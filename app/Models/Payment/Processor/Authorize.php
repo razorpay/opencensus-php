@@ -8638,17 +8638,7 @@ trait Authorize
 
                 $this->repo->saveOrFail($txn);
 
-
-                if($this->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_JOURNAL_WRITES) === true)
-                {
-                    \Event::dispatch(new TransactionalClosureEvent(function () use ($payment)
-                    {
-                        // This occurs in purchase model
-                        $transactionMessage = CaptureJournalEvents::createTransactionMessageForGatewayCapture($payment);
-
-                        LedgerEntryJob::dispatch($this->mode, $transactionMessage, $this->merchant)->onConnection('sync');
-                    }));
-                }
+                $this->createLedgerEntriesForGatewayCaptureOnAuthorize($payment);
             }
 
             $this->repo->saveOrFail($payment);
@@ -8683,6 +8673,34 @@ trait Authorize
 
         return $updated;
     }
+
+
+    private function createLedgerEntriesForGatewayCaptureOnAuthorize(Payment\Entity $payment)
+    {
+        try
+        {
+            if($this->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_JOURNAL_WRITES) === true)
+            {
+                $transactionMessage = CaptureJournalEvents::createTransactionMessageForGatewayCapture($payment);
+
+                \Event::dispatch(new TransactionalClosureEvent(function () use ($transactionMessage)
+                {
+                    // this is triggered for auth and capture model when merchant triggers the manual capture
+
+                    LedgerEntryJob::dispatch($this->mode, $transactionMessage)->onConnection('sync');
+                }));
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::PG_LEDGER_ENTRY_FAILED,
+                []);
+        }
+    }
+
 
     protected function sendFeedbackPaymentAuthenticatedToDoppler($payment)
     {

@@ -34,18 +34,11 @@ class RefundJournalEvents
 
                 $transactionMessage[Constants::TRANSACTOR_EVENT] = Constants::REFUND_PROCESSED_DIRECT_SETTLEMENT;
 
-                $rule = (object) self::fetchLedgerRulesForRefundsDirectSettlement($refund, $txn);
+                $transactionMessage[Constants::ADDITIONAL_PARAMS] = self::fetchLedgerRulesForRefundsDirectSettlement($refund, $txn);
 
-                //add ledger entries only if direct_settlement_accounting rule is set.
-                if (isset($rule[Constants::DIRECT_SETTLEMENT_ACCOUNTING]) === true)
-                {
-                    $transactionMessage[Constants::ADDITIONAL_PARAMS] = $rule;
-
-                    CreateLedgerJournal::dispatch($mode, $transactionMessage, $txn->merchant)->onConnection('sync');
-                }
+                CreateLedgerJournal::dispatch($mode, $transactionMessage, $txn->merchant)->onConnection('sync');
             } //Normal autorefund scenarios
-            else if (($refund->payment->getStatus() === "authorized") and
-                ($refund->payment->getRefundAt() < Carbon::now()->getTimestamp()))
+            else if ($refund->payment->hasBeenCaptured() === false)
             {
                 $transactionMessage = self::createTransactionMessageForRefund($refund, $txn);
 
@@ -59,7 +52,7 @@ class RefundJournalEvents
             {
                 $transactionMessage = self::createTransactionMessageForRefund($refund, $txn);
 
-                $transactionMessage[Constants::ADDITIONAL_PARAMS] = (object) self::fetchLedgerRulesForRefunds($refund, $txn);
+                $transactionMessage[Constants::ADDITIONAL_PARAMS] = self::fetchLedgerRulesForRefunds($refund, $txn);
 
                 CreateLedgerJournal::dispatch($mode, $transactionMessage, $txn->merchant)->onConnection('sync');
             }
@@ -88,10 +81,9 @@ class RefundJournalEvents
     //1. Balance is deducted from merchant balance / credits as gateway doesn't take care of refund.
     //2. Check for the speed of refund and credits usage and make appropriate ledger entries.
     //3. Check if autorefund occurred on DS settlement
-    public static function fetchLedgerRulesForRefundsDirectSettlement(RefundEntity $refund, Transaction\Entity $transaction): array
+    public static function fetchLedgerRulesForRefundsDirectSettlement(RefundEntity $refund, Transaction\Entity $transaction)
     {
-        $rule = [
-        ];
+        $rule = null;
 
         // In this case, the gateway itself handles the refund hence, money is not deducted from merchant balance account
         if($refund->isDirectSettlementRefund() === true)
@@ -114,15 +106,14 @@ class RefundJournalEvents
                 }
 
                 // Auto refund condition in direct settlement
-                if (($refund->payment->hasBeenCaptured() === false) and
-                    ($refund->payment->getRefundAt() < Carbon::now()->getTimestamp()))
+                if ($refund->payment->hasBeenCaptured() === false)
                 {
                     $rule[Constants::DIRECT_SETTLEMENT_ACCOUNTING] = Constants::AUTOREFUND_DS_WITH_REFUND;
                 }
             }
         }
         //Gateway doesn't handle the refund and money needs to be deducted from merchant
-        else if ($refund->isDirectSettlementWithoutRefund())
+        else if ($refund->isDirectSettlementWithoutRefund() === true)
         {
             if(($refund->getSpeedDecisioned() === speed::NORMAL) or
                 ($refund->getSpeedProcessed() === speed::NORMAL))
@@ -137,8 +128,7 @@ class RefundJournalEvents
                 }
 
                 // Auto refund condition in direct settlement without refund
-                if (($refund->payment->hasBeenCaptured() === false) and
-                    ($refund->payment->getRefundAt() < Carbon::now()->getTimestamp()))
+                if ($refund->payment->hasBeenCaptured() === false)
                 {
                     if($transaction->isRefundCredits() === true)
                     {
@@ -167,10 +157,9 @@ class RefundJournalEvents
     }
 
     //reversal entity has association with refund entity
-    public static function fetchLedgerRulesForReversal(Reversal $reversal, Transaction\Entity $transaction, RefundEntity $refund, bool $feeOnlyReversal): array
+    public static function fetchLedgerRulesForReversal(Transaction\Entity $transaction, RefundEntity $refund, bool $feeOnlyReversal)
     {
-        $rule = [
-        ];
+        $rule = null;
 
         //This is a case where optimum refund was initially triggered and then only fee was reversed
         //converting instant refund to normal refund
@@ -209,10 +198,9 @@ class RefundJournalEvents
     }
 
     //Creates a rule object for ledger entry based on refund usecases.
-    public static function fetchLedgerRulesForRefunds(RefundEntity $refund, Transaction\Entity $transaction): array
+    public static function fetchLedgerRulesForRefunds(RefundEntity $refund, Transaction\Entity $transaction)
     {
-        $rule = [
-        ];
+        $rule = null;
 
         if(($refund->getSpeedDecisioned() === speed::NORMAL) and
             ($transaction->isRefundCredits()) === true)
@@ -241,7 +229,7 @@ class RefundJournalEvents
         $reversalData = array(
             Constants::TRANSACTOR_ID                 => $reversal->getId(),
             Constants::TRANSACTOR_EVENT              => Constants::REFUND_REVERSAL,
-            Constants::IDENTIFIERS                   => (object) [
+            Constants::IDENTIFIERS                   => [
                 Constants::GATEWAY         => $reversal->entity->getGateway(),
             ],
         );
@@ -255,7 +243,7 @@ class RefundJournalEvents
         $refundData = array(
             Constants::TRANSACTOR_ID                => $refund->getId(),
             Constants::TRANSACTOR_EVENT              => Constants::REFUND_PROCESSED,
-            Constants::IDENTIFIERS                   => (object) [
+            Constants::IDENTIFIERS                   => [
                 Constants::GATEWAY           => $refund->getGateway(),
             ],
         );

@@ -21,8 +21,6 @@ class BaseJournalEvents
             Constants::TAX                       => strval(abs($tax)),
             Constants::COMMISSION                => strval(abs($fee)),
             Constants::TRANSACTION_DATE          => $transaction->getCreatedAt(),
-            Constants::NOTES                     => new \stdClass(),
-            Constants::IDENTIFIERS               => (object) [],
         );
     }
 }

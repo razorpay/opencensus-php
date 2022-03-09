@@ -5950,6 +5950,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const KAFKA_JOURNAL_ENTRY_PUSH_FAILED                            = "KAFKA_JOURNAL_ENTRY_PUSH_FAILED";
     const KAFKA_JOURNAL_ENTRY_QUEUE_DELETE                           = "KAFKA_JOURNAL_ENTRY_QUEUE_DELETE";
     const LEDGER_ENTRY_FAILED                                        = "LEDGER_ENTRY_FAILED";
+    const PG_LEDGER_ENTRY_FAILED                                     = "PG_LEDGER_ENTRY_FAILED";
 
     // Merchant Website Checker
     const HEALTH_CHECKER_PERIODIC_CRON_STARTED             = 'HEALTH_CHECKER_PERIODIC_CRON_STARTED';

@@ -24,11 +24,9 @@ class CreateLedgerJournal extends Job
 
     protected $merchant;
 
-    public function __construct(string $mode, array $transactionMessage, Merchant\Entity $merchant)
+    public function __construct(string $mode, array $transactionMessage)
     {
         parent::__construct($mode);
-
-        $this->merchant = $merchant;
 
         $this->transactionMessage = $transactionMessage;
     }
@@ -53,11 +51,6 @@ class CreateLedgerJournal extends Job
 
         try
         {
-            if($this->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_JOURNAL_WRITES) === false)
-            {
-                return;
-            }
-
             $kafkaProducer = (new KafkaProducer($topic, stringify($message), $producerKey));
 
             $kafkaProducer->Produce();
@@ -68,7 +61,7 @@ class CreateLedgerJournal extends Job
                 "message" => $message
             ]);
         }
-        catch (Exception $ex)
+        catch (\Exception $ex)
         {
             $this->trace->traceException(
                 $ex,

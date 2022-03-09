@@ -523,18 +523,7 @@ class Core extends Base\Core
 
             $txnCore->saveFeeDetails($txn, $feesSplit);
 
-            if($reversal->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_JOURNAL_WRITES) === true)
-            {
-                // Create ledger entry for transaction here
-                \Event::dispatch(new TransactionalClosureEvent(function () use ($txn, $reversal, $feeOnlyReversal)
-                {
-                    $transactionMessage = RefundJournalEvents::createTransactionMessageForRefundReversal($reversal, $txn);
-
-                    $transactionMessage[LedgerConstants::ADDITIONAL_PARAMS] = (object)RefundJournalEvents::fetchLedgerRulesForReversal($reversal, $txn, $reversal->entity, $feeOnlyReversal);
-
-                    LedgerEntryJob::dispatch($this->mode, $transactionMessage, $reversal->merchant)->onConnection('sync');
-                }));
-            }
+            $this->createLedgerEntriesForReversals($txn, $reversal, $feeOnlyReversal);
 
             return $reversal;
         });
@@ -549,6 +538,32 @@ class Core extends Base\Core
             ]);
 
         return $reversal;
+    }
+
+    private function createLedgerEntriesForReversals(Transaction\Entity $txn, Reversal\Entity $reversal, bool $feeOnlyReversal)
+    {
+        try
+        {
+            if ($reversal->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_JOURNAL_WRITES) === true)
+            {
+
+                $transactionMessage = RefundJournalEvents::createTransactionMessageForRefundReversal($reversal, $txn);
+                $transactionMessage[LedgerConstants::ADDITIONAL_PARAMS] = RefundJournalEvents::fetchLedgerRulesForReversal($txn, $reversal->entity, $feeOnlyReversal);
+
+                \Event::dispatch(new TransactionalClosureEvent(function () use ($transactionMessage)
+                {
+                    LedgerEntryJob::dispatch($this->mode, $transactionMessage)->onConnection('sync');
+                }));
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::PG_LEDGER_ENTRY_FAILED,
+                []);
+        }
     }
 
     /**

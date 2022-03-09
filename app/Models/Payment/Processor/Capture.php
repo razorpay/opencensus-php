@@ -325,13 +325,7 @@ trait Capture
 
                         $this->repo->saveOrFail($this->payment);
 
-                        if($this->payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_JOURNAL_WRITES) === true)
-                        {
-                            // this is triggered for auth and capture model when merchant triggers the manual capture
-                            $transactionMessage = CaptureJournalEvents::createTransactionMessageForGatewayCapture($this->payment);
-
-                            LedgerEntryJob::dispatch($this->mode, $transactionMessage, $this->merchant)->onConnection('sync');
-                        }
+                        $this->createLedgerEntriesForGatewayCapture($this->payment);
                     }
 
                     return true;
@@ -345,6 +339,28 @@ trait Capture
             );
 
             return false;
+        }
+    }
+
+    private function createLedgerEntriesForGatewayCapture(Payment\Entity $payment)
+    {
+        try
+        {
+            if($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_JOURNAL_WRITES) === true)
+            {
+                // this is triggered for auth and capture model when merchant triggers the manual capture
+                $transactionMessage = CaptureJournalEvents::createTransactionMessageForGatewayCapture($payment);
+
+                LedgerEntryJob::dispatch($this->mode, $transactionMessage)->onConnection('sync');
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::PG_LEDGER_ENTRY_FAILED,
+                []);
         }
     }
 
@@ -617,13 +633,7 @@ trait Capture
                     // in a transaction, which could fail and end up rolling back.
                     $this->repo->saveOrFail($this->payment);
 
-                    if($this->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_JOURNAL_WRITES) === true)
-                    {
-                        // Gets called in auto capture mode of auth and capture model
-                        $transactionMessage = CaptureJournalEvents::createTransactionMessageForGatewayCapture($this->payment);
-
-                        LedgerEntryJob::dispatch($this->mode, $transactionMessage, $this->merchant)->onConnection('sync');
-                    }
+                    $this->createLedgerEntriesForGatewayCapture($this->payment);
                 }
             }
 
@@ -816,18 +826,7 @@ trait Capture
                 $this->handleLateBalanceUpdate($txn, $merchantBalance);
             }
 
-            if($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_JOURNAL_WRITES) === true)
-            {
-                $transactionMessage = CaptureJournalEvents::createTransactionMessageForMerchantCapture($payment, $txn);
-
-                \Event::dispatch(new TransactionalClosureEvent(function () use ($txn, $transactionMessage) {
-                    // Job will be dispatched only if the transaction commits.
-
-                    $transactionMessage[LedgerConstants::ADDITIONAL_PARAMS] = (object)CaptureJournalEvents::fetchRulesForPaymentCredits($txn);
-
-                    LedgerEntryJob::dispatch($this->mode, $transactionMessage, $this->merchant)->onConnection('sync');
-                }));
-            }
+            $this->createLedgerEntriesForMerchantCapture($payment, $txn);
 
             // Please keep this function at the end of transaction block, as
             // we are updating orders which lies in PG Router service now.
@@ -840,6 +839,34 @@ trait Capture
         $this->processTransferIfApplicable($payment);
 
         $this->tracePaymentInfo(TraceCode::PAYMENT_CAPTURE_SUCCESS);
+    }
+
+
+    private function createLedgerEntriesForMerchantCapture(Payment\Entity $payment, Transaction\Entity $txn)
+    {
+        try
+        {
+            if($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_JOURNAL_WRITES) === true)
+            {
+                $transactionMessage = CaptureJournalEvents::createTransactionMessageForMerchantCapture($payment, $txn);
+
+                \Event::dispatch(new TransactionalClosureEvent(function () use ($txn, $transactionMessage) {
+                    // Job will be dispatched only if the transaction commits.
+
+                    $transactionMessage[LedgerConstants::ADDITIONAL_PARAMS] = CaptureJournalEvents::fetchRulesForPaymentCredits($txn);
+
+                    LedgerEntryJob::dispatch($this->mode, $transactionMessage)->onConnection('sync');
+                }));
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::PG_LEDGER_ENTRY_FAILED,
+                []);
+        }
     }
 
 

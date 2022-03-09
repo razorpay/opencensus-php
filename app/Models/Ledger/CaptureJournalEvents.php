@@ -15,7 +15,6 @@ class CaptureJournalEvents
         $merchantCaptureData = array(
             Constants::TRANSACTOR_ID                 => $payment->getId(),
             Constants::TRANSACTOR_EVENT              => Constants::MERCHANT_CAPTURED,
-            Constants::IDENTIFIERS                   => (object) [],
         );
         return array_merge($transactionMessage, $merchantCaptureData);
     }
@@ -38,17 +37,15 @@ class CaptureJournalEvents
             Constants::COMMISSION                   => strval($fee),
             Constants::TRANSACTOR_EVENT             => Constants::GATEWAY_CAPTURED,
             Constants::TRANSACTION_DATE             => $payment->getCreatedAt(),
-            Constants::NOTES                        => new \stdClass(),
-            Constants::IDENTIFIERS                  => (object) [
+            Constants::IDENTIFIERS                  => [
                 Constants::GATEWAY        => $gateway,
             ],
         );
     }
 
-    public static function fetchRulesForPaymentCredits(Transaction\Entity $transaction): array
+    public static function fetchRulesForPaymentCredits(Transaction\Entity $transaction)
     {
-        $rule = [
-        ];
+        $rule = null;
 
         if($transaction->isGratis() === true)
         {

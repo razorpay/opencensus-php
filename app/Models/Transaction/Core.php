@@ -985,18 +985,33 @@ class Core extends Base\Core
     {
         list($txn, $feeSplit) = $this->createTransactionForSource($settlement);
 
-        if($txn->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_JOURNAL_WRITES) === true)
-        {
-
-            \Event::dispatch(new TransactionalClosureEvent(function () use ($txn, $settlement)
-            {
-                $transactionMessage = SettlementJournalEvents::createTransactionMessageForSettlement($settlement, $txn);
-
-                LedgerEntryJob::dispatch($this->mode, $transactionMessage, $txn->merchant)->onConnection('sync');
-            }));
-        }
+        $this->createLedgerEntryForSettlement($txn, $settlement);
 
         return $txn;
+    }
+
+    private function createLedgerEntryForSettlement(Transaction\Entity $txn, Settlement\Entity $settlement)
+    {
+        try
+        {
+            if($txn->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_JOURNAL_WRITES) === true)
+            {
+
+                $transactionMessage = SettlementJournalEvents::createTransactionMessageForSettlement($settlement, $txn);
+                \Event::dispatch(new TransactionalClosureEvent(function () use ($transactionMessage)
+                {
+                    LedgerEntryJob::dispatch($this->mode, $transactionMessage)->onConnection('sync');
+                }));
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::PG_LEDGER_ENTRY_FAILED,
+                []);
+        }
     }
 
     public function createFromSettlementTransfer(Settlement\Transfer\Entity $transfer)
