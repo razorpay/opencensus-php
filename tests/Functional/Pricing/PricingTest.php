@@ -243,6 +243,13 @@ class PricingTest extends TestCase
         $this->startTest();
     }
 
+    public function testStringifiedPricingPlan()
+    {
+        // assertion are inherent
+        // verifies the flow when stringified json data is sent for processing
+        $this->startTest();
+    }
+
     public function testBulkPricingPlanOfMultipleTypes()
     {
         $this->startTest();

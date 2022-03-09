@@ -90,6 +90,35 @@ return [
         ],
     ],
 
+    'testStringifiedPricingPlan' => [
+        'request' => [
+            'content' => [
+                'plan_name' => 'TestStringifiedPlan2',
+                'rules'     => "[{\r\n\"payment_method\": \"wallet\",\r\n\"payment_network\": \"paytm\",\r\n\"percent_rate\": 1000\r\n }]",
+            ],
+            'url' => '/pricing',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'name'      => 'TestStringifiedPlan2',
+                'entity'    => 'pricing',
+                'count'     => 1,
+                'rules'     => [
+                    [
+                        'plan_name'             => 'TestStringifiedPlan2',
+                        'payment_method'        => 'wallet',
+                        'payment_method_type'   => null,
+                        'payment_network'       => 'paytm',
+                        'payment_issuer'        => null,
+                        'percent_rate'          => 1000,
+                        'type'                  => 'pricing',
+                    ]
+                ],
+            ],
+        ],
+    ],
+
     'testAddBulkPlanRules' => [
         'request'  => [
             'content' => [
