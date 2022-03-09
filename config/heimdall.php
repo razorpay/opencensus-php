@@ -505,6 +505,10 @@ return [
             Permission::EDIT_MERCHANT_RECEIPT_EMAIL_EVENT   => '',
             Permission::EDIT_BULK_MERCHANT                  => '',
             Permission::ASSIGN_MERCHANT_TERMINAL            => '',
+            Permission::CREATE_EXTERNAL_ORG_TERMINALS       => [
+                'description'   => 'Create paysecure terminal',
+                'assignable'    => true,
+            ],
             Permission::ASSIGN_MERCHANT_BANKS               => '',
             Permission::ADD_MERCHANT_ADJUSTMENT             => '',
             Permission::EDIT_MERCHANT_EMAIL                 => [

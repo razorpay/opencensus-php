@@ -10,6 +10,8 @@ use RZP\Base\BuilderEx;
 use RZP\Models\Payment;
 use RZP\Constants\Table;
 use RZP\Models\Merchant;
+use RZP\Error\ErrorCode;
+use RZP\Models\Admin\Org;
 use RZP\Models\Payment\Method;
 use RZP\Constants\Entity as E;
 use RZP\Models\Payment\Gateway;
@@ -18,6 +20,7 @@ use RZP\Models\Currency\Currency;
 use RZP\Constants\Mode as RzpMode;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Terminal\BankingType;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Base\QueryCache\Cacheable;
 use RZP\Models\Payment\Processor\PayLater;
 use RZP\Models\Payment\Processor\Netbanking;
@@ -315,6 +318,7 @@ class Entity extends Base\PublicEntity
         self::TYPE,
         self::GATEWAY,
         self::MODE,
+        self::ORG_ID,
     ];
 
     protected $defaults = [
@@ -1212,6 +1216,43 @@ class Entity extends Base\PublicEntity
         $input[self::GATEWAY] = strtolower($input[self::GATEWAY]);
     }
 
+    protected function modifyOrgId(& $input)
+    {
+        $app = App::getFacadeRoot();
+
+        if ( isset($input[self::ORG_ID]) === true )
+        {
+            // remove the 'org_' from org_id in input if present,
+            // since resulting terminal's org_id should not have 'org_'
+            // if 'org_' not present in the org_id in input, input will not be changed, but,
+            // we need to append it to the local variable orgId which we are using to fetch the org here
+
+            $input[self::ORG_ID] = Org\Entity::verifyIdAndSilentlyStripSign($input[self::ORG_ID]);
+
+            $orgId = 'org_' . $input[self::ORG_ID];  // resulting orgId will be org_{id}
+
+            try
+            {
+                $org = (new Org\Repository)->findOrFailPublic($input[self::ORG_ID]);
+
+                $this->org()->associate($org);  // if org is set in input, associate the terminal with this org
+            }
+            catch (\Exception $e)
+            {
+                $app['trace']->info(TraceCode::TERMINAL_ORG_HEADERS_EXCEPTION, [
+                    'stripped org id' => $input[self::ORG_ID],
+                ]);
+
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_INVALID_ORG_ID,
+                    null,
+                    [
+                        'org_id' => $orgId,
+                    ]
+                );
+            }
+        }
+    }
     // ---------------------- END MODIFIERS ----------------------
 
     // ---------------------- SCOPES ----------------------

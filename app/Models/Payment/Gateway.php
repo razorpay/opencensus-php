@@ -350,6 +350,7 @@ class Gateway
         self::PINELABS              => self::PINELABS,
         self::INGENICO              => self::INGENICO,
         self::NETBANKING_IDFC       => self::IDFC,
+        self::PAYSECURE             => self::ACQUIRER_AXIS,
         self::NETBANKING_SBI        => self::SBIN,
         self::NETBANKING_INDUSIND   => self::INDUSIND,
         self::OFFLINE_HDFC          => self::HDFC,

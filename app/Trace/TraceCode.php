@@ -6416,6 +6416,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SKIP_ORG_DATA_IN_RESPONSE                         = 'SKIP_ORG_DATA_IN_RESPONSE';
 
     const TERMINAL_ORG_HEADERS_EXCEPTION                    = 'TERMINAL_ORG_HEADERS_EXCEPTION';
+    
     //FIRS Document Processor Job
     const FIRS_DOCUMENT_PROCESSOR_JOB_INIT      = 'FIRS_DOCUMENT_PROCESSOR_JOB_INIT';
     const FIRS_DOCUMENT_PROCESSOR_JOB_FAILED    = 'FIRS_DOCUMENT_PROCESSOR_JOB_FAILED';

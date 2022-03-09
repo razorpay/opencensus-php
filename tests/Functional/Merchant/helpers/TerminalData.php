@@ -850,6 +850,17 @@ return [
         ],
     ],
 
+    'testDeleteTerminal2WithAxisOrgId' => [
+        'request' => [
+            'url' => '/terminals/testatomrandom',
+            'method' => 'DELETE',
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
     'testCopySharedTerminal' => [
         'response' => [
             'content' => [

@@ -210,4 +210,13 @@ class Service extends Base\Service
 
         return false;
     }
+
+    public function validateOrgIdWithFeatureFlag(string $orgId, string $featureFlag)
+    {
+        $features = (new \RZP\Models\Feature\Service)->getFeatures('org',$orgId);
+
+        $assignedFeatures =  $features['assigned_features']->pluck('name')->toArray();
+
+        return (in_array($featureFlag, $assignedFeatures) === true);
+    }
 }

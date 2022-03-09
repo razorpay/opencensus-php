@@ -160,6 +160,7 @@ class Validator extends Base\Validator
         Payment\Gateway::CHECKOUT_DOT_COM,
         Payment\Gateway::BILLDESK_SIHUB,
         Payment\Gateway::MANDATE_HQ,
+        Payment\Gateway::PAYSECURE,
         Payment\Gateway::RUPAY_SIHUB,
         Payment\Gateway::NETBANKING_BDBL,
         Payment\Gateway::NETBANKING_UCO,
@@ -879,6 +880,12 @@ class Validator extends Base\Validator
         Entity::ENABLED                    => 'required|in:0',
         Entity::GATEWAY_ACQUIRER           => 'required|in:axis',
         Entity::STATUS                     => 'required|in:pending',
+    ];
+
+    protected static $paysecureEditTerminalRules = [
+        Entity::TYPE                       => 'sometimes|array',
+        Entity::STATUS                     => 'sometimes|string|in:deactivated,activated',
+        Entity::CURRENCY                   => 'sometimes|array',
     ];
 
     protected static $cybersourceEditTerminalRules = [

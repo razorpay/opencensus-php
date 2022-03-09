@@ -58,6 +58,15 @@ trait EntityActionTrait
         return $this->makeRequestAndGetContent($request);
     }
 
+    protected function editTerminalExternalOrg($tid, $input)
+    {
+        $request = array(
+            'url' => '/terminals/'.$tid . '/external_org',
+            'method' => 'put',
+            'content' => $input);
+
+        return $this->makeRequestAndGetContent($request);
+    }
     protected function copyTerminal($tid, $mid, $input)
     {
         $request = array(
