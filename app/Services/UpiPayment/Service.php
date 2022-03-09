@@ -869,13 +869,29 @@ class Service
 
         if ($statusCode === 404)
         {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_URL_NOT_FOUND,
+                null,
+                [
+                    'http_code' => $statusCode,
+                ]
+            );
+        }
+        else if ($statusCode === 401)
+        {
+            throw new Exception\AuthenticationException(
+                ErrorCode::BAD_REQUEST_AUTHENTICATION_FAILED
+            );
         }
         else if ($statusCode === 503)
         {
             throw new Exception\ServerErrorException(
                 'Upi Payments Service is not available',
-                ErrorCode::SERVER_ERROR_SERVICE_UNAVAILABLE);
+                ErrorCode::SERVER_ERROR_SERVICE_UNAVAILABLE,
+                [
+                    'http_code' => $statusCode,
+                ]
+            );
         }
 
         $responseBody = json_decode($response->getBody(), true);
