@@ -174,8 +174,6 @@ class VpaGateway extends Gateway implements Contracts\VpaGateway
             Fields::CUSTOMER_PRIMARY_VPA    => $this->getCustomerPrimaryVpa(),
         ]);
 
-        $s2s = $this->sendS2sRequest($request);
-
         $response->setData([
             Entity::VPA => [
                 Entity::ID  => $vpa[Entity::ID],
