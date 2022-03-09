@@ -968,7 +968,7 @@ class Processor
 
     protected function addOrderIdToInputForExternalSubscription(array & $input)
     {
-        assert($this->subscription->isExternal() === true);
+        assert($this->subscription->isExternal() === true); // nosemgrep :assert-fix-false-positives
 
         // For subscription card change, we donot need to add order id
         // for the following subscription states. (For these states, we will be
@@ -1050,7 +1050,7 @@ class Processor
 
     protected function addCustomerIdToInputForExternalSubscription(array & $input)
     {
-        assert($this->subscription->isExternal() === true);
+        assert($this->subscription->isExternal() === true); // nosemgrep : assert-fix-false-positives
         //
         // If a subscription_id is sent in the input, the customer_id should
         // never be sent. It's either associated with the subscription (local customer)

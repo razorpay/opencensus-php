@@ -418,7 +418,7 @@ class FreshdeskTicketClient
 
     protected function makeCurlRequest(array &$request)
     {
-        $mime_boundary = md5(time());
+        $mime_boundary = md5(time()); // nosemgrep : php.lang.security.weak-crypto.weak-crypto
 
         $curl = curl_init();
 

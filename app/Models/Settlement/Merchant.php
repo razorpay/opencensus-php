@@ -192,7 +192,7 @@ class Merchant
 
     public function createSettlementAttempt($merchantSettleToPartner, $params = []) : FundTransferAttempt\Entity
     {
-        assert($this->setl->hasTransaction(), true);
+        assert($this->setl->hasTransaction(), true); // nosemgrep : assert-fix-false-positives
 
         $initiateAt = null;
 

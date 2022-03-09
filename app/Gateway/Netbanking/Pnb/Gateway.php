@@ -491,7 +491,7 @@ class Gateway extends Base\Gateway
 
     protected function getHashOfString($str)
     {
-        return md5($str);
+        return md5($str); // nosemgrep : php.lang.security.weak-crypto.weak-crypto
     }
 
     protected function getLiveSecret()

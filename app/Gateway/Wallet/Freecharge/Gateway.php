@@ -790,7 +790,7 @@ class Gateway extends Base\Gateway
         $cipherText = openssl_encrypt(
             $accessToken, self::ENCRYPTION_MODE, $key, OPENSSL_RAW_DATA);
 
-        assert($cipherText !== false);
+        assert($cipherText !== false); // nosemgrep : assert-fix-false-positives
 
         return bin2hex($cipherText);
     }
