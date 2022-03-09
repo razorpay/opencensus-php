@@ -2,6 +2,8 @@
 
 namespace App\Constants;
 
+use App\Http\ApiUrl;
+
 class Tracing
 {
     // constants related to distributed tracing setup
@@ -58,6 +60,8 @@ class Tracing
     public static function getBasicSpanAttributes($app): array
     {
         $attrs = ['service.version' => $app['config']->get('jaeger.tag_service_version')]??"1.0";
+
+        $attrs['product'] = ApiUrl::isBankingOriginRequest() ? "banking" : "primary";
 
         if (isset($app['request']))
         {
