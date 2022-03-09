@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Payout;
 
+use App;
 use Mail;
 use Carbon\Carbon;
 use RZP\Constants\Product;
@@ -2629,6 +2630,56 @@ class Service extends Base\Service
     public function getPayoutStatusReasonMap(): array
     {
         return StatusReasonMap::$payoutStatusToReasonMap;
+    }
+
+    public function getHolidayDetails(array $input): array
+    {
+        $app  = \App::getFacadeRoot();
+
+        $auth = $app['basicauth'];
+        $merchantId = $auth->getMerchant()->getId();
+
+        $input[Entity::MERCHANT_ID] = $merchantId;
+
+        $tempInput = $input;
+
+        $balance = $this->processAccountNumber($tempInput);
+
+        $channel = $balance->getChannel();
+
+        $this->trace->info(
+            TraceCode::FTS_HOLIDAY_DEBUG,
+            [
+                "account_type" => $balance->getAccountType(),
+                "merchant" => $merchantId,
+                "channel" => $channel
+            ]
+        );
+
+        if ($balance->isAccountTypeDirect() === true)
+        {
+            if ($channel === 'rbl')
+            {
+                $input[Entity::CHANNEL] = 'rbl';
+            }
+            else if ($channel === 'icici')
+            {
+                $input[Entity::CHANNEL] = 'icici';
+            }
+        }
+        else if ($balance->isAccountTypeShared() === true)
+        {
+            $input[Entity::CHANNEL] = 'icici';
+        }
+
+        unset($input[Entity::ACCOUNT_NUMBER]);
+
+        /** @var \RZP\Services\FTS\FundTransfer $transferService */
+        $transferService = App::getFacadeRoot()['fts_fund_transfer'];
+
+        $response = $transferService->getHolidayDetails($input);
+
+        return $response;
     }
 
     public function createPayoutViaLedgerCronJob(array $blacklistIds, array $forcedMerchantIds, int $limit)

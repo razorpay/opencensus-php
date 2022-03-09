@@ -1508,6 +1508,8 @@ class Route
 
         'update_merchant_sla_for_on_hold_payouts'  => ['put',      'payouts/merchant_on_hold_slas',                  'PayoutController@updateMerchantOnHoldSlas'],
 
+        'payout_get_holiday_details'              => ['get',     'holidays',                                        'PayoutController@getHolidayDetails'],
+
         //Routes related to workflows microservice
         'wfs_config_create'                       => ['post',    'wf-service/configs',                               'WorkflowServiceController@createConfig'                            ],
         'wfs_config_update'                       => ['patch',   'wf-service/configs',                               'WorkflowServiceController@updateConfig'                            ],
@@ -3901,6 +3903,8 @@ class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        //FTS holiday Details
+        'payout_get_holiday_details',
         'coupon_expiry_alert',
         'upi_transfer_process_internal',
         'payment_callback_bharatqr_internal',
@@ -4654,6 +4658,8 @@ class Route
     //
 
     public static $proxy = [
+        //FTS holiday Details
+        'payout_get_holiday_details',
         'fund_addition_tpv',
         'merchant_coupons_apply',
         'raw_address_create_batch_service',
@@ -7669,6 +7675,7 @@ class Route
         'payout_validate'                              => Permission::CREATE_PAYOUT,
         'payouts_batch_create'                         => Permission::CREATE_PAYOUT,
         'payout_create_with_otp'                       => Permission::CREATE_PAYOUT,
+        'payout_get_holiday_details'                   => Permission::CREATE_PAYOUT,
         'currency_fetch_all_proxy'                     => '*',
         'reports_monthly_banking_invoice'              => '*',
         'merchant_activation_business_categories'      => '*',
@@ -8943,6 +8950,7 @@ class Route
             'payout_create',
             'payout_validate',
             'payout_create_with_otp',
+            'payout_get_holiday_details',
             'payout_fetch_by_id',
             'payout_fetch_multiple',
             'payout_fetch_reversals',

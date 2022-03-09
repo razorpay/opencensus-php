@@ -576,4 +576,14 @@ class PayoutController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function getHolidayDetails()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->getHolidayDetails($input);
+
+        return ApiResponse::json($data);
+    }
+
 }

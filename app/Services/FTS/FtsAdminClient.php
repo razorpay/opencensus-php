@@ -36,6 +36,8 @@ class FtsAdminClient extends Base
 
     const MERCHANT_CONFIGURATIONS = "merchant_configurations";
 
+    const HOLIDAY = "holiday";
+
     const FAIL_FAST_STATUS_LOGS = 'fail_fast_status_logs';
 
     public function __construct()

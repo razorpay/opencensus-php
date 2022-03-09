@@ -1453,4 +1453,20 @@ class FundTransfer extends Base
             $input);
     }
 
+
+    public function getHolidayDetails(array $input)
+    {
+        $this->trace->info(
+            TraceCode::FTS_HOLIDAY_DEBUG,
+            [
+                "input" => $input,
+            ]
+        );
+
+
+        return $this->createAndSendRequest(
+            parent::FTS_HOLIDAY_URL,
+            Requests::GET,
+            $input);
+    }
 }
