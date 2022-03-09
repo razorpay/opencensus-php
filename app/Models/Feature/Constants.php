@@ -1227,7 +1227,7 @@ class Constants
     /**
      * Feature flag to allow only 3ds enabled international transactions
      */
-    const FAIL_NON3DS_INTERNATIONAL = 'fail_non3ds_international';
+    const ACCEPT_ONLY_3DS_PAYMENTS = 'accept_only_3ds_payments';
 
     /**
      * Feature flag disables a merchant from creating linked accounts with existing emails
@@ -1694,7 +1694,7 @@ class Constants
         self::SUBM_QR_IMAGE_CONTENT           => true,
         self::RECURRING_CARD_MANDATE_BILLDESK_SIHUB => true,
         self::RAZORPAYX_FLOWS_VIA_OAUTH       => true,
-        self::FAIL_NON3DS_INTERNATIONAL       => true,
+        self::ACCEPT_ONLY_3DS_PAYMENTS        => true,
 
     ];
 

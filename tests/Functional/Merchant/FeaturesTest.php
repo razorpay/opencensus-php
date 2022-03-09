@@ -2987,7 +2987,7 @@ Regards,
         $this->testFeatureStatus($featureToBeChecked);
     }
 
-    public function testFailNon3dsInternational()
+    public function testAcceptOnly3dsPayments()
     {
         $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');
 

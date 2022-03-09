@@ -2447,12 +2447,12 @@ return [
             'status_code' => 200
         ]
     ],
-    'testFailNon3dsInternational'=>[
+    'testAcceptOnly3dsPayments'=>[
         'request'  => [
             'url'     => '/features',
             'method'  => 'post',
             'content' => [
-                'names'       => ['fail_non3ds_international'],
+                'names'       => ['accept_only_3ds_payments'],
                 'entity_type' => 'merchant',
                 'entity_id'   => '10000000000000'
             ]
@@ -2460,7 +2460,7 @@ return [
         'response' => [
             'content' => [
                 [
-                    'name' => 'fail_non3ds_international',
+                    'name' => 'accept_only_3ds_payments',
                     'entity_id' => '10000000000000',
                     'entity_type' => 'merchant',
                 ]
