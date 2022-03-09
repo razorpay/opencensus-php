@@ -6502,15 +6502,19 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const UNSUPPORTED_LIBRARY_FOR_INTERNATIONAL_APPS        = 'UNSUPPORTED_LIBRARY_FOR_INTERNATIONAL_APPS';
 
-    //product_config_api
     const SAVE_MERCHANT_METHODS                             = 'SAVE_MERCHANT_METHODS';
     const PAYMENTS_GENERAL_CONFIG_CREATE_RESPONSE           = 'PAYMENTS_GENERAL_CONFIG_CREATE_RESPONSE';
     const PRODUCT_CONFIGURATION_CREATE_RESPONSE             = 'PRODUCT_CONFIGURATION_CREATE_RESPONSE';
     const CALL_TO_DOWNTIME_MANAGER_FAILED                   = 'CALL_TO_DOWNTIME_MANAGER_FAILED';
     const SENT_DOWNTIME_TO_DOWNTIME_MANAGER                 = 'SENT_DOWNTIME_TO_DOWNTIME_MANAGER';
     const SENDING_DOWNTIME_TO_DOWNTIME_MANAGER              = 'SENDING_DOWNTIME_TO_DOWNTIME_MANAGER';
+
+    const DOWNTIME_MANAGER_REQUEST                          = 'DOWNTIME_MANAGER_REQUEST';
+    const DOWNTIME_MANAGER_RESPONSE                         = 'DOWNTIME_MANAGER_RESPONSE';
+
     const FETCHING_LOGO_FROM_URL                            = 'FETCHING_LOGO_FROM_URL';
     const ERROR_WHILE_FETCHING_LOGO_FROM_URL                = 'ERROR_WHILE_FETCHING_LOGO_FROM_URL';
+
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
