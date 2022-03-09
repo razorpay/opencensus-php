@@ -2118,6 +2118,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ES_INDEX_CREATE                                       = 'ES_INDEX_CREATE';
     const ES_UPDATE_ACTION                                      = 'ES_UPDATE_ACTION';
     const ES_UNHANDLED_FAILURE                                  = 'ES_UNHANDLED_FAILURE';
+    const ES_DEBUG_MERCHANT_COUNT                               = 'ES_DEBUG_MERCHANT_COUNT';
+    const ES_DEBUG_TOTAL_COUNT                                  = 'ES_DEBUG_TOTAL_COUNT';
+    const ES_DEBUG_INPUT                                        = 'ES_DEBUG_INPUT';
 
     const RECON_ALERT                                           = 'RECON_ALERT';
     const RECON_EMAIL_VALIDATION_FAILED                         = 'RECON_EMAIL_VALIDATION_FAILED';

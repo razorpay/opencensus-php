@@ -14,6 +14,8 @@ use RZP\Error\ErrorCode;
 use RZP\Services\EsClient;
 use RZP\Models\Base\EsDao;
 use RZP\Base\RuntimeManager;
+use RZP\Jobs\EsSync;
+use RZP\Models\Base\EsRepository;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Exception\BadRequestException;
 
@@ -69,6 +71,135 @@ class EsController extends Controller
         $this->trace->info(TraceCode::ES_DEBUG_RESPONSE, $resTracePayload);
 
         return ApiResponse::json($res);
+    }
+
+    public function syncPayoutsToES()
+    {
+        $input = Request::all();
+
+        $this->trace->debug(TraceCode::ES_DEBUG_INPUT, [
+            'input'  => $input,
+        ]);
+
+        $merchantIds = $input['merchantIds'];
+
+        $batch = $input['batchSize'];
+
+        $mode = $this->app['rzp.mode'];
+
+        $merchantCount = 0;
+
+        foreach ($merchantIds as $merchantId)
+        {
+            $skip = 0;
+
+            $totalCount = 0;
+
+            do {
+                $payouts = $this->repo
+                    ->payout
+                    ->fetchPayoutsForMerchantIdWithSkip($merchantId, $skip, $batch);
+
+                $count = count($payouts);
+
+                $skip += $count;
+
+                try {
+                    EsSync::dispatch($mode,
+                        EsRepository::UPDATE, 'payout',
+                        $payouts)->delay(0.2);
+                } catch (\Throwable $e) {
+                    $this->trace->traceException(
+                        $e,
+                        Trace::ERROR,
+                        TraceCode::ES_SYNC_PUSH_FAILED);
+                }
+
+                $this->trace->debug(TraceCode::ES_DEBUG_RESPONSE, [
+                    'merchantId' => $merchantId,
+                    'count' => $count,
+                ]);
+
+                $totalCount += $count;
+
+            } while ($batch === $count);
+
+            $this->trace->debug(TraceCode::ES_DEBUG_TOTAL_COUNT, [
+                'totalPayouts'  => $totalCount,
+                'merchantId'    => $merchantId,
+            ]);
+
+            $merchantCount++;
+        }
+
+        $this->trace->debug(TraceCode::ES_DEBUG_MERCHANT_COUNT, [
+            'merchantCount'  => $merchantCount,
+        ]);
+    }
+
+    public function syncTransactionsToES()
+    {
+        $input = Request::all();
+
+        $this->trace->debug(TraceCode::ES_DEBUG_INPUT, [
+            'input'  => $input,
+        ]);
+
+        $merchantIds = $input['merchantIds'];
+
+        $batch = $input['batchSize'];
+
+        $mode = $this->app['rzp.mode'];
+
+        $merchantCount = 0;
+
+        foreach ($merchantIds as $merchantId)
+        {
+            $skip = 0;
+
+            $totalCount = 0;
+
+            do
+            {
+                $transactions = $this->repo
+                    ->transaction
+                    ->fetchTransactionsForMerchantIdWithSkip($merchantId, $skip, $batch);
+
+                $count = count($transactions);
+
+                $skip += $count;
+
+                try{
+                    EsSync::dispatch($mode,
+                        EsRepository::CREATE, 'transaction',
+                        $transactions)->delay(0.2);
+                } catch (\Throwable $e) {
+                    $this->trace->traceException(
+                        $e,
+                        Trace::ERROR,
+                        TraceCode::ES_SYNC_PUSH_FAILED);
+                }
+
+                $this->trace->debug(TraceCode::ES_DEBUG_RESPONSE, [
+                    'merchantId' => $merchantId,
+                    'count'  => $count,
+                ]);
+
+                $totalCount += $count;
+
+            } while($batch === $count);
+
+            $this->trace->debug(TraceCode::ES_DEBUG_TOTAL_COUNT, [
+                'totalTransactions'  => $totalCount,
+                'merchantId'         => $merchantId,
+            ]);
+
+            $merchantCount++;
+        }
+
+        $this->trace->debug(TraceCode::ES_DEBUG_MERCHANT_COUNT, [
+            'merchantCount'  => $merchantCount,
+        ]);
     }
 
     // -------------------- Write endpoint starts -----------------------------

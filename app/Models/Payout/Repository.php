@@ -2277,4 +2277,20 @@ class Repository extends Base\Repository
             ->update($updates);
 
     }
+
+    public function fetchPayoutsForMerchantIdWithSkip($merchantId, $skip, $count)
+    {
+        $payoutCreatedAtColumn   = $this->dbColumn(Entity::CREATED_AT);
+
+        $payouts = $this->newQuery()
+            ->merchantId($merchantId)
+            ->take($count)
+            ->skip($skip)
+            ->oldest($payoutCreatedAtColumn)
+            ->get()
+            ->pluck(Entity::ID)
+            ->toArray();
+
+        return $payouts;
+    }
 }

@@ -1227,6 +1227,8 @@ class Route
         'es_index_create'                          => ['post',     'es/index_create',                                'EsController@postIndexCreate'                                      ],
         'es_index'                                 => ['post',     'es/index',                                       'EsController@postIndex'                                            ],
         'es_proxy'                                 => ['any',      'es/proxy/{path?}',                               'EsController@proxy'                                                ],
+        'es_transactions_sync'                     => ['post',     'es/transactions/sync/',                          'EsController@syncTransactionsToES'                                 ],
+        'es_payouts_sync'                          => ['post',     'es/payouts/sync/',                               'EsController@syncPayoutsToES'                                      ],
         'gateway_fetch_downtimes'                  => ['get',      'gateway/downtimes',                              'GatewayController@getGatewayDowntimes'                             ],
         'gateway_downtimes_archive'                => ['post',     'gateway/downtimes/archive',                      'GatewayController@archiveGatewayDowntimes'                         ],
         'gateway_create_downtime'                  => ['post',     'gateway/downtimes',                              'GatewayController@postGatewayDowntime'                             ],
@@ -5353,6 +5355,8 @@ class Route
     // of X-Admin-Token being passed.
     //
     public static $admin = [
+        'es_transactions_sync',
+        'es_payouts_sync',
         'admin_trigger_2fa_otp',
         'admin_account_lock_unlock',
         'workflow_needs_merchant_clarification',
@@ -6826,6 +6830,8 @@ class Route
         'es_index_create'                          => Permission::ES_WRITE_OPERATION,
         'es_index'                                 => Permission::ES_WRITE_OPERATION,
         'es_proxy'                                 => Permission::ES_WRITE_OPERATION,
+        'es_transactions_sync'                     => Permission::VIEW_ACTIVATION_FORM,
+        'es_payouts_sync'                          => Permission::VIEW_ACTIVATION_FORM,
         'feature_add'                              => Permission::EDIT_MERCHANT_FEATURES,
         'enable_instant_refunds'                   => Permission::EDIT_MERCHANT_FEATURES,
         'feature_bulk_assign'                      => Permission::MANAGE_BULK_FEATURE_MAPPING,
@@ -9748,6 +9754,8 @@ class Route
             'es_index',
             'es_index_create',
             'es_proxy',
+            'es_transactions_sync',
+            'es_payouts_sync',
             'excel_store_create_page',
             'excel_store_delete_records',
             'excel_store_get_records',
