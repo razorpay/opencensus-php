@@ -185,6 +185,89 @@ class PaymentGatewayConfigTest extends OAuthTestCase
         $this->runRequestResponseFlow($testData);
 
         //This helps in validating graceful handling of flash_checkout feature.
+        $response = $this->runRequestResponseFlow($testData);
+
+        $logo_url = $response['active_configuration']['checkout']['logo'];
+
+        // check if logo is fetched from logo_url and stored in /logos path
+        $this->assertTrue((bool) preg_match('~\/logos\/[a-zA-Z0-9]{14}.(jpg|png|jpeg)~', $logo_url));
+
+        $this->assertTrue($metricCaptured);
+    }
+
+    public function testUpdatePaymentGatewayConfigWithInvalidLogoResolution()
+    {
+        Mail::fake();
+
+        $this->setupPrivateAuthForPartner();
+
+        $this->mockTerminalServiceResponse();
+
+        $metricsMock = $this->createMetricsMock();
+
+        $testData = $this->testData['createUnregisteredBusinessTypeAccount'];
+
+        $accountResponse = $this->runRequestResponseFlow($testData);
+
+        $accountId = $accountResponse['id'];
+
+        $testData = $this->testData['testCreateDefaultPaymentGatewayConfig'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products';
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $merchantProductId = $response['id'];
+
+        $testData = $this->testData['testUpdatePaymentGatewayConfig'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products/' . $merchantProductId;
+
+        $metricCaptured = false;
+
+        $expectedMetricData = $this->getMerchantProductMetricData('payment_gateway');
+
+        $this->mockAndCaptureCountMetric(Metric::PRODUCT_CONFIG_UPDATE_SUCCESS_TOTAL, $metricsMock, $metricCaptured, $expectedMetricData);
+
+        $this->runRequestResponseFlow($testData);
+
+        $this->assertTrue($metricCaptured);
+    }
+
+    public function testUpdatePaymentGatewayConfigWithInvalidLogoPath()
+    {
+        Mail::fake();
+
+        $this->setupPrivateAuthForPartner();
+
+        $this->mockTerminalServiceResponse();
+
+        $metricsMock = $this->createMetricsMock();
+
+        $testData = $this->testData['createUnregisteredBusinessTypeAccount'];
+
+        $accountResponse = $this->runRequestResponseFlow($testData);
+
+        $accountId = $accountResponse['id'];
+
+        $testData = $this->testData['testCreateDefaultPaymentGatewayConfig'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products';
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $merchantProductId = $response['id'];
+
+        $testData = $this->testData['testUpdatePaymentGatewayConfig'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products/' . $merchantProductId;
+
+        $metricCaptured = false;
+
+        $expectedMetricData = $this->getMerchantProductMetricData('payment_gateway');
+
+        $this->mockAndCaptureCountMetric(Metric::PRODUCT_CONFIG_UPDATE_SUCCESS_TOTAL, $metricsMock, $metricCaptured, $expectedMetricData);
+
         $this->runRequestResponseFlow($testData);
 
         $this->assertTrue($metricCaptured);

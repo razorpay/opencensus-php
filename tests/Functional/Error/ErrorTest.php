@@ -63,6 +63,7 @@ class ErrorTest extends TestCase
             "BAD_REQUEST_MERCHANT_NOT_ON_LEDGER_REVERSE_SHADOW",
             "BAD_REQUEST_BATCH_TYPE_PERMISSION_MISSING",
             "BAD_REQUEST_BATCH_FILE_INVALID_ACCOUNT_NO",
+            "BAD_REQUEST_FETCH_LOGO_FROM_URL_FAILED"
         ];
 
         $errorCodeBatches = array();

@@ -2,20 +2,25 @@
 
 namespace RZP\Models\Merchant\Product\Config;
 
-use RZP\Constants\HyperTrace;
+use File;
 use RZP\Models\Base;
 use RZP\Models\User;
+use RZP\Trace\Tracer;
 use RZP\Models\Feature;
+use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
 use RZP\Models\Settlement;
+use RZP\Constants\HyperTrace;
 use RZP\Models\Payment\Config;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Product;
 use RZP\Models\Merchant\AccountV2;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\Product\Util;
-use RZP\Models\Merchant\Product\Requirements;
+use RZP\Exception\BadRequestException;
 use RZP\Jobs\ProductConfig\AutoUpdateMerchantProducts;
-use RZP\Trace\Tracer;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class PaymentsGeneralConfig extends Base\Service
 {
@@ -265,6 +270,8 @@ class PaymentsGeneralConfig extends Base\Service
             }
         }
 
+        $this->updateLogoInformation($input, $merchant->getId());
+
         $this->merchantService->editConfig($input);
     }
 
@@ -320,5 +327,91 @@ class PaymentsGeneralConfig extends Base\Service
         }
 
         return $existingNoFlashCheckoutFeatureValue;
+    }
+
+    /**
+     * If logo_url is passed in the input then fetch logo contents from it and store it in a file
+     *
+     * @param array $input
+     * @param string $merchantId
+     *
+     * @return void
+     */
+    private function updateLogoInformation(array & $input, string $merchantId)
+    {
+        try
+        {
+            if (isset($input[Merchant\Entity::LOGO_URL]) === false)
+            {
+                return;
+            }
+
+            $url = $input[Merchant\Entity::LOGO_URL];
+
+            $path_info = pathinfo($url);
+
+            $this->trace->info(
+                TraceCode::FETCHING_LOGO_FROM_URL,
+                [
+                    'url'         => $url,
+                    'path_info'   => $path_info,
+                    'merchant_id' => $merchantId
+                ]
+            );
+
+            $contents = file_get_contents($url);
+
+            $file = storage_path('files/logos') . '/' . $path_info['basename'];
+
+            file_put_contents($file, $contents);
+
+            $input[Util\Constants::LOGO] = $this->getUploadedFileInstance($file);
+
+            unset($input[Merchant\Entity::LOGO_URL]);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::ERROR_WHILE_FETCHING_LOGO_FROM_URL,
+                [
+                    'error'       => $e->getMessage(),
+                    'url'         => $url,
+                    'merchant_id' => $merchantId
+                ]
+            );
+
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_FETCH_LOGO_FROM_URL_FAILED,
+                Merchant\Entity::LOGO_URL,
+                ['url' => $url]
+            );
+        }
+    }
+
+    private function getUploadedFileInstance(string $path): UploadedFile
+    {
+        $name = File::name($path);
+
+        $extension = File::extension($path);
+
+        $originalName = $name . '.' . $extension;
+
+        $mimeType = File::mimeType($path);
+
+        $size = File::size($path);
+
+        $error = null;
+
+        // Setting as Test, because UploadedFile expects the file instance to be a temporary uploaded file, and
+        // reads from Local Path only in test mode. As our requirement is to always read from local path, so
+        // creating the UploadedFile instance in test mode.
+
+        $test = true;
+
+        $object = new UploadedFile($path, $originalName, $mimeType, $size, $error, $test);
+
+        return $object;
     }
 }

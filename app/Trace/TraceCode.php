@@ -6507,6 +6507,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CALL_TO_DOWNTIME_MANAGER_FAILED                   = 'CALL_TO_DOWNTIME_MANAGER_FAILED';
     const SENT_DOWNTIME_TO_DOWNTIME_MANAGER                 = 'SENT_DOWNTIME_TO_DOWNTIME_MANAGER';
     const SENDING_DOWNTIME_TO_DOWNTIME_MANAGER              = 'SENDING_DOWNTIME_TO_DOWNTIME_MANAGER';
+    const FETCHING_LOGO_FROM_URL                            = 'FETCHING_LOGO_FROM_URL';
+    const ERROR_WHILE_FETCHING_LOGO_FROM_URL                = 'ERROR_WHILE_FETCHING_LOGO_FROM_URL';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',

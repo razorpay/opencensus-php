@@ -1554,6 +1554,7 @@ class PublicErrorDescription
     const BAD_REQUEST_EMI_INSTRUMENT_INVALID                                        = 'Invalid emi instrument code';
     const BAD_REQUEST_PAYMENT_CUSTOMER_DROPPED_OFF                                  = 'Customer dropped off without completing the payment';
     const BAD_REQUEST_INTERNATIONAL_ENABLEMENT_VALIDATION_FAILURE                   = 'International enablement details couldn\'t be captured due to validation failure.';
+    const BAD_REQUEST_FETCH_LOGO_FROM_URL_FAILED                                    = 'Error occurred while fetching logo from url provided';
 
     // Upi Payment Service
     const SERVER_ERROR_UPI_PAYMENT_SERVICE_REQUEST_ERROR                            = 'We are facing some trouble completing your request at the moment. Please try again shortly.';

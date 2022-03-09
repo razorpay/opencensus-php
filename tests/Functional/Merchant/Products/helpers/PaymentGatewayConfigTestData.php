@@ -236,7 +236,7 @@ return [
                 ],
                 'checkout'        => [
                     'flash_checkout' => false,
-                    'logo'           => 'http://google.com/logo.jpeg'
+                    'logo'           => __DIR__ . '/sample_valid_logo.jpg'
                 ],
                 'payment_methods' => [
                     'wallet' => [
@@ -267,7 +267,6 @@ return [
                     'checkout'        => [
                         'theme_color'    => '#FFFFFF',
                         'flash_checkout' => false,
-                        'logo'           => 'http://google.com/logo.jpeg'
                     ],
                     'refund'          => [
                         'default_refund_speed' => 'normal'
@@ -279,6 +278,58 @@ return [
                 ]
             ],
         ]
+    ],
+
+    'testUpdatePaymentGatewayConfigWithInvalidLogoResolution' => [
+        'request'  => [
+            'url'     => '/v2/accounts/{accountId}/products/{merchantProductId}',
+            'method'  => 'PATCH',
+            'content' => [
+                'checkout'        => [
+                    'flash_checkout' => false,
+                    'logo'           => __DIR__ . '/sample_invalid_logo.jpeg'
+                ],
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The height and width of the logo are not the same. Upload a square image.',
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_LOGO_NOT_SQUARE,
+        ],
+    ],
+
+    'testUpdatePaymentGatewayConfigWithInvalidLogoPath' => [
+        'request'  => [
+            'url'     => '/v2/accounts/{accountId}/products/{merchantProductId}',
+            'method'  => 'PATCH',
+            'content' => [
+                'checkout'        => [
+                    'flash_checkout' => false,
+                    'logo'           => __DIR__ . '/sample_invalid_logo_path.jpeg'
+                ],
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Error occurred while fetching logo from url provided',
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_FETCH_LOGO_FROM_URL_FAILED,
+        ],
     ],
 
     'testRequirementsForUnregisteredBusiness' => [
