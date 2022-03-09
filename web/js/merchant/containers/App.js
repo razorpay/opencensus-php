@@ -377,7 +377,7 @@ class App extends Component {
       };
       if (user.showNPSSurvey() === true) {
         const GoLiveNPSEnableTypeForm = createSidetab(
-          'IViQsX2b', // go live survey
+          'piCrdFI8', // go live survey
           {
             width: 500,
             buttonText: 'Feedback',
@@ -390,7 +390,7 @@ class App extends Component {
         this.state.GoLiveNPSEnableTypeForm = GoLiveNPSEnableTypeForm; // saving reference typeform
 
         const NonGoLiveNPSEnableTypeForm = createSidetab(
-          'pHsrU3c0', // non go live survey
+          'LLaFW6pQ', // non go live survey
           {
             width: 500,
             buttonText: 'Feedback',
@@ -468,7 +468,7 @@ class App extends Component {
         this.state.GoLiveNPSEnableTypeForm
       ) {
         const takeGoLiveNPSSurvey = this.dateIsInRange(user.created_at, [
-          ['2022-01-01', '2022-01-31'],
+          ['2022-02-01', '2022-02-28'],
         ]);
         this.setState({ goLiveNPSSurveyPopup: takeGoLiveNPSSurvey });
       }
@@ -486,9 +486,9 @@ class App extends Component {
         this.state.NonGoLiveNPSEnableTypeForm
       ) {
         const takeNonGoLiveNPSSurvey = this.dateIsInRange(user.created_at, [
-          ['2021-10-01', '2021-10-31'],
-          ['2021-07-01', '2021-07-31'],
-          ['2021-01-01', '2021-01-31'],
+          ['2021-11-01', '2021-11-30'],
+          ['2021-08-01', '2021-08-31'],
+          ['2021-02-01', '2021-02-28'],
         ]);
         this.setState({ nonGoLiveNPSSurveyPopup: takeNonGoLiveNPSSurvey });
       }
