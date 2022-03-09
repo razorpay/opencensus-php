@@ -33,10 +33,12 @@ export const trackFb = (event) => {
 };
 
 export const trackhubsContactUpdate = (data) => {
-  window.trackHubs({
-    name: 'update_property',
-    data,
-  });
+  if (window.trackHubs) {
+    window.trackHubs({
+      name: 'update_property',
+      data,
+    });
+  }
 };
 
 /**
