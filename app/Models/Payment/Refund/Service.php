@@ -471,6 +471,32 @@ class Service extends Base\Service
 
     public function fetch($id, array $input = [])
     {
+        $scroogeRefundArray = [];
+        $experiment = false;
+
+        // Route only private auth and not proxy auth requests to scrooge
+        if ($this->app['basicauth']->isStrictPrivateAuth() === true)
+        {
+            // Expands is not supported in strict private auth, but requests could still come at the moment
+            // Not moving them to scrooge right away. Need to handle validation part on scrooge for such additional params
+            if (empty($input) === true)
+            {
+                $variant = $this->app->razorx->getTreatment($id,
+                    RefundConstants::RAZORX_KEY_REFUND_FETCH_BY_ID_FROM_SCROOGE,
+                    $this->mode
+                );
+
+                if ($variant === RefundConstants::RAZORX_VARIANT_ON)
+                {
+                    $experiment = true;
+
+                    $scroogeResponse = $this->app['scrooge']->refundsFetchById($id, $input);
+
+                    $scroogeRefundArray = $scroogeResponse['body'];
+                }
+            }
+        }
+
         $refundArray = $this->repo->refund->fetchAndReturnPublicArrayWithExpand($id, $this->merchant, $input);
 
         // Adding `processed_at`, `failed_at`, `speed_change_time`, `gateway_refund_support` params only for dashboard
@@ -478,7 +504,42 @@ class Service extends Base\Service
         {
             $this->addParamsForDashboard($refundArray);
         }
+
+        if ($experiment === true)
+        {
+            $this->compareAndLogRefundResponses($refundArray, $scroogeRefundArray);
+        }
+
         return $refundArray;
+    }
+
+    public function compareAndLogRefundResponses($refundArray, $scroogeRefundArray)
+    {
+        // Compare scrooge and api response
+        $responseDiff = [];
+
+        foreach ($refundArray as $key => $value)
+        {
+            if ($key === RefundEntity::ACQUIRER_DATA)
+            {
+                // casting this to array as acquirer_data is a spine dictionary object, compare would fail
+                $value = $value->toArray();
+            }
+
+            if ($scroogeRefundArray[$key] !== $value)
+            {
+                $responseDiff[$key] = $value;
+            }
+        }
+
+        if (empty($responseDiff) === false)
+        {
+            $this->trace->info(TraceCode::SCROOGE_REFUND_FETCH_BY_ID_INCONSISTENCY, [
+                'diff_keys'        => array_keys($responseDiff),
+                'api_response'     => $refundArray,
+                'scrooge_response' => $scroogeRefundArray,
+            ]);
+        }
     }
 
     public function fetchEntity($id)

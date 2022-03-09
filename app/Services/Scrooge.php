@@ -780,4 +780,17 @@ class Scrooge
             'error_description' => $payout->getFailureReason(),
         ];
     }
+
+    /**
+     * @param $id
+     * @param array $input
+     * @return array
+     */
+    public function refundsFetchById($id, array $input): array
+    {
+        return $this->sendRequest(
+            self::RefundsBaseURL . '/' . $id,
+            Requests::GET,
+            $input);
+    }
 }

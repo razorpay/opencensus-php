@@ -369,4 +369,28 @@ class Scrooge extends BaseScrooge
             'body' => $scroogeResponseBody
         ];
     }
+
+    public function refundsFetchById($id, array $input): array
+    {
+        $scroogeResponseBody = [
+            "acquirer_data"   => [],
+            "amount"          => 100,
+            "batch_id"        => "",
+            "created_at"      => 1626357774,
+            "currency"        => "INR",
+            "entity"          => "refund",
+            "id"              => $id,
+            "notes"           => [],
+            "payment_id"      => "pay_HZETs6HPiyDr8n",
+            "receipt"         => "",
+            "speed_processed" => "normal",
+            "speed_requested" => "optimum",
+            "status"          => "processed"
+        ];
+
+        return [
+            'code' => 200,
+            'body' => $scroogeResponseBody
+        ];
+    }
 }
