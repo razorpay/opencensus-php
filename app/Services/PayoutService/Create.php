@@ -64,7 +64,7 @@ class Create extends Base
             Payout\Entity::PURPOSE               => $input[Payout\Entity::PURPOSE],
             Payout\Entity::AMOUNT                => (int) $input[Payout\Entity::AMOUNT],
             Payout\Entity::CURRENCY              => $input[Payout\Entity::CURRENCY],
-            Payout\Entity::MODE                  => $input[Payout\Entity::MODE],
+            Payout\Entity::MODE                  => $input[Payout\Entity::MODE] ?? null,
             Payout\Entity::QUEUE_IF_LOW_BALANCE  => (boolean) ($input[Payout\Entity::QUEUE_IF_LOW_BALANCE] ?? false),
             Payout\Entity::ACCOUNT_NUMBER        => (string) $input[Payout\Entity::ACCOUNT_NUMBER],
             Payout\Entity::REFERENCE_ID          => $input[Payout\Entity::REFERENCE_ID] ?? null,
