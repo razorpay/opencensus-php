@@ -39,7 +39,7 @@ class Aadhaar_front_and_back extends BaseConfig
                         [
                             "var" => "enrichments.ocr.details.3.aadhaar_number.value",
                         ],
-                        81
+                        100
                     ],
                 ],
             ],
