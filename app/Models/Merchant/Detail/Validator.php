@@ -98,7 +98,7 @@ class Validator extends Base\Validator
         Entity::PROMOTER_PAN_NAME               => 'sometimes|max:255',
         Entity::BANK_NAME                       => 'sometimes|alpha_num|between:5,20',
         Entity::BANK_ACCOUNT_NUMBER             => 'sometimes|regex:/^[a-zA-Z0-9]+$/|between:5,20|custom',
-        Entity::BANK_ACCOUNT_NAME               => 'sometimes|regex:/^[a-zA-Z0-9\s]+$/|min:4|max:120',
+        Entity::BANK_ACCOUNT_NAME               => 'sometimes|string|min:4|max:120',
         Entity::BANK_ACCOUNT_TYPE               => 'sometimes|alpha_space|max:20',
         Entity::BANK_BRANCH                     => 'sometimes|max:255',
         Entity::BANK_BRANCH_IFSC                => 'sometimes|alpha_num|max:11|custom',
