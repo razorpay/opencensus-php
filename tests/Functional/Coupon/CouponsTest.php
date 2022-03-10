@@ -846,6 +846,7 @@ class CouponsTest extends TestCase
 
         $this->assertEquals($requestData['response']['content'], $response);
 
+
     }
 
     public function testApplyNotApplicableCoupon()

@@ -34,6 +34,10 @@ class UfhService
 
     const LOCATION          = 'location';
 
+    const STATUS            = 'status';
+
+    const STATUS_FAILED     = 'failed';
+
     const QUERY_PARAMS      = 'query_params';
 
     const FILE              = 'file';
@@ -417,7 +421,8 @@ class UfhService
 
     protected function validateResponse(array $res = null)
     {
-        if ((empty($res[self::ID]) === true) or (empty($res[self::LOCATION]) === true))
+        if ((empty($res[self::ID]) === true) or (empty($res[self::LOCATION]) === true)
+            or (empty($res[self::STATUS]) === true) or ($res[self::STATUS] === self::STATUS_FAILED))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Response not valid',
