@@ -1,9 +1,10 @@
 import { connect } from 'react-redux';
-import React, { Fragment } from 'react';
+import React from 'react';
 import moment from 'moment';
 import TicketStatus from './TicketStatus';
 import Attachment from './Attachment';
 import Message from './Message';
+import sanitizer from 'common/utils/xss-sanitizer';
 const RAZORPAY_LOGO = `https://razorpay.com/assets/razorpay-glyph.svg`;
 
 @connect((state) => {
@@ -92,9 +93,13 @@ export default class Ticket extends React.Component {
                 {this.state.showFullMessage && !isTicketCreatedByAgent && (
                   <p className="message-to">To: Razorpay Account</p>
                 )}
-                <p className={`lh-18 ${this.state.showFullMessage ? '' : 'truncated'}`}>
-                  {ticket?.description_text}
-                </p>
+                {/* nosemgrep */}
+                <p
+                  className={`lh-18 user-ticket-description ${
+                    this.state.showFullMessage ? '' : 'truncated'
+                  }`}
+                  dangerouslySetInnerHTML={{ __html: sanitizer(ticket?.description) }}
+                />
               </div>
             </div>
             {ticket?.attachments?.length > 0 && (

@@ -17,7 +17,6 @@ import {
   getResponseArrivalType,
   getTicketStatus,
 } from '../utils';
-import Ticket from './Ticket';
 import { merchantFetch } from 'merchant/utils/ajax';
 import Spinner from 'common/ui/Spinner';
 import Popover, { PopoverBody } from 'common/ui/Popover';
@@ -29,6 +28,10 @@ import {
 import Reply from './Reply';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import FailedScreen from './FailedScreen';
+import lazy from 'merchant/routes/LazyLoader';
+import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
+
+const Ticket = lazy(() => import(/* webpackChunkName: 'Ticket' */ './Ticket'));
 
 @withRouter
 @connect(
@@ -364,13 +367,15 @@ export default class Conversations extends React.Component {
                 </div>
               </h3>
               {!isLoading && (
-                <Ticket
-                  logo_url={this.props.user.logo_url}
-                  ticket={this.state.ticket}
-                  totalConversations={total_conversations}
-                  ticketID={TICKET_ID}
-                  isReplyAdded={this.state.isReplyAdded}
-                />
+                <SuspenseWithLoader>
+                  <Ticket
+                    logo_url={this.props.user.logo_url}
+                    ticket={this.state.ticket}
+                    totalConversations={total_conversations}
+                    ticketID={TICKET_ID}
+                    isReplyAdded={this.state.isReplyAdded}
+                  />
+                </SuspenseWithLoader>
               )}
               <div>
                 <div className="ticket-replies-container">
