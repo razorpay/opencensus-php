@@ -56,6 +56,15 @@ class Constants
   const OTP_LOGIN_2FA_PASSWORD_SUCCESS_COUNT            = 'otp_login_2fa_password_success_count';
   const OTP_LOGIN_2FA_PASSWORD_FAILED_COUNT             = 'otp_login_2fa_password_failed_count';
   const OTP_LOGIN_2FA_PASSWORD_DURATION                 = 'otp_login_2fa_password_duration';
+  const PASSWORD_LOGIN_2FA_OTP_SUCCESS_COUNT            = 'password_login_2fa_otp_success_count';
+  const PASSWORD_LOGIN_2FA_OTP_DURATION                 = 'password_login_2fa_otp_duration';
+  const PASSWORD_LOGIN_2FA_OTP_FAILED_COUNT             = 'password_login_2fa_otp_failed_count';
+  const USER_OAUTH_LOGIN_SUCCESS_COUNT                  = 'user_oauth_login_success_count';
+  const USER_OAUTH_LOGIN_DURATION                       = 'user_oauth_login_duration';
+  const USER_OAUTH_LOGIN_FAILED_COUNT                   = 'user_oauth_login_failed_count';
+  const USER_OAUTH_SIGNUP_SUCCESS_COUNT                 = 'user_oauth_signup_success_count';
+  const USER_OAUTH_SIGNUP_DURATION                      = 'user_oauth_signup_duration';
+  const USER_OAUTH_SIGNUP_FAILED_COUNT                  = 'user_oauth_signup_failed_count';
 
   // Metric Lables
   const LOGIN_METHOD                = 'login_method';

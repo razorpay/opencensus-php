@@ -126,8 +126,9 @@ class Constants
 
     const LOGIN_2FA_WITH_PASSWORD = "password";
 
-    const PASSWORD = "password";
-    const OTP = "otp";
+    const PASSWORD  = "password";
+    const OTP       = "otp";
+    const OAUTH     = "oauth";
 
     // trace & metric constants
     const SUCCESS                   = "success";
@@ -152,6 +153,9 @@ class Constants
     const VERIFY_LOGIN_OTP                  = 'verify_login_otp';
     const VERIFY_SIGNUP_OTP                 = 'verify_signup_otp';
     const OTP_LOGIN_2FA_PASSWORD            = 'otp_login_2fa_password';
+    const PASSWORD_LOGIN_2FA_OTP            = 'password_login_2fa_otp';
+    const USER_OAUTH_LOGIN                  = 'user_oauth_login';
+    const USER_OAUTH_SIGNUP                 = 'user_oauth_signup';
 
     const SEND_SIGNUP_OTP_SUCCESS           = 'send_signup_otp_success';
     const SEND_SIGNUP_OTP_FAILED            = 'send_signup_otp_failed';
@@ -167,6 +171,12 @@ class Constants
     const VERIFY_SIGNUP_OTP_FAILED          = 'verify_signup_otp_failed';
     const OTP_LOGIN_2FA_PASSWORD_SUCCESS    = 'otp_login_2fa_password_success';
     const OTP_LOGIN_2FA_PASSWORD_FAILED     = 'otp_login_2fa_password_failed';
+    const PASSWORD_LOGIN_2FA_OTP_SUCCESS    = 'password_login_2fa_otp_success';
+    const PASSWORD_LOGIN_2FA_OTP_FAILED     = 'password_login_2fa_otp_failed';
+    const USER_OAUTH_LOGIN_SUCCESS          = 'user_oauth_login_success';
+    const USER_OAUTH_LOGIN_FAILED           = 'user_oauth_login_failed';
+    const USER_OAUTH_SIGNUP_SUCCESS         = 'user_oauth_signup_success';
+    const USER_OAUTH_SIGNUP_FAILED          = 'user_oauth_signup_failed';
 
 
     const TRACE_DETAILS_MAP = [
@@ -282,5 +292,53 @@ class Constants
                 self::IS_LOGIN => true,
             ],
         ],
+        self::PASSWORD_LOGIN_2FA_OTP => [
+            self::PASSWORD_LOGIN_2FA_OTP_SUCCESS => [
+                self::METHOD => self::OTP,
+                self::TRACE_CODE => TraceCode::PASSWORD_LOGIN_2FA_OTP_SUCCESS,
+                self::METRIC_CONSTANT => MetricConstants::PASSWORD_LOGIN_2FA_OTP_SUCCESS_COUNT,
+                self::METRIC_DURATION_CONSTANT => MetricConstants::PASSWORD_LOGIN_2FA_OTP_DURATION,
+                self::IS_LOGIN => true,
+            ],
+            self::PASSWORD_LOGIN_2FA_OTP_FAILED => [
+                self::METHOD => self::OTP,
+                self::TRACE_CODE => TraceCode::PASSWORD_LOGIN_2FA_OTP_FAILED,
+                self::METRIC_CONSTANT => MetricConstants::PASSWORD_LOGIN_2FA_OTP_FAILED_COUNT,
+                self::METRIC_DURATION_CONSTANT => MetricConstants::PASSWORD_LOGIN_2FA_OTP_DURATION,
+                self::IS_LOGIN => true,
+            ],
+        ],
+        self::USER_OAUTH_LOGIN => [
+            self::USER_OAUTH_LOGIN_SUCCESS => [
+                self::METHOD => self::OAUTH,
+                self::TRACE_CODE => TraceCode::USER_OAUTH_LOGIN_SUCCESS,
+                self::METRIC_CONSTANT => MetricConstants::USER_OAUTH_LOGIN_SUCCESS_COUNT,
+                self::METRIC_DURATION_CONSTANT => MetricConstants::USER_OAUTH_LOGIN_DURATION,
+                self::IS_LOGIN => true,
+            ],
+            self::USER_OAUTH_LOGIN_FAILED => [
+                self::METHOD => self::OAUTH,
+                self::TRACE_CODE => TraceCode::USER_OAUTH_LOGIN_FAILED,
+                self::METRIC_CONSTANT => MetricConstants::USER_OAUTH_LOGIN_FAILED_COUNT,
+                self::METRIC_DURATION_CONSTANT => MetricConstants::USER_OAUTH_LOGIN_DURATION,
+                self::IS_LOGIN => true,
+            ]
+        ],
+        self::USER_OAUTH_SIGNUP => [
+            self::USER_OAUTH_SIGNUP_SUCCESS => [
+                self::METHOD => self::OAUTH,
+                self::TRACE_CODE => TraceCode::USER_OAUTH_SIGNUP_SUCCESS,
+                self::METRIC_CONSTANT => MetricConstants::USER_OAUTH_SIGNUP_SUCCESS_COUNT,
+                self::METRIC_DURATION_CONSTANT => MetricConstants::USER_OAUTH_SIGNUP_DURATION,
+                self::IS_LOGIN => false,
+            ],
+            self::USER_OAUTH_SIGNUP_FAILED => [
+                self::METHOD => self::OAUTH,
+                self::TRACE_CODE => TraceCode::USER_OAUTH_SIGNUP_FAILED,
+                self::METRIC_CONSTANT => MetricConstants::USER_OAUTH_SIGNUP_FAILED_COUNT,
+                self::METRIC_DURATION_CONSTANT => MetricConstants::USER_OAUTH_SIGNUP_DURATION,
+                self::IS_LOGIN => false,
+            ]
+        ]
     ];
 }

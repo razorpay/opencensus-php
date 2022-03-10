@@ -383,6 +383,8 @@ class UserController extends Controller
 
         $timeTaken = microtime(true) - $timeStart;
 
+        $this->traceDuration($timeTaken, TraceCode::USER_SIGNUP_DURATION);
+
         Helper::pushSignUpLoginMetrics(Constants::USER_SIGNUP, $input, $error, $timeTaken);
 
         return AppResponse::jsonResponse($error, $data);
@@ -390,6 +392,7 @@ class UserController extends Controller
 
     public function postOauthRegister()
     {
+        $timeStart = microtime(true);
         $input = Input::all();
 
         try
@@ -402,14 +405,11 @@ class UserController extends Controller
             $data  = null;
         }
 
-        if(empty($error) === false) {
-            $this->metrics->count(MetricConstants::USER_SIGNUP_FAIL_COUNT,
-                EVENT_TRIGGER_COUNT,
-                [
-                    MetricConstants::SIGNUP_MEDIUM => MetricConstants::EMAIL,
-                    MetricConstants::SIGNUP_METHOD => MetricConstants::OAUTH,
-                ]);
-        }
+        $timeTaken = microtime(true) - $timeStart;
+
+        $this->traceDuration($timeTaken, TraceCode::USER_OAUTH_SIGNUP_DURATION);
+
+        Helper::pushSignUpLoginMetrics(Constants::USER_OAUTH_SIGNUP, $input, $error, $timeTaken);
 
         return AppResponse::jsonResponse($error, $data);
     }
@@ -642,6 +642,7 @@ class UserController extends Controller
 
     public function postOauthSignIn()
     {
+        $timeStart = microtime(true);
         $input = Input::all();
 
         try
@@ -654,24 +655,11 @@ class UserController extends Controller
             $data  = null;
         }
 
-        $dimensions = [
-            MetricConstants::LOGIN_METHOD => MetricConstants::OAUTH,
-            MetricConstants::LOGIN_MEDIUM => MetricConstants::EMAIL,
-            MetricConstants::LOGIN_ACTION => MetricConstants::NORMAL_LOGIN,
-        ];
+        $timeTaken = microtime(true) - $timeStart;
 
-        if (empty($error) === true)
-        {
-            $this->metrics->count(MetricConstants::USER_LOGIN_COUNT,
-                EVENT_TRIGGER_COUNT,
-                $dimensions
-            );
-        } else {
-            $this->metrics->count(MetricConstants::USER_LOGIN_FAIL_COUNT,
-                EVENT_TRIGGER_COUNT,
-                $dimensions
-            );
-        }
+        $this->traceDuration($timeTaken, TraceCode::USER_OAUTH_LOGIN_DURATION);
+
+        Helper::pushSignUpLoginMetrics(Constants::USER_OAUTH_LOGIN, $input, $error, $timeTaken);
 
         return AppResponse::jsonResponse($error, $data);
     }
@@ -683,28 +671,16 @@ class UserController extends Controller
      */
     public function postSetup2faVerifyOtp()
     {
+        $timeStarted = microtime(true);
         $input = Input::all();
 
         list($error, $data) = (new User\Service)->verify2FAMode($input, UserConstants::LOGIN_2FA_WITH_OTP);
 
-        $dimensions = [
-            MetricConstants::LOGIN_METHOD => $this->getLoginMethodFromSession(),
-            MetricConstants::LOGIN_MEDIUM => MetricConstants::EMAIL,
-            MetricConstants::LOGIN_ACTION => MetricConstants::TWO_FA_OTP_VERIFICATION,
-        ];
+        $timeTaken = microtime(true) - $timeStarted;
 
-        if (empty($error) === true)
-        {
-            $this->metrics->count(MetricConstants::USER_LOGIN_COUNT,
-                EVENT_TRIGGER_COUNT,
-                $dimensions
-            );
-        } else {
-            $this->metrics->count(MetricConstants::TWO_FA_PASSWORD_VERIFICATION_FAILED_COUNT,
-                EVENT_TRIGGER_COUNT,
-                $dimensions
-            );
-        }
+        $this->traceDuration($timeTaken, TraceCode::PASSWORD_LOGIN_2FA_OTP_DURATION);
+
+        Helper::pushSignUpLoginMetrics(Constants::PASSWORD_LOGIN_2FA_OTP, $input, $error, $timeTaken);
 
         return AppResponse::jsonResponse($error, $data);
     }
