@@ -14,3 +14,10 @@
     password = "RANDOM_DASH_PASSWORD"
     rzp_super_key="rzp_test"
     rzp_super_secret="DASHBOARD_AUTH_PASS_STAGING"
+
+[virtualaccount]
+    user = "7HQnhEQDgBIdlv"
+    role = "owner"
+    merchantId = "CeSoV4pBMpqFJ4"
+    username = "rzp_test_DHhCyWXE8tHLWv"
+    password = "FFT58bebohD5w6UiiVBFYNbL"

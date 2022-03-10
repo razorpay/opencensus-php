@@ -4,6 +4,8 @@ type Configuration struct {
 	App         AppConfig
 	PaymentPage PaymentPageConfig
 	SubMerchant LinkedAccountConfig
+	VirtualAccount VirtualAccountConfig
+
 }
 
 type AppConfig struct {
@@ -26,4 +28,13 @@ type LinkedAccountConfig struct {
 	Password       string
 	RzpSuperKey    string
 	RzpSuperSecret string
+}
+
+type VirtualAccountConfig struct {
+	// user for creating PP
+	User     string
+	Role     string
+	Username string
+	Password string
+	MerchantId string
 }

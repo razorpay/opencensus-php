@@ -1,0 +1,273 @@
+package virtualaccount
+
+import (
+	"fmt"
+	"github.com/razorpay/goutils/itf"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/suite"
+	"testing"
+)
+
+type VirtualAccountAPITestSuite struct {
+	itf.Suite
+}
+
+func (s *VirtualAccountAPITestSuite) TestCreateVirtualAccountPositive(){
+	type positiveTestCases struct {
+		description   string
+		input         VirtualAccountRequest
+	}
+	for _, scenario := range []positiveTestCases{
+		{
+			description: "VA_WITH_BANK_ACCOUNT",
+			input: VirtualAccountRequest{
+				Receiver: &ReceiversRequest{
+					Types: []string{"bank_account"},
+					BankAccount: nil,
+				},
+				Name: "Automation Test",
+				AmountExpected: "1000",
+				CustomerID: "cust_Iwf3ydmuCV3y8R",
+				Description: "Testing of Virtual Accounts",
+			},
+		},
+		{
+			description: "VA_WITH_OUT_CUSTOMER",
+			input: VirtualAccountRequest{
+				Receiver: &ReceiversRequest{
+					Types: []string{"bank_account"},
+					BankAccount: nil,
+				},
+				Name: "Automation Test",
+				AmountExpected: "1000",
+				Description: "Testing of Virtual Accounts",
+			},
+		},
+		{
+			description: "VA_WITH_OUT_AMOUNT",
+			input: VirtualAccountRequest{
+				Receiver: &ReceiversRequest{
+					Types: []string{"bank_account"},
+					BankAccount: nil,
+				},
+				Name: "Automation Test",
+				Description: "Testing of Virtual Accounts",
+			},
+		},
+		{
+			description: "VA_WITH_VPA",
+			input: VirtualAccountRequest{
+				Receiver: &ReceiversRequest{
+					Types: []string{"bank_account","vpa"},
+					BankAccount: nil,
+				},
+				Name: "Automation Test",
+				Description: "Testing of Virtual Accounts",
+			},
+		},
+		{
+			description: "VA_AUTOGENERATE_VPA",
+			input: VirtualAccountRequest{
+				Receiver: &ReceiversRequest{
+					Types: []string{"bank_account","vpa"},
+					BankAccount: nil,
+				},
+				Description: "Testing of Virtual Accounts",
+			},
+		},
+		{
+			description: "VA_WITH_AMOUNT_ZERO",
+			input: VirtualAccountRequest{
+				Receiver: &ReceiversRequest{
+					Types: []string{"bank_account"},
+					BankAccount: nil,
+				},
+				Name: "Automation Test",
+				AmountExpected: "0",
+				CustomerID: "cust_Iwf3ydmuCV3y8R",
+				Description: "Testing of Virtual Accounts",
+			},
+		},
+		{
+			description: "VA_WITH_VPA_ONLY",
+			input: VirtualAccountRequest{
+				Receiver: &ReceiversRequest{
+					Types: []string{"vpa"},
+					BankAccount: nil,
+				},
+				Name: "Automation Test",
+				AmountExpected: "0",
+				CustomerID: "cust_Iwf3ydmuCV3y8R",
+				Description: "Testing of Virtual Accounts",
+			},
+		},
+	} {
+		s.Run(scenario.description, func (){
+			ppRes := CreateVirtualAccount(s.T(), scenario.input)
+			fmt.Println(ppRes)
+			verifyCreateVA(s.T(), ppRes)
+		})
+	}
+}
+
+func (s *VirtualAccountAPITestSuite) TestCreateVirtualAccountNegative(){
+	type negativeTestCases struct {
+		description   string
+		input         VirtualAccountRequest
+	}
+	for _, scenario := range []negativeTestCases{
+		{
+			description: "VA_WITH_INVALID_RECEIVER",
+			input: VirtualAccountRequest{
+				Receiver: &ReceiversRequest{
+					Types: []string{"bank_account","v"},
+				},
+				Description: "One or more of the given receiver types is invalid.",
+			},
+		},
+		{
+			description: "VA_WITH_CLOSE_BY",
+			input: VirtualAccountRequest{
+				Receiver: &ReceiversRequest{
+					Types: []string{"bank_account"},
+				},
+				Description: "close_by should be at least 15 minutes after current time",
+				CloseBy: 1577220870,
+			},
+		},
+		{
+			description: "VA_RECEIVER_ITEM",
+			input: VirtualAccountRequest{
+				Receiver: &ReceiversRequest{
+					Types: []string{},
+				},
+				Description: "The receivers field is required.",
+			},
+		},
+		{
+			description: "VA_WITH_AMOUNT",
+			input: VirtualAccountRequest{
+				Receiver: &ReceiversRequest{
+					Types: []string{"vpa"},
+					BankAccount: nil,
+				},
+				Name: "Automation Test",
+				AmountExpected: "-1",
+				CustomerID: "cust_Iwf3ydmuCV3y8R",
+				Description: "The amount expected must be at least 0.",
+			},
+		},
+	} {
+		s.Run(scenario.description, func (){
+			error := CreateVirtualAccountNegative(s.T(), scenario.input)
+			assert.Equal(s.T(),error.Error.Description, scenario.input.Description)
+		})
+	}
+}
+
+func (s *VirtualAccountAPITestSuite) TestCreateVirtualAccountUpdate(){
+	type positiveTestCases struct {
+		description   string
+		input         VirtualAccountRequest
+	}
+	for _, scenario := range []positiveTestCases{
+		{
+			description: "VA_WITH_BANK_ACCOUNT",
+			input: VirtualAccountRequest{
+				Receiver: &ReceiversRequest{
+					Types: []string{"bank_account"},
+					BankAccount: nil,
+				},
+				Name: "Automation Test",
+				AmountExpected: "1000",
+				CustomerID: "cust_Iwf3ydmuCV3y8R",
+				Description: "Testing of Virtual Accounts",
+			},
+		},
+		{
+			description: "VA_WITH_OUT_CUSTOMER",
+			input: VirtualAccountRequest{
+				Receiver: &ReceiversRequest{
+					Types: []string{"bank_account"},
+					BankAccount: nil,
+				},
+				Name: "Automation Test",
+				AmountExpected: "1000",
+				Description: "Testing of Virtual Accounts",
+			},
+		},
+		{
+			description: "VA_WITH_OUT_AMOUNT",
+			input: VirtualAccountRequest{
+				Receiver: &ReceiversRequest{
+					Types: []string{"bank_account"},
+					BankAccount: nil,
+				},
+				Name: "Automation Test",
+				Description: "Testing of Virtual Accounts",
+			},
+		},
+		{
+			description: "VA_WITH_VPA",
+			input: VirtualAccountRequest{
+				Receiver: &ReceiversRequest{
+					Types: []string{"bank_account","vpa"},
+					BankAccount: nil,
+				},
+				Name: "Automation Test",
+				Description: "Testing of Virtual Accounts",
+			},
+		},
+		{
+			description: "VA_AUTOGENERATE_VPA",
+			input: VirtualAccountRequest{
+				Receiver: &ReceiversRequest{
+					Types: []string{"bank_account","vpa"},
+					BankAccount: nil,
+				},
+				Description: "Testing of Virtual Accounts",
+			},
+		},
+		{
+			description: "VA_WITH_AMOUNT_ZERO",
+			input: VirtualAccountRequest{
+				Receiver: &ReceiversRequest{
+					Types: []string{"bank_account"},
+					BankAccount: nil,
+				},
+				Name: "Automation Test",
+				AmountExpected: "0",
+				CustomerID: "cust_Iwf3ydmuCV3y8R",
+				Description: "Testing of Virtual Accounts",
+			},
+		},
+		{
+			description: "VA_WITH_VPA_ONLY",
+			input: VirtualAccountRequest{
+				Receiver: &ReceiversRequest{
+					Types: []string{"vpa"},
+					BankAccount: nil,
+				},
+				Name: "Automation Test",
+				AmountExpected: "0",
+				CustomerID: "cust_Iwf3ydmuCV3y8R",
+				Description: "Testing of Virtual Accounts",
+			},
+		},
+	} {
+		s.Run(scenario.description, func (){
+			ppRes := CreateVirtualAccount(s.T(), scenario.input)
+			ppUpdateRes := UpdateVirtualAccount(s.T(),ppRes)
+			fmt.Println(ppUpdateRes)
+			verifyCreateVA(s.T(), ppRes)
+		})
+	}
+}
+
+func verifyCreateVA(t *testing.T, virtualAccountResponse VirtualAccountResponse) {
+	assert.NotEmptyf(t, virtualAccountResponse.ID, "Virtual Account did not created")
+}
+
+func TestVirtualAccountAPI(t *testing.T) {
+	suite.Run(t, &VirtualAccountAPITestSuite{Suite: itf.NewSuite(itf.WithTags([]string{TagVirtualAccount}), itf.WithPriority(itf.PriorityP0))})
+}
