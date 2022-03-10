@@ -1414,6 +1414,11 @@ export default class User {
     return this.getExpStatus('partner_app_store');
   }
 
+  get isPartnershipFUX() {
+    const variant = getSplitzExperimentVariant('partnership_fux');
+    return variant?.name === 'exposed';
+  }
+
   get isPartnershipForXEnabled() {
     const variant = getSplitzExperimentVariant('partnership_for_razorpayx');
     return variant?.name === 'exposed';
