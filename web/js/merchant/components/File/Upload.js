@@ -138,7 +138,7 @@ export default class FileUpload extends React.Component {
     //- so manually add file type from the map
     if (isBlank(type)) {
       const probableTypes = fileTypesMap[file.name.split('.').pop()];
-      type = probableTypes.split(',')[0];
+      type = probableTypes?.split(',')[0];
     }
 
     //- if it is still empty return false for other types which are not required
