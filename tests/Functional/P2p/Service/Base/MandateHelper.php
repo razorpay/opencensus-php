@@ -29,9 +29,9 @@ class MandateHelper extends P2pHelper
     {
         $this->shouldValidateJsonSchema = false;
 
-        $this->validationJsonSchemaPath = 'mandate/{mandate_id}/authorize/initiate';
+        $this->validationJsonSchemaPath = 'mandates/{mandate_id}/authorize/initiate';
 
-        $request = $this->request('mandate/%s/authorize/initiate', [$id]);
+        $request = $this->request('mandates/%s/authorize/initiate', [$id]);
 
         $default = [];
 
@@ -44,9 +44,9 @@ class MandateHelper extends P2pHelper
     {
         $this->shouldValidateJsonSchema = false;
 
-        $this->validationJsonSchemaPath = 'mandate/{mandate_id}/reject/initiate';
+        $this->validationJsonSchemaPath = 'mandates/{mandate_id}/reject/initiate';
 
-        $request = $this->request('mandate/%s/reject/initiate', [$id]);
+        $request = $this->request('mandates/%s/reject/initiate', [$id]);
 
         $default = [];
 
@@ -59,9 +59,9 @@ class MandateHelper extends P2pHelper
     {
         $this->shouldValidateJsonSchema = false;
 
-        $this->validationJsonSchemaPath = 'mandate/{mandate_id}/reject';
+        $this->validationJsonSchemaPath = 'mandates/{mandate_id}/reject';
 
-        $request = $this->request('mandate/%s/reject', [$id]);
+        $request = $this->request('mandates/%s/reject', [$id]);
 
         $default = [];
 
@@ -74,9 +74,9 @@ class MandateHelper extends P2pHelper
     {
         $this->shouldValidateJsonSchema = false;
 
-        $this->validationJsonSchemaPath = 'mandate/{mandate_id}/pause/initiate';
+        $this->validationJsonSchemaPath = 'mandates/{mandate_id}/pause/initiate';
 
-        $request = $this->request('mandate/%s/pause/initiate', [$id]);
+        $request = $this->request('mandates/%s/pause/initiate', [$id]);
 
         $default = [];
 
@@ -89,9 +89,9 @@ class MandateHelper extends P2pHelper
     {
         $this->shouldValidateJsonSchema = false;
 
-        $this->validationJsonSchemaPath = 'mandate/{mandate_id}/unpause/initiate';
+        $this->validationJsonSchemaPath = 'mandates/{mandate_id}/unpause/initiate';
 
-        $request = $this->request('mandate/%s/unpause/initiate', [$id]);
+        $request = $this->request('mandates/%s/unpause/initiate', [$id]);
 
         $default = [];
 
@@ -104,9 +104,9 @@ class MandateHelper extends P2pHelper
     {
         $this->shouldValidateJsonSchema = false;
 
-        $this->validationJsonSchemaPath = 'mandate/{mandate_id}/revoke/initiate';
+        $this->validationJsonSchemaPath = 'mandates/{mandate_id}/revoke/initiate';
 
-        $request = $this->request('mandate/%s/revoke/initiate', [$id]);
+        $request = $this->request('mandates/%s/revoke/initiate', [$id]);
 
         $default = [];
 
@@ -119,9 +119,9 @@ class MandateHelper extends P2pHelper
     {
         $this->shouldValidateJsonSchema = false;
 
-        $this->validationJsonSchemaPath = 'mandate/{mandate_id}/authorize';
+        $this->validationJsonSchemaPath = 'mandates/{mandate_id}/authorize';
 
-        $request = $this->request('mandate/%s/authorize', [$id]);
+        $request = $this->request('mandates/%s/authorize', [$id]);
 
         $default = [];
 
@@ -134,9 +134,9 @@ class MandateHelper extends P2pHelper
     {
         $this->shouldValidateJsonSchema = false;
 
-        $this->validationJsonSchemaPath = 'mandate/{mandate_id}/pause';
+        $this->validationJsonSchemaPath = 'mandates/{mandate_id}/pause';
 
-        $request = $this->request('mandate/%s/pause', [$id]);
+        $request = $this->request('mandates/%s/pause', [$id]);
 
         $default = [];
 
@@ -149,9 +149,9 @@ class MandateHelper extends P2pHelper
     {
         $this->shouldValidateJsonSchema = false;
 
-        $this->validationJsonSchemaPath = 'mandate/{mandate_id}/unpause';
+        $this->validationJsonSchemaPath = 'mandates/{mandate_id}/unpause';
 
-        $request = $this->request('mandate/%s/unpause', [$id]);
+        $request = $this->request('mandates/%s/unpause', [$id]);
 
         $default = [];
 
@@ -164,9 +164,9 @@ class MandateHelper extends P2pHelper
     {
         $this->shouldValidateJsonSchema = false;
 
-        $this->validationJsonSchemaPath = 'mandate/{mandate_id}/revoke';
+        $this->validationJsonSchemaPath = 'mandates/{mandate_id}/revoke';
 
-        $request = $this->request('mandate/%s/revoke', [$id]);
+        $request = $this->request('mandates/%s/revoke', [$id]);
 
         $default = [];
 
