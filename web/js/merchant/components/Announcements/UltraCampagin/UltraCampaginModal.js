@@ -4,7 +4,24 @@ import { connect } from 'react-redux';
 import React from 'react';
 import { AsyncBtn } from 'common/new-ui/Button';
 
-const UltraCampaginModal = ({ user, save }) => {
+const clickAndOpenUrl = (user) => {
+  let url = '';
+  if (user.isUCCapitalCardsOnlyCampaignEnabled) {
+    url =
+      'https://x.razorpay.com/cards/apply?intent=corporate_cards&utm_source=Growth&utm_medium=exclusive+offers&utm_campaign=ultra_cc';
+  } else {
+    url =
+      'https://dashboard.razorpay.com/app/capital/cash-advance?utm_source=Growth&utm_medium=exclusive+offers&utm_campaign=ultra_loc';
+  }
+  const isExternal = /^http(s)?:\/\//.test(url);
+  if (isExternal) {
+    window.open(url, '_blank');
+  } else {
+    history.push(url);
+  }
+};
+
+const UltraCampaginModal = ({ user }) => {
   let background_color_footer = '#060C1E';
   let cta_background_color =
     'linear-gradient(104.22deg, #F16E21 6.49%, #D3512B 52.27%, #B12A31 100%)';
@@ -52,7 +69,7 @@ const UltraCampaginModal = ({ user, save }) => {
           className="btn"
           type="submit"
           style={{ background: cta_background_color }}
-          onClick={save}
+          onClick={() => clickAndOpenUrl(user)}
         >
           Apply Now ✨
         </AsyncBtn.Primary>
