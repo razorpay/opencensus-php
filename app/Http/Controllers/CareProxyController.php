@@ -33,6 +33,7 @@ class CareProxyController extends Controller
     //admin
     const UPSERT_OPERATOR = 'twirp/rzp.care.callback.v1.CallbackService/UpsertOperator';
 
+
     //chat
     const CHAT_GET_MERCHANT  = 'twirp/rzp.care.chat.v1.ChatService/GetMerchant';
     const CHAT_FETCH_TICKETS = 'twirp/rzp.care.chat.v1.ChatService/FetchTickets';
@@ -43,12 +44,22 @@ class CareProxyController extends Controller
     const CALLBACK_EDIT_DATE_CONFIG = 'twirp/rzp.care.admin.v1.CallbackConfigService/editDateSlotConfig';
     const CALLBACK_EDIT_WEEK_CONFIG = 'twirp/rzp.care.admin.v1.CallbackConfigService/editWeekSlotConfig';
 
+    //Click to call Timings config
+    const CLICK_TO_CALL_GET_TIMINGS_CONFIG = 'twirp/rzp.care.admin.v1.CallbackConfigService/GetClickToCallTimingConfig';
+    const CLICK_TO_CALL_PUT_TIMINGS_CONFIG = 'twirp/rzp.care.admin.v1.CallbackConfigService/PutClickToCallTimingConfig';
+    const CLICK_TO_CALL_GET_HOLIDAYS       = 'twirp/rzp.care.admin.v1.CallbackConfigService/GetClickToCallHolidays';
+    const CLICK_TO_CALL_PUT_HOLIDAYS       = 'twirp/rzp.care.admin.v1.CallbackConfigService/PutClickToCallHolidays';
+
     const ROUTE_VS_PERMISSION = [
-        self::CALLBACK_GET_DATE_CONFIG  => Name::CALLBACK_SLOT_CONFIG_VIEW,
-        self::CALLBACK_EDIT_DATE_CONFIG => Name::CALLBACK_SLOT_CONFIG_EDIT,
-        self::CALLBACK_GET_WEEK_CONFIG  => Name::CALLBACK_SLOT_CONFIG_VIEW,
-        self::CALLBACK_EDIT_WEEK_CONFIG => Name::CALLBACK_SLOT_CONFIG_EDIT,
-        self::UPSERT_OPERATOR           => Name::MANAGE_CARE_SERVICE_CALLBACK,
+        self::CALLBACK_GET_DATE_CONFIG         => Name::CALLBACK_SLOT_CONFIG_VIEW,
+        self::CALLBACK_EDIT_DATE_CONFIG        => Name::CALLBACK_SLOT_CONFIG_EDIT,
+        self::CALLBACK_GET_WEEK_CONFIG         => Name::CALLBACK_SLOT_CONFIG_VIEW,
+        self::CALLBACK_EDIT_WEEK_CONFIG        => Name::CALLBACK_SLOT_CONFIG_EDIT,
+        self::UPSERT_OPERATOR                  => Name::MANAGE_CARE_SERVICE_CALLBACK,
+        self::CLICK_TO_CALL_GET_TIMINGS_CONFIG => Name::CLICK_TO_CALL_TIMING_CONFIG_VIEW,
+        self::CLICK_TO_CALL_PUT_TIMINGS_CONFIG => Name::CLICK_TO_CALL_TIMING_CONFIG_EDIT,
+        self::CLICK_TO_CALL_GET_HOLIDAYS       => Name::CLICK_TO_CALL_TIMING_CONFIG_VIEW,
+        self::CLICK_TO_CALL_PUT_HOLIDAYS       => Name::CLICK_TO_CALL_TIMING_CONFIG_EDIT,
     ];
 
     const MERCHANT_ROUTES = [
@@ -79,6 +90,10 @@ class CareProxyController extends Controller
         self::CALLBACK_EDIT_DATE_CONFIG,
         self::CALLBACK_GET_WEEK_CONFIG,
         self::CALLBACK_EDIT_WEEK_CONFIG,
+        self::CLICK_TO_CALL_PUT_HOLIDAYS,
+        self::CLICK_TO_CALL_GET_HOLIDAYS,
+        self::CLICK_TO_CALL_PUT_TIMINGS_CONFIG,
+        self::CLICK_TO_CALL_GET_TIMINGS_CONFIG
     ];
 
     const CHAT_ROUTES = [

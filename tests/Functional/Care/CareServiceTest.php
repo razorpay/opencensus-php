@@ -329,6 +329,72 @@ class CareServiceTest extends TestCase
             ],
             [
                 self::AUTH                                => 'admin',
+                self::API_ROUTE                           => '/care_service/admin/twirp/rzp.care.admin.v1.CallbackConfigService/GetClickToCallTimingConfig',
+                self::EXPECTED_CARE_SERVICE_ROUTE         => 'https://care-int.razorpay.com/twirp/rzp.care.admin.v1.CallbackConfigService/GetClickToCallTimingConfig',
+                self::EXPECTED_CARE_SERVICE_REQUEST       => [
+                    'admin' => [
+                        'id' => 'RzrpySprAdmnId',
+                    ],
+                ],
+                self::API_REQUEST_BODY                    => [],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_BODY   => [
+                    'key' => 'value',
+                ],
+                self::PERMISSIONS                         => ['click_to_call_timing_config_view'],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_STATUS => 200,
+            ],
+            [
+                self::AUTH                                => 'admin',
+                self::API_ROUTE                           => '/care_service/admin/twirp/rzp.care.admin.v1.CallbackConfigService/PutClickToCallTimingConfig',
+                self::EXPECTED_CARE_SERVICE_ROUTE         => 'https://care-int.razorpay.com/twirp/rzp.care.admin.v1.CallbackConfigService/PutClickToCallTimingConfig',
+                self::EXPECTED_CARE_SERVICE_REQUEST       => [
+                    'key'   => 'value',
+                    'admin' => [
+                        'id' => 'RzrpySprAdmnId',
+                    ]
+                ],
+                self::API_REQUEST_BODY                    => ["key" => "value"],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_BODY   => [
+                    'key' => 'value',
+                ],
+                self::PERMISSIONS                         => ['click_to_call_timing_config_edit'],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_STATUS => 200,
+            ],
+            [
+                self::AUTH                                => 'admin',
+                self::API_ROUTE                           => '/care_service/admin/twirp/rzp.care.admin.v1.CallbackConfigService/GetClickToCallHolidays',
+                self::EXPECTED_CARE_SERVICE_ROUTE         => 'https://care-int.razorpay.com/twirp/rzp.care.admin.v1.CallbackConfigService/GetClickToCallHolidays',
+                self::EXPECTED_CARE_SERVICE_REQUEST       => [
+                    'admin' => [
+                        'id' => 'RzrpySprAdmnId',
+                    ],
+                ],
+                self::API_REQUEST_BODY                    => [],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_BODY   => [
+                    'key' => 'value',
+                ],
+                self::PERMISSIONS                         => ['click_to_call_timing_config_view'],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_STATUS => 200,
+            ],
+            [
+                self::AUTH                                => 'admin',
+                self::API_ROUTE                           => '/care_service/admin/twirp/rzp.care.admin.v1.CallbackConfigService/PutClickToCallHolidays',
+                self::EXPECTED_CARE_SERVICE_ROUTE         => 'https://care-int.razorpay.com/twirp/rzp.care.admin.v1.CallbackConfigService/PutClickToCallHolidays',
+                self::EXPECTED_CARE_SERVICE_REQUEST       => [
+                    'key'   => 'value',
+                    'admin' => [
+                        'id' => 'RzrpySprAdmnId',
+                    ]
+                ],
+                self::API_REQUEST_BODY                    => ["key" => "value"],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_BODY   => [
+                    'key' => 'value',
+                ],
+                self::PERMISSIONS                         => ['click_to_call_timing_config_edit'],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_STATUS => 200,
+            ],
+            [
+                self::AUTH                                => 'admin',
                 self::API_ROUTE                           => '/care_service/admin/twirp/rzp.care.admin.v1.CallbackConfigService/getDateSlotConfig',
                 self::EXPECTED_CARE_SERVICE_ROUTE         => 'https://care-int.razorpay.com/twirp/rzp.care.admin.v1.CallbackConfigService/getDateSlotConfig',
                 self::EXPECTED_CARE_SERVICE_REQUEST       => [

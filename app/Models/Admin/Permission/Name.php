@@ -831,6 +831,9 @@ class Name
     const CALLBACK_SLOT_CONFIG_VIEW                    = 'callback_slot_config_view';
     const CALLBACK_SLOT_CONFIG_EDIT                    = 'callback_slot_config_edit';
 
+    const CLICK_TO_CALL_TIMING_CONFIG_VIEW = 'click_to_call_timing_config_view';
+    const CLICK_TO_CALL_TIMING_CONFIG_EDIT = 'click_to_call_timing_config_edit';
+
     // Payment Fraud
     const GET_FRAUD_ATTRIBUTES          = 'get_fraud_attributes';
     const SAVE_PAYMENT_FRAUD            = 'save_payment_fraud';
