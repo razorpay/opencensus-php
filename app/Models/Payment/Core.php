@@ -313,13 +313,13 @@ class Core extends Base\Core
 
         $expiryAt = Carbon::now()->addHours($plExpireAfterHours)->getTimestamp();
 
-        $title = sprintf("Complete you order on %s", $payment->merchant->getDisplayNameElseName());
+        $title = sprintf("Complete your order on %s", $payment->merchant->getDisplayNameElseName());
 
         $createUpiLink = $this->app->razorx->getTreatment($payment->getMerchantId(), Merchant\RazorxTreatment::PL_MISSED_ORDER_UPI_LINK, $this->mode);
 
         $data = [
-            'order_id' => $payment->getOrderId(),
-            'upi_link' => $createUpiLink,
+            'order_id' => $payment->order->getId(),
+            'upi_link' => $createUpiLink == "on",
             'amount' => $payment->order->getAmount(),
             'currency' => $payment->order->getCurrency(),
             'expire_by' => $expiryAt,
@@ -345,22 +345,13 @@ class Core extends Base\Core
             ],
         ];
 
-        $this->trace->info(TraceCode::FAILED_PAYMENT_PL_CREATION_SUCCESS, [ 'response' => $data]);
+        $this->trace->info(TraceCode::FAILED_PAYMENT_PL_CREATION_REQUEST, [ 'request' => $data]);
 
-        try {
-            $response = (new PaymentLinkService($this->app))->sendDirectRequestParams("v1/retry_payment_links", "POST", $payment->merchant, $data);
+        $response = (new PaymentLinkService($this->app))->sendDirectRequestParams("v1/retry_payment_links", "POST", $payment->merchant, $data);
 
-            $this->trace->info(TraceCode::FAILED_PAYMENT_PL_CREATION_SUCCESS, [ 'response' => $response]);
+        $this->trace->info(TraceCode::FAILED_PAYMENT_PL_CREATION_RESPONSE, [ 'response' => $response]);
 
-            return $response;
-        } catch (ServerErrorException $e) {
-            $this->trace->traceException(
-                $e,
-                Trace::ERROR,
-                TraceCode::FAILED_PAYMENT_PL_CREATION_FAILED
-            );
-            return null;
-        }
+        return $response;
     }
 
     public function pushFailedPaymentToKafkaForPLCreation($payment)
@@ -394,7 +385,7 @@ class Core extends Base\Core
             Constants::KAFKA_MESSAGE_DATA      => $data,
         ];
 
-        $this->trace->info(TraceCode::FAILED_PAYMENT_PL_CREATION_SUCCESS, ['msg' => $message]);
+        $this->trace->info(TraceCode::FAILED_PAYMENT_PL_CREATION_KAFKA_MESSAGE, ['msg' => $message]);
 
         try
         {

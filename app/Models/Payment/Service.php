@@ -4539,7 +4539,19 @@ class Service extends Base\Service
 
     public function reviveOrderViaPL($id)
     {
-        $payment = $this->repo->payment->find($id);
+        try {
+            $payment = $this->repo->payment->findByPublicId($id);
+        } catch (\Throwable $e) {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::FAILED_PAYMENT_PL_CREATION_FAILED,
+                [
+                    'payment_id'         => $id
+                ]
+            );
+            return false;
+        }
 
         if ($payment->hasOrder() == false || $payment->order->isPaid() == true)
         {
