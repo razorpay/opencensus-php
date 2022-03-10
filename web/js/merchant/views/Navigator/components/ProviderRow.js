@@ -1,19 +1,5 @@
-import { connect } from 'react-redux';
-import { Route, Switch, NavLink } from 'react-router-dom';
-import { Fragment } from 'react';
-import Input, { Description, Label } from 'common/new-ui/Input';
-import Field, {
-  TextAreaField,
-  SwitchField,
-  SelectField,
-  SearchableSelectField,
-} from 'razorx/components/ui/Field';
-import { PowerSelect } from 'react-power-select';
-
-import { titleCase } from 'common/utils/rzp-utils';
+import React from 'react';
 import Select from './Select';
-import SelectConfig from 'merchant_common/containers/ReportsAsync/GenerateReportPanel/SelectConfig';
-
 export default class ProviderRow extends React.Component {
   render() {
     const additional_attribute = this.props.rule.additional_attribute;
@@ -23,7 +9,7 @@ export default class ProviderRow extends React.Component {
           this.props.readonly ? 'expression-row-readonly' : ''
         } ${this.props.dashed ? 'dashed if-tran-exp' : ''}`}
         onClick={(e) => {
-          let parent = e.target;
+          const parent = e.target;
           if (parent.classList[0] === 'provider-expression-row') {
             if (this.props.onClose) {
               this.props.onClose();
@@ -107,7 +93,7 @@ export default class ProviderRow extends React.Component {
                             },
                           ],
                         },
-                        this.props.rule.expression.operands[1],
+                        ...this.props.rule.expression.operands.slice(1),
                       ],
                     },
                   });

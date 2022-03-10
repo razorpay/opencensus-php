@@ -272,7 +272,7 @@ export default class CreateRule extends React.Component {
     Object.keys(rules).forEach((k) => {
       let total_load = 0;
       rules[k].forEach((r) => {
-        const load = Number(r.additional_attribute[1].value);
+        const load = Number(r.additional_attribute[1]?.value);
         total_load += load;
         if (!(isExpressionValid(r.expression.operands[0]) && load > 0)) {
           is_valid = false;
@@ -300,7 +300,11 @@ export default class CreateRule extends React.Component {
     const rules = mapRulesArrayToObject(this.state.rule.rules);
     Object.keys(rules).forEach((k) => {
       rules[k].forEach((r) => {
-        if (r.expression.operands[0].operands[0].value === '$provider.id') {
+        if (
+          r.expression.operands &&
+          r.expression.operands[0].operands &&
+          r.expression.operands[0].operands[0].value === '$provider.id'
+        ) {
           const provider = r.expression.operands[0].operands[1].value;
           MAPPED_PROVIDERS.forEach((p) => {
             if (p.id === provider && p.disabled) {
@@ -551,8 +555,8 @@ export default class CreateRule extends React.Component {
     }
 
     this.state.rule.rules.forEach((rule) => {
-      rule.expression.operands.forEach((o) => {
-        if (o.operands[1].value == SMART_ROUTER) {
+      rule.expression.operands?.forEach((o) => {
+        if (o.operands && o.operands[1].value == SMART_ROUTER) {
           is_smart_router = true;
         }
       });
@@ -1218,6 +1222,7 @@ export default class CreateRule extends React.Component {
                                           message: 'Rule has been updated successully',
                                           closeTimeout: 5000,
                                         });
+                                        this.setState({ redirect: '/optimizer/rules' });
                                       }
                                     })
                                     .catch((e) => {

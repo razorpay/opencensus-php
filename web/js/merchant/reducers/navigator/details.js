@@ -1,7 +1,11 @@
-import { set, merge } from 'common/utils/immutable';
+import { merge } from 'common/utils/immutable';
 import { merchantFetch } from 'merchant/utils/ajax';
-import { rule, DEFAULT_RULE, setRuleMode } from 'merchant/views/Navigator/components/util';
-import { getRuleScore, appendMid } from '../../views/Navigator/components/util';
+import {
+  rule,
+  DEFAULT_RULE,
+  getRuleScore,
+  appendMid,
+} from 'merchant/views/Navigator/components/util';
 
 const FETCH_RULE = 'FETCH_RULE';
 const FETCH_RULES = 'FETCH_RULES';
@@ -14,12 +18,12 @@ const DELETE_RULE = 'DELETE_RULE';
 const CREATE_RULE = 'CREATE_RULE';
 const UPDATE_RULE = 'UPDATE_RULE';
 export const getRule = (id) => {
-  let params = {
+  const params = {
     url: `merchant/mid/rule_groups/${id}`,
     method: 'get',
   };
   return merchantFetch(params).then((d) => {
-    let rule = d.data;
+    const rule = d.data;
     if (rule.name === appendMid(DEFAULT_RULE)) {
       rule.is_default = true;
     }
@@ -29,7 +33,7 @@ export const getRule = (id) => {
 };
 
 export const createRuleGroup = (data) => {
-  let params = {
+  const params = {
     url: 'merchant/mid/rule_groups',
     method: 'POST',
     headers: {
@@ -43,7 +47,7 @@ export const createRuleGroup = (data) => {
 export const updateRuleGroup = (data) => {
   const id = data.id;
   // delete data.id;
-  let params = {
+  const params = {
     url: `merchant/mid/rule_groups/${id}`,
     method: 'PUT',
     headers: {
@@ -54,8 +58,20 @@ export const updateRuleGroup = (data) => {
   return merchantFetch(params).then((d) => d.data);
 };
 
+export const getRules = () => {
+  const params = {
+    url: `merchant/mid/rule_groups`,
+    method: 'get',
+  };
+  return merchantFetch(params).then((a) => {
+    const rules = a.data.filter((a) => a.rules);
+    rules.sort((a, b) => a.rules[0].score - b.rules[0].score);
+    return rules;
+  });
+};
+
 export const reorderRuleGroups = (rules, rule) => {
-  let body = {
+  const body = {
     order: {
       ordered_names: rules.map((r) => r.name),
     },
@@ -63,7 +79,7 @@ export const reorderRuleGroups = (rules, rule) => {
   if (rule) {
     body.rule_group_id = rule.id;
   }
-  let params = {
+  const params = {
     url: 'merchant/mid/reorder_rule_groups',
     method: 'PUT',
     headers: {
@@ -71,7 +87,7 @@ export const reorderRuleGroups = (rules, rule) => {
     },
     data: body,
   };
-  return merchantFetch(params).then((d) => getRules());
+  return merchantFetch(params).then(() => getRules());
 };
 
 export const getRuleProviders = () => {
@@ -91,7 +107,7 @@ export const getTerminalProviders = () => {
 };
 
 export const deleteRuleGroup = (id) => {
-  let params = {
+  const params = {
     url: `merchant/mid/rule_groups/${id}`,
     method: 'delete',
   };
@@ -99,24 +115,12 @@ export const deleteRuleGroup = (id) => {
 };
 
 export const updateRuleMode = (id, mode) => {
-  let params = {
+  const params = {
     url: `merchant/mid/rule_groups/${id}/mode/${mode}`,
     method: 'put',
   };
-  return merchantFetch(params).then((e) => {
+  return merchantFetch(params).then(() => {
     return getRule(id);
-  });
-};
-
-export const getRules = () => {
-  let params = {
-    url: `merchant/mid/rule_groups`,
-    method: 'get',
-  };
-  return merchantFetch(params).then((a) => {
-    let rules = a.data.filter((a) => a.rules);
-    rules.sort((a, b) => a.rules[0].score - b.rules[0].score);
-    return rules;
   });
 };
 
@@ -183,7 +187,7 @@ export const deleteRule = (id) => {
   };
 };
 
-let initialState = {
+const initialState = {
   loading: true,
   rules: [],
   rules_loaded: false,
@@ -206,11 +210,11 @@ let initialState = {
     },
   ],
   terminalProviders: [],
-  rule: rule,
+  rule,
   error: null,
 };
 
-export default function (state = initialState, action) {
+export default function navigatorReducer(state = initialState, action) {
   switch (action.type) {
     case `${FETCH_RULE}::SUCCESS`:
       if (action.payload.name === appendMid(DEFAULT_RULE)) {
@@ -240,27 +244,28 @@ export default function (state = initialState, action) {
         rule_detail_loading: true,
       });
 
-    case `${FETCH_RULES}::SUCCESS`:
+    case `${FETCH_RULES}::SUCCESS`: {
       let dr;
-      let rules = action.payload;
+      const rules = action.payload;
       rules.forEach((r, i) => {
         if (r.name === appendMid(DEFAULT_RULE)) {
           dr = r;
           rules.splice(i, 1);
         }
       });
-      let body = {
+      const body = {
         loading: false,
         rules_loaded: true,
         rule_detail_loading: false,
         deactivate_loading: false,
-        rules: rules,
+        rules,
         error: null,
       };
       if (dr) {
         body.default_rule = dr;
       }
       return merge(state, body);
+    }
 
     case `${CHANGE_RULE_MODE}::ERROR`:
       return merge(state, {
@@ -278,10 +283,10 @@ export default function (state = initialState, action) {
         deactivate_loading: true,
       });
 
-    case `${CHANGE_RULE_MODE}::SUCCESS`:
-      let RULES = state.rules;
-      let ruleIndex = state.rules.findIndex((rule) => rule.id === action.payload.id);
-      let BDY = {
+    case `${CHANGE_RULE_MODE}::SUCCESS`: {
+      const RULES = state.rules;
+      const ruleIndex = state.rules.findIndex((rule) => rule.id === action.payload.id);
+      const BDY = {
         rule_detail_loading: false,
         deactivate_loading: false,
         create_rule_loading: false,
@@ -294,6 +299,7 @@ export default function (state = initialState, action) {
       }
 
       return merge(state, BDY);
+    }
 
     case `${REORDER_RULES}::ERROR`:
       return merge(state, {
@@ -306,26 +312,27 @@ export default function (state = initialState, action) {
         reorder_loading: true,
       });
 
-    case `${REORDER_RULES}::SUCCESS`:
-      let R = state.rules,
-        BODY = {
-          reorder_loading: false,
-        };
+    case `${REORDER_RULES}::SUCCESS`: {
+      let RULES = state.rules;
+      const BODY = {
+        reorder_loading: false,
+      };
 
       if (action.payload.length) {
-        R = action.payload;
-        BODY.rules = R;
-        let R = R.find((rule) => rule.id === state.rule.id);
-        if (R) {
-          BODY.rule = R;
+        RULES = action.payload;
+        BODY.rules = RULES;
+        const RULE = RULES.find((rule) => rule.id === state.rule.id);
+        if (RULE) {
+          BODY.rule = RULE;
         }
-        let dri = BODY.rules.findIndex((rule) => rule.name === appendMid(DEFAULT_RULE));
+        const dri = BODY.rules.findIndex((rule) => rule.name === appendMid(DEFAULT_RULE));
         if (dri !== -1) {
           BODY.default_rule = BODY.rules[dri];
           BODY.rules.splice(dri, 1);
         }
       }
       return merge(state, BODY);
+    }
 
     case `${FETCH_RULES}::ERROR`:
       return merge(state, {
@@ -403,9 +410,9 @@ export default function (state = initialState, action) {
         error: action.payload.errors,
       });
 
-    case `${UPDATE_RULE}::SUCCESS`:
+    case `${UPDATE_RULE}::SUCCESS`: {
       let DR;
-      let RU = state.rules.map((r) => {
+      const RU = state.rules.map((r) => {
         if (r.name === appendMid(DEFAULT_RULE)) {
           DR = r;
         }
@@ -415,7 +422,10 @@ export default function (state = initialState, action) {
           return r;
         }
       });
-      let BD = {
+      if (action.payload.name === appendMid(DEFAULT_RULE)) {
+        DR = action.payload;
+      }
+      const BD = {
         rules: RU,
         create_rule_loading: false,
         error: action.payload.errors,
@@ -424,6 +434,7 @@ export default function (state = initialState, action) {
         BD.default_rule = DR;
       }
       return merge(state, BD);
+    }
 
     case `${UPDATE_RULE}::PENDING`:
       return merge(state, {

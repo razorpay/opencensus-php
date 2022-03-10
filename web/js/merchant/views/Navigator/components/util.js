@@ -800,6 +800,7 @@ export const getValue = (type, value) => {
 
 export const isExpressionValid = (expression) => {
   return (
+    expression.operands &&
     expression.operands[0] &&
     expression.operands[0].value &&
     expression.operands[1].value &&
@@ -1013,9 +1014,24 @@ export const removeMid = (value) => {
 export const DEFAULT_RULE = 'Default Rule';
 export const TOTAL_RULE_LIMIT = 15;
 
+const setRuleModeOperand = (rule, mode) => {
+  rule.expression?.operands?.forEach((o) => {
+    if (o.operands && o.operands.length > 1) {
+      if (o.operands[1]?.type === 'variable' && o.operands[1]?.value === '$payment.rule_mode') {
+        o.operands[0].value = mode;
+      } else if (
+        o.operands[0]?.type === 'variable' &&
+        o.operands[0]?.value === '$payment.rule_mode'
+      ) {
+        o.operands[1].value = mode;
+      }
+    }
+  });
+};
+
 export const setRuleMode = (rules, mode) => {
   rules.forEach((r) => {
-    r.expression.operands[1].operands[0].value = mode;
+    setRuleModeOperand(r, mode);
   });
   return rules;
 };
@@ -1044,6 +1060,14 @@ export const uniqueArray = (arr) => {
     }
   }
   return a;
+};
+
+export const findProviderName = (providers, id) => {
+  if (id === 'razorpay') {
+    return 'razorpay';
+  }
+  const provider = providers?.filter((p) => p.Terminal_id === id);
+  return provider.length > 0 ? provider[0].Provider_name : id;
 };
 
 export const SMART_ROUTER = 'smart_router';
