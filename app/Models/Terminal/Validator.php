@@ -80,6 +80,9 @@ class Validator extends Base\Validator
         Entity::OFFLINE                     => 'sometimes|string',
     ];
 
+    protected static $gatewayInputRules = [
+        Entity::GATEWAY                        => 'not_in:paysecure',
+    ];
     protected static $mpansBeforeTokenizationRules = [
         Entity::MC_MPAN                     => 'sometimes|string|size:16',
         Entity::VISA_MPAN                   => 'sometimes|string|size:16',
@@ -877,9 +880,12 @@ class Validator extends Base\Validator
         Entity::CURRENCY                   => 'required|array',
         Entity::CARD                       => 'required|boolean|in:1',
         Entity::MERCHANT_ID                => 'required|alpha_num|size:14',
-        Entity::ENABLED                    => 'required|in:0',
+        Entity::ENABLED                    => 'required|in:0,1',
         Entity::GATEWAY_ACQUIRER           => 'required|in:axis',
-        Entity::STATUS                     => 'required|in:pending',
+        Entity::STATUS                     => 'required|in:pending,activated',
+        Entity::ORG_ID                     => 'sometimes',
+        Entity::PROCURER                   => 'sometimes',
+        Entity::TYPE                       => 'sometimes'
     ];
 
     protected static $paysecureEditTerminalRules = [

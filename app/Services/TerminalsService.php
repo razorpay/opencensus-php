@@ -171,7 +171,19 @@ class TerminalsService
 
         $params = self::PARAMS[self::CREATE_TERMINAL];
 
-        $response = $this->sendRequest($params[self::PATH], $content, $params[self::METHOD]);
+        try
+        {
+            $headers = $this->getTerminalServiceOrgHeaders();
+        }
+        catch (\Exception $e)
+        {
+            $this->app['trace']->traceException($e, Trace::ERROR, TraceCode::TERMINAL_ORG_HEADERS_EXCEPTION, [
+                'message' => $e->getMessage(),
+                'function' => 'migrateTerminal',
+            ]);
+        }
+
+        $response = $this->sendRequest($params[self::PATH], $content, $params[self::METHOD], [], $headers);
 
         return $this->parseAndReturnResponse($response)['data'] ?? [];
     }
@@ -313,6 +325,17 @@ class TerminalsService
             self::FEATURES      =>  $features,
         ];
 
+        try
+        {
+            $headers = $this->getTerminalServiceOrgHeaders();
+        }
+        catch (\Exception $e)
+        {
+            $this->app['trace']->traceException($e, Trace::ERROR, TraceCode::TERMINAL_ORG_HEADERS_EXCEPTION, [
+                'message' => $e->getMessage(),
+                'function' => 'initiateOnboarding',
+            ]);
+        }
         // for network tokenization
         if (isset($otherInputs[self::ORG_ID]) === true)
         {
@@ -331,9 +354,9 @@ class TerminalsService
 
         $content = json_encode($content);
 
-        $response = $this->sendRequest($path, $content, $params[self::METHOD], $params[self::OPTIONS]);
+        $response = $this->sendRequest($path, $content, $params[self::METHOD], $params[self::OPTIONS],$headers);
 
-        return $this->parseAndReturnResponse($response)[self::DATA];
+        return $this->parseAndReturnResponse($response)[self::DATA] ?? [];
     }
 
     public function getTerminalsByMerchantIdAndGateway(string $merchantId, string $gateway)

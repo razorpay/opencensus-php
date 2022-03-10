@@ -164,6 +164,113 @@ return [
         ]
     ],
 
+    'testAssignPaysecureTerminal' => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'paysecure',
+                'gateway_acquirer'          => 'axis',
+                'card'                      => 1,
+                'currency'                  => ["INR"],
+                'gateway_merchant_id'       => '123456789012345',
+                'gateway_terminal_id'       => '12345678',
+                'mode'                      => 3,
+                'status'                    => 'activated',
+                'enabled'                   => 1,
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+            ],
+            'status_code' =>400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ],
+
+    'testAssignPaysecureTerminalNonRzpOrg' => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'paysecure',
+                'gateway_acquirer'          => 'axis',
+                'card'                      => 1,
+                'currency'                  => ["INR"],
+                'gateway_merchant_id'       => '123456789012345',
+                'gateway_terminal_id'       => '12345678',
+                'mode'                      => 3,
+                'status'                    => 'activated',
+                'enabled'                   => 1,
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ],
+
+    'testCreatePaysecureTerminal' => [
+        'request' => [
+            'content' => [
+                'id'                        => '12345678901234',
+                'gateway'                   => 'paysecure',
+                'gateway_acquirer'          => 'axis',
+                'card'                      => 1,
+                'currency'                  => ["INR"],
+                'gateway_merchant_id'       => '123456789012345',
+                'gateway_terminal_id'       => '12345678',
+                'mode'                      => 3,
+                'status'                    => 'activated',
+                'enabled'                   => 1,
+                'type'                      => [
+                    'non_recurring'                 => '1',
+                    'direct_settlement_with_refund' => '1',
+                ],
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'gateway_acquirer'    => 'axis',
+                'gateway_merchant_id' => '123456789012345',
+                'gateway_terminal_id' => '12345678',
+                'enabled'             => true
+            ]
+        ]
+    ],
+
+    'testCreatePaysecureTerminalNonRzpOrg' => [
+        'request' => [
+            'content' => [
+                'id'                        => '12345678901234',
+                'gateway'                   => 'paysecure',
+                'gateway_acquirer'          => 'axis',
+                'card'                      => 1,
+                'currency'                  => ["INR"],
+                'gateway_merchant_id'       => '123456789012345',
+                'gateway_terminal_id'       => '12345678',
+                'mode'                      => 3,
+                'status'                    => 'activated',
+                'enabled'                   => 1,
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'gateway_acquirer'    => 'axis',
+                'gateway_merchant_id' => '123456789012345',
+                'gateway_terminal_id' => '12345678',
+                'enabled'             => true
+            ]
+        ]
+    ],
     'testAssignTerminalWhenDuplicateDeactivatedTerminalExist' => [
         'request' => [
             'content' => [
@@ -1854,6 +1961,21 @@ return [
                 'enabled' => false
             ]
         ]
+    ],
+
+    'testToggleTerminalWithAxisOrgId' => [
+        'request' => [
+            'content' => [
+                'toggle' => '0',
+                'remarks'  => 'Disabling terminal because of some reason',
+            ],
+            'method' => 'PUT'
+        ],
+        'response' => [
+            'content' => [
+                'enabled' => false
+            ],
+        ],
     ],
 
     'testTerminalModeDual' => [

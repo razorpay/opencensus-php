@@ -15,10 +15,12 @@ use RZP\Models\Payment;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Models\Admin\Org;
 use RZP\Base\RuntimeManager;
 use RZP\Error\PublicErrorCode;
 use RZP\Exception\BaseException;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Exception\BadRequestException;
 use RZP\Jobs\TerminalsServiceMigrateJob;
 use RZP\Models\Gateway\Terminal\Constants;
 use RZP\Models\Mpan\Constants as MpanConstants;
@@ -29,6 +31,10 @@ class Service extends Base\Service
 {
     use Migrate;
 
+    const  ERROR_PARAMS = [
+        "Terminal doesn't exist with this Id",
+        "BAD_REQUEST_ACCESS_DENIED"
+    ];
     public function createTerminal($id, $input)
     {
         $merchant = $this->repo->merchant->findOrFailPublic($id);
@@ -191,6 +197,12 @@ class Service extends Base\Service
 
         $terminal = $this->repo->terminal->findOrFailPublic($id);
 
+        $terminalArray = $terminal->toArrayAdmin();
+
+        if ( (new Org\Service)->validateEntityOrgId($terminalArray) === false)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_ACCESS_DENIED);
+        }
         $this->app['workflow']
              ->setEntityAndId($terminal->getEntity(), $terminal->getId())
              ->handle($terminal, (new \stdClass));
@@ -220,6 +232,12 @@ class Service extends Base\Service
 
         $terminal = $this->repo->terminal->findOrFail($tid);
 
+        $terminalArray = $terminal->toArrayAdmin();
+
+        if((new Org\Service)->validateEntityOrgId($terminalArray) === false)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_ACCESS_DENIED);
+        }
         $terminal = (new Terminal\Core)->edit($terminal, $input);
 
         return $terminal->toArrayAdmin();
@@ -375,6 +393,12 @@ class Service extends Base\Service
             ['terminal_enable' => !$enabled],
         ];
 
+        $terminalArray = $terminal->toArrayAdmin();
+
+        if ( (new Org\Service)->validateEntityOrgId($terminalArray) === false)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_ACCESS_DENIED);
+        }
         $this->app['workflow']
              ->setEntityAndId($terminal->getEntity(), $terminal->getId())
              ->handle($original, $dirty);
@@ -1043,7 +1067,7 @@ class Service extends Base\Service
                 // assert on message and rethrow if not correct
                 if (($data === []) and
                     ($exception->getCode() === ErrorCode::BAD_REQUEST_TERMINALS_SERVICE_ERROR) and
-                    ($exception->getMessage() == "Terminal doesn't exist with this Id"))
+                    ( in_array($exception->getMessage() ,self::ERROR_PARAMS) === true))
                 {
 
                 }

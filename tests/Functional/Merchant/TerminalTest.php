@@ -135,6 +135,84 @@ class TerminalTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreatePaysecureTerminal()
+    {
+        $this->ba->terminalsAuth();
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $url = '/merchants/'.$merchant->getKey().'/terminals/internal';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testCreatePaysecureTerminalNonRzpOrg()
+    {
+        $org = $this->fixtures->org->createHdfcOrg();
+
+        $this->ba->adminAuth('test', 'SuperSecretTokenForRazorpaySuprHdfcbToken', $org->getPublicId(), 'hdfcbank.com');
+
+        $terminal = $this->fixtures->create(
+            'terminal:shared_hdfc_terminal', [
+            'used'        => true,
+            'enabled'     => '1',
+            'sync_status' => 'sync_success',
+            'org_id'      => $org->getId(),
+        ]);
+
+        $this->testData[__FUNCTION__]['request']['content']['org_id'] = 'org_' . $org->getId();
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $this->ba->terminalsAuth();
+
+        $url = '/merchants/'.$merchant->getKey().'/terminals/internal';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->testData[__FUNCTION__]['response']['content']['org_id'] = $org->getId();
+
+        $this->startTest();
+    }
+
+    // uses assignTerminal on admin dashboard
+    public function testAssignPaysecureTerminal()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $url = '/merchants/'.$merchant->getKey().'/terminals';
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    // uses assignTerminal on admin dashboard
+    public function testAssignPaysecureTerminalNonRzpOrg()
+    {
+        $org = $this->fixtures->org->createHdfcOrg();
+
+        $this->ba->adminAuth('test', 'SuperSecretTokenForRazorpaySuprHdfcbToken', $org->getPublicId(), 'hdfcbank.com');
+
+        $terminal = $this->fixtures->create(
+            'terminal:shared_hdfc_terminal', [
+            'used'        => true,
+            'enabled'     => '1',
+            'sync_status' => 'sync_success',
+            'org_id'      => $org->getId(),
+        ]);
+
+        $this->testData[__FUNCTION__]['request']['content']['org_id'] = 'org_' . $org->getId();
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $url = '/merchants/'.$merchant->getKey().'/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
     public function testAssignTerminalWhenDuplicateDeactivatedTerminalExist()
     {
         $merchant = $this->fixtures->create('merchant');
@@ -795,6 +873,43 @@ class TerminalTest extends TestCase
         $this->assertEquals($content['status'],$data['status']);
 
         $this->assertEquals($content['type'][0],'non_recurring');
+    }
+
+    public function testEditNonPaysecureTerminalWithByAxisAdminUser()
+    {
+        $org = $this->fixtures->org->createHdfcOrg();
+
+        $terminal = $this->fixtures->create(
+            'terminal:shared_hdfc_terminal', [
+            'used'        => true,
+            'enabled'     => '1',
+            'sync_status' => 'sync_success',
+            'org_id'      => $org->getId(),
+        ]);
+
+
+        $tid = $terminal['id'];
+
+        $data = [
+            'procurer' => "merchant",
+        ];
+
+        $this->fixtures->create('feature', [
+            'entity_id' => $org->getId(),
+            'name'   => 'axis_org',
+            'entity_type' => 'org',
+        ]);
+
+        $org = $this->fixtures->org->createAxisOrg();
+
+        $this->ba->adminAuth('test', 'SuperSecretTokenForRazorpaySuprAxisbToken', $org->getPublicId(), 'hdfcbank.com');
+
+        $this->expectException(Exception\BadRequestException::class);
+
+        $this->expectExceptionMessage(
+            'Access Denied');
+
+        $content = $this->editTerminalExternalOrg($tid, $data);
     }
 
     public function testCreateCredTerminal()
@@ -1488,6 +1603,35 @@ class TerminalTest extends TestCase
 
     }
 
+    public function testToggleTerminalWithAxisOrgId()
+    {
+        $org = $this->fixtures->org->createAxisOrg();
+
+        $this->ba->adminAuth('test', 'SuperSecretTokenForRazorpaySuprAxisbToken', $org->getPublicId(), 'hdfcbank.com');
+
+        $terminal = $this->fixtures->create(
+            'terminal:shared_axis_terminal', [
+            'used'        => true,
+            'enabled'     => '1',
+            'sync_status' => 'sync_success',
+            'org_id'      => $org->getId(),
+        ]);
+
+        $tid = $terminal['id'];
+
+        $url = '/terminals/'.$tid.'/toggle';
+
+        $this->fixtures->create('feature', [
+            'entity_id' => $org->getId(),
+            'name'   => 'axis_org',
+            'entity_type' => 'org',
+        ]);
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+
+    }
     public function testEditWalletAirtelmoneyTerminalWithNotRequiredFields()
     {
         $terminal = $this->fixtures->create('terminal:shared_airtelmoney_terminal');
