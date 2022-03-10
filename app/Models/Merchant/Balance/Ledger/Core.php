@@ -22,6 +22,8 @@ class Core extends Base\Core
     const DIRECT_MERCHANT_ONBOARDING    = 'direct_merchant_onboarding';
     const SHARED_MERCHANT_ONBOARDING    = 'shared_merchant_onboarding';
     const SHARED_GATEWAY_ONBOARDING     = 'shared_gateway_onboarding';
+    const PG_MERCHANT_ONBOARDING        = 'pg_merchant_onboarding';
+    const PG_GATEWAY_ONBOARDING         = 'pg_gateway_onboarding';
 
     const MODE                              = 'mode';
     const TENANT                            = 'tenant';
@@ -62,7 +64,9 @@ class Core extends Base\Core
     protected $eventDescription = [
         self::DIRECT_MERCHANT_ONBOARDING    => 'Event for onboarding of merchant on direct account',
         self::SHARED_MERCHANT_ONBOARDING    => 'Event for onboarding of merchant on shared account',
-        self::SHARED_GATEWAY_ONBOARDING     => 'Event for onboarding a gateway'
+        self::SHARED_GATEWAY_ONBOARDING     => 'Event for onboarding a gateway',
+        self::PG_MERCHANT_ONBOARDING        => 'PG merchant onboarded',
+        self::PG_GATEWAY_ONBOARDING         => 'PG gateway onboarded'
     ];
 
     const TIME_TAKEN       = 'time_taken';
@@ -136,7 +140,7 @@ class Core extends Base\Core
     {
         try
         {
-            $payload = $this->getPGLedgerAccountCreatePayload($mode, $merchant, self::SHARED_MERCHANT_ONBOARDING, $balanceAmount, $creditBalances);
+            $payload = $this->getPGLedgerAccountCreatePayload($mode, $merchant, self::PG_MERCHANT_ONBOARDING, $balanceAmount, $creditBalances);
             $ledgerService = $this->app['ledger'];
             $ledgerService->setIdempotencyKey(Uuid::uuid1()->toString());
             $ledgerService->setTenantHeader(self::PG);
@@ -160,7 +164,7 @@ class Core extends Base\Core
     {
         try
         {
-            $payload = $this->getPGLedgerGatewayAccountCreatePayload($mode, $merchantId, self::SHARED_GATEWAY_ONBOARDING, $gateway);
+            $payload = $this->getPGLedgerGatewayAccountCreatePayload($mode, $merchantId, self::PG_GATEWAY_ONBOARDING, $gateway);
             $ledgerService = $this->app['ledger'];
             $ledgerService->setIdempotencyKey(Uuid::uuid1()->toString());
             $ledgerService->setTenantHeader(self::PG);

@@ -5,10 +5,10 @@ namespace RZP\Models\Ledger;
 class Constants
 {
     //Gateway events
-    const GATEWAY_CAPTURED                                  = "gateway_captured";
+    const GATEWAY_CAPTURED                                  = "payment_gateway_captured";
 
     //Merchant Capture events
-    const MERCHANT_CAPTURED                                 = "merchant_captured";
+    const MERCHANT_CAPTURED                                 = "payment_merchant_captured";
     const SETTLEMENT_PROCESSED                              = "settlement_processed";
     const AUTOREFUND_PROCESSED                              = "autorefund_processed";
     const CREDIT_ACCOUNTING                                 = 'credit_accounting';
