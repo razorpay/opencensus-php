@@ -5,6 +5,7 @@ namespace App\Admin;
 use App\Trace\TraceCode;
 use Symfony\Component\Routing\Route;
 use Ackintosh\Ganesha as CircuitBreaker;
+use App\Metrics\Constants as MetricsConstants;
 
 class ApiRouteCircuitBreaker
 {
@@ -39,12 +40,18 @@ class ApiRouteCircuitBreaker
     const PORT                                 = 'port';
     const TCP                                  = 'tcp';
 
+    const CIRCUIT_STATE                        = 'circuit_state';
+    const CIRCUIT_OPEN                         = 'open';
+    const CIRCUIT_CLOSE                        = 'close';
+
     const PREG_REPLACE_REGEX_FOR_PATH_MATCH    = '/\{(\w+?)\?\}/';
     const PREG_REPLACE_WITH_FOR_PATH_MATCH     = '{$1}';
 
     protected $app;
 
     protected $cache;
+
+    protected $circuitState;
 
     protected $options = [
         // The interval in time (seconds) that evaluate the thresholds.
@@ -76,6 +83,9 @@ class ApiRouteCircuitBreaker
 
         $this->options        = array_merge($options, $this->options);
 
+        // default state is close
+        $this->circuitState = self::CIRCUIT_CLOSE;
+
         $this->matchPath();
     }
 
@@ -86,8 +96,17 @@ class ApiRouteCircuitBreaker
         if ((is_null($this->matchedRouteName) === false) and
             ($this->circuitBreaker->isAvailable($this->matchedRouteName) === false))
         {
+            $this->circuitState = self::CIRCUIT_OPEN;
+
             $breakCircuit = true;
         }
+
+        $this->app['metrics']->count(
+            MetricsConstants::API_CIRCUIT_BREAKER_STATE_COUNT,
+            MetricsConstants::EVENT_COUNT_ONE, [
+                MetricsConstants::CIRCUIT_STATE                => $this->circuitState,
+                MetricsConstants::LABEL_HTTP_REQUESTS_ROUTE    => $this->matchedRouteName ?? MetricsConstants::UNKNOWN_ROUTE,
+            ]);
 
         $this->app['trace']->info(TraceCode::API_CIRCUIT_BREAKER_DECISION, [
             self::BREAK_CIRCUIT => $breakCircuit,
@@ -107,6 +126,7 @@ class ApiRouteCircuitBreaker
                 self::METHOD        => $this->routeMethod,
                 self::PATH_PATTERN  => $this->matchedPathPattern,
                 self::PATH          => $this->routePath,
+                self::CIRCUIT_STATE => $this->circuitState,
             ]);
 
             $this->circuitBreaker->success($this->matchedRouteName);
@@ -118,6 +138,14 @@ class ApiRouteCircuitBreaker
                 self::PATH          => $this->routePath,
             ]);
         }
+
+        $this->app['metrics']->count(
+            MetricsConstants::API_CIRCUIT_BREAKER_REQUEST_RESULT_COUNT,
+            MetricsConstants::EVENT_COUNT_ONE, [
+                MetricsConstants::CIRCUIT_STATE              => $this->circuitState,
+                MetricsConstants::REQUEST_RESULT             => MetricsConstants::REQUEST_SUCCESS,
+                MetricsConstants::LABEL_HTTP_REQUESTS_ROUTE  => $this->matchedRouteName ?? MetricsConstants::UNKNOWN_ROUTE,
+            ]);
     }
 
     public function failure($traceData = [])
@@ -131,6 +159,7 @@ class ApiRouteCircuitBreaker
                 self::METHOD        => $this->routeMethod,
                 self::PATH_PATTERN  => $this->matchedPathPattern,
                 self::PATH          => $this->routePath,
+                self::CIRCUIT_STATE => $this->circuitState,
             ]));
         }
         else
@@ -140,6 +169,14 @@ class ApiRouteCircuitBreaker
                 self::PATH          => $this->routePath,
             ]));
         }
+
+        $this->app['metrics']->count(
+            MetricsConstants::API_CIRCUIT_BREAKER_REQUEST_RESULT_COUNT,
+            MetricsConstants::EVENT_COUNT_ONE, [
+                MetricsConstants::CIRCUIT_STATE              => $this->circuitState,
+                MetricsConstants::REQUEST_RESULT             => MetricsConstants::REQUEST_FAILURE,
+                MetricsConstants::LABEL_HTTP_REQUESTS_ROUTE  => $this->matchedRouteName ?? MetricsConstants::UNKNOWN_ROUTE,
+            ]);
     }
 
     public function saveApiRouteDetails($apiRouteName, $apiPathPattern)

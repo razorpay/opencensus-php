@@ -65,6 +65,8 @@ class Constants
   const USER_OAUTH_SIGNUP_SUCCESS_COUNT                 = 'user_oauth_signup_success_count';
   const USER_OAUTH_SIGNUP_DURATION                      = 'user_oauth_signup_duration';
   const USER_OAUTH_SIGNUP_FAILED_COUNT                  = 'user_oauth_signup_failed_count';
+  const API_CIRCUIT_BREAKER_STATE_COUNT                 = 'api_circuit_breaker_state';
+  const API_CIRCUIT_BREAKER_REQUEST_RESULT_COUNT        = 'api_circuit_breaker_request_result';
 
   // Metric Lables
   const LOGIN_METHOD                = 'login_method';
@@ -121,4 +123,11 @@ class Constants
   // products
   const PRIMARY                     = 'primary';
   const BANKING                     = 'banking';
+
+  // API Circuit Breaker Related dimensions and labels
+  const CIRCUIT_STATE               = 'circuit_state';
+  const UNKNOWN_ROUTE               = 'unknown_route';
+  const REQUEST_RESULT              = 'result';
+  const REQUEST_FAILURE             = 'failure';
+  const REQUEST_SUCCESS             = 'success';
 }
