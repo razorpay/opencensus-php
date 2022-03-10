@@ -336,6 +336,7 @@ class UserRolePermissionsMap
                  Permission::GENERATE_TDS_CHALLAN_ZIP,
                  Permission::VIEW_TAX_PAYMENTS,
 
+                 Permission::CREATE_ACCOUNTING_INTEGRATION,
                  Permission::SYNC_ACCOUNTING_INTEGRATION,
                  Permission::VIEW_ACCOUNTING_INTEGRATION,
                  Permission::WAITLIST_ACCOUNTING_INTEGRATION,

@@ -6,6 +6,7 @@ use Mockery;
 
 use App;
 
+use RZP\Models\User\BankingRole;
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
@@ -478,5 +479,33 @@ class AccountingPayoutsTest extends TestCase
         $this->startTest();
 
         $apMock->shouldHaveReceived('syncChartOfAccounts');
+    }
+
+    public function testCreateIntegrationFromL1Role()
+    {
+        $user = $this->fixtures->create('user', ['id' => '20000000000006']);
+
+        $mappingData = [
+            'user_id'     => $user['id'],
+            'merchant_id' => '10000000000000',
+            'role'        => BankingRole::FINANCE_L1,
+            'product'     => 'banking',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user['id']);
+
+        $apMock = Mockery::mock('RZP\Services\AccountingPayouts');
+
+        $apMock->shouldReceive('integrationAppInitiate')->andReturn([]);
+        $this->app->instance('accounting-payouts', $apMock);
+
+        $this->mockRazorxTreatment();
+
+        $this->startTest();
+
+        $apMock->shouldHaveReceived('integrationAppInitiate');
+
     }
 }
