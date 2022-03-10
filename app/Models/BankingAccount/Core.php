@@ -1500,7 +1500,7 @@ class Core extends Base\Core
 
             $properties = $this->getSegmentEventPropertiesForBankingAccountStatusChange($bankingAccount, $currentBankingAccountStatus, $currentBankingAccountSubStatus);
 
-            $this->app['x-segment']->pushIdentifyAndTrackEvent($merchant, $properties, SegmentEvent::BANKING_ACCOUNT_STATUS_CHANGE);
+            $this->app['x-segment']->sendEventToSegment(SegmentEvent::BANKING_ACCOUNT_STATUS_CHANGE, $merchant, $properties);
         }
     }
 

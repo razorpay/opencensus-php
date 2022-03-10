@@ -17,7 +17,7 @@ class XSegmentClient extends SegmentAnalyticsClient
         $this->config = $this->app['config']->get('services.x-segment');
     }
 
-    public function sendEventToSegment(string $eventName, Merchant\Entity $merchant = null){
+    public function sendEventToSegment(string $eventName, Merchant\Entity $merchant = null, array $properties = []){
         try {
 
             $this->trace->info(TraceCode::XSEGMENT_EVENT_DISPATCH,
@@ -41,6 +41,9 @@ class XSegmentClient extends SegmentAnalyticsClient
                     'email' => $user['email'],
                     'name'  => $user['name']
                 ];
+                if ($eventName === SegmentEvent::BANKING_ACCOUNT_STATUS_CHANGE) {
+                    $customProperties += $properties;
+                }
 
                 $result = 'on';
 
@@ -53,7 +56,7 @@ class XSegmentClient extends SegmentAnalyticsClient
                     $result = $variant;
                 }
 
-                if($result != 'off') {
+                if($result != 'off' or $eventName == SegmentEvent::BANKING_ACCOUNT_STATUS_CHANGE) {
                     $this->pushIdentifyandTrackEvent($merchant, $customProperties, $eventName);
                 }
             }
