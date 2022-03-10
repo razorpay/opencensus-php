@@ -33,7 +33,7 @@ class Service extends Base\Service
     public function createPlan($input, $type = null)
     {
         // if rules are sent in json encoded form, decode it
-        if (is_string($input['rules']) === true)
+        if (isset($input['rules']) === true and is_string($input['rules']) === true)
         {
             $input['rules'] = json_decode($input['rules'], true);
             // stringify each key value pair; to mimic how data arrives at php backend
@@ -44,10 +44,10 @@ class Service extends Base\Service
                     $input['rules'][$counter][$key] = strval($value);
                 }
             }
+            $this->trace->info(
+                TraceCode::PRICING_PLAN_CREATE_ATTEMPT, ['rules_count' => count($input['rules'])]
+            );
         }
-        $this->trace->info(
-            TraceCode::PRICING_PLAN_CREATE_ATTEMPT, ['rules_count' => count($input['rules'])]
-        );
         $ruleOrgId = $this->getRuleOrgId();
 
         $this->repo->pricing->withBuyPricing();

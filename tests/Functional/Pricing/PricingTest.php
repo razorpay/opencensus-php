@@ -260,6 +260,11 @@ class PricingTest extends TestCase
         $this->startTest();
     }
 
+    public function testEmptyPlanWithNoRules()
+    {
+        $this->startTest();
+    }
+
     public function testDuplicateBulkPricingPlan()
     {
         $this->startTest();
