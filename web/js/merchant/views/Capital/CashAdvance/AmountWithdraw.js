@@ -123,7 +123,15 @@ const parseRepaymentBreakup = (repayments) => {
 };
 
 const computeMaxDueDate = (limit) => {
-  return moment().add(limit - 1, 'days');
+  // utcOffset here is used to set timezone
+  // 330 is basically difference between ist time and utc time in minutes (5.5 * 60)
+  // ref: https://momentjs.com/docs/#/manipulating/utc-offset/
+  // value returned from here is used as defaultValue for rc-calendar
+  // hence calendar shown will always be based on IST time (not local)
+  return moment()
+    .utc()
+    .utcOffset(330)
+    .add(limit - 1, 'days');
 };
 
 const checkIfFirstCashAdvanceLogin = () => {
