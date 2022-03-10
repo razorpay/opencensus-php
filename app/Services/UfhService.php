@@ -73,6 +73,11 @@ class UfhService
         Role::SUPPORT =>  Type::VALID_DOCUMENTS,
     ];
 
+    protected $cloudfrontExperiments = [
+        RazorxTreatment::PG_ONBOARDING_CLIENT_CLOUDFRONT_EXP,
+        RazorxTreatment::INVOICE_CLOUDFRONT_ONBOARDING,
+    ];
+
     const FULLY_ONBOARDED_CLOUDFRONT_NAMESPACES = [
         EntityConstants::QR_CODE,
     ];
@@ -142,6 +147,26 @@ class UfhService
         $this->route = $this->app['api.route'];
     }
 
+    protected function isCloudfrontExperimentEnabled()
+    {
+        $isExperimentEnabled = false;
+
+        foreach($this->cloudfrontExperiments as $experiment)
+        {
+            $isExperimentEnabled |= (new MerchantCore())->isRazorxExperimentEnable(
+                $this->merchantId, $experiment);
+        }
+
+        if($isExperimentEnabled === true)
+        {
+            $this->trace->info(
+                TraceCode::CLOUDFRONT_EXPERIMENT_ENABLED
+            );
+        }
+
+        return $isExperimentEnabled;
+    }
+
     protected function createUfhClient()
     {
         /*
@@ -153,10 +178,7 @@ class UfhService
         if(empty($this->clientType) === false)
         {
             if($this->merchantId != null) {
-                $isExperimentEnabled = (new MerchantCore())->isRazorxExperimentEnable(
-                    $this->merchantId, RazorxTreatment::PG_ONBOARDING_CLIENT_CLOUDFRONT_EXP);
-
-                if(($isExperimentEnabled == true) or
+                if(($this->isCloudfrontExperimentEnabled() == true)  or
                    (in_array($this->clientType, self::FULLY_ONBOARDED_CLOUDFRONT_NAMESPACES) == true)) {
                     $clientUsername = $this->clientType;
                 }
@@ -198,8 +220,13 @@ class UfhService
 
         $storageFileName = strtolower($storageFileName);
 
-        $movedFile = $file->move(storage_path('files/filestore'), $storageFileName . '.' . $ext);
+        $movedFile = $file;
 
+        if($type !== \RZP\Models\FileStore\Type::INVOICE_PDF)
+        {
+            $movedFile = $file->move(storage_path('files/filestore'), $storageFileName . '.' . $ext);
+        }
+        
         $requestData = $this->getRequestData($file, $movedFile, $storageFileName, $type, $entity, $metadata);
 
         $this->trace->info(

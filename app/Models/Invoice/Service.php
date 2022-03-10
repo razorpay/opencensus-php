@@ -15,12 +15,12 @@ use RZP\Error\ErrorCode;
 use RZP\Models\LineItem;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
-use RZP\Models\FileStore;
 use RZP\Models\User\Role;
 use RZP\Http\RequestHeader;
 use RZP\Constants\Entity as E;
 use RZP\Mail\Invoice\PaymentLinkServiceBase;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\FileStore;
 use RZP\Jobs\Invoice\BatchNotify as InvoiceBatchNotifyJob;
 
 class Service extends Base\Service
@@ -546,6 +546,7 @@ class Service extends Base\Service
      * @return string|null
      * @throws \RZP\Exception\BadRequestException
      */
+
     public function getInvoicePdfSignedUrl(string $id, bool $download = false)
     {
         $invoice = $this->repo
@@ -574,7 +575,7 @@ class Service extends Base\Service
 
         $downloadAs = $download ? $invoice->getPdfDisplayName() : null;
 
-        return (new FileStore\Accessor)->getSignedUrlOfFile($pdf, $downloadAs);
+        return (new FileUploadUfh())->getSignedUrl($invoice);
     }
 
     public function issueInvoicesOfBatch(string $batchId, array $input): array

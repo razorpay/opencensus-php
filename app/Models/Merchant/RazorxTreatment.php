@@ -67,6 +67,8 @@ final class RazorxTreatment
     // Experiment to enable UFH Cloudfront for merchant documents upload
     const PG_ONBOARDING_CLIENT_CLOUDFRONT_EXP = 'pg_onboarding_client_cloudfront_exp';
 
+    const INVOICE_CLOUDFRONT_ONBOARDING ='invoice_cloudfront_onborading';
+
     const OLD_TO_NEW_IFSC_FOR_MERGED_BANK = 'old_to_new_ifsc_for_merged_bank';
 
     //

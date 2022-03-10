@@ -6,6 +6,7 @@ use Config;
 use RZP\Trace\TraceCode;
 use RZP\Services\UfhService as BaseUfhClient;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use RZP\Models\FileStore\Type;
 
 class UfhService extends BaseUfhClient
 {
@@ -39,7 +40,7 @@ class UfhService extends BaseUfhClient
         // this mock service is being used in test cases . We should not change the file location of input file
         // But in some test cases we are doing that
         //
-        if ($ext !== 'png')
+        if (($ext !== 'png') and ($type !== Type::INVOICE_PDF))
         {
             $movedFile = $file->move(storage_path('files/filestore'), $storageFileName . '.' . $ext);
         }

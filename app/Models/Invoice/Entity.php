@@ -1865,14 +1865,19 @@ class Entity extends Base\PublicEntity
     /**
      * Gets the most recent invoice pdf file, or null
      *
-     * @return FileStore\Entity|null
+     * @return array
      */
     public function pdf()
     {
-        return $this->files()
-                    ->where(FileStore\Entity::TYPE, '=', FileStore\Type::INVOICE_PDF)
-                    ->latest()
-                    ->first();
+        $response = (new FileUploadUfh())->getFiles($this);
+
+        if($response['count'] == 0)
+        {
+            return null;
+        }
+
+        //didnt find any need to convert the ufh response to an local file instance, will change once I find it.
+        return $response;
     }
 
     // -------------------------------------- End Relations ----------

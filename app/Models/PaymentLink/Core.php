@@ -947,11 +947,9 @@ class Core extends Base\Core
             return $response;
         }
 
-        $downloadAs = $invoice->getPdfDisplayName();
-
-        $pdfUrl = Tracer::inSpan(['name' => 'payment_page.invoice.get_signed_url'], function() use($pdf, $downloadAs)
+        $pdfUrl = Tracer::inSpan(['name' => 'payment_page.invoice.get_signed_url'], function() use($invoice)
         {
-            return (new FileStore\Accessor)->getSignedUrlOfFile($pdf, $downloadAs);
+            return (new Invoice\FileUploadUfh())->getSignedUrl($invoice);
         });
 
         $response['receipt_download_url'] = $pdfUrl;

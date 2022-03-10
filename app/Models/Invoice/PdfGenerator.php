@@ -13,6 +13,9 @@ use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
+use RZP\Services\UfhService;
+use Illuminate\Http\UploadedFile;
+use RZP\Services\Mock\UfhService as MockUfhService;
 
 class PdfGenerator extends Base\Core
 {
@@ -36,6 +39,7 @@ class PdfGenerator extends Base\Core
     const INVOICE_PDF_PP_CSS_PATH      = '/invoice.css';
     const INVOICE_PDF_SUB_TEMPLATE_PATH = '/invoice_subscription.mustache';
     const INVOICE_PDF_SUB_CSS_PATH      = '/invoice.css';
+    const LOCAL_FILE                    = 'local_file';
 
     protected $invoicejsBaseUrl;
     protected $invoice;
@@ -66,17 +70,63 @@ class PdfGenerator extends Base\Core
 
         $this->trace->histogram(Metric::INVOICE_PDF_GEN_DURATION_MILLISECONDS, $duration);
 
-        return (new FileStore\Creator())
-                    ->name($this->invoice->getPdfFilename())
-                    ->content($pdfContent)
-                    ->extension(FileStore\Format::PDF)
-                    ->mime('application/pdf')
-                    ->store(FileStore\Store::S3)
-                    ->entity($this->invoice)
-                    ->merchant($this->invoice->merchant)
-                    ->type(FileStore\Type::INVOICE_PDF)
-                    ->save()
-                    ->getFileInstance();
+        $file = (new FileStore\Creator())
+            ->name($this->invoice->getPdfFilename())
+            ->content($pdfContent)
+            ->extension(FileStore\Format::PDF)
+            ->mime('application/pdf')
+            ->store(FileStore\Store::LOCAL)
+            ->entity($this->invoice)
+            ->merchant($this->invoice->merchant)
+            ->type(FileStore\Type::INVOICE_PDF)
+            ->save()
+            ->getFileInstance();
+
+        $localFilePath = $file->getFullFilePath();
+
+        $uploadedFile = new UploadedFile(
+            $localFilePath,
+            $this->invoice->getPdfFilename(). '.pdf',
+            'application/pdf',
+            filesize($localFilePath),
+            null,
+            true
+        );
+
+        try
+        {
+            $filenameWithoutExt = str_before($uploadedFile->getClientOriginalName(), '.' . $uploadedFile->getClientOriginalExtension());
+
+            $uploadFilename = $filenameWithoutExt;
+
+            $ufhService  = (new FileUploadUfh())->getUfhService();
+
+            if($ufhService !== null)
+            {
+                $ufhResponse = $ufhService->uploadFileAndGetUrl(
+                    $uploadedFile,
+                    $uploadFilename,
+                    FileStore\Type::INVOICE_PDF,
+                    $this->invoice
+                );
+
+                $this->trace->info(
+                    TraceCode::INVOICE_IMAGE_UFH_FILE_UPLOAD_RESPONSE,
+                    $ufhResponse
+                );
+            }
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->info(
+                TraceCode::INVOICE_IMAGE_UFH_FILE_UPLOAD_FAILED,
+                [
+                    'Error message' => $ex->getMessage(),
+                ]
+            );
+        }
+
+        return $file;
     }
 
     protected function getPdfContent(string $html): string

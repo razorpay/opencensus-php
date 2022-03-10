@@ -595,7 +595,7 @@ class ViewDataSerializerHosted extends Base\Core
                 return;
             }
 
-            $signedPdfUrl = (new FileStore\Accessor)->getSignedUrlOfFile($pdf, $this->invoice->getPdfDisplayName());
+            $signedPdfUrl = (new FileUploadUfh())->getSignedUrl($this->invoice);
 
             $serialized[Entity::SIGNED_PDF_URL] = $signedPdfUrl;
         }
