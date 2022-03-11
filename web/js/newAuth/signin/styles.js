@@ -2,17 +2,14 @@
 import Styled from 'styled-components';
 import View from '@razorpay/blade-old/src/atoms/View';
 import Text from '@razorpay/blade-old/src/atoms/Text';
-import { BANK_NAMES } from '../utils';
 import { media } from '../breakpoints';
-import { lightTheme as theme } from '@razorpay/blade-old/src/tokens/theme.web';
 import { getColor } from '@razorpay/blade-old/src/_helpers/theme';
+import { getPageBackgroundColor } from './theme';
 
 export const Container = Styled(View)`
   overflow-y: auto;
   height: 100%;
-  background: ${({ org }) =>
-    ((org === BANK_NAMES.ICICI || org === BANK_NAMES.AXIS) && theme.colors.background[600]) ||
-    'linear-gradient(0deg, rgba(2, 42, 156, 0.3), rgba(2, 42, 156, 0.3)), linear-gradient(232.85deg, #020529 -52%, #000B8E 198.1%);'};
+  background: ${({ org }) => getPageBackgroundColor(org)}
 `;
 
 export const CustomLinkButton = Styled(View)`

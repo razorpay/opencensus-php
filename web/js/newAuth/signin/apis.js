@@ -1,4 +1,6 @@
+/* eslint valid-jsdoc: 0 */
 import ajax from 'common/utils/ajax';
+import { BANK_NAMES } from 'newAuth/utils';
 import { getChannelID } from '../../../js/merchant/models/GrowthService/commonUtils';
 
 const ENDPOINTS = {
@@ -29,6 +31,11 @@ export const fetchLoginCards = () => {
   });
 };
 
+/**
+ * @param {import("./types").OrgData} data
+ * @TODO: Fix banking URL inconsistencies
+ * @see https://razorpay.slack.com/archives/CTM086NSF/p1646307229892829
+ */
 export const transformFetchOrgData = (data) => {
   return {
     logo: data.login_logo_url || 'img/logo_full.png',
@@ -38,7 +45,13 @@ export const transformFetchOrgData = (data) => {
     businessName: data.business_name,
     // hiding the signup button for banking URLs from frontend for now until backend fixes the inconsistency
     isSignupAllowed: data.custom_code === 'rzp',
-    backgroundImgUrl: data.background_image_url,
+    // Kotak bank's backgroundImageUrl is showing a blank white image
+    // thus we are removing it, which will result in fallback of .logo being in use
+    backgroundImgUrl: data.custom_code === BANK_NAMES.KKBK ? null : data.background_image_url,
+    styles: {
+      navBg: data?.merchant_styles?.navBg,
+      primary: data?.merchant_styles?.primary,
+    },
   };
 };
 
