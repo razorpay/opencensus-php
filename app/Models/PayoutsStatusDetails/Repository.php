@@ -31,16 +31,11 @@ class Repository extends Base\Repository
 
     public function fetchPayoutStatusDetailsLatest(string $payoutId)
     {
-        $columnsToSelect = [
-            Entity::REASON,
-            Entity::DESCRIPTION,
-        ];
-
         $payoutIdColumn = $this->repo->payouts_status_details->dbColumn(Entity::PAYOUT_ID);
         $createdAtColumn = $this->repo->payouts_status_details->dbColumn(Entity::CREATED_AT);
 
         return $this->newQuery()
-                    ->select($columnsToSelect)
+                    ->select(Table::PAYOUTS_STATUS_DETAILS.'.*')
                     ->where($payoutIdColumn, $payoutId)
                     ->orderBy($createdAtColumn,'desc')
                     ->first();

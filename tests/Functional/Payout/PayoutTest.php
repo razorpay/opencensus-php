@@ -13148,6 +13148,9 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals('beneficiary_bank_rejected',$statusDetails['reason']);
         $this->assertEquals('Payout rejected by beneficiary bank. Please contact beneficiary bank.',$statusDetails['description']);
 
+        $payoutResponse = $payout->toArrayPublic();
+        $this->assertEquals('beneficiary_bank', $payoutResponse['status_details']['source']);
+
         $payoutReversedEventData = $this->testData[__FUNCTION__];
 
         $this->validateStorkWebhookFireEvent('payout.reversed', $payoutReversedEventData, $payloadReversed);
@@ -13198,6 +13201,9 @@ class PayoutTest extends OAuthTestCase
 
         $this->assertEquals('beneficiary_bank_rejected',$statusDetails['reason']);
         $this->assertEquals('Payout rejected by beneficiary bank. Please contact beneficiary bank.',$statusDetails['description']);
+
+        $payoutResponse = $payout->toArrayPublic();
+        $this->assertEquals('beneficiary_bank', $payoutResponse['status_details']['source']);
 
         $payoutReversedEventData = $this->testData[__FUNCTION__];
 

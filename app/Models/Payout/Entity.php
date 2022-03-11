@@ -2390,8 +2390,21 @@ class Entity extends Base\PublicEntity
 
             if($statusDetails['reason'] !== null)
             {
-                $source = PayoutsStatusDetails\ReasonSourceMap::$statusDetailsReasonToSourceMap[$statusDetails['reason']];
+                if($statusDetails['status'] !== Status::REVERSED  or $statusDetails['status'] !== Status::FAILED)
+                {
+                    $source = PayoutsStatusDetails\ReasonSourceMap::$statusDetailsReasonToSourceMap[$statusDetails['reason'] ?? null];
+                }
+
+                else
+                {
+                    $error        = new PayoutError($this);
+
+                    $errorDetails = $error->getErrorDetails();
+
+                    $source       = $errorDetails['source'] ?? null;
+                }
             }
+
             else
             {
                 $source = null;
@@ -2435,8 +2448,21 @@ class Entity extends Base\PublicEntity
                 {
                     if($statusArray['reason'] !== null)
                     {
-                        $source = PayoutsStatusDetails\ReasonSourceMap::$statusDetailsReasonToSourceMap[$statusArray['reason']];
+                        if($statusArray['status'] !== Status::REVERSED  or $statusArray['status'] !== Status::FAILED)
+                        {
+                            $source = PayoutsStatusDetails\ReasonSourceMap::$statusDetailsReasonToSourceMap[$statusArray['reason']] ?? null;
+                        }
+
+                        else
+                        {
+                            $error        = new PayoutError($this);
+
+                            $errorDetails = $error->getErrorDetails();
+
+                            $source       = $errorDetails['source'] ?? null;
+                        }
                     }
+
                     else
                     {
                         $source = null;

@@ -14,6 +14,8 @@ class StatusReasonMap
 
     const PAYOUT_BANK_PROCESSING                = 'payout_bank_processing';
 
+    const PAYOUT_PROCESSING                     = 'payout_processing';
+
     const PAYOUT_PROCESSED                      = 'payout_processed';
 
     const LOW_BALANCE                           = 'low_balance';
