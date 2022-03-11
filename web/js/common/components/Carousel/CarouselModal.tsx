@@ -77,6 +77,12 @@ const CarouselModal = ({
     } else {
       const user = getUser();
       const { IlBv2LyCzsyZqI: { variables: { result = '' } = {} } = {} } = user?.splitz_experiments; // TODO: remove this hardcode exp id once splitz evaluate api is ready
+      bannerInitiatedEvent(
+        'carousel_banner_notification1_cta2',
+        banner_id,
+        bannerOrder,
+        tracking_data,
+      );
 
       return sendDataToSalesForce(
         {
