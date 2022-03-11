@@ -226,6 +226,10 @@ class SupportBody extends Component {
     window.open('https://razorpay.com/knowledgebase/#merchant', '_blank');
     trackSupportOptions('faqs');
   };
+
+  handleTicketCreatingSuccess = (data) => {
+    TicketSystemEmitter.emit('ticket-created', data);
+  };
   render() {
     const { notifyCount, isOpened, onToggle, isCallEnabled, scheduleCallConfig, user } = this.props;
     const { handleClick, openDashboardGuide } = this;
@@ -304,6 +308,7 @@ class SupportBody extends Component {
               // removing hash to support frontend care package
               module={careSupportSection.module?.replace('#', '')}
               initialData={careSupportSection.initialData}
+              onSuccess={this.handleTicketCreatingSuccess}
               onClose={() => {
                 this.setState({
                   careSupportSection: null,

@@ -22,13 +22,13 @@ import {
   OPEN_DOCUMENTATION,
   CLICK_ON_MANAGE_ALERTS,
 } from './ga';
-import { CreateTicketEmitter } from 'merchant/views/TicketSupport/utils';
 import lazy from 'merchant/routes/LazyLoader';
 import DocsLink from 'merchant/components/DocsLink';
 import ReserveBalance from 'merchant/views/Account/Balances/ReserveBalance';
 import HeaderAction from 'common/ui/HeaderAction';
 import CurrentBalance from 'merchant/views/Account/Balances/CurrentBalance';
 import Loader from 'common/ui/Loader';
+import { TicketSystemEmitter } from 'merchant/care/init';
 
 const ManageBalanceAlert = lazy(() =>
   import(
@@ -171,9 +171,9 @@ class AddFundsContainer extends Component {
     }
   };
 
-  handleTicketCreation = (response) => {
+  handleTicketCreation = (data = {}) => {
     const payload = {
-      ticketNo: response?.data?.ticket_id,
+      ticketNo: data?.ticket_id,
       description: 'Please activate reserve balance and share VA details',
     };
     this.props.storeTicketDetails(payload);
@@ -183,9 +183,9 @@ class AddFundsContainer extends Component {
   };
 
   handleActivate = () => {
-    if (window.rzpTicketSystem && window.rzpTicketSystem.addEventListener) {
-      window.rzpTicketSystem.addEventListener('ticket-created', this.handleTicketCreation);
-      CreateTicketEmitter.emit('create-ticket', 'tickets');
+    TicketSystemEmitter.once('ticket-created', this.handleTicketCreation);
+    if (window.rzpTicketSystem && window.rzpTicketSystem.openModal) {
+      window.rzpTicketSystem.openModal(`#ticket`);
 
       if (document.getElementsByName('request-description')?.length > 0) {
         setTimeout(() => {
@@ -206,9 +206,9 @@ class AddFundsContainer extends Component {
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
     });
-    if (window.rzpTicketSystem) {
-      window.rzpTicketSystem.addEventListener('ticket-created', this.handleTicketCreation);
-      CreateTicketEmitter.emit('create-ticket', 'tickets');
+    TicketSystemEmitter.once('ticket-created', this.handleTicketCreation);
+    if (window.rzpTicketSystem && window.rzpTicketSystem.openModal) {
+      window.rzpTicketSystem.openModal(`#ticket`);
     }
   };
 
