@@ -271,8 +271,7 @@ class Repository extends Base\Repository
         return $this->newQueryWithConnection($this->getSlaveConnection())
             ->where(Entity::ORG_ID, $orgId)
             ->whereBetween(Entity::CREATED_AT, [$from, $to])
-            ->get()
-            ;
+            ->get();
     }
 
     public function fetchMerchantsActivatedBetweenForOrg($from, $to, $orgId)
@@ -1523,5 +1522,16 @@ class Repository extends Base\Repository
             ->whereNotIn($merchantId, $blacklistedMIDs);
 
         return $query->pluck($merchantId);
+    }
+
+    public function fetchMerchantsCreatedBetweenOfOrg($from, $to, $org = Org\Entity::RAZORPAY_ORG_ID)
+    {
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+            ->whereBetween(Entity::CREATED_AT, [$from, $to])
+            ->where(Entity::ORG_ID, '=' , $org)
+            ->where(Entity::BUSINESS_BANKING, '=', false)
+            ->get()
+            ->pluck(Entity::ID)
+            ->toArray();
     }
 }

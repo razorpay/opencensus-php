@@ -10,7 +10,7 @@ class SignupStartedDataCollector extends TimeBoundDbDataCollector
 {
     protected function collectDataWithinInterval($startTime, $endTime): CollectorDto
     {
-        $merchantIdList = $this->repo->merchant->fetchMerchantsCreatedBetween($startTime, $endTime);
+        $merchantIdList = $this->repo->merchant->fetchMerchantsCreatedBetweenOfOrg($startTime, $endTime);
 
         $data["merchantIds"] = $merchantIdList;
 

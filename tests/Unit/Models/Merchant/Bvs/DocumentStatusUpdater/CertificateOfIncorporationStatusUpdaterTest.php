@@ -50,6 +50,7 @@ class CertificateOfIncorporationStatusUpdaterTest extends TestCase
             ]
         ];
 
+        
         (new KafkaMessageProcessor)->process('api-bvs-validation-result-events', $kafkaEventPayload, 'live');
 
         $bvsValidation = $this->getDbEntityById('bvs_validation', $bvsValidation->getValidationId());
