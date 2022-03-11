@@ -2,8 +2,35 @@
 
 namespace RZP\Tests\P2p\Service\Base;
 
+use Carbon\Carbon;
+use RZP\Gateway\P2p\Upi\Sharp\Fields;
+use RZP\Gateway\P2p\Upi\Sharp\Actions\UpiAction;
+use RZP\Tests\P2p\Service\Base\Fixtures\Fixtures;
+
 class MandateHelper extends P2pHelper
 {
+
+    public function createMandate($gateway)
+    {
+        $request = [
+            Fields::TYPE                    => UpiAction::INCOMING_MANDATE_CREATE,
+            Fields::AMOUNT                  => 100,
+            Fields::AMOUNT_RULE             => 'MAX',
+            Fields::PAYER_VPA               => $this->fixtures->vpa(Fixtures::DEVICE_1)->getAddress(),
+            Fields::PAYEE_VPA               => 'username@randompsp',
+            Fields::VALIDITY_START          => Carbon::now()->getTimestamp(),
+            Fields::VALIDITY_END            => Carbon::now()->addDays(365)->getTimestamp(),
+            Fields::TRANSACTION_NOTE        => 'UPI',
+        ];
+
+        $content = [
+            'content' => json_encode($request)
+        ];
+
+        $response = $this->callback($gateway, $content);
+
+        return $response;
+    }
 
     public function fetchAll(array $content = [])
     {

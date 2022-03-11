@@ -18,4 +18,5 @@ class ClAction
     const CHANGE                = 'change';
     const BALANCE               = 'balance';
     const DEBIT                 = 'debit';
+    const RECURRING_DEBIT       = 'recurring_debit';
 }

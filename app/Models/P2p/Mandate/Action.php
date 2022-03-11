@@ -3,6 +3,7 @@
 namespace RZP\Models\P2p\Mandate;
 
 use RZP\Models\P2p\Base;
+use RZP\Http\Controllers\P2p\Requests;
 
 class Action extends Base\Action
 {
@@ -44,4 +45,8 @@ class Action extends Base\Action
 
     const REVOKE                                    = 'revoke';
     const REVOKE_SUCCESS                            = 'revokeSuccess';
+
+    protected $actionToRoute = [
+        self::INITIATE_AUTHORIZE        => Requests::P2P_CUSTOMER_MANDATE_AUTHORIZE,
+    ];
 }

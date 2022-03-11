@@ -45,6 +45,15 @@ class Gateway extends Base\Gateway
         return $gateway->response();
     }
 
+    public function mandate(Context $context)
+    {
+        $gateway = Factory::make($context, Contracts\MandateGateway::class);
+
+        $this->handleGatewaySwitch($gateway, __FUNCTION__);
+
+        return $gateway->response();
+    }
+
     public function upi(Context $context)
     {
         $gateway = Factory::make($context, Contracts\UpiGateway::class);

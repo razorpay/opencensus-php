@@ -28,19 +28,25 @@ class Processor extends Base\Processor
         return $mandate->toArrayPublic();
     }
 
+    /**
+     * @param array $input
+     * This is the method to initiate authorize mandate flow
+     * @return array
+     * @throws \RZP\Exception\RuntimeException
+     * @throws \Throwable
+     */
     public function initiateAuthorize(array $input): array
     {
         $this->initialize(Action::INITIATE_AUTHORIZE, $input);
 
-        $mandate = $this->core->fetch($input['id']);
+        $mandate = $this->core->fetch($input[Entity::ID]);
 
         //TODO: implement validator logic
 
-        //TODO: initiate gateway callback
+        $this->initiateCallGateway($mandate);
 
-        //TODO: gateway specific response
+        return $this->callGateway();
 
-        return $mandate->toArrayPublic();
     }
 
     public function authorizeMandate(array $input): array
@@ -176,5 +182,18 @@ class Processor extends Base\Processor
         //TODO: gateway specific response
 
         return $mandate->toArrayPublic();
+    }
+
+    protected function initiateCallGateway(Entity $mandate)
+    {
+        $this->gatewayInput->putMany([
+             Entity::MANDATE      => $mandate ,
+             Entity::PAYER        => $mandate->payer ,
+             Entity::PAYEE        => $mandate->payee ,
+             Entity::BANK_ACCOUNT => $mandate->bank_account ,
+             Entity::UPI          => $mandate->upi ,
+         ]);
+
+        $this->callbackInput->push($mandate->getPublicId());
     }
 }

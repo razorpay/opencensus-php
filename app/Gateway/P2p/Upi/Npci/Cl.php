@@ -4,14 +4,17 @@ namespace RZP\Gateway\P2p\Upi\Npci;
 
 use Carbon\Carbon;
 use RZP\Models\P2p\Vpa;
-use RZP\Models\P2p\BankAccount;
+use RZP\Models\P2p\Mandate;
 use RZP\Models\P2p\Transaction;
+use RZP\Models\P2p\BankAccount;
 use RZP\Gateway\P2p\Base\Request;
+use RZP\Models\P2p\Mandate\UpiMandate;
 use RZP\Models\P2p\Base\Libraries\ArrayBag;
 
 /**
  * Base version of NPCI Library which is V_1_5 (1.5)
  * Class Cl
+ *
  * @package RZP\Gateway\P2p\Upi\Npci
  */
 class Cl
@@ -29,8 +32,8 @@ class Cl
 
     public function __construct(ArrayBag $handle, array $input)
     {
-        $this->handle   = $handle;
-        $this->data     = new ArrayBag();
+        $this->handle = $handle;
+        $this->data   = new ArrayBag();
 
         $this->setData($input);
     }
@@ -45,7 +48,18 @@ class Cl
     }
 
     /**
+     * Whether the CL token should be registered or rotated
+     *
+     * @return bool
+     */
+    public function shouldRegisterApp(): bool
+    {
+        return ($this->shouldRegisterToken() or $this->shouldRotateToken());
+    }
+
+    /**
      * Whether the CL was ever registered for the device
+     *
      * @return bool
      */
     public function shouldRegisterToken(): bool
@@ -57,6 +71,7 @@ class Cl
 
     /**
      * Whether the CL token is expiring for the device
+     *
      * @return bool
      */
     public function shouldRotateToken(): bool
@@ -68,16 +83,8 @@ class Cl
     }
 
     /**
-     * Whether the CL token should be registered or rotated
-     * @return bool
-     */
-    public function shouldRegisterApp(): bool
-    {
-        return ($this->shouldRegisterToken() or $this->shouldRotateToken());
-    }
-
-    /**
      * Device registration request
+     *
      * @return Request
      */
     public function registerRequest(): Request
@@ -85,88 +92,16 @@ class Cl
         $request = $this->request(ClAction::GET_CHALLENGE);
 
         $request->setContent([
-            ClOutput::VECTOR => [
-                ClOutput::INITIAL,
-                $this->data->get(ClInput::DEVICE_ID),
-            ],
-            ClOutput::COUNT => 2,
-        ]);
+                                 ClOutput::VECTOR => [
+                                     ClOutput::INITIAL,
+                                     $this->data->get(ClInput::DEVICE_ID),
+                                 ],
+                                 ClOutput::COUNT  => 2,
+                             ]);
 
         $request->setCallback([
-            ClOutput::TYPE    => ClOutput::INITIAL,
-        ]);
-
-        return $request;
-    }
-
-    /**
-     * Device rotation request
-     * @return Request
-     */
-    public function rotateRequest(): Request
-    {
-        $request = $this->request(ClAction::GET_CHALLENGE);
-
-        $request->setContent([
-            ClOutput::VECTOR => [
-                ClOutput::ROTATE,
-                $this->data->get(ClInput::DEVICE_ID),
-            ],
-            ClOutput::COUNT => 2,
-        ]);
-
-        $request->setCallback([
-            ClOutput::TYPE    => ClOutput::ROTATE,
-        ]);
-
-        return $request;
-    }
-
-    /**
-     * App registration request
-     * @return Request
-     */
-    public function registerAppRequest(): Request
-    {
-        $request = $this->request(ClAction::REGISTER_APP);
-
-        $request->setContent([
-            ClOutput::VECTOR => [
-                $this->data->get(ClInput::APP_ID),
-                $this->data->get(ClInput::MOBILE_NUMBER),
-                $this->data->get(ClInput::DEVICE_ID),
-                $this->generateHmac(),
-            ],
-            ClOutput::COUNT => 4,
-        ]);
-
-        $request->setCallback([
-            ClOutput::TOKEN    => $this->data->get(ClInput::CL_TOKEN),
-            ClOutput::EXPIRY   => Carbon::now()->addDays(45)->getTimestamp(),
-        ]);
-
-        return $request;
-    }
-
-    public function getCredentialRequest(string $action): Request
-    {
-        $this->getCredentialAction = $action;
-
-        $request = $this->request(ClAction::GET_CREDENTIAL);
-
-        $request->setContent([
-            ClOutput::VECTOR => [
-                $this->getCredKeyCode(),
-                $this->getCredXmlPayload(),
-                $this->getCredControls(),
-                $this->getCredConfiguration(),
-                $this->getCredSalt(),
-                $this->getCredTrust(),
-                $this->getCredPayInfo(),
-                $this->getCredLanguagePref(),
-            ],
-            ClOutput::COUNT => 8,
-        ]);
+                                  ClOutput::TYPE => ClOutput::INITIAL,
+                              ]);
 
         return $request;
     }
@@ -177,6 +112,57 @@ class Cl
 
         $request->setSdk(ClOutput::NPCI);
         $request->setAction($action);
+
+        return $request;
+    }
+
+    /**
+     * Device rotation request
+     *
+     * @return Request
+     */
+    public function rotateRequest(): Request
+    {
+        $request = $this->request(ClAction::GET_CHALLENGE);
+
+        $request->setContent([
+                                 ClOutput::VECTOR => [
+                                     ClOutput::ROTATE,
+                                     $this->data->get(ClInput::DEVICE_ID),
+                                 ],
+                                 ClOutput::COUNT  => 2,
+                             ]);
+
+        $request->setCallback([
+                                  ClOutput::TYPE => ClOutput::ROTATE,
+                              ]);
+
+        return $request;
+    }
+
+    /**
+     * App registration request
+     *
+     * @return Request
+     */
+    public function registerAppRequest(): Request
+    {
+        $request = $this->request(ClAction::REGISTER_APP);
+
+        $request->setContent([
+                                 ClOutput::VECTOR => [
+                                     $this->data->get(ClInput::APP_ID),
+                                     $this->data->get(ClInput::MOBILE_NUMBER),
+                                     $this->data->get(ClInput::DEVICE_ID),
+                                     $this->generateHmac(),
+                                 ],
+                                 ClOutput::COUNT  => 4,
+                             ]);
+
+        $request->setCallback([
+                                  ClOutput::TOKEN  => $this->data->get(ClInput::CL_TOKEN),
+                                  ClOutput::EXPIRY => Carbon::now()->addDays(45)->getTimestamp(),
+                              ]);
 
         return $request;
     }
@@ -196,7 +182,31 @@ class Cl
         return $encrypted;
     }
 
+    public function getCredentialRequest(string $action): Request
+    {
+        $this->getCredentialAction = $action;
+
+        $request = $this->request(ClAction::GET_CREDENTIAL);
+
+        $request->setContent([
+                                 ClOutput::VECTOR => [
+                                     $this->getCredKeyCode(),
+                                     $this->getCredXmlPayload(),
+                                     $this->getCredControls(),
+                                     $this->getCredConfiguration($action),
+                                     $this->getCredSalt($action),
+                                     $this->getCredTrust(),
+                                     $this->getCredPayInfo(),
+                                     $this->getCredLanguagePref(),
+                                 ],
+                                 ClOutput::COUNT  => 8,
+                             ]);
+
+        return $request;
+    }
+
     // Get Credentials Methods
+
     private function getCredKeyCode()
     {
         return 'NPCI';
@@ -211,15 +221,14 @@ class Cl
     {
         $creds = $this->data->get(ClInput::BANK_ACCOUNT)[BankAccount\Entity::CREDS] ?? [];
 
-        $transformed = array_map(function($cred)
-        {
+        $transformed = array_map(function($cred) {
             if (empty($cred[BankAccount\Credentials::SET]) === false)
             {
                 return [
-                    ClOutput::TYPE      => $cred[BankAccount\Credentials::TYPE],
-                    ClOutput::SUB_TYPE  => $cred[BankAccount\Credentials::SUB_TYPE],
-                    ClOutput::DTYPE     => $cred[BankAccount\Credentials::FORMAT],
-                    ClOutput::DLENGTH   => $cred[BankAccount\Credentials::LENGTH],
+                    ClOutput::TYPE     => $cred[BankAccount\Credentials::TYPE],
+                    ClOutput::SUB_TYPE => $cred[BankAccount\Credentials::SUB_TYPE],
+                    ClOutput::DTYPE    => $cred[BankAccount\Credentials::FORMAT],
+                    ClOutput::DLENGTH  => $cred[BankAccount\Credentials::LENGTH],
                 ];
             }
         }, $creds);
@@ -230,44 +239,89 @@ class Cl
         ];
     }
 
-    private function getCredConfiguration()
+    private function getCredConfiguration(string $type)
     {
-        return [
-            // NOTE: Not needed for actual npci integration
-            'txnId'                 => $this->data->get(ClInput::TXN_ID),
-            'action'                => $this->getCredentialAction,
-        ];
+        switch ($type)
+        {
+            case ClAction::RECURRING_DEBIT:
+                return [
+                    // NOTE: Not needed for actual npci integration
+                    'txnId'  => $this->data->get(ClInput::MANDATE)[Mandate\Entity::ID],
+                    'action' => $this->getCredentialAction,
+                ];
+            default:
+                return [
+                    // NOTE: Not needed for actual npci integration
+                    'txnId'  => $this->data->get(ClInput::TXN_ID),
+                    'action' => $this->getCredentialAction,
+                ];
+        }
     }
 
-    private function getCredSalt()
+    private function getCredSalt(string $type)
     {
-        // Order is important thus we declare first
-        $salt = [
-            ClOutput::TXN_ID        => $this->data->get(ClInput::TXN_ID),
-            ClOutput::TXN_AMOUNT    => null,
-            ClOutput::DEVICE_ID     => $this->data->get(ClInput::DEVICE_ID),
-            ClOutput::APP_ID        => $this->data->get(ClInput::APP_ID),
-            ClOutput::MOBILE_NUMBER => $this->data->get(ClInput::MOBILE_NUMBER),
-            ClOutput::PAYER_ADDR    => null,
-            ClOutput::PAYEE_ADDR    => null,
-        ];
-
-        if ($this->getCredentialAction === ClAction::DEBIT)
+        switch ($type)
         {
-            $txnId = $this->data->get(ClInput::UPI)[Transaction\UpiTransaction\Entity::NETWORK_TRANSACTION_ID];
-            $salt[ClOutput::TXN_ID] = $txnId;
+            case ClAction::RECURRING_DEBIT:
+                // Order is important thus we declare first
+                $salt = [
+                    ClOutput::MANDATE_ID     => $this->data->get(ClInput::MANDATE)[Mandate\Entity::ID],
+                    ClOutput::MANDATE_AMOUNT => null,
+                    ClOutput::DEVICE_ID      => $this->data->get(ClInput::DEVICE_ID),
+                    ClOutput::APP_ID         => $this->data->get(ClInput::APP_ID),
+                    ClOutput::MOBILE_NUMBER  => $this->data->get(ClInput::MOBILE_NUMBER),
+                    ClOutput::PAYER_ADDR     => null,
+                    ClOutput::PAYEE_ADDR     => null,
+                ];
 
-            $amount = $this->data->get(ClInput::TRANSACTION)[Transaction\Entity::AMOUNT];
-            $salt[ClOutput::TXN_AMOUNT] = amount_format_IN($amount);
+                if ($this->getCredentialAction === ClAction::RECURRING_DEBIT)
+                {
+                    $txnId                  = $this->data->get(Mandate\Entity::UPI)[UpiMandate\Entity::NETWORK_TRANSACTION_ID];
+                    $salt[ClOutput::TXN_ID] = $txnId;
 
-            $payerVpa = $this->data->get(ClInput::PAYER)[Vpa\Entity::ADDRESS];
-            $salt[ClOutput::PAYER_ADDR] = $payerVpa;
+                    $amount                     = $this->data->get(ClInput::MANDATE)[Mandate\Entity::AMOUNT];
+                    $salt[ClOutput::TXN_AMOUNT] = amount_format_IN($amount);
 
-            $payeeVpa = $this->data->get(ClInput::PAYEE)[Vpa\Entity::ADDRESS];
-            $salt[ClOutput::PAYEE_ADDR] = $payeeVpa;
+                    $payerVpa                   = $this->data->get(ClInput::PAYER)[Vpa\Entity::ADDRESS];
+                    $salt[ClOutput::PAYER_ADDR] = $payerVpa;
+
+                    $payeeVpa                   = $this->data->get(ClInput::PAYEE)[Vpa\Entity::ADDRESS];
+                    $salt[ClOutput::PAYEE_ADDR] = $payeeVpa;
+
+                    $salt[ClOutput::CRED_TYPE] = ClInput::MANDATE;
+                }
+
+                return array_filter($salt);
+
+            default:
+                $salt = [
+                    ClOutput::TXN_ID        => $this->data->get(ClInput::TXN_ID),
+                    ClOutput::TXN_AMOUNT    => null,
+                    ClOutput::DEVICE_ID     => $this->data->get(ClInput::DEVICE_ID),
+                    ClOutput::APP_ID        => $this->data->get(ClInput::APP_ID),
+                    ClOutput::MOBILE_NUMBER => $this->data->get(ClInput::MOBILE_NUMBER),
+                    ClOutput::PAYER_ADDR    => null,
+                    ClOutput::PAYEE_ADDR    => null,
+                ];
+
+                if ($this->getCredentialAction === ClAction::DEBIT)
+                {
+                    $txnId                  = $this->data->get(ClInput::UPI)[Transaction\UpiTransaction\Entity::NETWORK_TRANSACTION_ID];
+                    $salt[ClOutput::TXN_ID] = $txnId;
+
+                    $amount                     = $this->data->get(ClInput::TRANSACTION)[Transaction\Entity::AMOUNT];
+                    $salt[ClOutput::TXN_AMOUNT] = amount_format_IN($amount);
+
+                    $payerVpa                   = $this->data->get(ClInput::PAYER)[Vpa\Entity::ADDRESS];
+                    $salt[ClOutput::PAYER_ADDR] = $payerVpa;
+
+                    $payeeVpa                   = $this->data->get(ClInput::PAYEE)[Vpa\Entity::ADDRESS];
+                    $salt[ClOutput::PAYEE_ADDR] = $payeeVpa;
+                }
+
+                return array_filter($salt);
         }
 
-        return array_filter($salt);
     }
 
     private function getCredTrust()
@@ -281,36 +335,36 @@ class Cl
 
         if ($this->getCredentialAction === ClAction::DEBIT)
         {
-            $value = $this->data->get(ClInput::PAYEE)[Vpa\Entity::BENEFICIARY_NAME];
-            $input = [
+            $value  = $this->data->get(ClInput::PAYEE)[Vpa\Entity::BENEFICIARY_NAME];
+            $input  = [
                 ClOutput::NAME  => ClOutput::PAYEE_NAME,
                 ClOutput::VALUE => $value,
             ];
             $info[] = $input;
 
-            $value = $this->data->get(ClInput::TRANSACTION)[Transaction\Entity::DESCRIPTION];
-            $input = [
+            $value  = $this->data->get(ClInput::TRANSACTION)[Transaction\Entity::DESCRIPTION];
+            $input  = [
                 ClOutput::NAME  => ClOutput::NOTE,
                 ClOutput::VALUE => $value,
             ];
             $info[] = $input;
 
-            $value = $this->data->get(ClInput::UPI)[Transaction\UpiTransaction\Entity::REF_ID];
-            $input = [
+            $value  = $this->data->get(ClInput::UPI)[Transaction\UpiTransaction\Entity::REF_ID];
+            $input  = [
                 ClOutput::NAME  => ClOutput::REF_ID,
                 ClOutput::VALUE => $value,
             ];
             $info[] = $input;
 
-            $value = $this->data->get(ClInput::UPI)[Transaction\UpiTransaction\Entity::REF_URL];
-            $input = [
+            $value  = $this->data->get(ClInput::UPI)[Transaction\UpiTransaction\Entity::REF_URL];
+            $input  = [
                 ClOutput::NAME  => ClOutput::REF_URL,
                 ClOutput::VALUE => $value,
             ];
             $info[] = $input;
 
-            $value = $this->data->get(ClInput::BANK_ACCOUNT)[BankAccount\Entity::MASKED_ACCOUNT_NUMBER];
-            $input = [
+            $value  = $this->data->get(ClInput::BANK_ACCOUNT)[BankAccount\Entity::MASKED_ACCOUNT_NUMBER];
+            $input  = [
                 ClOutput::NAME  => ClOutput::ACCOUNT,
                 ClOutput::VALUE => $value,
             ];

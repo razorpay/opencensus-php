@@ -88,6 +88,8 @@ class Scenario
     const TR601     = 'TR601';
     const TR602     = 'TR602';
 
+    // Mandate Scenarios
+    const MA101     = 'MA101';
     /**
      *
      *  self::SCENARIO_ID => [
@@ -571,6 +573,13 @@ class Scenario
             'desc'      => 'Respond with error code',
             'code'      => null,
             'sub'       => '102',
+        ],
+        self::MA101 => [
+            'entity'    => 'mandate',
+            'action'    => 'initiatePay',
+            'success'   => false,
+            'desc'      => 'Beneficiary Bank Down',
+            'code'      => ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
         ],
     ];
 

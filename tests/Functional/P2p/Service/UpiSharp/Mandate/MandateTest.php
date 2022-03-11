@@ -7,6 +7,7 @@ use RZP\Models\Base\PublicEntity;
 use RZP\Models\P2p\Mandate\Entity;
 use RZP\Gateway\P2p\Upi\Sharp\Fields;
 use RZP\Exception\BadRequestException;
+use RZP\Http\Controllers\P2p\Requests;
 use RZP\Tests\P2p\Service\UpiSharp\TestCase;
 use RZP\Gateway\P2p\Upi\Sharp\Actions\UpiAction;
 use RZP\Tests\P2p\Service\Base\Fixtures\Fixtures;
@@ -93,11 +94,20 @@ class MandateTest extends TestCase
     {
         $helper = $this->getMandateHelper();
 
-        $this->expectException(BadRequestException::class);
+        $helper->createMandate($this->gateway);
 
-        $this->expectExceptionMessage('The id provided does not exist');
+        $response = $helper->fetchAll();
 
-        $response = $helper->initiateAuthorize('IlS1WhGL84jAoR', []);
+        $mandateId = $response['items'][0]['id'];
+
+        $request = $helper->initiateAuthorize(substr($mandateId, 5), []);
+
+        $this->handleNpciClRequest(
+            $request,
+            'getCredential',
+            $this->expectedCallback(Requests::P2P_CUSTOMER_MANDATE_AUTHORIZE, [$mandateId]),
+            [],
+            null);
     }
 
     public function testInitiateReject()

@@ -21,6 +21,7 @@ class ClOutput
     const SUB_TYPE          = 'subType';
     const DTYPE             = 'dtype';
     const DLENGTH           = 'dlength';
+    const CRED_TYPE         = 'credType';
 
     // GetCredential::SALT
     const TXN_ID            = CLInput::TXN_ID;
@@ -39,4 +40,9 @@ class ClOutput
     const REF_ID            = 'refId';
     const REF_URL           = 'refUrl';
     const ACCOUNT           = 'account';
+
+    // GetCredential::Mandate
+    const MANDATE_ID        = 'mandate_id';
+    const MANDATE_AMOUNT    = 'mandate_amount';
+
 }
