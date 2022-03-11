@@ -4288,6 +4288,13 @@ class Core extends Base\Core
             return true;
         }
 
+        $submit = $input[Entity::SUBMIT] ?? false;
+
+        if (empty($verificationStatus) === true and ($submit === '1'))
+        {
+            return true;
+        }
+
         //
         // check if there is any change in any field
         //

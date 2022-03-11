@@ -19,7 +19,7 @@ class SignUpEventRequest extends FriendBuyRequest
     {
         parent::__construct();
 
-        $this->email = $m2mEntity->getValueFromMetaData(Constants::EMAIL)??$m2mEntity->getValueFromMetaData(M2MConstants::MOBILE);
+        $this->email = $m2mEntity->getValueFromMetaData(Constants::EMAIL);
 
         $this->customerId = $m2mEntity->getRefereeId();
 

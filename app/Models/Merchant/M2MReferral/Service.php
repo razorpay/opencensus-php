@@ -113,7 +113,7 @@ class Service extends Base\Service
 
     protected function postSignUpEvent($m2mReferral)
     {
-        if (empty($m2mReferral->getValueFromMetaData(FB::EMAIL)) === false or empty($m2mReferral->getValueFromMetaData(Constants::MOBILE)) === false)
+        if (empty($m2mReferral->getValueFromMetaData(FB::EMAIL)) === false)
         {
             $fbresponse = (new FriendBuyService())->postSignupEvent(new FriendBuy\SignUpEventRequest($m2mReferral));
 
@@ -267,6 +267,7 @@ class Service extends Base\Service
         $this->app['rzp.mode'] = Mode::LIVE;
         $this->core()->setModeAndDefaultConnection(Mode::LIVE);
 
+        $referrerData = null;
         //validations
         $merchant = $this->repo->merchant->findOrFailPublic($request->getMerchantId());
 
@@ -299,7 +300,6 @@ class Service extends Base\Service
             ];
 
             $coupon = (new CouponCore())->getCouponByCode($merchant, $couponInput);
-
             $promotion = $coupon->source;
 
             $eventAttributes = [
@@ -312,6 +312,11 @@ class Service extends Base\Service
 
             $this->app['segment-analytics']->pushTrackEvent(
                 $referrer, $eventAttributes, SegmentEvent::ADVOCATE_REFERRAL);
+
+            $data         = [
+                StoreConstants::NAMESPACE => StoreConfigKey::ONBOARDING_NAMESPACE
+            ];
+            $referrerData = (new StoreCore())->fetchMerchantStore($referrer->getId(), $data, StoreConstants::INTERNAL);
 
             $this->repo->transactionOnLiveAndTest(function() use ($m2mReferral) {
 
@@ -330,6 +335,20 @@ class Service extends Base\Service
                                          [
                                              'request' => $request]);
 
+            if (empty($referrerData) === false)
+            {
+                $data = [
+                    StoreConstants::NAMESPACE                    => StoreConfigKey::ONBOARDING_NAMESPACE,
+                    StoreConfigKey::REFERRED_COUNT               => $referrerData[StoreConfigKey::REFERRED_COUNT]??0,
+                    StoreConfigKey::REFERRAL_SUCCESS_POPUP_COUNT => $referrerData[StoreConfigKey::REFERRAL_SUCCESS_POPUP_COUNT]??0,
+                    StoreConfigKey::REFEREE_NAME                 => $referrerData[StoreConfigKey::REFEREE_NAME]??[],
+                    StoreConfigKey::REFEREE_ID                   => $referrerData[StoreConfigKey::REFEREE_ID]??[],
+                    StoreConfigKey::REFERRAL_AMOUNT              => $referrerData[StoreConfigKey::REFERRAL_AMOUNT]??0,
+                    StoreConfigKey::REFERRAL_AMOUNT_CURRENCY     => 'INR'
+                ];
+
+                (new StoreCore())->updateMerchantStore($referrer->getId(), $data, StoreConstants::INTERNAL);
+            }
             throw $e;
         }
     }
@@ -409,15 +428,7 @@ class Service extends Base\Service
             $referee = $this->repo->merchant->findOrFail($m2mReferral->getRefereeId());
 
             //no coupon credits after max referrals for referrer
-            $keys = [
-                StoreConfigKey::REFERRED_COUNT
-            ];
-
-            $data          = (new StoreCore())->fetchValuesFromStore($referrer->getId(),
-                                                                     StoreConfigKey::ONBOARDING_NAMESPACE,
-                                                                     $keys,
-                                                                     StoreConstants::INTERNAL);
-            $referralCount = $data[StoreConfigKey::REFERRED_COUNT] ?? 0;
+            $referralCount = $this->entityRepo->getReferralCount($referrer->getId());
 
             if ($referralCount >= env(FeatureConstants::M2M_REFERRAL_MAX_REFERRED_COUNT_ALLOWED))
             {
@@ -470,7 +481,7 @@ class Service extends Base\Service
                 }
             }
 
-            $referralCount = $this->entityRepo->getReferralCount($referrer->getId());
+            $referralCount++;
 
             $data = [
                 StoreConstants::NAMESPACE                    => StoreConfigKey::ONBOARDING_NAMESPACE,
@@ -516,11 +527,6 @@ class Service extends Base\Service
             $m2mReferralInput[$param] = $data[$param] ?? '';
             unset($data[$param]);
         }
-        if (isset($data[UserEntity::CONTACT_MOBILE]) === true)
-        {
-            $m2mReferralInput[Constants::MOBILE] = $data[UserEntity::CONTACT_MOBILE];
-        }
-
         $this->trace->info(TraceCode::FRIEND_BUY_SIGNUP, [
             'params' => $m2mReferralInput,
         ]);

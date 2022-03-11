@@ -377,6 +377,39 @@ return [
             'status_code' => 400,
         ]
     ],
+    'testRewardValidationFriendCouponApplyFailedAdvocateAlreadyReferred' => [
+        'request'  => [
+            'url'     => '/friendbuy/reward_validation',
+            'method'  => 'POST',
+            'headers' =>[
+                'x-friendbuy-hmac-sha256'=> 'muGWc0fftTMWwYS9Md/kjchLRtfmzq3e8bwt9W+/EwY='
+            ],
+            'content' => [
+                "eventType"=> "mtu",
+                "recipientType"=> "advocate",
+                "campaignId"=> "e1466ae6-441f-43e4-88c0-36e0b0c6bc15",
+                "event"=> [
+                    "isNewCustomer"=> true,
+                    "email"=> "12@c.com",
+                    "customerId"=> "I0qYGdG9IGaVxz"
+                ],
+                "advocate"=> [
+                    "customerId"=> "Hm9Bv6kFufFS36",
+                    "email"=> "123@razorpay.com",
+                    "ipAddress"=> "115.110.224.178"
+                ],
+                "actor"=> [
+                    "customerId"=> "I0qYGdG9IGaVxz",
+                    "email"=> "124@razorpay.com",
+                    "ipAddress"=> "115.110.224.178"
+                ]
+            ]
+        ],
+        'response' => [
+            'content' =>[],
+            'status_code' => 400,
+        ]
+    ],
     'testRewardValidationFriendCouponApplyFailed' => [
         'request'  => [
             'url'     => '/friendbuy/reward_validation',

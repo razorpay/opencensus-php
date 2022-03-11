@@ -283,15 +283,7 @@ class M2MReferralTest extends TestCase
         $m2mReferral = $this->getDbLastEntity('m2m_referral');
 
         $this->assertNotNull($m2mReferral);
-        $this->assertEquals(M2MEntityStatus::SIGNUP_EVENT_SENT, $m2mReferral->getAttribute(M2MReferralEntity::STATUS));
-        $this->assertArraySubset(
-            [
-                'utmSource'    => 'friendbuy',
-                'utmMedium'    => 'referral',
-                "utmCampaign"  => "Referral Test",
-                "referralCode" => "mg5xnqzn",
-                'mobile'       => '8877665544',
-            ], $m2mReferral->getAttribute(M2MReferralEntity::METADATA));
+        $this->assertEquals(M2MEntityStatus::SIGN_UP, $m2mReferral->getAttribute(M2MReferralEntity::STATUS));
 
         $data = [
             StoreConstants::NAMESPACE => StoreConfigKey::ONBOARDING_NAMESPACE
@@ -853,10 +845,81 @@ class M2MReferralTest extends TestCase
         $this->assertNull($data[StoreConfigKey::REFERRAL_SUCCESS_POPUP_COUNT]);
     }
 
+    public function testRewardValidationFriendCouponApplyFailedAdvocateAlreadyReferred()
+    {
+        $refereeMerchant  = $this->createMerchant('I0qYGdG9IGaVxz');
+        $referrerMerchant = $this->createMerchant('Hm9Bv6kFufFS36');
+        $randomMerchant   = $this->createMerchant('HucXhpLFHt8tQp');
+
+        $input      = [
+            M2MReferralEntity::STATUS      => M2MEntityStatus::MTU_EVENT_SENT,
+            M2MReferralEntity::REFERRER_ID => $referrerMerchant->getMerchantId(),
+            M2MReferralEntity::METADATA    => [
+                M2MConstants::REFERRAL_CODE => 'zawdfd8x',
+                FBConstants::EMAIL          => $refereeMerchant->getEmail()
+            ]
+        ];
+        $promotions = $this->mockAdvocateCoupon();
+
+        (new Core())->createM2MReferral($refereeMerchant, $input);
+
+        $originalData = [
+            StoreConstants::NAMESPACE                    => StoreConfigKey::ONBOARDING_NAMESPACE,
+            StoreConfigKey::REFERRED_COUNT               => 1,
+            StoreConfigKey::REFERRAL_SUCCESS_POPUP_COUNT => 1,
+            StoreConfigKey::REFEREE_ID                   => [$randomMerchant->getId()],
+            StoreConfigKey::REFEREE_NAME                 => [$randomMerchant->getName()],
+            StoreConfigKey::REFERRAL_AMOUNT              => 100
+        ];
+
+        (new StoreCore())->updateMerchantStore($referrerMerchant->getId(), $originalData, StoreConstants::INTERNAL);
+
+        $this->ba->noAuth();
+
+        $this->expectException(BadRequestException::class);
+        $this->startTest();
+
+        $m2mReferral = $this->getDbLastEntity('m2m_referral');
+        $this->assertNull($m2mReferral->getAttribute('referrer_status'));
+        $this->assertEquals(M2MEntityStatus::MTU_EVENT_SENT, $m2mReferral->getAttribute('status'));
+        $this->assertNotNull($m2mReferral->getAttribute('referrer_id'));
+        $this->assertEquals($referrerMerchant->getMerchantId(), $m2mReferral->getAttribute('referrer_id'));
+
+        $repo = new Repository();
+
+        $merchantPromotion = $repo->getByMerchantId(
+            $refereeMerchant->getId()
+        );
+
+        $this->assertEquals(0, $merchantPromotion->count());
+
+        $data = [
+            StoreConstants::NAMESPACE => StoreConfigKey::ONBOARDING_NAMESPACE
+        ];
+        $data = (new StoreCore())->fetchMerchantStore($refereeMerchant->getId(), $data, StoreConstants::INTERNAL);
+        $this->assertNotNull($data);
+        $this->assertNull($data[StoreConfigKey::IS_SIGNED_UP_REFEREE]);
+        $this->assertNull($data[StoreConfigKey::REFERRAL_SUCCESS_POPUP_COUNT]);
+
+        $merchantPromotion = $repo->getByMerchantId(
+            $referrerMerchant->getId()
+        );
+
+        $this->assertEquals(0, $merchantPromotion->count());
+
+        $data = [
+            StoreConstants::NAMESPACE => StoreConfigKey::ONBOARDING_NAMESPACE
+        ];
+        $data = (new StoreCore())->fetchMerchantStore($referrerMerchant->getId(), $data, StoreConstants::INTERNAL);
+        $this->assertNotNull($data);
+        $this->assertArraySubset($data, $originalData);
+
+    }
     public function testRewardValidationFriendCouponApplyFailed()
     {
         $refereeMerchant  = $this->createMerchant('I0qYGdG9IGaVxz');
         $referrerMerchant = $this->createMerchant('Hm9Bv6kFufFS36');
+        $randomMerchant   = $this->createMerchant('HucXhpLFHt8tQp');
 
         $input      = [
             M2MReferralEntity::STATUS      => M2MEntityStatus::MTU_EVENT_SENT,
@@ -903,12 +966,21 @@ class M2MReferralTest extends TestCase
 
         $this->assertEquals(0, $merchantPromotion->count());
 
-        $data = [
+        $expectedData = [
+            StoreConfigKey::REFERRED_COUNT               => 0,
+            StoreConfigKey::REFERRAL_SUCCESS_POPUP_COUNT => 0,
+            StoreConfigKey::REFEREE_NAME                 => [],
+            StoreConfigKey::REFEREE_ID                   => [],
+            StoreConfigKey::REFERRAL_AMOUNT              => 0,
+            StoreConfigKey::REFERRAL_AMOUNT_CURRENCY     => 'INR'
+        ];
+        $data         = [
             StoreConstants::NAMESPACE => StoreConfigKey::ONBOARDING_NAMESPACE
         ];
-        $data = (new StoreCore())->fetchMerchantStore($referrerMerchant->getId(), $data, StoreConstants::INTERNAL);
+        $data         = (new StoreCore())->fetchMerchantStore($referrerMerchant->getId(), $data, StoreConstants::INTERNAL);
         $this->assertNotNull($data);
-        $this->assertNull($data[StoreConfigKey::REFERRAL_SUCCESS_POPUP_COUNT]);
+        $this->assertArraySubset($data, $expectedData);
+
     }
 
     public function testRewardValidationAdvocateCouponApplyFailed()

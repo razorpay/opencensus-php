@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Mail;
 use RZP\Models\Admin\Org\Entity as OrgEntity;
 use RZP\Mail\Merchant\MerchantOnboardingEmail;
 use RZP\Models\Merchant\Store\Core as StoreCore;
+use RZP\Tests\Functional\Merchant\MerchantTest;
 use RZP\Services\Segment\SegmentAnalyticsClient;
 use RZP\Tests\Functional\Fixtures\Entity\BvsValidation;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
@@ -34,6 +35,8 @@ use RZP\Models\Merchant\Detail\SelectiveRequiredFields;
 use RZP\Models\Merchant\Store\ConfigKey as StoreConfigKey;
 use RZP\Models\Merchant\Store\Constants as StoreConstants;
 use RZP\Models\Merchant\Detail\Constants as DetailConstant;
+use RZP\Models\Merchant\M2MReferral\Status as M2MEntityStatus;
+use RZP\Models\Merchant\M2MReferral\Entity as M2MReferralEntity;
 use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstants;
 use RZP\Models\Merchant\BvsValidation\Entity as BVSEntity;
 use RZP\Models\Merchant\Cron\Constants as CronConstants;
@@ -949,7 +952,27 @@ class CoreTest extends TestCase
 
         (new Escalations\Core)->handleMtuCouponApply();
     }
+    public function testM2MSegmentEventPushForFirstTransaction()
+    {
+        $this->createAndFetchMocks();
 
+        $merchantDetail = $this->fixtures->on('live')->create('merchant_detail:valid_fields');
+
+        $merchant=$merchantDetail->merchant;
+
+        $merchantId = $merchantDetail->getMerchantId();
+
+        $this->createTransaction($merchantId, 'payment', 10000, Carbon::now()->subHour()->getTimestamp());
+        $this->createPayment($merchantId, 10000);
+
+        $input = [
+            M2MReferralEntity::MERCHANT_ID => $merchantId,
+            M2MReferralEntity::STATUS      => M2MEntityStatus::MTU_EVENT_SENT
+        ];
+        $m2m = (new \RZP\Models\Merchant\M2MReferral\Core())->createM2MReferral($merchant, $input);
+
+        (new Escalations\Core)->handleMtuCouponApply();
+    }
     protected function enableRazorXTreatmentForRazorX()
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
@@ -1148,7 +1171,35 @@ class CoreTest extends TestCase
 
         $this->assertTrue($response['showMtuPopup']);
     }
+    public function testM2MNotEligibleForMtuPopupShow()
+    {
+        $this->enableRazorXTreatmentForRazorX();
 
+        $merchantId = '1X4hRFHFx4UiXt';
+
+        $merchantAttributes = [
+            'id' => $merchantId,
+            'activated' => 1,
+            'live' => 1,
+            'activated_at' => Carbon::now()->subDays(2)->getTimestamp()
+        ];
+
+        $merchant=$this->fixtures->create('merchant', $merchantAttributes);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            'merchant_id' => $merchantId,
+        ]);
+
+        $input = [
+            M2MReferralEntity::MERCHANT_ID => $merchantId,
+            M2MReferralEntity::STATUS      => M2MEntityStatus::MTU_EVENT_SENT
+        ];
+        $m2m = (new \RZP\Models\Merchant\M2MReferral\Core())->createM2MReferral($merchant, $input);
+
+        $response = (new Core)->createResponse($merchantDetail);
+
+        $this->assertFalse($response['showMtuPopup']);
+    }
     public function testNotEligibleForMtuPopupShow()
     {
         $this->enableRazorXTreatmentForRazorX();
@@ -2489,5 +2540,27 @@ class CoreTest extends TestCase
 
         $this->app->razorx->method('getTreatment')
             ->willReturn($returnValue);
+    }
+
+    public function testM2MOfferMtuCronJob()
+    {
+        $this->createAndFetchMocks();
+        $this->mockRazorxTreatment();
+
+        $merchant = $this->repo->merchant->findorfail('10000000000011');
+        $input = [
+            M2MReferralEntity::MERCHANT_ID => '10000000000011',
+            M2MReferralEntity::STATUS      => M2MEntityStatus::MTU_EVENT_SENT
+        ];
+
+        $m2m = (new \RZP\Models\Merchant\M2MReferral\Core())->createM2MReferral($merchant, $input);
+
+
+        (new CronJobHandler\Core())->handleCron("first-payment-offer-daily-notification", [
+            "start_time" => Carbon::now()->subDecade()->getTimestamp(),
+            "end_time"   => Carbon::now()->getTimestamp(),
+        ]);
+
+
     }
 }
