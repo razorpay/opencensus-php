@@ -2,11 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 
-import {
-  fetchTransfers,
-  fetchReversals,
-  fetchSettlements,
-} from 'merchantLA/reducers/collection';
+import { fetchTransfers, fetchReversals, fetchSettlements } from 'merchantLA/reducers/collection';
 import { titleCase } from 'common/utils/rzp-utils';
 
 import GenericPanel, {
@@ -18,7 +14,7 @@ import { tabs, tabsMeta } from './data';
 
 import { trackTabClick, trackEntityClick, trackGoToLinks } from './ga';
 
-const shouldDisplayCompact = windowWidth => {
+const shouldDisplayCompact = (windowWidth) => {
   return windowWidth < 480;
 };
 
@@ -41,23 +37,20 @@ const Row = ({ record, tabName, tabTitle, sectionTitle, displayCompact }) => {
 
         if (columnMeta.recordKey === 'id') {
           value = (
-            <value.type
-              {...value.props}
-              onClick={() => trackEntityClick(tabTitle, sectionTitle)}
-            >
+            <value.type {...value.props} onClick={() => trackEntityClick(tabTitle, sectionTitle)}>
               {value.props.children}
             </value.type>
           );
         }
 
-        return <td key={tabName + '-' + index}>{value}</td>;
+        return <td key={`${tabName}-${index}`}>{value}</td>;
       })}
     </tr>
   );
 };
 
 @connect(
-  state => {
+  (state) => {
     return {
       transfers: state.transfers,
       reversals: state.reversals,
@@ -69,7 +62,7 @@ const Row = ({ record, tabName, tabTitle, sectionTitle, displayCompact }) => {
     fetchTransfers,
     fetchReversals,
     fetchSettlements,
-  }
+  },
 )
 export default class RecentActivity extends Component {
   constructor(props) {
@@ -99,11 +92,8 @@ export default class RecentActivity extends Component {
   }
 
   fetchData(params) {
-    this.props.fetchTransfers(params).then(data => {
-      return (
-        this.props.onFetchTransfers &&
-        this.props.onFetchTransfers(data && data.data)
-      );
+    this.props.fetchTransfers(params).then((data) => {
+      return this.props.onFetchTransfers && this.props.onFetchTransfers(data && data.data);
     });
     this.props.fetchReversals(params);
     this.props.fetchSettlements(params);
@@ -120,10 +110,10 @@ export default class RecentActivity extends Component {
   }
 
   render() {
-    const { selectedTab, displayCompact } = this.state,
-      selectedTabData = this.props[selectedTab],
-      numColumns = tabsMeta[selectedTab].columns.length,
-      selectedTabTitle = titleCase(selectedTab);
+    const { selectedTab, displayCompact } = this.state;
+    const selectedTabData = this.props[selectedTab];
+    const numColumns = tabsMeta[selectedTab].columns.length;
+    const selectedTabTitle = titleCase(selectedTab);
 
     let body = null;
 
@@ -131,9 +121,7 @@ export default class RecentActivity extends Component {
       body = (
         <tr>
           <td colSpan={numColumns}>
-            <center>
-              {selectedTabData.loading ? 'Please Wait...' : 'No Records found.'}
-            </center>
+            <center>{selectedTabData.loading ? 'Please Wait...' : 'No Records found.'}</center>
           </td>
         </tr>
       );
@@ -161,16 +149,10 @@ export default class RecentActivity extends Component {
           <tabbed-container>
             <div className="row">
               {tabs.map((tabName, index) => {
-                const className =
-                  (tabName === selectedTab ? 'active ' : '') + 'col-xs-4';
+                const className = `${tabName === selectedTab ? 'active ' : ''}col-xs-4`;
 
                 return (
-                  <a
-                    className={className}
-                    key={index}
-                    name={tabName}
-                    onClick={this.handleTabClick}
-                  >
+                  <a className={className} key={index} name={tabName} onClick={this.handleTabClick}>
                     {tabName.toUpperCase()}
                   </a>
                 );
@@ -188,10 +170,9 @@ export default class RecentActivity extends Component {
             <div className="pull-right">
               <Link
                 target="_blank"
+                rel="noreferrer noopener"
                 to={`/${selectedTab}`}
-                onClick={() =>
-                  trackGoToLinks(selectedTabTitle, this.props.sectionTitle)
-                }
+                onClick={() => trackGoToLinks(selectedTabTitle, this.props.sectionTitle)}
               >
                 View all {selectedTabTitle} <i className="i i-chevron-right" />
               </Link>

@@ -1,5 +1,5 @@
 import { trackLinkClick } from './ga';
-import { Link } from 'react-router-dom';
+import React from 'react';
 
 export default ({ user }) => {
   return (
@@ -19,6 +19,7 @@ export default ({ user }) => {
             href="https://razorpay.com/agreement/"
             target="_blank"
             onClick={trackLinkClick}
+            rel="noreferrer noopener"
           >
             Merchant Agreement
           </a>
@@ -29,6 +30,7 @@ export default ({ user }) => {
             href="https://razorpay.com/terms/"
             target="_blank"
             onClick={trackLinkClick}
+            rel="noreferrer noopener"
           >
             Terms of Use
           </a>
@@ -39,6 +41,7 @@ export default ({ user }) => {
             href="https://razorpay.com/privacy/"
             target="_blank"
             onClick={trackLinkClick}
+            rel="noreferrer noopener"
           >
             Privacy Policy
           </a>

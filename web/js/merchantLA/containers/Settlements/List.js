@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
 import Pager from 'common/ui/Pager';
@@ -97,7 +97,12 @@ export default class SettlementsListContainer extends ListContainer {
           <NavLink to="/settlements">Settlements</NavLink>
           <HeaderAction>
             <div>
-              <a class="btn btn-link" href="http://razorpay.com/settlement" target="_blank">
+              <a
+                class="btn btn-link"
+                href="http://razorpay.com/settlement"
+                target="_blank"
+                rel="noreferrer noopener"
+              >
                 How settlements work?&nbsp;
                 <span class="icon i-external-link" />
               </a>

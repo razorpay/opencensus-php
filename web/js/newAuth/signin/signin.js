@@ -145,6 +145,7 @@ const Signin = () => {
                                       as="a"
                                       href="https://policies.google.com/privacy"
                                       target="_blank"
+                                      rel="noreferrer noopener"
                                     >
                                       <CaptchaText
                                         textColor={captchaTextColor.secondary}
@@ -164,6 +165,7 @@ const Signin = () => {
                                       as="a"
                                       href="https://policies.google.com/terms"
                                       target="_blank"
+                                      rel="noreferrer noopener"
                                     >
                                       <CaptchaText
                                         textColor={captchaTextColor.secondary}
