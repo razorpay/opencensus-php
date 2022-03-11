@@ -22,6 +22,7 @@ use RZP\Error\ErrorCode;
 use RZP\Constants\Entity as E;
 use RZP\Exception\BadRequestException;
 use RZP\Models\PaymentLink\Metric;
+use RZP\Services\Elfin\Service as ElfinService;
 use RZP\Models\PaymentLink\PaymentPageItem as PPI;
 
 class Service extends Base\Service
@@ -763,5 +764,19 @@ class Service extends Base\Service
         $paymentHandle = $this->core->precreatePaymentHandle($this->merchant);
 
         return $paymentHandle;
+    }
+
+    /**
+     * Retrieves slug's metadata from Gimli which contains entity, id & mode
+     *
+     * @param string $slug
+     *
+     * @return array|null
+     */
+    public function getSlugMetaData(string $slug): ?array
+    {
+        return Tracer::inSpan(['name' => Constants::HT_PP_HOSTED_SLUG_DATA], function() use ($slug) {
+            return (new ElfinWrapper(ElfinService::GIMLI))->expandAndGetMetadata($slug);
+        });
     }
 }

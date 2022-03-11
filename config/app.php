@@ -378,4 +378,11 @@ return array(
     'shopify_1cc_sqs_splitz_experiment_id' => env('SHOPIFY_1CC_SQS_SPLITZ_EXPERIMENT_ID'),
 
     'payment_handle_domain' => env('PAYMENT_HANDLE_DOMAIN'),
+
+    'nocode' => [
+        'cache' => [
+            'slug_ttl' => env('NOCODE_SLUG_CACHE_TTL', 86400),
+            'prefix' => env('NOCODE_CACHE_PREFIX', 'NOCODE')
+        ]
+    ],
 );

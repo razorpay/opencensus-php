@@ -17,4 +17,10 @@ class Constants
     const PARTNER_SHIPROCKET = 'partner_shiprocket';
 
     const PARTNER_WEBHOOK_SETTINGS_KEY = 'partner_webhook_settings';
+
+    // Hypertrace names
+    const HT_PP_HOSTED_SLUG_DATA = 'payment_pages.hosted.pages.slug.get.data';
+
+    // cache keys
+    const SLUG_CACHE_KEY = 'SLUG_ENTITY_MAP';
 }

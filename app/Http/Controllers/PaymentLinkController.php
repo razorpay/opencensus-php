@@ -192,13 +192,7 @@ class PaymentLinkController extends Controller
      */
     public function viewBySlug(string $slug)
     {
-        // Retrieves slug's metadata from Gimli which contains entity, id & mode
-        $gimli        = $this->app['elfin']->driver('gimli');
-        $slugMetadata = Tracer::inSpan([
-            'name' => 'payment_pages.hosted.pages.slug.get.template'],
-            function() use ($slug, $gimli) {
-                return $gimli->expandAndGetMetadata($slug);
-        });
+        $slugMetadata = $this->service()->getSlugMetaData($slug);
 
         // Renders 404 if no metadata available(error/exception at Gimli side)
         if ($slugMetadata === null)
