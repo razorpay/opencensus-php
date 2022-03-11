@@ -60,6 +60,8 @@ class Service
     const CREATE_MERCHANT_EMAIL_MAPPING = 'CreateMerchantEmailMapping';
     const GET_AUTO_PROCESSED_INVOICE    = 'GetAutoProcessedInvoiceDetails';
     const TRIGGER_VENDOR_INVITE         = 'TriggerEiVendorInvitationEmail';
+    const DISABLE_VENDOR_PORTAL         = 'DisableVendorPortal';
+    const ENABLE_VENDOR_PORTAL          = 'EnableVendorPortal';
 
     const BASE_PATH = 'twirp/vendorpayments.Vendorpayments';
 
@@ -612,6 +614,30 @@ class Service
         $data = [
             'merchant_id'     => $merchant->getMerchantId(),
             'invoice_file_id' => $fileId
+        ];
+
+        return $this->makeRequest($merchant, $url, $data, [], 'POST');
+    }
+
+    public function disableVendorPortal(MerchantEntity $merchant, string $contactId)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::DISABLE_VENDOR_PORTAL);
+
+        $data = [
+            'merchant_id' => $merchant->getMerchantId(),
+            'contact_id'  => $contactId
+        ];
+
+        return $this->makeRequest($merchant, $url, $data, [], 'POST');
+    }
+
+    public function enableVendorPortal(MerchantEntity $merchant, string $contactId)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::ENABLE_VENDOR_PORTAL);
+
+        $data = [
+            'merchant_id' => $merchant->getMerchantId(),
+            'contact_id'  => $contactId
         ];
 
         return $this->makeRequest($merchant, $url, $data, [], 'POST');

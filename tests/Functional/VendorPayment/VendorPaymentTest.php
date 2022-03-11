@@ -568,4 +568,34 @@ class VendorPaymentTest extends TestCase
 
         $vpMock->shouldHaveReceived('accept');
     }
+
+    public function testDisableVendorPortal()
+    {
+        $this->ba->proxyAuth();
+
+        $vpMock = Mockery::mock('RZP\Services\VendorPayment');
+
+        $vpMock->shouldReceive('disableVendorPortal')->andReturn([]);
+
+        $this->app->instance('vendor-payment', $vpMock);
+
+        $this->startTest();
+
+        $vpMock->shouldHaveReceived('disableVendorPortal');
+    }
+
+    public function testEnableVendorPortal()
+    {
+        $this->ba->proxyAuth();
+
+        $vpMock = Mockery::mock('RZP\Services\VendorPayment');
+
+        $vpMock->shouldReceive('enableVendorPortal')->andReturn([]);
+
+        $this->app->instance('vendor-payment', $vpMock);
+
+        $this->startTest();
+
+        $vpMock->shouldHaveReceived('enableVendorPortal');
+    }
 }

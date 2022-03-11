@@ -277,4 +277,14 @@ class VendorPaymentController extends Controller
     {
         return $this->service->inviteVendor($this->ba->getMerchant(), $this->input);
     }
+
+    public function disableVendorPortal(string $contactId)
+    {
+        return $this->service->disableVendorPortal($this->ba->getMerchant(), $contactId);
+    }
+
+    public function enableVendorPortal(string $contactId)
+    {
+        return $this->service->enableVendorPortal($this->ba->getMerchant(), $contactId);
+    }
 }

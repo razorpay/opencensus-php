@@ -981,6 +981,8 @@ class UserRolesScope
             'vendor_payment_reporting_info'                        => [Role::OWNER, Role::ADMIN],
             'vendor_payment_summary'                               => [Role::OWNER, Role::ADMIN],
             'vendor_payment_update_invoice_file_id'                => [Role::OWNER, Role::ADMIN],
+            'vendor_payment_disable_vendor_portal'                 => [Role::OWNER, Role::ADMIN],
+            'vendor_payment_enable_vendor_portal'                  => [Role::OWNER, Role::ADMIN],
             'invite_to_vendor_portal'                              => [Role::OWNER, Role::ADMIN, Role::OPERATIONS, Role::FINANCE],
             'vendor_invoices_list'                                 => [Role::VENDOR],
             'vendor_invoice_create'                                => [Role::VENDOR],

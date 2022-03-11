@@ -675,4 +675,32 @@ return [
         'content' => []
     ]
 ],
+    'testDisableVendorPortal' => [
+        'request'  => [
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
+                'HTTP_X-Dashboard-User-Id' => '20000000000000',
+            ],
+            'url'     => '/vendor-payments/contacts/contact_1234/vendor-portal-disable',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+    'testEnableVendorPortal' => [
+        'request'  => [
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
+                'HTTP_X-Dashboard-User-Id' => '20000000000000',
+            ],
+            'url'     => '/vendor-payments/contacts/contact_1234/vendor-portal-enable',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
 ];

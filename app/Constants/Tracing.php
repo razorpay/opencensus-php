@@ -125,6 +125,8 @@ class Tracing
             'vendor_payment_email_integration_webhook',
             'vendor_payment_get_email_mapping',
             'vendor_payment_send_vendor_invite_ei',
+            'vendor_payment_disable_vendor_portal',
+            'vendor_payment_enable_vendor_portal',
             'merchant_fetch_internal_users',
             'vendor_payment_get_auto_processed_invoice',
 
