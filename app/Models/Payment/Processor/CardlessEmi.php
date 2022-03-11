@@ -26,7 +26,7 @@ class CardlessEmi
     /** @var int[] The minimum order/transaction amount in paisa for each cardless emi provider. */
     public const MIN_AMOUNTS = [
         self::EARLYSALARY  => 300000, // Rs. 3000
-        self::ZESTMONEY    => 90000,  // Rs. 900
+        self::ZESTMONEY    => 9900,   // Rs. 99
         self::FLEXMONEY    => 300000, // Rs. 3000
         self::WALNUT369    => 90000,  // Rs. 900
         self::SEZZLE       => 20000,  // Rs. 200

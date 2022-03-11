@@ -28,7 +28,7 @@ class AffordabilityTest extends TestCase
         ],
         'zestmoney' => [
             'enabled' => true,
-            'min_amount' => 90000,
+            'min_amount' => 9900,
         ],
         'barb' => [
             'enabled' => true,
