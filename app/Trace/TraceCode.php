@@ -4391,6 +4391,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MIGRATE_TO_CREDCASE_REQUEST                           = 'MIGRATE_TO_CREDCASE_REQUEST';
     const SKIP_INTERNAL_CREDENTIAL_MIGRATION                    = 'SKIP_INTERNAL_CREDENTIAL_MIGRATION';
 
+    const OUTBOX_JOB_CREATED                                    = 'OUTBOX_JOB_CREATED';
+
     const CREDCASE_SIGNER_ERROR                                 = 'CREDCASE_SIGNER_ERROR';
     const CREDCASE_SIGNER_REDIS_ERROR                           = 'CREDCASE_SIGNER_REDIS_ERROR';
     const CREDCASE_SIGNER_REDIS_NOT_FOUND                       = 'CREDCASE_SIGNER_REDIS_NOT_FOUND';

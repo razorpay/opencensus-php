@@ -3,9 +3,9 @@
 namespace RZP\Tests\Functional\Modules\Acs;
 
 use Config;
-
 use Razorpay\Outbox\Encoder\JsonEncoder;
 use Razorpay\Outbox\Encrypt\AES256GCMEncrypt;
+use Psr\Log\LoggerInterface as Logger;
 use Razorpay\Outbox\Job\Core as OutboxCore;
 use Razorpay\Outbox\Job\Repository;
 use RZP\Constants\Mode;
@@ -274,8 +274,9 @@ class SyncEventManagerTest extends TestCase
         $encrypter = new AES256GCMEncrypt('OUTBOX_ENCRYPTION_KEY');
         $encoder   = new JsonEncoder();
         $repo      = new Repository(\Database\Connection::LIVE);
+        $trace = $this->getMockBuilder(Logger::class)->getMock();
         $mock = $this->getMockBuilder(OutboxCore::class)
-            ->setConstructorArgs([$encrypter, $encoder, $repo])
+            ->setConstructorArgs([$encrypter, $encoder, $repo, $trace])
             ->onlyMethods($methods)
             ->getMock();
         $this->app->instance('outbox', $mock);
