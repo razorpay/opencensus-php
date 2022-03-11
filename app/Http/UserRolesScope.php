@@ -984,6 +984,7 @@ class UserRolesScope
             'vendor_payment_disable_vendor_portal'                 => [Role::OWNER, Role::ADMIN],
             'vendor_payment_enable_vendor_portal'                  => [Role::OWNER, Role::ADMIN],
             'invite_to_vendor_portal'                              => [Role::OWNER, Role::ADMIN, Role::OPERATIONS, Role::FINANCE],
+            'resend_invite_to_vendor_portal'                       => [Role::OWNER, Role::ADMIN, Role::OPERATIONS, Role::FINANCE],
             'vendor_invoices_list'                                 => [Role::VENDOR],
             'vendor_invoice_create'                                => [Role::VENDOR],
             'vendor_portal_list_tds_categories'                    => [Role::VENDOR],

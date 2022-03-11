@@ -101,4 +101,13 @@ class InvitationController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function resendVendorPortalInvitation()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->resendVendorPortalInvitation($this->ba->getMerchant(), $input);
+
+        return ApiResponse::json($data);
+    }
 }

@@ -1892,6 +1892,7 @@ class Route
 
         //Vendor portal invitation
         'invite_to_vendor_portal'                  => ['post',     'vendor_portal_invitation',                        'InvitationController@createVendorPortalInvitation'                  ],
+        'resend_invite_to_vendor_portal'           => ['post',     'resend_vendor_portal_invitation',                 'InvitationController@resendVendorPortalInvitation'                  ],
 
         // Risk Routes
         'customer_flagging_entity_details'         => ['get',      'customer_flagging/entity_details/{id}',          'RiskController@getEntityDetails'                                   ],
@@ -5177,6 +5178,7 @@ class Route
 
         // Vendor Portal Invitation
         'invite_to_vendor_portal',
+        'resend_invite_to_vendor_portal',
 
         // Accounting Payouts
         'accounting_payouts_integration_status',
@@ -7781,6 +7783,7 @@ class Route
         'x_apps_get_all_settings'                      => Permission::UPDATE_TAX_PAYMENT_SETTINGS,
         'x_apps_add_or_update_settings'                => Permission::UPDATE_TAX_PAYMENT_SETTINGS,
         'invite_to_vendor_portal'                      => Permission::INVITE_VENDOR,
+        'resend_invite_to_vendor_portal'               => Permission::INVITE_VENDOR,
         'merchant_edit_config_logo'                    => Permission::MERCHANT_CONFIG_LOGO,
         'contact_get'                                  => Permission::VIEW_CONTACT,
         'contact_list'                                 => Permission::VIEW_CONTACT,
@@ -9322,6 +9325,7 @@ class Route
             'x_apps_get_all_settings',
             'x_apps_add_or_update_settings',
             'invite_to_vendor_portal',
+            'resend_invite_to_vendor_portal',
             'virtual_account_add_receivers',
             'virtual_account_add_allowed_payer',
             'virtual_account_delete_allowed_payer',
@@ -12878,6 +12882,7 @@ class Route
         'x_apps_add_or_update_settings',
 
         'invite_to_vendor_portal',
+        'resend_invite_to_vendor_portal',
 
         'payout_links_added_fund_accounts',
         'payout_links_added_fund_accounts_cors',

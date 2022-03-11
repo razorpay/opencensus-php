@@ -143,6 +143,7 @@ class Tracing
             'invite_to_vendor_portal',
             'vendor_portal_get_vendor_preferences',
             'vendor_portal_update_vendor_preferences',
+            'resend_invite_to_vendor_portal',
 
             // accounting-payouts API routes
             'accounting_payouts_integration_status',

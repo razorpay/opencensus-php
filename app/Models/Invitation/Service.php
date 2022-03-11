@@ -168,6 +168,17 @@ class Service extends Base\Service
         return $invitation->toArrayPublic();
     }
 
+    public function resendVendorPortalInvitation(MerchantEntity $merchant, array $request): array
+    {
+        if (empty($request['contact_id'])) {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_VALIDATION_FAILURE, null, null, PublicErrorDescription::BAD_REQUEST_CONTACT_ID_MISSING_FOR_INVITATION);
+        }
+
+        $invitation = $this->core()->resendVendorPortalInvitation($merchant, $request['contact_id']);
+
+        return $invitation->toArrayPublic();
+    }
+
     /**
      * Email Invitation Mail
      *

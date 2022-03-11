@@ -15,18 +15,19 @@ use RZP\Models\Merchant\Entity as MerchantEntity;
 
 class Service
 {
-    const LIST_VENDOR_INVOICES       = "ListVendorInvoices";
-    const CREATE_INVITE              = "Invite";
-    const ACCEPT_INVITE              = "AcceptInvite";
-    const LIST_TDS_CATEGORIES        = "ListTdsCategory";
-    const GET_VENDOR_INVOICE         = "GetVendorInvoice";
-    const GET_INVOICE_SIGNED_URL     = "GetInvoiceSignedURL";
-    const LIST_VENDOR_PORTAL_INVITES = "ListVendorPortalInvites";
-    const UPLOAD_INVOICE             = "UploadInvoice";
-    const GET_OCR_DATA               = "GetOcrData";
-    const CREATE_VENDOR_INVOICE      = "CreateVendorInvoice";
-    const GET_VENDOR_PREFERENCES     = "GetVendorPreferences";
-    const UPDATE_VENDOR_PREFERENCES  = "UpdateVendorPreferences";
+    const LIST_VENDOR_INVOICES           = "ListVendorInvoices";
+    const CREATE_INVITE                  = "Invite";
+    const ACCEPT_INVITE                  = "AcceptInvite";
+    const LIST_TDS_CATEGORIES            = "ListTdsCategory";
+    const GET_VENDOR_INVOICE             = "GetVendorInvoice";
+    const GET_INVOICE_SIGNED_URL         = "GetInvoiceSignedURL";
+    const LIST_VENDOR_PORTAL_INVITES     = "ListVendorPortalInvites";
+    const UPLOAD_INVOICE                 = "UploadInvoice";
+    const GET_OCR_DATA                   = "GetOcrData";
+    const CREATE_VENDOR_INVOICE          = "CreateVendorInvoice";
+    const GET_VENDOR_PORTAL_INVITE_TOKEN = "GetVendorPortalInviteToken";
+    const GET_VENDOR_PREFERENCES         = "GetVendorPreferences";
+    const UPDATE_VENDOR_PREFERENCES      = "UpdateVendorPreferences";
 
     const BASE_PATH                  = "/twirp/vendorportal.Vendorportal/";
 
@@ -160,6 +161,14 @@ class Service
             'vendor_portal_invite_id' => $vendorInviteId,
             'vendor_user_id'          => $user->getPublicId(),
         ];
+
+        return $this->makeRequest($url, $input);
+    }
+
+    public function getInviteToken(MerchantEntity $merchant, array $input)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::GET_VENDOR_PORTAL_INVITE_TOKEN);
+        $input['merchant_id'] = $merchant->getId();
 
         return $this->makeRequest($url, $input);
     }

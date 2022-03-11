@@ -263,10 +263,10 @@ class InvitationTest extends TestCase
         Mail::fake();
 
         $this->fixtures->create('user',
-                                [
-                                    'id'    => '1000InviteUser',
-                                    'email' => 'existinginvite@razorpay.com'
-                                ]);
+            [
+                'id'    => '1000InviteUser',
+                'email' => 'existinginvite@razorpay.com'
+            ]);
 
         $this->startTest();
 
@@ -315,10 +315,10 @@ class InvitationTest extends TestCase
         $nonOwnerUser = $this->fixtures->create('user');
 
         $this->fixtures->user->createUserMerchantMapping([
-                                                             'merchant_id' => '10000000000000',
-                                                             'user_id'     => $nonOwnerUser->id,
-                                                             'role'        => 'rbl_supervisor',
-                                                         ]);
+            'merchant_id' => '10000000000000',
+            'user_id'     => $nonOwnerUser->id,
+            'role'        => 'rbl_supervisor',
+        ]);
 
         $this->ba->proxyAuth('rzp_test_10000000000000', $nonOwnerUser->id);
 
@@ -330,10 +330,10 @@ class InvitationTest extends TestCase
         $nonOwnerUser = $this->fixtures->create('user');
 
         $this->fixtures->user->createUserMerchantMapping([
-                                                             'merchant_id' => '10000000000000',
-                                                             'user_id'     => $nonOwnerUser->id,
-                                                             'role'        => 'rbl_supervisor',
-                                                         ]);
+            'merchant_id' => '10000000000000',
+            'user_id'     => $nonOwnerUser->id,
+            'role'        => 'rbl_supervisor',
+        ]);
 
         $this->ba->proxyAuth('rzp_test_10000000000000', $nonOwnerUser->id);
 
@@ -354,10 +354,10 @@ class InvitationTest extends TestCase
     public function testAcceptInvitation()
     {
         $this->fixtures->create('user',
-                                [
-                                    'id'    => '1000InviteUser',
-                                    'email' => 'testteaminvite@razorpay.com'
-                                ]);
+            [
+                'id'    => '1000InviteUser',
+                'email' => 'testteaminvite@razorpay.com'
+            ]);
 
         $invitation = $this->fixtures->create('invitation', ['email' => 'testteaminvite@razorpay.com']);
 
@@ -370,16 +370,16 @@ class InvitationTest extends TestCase
         $this->startTest();
 
         $invite = \DB::table('invitations')
-                     ->where('id', '=', $invitation['id'])
-                     ->whereNull('deleted_at')
-                     ->first();
+            ->where('id', '=', $invitation['id'])
+            ->whereNull('deleted_at')
+            ->first();
 
         $this->assertNull($invite);
 
         $merchants = DB::table('merchant_users')
-                       ->where('user_id', '=', '1000InviteUser')
-                       ->where('merchant_id', self::DEFAULT_MERCHANT_ID)
-                       ->first();
+            ->where('user_id', '=', '1000InviteUser')
+            ->where('merchant_id', self::DEFAULT_MERCHANT_ID)
+            ->first();
 
         $this->assertEquals('manager', $merchants->role);
     }
@@ -454,9 +454,9 @@ class InvitationTest extends TestCase
         $this->startTest();
 
         $data = DB::table(Table::MERCHANT_USERS)->where(MerchantUserEntity::MERCHANT_ID, '=', self::DEFAULT_MERCHANT_ID)
-                                                ->where(MerchantUserEntity::USER_ID, '=', '1000InviteUser')
-                                                ->where(MerchantUserEntity::PRODUCT, '=', 'banking')
-                                                ->get();
+            ->where(MerchantUserEntity::USER_ID, '=', '1000InviteUser')
+            ->where(MerchantUserEntity::PRODUCT, '=', 'banking')
+            ->get();
 
         $this->assertEquals(count($data), 2);
     }
@@ -473,11 +473,11 @@ class InvitationTest extends TestCase
             ]);
 
         $merchant = $this->fixtures->create('merchant',
-                                            ['restricted' => true]);
+            ['restricted' => true]);
 
         $invitation = $this->fixtures->create('invitation',
-                                              ['merchant_id' => $merchant['id'],
-                                               'email'       => 'testteaminvite@razorpay.com']);
+            ['merchant_id' => $merchant['id'],
+                'email'       => 'testteaminvite@razorpay.com']);
 
         $testData = & $this->testData[__FUNCTION__];
 
@@ -493,17 +493,17 @@ class InvitationTest extends TestCase
         $this->mockRazorxTreatment();
 
         $user = $this->fixtures->create('user',
-                                [
-                                    'id'    => '1000InviteUser',
-                                    'email' => 'testteaminvite@razorpay.com'
-                                ]);
+            [
+                'id'    => '1000InviteUser',
+                'email' => 'testteaminvite@razorpay.com'
+            ]);
 
         $merchantIdsCaller = $user->merchants()->get()->pluck('id')->toArray();
 
         $this->fixtures->merchant->edit($merchantIdsCaller[0], ['restricted' => true]);
 
         $invitation = $this->fixtures->create('invitation',
-                                               ['email'       => 'testteaminvite@razorpay.com']);
+            ['email'       => 'testteaminvite@razorpay.com']);
 
         $testData = & $this->testData[__FUNCTION__];
 
@@ -517,16 +517,16 @@ class InvitationTest extends TestCase
     public function testRejectInvitation()
     {
         $this->fixtures->create('user',
-                                [
-                                    'id'    => '1000InviteUser',
-                                    'email' => 'reject@razorpay.com'
-                                ]);
+            [
+                'id'    => '1000InviteUser',
+                'email' => 'reject@razorpay.com'
+            ]);
 
         $invitation = $this->fixtures->create('invitation',
-                                                [
-                                                    'user_id'     => '1000InviteUser',
-                                                    'email'       => 'reject@razorpay.com'
-                                                ]);
+            [
+                'user_id'     => '1000InviteUser',
+                'email'       => 'reject@razorpay.com'
+            ]);
 
         $testData = & $this->testData[__FUNCTION__];
 
@@ -537,16 +537,16 @@ class InvitationTest extends TestCase
         $this->startTest();
 
         $invite = \DB::table('invitations')
-                     ->where('id', '=', $invitation['id'])
-                     ->whereNotNull('deleted_at')
-                     ->first();
+            ->where('id', '=', $invitation['id'])
+            ->whereNotNull('deleted_at')
+            ->first();
 
         $this->assertNotNull($invite);
 
         $merchants = DB::table('merchant_users')
-                       ->where('user_id', '=', '1000InviteUser')
-                       ->where('merchant_id', self::DEFAULT_MERCHANT_ID)
-                       ->first();
+            ->where('user_id', '=', '1000InviteUser')
+            ->where('merchant_id', self::DEFAULT_MERCHANT_ID)
+            ->first();
 
         $this->assertNull($merchants);
     }
@@ -554,15 +554,15 @@ class InvitationTest extends TestCase
     public function testInvalidResponseToInvitation()
     {
         $this->fixtures->create('user',
-                                [
-                                    'id'    => '1000InviteUser',
-                                    'email' => 'reject@razorpay.com'
-                                ]);
+            [
+                'id'    => '1000InviteUser',
+                'email' => 'reject@razorpay.com'
+            ]);
 
         $invitation = $this->fixtures->create('invitation',
-                                                [ 'user_id'     => '1000InviteUser',
-                                                  'email'       => 'reject@razorpay.com'
-                                                ]);
+            [ 'user_id'     => '1000InviteUser',
+                'email'       => 'reject@razorpay.com'
+            ]);
 
         $testData = & $this->testData[__FUNCTION__];
 
@@ -617,10 +617,10 @@ class InvitationTest extends TestCase
     public function testUpdateDeletedInvitation()
     {
         $invitation = $this->fixtures->create('invitation',
-                                [
-                                    'email'       => 'update@razorpay.com',
-                                    'deleted_at'  => '144339434',
-                                ]);
+            [
+                'email'       => 'update@razorpay.com',
+                'deleted_at'  => '144339434',
+            ]);
 
         $testData = & $this->testData[__FUNCTION__];
 
@@ -640,9 +640,9 @@ class InvitationTest extends TestCase
         $this->startTest();
 
         $invite = \DB::table('invitations')
-                     ->where('id', '=', $invitation['id'])
-                     ->whereNull('deleted_at')
-                     ->first();
+            ->where('id', '=', $invitation['id'])
+            ->whereNull('deleted_at')
+            ->first();
 
         $this->assertNull($invite);
     }
@@ -652,10 +652,10 @@ class InvitationTest extends TestCase
         $this->fixtures->create('invitation', ['email' => 'pending1@razorpay.com']);
 
         $this->fixtures->create('invitation',
-                                [
-                                    'email'       => 'pending2@razorpay.com',
-                                    'role'        => 'finance',
-                                ]);
+            [
+                'email'       => 'pending2@razorpay.com',
+                'role'        => 'finance',
+            ]);
 
         $testData = & $this->testData[__FUNCTION__];
 
@@ -722,8 +722,8 @@ class InvitationTest extends TestCase
         $invitation = $this->fixtures->create('invitation');
 
         $invite = \DB::table('invitations')
-                     ->where('id', '=', $invitation['id'])
-                     ->first();
+            ->where('id', '=', $invitation['id'])
+            ->first();
 
         $testData = & $this->testData[__FUNCTION__];
 
@@ -855,14 +855,14 @@ class InvitationTest extends TestCase
     {
         // Mock Razorx
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
-                           ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment'])
-                           ->getMock();
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
 
         $this->app->razorx->method('getTreatment')
-                          ->willReturn($returnValue);
+            ->willReturn($returnValue);
     }
 
     public function testPostSendInvitationByMerchantRestricted()
@@ -928,7 +928,7 @@ class InvitationTest extends TestCase
         $this->ba->proxyAuth('rzp_test_' . self::DEFAULT_X_MERCHANT_ID, $xMerchantUser->getId());
 
         $invitation = $this->fixtures->create('invitation',['merchant_id'=> self::DEFAULT_X_MERCHANT_ID,
-                                                                    'is_draft'    =>  1,
+            'is_draft'    =>  1,
         ]);
 
         $testData = & $this->testData[__FUNCTION__];
@@ -1388,6 +1388,45 @@ class InvitationTest extends TestCase
 
         $this->app->instance('vendor-portal', $vendorPortalServiceMock);
 
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testResendVendorPortalInvitation()
+    {
+        Mail::fake();
+
+        $this->fixtures->create('contact', ['id' => '1000000contact', 'type' => 'vendor', 'email' => 'testteaminvite@razorpay.com']);
+
+        $this->fixtures->create('invitation', ['token' => '12345678']);
+
+        $vendorPortalServiceMock = $this->getMockBuilder(VendorPortalService::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getInviteToken'])
+            ->getMock();
+
+        $vendorPortalServiceMock->expects($this->once())
+            ->method('getInviteToken')
+            ->willReturn(['invite_token'=>'12345678']);
+
+        $this->app->instance('vendor-portal', $vendorPortalServiceMock);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        Mail::assertQueued(VendorPortalInvite::class, function ($mail) {
+            $this->assertEquals(VendorPortalInvite::NEW_VENDOR_PORTAL_INVITE, $mail->view);
+
+            $this->assertRegExp('/\/vendor-portal\/signup\?invitation=[a-zA-Z0-9]+/', $mail->viewData['invite_link']);
+
+            return true;
+        });
+    }
+
+    public function testResendVendorPortalInviteWithoutContactId()
+    {
         $this->ba->proxyAuth();
 
         $this->startTest();

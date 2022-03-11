@@ -15,6 +15,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Exception;
 use RZP\Http\Request\Requests;
 use RZP\Models\Base;
+use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\User;
 use RZP\Models\Merchant;
 use RZP\Models\User\AxisUserRole;
@@ -142,9 +143,10 @@ class Core extends Base\Core
 
     public function createVendorPortalInvitation(array $input, string $contactId): Entity
     {
-        $input[Entity::TOKEN] = str_random(40);;
+        $input[Entity::TOKEN] = str_random(40);
 
         $invitation = (new Entity);
+
 
         $vendorPortalMerchantId = $this->app['config']['applications.vendor_payments']['vendor_portal_merchant_id'];
 
@@ -180,6 +182,23 @@ class Core extends Base\Core
         $invitedUserExists = (empty($invitedUser) === false);
 
         // Send email
+        $this->sendVendorPortalInviteEmail($invitation, $contactId, $invitedUserExists);
+
+        return $invitation;
+    }
+
+    public function resendVendorPortalInvitation(MerchantEntity $merchant, string $contactId): Entity
+    {
+        $params['contact_id'] = $contactId;
+
+        $token = $this->vendorPortalService->getInviteToken($merchant, $params);
+
+        $invitation = $this->fetchByToken($token['invite_token']);
+
+        $invitedUser = $this->repo->user->getUserFromEmail(strtolower($invitation[Entity::EMAIL]));
+
+        $invitedUserExists = (empty($invitedUser) === false);
+
         $this->sendVendorPortalInviteEmail($invitation, $contactId, $invitedUserExists);
 
         return $invitation;

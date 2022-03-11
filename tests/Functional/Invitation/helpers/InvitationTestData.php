@@ -1101,4 +1101,47 @@ return [
             'internal_error_code' => ErrorCode::SERVER_ERROR,
         ],
     ],
+    'testResendVendorPortalInvitation' => [
+        'request' => [
+            'url'    => '/resend_vendor_portal_invitation',
+            'method' => 'POST',
+            'content' => [
+                'contact_id' => 'cont_1000000contact',
+            ],
+            'server'  => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url')
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id' => '1000InviteMerc',
+                'email'       => 'testteaminvite@razorpay.com',
+                'role'        => 'manager',
+                'product'     => 'primary',
+            ]
+        ]
+    ],
+    'testResendVendorPortalInviteWithoutContactId' => [
+        'request' => [
+            'url'    => '/resend_vendor_portal_invitation',
+            'method' => 'POST',
+            'content' => [],
+            'server'  => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url')
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_CONTACT_ID_MISSING_FOR_INVITATION,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
 ];
