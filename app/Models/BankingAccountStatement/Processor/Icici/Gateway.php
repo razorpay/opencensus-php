@@ -577,7 +577,8 @@ class Gateway extends BaseProcessor
         {
             $timeInDescription = intval(substr($description, -14));
 
-            if (abs($longFormatPostedDate - $timeInDescription) < 120)
+            // if difference is less than 4 hours, we won't allow the records to be saved
+            if (abs($longFormatPostedDate - $timeInDescription) < 40000)
             {
                 $this->allowRecordsToSave = false;
             }
