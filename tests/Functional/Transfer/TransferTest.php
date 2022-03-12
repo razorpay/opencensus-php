@@ -133,6 +133,30 @@ class TransferTest extends TestCase
         $this->assertArraySelectiveEquals($expected, $response);
     }
 
+    public function testFetchMultipleReversals()
+    {
+        $transfer1 = $this->createTransfer('account');
+
+        $transfer2 = $this->createTransfer('account');
+
+        $reversal1 = $this->createReversal($transfer1['id'], 500);
+
+        $reversal2 = $this->createReversal($transfer1['id'], 400);
+
+        $reversal3 = $this->createReversal($transfer2['id']);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $data['response']['content']['items'][] = $reversal3;
+
+        $data['response']['content']['items'][] = $reversal2;
+
+        $data['response']['content']['items'][] = $reversal1;
+
+        $this->runRequestResponseFlow($data);
+    }
+
+
     public function testTransferToAccount()
     {
         $transfer = $this->createTransfer('account');
@@ -772,6 +796,26 @@ class TransferTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testLaFetchReversal()
+    {
+        $transfer = $this->createTransfer('account');
+
+        $reversal = $this->createReversal($transfer['id']);
+
+        $data = & $this->testData[__FUNCTION__];
+
+        $data['request']['url'] = '/la-reversals/' . $reversal['id'];
+
+        $data['response']['content'] = $reversal;
+
+        $user = $this->fixtures->user->createUserForMerchant('10000000000001', [], Role::LINKED_ACCOUNT_OWNER);
+
+        $this->ba->proxyAuth('rzp_test_10000000000001', $user->getId());
+
+        $this->startTest();
+    }
+
 
     // RM.refund_source=balance & LA.refund_source=balance
     public function testLinkedAccountReversalCase1()

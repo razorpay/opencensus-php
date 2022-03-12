@@ -12,6 +12,7 @@ use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Tests\Functional\Payment\Transfers\TransferTrait;
+use RZP\Models\User\Role;
 
 class PaymentMarketplaceTransferTest extends TestCase
 {
@@ -615,4 +616,38 @@ class PaymentMarketplaceTransferTest extends TestCase
 
         $this->app->razorx->method('getTreatment')->willReturn($variant);
     }
+
+    public function testFetchLinkedAccountTransferByPaymentId()
+    {
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $transfers[0] = [
+            'account' => 'acc_10000000000001',
+            'amount'  => 1000,
+            'currency'=> 'INR',
+        ];
+
+        $transfers = $this->transferPayment($this->payment['id'], $transfers);
+
+        $transfer = $transfers['items'][0];
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/la-transfers/payment/' . $this->payment['id'];
+
+
+        $testData['response']['content']['items'][0] += [
+            "id"                                     => $transfer['id'],
+            "source"                                 => $this->payment['id']
+        ];
+
+        $user = $this->fixtures->user->createUserForMerchant('10000000000001', [], Role::LINKED_ACCOUNT_OWNER);
+
+        $this->ba->proxyAuth('rzp_test_10000000000001', $user->getId());
+
+        $this->fixtures->merchant->addFeatures(['display_parent_payment_id'], '10000000000001');
+
+        $this->runRequestResponseFlow($testData);
+    }
+
 }

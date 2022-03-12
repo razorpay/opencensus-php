@@ -98,6 +98,20 @@ return [
         ],
     ],
 
+    'testFetchMultipleReversals' => [
+        'request' => [
+            'method'  => 'GET',
+            'url'     => '/reversals',
+            'content' => [],
+        ],
+        'response'  => [
+            'content' => [
+                'count'         => 3,
+                'items'         => [],
+            ],
+        ],
+    ],
+
     'testLiveModeTransferToNonActivatedAccount' => [
         'response'  => [
             'content' => [
@@ -402,6 +416,16 @@ return [
     'testLaFetchReversals' => [
         'request' => [
             'method'  => 'GET',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+
+    'testLaFetchReversal' => [
+        'request' => [
+            'method' => 'GET',
             'content' => [],
         ],
         'response' => [
