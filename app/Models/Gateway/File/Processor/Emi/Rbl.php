@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Gateway\File\Processor\Emi;
 
+use App;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\FileStore;
 use RZP\Models\Emi\Entity;
@@ -11,11 +12,14 @@ class Rbl extends Base
     const BANK_CODE   = IFSC::RATN;
     const FILE_TYPE   = FileStore\Type::RBL_EMI_FILE;
     const FILE_NAME   = 'Rbl_Emi_File';
-    const DATE_FORMAT = 'd-M-y';
+    const DATE_FORMAT = 'd-m-Y';
+
 
     protected function formatDataForFile($data)
     {
         $formattedData = [];
+
+        $rrn = $this->getRrnNumber($data['items']);
 
         foreach ($data['items'] as $emiPayment)
         {
@@ -32,26 +36,28 @@ class Rbl extends Base
             $emiAmount = $this->getEmiAmount($principalAmount, $rate, $tenure);
 
             $formattedData[] = [
-                'EMI ID'                           => $emiPayment->getId(),
-                'RBL Card no'                      => $this->getCardNumber($emiPayment->card),
-                'Issuer'                           => 'RBL Bank',
+                'EMIID'                           => $emiPayment->getId(),
+                'Card'                            => 'XX' . $emiPayment->card->getLast4(),
+                'Issuer'                           => 'RBL',
                 'Acquirer'                         => '',
                 'Aggregator Merchant Name'         => 'RAZORPAY',
                 'Manufacturer'                     => '',
-                'Auth Code'                        => $this->getAuthCode($emiPayment),
+                'RRN'                              => $rrn[$emiPayment->getId()]['rrn'] ?? '',
+                'Auth'                             => 'XX' . str_pad($this->getAuthCode($emiPayment), 6, '0', STR_PAD_LEFT),
                 'Tx Amount'                        => $principalAmount,
-                'EMI Offer'                        => $tenure,
-                'EMI Plan ID'                      => $issuerPlanId,
+                'tenure'                           => $tenure . ' Months',
+                'plan'                             => $issuerPlanId,
                 'Customer Name'                    => '',
-                'Mobile No'                        => '',
+                'Mobile'                           => '',
+                'Address'                          => '',
+                'Email'                            => '',
                 'Store Name'                       => '',
                 'Address1'                         => '',
                 'Store City'                       => '',
-                'Store State'                      => '',
+                'Place'                            => '',
                 'MID'                              => '',
                 'TID'                              => '',
                 'Tx Time'                          => $this->getFormattedDate($emiPayment->getAuthorizeTimestamp()),
-                'Subvention payable to Issuer'     => '',
                 'Subvention Amount (Rs.)'          => '',
                 'Interest Rate'                    => $rate,
                 'Customer Processing Fee'          => '',
@@ -93,5 +99,28 @@ class Rbl extends Base
         $den = $expression - 1;
 
         return floor($num / $den);
+    }
+
+    protected function getRrnNumber($data)
+    {
+        $CPS_PARAMS = [
+            \RZP\Reconciliator\Base\Constants::RRN
+        ];
+
+        $paymentIds = array();
+
+        foreach ($data as $payment)
+        {
+            array_push($paymentIds, $payment->id);
+        }
+
+        $request = [
+            'fields'        => $CPS_PARAMS,
+            'payment_ids'   => $paymentIds,
+        ];
+
+        $response = App::getFacadeRoot()['card.payments']->fetchAuthorizationData($request);
+
+        return $response;
     }
 }
