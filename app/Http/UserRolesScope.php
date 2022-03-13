@@ -413,7 +413,7 @@ class UserRolesScope
             'reward_fetch'                                  => [Role::ADMIN, Role::OWNER, Role::SUPPORT, Role::OPERATIONS, Role::MANAGER,],
             'setl_amount'                                   => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::OPERATIONS, Role::SUPPORT, Role::FINANCE, Role::SELLERAPP, Role::SELLERAPP_PLUS, Role::AGENT, Role::RBL_SUPERVISOR,],
             'setl_fetch_source_details'                     => [Role::ADMIN, Role::OWNER, Role::FINANCE, Role::MANAGER, Role::OPERATIONS, Role::SUPPORT,],
-            'setl_get_details'                              => [Role::ADMIN, Role::OWNER, Role::FINANCE, Role::MANAGER, Role::OPERATIONS, Role::SUPPORT,],
+            'setl_get_details'                              => array_merge([Role::ADMIN, Role::OWNER, Role::FINANCE, Role::MANAGER, Role::OPERATIONS, Role::SUPPORT,], Role::LINKED_ACCOUNT_ROLES),
             'setl_holidays'                                 => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::FINANCE, Role::OPERATIONS, Role::SUPPORT, Role::SELLERAPP,],
             'setl_sms_notification_status'                  => [Role::ADMIN, Role::OWNER, Role::MANAGER,],
             'settlement_ondemand_create_dashboard'          => [Role::ADMIN, Role::OWNER, Role::MANAGER,],
