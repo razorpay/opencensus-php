@@ -1138,7 +1138,7 @@ class Core extends Base\Core
     private function updateCapturedPaymentCount(int $count, Entity $entity, array $existingComputedSettings = [])
     {
         $this->repo->assertTransactionActive();
-        
+
         if (empty($existingComputedSettings) === true)
         {
             $existingComputedSettings = $entity->getComputedSettings()->toArray();
@@ -2513,6 +2513,11 @@ class Core extends Base\Core
         // removes spaces
         $merchantBillingLabel = '@' . strtolower(str_replace(' ', '', $merchantBillingLabel));
 
+        if(strlen($merchantBillingLabel) > Entity::MAX_SLUG_LENGTH)
+        {
+            $merchantBillingLabel = substr($merchantBillingLabel, 0, Entity::MAX_SLUG_LENGTH);
+        }
+
         $suggestions = [];
 
         if($this->slugExists($merchantBillingLabel) === false)
@@ -2531,7 +2536,15 @@ class Core extends Base\Core
     {
         while($count > 0) {
 
-            $suggestedHandle = $handle . rand(1, 10000);
+            $randInteger = rand(1, 10000);
+
+            $suggestedHandle = $handle . $randInteger;
+
+            if(strlen($suggestedHandle) > Entity::MAX_SLUG_LENGTH)
+            {
+                $suggestedHandle = substr($handle, 0, Entity::MAX_SLUG_LENGTH - strlen((string)$randInteger))
+                    . $randInteger;
+            }
 
             if ($this->slugExists($suggestedHandle) === false) {
 
@@ -2635,7 +2648,7 @@ class Core extends Base\Core
         ];
     }
 
-    protected function createGimliEntryForHandle(string $handle, string $merchantId,string $handlePageId = null)
+    protected function createGimliEntryForHandle(string $handle, string $merchantId,string $handlePageId = null, int $retryTotal = 3)
     {
         // Fail: If failed to shorten the URL, do not continue with creation and fail
         $fail = true;
@@ -2663,24 +2676,56 @@ class Core extends Base\Core
 
         $url = $this->paymentHandleHostedBaseUrl . '/' . $handle;
 
-        try
+        $sleepTime = 0;
+
+        $retry = $retryTotal;
+
+        while($retry > 0)
         {
-            $this->elfin->shorten($url, $params, $fail);
-        }
-        catch (BaseException $e)
-        {
-            // TODO: Gimli should return 4xx & Elfin service should propagate that error to callee
-            if (preg_match('/Duplicate|Blacklisted/', $e->getDataAsString()) === 1)
+            try
             {
-                throw new BadRequestException(
-                    ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
-                    ViewType::PAYMENT_HANDLE,
-                    [
-                        Entity::SLUG => $handle,
+                $shortUrl = $this->elfin->shorten($url, $params, $fail);
+
+                if($shortUrl !== "")
+                {
+                    $this->trace->count(METRIC::PAYMENT_HANDLE_SHORTENING_SUCCESSFUL_COUNT, [
+                        'slug'    => $handle,
+                        'retries' => $retryTotal - $retry
                     ]);
+
+                    $this->trace->info(TraceCode::PAYMENT_HANDLE_GIMLI_MAPPING_CREATION_SUCCESSFUL, [
+                        'slug'    => $handle,
+                        'retries' => $retryTotal - $retry
+                    ]);
+
+                    return;
+                }
             }
-            throw $e;
+            catch (\Throwable $e)
+            {
+                $this->trace->info(TraceCode::PAYMENT_HANDLE_CREATE_GIMLI_MAPPING_RETRY,[
+                    "slug"   => $handle,
+                    "retry"  => $retryTotal - $retry,
+                    "error"  => $e->getMessage()
+                ]);
+            }
+
+            $retry = $retry - 1;
+
+            sleep($sleepTime);
+
+            $sleepTime = $sleepTime + 1;
         }
+
+        $this->trace->count(Metric::PAYMENT_HANDLE_SHORTENING_UNSUCCESSFUL_COUNT);
+
+        throw new BadRequestException(
+            ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            ViewType::PAYMENT_HANDLE,
+            [
+                Entity::SLUG => $handle,
+            ]
+        );
     }
 
     protected function createPaymentPageForPaymentHandle(array $input, Merchant\Entity $merchant)

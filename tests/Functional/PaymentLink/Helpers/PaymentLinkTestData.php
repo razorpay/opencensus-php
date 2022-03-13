@@ -3068,6 +3068,34 @@ return [
         ],
     ],
 
+    'testPaymentHandleCreationBillingLabelLengthMoreThanThirty' => [
+        'request'  => [
+            'url'   => '/payment_handle',
+            'method'=> 'post',
+        ],
+        'response' => [
+            'content'   => [
+                'title'      =>    'Test Billing Label Private Limited',
+                'slug'       =>    '@testbillinglabelprivatelimite',
+                'url'        =>    'https://razorpay.me/@testbillinglabelprivatelimite'
+            ]
+        ]
+    ],
+
+    'testPaymentHandleCreationBillingLabelLengthMoreThanEighty' => [
+        'request'  => [
+            'url'   => '/payment_handle',
+            'method'=> 'post',
+        ],
+        'response' => [
+            'content'   => [
+                'title'      =>    'Test Billing Label Private Limited Lorem Ipsum is simply dummy text of the print',
+                'slug'       =>    '@testbillinglabelprivatelimite',
+                'url'        =>    'https://razorpay.me/@testbillinglabelprivatelimite'
+            ]
+        ]
+    ],
+
     'testPaymentHandlePrecreation'  => [
         'request'  => [
             'url'   => '/precreate_payment_handle',

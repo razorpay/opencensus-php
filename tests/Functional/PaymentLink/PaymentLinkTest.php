@@ -1931,6 +1931,28 @@ class PaymentLinkTest extends TestCase
         $this->assertEquals('@testlabel123', $ph->getSlugFromShortUrl());
     }
 
+    public function testPaymentHandleCreationBillingLabelLengthMoreThanThirty()
+    {
+        $this->ba->proxyAuthLive();
+
+        $this->mockGimliPaymentHandle('Test Billing Label Private Limited');
+
+        $this->fixtures->merchant->edit('10000000000000', ['billing_label' => 'Test Billing Label Private Limited']);
+
+        $this->startTest();
+    }
+
+    public function testPaymentHandleCreationBillingLabelLengthMoreThanEighty()
+    {
+        $this->ba->proxyAuthLive();
+
+        $this->mockGimliPaymentHandle('Test Billing Label Private Limited Lorem Ipsum is simply dummy text of the printing Lorem Ipsum');
+
+        $this->fixtures->merchant->edit('10000000000000', ['billing_label' => 'Test Billing Label Private Limited Lorem Ipsum is simply dummy text of the printing Lorem Ipsum']);
+
+        $this->startTest();
+    }
+
     public function testPaymentHandlePrecreation()
     {
         $this->mockGimliPaymentHandle();
@@ -2630,7 +2652,12 @@ class PaymentLinkTest extends TestCase
     {
         $handle = preg_replace('/[^a-zA-Z0-9-]+/', '', $billingLabel);
 
-        $handle = '@' . strtolower(str_replace(' ', '', $billingLabel));
+        $handle = '@' . strtolower(str_replace(' ', '', $handle));
+
+        if(strlen($handle) > Entity::MAX_SLUG_LENGTH)
+        {
+            $handle = substr($handle, 0, Entity::MAX_SLUG_LENGTH);
+        }
 
         return $handle;
     }

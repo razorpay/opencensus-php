@@ -35,4 +35,7 @@ final class Metric
     const PAYMENT_HANDLE_CREATION_FAILED_COUNT                    = 'payment_handle_creation_failed_count';
     const PAYMENT_HANDLE_CREATION_SUCCESSFUL_COUNT                = 'payment_handle_creation_successful_count';
     const PAYMENT_HANDLE_CREATION_REQUEST                         = 'payment_handle_creation_request';
+
+    const PAYMENT_HANDLE_SHORTENING_UNSUCCESSFUL_COUNT     = 'payment_handle_shortening_unsuccessful_count';
+    const PAYMENT_HANDLE_SHORTENING_SUCCESSFUL_COUNT       = 'payment_handle_shortening_successful_count';
 }

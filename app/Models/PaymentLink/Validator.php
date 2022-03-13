@@ -35,7 +35,7 @@ class Validator extends Base\Validator
         Entity::EXPIRE_BY       => 'sometimes|epoch|nullable|custom',
         Entity::TIMES_PAYABLE   => 'sometimes|mysql_unsigned_int|min:1|nullable',
         Entity::RECEIPT         => 'string|min:3|max:40|nullable',
-        Entity::TITLE           => 'required|string|min:3|max:40|utf8',
+        Entity::TITLE           => 'required|string|min:3|max:80|utf8',
         Entity::DESCRIPTION     => 'string|max:65535|nullable|utf8', // 65535 bytes is size of mysql's text data type.
         Entity::NOTES           => 'sometimes|notes',
         Entity::SLUG            => 'filled|min:4|max:30', // need to call validate slug separately for regex validation
@@ -72,7 +72,7 @@ class Validator extends Base\Validator
         Entity::EXPIRE_BY       => 'sometimes|epoch|nullable|custom',
         Entity::TIMES_PAYABLE   => 'sometimes|mysql_unsigned_int|min:1|nullable|custom',
         Entity::RECEIPT         => 'string|min:3|max:40|nullable',
-        Entity::TITLE           => 'string|min:3|max:40|utf8',
+        Entity::TITLE           => 'string|min:3|max:80|utf8',
         Entity::DESCRIPTION     => 'string|max:65535|nullable|utf8', // 65535 bytes is size of mysql's text data type.
         Entity::NOTES           => 'sometimes|notes',
         Entity::SLUG            => 'filled|min:4|max:30|custom',
@@ -183,13 +183,13 @@ class Validator extends Base\Validator
     ];
 
     protected static $createPaymentHandleRules = [
-        Entity::TITLE           => 'required|string|min:3|max:40',
+        Entity::TITLE           => 'required|string|min:3|max:80',
         Entity::SLUG            => 'required|min:4|max:30',
         Entity::CURRENCY        => 'filled|string|currency',
     ];
 
     protected static $updatePaymentHandleRules = [
-        Entity::SLUG            => 'required',
+        Entity::SLUG            => 'required|min:4|max:30',
     ];
 
     /**
