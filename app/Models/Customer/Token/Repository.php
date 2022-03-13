@@ -82,6 +82,21 @@ class Repository extends Base\Repository
         return $token;
     }
 
+    public function getByTokenAndMerchant($token, Merchant\Entity $merchant)
+    {
+        $token = $this->newQuery()
+            ->where(Token\Entity::MERCHANT_ID, '=', $merchant->getId())
+            ->where(Token\Entity::TOKEN, '=', $token)
+            ->first();
+
+        if ($token !== null)
+        {
+            $token->merchant()->associate($merchant);
+        }
+
+        return $token;
+    }
+
     public function getByTokenAndCustomerId(string $token, string $customerId)
     {
         return $this->newQuery()
@@ -163,6 +178,27 @@ class Repository extends Base\Repository
                     ->orderBy(Token\Entity::CREATED_AT, 'desc')
                     ->orderBy(Token\Entity::ID, 'desc')
                     ->get();
+    }
+
+
+    public function getByMethodAndCustomerIdIsNull ($method , $merchantId ,$vaultToken)
+    {
+         $tokenCardIdColumn = $this->repo->token->dbColumn(Token\Entity::CARD_ID);
+         $tokenMerchantIdColumn = $this->repo->token->dbColumn(Token\Entity::MERCHANT_ID);
+         $tokenCreatedAtColumn = $this->repo->token->dbColumn(Token\Entity::CREATED_AT);
+         $tokenIdColumn = $this->repo->token->dbColumn(Token\Entity::ID);
+         $cardIdColumn = $this->repo->card->dbColumn(Card\Entity::ID);
+
+         return $this->newQueryWithConnection($this->getSlaveConnection())
+                     ->select($this->repo->token->dbColumn('*'))
+                     ->join(Table::CARD, $tokenCardIdColumn, '=', $cardIdColumn)
+                     ->where(Entity::METHOD, '=', $method)
+                     ->where($tokenMerchantIdColumn, '=', $merchantId)
+                     ->where(Card\Entity::VAULT_TOKEN,'=' , $vaultToken)
+                     ->whereNull(Entity::CUSTOMER_ID)
+                     ->orderBy($tokenCreatedAtColumn, 'desc')
+                     ->orderBy($tokenIdColumn, 'desc')
+                     ->get();
     }
 
     public function getByMethodAndCustomerIdAndCardIds($method, $customer, $cardIds)

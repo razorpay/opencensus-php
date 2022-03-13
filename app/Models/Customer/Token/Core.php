@@ -290,6 +290,83 @@ class Core extends Base\Core
         return $token;
     }
 
+    public function createWithoutCustomer($input, Merchant\Entity $merchant, Card\Entity $card = null , bool $validateExisting = true) {
+
+        $traceInput = $input;
+
+        unset($traceInput[Entity::AADHAAR_NUMBER]);
+
+        $this->trace->info(
+            TraceCode::TOKEN_CREATE,
+            [
+                'input'       => $traceInput
+            ]
+        );
+
+        $token = new Token\Entity;
+
+        if (isset($input[Token\Entity::CARD_ID]) === true)
+        {
+            $card = $this->repo->card->findOrFailPublic($input[Token\Entity::CARD_ID]);
+        }
+
+        //
+        // This is here because we are doing
+        // a terminal check later in the flow.
+        //
+        $terminal = null;
+
+        if (isset($input[Token\Entity::TERMINAL_ID]))
+        {
+            //
+            // This if block gets run only in case of wallet currently. + nach migration
+            //
+
+            $terminal = $this->repo->terminal->findOrFail($input[Token\Entity::TERMINAL_ID]);
+
+            unset($input[Token\Entity::TERMINAL_ID]);
+        }
+
+        //
+        // This should be before associations because if defaults for the
+        // foreign entities are present as null in the entity class
+        // and if the association is done before the build, the
+        // association will get overridden as null.
+        //
+        $token->build($input);
+
+        if ($card !== null)
+        {
+            if ($token->getExpiredAt() === null)
+            {
+                $token->setExpiredAt($card->getExpiryTimestamp());
+            }
+
+            $token->card()->associate($card);
+        }
+
+        if ($terminal !== null)
+        {
+            $token->terminal()->associate($terminal);
+        }
+
+        $token->merchant()->associate($merchant);
+
+        if ($validateExisting === true)
+        {
+            $existingToken = $this->validateExistingToken($token);
+
+            if ($existingToken !== null)
+            {
+                return $existingToken;
+            }
+        }
+
+        $this->repo->saveOrFail($token);
+
+        return $token;
+    }
+
     public function cloneToken(Entity $token) :Entity
     {
         $createInput = [
@@ -347,6 +424,49 @@ class Core extends Base\Core
                     $id,
                     'Token not found for id: ' . $id . ' customer id: ' . $customer->getId());
             }
+        }
+
+        return $token;
+    }
+
+    /**
+     * Get the token entity for merchant with no customer.
+     * $id can be token or
+     * token id or
+     * gateway token(with recurring_debit_umrn feature enabled for merchant)
+     * for now.
+     * @param $id
+     * @param $merchant
+     * @return Token\Entity
+     */
+    public function getByTokenIdAndMerchant($id, Merchant\Entity $merchant)
+    {
+        $token = null;
+
+        if (($this->merchant !== null) and
+            ($this->merchant->isFeatureEnabled(Feature::RECURRING_DEBIT_UMRN) === true))
+        {
+            $token = $this->repo->token->getByGatewayTokenAndMerchantId($id, $merchant->getId());
+        }
+
+        // TODO: remove this once merchants shifts to token_id
+        if ($token === null)
+        {
+            $token = $this->repo->token->getByTokenAndMerchant($id, $merchant);
+        }
+
+        if ($token === null)
+        {
+            $token = $this->repo->token->findByPublicIdAndMerchant($id, $merchant);
+        }
+
+        if (($token->getMerchantId() !== $merchant->getId()) || (empty($token->getCustomerId()) === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_TOKEN_NOT_FOUND,
+                Entity::ID,
+                $id,
+                'Token not found for id: ' . $id . ' merchant id: ' . $merchant->getId());
         }
 
         return $token;
@@ -865,8 +985,22 @@ class Core extends Base\Core
 
     protected function validateExistingToken($token)
     {
-        $existingTokens = $this->repo->token->getByMethodAndCustomerId(
-                                $token->getMethod(), $token->customer);
+        $customer = $token->customer;
+
+        if ($customer !== null)
+        {
+            $existingTokens = $this->repo->token->getByMethodAndCustomerId(
+                $token->getMethod(), $token->customer);
+        }
+        else
+        {
+            if ($token->card->getVaultToken() === null )
+            {
+                return null;
+            }
+
+            $existingTokens = $this->repo->token->getByMethodAndCustomerIdIsNull($token->getMethod(),$token->getMerchantId(), $token->card->getVaultToken());
+        }
 
         $func = 'validateExistingToken' . studly_case($token->getMethod());
 

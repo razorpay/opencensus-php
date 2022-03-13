@@ -1554,6 +1554,149 @@ class SavedCardsPaymentCreateTest extends TestCase
         $this->assertEquals(true, $content['tokens']['items'][0]['consent_taken']);
     }
 
+    public function testS2SPaymentCreateAndSaveCardWithoutCustomer()
+    {
+        $this->ba->privateAuth();
+
+        $this->mockCardVault();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['save'] = 1;
+
+        $this->fixtures->merchant->addFeatures(['s2s']);
+
+        $response = $this->doS2SPrivateAuthPayment($payment);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $response);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $card = $this->getLastEntity('card', true);
+
+        $token = $this->getLastEntity('token', true);
+
+        $this->assertEquals($payment['id'], $response['razorpay_payment_id']);
+
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->assertTrue($this->redirectToAuthorize);
+
+        // validations
+        $this->assertEquals($payment[Payment::CARD_ID], $card['id']);
+
+        $this->assertTrue($payment['save']);
+
+        $this->assertEquals('card_'.$token[Token::CARD_ID], $card['id']);
+
+        $this->assertNull($payment[Payment::GLOBAL_TOKEN_ID]);
+
+        $this->assertEquals($token[Token::USED_COUNT], 1);
+
+        $this->assertNotEquals($token[Token::USED_AT], null);
+
+        // create another payment with new token and fetch entities
+
+        $this->payment = $this->getDefaultPaymentArray();
+        unset($this->payment[Payment::BANK]);
+        unset($this->payment[Payment::NOTES]);
+        $this->payment[Payment::CARD] = ['cvv' => 111];
+        $this->payment[Payment::TOKEN] = $token[Payment::TOKEN];
+        $content = $this->doS2SPrivateAuthPayment($this->payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $card = $this->getLastEntity('card', true);
+
+        $token = $this->getLastEntity('token', true);
+
+        // validations
+        $this->assertArrayHasKey('razorpay_payment_id', $content);
+
+        $this->assertEquals($payment[Payment::TOKEN_ID], $token['id']);
+
+        $this->assertFalse($payment['save']);
+
+        $this->assertEquals($card[Card::GLOBAL_CARD_ID], null);
+
+        $this->assertEquals($token[Token::USED_COUNT], 2);
+
+        $this->assertNotEquals($token[Token::USED_AT], null);
+
+    }
+
+    public function testCreateAndSaveCardTwiceWithoutCustomer()
+    {
+        $this->ba->privateAuth();
+
+        $this->mockCardVault();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['save'] = 1;
+
+        $this->fixtures->merchant->addFeatures(['s2s']);
+
+        $response = $this->doS2SPrivateAuthPayment($payment);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $response);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $card = $this->getLastEntity('card', true);
+
+        $token1 = $this->getLastEntity('token', true);
+
+        $this->assertEquals($payment['id'], $response['razorpay_payment_id']);
+
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->assertTrue($this->redirectToAuthorize);
+
+        // validations
+        $this->assertEquals($payment[Payment::CARD_ID], $card['id']);
+
+        $this->assertTrue($payment['save']);
+
+        $this->assertEquals('card_'.$token1[Token::CARD_ID], $card['id']);
+
+        $this->assertNull($payment[Payment::GLOBAL_TOKEN_ID]);
+
+        $this->assertEquals($token1[Token::USED_COUNT], 1);
+
+        $this->assertNotEquals($token1[Token::USED_AT], null);
+
+        // create another payment with new token and fetch entities
+
+        $this->payment = $this->getDefaultPaymentArray();
+
+        $this->payment['save'] = 1;
+
+        $content = $this->doS2SPrivateAuthPayment($this->payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $card = $this->getLastEntity('card', true);
+
+        $token2 = $this->getLastEntity('token', true);
+
+        // validations
+        $this->assertArrayHasKey('razorpay_payment_id', $content);
+
+        $this->assertEquals($payment[Payment::TOKEN_ID], $token2['id']);
+
+        $this->assertTrue($payment['save']);
+
+        $this->assertEquals($card[Card::GLOBAL_CARD_ID], null);
+
+        $this->assertEquals($token2[Token::USED_COUNT], 2);
+
+        $this->assertNotEquals($token2[Token::USED_AT], null);
+
+        $this->assertEquals($token1['id'], $token2['id']);
+    }
+
+
     protected function mockSession($appToken = 'capp_1000000custapp')
     {
         $data = [ 'test_app_token' => $appToken ];

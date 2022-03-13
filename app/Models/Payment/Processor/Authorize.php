@@ -4183,7 +4183,7 @@ trait Authorize
         }
         else if ($customer === null)
         {
-            $this->preProcessPaymentWithoutSaving($payment, $input, $gatewayInput);
+            $this->preProcessPaymentWithoutCustomer($payment, $input, $gatewayInput);
         }
         else if ($customer->isLocal() === true)
         {
@@ -4971,6 +4971,29 @@ trait Authorize
         }
     }
 
+    // process the s2s saved card payment without customer_id
+    protected function preProcessPaymentWithoutCustomer($payment, array & $input, array & $gatewayInput)
+    {
+        $saveMethod = $payment->getSave();
+
+        if (($payment->isMethodCardOrEmi() === false) or
+            ($this->app['basicauth']->isPrivateAuth() === false) or
+            ((empty($input[Payment\Entity::TOKEN]) === true) && ($saveMethod === false)))
+        {
+            $this->preProcessPaymentWithoutSaving($payment, $input, $gatewayInput);
+            return;
+        }
+
+        if (empty($input[Payment\Entity::TOKEN]) === true)
+        {
+            $this->preProcessPaymentFromUserDataLocal($payment, $input, $gatewayInput, null);
+        }
+        else
+        {
+            $this->preProcessPaymentFromSavedMethodLocal( $payment, $input, $gatewayInput, null);
+        }
+    }
+
     protected function preProcessPaymentForLocalCustomer(Customer\Entity $customer,
                                                          Payment\Entity $payment,
                                                          array & $input,
@@ -4983,11 +5006,11 @@ trait Authorize
         //
         if (empty($input[Payment\Entity::TOKEN]) === true)
         {
-            $this->preProcessPaymentFromUserDataLocal($customer, $payment, $input, $gatewayInput);
+            $this->preProcessPaymentFromUserDataLocal($payment, $input, $gatewayInput, $customer);
         }
         else
         {
-            $this->preProcessPaymentFromSavedMethodLocal($customer, $payment, $input, $gatewayInput);
+            $this->preProcessPaymentFromSavedMethodLocal($payment, $input, $gatewayInput, $customer);
         }
     }
 
@@ -5113,10 +5136,10 @@ trait Authorize
         }
     }
 
-    protected function preProcessPaymentFromSavedMethodLocal(Customer\Entity $customer,
-                                                           Payment\Entity $payment,
-                                                           array & $input,
-                                                           array & $gatewayInput)
+    protected function preProcessPaymentFromSavedMethodLocal(Payment\Entity $payment,
+                                                             array & $input,
+                                                             array & $gatewayInput,
+                                                             Customer\Entity $customer = null)
     {
         $this->trace->info(
             TraceCode::PAYMENT_PROCESS_FROM_SAVED_LOCAL,
@@ -5126,7 +5149,14 @@ trait Authorize
 
         $tokenId = $input[Payment\Entity::TOKEN];
 
-        $token = (new Token\Core)->getByTokenIdAndCustomer($tokenId, $customer);
+        if ($customer !== null)
+        {
+            $token = (new Token\Core)->getByTokenIdAndCustomer($tokenId, $customer);
+        }
+        else
+        {
+            $token = (new Token\Core)->getByTokenIdAndMerchant($tokenId, $payment->merchant);
+        }
 
         if ($payment->isMethodCardOrEmi() === true)
         {
@@ -5230,10 +5260,11 @@ trait Authorize
         }
     }
 
-    protected function preProcessPaymentFromUserDataLocal(Customer\Entity $customer,
-                                                          Payment\Entity $payment,
+    protected function preProcessPaymentFromUserDataLocal(Payment\Entity $payment,
                                                           array $input,
-                                                          array & $gatewayInput)
+                                                          array & $gatewayInput,
+                                                          Customer\Entity $customer = null)
+
     {
         // If save is set to true or recurring is set to true,
         // we save the card details while processing the payment
@@ -5247,7 +5278,7 @@ trait Authorize
         }
         else
         {
-            $this->savePaymentMethodLocal($customer, $payment, $input, $gatewayInput);
+            $this->savePaymentMethodLocal($payment, $input, $gatewayInput, $customer);
         }
     }
 
@@ -5272,31 +5303,33 @@ trait Authorize
         }
     }
 
-    protected function savePaymentMethodLocal(Customer\Entity $customer,
-                                              Payment\Entity $payment,
+    protected function savePaymentMethodLocal(Payment\Entity $payment,
                                               array $input,
-                                              array & $gatewayInput)
+                                              array & $gatewayInput,
+                                              Customer\Entity $customer = null)
     {
         $token = null;
 
         // create local saved card and link to payment
         if (($payment->isMethodCardOrEmi() === true) and ($payment->isGooglePayCard() === false))
         {
-            $gatewayInput['card'] = $this->createCardEntity($input['card'], true, $customer->merchant, $input);
+            $merchant = ($customer === null) ? $payment->merchant : $customer->merchant;
+
+            $gatewayInput['card'] = $this->createCardEntity($input['card'], true, $merchant, $input);
 
             $savedLocalCard = $payment->card;
 
             // save local saved card for local customer
-            $token = $this->savePaymentMethod($customer, $payment, $savedLocalCard->getId(), $input);
+            $token = $this->savePaymentMethod($payment, $customer, $savedLocalCard->getId(), $input);
         }
         else if ($payment->isEmandate() === true)
         {
             // save emandate bank locally for local customer
-            $token = $this->savePaymentMethod($customer, $payment, null, $input);
+            $token = $this->savePaymentMethod($payment, $customer, null, $input);
         }
         else if (($payment->isUpiRecurring() === true) or ($this->shouldSaveVpaForUpiPayments() === true))
         {
-            $token = $this->savePaymentMethod($customer, $payment, null, $input);
+            $token = $this->savePaymentMethod($payment, $customer, null, $input);
 
             // If payment is upi recurring, we will update the mandate entity with the token id. We have already
             // validated that for upi recurring, the order has upi mandate entity linked.
@@ -5309,7 +5342,7 @@ trait Authorize
         }
         else if ($payment->isNach() === true)
         {
-            $token = $this->savePaymentMethod($customer, $payment, null, $input);
+            $token = $this->savePaymentMethod($payment, $customer, null, $input);
         }
 
         if ($token !== null)
@@ -5341,16 +5374,16 @@ trait Authorize
             $this->repo->saveOrFail($payment->card);
 
             // save global saved card for global customer
-            $token = $this->savePaymentMethod($customer, $payment, $savedGlobalCard->getId(), $input);
+            $token = $this->savePaymentMethod($payment, $customer, $savedGlobalCard->getId(), $input);
         }
         else if ($payment->isEmandate() === true)
         {
             // save emandate bank token globally for global customer
-            $token = $this->savePaymentMethod($customer, $payment, null, $input);
+            $token = $this->savePaymentMethod($payment, $customer, null, $input);
         }
         else if (($payment->isUpiRecurring() === true) or ($this->shouldSaveVpaForUpiPayments() === true))
         {
-            $token = $this->savePaymentMethod($customer, $payment, null, $input);
+            $token = $this->savePaymentMethod($payment, $customer, null, $input);
 
 
             // If payment is upi recurring, we will update the mandate entity with the token id. We have already
@@ -5369,7 +5402,7 @@ trait Authorize
     }
 
     protected function savePaymentMethod(
-        Customer\Entity $customer, Payment\Entity $payment, $savedCardId = null, array $input = [])
+        Payment\Entity $payment, Customer\Entity $customer = null, $savedCardId = null, array $input = [])
     {
         if ($payment->isMethodCardOrEmi() === true)
         {
@@ -5391,14 +5424,23 @@ trait Authorize
             return null;
         }
 
+        $customerId = null;
+        $customerLocal = null;
+
+        if ($customer !== null)
+        {
+            $customerId = $customer->getId();
+            $customerLocal = $customer->isLocal();
+        }
+
         $this->trace->info(
             TraceCode::PAYMENT_SAVE_METHOD,
             [
                 'method'            => $payment->getMethod(),
                 'payment_id'        => $payment->getId(),
                 'merchant_id'       => $payment->merchant->getId(),
-                'customer_id'       => $customer->getId(),
-                'local'             => $customer->isLocal(),
+                'customer_id'       => $customerId,
+                'local'             => $customerLocal,
                 'card_id'           => $savedCardId,
                 'auth_type'         => $payment->getAuthType(),
                 'account_type'      => $input[Payment\Entity::BANK_ACCOUNT][Token\Entity::ACCOUNT_TYPE] ?? null,
@@ -5578,7 +5620,15 @@ trait Authorize
         // @codingStandardsIgnoreStart
         try
         {
-            $token = (new Token\Core)->create($customer, $saveMethodInput, null, $validateExisting);
+            if ($customer !== null)
+            {
+                $token = (new Token\Core)->create($customer, $saveMethodInput, null, $validateExisting);
+            }
+            else
+            {
+                $token = (new Token\Core)->createWithoutCustomer($saveMethodInput, $payment->merchant, $card , $validateExisting);
+            }
+
         }
         catch (\Exception $e)
         {
