@@ -448,7 +448,7 @@ class ActivationTest extends OAuthTestCase
             'payumoney'     => true,
             'payzapp'       => true,
             'sbibuddy'      => true,
-            'phonepe'       => true,
+            'phonepe'       => false,
             'debit_emi_providers'=> ['HDFC' => 1],
         ];
 
@@ -679,7 +679,7 @@ class ActivationTest extends OAuthTestCase
             'payumoney'     => true,
             'payzapp'       => true,
             'sbibuddy'      => true,
-            'phonepe'       => true,
+            'phonepe'       => false,
             'cardless_emi'  => false,
             'debit_emi_providers'=> [],
         ];
@@ -746,7 +746,7 @@ class ActivationTest extends OAuthTestCase
             'payumoney'     => true,
             'payzapp'       => true,
             'sbibuddy'      => true,
-            'phonepe'       => true,
+            'phonepe'       => false,
             'cardless_emi'  => true,
             'debit_emi_providers'=> [],
         ];
@@ -814,7 +814,7 @@ class ActivationTest extends OAuthTestCase
             'payumoney'     => true,
             'payzapp'       => true,
             'sbibuddy'      => true,
-            'phonepe'       => true,
+            'phonepe'       => false,
             'cardless_emi'  => true,
         ];
 
@@ -881,7 +881,7 @@ class ActivationTest extends OAuthTestCase
             'payumoney'     => true,
             'payzapp'       => true,
             'sbibuddy'      => true,
-            'phonepe'       => true,
+            'phonepe'       => false,
             'cardless_emi'  => false,
             'debit_emi_providers'=> [],
         ];

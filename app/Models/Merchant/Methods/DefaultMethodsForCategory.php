@@ -956,6 +956,7 @@ class DefaultMethodsForCategory
     const AUTO_DISABLED_METHODS = [
         Entity::PAYTM,
         Entity::PAYPAL,
+        Entity::PHONEPE,
     ];
 
     // Refer: https://docs.google.com/spreadsheets/d/1SbG4Zi29QFBjwN8QjKS47V13DW6LFbDk0U-OXQ1FLQo
