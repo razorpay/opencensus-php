@@ -331,10 +331,6 @@ class Service
                 ];
                 break;
             case self::ENTITY_FETCH:
-                $data = [
-                    'data'      => $input,
-                    'gateway'   => $input['gateway'],
-                ];
                 break;
             default:
                 throw new Exception\LogicException(
@@ -474,7 +470,7 @@ class Service
             case Payment\Action::AUTHORIZE_FAILED:
                 return $this->processVerifyResponse($response);
             case self::ENTITY_FETCH:
-                return $response;
+                return $response[Response::ENTITY];
             default:
                 throw new Exception\LogicException(
                     'No supported actions found for UPS',

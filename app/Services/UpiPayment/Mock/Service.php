@@ -252,7 +252,7 @@ class Service extends UpiPaymentService
 
     protected function entityFetch(array $content)
     {
-        $response = [
+        $response['entity'] = [
             'customer_reference'    => '22712135190',
             'npci_txn_id'           => 'FT2022712537204137',
             'gateway_reference'     => '',
