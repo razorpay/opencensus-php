@@ -799,6 +799,7 @@ class InstrumentRequestProxyTest extends TestCase
             $this->assertEquals($testCase[self::EXPECTED_REQUEST_CONTENT_TERMINALS_SERVICE], $content);
 
             $this->assertArrayHasKey('X-Dashboard-Admin-Email', $additionalHeaders);
+            $this->assertArrayHasKey('permission', $additionalHeaders);
 
             $body = '
                    {

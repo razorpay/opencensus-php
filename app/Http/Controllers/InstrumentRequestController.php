@@ -7,6 +7,7 @@ use App;
 use Request;
 use ApiResponse;
 use RZP\Trace\TraceCode;
+use RZP\Models\Admin\Permission;
 use Illuminate\Routing\Controller as BaseController;
 
 
@@ -16,6 +17,7 @@ class InstrumentRequestController extends BaseController
     const X_DASHBOARD_ADMIN_ORG_ID = 'X-Dashboard-Admin-OrgId';
     const X_DASHBOARD_MERCHANT_ID   = "X-Dashboard-Merchant-Id";
     const X_DASHBOARD_MERCHANT_ORG_ID   = "X-Dashboard-Merchant-OrgId";
+    const PERMISSION    =   'permission';
 
     // razorx flags
     const RAZORX_FLAG_SWITCH_BULK_PATCH_ROUTE = 'terminals_service_bulk_patch_instrument_request';
@@ -23,6 +25,7 @@ class InstrumentRequestController extends BaseController
     protected $app;
 
     protected $auth;
+
     /**
      * InstrumentRequestController constructor.
      */
@@ -428,8 +431,24 @@ class InstrumentRequestController extends BaseController
 
     protected function getKAMHeadersForInstrumentRequest() : array
     {
+        $permissionName = Permission\Name::UPDATE_MERCHANT_INSTRUMENT_REQUEST;
+        $adminPermissions = $this->auth->getAdmin()->getPermissionsList();
+
+        foreach ($adminPermissions as $adminPermission) {
+            if ($adminPermission === Permission\Name::SKIP_ACTIVATION_CHECK_WHILE_RAISING_MIR_FROM_KAM){
+                $permissionName = Permission\Name::SKIP_ACTIVATION_CHECK_WHILE_RAISING_MIR_FROM_KAM;
+            }
+        }
+
+        $this->trace->info(
+            TraceCode::SKIP_ACTIVATION_CHECK_PERMISSION,
+            [
+                'PERMISSION'          => $permissionName,
+            ]);
+
         return [
             self::X_DASHBOARD_ADMIN_EMAIL => $this->getAdminEmail(), // will be empty if not kam
+            self::PERMISSION => $permissionName
         ];
 
     }

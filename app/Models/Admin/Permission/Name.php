@@ -623,6 +623,7 @@ class Name
     const DELETE_INTERNAL_INSTRUMENT_REQUEST = 'delete_internal_instrument_request';
 
     const UPDATE_MERCHANT_INSTRUMENT_REQUEST = 'update_merchant_instrument_request';
+    const SKIP_ACTIVATION_CHECK_WHILE_RAISING_MIR_FROM_KAM = 'skip_activation_check_while_raising_mir_from_kam';
     const VIEW_MERCHANT_INSTRUMENT_REQUEST   = 'view_merchant_instrument_request';
 
     const UPDATE_MERCHANT_INSTRUMENT = 'update_merchant_instrument';

@@ -1766,6 +1766,10 @@ return [
                 'description'   => 'Update single/bulk merchant instrument requests',
                 'assignable'    => true,
             ],
+            Permission::SKIP_ACTIVATION_CHECK_WHILE_RAISING_MIR_FROM_KAM => [
+                'description'   => 'Skip activation check for merchant instrument requests raised from KAM dashboard',
+                'assignable'    => true,
+            ],
             Permission::UPDATE_MERCHANT_INSTRUMENT => [
                 'description'   => 'Update merchant instrument',
                 'assignable'    => true,
