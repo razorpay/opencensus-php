@@ -441,7 +441,7 @@ class DefaultMethodsForCategory
                 ],
                 '5971'  =>  [
                     Category::ECOMMERCE => [
-                        self::BLACKLISTED_METHODS => [ENTITY::AMEX, Entity::EMI, Entity::CARDLESS_EMI, Entity::HDFC_DEBIT_EMI],
+                        self::BLACKLISTED_METHODS => [ENTITY::AMEX, Entity::EMI, Entity::HDFC_DEBIT_EMI],
                         self::GREYLISTED_METHODS =>[],
                         self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
                     ]
