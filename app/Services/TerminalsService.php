@@ -40,6 +40,7 @@ class TerminalsService
     const X_RAZORPAY_TASKID         = 'X-Razorpay-TaskId';
     const X_RZP_TESTCASE_ID         = 'X-RZP-TESTCASE-ID';
     const X_DASHBOARD_MERCHANT_ID   = 'X-Dashboard-Merchant-Id';
+    const X_TRUNCATE_TERMINAL_RESPONSE  = 'X-Truncate-Terminal-Response';
 
 
     const GATEWAY           = 'gateway';
@@ -261,6 +262,10 @@ class TerminalsService
             $options[self::CONNECT_TIMEOUT] = 0.5;
         }
 
+        $additionalHeaders = $this->addHeaderForExternalOrg();
+
+        $headers = array_merge($headers, $additionalHeaders);
+
         // For merchant dashboard requests : RaaS
         if ((strpos($path, "/mid/provider") !== false) || ((strpos($path, "optimizer/merchant/mid/methods") !== false)))
         {
@@ -272,6 +277,27 @@ class TerminalsService
         $response = $this->sendRequest($path, $input, $method, $options, $headers);
 
         return $this->parseAndReturnResponse($response)[self::DATA] ?? [];
+    }
+
+    protected function addHeaderForExternalOrg():array
+    {
+        $additionalHeaders = [];
+
+        $orgId = $this->app['basicauth']->getOrgId();
+
+        if(empty($orgId) === false)
+        {
+            $orgId = Org\Entity::verifyIdAndSilentlyStripSign($orgId);
+
+            $validateOrgHasFeature = (new Org\Service)->validateOrgIdWithFeatureFlag($orgId, 'axis_org');
+
+            if($validateOrgHasFeature === true)
+            {
+                $additionalHeaders = $this->getTruncateResponseHeaders();
+            }
+        }
+
+        return $additionalHeaders;
     }
 
     public function proxyTerminalServiceFormRequest($input, $method, $path, $options = [], $headers = [])
@@ -840,6 +866,14 @@ class TerminalsService
         }
         return [];
     }
+
+    protected function getTruncateResponseHeaders() : array
+    {
+        return [
+            self::X_TRUNCATE_TERMINAL_RESPONSE => 'gateway',
+        ];
+    }
+
     protected function getRequestMultipart($input)
     {
         $multipart = [

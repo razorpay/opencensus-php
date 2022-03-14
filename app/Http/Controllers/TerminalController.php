@@ -6,6 +6,7 @@ use ApiResponse;
 use Request;
 use Route;
 use RZP\Trace\TraceCode;
+use RZP\Models\Admin\Org;
 
 class TerminalController extends Controller
 {
@@ -316,7 +317,7 @@ class TerminalController extends Controller
         $path = "v2/terminal/onboard/" . $mid . "/status?gateway=" . $gateway;
 
         $response = $this->app['terminals_service']->proxyTerminalService('', $method, $path, ['timeout' => 10],  []);
-        
+
         return ApiResponse::json($response);
     }
 
@@ -391,6 +392,33 @@ class TerminalController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function fetchMerchantsTerminals()
+    {
+        $input = Request::all();
+
+        $orgId = $this->app['basicauth']->getOrgId();
+
+        $input['org_id'] = Org\Entity::verifyIdAndSilentlyStripSign($orgId);
+        if(isset($input['merchant_id']))
+        {
+            $input['merchant_ids'] = [$input['merchant_id']];
+        }
+
+        if(isset($input['terminal_id']))
+        {
+            $input['terminal_ids'] = [$input['terminal_id']];
+        }
+
+        $response = $this->app['terminals_service']->proxyTerminalService(
+            $input,
+            \Requests::POST,
+            'v1/merchants/terminals'
+        );
+
+        return ApiResponse::json($response);
+    }
+
 
     public function updateTerminalsBulk()
     {

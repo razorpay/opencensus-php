@@ -867,6 +867,25 @@ return [
         ],
     ],
 
+    'testTerminalServiceProxyFetchMerchantsTerminals' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/merchants/terminals',
+            'content' => [
+                'gateway' => 'paysecure',
+                'merchant_ids'  => ['1000000000000m'],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                [
+                'merchant_ids' => "10000000000000",
+                "gateway" => "paysecure"
+                ]
+            ],
+        ],
+    ],
+
     'testTerminalServiceProxyCreateTerminalSubmerchant' => [
         'request' => [
             'method'  => 'POST',

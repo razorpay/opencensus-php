@@ -500,6 +500,7 @@ class Route
         'terminals_proxy_fetch_gateway_credential' => ['get',      'terminals/proxy/gateway_credentials/{gateway}',  'TerminalController@proxyV2TerminalService'                         ],
         'terminals_proxy_delete_gateway_credential'=> ['delete',   'terminals/proxy/gateway_credentials/{id}',       'TerminalController@proxyV2TerminalService'                         ],
         'terminals_proxy_fetch_terminals_credentials'=> ['post',   'terminals/credentials',                          'TerminalController@fetchTerminalsCredentials'                      ],
+        'terminals_proxy_fetch_terminals_org'      => ['post',     'merchants/terminals',                            'TerminalController@fetchMerchantsTerminals'                      ],
 
         // terminal service optimizer related proxies
         'terminals_proxy_get_optimizer_gateways'            =>  ['get',     'terminals/proxy/optimizer/supported_gateways',          'TerminalController@proxyV2TerminalService'             ],
@@ -5750,6 +5751,7 @@ class Route
         'terminal_remove_merchant',
         'terminal_restore',
         'terminal_toggle',
+        'terminals_proxy_fetch_terminals_org',
         'transaction_create_fees_breakup',
         'upi_fill_bank',
         'upi_psp_allow',
@@ -6670,6 +6672,7 @@ class Route
         'gateway_update_rule'                      => Permission::EDIT_GATEWAY_RULE,
         'gateway_delete_rule'                      => Permission::DELETE_GATEWAY_RULE,
         'terminal_toggle'                          => Permission::TOGGLE_TERMINAL,
+        'terminals_proxy_fetch_terminals_org'      => Permission::VIEW_TERMINAL_EXTERNAL_ORG,
         'terminal_update_bulk'                     => Permission::EDIT_TERMINAL,
         'terminal_check_encrypted_value'           => Permission::CHECK_TERMINAL_SECRET,
         'terminal_delete'                          => Permission::DELETE_TERMINAL,
@@ -11047,6 +11050,7 @@ class Route
             'terminal_set_banks',
             'terminal_toggle',
             'terminal_update_bulk',
+            'terminals_proxy_fetch_terminals_org',
             'terminals_proxy_create_gateway_credential',
             'terminals_proxy_delete_gateway_credential',
             'terminals_proxy_fetch_gateway_credential',

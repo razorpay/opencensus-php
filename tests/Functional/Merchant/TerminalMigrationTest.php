@@ -3008,6 +3008,17 @@ class TerminalMigrationTest extends TestCase
         $this->startTest();
     }
 
+    public function testTerminalServiceProxyFetchMerchantsTerminals()
+    {
+        $this->ba->adminAuth();
+
+        $this->mockTerminalsServiceSendRequest(function() {
+            return $this->getProxyFetchMerchantsTerminalsTerminalServiceResponse();
+        }, 1);
+
+        $this->startTest();
+    }
+
 
     public function testTerminalServiceProxyCreateTerminalSubmerchant()
     {
