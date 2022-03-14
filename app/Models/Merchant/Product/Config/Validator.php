@@ -48,7 +48,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $settlementsRules = [
-        Util\Constants::BENEFICIARY_NAME => 'sometimes|regex:/^[a-zA-Z0-9\s]+$/|min:4|max:120',
+        Util\Constants::BENEFICIARY_NAME => 'sometimes|string|min:4|max:120',
         Util\Constants::IFSC_CODE        => 'sometimes|alpha_num|max:11|custom',
         Util\Constants::ACCOUNT_NUMBER   => 'sometimes|regex:/^[a-zA-Z0-9]+$/|between:5,20|custom',
     ];

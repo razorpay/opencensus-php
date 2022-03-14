@@ -395,7 +395,7 @@ return [
                 'settlements' => [
                     'account_number'   => '123576432234',
                     'ifsc_code'        => 'HDFC0000317',
-                    'beneficiary_name' => 'bank account name'
+                    'beneficiary_name' => 'bank - account name'
                 ],
             ],
         ],
@@ -420,7 +420,7 @@ return [
                     'settlements'     => [
                         'account_number'   => '123576432234',
                         'ifsc_code'        => 'HDFC0000317',
-                        'beneficiary_name' => 'bank account name'
+                        'beneficiary_name' => 'bank - account name'
                     ],
                 ],
                 'requirements'         => [
