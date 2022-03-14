@@ -268,6 +268,7 @@ class Tracing
 
             // Partner routes
             'merchant_bulk_onboarding_admin',
+            'update_partner_type',
             'account_create',
             'account_list',
             'account_fetch',

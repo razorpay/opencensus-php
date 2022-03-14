@@ -17,12 +17,14 @@ use RZP\Models\Merchant;
 use RZP\Models\Partner;
 use RZP\Base\RuntimeManager;
 use RZP\Constants\Entity as E;
+use RZP\Constants\HyperTrace;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Credits;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Merchant\AccessMap;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\InheritanceMap;
+
 
 class MerchantController extends Controller
 {
@@ -1820,7 +1822,10 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $response = $this->service()->updatePartnerType($input);
+        $response = Tracer::inspan(['name' => HyperTrace::UPDATE_PARTNER_TYPE_SERVICE], function () use ($input) {
+
+            return $this->service()->updatePartnerType($input);
+        });
 
         return ApiResponse::json($response);
     }

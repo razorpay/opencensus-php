@@ -5985,9 +5985,13 @@ class Service extends Base\Service
     {
         (new Validator)->validateInput('update_partner_type', $input);
 
-        $partnerType = $input[Entity::PARTNER_TYPE];
+        $response = Tracer::inspan(['name' => HyperTrace::UPDATE_PARTNER_TYPE_CORE,
+                     'attributes' => array ( Entity::PARTNER_TYPE =>  $input[Entity::PARTNER_TYPE], 'merchantId'=> $this->merchant->getId())], function () use ($input) {
 
-        return $this->core()->updatePartnerType($this->merchant, $partnerType);
+            return $this->core()->updatePartnerType($this->merchant, $input[Entity::PARTNER_TYPE]);
+        });
+
+        return $response;
     }
 
     public function backFillMerchantApplications(array $input)

@@ -2820,52 +2820,58 @@ class Core extends Base\Core
 
             $this->repo->saveOrFail($merchant);
 
-            $this->setDefaultFeatureForPartner($merchant);
 
-            (new Activation\Core())->createOrFetchPartnerActivationForMerchant($merchant, false);
+            Tracer::inspan(['name' => HyperTrace::CREATE_DEFAULT_FEATURE_FOR_PARTNER], function () use ($merchant) {
+                $this->setDefaultFeatureForPartner($merchant);
+            });
+
+            Tracer::inspan(['name' => HyperTrace::CREATE_PARTNER_ACTIVATION], function () use ($merchant) {
+                (new Activation\Core())->createOrFetchPartnerActivationForMerchant($merchant, false);
+            });
 
             $app = $this->createPartnerApp($merchant);
-
-            if ($merchant->isPurePlatformPartner() === false)
-            {
-                // create new partner config for aggregator/reseller partners
-                if ($merchant->isFullyManagedPartner() === false)
+            Tracer::inspan (['name' => HyperTrace::PROCESS_MARK_AS_PARTNER], function () use ($merchant, $app) {
+                if ($merchant->isPurePlatformPartner() === false)
                 {
-                    $application = (new OAuthApp\Repository())->findOrFail($app[OAuthApp\Entity::ID]);
+                    // create new partner config for aggregator/reseller partners
+                    if ($merchant->isFullyManagedPartner() === false)
+                    {
+                        $application = (new OAuthApp\Repository())->findOrFail($app[OAuthApp\Entity::ID]);
 
-                    $this->createPartnerConfig($application, $merchant);
+                        $this->createPartnerConfig($application, $merchant);
+                    }
+
+                    $applicationType = (new MerchantApplications\Core())->getDefaultAppTypeForPartner($merchant);
+
+                    $this->createMerchantApplication($merchant, $app[OAuthApp\Entity::ID], $applicationType);
+
+                    if (($merchant->isAggregatorPartner() === true) or ($merchant->isFullyManagedPartner() === true))
+                    {
+                        // create referred app and partner config for aggregator/fully_managed partners to give them reseller functionality
+                        $this->createReferredAppAndPartnerConfigForManaged($merchant);
+                    }
+
+                    $partnerType = $merchant->getPartnerType();
+
+                    if(in_array($partnerType, Constants::$referralPartnerTypes) === true)
+                    {
+                        (new Referral\Core)->createOrFetch($merchant);
+                    }
+
+                    $dimensionsForMerchantApplication = [
+                        Entity::PARTNER_TYPE => $merchant->getPartnerType(),
+                        'application_type'   => $applicationType
+                    ];
+
+                    $this->trace->count(Metric::PARTNER_MERCHANT_APPLICATION_CREATE_TOTAL, $dimensionsForMerchantApplication);
+
+                    $dimensionsForDefaultPartnerConfig = [
+                        Entity::PARTNER_TYPE => $merchant->getPartnerType(),
+                    ];
+
+                    $this->trace->count(Metric::PARTNER_CONFIG_CREATE_TOTAL, $dimensionsForDefaultPartnerConfig);
                 }
-
-                $applicationType = (new MerchantApplications\Core())->getDefaultAppTypeForPartner($merchant);
-
-                $this->createMerchantApplication($merchant, $app[OAuthApp\Entity::ID], $applicationType);
-
-                if (($merchant->isAggregatorPartner() === true) or ($merchant->isFullyManagedPartner() === true))
-                {
-                    // create referred app and partner config for aggregator/fully_managed partners to give them reseller functionality
-                    $this->createReferredAppAndPartnerConfigForManaged($merchant);
-                }
-
-                $partnerType = $merchant->getPartnerType();
-
-                if(in_array($partnerType, Constants::$referralPartnerTypes) === true)
-                {
-                    (new Referral\Core)->createOrFetch($merchant);
-                }
-
-                $dimensionsForMerchantApplication = [
-                    Entity::PARTNER_TYPE => $merchant->getPartnerType(),
-                    'application_type'   => $applicationType
-                ];
-
-                $this->trace->count(Metric::PARTNER_MERCHANT_APPLICATION_CREATE_TOTAL, $dimensionsForMerchantApplication);
-
-                $dimensionsForDefaultPartnerConfig = [
-                    Entity::PARTNER_TYPE => $merchant->getPartnerType(),
-                ];
-
-                $this->trace->count(Metric::PARTNER_CONFIG_CREATE_TOTAL, $dimensionsForDefaultPartnerConfig);
-            }
+            });
         });
 
         $dimensions = [Entity::PARTNER_TYPE => $merchant->getPartnerType()];
@@ -2989,9 +2995,14 @@ class Core extends Base\Core
      */
     public function updatePartnerType(Entity $merchant, string $partnerType): array
     {
-        $partner = $this->repo->transactionOnLiveAndTest(function () use ($merchant, $partnerType)
-        {
-            $partner = $this->markAsPartner($merchant, $partnerType);
+
+        $partner = Tracer::inspan(['name' => HyperTrace::MARK_AS_PARTNER,
+            'attributes' => array ( 'partnerType'=> $partnerType, 'merchantId'=> $this->merchant->getId())], function () use ($merchant, $partnerType) {
+
+            $partner = $this->repo->transactionOnLiveAndTest(function () use ($merchant, $partnerType)
+            {
+                return $this->markAsPartner($merchant, $partnerType);
+            });
 
             return $partner;
         });

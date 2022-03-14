@@ -129,6 +129,14 @@ class HyperTrace
     const ATTACH_SUBMERCHANT_OWNER_IF_APPLICABLE               = 'attach_submerchant_owner_if_applicable';
     const CREATE_ADDITIONAL_USER_OR_FETCH_IF_APPLICABLE        = 'create_additional_user_or_fetch_if_applicable';
 
+    /* Partner Type Update  */
+    const CREATE_PARTNER_ACTIVATION                            = 'create_partner_activation';
+    const CREATE_DEFAULT_FEATURE_FOR_PARTNER                   = 'default_feature_for_partner';
+    const UPDATE_PARTNER_TYPE_SERVICE                          = 'update_partner_type.service';
+    const UPDATE_PARTNER_TYPE_CORE                             = 'update_partner_type.core';
+    const PROCESS_MARK_AS_PARTNER                              = 'process_mark_as_partner';
+    const MARK_AS_PARTNER                                      = 'mark_as_partner';
+
     const CREATE_ACCOUNTS                                      = 'create_accounts.service';
     const CREATE_ACCOUNTS_CORE                                 = 'create_accounts.core';
     const LIST_ACCOUNTS                                        = 'list_accounts.service';
