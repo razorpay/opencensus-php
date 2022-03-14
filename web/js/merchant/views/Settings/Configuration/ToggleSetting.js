@@ -13,7 +13,9 @@ class ToggleSetting extends Component {
 
     if (props.features.length) {
       const featureFlagValue = this.getFeatureFlag(props.features);
-      this.state.isFeatureFlagEnabled = featureFlagValue;
+      this.state.isFeatureFlagEnabled = props.isFeatureAPIKeyReversed
+        ? !featureFlagValue
+        : featureFlagValue;
     }
   }
 
