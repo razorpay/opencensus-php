@@ -771,11 +771,6 @@ class Service extends Base\Service
         return $va;
     }
 
-    public function bulkMigrateYesbank(array $input)
-    {
-        return (new Core)->bulkMigrateYesbank($input);
-    }
-
     protected function getDeviceForQr(array $input)
     {
         if (isset($input['notifications']['device_id']) === false)

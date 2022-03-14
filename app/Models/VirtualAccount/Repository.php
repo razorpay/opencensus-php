@@ -57,15 +57,6 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function getActiveVirtualAccountFromBankAccountId(string $bankAccountId)
-    {
-        return $this->newQuery()
-                    ->where(Entity::STATUS, '=', Status::ACTIVE)
-                    ->where(Entity::BANK_ACCOUNT_ID, '=', $bankAccountId)
-                    ->first();
-    }
-
-
     public function findActiveVirtualAccountByOrder(Order\Entity $order)
     {
         return $this->newQuery()
@@ -139,38 +130,6 @@ class Repository extends Base\Repository
                     ->findOrFailPublic($id);
     }
 
-
-    public function findActiveByDescriptorAndMerchant(
-        string $descriptor,
-        Merchant $merchant)
-    {
-        $query = $this->newQuery()
-                      ->merchantId($merchant->getId())
-                      ->where(Entity::STATUS, '=', Status::ACTIVE)
-                      ->where(Entity::DESCRIPTOR, '=', $descriptor);
-
-        return $query->get();
-    }
-
-    public function fetchExcessPaidVirtualAccounts()
-    {
-        $excessCondition = 'amount_received > (amount_expected + amount_reversed)';
-
-        $query = $this->newQuery()
-                      ->where(Entity::STATUS, '=', Status::PAID)
-                      ->whereNotNull(Entity::AMOUNT_EXPECTED)
-                      ->whereRaw($excessCondition);
-
-        return $query->get();
-    }
-
-    public function existsByBalanceId(string $balanceId): bool
-    {
-        return $this->newQuery()
-                    ->where(Entity::BALANCE_ID, $balanceId)
-                    ->exists();
-    }
-
     public function fetchVirtualAccountsToBeClosed($limit = 10000)
     {
         $now = Carbon::now(Timezone::IST)->getTimestamp();
@@ -189,28 +148,6 @@ class Repository extends Base\Repository
                     ->where(Entity::STATUS, '!=', Status::PAID)
                     ->where(Entity::VPA_ID, '=', $vpaId)
                     ->first();
-    }
-
-    public function getYesbankMigrateQuery(string $afterId, string $fromTime, string $toTime, int $limit, array $merchantIds = [])
-    {
-        /** @var BuilderEx $query */
-        $query = $this->newQuery();
-
-        $query->where(Entity::ID, '>', $afterId)
-              ->where(Entity::STATUS, Status::ACTIVE)
-              ->whereNotNull(Entity::BANK_ACCOUNT_ID)
-              ->whereNull(Entity::BANK_ACCOUNT_ID2)
-              ->whereBetween(Entity::CREATED_AT, [$fromTime, $toTime])
-              ->orderBy(Entity::ID);
-
-        if (empty($merchantIds) === false)
-        {
-            $query->whereIn(Entity::MERCHANT_ID, $merchantIds);
-        }
-
-        $query->limit($limit);
-
-        return $query;
     }
 
     /**

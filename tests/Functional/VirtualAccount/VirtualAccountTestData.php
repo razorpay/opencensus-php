@@ -637,6 +637,16 @@ return [
         ],
     ],
 
+    'testCloseVirtualAccountInBulk' => [
+        'request' => [
+            'url' => '/virtual_accounts/close/bulk',
+            'method' => 'post',
+        ],
+        'response' => [
+            'status_code' => 200,
+        ],
+    ],
+
     'testEditBulkVirtualAccounts' => [
         'request'  => [
             'content' => [

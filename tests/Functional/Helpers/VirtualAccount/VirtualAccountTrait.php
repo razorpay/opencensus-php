@@ -446,4 +446,18 @@ trait VirtualAccountTrait
 
         return $response;
     }
+
+    public function getVirtualAccountConfig()
+    {
+        $request = [
+            'method'  => 'GET',
+            'url'     => '/virtual_account/configs',
+        ];
+
+        $this->ba->proxyAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        return $response;
+    }
 }

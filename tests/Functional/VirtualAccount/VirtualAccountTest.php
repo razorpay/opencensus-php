@@ -2,9 +2,8 @@
 
 namespace RZP\Tests\Functional\VirtualAccount;
 
+use Hash;
 use Carbon\Carbon;
-use Illuminate\Database\Eloquent\Factory;
-
 use RZP\Models\Feature;
 use RZP\Constants\Timezone;
 use RZP\Models\BankTransfer;
@@ -15,11 +14,14 @@ use RZP\Models\Payment\Gateway;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\FeeBearer;
 use RZP\Models\VirtualAccount\Core;
+use RZP\Models\Base\PublicCollection;
 use RZP\Models\VirtualAccount\Status;
 use RZP\Exception\BadRequestException;
 use RZP\Models\VirtualAccount\Constant;
+use RZP\Models\VirtualAccount\Provider;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Models\Merchant\RazorxTreatment;
+use Illuminate\Database\Eloquent\Factory;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Models\QrCode\Repository as QrCodeRepo;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -225,6 +227,29 @@ class VirtualAccountTest extends TestCase
         $jswAccount = $this->getDbLastEntity('bank_account');
         $this->assertEquals('VAJSW', substr($jswAccount['account_number'], 0, 5));
         $this->assertEquals('RATN0000001', $jswAccount['ifsc_code']);
+    }
+
+    public function testGetVirtualAccountConfig()
+    {
+        $terminalAttributes = [
+            'gateway'               => Gateway::RBL,
+            'merchant_id'           => '10000000000000',
+            'gateway_merchant_id'   => '2223',
+            'gateway_merchant_id2'  => '00',
+            'type'                  => [
+                Type::NON_RECURRING    => '1',
+                Type::NUMERIC_ACCOUNT  => '1',
+            ]
+        ];
+
+        $this->fixtures->on('test')->create('terminal:bank_account_terminal', $terminalAttributes);
+        $response = $this->getVirtualAccountConfig();
+
+        $this->assertEquals('222300', $response['bank_account']['prefix']);
+        $this->assertEquals(true, $response['bank_account']['isDescriptorEnabled']);
+        $this->assertEquals('rzr.payto00000', $response['vpa']['prefix']);
+        $this->assertEquals('icici', $response['vpa']['handle']);
+        $this->assertEquals(true, $response['vpa']['isDescriptorEnabled']);
     }
 
     public function testCreateVirtualAccountForOrgMerchantFeatureFlag()
@@ -569,6 +594,55 @@ class VirtualAccountTest extends TestCase
         $this->assertNotNull($virtualAccount->getClosedAt());
 
         $this->assertEquals(Status::CLOSED, $virtualAccount->getStatus());
+    }
+
+    public function testCloseVAPostMigration()
+    {
+        $terminalAttributes = [
+            'gateway'               => Gateway::BT_YESBANK,
+            'merchant_id'           => '10000000000000',
+            'gateway_merchant_id'   => '2223',
+            'type'                  => [
+                Type::NON_RECURRING     => '1',
+                Type::NUMERIC_ACCOUNT   => '1',
+            ]
+        ];
+
+        $this->fixtures->on('test')->create('terminal:bank_account_terminal', $terminalAttributes);
+        $virtualAccount = $this->createVirtualAccount([], true);
+
+        $bankAccount1 =  $this->getDbLastEntity('bank_account');
+
+        $bankAccount2 = $this->fixtures->create(
+            'bank_account',
+            [
+                'merchant_id'       => '10000000000000',
+                'entity_id'         =>  substr($virtualAccount['id'], 3, strlen($virtualAccount['id'])),
+                'type'              => 'virtual_account',
+                'account_number'    =>  $bankAccount1->getAccountNumber(),
+                'ifsc_code'         => 'RATN0VAAPIS',
+            ]
+        );
+
+        $this->fixtures->edit(
+            'virtual_account',
+            substr($virtualAccount['id'], 3, strlen($virtualAccount['id'])),
+            ['bank_account_id_2' => $bankAccount2->getId()]
+        );
+
+        $this->closeVirtualAccount($virtualAccount['id']);
+        $virtualAccount = $this->getDbLastEntity('virtual_account');
+
+        $this->assertEquals(Status::CLOSED, $virtualAccount['status']);
+
+        $bankAccount1 = $this->getTrashedDbEntityById('bank_account', $bankAccount1->getId());
+        $bankAccount2 = $this->getTrashedDbEntityById('bank_account', $bankAccount2->getId());
+
+        $this->assertNotNull($bankAccount1['deleted_at']);
+        $this->assertNotNull($bankAccount2['deleted_at']);
+
+        $this->assertEquals(Provider::IFSC[Provider::YESBANK], $bankAccount1->getIfscCode());
+        $this->assertEquals(Provider::IFSC[Provider::RBL], $bankAccount2->getIfscCode());
     }
 
     public function testVirtualAccountCloseByCron()
@@ -2312,6 +2386,29 @@ class VirtualAccountTest extends TestCase
     public function testCreateVirtualAccountInBulkForBanking()
     {
         $this->setUpMerchantForBusinessBanking(true, 10000000);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testCloseVirtualAccountInBulk()
+    {
+        $virtualAccount1 = $this->createVirtualAccount();
+        $virtualAccount2 = $this->createVirtualAccount();
+        $virtualAccount3 = $this->createVirtualAccount();
+
+        $this->testData[__FUNCTION__]['request']['content'] = [
+            'virtual_account_ids' => [
+                substr($virtualAccount1['id'], 3, strlen($virtualAccount1['id'])),
+                substr($virtualAccount2['id'], 3, strlen($virtualAccount2['id'])),
+                substr($virtualAccount3['id'], 3, strlen($virtualAccount3['id'])),
+            ]
+        ];
+
+        $this->testData[__FUNCTION__]['response']['content']= [
+            'success' => [$virtualAccount1['id'], $virtualAccount2['id'], $virtualAccount3['id']]
+        ];
 
         $this->ba->adminAuth();
 
