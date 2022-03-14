@@ -2,12 +2,14 @@
 
 namespace RZP\Models\Merchant\Account;
 
+use RZP\Constants\HyperTrace;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\BankAccount;
 use RZP\Models\Merchant\Notify;
 use RZP\Exception\BadRequestException;
+use RZP\Trace\Tracer;
 
 class Service extends Merchant\Service
 {
@@ -120,21 +122,30 @@ class Service extends Merchant\Service
 
         Entity::verifyIdAndStripSign($accountId);
 
-        $account = $this->core()->fetchAccount($accountId);
+        $account = Tracer::inspan(['name' => HyperTrace::FETCH_ACCOUNTS_CORE], function () use ($accountId) {
+
+            return $this->core()->fetchAccount($accountId);
+        });
 
         return $this->getResponseObject()->generateResponse($account);
     }
 
     public function fetchAccountByExternalId(string $externalId)
     {
-        $account = $this->core()->fetchAccountByExternalId($this->merchant, $externalId);
+        $account = Tracer::inspan(['name' => HyperTrace::FETCH_ACCOUNTS_BY_EXTERNAL_ID_CORE], function () use ($externalId) {
+
+            return $this->core()->fetchAccountByExternalId($this->merchant, $externalId);
+        });
 
         return $this->getResponseObject()->generateResponse($account);
     }
 
     public function createAccount(array $input): array
     {
-        $account = $this->core()->createAccount($this->merchant, $input);
+        $account = Tracer::inspan(['name' => HyperTrace::CREATE_ACCOUNTS_CORE], function () use ($input) {
+
+            return $this->core()->createAccount($this->merchant, $input);
+        });
 
         return $this->getResponseObject()->generateResponse($account);
     }
@@ -145,14 +156,20 @@ class Service extends Merchant\Service
 
         Entity::verifyIdAndStripSign($accountId);
 
-        $account = $this->core()->editAccount($this->merchant, $accountId, $input);
+        $account = Tracer::inspan(['name' => HyperTrace::EDIT_ACCOUNTS_CORE], function () use ($accountId, $input) {
+
+            return $this->core()->editAccount($this->merchant, $accountId, $input);
+        });
 
         return $this->getResponseObject()->generateResponse($account);
     }
 
     public function listAccounts(array $input): array
     {
-        $accounts = $this->core()->listAccounts($this->merchant, $input);
+        $accounts = Tracer::inspan(['name' => HyperTrace::LIST_ACCOUNTS_CORE], function () use ($input) {
+
+            return $this->core()->listAccounts($this->merchant, $input);
+        });
 
         return $accounts->map(function($account) {
             return $this->getResponseObject()->generateResponse($account);

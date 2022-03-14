@@ -205,7 +205,10 @@ class Core extends Merchant\Core
             (new Validator())->validateNeedsClarificationRespondedIfApplicable($subMerchant, $detailInput);
         });
 
-        $merchantDetailsCore->saveMerchantDetails($detailInput, $subMerchant);
+        Tracer::inspan(['name' => HyperTrace::SAVE_MERCHANT_DETAILS], function () use ($merchantDetailsCore, $detailInput, $subMerchant) {
+
+            $merchantDetailsCore->saveMerchantDetails($detailInput, $subMerchant);
+        });
 
         $this->updateUserIfApplicable($detailInput, $subMerchant->getEmail());
 

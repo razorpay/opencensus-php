@@ -268,6 +268,11 @@ class Tracing
 
             // Partner routes
             'merchant_bulk_onboarding_admin',
+            'account_create',
+            'account_list',
+            'account_fetch',
+            'account_edit',
+            'account_fetch_by_external_id',
 
             //Onboarding APIs
             'account_create_v2',

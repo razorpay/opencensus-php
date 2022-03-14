@@ -84,7 +84,7 @@ class HyperTrace
     const CREATE_OR_FETCH_STAKEHOLDER                           = 'create_or_fetch_stakeholder';
     const SAVE_STAKEHOLDER                                      = 'save_stakeholder';
     const EDIT_STAKEHOLDER                                      = 'save_stakeholder.edit';
-    const SAVE_MERCHANT_DETAILS                                 = 'save_stakeholder.save_merchant_details';
+    const SAVE_MERCHANT_DETAILS                                 = 'save_merchant_details';
     const UPDATE_NC_FIELDS_ACKNOWLEDGED                         = 'update_nc_fields_acknowledged';
     const VALIDATE_NC_RESPONDED_IF_APPLICABLE                   = 'validate_nc_responded_if_applicable';
 
@@ -128,4 +128,28 @@ class HyperTrace
     const ADD_FEATURE_REQUEST                                  = 'add_feature_request.core';
     const ATTACH_SUBMERCHANT_OWNER_IF_APPLICABLE               = 'attach_submerchant_owner_if_applicable';
     const CREATE_ADDITIONAL_USER_OR_FETCH_IF_APPLICABLE        = 'create_additional_user_or_fetch_if_applicable';
+
+    const CREATE_ACCOUNTS                                      = 'create_accounts.service';
+    const CREATE_ACCOUNTS_CORE                                 = 'create_accounts.core';
+    const LIST_ACCOUNTS                                        = 'list_accounts.service';
+    const LIST_ACCOUNTS_CORE                                   = 'list_accounts.core';
+    const FETCH_ACCOUNTS                                       = 'fetch_accounts.service';
+    const FETCH_ACCOUNTS_CORE                                  = 'fetch_accounts.core';
+    const FETCH_ACCOUNTS_BY_EXTERNAL_ID                        = 'fetch_accounts_by_external_id.service';
+    const FETCH_ACCOUNTS_BY_EXTERNAL_ID_CORE                   = 'fetch_accounts_by_external_id.core';
+    const EDIT_ACCOUNTS                                        = 'edit_accounts.service';
+    const EDIT_ACCOUNTS_CORE                                   = 'edit_accounts.core';
+    const CREATE_SUBMERCHANT_AND_ASSOCIATED_ENTITIES           = 'create_submerchant_and_associated_entities';
+    const UPDATE_ACTIVATION_FLOWS                              = 'update_activation_flows';
+    const SUBMIT_DETAILS_AND_ACTIVATE_IF_APPLICABLE            = 'submit_details_and_activate_if_applicable';
+    const EDIT_MERCHANT_DETAIL_FIELDS                          = 'edit_merchant_detail_fields';
+    const GET_UPDATED_KYC_CLARIFICATION_REASONS                = 'get_updated_kyc_clarification_reasons';
+    const AUTO_UPDATE_MERCHANT_CATEGORY_DETAILS_IF_APPLICABLE  = 'auto_update_merchant_category_details_if_applicable';
+    const SYNC_MERCHANT_DETAIL_FIELDS_TO_STAKEHOLDER           = 'sync_merchant_detail_fields_to_stakeholder';
+    const SAVE_BUSINESS_DETAILS_FOR_MERCHANT                   = 'save_business_details_for_merchant';
+    const PERFORM_KYC_VERIFICATION                             = 'perform_kyc_verification';
+    const SUBMIT_ACTIVATION_FORM                               = 'submit_activation_form';
+    const GET_MERCHANT_DETAILS_CORE                            = 'get_merchant_details.core';
+    const CREATE_MERCHANT_DETAILS_CORE                         = 'create_merchant_details.core';
+
 }

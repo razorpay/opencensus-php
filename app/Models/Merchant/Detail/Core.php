@@ -7,6 +7,7 @@ use Queue;
 use Config;
 use Lib\PhoneBook;
 use Carbon\Carbon;
+use RZP\Constants\HyperTrace;
 use RZP\Encryption;
 use RZP\Exception;
 use RZP\Models\Base;
@@ -277,9 +278,13 @@ class Core extends Base\Core
             if(array_key_exists(BusinessDetailEntity::APP_URLS,$businessDetailsInput)) {
                 $this->checkForCorrectAppUrls($businessDetailsInput[BusinessDetailEntity::APP_URLS]);
             }
-            //save App Urls Details
-            $businessDetailService = new Service();
-            $businessDetails = $businessDetailService->saveBusinessDetailsForMerchant($merchant->getId(), $businessDetailsInput);
+
+            $businessDetails = Tracer::inspan(['name' => HyperTrace::SAVE_BUSINESS_DETAILS_FOR_MERCHANT], function () use ($merchant, $businessDetailsInput) {
+
+                //save App Urls Details
+                $businessDetailService = new Service();
+                return $businessDetailService->saveBusinessDetailsForMerchant($merchant->getId(), $businessDetailsInput);
+            });
 
             //Calling App Checker Service during onboarding
             (new HealthChecker\Core())->notifyRiskChecker(
@@ -301,20 +306,23 @@ class Core extends Base\Core
 
         $merchantDetails->edit($input);
 
-        // do pan validation
-        $this->verifyPOIDetailsIfApplicable($merchantDetails, $merchant, $input);
+        Tracer::inspan(['name' => HyperTrace::PERFORM_KYC_VERIFICATION], function () use ($merchantDetails, $merchant, $input) {
 
-        $this->verifyCompanyPanDetailsIfApplicable($merchantDetails, $merchant, $input);
+            // do pan validation
+            $this->verifyPOIDetailsIfApplicable($merchantDetails, $merchant, $input);
 
-        $this->verifyGSTINIfApplicable($merchantDetails, $merchant, $input);
+            $this->verifyCompanyPanDetailsIfApplicable($merchantDetails, $merchant, $input);
 
-        $this->verifyShopEstbNumberIfApplicable($merchantDetails, $merchant, $input);
+            $this->verifyGSTINIfApplicable($merchantDetails, $merchant, $input);
 
-        $this->verifyCINDetailsIfApplicable($merchantDetails, $merchant, $input);
+            $this->verifyShopEstbNumberIfApplicable($merchantDetails, $merchant, $input);
 
-        $this->attemptPennyTesting($merchantDetails, $merchant, false, $input);
+            $this->verifyCINDetailsIfApplicable($merchantDetails, $merchant, $input);
 
-        $this->triggerSyncValidationRequests($merchant, $merchantDetails);
+            $this->attemptPennyTesting($merchantDetails, $merchant, false, $input);
+
+            $this->triggerSyncValidationRequests($merchant, $merchantDetails);
+        });
 
         return $this->mutex->acquireAndRelease(
             $merchant->getId(),
@@ -333,7 +341,10 @@ class Core extends Base\Core
 
                     $this->repo->merchant_detail->lockForUpdate($merchantDetails->getId());
 
-                    $merchantDetails = $this->editMerchantDetailFields($merchant, $input);
+                    $merchantDetails = Tracer::inspan(['name' => HyperTrace::EDIT_MERCHANT_DETAIL_FIELDS], function () use ($merchant, $input) {
+
+                        return $this->editMerchantDetailFields($merchant, $input);
+                    });
 
                     $oldActivationStatus = $merchantDetails->getActivationStatus();
 
@@ -346,7 +357,10 @@ class Core extends Base\Core
                         // blacklisted merchant should not be allowed to submit l2 form
                         $merchantDetails->getValidator()->validateFullActivationForm($merchant);
 
-                        $response = $this->submitActivationForm($merchant, $input, $originProduct);
+                        $response = Tracer::inspan(['name' => HyperTrace::SUBMIT_ACTIVATION_FORM], function () use ($merchant, $input, $originProduct) {
+
+                            return $this->submitActivationForm($merchant, $input, $originProduct);
+                        });
 
                         // If activation status changes to under_review and previous activation status is
                         // Needs Clarification, then it means merchant has responded to Needs Clarification.
@@ -1443,7 +1457,10 @@ class Core extends Base\Core
                 TraceCode::MERCHANT_DETAIL_DOES_NOT_EXIST,
                 [ 'merchant_id'    => $merchant->getId() ]);
 
-            $merchantDetails = $this->createMerchantDetails($merchant, $input);
+            $merchantDetails = Tracer::inspan(['name' => HyperTrace::CREATE_MERCHANT_DETAILS_CORE], function () use ($merchant, $input) {
+
+                return $this->createMerchantDetails($merchant, $input);
+            });
 
             // if merchant details are created, load relation in $merchant
             $merchant->load('merchantDetail');
@@ -1747,7 +1764,10 @@ class Core extends Base\Core
 
     public function editMerchantDetailFields(Merchant\Entity $merchant, array $input): Entity
     {
-        $merchantDetails = $this->getMerchantDetails($merchant, $input);
+        $merchantDetails = Tracer::inspan(['name' => HyperTrace::GET_MERCHANT_DETAILS_CORE], function () use ($merchant, $input) {
+
+            return $this->getMerchantDetails($merchant, $input);
+        });
 
         if (isset($input[Entity::REVIEWER_ID]) === true)
         {
@@ -1778,7 +1798,10 @@ class Core extends Base\Core
 
         $merchantDetails->edit($input);
 
-        $kycClarificationReasons = $this->getUpdatedKycClarificationReasons($input, $merchantDetails->getMerchantId());
+        $kycClarificationReasons = Tracer::inspan(['name' => HyperTrace::GET_UPDATED_KYC_CLARIFICATION_REASONS], function () use ($input, $merchantDetails) {
+
+            return $this->getUpdatedKycClarificationReasons($input, $merchantDetails->getMerchantId());
+        });
 
         if(empty($kycClarificationReasons) === false)
         {
@@ -1787,7 +1810,10 @@ class Core extends Base\Core
 
         $this->updateBusinessCategory($merchantDetails, $input);
 
-        $this->autoUpdateMerchantCategoryDetailsIfApplicable($merchantDetails, $merchant);
+        Tracer::inspan(['name' => HyperTrace::AUTO_UPDATE_MERCHANT_CATEGORY_DETAILS_IF_APPLICABLE], function () use ($merchantDetails, $merchant) {
+
+            $this->autoUpdateMerchantCategoryDetailsIfApplicable($merchantDetails, $merchant);
+        });
 
         $this->repo->saveOrFail($merchantDetails);
 
@@ -1796,12 +1822,18 @@ class Core extends Base\Core
         // Sync few input fields to merchant entity
         (new Merchant\Core)->syncMerchantEntityFields($merchant, $input);
 
-        // dual write promoter related fields to stakeholder entity
-        (new Stakeholder\Core)->syncMerchantDetailFieldsToStakeholder($merchantDetails, $input);
+        Tracer::inspan(['name' => HyperTrace::SYNC_MERCHANT_DETAIL_FIELDS_TO_STAKEHOLDER], function () use ($merchantDetails, $input) {
+
+            // dual write promoter related fields to stakeholder entity
+            (new Stakeholder\Core)->syncMerchantDetailFieldsToStakeholder($merchantDetails, $input);
+        });
 
         if(isset($input['stakeholder']) === true)
         {
-            (new Stakeholder\Core)->saveStakeholder(null, $merchant->getId(), $input['stakeholder'], 'activation');
+            Tracer::inspan(['name' => HyperTrace::SAVE_STAKEHOLDER], function () use ($merchant, $input) {
+
+                (new Stakeholder\Core)->saveStakeholder(null, $merchant->getId(), $input['stakeholder'], 'activation');
+            });
         }
 
         if (isset($input['merchant_avg_order_value']) === true)

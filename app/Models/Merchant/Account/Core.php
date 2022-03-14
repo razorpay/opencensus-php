@@ -111,9 +111,15 @@ class Core extends Merchant\Core
 
         $subMerchant = $this->repo->transactionOnLiveAndTest(function () use ($input, $partner)
         {
-            $subMerchant = $this->createSubmerchantAndAssociatedEntities($partner, $input);
+            $subMerchant = Tracer::inspan(['name' => HyperTrace::CREATE_SUBMERCHANT_AND_ASSOCIATED_ENTITIES], function () use ($partner, $input) {
 
-            $this->submitDetailsAndActivateIfApplicable($partner, $subMerchant);
+                return $this->createSubmerchantAndAssociatedEntities($partner, $input);
+            });
+
+            Tracer::inspan(['name' => HyperTrace::SUBMIT_DETAILS_AND_ACTIVATE_IF_APPLICABLE], function () use ($partner, $subMerchant) {
+
+                $this->submitDetailsAndActivateIfApplicable($partner, $subMerchant);
+            });
 
             return $subMerchant;
         });
@@ -144,7 +150,10 @@ class Core extends Merchant\Core
     {
         $input[Entity::EXTERNAL_ID] = $externalId;
 
-        $accounts = $this->listAccounts($partner, $input);
+        $accounts = Tracer::inspan(['name' => HyperTrace::LIST_ACCOUNTS_CORE], function () use ($partner, $input) {
+
+            return $this->listAccounts($partner, $input);
+        });
 
         return $accounts->firstOrFail();
     }
@@ -166,8 +175,12 @@ class Core extends Merchant\Core
 
         $account = $this->repo->transactionOnLiveAndTest(function () use ($input, $partner, $accountId)
         {
-            $subMerchant = $this->fillSubMerchant($accountId, $input);
-            $subMerchant = $this->fillSubMerchantDetails($subMerchant, $input);
+            $subMerchant = Tracer::inspan(['name' => HyperTrace::FILL_SUBMERCHANT_DETAILS], function () use ($input, $accountId) {
+
+                $subMerchant = $this->fillSubMerchant($accountId, $input);
+                $subMerchant = $this->fillSubMerchantDetails($subMerchant, $input);
+                return $subMerchant;
+            });
 
             $this->upsertMerchantEmails($subMerchant, $input);
 
@@ -271,15 +284,25 @@ class Core extends Merchant\Core
         $subMerchantCreateInput = Helper::getSubMerchantCreateInput($input);
 
         // this creates only test balance
-        $subMerchantArray = (new Merchant\Service)->createSubMerchant($subMerchantCreateInput, $partner);
+        $subMerchantArray = Tracer::inspan(['name' => HyperTrace::CREATE_SUBMERCHANT_SERVICE], function () use ($subMerchantCreateInput, $partner) {
+
+            return (new Merchant\Service)->createSubMerchant($subMerchantCreateInput, $partner);
+        });
         $subMerchantId    = Entity::verifyIdAndStripSign($subMerchantArray[Entity::ID]);
 
-        $subMerchant = $this->fillSubMerchant($subMerchantId, $input);
-        $subMerchant = $this->fillSubMerchantDetails($subMerchant, $input);
+        $subMerchant = Tracer::inspan(['name' => HyperTrace::FILL_SUBMERCHANT_DETAILS], function () use ($input, $subMerchantId) {
+
+            $subMerchant = $this->fillSubMerchant($subMerchantId, $input);
+            $subMerchant = $this->fillSubMerchantDetails($subMerchant, $input);
+            return $subMerchant;
+        });
 
         $this->fillBankAccountNotes($subMerchant, $input);
 
-        $this->updateActivationFlows($partner, $subMerchant);
+        Tracer::inspan(['name' => HyperTrace::UPDATE_ACTIVATION_FLOWS], function () use ($partner, $subMerchant) {
+
+            $this->updateActivationFlows($partner, $subMerchant);
+        });
 
         $this->upsertMerchantEmails($subMerchant, $input);
 
@@ -342,7 +365,10 @@ class Core extends Merchant\Core
 
         $merchantDetailsCore = new Detail\Core;
 
-        $subMerchantDetails = $merchantDetailsCore->editMerchantDetailFields($subMerchant, $detailInput);
+        $subMerchantDetails = Tracer::inspan(['name' => HyperTrace::EDIT_MERCHANT_DETAIL_FIELDS], function () use ($merchantDetailsCore, $subMerchant, $detailInput) {
+
+            return $merchantDetailsCore->editMerchantDetailFields($subMerchant, $detailInput);
+        });
 
         $subMerchantDetails->getValidator()->validateMerchantHasRegisteredAddress();
 

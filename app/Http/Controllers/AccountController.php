@@ -5,7 +5,9 @@ namespace RZP\Http\Controllers;
 use Request;
 use ApiResponse;
 
+use RZP\Constants\HyperTrace;
 use RZP\Models\Merchant;
+use RZP\Trace\Tracer;
 
 class AccountController extends Controller
 {
@@ -65,7 +67,10 @@ class AccountController extends Controller
     {
         $input = Request::all();
 
-        $response = $this->service()->createAccount($input);
+        $response = Tracer::inspan(['name' => HyperTrace::CREATE_ACCOUNTS], function () use ($input) {
+
+            return $this->service()->createAccount($input);
+        });
 
         return ApiResponse::json($response);
     }
@@ -85,14 +90,20 @@ class AccountController extends Controller
 
     public function fetchAccount(string $accountId)
     {
-        $response = $this->service()->fetchAccount($accountId);
+        $response = Tracer::inspan(['name' => HyperTrace::FETCH_ACCOUNTS], function () use ($accountId) {
+
+            return $this->service()->fetchAccount($accountId);
+        });
 
         return ApiResponse::json($response);
     }
 
     public function fetchByExternalId(string $externalId)
     {
-        $response = $this->service()->fetchAccountByExternalId($externalId);
+        $response = Tracer::inspan(['name' => HyperTrace::FETCH_ACCOUNTS_BY_EXTERNAL_ID], function () use ($externalId) {
+
+            return $this->service()->fetchAccountByExternalId($externalId);
+        });
 
         return ApiResponse::json($response);
     }
@@ -101,7 +112,10 @@ class AccountController extends Controller
     {
         $input = Request::all();
 
-        $response = $this->service()->editAccount($accountId, $input);
+        $response = Tracer::inspan(['name' => HyperTrace::EDIT_ACCOUNTS], function () use ($accountId, $input) {
+
+            return $this->service()->editAccount($accountId, $input);
+        });
 
         return ApiResponse::json($response);
     }
@@ -110,7 +124,10 @@ class AccountController extends Controller
     {
         $input = Request::all();
 
-        $response = $this->service()->listAccounts($input);
+        $response = Tracer::inspan(['name' => HyperTrace::LIST_ACCOUNTS], function () use ($input) {
+
+            return $this->service()->listAccounts($input);
+        });
 
         return ApiResponse::json($response);
     }
