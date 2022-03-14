@@ -98,7 +98,7 @@ export default class RequestEntity extends Component {
         <div class="header">
           <span class="title">
             Experiment:{' '}
-            <a className="link" href={`/razorx/${url}`} target="_blank">
+            <a className="link" href={`/razorx/${url}`} target="_blank" rel="noopener noreferrer">
               {entityData && entityData.description}
             </a>
           </span>

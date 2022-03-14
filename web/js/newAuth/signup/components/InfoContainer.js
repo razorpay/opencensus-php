@@ -42,6 +42,7 @@ const InfoContainer = ({ handleContactUsClick }) => {
                   size="xsmall"
                   href="https://razorpay.com/support/#request/merchant"
                   target="_blank"
+                  rel="noopener noreferrer"
                   onClick={handleContactUsClick}
                 >
                   Contact Us

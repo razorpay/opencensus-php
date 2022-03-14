@@ -522,7 +522,7 @@ class PaymentSettings extends Component {
                   : 'https://razorpay.com/docs/payment-gateway/payments/capture-settings/'
               }
               target="_blank"
-              rel="noreferrer"
+              rel="noopener noreferrer"
               onClick={this.onKnowMoreClick}
             >
               Know more <i class="i i-external-link" style={{ marginLeft: '5px' }} />

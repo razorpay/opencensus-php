@@ -160,7 +160,7 @@ export const Sidebar = ({ user, handleLogout, isSplitz }) => (
           href="https://dashboard.razorpay.com/admin/profile"
           className="btn-default"
           target="_blank"
-          rel="noreferrer"
+          rel="noopener noreferrer"
         >
           Profile
         </a>

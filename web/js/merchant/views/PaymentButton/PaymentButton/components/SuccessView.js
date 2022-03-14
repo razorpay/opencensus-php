@@ -180,7 +180,7 @@ export default class SuccessModal extends React.Component {
                         <DocLink
                           href={`https://razorpay.com/docs/payment-button/supported-platforms/${plugin.docLink}`}
                           target="_blank"
-                          rel="noreferrer"
+                          rel="noopener noreferrer"
                           onClick={plugin.handleClick}
                         >
                           {plugin.title}
@@ -199,7 +199,7 @@ export default class SuccessModal extends React.Component {
                         <DocLink
                           href={`https://razorpay.com/docs/payment-button/supported-platforms/${integration.docLink}`}
                           target="_blank"
-                          rel="noreferrer"
+                          rel="noopener noreferrer"
                           onClick={integration.handleClick}
                         >
                           {integration.title}

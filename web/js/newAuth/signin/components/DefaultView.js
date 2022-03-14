@@ -52,6 +52,7 @@ const DefaultView = () => {
                   as="a"
                   href="https://razorpay.com/support/#request/merchant"
                   target="_blank"
+                  rel="noopener noreferrer"
                   onClick={handleContactUsClick}
                 >
                   <Text size="xsmall" color="primary.900">

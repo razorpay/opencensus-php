@@ -85,7 +85,7 @@ class SwitchToPLV2Modal extends React.Component {
           <br />
           <br />
           To learn more about new service and its features, visit our{' '}
-          <DocLink href={DOCS_LINK} target="_blank" rel="noopener">
+          <DocLink href={DOCS_LINK} target="_blank" rel="noopener noreferrer">
             documentation page &nbsp;
             <i className="i i-external-link" />
           </DocLink>
