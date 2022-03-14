@@ -461,6 +461,16 @@ class Constants
     const CAPITAL_CARDS_ELIGIBLE = 'capital_cards_eligible';
 
     /**
+     * Alerts in #capital_cards_anomaly_alerts when merchant makes a transaction outside this limit value mapped in capital-cards
+     */
+    const CARDS_TRANSACTION_LIMIT_1 = 'cards_transaction_limit_1';
+
+    /**
+     * Alerts in #capital_cards_anomaly_alerts when merchant makes a transaction outside this limit value mapped in capital-cards
+     */
+    const CARDS_TRANSACTION_LIMIT_2 = 'cards_transaction_limit_2';
+
+    /**
      * Gives access to los service
      */
     const LOS = 'los';
@@ -1499,6 +1509,8 @@ class Constants
         self::LOC                             => true,
         self::LOS                             => true,
         self::CAPITAL_CARDS_ELIGIBLE          => true,
+        self::CARDS_TRANSACTION_LIMIT_1       => true,
+        self::CARDS_TRANSACTION_LIMIT_2       => true,
         self::USE_SETTLEMENT_ONDEMAND         => true,
         self::SHOW_ON_DEMAND_DEDUCTION        => true,
         self::ALLOW_NETBANKING_FETCH          => true,
@@ -1849,6 +1861,16 @@ class Constants
             'feature'       => self::CAPITAL_CARDS_ELIGIBLE,
             'display_name'  => 'Capital cards eligible',
             'documentation' => '',
+        ],
+        self::CARDS_TRANSACTION_LIMIT_1 => [
+            'feature'       => self::CARDS_TRANSACTION_LIMIT_1,
+            'display_name'  => 'Cards transaction limit 1',
+            'documentation' => 'Alerts in #capital_cards_anomaly_alerts when merchant makes a transaction outside this limit value mapped in capital-cards',
+        ],
+        self::CARDS_TRANSACTION_LIMIT_2 => [
+            'feature'       => self::CARDS_TRANSACTION_LIMIT_2,
+            'display_name'  => 'Cards transaction limit 2',
+            'documentation' => 'Alerts in #capital_cards_anomaly_alerts when merchant makes a transaction outside this limit value mapped in capital-cards',
         ],
         self::WITHDRAW_LOC              => [
             'feature'       => self::WITHDRAW_LOC,

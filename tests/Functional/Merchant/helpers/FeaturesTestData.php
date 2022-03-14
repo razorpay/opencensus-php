@@ -893,6 +893,48 @@ return [
             ]
         ]
     ],
+    'testAddMerchantCardTransactionLimit1FeatureAdminAuth'=>[
+        'request'  => [
+            'url'     => '/features',
+            'method'  => 'post',
+            'content' => [
+                'names'       => ['cards_transaction_limit_1'],
+                'entity_type' => 'merchant',
+                'entity_id'   => '10000000000000',
+                'should_sync' => true
+            ]
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'name' => 'cards_transaction_limit_1',
+                    'entity_id' => '10000000000000',
+                    'entity_type' => 'merchant',
+                ]
+            ]
+        ]
+    ],
+    'testAddMerchantCardTransactionLimit2FeatureAdminAuth'=>[
+        'request'  => [
+            'url'     => '/features',
+            'method'  => 'post',
+            'content' => [
+                'names'       => ['cards_transaction_limit_2'],
+                'entity_type' => 'merchant',
+                'entity_id'   => '10000000000000',
+                'should_sync' => true
+            ]
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'name' => 'cards_transaction_limit_2',
+                    'entity_id' => '10000000000000',
+                    'entity_type' => 'merchant',
+                ]
+            ]
+        ]
+    ],
     'testAddMerchantDisableOnDemandForLocFeatureInternalAuth'=>[
         'request'  => [
             'url'     => '/internal/features',

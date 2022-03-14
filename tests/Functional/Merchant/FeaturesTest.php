@@ -1110,6 +1110,27 @@ class FeaturesTest extends OAuthTestCase
 
         $this->startTest();
     }
+    /**
+     * This function tests updating of merchant feature card_transaction_limit_1.
+     */
+    public function testAddMerchantCardTransactionLimit1FeatureAdminAuth()
+    {
+        Mail::fake();
+        $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');
+
+        $this->startTest();
+    }
+
+    /**
+     * This function tests updating of merchant feature card_transaction_limit_2.
+     */
+    public function testAddMerchantCardTransactionLimit2FeatureAdminAuth()
+    {
+        Mail::fake();
+        $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');
+
+        $this->startTest();
+    }
 
     /**
      * This function tests updating of merchant feature disable_ondemand_for_loc.
