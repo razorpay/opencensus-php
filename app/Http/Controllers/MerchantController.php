@@ -1652,6 +1652,15 @@ class MerchantController extends Controller
         return $response;
     }
 
+    public function submerchantsAttachOwner()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->submerchantsAttachOwner($input);
+
+        return $response;
+    }
+
     public function postSubMerchantUser($merchantId)
     {
         $input = Request::all();

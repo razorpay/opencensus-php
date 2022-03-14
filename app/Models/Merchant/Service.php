@@ -6058,6 +6058,74 @@ class Service extends Base\Service
         return $response;
     }
 
+    public function submerchantsAttachOwner($input)
+    {
+        $merchantIds = isset($input['merchant_ids']) ? $input['merchant_ids'] : null;
+
+        $this->trace->info(TraceCode::BEGIN_SUBMERCHANT_OWNER_BACKFILLING, [
+            'merchant_ids' => $merchantIds,
+        ]);
+
+        $count = 50;
+        $afterId = null;
+        $core = new Merchant\Core();
+        $appCore = new MerchantApplications\Core();
+
+        $fixedMerchantIds = [];
+
+        $partners = $this->repo->merchant->fetchAggregatorPartners($merchantIds, $count, $afterId);
+
+        while($partners->count() > 0)
+        {
+            foreach($partners as $partner)
+            {
+                $appIds = $appCore->getMerchantAppIds($partner->getId(), [MerchantApplications\Entity::REFERRED]);
+                $referredSubmerchants = $this->repo->merchant->fetchSubmerchantsByAppIds($appIds);
+
+                $partnerOwner = $partner->primaryOwner()->getId();
+
+                foreach($referredSubmerchants as $referredSubmerchant)
+                {
+                    $submerchant_users = $referredSubmerchant->users->getIds();
+
+                    if (in_array($partnerOwner, $submerchant_users) == false)
+                    {
+                        $this->trace->info(TraceCode::FIXING_REFERRED_SUBMERCHANT, [
+                            'merchant_id' => $referredSubmerchant->getId(),
+                            'appIds' => $appIds,
+                            'partner_id' => $partner->getId(),
+                        ]);
+
+                        try
+                        {
+                            $core->attachSubMerchantOwner($partnerOwner, $referredSubmerchant, \RZP\Constants\Product::PRIMARY);
+
+                            if (!isset($fixedMerchantIds[$partner->getId()]))
+                            {
+                                $fixedMerchantIds[$partner->getId()] = [];
+                            }
+
+                            array_push($fixedMerchantIds[$partner->getId()], $referredSubmerchant->getId());
+                        }
+                        catch (\Exception $e)
+                        {
+                            $this->trace->info(TraceCode::FIXING_REFERRED_SUBMERCHANT_FAILED, [
+                                'messgae' => $e->getMessage(),
+                                'error' => $e,
+                            ]);
+                        }
+
+                    }
+                }
+            }
+
+            $afterId = $partners->last()->getId();
+            $partners = $this->repo->merchant->fetchAggregatorPartners($merchantIds, $count, $afterId);
+        }
+
+        return $fixedMerchantIds;
+    }
+
     /**
      * @param string $merchantId
      *
