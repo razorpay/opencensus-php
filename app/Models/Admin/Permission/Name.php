@@ -799,6 +799,7 @@ class Name
 
     // Ledger service permissions
     const LEDGER_SERVICE_ACTIONS                       = 'ledger_service_actions';
+    const LEDGER_CLIENT_ACTIONS                        = 'ledger_client_actions';
     const LEDGER_VIEW_DASHBOARD                        = 'ledger_view_dashboard';
 
     // Settlement Service permissions

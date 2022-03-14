@@ -1079,6 +1079,10 @@ return [
                 'description' => 'Allows performing various create/update operations on Ledger service such as account create etc',
                 'assignable'  => true,
             ],
+            Permission::LEDGER_CLIENT_ACTIONS => [
+                'description' => 'Allows limited write operations on Ledger service which should be accessible to clients.',
+                'assignable'  => true,
+            ],
             Permission::LEDGER_VIEW_DASHBOARD => [
                 'description' => 'Allows read operation on Ledger Dashboard to fetch accounts etc',
                 'assignable'  => true,
