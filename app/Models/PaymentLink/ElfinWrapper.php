@@ -28,9 +28,16 @@ final class ElfinWrapper
      */
     private $cache;
 
+    /**
+     * @var \Razorpay\Trace\Logger
+     */
+    private $trace;
+
     public function __construct($driver = null)
     {
         $this->app = App::getFacadeRoot();
+
+        $this->trace = $this->app['trace'];
 
         $this->driver = $driver;
 
@@ -56,11 +63,23 @@ final class ElfinWrapper
             return null;
         }
 
-        return $this
+        $fromCache = true;
+
+        $expanded = $this
             ->cache
-            ->remember($this->getSlugMapCacheKey($hash), $this->getSlugMapCacheTTL(), function () use ($hash) {
+            ->remember($this->getSlugMapCacheKey($hash), $this->getSlugMapCacheTTL(), function () use ($hash, &$fromCache) {
+                $fromCache = false;
+
                 return $this->elfin->expand($hash);
             });
+
+        $metrics = $fromCache === true
+            ? Metric::PAYMENT_PAGE_GIMLI_CACHE_HIT_COUNT
+            : Metric::PAYMENT_PAGE_GIMLI_CACHE_MISS_COUNT;
+
+        $this->trace->count($metrics);
+
+        return $expanded;
     }
 
     /**
