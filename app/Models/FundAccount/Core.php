@@ -1075,7 +1075,7 @@ class Core extends Base\Core
             $regexForRemovingWhitespaceAndSpecialCharacters = $customRegex;
         }
 
-        $input = preg_replace($regexForRemovingWhitespaceAndSpecialCharacters, "", $input);
+        $input = preg_replace($regexForRemovingWhitespaceAndSpecialCharacters, "", $input); // nosemgrep : php.lang.security.preg-replace-eval.preg-replace-eval
 
         return $input;
     }

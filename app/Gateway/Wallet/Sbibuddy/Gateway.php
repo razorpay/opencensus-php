@@ -480,7 +480,7 @@ class Gateway extends Base\Gateway
     {
         $secret = base64_decode($this->getSecret());
 
-        assert($secret !== null);
+        assert($secret !== null); // nosemgrep : razorpay:assert-fix-false-positives
 
         return (new AESCrypto(AES::MODE_ECB, $secret));
     }

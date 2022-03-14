@@ -38,7 +38,7 @@ class Core extends Base\Core
         string $destinationMerchantId,
         string $balanceType): Entity
     {
-        assert($settlement->hasTransaction(), true);
+        assert($settlement->hasTransaction(), true); // nosemgrep : razorpay:assert-fix-false-positives
 
         $this->trace->info(TraceCode::SETTLEMENT_TRANSFER_CREATE_INITIATED,
             [

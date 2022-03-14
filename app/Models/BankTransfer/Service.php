@@ -195,7 +195,7 @@ class Service extends Base\Service
             {
                 $invalidPrefixRegex = '/' . $invalidRegex . '/i';
 
-                $payerAccountNumber = preg_replace($invalidPrefixRegex, '', $payerAccountNumber);
+                $payerAccountNumber = preg_replace($invalidPrefixRegex, '', $payerAccountNumber); // nosemgrep : php.lang.security.preg-replace-eval.preg-replace-eval
             }
 
             $input[Entity::PAYER_ACCOUNT] = $payerAccountNumber;

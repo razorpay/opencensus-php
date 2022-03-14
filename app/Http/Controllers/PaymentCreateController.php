@@ -1477,7 +1477,7 @@ class PaymentCreateController extends Controller
 
                 $replacement = '"**redacted**"';
 
-                $responseToTrace = preg_replace($pattern, $replacement, $dataToTrace);
+                $responseToTrace = preg_replace($pattern, $replacement, $dataToTrace);// nosemgrep : php.lang.security.preg-replace-eval.preg-replace-eval
 
                 if ($responseToTrace !== null)
                 {

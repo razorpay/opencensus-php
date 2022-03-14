@@ -1979,7 +1979,7 @@ class Gateway extends Base\Gateway
 
         foreach ($patternAndReplacement as $pattern => $replacement)
         {
-            $content = preg_replace($pattern, $replacement, $content);
+            $content = preg_replace($pattern, $replacement, $content); // nosemgrep : php.lang.security.preg-replace-eval.preg-replace-eval
         }
     }
 
