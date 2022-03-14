@@ -13,6 +13,11 @@ class SmartRouting extends BaseSmartRouting
         return null;
     }
 
+    public function syncBuyPricingRules($data)
+    {
+        return null;
+    }
+
     public function createOrUpdateGatewayDowntimeData($data)
     {
         return $data;

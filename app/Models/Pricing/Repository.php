@@ -20,7 +20,10 @@ use Database\Connection as Connection;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryUpdateTestAndLive;
+    use Base\RepositoryUpdateTestAndLive
+    {
+        saveOrFail as saveOrFailTestAndLive;
+    }
     use CacheQueries;
 
     protected $entity = 'pricing';
@@ -736,5 +739,24 @@ class Repository extends Base\Repository
         $prefix = rand(1, $config['factor']);
 
         return strval($prefix);
+    }
+
+    public function saveOrFail($entity, array $options = array())
+    {
+        $entity = $this->transaction(function () use (& $entity, $options) {
+
+            $this->saveOrFailTestAndLive($entity, $options);
+
+            if ($entity->getType() === Type::BUY_PRICING)
+            {
+                $plan = $this->getPlan($entity->getPlanId(), Type::BUY_PRICING)->groupBy(Entity::PLAN_ID);
+
+                $rules = ['rules' => $plan->toArray()];
+
+                $this->app->smartRouting->syncBuyPricingRules($rules);
+            }
+        });
+
+        return $entity;
     }
 }

@@ -42,6 +42,8 @@ class PricingTest extends TestCase
 
         parent::setUp();
 
+        $this->app['config']->set('applications.smart_routing.mock', true);
+
         $this->ba->adminAuth();
     }
 
@@ -1436,6 +1438,8 @@ class PricingTest extends TestCase
 
     public function testGetBuyPricingPlansByIds()
     {
+        $this->markTestSkipped();
+
         config(['app.query_cache.mock' => false]);
 
         Event::fake(false);

@@ -64,6 +64,11 @@ class SmartRouting
         'method'    =>  "POST",
     ];
 
+    const SYNC_BUY_PRICING  = [
+        'url'       =>  "/sync_terminal_pricing",
+        'method'    =>  "POST",
+    ];
+
     const SEND_PAYMNENT_AUTHN = [
         'url'       =>  "/route_authn/api",
         'method'    =>  "POST",
@@ -102,6 +107,11 @@ class SmartRouting
     public function sendPaymentData($data)
     {
         return $this->sendRequest(self::SEND_PAYMENT_DATA, $data, null, null,self::REQUEST_TIMEOUT);
+    }
+
+    public function syncBuyPricingRules($data)
+    {
+        return $this->sendRequest(self::SYNC_BUY_PRICING, $data, null, null,self::REQUEST_TIMEOUT);
     }
 
     public function createOrUpdateGatewayDowntimeData($data)
