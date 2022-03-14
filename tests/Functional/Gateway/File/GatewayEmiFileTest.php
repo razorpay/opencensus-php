@@ -216,7 +216,7 @@ class GatewayEmiFileTest extends TestCase
         $emiFileContents = (new ExcelImport)->toArray($data);
 
         // Check if the fields are set correctly
-        $this->assertEquals('414772XXXXXX0009', $emiFileContents[0][0]['card_pan']);
+        $this->assertEquals('************0009', $emiFileContents[0][0]['card_pan']);
         $this->assertEquals('INDUSIND', $emiFileContents[0][0]['issuer']);
         $this->assertEquals('14%', $emiFileContents[0][0]['interest_rate']);
 

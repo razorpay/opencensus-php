@@ -131,6 +131,7 @@ class Indusind extends Base
         return $config[$bucketType];
     }
 
+
     protected function formatDataForFile($data)
     {
         $formattedData = [];
@@ -145,7 +146,7 @@ class Indusind extends Base
 
             $emiPercent = $emiPlan['rate'] / 100;
 
-            $cardNumber = $emiPayment->card->getMaskedCardNumber();
+            $cardNumber = str_repeat('*', 12) . $emiPayment->card->getLast4();
 
             $formattedData[] = [
                 'EMI ID'                       => $emiPayment->getId(),
