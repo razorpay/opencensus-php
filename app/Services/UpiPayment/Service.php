@@ -787,7 +787,7 @@ class Service
                 $traceData += $this->getAuthorizeTraceData($request[Request::CONTENT]);
                 break;
             case self::PRE_PROCESS:
-                $traceData += $request[Request::CONTENT];
+                $traceData += $this->getPreProcessTraceData($request[Request::CONTENT]);
                 break;
             case Payment\Action::CALLBACK:
                 $traceData += $request[Request::CONTENT];
@@ -807,6 +807,31 @@ class Service
         }
 
         $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_REQUEST, $traceData);
+    }
+
+    /**
+     * Returns trace data for pre-process request
+     *
+     * @param array $content
+     * @return array
+     */
+    protected function getPreProcessTraceData(array $content): array
+    {
+        $data = $content[Response::DATA];
+
+        $traceData['gateway'] = $data['gateway'];
+
+        if (isset($data[Entity::TERMINAL]) === true)
+        {
+            $terminal = $data[Entity::TERMINAL];
+
+            $traceData[Entity::TERMINAL] = [
+                Payment\Entity::ID      => $terminal[Payment\Entity::ID],
+                payment\Entity::GATEWAY => $terminal[Payment\Entity::GATEWAY]
+            ];
+        }
+
+        return $traceData;
     }
 
     /**
