@@ -3739,19 +3739,26 @@ class Core extends Base\Core
 
         (new Validator)->validateIsNonPurePlatformPartner($partner);
 
-        $appIds = (new MerchantApplications\Core)->getMerchantAppIds($partnerId, [MerchantApplications\Entity::MANAGED]);
+        $appTypes = [MerchantApplications\Entity::MANAGED];
+
+        if ($partner->isAggregatorPartner() === true)
+        {
+            // For aggregator partners, we need to check for both managed and referred applications
+            // since we now treat all type of sub-merchants being managed by the aggregator partner
+            $appTypes[] = MerchantApplications\Entity::REFERRED;
+        }
+
+        $appIds = (new MerchantApplications\Core)->getMerchantAppIds($partnerId, $appTypes);
 
         if (empty($appIds) === true)
         {
             return false;
         }
 
-        $appId = $appIds[0];
-
         $mapping = (new AccessMap\Repository)
-            ->findMerchantAccessMapOnEntityId($merchantId, $appId, AccessMap\Entity::APPLICATION);
+            ->findMerchantAccessMapOnEntityIds($merchantId, $appIds, AccessMap\Entity::APPLICATION);
 
-        return (empty($mapping) === false);
+        return $mapping->isNotEmpty();
     }
 
     public function isMerchantReferredByPartner(string $merchantId, string $partnerId): bool
