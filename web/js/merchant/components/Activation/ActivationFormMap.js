@@ -1198,12 +1198,6 @@ const bankAccountFields = [
     maxLength: '120',
     minLength: '4',
     _autoRenderImpure: true,
-    validator: function validator(val) {
-      if (val && !/^[a-zA-Z0-9][a-zA-Z0-9-&\'._()\s–\/]{3,119}$/.test(val)) {
-        return 'Name should contain at least 4 characters. Exclude numbers and special characters';
-      }
-      return '';
-    },
     checkValidityFromAPI: getBankVerificationAtteemptError,
     description: (activation) =>
       isUnregisteredBusiness(activation) || activation.props.user.isRegAutoKYCEnabled
@@ -1221,14 +1215,10 @@ const bankAccountFields = [
       if (!this.isOnKYCTab()) {
         const { user, fetchBankVerificationAttemptCount } = this.props;
         const { dirty } = this.state;
-        const isValidBankName =
-          dirty?.bank_account_name &&
-          !/^[a-zA-Z0-9][a-zA-Z0-9-&\'._()\s–\/]{3,119}$/.test(dirty?.bank_account_name);
 
         if (
           user.activation_form_milestone === 'L1' &&
           user.isSyncBankVerificationEnabled &&
-          !isValidBankName &&
           dirty?.bank_account_name &&
           dirty?.bank_account_name !== user?.bank_account_name
         ) {

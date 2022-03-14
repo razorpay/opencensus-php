@@ -154,11 +154,6 @@ const BankDetails: React.FC<BankDetailsProps> = ({ isFormLocked }) => {
       validationSchema={() => {
         return Yup.object().shape({
           bank_account_name: Yup.string()
-            .matches(/^[a-zA-Z0-9][a-zA-Z0-9-&\\'._()\s–\\/]{3,119}$/, {
-              message:
-                'Name should contain at least 4 characters. Exclude numbers and special characters',
-              excludeEmptyString: true,
-            })
             .required('Bank Account Name is a required field')
             .nullable(),
           bank_account_number: Yup.string()
