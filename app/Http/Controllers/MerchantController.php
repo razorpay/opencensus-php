@@ -2894,4 +2894,13 @@ class MerchantController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function bulkConvertResellerToAggregatorPartner()
+    {
+        $input = Request::all();
+
+        $this->service()->bulkConvertResellerToAggregatorPartner($input);
+
+        return ApiResponse::json([]);
+    }
 }

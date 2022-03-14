@@ -8,6 +8,7 @@ use RZP\Models\Merchant\MerchantApplications;
 
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\OAuth\OAuthTestCase;
+use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
 
@@ -69,6 +70,30 @@ class MerchantCoreTest extends OAuthTestCase
         // commissions data should not be deleted for partner
         $commission = $this->getDbEntities("commission", ["partner_id" => $merchantId]);
         $this->assertCount(1, $commission);
+    }
+
+    public function testResellerToAggregatorPartnerTypeUpdate()
+    {
+        list($merchantId, $managedAppId) = $this->createResellerPartnerAndSubmerchantAndFetchMocks();
+
+        $this->core->updateResellerToAggregator($merchantId);
+
+        // partner type should be updated as reseller
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+        $this->assertEquals('aggregator', $merchant->getPartnerType());
+
+        // new merchant applications should be created for managed and referred
+        $applications = $this->getDbEntities('merchant_application',
+            ['merchant_id' => $merchantId])->toArray();
+        $this->assertCount(2, $applications);
+        $this->assertEquals('managed', $applications[0]['type']);
+        $this->assertEquals('referred', $applications[1]['type']);
+
+        // merchant access map should be updated with new application id
+        $accessMaps = $this->getDbEntities('merchant_access_map',
+            ['entity_type' => 'application', 'entity_owner_id' => $merchantId])->toArray();
+        $this->assertCount(1, $accessMaps);
+        $this->assertEquals($managedAppId, $accessMaps[0]['entity_id']);
     }
 
     protected function createAggregatorPartnerAndSubmerchantAndFetchMocks(string $merchantId = '10000000000000', string $submerchantId = '100submerchant', string $newAppId = '8ckeirnw84ifke')
@@ -142,5 +167,46 @@ class MerchantCoreTest extends OAuthTestCase
                 ['applications/'.$referredApp, 'PUT', ['merchant_id' => $merchantId]
                 ])
             ->willReturnOnConsecutiveCalls($app = ['id'=> $newAppId], [], []);
+    }
+
+    private function createResellerPartnerAndSubmerchantAndFetchMocks(string $submerchantId = '101submerchant')
+    {
+        list($partner, $app) = $this->createPartnerAndApplication(['partner_type' => 'reseller']);
+
+        $merchantId = $partner->getId();
+
+        $this->fixtures->merchant->edit($merchantId, ['name' => 'et', 'website' => 'http://www.monahan.com/harum-fuga-quae-culpa-quod']);
+
+        $this->createConfigForPartnerApp($app->getId());
+
+        $this->createSubMerchant($partner, $app, ['id' => '101submerchant'], ['id' => 'J00dqRlTeStNzb']);
+
+        $this->ba->adminAuth();
+
+        $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'reseller', 'id' => '9reeiryr64ifke']);
+
+        $createParams = [
+            'website' => 'http://www.monahan.com/harum-fuga-quae-culpa-quod',
+            'merchant_id' => $merchantId,
+            'type' => 'partner'
+        ];
+
+        $managedAppRequestParams = array_merge(['name' => 'et'], $createParams);
+
+        $referredAppRequestParams = array_merge(['name' => 'Referred application'], $createParams);
+
+        $managedAppId = '7fheiryr64ifke';
+        $referredAppId = '9reeiryr64ifke';
+
+        $this->authServiceMock
+            ->expects($this->exactly(3))
+            ->method('sendRequest')
+            ->withConsecutive(
+                ['applications', 'POST', $managedAppRequestParams],
+                ['applications', 'POST', $referredAppRequestParams],
+                ['applications/'.$app->getId(), 'PUT', ['merchant_id' => $merchantId]])
+            ->willReturnOnConsecutiveCalls($app = ['id'=> $managedAppId], ['id'=> $referredAppId], []);
+
+        return [$merchantId, $managedAppId];
     }
 }

@@ -404,7 +404,7 @@ class Core extends Base\Core
      *
      * @return array
      */
-    private function getClonedPartnerConfig(Entity $config, $attribute)
+    public function getClonedPartnerConfig(Entity $config, $attribute)
     {
         $newConfig = $config->replicate();
 

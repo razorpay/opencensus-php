@@ -9132,4 +9132,11 @@ class Service extends Base\Service
 
         return ['success' => true];
     }
+
+    public function bulkConvertResellerToAggregatorPartner(array $input)
+    {
+        $merchantIds = $input['merchant_ids'];
+
+        return $this->core()->bulkConvertResellerToAggregatorPartner($merchantIds);
+    }
 }

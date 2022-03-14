@@ -2457,7 +2457,8 @@ class Route
         'merchant_partners_fetch'                  => ['get',      'merchants/{id}/partners',                        'MerchantController@getAffiliatedPartners'                          ],
         'merchant_associated_accounts_fetch'       => ['get',      'merchant/{id}/associated_accounts',              'MerchantController@getAssociatedAccounts'                          ],
 
-        'bulk_migrate_aggregator_to_reseller'       => ['put',       'merchant/migrate_aggregator_to_reseller/bulk',    'MerchantController@bulkConvertAggregatorToResellerPartner'],
+        'bulk_migrate_aggregator_to_reseller'      => ['put',      'merchant/migrate_aggregator_to_reseller/bulk',   'MerchantController@bulkConvertAggregatorToResellerPartner'         ],
+        'bulk_migrate_reseller_to_aggregator'      => ['put',      'merchant/migrate_reseller_to_aggregator/bulk',   'MerchantController@bulkConvertResellerToAggregatorPartner'         ],
 
         // Webhook Api Wrapper
         'webhook_fire'                             => ['post',     'webhook/{event}/fire',                           'WebhookV2Controller@processWebhook'                                ],
@@ -3556,6 +3557,7 @@ class Route
 
     public static $private = [
         'bulk_migrate_aggregator_to_reseller',
+        'bulk_migrate_reseller_to_aggregator',
         'qr_configs_create',
         'qr_configs_fetch',
         'qr_configs_delete',
@@ -7064,7 +7066,8 @@ class Route
         'merchant_associated_accounts_fetch'       => Permission::VIEW_PARTNERS,
         'fetch_merchant_products'                  => Permission::VIEW_PARTNERS,
         'fetch_partner_first_user_experience'      => Permission::VIEW_PARTNERS,
-        'bulk_migrate_aggregator_to_reseller'       => Permission::EDIT_PARTNERS,
+        'bulk_migrate_aggregator_to_reseller'      => Permission::EDIT_PARTNERS,
+        'bulk_migrate_reseller_to_aggregator'      => Permission::EDIT_PARTNERS,
         'backfill_merchant_applications'           => Permission::ADMIN_MANAGE_PARTNERS,
         'backfill_referred_application'            => Permission::ADMIN_MANAGE_PARTNERS,
         'product_tnc_map_create'                   => Permission::ADMIN_MANAGE_PARTNERS,
@@ -10429,6 +10432,7 @@ class Route
             'partner_actions',
             'partner_activation_bulk_assign_reviewer',
             'bulk_migrate_aggregator_to_reseller',
+            'bulk_migrate_reseller_to_aggregator',
             'patch_internal_instrument_request_by_id',
             'pause_internal_instrument_request_by_id',
             'patch_internal_instrument_requests',

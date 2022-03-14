@@ -92,6 +92,9 @@ final class Constants
     const AGGREGATOR_TO_RESELLER_UPDATE           = "aggregator_to_reseller_update";
     const AGGREGATOR_TO_RESELLER_UPDATE_LOCK_TIME_OUT = 30; //seconds
 
+    const RESELLER_TO_AGGREGATOR_UPDATE           = "reseller_to_aggregator_update";
+    const RESELLER_TO_AGGREGATOR_UPDATE_LOCK_TIME_OUT = 30; //seconds
+
     // Used in partners flows
     const APPLICATION_ID                          = 'application_id';
     const APP_TYPE                                = 'app_type';

@@ -110,7 +110,7 @@ trait PartnerTrait
         ];
     }
 
-    public function createSubMerchant($merchant, $app, $subMerchantAttributes = [])
+    public function createSubMerchant($merchant, $app, $subMerchantAttributes = [], $accessMapAttributes = [])
     {
         $subMerchantId = $subMerchantAttributes['id'] ?? 'submerchantNum';
         unset($subMerchantAttributes['id']);
@@ -137,6 +137,8 @@ trait PartnerTrait
             'merchant_id'     => $subMerchant->getId(),
             'entity_owner_id' => $merchant->getId(),
         ];
+
+        $accessMapData = array_merge($accessMapAttributes, $accessMapData);
 
         $accessMap = $this->fixtures->create('merchant_access_map', $accessMapData);
 
