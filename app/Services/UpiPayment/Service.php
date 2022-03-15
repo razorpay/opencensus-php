@@ -331,6 +331,7 @@ class Service
                 ];
                 break;
             case self::ENTITY_FETCH:
+                $data = $input;
                 break;
             default:
                 throw new Exception\LogicException(
