@@ -89,6 +89,11 @@ class Create extends Base
             $requestBody[Payout\Entity::SCHEDULED_AT] = $input[Payout\Entity::SCHEDULED_AT];
         }
 
+        if (empty($input[Payout\Entity::SKIP_WORKFLOW]) === false)
+        {
+            $requestBody[Payout\Entity::SKIP_WORKFLOW] = $input[Payout\Entity::SKIP_WORKFLOW];
+        }
+      
         if (isset($input[Payout\Entity::ORIGIN]) === true)
         {
             $requestBody[Payout\Entity::ORIGIN] = $input[Payout\Entity::ORIGIN];

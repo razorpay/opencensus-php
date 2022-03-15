@@ -11537,6 +11537,28 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals(Payout\Status::PENDING, $payout->getStatus());
     }
 
+    public function testDisablePayoutServicePayoutCreationForInternalPayoutFeatureEnabled()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_SERVICE_ENABLED]);
+
+        $this->liveSetUp();
+
+        $this->setupWorkflowForLiveMode();
+
+        $this->disableWorkflowMocks();
+
+        $this->ba->appAuthLive($this->config['applications.vendor_payments.secret']);
+
+        $this->fixtures->on('live')->edit('contact', '1000001contact', ['type' => 'rzp_tax_pay']);
+
+        $this->startTest();
+
+        $payout = $this->getDbLastEntity('payout', 'live');
+
+        $this->assertEquals($payout['workflow_feature'], 4);
+        $this->assertEquals(false, $payout['is_payout_service']);
+    }
+
     public function testDisableWorkflowForInternalContactPayoutCreatedByVendorPayments()
     {
         $this->liveSetUp();

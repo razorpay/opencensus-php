@@ -206,7 +206,7 @@ class Base extends BaseCore
             (new Payout\Validator)->setStrictFalse()
                 ->validateInput('skip_workflow', $input);
 
-            $skipWorkflow = (bool) array_pull($input, Entity::SKIP_WORKFLOW);
+            $skipWorkflow = isset($input[Entity::SKIP_WORKFLOW]) ? boolval($input[Entity::SKIP_WORKFLOW]) : null;
         }
 
         // Workflow can be enabled for internal contacts by passing enable_workflow_for_internal_contact field in input.
@@ -222,6 +222,8 @@ class Base extends BaseCore
         $this->isWorkflowEnabled = $this->isWorkflowApplicable($skipWorkflow, $enableWorkflowForInternalContact);
 
         $payoutViaMicroservice = $this->createPayoutViaMicroservice($input);
+
+        unset($input[Entity::SKIP_WORKFLOW]);
 
         if (is_null($payoutViaMicroservice) === false)
         {
@@ -2710,6 +2712,8 @@ class Base extends BaseCore
 
                 $payout = $this->repo->transaction(function () use ($input, $id, $status, $workflowDetails)
                 {
+                    $this->workflowFeature = !empty($workflowDetails['workflow_feature']) ? $workflowDetails['workflow_feature'] : null;
+
                     $payout = $this->createPayoutEntity($input);
 
                     if ($id !== null)
@@ -3074,6 +3078,21 @@ class Base extends BaseCore
                     $isEnabled = $this->merchant->isFeatureEnabled(Feature::WORKFLOW_VIA_PAYOUTS_MS);
 
                     if ($isEnabled === false)
+                    {
+                        return false;
+                    }
+
+                    if ((new Payout\Service())->isPayoutLinkApp() === true) {
+                        return false;
+                    }
+                }
+                else
+                {
+                    // If WF is disabled, we should not call payout service for
+                    // those features that are currently not supported at payout service
+                    // otherwise in such cases WF will get created at payout service's end
+                    if((empty($this->workflowFeature) == false) &&
+                        (!in_array($this->workflowFeature, Payout\WorkflowFeature::SUPPORTED_FEATURES_ON_PAYOUT_SERVICE, true) === true))
                     {
                         return false;
                     }

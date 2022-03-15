@@ -12695,6 +12695,73 @@ return [
         ],
     ],
 
+    'testDisablePayoutServicePayoutCreationForInternalPayoutFeatureEnabled' => [
+        'request'  => [
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Razorpay-Account'   => '10000000000000',
+                'HTTP_X-Payout-Idempotency' => 'test_i_key',
+            ],
+            'url'     => '/internalContactPayout',
+            'content' => [
+                'account_number'                       => '2224440041626905',
+                'amount'                               => 2000000,
+                'currency'                             => 'INR',
+                'purpose'                              => 'refund',
+                'narration'                            => 'Batman',
+                'mode'                                 => 'IMPS',
+                'enable_workflow_for_internal_contact' => false,
+                'fund_account_id'                      => 'fa_100000000000fa',
+                'notes'                                => [
+                    'abc' => 'xyz',
+                ],
+                'origin'                               => 'dashboard',
+                'source_details'                       => [
+                    [
+                        'source_id'   => '100000000000sa',
+                        'source_type' => 'payout_links',
+                        'priority'    => 1,
+                    ],
+                    [
+                        'source_id'   => '100000000001sa',
+                        'source_type' => 'vendor_payments',
+                        'priority'    => 2,
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'narration'       => 'Batman',
+                'purpose'         => 'refund',
+                'status'          => 'processing',
+                'mode'            => 'IMPS',
+                'tax'             => 162,
+                'fees'            => 1062,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+                'origin'          => 'dashboard',
+                'source_details'  => [
+                    [
+                        'source_id'   => '100000000000sa',
+                        'source_type' => 'payout_links',
+                        'priority'    => 1,
+                    ],
+                    [
+                        'source_id'   => '100000000001sa',
+                        'source_type' => 'vendor_payments',
+                        'priority'    => 2,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testDisableWorkflowForInternalContactPayoutCreatedByVendorPayments' => [
         'request'  => [
             'method'  => 'POST',

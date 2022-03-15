@@ -19,6 +19,13 @@ class WorkflowFeature
         Constants::SKIP_WF_FOR_PAYOUT_LINK    => 7,
     ];
 
+    const SUPPORTED_FEATURES_ON_PAYOUT_SERVICE = [
+        Constants::PAYOUT_WORKFLOWS,
+        Constants::SKIP_WF_AT_PAYOUTS,
+        Constants::SKIP_WORKFLOWS_FOR_API,
+        Constants::SKIP_WF_FOR_PAYROLL
+    ];
+
     public static function getIntValueFromWorkflowFeature($feature)
     {
         return self::WORKFLOW_FEATURES[$feature];

@@ -2161,4 +2161,20 @@ class PayoutServiceTest extends TestCase
 
         $this->assertNotNull($payout->getFailedAt());
     }
+
+    public function testCreatePayoutEntryViaPayoutsLinkWithWFEnabled() {
+
+        $this->fixtures->on('live')->merchant->addFeatures([Feature\Constants::PAYOUT_WORKFLOWS]);
+        $this->fixtures->on('live')->merchant->addFeatures([Feature\Constants::WORKFLOW_VIA_PAYOUTS_MS]);
+
+        $this->ba->appAuthLive($this->config['applications.payout_links.secret']);
+
+        $this->startTest();
+
+        $payout = $this->getDbLastEntity('payout', 'live');
+
+        $this->assertNotNull($payout);
+        $this->assertEquals($payout['workflow_feature'], 1);
+        $this->assertEquals($payout['is_payout_service'], false);
+    }
 }
