@@ -1606,6 +1606,7 @@ class Route
         'accounting_integration_tally_acknowledge_payment'      => ['post',     'accounting-integration/tally/payments/{id}/acknowledge',   'AccountingPayoutsController@acknowledgeTallyPayment'   ],
         'accounting_integration_tally_integrate'                => ['post',     'accounting-integration/tally/integrate',                   'AccountingPayoutsController@integrateTally'            ],
         'accounting_integration_tally_delete_integration'       => ['post',     'accounting-integration/tally/delete',                      'AccountingPayoutsController@deleteIntegrationTally'    ],
+        'accounting_integration_tally_tax_slab_rates'           => ['get',      'accounting-integration/tally/tax-slabs',                   'AccountingPayoutsController@getTaxSlabs'               ],
 
         'accounting_integration_get_chart_of_accounts'          => ['get',      'accounting-integration/chart-of-accounts/{app}',           'AccountingPayoutsController@getChartOfAccounts'        ],
         'accounting_integration_put_chart_of_accounts'          => ['put',      'accounting-integration/chart-of-accounts/{app}',           'AccountingPayoutsController@putChartOfAccounts'        ],
@@ -3880,6 +3881,7 @@ class Route
         'accounting_integration_tally_acknowledge_payment',
         'accounting_integration_tally_integrate',
         'accounting_integration_tally_delete_integration',
+        'accounting_integration_tally_tax_slab_rates',
 
 
         // routes for account and stakeholder documents
@@ -8356,6 +8358,7 @@ class Route
             'accounting_integration_tally_acknowledge_payment',
             'accounting_integration_tally_integrate',
             'accounting_integration_tally_delete_integration',
+            'accounting_integration_tally_tax_slab_rates',
             'activate_live_offline_device',
             'activate_test_offline_device',
             'add_additional_website_self_serve',
@@ -12810,6 +12813,7 @@ class Route
         'accounting_integration_tally_acknowledge_payment',
         'accounting_integration_tally_integrate',
         'accounting_integration_tally_delete_integration',
+        'accounting_integration_tally_tax_slab_rates',
     ];
 
     //
@@ -12944,6 +12948,7 @@ class Route
         'accounting_integration_tally_acknowledge_payment',
         'accounting_integration_tally_integrate',
         'accounting_integration_tally_delete_integration',
+        'accounting_integration_tally_tax_slab_rates',
 
         'contact_get',
         'contact_list',

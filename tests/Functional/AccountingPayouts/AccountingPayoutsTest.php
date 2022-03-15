@@ -286,6 +286,21 @@ class AccountingPayoutsTest extends TestCase
         $apMock->shouldHaveReceived('createTallyInvoice');
     }
 
+    public function testGetTaxSlabServiceMethod()
+    {
+        $this->ba->privateAuth();
+
+        $apMock = Mockery::mock('RZP\Services\AccountingPayouts');
+
+        $apMock->shouldReceive('getTaxSlabs')->andReturn([]);
+
+        $this->app->instance('accounting-payouts', $apMock);
+
+        $this->startTest();
+
+        $apMock->shouldHaveReceived('getTaxSlabs');
+    }
+
     public function testFetchTallyInvoiceServiceMethod()
     {
         $this->ba->privateAuth();

@@ -33,6 +33,7 @@ class Service
     const WAITLIST                    = 'Waitlist';
     const X_APP_MODE                  = 'X-App-Mode';
     const CREATE_INVOICE_FROM_TALLY   = 'CreateInvoiceFromTally';
+    const FETCH_TAX_SLABS             = 'GetTaxSlabRatesTally';
     const FETCH_TALLY_INVOICE         = 'FetchTallyInvoice';
     const CANCEL_TALLY_INVOICE        = 'CancelTallyInvoice';
     const FETCH_TALLY_PAYMENTS        = 'FetchTallyPayments';
@@ -255,6 +256,13 @@ class Service
         $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::CREATE_INVOICE_FROM_TALLY);
 
         return $this->makeRequest($merchant, $url, $input, null, [], 'POST', MODE::LIVE);
+    }
+
+    public function getTaxSlabs(MerchantEntity $merchant)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::FETCH_TAX_SLABS);
+
+        return $this->makeRequest($merchant, $url, [], null, [], 'POST', MODE::LIVE);
     }
 
     public function fetchTallyInvoice(MerchantEntity $merchant, array $input)

@@ -170,6 +170,16 @@ return [
         ]
     ],
 
+    'testGetTaxSlabServiceMethod' => [
+        'request'  => [
+            'method' => 'GET',
+            'url'    => '/accounting-integration/tally/tax-slabs',
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+
     'testFetchTallyInvoiceServiceMethod' => [
         'request'  => [
             'server' => [
