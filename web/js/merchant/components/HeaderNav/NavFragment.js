@@ -5,7 +5,10 @@ import ShowWhen from 'merchant/components/ShowWhen';
 import ModesDropdown from './SwitchMode';
 import SwitchMerchant from './SwitchMerchant';
 import OffersForYou from 'common/ui/OffersForYou';
-
+import { fetchExclusiveOffer as fetchExclusiveOfferProp } from '../../../merchant/reducers/growthService';
+import { compose } from 'redux';
+import { connect } from 'react-redux';
+import { withRouter } from 'react-router-dom';
 class NavFragment extends Component {
   constructor(props) {
     super(props);
@@ -36,6 +39,11 @@ class NavFragment extends Component {
     storage.removeItem(this.showModePopoverToken);
   }
 
+  componentDidMount() {
+    const { fetchExclusiveOffer } = this.props;
+    fetchExclusiveOffer({ fromWhere: 'gsExclusiveOffer' });
+  }
+
   render() {
     const {
       user,
@@ -46,10 +54,13 @@ class NavFragment extends Component {
       referee,
       canShowMtuPopup,
       mtuOfferCount,
+      exclusive_offers,
     } = this.props;
     const { showSwitchModeTooltip } = this.state;
 
     const isReferredMerchant = referee?.status === 'signup';
+
+    const shouldShowGSExclusiveOffers = Object.keys(exclusive_offers || {}).length > 0;
 
     const canShowOnboardingOffers =
       !isReferredMerchant && canShowMtuPopup && user.isOnboardingCouponEnabled;
@@ -69,8 +80,10 @@ class NavFragment extends Component {
             user.isProjectMoonshineEnabled ||
             user.isProjectKeystoneCorporateCardsEnabled ||
             user.isProjectKeystoneCashAdvanceEnabled ||
-            user.isGSExclusiveOfferEnabled ||
-            user.isICICILinkedCAFlowEnabled('offers-for-you')
+            user.isICICILinkedCAFlowEnabled('offers-for-you') ||
+            user.isUCCapitalCardsOnlyCampaignEnabled ||
+            user.isUCCapitalLOCOnlyCampaignEnabled ||
+            shouldShowGSExclusiveOffers
           }
         >
           <OffersForYou
@@ -108,4 +121,17 @@ class NavFragment extends Component {
   }
 }
 
-export default NavFragment;
+export default compose(
+  withRouter,
+  connect(
+    (state) => {
+      return {
+        ...state?.session.user,
+        ...state?.growthService?.exclusive_offers,
+      };
+    },
+    {
+      fetchExclusiveOffer: fetchExclusiveOfferProp,
+    },
+  ),
+)(NavFragment);

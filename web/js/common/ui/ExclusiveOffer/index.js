@@ -2,49 +2,13 @@ import { closeModal as closeModalProp } from 'merchant_common/reducers/modals';
 import { compose } from 'redux';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import rTracking from 'react-tracking';
-import { fetchExclusiveOffer as fetchExclusiveOfferProp } from '../../../merchant/reducers/growthService';
 import Loader from 'common/ui/Loader';
 import { SubmissionSuccessfull } from '../NotificationsDropdown/RazorpayXNitroAnnouncement';
 import { sendDataToSalesForce } from '../../utils/common-api';
 
-const ExclusiveOffer = ({
-  tracking,
-  fetchExclusiveOffer,
-  loading,
-  exclusive_offers,
-  user,
-  closeModal,
-  history,
-}) => {
-  useEffect(() => {
-    fetchExclusiveOffer({ fromWhere: 'gsExclusiveOffer' });
-  }, []);
-
-  const defaultExclusiveOffer = {
-    product_name: 'default',
-    label: 'Qualified for Nitro Base Campaign',
-    id: 'Nitro_Base',
-    image: {
-      url: 'https://cdn.razorpay.com/static/assets/final-modal/NitroNewICICIBase.png',
-      alt_text: 'Nitro Base',
-    },
-    offer_cta: {
-      label: 'I am Interested ✨',
-      style: 'normal',
-    },
-    footer_data: {
-      style: 'normal',
-      label:
-        'Your Business deserves a better bank. Take control of your finances with RazorpayX Current Account',
-    },
-    offer: {
-      background_color: '#050d1f',
-      cta_background_color: 'linear-gradient(108.69deg, #FFC13E -96.94%, #FF650F 100%)',
-      cta_font_color: '#FFFFFF',
-    },
-  };
+const ExclusiveOffer = ({ tracking, loading, exclusive_offers, user, closeModal, history }) => {
   const [activeView, setActiveView] = useState('detail-view');
   const Description = ({ description, type }) => {
     switch (type) {
@@ -97,11 +61,7 @@ const ExclusiveOffer = ({
   };
 
   if (!loading) {
-    // if no exclusive offer is available
-    if (Object.keys(exclusive_offers).length === 0) {
-      exclusive_offers = defaultExclusiveOffer;
-    }
-    if (activeView === 'detail-view') {
+    if (Object.keys(exclusive_offers).length > 0 && activeView === 'detail-view') {
       return (
         <>
           <button
@@ -196,7 +156,6 @@ export default compose(
       };
     },
     {
-      fetchExclusiveOffer: fetchExclusiveOfferProp,
       closeModal: closeModalProp,
     },
   ),

@@ -123,6 +123,25 @@ const OffersForYou = ({
           size: 'xlarge',
           className: 'RazorpayXNitroAnnouncement--Modal',
         });
+      } else if (
+        user.isUCCapitalCardsOnlyCampaignEnabled ||
+        user.isUCCapitalLOCOnlyCampaignEnabled ||
+        user.isProjectKeystoneCorporateCardsEnabled ||
+        user.isProjectKeystoneCashAdvanceEnabled ||
+        user.isProjectNitroCorporateCard ||
+        user.isProjectNitroEnabled ||
+        user.isICICILinkedCAFlowEnabled('offers-for-you')
+      ) {
+        openModals({
+          component: (
+            <RazorpayXNitroAnnouncement hideModal={closeModals} fromWhere="offers-for-you" />
+          ),
+          size: 'xlarge',
+          className:
+            user.isProjectKeystoneCorporateCardsEnabled || user.isProjectKeystoneCashAdvanceEnabled
+              ? 'Keystone--Modal'
+              : 'RazorpayXNitroAnnouncement--Modal',
+        });
       } else if (user.isGSExclusiveOfferEnabled) {
         openModals({
           component: <ExclusiveOffer />,
