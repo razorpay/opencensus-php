@@ -43,6 +43,8 @@ class Base extends Core
     const IDENTIFIERS           = 'identifiers';
     const ADDITIONAL_PARAMS     = 'additional_params';
 
+    const BANKING_ACCOUNT_STMT_DETAIL_ID  = "banking_account_stmt_detail_id";
+
     // For txn sqs
     const ENTITY_ID                 = 'entity_id';
     const ENTITY_NAME               = 'entity_name';

@@ -17456,6 +17456,696 @@ class PayoutTest extends OAuthTestCase
         Queue::assertPushed(Transactions::class, 1);
     }
 
+    public function testDirectAccountPayoutProcessedInLedgerShadowMode()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::DA_LEDGER_JOURNAL_WRITES]);
+
+        $this->createDirectAccountPayout();
+
+        $ledgerSnsPayloadArray = [];
+        $this->mockLedgerSns(2, $ledgerSnsPayloadArray);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $payoutId = $payout->getId();
+
+        $this->fixtures->edit('payout', $payoutId, [
+            'utr' => 'sampleutr876545'
+        ]);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        // create a txn linked to bas and external
+        $attributes = [
+            'id'          => 'sampleTxnId234',
+            'merchant_id' => $payout->getMerchantId(),
+            'amount'      => $payout->getAmount(),
+            'balance_id'  => $payout->getBalanceId(),
+            'type'        => 'external',
+            'entity_id'   => 'randomexternal',
+        ];
+        $this->fixtures->create('transaction', $attributes);
+        $txnCreated = $this->getDbLastEntity('transaction');
+
+        // create a external for this payout so it gets picked
+        $this->fixtures->create('external',
+            [
+                'id'                        => 'randomexternal',
+                'merchant_id'               => $payout->getMerchantId(),
+                'amount'                    => $payout->getAmount(),
+                'channel'                   => $payout->getChannel(),
+                'transaction_id'            => $txnCreated['id'],
+                'utr'                       => $payout->getUtr(),
+                'balance_id'                => $payout->getBalanceId(),
+            ]);
+
+        $externalCreated = $this->getDbLastEntity('external');
+
+        // create a bas for this payout so it gets picked
+        $this->fixtures->create('banking_account_statement',
+            [
+                'type'                      => 'debit',
+                'amount'                    => $payout->getAmount(),
+                'channel'                   => $payout->getChannel(),
+                'account_number'            => $payout->balance->getAccountNumber(),
+                'transaction_id'            => $txnCreated['id'],
+                'entity_id'                 => $externalCreated['id'],
+                'entity_type'               => 'external',
+                'bank_transaction_id'       => 'SDHDH',
+                'balance'                   => 30019891,
+                'transaction_date'          => 1584987183,
+                'utr'                       => $payout->getUtr()
+            ]);
+
+        // create a bas details for this payout so it gets used to pick basd id for ledger
+        $this->fixtures->create('banking_account_statement_details',[
+            Details\Entity::ID             => 'xbas0000000002',
+            Details\Entity::MERCHANT_ID    => $payout->getMerchantId(),
+            Details\Entity::BALANCE_ID     => $payout->getBalanceId(),
+            Details\Entity::ACCOUNT_NUMBER => $payout->balance->getAccountNumber(),
+            Details\Entity::CHANNEL        => Details\Channel::RBL,
+            Details\Entity::STATUS         => Details\Status::ACTIVE,
+        ]);
+
+        (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
+            'fta_status' => 'processed',
+            'failure_reason' => '',
+            'bank_status_code' => 'SUCCESS'
+        ]);
+
+        $updatedPayout = $this->getDbEntityById('payout', $payoutId)->toArray();
+
+        $this->assertEquals($updatedPayout[Payout\Entity::STATUS], Payout\Status::PROCESSED);
+        $this->assertNull($updatedPayout[Payout\Entity::REVERSED_AT]);
+
+        $transactorTypeArray = [
+            'da_ext_payout_processed',
+            'da_payout_processed_recon',
+        ];
+
+        for ($index = 0; $index<count($ledgerSnsPayloadArray); $index++)
+        {
+            $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
+
+            $ledgerRequestPayload['additional_params'] = json_decode($ledgerRequestPayload['additional_params'], true);
+
+            $this->assertEquals('X', $ledgerRequestPayload['tenant']);
+            $this->assertEquals('test', $ledgerRequestPayload['mode']);
+            $this->assertEquals($payout->getPublicId(), $ledgerRequestPayload['transactor_id']);
+            $this->assertEquals('10000000000000', $ledgerRequestPayload['merchant_id']);
+            $this->assertEquals('INR', $ledgerRequestPayload['currency']);
+            $this->assertEquals('590', $ledgerRequestPayload['commission']);
+            $this->assertEquals('90', $ledgerRequestPayload['tax']);
+            $this->assertEquals($transactorTypeArray[$index], $ledgerRequestPayload['transactor_event']);
+            $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload['additional_params']);
+        }
+    }
+
+    public function testDirectAccountPayoutReversedInLedgerShadowMode()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::DA_LEDGER_JOURNAL_WRITES]);
+
+        $this->createDirectAccountPayout();
+
+        $ledgerSnsPayloadArray = [];
+        $this->mockLedgerSns(2, $ledgerSnsPayloadArray);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $payoutId = $payout->getId();
+
+        // create a txn for payout
+        $attributes = [
+            'id'          => 'sampleTxnId000',
+            'merchant_id' => $payout->getMerchantId(),
+            'amount'      => $payout->getAmount(),
+            'balance_id'  => $payout->getBalanceId(),
+            'type'        => 'payout',
+//            'entity_id'   => $payoutId,
+        ];
+        $this->fixtures->create('transaction', $attributes);
+        $txnForPayout = $this->getDbLastEntity('transaction');
+
+        // update payout with utr and txn, so that we can mover ahead to test reversal
+        $this->fixtures->edit('payout', $payoutId, [
+            'utr'               => 'sampleutr876545',
+//            'transaction_id'    => $txnForPayout['id'],
+        ]);
+
+        $txnForPayout->sourceAssociate($payout);
+        $payout->transaction()->associate($txnForPayout);
+
+        $txnForPayout->saveOrFail();
+        $payout->saveOrFail();
+
+        $txnForPayout = $this->getDbLastEntity('transaction');
+        $payout = $this->getDbLastEntity('payout');
+
+        // create a txn linked to bas and external
+        $attributes = [
+            'id'          => 'sampleTxnId235',
+            'merchant_id' => $payout->getMerchantId(),
+            'amount'      => $payout->getAmount(),
+            'balance_id'  => $payout->getBalanceId(),
+            'type'        => 'external',
+            'entity_id'   => 'randomexternal',
+        ];
+        $this->fixtures->create('transaction', $attributes);
+        $txnCreated = $this->getDbLastEntity('transaction');
+
+        // create a external for this payout so it gets picked
+        $this->fixtures->create('external',
+            [
+                'id'                        => 'randomexternal',
+                'merchant_id'               => $payout->getMerchantId(),
+                'amount'                    => $payout->getAmount(),
+                'channel'                   => $payout->getChannel(),
+                'transaction_id'            => $txnCreated['id'],
+                'utr'                       => $payout->getUtr(),
+                'balance_id'                => $payout->getBalanceId(),
+            ]);
+
+        $externalCreated = $this->getDbLastEntity('external');
+
+        // create a bas for this payout so it gets picked
+        $this->fixtures->create('banking_account_statement',
+            [
+                'type'                      => 'credit',
+                'amount'                    => $payout->getAmount(),
+                'channel'                   => $payout->getChannel(),
+                'account_number'            => $payout->balance->getAccountNumber(),
+                'transaction_id'            => $txnCreated['id'],
+                'entity_id'                 => $externalCreated['id'],
+                'entity_type'               => 'external',
+                'bank_transaction_id'       => 'SDHDH',
+                'balance'                   => 30019891,
+                'transaction_date'          => 1584987183,
+                'utr'                       => $payout->getUtr(),
+                'created_at'                => Carbon::now()->getTimestamp() + 3600
+            ]);
+
+        // create a bas details for this payout so it gets used to pick basd id for ledger
+        $this->fixtures->create('banking_account_statement_details',[
+            Details\Entity::ID             => 'xbas0000000002',
+            Details\Entity::MERCHANT_ID    => $payout->getMerchantId(),
+            Details\Entity::BALANCE_ID     => $payout->getBalanceId(),
+            Details\Entity::ACCOUNT_NUMBER => $payout->balance->getAccountNumber(),
+            Details\Entity::CHANNEL        => Details\Channel::RBL,
+            Details\Entity::STATUS         => Details\Status::ACTIVE,
+        ]);
+
+        (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
+            'fta_status' => 'reversed',
+            'failure_reason' => '',
+            'bank_status_code' => 'SUCCESS'
+        ]);
+
+        $updatedPayout = $this->getDbEntityById('payout', $payoutId)->toArray();
+
+        $reversal = $this->getDbLastEntity('reversal');
+
+        $this->assertEquals($updatedPayout[Payout\Entity::STATUS], Payout\Status::REVERSED);
+        $this->assertNotNull($updatedPayout[Payout\Entity::REVERSED_AT]);
+
+        $transactorTypeArray = [
+            'da_ext_payout_reversed',
+            'da_payout_reversed_recon',
+        ];
+
+        for ($index = 0; $index<count($ledgerSnsPayloadArray); $index++)
+        {
+            $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
+
+            $ledgerRequestPayload['additional_params'] = json_decode($ledgerRequestPayload['additional_params'], true);
+
+            $this->assertEquals('X', $ledgerRequestPayload['tenant']);
+            $this->assertEquals('test', $ledgerRequestPayload['mode']);
+            $this->assertEquals($reversal->getPublicId(), $ledgerRequestPayload['transactor_id']);
+            $this->assertEquals('10000000000000', $ledgerRequestPayload['merchant_id']);
+            $this->assertEquals('INR', $ledgerRequestPayload['currency']);
+            $this->assertEquals('590', $ledgerRequestPayload['commission']);
+            $this->assertEquals('90', $ledgerRequestPayload['tax']);
+            $this->assertEquals($transactorTypeArray[$index], $ledgerRequestPayload['transactor_event']);
+            $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload['additional_params']);
+        }
+    }
+
+    public function testDirectAccountPayoutProcessedAndReversedInLedgerShadowMode()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::DA_LEDGER_JOURNAL_WRITES]);
+
+        $this->createDirectAccountPayout();
+
+        $ledgerSnsPayloadArray = [];
+        $this->mockLedgerSns(4, $ledgerSnsPayloadArray);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $payoutId = $payout->getId();
+
+        $this->fixtures->edit('payout', $payoutId, [
+            'utr'               => 'sampleutr876545',
+        ]);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        // create a txn linked to bas and external
+        $attributes = [
+            'id'          => 'sampleTxnId235',
+            'merchant_id' => $payout->getMerchantId(),
+            'amount'      => $payout->getAmount(),
+            'balance_id'  => $payout->getBalanceId(),
+            'type'        => 'external',
+            'entity_id'   => 'randomexternal',
+        ];
+        $this->fixtures->create('transaction', $attributes);
+        $txnCreatedForExternalPayout = $this->getDbLastEntity('transaction');
+
+        // create a external for this payout so it gets picked
+        $this->fixtures->create('external',
+            [
+                'id'                        => 'randomexternal',
+                'merchant_id'               => $payout->getMerchantId(),
+                'amount'                    => $payout->getAmount(),
+                'channel'                   => $payout->getChannel(),
+                'transaction_id'            => $txnCreatedForExternalPayout['id'],
+                'utr'                       => $payout->getUtr(),
+                'balance_id'                => $payout->getBalanceId(),
+            ]);
+
+        $externalCreatedForPayout = $this->getDbLastEntity('external');
+
+        // create a bas for this payout so it gets picked
+        $this->fixtures->create('banking_account_statement',
+            [
+                'type'                      => 'debit',
+                'amount'                    => $payout->getAmount(),
+                'channel'                   => $payout->getChannel(),
+                'account_number'            => $payout->balance->getAccountNumber(),
+                'transaction_id'            => $txnCreatedForExternalPayout['id'],
+                'entity_id'                 => $externalCreatedForPayout['id'],
+                'entity_type'               => 'external',
+                'bank_transaction_id'       => 'SDHDH',
+                'balance'                   => 30019891,
+                'transaction_date'          => 1584987183,
+                'utr'                       => $payout->getUtr(),
+                'created_at'                => Carbon::now()->getTimestamp() + 3600
+            ]);
+
+        $banking_account_statement = $this->getDbLastEntity('banking_account_statement');
+
+        // create a txn linked to bas and external
+        $attributes = [
+            'id'          => 'sampleTxnId230',
+            'merchant_id' => $payout->getMerchantId(),
+            'amount'      => $payout->getAmount(),
+            'balance_id'  => $payout->getBalanceId(),
+            'type'        => 'external',
+            'entity_id'   => 'randomexternl1',
+        ];
+        $this->fixtures->create('transaction', $attributes);
+        $txnCreatedForExternalReversal = $this->getDbEntity('transaction', ['id' => 'sampleTxnId230']);
+
+        // create a external for this payout so it gets picked
+        $this->fixtures->create('external',
+            [
+                'id'                        => 'randomexternl1',
+                'merchant_id'               => $payout->getMerchantId(),
+                'amount'                    => $payout->getAmount(),
+                'channel'                   => $payout->getChannel(),
+                'transaction_id'            => $txnCreatedForExternalReversal['id'],
+                'utr'                       => $payout->getUtr(),
+                'balance_id'                => $payout->getBalanceId(),
+            ]);
+
+        $externalCreatedForReversal = $this->getDbLastEntity('external');
+
+        // create a bas for this payout so it gets picked
+        $this->fixtures->create('banking_account_statement',
+            [
+                'type'                      => 'credit',
+                'amount'                    => $payout->getAmount(),
+                'channel'                   => $payout->getChannel(),
+                'account_number'            => $payout->balance->getAccountNumber(),
+                'transaction_id'            => $txnCreatedForExternalReversal['id'],
+                'entity_id'                 => $externalCreatedForReversal['id'],
+                'entity_type'               => 'external',
+                'bank_transaction_id'       => 'SDHDH',
+                'balance'                   => 30019891,
+                'transaction_date'          => 1584987183,
+                'utr'                       => $payout->getUtr(),
+                'created_at'                => Carbon::now()->getTimestamp() + 3600
+            ]);
+
+        $banking_account_statement_rev = $this->getDbLastEntity('banking_account_statement');
+
+        // create a bas details for this payout so it gets used to pick basd id for ledger
+        $this->fixtures->create('banking_account_statement_details',[
+            Details\Entity::ID             => 'xbas0000000002',
+            Details\Entity::MERCHANT_ID    => $payout->getMerchantId(),
+            Details\Entity::BALANCE_ID     => $payout->getBalanceId(),
+            Details\Entity::ACCOUNT_NUMBER => $payout->balance->getAccountNumber(),
+            Details\Entity::CHANNEL        => Details\Channel::RBL,
+            Details\Entity::STATUS         => Details\Status::ACTIVE,
+        ]);
+
+        (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
+            'fta_status' => 'reversed',
+            'failure_reason' => '',
+            'bank_status_code' => 'SUCCESS'
+        ]);
+
+        $updatedPayout = $this->getDbEntityById('payout', $payoutId)->toArray();
+
+        $reversal = $this->getDbLastEntity('reversal');
+
+        $this->assertEquals($updatedPayout[Payout\Entity::STATUS], Payout\Status::REVERSED);
+        $this->assertNotNull($updatedPayout[Payout\Entity::REVERSED_AT]);
+
+        $transactorTypeArray = [
+            'da_ext_payout_processed',
+            'da_payout_processed_recon',
+            'da_ext_payout_reversed',
+            'da_payout_reversed_recon',
+        ];
+
+        $transactorIdArray = [
+            $payout->getPublicId(),
+            $payout->getPublicId(),
+            $reversal->getPublicId(),
+            $reversal->getPublicId(),
+        ];
+
+        for ($index = 0; $index<count($ledgerSnsPayloadArray); $index++)
+        {
+            $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
+
+            $ledgerRequestPayload['additional_params'] = json_decode($ledgerRequestPayload['additional_params'], true);
+
+            $this->assertEquals('X', $ledgerRequestPayload['tenant']);
+            $this->assertEquals('test', $ledgerRequestPayload['mode']);
+            $this->assertEquals($transactorIdArray[$index], $ledgerRequestPayload['transactor_id']);
+            $this->assertEquals('10000000000000', $ledgerRequestPayload['merchant_id']);
+            $this->assertEquals('INR', $ledgerRequestPayload['currency']);
+            $this->assertEquals('590', $ledgerRequestPayload['commission']);
+            $this->assertEquals('90', $ledgerRequestPayload['tax']);
+            $this->assertEquals($transactorTypeArray[$index], $ledgerRequestPayload['transactor_event']);
+            $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload['additional_params']);
+        }
+    }
+
+    public function testDirectAccountFeePayoutProcessedAndReversedInLedgerShadowMode()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::DA_LEDGER_JOURNAL_WRITES]);
+
+        $this->createDirectAccountPayout();
+
+        $ledgerSnsPayloadArray = [];
+        $this->mockLedgerSns(2, $ledgerSnsPayloadArray);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $payoutId = $payout->getId();
+
+        $this->fixtures->edit('payout', $payoutId, [
+            'utr'               => 'sampleutr876545',
+            'purpose'           => 'rzp_fees',
+        ]);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        // create a txn linked to bas and external
+        $attributes = [
+            'id'          => 'sampleTxnId235',
+            'merchant_id' => $payout->getMerchantId(),
+            'amount'      => $payout->getAmount(),
+            'balance_id'  => $payout->getBalanceId(),
+            'type'        => 'external',
+            'entity_id'   => 'randomexternal',
+        ];
+        $this->fixtures->create('transaction', $attributes);
+        $txnCreatedForExternalPayout = $this->getDbLastEntity('transaction');
+
+        // create a external for this payout so it gets picked
+        $this->fixtures->create('external',
+            [
+                'id'                        => 'randomexternal',
+                'merchant_id'               => $payout->getMerchantId(),
+                'amount'                    => $payout->getAmount(),
+                'channel'                   => $payout->getChannel(),
+                'transaction_id'            => $txnCreatedForExternalPayout['id'],
+                'utr'                       => $payout->getUtr(),
+                'balance_id'                => $payout->getBalanceId(),
+            ]);
+
+        $externalCreatedForPayout = $this->getDbLastEntity('external');
+
+        // create a bas for this payout so it gets picked
+        $this->fixtures->create('banking_account_statement',
+            [
+                'type'                      => 'debit',
+                'amount'                    => $payout->getAmount(),
+                'channel'                   => $payout->getChannel(),
+                'account_number'            => $payout->balance->getAccountNumber(),
+                'transaction_id'            => $txnCreatedForExternalPayout['id'],
+                'entity_id'                 => $externalCreatedForPayout['id'],
+                'entity_type'               => 'external',
+                'bank_transaction_id'       => 'SDHDH',
+                'balance'                   => 30019891,
+                'transaction_date'          => 1584987183,
+                'utr'                       => $payout->getUtr(),
+                'created_at'                => Carbon::now()->getTimestamp() + 3600
+            ]);
+
+        $banking_account_statement = $this->getDbLastEntity('banking_account_statement');
+
+        // create a txn linked to bas and external
+        $attributes = [
+            'id'          => 'sampleTxnId230',
+            'merchant_id' => $payout->getMerchantId(),
+            'amount'      => $payout->getAmount(),
+            'balance_id'  => $payout->getBalanceId(),
+            'type'        => 'external',
+            'entity_id'   => 'randomexternl1',
+        ];
+        $this->fixtures->create('transaction', $attributes);
+        $txnCreatedForExternalReversal = $this->getDbEntity('transaction', ['id' => 'sampleTxnId230']);
+
+        // create a external for this payout so it gets picked
+        $this->fixtures->create('external',
+            [
+                'id'                        => 'randomexternl1',
+                'merchant_id'               => $payout->getMerchantId(),
+                'amount'                    => $payout->getAmount(),
+                'channel'                   => $payout->getChannel(),
+                'transaction_id'            => $txnCreatedForExternalReversal['id'],
+                'utr'                       => $payout->getUtr(),
+                'balance_id'                => $payout->getBalanceId(),
+            ]);
+
+        $externalCreatedForReversal = $this->getDbLastEntity('external');
+
+        // create a bas for this payout so it gets picked
+        $this->fixtures->create('banking_account_statement',
+            [
+                'type'                      => 'credit',
+                'amount'                    => $payout->getAmount(),
+                'channel'                   => $payout->getChannel(),
+                'account_number'            => $payout->balance->getAccountNumber(),
+                'transaction_id'            => $txnCreatedForExternalReversal['id'],
+                'entity_id'                 => $externalCreatedForReversal['id'],
+                'entity_type'               => 'external',
+                'bank_transaction_id'       => 'SDHDH',
+                'balance'                   => 30019891,
+                'transaction_date'          => 1584987183,
+                'utr'                       => $payout->getUtr(),
+                'created_at'                => Carbon::now()->getTimestamp() + 3600
+            ]);
+
+        $banking_account_statement_rev = $this->getDbLastEntity('banking_account_statement');
+
+        // create a bas details for this payout so it gets used to pick basd id for ledger
+        $this->fixtures->create('banking_account_statement_details',[
+            Details\Entity::ID             => 'xbas0000000002',
+            Details\Entity::MERCHANT_ID    => $payout->getMerchantId(),
+            Details\Entity::BALANCE_ID     => $payout->getBalanceId(),
+            Details\Entity::ACCOUNT_NUMBER => $payout->balance->getAccountNumber(),
+            Details\Entity::CHANNEL        => Details\Channel::RBL,
+            Details\Entity::STATUS         => Details\Status::ACTIVE,
+        ]);
+
+        (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
+            'fta_status' => 'reversed',
+            'failure_reason' => '',
+            'bank_status_code' => 'SUCCESS'
+        ]);
+
+        $updatedPayout = $this->getDbEntityById('payout', $payoutId)->toArray();
+
+        $reversal = $this->getDbLastEntity('reversal');
+
+        $this->assertEquals($updatedPayout[Payout\Entity::STATUS], Payout\Status::REVERSED);
+        $this->assertNotNull($updatedPayout[Payout\Entity::REVERSED_AT]);
+
+        $transactorTypeArray = [
+            'da_ext_fee_payout_processed',
+            'da_ext_fee_payout_reversed',
+        ];
+
+        $transactorIdArray = [
+            $payout->getPublicId(),
+            $reversal->getPublicId(),
+        ];
+
+        for ($index = 0; $index<count($ledgerSnsPayloadArray); $index++)
+        {
+            $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
+
+            $ledgerRequestPayload['additional_params'] = json_decode($ledgerRequestPayload['additional_params'], true);
+
+            $this->assertEquals('X', $ledgerRequestPayload['tenant']);
+            $this->assertEquals('test', $ledgerRequestPayload['mode']);
+            $this->assertEquals($transactorIdArray[$index], $ledgerRequestPayload['transactor_id']);
+            $this->assertEquals('10000000000000', $ledgerRequestPayload['merchant_id']);
+            $this->assertEquals('INR', $ledgerRequestPayload['currency']);
+            $this->assertEquals('2000', $ledgerRequestPayload['amount']);
+            $this->assertEquals('590', $ledgerRequestPayload['commission']);
+            $this->assertEquals('90', $ledgerRequestPayload['tax']);
+            $this->assertEquals($transactorTypeArray[$index], $ledgerRequestPayload['transactor_event']);
+            $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload['additional_params']);
+        }
+    }
+
+    public function testDirectAccountPayoutProcessedAndReversedWithoutLedgerShadowMode()
+    {
+        $this->createDirectAccountPayout();
+
+        $this->mockLedgerSns(0);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $payoutId = $payout->getId();
+
+        $this->fixtures->edit('payout', $payoutId, [
+            'utr'               => 'sampleutr876545',
+        ]);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        // create a txn linked to bas and external
+        $attributes = [
+            'id'          => 'sampleTxnId235',
+            'merchant_id' => $payout->getMerchantId(),
+            'amount'      => $payout->getAmount(),
+            'balance_id'  => $payout->getBalanceId(),
+            'type'        => 'external',
+            'entity_id'   => 'randomexternal',
+        ];
+        $this->fixtures->create('transaction', $attributes);
+        $txnCreatedForExternalPayout = $this->getDbLastEntity('transaction');
+
+        // create a external for this payout so it gets picked
+        $this->fixtures->create('external',
+            [
+                'id'                        => 'randomexternal',
+                'merchant_id'               => $payout->getMerchantId(),
+                'amount'                    => $payout->getAmount(),
+                'channel'                   => $payout->getChannel(),
+                'transaction_id'            => $txnCreatedForExternalPayout['id'],
+                'utr'                       => $payout->getUtr(),
+                'balance_id'                => $payout->getBalanceId(),
+            ]);
+
+        $externalCreatedForPayout = $this->getDbLastEntity('external');
+
+        // create a bas for this payout so it gets picked
+        $this->fixtures->create('banking_account_statement',
+            [
+                'type'                      => 'debit',
+                'amount'                    => $payout->getAmount(),
+                'channel'                   => $payout->getChannel(),
+                'account_number'            => $payout->balance->getAccountNumber(),
+                'transaction_id'            => $txnCreatedForExternalPayout['id'],
+                'entity_id'                 => $externalCreatedForPayout['id'],
+                'entity_type'               => 'external',
+                'bank_transaction_id'       => 'SDHDH',
+                'balance'                   => 30019891,
+                'transaction_date'          => 1584987183,
+                'utr'                       => $payout->getUtr(),
+                'created_at'                => Carbon::now()->getTimestamp() + 3600
+            ]);
+
+        $banking_account_statement = $this->getDbLastEntity('banking_account_statement');
+
+        // create a txn linked to bas and external
+        $attributes = [
+            'id'          => 'sampleTxnId230',
+            'merchant_id' => $payout->getMerchantId(),
+            'amount'      => $payout->getAmount(),
+            'balance_id'  => $payout->getBalanceId(),
+            'type'        => 'external',
+            'entity_id'   => 'randomexternl1',
+        ];
+        $this->fixtures->create('transaction', $attributes);
+        $txnCreatedForExternalReversal = $this->getDbEntity('transaction', ['id' => 'sampleTxnId230']);
+
+        // create a external for this payout so it gets picked
+        $this->fixtures->create('external',
+            [
+                'id'                        => 'randomexternl1',
+                'merchant_id'               => $payout->getMerchantId(),
+                'amount'                    => $payout->getAmount(),
+                'channel'                   => $payout->getChannel(),
+                'transaction_id'            => $txnCreatedForExternalReversal['id'],
+                'utr'                       => $payout->getUtr(),
+                'balance_id'                => $payout->getBalanceId(),
+            ]);
+
+        $externalCreatedForReversal = $this->getDbLastEntity('external');
+
+        // create a bas for this payout so it gets picked
+        $this->fixtures->create('banking_account_statement',
+            [
+                'type'                      => 'credit',
+                'amount'                    => $payout->getAmount(),
+                'channel'                   => $payout->getChannel(),
+                'account_number'            => $payout->balance->getAccountNumber(),
+                'transaction_id'            => $txnCreatedForExternalReversal['id'],
+                'entity_id'                 => $externalCreatedForReversal['id'],
+                'entity_type'               => 'external',
+                'bank_transaction_id'       => 'SDHDH',
+                'balance'                   => 30019891,
+                'transaction_date'          => 1584987183,
+                'utr'                       => $payout->getUtr(),
+                'created_at'                => Carbon::now()->getTimestamp() + 3600
+            ]);
+
+        $banking_account_statement_rev = $this->getDbLastEntity('banking_account_statement');
+
+        // create a bas details for this payout so it gets used to pick basd id for ledger
+        $this->fixtures->create('banking_account_statement_details',[
+            Details\Entity::ID             => 'xbas0000000002',
+            Details\Entity::MERCHANT_ID    => $payout->getMerchantId(),
+            Details\Entity::BALANCE_ID     => $payout->getBalanceId(),
+            Details\Entity::ACCOUNT_NUMBER => $payout->balance->getAccountNumber(),
+            Details\Entity::CHANNEL        => Details\Channel::RBL,
+            Details\Entity::STATUS         => Details\Status::ACTIVE,
+        ]);
+
+        (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
+            'fta_status' => 'reversed',
+            'failure_reason' => '',
+            'bank_status_code' => 'SUCCESS'
+        ]);
+
+        $updatedPayout = $this->getDbEntityById('payout', $payoutId)->toArray();
+
+        $reversal = $this->getDbLastEntity('reversal');
+
+        $this->assertEquals($updatedPayout[Payout\Entity::STATUS], Payout\Status::REVERSED);
+        $this->assertNotNull($updatedPayout[Payout\Entity::REVERSED_AT]);
+    }
+
     public function testCreateAndProcessQueuedPayoutInLedgerReverseShadowMode()
     {
         $this->testData[__FUNCTION__] = $this->testData['testCreateAndProcessQueuedPayout'];

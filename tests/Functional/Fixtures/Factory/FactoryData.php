@@ -2062,5 +2062,19 @@ final class FactoryData
             'id'                => $faker->uniqueid,
             'revision_id'       => $faker->uniqueid,
             ]);
+
+        $factory(\RZP\Models\External\Entity::class, [
+            'id'                            => 'randomexternal',
+            'merchant_id'                   => '10000000000000',
+            'transaction_id'                => 'RZPtxn00000',
+            'channel'                       => 'rbl',
+            'utr'                           => '99999999912',
+            'currency'                      => 'INR',
+            'bank_reference_number'         => 'M86858',
+            'type'                          => 'debit',
+            'balance_id'                    => 12324222,
+            'banking_account_statement_id'  => 'J3J9XVuHZHWOoo',
+        ]);
+
     }
 }

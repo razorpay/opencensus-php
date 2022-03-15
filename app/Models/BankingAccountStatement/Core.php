@@ -10,6 +10,7 @@ use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\Admin;
 use RZP\Models\Payout;
+use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
 use RZP\Models\External;
 use RZP\Models\Merchant;
@@ -19,6 +20,7 @@ use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
 use RZP\Models\Payout\Status;
 use RZP\Models\BankingAccount;
+use RZP\Models\Payout\Purpose;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Jobs\RblBankingAccountStatement;
 use RZP\Jobs\IciciBankingAccountStatement;
@@ -933,7 +935,7 @@ class Core extends Base\Core
                 'bank_txn_channel'      => $bankTxnChannel,
             ]);
 
-        list($sourceEntity, $isSourceAlreadyCreated) = $this->repo->transaction(function () use ($bankTransaction, $merchant, $processor) {
+        list($sourceEntity, $isSourceAlreadyCreated, $basEntity) = $this->repo->transaction(function () use ($bankTransaction, $merchant, $processor) {
 
             $basEntity = (new Entity)->build($bankTransaction);
 
@@ -983,8 +985,11 @@ class Core extends Base\Core
                     'entity_type'           => $basEntity->getEntityType(),
                 ]);
 
-            return [$sourceEntity, $isSourceAlreadyCreated];
+            return [$sourceEntity, $isSourceAlreadyCreated, $basEntity];
         });
+
+        // send event to ledger in shadow mode
+        $this->sendToLedgerPostSourceEntityProcessing($merchant, $sourceEntity, $basEntity);
 
         $this->fireWebhooksAfterSuccessfulMappingOfSourceEntity($sourceEntity, $isSourceAlreadyCreated);
     }
@@ -996,6 +1001,9 @@ class Core extends Base\Core
             try
             {
                 list($sourceEntity, $isSourceAlreadyCreated) = $this->linkAccountStatementRecord($basEntity, $merchant);
+
+                // send event to ledger in shadow mode
+                $this->sendToLedgerPostSourceEntityProcessing($merchant, $sourceEntity, $basEntity);
             }
             catch (\Throwable $e)
             {
@@ -1019,6 +1027,8 @@ class Core extends Base\Core
 
                     list($sourceEntity, $isSourceAlreadyCreated) = $this->linkAccountStatementRecord($basEntity, $merchant);
 
+                    // send event to ledger in shadow mode
+                    $this->sendToLedgerPostSourceEntityProcessing($merchant, $sourceEntity, $basEntity);
                 }
                 else
                 {
@@ -1225,7 +1235,7 @@ class Core extends Base\Core
 
         $this->trace->info(TraceCode::BAS_ENTRY_SOURCE_MAPPING_DETAILS,
                    [
-                       'source_id'   => $sourceEntity->getId(),
+                       'source_id'   => $sourceEntity->getPublicId(),
                        'source_type' => $sourceEntity->getEntityName(),
                        'bas_id'      => $basEntity->getId(),
                        'account_no'  => $basEntity->getAccountNumber(),
@@ -2500,5 +2510,111 @@ class Core extends Base\Core
         );
 
         return (strtolower($variant) == 'on');
+    }
+
+    /**
+     * This function handles the logic to decide what events to send to ledger post the processing of source entity on statement fetch
+     * @param $merchant
+     * @param $sourceEntity
+     * @param $basEntity
+     */
+    public function sendToLedgerPostSourceEntityProcessing($merchant, $sourceEntity, $basEntity)
+    {
+        $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_FLOW_LEDGER_SHADOW,
+            [
+                'source_entity_id'      => $sourceEntity->getPublicId(),
+                'source_entity_name'    => $sourceEntity->getEntityName(),
+                'bas_id'                => $basEntity->getId(),
+                'account_no'            => $basEntity->getAccountNumber(),
+                'entity_type'           => $basEntity->getEntityType(),
+            ]);
+        if ($sourceEntity->getEntityName() === Constants\Entity::EXTERNAL)
+        {
+            $ledgerEvent = Transaction\Processor\Ledger\Payout::DA_EXT_CREDIT;
+            if ($basEntity->isTypeDebit() === true)
+            {
+                $ledgerEvent = Transaction\Processor\Ledger\Payout::DA_EXT_DEBIT;
+            }
+            $this->processLedgerPayoutForDirect($merchant, $ledgerEvent, null, null, $sourceEntity, $basEntity);
+
+        }
+        else if ($sourceEntity->getEntityName() === Constants\Entity::PAYOUT)
+        {
+            if ($sourceEntity->getPurpose() === Purpose::RZP_FEES)
+            {
+                $this->processLedgerPayoutForDirect($merchant, Transaction\Processor\Ledger\Payout::DA_FEE_PAYOUT_PROCESSED, $sourceEntity);
+            }
+            else
+            {
+                $this->processLedgerPayoutForDirect($merchant, Transaction\Processor\Ledger\Payout::DA_PAYOUT_PROCESSED, $sourceEntity);
+                $this->processLedgerPayoutForDirect($merchant, Transaction\Processor\Ledger\Payout::DA_PAYOUT_PROCESSED_RECON, $sourceEntity, null, null, $basEntity);
+            }
+        }
+        else if ($sourceEntity->getEntityName() === Constants\Entity::REVERSAL)
+        {
+            /** @var Payout\Entity $payout */
+            $payout = $sourceEntity->entity;
+            if ($payout->getPurpose() === Purpose::RZP_FEES)
+            {
+                $this->processLedgerPayoutForDirect($merchant, Transaction\Processor\Ledger\Payout::DA_FEE_PAYOUT_REVERSED, $payout, $sourceEntity);
+            }
+            else {
+                $this->processLedgerPayoutForDirect($merchant,Transaction\Processor\Ledger\Payout::DA_PAYOUT_REVERSED, $payout, $sourceEntity);
+                $this->processLedgerPayoutForDirect($merchant,Transaction\Processor\Ledger\Payout::DA_PAYOUT_REVERSED_RECON, $payout, $sourceEntity, null, $basEntity);
+            }
+        }
+    }
+
+    /**
+     * @param string               $event
+     * @param Payout\Entity|null   $payout
+     * @param Reversal\Entity|null $reversal
+     * @param External\Entity|null $external
+     * @param Entity|null          $bas
+     * Push event to ledger sns when
+     * - an external record is identified as payout/reversal.
+     * - a external record is not identified as payout/reversal
+     * This will create the required journal in ledger DB.
+     * Since ledger keeps different records for all payout states, these events are triggered.
+     */
+    public function processLedgerPayoutForDirect($merchant,
+                                                 string $event,
+                                                 Payout\Entity $payout = null,
+                                                 Reversal\Entity $reversal = null,
+                                                 External\Entity $external = null,
+                                                 Entity $bas = null)
+    {
+        // Here only direct payout is pushed to ledger. So in case of shared, return.
+        // In case env variable ledger.enabled is false, return.
+        if ($this->app['config']->get('applications.ledger.enabled') === false)
+        {
+            return;
+        }
+
+        if (($payout !== null) and (($payout->getBalanceAccountType() === Merchant\Balance\AccountType::SHARED) or ($payout->isBalanceTypePrimary() === true)))
+        {
+            return;
+        }
+
+        $entityForFeatureCheck = $payout;
+        if ($payout === null)
+        {
+            $entityForFeatureCheck = $bas;
+        }
+
+        // Skip ledger shadow mode for high TPS merchant
+        if ($merchant->isFeatureEnabled(Feature\Constants::HIGH_TPS_COMPOSITE_PAYOUT) === true)
+        {
+            return;
+        }
+
+        // If the mode is not live OR the merchant does not have the DA's ledger journal write feature, we return.
+        if ($merchant->isFeatureEnabled(Feature\Constants::DA_LEDGER_JOURNAL_WRITES) === false)
+        {
+            return;
+        }
+
+        (new Transaction\Processor\Ledger\Payout)
+            ->pushTransactionToLedgerForDirect($event, $payout, $reversal, $external, $bas);
     }
 }

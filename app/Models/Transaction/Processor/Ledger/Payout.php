@@ -7,6 +7,7 @@ use Ramsey\Uuid\Uuid;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Reversal;
+use RZP\Models\External;
 use RZP\Models\Payout\Mode;
 use RZP\Models\Payout\Entity;
 use RZP\Models\Payout\Status;
@@ -19,6 +20,7 @@ use RZP\Exception\BadRequestException;
 use RZP\Services\Ledger as LedgerService;
 use RZP\Models\Transaction\Entity as TransactionEntity;
 use RZP\Models\Merchant\Balance\Entity as BalanceEntity;
+use RZP\Models\BankingAccountStatement\Entity as BASEntity;
 
 class Payout extends Base
 {
@@ -44,6 +46,20 @@ class Payout extends Base
     const INTER_ACCOUNT_PAYOUT_PROCESSED = "inter_account_payout_processed";
     const INTER_ACCOUNT_PAYOUT_REVERSED  = "inter_account_payout_reversed";
     const INTER_ACCOUNT_PAYOUT_FAILED    = "inter_account_payout_failed";
+
+    // Ledger Events for Direct Accounting
+    const DA_PAYOUT_PROCESSED           = "da_payout_processed";
+    const DA_PAYOUT_REVERSED            = "da_payout_reversed";
+    const DA_EXT_PAYOUT_PROCESSED       = "da_ext_payout_processed";
+    const DA_EXT_PAYOUT_REVERSED        = "da_ext_payout_reversed";
+    const DA_PAYOUT_PROCESSED_RECON     = "da_payout_processed_recon";
+    const DA_PAYOUT_REVERSED_RECON      = "da_payout_reversed_recon";
+    const DA_EXT_DEBIT                  = "da_ext_debit";
+    const DA_EXT_CREDIT                 = "da_ext_credit";
+    const DA_FEE_PAYOUT_PROCESSED       = "da_fee_payout_processed";
+    const DA_FEE_PAYOUT_REVERSED        = "da_fee_payout_reversed";
+    const DA_EXT_FEE_PAYOUT_PROCESSED   = "da_ext_fee_payout_processed";
+    const DA_EXT_FEE_PAYOUT_REVERSED    = "da_ext_fee_payout_reversed";
 
     public function pushTransactionToLedger(Entity $payout,
                                             string $transactorEvent,
@@ -158,6 +174,184 @@ class Payout extends Base
                 TraceCode::LEDGER_JOURNAL_PAYOUT_PAYLOAD_ERROR,
                 [
                     self::TRANSACTOR_ID    => $payout->getPublicId(),
+                    self::TRANSACTOR_EVENT => $transactorEvent,
+                ]);
+        }
+        finally
+        {
+            $this->trace->info(
+                TraceCode::LEDGER_JOURNAL_PAYOUT_STREAMING_TIME_TAKEN,
+                [
+                    self::TIME_TAKEN => millitime() - $startTime,
+                ]);
+        }
+    }
+
+    public function pushTransactionToLedgerForDirect(string $transactorEvent,
+                                                     Entity $payout = null,
+                                                     Reversal\Entity $reversal = null,
+                                                     External\Entity $external = null,
+                                                     BASEntity $bas = null)
+    {
+        $startTime = millitime();
+
+        try
+        {
+            /**
+             * Check whether the event is default or not. Default event is set when there
+             * is no event registered at ledger for that payout status.
+             * In this case, it is not required to push transaction through sns.
+             */
+            if ($this->isDefaultEvent($transactorEvent))
+            {
+                $this->trace->info(
+                    TraceCode::LEDGER_JOURNAL_TRANSACTOR_EVENT_NOT_REGISTERED,
+                    [
+                        self::TRANSACTOR_EVENT => $transactorEvent,
+                        self::ENTITY           => $payout,
+                    ]);
+
+                return;
+            }
+
+            $payload = [];
+            $transactorId = null;
+            $balanceId = null;
+            $transactionId = null;
+
+            if ($payout !== null)
+            {
+                $payload = $this->getDefaultPayloadForDirectPayout($payout);
+                $transactorId = $payout->getPublicId();
+                $transactionId = $payout->getTransactionId();
+                $balanceId = BalanceEntity::getSignedIdOrNull($payout->getBalanceId());
+            }
+            else if ($external != null)
+            {
+                $payload = $this->getDefaultPayloadForDirectExternal($external);
+                $transactorId = $external->getPublicId();
+                $transactionId = $external->getTransactionId();
+                $balanceId = BalanceEntity::getSignedIdOrNull($external->getBalanceId());
+            }
+
+            $transactorDate = null;
+            $apiTransactionId = null;
+
+            switch ($transactorEvent)
+            {
+                case self::DA_FEE_PAYOUT_PROCESSED:
+                case self::DA_PAYOUT_PROCESSED:
+                    $apiTransactionId = $payout->getTransactionId();
+                    $transactorDate = $payout->getProcessedAt();
+                    // add fee accounting as reward if reward payout
+                    $this->updatePayloadForFeeCredits($payload, $payout);
+
+                    break;
+
+                case self::DA_EXT_FEE_PAYOUT_PROCESSED:
+                case self::DA_EXT_PAYOUT_PROCESSED:
+                    $transactorDate = $payout->getProcessedAt();
+                    // add fee accounting as reward if reward payout
+                    $this->updatePayloadForFeeCredits($payload, $payout);
+
+                    break;
+
+                case self::DA_FEE_PAYOUT_REVERSED:
+                case self::DA_PAYOUT_REVERSED:
+                    if ($reversal !== null){
+                        $transactorDate = $reversal->getCreatedAt();
+                        $transactorId = $reversal->getPublicId();
+                        $transactionId = $reversal->getTransactionId();
+                        $apiTransactionId = $reversal->getTransactionId();
+                    }
+                    // add fee accounting as reward for reward payouts
+                    $this->updatePayloadForFeeCredits($payload, $payout);
+
+                    break;
+
+                case self::DA_EXT_FEE_PAYOUT_REVERSED:
+                case self::DA_EXT_PAYOUT_REVERSED:
+                    if ($reversal !== null){
+                        $transactorDate = $reversal->getCreatedAt();
+                        $transactorId = $reversal->getPublicId();
+                        $transactionId = $reversal->getTransactionId();
+                    }
+                    // add fee accounting as reward for reward payouts
+                    $this->updatePayloadForFeeCredits($payload, $payout);
+
+                    break;
+
+                case self::DA_PAYOUT_PROCESSED_RECON:
+                    $transactorId = $payout->getPublicId();
+                    $transactionId = $payout->getTransactionId();
+                    if ($bas !== null){
+                        $transactorDate = $bas->getTransactionDate();
+                    }
+
+                    break;
+
+                case self::DA_PAYOUT_REVERSED_RECON:
+                    if ($reversal !== null){
+                        $transactorId = $reversal->getPublicId();
+                        $transactionId = $reversal->getTransactionId();
+                    }
+                    if ($bas !== null){
+                        $transactorDate = $bas->getTransactionDate();
+                    }
+
+                    break;
+
+                case self::DA_EXT_DEBIT:
+                case self::DA_EXT_CREDIT:
+                    if ($bas !== null){
+                        $transactorDate = $bas->getPostedDate() ?? $bas->getTransactionDate();
+                    }
+                    if ($external != null){
+                        $transactorId = $external->getPublicId();
+                        $apiTransactionId = $external->getTransactionId();
+                    }
+
+                    break;
+
+                default:
+                    throw new LogicException(self::TRANSACTOR_EVENT . ' not implemented at ledger : ' . $transactorEvent);
+            }
+
+            $notes = [
+                self::BALANCE_ID     => $balanceId,
+                self::TRANSACTION_ID => TransactionEntity::getSignedIdOrNull($transactionId),
+            ];
+
+            $payload[self::NOTES]              = json_encode($notes);
+            $payload[self::TRANSACTOR_ID]      = $transactorId;
+            $payload[self::TRANSACTOR_EVENT]   = $transactorEvent;
+            $payload[self::TRANSACTION_DATE]   = $transactorDate;
+
+            // Only sending api_transaction ID in case of processed and reversed (when txn is created on api)
+            // This remains null for payout_processed event
+            if (empty($apiTransactionId) === false)
+            {
+                $payload[self::API_TRANSACTION_ID] = $apiTransactionId;
+            }
+
+            $payload[self::IDENTIFIERS] = json_encode($payload[self::IDENTIFIERS]);
+            $payload[self::ADDITIONAL_PARAMS] = json_encode($payload[self::ADDITIONAL_PARAMS]);
+
+            $this->pushToLedgerSns($payload);
+        }
+        catch (\Throwable $e)
+        {
+            $entityForLog = $payout;
+            if ($payout === null)
+            {
+                $entityForLog = $external;
+            }
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::LEDGER_JOURNAL_PAYOUT_PAYLOAD_ERROR,
+                [
+                    self::TRANSACTOR_ID    => $entityForLog->getPublicId(),
                     self::TRANSACTOR_EVENT => $transactorEvent,
                 ]);
         }
@@ -391,6 +585,58 @@ class Payout extends Base
             self::BASE_AMOUNT         => (string) $payout->getBaseAmount(),
             self::COMMISSION          => (string) $payout->getFee(),
             self::TAX                 => (string) $payout->getTax(),
+            self::IDENTIFIERS         => $identifiers,
+            self::ADDITIONAL_PARAMS   => $additional_params,
+        ];
+    }
+
+    protected function getDefaultPayloadForDirectPayout(Entity $payout)
+    {
+        $additional_params = [];
+        $channel = $payout->getChannel();
+        $accountNumber = $payout->balance->getAccountNumber();
+        $basDetails = $this->repo->banking_account_statement_details->fetchByAccountNumberAndChannel($accountNumber, $channel);
+
+        $identifiers = [
+            self::BANKING_ACCOUNT_STMT_DETAIL_ID  => (string) $basDetails->getPublicId(),
+        ];
+
+        return [
+            self::TENANT              => self::X,
+            self::MODE                => $this->mode,
+            self::IDEMPOTENCY_KEY     => Uuid::uuid1()->toString(),
+            self::MERCHANT_ID         => $payout->getMerchantId(),
+            self::CURRENCY            => $payout->getCurrency(),
+            self::AMOUNT              => (string) $payout->getAmount(),
+            self::BASE_AMOUNT         => (string) $payout->getBaseAmount(),
+            self::COMMISSION          => (string) $payout->getFee(),
+            self::TAX                 => (string) $payout->getTax(),
+            self::IDENTIFIERS         => $identifiers,
+            self::ADDITIONAL_PARAMS   => $additional_params,
+        ];
+    }
+
+    protected function getDefaultPayloadForDirectExternal(External\Entity $external)
+    {
+        $additional_params = [];
+        $channel = $external->getChannel();
+        $accountNumber = $external->balance->getAccountNumber();
+        $basDetails = $this->repo->banking_account_statement_details->fetchByAccountNumberAndChannel($accountNumber, $channel);
+
+        $identifiers = [
+            self::BANKING_ACCOUNT_STMT_DETAIL_ID  => (string) $basDetails->getPublicId(),
+        ];
+
+        return [
+            self::TENANT              => self::X,
+            self::MODE                => $this->mode,
+            self::IDEMPOTENCY_KEY     => Uuid::uuid1()->toString(),
+            self::MERCHANT_ID         => $external->getMerchantId(),
+            self::CURRENCY            => $external->getCurrency(),
+            self::AMOUNT              => (string) $external->getAmount(),
+            self::BASE_AMOUNT         => (string) $external->getBaseAmount(),
+            self::COMMISSION          => "", // rzp fees and tax to be 0 for external transactions
+            self::TAX                 => "",
             self::IDENTIFIERS         => $identifiers,
             self::ADDITIONAL_PARAMS   => $additional_params,
         ];

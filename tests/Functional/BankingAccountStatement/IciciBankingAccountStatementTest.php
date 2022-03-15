@@ -4,7 +4,6 @@ namespace Functional\BankingAccountStatement;
 
 use Queue;
 use Mockery;
-
 use Carbon\Carbon;
 use RZP\Models\Payout;
 use RZP\Services\Mozart;
@@ -21,6 +20,7 @@ use RZP\Exception\GatewayErrorException;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Admin\Service as AdminService;
+use RZP\Models\Feature\Constants as Features;
 use RZP\Models\BankingAccount\Entity as BaEntity;
 use RZP\Models\External\Entity as ExternalEntity;
 use RZP\Jobs\FTS\FundTransfer as FtsFundTransfer;
@@ -1062,6 +1062,8 @@ class IciciBankingAccountStatementTest extends TestCase
 
     public function testUtrMappingForIMPS()
     {
+        $this->mockLedgerSns(0);
+
         $this->fixtures->create('banking_account_statement',
                                 [
                                     'type'                      => 'credit',
@@ -1152,6 +1154,284 @@ class IciciBankingAccountStatementTest extends TestCase
         $this->assertEquals(EntityConstants::PAYOUT, $feeBreakup[0]['name']);
         $this->assertEquals(90, $feeBreakup[1]['amount']);
         $this->assertEquals(EntityConstants::TAX, $feeBreakup[1]['name']);
+    }
+
+    // asserting external credit and payout events to ledger
+    public function testUtrMappingForIMPSWithLedgerShadow()
+    {
+        $this->fixtures->merchant->addFeatures([Features::DA_LEDGER_JOURNAL_WRITES]);
+
+        $ledgerSnsPayloadArray = [];
+        $this->mockLedgerSns(3, $ledgerSnsPayloadArray);
+
+        $this->fixtures->create('banking_account_statement',
+            [
+                'type'                      => 'credit',
+                'amount'                    => '1000000',
+                'channel'                   => 'icici',
+                'account_number'            => '2224440041626905',
+                'bank_transaction_id'       => 'SDHDH',
+                'balance'                   => 1000000,
+                'transaction_date'          => 1584987183,
+                'posted_date'               => 1584987183,
+            ]);
+
+        $this->setupForIciciPayout(Channel::ICICI, 100, FundTransfer\Mode::IMPS);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals(590, $payout['fees']);
+        $this->assertEquals(90, $payout['tax']);
+        $this->assertEquals('Bbg7cl6t6I3XB7', $payout['pricing_rule_id']);
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated',
+            'utr' => '104913832918' ]);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit('fund_transfer_attempt', $attempt['id'], ['utr' => '104913832918' ]);
+
+        $ftsCreateTransfer = new FtsFundTransfer(
+            EnvMode::TEST,
+            $attempt['id']);
+
+        $ftsCreateTransfer->handle();
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->assertEquals(Attempt\Status::INITIATED, $attempt['status']);
+
+        $this->updateFta(
+            $attempt['fts_transfer_id'],
+            $attempt['source'],
+            Attempt\Type::PAYOUT,
+            Attempt\Status::PROCESSED);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->assertEquals(Payout\Status::PROCESSED, $payout['status']);
+        $this->assertEquals(FundTransfer\Mode::IMPS, $payout['mode']);
+        $this->assertEquals('104913832918', $payout['utr']);
+        $this->assertEquals(Attempt\Status::PROCESSED, $attempt['status']);
+        $this->assertEquals(FundTransfer\Mode::IMPS, $attempt['mode']);
+
+        $mockedResponse = $this->getIciciDataResponse();
+        unset($mockedResponse[F::DATA][F::RECORD][0]);
+        unset($mockedResponse[F::DATA][F::RECORD][2]);
+        $mockedResponse[F::DATA][F::RECORD] = $mockedResponse[F::DATA][F::RECORD][1];
+        $this->setMozartMockResponse($mockedResponse);
+
+        $testData = $this->testData['testIciciAccountStatementCase1'];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+
+        $basEntries = $this->getDbEntities('banking_account_statement', ['account_number' => '2224440041626905']);
+        $payoutTxn = $this->getDbLastEntity('transaction');
+        $externalEntries = $this->getDbEntities('external', ['balance_id' => $payout['balance_id']]);
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals(EntityConstants::PAYOUT, $basEntries[1]['entity_type']);
+        $this->assertEquals($payout['id'], $basEntries[1]['entity_id']);
+        $this->assertEquals($payout['transaction_id'], $basEntries[1]['transaction_id']);
+        $this->assertEquals($payout['utr'], $basEntries[1]['utr']);
+
+        $this->assertEquals(1, count($externalEntries));
+        $this->assertEquals(EntityConstants::PAYOUT, $payoutTxn['type']);
+        $this->assertEquals($payoutTxn['id'], $payout['transaction_id']);
+
+        $feeBreakup = $this->getDbEntities('fee_breakup', ['transaction_id' => $payout['transaction_id']]);
+
+        $this->assertEquals('Bbg7cl6t6I3XB7', $feeBreakup[0]['pricing_rule_id']);
+        $this->assertEquals(500, $feeBreakup[0]['amount']);
+        $this->assertEquals(EntityConstants::PAYOUT, $feeBreakup[0]['name']);
+        $this->assertEquals(90, $feeBreakup[1]['amount']);
+        $this->assertEquals(EntityConstants::TAX, $feeBreakup[1]['name']);
+
+        $transactorTypeArray = [
+            'da_ext_credit',
+            'da_payout_processed',
+            'da_payout_processed_recon'
+        ];
+
+        $transactorIdArray = [
+            $externalEntries[0]->getPublicId(),
+            $payout->getPublicId(),
+            $payout->getPublicId(),
+        ];
+
+        $commissionArray = [
+            '',
+            '590',
+            '590',
+        ];
+        $taxArray = [
+            '',
+            '90',
+            '90',
+        ];
+
+        for ($index = 0; $index<count($ledgerSnsPayloadArray); $index++)
+        {
+            $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
+
+            $ledgerRequestPayload['additional_params'] = json_decode($ledgerRequestPayload['additional_params'], true);
+
+            $this->assertEquals('X', $ledgerRequestPayload['tenant']);
+            $this->assertEquals('test', $ledgerRequestPayload['mode']);
+            $this->assertEquals($transactorIdArray[$index], $ledgerRequestPayload['transactor_id']);
+            $this->assertEquals('10000000000000', $ledgerRequestPayload['merchant_id']);
+            $this->assertEquals('INR', $ledgerRequestPayload['currency']);
+            $this->assertEquals($commissionArray[$index], $ledgerRequestPayload['commission']);
+            $this->assertEquals($taxArray[$index], $ledgerRequestPayload['tax']);
+            $this->assertEquals($transactorTypeArray[$index], $ledgerRequestPayload['transactor_event']);
+            $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload['additional_params']);
+        }
+    }
+
+    public function testUtrMappingForFeePayoutWithLedgerShadow()
+    {
+        $this->fixtures->merchant->addFeatures([Features::DA_LEDGER_JOURNAL_WRITES]);
+
+        $ledgerSnsPayloadArray = [];
+        $this->mockLedgerSns(2, $ledgerSnsPayloadArray);
+
+        $this->fixtures->create('banking_account_statement',
+            [
+                'type'                      => 'credit',
+                'amount'                    => '1000000',
+                'channel'                   => 'icici',
+                'account_number'            => '2224440041626905',
+                'bank_transaction_id'       => 'SDHDH',
+                'balance'                   => 1000000,
+                'transaction_date'          => 1584987183,
+                'posted_date'               => 1584987183,
+            ]);
+
+        $this->setupForIciciPayout(Channel::ICICI, 100, FundTransfer\Mode::IMPS);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals(590, $payout['fees']);
+        $this->assertEquals(90, $payout['tax']);
+        $this->assertEquals('Bbg7cl6t6I3XB7', $payout['pricing_rule_id']);
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated',
+            'utr'       => '104913832918',
+            'purpose'   => 'rzp_fees'
+        ]);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit('fund_transfer_attempt', $attempt['id'], ['utr' => '104913832918' ]);
+
+        $ftsCreateTransfer = new FtsFundTransfer(
+            EnvMode::TEST,
+            $attempt['id']);
+
+        $ftsCreateTransfer->handle();
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->assertEquals(Attempt\Status::INITIATED, $attempt['status']);
+
+        $this->updateFta(
+            $attempt['fts_transfer_id'],
+            $attempt['source'],
+            Attempt\Type::PAYOUT,
+            Attempt\Status::PROCESSED);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->assertEquals(Payout\Status::PROCESSED, $payout['status']);
+        $this->assertEquals(FundTransfer\Mode::IMPS, $payout['mode']);
+        $this->assertEquals('104913832918', $payout['utr']);
+        $this->assertEquals(Attempt\Status::PROCESSED, $attempt['status']);
+        $this->assertEquals(FundTransfer\Mode::IMPS, $attempt['mode']);
+
+        $mockedResponse = $this->getIciciDataResponse();
+        unset($mockedResponse[F::DATA][F::RECORD][0]);
+        unset($mockedResponse[F::DATA][F::RECORD][2]);
+        $mockedResponse[F::DATA][F::RECORD] = $mockedResponse[F::DATA][F::RECORD][1];
+        $this->setMozartMockResponse($mockedResponse);
+
+        $testData = $this->testData['testIciciAccountStatementCase1'];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+
+        $basEntries = $this->getDbEntities('banking_account_statement', ['account_number' => '2224440041626905']);
+        $payoutTxn = $this->getDbLastEntity('transaction');
+        $externalEntries = $this->getDbEntities('external', ['balance_id' => $payout['balance_id']]);
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals(EntityConstants::PAYOUT, $basEntries[1]['entity_type']);
+        $this->assertEquals($payout['id'], $basEntries[1]['entity_id']);
+        $this->assertEquals($payout['transaction_id'], $basEntries[1]['transaction_id']);
+        $this->assertEquals($payout['utr'], $basEntries[1]['utr']);
+
+        $this->assertEquals(1, count($externalEntries));
+        $this->assertEquals(EntityConstants::PAYOUT, $payoutTxn['type']);
+        $this->assertEquals($payoutTxn['id'], $payout['transaction_id']);
+
+        $feeBreakup = $this->getDbEntities('fee_breakup', ['transaction_id' => $payout['transaction_id']]);
+
+        $this->assertEquals('Bbg7cl6t6I3XB7', $feeBreakup[0]['pricing_rule_id']);
+        $this->assertEquals(500, $feeBreakup[0]['amount']);
+        $this->assertEquals(EntityConstants::PAYOUT, $feeBreakup[0]['name']);
+        $this->assertEquals(90, $feeBreakup[1]['amount']);
+        $this->assertEquals(EntityConstants::TAX, $feeBreakup[1]['name']);
+
+        $transactorTypeArray = [
+            'da_ext_credit',
+            'da_fee_payout_processed',
+        ];
+
+        $transactorIdArray = [
+            $externalEntries[0]->getPublicId(),
+            $payout->getPublicId(),
+        ];
+
+        $commissionArray = [
+            '',
+            '590',
+        ];
+
+        $taxArray = [
+            '',
+            '90',
+        ];
+
+        for ($index = 0; $index<count($ledgerSnsPayloadArray); $index++)
+        {
+            $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
+
+            $ledgerRequestPayload['additional_params'] = json_decode($ledgerRequestPayload['additional_params'], true);
+
+            $this->assertEquals('X', $ledgerRequestPayload['tenant']);
+            $this->assertEquals('test', $ledgerRequestPayload['mode']);
+            $this->assertEquals($transactorIdArray[$index], $ledgerRequestPayload['transactor_id']);
+            $this->assertEquals('10000000000000', $ledgerRequestPayload['merchant_id']);
+            $this->assertEquals('INR', $ledgerRequestPayload['currency']);
+            $this->assertEquals($commissionArray[$index], $ledgerRequestPayload['commission']);
+            $this->assertEquals($taxArray[$index], $ledgerRequestPayload['tax']);
+            $this->assertEquals($transactorTypeArray[$index], $ledgerRequestPayload['transactor_event']);
+            $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload['additional_params']);
+        }
     }
 
     public function testUtrMappingForRTGS()
@@ -1356,6 +1636,233 @@ class IciciBankingAccountStatementTest extends TestCase
         $this->testData[__FUNCTION__] = $testData;
 
         $this->startTest();
+    }
+
+    // asserting external credit, external debit, payout and reversal events to ledger
+    public function testWebhookEventForIciciAccountStatementForSuccessfulMappingToReversalWithLedgerShadow()
+    {
+        $this->fixtures->merchant->addFeatures([Features::DA_LEDGER_JOURNAL_WRITES]);
+
+        $ledgerSnsPayloadArray = [];
+        $this->mockLedgerSns(6, $ledgerSnsPayloadArray);
+
+        $this->setupForIciciPayout(Channel::ICICI, 100, FundTransfer\Mode::NEFT);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals(590, $payout['fees']);
+        $this->assertEquals(90, $payout['tax']);
+        $this->assertEquals('Bbg7cl6t6I3XB7', $payout['pricing_rule_id']);
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated',
+            'utr' => '023629961691' ]);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit('fund_transfer_attempt', $attempt['id'], ['utr' => '023629961691' ]);
+
+        $ftsCreateTransfer = new FtsFundTransfer(
+            EnvMode::TEST,
+            $attempt['id']);
+
+        $ftsCreateTransfer->handle();
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->assertEquals(Attempt\Status::INITIATED, $attempt['status']);
+
+        $this->updateFta(
+            $attempt['fts_transfer_id'],
+            $attempt['source'],
+            Attempt\Type::PAYOUT,
+            Attempt\Status::FAILED);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->assertEquals(Payout\Status::FAILED, $payout['status']);
+        $this->assertEquals(FundTransfer\Mode::NEFT, $payout['mode']);
+        $this->assertEquals(Attempt\Status::FAILED, $attempt['status']);
+        $this->assertEquals(FundTransfer\Mode::NEFT, $attempt['mode']);
+
+        $mockedResponse = $this->getIciciDataResponseForReversal();
+
+        $this->setMozartMockResponse($mockedResponse);
+
+        $this->ba->cronAuth();
+
+        $eventTestDataKey = 'testPayoutReversedWebhookForSuccessfulMappingToReversal';
+
+        $this->expectWebhookEventWithContents('payout.reversed', $eventTestDataKey);
+
+        $eventTestDataKey1 = 'testTransactionCreatedWebhookForSuccessfulMappingToReversal';
+        $data = & $this->testData['testTransactionCreatedWebhookForSuccessfulMappingToReversal'];
+        $data['payload']['transaction']['entity']['source']['payout_id'] = 'pout_' . $payout->getId();
+
+        $this->expectWebhookEventWithContents('transaction.created', $eventTestDataKey1);
+
+        $testData = $this->testData['testIciciAccountStatementCase1'];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->startTest();
+
+        $transactorTypeArray = [
+            'da_ext_credit',
+            'da_ext_debit',
+            'da_ext_payout_processed',
+            'da_payout_processed_recon',
+            'da_payout_reversed',
+            'da_payout_reversed_recon',
+        ];
+
+        $commissionArray = [
+            '',
+            '',
+            '590',
+            '590',
+            '590',
+            '590',
+        ];
+
+        $taxArray = [
+            '',
+            '',
+            '90',
+            '90',
+            '90',
+            '90',
+        ];
+
+        for ($index = 0; $index<count($ledgerSnsPayloadArray); $index++)
+        {
+            $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
+
+            $ledgerRequestPayload['additional_params'] = json_decode($ledgerRequestPayload['additional_params'], true);
+
+            $this->assertEquals('X', $ledgerRequestPayload['tenant']);
+            $this->assertEquals('test', $ledgerRequestPayload['mode']);
+            $this->assertEquals('10000000000000', $ledgerRequestPayload['merchant_id']);
+            $this->assertEquals('INR', $ledgerRequestPayload['currency']);
+            $this->assertEquals($commissionArray[$index], $ledgerRequestPayload['commission']);
+            $this->assertEquals($taxArray[$index], $ledgerRequestPayload['tax']);
+            $this->assertEquals($transactorTypeArray[$index], $ledgerRequestPayload['transactor_event']);
+            $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload['additional_params']);
+        }
+    }
+
+    public function testWebhookEventForIciciAccountStatementForSuccessfulMappingToReversalForFeePayoutWithLedgerShadow()
+    {
+        $this->fixtures->merchant->addFeatures([Features::DA_LEDGER_JOURNAL_WRITES]);
+
+        $ledgerSnsPayloadArray = [];
+        $this->mockLedgerSns(4, $ledgerSnsPayloadArray);
+
+        $this->setupForIciciPayout(Channel::ICICI, 100, FundTransfer\Mode::NEFT);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals(590, $payout['fees']);
+        $this->assertEquals(90, $payout['tax']);
+        $this->assertEquals('Bbg7cl6t6I3XB7', $payout['pricing_rule_id']);
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated',
+            'utr'       => '023629961691',
+            'purpose'   => 'rzp_fees'
+        ]);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit('fund_transfer_attempt', $attempt['id'], ['utr' => '023629961691' ]);
+
+        $ftsCreateTransfer = new FtsFundTransfer(
+            EnvMode::TEST,
+            $attempt['id']);
+
+        $ftsCreateTransfer->handle();
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->assertEquals(Attempt\Status::INITIATED, $attempt['status']);
+
+        $this->updateFta(
+            $attempt['fts_transfer_id'],
+            $attempt['source'],
+            Attempt\Type::PAYOUT,
+            Attempt\Status::FAILED);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->assertEquals(Payout\Status::FAILED, $payout['status']);
+        $this->assertEquals(FundTransfer\Mode::NEFT, $payout['mode']);
+        $this->assertEquals(Attempt\Status::FAILED, $attempt['status']);
+        $this->assertEquals(FundTransfer\Mode::NEFT, $attempt['mode']);
+
+        $mockedResponse = $this->getIciciDataResponseForReversal();
+
+        $this->setMozartMockResponse($mockedResponse);
+
+        $this->ba->cronAuth();
+
+        $eventTestDataKey = 'testPayoutReversedWebhookForSuccessfulMappingToReversal';
+
+        $this->expectWebhookEventWithContents('payout.reversed', $eventTestDataKey);
+
+        $eventTestDataKey1 = 'testTransactionCreatedWebhookForSuccessfulMappingToReversal';
+        $data = & $this->testData['testTransactionCreatedWebhookForSuccessfulMappingToReversal'];
+        $data['payload']['transaction']['entity']['source']['payout_id'] = 'pout_' . $payout->getId();
+
+        $this->expectWebhookEventWithContents('transaction.created', $eventTestDataKey1);
+
+        $testData = $this->testData['testIciciAccountStatementCase1'];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->startTest();
+
+        $transactorTypeArray = [
+            'da_ext_credit',
+            'da_ext_debit',
+            'da_ext_fee_payout_processed',
+            'da_fee_payout_reversed',
+        ];
+
+        $commissionArray = [
+            '',
+            '',
+            '590',
+            '590',
+        ];
+
+        $taxArray = [
+            '',
+            '',
+            '90',
+            '90',
+        ];
+
+        for ($index = 0; $index<count($ledgerSnsPayloadArray); $index++)
+        {
+            $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
+
+            $ledgerRequestPayload['additional_params'] = json_decode($ledgerRequestPayload['additional_params'], true);
+
+            $this->assertEquals('X', $ledgerRequestPayload['tenant']);
+            $this->assertEquals('test', $ledgerRequestPayload['mode']);
+            $this->assertEquals('10000000000000', $ledgerRequestPayload['merchant_id']);
+            $this->assertEquals('INR', $ledgerRequestPayload['currency']);
+            $this->assertEquals($commissionArray[$index], $ledgerRequestPayload['commission']);
+            $this->assertEquals($taxArray[$index], $ledgerRequestPayload['tax']);
+            $this->assertEquals($transactorTypeArray[$index], $ledgerRequestPayload['transactor_event']);
+            $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload['additional_params']);
+        }
     }
 
     public function testIciciAccountStatementGatewayException()

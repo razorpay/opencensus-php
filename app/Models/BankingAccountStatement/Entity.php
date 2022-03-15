@@ -169,6 +169,11 @@ class Entity extends Base\PublicEntity
 
     // ---------------------------- Setters ----------------------------------- //
 
+    public function setTransactionId(string $transactionId)
+    {
+        return $this->setAttribute(self::TRANSACTION_ID, $transactionId);
+    }
+
     public function setAccountNumber(string $accountNumber)
     {
         $this->setAttribute(self::ACCOUNT_NUMBER, $accountNumber);
@@ -270,6 +275,11 @@ class Entity extends Base\PublicEntity
     public function getTransactionDate()
     {
         return $this->getAttribute(self::TRANSACTION_DATE);
+    }
+
+    public function getTransactionId()
+    {
+        return $this->getAttribute(self::TRANSACTION_ID);
     }
 
     public function getBankTransactionId()

@@ -66,6 +66,7 @@ use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Services\Pagination\Entity as PaginationEntity;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\BankingAccountStatement\Entity as BASEntity;
 use RZP\Models\Payout\Processor\DownstreamProcessor\FundAccountPayout;
 use RZP\Models\Payout\Processor\DownstreamProcessor\DownstreamProcessor;
 use RZP\PushNotifications\Payout\PendingApprovals as PendingApprovalsPN;
@@ -2233,7 +2234,7 @@ class Core extends Base\Core
         }
         else
         {
-            $this->repo->transaction(
+            $bankAccStmt = $this->repo->transaction(
                 function() use ($payout, $debit_bas) {
                     $payout->setStatus(Status::PROCESSED);
 
@@ -2241,13 +2242,31 @@ class Core extends Base\Core
 
                     $this->repo->saveOrFail($payout);
 
+                    $bankAccStmt = null;
                     if ($payout->isBalanceAccountTypeDirect() === true)
                     {
-                        $this->handlePayoutTransactionForDirectBanking($payout, $debit_bas);
+                        $bankAccStmt = $this->handlePayoutTransactionForDirectBanking($payout, $debit_bas);
 
                         (new FeeRecovery\Core)->handlePayoutStatusUpdate($payout);
                     }
+                    return $bankAccStmt;
                 });
+
+            // send event to ledger in shadow mode for direct acc
+            // if $bankAccStmt was found for the payout, it indicates that we mapped an existing external transaction to razorpay payout
+            // so corresponding event needs to be sent to ledger
+            if (($payout->isBalanceAccountTypeDirect() === true) and ($bankAccStmt !== null))
+            {
+                if ($payout->getPurpose() === Purpose::RZP_FEES)
+                {
+                    $this->processLedgerPayoutForDirect($payout, Transaction\Processor\Ledger\Payout::DA_EXT_FEE_PAYOUT_PROCESSED, null, null, $bankAccStmt);
+                }
+                else
+                {
+                    $this->processLedgerPayoutForDirect($payout, Transaction\Processor\Ledger\Payout::DA_EXT_PAYOUT_PROCESSED, null, null, $bankAccStmt);
+                    $this->processLedgerPayoutForDirect($payout, Transaction\Processor\Ledger\Payout::DA_PAYOUT_PROCESSED_RECON, null, null, $bankAccStmt);
+                }
+            }
 
             $this->app->events->dispatch('api.payout.processed', [$payout]);
 
@@ -2372,6 +2391,46 @@ class Core extends Base\Core
          ->pushTransactionToLedger($payout, $event, $reversal, $ftsSourceAccountInformation);
     }
 
+    /**
+     * @param Entity               $payout
+     * @param string               $event
+     * @param Reversal\Entity|null $reversal
+     * @param External\Entity|null $external
+     * @param BASEntity|null       $bas
+     * Push event to ledger sns when an external record is identified as payout or reversal. This will create this required journal in ledger DB.
+     * Since ledger keeps different records for all payout states, these events are triggered.
+     */
+    public function processLedgerPayoutForDirect(Entity $payout,
+                                                string $event,
+                                                Reversal\Entity $reversal = null,
+                                                External\Entity $external = null,
+                                                BASEntity $bas = null)
+    {
+        // Here only direct fundAccount payout is pushed to ledger. So in case of shared, return.
+        // In case env variable ledger.enabled is false, return.
+        if (($this->app['config']->get('applications.ledger.enabled') === false) or
+            ($payout->getBalanceAccountType() === AccountType::SHARED) or
+            ($payout->isBalanceTypePrimary() === true))
+        {
+            return;
+        }
+
+        // Skip ledger shadow mode for high TPS merchant
+        if ($payout->merchant->isFeatureEnabled(Feature\Constants::HIGH_TPS_COMPOSITE_PAYOUT) === true)
+        {
+            return;
+        }
+
+        // If the mode is not live OR the merchant does not have the DA's ledger journal write feature, we return.
+        if ($payout->merchant->isFeatureEnabled(Feature\Constants::DA_LEDGER_JOURNAL_WRITES) === false)
+        {
+            return;
+        }
+
+        (new Transaction\Processor\Ledger\Payout)
+            ->pushTransactionToLedgerForDirect($event, $payout, $reversal, $external, $bas);
+    }
+
     public static function shouldPayoutGoThroughLedgerReverseShadowFlow($payout)
     {
         // Skip ledger reverse shadow mode for high TPS merchant
@@ -2414,7 +2473,7 @@ class Core extends Base\Core
                     'debit_bas'      => optional($debit_bas)->getId()
                 ]);
 
-            return;
+            return null;
         }
 
         $bas = $debit_bas;
@@ -2449,7 +2508,7 @@ class Core extends Base\Core
                         'payout_id' => $payout->getId(),
                     ]);
 
-                return;
+                return null;
             }
         }
 
@@ -2481,6 +2540,8 @@ class Core extends Base\Core
         }
 
         $this->updateTransactionAndSourceToPayout($payout, $transaction);
+
+        return $transaction->bankingAccountStatement;
     }
 
     /**
@@ -2494,7 +2555,7 @@ class Core extends Base\Core
      */
     public function handleReversalTransactionForDirectBanking(Reversal\Entity $reversal, $credit_bas = null)
     {
-        $payoutTransaction = $this->handleProcessedPayoutViaReversedPayout($reversal);
+        list($payoutTransaction, $bankAccStmtForPayout) = $this->handleProcessedPayoutViaReversedPayout($reversal);
 
         //
         // If we were not able to find payout's transaction, we won't be able to find
@@ -2502,7 +2563,7 @@ class Core extends Base\Core
         //
         if (empty($payoutTransaction) === true)
         {
-            return;
+            return [null, null];
         }
 
         if ($reversal->hasTransaction() === true)
@@ -2515,7 +2576,7 @@ class Core extends Base\Core
                     'credit_bas'     => $credit_bas->getId()
                 ]);
 
-            return;
+            return [null, null];
         }
 
         $bas = $credit_bas;
@@ -2534,7 +2595,7 @@ class Core extends Base\Core
                         'reversal_id' => $reversal->getId(),
                     ]);
 
-                return;
+                return [null, $bankAccStmtForPayout];
             }
         }
 
@@ -2567,6 +2628,8 @@ class Core extends Base\Core
         }
 
         $this->updateTransactionAndSourceToReversal($reversal, $transaction);
+
+        return [$transaction->bankingAccountStatement, $bankAccStmtForPayout];
     }
 
     protected function handleProcessedPayoutViaReversedPayout(Reversal\Entity $reversal)
@@ -2576,7 +2639,7 @@ class Core extends Base\Core
 
         if ($payout->hasTransaction() === true)
         {
-            return $payout->transaction;
+            return [$payout->transaction, null];
         }
 
         $this->trace->info(
@@ -2586,9 +2649,9 @@ class Core extends Base\Core
                 'payout_id'     => $payout->getId()
             ]);
 
-        $this->handlePayoutTransactionForDirectBanking($payout);
+        $bankAccStmt = $this->handlePayoutTransactionForDirectBanking($payout);
 
-        return $payout->transaction;
+        return [$payout->transaction, $bankAccStmt];
     }
 
     public function updateTransactionAndSourceToPayout(Entity $payout, Transaction\Entity $transaction)
@@ -3217,7 +3280,7 @@ class Core extends Base\Core
         // This is to ensure that the process that is working on the payout
         // resource, releases mutex on the payout only once all entities are
         // saved in the database.
-        $this->mutex->acquireAndRelease(
+        list($bankAccStmtForReversal, $bankAccStmtForPayout) = $this->mutex->acquireAndRelease(
             'reversal_payout_id_' . $payout->getId(),
             function () use ($payout, $reverseReason, $ftaBankStatusCode, $credit_bas, &$reversal)
             {
@@ -3235,10 +3298,10 @@ class Core extends Base\Core
                             'reverse_reason' => $reverseReason,
                         ]);
 
-                    return;
+                    return [null, null];
                 }
 
-                $reversal = $this->repo->transaction(
+                list($reversal, $bankAccStmtForReversal, $bankAccStmtForPayout) = $this->repo->transaction(
                     function() use ($payout, $reverseReason, $ftaBankStatusCode, $credit_bas) {
                         $reversal = (new Reversal\Core)->reverseForPayout($payout);
 
@@ -3249,9 +3312,11 @@ class Core extends Base\Core
 
                         $payout->setStatusCode($ftaBankStatusCode);
 
+                        $bankAccStmtForReversal = null;
+                        $bankAccStmtForPayout = null;
                         if ($payout->isBalanceAccountTypeDirect() === true)
                         {
-                            $this->handleReversalTransactionForDirectBanking($reversal, $credit_bas);
+                            list($bankAccStmtForReversal, $bankAccStmtForPayout) = $this->handleReversalTransactionForDirectBanking($reversal, $credit_bas);
                         }
 
                         $previousStatus = $payout->getStatus();
@@ -3282,12 +3347,42 @@ class Core extends Base\Core
 
                         $this->repo->saveOrFail($payout);
 
-                        return $reversal;
+                        return [$reversal, $bankAccStmtForReversal, $bankAccStmtForPayout];
                     });
+                return [$bankAccStmtForReversal, $bankAccStmtForPayout];
             },
             self::PAYOUT_REVERSAL_MUTEX_LOCK_TIMEOUT,
             ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS
         );
+
+        // send event to ledger in shadow mode for direct acc
+        if (($payout->isBalanceAccountTypeDirect() === true) and ($bankAccStmtForPayout !== null))
+        {
+            if ($payout->getPurpose() === Purpose::RZP_FEES)
+            {
+                $this->processLedgerPayoutForDirect($payout, Transaction\Processor\Ledger\Payout::DA_EXT_FEE_PAYOUT_PROCESSED, null, null, $bankAccStmtForPayout);
+            }
+            else
+            {
+                $this->processLedgerPayoutForDirect($payout, Transaction\Processor\Ledger\Payout::DA_EXT_PAYOUT_PROCESSED, null, null, $bankAccStmtForPayout);
+                $this->processLedgerPayoutForDirect($payout, Transaction\Processor\Ledger\Payout::DA_PAYOUT_PROCESSED_RECON, null, null, $bankAccStmtForPayout);
+            }
+        }
+
+        // send event to ledger in shadow mode for direct acc
+        if (($payout->isBalanceAccountTypeDirect() === true) and ($bankAccStmtForReversal !== null))
+        {
+            if ($payout->getPurpose() === Purpose::RZP_FEES)
+            {
+                $this->processLedgerPayoutForDirect($payout, Transaction\Processor\Ledger\Payout::DA_EXT_FEE_PAYOUT_REVERSED, $reversal, null, $bankAccStmtForReversal);
+            }
+            else
+            {
+                $this->processLedgerPayoutForDirect($payout, Transaction\Processor\Ledger\Payout::DA_EXT_PAYOUT_REVERSED, $reversal, null, $bankAccStmtForReversal);
+                $this->processLedgerPayoutForDirect($payout, Transaction\Processor\Ledger\Payout::DA_PAYOUT_REVERSED_RECON, $reversal, null, $bankAccStmtForReversal);
+            }
+        }
+
     }
 
     public function reversePayoutForHighTpsMerchants(Entity $payout,
