@@ -3916,9 +3916,7 @@ class PayoutLinkTest extends TestCase
     public function testGenerateAndSendCustomerOtpTestMode()
     {
         $plMock = $this->getMockedServiceMakeRequestSuccessResponse([
-            'settings' => [
-                'merchant_id' => '10000000000000',
-            ],
+            'merchant_id' => '10000000000000'
         ]);
 
         $this->app->instance('payout-links', $plMock);
@@ -3936,9 +3934,7 @@ class PayoutLinkTest extends TestCase
     public function testGenerateAndSendCustomerOtpLiveModeWithOutModeHeader()
     {
         $plMock = $this->getMockedServiceMakeRequestSuccessResponse([
-            'settings' => [
-                'merchant_id' => '10000000000000',
-            ],
+            'merchant_id' => '10000000000000',
             'success' => 'ok',
         ]);
 
@@ -3957,9 +3953,7 @@ class PayoutLinkTest extends TestCase
     public function testGenerateAndSendCustomerOtpLiveModeWithModeHeader()
     {
         $plMock = $this->getMockedServiceMakeRequestSuccessResponse([
-            'settings' => [
-                'merchant_id' => '10000000000000',
-            ],
+            'merchant_id' => '10000000000000',
             'success' => 'ok',
         ]);
 

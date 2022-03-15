@@ -166,6 +166,8 @@ class PayoutLinks
     const INTEGRATION_STATUS                       = 'integration_status';
     const NOT_INITIATED                            = 'not-initiated';
 
+    const EXPAND                                   = 'expand';
+
     public static $statusValidForSupportDetailsInHostedPage = [
         self::STATUS_EXPIRED,
         self::STATUS_PENDING,
@@ -551,22 +553,24 @@ class PayoutLinks
 
     public function getModeAndMerchant(string $payoutLinkId)
     {
-        $this->trace->info(TraceCode::PAYOUT_LINK_GET_HOSTED_PAGE_DATA,
+        $this->trace->info(TraceCode::PAYOUT_LINK_GET_MODE_AND_MERCHANT,
             [
                 $payoutLinkId
             ]);
 
         $mode = $this->getModeForPublicPage();
 
-        $url = sprintf('%s/%s', $this->baseUrl, self::GET_HOSTED_PAGE_DATA);
+        $url = sprintf('%s/%s', $this->baseUrl, self::FETCH_PAYOUT_LINK_PATH);
 
         $request = [
-            self::PAYOUT_LINK_ID => 'poutlk_' . $payoutLinkId
+            self::PAYOUT_LINK_ID        => 'poutlk_' . $payoutLinkId,
+            self::IS_DASHBOARD_REQUEST  => false,
+            self::EXPAND                => []
         ];
 
         $response =  $this->makeRequest($url, $request, [], self::POST, $mode);
 
-        return [$mode, $response['settings'][self::MERCHANT_ID]];
+        return [$mode, $response[self::MERCHANT_ID]];
     }
 
     public function initiate(MerchantEntity $merchant, array $input, string $payoutLinkId): array
