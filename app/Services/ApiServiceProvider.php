@@ -451,7 +451,7 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
             $encrypter = new AES256GCMEncrypt(env("OUTBOX_ENCRYPTION_KEY"));
             $encoder   = new JsonEncoder();
             $repo      = new Repository($app['config']->get('database.default'));
-            return new Core($encrypter, $encoder, $repo, $app['trace']);
+            return new Core($encrypter, $encoder, $repo);
         });
 
         $this->app->singleton('keyless_header', function ($app) {
