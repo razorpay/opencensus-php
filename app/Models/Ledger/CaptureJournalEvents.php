@@ -13,7 +13,7 @@ class CaptureJournalEvents
         $transactionMessage = BaseJournalEvents::generateBaseForJournalEntry($transaction);
 
         $merchantCaptureData = array(
-            Constants::TRANSACTOR_ID                 => $payment->getId(),
+            Constants::TRANSACTOR_ID                 => $payment->getPublicId(),
             Constants::TRANSACTOR_EVENT              => Constants::MERCHANT_CAPTURED,
         );
         return array_merge($transactionMessage, $merchantCaptureData);
@@ -26,9 +26,10 @@ class CaptureJournalEvents
 
         $gateway = $payment->terminal ? $payment->terminal->getGateway() : "not found";
 
+        // api transaction id is assigned to transaction id if it is present in payment entity else payment id is passed as api transaction id
         return array(
-            Constants::TRANSACTOR_ID                => $payment->getId(),
-            Constants::API_TRANSACTION_ID           => $payment->getId(),
+            Constants::TRANSACTOR_ID                => $payment->getPublicId(),
+            Constants::API_TRANSACTION_ID           => ($payment->getTransactionId() !== null) ? $payment->getTransactionId() : $payment->getId(),
             Constants::MERCHANT_ID                  => $payment->getMerchantId(),
             Constants::CURRENCY                     => $payment->getCurrency(),
             Constants::AMOUNT                       => strval($payment->getAmount()),

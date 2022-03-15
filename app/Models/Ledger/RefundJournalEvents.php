@@ -7,7 +7,7 @@ use App;
 use Carbon\Carbon;
 use RZP\Trace\TraceCode;
 use RZP\Models\Transaction;
-use RZP\Jobs\Ledger\CreateLedgerJournal;
+use RZP\Jobs\Ledger\CreateLedgerJournal as LedgerEntryJob;
 use RZP\Models\Reversal\Entity as Reversal;
 use RZP\Models\Payment\Refund\Speed as Speed;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
@@ -36,7 +36,7 @@ class RefundJournalEvents
 
                 $transactionMessage[Constants::ADDITIONAL_PARAMS] = self::fetchLedgerRulesForRefundsDirectSettlement($refund, $txn);
 
-                CreateLedgerJournal::dispatch($mode, $transactionMessage, $txn->merchant)->onConnection('sync');
+                LedgerEntryJob::dispatchNow($mode, $transactionMessage);
             } //Normal autorefund scenarios
             else if ($refund->payment->hasBeenCaptured() === false)
             {
@@ -46,7 +46,7 @@ class RefundJournalEvents
                     Constants::REFUND_ACCOUNTING => Constants::AUTOREFUND
                 ];
 
-                CreateLedgerJournal::dispatch($mode, $transactionMessage, $txn->merchant)->onConnection('sync');
+                LedgerEntryJob::dispatchNow($mode, $transactionMessage);
             } // Normal refund scenario
             else
             {
@@ -54,7 +54,7 @@ class RefundJournalEvents
 
                 $transactionMessage[Constants::ADDITIONAL_PARAMS] = self::fetchLedgerRulesForRefunds($refund, $txn);
 
-                CreateLedgerJournal::dispatch($mode, $transactionMessage, $txn->merchant)->onConnection('sync');
+                LedgerEntryJob::dispatchNow($mode, $transactionMessage);
             }
         }
         catch (\Exception $ex)
@@ -227,7 +227,7 @@ class RefundJournalEvents
         $transactionMessage = BaseJournalEvents::generateBaseForJournalEntry($transaction);
 
         $reversalData = array(
-            Constants::TRANSACTOR_ID                 => $reversal->getId(),
+            Constants::TRANSACTOR_ID                 => $reversal->getPublicId(),
             Constants::TRANSACTOR_EVENT              => Constants::REFUND_REVERSAL,
             Constants::IDENTIFIERS                   => [
                 Constants::GATEWAY         => $reversal->entity->getGateway(),
@@ -241,7 +241,7 @@ class RefundJournalEvents
         $transactionMessage = BaseJournalEvents::generateBaseForJournalEntry($transaction);
 
         $refundData = array(
-            Constants::TRANSACTOR_ID                => $refund->getId(),
+            Constants::TRANSACTOR_ID                => $refund->getPublicId(),
             Constants::TRANSACTOR_EVENT              => Constants::REFUND_PROCESSED,
             Constants::IDENTIFIERS                   => [
                 Constants::GATEWAY           => $refund->getGateway(),

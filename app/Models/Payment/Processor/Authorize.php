@@ -8735,9 +8735,7 @@ trait Authorize
 
                 \Event::dispatch(new TransactionalClosureEvent(function () use ($transactionMessage)
                 {
-                    // this is triggered for auth and capture model when merchant triggers the manual capture
-
-                    LedgerEntryJob::dispatch($this->mode, $transactionMessage)->onConnection('sync');
+                    LedgerEntryJob::dispatchNow($this->mode, $transactionMessage);
                 }));
             }
         }

@@ -14,7 +14,7 @@ class SettlementJournalEvents
         $transactionMessage = BaseJournalEvents::generateBaseForJournalEntry($transaction);
 
         $refundData = array(
-            Constants::TRANSACTOR_ID                 => $settlement->getId(),
+            Constants::TRANSACTOR_ID                 => $settlement->getPublicId(),
             Constants::TRANSACTOR_EVENT              => Constants::SETTLEMENT_PROCESSED,
         );
         return array_merge($transactionMessage, $refundData);

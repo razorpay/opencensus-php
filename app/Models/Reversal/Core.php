@@ -552,7 +552,7 @@ class Core extends Base\Core
 
                 \Event::dispatch(new TransactionalClosureEvent(function () use ($transactionMessage)
                 {
-                    LedgerEntryJob::dispatch($this->mode, $transactionMessage)->onConnection('sync');
+                    LedgerEntryJob::dispatchNow($this->mode, $transactionMessage);
                 }));
             }
         }
