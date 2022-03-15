@@ -44,6 +44,9 @@ class PersonalPan extends Base
 
     public function performPostProcessOperation(BvsValidation\Entity $entity): void
     {
-        $this->merchantDetails->setPoiVerificationStatus(BvsValidationConstants::INITIATED);
+        if ($this->merchantDetails->getPoiVerificationStatus() === BvsValidationConstants::PENDING)
+        {
+            $this->merchantDetails->setPoiVerificationStatus(BvsValidationConstants::INITIATED);
+        }
     }
 }

@@ -6,6 +6,7 @@ use App;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Core;
+use RZP\Models\Admin\Org\Entity;
 use RZP\Exception\LogicException;
 use RZP\Exception\AssertionException;
 use RZP\Exception\IntegrationException;
@@ -31,11 +32,36 @@ class DefaultProcessor implements Processor
     protected $configName;
 
     protected $experimentMap = [
-        Constant::GSTIN    => RazorxTreatment::GSTIN_SYNC,
-        Constant::CIN      => RazorxTreatment::CIN_SYNC,
-        Constant::LLP_DEED => RazorxTreatment::LLPIN_SYNC
+        Constant::GSTIN                                      => RazorxTreatment::GSTIN_SYNC,
+        Constant::CIN                                        => RazorxTreatment::CIN_SYNC,
+        Constant::LLP_DEED                                   => RazorxTreatment::LLPIN_SYNC,
+        Constant::PERSONAL_PAN                               => RazorxTreatment::PERSONAL_PAN_SYNC,
+        Constant::BUSINESS_PAN                               => RazorxTreatment::BUSINESS_PAN_SYNC,
+        Constant::BANK_ACCOUNT_WITH_PERSONAL_PAN             => RazorxTreatment::BANK_SYNC,
+        Constant::BANK_ACCOUNT_WITH_BUSINESS_PAN             => RazorxTreatment::BANK_SYNC,
+        Constant::BANK_ACCOUNT_WITH_BUSINESS_OR_PROMOTER_PAN => RazorxTreatment::BANK_SYNC,
+        Constant::AADHAAR                                    => RazorxTreatment::AADHAR_FRONT_BACK_SYNC,
+        Constant::AADHAAR_WITH_PAN                           => RazorxTreatment::AADHAR_EKYC_SYNC,
+        Constant::VOTERS_ID                                  => RazorxTreatment::VOTERS_ID_SYNC,
+        Constant::PASSPORT                                   => RazorxTreatment::PASSPORT_SYNC
+
     ];
 
+    protected $timeoutMap = [
+        Constant::GSTIN                                      => 2,
+        Constant::CIN                                        => 2,
+        Constant::LLP_DEED                                   => 2,
+        Constant::PERSONAL_PAN                               => 2,
+        Constant::BUSINESS_PAN                               => 2,
+        Constant::BANK_ACCOUNT_WITH_PERSONAL_PAN             => 2,
+        Constant::BANK_ACCOUNT_WITH_BUSINESS_PAN             => 2,
+        Constant::BANK_ACCOUNT_WITH_BUSINESS_OR_PROMOTER_PAN => 2,
+        Constant::AADHAAR                                    => 2,
+        Constant::AADHAAR_WITH_PAN                           => 2,
+        Constant::VOTERS_ID                                  => 2,
+        Constant::PASSPORT                                   => 2
+
+    ];
     /**
      * @var BvsConfig
      */
@@ -63,6 +89,7 @@ class DefaultProcessor implements Processor
         $this->trace = $this->app['trace'];
 
         $this->input = $input;
+
 
         if(empty($configName)===false)
         {
@@ -101,7 +128,7 @@ class DefaultProcessor implements Processor
         {
             try
             {
-                $response = (new BvsClient\BvsValidationClientV2($this->merchant, true))->createValidation($validation);
+                $response = (new BvsClient\BvsValidationClientV2($this->merchant, true,$this->getTimeout()))->createValidation($validation);
 
                 return new ValidationBaseResponseV2($response);
             }
@@ -206,6 +233,21 @@ class DefaultProcessor implements Processor
         return $validation;
     }
 
+    protected function getTimeout()
+    {
+        if (empty($this->timeoutMap) === true or
+            empty($this->configName) === true or
+            array_key_exists($this->configName, $this->timeoutMap) === false or
+            empty($this->timeoutMap[$this->configName]) === true
+        )
+        {
+            return 2;
+        }
+
+        return $this->timeoutMap[$this->configName];
+
+    }
+
     protected function requestMode()
     {
         if (empty($this->merchant) === true or
@@ -249,5 +291,6 @@ class DefaultProcessor implements Processor
         $this->app['segment-analytics']->pushTrackEvent($this->merchant, [], SegmentEvent::BVS_IN_SYNC_ENABLED);
 
         return Constant::SYNC;
+
     }
 }

@@ -315,7 +315,7 @@ class Core extends Detail\Core
 
                     if ($this->canSubmit($input, $response[E::PARTNER_ACTIVATION]) === true)
                     {
-                        $response = $this->submitPartnerActivationForm($merchant, $merchantDetails, $partnerActivation,$input);
+                        $response = $this->submitPartnerActivationForm($merchant, $merchantDetails,$partnerActivation,$input);
 
                         $newPartnerActivationStatus = $response[E::PARTNER_ACTIVATION][Activation\Entity::ACTIVATION_STATUS];
 
@@ -336,17 +336,20 @@ class Core extends Detail\Core
 
     /**
      * This function is used to lock and submit the partner activation form and update the partner with relevant activation status
-     * @param Merchant\Entity $merchant
-     * @param Entity $merchantDetails
+     *
+     * @param Merchant\Entity   $merchant
+     * @param Entity            $merchantDetails
      * @param Activation\Entity $partnerActivation
-     * @param array $input
-     * @param string $source
+     * @param array|null        $input
+     * @param string            $source
      *
      * @return array
+     * @throws Exception\InvalidPermissionException
+     * @throws LogicException
      * @throws \Throwable
      */
     public function submitPartnerActivationForm(Merchant\Entity $merchant, Entity $merchantDetails,
-                                                Activation\Entity $partnerActivation,array $input, string $source = Constants::PARTNER): array
+                                                Activation\Entity $partnerActivation, ?array $input, string $source = Constants::PARTNER): array
     {
         $activationStatus = $this->getApplicablePartnerActivationStatus($merchantDetails, $partnerActivation);
 

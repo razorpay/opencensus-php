@@ -8,10 +8,18 @@ final class RazorxTreatment
     const AADHAAR_EKYC_FOR_REG_BUSINESS_TYPES='adharEkyc_for_reg_businessTypes';
 
     //Razorx treatment constant, whether to make sync call or not
-    const GSTIN_SYNC    = "gstin_sync";
-    const LLPIN_SYNC    = "llpin_sync";
-    const CIN_SYNC      = "cin_sync";
-    const BVS_IN_SYNC      = "bvs_in_sync";
+
+    const GSTIN_SYNC                = "gstin_sync";
+    const LLPIN_SYNC                = "llpin_sync";
+    const CIN_SYNC                  = "cin_sync";
+    const PERSONAL_PAN_SYNC         = "personal_pan_sync";
+    const BUSINESS_PAN_SYNC         = "business_pan_sync";
+    const BANK_SYNC                 = "bank_sync";
+    const AADHAR_FRONT_BACK_SYNC         = "aadhar_front_back_sync";
+    const AADHAR_EKYC_SYNC          = "aadhar_ekyc_sync";
+    const VOTERS_ID_SYNC            = 'voters_id_sync';
+    const PASSPORT_SYNC             = 'passport_sync';
+    const BVS_IN_SYNC               = "bvs_in_sync";
 
     const CORPORATE_PRICING_FUNCTIONALITY = 'CORPORATE_PRICING_FUNCTIONALITY';
 

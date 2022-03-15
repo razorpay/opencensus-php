@@ -610,7 +610,8 @@ class Core extends Base\Core
             ],
         ];
 
-        $bvsValidation = (new AutoKyc\Bvs\Core($merchant, $merchantDetails))->verify($merchantDetails->getId(), $payload);
+        $bvsValidation = (new AutoKyc\Bvs\Core($merchant,$merchantDetails))->verify($merchantDetails->getId(), $payload);
+
     }
 
     public function canActivateMerchant(DetailEntity $merchantDetails, $isRiskyMerchant)
@@ -1408,7 +1409,12 @@ class Core extends Base\Core
         $this->updateDocumentVerificationStatus(
             $merchant, $merchantDetails,Constant::PERSONAL_PAN, BvsValidationConstants::IDENTIFIER);
 
+        $eventAttributes = [
+            'time_stamp'    => Carbon::now()->getTimestamp(),
+            'artefact_type' => 'personal_pan'
+        ];
 
+        $this->app['segment-analytics']->pushTrackEvent($merchant, $eventAttributes, SegmentEvent::RETRY_INPUT_ACTIVATION_FORM);
     }
 
     /**
@@ -1450,6 +1456,13 @@ class Core extends Base\Core
         }
 
         $this->updateDocumentVerificationStatus($merchant,$merchantDetails, Constant::BUSINESS_PAN);
+
+        $eventAttributes = [
+            'time_stamp'    => Carbon::now()->getTimestamp(),
+            'artefact_type' => 'business_pan'
+        ];
+
+        $this->app['segment-analytics']->pushTrackEvent($merchant, $eventAttributes, SegmentEvent::RETRY_INPUT_ACTIVATION_FORM);
     }
 
     /**
@@ -3511,11 +3524,11 @@ class Core extends Base\Core
     }
 
     /**
-     * @param Entity $merchantDetails
+     * @param Entity          $merchantDetails
      * @param Merchant\Entity $merchant
      *
      * @param array           $input
-     * @param bool $bankDetailsUpdated
+     * @param bool            $bankDetailsUpdated
      *
      * @throws Exception\InvalidPermissionException
      * @throws LogicException
@@ -3533,12 +3546,12 @@ class Core extends Base\Core
             Entity::BANK_BRANCH_IFSC
         ];
 
-        $isAutoKycAttemptRequired = $this->isAutoKycAttemptRequired($requiredFields,
-                                                                    $requiredFields,
-                                                                    $input,
-                                                                    DetailEntity::BANK_DETAILS_VERIFICATION_STATUS,
-                                                                    [BvsValidationConstants::FAILED],
-                                                                    $merchant->getId());
+        $isAutoKycAttemptRequired=$this->isAutoKycAttemptRequired($requiredFields,
+                                                         $requiredFields,
+                                                         $input,
+                                                         DetailEntity::BANK_DETAILS_VERIFICATION_STATUS,
+                                                         [BvsValidationConstants::FAILED],
+                                                                  $merchant->getId());
 
         if (($merchantDetails->getBankDetailsVerificationStatus() === DEConstants::VERIFIED or
              $merchantDetails->getBankDetailsVerificationStatus() === BvsValidationConstants::INITIATED) and
@@ -3583,12 +3596,19 @@ class Core extends Base\Core
             return;
         }
 
-        if ($isAutoKycAttemptRequired === true or
-            ($pennyTestingAttemptsCount == 0 and $merchantDetails->isSubmitted()===false) or
+        if ($isAutoKycAttemptRequired===true or
+            ($pennyTestingAttemptsCount == 0 and $merchantDetails->isSubmitted() === false) or
             $bankDetailsUpdated === true)
         {
 
-            $this->updateDocumentVerificationStatus($merchant,$merchantDetails, Entity::BANK_ACCOUNT_NUMBER);
+            $this->updateDocumentVerificationStatus($merchant, $merchantDetails, Entity::BANK_ACCOUNT_NUMBER);
+
+            $eventAttributes = [
+                'time_stamp'    => Carbon::now()->getTimestamp(),
+                'artefact_type' => 'bank_account'
+            ];
+
+            $this->app['segment-analytics']->pushTrackEvent($merchant, $eventAttributes, SegmentEvent::RETRY_INPUT_ACTIVATION_FORM);
         }
     }
 
@@ -4338,6 +4358,7 @@ class Core extends Base\Core
      * @param string $merchantId
      *
      * @return bool
+     * @throws Exception\InvalidPermissionException
      */
     protected function isAutoKycAttemptRequired(
         array $dependentFields,
@@ -4382,7 +4403,7 @@ class Core extends Base\Core
         return false;
     }
 
-    public function hasAllRequiredFields(Entity $merchantDetails, array $input, array $requiredFields)
+    public function hasAllRequiredFields(DetailEntity $merchantDetails, array $input, array $requiredFields)
     {
         // check that all require fields are present for calling external api
         // changed to empty on $merchantDetails->getAttribute($field) because fields value could be empty string eg. do_not_have_gstin
@@ -4396,7 +4417,6 @@ class Core extends Base\Core
 
         return true;
     }
-
 
     /**
      * @param Entity          $merchantDetails
@@ -4691,7 +4711,7 @@ class Core extends Base\Core
             return;
         }
 
-        $this->updateDocumentVerificationStatus($merchant,$merchantDetails, Constant::GSTIN);
+        $this->updateDocumentVerificationStatus($merchant, $merchantDetails, Constant::GSTIN);
 
         $eventAttributes = [
             'time_stamp'    => Carbon::now()->getTimestamp(),
@@ -4699,7 +4719,8 @@ class Core extends Base\Core
         ];
         $this->app['segment-analytics']->pushTrackEvent($merchant, $eventAttributes, SegmentEvent::RETRY_INPUT_ACTIVATION_FORM);
 
-        }
+
+    }
 
 
     /**

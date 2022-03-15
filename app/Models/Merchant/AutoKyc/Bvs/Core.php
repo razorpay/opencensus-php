@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant\AutoKyc\Bvs;
 
 use App;
+use RZP\Models\Merchant\Document\Entity as DocumentEntity;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
@@ -32,12 +33,16 @@ class Core extends Base\Core
 
     protected $merchantDetails;
 
-    public function __construct(Entity $merchant = null, DetailEntity $merchantDetails = null)
+    protected $document;
+
+    public function __construct(Entity $merchant = null, DetailEntity $merchantDetails = null,DocumentEntity $document=null)
+
     {
         parent::__construct();
 
         $this->merchantDetails = $merchantDetails;
         $this->merchant        = $merchant;
+        $this->document        = $document;
     }
 
     public function fetchValidationDetails(string $merchantId, array $input, $validationId = null)
@@ -95,7 +100,7 @@ class Core extends Base\Core
 
             $bvsCore = new BvsValidation\Core($this->merchantDetails);
 
-            $validation = $bvsCore->create($validationObject);
+            $validation = $bvsCore->create($validationObject,$this->document);
 
             $bvsCore->setCustomCallbackHandlerIfApplicable($validation, $input);
         }

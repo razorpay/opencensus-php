@@ -36,6 +36,9 @@ class CompanyPan extends Base
 
     public function performPostProcessOperation(BvsValidation\Entity $validation): void
     {
-        $this->merchantDetails->setCompanyPanVerificationStatus(BvsValidationConstants::INITIATED);
+        if ($this->merchantDetails->getCompanyPanVerificationStatus() === BvsValidationConstants::PENDING)
+        {
+            $this->merchantDetails->setCompanyPanVerificationStatus(BvsValidationConstants::INITIATED);
+        }
     }
 }

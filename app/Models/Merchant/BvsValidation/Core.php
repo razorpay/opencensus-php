@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant\BvsValidation;
 
+use RZP\Models\Merchant\Document\Entity as DocumentEntity;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Models\Merchant;
@@ -103,12 +104,14 @@ class Core extends Base\Core
     }
 
     /**
-     * @param array $input
+     * @param array                         $input
+     *
+     * @param Merchant\Document\Entity|null $document
      *
      * @return Entity
-     * @throws \RZP\Exception\LogicException
+     * @throws LogicException
      */
-    public function create(array $input): Entity
+    public function create(array $input,DocumentEntity $document=null): Entity
     {
         $this->trace->info(TraceCode::BVS_CREATE_VALIDATION_PAYLOAD, $input);
 
@@ -124,6 +127,13 @@ class Core extends Base\Core
         ];
 
         $this->trace->count(Detail\Metric::VALIDATION_STATUS_BY_ARTEFACT_TOTAL, $verificationMetrics);
+
+        if(empty($document)===false)
+        {
+            $document->setValidationId($validation->getValidationId());
+
+            $this->repo->merchant_document->saveOrFail($document);
+        }
 
         return $validation;
     }
@@ -253,8 +263,7 @@ class Core extends Base\Core
         (new BankAccountCore())->handleBankAccountUpdateCallback($merchant, $merchantDetails, $validation);
     }
 
-
-    protected function getMerchantId($validation)
+    public function getMerchantId($validation)
     {
         $ownerId = $validation->getOwnerId();
 
@@ -470,6 +479,7 @@ class Core extends Base\Core
             ]);
 
             $customHandlerKey = $this->getCustomHandlerKey($validation);
+
 
             $this->cache->put($customHandlerKey, $customHandler, self::BVS_VALIDATION_CUSTOM_CALLBACK_HANDLER_TTL_IN_SEC);
         }

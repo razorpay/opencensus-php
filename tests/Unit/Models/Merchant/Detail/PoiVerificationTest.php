@@ -71,6 +71,6 @@ class PoiVerificationTest extends TestCase
         $this->assertNotEmpty($bvsValidation);
 
         $this->assertEquals(Bvs\Constant::PERSONAL_PAN, $bvsValidation->getArtefactType());
-        $this->assertEquals("captured", $bvsValidation->getValidationStatus());
+        $this->assertEquals("success", $bvsValidation->getValidationStatus());
     }
 }

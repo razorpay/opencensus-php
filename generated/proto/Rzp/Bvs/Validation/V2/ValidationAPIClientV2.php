@@ -17,9 +17,16 @@ use Google\Protobuf\Internal\Message;
  */
 final class ValidationAPIClientV2 extends ValidationAPIAbstractClient implements ValidationAPI
 {
+    protected $timeout=2;
     /**
      * @inheritDoc
      */
+
+    public function setTimeout($timeout)
+    {
+        $this->timeout = $timeout;
+    }
+
     protected function doRequest(array $ctx, string $url, Message $in, Message $out): void
     {
         $body = $in->serializeToString();
@@ -28,7 +35,7 @@ final class ValidationAPIClientV2 extends ValidationAPIAbstractClient implements
 
         try {
 
-            $resp = $this->httpClient->sendRequest($req,["timeout"=>2]);
+            $resp = $this->httpClient->sendRequest($req,["timeout"=>$this->timeout]);
 
         } catch (\Throwable $e) {
 

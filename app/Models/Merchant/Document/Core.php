@@ -417,7 +417,7 @@ class Core extends Base\Core
         }
         else if (Type::isPoaDocument($document->getDocumentType()) === true)
         {
-            $this->performPoaOcrWithBvs($document, $merchantDetails);
+            $this->performPoaOcrWithBvs($document, $merchantDetails,$merchant);
         }
         else
         {
@@ -434,10 +434,11 @@ class Core extends Base\Core
     }
 
     /**
-     * @param Entity        $document
-     * @param Detail\Entity $merchantDetails
+     * @param Entity          $document
+     * @param Detail\Entity   $merchantDetails
+     * @param Merchant\Entity $merchant
      */
-    public function performPoaOcrWithBvs(Entity $document, Detail\Entity $merchantDetails)
+    public function performPoaOcrWithBvs(Entity $document, Detail\Entity $merchantDetails, Merchant\Entity $merchant)
     {
 
         $artefactDetails = Constant::FIELD_ARTEFACT_DETAILS_MAP[$document->getDocumentType()] ?? [];
@@ -457,12 +458,14 @@ class Core extends Base\Core
             ],
         ];
 
-        $bvsValidation = (new AutoKyc\Bvs\Core())->verify(
+        $bvsValidation = (new AutoKyc\Bvs\Core($merchant,$merchantDetails,$document))->verify(
             $merchantDetails->getId(),
             $payload);
 
-        if (empty($bvsValidation) === false)
+
+        if (empty($bvsValidation) === false and $bvsValidation->getValidationStatus() == BvsValidationConstants::CAPTURED)
         {
+
             $document->setValidationId($bvsValidation->getValidationId());
 
             $merchantDetails->setPoaVerificationStatus(null);
@@ -475,6 +478,7 @@ class Core extends Base\Core
 
             $this->repo->merchant_detail->saveOrFail($merchantDetails);
         }
+
     }
 
     /**

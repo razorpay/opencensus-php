@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Merchant\Bvs;
 
+use Mail;
 use DB;
 use App;
 use Config;
@@ -126,6 +127,7 @@ class BvsValidationTest extends TestCase
     {
         $this->checkCreateBvsValidationPoa('aadhar_front', 'aadhaar');
     }
+
     public function testCreateBvsValidationAadhaarBack()
     {
         $this->checkCreateBvsValidationAadharBack();
@@ -173,6 +175,7 @@ class BvsValidationTest extends TestCase
 
         $document        = $this->getDbEntity('merchant_document', ['merchant_id' => $mid]);
         $merchantDetails = $this->getDbEntity('merchant_detail', ['merchant_id' => $mid]);
+        $this->assertEquals("captured", $bvsValidation->getValidationStatus());
 
         $this->assertNotNull($document->getValidationId());
         $this->assertNull($merchantDetails->getPoaVerificationStatus());
@@ -653,5 +656,147 @@ class BvsValidationTest extends TestCase
         $this->startTest($testData);
 
         return $this->getDbEntity('bvs_validation', ['owner_id' => $mid, 'owner_type' => 'merchant']);
+    }
+
+    private function createAndFetchMocks($razorXEnabled)
+    {
+        Mail::fake();
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        if ($razorXEnabled)
+        {
+            $this->app['razorx']->method('getTreatment')
+                                ->will($this->returnCallback(
+                                    function($mid, $feature, $mode) {
+                                        if ($feature === RazorxTreatment::BVS_PENNY_TESTING)
+                                        {
+                                            return 'on';
+                                        }
+                                        elseif ($feature===RazorxTreatment::AADHAAR_FRONT_AND_BACK_JOINT_VALIDATION){
+                                            return 'off';
+                                        }
+                                        return 'on';
+                                    }));
+        }
+        else
+        {
+            $this->app['razorx']->method('getTreatment')
+                                ->will($this->returnCallback(
+                                    function($mid, $feature, $mode) {
+                                        if ($feature === RazorxTreatment::BVS_PENNY_TESTING)
+                                        {
+                                            return 'on';
+                                        }
+
+                                        elseif ($feature===RazorxTreatment::AADHAAR_FRONT_AND_BACK_JOINT_VALIDATION){
+                                            return 'off';
+                                        }
+                                        return 'off';
+                                    }));
+        }
+
+    }
+
+    public function testCreateBvsValidationPoaAadhaarSyncEnabled()
+    {
+        $this->checkSyncEnabledPOA('aadhar_front', 'aadhaar');
+    }
+
+    public function testCreateBvsValidationAadhaarBackSyncEnabled()
+    {
+        $mid = '10000000000000';
+
+        $merchantDetailsData = [
+            'merchant_id'             => $mid,
+            'business_type'           => '4',
+            'poa_verification_status' => null
+        ];
+        $documentType        = 'aadhar_back';
+        $artefactType        = 'aadhaar';
+        $test                = 'testCreateBvsValidationPoa';
+
+        $this->createAndFetchMocks(true);
+
+        $this->updateUploadDocumentData($test);
+
+        $request = &$this->testData[$test]['request'];
+
+        $request['content']['document_type'] = sprintf($request['content']['document_type'], $documentType);
+
+        $bvsValidation = $this->triggerBvsVerification($test, $merchantDetailsData);
+
+        $expectedValues = [
+            'artefact_type' => $artefactType,
+            'owner_id'      => $mid,
+        ];
+        // Verify bvs_validation entity is created
+        $bvsValidation = (new Repository)->getLatestArtefactValidationForOwnerIdAndOwnerType($mid, 'merchant', $artefactType);
+
+        $this->assertNotNull($bvsValidation->getValidationId());
+        $this->assertEmpty($bvsValidation->getErrorCode());
+        $this->assertEmpty($bvsValidation->getErrorDescription());
+        $this->assertEquals("captured", $bvsValidation->getValidationStatus());
+
+        $document        = $this->getDbEntity('merchant_document', ['merchant_id' => $mid]);
+        $merchantDetails = $this->getDbEntity('merchant_detail', ['merchant_id' => $mid]);
+
+        $this->assertNotNull($document->getValidationId());
+        $this->assertNull($merchantDetails->getPoaVerificationStatus());
+
+    }
+
+    public function testCreateBvsValidationPoaVoterIdSyncEnabled()
+    {
+        $this->checkSyncEnabledPOA('voter_id_front', 'voters_id');
+    }
+
+    public function testCreateBvsValidationPoaPassportSyncEnabled()
+    {
+        $this->checkSyncEnabledPOA('passport_front', 'passport');
+    }
+
+    public function checkSyncEnabledPOA($documentType,$artefactType)
+    {
+        $mid = '10000000000000';
+
+        $merchantDetailsData = [
+            'merchant_id'   => $mid,
+            'business_type' => '4',
+        ];
+
+        $test                = 'testCreateBvsValidationPoa';
+
+        $this->createAndFetchMocks(true);
+
+        $this->updateUploadDocumentData($test);
+
+        $request = &$this->testData[$test]['request'];
+
+        $request['content']['document_type'] = sprintf($request['content']['document_type'], $documentType);
+
+        $bvsValidation = $this->triggerBvsVerification($test, $merchantDetailsData);
+
+        $expectedValues = [
+            'artefact_type' => $artefactType,
+            'owner_id'      => $mid,
+        ];
+        // Verify bvs_validation entity is created
+        $bvsValidation = (new Repository)->getLatestArtefactValidationForOwnerIdAndOwnerType($mid, 'merchant', $artefactType);
+
+        $this->assertNotNull($bvsValidation->getValidationId());
+        $this->assertEmpty($bvsValidation->getErrorCode());
+        $this->assertEmpty($bvsValidation->getErrorDescription());
+        $this->assertEquals("success", $bvsValidation->getValidationStatus());
+
+        $document        = $this->getDbEntity('merchant_document', ['merchant_id' => $mid]);
+        $merchantDetails = $this->getDbEntity('merchant_detail', ['merchant_id' => $mid]);
+
+        $this->assertNotNull($document->getValidationId());
+        $this->assertEquals("verified", $merchantDetails->getPoaVerificationStatus());
     }
 }

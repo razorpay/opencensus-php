@@ -87,7 +87,11 @@ class BankAccount extends Base
     public function performPostProcessOperation(BvsValidation\Entity $bvsValidation): void
     {
         $this->incrementBankAccountVerification();
-        $this->merchantDetails->setBankDetailsVerificationStatus(BvsValidationConstants::INITIATED);
+
+        if ($this->merchantDetails->getBankDetailsVerificationStatus() === BvsValidationConstants::PENDING)
+        {
+            $this->merchantDetails->setBankDetailsVerificationStatus(BvsValidationConstants::INITIATED);
+        }
     }
 
     private function incrementBankAccountVerification()

@@ -71,7 +71,7 @@ class CompanyPanVerificationTest extends TestCase
         $this->assertNotEmpty($bvsValidation);
 
         $this->assertEquals(Bvs\Constant::BUSINESS_PAN, $bvsValidation->getArtefactType());
-        $this->assertEquals("captured", $bvsValidation->getValidationStatus());
+        $this->assertEquals("success", $bvsValidation->getValidationStatus());
     }
 
 }

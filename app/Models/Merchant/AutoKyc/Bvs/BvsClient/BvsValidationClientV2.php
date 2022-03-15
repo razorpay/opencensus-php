@@ -34,12 +34,15 @@ class BvsValidationClientV2 extends BaseClient
      *
      * @param null $merchant
      * @param bool $sync
+     * @param int  $timeout
      */
-    function __construct($merchant = null, $sync = false)
+    function __construct($merchant = null, $sync = false,$timeout=2)
     {
         parent::__construct($merchant, $sync);
 
         $this->ValidationApiClient = new validationV2\ValidationAPIClientV2($this->host, $this->httpClient);
+
+        $this->ValidationApiClient->setTimeout($timeout);
     }
 
     public function getValidation(array $payload)
