@@ -82,6 +82,8 @@ class Type
 
     const RBL_CORP_NETBANKING_CLAIM         = 'rbl_corp_netbanking_claim';
 
+    const RBL_MERCHANT_MASTER_FIRS          = 'rbl_merchant_master_firs';
+
     const SBI_NETBANKING_REFUND             = 'sbi_netbanking_refund';
 
     const SBI_NETBANKING_CLAIM              = 'sbi_netbanking_claim';
@@ -268,6 +270,7 @@ class Type
      */
     const TYPE_MAP = [
         self::BLANK => [
+            self::RBL_MERCHANT_MASTER_FIRS,
             self::HSBC_EMI_FILE,
             self::KOTAK_NETBANKING_CLAIM,
             self::KOTAK_NETBANKING_REFUND,
@@ -441,6 +444,7 @@ class Type
      * Types allowed when no entity is associated
      */
     const SHARED_ACCOUNT_ALLOWED_TYPES = [
+        self::RBL_MERCHANT_MASTER_FIRS,
         self::RECONCILIATION_BATCH_INPUT,
         self::RECONCILIATION_BATCH_ANALYTICS_OUTPUT,
         self::RECONCILIATION_BATCH_TXN_FILE,
@@ -735,6 +739,7 @@ class Type
 
         self::DATA_LAKE_SEGMENTS_BUCKET_CONFIG => [
             self::DATA_LAKE_SEGMENT_FILE,
+            self::RBL_MERCHANT_MASTER_FIRS,
         ],
     ];
 

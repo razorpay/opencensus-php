@@ -51,4 +51,6 @@ class Constants
     const NSDL_NB_COMBINED_FILE_JOB_NAME    = 'nsdl_netbanking_refund_prod';
 
     const AXIS_NB_COMBINED_FILE_JOB_NAME    = 'axis_netbanking_refund_prod';
+
+    const RBL_MERCHANT_MASTER_FIRS_JOB_NAME = 'rbl_merchant_master_firs';
 }

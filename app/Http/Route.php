@@ -1917,6 +1917,7 @@ class Route
         'firs_document_categorize'                 => ['post',      'merchant/firs',                                 'LambdaController@processLambdaFIRS'                                ],
         'firs_document_fetch'                      => ['get',       'merchant/firs',                                 'DocumentController@fetchFIRSDocuments'                             ],
         'firs_document_download'                   => ['get',       'merchant/firs/content',                         'DocumentController@DownloadFIRSDocuments'                          ],
+        'automate_merchant_master_firs'            => ['post',      'rbl/update_merchant_master/firs',               'LambdaController@processLambdaMerchantMasterFIRS'                  ],
 
         // Shield routes
         'shield_rules_get_multiple' => [
@@ -4144,6 +4145,7 @@ class Route
         'hourly_reconciliation_summary_fetch',
         'lambda_post_h2h',
         'firs_document_categorize',
+        'automate_merchant_master_firs',
         'setcronjob_webhook',
         'bank_transfer_payment_receiver_backfill',
         'refund_processed_at_backfill',
@@ -11934,6 +11936,7 @@ class Route
             'bank_transfer_process_file',
             'segment_create_update',
             'firs_document_categorize',
+            'automate_merchant_master_firs',
         ],
 
         'merchants-risk' => [

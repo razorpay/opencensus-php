@@ -629,6 +629,18 @@ class Creator extends Base\Core
     }
 
     /**
+     * Returns bucket config of the file
+     *
+     */
+    public function getBucketConfig(string $fileType): array
+    {
+        $bucketConfig = $this->storageHandler->getBucketConfig(
+            $fileType, $this->env);
+
+        return $bucketConfig;
+    }
+
+    /**
      * Returns instance of FileStore Entity
      * TODO : think of a better way
      *

@@ -4,18 +4,24 @@ namespace RZP\Models\Lambda;
 
 use File;
 use Request;
+use RZP\Base\RuntimeManager;
 use RZP\Exception;
+use RZP\Mail\Base\Constants;
 use RZP\Models\Base;
 use RZP\Models\Batch;
 use RZP\Models\Gateway\File\Constants as GatewayConstants;
+use RZP\Services\Beam\Constants as BeamConstants;
+use RZP\Services\Beam\Service as BeamService;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Models\FileStore;
 use RZP\Services\UfhService;
 use RZP\Models\Merchant\Document;
 use RZP\Models\FundTransfer\Kotak;
 use RZP\Reconciliator\FileProcessor;
 use Symfony\Component\HttpFoundation;
 use RZP\Models\Merchant\Document\Entity;
+use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 
 class Service extends Base\Service
 {
@@ -41,6 +47,41 @@ class Service extends Base\Service
     // the extraction is handled as part of batch processing
     const SKIP_INPUT_EXTRACT = [
         Batch\Type::NACH
+    ];
+
+    protected static $headers = [
+        'MID',
+        'Merchant name',
+        'Partner_Name',
+        'Partner_Code',
+        'TID',
+        'TID Creation Date',
+        'Date of Onboarding',
+        'Legal Name',
+        'DBA Name',
+        'Machine Type',
+        'Terminal Model',
+        'Address1',
+        'State',
+        'City',
+        'Location',
+        'PIN Code',
+        'Phone No. (Landline)',
+        'Mobile No.',
+        'Email Id',
+        'Contact Person Name',
+        'Merchant Category Code',
+        'MCC Description',
+        'Beneficiary Account NAME',
+        'Beneficiary Account No',
+        'Beneficiary Address',
+        'IFSC Code',
+        'Payment Mode',
+        'Activate Date',
+        'Current Status',
+        'Business Website',
+        'Purpose Code',
+        'Purpose Code Description',
     ];
 
     public function __construct()
@@ -297,5 +338,134 @@ class Service extends Base\Service
         }
     }
 
+    public function processLambdaMerchantMasterFIRS(array $input)
+    {
+        $this->trace->info(TraceCode::LAMBDA_REQUEST,
+            [
+                'input'   => $input
+            ]);
 
+        RuntimeManager::setMemoryLimit('1024M');
+        RuntimeManager::setTimeLimit(3000);
+        RuntimeManager::setMaxExecTime(6000);
+
+        $configKey = true;
+
+        list($file, $locationType) = $this->getFileDetails($input,'rbl_merchant_master',$configKey);
+
+        $fileDetails = $this->fileProcessor->getFileDetails($file, $locationType, false);
+
+        $handler = fopen($fileDetails['file_path'],"r");
+
+        $merchantDetailsMap = $this->fetchMerchantDetailsMapFromFile($handler);
+
+        fseek($handler,0);
+        $headers = fgetcsv($handler);
+        $finalHeaders = self::$headers;
+        $data=array();
+
+        while (!feof($handler))
+        {
+            $row = fgetcsv($handler);
+            if($row[0]=='')
+                continue;
+            $merchantBankDetail = $merchantDetailsMap[$row[0]];
+
+            //Adding the Merchant Bank Details
+            $row[23] = (string) $merchantBankDetail[DetailEntity::BANK_ACCOUNT_NAME];
+            $row[24] = (string) $merchantBankDetail[DetailEntity::BANK_ACCOUNT_NUMBER];
+            $row[25] = (string) $merchantBankDetail[DetailEntity::BANK_BENEFICIARY_ADDRESS1].' '.$merchantBankDetail[DetailEntity::BANK_BENEFICIARY_ADDRESS2].' '.$merchantBankDetail[DetailEntity::BANK_BENEFICIARY_ADDRESS3];
+            $row[26] = (string) $merchantBankDetail[DetailEntity::BANK_BRANCH_IFSC];
+
+            $line = array_combine($finalHeaders,array_slice($row,1));
+            array_push($data,$line);
+        }
+        $month = date('m');
+        $year = date('y');
+        if($month==1)
+        {
+            $month = 12;
+            $year = $year-1;
+        }
+        else{
+            $month = $month -1;
+        }
+        $fileName = 'FIRS Merchants_'.$month.$year;
+        fclose($handler);
+
+        $creator = new FileStore\Creator;
+        $creator->extension(FileStore\Format::XLSX)
+            ->content($data)
+            ->name($fileName)
+            ->store(FileStore\Store::S3)
+            ->type(FileStore\Type::RBL_MERCHANT_MASTER_FIRS)
+            ->save();
+
+        $this->pushFilesToSFTP($creator);
+
+        $response = [
+            $creator->getSignedUrl(),
+        ];
+
+        return $response;
+    }
+
+    protected function fetchMerchantDetailsMapFromFile( $fileHandler)
+    {
+        $headers = fgetcsv($fileHandler);
+        $merchantIds=array();
+
+        while(! feof($fileHandler))
+        {
+            $row = fgetcsv($fileHandler);
+            if($row[0]=='')
+                continue;
+            array_push($merchantIds,$row[0]);
+        }
+
+        $distinctMerchantIds = array_unique($merchantIds);
+
+        $splitIds = array_chunk($distinctMerchantIds,1000);
+        $merchantDetailsMap=[];
+
+        foreach ($splitIds as $setIds)
+        {
+            $merchantBankDetails = $this->repo->merchant_detail->findMerchantBankDetailsWithIds($setIds);
+            foreach ($merchantBankDetails as $merchantDetail)
+            {
+                $merchantId = $merchantDetail[Entity::MERCHANT_ID];
+                if(isset($merchantDetailsMap[$merchantId]) === false)
+                {
+                    $merchantDetailsMap[$merchantId]=[];
+                }
+                $merchantDetailsMap[$merchantId] = $merchantDetail;
+            }
+        }
+
+        return $merchantDetailsMap;
+    }
+
+    protected function pushFilesToSFTP(FileStore\Creator $creator)
+    {
+        $bucketConfig = $creator->getBucketConfig(FileStore\Type::RBL_MERCHANT_MASTER_FIRS);
+
+        $data =  [
+            BeamService::BEAM_PUSH_FILES   => [$creator->getFullFileName()],
+            BeamService::BEAM_PUSH_JOBNAME => BeamConstants::RBL_MERCHANT_MASTER_FIRS_JOB_NAME,
+            BeamService::BEAM_PUSH_BUCKET_NAME   => $bucketConfig['name'],
+            BeamService::BEAM_PUSH_BUCKET_REGION => $bucketConfig['region'],
+        ];
+
+        $timelines = [];
+
+        $mailInfo = [
+            'fileInfo'  => [$creator->getFullFileName()],
+            'channel'   => 'RBL',
+            'filetype'  => FileStore\Type::RBL_MERCHANT_MASTER_FIRS,
+            'subject'   => 'File send failure',
+            'recipient' => Constants::MAIL_ADDRESSES[Constants::CROSS_BORDER_TECH]
+        ];
+
+        $this->app['beam']->beamPush($data, $timelines, $mailInfo);
+    }
 }

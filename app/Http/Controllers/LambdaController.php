@@ -29,4 +29,13 @@ class LambdaController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function processLambdaMerchantMasterFIRS()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->processLambdaMerchantMasterFIRS($input);
+
+        return ApiResponse::json($data);
+    }
 }

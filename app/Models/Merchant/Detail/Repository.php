@@ -430,4 +430,20 @@ class Repository extends Base\Repository
                     ->where(Entity::MERCHANT_ID, '!=', $merchantIdToBeExcluded)
                     ->first();
     }
+
+    public function findMerchantBankDetailsWithIds(array $merchantIds): array
+    {
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+                    ->select(Entity::MERCHANT_ID,
+                             Entity::BANK_ACCOUNT_NAME,
+                             Entity::BANK_ACCOUNT_NUMBER,
+                             Entity::BANK_BRANCH_IFSC,
+                             Entity::BANK_BENEFICIARY_ADDRESS1,
+                             Entity::BANK_BENEFICIARY_ADDRESS2,
+                             Entity::BANK_BENEFICIARY_ADDRESS3
+                    )
+                    ->whereIn(Entity::MERCHANT_ID,$merchantIds)
+                    ->get()
+                    ->toArray();
+    }
 }
