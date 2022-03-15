@@ -18,6 +18,7 @@ return [
                 "fund_account_id"      => "fa_100000000000fa",
                 "balance_id"           => "GhidjxhfiCL7WT",
                 "merchant_id"          => "10000000000000",
+                "origin"               => "api",
                 "channel"              => "",
                 "amount"               => 100,
                 "status"               => "create_request_submitted",

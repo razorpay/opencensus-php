@@ -2664,6 +2664,7 @@ class Base extends BaseCore
             Payout\Entity::REFERENCE_ID    => $params[Payout\Entity::REFERENCE_ID] ?? null,
             Payout\Entity::NARRATION       => $params[Payout\Entity::NARRATION] ?? null,
             Payout\Entity::NOTES           => $params[Payout\Entity::NOTES] ?? [],
+            Payout\Entity::ORIGIN          => $params[Payout\Entity::ORIGIN] ?? Entity::API,
         ];
 
         if (empty($params[Payout\Entity::SOURCE_DETAILS]) === false)

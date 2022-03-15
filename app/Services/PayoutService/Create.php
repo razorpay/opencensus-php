@@ -89,6 +89,11 @@ class Create extends Base
             $requestBody[Payout\Entity::SCHEDULED_AT] = $input[Payout\Entity::SCHEDULED_AT];
         }
 
+        if (isset($input[Payout\Entity::ORIGIN]) === true)
+        {
+            $requestBody[Payout\Entity::ORIGIN] = $input[Payout\Entity::ORIGIN];
+        }
+
         return $requestBody;
     }
 }
