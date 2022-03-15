@@ -1962,11 +1962,27 @@ class MerchantCreateTest extends TestCase
 
     }
 
-//    TODO: FR 4a of PRTS 1030; raise from a separate PR
-//    public function testCreateLinkedAccountForExistingEmailsFlagPresentForMerchantDisallowingIt()
-//    {
-//
-//    }
+    public function testCreateLinkedAccountForExistingEmailsWithFeatureEnabledToDisallow()
+    {
+        $this->mockRazorxTreatment();
+
+        $this->fixtures->merchant->addFeatures([
+            FeatureConstants::MARKETPLACE,
+            FeatureConstants::DISALLOW_LINKED_ACCOUNT_WITH_DUPLICATE_EMAILS
+        ]);
+
+        $existingLAMerchant = $this->fixtures->create('merchant', [
+            'id' => '10000000000002',
+            'email' => 'test2@razorpay.com',
+            'parent_id' => '10000000000000'
+        ]);
+
+        $this->ba->proxyAuth();
+
+        $this->testData[__FUNCTION__]['request']['content']['email'] = $existingLAMerchant['email'];
+
+        $this->startTest();
+    }
 
     /**
      * given: there are merchants with dashboard access for a given email (i.e. there is an associated user)

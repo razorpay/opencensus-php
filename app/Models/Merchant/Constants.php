@@ -65,6 +65,8 @@ final class Constants
     const COUNT                                   = 'count';
     const IS_USED                                 = 'is_used';
 
+    const PARENT_NAME                             = 'parent_name';
+
     // Partner constants
     const BANK                                    = 'bank';
     const PARTNER                                 = 'partner';

@@ -2942,7 +2942,15 @@ class Entity extends Base\PublicEntity
             self::CREATED_AT            => $this->getAttribute(self::CREATED_AT),
             self::UPDATED_AT            => $this->getAttribute(self::UPDATED_AT),
             self::SECOND_FACTOR_AUTH    => $this->getAttribute(self::SECOND_FACTOR_AUTH),
+            self::PARENT_ID             => $this->getAttribute(self::PARENT_ID),
+            Constants::PARENT_NAME      => null,
         ];
+
+        if (empty($attributes[self::PARENT_ID]) === false)
+        {
+            $parentMerchant = $this->parent()->get()->first();
+            $attributes[Constants::PARENT_NAME] = $parentMerchant->getAttribute(self::NAME);
+        }
 
         $attributes[self::ROLE] = $this->getAttribute(self::PIVOT)->role;
         $attributes[self::PRODUCT] = $this->getAttribute(self::PIVOT)->product;

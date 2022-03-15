@@ -1254,7 +1254,6 @@ class Validator extends Base\Validator
      * Check that if merchant entities exist for an email.
      * If they do, check that none of them is a linked account with parent ID same as the MID
      * of the requesting merchant.
-     * @todo FR 4a of PRTS 1030; raise from a separate PR
      * @param string $email
      * @throws Exception\BadRequestException
      */
@@ -1267,16 +1266,17 @@ class Validator extends Base\Validator
 
         if($merchantsForEmail->count() > 0)
         {
-//            $disallow_feature = $requestingMerchant->isFeatureEnabled(
-//                Feature\Constants::DISALLOW_LINKED_ACCOUNT_WITH_DUPLICATE_EMAILS
-//            );
-//
-//            if($disallow_feature === true)
-//            {
-//                throw new Exception\BadRequestException(
-//                    ErrorCode::BAD_REQUEST_DISABLE_LINKED_ACCOUNT_CREATION_DUPLICATE_EMAIL_ENABLED
-//                );
-//            }
+            $isFeatureEnabled = $requestingMerchant->isFeatureEnabled(
+                Feature\Constants::DISALLOW_LINKED_ACCOUNT_WITH_DUPLICATE_EMAILS
+            );
+
+            if($isFeatureEnabled === true)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_LINKED_ACCOUNT_CREATION_WITH_DUPLICATE_EMAIL_NOT_ENABLED
+                );
+            }
+
             foreach ($merchantsForEmail as $merchant)
             {
                 if ($merchant->isLinkedAccount() === true)

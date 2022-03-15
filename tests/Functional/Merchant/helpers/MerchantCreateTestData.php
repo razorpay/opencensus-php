@@ -1483,6 +1483,32 @@ return [
         ],
     ],
 
+    'testCreateLinkedAccountForExistingEmailsWithFeatureEnabledToDisallow' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'POST',
+            'content' => [
+                'email'            => 'dynamically generated',
+                'name'             => 'Linked Account Name',
+                'account'          => true,
+                'dashboard_access' => true,
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_LINKED_ACCOUNT_CREATION_WITH_DUPLICATE_EMAIL_NOT_ENABLED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_LINKED_ACCOUNT_CREATION_WITH_DUPLICATE_EMAIL_NOT_ENABLED,
+        ],
+    ],
+
     'testCreateLinkedAccountForExistingEmailsWithoutDashboardAccess' => [
         'request'  => [
             'url'     => '/submerchants',

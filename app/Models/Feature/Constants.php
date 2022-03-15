@@ -1244,7 +1244,7 @@ class Constants
     /**
      * Feature flag disables a merchant from creating linked accounts with existing emails
      */
-    const DISALLOW_LINKED_ACCOUNT_WITH_DUPLICATE_EMAILS = 'disallow_linked_account_with_duplicate_emails';
+    const DISALLOW_LINKED_ACCOUNT_WITH_DUPLICATE_EMAILS = 'no_la_for_existing_emails';
 
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,

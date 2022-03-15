@@ -1031,7 +1031,7 @@ class PublicErrorDescription
     const BAD_REQUEST_LINKED_ACCOUNT_CANNOT_BE_INSTANTLY_ACTIVATED              = 'Linked account cannot be instantly activated';
     const BAD_REQUEST_LINKED_ACCOUNT_REVERSAL_ABILITY_ALREADY_GIVEN             = 'Linked Account reversal ability is already given to the merchant';
     const BAD_REQUEST_LINKED_ACCOUNT_REVERSAL_ABILITY_ALREADY_REMOVED           = 'Linked Account reversal ability is already removed from the merchant';
-//    const BAD_REQUEST_DISABLE_LINKED_ACCOUNT_CREATION_DUPLICATE_EMAIL_ENABLED   = 'Feature to create Linked Account with existing emails is not allowed for this merchant. Please contact support';
+    const BAD_REQUEST_LINKED_ACCOUNT_CREATION_WITH_DUPLICATE_EMAIL_NOT_ENABLED  = 'Feature to create Linked Account with existing emails is not allowed for this merchant. Please contact support.';
 
     // Partners
     const BAD_REQUEST_OAUTH_APP_NOT_FOUND                                       = 'Oauth app could not be found. Create an app to continue.';
