@@ -419,6 +419,13 @@
   "FTS_BANK_TXN_LIMIT_CROSSED": {
     "failed": {
       "source": "business",
+      "reason": "gateway_down",
+      "description": "Payout failed as the partner bank is facing technical issues. Please retry"
+    }
+  },
+  "FTS_MERCHANT_TXN_LIMIT_CROSSED": {
+    "failed": {
+      "source": "business",
       "reason": "amount_limit_exhausted(NEFT)",
       "description": "The NEFT 24*7 limits for your account has been exhausted. Please retry after sometime"
     }
