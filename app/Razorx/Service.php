@@ -249,7 +249,8 @@ class Service extends Base\Service
             'rx_acc_statement_date_filter',
             'rx_accounting_gtm',
             'rx_control_account_balance',
-            'rx_va_apps_onboarding_welcome_screen'
+            'rx_va_apps_onboarding_welcome_screen',
+            'rx_revamped_help_and_support_widget'
         ];
 
         $experimentsResults = $this->getBulkTreatment($features);
