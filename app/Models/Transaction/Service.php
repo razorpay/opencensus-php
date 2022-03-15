@@ -5,20 +5,21 @@ namespace RZP\Models\Transaction;
 use RZP\Constants;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Card;
 use RZP\Trace\Tracer;
 use RZP\Services\Mutex;
-use RZP\Base\JitValidator;
-use RZP\Base\RuntimeManager;
-use RZP\Jobs\Settlement\LedgerReconJob2;
-use RZP\Models\FundAccount\Validation\Core;
 use RZP\Models\Payment;
+use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
-use RZP\Models\Card;
-use RZP\Models\Pricing\Fee;
-use RZP\Models\Payment\Refund;
+use RZP\Base\JitValidator;
 use RZP\Models\Transaction;
+use RZP\Models\Pricing\Fee;
+use RZP\Base\RuntimeManager;
+use RZP\Models\Payment\Refund;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Jobs\Settlement\LedgerReconJob2;
+use RZP\Models\FundAccount\Validation\Core;
 use RZP\Models\Report\Types\BasicEntityReport;
 use Razorpay\Spine\Exception\DbQueryException;
 
@@ -431,6 +432,10 @@ class Service extends Base\Service
 
     public function fetchMultiple(array $input)
     {
+
+        $balanceType = $input['balance_type'] ?? Merchant\Balance\Type::BANKING;
+        $balanceAccountType = $input['balance_account_type'] ?? Merchant\Balance\AccountType::SHARED;
+
         $this->trace->info(
             TraceCode::LEDGER_TRANSACTIONS_FETCH_REQUEST,
             [
@@ -440,6 +445,8 @@ class Service extends Base\Service
                 'limit'                 => $input['count'],
                 'offset'                => $input['skip'],
                 'last_processed_txn_id' => $input['last_processed_txn_id'],
+                'balance_type'          => $balanceType,
+                'balance_account_type'  => $balanceAccountType,
             ]);
 
         $startTimeMs = round(microtime(true) * 1000);
@@ -450,7 +457,9 @@ class Service extends Base\Service
             $input['to'],
             $input['count'],
             $input['skip'],
-            $input['last_processed_txn_id']
+            $input['last_processed_txn_id'],
+            $balanceType,
+            $balanceAccountType
         );
 
         $endTimeMs = round(microtime(true) * 1000);

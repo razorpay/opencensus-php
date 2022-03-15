@@ -2490,7 +2490,8 @@ class Repository extends Base\Repository
      * @param int|null $lastProcessedTxnId
      * @return mixed
      */
-    public function fetchBankingTransactionsForLedgerRecon(array $merchantIds, $from, $to, int $count = 1000, int $skip = 0, string $lastProcessedTxnId = null)
+    public function fetchBankingTransactionsForLedgerRecon(array $merchantIds, $from, $to, int $count = 1000, int $skip = 0, string $lastProcessedTxnId = null,
+                                                           $balanceType = Balance\Type::BANKING, $balanceAccountType = Merchant\Balance\AccountType::SHARED)
     {
         // select column
         $transactionIdColumn = $this->dbColumn(Entity::ID);
@@ -2529,11 +2530,11 @@ class Repository extends Base\Repository
                       ->leftjoin(Table::BALANCE, $balanceIdColumn, '=', $transactionBalanceIdColumn)
                       ->leftjoin(Table::MERCHANT, $merchantIdColumn, '=', $transactionMerchantIdColumn)
                       // To fetch only banking transaction until pg use cases are onboarded
-                      ->where(function ($query) use ($transactionBalanceIdColumn, $balanceTypeColumn)
+                      ->where(function ($query) use ($balanceType, $transactionBalanceIdColumn, $balanceTypeColumn)
                       {
-                          $query->WhereIn($balanceTypeColumn, [Balance\Type::BANKING]);
+                          $query->WhereIn($balanceTypeColumn, [$balanceType]);
                       })
-                      ->where($balanceAccountTypeColumn, '=', Merchant\Balance\AccountType::SHARED)
+                      ->where($balanceAccountTypeColumn, '=', $balanceAccountType)
                       ->whereIn($transactionMerchantIdColumn, $merchantIds);
 
         if (empty($lastProcessedTxnId) === false)
