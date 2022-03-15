@@ -2943,4 +2943,14 @@ class Service extends Base\Service
         }
         return $updateCount;
     }
+
+    public function getBusinessTypes($merchant_id)
+    {
+        $core = new Core();
+
+        $merchant_id = $merchant_id ?? $this->merchant->getId();
+
+        return $core->getBusinessTypes($merchant_id);
+
+    }
 }

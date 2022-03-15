@@ -244,6 +244,8 @@ class RouteTeamMap
         'merchant_activation_business_details'            => [self::TEAM_PAYMENTS_GROWTH],
         'merchant_activation_company_search'              => [self::TEAM_PAYMENTS_GROWTH],
         'merchant_activation_gst_details'                 => [self::TEAM_PAYMENTS_GROWTH],
+        'merchant_business_types'                         => [self::TEAM_PAYMENTS_GROWTH],
+        'merchant_business_types_admin'                   => [self::TEAM_PAYMENTS_GROWTH],
         'merchant_activation_needs_clarification'         => [self::TEAM_PAYMENTS_GROWTH],
         'merchant_activation_files'                       => [self::TEAM_PAYMENTS_GROWTH],
         'merchant_activation_upload_file_admin'           => [self::TEAM_PAYMENTS_GROWTH],

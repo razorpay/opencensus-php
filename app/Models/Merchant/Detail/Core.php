@@ -3628,7 +3628,7 @@ class Core extends Base\Core
         {
             $status = $this->getApplicableActivationStatusForNoDoc($merchantDetails);
 
-            $this->trace->info(TraceCode::APPLICABLE_ACTIVATION_STATUS_FOR_NO_DOC,[
+            $this->trace->info(TraceCode::APPLICABLE_ACTIVATION_STATUS_FOR_NO_DOC, [
                 'merchant_id'       => $merchantDetails->getId(),
                 'activation_status' => $status,
             ]);
@@ -3651,11 +3651,13 @@ class Core extends Base\Core
                 case BusinessType::PRIVATE_LIMITED:
                 case BusinessType::PUBLIC_LIMITED:
                 case BusinessType::LLP:
+                case BusinessType::HUF:
                 case BusinessType::TRUST:
                 case BusinessType::SOCIETY:
                     return $this->getApplicableActivationStatusForRegisteredMerchant($merchantDetails);
             }
         }
+
         return Status::UNDER_REVIEW;
     }
 
@@ -6342,6 +6344,45 @@ class Core extends Base\Core
         return $error_description;
     }
 
+    public function getBusinessTypes(string $merchantId) : array
+    {
+        $result = [];
+
+        foreach (BusinessType::$businessTypeBuckets as $bucketName => $businessTypes)
+        {
+            $result[$bucketName] = [];
+
+            foreach ($businessTypes as $businessType)
+            {
+                if (array_key_exists($businessType, BusinessType::$businessTypeExperiments))
+                {
+                    $experimentName            = BusinessType::$businessTypeExperiments[$businessType];
+                    $isRazorxExperimentEnabled = (new Merchant\Core)->isRazorxExperimentEnable(
+                        $merchantId,
+                        $experimentName);
+
+                    $this->trace->info(
+                        TraceCode::RAZORX_EXPERIMENT_RESULT,
+                        [$experimentName => $isRazorxExperimentEnabled]);
+
+                    if ($isRazorxExperimentEnabled === true)
+                    {
+                        $result[$bucketName] = array_merge($result[$bucketName], [$businessType => 'active']);
+                    }
+                    else
+                    {
+                        $result[$bucketName] = array_merge($result[$bucketName], [$businessType => 'inactive']);
+                    }
+                }
+                else
+                {
+                    $result[$bucketName] = array_merge($result[$bucketName], [$businessType => 'active']);
+                }
+            }
+        }
+
+        return $result;
+    }
     /*
      * This function builds the response error code in the event there exists an error in the validation
      * It queries the latest validation for the supported artefact types and checks if it has error,
@@ -6373,7 +6414,7 @@ class Core extends Base\Core
             {
                 // verify that the latest validation does not belong to a deleted document
                 $document = $this->repo->merchant_document->findNonDeletedDocumentForMerchantIdAndValidationId($merchantId,
-                    $validation->getValidationId());
+                                                                                                               $validation->getValidationId());
                 if (empty($document) === true)
                 {
                     // since document associated with the validation is deleted, skip the processing
@@ -6383,7 +6424,7 @@ class Core extends Base\Core
                     '$document' => $document,
                 ]);
             }
-            $errorDescription = $validation->getErrorDescription();
+            $errorDescription       = $validation->getErrorDescription();
             $validationErrorCodeKey = Constant::ARTEFACT_STATUS_ATTRIBUTE_MAPPING[$artefactType . '-' . $validationUnit][1];
             // get value from the error_description
             $verificationResponseKey = $artefactType . $validationUnit . $errorDescription;
@@ -6393,12 +6434,13 @@ class Core extends Base\Core
             }
             else
             {
-                $errorPrefix = strtoupper($artefactType);
+                $errorPrefix              = strtoupper($artefactType);
                 $validationErrorCodeValue = $errorPrefix . '_' . $validation->getErrorCode();
             }
             // append the output
             $errorCodes[$validationErrorCodeKey] = $validationErrorCodeValue;
         }
+
         return $errorCodes;
     }
 }

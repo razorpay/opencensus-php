@@ -3472,6 +3472,20 @@ class ActivationTest extends OAuthTestCase
 
         $this->verifySuccessBankDetailVerification($favAttribute, $merchantDetailAttribute, 'under_review');
     }
+    public function testSuccessBankDetailsVerificationForHUF()
+    {
+        $merchantDetailAttribute = [
+            'business_type'     => 13,
+            'business_name' => 'p kumar',
+            'bank_account_name' => 'pankaj k',
+        ];
+
+        $favAttribute = [
+            ValidationEntity::REGISTERED_NAME => "p kumar",
+        ];
+
+        $this->verifySuccessBankDetailVerification($favAttribute, $merchantDetailAttribute, 'under_review');
+    }
 
     public function testSuccessBankDetailsVerificationForLLP()
     {
@@ -3640,9 +3654,23 @@ class ActivationTest extends OAuthTestCase
         $this->verifyFailureBankDetailsVerification($merchantAttributes);
     }
 
+    public function testFailureBankDetailsVerificationForHUF()
+    {
+        $merchantAttributes = ['business_type' => 13, 'promoter_pan_name' => 'pankaj kumar'];
+
+        $this->verifyFailureBankDetailsVerification($merchantAttributes);
+    }
+
     public function testFailureBankDetailsVerificationForNameMismatchCasePartnerShip()
     {
         $merchantAttributes = ['business_type' => 1, 'promoter_pan_name' => 'pankaj kumar'];
+
+        $this->verifyFailureBankDetailsVerificationForNameMismatchCase($merchantAttributes);
+    }
+
+    public function testFailureBankDetailsVerificationForNameMismatchCaseHUF()
+    {
+        $merchantAttributes = ['business_type' => 13, 'promoter_pan_name' => 'pankaj kumar'];
 
         $this->verifyFailureBankDetailsVerificationForNameMismatchCase($merchantAttributes);
     }

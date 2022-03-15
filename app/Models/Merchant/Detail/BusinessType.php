@@ -3,26 +3,28 @@
 namespace RZP\Models\Merchant\Detail;
 
 use RZP\Exception;
-
+use RZP\Models\Merchant\RazorxTreatment;
 class BusinessType
 {
 
     /**
      * These keys are used to fetch the type of the business from its integer representation.
+     *
      * @todo: Revamp and remove this code and implement a cleaner approach.
      */
-    const TYPE1     = 'Proprietorship';
-    const TYPE2     = 'Individual';
-    const TYPE3     = 'Partnership';
-    const TYPE4     = 'Private Limited';
-    const TYPE5     = 'Public Limited';
-    const TYPE6     = 'LLP';
-    const TYPE7     = 'NGO';
-    const TYPE8     = 'Educational Institutes';
-    const TYPE9     = 'Trust';
-    const TYPE10    = 'Society';
-    const TYPE11    = 'Not yet registered';
-    const TYPE12    = 'Other';
+    const TYPE1  = 'Proprietorship';
+    const TYPE2  = 'Individual';
+    const TYPE3  = 'Partnership';
+    const TYPE4  = 'Private Limited';
+    const TYPE5  = 'Public Limited';
+    const TYPE6  = 'LLP';
+    const TYPE7  = 'NGO';
+    const TYPE8  = 'Educational Institutes';
+    const TYPE9  = 'Trust';
+    const TYPE10 = 'Society';
+    const TYPE11 = 'Not yet registered';
+    const TYPE12 = 'Other';
+    const TYPE13  = 'HUF';
 
     /**
      * These keys define the input keys for business_type.
@@ -40,6 +42,7 @@ class BusinessType
     const SOCIETY                = 'society';
     const NOT_YET_REGISTERED     = 'not_yet_registered';
     const EDUCATIONAL_INSTITUTES = 'educational_institutes';
+    const HUF                    = 'huf';
 
     /**
      * The database field for business_type is a string but integer values are currently being stored in it.
@@ -62,13 +65,14 @@ class BusinessType
         self::SOCIETY                => 10,
         self::NOT_YET_REGISTERED     => 11,
         self::OTHER                  => 12,
+        self::HUF                    => 13,
     ];
 
     const REGISTERED   = 'registered';
     const UNREGISTERED = 'unregistered';
 
     // business type is divided into two category which decides on-boarding experience
-    public static $businessTypeBuckets = [
+    public static    $businessTypeBuckets                               = [
         self::REGISTERED   => [
             self::PROPRIETORSHIP,
             self::PARTNERSHIP,
@@ -80,11 +84,16 @@ class BusinessType
             self::SOCIETY,
             self::OTHER,
             self::NGO,
+            self::HUF
         ],
         self::UNREGISTERED => [
             self::INDIVIDUAL,
             self::NOT_YET_REGISTERED,
         ]
+    ];
+
+    public static    $businessTypeExperiments                           = [
+        self::HUF => RazorxTreatment::HUF_BUSINESS_TYPE
     ];
 
     protected static $GreylistedInternationalActivationFlowBusinessType = [
@@ -94,7 +103,7 @@ class BusinessType
         self::TRUST
     ];
 
-    public static $ValidateCompanyPanBusinessType = [
+    public static    $ValidateCompanyPanBusinessType                    = [
         self::PRIVATE_LIMITED,
         self::PUBLIC_LIMITED,
         self::LLP,
@@ -103,30 +112,36 @@ class BusinessType
         self::SOCIETY,
         self::OTHER,
         self::NGO,
-        self::PARTNERSHIP
+        self::PARTNERSHIP,
+        self::HUF
     ];
 
-    public static $ValidateCINBusinessType = [
-        self::PRIVATE_LIMITED,
-        self::PUBLIC_LIMITED,
-        self::LLP,
-    ];
-
-    protected static $ValidateShopEstbBusinessType = [
+    protected static $ValidateGSTINBusinessType                         = [
         self::PROPRIETORSHIP
     ];
 
-    protected static $validCompanySearchBusinessTypes = [
+    public static    $ValidateCINBusinessType                           = [
+        self::PRIVATE_LIMITED,
+        self::PUBLIC_LIMITED,
+        self::LLP,
+    ];
+
+    protected static $ValidateShopEstbBusinessType                      = [
+        self::PROPRIETORSHIP
+    ];
+
+    protected static $validCompanySearchBusinessTypes                   = [
         self::PUBLIC_LIMITED,
         self::PRIVATE_LIMITED,
         self::LLP,
     ];
 
-    protected static $validAadhaarEsignBusinessTypes = [
+    protected static $validAadhaarEsignBusinessTypes                    = [
         self::NOT_YET_REGISTERED,
         self::INDIVIDUAL,
         self::PROPRIETORSHIP,
         self::PARTNERSHIP,
+        self::HUF,
         self::PUBLIC_LIMITED,
         self::PRIVATE_LIMITED,
         self::LLP
@@ -212,7 +227,7 @@ class BusinessType
             return;
         }
 
-        return constant(__CLASS__.'::'.'TYPE'.$num);
+        return constant(__CLASS__ . '::' . 'TYPE' . $num);
     }
 
     /**
@@ -260,7 +275,7 @@ class BusinessType
         return $map[$index];
     }
 
-    public static function isCompanyPanEnableBusinessTypes($businessType) : bool
+    public static function isCompanyPanEnableBusinessTypes($businessType): bool
     {
         if (empty($businessType) === true)
         {

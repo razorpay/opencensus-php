@@ -101,6 +101,7 @@ class NeedsClarificationMetaData
     const BUSINESS_TYPE_REASON_CODE_MAPPING=[
         BusinessType::PROPRIETORSHIP            => NeedsClarificationReasonsList::BANK_ACCOUNT_CHANGE_REQUEST_FOR_PROP_NGO_TRUST,
         BusinessType::PARTNERSHIP               => NeedsClarificationReasonsList::BANK_ACCOUNT_CHANGE_REQUEST_FOR_PVT_PUBLIC_LLP,
+        BusinessType::HUF                       => NeedsClarificationReasonsList::BANK_ACCOUNT_CHANGE_REQUEST_FOR_PVT_PUBLIC_LLP,
         BusinessType::PRIVATE_LIMITED           => NeedsClarificationReasonsList::BANK_ACCOUNT_CHANGE_REQUEST_FOR_PVT_PUBLIC_LLP,
         BusinessType::PUBLIC_LIMITED            => NeedsClarificationReasonsList::BANK_ACCOUNT_CHANGE_REQUEST_FOR_PVT_PUBLIC_LLP,
         BusinessType::LLP                       => NeedsClarificationReasonsList::BANK_ACCOUNT_CHANGE_REQUEST_FOR_PVT_PUBLIC_LLP,

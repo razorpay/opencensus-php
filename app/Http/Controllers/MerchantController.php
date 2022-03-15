@@ -1080,6 +1080,13 @@ class MerchantController extends Controller
         return $response;
     }
 
+    public function getBusinessTypes($id = null)
+    {
+        $response = $this->service(E::MERCHANT_DETAIL)->getBusinessTypes($id);
+
+        return $response;
+    }
+
     public function isAdminLoggedInAsMerchant()
     {
         $response = $this->service(E::MERCHANT)->isAdminLoggedInAsMerchant();

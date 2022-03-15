@@ -553,7 +553,7 @@ class UserRolesScope
             'customer_get_wallet_balance'                          => [Role::OWNER, Role::ADMIN],
             'customer_get_wallet_statement'                        => [Role::OWNER, Role::ADMIN],
             'customer_set_primary_address'                         => [Role::OWNER, Role::ADMIN],
-            'customer_update_token'                                => [Role::OWNER, Role::ADMIN],
+            'customer_update_token'                                 => [Role::OWNER, Role::ADMIN],
             'customer_wallet_payout'                               => [Role::OWNER, Role::ADMIN],
             'd2c_bureau_details_fetch'                             => [Role::OWNER, Role::ADMIN],
             'd2c_bureau_details_otp_submit'                        => [Role::OWNER, Role::ADMIN],
@@ -638,6 +638,8 @@ class UserRolesScope
             'linked_account_update_bank_account'                   => [Role::OWNER, Role::ADMIN, Role::MANAGER, Role::OPERATIONS],
             'list_low_balance_config'                              => [Role::OWNER, Role::ADMIN],
             'list_merchant_notification_config'                    => [Role::OWNER, Role::ADMIN],
+            'merchant_business_types'                              => array_merge(Role::ALL_ROLES, BankingRole::getAllRoles(), Role::LINKED_ACCOUNT_ROLES,Role::RBL_ROLES),
+            'merchant_business_types_admin'                        => array_merge(Role::ALL_ROLES, BankingRole::getAllRoles(), Role::LINKED_ACCOUNT_ROLES,Role::RBL_ROLES),
             'merchant_activation_business_details'                 => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE],
             'merchant_activation_company_search'                   => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE],
             'merchant_activation_needs_clarification'              => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE],
@@ -1041,6 +1043,7 @@ class UserRolesScope
             'shipping_method_provider_post'                       => [Role::OWNER, Role::ADMIN],
             'shipping_method_provider_patch'                      => [Role::OWNER, Role::ADMIN],
             'shipping_method_provider_delete'                     => [Role::OWNER, Role::ADMIN],
+
         ];
 
         /*
@@ -1079,6 +1082,8 @@ class UserRolesScope
             'm2m_referral_link_get'            => true,
             'merchant_activation_save'         => true,
             'merchant_document_upload'         => true,
+            'merchant_business_types'          => true,
+            'merchant_business_types_admin'    => true
         ];
     }
 

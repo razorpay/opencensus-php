@@ -490,6 +490,7 @@ class Constants
         BusinessType::INDIVIDUAL => RazorxTreatment::ESIGN_AADHAR_FUNCTIONALITY,
         BusinessType::PROPRIETORSHIP =>RazorxTreatment::ESIGN_AADHAR_FUNCTIONALITY,
         BusinessType::PARTNERSHIP =>RazorxTreatment::ESIGN_AADHAR_FUNCTIONALITY,
+        BusinessType::HUF =>RazorxTreatment::HUF_BUSINESS_TYPE,
         BusinessType::PUBLIC_LIMITED =>RazorxTreatment::AADHAAR_EKYC_FOR_REG_BUSINESS_TYPES,
         BusinessType::PRIVATE_LIMITED => RazorxTreatment::AADHAAR_EKYC_FOR_REG_BUSINESS_TYPES,
         BusinessType::LLP =>RazorxTreatment::AADHAAR_EKYC_FOR_REG_BUSINESS_TYPES

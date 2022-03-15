@@ -241,6 +241,7 @@ class ValidationFields
         BusinessType::LLP                    => self::DEFAULT_REGISTERED_GROUP,
         BusinessType::OTHER                  => self::DEFAULT_REGISTERED_GROUP,
         BusinessType::PARTNERSHIP            => self::DEFAULT_REGISTERED_GROUP,
+        BusinessType::HUF                    => self::DEFAULT_REGISTERED_GROUP,
         BusinessType::PROPRIETORSHIP         => self::PROPRIETORSHIP_FIELD_GROUP,
         BusinessType::PUBLIC_LIMITED         => self::DEFAULT_REGISTERED_GROUP,
         BusinessType::PRIVATE_LIMITED        => self::DEFAULT_REGISTERED_GROUP,

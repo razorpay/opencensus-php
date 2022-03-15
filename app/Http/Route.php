@@ -691,6 +691,8 @@ class Route
         'merchant_activation_business_details'     => ['get',      'merchant/activation/business_details',           'MerchantController@getBusinessDetails'                             ],
         'merchant_activation_company_search'       => ['get',      'merchant/activation/company_search',             'MerchantController@getCompanySearchList'                           ],
         'merchant_activation_gst_details'          => ['get',      'merchant/activation/gst_details',                'MerchantController@getGstInList'                                   ],
+        'merchant_business_types'                  => ['get',      'merchant/onboarding/business_types',             'MerchantController@getBusinessTypes'                               ],
+        'merchant_business_types_admin'            => ['get',      'merchant/{id}/onboarding/business_types',        'MerchantController@getBusinessTypes'                               ],
         'merchant_activation_needs_clarification'  => ['get',      'merchant/activation/clarification_reasons',      'MerchantController@getNeedsClarificationReasons'                   ],
         'merchant_activation_files'                => ['get',      'merchant/activation/{id}/files',                 'MerchantController@getActivationFiles'                             ],
         'merchant_activation_upload_file_admin'    => ['post',     'merchant/activation/{id}/files',                 'MerchantController@postUploadActivationFileAdmin'                  ],
@@ -4867,6 +4869,7 @@ class Route
         'merchant_activation_business_details',
         'merchant_activation_company_search',
         'merchant_activation_gst_details',
+        'merchant_business_types',
         'merchant_activation_needs_clarification',
         'merchant_razorx_evaluate',
         'merchant_razorx_bulk_evaluate',
@@ -5377,6 +5380,7 @@ class Route
     // of X-Admin-Token being passed.
     //
     public static $admin = [
+        'merchant_business_types_admin',
         'es_transactions_sync',
         'es_payouts_sync',
         'admin_trigger_2fa_otp',
@@ -6697,6 +6701,8 @@ class Route
         'merchant_activation_business_categories'  => Permission::VIEW_MERCHANT,
         'merchant_activation_business_categories_v2' => Permission::VIEW_MERCHANT,
         'merchant_activation_needs_clarification'  => Permission::VIEW_MERCHANT,
+        'merchant_business_types'                  => Permission::VIEW_MERCHANT,
+        'merchant_business_types_admin'            => Permission::VIEW_MERCHANT,
         'merchant_get_terminals'                   => Permission::VIEW_TERMINAL,
         'merchant_activation_details'              => Permission::VIEW_MERCHANT,
         'fetch_merchant_escalation'                => Permission::VIEW_MERCHANT,
@@ -7642,7 +7648,7 @@ class Route
         'merchant_store_add'                           => Permission::EDIT_MERCHANT,
         'merchant_store_fetch'                         => Permission::VIEW_MERCHANT,
         'merchant_activation_needs_clarification'      => '*',
-
+        'merchant_business_types'                      => '*',
         'merchant_fire_hubspot_event'                  => '*',
         'merchant_create_lead_to_salesforce'           => '*',
         'accounting_payouts_integration_status'        => Permission::VIEW_ACCOUNTING_INTEGRATION,
@@ -8670,6 +8676,7 @@ class Route
             'merchant_activation_details',
             'fetch_merchant_escalation',
             'merchant_activation_needs_clarification',
+            'merchant_business_types',
             'merchant_activation_save',
             'merchant_balance_fetch_by_id',
             'merchant_tnc_save',
@@ -9408,6 +9415,7 @@ class Route
         ],
 
         'admin_dashboard' => [
+            'merchant_business_types_admin',
             'admin_trigger_2fa_otp',
             'admin_account_lock_unlock',
             'setl_merchant_dashboard_config_get',
@@ -10126,6 +10134,7 @@ class Route
             'merchant_activation_details',
             'merchant_activation_files',
             'merchant_activation_needs_clarification',
+            'merchant_business_types',
             'merchant_activation_reviewers',
             'merchant_activation_save',
             'merchant_tnc_save',

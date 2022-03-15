@@ -96,6 +96,20 @@ class BankAccountTest extends TestCase
         );
     }
 
+    public function testRequestPayloadForHUF()
+    {
+        $merchantDetail = $this->getMerchantDetailFixture(13);
+        $bankAccount = new $this->dispatcherClass($merchantDetail->merchant, $merchantDetail);
+
+        $requestPayload = $bankAccount->getRequestPayload();
+
+        $this->verifyRequestPayload(
+            $requestPayload,
+            [self::BUSINESS_PAN_NAME],
+            Constant::BANK_ACCOUNT_WITH_BUSINESS_PAN
+        );
+    }
+
     public function testRequestPayloadForProprietorship()
     {
         $merchantDetail = $this->getMerchantDetailFixture(1);

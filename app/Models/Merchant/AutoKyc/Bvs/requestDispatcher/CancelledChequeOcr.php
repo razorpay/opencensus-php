@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant\AutoKyc\Bvs\requestDispatcher;
 
+use Illuminate\Support\Facades\Bus;
 use RZP\Models\Merchant\Document\Type;
 use RZP\Models\Merchant\Detail\BusinessType;
 use RZP\Models\Merchant\Detail\PennyTesting;
@@ -70,6 +71,7 @@ class CancelledChequeOcr extends Base
             case BusinessType::PUBLIC_LIMITED:
             case BusinessType::LLP:
             case BusinessType::PARTNERSHIP:
+            case BusinessType::HUF:
                 return Constant::CANCELLED_CHEQUE_OCR_BUSINESS_PAN;
 
             default:

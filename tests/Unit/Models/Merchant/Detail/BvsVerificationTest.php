@@ -62,11 +62,18 @@ class BvsVerificationTest extends TestCase
     {
         $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', [
 
-            Detail\Entity::GSTIN                     => "03AADCB1234M1ZX",
-            Detail\Entity::GSTIN_VERIFICATION_STATUS => "pending",
-            Detail\Entity::COMPANY_CIN               => "U67190TN2014PTC096971",
-            Detail\Entity::CIN_VERIFICATION_STATUS   => "pending",
-            Detail\Entity::BUSINESS_TYPE             => BusinessType::getIndexFromKey($businessType),
+            Detail\Entity::GSTIN                           => "03AADCB1234M1ZX",
+            Detail\Entity::GSTIN_VERIFICATION_STATUS       => "pending",
+            Detail\Entity::COMPANY_CIN                     => "U67190TN2014PTC096971",
+            Detail\Entity::CIN_VERIFICATION_STATUS         => "pending",
+            Detail\Entity::POI_VERIFICATION_STATUS         => "pending",
+            Detail\Entity::PROMOTER_PAN                    => "BRRPK8070K",
+            Detail\Entity::PROMOTER_PAN_NAME               => "vasanthi kakarla",
+            Detail\Entity::BUSINESS_NAME                   => "vasanthi kakarla",
+            Detail\Entity::COMPANY_PAN_NAME                => "vasanthi kakarla",
+            Detail\Entity::COMPANY_PAN                     => "BRRPK8070K",
+            Detail\Entity::COMPANY_PAN_VERIFICATION_STATUS => "pending",
+            Detail\Entity::BUSINESS_TYPE                   => BusinessType::getIndexFromKey($businessType),
         ]);
 
         return [$merchantDetail];
@@ -130,6 +137,101 @@ class BvsVerificationTest extends TestCase
         $merchant_details = (new Detail\Repository())->findOrFailPublic($merchantDetail->getMerchantId());
         $this->assertEquals('verified', $merchant_details->getGstinVerificationStatus());
 
+    }
+
+    public function testPOIVerificationViaBvsIfExpIsEnabledOnL2HUF()
+    {
+        Config::set('applications.kyc.mock', true);
+        Config::set('services.bvs.mock', true);
+        Config::set('services.bvs.response', 'success');
+
+        [$detailCore] = $this->createAndFetchMocks(false);
+        [$merchantDetail] = $this->createAndFetchFixturesL2(BusinessType::HUF);
+
+        $this->app->instance("rzp.mode", Mode::LIVE);
+        // Submit L2 form
+        $detailCore->saveMerchantDetails(["submit" => "1"], $merchantDetail->merchant);
+
+        // Verify bvs_validation entity is created
+        $bvsValidation = (new Repository)->getLatestArtefactValidationForOwnerIdAndOwnerType($merchantDetail->getMerchantId(), 'merchant', Bvs\Constant::PERSONAL_PAN);
+        $this->assertNotEmpty($bvsValidation);
+
+        $this->assertEquals(Bvs\Constant::PERSONAL_PAN, $bvsValidation->getArtefactType());
+        $this->assertEquals("captured", $bvsValidation->getValidationStatus());
+        $merchant_details = (new Detail\Repository())->findOrFailPublic($merchantDetail->getMerchantId());
+        $this->assertEquals('initiated', $merchant_details->getPoiVerificationStatus());
+
+    }
+    public function testCompanyPanVerificationViaBvsIfExpIsEnabledOnL2HUF()
+    {
+        Config::set('applications.kyc.mock', true);
+        Config::set('services.bvs.mock', true);
+        Config::set('services.bvs.response', 'success');
+
+        [$detailCore] = $this->createAndFetchMocks(false);
+        [$merchantDetail] = $this->createAndFetchFixturesL2(BusinessType::HUF);
+
+        $this->app->instance("rzp.mode", Mode::LIVE);
+        // Submit L2 form
+        $detailCore->saveMerchantDetails(["submit" => "1"], $merchantDetail->merchant);
+
+        // Verify bvs_validation entity is created
+        $bvsValidation = (new Repository)->getLatestArtefactValidationForOwnerIdAndOwnerType($merchantDetail->getMerchantId(), 'merchant', Bvs\Constant::BUSINESS_PAN);
+        $this->assertNotEmpty($bvsValidation);
+
+        $this->assertEquals(Bvs\Constant::BUSINESS_PAN, $bvsValidation->getArtefactType());
+        $this->assertEquals("captured", $bvsValidation->getValidationStatus());
+        $merchant_details = (new Detail\Repository())->findOrFailPublic($merchantDetail->getMerchantId());
+        $this->assertEquals('initiated', $merchant_details->getCompanyPanVerificationStatus());
+
+    }
+
+    public function testGstInVerificationViaBvsIfExpIsEnabledOnL2HUF()
+    {
+        Config::set('applications.kyc.mock', true);
+        Config::set('services.bvs.mock', true);
+        Config::set('services.bvs.response', 'success');
+
+        [$detailCore] = $this->createAndFetchMocks(true);
+        [$merchantDetail] = $this->createAndFetchFixturesL2(BusinessType::HUF);
+
+        $this->app->instance("rzp.mode", Mode::LIVE);
+        // Submit L2 form
+        $detailCore->saveMerchantDetails(["submit" => "1"], $merchantDetail->merchant);
+
+        // Verify bvs_validation entity is created
+        $bvsValidation = (new Repository)->getLatestArtefactValidationForOwnerIdAndOwnerType($merchantDetail->getMerchantId(), 'merchant', Bvs\Constant::GSTIN);
+        $this->assertNotEmpty($bvsValidation);
+
+        $this->assertEquals(Bvs\Constant::GSTIN, $bvsValidation->getArtefactType());
+        $this->assertEquals("success", $bvsValidation->getValidationStatus());
+        $merchant_details = (new Detail\Repository())->findOrFailPublic($merchantDetail->getMerchantId());
+        $this->assertEquals('verified', $merchant_details->getGstinVerificationStatus());
+
+    }
+
+    public function testGstInVerificationViaBvsIfExpIsDisabledOnL2HUF()
+    {
+        Config::set('applications.kyc.mock', true);
+        Config::set('services.bvs.mock', true);
+        Config::set('services.bvs.response', 'success');
+
+        [$detailCore] = $this->createAndFetchMocks(false);
+        [$merchantDetail] = $this->createAndFetchFixturesL2(BusinessType::HUF);
+
+        $this->app->instance("rzp.mode", Mode::LIVE);
+        // Submit L2 form
+        $detailCore->saveMerchantDetails(["submit" => "1"], $merchantDetail->merchant);
+
+        // Verify bvs_validation entity is created
+        $bvsValidation = (new Repository)->getLatestArtefactValidationForOwnerIdAndOwnerType($merchantDetail->getMerchantId(), 'merchant', Bvs\Constant::GSTIN);
+        $this->assertNotEmpty($bvsValidation);
+
+        $this->assertEquals($bvsValidation->getArtefactType(), Bvs\Constant::GSTIN);
+        $this->assertEquals($bvsValidation->getValidationStatus(), "captured");
+
+        $merchant_details = (new Detail\Repository())->findOrFailPublic($merchantDetail->getMerchantId());
+        $this->assertEquals('initiated', $merchant_details->getGstinVerificationStatus());
     }
 
     public function testGstInVerificationViaBvsIfExpIsDisabledOnL2()

@@ -727,6 +727,7 @@ class PennyTesting extends Base\Core
             case BusinessType::PRIVATE_LIMITED:
             case BusinessType::PUBLIC_LIMITED:
             case BusinessType::PARTNERSHIP:
+            case BusinessType::HUF:
             case BusinessType::LLP:
 
                 return [

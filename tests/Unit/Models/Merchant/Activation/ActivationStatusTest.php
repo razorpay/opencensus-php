@@ -9,6 +9,7 @@ use RZP\Models\Admin\Permission;
 use RZP\Models\Workflow\Action\Constants;
 use RZP\Models\Workflow\Action\MakerType;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
+use RZP\Models\Merchant\Detail\Core as DetailCore;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Admin\Org\Entity as OrgEntity;
@@ -89,5 +90,26 @@ class ActivationStatusTest extends TestCase
 
         $action = $this->getDbLastEntity('workflow_action', 'live');
         $this->assertEquals($action->getState(), 'closed');
+    }
+
+    public function testAutoKycHUF()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', [
+            'business_type'                    => '13',
+            'poi_verification_status'          => 'verified',
+            'company_pan_verification_status'  => 'verified',
+            'bank_details_verification_status' => 'verified',
+        ]);
+
+        $mid = $merchantDetail->getId();
+
+        $stakeholder = $this->fixtures->create('stakeholder', [
+            'merchant_id'                          => $mid,
+            'aadhaar_esign_status'                 => 'verified',
+            'aadhaar_verification_with_pan_status' => 'verified'
+        ]);
+
+        $isAutoKycDone = (new DetailCore)->isAutoKycDone($merchantDetail);
+        $this->assertFalse($isAutoKycDone);
     }
 }

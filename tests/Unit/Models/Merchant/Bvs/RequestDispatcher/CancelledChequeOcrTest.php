@@ -98,6 +98,20 @@ class CancelledChequeOcrTest extends TestCase
         );
     }
 
+    public function testRequestPayloadForHuf()
+    {
+        $merchantDetail = $this->getMerchantDetailFixture(13);
+        $bankAccount = new $this->dispatcherClass($merchantDetail->merchant, $merchantDetail);
+
+        $requestPayload = $bankAccount->getRequestPayload();
+
+        $this->verifyRequestPayload(
+            $requestPayload,
+            [self::BUSINESS_PAN_NAME],
+            Constant::CANCELLED_CHEQUE_OCR_BUSINESS_PAN
+        );
+    }
+
     public function testRequestPayloadForProprietorship()
     {
         $merchantDetail = $this->getMerchantDetailFixture(1);
