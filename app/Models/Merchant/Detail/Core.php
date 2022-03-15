@@ -219,6 +219,8 @@ class Core extends Base\Core
                                         Merchant\Entity $merchant,
                                         string $originProduct = Product::PRIMARY)
     {
+        $startTime = microtime(true);
+
         $this->trace->info(
             TraceCode::MERCHANT_SAVE_ACTIVATION_DETAILS,
             [
@@ -308,6 +310,7 @@ class Core extends Base\Core
 
         Tracer::inspan(['name' => HyperTrace::PERFORM_KYC_VERIFICATION], function () use ($merchantDetails, $merchant, $input) {
 
+            $verificationStartTime = microtime(true);
             // do pan validation
             $this->verifyPOIDetailsIfApplicable($merchantDetails, $merchant, $input);
 
@@ -322,11 +325,17 @@ class Core extends Base\Core
             $this->attemptPennyTesting($merchantDetails, $merchant, false, $input);
 
             $this->triggerSyncValidationRequests($merchant, $merchantDetails);
+
+            $this->trace->info(TraceCode::MERCHANT_KYC_VERIFICATION_LATENCY, [
+                'merchant_id' => $merchant->getId(),
+                'duration'    => (microtime(true) - $verificationStartTime) * 1000,
+                'start_time'  => $verificationStartTime
+            ]);
         });
 
         return $this->mutex->acquireAndRelease(
             $merchant->getId(),
-            function() use ($input, $merchantDetails, $merchant, $originProduct, $oldMerchantDetails, $activationFormMilestone) {
+            function() use ($input, $merchantDetails, $merchant, $originProduct, $oldMerchantDetails, $activationFormMilestone, $startTime) {
 
                 return $this->repo->transactionOnLiveAndTest(function() use (
                     $input,
@@ -334,8 +343,11 @@ class Core extends Base\Core
                     $merchant,
                     $originProduct,
                     $oldMerchantDetails,
-                    $activationFormMilestone
+                    $activationFormMilestone,
+                    $startTime
                 ) {
+
+                    $startTimePostAcquiringMutexLock = microtime(true);
 
                     $this->repo->merchant->lockForUpdate($merchant->getId());
 
@@ -375,6 +387,13 @@ class Core extends Base\Core
                         $response = $this->updateActivationProgress($merchant);
                     }
 
+                    $this->trace->info(TraceCode::MERCHANT_SAVE_ACTIVATION_DETAILS_LATENCY, [
+                        'merchant_id'                 => $merchant->getId(),
+                        'start_time'                  => $startTime * 1000,
+                        'start_time'                  => $startTime * 1000,
+                        'duration_after_lock_acquire' => (microtime(true) - $startTimePostAcquiringMutexLock) * 1000,
+                        'overall_duration'            => (microtime(true) - $startTime) * 1000,
+                    ]);
                     return $response;
                 });
             },
@@ -638,6 +657,8 @@ class Core extends Base\Core
 
     public function submitActivationForm(Merchant\Entity $merchant, array $input = null, string $originProduct = Product::PRIMARY)
     {
+        $startTime = microtime(true);
+
         $this->repo->assertTransactionActive();
 
         $merchantDetails = $this->getMerchantDetails($merchant);
@@ -706,6 +727,11 @@ class Core extends Base\Core
 
         $this->submitPartnerActivationFormIfApplicable($merchant, $input);
 
+        $this->trace->info(TraceCode::MERCHANT_FORM_SUBMIT_LATENCY, [
+            'merchant_id' => $merchant->getId(),
+            'duration'    => (microtime(true) - $startTime) * 1000,
+            'start_time'  => $startTime * 1000
+        ]);
         return $response;
     }
 
@@ -2268,6 +2294,8 @@ class Core extends Base\Core
      */
     public function updateActivationStatus(Merchant\Entity $merchant, array $input, PublicEntity $maker): Entity
     {
+        $startTime = microtime(true);
+
         $merchantDetails = $this->getMerchantDetails($merchant, $input);
 
         $merchantDetails->getValidator()->validateInput('activationStatus', $input);
@@ -2535,6 +2563,12 @@ class Core extends Base\Core
         $partnerActivationCore->autoActivatePartnerIfApplicable($merchant, $merchantDetails, $maker);
 
         $partnerActivationCore->markPartnerFormAsNCIfApplicable($merchant, $merchantDetails, $maker);
+
+        $this->trace->info(TraceCode::MERCHANT_UPDATE_ACTIVATION_STATUS_LATENCY, [
+            'merchant_id' => $merchant->getId(),
+            'duration'    => (microtime(true) - $startTime) * 1000,
+            'start_time'  => $startTime
+        ]);
 
         return $merchantDetails;
     }
@@ -2931,6 +2965,8 @@ class Core extends Base\Core
 
     public function createResponse(Entity $merchantDetails): array
     {
+        $startTime = microtime(true);
+
         list($response, $merchantDetails) = Tracer::inSpan(['name' => 'create_response.refreshing_entities'], function() use($merchantDetails) {
 
             $response = $merchantDetails->toArrayPublic();
@@ -3087,7 +3123,10 @@ class Core extends Base\Core
             ]);
             $response[DetailConstants::VERIFICATION_ERROR_CODES] = [];
         }
-
+        $this->trace->info(TraceCode::MERCHANT_CREATE_RESPONSE_LATENCY, [
+            'merchant_id' => $merchantDetails->getId(),
+            'duration'    => (microtime(true) - $startTime) * 1000,
+        ]);
         return $response;
     }
 

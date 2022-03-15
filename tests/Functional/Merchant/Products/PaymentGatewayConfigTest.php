@@ -104,7 +104,7 @@ class PaymentGatewayConfigTest extends OAuthTestCase
 
         $testData = $this->testData['testCreateProductConfigInvalidInput'];
 
-        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products';
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products' ;
 
         $this->runRequestResponseFlow($testData);
     }

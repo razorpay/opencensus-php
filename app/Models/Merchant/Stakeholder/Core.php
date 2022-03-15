@@ -71,6 +71,8 @@ class Core extends Base\Core
     public function saveStakeholder($id, string $merchantId, array $input, string $rule='edit'): Entity
     {
         return $this->repo->transactionOnLiveAndTest(function () use ($id, $merchantId, $input, $rule) {
+            $startTime = microtime(true);
+
             $merchant = $this->repo->merchant->findOrFail($merchantId);
             $merchantDetailInput = Helper::getMerchantDetailInput($input);
 
@@ -101,6 +103,7 @@ class Core extends Base\Core
                 AutoUpdateMerchantProducts::dispatch(Product\Status::STAKEHOLDER_SOURCE, $merchant, $merchantDetails);
             }
 
+            $stakeholderUpdateStartTime = microtime(true);
 
             $stakeholderInput = Helper::getStakeholderInput($input);
 
@@ -123,6 +126,14 @@ class Core extends Base\Core
                 $this->editStakeholder($stakeholder, $stakeholderInput, $rule);
             });
 
+            $this->trace->info(TraceCode::STAKEHOLDER_V2_UPDATE_LATENCY, [
+                'stakeholder_update_startTime'         => $stakeholderUpdateStartTime,
+                'stakeholder_update_duration'          => (microtime(true) - $stakeholderUpdateStartTime) * 1000,
+                'stakeholder_update_overall_duration'  => (microtime(true) - $startTime) * 1000,
+                'stakeholder_update_overall_startTime' => $startTime * 1000,
+                'merchant_id'                          => $merchantId,
+                'stakeholder_id'                       => $id
+            ]);
             return $stakeholder;
         });
     }

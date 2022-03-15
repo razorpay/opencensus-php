@@ -79,6 +79,8 @@ class Service extends Base\Service
      */
     public function saveBusinessDetailsForMerchant(string $merchantId, array $input)
     {
+        $startTime = microtime(true);
+
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
         $merchantDetailCore = new Detail\Core();
@@ -95,6 +97,12 @@ class Service extends Base\Service
         {
             $businessDetail = $this->core->editBusinessDetail($merchantDetails, $input);
         }
+
+        $this->trace->info(TraceCode::MERCHANT_BUSINESS_DETAILS_SAVE_LATENCY, [
+            'merchant_id' => $merchantId,
+            'duration'    => (microtime(true) - $startTime) * 1000,
+            'start_time'  => $startTime
+        ]);
 
         return $businessDetail;
     }

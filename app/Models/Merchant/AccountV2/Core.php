@@ -89,6 +89,8 @@ class Core extends Merchant\Core
 
     public function editAccountV2(Merchant\Entity $partner, string $accountId, array $input)
     {
+        $functionStartTime = microtime(true);
+
         $accountCoreV1 = new Merchant\Account\Core();
 
         $accountCoreV1->validatePartnerAccess($partner, $accountId);
@@ -103,6 +105,9 @@ class Core extends Merchant\Core
         {
             (new Validator)->validateInput('edit_account', $input);
         }
+
+        $validationDuration = (microtime(true) - $functionStartTime) * 1000;
+
         $account = $this->repo->transactionOnLiveAndTest(function () use ($input, $partner, $accountId, $subMerchantDetails)
         {
             $subMerchant = Tracer::inspan(['name' => HyperTrace::FILL_SUBMERCHANT_DETAILS], function () use ($input, $accountId) {
@@ -121,6 +126,13 @@ class Core extends Merchant\Core
         $dimensions = $this->getDimensionsForAccountV2Metrics($subMerchantDetails, $partner);
 
         $this->trace->count(Metric::ACCOUNT_V2_EDIT_SUCCESS_TOTAL, $dimensions);
+
+        $this->trace->info(TraceCode::ACCOUNT_V2_OVERALL_UPDATE_LATENCY, [
+            'merchant_id'         => $accountId,
+            'validation_duration' => $validationDuration,
+            'over_all_duration'   => (microtime(true) - $functionStartTime) * 1000,
+            'start_time'          => $functionStartTime
+        ]);
 
         return $account;
     }
@@ -155,6 +167,8 @@ class Core extends Merchant\Core
 
     protected function fillSubMerchant(string $subMerchantId, array $input): Merchant\Entity
     {
+        $startTime = microtime(true);
+
         $this->repo->assertTransactionActive();
 
         $subMerchant = $this->repo->merchant->findOrFailPublic($subMerchantId);
@@ -189,11 +203,19 @@ class Core extends Merchant\Core
 
         $merchantCore->editConfig($subMerchant, $subMerchantInput);
 
+        $this->trace->info(TraceCode::ACCOUNT_V2_MERCHANT_UPDATE_LATENCY, [
+            'merchant_id' => $subMerchant->getId(),
+            'start_time'  => $startTime,
+            'duration'    => (microtime(true) - $startTime) * 1000
+        ]);
+
         return $subMerchant;
     }
 
     protected function fillSubMerchantDetails(Merchant\Entity $subMerchant, array $input): Merchant\Entity
     {
+        $startTime = microtime(true);
+
         $this->repo->assertTransactionActive();
 
         $detailInput = InputHelper::getSubMerchantDetailInput($input);
@@ -213,6 +235,12 @@ class Core extends Merchant\Core
         $this->updateUserIfApplicable($detailInput, $subMerchant->getEmail());
 
         $this->updateNCFieldsAcknowledgedIfApplicable($detailInput, $subMerchant);
+
+        $this->trace->info(TraceCode::ACCOUNT_V2_MERCHANT_UPDATE_LATENCY, [
+            'merchant_id' => $subMerchant->getId(),
+            'start_time'  => $startTime,
+            'duration'    => (microtime(true) - $startTime) * 1000
+        ]);
 
         return $subMerchant;
     }
@@ -267,6 +295,8 @@ class Core extends Merchant\Core
 
     public function updateNCFieldsAcknowledgedIfApplicable(array $input, Merchant\Entity $subMerchant)
     {
+        $startTime = microtime(true);
+
         $subMerchantDetails = $subMerchant->merchantDetail;
 
         if (empty($subMerchantDetails) === true || $subMerchantDetails->getActivationStatus() !== Detail\Status::NEEDS_CLARIFICATION)
@@ -280,6 +310,12 @@ class Core extends Merchant\Core
         {
             $needsClarificationCore->updateNCFieldAcknowledged($field, $subMerchantDetails);
         }
+
+        $this->trace->info(TraceCode::ACCOUNT_V2_MERCHANT_NC_FIELDS_ACKNOWLEDGED_LATENCY, [
+            'start_time'  => $startTime,
+            'merchant_id' => $subMerchant->getId(),
+            'duration'    => (microtime(true) - $startTime) * 1000,
+        ]);
     }
 
     protected function upsertMerchantEmails(Merchant\Entity $subMerchant, array $input)
