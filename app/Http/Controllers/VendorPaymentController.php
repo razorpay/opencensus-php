@@ -118,9 +118,9 @@ class VendorPaymentController extends Controller
         return $this->service->sendMail($this->input);
     }
 
-    public function getInvoiceSignedUrl(string $fileId)
+    public function getInvoiceSignedUrl(string $vendorPaymentId)
     {
-        return $this->service->getInvoiceSignedUrl($this->ba->getMerchant(), $fileId);
+        return $this->service->getInvoiceSignedUrl($this->ba->getMerchant(), $vendorPaymentId);
     }
 
     public function summary()

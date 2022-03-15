@@ -86,12 +86,12 @@ class Service
         return $this->makeRequest($url, ['timestamp' => now()]);
     }
 
-    public function getInvoiceSignedUrl(UserEntity $user, string $vendorInviteId, string $fileId)
+    public function getInvoiceSignedUrl(UserEntity $user, string $vendorInviteId, string $vendorPaymentId)
     {
         $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::GET_INVOICE_SIGNED_URL);
 
         $input = [
-            'file_id'                 => $fileId,
+            'vendor_payment_id'       => $vendorPaymentId,
             'vendor_portal_invite_id' => $vendorInviteId,
             'vendor_user_id'          => $user->getPublicId(),
         ];

@@ -427,11 +427,11 @@ class Service
     }
 
     public function getInvoiceSignedUrl(MerchantEntity $merchant,
-                                        string $fileId)
+                                        string $vendorPaymentId)
     {
         $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::GET_INVOICE_SIGNED_URL);
 
-        $input = ['file_id' => $fileId];
+        $input = ['vendor_payment_id' => $vendorPaymentId];
 
         return $this->makeRequest($merchant, $url, $input);
     }

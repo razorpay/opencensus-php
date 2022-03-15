@@ -31,9 +31,9 @@ class VendorPortalController extends Controller
         return $this->service->listTdsCategories();
     }
 
-    public function getInvoiceSignedUrl(string $vendorInviteId, string $fileId)
+    public function getInvoiceSignedUrl(string $vendorInviteId, string $vendorPaymentId)
     {
-        return $this->service->getInvoiceSignedUrl($this->ba->getUser(), $vendorInviteId, $fileId);
+        return $this->service->getInvoiceSignedUrl($this->ba->getUser(), $vendorInviteId, $vendorPaymentId);
     }
 
     public function listVendorPortalInvites()
