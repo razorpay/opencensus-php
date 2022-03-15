@@ -15,6 +15,7 @@ use RZP\Models\Adjustment;
 use RZP\Constants\Timezone;
 use RZP\Models\Dispute\Phase;
 use RZP\Models\Dispute\Entity;
+use RZP\Models\Terminal\Category;
 use RZP\Services\RazorXClient;
 use Illuminate\Http\UploadedFile;
 use RZP\Tests\Functional\TestCase;
@@ -329,6 +330,19 @@ class DisputeTest extends TestCase
         $this->fixtures->edit('merchant', $merchantId, ['category' => '6211']);
 
         $testData['response']['content']['error']['description'] = 'Deduct At Onset Dispute can not be created for this Merchant Category';
+
+        $this->startTest($testData);
+    }
+
+    public function testDisputeCreateWithDeductAtOnsetGovernmentMerchantValidationFailure()
+    {
+        $testData = $this->updateCreateTestData();
+
+        $merchantId = $this->payment->merchant->getId();
+
+        $this->setUpFixtures(['merchant_id' => $merchantId]);
+
+        $this->fixtures->edit('merchant', $merchantId, ['category2' => Category::GOVERNMENT]);
 
         $this->startTest($testData);
     }

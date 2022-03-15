@@ -4,6 +4,8 @@
 namespace RZP\Models\Dispute;
 
 
+use RZP\Models\Terminal\Category;
+
 class Constants
 {
     const CUSTOMER_DISPUTE_GATEWAY_DISPUTE_ID_PREFIX = 'DISPUTE';
@@ -24,5 +26,10 @@ class Constants
 
     const MCC_TO_EXCLUDE_FROM_DEDUCT_AT_ONSET = [
         '6211',
+    ];
+
+    const CATEGORY2_TO_EXCLUDE_FROM_DEDUCT_AT_ONSET = [
+        Category::GOVERNMENT,
+        Category::GOVT_EDUCATION
     ];
 }

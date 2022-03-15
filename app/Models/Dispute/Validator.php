@@ -186,6 +186,14 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestValidationFailureException(
                 'Deduct At Onset Dispute can not be created for this Merchant Category');
         }
+
+        $category2 = $merchant->getCategory2();
+
+        if (in_array($category2, Constants::CATEGORY2_TO_EXCLUDE_FROM_DEDUCT_AT_ONSET) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Deduct At Onset Dispute cannot be created when category2 is ' . $category2);
+        }
     }
 
     public function validatePaymentAndMerchantForDispute($input, $payment)
