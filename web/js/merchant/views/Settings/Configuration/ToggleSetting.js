@@ -58,7 +58,9 @@ class ToggleSetting extends Component {
     const shouldSync = 0;
     const data = {
       features: {
-        [this.props.featureAPIKey]: isFeatureEnabled,
+        [this.props.featureAPIKey]: this.props.isFeatureAPIKeyReversed
+          ? !isFeatureEnabled
+          : isFeatureEnabled,
       },
       should_sync: shouldSync,
     };
