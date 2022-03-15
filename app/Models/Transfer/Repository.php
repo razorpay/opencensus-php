@@ -104,19 +104,20 @@ class Repository extends Base\Repository
 
     /**
      * Query: SELECT DISTINCT `source_id` FROM `transfers` WHERE `source_type` = $sourceType AND
-     * `status` = 'pending' LIMIT $count
+     * `status` = 'pending' AND `updated_at` < (now - 3 hours) LIMIT $count
      *
      * @param string $sourceType
      * @param int $count
      *
      * @return mixed
      */
-    public function fetchPendingTransfersToRetry(string $sourceType, int $count = 100)
+    public function fetchPendingTransfersToRetry(string $sourceType, int $count = 100, int $hours = -3)
     {
         return $this->newQueryWithConnection($this->getSlaveConnection())
                     ->select(Entity::SOURCE_ID)
                     ->where(Entity::SOURCE_TYPE, $sourceType)
                     ->where(Entity::STATUS, Status::PENDING)
+                    ->where(Entity::UPDATED_AT, '<', Carbon::now()->addHours($hours)->getTimestamp())
                     ->limit($count)
                     ->distinct()
                     ->get()
