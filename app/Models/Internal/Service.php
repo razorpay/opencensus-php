@@ -12,6 +12,7 @@ use RZP\Models\FundAccount;
 use RZP\Models\BankAccount;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Merchant\Balance\Type;
+use RZP\Models\Bank\Name as BankName;
 use RZP\Exception\BadRequestException;
 use RZP\Services\Ledger as LedgerService;
 use RZP\Models\Merchant\Balance\AccountType;
@@ -63,6 +64,7 @@ class Service extends Base\Service
             Payout\Entity::CURRENCY    => $payout->getCurrency(),
             Payout\Entity::TYPE        => self::TYPE_CREDIT,
             Payout\Entity::UPDATED_AT  => $payout->getUpdatedAt(),
+            Payout\Entity::MODE        => $payout->getMode(),
         ]);
 
         // based on the payout_id, the beneficiary's account number has to be identified.
@@ -76,12 +78,18 @@ class Service extends Base\Service
         }
 
         // get account_number from bank account using id
-        $bankAccount = $this->repo->bank_account->find($fundAccount->getAccountId(), [BankAccount\Entity::ACCOUNT_NUMBER]);
+        $bankAccount = $this->repo->bank_account->find($fundAccount->getAccountId(), [BankAccount\Entity::ACCOUNT_NUMBER, BankAccount\Entity::IFSC_CODE]);
         if (empty($bankAccount) === true)
         {
             // throw exception
             throw new BadRequestException(ErrorCode::BAD_REQUEST_INTERNAL_ACCOUNT_NOT_FOUND);
         }
+
+        // fetch bank_name for the given payout
+        // payout -> fund_account -> bank_account -> ifsc_code
+        $ifscCode = $bankAccount->getIfscCode();
+        // ifsc_code -> bank_name
+        $bankName = (new BankName)->getName($ifscCode);
 
         // RZP_INTERNAL_ACCOUNTS contains list of internal accounts belonging to Razorpay
         // Check if the account belongs to RZP Internal accounts and it's an RZPX Account
@@ -105,6 +113,10 @@ class Service extends Base\Service
             Entity::AMOUNT            => $payout->getAmount(),
             Entity::BASE_AMOUNT       => $payout->getBaseAmount(),
             Entity::UTR               => $payout->getUtr(),
+            Entity::MODE              => $payout->getMode(),
+            Entity::ENTITY_ID         => $payout->getId(),
+            Entity::ENTITY_TYPE       => $payout->getEntity(),
+            Entity::BANK_NAME         => $bankName,
             Entity::CURRENCY          => $payout->getCurrency(),
             Entity::TYPE              => self::TYPE_CREDIT,
             Entity::TRANSACTION_DATE  => $payout->getUpdatedAt(),
@@ -122,16 +134,16 @@ class Service extends Base\Service
 
         $this->trace->info(TraceCode::INTERNAL_CREATE_INPUT_DATA, $input);
 
-        // check if utr already exists for any internal entity
-        $response = $this->repo->internal->fetchByUTR($input[Entity::UTR]);
+        // check if entity_id & entity_type already exists for any internal entity
+        $response = $this->repo->internal->fetchByEntityIDAndType($input[Entity::ENTITY_ID], $input[Entity::ENTITY_TYPE]);
         if ($response !== null)
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_INTERNAL_ENTITY_ALREADY_EXISTS);
         }
 
-        // take mutex lock on the utr
+        // take mutex lock on the entity_id
         $mutex = App::getFacadeRoot()['api.mutex'];
-        $mutexKey = sprintf(self::INTERNAL_ENTITY_CREATE_MUTEX, $input[Entity::UTR]);
+        $mutexKey = sprintf(self::INTERNAL_ENTITY_CREATE_MUTEX, $input[Entity::ENTITY_ID]);
         $mutex->acquireAndRelease($mutexKey, function() use ($input, $internal){
 
             $internal[Entity::STATUS] = self::STATUS_EXPECTED;
@@ -142,14 +154,14 @@ class Service extends Base\Service
         return $internal->toArray();
     }
 
-    public function failOnPayoutReversal(string $utr): array
+    public function failOnPayoutReversal(Payout\Entity $payout): array
     {
         $this->trace->info(TraceCode::INTERNAL_FAIL_ON_PAYOUT_REVERSAL_INPUT_DATA, [
-            Entity::UTR => $utr,
+            Payout\Entity::ID => $payout->getPublicId(),
         ]);
 
         // fetch internal entity from the utr
-        $internal = $this->repo->internal->fetchByUTR($utr);
+        $internal = $this->repo->internal->fetchByEntityIDAndType($payout->getId(), $payout->getEntity());
         if ($internal == null)
         {
             // throw exception
@@ -166,7 +178,7 @@ class Service extends Base\Service
         ]);
 
         // fetch internal entity from the id
-        $internal = $this->repo->internal->findByPublicId($id);
+        $internal = $this->repo->internal->find($id);
         if ($internal == null)
         {
             // throw exception
@@ -186,7 +198,7 @@ class Service extends Base\Service
         (new Validator)->validateInput('reconcile', $input);
 
         // fetch internal entity from the id
-        $internal = $this->repo->internal->findByPublicId($id);
+        $internal = $this->repo->internal->find($id);
         if ($internal == null)
         {
             // throw exception
@@ -227,7 +239,7 @@ class Service extends Base\Service
         // update the internal entity with journal_id
         $internal[Entity::TRANSACTION_ID] = $journal[Base\UniqueIdEntity::ID];
         $internal[Entity::STATUS]         = $input[Entity::STATUS];
-        $internal[Entity::RECONCILED_AT]  = $input[Entity::RECONCILED_AT];
+        $internal[Entity::RECONCILED_AT]  = time();
         $this->repo->saveOrFail($internal);
 
         return $internal->toArray();

@@ -42,6 +42,18 @@ class CreateInternalTable extends Migration
 
             $table->string(Entity::UTR, 45);
 
+            $table->string(Entity::BANK_NAME, 255)
+                ->nullable();
+
+            $table->string(Entity::MODE, 30)
+                ->nullable();
+
+            $table->string(Entity::ENTITY_ID, Entity::ID_LENGTH)
+                ->nullable();
+
+            $table->string(Entity::ENTITY_TYPE, 45)
+                ->nullable();
+
             $table->string(Entity::REMARKS)
                 ->nullable();
 
@@ -61,7 +73,7 @@ class CreateInternalTable extends Migration
 
             // Indexes
 
-            $table->index([Entity::UTR, Entity::DELETED_AT]);
+            $table->index([Entity::ENTITY_ID]);
 
         });
     }

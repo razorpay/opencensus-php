@@ -2021,15 +2021,19 @@ final class FactoryData
         ]);
 
         $factory(\RZP\Models\Internal\Entity::class, [
-            'id'               => $faker->uniqueid,
-            'merchant_id'      => '10000000000000',
-            'currency'         => 'INR',
-            'amount'           => '1',
-            'base_amount'      => '1',
-            'utr'              => '999999999',
-            'transaction_date' => $faker->timestamp,
-            'created_at'       => $faker->timestamp,
-            'updated_at'       => $faker->timestamp,
+            'id'                 => $faker->uniqueid,
+            'merchant_id'        => '10000000000000',
+            'currency'           => 'INR',
+            'amount'             => '1',
+            'base_amount'        => '1',
+            'utr'                => '999999999',
+            'transaction_date'   => $faker->timestamp,
+            'created_at'         => $faker->timestamp,
+            'updated_at'         => $faker->timestamp,
+            'source_entity_id'   => 'sampleEntityId',
+            'source_entity_type' => 'payout',
+            'mode'               => 'IFSC',
+            'bank_name'          => 'HDFC Bank',
         ]);
 
         $factory(\RZP\Models\Dispute\DebitNote\Entity::class, [

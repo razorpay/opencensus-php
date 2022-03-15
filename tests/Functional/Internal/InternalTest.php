@@ -29,26 +29,34 @@ class InternalTest extends TestCase
         $requestData = [
             'request' => [
                 'content' => [
-                    'utr'              => '999999999',
-                    'amount'           => '1',
-                    'base_amount'      => '1',
-                    'transaction_date' => 1611132045,
-                    'currency'         => 'INR',
-                    'type'             => 'credit',
-                    'merchant_id'      => 'sampleMerchant',
+                    'utr'                => '999999999',
+                    'amount'             => '1',
+                    'base_amount'        => '1',
+                    'transaction_date'   => 1611132045,
+                    'currency'           => 'INR',
+                    'type'               => 'credit',
+                    'merchant_id'        => 'sampleMerchant',
+                    'source_entity_id'   => 'sampleEntityId',
+                    'source_entity_type' => 'payout',
+                    'mode'               => 'IMPS',
+                    'bank_name'          => 'HDFC Bank',
                 ],
                 'url'     => '/internal',
                 'method'  => 'POST',
             ],
             'response' => [
                 'content' => [
-                    'merchant_id'      => 'sampleMerchant',
-                    'status'           => 'expected',
-                    'type'             => 'credit',
-                    'currency'         => 'INR',
-                    'amount'           => 1,
-                    'base_amount'      => 1,
-                    'utr'              => '999999999',
+                    'merchant_id'        => 'sampleMerchant',
+                    'status'             => 'expected',
+                    'type'               => 'credit',
+                    'currency'           => 'INR',
+                    'amount'             => 1,
+                    'base_amount'        => 1,
+                    'utr'                => '999999999',
+                    'source_entity_id'   => 'sampleEntityId',
+                    'source_entity_type' => 'payout',
+                    'mode'               => 'IMPS',
+                    'bank_name'          => 'HDFC Bank',
                 ],
             ],
         ];
@@ -69,7 +77,7 @@ class InternalTest extends TestCase
         $requestData = [
             'request' => [
                 'content' => [],
-                'url'     => '/internal/'.$internal->getPublicId().'/fail',
+                'url'     => '/internal/'.$internal->getId().'/fail',
                 'method'  => 'POST',
             ],
             'response' => [
@@ -102,10 +110,9 @@ class InternalTest extends TestCase
         $requestData = [
             'request' => [
                 'content' => [
-                    "reconciled_at" => 1611132045,
                     "status"        => "received",
                 ],
-                'url'    => '/internal/'.$internal->getPublicId().'/reconcile',
+                'url'    => '/internal/'.$internal->getId().'/reconcile',
                 'method' => 'POST',
             ],
             'response' => [
@@ -118,7 +125,6 @@ class InternalTest extends TestCase
                     'amount'           => 1,
                     'base_amount'      => 1,
                     'utr'              => '999999999',
-                    'reconciled_at'    => json_encode(1611132045),
                 ],
             ],
         ];

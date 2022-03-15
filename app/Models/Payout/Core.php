@@ -2980,7 +2980,7 @@ class Core extends Base\Core
             try {
                 // get internal entity
                 $internalEntityService = new \RZP\Models\Internal\Service();
-                $internalEntityService->failOnPayoutReversal($payout->getUtr());
+                $internalEntityService->failOnPayoutReversal($payout);
             }
             catch(\Throwable $ex)
             {

@@ -12296,6 +12296,8 @@ class Route
             'upi_transfer_process_internal',
             'payment_callback_bharatqr_internal',
             'payment_upi_authorize_failed',
+            'internal_fail',
+            'internal_reconcile',
         ]
     ];
 

@@ -14,6 +14,10 @@ class Entity extends Base\PublicEntity
     const MERCHANT_ID               = 'merchant_id';
     const TRANSACTION_ID            = 'transaction_id';
     const UTR                       = 'utr';
+    const BANK_NAME                 = 'bank_name';
+    const MODE                      = 'mode';
+    const ENTITY_ID                 = 'source_entity_id';
+    const ENTITY_TYPE               = 'source_entity_type';
     const TYPE                      = 'type';
     const AMOUNT                    = 'amount';
     const BASE_AMOUNT               = 'base_amount';
@@ -34,6 +38,10 @@ class Entity extends Base\PublicEntity
         self::BASE_AMOUNT,
         self::CURRENCY,
         self::UTR,
+        self::MODE,
+        self::BANK_NAME,
+        self::ENTITY_ID,
+        self::ENTITY_TYPE,
         self::REMARKS,
         self::TRANSACTION_DATE,
         self::MERCHANT_ID,
@@ -44,6 +52,10 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::TRANSACTION_ID,
         self::UTR,
+        self::MODE,
+        self::BANK_NAME,
+        self::ENTITY_ID,
+        self::ENTITY_TYPE,
         self::REMARKS,
         self::TYPE,
         self::AMOUNT,
@@ -61,6 +73,10 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::TRANSACTION_ID,
         self::UTR,
+        self::MODE,
+        self::BANK_NAME,
+        self::ENTITY_ID,
+        self::ENTITY_TYPE,
         self::TYPE,
         self::AMOUNT,
         self::BASE_AMOUNT,

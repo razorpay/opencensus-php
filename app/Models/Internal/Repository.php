@@ -9,10 +9,11 @@ class Repository extends Base\Repository
 {
     protected $entity = Constants\Entity::INTERNAL;
 
-    public function fetchByUTR($utr)
+    public function fetchByEntityIDAndType($entityId, $entityType)
     {
         return $this->newQuery()
-                    ->where(Entity::UTR, $utr)
+                    ->where(Entity::ENTITY_ID, $entityId)
+                    ->where(Entity::ENTITY_TYPE, $entityType)
                     ->first();
     }
 }

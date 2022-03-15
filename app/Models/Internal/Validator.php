@@ -14,10 +14,13 @@ class Validator extends Base\Validator
         Entity::CURRENCY         => 'required|filled|string|size:3',
         Entity::TYPE             => 'required|filled|string|in:debit,credit',
         Entity::TRANSACTION_DATE => 'required|filled|integer',
+        Entity::MODE             => 'required|filled|string',
+        Entity::BANK_NAME        => 'required|filled|string',
+        Entity::ENTITY_ID        => 'required|filled|string',
+        Entity::ENTITY_TYPE      => 'required|filled|string',
     ];
 
     protected static $reconcileRules = [
         Entity::STATUS        => 'required|filled|string|in:failed,received',
-        Entity::RECONCILED_AT => 'required|filled|integer',
     ];
 }
