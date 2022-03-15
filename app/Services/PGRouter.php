@@ -540,6 +540,12 @@ class PGRouter
                     'data' => $e->getMessage()
                 ]);
 
+            $dimensions = [
+                'url' => $request['url']
+            ];
+
+            $this->trace->count(TraceCode::PG_ROUTER_REQUEST_FAILURE, $dimensions);
+
             throw $e;
         }
 
