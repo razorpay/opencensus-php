@@ -105,6 +105,28 @@ class Repository extends Base\Repository
                     ->first();
     }
 
+    public function getDirectBasDetailEntityByMerchantAndBalanceId($merchantId, $balanceId)
+    {
+        $basDetailsBalanceIdColumn     = $this->dbColumn(Entity::BALANCE_ID);
+        $channelColumn                 = $this->dbColumn(Entity::CHANNEL);
+        $merchantIdColumn              = $this->dbColumn(Entity::MERCHANT_ID);
+
+        $balanceIdColumn                = $this->repo->balance->dbColumn(Entity::ID);
+        $accountTypeColumn              = $this->repo->balance->dbColumn(Merchant\Balance\Entity::ACCOUNT_TYPE);
+        $balanceTypeColumn              = $this->repo->balance->dbColumn(Merchant\Balance\Entity::TYPE);
+
+        $basDetailsAttr = $this->dbColumn('*');
+
+        return $this->newQuery()
+            ->select($basDetailsAttr)
+            ->where($merchantIdColumn, '=', $merchantId)
+            ->join(Constants\Table::BALANCE, $basDetailsBalanceIdColumn, '=', $balanceIdColumn)
+            ->where($balanceIdColumn, '=', $balanceId)
+            ->where($accountTypeColumn, '=', Merchant\Balance\AccountType::DIRECT)
+            ->where($balanceTypeColumn, '=', Merchant\Balance\Type::BANKING)
+            ->first();
+    }
+
     /**
      * Filter out Balance Id for balances where gateway balance has updated in last 6 hours
      *

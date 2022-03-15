@@ -170,6 +170,33 @@ class Service extends Base\Service
                             (new Core)->delete($feature);
                         }
                         break;
+
+                    case 'da_shadow_merchant_onboard':
+                        // first sending the request to ledger because if anything fails we don't add the feature
+                        $this->ledgerAccountCreateRequestForDirect($merchant);
+
+                        // Add LEDGER_JOURNAL_WRITES feature to merchant
+                        (new Core)->create(
+                            [
+                                Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
+                                Entity::ENTITY_ID => $merchant->getId(),
+                                Entity::NAME => Constants::DA_LEDGER_JOURNAL_WRITES,
+                            ]);
+                        break;
+
+                    //The case below removes feature flag from merchant
+                    case 'da_shadow_merchant_offboard':
+
+                        $featureFlag = Constants::DA_LEDGER_JOURNAL_WRITES;
+                        $feature = $this->repo->feature->findByEntityTypeEntityIdAndNameOrFail(
+                            EntityConstants::MERCHANT,
+                            $merchant->getId(),
+                            $featureFlag);
+
+                        if (!empty($feature)) {
+                            (new Core)->delete($feature);
+                        }
+                        break;
                 }
             } catch(\Exception $e) {
 
@@ -263,6 +290,36 @@ class Service extends Base\Service
             AccountType::SHARED,
             $balance->getBalance(),
             $currentMerchantCredits);
+    }
+
+    private function ledgerAccountCreateRequestForDirect($merchant)
+    {
+        // Fetch Merchant balances. Required to generate request body for direct accounts creation on ledger
+        $balances = $this->repo->balance->getMerchantBalancesByTypeAndAccountType(
+            $merchant->getId(),
+            BalanceType::BANKING,
+            AccountType::DIRECT,
+            $this->mode);
+
+        // onboard all accounts of the merchant
+        foreach ($balances as $balance) {
+            // Fetch Merchant banking account. Required to generate request body for account creation on ledger
+            $bankingAccStmtDetails = $this->repo->banking_account_statement_details->getDirectBasDetailEntityByMerchantAndBalanceId($merchant->getId(), $balance->getId());
+
+            $this->trace->info(TraceCode::DA_LEDGER_JOURNAL_WRITES_FEATURE_ASSIGNED,
+                [
+                    Constants::MERCHANT_ID => $merchant->getId(),
+                    Constants::MODE => $this->mode,
+                    'balance_id' => $balance->getId(),
+                    'banking_account_stmt_detail_id' => $bankingAccStmtDetails->getId(),
+                ]);
+
+            (new Merchant\Balance\Ledger\Core)->createXLedgerAccountForDirect(
+                $merchant,
+                $bankingAccStmtDetails,
+                $this->mode,
+                $balance->getBalance());
+        }
     }
 
     public function addAccountFeatures(array $input): array
