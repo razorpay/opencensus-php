@@ -2596,12 +2596,6 @@ class Core extends Base\Core
             return;
         }
 
-        $entityForFeatureCheck = $payout;
-        if ($payout === null)
-        {
-            $entityForFeatureCheck = $bas;
-        }
-
         // Skip ledger shadow mode for high TPS merchant
         if ($merchant->isFeatureEnabled(Feature\Constants::HIGH_TPS_COMPOSITE_PAYOUT) === true)
         {
