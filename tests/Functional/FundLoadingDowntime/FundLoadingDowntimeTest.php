@@ -308,12 +308,16 @@ class FundLoadingDowntimeTest extends TestCase
         Mail::fake();
 
         $this->createMerchantConfigs('10000000000000', ['sagnik1@razorpay.com', 'sagnik11@gmail.com'], ['9468620910', '9468620911']);
+        $this->createMerchantConfigs('10000000000011', ['sagnik2@razorpay.com', 'sagnik11@gmail.com'], ['9468620912', '9468620911']);
 
         $this->createBankAccount('10000000000000', 'va111111111111', '34340000000000');
+        $this->createBankAccount('10000000000011', 'va222222222222', '56560000000000');
 
-        $this->createBalance('xbalance111111');
+        $this->createBalance('xbalance111111', '10000000000000');
+        $this->createBalance('xbalance222222', '10000000000011');
 
         $this->createVirtualAccount('10000000000000', 'xbalance111111', 'va111111111111');
+        $this->createVirtualAccount('10000000000011', 'xbalance222222', 'va222222222222');
 
         $this->startTest();
 
@@ -346,7 +350,9 @@ class FundLoadingDowntimeTest extends TestCase
             $this->assertArraySelectiveEquals($fundLoadingDowntime, $fundLoadingDowntimes[$key]);
         }
 
-        Mail::assertQueued(FundLoadingDowntimeMail::class, function($mail)
+        $recipients = [];
+
+        Mail::assertQueued(FundLoadingDowntimeMail::class, function($mail) use (& $recipients)
         {
             $this->assertSame(Constants::CREATION, $mail->flowType);
             $this->assertSame('fund_loading_downtime.creation.multiple', $mail->templateName);
@@ -379,11 +385,19 @@ class FundLoadingDowntimeTest extends TestCase
                 $mail->from[0]
             );
 
+            foreach ($mail->to as $recipient)
+            {
+                array_push($recipients, $recipient['address']);
+            }
+
             $this->assertSame(FundLoadingDowntimeMail::rotatingLight . '[Downtime Alert] : RazorpayX ICICI VA | 22 Sep 05:52 pm to 22 Sep 06:08 pm & 22 Sep 06:08 pm to 22 Sep 06:25 pm',
                               $mail->subject);
 
             return true;
         });
+
+        $expectedRecipients = ['sagnik1@razorpay.com', 'sagnik2@razorpay.com', 'sagnik11@gmail.com'];
+        $this->assertEqualsCanonicalizing($expectedRecipients, array_unique($recipients));
     }
 
     public function testUpdationFlow()
@@ -395,12 +409,16 @@ class FundLoadingDowntimeTest extends TestCase
         Carbon::setTestNow($currentTime);
 
         $this->createMerchantConfigs('10000000000000', ['sagnik1@razorpay.com', 'sagnik11@gmail.com'], ['9468620910', '9468620911']);
+        $this->createMerchantConfigs('10000000000011', ['sagnik2@razorpay.com', 'sagnik11@gmail.com'], ['9468620912', '9468620911']);
 
         $this->createBankAccount('10000000000000', 'va111111111111', '34340000000000');
+        $this->createBankAccount('10000000000011', 'va222222222222', '56560000000000');
 
-        $this->createBalance('xbalance111111');
+        $this->createBalance('xbalance111111', '10000000000000');
+        $this->createBalance('xbalance222222', '10000000000011');
 
         $this->createVirtualAccount('10000000000000', 'xbalance111111', 'va111111111111');
+        $this->createVirtualAccount('10000000000011', 'xbalance222222', 'va222222222222');
 
         $attributes = [
             'id'         => '100000downtime',
@@ -451,12 +469,14 @@ class FundLoadingDowntimeTest extends TestCase
             ]
         ];
 
-       foreach($expectedFundLoadingDowntimes as $key => $downtime)
+        foreach ($expectedFundLoadingDowntimes as $key => $downtime)
         {
             $this->assertArraySelectiveEquals($downtime, $updatedFundLoadingDowntimes[$key]);
         }
 
-        Mail::assertQueued(FundLoadingDowntimeMail::class, function($mail)
+        $recipients = [];
+
+        Mail::assertQueued(FundLoadingDowntimeMail::class, function($mail) use(& $recipients)
         {
             $this->assertSame(Constants::UPDATION, $mail->flowType);
             $this->assertSame('fund_loading_downtime.updation', $mail->templateName);
@@ -480,11 +500,19 @@ class FundLoadingDowntimeTest extends TestCase
                 $mail->from[0]
             );
 
+            foreach ($mail->to as $recipient)
+            {
+                array_push($recipients, $recipient['address']);
+            }
+
             $this->assertSame(FundLoadingDowntimeMail::rotatingLight . '[Downtime Updated] : RazorpayX ICICI VA | 30 Dec 12:00 am to 31 Dec 12:00 am',
                               $mail->subject);
 
             return true;
         });
+
+        $expectedRecipients = ['sagnik1@razorpay.com', 'sagnik2@razorpay.com', 'sagnik11@gmail.com'];
+        $this->assertEqualsCanonicalizing($expectedRecipients, array_unique($recipients));
     }
 
     public function testUpdationFlowWithMultipleDurations()
@@ -496,12 +524,16 @@ class FundLoadingDowntimeTest extends TestCase
         Carbon::setTestNow($currentTime);
 
         $this->createMerchantConfigs('10000000000000', ['sagnik1@razorpay.com', 'sagnik11@gmail.com'], ['9468620910', '9468620911']);
+        $this->createMerchantConfigs('10000000000011', ['sagnik2@razorpay.com', 'sagnik11@gmail.com'], ['9468620912', '9468620911']);
 
         $this->createBankAccount('10000000000000', 'va111111111111', '34340000000000');
+        $this->createBankAccount('10000000000011', 'va222222222222', '56560000000000');
 
-        $this->createBalance('xbalance111111');
+        $this->createBalance('xbalance111111', '10000000000000');
+        $this->createBalance('xbalance222222', '10000000000011');
 
         $this->createVirtualAccount('10000000000000', 'xbalance111111', 'va111111111111');
+        $this->createVirtualAccount('10000000000011', 'xbalance222222', 'va222222222222');
 
 
         $attributes = [
@@ -558,7 +590,9 @@ class FundLoadingDowntimeTest extends TestCase
             $this->assertArraySelectiveEquals($downtime, $updatedFundLoadingDowntimes[$key]);
         }
 
-        Mail::assertQueued(FundLoadingDowntimeMail::class, function($mail)
+        $recipients = [];
+
+        Mail::assertQueued(FundLoadingDowntimeMail::class, function($mail) use (& $recipients)
         {
             $this->assertSame(Constants::UPDATION, $mail->flowType);
             $this->assertSame('fund_loading_downtime.updation.multiple', $mail->templateName);
@@ -591,24 +625,36 @@ class FundLoadingDowntimeTest extends TestCase
                 $mail->from[0]
             );
 
+            foreach ($mail->to as $recipient)
+            {
+                array_push($recipients, $recipient['address']);
+            }
+
             $this->assertSame(FundLoadingDowntimeMail::rotatingLight . '[Downtime Updated] : RazorpayX ICICI VA | 30 Dec 12:00 am to 31 Dec 12:00 am & 30 Dec 01:00 am to 30 Dec 05:00 am',
                               $mail->subject);
 
             return true;
         });
+
+        $expectedRecipients = ['sagnik1@razorpay.com', 'sagnik2@razorpay.com', 'sagnik11@gmail.com'];
+        $this->assertEqualsCanonicalizing($expectedRecipients, array_unique($recipients));
     }
 
     public function testResolutionFlow()
     {
         Mail::fake();
 
-        $this->createMerchantConfigs('10000000000000', ['sagnik1@razorpay.com'], ['9468620910', '9468620911']);
+        $this->createMerchantConfigs('10000000000000', ['sagnik1@razorpay.com', 'sagnik11@gmail.com'], ['9468620910', '9468620911']);
+        $this->createMerchantConfigs('10000000000011', ['sagnik1@razorpay.com', 'sagnik11@gmail.com'], ['9468620910', '9468620911']);
 
         $this->createBankAccount('10000000000000', 'va111111111111', '34340000000000');
+        $this->createBankAccount('10000000000011', 'va222222222222', '56560000000000');
 
-        $this->createBalance('xbalance111111');
+        $this->createBalance('xbalance111111', '10000000000000');
+        $this->createBalance('xbalance222222', '10000000000011');
 
         $this->createVirtualAccount('10000000000000', 'xbalance111111', 'va111111111111');
+        $this->createVirtualAccount('10000000000011', 'xbalance222222', 'va222222222222');
 
         $firstDowntime = [
             'id'         => '100000downtime',
@@ -664,7 +710,9 @@ class FundLoadingDowntimeTest extends TestCase
             $this->assertArraySelectiveEquals($downtime, $resolvedDowntimes[$key]);
         }
 
-        Mail::assertQueued(FundLoadingDowntimeMail::class, function($mail)
+        $recipients = [];
+
+        Mail::assertQueued(FundLoadingDowntimeMail::class, function($mail) use (& $recipients)
         {
             $this->assertSame(Constants::RESOLUTION, $mail->flowType);
             $this->assertSame('fund_loading_downtime.resolution', $mail->templateName);
@@ -691,24 +739,36 @@ class FundLoadingDowntimeTest extends TestCase
                 $mail->to[0]
             );
 
+            foreach ($mail->to as $recipient)
+            {
+                array_push($recipients, $recipient['address']);
+            }
+
             $this->assertSame(FundLoadingDowntimeMail::whiteCheckMark . '[Downtime Resolved] : RazorpayX ICICI VA',
                               $mail->subject);
 
             return true;
         });
+
+        $expectedRecipients = ['sagnik1@razorpay.com', 'sagnik11@gmail.com'];
+        $this->assertEqualsCanonicalizing($expectedRecipients, array_unique($recipients));
     }
 
     public function testCancellationFlow()
     {
         Mail::fake();
 
-        $this->createMerchantConfigs('10000000000000', ['sagnik1@razorpay.com'], ['9468620910', '9468620911']);
+        $this->createMerchantConfigs('10000000000000', ['sagnik1@razorpay.com', 'sagnik11@gmail.com'], ['9468620910', '9468620911']);
+        $this->createMerchantConfigs('10000000000011', ['sagnik1@razorpay.com', 'sagnik11@gmail.com'], ['9468620910', '9468620911']);
 
         $this->createBankAccount('10000000000000', 'va111111111111', '34340000000000');
+        $this->createBankAccount('10000000000011', 'va222222222222', '56560000000000');
 
-        $this->createBalance('xbalance111111');
+        $this->createBalance('xbalance111111', '10000000000000');
+        $this->createBalance('xbalance222222', '10000000000011');
 
         $this->createVirtualAccount('10000000000000', 'xbalance111111', 'va111111111111');
+        $this->createVirtualAccount('10000000000011', 'xbalance222222', 'va222222222222');
 
         $attributes = [
             'id'         => '100000downtime',
@@ -754,8 +814,10 @@ class FundLoadingDowntimeTest extends TestCase
 
         $this->assertArraySelectiveEquals($attributes, $remainingDowntimes[0]);
 
+        $recipients = [];
+
         // email related assertions
-        Mail::assertQueued(FundLoadingDowntimeMail::class, function($mail)
+        Mail::assertQueued(FundLoadingDowntimeMail::class, function($mail) use (& $recipients)
         {
             $this->assertSame(Constants::CANCELLATION, $mail->flowType);
             $this->assertSame('fund_loading_downtime.cancellation', $mail->templateName);
@@ -785,11 +847,19 @@ class FundLoadingDowntimeTest extends TestCase
                 $mail->to[0]
             );
 
+            foreach ($mail->to as $recipient)
+            {
+                array_push($recipients, $recipient['address']);
+            }
+
             $this->assertSame(FundLoadingDowntimeMail::whiteCheckMark . '[Downtime Cancelled] : RazorpayX ICICI VA',
                               $mail->subject);
 
             return true;
         });
+
+        $expectedRecipients = ['sagnik1@razorpay.com', 'sagnik11@gmail.com'];
+        $this->assertEqualsCanonicalizing($expectedRecipients, array_unique($recipients));
     }
 
     public function testCancellationFlowWithNeitherSMSNorEmailNotifications()
@@ -797,12 +867,16 @@ class FundLoadingDowntimeTest extends TestCase
         Mail::fake();
 
         $this->createMerchantConfigs('10000000000000', ['sagnik1@razorpay.com', 'sagnik11@gmail.com'], ['9468620910', '9468620911']);
+        $this->createMerchantConfigs('10000000000011', ['sagnik1@razorpay.com', 'sagnik11@gmail.com'], ['9468620910', '9468620911']);
 
         $this->createBankAccount('10000000000000', 'va111111111111', '34340000000000');
+        $this->createBankAccount('10000000000011', 'va222222222222', '56560000000000');
 
-        $this->createBalance('xbalance111111');
+        $this->createBalance('xbalance111111', '10000000000000');
+        $this->createBalance('xbalance222222', '10000000000011');
 
         $this->createVirtualAccount('10000000000000', 'xbalance111111', 'va111111111111');
+        $this->createVirtualAccount('10000000000011', 'xbalance222222', 'va222222222222');
 
         $attributes = [
             'id'         => '100000downtime',
@@ -856,12 +930,16 @@ class FundLoadingDowntimeTest extends TestCase
         Mail::fake();
 
         $this->createMerchantConfigs('10000000000000', ['sagnik1@razorpay.com', 'sagnik11@gmail.com'], ['9468620910', '9468620911']);
+        $this->createMerchantConfigs('10000000000011', ['sagnik1@razorpay.com', 'sagnik11@gmail.com'], ['9468620910', '9468620911']);
 
         $this->createBankAccount('10000000000000', 'va111111111111', '34340000000000');
+        $this->createBankAccount('10000000000011', 'va222222222222', '56560000000000');
 
-        $this->createBalance('xbalance111111');
+        $this->createBalance('xbalance111111', '10000000000000');
+        $this->createBalance('xbalance222222', '10000000000011');
 
         $this->createVirtualAccount('10000000000000', 'xbalance111111', 'va111111111111');
+        $this->createVirtualAccount('10000000000011', 'xbalance222222', 'va222222222222');
 
         $attributes = [
             'id'         => '100000downtime',
@@ -914,15 +992,17 @@ class FundLoadingDowntimeTest extends TestCase
     {
         Mail::fake();
 
-        $this->createMerchantConfigs('10000000000000', ['sagnik@razorpay.com'], ['9468620910', '9468620911']);
-
-        $this->createMerchantConfigs('20000000000000', ['sagnik2@razorpay.com'], ['9468620910', '9468620911']);
+        $this->createMerchantConfigs('10000000000000', ['sagnik1@razorpay.com', 'sagnik11@gmail.com'], ['9468620910', '9468620911']);
+        $this->createMerchantConfigs('10000000000011', ['sagnik1@razorpay.com', 'sagnik11@gmail.com'], ['9468620910', '9468620911']);
 
         $this->createBankAccount('10000000000000', 'va111111111111', '34340000000000');
+        $this->createBankAccount('10000000000011', 'va222222222222', '56560000000000');
 
-        $this->createBalance('xbalance111111');
+        $this->createBalance('xbalance111111', '10000000000000');
+        $this->createBalance('xbalance222222', '10000000000011');
 
         $this->createVirtualAccount('10000000000000', 'xbalance111111', 'va111111111111');
+        $this->createVirtualAccount('10000000000011', 'xbalance222222', 'va222222222222');
 
         $attributes = [
             'id'         => '100000downtime',
@@ -968,7 +1048,9 @@ class FundLoadingDowntimeTest extends TestCase
 
         $this->assertArraySelectiveEquals($attributes, $remainingDowntimes[0]);
 
-        Mail::assertQueued(FundLoadingDowntimeMail::class, function($mail)
+        $recipients = [];
+
+        Mail::assertQueued(FundLoadingDowntimeMail::class, function($mail) use (& $recipients)
         {
             $this->assertSame(Constants::CANCELLATION, $mail->flowType);
 
@@ -992,16 +1074,24 @@ class FundLoadingDowntimeTest extends TestCase
 
             $this->assertArraySelectiveEquals(
                 [
-                    'address' => "sagnik@razorpay.com"
+                    'address' => "sagnik1@razorpay.com"
                 ],
                 $mail->to[0]
             );
+
+            foreach ($mail->to as $recipient)
+            {
+                array_push($recipients, $recipient['address']);
+            }
 
             $this->assertSame(FundLoadingDowntimeMail::whiteCheckMark . '[Downtime Cancelled] : RazorpayX ICICI VA',
                               $mail->subject);
 
             return true;
         });
+
+        $expectedRecipients = ['sagnik1@razorpay.com', 'sagnik11@gmail.com'];
+        $this->assertEqualsCanonicalizing($expectedRecipients, array_unique($recipients));
     }
 
     public function createMerchantConfigs($mid, $emails, $mobiles)
@@ -1040,10 +1130,11 @@ class FundLoadingDowntimeTest extends TestCase
         $this->fixtures->create('bank_account', $bankAccount);
     }
 
-    public function createBalance($id)
+    public function createBalance($id, $merchantId)
     {
         $balance = [
             'id'           => $id,
+            'merchant_id'  => $merchantId,
             'type'         => 'banking',
             'account_type' => 'shared'
         ];

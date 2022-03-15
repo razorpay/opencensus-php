@@ -378,12 +378,14 @@ return [
         'response' => [
             'content' => [
                 "sms"                  => [
-                    "successes" => 2,
+                    "successes" => 3,
                     "failures"  => 0,
+                    "skipped"   => 1,
                 ],
                 'email'                => [
-                    "successes" => 2,
+                    "successes" => 3,
                     "failures"  => 0,
+                    "skipped"   => 1,
                 ],
                 'downtime_information' => [
                     'type'                => 'Scheduled Maintenance Activity',
@@ -431,12 +433,14 @@ return [
         'response' => [
             'content' => [
                 "sms"                  => [
-                    "successes" => 2,
+                    "successes" => 3,
                     "failures"  => 0,
+                    "skipped"   => 1,
                 ],
                 'email'                => [
-                    "successes" => 2,
+                    "successes" => 3,
                     "failures"  => 0,
+                    "skipped"   => 1,
                 ],
                 'downtime_information' => [
                     'type'                => 'Scheduled Maintenance Activity',
@@ -479,12 +483,14 @@ return [
         'response' => [
             'content' => [
                 "sms"                  => [
-                    "successes" => 2,
+                    "successes" => 3,
                     "failures"  => 0,
+                    "skipped"   => 1,
                 ],
                 'email'                => [
-                    "successes" => 2,
+                    "successes" => 3,
                     "failures"  => 0,
+                    "skipped"   => 1,
                 ],
                 'downtime_information' => [
                     'type'                => 'Scheduled Maintenance Activity',
@@ -531,10 +537,12 @@ return [
                 "sms"                  => [
                     "successes" => 2,
                     "failures"  => 0,
+                    "skipped"   => 2,
                 ],
                 'email'                => [
-                    "successes" => 1,
+                    "successes" => 2,
                     "failures"  => 0,
+                    "skipped"   => 2,
                 ],
                 'downtime_information' => [
                     'type'                => 'Scheduled Maintenance Activity',
@@ -575,10 +583,12 @@ return [
                 "sms"                  => [
                     "successes" => 2,
                     "failures"  => 0,
+                    "skipped"   => 2,
                 ],
                 'email'                => [
-                    "successes" => 1,
+                    "successes" => 2,
                     "failures"  => 0,
+                    "skipped"   => 2,
                 ],
                 'downtime_information' => [
                     'type'                => 'Scheduled Maintenance Activity',
@@ -645,10 +655,12 @@ return [
                 "sms"                  => [
                     "successes" => 2,
                     "failures"  => 0,
+                    "skipped"   => 2,
                 ],
                 'email'                => [
                     "successes" => 0,
                     "failures"  => 0,
+                    "skipped"   => 0,
                 ],
                 'downtime_information' => [
                     'type'                => 'Scheduled Maintenance Activity',
@@ -684,10 +696,12 @@ return [
                 "sms"                  => [
                     "successes" => 0,
                     "failures"  => 0,
+                    "skipped"   => 0,
                 ],
                 'email'                => [
-                    "successes" => 1,
+                    "successes" => 2,
                     "failures"  => 0,
+                    "skipped"   => 2,
                 ],
                 'downtime_information' => [
                     'type'                => 'Scheduled Maintenance Activity',

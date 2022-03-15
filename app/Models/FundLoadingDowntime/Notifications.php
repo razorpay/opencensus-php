@@ -49,6 +49,10 @@ class Notifications
 
     protected $sendEmail;
 
+    protected $emailSentForEmailIds = [];
+
+    protected $smsSentForMobileNumbers = [];
+
     /**
      * @var FundLoadingDowntimeMail $mailInstance
      */
@@ -59,6 +63,7 @@ class Notifications
     const EMAIL      = 'email';
     const SENDER     = 'RZPAYX';
     const FAILURES   = 'failures';
+    const SKIPPED    = 'skipped';
     const SEND_SMS   = 'send_sms';
     const SUCCESSES  = 'successes';
     const SEND_EMAIL = 'send_email';
@@ -219,8 +224,10 @@ class Notifications
 
             $response[self::SMS][self::SUCCESSES]   += $smsResponse[self::SUCCESSES] ?? 0;
             $response[self::SMS][self::FAILURES]    += $smsResponse[self::FAILURES] ?? 0;
+            $response[self::SMS][self::SKIPPED]     += $smsResponse[self::SKIPPED] ?? 0;
             $response[self::EMAIL][self::SUCCESSES] += $emailResponse[self::SUCCESSES] ?? 0;
             $response[self::EMAIL][self::FAILURES]  += $emailResponse[self::FAILURES] ?? 0;
+            $response[self::EMAIL][self::SKIPPED]   += $emailResponse[self::SKIPPED] ?? 0;
         }
 
         return $response;
@@ -230,8 +237,10 @@ class Notifications
     {
         $response[self::SMS][self::SUCCESSES]   = 0;
         $response[self::SMS][self::FAILURES]    = 0;
+        $response[self::SMS][self::SKIPPED]     = 0;
         $response[self::EMAIL][self::SUCCESSES] = 0;
         $response[self::EMAIL][self::FAILURES]  = 0;
+        $response[self::EMAIL][self::SKIPPED]   = 0;
 
         return $response;
     }
@@ -240,6 +249,7 @@ class Notifications
     {
         $response[self::SUCCESSES]        = 0;
         $response[self::FAILURES]         = 0;
+        $response[self::SKIPPED]          = 0;
         $response[Constants::MERCHANT_ID] = $merchantId;
 
         $this->trace->info(
@@ -263,12 +273,26 @@ class Notifications
                 continue;
             }
 
+            if (in_array($emailId, $this->emailSentForEmailIds))
+            {
+                $this->trace->info(
+                    TraceCode::FUND_LOADING_DOWNTIME_EMAIL_ALREADY_SENT_TO_EMAIL_ID,
+                    [
+                        Constants::MERCHANT_ID => $merchantId,
+                        'email_id_index'       => $index,
+                    ]
+                );
+                $response[self::SKIPPED]++;
+                continue;
+            }
+
             $this->mailInstance->setMerchantEmailId($emailId);
 
             try
             {
                 $storkResponse = Mail::queue($this->mailInstance);
                 $response[self::SUCCESSES]++;
+                array_push($this->emailSentForEmailIds, $emailId);
 
                 $this->trace->info(TraceCode::FUND_LOADING_DOWNTIME_EMAIL_TO_MERCHANT_SENT,
                                    [
@@ -307,6 +331,7 @@ class Notifications
     {
         $response[self::SUCCESSES] = 0;
         $response[self::FAILURES]  = 0;
+        $response[self::SKIPPED]   = 0;
 
         $response[Constants::MERCHANT_ID]   = $merchantId;
         $smsPayload[SmsConstants::OWNER_ID] = $merchantId;
@@ -331,10 +356,24 @@ class Notifications
                 continue;
             }
 
+            if (in_array($mobileNumber, $this->smsSentForMobileNumbers))
+            {
+                $this->trace->info(
+                    TraceCode::FUND_LOADING_DOWNTIME_SMS_ALREADY_SENT_TO_MOBILE_NUMBER,
+                    [
+                        Constants::MERCHANT_ID => $merchantId,
+                        'mobile_number_index'  => $key,
+                    ]
+                );
+                $response[self::SKIPPED]++;
+                continue;
+            }
+
             try
             {
                 $storkResponse = $this->stork->sendSms($this->ba->getMode(), $smsPayload, false);
                 $response[self::SUCCESSES]++;
+                array_push($this->smsSentForMobileNumbers, $mobileNumber);
 
                 $this->trace->info(TraceCode::FUND_LOADING_DOWNTIME_SMS_TO_MERCHANT_SENT,
                                    [
