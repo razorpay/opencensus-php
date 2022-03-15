@@ -11,6 +11,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
+use RZP\Base\RuntimeManager;
 use RZP\Models\Base as ModelBase;
 use RZP\Models\Gateway\File\Status;
 use RZP\Models\Base\PublicCollection;
@@ -274,5 +275,10 @@ class EnachNpciNetbanking extends Base
             ]);
 
         return $tokens;
+    }
+
+    protected function increaseAllowedSystemLimits()
+    {
+        RuntimeManager::setMemoryLimit('2048M');
     }
 }
