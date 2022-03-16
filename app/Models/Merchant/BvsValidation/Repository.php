@@ -20,6 +20,8 @@ class Repository extends Base\Repository
      *
      * @param string $validationUnit
      *
+     * @param string $ownerType
+     *
      * @return mixed
      */
     public function getLatestArtefactValidationForOwnerId(
@@ -30,13 +32,17 @@ class Repository extends Base\Repository
         $validationUnitColumn = $this->repo->bvs_validation->dbColumn(Entity::VALIDATION_UNIT);
         $ownerTypeColumn    = $this->repo->bvs_validation->dbColumn(Entity::OWNER_TYPE);
 
-        return $this->newQuery()
-                    ->where($ownerIdColumn, $ownerId)
-                    ->where($artefactTypeColumn, $artefactType)
-                    ->where($validationUnitColumn, $validationUnit)
-                    ->where($ownerTypeColumn, $ownerType)
-                    ->orderBy(Entity::CREATED_AT, 'desc')
-                    ->first();
+        $query = $this->newQuery()
+                      ->where($ownerIdColumn, $ownerId)
+                      ->where($artefactTypeColumn, $artefactType);
+
+        if(empty($validationUnit) === false)
+            $query = $query -> where($validationUnitColumn, $validationUnit);
+        if(empty($ownerType) ===  false)
+            $query = $query -> where($ownerTypeColumn, $ownerType);
+
+        return $query->orderBy(Entity::CREATED_AT, 'desc')->first();
+
     }
 
     /**

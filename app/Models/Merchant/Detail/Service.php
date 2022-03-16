@@ -2,10 +2,10 @@
 
 namespace RZP\Models\Merchant\Detail;
 
+use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Models\Merchant\Balance\Type as ProductType;
 use Throwable;
 use Carbon\Carbon;
-use Lib\PhoneBook;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Error\ErrorCode;
@@ -77,6 +77,7 @@ use RZP\Notifications\Dashboard\Handler as DashboardNotificationHandler;
 use RZP\Models\Workflow\Observer\Constants as WorkflowObserverConstants;
 use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstants;
 use RZP\Notifications\Dashboard\Constants as DashboardNotificationConstants;
+use RZP\Models\Merchant\AutoKyc\Bvs\BvsClient\BvsValidationClient;
 
 class Service extends Base\Service
 {
@@ -2942,6 +2943,33 @@ class Service extends Base\Service
             }
         }
         return $updateCount;
+    }
+
+    /**
+     * @param string $merchantId
+     *
+     * @return array
+     */
+    public function getEnhancedActivationDetails(string $merchantId)
+    {
+        $artefacts = [Constant::CIN,Constant::GSTIN,Constant::LLPIN];
+        $result=[];
+
+        foreach ($artefacts as $artefact)
+        {
+            try
+            {
+                $result[$artefact] = $this -> core-> getBvsValidationArtefactDetails($merchantId,$artefact);
+            }catch(\Exception $e)
+            {
+                $err = [];
+                $err['merchant_details'] = $merchantId;
+                $err['message'] = 'No '.$artefact .' Details Found';
+                $err['exception'] = $e;
+                $this->trace->debug(TraceCode::DEBUG_LOGGING,$err);
+            }
+        }
+        return $result;
     }
 
     public function getBusinessTypes($merchant_id)

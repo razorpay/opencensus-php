@@ -226,7 +226,7 @@ class UfhService
         {
             $movedFile = $file->move(storage_path('files/filestore'), $storageFileName . '.' . $ext);
         }
-        
+
         $requestData = $this->getRequestData($file, $movedFile, $storageFileName, $type, $entity, $metadata);
 
         $this->trace->info(
@@ -451,6 +451,7 @@ class UfhService
         if ((empty($res[self::ID]) === true) or (empty($res[self::LOCATION]) === true)
             or (empty($res[self::STATUS]) === true) or ($res[self::STATUS] === self::STATUS_FAILED))
         {
+            $this->trace->info(TraceCode::UFH_FILE_UPLOAD_FAILED, $res);
             throw new Exception\BadRequestValidationFailureException(
                 'Response not valid',
                 'response',

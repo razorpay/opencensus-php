@@ -677,6 +677,7 @@ class Route
         'business_website_status'                  => ['get',      'merchant/business_website_status',               'MerchantController@getWebsiteSelfServeWorkflowDetails'             ],
         'decrypt_merchant_website_comment'         => ['get',      'merchant/{actionId}/decrypt_website_comment',    'MerchantController@getDecryptedWebsiteCommentForWebsiteSelfServe'  ],
         'merchant_activation_details'              => ['get',      'merchant/activation',                            'MerchantController@getActivationDetails'                           ],
+        'merchant_enhanced_activation_details'     => ['get',      'merchant/enhancedactivation/{merchantId}',       'MerchantController@getEnhancedMerchantActivationDetails'           ],
         'merchant_activation_save'                 => ['post',     'merchant/activation',                            'MerchantController@postSaveActivationDetails'                      ],
         'merchant_activation_otp_send'             => ['post',     'merchant/activation/otp/send',                   'MerchantController@otpSendViaEmail' ],
         'is_admin_as_merchant'                     => ['get',      'merchant/is_admin_as_merchant',                  'MerchantController@isAdminLoggedInAsMerchant'                      ],
@@ -5403,6 +5404,7 @@ class Route
     // of X-Admin-Token being passed.
     //
     public static $admin = [
+        'merchant_enhanced_activation_details',
         'mob_admin_routes',
         'merchant_business_types_admin',
         'es_transactions_sync',
@@ -6480,6 +6482,7 @@ class Route
     ];
 
     public static $routePermission = [
+        'merchant_enhanced_activation_details'     => Permission::VIEW_MERCHANT,
         'mob_admin_routes'                          => Permission::MOB_ADMIN,
         'admin_trigger_2fa_otp'                    => Permission::AUTH_LOCAL_ADMIN,
         'admin_account_lock_unlock'                => Permission::AUTH_LOCAL_ADMIN,
@@ -9466,6 +9469,7 @@ class Route
         ],
 
         'admin_dashboard' => [
+            'merchant_enhanced_activation_details',
             'mob_admin_routes',
             'merchant_business_types_admin',
             'admin_trigger_2fa_otp',

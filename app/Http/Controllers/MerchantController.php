@@ -2907,6 +2907,14 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function getEnhancedMerchantActivationDetails(string $merchantId)
+    {
+
+        $response = $this->service(E::MERCHANT_DETAIL)->getEnhancedActivationDetails($merchantId);
+
+        return ApiResponse::json($response);
+    }
+
     public function bulkConvertResellerToAggregatorPartner()
     {
         $input = Request::all();

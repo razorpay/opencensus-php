@@ -22,6 +22,7 @@ class Constants
     const ERROR_CODE            = 'error_code';
     const ERROR_DESCRIPTION     = 'error_description';
     const RULE_EXECUTION_LIST   = 'rule_execution_list';
+    const ENRICHMENT_DETAILS    = 'enrichmentDetails';
 
     const BVS_KYC_VERIFICATION_RESULT       = 'bvs_kyc_verification_result';
     const MATCH                             = 'match';

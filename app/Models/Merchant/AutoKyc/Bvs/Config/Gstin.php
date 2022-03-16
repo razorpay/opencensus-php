@@ -90,5 +90,10 @@ class Gstin extends BaseConfig
 
     protected $enrichmentDetails = [
         "online_provider.details.primary_address.value",
+        "online_provider.details.trade_name.value",
+        "online_provider.details.nature_of_business.value",
+        "online_provider.details.gstin.value",
+        "online_provider.details.status.value",
+        "online_provider.details.legal_name.value",
     ];
 }
