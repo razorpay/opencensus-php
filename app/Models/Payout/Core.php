@@ -4738,12 +4738,9 @@ class Core extends Base\Core
      */
     public function isWorkflowServiceEnabled(): bool
     {
-        $variant = $this->app['razorx']->getTreatment($this->merchant->getId(),
-            Merchant\RazorxTreatment::PROCESS_VIA_WORKFLOW_SERVICE,
-            $this->mode
-        );
+        $isBlacklistedMerchant = $this->merchant->isFeatureEnabled(FeatureConstants::BLOCKLIST_FOR_WORKFLOW_SERVICE);
 
-        return (strtolower($variant) === 'on');
+        return $isBlacklistedMerchant === false;
     }
 
     public function updatePayoutEntry($payoutId, $input) {

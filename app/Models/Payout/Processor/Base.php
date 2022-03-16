@@ -1686,17 +1686,14 @@ class Base extends BaseCore
      */
     public function isWorkflowServiceEnabled(): bool
     {
-        $variant = $this->app['razorx']->getTreatment($this->merchant->getId(),
-            Merchant\RazorxTreatment::PROCESS_VIA_WORKFLOW_SERVICE,
-            $this->mode
-        );
+        $isBlacklistedMerchant = $this->merchant->isFeatureEnabled(Features::BLOCKLIST_FOR_WORKFLOW_SERVICE);
 
         $this->trace->info(TraceCode::WORKFLOW_SERVICE_RAZOR_X_TREATMENT, [
-            'result'        => $variant,
+            'result'        => $isBlacklistedMerchant,
             'merchant_id'   => $this->merchant->getId(),
         ]);
 
-        return (strtolower($variant) === 'on');
+        return $isBlacklistedMerchant === false;
     }
 
     /**

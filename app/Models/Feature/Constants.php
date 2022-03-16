@@ -1246,6 +1246,12 @@ class Constants
      */
     const DISALLOW_LINKED_ACCOUNT_WITH_DUPLICATE_EMAILS = 'no_la_for_existing_emails';
 
+    /**
+     * Feature flag to block merchants on workflow service.
+     * If the feature is enabled, workflow will be processed via API, else via workflow service
+     */
+    const BLOCKLIST_FOR_WORKFLOW_SERVICE = 'blocklist_for_wf_service';
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -1710,7 +1716,7 @@ class Constants
         self::RECURRING_CARD_MANDATE_BILLDESK_SIHUB => true,
         self::RAZORPAYX_FLOWS_VIA_OAUTH       => true,
         self::ACCEPT_ONLY_3DS_PAYMENTS        => true,
-
+        self::BLOCKLIST_FOR_WORKFLOW_SERVICE  => true,
     ];
 
     // Entity type constants
@@ -2436,6 +2442,11 @@ class Constants
             'display_name' => 'Access to RazorpayX flows via oauth',
             'description'  => 'This feature, if enabled, will allow access to RazorpayX exclusive flows via oauth',
         ],
+        self::BLOCKLIST_FOR_WORKFLOW_SERVICE => [
+            'feature'      => self::BLOCKLIST_FOR_WORKFLOW_SERVICE,
+            'display_name' => 'Process workflows via API (old workflow setup)',
+            'description'  => 'This feature, if enabled, will process the workflows for the merchant via API Monolith',
+        ]
     ];
 
     /**
