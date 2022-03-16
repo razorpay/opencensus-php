@@ -16,6 +16,8 @@ class Type
     const EXPLORE_DASHBOARD_BUTTON_AT_WELCOME_PAGE_CLICKED = 'explore_dashboard_button_at_welcome_page_clicked';
     const NFT_PROJECT                                      = 'nft_project'; // used for checking if merchant has received their NFT
     const CA_LINKING_OPT_OUT                               = 'ca_linking_opt_out';
+    const VA_KYC_STARTED                                   = 'va_kyc_started';
+    const VA_KYC_POST_ACTIVATION_COMPLETED                 = 'va_kyc_post_activation_completed';
 
     // CA Account Status Types
     const CA_ALLOCATED_BANK             = 'ca_allocated_bank';

@@ -20,6 +20,8 @@ class GroupType
             Type::EXPLORE_DASHBOARD_BUTTON_AT_WELCOME_PAGE_CLICKED,
             Type::NFT_PROJECT,
             Type::CA_LINKING_OPT_OUT,
+            Type::VA_KYC_STARTED,
+            Type::VA_KYC_POST_ACTIVATION_COMPLETED,
         ],
 
         Group::X_MERCHANT_CURRENT_ACCOUNTS => [
