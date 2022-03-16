@@ -2688,7 +2688,7 @@ class Core extends Base\Core
 
                 if($shortUrl !== "")
                 {
-                    $this->trace->count(METRIC::PAYMENT_HANDLE_SHORTENING_SUCCESSFUL_COUNT, [
+                    $this->trace->count(Metric::PAYMENT_HANDLE_SHORTENING_SUCCESSFUL_COUNT, [
                         'slug'    => $handle,
                         'retries' => $retryTotal - $retry
                     ]);
