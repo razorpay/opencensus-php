@@ -110,6 +110,7 @@ class Repository extends Transaction\Repository
         $this->trace->info(TraceCode::QUERY_TIME_FOR_TRANSACTION_API , [
             'duration_ms'    => $totalFetchTime,
             'merchantId'     => $merchantId,
+            'queryparams'    => array_keys($input),
         ]);
 
 
@@ -142,6 +143,7 @@ class Repository extends Transaction\Repository
         $this->trace->info(TraceCode::QUERY_TIME_FOR_TRANSACTION_API_FOR_BANKING , [
             'duration_ms'    => $totalFetchTime,
             'merchantId'     => $merchantId,
+            'queryparams'    => array_keys($input),
         ]);
 
 

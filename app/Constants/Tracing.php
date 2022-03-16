@@ -316,6 +316,7 @@ class Tracing
             'payout_reject_bulk',
             'transaction_statement_fetch',
             'transaction_statement_fetch_multiple',
+            'transaction_statement_fetch_multiple_for_banking',
             'payout_purpose_get',
             'payout_purpose_post',
             'fund_account_create',
