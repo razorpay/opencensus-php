@@ -47,7 +47,7 @@ class PaymentDowntimeEvent extends Job
         try
         {
             /** @var \RZP\Models\Payment\Downtime\Entity */
-            $downtime = unserialize($this->serializedDowntime);
+            $downtime = unserialize($this->serializedDowntime); // nosemgrep : php.lang.security.unserialize-use.unserialize-use
 
             $downtimeType = ($downtime->getMerchantId() === null) ? DowntimeService::PLATFORM : DowntimeService::MERCHANT;
 

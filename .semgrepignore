@@ -4,6 +4,7 @@ tests/*
 /* Env Files */
 environment/.env.drone
 environment/.env.sample
+environment/.env.defaults
 
 /* Mock */
 app/Services/Mock/*.php

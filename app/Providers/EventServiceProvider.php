@@ -180,7 +180,7 @@ class EventServiceProvider extends ServiceProvider
         // Actual job class is wrapped under likes of SyncJob, SqsJob classes.
         // Also we only have to deal with Job classes extending our base Job.
         //
-        $resolvedJob  = unserialize($job->payload()['data']['command']);
+        $resolvedJob  = unserialize($job->payload()['data']['command']); // nosemgrep : php.lang.security.unserialize-use.unserialize-use
 
         if ($resolvedJob instanceof Job === true)
         {
