@@ -108,7 +108,7 @@ class Base
 
     const SCHEDULE = '/channel_health_events/schedules';
 
-    const MANUAL_OVERRIDE = '/channel_health_events/manual-override';
+    const MANUAL_OVERRIDE = '/channel_health_events/manual_override';
 
     const SCHEDULE_GET_ROUTE = '/routing/schedules';
 
@@ -127,6 +127,8 @@ class Base
     const FTS_FAIL_FAST_STATUS_LOGS_GET_URL = '/routing/fail_fast_status_logs';
 
     const FTS_NEW_CHANNEL_HEALTH_STATS = '/routing/channel_health_stats';
+
+    const FTS_FAIL_FAST_STATUS_MANUAL_UPDATE = '/channel_health_events/fail_fast_status/manual_update';
 
     // Headers
     const ACCEPT        = 'Accept';

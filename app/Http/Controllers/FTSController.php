@@ -280,4 +280,11 @@ class FTSController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function failFastStatusManualUpdate()
+    {
+        $response = $this->app['fts_fund_transfer']->failFastStatusManualUpdate($this->input);
+
+        return ApiResponse::json($response);
+    }
 }

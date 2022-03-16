@@ -1469,4 +1469,14 @@ class FundTransfer extends Base
             Requests::GET,
             $input);
     }
+
+    public function failFastStatusManualUpdate(array $input)
+    {
+        $this->setAdminHeader();
+
+        return $this->createAndSendRequest(
+            parent::FTS_FAIL_FAST_STATUS_MANUAL_UPDATE,
+            Requests::POST,
+            $input);
+    }
 }

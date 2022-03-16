@@ -600,7 +600,7 @@ class Route
         'fts_dashboard_merchant_configurations_create'      => ['post',     'fts/dashboard/merchant_configurations',                            'FTSController@createMerchantConfigurations'                        ],
         'fts_dashboard_merchant_configurations_delete'      => ['delete',   'fts/dashboard/merchant_configurations',                            'FTSController@deleteMerchantConfigurations'                        ],
         'fts_dashboard_merchant_configurations_patch'       => ['patch',    'fts/dashboard/merchant_configurations',                            'FTSController@patchMerchantConfigurations'                         ],
-
+        'fts_dashboard_fail_fast_status_manual_update'      => ['post',     'fts/dashboard/fail_fast_status/manual_update',                     'FTSController@failFastStatusManualUpdate'                          ],
 
         'nodal_file_upload_retry'                  => ['post',     'nodal_file_upload/retry',                        'FundTransferAttemptController@nodalFileUploadThroughBeam',         ],
         'channel_health_check'                     => ['post',     'channel_health_check/{channel}',                 'FundTransferAttemptController@healthCheck',                        ],
@@ -6146,6 +6146,7 @@ class Route
         'fts_dashboard_merchant_configurations_create',
         'fts_dashboard_merchant_configurations_delete',
         'fts_dashboard_merchant_configurations_patch',
+        'fts_dashboard_fail_fast_status_manual_update',
 
         'create_merchant_options_admin',
         'read_merchant_options_admin',
@@ -7349,6 +7350,7 @@ class Route
         'fts_dashboard_merchant_configurations_create'      => Permission::FTS_ROUTING_RULES_UPDATE,
         'fts_dashboard_merchant_configurations_delete'      => Permission::FTS_ROUTING_RULES_UPDATE,
         'fts_dashboard_merchant_configurations_patch'       => Permission::FTS_ROUTING_RULES_UPDATE,
+        'fts_dashboard_fail_fast_status_manual_update'      => Permission::FTS_ROUTING_RULES_UPDATE,
 
         //relay permissions
         'relay_get_apps'                                    => Permission::RELAY_READ_PERMISSION,
@@ -9959,6 +9961,7 @@ class Route
             'fts_dashboard_merchant_configurations_create',
             'fts_dashboard_merchant_configurations_delete',
             'fts_dashboard_merchant_configurations_patch',
+            'fts_dashboard_fail_fast_status_manual_update',
             'fund_account_bulk_create',
             'fund_account_create',
             'fund_account_create_public',
