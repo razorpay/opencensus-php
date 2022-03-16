@@ -160,7 +160,7 @@ class AccountV2Test extends TestCase
 
         $merchantDetails->setGstinVerificationStatus(POIStatus::VERIFIED);
 
-        $value = (new \RZP\Models\Merchant\Detail\Core())->isAutoKycDone($merchantDetails);
+        $value = (new Detail\Core())->isAutoKycDone($merchantDetails);
 
         $this->assertEquals(true, $value);
     }

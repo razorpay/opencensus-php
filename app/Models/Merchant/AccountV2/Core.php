@@ -201,7 +201,13 @@ class Core extends Merchant\Core
 
         $merchantCore = new Merchant\Core;
 
-        $merchantCore->editConfig($subMerchant, $subMerchantInput);
+        // Updating merchant if the submerchant input is non-empty
+        // The editConfig internally does update of merchant
+        // Incase if the merchant is locked for update by another thread, unnecessarily the current thread keeps waiting until lock is released
+        if (empty($subMerchantInput) === false)
+        {
+            $merchantCore->editConfig($subMerchant, $subMerchantInput);
+        }
 
         $this->trace->info(TraceCode::ACCOUNT_V2_MERCHANT_UPDATE_LATENCY, [
             'merchant_id' => $subMerchant->getId(),

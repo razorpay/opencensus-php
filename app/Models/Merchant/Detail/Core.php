@@ -353,6 +353,12 @@ class Core extends Base\Core
 
                     $this->repo->merchant_detail->lockForUpdate($merchantDetails->getId());
 
+                    $this->trace->info(TraceCode::MERCHANT_DB_LOCK_ACQUIRE_LATENCY, [
+                        'acquired'                => true,
+                        'dblock_acquire_duration' => (microtime(true) - $startTimePostAcquiringMutexLock) * 1000,
+                        'merchant_id'             => $merchant->getId()
+                    ]);
+
                     $merchantDetails = Tracer::inspan(['name' => HyperTrace::EDIT_MERCHANT_DETAIL_FIELDS], function () use ($merchant, $input) {
 
                         return $this->editMerchantDetailFields($merchant, $input);
