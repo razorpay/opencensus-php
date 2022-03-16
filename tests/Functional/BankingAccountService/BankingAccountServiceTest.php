@@ -469,6 +469,43 @@ class BankingAccountServiceTest extends TestCase
         $this->assertEquals('ACCOUNTANT', $applicationSpecificFields['role_in_business']);
     }
 
+    public function testBusinessApplicationSignatoriesWithMobAuth()
+    {
+        $this->testData[__FUNCTION__] = $this->testData['testBusinessApplicationSignatories'];
+
+        $this->ba->mobAppAuthForProxyRoutes();
+
+        $attributes = [
+            'bas_business_id' => '10000000000000',
+        ];
+
+        $this->createMerchantDetailWithBusinessId($attributes);
+
+        $request = &$this->testData[__FUNCTION__]['request'];
+
+        $response = $this->startTest();
+
+        $this->assertEquals('20000000000000', $response['person_id']);
+
+        $this->assertEquals('30000000000000', $response['data']['id']);
+
+        $this->assertEquals('AUTHORIZED_SIGNATORY', $response['data']['signatories'][0]['signatory_type']);
+
+        $this->assertEquals('20000000000000', $response['data']['signatories'][0]['person_id']);
+
+        $applicationSpecificFields = $response['data']['application_specific_fields'];
+
+        $this->assertEquals('N', $applicationSpecificFields['isBusinessGovtBodyOrLiasedOnUnrecognisedStockOrInternationalOrg']);
+
+        $this->assertEquals('Y', $applicationSpecificFields['isIndianFinancialInstitution']);
+
+        $this->assertEquals('N', $applicationSpecificFields['isOwnerNotIndianCitizen']);
+
+        $this->assertEquals('Y', $applicationSpecificFields['isTaxResidentOutsideIndia']);
+
+        $this->assertEquals('ACCOUNTANT', $applicationSpecificFields['role_in_business']);
+    }
+
     public function testBusinessApplicationSignatoriesWithDocCollectionDetails()
     {
         $this->ba->proxyAuth();

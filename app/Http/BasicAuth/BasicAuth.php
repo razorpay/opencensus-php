@@ -1711,6 +1711,11 @@ class BasicAuth
         return $this->internalApp === 'care';
     }
 
+    public function isMobApp()
+    {
+        return $this->internalApp === 'master_onboarding';
+    }
+
     public function isDashboardApp()
     {
         /*
@@ -1726,6 +1731,7 @@ class BasicAuth
                 ($this->isFrontendGraphqlApp() === true) or
                 ($this->isVendorPaymentApp() === true) or
                 ($this->isCapitalCardsApp() === true) or
+                ($this->isMobApp() === true) or
                 ($this->isCapitalLOCApp() === true) or
                 ($this->isCapitalCollectionsApp() === true) or
                 ($this->isSettlementsApp() === true) or

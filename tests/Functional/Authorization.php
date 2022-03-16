@@ -221,7 +221,6 @@ class Authorization
         $this->proxy = false;
     }
 
-
     public function batchAuth($user = 'rzp_test_10000000000000')
     {
         $this->appAuth($user, \Config::get('applications.batch')['secret']);
@@ -269,6 +268,23 @@ class Authorization
         $this->appAuth($user, \Config::get('applications.stork')['secret']);
 
         $this->proxy = false;
+    }
+
+    public function mobAppAuthForProxyRoutes($mode = 'test', $merchantId = '10000000000000', $userId = null)
+    {
+        $this->appAuth('rzp_' . $mode . '_' . $merchantId, \Config::get('applications.master_onboarding')['secret']);
+
+        if ($userId === null)
+        {
+            $userId = $this->defaultMerchantUser;
+        }
+
+        $this->appHeaders['X-Dashboard-User-Id'] = $userId;
+    }
+
+    public function mobAppAuthForInternalRoutes($user = 'rzp_test')
+    {
+        $this->appAuth($user, \Config::get('applications.master_onboarding')['secret']);
     }
 
     public function freshdeskWebhookAuth($mode = 'test')

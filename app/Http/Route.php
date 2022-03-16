@@ -2261,6 +2261,18 @@ class Route
         // batch service
         'batch_service_route'                      => ['any',      'service/batch/{path?}',                          'BatchController@sendRequest'                                       ],
 
+        // Master Onboarding Service routes
+        'mob_admin_routes'                         => ['any',      'mob/admin/{path?}',                                     'MasterOnboardingController@adminRequest'                           ],
+        'mob_intent_apply_application'             => ['post',     'mob/intents/{id}/application/apply',                    'MasterOnboardingController@proxyRequest'                           ],
+        'mob_fetch_application'                    => ['get',      'mob/applications/{id}',                                 'MasterOnboardingController@proxyRequest'                           ],
+        'mob_fetch_multiple_applications'          => ['get',      'mob/applications',                                      'MasterOnboardingController@proxyRequest'                           ],
+        'mob_create_intent'                        => ['post',     'mob/intents',                                           'MasterOnboardingController@proxyRequest'                           ],
+        'mob_fetch_intent'                         => ['get',      'mob/intents/{id}',                                      'MasterOnboardingController@proxyRequest'                           ],
+        'mob_fetch_multiple_intents'               => ['get',      'mob/intents',                                           'MasterOnboardingController@proxyRequest'                           ],
+        'mob_save_workflow'                        => ['post',     'mob/save_workflow',                                     'MasterOnboardingController@proxyRequest'                           ],
+        'mob_get_workflow'                         => ['get',      'mob/get_workflow/{id}',                                 'MasterOnboardingController@proxyRequest'                           ],
+        'mob_to_bas_routes'                        => ['any',      'mob/bas/merchant/banking_application/business/{path?}', 'BasController@forwardRequest'                                      ],
+
         //all requests get forwarded to banking account service
         'banking_account_service_lms_routes_all'   => ['any',      'bas/lms/{path?}',                                    'BasController@forwardLMSRequest'                               ],
         'banking_account_service_lms_routes_ops'   => ['any',      'bas/lms_ops/{path?}',                                'BasController@forwardLMSRequest'                               ],
@@ -3919,6 +3931,7 @@ class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        'mob_to_bas_routes',
         //FTS holiday Details
         'payout_get_holiday_details',
         'coupon_expiry_alert',
@@ -4675,6 +4688,14 @@ class Route
     //
 
     public static $proxy = [
+        'mob_fetch_multiple_intents',
+        'mob_fetch_intent',
+        'mob_fetch_multiple_applications',
+        'mob_create_intent',
+        'mob_fetch_application',
+        'mob_intent_apply_application',
+        'mob_save_workflow',
+        'mob_get_workflow',
         //FTS holiday Details
         'payout_get_holiday_details',
         'fund_addition_tpv',
@@ -5382,6 +5403,7 @@ class Route
     // of X-Admin-Token being passed.
     //
     public static $admin = [
+        'mob_admin_routes',
         'merchant_business_types_admin',
         'es_transactions_sync',
         'es_payouts_sync',
@@ -6455,6 +6477,7 @@ class Route
     ];
 
     public static $routePermission = [
+        'mob_admin_routes'                          => Permission::MOB_ADMIN,
         'admin_trigger_2fa_otp'                    => Permission::AUTH_LOCAL_ADMIN,
         'admin_account_lock_unlock'                => Permission::AUTH_LOCAL_ADMIN,
         'm2m_referral_link_get'                     => Permission::VIEW_MERCHANT,
@@ -7647,6 +7670,14 @@ class Route
     ];
 
     public static $bankingRoutePermissions = [
+        'mob_fetch_multiple_intents'                   => '*',
+        'mob_fetch_intent'                             => '*',
+        'mob_fetch_multiple_applications'              => '*',
+        'mob_create_intent'                            => '*',
+        'mob_fetch_application'                        => '*',
+        'mob_intent_apply_application'                 => '*',
+        'mob_save_workflow'                            => '*',
+        'mob_get_workflow'                             => '*',
         'merchant_store_add'                           => Permission::EDIT_MERCHANT,
         'merchant_store_fetch'                         => Permission::VIEW_MERCHANT,
         'merchant_activation_needs_clarification'      => '*',
@@ -8245,6 +8276,10 @@ class Route
      * Nothing here should be in private or admin auth
      */
     public static $internalApps = [
+        'master_onboarding' => [
+            '*',
+        ],
+
         'vendor_payments' => [
             'contact_get_internal',
             'contact_list_internal',
@@ -8282,6 +8317,14 @@ class Route
         ],
 
         'merchant_dashboard' => [
+            'mob_fetch_multiple_intents',
+            'mob_fetch_intent',
+            'mob_fetch_multiple_applications',
+            'mob_create_intent',
+            'mob_fetch_application',
+            'mob_intent_apply_application',
+            'mob_save_workflow',
+            'mob_get_workflow',
             'shipping_provider_list',
             'shipping_provider_post',
             'shipping_provider_patch',
@@ -9418,6 +9461,7 @@ class Route
         ],
 
         'admin_dashboard' => [
+            'mob_admin_routes',
             'merchant_business_types_admin',
             'admin_trigger_2fa_otp',
             'admin_account_lock_unlock',

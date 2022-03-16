@@ -619,6 +619,8 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
 
         $this->registerBankingAccountService();
 
+        $this->registerMasterOnboarding();
+
         $this->registerXPayrollService();
 
         $this->registerCapitalCollectionsClient();
@@ -1797,6 +1799,23 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
             $implementation = $mock ? Mock\BankingAccountService::class : BankingAccountService::class;
 
             return new $implementation($app);
+        });
+    }
+
+    protected function registerMasterOnboarding()
+    {
+        $this->app->singleton('master_onboarding', function ($app)
+        {
+            $mock = $app['config']->get('applications.master_onboarding.mock');
+
+            if ($mock === true)
+            {
+                return new RZP\Services\Mock\MasterOnboardingService();
+            }
+            else
+            {
+                return new MasterOnboardingService();
+            }
         });
     }
 

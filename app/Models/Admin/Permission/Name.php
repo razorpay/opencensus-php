@@ -480,6 +480,7 @@ class Name
     // Permission to access wallet admin actions
     const WALLETS                              = 'wallet';
 
+    const MOB_ADMIN                           = 'mob_admin';
     const LOC                                 = 'loc';
     const LOC_CONFIG_EDIT                     = 'loc_config_edit';
     const LOC_CONFIG_VIEW                     = 'loc_config_view';

@@ -1,0 +1,56 @@
+<?php
+
+namespace RZP\Http\Controllers;
+
+use Request;
+use ApiResponse;
+
+use RZP\Services\MasterOnboardingService;
+
+class MasterOnboardingController extends Controller
+{
+    protected $masterOnboardingService;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->masterOnboardingService = $this->app['master_onboarding'];
+    }
+
+    /**
+     * Validates and forwards request to MOB.
+     * @return mixed
+     * @throws \RZP\Exception\BadRequestException
+     */
+
+    public function proxyRequest()
+    {
+        $request = Request::instance();
+
+        $requestUri = substr(Request::path(), 7);
+
+        $method = Request::method();
+
+        $payload = $request->all();
+
+        $response = $this->masterOnboardingService->sendRequestAndParseResponse($requestUri, $method, $payload, false);
+
+        return ApiResponse::json($response);
+    }
+
+    public function adminRequest($path = null)
+    {
+        $request = Request::instance();
+
+        $requestUri = $path;
+
+        $method = $request->method();
+
+        $payload   = $request->all();
+
+        $response = $this->masterOnboardingService->sendRequestAndParseResponse($requestUri, $method, $payload, true);
+
+        return ApiResponse::json($response);
+    }
+}

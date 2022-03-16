@@ -1153,6 +1153,15 @@ return [
         'rbl_leads_sf_time_filter' => env('RBL_LEADS_SF_TIME_FILTER', 1631903400),
     ],
 
+    'master_onboarding' => [
+        'url'                      => env('APP_MASTER_ONBOARDING_SERVICE_URL'),
+        'upstream_secret'          => env('APP_MASTER_ONBOARDING_SERVICE_UPSTREAM_SECRET'),
+        'timeout'                  => env('APP_MASTER_ONBOARDING_SERVICE_TIMEOUT_SECS', 30),
+        'mock'                     => env('MOCK_MASTER_ONBOARDING_SERVICE', false),
+        'key'                      => env('APP_MASTER_ONBOARDING_SERVICE_UPSTREAM_KEY'),
+        'secret'                   => env('APP_MASTER_ONBOARDING_SERVICE_DOWNSTREAM_SECRET'),
+    ],
+
     'acs' => [
         'sync_enabled' => env('ACS_SYNC_ENABLED', false),
         'credcase_sync_enabled' => env('CREDCASE_CONSUMER_SYNC_ENABLED', false),
