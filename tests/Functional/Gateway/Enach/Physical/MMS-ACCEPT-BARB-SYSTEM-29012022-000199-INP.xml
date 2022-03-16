@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pain.012.001.01">
+    <MndtAccptncRpt>
+        <GrpHdr>
+            <MsgId>$tokenId</MsgId>
+            <CreDtTm>2022-01-29T00:00:00+05:30</CreDtTm>
+            <InitgPty>
+                <Id>
+                    <OrgId>
+                        <Othr>
+                            <Id>ICIC00261000001992</Id>
+                        </Othr>
+                    </OrgId>
+                </Id>
+            </InitgPty>
+            <InstgAgt>
+                <FinInstnId>
+                    <ClrSysMmbId>
+                        <MmbId>BARB0VJBILE</MmbId>
+                    </ClrSysMmbId>
+                    <Nm>BANK OF BARODA</Nm>
+                </FinInstnId>
+            </InstgAgt>
+            <InstdAgt>
+                <FinInstnId>
+                    <ClrSysMmbId>
+                        <MmbId>ICIC0TREA00</MmbId>
+                    </ClrSysMmbId>
+                    <Nm>ICICI BANK LTD</Nm>
+                </FinInstnId>
+            </InstdAgt>
+        </GrpHdr>
+        <UndrlygAccptncDtls>
+            <OrgnlMsgInf>
+                <MsgId>$tokenId</MsgId>
+                <MsgNmId>pain.011.001.01</MsgNmId>
+                <CreDtTm>2022-01-29T14:42:08+05:30</CreDtTm>
+            </OrgnlMsgInf>
+            <AccptncRslt>
+                <Accptd>true</Accptd>
+                <RjctRsn>
+                    <Prtry>sack</Prtry>
+                </RjctRsn>
+            </AccptncRslt>
+            <OrgnlMndt>
+                <OrgnlMndtId>ICIC0000000011506909</OrgnlMndtId>
+            </OrgnlMndt>
+        </UndrlygAccptncDtls>
+    </MndtAccptncRpt>
+</Document>

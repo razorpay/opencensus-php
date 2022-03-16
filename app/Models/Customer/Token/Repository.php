@@ -122,6 +122,15 @@ class Repository extends Base\Repository
                     ->first();
     }
 
+    public function getDeleteTokenByGatewayToken($gatewayToken)
+    {
+        return $this->newQuery()
+                    ->where(Token\Entity::GATEWAY_TOKEN, '=', $gatewayToken)
+                    ->orderBy(Token\Entity::CREATED_AT, 'desc')
+                    ->withTrashed()
+                    ->first();
+    }
+
     public function getByGatewayTokenAndMerchantId(string $gatewayToken, string $merchantId)
     {
         return $this->newQuery()

@@ -709,6 +709,71 @@ class IciciGatewayTest extends TestCase
         zip_close($actualZipFile);
     }
 
+    public function testNachCancellationSuccessResponseFile()
+    {
+        $payment = $this->createRecurringNachPayment();
+
+        $batchFile = $this->getBatchFileToUploadForBankDebitResponse($payment);
+
+        $url = '/admin/batches';
+
+        $this->ba->adminAuth();
+
+        $this->makeRequestWithGivenUrlAndFile($url, $batchFile, 'debit');
+
+        $batch = $this->getLastEntity('batch', true);
+
+        $this->assertEquals('nach', $batch['type']);
+        $this->assertEquals('processed', $batch['status']);
+
+        $paymentEntity = $this->getDbLastPayment();
+
+        $this->assertTrue($paymentEntity->isAuthorized());
+
+        $this->assertTrue($paymentEntity->transaction->isReconciled());
+
+        $this->assertEquals('confirmed', $paymentEntity->localToken->getRecurringStatus());
+
+        $this->assertNotEmpty($paymentEntity->localToken->getGatewayToken());
+
+        $response = $this->deleteCustomerToken('token_' . $paymentEntity['token_id'], 'cust_' . $paymentEntity['customer_id']);
+
+        $this->assertTrue($response['deleted']);
+
+        $batchFile = $this->getBatchFileToUploadForMandateCancelRes($paymentEntity);
+
+        $url = '/admin/batches';
+
+        $this->ba->adminAuth();
+
+        $this->makeRequestWithGivenUrlAndFile($url, $batchFile,'cancel');
+
+        $token = $this->getTrashedDbEntityById('token', $paymentEntity->getTokenId());
+
+        $this->assertEquals('cancelled', $token['recurring_status']);
+    }
+
+    protected function getBatchFileToUploadForMandateCancelRes(Payment $payment): TestingFile
+    {
+        $tokenId = $payment->getTokenId();
+
+        $xmlData = file_get_contents(__DIR__ . '/MMS-ACCEPT-BARB-SYSTEM-29012022-000199-INP.xml');
+
+        $responseXml = strtr($xmlData, ['$tokenId' => $tokenId]);
+
+        $zip = new ZipArchive();
+
+        $zip->open(__DIR__ . '/MMS-CANCEL-ICIC-ICIC403690-29012022-000026-RES.zip', ZipArchive::CREATE);
+
+        $zip->addFromString( 'MMS-ACCEPT-BARB-SYSTEM-29012022-000199-INP.xml', $responseXml);
+
+        $zip->close();
+
+        $handle = fopen(__DIR__ . '/MMS-CANCEL-ICIC-ICIC403690-29012022-000026-RES.zip', 'r');
+
+        return (new TestingFile('MMS-CANCEL-ICIC-ICIC403690-29012022-000026-RES.zip', $handle));
+    }
+
     protected function createRecurringNachPayment()
     {
         $initialPayment = $this->createAcceptedToken();
