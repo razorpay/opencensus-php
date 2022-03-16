@@ -793,6 +793,11 @@ trait Capture
                     ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_CAPTURED);
             }
 
+            //The below condition will help us identify if a transaction was created at the gateway capture stage itself.
+            //If it is created then we don't send the same transaction ID again in journal request.
+            //Always initialize this variable before we update the payment status to captured.
+            $isTransactionPresent = $payment->isGatewayCaptured() and $payment->isAuthorized();
+
             $this->updatePaymentCaptured($payment, $autoCaptured);
 
             //
@@ -825,7 +830,7 @@ trait Capture
                 $this->handleLateBalanceUpdate($txn, $merchantBalance);
             }
 
-            $this->createLedgerEntriesForMerchantCapture($payment, $txn);
+            $this->createLedgerEntriesForMerchantCapture($payment, $txn, $isTransactionPresent);
 
             // Please keep this function at the end of transaction block, as
             // we are updating orders which lies in PG Router service now.
@@ -841,13 +846,13 @@ trait Capture
     }
 
 
-    private function createLedgerEntriesForMerchantCapture(Payment\Entity $payment, Transaction\Entity $txn)
+    private function createLedgerEntriesForMerchantCapture(Payment\Entity $payment, Transaction\Entity $txn, bool $isTransactionPresent)
     {
         try
         {
             if($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_JOURNAL_WRITES) === true)
             {
-                $transactionMessage = CaptureJournalEvents::createTransactionMessageForMerchantCapture($payment, $txn);
+                $transactionMessage = CaptureJournalEvents::createTransactionMessageForMerchantCapture($payment, $txn, $isTransactionPresent);
                 $transactionMessage[LedgerConstants::ADDITIONAL_PARAMS] = CaptureJournalEvents::fetchRulesForPaymentCredits($txn);
 
                 \Event::dispatch(new TransactionalClosureEvent(function () use ($txn, $transactionMessage) {

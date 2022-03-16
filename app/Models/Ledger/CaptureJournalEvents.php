@@ -8,9 +8,15 @@ use RZP\Constants\Entity as EntityConstant;
 
 class CaptureJournalEvents
 {
-    public static function createTransactionMessageForMerchantCapture(Payment\Entity $payment, Transaction\Entity $transaction): array
+    public static function createTransactionMessageForMerchantCapture(Payment\Entity $payment, Transaction\Entity $transaction, bool $isTransactionPresent): array
     {
         $transactionMessage = BaseJournalEvents::generateBaseForJournalEntry($transaction);
+
+        //If the transaction was already present at gateway capture stage then we don't send the same api transaction id in merchant captured stage
+        if($isTransactionPresent === true)
+        {
+            unset($transactionMessage[Constants::API_TRANSACTION_ID]);
+        }
 
         $merchantCaptureData = array(
             Constants::TRANSACTOR_ID                 => $payment->getPublicId(),
@@ -39,7 +45,7 @@ class CaptureJournalEvents
             Constants::TRANSACTOR_EVENT             => Constants::GATEWAY_CAPTURED,
             Constants::TRANSACTION_DATE             => $payment->getCreatedAt(),
             Constants::IDENTIFIERS                  => [
-                Constants::GATEWAY        => $gateway,
+                Constants::GATEWAY          => $gateway,
             ],
         );
     }
