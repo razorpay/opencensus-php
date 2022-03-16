@@ -76,12 +76,12 @@ class MasterOnboardingService
     {
         return [
             'Grpc-metadata-X-Merchant-Id'       => $this->ba->getMerchant()->getId() ?? '',
-            'X-Merchant-Email'                  => $this->ba->getMerchant()->getEmail() ?? '',
+            'Grpc-metadata-X-Merchant-Email'    => $this->ba->getMerchant()->getEmail() ?? '',
             'Grpc-metadata-X-Dashboard-User-Id' => $this->ba->getUser()->getId() ?? '',
             'Grpc-metadata-X-Service'           => $this->ba->getRequestOriginProduct(),
             'Grpc-metadata-X-Razorpay-TaskId'   => $this->app['request']->getTaskId(),
-            'X-User-Role'                       => $this->ba->getUserRole() ?? '',
-            'X-Auth-Type'                       => 'proxy',
+            'Grpc-metadata-X-User-Role'         => $this->ba->getUserRole() ?? '',
+            'Grpc-metadata-X-Auth-Type'         => 'proxy',
         ];
     }
 
@@ -122,7 +122,7 @@ class MasterOnboardingService
     {
         $path = $this->getPathWithQueryString($method, $path, $data);
 
-        $url = $this->baseUrl . '/v1/' . $path;
+        $url = $isAdmin === true ? $this->baseUrl . '/'. $path : $this->baseUrl . '/v1/' . $path;
 
         $headers = ($isAdmin === true) ? $this->getAdminRequestHeaders() : $this->getProxyRequestHeaders();
 
