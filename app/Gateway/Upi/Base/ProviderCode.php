@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Upi\Base;
 
 use RZP\Constants;
+use RZP\Trace\TraceCode;
 use RZP\Models\Bank\IFSC;
 
 class ProviderCode
@@ -497,5 +498,41 @@ class ProviderCode
         }
 
         return (array_search($psp, self::$validAutoPayPspProvider) !== false);
+    }
+
+    /**
+     * Checks if the VPA Handle of the provided VPA has been whitelisted
+     * for the provided Merchant ID (mid) for testing purposes
+     *
+     * @param string $vpa
+     * @param string $mid
+     *
+     * @return bool
+     */
+    public static function validateAutopayVpaHandleForPspTesting(string $vpa, string $mid): bool
+    {
+        $vpaHandle  = substr($vpa, (strpos($vpa, '@') + 1));
+        $isValid    = false;
+
+        switch ($vpaHandle)
+        {
+            case self::OKSBI:
+                // For GooglePay's Testing
+                $key            = 'gateway.upi_icici.recurring_' . self::OKSBI . '_test_merchants';
+                $merchantIds    = app('config')->get($key);
+                $isValid        = (in_array($mid, $merchantIds, true) === true);
+
+                break;
+            default:
+                $isValid = false;
+        }
+
+        app('trace')->info(TraceCode::MISC_TRACE_CODE, [
+            'vpa_handle'    => $vpaHandle,
+            'is_valid'      => $isValid,
+            'merchant_id'   => $mid,
+        ]);
+
+        return $isValid;
     }
 }

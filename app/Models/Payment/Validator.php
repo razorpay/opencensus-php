@@ -1619,8 +1619,10 @@ class Validator extends Base\Validator
     protected function validateUpiBlockForAutoPay($vpa)
     {
         $isSupportedVpa = ProviderCode::validateAutoPayPspProvider($vpa, $this->isTestMode());
+        $isPspTestVpa   = ProviderCode::validateAutopayVpaHandleForPspTesting($vpa, $this->entity->merchant->getId());
 
-        if ($isSupportedVpa === false)
+        if (($isSupportedVpa === false) and
+            ($isPspTestVpa === false))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_UPI_APP_AUTO_PAY_NOT_SUPPORTED,

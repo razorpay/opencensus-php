@@ -250,6 +250,44 @@ class UpiIciciRecurringTest extends UpiInitialRecurringTestCase
         ], $payment->toArray());
     }
 
+    /**
+     * This is a tabular test that checks all MID based whitelisted vpa handles for upi recurring
+     *
+     * @dataProvider merchantBasedVpaWhitelistingForAutopayDataProvider
+     * @param $vpa - VPA E.g. "anish@oksbi" etc.
+     */
+    public function testMerchantBasedVpaWhitelisting($vpa)
+    {
+        $vpaHandle  = substr($vpa, (strpos($vpa, '@') + 1));
+        $key        = 'gateway.upi_icici.recurring_' . $vpaHandle . '_test_merchants';
+
+        $this->app['config']->set($key, ['10000000000000']);
+
+        $this->payment['vpa'] = $vpa; // override the vpa to test this scenario in TEST env
+
+        $this->goWithTheFlow(
+            null,
+            function () {
+                $this->testRecurringMandateCreate();
+            }
+        );
+    }
+
+    /**
+     * This function provides the testcases for the @testMerchantBasedVpaWhitelisting
+     * Each testcase must consist of a VPA (string)
+     *
+     * @return array of testcases
+     */
+    public function merchantBasedVpaWhitelistingForAutopayDataProvider()
+    {
+        $cases = [];
+
+        $cases['oksbi_allow'] = ['razorpay@oksbi'];
+
+        return $cases;
+    }
+
     protected function enableRecurringTpv()
     {
         // Create shared terminal for TPV Payment
