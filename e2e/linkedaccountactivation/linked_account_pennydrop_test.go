@@ -2,7 +2,7 @@ package e2e
 
 import (
 	"encoding/json"
-	"fmt"
+	// "fmt"
 	"net/http"
 	"os"
 	"strconv"
@@ -12,7 +12,7 @@ import (
 	"github.com/razorpay/api/e2e"
 	"github.com/razorpay/goutils/itf"
 	"github.com/razorpay/goutils/itf/httpexpect"
-	"github.com/stretchr/testify/assert"
+	// "github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -47,33 +47,33 @@ func (s *LinkedAccountPennyTestingApiTestSuite) AfterTest(suiteName, testName st
 	// Run statements after every test of the suite.
 }
 
-func (s *LinkedAccountPennyTestingApiTestSuite) TestVerificationPendingStatus() {
-    // todo remove this check
-    // intermittently failing with expected: "verification_pending" actual : "verification_failed"
-	s.T().SkipNow()
-	dir, _ := os.Getwd()
-	var laRes LinkedAccountCreateResponse
-	laReq, _ := GetLinkedAccountCreateRequest(dir + "/../linkedaccountactivation/linkedaccountcreate.json")
-	uniqueId := strconv.FormatInt(time.Now().Unix(), 10)
-	laReq.Name = "LA " + uniqueId
-	laReq.Email = "la-" + uniqueId + "@email.com"
-
-	obj := httpexpect.New(s.T(), e2e.Config.App.Hostname).
-		POST("/v1/beta/accounts").
-		WithBasicAuth(e2e.Config.SubMerchant.Username, e2e.Config.SubMerchant.Password).
-		WithHeaders(map[string]string{
-			"X-Dashboard-User-id":   e2e.Config.SubMerchant.User,
-			"X-Dashboard-User-Role": e2e.Config.SubMerchant.Role,
-			"Content-Type":          "application/json",
-		}).
-		WithJSON(laReq).
-		Expect().
-		Status(http.StatusOK).Body()
-
-	json.Unmarshal([]byte(obj.Raw()), &laRes)
-	assert.NotNil(s.T(), laRes.ActivationDetails.Status)
-	assert.Equal(s.T(), "verification_pending", laRes.ActivationDetails.Status)
-}
+// func (s *LinkedAccountPennyTestingApiTestSuite) TestVerificationPendingStatus() {
+//     // todo remove this check
+//     // intermittently failing with expected: "verification_pending" actual : "verification_failed"
+// 	s.T().SkipNow()
+// 	dir, _ := os.Getwd()
+// 	var laRes LinkedAccountCreateResponse
+// 	laReq, _ := GetLinkedAccountCreateRequest(dir + "/../linkedaccountactivation/linkedaccountcreate.json")
+// 	uniqueId := strconv.FormatInt(time.Now().Unix(), 10)
+// 	laReq.Name = "LA " + uniqueId
+// 	laReq.Email = "la-" + uniqueId + "@email.com"
+//
+// 	obj := httpexpect.New(s.T(), e2e.Config.App.Hostname).
+// 		POST("/v1/beta/accounts").
+// 		WithBasicAuth(e2e.Config.SubMerchant.Username, e2e.Config.SubMerchant.Password).
+// 		WithHeaders(map[string]string{
+// 			"X-Dashboard-User-id":   e2e.Config.SubMerchant.User,
+// 			"X-Dashboard-User-Role": e2e.Config.SubMerchant.Role,
+// 			"Content-Type":          "application/json",
+// 		}).
+// 		WithJSON(laReq).
+// 		Expect().
+// 		Status(http.StatusOK).Body()
+//
+// 	json.Unmarshal([]byte(obj.Raw()), &laRes)
+// 	assert.NotNil(s.T(), laRes.ActivationDetails.Status)
+// 	assert.Equal(s.T(), "verification_pending", laRes.ActivationDetails.Status)
+// }
 
 func createLinkedAccount(t *testing.T) LinkedAccountCreateResponse {
 
@@ -103,27 +103,27 @@ func createLinkedAccount(t *testing.T) LinkedAccountCreateResponse {
 	return laRes
 }
 
-func (s *LinkedAccountPennyTestingApiTestSuite) TestFetchMerchantActivationDetails() {
-    //todo:: remove this check
-	s.T().SkipNow()
-	laObj := createLinkedAccount(s.T())
-	fmt.Println(laObj)
-	var laRes MerchantActivationDetails
-	res := httpexpect.New(s.T(), e2e.Config.App.Hostname).
-		GET("/v1/merchant/activation").
-		WithBasicAuth(e2e.Config.SubMerchant.Username, e2e.Config.SubMerchant.Password).
-		WithHeaders(map[string]string{
-			"X-Razorpay-Account":    laObj.Id,
-			"X-Dashboard-User-id":   e2e.Config.SubMerchant.User,
-			"X-Dashboard-User-Role": e2e.Config.SubMerchant.Role,
-		}).
-		Expect().
-		Status(http.StatusOK).Body()
-
-	json.Unmarshal([]byte(res.Raw()), &laRes)
-	assert.Equal(s.T(), "verification_pending", laRes.ActivationStatus)
-
-}
+// func (s *LinkedAccountPennyTestingApiTestSuite) TestFetchMerchantActivationDetails() {
+//     //todo:: remove this check
+// 	s.T().SkipNow()
+// 	laObj := createLinkedAccount(s.T())
+// 	fmt.Println(laObj)
+// 	var laRes MerchantActivationDetails
+// 	res := httpexpect.New(s.T(), e2e.Config.App.Hostname).
+// 		GET("/v1/merchant/activation").
+// 		WithBasicAuth(e2e.Config.SubMerchant.Username, e2e.Config.SubMerchant.Password).
+// 		WithHeaders(map[string]string{
+// 			"X-Razorpay-Account":    laObj.Id,
+// 			"X-Dashboard-User-id":   e2e.Config.SubMerchant.User,
+// 			"X-Dashboard-User-Role": e2e.Config.SubMerchant.Role,
+// 		}).
+// 		Expect().
+// 		Status(http.StatusOK).Body()
+//
+// 	json.Unmarshal([]byte(res.Raw()), &laRes)
+// 	assert.Equal(s.T(), "verification_pending", laRes.ActivationStatus)
+//
+// }
 
 func (s *LinkedAccountPennyTestingApiTestSuite) TestCheck() {
 	httpexpect.New(s.T(), e2e.Config.App.Hostname).
