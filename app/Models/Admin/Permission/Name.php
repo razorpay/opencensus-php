@@ -477,6 +477,9 @@ class Name
     // Permission to access capital-cards service
     const CAPITAL_CARDS                       = 'capital_cards';
 
+    // Permission to access capital-scorecard service
+    const CAPITAL_SCORECARD                   = 'capital_scorecard';
+
     // Permission to access wallet admin actions
     const WALLETS                              = 'wallet';
 

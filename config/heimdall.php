@@ -1461,6 +1461,11 @@ return [
                 'assignable'  => true,
             ],
 
+            Permission::CAPITAL_SCORECARD => [
+                'description' => 'Allow access to capital-scorecard service from dashboard',
+                'assignable'  => true,
+            ],
+
             Permission::CAPITAL_CREATE_PAYMENT_LINK => [
                 'description' => 'Allow capital to create payment link',
                 'assignable'  => true,
