@@ -1932,14 +1932,15 @@ class Core extends Base\Core
      * Push local tokenIds into SQS for local saved cards tokenisation
      *
      * @param  array  $tokenIds
+     * @param  string  $asyncTokenisationJobId
      *
      * @return void
      */
-    public function pushTokenIdsToQueueForTokenisation(array $tokenIds): void
+    public function pushTokenIdsToQueueForTokenisation(array $tokenIds, string $asyncTokenisationJobId): void
     {
         foreach ($tokenIds as $tokenId)
         {
-            LocalSavedCardTokenisationJob::dispatch($this->mode, $tokenId);
+            LocalSavedCardTokenisationJob::dispatch($this->mode, $tokenId, $asyncTokenisationJobId);
         }
     }
 

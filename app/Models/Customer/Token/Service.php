@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Customer\Token;
 
+use RZP\Diag\EventCode;
 use Aws\Ec2\Exception\Ec2Exception;
 use phpseclib\Crypt\AES;
 use RZP\Encryption\AESEncryption;
@@ -864,16 +865,25 @@ class Service extends Base\Service
     {
         try
         {
+            $asyncTokenisationJobId = UniqueIdEntity::generateUniqueId();
+
             $merchantIds = $this->repo->feature->findMerchantIdsHavingFeatures([Feature\Constants::ASYNC_TOKENISATION]);
 
+            $this->app['diag']->trackAsyncTokenisationEvent(EventCode::ASYNC_TOKENISATION_JOB_INITIATED, [
+                'merchant_id_count'         => count($merchantIds),
+                'merchant_id_list'          => $merchantIds,
+                'async_tokenization_job_id' => $asyncTokenisationJobId,
+            ]);
+
             $this->trace->info(TraceCode::ASYNC_LOCAL_TOKENISATION_REQUEST, [
-                'merchantIdsCount'  => count($merchantIds),
-                'merchantIdsList'   => $merchantIds,
+                'merchantIdsCount'          => count($merchantIds),
+                'merchantIdsList'           => $merchantIds,
+                'async_tokenization_job_id' => $asyncTokenisationJobId,
             ]);
 
             foreach ($merchantIds as $merchantId)
             {
-                MerchantAsyncTokenisationJob::dispatch($this->mode, $merchantId);
+                MerchantAsyncTokenisationJob::dispatch($this->mode, $merchantId, $asyncTokenisationJobId);
             }
 
             $this->trace->info(TraceCode::ASYNC_LOCAL_TOKENISATION_DISPATCH_SUCCESS, [
@@ -916,7 +926,11 @@ class Service extends Base\Service
 
             $this->core->storeConsents($merchantId, $validTokenIds);
 
-            $this->core->pushTokenIdsToQueueForTokenisation($validTokenIds);
+            $asyncTokenisationJobId = UniqueIdEntity::generateUniqueId();
+
+            $this->core->pushTokenIdsToQueueForTokenisation($validTokenIds, $asyncTokenisationJobId);
+
+            $this->triggerBulkConsentCollectionAndTokenisationEvent($merchantId, $asyncTokenisationJobId, $validTokenIds);
 
             $this->trace->info(TraceCode::BULK_LOCAL_TOKENISATION_DISPATCH_SUCCESS, [
                 'merchantId'              => $merchantId,
@@ -942,6 +956,30 @@ class Service extends Base\Service
             );
 
             return ['success' => false, 'message' => 'Error occurred while triggering tokenisation'];
+        }
+    }
+
+    /**
+     * @param string $merchantId
+     * @param string $asyncTokenisationJobId
+     * @param array  $tokenIds
+     */
+    protected function triggerBulkConsentCollectionAndTokenisationEvent(string $merchantId, string $asyncTokenisationJobId, array &$tokenIds): void
+    {
+        $tokenIdsChunk = array_chunk($tokenIds, 5000);
+        $tokenIdsCount = count($tokenIds);
+
+        foreach ($tokenIdsChunk as $chunk) {
+            $this->app['diag']->trackAsyncTokenisationEvent(
+                EventCode::ASYNC_TOKENISATION_ADMIN_CONSENT_COLLECTION_AND_TOKENISATION_TRIGGER,
+                [
+                    'merchant_id' => $merchantId,
+                    'token_id_list' => $chunk,
+                    'token_id_count' => count($chunk),
+                    'total_token_id_count' => $tokenIdsCount,
+                    'async_tokenisation_job_id' => $asyncTokenisationJobId,
+                ]
+            );
         }
     }
 }

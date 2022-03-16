@@ -2,10 +2,13 @@
 
 namespace RZP\Jobs;
 
+use App;
+use RZP\Diag\EventCode;
 use RZP\Models\Merchant\Account;
 use RZP\Trace\TraceCode;
 use RZP\Models\Customer\Token;
 use Razorpay\Trace\Logger as Trace;
+use Throwable;
 
 class MerchantAsyncTokenisationJob extends Job
 {
@@ -20,11 +23,15 @@ class MerchantAsyncTokenisationJob extends Job
 
     protected $merchantId;
 
-    public function __construct(string $mode, string $merchantId)
+    protected $asyncTokenisationJobId;
+
+    public function __construct(string $mode, string $merchantId, string $asyncTokenisationJobId)
     {
         parent::__construct($mode);
 
         $this->merchantId = $merchantId;
+
+        $this->asyncTokenisationJobId = $asyncTokenisationJobId;
     }
 
     public function init(): void
@@ -41,13 +48,18 @@ class MerchantAsyncTokenisationJob extends Job
     {
         parent::handle();
 
+        $totalTokensDispatched = 0;
+
         try
         {
             $merchantId = $this->merchantId;
 
+            $this->triggerEvent(EventCode::ASYNC_TOKENISATION_MERCHANT_PICKED);
+
             $this->trace->info(TraceCode::MERCHANT_ASYNC_TOKENISATION_JOB_REQUEST, [
-                'mode'          => $this->mode,
-                'merchantId'    => $merchantId,
+                'mode'                      => $this->mode,
+                'merchantId'                => $merchantId,
+                'async_tokenization_job_id' => $this->asyncTokenisationJobId,
             ]);
 
             if($merchantId === Account::SHARED_ACCOUNT)
@@ -76,7 +88,7 @@ class MerchantAsyncTokenisationJob extends Job
                     'tokensCount'   => count($tokenIds),
                 ]);
 
-                $this->tokenCore->pushTokenIdsToQueueForTokenisation($tokenIds);
+                $this->tokenCore->pushTokenIdsToQueueForTokenisation($tokenIds, $this->asyncTokenisationJobId);
 
                 $this->trace->info(TraceCode::ASYNC_TOKENISATION_TOKEN_DISPATCH_SUCCESS, [
                     'merchantId'    => $this->merchantId,
@@ -86,15 +98,23 @@ class MerchantAsyncTokenisationJob extends Job
 
                 $offset += $queryLimit;
                 $tokensCount = count($tokenIds);
+                $totalTokensDispatched += $tokensCount;
             }
+
+            $this->triggerEvent(EventCode::ASYNC_TOKENISATION_MERCHANT_COMPLETED, [
+                'total_tokens_dispatched' => $totalTokensDispatched,
+            ]);
 
             $this->trace->info(TraceCode::MERCHANT_ASYNC_TOKENISATION_JOB_SUCCESS, [
                 'mode'          => $this->mode,
                 'merchantId'    => $merchantId,
+                'total'         => $totalTokensDispatched
             ]);
         }
-        catch (\Throwable $e)
+        catch (Throwable $e)
         {
+            $this->trackAsyncTokenisationJobErrorEvent($e, $totalTokensDispatched);
+
             $this->trace->traceException(
                 $e,
                 Trace::ERROR,
@@ -107,5 +127,30 @@ class MerchantAsyncTokenisationJob extends Job
         }
 
         $this->delete();
+    }
+
+    protected function trackAsyncTokenisationJobErrorEvent(Throwable $e, int $totalTokensDispatched): void
+    {
+        $error_details = [
+            'message' => $e->getMessage(),
+            'code'    => $e->getCode(),
+        ];
+
+        $this->triggerEvent(EventCode::ASYNC_TOKENISATION_MERCHANT_FAILED, [
+            'total_tokens_dispatched' => $totalTokensDispatched,
+            'error_detail'            => json_encode($error_details),
+        ]);
+    }
+
+    protected function triggerEvent(array $eventData, array $customProperties = []): void
+    {
+        $properties = [
+            'merchant_id'               => $this->merchantId,
+            'async_tokenization_job_id' => $this->asyncTokenisationJobId,
+        ];
+
+        $properties = array_merge($properties, $customProperties);
+
+        app('diag')->trackAsyncTokenisationEvent($eventData, $properties);
     }
 }

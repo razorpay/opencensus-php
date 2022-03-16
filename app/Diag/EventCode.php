@@ -1106,4 +1106,44 @@ class EventCode
         'group'   => 'reserve_balance_addition',
         'name'    => 'reserve.balance.addition.success'
     ];
+
+    public const ASYNC_TOKENISATION_JOB_INITIATED = [
+        'group'   => 'async_tokenisation',
+        'name'    => 'async_tokenisation.job.initiated'
+    ];
+
+    public const ASYNC_TOKENISATION_MERCHANT_PICKED = [
+        'group'   => 'async_tokenisation',
+        'name'    => 'async_tokenisation.merchant.picked'
+    ];
+
+    public const ASYNC_TOKENISATION_MERCHANT_COMPLETED = [
+        'group'   => 'async_tokenisation',
+        'name'    => 'async_tokenisation.merchant.completed'
+    ];
+
+    public const ASYNC_TOKENISATION_MERCHANT_FAILED = [
+        'group'   => 'async_tokenisation',
+        'name'    => 'async_tokenisation.merchant.failed'
+    ];
+
+    public const ASYNC_TOKENISATION_TOKEN_CREATION_INITIATED = [
+        'group'   => 'async_tokenisation',
+        'name'    => 'async_tokenisation.token.creation_initiated'
+    ];
+
+    public const ASYNC_TOKENISATION_TOKEN_CREATION_SUCCESS = [
+        'group'   => 'async_tokenisation',
+        'name'    => 'async_tokenisation.token.creation_success'
+    ];
+
+    public const ASYNC_TOKENISATION_TOKEN_CREATION_FAILED = [
+        'group'   => 'async_tokenisation',
+        'name'    => 'async_tokenisation.token.creation_failed'
+    ];
+
+    public const ASYNC_TOKENISATION_ADMIN_CONSENT_COLLECTION_AND_TOKENISATION_TRIGGER = [
+        'group'   => 'async_tokenisation',
+        'name'    => 'async_tokenisation.admin_dashboard.tokens.consent_collection_and_tokenisation',
+    ];
 }

@@ -2,9 +2,13 @@
 
 namespace RZP\Jobs;
 
+use App;
+use RZP\Diag\EventCode;
+use RZP\Models\Card\Entity as CardEntity;
 use RZP\Models\Customer\Token;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
+use Throwable;
 
 class LocalSavedCardTokenisationJob extends Job
 {
@@ -20,16 +24,20 @@ class LocalSavedCardTokenisationJob extends Job
 
     protected $merchantId;
 
+    protected $asyncTokenisationJobId;
+
     /**
      * @var Token\Core
      */
     protected $tokenCore;
 
-    public function __construct($mode, $tokenId)
+    public function __construct(string $mode, string $tokenId, string $asyncTokenisationJobId)
     {
         parent::__construct($mode);
 
         $this->tokenId = $tokenId;
+
+        $this->asyncTokenisationJobId = $asyncTokenisationJobId;
     }
 
     public function init(): void
@@ -48,13 +56,19 @@ class LocalSavedCardTokenisationJob extends Job
 
         try
         {
+            /** @var Token\Entity $token */
             $token = $this->repoManager->token->findOrFailPublic($this->tokenId);
 
             $this->merchantId = $token->getMerchantId();
 
+            $card = $token->card;
+
+            $this->triggerEvent(EventCode::ASYNC_TOKENISATION_TOKEN_CREATION_INITIATED, $card);
+
             $this->trace->info(TraceCode::LOCAL_TOKENISATION_JOB_REQUEST, [
-                'tokenId'       => $this->tokenId,
-                'merchantId'    => $this->merchantId,
+                'tokenId'                   => $this->tokenId,
+                'merchantId'                => $this->merchantId,
+                'async_tokenization_job_id' => $this->asyncTokenisationJobId,
             ]);
 
             if($token->isLocal() === false)
@@ -71,9 +85,9 @@ class LocalSavedCardTokenisationJob extends Job
                 return;
             }
 
-            $card = $token->card;
-
             $cardInput = $this->tokenCore->buildCardInputForTokenisation($card);
+
+            $startTime = millitime();
 
             /**
              * this takes card details from existing token, card entity
@@ -84,16 +98,22 @@ class LocalSavedCardTokenisationJob extends Job
             $this->tokenCore->migrateToTokenizedCard($token, $cardInput);
 
             $this->trace->info(TraceCode::LOCAL_TOKENISATION_JOB_SUCCESS, [
-                'tokenId' => $this->tokenId,
+                'tokenId'       => $this->tokenId,
                 'merchantId'    => $this->merchantId,
+                'timeTaken'     => millitime() - $startTime,
+                'network'       => $card->getNetwork(),
             ]);
+
+            $this->triggerEvent(EventCode::ASYNC_TOKENISATION_TOKEN_CREATION_SUCCESS, $card);
 
             $this->delete();
 
             return;
         }
-        catch (\Throwable $e)
+        catch (Throwable $e)
         {
+            $this->trackFailedTokenCreationEvent($e, $card ?? new CardEntity());
+
             $this->trace->traceException(
                 $e,
                 Trace::ERROR,
@@ -113,7 +133,6 @@ class LocalSavedCardTokenisationJob extends Job
     {
         if ($this->attempts() > self::MAX_RETRY_ATTEMPT)
         {
-            // @TODO: Add analytics event later to show job failure
             $this->trace->error(TraceCode::LOCAL_TOKENISATION_JOB_FAILED, [
                 'tokenId'       => $this->tokenId,
                 'merchantId'    => $this->merchantId,
@@ -134,5 +153,35 @@ class LocalSavedCardTokenisationJob extends Job
             'tokenId'       => $this->tokenId,
             'merchantId'    => $this->merchantId,
         ]);
+    }
+
+    protected function trackFailedTokenCreationEvent(Throwable $e, CardEntity $card): void
+    {
+        $error_details = [
+            'message' => $e->getMessage(),
+            'code'    => $e->getCode(),
+        ];
+
+        $properties = [
+            'error_detail' => json_encode($error_details),
+        ];
+
+        $this->triggerEvent(EventCode::ASYNC_TOKENISATION_TOKEN_CREATION_FAILED, $card, $properties);
+    }
+
+    protected function triggerEvent(array $eventData, CardEntity $card, array $customProperties = []): void
+    {
+        $properties = [
+            'token_id'                  => $this->tokenId,
+            'merchant_id'               => $this->merchantId,
+            'card_network'              => $card->getNetwork(),
+            'card_issuer'               => $card->getIssuer(),
+            'async_tokenization_job_id' => $this->asyncTokenisationJobId,
+            'attempt'                   => $this->attempts(),
+        ];
+
+        $properties = array_merge($properties, $customProperties);
+
+        app('diag')->trackAsyncTokenisationEvent($eventData, $properties);
     }
 }
