@@ -252,10 +252,13 @@ class UpiPaymentServiceReconciliate extends SubReconciliator\PaymentReconciliate
             Constants::GATEWAY_DATA => $dataToUpdate,
             Constants::GATEWAY      => $this->payment->getGateway(),
             Constants::BATCH_ID     => $this->batchId,
+            Constants::MODEL        => Constants::AUTHORIZE
         ];
 
+        $publishData['data'] = json_encode($data);
+
         try {
-            $response = $metroHandler->publish($topic, $data);
+            $response = $metroHandler->publish($topic, $publishData);
 
             $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_METRO_MESSAGE_PUBLISHED,
             [
@@ -264,7 +267,6 @@ class UpiPaymentServiceReconciliate extends SubReconciliator\PaymentReconciliate
             ]);
 
         } catch (Throwable $e) {
-
             $this->trace->traceException(
                 $e,
                 Trace::CRITICAL,
