@@ -2486,7 +2486,6 @@ class Constants
         self::QR_CODES,
         self::ES_AUTOMATIC,
         self::ES_AUTOMATIC_RESTRICTED,
-        self::SHOW_CREDIT_SCORE,
         self::SKIP_WORKFLOWS_FOR_API,
         self::LOC_STAGE_2,
         self::SETTLEMENTS_SMS_STOP,
