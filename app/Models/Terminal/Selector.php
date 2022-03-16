@@ -996,7 +996,7 @@ class Selector extends Base\Core
         }
 
         // Route payments to router in Prod and stage
-        if (in_array($this->app['env'], [Environment::PRODUCTION, Environment::BETA, Environment::AXIS, Environment::FUNC, Environment::PERF]) === false)
+        if (in_array($this->app['env'], [Environment::PRODUCTION, Environment::BETA, Environment::AXIS, Environment::FUNC, Environment::PERF, Environment::PERF2]) === false)
         {
             return false;
         }

@@ -1,0 +1,24 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.class: traefik
+  generation: 1
+  name: api
+  namespace: perf2
+spec:
+  rules:
+    - host: perf2-api.razorpay.in
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: api
+              servicePort: 80
+    - host: perf2-invoices.razorpay.in
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: api
+              servicePort: 80

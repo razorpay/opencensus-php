@@ -1,0 +1,94 @@
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: api-web
+  namespace: perf2
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      name: api-web
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        iam.amazonaws.com/role: perf2-api
+      labels:
+        name: api-web
+    spec:
+      containers:
+        - args:
+            - web
+          env:
+            - name: APP_MODE
+              valueFrom:
+                configMapKeyRef:
+                  key: APP_MODE
+                  name: api
+          image: razorpay/api:65776c4923b1d010ba80b9ae7d2f3e0d1014299b
+          imagePullPolicy: IfNotPresent
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - /bin/rm
+                  - -f
+                  - /app/public/commit.txt
+                  - ;
+                  - sleep
+                  - "5"
+                  - ;
+                  - /usr/sbin/apachectl
+                  - -s
+                  - quit
+          livenessProbe:
+            httpGet:
+              path: /commit.txt
+              port: 80
+              httpHeaders:
+                - name: Host
+                  value: perf2-api.razorpay.in
+            initialDelaySeconds: 60
+            periodSeconds: 2
+          name: api
+          ports:
+            - containerPort: 80
+              protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: /commit.txt
+              port: 80
+              httpHeaders:
+                - name: Host
+                  value: perf2-api.razorpay.in
+            initialDelaySeconds: 60
+            periodSeconds: 120
+          resources:
+            limits:
+              cpu: "1"
+              memory: 2861Mi
+            requests:
+              cpu: "1"
+              memory: 2861Mi
+          volumeMounts:
+            - mountPath: /app/storage/logs/
+              name: trace
+            - mountPath: /var/log/apache/
+              name: apache
+      dnsPolicy: Default
+      imagePullSecrets:
+        - name: registry
+      nodeSelector:
+        node-role.kubernetes.io/qa: ""
+      restartPolicy: Always
+      volumes:
+        - name: trace
+          hostPath:
+            path: /var/log/fluentd/splunk/api/trace
+        - name: apache
+          hostPath:
+            path: /var/log/fluentd/splunk/api/apache

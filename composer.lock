@@ -8524,16 +8524,16 @@
         },
         {
             "name": "razorpay/trace",
-            "version": "3.2.0",
+            "version": "3.2.1",
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/trace.git",
-                "reference": "354894d3f9f85718dd877609b67711d36eeec727"
+                "reference": "2ddde0adc69075120ef77cb469df1e6aa6e64985"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/trace/zipball/354894d3f9f85718dd877609b67711d36eeec727",
-                "reference": "354894d3f9f85718dd877609b67711d36eeec727",
+                "url": "https://api.github.com/repos/razorpay/trace/zipball/2ddde0adc69075120ef77cb469df1e6aa6e64985",
+                "reference": "2ddde0adc69075120ef77cb469df1e6aa6e64985",
                 "shasum": ""
             },
             "require": {
@@ -8594,7 +8594,7 @@
                 "trace"
             ],
             "support": {
-                "source": "https://github.com/razorpay/trace/tree/3.2.0",
+                "source": "https://github.com/razorpay/trace/tree/3.2.1",
                 "issues": "https://github.com/razorpay/trace/issues"
             },
             "time": "2021-11-24T09:55:06+00:00"
