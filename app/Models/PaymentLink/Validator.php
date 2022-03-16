@@ -219,7 +219,7 @@ class Validator extends Base\Validator
         Entity::AVALIABLE_UNITS         => 'numeric|min:1|max:4294967295',
         Entity::DISPLAY_AVAILABLE_UNITS => 'string|in:0,1',
         Entity::DISPLAY_SOLD_UNITS      => 'string|in:0,1',
-        Entity::GOAL_AMOUNT             => 'mysql_unsigned_int|min_amount',
+        Entity::GOAL_AMOUNT             => 'integer|min_amount',
         Entity::DISPLAY_DAYS_LEFT       => 'string|in:0,1',
         Entity::DISPLAY_SUPPORTER_COUNT => 'string|in:0,1',
     ];

@@ -4093,4 +4093,78 @@ return [
             ],
         ],
     ],
+
+    'testGoalTrackerAmountMoreThenACrOnMakingMultiplePaymentShouldIncrementKeys' => [
+        'request'  => [
+            'url'     => '/payment_pages/pl_100000000000pl/order',
+            'method'  => 'post',
+            'content' => [
+                "line_items" => [
+                    [
+                        "payment_page_item_id" => "ppi_10000000000ppi",
+                        "amount" => 5000,
+                        "quantity" => 1,
+                    ],
+                    [
+                        "payment_page_item_id" => "ppi_10000000001ppi",
+                        "amount" => 10000,
+                        "quantity" => 2,
+                    ]
+                ],
+                "notes" => [
+                    "email" => "some@email.com",
+                    "phone" => "898989898",
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testGoalTrackerAmountMoreThenACrShouldbeAllowed' => [
+        'request'  => [
+            'url'     => '/payment_pages',
+            'method'  => 'post',
+            'content' => [
+                'receipt'       => '00000000000001',
+                'title'         => 'Sample title',
+                'description'   => '[{"insert":"Sample description"},{"insert":"\\n"}]',
+                'notes'         => [
+                    'sample_key' => 'Sample notes',
+                ],
+                'payment_page_items' => [
+                    [
+                        'item' => [
+                            'name'        =>  'amount',
+                            'description' => NULL,
+                            'amount'      => 100000,
+                            'currency'    => 'INR',
+                        ],
+                        'mandatory'         => TRUE,
+                        'image_url'         => 'dummy',
+                        'stock'             => 10000,
+                        'min_purchase'      => 2,
+                        'max_purchase'      => 10000,
+                        'min_amount'        => NULL,
+                        'max_amount'        => NULL,
+                    ]
+                ],
+                "settings" => [
+                    'goal_tracker'    => [
+                        'tracker_type'  => 'donation_amount_based',
+                        "is_active"     => "1",
+                        "meta_data"     => [
+                            "goal_amount"               => "750000000000000",
+                            "display_days_left"         => "0",
+                            "display_supporter_count"   => "1",
+                        ]
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
 ];

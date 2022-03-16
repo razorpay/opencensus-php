@@ -194,7 +194,7 @@ return [
                 ]
             ],
             BadRequestValidationFailureException::class,
-            'The goal amount must be valid integer between 0 and 4294967295.'
+            'The goal amount must be an integer.'
         ],
         "Goal amount should be exeed supported value" => [
             [
@@ -212,7 +212,7 @@ return [
                 ]
             ],
             BadRequestValidationFailureException::class,
-            'The goal amount must be valid integer between 0 and 4294967295.'
+            'The goal amount must be an integer.'
         ],
         "Goal amount should adhere to minimum amount in paise for RS 10" => [
             [
