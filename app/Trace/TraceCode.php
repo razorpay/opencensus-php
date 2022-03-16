@@ -9,9 +9,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FTS_HOLIDAY_DEBUG                                     = "FTS_HOLIDAY_DEBUG";
 
     const RAZORX_EXPERIMENT_RESULT = "RAZORX_EXPERIMENT_RESULT";
-    const BEGIN_SUBMERCHANT_OWNER_BACKFILLING                   = 'BEGIN_SUBMERCHANT_OWNER_BACKFILLING';
-    const FIXING_REFERRED_SUBMERCHANT                           = 'FIXING_REFERRED_SUBMERCHANT';
-    const FIXING_REFERRED_SUBMERCHANT_FAILED                     = 'FIXING_REFERRED_SUBMERCHANT_FAILED';
     const MERCHANT_BVS_BANK_VERIFICATION                        = 'MERCHANT_BVS_BANK_VERIFICATION';
     const GET_RZORX_EXPERIMENT_ERROR                            = 'GET_RZORX_EXPERIMENT_ERROR';
     const BVS_VERIFICATION_ERROR                                = 'BVS_VERIFICATION_ERROR';
@@ -6472,7 +6469,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SKIP_ORG_DATA_IN_RESPONSE                         = 'SKIP_ORG_DATA_IN_RESPONSE';
 
     const TERMINAL_ORG_HEADERS_EXCEPTION                    = 'TERMINAL_ORG_HEADERS_EXCEPTION';
-
+    
     //FIRS Document Processor Job
     const FIRS_DOCUMENT_PROCESSOR_JOB_INIT      = 'FIRS_DOCUMENT_PROCESSOR_JOB_INIT';
     const FIRS_DOCUMENT_PROCESSOR_JOB_FAILED    = 'FIRS_DOCUMENT_PROCESSOR_JOB_FAILED';
