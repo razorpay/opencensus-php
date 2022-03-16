@@ -2801,6 +2801,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const FRESHDESK_PLUGIN_MERCHANT_TAG_FLAG                    = 'FRESHDESK_PLUGIN_MERCHANT_TAG_FLAG';
     const DRUID_DATA_PLUGIN_MERCHANT                            = 'DRUID_DATA_PLUGIN_MERCHANT';
+    const FRESHDESK_CREATE_TICKET_INPUT_LOG                     = 'FRESHDESK_CREATE_TICKET_INPUT_LOG';
 
     const FRESHDESK_SCHEDULER_INPUT                             = 'FRESHDESK_SCHEDULER_INPUT';
     const GET_AGENT_CREATED_TICKET_ENTITY                       = 'GET_AGENT_CREATED_TICKET_ENTITY';

@@ -525,6 +525,18 @@ class Service extends Base\Service
 
         $url = $this->getFreshdeskUrlType($type, $fdInstance);
 
+        if (array_key_exists(Constants::CF_REQUESTOR_CATEGORY, $input[Constants::CUSTOM_FIELDS]) and
+            array_key_exists(Constants::CF_REQUESTOR_SUBCATEGORY, $input[Constants::CUSTOM_FIELDS]) and
+            array_key_exists(Constants::CF_REQUESTOR_ITEM, $input[Constants::CUSTOM_FIELDS]))
+        {
+            $this->trace->info(TraceCode::FRESHDESK_CREATE_TICKET_INPUT_LOG, [
+                'fd_instance'               => $fdInstance,
+                'cf_requester_category'     => $input[Constants::CUSTOM_FIELDS][Constants::CF_REQUESTOR_CATEGORY],
+                'cf_requestor_subcategory'  => $input[Constants::CUSTOM_FIELDS][Constants::CF_REQUESTOR_SUBCATEGORY],
+                'cf_requester_item'         => $input[Constants::CUSTOM_FIELDS][Constants::CF_REQUESTOR_ITEM]
+            ]);
+        }
+
         unset($input[Constants::FD_INSTANCE]);
 
         $ticketCreateResponse = $this->app[Constants::FRESHDESK_CLIENT]->postTicket($input, $url);
