@@ -48,6 +48,12 @@ class Service
     const PUT_CHART_OF_ACCOUNTS       = 'PutChartOfAccounts';
     const SYNC_CHART_OF_ACCOUNTS      = 'SyncChartOfAccounts';
 
+    const X_RAZORPAY_TASKID_HEADER    = 'X-Razorpay-TaskId';
+    const X_REQUEST_ID                = 'X-Request-ID';
+    const X_MERCHANT_ID               = 'X-Merchant-Id';
+    const X_USER_ID                   = 'X-User-Id';
+    const X_ORG_ID                    = 'X-Org-Id';
+
     protected $app;
 
     protected $repo;
@@ -401,7 +407,15 @@ class Service
 
         $headers['Content-Type'] = 'application/json';
 
-        $headers['X-Task-ID'] = $this->app['request']->getId();
+        $headers[self::X_RAZORPAY_TASKID_HEADER] = $this->app['request']->getTaskId();
+
+        $headers[self::X_REQUEST_ID] = $this->app['request']->getId();
+
+        $headers[self::X_MERCHANT_ID] = $this->app['basicauth']->getMerchantId();
+
+        $headers[self::X_USER_ID] = optional($this->app['basicauth']->getUser())->getId() ?? '';
+
+        $headers[self::X_ORG_ID] = $this->app['basicauth']->getOrgId();
 
         $options = ['auth' => ['api', $this->config['secret']]];
 

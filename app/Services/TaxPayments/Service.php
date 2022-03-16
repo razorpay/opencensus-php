@@ -58,24 +58,28 @@ class Service
     const UFH_BULK_DOWNLOAD               = 'InitiateBulkChallanDownload';
 
     // general constants
-    const DATA = 'data';
-    const TEMPLATE_NAME = 'template_name';
-    const SUBJECT = 'subject';
-    const NAME = 'name';
-    const TYPE = 'type';
-    const ACCOUNT_NUMBER = 'account_number';
-    const BALANCE = 'balance';
-    const MERCHANT_ID = 'merchant_id';
-    const SETTINGS = 'settings';
-    const BANKING_ACCOUNT = 'banking_account';
-    const MERCHANT_EMAIL = 'merchant_email';
-    const CONTENT_TYPE = 'Content-Type';
-    const X_TASK_ID = 'X-Task-ID';
-    const X_APP_MODE = 'X-App-Mode';
-    const CC_EMAILS = 'cc_emails';
-    const DROPPING_REQUEST = 0;
-    const DEFAULT_OFFSET = 0;
-    const DEFAULT_LIMIT = 10;
+    const DATA                     = 'data';
+    const TEMPLATE_NAME            = 'template_name';
+    const SUBJECT                  = 'subject';
+    const NAME                     = 'name';
+    const TYPE                     = 'type';
+    const ACCOUNT_NUMBER           = 'account_number';
+    const BALANCE                  = 'balance';
+    const MERCHANT_ID              = 'merchant_id';
+    const SETTINGS                 = 'settings';
+    const BANKING_ACCOUNT          = 'banking_account';
+    const MERCHANT_EMAIL           = 'merchant_email';
+    const CONTENT_TYPE             = 'Content-Type';
+    const X_APP_MODE               = 'X-App-Mode';
+    const CC_EMAILS                = 'cc_emails';
+    const DROPPING_REQUEST         = 0;
+    const DEFAULT_OFFSET           = 0;
+    const DEFAULT_LIMIT            = 10;
+    const X_RAZORPAY_TASKID_HEADER = 'X-Razorpay-TaskId';
+    const X_REQUEST_ID             = 'X-Request-ID';
+    const X_MERCHANT_ID            = 'X-Merchant-Id';
+    const X_USER_ID                = 'X-User-Id';
+    const X_ORG_ID                 = 'X-Org-Id';
 
     protected $app;
 
@@ -521,7 +525,15 @@ class Service
 
         $headers[self::CONTENT_TYPE] = 'application/json';
 
-        $headers[self::X_TASK_ID] = $this->app['request']->getId();
+        $headers[self::X_RAZORPAY_TASKID_HEADER] = $this->app['request']->getTaskId();
+
+        $headers[self::X_REQUEST_ID] = $this->app['request']->getId();
+
+        $headers[self::X_MERCHANT_ID] = $this->app['basicauth']->getMerchantId();
+
+        $headers[self::X_USER_ID] = optional($this->app['basicauth']->getUser())->getId() ?? '';
+
+        $headers[self::X_ORG_ID] = $this->app['basicauth']->getOrgId();
 
         $options = [
             'auth' => ['api', $this->config['secret']],

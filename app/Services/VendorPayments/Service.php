@@ -65,15 +65,19 @@ class Service
 
     const BASE_PATH = 'twirp/vendorpayments.Vendorpayments';
 
-    const DATA               = 'data';
-    const TEMPLATE_NAME      = 'template_name';
-    const SUBJECT            = 'subject';
-    const NAME               = 'name';
-    const TO_EMAIL           = 'to_emails';
-    const GET_REPORTING_INFO = 'GetReportingInfo';
-    const CONTENT_TYPE       = 'Content-Type';
-    const X_TASK_ID          = 'X-Task-ID';
-    const X_APP_MODE         = 'X-App-Mode';
+    const DATA                     = 'data';
+    const TEMPLATE_NAME            = 'template_name';
+    const SUBJECT                  = 'subject';
+    const NAME                     = 'name';
+    const TO_EMAIL                 = 'to_emails';
+    const GET_REPORTING_INFO       = 'GetReportingInfo';
+    const CONTENT_TYPE             = 'Content-Type';
+    const X_APP_MODE               = 'X-App-Mode';
+    const X_RAZORPAY_TASKID_HEADER = 'X-Razorpay-TaskId';
+    const X_REQUEST_ID             = 'X-Request-ID';
+    const X_MERCHANT_ID            = 'X-Merchant-Id';
+    const X_USER_ID                = 'X-User-Id';
+    const X_ORG_ID                 = 'X-Org-Id';
 
     const MESSAGE_ID  = 'message_id';
     const RECIPIENT   = 'recipient';
@@ -657,7 +661,15 @@ class Service
 
         $headers[self::CONTENT_TYPE] = 'application/json';
 
-        $headers[self::X_TASK_ID] = $this->app['request']->getId();
+        $headers[self::X_RAZORPAY_TASKID_HEADER] = $this->app['request']->getTaskId();
+
+        $headers[self::X_REQUEST_ID] = $this->app['request']->getId();
+
+        $headers[self::X_MERCHANT_ID] = $this->app['basicauth']->getMerchantId();
+
+        $headers[self::X_USER_ID] = optional($this->app['basicauth']->getUser())->getId() ?? '';
+
+        $headers[self::X_ORG_ID] = $this->app['basicauth']->getOrgId();
 
         if ($mode == null)
         {
