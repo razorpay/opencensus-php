@@ -109,7 +109,7 @@ class DebitNoteTest extends TestCase
     {
         $this->expectFreshdeskCurlRequest(
             [
-                'subject'         => 'Razorpay Account Review:  test merchant name | 10000000000000 | Pending Recoveries',
+                'subject'         => 'Regarding your commercial debit note - 10000000000000',
                 'status'          => 6,
                 'tags'            => [
                     'bulk_debit_note',
@@ -232,7 +232,7 @@ class DebitNoteTest extends TestCase
 
         $this->expectFreshdeskCurlRequest(
             [
-                'subject'  => 'Razorpay Account Review:  test merchant name | 10000000000000 | Pending Recoveries',
+                'subject'  => 'Regarding your commercial debit note - 10000000000000',
                 'status'   => 6,
                 'tags'     => [
                     'bulk_debit_note',

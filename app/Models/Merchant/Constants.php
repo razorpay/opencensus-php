@@ -682,13 +682,13 @@ final class Constants
     //Debit note created
     const DEBIT_NOTE_CREATE_EMAIL_SIGNUP_SMS_TEMPLATE            = 'sms.risk.debit_note_email_signup';
     const DEBIT_NOTE_CREATE_EMAIL_SIGNUP_EMAIL_TEMPLATE          = 'emails.merchant.risk.debit_note.created';
-    const DEBIT_NOTE_CREATE_EMAIL_SIGNUP_EMAIL_SUBJECT           = 'Razorpay Account Review:  {merchant_name} | {merchant_id} | Pending Recoveries';
+    const DEBIT_NOTE_CREATE_EMAIL_SIGNUP_EMAIL_SUBJECT           = 'Regarding your commercial debit note - {merchant_id}';
     const DEBIT_NOTE_CREATE_EMAIL_SIGNUP_WHATSAPP_TEMPLATE_NAME  = 'whatsapp_risk_debit_note_email_signup';
     const DEBIT_NOTE_CREATE_EMAIL_SIGNUP_WHATSAPP_TEMPLATE       = 'Hi {merchant_name}, we wish to notify you regarding pending recoveries on your Razorpay Account. We request you to transfer the due amount to our Nodal account. Please check registered email for more details.';
 
     const DEBIT_NOTE_CREATE_MOBILE_SIGNUP_SMS_TEMPLATE           = 'sms.risk.debit_note_mobile_signup';
     const DEBIT_NOTE_CREATE_MOBILE_SIGNUP_EMAIL_TEMPLATE         = 'emails.merchant.risk.debit_note.created';
-    const DEBIT_NOTE_CREATE_MOBILE_SIGNUP_EMAIL_SUBJECT          = 'Razorpay Account Review:  {merchant_name} | {merchant_id} | Pending Recoveries';
+    const DEBIT_NOTE_CREATE_MOBILE_SIGNUP_EMAIL_SUBJECT          = 'Regarding your commercial debit note - {merchant_id}';
     const DEBIT_NOTE_CREATE_MOBILE_SIGNUP_WHATSAPP_TEMPLATE_NAME = 'whatsapp_risk_debit_note_mobile_signup';
     const DEBIT_NOTE_CREATE_MOBILE_SIGNUP_WHATSAPP_TEMPLATE      = 'Hi {merchant_name}, we wish to notify you regarding pending recoveries on your Razorpay Account. We request you to transfer the due amount to our Nodal account. Please check link {supportTicketLink} for more details.';
 
