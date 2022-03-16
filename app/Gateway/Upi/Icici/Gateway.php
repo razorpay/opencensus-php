@@ -35,6 +35,8 @@ class Gateway extends Base\Gateway
     const GATEWAY_API_RAZORX_PREFIX     = 'upi_icici_gateway_api_versions';
     const GATEWAY_API_VERSION_1         = 'v1';
     const GATEWAY_API_VERSION_2         = 'v2';
+    const GATEWAY_API_VERSION_3         = 'v3';
+    const GATEWAY_API_VERSION_4         = 'v4';
     const VPA_LENGTH                    = 20;
 
     use AuthorizeFailed;
@@ -1663,6 +1665,11 @@ class Gateway extends Base\Gateway
         $this->razorxTrace = [
             'access_code' => $accessCode,
         ];
+
+        if ($action == Action::VALIDATE_VPA)
+        {
+            return self::GATEWAY_API_VERSION_3;
+        }
 
         // If the access code is set to v1
         if ($accessCode === self::GATEWAY_API_VERSION_1)
