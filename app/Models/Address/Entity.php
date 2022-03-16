@@ -26,6 +26,8 @@ class Entity extends Base\PublicEntity
     const NAME                  = 'name';
     const TAG                   = 'tag';
     const LANDMARK              = 'landmark';
+    const SOURCE_ID             = 'source_id';
+    const SOURCE_TYPE           = 'source_type';
 
     protected static $sign      = 'addr';
 
@@ -46,6 +48,8 @@ class Entity extends Base\PublicEntity
         self::NAME,
         self::TAG,
         self::LANDMARK,
+        self::SOURCE_ID,
+        self::SOURCE_TYPE,
     ];
 
     protected static $modifiers = [
@@ -71,6 +75,8 @@ class Entity extends Base\PublicEntity
         self::NAME,
         self::TAG,
         self::LANDMARK,
+        self::SOURCE_ID,
+        self::SOURCE_TYPE,
     ];
 
     protected $public = [
@@ -90,10 +96,12 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $defaults = [
-        self::LINE2   => null,
-        self::ZIPCODE => null,
-        self::PRIMARY => true,
-        self::COUNTRY => Constants\Country::IN,
+        self::LINE2         => null,
+        self::ZIPCODE       => null,
+        self::PRIMARY       => true,
+        self::COUNTRY       => Constants\Country::IN,
+        self::SOURCE_ID     => null,
+        self::SOURCE_TYPE   => null,
     ];
 
     protected $publicSetters = [

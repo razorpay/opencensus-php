@@ -52,6 +52,16 @@ class AddressTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateWithSourceDetails()
+    {
+        $this->startTest();
+    }
+
+    public function testCreateWithoutSourceDetails()
+    {
+        $this->startTest();
+    }
+
     public function testSetPrimaryAddressForNonPrimaryAddressWithNoSwitch()
     {
         $address = $this->fixtures->create('address');

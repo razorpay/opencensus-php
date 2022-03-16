@@ -63,6 +63,10 @@ class CreateAddress extends Migration
             $table->index(Entity::DELETED_AT);
             $table->index(Entity::CREATED_AT);
             $table->index(Entity::UPDATED_AT);
+            $table->char(Entity::SOURCE_ID, Entity::ID_LENGTH)
+                  ->nullable();
+            $table->string(Entity::SOURCE_TYPE, 32)
+                  ->nullable();
         });
     }
 

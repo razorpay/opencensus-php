@@ -6667,3 +6667,7 @@ ALTER TABLE coupons ADD COLUMN is_internal tinyint(1) DEFAULT 0;
 ALTER TABLE coupons ADD COLUMN alerts json DEFAULT NULL;
 
 ALTER TABLE promotions ADD COLUMN creator_email VARCHAR(255) DEFAULT NULL;
+
+ALTER TABLE addresses ADD COLUMN source_id CHAR(14) collate utf8mb4_bin DEFAULT NULL;
+
+ALTER TABLE addresses ADD COLUMN source_type varchar(20) DEFAULT NULL;

@@ -166,6 +166,8 @@ class BulkUploadClient extends Job
             try
             {
                 $address['is_raw_address']=true;
+                $address[Address\Entity::SOURCE_ID] = $address['id'];
+                $address[Address\Entity::SOURCE_TYPE] = "bulk_upload";
                 array_push($json["addresses"],$address);
             }
             catch (\Throwable $e)

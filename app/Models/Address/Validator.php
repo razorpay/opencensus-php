@@ -64,6 +64,8 @@ class Validator extends Base\Validator
         Entity::TAG      => 'sometimes|string|between:2,32',
         Entity::LANDMARK => 'sometimes|string|between:2,32',
         Entity::PRIMARY  => 'sometimes|in:0,1',
+        Entity::SOURCE_ID => 'sometimes',
+        Entity::SOURCE_TYPE => 'sometimes|in:bulk_upload,payment_pages,thirdwatch',
     ];
 
     protected static $codServiceabilityCheckRules = [

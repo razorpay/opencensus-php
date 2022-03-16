@@ -250,4 +250,67 @@ return [
             ],
         ],
     ],
+
+    'testCreateWithSourceDetails' => [
+        'request' => [
+            'url' => '/customers/cust_100000customer/addresses',
+            'method' => 'post',
+            'content' => [
+                'line1'         => 'some line one',
+                'line2'         => 'some line two',
+                'city'          => 'Bangalore',
+                'state'         => 'Karnataka',
+                'zipcode'       => '560078',
+                'country'       => 'india',
+                'type'          => 'shipping_address',
+                'primary'       => '0',
+                'source_id'     => '12345678901234',
+                'source_type'   => 'bulk_upload'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'type'  => 'shipping_address',
+                'primary'       => false,
+                'line1'         => 'some line one',
+                'line2'         => 'some line two',
+                'zipcode'       => '560078',
+                'city'          => 'Bangalore',
+                'state'         => 'Karnataka',
+                'country'       => 'in'
+            ],
+        ],
+
+    ],
+
+    'testCreateWithoutSourceDetails' => [
+        'request' => [
+            'url' => '/customers/cust_100000customer/addresses',
+            'method' => 'post',
+            'content' => [
+                'line1'         => 'some line one',
+                'line2'         => 'some line two',
+                'city'          => 'Bangalore',
+                'state'         => 'Karnataka',
+                'zipcode'       => '560078',
+                'country'       => 'india',
+                'type'          => 'shipping_address',
+                'primary'       => '0'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'type'  => 'shipping_address',
+                'primary'       => false,
+                'line1'         => 'some line one',
+                'line2'         => 'some line two',
+                'zipcode'       => '560078',
+                'city'          => 'Bangalore',
+                'state'         => 'Karnataka',
+                'country'       => 'in'
+            ],
+        ],
+
+    ],
+
 ];
