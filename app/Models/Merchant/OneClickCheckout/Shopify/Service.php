@@ -26,6 +26,7 @@ class Service extends Base\Service
     const skipListCouponMids = [
         'DzyQ9A6YiAcZpT',
         'Glcz7NhPAxVEOw',
+        'GA7JN5LdX495NH',
     ];
 
     protected $mutex;
