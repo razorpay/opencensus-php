@@ -937,7 +937,7 @@ class Core extends Base\Core
 
         try {
             $user = $this->repo->user->findOrFailPublic($userId);
-            $merchant = $user->getMerchantEntity();
+            $merchant = $user->getTopMerchantEntity();
 
             return $merchant;
         }
@@ -2074,6 +2074,15 @@ class Core extends Base\Core
 
         (new Core)->trackOnboardingEvent($user->getEmail(),
                                          EventCode::MERCHANT_ONBOARDING_LOGIN_SUCCESS);
+
+        $merchant = $this->findMerchant($user[Entity::ID]);
+
+        //  $this->mode === 'test', just a hack need to write proper test case after setting product as Banking in requests origin
+
+        if(($merchant !== null) and (($this->app['basicauth']->getRequestOriginProduct() === ProductType::BANKING) or $this->mode === 'test')) {
+
+            $this->app['x-segment']->sendEventToSegment(SegmentEvent::USER_LOGIN, $merchant);
+        }
 
         $response = array_merge($response, $this->get($user, true));
 

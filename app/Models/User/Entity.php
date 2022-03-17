@@ -565,4 +565,10 @@ class Entity extends Base\PublicEntity
     {
         return (new MerchantUser\Repository())->fetchMerchantIdForUserIdAndRole($this->getId());
     }
+
+    public function getTopMerchantEntity()
+    {
+        $merchantIds = (new MerchantUser\Repository)->returnMerchantIdsForUserId($this->getAttribute(self::ID), 1);
+        return (new Merchant\Repository)->find($merchantIds[0]);
+    }
 }
