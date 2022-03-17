@@ -5,6 +5,7 @@ namespace RZP\Models\PaymentLink;
 use App;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use RZP\Exception\BadRequestException;
@@ -166,6 +167,10 @@ class Entity extends Base\PublicEntity
     const CITY                                  = 'city';
     const STATE                                 = 'state';
     const PINCODE                               = 'pincode';
+
+    // hosted Cache key names
+    const ENTITY_BASE_CACHE_KEY                         = "hosted:entity";
+    const SERIALIZE_PP_CACHE_KEY                        = "paymentlink:serialized";
 
     const SETTINGS_KEYS                = [
         self::THEME,
@@ -359,6 +364,41 @@ class Entity extends Base\PublicEntity
     protected $embeddedRelations   = [
         self::PAYMENT_PAGE_ITEMS,
     ];
+
+    /**
+     * @param string $id
+     *
+     * @return string
+     */
+    public static function getHostedCacheKey(string $id): string
+    {
+        $prefix = Config::get("app.nocode.cache.prefix");
+
+        return  $prefix . ":"
+            . self::ENTITY_BASE_CACHE_KEY . ":"
+            . self::SERIALIZE_PP_CACHE_KEY . ":"
+            . $id;
+    }
+
+    /**
+     * @param string $id
+     *
+     * @return void
+     */
+    public static function clearHostedCacheForPageId(string $id)
+    {
+        $cacheKey = Entity::getHostedCacheKey($id);
+
+        Cache::forget($cacheKey);
+    }
+
+    /**
+     * @return int
+     */
+    public static function getHostedCacheTTL(): int
+    {
+        return (int) Config::get("app.nocode.cache.hosted_ttl");
+    }
 
     /**
      * Converting description to quill js object format for backward compatibility.

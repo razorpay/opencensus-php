@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\PaymentLink;
 
+use Event;
 use Carbon\Carbon;
 
 use Illuminate\Http\UploadedFile;
@@ -14,6 +15,8 @@ use RZP\Models\PaymentLink\Entity;
 use RZP\Services\Elfin\Impl\Gimli;
 use RZP\Jobs\PaymentPageProcessor;
 use Illuminate\Support\Facades\Bus;
+use Illuminate\Cache\Events\CacheHit;
+use Illuminate\Cache\Events\CacheMissed;
 use RZP\Services\Elfin\Service as ElfinService;
 use RZP\Services\Mock;
 use RZP\Services\Elfin;
@@ -1211,6 +1214,8 @@ class PaymentLinkTest extends TestCase
             'name' => 'org_custom_branding',
         ]);
 
+        Entity::clearHostedCacheForPageId("pl_" . self::TEST_PL_ID);
+
         $response = $this->call('GET', "/v1/payment_pages/pl_" . self::TEST_PL_ID . "/view");
 
         $this->assertStringContainsString('https:\/\/www.google.com', $response->getContent());
@@ -1345,6 +1350,8 @@ class PaymentLinkTest extends TestCase
             'entity_type' => 'org',
             'name' => 'org_custom_branding',
         ]);
+
+        Entity::clearHostedCacheForPageId("pl_" . self::TEST_PL_ID);
 
         $response = $this->call('GET', "/v1/payment_pages/pl_" . self::TEST_PL_ID . "/view");
 
@@ -2173,7 +2180,9 @@ class PaymentLinkTest extends TestCase
 
         $this->startTest();
 
-        Bus::assertNotDispatched(PaymentPageProcessor::class);
+        Bus::assertNotDispatched(PaymentPageProcessor::class, function (PaymentPageProcessor $processor) {
+            return $processor->getEvent() !== PaymentPageProcessor::PAYMENT_PAGE_HOSTED_CACHE;
+        });
     }
 
     /**
@@ -2393,6 +2402,182 @@ class PaymentLinkTest extends TestCase
         $pl->getComputedSettingsAccessor()->upsert($computed)->save();
 
         $this->startTest();
+    }
+
+    /**
+     *  @group pp_hosted_cache
+     */
+    public function testOnHostedViewCallCachingShouldWork()
+    {
+        $this->createPaymentLink();
+        $this->createPaymentPageItem();
+
+        Event::fake(false);
+
+        $id = "pl_" . self::TEST_PL_ID;
+
+        $this->callViewUrlAndMakeAssertions();
+
+        Event::assertDispatched(CacheMissed::class);
+
+        $this->callViewUrlAndMakeAssertions();
+
+        Event::assertDispatched(CacheHit::class, function(CacheHit $hit) use ($id) {
+            return $hit->key === Entity::getHostedCacheKey($id);
+        });
+
+        Entity::clearHostedCacheForPageId($id);
+    }
+
+    /**
+     *  @group pp_hosted_cache
+     */
+    public function testOnCreatePaymentPageViewCallShouldBeCached()
+    {
+        Event::fake(false);
+
+        $data = $this->startTest();
+
+        Event::assertDispatched(CacheMissed::class, function(CacheMissed $missed) use ($data) {
+            return $missed->key === Entity::getHostedCacheKey($data['id']);
+        });
+
+        $this->callViewUrlAndMakeAssertions(Entity::stripDefaultSign($data['id']));
+
+        Event::assertDispatched(CacheHit::class, function(CacheHit $hit) use ($data) {
+            return $hit->key === Entity::getHostedCacheKey($data['id']);
+        });
+    }
+
+    /**
+     *  @group pp_hosted_cache
+     */
+    public function testOnUpdatePaymentPageViewCallShouldBeCached()
+    {
+        Event::fake(false);
+
+        $this->createPaymentLink();
+        $this->createPaymentPageItem();
+
+        $data = $this->startTest();
+
+        Event::assertDispatched(CacheMissed::class, function(CacheMissed $missed) use ($data) {
+            return $missed->key === Entity::getHostedCacheKey($data['id']);
+        });
+
+        $this->callViewUrlAndMakeAssertions(Entity::stripDefaultSign($data['id']));
+
+        Event::assertDispatched(CacheHit::class, function(CacheHit $hit) use ($data) {
+            return $hit->key === Entity::getHostedCacheKey($data['id']);
+        });
+    }
+
+    /**
+     *  @group pp_hosted_cache
+     */
+    public function testOnPageActivateViewCallShouldBeCached()
+    {
+        Event::fake(false);
+
+        $attributes = [
+            PaymentLinkModel\Entity::STATUS        => PaymentLinkModel\Status::INACTIVE,
+            PaymentLinkModel\Entity::STATUS_REASON => PaymentLinkModel\StatusReason::DEACTIVATED,
+        ];
+
+        $this->createPaymentLink(self::TEST_PL_ID, $attributes);
+
+        $data = $this->startTest();
+
+        Event::assertDispatched(CacheMissed::class, function(CacheMissed $missed) use ($data) {
+            return $missed->key === Entity::getHostedCacheKey($data['id']);
+        });
+
+        $this->callViewUrlAndMakeAssertions(Entity::stripDefaultSign($data['id']));
+
+        Event::assertDispatched(CacheHit::class, function(CacheHit $hit) use ($data) {
+            return $hit->key === Entity::getHostedCacheKey($data['id']);
+        });
+    }
+
+    /**
+     *  @group pp_hosted_cache
+     */
+    public function testOnPageExpireViewCallShouldBeCached()
+    {
+        Event::fake();
+
+        $this->createPaymentLinkWithMultipleItem(self::TEST_PL_ID, ['expire_by' => '1400000000']);
+
+        $this->fixtures->create('payment_link');
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+
+        Event::assertDispatched(CacheMissed::class, function(CacheMissed $missed) {
+            return $missed->key === Entity::getHostedCacheKey('pl_' . self::TEST_PL_ID);
+        });
+
+        $this->callViewUrlAndMakeAssertions();
+
+        Event::assertDispatched(CacheHit::class, function(CacheHit $hit) {
+            return $hit->key === Entity::getHostedCacheKey('pl_' . self::TEST_PL_ID);
+        });
+    }
+
+    /**
+     *  @group pp_hosted_cache
+     */
+    public function testOnPageSetRecieptDetailsViewCallShouldBeCached()
+    {
+        Event::fake(false);
+
+        $settings = [
+            PaymentLink\Entity::UDF_SCHEMA => '[
+            {"name":"email","required":true,"title":"Email","type":"string","pattern":"email","settings":{"position":1}},
+            {"name":"phone","title":"Phone","required":true,"type":"number","pattern":"phone","minLength":"8","options":{},"settings":{"position":2}}]'
+        ];
+
+        $paymentLink = $this->createPaymentLink(self::TEST_PL_ID);
+
+        $paymentLink->getSettingsAccessor()->upsert($settings)->save();
+
+        $this->startTest();
+
+        Event::assertDispatched(CacheMissed::class, function(CacheMissed $missed) {
+            return $missed->key === Entity::getHostedCacheKey('pl_' . self::TEST_PL_ID);
+        });
+
+        $this->callViewUrlAndMakeAssertions();
+
+        Event::assertDispatched(CacheHit::class, function(CacheHit $hit) {
+            return $hit->key === Entity::getHostedCacheKey('pl_' . self::TEST_PL_ID);
+
+        });
+    }
+
+    /**
+     *  @group pp_hosted_cache
+     */
+    public function testOnPageUpdateItemViewCallShouldBeCached()
+    {
+        Event::fake(false);
+
+        $this->createPaymentLinkAndOrderForThat();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        Event::assertDispatched(CacheMissed::class, function(CacheMissed $missed) {
+            return $missed->key === Entity::getHostedCacheKey('pl_' . self::TEST_PL_ID);
+        });
+
+        $this->callViewUrlAndMakeAssertions();
+
+        Event::assertDispatched(CacheHit::class, function(CacheHit $hit) {
+            return $hit->key === Entity::getHostedCacheKey('pl_' . self::TEST_PL_ID);
+        });
     }
 
     /**

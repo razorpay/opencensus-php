@@ -20,6 +20,19 @@ class Constants
 
     // Hypertrace names
     const HT_PP_HOSTED_SLUG_DATA = 'payment_pages.hosted.pages.slug.get.data';
+    const HT_PP_HOSTED_FIND         = 'payment_page.hosted.find';
+    const HT_PP_HOSTED_GET_PAYLOAD  = 'payment_page.hosted.get.payload';
+    const HT_PP_HOSTED_GET_TEMPLATE = 'payment_page.hosted.get.template';
+    const HT_PP_HOSTED_VALIDATE     = 'payment_page.hosted.validate';
+    const HT_PP_HOSTED_SERIALIZE    = 'payment_page.hosted.pages.serialize';
+    const HT_PP_HOSTED_SCHEMA       = 'payment_page.hosted.pages.get.schema';
+
+    const HT_PP_HOSTED_CACHE_DISPATCH   = 'payment_page.hosted.cache';
+    const HT_PPI_TRANSACTION            = 'payment_page.ppi.update.transaction';
+    const HT_PPI_UPDATE_LOCK            = 'payment_page.ppi.update.lock_and_reload';
+    const HT_PPI_UPDATE_CORE            = 'payment_page.ppi.update.core';
+    const HT_PPI_UPDATE_STATUS          = 'payment_pages.ppi.update.change_status';
+    const HT_PPI_UPDATE_SAVE            = 'payment_pages.ppi.update.save_or_fail';
 
     // cache keys
     const SLUG_CACHE_KEY = 'SLUG_ENTITY_MAP';

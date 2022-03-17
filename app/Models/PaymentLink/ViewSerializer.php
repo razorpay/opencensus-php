@@ -51,9 +51,24 @@ class ViewSerializer extends Base\Core
         $this->merchant    = $paymentLink->merchant;
     }
 
+    /**
+     * @param array $data
+     *
+     * @return array
+     */
+    public function updateKeyLessHeader(array $data): array
+    {
+        $data['keyless_header'] = $this->getKeylessAuth();
+
+        return $data;
+    }
+
+    /**
+     * @return array
+     */
     public function serializeForHosted(): array
     {
-        return [
+        $data = [
             'key_id'           => $this->getMerchantKeyId(),
             'is_test_mode'     => ($this->mode === Mode::TEST),
             'environment'      => $this->app->environment(),
@@ -62,8 +77,9 @@ class ViewSerializer extends Base\Core
             'base_url'         => $this->config['app']['url'],
             E::ORG             => $this->serializeOrgPropertiesForHosted(),
             'view_preferences' => $this->getViewPreferences(),
-            'keyless_header'   => $this->getKeylessAuth(),
         ];
+
+        return $this->updateKeyLessHeader($data);
     }
 
     public function serializeForInternal(): array
@@ -123,7 +139,7 @@ class ViewSerializer extends Base\Core
             self::RAZORX_PERFORMANCE_OPTIMISED,
             $mode
         );
-        
+
         $contactOptional = $this->merchant->isFeatureEnabled(Feature\Constants::CONTACT_OPTIONAL);
 
         $emailOptional  = $this->merchant->isFeatureEnabled(Feature\Constants::EMAIL_OPTIONAL);

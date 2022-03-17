@@ -237,10 +237,18 @@ class Service extends Base\Service
         return [$view, $payload];
     }
 
+    /**
+     * @param string $id
+     * @param array  $input
+     *
+     * @return array
+     * @throws \RZP\Exception\BadRequestException
+     * @throws \RZP\Exception\BadRequestValidationFailureException
+     */
     public function getViewNameAndPayload(string $id, array $input)
     {
         /** @var Entity $paymentLink */
-        $paymentLink = Tracer::inSpan(['name' => 'payment_page.hosted.find'], function() use ($id) {
+        $paymentLink = Tracer::inSpan(['name' => Constants::HT_PP_HOSTED_FIND], function() use ($id) {
             return $this->repo->payment_link->findActiveByPublicId($id);
         });
 
@@ -250,16 +258,16 @@ class Service extends Base\Service
 
         $validator->validatePaymentHandleAndHost($paymentLink, $route);
 
-        Tracer::inSpan(['name' => 'payment_page.hosted.validate'], function() use ($paymentLink, $validator) {
+        Tracer::inSpan(['name' => Constants::HT_PP_HOSTED_VALIDATE], function() use ($paymentLink, $validator) {
             $validator->validatePageViewable($paymentLink);
         });
 
-        $viewPayload = Tracer::inSpan(['name' => 'payment_page.hosted.get.payload'], function() use
+        $viewPayload = Tracer::inSpan(['name' => Constants::HT_PP_HOSTED_GET_PAYLOAD], function() use
         ($paymentLink) {
             return $this->core->getHostedViewPayload($paymentLink);
         });
 
-        $view = Tracer::inSpan(['name' => 'payment_page.hosted.get.template'], function() use ($paymentLink) {
+        $view = Tracer::inSpan(['name' => Constants::HT_PP_HOSTED_GET_TEMPLATE], function() use ($paymentLink) {
             return $this->core->getHostedViewTemplate($paymentLink);
         });
 

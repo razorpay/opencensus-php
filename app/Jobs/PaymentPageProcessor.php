@@ -21,6 +21,7 @@ class PaymentPageProcessor extends Job
     const PAYMENT_HANDLE_CREATION   = 'PAYMENT_HANDLE_CREATION';
 
     const PAYMENT_PAGE_CREATE_DEDUPE    = 'PAYMENT_PAGE_CREATE_DEDUPE';
+    const PAYMENT_PAGE_HOSTED_CACHE     = 'PAYMENT_PAGE_HOSTED_CACHE';
 
     /**
      * {@inheritDoc}
@@ -63,13 +64,21 @@ class PaymentPageProcessor extends Job
         $this->merchant = $this->params->get('merchant');
     }
 
+    /**
+     * @return mixed
+     */
+    public function getEvent()
+    {
+        return $this->event;
+    }
+
     public function handle()
     {
         parent::handle();
 
         $this->context = [
             'mode'  => $this->mode,
-            'event' => $this->event
+            'event' => $this->getEvent()
         ];
 
         // time taken in milliseconds for a worker to pick job
@@ -78,7 +87,7 @@ class PaymentPageProcessor extends Job
         $this->trace->histogram(PaymentLink\Metric::PAYMENT_PAGE_PROCESSOR_TIME_TAKEN_TO_PICK_JOB,
             $timeTakenToPickJobInMilliSecs, $this->context);
 
-        $handler = "handle" . Str::studly(Str::lower($this->event));
+        $handler = "handle" . Str::studly(Str::lower($this->getEvent()));
 
         if (! method_exists($this, $handler))
         {
@@ -251,6 +260,44 @@ class PaymentPageProcessor extends Job
             (new PaymentLink\Core)->doDedupeAndRiskActions($entity);
 
             $this->trace->info(TraceCode::PAYMENT_PAGE_CREATE_DEDUPE_QUEUE_COMPLETED, $this->params->toArray());
+
+            $this->trace->count(PaymentLink\METRIC::PAYMENT_PAGE_PROCESSOR_JOB_SUCCESS_COUNT_TOTAL, $this->context);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, null, null, [
+                'params'    => $this->params->toArray(),
+            ]);
+            $this->trace->count(PaymentLink\METRIC::PAYMENT_PAGE_PROCESSOR_JOB_FAIL_COUNT_TOTAL, $this->context);
+        }
+
+        $this->delete();
+    }
+
+    protected function handlePaymentPageHostedCache()
+    {
+        $paymentPageId  = $this->params->get('payment_page_id');
+
+        $this->trace->info(TraceCode::PAYMENT_PAGE_HOSTED_CACHE_QUEUE_START);
+
+        if (empty($paymentPageId) === true)
+        {
+            $this->trace->info(TraceCode::PAYMENT_PAGE_HOSTED_CACHE_QUEUE_FAILED, $this->params->toArray());
+
+            $this->delete();
+
+            $this->trace->count(PaymentLink\METRIC::PAYMENT_PAGE_PROCESSOR_JOB_FAIL_COUNT_TOTAL, $this->context);
+
+            return;
+        }
+
+        try
+        {
+            $entity = $this->repoManager->payment_link->find($paymentPageId);
+
+            (new PaymentLink\Core)->updateHostedCache($entity);
+
+            $this->trace->info(TraceCode::PAYMENT_PAGE_HOSTED_CACHE_QUEUE_COMPLETED, $this->params->toArray());
 
             $this->trace->count(PaymentLink\METRIC::PAYMENT_PAGE_PROCESSOR_JOB_SUCCESS_COUNT_TOTAL, $this->context);
         }

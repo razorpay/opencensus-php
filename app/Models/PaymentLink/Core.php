@@ -152,6 +152,10 @@ class Core extends Base\Core
             $this->dispatchAppRiskCheck($paymentLink);
         });
 
+        Tracer::inSpan(['name' => Constants::HT_PP_HOSTED_CACHE_DISPATCH], function() use ($paymentLink) {
+            $this->dispatchHostedCache($paymentLink);
+        });
+
         return $paymentLink;
     }
 
@@ -381,6 +385,10 @@ class Core extends Base\Core
                 $this->repo->loadRelations($paymentLink);
             });
 
+            Tracer::inSpan(['name' => Constants::HT_PP_HOSTED_CACHE_DISPATCH], function() use ($paymentLink) {
+                $this->dispatchHostedCache($paymentLink);
+            });
+
             $this->trace->info(TraceCode::PAYMENT_LINK_UPDATED, $paymentLink->toArrayPublic());
         });
 
@@ -493,6 +501,10 @@ class Core extends Base\Core
                 {
                     $this->repo->saveOrFail($paymentLink);
                 });
+            });
+
+            Tracer::inSpan(['name' => Constants::HT_PP_HOSTED_CACHE_DISPATCH], function() use ($paymentLink) {
+                $this->dispatchHostedCache($paymentLink);
             });
         });
 
@@ -711,6 +723,8 @@ class Core extends Base\Core
             ], true);
         });
 
+        $this->updateHostedCache($refund->payment->paymentLink);
+
         $this->trace->info(TraceCode::PAYMENT_LINK_PAYMENT_REFUND_PROCESS_COMPLETED, $context);
     }
 
@@ -801,6 +815,8 @@ class Core extends Base\Core
         $this->doPostPaymentRiskActions($paymentLink, $payment);
 
         $this->eventPaymentPagePaid($paymentLink, $payment);
+
+        $this->updateHostedCache($paymentLink);
     }
 
     public function createOrder(Entity $paymentLink, array $input)
@@ -893,6 +909,10 @@ class Core extends Base\Core
             ->all();
 
         $response = array_intersect_key($receiptSettings->toArray(), array_flip(Entity::INVOICE_DETAILS_KEYS));
+
+        Tracer::inSpan(['name' => Constants::HT_PP_HOSTED_CACHE_DISPATCH], function() use ($paymentLink) {
+            $this->dispatchHostedCache($paymentLink);
+        });
 
         return $response;
     }
@@ -1760,12 +1780,12 @@ class Core extends Base\Core
     public function getHostedViewPayload(Entity $paymentLink): array
     {
         // Fetch serialized view data for the view to consume
-        $payload['data'] = Tracer::inSpan(['name' => 'payment_page.hosted.pages.serialize'], function() use ($paymentLink) {
-            return (new ViewSerializer($paymentLink))->serializeForHosted();
+        $payload['data'] = Tracer::inSpan(['name' => Constants::HT_PP_HOSTED_SERIALIZE], function() use ($paymentLink) {
+            return $this->getSerializedFromCache($paymentLink);
         });
 
         // Append UDF Schema as a JSON string, if defined
-        $payload[Entity::UDF_SCHEMA] = Tracer::inSpan(['name' => 'payment_page.hosted.pages.get.schema'], function() use ($paymentLink) {
+        $payload[Entity::UDF_SCHEMA] = Tracer::inSpan(['name' => Constants::HT_PP_HOSTED_SCHEMA], function() use ($paymentLink) {
             return (new UdfSchema($paymentLink))->getSchema();
         });
 
@@ -1877,44 +1897,40 @@ class Core extends Base\Core
 
     public function updatePaymentPageItem(PaymentPageItem\Entity $paymentPageItem, array $input)
     {
-        $paymentPageItem = Tracer::inSpan(['name' => 'payment_page.ppi.update.transaction'], function() use($paymentPageItem, $input)
+        $paymentPageItem = Tracer::inSpan(['name' => Constants::HT_PPI_TRANSACTION], function() use ($paymentPageItem, $input)
         {
-            return $this->repo->transaction(
+            return $this->repo->transaction(function () use ($paymentPageItem, $input) {
+                $paymentLink = $paymentPageItem->paymentLink;
 
-                function () use ($paymentPageItem, $input) {
+                Tracer::inSpan(['name' => Constants::HT_PPI_UPDATE_LOCK], function() use($paymentLink)
+                {
+                    $this->repo->payment_link->lockForUpdateAndReload($paymentLink);
+                });
 
-                    $paymentLink = $paymentPageItem->paymentLink;
+                $this->repo->payment_page_item->reload($paymentPageItem);
 
-                    Tracer::inSpan(['name' => 'payment_page.ppi.update.lock_and_reload'], function() use($paymentLink)
-                    {
-                        $this->repo->payment_link->lockForUpdateAndReload($paymentLink);
-                    });
+                $paymentPageItem = Tracer::inSpan(['name' => Constants::HT_PPI_UPDATE_CORE], function() use($paymentPageItem, $input)
+                {
+                    return (new PaymentPageItem\Core)->update($paymentPageItem, $input);
+                });
 
-                    $this->repo->payment_page_item->reload($paymentPageItem);
+                Tracer::inSpan(['name' => Constants::HT_PPI_UPDATE_STATUS], function() use($paymentLink)
+                {
+                    $this->changeStatusAfterUpdateIfApplicable($paymentLink);
+                });
 
-                    $paymentPageItem = Tracer::inSpan(['name' => 'payment_page.ppi.update.core'], function() use($paymentPageItem, $input)
-                    {
-                        return (new PaymentPageItem\Core)->update($paymentPageItem, $input);
-                    });
+                Tracer::inSpan(['name' =>  Constants::HT_PPI_UPDATE_SAVE], function() use($paymentLink) {
+                    $paymentLink->saveOrFail();
+                });
 
-                    $paymentPageItems = Tracer::inSpan(['name' => 'payment_page.ppi.update.get_payment_page_items'], function() use($paymentPageItem)
-                    {
-                        return $paymentPageItem->paymentLink->paymentPageItems()->get();
-                    });
-
-                    Tracer::inSpan(['name' => 'payment_pages.ppi.update.change_status'], function() use($paymentLink)
-                    {
-                        $this->changeStatusAfterUpdateIfApplicable($paymentLink);
-                    });
-
-                    Tracer::inSpan(['name' => 'payment_pages.ppi.update.save_or_fail'], function() use($paymentLink) {
-                        $paymentLink->saveOrFail();
-                    });
-
-                    return $paymentPageItem;
-                }
-            );
+                return $paymentPageItem;
+            });
         });
+
+        Tracer::inSpan(['name' => Constants::HT_PP_HOSTED_CACHE_DISPATCH], function() use ($paymentPageItem) {
+            $this->dispatchHostedCache($paymentPageItem->paymentLink);
+        });
+
         return $paymentPageItem;
     }
 
@@ -1977,6 +1993,10 @@ class Core extends Base\Core
                     $this->repo->saveOrFail($paymentLink);
                 }
             });
+
+        Tracer::inSpan(['name' => Constants::HT_PP_HOSTED_CACHE_DISPATCH], function() use ($paymentLink) {
+            $this->dispatchHostedCache($paymentLink);
+        });
 
         $this->traceForExpire($paymentLink);
     }
@@ -2814,5 +2834,90 @@ class Core extends Base\Core
         $this->app['basicauth']->setModeAndDbConnection($prevMode);
 
         return $handle === null ? '' : $handle;
+    }
+
+    /**
+     * @param \RZP\Models\PaymentLink\Entity $paymentLink
+     *
+     * @return void
+     */
+    public function updateHostedCache(Entity $paymentLink)
+    {
+        Entity::clearHostedCacheForPageId($paymentLink->getPublicId());
+
+        $this->getSerializedFromCache($paymentLink);
+    }
+
+    /**
+     * @param \RZP\Models\PaymentLink\Entity $paymentLink
+     *
+     * @return array
+     */
+    private function getSerializedFromCache(Entity $paymentLink): array
+    {
+        $serializer = new ViewSerializer($paymentLink);
+
+        if (! $this->shouldCacheHostedResponse($paymentLink))
+        {
+            return $serializer->serializeForHosted();
+        }
+
+        $cacheKey = Entity::getHostedCacheKey($paymentLink->getPublicId());
+
+        $cached = $this
+            ->cache
+            ->remember($cacheKey, Entity::getHostedCacheTTL(), function () use ($serializer) {
+                return $serializer->serializeForHosted();
+            });
+
+        return $serializer->updateKeyLessHeader($cached);
+    }
+
+    /**
+     * @param \RZP\Models\PaymentLink\Entity $paymentLink
+     *
+     * @return void
+     */
+    private function dispatchHostedCache(Entity $paymentLink)
+    {
+        if (! $this->shouldCacheHostedResponse($paymentLink))
+        {
+            return;
+        }
+
+        $request = [
+            'event'             => PaymentPageProcessor::PAYMENT_PAGE_HOSTED_CACHE,
+            'payment_page_id'   => $paymentLink->getId(),
+            'start_time'        => millitime(),
+        ];
+
+        try {
+            $this->trace->info(
+                TraceCode::PAYMENT_PAGE_HOSTED_CACHE_SQS_PUSH_INIT,
+                $request
+            );
+
+            PaymentPageProcessor::dispatch($this->mode, $request);
+
+            $this->trace->info(
+                TraceCode::PAYMENT_PAGE_HOSTED_CACHE_SQS_PUSHED,
+                $request
+            );
+        } catch (\Exception $e) {
+            $this->trace->error(
+                TraceCode::PAYMENT_PAGE_HOSTED_CACHE_SQS_PUSH_FAILED,
+                $request
+            );
+        }
+    }
+
+    /**
+     * @param \RZP\Models\PaymentLink\Entity $paymentLink
+     *
+     * @return bool
+     */
+    private function shouldCacheHostedResponse(Entity $paymentLink): bool
+    {
+        return $paymentLink->getViewType() === ViewType::PAGE;
     }
 }

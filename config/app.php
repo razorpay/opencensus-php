@@ -381,8 +381,9 @@ return array(
 
     'nocode' => [
         'cache' => [
-            'slug_ttl' => env('NOCODE_SLUG_CACHE_TTL', 86400),
-            'prefix' => env('NOCODE_CACHE_PREFIX', 'NOCODE')
+            'slug_ttl'      => env('NOCODE_SLUG_CACHE_TTL', 86400),
+            'prefix'        => env('NOCODE_CACHE_PREFIX', 'NOCODE'),
+            'hosted_ttl'    => env('NOCODE_HOSTED_CACHE_TTL', 3600),
         ]
     ],
 );

@@ -4167,4 +4167,143 @@ return [
             'content' => [],
         ],
     ],
+
+    'testOnCreatePaymentPageViewCallShouldBeCached' => [
+        'request'  => [
+            'url'     => '/payment_pages',
+            'method'  => 'post',
+            'content' => [
+                'receipt'       => '00000000000001',
+                'title'         => 'Sample title',
+                'description'   => '{"value":[{"insert":"Product Image(s)"}],"metaText":""}',
+                'notes'         => [
+                    'sample_key' => 'Sample notes',
+                ],
+                'payment_page_items' => [
+                    [
+                        'item' => [
+                            'name'        =>  'amount',
+                            'description' => NULL,
+                            'amount'      => 100000,
+                            'currency'    => 'INR',
+                        ],
+                        'mandatory'         => TRUE,
+                        'image_url'         => 'dummy',
+                        'stock'             => 10000,
+                        'min_purchase'      => 2,
+                        'max_purchase'      => 10000,
+                        'min_amount'        => NULL,
+                        'max_amount'        => NULL,
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    "testOnUpdatePaymentPageViewCallShouldBeCached" => [
+        'request'  => [
+            'url'     => '/payment_pages/pl_100000000000pl',
+            'method'  => 'patch',
+            'content' => [
+                'receipt'       => '00000000000001',
+                'title'         => 'Sample title',
+                'description'   => '{"value": [{"insert":"Sample description"},{"insert":"\\n"}],"metaText":""}',
+                'notes'         => [
+                    'sample_key' => 'Sample notes',
+                ],
+                "settings" => [
+                    "payment_success_message" =>  "Thank you",
+                    "udf_schema" => "[{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":0}},{\"name\":\"phone\",\"title\":\"Phone\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":\"8\",\"options\":[],\"settings\":{\"position\":1}},{\"name\":\"name\",\"title\":\"Name\",\"required\":true,\"type\":\"string\",\"options\":{\"is_shiprocket\":true},\"settings\":{\"position\":3}},{\"name\":\"address\",\"title\":\"Address\",\"required\":true,\"type\":\"string\",\"options\":{\"cmp\":\"textarea\",\"is_shiprocket\":true},\"settings\":{\"position\":4}},{\"name\":\"city\",\"title\":\"City\",\"required\":true,\"type\":\"string\",\"options\":{\"is_shiprocket\":true},\"settings\":{\"position\":5}},{\"name\":\"state\",\"title\":\"State\",\"required\":true,\"type\":\"string\",\"options\":{\"is_shiprocket\":true},\"settings\":{\"position\":6}},{\"name\":\"pincode\",\"title\":\"Pincode\",\"required\":true,\"type\":\"number\",\"minLength\":5,\"maxLength\":7,\"pattern\":\"number\",\"options\":{\"is_shiprocket\":true},\"settings\":{\"position\":7}}]",
+                ],
+                'payment_page_items' => [
+                    [
+                        'item' => [
+                            'name'        =>  'amount',
+                            'description' => NULL,
+                            'amount'      => 100000,
+                            'currency'    => 'INR',
+                        ],
+                        'mandatory'         => TRUE,
+                        'image_url'         => 'dummy',
+                        'stock'             => 10000,
+                        'min_purchase'      => 2,
+                        'max_purchase'      => 10000,
+                        'min_amount'        => NULL,
+                        'max_amount'        => NULL,
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ]
+    ],
+
+    "testOnPageActivateViewCallShouldBeCached" => [
+        'request' => [
+            'url'    => '/payment_pages/pl_100000000000pl/activate',
+            'method' => 'patch',
+        ],
+        'response' => [
+            'content' => [
+                'id'            => 'pl_100000000000pl',
+                'status'        => 'active',
+                'status_reason' => null,
+            ],
+        ],
+    ],
+
+    'testOnPageExpireViewCallShouldBeCached' => [
+        'request'  => [
+            'url'     => '/payment_pages/expire',
+            'method'  => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'total_count' => 1,
+                'failed_ids'  => [],
+            ],
+        ],
+    ],
+
+    "testOnPageSetRecieptDetailsViewCallShouldBeCached" => [
+        'request'   => [
+            'url'       => '/payment_pages/pl_100000000000pl/receipt',
+            'method'    => 'post',
+            'content'   => [
+                'enable_receipt' => true,
+                'selected_udf_field' => 'email',
+                'enable_custom_serial_number' => true,
+            ]
+        ],
+        'response'  => [
+            'status_code'   => 200,
+            'content'       => [
+                'enable_receipt'    => '1',
+                'selected_udf_field' => 'email',
+                'enable_custom_serial_number' => '1',
+            ]
+        ]
+    ],
+
+    'testOnPageUpdateItemViewCallShouldBeCached' => [
+        'request'  => [
+            'url'     => '/payment_pages/payment_page_item/ppi_10000000000ppi',
+            'method'  => 'patch',
+            'content' => [
+                'item' => [
+                    'amount' => '7500'
+                ],
+                'stock' => 2,
+            ],
+        ],
+        'response'  => [
+            'status_code'   => 200,
+            'content'   => []
+        ]
+    ],
 ];
