@@ -57,7 +57,10 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service()->createSubMerchant($input);
+        $data = Tracer::inspan(['name' => HyperTrace::CREATE_SUBMERCHANT_SERVICE], function () use ($input) {
+
+            return $this->service()->createSubMerchant($input);
+        });
 
         return ApiResponse::json($data);
     }
@@ -73,7 +76,10 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service()->createSubMerchantViaBatch($input);
+        $data = Tracer::inspan(['name' => HyperTrace::CREATE_SUBMERCHANT_BATCH], function () use ($input) {
+
+            return $this->service()->createSubMerchantViaBatch($input);
+        });
 
         return ApiResponse::json($data);
     }
@@ -1820,7 +1826,10 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $response = $this->service()->listSubmerchants($input);
+        $response = Tracer::inspan(['name' => HyperTrace::LIST_SUBMERCHANTS], function () use ($input) {
+
+            return $this->service()->listSubmerchants($input);
+        });
 
         return ApiResponse::json($response);
     }
@@ -2057,7 +2066,10 @@ class MerchantController extends Controller
      */
     public function fetchReferral()
     {
-        $response = $this->service()->fetchReferral();
+        $response = Tracer::inspan(['name' => HyperTrace::FETCH_REFERRAL], function () {
+
+            return $this->service()->fetchReferral();
+        });
 
         return ApiResponse::json($response);
     }
@@ -2069,7 +2081,10 @@ class MerchantController extends Controller
      */
     public function createReferral()
     {
-        $response = $this->service()->createReferral();
+        $response = Tracer::inspan(['name' => HyperTrace::CREATE_REFERRAL], function () {
+
+            return $this->service()->createReferral();
+        });
 
         return ApiResponse::json($response);
     }

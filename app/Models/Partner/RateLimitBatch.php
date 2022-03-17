@@ -3,8 +3,10 @@
 namespace RZP\Models\Partner;
 
 use RZP\Models\Base;
+use RZP\Trace\Tracer;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Constants\HyperTrace;
 use RZP\Models\Merchant\Entity;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Service as MerchantService;
@@ -48,7 +50,10 @@ class RateLimitBatch extends Base\Core
 
         $merchantService = new MerchantService;
 
-        $output = $merchantService->createSubMerchant($input, $merchant, Constants::ADD_MULTIPLE_ACCOUNT);
+        $output = Tracer::inspan(['name' => HyperTrace::CREATE_SUBMERCHANT_SERVICE], function () use ($merchantService, $merchant, $input) {
+
+            return $merchantService->createSubMerchant($input, $merchant, Constants::ADD_MULTIPLE_ACCOUNT);
+        });
 
         $data = [
             'account_id'   => $output['id'] ?? null,

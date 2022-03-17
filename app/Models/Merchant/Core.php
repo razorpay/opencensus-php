@@ -1127,7 +1127,10 @@ class Core extends Base\Core
     public function addMerchantSupportingEntities(Entity $merchant, Entity $aggregatorMerchant = null,
                                                   bool $optimizeCreationFlow = false, array $input = [])
     {
-        (new Detail\Core)->createMerchantDetails($merchant, $input);
+        Tracer::inspan(['name' => HyperTrace::CREATE_MERCHANT_DETAILS_CORE], function () use ($merchant, $input) {
+
+            (new Detail\Core)->createMerchantDetails($merchant, $input);
+        });
 
         if ($optimizeCreationFlow === true)
         {
@@ -3877,7 +3880,10 @@ class Core extends Base\Core
 
         if ($applyProductFilter === true)
         {
-            list($offset, $merchants) = $this->filterSubmerchantsOnProduct($params, $appIds, $partner->getId());
+            list($offset, $merchants) = Tracer::inspan(['name' => HyperTrace::FILTER_SUBMERCHANTS_ON_PRODUCT], function () use ($params, $appIds, $partner) {
+
+                return $this->filterSubmerchantsOnProduct($params, $appIds, $partner->getId());
+            });
         }
         else
         {
@@ -3894,7 +3900,10 @@ class Core extends Base\Core
         {
             $merchants = $merchants->map(function($submerchant) use ($partnerUser, $product, $partner)
             {
-                return $this->getPartnerSubmerchantData($submerchant, $partner, $partnerUser, $product);
+                return Tracer::inspan(['name' => HyperTrace::GET_PARTNER_SUBMERCHANT_DATA], function () use ($submerchant, $partner, $partnerUser, $product) {
+
+                    return $this->getPartnerSubmerchantData($submerchant, $partner, $partnerUser, $product);
+                });
             });
         }
 
@@ -3998,9 +4007,17 @@ class Core extends Base\Core
             Detail\Entity::ACTIVATION_STATUS => $submerchant->getAttribute(Detail\Entity::ACTIVATION_STATUS),
         ];
 
-        $submerchantOwner = $this->getNonPartnerOwner($submerchant, $partnerUser, $product);
+        $submerchant[Entity::USER] = Tracer::inspan(['name' => HyperTrace::GET_SUBMERCHANT_OWNER_DATA], function () use ($submerchant, $partnerUser, $product) {
 
-        $submerchant[Entity::USER] = ($submerchantOwner === null) ? null : $submerchantOwner->toArrayPublic();
+            $subMerchantOwner = $this->getNonPartnerOwner($submerchant, $partnerUser, $product);
+
+            if (empty($subMerchantOwner) === true)
+            {
+                return null;
+            }
+
+            return $subMerchantOwner->toArrayPublic();
+        });
 
         $submerchant[Entity::DASHBOARD_ACCESS] = $this->hasSubmerchantDashboardAccess($submerchant);
 
@@ -4019,7 +4036,10 @@ class Core extends Base\Core
 
         if($product === Product::BANKING)
         {
-            $caStatus = $this->getBankingAccountStatus($submerchant);
+            $caStatus = Tracer::inspan(['name' => HyperTrace::GET_BANKING_ACCOUNT_STATUS], function () use ($submerchant) {
+
+                return $this->getBankingAccountStatus($submerchant);
+            });
 
             $submerchant[Entity::BANKING_ACCOUNT] = [
                 ENTITY::CA_STATUS => $caStatus
@@ -6076,7 +6096,10 @@ class Core extends Base\Core
                 $channel = $currentAccount[BankingAccount\Entity::CHANNEL];
             }
 
-            $caStatus = (new BankingAccount\Core())->getMerchantBankingAccountStatus($channel, $merchant, $mode);
+            $caStatus = Tracer::inspan(['name' => HyperTrace::GET_MERCHANT_BANKING_ACCOUNT_STATUS], function () use ($channel, $merchant, $mode) {
+
+                return (new BankingAccount\Core())->getMerchantBankingAccountStatus($channel, $merchant, $mode);
+            });
 
             $transformedCaStatus = $this->getTransformedCaStatus($merchant, $caStatus, $channel);
 

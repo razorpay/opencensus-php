@@ -5,9 +5,11 @@ namespace RZP\Models\Merchant\Referral;
 use RZP\Constants\Product;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Trace\Tracer;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Constants\HyperTrace;
 use RZP\Exception\BadRequestException;
 
 class Core extends Base\Core
@@ -150,17 +152,21 @@ class Core extends Base\Core
                                 Product::BANKING => $this->config['applications.banking_service_url'] . '/auth/');
 
 
-        if (empty($referrals) === true)
-        {
-            $referrals = $this->create($merchant, $productConfig);
-        }
-        else{
-            list($missingReferralConfig, $existingReferrals) = $this->findMissingReferrals($referrals, $productConfig);
+        $referrals = Tracer::inspan(['name' => HyperTrace::CREATE_REFERRAL_CORE], function () use($referrals, $merchant, $productConfig) {
 
-            $missingReferrals = $this->create($merchant, $missingReferralConfig);
+            if (empty($referrals) === true)
+            {
+                return $this->create($merchant, $productConfig);
+            }
+            else
+            {
+                list($missingReferralConfig, $existingReferrals) = $this->findMissingReferrals($referrals, $productConfig);
 
-            $referrals = array_merge($existingReferrals, $missingReferrals);
-        }
+                $missingReferrals = $this->create($merchant, $missingReferralConfig);
+
+                return array_merge($existingReferrals, $missingReferrals);
+            }
+        });
 
         return $referrals;
     }
@@ -180,7 +186,10 @@ class Core extends Base\Core
 
         foreach($productConfig as $product => $dashboardUrl)
         {
-            $refCode = $this->generateReferralCode($merchant);
+            $refCode = Tracer::inspan(['name' => HyperTrace::GENERATE_REFERRAL_CODE], function () use($merchant) {
+
+                return $this->generateReferralCode($merchant);
+            });
 
             $input[Entity::REF_CODE] = $refCode;
 

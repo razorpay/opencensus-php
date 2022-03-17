@@ -279,7 +279,10 @@ class Service extends Base\Service
 
         $merchant = $this->repo->merchant->findOrFail($merchantId);
 
-        $data = (new RateLimitBatch())->partnerSubmerchantInvite($merchant, $input);
+        $data = Tracer::inspan(['name' => HyperTrace::PARTNER_SUBMERCHANT_INVITE], function () use ($merchant, $input) {
+
+            return (new RateLimitBatch())->partnerSubmerchantInvite($merchant, $input);
+        });
 
         return $data;
     }
@@ -606,7 +609,11 @@ class Service extends Base\Service
             (($isOptionalEmailAllowed === true) and ($subMerchantEmailIsSame === true)) or
             (($isPartner === false) and ($hasAggregatorFeature === true)))
         {
-            $this->core()->attachSubMerchantOwner($ownerId, $subMerchant, $product);
+            Tracer::inspan(['name' => HyperTrace::ATTACH_SUBMERCHANT_OWNER], function () use ($ownerId, $subMerchant, $product) {
+
+                $this->core()->attachSubMerchantOwner($ownerId, $subMerchant, $product);
+
+            });
         }
     }
 
@@ -6044,7 +6051,10 @@ class Service extends Base\Service
 
         $startTime = millitime();
 
-        $result = $this->core()->listSubmerchants($partner, $input);
+        $result = Tracer::inspan(['name' => HyperTrace::LIST_SUBMERCHANTS_CORE], function () use ($partner, $input) {
+
+            return $this->core()->listSubmerchants($partner, $input);
+        });
 
         $this->trace->histogram(Metric::FETCH_ALL_SUBMERCHANTS_LATENCY, millitime()-$startTime);
 
@@ -7104,7 +7114,10 @@ class Service extends Base\Service
     {
         $merchant = $this->auth->getMerchant();
 
-        $referrals = (new Referral\Core)->fetchMerchantReferral($merchant);
+        $referrals = Tracer::inspan(['name' => HyperTrace::FETCH_MERCHANT_REFERRAL_CORE], function () use ($merchant) {
+
+            return (new Referral\Core)->fetchMerchantReferral($merchant);
+        });
 
         return $this->formatReferralResponse($referrals);
     }
@@ -7122,7 +7135,10 @@ class Service extends Base\Service
 
         (new Referral\Validator)->validateForReferral($partner);
 
-        $referrals = (new Referral\Core)->createOrFetch($merchant);
+        $referrals = Tracer::inspan(['name' => HyperTrace::CREATE_OR_FETCH_REFERRAL_CORE], function () use($merchant) {
+
+            return (new Referral\Core)->createOrFetch($merchant);
+        });
 
         $result = $referrals[Product::PRIMARY];
 

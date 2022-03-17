@@ -127,6 +127,7 @@ class HyperTrace
     const MAP_SUBMERCHANT_PARTNER_APP_IF_APPLICABLE            = 'map_submerchant_partner_app_if_applicable';
     const ADD_FEATURE_REQUEST                                  = 'add_feature_request.core';
     const ATTACH_SUBMERCHANT_OWNER_IF_APPLICABLE               = 'attach_submerchant_owner_if_applicable';
+    const ATTACH_SUBMERCHANT_OWNER                             = 'attach_submerchant_owner';
     const CREATE_ADDITIONAL_USER_OR_FETCH_IF_APPLICABLE        = 'create_additional_user_or_fetch_if_applicable';
 
     /* Partner Type Update  */
@@ -157,7 +158,25 @@ class HyperTrace
     const SAVE_BUSINESS_DETAILS_FOR_MERCHANT                   = 'save_business_details_for_merchant';
     const PERFORM_KYC_VERIFICATION                             = 'perform_kyc_verification';
     const SUBMIT_ACTIVATION_FORM                               = 'submit_activation_form';
+
+    const LIST_SUBMERCHANTS                                    = 'list_submerchants.service';
+    const LIST_SUBMERCHANTS_CORE                               = 'list_submerchants.core';
+    const FILTER_SUBMERCHANTS_ON_PRODUCT                       = 'filter_submerchants_on_product';
+    const GET_PARTNER_SUBMERCHANT_DATA                         = 'get_partner_submerchant_data';
+    const GET_SUBMERCHANT_OWNER_DATA                           = 'get_submerchant_owner_data';
+    const GET_BANKING_ACCOUNT_STATUS                           = 'get_banking_account_status';
+    const GET_MERCHANT_BANKING_ACCOUNT_STATUS                  = 'get_merchant_banking_account_status';
+
+    const FETCH_REFERRAL                                       = 'fetch_referral.service';
+    const FETCH_MERCHANT_REFERRAL_CORE                         = 'fetch_merchant_referral.core';
+    const CREATE_REFERRAL                                      = 'create_referral.service';
+    const CREATE_OR_FETCH_REFERRAL_CORE                        = 'create_or_fetch_referral.core';
+    const CREATE_REFERRAL_CORE                                 = 'create_referral.core';
+    const GENERATE_REFERRAL_CODE                               = 'generate_referral_code';
+
+    const CREATE_SUBMERCHANT_BATCH                             = 'create_submerchant_batch.service';
+    const PARTNER_SUBMERCHANT_INVITE                           = 'partner_submerchant_invite';
+
     const GET_MERCHANT_DETAILS_CORE                            = 'get_merchant_details.core';
     const CREATE_MERCHANT_DETAILS_CORE                         = 'create_merchant_details.core';
-
 }
