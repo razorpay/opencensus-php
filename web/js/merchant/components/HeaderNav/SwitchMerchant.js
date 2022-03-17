@@ -5,6 +5,14 @@ import Popover, { PopoverBody } from 'common/ui/Popover';
 const SwitchMerchant = ({ user, onSwitchMerchant }) => {
   let merchants = user.merchants;
   merchants = Object.keys(merchants).map((merchantId) => merchants[merchantId]);
+  const linkedActs = merchants.flatMap((merchant) => (merchant.parent_id ? merchant : []));
+  linkedActs.sort((m1, m2) =>
+    (m1.display_name || m1.name).localeCompare(m2.display_name || m2.name),
+  );
+  merchants = merchants
+    .flatMap((merchant) => (merchant.parent_id ? [] : merchant))
+    .concat(linkedActs);
+
   return (
     <PowerSelect
       options={merchants}
@@ -17,7 +25,9 @@ const SwitchMerchant = ({ user, onSwitchMerchant }) => {
           <span class="help-content">
             <span class="SwitchMerchantDropdown__option">
               {option.id === user.current ? <i class="i i-check text-success pull-right" /> : null}
-              {option.display_name || option.name}
+              {`${option.parent_id ? `${option.parent_name} - ` : ''}${
+                option.display_name || option.name
+              }`}
               <Popover align="left" theme="dark" parentQuerySelector=".switch-merchant__Tether">
                 <PopoverBody>
                   <div>{option.display_name || option.name}</div>
