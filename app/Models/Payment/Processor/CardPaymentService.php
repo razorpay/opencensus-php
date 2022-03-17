@@ -139,11 +139,36 @@ trait CardPaymentService
                 {
                     $excData = $exc->getError()->getClass();
                 }
+
+                if ($this->isPaysecureUnknowCapture($action, $gateway, $excData) === true)
+                {
+                    $this->trace->traceException(
+                        $exc,
+                        Trace::ERROR,
+                        TraceCode::CARD_PAYMENT_SERVICE_PAYSECURE_CAPTURE_UNKNOWN_ERROR,
+                        [
+                            'action'    => $action ?? 'none',
+                            'gateway'   => $gateway ?? 'none',
+                            'excData'   => $excData,
+                            'payment_id'  => $payment->getId(),
+                        ]);
+                }
+
                 $this->pushDimensions($action, $gatewayData, Metric::FAILED, $gateway, $excData, $statusCode);
             }
 
             throw $exc;
         }
+    }
+
+    private function isPaysecureUnknowCapture($action, $gateway, $excData): bool
+    {
+        if (is_null($action) or is_null($gateway) or is_null($excData))
+        {
+            return false;
+        }
+
+        return $excData === 'UKNOWN' and $action === Action::CAPTURE and $gateway === Payment\Gateway::PAYSECURE;
     }
 
     protected function pushDimensions($action, $input, $status, $gateway, $excData = null, $statusCode = null)
