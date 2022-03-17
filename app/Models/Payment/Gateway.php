@@ -4112,6 +4112,7 @@ class Gateway
     {
         $gateways = [
             self::UPI_AIRTEL,
+            self::UPI_YESBANK
         ];
 
         return (in_array($gateway, $gateways, true));
