@@ -298,6 +298,16 @@ class Repository extends Base\Repository
                     ->first();
     }
 
+
+    public function fetchCardsWithVaultToken(string $vaultToken, string $merchantId)
+    {
+        // Query Executed - select `*` from `cards` where `merchant_id` = ? and `vault_token` = ?
+        return $this->newQuery()
+            ->where(Entity::MERCHANT_ID, '=', $merchantId)
+            ->where(Entity::VAULT_TOKEN, '=', $vaultToken)
+            ->get();
+    }
+
     public function fetchLatestCardWithVaultTokenOnly(string $vaultToken)
     {
         // Query Executed - select `*` from `cards` where `vault_token` = ?

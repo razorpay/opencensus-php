@@ -1039,6 +1039,44 @@ class Core extends Base\Core
         return null;
     }
 
+    protected function validateAndReturnExistingNetworkToken($token)
+    {
+        $newCard = $token->card;
+
+        if (empty($newCard->getVaultToken()) === true)
+        {
+            return null;
+        }
+
+        // Return cards having same vault token as that of the new card
+        $cards = $this->repo->card->fetchCardsWithVaultToken($newCard->getVaultToken(), $token->getMerchantId());
+
+        if(empty($cards) === true)
+        {
+            return null;
+        }
+
+        $expiryMonth = $newCard->getExpiryMonth();
+
+        $expiryYear = $newCard->getExpiryYear();
+
+        foreach ($cards as $card)
+        {
+            if (($card->getExpiryMonth() === $expiryMonth) and
+                ($card->getExpiryYear()  === $expiryYear))
+            {
+                // fetch existing token
+                return $this->repo->token->fetchByMethodAndCardIdAndMerchant(
+                    Method::CARD,
+                    $card->getId(),
+                    $token->getMerchantId()
+                );
+            }
+        }
+
+        return null;
+    }
+
     protected function validateExistingTokenEmandate($existingTokens, $newToken)
     {
         return null;
@@ -1461,6 +1499,13 @@ class Core extends Base\Core
     {
         $customer = null;
 
+        $this->trace->info(
+            TraceCode::TOKEN_CREATE_FOR_TOKENIZED_CARD_REQUEST,
+            [
+                'notes' => (isset($input['notes']) === true) ? $input['notes'] : null,
+                'authentication' => (isset($input['authentication']) === true) ? $input['authentication'] : null,
+            ]);
+
         (new Validator)->validateInput(Validator::CREATE_NETWORK_TOKEN, $input);
 
         (new Validator)->validateInput(Validator::CREATE_NETWORK_CARD, $input[Entity::CARD]);
@@ -1515,7 +1560,22 @@ class Core extends Base\Core
             $token->customer()->associate($customer);
         }
 
-        $existingToken = $this->validateExistingNetworkToken($token);
+        $this->trace->info(
+            TraceCode::EXISTING_TOKEN_CHECK,
+            [
+                'new_card'  => $token->getCardId()
+            ]);
+
+        $requeststartAt = millitime();
+
+        $existingToken = $this->validateAndReturnExistingNetworkToken($token);
+
+        $this->trace->info(
+            TraceCode::EXISTING_TOKEN_CHECK,
+            [
+                'existing_token'  => empty($existingToken) === false ? $existingToken->getId() : null,
+                'fetch_time_ms'      => millitime() - $requeststartAt,
+            ]);
 
         if (empty($existingToken) === false)
         {
@@ -1599,7 +1659,7 @@ class Core extends Base\Core
             $token->customer()->associate($customer);
         }
 
-        $existingToken = $this->validateExistingNetworkToken($token);
+        $existingToken = $this->validateAndReturnExistingNetworkToken($token);
 
         if (empty($existingToken) === false)
         {
