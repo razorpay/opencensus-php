@@ -420,6 +420,10 @@ class Entity
     const SHIELD_RISK_THRESHOLD_CONFIGS   = 'shield.risk_threshold_configs';
     const SHIELD_MERCHANT_RISK_THRESHOLDS = 'shield.merchant_risk_thresholds';
 
+    // Service: Governor
+    const GOVERNOR_RULES                = 'governor.rules';
+    const GOVERNOR_RULE_GROUPS          = 'governor.rule_groups';
+
     const PAYMENTS_CARDS_AUTHORIZATION  = 'payments_cards.authorization';
     const PAYMENTS_CARDS_AUTHENTICATION = 'payments_cards.authentication';
     const PAYMENTS_CARDS_CAPTURE        = 'payments_cards.capture';
@@ -1346,6 +1350,10 @@ class Entity
         self::PAYOUTS_REVERSALS      => \RZP\Services\PayoutService\AdminFetch::class,
         self::PAYOUTS_PAYOUT_LOGS    => \RZP\Services\PayoutService\AdminFetch::class,
         self::PAYOUTS_PAYOUT_SOURCES => \RZP\Services\PayoutService\AdminFetch::class,
+
+        self::GOVERNOR_RULES        => \RZP\Services\GovernorService::class,
+        self::GOVERNOR_RULE_GROUPS  => \RZP\Services\GovernorService::class
+
     ];
 
     protected static $syncedInLiveAndTest = [

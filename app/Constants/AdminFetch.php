@@ -1518,6 +1518,49 @@ class AdminFetch
             ],
             Entity::PAYOUTS_PAYOUT_SOURCES => [
             ],
+
+            Entity::GOVERNOR_RULES => [
+                'rule_group_id'       => [
+                    Fetch::LABEL        => 'RuleGroup Public Id',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
+                ],
+                'rule_chain_id'       => [
+                    Fetch::LABEL        => 'RuleChain Public Id',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
+                ],
+                'namespace_id'       => [
+                    Fetch::LABEL        => 'Namespace Public Id',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
+                ],
+                'rule_name'       => [
+                    Fetch::LABEL        => 'Rule Name',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
+                ],
+                'rule_expression'       => [
+                    Fetch::LABEL        => 'Rule Expression',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
+                ],
+            ],
+
+            Entity::GOVERNOR_RULE_GROUPS => [
+                'rule_chain_id'       => [
+                    Fetch::LABEL        => 'RuleChain Public Id',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
+                ],
+                'namespace_id'       => [
+                    Fetch::LABEL        => 'Namespace Public Id',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
+                ],
+                'rule_group_name'       => [
+                    Fetch::LABEL        => 'RuleGroup Name',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
+                ],
+                'precondition'       => [
+                    Fetch::LABEL        => 'RuleGroup Precondition',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
+                ],
+            ],
+
         ];
     }
 

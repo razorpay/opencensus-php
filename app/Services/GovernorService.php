@@ -2,6 +2,7 @@
 
 namespace RZP\Services;
 
+use App;
 use Requests_Hooks;
 use Requests_Session;
 
@@ -111,8 +112,13 @@ class GovernorService
 
     protected $request;
 
-    public function __construct($app)
+    public function __construct($app = null)
     {
+        if (empty($app) === true)
+        {
+            $app = App::getFacadeRoot();
+        }
+
         $this->app = $app;
 
         $this->trace = $app['trace'];
@@ -460,5 +466,19 @@ class GovernorService
     public function setCurlOptions($curl)
     {
         curl_setopt( $curl, CURLOPT_HTTPHEADER, array('Expect:'));
+    }
+
+    public function fetch(string $entity, string $id, array $input)
+    {
+        $path = "admin/" . $entity . "/" . $id;
+
+        return $this->sendRequestV1("GET", $path, $input);
+    }
+
+    public function fetchMultiple(string $entity, array $input)
+    {
+        $path = "admin/" . $entity;
+
+        return $this->sendRequestV1("POST", $path, $input);
     }
 }
