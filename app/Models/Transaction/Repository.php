@@ -2487,7 +2487,9 @@ class Repository extends Base\Repository
      * @param $to
      * @param int $count
      * @param int $skip
-     * @param int|null $lastProcessedTxnId
+     * @param string|null $lastProcessedTxnId
+     * @param string $balanceType
+     * @param string $balanceAccountType
      * @return mixed
      */
     public function fetchBankingTransactionsForLedgerRecon(array $merchantIds, $from, $to, int $count = 1000, int $skip = 0, string $lastProcessedTxnId = null,

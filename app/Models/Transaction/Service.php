@@ -8,6 +8,7 @@ use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Trace\Tracer;
 use RZP\Services\Mutex;
+use RZP\Models\Feature;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
@@ -451,8 +452,26 @@ class Service extends Base\Service
 
         $startTimeMs = round(microtime(true) * 1000);
 
+        /*
+         * These merchant ids will have either DA or VA merchants. In case of VA merchants,
+         * we will remove merchants which have LEDGER_REVERSE_SHADOW feature flag.
+         */
+        $ledgerShadowMerchantIds = $input[Entity::MERCHANT_ID];
+
+        if ($balanceAccountType === Merchant\Balance\AccountType::SHARED)
+        {
+            $ledgerReverseShadowMerchantIds = $this->repo->feature->getMerchantIdsHavingFeature(Feature\Constants::LEDGER_REVERSE_SHADOW, $input[Entity::MERCHANT_ID]);
+            $ledgerShadowMerchantIds = array_diff($input[Entity::MERCHANT_ID], $ledgerReverseShadowMerchantIds);
+        }
+
+        $this->trace->info(
+            TraceCode::LEDGER_TRANSACTIONS_SHADOW_MERCHANTS_COUNT,
+            [
+                'shadow_merchant_id_count' => count($ledgerShadowMerchantIds),
+            ]);
+
         $txn = $this->repo->transaction->fetchBankingTransactionsForLedgerRecon(
-            $input[Entity::MERCHANT_ID],
+            $ledgerShadowMerchantIds,
             $input['from'],
             $input['to'],
             $input['count'],
