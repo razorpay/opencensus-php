@@ -918,7 +918,9 @@ class PayoutLinks
     {
         $url = $this->getConstructedUrl(self::SHOPIFY_INSTALL_PATH);
 
-        $response = $this->makeRequest($url, $input);
+        $data['input'] = $_SERVER['QUERY_STRING'];
+
+        $response = $this->makeRequest($url, $data);
 
         return $response[self::REDIRECT_URI];
     }
