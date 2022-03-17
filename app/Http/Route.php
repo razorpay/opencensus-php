@@ -7469,7 +7469,7 @@ class Route
         'merchant_instrument_request_create_bulk'     => Permission::UPDATE_MERCHANT_INSTRUMENT_REQUEST,
         'merchant_instrument_request_create_bulk_v2'  => Permission::UPDATE_MERCHANT_INSTRUMENT_REQUEST,
         'merchant_instrument_request_update_by_id'    => Permission::UPDATE_MERCHANT_INSTRUMENT_REQUEST,
-        'mir_instrument_set'                          => Permission::UPDATE_MERCHANT_INSTRUMENT,
+        'mir_instrument_set'                          => Permission::VIEW_INTERNAL_INSTRUMENT_REQUEST,
         'fetch_merchant_instrument_requests'          => Permission::VIEW_MERCHANT_INSTRUMENT_REQUEST,
 
         'smart_dashboard_razorx_admin'                => Permission::VIEW_IIR_DISCREPANCY,
