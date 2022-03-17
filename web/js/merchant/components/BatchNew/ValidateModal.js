@@ -134,12 +134,18 @@ class BatchValidateModal extends Component {
                 {batchType !== 'virtual_account_edit' ? (
                   <ol className="validate-modal-ul">
                     <li>The amount mentioned should be in paise.</li>
-                    {batchType && batchType !== 'refund' && (
-                      <li>
-                        The {user.isPaymentlinksV2Enabled ? 'reference id' : 'receipt id'} for all{' '}
-                        {batchTypeText ? batchTypeText : titleCase(batchType)}s should be unique.
-                      </li>
-                    )}
+                    {batchType &&
+                      [
+                        'refund',
+                        'payment_transfer',
+                        'transfer_reversal',
+                        'linked_account_create',
+                      ].indexOf(batchType) === -1 && (
+                        <li>
+                          The {user.isPaymentlinksV2Enabled ? 'reference id' : 'receipt id'} for all{' '}
+                          {batchTypeText ? batchTypeText : titleCase(batchType)}s should be unique.
+                        </li>
+                      )}
 
                     {batchType === 'refund' ? (
                       <>
