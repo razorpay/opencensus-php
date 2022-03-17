@@ -3933,8 +3933,6 @@ class Route
     // Put it in the Admin Array instead
     public static $internal = [
         'mob_to_bas_routes',
-        //FTS holiday Details
-        'payout_get_holiday_details',
         'coupon_expiry_alert',
         'upi_transfer_process_internal',
         'payment_callback_bharatqr_internal',
@@ -4624,7 +4622,8 @@ class Route
         'user_resend_verification_otp',
         'bank_transfer_process_icici',
         'bank_transfer_process_hdfc_ecms',
-
+        //FTS holiday Details
+        'payout_get_holiday_details',
     ];
 
     // The below routes can be used with partner credentials without X-Razorpay-Account header,
