@@ -321,7 +321,26 @@ return [
             'url'     => '/fd/support_dashboard/ticket/razorpayid0012/reply',
             'method'  => 'POST',
             'content' => [
-                'user_id'=> '890',
+                'user_id'=> '1000',
+                'body'   => 'random reply',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'        => 'redacted',
+                'user_id'   => 890,
+                'body'      => 'random reply',
+                'ticket_id' => 'razorpayid0012',
+
+            ],
+        ],
+    ],
+    'testReplyToTicketWithOutDataInRedis' => [
+        'request' => [
+            'url'     => '/fd/support_dashboard/ticket/razorpayid0012/reply',
+            'method'  => 'POST',
+            'content' => [
+                'user_id'=> '1000',
                 'body'   => 'random reply',
             ],
         ],

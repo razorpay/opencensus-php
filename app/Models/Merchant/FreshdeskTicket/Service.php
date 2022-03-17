@@ -609,6 +609,10 @@ class Service extends Base\Service
 
         $response = $ticketWithStats ?? [];
 
+        if(array_key_exists(Constants::REQUESTER_ID, $response) === true) {
+            $this->app['cache']->set('freshdesk_ticket' .'_'. $ticketEntity->getId() .'_'.'requester_id', $response[Constants::REQUESTER_ID], 86400);
+        }
+
         return $this->rewriteFreshdeskTicket($response, $ticketEntity, $type);
     }
 
@@ -706,13 +710,9 @@ class Service extends Base\Service
 
     public function postTicketReply($id, array $input, $type): array
     {
-        // Converting user id to int - it comes as a string from FE sometimes
-        if (isset($input[Constants::USER_ID]) === true)
-        {
-            $input[Constants::USER_ID] += 0;
-        }
+        $input[Constants::USER_ID] = $this->app['cache']->get('freshdesk_ticket_'. $id .'_requester_id');
 
-        (new Validator)->validateInput('create_' . studly_case($type) . '_ticket_reply', $input);
+        $this->trace->info(TraceCode::FRESHDESK_TICKET_REQUESTER_ID_FROM_CACHE, ['user_id' => $input[Constants::USER_ID]]);
 
         $ticketEntity = $this->repo->merchant_freshdesk_tickets->fetch([
             Entity::TYPE        => $type,
@@ -722,6 +722,22 @@ class Service extends Base\Service
         $fdInstance = $ticketEntity->getFdInstance();
 
         $url = $this->getFreshdeskUrlType($type, $fdInstance);
+
+        if ($input[Constants::USER_ID] == null)
+        {
+            $ticket = $this->app[Constants::FRESHDESK_CLIENT]->fetchTicketById($ticketEntity->getTicketId(), $url);
+            if (array_key_exists(Constants::REQUESTER_ID, $ticket))
+            {
+                $input[Constants::USER_ID] = $ticket[Constants::REQUESTER_ID];
+            }
+        }
+        // Converting user id to int
+        if (isset($input[Constants::USER_ID]) === true)
+        {
+            $input[Constants::USER_ID] += 0;
+        }
+
+        (new Validator)->validateInput('create_' . studly_case($type) . '_ticket_reply', $input);
 
         $ticketReplyResponse = $this->app[Constants::FRESHDESK_CLIENT]->postTicketReply($ticketEntity->getTicketId(), $input, $url);
 

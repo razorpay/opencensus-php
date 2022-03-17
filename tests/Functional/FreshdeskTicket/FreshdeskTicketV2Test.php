@@ -452,6 +452,30 @@ class FreshdeskTicketV2Test extends TestCase
 
         ]);
 
+        $this->app['cache']->put('freshdesk_ticket_razorpayid0012_requester_id', 890);
+
+        $this->startTest();
+    }
+
+    public function testReplyToTicketWithOutDataInRedis()
+    {
+        $this->expectFreshdeskRequestAndRespondWith('tickets/12?include=requester', 'get',
+            [], [
+            'requester_id' => 890,
+        ]);
+
+        $this->expectFreshdeskRequestAndRespondWith('tickets/12/reply', 'post',
+                                                    [
+                                                        'body' => 'random reply',
+                                                    ],
+                                                    [
+                                                        'id'        => 567,
+                                                        'user_id'   => 890,
+                                                        'body'      => 'random reply',
+                                                        'ticket_id' => '12',
+
+                                                    ]);
+
         $this->startTest();
     }
 
@@ -490,6 +514,7 @@ class FreshdeskTicketV2Test extends TestCase
                 'ticket_id' => '12',
 
             ]);
+        $this->app['cache']->put('freshdesk_ticket_razorpayid0012_requester_id', 890);
 
         $this->startTest();
     }

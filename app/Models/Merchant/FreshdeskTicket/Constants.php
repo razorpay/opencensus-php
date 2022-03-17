@@ -71,6 +71,7 @@ class Constants
     const FROM_EMAIL    = 'from_email';
     const FR_DUE_BY     = 'fr_due_by';
     const GROUP_ID      = 'group_id';
+    const REQUESTER_ID  = 'requester_id';
 
     const FD_INSTANCE      = 'fd_instance';
     const FRESHDESK_CLIENT = 'freshdesk_client';
