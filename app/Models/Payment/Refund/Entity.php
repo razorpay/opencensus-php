@@ -646,21 +646,9 @@ class Entity extends Base\PublicEntity
 
         switch ($payment->getMethod())
         {
-            case Payment\Method::CARD:
-                $acquirerData = [
-                    self::ARN   => $this->getAttribute(self::REFERENCE1)
-                ];
-                break;
-
             case Payment\Method::UPI:
                 $acquirerData = [
                     self::RRN   => $this->getAttribute(self::REFERENCE1)
-                ];
-                break;
-
-            case Payment\Method::NETBANKING:
-                $acquirerData = [
-                    self::ARN   => $this->getAttribute(self::REFERENCE1)
                 ];
                 break;
 
@@ -670,17 +658,10 @@ class Entity extends Base\PublicEntity
                 ];
                 break;
 
-            case Payment\Method::CARDLESS_EMI:
+            default:
                 $acquirerData = [
                     self::ARN  => $this->getAttribute(self::REFERENCE1)
                 ];
-                break;
-
-            case Payment\Method::PAYLATER:
-                $acquirerData = [
-                    self::ARN  => $this->getAttribute(self::REFERENCE1)
-                ];
-                break;
         }
 
         return (new Dictionary($acquirerData));
