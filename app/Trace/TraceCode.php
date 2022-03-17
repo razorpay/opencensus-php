@@ -13,7 +13,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GET_RZORX_EXPERIMENT_ERROR                            = 'GET_RZORX_EXPERIMENT_ERROR';
     const BVS_VERIFICATION_ERROR                                = 'BVS_VERIFICATION_ERROR';
     const TERMINAL_SERVICE_PREVIOUS_STATUS_RESPONSE             = 'TERMINAL_SERVICE_PREVIOUS_STATUS_RESPONSE';
-
     const HTTP_REQUEST_RESPONSE_SIZE                            = 'HTTP_REQUEST_RESPONSE_SIZE';
 
     const TOKEN_REQUESTOR_CARD_NUMBER_DECRYPTION                = 'TOKEN_REQUESTOR_CARD_NUMBER_DECRYPTION';
@@ -6474,7 +6473,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SKIP_ORG_DATA_IN_RESPONSE                         = 'SKIP_ORG_DATA_IN_RESPONSE';
 
     const TERMINAL_ORG_HEADERS_EXCEPTION                    = 'TERMINAL_ORG_HEADERS_EXCEPTION';
-    
+
     //FIRS Document Processor Job
     const FIRS_DOCUMENT_PROCESSOR_JOB_INIT      = 'FIRS_DOCUMENT_PROCESSOR_JOB_INIT';
     const FIRS_DOCUMENT_PROCESSOR_JOB_FAILED    = 'FIRS_DOCUMENT_PROCESSOR_JOB_FAILED';

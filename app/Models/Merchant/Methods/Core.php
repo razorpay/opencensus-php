@@ -518,6 +518,21 @@ class Core extends Base\Core
         }
     }
 
+    public function validateCategoryUpdateForMerchant(string $categoryToBeUpdated, \RZP\Models\Merchant\Entity $merchant, bool $forceIgnoreValidation)
+    {
+        switch ($categoryToBeUpdated)
+        {
+            case '5094':
+            case '5944':
+            case '7631':
+                if (!$forceIgnoreValidation)
+                {
+                    (new Validator)->validateEmiOptionsForJewelleryMerchants($categoryToBeUpdated, $merchant);
+                }
+                break;
+        }
+    }
+
     public function setDefaultMethods($merchant, Merchant\Entity $aggregatorMerchant = null)
     {
         $methods = $this->repo->methods->getMethodsForMerchant($merchant);

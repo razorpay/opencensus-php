@@ -702,6 +702,82 @@ return [
         ]
     ],
 
+    'testEditMerchantCategoryToBlacklistedJewelleryCategoryWithEmiEnabled' => [
+        'request' => [
+            'raw' => json_encode([
+                'category'      => '5944',
+                'reset_methods' => false,
+            ]),
+            'url' => '/merchants/1X4hRFHFx4UiXt',
+            'method' => 'put',
+            'server' => [
+                // Case: In sign-up case we will not have any other headers
+                // (eg. X-Dashboard-User-Email etc) from dashboard.
+                'CONTENT_TYPE'  => 'application/json',
+                'HTTP_X-Dashboard' => 'true',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Please disable the EMI in order to update the Category',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testEditMerchantCategoryToBlacklistedJewelleryCategoryWithEmiEnabledAndMethodsReset' => [
+        'request' => [
+            'raw' => json_encode([
+                'category'      => '5944',
+                'reset_methods' => true,
+            ]),
+            'url' => '/merchants/1X4hRFHFx4UiXt',
+            'method' => 'put',
+            'server' => [
+                // Case: In sign-up case we will not have any other headers
+                // (eg. X-Dashboard-User-Email etc) from dashboard.
+                'CONTENT_TYPE'  => 'application/json',
+                'HTTP_X-Dashboard' => 'true',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'category' => '5944',
+                ],
+            ],
+            'status_code' => 200,
+    ],
+
+    'testEditMerchantCategoryToBlacklistedJewelleryCategoryWithEmiDisabled' => [
+        'request' => [
+            'raw' => json_encode([
+                'category'      => '5944',
+                'reset_methods' => false,
+            ]),
+            'url' => '/merchants/1X4hRFHFx4UiXt',
+            'method' => 'put',
+            'server' => [
+                // Case: In sign-up case we will not have any other headers
+                // (eg. X-Dashboard-User-Email etc) from dashboard.
+                'CONTENT_TYPE'  => 'application/json',
+                'HTTP_X-Dashboard' => 'true',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'category' => '5944',
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testEditMerchantWithHighRiskThreshold' => [
         'request' => [
             'raw' => json_encode([

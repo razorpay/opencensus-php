@@ -1527,6 +1527,14 @@ class Core extends Base\Core
         {
             if (isset($input[Merchant\Entity::CATEGORY]) === true)
             {
+                $forceIgnoreValidation = false;
+
+                if (isset($input['reset_methods']) === true)
+                {
+                    $forceIgnoreValidation = $input['reset_methods'];
+                }
+
+                (new Methods\Core)->validateCategoryUpdateForMerchant($input[Merchant\Entity::CATEGORY], $merchant, $forceIgnoreValidation);
                 (new Terminal\Core)->processMerchantMccUpdate($merchant, $input);
             }
 

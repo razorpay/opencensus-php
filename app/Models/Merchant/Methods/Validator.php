@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant\Methods;
 use RZP\Base;
 use RZP\Exception;
 use RZP\Models\Payment\Processor\Netbanking;
+use RZP\Trace\TraceCode;
 
 class Validator extends Base\Validator
 {
@@ -169,6 +170,17 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestValidationFailureException(
                 'AMEX card network cannot be enabled for this MCC: '.$mcc,
                 'card_networks');
+        }
+    }
+
+    public function validateEmiOptionsForJewelleryMerchants(string $categoryToBeUpdated, \RZP\Models\Merchant\Entity $merchant)
+    {
+        $methods = (new Core)->getMethods($merchant);
+        $emiTypes = $methods->getEmiTypes();
+
+        if(in_array($categoryToBeUpdated, self::$emiBlacklistedCategories) && ($emiTypes['credit'] === true || $emiTypes['debit'] === true)){
+            throw new Exception\BadRequestValidationFailureException(
+                'Please disable the EMI in order to update the Category');
         }
     }
 }

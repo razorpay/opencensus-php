@@ -672,14 +672,15 @@ class Service extends Base\Service
 
     public function edit(string $id, array $input): array
     {
+        $merchant = $this->repo->merchant->findOrFailPublic($id);
+
         $this->trace->info(
             TraceCode::MERCHANT_EDIT,
             [
+                'merchant'    => $merchant,
                 'merchant_id' => $id,
                 'input'       => $input,
             ]);
-
-        $merchant = $this->repo->merchant->findOrFailPublic($id);
 
         // when the funds are released via bulk action then in that scenario
         // just process the data at API side. No settlement service will be called to

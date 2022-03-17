@@ -642,6 +642,61 @@ class MerchantTest extends TestCase
         $this->assertArrayNotHasKey('groups', $result);
     }
 
+    public function testEditMerchantCategoryToBlacklistedJewelleryCategoryWithEmiEnabled()
+    {
+        $this->createMerchant();
+
+        $this->fixtures->merchant->activate('1X4hRFHFx4UiXt');
+
+        $this->fixtures->merchant->enableEmi('1X4hRFHFx4UiXt');
+
+        $this->fixtures->merchant->edit('1X4hRFHFx4UiXt', ['category' => '5692',]);
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, 'org_'.$this->org->id);
+
+        $this->startTest();
+    }
+
+    public function testEditMerchantCategoryToBlacklistedJewelleryCategoryWithEmiDisabled()
+    {
+        $this->createMerchant();
+
+        $this->fixtures->merchant->activate('1X4hRFHFx4UiXt');
+
+        $this->fixtures->merchant->disableEmi('1X4hRFHFx4UiXt');
+
+        $this->fixtures->merchant->edit('1X4hRFHFx4UiXt', ['category' => '5692',]);
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, 'org_'.$this->org->id);
+
+        $response = $this->startTest();
+
+        $this->assertEquals([], $response['methods']['emi']);
+    }
+
+    public function testEditMerchantCategoryToBlacklistedJewelleryCategoryWithEmiEnabledAndMethodsReset()
+    {
+        $this->createMerchant();
+
+        $this->fixtures->merchant->activate('1X4hRFHFx4UiXt');
+
+        $this->fixtures->merchant->enableEmi('1X4hRFHFx4UiXt');
+
+        $this->fixtures->merchant->edit('1X4hRFHFx4UiXt', ['category' => '5692',]);
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, 'org_'.$this->org->id);
+
+        $response = $this->startTest();
+
+        $this->assertEquals([], $response['methods']['emi']);
+    }
+
     public function testEditMerchantWithNullFeeCreditsThreshold()
     {
         $this->createMerchant();
