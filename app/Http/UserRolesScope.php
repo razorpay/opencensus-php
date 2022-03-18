@@ -471,6 +471,8 @@ class UserRolesScope
             'accounting_integration_tally_acknowledge_payment'     => [Role::OWNER, Role::ADMIN],
             'accounting_integration_tally_cancel_invoice'          => [Role::OWNER, Role::ADMIN],
             'accounting_integration_tally_delete_integration'      => [Role::OWNER, Role::ADMIN],
+            'accounting_integration_add_or_update_settings'        => [Role::OWNER, Role::ADMIN],
+            'accounting_integration_get_all_settings'              => [Role::OWNER, Role::ADMIN],
             'accounting_integration_tally_fetch_invoice'           => [Role::OWNER, Role::ADMIN],
             'accounting_integration_tally_fetch_payment'           => [Role::OWNER, Role::ADMIN],
             'accounting_integration_tally_integrate'               => [Role::OWNER, Role::ADMIN],

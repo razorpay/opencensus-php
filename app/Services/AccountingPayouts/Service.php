@@ -47,6 +47,8 @@ class Service
     const GET_CHART_OF_ACCOUNTS       = 'GetChartOfAccounts';
     const PUT_CHART_OF_ACCOUNTS       = 'PutChartOfAccounts';
     const SYNC_CHART_OF_ACCOUNTS      = 'SyncChartOfAccounts';
+    const ADD_OR_UPDATE_SETTINGS      = 'AddOrUpdateSettings';
+    const GET_ALL_SETTINGS            = 'GetAllSettings';
 
     const X_RAZORPAY_TASKID_HEADER    = 'X-Razorpay-TaskId';
     const X_REQUEST_ID                = 'X-Request-ID';
@@ -71,6 +73,20 @@ class Service
         $this->config = $app['config']['applications.vendor_payments'];
 
         $this->repo = $app['repo'];
+    }
+
+    public function addOrUpdateSettings(MerchantEntity $merchant, array $input)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::ADD_OR_UPDATE_SETTINGS);
+
+        return $this->makeRequest($merchant, $url, $input);
+    }
+
+    public function getAllSettings(MerchantEntity $merchant)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::GET_ALL_SETTINGS);
+
+        return $this->makeRequest($merchant, $url);
     }
 
     public function updateBAMapping(MerchantEntity $merchant, array $input)

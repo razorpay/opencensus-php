@@ -301,6 +301,36 @@ class AccountingPayoutsTest extends TestCase
         $apMock->shouldHaveReceived('getTaxSlabs');
     }
 
+    public function testGetAllSettingsMethod()
+    {
+        $this->ba->proxyAuth();
+
+        $apMock = Mockery::mock('RZP\Services\AccountingPayouts');
+
+        $apMock->shouldReceive('getAllSettings')->andReturn([]);
+
+        $this->app->instance('accounting-payouts', $apMock);
+
+        $this->startTest();
+
+        $apMock->shouldHaveReceived('getAllSettings');
+    }
+
+    public function testAddOrUpdateSettingsMethod()
+    {
+        $this->ba->privateAuth();
+
+        $apMock = Mockery::mock('RZP\Services\AccountingPayouts');
+
+        $apMock->shouldReceive('addOrUpdateSettings')->andReturn([]);
+
+        $this->app->instance('accounting-payouts', $apMock);
+
+        $this->startTest();
+
+        $apMock->shouldHaveReceived('addOrUpdateSettings');
+    }
+
     public function testFetchTallyInvoiceServiceMethod()
     {
         $this->ba->privateAuth();

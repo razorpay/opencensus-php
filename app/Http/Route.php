@@ -1610,6 +1610,9 @@ class Route
         'accounting_integration_tally_delete_integration'       => ['post',     'accounting-integration/tally/delete',                      'AccountingPayoutsController@deleteIntegrationTally'    ],
         'accounting_integration_tally_tax_slab_rates'           => ['get',      'accounting-integration/tally/tax-slabs',                   'AccountingPayoutsController@getTaxSlabs'               ],
 
+        'accounting_integration_add_or_update_settings'   => ['post',     'accounting-integration/settings',                          'AccountingPayoutsController@addOrUpdateSettings'       ],
+        'accounting_integration_get_all_settings'         => ['get',      'accounting-integration/settings',                          'AccountingPayoutsController@getAllSettings'            ],
+
         'accounting_integration_get_chart_of_accounts'          => ['get',      'accounting-integration/chart-of-accounts/{app}',           'AccountingPayoutsController@getChartOfAccounts'        ],
         'accounting_integration_put_chart_of_accounts'          => ['put',      'accounting-integration/chart-of-accounts/{app}',           'AccountingPayoutsController@putChartOfAccounts'        ],
         'accounting_integration_sync_chart_of_accounts'         => ['post',     'accounting-integration/chart-of-accounts/{app}/sync',      'AccountingPayoutsController@syncChartOfAccounts'       ],
@@ -3894,6 +3897,7 @@ class Route
         'accounting_integration_tally_acknowledge_payment',
         'accounting_integration_tally_integrate',
         'accounting_integration_tally_delete_integration',
+        'accounting_integration_add_or_update_settings',
         'accounting_integration_tally_tax_slab_rates',
 
 
@@ -5223,6 +5227,9 @@ class Route
         'accounting_payouts_sync_status',
         'accounting_payouts_sync',
         'accounting_payouts_waitlist',
+
+        //Tally App
+        'accounting_integration_get_all_settings',
 
         'accounting_integration_get_organization',
         'accounting_integration_set_organization',
@@ -7709,6 +7716,7 @@ class Route
         'accounting_integration_get_chart_of_accounts' => Permission::VIEW_ACCOUNTING_INTEGRATION,
         'accounting_integration_put_chart_of_accounts' => Permission::UPDATE_ACCOUNTING_INTEGRATION,
         'accounting_integration_sync_chart_of_accounts'=> Permission::SYNC_ACCOUNTING_INTEGRATION,
+        'accounting_integration_get_all_settings'      => Permission::VIEW_ACCOUNTING_INTEGRATION,
 
         'merchant_primary_balance_fetch'               => '*',
         'ufh_upload_file'                              => '*',
@@ -8390,6 +8398,7 @@ class Route
             'accounting_payouts_integration_app_get_url',
             'accounting_payouts_integration_app_initiate',
             'accounting_payouts_integration_status',
+            'accounting_integration_get_all_settings',
             'accounting_payouts_cash_flow_list_ba',
             'accounting_payouts_cash_flow_update_ba_mapping',
             'accounting_payouts_integration_status_app',
@@ -8409,6 +8418,7 @@ class Route
             'accounting_integration_tally_acknowledge_payment',
             'accounting_integration_tally_integrate',
             'accounting_integration_tally_delete_integration',
+            'accounting_integration_add_or_update_settings',
             'accounting_integration_tally_tax_slab_rates',
             'activate_live_offline_device',
             'activate_test_offline_device',
@@ -9514,6 +9524,7 @@ class Route
             'accounting_payouts_integration_app_get_url',
             'accounting_payouts_integration_app_initiate',
             'accounting_payouts_integration_status',
+            'accounting_integration_get_all_settings',
             'accounting_payouts_integration_status_app',
             'accounting_payouts_sync',
             'accounting_payouts_sync_status',
@@ -12866,6 +12877,7 @@ class Route
         'accounting_integration_tally_acknowledge_payment',
         'accounting_integration_tally_integrate',
         'accounting_integration_tally_delete_integration',
+        'accounting_integration_add_or_update_settings',
         'accounting_integration_tally_tax_slab_rates',
     ];
 
@@ -12977,6 +12989,7 @@ class Route
 
         // Accounting Payouts
         'accounting_payouts_integration_status',
+        'accounting_integration_get_all_settings',
         'accounting_payouts_cash_flow_list_ba',
         'accounting_payouts_cash_flow_update_ba_mapping',
         'accounting_payouts_integration_app_get_url',
@@ -13001,6 +13014,7 @@ class Route
         'accounting_integration_tally_acknowledge_payment',
         'accounting_integration_tally_integrate',
         'accounting_integration_tally_delete_integration',
+        'accounting_integration_add_or_update_settings',
         'accounting_integration_tally_tax_slab_rates',
 
         'contact_get',

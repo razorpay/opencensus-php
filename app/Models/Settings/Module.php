@@ -14,29 +14,30 @@ use RZP\Exception\BadRequestValidationFailureException;
  */
 class Module
 {
-    const USER                  = 'user';
-    const BATCH                 = 'batch';
-    const PARTNER               = 'partner';
-    const MERCHANT              = 'merchant';
-    const ONBOARDING            = 'onboarding';
-    const OPENWALLET            = 'openwallet';
-    const SUBSCRIPTIONS         = 'subscriptions';
-    const PAYMENT_LINK          = 'payment_link';
-    const PAYMENT_PAGE_ITEM     = 'payment_page_item';
-    const PAYOUT_PURPOSE        = 'payout_purpose';
-    const PAYOUT_LINK           = 'payout_link';
-    const PAYOUTS               = 'payouts';
-    const TAX_PAYMENTS          = 'tax_payments';
-    const X_APPS                = 'x_apps';
-    const CONTACT_TYPE          = 'contact_type';
-    const D2C_BUREAU_CAMPAIGN   = 'd2c_bureau_campaign';
-    const BALANCE               = 'balance';
-    const FREE_PAYOUT           = 'free_payout';
-    const PAYOUT_AMOUNT_TYPE    = 'payout_amount_type';
-    const VIRTUAL_ACCOUNT       = 'virtual_account';
-    const M2P_TRANSFER          = 'm2p_transfer';
-    const QR_CODE               = 'qr_code';
-    const PAYMENT_STORE         = 'payment_store';
+    const USER                   = 'user';
+    const BATCH                  = 'batch';
+    const PARTNER                = 'partner';
+    const MERCHANT               = 'merchant';
+    const ONBOARDING             = 'onboarding';
+    const OPENWALLET             = 'openwallet';
+    const SUBSCRIPTIONS          = 'subscriptions';
+    const PAYMENT_LINK           = 'payment_link';
+    const PAYMENT_PAGE_ITEM      = 'payment_page_item';
+    const PAYOUT_PURPOSE         = 'payout_purpose';
+    const PAYOUT_LINK            = 'payout_link';
+    const PAYOUTS                = 'payouts';
+    const TAX_PAYMENTS           = 'tax_payments';
+    const ACC_INTEGRATION        = 'acc_integration';
+    const X_APPS                 = 'x_apps';
+    const CONTACT_TYPE           = 'contact_type';
+    const D2C_BUREAU_CAMPAIGN    = 'd2c_bureau_campaign';
+    const BALANCE                = 'balance';
+    const FREE_PAYOUT            = 'free_payout';
+    const PAYOUT_AMOUNT_TYPE     = 'payout_amount_type';
+    const VIRTUAL_ACCOUNT        = 'virtual_account';
+    const M2P_TRANSFER           = 'm2p_transfer';
+    const QR_CODE                = 'qr_code';
+    const PAYMENT_STORE          = 'payment_store';
 
     const PAYMENT_LINK_COMPUTED = 'payment_link_computed';
 

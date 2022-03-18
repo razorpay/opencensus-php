@@ -180,6 +180,26 @@ return [
         ]
     ],
 
+    'testGetAllSettingsMethod' => [
+        'request'  => [
+            'method' => 'GET',
+            'url'    => '/accounting-integration/settings',
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+
+    'testAddOrUpdateSettingsMethod' => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/accounting-integration/settings',
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+
     'testFetchTallyInvoiceServiceMethod' => [
         'request'  => [
             'server' => [
