@@ -145,7 +145,7 @@ class Validator extends Base\Validator
         Entity::STAKEHOLDER                              => 'sometimes|array|custom',
         Entity::MERCHANT_AVG_ORDER_VALUE                 => 'filled|array|custom',
         Entity::CONTACT_NAME                             => 'sometimes|alpha_space|max:255',
-        Entity::CONTACT_EMAIL                            => 'sometimes|email|max:255',
+        Entity::CONTACT_EMAIL                            => 'sometimes|nullable|email|max:255',
         Entity::CONTACT_MOBILE                           => 'sometimes|max:15|contact_syntax',
         Entity::CONTACT_LANDLINE                         => 'sometimes|numeric|digits_between:8,11',
         Entity::BUSINESS_TYPE                            => 'filled|numeric|digits_between:1,10',

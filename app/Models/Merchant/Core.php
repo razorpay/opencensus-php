@@ -4498,6 +4498,21 @@ class Core extends Base\Core
             $this->updateWhitelistedDomain($merchant, $merchantInput);
         }
 
+        if((array_key_exists(Detail\Entity::CONTACT_EMAIL, $input) === true)
+            and (is_null($input[Detail\Entity::CONTACT_EMAIL]) === true))
+        {
+            if(empty($merchant->getEmail()) === false)
+            {
+                $merchantUser = $this->repo->user->getUserFromEmail($merchant->getEmail());
+
+                $merchantUser->setAttribute(Entity::EMAIL, null);
+
+                $this->repo->saveOrFail($merchantUser);
+            }
+
+            $merchant->setEmail($input[Detail\Entity::CONTACT_EMAIL]);
+        }
+
         if (empty($input[Detail\Entity::BUSINESS_DBA]) === false)
         {
             $merchantInput[Entity::BILLING_LABEL] = $input[Detail\Entity::BUSINESS_DBA];
