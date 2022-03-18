@@ -33,9 +33,8 @@ class CaptureJournalEvents
         $gateway = $payment->terminal ? $payment->terminal->getGateway() : "not found";
 
         // api transaction id is assigned to transaction id if it is present in payment entity else payment id is passed as api transaction id
-        return array(
+        $message = array(
             Constants::TRANSACTOR_ID                => $payment->getPublicId(),
-            Constants::API_TRANSACTION_ID           => ($payment->getTransactionId() !== null) ? $payment->getTransactionId() : $payment->getId(),
             Constants::MERCHANT_ID                  => $payment->getMerchantId(),
             Constants::CURRENCY                     => $payment->getCurrency(),
             Constants::AMOUNT                       => strval($payment->getAmount()),
@@ -48,6 +47,13 @@ class CaptureJournalEvents
                 Constants::GATEWAY          => $gateway,
             ],
         );
+
+        if($payment->getTransactionId() !== null)
+        {
+            $message[Constants::API_TRANSACTION_ID] = $payment->getTransactionId();
+        }
+
+        return $message;
     }
 
     public static function fetchRulesForPaymentCredits(Transaction\Entity $transaction)
