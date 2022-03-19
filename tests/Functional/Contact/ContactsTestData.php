@@ -2643,4 +2643,33 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_INTERNAL_CONTACT_CREATE_UPDATE_NOT_PERMITTED,
         ],
     ],
+
+    'testTrimContactName' =>[
+        'request'  => [
+            'url'    => '',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'id'     => '',
+                'entity' => 'contact',
+                'name' => 'test contact',
+            ],
+        ],
+    ],
+
+    'testTrimContactType' => [
+        'request'  => [
+            'url'    => '',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'id'     => '',
+                'entity' => 'contact',
+                'name' => 'test contact',
+                'type' => 'test type',
+            ],
+        ],
+    ],
 ];

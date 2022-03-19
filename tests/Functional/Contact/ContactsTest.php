@@ -7,8 +7,10 @@ use RZP\Constants\Timezone;
 use RZP\Error\Error;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Contact\Core;
 use RZP\Models\Feature;
 use RZP\Models\Contact\Entity;
+use RZP\Services\Pagination\Entity as PaginationEntity;
 use RZP\Services\RazorXClient;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Services\Segment\XSegmentClient;
@@ -1461,6 +1463,100 @@ class ContactsTest extends TestCase
         $this->testData[__FUNCTION__] = $testData;
 
         $this->ba->payoutLinksAppAuth();
+
+        $this->startTest();
+    }
+
+    public function testTrimContactName()
+    {
+        $contact = $this->fixtures->create('contact', ['name'=>' test contact ']);
+        $contactId = $contact['id'];
+        $merchantId = $contact['merchant_id'];
+        $creationTime = $contact['created_at'];
+
+        $pagination = new PaginationEntity();
+        $pagination->setAttribute(PaginationEntity::WHITELIST_MERCHANT_IDS, [$merchantId]);
+        $pagination->setAttribute(PaginationEntity::LIMIT, 1000);
+        $pagination->setAttribute(PaginationEntity::START_TIME,$creationTime);
+        $pagination->setAttribute(PaginationEntity::END_TIME, $creationTime);
+        $pagination->setAttribute(PaginationEntity::DURATION, 0);
+        $pagination->build();
+
+        $core = new Core();
+        $core->trimContactName($pagination);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/contacts/cont_'.$contactId;
+        $testData['response']['content']['id'] = 'cont_'.$contactId;
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->startTest();
+    }
+
+    public function testTrimContactType()
+    {
+        $merchantId = '10000000000000';
+        //create a type with spaces
+        $testData = $this->testData[__FUNCTION__];
+
+        $request = [
+            'url'     => '/contacts/types',
+            'method'  => 'POST',
+            'content' => [
+                'type' => ' test type ',
+            ],
+        ];
+
+        $response = [
+            'content' => [
+                'entity' => "collection",
+            ]
+        ];
+
+        $testData['request'] = $request;
+        $testData['response'] = $response;
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->startTest();
+
+        //create contact with new type
+        $contact = $this->fixtures->create('contact',['name'=> 'test contact', 'type'=>' test type ']);
+        $contactId = $contact['id'];
+        $creationTime = $contact['created_at'];
+
+        $pagination = new PaginationEntity();
+        $pagination->setAttribute(PaginationEntity::WHITELIST_MERCHANT_IDS, [$merchantId]);
+        $pagination->setAttribute(PaginationEntity::LIMIT, 1000);
+        $pagination->setAttribute(PaginationEntity::START_TIME,$creationTime);
+        $pagination->setAttribute(PaginationEntity::END_TIME, $creationTime);
+        $pagination->setAttribute(PaginationEntity::DURATION, 0);
+        $pagination->build();
+
+        $core = new Core();
+        $core->trimContactType($pagination);
+
+        //get current contact and check its type
+        $request = [
+            'url'    => '/contacts/cont_'.$contactId,
+            'method' => 'GET'
+        ];
+
+        $response = [
+            'content' => [
+                'id'     => 'cont_'.$contactId,
+                'entity' => 'contact',
+                'name' => 'test contact',
+                'type' => 'test type',
+            ],
+        ];
+
+        $testData['request'] = $request;
+        $testData['response'] = $response;
+
+        $this->testData[__FUNCTION__] = $testData;
 
         $this->startTest();
     }
