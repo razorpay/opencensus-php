@@ -171,6 +171,13 @@ class BillDeskSIHub extends CardMandate\MandateHubs\BaseHub
             'start_time' => $startTime,
         ]);
 
+        $endTime = $payment->localToken->getExpiredAt();
+
+        if ($endTime === null)
+        {
+            $endTime = $card->getExpiryTimestamp();
+        }
+
         return [
             Constants::PAYMENT          => $payment->toArray(),
             Constants::TERMINAL         => $payment->terminal ? $payment->terminal->toArray() : null,
@@ -179,6 +186,7 @@ class BillDeskSIHub extends CardMandate\MandateHubs\BaseHub
             Constants::TOKEN            => $tokenData,
             Constants::CARD             => $cardData,
             Constants::CARD_MANDATE     => $cardMandate->toArray(),
+            Constants::END_TIME         => $endTime,
         ];
     }
 
