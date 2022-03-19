@@ -89,6 +89,8 @@ class OAuthScopes
         'accounting_integration_tally_acknowledge_payment' => [self::TALLY_READ_WRITE],
         'accounting_integration_tally_integrate'           => [self::TALLY_READ_WRITE],
         'accounting_integration_tally_delete_integration'  => [self::TALLY_READ_WRITE],
+        'accounting_integration_tally_create_contact'      => [self::TALLY_READ_WRITE],
+        'accounting_integration_tally_sync_status'         => [self::TALLY_READ_WRITE],
         'accounting_integration_tally_tax_slab_rates'      => [self::TALLY_READ_WRITE],
         'accounting_integration_add_or_update_settings'    => [self::TALLY_READ_WRITE],
 

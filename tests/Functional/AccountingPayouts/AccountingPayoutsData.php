@@ -171,19 +171,18 @@ return [
     ],
 
     'testGetTaxSlabServiceMethod' => [
-        'request'  => [
+        'request' => [
             'method' => 'GET',
-            'url'    => '/accounting-integration/tally/tax-slabs',
+            'url' => '/accounting-integration/tally/tax-slabs',
         ],
         'response' => [
             'content' => []
         ]
     ],
-
     'testGetAllSettingsMethod' => [
-        'request'  => [
+        'request' => [
             'method' => 'GET',
-            'url'    => '/accounting-integration/settings',
+            'url' => '/accounting-integration/settings',
         ],
         'response' => [
             'content' => []
@@ -191,9 +190,29 @@ return [
     ],
 
     'testAddOrUpdateSettingsMethod' => [
-        'request'  => [
+        'request' => [
             'method' => 'POST',
-            'url'    => '/accounting-integration/settings',
+            'url' => '/accounting-integration/settings',
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+
+    'testCreateTallyVendorsServiceMethod' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/accounting-integration/tally/vendors',
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+
+    'testSyncVendorStatusServiceMethod' => [
+        'request' => [
+            'method' => 'GET',
+            'url' => '/accounting-integration/tally/vendors/sync-status',
         ],
         'response' => [
             'content' => []

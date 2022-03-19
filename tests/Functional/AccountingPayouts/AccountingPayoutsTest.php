@@ -331,6 +331,36 @@ class AccountingPayoutsTest extends TestCase
         $apMock->shouldHaveReceived('addOrUpdateSettings');
     }
 
+    public function testCreateTallyVendorsServiceMethod()
+    {
+        $this->ba->privateAuth();
+
+        $apMock = Mockery::mock('RZP\Services\AccountingPayouts');
+
+        $apMock->shouldReceive('createTallyVendors')->andReturn([]);
+
+        $this->app->instance('accounting-payouts', $apMock);
+
+        $this->startTest();
+
+        $apMock->shouldHaveReceived('createTallyVendors');
+    }
+
+    public function testSyncVendorStatusServiceMethod()
+    {
+        $this->ba->privateAuth();
+
+        $apMock = Mockery::mock('RZP\Services\AccountingPayouts');
+
+        $apMock->shouldReceive('fetchSyncStatus')->andReturn([]);
+
+        $this->app->instance('accounting-payouts', $apMock);
+
+        $this->startTest();
+
+        $apMock->shouldHaveReceived('fetchSyncStatus');
+    }
+
     public function testFetchTallyInvoiceServiceMethod()
     {
         $this->ba->privateAuth();
