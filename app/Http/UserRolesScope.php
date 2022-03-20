@@ -290,6 +290,7 @@ class UserRolesScope
             'payment_handle_create'                    => [Role::OWNER, Role::ADMIN],
             'payment_handle_precreate'                 => [Role::OWNER, Role::ADMIN],
             'payment_handle_update'                    => [Role::OWNER, Role::ADMIN],
+            'payment_handle_update_old'                => [Role::OWNER, Role::ADMIN],
             'payment_handle_availability'              => [Role::OWNER, Role::ADMIN],
             'payment_handle_get'                       => [Role::OWNER, Role::ADMIN],
             'payment_handle_suggestion'                => [Role::OWNER, Role::ADMIN],

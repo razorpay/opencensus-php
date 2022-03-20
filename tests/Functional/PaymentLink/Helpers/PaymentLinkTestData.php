@@ -3045,7 +3045,6 @@ return [
                 'title'=> 'Test Label 123'
             ]
         ]
-
     ],
 
     'testPaymentHandleFetchWhenHandleDoesNotExists' => [

@@ -2000,6 +2000,47 @@ class PaymentLinkTest extends TestCase
         $this->startTest();
     }
 
+    public function testPaymentHandleUpdateOld()
+    {
+        $this->mockGimliPaymentHandle("Test Billing Label");
+
+        $this->ba->proxyAuthLive();
+
+        $createRequest = [
+            'method' => 'POST',
+            'url'    => '/v1/payment_handle'
+        ];
+
+        $phCreateResponse = $this->makeRequestAndGetContent($createRequest);
+
+        $plId = $phCreateResponse['id'];
+
+        $newPaymentHandle = "@newHandle";
+
+        $this->mockGimliPaymentHandle($newPaymentHandle);
+
+        $handleUrl = $this->app['config']->get('app.payment_handle_hosted_base_url')
+            . "/". $newPaymentHandle;
+
+        $request = [
+            'method' => 'PATCH',
+            'url' => '/v1/payment_handle/' . $plId,
+            'content' => [
+                'slug' => $newPaymentHandle
+            ]
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertArrayHasKey(Entity::URL, $content);
+
+        $this->assertArrayHasKey(Entity::SLUG, $content);
+
+        $this->assertEquals($content[Entity::SLUG], $newPaymentHandle);
+
+        $this->assertEquals($content[Entity::URL], $handleUrl);
+    }
+
     public function testPaymentHandleFetch()
     {
         $this->testPaymentHandleCreation();
