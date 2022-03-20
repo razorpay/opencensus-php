@@ -3,14 +3,15 @@
 namespace RZP\Tests\Unit\PayoutLink;
 
 use Mockery;
-use RZP\Constants\Environment;
-use RZP\Constants\Mode;
-use RZP\Models\BankingAccount\Channel;
-use RZP\Models\Merchant;
 use RZP\Exception;
+use ReflectionClass;
+use RZP\Constants\Mode;
+use RZP\Models\Merchant;
 use RZP\Services\RazorXClient;
+use RZP\Constants\Environment;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\PayoutLink\Service;
+use RZP\Models\BankingAccount\Channel;
 
 class PayoutLinkMicroserviceTest extends TestCase
 {
@@ -1604,6 +1605,66 @@ class PayoutLinkMicroserviceTest extends TestCase
                     }
                     return 'on';
                 }));
+    }
+
+    protected static function getMethodWithModifiedAccessibility($name)
+    {
+        $class = new ReflectionClass('RZP\Services\PayoutLinks');
+
+        $method = $class->getMethod($name);
+
+        $method->setAccessible(true);
+
+        return $method;
+    }
+
+    protected function mockRazorXTreatment($variant)
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->willReturn($variant);
+    }
+
+    public function testIsWorkflowEnabledForBlacklistedMerchant()
+    {
+        // for blacklisted merchant, the new flag will be enabled i.e. variant will be 'on'
+        // (for the merchant for which the flag is enabled, workflow-feature is disabled)
+        $this->mockRazorXTreatment('on');
+
+        $mock = $this->getMockBuilder('RZP\Services\PayoutLinks')
+            ->enableOriginalConstructor()
+            ->setConstructorArgs([$this->app])
+            ->getMock();
+
+        $workflowCheckMethod = self::getMethodWithModifiedAccessibility('isWorkflowEnabledForPLMerchant');
+
+        $result = $workflowCheckMethod->invokeArgs($mock, ['merchant-id']);
+
+        $this->assertEquals(false, $result);
+    }
+
+    public function testIsWorkflowEnabledForGeneralMerchant()
+    {
+        // for general merchant, the new flag will be disabled
+        // (i.e. for the merchant for which the flag is disabled, workflow-feature is enabled)
+        $this->mockRazorXTreatment('off');
+
+        $mock = $this->getMockBuilder('RZP\Services\PayoutLinks')
+            ->enableOriginalConstructor()
+            ->setConstructorArgs([$this->app])
+            ->getMock();
+
+        $workflowCheckMethod = self::getMethodWithModifiedAccessibility('isWorkflowEnabledForPLMerchant');
+
+        $result = $workflowCheckMethod->invokeArgs($mock, ['merchant-id']);
+
+        $this->assertEquals(true, $result);
     }
 
 }

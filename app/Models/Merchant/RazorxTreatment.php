@@ -216,6 +216,9 @@ final class RazorxTreatment
     // To decide if approval workflow is enabled for the merchant
     const RX_PAYOUT_LINK_WORKFLOW = 'rx_payout_link_workflow';
 
+    // To decide if payout link approval workflow is disabled for the merchant
+    const RX_PAYOUT_LINK_WORKFLOW_DISABLED = 'rx_payout_link_workflow_disabled';
+
     // Check whether skip_workflow_payout_specific feature is allowed for merchant or not.
     const SKIP_WORKFLOW_PAYOUT_SPECIFIC_FEATURE = 'skip_workflow_payout_specific_feature';
 

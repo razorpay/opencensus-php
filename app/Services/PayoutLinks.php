@@ -225,12 +225,11 @@ class PayoutLinks
 
     protected function isWorkflowEnabledForPLMerchant(string $merchantId)
     {
-        // get pl_workflow_experiment_flag value
         $variant = $this->app['razorx']->getTreatment($merchantId,
-            Merchant\RazorxTreatment::RX_PAYOUT_LINK_WORKFLOW,
+            Merchant\RazorxTreatment::RX_PAYOUT_LINK_WORKFLOW_DISABLED,
             $this->app['rzp.mode'] ?? 'live');
 
-        return ($variant == 'on');
+        return !($variant === 'on');
     }
 
     public function create(MerchantEntity $merchant, array $input): array
