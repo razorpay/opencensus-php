@@ -54,7 +54,7 @@ class TrustedBadge extends Job
 
             /**
              * Merchant id query, check the following
-             * 1. activation date < 120 days
+             * 1. activation date < 90 days
              * 2. is razorpay org
              * 3. category2 not in (government, lending, govt education)
              * 4. registered - details table - business_type not in ('2','11')

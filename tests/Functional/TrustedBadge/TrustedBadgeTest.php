@@ -4,8 +4,12 @@
 namespace Functional\TrustedBadge;
 
 use Carbon\Carbon;
-use RZP\Tests\Functional\TestCase;
+use RZP\Models\Merchant\Account;
+use RZP\Models\Terminal\Category;
+use RZP\Models\TrustedBadge\Core;
+use RZP\Services\Mock\DataLakePresto as DataLakePrestoMock;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\TestCase;
 
 class TrustedBadgeTest extends TestCase
 {
@@ -60,6 +64,69 @@ class TrustedBadgeTest extends TestCase
         $response = $this->makeRequestAndGetContent($request);
 
         $this->assertEquals('ineligible', $response['status']);
+    }
+
+    public function testMerchantsActivatedMoreThanThreeMonthsAgoAreEligibleForRTB(): void
+    {
+        $ninetyOneDaysAgo = Carbon::today()->subDays(91)->getTimestamp();
+
+        $prestoService = $this->getMockBuilder(DataLakePrestoMock::class)
+            ->setConstructorArgs([$this->app])
+            ->onlyMethods(['getDataFromDataLake'])
+            ->getMock();
+
+        $callback = static function ($query) {
+            $standardCheckoutEligibleMerchants = [
+                [
+                    'merchant_id' => Account::TEST_ACCOUNT,
+                ],
+            ];
+
+            if ($query === 'select * from hive.aggregate_pa.rtb_eligibility_trxn_check_v1') {
+                return $standardCheckoutEligibleMerchants;
+            }
+
+            return [];
+        };
+
+        $prestoService->method( 'getDataFromDataLake')
+            ->willReturnCallback($callback);
+
+        $this->app->instance('datalake.presto', $prestoService);
+
+        $this->fixtures->edit('merchant', Account::TEST_ACCOUNT, [
+            'category2' => Category::SECURITIES,
+            'activated_at' => $ninetyOneDaysAgo,
+        ]);
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id' => Account::TEST_ACCOUNT,
+            'business_type' => 4,
+            'activation_status' => 'activated',
+        ]);
+
+        $request = array(
+            'url' => '/trusted_badge/eligibility_cron',
+            'method' => 'POST'
+        );
+
+        $this->ba->cronAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(true, $response['success']);
+
+        $this->ba->proxyAuth();
+
+        $request = array(
+            'url' => '/trusted_badge',
+            'method' => 'GET',
+            'content' => [],
+        );
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals('eligible', $response['status']);
     }
 
     public function testTrustedBadgeDetailsWithEntry(): void

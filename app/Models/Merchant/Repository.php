@@ -1509,13 +1509,13 @@ class Repository extends Base\Repository
 
         $excludedCategoryList = [Category::LENDING, Category::GOVERNMENT, Category::GOVT_EDUCATION];
         $excludedBusinessTypeList =  Detail\BusinessType::getIndexForUnregisteredBusiness();
-        $fourMonthsAgoTimestamp = Carbon::today()->subDays(120)->getTimestamp();
+        $threeMonthsAgoTimestamp = Carbon::today()->subDays(90)->getTimestamp();
 
         $query = $this->newQueryWithConnection($this->getSlaveConnection())
             ->join(Table::MERCHANT_DETAIL, Entity::ID, Detail\Entity::MERCHANT_ID)
             ->select($merchantId)
             ->where($orgId, '=', Org\Entity::RAZORPAY_ORG_ID)
-            ->where($activatedAt, '<', $fourMonthsAgoTimestamp)
+            ->where($activatedAt, '<', $threeMonthsAgoTimestamp)
             ->where($activationStatus, '=', Detail\Status::ACTIVATED)
             ->whereNotIn($category2, $excludedCategoryList)
             ->whereNotIn($businessType, $excludedBusinessTypeList)
