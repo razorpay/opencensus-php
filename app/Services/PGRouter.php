@@ -76,6 +76,8 @@ class PGRouter
 
     const PG_ROUTER_FAILURE_STATUS_CODE = "pg_router_failure_status_code";
 
+    const PG_ROUTER_REQUEST_FAILURE = "pg_router_request_failure";
+
     // Headers
     const ACCEPT            = 'Accept';
     const X_MODE            = 'X-Mode';
@@ -544,7 +546,7 @@ class PGRouter
                 'url' => $request['url']
             ];
 
-            $this->trace->count(TraceCode::PG_ROUTER_REQUEST_FAILURE, $dimensions);
+            $this->trace->count(self::PG_ROUTER_REQUEST_FAILURE, $dimensions);
 
             throw $e;
         }
