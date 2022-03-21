@@ -10,6 +10,7 @@ use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Key;
 use RZP\Models\Report;
 use RZP\Models\Gateway;
+use RZP\Models\User\Role;
 use RZP\Trace\Tracer;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
@@ -232,6 +233,8 @@ class MerchantController extends Controller
     public function putMerchantConfig()
     {
         $input = Request::all();
+
+        $this->validateRoleForPutMerchantConfig($input);
 
         $data = $this->service()->editConfig($input);
 
@@ -2937,5 +2940,25 @@ class MerchantController extends Controller
         $this->service()->bulkConvertResellerToAggregatorPartner($input);
 
         return ApiResponse::json([]);
+    }
+
+    private function validateRoleForPutMerchantConfig(array $input)
+    {
+        $ba = $this->app['basicauth'];
+
+        $manageAlertRoles = array(Role::OWNER, Role::ADMIN, Role::MANAGER);
+
+        if($this->ba->isProxyAuth() === true
+            && in_array($ba->getUserRole(), $manageAlertRoles) === false
+            && (isset($input["amount_credits_threshold"]) === true
+                or isset($input["fee_credits_threshold"]) === true
+                or isset($input["refund_credits_threshold"]) === true
+                or isset($input["balance_threshold"]) === true)
+        )
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_URL_NOT_FOUND
+            );
+        }
     }
 }
