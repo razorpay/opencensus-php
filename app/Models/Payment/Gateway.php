@@ -4085,7 +4085,44 @@ class Gateway
             self::WALLET_FREECHARGE
         ];
 
-        return ((in_array($payment[Payment\Entity::GATEWAY], $gateways, true)) and ($payment[Payment\Entity::CPS_ROUTE] === Payment\Entity::NB_PLUS_SERVICE));
+        $gateway = $payment[Payment\Entity::GATEWAY];
+
+        $acquirerGateways = [
+            self::PAYLATER     => [
+                Paylater::LAZYPAY,
+            ],
+        ];
+
+        if(in_array($gateway, array_keys($acquirerGateways), true))
+        {
+            $gateways = $acquirerGateways[$gateway];
+
+            $gateway = $payment[Payment\Entity::WALLET];
+        }
+
+        return ((in_array($gateway, $gateways, true)) and ($payment[Payment\Entity::CPS_ROUTE] === Payment\Entity::NB_PLUS_SERVICE));
+    }
+
+    public static function shouldSkipDebit($payment)
+    {
+        $gateways = [];
+
+        $gateway = $payment[Payment\Entity::GATEWAY];
+
+        $acquirerGateways = [
+            self::PAYLATER     => [
+                Paylater::LAZYPAY,
+            ],
+        ];
+
+        if(in_array($gateway, array_keys($acquirerGateways), true))
+        {
+            $gateways = $acquirerGateways[$gateway];
+
+            $gateway = $payment[Payment\Entity::WALLET];
+        }
+
+        return (in_array($gateway, $gateways, true));
     }
 
     /**

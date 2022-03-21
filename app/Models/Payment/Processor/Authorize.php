@@ -7566,7 +7566,7 @@ trait Authorize
 
         //Paylater ICICI has otp flow enabled
         if (($payment->isPayLater() === true) and
-            (($wallet === PayLater::ICICI) or ($wallet === Paylater::LAZYPAY)))
+            (($wallet === PayLater::ICICI)))
         {
             return true;
         }

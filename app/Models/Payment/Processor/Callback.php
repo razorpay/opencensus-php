@@ -619,7 +619,10 @@ trait Callback
 
             $this->postPaymentOtpCallbackProcessing($input, $data);
 
-            $this->callGatewayFunction(Payment\Action::AUTHORIZE, $input);
+            if(Payment\Gateway::shouldSkipDebit($input['payment']) !== true)
+            {
+                $this->callGatewayFunction(Payment\Action::AUTHORIZE, $input);
+            }
         }
         else
         {
