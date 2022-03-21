@@ -33,9 +33,10 @@ const SettlementMessageContainer = ({ user, holidayList, openModal, balance }) =
     isOndemandSettlementEnabled && !isOndemandSettlementsRestricted;
   const isPartialOndemandSettlementEnabled =
     isOndemandSettlementEnabled && isOndemandSettlementsRestricted;
+  const { isAutomaticSettlementEnabled, isAutomaticSettlementRestricted, isOrgRZP } = user;
 
   function getPayoutMessageData() {
-    if (!user.isAutomaticSettlementEnabled && !user.isAutomaticSettlementRestricted) {
+    if (!isAutomaticSettlementEnabled && !isAutomaticSettlementRestricted && isOrgRZP) {
       return messageFactory.getEnableScheduledSettlements();
     } else if (isBankingDay && balance < 100) {
       return messageFactory.getSettlementWillBeSkipped();
@@ -46,14 +47,14 @@ const SettlementMessageContainer = ({ user, holidayList, openModal, balance }) =
     } else if (diff) {
       if (
         isFullOndemandSettlementEnabled &&
-        user.isAutomaticSettlementEnabled &&
+        isAutomaticSettlementEnabled &&
         !getEsBannerSeen(NEW_BANNERS.FULL_SHIFT_SUCCESS)
       ) {
         return messageFactory.getFullShiftSuccess();
       } else if (
         diff > 30 &&
         isPartialOndemandSettlementEnabled &&
-        user.isAutomaticSettlementRestricted &&
+        isAutomaticSettlementRestricted &&
         !getEsBannerSeen(NEW_BANNERS.FULL_SHIFT_FAILURE)
       ) {
         return messageFactory.getFullShiftFailure();
