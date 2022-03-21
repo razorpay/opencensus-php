@@ -197,4 +197,11 @@ class SettlementOndemandController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function isOndemandBlocked()
+    {
+        $data = $this->service(Entity::SETTLEMENT_ONDEMAND)->isOndemandBlocked();
+
+        return ApiResponse::json($data);
+    }
 }

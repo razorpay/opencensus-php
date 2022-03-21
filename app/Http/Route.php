@@ -2173,7 +2173,7 @@ class Route
         'early_settlement_feature_period_disable'  => ['post',      'es/feature/disable',                            'SettlementOndemandController@disableFeaturePeriod'                 ],
         'settlement_ondemand_full_enable'          => ['post',      'settlements/ondemand/full',                     'SettlementOndemandController@enableFullESFromRestricted'           ],
         'settlement_ondemand_restricted_enable'    => ['post',      'settlements/ondemand/restricted',               'SettlementOndemandController@addOndemandRestrictedFeature'         ],
-
+        'settlement_ondemand_blocked'              => ['get',       'settlements/ondemand/merchant/config',          'SettlementOndemandController@isOndemandBlocked'                    ],
 
         // OAuth routes
         'oauth_token_create'                       => ['post',     'oauth/tokens',                                   'OAuthTokenController@create'                                       ],
@@ -4775,6 +4775,7 @@ class Route
         'settlement_ondemand_create_dashboard',
         'settlement_ondemand_fees_dashboard',
         'settlement_ondemand_feature_validate',
+        'settlement_ondemand_blocked',
         'loc_service',
         'capital_cards_service',
         'bvs_service_dashboard',
@@ -9202,6 +9203,7 @@ class Route
             'settlement_ondemand_create',
             'settlement_ondemand_create_dashboard',
             'settlement_ondemand_feature_validate',
+            'settlement_ondemand_blocked',
             'settlement_ondemand_fees',
             'settlement_ondemand_fees_dashboard',
             'settlement_ondemand_fetch',
@@ -10995,6 +10997,7 @@ class Route
             'settlement_ondemand_create',
             'settlement_ondemand_create_dashboard',
             'settlement_ondemand_feature_validate',
+            'settlement_ondemand_blocked',
             'settlement_ondemand_fees',
             'settlement_ondemand_fees_dashboard',
             'settlement_ondemand_fetch',
@@ -12534,6 +12537,7 @@ class Route
         'settlement_ondemand_create_dashboard' => [Feature::ES_ON_DEMAND],
         'settlement_ondemand_fees'             => [Feature::ES_ON_DEMAND],
         'settlement_ondemand_fees_dashboard'   => [Feature::ES_ON_DEMAND],
+        'settlement_ondemand_blocked'          => [Feature::ES_ON_DEMAND],
         'card_issuer_validate'                 => [Feature::BIN_ISSUER_VALIDATOR],
         'iin_list_by_flow'                     => [Feature::IIN_LISTING],
         'iin_get'                              => [Feature::BIN_API],

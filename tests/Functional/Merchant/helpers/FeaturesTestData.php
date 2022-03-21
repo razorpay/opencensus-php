@@ -770,6 +770,11 @@ return [
                         'display_name'  => 'Es Ondemand Restricted'
                     ],
                     [
+                        'feature'       => 'block_es_on_demand',
+                        'value'         => false,
+                        'display_name'  => 'Block Es Ondemand',
+                    ],
+                    [
                         'feature'       => 'updated_imps_ondemand',
                         'value'         => false,
                         'display_name'  => 'Updated IMPS Ondemand',
@@ -1400,6 +1405,7 @@ return [
                     'transaction_v2',
                     'es_on_demand',
                     'es_on_demand_restricted',
+                    'block_es_on_demand',
                     'updated_imps_ondemand',
                     'es_automatic',
                     'es_automatic_restricted',
@@ -1515,6 +1521,7 @@ return [
                         'transaction_v2',
                         'es_on_demand',
                         'es_on_demand_restricted',
+                        'block_es_on_demand',
                         'updated_imps_ondemand',
                         'es_automatic',
                         'es_automatic_restricted',
@@ -1637,6 +1644,7 @@ return [
                     'transaction_v2',
                     'es_on_demand',
                     'es_on_demand_restricted',
+                    'block_es_on_demand',
                     'updated_imps_ondemand',
                     'es_automatic',
                     'es_automatic_restricted',

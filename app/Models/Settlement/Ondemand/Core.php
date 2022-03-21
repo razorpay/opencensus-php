@@ -3,6 +3,7 @@
 namespace RZP\Models\Settlement\Ondemand;
 
 use App;
+use Config;
 use Carbon\Carbon;
 
 use RZP\Exception;
@@ -457,6 +458,20 @@ class Core extends Base\Core
         }
 
         return $merchantIdList;
+    }
+
+    public function isOndemandBlocked():bool
+    {
+        $ondemandXMerchantId = Config::get('applications.razorpayx_client.live.ondemand_x_merchant.id');
+
+        $merchant = $this->repo->merchant->findOrFail($ondemandXMerchantId);
+
+        if ($merchant->isFeatureEnabled(Feature\Constants::BLOCK_ES_ON_DEMAND) === true)
+        {
+            return true;
+        }
+
+        return false;
     }
 
 }

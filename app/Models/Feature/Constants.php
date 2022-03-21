@@ -114,6 +114,7 @@ class Constants
     const TRANSACTION_V2                  = 'transaction_v2';
     const ES_ON_DEMAND                    = 'es_on_demand';
     const ES_ON_DEMAND_RESTRICTED         = 'es_on_demand_restricted';
+    const BLOCK_ES_ON_DEMAND              = 'block_es_on_demand';
     const UPDATED_IMPS_ONDEMAND           = 'updated_imps_ondemand';
     const ES_AUTOMATIC                    = 'es_automatic';
     const ES_AUTOMATIC_RESTRICTED         = 'es_automatic_restricted';
@@ -1391,6 +1392,7 @@ class Constants
         self::TRANSACTION_V2                  => true,
         self::ES_ON_DEMAND                    => true,
         self::ES_ON_DEMAND_RESTRICTED         => true,
+        self::BLOCK_ES_ON_DEMAND              => true,
         self::UPDATED_IMPS_ONDEMAND           => true,
         self::ES_AUTOMATIC                    => true,
         self::ES_AUTOMATIC_RESTRICTED         => true,
@@ -1831,6 +1833,11 @@ class Constants
         self::ES_ON_DEMAND_RESTRICTED => [
             'feature'       => self::ES_ON_DEMAND_RESTRICTED,
             'display_name'  => 'Es Ondemand Restricted',
+            'documentation' => '',
+        ],
+        self::BLOCK_ES_ON_DEMAND        => [
+            'feature'       => self::BLOCK_ES_ON_DEMAND,
+            'display_name'  => 'Block Es Ondemand',
             'documentation' => '',
         ],
         self::UPDATED_IMPS_ONDEMAND => [

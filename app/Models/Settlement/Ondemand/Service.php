@@ -91,6 +91,8 @@ class Service extends Base\Service
 
                 $this->validateIfOndemandMerchant();
 
+                $this->validateIfOndemandBlocked();
+
                 $this->validateIfDisabledByCollections();
 
                 $amount = $this->core()->getSettlementAmount($input, $this->merchant);
@@ -241,6 +243,20 @@ class Service extends Base\Service
             {
                 throw new Exception\BadRequestValidationFailureException(ErrorCode::BAD_REQUEST_ES_ON_DEMAND_DISABLED_BY_COLLECTIONS);
             }
+    }
+
+    public function validateIfOndemandBlocked()
+    {
+        if(($this->core()->isOndemandBlocked()) === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ONDEMAND_SETTLEMENT_BLOCKED,
+                null,
+                [
+                    'merchantId'=> $this->merchant->getId(),
+                ],
+                'Ondemand settlement has been blocked for a while');
+        }
     }
 
     public function fetch(string $id, array $input): array
@@ -455,6 +471,15 @@ class Service extends Base\Service
 
         return [
             'response' => 'AddFullES job dispatched',
+        ];
+    }
+
+    public function isOndemandBlocked()
+    {
+        $ondemandBlocked = $this->core()->isOndemandBlocked();
+
+        return [
+            'blocked' => $ondemandBlocked
         ];
     }
 }

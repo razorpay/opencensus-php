@@ -4783,6 +4783,59 @@ class SettlementOndemandTest extends TestCase
         Carbon::setTestNow($bankingHour);
 
         $this->startTest();
+    }
 
+    public function testOndemandBlocked()
+    {
+        $this->ba->proxyAuth('rzp_live_' . $this->merchantDetail['merchant_id']);
+
+        $this->fixtures->create('merchant', [
+            'id'   => '10000000000001'
+        ]);
+
+        $this->app['config']->set('applications.razorpayx_client.live.ondemand_x_merchant.id', '10000000000001');
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000001', 'name' => 'block_es_on_demand']);
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => $this->merchantDetail['merchant_id'], 'name' => 'es_on_demand']);
+
+        $this->startTest();
+    }
+
+    public function testOndemandNotBlocked()
+    {
+        $this->ba->proxyAuth('rzp_live_' . $this->merchantDetail['merchant_id']);
+
+        $this->fixtures->create('merchant', [
+            'id'   => '10000000000001'
+        ]);
+
+        $this->app['config']->set('applications.razorpayx_client.live.ondemand_x_merchant.id', '10000000000001');
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => $this->merchantDetail['merchant_id'], 'name' => 'es_on_demand']);
+
+        $this->startTest();
+    }
+
+    public function testCreateOndemandBlockedError()
+    {
+        $this->ba->proxyAuth('rzp_test_' . $this->merchantDetail['merchant_id'], $this->user->getId());
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_on_demand']);
+
+        $this->fixtures->create('merchant', [
+            'id'   => '10000000000001'
+        ]);
+
+        $this->app['config']->set('applications.razorpayx_client.live.ondemand_x_merchant.id', '10000000000001');
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000001', 'name' => 'block_es_on_demand']);
+
+        $this->startTest();
     }
 }

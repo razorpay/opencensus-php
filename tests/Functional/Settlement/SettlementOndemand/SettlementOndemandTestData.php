@@ -1911,4 +1911,64 @@ return [
         ],
     ],
 
+    'testOndemandBlocked' =>[
+        'request'  => [
+            'url'     => '/settlements/ondemand/merchant/config',
+            'method'  => 'get',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
+            'content' => []
+        ],
+        'response' => [
+            'content' => [
+                'blocked' => true
+            ],
+        ],
+    ],
+
+    'testOndemandNotBlocked' =>[
+        'request'  => [
+            'url'     => '/settlements/ondemand/merchant/config',
+            'method'  => 'get',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
+            'content' => []
+        ],
+        'response' => [
+            'content' => [
+                'blocked' => false
+            ],
+        ],
+    ],
+
+    'testCreateOndemandBlockedError' =>[
+        'request'  => [
+            'url'     => '/settlements/ondemand',
+            'method'  => 'post',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
+            'content' => [
+                'amount'              => 20000,
+                'settle_full_balance' => 0,
+                'description'         => 'Demo Narration - optional',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Ondemand settlement has been blocked for a while',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ONDEMAND_SETTLEMENT_BLOCKED,
+        ],
+    ],
+
 ];

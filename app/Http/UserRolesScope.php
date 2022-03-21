@@ -421,6 +421,7 @@ class UserRolesScope
             'settlement_ondemand_feature_validate'          => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::OPERATIONS, Role::FINANCE, Role::SUPPORT, Role::SELLERAPP,],
             'settlement_ondemand_fees_dashboard'            => [Role::ADMIN, Role::OWNER, Role::MANAGER,],
             'settlement_ondemand_fetch'                     => [Role::ADMIN, Role::OWNER, Role::OPERATIONS, Role::SELLERAPP, Role::MANAGER, Role::SUPPORT, Role::FINANCE, Role::SELLERAPP_PLUS,],
+            'settlement_ondemand_blocked'                   => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::OPERATIONS, Role::FINANCE, Role::SUPPORT, Role::SELLERAPP,],
             'subscription_fetch'                            => [Role::ADMIN, Role::OWNER, Role::MANAGER,],
             'subscription_fetch_changes'                    => [Role::ADMIN, Role::OWNER, Role::MANAGER,],
             'subscription_fetch_due_addons'                 => [Role::ADMIN, Role::OWNER, Role::MANAGER,],
