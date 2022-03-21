@@ -339,6 +339,8 @@ class Service
         $input = [
             'payout_status' => $payout->getStatus(),
             'payout_id'     => $payout->getPublicId(),
+            'source_type'   => $payout->getSourceDetails()->getSourceType(),
+            'source_id'     => $payout->getSourceDetails()->getSourceId(),
         ];
 
         return $this->makeRequest($payout->merchant, $url, $input, [], 'POST', $mode);
