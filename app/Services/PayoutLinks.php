@@ -223,13 +223,22 @@ class PayoutLinks
         return $mode;
     }
 
-    protected function isWorkflowEnabledForPLMerchant(string $merchantId)
+    protected function isWorkflowEnabledForPLMerchant(MerchantEntity $merchant)
     {
-        $variant = $this->app['razorx']->getTreatment($merchantId,
-            Merchant\RazorxTreatment::RX_PAYOUT_LINK_WORKFLOW_DISABLED,
+        $payoutWorkflowsFlag = $merchant->isFeatureEnabled(Features::PAYOUT_WORKFLOWS);
+
+        if($payoutWorkflowsFlag === false)
+        {
+            return false;
+        }
+
+        //blacklisted_merchants => off
+        //otherwise => on
+        $variant = $this->app['razorx']->getTreatment($merchant->getId(),
+            Merchant\RazorxTreatment::RX_PAYOUT_LINK_WORKFLOW,
             $this->app['rzp.mode'] ?? 'live');
 
-        return !($variant === 'on');
+        return ($variant === 'on');
     }
 
     public function create(MerchantEntity $merchant, array $input): array
@@ -258,7 +267,7 @@ class PayoutLinks
 
         $input[self::MERCHANT_FEATURES] = [
             self::IS_SKIP_WORKFLOW_FOR_PL_API   => $merchant->isFeatureEnabled(Features::SKIP_WORKFLOWS_FOR_API),
-            self::IS_WORKFLOW_ENABLED           => $this->isWorkflowEnabledForPLMerchant($merchant->getId())
+            self::IS_WORKFLOW_ENABLED           => $this->isWorkflowEnabledForPLMerchant($merchant)
         ];
 
         $response = $this->makeRequest($url, $input, [], self::POST, $this->getMode());
@@ -864,12 +873,6 @@ class PayoutLinks
 
         $request[self::MERCHANT_ID] = $merchantId;
 
-        // since batch request is only done via dashboard so removing `SKIP_WORKFLOWS_FOR_API` flag
-        // and also this method does not have access for merchant entity so `$merchant->isFeatureEnabled()` can not be called
-        $request[self::MERCHANT_FEATURES] = [
-            self::IS_WORKFLOW_ENABLED   => $this->isWorkflowEnabledForPLMerchant($merchantId)
-        ];
-
         $request[self::BATCH_REQUEST_ROWS] = $input;
 
         $mode = Mode::LIVE;
@@ -884,6 +887,12 @@ class PayoutLinks
                 'batch_id'    => $batchId,
             ]);
         }
+
+        $merchant = $this->repo->merchant->connection($mode)->findOrFail($merchantId);
+
+        $request[self::MERCHANT_FEATURES] = [
+            self::IS_WORKFLOW_ENABLED   => $this->isWorkflowEnabledForPLMerchant($merchant)
+        ];
 
         $url = $this->getConstructedUrl(self::CREATE_BATCH);
 

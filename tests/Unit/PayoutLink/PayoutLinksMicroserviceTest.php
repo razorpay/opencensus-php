@@ -1633,26 +1633,8 @@ class PayoutLinkMicroserviceTest extends TestCase
 
     public function testIsWorkflowEnabledForBlacklistedMerchant()
     {
-        // for blacklisted merchant, the new flag will be enabled i.e. variant will be 'on'
-        // (for the merchant for which the flag is enabled, workflow-feature is disabled)
-        $this->mockRazorXTreatment('on');
-
-        $mock = $this->getMockBuilder('RZP\Services\PayoutLinks')
-            ->enableOriginalConstructor()
-            ->setConstructorArgs([$this->app])
-            ->getMock();
-
-        $workflowCheckMethod = self::getMethodWithModifiedAccessibility('isWorkflowEnabledForPLMerchant');
-
-        $result = $workflowCheckMethod->invokeArgs($mock, ['merchant-id']);
-
-        $this->assertEquals(false, $result);
-    }
-
-    public function testIsWorkflowEnabledForGeneralMerchant()
-    {
-        // for general merchant, the new flag will be disabled
-        // (i.e. for the merchant for which the flag is disabled, workflow-feature is enabled)
+        // for blacklisted merchant, the existing flag will be not enabled i.e. variant will be 'off'
+        // (for the merchant for which the flag is disabled, workflow-feature is disabled)
         $this->mockRazorXTreatment('off');
 
         $mock = $this->getMockBuilder('RZP\Services\PayoutLinks')
@@ -1662,10 +1644,59 @@ class PayoutLinkMicroserviceTest extends TestCase
 
         $workflowCheckMethod = self::getMethodWithModifiedAccessibility('isWorkflowEnabledForPLMerchant');
 
-        $result = $workflowCheckMethod->invokeArgs($mock, ['merchant-id']);
+        $merchant = $this->fixtures->create('merchant');
+
+        $this->fixtures->create('feature', [
+            'name'          => 'payout_workflows',
+            'entity_id'     => $merchant->getId(),
+            'entity_type'   => 'merchant',
+        ]);
+
+        $result = $workflowCheckMethod->invokeArgs($mock, [$merchant]);
+
+        $this->assertEquals(false, $result);
+    }
+
+    public function testIsWorkflowEnabledForGeneralMerchant()
+    {
+        // for general merchant, the existing flag will be enabled
+        // (i.e. for the merchant for which the flag is enabled, workflow-feature is enabled)
+        $this->mockRazorXTreatment('on');
+
+        $mock = $this->getMockBuilder('RZP\Services\PayoutLinks')
+            ->enableOriginalConstructor()
+            ->setConstructorArgs([$this->app])
+            ->getMock();
+
+        $workflowCheckMethod = self::getMethodWithModifiedAccessibility('isWorkflowEnabledForPLMerchant');
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $this->fixtures->create('feature', [
+            'name'          => 'payout_workflows',
+            'entity_id'     => $merchant->getId(),
+            'entity_type'   => 'merchant',
+        ]);
+
+        $result = $workflowCheckMethod->invokeArgs($mock, [$merchant]);
 
         $this->assertEquals(true, $result);
     }
 
+    public function testPayoutWorkflowsFeaturesDisabledPL()
+    {
+        $mock = $this->getMockBuilder('RZP\Services\PayoutLinks')
+            ->enableOriginalConstructor()
+            ->setConstructorArgs([$this->app])
+            ->getMock();
+
+        $workflowCheckMethod = self::getMethodWithModifiedAccessibility('isWorkflowEnabledForPLMerchant');
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $result = $workflowCheckMethod->invokeArgs($mock, [$merchant]);
+
+        $this->assertEquals(false, $result);
+    }
 }
 
