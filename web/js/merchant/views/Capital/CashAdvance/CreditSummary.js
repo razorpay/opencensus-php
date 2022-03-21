@@ -27,6 +27,7 @@ export default function CreditSummary({
   const isReasonCldRiskPolicy = reason === ONHOLD_REASONS.CLD_RISK_POLICY;
   const isReasonEndOfCreditLine = reason === ONHOLD_REASONS.END_OF_CREDIT_LINE_TENURE;
   const isReasonKudosNotMigrated = reason === ONHOLD_REASONS.NOT_MIGRATED_TO_GROMOR;
+  const isWithdrawlDisabledDueToDPD = reason === ONHOLD_REASONS.DISABLE_LOC_POST_DPD; // high priority to show messages related to this issue.
 
   const renderOnHoldSection = () => {
     return (
@@ -63,7 +64,9 @@ export default function CreditSummary({
 
   return (
     <div className="withdrawals__credit-meta">
-      {isWithdrawalOnhold && (isReasonCldRiskPolicy || isReasonKudosNotMigrated) ? (
+      {isWithdrawalOnhold &&
+      !isWithdrawlDisabledDueToDPD &&
+      (isReasonCldRiskPolicy || isReasonKudosNotMigrated) ? (
         renderOnHoldSection()
       ) : (
         <>
@@ -78,7 +81,7 @@ export default function CreditSummary({
                   <Popover align="top" theme="dark" parentQuerySelector=".withdrawals__top-summary">
                     <PopoverBody>
                       <div className="text-left">
-                        {isReasonEndOfCreditLine
+                        {isReasonEndOfCreditLine && !isWithdrawlDisabledDueToDPD
                           ? 'Your credit line has been disabled as it has reached the end of tenure.'
                           : ' Your withdrawals are temporarily blocked due to missed repayments. Please repay to continue withdrawing from your credit line.'}
                       </div>

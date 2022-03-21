@@ -431,6 +431,14 @@ export default class User {
     return this.isFeatureEnabled('disable_refunds');
   }
 
+  get isCashAdvanceDisabled() {
+    return this.isFeatureEnabled('disable_loc_post_dpd'); // due to post dpd in capital products
+  }
+
+  get isLoansDisabled() {
+    return this.isFeatureEnabled('disable_loans_post_dpd'); // due to post dpd in capital products
+  }
+
   get isProjectNitroEnabled() {
     // moving nitro to splitz phase wise, so keeping checks for both splitz and razorx experiments currently.
 

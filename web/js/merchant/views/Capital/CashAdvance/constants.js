@@ -266,6 +266,8 @@ export const SCHEDULED_REPAYMENT_LINKS = [
 
 export const COLLECTIONS_PRODUCT_TYPES = {
   CASH_ADVANCE: 'PRODUCT_TYPE_LOC',
+  CARDS: 'PRODUCT_TYPE_CARDS',
+  LOANS: 'PRODUCT_TYPE_LOANS',
 };
 
 export const COLLECTIONS_PAYMENT_REFERENCE_TYPE = {
@@ -304,6 +306,7 @@ export const ONHOLD_REASONS = {
   NOT_MIGRATED_TO_GROMOR: 'not_migrated_to_gromor',
   CLD_RISK_POLICY: 'cld_risk_policy',
   END_OF_CREDIT_LINE_TENURE: 'end_of_credit_line_tenure',
+  DISABLE_LOC_POST_DPD: 'disable_loc_post_dpd', // available in user.featureflags
 };
 
 export const REPAYMENT_TYPES = {

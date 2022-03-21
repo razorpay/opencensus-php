@@ -1,4 +1,5 @@
 import { merchantFetch } from 'merchant/utils/ajax';
+import { COLLECTIONS_PRODUCT_TYPES } from '../../CashAdvance/constants';
 import { COLLECTIONS_PRODUCT_ENTITY_TYPE } from './constants';
 
 const COLLECTIONS_BASE_URL = 'capital_collections/service/v1';
@@ -66,5 +67,12 @@ export default {
   },
   updateRepayment(data) {
     return request(`${COLLECTIONS_BASE_URL}/repayments/order-callback`, { data }, 'put');
+  },
+  getProductDisabledReason(productType = COLLECTIONS_PRODUCT_TYPES.LOANS) {
+    return request(`${COLLECTIONS_BASE_URL}/dpd/disable_reason`, {
+      params: {
+        product_type: productType,
+      },
+    }).then(({ data: { response } }) => response);
   },
 };

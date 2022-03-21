@@ -102,4 +102,24 @@
             }
           }
     }
+    &.loan-application-disabled-body--dpd {
+        .loan-application-disabled-wrapper {
+            .action-point {
+                margin-top: 2px;
+            }
+            .subtitle {
+                position: relative;
+                &::before {
+                    content: '';
+                    position: absolute;
+                    width: 4px;
+                    height: 102%;
+                    background: #EC9B26;
+                    border-radius: 0px 3px 3px 0px;
+                    left: -20px;
+                    top: -2px;
+                }
+            }
+        }
+    }
 }

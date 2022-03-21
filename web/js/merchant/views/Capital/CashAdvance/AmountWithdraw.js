@@ -42,7 +42,12 @@ import trackAutomatedCA from './ga/automated';
 import MaxWithdrawError from './MaxWithdrawError';
 import Repayments from 'merchant/models/Capital/Repayments';
 import Withdrawal from 'merchant/models/Capital/Withdrawals';
-import { loadCheckoutScript, checkifDateExpired } from 'merchant/views/Capital/utils';
+import {
+  loadCheckoutScript,
+  checkifDateExpired,
+  getDisabledReasons,
+  getProductNames,
+} from 'merchant/views/Capital/utils';
 import { fetchRepayments } from 'merchant/reducers/capital/repayments';
 import Spinner from 'common/ui/Spinner';
 import PlaceholderLoader from 'common/ui/PlaceholderLoader';
@@ -187,8 +192,26 @@ export default class AmountWithdraw extends React.Component {
         totalRepaid: 0,
       },
       showRepaymentInfoTooltip: checkIfFirstCashAdvanceLogin(),
+      locDisabledReason: {
+        fetching: this.isCashAdvanceDisabled,
+        reasons: [], // product types eg:- [PRODUCT_TYPE_CARDS, ...]
+      },
     };
     this.state = this.initialState;
+  }
+
+  get isCashAdvanceDisabled() {
+    return this.props.user.isCashAdvanceDisabled;
+  }
+
+  get isCashAdvanceDisabledDue2SelfBlock() {
+    const { locDisabledReason } = this.state;
+    return (
+      !!locDisabledReason.reasons.length &&
+      locDisabledReason.reasons.every(
+        (prodType) => prodType === COLLECTIONS_PRODUCT_TYPES.CASH_ADVANCE,
+      )
+    ); // only cash advance in dpd - self blocked
   }
 
   componentDidMount() {
@@ -288,6 +311,17 @@ export default class AmountWithdraw extends React.Component {
         isRepaymentLoading: false,
       });
     }
+    this.isCashAdvanceDisabled &&
+      getDisabledReasons(this.props.user, COLLECTIONS_PRODUCT_TYPES.CASH_ADVANCE).then(
+        (reasons) => {
+          this.setState({
+            locDisabledReason: {
+              fetching: false,
+              reasons,
+            },
+          });
+        },
+      );
   }
 
   componentWillUnmount() {
@@ -1051,9 +1085,12 @@ export default class AmountWithdraw extends React.Component {
     );
   };
 
-  withdrawOnholdReasonSection = (reason) => {
+  withdrawOnholdReasonSection = (reason, showFooter = true) => {
     const isReasonCldRiskPolicy = reason === ONHOLD_REASONS.CLD_RISK_POLICY;
     const isReasonKudosNotMigrated = reason === ONHOLD_REASONS.NOT_MIGRATED_TO_GROMOR;
+    const isReasonWithdrawlDisabledDueToDPD = reason === ONHOLD_REASONS.DISABLE_LOC_POST_DPD; // high priority to show messages related to this issue.
+
+    const { locDisabledReason, isRepaymentLoading, outstandingRepayment } = this.state;
 
     const resonLabels = {
       cld_risk_policy: (
@@ -1076,12 +1113,38 @@ export default class AmountWithdraw extends React.Component {
           help you activate cash advance account
         </>
       ),
+      [ONHOLD_REASONS.DISABLE_LOC_POST_DPD]:
+        locDisabledReason.fetching || isRepaymentLoading ? (
+          <div className="withdrawals__onhold-summary__disabled-loc-loading">
+            <div className="PlaceholderLoader w-full" />
+            <div className="PlaceholderLoader w-6" />
+            <div className="PlaceholderLoader w-3 mt-7" />
+          </div>
+        ) : (
+          <>
+            <div>
+              {this.isCashAdvanceDisabledDue2SelfBlock
+                ? 'Sorry, Your withdrawals are temporarily blocked due to missed repayments. Please repay to continue using your credit line.'
+                : `Sorry, your withdrawals are temporarily blocked due to missed repayments on one or
+                more of your other products - ${getProductNames(locDisabledReason.reasons)}.
+                Please repay to continue using your credit line.`}
+            </div>
+            <br />
+            <div className="mt-8">
+              {' '}
+              If you have already repaid your pending dues, then your withdrawals will be enabled
+              back within 24 - 48 working hours.
+            </div>
+          </>
+        ),
     };
 
     const renderBottomSection = () => {
+      const isReasonKudosorCldOnly =
+        !isReasonWithdrawlDisabledDueToDPD && (isReasonCldRiskPolicy || isReasonKudosNotMigrated);
       return (
         <div className="flex outstanding__wrapper">
-          {isReasonCldRiskPolicy || isReasonKudosNotMigrated ? (
+          {isReasonKudosorCldOnly ? (
             <div>
               <i className="i i-info-outline withdrawals__onhold-icon bottom-section-icon" />
               Keep using the payments gateway for your business needs to keep the payments volume
@@ -1093,7 +1156,7 @@ export default class AmountWithdraw extends React.Component {
                 <div className="outstanding-title">Outstanding Repayment</div>
                 <strong className="outstanding-amount">
                   <Amount
-                    value={this.state.outstandingRepayment.amount}
+                    value={outstandingRepayment.amount}
                     parentQuerySelector=".withdrawals__top-summary"
                   />
                 </strong>
@@ -1117,9 +1180,9 @@ export default class AmountWithdraw extends React.Component {
             <i className="i i-error withdrawals__onhold-icon" />
             <h3 className="withdrawals__onhold-title text--secondary">Withdrawals are on hold!</h3>
           </div>
-          <p className="withdrawals__onhold-summary">{resonLabels[reason]}</p>
+          <div className="withdrawals__onhold-summary">{resonLabels[reason]}</div>
         </div>
-        {renderBottomSection()}
+        {showFooter && renderBottomSection()}
       </div>
     );
   };
@@ -1146,6 +1209,8 @@ export default class AmountWithdraw extends React.Component {
       latestRepaymentDone,
       isRepaymentLoading,
       withdraw_errors,
+      locDisabledReason,
+      outstandingRepayment,
     } = this.state;
     const {
       user,
@@ -1181,6 +1246,12 @@ export default class AmountWithdraw extends React.Component {
         : '';
     const isAggrementSigned = isDateExpired && locEsignEnabled && partner_id !== 'GROMOR';
 
+    const isWithdrawlDisabled = this.isCashAdvanceDisabled; // due to post dpd in any capital products, message shown on high priority
+    const allowOutStandingAmountRepayment =
+      !locDisabledReason.fetching &&
+      this.isCashAdvanceDisabledDue2SelfBlock &&
+      outstandingRepayment.amount;
+
     return (
       <div className="withdrawals__action-container card flex">
         {showFirstWithdrawalOffer ? (
@@ -1211,7 +1282,12 @@ export default class AmountWithdraw extends React.Component {
         ) : null}
 
         <div class="no-margin full-width" style={{ position: 'relative' }}>
-          {isGromorAgreementLoading ? (
+          {isWithdrawlDisabled ? (
+            this.withdrawOnholdReasonSection(
+              ONHOLD_REASONS.DISABLE_LOC_POST_DPD,
+              allowOutStandingAmountRepayment,
+            )
+          ) : isGromorAgreementLoading ? (
             <div class="page-spinner-container" style={{ height: '100%' }}>
               <Spinner />
             </div>
@@ -1721,14 +1797,21 @@ export default class AmountWithdraw extends React.Component {
       haveWithdrawals = false,
       withdrawalConfigurationDetails: { data: { status, comments: { reason = '' } = {} } } = {},
     } = this.props;
-    const isWithdrawalOnhold = status === 'ONHOLD';
+    const isWithdrawalOnhold = status === 'ONHOLD' || this.isCashAdvanceDisabled;
+    const withdrawalHoldReason = this.isCashAdvanceDisabled
+      ? ONHOLD_REASONS.DISABLE_LOC_POST_DPD
+      : reason;
 
     switch (currentView) {
       case VIEWS.WITHDRAW:
       case VIEWS.WITHDRAW_FAIL:
         if (!withdrawalConfigurationDetails || withdrawConfigLoading || seedData.loading)
           return (
-            <CreditSummary loading={true} isWithdrawalOnhold={isWithdrawalOnhold} reason={reason} />
+            <CreditSummary
+              loading
+              isWithdrawalOnhold={isWithdrawalOnhold}
+              reason={withdrawalHoldReason}
+            />
           );
         else {
           return (
@@ -1740,7 +1823,7 @@ export default class AmountWithdraw extends React.Component {
               history={history}
               haveWithdrawals={haveWithdrawals}
               isWithdrawalOnhold={isWithdrawalOnhold}
-              reason={reason}
+              reason={withdrawalHoldReason}
             />
           );
         }

@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import getApplicationProgressPercentage from '../utils/ProgressPercentageCalculator';
 import ApplicationOverviewLoadingSkeleton from '../components/ApplicationOverviewLoadingSkeleton';
-import { isCashAdvanceProduct, isLoanProduct } from '../utils';
+import { getDisabledReasons, getProductNames, isCashAdvanceProduct, isLoanProduct } from '../utils';
 import Spinner from '../components/Spinner';
 import ApplicationOnboardingForm from './Forms/ApplicationOnboardingForm';
 import ApplicationStatusOverview from './ApplicationStatusOverview';
@@ -86,12 +86,20 @@ const parseApplicationMetaData = (loanApplicationDetails) => {
   },
 )
 export default class LoanApplicationOverview extends React.Component {
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
     this.state = {
       applications: [],
+      loanDisabledReason: {
+        fetching: this.isLoanDisabled,
+        reasons: [], // product types eg:- [PRODUCT_TYPE_CARDS, ...]
+      },
     };
     this.onLoadHandlers = [];
+  }
+
+  get isLoanDisabled() {
+    return isLoanProduct(this.getProductCode()) && this.props.user.isLoansDisabled; // any capital products in dpd as per config
   }
 
   gaEventDispatcher = (eventObject) => {
@@ -108,6 +116,15 @@ export default class LoanApplicationOverview extends React.Component {
     triggerHotjarRecording(HOTJAR_TRIGGERS.LOAN_APPLICATION_PAGE_OPEN);
 
     document.querySelector('.pagefooter').style.display = 'none';
+    this.isLoanDisabled &&
+      getDisabledReasons(this.props.user).then((reasons) => {
+        this.setState({
+          loanDisabledReason: {
+            fetching: false,
+            reasons,
+          },
+        });
+      });
   }
 
   componentWillUnmount() {
@@ -460,6 +477,46 @@ export default class LoanApplicationOverview extends React.Component {
     return false;
   };
 
+  renderLoanApplicationDisabledDueToDPDUI = () => {
+    const { loanApplicationDetails } = this.props;
+    const { reasons } = this.state.loanDisabledReason;
+    return (
+      <div className="status-overview">
+        <div className="loan-application-overview-header flex">
+          <div className="loan-meta-wrapper">
+            <h4>
+              <strong>Your Loan Application</strong>
+            </h4>
+            {loanApplicationDetails.meta.data.application?.id && (
+              <p className="text--secondary">
+                <i className="i i-document" />
+                Application ID: {loanApplicationDetails.meta.data.application.id}
+              </p>
+            )}
+          </div>
+        </div>
+        <div class="loan-application-disabled-body loan-application-disabled-body--dpd">
+          <div className="loan-application-disabled-wrapper">
+            <div className="flex title-wrapper">
+              <i className="i i-error" />
+              <p className="title">Your loan application is on hold</p>
+            </div>
+            <p className="description">
+              Your current loan application is temporarily put on hold due to missed repayments on{' '}
+              {getProductNames(reasons)}.
+            </p>
+            <div className="subtitle">What should you do next?</div>
+            <p className="action-point description">
+              Please pay your current outsanding to continue with your application. If you have
+              already repaid your pending dues, then your loan application will be enabled back
+              within 24 - 48 working hours.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   render() {
     const { loanApplicationDetails } = this.props;
 
@@ -471,6 +528,8 @@ export default class LoanApplicationOverview extends React.Component {
       );
 
     const UIConfig = this.getUIConfig();
+    const isLoanApplicationDisabledDueToDPD = this.isLoanDisabled;
+    const isFetchingLoanDisabledReason = this.state.loanDisabledReason.fetching;
 
     return (
       <OnBoardingWrapper class="Loans">
@@ -496,8 +555,12 @@ export default class LoanApplicationOverview extends React.Component {
             'loan-application-home-top-border'
           }`}
         >
-          {loanApplicationDetails.meta.loading || loanApplicationDetails.products.loading ? (
+          {loanApplicationDetails.meta.loading ||
+          loanApplicationDetails.products.loading ||
+          isFetchingLoanDisabledReason ? (
             <ApplicationOverviewLoadingSkeleton />
+          ) : isLoanApplicationDisabledDueToDPD ? (
+            this.renderLoanApplicationDisabledDueToDPDUI()
           ) : (
             this.getApplicationOverview()
           )}

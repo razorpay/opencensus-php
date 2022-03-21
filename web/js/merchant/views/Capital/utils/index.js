@@ -5,7 +5,13 @@ import {
   CAPITAL_PRODUCT_CODES,
   ERROR_STATES,
 } from '../Loans/constants';
-import LocalStorageService from 'common/utils/localStorage';
+import * as LocalStorageService from 'common/utils/localStorage';
+import { COLLECTIONS_PRODUCT_TYPES } from '../CashAdvance/constants';
+import api from '../Loans/LoansCollections/api';
+
+export const calculatePercentageAmount = (rateInBPS, credit_amount) => {
+  return ((parseInt(rateInBPS, 10) / 100) * parseInt(credit_amount, 10)) / 100;
+};
 
 export const getDisbursalAmount = (creditOffered, processingFeePercentage, taxPercentage) => {
   const processingFee = calculatePercentageAmount(processingFeePercentage, creditOffered);
@@ -17,10 +23,6 @@ export const isPreceedingState = (currentState, activeState, strict = false) => 
   const currentStateIndex = APPLICATION_STATE_SEQUENCE.indexOf(currentState);
   const activeStateIndex = APPLICATION_STATE_SEQUENCE.indexOf(activeState);
   return strict ? currentStateIndex < activeStateIndex : currentStateIndex <= activeStateIndex;
-};
-
-export const calculatePercentageAmount = (rateInBPS, credit_amount) => {
-  return ((parseInt(rateInBPS) / 100) * parseInt(credit_amount)) / 100;
 };
 
 export function postToUrl(path, params, method = 'post') {
@@ -81,6 +83,7 @@ export const getApplicationProgressPercentage = (currentState, applicationStateG
 };
 
 export const loadCheckoutScript = () => {
+  // eslint-disable-next-line consistent-return
   return new Promise((resolve, reject) => {
     if (window.Razorpay) return resolve();
 
@@ -106,9 +109,9 @@ export const validateMobileNumber = (input) => {
 };
 
 export const createFormData = (form = {}) => {
-  let formData = new FormData();
+  const formData = new FormData();
 
-  Object.keys(form).map((key) => {
+  Object.keys(form).forEach((key) => {
     formData.append(key, form[key]);
   });
 
@@ -133,6 +136,7 @@ export const getSettlementStatus = (merchantId, callbackSettlementStatus) => {
   const parseSettlementCallbackStatus = () => {
     if (callbackSettlementStatus === 'settlementDone') return true;
     else if (callbackSettlementStatus === 'disableAnimation') return false;
+    return false;
   };
   const settlementCallbackStatus = parseSettlementCallbackStatus();
 
@@ -172,4 +176,59 @@ export const getDateSuffix = (date) => {
     default:
       return 'th';
   }
+};
+
+const CAPITAL_PRODUCTS = [
+  {
+    label: 'Corporate Cards',
+    productType: COLLECTIONS_PRODUCT_TYPES.CARDS,
+    flags: ['isCardsEnabled'], // isCardsLOSEnabled = capital_cards_eligible
+    // disabledFlag: 'disable_cards_post_dpd',
+  },
+  {
+    label: 'Cash Advance',
+    productType: COLLECTIONS_PRODUCT_TYPES.CASH_ADVANCE,
+    flags: ['isWithdrawFeatureEnabled'], // to identify is products available for the merchant. 'loc', 'loc_stage_2', 'los' to
+    // disabledFlag: 'disable_loc_post_dpd', // product avail but disabled due to dpd or something
+  },
+  {
+    label: 'Working Capital loan',
+    productType: COLLECTIONS_PRODUCT_TYPES.LOANS,
+    flags: ['isLoansEnabled'],
+    // disabledFlag: 'disable_loans_post_dpd',
+  },
+];
+/**
+ * @param {Object} user User Instance. used to access feature flags
+ * @returns {Array} Array of product types active for merchants
+ */
+const getActiveCapitalProductsForMerchant = (user) =>
+  CAPITAL_PRODUCTS.filter((product) => product.flags.every((flag) => user[flag])).map(
+    (product) => product.productType,
+  );
+/**
+ * @param {Array} reasons Array of product types
+ * @returns {String} comma seprate product names derived from product types
+ */
+export const getProductNames = (reasons) =>
+  CAPITAL_PRODUCTS.filter((product) => reasons.includes(product.productType)).reduce(
+    (names, product, idx, srcArray) => {
+      const lastElement = srcArray.length - 1 === idx;
+      const prefix = names.length ? (lastElement ? ' and ' : ' , ') : '';
+      names += `${prefix}${product.label}`;
+      return names;
+    },
+    '',
+  ); // ex:- Cash Advance, or Corporate Card.
+/**
+ * get which producst disabled
+ * @param {Object} user User Instance
+ * @param {String} productType values of COLLECTIONS_PRODUCT_TYPES
+ * @returns {Array} Promise resolves into Array of product types
+ */
+export const getDisabledReasons = async (user, productType) => {
+  const data = await api.getProductDisabledReason(productType).catch(() => []);
+  const prods = data.map((prod) => prod.product_type);
+
+  return prods.length ? prods : getActiveCapitalProductsForMerchant(user);
 };
