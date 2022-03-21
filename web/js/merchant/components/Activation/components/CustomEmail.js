@@ -32,6 +32,7 @@ const CustomEmail = ({
   const [error, setError] = useState('');
   const [otp, setOtp] = useState('');
   const [isOtpSend, setIsOtpSend] = useState(false);
+  const [ischeck, setIsCheck] = useState(isChecked);
   const [token, setToken] = useState('');
   const [wrongOtp, setWrongOtp] = useState(false);
   const [isApiCalling, setIsApiCall] = useState(false);
@@ -219,12 +220,13 @@ const CustomEmail = ({
             if (!target.checked) {
               resetValue();
             }
+            setIsCheck(target.checked);
           }}
           autoRender={true}
-          checked={isChecked}
+          checked={ischeck || isEmailVerified}
         />
       )}
-      {isChecked || !user.isEmailNonMandatoryOnL2Form ? (
+      {(isChecked && ischeck) || !user.isEmailNonMandatoryOnL2Form ? (
         <div>
           {isEmailVerified ? (
             <VerifiedEmail />

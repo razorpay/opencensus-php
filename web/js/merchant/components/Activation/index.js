@@ -1995,6 +1995,12 @@ export default class ActivationWizard extends React.Component {
 
   setEnableAndDisableCheckboxOnL2 = (isEmailOnL2) => {
     this.setState({ isEmailOnL2 });
+    const { contact_email, user } = this.props.user;
+
+    // update email in BE if email not verified
+    if (!user?.confirmed && !!contact_email && isEmailOnL2) {
+      this.props.save({ contact_email: null });
+    }
   };
 
   onWebsiteCheckboxChange = ({ target }) => {
@@ -2834,7 +2840,7 @@ export function ActivationField(field) {
     rest.postSuccessfulEmailVerify = this.postSuccessfulEmailVerify;
     rest.setEnableAndDisableCheckbox = this.setEnableAndDisableCheckbox;
     rest.setEnableAndDisableCheckboxOnL2 = this.setEnableAndDisableCheckboxOnL2;
-    rest.isChecked = this.props.user.user?.confirmed || !this.state.isEmailOnL2;
+    rest.isChecked = this.props.user.user?.confirmed || !!contact_email || !this.state.isEmailOnL2;
     rest.contactName = this.state.dirty.contact_name || contact_name;
     rest.activationMilestone = activation_form_milestone;
     rest.sendErrorMessageToSegment = this.sendErrorMessageToSegment;

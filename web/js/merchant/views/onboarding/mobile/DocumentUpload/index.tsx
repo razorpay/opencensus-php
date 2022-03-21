@@ -216,6 +216,12 @@ const DocumentUpload = ({ isFormLocked }: IDocumentUploadProps): React.ReactElem
     return error;
   };
 
+  useEffect(() => {
+    if (!isEmailVerified && !!data?.contact_email) {
+      setHasNonMandatoryEmail(!!data?.contact_email);
+    }
+  }, []);
+
   // update document tab complete checkbox whenever state change
   useEffect(() => {
     const isComplete = isDocumentTabComplete(
@@ -1070,6 +1076,10 @@ const DocumentUpload = ({ isFormLocked }: IDocumentUploadProps): React.ReactElem
                       onChange={(checked) => {
                         setHasNonMandatoryEmail(checked);
                         setDocumentUploadCompleted(!checked);
+                        // update email in BE if email not verified
+                        if (!isEmailVerified && !!data.contact_email && !checked) {
+                          postData({ contact_email: null });
+                        }
                         trackEvents({
                           objectName: 'Checkbox',
                           actionName: 'Clicked',

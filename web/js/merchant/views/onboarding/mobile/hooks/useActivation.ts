@@ -19,6 +19,7 @@ export const postActivation = (data, accountId) =>
     mode: 'live',
     headers: {
       'X-Razorpay-Account': accountId,
+      'Content-Type': 'application/json',
     },
   });
 
