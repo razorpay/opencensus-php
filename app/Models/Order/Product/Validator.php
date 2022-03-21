@@ -22,14 +22,19 @@ class Validator extends Base\Validator
 
 
     protected static $createMutualFundProductRules = [
-        Entity::TYPE         => 'required|in:mutual_fund',
-        Constants::RECEIPT   => 'sometimes|string',
-        Constants::PLAN      => 'sometimes|string',
-        Constants::SCHEME    => 'sometimes|string',
-        Constants::OPTION    => 'sometimes|string',
-        Constants::AMOUNT    => 'sometimes|string',
-        Constants::FOLIO     => 'sometimes|string',
-        Constants::NOTES     => 'sometimes|array',
+        Entity::TYPE                    => 'required|in:mutual_fund',
+        Constants::RECEIPT              => 'sometimes|string',
+        Constants::PLAN                 => 'sometimes|string',
+        Constants::SCHEME               => 'sometimes|string',
+        Constants::OPTION               => 'sometimes|string',
+        Constants::AMOUNT               => 'sometimes|string',
+        Constants::FOLIO                => 'sometimes|string',
+        Constants::MF_MEMBER_ID         => 'sometimes|string',
+        Constants::MF_USER_ID           => 'sometimes|string',
+        Constants::MF_PARTNER           => 'sometimes|string',
+        Constants::MF_INVESTMENT_TYPES  => 'sometimes|string',
+        Constants::MF_AMC_CODE          => 'sometimes|string',
+        Constants::NOTES                => 'sometimes|array',
     ];
 
     protected static $createLoanProductRules = [
