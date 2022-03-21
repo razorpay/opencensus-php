@@ -2479,10 +2479,6 @@ class PaymentLinkTest extends TestCase
 
         $data = $this->startTest();
 
-        Event::assertDispatched(CacheMissed::class, function(CacheMissed $missed) use ($data) {
-            return $missed->key === Entity::getHostedCacheKey($data['id']);
-        });
-
         $this->callViewUrlAndMakeAssertions(Entity::stripDefaultSign($data['id']));
 
         Event::assertDispatched(CacheHit::class, function(CacheHit $hit) use ($data) {
@@ -2501,10 +2497,6 @@ class PaymentLinkTest extends TestCase
         $this->createPaymentPageItem();
 
         $data = $this->startTest();
-
-        Event::assertDispatched(CacheMissed::class, function(CacheMissed $missed) use ($data) {
-            return $missed->key === Entity::getHostedCacheKey($data['id']);
-        });
 
         $this->callViewUrlAndMakeAssertions(Entity::stripDefaultSign($data['id']));
 
@@ -2529,10 +2521,6 @@ class PaymentLinkTest extends TestCase
 
         $data = $this->startTest();
 
-        Event::assertDispatched(CacheMissed::class, function(CacheMissed $missed) use ($data) {
-            return $missed->key === Entity::getHostedCacheKey($data['id']);
-        });
-
         $this->callViewUrlAndMakeAssertions(Entity::stripDefaultSign($data['id']));
 
         Event::assertDispatched(CacheHit::class, function(CacheHit $hit) use ($data) {
@@ -2554,10 +2542,6 @@ class PaymentLinkTest extends TestCase
         $this->ba->cronAuth();
 
         $this->startTest();
-
-        Event::assertDispatched(CacheMissed::class, function(CacheMissed $missed) {
-            return $missed->key === Entity::getHostedCacheKey('pl_' . self::TEST_PL_ID);
-        });
 
         $this->callViewUrlAndMakeAssertions();
 
@@ -2585,10 +2569,6 @@ class PaymentLinkTest extends TestCase
 
         $this->startTest();
 
-        Event::assertDispatched(CacheMissed::class, function(CacheMissed $missed) {
-            return $missed->key === Entity::getHostedCacheKey('pl_' . self::TEST_PL_ID);
-        });
-
         $this->callViewUrlAndMakeAssertions();
 
         Event::assertDispatched(CacheHit::class, function(CacheHit $hit) {
@@ -2609,10 +2589,6 @@ class PaymentLinkTest extends TestCase
         $this->ba->proxyAuth();
 
         $this->startTest();
-
-        Event::assertDispatched(CacheMissed::class, function(CacheMissed $missed) {
-            return $missed->key === Entity::getHostedCacheKey('pl_' . self::TEST_PL_ID);
-        });
 
         $this->callViewUrlAndMakeAssertions();
 

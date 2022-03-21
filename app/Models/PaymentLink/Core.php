@@ -2845,7 +2845,25 @@ class Core extends Base\Core
     {
         Entity::clearHostedCacheForPageId($paymentLink->getPublicId());
 
-        $this->getSerializedFromCache($paymentLink);
+        $this->buildHostedCacheAndGet($paymentLink);
+    }
+
+    /**
+     * @param \RZP\Models\PaymentLink\Entity $paymentLink
+     *
+     * @return array
+     */
+    private function buildHostedCacheAndGet(Entity $paymentLink): array
+    {
+        $serialized = (new ViewSerializer($paymentLink))->serializeForHosted();
+
+        $cacheKey = Entity::getHostedCacheKey($paymentLink->getPublicId());
+
+        $this->cache->put($cacheKey, $serialized, Entity::getHostedCacheTTL());
+
+        $this->trace->count(Metric::PAYMENT_PAGE_HOSTED_CACHE_BUILD_COUNT, $paymentLink->getMetricDimensions());
+
+        return $serialized;
     }
 
     /**
@@ -2864,13 +2882,28 @@ class Core extends Base\Core
 
         $cacheKey = Entity::getHostedCacheKey($paymentLink->getPublicId());
 
-        $cached = $this
-            ->cache
-            ->remember($cacheKey, Entity::getHostedCacheTTL(), function () use ($serializer) {
-                return $serializer->serializeForHosted();
-            });
+        $fromCache = true;
 
-        return $serializer->updateKeyLessHeader($cached);
+        if ($this->cache->has($cacheKey) === true)
+        {
+            $cached = $this->cache->get($cacheKey);
+
+            $cached = $serializer->updateKeyLessHeader($cached);
+        }
+        else
+        {
+            $fromCache = false;
+
+            $cached = $this->buildHostedCacheAndGet($paymentLink);
+        }
+
+        $metrics = $fromCache === true
+            ? Metric::PAYMENT_PAGE_HOSTED_CACHE_HIT_COUNT
+            : Metric::PAYMENT_PAGE_HOSTED_CACHE_MISS_COUNT;
+
+        $this->trace->count($metrics, $paymentLink->getMetricDimensions());
+
+        return $cached;
     }
 
     /**

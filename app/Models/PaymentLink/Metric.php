@@ -42,4 +42,9 @@ final class Metric
     // Gimli Caching Metrics
     const PAYMENT_PAGE_GIMLI_CACHE_HIT_COUNT    = 'PAYMENT_PAGE_GIMLI_CACHE_HIT_COUNT';
     const PAYMENT_PAGE_GIMLI_CACHE_MISS_COUNT   = 'PAYMENT_PAGE_GIMLI_CACHE_MISS_COUNT';
+
+    // Hosted page cache metrics
+    const PAYMENT_PAGE_HOSTED_CACHE_HIT_COUNT   = 'payment_page_hosted_cache_hit_count';
+    const PAYMENT_PAGE_HOSTED_CACHE_MISS_COUNT  = 'payment_page_hosted_cache_miss_count';
+    const PAYMENT_PAGE_HOSTED_CACHE_BUILD_COUNT = 'payment_page_hosted_cache_build_count';
 }
