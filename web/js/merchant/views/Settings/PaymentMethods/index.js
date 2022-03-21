@@ -1,13 +1,17 @@
 import { useEffect } from 'react';
 import { connect } from 'react-redux';
+import { Link } from 'react-router-dom';
+
 import RootList from './components/RootList';
 import IntermediateList from './components/IntermediateList';
 import LeafList from './components/LeafList';
 import Spinner from 'common/ui/Spinner';
 import Banner from 'common/ui/Banner';
-import { showNotification as sN } from 'merchant_common/reducers/notifications';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+
+import { showNotification as sN } from 'merchant_common/reducers/notifications';
+import { trackLinkClick } from 'merchantLA/containers/TestModeBanner/ga';
 
 import {
   fetchMerchantInstruments as fMI,
@@ -79,7 +83,11 @@ const PaymentMethod = (props) => {
         <Banner className="no-margin">
           <span>
             <i className="i i-info-outline" /> KYC verification is mandatory to request for new
-            payment methods. Please complete your<a> activation form</a>, if not done already.
+            payment methods. Please complete your
+            <Link to="/activation" onClick={() => trackLinkClick('Go To - Activation Form')}>
+              &nbsp; activation form
+            </Link>
+            , if not done already.
           </span>
         </Banner>
       )}
