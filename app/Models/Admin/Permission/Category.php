@@ -69,4 +69,5 @@ class Category
     const EVENT_PROMOTION              = 'event_promotion';
     const OFFER                        = 'offer';
     const REFUND                       = 'refund';
+    const RULE_VISIBILITY              = 'rule_visibility';
 }

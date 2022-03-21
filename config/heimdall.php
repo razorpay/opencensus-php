@@ -1190,6 +1190,12 @@ return [
             ],
         ],
 
+        PermissionCategory::RULE_VISIBILITY => [
+            Permission::RULE_VISIBILITY => [
+                'description'   => 'Gives Access to Rule Visibility Dashboard',
+            ],
+        ],
+
         PermissionCategory::GATEWAY_DOWNTIME  => [
             Permission::CREATE_GATEWAY_DOWNTIME => [
                 'description' => 'Create Gateway Downtime',
