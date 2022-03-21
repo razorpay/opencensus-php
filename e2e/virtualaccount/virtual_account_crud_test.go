@@ -104,8 +104,106 @@ func (s *VirtualAccountAPITestSuite) TestCreateVirtualAccountPositive(){
 	} {
 		s.Run(scenario.description, func (){
 			ppRes := CreateVirtualAccount(s.T(), scenario.input)
-			fmt.Println(ppRes)
 			verifyCreateVA(s.T(), ppRes)
+		})
+	}
+}
+
+func (s *VirtualAccountAPITestSuite) TestCloseVirtualAccountPositive(){
+	type positiveTestCases struct {
+		description   string
+		input         VirtualAccountRequest
+	}
+	for _, scenario := range []positiveTestCases{
+		{
+			description: "VA_WITH_BANK_ACCOUNT",
+			input: VirtualAccountRequest{
+				Receiver: &ReceiversRequest{
+					Types: []string{"bank_account"},
+					BankAccount: nil,
+				},
+				Name: "Automation Test",
+				AmountExpected: "1000",
+				CustomerID: "cust_Iwf3ydmuCV3y8R",
+				Description: "Testing of Virtual Accounts",
+			},
+		},
+		{
+			description: "VA_WITH_OUT_CUSTOMER",
+			input: VirtualAccountRequest{
+				Receiver: &ReceiversRequest{
+					Types: []string{"bank_account"},
+					BankAccount: nil,
+				},
+				Name: "Automation Test",
+				AmountExpected: "1000",
+				Description: "Testing of Virtual Accounts",
+			},
+		},
+		{
+			description: "VA_WITH_OUT_AMOUNT",
+			input: VirtualAccountRequest{
+				Receiver: &ReceiversRequest{
+					Types: []string{"bank_account"},
+					BankAccount: nil,
+				},
+				Name: "Automation Test",
+				Description: "Testing of Virtual Accounts",
+			},
+		},
+		{
+			description: "VA_WITH_VPA",
+			input: VirtualAccountRequest{
+				Receiver: &ReceiversRequest{
+					Types: []string{"bank_account","vpa"},
+					BankAccount: nil,
+				},
+				Name: "Automation Test",
+				Description: "Testing of Virtual Accounts",
+			},
+		},
+		{
+			description: "VA_AUTOGENERATE_VPA",
+			input: VirtualAccountRequest{
+				Receiver: &ReceiversRequest{
+					Types: []string{"bank_account","vpa"},
+					BankAccount: nil,
+				},
+				Description: "Testing of Virtual Accounts",
+			},
+		},
+		{
+			description: "VA_WITH_AMOUNT_ZERO",
+			input: VirtualAccountRequest{
+				Receiver: &ReceiversRequest{
+					Types: []string{"bank_account"},
+					BankAccount: nil,
+				},
+				Name: "Automation Test",
+				AmountExpected: "0",
+				CustomerID: "cust_Iwf3ydmuCV3y8R",
+				Description: "Testing of Virtual Accounts",
+			},
+		},
+		{
+			description: "VA_WITH_VPA_ONLY",
+			input: VirtualAccountRequest{
+				Receiver: &ReceiversRequest{
+					Types: []string{"vpa"},
+					BankAccount: nil,
+				},
+				Name: "Automation Test",
+				AmountExpected: "0",
+				CustomerID: "cust_Iwf3ydmuCV3y8R",
+				Description: "Testing of Virtual Accounts",
+			},
+		},
+	} {
+		s.Run(scenario.description, func (){
+			ppRes := CreateVirtualAccount(s.T(), scenario.input)
+			verifyCreateVA(s.T(), ppRes)
+			ppResClose := CloseVirtualAccount(s.T(),ppRes)
+			verifyClosedVA(s.T(), ppResClose)
 		})
 	}
 }
@@ -264,8 +362,78 @@ func (s *VirtualAccountAPITestSuite) TestCreateVirtualAccountUpdate(){
 	}
 }
 
+func (s *VirtualAccountAPITestSuite) TestGetVirtualAccountById(){
+	type positiveTestCases struct {
+		description   string
+		input         VirtualAccountRequest
+	}
+	for _, scenario := range []positiveTestCases{
+		{
+			description: "VA_WITH_BANK_ACCOUNT",
+			input: VirtualAccountRequest{
+				Receiver: &ReceiversRequest{
+					Types: []string{"bank_account"},
+					BankAccount: nil,
+				},
+				Name: "Automation Test",
+				AmountExpected: "1000",
+				CustomerID: "cust_Iwf3ydmuCV3y8R",
+				Description: "Testing of Virtual Accounts",
+			},
+		},
+		{
+			description: "VA_WITH_OUT_CUSTOMER",
+			input: VirtualAccountRequest{
+				Receiver: &ReceiversRequest{
+					Types: []string{"bank_account"},
+					BankAccount: nil,
+				},
+				Name: "Automation Test",
+				AmountExpected: "1000",
+				Description: "Testing of Virtual Accounts",
+			},
+		},
+		{
+			description: "VA_WITH_OUT_AMOUNT",
+			input: VirtualAccountRequest{
+				Receiver: &ReceiversRequest{
+					Types: []string{"bank_account"},
+					BankAccount: nil,
+				},
+				Name: "Automation Test",
+				Description: "Testing of Virtual Accounts",
+			},
+		},
+	} {
+		s.Run(scenario.description, func (){
+			ppRes := CreateVirtualAccount(s.T(), scenario.input)
+			ppGetVARes := FetchVirtualAccount(s.T(),ppRes)
+			verifyFetchedVA(s.T(), ppRes,ppGetVARes)
+		})
+	}
+}
+
+func (s *VirtualAccountAPITestSuite) TestGetAllVirtualAccount(){
+			ppGetVARes := FetchAllVirtualAccount(s.T())
+			verifyFetchedAllVA(s.T(),ppGetVARes)
+}
+
 func verifyCreateVA(t *testing.T, virtualAccountResponse VirtualAccountResponse) {
 	assert.NotEmptyf(t, virtualAccountResponse.ID, "Virtual Account did not created")
+}
+
+func verifyClosedVA(t *testing.T, virtualAccountResponse VirtualAccountResponse) {
+	assert.Equalf(t, "closed",virtualAccountResponse.Status,"Status is not closed")
+	assert.NotEmptyf(t, virtualAccountResponse.ID,"Virtual Account could not be closed")
+}
+
+func verifyFetchedVA(t *testing.T, virtualAccountResponse VirtualAccountResponse,virtualAccountFetched VirtualAccountResponse) {
+	assert.Equalf(t, virtualAccountResponse.ID,virtualAccountFetched.ID,"Id could not be fetched")
+	assert.NotEmptyf(t, virtualAccountFetched.ID,"Virtual Account could not be fetched")
+}
+
+func verifyFetchedAllVA(t *testing.T, virtualAccountResponse VirtualAccountEntityResponse) {
+	assert.NotEmptyf(t, virtualAccountResponse.Count,"Virtual Account could not be fetched")
 }
 
 func TestVirtualAccountAPI(t *testing.T) {
