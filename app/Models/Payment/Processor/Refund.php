@@ -4032,6 +4032,7 @@ trait Refund
             RefundConstants::MERCHANT_ID           => $payment->getMerchantId(),
             RefundConstants::PAYMENT_CREATED_AT    => strval($payment->getCreatedAt()),
             RefundConstants::MERCHANT_ACTIVATED_AT => strval($payment->merchant->getActivatedAt()),
+            RefundConstants::FUNDS_ON_HOLD         => strval($payment->merchant->isFundsOnHold()),
         ];
 
         // setting default amount when actual refund amount is not known yet

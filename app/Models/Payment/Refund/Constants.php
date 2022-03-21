@@ -63,6 +63,7 @@ class Constants
     const BUSINESS_SUPPORT_DETAILS = 'business_support_details';
     const CURRENCY                 = 'currency';
     const ACQUIRER_DATA            = 'acquirer_data';
+    const FUNDS_ON_HOLD            = 'funds_on_hold';
 
     const RESPONSE_CODE          = 'code';
     const RESPONSE_BODY          = 'body';
