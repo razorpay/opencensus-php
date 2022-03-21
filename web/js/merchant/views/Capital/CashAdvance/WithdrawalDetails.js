@@ -73,11 +73,17 @@ class WithdrawalDetails extends Component {
   }
 
   fetchWithdrawalDetails = () => {
-    this.props.fetchWithdrawalDetails({
-      reference_type: 'ID',
-      reference_id: this.props.id,
-    });
-    this.fetchBreakdownDetails();
+    this.props
+      .fetchWithdrawalDetails({
+        reference_type: 'ID',
+        reference_id: this.props.id,
+      })
+      .then((response) => {
+        const plan_id = response?.data?.withdrawal?.plan_id;
+        if (plan_id) {
+          this.fetchBreakdownDetails();
+        }
+      });
   };
 
   fetchBreakdownDetails = () => {
