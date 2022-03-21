@@ -2,7 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import moment from 'moment';
 
-import { CASH_ADVANCE_SECTIONS, DEFAULT_COUNT, COLLECTIONS_PRODUCT_TYPES } from '../constants';
+import { CASH_ADVANCE_SECTIONS, COLLECTIONS_PRODUCT_TYPES } from '../constants';
 import RepaymentListFilter from '../CommonListFilter';
 import RepaymentList from './RepaymentsList';
 import { fetchRepayments as fetchRepaymentsList } from 'merchant/reducers/capital/repayments';
@@ -51,6 +51,13 @@ const exportAsCSV = (repayments) => {
   },
 )
 class Repayments extends React.Component {
+  defaultCount = 15;
+  pagination = {
+    count: this.defaultCount,
+    skip: 0,
+  };
+  filters = {};
+
   componentDidMount() {
     const {
       loading,
@@ -60,8 +67,8 @@ class Repayments extends React.Component {
 
     this.commonRequestParams = {
       product_type: COLLECTIONS_PRODUCT_TYPES.CASH_ADVANCE,
-      skip: 0,
-      count: DEFAULT_COUNT,
+      skip: this.pagination.skip,
+      count: this.pagination.count,
       credit_id: creditId,
       order_by_type: 'ORDER_BY_TYPE_DESC',
       order_by_field: 'ORDER_BY_FIELD_CREATED_AT',
@@ -72,12 +79,14 @@ class Repayments extends React.Component {
     }
   }
 
-  search = (filters) => {
+  search = (filters, resetPagination = true) => {
+    resetPagination && (this.pagination.skip = 0); // initiating new filter such as id, status, period so reset pagination
     const payload = {
       ...this.commonRequestParams,
-      count: filters.count ? parseInt(filters.count, 10) : DEFAULT_COUNT,
+      skip: this.pagination.skip,
+      count: filters.count ? parseInt(filters.count, 10) : this.pagination.count,
     };
-
+    this.pagination.count = payload.count;
     if (filters.reference_id) {
       payload.repayment_id = filters.reference_id;
     }
@@ -95,11 +104,16 @@ class Repayments extends React.Component {
     }
 
     this.props.fetchRepayments(payload);
+    this.filters = payload;
+  };
+
+  handlePaginate = (params) => {
+    this.pagination.skip = params.skip;
+    this.search(this.filters, false);
   };
 
   render() {
     const { data: repayments, loading } = this.props;
-
     return (
       <React.Fragment>
         <div className="cash-advance-repayments-header flex">
@@ -109,19 +123,18 @@ class Repayments extends React.Component {
           <div className="filters-wrapper">
             <RepaymentListFilter
               form="withdrawalListFilter"
-              count={DEFAULT_COUNT}
-              maxCountLimit={1000}
+              count={this.defaultCount}
+              maxCountLimit={25}
               onSubmit={this.search}
               view={CASH_ADVANCE_SECTIONS.REPAYMENTS}
               showPeriodSelect
             />
           </div>
           <RepaymentList
-            count={25}
-            skip={false}
-            paginate={false}
+            paginationConfig={this.pagination}
             repayments={repayments}
             loading={loading}
+            onPaginate={this.handlePaginate}
           />
           <div className="right-cta">
             <button className="btn btn-outline" onClick={() => exportAsCSV(repayments)}>

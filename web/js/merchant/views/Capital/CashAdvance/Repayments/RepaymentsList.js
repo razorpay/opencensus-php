@@ -3,9 +3,11 @@ import PropTypes from 'prop-types';
 import moment from 'moment';
 import { Link } from 'react-router-dom';
 
+import Pager from 'common/ui/Pager';
 import TableBody from 'common/ui/TableBody';
 import EntityItemRow from 'merchant/containers/EntityItemRow';
 import Amount from 'common/ui/Amount';
+import { classList } from 'common/utils/rzp-utils';
 import {
   STATUS_LABELS,
   StatusPillClasses,
@@ -48,9 +50,14 @@ const ListItem = ({ repayment }) => {
   );
 };
 
-const RepaymentsList = ({ repayments, loading }) => {
+const RepaymentsList = ({ repayments, loading, paginationConfig, onPaginate }) => {
   return (
-    <div className="table-responsive">
+    <div
+      className={classList(
+        'table-responsive',
+        loading && 'cash-advance-repayments__table--loading',
+      )}
+    >
       <table className="table table-hover">
         <thead>
           <tr>
@@ -87,6 +94,14 @@ const RepaymentsList = ({ repayments, loading }) => {
           ))}
         </TableBody>
       </table>
+      <div className="cash-advance-repayments__table-pager">
+        <Pager
+          count={paginationConfig.count}
+          skip={paginationConfig.skip}
+          length={repayments.length}
+          onClick={onPaginate}
+        />
+      </div>
     </div>
   );
 };
