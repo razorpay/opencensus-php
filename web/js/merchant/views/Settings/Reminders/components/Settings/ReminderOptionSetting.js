@@ -94,7 +94,7 @@ const RemovableSelect = ({ options, onRemove, ...otherProps }) => (
       class="removable-power-select"
     />
 
-    <span class="close-btn" onClick={onRemove}>
+    <span class="cross-wrapper" onClick={onRemove}>
       <i class="i-close" />
     </span>
   </div>
