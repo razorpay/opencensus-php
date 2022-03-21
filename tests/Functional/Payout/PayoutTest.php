@@ -12,6 +12,7 @@ use Mockery;
 use Requests_Response;
 
 use Carbon\Carbon;
+use RZP\Models\PayoutOutbox\Constants as PayoutOutboxConstants;
 use RZP\Services\DiagClient;
 use RZP\Services\Raven;
 use RZP\Jobs\Transactions;
@@ -2672,6 +2673,159 @@ class PayoutTest extends OAuthTestCase
         $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
 
         $this->assertEquals('Test Merchant Fund Transfer', $payoutAttempt['narration']);
+    }
+
+    // Create Undoable payout testcase
+    public function testCreateUndoablePayoutWithOtp()
+    {
+        $testData = $this->testData['testCreateUndoablePayoutWithOtp'];
+        $testData['request']['url']              = '/payouts_with_otp';
+        $testData['request']['content']['token'] = 'BUIj3m2Nx2VvVj';
+        $testData['request']['content']['otp']   = '0007';
+
+        $this->testData[__FUNCTION__] = $testData;
+        $this->setMockRazorxTreatment(['rx_undo_payout_feature' => 'on', 'imps_mode_payout_filter' => 'control']);
+        $this->fixtures->create('merchant_attribute',
+            [
+                'merchant_id' => '10000000000000',
+                'product'     => 'banking',
+                'group'       => 'x_merchant_preferences',
+                'type'        => 'undo_payouts',
+                'value'       => 'true'
+            ]);
+        $this->ba->proxyAuth();
+        $this->startTest();
+        $payout = $this->getLastEntity('payout_outbox', true);
+        return $payout;
+    }
+
+    public function testCreatePayoutWithOtpAndUndoPayoutPreferenceFalse()
+    {
+        $testData = $this->testData['testCreatePayoutWithOtpAndUndoPayoutPreferenceFalse'];
+        $testData['request']['url']              = '/payouts_with_otp';
+        $testData['request']['content']['token'] = 'BUIj3m2Nx2VvVj';
+        $testData['request']['content']['otp']   = '0007';
+
+        $this->testData[__FUNCTION__] = $testData;
+        $this->setMockRazorxTreatment(['rx_undo_payout_feature' => 'on', 'imps_mode_payout_filter' => 'control']);
+        $this->fixtures->create('merchant_attribute',
+            [
+                'merchant_id' => '10000000000000',
+                'product'     => 'banking',
+                'group'       => 'x_merchant_preferences',
+                'type'        => 'undo_payouts',
+                'value'       => 'false'
+            ]);
+        $this->ba->proxyAuth();
+        $this->startTest();
+        $payout = $this->getLastEntity('payout', true);
+        $this->assertEquals("MerchantUser01", $payout['user_id']);
+    }
+
+    // Undo payout testcases
+    public function testUndoPayout() {
+        $payout = $this->testCreateUndoablePayoutWithOtp();
+
+        $testData = $this->testData['testUndoPayout'];
+        $testData['request']['url'] = '/payouts/'. $payout['id'] . '/undo';
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->proxyAuth();
+        $response = $this->startTest();
+        $this->assertEquals(true, $response['deleted']);
+    }
+
+    // this is a helper func. Not a standalone test
+    private function testUndoPayoutWithId($id) {
+        $testData = $this->testData['testUndoPayout'];
+        $testData['request']['url'] = '/payouts/'. $id . '/undo';
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->proxyAuth();
+        $response = $this->startTest();
+        $this->assertEquals(true, $response['deleted']);
+    }
+
+    public function testUndoOnSamePayoutMultipleTimes() {
+        $payout = $this->testCreateUndoablePayoutWithOtp();
+
+        // Undo the payout for the 1st time
+        $this->testUndoPayoutWithId($payout['id']);
+
+        // trying again for the same id - should throw exception
+        $testData = $this->testData['testUndoOnSamePayoutMultipleTimes'];
+        $testData['request']['url'] = '/payouts/'. $payout['id'] . '/undo';
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->proxyAuth();
+        $this->startTest();
+    }
+
+    public function testUndoPayoutWithInvalidId() {
+        $this->setMockRazorxTreatment(['rx_undo_payout_feature' => 'on', 'imps_mode_payout_filter' => 'control']);
+
+        $testData = $this->testData['testUndoPayoutWithInvalidId'];
+        $testData['request']['url'] = '/payouts/'. 123 . '/undo';
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->proxyAuth();
+        $this->startTest();
+    }
+
+    public function testUndoPayoutWithValidIdPostExpiryTime() {
+        $payout = $this->testCreateUndoablePayoutWithOtp();
+        sleep(PayoutOutboxConstants::DEFAULT_PAYOUT_OUTBOX_EXPIRY_IN_SECONDS + 2);
+        $testData = $this->testData['testUndoPayoutWithValidIdPostExpiryTime'];
+        $testData['request']['url'] = '/payouts/'. $payout['id'] . '/undo';
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->proxyAuth();
+        $this->startTest();
+    }
+
+    // Resume payout testcases
+    public function testResumePayout() {
+        $payout = $this->testCreateUndoablePayoutWithOtp();
+
+        $testData = $this->testData['testResumePayout'];
+        $testData['request']['url'] = '/payouts/'. $payout['id'] . '/resume';
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->proxyAuth();
+        $this->startTest();
+    }
+
+    // this is a helper func. Not a standalone test
+    private function testResumePayoutWithId($id) {
+        $testData = $this->testData['testResumePayout'];
+        $testData['request']['url'] = '/payouts/'. $id . '/resume';
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->proxyAuth();
+        $this->startTest();
+    }
+
+    public function testResumeOnSamePayoutMultipleTimes() {
+        $payout = $this->testCreateUndoablePayoutWithOtp();
+
+        // Resume the payout for the 1st time
+        $this->testResumePayoutWithId($payout['id']);
+
+        // trying again for the same id - should throw exception
+        $testData = $this->testData['testResumeOnSamePayoutMultipleTimes'];
+        $testData['request']['url'] = '/payouts/'. $payout['id'] . '/resume';
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->proxyAuth();
+        $this->startTest();
     }
 
     public function testBalancesWithBearerAuth()

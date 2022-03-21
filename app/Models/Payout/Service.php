@@ -11,6 +11,7 @@ use RZP\Exception;
 use RZP\Constants;
 use RZP\Error\Error;
 use RZP\Models\Base;
+use RZP\Models\PayoutOutbox\RequestType;
 use RZP\Models\User;
 use RZP\Models\Card;
 use RZP\Models\Admin;
@@ -19,6 +20,7 @@ use RZP\Models\Payout;
 use RZP\Models\Contact;
 use RZP\Models\Pricing;
 use RZP\Models\Reversal;
+use RZP\Models\PayoutOutbox;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
@@ -716,9 +718,68 @@ class Service extends Base\Service
             $payoutInput[Entity::ORIGIN] = Entity::DASHBOARD;
         }
 
-        $payout = $this->core->createPayoutToFundAccount($payoutInput, $this->merchant);
+        /*
+         * If Undo payout feature is enabled for the merchant, then create payout in pending state else go with core payout create flow
+        */
 
-        return $payout->toArrayPublic();
+        if ($this->shouldCreateUndoablePayout()) {
+            $payoutOutboxInput = $this->prepareInputForPayoutOutbox($payoutInput);
+
+            $outboxPayout = (new PayoutOutbox\Core())->create($payoutOutboxInput);
+
+            $outboxPayout[PayoutOutbox\Entity::STATUS] = Status::PENDING_ON_CONFIRMATION;
+
+            return $outboxPayout->toArrayPublic();
+        } else {
+            $payout = $this->core->createPayoutToFundAccount($payoutInput, $this->merchant);
+
+            return $payout->toArrayPublic();
+        }
+    }
+
+    private function shouldCreateUndoablePayout()
+    {
+        $undoPayoutExperimentVariant = $this->app->razorx->getTreatment(
+            $this->merchant->getId(),
+            RazorxTreatment::RX_UNDO_PAYOUTS_FEATURE,
+            Constants\Mode::LIVE);
+
+        $isUndoPayoutPreferenceEnabled = $this->fetchUserPreferenceForUndoPayouts();
+
+        return ((strtolower($undoPayoutExperimentVariant) === 'on') && ($isUndoPayoutPreferenceEnabled));
+    }
+
+    private function fetchUserPreferenceForUndoPayouts() {
+        try {
+            // Fetch merchant preferences for undo payouts
+            $merchantPreferences  = (new Merchant\Attribute\Core())->fetchKeyValuesByMerchantId(
+                $this->merchant->getId(),
+                Product::BANKING,
+                Merchant\Attribute\Group::X_MERCHANT_PREFERENCES,
+                [Merchant\Attribute\Type::UNDO_PAYOUTS]
+            )->toArrayPublic();
+
+        } catch (\Exception $e) {
+            $merchantPreferences = [];
+        }
+
+        // If merchant has no preference configured then return true (default
+        if (sizeof($merchantPreferences) === 0 || sizeof($merchantPreferences['items']) === 0)
+        {
+            return true;
+        }
+
+        return $merchantPreferences['items'][0]['value'] === 'true';
+    }
+
+    private function prepareInputForPayoutOutbox(array $input): array {
+        $payoutOutboxInput[PayoutOutbox\Entity::PAYOUT_DATA] = json_encode($input);
+        $payoutOutboxInput[PayoutOutbox\Entity::MERCHANT_ID] = $this->merchant['id'];
+        $payoutOutboxInput[PayoutOutbox\Entity::USER_ID] = $this->user['id'];
+        $payoutOutboxInput[PayoutOutbox\Entity::SOURCE] = Entity::DASHBOARD;
+        $payoutOutboxInput[PayoutOutbox\Entity::PRODUCT] = $this->auth->getProduct();
+        $payoutOutboxInput[PayoutOutbox\Entity::REQUEST_TYPE] = RequestType::PAYOUTS;
+        return $payoutOutboxInput;
     }
 
     public function internalMerchantPayout(array $input): array

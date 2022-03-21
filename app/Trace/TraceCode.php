@@ -3021,6 +3021,13 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const ENTITY_BULK_ADD_REQUEST                               = 'ENTITY_BULK_ADD_REQUEST';
 
+    // Payout outbox
+    const CREATE_PAYOUT_OUTBOX_REQUEST                          = 'CREATE_PAYOUT_OUTBOX_REQUEST';
+    const DELETE_PAYOUT_OUTBOX_REQUEST                          = 'DELETE_PAYOUT_OUTBOX_REQUEST';
+    const RESUME_PAYOUT_CREATION_REQUEST                        = 'RESUME_PAYOUT_CREATION_REQUEST';
+    const RESUME_PAYOUT_CREATION                                = 'RESUME_PAYOUT_CREATION';
+    const BAD_REQUEST_PAYOUT_DOES_NOT_EXIST_IN_OUTBOX           = 'BAD_REQUEST_PAYOUT_DOES_NOT_EXIST_IN_OUTBOX';
+
     // Trace code for OAuth and Authentication service
     const AUTH_SERVICE_REQUEST                                  = 'AUTH_SERVICE_REQUEST';
     const SEND_OAUTH_MAIL_REQUEST                               = 'SEND_OAUTH_MAIL_REQUEST';

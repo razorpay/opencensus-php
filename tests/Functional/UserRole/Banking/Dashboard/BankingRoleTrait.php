@@ -14,6 +14,8 @@ trait BankingRoleTrait
             BankingRole::OWNER => [
                 'payout_bulk_create',
                 'payout_create_with_otp',
+                'undo_payout_creation',
+                'resume_payout_creation',
                 'payout_approve_bulk',
                 'payout_reject_bulk',
                 'payout_approve',
@@ -98,6 +100,8 @@ trait BankingRoleTrait
             BankingRole::ADMIN => [
                 'payout_bulk_create',
                 'payout_create_with_otp',
+                'undo_payout_creation',
+                'resume_payout_creation',
                 'payout_approve_bulk',
                 'payout_reject_bulk',
                 'payout_approve',
@@ -170,6 +174,8 @@ trait BankingRoleTrait
             BankingRole::FINANCE_L1 => [
                 'payout_bulk_create',
                 'payout_create_with_otp',
+                'undo_payout_creation',
+                'resume_payout_creation',
                 'payout_approve_bulk',
                 'payout_reject_bulk',
                 'payout_approve',

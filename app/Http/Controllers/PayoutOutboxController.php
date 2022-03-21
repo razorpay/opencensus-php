@@ -3,6 +3,7 @@
 namespace RZP\Http\Controllers;
 
 use ApiResponse;
+use Request;
 use RZP\Models\PayoutOutbox\Service as PayoutOutboxService;
 
 class PayoutOutboxController extends Controller
@@ -11,7 +12,19 @@ class PayoutOutboxController extends Controller
 
     public function createPayoutOutboxPartition()
     {
-        $response = (new PayoutOutboxService())->createPayoutOutboxPartition();
+        $response =  (new PayoutOutboxService())->createPayoutOutboxPartition();
+
+        return ApiResponse::json($response);
+    }
+
+    public function undoPayout(string $id) {
+        $response = $this->service()->undoPayout($id);
+
+        return ApiResponse::json($response);
+    }
+
+    public function resumePayout(string $id) {
+        $response = $this->service()->resumePayout($id);
 
         return ApiResponse::json($response);
     }

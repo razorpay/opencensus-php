@@ -11,6 +11,36 @@ use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
 {
+    public function undoPayout($id): array {
+        $this->trace->info(TraceCode::DELETE_PAYOUT_OUTBOX_REQUEST, ['id' => $id]);
+
+        $outboxPayout = $this->repo->payout_outbox->fetchPayoutInOutboxById($id, $this->merchant['id'], $this->user['id']);
+
+        if ($outboxPayout == null || $outboxPayout->trashed()) {
+            $this->trace->info(TraceCode::BAD_REQUEST_PAYOUT_DOES_NOT_EXIST_IN_OUTBOX, ['id' => $id]);
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);
+        }
+
+        $this->repo->deleteOrFail($outboxPayout);
+
+        return $outboxPayout->toArrayDeleted();
+    }
+
+    public function resumePayout($id) {
+        $this->trace->info(TraceCode::RESUME_PAYOUT_CREATION_REQUEST, ['id' => $id]);
+
+        $outboxPayout = $this->repo->payout_outbox->fetchPayoutInOutboxById($id, $this->merchant['id'], $this->user['id']);
+
+        if ($outboxPayout == null || $outboxPayout->trashed()) {
+            $this->trace->info(TraceCode::BAD_REQUEST_PAYOUT_DOES_NOT_EXIST_IN_OUTBOX, ['id' => $id]);
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);
+        }
+
+        $payout = $this->core()->resumePayout($id);
+
+        return $payout->toArrayPublic();
+    }
+
     public function createPayoutOutboxPartition() {
         try
         {

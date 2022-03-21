@@ -23,6 +23,34 @@ class Repository extends Base\Repository
 
     const PARTITION_NAME = "partition_name";
 
+    /**
+     * This function checks for deleted at status
+     *
+     * @param string $id
+     * @param string $merchantId
+     * @param string $userId
+     * @return mixed
+     */
+    public function fetchPayoutInOutboxById(string $id, string $merchantId, string $userId)
+    {
+        $mode = $this->app['rzp.mode'];
+        return $this->newQueryWithConnection($mode)
+                    ->useWritePdo()
+                    ->where(Entity::ID, $id)
+                    ->merchantId($merchantId)
+                    ->where(Entity::USER_ID, $userId)
+                    ->whereNull(Entity::DELETED_AT)
+                    ->where(Entity::EXPIRES_AT, ">=", Carbon::now()->timestamp)
+                    ->first();
+    }
+
+    public function createPayoutInOutbox($input): array
+    {
+        $payout = $this->core->create($input);
+
+        return $payout->toArrayPublic();
+    }
+
     /*
         There will be a total of 14 partitions for this table always, 6 of which will be for future dates.
         For e.g. if today is 8th May 2021 and the cron is yet to get triggered, 14 partitions will already be there as follows

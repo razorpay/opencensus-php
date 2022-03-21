@@ -1009,6 +1009,215 @@ return [
         ]
     ],
 
+    // Create Undoable payout testcase
+    'testCreateUndoablePayoutWithOtp' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'mode'            => 'IMPS',
+                'fund_account_id' => 'fa_100000000000fa',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+            'server' => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'pending_on_confirmation'
+            ],
+        ],
+    ],
+
+    'testCreatePayoutWithOtpAndUndoPayoutPreferenceFalse' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'mode'            => 'IMPS',
+                'fund_account_id' => 'fa_100000000000fa',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+            'server' => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'purpose'         => 'refund',
+                'mode'            => 'IMPS',
+                'tax'             => 162,
+                'fees'            => 1062,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+    ],
+
+
+    // Undo payout testcases
+    'testUndoPayout' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'server' => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content' => []
+        ],
+    ],
+
+    'testUndoPayoutWithId' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'server' => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content' => []
+        ],
+    ],
+
+    'testUndoOnSamePayoutMultipleTimes' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'server' => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The id provided does not exist',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID,
+        ],
+    ],
+
+    'testUndoPayoutWithInvalidId' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'server' => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The id provided does not exist',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID,
+        ],
+    ],
+
+    'testUndoPayoutWithValidIdPostExpiryTime' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'server' => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The id provided does not exist',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID,
+        ],
+    ],
+
+    // Resume payout testcases
+    'testResumePayout' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'server' => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'purpose'         => 'refund',
+                'mode'            => 'IMPS',
+                'tax'             => 162,
+                'fees'            => 1062,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+    ],
+
+    'testResumeOnSamePayoutMultipleTimes' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'server' => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The id provided does not exist',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID,
+        ],
+    ],
+
     'testCreatePayoutWithOtp' => [
         'request'  => [
             'method'  => 'POST',

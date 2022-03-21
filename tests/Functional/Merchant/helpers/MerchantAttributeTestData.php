@@ -716,6 +716,24 @@ return [
         ],
     ],
 
+    'testMerchantGetUndoPayoutPreferencesByGroup' => [
+        'request' => [
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
+            ],
+            'url' => '/merchant/preferences/x_merchant_preferences',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'type' => 'undo_payouts',
+                    'value' => 'true'
+                ]
+            ]
+        ],
+    ],
+
     'testMerchantGetPreferencesByGroupAndType' => [
         'request' => [
             'server' => [

@@ -29,6 +29,7 @@ class Status
     const SCHEDULED                          = 'scheduled';
     const CREATE_REQUEST_SUBMITTED           = 'create_request_submitted';
     const ON_HOLD                            = 'on_hold';
+    const PENDING_ON_CONFIRMATION            = 'pending_on_confirmation';
 
     /**
      * Used only to expose publicly.

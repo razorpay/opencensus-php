@@ -382,6 +382,18 @@ class MerchantAttributeTest extends TestCase
         $this->startTest();
     }
 
+    public function testMerchantGetUndoPayoutPreferencesByGroup()
+    {
+        $this->createMerchantAttribute('10000000000000', 'banking', 'x_merchant_preferences', 'undo_payouts', 'true');
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id' => '10000000000000',
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
+        ]);
+        $this->ba->proxyAuth();
+        $this->startTest();
+    }
+
     public function testMerchantGetPreferencesByGroupForSource()
     {
         $this->createMerchantAttribute('10000000000000', 'banking', 'x_merchant_source', 'pg', 'false');

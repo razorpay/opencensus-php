@@ -1499,6 +1499,10 @@ class Route
         'payouts_bulk_amount_type'                 => ['post',     'payouts/bulk/amount_type',                       'PayoutController@postBulkPayoutsAmountType'                        ],
         'payouts_bulk_amount_type_update'          => ['patch',    'payouts/bulk/amount_type',                       'PayoutController@updateBulkPayoutsAmountType'                       ],
 
+        // Payout Outbox
+        'undo_payout_creation'                      => ['post',     'payouts/{id}/undo',                            'PayoutOutboxController@undoPayout'                                     ],
+        'resume_payout_creation'                    => ['post',     'payouts/{id}/resume',                          'PayoutOutboxController@resumePayout'                                  ],
+
         // to show list of status reason available for different statuses
         'payout_status_to_reason_mapping'          => ['get',      'payouts_status_reason_map',                      'PayoutController@getPayoutStatusReasonMap'                                 ],
 
@@ -3258,7 +3262,6 @@ class Route
         'create_payment_payout_service_axis_cc'   => ['post',     'payouts_service/payments/create/axis',                   'PaymentCreateController@postCreateS2SPayment'                 ],
         'update_payout_payout_service'            => ['patch',    'payouts_service/payout/{payout_id}/update',              'PayoutController@updatePayoutEntry'                           ],
         'payout_analytics_axis_cc'                => ['get',      'payouts_analytics',                                      'PayoutController@payoutAnalytics'                             ],
-
         'payout_outbox_partition_cron'            => ['post',     'payout_outbox/partition',                                'PayoutOutboxController@createPayoutOutboxPartition'           ],
         'payment_analytics_partition_cron'        => ['post',     'payment_analytics/partition',                            'PaymentController@createPaymentAnalyticsPartition'            ],
 
@@ -4469,7 +4472,7 @@ class Route
         'payout_links_batch_process',
         'merchant_methods_hdfc_debit_emi',
 
-        // payout outbox cron creates a new partition and drops oldest partition, runs daily
+                // payout outbox cron creates a new partition and drops oldest partition, runs daily
         'payout_outbox_partition_cron',
 
         'vendor_payment_email_integration_webhook',
@@ -4603,6 +4606,8 @@ class Route
         'user_verify_email',
         'user_verify_through_mode',
         'payout_create_with_otp',
+        'undo_payout_creation',
+        'resume_payout_creation',
         'payout_validate',
         // payouts approve reject routes
         'payout_approve_bulk',
@@ -5054,6 +5059,8 @@ class Route
         'user_verify_contact',
         'user_verify_email',
         'payout_create_with_otp',
+        'undo_payout_creation',
+        'resume_payout_creation',
         'payout_validate',
         'user_send_x_mobile_app_link',
         'payout_approve_bulk',
@@ -7255,6 +7262,8 @@ class Route
         'payout_validate'                          => Permission::CREATE_PAYOUT,
         'payouts_batch_create'                     => Permission::CREATE_PAYOUT,
         'payout_create_with_otp'                   => Permission::CREATE_PAYOUT,
+        'undo_payout_creation'                     => Permission::CREATE_PAYOUT,
+        'resume_payout_creation'                   => Permission::CREATE_PAYOUT,
 
         'payment_on_hold_bulk_update'              => Permission::SETTLEMENT_RELEASE_HOLD_PAYMENT,
         'payment_card_vault_migrate'               => Permission::VAULT_TOKEN_CREATE,
@@ -7763,6 +7772,8 @@ class Route
         'payout_validate'                              => Permission::CREATE_PAYOUT,
         'payouts_batch_create'                         => Permission::CREATE_PAYOUT,
         'payout_create_with_otp'                       => Permission::CREATE_PAYOUT,
+        'undo_payout_creation'                         => Permission::CREATE_PAYOUT,
+        'resume_payout_creation'                       => Permission::CREATE_PAYOUT,
         'payout_get_holiday_details'                   => Permission::CREATE_PAYOUT,
         'currency_fetch_all_proxy'                     => '*',
         'reports_monthly_banking_invoice'              => '*',
@@ -9059,6 +9070,8 @@ class Route
             'payout_create',
             'payout_validate',
             'payout_create_with_otp',
+            'undo_payout_creation',
+            'resume_payout_creation',
             'payout_get_holiday_details',
             'payout_fetch_by_id',
             'payout_fetch_multiple',
@@ -10684,6 +10697,8 @@ class Route
             'payout_create',
             'payout_validate',
             'payout_create_with_otp',
+            'undo_payout_creation',
+            'resume_payout_creation',
             'payout_fetch_by_id',
             'payout_fetch_multiple',
             'payout_fetch_reversals',
@@ -12451,6 +12466,8 @@ class Route
         'payout_reject_bulk'                   => [Feature::PAYOUT],
         'payout_update_status'                 => [Feature::PAYOUT],
         'payout_create_with_otp'               => [Feature::PAYOUT],
+        'undo_payout_creation'                 => [Feature::PAYOUT],
+        'resume_payout_creation'               => [Feature::PAYOUT],
         'payout_fetch_by_id'                   => [Feature::PAYOUT],
         'payout_approve'                       => [Feature::PAYOUT],
         'payout_reject'                        => [Feature::PAYOUT],
@@ -12903,6 +12920,8 @@ class Route
         'payout_validate',
         'payouts_batch_create',
         'payout_create_with_otp',
+        'undo_payout_creation',
+        'resume_payout_creation',
         'payout_bulk_create',
         'payout_bulk_approve',
         'payout_approve_bulk',
@@ -13265,6 +13284,8 @@ class Route
         'reports_fetch_multiple'                            => HeartbeatLagChecker::SLAVE,
         'p2p_fetch_multiple'                                => HeartbeatLagChecker::SLAVE,
         'payout_fetch_multiple'                             => HeartbeatLagChecker::MASTER,
+        'undo_payout_creation'                              => HeartbeatLagChecker::MASTER,
+        'resume_payout_creation'                            => HeartbeatLagChecker::MASTER,
         'transfer_fetch_multiple'                           => HeartbeatLagChecker::SLAVE,
         'reversal_fetch_multiple'                           => HeartbeatLagChecker::SLAVE,
         'reversal_fetch_multiple_la'                        => HeartbeatLagChecker::SLAVE,

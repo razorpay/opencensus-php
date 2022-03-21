@@ -18,6 +18,7 @@ class Type
     const CA_LINKING_OPT_OUT                               = 'ca_linking_opt_out';
     const VA_KYC_STARTED                                   = 'va_kyc_started';
     const VA_KYC_POST_ACTIVATION_COMPLETED                 = 'va_kyc_post_activation_completed';
+    const UNDO_PAYOUTS                                     = 'undo_payouts';
 
     // CA Account Status Types
     const CA_ALLOCATED_BANK             = 'ca_allocated_bank';

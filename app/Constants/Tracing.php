@@ -189,6 +189,8 @@ class Tracing
             // payout API routes
             'payout_create',
             'payout_create_with_otp',
+            'undo_payout_creation',
+            'resume_payout_creation',
 
             'payment_fetch_multiple',
             'reconciliate_via_batch_service',

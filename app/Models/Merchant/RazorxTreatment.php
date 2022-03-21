@@ -182,6 +182,9 @@ final class RazorxTreatment
     // Experiment to skip payroll payouts in the payouts list/detail view
     const RX_SKIP_PAYROLL_PAYOUTS = 'rx_skip_payroll_payouts';
 
+    // Experiment to skip payroll payouts in the payouts list/detail view
+    const RX_UNDO_PAYOUTS_FEATURE = 'rx_undo_payout_feature';
+
     // Experiment to send login email notification to user
     const USER_LOGIN_EMAIL_NOTIFICATION = 'user_login_email_notification';
 
