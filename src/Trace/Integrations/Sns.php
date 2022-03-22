@@ -41,10 +41,6 @@ class Sns implements IntegrationInterface
         if (!empty($arguments)) {
             $CommandName = $arguments->getName();
             foreach ($arguments as $key => $value) {
-                if ($key === 'name') {
-                    $CommandName = $value;
-                    continue;
-                }
                 if ($key === "TargetArn") {
                     $TargetArn = $value;
                     continue;
