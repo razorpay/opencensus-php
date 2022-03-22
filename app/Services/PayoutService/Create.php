@@ -64,7 +64,6 @@ class Create extends Base
             Payout\Entity::PURPOSE               => $input[Payout\Entity::PURPOSE],
             Payout\Entity::AMOUNT                => (int) $input[Payout\Entity::AMOUNT],
             Payout\Entity::CURRENCY              => $input[Payout\Entity::CURRENCY],
-            Payout\Entity::MODE                  => $input[Payout\Entity::MODE] ?? null,
             Payout\Entity::QUEUE_IF_LOW_BALANCE  => (boolean) ($input[Payout\Entity::QUEUE_IF_LOW_BALANCE] ?? false),
             Payout\Entity::ACCOUNT_NUMBER        => (string) $input[Payout\Entity::ACCOUNT_NUMBER],
             Payout\Entity::REFERENCE_ID          => $input[Payout\Entity::REFERENCE_ID] ?? null,
@@ -78,22 +77,22 @@ class Create extends Base
         {
             $requestBody[Payout\Entity::SOURCE_DETAILS] = $input[Payout\Entity::SOURCE_DETAILS];
         }
-
         if (empty($input[Payout\Entity::NOTES]) === false)
         {
             $requestBody[Payout\Entity::NOTES] = $input[Payout\Entity::NOTES];
         }
-
         if (isset($input[Payout\Entity::SCHEDULED_AT]) === true)
         {
             $requestBody[Payout\Entity::SCHEDULED_AT] = $input[Payout\Entity::SCHEDULED_AT];
         }
-
+        if (isset($input[Payout\Entity::MODE]) === true)
+        {
+            $requestBody[Payout\Entity::MODE] = $input[Payout\Entity::MODE];
+        }
         if (empty($input[Payout\Entity::SKIP_WORKFLOW]) === false)
         {
             $requestBody[Payout\Entity::SKIP_WORKFLOW] = $input[Payout\Entity::SKIP_WORKFLOW];
         }
-      
         if (isset($input[Payout\Entity::ORIGIN]) === true)
         {
             $requestBody[Payout\Entity::ORIGIN] = $input[Payout\Entity::ORIGIN];
