@@ -2,15 +2,22 @@
 
 namespace OpenCensus\Trace\Integrations;
 
+use Aws\Command;
+use Aws\Sdk;
 use Aws\Sns\SnsClient;
 use PHPUnit\Framework\TestCase;
 
 class SnsTest extends TestCase
 {
 
+    protected $args = array();
+
+    public function &__get($name) {
+        return $this->$name;
+    }
+
     public function testHandleExecute()
     {
-
         $args = [
             'name' => 'Publish',
             'profile' => 'default',
@@ -24,12 +31,13 @@ class SnsTest extends TestCase
                 'TopicArn' => 'arn:aws:sns:us-east-1:000000000000:test',
             ]
         ];
+        $cmd = new Command("Publish", ["TopicArn"=>"arn:aws:sns:us-east-1:000000000000:test"]);
 
-        $sdk = new \Aws\Sdk();
+        $sdk = new Sdk();
 
         $client = $sdk->createClient('sns', $args);
 
-        $span = Sns::handleExecute($client, $args);
+        $span = Sns::handleExecute($client, $cmd);
 
         $expected = array (
             'attributes' =>

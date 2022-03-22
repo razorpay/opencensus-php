@@ -39,6 +39,7 @@ class Sns implements IntegrationInterface
         $getHost = ($command->getEndpoint())->getHost();
 
         if (!empty($arguments)) {
+            $CommandName = $arguments->getName();
             foreach ($arguments as $key => $value) {
                 if ($key === 'name') {
                     $CommandName = $value;
