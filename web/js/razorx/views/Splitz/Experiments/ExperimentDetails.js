@@ -347,7 +347,14 @@ export default class ExperimentDetails extends React.Component {
               return (
                 <div className="segment pad-highlight" key={variant.id}>
                   <div>
-                    <span className="square-pills label-semi-muted">{variant.name}</span>
+                    <span className="square-pills label-semi-muted">
+                      <b>Name:</b> {variant.name}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="square-pills label-semi-muted">
+                      <b>Weight:</b> {variant.weight}
+                    </span>
                   </div>
                   {variant.variables ? (
                     <div className="sub-segment" style={{ paddingLeft: '13px' }}>

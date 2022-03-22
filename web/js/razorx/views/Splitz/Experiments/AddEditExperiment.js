@@ -21,6 +21,7 @@ export default class AddEditExperiment extends React.Component {
     let variants = [
       {
         name: '',
+        weight: '',
         variables: [
           {
             key: '',
@@ -155,6 +156,27 @@ export default class AddEditExperiment extends React.Component {
 
     if (!this.state.variants.length || !this.state.variants[0].name.length) {
       return 'Please add a variant';
+    }
+
+    let totalWeight = 0;
+    for (const variant of this.state.variants) {
+      let weight = variant.weight;
+      if (weight == undefined || weight === '') {
+        return 'Variant weight is a required field';
+      }
+      if (isNaN(weight)) {
+        return 'Variant weight must be an integer';
+      }
+
+      weight = parseInt(weight, 10);
+      if (weight < 0 || weight > 100) {
+        return 'Variant weight value must be between 0 and 100(both included)';
+      }
+      totalWeight += weight;
+    }
+
+    if (totalWeight != 100) {
+      return `Total weight all variants must be 100. Current weight: ${totalWeight}`;
     }
 
     if (this.state.selectedType === 'split' && this.state.variants.length < 2) {
@@ -602,9 +624,20 @@ export default class AddEditExperiment extends React.Component {
                 return (
                   <div key={variantIndex}>
                     <div className="flex-row" style={{ alignItems: 'center' }}>
+                      <div className="label">{`Variant #${variantLabel}`}</div>
+                      <span
+                        className="cross cross-right"
+                        onClick={() => {
+                          this.setState({
+                            variants: variants.filter((v, index) => index !== variantIndex),
+                          });
+                        }}
+                      />
+                    </div>
+                    <div className="flex-row" style={{ alignItems: 'center' }}>
                       <Field
                         type="text"
-                        label={`Variant #${variantLabel}`}
+                        label="Name"
                         name="variantName"
                         placeholder="Variant Name"
                         value={variant.name}
@@ -616,16 +649,19 @@ export default class AddEditExperiment extends React.Component {
                           });
                         }}
                       />
-                      <span
-                        style={{
-                          marginLeft: '2px',
-                          fontSize: '20px',
-                          width: '25px',
-                        }}
-                        className="cross"
-                        onClick={() => {
+                    </div>
+                    <div className="flex-row">
+                      <Field
+                        type="text"
+                        label="Weight"
+                        name="variantWeight"
+                        placeholder="Variant Weight"
+                        value={variant.weight}
+                        onChange={(e) => {
+                          const newVariants = [...variants];
+                          newVariants[variantIndex].weight = e.target.value;
                           this.setState({
-                            variants: variants.filter((v, index) => index !== variantIndex),
+                            variants: newVariants,
                           });
                         }}
                       />
