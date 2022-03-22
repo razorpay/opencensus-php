@@ -192,12 +192,12 @@ class Helper
             if(isset($input[Constants::EMAIL]) === true)
             {
                 $medium         = MetricConstants::EMAIL;
-                $mediumValue    = Util::mask_email($input[Constants::EMAIL]);
+                $mediumValue    = Util::mask_email($input[Constants::EMAIL]) ?? "INVALID";
             }
             elseif (isset($input[Constants::CONTACT_MOBILE]) === true)
             {
                 $medium         = MetricConstants::CONTACT_MOBILE;
-                $mediumValue    = Util::mask_phone($input[Constants::CONTACT_MOBILE]);
+                $mediumValue    = Util::mask_phone($input[Constants::CONTACT_MOBILE]) ?? "INVALID";
             }
 
             $traceData = [
@@ -236,7 +236,7 @@ class Helper
                 ]
             );
         }
-        catch(\Exception $e)
+        catch(\Throwable $e)
         {
             $trace->error(
                 TraceCode::LOGIN_SIGNUP_METRIC_TRACE_PUSH_FAILED,

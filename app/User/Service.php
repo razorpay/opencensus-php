@@ -190,7 +190,7 @@ class Service extends Base\Service
                 ]
             );
         }
-        catch (\Exception $e)
+        catch (\Throwable $e)
         {
             $this->trace->error(
                 TraceCode::LOGIN_SIGNUP_METRIC_TRACE_PUSH_FAILED,

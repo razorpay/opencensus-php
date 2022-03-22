@@ -71,12 +71,13 @@ class Util
             (in_array($baseUrl, $allowedHostsEnv, true) === true));
     }
 
-    public static function mask_phone(string $phone = null)
+    public static function mask_phone($phone = null)
     {
-        if (empty($phone) === true)
+        if ((is_string($phone) === false) or (empty($phone) === true))
         {
             return null;
         }
+
         $phoneLen = strlen($phone);
 
         return substr($phone, 0, 2) .
@@ -84,12 +85,13 @@ class Util
             substr($phone, $phoneLen - 2, 2);
     }
 
-    public static function mask_email(string $email = null, float $percentageToMask = 0.7)
+    public static function mask_email($email = null, float $percentageToMask = 0.7)
      {
          $trace = \App::getFacadeRoot()['trace'];
-         $maskedEmail = $email;
 
-         if (empty($email) === true)
+         $maskedEmail = null;
+
+         if ((is_string($email) === false) or (empty($email) === true))
          {
              return null;
          }
@@ -121,7 +123,9 @@ class Util
                  $domain[strlen($domain) - 1];
 
              $maskedEmail = sprintf('%s@%s.%s', $maskedEmailName, $maskedDomain, $topLevelDomain);
-         } catch (\Exception $e) {
+         }
+         catch (\Exception $e)
+         {
              $trace->error('INVALID_EMAIL_CANNOT_MASK', [
                  'email' => $email
              ]);
