@@ -175,10 +175,6 @@ class Service extends Base\Service
     // returns list of coupons, filter out personal and shipping coupons
     public function getShopifyCoupons(array $input, string $merchantId = ''): array
     {
-        if (isset($merchantId) === true and in_array($merchantId, self::skipListCouponMids) === true)
-        {
-            return ['promotions' => []];
-        }
 
         $checkoutId = $input['order_id'];
 
@@ -189,10 +185,41 @@ class Service extends Base\Service
         // TODO: discuss proper error for this
         if (empty($checkout['data']['node']) === true)
         {
-          return (new Errors)->getInvalidCouponApplicationResponse();
+            $this->trace->error(
+                 TraceCode::SHOPIFY_1CC_API_ERROR,
+                 [
+                     'type'       => 'invalid_checkout_id',
+                     'checkoutId' => $checkoutId,
+                     'checkout'   => $checkout,
+                 ]);
+
+            return ['promotions' => []];
         }
 
         $checkoutNode = $checkout['data']['node'];
+
+        // NOTE: For now we do not update existing emails until storefront_id fix is completed
+        // update emails for logged in users
+        if (empty($input['email']) === false and empty($checkoutNode['email']) === true)
+        {
+            try
+            {
+                $emailRes = (new Core)->updateCheckoutEmail($checkoutId, $input['email']);
+                $emailRes = json_decode($emailRes, true);
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->info(
+                    TraceCode::SHOPIFY_1CC_UPDATE_EMAIL_FAILED,
+                    ['checkoutId' => $checkoutId, 'reason' => $e.getMessage()]);
+            }
+        }
+
+        if (isset($merchantId) === true and in_array($merchantId, self::skipListCouponMids) === true)
+        {
+            return ['promotions' => []];
+        }
+
 
         $amount = $checkoutNode['subtotalPrice'];
 
@@ -295,10 +322,9 @@ class Service extends Base\Service
             }
             catch (\Exception $e)
             {
-              $this->trace->info(
-                  TraceCode::SHOPIFY_1CC_UPDATE_EMAIL_FAILED,
-                  ['reason' => $e.getMessage()]
-              );
+                $this->trace->info(
+                    TraceCode::SHOPIFY_1CC_UPDATE_EMAIL_FAILED,
+                    ['checkoutId' => $checkoutId, 'reason' => $e.getMessage()]);
             }
         }
 
@@ -340,12 +366,6 @@ class Service extends Base\Service
         {
             return (new Errors)->getInvalidCouponApplicationResponse();
         }
-    }
-
-    // update checkout email
-    public function updateCheckoutEmail(string $checkoutId, string $email)
-    {
-        $response = (new Core)->updateCheckoutEmail($checkoutId, $email);
     }
 
     /**

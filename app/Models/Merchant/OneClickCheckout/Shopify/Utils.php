@@ -72,4 +72,14 @@ class Utils
 
         $this->trace->histogram($metric, $duration, $dimensions);
     }
+
+    public function stripAndReturnShopId(string $shop): string
+    {
+        if (strpos($shop, '.myshopify.com') !== false)
+        {
+            $shop = explode('.myshopify.com', $shop)[0];
+        }
+
+        return $shop;
+    }
 }
