@@ -3,9 +3,11 @@
 namespace RZP\Models\UpiTransfer;
 
 use RZP\Models\Base;
+use RZP\Trace\Tracer;
 use RZP\Models\Payment;
 use RZP\Diag\EventCode;
 use RZP\Trace\TraceCode;
+use RZP\Constants\HyperTrace;
 use RZP\Models\VirtualAccount;
 use RZP\Models\Currency\Currency;
 use RZP\Constants\Entity as Constants;
@@ -69,7 +71,11 @@ class Processor extends VirtualAccount\Processor
 
                     $this->callbackData[Payment\Entity::TERMINAL_ID] = $this->getTerminal()->getId();
 
-                    $this->createPaymentOrUnexpected($upiTransfer, $paymentInput, $this->callbackData);
+                    Tracer::inSpan(['name' => HyperTrace::UPI_TRANSFER_PROCESS_PAYMENT],
+                        function() use ($upiTransfer, $paymentInput)
+                    {
+                        $this->createPaymentOrUnexpected($upiTransfer, $paymentInput, $this->callbackData);
+                    });
 
                     $payment = $this->getPaymentProcessor()->getPayment();
 
@@ -85,7 +91,10 @@ class Processor extends VirtualAccount\Processor
                 }
             );
 
-            $this->refundOrCapturePayment($upiTransfer);
+            Tracer::inSpan(['name' => HyperTrace::UPI_TRANSFER_CAPTURE_OR_REFUND], function() use ($upiTransfer)
+            {
+                $this->refundOrCapturePayment($upiTransfer);
+            });
 
             return $upiTransfer;
         }

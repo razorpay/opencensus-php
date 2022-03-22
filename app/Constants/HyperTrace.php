@@ -41,6 +41,12 @@ class HyperTrace
     const UPI_SERVICE_FIND_BY_PAYMENT_ID                        = 'upi.service.findByPaymentId';
     const PAYMENT_REFUND                                        = 'payment.refund';
 
+    /* UPI Transfer Traces name*/
+    const UPI_TRANSFER_CAPTURE_OR_REFUND                        = 'upi_transfer.processor.processPayment';
+    const UPI_TRANSFER_PROCESS_PAYMENT                          = 'upi_transfer.processor.processPayment';
+    const UPI_TRANSFER_PRE_PROCESS_CALLBACK                     = 'upi_transfer.service.computeGatewayResponseAndTerminal';
+    const UPI_TRANSFER_FETCH_TERMINAL                           = 'upi_transfer.service.computeGatewayResponseAndTerminal';
+
     /*QR code traces names*/
     const QR_CODE_CREATE                                        = 'qrv2_qr_code.create';
     const QR_CODE_CREATE_FOR_CHECKOUT                           = 'qrv2_qr_code.create_for_checkout';

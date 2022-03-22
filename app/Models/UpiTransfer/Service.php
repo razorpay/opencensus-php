@@ -2,18 +2,18 @@
 
 namespace RZP\Models\UpiTransfer;
 
-use RZP\Constants\HyperTrace;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Trace\Tracer;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Constants\HyperTrace;
 use RZP\Models\Merchant\Account;
 use RZP\Gateway\Upi\Icici\Fields;
 use RZP\Models\UpiTransferRequest;
-use RZP\Trace\Tracer;
 
 class Service extends Base\Service
 {
@@ -69,9 +69,17 @@ class Service extends Base\Service
 
         $gatewayClass = $this->getGatewayClass($input, $gateway);
 
-        $gatewayResponse = $gatewayClass->preProcessServerCallback($input, false, true);
+        $gatewayResponse = Tracer::inSpan(['name' => HyperTrace::UPI_TRANSFER_PRE_PROCESS_CALLBACK],
+            function() use ($input, $gatewayClass)
+            {
+                return $gatewayClass->preProcessServerCallback($input, false, true);
+            });
 
-        $terminal = $this->terminal ?: $this->getTerminalFromGatewayResponse($gatewayResponse, $gateway, $gatewayClass);
+        $terminal = Tracer::inSpan(['name' => HyperTrace::UPI_TRANSFER_FETCH_TERMINAL],
+            function() use ($gatewayResponse, $gateway, $gatewayClass)
+            {
+                return $this->terminal ?: $this->getTerminalFromGatewayResponse($gatewayResponse, $gateway, $gatewayClass);
+            });
 
         $gatewayResponse = $gatewayClass->getUpiTransferData($gatewayResponse);
 
