@@ -13,6 +13,7 @@ use RZP\Exception\BadRequestException;
 use RZP\Models\Payout\Entity as PayoutEntity;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Mail\VendorPayments\GenericVendorPaymentEmail;
+use RZP\Models\PayoutSource\Entity as PayoutSourceEntity;
 
 /**
  * This class will be the main file that will talk to
@@ -339,9 +340,19 @@ class Service
         $input = [
             'payout_status' => $payout->getStatus(),
             'payout_id'     => $payout->getPublicId(),
-            'source_type'   => $payout->getSourceDetails()->getSourceType(),
-            'source_id'     => $payout->getSourceDetails()->getSourceId(),
         ];
+
+        $sourceDetails = $payout->getSourceDetails();
+        foreach ($sourceDetails as $sourceDetail) {
+            switch ($sourceDetail->getSourceType())
+            {
+                case PayoutSourceEntity::VENDOR_PAYMENTS:
+                case PayoutSourceEntity::TAX_PAYMENTS:
+                    $input['source_type'] = $sourceDetail->getSourceType();
+                    $input['source_id'] = $sourceDetail->getSourceId();
+                    break;
+            }
+        }
 
         return $this->makeRequest($payout->merchant, $url, $input, [], 'POST', $mode);
     }
