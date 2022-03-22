@@ -236,7 +236,7 @@ class UserController extends Controller
             $input['email'] = mb_strtolower($input['email']);
         }
 
-        list($error, $data) = (new User\Service)->registerWithOtp($input);
+        list($error, $data, $httpCode) = (new User\Service)->registerWithOtp($input);
 
         $timeTaken = microtime(true) - $timeStarted;
 
@@ -252,7 +252,7 @@ class UserController extends Controller
             $error = [$error];
         }
 
-        return AppResponse::jsonResponse($error, $data);
+        return AppResponse::jsonResponse($error, $data, $httpCode);
     }
 
     public function postRegisterVerifyOtp()
@@ -269,7 +269,7 @@ class UserController extends Controller
 
         $this->checkCaptchaDisableInPayload($input);
 
-        list($error, $data) = (new User\Service)->registerWithOtpVerify($input);
+        list($error, $data, $httpCode) = (new User\Service)->registerWithOtpVerify($input);
 
         if (isset($input['email']))
         {
@@ -314,7 +314,7 @@ class UserController extends Controller
             $error = [$error];
         }
 
-        return AppResponse::jsonResponse($error, $res);
+        return AppResponse::jsonResponse($error, $res, $httpCode);
     }
 
     public function postRegister()
@@ -328,7 +328,7 @@ class UserController extends Controller
         {
             $this->checkCaptchaDisableInPayload($input);
 
-            list($error, $data) = (new User\Service)->register($input);
+            list($error, $data, $httpCode) = (new User\Service)->register($input);
 
             if (empty($error))
             {
@@ -387,7 +387,7 @@ class UserController extends Controller
 
         Helper::pushSignUpLoginMetrics(Constants::USER_SIGNUP, $input, $error, $timeTaken);
 
-        return AppResponse::jsonResponse($error, $data);
+        return AppResponse::jsonResponse($error, $data, $httpCode);
     }
 
     public function postOauthRegister()
@@ -397,12 +397,13 @@ class UserController extends Controller
 
         try
         {
-            list($error, $data) = (new User\Service)->oauthRegisterAndSignIn($input);
+            list($error, $data, $httpCode) = (new User\Service)->oauthRegisterAndSignIn($input);
         }
         catch (RecoverableException $e)
         {
             $error = [$e->getMessage()];
             $data  = null;
+            $httpCode = 400;
         }
 
         $timeTaken = microtime(true) - $timeStart;
@@ -411,7 +412,7 @@ class UserController extends Controller
 
         Helper::pushSignUpLoginMetrics(Constants::USER_OAUTH_SIGNUP, $input, $error, $timeTaken);
 
-        return AppResponse::jsonResponse($error, $data);
+        return AppResponse::jsonResponse($error, $data, $httpCode);
     }
 
     /**
@@ -442,7 +443,7 @@ class UserController extends Controller
 
         $userService->addUserBrowserDetails($input);
 
-        list($error, $data) = $userService->login($input);
+        list($error, $data, $httpCode) = $userService->login($input);
 
         $timeTaken = microtime(true) - $timeStart;
 
@@ -450,7 +451,7 @@ class UserController extends Controller
 
         Helper::pushSignUpLoginMetrics(Constants::USER_LOGIN, $input, $error, $timeTaken);
 
-        return AppResponse::jsonResponse($error, $data);
+        return AppResponse::jsonResponse($error, $data, $httpCode);
     }
 
     /**
@@ -484,7 +485,7 @@ class UserController extends Controller
             $input['email'] = mb_strtolower($input['email']);
         }
 
-        list($error, $data) = (new User\Service)->otpLogin($input);
+        list($error, $data, $httpCode) = (new User\Service)->otpLogin($input);
 
         $timeTaken = microtime(true) - $timeStarted;
 
@@ -498,7 +499,7 @@ class UserController extends Controller
             $error = [$error];
         }
 
-        return AppResponse::jsonResponse($error, $data);
+        return AppResponse::jsonResponse($error, $data, $httpCode);
     }
 
     /**
@@ -561,7 +562,7 @@ class UserController extends Controller
             $input['email'] = mb_strtolower($input['email']);
         }
 
-        list($error, $data) = (new User\Service)->verifyOtpLogin($input);
+        list($error, $data, $httpCode) = (new User\Service)->verifyOtpLogin($input);
 
         $timeTaken = microtime(true) - $timeStarted;
 
@@ -569,7 +570,7 @@ class UserController extends Controller
 
         Helper::pushSignUpLoginMetrics(Constants::VERIFY_LOGIN_OTP, $input, $error, $timeTaken);
 
-        return AppResponse::jsonResponse($error, $data);
+        return AppResponse::jsonResponse($error, $data, $httpCode);
     }
 
     /**
@@ -647,12 +648,13 @@ class UserController extends Controller
 
         try
         {
-            list($error, $data) = (new User\Service)->oauthSignIn($input);
+            list($error, $data, $httpCode) = (new User\Service)->oauthSignIn($input);
         }
         catch (RecoverableException $e)
         {
             $error = [$e->getMessage()];
             $data  = null;
+            $httpCode = 400;
         }
 
         $timeTaken = microtime(true) - $timeStart;
@@ -661,7 +663,7 @@ class UserController extends Controller
 
         Helper::pushSignUpLoginMetrics(Constants::USER_OAUTH_LOGIN, $input, $error, $timeTaken);
 
-        return AppResponse::jsonResponse($error, $data);
+        return AppResponse::jsonResponse($error, $data, $httpCode);
     }
 
     /**

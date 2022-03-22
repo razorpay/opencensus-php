@@ -120,18 +120,18 @@ class Service extends Base\Service
             false
         );
 
-        list($error, $data) = $request->processInput($input)->send('users/register', 'POST');
+        list($error, $data, $httpCode) = $request->processInput($input)->send('users/register', 'POST');
 
-        if (empty($error) === false)
+        /*if (empty($error) === false)
         {
             throw new BadRequestError(
                 $error[0],
                 ErrorCode::BAD_REQUEST_ERROR,
                 400
             );
-        }
+        }*/
 
-        return [$error, $data];
+        return [$error, $data, $httpCode];
     }
 
     /**
@@ -219,9 +219,9 @@ class Service extends Base\Service
             false
         );
 
-        list($error, $data) = $this->requestAPI($input,'users/register/otp/verify', 'POST', $options);
+        list($error, $data, $httpCode) = $this->requestAPI($input,'users/register/otp/verify', 'POST', $options);
 
-        return [$error, $data];
+        return [$error, $data, $httpCode];
     }
 
     /**
@@ -266,7 +266,7 @@ class Service extends Base\Service
 
         $input[Constants::OAUTH_PROVIDER] = json_encode(array($input[Constants::OAUTH_PROVIDER]));
 
-        list($error, $data) = $this->oauthRegister($input);
+        list($error, $data, $httpCode) = $this->oauthRegister($input);
 
         if ((empty($error) === true))
         {
@@ -277,10 +277,10 @@ class Service extends Base\Service
                 Constants::OAUTH_SOURCE   => $input[Constants::OAUTH_SOURCE],
             ];
 
-            list($error, $data) = $this->oauthSignIn($credentials);
+            list($error, $data, $httpCode) = $this->oauthSignIn($credentials);
         }
 
-        return [$error, $data];
+        return [$error, $data, $httpCode];
     }
 
     /**
@@ -293,30 +293,30 @@ class Service extends Base\Service
     {
         $request = new ApiRequestAny();
 
-        list($error, $data) = $request->processInput($input)->send(
+        list($error, $data, $httpCode) = $request->processInput($input)->send(
             Constants::OAUTH_REGISTER_ROUTE, Constants::POST_METHOD);
 
-        if (empty($error) === false)
+        /*if (empty($error) === false)
         {
             throw new BadRequestError(
                 $error[0],
                 ErrorCode::BAD_REQUEST_ERROR,
                 400
             );
-        }
+        }*/
 
-        Session::put(Constants::OAUTH_LOGIN, true);
+        if (empty($error) === true) Session::put(Constants::OAUTH_LOGIN, true);
 
-        return [$error, $data];
+        return [$error, $data, $httpCode];
     }
 
     public function oauthSignIn($input): array
     {
-        list($error, $genericUser) = $this->oauthLoginOnApiOnRoute($input,
+        list($error, $genericUser, $httpCode) = $this->oauthLoginOnApiOnRoute($input,
                                                                    Constants::OAUTH_LOGIN_ROUTE,
                                                                    Constants::POST_METHOD);
 
-        return $this->handleOauthLoginResponse($error, $genericUser, "email");
+        return $this->handleOauthLoginResponse($error, $genericUser, "email", $httpCode);
     }
 
     /**
@@ -485,7 +485,7 @@ class Service extends Base\Service
      */
     public function login(array $input)
     {
-        list($error, $genericUser) = $this->loginOnApi($input);
+        list($error, $genericUser, $httpCode) = $this->loginOnApi($input);
 
         if(isset($input["email"]) === true)
         {
@@ -496,7 +496,7 @@ class Service extends Base\Service
             $logged_in_via = Constants::CONTACT_MOBILE;
         }
 
-        return $this->handleLoginResponse($error, $genericUser, $logged_in_via);
+        return $this->handleLoginResponse($error, $genericUser, $logged_in_via, $httpCode);
     }
 
     /**
@@ -561,7 +561,7 @@ class Service extends Base\Service
      */
     public function verifyOtpLogin(array $input)
     {
-        list($error, $genericUser) = $this->verifyOtpLoginOnApi($input);
+        list($error, $genericUser, $httpCode) = $this->verifyOtpLoginOnApi($input);
 
         if(isset($input["email"]) === true)
         {
@@ -572,7 +572,7 @@ class Service extends Base\Service
             $logged_in_via = Constants::CONTACT_MOBILE;
         }
 
-        return $this->handleLoginResponse($error, $genericUser, $logged_in_via);
+        return $this->handleLoginResponse($error, $genericUser, $logged_in_via, $httpCode);
     }
 
     /**
@@ -596,7 +596,7 @@ class Service extends Base\Service
         return $this->handleLoginResponse($error, $genericUser, $logged_in_via);
     }
 
-    protected function handleLoginResponse($error, $genericUser, $logged_in_via=null)
+    protected function handleLoginResponse($error, $genericUser, $logged_in_via=null, $httpCode=null)
     {
         if (empty($error) === false)
         {
@@ -614,9 +614,9 @@ class Service extends Base\Service
                 {
                     if(in_array($error[Constants::INTERNAL][Constants::INTERNAL_ERROR_CODE], ApiRequestAny::INTERNAL_ERROR_CODES) === true)
                     {
-                        return [[$error, self::LOGIN_UNAUTHENTICATED], null];
+                        return [[$error, self::LOGIN_UNAUTHENTICATED], null, $httpCode];
                     }
-                    return [['User Login Failed, Please check your login credentials.', self::LOGIN_UNAUTHENTICATED], null];
+                    return [['User Login Failed, Please check your login credentials.', self::LOGIN_UNAUTHENTICATED], null, $httpCode];
                 }
 
                 // very very nasty dirty hack to not to write lot of code.
@@ -625,35 +625,35 @@ class Service extends Base\Service
                     $error = $error['description'];
                 }
 
-                return [[$error, self::LOGIN_UNAUTHENTICATED], null];
+                return [[$error, self::LOGIN_UNAUTHENTICATED], null, $httpCode];
             }
 
             if (in_array('Low captcha score', $error) === true)
             {
-                return [['Captcha score low, Please try again.', self::LOGIN_UNAUTHENTICATED], null];
+                return [['Captcha score low, Please try again.', self::LOGIN_UNAUTHENTICATED], null, $httpCode];
             }
 
             if (in_array('Captcha Failed', $error) === true)
             {
-                return [['Captcha validation Failed, Please refresh page and try again.', self::LOGIN_UNAUTHENTICATED], null];
+                return [['Captcha validation Failed, Please refresh page and try again.', self::LOGIN_UNAUTHENTICATED], null, $httpCode];
             }
 
             if (in_array('Incorrect Password login attempt exhausted. Please contact support or login via dashboard', $error) === true)
             {
-                return [['Incorrect Password login attempt exhausted. Please contact support or login via dashboard', self::LOGIN_UNAUTHENTICATED], null];
+                return [['Incorrect Password login attempt exhausted. Please contact support or login via dashboard', self::LOGIN_UNAUTHENTICATED], null, $httpCode];
             }
 
             if (in_array('Verification failed because of incorrect OTP.', $error) === true)
             {
-                return [['Verification failed because of incorrect OTP.', self::LOGIN_UNAUTHENTICATED], null];
+                return [['Verification failed because of incorrect OTP.', self::LOGIN_UNAUTHENTICATED], null, $httpCode];
             }
 
             if (in_array('BAD_REQUEST_INCORRECT_OTP', $error) === true)
             {
-                return [['Verification failed because of incorrect OTP.', self::LOGIN_UNAUTHENTICATED], null];
+                return [['Verification failed because of incorrect OTP.', self::LOGIN_UNAUTHENTICATED], null, $httpCode];
             }
 
-            return [['The email or password you have entered is incorrect. Click on “Forgot?” to reset your password. ', self::LOGIN_UNAUTHENTICATED], null];
+            return [['The email or password you have entered is incorrect. Click on “Forgot?” to reset your password. ', self::LOGIN_UNAUTHENTICATED], null, $httpCode];
         }
 
         Auth::login($genericUser, false);
@@ -694,10 +694,10 @@ class Service extends Base\Service
 
         $this->trace->info(TraceCode::USER_LOGIN, $traceData);
 
-        return [$error, $res];
+        return [$error, $res, $httpCode];
     }
 
-    protected function handleOauthLoginResponse($error, $genericUser, $logged_in_via=null)
+    protected function handleOauthLoginResponse($error, $genericUser, $logged_in_via=null, $httpCode = null)
     {
         if (empty($error) === false)
         {
@@ -713,7 +713,7 @@ class Service extends Base\Service
                 }
                 else
                 {
-                    return [[Constants::LOGIN_FAILED_CHECK_CREDENTIALS, self::LOGIN_UNAUTHENTICATED], null];
+                    return [[Constants::LOGIN_FAILED_CHECK_CREDENTIALS, self::LOGIN_UNAUTHENTICATED], null, $httpCode];
                 }
 
                 // very very nasty dirty hack to not to write lot of code. check handleLoginResponse function
@@ -722,16 +722,16 @@ class Service extends Base\Service
                     $error = $error[Constants::DESCRIPTION];
                 }
 
-                return [[$error, self::LOGIN_UNAUTHENTICATED], null];
+                return [[$error, self::LOGIN_UNAUTHENTICATED], null, $httpCode];
             }
 
             //temporarily added and will be removed after the root cause is fixed.
             if (in_array(Constants::NO_DB_RECORDS_FOUND, $error) === true)
             {
-                return [[Constants::ACCOUNT_DOES_NOT_EXIST, self::LOGIN_UNREGISTERED], null];
+                return [[Constants::ACCOUNT_DOES_NOT_EXIST, self::LOGIN_UNREGISTERED], null, $httpCode];
             }
 
-            return [[Constants::GOOGLE_SIGN_IN_ERROR, self::LOGIN_UNAUTHENTICATED], null];
+            return [[Constants::GOOGLE_SIGN_IN_ERROR, self::LOGIN_UNAUTHENTICATED], null, $httpCode];
         }
 
         Auth::login($genericUser, false);
@@ -773,7 +773,7 @@ class Service extends Base\Service
 
         $this->deleteSessionsIfApplicable($genericUser);
 
-        return [$error, $res];
+        return [$error, $res, $httpCode];
     }
 
     public function deleteSessionsIfApplicable(GenericUser $genericUser)
@@ -1407,7 +1407,7 @@ class Service extends Base\Service
     {
         $request = new \App\Admin\ApiRequestAny($options);
 
-        list($error, $data) = $request->processInput($input)->send($route, $httpVerb);
+        list($error, $data, $httpCode) = $request->processInput($input)->send($route, $httpVerb);
 
         $genericUser = null;
 
@@ -1424,25 +1424,25 @@ class Service extends Base\Service
         }
 
 
-        return [$error, $genericUser];
+        return [$error, $genericUser, $httpCode];
     }
 
     public function loginOtpRoute(array $input, string $route, string $httpVerb, array $options=[])
     {
         $request = new \App\Admin\ApiRequestAny($options);
 
-        list($error, $data) = $request->processInput($input)->send($route, $httpVerb);
+        list($error, $data, $httpCode) = $request->processInput($input)->send($route, $httpVerb);
 
-        return [$error, $data];
+        return [$error, $data, $httpCode];
     }
 
     public function requestAPI(array $input, string $route, string $httpVerb, array $options=[])
     {
         $request = new ApiRequestAny($options);
 
-        list($error, $data) = $request->processInput($input)->send($route, $httpVerb);
+        list($error, $data, $httpCode) = $request->processInput($input)->send($route, $httpVerb);
 
-        return [$error, $data];
+        return [$error, $data, $httpCode];
     }
 
     public function userVerificationRoute(array $input, string $route, string $httpVerb, array $options=[])
@@ -1477,7 +1477,7 @@ class Service extends Base\Service
             Constants::OAUTH_SOURCE   => $input[Constants::OAUTH_SOURCE],
         ];
 
-        list($error, $data) = $request->processInput($credentials)->send($route, $httpVerb);
+        list($error, $data, $httpCode) = $request->processInput($credentials)->send($route, $httpVerb);
 
         if (empty($error) === true)
         {
@@ -1494,7 +1494,7 @@ class Service extends Base\Service
                 [Constants::ERROR => $error, Constants::EMAIL => $email]);
         }
 
-        return [$error, $genericUser];
+        return [$error, $genericUser, $httpCode];
     }
 
     public function loginOnApi(array $input)

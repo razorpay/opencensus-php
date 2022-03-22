@@ -176,7 +176,7 @@ class Helper
                     }
                     else
                     {
-                        $traceDetails[Constants::ERROR_CODE] = "UNKNOWN_ERROR";
+                        $traceDetails[Constants::ERROR_CODE] = $error[0];
                     }
                 }
             }
