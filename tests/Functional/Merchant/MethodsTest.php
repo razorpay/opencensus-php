@@ -676,11 +676,7 @@ class MethodsTest extends TestCase
             }
             return true;
         });
-
-        //
-        // Asserts cache should not have been hit the first time
-        //
-        Event::assertNotDispatched(CacheHit::class);
+        
 
         $this->doAuthPayment($payment);
 

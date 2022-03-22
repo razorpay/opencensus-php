@@ -1037,7 +1037,8 @@ class Validator extends Base\Validator
             }
         }
 
-        $maxAmountAllowed = $this->entity->merchant->getMaxPaymentAmount();
+        $isInternational = $this->entity->fetchInternationalFromInput($input);
+        $maxAmountAllowed = $this->entity->merchant->getMaxPaymentAmountTransactionType($isInternational);
 
         $currency = $input['currency'];
 

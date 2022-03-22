@@ -327,6 +327,10 @@ return [
                 'assignable'  => true,
                 'workflow'    => true,
             ],
+            Permission::INCREASE_INTERNATIONAL_TRANSACTION_LIMIT  => [
+                'assignable'  => true,
+                'workflow'    => true,
+            ],
             Permission::TOGGLE_TERMINAL                     => [
                 'description' => 'Ability to enable or disable a terminal',
                 'assignable' => true,

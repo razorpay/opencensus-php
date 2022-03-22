@@ -6589,6 +6589,9 @@ CREATE TABLE merchant_1cc_auth_configs
     ADD INDEX merchant_1cc_auth_configs_merchant_id_index (merchant_id)
 );
 
+ALTER TABLE merchants
+    ADD COLUMN max_international_payment_amount INTEGER UNSIGNED NULL;
+
 CREATE TABLE raw_addresses
 (
     id char(14) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,

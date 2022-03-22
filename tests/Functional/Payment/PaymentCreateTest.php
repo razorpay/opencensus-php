@@ -4185,6 +4185,38 @@ class PaymentCreateTest extends TestCase
         });
     }
 
+    public function testCreateInternationalPaymentWithAmountGreaterThanMaxAmount()
+    {
+        $merchantId = "10000000000000";
+
+        $merchantAttribute = [
+            MERCHANT::INTERNATIONAL => true,
+            MERCHANT::CONVERT_CURRENCY => true,
+            MERCHANT::MAX_INTERNATIONAL_PAYMENT_AMOUNT => 10000,
+        ];
+
+        $this->fixtures->edit('merchant', $merchantId, $merchantAttribute);
+        $this->fixtures->merchant->addFeatures(['disable_native_currency']);
+
+        $merchantDetailAttribute = [
+            DetailEntity::MERCHANT_ID => $merchantId,
+        ];
+
+        $this->fixtures->create('merchant_detail', $merchantDetailAttribute);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card']['number'] = '4012010000000007';
+
+        $payment['amount'] = '10001';
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function () use ($payment) {
+            $this->doAuthPayment($payment);
+        });
+    }
+
     public function testIntlPaymentWhenNotAllowedForPaymentGateway()
     {
         $merchantId = "10000000000000";

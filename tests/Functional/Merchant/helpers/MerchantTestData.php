@@ -10602,6 +10602,22 @@ return [
         ]
     ],
 
+    'testUnregisteredIncreaseInternationalTransactionLimitWorkflowApprove' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/merchant/transaction_limit',
+            'content' => [
+                'transaction_type'                  => 'international',
+                'new_transaction_limit_by_merchant' => 1000000,
+                'transaction_limit_increase_reason' => 'comment for reason comment for reason comment for reason comment for reason comment for reason comment for reason comment for reason comment for reason'
+            ],
+        ],
+        'response' => [
+            'content'     => [],
+            'status_code' => 200,
+        ]
+    ],
+
     'testIncreaseTransactionLimitRoleFailure' => [
         'request'  => [
             'method'  => 'POST',
@@ -10630,6 +10646,34 @@ return [
             'method'  => 'POST',
             'url'     => '/merchant/transaction_limit',
             'content' => [
+                'new_transaction_limit_by_merchant' => 1000000,
+                'transaction_limit_increase_reason' => 'comment for reason comment for reason comment for reason comment for reason comment for reason comment for reason comment for reason comment for reason'
+            ],
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_NOT_ACTIVATED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_NOT_ACTIVATED,
+        ],
+    ],
+
+    'testIncreaseInternationalTransactionMerchantActivationFailure' => [
+        'request'   => [
+            'method'  => 'POST',
+            'url'     => '/merchant/transaction_limit',
+            'content' => [
+                'transaction_type'                  => 'international',
                 'new_transaction_limit_by_merchant' => 1000000,
                 'transaction_limit_increase_reason' => 'comment for reason comment for reason comment for reason comment for reason comment for reason comment for reason comment for reason comment for reason'
             ],

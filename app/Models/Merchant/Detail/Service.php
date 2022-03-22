@@ -2911,6 +2911,29 @@ class Service extends Base\Service
         }
     }
 
+    public function getAgentApprovedInternationalTransactionLimit(Merchant\Entity $merchant)
+    {
+
+        $actionEntity = (new WorkFlowActionCore())->fetchOpenActionOnEntityOperation($merchant->getMerchantId(),
+            $merchant->getEntity(),
+            PermissionName::INCREASE_INTERNATIONAL_TRANSACTION_LIMIT,
+            $merchant->getOrgId()
+        )->first();
+
+        $differEntity = (new DifferCore)->fetchRequest($actionEntity->getId());
+
+        if (empty($differEntity) === true)
+        {
+            throw new Exception\ServerErrorException('Workflow action differ entity not found',
+                ErrorCode::SERVER_ERROR);
+        }
+
+        if(isset($differEntity[DifferEntity::WORKFLOW_OBSERVER_DATA][WorkflowObserver\Constants::APPROVED_TRANSACTION_LIMIT]) == true)
+        {
+            return $differEntity[DifferEntity::WORKFLOW_OBSERVER_DATA][WorkflowObserver\Constants::APPROVED_TRANSACTION_LIMIT];
+        }
+    }
+
     public function updateLinkedAccountBankVerificationStatus($merchantIds)
     {
         $updateCount = 0;

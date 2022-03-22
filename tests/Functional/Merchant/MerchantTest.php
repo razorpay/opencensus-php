@@ -13921,6 +13921,139 @@ IFSC Code  ICIC0001206
         });
     }
 
+    public function testRegisteredIncreaseInternationalTransactionLimitWorkflowApprove()
+    {
+        $this->mockStorkForTransactionLimitSelfServe();
+
+        $merchantId = $this->createInternationalTransactionLimitUpdateWorkflow();
+
+        $workflowAction = $this->getLastEntity('workflow_action', true);
+
+        $this->assertNotEmpty($workflowAction);
+
+        $workflowActionId = $workflowAction['id'];
+
+        $this->esClient->indices()->refresh();
+
+        $observerData = ['approved_transaction_limit' => '800000'];
+
+        $this->updateObserverData($workflowActionId, $observerData);
+
+        $insertedObserverData = $this->getWorkflowData();
+
+        $this->assertNotEmpty($insertedObserverData);
+
+        $insertedObserverData = $insertedObserverData['workflow_observer_data'];
+
+        $this->assertArraySelectiveEquals($insertedObserverData, $observerData);
+
+        $this->performWorkflowAction($workflowActionId, true);
+
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+
+        $this->assertEquals(800000 , $merchant->getMaxPaymentAmountTransactionType(true));
+
+    }
+
+    public function testUnregisteredIncreaseInternationalTransactionLimitWorkflowApprove()
+    {
+        Mail::fake();
+
+        $predefinedMerchant = [
+            'name'               => 'testname',
+            'activated'          => 1,
+            'max_international_payment_amount' => 10000
+        ];
+
+        $predefinedMerchantDetails = [
+            'business_type'      => 2,
+            'business_category'  => Merchant\Detail\BusinessCategory::MEDIA_AND_ENTERTAINMENT
+        ];
+
+        [$merchantId, $userId] = $this->setupMerchantWithMerchantDetails($predefinedMerchant, $predefinedMerchantDetails);
+
+        $this->mockStorkForTransactionLimitSelfServe();
+
+        $this->setupWorkflow('increase_international_transaction_limit', PermissionName::INCREASE_INTERNATIONAL_TRANSACTION_LIMIT, 'test');
+
+        $this->ba->proxyAuth('rzp_test_'.$merchantId, $userId);
+
+        $this->startTest();
+
+        $workflowAction = $this->getLastEntity('workflow_action', true);
+
+        $this->assertNotEmpty($workflowAction);
+
+        $workflowActionId = $workflowAction['id'];
+
+        $this->esClient->indices()->refresh();
+
+        $observerData = ['approved_transaction_limit' => '800000'];
+
+        $this->updateObserverData($workflowActionId, $observerData);
+
+        $insertedObserverData = $this->getWorkflowData();
+
+        $this->assertNotEmpty($insertedObserverData);
+
+        $insertedObserverData = $insertedObserverData['workflow_observer_data'];
+
+        $this->assertArraySelectiveEquals($insertedObserverData, $observerData);
+
+        $this->performWorkflowAction($workflowActionId, true);
+
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+
+        $this->assertEquals(800000 , $merchant->getMaxPaymentAmountTransactionType(true));
+
+    }
+
+    protected function createInternationalTransactionLimitUpdateWorkflow()
+    {
+        Mail::fake();
+
+        $predefinedMerchant = [
+            'name'               => 'testname',
+            'activated'          => 1,
+            'max_international_payment_amount' => 10000,
+        ];
+
+        $predefinedMerchantDetails = [
+            'business_type'      => 4,
+            'business_category'  => Merchant\Detail\BusinessCategory::OTHERS
+        ];
+
+        [$merchantId, $userId] = $this->setupMerchantWithMerchantDetails($predefinedMerchant, $predefinedMerchantDetails);
+
+        $druidService = $this->getMockBuilder(MockDruidService::class)
+            ->setConstructorArgs([$this->app])
+            ->onlyMethods([ 'getDataFromDruid'])
+            ->getMock();
+
+        $this->app->instance('druid.service', $druidService);
+
+        $dataFromDruid = $this->testData['testGetRiskData']['druid_response'];
+
+        $dataFromDruid['Domestic_cts_overall_merchant_id'] = $merchantId;
+
+        $dataFromDruid['Domestic_FTS_merchant_id'] = $merchantId;
+
+        $druidService->method('getDataFromDruid')
+            ->willReturn([null, [$dataFromDruid]]);
+
+        $testData = $this->testData['testUnregisteredIncreaseInternationalTransactionLimitWorkflowApprove'];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->setupWorkflow('increase_international_transaction_limit', PermissionName::INCREASE_INTERNATIONAL_TRANSACTION_LIMIT, 'test');
+
+        $this->ba->proxyAuth('rzp_test_'.$merchantId, $userId);
+
+        $this->startTest();
+
+        return $merchantId;
+    }
+
     public function testTransactionLimitUpdateWorkflowNeedsClarification()
     {
         $merchantId = $this->createTransactionLimitUpdateWorkflow();
@@ -14046,6 +14179,35 @@ IFSC Code  ICIC0001206
         [$merchantId, $userId] = $this->setupMerchantWithMerchantDetails($predefinedMerchant, $predefinedMerchantDetails);
 
         $testData = $this->testData['testIncreaseTransactionMerchantActivationFailure'];
+
+        $testData['response']['content']['error']['description'] = 'The new transaction limit is same as the current transaction limit';
+
+        $testData['exception']['class'] = 'RZP\Exception\BadRequestValidationFailureException';
+
+        $testData['exception']['internal_error_code'] = ErrorCode::BAD_REQUEST_VALIDATION_FAILURE;
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId, $userId);
+
+        $this->startTest();
+    }
+
+    public function testIncreaseInternationalTransactionLimitSameAsPreviousFailure()
+    {
+        $predefinedMerchant = [
+            'activated'          => 1,
+            'max_international_payment_amount' => 1000000
+        ];
+
+        $predefinedMerchantDetails = [
+            'business_type'      => 2,
+            'business_category'  => Merchant\Detail\BusinessCategory::OTHERS
+        ];
+
+        [$merchantId, $userId] = $this->setupMerchantWithMerchantDetails($predefinedMerchant, $predefinedMerchantDetails);
+
+        $testData = $this->testData['testIncreaseInternationalTransactionMerchantActivationFailure'];
 
         $testData['response']['content']['error']['description'] = 'The new transaction limit is same as the current transaction limit';
 

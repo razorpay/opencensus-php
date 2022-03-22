@@ -168,6 +168,10 @@ class CreateMerchants extends Migration
                   ->unsigned()
                   ->nullable();
 
+            $table->integer(Merchant::MAX_INTERNATIONAL_PAYMENT_AMOUNT)
+                ->unsigned()
+                ->nullable();
+
             $table->integer(Merchant::AUTO_REFUND_DELAY)
                   ->nullable()
                   ->default(null);

@@ -155,6 +155,9 @@ class Entity extends Base\PublicEntity
     // Receipt email to be triggered at payment status
     const RECEIPT_EMAIL_TRIGGER_EVENT = 'receipt_email_trigger_event';
 
+    // International transaction limit of merchant
+    const MAX_INTERNATIONAL_PAYMENT_AMOUNT = 'max_international_payment_amount';
+
     //
     // Followings are derived data indexed in ES and goes to
     // admin dashboard as it is.
@@ -344,6 +347,7 @@ class Entity extends Base\PublicEntity
         self::CONVERT_CURRENCY,
         self::AUTO_REFUND_DELAY,
         self::MAX_PAYMENT_AMOUNT,
+        self::MAX_INTERNATIONAL_PAYMENT_AMOUNT,
         self::INVOICE_LABEL_FIELD,
         self::LINKED_ACCOUNT_KYC,
         self::RECEIPT_EMAIL_ENABLED,
@@ -427,6 +431,7 @@ class Entity extends Base\PublicEntity
         self::METHODS,
         self::CONVERT_CURRENCY,
         self::MAX_PAYMENT_AMOUNT,
+        self::MAX_INTERNATIONAL_PAYMENT_AMOUNT,
         self::AUTO_REFUND_DELAY,
         self::AUTO_CAPTURE_LATE_AUTH,
         self::BRAND_COLOR,
@@ -485,6 +490,7 @@ class Entity extends Base\PublicEntity
         self::RISK_THRESHOLD                 => null,
         self::LOGO_URL                       => null,
         self::MAX_PAYMENT_AMOUNT             => null,
+        self::MAX_INTERNATIONAL_PAYMENT_AMOUNT => null,
         self::ORG_ID                         => null,
         self::AUTO_REFUND_DELAY              => null,
         self::AUTO_CAPTURE_LATE_AUTH         => false,
@@ -579,6 +585,7 @@ class Entity extends Base\PublicEntity
     ];
 
     const MAX_PAYMENT_AMOUNT_DEFAULT                  = 50000000;
+    const MAX_INTERNATIONAL_PAYMENT_AMOUNT_DEFAULT    = 50000000;
     const MAX_PAYMENT_AMOUNT_DEFAULT_FOR_UNREGISTERED = 1000000;
     const RISK_THRESHOLD_DEFAULT                      = 8;
     const DCC_MARKUP_PERCENTAGE_DEFAULT               = 7;
@@ -1478,6 +1485,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::MAX_PAYMENT_AMOUNT, $maxAmount);
     }
 
+    public function setMaxInternationalPaymentAmount(int $maxAmount)
+    {
+        $this->setAttribute(self::MAX_INTERNATIONAL_PAYMENT_AMOUNT, $maxAmount);
+    }
+
     public function merchantInheritanceMap()
     {
         return $this->hasOne('RZP\Models\Merchant\InheritanceMap\Entity');
@@ -1747,6 +1759,21 @@ class Entity extends Base\PublicEntity
     public function getMaxPaymentAmount()
     {
         return $this->getAttribute(self::MAX_PAYMENT_AMOUNT);
+    }
+
+    public function getMaxPaymentAmountTransactionType($international = false)
+    {
+        if ($international)
+        {
+            $maxPaymentAmount = $this->getAttribute(self::MAX_INTERNATIONAL_PAYMENT_AMOUNT);
+            if($maxPaymentAmount === null){
+                $domesticMaxPaymentAmount = $this->getAttribute(self::MAX_PAYMENT_AMOUNT);
+                $maxPaymentAmount = max(Entity::MAX_INTERNATIONAL_PAYMENT_AMOUNT_DEFAULT, $domesticMaxPaymentAmount);
+            }
+            return $maxPaymentAmount;
+        }
+        else
+            return $this->getAttribute(self::MAX_PAYMENT_AMOUNT);
     }
 
     public function getInvoiceLabelField()

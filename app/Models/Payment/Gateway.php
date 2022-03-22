@@ -405,6 +405,15 @@ class Gateway
     ];
 
     /**
+     * These are the apps that process
+     * international payments
+     */
+    const INTERNATIONAL_ENABLED_APPS= [
+        self::TRUSTLY,
+        self::POLI,
+    ];
+
+    /**
      * These are the apps that require
      * dynamic currency conversion for processing
      */

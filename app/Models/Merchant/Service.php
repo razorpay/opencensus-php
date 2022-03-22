@@ -1322,6 +1322,8 @@ class Service extends Base\Service
         {
             $response[Entity::MAX_PAYMENT_AMOUNT] =  $this->merchant->getMaxPaymentAmount();
 
+            $response[Entity::MAX_INTERNATIONAL_PAYMENT_AMOUNT] =  $this->merchant->getMaxPaymentAmountTransactionType(true);
+
             $response['is_suspended'] =  $this->merchant->isSuspended();
 
             $response['is_live'] = $this->merchant->isLive();
@@ -8430,28 +8432,43 @@ class Service extends Base\Service
 
         $newMerchantData = clone $oldMerchantData;
 
-        $newMerchantData->setMaxPaymentAmount($input[Constants::NEW_TRANSACTION_LIMIT_BY_MERCHANT]);
+        $data = [Entity::MERCHANT_ID => $merchantId];
+
+        if ((isset($input[Constants::TRANSACTION_TYPE]) === true) and
+            ($input[Constants::TRANSACTION_TYPE]) === Constants::TRANSACTION_TYPE_INTERNATIONAL)
+        {
+            $newMerchantData->setMaxInternationalPaymentAmount($input[Constants::NEW_TRANSACTION_LIMIT_BY_MERCHANT]);
+            $data[Entity::MAX_INTERNATIONAL_PAYMENT_AMOUNT] = $input[Constants::NEW_TRANSACTION_LIMIT_BY_MERCHANT];
+            $workflowPermission = Permission::INCREASE_INTERNATIONAL_TRANSACTION_LIMIT;
+        }else{
+            $newMerchantData->setMaxPaymentAmount($input[Constants::NEW_TRANSACTION_LIMIT_BY_MERCHANT]);
+            $data[Entity::MAX_PAYMENT_AMOUNT] = $input[Constants::NEW_TRANSACTION_LIMIT_BY_MERCHANT];
+            $workflowPermission = Permission::INCREASE_TRANSACTION_LIMIT;
+        }
 
         $this->app['workflow']
-            ->setPermission(Permission::INCREASE_TRANSACTION_LIMIT)
+            ->setPermission($workflowPermission)
             ->setEntityAndId($merchant->getEntity(), $merchant->getId())
-            ->setInput([
-                Entity::MERCHANT_ID         => $merchantId,
-                Entity::MAX_PAYMENT_AMOUNT  => $input[Constants::NEW_TRANSACTION_LIMIT_BY_MERCHANT]
-            ])
+            ->setInput($data)
             ->setController(Constants::INCREASE_TRANSACTION_LIMIT_POST_WORKFLOW_APPROVE)
             ->handle($oldMerchantData, $newMerchantData, true);
 
-        $this->addCommentForIncreaseTransactionLimitPostWorkflowCreation($merchant, $input);
+        $this->addCommentForIncreaseTransactionLimitPostWorkflowCreation($merchant, $input, $workflowPermission);
 
-        return [Entity::MAX_PAYMENT_AMOUNT => $merchant->getMaxPaymentAmount()];
+        if ((isset($input[Constants::TRANSACTION_TYPE]) === true) and
+            ($input[Constants::TRANSACTION_TYPE]) === "international")
+        {
+            return [Entity::MAX_INTERNATIONAL_PAYMENT_AMOUNT => $merchant->getMaxPaymentAmountTransactionType(true)];
+        } else{
+            return [Entity::MAX_PAYMENT_AMOUNT => $merchant->getMaxPaymentAmountTransactionType(false)];
+        }
     }
 
-    protected function addCommentForIncreaseTransactionLimitPostWorkflowCreation(Entity $merchant, array $input)
+    protected function addCommentForIncreaseTransactionLimitPostWorkflowCreation(Entity $merchant, array $input, string $workflowPermission)
     {
         $workFlowAction = (new WorkFlowActionCore())->fetchOpenActionOnEntityOperation($merchant->getMerchantId(),
             $merchant->getEntity(),
-            Permission::INCREASE_TRANSACTION_LIMIT,
+            $workflowPermission,
             $merchant->getOrgId()
         )->first();
 
@@ -8506,9 +8523,18 @@ class Service extends Base\Service
 
         $merchant = $this->repo->merchant->findorFailPublic($merchantId);
 
-        $newTransactionLimit = (new Merchant\Detail\Service())->getAgentApprovedTransactionLimit($merchant);
+        $isInternationalLimit = array_key_exists('max_international_payment_amount', $input);
 
-        $this->merchant->setMaxPaymentAmount($newTransactionLimit);
+        if($isInternationalLimit){
+            $newTransactionLimit = (new Merchant\Detail\Service())->getAgentApprovedInternationalTransactionLimit($merchant);
+
+            $this->merchant->setMaxInternationalPaymentAmount($newTransactionLimit);
+        }
+        else {
+            $newTransactionLimit = (new Merchant\Detail\Service())->getAgentApprovedTransactionLimit($merchant);
+
+            $this->merchant->setMaxPaymentAmount($newTransactionLimit);
+        }
 
         $this->repo->merchant->saveOrFail($this->merchant);
 

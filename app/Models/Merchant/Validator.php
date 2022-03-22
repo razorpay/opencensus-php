@@ -147,6 +147,7 @@ class Validator extends Base\Validator
         Entity::FEE_MODEL                             => 'sometimes|in:prepaid,postpaid',
         Entity::REFUND_SOURCE                         => 'sometimes|string|max:32|in:balance,credits',
         Entity::MAX_PAYMENT_AMOUNT                    => 'sometimes|integer',
+        Entity::MAX_INTERNATIONAL_PAYMENT_AMOUNT      => 'sometimes|integer',
         // max: 5 days (don't change max value without consult), min:60 minutes
         Entity::AUTO_REFUND_DELAY                     => 'sometimes|string|custom',
         Entity::DEFAULT_REFUND_SPEED                  => 'sometimes|filled|string|in:normal,optimum',
@@ -545,6 +546,7 @@ class Validator extends Base\Validator
     protected static $transactionLimitSelfServeRules = [
         Constants::NEW_TRANSACTION_LIMIT_BY_MERCHANT      => 'required|integer|min:1',
         Constants::TRANSACTION_LIMIT_INCREASE_REASON      => 'required|string|min:100',
+        Constants::TRANSACTION_TYPE                       => 'sometimes|string|in:domestic,international',
         Constants::TRANSACTION_LIMIT_INCREASE_INVOICE_URL => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip',
     ];
 
@@ -2471,9 +2473,37 @@ class Validator extends Base\Validator
         }
     }
 
+    protected function getMaxTransactionTypePaymentAmount(array $input, Entity $merchant)
+    {
+        $transactionType = $this->validateIncreaseTransactionLimitType($input);
+        $isTypeInternational = $transactionType === "international";
+        return $merchant->getMaxPaymentAmountTransactionType($isTypeInternational);
+    }
+
+    protected function validateIncreaseTransactionLimitType(array $input)
+    {
+        if (isset($input[Constants::TRANSACTION_TYPE]) === true){
+            return $input[Constants::TRANSACTION_TYPE];
+        }
+        return Constants::TRANSACTION_TYPE_DOMESTIC;
+    }
+
+    protected function validateIncreaseTransactionLimitWorkflow(string $transactionType)
+    {
+        if ($transactionType === "international"){
+            return Constants::INCREASE_INTERNATIONAL_TRANSACTION_LIMIT;
+
+        }else{
+            return Constants::INCREASE_TRANSACTION_LIMIT;
+        }
+    }
+
     public function validateIncreaseTransactionLimitConditions(Entity $merchant, array $input, bool $isBusinessRegistered, bool $isMerchantKamOrDirectSales = false)
     {
-        $oldLimit = $merchant->getMaxPaymentAmount();
+
+        $transactionType = $this->validateIncreaseTransactionLimitType($input);
+        $increaseTransactionLimitWorkflowType = $this->validateIncreaseTransactionLimitWorkflow($transactionType);
+        $oldLimit = $this->getMaxTransactionTypePaymentAmount($input, $merchant);
 
         $merchantDetails = (new Detail\Core)->getMerchantDetails($merchant);
 
@@ -2485,11 +2515,11 @@ class Validator extends Base\Validator
 
         $this->validateTransactionLimitNotSameAsCurrent($input, $oldLimit);
 
-        $this->validateRequestNotRaisedInLastThirtyDays($merchant);
+        $this->validateRequestNotRaisedInLastThirtyDays($merchant, $increaseTransactionLimitWorkflowType);
 
         if ($isMerchantKamOrDirectSales === false)
         {
-            $this->validateNotExceedingMaximumLimit($merchant, $input, $isBusinessRegistered, $businessCategory);
+            $this->validateNotExceedingMaximumLimit($input, $isBusinessRegistered, $businessCategory, $oldLimit);
 
             $this->validateNotUnregiesteredGamingOrGovernmentBusinessCategory($businessCategory, $isBusinessRegistered);
 
@@ -2507,10 +2537,8 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateRequestNotRaisedInLastThirtyDays(Entity $merchant)
+    protected function validateRequestNotRaisedInLastThirtyDays(Entity $merchant, string $workflowType)
     {
-        $workflowType = Constants::INCREASE_TRANSACTION_LIMIT;
-
         [$entityId, $entity] = (new Core())->fetchWorkflowData($workflowType, $merchant);
 
         $action = (new ActionCore)->fetchLastUpdatedWorkflowActionInPermissionList(
@@ -2548,9 +2576,8 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateNotExceedingMaximumLimit(Entity $merchant, array $input, bool $isBusinessRegistered, $businessCategory)
+    protected function validateNotExceedingMaximumLimit(array $input, bool $isBusinessRegistered, $businessCategory, int $oldLimit)
     {
-        $oldLimit = $merchant->getMaxPaymentAmount();
 
         if ($isBusinessRegistered === true)
         {

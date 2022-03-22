@@ -5194,6 +5194,45 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return ($allowSurplus or $allowDeficit);
     }
 
+    public function fetchInternationalFromInput(array $input): bool
+    {
+        $method = $input['method'];
+
+        if ($method === Payment\Method::CARD and
+            isset($input[Payment\Entity::CARD]) and
+            isset($input[Payment\Entity::CARD][Card\Entity::NUMBER]))
+        {
+            $app = \App::getFacadeRoot();
+            $iinId = substr($input[Payment\Entity::CARD][Card\Entity::NUMBER], 0, 6);
+
+            $iin = $app['repo']->iin->find($iinId);
+
+            // IIN not available
+            if (empty($iin) === true)
+            {
+                return false;
+            }
+
+            if ($iin->isInternational() === true)
+            {
+                return true;
+            }
+        }
+        else if(($method === Payment\Method::WALLET) and
+            ($input['wallet'] === Wallet::PAYPAL))
+        {
+            return true;
+        }
+        else if(($method === Payment\Method::APP) and
+            (isset($input['provider']) === true)  and
+            (in_array($input['provider'], Payment\Gateway::INTERNATIONAL_ENABLED_APPS) === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     public function shouldAllowGatewayAmountSurplus(int $amountAuthorized): bool
     {
         $allowedMerchantsForSurplus = config()->get('app.amount_difference_allowed_authorized');

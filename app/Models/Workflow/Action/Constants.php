@@ -47,6 +47,7 @@ class Constants
         Permission\Name::EDIT_MERCHANT_GSTIN_DETAIL,
         Permission\Name::ADD_ADDITIONAL_WEBSITE,
         Permission\Name::INCREASE_TRANSACTION_LIMIT,
+        Permission\Name::INCREASE_INTERNATIONAL_TRANSACTION_LIMIT,
     ];
 
     const WORKFLOW_NEEDS_MERCHANT_CLARIFICATION_TAG      = 'Awaiting Customer Response';

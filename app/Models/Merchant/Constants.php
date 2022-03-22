@@ -157,13 +157,18 @@ final class Constants
 
     const COMMENT                                       = 'comment';
     const NEW_TRANSACTION_LIMIT_BY_MERCHANT             = 'new_transaction_limit_by_merchant';
+    const TRANSACTION_TYPE                              = 'transaction_type';
     const TRANSACTION_LIMIT_INCREASE_REASON             = 'transaction_limit_increase_reason';
     const TRANSACTION_LIMIT_INCREASE_INVOICE_URL        = 'transaction_limit_increase_invoice_url';
     const INCREASE_TRANSACTION_LIMIT                    = 'increase_transaction_limit';
+    const INCREASE_INTERNATIONAL_TRANSACTION_LIMIT      = 'increase_international_transaction_limit';
     const UPDATED_TRANSACTION_LIMIT                     = 'updated_transaction_limit';
     const GSTIN_UPDATE_SELF_SERVE                       = 'gstin_update_self_serve';
     const OLD_GSTIN                                     = 'old_gstin';
     const NEW_GSTIN                                     = 'new_gstin';
+    const TRANSACTION_TYPE_INTERNATIONAL                = 'international';
+    const TRANSACTION_TYPE_DOMESTIC                     = 'domestic';
+
 
     const INCREASE_TRANSACTION_LIMIT_POST_WORKFLOW_APPROVE          = 'RZP\Http\Controllers\MerchantController@postTransactionLimitWorkflowApprove';
 
@@ -496,6 +501,10 @@ final class Constants
         ],
         self::INCREASE_TRANSACTION_LIMIT   => [
             self::PERMISSION   => Permission::INCREASE_TRANSACTION_LIMIT,
+            self::ENTITY       => \RZP\Constants\Entity::MERCHANT,
+        ],
+        self::INCREASE_INTERNATIONAL_TRANSACTION_LIMIT   => [
+            self::PERMISSION   => Permission::INCREASE_INTERNATIONAL_TRANSACTION_LIMIT,
             self::ENTITY       => \RZP\Constants\Entity::MERCHANT,
         ],
         self::GSTIN_UPDATE_SELF_SERVE      => [

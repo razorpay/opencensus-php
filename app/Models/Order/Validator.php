@@ -171,7 +171,13 @@ class Validator extends Base\Validator
             }
         }
 
-        $maxAmountAllowed = $merchant->getMaxPaymentAmount();
+        $domesticMaxAmountAllowed = $merchant->getMaxPaymentAmount();
+
+        $internationalMaxAmountAllowed = $merchant->getMaxPaymentAmountTransactionType(true);
+
+        // order creation will use max of domestic/international limit.
+        // Payment will have individual validation.
+        $maxAmountAllowed = max($domesticMaxAmountAllowed,$internationalMaxAmountAllowed);
 
         $currency = $input['currency'];
 
@@ -428,11 +434,11 @@ class Validator extends Base\Validator
 
         if ($partialPaymentAllowed === true)
         {
-            $this->validatePartialPaymentOrderAmount($paymentAmount);
+            $this->validatePartialPaymentOrderAmount($paymentAmount, $payment);
         }
     }
 
-    protected function validatePartialPaymentOrderAmount(int $paymentAmount)
+    protected function validatePartialPaymentOrderAmount(int $paymentAmount, Payment\Entity $payment)
     {
         /** @var Entity $order */
         $order = $this->entity;
@@ -464,7 +470,7 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_PAYMENT_ORDER_ALREADY_PAID);
         }
 
-        if ($amountPaid + $paymentAmount > $order->merchant->getMaxPaymentAmount())
+        if ($amountPaid + $paymentAmount > $order->merchant->getMaxPaymentAmountTransactionType($payment->isInternational()))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_TXN_LIMIT_EXCEEDED);

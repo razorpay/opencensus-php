@@ -52,6 +52,8 @@ class MerchantSelfServeObserver implements WorkflowObserverInterface
 
         PermissionName::INCREASE_TRANSACTION_LIMIT     => DashboardEvents::INCREASE_TRANSACTION_LIMIT_REJECTION_REASON,
 
+        PermissionName::INCREASE_INTERNATIONAL_TRANSACTION_LIMIT     => DashboardEvents::INCREASE_TRANSACTION_LIMIT_REJECTION_REASON,
+
         PermissionName::UPDATE_MERCHANT_GSTIN_DETAIL   => DashboardEvents::GSTIN_UPDATE_REJECTION_REASON,
 
         PermissionName::EDIT_MERCHANT_GSTIN_DETAIL     => DashboardEvents::GSTIN_ADD_REJECTION_REASON,

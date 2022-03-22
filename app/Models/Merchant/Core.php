@@ -360,6 +360,7 @@ class Core extends Base\Core
         if ($aggregatorMerchant->isMarketplace() === true and $linkedAccount === true)
         {
             $subMerchant->setMaxPaymentAmount($aggregatorMerchant->getMaxPaymentAmount());
+            $subMerchant->setMaxInternationalPaymentAmount($aggregatorMerchant->getMaxPaymentAmountTransactionType(true));
 
             $subMerchant->parent()->associate($aggregatorMerchant);
         }

@@ -307,6 +307,7 @@ class OrderTest extends TestCase
 
         $merchantAttribute = [
             Entity::CATEGORY => 5399,
+            ENTITY::MAX_INTERNATIONAL_PAYMENT_AMOUNT    => 25000,
         ];
 
         $this->fixtures->edit('merchant', $merchantId, $merchantAttribute);
@@ -2528,6 +2529,7 @@ class OrderTest extends TestCase
             Entity::INTERNATIONAL         => true,
             Entity::CONVERT_CURRENCY      => true,
             ENTITY::MAX_PAYMENT_AMOUNT    => 10000,
+            ENTITY::MAX_INTERNATIONAL_PAYMENT_AMOUNT    => 10000,
         ];
 
         $this->fixtures->edit('merchant', $merchantId, $merchantAttribute);

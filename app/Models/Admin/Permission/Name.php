@@ -419,6 +419,9 @@ class Name
     const AUTO_KYC_SOFT_LIMIT_BREACH          = 'auto_kyc_soft_limit_breach';
     const AUTO_KYC_SOFT_LIMIT_BREACH_UNREGISTERED = 'auto_kyc_soft_limit_breach_unregistered';
 
+    // International transaction limit of merchant
+    const INCREASE_INTERNATIONAL_TRANSACTION_LIMIT = 'increase_international_transaction_limit';
+
     // Permission to create NC responded WF
     const NEEDS_CLARIFICATION_RESPONDED = 'needs_clarification_responded';
 
