@@ -21,17 +21,18 @@ const SwitchMerchant = ({ user, onSwitchMerchant }) => {
       searchIndices={['name', 'display_name']}
       showClear={false}
       optionComponent={({ option }) => {
+        const { id, parent_id, display_name, name, parent_name } = option;
         return (
-          <span class="help-content">
-            <span class="SwitchMerchantDropdown__option">
-              {option.id === user.current ? <i class="i i-check text-success pull-right" /> : null}
-              {`${option.parent_id ? `${option.parent_name} - ` : ''}${
-                option.display_name || option.name
-              }`}
+          <span className="help-content">
+            <span className="SwitchMerchantDropdown__option">
+              {id === window.rzp_user.current ? (
+                <i className="i i-check text-success pull-right" />
+              ) : null}
+              {`${parent_id ? `${parent_name} - ` : ''}${display_name || name}`}
               <Popover align="left" theme="dark" parentQuerySelector=".switch-merchant__Tether">
                 <PopoverBody>
-                  <div>{option.display_name || option.name}</div>
-                  <div class="text--secondary">({option.name})</div>
+                  <div>{display_name || name}</div>
+                  <div className="text--secondary">({name})</div>
                 </PopoverBody>
               </Popover>
             </span>
