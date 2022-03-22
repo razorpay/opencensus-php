@@ -134,6 +134,7 @@ export const RZPFeatures = {
   QR_CODES: 'qr_codes',
   MAGIC_CHECKOUT: 'magic_checkout',
   STORES: 'stores',
+  RAZORPAYX: 'razorpayx',
 };
 
 export const UPI_AVL_LIMIT = 20000000;

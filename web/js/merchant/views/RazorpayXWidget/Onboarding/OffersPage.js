@@ -1,6 +1,8 @@
 import Button from 'common/new-ui/Button';
 import { OFFER_DETAILS } from '../../ConnectedBanking/data';
 import FeaturesList from '../../ConnectedBanking/components/FeaturesList';
+import { analyticsTrack } from 'common/utils/analytics';
+
 const featuresList = OFFER_DETAILS.ICICI.content.featuresList;
 
 const CAMPAIGN_VALUE = 'pg_x_widget';
@@ -11,6 +13,12 @@ const OffersPage = ({ prev }) => {
   };
 
   const handleGetStartedButton = () => {
+    analyticsTrack({
+      objectName: 'RazorayX Get Started',
+      actionName: 'Clicked',
+      screen: 'RazorpayX Onboarding',
+    });
+
     window.open(
       `${window.bankingServiceUrl}/welcome?campaign=${CAMPAIGN_VALUE}&intent=current_account`,
       '_blank',

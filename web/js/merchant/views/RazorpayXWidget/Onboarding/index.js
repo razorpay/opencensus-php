@@ -3,6 +3,7 @@ import { OnBoardingWrapper } from 'merchant/components/OnBoarding';
 import Landing from 'merchant/components/OnBoarding/Slides/Landing';
 import OffersPage from './OffersPage';
 import { FeatureTiles } from './FeatureTile';
+import { RZPFeatures } from 'merchant/helpers/data';
 
 const getOnBoardingSliderDots = () => {
   return (sliderProps) => <SliderDots {...sliderProps} />;
@@ -44,6 +45,7 @@ const RazorpayXOnboarding = () => {
             desc={desc}
             callout={calloutElement}
             ctaText="Next"
+            feature={RZPFeatures.RAZORPAYX}
           />
         )}
 

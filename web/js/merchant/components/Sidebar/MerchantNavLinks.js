@@ -7,6 +7,8 @@ import * as LocalStorageService from 'common/utils/localStorage';
 import MagicCheckoutNavLink from 'merchant/components/Sidebar/MagicCheckoutNavLink';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { getIsBankingEnabled } from './helpers';
+import { trackViewedBankingNavBar } from './ga';
 
 const RECOMMANDED_PRODUCT_LIST = [
   'payment_gateway',
@@ -42,6 +44,10 @@ function MerchantNavLinks(props) {
     ) {
       //set default payment link as a recommend product.
       LocalStorageService.setItem('default_product_page', 'payment_link');
+    }
+
+    if (getIsBankingEnabled(user)) {
+      trackViewedBankingNavBar();
     }
   }, []);
 
@@ -169,9 +175,7 @@ function MerchantNavLinks(props) {
         icon="i i-razorpayx text-razorpayx-orange"
         to="/razorpayx"
         isNew={true}
-        additionalCondition={(currentUser) =>
-          currentUser.isShowRazorpayXWidgetEnabled && currentUser.isOrgRZP
-        }
+        additionalCondition={getIsBankingEnabled}
       />
 
       <MainNavLink
