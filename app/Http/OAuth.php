@@ -392,6 +392,8 @@ class OAuth
         $this->ba->setOAuthClientId($response[OAuthToken::CLIENT_ID]);
         $this->ba->setOAuthApplicationId($response[OAuthToken::APPLICATION_ID]);
         $this->ba->setUserRoleWithUserIdAndMerchantId($merchantId, $userId);
+        // not sent in trace logs
+        $this->ba->setTokenScopes($tokenScopes);
 
         $isRazorpayXExclusiveRoute = $this->isBankingRoute();
 
@@ -399,8 +401,7 @@ class OAuth
                                                             $response[OAuthToken::APPLICATION_ID],
                                                 Feature\Constants::RAZORPAYX_FLOWS_VIA_OAUTH)['status'];
 
-        if ($isRazorpayXExclusiveRoute === true and
-            $isApplicationAllowedForBankingRoutes === false)
+        if ($isRazorpayXExclusiveRoute === true and $isApplicationAllowedForBankingRoutes === false)
         {
             return ApiResponse::unauthorizedOauthAccessToRazorpayX();
         }

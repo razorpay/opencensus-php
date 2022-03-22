@@ -22,6 +22,9 @@ class Entity extends Base\PublicEntity
 
     const OAUTH = 'oauth';
 
+    // used for apps that are not under partnerships
+    const MERCHANT = 'merchant';
+
     protected $entity = Constants\Entity::MERCHANT_APPLICATION;
 
     protected $generateIdOnCreate = true;

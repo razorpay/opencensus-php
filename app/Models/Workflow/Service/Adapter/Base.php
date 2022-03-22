@@ -324,7 +324,7 @@ abstract class Base
             $actorType = Constants::MERCHANT;
             $actorPropertyValue = Constants::API;
 
-            if ($ba->isSlackApp() === true) {
+            if ($ba->isSlackApp() === true || $ba->isAppleWatchApp()) {
                 $actorType = Constants::USER;
                 $actorId = $user->getId();
                 $actorPropertyValue = ($repo->merchant->getMerchantUserMapping($merchant->getId(), $user->getId(), null, Product::BANKING))->pivot->role;

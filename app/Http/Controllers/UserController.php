@@ -275,6 +275,13 @@ class UserController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getUserSelf()
+    {
+        $data = $this->service()->get("");
+
+        return ApiResponse::json($data);
+    }
+
     public function getActorInfo(string $id)
     {
         $data = $this->service()->getActorInfo($id);

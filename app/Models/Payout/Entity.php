@@ -1909,7 +1909,7 @@ class Entity extends Base\PublicEntity
         // Workflows are not enabled on test mode for now
         if ((app('rzp.mode') === Mode::TEST) or
             (($basicAuth->isStrictPrivateAuth() === true) and
-            ($basicAuth->isSlackApp() === false)))
+            ($basicAuth->isSlackApp() === false and $basicAuth->isAppleWatchApp() === false)))
         {
             unset($attributes[self::WORKFLOW_HISTORY]);
 
@@ -1925,7 +1925,8 @@ class Entity extends Base\PublicEntity
 
     public function setPublicBankingAccountIdAttribute(array & $attributes)
     {
-        if (app('basicauth')->isProxyOrPrivilegeAuth() === false and app('basicauth')->isSlackApp() === false)
+        if (app('basicauth')->isProxyOrPrivilegeAuth() === false and
+            (app('basicauth')->isSlackApp() === false and app('basicauth')->isAppleWatchApp() === false))
         {
             unset ($attributes[self::BANKING_ACCOUNT_ID]);
 
@@ -2015,7 +2016,7 @@ class Entity extends Base\PublicEntity
         $basicAuth = app('basicauth');
 
         if ($basicAuth->isStrictPrivateAuth() === true and
-            ($basicAuth->isSlackApp() === false))
+            ($basicAuth->isSlackApp() === false and $basicAuth->isAppleWatchApp() === false))
         {
             unset($attributes[self::USER_ID]);
         }
@@ -2049,7 +2050,7 @@ class Entity extends Base\PublicEntity
         // show fund_account in the response of composite payout.
 
         if ((app('basicauth')->isStrictPrivateAuth() === true) and
-            !(($this->isComposite() === true) or app('basicauth')->isSlackApp() === true))
+            !(($this->isComposite() === true) or app('basicauth')->isSlackApp() === true or app('basicauth')->isAppleWatchApp() === true))
         {
             array_forget($attributes, self::FUND_ACCOUNT);
 

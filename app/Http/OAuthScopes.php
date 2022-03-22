@@ -16,10 +16,12 @@ class OAuthScopes
     const RX_READ_ONLY = 'rx_read_only';
     const RX_READ_WRITE = 'rx_read_write';
 
-    const RAZORPAY_X_SCOPES = [self::RX_READ_ONLY, self::RX_READ_WRITE];
+    const RAZORPAY_X_SCOPES = [self::RX_READ_ONLY, self::RX_READ_WRITE, self::APPLE_WATCH_READ_WRITE];
 
     const TALLY_READ_ONLY  = 'tally_read_only';
     const TALLY_READ_WRITE = 'tally_read_write';
+
+    const APPLE_WATCH_READ_WRITE = 'apple_watch_read_write';
 
     /**
      * Map of additional scopes for a route (identified by the route name alias)
@@ -57,10 +59,10 @@ class OAuthScopes
         'payout_purpose_get'                             => [self::RX_READ_ONLY, self::RX_READ_WRITE],
         'payout_purpose_post'                            => [self::RX_READ_WRITE],
         'payout_fetch_by_id'                             => [self::RX_READ_ONLY, self::RX_READ_WRITE],
-        'payout_fetch_multiple'                          => [self::RX_READ_ONLY, self::RX_READ_WRITE],
-        'payout_reject'                                  => [ self::RX_READ_WRITE],
-        'payout_approve'                                 => [ self::RX_READ_WRITE],
-        'user_otp_create'                                => [self::RX_READ_ONLY, self::RX_READ_WRITE],
+        'payout_fetch_multiple'                          => [self::RX_READ_ONLY, self::RX_READ_WRITE, self::APPLE_WATCH_READ_WRITE],
+        'payout_reject'                                  => [ self::RX_READ_WRITE, self::APPLE_WATCH_READ_WRITE],
+        'payout_approve'                                 => [ self::RX_READ_WRITE, self::APPLE_WATCH_READ_WRITE],
+        'user_otp_create'                                => [self::RX_READ_ONLY, self::RX_READ_WRITE, self::APPLE_WATCH_READ_WRITE],
         'activated_banking_accounts_list'                => [self::RX_READ_ONLY, self::RX_READ_WRITE],
         'merchant_balance_fetch'                         => [self::RX_READ_ONLY, self::RX_READ_WRITE],
         'payout_create'                                  => [self::RX_READ_WRITE],
@@ -100,7 +102,11 @@ class OAuthScopes
         'payment_links_create'                   => [self::READ_WRITE, self::TALLY_READ_WRITE],
         'payment_links_update'                   => [self::READ_WRITE, self::TALLY_READ_WRITE],
         'payment_links_cancel'                   => [self::READ_WRITE, self::TALLY_READ_WRITE],
-        'payment_links_expire'                   => [self::READ_WRITE, self::TALLY_READ_WRITE]
+        'payment_links_expire'                   => [self::READ_WRITE, self::TALLY_READ_WRITE],
+
+        'user_fetch_self'                        => [self::APPLE_WATCH_READ_WRITE],
+        'banking_accounts_list'                  => [self::APPLE_WATCH_READ_WRITE],
+        'payouts_summary'                        => [self::APPLE_WATCH_READ_WRITE],
     ];
 
     /**

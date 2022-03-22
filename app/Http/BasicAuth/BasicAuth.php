@@ -14,6 +14,7 @@ use Razorpay\OAuth\OAuthServer;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception;
 use RZP\Http\Edge\Metric;
+use RZP\Http\OAuthScopes;
 use RZP\Http\RequestContextV2;
 use RZP\Http\Route;
 use RZP\Models\Application\Entity;
@@ -151,6 +152,11 @@ class BasicAuth
      * @var string|null
      */
     protected $partnerMerchantId;
+
+    /**
+     * @var array|null
+     */
+    protected $tokenScopes;
 
     /**
      * Key and secret sent by client for
@@ -1654,6 +1660,11 @@ class BasicAuth
         return $this->partnerMerchantId;
     }
 
+    public function getTokenScopes()
+    {
+        return $this->tokenScopes;
+    }
+
     public function getPublicKey()
     {
         $authCreds = $this->authCreds;
@@ -1889,6 +1900,11 @@ class BasicAuth
         $this->partnerMerchantId = $merchantId;
     }
 
+    public function setTokenScopes(array $tokenScopes)
+    {
+        $this->tokenScopes = $tokenScopes;
+    }
+
     public function setMerchant($merchant)
     {
         if ($merchant !== null)
@@ -2020,6 +2036,23 @@ class BasicAuth
     {
         return ($this->getAccessTokenId() !== null and
             ((new Feature\Service())->checkFeatureEnabled(Feature\Constants::APPLICATION, $this->getOAuthApplicationId(), Feature\Constants::PUBLIC_SETTERS_VIA_OAUTH))['status']);
+    }
+
+    public function isAppleWatchApp(): bool
+    {
+        $scopes = $this->tokenScopes;
+
+        if (empty($scopes))
+        {
+            return false;
+        }
+
+        if (in_array(OAuthScopes::APPLE_WATCH_READ_WRITE,$scopes,true))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     public function getSourceChannel()
@@ -2771,7 +2804,7 @@ class BasicAuth
         }
 
         // ToDo:: Once oauth tokens have product level segregation this can be removed and product can be derived from token.
-        if ($this->isSlackApp() === true)
+        if ($this->isSlackApp() === true || $this->isAppleWatchApp())
         {
             $product = Product::BANKING;
         }

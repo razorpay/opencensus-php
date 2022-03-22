@@ -347,7 +347,8 @@ class Validator extends Base\Validator
                                  . 'user_auth,'
                                  . 'bulk_payout_approve,'
                                  . 'create_bulk_payout_link,'
-                                 . 'replace_key',
+                                 . 'replace_key,'
+                                 . 'apple_watch_token',
         Entity::TOKEN         => 'sometimes|filled',
 
         // Applicable to select actions: Need to send these payloads for raven's sms content.
@@ -961,6 +962,12 @@ class Validator extends Base\Validator
             ($user->getConfirmedAttribute() === false))
         {
             throw new BadRequestValidationFailureException('Contact Email is not verified');
+        }
+
+        if (($medium !== 'sms') and
+            ($action === 'apple_watch_token'))
+        {
+            throw new BadRequestValidationFailureException('Sms must be the medium for generating Apple Watch token');
         }
     }
 

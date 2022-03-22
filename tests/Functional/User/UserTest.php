@@ -14,8 +14,10 @@ use RZP\Http\UserRolePermissionsMap;
 use RZP\Jobs\NotifyRas;
 use RZP\Error\ErrorCode;
 use RZP\Mail\User\Otp;
+use RZP\Models\Feature;
 use RZP\Mail\User\Login;
 use RZP\Models\User\Role;
+use Razorpay\OAuth\Client;
 use RZP\Constants\Product;
 use RZP\Http\RequestHeader;
 use RZP\Constants\Timezone;
@@ -5602,6 +5604,36 @@ class UserTest extends TestCase
         $this->ba->appAuth('rzp_'.'test', $pwd);
 
         $this->testData[__FUNCTION__]['request']['url'] .= $user['id'];
+
+        $this->startTest();
+    }
+
+    public function testGetUserViaOAuth()
+    {
+        $this->fixtures->edit('merchant',
+            '10000000000000',
+            ['activated' => true, 'business_banking' => true]);
+
+        $client = factory(Client\Entity::class)->create(['environment' => 'prod']);
+
+        $this->fixtures->feature->create([
+            Feature\Entity::ENTITY_TYPE => Feature\Constants::APPLICATION,
+            Feature\Entity::ENTITY_ID   => $client->application_id,
+            Feature\Entity::NAME        => Feature\Constants::RAZORPAYX_FLOWS_VIA_OAUTH
+        ]);
+
+        $user = $this->fixtures->create('user', [
+            'contact_mobile'    => '9876543210',
+        ]);
+
+        $accessToken = $this->generateOAuthAccessToken([
+            'scopes'=> ['apple_watch_read_write'],
+            'mode' => 'live',
+            'client_id' => $client->getId(),
+            'user_id'   => $user['id']
+        ], 'prod');
+
+        $this->ba->oauthBearerAuth($accessToken);
 
         $this->startTest();
     }

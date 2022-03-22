@@ -1803,6 +1803,8 @@ class Route
         'user_check_has_set_password'              => ['get',      'users/set/password',                             'UserController@getCheckUserHasSetPassword'                         ],
         'user_set_password'                        => ['post',     'users/set/password',                             'UserController@postSetUserPassword'                                ],
         'user_edit_self'                           => ['patch',    'users',                                          'UserController@editSelf'                                           ],
+        // Fetch user via OAuth (Private Auth)
+        'user_fetch_self'                          => ['get',      'users_self',                                     'UserController@getUserSelf'                                            ],
         'user_fetch'                               => ['get',      'users/{id}',                                     'UserController@getUser'                                            ],
         'user_fetch_internal'                      => ['get',      'users_internal/{id}',                            'UserController@getUser'                                            ],
         'user_fetch_entity'                        => ['get',      'users_entity/{id}',                              'UserController@getUserEntity'                                      ],
@@ -2180,6 +2182,7 @@ class Route
         'oauth_token_fetch_multiple'               => ['get',      'oauth/tokens',                                   'OAuthTokenController@getAll'                                       ],
         'oauth_token_fetch'                        => ['get',      'oauth/tokens/{id}',                              'OAuthTokenController@get'                                          ],
         'oauth_token_revoke'                       => ['put',      'oauth/tokens/{id}/revoke',                       'OAuthTokenController@revoke'                                       ],
+        'oauth_token_create_for_apple_watch'       => ['post',     'oauth/tokens/apple-watch',                       'OAuthTokenController@createForAppleWatch'                          ],
         'oauth_application_create'                 => ['post',     'oauth/applications',                             'OAuthApplicationController@create'                                 ],
         'oauth_application_create_partner'         => ['post',     'oauth/applications/partner',                     'OAuthApplicationController@createPartner'                          ],
         'oauth_application_fetch_multiple'         => ['get',      'oauth/applications',                             'OAuthApplicationController@getMultiple'                            ],
@@ -3939,6 +3942,8 @@ class Route
         'update_shipping_slabs',
         'update_cod_slabs',
         'banking_axis_invitations_send',
+
+        'user_fetch_self',
     ];
 
     // Only routes defined in internalApps go here
@@ -4598,6 +4603,7 @@ class Route
         'user_login_2fa_setup_mobile',
         'user_access',
         'user_fetch',
+        'user_fetch_self',
         'user_change_password',
         'user_merchant_upgrade',
         'user_edit_self',
@@ -5418,6 +5424,9 @@ class Route
 
         //payout status reason mapping
         'payout_status_to_reason_mapping',
+
+        'oauth_token_create_for_apple_watch',
+
         'transaction_statement_fetch_multiple_for_banking',
     ];
     // These will run on internal auth with the assurance
@@ -8067,6 +8076,7 @@ class Route
         'purpose_code_fetch'                  => Permission::VIEW_MERCHANT,
         'merchant_patch_purpose_code'         => Permission::EDIT_MERCHANT,
         'user_fetch_purpose_code'             => '*',
+        'oauth_token_create_for_apple_watch' => '*',
         'oauth_token_fetch_multiple'          => Permission::MERCHANT_GET_OAUTH_TOKEN,
     ];
 
@@ -9500,6 +9510,8 @@ class Route
             'state_fetch',
 
             'growth_get_public_asset_details',
+
+            'oauth_token_create_for_apple_watch',
         ],
 
         'admin_dashboard' => [
@@ -13161,6 +13173,18 @@ class Route
         'disable_low_balance_config_admin',
         'delete_low_balance_config_admin',
         'list_low_balance_config_admin',
+
+        'oauth_token_create_for_apple_watch',
+    ];
+
+
+    // For routes that need to exposed on OAuth but not Private Auth
+    // NOTE: Route needs to exist in some other Auth (Proxy) otherwise it won't get registered
+    // TODO: Need to move `payout_create_with_otp`, `user_otp_create`, `payout_approve`, `payout_reject` here
+    const OAUTH_SPECIFIC_ROUTES = [
+        'payouts_summary',
+        'banking_accounts_list',
+        'user_fetch_self'
     ];
 
     public static $routesWithV2Prefix = [
@@ -13455,6 +13479,7 @@ class Route
         'merchant_get_tags'                                 => HeartbeatLagChecker::MASTER,
         'merchant_activation_details'                       => HeartbeatLagChecker::MASTER,
         'user_fetch'                                        => HeartbeatLagChecker::MASTER,
+        'user_fetch_self'                                   => HeartbeatLagChecker::MASTER,
         'invoice_fetch'                                     => HeartbeatLagChecker::MASTER,
         'invoice_view_live'                                 => HeartbeatLagChecker::MASTER,
         'merchant_features_fetch'                           => HeartbeatLagChecker::MASTER,
@@ -13515,6 +13540,7 @@ class Route
         'payout_links_shopify_app_customers_redact'         => HeartbeatLagChecker::SLAVE,
         'payout_links_shopify_app_shop_redact'              => HeartbeatLagChecker::SLAVE,
         'payout_links_shopify_customers_data_request'       => HeartbeatLagChecker::SLAVE,
+        'oauth_token_create_for_apple_watch'                => HeartbeatLagChecker::MASTER,
     ];
 
     public static $terminalsServiceFormRequestsRoutes = [

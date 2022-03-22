@@ -3980,6 +3980,23 @@ return [
         ],
     ],
 
+    'testGetUserViaOAuth'  => [
+        'request' => [
+            'url'       => '/users_self',
+            'method'    => 'GET',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
+            'content'   => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'contact_mobile'          => '9876543210',
+            ],
+        ],
+    ],
+
     'testGetUserForAdminFromMerchantDashboardApp' => [
         'request'  => [
             'url'     => '/users-admin/',

@@ -1356,6 +1356,43 @@ return [
         ],
     ],
 
+    'testApprovePayoutInAppleWatchWithBearerAuth' => [
+        'request'  => [
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
+            'method'  => 'POST',
+            'url'     => '/payouts/{id}/approve',
+            'content' => [
+                'token'        => 'BUIj3m2Nx2VvVj',
+                'otp'          => '0007',
+                'user_comment' => 'Approving',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testRejectPayoutInAppleWatchWithBearerAuth' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts/{id}/reject',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
+            'content' => [
+                'queue_if_low_balance'  => 0,
+                'user_comment' => 'Rejecting',
+                'force_reject' => false
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
     'testApprovePayoutWithComment' => [
         'request'  => [
             'server' => [

@@ -247,7 +247,9 @@ class Authenticate
         // Only private auth endpoints may be accessed
         // with OAuth bearer tokens
         //
-        if (in_array($route, Route::$private, true) === false)
+        // A separate array is maintained for routes which need to accessed via OAuth but not Basic Auth
+        $bearerAuthRoutes = array_merge(Route::$private,Route::OAUTH_SPECIFIC_ROUTES);
+        if (in_array($route, $bearerAuthRoutes, true) === false)
         {
             return ApiResponse::routeNotFound();
         }

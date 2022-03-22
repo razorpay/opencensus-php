@@ -4133,7 +4133,8 @@ class Core extends Base\Core
 
         if ((($auth->isAdminAuth() === true) ||
                 ($auth->isProxyAuth() === false)) and
-                ($auth->isSlackApp() === false))
+                ($auth->isSlackApp() === false) and
+                (!$auth->isAppleWatchApp()))
         {
             throw new Exception\BadRequestValidationFailureException('Auth is not proxy for payout approval');
         }

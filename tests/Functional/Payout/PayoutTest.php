@@ -3018,6 +3018,151 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals(false, $firstActionChecker['approved']);
     }
 
+    public function testApprovePayoutInAppleWatchWithBearerAuth()
+    {
+        $this->mockLedgerSns(0);
+
+        $this->liveSetUp();
+
+        $client = factory(Client\Entity::class)->create(['environment' => 'prod']);
+
+        $accessToken = $this->generateOAuthAccessToken(['scopes'=> ['apple_watch_read_write'], 'mode' => 'live', 'client_id' => $client->getId()], 'prod');
+
+        $this->fixtures->feature->create([
+            Feature\Entity::ENTITY_TYPE => Feature\Constants::APPLICATION,
+            Feature\Entity::ENTITY_ID   => $client->application_id,
+            Feature\Entity::NAME        => Feature\Constants::RAZORPAYX_FLOWS_VIA_OAUTH
+        ]);
+
+        $this->fixtures->user->createUserForMerchant('10000000000000', ['id' => '20000000000000', 'contact_mobile' => 9999999999],'owner', 'live');
+
+        $this->fixtures->user->createUserForMerchant('10000000000000', ['id' => '70000000000000', 'contact_mobile' => 9999999999],'owner', 'live');
+
+        $this->fixtures->user->createUserMerchantMapping([
+            'user_id'     => '20000000000000',
+            'merchant_id' => '10000000000000',
+            'product'     => 'banking',
+            'role'       => 'owner'
+        ], 'live');
+
+        $this->fixtures->user->createUserMerchantMapping([
+            'user_id'     => '70000000000000',
+            'merchant_id' => '10000000000000',
+            'product'     => 'banking',
+            'role'       => 'admin'
+        ], 'live');
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $payout = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
+
+        $this->ba->oauthBearerAuth($accessToken);
+
+        $expectedProperties = [
+            'payout' => [
+                'status' => 'pending',
+                'created_by' => 'api_user',
+            ],
+            'merchant' => [
+                'id' => '10000000000000',
+                'name' => 'Test Merchant',
+            ],
+            'error_code' => 'SUCCESS',
+            'properties' => [
+                'merchant_id' => '10000000000000',
+                'request' => 'payout_approve',
+                'user_role' => 'owner',
+                'channel' => 'apple_watch',
+            ]
+        ];
+
+        $this->verifyPayoutsEvent($expectedProperties);
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/payouts/' . $payout['id'] . '/approve';
+
+        $firstApprovalResponse = $this->startTest();
+
+        $firstActionChecker = $this->getDbLastEntity('action_checker', 'live');
+        $this->assertEquals('pending', $firstApprovalResponse['status']);
+        $this->assertEquals('Approving', $firstActionChecker['user_comment']);
+        $this->assertEquals(true, $firstActionChecker['approved']);
+    }
+
+    public function testRejectPayoutInAppleWatchWithBearerAuth()
+    {
+        $this->mockLedgerSns(0);
+
+        $this->liveSetUp();
+
+        $client = factory(Client\Entity::class)->create(['environment' => 'prod']);
+
+        $this->fixtures->feature->create([
+            Feature\Entity::ENTITY_TYPE => Feature\Constants::APPLICATION,
+            Feature\Entity::ENTITY_ID   => $client->application_id,
+            Feature\Entity::NAME        => Feature\Constants::RAZORPAYX_FLOWS_VIA_OAUTH
+        ]);
+
+        $accessToken = $this->generateOAuthAccessToken(['scopes'=>['apple_watch_read_write'], 'mode' => 'live', 'client_id' => $client->getId()], 'prod');
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => Feature\Constants::RAZORPAYX_FLOWS_VIA_OAUTH]);
+
+        $this->fixtures->user->createUserForMerchant('10000000000000', ['id' => '20000000000000', 'contact_mobile' => 9999999999],'owner', 'live');
+
+        $this->fixtures->user->createUserForMerchant('10000000000000', ['id' => '70000000000000', 'contact_mobile' => 9999999999],'owner', 'live');
+
+        $this->fixtures->user->createUserMerchantMapping([
+            'user_id'     => '20000000000000',
+            'merchant_id' => '10000000000000',
+            'product'     => 'banking',
+            'role'       => 'owner'
+        ], 'live');
+
+        $this->fixtures->user->createUserMerchantMapping([
+            'user_id'     => '70000000000000',
+            'merchant_id' => '10000000000000',
+            'product'     => 'banking',
+            'role'       => 'admin'
+        ], 'live');
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $payout = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
+
+        $this->ba->oauthBearerAuth($accessToken);
+
+        $expectedProperties = [
+            'payout' => [
+                'status' => 'pending',
+                'created_by' => 'api_user',
+            ],
+            'merchant' => [
+                'id' => '10000000000000',
+                'name' => 'Test Merchant',
+            ],
+            'error_code' => 'SUCCESS',
+            'properties' => [
+                'merchant_id' => '10000000000000',
+                'request' => 'payout_reject',
+                'user_role' => 'owner',
+                'channel' => 'apple_watch',
+            ]
+        ];
+
+        $this->verifyPayoutsEvent($expectedProperties);
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/payouts/' . $payout['id'] . '/reject';
+
+        $firstApprovalResponse = $this->startTest();
+
+        $firstActionChecker = $this->getDbLastEntity('action_checker', 'live');
+        $this->assertEquals('rejected', $firstApprovalResponse['status']);
+        $this->assertEquals('Rejecting', $firstActionChecker['user_comment']);
+        $this->assertEquals(false, $firstActionChecker['approved']);
+    }
+
     public function testGetPayoutsWithBearerAuth()
     {
         $this->mockLedgerSns(0);

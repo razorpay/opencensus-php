@@ -70,4 +70,23 @@ class OAuthTokenController extends Controller
 
         return $entity;
     }
+
+    /**
+     * This route is used to generate OAuth token for Apple Watch without authorization step
+     * (Since app is internal)
+     */
+    public function createForAppleWatch()
+    {
+        $input = Request::all();
+
+        $user = $this->auth->getUser();
+
+        $merchant = $this->auth->getMerchant();
+
+        $mode = $this->auth->getMode();
+
+        $response = $this->service()->createForAppleWatch($input,$user,$merchant,$mode);
+
+        return ApiResponse::json($response);
+    }
 }
