@@ -14,7 +14,7 @@
         "laravel/tinker": "^2.5",
         "opencensus/opencensus-exporter-jaeger": "^0.1.2-alpha",
         "predis/predis": "^1.1",
-        "opencensus/opencensus": "v0.7.7.0-alpha"
+        "opencensus/opencensus": "v0.7.7.1"
     },
     "require-dev": {
         "facade/ignition": "^2.5",
