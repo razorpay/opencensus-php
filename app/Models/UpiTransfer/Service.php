@@ -167,53 +167,54 @@ class Service extends Base\Service
 
         $gatewayClass = $this->app['gateway']->gateway($gateway);
 
-        $this->terminal = $this->getTerminalFromCallback($input, $gatewayClass, $gateway);
+//        $this->terminal = $this->getTerminalFromCallback($input, $gatewayClass, $gateway);
 
         $gatewayClass->setGatewayParams($input, $this->mode, $this->terminal);
 
         return $gatewayClass;
     }
 
-    protected function getTerminalFromCallback($gatewayRequest, $gatewayClass, $gateway)
-    {
-        if (method_exists($gatewayClass, 'getTerminalDetailsFromCallbackIfApplicable') !== true)
-        {
-            return null;
-        }
+    /*
+   protected function getTerminalFromCallback($gatewayRequest, $gatewayClass, $gateway)
+   {
+       if (method_exists($gatewayClass, 'getTerminalDetailsFromCallbackIfApplicable') !== true)
+       {
+           return null;
+       }
 
-        $terminalDetails = $gatewayClass->getTerminalDetailsFromCallbackIfApplicable($gatewayRequest);
+      $terminalDetails = $gatewayClass->getTerminalDetailsFromCallbackIfApplicable($gatewayRequest);
 
-        //Earlier flow was,to create a new terminal with exactly same configs every time a merchant requests for a new custom prefix for virtual vpa
-        //From now on all the payment will go via single terminal.
-        $terminalDetails[Terminal\Entity::MERCHANT_ID] = Account::SHARED_ACCOUNT;
+       //Earlier flow was,to create a new terminal with exactly same configs every time a merchant requests for a new custom prefix for virtual vpa
+       //From now on all the payment will go via single terminal.
+       $terminalDetails[Terminal\Entity::MERCHANT_ID] = Account::SHARED_ACCOUNT;
 
-        $terminal = $this->repo->terminal->findByGatewayAndTerminalData($gateway, $terminalDetails);
+       $terminal = $this->repo->terminal->findByGatewayAndTerminalData($gateway, $terminalDetails);
 
-        if ($terminal !== null)
-        {
-            return $terminal;
-        }
+       if ($terminal !== null)
+       {
+           return $terminal;
+       }
 
-        unset($terminalDetails[Terminal\Entity::MERCHANT_ID]);
+       unset($terminalDetails[Terminal\Entity::MERCHANT_ID]);
 
-        $terminals = $this->repo->terminal->getByParams($terminalDetails);
+       $terminals = $this->repo->terminal->getByParams($terminalDetails);
 
-        if ($terminals->count() !== 0)
-        {
-            return $terminals->first();
-        }
-        else
-        {
-            throw new Exception\LogicException(
-                'No terminal found for upi transfer',
-                null,
-                [
-                    'gateway_response' => $gatewayRequest,
-                    'gateway'          => $gateway,
-                ]
-            );
-        }
-    }
+       if ($terminals->count() !== 0)
+       {
+           return $terminals->first();
+       }
+       else
+       {
+           throw new Exception\LogicException(
+               'No terminal found for upi transfer',
+               null,
+               [
+                   'gateway_response' => $gatewayRequest,
+                   'gateway'          => $gateway,
+               ]
+           );
+       }
+    }*/
 
     protected function getTerminalFromGatewayResponse($gatewayResponse, $gateway, $gatewayClass)
     {

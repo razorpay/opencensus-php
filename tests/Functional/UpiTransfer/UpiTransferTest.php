@@ -169,6 +169,55 @@ class UpiTransferTest extends TestCase
         $this->assertNotNull($fta['vpa_id']);
     }
 
+    public function testProcessUpiTransferAndFetch()
+    {
+        $this->processUpiTransfer();
+
+        $upiTransfer = $this->getLastEntity('upi_transfer', true);
+        $payment     = $this->getLastEntity('payment', true);
+        $upi         = $this->getLastEntity('upi', true);
+
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(10000, $payment['amount']);
+        $this->assertEquals(Gateway::UPI_ICICI, $payment['gateway']);
+        $this->assertEquals('vpa', $payment['receiver_type']);
+
+        $this->assertEquals($upiTransfer['payment_id'], $payment['id']);
+        $this->assertEquals($this->vpa['address'], $upiTransfer['payee_vpa']);
+
+        $this->assertNotNull($upi['payment_id']);
+        $this->assertTrue(isset($upi['type']));
+        $this->assertEquals($upi['type'], 'pay');
+
+        $this->assertEquals($upiTransfer['expected'], true);
+
+        $this->assertEquals(null, $upiTransfer['unexpected_reason']);
+
+        // Being used in scrooge checks
+        $this->gateway = $payment['gateway'];
+
+        $response = $this->fetchPaymentForUpiTransfer($payment['id']);
+
+        $this->assertEquals($payment['id'], $response['payment_id']);
+        $this->assertEquals($upiTransfer['id'], $response['id']);
+        $this->assertEquals(10000, $response['amount']);
+    }
+
+    protected function fetchPaymentForUpiTransfer($paymentId)
+    {
+        $this->ba->privateAuth();
+
+        $request = array(
+            'method'    => 'GET',
+            'url'       => '/payments/'.$paymentId.'/upi_transfer'
+        );
+
+        $payment = $this->makeRequestAndGetContent($request);
+
+        return $payment;
+    }
+
     public function testFetchPaymentForBankReference()
     {
         $vpa = $this->createVirtualAccount('test', '10000000000000', 'vpVpaIcici');
