@@ -1224,6 +1224,13 @@ return [
         'timeout'       => env('APP_SHIPPING_SERVICE_TIMEOUT', 3),
     ],
 
+    'rto_prediction_service' => [
+        'url'           => env('APP_RTO_PREDICTION_SERVICE_URL'),
+        'username'      => 'api',
+        'secret'        => env('APP_RTO_PREDICTION_SERVICE_SECRET'),
+        'timeout'       => env('APP_RTO_PREDICTION_SERVICE_TIMEOUT', 3),
+    ],
+
     'tokenization' => [
         'secret' => env('TOKENIZATION_SECRET'),
     ],

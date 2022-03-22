@@ -168,6 +168,24 @@ class ThirdWatchService
             $this->enrichAddressForTW($orderId, $address);
             $kafkaResult = (new ThirdWatchClient())->sendAddressToKafka($key, $address);
 
+            try
+            {
+                $response = $this->app['rto_prediction_provider_service']->evaluate($input);
+//                if (strcmp($response['result']['action'], "allow") == 0)
+//                {
+//                    return ['cod' => true];
+//                }
+//                return ['cod' => false];
+            }
+            catch (Exception\BadRequestException $e)
+            {
+//                return ['cod' => false];
+            }
+            catch (\Exception $e)
+            {
+//                return ['cod' => true];
+            }
+
             if ($kafkaResult === false)
             {
                 return ['cod' => false];
