@@ -13,7 +13,6 @@ class Sns implements IntegrationInterface
             return;
         }
         opencensus_trace_method('Aws\AwsClient', 'execute', [static::class, 'handleExecute']);
-
     }
 
 
