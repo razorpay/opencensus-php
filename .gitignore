@@ -51,6 +51,7 @@ storage/files/qrcodes/*
 
 #intellij
 api.iml
+.idea
 
 #Central Repo Error Codes
 error_codes/
