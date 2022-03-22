@@ -3403,6 +3403,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_GSTIN_VERIFICATION_FAILED                    = 'MERCHANT_GSTIN_VERIFICATION_FAILED';
     const MERCHANT_COMPANY_SEARCH_FAILED                        = 'MERCHANT_COMPANY_SEARCH_FAILED';
     const COMPANY_SEARCH_EXHAUSTED                              = 'COMPANY_SEARCH_EXHAUSTED';
+    const REWARD_VALIDATION_EXHAUSTED                           = 'REWARD_VALIDATION_EXHAUSTED';
 
     const GET_GST_DETAILS_EXHAUSTED                             = 'GET_GST_DETAILS_EXHAUSTED';
     const GET_GST_DETAILS_FAILED                                = 'GET_GST_DETAILS_FAILED';
