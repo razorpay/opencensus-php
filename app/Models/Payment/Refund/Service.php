@@ -116,7 +116,7 @@ class Service extends Base\Service
             $input[Entity::SPEED_REQUESTED]            = $refund->getSpeedRequested();
 
         }
-        catch (\Exception $e)
+        catch (\Throwable $e)
         {
             // RZP Exceptions have public error code & description which can be exposed in the output file
             $this->trace->traceException($e, null, TraceCode::BATCH_PROCESSING_ERROR, $tracePayload);

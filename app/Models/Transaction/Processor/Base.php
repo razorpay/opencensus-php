@@ -952,7 +952,7 @@ abstract class Base extends BaseCore
     // Eg - Another usecase is cardlessemi walnut369, the net settlement amount depends on discount applied during credit
     protected function getDiscountIfApplicable(Payment\Entity $payment)
     {
-        if (($payment->isCardlessEmiWalnut369() === true) and ($this->merchant->isFeatureEnabled(Feature\Constants::SOURCED_BY_WALNUT369) === true))
+        if (($payment->isCardlessEmiWalnut369() === true) and ($payment->merchant->isFeatureEnabled(Feature\Constants::SOURCED_BY_WALNUT369) === true))
         {
             if ($payment->getBaseAmount() !== $this->txn->getAmount())
             {
