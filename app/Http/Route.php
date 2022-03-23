@@ -219,6 +219,7 @@ class Route
         'payment_fetch_refund_by_id'               => ['get',      'payments/{paymentId}/refunds/{rfndId}',          'PaymentController@getRefundByRefundAndPaymentId'                   ],
         'payment_fetch_transaction'                => ['get',      'payments/{id}/transaction',                      'PaymentController@getTransactionForPayment'                        ],
         'payment_timeout'                          => ['post',     'payments/timeout',                               'PaymentController@postTimeout'                                     ],
+        'payment_timeout_new'                      => ['post',     'payments/{id}/timeout_new',                      'PaymentController@postTimeoutNew'                                     ],
         'payment_auth_timeout'                     => ['post',     'payments/auth/timeout',                          'PaymentController@postAuthTimeout'                                 ],
         'payment_auto_capture'                     => ['post',     'payments/autocapture',                           'PaymentController@postAutoCapture'                                 ],
         'payment_auto_capture_email'               => ['get',      'payments/autocapture/email',                     'PaymentController@getAutoCaptureEmail'                             ],
@@ -4450,6 +4451,7 @@ class Route
 
         'add_verify_disabled_gateway',
         'p2p_retrieve_banks_cron',
+        'payment_timeout_new',
         'payment_verify_new',
         'user_fetch_entity',
         'bulk_submerchant_assign',
@@ -12264,6 +12266,7 @@ class Route
             'internal_transactions',
             'payment_order_revive',
             'payment_verify_new',
+            'payment_timeout_new',
             'internal_merchant_fetch',
             'payment_notify',
             'order_fetch_by_id_internal_admin',

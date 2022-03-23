@@ -4152,6 +4152,114 @@ class Service extends Base\Service
         return $data;
     }
 
+    public function timeoutPaymentsNew($paymentId)
+    {
+        $now = time();
+
+        $data = [];
+        $data['retry_timeout'] = false;
+
+        $payment = $this->repo->payment->find($paymentId);
+
+        if (isset($payment) === false)
+        {
+            $this->trace->info(
+                TraceCode::PAYMENT_TIMEOUT_SCHEDULER_INVALID_ID,
+                [
+                    'payment_id' => $paymentId
+                ]);
+
+            return $data;
+        }
+
+        $data['payment'] = $payment->toArrayPublic();
+
+        $extraProperties = [
+            'is_pushed_to_kafka'  => $payment->getIsPushedToKafka(),
+        ];
+
+        $shouldTimeout = $payment->shouldTimeout($now);
+
+        $this->trace->info(
+            TraceCode::PAYMENT_TIMEOUT_SCHEDULER_INITIATED,
+            [
+                'payment_id' => $payment->getId()
+            ]);
+
+        $this->app['diag']->trackTimeoutPaymentEvent(EventCode::PAYMENT_TIMEOUT_SCHEDULER_INITIATED, $payment, null, $extraProperties);
+
+        if($payment->isCreated() !== true)
+        {
+            $this->app['diag']->trackTimeoutPaymentEvent(EventCode::PAYMENT_TIMEOUT_SCHEDULER_STATUS_FAILURE, $payment, null, $extraProperties);
+
+            $this->trace->info(
+                TraceCode::PAYMENT_TIMEOUT_SCHEDULER_STATUS_NOT_CREATED,
+                [
+                    'payment_id'        => $payment->getId(),
+                    'payment_status'    => $payment->getStatus()
+                ]);
+
+            return $data;
+        }
+        else if($shouldTimeout !== true)
+        {
+            $this->app['diag']->trackTimeoutPaymentEvent(EventCode::PAYMENT_TIMEOUT_SCHEDULER_TIME_FAILURE, $payment, null, $extraProperties);
+
+            $this->trace->info(
+                TraceCode::PAYMENT_TIMEOUT_SCHEDULER_SHOULD_NOT_TIMEOUT,
+                [
+                    'payment_id' => $payment->getId()
+                ]);
+
+            return $data;
+        }
+        else
+        {
+            $this->trace->info(
+                TraceCode::PAYMENT_TIMEOUT_SCHEDULER_PROCESSING_STARTED,
+                [
+                    'payment_id'       => $paymentId,
+                ]);
+
+            $this->repo->transaction(function () use ($payment, & $data, $extraProperties)
+            {
+                $this->repo->payment->lockForUpdateAndReload($payment);
+
+                try
+                {
+                    $this->getNewProcessor($payment->merchant)
+                        ->setPayment($payment)
+                        ->timeoutPayment();
+
+                    $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_AUTHORIZATION_DROPPED, $payment);
+
+                    $payment->reload();
+
+                    $data['payment'] = $payment->toArrayPublic();
+
+                    $this->trace->info(
+                        TraceCode::PAYMENT_TIMEOUT_SCHEDULER_SUCCESS,
+                        [
+                            'payment_id'       => $payment->getId(),
+                            'payment_status'   => $payment->getStatus()
+                        ]);
+
+                    $this->app['diag']->trackTimeoutPaymentEvent(EventCode::PAYMENT_TIMEOUT_SCHEDULER_SUCCESS, $payment, null, $extraProperties);
+                }
+                catch (\Throwable $e)
+                {
+                    $this->trace->traceException($e);
+
+                    $this->app['diag']->trackTimeoutPaymentEvent(EventCode::PAYMENT_TIMEOUT_SCHEDULER_ERROR, $payment, $e, $extraProperties);
+
+                    $data['retry_timeout'] = true;
+                }
+            });
+        }
+
+        return $data;
+    }
+
     public function updateReference6($id)
     {
         $response = [];

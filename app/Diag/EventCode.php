@@ -352,6 +352,31 @@ class EventCode
         'name'  => 'payment.verification.status.not.for.verify'
     ];
 
+    const PAYMENT_TIMEOUT_SCHEDULER_INITIATED = [
+        'group' => 'timeout',
+        'name'  => 'payment.timeout.scheduler.initiated'
+    ];
+
+    const PAYMENT_TIMEOUT_SCHEDULER_STATUS_FAILURE   = [
+        'group' => 'timeout',
+        'name'  => 'payment.timeout.scheduler.status.failure'
+    ];
+
+    const PAYMENT_TIMEOUT_SCHEDULER_TIME_FAILURE  = [
+        'group' => 'timeout',
+        'name'  => 'payment.timeout.scheduler.time.failure'
+    ];
+
+    const PAYMENT_TIMEOUT_SCHEDULER_SUCCESS  = [
+        'group' => 'timeout',
+        'name'  => 'payment.timeout.scheduler.success'
+    ];
+
+    const PAYMENT_TIMEOUT_SCHEDULER_ERROR  = [
+        'group' => 'timeout',
+        'name'  => 'payment.timeout.scheduler.error'
+    ];
+
     const PAYMENT_VERIFICATION_SCHEDULER_VERIFY_INITIATED = [
         'group' => 'verification',
         'name'  => 'payment.verification.scheduler.verify.initiated'

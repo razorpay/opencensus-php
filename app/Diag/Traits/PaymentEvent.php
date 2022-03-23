@@ -23,6 +23,34 @@ trait PaymentEvent
         $this->trackEvent(PE::EVENT_TYPE, PE::EVENT_VERSION, $eventData, $properties);
     }
 
+    public function trackTimeoutPaymentEvent(
+        array $event,
+        Payment\Entity $payment = null,
+        \Throwable $ex = null,
+        array $customProperties = [])
+    {
+        $metaDetails = [
+            'metadata' => [
+                'payment' => [
+                    'id'        => $payment->getPublicId(),
+                    'status'    => $payment->getStatus()
+                ]
+            ],
+            'read_key' => array('payment.id'),
+            'write_key' => 'payment.id'
+        ];
+
+        $customProperties +=[
+            'status'              => $payment->getStatus(),
+            'timeout_window'      => $payment->getTimeoutWindow(),
+            'created_at'          => $payment->getCreatedAt(),
+            'internal_error_code' => $payment->getInternalErrorCode(),
+            'error_desc'          => $payment->getErrorDescription(),
+        ];
+
+        $this->trackPaymentEventV2($event, $payment, $ex, $metaDetails, $customProperties);
+    }
+
     public function trackVerifyPaymentEvent(
         array $event,
         Payment\Entity $payment = null,

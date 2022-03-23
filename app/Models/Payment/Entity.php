@@ -4448,7 +4448,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return $features;
     }
 
-    protected function getTimeoutWindow()
+    public function getTimeoutWindow()
     {
         $gateway = $this->getGateway();
 
