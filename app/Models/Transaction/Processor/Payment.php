@@ -162,7 +162,8 @@ class Payment extends Base
 
             return false;
         }
-        else if ($this->source->merchant->isFeatureEnabled(Feature\Constants::ASYNC_BALANCE_UPDATE) === true)
+        else if (($this->source->merchant->isFeatureEnabled(Feature\Constants::ASYNC_BALANCE_UPDATE) === true) and
+            ($this->source->isExternal() === false))
         {
             return false;
         }
@@ -183,7 +184,8 @@ class Payment extends Base
 
     protected function shouldMoveTxnFillToAsync(): bool
     {
-        return $this->source->merchant->isFeatureEnabled(Feature\Constants::ASYNC_TXN_FILL_DETAILS);
+        return (($this->source->merchant->isFeatureEnabled(Feature\Constants::ASYNC_TXN_FILL_DETAILS)) and
+            ($this->source->isExternal() === false));
     }
 
     protected function fillEmptyTxnFeesAndAmount()

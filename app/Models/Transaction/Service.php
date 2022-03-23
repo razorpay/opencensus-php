@@ -426,6 +426,8 @@ class Service extends Base\Service
             $payment->card()->associate($card);
         }
 
+        $payment->setExternal(true);
+
         $txn = (new Transaction\Core)->createUpdateLedgerTransaction($payment);
 
         return $txn->toArrayPublic();
