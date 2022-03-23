@@ -372,4 +372,12 @@ export default {
     // prod experiment id
     'Izqj4llwT0wcZq',
   ],
+  cross_sell_edu_exp: [
+    // prod experiment id
+    'J7KsRnA49jUwMh',
+  ],
+  cross_sell_other_exp: [
+    // prod experiment id
+    'J7Kt1EpzaLk9dQ',
+  ],
 };

@@ -25,6 +25,7 @@ import NitroICICIModal from '../../../merchant/components/Announcements/NitroICI
 import NitroMidmarketRemarketingModal from '../../../merchant/components/Announcements/NitroMMRemarketingBanner/NitroMidmarketRemarketingModal';
 import NitroICICINewSegmentModal from '../../../merchant/components/Announcements/NitroICICINewSegmentsBanner/NitroICICINewSegmentModal';
 import UltraCampaginModal from '../../../merchant/components/Announcements/UltraCampagin/UltraCampaginModal';
+import CrossSellSubscriptionsModal from 'merchant/components/Announcements/CrossSellSubscriptions/CrossSellSubscriptionsModal';
 
 const BENEFITS = {
   other: [
@@ -784,7 +785,21 @@ class DetailView extends React.Component {
 
   render() {
     const showNitroFormFields = this.state.showNitroFormFields;
-    const { isProjectNitroCorporateCard, isNitroFormFillEnabled } = this.props.user;
+    const {
+      isProjectNitroCorporateCard,
+      isNitroFormFillEnabled,
+      isCSSEducationEnabled,
+      isCSSOtherBusinessesEnabled,
+      isNitroIciciBrandedCampaignEnabled,
+      isNitroIciciRemarketingCampaignEnabled,
+      isNitroNitromidmarketRemarketingCampaignEnabled,
+      isNitroCCCampaignEnabled,
+      isNewNitroICICIBrandedCampaignEnabled,
+      isNewNitroICICIPlusCardOfferCampaignEnabled,
+      isNewNitroICICIBaseCampaignEnabled,
+      isUCCapitalCardsOnlyCampaignEnabled,
+      isUCCapitalLOCOnlyCampaignEnabled,
+    } = this.props.user;
     const content = isProjectNitroCorporateCard ? BENEFITS.corporateCards : BENEFITS.other;
 
     if (this.showKeystoneModal)
@@ -792,13 +807,13 @@ class DetailView extends React.Component {
         <KeystoneModal user={this.props.user} save={this.save} tracking={this.props.tracking} />
       );
     if (showNitroFormFields) return <InfoForm save={this.save} tracking={this.props.tracking} />;
-    if (this.props.user.isNitroIciciBrandedCampaignEnabled)
-      return <NitroICICIModal save={this.save} />;
-    if (this.props.user.isNitroIciciRemarketingCampaignEnabled)
-      return <NitroICICIModal save={this.save} />;
-    if (this.props.user.isNitroNitromidmarketRemarketingCampaignEnabled)
+    if (isCSSEducationEnabled || isCSSOtherBusinessesEnabled)
+      return <CrossSellSubscriptionsModal user={this?.props?.user} />;
+    if (isNitroIciciBrandedCampaignEnabled) return <NitroICICIModal save={this.save} />;
+    if (isNitroIciciRemarketingCampaignEnabled) return <NitroICICIModal save={this.save} />;
+    if (isNitroNitromidmarketRemarketingCampaignEnabled)
       return <NitroMidmarketRemarketingModal save={this.save} />;
-    if (this?.props?.user?.isNitroCCCampaignEnabled)
+    if (isNitroCCCampaignEnabled)
       return (
         <NitroCCCampaignModal
           user={this.props.user}
@@ -807,9 +822,9 @@ class DetailView extends React.Component {
         />
       );
     if (
-      this?.props?.user?.isNewNitroICICIBrandedCampaignEnabled ||
-      this?.props?.user?.isNewNitroICICIPlusCardOfferCampaignEnabled ||
-      this?.props?.user?.isNewNitroICICIBaseCampaignEnabled
+      isNewNitroICICIBrandedCampaignEnabled ||
+      isNewNitroICICIPlusCardOfferCampaignEnabled ||
+      isNewNitroICICIBaseCampaignEnabled
     )
       return (
         <NitroICICINewSegmentModal
@@ -818,10 +833,7 @@ class DetailView extends React.Component {
           tracking={this?.props?.tracking}
         />
       );
-    if (
-      this?.props?.user?.isUCCapitalCardsOnlyCampaignEnabled ||
-      this?.props?.user?.isUCCapitalLOCOnlyCampaignEnabled
-    )
+    if (isUCCapitalCardsOnlyCampaignEnabled || isUCCapitalLOCOnlyCampaignEnabled)
       return (
         <UltraCampaginModal
           user={this?.props?.user}

@@ -524,6 +524,14 @@ export default class User {
     return getSplitzExperimentVariant('QR_code_experiment')?.variables?.result === 'on';
   }
 
+  get isCSSEducationEnabled() {
+    return getSplitzExperimentVariant('cross_sell_edu_exp')?.variables?.result === 'on';
+  }
+
+  get isCSSOtherBusinessesEnabled() {
+    return getSplitzExperimentVariant('cross_sell_other_exp')?.variables?.result === 'on';
+  }
+
   get isLoanCustomAmountRepaymentEnabled() {
     return this.getExpStatus('loans_allow_custom_amount_repayment');
   }
