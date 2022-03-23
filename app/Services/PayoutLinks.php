@@ -235,7 +235,7 @@ class PayoutLinks
         //blacklisted_merchants => off
         //otherwise => on
         $variant = $this->app['razorx']->getTreatment($merchant->getId(),
-            Merchant\RazorxTreatment::RX_PAYOUT_LINK_WORKFLOW,
+            Merchant\RazorxTreatment::RX_PAYOUT_LINK_WORKFLOW_GA,
             $this->app['rzp.mode'] ?? 'live');
 
         return ($variant === 'on');
