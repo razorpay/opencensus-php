@@ -1111,6 +1111,31 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE,
         ],
     ],
+    'testFailAddDisableAmazonISPostDpdAdmin'=>[
+        'request'  => [
+            'url'     => '/features',
+            'method'  => 'post',
+            'content' => [
+                'names'       => ['disable_amazonis_post_dpd'],
+                'entity_type' => 'merchant',
+                'entity_id'   => '10000000000000',
+                'should_sync' => true
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE,
+        ],
+    ],
     'testAddMerchantDisableOnDemandForLoanFeatureInternalAuth'=>[
         'request'  => [
             'url'     => '/internal/features',
@@ -1210,6 +1235,27 @@ return [
             'content' => [
                 [
                     'name' => 'disable_loc_post_dpd',
+                    'entity_id' => '10000000000000',
+                    'entity_type' => 'merchant',
+                ]
+            ]
+        ]
+    ],
+    'testAddDisableAmazonISPostDpdInternal'=>[
+        'request'  => [
+            'url'     => '/internal/features',
+            'method'  => 'post',
+            'content' => [
+                'names'       => ['disable_amazonis_post_dpd'],
+                'entity_type' => 'merchant',
+                'entity_id'   => '10000000000000',
+                'should_sync' => true
+            ]
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'name' => 'disable_amazonis_post_dpd',
                     'entity_id' => '10000000000000',
                     'entity_type' => 'merchant',
                 ]

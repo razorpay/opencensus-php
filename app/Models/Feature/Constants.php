@@ -548,6 +548,12 @@ class Constants
     const DISABLE_LOC_POST_DPD = "disable_loc_post_dpd";
 
     /**
+     * Disables amazon_is post dpd since merchant did not repay
+     * Controlled by collections service
+     */
+    const DISABLE_AMAZON_IS_POST_DPD = "disable_amazonis_post_dpd";
+
+    /**
      * Flag to use settlement/ondemand route for ondemand settlement .
      */
     const USE_SETTLEMENT_ONDEMAND      = 'use_settlement_ondemand';
@@ -1536,6 +1542,7 @@ class Constants
         self::DISABLE_CARDS_POST_DPD          => true,
         self::DISABLE_LOANS_POST_DPD          => true,
         self::DISABLE_LOC_POST_DPD            => true,
+        self::DISABLE_AMAZON_IS_POST_DPD      => true,
         self::LOC_STAGE_1                     => true,
         self::LOC_STAGE_2                     => true,
         self::NPS_SURVEY_PAYMENT_PAGES        => true,
@@ -2352,6 +2359,11 @@ class Constants
         self::DISABLE_LOC_POST_DPD  =>  [
             'feature'       =>  self::DISABLE_LOC_POST_DPD,
             'display_name'  =>  'Disable loc post dpd',
+            'documentation' =>  '',
+        ],
+        self::DISABLE_AMAZON_IS_POST_DPD  =>  [
+            'feature'       =>  self::DISABLE_AMAZON_IS_POST_DPD,
+            'display_name'  =>  'Disable amazon_is post dpd',
             'documentation' =>  '',
         ],
         self::HIGH_TPS_COMPOSITE_PAYOUT => [

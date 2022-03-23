@@ -1063,7 +1063,8 @@ class Core extends Base\Core
                                          ($feature->getName() === Feature::DISABLE_ONDEMAND_FOR_LOC) ||
                                          ($feature->getName() === Feature::DISABLE_CARDS_POST_DPD) ||
                                          ($feature->getName() === Feature::DISABLE_LOANS_POST_DPD) ||
-                                         ($feature->getName() === Feature::DISABLE_LOC_POST_DPD) )&&
+                                         ($feature->getName() === Feature::DISABLE_LOC_POST_DPD) ||
+                                         ($feature->getName() === Feature::DISABLE_AMAZON_IS_POST_DPD) )&&
                                          ($feature->getEntityType() === Constants::MERCHANT) &&
                                          ($this->app['basicauth']->isCapitalCollectionsApp() === false));
 
@@ -1083,7 +1084,8 @@ class Core extends Base\Core
                                          ($feature->getName() === Feature::DISABLE_ONDEMAND_FOR_CARD) ||
                                          ($feature->getName() === Feature::DISABLE_CARDS_POST_DPD) ||
                                          ($feature->getName() === Feature::DISABLE_LOANS_POST_DPD) ||
-                                         ($feature->getName() === Feature::DISABLE_LOC_POST_DPD)) &&
+                                         ($feature->getName() === Feature::DISABLE_LOC_POST_DPD)   ||
+                                         ($feature->getName() === Feature::DISABLE_AMAZON_IS_POST_DPD) )&&
                                          ($feature->getEntityType() === Constants::MERCHANT) &&
                                          ($this->app['basicauth']->isCapitalCollectionsApp() === false));
 
