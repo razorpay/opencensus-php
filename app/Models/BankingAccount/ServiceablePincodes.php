@@ -14641,6 +14641,9 @@ class ServiceablePincodes
     ];
 
     public static $unserviceableByRBL = [
+        411033,
+        500074,
+        638452,
         173205,
         174103,
         711101,
