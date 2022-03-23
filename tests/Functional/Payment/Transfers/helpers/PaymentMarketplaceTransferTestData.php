@@ -226,10 +226,10 @@ return [
                 'currency'  => 'INR',
                 'error'     => [
                     'code'          => 'BAD_REQUEST_TRANSFER_INSUFFICIENT_BALANCE',
-                    'description'   => 'Transfer amount was greater than available balance',
-                    'reason'        => NULL,
+                    'description'   => 'Account does not have sufficient balance to carry out transfer operation',
+                    'reason'        => 'insufficient_account_balance',
                     'field'         => 'amount',
-                    'step'          => NULL,
+                    'step'          => 'transfer_processing',
                     'source'        => NULL,
                     'metadata'      => NULL,
                 ]

@@ -26,16 +26,21 @@ class ErrorCodeMapping
     protected static $publicErrorDescriptions = [
         // Sort these in PhpStorm by selecting the lines, then Edit menu -> Sort Lines.
         self::BAD_REQUEST_ERROR                                                         => 'Bad request error',
-        self::BAD_REQUEST_LINKED_ACCOUNT_NOTES_KEY_MISSING                              => 'Invalid linked_account_notes',
+        self::BAD_REQUEST_LINKED_ACCOUNT_NOTES_KEY_MISSING                              => 'Keys sent in linked_account_notes must exist in notes',
         self::BAD_REQUEST_NEGATIVE_BALANCE_BREACHED                                     => 'Maximum negative balance limit was breached',
-        self::BAD_REQUEST_PAYMENT_FEES_GREATER_THAN_AMOUNT                              => 'Total fees greater than transfer amount',
-        self::BAD_REQUEST_TRANSFER_INSUFFICIENT_BALANCE                                 => 'Transfer amount was greater than available balance',
+        self::BAD_REQUEST_PAYMENT_FEES_GREATER_THAN_AMOUNT                              => 'Fees calculated for transfer is greater than transfer amount',
+        self::BAD_REQUEST_TRANSFER_INSUFFICIENT_BALANCE                                 => 'Account does not have sufficient balance to carry out transfer operation',
         self::INTERNAL_SERVER_ERROR                                                     => 'Internal server error',
     ];
 
     private static $reasons = [
-        // Sort these in PhpStorm by selecting the lines, then Edit menu -> Sort Lines.
-        self::BAD_REQUEST_LINKED_ACCOUNT_NOTES_KEY_MISSING                              => 'Item in linked_account_notes not key in notes',
+        // Sort these in PhpStorm by selecting the lines, then Edit menu -> Sort Lines .
+        self::BAD_REQUEST_LINKED_ACCOUNT_NOTES_KEY_MISSING                              => 'invalid_notes_keys',
+        self::BAD_REQUEST_NEGATIVE_BALANCE_BREACHED                                     => 'maximum_negative_balance_limit_breached',
+        self::BAD_REQUEST_PAYMENT_FEES_GREATER_THAN_AMOUNT                              => 'amount_less_than_minimum_amount',
+        self::BAD_REQUEST_TRANSFER_INSUFFICIENT_BALANCE                                 => 'insufficient_account_balance',
+        self::INTERNAL_SERVER_ERROR                                                     => 'server_error',
+
     ];
 
     private static $fields = [
@@ -48,6 +53,10 @@ class ErrorCodeMapping
 
     private static $steps = [
         // Sort these in PhpStorm by selecting the lines, then Edit menu -> Sort Lines.
+        self::BAD_REQUEST_LINKED_ACCOUNT_NOTES_KEY_MISSING                              => 'transfer_processing',
+        self::BAD_REQUEST_NEGATIVE_BALANCE_BREACHED                                     => 'transfer_processing',
+        self::BAD_REQUEST_PAYMENT_FEES_GREATER_THAN_AMOUNT                              => 'transfer_processing',
+        self::BAD_REQUEST_TRANSFER_INSUFFICIENT_BALANCE                                 => 'transfer_processing',
     ];
 
     public static function isErrorCodePublic($errorCode)

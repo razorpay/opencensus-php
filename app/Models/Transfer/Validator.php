@@ -415,7 +415,7 @@ class Validator extends Base\Validator
         elseif($bankDetailsVerificationStatus !== BvsConstants::VERIFIED)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Bank account verification is pending for this linked account.'
+                'Bank account verification is pending for this linked account'
             );
         }
     }
