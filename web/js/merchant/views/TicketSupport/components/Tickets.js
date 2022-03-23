@@ -135,9 +135,7 @@ export default class Tickets extends React.Component {
         (statuses[ticket.status].name === 'Resolved' || statuses[ticket.status].name === 'Closed')
       ) {
         CLOSED_TICKETS.push(ticket);
-      } else {
-        OPEN_TICKETS.push(ticket);
-      }
+      } else if (ticket.custom_fields.cf_ticket_queue !== 'Internal') OPEN_TICKETS.push(ticket);
     });
     return (
       <div>
