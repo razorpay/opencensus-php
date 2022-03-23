@@ -6509,12 +6509,17 @@ trait Authorize
         return $this->processAuthorizeResponse($payment);
     }
 
-    /*
-    All the recurring payment should not go via sync flow because in recurring payment
-    If tokenisation is failing we are not proceeding with payment capture and displaying the
-    failure msg right away in the checkout.
-    */
-    protected function migrateTokenIfApplicable($payment, $callbackData)
+    /**
+     * Migrates a Razorpay saved card attached to the token to a network saved card.
+     *
+     * NOTE: Recurring payments should not go via sync flow because in recurring
+     * payment flow if tokenisation fails we do not proceed with payment capture
+     * and display the failure msg right away in the checkout.
+     *
+     * @param Payment\Entity $payment
+     * @param array          $callbackData
+     */
+    protected function migrateTokenIfApplicable($payment, $callbackData): void
     {
         try
         {
@@ -6526,10 +6531,14 @@ trait Authorize
                 return;
             }
 
-            $card = $token->card;
-
-            if ($payment->merchant->isFeatureEnabled(Feature\Constants::NETWORK_TOKENIZATION_LIVE) === false)
+            if ($token->merchant->isFeatureEnabled(Feature\Constants::NETWORK_TOKENIZATION_LIVE) === false)
             {
+                return;
+            }
+
+            if ($token->isLocal() === false) {
+                // @TODO: Remove this check when we add the experiment to control
+                // token provisioning for global saved cards.
                 return;
             }
 
@@ -6539,6 +6548,8 @@ trait Authorize
             {
                 return;
             }
+
+            $card = $token->card;
 
             if (($card->isVisa() === false) and
                 ($card->isMasterCard() === false) and
