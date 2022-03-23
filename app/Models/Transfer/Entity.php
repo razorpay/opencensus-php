@@ -15,6 +15,7 @@ use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Entity as E;
 use RZP\Models\Base\Traits\NotesTrait;
+use RZP\Models\Order\Repository as OrderRepository;
 use RZP\Models\Transfer\Traits\LinkedAccountNotesTrait;
 
 /**
@@ -691,6 +692,46 @@ class Entity extends Base\PublicEntity
     public function setPublicErrorAttribute(array & $attributes)
     {
         $attributes[self::ERROR] = ErrorCodeMapping::getPublicErrorAttribute($this);
+    }
+
+    public function getSourceAttribute()
+    {
+        $source = null;
+
+        if ($this->relationLoaded('source') === true)
+        {
+            $source = $this->getRelation('source');
+        }
+
+        if ($source !== null)
+        {
+            return $source;
+        }
+
+        if ($this->getSourceType() === Constant::ORDER)
+        {
+            $source = $this->source()->with('offers')->first();
+        }
+        else if ($this->getSourceId() !== null)
+        {
+            $source = $this->source()->first();
+        }
+
+        if (empty($source) === false)
+        {
+            return $source;
+        }
+
+        if ($this->getSourceType() === Constant::ORDER)
+        {
+            $order = (new OrderRepository())->findOrFailPublic($this->getSourceId());
+
+            $this->source()->associate($order);
+
+            return $order;
+        }
+
+        return null;
     }
 
     public function toArrayReport()
