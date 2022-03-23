@@ -21,7 +21,7 @@ class AccountingPayoutsController extends Controller
 
     public function getAllSettings()
     {
-        return $this->service->getAllSettings($this->ba->getMerchant());
+        return $this->service->getAllSettings($this->ba->getMerchant(), $this->input);
     }
 
     public function updateBAMapping()

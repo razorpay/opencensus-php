@@ -81,14 +81,18 @@ class Service
     {
         $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::ADD_OR_UPDATE_SETTINGS);
 
-        return $this->makeRequest($merchant, $url, $input);
+        $app = array_pull($input, 'app', '');
+
+        return $this->makeRequest($merchant, $url, $input, $app);
     }
 
-    public function getAllSettings(MerchantEntity $merchant)
+    public function getAllSettings(MerchantEntity $merchant, array $input)
     {
         $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::GET_ALL_SETTINGS);
 
-        return $this->makeRequest($merchant, $url);
+        $app = array_pull($input, 'app', '');
+
+        return $this->makeRequest($merchant, $url, [], $app);
     }
 
     public function updateBAMapping(MerchantEntity $merchant, array $input)
