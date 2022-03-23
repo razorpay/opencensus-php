@@ -290,4 +290,14 @@ return [
         ],
     ],
 
+    'testCronProcessPendingPaymentTransfers' => [
+        'request'   => [
+            'method'    => 'POST',
+            'url'       => '/transfers/process_payment_pending',
+            'content'   => [],
+        ],
+        'response'  => [
+            'content' => [],
+        ],
+    ],
 ];

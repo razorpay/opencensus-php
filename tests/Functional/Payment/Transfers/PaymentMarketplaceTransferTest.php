@@ -3,6 +3,8 @@
 namespace RZP\Tests\Functional\Payment\Transfers;
 
 use Carbon\Carbon;
+use RZP\Models\Payment;
+use RZP\Models\User\Role;
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\FeeBearer;
@@ -12,7 +14,6 @@ use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Tests\Functional\Payment\Transfers\TransferTrait;
-use RZP\Models\User\Role;
 
 class PaymentMarketplaceTransferTest extends TestCase
 {
@@ -650,4 +651,47 @@ class PaymentMarketplaceTransferTest extends TestCase
         $this->runRequestResponseFlow($testData);
     }
 
+    public function testCronProcessPendingPaymentTransfers()
+    {
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $paymentId = $this->payment['id'];
+
+        $paymentId = Payment\Entity::verifyIdAndSilentlyStripSign($paymentId);
+
+        $dummyTransferData = [
+            'id'                 => "AnyRandomID123",
+            'source_id'          => $paymentId,
+            'source_type'        => "payment",
+            'status'             => "pending",
+            'settlement_status'  => NULL,
+            'to_id'              => 10000000000001,
+            'to_type'            => "merchant",
+            'amount'             => 50000,
+            'currency'           => "INR",
+            'amount_reversed'    => 0,
+            'created_at'         => Carbon::now()->addHours(-5)->getTimestamp(),
+            'updated_at'         => Carbon::now()->addHours(-4)->getTimestamp()
+        ];
+
+        $this->fixtures->transfer->create($dummyTransferData);
+
+        $transfer = $this->getLastEntity('transfer', true);
+
+        $this->assertEquals('pending', $transfer['status']);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->ba->cronAuth();
+
+        $paymentIds = $this->runRequestResponseFlow($data);
+
+        $transfer = $this->getLastEntity('transfer', true);
+
+        $this->assertEquals('processed', $transfer['status']);
+
+        $this->assertEquals($paymentId, $paymentIds[0]);
+
+        $this->assertNotNULL($transfer['processed_at']);
+    }
 }

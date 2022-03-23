@@ -47,6 +47,23 @@ return [
         ],
     ],
 
+    'testCreateOrderWithoutTransfers' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/orders',
+            'content' => [
+                'amount'    => '50000',
+                'currency'  => 'INR',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'amount'    => 50000,
+                'currency'  => 'INR',
+            ],
+        ],
+    ],
+
     'testCreateOrderTransfersForCredits' => [
         'request' => [
             'method' => 'POST',

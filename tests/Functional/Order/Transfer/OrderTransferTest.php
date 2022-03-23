@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Order\Transfers;
 
 use Carbon\Carbon;
+use RZP\Models\Order;
 use RZP\Models\Transfer;
 use RZP\Constants\Timezone;
 use RZP\Services\RazorXClient;
@@ -49,6 +50,14 @@ class OrderTransferTest extends TestCase
 
         return $order;
     }
+
+    public function testCreateOrderWithoutTransfers()
+    {
+        $order = $this->startTest();
+
+        return $order;
+    }
+
 
     public function testCreateOrderTransfersForCredits() {
 
@@ -399,7 +408,6 @@ class OrderTransferTest extends TestCase
         $transfer = $this->getLastEntity('transfer', true);
 
         $this->assertEquals('pending', $transfer['status']);
-
         // Enable dispatch here
 
         $data = $this->testData[__FUNCTION__];
@@ -413,6 +421,55 @@ class OrderTransferTest extends TestCase
         $this->assertEquals('processed', $transfer['status']);
 
         $this->assertEquals($order['id'], 'order_' . $orderIds[0]);
+    }
+
+    public function testCronProcessPendingOrderTransfers2()
+    {
+        // this function will return an order, and this order does not have any transfer.
+        // So only payment capture corresponding to this order is going to happen.
+
+        $order = $this->testCreateOrderWithoutTransfers();
+
+        $this->capturePaymentProcessOrderTransfers($order);
+
+        $orderId = $order['id'];
+
+        $orderId = Order\Entity::verifyIdAndSilentlyStripSign($orderId);
+
+        $dummyTransferData = [
+            'id'                => "SomethingRandm",
+            'source_id'         => $orderId,
+            'source_type'       => "order",
+            'status'            => "pending",
+            'settlement_status' => NULL,
+            'to_id'             => 10000000000001,
+            'to_type'           => "merchant",
+            'amount'            => 50000,
+            'currency'          => "INR",
+            'amount_reversed'   => 0,
+            'created_at'         => Carbon::now()->addHours(-5)->getTimestamp(),
+            'updated_at'         => Carbon::now()->addHours(-4)->getTimestamp()
+        ];
+
+        $this->fixtures->transfer->create($dummyTransferData);
+
+        $transfer = $this->getLastEntity('transfer', true);
+
+        $this->assertEquals('pending', $transfer['status']);
+
+        $data = $this->testData['testCronProcessPendingOrderTransfers'];
+
+        $this->ba->cronAuth();
+
+        $orderIds = $this->runRequestResponseFlow($data);
+
+        $transfer = $this->getLastEntity('transfer', true);
+
+        $this->assertEquals('processed', $transfer['status']);
+
+        $this->assertEquals($orderId, $orderIds[0]);
+
+        $this->assertNotNULL($transfer['processed_at']);
     }
 
     public function testCronProcessFailedOrderTransfers()
