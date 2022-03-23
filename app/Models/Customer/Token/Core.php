@@ -18,7 +18,7 @@ use RZP\Exception;
 use RZP\Trace\TraceCode;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Feature\Constants as Feature;
-use RZP\Jobs\LocalSavedCardTokenisationJob;
+use RZP\Jobs\SavedCardTokenisationJob;
 use Razorpay\Trace\Logger as Trace;
 
 class Core extends Base\Core
@@ -2000,7 +2000,7 @@ class Core extends Base\Core
     {
         foreach ($tokenIds as $tokenId)
         {
-            LocalSavedCardTokenisationJob::dispatch($this->mode, $tokenId, $asyncTokenisationJobId);
+            SavedCardTokenisationJob::dispatch($this->mode, $tokenId, $asyncTokenisationJobId);
         }
     }
 

@@ -10,7 +10,7 @@ use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
 use Throwable;
 
-class LocalSavedCardTokenisationJob extends Job
+class SavedCardTokenisationJob extends Job
 {
     protected const RETRY_INTERVAL = 300;
 
@@ -65,18 +65,12 @@ class LocalSavedCardTokenisationJob extends Job
 
             $this->triggerEvent(EventCode::ASYNC_TOKENISATION_TOKEN_CREATION_INITIATED, $card);
 
-            $this->trace->info(TraceCode::LOCAL_TOKENISATION_JOB_REQUEST, [
+            $this->trace->info(TraceCode::SAVED_CARD_TOKENISATION_JOB_REQUEST, [
                 'tokenId'                   => $this->tokenId,
                 'merchantId'                => $this->merchantId,
                 'async_tokenization_job_id' => $this->asyncTokenisationJobId,
             ]);
 
-            if($token->isLocal() === false)
-            {
-                $this->traceTokenisationNotApplicable();
-                $this->delete();
-                return;
-            }
 
             if($this->tokenCore->checkIfTokenisationApplicable($token) === false)
             {
@@ -97,8 +91,8 @@ class LocalSavedCardTokenisationJob extends Job
              */
             $this->tokenCore->migrateToTokenizedCard($token, $cardInput);
 
-            $this->trace->info(TraceCode::LOCAL_TOKENISATION_JOB_SUCCESS, [
-                'tokenId'       => $this->tokenId,
+            $this->trace->info(TraceCode::SAVED_CARD_TOKENISATION_JOB_SUCCESS, [
+                'tokenId' => $this->tokenId,
                 'merchantId'    => $this->merchantId,
                 'timeTaken'     => millitime() - $startTime,
                 'network'       => $card->getNetwork(),
@@ -117,7 +111,7 @@ class LocalSavedCardTokenisationJob extends Job
             $this->trace->traceException(
                 $e,
                 Trace::ERROR,
-                TraceCode::LOCAL_TOKENISATION_JOB_ERROR,
+                TraceCode::SAVED_CARD_TOKENISATION_JOB_ERROR,
                 [
                     'tokenId'       => $this->tokenId,
                     'merchantId'    => $this->merchantId,
@@ -133,7 +127,8 @@ class LocalSavedCardTokenisationJob extends Job
     {
         if ($this->attempts() > self::MAX_RETRY_ATTEMPT)
         {
-            $this->trace->error(TraceCode::LOCAL_TOKENISATION_JOB_FAILED, [
+            // @TODO: Add analytics event later to show job failure
+            $this->trace->error(TraceCode::SAVED_CARD_TOKENISATION_JOB_FAILED, [
                 'tokenId'       => $this->tokenId,
                 'merchantId'    => $this->merchantId,
                 'jobAttempts'   => $this->attempts(),
@@ -149,7 +144,7 @@ class LocalSavedCardTokenisationJob extends Job
 
     protected function traceTokenisationNotApplicable(): void
     {
-        $this->trace->info(TraceCode::LOCAL_TOKENISATION_JOB_TOKEN_NOT_APPLICABLE, [
+        $this->trace->info(TraceCode::SAVED_CARD_TOKENISATION_JOB_TOKEN_NOT_APPLICABLE, [
             'tokenId'       => $this->tokenId,
             'merchantId'    => $this->merchantId,
         ]);
