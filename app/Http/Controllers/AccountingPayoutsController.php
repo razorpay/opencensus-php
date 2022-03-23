@@ -94,6 +94,16 @@ class AccountingPayoutsController extends Controller
         return $this->service->createTallyInvoice($this->ba->getMerchant(), $this->input);
     }
 
+    public function acknowledgeCashFlowEntries()
+    {
+        return $this->service->acknowledgeCashFlowEntries($this->ba->getMerchant(), $this->input);
+    }
+
+    public function updateMappingCashFlowEntries()
+    {
+        return $this->service->updateMappingCashFlowEntries($this->ba->getMerchant(), $this->input);
+    }
+
     public function createTallyVendors()
     {
         return $this->service->createTallyVendors($this->ba->getMerchant(), $this->input);

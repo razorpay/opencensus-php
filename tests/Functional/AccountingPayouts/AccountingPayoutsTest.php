@@ -583,4 +583,34 @@ class AccountingPayoutsTest extends TestCase
         $apMock->shouldHaveReceived('integrationAppInitiate');
 
     }
+
+    public function testCashFlowEntriesAckServiceMethod()
+    {
+        $this->ba->privateAuth();
+
+        $apMock = Mockery::mock('RZP\Services\AccountingPayouts');
+
+        $apMock->shouldReceive('acknowledgeCashFlowEntries')->andReturn([]);
+
+        $this->app->instance('accounting-payouts', $apMock);
+
+        $this->startTest();
+
+        $apMock->shouldHaveReceived('acknowledgeCashFlowEntries');
+    }
+
+    public function testCashFlowUpdateMappingServiceMethod()
+    {
+        $this->ba->privateAuth();
+
+        $apMock = Mockery::mock('RZP\Services\AccountingPayouts');
+
+        $apMock->shouldReceive('updateMappingCashFlowEntries')->andReturn([]);
+
+        $this->app->instance('accounting-payouts', $apMock);
+
+        $this->startTest();
+
+        $apMock->shouldHaveReceived('updateMappingCashFlowEntries');
+    }
 }

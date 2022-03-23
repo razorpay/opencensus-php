@@ -170,6 +170,26 @@ return [
         ]
     ],
 
+    'testCashFlowEntriesAckServiceMethod' => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/accounting-integration/tally/cashflow/entries/ack',
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+
+    'testCashFlowUpdateMappingServiceMethod' => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/accounting-integration/tally/cashflow/update-mapping',
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+
     'testGetTaxSlabServiceMethod' => [
         'request' => [
             'method' => 'GET',

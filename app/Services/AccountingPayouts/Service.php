@@ -46,6 +46,8 @@ class Service
     const SET_DOMAIN                  = 'SetAccountingAppDomain';
     const GET_ORGANISATION_INFO       = 'GetOrganisationsAccountingApp';
     const SET_ORGANISATION_INFO       = 'SetOrganisationInfoAccountingApp';
+    const TALLY_ACK_CASHFLOW_ENTRIES  = 'AcknowledgeCashFlowTallyEntries';
+    const TALLY_UPDATE_MAPPING        = 'CashFlowUpdateMappingTally';
     const GET_CHART_OF_ACCOUNTS       = 'GetChartOfAccounts';
     const PUT_CHART_OF_ACCOUNTS       = 'PutChartOfAccounts';
     const SYNC_CHART_OF_ACCOUNTS      = 'SyncChartOfAccounts';
@@ -75,6 +77,20 @@ class Service
         $this->config = $app['config']['applications.vendor_payments'];
 
         $this->repo = $app['repo'];
+    }
+
+    public function acknowledgeCashFlowEntries(MerchantEntity $merchant, array $input)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::TALLY_ACK_CASHFLOW_ENTRIES);
+
+        return $this->makeRequest($merchant, $url, $input, null, [], 'POST', MODE::LIVE);
+    }
+
+    public function updateMappingCashFlowEntries(MerchantEntity $merchant, array $input)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::TALLY_UPDATE_MAPPING);
+
+        return $this->makeRequest($merchant, $url, $input, null, [], 'POST', MODE::LIVE);
     }
 
     public function addOrUpdateSettings(MerchantEntity $merchant, array $input)
