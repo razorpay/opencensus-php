@@ -4,6 +4,7 @@ namespace RZP\Models\Customer;
 
 use http\Url;
 use RZP\Constants\Mode;
+use RZP\Error\PublicErrorDescription;
 use RZP\Models\Base;
 use RZP\Models\Terminal;
 use RZP\Models\Customer;
@@ -349,8 +350,11 @@ class Core extends Base\Core
      *
      *
      * @param $input
+     * @return array
+     * @throws Exception\BadRequestException
+     * @throws Exception\BadRequestValidationFailureException
+     * @throws Exception\InvalidArgumentException
      */
-
     public function createGlobalAddress($input)
     {
         if(Session()->has($this->mode . '_app_token') === false)
@@ -382,7 +386,6 @@ class Core extends Base\Core
         if ( isset($input[Entity::SHIPPING_ADDRESS]) ) {
             $address[Entity::SHIPPING_ADDRESS] = $addressEntity->create($customer, Address\Type::CUSTOMER, $input[Entity::SHIPPING_ADDRESS], true);
         }
-
         if ( isset($input[Entity::BILLING_ADDRESS]) ) {
             $address[Entity::BILLING_ADDRESS] = $addressEntity->create($customer, Address\Type::CUSTOMER, $input[Entity::BILLING_ADDRESS], true);
         }
@@ -391,7 +394,11 @@ class Core extends Base\Core
 
     }
 
-    public function editGlobalAddress($input)
+    /**
+     * @throws Exception\BadRequestValidationFailureException
+     * @throws Exception\BadRequestException
+     */
+    public function editGlobalAddress($input): array
     {
         if(Session()->has($this->mode . '_app_token') === false)
         {
@@ -882,17 +889,23 @@ class Core extends Base\Core
     /**
      * @param $input
      * @param Base\PublicEntity $customer
-     * @param Address\Core $addressEntity
-     * @param array $address
      * @return array
+     * @throws Exception\BadRequestException
      * @throws Exception\BadRequestValidationFailureException
      */
     public function editAddress($input, Base\PublicEntity $customer)
     {
-
         $addressCore = new Address\Core();
 
-        $address = $this->repo->address->findByEntityAndId($input[Base\UniqueIdEntity::ID], $customer);
+        try
+        {
+            $address = $this->repo->address->findByEntityAndId($input[Base\UniqueIdEntity::ID], $customer);
+        }
+        catch (\Throwable $ex)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR,null,null,PublicErrorDescription::BAD_REQUEST_CUSTOMER_ADDRESS_NOT_FOUND);
+        }
 
         return $addressCore->edit($address, $input);
     }

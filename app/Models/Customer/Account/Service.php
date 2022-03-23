@@ -520,9 +520,7 @@ class Service extends Base\Service
 
     public function editGlobalAddress(array $input)
     {
-        $address = $this->core->editGlobalAddress($input);
-
-        return $address;
+        return $this->core->editGlobalAddress($input);
     }
 
     public function createAddress($customerId, array $input)

@@ -39,6 +39,7 @@ class Validator extends Base\Validator
 
     protected static $editRules = [
         UniqueIdEntity::ID  => 'sometimes|string',
+        Entity::CONTACT     => 'sometimes|contact_syntax',
         Entity::NAME        => 'sometimes|string|between:2,64',
         Entity::LINE1       => 'sometimes|string|between:10,255',
         Entity::LINE2       => 'sometimes|string|between:5,255|custom',
