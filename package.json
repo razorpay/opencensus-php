@@ -18,6 +18,7 @@
     "build": "node signup.js; cd web && npm run production:build",
     "test": "cd web && npm run test",
     "test:jest": "cd web && npm run test:jest",
+    "test:jest-watch-changed": "cd web && npm run test:jest-watch-changed",
     "test:jest-watch": "cd web && npm run test:jest-watch",
     "build:e2e": "cd web && npm run e2e:build",
     "test:e2e": "cd web && npm run test:e2e",

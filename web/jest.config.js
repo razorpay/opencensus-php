@@ -56,7 +56,7 @@ module.exports = {
     './js/merchant/views/Settlements/': {
       statements: 75,
       branches: 65,
-      functions: 75,
+      functions: 74,
       lines: 75,
     },
   },

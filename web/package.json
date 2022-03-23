@@ -66,6 +66,7 @@
     "unit-tests": "NODE_PATH=./js mocha 'test/**/*.js' --full-trace --require @babel/register",
     "test": "nyc --reporter=text npm run unit-tests",
     "test:jest": "jest",
+    "test:jest-watch-changed": "jest --watch",
     "test:jest-watch": "jest --watchAll --silent=false",
     "test:e2e": "jest -c jest.e2e.config.js",
     "dev:e2e": "jest -o -c jest.e2e.config.js",
