@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Gateway\File\Processor\Emi;
 
+use App;
 use Carbon\Carbon;
 use RZP\Models\Emi;
 use RZP\Models\Payment;
@@ -14,11 +15,13 @@ class Bob extends Base
     const BANK_CODE   = IFSC::BARB;
     const FILE_TYPE   = FileStore\Type::BOB_EMI_FILE;
     const FILE_NAME   = 'Bob_Emi_File';
-    const DATE_FORMAT = 'd/m/Y';
+    const DATE_FORMAT = 'd/m/Y h:i:s A';
 
     protected function formatDataForFile($data)
     {
         $formattedData = [];
+
+        $rrn = $this->getRrnNumber($data['items']);
 
         foreach ($data['items'] as $emiPayment)
         {
@@ -61,70 +64,64 @@ class Bob extends Base
             $merchantDbaName =  $merchant->getDbaName() ?: 'Razorpay Payments';
 
             $formattedData[] = [
-                'LOYALTY_TRANSACTIONID'            => $emiPayment->getId(),
-                'ISSUER'                           => 'Bank of Baroda',
-                'ACQUIRER'                         => $acquirer,
-                'MANUFACTURER_NAME'                => '',
-                'MERCHANT_NAME'                    => $merchantDbaName,
-                'STORE_NAME'                       => '',
-                'STORE_CITY'                       => '',
-                'STORE_STATE'                      => '',
-                'BANK_MID'                         => '',
-                'BANK_TID'                         => '',
-                'EMI_OFFER'                        => $emiTenure.' Months',
-                'CARD_PAN'                         => $this->getCardNumber($emiPayment->card),
-                'FIRST_NAME'                       => '',
-                'MOBILE_NUMBER'                    => '',
-                'EMAIL'                            => '',
-                'BANKRRN'                          => '',
-                'BANKAPPROVALCODE'                 => $this->getAuthCode($emiPayment),
-                'BANKDATETIME'                     => $this->getFormattedDate($emiPayment->getCaptureTimestamp()),
-                'SETTLEMENTTIME'                   => $this->getFormattedDate($txn->getSettledAt()),
-                'TRANSACTIONAMOUNT'                => $this->getFormattedAmount($emiPayment->getAmount()),
-                'MERCHANTSUBVENTION'               => '',
-                'MERCHANTSUBVENTIONAMOUNT'         => $subventionAmount,
-                'BANK_SUBVENTION'                  => '',
-                'BANK_SUBVENTIONAMOUNT'            => '',
-                'CUSTOMERINTERESTRATE'             => $emiPercent.'%',
-                'PROCESSING_FEE'                   => '',
-                'ADVANCEDEMI'                      => '',
-                'MERCHANTRATE'                     => '',
-                'MERCHANTAMOUNT'                   => '',
-                'TXSTATUS'                         => '',
-                'TYPE'                             => '',
-                'FLAG'                             => '',
-                'PRODUCT_CATEGORY'                 => $merchant->getCategory(),
-                'SUB_CAT1'                         => '',
-                'SUB_CAT2'                         => '',
-                'SUB_CAT3'                         => '',
-                'MANUFACTURERSUBVENTION'           => '',
-                'MANUFACTURERSUBVENTIONAMOUNT'     => '',
-                'PRODUCT_SR__NO_ DBA_NAME'         => '',
-                'DMS_CODE'                         => '',
-                'DEALER_TYPE'                      => '',
-                'BATCH_NO_'                        => '',
-                'CARD_HASH'                        => '',
-                'RATE_OF_INTEREST____P_A_'         => $emiPercent.'%',
-                'EMI_AMOUNT'                       => $emiAmount,
-                'LOAN_AMOUNT'                      => $principalAmount,
-                'DISCOUNT_CASHBACK__'              => '',
-                'DISCOUNT_CASHBACK_AMOUNT'         => '',
-                'BONUS_REWARD_POINTS'              => '',
-                'EMI_MODEL'                        => $issuerPlanId,
-                'Payback Rate'                     => '',
-                'Payback Amount'                   => '',
-                'Additional cashback Rate'         => '',
-                'Additional cashback Amount'       => '',
-                'Total'                            => '',
+                'EMI ID'                    => $emiPayment->getId(),
+                'cardno'                    => str_repeat('*', 12) . $emiPayment->card->getLast4(),
+                'Issuer'                    => 'NA',
+                'Acquirer'                  => 'NA',
+                'Manufacturer'              => $merchantDbaName,
+                'Merchant Name'             => $merchantDbaName,
+                'RRN'                       => $rrn[$emiPayment->getId()]['rrn'] ?? '',
+                'Auth Code'                 => $this->getAuthCode($emiPayment),
+                'Transaction Amt'           => $this->getFormattedAmount($emiPayment->getAmount()),
+                'EMI Offer'                 => $emiTenure . ' Months',
+                'Email'                     => 'NA',
+                'Store Name'                => 'NA',
+                'Address1'                  => 'NA',
+                'Store City'                => 'NA',
+                'Store State'               => 'NA',
+                'MID'                       => '',
+                'TID'                       => '',
+                'Transaction Time'          => $this->getFormattedDate($emiPayment->getCaptureTimestamp()),
+                'Subvention'                => '',
+                'Subvention Amount (Rs)'    => '',
+                'Interest Rate'             => $emiPercent.'%',
+                'Customer Processing Fee'   => '',
+                'Customer Processing Amt'   => '',
+                'Emi Amount'                => $emiAmount,
+                'Transaction Amount'        => $this->getFormattedAmount($emiPayment->getAmount()),
+
             ];
         }
 
         return $formattedData;
     }
 
+    protected function getRrnNumber($data)
+    {
+        $CPS_PARAMS = [
+            \RZP\Reconciliator\Base\Constants::RRN
+        ];
+
+        $paymentIds = array();
+
+        foreach ($data as $payment)
+        {
+            array_push($paymentIds, $payment->id);
+        }
+
+        $request = [
+            'fields'        => $CPS_PARAMS,
+            'payment_ids'   => $paymentIds,
+        ];
+
+        $response = App::getFacadeRoot()['card.payments']->fetchAuthorizationData($request);
+
+        return $response;
+    }
+
     protected function getFormattedAmount($amount)
     {
-        return number_format($amount/100, 2);
+        return number_format($amount/100, 2, '.', '');
     }
 
 }
