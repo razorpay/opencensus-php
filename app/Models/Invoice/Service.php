@@ -156,6 +156,12 @@ class Service extends Base\Service
 
     public function fetchMultiple(array $input): array
     {
+
+        $this->trace->info(TraceCode::INVOICE_FETCH_MULTIPLE_REQUEST,
+            [
+                'input' => $input,
+            ]);
+
         // Appends USER_ID in query input if userId available in headers via
         // dashboard given userRole is sellerapp so only invoices created by
         // that user is visible in fetched list.
