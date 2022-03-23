@@ -592,7 +592,9 @@ class ViewDataSerializerHosted extends Base\Core
 
             if ($pdf === null)
             {
-                return;
+                $pdfFilePath = $this->core->getFreshInvoicePdfFilePath($this->invoice);
+
+                (new FileUploadUfh())->uploadToUfh($pdfFilePath, $this->invoice);
             }
 
             $signedPdfUrl = (new FileUploadUfh())->getSignedUrl($this->invoice);

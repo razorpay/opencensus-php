@@ -84,48 +84,8 @@ class PdfGenerator extends Base\Core
 
         $localFilePath = $file->getFullFilePath();
 
-        $uploadedFile = new UploadedFile(
-            $localFilePath,
-            $this->invoice->getPdfFilename(). '.pdf',
-            'application/pdf',
-            filesize($localFilePath),
-            null,
-            true
-        );
-
-        try
-        {
-            $filenameWithoutExt = str_before($uploadedFile->getClientOriginalName(), '.' . $uploadedFile->getClientOriginalExtension());
-
-            $uploadFilename = $filenameWithoutExt;
-
-            $ufhService  = (new FileUploadUfh())->getUfhService();
-
-            if($ufhService !== null)
-            {
-                $ufhResponse = $ufhService->uploadFileAndGetUrl(
-                    $uploadedFile,
-                    $uploadFilename,
-                    FileStore\Type::INVOICE_PDF,
-                    $this->invoice
-                );
-
-                $this->trace->info(
-                    TraceCode::INVOICE_IMAGE_UFH_FILE_UPLOAD_RESPONSE,
-                    $ufhResponse
-                );
-            }
-        }
-        catch (\Exception $ex)
-        {
-            $this->trace->info(
-                TraceCode::INVOICE_IMAGE_UFH_FILE_UPLOAD_FAILED,
-                [
-                    'Error message' => $ex->getMessage(),
-                ]
-            );
-        }
-
+        (new FileUploadUfh())->uploadToUfh($localFilePath, $this->invoice);
+        
         return $file;
     }
 

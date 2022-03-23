@@ -5,6 +5,8 @@ namespace RZP\Models\Invoice;
 use RZP\Models\Base\PublicEntity;
 use RZP\Services\UfhService;
 use RZP\Trace\TraceCode;
+use RZP\Models\FileStore\Type;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class FileUploadUfh extends Core
 {
@@ -80,5 +82,51 @@ class FileUploadUfh extends Core
         );
 
         return $response['signed_url'];
+    }
+
+    public function uploadToUfh($localFilePath, $invoice)
+    {
+        try
+        {
+            $uploadedFile = new UploadedFile(
+                $localFilePath,
+                $invoice->getPdfFilename(). '.pdf',
+                'application/pdf',
+                filesize($localFilePath),
+                null,
+                true
+            );
+
+            $filenameWithoutExt = str_before($uploadedFile->getClientOriginalName(), '.' . $uploadedFile->getClientOriginalExtension());
+
+            $uploadFilename = $filenameWithoutExt;
+
+            $ufhService  = $this->getUfhService();
+
+            if($ufhService !== null)
+            {
+                $ufhResponse = $ufhService->uploadFileAndGetUrl(
+                    $uploadedFile,
+                    $uploadFilename,
+                    Type::INVOICE_PDF,
+                    $invoice
+                );
+
+                $this->trace->info(
+                    TraceCode::INVOICE_IMAGE_UFH_FILE_UPLOAD_RESPONSE,
+                    $ufhResponse
+                );
+            }
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->info(
+                TraceCode::INVOICE_IMAGE_UFH_FILE_UPLOAD_FAILED,
+                [
+                    'Error message' => $ex->getMessage(),
+                ]
+            );
+        }
+
     }
 }
