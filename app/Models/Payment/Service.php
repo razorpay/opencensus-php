@@ -3897,7 +3897,20 @@ class Service extends Base\Service
     {
         (new PaymentMeta\Validator)->validateInput('reference_id',$input);
 
-        return $this->repo->payment_meta->fetchByParams($input);
+        $fetchLast = ((isset($input[PaymentMeta\Validator::FETCH_LAST]) === true) and
+                      ((bool)$input[PaymentMeta\Validator::FETCH_LAST] === true));
+
+        unset($input[PaymentMeta\Validator::FETCH_LAST]);
+
+        $result = $this->repo->payment_meta->fetchByParams($input);
+
+        if (($fetchLast === true) and ($result->count() > 0))
+        {
+            // return last entity as an object in array to keep consistency in the response structure
+            return [$result->last()];
+        }
+
+        return $result;
     }
 
     public function fetchPaymentEntity(string $id)

@@ -8,6 +8,8 @@ use RZP\Models\Currency\Currency;
 
 class Validator extends Base\Validator
 {
+    const FETCH_LAST = 'fetch_last';
+
     protected static $createRules = [
         Entity::GATEWAY_AMOUNT             => 'sometimes|integer|min:0',
         Entity::GATEWAY_CURRENCY           => 'sometimes|string|size:3|custom',
@@ -23,6 +25,7 @@ class Validator extends Base\Validator
 
     protected static $referenceIdRules = [
         Entity::ACTION               => 'sometimes|string',
+        self::FETCH_LAST             => 'sometimes|boolean',
         Entity::REFERENCE_ID         => 'sometimes|string',
         Entity::PAYMENT_ID           => 'sometimes|string',
     ];

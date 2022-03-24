@@ -109,4 +109,74 @@ class PaymentRelatedEntitiesTest extends TestCase
 
         $this->assertEquals($merchant['id'],$response['card']['merchant_id']);
     }
+
+    public function testPaymentMetaSearch()
+    {
+        $attributes = [
+            'payment_id' => 'J4xTrMIbNo41ac',
+            'action_type' => 'capture',
+            'reference_id' => 'G3MVX2B2smmDShAna3xPNum',
+        ];
+
+        $this->fixtures->create('payment_meta', $attributes);
+
+        $this->ba->expressAuth();
+
+        $this->testData[__FUNCTION__]['request']['content'] = [
+            "reference_id" => "G3MVX2B2smmDShAna3xPNum",
+            "action_type" => "capture"
+        ];
+
+        $data = $this->startTest();
+
+        $this->assertCount(1, $data);
+        $this->assertEquals('J4xTrMIbNo41ac', $data[0]['payment_id']);
+
+        $this->testData[__FUNCTION__]['request']['content'] = [
+            "reference_id" => "G3MVX2B2smmDShAna3xPNu",
+            "action_type" => "capture"
+        ];
+
+        $data = $this->startTest();
+
+        $this->assertCount(0, $data);
+
+        $attributes['payment_id'] = 'J4xTrMIbNo41ad';
+
+        $this->fixtures->create('payment_meta', $attributes);
+
+        $attributes['payment_id'] = 'J4xTrMIbNo41ae';
+
+        $this->fixtures->create('payment_meta', $attributes);
+
+        $this->testData[__FUNCTION__]['request']['content'] = [
+            "reference_id" => "G3MVX2B2smmDShAna3xPNum",
+            "action_type" => "capture"
+        ];
+
+        $data = $this->startTest();
+
+        $this->assertCount(3, $data);
+
+        $this->testData[__FUNCTION__]['request']['content'] = [
+            "reference_id" => "G3MVX2B2smmDShAna3xPNum",
+            "action_type" => "capture",
+            "fetch_last" => true
+        ];
+
+        $data = $this->startTest();
+
+        $this->assertCount(1, $data);
+        $this->assertEquals('J4xTrMIbNo41ae', $data[0]['payment_id']);
+
+        $this->testData[__FUNCTION__]['request']['content'] = [
+            "reference_id" => "G3MVX2B2smmDShAna3xPNu",
+            "action_type" => "capture",
+            "fetch_last" => true
+        ];
+
+        $data = $this->startTest();
+
+        $this->assertCount(0, $data);
+    }
 }

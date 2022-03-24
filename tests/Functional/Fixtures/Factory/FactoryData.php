@@ -1471,6 +1471,13 @@ final class FactoryData
                                                             ]
         );
 
+        $factory(\RZP\Models\Payment\PaymentMeta\Entity::class, [
+                                                                'payment_id'        => 'factory:RZP\Models\Payment\Entity',
+                                                                'created_at'        => $faker->timestamp,
+                                                                'updated_at'        => $faker->timestamp,
+                                                            ]
+        );
+
         $factory(\RZP\Gateway\Mozart\Entity::class, [
                                                       'id'                => '0',
                                                       'payment_id'        => 'factory:RZP\Models\Payment\Entity',

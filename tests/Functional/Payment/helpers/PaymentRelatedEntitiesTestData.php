@@ -146,5 +146,18 @@ return [
                 ]
             ],
         ],
+    ],
+
+    'testPaymentMetaSearch' => [
+        'request' => [
+            'url' => '/payments/meta/reference',
+            'method' => 'POST',
+            'content' => [
+            ]
+        ],
+        'response' => [
+            'content' => [
+            ]
+        ],
     ]
 ];
