@@ -168,7 +168,10 @@ class Core extends Base\Core
                 Entity::MERCHANT_ID => $this->merchant->getPublicId()
             ]);
 
-        $paymentPage = $this->createPaymentPageForPaymentHandle($input,  $merchant);
+        $paymentPage = Tracer::inSpan(['name' => Constants::HT_PH_CREATE_REQUEST_CREATE_PP], function() use($input, $merchant)
+        {
+            return $this->createPaymentPageForPaymentHandle($input,  $merchant);
+        });
 
         $this->upsertDefaultPaymentHandleForMerchant($input[Entity::SLUG], $paymentPage->getPublicId());
 
@@ -199,7 +202,6 @@ class Core extends Base\Core
         $handlePageId = array_get($merchantSettings, Entity::DEFAULT_PAYMENT_HANDLE . '.' . Entity::DEFAULT_PAYMENT_HANDLE_PAGE_ID);
 
         $this->createGimliEntryForHandle($input[Entity::SLUG], $this->merchant->getPublicId(), $handlePageId);
-
 
         $this->upsertDefaultPaymentHandleForMerchant($input[Entity::SLUG], $handlePageId);
 
@@ -2514,11 +2516,14 @@ class Core extends Base\Core
             $input[Entity::DEFAULT_PAYMENT_HANDLE_PAGE_ID] = $handlePageId;
         }
 
-        Settings\Accessor::for($this->merchant, Settings\Module::PAYMENT_LINK)
-            ->upsert([
-                Entity::DEFAULT_PAYMENT_HANDLE => $input
-            ])
-            ->save();
+        Tracer::inSpan(['name' => Constants::HT_PH_UPSERT_MERCHANT_SETTINGS], function() use($input)
+        {
+            Settings\Accessor::for($this->merchant, Settings\Module::PAYMENT_LINK)
+                ->upsert([
+                    Entity::DEFAULT_PAYMENT_HANDLE => $input
+                ])
+                ->save();
+        });
     }
 
     public function suggestionPaymentHandle($count)
@@ -2640,8 +2645,12 @@ class Core extends Base\Core
             [
                 Entity::MERCHANT_ID => $merchant->getId()
             ]);
+
         // get unique handle
-        $handle = $this->suggestionPaymentHandle(1);
+        $handle = Tracer::inSpan(['name' => Constants::HT_PH_GET_UNIQUE_HANDLE], function()
+        {
+           return $this->suggestionPaymentHandle(1);
+        });
 
         $handle = $handle[0];
 
@@ -2704,7 +2713,10 @@ class Core extends Base\Core
         {
             try
             {
-                $shortUrl = $this->elfin->shorten($url, $params, $fail);
+                $shortUrl = Tracer::inSpan(['name' => Constants::HT_PH_SHORTEN], function() use($url, $params, $fail)
+                {
+                    return $this->elfin->shorten($url, $params, $fail);
+                });
 
                 if($shortUrl !== "")
                 {
@@ -2767,13 +2779,15 @@ class Core extends Base\Core
         // which was created in pre-create step in case of payment handle
         $this->updateGimliMappingForHandle($input[Entity::SLUG], $paymentPage->getPublicId());
 
-        $this->repo->transaction(function() use ($paymentPage, $settings, $input)
+        Tracer::inSpan(['name' => Constants::HT_PH_CREATE_REQUEST_CREATE_PP_TRANSACTION], function() use($input, $paymentPage, $settings)
         {
-            $this->upsertSettings($paymentPage, $settings);
+            $this->repo->transaction(function () use ($paymentPage, $settings, $input) {
+                $this->upsertSettings($paymentPage, $settings);
 
-            $this->repo->saveOrFail($paymentPage);
+                $this->repo->saveOrFail($paymentPage);
 
-            $this->createPaymentPageItems($input, $paymentPage);
+                $this->createPaymentPageItems($input, $paymentPage);
+            });
         });
 
         $this->trackPaymentPageCreatedEvent($paymentPage, $input);
@@ -2797,7 +2811,10 @@ class Core extends Base\Core
 
         try
         {
-            $gimli->update($handle, $input);
+            Tracer::inSpan(['name' => Constants::HT_PH_GIMLI_UPDATE], function() use($input, $handle, $gimli)
+            {
+                $gimli->update($handle, $input);
+            });
         }
         catch (\Throwable $e)
         {

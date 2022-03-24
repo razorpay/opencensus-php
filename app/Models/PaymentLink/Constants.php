@@ -34,6 +34,17 @@ class Constants
     const HT_PPI_UPDATE_STATUS          = 'payment_pages.ppi.update.change_status';
     const HT_PPI_UPDATE_SAVE            = 'payment_pages.ppi.update.save_or_fail';
 
+    const HT_PH_CREATE_REQUEST_PRECREATE               = 'payment_handle.create_request.precreate';
+    const HT_PH_CREATE_REQUEST_CREATE                  = 'payment_handle.create_request.create';
+    const HT_PH_GET                                    = 'payment_handle.get';
+    const HT_PH_UPSERT_MERCHANT_SETTINGS               = 'payment_handle.upsert_merchant_settings';
+    const HT_PH_GET_UNIQUE_HANDLE                      = 'payment_handle.create_request.precreate.get_unique_handle';
+    const HT_PH_SHORTEN                                = 'payment_handle.shorten';
+    const HT_PH_GIMLI_UPDATE                           = 'payment_handle.gimli_entry_update';
+    const HT_PH_CREATE_REQUEST_CREATE_PP               = 'payment_handle.create_request.create.create_pp';
+    const HT_PH_CREATE_REQUEST_CREATE_PP_TRANSACTION   = 'payment_handle.create_request.create.create_pp.transaction';
+    const HT_PH_UPDATE                                 = 'payment_handle.update';
+
     // cache keys
     const SLUG_CACHE_KEY = 'SLUG_ENTITY_MAP';
 }

@@ -483,9 +483,15 @@ class Service extends Base\Service
 
             $this->modifyInputForPaymentHandle($input);
 
-            $this->core->precreatePaymentHandle($this->merchant);
+            Tracer::inSpan(['name' => Constants::HT_PH_CREATE_REQUEST_PRECREATE], function()
+            {
+                $this->core->precreatePaymentHandle($this->merchant);
+            });
 
-            $response = $this->core->createPaymentHandle($input, $this->merchant, $this->user);
+            $response = Tracer::inSpan(['name' => Constants::HT_PH_CREATE_REQUEST_CREATE], function() use($input)
+            {
+                return $this->core->createPaymentHandle($input, $this->merchant, $this->user);
+            });
 
             $modifiedResponse = $this->modifyResponseForPaymentHandle($response);
 
@@ -535,7 +541,10 @@ class Service extends Base\Service
         $validator->validatePaymentHandleUpdation($input, $this->merchant);
 
         // TODO Add validation to see if id and default payment handle id is same
-        $response = $this->core->updatePaymentHandle($input);
+        $response = Tracer::inSpan(['name' => Constants::HT_PH_UPDATE], function() use($input)
+        {
+            return $this->core->updatePaymentHandle($input);
+        });
 
         $this->trace->count(Metric::PAYMENT_HANDLE_UPDATE_TOTAL_SUCCESSFUL_REQUEST);
 
@@ -553,7 +562,10 @@ class Service extends Base\Service
                 null);
         }
 
-        $response = $this->core->getPaymentHandleByMerchant($this->merchant);
+        $response = Tracer::inSpan(['name' => Constants::HT_PH_GET], function()
+        {
+            return $this->core->getPaymentHandleByMerchant($this->merchant);
+        });
 
         return $response;
     }
