@@ -32,6 +32,8 @@ class Service extends Base\Service
     /** @var \Illuminate\Contracts\Cache\Store $cache */
     protected $cache;
 
+    const PG_ROUTER_TRANSACTION_FAILURE = 'pg_router_transaction_failure';
+
     public function __construct()
     {
         parent::__construct();
@@ -428,7 +430,27 @@ class Service extends Base\Service
 
         $payment->setExternal(true);
 
-        $txn = (new Transaction\Core)->createUpdateLedgerTransaction($payment);
+        try
+        {
+            $txn = (new Transaction\Core)->createUpdateLedgerTransaction($payment);
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::PG_ROUTER_TRANSACTION_FAILURE,
+                [
+                    'data' => $ex->getMessage()
+                ]);
+
+            $dimensions =  (new Payment\Metric)->getDefaultExceptionDimensions($ex);
+
+            $this->trace->count(self::PG_ROUTER_TRANSACTION_FAILURE, $dimensions);
+
+            throw $ex;
+        }
+
 
         return $txn->toArrayPublic();
     }

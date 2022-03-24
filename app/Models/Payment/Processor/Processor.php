@@ -433,6 +433,7 @@ class Processor
             }
 
             if (($this->route->isRearchRoute($currentRouteName) == false) or
+                (empty($input[Payment\Entity::ORDER_ID]) === true) or
                 (empty($input[Payment\Entity::METHOD]) === true) or
                 ($input[Payment\Entity::METHOD] !== Payment\METHOD::CARD) or
                 (empty($input[Payment\Entity::RECURRING]) === false) or

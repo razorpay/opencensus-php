@@ -326,7 +326,7 @@ class Metric extends Base\Core
         return null;
     }
 
-    protected function getDefaultExceptionDimensions(\Throwable $e): array
+    public function getDefaultExceptionDimensions(\Throwable $e): array
     {
         $errorAttributes = [];
 

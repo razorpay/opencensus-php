@@ -1940,9 +1940,13 @@ class PaymentCreateTest extends TestCase
                                 return 'off';
                             }));
 
+        $order = $this->fixtures->order->createPaymentCaptureOrder();
+
         $this->enablePgRouterConfig();
 
         $payment = $this->getDefaultPaymentArray();
+
+        $payment['order_id'] = 'order_'.$order->getId();
 
         $pgService = \Mockery::mock('RZP\Services\PGRouter')->shouldAllowMockingProtectedMethods()->makePartial();
 

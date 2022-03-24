@@ -5487,6 +5487,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const PG_ROUTER_REQUEST_FAILURE                           = 'PG_ROUTER_REQUEST_FAILURE';
 
+    const PG_ROUTER_TRANSACTION_FAILURE                       = 'PG_ROUTER_TRANSACTION_FAILURE';
+
     const PG_ROUTER_REQUEST                                   = 'PG_ROUTER_REQUEST';
 
     const ORDER_ROUTING_TO_PG_ROUTER                          = 'ORDER_ROUTING_TO_PG_ROUTER';
