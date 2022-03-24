@@ -3075,4 +3075,41 @@ Regards,
         $this->startTest();
     }
 
+    public function testPayoutServiceFeatureAdditionWhenLedgerReverseShadowIsEnabled()
+    {
+        $this->fixtures->merchant->addFeatures(['ledger_reverse_shadow']);
+
+        $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');
+
+        $this->startTest();
+    }
+
+    public function testLedgerReverseShadowFeatureAdditionWhenPayoutServiceFeatureIsEnabled()
+    {
+        $this->fixtures->merchant->addFeatures(['payout_service_enabled']);
+
+        $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');
+
+        $this->startTest();
+    }
+
+    public function testPayoutServiceFeatureAdditionWhenLedgerJournalReadsIsEnabled()
+    {
+        $this->fixtures->merchant->addFeatures(['ledger_journal_reads']);
+
+        $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');
+
+        $this->startTest();
+    }
+
+    public function testLedgerJournalReadsFeatureAdditionWhenPayoutServiceFeatureIsEnabled()
+    {
+        $this->fixtures->merchant->addFeatures(['payout_service_enabled']);
+
+        $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');
+
+        $this->startTest();
+    }
+
+
 }

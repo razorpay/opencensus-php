@@ -787,42 +787,55 @@ class Activate extends Base\Core
                 {
                     // assign LEDGER_REVERSE_SHADOW feature for the merchant to be onboarded in
                     // reverse shadow mode
-                    if ($merchant->isFeatureEnabled(Feature\Constants::LEDGER_REVERSE_SHADOW) === false)
+                    try
                     {
-                        (new Feature\Core)->create(
-                            [
-                                Feature\Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
-                                Feature\Entity::ENTITY_ID   => $merchant->getId(),
-                                Feature\Entity::NAME        => Feature\Constants::LEDGER_REVERSE_SHADOW,
-                            ]);
+                        if ($merchant->isFeatureEnabled(Feature\Constants::LEDGER_REVERSE_SHADOW) === false)
+                        {
+                            (new Feature\Core)->create(
+                                [
+                                    Feature\Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
+                                    Feature\Entity::ENTITY_ID   => $merchant->getId(),
+                                    Feature\Entity::NAME        => Feature\Constants::LEDGER_REVERSE_SHADOW,
+                                ]);
 
-                        $this->trace->info(
-                            TraceCode::LEDGER_REVERSE_SHADOW_FEATURE_ASSIGNED,
-                            [
-                                'merchant_id'       => $merchant->getId(),
-                                'mode'              => $mode,
-                            ]);
+                            $this->trace->info(
+                                TraceCode::LEDGER_REVERSE_SHADOW_FEATURE_ASSIGNED,
+                                [
+                                    'merchant_id'       => $merchant->getId(),
+                                    'mode'              => $mode,
+                                ]);
+                        }
+                        // assign LEDGER_JOURNAL_READS feature for the merchant to be onboarded in
+                        // reverse shadow mode. Assigning as of now only for live mode as this is used by reporting
+                        // and reporting doesn't support test mode as of now.
+                        if ($merchant->isFeatureEnabled(Feature\Constants::LEDGER_JOURNAL_READS) === false
+                            and ($mode === Mode::LIVE))
+                        {
+                            (new Feature\Core)->create(
+                                [
+                                    Feature\Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
+                                    Feature\Entity::ENTITY_ID   => $merchant->getId(),
+                                    Feature\Entity::NAME        => Feature\Constants::LEDGER_JOURNAL_READS,
+                                ]);
+
+                            $this->trace->info(
+                                TraceCode::LEDGER_JOURNAL_READS_FEATURE_ASSIGNED,
+                                [
+                                    'merchant_id'       => $merchant->getId(),
+                                    'mode'              => $mode,
+                                ]);
+                        }
                     }
-                    // assign LEDGER_JOURNAL_READS feature for the merchant to be onboarded in
-                    // reverse shadow mode. Assigning as of now only for live mode as this is used by reporting
-                    // and reporting doesn't support test mode as of now.
-                    if ($merchant->isFeatureEnabled(Feature\Constants::LEDGER_JOURNAL_READS) === false
-                        and ($mode === Mode::LIVE))
+                    catch (Exception\BadRequestValidationFailureException $e)
                     {
-                        (new Feature\Core)->create(
-                            [
-                                Feature\Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
-                                Feature\Entity::ENTITY_ID   => $merchant->getId(),
-                                Feature\Entity::NAME        => Feature\Constants::LEDGER_JOURNAL_READS,
-                            ]);
-
-                        $this->trace->info(
-                            TraceCode::LEDGER_JOURNAL_READS_FEATURE_ASSIGNED,
-                            [
-                                'merchant_id'       => $merchant->getId(),
-                                'mode'              => $mode,
-                            ]);
+                        // TODO: Add alert for this
+                        $this->trace->traceException(
+                            $e,
+                            Trace::ERROR,
+                            TraceCode::FEATURE_FLAG_ASSIGNMENT_EXCEPTION_LEDGER_ONBOARDING
+                        );
                     }
+
                     (new Merchant\Balance\Ledger\Core)->createXLedgerAccount($merchant, $bankingAccount, $mode, AccountType::SHARED, 0, 0, $ledgerReverseShadowExperimentActive);
                 }
                 else

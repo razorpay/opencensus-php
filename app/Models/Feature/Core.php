@@ -54,11 +54,12 @@ class Core extends Base\Core
      * Create feature
      *
      * @param array $input
-     * @param bool $shouldSync Should the entity be save on both test and live
+     * @param bool  $shouldSync Should the entity be save on both test and live
      *
      * @return Entity
      * @throws Exception\BadRequestException
      * @throws Exception\ServerErrorException
+     * @throws Exception\BadRequestValidationFailureException
      */
     public function create(array $input, bool $shouldSync = false): Entity
     {
@@ -118,6 +119,18 @@ class Core extends Base\Core
                 Entity::NEW_FEATURE       => $feature->getName(),
                 Entity::SHOULD_SYNC       => $shouldSync
             ]);
+
+        if ($entityType === Constants::MERCHANT and
+            in_array($feature->getName(),
+                     [
+                         Constants::PAYOUT_SERVICE_ENABLED,
+                         Constants::LEDGER_JOURNAL_READS,
+                         Constants::LEDGER_REVERSE_SHADOW,
+                     ],
+                     true) === true)
+        {
+            $this->controlFeatureAssignmentForLedger($feature->getName(), $assignedFeatureNames);
+        }
 
         $this->checkAuthTypeIfApplicable($feature);
 
@@ -1096,5 +1109,46 @@ class Core extends Base\Core
                      $feature
            );
        }
+    }
+
+    /**
+     * @param string $newFeatureName The new feature to be added
+     * @param array $assignedFeatureNames The features already present for that entity
+     *
+     * @throws Exception\BadRequestValidationFailureException if ledger integration can break
+     */
+    protected function controlFeatureAssignmentForLedger(string $newFeatureName, array $assignedFeatureNames)
+    {
+        if ($newFeatureName === Constants::PAYOUT_SERVICE_ENABLED and
+            in_array(Constants::LEDGER_REVERSE_SHADOW, $assignedFeatureNames, true) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Enabling ' . $newFeatureName . ' is not allowed when ' . Constants::LEDGER_REVERSE_SHADOW . ' is already enabled.'
+            );
+        }
+
+        if ($newFeatureName === Constants::LEDGER_REVERSE_SHADOW and
+            in_array(Constants::PAYOUT_SERVICE_ENABLED, $assignedFeatureNames, true) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Enabling ' . $newFeatureName . ' is not allowed when ' . Constants::PAYOUT_SERVICE_ENABLED . ' is already enabled.'
+            );
+        }
+
+        if ($newFeatureName === Constants::PAYOUT_SERVICE_ENABLED and
+            in_array(Constants::LEDGER_JOURNAL_READS, $assignedFeatureNames, true) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Enabling ' . $newFeatureName . ' is not allowed when ' . Constants::LEDGER_JOURNAL_READS . ' is already enabled.'
+            );
+        }
+
+        if ($newFeatureName === Constants::LEDGER_JOURNAL_READS and
+            in_array(Constants::PAYOUT_SERVICE_ENABLED, $assignedFeatureNames, true) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Enabling ' . $newFeatureName . ' is not allowed when ' . Constants::PAYOUT_SERVICE_ENABLED . ' is already enabled.'
+            );
+        }
     }
 }
