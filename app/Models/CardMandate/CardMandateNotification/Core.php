@@ -95,7 +95,7 @@ class Core extends Base\Core
             $cardMandateNotification->getStatus() === Status::NOTIFIED and
             $cardMandateNotification->getAfaStatus() !== AfaStatus::REJECTED)
         {
-            $reminderId = $this->setCardAutoRecurringReminder($cardMandateNotification, $mandateHub);
+            $reminderId = $this->setCardAutoRecurringReminder($cardMandateNotification, $cardMandate->getMandateHub());
 
             $cardMandateNotification->setReminderId($reminderId);
 
