@@ -344,6 +344,7 @@ final class RazorxTreatment
     const CRED_OFFER_SUBTEXT = 'cred_offer_subtext';
     //razorx experiment for using scheduler
     const GATEWAY_SCHEDULER_VERIFY_EXPERIMENT           = 'gateway_scheduler_verify_experiment';
+    const GATEWAY_SCHEDULER_TIMEOUT_EXPERIMENT          = 'gateway_scheduler_timeout_experiment';
     // controls %age of the mail to be sent via stork
     const API_STORK_MAIL_PAYMENT_CAPTURE        = 'api_stork_mail_payment_capture';
     const API_STORK_MAIL_PAYMENT_FAILURE        = 'api_stork_mail_payment_failure';

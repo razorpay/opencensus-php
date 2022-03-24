@@ -621,9 +621,9 @@ class Repository extends Base\Repository
      * @param array  $excludeMerchantList List of merchant IDs to be ignored
      * @return mixed
      */
-    public function fetchOldCreatedPaymentsForMethodForTimeout(int $fromTimestamp, int $toTimestamp, int $limit, string $method, $emandateRecurringType, array $includeMerchantList, array $excludeMerchantList)
+    public function fetchOldCreatedPaymentsForMethodForTimeout(int $fromTimestamp, int $toTimestamp, int $limit, string $method, $emandateRecurringType, array $includeMerchantList, array $excludeMerchantList, $filterPaymentPushedToKafka)
     {
-        return $this->repo->useSlave(function() use ($fromTimestamp, $toTimestamp, $limit, $method, $emandateRecurringType, $includeMerchantList, $excludeMerchantList)
+        return $this->repo->useSlave(function() use ($fromTimestamp, $toTimestamp, $limit, $method, $emandateRecurringType, $includeMerchantList, $excludeMerchantList, $filterPaymentPushedToKafka)
         {
             $query = $this->newQuery()
                         ->from(\DB::raw('`payments` FORCE INDEX (payments_status_index)'))
@@ -644,6 +644,11 @@ class Repository extends Base\Repository
             if ($emandateRecurringType !== null)
             {
                 $query->where(Payment\Entity::RECURRING_TYPE, '=', $emandateRecurringType);
+            }
+
+            if ($filterPaymentPushedToKafka === true)
+            {
+                $query->whereIn(Payment\Entity::IS_PUSHED_TO_KAFKA, [Payment\Processor\Constants::NOTHING_VIA_SCHEDULER, Payment\Processor\Constants::VERIFY_VIA_SCHEDULER]);
             }
 
             return $query->with(['merchant', 'merchant.features'])
@@ -692,9 +697,9 @@ class Repository extends Base\Repository
      * @param array  $excludeMerchantList List of merchant IDs to be ignored
      * @return int
      */
-    public function fetchOldPaymentsMinCreatedForMethodForTimeout(string $method, $emandateRecurringType, array $includeMerchantList, array $excludeMerchantList)
+    public function fetchOldPaymentsMinCreatedForMethodForTimeout(string $method, $emandateRecurringType, array $includeMerchantList, array $excludeMerchantList, $filterPaymentPushedToKafka)
     {
-        return $this->repo->useSlave(function() use ($method, $emandateRecurringType, $includeMerchantList, $excludeMerchantList)
+        return $this->repo->useSlave(function() use ($method, $emandateRecurringType, $includeMerchantList, $excludeMerchantList, $filterPaymentPushedToKafka)
         {
             $query =  $this->newQueryWithConnection($this->getSlaveConnection())
                       ->from(\DB::raw('`payments` FORCE INDEX (payments_status_index)'))
@@ -713,6 +718,11 @@ class Repository extends Base\Repository
             if ($emandateRecurringType !== null)
             {
                 $query->where(Payment\Entity::RECURRING_TYPE, '=', $emandateRecurringType);
+            }
+
+            if ($filterPaymentPushedToKafka === true)
+            {
+                $query->whereIn(Payment\Entity::IS_PUSHED_TO_KAFKA, [Payment\Processor\Constants::NOTHING_VIA_SCHEDULER, Payment\Processor\Constants::VERIFY_VIA_SCHEDULER]);
             }
 
             return $query->min(Entity::CREATED_AT);
@@ -930,7 +940,7 @@ class Repository extends Base\Repository
 
         if ($filterPaymentPushedToKafka === true)
         {
-            $query->whereNull(Payment\Entity::IS_PUSHED_TO_KAFKA);
+            $query->whereIn(Payment\Entity::IS_PUSHED_TO_KAFKA, [Payment\Processor\Constants::NOTHING_VIA_SCHEDULER, Payment\Processor\Constants::TIMEOUT_VIA_SCHEDULER]);
         }
 
         return $query->take($count)

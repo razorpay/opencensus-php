@@ -5876,48 +5876,61 @@ class Processor
     protected function pushPaymentToKafkaForVerify($payment)
     {
         $startTime = microtime(true);
-
-        $isVerifyNewFlow = false;
-
-        $isPushedToKafka = null;
-
         $gateway = $payment->getGateway();
+        $method = $payment->getMethod();
 
         if (empty($payment->getGooglePayMethods()) === false)
         {
             $gateway = Payment\Entity::GOOGLE_PAY;
         }
 
+        $isReminderVerifyPayment = false;
+        $isReminderTimeoutPayment = false;
+
         if ((($gateway !== null) and
             (array_search($gateway, Payment\Gateway::$verifyDisabled) === false)))
-
         {
             $variant = $this->app->razorx->getTreatment(
                 $gateway,
                 Merchant\RazorxTreatment::GATEWAY_SCHEDULER_VERIFY_EXPERIMENT,
                 $this->mode
             );
-
             // for Gpay, we have to push to kafka always
             // irrespective of the experiment variant
             if (((str_starts_with($variant, 'on') === true) or
                 ($gateway === Payment\Entity::GOOGLE_PAY)) and
                 ($this->app->runningUnitTests() === false))
             {
-                $isVerifyNewFlow = true;
-
-                $this->trace->info(
-                    TraceCode::PAYMENT_KAFKA_PUSH_INITIATED,
-                    [
-                        'payment_id' => $payment->getId(),
-                    ]
-                );
-
-                $isPushedToKafka = (new Payment\Core())->pushPaymentToKafka($payment, $startTime);
+                $isReminderVerifyPayment = true;
             }
         }
 
-        (new Payment\Metric())->pushVerifyViaOldOrNewFlowMetrics(get_diff_in_millisecond($startTime), $isVerifyNewFlow, $payment->getGateway());
+        // need to introduce the GATEWAY_SCHEDULER_TIMEOUT_EXPERIMENT in razorx
+        $variant = $this->app->razorx->getTreatment(
+            $method,
+            Merchant\RazorxTreatment::GATEWAY_SCHEDULER_TIMEOUT_EXPERIMENT,
+            $this->mode
+        );
+
+        if((str_starts_with($variant, 'on') === true) and
+            ($this->app->runningUnitTests() === false))
+        {
+            $isReminderTimeoutPayment = true;
+        }
+
+        $this->trace->info(
+            TraceCode::PAYMENT_KAFKA_PUSH_INITIATED,
+            [
+                'payment_id' => $payment->getId(),
+                'isReminderTimeoutPayment' => $isReminderTimeoutPayment ,
+                'isReminderVerifyPayment' => $isReminderVerifyPayment,
+            ]
+        );
+
+        $isPushedToKafka = (new Payment\Core())->pushPaymentToKafka($payment, $startTime, $isReminderTimeoutPayment, $isReminderVerifyPayment);
+
+        (new Payment\Metric())->pushVerifyViaOldOrNewFlowMetrics(get_diff_in_millisecond($startTime), $isReminderVerifyPayment, $payment->getGateway());
+        (new Payment\Metric())->pushTimeoutViaOldOrNewFlowMetrics(get_diff_in_millisecond($startTime), $isReminderTimeoutPayment, $payment->getMethod());
 
         return $isPushedToKafka;
     }

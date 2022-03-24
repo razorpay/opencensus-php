@@ -195,34 +195,100 @@ class Core extends Base\Core
         return $payment;
     }
 
-    public function pushPaymentToKafka($payment, $startTime)
+    public function pushPaymentToKafka($payment, $startTime, $isReminderTimeoutPayment, $isReminderVerifyPayment)
     {
-        //1 => successfully pushed to kafka
-        $isPushedToKafka = 1;
+        // null => nothing pushed to kafka
+        $isPushedToKafka = Constants::NOTHING_VIA_SCHEDULER;
 
         $producerKey = $payment->getId();
 
         $topic = env('REGISTER_PAYMENT_SCHEDULER_EVENT', 'register-payment-scheduler-event');
 
-        // for gpay, namespace would be provider_action
-        if (empty($payment->getGooglePayMethods()) === false)
+        $data = [];
+
+        if($isReminderVerifyPayment === true)
         {
-            $namespace = Payment\Entity::GOOGLE_PAY . '_verify';
-        }
-        else
-        {
-            $namespace = $payment->getMethod() . '_' . $payment->getGateway() . '_verify';
+            // for gpay, namespace would be provider_action
+            if (empty($payment->getGooglePayMethods()) === false)
+            {
+                $namespace = Payment\Entity::GOOGLE_PAY . '_verify';
+            }
+            else
+            {
+                $namespace = $payment->getMethod() . '_' . $payment->getGateway() . '_verify';
+            }
+
+            $verifyReminderData = [
+                Constants::NAMESPACE     => $namespace,
+                Constants::ENTITY_ID     => $payment->getId(),
+                Constants::ENTITY_TYPE   => 'payments',
+                Constants::REMINDER_DATA => [
+                    Constants::VERIFY_AT      => Carbon::now()->getTimestamp()
+                ],
+                Constants::VERIFY_SERVICE => 'api'
+            ];
+
+            $this->trace->info(
+                TraceCode::PAYMENT_VERIFY_MESSAGE,
+                [
+                    'timeout_message'    => $verifyReminderData
+                ]
+            );
+
+            array_push($data, $verifyReminderData);
         }
 
-        $data = [
-            Constants::NAMESPACE    => $namespace,
-            Constants::ENTITY_ID    => $payment->getId(),
-            Constants::ENTITY_TYPE  => 'payments',
-            Constants::REMINDER_DATA => [
-                Constants::VERIFY_AT      => Carbon::now()->getTimestamp()
-            ],
-            Constants::VERIFY_SERVICE => 'api'
-        ];
+        if($isReminderTimeoutPayment === true)
+        {
+            if (empty($payment->getGooglePayMethods()) === false)
+            {
+                $namespace = Payment\Entity::GOOGLE_PAY . Constants::TIMEOUT_SUFFIX;
+            }
+            else
+            {
+                $namespace = $payment->getMethod() . Constants::TIMEOUT_SUFFIX;
+            }
+
+            $timeoutWindow = $payment->getTimeoutWindow();
+            $payment_timeout_at = Carbon::now()->addSeconds($timeoutWindow)->getTimestamp();
+
+            $timeoutReminderData = [
+                Constants::NAMESPACE     => $namespace,
+                Constants::ENTITY_ID     => $payment->getId(),
+                Constants::ENTITY_TYPE   => 'payments',
+                Constants::REMINDER_DATA => [
+                    Constants::TIMEOUT_AT      =>   $payment_timeout_at
+                ],
+                Constants::TIMEOUT_SERVICE => 'api'
+            ];
+
+            $this->trace->info(
+                TraceCode::PAYMENT_TIMEOUT_MESSAGE,
+                [
+                    'timeout_message'    => $timeoutReminderData
+                ]
+            );
+
+            array_push($data, $timeoutReminderData);
+        }
+
+        if ($isReminderVerifyPayment === true && $isReminderTimeoutPayment === true)
+        {
+            $isPushedToKafka = Constants::VERIFY_AND_TIMEOUT_VIA_SCHEDULER;
+        }
+        elseif ($isReminderTimeoutPayment === true)
+        {
+            $isPushedToKafka = Constants::TIMEOUT_VIA_SCHEDULER;
+        }
+        elseif ($isReminderVerifyPayment === true)
+        {
+            $isPushedToKafka = Constants::VERIFY_VIA_SCHEDULER;
+        }
+
+        if ($isPushedToKafka === Constants::NOTHING_VIA_SCHEDULER)
+        {
+            return $isPushedToKafka;
+        }
 
         $message = [
             Constants::KAFKA_MESSAGE_TASK_NAME => Constants::REGISTER_PAYMENT_IN_SCHEDULER,
@@ -270,7 +336,9 @@ class Core extends Base\Core
     public function pushPaymentToKafkaForDeRegistrations($payment, $startTime): void
     {
         $data = [];
-        if(in_array($payment->getIsPushedToKafka(), Constants::VALID_FOR_TIMEOUT_DEREGISTRATION)) {
+
+        if(in_array($payment->getIsPushedToKafka(), Constants::VALID_FOR_TIMEOUT_DEREGISTRATION))
+        {
             $data[] = [
                 Constants::NAMESPACE    => $payment->getMethod() . Constants::TIMEOUT_SUFFIX,
                 Constants::PAYMENT_ID   => $payment->getId(),
@@ -278,11 +346,13 @@ class Core extends Base\Core
             ];
         }
 
-        if(count($data) == 0) {
+        if(count($data) == 0)
+        {
             return;
         }
 
         $producerKey = $payment->getId();
+
         $this->trace->info(
             TraceCode::PAYMENT_SCHEDULER_DEREGISTER_INIT,
             [

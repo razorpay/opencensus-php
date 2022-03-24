@@ -2562,9 +2562,11 @@ class Service extends Base\Service
         $includeMerchantList = $input['include_merchants'] ?? [];
         $excludeMerchantList = $input['exclude_merchants'] ?? [];
 
+        $filterPaymentPushedToKafka = $input['filter_payment_pushed_to_kafka'] ?? false;
+
         foreach ($allMethods as $method)
         {
-            $count = $count + $this->timeoutOldPaymentsForMethod($limit, $method, $emandateRecurringType, $includeMerchantList, $excludeMerchantList);
+            $count = $count + $this->timeoutOldPaymentsForMethod($limit, $method, $emandateRecurringType, $includeMerchantList, $excludeMerchantList, $filterPaymentPushedToKafka);
         }
 
         return ['count' => $count];
@@ -2653,7 +2655,7 @@ class Service extends Base\Service
         return $count;
     }
 
-    public function timeoutOldPaymentsForMethod($limit, $method, $emandateRecurringType, array $includeMerchantList, array $excludeMerchantList)
+    public function timeoutOldPaymentsForMethod($limit, $method, $emandateRecurringType, array $includeMerchantList, array $excludeMerchantList, $filterPaymentPushedToKafka)
     {
         $count = 0;
 
@@ -2669,7 +2671,9 @@ class Service extends Base\Service
         $fromTimestamp = $this->repo->payment->fetchOldPaymentsMinCreatedForMethodForTimeout($method,
                                                                                              $emandateRecurringType,
                                                                                              $includeMerchantList,
-                                                                                             $excludeMerchantList);
+                                                                                             $excludeMerchantList,
+                                                                                             $filterPaymentPushedToKafka
+                                                                                            );
 
         if (isset($fromTimestamp) === false)
         {
@@ -2682,7 +2686,9 @@ class Service extends Base\Service
                                                                                      $method,
                                                                                      $emandateRecurringType,
                                                                                      $includeMerchantList,
-                                                                                     $excludeMerchantList);
+                                                                                     $excludeMerchantList,
+                                                                                     $filterPaymentPushedToKafka
+                                                                                    );
 
         $total = count($payments);
 

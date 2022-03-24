@@ -38,6 +38,7 @@ class Metric extends Base\Core
     const LABEL_LIBRARY                         = 'library';
 
     const IS_VERIFY_NEW_FLOW                    = 'is_verify_new_flow';
+    const IS_TIMEOUT_NEW_FLOW                   = 'is_timeout_new_flow';
 
 
     // Metric Names
@@ -69,6 +70,8 @@ class Metric extends Base\Core
     const KAFKA_PUSH_FAILED_FOR_PAYMENT_COUNT              = 'kafka_push_failed_for_payment_count';
 
     const VERIFY_FLOW_NEW_OR_OLD_COUNT                     = 'verify_flow_new_or_old_count';
+
+    const TIMEOUT_FLOW_NEW_OR_OLD_COUNT                    = 'timeout_flow_new_or_old_count';
 
     const PAYMENT_SCHEDULER_DEREGISTER_KAFKA_SUCCESS_COUNT = 'payment_scheduler_deregister_kafka_success_count';
     const PAYMENT_SCHEDULER_DEREGISTER_KAFKA_FAILED_COUNT  = 'payment_scheduler_deregister_kafka_failed_count';
@@ -226,14 +229,24 @@ class Metric extends Base\Core
         $this->trace->histogram(self::PAYMENT_SCHEDULER_DEREGISTER_KAFKA_FAILED_COUNT, $requestTime, []);
     }
 
-    public function pushVerifyViaOldOrNewFlowMetrics($requestTime, $isVerifyNewFlow, $gateway)
+    public function pushVerifyViaOldOrNewFlowMetrics($requestTime, $isReminderVerifyPayment, $gateway)
     {
         $dimensions = [
             self::LABEL_PAYMENT_GATEWAY    => $gateway,
-            self::IS_VERIFY_NEW_FLOW       => $isVerifyNewFlow
+            self::IS_VERIFY_NEW_FLOW       => $isReminderVerifyPayment
         ];
 
         $this->trace->histogram(self::VERIFY_FLOW_NEW_OR_OLD_COUNT, $requestTime, $dimensions);
+    }
+
+    public function pushTimeoutViaOldOrNewFlowMetrics($requestTime, $isReminderTimeoutPayment, $method)
+    {
+        $dimensions = [
+            self::LABEL_PAYMENT_METHOD      => $method,
+            self::IS_TIMEOUT_NEW_FLOW       => $isReminderTimeoutPayment
+        ];
+
+        $this->trace->histogram(self::TIMEOUT_FLOW_NEW_OR_OLD_COUNT, $requestTime, $dimensions);
     }
 
     protected function getDefaultDimentions(Entity $payment)

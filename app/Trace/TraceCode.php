@@ -5937,6 +5937,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_KAFKA_PUSH_INITIATED                          = 'PAYMENT_KAFKA_PUSH_INITIATED';
     const PAYMENT_KAFKA_PUSH_SUCCESS                            = 'PAYMENT_KAFKA_PUSH_SUCCESS';
     const PAYMENT_KAFKA_PUSH_FAILED                             = 'PAYMENT_KAFKA_PUSH_FAILED';
+    const PAYMENT_TIMEOUT_MESSAGE                               = 'PAYMENT_TIMEOUT_MESSAGE';
+    const PAYMENT_VERIFY_MESSAGE                                = 'PAYMENT_VERIFY_MESSAGE';
     const PAYMENT_FAILED_KAFKA_PUSH_SUCCESS                     = 'PAYMENT_FAILED_KAFKA_PUSH_SUCCESS';
     const PAYMENT_FAILED_KAFKA_PUSH_FAILED                      = 'PAYMENT_FAILED_KAFKA_PUSH_FAILED';
     const PAYMENT_SCHEDULER_DEREGISTER_INIT                     = 'PAYMENT_SCHEDULER_DEREGISTER_INIT';
