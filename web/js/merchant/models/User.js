@@ -1302,6 +1302,21 @@ export default class User {
     return currentOrg === 'axis';
   }
 
+  get isOrgICICI() {
+    const currentOrg = getOrg().custom_code;
+    return currentOrg === 'icic';
+  }
+
+  get isOrgHDFCCollectNow() {
+    const currentOrg = getOrg().custom_code;
+    return currentOrg === 'HDFC';
+  }
+
+  get isOrgSIB() {
+    const currentOrg = getOrg().custom_code;
+    return currentOrg === 'SIBL';
+  }
+
   get isOrgKotak() {
     const currentOrg = getOrg()?.custom_code;
 

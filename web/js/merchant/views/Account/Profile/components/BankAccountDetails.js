@@ -66,12 +66,20 @@ const BankAccountDetails = ({
 
   const isOnTemporaryHold = settlementConfig?.data?.config?.features?.hold?.status;
 
+  // Hide "Request change" button for Axis, HDFC Collect Now, ICICI & SIB Org
+  const hideRequestChange =
+    user.isOrgAxis ||
+    user.isOrgHDFCCollectNow ||
+    user.isOrgICICI ||
+    user.isOrgSIB ||
+    user.isOrgKotak;
+
   const showRequestChange =
     !isSettlementOnHold &&
     isBankAccountChangeAllowed !== null &&
     !user.blockBankAccountUpdate() &&
     user.activation_status === 'activated' &&
-    !user.isOrgAxis &&
+    !hideRequestChange &&
     !(isOnTemporaryHold && bankAccountChangeStatus) &&
     (bank_detail_update_workflow?.workflow_exists === false ||
       !['open', 'approved'].includes(bank_detail_update_workflow?.workflow_status));
@@ -80,7 +88,7 @@ const BankAccountDetails = ({
     <div className="panel panel-default" ref={bankAccountSectionRef}>
       <div className="panel-heading">
         <TextHighlighter hashedWith={UPDATE_BANK_ACC}>Bank Account</TextHighlighter>
-        {isSettlementOnHold && !user.isOrgAxis && (
+        {isSettlementOnHold && !hideRequestChange && (
           <span className="pull-right gray">
             <span>Request Change</span>
             <small className="help-content">
