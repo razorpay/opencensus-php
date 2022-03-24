@@ -4,6 +4,7 @@ namespace RZP\Models\Partner;
 
 use Razorpay\OAuth;
 
+use RZP\Constants\Entity as EntityName;
 use RZP\Models\Base;
 use RZP\Models\Feature;
 use RZP\Trace\Tracer;
@@ -20,6 +21,7 @@ use RZP\Models\Merchant\Preferences;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Merchant\Entity as ME;
 use RZP\Models\Merchant\Detail\DeDupe;
+use RZP\Models\Merchant\Stakeholder;
 use RZP\Models\Merchant\WebhookV2\Stork;
 use RZP\Models\Merchant\Account\Entity as Account;
 use RZP\Models\Batch\Helpers\SubMerchant as Helper;
@@ -381,8 +383,16 @@ class SubMerchantBatchUtility extends Base\Core
                 }
             );
 
+            // for registered merchants aadhar esign status will be validated before form submission
+            // if aadhar lined linked is set to 1. Which we do not want in this case.
+            // more context here https://razorpay.slack.com/archives/C4MSCSHSL/p1646395661750039
             // Submit activation form
-            $submitData = [MerchantDetail::SUBMIT => '1'];
+            $submitData = [
+                EntityName::STAKEHOLDER => [
+                    Stakeholder\Entity::AADHAAR_LINKED => 0,
+                ],
+                MerchantDetail::SUBMIT => '1'
+            ];
             $response   = $this->merchantDetailCore->saveMerchantDetails($submitData, $subMerchant);
 
             if ($response[MerchantDetail::SUBMITTED] === false)

@@ -33,6 +33,8 @@ use RZP\Tests\Functional\Fixtures\Entity\Pricing;
 use Razorpay\OAuth\Application\Entity as OAuthApp;
 use RZP\Mail\User\PasswordReset as PasswordResetMail;
 use RZP\Models\Feature\Constants as FeatureConstants;
+use RZP\Models\Merchant\Detail\Entity as MerchantDetail;
+use RZP\Models\Merchant\Detail\Status as MerchantDetailStatus;
 use RZP\Tests\Functional\Fixtures\Entity\Pricing as TestPricing;
 use RZP\Mail\Merchant\CreateSubMerchant as CreateSubMerchantMail;
 use RZP\Mail\Merchant\CreateSubMerchantPartner as CreateSubMerchantPartnerMail;
@@ -964,6 +966,9 @@ class MerchantCreateTest extends TestCase
         $this->ba->batchAppAuth();
 
         $this->startTest();
+
+        $submerchantDetail = $this->getLastEntity('merchant_detail', true);
+        $this->assertEquals($submerchantDetail[MerchantDetail::ACTIVATION_STATUS], MerchantDetailStatus::ACTIVATED);
     }
 
     public function testCreateSubMerchantWithInvalidEmailByAdminForAggregatorBatch()
