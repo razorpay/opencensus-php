@@ -29,6 +29,7 @@ import { bindActionCreators } from 'redux';
 import EasterEgg from 'merchant/components/EasterEgg';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import DashboardBanner from '../../../common/ui/DashboardBanner';
+import { fetchTerminalProviders } from 'merchant/reducers/navigator/details';
 
 let url = 'https://play.google.com/store/apps/details?id=com.razorpay.payments.app';
 if (getMobileOperatingSystem() == 'iOS') {
@@ -46,7 +47,16 @@ class TransactionsContainer extends Component {
   }
 
   componentDidMount() {
-    const { fetchSettlementAmount, fetchOpenDisputes, fetchSettlementConfig } = this.props;
+    const {
+      fetchSettlementAmount,
+      fetchOpenDisputes,
+      fetchSettlementConfig,
+      fetchProviders,
+      user,
+    } = this.props;
+    if (user?.isSingleReconEnabled && user?.isOptimizerEnabled) {
+      fetchProviders();
+    }
     fetchSettlementAmount();
     fetchOpenDisputes();
     fetchSettlementConfig();
@@ -386,6 +396,7 @@ const mapDispatchToProps = (dispatch) => {
       closeModal,
       fetchOpenDisputes: fnFetchOpenDisputes,
       fetchSettlementConfig: fnFetchSettlementConfig,
+      fetchProviders: fetchTerminalProviders,
     },
     dispatch,
   );

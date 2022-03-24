@@ -1,4 +1,5 @@
 import React, { Fragment, Component } from 'react';
+import moment from 'moment';
 import Time from 'common/ui/Time';
 import { SettlementStatusLabel } from 'merchant/components/StatusLabel';
 import ContentToggler from 'common/ui/Toggler/ContentToggler';
@@ -32,7 +33,7 @@ class SettlementInfo extends Component {
   };
 
   render() {
-    const { data, settlement_amount, settlementConfig } = this.props;
+    const { data, settlement_amount, settlementConfig, user, terminalProviders } = this.props;
 
     const { no_settlement } = settlement_amount.data;
 
@@ -61,9 +62,21 @@ class SettlementInfo extends Component {
               <br />
               <ContentToggler onToggleClick={this.props.viewSettlementOverview}>
                 <span>
-                  Settled on <Time value={data.transaction.settled_at} format="DD MMM YYYY" />
+                  Settled on{' '}
+                  <Time
+                    value={
+                      user.isSingleReconEnabled && user.isOptimizerEnabled
+                        ? data.transaction.settlement.created_at
+                        : data.transaction.settled_at
+                    }
+                    format="DD MMM YYYY"
+                  />
                 </span>
-                <SettlementOverview payment={data} />
+                <SettlementOverview
+                  payment={data}
+                  terminalProviders={terminalProviders}
+                  user={user}
+                />
               </ContentToggler>
             </Fragment>
           ) : (
@@ -82,7 +95,12 @@ class SettlementInfo extends Component {
           </a>
         </div>
       );
-    } else if (data.transaction.settled_at) {
+    } else if (
+      data.transaction.settled_at &&
+      (!user.isSingleReconEnabled ||
+        !user.isOptimizerEnabled ||
+        data.optimizer_provider === 'Razorpay')
+    ) {
       jsx = (
         <Fragment>
           {!(data.transaction && data.transaction.settlement) ? (
@@ -93,6 +111,37 @@ class SettlementInfo extends Component {
           <span className="link">
             To be settled on <Time value={data?.transaction?.settled_at} format="DD MMM YYYY" />
           </span>
+        </Fragment>
+      );
+    } else if (
+      user.isSingleReconEnabled &&
+      user.isOptimizerEnabled &&
+      data.optimizer_provider !== 'Razorpay'
+    ) {
+      const info = this.props.integratedGateways?.includes(data.settled_by) ? (
+        <>
+          Settlement details last fetched at{' '}
+          <Time value={moment().subtract(1, 'day').unix()} format="DD MMM YYYY" /> 9pm and no data{' '}
+          was found. We will next fetch at{' '}
+          {moment(`${moment().format('YYYY-MM-DD')}T21:00:00`).isAfter(moment()) ? (
+            <Time value={moment().unix()} format="DD MMM YYYY" />
+          ) : (
+            <Time value={moment().add(1, 'day').unix()} format="DD MMM YYYY" />
+          )}{' '}
+          9pm
+        </>
+      ) : (
+        <>Not integrated with {data.settled_by} to fetch settlement details</>
+      );
+      jsx = (
+        <Fragment>
+          <div>--</div>
+          <div className="optimizer-settlement-info">
+            <p className="icon-para">
+              <i className="i i-info-outline" />
+            </p>
+            <p className="info-para">{info}</p>
+          </div>
         </Fragment>
       );
     } else {
@@ -108,6 +157,7 @@ const mapStateToProps = (state) => {
     user: state.session.user,
     settlement_amount: state.home.settlement_amount,
     settlementConfig: state.settlement.config,
+    terminalProviders: state.navigator.terminalProviders,
   };
 };
 

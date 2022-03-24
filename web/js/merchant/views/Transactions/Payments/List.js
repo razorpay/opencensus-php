@@ -11,6 +11,7 @@ export default connect(
       ...state.payments,
       user: state.session.user,
       user_segment_data: state.session.user_segment_data,
+      terminalProviders: state.navigator.terminalProviders,
     };
   },
   { fetchAll, fetchFA, resetFA },

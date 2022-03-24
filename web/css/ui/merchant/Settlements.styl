@@ -596,14 +596,6 @@ button.bw {
   border-radius: 23px;
 }
 
-.settlement-detail-row {
-  display: flex;
-  width: 75%;
-  justify-content: space-between;
-  padding: 3px 0px 0px 0px;
-  color: #7C8199;
-}
-
 .settlement-sub-row {
   border-left-style: solid;
   padding-left: 10px;
@@ -734,11 +726,18 @@ i.settle-now {
 }
 
 .settlement-detail-row {
-  display: flex;
-  width: 73%;
-  justify-content: space-between;
   padding: 3px 0px 0px 0px;
   color: #7C8199;
+  .col-xs-4 {
+    padding: 0;
+  }
+  .col-xs-8 {
+    padding: 0;
+    img {
+      max-height: 15px;
+      margin-right: 5px;
+    }
+  }
 }
 
 .settlement-caption {
@@ -1520,3 +1519,14 @@ i.settle-now {
 
 .capitalize
   text-transform: capitalize
+
+.optimizer-settlement-info
+  color #7C8197
+  font-size 12px
+  line-height 15px
+  .icon-para
+    display inline-block
+  .info-para
+    display inline-block
+    padding-left 5px
+    position absolute

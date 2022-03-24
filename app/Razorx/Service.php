@@ -251,7 +251,8 @@ class Service extends Base\Service
             'rx_control_account_balance',
             'rx_va_apps_onboarding_welcome_screen',
             'rx_revamped_help_and_support_widget',
-            'rx_cohesive_fullscreen_payout'
+            'rx_cohesive_fullscreen_payout',
+            'optimizer_single_recon'
         ];
 
         $experimentsResults = $this->getBulkTreatment($features);

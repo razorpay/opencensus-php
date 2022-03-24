@@ -2,6 +2,7 @@ import ListFilter from 'merchant/components/ListFilter';
 import DateRangePicker from 'common/ui/DateRangePicker';
 import { Field } from 'redux-form';
 import { useState } from 'react';
+import ProviderSelector from 'merchant/components/ProviderSelector';
 
 const dateRangePresets = [
   ['Past 7 Days', -7, 'days'],
@@ -18,8 +19,10 @@ export default ({ showBatchIdFilter, ...props }) => {
     });
   };
 
+  const [provider, setProvider] = useState({ name: 'All', value: '', gateway: '' });
+
   return (
-    <ListFilter date={date} {...props}>
+    <ListFilter date={date} provider={provider} setProvider={setProvider} {...props}>
       <div class="form-group list-filter-item">
         <label>Payment Id</label>
         <Field name="id" component="input" class="form-control input-sm" />
@@ -54,6 +57,21 @@ export default ({ showBatchIdFilter, ...props }) => {
         <label>Email</label>
         <Field name="email" component="input" type="email" class="form-control input-sm" />
       </div>
+
+      {props.user?.isSingleReconEnabled &&
+        props.user?.isOptimizerEnabled &&
+        props.terminalProviders &&
+        props.terminalProviders.length > 0 && (
+          <div className="form-group list-filter-item">
+            <label>Processed by</label>
+            <ProviderSelector
+              name="terminal_id"
+              providers={props.terminalProviders}
+              provider={provider}
+              setProvider={setProvider}
+            />
+          </div>
+        )}
 
       <div class="form-group list-filter-item">
         <label>Notes</label>

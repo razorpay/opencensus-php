@@ -10,6 +10,7 @@ import {
   status,
 } from 'common/ui/item/pair';
 import EntityTable from 'merchant/components/EntityTable';
+import PaymentOptimizerProvider from 'merchant/views/Transactions/Payments/components/PaymentOptimizerProvider';
 
 const getOrderId = ({ notes }) => {
   // Merchant's custom defined order IDs
@@ -64,6 +65,20 @@ export default (props) => {
 
   if (props.paymentColumns) {
     paymentColumns = props.paymentColumns;
+  }
+
+  if (props.user?.isSingleReconEnabled && props.user?.isOptimizerEnabled) {
+    paymentColumns.splice(1, 0, {
+      title: 'Payment Provider',
+      value: (item) => (
+        <PaymentOptimizerProvider
+          terminal_id={item.optimizer_provider}
+          settled_by={item.settled_by}
+          terminalProviders={props.terminalProviders}
+          hideExternalLink={true}
+        />
+      ),
+    });
   }
 
   const orders = mapOrders(props.items);

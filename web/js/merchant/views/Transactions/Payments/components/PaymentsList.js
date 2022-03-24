@@ -141,7 +141,14 @@ export default class PaymentsListContainer extends ListContainer {
   };
 
   render() {
-    const { docUrl, quickTourFeature, isRoute, user, failureAnalysisData } = this.props;
+    const {
+      docUrl,
+      quickTourFeature,
+      isRoute,
+      user,
+      failureAnalysisData,
+      terminalProviders,
+    } = this.props;
 
     return (
       <div class="content-wrapper">
@@ -200,6 +207,8 @@ export default class PaymentsListContainer extends ListContainer {
           }}
           onSearchAnalytics={this.onSearchAnalytics}
           onClearAnalytics={this.onClearAnalytics}
+          terminalProviders={terminalProviders}
+          user={user}
         />
         {/* Only Needed to show FA on Trasaction Tab not in Routes Tab */}
         {!isRoute && user?.isFAEnabled && this.doShowFA() && failureAnalysisData?.data && (

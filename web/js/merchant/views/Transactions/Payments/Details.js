@@ -23,6 +23,7 @@ import {
 import { analyticsTrack } from 'common/utils/analytics';
 import DualDetailView, { PrimaryView, SecondaryView } from 'common/new-ui/DualDetailView';
 import { updateItemInPayments } from 'merchant/reducers/collection';
+import { fetchTerminalProviders } from 'merchant/reducers/navigator/details';
 
 class PaymentDetailsContainer extends Component {
   constructor(props) {
@@ -101,6 +102,9 @@ class PaymentDetailsContainer extends Component {
   UNSAFE_componentWillMount() {
     this.fetchData(this.props.id);
     this.props.fetchSettlementAmount();
+    if (this.props.user?.isSingleReconEnabled && this.props.user?.isOptimizerEnabled) {
+      this.props.fetchProviders();
+    }
   }
 
   UNSAFE_componentWillReceiveProps(nextProps) {
@@ -338,6 +342,7 @@ class PaymentDetailsContainer extends Component {
       config,
       entity_name,
       merchantManualAction,
+      terminalProviders,
     } = this.props;
     let statusMsg = {};
 
@@ -376,6 +381,7 @@ class PaymentDetailsContainer extends Component {
             onClose={this.props.onCloseSecView}
             merchantManualAction={merchantManualAction}
             settlement_amount={this.props.settlement_amount}
+            terminalProviders={terminalProviders}
           />
         </PrimaryView>
         <SecondaryView entityName="disputes">
@@ -410,6 +416,7 @@ export default compose(
         org: state.session.org,
         config: state.config.config,
         settlement_amount: state.home.settlement_amount,
+        terminalProviders: state.navigator.terminalProviders,
       };
     },
     {
@@ -417,6 +424,7 @@ export default compose(
       expandSlider,
       compactSlider: fnCompactSlider,
       updateItemInPayments,
+      fetchProviders: fetchTerminalProviders,
       ...ModalActions,
       ...PaymentActions,
       ...NotificationsActions,

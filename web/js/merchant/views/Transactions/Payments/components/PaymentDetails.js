@@ -19,9 +19,10 @@ import ContentToggler from 'common/ui/Toggler/ContentToggler';
 import SettlementOverview from './SettlementOverview';
 import AnnouncementBar from 'merchant/components/AnnouncementBar';
 import SettlementInfo from 'merchant/views/Settlements/components/SettlementInfo';
-import React, { useEffect } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { OptimizerDetails } from 'merchant/views/Transactions/Payments/components/OptimizerDetails';
 import { isInteger } from 'common/utils/validators';
 
 function PaymentDetails(props) {
@@ -41,11 +42,26 @@ function PaymentDetails(props) {
     viewSettlementOverview,
     user,
     location,
+    terminalProviders,
   } = props;
 
   const isFromHomePage = location.state?.fromHomePage;
+  const scroller = useRef();
+  const [scrolledToBottom, setScrolledToBottom] = useState(false);
+
+  const handleScroll = useCallback(() => {
+    const ele = scroller.current;
+    if (ele.scrollTop >= ele.scrollHeight - ele.clientHeight - 100) {
+      setScrolledToBottom(true);
+    } else if (ele.scrollTop <= 10 && scrolledToBottom) {
+      setScrolledToBottom(false);
+    }
+  }, [scrolledToBottom]);
 
   useEffect(() => {
+    if (user.isSingleReconEnabled && user.isOptimizerEnabled) {
+      scroller.current.addEventListener('scroll', handleScroll);
+    }
     if (payment.id) {
       analyticsTrack({
         objectName: 'payment details',
@@ -68,29 +84,37 @@ function PaymentDetails(props) {
         },
       });
     }
-  }, [isFromHomePage, payment]);
+  }, [isFromHomePage, payment, user, handleScroll]);
 
   return (
-    <div class="content-wrapper content-sm txn-details">
+    <div className="content-wrapper content-sm txn-details" ref={scroller}>
       {isLoading ? (
-        <div class="page-spinner-container">
+        <div className="page-spinner-container">
           <Spinner />
         </div>
       ) : (
-        <div class="panel panel-default SliderPanel">
-          <div class="panel-heading">
+        <div
+          className={`panel panel-default SliderPanel ${
+            user.isSingleReconEnabled && user.isOptimizerEnabled ? 'opt-remove-margin' : ''
+          }`}
+        >
+          <div className="panel-heading">
             {props.onClose && (
-              <button type="button" class="close close-secondary" onClick={props.onClose}>
-                <i class="i i-close" />
+              <button type="button" className="close close-secondary" onClick={props.onClose}>
+                <i className="i i-close" />
               </button>
             )}
             Payment Id: <b>{payment.id}</b>
           </div>
 
-          <div class="SliderPanel__Body">
-            <div class="panel-body">
+          <div className="SliderPanel__Body">
+            <div
+              className={`panel-body ${
+                user.isSingleReconEnabled && user.isOptimizerEnabled ? 'optimizer-panel-body' : ''
+              }`}
+            >
               {payment.status === 'authorized' && isRoleAllowedEdit && (
-                <div class="payments-manual-actions">
+                <div className="payments-manual-actions">
                   <button
                     onClick={() => {
                       analyticsTrack({
@@ -115,13 +139,13 @@ function PaymentDetails(props) {
                       });
                       props.confirmCapture(payment);
                     }}
-                    class="btn btn-primary"
+                    className="btn btn-primary"
                   >
                     Capture Payment
                   </button>
                   <button
                     onClick={openRefundModal}
-                    class="btn btn-primary"
+                    className="btn btn-primary"
                     style={{ marginLeft: '5px' }}
                   >
                     Refund Payment
@@ -129,7 +153,11 @@ function PaymentDetails(props) {
                 </div>
               )}
               <Alert type={statusMsg.type} message={statusMsg.message} />
-              <div class="list-group pair-row-container">
+              <div
+                className={`list-group pair-row-container ${
+                  user.isSingleReconEnabled && user.isOptimizerEnabled ? 'opt-remove-margin' : ''
+                }`}
+              >
                 <PaymentPageDetails payment={payment} />
 
                 <EntityDetailRow label="Amount">
@@ -240,7 +268,13 @@ function PaymentDetails(props) {
                 </EntityDetailRow>
 
                 <ShowWhen
-                  additionalCondition={() => user.isUxRevampPhase2Enabled && payment.transaction}
+                  additionalCondition={() =>
+                    user.isUxRevampPhase2Enabled &&
+                    payment.transaction &&
+                    (!user.isSingleReconEnabled ||
+                      !user.isOptimizerEnabled ||
+                      payment.optimizer_provider === 'Razorpay')
+                  }
                 >
                   <EntityDetailRow label="Settlement Details">
                     <SettlementInfo data={payment} />
@@ -346,7 +380,11 @@ function PaymentDetails(props) {
 
                 <PaymentSplitInItems payment={payment} />
 
-                {!user.isUxRevampPhase2Enabled && payment.transaction ? (
+                {!user.isUxRevampPhase2Enabled &&
+                payment.transaction &&
+                (!user.isSingleReconEnabled ||
+                  !user.isOptimizerEnabled ||
+                  payment.optimizer_provider === 'Razorpay') ? (
                   <EntityDetailRow label="Settlement Details">
                     {payment.transaction.settlement ? (
                       <ContentToggler onToggleClick={viewSettlementOverview}>
@@ -354,10 +392,10 @@ function PaymentDetails(props) {
                           Settled on{' '}
                           <Time value={payment.transaction.settled_at} format="DD MMM YYYY" />
                         </span>
-                        <SettlementOverview payment={payment} />
+                        <SettlementOverview payment={payment} user={user} />
                       </ContentToggler>
                     ) : payment.transaction.settled_at ? (
-                      <span class="link">
+                      <span className="link">
                         To be settled on{' '}
                         <Time value={payment.transaction.settled_at} format="DD MMM YYYY" />
                       </span>
@@ -367,6 +405,15 @@ function PaymentDetails(props) {
                   </EntityDetailRow>
                 ) : null}
               </div>
+              {user.isSingleReconEnabled &&
+                user.isOptimizerEnabled &&
+                payment.optimizer_provider && (
+                  <OptimizerDetails
+                    payment={payment}
+                    terminalProviders={terminalProviders}
+                    scrolledToBottom={scrolledToBottom}
+                  />
+                )}
             </div>
           </div>
         </div>

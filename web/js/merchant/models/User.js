@@ -830,6 +830,14 @@ export default class User {
     return this.getExpStatus('optimizer_add_provider');
   }
 
+  get isOptimizerEnabled() {
+    return this.findTag('raas');
+  }
+
+  get isSingleReconEnabled() {
+    return this.getExpStatus('optimizer_single_recon');
+  }
+
   get isOndemandSettlementEnabled() {
     return this.isFeatureEnabled('ES_ON_DEMAND');
   }

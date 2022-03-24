@@ -5,7 +5,7 @@ import { stringifyQueryParams, getURLQueryParams } from 'common/utils/rzp-utils'
 import { isMobileDevice } from 'merchant/components/Home/data';
 import { withRouter } from 'react-router-dom';
 
-const DEFAULT_MAX_FILTER_COUNT_DESKTOP = 8;
+const DEFAULT_MAX_FILTER_COUNT_DESKTOP = 9;
 const DEFAULT_MAX_FILTER_COUNT_MOBILE = 2;
 
 /*
@@ -65,10 +65,19 @@ class ListFilter extends Component {
 
   // update query params in url before search
   handleOnSubmit = (props) => {
-    const date = this.props.date;
+    const { date, provider } = this.props;
     if (date) {
       props.from = date.from;
       props.to = date.to;
+    }
+    if (provider) {
+      if (provider.value === 'razorpay') {
+        delete props.terminal_id;
+        props.settled_by = 'Razorpay';
+      } else {
+        delete props.settled_by;
+        props.terminal_id = provider.value;
+      }
     }
 
     this.props.history.push({
@@ -92,6 +101,10 @@ class ListFilter extends Component {
     this.props.reset();
 
     this.props.onClearAnalytics();
+
+    if (this.props.setProvider) {
+      this.props.setProvider({ name: 'All', value: '', gateway: '' });
+    }
   };
 
   render() {
