@@ -927,6 +927,11 @@ class Constants
     const ORG_SUB_MERCHANT_MCC_PENDING  =   'sub_merchant_mcc_pending';
 
     /**
+     * Org level feature flag for blocking account updation if org has this feature enabled.
+     */
+    const ORG_BLOCK_ACCOUNT_UPDATE  =   'block_account_update';
+
+    /**
      * Show old error desc to merchant based on feature value
      */
     const SHOW_OLD_ERROR_DESC = 'show_old_error_desc';
@@ -1663,6 +1668,7 @@ class Constants
         self::MFN                             => true,
         self::SEND_DCC_COMPLIANCE             => true,
         self::ORG_SUB_MERCHANT_MCC_PENDING    => true,
+        self::ORG_BLOCK_ACCOUNT_UPDATE        => true,
         self::SOURCED_BY_WALNUT369            => true,
         self::M2M_REFERRAL                    => true,
         self::ENABLE_SIFT_JS                  => true,

@@ -629,6 +629,8 @@ class Core extends Base\Core
 
     public function bankAccountUpdate(MerchantEntity $merchant, array $input)
     {
+        $this->validateFeatureForAccountUpdate($merchant);
+
         $this->trace->info(TraceCode::BANK_ACCOUNT_UPDATE_FUNDS_ON_HOLD, [
             Merchant\Entity::HOLD_FUNDS => $merchant->getHoldFunds()
         ]);
@@ -1149,6 +1151,20 @@ class Core extends Base\Core
             throw new BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_BANK_ACCOUNT_UPDATE_IN_PROGRESS);
         }
     }
+
+    /**
+     * If feature flag is enabled on org then don't allow merchants to update their account.
+     * @param MerchantEntity $merchant
+     * @throws BadRequestException
+     */
+    protected function validateFeatureForAccountUpdate(MerchantEntity $merchant)
+    {
+        if($merchant->org->isFeatureEnabled(Feature\Constants::ORG_BLOCK_ACCOUNT_UPDATE)=== true)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_CANNOT_UPDATE_BANK_ACCOUNT, null, null);
+        }
+    }
+
 
     protected function validateMerchantFundsAreNotOnHold(MerchantEntity $merchant)
     {

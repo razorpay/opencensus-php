@@ -11712,5 +11712,44 @@ return [
             ],
         ],
     ],
-
+    'testBankAccountUpdateWithFeatureFlag' => [
+        'request'  => [
+            'content' => [
+                'ifsc_code'        => 'HDFC0001206',
+                'account_number'   => '0002020000304030434',
+                'beneficiary_name' => 'Test Merchant',
+            ],
+            'url'     => '/merchants/bank_account/update',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'                  => 'BAD_REQUEST_ERROR',
+                    'description'           => 'Account details can not be updated',
+                    'internal_error_code'   => ErrorCode::BAD_REQUEST_CANNOT_UPDATE_BANK_ACCOUNT,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+    ],
+    'testBankAccountUpdateWithoutFeatureFlag' => [
+        'request'  => [
+            'content' => [
+                'ifsc_code'        => 'HDFC0001206',
+                'account_number'   => '0002020000304030434',
+                'beneficiary_name' => 'Test Merchant',
+            ],
+            'url'     => '/merchants/bank_account/update',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id'      => '10000000000000',
+                'ifsc_code'        => 'HDFC0001206',
+                'account_number'   => '0002020000304030434',
+                'beneficiary_name' => 'Test Merchant',
+            ],
+        ],
+    ],
 ];
