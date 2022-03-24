@@ -90,7 +90,8 @@ class Scenario
 
     // Mandate Scenarios
     const MA101     = 'MA101';
-    /**
+    const MA201     = 'MA201';
+    /*
      *
      *  self::SCENARIO_ID => [
      *      'entity'        => Entity where scenario is handled
@@ -577,6 +578,13 @@ class Scenario
         self::MA101 => [
             'entity'    => 'mandate',
             'action'    => 'initiatePay',
+            'success'   => false,
+            'desc'      => 'Beneficiary Bank Down',
+            'code'      => ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
+        ],
+        self::MA201 => [
+            'entity'    => 'mandate',
+            'action'    => 'authorize',
             'success'   => false,
             'desc'      => 'Beneficiary Bank Down',
             'code'      => ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,

@@ -70,6 +70,7 @@ class ErrorCodeDescriptions extends Base\ErrorCodes\BaseCodeDescriptions
         'U66'   => 'Device Fingerprint mismatch',
         'U67'   => 'Debit TimeOut',
         'U69'   => 'Collect Expired',
+        'U70'   => 'Mandate collect Expired',
         '61'    => 'EXCEEDS TRANSACTION AMOUNT LIMIT',
         'A01'   => 'Payer/Payee.Ac must be present',
         'B07'   => 'Payee.Code numeric of length 4',

@@ -179,6 +179,75 @@ class Entity extends Base\Entity
         Entity::CYCLES_COMPLETED,
     ];
 
+    /**
+     * @return \RZP\Models\P2p\Mandate\Entity
+     */
+    public function setStatus(string $status)
+    {
+        return $this->setAttribute(self::STATUS, $status);
+    }
+
+    /**
+     * @return \RZP\Models\P2p\Mandate\Entity
+     */
+    public function setInternalStatus(string $internalStatus)
+    {
+        $this->setStatus($internalStatus);
+
+        return $this->setAttribute(self::INTERNAL_STATUS, $internalStatus);
+    }
+
+    /**
+     * @return string self::INTERNAL_STATUS
+     */
+    public function getInternalStatus()
+    {
+        return $this->getAttribute(self::INTERNAL_STATUS);
+    }
+
+    /**
+     * This is the method to mark the internal statuses of mandate to be authroized
+     */
+    public function markApproved()
+    {
+        $this->setInternalStatus(Status::APPROVED);
+    }
+
+    /**
+     * This is the method to mark the internal statuses of mandate to be authroized
+     */
+    public function markCompleted()
+    {
+        $this->setInternalStatus(Status::COMPLETED);
+        $this->setAttribute(self::COMPLETED_AT, $this->freshTimestamp());
+    }
+
+    /**
+     * This is the method to check if the status is marked as completed
+     * @return bool
+     */
+    public function isCompleted(): bool
+    {
+        return in_array($this->getInternalStatus(), [Status::COMPLETED]);
+    }
+
+    /**
+     * This is the method to check if the status is marked as completed
+     * @return bool
+     */
+    public function isRevoked(): bool
+    {
+        return in_array($this->getInternalStatus(), [Status::REVOKED]);
+    }
+
+    /**
+     * This is the method to check if mandate statuses is failed
+     * @return bool
+     */
+    public function isFailed(): bool
+    {
+        return in_array($this->getInternalStatus(), [Status::FAILED, Status::REJECTED, Status::EXPIRED]);
+    }
     /***************** SETTERS *****************/
 
     /**

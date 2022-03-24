@@ -15,4 +15,6 @@ use RZP\Gateway\P2p\Base\GatewayInterface;
 interface MandateGateway extends GatewayInterface
 {
     public function initiateAuthorize(Response $response);
+
+    public function authorizeMandate(Response $response);
 }

@@ -19,7 +19,7 @@ class Action extends Base\Action
     const INITIATE_AUTHORIZE                        = 'initiateAuthorize';
     const INITIATE_AUTHORIZE_SUCCESS                = 'initiateAuthorizeSuccess';
 
-    const AUTHORIZE_MANDATE                         = 'authorize';
+    const AUTHORIZE_MANDATE                         = 'authorizeMandate';
     const AUTHORIZE_MANDATE_SUCCESS                 = 'authorizeSuccess';
 
     const INITIATE_REJECT                           = 'initiateReject';

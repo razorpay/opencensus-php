@@ -5,6 +5,7 @@ namespace RZP\Tests\P2p\Service\UpiSharp\Mandate;
 use Carbon\Carbon;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\P2p\Mandate\Entity;
+use RZP\Models\P2p\Mandate\Status;
 use RZP\Gateway\P2p\Upi\Sharp\Fields;
 use RZP\Exception\BadRequestException;
 use RZP\Http\Controllers\P2p\Requests;
@@ -54,14 +55,14 @@ class MandateTest extends TestCase
         $helper = $this->getMandateHelper();
 
         $request = [
-            Fields::TYPE                    => UpiAction::INCOMING_MANDATE_CREATE,
-            Fields::AMOUNT                  => 100,
-            Fields::AMOUNT_RULE             => 'MAX',
-            Fields::PAYER_VPA               => $this->fixtures->vpa(Fixtures::DEVICE_1)->getAddress(),
-            Fields::PAYEE_VPA               => 'username@randompsp',
-            Fields::VALIDITY_START          => Carbon::now()->getTimestamp(),
-            Fields::VALIDITY_END            => Carbon::now()->addDays(365)->getTimestamp(),
-            Fields::TRANSACTION_NOTE        => 'UPI',
+            Fields::TYPE             => UpiAction::INCOMING_MANDATE_CREATE,
+            Fields::AMOUNT           => 100,
+            Fields::AMOUNT_RULE      => 'MAX',
+            Fields::PAYER_VPA        => $this->fixtures->vpa(Fixtures::DEVICE_1)->getAddress(),
+            Fields::PAYEE_VPA        => 'username@randompsp',
+            Fields::VALIDITY_START   => Carbon::now()->getTimestamp(),
+            Fields::VALIDITY_END     => Carbon::now()->addDays(365)->getTimestamp(),
+            Fields::TRANSACTION_NOTE => 'UPI',
         ];
 
         $content = [
@@ -158,11 +159,25 @@ class MandateTest extends TestCase
     {
         $helper = $this->getMandateHelper();
 
-        $this->expectException(BadRequestException::class);
+        $helper->createMandate($this->gateway);
 
-        $this->expectExceptionMessage('The id provided does not exist');
+        $response = $helper->fetchAll();
 
-        $response = $helper->authorizeMandate('IlS1WhGL84jAoR', []);
+        $mandateId = $response['items'][0][Entity::ID];
+
+        $amount = $response['items'][0][Entity::AMOUNT];
+
+        $request = $helper->initiateAuthorize(substr($mandateId, 5), []);
+
+        $content = ['sdk' => $this->handleNpciClRequest($request,
+                                                        'getCredential')()];
+
+        $response = $helper->authorizeMandate($mandateId, []);
+
+        $this->assertArraySubset([
+            Entity::STATUS => Status::APPROVED,
+            Entity::AMOUNT => $amount,
+        ], $response);
     }
 
     public function testRejectMandate()
