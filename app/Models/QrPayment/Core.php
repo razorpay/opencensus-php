@@ -7,6 +7,7 @@ use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\BharatQr;
 use RZP\Models\BankAccount;
+use RZP\Models\QrPayment\Metric;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\QrPaymentRequest;
 
@@ -78,7 +79,13 @@ class Core extends Base\Core
         {
             $isExpected = $qrPayment === null ? null : $qrPayment->isExpected();
 
+            $method = $gatewayResponse['qr_data']['method'];
+
+            $gateway = $gatewayResponse['qr_data'][BharatQr\GatewayResponseParams::GATEWAY];
+
             (new QrPaymentRequest\Service())->update($qrPaymentRequest, $isExpected, $qrPayment, $errorMessage, QrPaymentRequest\Type::BHARAT_QR);
+
+            (new Metric())->pushQrV2PaymentsMetrics($isExpected, $valid, $gateway, $method, $errorMessage);
         }
 
         return $valid;

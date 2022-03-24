@@ -9,6 +9,7 @@ use RZP\Models\QrPayment;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
+use RZP\Models\QrCode\Metric;
 use RZP\Models\Merchant\Account;
 use RZP\Models\QrCode\Constants;
 use Razorpay\Trace\Logger as Trace;
@@ -32,6 +33,8 @@ class Service extends QrCode\Service
     {
         $this->trace->info(TraceCode::QR_CODE_CREATE_REQUEST, $input);
 
+        $errorMessage = null;
+
         try
         {
             $input[Entity::REQUEST_SOURCE] = $this->getRequestSourceViaAuth();
@@ -44,9 +47,15 @@ class Service extends QrCode\Service
         }
         catch (\Exception $ex)
         {
+            $errorMessage = $ex->getMessage();
+
             $this->trace->traceException($ex, Trace::CRITICAL, TraceCode::QR_CODE_CREATE_REQUEST_FAILED, $input);
 
             throw $ex;
+        }
+        finally
+        {
+            (new Metric())->pushCreateMetrics($input, $errorMessage);
         }
 
         $this->handleReminderForQrCode($qrCode);
@@ -153,6 +162,8 @@ class Service extends QrCode\Service
     {
         $this->trace->info(TraceCode::QR_CODE_CLOSE_REQUEST, ['id' => $id]);
 
+        $errorMessage = null;
+
         try
         {
             $qrCode = (new Repository())->findByPublicIdAndMerchant($id, $this->merchant);
@@ -176,7 +187,13 @@ class Service extends QrCode\Service
                 'id' => $id
             ]);
 
+            $errorMessage = $ex->getMessage();
+
             throw $ex;
+        }
+        finally
+        {
+            (new Metric())->pushCloseMetrics($closeReason, $errorMessage);
         }
     }
 
