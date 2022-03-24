@@ -44,7 +44,8 @@ class Service extends Base\Service
     public function createForAppleWatch(array $input, User\Entity $user, MerchantEntity $merchant, string $mode): array
     {
 
-        (new Validator())->validateCreateForAppleWatch($input,$user->getId(),$merchant->getId(),$mode);
+        (new Validator())->validateCreateForAppleWatch($input, $user->getId(),$merchant->getId(),
+            $merchant->isActivated() === true, $mode);
 
         (new User\Core)->verifyOtp($input + ['action' => 'apple_watch_token'],
                                     $merchant,

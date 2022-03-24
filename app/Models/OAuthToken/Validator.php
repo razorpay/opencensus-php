@@ -6,6 +6,7 @@ use RZP\Base;
 
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorDescription;
 use RZP\Exception\BadRequestException;
 use RZP\Models\User as User;
 use RZP\Models\Batch\Header;
@@ -28,7 +29,7 @@ class Validator extends Base\Validator
     /**
      * @throws BadRequestException
      */
-    public function validateCreateForAppleWatch(array $input, string $userId, string $merchantId, string $mode)
+    public function validateCreateForAppleWatch(array $input, string $userId, string $merchantId, bool $merchantActivated, string $mode)
     {
         (new Validator())->validateInput('createForAppleWatch',$input);
 
@@ -40,6 +41,13 @@ class Validator extends Base\Validator
                 $mode,
                 'Token request for Apple Watch is only supported in Live Mode'
             );
+        }
+
+        if (!$merchantActivated)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR, null, null,
+                PublicErrorDescription::BAD_REQUEST_MERCHANT_NOT_ACTIVATED_FOR_LIVE_REQUEST);
         }
 
         (new \RZP\Models\Merchant\Validator())->validateUserIsOwnerForMerchant($userId, $merchantId);

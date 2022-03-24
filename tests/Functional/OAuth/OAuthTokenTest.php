@@ -107,6 +107,8 @@ class OAuthTokenTest extends TestCase
 
     public function testCreateAppleWatchTokenForOwner()
     {
+        $this->fixtures->on('live')->merchant->edit('10000000000000', ['activated' => 1]);
+
         $attributes = [
             'merchant_id' => '10000000000000',
             'partner_type'=> 'apple_watch',
@@ -177,6 +179,8 @@ class OAuthTokenTest extends TestCase
 
     public function testCreateAppleWatchTokenForAdminFails()
     {
+        $this->fixtures->on('live')->merchant->edit('10000000000000', ['activated' => 1]);
+
         $adminRoleUser = $this->fixtures->user->createBankingUserForMerchant('10000000000000', [], Role::ADMIN, Mode::LIVE);
 
         $this->ba->proxyAuth('rzp_live_10000000000000', $adminRoleUser->getId());
@@ -186,6 +190,8 @@ class OAuthTokenTest extends TestCase
 
     public function testCreateAppleWatchTokenForOwnerWhenAppDoesNotExist()
     {
+        $this->fixtures->on('live')->merchant->edit('10000000000000', ['activated' => 1]);
+
         $this->authServiceMock
             ->expects($this->at(0))
             ->method('sendRequest')
@@ -262,7 +268,27 @@ class OAuthTokenTest extends TestCase
 
     public function testCreateAppleWatchTokenForOwnerOtpMissing()
     {
+        $this->fixtures->on('live')->merchant->edit('10000000000000', ['activated' => 1]);
+
         $this->ba->proxyAuthLive();
+
+        $this->startTest();
+    }
+
+    public function testCreateAppleWatchTokenForUnactivatedMerchant()
+    {
+        $this->fixtures->on('live')->merchant->edit('10000000000000', ['activated' => 0]);
+
+        $this->ba->proxyAuthLive();
+
+        $this->startTest();
+    }
+
+    public function testCreateAppleWatchTokenInTestMode()
+    {
+        $this->fixtures->on('test')->merchant->edit('10000000000000', ['activated' => 1]);
+
+        $this->ba->proxyAuth();
 
         $this->startTest();
     }

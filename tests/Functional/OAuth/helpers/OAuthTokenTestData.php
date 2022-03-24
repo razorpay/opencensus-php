@@ -160,4 +160,60 @@ return [
             'internal_error_code' => 'BAD_REQUEST_VALIDATION_FAILURE',
         ],
     ],
+
+    'testCreateAppleWatchTokenForUnactivatedMerchant' => [
+        'request' => [
+            'url'       => '/oauth/tokens/apple-watch',
+            'method'    => 'POST',
+            'content'   => [
+                'otp'   =>  '000007',
+                'token' =>  'dummy'
+            ],
+            'server' => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => 'BAD_REQUEST_ERROR',
+                    'description' => 'Must not be able to make live request when not activated',
+
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => \RZP\Exception\BadRequestException::class,
+            'internal_error_code' => 'BAD_REQUEST_ERROR',
+        ],
+    ],
+
+    'testCreateAppleWatchTokenInTestMode' => [
+        'request' => [
+            'url'       => '/oauth/tokens/apple-watch',
+            'method'    => 'POST',
+            'content'   => [
+                'otp'   =>  '000007',
+                'token' =>  'dummy'
+            ],
+            'server' => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => 'BAD_REQUEST_ERROR',
+                    'description' => 'Token request for Apple Watch is only supported in Live Mode',
+
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => \RZP\Exception\BadRequestException::class,
+            'internal_error_code' => 'BAD_REQUEST_ERROR',
+        ],
+    ],
 ];
