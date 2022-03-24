@@ -936,6 +936,16 @@ class EventCode
         'name'  => 'payment.failed.kafka.push.failed'
     ];
 
+    const PAYMENT_SCHEDULER_DEREGISTER_PUSH_SUCCESS       = [
+        'group' => 'kafka_push',
+        'name'  => 'payment.scheduler.deregister.kafka.push.success'
+    ];
+
+    const PAYMENT_SCHEDULER_DEREGISTER_PUSH_FAILED       = [
+        'group' => 'kafka_push',
+        'name'  => 'payment.scheduler.deregister.kafka.push.failed'
+    ];
+
     //M2M Reward Events
     const REWARD_UPDATED = [
         'group' => 'updation',

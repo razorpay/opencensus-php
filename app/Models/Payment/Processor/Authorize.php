@@ -6506,6 +6506,8 @@ trait Authorize
 
         $this->migrateTokenIfApplicable($payment, $callbackData);
 
+        (new Payment\Core())->pushPaymentToKafkaForDeRegistrations($payment, microtime(true));
+
         return $this->processAuthorizeResponse($payment);
     }
 

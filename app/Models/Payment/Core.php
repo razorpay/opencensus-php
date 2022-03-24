@@ -267,6 +267,68 @@ class Core extends Base\Core
         return $isPushedToKafka;
     }
 
+    public function pushPaymentToKafkaForDeRegistrations($payment, $startTime): void
+    {
+        $data = [];
+        if(in_array($payment->getIsPushedToKafka(), Constants::VALID_FOR_TIMEOUT_DEREGISTRATION)) {
+            $data[] = [
+                Constants::NAMESPACE    => $payment->getMethod() . Constants::TIMEOUT_SUFFIX,
+                Constants::PAYMENT_ID   => $payment->getId(),
+                Constants::ACTIVE       => false
+            ];
+        }
+
+        if(count($data) == 0) {
+            return;
+        }
+
+        $producerKey = $payment->getId();
+        $this->trace->info(
+            TraceCode::PAYMENT_SCHEDULER_DEREGISTER_INIT,
+            [
+                'payment_id'         => $payment->getId(),
+                'is_pushed_to_kafka' => $payment->getIsPushedToKafka()
+            ]
+        );
+
+        $topic = env('REGISTER_PAYMENT_SCHEDULER_EVENT', 'register-payment-scheduler-event');
+
+        $message = [
+            Constants::KAFKA_MESSAGE_TASK_NAME => Constants::DEREGISTER_PAYMENT_IN_SCHEDULER,
+            Constants::KAFKA_MESSAGE_DATA      => $data,
+        ];
+
+        try
+        {
+            (new KafkaProducer($topic, stringify($message), $producerKey))->Produce();
+
+            $this->trace->info(
+                TraceCode::PAYMENT_SCHEDULER_DEREGISTER_PUSH_SUCCESS,
+                [
+                    'payment_id'    => $payment->getId(),
+                    'topic'         => $topic,
+                    'message'       => $message
+                ]
+            );
+
+            $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_SCHEDULER_DEREGISTER_PUSH_SUCCESS, $payment);
+
+            (new Payment\Metric())->pushKafkaPushSuccessForPaymentSchedulerDeRegistrationMetrics(get_diff_in_millisecond($startTime));
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::PAYMENT_SCHEDULER_DEREGISTER_PUSH_FAILED
+            );
+
+            $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_SCHEDULER_DEREGISTER_PUSH_FAILED, $payment, $e);
+
+            (new Payment\Metric())->pushKafkaPushFailedForPaymentSchedulerDeRegistrationMetrics(get_diff_in_millisecond($startTime));
+        }
+    }
+
     public function getGrievanceEntityDetails(string $id)
     {
 

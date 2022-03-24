@@ -68,7 +68,10 @@ class Metric extends Base\Core
 
     const KAFKA_PUSH_FAILED_FOR_PAYMENT_COUNT              = 'kafka_push_failed_for_payment_count';
 
-    const VERIFY_FLOW_NEW_OR_OLD_COUNT                      = 'verify_flow_new_or_old_count';
+    const VERIFY_FLOW_NEW_OR_OLD_COUNT                     = 'verify_flow_new_or_old_count';
+
+    const PAYMENT_SCHEDULER_DEREGISTER_KAFKA_SUCCESS_COUNT = 'payment_scheduler_deregister_kafka_success_count';
+    const PAYMENT_SCHEDULER_DEREGISTER_KAFKA_FAILED_COUNT  = 'payment_scheduler_deregister_kafka_failed_count';
 
     public function pushCreateMetrics(Entity $payment)
     {
@@ -211,6 +214,16 @@ class Metric extends Base\Core
     public function pushKafkaPushFailedForFailedPaymentMetrics($requestTime)
     {
         $this->trace->histogram(self::KAFKA_PUSH_FAILED_FOR_PAYMENT_COUNT, $requestTime, []);
+    }
+
+    public function pushKafkaPushSuccessForPaymentSchedulerDeRegistrationMetrics($requestTime)
+    {
+        $this->trace->histogram(self::PAYMENT_SCHEDULER_DEREGISTER_KAFKA_SUCCESS_COUNT, $requestTime, []);
+    }
+
+    public function pushKafkaPushFailedForPaymentSchedulerDeRegistrationMetrics($requestTime)
+    {
+        $this->trace->histogram(self::PAYMENT_SCHEDULER_DEREGISTER_KAFKA_FAILED_COUNT, $requestTime, []);
     }
 
     public function pushVerifyViaOldOrNewFlowMetrics($requestTime, $isVerifyNewFlow, $gateway)
