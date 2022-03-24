@@ -9,6 +9,7 @@ use Request;
 use RZP\Encryption\AESEncryption;
 use RZP\Error\Error;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\PaymentLink\Metric;
 use RZP\Trace\TraceCode;
 use RZP\Trace\Tracer;
 use Illuminate\Http\Request  as CurrentRequest;
@@ -21,7 +22,6 @@ use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Entity as E;
 use RZP\Exception\BadRequestException;
-use RZP\Models\PaymentLink\Metric;
 use RZP\Services\Elfin\Service as ElfinService;
 use RZP\Models\PaymentLink\PaymentPageItem as PPI;
 
@@ -526,6 +526,8 @@ class Service extends Base\Service
                 null);
         }
 
+        $this->trace->count(Metric::PAYMENT_HANDLE_UPDATE_TOTAL_REQUEST);
+
         $validator = (new Validator);
 
         $validator->validateInput('updatePaymentHandle',$input);
@@ -534,6 +536,8 @@ class Service extends Base\Service
 
         // TODO Add validation to see if id and default payment handle id is same
         $response = $this->core->updatePaymentHandle($input);
+
+        $this->trace->count(Metric::PAYMENT_HANDLE_UPDATE_TOTAL_SUCCESSFUL_REQUEST);
 
         return $response;
     }
@@ -589,36 +593,57 @@ class Service extends Base\Service
             );
         }
 
-        $precreatedHandle = $this->core->getHandleFromTestMode();
-
-        $input = $this->getDefaultValuesPaymentHandle();
-
-        // ie precreate was not called on payment handle
-        if (empty($precreatedHandle) === true)
+        try
         {
-            $ph = $this->core->precreatePaymentHandle($this->merchant);
+            $this->trace->count(Metric::PAYMENT_HANDLE_CREATION_REQUEST);
 
-            // edit here
-            $input[Entity::SLUG] = $ph[Entity::SLUG];
+            $startTime = millitime();
+
+            $precreatedHandle = $this->core->getHandleFromTestMode();
+
+            $input = $this->getDefaultValuesPaymentHandle();
+
+            // ie precreate was not called on payment handle
+            if (empty($precreatedHandle) === true)
+            {
+                $ph = $this->core->precreatePaymentHandle($this->merchant);
+
+                // edit here
+                $input[Entity::SLUG] = $ph[Entity::SLUG];
+            }
+            else
+            {
+                $input[Entity::SLUG] = $precreatedHandle;
+            }
+
+            $this->modifyInputForPaymentHandle($input);
+
+            // TODO: change this with validatepaymenthandle later
+
+            $validator = new Validator();
+
+            $validator->isValidPaymentHandle($input[Entity::SLUG]);
+
+            $validator->validatePaymentHandleCreatedForMerchant($this->merchant);
+
+            $paymentHandle = $this->core->createPaymentHandle($input, $this->merchant);
+
+            $paymentHandle = $this->modifyResponseForPaymentHandle($paymentHandle);
+
+            $this->trace->count(Metric::PAYMENT_HANDLE_CREATION_SUCCESSFUL_COUNT);
+
+            $this->trace->histogram(Metric::PAYMENT_HANDLE_CREATION_TIME_TAKEN, millitime() - $startTime);
+
+            return $paymentHandle;
         }
-        else
+        catch(\Exception $e)
         {
-            $input[Entity::SLUG] = $precreatedHandle;
+            $this->trace->count(Metric::PAYMENT_HANDLE_CREATION_FAILED_COUNT);
+
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::PAYMENT_HANDLE_CREATION_FAILED);
+
+            throw $e;
         }
-
-        $this->modifyInputForPaymentHandle($input);
-
-        // TODO: change this with validatepaymenthandle later
-
-        $validator = new Validator();
-
-        $validator->isValidPaymentHandle($input[Entity::SLUG]);
-
-        $validator->validatePaymentHandleCreatedForMerchant($this->merchant);
-
-        $paymentHandle = $this->core->createPaymentHandle($input, $this->merchant);
-
-        return $this->modifyResponseForPaymentHandle($paymentHandle);
     }
 
     public function getPaymentHandlePreviewPage(string $slug, string $merchantId)
@@ -633,12 +658,16 @@ class Service extends Base\Service
 
         $viewPayload = $this->core->getAttributesForPaymentHandlePreview($input, $merchant, $slug);
 
+        $this->trace->count(Metric::PAYMENT_HANDLE_PREVIEW_PAGE_VIEW_TOTAL);
+
         return $viewPayload;
     }
 
     public function encryptAmountForPaymentHandle(array $input): array
     {
         (new Validator)->validateInput('encryptAmountForPaymentHandle', $input);
+
+        $this->trace->count(Metric::PAYMENT_HANDLE_AMOUNT_ENCRYPTION_TOTAL_REQUEST);
 
         return $this->core->encryptAmountForPaymentHandle($input);
     }

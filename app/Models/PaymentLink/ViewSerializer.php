@@ -236,6 +236,8 @@ class ViewSerializer extends Base\Core
     {
         if($this->paymentLink->getViewType() === ViewType::PAYMENT_HANDLE)
         {
+            $this->trace->count(Metric::PAYMENT_HANDLE_VIEW_COUNT);
+
             $handleSerialized[Entity::HANDLE_URL] = $this->paymentLink->getHandleUrl();
         }
     }

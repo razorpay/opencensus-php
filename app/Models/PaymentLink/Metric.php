@@ -36,6 +36,15 @@ final class Metric
     const PAYMENT_HANDLE_CREATION_SUCCESSFUL_COUNT                = 'payment_handle_creation_successful_count';
     const PAYMENT_HANDLE_CREATION_REQUEST                         = 'payment_handle_creation_request';
 
+    const PAYMENT_HANDLE_VIEW_COUNT                               = 'payment_handle_view_count';
+
+    const PAYMENT_HANDLE_UPDATE_TOTAL_REQUEST                     = 'payment_handle_update_total_request';
+    const PAYMENT_HANDLE_UPDATE_TOTAL_SUCCESSFUL_REQUEST          = 'payment_handle_update_total_successful_request';
+
+    const PAYMENT_HANDLE_AMOUNT_ENCRYPTION_TOTAL_REQUEST          = 'payment_handle_amount_encryption_total_request';
+
+     const PAYMENT_HANDLE_PREVIEW_PAGE_VIEW_TOTAL                 = 'payment_handle_preview_page_view_total';
+
     const PAYMENT_HANDLE_SHORTENING_UNSUCCESSFUL_COUNT     = 'payment_handle_shortening_unsuccessful_count';
     const PAYMENT_HANDLE_SHORTENING_SUCCESSFUL_COUNT       = 'payment_handle_shortening_successful_count';
 
