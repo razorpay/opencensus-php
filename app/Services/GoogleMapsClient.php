@@ -28,7 +28,7 @@ class GoogleMapsClient
         $this->cache = $app['cache'];
     }
 
-    protected function buildAutosuggestQuery(string $query, array $location): string
+    protected function buildAutosuggestQuery(string $query, $location): string
     {
         $params = 'input=' . $query . '&key=' . $this->apiKey;
 
@@ -96,9 +96,10 @@ class GoogleMapsClient
 
         //check response status
 
-        if ($json['status'] !== 'OK')
+        $status = $json['status'] ?? '';
+        if ($status !== 'OK')
         {
-            throw new \Exception($json['error_message']);
+            throw new ServerErrorException($status, ErrorCode::SERVER_ERROR);
         }
 
         $data = [
