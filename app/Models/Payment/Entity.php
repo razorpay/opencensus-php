@@ -50,6 +50,7 @@ use RZP\Models\Base\Traits\ExternalEntity;
 use RZP\Models\Payment\Analytics\Metadata;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Payment\Processor\Constants;
+use RZP\Models\Feature\Constants as Features;
 use RZP\Models\Payment\Processor\App as AppMethod;
 use RZP\Models\CardMandate\CardMandateNotification;
 use RZP\Models\QrCode\NonVirtualAccountQrCode as QrV2;
@@ -238,6 +239,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     const GATEWAY_ERROR_CODE        = 'gateway_error_code';
     const GATEWAY_ERROR_DESCRIPTION = 'gateway_error_description';
+
+    const OPTIMIZER_PROVIDER = 'optimizer_provider';
 
     // constants and defaults
     const CURRENCY_LENGTH                   = 3;
@@ -492,6 +495,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::FEE_BEARER,
         self::PROVIDER,
         self::SETTLED_BY,
+        self::OPTIMIZER_PROVIDER,
     ];
 
     protected $reconAppInternal = [
@@ -577,7 +581,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::PROVIDER,
         self::DCC,
         self::MCC,
-        self::SETTLED_BY
+        self::SETTLED_BY,
+        self::OPTIMIZER_PROVIDER,
     ];
 
     protected $appends = [self::PUBLIC_ID, self::CAPTURED, self::ACQUIRER_DATA, self::GATEWAY_PROVIDER];
@@ -3681,17 +3686,45 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     public function setPublicSettledByAttribute(array & $array)
     {
-        if (($this->merchant === null) or
-            ($this->merchant->isFeatureEnabled(Feature\Constants::EXPOSE_SETTLED_BY) === false))
+        if ($this->merchant === null)
         {
             unset($array[self::SETTLED_BY]);
             return;
+        }
+
+        if ($this->merchant->isFeatureEnabled(Feature\Constants::EXPOSE_SETTLED_BY) === false)
+        {
+            if($this->isOptimiserDashboardPayment() === false)
+            {
+                unset($array[self::SETTLED_BY]);
+                return;
+            }
         }
 
         if (isset(Payment\Gateway::DIRECT_SETTLEMENT_ORG_NAME[$array[self::SETTLED_BY]]) === true)
         {
             $array[self::SETTLED_BY] = Payment\Gateway::DIRECT_SETTLEMENT_ORG_NAME[$array[self::SETTLED_BY]];
         }
+    }
+
+    public function isOptimiserDashboardPayment()
+    {
+        $app = \App::getFacadeRoot();
+
+        if($app['basicauth']->isProxyAuth() === true and
+            $this->merchant->isFeatureEnabled(Features::RAAS) === true)
+        {
+
+            $experimentResult = $app['razorx']->getTreatment($this->merchant->getId(),
+                'optimizer_single_recon', $app['rzp.mode']);
+
+            if($experimentResult === 'on')
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public function setPublicAccountIdAttribute(array & $array)
@@ -3773,6 +3806,25 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         }
 
         unset($array[self::GATEWAY_DATA]);
+    }
+
+    public function setPublicOptimizerProviderAttribute(array & $array)
+    {
+        $app = \App::getFacadeRoot();
+
+        // We only want to set the Provider while serving requests from optimiser dashboard
+
+        if($this->isOptimiserDashboardPayment() === true)
+        {
+            if($this->terminal->getProcurer() === 'merchant')
+            {
+                $array[self::OPTIMIZER_PROVIDER] = $this->terminal->getId();
+            }
+            else
+            {
+                $array[self::OPTIMIZER_PROVIDER] = "Razorpay";
+            }
+        }
     }
 
     public function associateTerminal($terminal)

@@ -51,6 +51,7 @@ use RZP\Base\ConnectionType;
 use RZP\Models\Payment\Verify\Verify;
 use RZP\Models\Locale\Core as Locale;
 use RZP\Models\SubscriptionRegistration;
+use RZP\Models\Feature\Constants as Features;
 use RZP\Models\CardMandate\CardMandateNotification;
 use RZP\Models\Payment\Verify\Result as VerifyResult;
 use RZP\Models\Payment\Processor\Constants as PaymentConstants;

@@ -52,6 +52,7 @@ class Fetch extends BaseFetch
             Entity::VIRTUAL_ACCOUNT_ID           => 'sometimes|string|max:17',
             Entity::VIRTUAL_ACCOUNT              => 'sometimes|in:0,1',
             Entity::VA_TRANSACTION_ID            => 'sometimes|string',
+            Entity::SETTLED_BY                   => 'sometimes'
         ],
         AuthType::PROXY_AUTH => [
             // @codingStandardsIgnoreLine
@@ -88,6 +89,8 @@ class Fetch extends BaseFetch
             Entity::TRANSFER_ID,
             Entity::CAPTURED,
             Entity::BATCH_ID,
+            Entity::TERMINAL_ID,
+            Entity::SETTLED_BY,
         ],
         AuthType::ADMIN_AUTH => [
             Entity::VERIFIED,

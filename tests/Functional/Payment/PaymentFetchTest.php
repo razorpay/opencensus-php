@@ -6,6 +6,7 @@ use Mockery;
 use Illuminate\Database\Eloquent\Factory;
 
 use RZP\Error\ErrorCode;
+use RZP\Services\RazorXClient;
 use RZP\Models\Currency\Currency;
 use RZP\Tests\Functional\Helpers\Org\CustomBrandingTrait;
 use RZP\Tests\Functional\TestCase;
@@ -1390,5 +1391,62 @@ class PaymentFetchTest extends TestCase
         $response = $this->startTest();
 
         $this->assertEquals($response['id'], 'pay_GrClIcbRtTUxxb');
+    }
+
+    public function testProxyAuthFetchPaymentOnTerminalId()
+    {
+        $payment = $this->fixtures->create('payment:authorized', []);
+
+        $this->testData[__FUNCTION__]['request']['content']['terminal_id'] = $payment['terminal_id'];
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testProxyAuthFetchPaymentByIdForOptimiser()
+    {
+        $merchant = $this->fixtures->on('live')->create('merchant');
+
+        $merchantId = $merchant->getId();
+
+        $this->fixtures->on('live')->create('feature', [
+            'name'          => Feature::RAAS,
+            'entity_id'     => $merchantId,
+            'entity_type'   => 'merchant',
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId, [], 'owner', 'live');
+
+        $payment = $this->fixtures->on('live')->create('payment:authorized', [
+            'merchant_id' => $merchantId,
+        ]);
+
+        $this->testData[__FUNCTION__]['request']['url'] .= $payment->getPublicId();
+
+        $this->ba->proxyAuth('rzp_live_'.$merchantId, $merchantUser->getId());
+
+        $this->mockRazorxWith(
+            'optimizer_single_recon', 'on');
+
+        $this->startTest();
+    }
+
+    private function mockRazorxWith(string $featureUnderTest, string $value = 'on')
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')->will(
+            $this->returnCallback(
+                function (string $mid, string $feature, string $mode) use ($featureUnderTest, $value)
+                {
+                    return $feature === $featureUnderTest ? $value : 'control';
+                }
+            ));
     }
 }

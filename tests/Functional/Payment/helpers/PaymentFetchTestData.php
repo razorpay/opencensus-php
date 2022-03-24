@@ -763,4 +763,33 @@ return [
             ],
         ],
     ],
+
+    'testProxyAuthFetchPaymentOnTerminalId' => [
+        'request' => [
+            'url'     => '/payments',
+            'method'  => 'get',
+            'content' => [
+                'terminal_id' => '',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+            ],
+        ],
+    ],
+
+    'testProxyAuthFetchPaymentByIdForOptimiser' => [
+        'request' => [
+            'url'     => '/payments/',
+            'method'  => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'payment',
+                'optimizer_provider' => 'Razorpay'
+            ],
+        ],
+    ],
 ];
