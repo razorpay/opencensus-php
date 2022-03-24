@@ -40,17 +40,18 @@ class Client
             $this->app['trace']->info(TraceCode::RTO_PREDICTION_SERVICE_REQUEST, [
                 'url'   => $url,
                 'method' => $method,
-                'input' => $input,
             ]);
 
             $response = $this->makeRequest($url, $this->getHeaders(), $input, $method, $this->getOptions());
 
-            $this->app['trace']->info(TraceCode::RTO_PREDICTION_SERVICE_RESPONSE,
-                [
-                    'status_code' => $response->status_code,
-                    'response' => $response
-                ]);
-
+            if ($response->status_code != 200)
+            {
+                $this->app['trace']->info(TraceCode::RTO_PREDICTION_SERVICE_RESPONSE,
+                    [
+                        'status_code' => $response->status_code,
+                        'response' => $response
+                    ]);
+            }
 
             if ($response->status_code > 400)
             {
