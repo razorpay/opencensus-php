@@ -223,20 +223,22 @@ class Core extends Base\Core
         return $card;
     }
 
-    public function createForFundAccount($input, $merchant)
+    public function createForFundAccount($input, $merchant, $compositePayoutSaveOrFail)
     {
         $input[Card\Entity::VAULT] = Card\Vault::RZP_VAULT;
 
         //Duplication of code here, since using contact.name in place of card.name created problems
         //with validation due to dissimilar regex.
         // Todo: Find better approach
+        // We are sending negation of compositePayoutSaveOrFail because to save the card entity
+        // dummy processing needs to be false
         if ($merchant->isFeatureEnabled(Feature\Constants::ALLOW_CARD_NAME_CHANGES) === true)
         {
-            $card = $this->createCardWithContactName($input, $merchant);
+            $card = $this->createCardWithContactName($input, $merchant, false, !$compositePayoutSaveOrFail);
         }
         else
         {
-            $card = $this->create($input, $merchant);
+            $card = $this->create($input, $merchant, false, !$compositePayoutSaveOrFail);
         }
 
         $cardType       = $card->getType();

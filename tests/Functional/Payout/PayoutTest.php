@@ -10906,6 +10906,52 @@ class PayoutTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testCompositePayoutCreationViaNewCompositeFlowV1ForPayoutsToCard()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::HIGH_TPS_COMPOSITE_PAYOUT]);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_PROCESS_ASYNC]);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_ASYNC_INGRESS]);
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::S2S,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::PAYOUT_TO_CARDS,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->fixtures->create('iin', [
+            'iin'     => 340169,
+            'network' => Network::$fullName[Network::MC],
+            'type'    => Type::CREDIT,
+            'issuer'  => Issuer::ICIC
+        ]);
+
+        $this->ba->privateAuth();
+
+        $request = $this->testData['testCompositePayoutCreationViaNewCompositeFlowV1ForPayoutsToCard']['request'];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $payout = $this->getDbLastEntity(Constants\Entity::PAYOUT);
+        $contact = $this->getDbLastEntity(Constants\Entity::CONTACT);
+        $fundAccount = $this->getDbLastEntity(Constants\Entity::FUND_ACCOUNT);
+        $card = $this->getDbLastEntity(Constants\Entity::CARD);
+
+
+        $this->assertEquals($response[PayoutEntity::ID], $payout->getPublicId());
+        $this->assertEquals($response[PayoutEntity::FUND_ACCOUNT][PayoutEntity::ID], $fundAccount->getPublicId());
+        $this->assertEquals($response[PayoutEntity::FUND_ACCOUNT][PayoutEntity::CONTACT][PayoutEntity::ID],
+                            $contact->getPublicId());
+        $this->assertEquals($fundAccount->account->getId(), $card->getId());
+    }
+
     public function testCompositePayoutCreationViaNewCompositeFlowV1()
     {
         $this->fixtures->merchant->addFeatures([Feature\Constants::HIGH_TPS_COMPOSITE_PAYOUT]);

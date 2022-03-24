@@ -336,7 +336,10 @@ class Core extends Base\Core
 
         $fundAccount->account()->associate($account);
 
-        $fundAccount->setUniqueHash($uniqueHash);
+        if (empty($uniqueHash) === false)
+        {
+            $fundAccount->setUniqueHash($uniqueHash);
+        }
 
         if (empty($metadata) === false)
         {
@@ -466,7 +469,7 @@ class Core extends Base\Core
                 $accountInput[Card\Entity::NAME] = $accountInput[Card\Entity::NAME] ?? Card\Entity::DUMMY_NAME;
 
                 // Todo: migrate payout to cards for high TPS merchants as done for whatsapp
-                $account = (new Card\Core)->createForFundAccount($accountInput, $merchant);
+                $account = (new Card\Core)->createForFundAccount($accountInput, $merchant, $compositePayoutSaveOrFail);
                 break;
 
             case Type::WALLET_ACCOUNT:
