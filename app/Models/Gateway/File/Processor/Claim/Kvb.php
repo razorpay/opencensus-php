@@ -17,6 +17,7 @@ class Kvb extends NetbankingBase
     const EXTENSION = FileStore\Format::XLSX;
     const FILE_TYPE = FileStore\Type::KVB_NETBANKING_CLAIM;
     const GATEWAY   = Payment\Gateway::NETBANKING_KVB;
+    const BASE_STORAGE_DIRECTORY      = 'Kvb/Claim/Netbanking/';
 
     protected function formatDataForFile(array $data)
     {
@@ -49,7 +50,7 @@ class Kvb extends NetbankingBase
     {
         $dateTime = Carbon::now(Timezone::IST)->format('YdmHis');
 
-        return static::FILE_NAME . $dateTime;
+        return static::BASE_STORAGE_DIRECTORY . static::FILE_NAME . $dateTime;
     }
 
     protected function getFormattedAmount($amount): String

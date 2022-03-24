@@ -61,12 +61,15 @@ class NbplusNetbankingIobCombinedFileTest extends NbPlusPaymentServiceNetbanking
             'count' => 1
         ], true);
 
+        $date = Carbon::now(Timezone::IST)->format('Ymd');
+
         $expectedFilesContent = [
             'entity' => 'collection',
             'count' => 1,
             'items' => [
                 [
                     'type' => 'iob_netbanking_refund',
+                    'location' => 'Iob/Refund/Netbanking/Batch_RAZOR_IOB_Refund_' . $date . '.xls',
                 ],
             ],
         ];

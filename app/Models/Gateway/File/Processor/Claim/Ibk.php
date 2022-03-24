@@ -16,6 +16,7 @@ class Ibk extends NetbankingBase
     const FILE_TYPE = FileStore\Type::IBK_NETBANKING_CLAIM;
     const GATEWAY   = Payment\Gateway::NETBANKING_IBK;
     const CITY      = 'Bangalore';
+    const BASE_STORAGE_DIRECTORY = 'Ibk/Claim/Netbanking/';
 
     protected function formatDataForFile(array $data)
     {
@@ -82,7 +83,7 @@ class Ibk extends NetbankingBase
     {
         $date = Carbon::now(Timezone::IST)->format('dmY');
 
-        return strtr(self::FILE_NAME, ['{$date}' => $date]);
+        return static::BASE_STORAGE_DIRECTORY. strtr(self::FILE_NAME, ['{$date}' => $date]);
     }
 
     protected function getFormattedAmount($amount): String

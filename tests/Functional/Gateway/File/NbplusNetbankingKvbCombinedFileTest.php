@@ -96,6 +96,8 @@ class NbplusNetbankingKvbCombinedFileTest extends StaticCallbackNbplusGatewayTes
             'count' => 2
         ], true);
 
+        $date = Carbon::now(Timezone::IST)->format('dmY');
+
         $expectedFilesContent = [
             'entity' => 'collection',
             'count' => 2,
@@ -105,6 +107,7 @@ class NbplusNetbankingKvbCombinedFileTest extends StaticCallbackNbplusGatewayTes
                 ],
                 [
                     'type' => 'kvb_netbanking_refund',
+                    'location' => 'Kvb/Refund/Netbanking/RAZORPAY_REFUND_' . $date . '_01.xlsx',
                 ],
             ],
         ];

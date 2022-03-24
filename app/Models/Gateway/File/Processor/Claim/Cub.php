@@ -19,6 +19,7 @@ class Cub extends NetbankingBase
     const EXTENSION = FileStore\Format::TXT;
     const FILE_TYPE = FileStore\Type::CUB_NETBANKING_CLAIM;
     const GATEWAY   = Payment\Gateway::NETBANKING_CUB;
+    const BASE_STORAGE_DIRECTORY = 'Cub/Claim/Netbanking/';
 
     protected function formatDataForFile(array $data)
     {
@@ -47,7 +48,7 @@ class Cub extends NetbankingBase
     {
         $dateTime = Carbon::now(Timezone::IST)->format('YdmHis');
 
-        return static::FILE_NAME . $dateTime;
+        return  static::BASE_STORAGE_DIRECTORY . static::FILE_NAME . $dateTime;
     }
 
     protected function fetchGatewayEntities($paymentIds)

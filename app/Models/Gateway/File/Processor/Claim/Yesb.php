@@ -17,6 +17,7 @@ class Yesb extends NetbankingBase
     const EXTENSION = FileStore\Format::XLS;
     const FILE_TYPE = FileStore\Type::YESB_NETBANKING_CLAIM;
     const GATEWAY   = Payment\Gateway::NETBANKING_YESB;
+    const BASE_STORAGE_DIRECTORY     = 'Yesbank/Claim/Netbanking/';
 
     // This value needs be stored as this is used in the file name
     protected $gatewayMerchantId;
@@ -65,7 +66,7 @@ class Yesb extends NetbankingBase
         $date = Carbon::now(Timezone::IST)->format('dmY');
 
         // the serial no is hardcoded as the file is generated only once
-        return 'RAZORPAY'.'_'. $date . '_' . '01';
+        return static::BASE_STORAGE_DIRECTORY . 'RAZORPAY'.'_'. $date . '_' . '01';
     }
 
     protected function getFormattedAmount($amount): String

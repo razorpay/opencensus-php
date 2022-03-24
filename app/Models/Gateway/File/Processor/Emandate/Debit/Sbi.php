@@ -32,6 +32,8 @@ class Sbi extends Base
 
     const CORPORATE_NAME = 'Razorpay Software Pvt Ltd';
 
+    const BASE_STORAGE_DIRECTORY = 'Sbi/Emandate/Netbanking/';
+
     public function __construct()
     {
         parent::__construct();
@@ -92,7 +94,7 @@ class Sbi extends Base
     {
         $date = Carbon::now(Timezone::IST)->format('dmY');
 
-        $fileName = strtr(static::FILE_NAME, ['{$utilityCode}' => $data['utilityCode'], '{$date}' => $date]);
+        $fileName = static::BASE_STORAGE_DIRECTORY . strtr(static::FILE_NAME, ['{$utilityCode}' => $data['utilityCode'], '{$date}' => $date]);
 
         return $fileName;
     }

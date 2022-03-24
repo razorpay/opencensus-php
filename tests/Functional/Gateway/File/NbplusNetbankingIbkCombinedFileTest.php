@@ -94,15 +94,19 @@ class NbplusNetbankingIbkCombinedFileTest extends NbPlusPaymentServiceNetbanking
 
         $file = $this->getEntities(Entity::FILE_STORE, ['count' => 2], true);
 
+        $date = Carbon::now(Timezone::IST)->format('dmY');
+
         $expectedFilesContent = [
             'entity' => 'collection',
             'count'  => 2,
             'items'  => [
                 [
                     'type' => 'ibk_netbanking_claim',
+                    'location' => 'Ibk/Claim/Netbanking/Claim_' . $date . '_IndianBank-NetBanking.xlsx',
                 ],
                 [
                     'type' => 'ibk_netbanking_refund',
+                    'location' => 'Ibk/Refund/Netbanking/Refund_' . $date . '_IndianBank-NetBanking.xlsx',
                 ],
             ],
         ];

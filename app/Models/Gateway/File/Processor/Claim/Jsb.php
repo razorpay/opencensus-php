@@ -19,6 +19,7 @@ class Jsb extends NetbankingBase
     const EXTENSION = FileStore\Format::TXT;
     const FILE_TYPE = FileStore\Type::JSB_NETBANKING_CLAIM;
     const GATEWAY   = Payment\Gateway::NETBANKING_JSB;
+    const BASE_STORAGE_DIRECTORY      = 'Jsb/Claim/Netbanking/';
 
     const HEADERS = ClaimFields::CLAIM_FIELDS;
 
@@ -55,7 +56,7 @@ class Jsb extends NetbankingBase
     {
         $dateTime = Carbon::now(Timezone::IST)->format('Ydmis');
 
-        return static::FILE_NAME . $dateTime;
+        return static::BASE_STORAGE_DIRECTORY . static::FILE_NAME . $dateTime;
     }
 
     protected function getFormattedAmount($amount): String

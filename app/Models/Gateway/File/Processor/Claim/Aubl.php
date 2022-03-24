@@ -15,6 +15,7 @@ class Aubl extends NetbankingBase
     const EXTENSION = FileStore\Format::XLSX;
     const FILE_TYPE = FileStore\Type::AUBL_NETBANKING_CLAIM;
     const GATEWAY   = Payment\Gateway::NETBANKING_AUSF;
+    const BASE_STORAGE_DIRECTORY  = 'Aubl/Claim/Netbanking/';
 
     protected function formatDataForFile(array $data)
     {
@@ -58,7 +59,7 @@ class Aubl extends NetbankingBase
     {
         $date = Carbon::now(Timezone::IST)->format('dmY');
 
-        return strtr(self::FILE_NAME, ['{$date}' => $date]);
+        return self::BASE_STORAGE_DIRECTORY . strtr(self::FILE_NAME, ['{$date}' => $date]);
     }
 
     protected function fetchBankPaymentId($data)

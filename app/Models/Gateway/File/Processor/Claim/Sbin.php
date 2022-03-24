@@ -32,6 +32,8 @@ class Sbin extends NetbankingBase
 
     const FILE_NAME = 'SBI_CLAIM';
 
+    const BASE_STORAGE_DIRECTORY = 'Sbi/Claim/Netbanking/';
+
     protected function increaseAllowedSystemLimits()
     {
         RuntimeManager::setMemoryLimit('2048M');
@@ -103,7 +105,7 @@ class Sbin extends NetbankingBase
     {
         $time = Carbon::now(Timezone::IST)->format('dmY');
 
-        return static::FILE_NAME . '_' . $time;
+        return  static::BASE_STORAGE_DIRECTORY . static::FILE_NAME . '_' . $time;
     }
 
     protected function fetchBankPaymentId($data)

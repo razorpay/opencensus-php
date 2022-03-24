@@ -325,7 +325,7 @@ class NetbankingSbiCombinedFileTest extends TestCase
             'items' => [
                 [
                     'type' => 'sbi_netbanking_claim',
-                    'location' => 'SBI_CLAIM' . '_' . $date . '.txt'
+                    'location' => 'Sbi/Claim/Netbanking/SBI_CLAIM' . '_' . $date . '.txt'
                 ],
                 [
                     'type' => 'sbi_netbanking_refund',

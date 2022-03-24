@@ -96,15 +96,19 @@ class NbplusNetbankingYesbCombinedFileTest extends NbPlusPaymentServiceNetbankin
             'count' => 2
         ], true);
 
+        $date = Carbon::now(Timezone::IST)->format('dmY');
+
         $expectedFilesContent = [
             'entity' => 'collection',
             'count' => 2,
             'items' => [
                 [
                     'type' => 'yesb_netbanking_claim',
+                    'location' => 'Yesbank/Claim/Netbanking/RAZORPAY_' . $date . '_01.xls',
                 ],
                 [
                     'type' => 'yesb_netbanking_refund',
+                    'location' => 'Yesbank/Refund/Netbanking/RAZORPAY_REFUND_' . $date . '_01.xls',
                 ],
             ],
         ];

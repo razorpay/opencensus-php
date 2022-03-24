@@ -29,6 +29,7 @@ class Iob extends Base
     const GATEWAY                    = Payment\Gateway::NETBANKING_IOB;
     const PAYMENT_TYPE_ATTRIBUTE     = Payment\Entity::BANK;
     const GATEWAY_CODE               = IFSC::IOBA;
+    const BASE_STORAGE_DIRECTORY      = 'Iob/Refund/Netbanking/';
 
     protected function formatDataForFile(array $data)
     {
@@ -60,7 +61,7 @@ class Iob extends Base
     {
         $date = Carbon::now(Timezone::IST)->format('Ymd');
 
-        return self::FILE_NAME . $date;
+        return  static::BASE_STORAGE_DIRECTORY . self::FILE_NAME . $date;
     }
 
     protected function addGatewayEntitiesToDataWithPaymentIds(array $data, array $paymentIds)
