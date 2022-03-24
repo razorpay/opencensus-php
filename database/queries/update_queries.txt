@@ -3801,3 +3801,5 @@ Drop table new_payment_analytics;
 ALTER TABLE qr_payment ADD payer_bank_account_id char(14) DEFAULT NULL;
 
 ALTER TABLE qr_code ADD request_source char(9) DEFAULT NULL;
+
+ALTER TABLE addresses MODIFY COLUMN landmark VARCHAR(255) DEFAULT NULL;

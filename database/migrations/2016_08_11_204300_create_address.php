@@ -45,7 +45,7 @@ class CreateAddress extends Migration
                 ->nullable();
             $table->string(Entity::NAME, 64)->nullable();
             $table->string(Entity::TAG, 32)->nullable();
-            $table->string(Entity::LANDMARK, 64)->nullable();
+            $table->string(Entity::LANDMARK, 255)->nullable();
 
             $table->integer(Entity::DELETED_AT)
                   ->nullable();

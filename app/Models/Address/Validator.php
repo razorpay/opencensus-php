@@ -21,7 +21,7 @@ class Validator extends Base\Validator
         Entity::STATE    => 'required|string|between:2,32',
         Entity::COUNTRY  => 'sometimes|string|between:2,64|custom',
         Entity::TAG      => 'sometimes|string|between:2,32',
-        Entity::LANDMARK => 'sometimes|string|between:2,32',
+        Entity::LANDMARK => 'sometimes|string|between:2,255',
         Entity::PRIMARY  => 'sometimes|in:0,1',
     ];
 
@@ -48,7 +48,7 @@ class Validator extends Base\Validator
         Entity::STATE       => 'sometimes|string|between:2,32',
         Entity::COUNTRY     => 'sometimes|string|between:2,64|custom',
         Entity::TAG         => 'sometimes|string|between:2,32',
-        Entity::LANDMARK    => 'sometimes|string|between:2,32',
+        Entity::LANDMARK    => 'sometimes|string|between:2,255',
         Entity::PRIMARY     => 'sometimes|in:0,1',
     ];
 
@@ -63,7 +63,7 @@ class Validator extends Base\Validator
         Entity::STATE    => 'required|string|between:2,32',
         Entity::COUNTRY  => 'required|string|between:2,64|custom',
         Entity::TAG      => 'sometimes|string|between:2,32',
-        Entity::LANDMARK => 'sometimes|string|between:2,32',
+        Entity::LANDMARK => 'sometimes|string|between:2,255',
         Entity::PRIMARY  => 'sometimes|in:0,1',
         Entity::SOURCE_ID => 'sometimes',
         Entity::SOURCE_TYPE => 'sometimes|in:bulk_upload,payment_pages,thirdwatch',
@@ -80,7 +80,7 @@ class Validator extends Base\Validator
       Entity::STATE            => 'required|string|between:2,32',
       Entity::COUNTRY          => 'required|string|between:2,64|custom',
       Entity::TAG              => 'sometimes|string|between:2,32',
-      Entity::LANDMARK         => 'sometimes|string|between:2,32',
+      Entity::LANDMARK         => 'sometimes|string|between:2,255',
       Entity::PRIMARY          => 'sometimes|in:0,1',
     ];
 
@@ -95,7 +95,7 @@ class Validator extends Base\Validator
         Entity::STATE            => 'required|string|between:2,32',
         Entity::COUNTRY          => 'required|string|between:2,64|custom',
         Entity::TAG              => 'sometimes|string|between:2,32',
-        Entity::LANDMARK         => 'sometimes|string|between:2,32',
+        Entity::LANDMARK         => 'sometimes|string|between:2,255',
         Entity::PRIMARY          => 'sometimes|in:0,1',
     ];
 
