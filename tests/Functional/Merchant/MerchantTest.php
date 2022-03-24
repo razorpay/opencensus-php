@@ -89,6 +89,7 @@ use RZP\Models\User\Entity as UserEntity;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Fixtures\Entity\User;
 use RZP\Tests\Functional\Partner\PartnerTrait;
+use RZP\Models\Merchant\Cron as CronJobHandler;
 use RZP\Models\BankAccount\Entity as BankAccount;
 use RZP\Tests\P2p\Service\Base\Traits\EventsTrait;
 use RZP\Models\Merchant\Entity as MerchantEntity;
@@ -106,7 +107,6 @@ use RZP\Models\Merchant\Methods\Repository as MethodRepo;
 use RZP\Mail\Banking\BeneficiaryFile as BeneficiaryFileMail;
 use RZP\Mail\InstrumentRequest\StatusNotify as StatusNotifyMail;
 use RZP\Mail\User\PasswordAndEmailReset as PasswordAndEmailResetMail;
-
 
 use RZP\Exception\GatewayErrorException;
 use RZP\Exception\GatewayTimeoutException;
@@ -12602,7 +12602,7 @@ IFSC Code  ICIC0001206
 
     public function testGetRiskDataColumnNotPresent()
     {
-        $druidService = $this->getMockBuilder(MockDruidService::class)
+        $druidService  = $this->getMockBuilder(MockDruidService::class)
                              ->setConstructorArgs([$this->app])
                              ->onlyMethods([ 'getDataFromDruid'])
                              ->getMock();
@@ -15017,4 +15017,44 @@ The same has been enabled for the account.
         $this->assertEquals($vaCreationResponse['feeVAId']['id'], $merchantDetails->getFundAdditionVAIds()['fee_credit']);
 
     }
+
+    protected function assertMerchantTransactionCountForLastMonthFromCache($merchantId, $expectedTransactionCount)
+    {
+        $app = App::getFacadeRoot();
+
+        $cacheData = $app['cache']->get('merchant_segment_type:' . $merchantId);
+
+        $this->assertEquals($expectedTransactionCount, $cacheData);
+    }
+
+    protected function runMerchantTransactionCountCronForPGAppMerchants()
+    {
+        (new CronJobHandler\Core())->handleCron("save-merchant-segment-type-cron", [
+            "start_time" => Carbon::now()->subDay(30)->getTimestamp(),
+            "end_time"   => Carbon::now()->getTimestamp(),
+        ]);
+    }
+
+    public function testMerchantTransactionCountFoLastMonthCron()
+    {
+        [$merchantId, $userId] = $this->setupMerchantWithMerchantDetails([], ['activation_status' => 'activated']);
+
+        $paymentAttributes = [
+            'merchant_id' => $merchantId,
+            'amount'      => 100
+        ];
+
+        $daysBefore = [ 0, 1, 10, 31 ];
+
+        foreach ($daysBefore as $day)
+        {
+            $this->fixtures->create('payment:authorized', array_merge($paymentAttributes, [ 'created_at' => Carbon::now()->subDay($day)->getTimestamp()]) );
+        }
+
+        $this->runMerchantTransactionCountCronForPGAppMerchants();
+
+        $this->assertMerchantTransactionCountForLastMonthFromCache($merchantId, 3);
+    }
+
+
 }
