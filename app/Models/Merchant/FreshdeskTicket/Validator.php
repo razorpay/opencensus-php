@@ -134,6 +134,22 @@ class Validator extends Base\Validator
         'status'                                                 => 'sometimes',
     ];
 
+    protected static $createSupportDashboardXTicketMobileSignupRules = [
+        'name'                                                   => 'required|string',
+        'email'                                                  => 'sometimes|email',
+        'subject'                                                => 'required|string',
+        'description'                                            => 'required|string',
+        'phone'                                                  => 'required',
+        'attachments'                                            => 'sometimes',
+        'priority'                                               => 'required:min:1|max:4',
+        'cc_emails'                                              => 'sometimes|array',
+        'custom_fields'                                          => 'required|array',
+        'custom_fields.cf_requestor_subcategory'                 => 'sometimes',
+        'custom_fields.cf_merchant_id_dashboard'                 => 'required',
+        'fd_instance'                                            => 'sometimes',
+        'status'                                                 => 'sometimes',
+    ];
+
     protected static $createSupportDashboardXTicketRules = [
         'name'                                                   => 'sometimes|string',
         'email'                                                  => 'required|email',

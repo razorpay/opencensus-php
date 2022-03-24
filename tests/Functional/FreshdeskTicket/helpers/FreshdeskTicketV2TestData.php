@@ -618,6 +618,27 @@ return [
             ],
         ],
     ],
+    'testCreateTicketRzpXMobileSignUp' => [
+        'request' => [
+            'url'     => '/fd/support_dashboard_x/ticket/',
+            'method'  => 'POST',
+            'content' => [
+                'description'   => 'ticket description',
+                'subject'       => 'ticket subject',
+                'cc_emails'     => ['a@b.com'],
+                'custom_fields' => [
+                    'cf_requester_category'       => 'Merchant',
+                    'cf_requestor_subcategory'    => 'Activation'
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'description'  => 'ticket description',
+            ],
+        ],
+    ],
+
     'testCreateTicketRzpX' => [
         'request' => [
             'url'     => '/fd/support_dashboard_x/ticket/',

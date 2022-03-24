@@ -1441,7 +1441,14 @@ class Service extends Base\Service
 
     protected function makeInputForSupportDashboardXPostTicket($input)
     {
-        $input['email'] = $input['email'] ?? $this->merchant->getEmail();
+        if ($this->merchant->isSignupViaEmail() === true)
+        {
+            $input['email'] = $input['email'] ?? $this->merchant->getEmail();
+        }
+        else
+        {
+            $input['name'] = $this->merchant->getName() ?? '';
+        }
 
         $input['phone'] = $input['phone'] ?? $this->merchant->merchantDetail->getContactMobile();
 

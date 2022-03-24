@@ -1083,6 +1083,61 @@ class FreshdeskTicketV2Test extends TestCase
 
     }
 
+    public function testCreateTicketRzpXMobileSignUp()
+    {
+        $frDueBy = time() + self::DAY * 2;
+
+        $frDueByFreshdeskFormat = $this->getTimeInFreshdeskFormat($frDueBy);
+
+        $this->checkFreshdeskCorrectInstanceCallAndRespondWith('tickets', 'POST', 'rzpx',
+                                                               [
+                                                                   'description'   => 'ticket description',
+                                                                   'subject'       => 'ticket subject',
+                                                                   'cc_emails'     => ['a@b.com'],
+                                                                   'custom_fields' => [
+                                                                       'cf_requester_category'    => 'Merchant',
+                                                                       'cf_requestor_subcategory' => 'Activation',
+                                                                       'cf_merchant_id_dashboard' => 'merchant_dashboard_10000000000000',
+                                                                   ],
+                                                                   'name'          => 'test_name',
+                                                                   'phone'         => '9876543210',
+                                                                   'priority'      => 1,
+                                                                   'status'        => 2,
+                                                               ],
+                                                               [
+                                                                   'id'            => '99',
+                                                                   'description'   => 'ticket description',
+                                                                   'fr_due_by'     => $frDueByFreshdeskFormat,
+                                                                   'custom_fields' => [
+                                                                       'cf_requester_category'    => 'Merchant',
+                                                                       'cf_requestor_subcategory' => 'Activation',
+                                                                       'cf_merchant_id_dashboard' => 'merchant_dashboard_10000000000000',
+                                                                   ],
+                                                                   'priority' =>  1,
+                                                               ]);
+
+        $this->fixtures->merchant->edit('10000000000000', ['signup_via_email' => 0]);
+
+        $this->fixtures->user->edit('MerchantUser01', ['signup_via_email' => 0]);
+
+        $this->fixtures->merchant->edit('10000000000000', ['name' => 'test_name']);
+
+        $response = $this->startTest();
+
+        $ticket = $this->getLastEntity('merchant_freshdesk_tickets', true);
+
+        $fdInstance = $ticket['ticket_details']['fd_instance'];
+
+        $this->assertNotEquals('razorpayid0012', $ticket['id']);
+
+        $this->assertNotEquals('99', $response['id']);
+
+        $this->assertEquals($response['id'], $ticket['id']);
+
+        $this->assertEquals('rzpx', $fdInstance);
+
+    }
+
     public function testCreateTicketForAUserWithoutNameRzpX()
     {
         $frDueBy = time() + self::DAY * 2;
