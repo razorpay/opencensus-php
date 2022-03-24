@@ -2426,4 +2426,195 @@ class FundAccountsTest extends TestCase
 
         $this->assertEquals($fundAccountCountBefore, $fundAccountCountAfter);
     }
+
+    /**
+     * Given duplicate fund accounts with the same unique_hash exists,
+     * When a fund account creation request with same bank account details is received
+     * Then If a duplicate active account exists, the oldest active Fund account with these details should be returned
+     * And If a duplicate active account does not exist, the oldest inactive account should be returned
+     **/
+    public function testDuplicateCreationForFundAccountWithNoHashAndLinkedToABankAccount()
+    {
+        $this->fixtures->create('contact', ['id' => 'J7iImMrzcOhfSi']);
+
+        $this->fixtures->create('bank_account', [
+            "id" => "J7iQ0CTMCm9xdY",
+            "merchant_id" => "10000000000000",
+            "entity_id" => "J7iQ02v8z258fx",
+            "type" => "contact",
+            "ifsc_code" => "SBIN0007105",
+            "account_number" => "111000",
+            "beneficiary_name" => "Prashanth YV",
+            "beneficiary_country" => "IN",
+            "notes" => [],
+            "created_at" => 1647423853,
+            "name" => "Prashanth YV",
+            "ifsc" => "SBIN0007105",
+        ]);
+
+        // Create duplicate Fund Accounts with same unique_hash
+        $oldestFundAccountId = "J7iImZSVfq0Ydc";
+        $oldestFundAccountCreationTime = 1647423443;
+
+        $oldestActiveFundAccountId = "J7iImZSVfq0Ydd";
+        $oldestActiveFundAccountCreationTime = 1647423453;
+
+        $this->fixtures->create('fund_account', [
+            "id" => $oldestFundAccountId,
+            "merchant_id" => "10000000000000",
+            "source_type" => "contact",
+            "source_id" => "J7iImMrzcOhfSi",
+            "account_type" => "bank_account",
+            "account_id" => "J7iQ0CTMCm9xdY",
+            "active" => false,
+            "created_at" => $oldestFundAccountCreationTime,
+            "updated_at" => $oldestFundAccountCreationTime,
+        ]);
+
+        $this->fixtures->create('fund_account', [
+            "id" => $oldestActiveFundAccountId,
+            "merchant_id" => "10000000000000",
+            "source_type" => "contact",
+            "source_id" => "J7iImMrzcOhfSi",
+            "account_type" => "bank_account",
+            "account_id" => "J7iQ0CTMCm9xdY",
+            "active" => true,
+            "created_at" => $oldestActiveFundAccountCreationTime,
+            "updated_at" => $oldestActiveFundAccountCreationTime,
+        ]);
+
+        $fundAccountsBeforeTest = $this->getDbEntities('fund_account');
+
+        Queue::fake();
+
+        $response = $this->startTest();
+
+        $fundAccountsAfterTest = $this->getDbEntities('fund_account');
+
+        $this->assertSameSize($fundAccountsBeforeTest, $fundAccountsAfterTest);
+        $this->assertEquals('fa_' . $oldestActiveFundAccountId, $response['id']);
+    }
+
+    /**
+     * Given duplicate fund accounts with the same unique_hash exists,
+     * When a fund account creation request with same vpa details is received
+     * Then If a duplicate active account exists, the oldest active Fund account with these details should be returned
+     * And If a duplicate active account does not exist, the oldest inactive account should be returned
+     **/
+    public function testDuplicateCreationForFundAccountWithNoHashAndLinkedToAVPA()
+    {
+        $this->fixtures->create('contact', ['id' => 'J7iImMrzcOhfSi']);
+
+        $this->fixtures->create('vpa', [
+            'id' => 'J9embXZB7QAute',
+            'username'    => 'amitm',
+            'handle'      => 'upi',
+            'entity_type' => 'contact',
+            'entity_id'   => 'J7iImMrzcOhfSi',
+        ]);
+
+        // Create duplicate Fund Accounts with same unique_hash
+        $oldestFundAccountId = "J7iImZSVfq0Ydc";
+        $oldestFundAccountCreationTime = 1647423443;
+
+        $oldestActiveFundAccountId = "J7iImZSVfq0Ydd";
+        $oldestActiveFundAccountCreationTime = 1647423453;
+
+        $this->fixtures->create('fund_account', [
+            "id" => $oldestFundAccountId,
+            "merchant_id" => "10000000000000",
+            "source_type" => "contact",
+            "source_id" => "J7iImMrzcOhfSi",
+            "account_type" => "vpa",
+            "account_id" => "J9embXZB7QAute",
+            "active" => false,
+            "created_at" => $oldestFundAccountCreationTime,
+            "updated_at" => $oldestFundAccountCreationTime,
+        ]);
+
+        $this->fixtures->create('fund_account', [
+            "id" => $oldestActiveFundAccountId,
+            "merchant_id" => "10000000000000",
+            "source_type" => "contact",
+            "source_id" => "J7iImMrzcOhfSi",
+            "account_type" => "vpa",
+            "account_id" => "J9embXZB7QAute",
+            "active" => true,
+            "created_at" => $oldestActiveFundAccountCreationTime,
+            "updated_at" => $oldestActiveFundAccountCreationTime,
+        ]);
+
+        $fundAccountsBeforeTest = $this->getDbEntities('fund_account');
+
+        Queue::fake();
+
+        $response = $this->startTest();
+
+        $fundAccountsAfterTest = $this->getDbEntities('fund_account');
+
+        $this->assertSameSize($fundAccountsBeforeTest, $fundAccountsAfterTest);
+        $this->assertEquals('fa_' . $oldestActiveFundAccountId, $response['id']);
+    }
+
+    /**
+     * Given duplicate fund accounts with the same unique_hash exists,
+     * When a fund account creation request with same wallet account details is received
+     * Then If a duplicate active account exists, the oldest active Fund account with these details should be returned
+     * And If a duplicate active account does not exist, the oldest inactive account should be returned
+     **/
+    public function testDuplicateCreationForFundAccountWithNoHashAndLinkedToAWallet()
+    {
+        $this->fixtures->create('contact', ['id' => 'J7iImMrzcOhfSi']);
+
+        $this->fixtures->create('wallet_account', [
+            'id' => 'J9faRlGE9IegtP',
+            "entity_id" => "J7iImMrzcOhfSi",
+            "entity_type" => "contact",
+            'phone' => '+919999988888',
+            'email' => 'test@gmail.com',
+            'name'  => 'test',
+        ]);
+
+        // Create duplicate Fund Accounts with same unique_hash
+        $oldestFundAccountId = "J7iImZSVfq0Ydc";
+        $oldestFundAccountCreationTime = 1647423443;
+
+        $oldestActiveFundAccountId = "J7iImZSVfq0Ydd";
+        $oldestActiveFundAccountCreationTime = 1647423453;
+
+        $this->fixtures->create('fund_account', [
+            "id" => $oldestFundAccountId,
+            "merchant_id" => "10000000000000",
+            "source_type" => "contact",
+            "source_id" => "J7iImMrzcOhfSi",
+            "account_type" => "wallet_account",
+            "account_id" => "J9faRlGE9IegtP",
+            "active" => false,
+            "created_at" => $oldestFundAccountCreationTime,
+            "updated_at" => $oldestFundAccountCreationTime,
+        ]);
+
+        $this->fixtures->create('fund_account', [
+            "id" => $oldestActiveFundAccountId,
+            "merchant_id" => "10000000000000",
+            "source_type" => "contact",
+            "source_id" => "J7iImMrzcOhfSi",
+            "account_type" => "wallet_account",
+            "account_id" => "J9faRlGE9IegtP",
+            "active" => true,
+            "created_at" => $oldestActiveFundAccountCreationTime,
+            "updated_at" => $oldestActiveFundAccountCreationTime,
+        ]);
+
+        $fundAccountsBeforeTest = $this->getDbEntities('fund_account');
+
+        Queue::fake();
+
+        $response = $this->startTest();
+
+        $fundAccountsAfterTest = $this->getDbEntities('fund_account');
+
+        $this->assertSameSize($fundAccountsBeforeTest, $fundAccountsAfterTest);
+        $this->assertEquals('fa_' . $oldestActiveFundAccountId, $response['id']);
+    }
 }

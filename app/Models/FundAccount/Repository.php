@@ -85,9 +85,13 @@ class Repository extends Base\Repository
 
            $faUniqueHashColumn = $this->dbColumn(Entity::UNIQUE_HASH);
 
+           $faActiveColumn = $this->dbColumn(Entity::ACTIVE);
+
            $account = $this->newQueryWithConnection($this->getReportingReplicaConnection())
                            ->select($allFundAccountAttributes)
                            ->where($faUniqueHashColumn, '=', $uniqueHash)
+                           ->orderBy($faActiveColumn, 'desc')
+                           ->orderBy(Entity::CREATED_AT, 'asc')
                            ->first();
        }
 
@@ -145,6 +149,8 @@ class Repository extends Base\Repository
 
         $bankAccountCreatedAtColumn = $this->repo->bank_account->dbColumn(BankAccount\Entity::CREATED_AT);
 
+        $faActiveColumn = $this->dbColumn(Entity::ACTIVE);
+
         if ($merchant->isFeatureEnabled(Feature\Constants::SKIP_CONTACT_DEDUP_FA_BA))
         {
             // TODO: Can remove strtoupper() if collation for ifsc column is made case insensitive
@@ -157,6 +163,8 @@ class Repository extends Base\Repository
                         ->where($bankAccountAccountNumberColumn, '=', $bankAccount[BankAccount\Entity::ACCOUNT_NUMBER])
                         ->where($bankAccountIfscCodeColumn, 'LIKE', $ifsc . '%')
                         ->where($bankAccountMerchantIdColumn, '=', $merchant->getId())
+                        ->orderBy($faActiveColumn, 'desc')
+                        ->orderBy(Entity::CREATED_AT, 'asc')
                         ->first();
         }
         else
@@ -171,6 +179,8 @@ class Repository extends Base\Repository
                         ->where($bankAccountIfscCodeColumn, '=', strtoupper($bankAccount[BankAccount\Entity::IFSC]))
                         ->where($bankAccountBeneficiaryName, '=', $bankAccount[BankAccount\Entity::NAME])
                         ->where($bankAccountMerchantIdColumn, '=', $merchant->getId())
+                        ->orderBy($faActiveColumn, 'desc')
+                        ->orderBy(Entity::CREATED_AT, 'asc')
                         ->first();
         }
     }
@@ -201,6 +211,8 @@ class Repository extends Base\Repository
 
         $vpaMerchantIdColumn = $this->repo->vpa->dbColumn(Vpa\Entity::MERCHANT_ID);
 
+        $faActiveColumn = $this->dbColumn(Entity::ACTIVE);
+
         list($username, $handle) = explode(Vpa\Entity::AROBASE, $vpa[Vpa\Entity::ADDRESS]);
 
         return $this->newQuery()
@@ -211,6 +223,8 @@ class Repository extends Base\Repository
                     ->where($vpaUsernameColumn, $username)
                     ->where($vpaHandleColumn, $handle)
                     ->where($vpaMerchantIdColumn, '=', $merchant->getId())
+                    ->orderBy($faActiveColumn, 'desc')
+                    ->orderBy(Entity::CREATED_AT, 'asc')
                     ->first();
     }
 
@@ -365,6 +379,8 @@ class Repository extends Base\Repository
 
         $walletAccountMerchantIdColumn = $this->repo->wallet_account->dbColumn(WalletAccount\Entity::MERCHANT_ID);
 
+        $faActiveColumn = $this->dbColumn(Entity::ACTIVE);
+
         return $this->newQuery()
                     ->select($allFundAccountAttributes)
                     ->join($walletAccountTable, $faAccountIdColumn, '=', $walletAccountIdColumn)
@@ -373,6 +389,8 @@ class Repository extends Base\Repository
                     ->where($walletAccountPhoneNoColumn, '=', $walletAccount[WalletAccount\Entity::PHONE])
                     ->where($walletAccountProviderColumn, '=', $walletAccount[WalletAccount\Entity::PROVIDER])
                     ->where($walletAccountMerchantIdColumn, '=', $merchant->getId())
+                    ->orderBy($faActiveColumn, 'desc')
+                    ->orderBy(Entity::CREATED_AT, 'asc')
                     ->first();
     }
 }

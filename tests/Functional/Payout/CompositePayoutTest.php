@@ -868,4 +868,99 @@ class CompositePayoutTest extends TestCase
         // Assert that the response doesn't have 'merchant_disabled' field
         $this->assertArrayNotHasKey('merchant_disabled', $response['fund_account']);
     }
+
+    /**
+     * Given duplicate fund accounts with the same unique_hash exists,
+     * When a composite payout creation request with same fund account details is received
+     * Then the existing oldest active Fund account should be associated with the payout
+     **/
+    public function testCreateCompositePayoutSelectsOldestActiveFundAccountWhenDuplicateFundAccountIsFound()
+    {
+        $this->fixtures->create('contact', [
+            "id" => "J7iImMrzcOhfSi",
+            "merchant_id" => "10000000000000",
+            "name" => "Prashanth YV",
+            "contact" => "9999999999",
+            "email" => "prashanth@razorpay.com",
+            "type" => "employee",
+            "reference_id" => null,
+            "notes" => [
+                "note_key" => "note_value"
+            ],
+            "active" => true,
+            "created_at" => 1647423442,
+            "updated_at" => 1647423442,
+        ]);
+
+        $this->fixtures->create('bank_account', [
+            "id" => "J7iQ0CTMCm9xdY",
+            "merchant_id" => "10000000000000",
+            "entity_id" => "J7iQ02v8z258fx",
+            "type" => "contact",
+            "ifsc_code" => "SBIN0007105",
+            "account_number" => "111000",
+            "beneficiary_name" => "Prashanth YV",
+            "beneficiary_country" => "IN",
+            "notes" => [],
+            "created_at" => 1647423853,
+            "name" => "Prashanth YV",
+            "ifsc" => "SBIN0007105",
+        ]);
+
+        // Create duplicate Fund Accounts with same unique_hash
+        $oldestFundAccountId = "J7iImZSVfq0Ydc";
+        $oldestFundAccountCreationTime = 1647423443;
+
+        $oldestActiveFundAccountId = "J7iImZSVfq0Ydd";
+        $oldestActiveFundAccountCreationTime = 1647423453;
+
+        $newestActiveFundAccountId = "J7iImZSVfq0Yde";
+        $newestActiveFundAccountCreationTime = 1647423463;
+
+        $this->fixtures->create('fund_account', [
+            "id" => $oldestFundAccountId,
+            "merchant_id" => "10000000000000",
+            "source_type" => "contact",
+            "source_id" => "J7iImMrzcOhfSi",
+            "account_type" => "bank_account",
+            "account_id" => "J7iQ0CTMCm9xdY",
+            "active" => false,
+            "created_at" => $oldestFundAccountCreationTime,
+            "updated_at" => $oldestFundAccountCreationTime,
+            "unique_hash" => "8f6ad5450d7466e718fa383ed6cff11dea8ef26d624dbf154891b9d69061f6b4",
+        ]);
+
+        $this->fixtures->create('fund_account', [
+            "id" => $oldestActiveFundAccountId,
+            "merchant_id" => "10000000000000",
+            "source_type" => "contact",
+            "source_id" => "J7iImMrzcOhfSi",
+            "account_type" => "bank_account",
+            "account_id" => "J7iQ0CTMCm9xdY",
+            "active" => true,
+            "created_at" => $oldestActiveFundAccountCreationTime,
+            "updated_at" => $oldestActiveFundAccountCreationTime,
+            "unique_hash" => "8f6ad5450d7466e718fa383ed6cff11dea8ef26d624dbf154891b9d69061f6b4",
+        ]);
+
+        $this->fixtures->create('fund_account', [
+            "id" => $newestActiveFundAccountId,
+            "merchant_id" => "10000000000000",
+            "source_type" => "contact",
+            "source_id" => "J7iImMrzcOhfSi",
+            "account_type" => "bank_account",
+            "account_id" => "J7iQ0CTMCm9xdY",
+            "active" => true,
+            "created_at" => $newestActiveFundAccountCreationTime,
+            "updated_at" => $newestActiveFundAccountCreationTime,
+            "unique_hash" => "8f6ad5450d7466e718fa383ed6cff11dea8ef26d624dbf154891b9d69061f6b4",
+        ]);
+
+        $this->startTest();
+
+        $payouts = $this->getDbEntities('payout');
+
+        // Assert that the created payout picks up the oldest active Fund Account ID
+        $this->assertEquals($oldestActiveFundAccountId, $payouts[0]['fund_account_id']);
+    }
 }

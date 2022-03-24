@@ -4289,5 +4289,90 @@ return [
             'class'               => Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_INTERNAL_FUND_ACCOUNT_CREATION_NOT_PERMITTED,
         ],
+    ],
+
+    'testDuplicateCreationForFundAccountWithNoHashAndLinkedToABankAccount' => [
+        'request'  => [
+            'content' => [
+                'account_type' => 'bank_account',
+                'contact_id'   => 'cont_J7iImMrzcOhfSi',
+                'bank_account'      => [
+                    'ifsc'           => 'SBIN0007105',
+                    'name'           => 'Prashanth YV',
+                    'account_number' => '111000',
+                ],
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'fund_account',
+                'account_type' => 'bank_account',
+                'contact_id'   => 'cont_J7iImMrzcOhfSi',
+                'bank_account'      => [
+                    'ifsc'           => 'SBIN0007105',
+                    'name'           => 'Prashanth YV',
+                    'account_number' => '111000'
+                ],
+            ],
+            'status_code' => 200
+        ],
+    ],
+
+    'testDuplicateCreationForFundAccountWithNoHashAndLinkedToAVPA' => [
+        'request'  => [
+            'content' => [
+                'account_type' => 'vpa',
+                'contact_id'   => 'cont_J7iImMrzcOhfSi',
+                'vpa'      => [
+                    'address' => 'amitm@upi',
+                ],
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'fund_account',
+                'account_type' => 'vpa',
+                'contact_id'   => 'cont_J7iImMrzcOhfSi',
+                'vpa'      => [
+                    'address' => 'amitm@upi',
+                ],
+            ],
+            'status_code' => 200
+        ],
+    ],
+
+    'testDuplicateCreationForFundAccountWithNoHashAndLinkedToAWallet' => [
+        'request'  => [
+            'content' => [
+                'account_type'  => 'wallet',
+                'contact_id'    => 'cont_J7iImMrzcOhfSi',
+                'wallet'  => [
+                    'provider' => 'amazonpay',
+                    'phone'    => '9999988888',
+                    'email'    => 'test@gmail.com',
+                    'name'     => 'test',
+                ],
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'fund_account',
+                'account_type' => 'wallet',
+                'contact_id'   => 'cont_J7iImMrzcOhfSi',
+                'wallet'  => [
+                    'provider' => 'amazonpay',
+                    'phone'    => '+919999988888',
+                    'email'    => 'test@gmail.com',
+                    'name'     => 'test',
+                ],
+            ],
+            'status_code' => 200
+        ],
     ]
 ];
