@@ -982,4 +982,40 @@ class Service extends Base\Service
             );
         }
     }
+
+    public function globalSavedCardAsyncTokenisation(): array
+    {
+        try
+        {
+            $asyncTokenisationJobId = UniqueIdEntity::generateUniqueId();
+
+            $this->app['diag']->trackAsyncTokenisationEvent(EventCode::ASYNC_TOKENISATION_JOB_INITIATED, [
+                'merchant_id_count'         => 1,
+                'merchant_id_list'          => [Merchant\Account::SHARED_ACCOUNT],
+                'async_tokenization_job_id' => $asyncTokenisationJobId,
+            ]);
+
+            $this->trace->info(TraceCode::ASYNC_GLOBAL_TOKENISATION_REQUEST, [
+                'async_tokenization_job_id' => $asyncTokenisationJobId,
+            ]);
+
+            MerchantAsyncTokenisationJob::dispatch($this->mode, Merchant\Account::SHARED_ACCOUNT, $asyncTokenisationJobId);
+
+            $this->trace->info(TraceCode::ASYNC_GLOBAL_TOKENISATION_DISPATCH_SUCCESS, [
+                'async_tokenization_job_id' => $asyncTokenisationJobId,
+            ]);
+
+            return ['success' => true];
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::ASYNC_GLOBAL_TOKENISATION_ERROR
+            );
+
+            return ['success' => false];
+        }
+    }
 }

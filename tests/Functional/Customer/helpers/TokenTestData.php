@@ -564,4 +564,17 @@ return [
             ],
         ],
     ],
+
+    'testGlobalCardsAsyncTokenisation' => [
+        'request'  => [
+            'url'      => '/tokenisation/global_cards',
+            'method'   => 'post',
+            'content'  => []
+        ],
+        'response' => [
+            'content' => [
+                'success' => true
+            ],
+        ],
+    ],
 ];

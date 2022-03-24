@@ -1087,4 +1087,25 @@ class TokenisationTest extends TestCase
             'vault'      => $vault,
         ];
     }
+
+    public function testGlobalCardAsyncTokenisationSuccess(): void
+    {
+        $testData = $this->testData['testGlobalCardsAsyncTokenisation'];
+
+        $this->ba->appAuth();
+
+        $gateways = ['tokenisation_visa'];
+
+        $timestamp = Carbon::now()->getTimestamp();
+
+        extract($this->setUpDataForTokenisation('100000Razorpay', $timestamp));
+
+        $this->mockTerminalServiceForMakeRequest($gateways);
+
+        $this->prepareData($merchantId, true);
+
+        $this->buildData($network, $merchantId, $vault, $methodTest, $tokenId, $timestamp);
+
+        $response = $this->runRequestResponseFlow($testData);
+    }
 }

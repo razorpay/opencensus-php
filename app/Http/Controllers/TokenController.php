@@ -89,4 +89,11 @@ class TokenController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function globalSavedCardAsyncTokenisation()
+    {
+        $data = $this->service()->globalSavedCardAsyncTokenisation();
+
+        return ApiResponse::json($data);
+    }
 }
