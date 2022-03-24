@@ -290,6 +290,32 @@ return [
         ],
     ],
 
+    'testFetchLinkedAccountTransferByPaymentIdAndTransferId' => [
+        'request' => [
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'items' => [
+                    [
+                        'recipient'                 => 'acc_10000000000001',
+                        'currency'                  => "INR",
+                        'amount'                    => 1000,
+                        'status'                    => 'processed',
+                        'amount_reversed'           => 0,
+                        'notes'                     => [],
+                        'fees'                      => 0,
+                        'tax'                       => 0,
+                        'on_hold'                   => false,
+                        'on_hold_until'             => null,
+                        'recipient_settlement_id'   => null,
+                        'linked_account_notes'      => [],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testCronProcessPendingPaymentTransfers' => [
         'request'   => [
             'method'    => 'POST',

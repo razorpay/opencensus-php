@@ -636,6 +636,39 @@ class PaymentMarketplaceTransferTest extends TestCase
 
         $testData['request']['url'] = '/la-transfers/payment/' . $this->payment['id'];
 
+        $testData['response']['content']['items'][0] += [
+            "id"                                     => $transfer['id'],
+            "source"                                 => $this->payment['id']
+        ];
+
+        $user = $this->fixtures->user->createUserForMerchant('10000000000001', [], Role::LINKED_ACCOUNT_OWNER);
+
+        $this->ba->proxyAuth('rzp_test_10000000000001', $user->getId());
+
+        $this->fixtures->merchant->addFeatures(['display_parent_payment_id'], '10000000000001');
+
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testFetchLinkedAccountTransferByPaymentIdAndTransferId()
+    {
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $transfers[0] = [
+            'account' => 'acc_10000000000001',
+            'amount'  => 1000,
+            'currency'=> 'INR',
+        ];
+
+        $transfers = $this->transferPayment($this->payment['id'], $transfers);
+
+        $transfer = $transfers['items'][0];
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/la-transfers/payment/' . $this->payment['id'];
+
+        $testData['request']['content']['id'] = $transfer['id'];
 
         $testData['response']['content']['items'][0] += [
             "id"                                     => $transfer['id'],

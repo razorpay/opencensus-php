@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Order\Transfers;
 use Carbon\Carbon;
 use RZP\Models\Order;
 use RZP\Models\Transfer;
+use RZP\Models\User\Role;
 use RZP\Constants\Timezone;
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
@@ -753,5 +754,59 @@ class OrderTransferTest extends TestCase
         $payment = $this->doAuthAndCapturePayment($payment);
 
         return $payment;
+    }
+
+    public function testFetchLinkedAccountTransferByPaymentIdOfOrder()
+    {
+        $order = $this->testCreateOrderTransfers();
+
+        $payment = $this->capturePaymentProcessOrderTransfers($order);
+
+        $transfer = $this->getLastEntity('transfer', true);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/la-transfers/payment/' . $payment['id'];
+
+        $testData['response']['content']['items'][0] += [
+            "id"                                     => $transfer['id'],
+            "source"                                 => $order['id']
+        ];
+
+        $user = $this->fixtures->user->createUserForMerchant('10000000000001', [], Role::LINKED_ACCOUNT_OWNER);
+
+        $this->ba->proxyAuth('rzp_test_10000000000001', $user->getId());
+
+        $this->fixtures->merchant->addFeatures(['display_parent_payment_id'], '10000000000001');
+
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testFetchLinkedAccountTransferByPaymentIdOfOrderWithTransferId()
+    {
+        $order = $this->testCreateOrderTransfers();
+
+        $payment = $this->capturePaymentProcessOrderTransfers($order);
+
+        $transfer = $this->getLastEntity('transfer', true);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/la-transfers/payment/' . $payment['id'];
+
+        $testData['request']['content']['id'] = $transfer['id'];
+
+        $testData['response']['content']['items'][0] += [
+            "id"                                     => $transfer['id'],
+            "source"                                 => $order['id']
+        ];
+
+        $user = $this->fixtures->user->createUserForMerchant('10000000000001', [], Role::LINKED_ACCOUNT_OWNER);
+
+        $this->ba->proxyAuth('rzp_test_10000000000001', $user->getId());
+
+        $this->fixtures->merchant->addFeatures(['display_parent_payment_id'], '10000000000001');
+
+        $this->runRequestResponseFlow($testData);
     }
 }
