@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Contacts;
 use RZP\Models\Contact\Repository;
 use RZP\Models\Contact\Core;
 use RZP\Models\Contact\Service;
+use RZP\Models\Contact\Type;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -118,5 +119,22 @@ class ContactsUnitTest extends TestCase
         $result = $repo->fetchContactsHavingSpaceInType([$merchant['id']], $creationTime, $creationTime);
 
         $this->assertEquals(0,sizeof($result),'');
+    }
+
+    public function testTrimType(){
+        $typeObj = new Type();
+        $merchant = $this->fixtures->create('merchant');
+        $typeObj->trimType(' test ', $merchant);
+
+        $allTypes = $typeObj->getAll($merchant)['items'];
+
+        $hasType = 0;
+        for($i=0;$i<sizeof($allTypes);$i++){
+            if($allTypes[$i]['type'] == 'test'){
+                $hasType = 1;
+            }
+        }
+
+        $this->assertEquals(1,$hasType,'');
     }
 }
