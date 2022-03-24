@@ -3,16 +3,12 @@
 namespace RZP\Tests\Functional\Transfer;
 
 use Mail;
-use RZP\Mail\Merchant\BalancePositiveAlert;
-use RZP\Mail\Merchant\NegativeBalanceThresholdAlert;
 use RZP\Models\Transfer;
 use RZP\Constants\Entity;
 use RZP\Models\User\Role;
-use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\RefundSource;
 use RZP\Exception\BadRequestException;
-use RZP\Mail\Merchant\NegativeBalanceAlert;
 use RZP\Models\Reversal\Entity as ReversalEntity;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Models\Feature\Constants as FeatureConstants;
@@ -35,6 +31,11 @@ class TransferTest extends TestCase
 
         parent::setUp();
 
+        $this->initializeTestSetup();
+    }
+
+    protected function initializeTestSetup()
+    {
         $this->fixtures->merchant->addFeatures(['marketplace', 'direct_transfer']);
 
         $account = $this->fixtures->create('merchant:marketplace_account');

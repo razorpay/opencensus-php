@@ -29,6 +29,11 @@ class OrderTransferTest extends TestCase
 
         $this->ba->privateAuth();
 
+        $this->initializeTestSetup();
+    }
+
+    protected function initializeTestSetup()
+    {
         $this->fixtures->merchant->addFeatures(['marketplace']);
 
         $account = $this->fixtures->create('merchant:marketplace_account');

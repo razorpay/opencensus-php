@@ -22,6 +22,11 @@ class PaymentMarketplaceRefundTest extends TestCase
 
         parent::setUp();
 
+        $this->initializeTestSetup();
+    }
+
+    protected function initializeTestSetup()
+    {
         $this->payment = $this->doAuthAndCapturePayment();
 
         $account1 = $this->fixtures->create('merchant:marketplace_account');

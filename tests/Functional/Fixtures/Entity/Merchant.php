@@ -233,13 +233,18 @@ class Merchant extends Base
     {
         $accountId = $data['id'] ?? '10000000000001';
 
-        $merchant = $this->fixtures->create(
-            'merchant',
-            [
-                'id' => $accountId,
-                'parent_id' => '10000000000000',
-                'pricing_plan_id' => '1hDYlICobzOCYt'
-            ]);
+        $merchantData = [
+            MerchantEntity::ID              => $accountId,
+            MerchantEntity::PARENT_ID       => '10000000000000',
+            MerchantEntity::PRICING_PLAN_ID => '1hDYlICobzOCYt'
+        ];
+
+        if(array_key_exists(MerchantEntity::EMAIL, $data))
+        {
+            $merchantData[MerchantEntity::EMAIL] = $data[MerchantEntity::EMAIL];
+        }
+
+        $merchant = $this->fixtures->create('merchant', $merchantData);
 
         $balance = 0;
 

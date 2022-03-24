@@ -30,6 +30,11 @@ class PaymentMarketplaceTransferTest extends TestCase
 
         parent::setUp();
 
+        $this->initializeTestSetup();
+    }
+
+    protected function initializeTestSetup()
+    {
         $this->payment = $this->doAuthAndCapturePayment();
 
         $account = $this->fixtures->create('merchant:marketplace_account');
