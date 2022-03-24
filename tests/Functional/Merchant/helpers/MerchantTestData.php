@@ -464,6 +464,111 @@ return [
             ],
         ],
     ],
+    'testGetMerchantConfigForActivatedMerchantFinanceRole'                          => [
+        'request'  => [
+            'url'    => '/merchant/user/app_config',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'segment_type' => 'payments_enabled_and_not_transacted',
+                'widgets'      => [
+                    ['type' => 'onboarding_card'],
+                    ['type' => 'recent_transactions'],
+                    ['type' => 'settlements'],
+                ],
+            ],
+        ],
+    ],
+    'testGetMerchantConfigForActivatedMerchantOwnerRoleWithTransactionsAndFTUXDone' => [
+        'request'  => [
+            'url'    => '/merchant/user/app_config',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'segment_type' => 'payments_enabled_and_transacted',
+                'widgets'      => [
+                    ['type' => 'payment_handle'],
+                    ['type' => 'onboarding_card'],
+                    ['type'  => 'accept_payments',
+                     'props' => [
+                         'products' => [
+                             [
+                                 'type'          => 'payment_link',
+                                 'ftux_complete' => true,
+                             ],
+                             [
+                                 'type'          => 'payment_gateway',
+                                 'ftux_complete' => false,
+                             ],
+                             [
+                                 'type'          => 'qr_code',
+                                 'ftux_complete' => false,
+                             ],
+                         ]
+                     ]
+                    ],
+                    ['type' => 'settlements'],
+                    ['type' => 'payment_analytics'],
+                    ['type' => 'recent_transactions'],
+                ],
+            ],
+        ],
+    ],
+    'testGetMerchantConfigForNonActivatedMerchantOwnerRole'                         => [
+        'request'  => [
+            'url'    => '/merchant/user/app_config',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'segment_type' => 'payments_not_enabled',
+                'widgets'      => [
+                    ['type' => 'payment_handle'],
+                    ['type' => 'onboarding_card'],
+                    ['type' => 'accept_payments'],
+                    ['type' => 'settlements'],
+                ],
+            ],
+        ],
+    ],
+    'testMerchantChangeFTUX'                                   => [
+        'request'  => [
+            'content' => [
+                'product'       => 'payment_link',
+                'ftux_complete' => true,
+            ],
+            'url'     => '/merchant/user/change/ftux',
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+    'testMerchantIncrementProductSession'                      => [
+        'request'  => [
+            'content' => [
+            ],
+            'url'     => '/merchant/user/app/session',
+            'method'  => 'POST',
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+    'testGetMerchantMultiplePaymentsWithCardDetailsWithSource' => [
+        'request'  => [
+            'url'     => '/merchant/payments/source',
+            'method'  => 'get',
+            'content' => [
+                'expand' => ['card']
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
 
     'testMerchantEmailGetUserStatus' => [
         'request' => [

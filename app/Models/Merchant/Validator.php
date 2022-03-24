@@ -390,6 +390,13 @@ class Validator extends Base\Validator
         'merchant_ids.*' => 'required|alpha_num|size:14',
     ];
 
+    // app scalability validation
+    protected static $appScalabilityChangeFtuxRules = [
+        constants::PRODUCT       => 'required|string|in:payment_link,payment_gateway,qr_code,tap_and_pay',
+        constants::FTUX_COMPLETE => 'required|bool',
+        constants::INTRODUCING   => 'sometimes|bool',
+    ];
+
 
     protected static $editConfigValidators = [
         'csv_email',

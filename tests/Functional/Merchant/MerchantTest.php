@@ -506,6 +506,102 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testGetMerchantConfigForActivatedMerchantFinanceRole()
+    {
+        [$merchantId, $userId] = $this->setupMerchantWithMerchantDetails([
+            'live' => true, 'activated' => 1], [
+            'activation_status' => 'activated',
+            'business_category' => 'ecommerce'
+        ], 'finance');
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId, $userId);
+
+        $this->startTest();
+    }
+
+    private function createMerchantTransactionAndAssertCacheData($merchantId)
+    {
+        $paymentAttributes = [
+            'merchant_id' => $merchantId,
+            'amount'      => 100
+        ];
+
+        $daysBefore = [0, 1, 10, 31];
+
+        foreach ($daysBefore as $day)
+        {
+            $this->fixtures->create('payment:authorized', array_merge($paymentAttributes, ['created_at' => Carbon::now()->subDay($day)->getTimestamp()]));
+        }
+
+        $this->runMerchantTransactionCountCronForPGAppMerchants();
+
+        $this->assertMerchantTransactionCountForLastMonthFromCache($merchantId, 3);
+    }
+
+    public function testGetMerchantConfigForActivatedMerchantOwnerRoleWithTransactionsAndFTUXDone()
+    {
+        $this->fixtures->merchant->edit('10000000000000', ['live' => true, 'activated' => 1]);
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'       => '10000000000000',
+            'activation_status' => 'activated',
+            'business_category' => 'ecommerce'
+        ]);
+
+        $this->testMerchantIncrementProductSession();
+
+        $this->ba->proxyAuthTest();
+
+        $this->createMerchantTransactionAndAssertCacheData('10000000000000');
+
+        $this->testMerchantChangeFTUX();
+
+        $this->startTest();
+    }
+
+    public function testGetMerchantConfigForNonActivatedMerchantOwnerRole()
+    {
+        [$merchantId, $userId] = $this->setupMerchantWithMerchantDetails(['live' => false, 'activated' => 0], [
+            'activation_status' => 'needs_clarification',
+            'business_category' => 'ecommerce'
+        ], 'owner');
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId, $userId);
+
+        $this->startTest();
+    }
+
+    public function testMerchantChangeFTUX()
+    {
+        $this->ba->proxyAuthTest();
+
+        $this->startTest();
+    }
+
+    public function testMerchantIncrementProductSession()
+    {
+        $this->ba->proxyAuthTest();
+
+        $this->startTest();
+    }
+
+    public function testGetMerchantMultiplePaymentsWithCardDetailsWithSource()
+    {
+        $order = $this->fixtures->create('order:payment_capture_order', [
+            'product_type' => 'payment_link'
+        ]);
+
+        $this->fixtures->create('payment:captured', [
+            'fee' => 23000, 'order_id' => $order->getId()
+        ]);
+
+        $this->ba->proxyAuthTest();
+
+        $response = $this->startTest();
+
+        $this->assertEquals('payment_link', $response['items'][0]['product_type']);
+    }
+
     public function testMerchantFetchKeys()
     {
         $this->ba->proxyAuthTest();

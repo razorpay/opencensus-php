@@ -55,6 +55,7 @@ final class Constants
     const WORKFLOW_URL                            = 'workflowUrl';
     const BUSINESS_TYPE                           = 'businessType';
     const TYPE                                    = 'type';
+    const EPOS                                    = 'ePOS';
     const LEVEL                                   = 'level';
     const WORKFLOW                                = 'workflow';
     const ID                                      = 'id';
@@ -174,6 +175,40 @@ final class Constants
 
     const TRANSACTION_LIMIT_INCREASE_REASON_COMMENT                 = 'Transaction Limit Increase Reason: %s';
     const TRANSACTION_LIMIT_INCREASE_SUPPORT_DOCUMENT_URL_COMMENT   = 'Support Document (Invoice) URL: %sadmin/entity/ufh.files/live/file_%s';
+
+
+    const PAYMENTS_ENABLED_AND_FREQUENTLY_TRANSACTED = 'payments_enabled_and_frequently_transacted';
+    const PAYMENTS_ENABLED_AND_TRANSACTED            = 'payments_enabled_and_transacted';
+    const PAYMENTS_ENABLED_AND_NOT_TRANSACTED        = 'payments_enabled_and_not_transacted';
+    const PAYMENTS_NOT_ENABLED                       = 'payments_not_enabled';
+    const PAYMENT_HANDLE                             = 'payment_handle';
+    const ONBOARDING_CARD                            = 'onboarding_card';
+    const ACCEPT_PAYMENTS                            = 'accept_payments';
+    const SETTLEMENTS                                = 'settlements';
+    const RECENT_TRANSACTIONS                        = 'recent_transactions';
+    const PAYMENT_ANALYTICS                          = 'payment_analytics';
+    const PRIORITY                                   = 'priority';
+    const PRODUCTS                                   = 'products';
+    const PROPS                                      = 'props';
+    const PRODUCT                                    = 'product';
+    const FTUX_COMPLETE                              = 'ftux_complete';
+    const INTRODUCING                                = 'introducing';
+    const USER_ROLES                                 = 'user_roles';
+    const SEGMENT_TYPE                               = 'segment_type';
+    const WIDGETS                                    = 'widgets';
+    const ERROR                                      = 'error';
+    const CODE                                       = 'code';
+    const DESCRIPTION                                = 'description';
+    const TITLE                                      = 'title';
+    const VARIANT                                    = 'variant';
+    const QR_CODE                                    = 'qr_code';
+    const TAP_AND_PAY                                = 'tap_and_pay';
+    const PAYMENT_LINK                               = 'payment_link';
+    const PAYMENT_GATEWAY                            = 'payment_gateway';
+    const IS_NEW_PRODUCT                             = 'is_new_product';
+    const SESSION_COUNT_PREFIX                       = 'session_count_prefix';
+    const MERCHANT_SEGMENT_TYPE                      = 'merchant_segment_type';
+    const TOTAL_TRANSACTIONS_IN_LAST_MONTH_TTL       = 60 * 60 * 24 * 2; //two days
 
     //Merchant tags
     const CAP_ES_0_DMT30  = 'CAP_ES_0_DMT30';
@@ -996,6 +1031,74 @@ final class Constants
     const NAME              = 'name';
     const VALUE             = 'value';
 
+
+    // static properties for different widgets and products for app scalability
+    const APP_SCALABILITY_CONFIG_STATIC_PROPS = [
+
+        self::PAYMENT_HANDLE => [
+            self::VARIANT     => 'variantA',
+            self::DESCRIPTION => 'Share your Razorpay.me link to get paid instantly',
+            self::TITLE       => 'Payments Handle',
+        ],
+
+        self::ONBOARDING_CARD => [
+            self::VARIANT     => 'variantA',
+            self::DESCRIPTION => '',
+            self::TITLE       => 'Onboarding Card',
+        ],
+
+        self::ACCEPT_PAYMENTS => [
+            self::VARIANT     => 'variantA',
+            self::DESCRIPTION => '',
+            self::TITLE       => 'Accept Payments',
+        ],
+
+        self::SETTLEMENTS => [
+            self::VARIANT     => 'variantA',
+            self::DESCRIPTION => 'We have transferred all payments received to your bank',
+            self::TITLE       => 'Settlements',
+        ],
+
+        self::PAYMENT_ANALYTICS => [
+            self::VARIANT     => 'variantA',
+            self::DESCRIPTION => '',
+            self::TITLE       => 'Payment Insights',
+        ],
+
+        self::RECENT_TRANSACTIONS => [
+            self::VARIANT     => 'variantA',
+            self::DESCRIPTION => '',
+            self::TITLE       => 'Recent Transactions',
+        ],
+
+        self::PAYMENT_LINK => [
+            self::TYPE           => 'payment_link',
+            self::TITLE          => 'Payment Link',
+            self::DESCRIPTION    => 'Create a link and send it to your customers to accept payments',
+            self::IS_NEW_PRODUCT => false
+        ],
+
+        self::PAYMENT_GATEWAY => [
+            self::TYPE           => 'payment_gateway',
+            self::TITLE          => 'Payment Gateway',
+            self::DESCRIPTION    => 'Integrate a Gateway to your website through seamless API integration',
+            self::IS_NEW_PRODUCT => false
+        ],
+
+        self::QR_CODE => [
+            self::TYPE           => 'qr_code',
+            self::TITLE          => 'QR Code',
+            self::DESCRIPTION    => 'Show QR code to your customer that helps them to pay from Razorpay supported partners',
+            self::IS_NEW_PRODUCT => true
+        ],
+
+        self::TAP_AND_PAY => [
+            self::TYPE           => 'tap_and_pay',
+            self::TITLE          => 'Tap & Pay',
+            self::DESCRIPTION    => 'Accept card payments by swiping your card on your NFC enabled phone',
+            self::IS_NEW_PRODUCT => false
+        ]
+    ];
 
     // Mapping is used for smart dashboard merchant details.
     const SMART_DASHBOARD_MERCHANT_DETAILS_MAP = [

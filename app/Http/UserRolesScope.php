@@ -108,6 +108,12 @@ class UserRolesScope
             'increase_transaction_limit_self_serve' => [Role::OWNER, Role::ADMIN],
             'add_additional_website_self_serve'     => [Role::OWNER, Role::ADMIN],
             'user_verify_and_update_mobile_otp'     => [Role::OWNER, Role::ADMIN],
+
+            'merchant_app_scalability_config'       => Role::ALL_ROLES,
+            'merchant_user_app_change_ftux'         => Role::ALL_ROLES,
+            'merchant_user_app_incr_product_session'=> Role::ALL_ROLES,
+            'merchant_recent_trans_with_source'     => Role::ALL_ROLES,
+
             // Merchant user routes
             'user_merchant_mapping_action' => [Role::OWNER, Role::LINKED_ACCOUNT_OWNER, Role::RBL_SUPERVISOR],
 

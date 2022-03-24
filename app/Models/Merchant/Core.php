@@ -984,6 +984,319 @@ class Core extends Base\Core
         ];
     }
 
+    public function getMerchantSegment($lastMonthTotalTransactions)
+    {
+        $activation_status = $this->merchant->merchantDetail->getActivationStatus();
+
+        if (in_array($activation_status, [Detail\Status::ACTIVATED, Detail\Status::ACTIVATED_MCC_PENDING, Detail\Status::INSTANTLY_ACTIVATED]) === true)
+        {
+            if ($lastMonthTotalTransactions > 10)
+            {
+                return Constants::PAYMENTS_ENABLED_AND_FREQUENTLY_TRANSACTED;
+            }
+            elseif ($lastMonthTotalTransactions > 0)
+            {
+                return Constants::PAYMENTS_ENABLED_AND_TRANSACTED;
+            }
+
+            return Constants::PAYMENTS_ENABLED_AND_NOT_TRANSACTED;
+        }
+
+        return Constants::PAYMENTS_NOT_ENABLED;
+    }
+
+    public function getCurrentSegmentWidgetData($merchantAppSegment)
+    {
+        switch ($merchantAppSegment)
+        {
+            case Constants::PAYMENTS_NOT_ENABLED :
+                return [
+                    Constants::PAYMENT_HANDLE  => [Constants::PRIORITY => 1, Constants::USER_ROLES => [User\Role::OWNER, User\Role::ADMIN, User\Role::MANAGER, User\Role::OPERATIONS, Constants::EPOS]],
+                    Constants::ONBOARDING_CARD => [Constants::PRIORITY => 2, Constants::USER_ROLES => [User\Role::OWNER, User\Role::ADMIN, User\Role::MANAGER, User\Role::FINANCE]],
+                    Constants::ACCEPT_PAYMENTS => [Constants::PRIORITY => 3, Constants::USER_ROLES => [User\Role::OWNER, User\Role::ADMIN, User\Role::MANAGER, User\Role::OPERATIONS, Constants::EPOS]],
+                    Constants::SETTLEMENTS     => [Constants::PRIORITY => 4, Constants::USER_ROLES => [User\Role::OWNER, User\Role::ADMIN, User\Role::MANAGER, User\Role::OPERATIONS, User\Role::FINANCE, User\Role::SUPPORT]],
+                ];
+
+            case Constants::PAYMENTS_ENABLED_AND_NOT_TRANSACTED :
+                return [
+                    Constants::PAYMENT_HANDLE      => [Constants::PRIORITY => 1, Constants::USER_ROLES => [User\Role::OWNER, User\Role::ADMIN, User\Role::MANAGER, User\Role::OPERATIONS, Constants::EPOS]],
+                    Constants::ONBOARDING_CARD     => [Constants::PRIORITY => 2, Constants::USER_ROLES => [User\Role::OWNER, User\Role::ADMIN, User\Role::MANAGER, User\Role::FINANCE]],
+                    Constants::ACCEPT_PAYMENTS     => [Constants::PRIORITY => 3, Constants::USER_ROLES => [User\Role::OWNER, User\Role::ADMIN, User\Role::MANAGER, User\Role::OPERATIONS, Constants::EPOS]],
+                    Constants::RECENT_TRANSACTIONS => [Constants::PRIORITY => 4, Constants::USER_ROLES => [User\Role::OWNER, User\Role::ADMIN, User\Role::MANAGER, User\Role::OPERATIONS, Constants::EPOS, User\Role::FINANCE, User\Role::SUPPORT]],
+                    Constants::SETTLEMENTS         => [Constants::PRIORITY => 5, Constants::USER_ROLES => [User\Role::OWNER, User\Role::ADMIN, User\Role::MANAGER, User\Role::OPERATIONS, User\Role::FINANCE, User\Role::SUPPORT]],
+                ];
+
+            case Constants::PAYMENTS_ENABLED_AND_TRANSACTED :
+                return [
+                    Constants::PAYMENT_HANDLE      => [Constants::PRIORITY => 1, Constants::USER_ROLES => [User\Role::OWNER, User\Role::ADMIN, User\Role::MANAGER, User\Role::OPERATIONS, Constants::EPOS]],
+                    Constants::ONBOARDING_CARD     => [Constants::PRIORITY => 2, Constants::USER_ROLES => [User\Role::OWNER, User\Role::ADMIN, User\Role::MANAGER, User\Role::FINANCE]],
+                    Constants::ACCEPT_PAYMENTS     => [Constants::PRIORITY => 3, Constants::USER_ROLES => [User\Role::OWNER, User\Role::ADMIN, User\Role::MANAGER, User\Role::OPERATIONS, Constants::EPOS]],
+                    Constants::RECENT_TRANSACTIONS => [Constants::PRIORITY => 6, Constants::USER_ROLES => [User\Role::OWNER, User\Role::ADMIN, User\Role::MANAGER, User\Role::OPERATIONS, Constants::EPOS, User\Role::FINANCE, User\Role::SUPPORT]],
+                    Constants::SETTLEMENTS         => [Constants::PRIORITY => 4, Constants::USER_ROLES => [User\Role::OWNER, User\Role::ADMIN, User\Role::MANAGER, User\Role::OPERATIONS, User\Role::FINANCE, User\Role::SUPPORT]],
+                    Constants::PAYMENT_ANALYTICS   => [Constants::PRIORITY => 5, Constants::USER_ROLES => [User\Role::OWNER, User\Role::ADMIN, User\Role::MANAGER, User\Role::OPERATIONS, Constants::EPOS, User\Role::FINANCE, User\Role::SUPPORT]],
+                ];
+
+            case Constants::PAYMENTS_ENABLED_AND_FREQUENTLY_TRANSACTED :
+                return [
+                    Constants::PAYMENT_HANDLE      => [Constants::PRIORITY => 1, Constants::USER_ROLES => [User\Role::OWNER, User\Role::ADMIN, User\Role::MANAGER, User\Role::OPERATIONS, Constants::EPOS]],
+                    Constants::ONBOARDING_CARD     => [Constants::PRIORITY => 2, Constants::USER_ROLES => [User\Role::OWNER, User\Role::ADMIN, User\Role::MANAGER, User\Role::FINANCE]],
+                    Constants::ACCEPT_PAYMENTS     => [Constants::PRIORITY => 3, Constants::USER_ROLES => [User\Role::OWNER, User\Role::ADMIN, User\Role::MANAGER, User\Role::OPERATIONS, Constants::EPOS]],
+                    Constants::SETTLEMENTS         => [Constants::PRIORITY => 4, Constants::USER_ROLES => [User\Role::OWNER, User\Role::ADMIN, User\Role::MANAGER, User\Role::OPERATIONS, User\Role::FINANCE, User\Role::SUPPORT]],
+                    Constants::PAYMENT_ANALYTICS   => [Constants::PRIORITY => 5, Constants::USER_ROLES => [User\Role::OWNER, User\Role::ADMIN, User\Role::MANAGER, User\Role::OPERATIONS, Constants::EPOS, User\Role::FINANCE, User\Role::SUPPORT]],
+                    Constants::RECENT_TRANSACTIONS => [Constants::PRIORITY => 6, Constants::USER_ROLES => [User\Role::OWNER, User\Role::ADMIN, User\Role::MANAGER, User\Role::OPERATIONS, Constants::EPOS, User\Role::FINANCE, User\Role::SUPPORT]],
+                ];
+        }
+    }
+
+    /**
+     * @throws \Exception
+     */
+    public function getWidgetProperty($widget, $merchantId, $userId)
+    {
+        $property[Constants::PROPS] = Constants::APP_SCALABILITY_CONFIG_STATIC_PROPS[$widget];
+
+        $func = 'get' . studly_case($widget) . 'DynamicProps';
+
+        if (method_exists($this, $func) === true)
+        {
+            $property[Constants::PROPS] = array_merge($property[Constants::PROPS], $this->$func($merchantId, $userId));
+        }
+
+        return $property;
+    }
+
+    /**
+     * @throws BadRequestValidationFailureException
+     */
+    private function getPaymentHandleDynamicProps($merchantId, $userId)
+    {
+        $response['payment_handle_slug'] = ((new \RZP\Models\PaymentLink\Service())
+            ->getPaymentHandleByMerchant());
+
+        $this->trace->info(TraceCode::MERCHANT_USER_APP_CONFIG_PAYMENT_HANDLE,
+                           [
+                               'merchant_id'         => $merchantId,
+                               'user_id'             => $userId,
+                           ]);
+
+        return $response;
+    }
+
+    private function getAcceptPaymentsDynamicProps($merchantId, $userId)
+    {
+        $products = [];
+
+        $currentProducts = [Constants::PAYMENT_LINK, Constants::PAYMENT_GATEWAY, Constants::QR_CODE, Constants::TAP_AND_PAY];
+
+        foreach ($currentProducts as $product)
+        {
+            $properties   = Constants::APP_SCALABILITY_CONFIG_STATIC_PROPS[$product];
+
+            $isNewProduct = $properties[Constants::IS_NEW_PRODUCT];
+
+            unset($properties[Constants::IS_NEW_PRODUCT]);
+
+            $products[Constants::PRODUCTS][] = array_merge($properties,
+                                                           $this->getFTUX($merchantId, $userId, $product, $isNewProduct));
+        }
+
+        $this->trace->info(TraceCode::MERCHANT_USER_APP_CONFIG_PRODUCTS_INFO,
+                           [
+                               'merchant_id' => $merchantId,
+                               'user_id'     => $userId,
+                               'products'    => $products,
+                           ]);
+
+        return $products;
+    }
+
+    private function getCacheKeyForAppScalability($merchantId, $userId, $prefix)
+    {
+        return $prefix . ':' . $merchantId . ':' . $userId;
+    }
+
+    private function getUserProductStatusInCache($merchantId, $userId, $product)
+    {
+        $key = $this->getCacheKeyForAppScalability($merchantId, $userId, $product);
+
+        $value = $this->cache->get($key);
+
+        $this->trace->info(TraceCode::MERCHANT_USER_APP_PRODUCT_CACHE_DATA,
+                           [
+                               'merchant_id' => $merchantId,
+                               'user_id'     => $userId,
+                               'product'     => $product,
+                               'cache_key'   => $key,
+                               'cache_value' => $value,
+                           ]);
+
+        if (is_null($value) === false)
+        {
+            return $value;
+        }
+
+        return false;
+    }
+
+    private function incrementSessionBasedOnSessionCount($merchantId, $userId, $product)
+    {
+        $key = $this->getCacheKeyForAppScalability($merchantId, $userId, Constants::SESSION_COUNT_PREFIX);
+
+        $value = $this->cache->get($key);
+
+        if ((is_null($value) === false) and
+            ($value['product'] === $product))
+        {
+            $this->cache->pull($key);
+
+            $value['count'] = $value['count'] + 1;
+
+            $this->cache->set($key, $value);
+        }
+        else
+        {
+            $this->cache->set($key, [
+                'count'   => 1,
+                'product' => $product,
+            ]);
+        }
+
+        $this->trace->info(TraceCode::MERCHANT_USER_APP_INTRO_SESSION_CACHE_DATA,
+                           [
+                               'merchant_id' => $merchantId,
+                               'user_id'     => $userId,
+                               'product'     => $product,
+                               'cache_key'   => $key,
+                               'cache_value' => $value,
+                           ]);
+    }
+
+    private function getIntroducingStatusBasedOnSessionCount($merchantId, $userId, $product)
+    {
+        $key = $this->getCacheKeyForAppScalability($merchantId, $userId, Constants::SESSION_COUNT_PREFIX);
+
+        $value = $this->cache->get($key);
+
+        // product decides the threshold to show it in introducing
+        $threshold = 30;
+
+        $this->trace->info(
+            TraceCode::MERCHANT_USER_APP_INTRO_SESSION_CACHE_DATA,
+            [
+                'merchant_id' => $merchantId,
+                'user_id'     => $userId,
+                'product'     => $product,
+                'threshold'   => $threshold,
+                'cache_key'   => $key,
+                'cache_value' => $value,
+            ]);
+
+        if ((is_null($value) === false) and
+            ($value['product'] === $product))
+        {
+            return ($value['count'] < $threshold);
+        }
+
+        return true;
+    }
+
+    private function getFTUX($merchantId, $userId, $product, $isNewProduct)
+    {
+        $ftux = [
+            Constants::FTUX_COMPLETE => $this->getUserProductStatusInCache($merchantId, $userId, $product),
+            Constants::INTRODUCING   => $isNewProduct
+        ];
+
+        if ($ftux[Constants::FTUX_COMPLETE] === true)
+        {
+            $ftux[Constants::INTRODUCING] = false;
+        }
+        elseif ($isNewProduct === true)
+        {
+            $ftux[Constants::INTRODUCING] = $this->getIntroducingStatusBasedOnSessionCount($merchantId, $userId, $product);
+        }
+
+        return $ftux;
+    }
+
+    public function changeMerchantUserFTUX($input, $merchantId, $userId)
+    {
+        $key = $this->getCacheKeyForAppScalability($merchantId, $userId, $input[Constants::PRODUCT]);
+
+        $value = $this->cache->get($key);
+
+        $this->trace->info(TraceCode::MERCHANT_USER_APP_CHANGE_FTUX_CACHE_DATA,
+                           [
+                               'merchant_id' => $merchantId,
+                               'user_id'     => $userId,
+                               'product'     => $input[Constants::PRODUCT],
+                               'cache_key'   => $key,
+                               'cache_value' => $value,
+                           ]);
+
+        if (is_null($value) === false)
+        {
+            $this->cache->pull($key);
+        }
+
+        $this->cache->set($key, (bool) $input[Constants::FTUX_COMPLETE]);
+    }
+
+    public function merchantUserIncrementProductSession($merchantId, $userId)
+    {
+        $products = $this->getAcceptPaymentsDynamicProps($merchantId, $userId);
+
+        foreach ($products[Constants::PRODUCTS] as $product)
+        {
+            if ($product[Constants::INTRODUCING] === true)
+            {
+                $this->incrementSessionBasedOnSessionCount($merchantId, $userId, $product[Constants::TYPE]);
+            }
+        }
+    }
+
+    public function merchantPaymentsWithOrderSource($input)
+    {
+        $merchantPayments = (new \RZP\Models\Payment\Service())->fetchMultiple($input);
+
+        $merchantOrders   = [];
+
+        foreach ($merchantPayments["items"] as $payment)
+        {
+            if (is_null($payment['order_id']) === false)
+            {
+                $order_id = explode('_', $payment['order_id']);
+
+                $merchantOrders[] = end($order_id);
+            }
+        }
+
+        $merchantOrders = array_unique($merchantOrders);
+
+        $merchantOrders = $this->repo->order->fetchMultipleOrdersBasedOnIds($merchantOrders);
+
+        $orderArray     = $merchantOrders->toArray();
+
+        $merchantOrderAndSource = [];
+
+        foreach ($orderArray as $order)
+        {
+            $merchantOrderAndSource['order_' . $order['id']] = $order['product_type'];
+        }
+
+        foreach ($merchantPayments["items"] as &$payment)
+        {
+            $payment['product_type'] = $merchantOrderAndSource[$payment['order_id']] ?? null;
+        }
+
+        $this->trace->info(TraceCode::MERCHANT_USER_APP_PAYMENT_WITH_SOURCE_END,
+                           [
+                               'merchantOrderIdAndSource' => $merchantOrderAndSource,
+                           ]);
+
+        return $merchantPayments;
+    }
+
     private function getAccountTypeLabelAndBalance($merchant, $accountType)
     {
         $balanceType = $accountType === Type::RESERVE_BALANCE ? Type::RESERVE_PRIMARY : Type::PRIMARY;

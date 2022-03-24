@@ -73,6 +73,38 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getAppScalabilityConfig()
+    {
+        $data = $this->service()->getAppScalabilityConfig();
+
+        return ApiResponse::json($data);
+    }
+
+    public function putAppChangeUserFTUX()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->changeAppMerchantUserFTUX($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function postIncrMerchantUserProductSession()
+    {
+        $data = $this->service()->merchantUserIncrementProductSession();
+
+        return ApiResponse::json($data);
+    }
+
+    public function getMerchantPaymentsWithOrderSource()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->getMerchantPaymentsWithOrderSource($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function postCreateSubMerchantViaBatch()
     {
         $input = Request::all();

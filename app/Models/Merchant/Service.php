@@ -2453,6 +2453,126 @@ class Service extends Base\Service
         return $feeBearer;
     }
 
+    public function getAppScalabilityConfig()
+    {
+        $merchant                   = $this->merchant;
+
+        $currentUser                = $this->user;
+
+        $currentUserRole            = $this->app['basicauth']->getUserRole();
+
+        $lastMonthTotalTransactions = $this->getMerchantTransactionsInLastMonth();
+
+        $merchantAppSegment         = $this->core()->getMerchantSegment($lastMonthTotalTransactions);
+
+        $this->trace->info(TraceCode::MERCHANT_USER_APP_CONFIG,
+                           [
+                               'merchant_id' => $merchant->getId(),
+                               'user_id'     => $currentUser->getId(),
+                               'user_role'   => $currentUserRole,
+                               'segment'     => $merchantAppSegment,
+                           ]);
+
+        $merchantAppSegmentWidgetData = $this->core()->getCurrentSegmentWidgetData($merchantAppSegment);
+
+        // sort widget based on priority, first product is the hero product
+        array_multisort(array_column($merchantAppSegmentWidgetData, Constants::PRIORITY), SORT_ASC,
+                        $merchantAppSegmentWidgetData);
+
+        $response = [];
+
+        $response[Constants::SEGMENT_TYPE] = $merchantAppSegment;
+        $response[Constants::WIDGETS]      = [];
+
+        foreach ($merchantAppSegmentWidgetData as $widget => $value)
+        {
+            if (in_array($currentUserRole, $value[Constants::USER_ROLES]) === true)
+            {
+                $data = [];
+
+                $data[Constants::TYPE] = $widget;
+
+                try
+                {
+                    $data = array_merge($data, $this->core()->getWidgetProperty($widget, $merchant->getId(), $currentUser->getId()));
+                }
+                catch (\Throwable $exception)
+                {
+                    $this->trace->error(TraceCode::MERCHANT_USER_APP_FAILED_TO_WIDGET_PROPS,
+                                        [
+                                            'merchant_id'   => $merchant->getId(),
+                                            'user_id'       => $currentUser->getId(),
+                                            'widget'        => $widget,
+                                            'error_message' => $exception->getMessage(),
+                                        ]);
+
+                    $data[Constants::ERROR] =
+                        [
+                            Constants::CODE        => $exception->getCode(),
+                            Constants::DESCRIPTION => $exception->getMessage()
+                        ];
+                }
+
+                $response[Constants::WIDGETS][] = $data;
+            }
+        }
+
+        return $response;
+    }
+
+    public function changeAppMerchantUserFTUX($input)
+    {
+        (new Validator)->validateInput('app_scalability_change_ftux', $input);
+
+        $merchant    = $this->merchant;
+
+        $currentUser = $this->user;
+
+        $this->trace->info(TraceCode::MERCHANT_USER_APP_PRODUCT_CHANGE_FTUX,
+                           [
+                               'merchant_id' => $merchant->getId(),
+                               'user_id'     => $currentUser->getId(),
+                               'input'       => $input,
+                           ]);
+
+        $this->core()->changeMerchantUserFTUX($input, $merchant->getId(), $currentUser->getId());
+
+        return [];
+    }
+
+    public function merchantUserIncrementProductSession()
+    {
+        $merchant        = $this->merchant;
+
+        $currentUser     = $this->user;
+
+        $currentUserRole = $this->app['basicauth']->getUserRole();
+
+        $this->trace->info(TraceCode::MERCHANT_USER_APP_INCR_SESSION,
+                           [
+                               'merchant_id' => $merchant->getId(),
+                               'user_id'     => $currentUser->getId(),
+                               'user_role'   => $currentUserRole,
+                           ]);
+
+        if (in_array($currentUserRole, [User\Role::OWNER, User\Role::ADMIN, User\Role::MANAGER, User\Role::OPERATIONS, Constants::EPOS]) === true)
+        {
+            $this->core()->merchantUserIncrementProductSession($merchant->getId(), $currentUser->getId());
+        }
+
+        return [];
+    }
+
+    public function getMerchantPaymentsWithOrderSource($input)
+    {
+        $this->trace->info(TraceCode::MERCHANT_USER_APP_PAYMENT_WITH_SOURCE_START,
+                           [
+                               'input' => $input,
+                           ]);
+
+        return $this->core()->merchantPaymentsWithOrderSource($input);
+    }
+
     public function getMerchantDataForSegmentAnalysis()
     {
         $this->trace->info(TraceCode::GET_MERCHANT_DATA_FOR_SEGMENT,[]);
@@ -9185,5 +9305,23 @@ class Service extends Base\Service
         $merchantIds = $input['merchant_ids'];
 
         return $this->core()->bulkConvertResellerToAggregatorPartner($merchantIds);
+    }
+
+    private function getMerchantTransactionsInLastMonth()
+    {
+        $merchant = $this->merchant;
+
+        $totalTransactions = Cache::get($this->getMerchantTransactionsInLastMonthKey($merchant->getMerchantId()));
+
+        if (empty($totalTransactions) === true)
+        {
+            return 0;
+        }
+        return  $totalTransactions;
+    }
+
+    public function getMerchantTransactionsInLastMonthKey($merchantId)
+    {
+        return Constants::MERCHANT_SEGMENT_TYPE . ':' . $merchantId;
     }
 }
