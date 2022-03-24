@@ -33,14 +33,15 @@ class FreshdeskTicketV2Test extends TestCase
 
     const RZP_CREATE_TICKET_MOBILE_SIGNUP = 'rzp_create_ticket_mobile_signup';
 
-    const RZP_CREATE_TICKET_CHECKING_CC_EMAILS = 'rzp_create_ticket_checking_cc_emails';
-    const RZP_CREATE_TICKET_SALESFORCE         = 'rzp_create_ticket_salesforce';
-    const RZP_CREATE_TICKET_INTERNAL_AUTH      = 'rzp_create_ticket_internal_auth';
-    const RZP_FETCH_TICKET_FILTER              = 'rzp_fetch_ticket_filter';
-    const RZP_FETCH_TICKET_FILTER_WITH_TAGS    = 'rzp_fetch_ticket_filter_with_tags';
-    const RZP_FETCH_TICKET_FILTER_AGENT        = 'rzp_fetch_ticket_filter_agent';
-    const RZP_FETCH_TICKET                     = 'rzp_fetch_ticket';
-    const RZP_CREATE_TICKET_HTML_TAGS          = 'rzp_create_ticket_html_tags';
+    const RZP_CREATE_TICKET_CHECKING_CC_EMAILS          = 'rzp_create_ticket_checking_cc_emails';
+    const RZP_CREATE_TICKET_SALESFORCE                  = 'rzp_create_ticket_salesforce';
+    const RZP_CREATE_TICKET_INTERNAL_AUTH               = 'rzp_create_ticket_internal_auth';
+    const RZP_FETCH_TICKET_FILTER                       = 'rzp_fetch_ticket_filter';
+    const RZP_FETCH_TICKET_FILTER_WITH_TAGS             = 'rzp_fetch_ticket_filter_with_tags';
+    const RZP_FETCH_TICKET_FILTER_AGENT                 = 'rzp_fetch_ticket_filter_agent';
+    const RZP_FETCH_TICKET_FILTER_AGENT_REMOVE_INTERNAL = 'rzp_fetch_ticket_filter_agent_remove_internal';
+    const RZP_FETCH_TICKET                              = 'rzp_fetch_ticket';
+    const RZP_CREATE_TICKET_HTML_TAGS                   = 'rzp_create_ticket_html_tags';
 
     const RZP_GET_TICKET_BY_ID                 = 'rzp_get_ticket_by_id';
 
@@ -260,7 +261,27 @@ class FreshdeskTicketV2Test extends TestCase
                             'id' => 'razorpayid0013',
                         ],
                     ],
-                ]
+                    ]
+            ],
+            [
+                'name'           => 'fetch_agent_tickets',
+                'cf_created_by'  => 'agent',
+                'fetch_response' => self::RZP_FETCH_TICKET_FILTER_AGENT_REMOVE_INTERNAL,
+                'content'        =>
+                    [
+                        'total'   => 3,
+                        'results' => [
+                            [
+                                'id' => 'razorpayid0013',
+                            ],
+                            [
+                                'id' => 'razorpayid0013',
+                            ],
+                            [
+                                'id' => 'razorpayid0013',
+                            ],
+                        ],
+                    ]
             ],
         ];
 
@@ -1404,17 +1425,17 @@ class FreshdeskTicketV2Test extends TestCase
 
         Carbon::setTestNow($fixedTime);
 
-            $this->setupTestDataGetAgentCreatedTickets('merchant_doesnt_exist');
+        $this->setupTestDataGetAgentCreatedTickets('merchant_doesnt_exist');
 
-            $ticketBeforeTest = $this->getLastEntity('merchant_freshdesk_tickets', true, 'live');
+        $ticketBeforeTest = $this->getLastEntity('merchant_freshdesk_tickets', true, 'live');
 
-            $this->ba->cronAuth('live');
+        $this->ba->cronAuth('live');
 
-            $this->startTest();
+        $this->startTest();
 
-            $ticketAfterTest = $this->getLastEntity('merchant_freshdesk_tickets', true, 'live');
+        $ticketAfterTest = $this->getLastEntity('merchant_freshdesk_tickets', true, 'live');
 
-            $this->assertEquals($ticketBeforeTest['id'], $ticketAfterTest['id']);
+        $this->assertEquals($ticketBeforeTest['id'], $ticketAfterTest['id']);
     }
 
     public function testFreshdeskWebhookGetAgentCreatedTicketMappedAlready()
@@ -2206,7 +2227,8 @@ class FreshdeskTicketV2Test extends TestCase
                             'custom_fields' =>  [
                                 "cf_requestor_subcategory"  => "Activation",
                                 "cf_requester_category"     => "Merchant",
-                                "cf_created_by"             => "agent"
+                                "cf_created_by"             => "agent",
+                                "cf_ticket_queue"           => "xyz"
                             ],
                             'fr_due_by' => '2020-12-08T16:04:20Z',
 
@@ -2217,7 +2239,8 @@ class FreshdeskTicketV2Test extends TestCase
                             'custom_fields' =>  [
                                 "cf_requestor_subcategory"  => "Merchant Activation",
                                 "cf_requester_category"     => "Merchant",
-                                "cf_created_by"             => "agent"
+                                "cf_created_by"             => "agent",
+                                "cf_ticket_queue"           => "xyz"
                             ],
                             'fr_due_by' => '2020-12-08T16:04:20Z',
 
@@ -2229,7 +2252,8 @@ class FreshdeskTicketV2Test extends TestCase
                             'custom_fields' =>  [
                                 "cf_requestor_subcategory"  => "Activation",
                                 "cf_requester_category"     => "Merchant",
-                                "cf_created_by"             => "agent"
+                                "cf_created_by"             => "agent",
+                                "cf_ticket_queue"           => "xyz"
                             ],
                             'fr_due_by' => '2020-12-08T16:04:20Z',
                         ],
@@ -2240,7 +2264,78 @@ class FreshdeskTicketV2Test extends TestCase
                             'custom_fields' =>  [
                                 "cf_requestor_subcategory"  => "Activation",
                                 "cf_requester_category"     => "Merchant",
-                                "cf_created_by"             => "agent"
+                                "cf_created_by"             => "agent",
+                                "cf_ticket_queue"           => "xyz"
+                            ],
+                            'fr_due_by' => '2020-12-08T16:04:20Z',
+                        ],
+                    ],
+
+                ]];
+        }
+        else if ($key === self::RZP_FETCH_TICKET_FILTER_AGENT_REMOVE_INTERNAL)
+        {
+            return [
+                'request'  => [],
+                'response' => [
+                    'results' => [
+                        [
+                            'id'        => 13,
+                            'body'      => 'some random body 13',
+                            'custom_fields' =>  [
+                                "cf_requestor_subcategory"  => "Activation",
+                                "cf_requester_category"     => "Merchant",
+                                "cf_created_by"             => "agent",
+                                "cf_ticket_queue"           => "xyz"
+                            ],
+                            'fr_due_by' => '2020-12-08T16:04:20Z',
+
+                        ],
+                        [
+                            'id'        => 34,
+                            'body'      => 'some random body 34',
+                            'custom_fields' =>  [
+                                "cf_requestor_subcategory"  => "Merchant Activation",
+                                "cf_requester_category"     => "Merchant",
+                                "cf_created_by"             => "agent",
+                                "cf_ticket_queue"           => "xyz"
+                            ],
+                            'fr_due_by' => '2020-12-08T16:04:20Z',
+
+                        ],
+                        [
+                            // 56 is not mapped to this merchant in our db. so we don't show it in the response, even if Freshdesk somehow returned this in the response
+                            'id'        => 56,
+                            'body'      => 'some random body 56',
+                            'custom_fields' =>  [
+                                "cf_requestor_subcategory"  => "Activation",
+                                "cf_requester_category"     => "Merchant",
+                                "cf_created_by"             => "agent",
+                                "cf_ticket_queue"           => "xyz"
+                            ],
+                            'fr_due_by' => '2020-12-08T16:04:20Z',
+                        ],
+                        [
+                            // 78 is not mapped to 'support_dashboard' in our db. so we don't show it in the response
+                            'id'        => 78,
+                            'body'      => 'some random body 78',
+                            'custom_fields' =>  [
+                                "cf_requestor_subcategory"  => "Activation",
+                                "cf_requester_category"     => "Merchant",
+                                "cf_created_by"             => "agent",
+                                "cf_ticket_queue"           => "xyz"
+                            ],
+                            'fr_due_by' => '2020-12-08T16:04:20Z',
+                        ],
+                        [
+                            // 79 is an internal Ticket so it should not come in the result
+                            'id'        => 79,
+                            'body'      => 'some random body 78',
+                            'custom_fields' =>  [
+                                "cf_requestor_subcategory"  => "Activation",
+                                "cf_requester_category"     => "Merchant",
+                                "cf_created_by"             => "agent",
+                                "cf_ticket_queue"           => "Internal"
                             ],
                             'fr_due_by' => '2020-12-08T16:04:20Z',
                         ],
@@ -2261,6 +2356,7 @@ class FreshdeskTicketV2Test extends TestCase
                                 "cf_requestor_subcategory"  => "Activation",
                                 "cf_requester_category"     => "Merchant",
                                 "cf_created_by"             => "agent",
+                                "cf_ticket_queue"           => "xyz",
                                 "cf_merchant_id"            => "10000000000000"
                             ],
                             'fr_due_by' => '2020-12-08T16:04:20Z',
@@ -2273,7 +2369,21 @@ class FreshdeskTicketV2Test extends TestCase
                                 "cf_requestor_subcategory"  => "Merchant Activation",
                                 "cf_requester_category"     => "Merchant",
                                 "cf_created_by"             => "agent",
-                                "cf_merchant_id"            => "10000000000000"
+                                "cf_merchant_id"            => "10000000000000",
+                                "cf_ticket_queue"           => "xyz"
+                            ],
+                            'fr_due_by' => '2020-12-08T16:04:20Z',
+
+                        ],
+                        [
+                            'id'        => "34",
+                            'body'      => 'some random body 35',
+                            'custom_fields' =>  [
+                                "cf_requestor_subcategory"  => "Merchant Activation",
+                                "cf_requester_category"     => "Merchant",
+                                "cf_created_by"             => "agent",
+                                "cf_merchant_id"            => "10000000000000",
+                                "cf_ticket_queue"           => "Internal"
                             ],
                             'fr_due_by' => '2020-12-08T16:04:20Z',
 
@@ -2295,7 +2405,8 @@ class FreshdeskTicketV2Test extends TestCase
                                 "cf_requestor_subcategory"  => "Activation",
                                 "cf_requester_category"     => "Merchant",
                                 "cf_created_by"             => "agent",
-                                "cf_merchant_id"            => "middoesntexist"
+                                "cf_merchant_id"            => "middoesntexist",
+                                "cf_ticket_queue"           => "xyz"
                             ],
                             'fr_due_by' => '2020-12-08T16:04:20Z',
 
@@ -2307,7 +2418,8 @@ class FreshdeskTicketV2Test extends TestCase
                                 "cf_requestor_subcategory"  => "Merchant Activation",
                                 "cf_requester_category"     => "Merchant",
                                 "cf_created_by"             => "agent",
-                                "cf_merchant_id"            => "middoesntexist"
+                                "cf_merchant_id"            => "middoesntexist",
+                                "cf_ticket_queue"           => "xyz"
                             ],
                             'fr_due_by' => '2020-12-08T16:04:20Z',
 
@@ -2329,7 +2441,8 @@ class FreshdeskTicketV2Test extends TestCase
                                 "cf_requestor_subcategory"  => "Activation",
                                 "cf_requester_category"     => "Merchant",
                                 "cf_created_by"             => "agent",
-                                "cf_merchant_id"            => "10000000000000"
+                                "cf_merchant_id"            => "10000000000000",
+                                "cf_ticket_queue"           => "xyz"
                             ],
                             'fr_due_by' => '2020-12-08T16:04:20Z',
 
@@ -2351,7 +2464,8 @@ class FreshdeskTicketV2Test extends TestCase
                                 "cf_requestor_subcategory"  => "Activation",
                                 "cf_requester_category"     => "Merchant",
                                 "cf_created_by"             => "agent",
-                                "cf_merchant_id"            => "10000000000000"
+                                "cf_merchant_id"            => "10000000000000",
+                                "cf_ticket_queue"           => "xyz"
                             ],
                             'fr_due_by' => '2020-12-08T16:04:20Z',
 

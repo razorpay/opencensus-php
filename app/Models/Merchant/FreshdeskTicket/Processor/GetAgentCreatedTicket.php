@@ -64,12 +64,15 @@ class GetAgentCreatedTicket extends Base
 
                         $isMapped = $this->isAlreadyMapped($ticket, $fdInstance);
 
+                        $shouldMap = $this->shouldTicketMappingBeCreated($ticket);
+
                         $this->trace->info(TraceCode::GET_AGENT_CREATED_TICKET_ALREADY_MAPPED, [
                             'isMapped'  => $isMapped,
+                            'shouldMap' => $shouldMap,
                             'ticket_id' => $ticket[Entity::ID],
                         ]);
 
-                        if ($isMapped === false)
+                        if ($isMapped === false && $shouldMap === true)
                         {
                             try
                             {
@@ -156,6 +159,18 @@ class GetAgentCreatedTicket extends Base
         }
 
         return $isMapped;
+    }
+
+    protected function shouldTicketMappingBeCreated($ticket): bool
+    {
+        $shouldMap = true;
+
+        if($ticket[Constants::CUSTOM_FIELDS][Constants::CF_TICKET_QUEUE] === Constants::TICKET_QUEUE_INTERNAL)
+        {
+            $shouldMap = false;
+        }
+
+        return $shouldMap;
     }
 
     protected function createTicketEntity($fdInstance, $ticket): Entity

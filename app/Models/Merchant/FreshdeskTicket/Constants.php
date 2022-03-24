@@ -186,4 +186,6 @@ class Constants
     const SUPPORT_TICKET_DASHBOARD_BUTTON_URL = '%s/%s/agent/conversation';
 
     const MERCHANT_PLUGIN_TAG       = 'plugin_merchant';
+
+    const TICKET_QUEUE_INTERNAL     = 'Internal';
 }

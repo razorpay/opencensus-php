@@ -1312,7 +1312,17 @@ class Service extends Base\Service
 
         foreach ($ticketsResponse as $ticket)
         {
-            array_push($freshdeskTicketIds, $ticket['id']);
+            if(empty($ticket[Constants::CUSTOM_FIELDS][Constants::CF_TICKET_QUEUE]) === false)
+            {
+                if ($ticket[Constants::CUSTOM_FIELDS][Constants::CF_TICKET_QUEUE] !== Constants::TICKET_QUEUE_INTERNAL)
+                {
+                    array_push($freshdeskTicketIds, $ticket['id']);
+                }
+            }
+            else
+            {
+                array_push($freshdeskTicketIds, $ticket['id']);
+            }
         }
 
         $freshdeskTicketIds = array_values(array_unique($freshdeskTicketIds));
