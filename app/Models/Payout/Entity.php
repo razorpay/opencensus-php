@@ -134,7 +134,7 @@ class Entity extends Base\PublicEntity
     // to send latest status details reason and description
    const STATUS_DETAILS          = 'status_details';
 
-   // to show status details for different statuses a payout has
+   // to show latest status details for  a payout (to be used at frontend side)
    const STATUS_SUMMARY          = 'status_summary';
 
    // to store latest status details id
@@ -2389,23 +2389,10 @@ class Entity extends Base\PublicEntity
         {
             $statusDetails = (new PayoutsStatusDetails\Repository())->fetchPayoutStatusDetailsLatest($this->getId());
 
-            if($statusDetails['reason'] !== null)
+            if($statusDetails !== null)
             {
-                if($statusDetails['status'] !== Status::REVERSED  or $statusDetails['status'] !== Status::FAILED)
-                {
-                    $source = PayoutsStatusDetails\ReasonSourceMap::$statusDetailsReasonToSourceMap[$statusDetails['reason'] ?? null];
-                }
-
-                else
-                {
-                    $error        = new PayoutError($this);
-
-                    $errorDetails = $error->getErrorDetails();
-
-                    $source       = $errorDetails['source'] ?? null;
-                }
+                $source = $this->getSourceForStatusDetails($statusDetails);
             }
-
             else
             {
                 $source = null;
@@ -2443,42 +2430,27 @@ class Entity extends Base\PublicEntity
         {
             if ((strtolower($variant) === 'on'))
             {
-                $statusDetails = (new PayoutsStatusDetails\Repository())->fetchPayoutStatusDetailsByPayoutId($this->getId());
+                $statusDetails = (new PayoutsStatusDetails\Repository())->fetchPayoutStatusDetailsLatest($this->getId());
 
-                foreach ($statusDetails as $statusArray)
+                if($statusDetails !== null)
                 {
-                    if($statusArray['reason'] !== null)
-                    {
-                        if($statusArray['status'] !== Status::REVERSED  or $statusArray['status'] !== Status::FAILED)
-                        {
-                            $source = PayoutsStatusDetails\ReasonSourceMap::$statusDetailsReasonToSourceMap[$statusArray['reason']] ?? null;
-                        }
+                    $source = $this->getSourceForStatusDetails($statusDetails);
+                }
 
-                        else
-                        {
-                            $error        = new PayoutError($this);
+                else
+                {
+                    $source = null;
+                }
 
-                            $errorDetails = $error->getErrorDetails();
-
-                            $source       = $errorDetails['source'] ?? null;
-                        }
-                    }
-
-                    else
-                    {
-                        $source = null;
-                    }
-
-                    $statusSummary [$statusArray['status']] [] =
+                $statusSummary [$statusDetails['status']] [] =
                         [
-                            PayoutsStatusDetails\Entity::REASON         => $statusArray['reason'],
-                            PayoutsStatusDetails\Entity::DESCRIPTION    => $statusArray['description'],
-                            'timestamp'                                 => $statusArray['created_at'],
+                            PayoutsStatusDetails\Entity::REASON         => $statusDetails['reason'],
+                            PayoutsStatusDetails\Entity::DESCRIPTION    => $statusDetails['description'],
+                            'timestamp'                                 => $statusDetails['created_at'],
                             'source'                                    => $source,
                         ];
-                }
-                $attributes[self::STATUS_SUMMARY] = $statusSummary;
             }
+                $attributes[self::STATUS_SUMMARY] = $statusSummary;
         }
 
         else
@@ -2903,5 +2875,25 @@ class Entity extends Base\PublicEntity
 
         return $beneBank;
 
+    }
+
+    public function getSourceForStatusDetails(PayoutsStatusDetails\Entity $statusDetails)
+    {
+        $status = $statusDetails['status'];
+
+        if($status!== Status::REVERSED  or $status!== Status::FAILED)
+        {
+                $source = PayoutsStatusDetails\ReasonSourceMap::$statusDetailsReasonToSourceMap[$statusDetails['reason']] ?? null;
+        }
+        else
+        {
+            $error        = new PayoutError($this);
+
+            $errorDetails = $error->getErrorDetails();
+
+            $source       = $errorDetails['source'] ?? null;
+        }
+
+        return $source;
     }
 }
