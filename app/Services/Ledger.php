@@ -3,12 +3,14 @@
 namespace RZP\Services;
 
 use Request;
-use RZP\Error\Error;
-use RZP\Error\ErrorCode;
 use RZP\Exception;
+use RZP\Error\Error;
 use RZP\Constants\Mode;
+use RZP\Models\Feature;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Http\Request\Requests;
+use RZP\Base\RepositoryManager;
 use RZP\Exception\LogicException;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Constants\Entity as EntityConstant;
@@ -43,6 +45,12 @@ class Ledger
 
     protected $auth;
 
+    /**
+     * Repository manager instance
+     * @var RepositoryManager
+     */
+    protected $repo;
+
     const AccountBaseURL = '/twirp/rzp.ledger.account.v1.AccountAPI';
 
     const AccountDetailBaseURL = '/twirp/rzp.ledger.account_detail.v1.AccountDetailAPI';
@@ -58,6 +66,14 @@ class Ledger
     const DashboardURL = '/twirp/rzp.ledger.dashboard.v1.DashboardAPI';
 
     const IDEMPOTENCY_KEY_HEADER = 'idempotency-key';
+
+    const MERCHANT_IDS = 'merchant_ids';
+
+    const ENTITIES = 'entities';
+
+    const BANKING_ACCOUNT_ID = 'banking_account_id';
+
+    const BANKING_ACCOUNT_STMT_DETAIL_ID = 'banking_account_stmt_detail_id';
 
     const URLS = [
         'create'                            => 'Create',
@@ -107,6 +123,8 @@ class Ledger
     public function __construct($app)
     {
         $this->trace = $app['trace'];
+
+        $this->repo = $app['repo'];
 
         $this->config = $app['config']->get('applications.ledger');
 
@@ -437,6 +455,39 @@ class Ledger
      */
     public function deleteMerchants($input, bool $throwExceptionOnFailure = false): array
     {
+        $ledgerReverseShadowMerchantIds = [];
+        if (empty(self::ENTITIES) === false)
+        {
+            if (empty($input[self::ENTITIES][self::BANKING_ACCOUNT_ID]) === false)
+            {
+                // if RX VA case, prevent deletion of VA's reverse shadow merchants
+                $ledgerReverseShadowMerchantIds = $this->repo->feature->getMerchantIdsHavingFeature(Feature\Constants::LEDGER_REVERSE_SHADOW, $input[self::MERCHANT_IDS]);
+            }
+            else if (empty($input[self::ENTITIES][self::BANKING_ACCOUNT_STMT_DETAIL_ID]) === false)
+            {
+                // if RX DA case, prevent deletion of DA's reverse shadow merchants
+                $ledgerReverseShadowMerchantIds = $this->repo->feature->getMerchantIdsHavingFeature(Feature\Constants::DA_LEDGER_REVERSE_SHADOW, $input[self::MERCHANT_IDS]);
+            }
+
+            $input[self::MERCHANT_IDS] = empty($ledgerReverseShadowMerchantIds) ? $input[self::MERCHANT_IDS] : array_diff($input[self::MERCHANT_IDS], $ledgerReverseShadowMerchantIds);
+        }
+
+        $this->trace->info(TraceCode::LEDGER_DELETE_MERCHANTS_REQUEST, [
+            'excluded_merchant_ids' => $ledgerReverseShadowMerchantIds,
+            'merchant_ids_to_be_deleted' => $input[self::MERCHANT_IDS],
+        ]);
+
+        // Call ledger only if there is something to delete
+        if (empty($input[self::MERCHANT_IDS]) === true)
+        {
+            throw new Exception\RuntimeException(
+                'No merchants to delete after prerequisite checks',
+                [
+                    'status_code'   => 500,
+                    'response_body' => null,
+                ]);
+        }
+
         return $this->sendRequest(self::DashboardURL . '/' . self::URLS['deleteMerchants'],
             Requests::POST, $input, $throwExceptionOnFailure);
     }
