@@ -281,6 +281,7 @@ class Response
 
         $response->setData($data);
         $response->setStatusCode($status);
+        $response->header(Header::X_ROUTE_NAME, $route);
 
         $this->stopBrowserCaching($response);
 

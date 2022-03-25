@@ -229,6 +229,9 @@ class UserRolesScope
             'subscription_test_charge'    => [Role::OWNER, Role::MANAGER, Role::ADMIN],
             'subscription_update'         => [Role::OWNER, Role::MANAGER, Role::ADMIN],
 
+            // Developer Console
+            'developer_console_action'    => [Role::OWNER],
+
             // Partner routes
             'submerchants_fetch'          => Role::allExceptPaymentLinkRoles(),
             'submerchants_fetch_multiple' => Role::allExceptPaymentLinkRoles(),
