@@ -2052,6 +2052,8 @@ class Service extends Base\Service
 
         $enabledCurrencyList = $terminal->getCurrency();
 
+        // REMOVE DISABLED PAYPAL CURRENCIES
+        $enabledCurrencyList = array_diff($enabledCurrencyList, Gateway\Constants::PAYPAL_DISABLED_CURRENCIES);
         if (empty($enabledCurrencyList) === true)
         {
             return;

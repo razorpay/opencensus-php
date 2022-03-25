@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Gateway\Mozart;
 
+use RZP\Models\Currency\Currency;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -91,6 +92,17 @@ class PaypalCurrencyWrapperTest extends TestCase
         {
             $this->doAuthPayment($payment);
         });
+    }
+
+    public function testPaymentFlowsRestrictINR(){
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_paypal_terminal', ['currency' => ['USD', 'INR'], 'merchant_id' => '10000000000000', 'id'=> '2ShrdPaypalTml']);
+
+        $response = $this->sendRequest($this->getDefaultPaymentFlowsRequestData());
+        $response_content = json_decode($response->getContent(), true);
+
+        $currencies = $response_content['all_currencies'];
+        self::assertFalse(array_search(Currency::INR, $currencies));
+        self::assertArrayHasKey(Currency::USD, $currencies);
     }
 
     private function getDefaultPaymentFlowsRequestData()
