@@ -45,6 +45,10 @@ class Service extends UpiPaymentService
     {
         $description = $content['payment']['description'];
 
+        $remark = 'Test Merchant ' . preg_replace('/[^a-zA-Z0-9 ]+/', '', $description);
+
+        assertTrue($content['metadata']['remark'] === $remark);
+
         $response = [];
 
         $error = null;

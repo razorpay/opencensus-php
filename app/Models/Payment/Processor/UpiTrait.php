@@ -323,8 +323,27 @@ trait UpiTrait
             Entity::TYPE        => $upiMetadata[Entity::TYPE],
             Entity::MODE        => $upiMetadata[Entity::MODE],
             Entity::EXPIRY_TIME => $upiMetadata[Entity::EXPIRY_TIME] ?? null,
+            'remark'            => $this->getRemark($payment),
         ];
 
         $gatewayData['metadata'] = $metadata;
+    }
+
+    /**
+     * @param Payment\Entity $payment
+     *
+     * @return string
+     */
+    protected function getRemark(Payment\Entity $payment): string
+    {
+        $paymentDescription = $payment->getDescription() ?? '';
+
+        $filteredPaymentDescription = Payment\Entity::getFilteredDescription($paymentDescription);
+
+        $description = $payment->merchant->getFilteredDba() . ' ' . $filteredPaymentDescription;
+
+        $remark = $description ? substr($description, 0, 50) : 'Pay via Razorpay';
+
+        return $remark;
     }
 }
