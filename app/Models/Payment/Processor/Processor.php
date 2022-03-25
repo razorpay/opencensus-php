@@ -218,17 +218,17 @@ class Processor
     /**
      * Razorx flag to indicate if a payment should go via PG Router and CPS or just via API service, during Payment creation
      */
-    const CARD_PAYMENTS_VIA_PGROUTER = 'card_payments_via_pg_router';
+    const CARD_PAYMENTS_VIA_PGROUTER = 'card_payments_via_pg_router_v2';
 
     /**
      * Razorx flag to indicate if a payment should go via PG Router and CPS or just via API service for headless or Rupay, during Payment creation
      */
-    const HEADLESS_CARD_PAYMENTS_VIA_PGROUTER = 'headless_card_payments_via_pg_router';
+    const HEADLESS_CARD_PAYMENTS_VIA_PGROUTER = 'headless_card_payments_via_pg_router_v2';
 
     /**
      * Razorx flag to indicate if a payment should go via PG Router and CPS or just via API service for IVR or OTP during Payment creation
      */
-    const IVR_OTP_CARD_PAYMENTS_VIA_PGROUTER = 'ivr_otp_card_payments_via_pg_router';
+    const IVR_OTP_CARD_PAYMENTS_VIA_PGROUTER = 'ivr_otp_card_payments_via_pg_router_v2';
 
     /**
      * User consent flag indicates whether the user has given consent to tokenise
@@ -244,17 +244,17 @@ class Processor
     /**
      * Razorx flag to indicate if a s2s payment should go via PG Router and CPS or just via API service, during Payment creation
      */
-    const S2S_CARD_PAYMENTS_VIA_PGROUTER = 's2s_card_payments_via_pg_router';
+    const S2S_CARD_PAYMENTS_VIA_PGROUTER = 's2s_card_payments_via_pg_router_v2';
 
     /**
      * Razorx flag to indicate if a s2s payment should go via PG Router and CPS or just via API service for headless and rupay, during Payment creation
      */
-    const HEADLESS_S2S_CARD_PAYMENTS_VIA_PGROUTER = 'headless_s2s_card_payments_via_pg_router';
+    const HEADLESS_S2S_CARD_PAYMENTS_VIA_PGROUTER = 'headless_s2s_card_payments_via_pg_router_v2';
 
     /**
      * Razorx flag to indicate if a s2s payment should go via PG Router and CPS or just via API service for IVR or OTP during Payment creation
      */
-    const S2S_IVR_OTP_CARD_PAYMENTS_VIA_PGROUTER = 'ivr_otp_s2s_card_payments_via_pg_router';
+    const S2S_IVR_OTP_CARD_PAYMENTS_VIA_PGROUTER = 'ivr_otp_s2s_card_payments_via_pg_router_v2';
 
     /**
      * @var Merchant\Entity
@@ -444,6 +444,7 @@ class Processor
                 (empty($input[Payment\Entity::TOKEN]) === false) or
                 (empty($input[Payment\Entity::SAVE]) === false) or
                 (empty($input[Payment\Entity::OFFER_ID]) === false) or
+                (empty($input[Payment\Entity::CHARGE_ACCOUNT]) === false) or
                 ((empty($input['reward_ids']) === false) and ($merchant->getId() !== '2aTeFCKTYWwfrF')) or
                 ((empty($input['auth_type']) === false) and ($input['auth_type'] !== "3ds")) or
                 ($merchant->isFeeBearerPlatform() === false) or

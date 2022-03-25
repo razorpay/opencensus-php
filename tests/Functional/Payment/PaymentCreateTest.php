@@ -1933,7 +1933,7 @@ class PaymentCreateTest extends TestCase
                           ->will($this->returnCallback(
                             function ($mid, $feature, $mode)
                             {
-                                if ($feature === 'card_payments_via_pg_router')
+                                if ($feature === 'card_payments_via_pg_router_v2')
                                 {
                                     return 'on';
                                 }
