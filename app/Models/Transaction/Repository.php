@@ -2642,6 +2642,54 @@ class Repository extends Base\Repository
         return $query->get()->toArray();
     }
 
+    public function fetchTransactionsWithSkip($skip, $count, $merchantIds=null, $startTime=null, $endTime=null)
+    {
+        $transactionIdColumn          = $this->dbColumn(Entity::ID);
+        $transactionBalanceIdColumn   = $this->dbColumn(Entity::BALANCE_ID);
+        $transactionMerchantIdColumn  = $this->dbColumn(Entity::MERCHANT_ID);
+        $transactionCreatedAtColumn   = $this->dbColumn(Entity::CREATED_AT);
+
+        $balanceIdColumn     = $this->repo->balance->dbColumn(Entity::ID);
+        $balanceTypeColumn   = $this->repo->balance->dbColumn(Entity::TYPE);
+        $merchantIdColumn    = $this->repo->merchant->dbColumn(Entity::ID);
+
+        $selectColumn  = [
+            $transactionIdColumn,
+        ];
+
+        $query = $this->newQueryWithConnection($this->getSlaveConnection())
+            ->select($selectColumn)
+            ->leftjoin(Table::BALANCE, $balanceIdColumn, '=', $transactionBalanceIdColumn)
+            ->leftjoin(Table::MERCHANT, $merchantIdColumn, '=', $transactionMerchantIdColumn)
+            // To fetch only banking transactions
+            ->where(function ($query) use ($transactionBalanceIdColumn, $balanceTypeColumn)
+            {
+                $query->WhereIn($balanceTypeColumn, [Balance\Type::BANKING]);
+            });
+
+        if($merchantIds != null)
+        {
+            $query->whereIn($transactionMerchantIdColumn, $merchantIds);
+        }
+
+        if($startTime != null)
+        {
+            $query->where($transactionCreatedAtColumn, '>=', $startTime);
+        }
+
+        if($endTime != null)
+        {
+            $query->where($transactionCreatedAtColumn, '<=', $endTime);
+        }
+
+        return $query->take($count)
+                    ->skip($skip)
+                    ->oldest($transactionCreatedAtColumn)
+                    ->get()
+                    ->pluck(Entity::ID)
+                    ->toArray();
+    }
+
     public function fetchTransactionsForMerchantIdWithSkip($merchantId, $skip, $count)
     {
         $transactionIdColumn          = $this->dbColumn(Entity::ID);
@@ -2669,10 +2717,10 @@ class Repository extends Base\Repository
             ->where($transactionMerchantIdColumn, $merchantId);
 
         return $query->take($count)
-                    ->skip($skip)
-                    ->oldest($transactionCreatedAtColumn)
-                    ->get()
-                    ->pluck(Entity::ID)
-                    ->toArray();
+            ->skip($skip)
+            ->oldest($transactionCreatedAtColumn)
+            ->get()
+            ->pluck(Entity::ID)
+            ->toArray();
     }
 }

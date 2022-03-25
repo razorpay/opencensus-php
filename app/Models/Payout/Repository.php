@@ -2278,6 +2278,36 @@ class Repository extends Base\Repository
 
     }
 
+    public function fetchPayoutsWithSkip($skip, $count, $merchantIds=null, $startTime=null, $endTime=null)
+    {
+        $payoutCreatedAtColumn   = $this->dbColumn(Entity::CREATED_AT);
+        $payoutMerchantIdColumn = $this->dbColumn(Entity::MERCHANT_ID);
+
+        $payouts = $this->newQuery();
+
+        if($merchantIds != null)
+        {
+            $payouts->whereIn($payoutMerchantIdColumn, $merchantIds);
+        }
+
+        if($startTime != null)
+        {
+            $payouts->where($payoutCreatedAtColumn, '>=', $startTime);
+        }
+
+        if($endTime != null)
+        {
+            $payouts->where($payoutCreatedAtColumn, '<=', $endTime);
+        }
+
+        return $payouts->take($count)
+                        ->skip($skip)
+                        ->oldest($payoutCreatedAtColumn)
+                        ->get()
+                        ->pluck(Entity::ID)
+                        ->toArray();
+    }
+
     public function fetchPayoutsForMerchantIdWithSkip($merchantId, $skip, $count)
     {
         $payoutCreatedAtColumn   = $this->dbColumn(Entity::CREATED_AT);

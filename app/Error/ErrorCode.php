@@ -1040,6 +1040,8 @@ class ErrorCode
 
     const BAD_REQUEST_URL_NOT_FOUND                                                 = 'BAD_REQUEST_URL_NOT_FOUND';
 
+    const BAD_REQUEST_NO_MATCHING_ENTITY                                            = 'BAD_REQUEST_NO_MATCHING_ENTITY';
+
     const BAD_FEATURE_PERMISSION_NOT_FOUND                                          = 'BAD_FEATURE_PERMISSION_NOT_FOUND';
 
     const BAD_REQUEST_ROUTE_DISABLED                                                = 'BAD_REQUEST_ROUTE_DISABLED';

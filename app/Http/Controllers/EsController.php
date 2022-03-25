@@ -15,6 +15,7 @@ use RZP\Services\EsClient;
 use RZP\Models\Base\EsDao;
 use RZP\Base\RuntimeManager;
 use RZP\Jobs\EsSync;
+use RZP\Jobs\EsSyncEntities;
 use RZP\Models\Base\EsRepository;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Exception\BadRequestException;
@@ -200,6 +201,36 @@ class EsController extends Controller
         $this->trace->debug(TraceCode::ES_DEBUG_MERCHANT_COUNT, [
             'merchantCount'  => $merchantCount,
         ]);
+    }
+
+    public function syncEntitiesToES()
+    {
+        $input = Request::all();
+
+        $this->trace->debug(TraceCode::ES_DEBUG_INPUT, [
+            'input'  => $input,
+        ]);
+
+        $batchSize = $input['batchSize'];
+
+        $entityType = $input['entityType'];
+
+        $startTime = $input['startTime'];
+
+        $endTime = $input['endTime'];
+
+        $merchantIds = $input['merchantIds'];
+
+        $mode = $this->app['rzp.mode'];
+
+        EsSyncEntities::dispatch(
+            $mode,
+            EsRepository::UPDATE,
+            $entityType,
+            $startTime,
+            $endTime,
+            $batchSize,
+            $merchantIds);
     }
 
     // -------------------- Write endpoint starts -----------------------------
