@@ -1,5 +1,6 @@
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties, titleCase } from 'common/utils/rzp-utils';
+import { getKycAnalyticsProperties } from 'merchant/views/RazorpayXWidget/helpers';
 
 const FAILED = 'FAILED';
 
@@ -37,21 +38,25 @@ function _track() {
   }
 
   return {
-    onBoardingSuccess: (featureName) => {
+    onBoardingSuccess: (featureName, { includeKycProperties }) => {
+      const properties = includeKycProperties ? { ...getKycAnalyticsProperties() } : {};
       sendToLumberjack(`${featureName}.onboarding.start`);
       sendToSegment(
         `${titleCase(featureName)} onboarding start`,
         'click',
         `${featureName} onboarding screen`,
+        properties,
       );
     },
 
-    introductionNextSuccess: (featureName, eventType) => {
+    introductionNextSuccess: (featureName, eventType, { includeKycProperties }) => {
+      const properties = includeKycProperties ? { ...getKycAnalyticsProperties() } : {};
       sendToLumberjack(`${featureName}.onboarding.introduction_next`);
       sendToSegment(
         `${titleCase(featureName)} onboarding introduction next`,
         eventType || 'click',
         `${featureName} onboarding screen`,
+        properties,
       );
     },
 

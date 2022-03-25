@@ -7,15 +7,17 @@ import ShowWhen from 'merchant/components/ShowWhen';
 @RTracking((props) => window.rzpQ.component(`${props.feature}_onboarding_landing_page`))
 export default class OnBoardingLanding extends React.PureComponent {
   componentDidMount() {
-    track.onBoardingSuccess(this.props.feature);
+    const { includeKycProperties, feature } = this.props;
+    track.onBoardingSuccess(feature, { includeKycProperties });
   }
 
   handleNexButton = () => {
     return this.props.next(() => {
-      track.introductionNextSuccess(this.props.feature);
+      const { includeKycProperties, feature, active } = this.props;
+      track.introductionNextSuccess(feature, null, { includeKycProperties });
       window.rzpAnalytics?.({
-        eventCategory: `Onboarding Card (${this.props.feature})`,
-        eventAction: `Page ${this.props.active} - Next CTA`,
+        eventCategory: `Onboarding Card (${feature})`,
+        eventAction: `Page ${active} - Next CTA`,
       });
     });
   };

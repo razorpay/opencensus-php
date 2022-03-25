@@ -1,5 +1,7 @@
 import { setTrackData } from 'common/utils/googleAnalytics';
 import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { getKycAnalyticsProperties } from 'merchant/views/RazorpayXWidget/helpers';
 
 const track = setTrackData({
   eventCategory: 'Dashboard - Side Nav',
@@ -21,5 +23,9 @@ export const trackViewedBankingNavBar = () => {
     objectName: 'Banking Left Nav Bar PG',
     actionName: 'Viewed',
     screen: 'home page',
+    properties: {
+      ...getCommonAnalyticsProperties(window.rzp_user),
+      ...getKycAnalyticsProperties(),
+    },
   });
 };

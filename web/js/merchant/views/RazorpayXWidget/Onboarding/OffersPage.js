@@ -2,6 +2,8 @@ import Button from 'common/new-ui/Button';
 import { OFFER_DETAILS } from '../../ConnectedBanking/data';
 import FeaturesList from '../../ConnectedBanking/components/FeaturesList';
 import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { getKycAnalyticsProperties } from 'merchant/views/RazorpayXWidget/helpers';
 
 const featuresList = OFFER_DETAILS.ICICI.content.featuresList;
 
@@ -17,6 +19,10 @@ const OffersPage = ({ prev }) => {
       objectName: 'RazorayX Get Started',
       actionName: 'Clicked',
       screen: 'RazorpayX Onboarding',
+      properties: {
+        ...getCommonAnalyticsProperties(window.rzp_user),
+        ...getKycAnalyticsProperties(),
+      },
     });
 
     window.open(

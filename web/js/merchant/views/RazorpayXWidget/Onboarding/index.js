@@ -46,6 +46,7 @@ const RazorpayXOnboarding = () => {
             callout={calloutElement}
             ctaText="Next"
             feature={RZPFeatures.RAZORPAYX}
+            includeKycProperties={true}
           />
         )}
 
