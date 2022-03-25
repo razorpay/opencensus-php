@@ -542,7 +542,7 @@ class Core extends Base\Core
             //check is required since declaration_step property added recently. Relying on it will lead to sending of applications irrespective of the state.
             if($bankingAccount->getStatus() === BankingAccount\Status::CREATED)
             {
-                if ($merchantChannel === null)
+                if ($merchantChannel !== Constants::CA_CHANNEL_NITRO)
                 {
                     $input = [
                         Constants::CA_PARTNER_BANK    => Constants::RBL,
@@ -565,7 +565,7 @@ class Core extends Base\Core
 
                     $this->repo->banking_account_detail->saveOrFail($detail);
                 }
-                elseif ($merchantChannel === Constants::CA_CHANNEL_NITRO and $merchantCaCampaignId !== null)
+                elseif ($merchantCaCampaignId !== null)
                 {
                     $input = [
                         Constants::SOURCE                => Constants::X_CA_UNIFIED_NITRO,
