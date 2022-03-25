@@ -2,6 +2,8 @@
 
 namespace Functional\Merchant;
 
+use Mail;
+
 use RZP\Models\Feature\Core;
 use RZP\Models\Feature\Entity;
 use RZP\Models\Merchant\Account;
@@ -17,6 +19,7 @@ use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Tests\Functional\Fixtures\Entity\Merchant;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Mail\Merchant\CreateSubMerchant as CreateSubMerchantMail;
 
 
 class AccountV2Test extends TestCase
@@ -75,6 +78,17 @@ class AccountV2Test extends TestCase
         $this->assertEmpty($stakeholders);
 
         $this->assertTrue($metricCaptured);
+    }
+
+    public function testCreateAccountV2WithInvalidDataRequest()
+    {
+        Mail::fake();
+
+        $this->setUpPartnerWithKycHandled();
+
+        Mail::assertNotQueued(CreateSubMerchantMail::class);
+
+        $this->startTest();
     }
 
     public function testCreateAccountV2ForCompletelyFilledRegisteredBusinessRequest()

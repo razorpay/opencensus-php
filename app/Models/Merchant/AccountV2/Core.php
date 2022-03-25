@@ -34,6 +34,13 @@ class Core extends Merchant\Core
 
         (new Validator)->validateInput('create_account', $input);
 
+        // Calling downstream validation to be in sync with them. https://razorpay.slack.com/archives/C021KESTRLH/p1647518134264949
+        $subMerchantInput = InputHelper::getSubMerchantInput($input);
+        $detailInput = InputHelper::getSubMerchantDetailInput($input);
+
+        (new Merchant\Validator())->validateInput('edit_config', $subMerchantInput);
+        (new Detail\Validator())->validateInput('edit', $detailInput);
+
         $account = Tracer::inspan(['name' => HyperTrace::CREATE_SUBMERCHANT_ENTITIES], function () use ($input, $partner) {
 
         $account = $this->repo->transactionOnLiveAndTest(function () use ($input, $partner)
