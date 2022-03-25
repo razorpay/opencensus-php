@@ -111,6 +111,23 @@ class Service extends UpiPaymentService
                 $code = 200;
 
                 break;
+                case 'mozart_validation_failure':
+                    $response['error'] = [
+                        'internal' => [
+                            'code'          => 'BAD_REQUEST_VALIDATION_FAILURE',
+                            'description'   => 'BAD_REQUEST_VALIDATION_ERROR: received false 
+                                                response with status 400 from mozart',
+                            'metadata'      => [
+                                'description'               => 'INPUT_VALIDATION_FAILED',
+                                'gateway_error_code'        => '',
+                                'gateway_error_description' => '',
+                                'internal_error_code'       => 'BAD_REQUEST_VALIDATION_FAILURE'
+                            ]
+                        ]
+                    ];
+                    $code = 200;
+
+                    break;
             default:
                 $response['data'] = [
                     'data' => [

@@ -516,9 +516,7 @@ class Service
         if ($code === 200)
         {
             // Verify error is handled separately.
-            // We do not process pre-process gateway failures.
-            if (($this->action == Payment\Action::VERIFY) or
-                ($this->action === self::PRE_PROCESS))
+            if ($this->action == Payment\Action::VERIFY)
             {
                 return;
             }
@@ -557,8 +555,24 @@ class Service
         $metadata = $error['internal']['metadata'];
 
         $internalErrorCode = $metadata['internal_error_code'];
+        $description      = $metadata['description'];
         $gatewayErrorCode = $metadata['gateway_error_code'];
         $gatewayErrorDesc = $metadata['gateway_error_description'];
+
+        if (starts_with($internalErrorCode, 'BAD_REQUEST') === true)
+        {
+            throw new Exception\BadRequestException(
+                $internalErrorCode,
+                null,
+                $error,
+                $description);
+        }
+
+        // We do not process gateway failures for pre-process
+        if ($this->action === self::PRE_PROCESS)
+        {
+            return;
+        }
 
         throw new Exception\GatewayErrorException(
             $internalErrorCode,

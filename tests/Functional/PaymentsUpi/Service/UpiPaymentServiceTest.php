@@ -233,6 +233,39 @@ class UpiPaymentServiceTest extends TestCase
     }
 
     /**
+     * Test Mozart failure for collect payment
+     *
+     * @return void
+     */
+    public function testMozartValidationFailure()
+    {
+        $payment = $this->payment;
+
+        $payment['description'] = 'mozart_validation_failure';
+
+        $this->makeRequestAndCatchException(
+            function() use ($payment)
+            {
+                $this->doAuthPaymentViaAjaxRoute($payment);
+            },
+            Exception\BadRequestException::class);
+
+        $payment = $this->getDbLastPayment();
+
+        $this->assertArraySubset(
+            [
+            Entity::STATUS              => 'failed',
+            Entity::GATEWAY             => 'upi_airtel',
+            Entity::TERMINAL_ID         => $this->terminal->getId(),
+            Entity::REFUND_AT           => null,
+            Entity::CPS_ROUTE           => Entity::UPI_PAYMENT_SERVICE,
+            Entity::ERROR_CODE          => 'BAD_REQUEST_ERROR',
+            Entity::INTERNAL_ERROR_CODE => 'BAD_REQUEST_VALIDATION_FAILURE'
+            ], $payment->toArray()
+        );
+    }
+
+    /**
      * Test Failed Collect Payment with pre-process through UPS
      * @return void
      */
