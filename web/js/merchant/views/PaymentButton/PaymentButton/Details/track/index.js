@@ -127,9 +127,9 @@ function _track() {
       });
       sendToSegment('settings redirect', _status, { via });
     },
-    pluginClick: (name) => {
-      sendToLumberjack(`plugins.${name}`);
-      sendToSegment(`${humanize(name)} documentation link`, 'click', {}, true);
+    pluginClick: (name, is_direct_plugin) => {
+      sendToLumberjack(`plugins.${name}`, { is_direct_plugin });
+      sendToSegment(`${humanize(name)} documentation link`, 'click', { is_direct_plugin }, true);
     },
 
     init(_lumberjackTrack, _buttonId) {

@@ -69,7 +69,13 @@ const LoginCard = ({ cardData, cardOrder }) => {
       </Space>
       {ctaText ? (
         <Space margin={[1, 0, 3, 0]} padding={[0]}>
-          <CustomLinkButton as="a" href={ctaURL} target="_blank" rel="noopener noreferrer" onClick={handleCTAClick}>
+          <CustomLinkButton
+            as="a"
+            href={ctaURL}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={handleCTAClick}
+          >
             {ctaText}
             <span>→</span>
           </CustomLinkButton>

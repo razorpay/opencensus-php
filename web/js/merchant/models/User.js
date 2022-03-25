@@ -770,6 +770,10 @@ export default class User {
     return this.getExpStatus('pp_donation_goal_tracker');
   }
 
+  get isPBDirectPluginLinks() {
+    return this.getExpStatus('pb_direct_plugin_links');
+  }
+
   /* Check case-insensitive tag check existence */
   findTag(tag) {
     return this.tags.some((t) => t.toLowerCase() === tag.toLowerCase());

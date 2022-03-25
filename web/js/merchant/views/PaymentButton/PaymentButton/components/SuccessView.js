@@ -14,14 +14,40 @@ const pluginsList = [
   {
     title: 'Wordpress Plugin',
     handleClick: track.pluginClick.bind(null, 'wordpress'),
-    docLink: 'wordpress',
+    docLink: 'https://razorpay.com/docs/payments/payment-button/supported-platforms/wordpress/',
+    docLink2: 'https://wordpress.org/plugins/razorpay-payment-button/',
     icon: 'wordpress.svg',
   },
   {
     title: 'Elementor Plugin',
     handleClick: track.pluginClick.bind(null, 'elementor'),
-    docLink: 'wordpress/elementor',
+    docLink:
+      'https://razorpay.com/docs/payments/payment-button/supported-platforms/wordpress/elementor/',
+    docLink2: 'https://wordpress.org/plugins/razorpay-payment-button-elementor/',
     icon: 'elementor.svg',
+  },
+  {
+    title: 'SiteOrigin Plugin',
+    handleClick: track.pluginClick.bind(null, 'siteorigin'),
+    docLink:
+      'https://razorpay.com/docs/payments/payment-button/supported-platforms/wordpress/site-origin/',
+    docLink2: 'https://wordpress.org/plugins/razorpay-payment-button-for-siteorigin/',
+    icon: 'siteorigin.jpeg',
+  },
+  {
+    title: 'Visual Composer Plugin',
+    handleClick: track.pluginClick.bind(null, 'visualcomposer'),
+    docLink:
+      'https://razorpay.com/docs/payments/payment-button/supported-platforms/wordpress/visual-composer/',
+    docLink2: 'https://wordpress.org/plugins/razorpay-payment-button-for-visual-composer/',
+    icon: 'visual-composer.jpeg',
+  },
+  {
+    title: 'Drupal Plugin',
+    handleClick: track.pluginClick.bind(null, 'drupal'),
+    docLink: 'https://razorpay.com/docs/payments/payment-button/supported-platforms/#drupal-plugin',
+    docLink2: 'https://www.drupal.org/project/payment_button_drupal_plugin',
+    icon: 'drupal.svg',
   },
 ];
 
@@ -108,6 +134,8 @@ export default class SuccessModal extends React.Component {
   }
 
   render() {
+    const { isPBDirectPluginLinks } = this.props.user;
+
     return (
       <div class="PaymentButton-Create-Form PaymentButton-Create-SuccessView-V2">
         <div class="Form-container">
@@ -176,12 +204,14 @@ export default class SuccessModal extends React.Component {
                         <img
                           src={`/dist/css/assets/payment_button/success-screen/plugins/${plugin.icon}`}
                           alt={`${plugin.title} Logo`}
+                          height="19"
+                          width="19"
                         />
                         <DocLink
-                          href={`https://razorpay.com/docs/payment-button/supported-platforms/${plugin.docLink}`}
+                          href={plugin[isPBDirectPluginLinks ? 'docLink2' : 'docLink']}
                           target="_blank"
                           rel="noopener noreferrer"
-                          onClick={plugin.handleClick}
+                          onClick={plugin.handleClick.bind(null, isPBDirectPluginLinks)}
                         >
                           {plugin.title}
                         </DocLink>

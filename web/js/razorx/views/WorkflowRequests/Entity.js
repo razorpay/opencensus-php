@@ -1,14 +1,27 @@
 import React, { Component } from 'react';
 import { observable, extendObservable, action } from 'mobx';
 import { observer } from 'mobx-react';
-import { openModal, notifySuccess, notifyDone } from 'razorx/components/Modal';
-import { adminGet, adminPut } from 'razorx/helpers/admin-fetch';
-import { titleCase } from 'common/utils/rzp-utils';
+import { adminGet } from 'razorx/helpers/admin-fetch';
 import { formatDate } from 'razorx/helpers/utils';
 
 import Comments from './Comments';
 import RequestActions from './RequestActions';
 import ExperimentsEntity from 'razorx/views/Experiments/Entity';
+
+/**
+ * Request State map
+ */
+const RequestState = {
+  approved: 'approved-state',
+  executed: 'executed-state',
+  closed: 'closed-state',
+  rejected: 'rejected-state',
+  open: 'open-state',
+};
+
+const entityMap = {
+  razorx_experiment_activate: 'experiments',
+};
 
 @observer
 export default class RequestEntity extends Component {
@@ -27,16 +40,12 @@ export default class RequestEntity extends Component {
     const { id } = this.props.match.params;
 
     adminGet(`live/w-actions/${id}/details`).then(
-      action(response => {
+      action((response) => {
         if (response) {
           //init levels map {level_num : [role1, role2, ...]}
 
-          if (
-            response.workflow &&
-            response.workflow.steps &&
-            response.workflow.steps.length
-          ) {
-            response.workflow.steps.forEach(step => {
+          if (response.workflow && response.workflow.steps && response.workflow.steps.length) {
+            response.workflow.steps.forEach((step) => {
               this.levels[step.level] = this.levels[step.level] || [];
               this.levels[step.level].push(step.role.name);
             });
@@ -46,35 +55,33 @@ export default class RequestEntity extends Component {
 
           //init comments array
           this.comments.replace(
-            response.comments.map(comment => ({ type: 'comment', ...comment }))
+            response.comments.map((comment) => ({ type: 'comment', ...comment })),
           );
 
           //init checkers array
           this.checkers.replace(
-            response.checkers.map(checker => ({ type: 'checker', ...checker }))
+            response.checkers.map((checker) => ({ type: 'checker', ...checker })),
           );
 
           this.data.replace(response);
           this.pending = false;
         }
-      })
+      }),
     );
   }
 
   @action
-  handleCommentAdd = response => {
+  handleCommentAdd = (response) => {
     this.comments.push({ type: 'comment', ...response });
   };
 
   @action
-  handleActionUpdate = response => {
+  handleActionUpdate = (response) => {
     this.data.replace(response);
-    this.checkers.replace(
-      response.checkers.map(checker => ({ ...checker, type: 'checker' }))
-    );
+    this.checkers.replace(response.checkers.map((checker) => ({ ...checker, type: 'checker' })));
   };
 
-  updateEntityData = entityData => {
+  updateEntityData = (entityData) => {
     this.setState({
       entityData,
     });
@@ -86,10 +93,8 @@ export default class RequestEntity extends Component {
     }
 
     const { entityData } = this.state;
-    const { levels, checkers, comments } = this;
+    const { checkers, comments } = this;
     const data = this.data.toJS();
-    const shouldShowTick = ['approved', 'executed'].indexOf(data.state) !== -1;
-    const { id } = this.props.match.params;
 
     const url = `${entityMap[data.entity_name]}/${data.entity_id}`;
 
@@ -115,9 +120,7 @@ export default class RequestEntity extends Component {
                     {formatDate(data.created_at)}
                   </span>
                 ) : null}
-                <span className={`pill ${RequestState[data.state]} m-l`}>
-                  {data.state}
-                </span>
+                <span className={`pill ${RequestState[data.state]} m-l`}>{data.state}</span>
               </div>
             </div>
 
@@ -151,18 +154,3 @@ export default class RequestEntity extends Component {
     );
   }
 }
-
-/**
- * Request State map
- */
-const RequestState = {
-  approved: 'approved-state',
-  executed: 'executed-state',
-  closed: 'closed-state',
-  rejected: 'rejected-state',
-  open: 'open-state',
-};
-
-const entityMap = {
-  razorx_experiment_activate: 'experiments',
-};
