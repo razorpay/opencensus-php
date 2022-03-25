@@ -651,6 +651,8 @@ class Processor
             case "payment_create_private_json":
                 $input['route_auth'] = $this->app['basicauth']->getAuthType();
                 return $this->app['pg_router']->validateAndCreatePaymentJson($input, true);
+            case "payment_create_checkout":
+                return $this->app['pg_router']->validateAndCreatePaymentCheckout($input, true);
         }
         return null;
     }

@@ -56,6 +56,8 @@ class PGRouter
     // and PG Router will take this as first call to create paymentId and perform validations. So, will be easy to switch in future.
     const PGRouterValidateAndCreatePayment = 'v1/payments/create/ajax';
 
+    const PGRouterValidateAndCreatePaymentCheckout = 'v1/payments/create/checkout';
+
     const PGRouterFetchPayment = 'v1/payments/';
 
     const PGRouterFetchCard    = 'v1/cards/';
@@ -130,6 +132,13 @@ class PGRouter
     public function validateAndCreatePayment(array $input, bool $throwExceptionOnFailure = false): array
     {
         $output = $this->sendRequest(self::PGRouterValidateAndCreatePayment, Requests::POST, $input, $throwExceptionOnFailure);
+
+        return $output['body'];
+    }
+
+    public function validateAndCreatePaymentCheckout(array $input, bool $throwExceptionOnFailure = false): array
+    {
+        $output = $this->sendRequest(self::PGRouterValidateAndCreatePaymentCheckout, Requests::POST, $input, $throwExceptionOnFailure);
 
         return $output['body'];
     }
