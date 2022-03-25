@@ -82,7 +82,7 @@ class TrustedBadge extends Job
                 'dmtMerchantsCount' => count($dmtMIDs),
             ]);
 
-            $disputedMIDs = array_flip($this->repoManager->dispute->getLostOrClosedDisputeMerchantIdsInLast4Months());
+            $disputedMIDs = array_flip($this->rtbCore->getMerchantsWithDisputeLossRateGreaterThanThreshold());
 
             $this->trace->info(TraceCode::RTB_CRON_CHECKPOINT_REACHED, [
                 'checkpoint'    => 'fetched_disputed_merchants',

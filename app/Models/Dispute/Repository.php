@@ -366,20 +366,25 @@ class Repository extends Base\Repository
         }
     }
 
-    public function getLostOrClosedDisputeMerchantIdsInLast4Months()
+    /**
+     * This query fetches all merchantIds with their corresponding number of
+     * disputes lost/closed after minCreatedAt timestamp
+     *
+     * @param int $minCreatedAt
+     *
+     * @return array Sample Output: ["mid1" => 1, "mid2" => 10, "mid3" => 4]
+     */
+    public function getCountOfLostOrClosedDisputesForMerchants(int $minCreatedAt): array
     {
-        $fourMonthAgo = Carbon::now()->subDays(120);
-
-        $query = $this->newQueryWithConnection($this->getSlaveConnection())
-            ->select(Entity::MERCHANT_ID)
-            ->distinct()
+        $result = $this->newQueryWithConnection($this->getSlaveConnection())
+            ->selectRaw(Entity::MERCHANT_ID . ', COUNT(*) AS disputes_count')
             ->whereIn(Entity::STATUS, Status::getMerchantAcceptedStatuses())
-            ->where(Entity::CREATED_AT, ">=", $fourMonthAgo->getTimestamp())
-            ->get();
+            ->where(Entity::CREATED_AT, ">=", $minCreatedAt)
+            ->groupby(Entity::MERCHANT_ID)
+            ->pluck('disputes_count' , Entity::MERCHANT_ID);
 
-        return $query->pluck(Entity::MERCHANT_ID)->toArray();
+        return $result->toArray();
     }
-
 
     public function getDisputesForDeductionReversal()
     {

@@ -2,6 +2,8 @@
 
 namespace RZP\Models\TrustedBadge;
 
+use Carbon\Carbon;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Redis;
 use RZP\Diag\EventCode;
@@ -19,6 +21,9 @@ use RZP\Models\TrustedBadge\TrustedBadgeHistory\Core as TrustedBadgeHistoryCore;
 
 class Core extends Base\Core
 {
+    /** @var float the maximum allowed dispute loss rate for a merchant to be eligible for RTB */
+    public const DISPUTE_LOSS_RATE_THRESHOLD = 0.1;
+
     public function eligibilityCron()
     {
         try
@@ -37,6 +42,74 @@ class Core extends Base\Core
 
             return ['success' => false];
         }
+    }
+
+    /**
+     * This method returns all merchantIds whose dispute loss rate
+     * exceeded DISPUTE_LOSS_RATE_THRESHOLD
+     *
+     * @param float $threshold DISPUTE_LOSS_RATE_THRESHOLD
+     * @return array list of merchantIds who are no longer eligible for RTB
+     */
+    public function getMerchantsWithDisputeLossRateGreaterThanThreshold(float $threshold = self::DISPUTE_LOSS_RATE_THRESHOLD): array
+    {
+        $disputedMerchantIds = [];
+
+        $fourMonthsAgo = Carbon::now()->subDays(120)->getTimestamp();
+
+        $disputeCountForMerchants = $this->repo->dispute->getCountOfLostOrClosedDisputesForMerchants($fourMonthsAgo);
+
+        $merchantIdsWithAtLeastOneDispute = array_keys($disputeCountForMerchants);
+
+        // Idea here is to not pass all MIDs at once but instead send them in chunks
+        $chunkedMerchantIds = array_chunk($merchantIdsWithAtLeastOneDispute , 500);
+
+        $paymentCountForDisputedMerchants = [];
+
+        foreach ($chunkedMerchantIds as $merchantIds)
+        {
+            $paymentCountChunks = $this->repo->payment->getPaymentsCountForMerchantsFromDataLakePresto(
+                $merchantIds,
+                $fourMonthsAgo
+            );
+
+            $paymentCountForDisputedMerchants[] = $paymentCountChunks;
+        }
+
+        $paymentCountForDisputedMerchants = array_merge([], ...$paymentCountForDisputedMerchants);
+
+        foreach ($disputeCountForMerchants as $merchantId => $disputeCount)
+        {
+            if (array_key_exists($merchantId , $paymentCountForDisputedMerchants) === false)
+            {
+                $disputedMerchantIds[] = $merchantId;
+                continue;
+            }
+
+            $paymentCount = $paymentCountForDisputedMerchants[$merchantId];
+
+            $disputeLossRate = $this->calculateDisputeLossRate($disputeCount, $paymentCount);
+
+            if ($disputeLossRate > $threshold)
+            {
+                $disputedMerchantIds[] = $merchantId;
+            }
+        }
+
+        return $disputedMerchantIds;
+    }
+
+    /**
+     * Dispute Loss rate is one of parameters used to verify eligibility of merchant for RTB.
+     * We consider only those disputes and payments within 4 months
+     *
+     * @param int $disputeCount Number of disputes lost/closed by the merchant
+     * @param int $paymentCount Number of successful payments processed by the merchant
+     * @return float
+     */
+    protected function calculateDisputeLossRate(int $disputeCount, int $paymentCount): float
+    {
+        return (($disputeCount * 100) / $paymentCount);
     }
 
     /**

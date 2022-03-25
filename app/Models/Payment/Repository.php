@@ -64,6 +64,21 @@ class Repository extends Base\Repository
         Card\Entity::LAST4,
     ];
 
+    public const SUCCESSFUL_PAYMENTS_COUNT_SQL = <<<'EOT'
+SELECT
+  merchant_id,
+  COUNT(*) AS payments_count
+FROM
+  hive.realtime_hudi_api.payments
+WHERE
+  authorized_at IS NOT NULL
+  AND merchant_id IN (%s)
+  AND created_date > '%s'
+GROUP BY
+  merchant_id;
+EOT;
+
+
     protected function serializeForIndexing(PublicEntity $entity): array
     {
         $serialized = parent::serializeForIndexing($entity);
@@ -1732,6 +1747,41 @@ class Repository extends Base\Repository
                       ->having('payment_count', '>=', 1);
 
         return $query->pluck('payment_count', 'offer_id')->toArray();
+    }
+
+    /**
+     * This query fetches number of successful payments
+     * Which are created after minCreatedAt timestamp for each merchant with disputes
+     * Note : we defined successful payment as a payment which has AUTHORIZED_AT as not null
+     * Note : we consider only those merchants who have atleast 1 dispute created after minCreatedAt
+     *
+     * @param array $merchantIds
+     * @param int $minCreatedAt the timestamp after which payment is considered valid
+     *
+     * @return array List of merchantIds with corresponding count of successful payments
+     *               Sample Output: ["mid1" => 12000, "mid2" => 1500, "mid3" => 100000]
+     */
+    public function getPaymentsCountForMerchantsFromDataLakePresto(array $merchantIds , int $minCreatedAt): array
+    {
+        if (empty($merchantIds)) {
+            return [];
+        }
+
+        $createdDate = Carbon::createFromTimestamp($minCreatedAt)->toDateString();
+
+        $commaSeparatedMerchantIds = "'" . implode("', '", $merchantIds) . "'";
+
+        $sql = sprintf(self::SUCCESSFUL_PAYMENTS_COUNT_SQL, $commaSeparatedMerchantIds, $createdDate);
+
+        $queryResult = app('datalake.presto')->getDataFromDataLake($sql);
+
+        $result = [];
+
+        foreach ($queryResult as $row) {
+            $result[$row['merchant_id']] = $row['payments_count'];
+        }
+
+        return $result;
     }
 
     /**
