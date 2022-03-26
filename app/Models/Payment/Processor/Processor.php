@@ -231,6 +231,11 @@ class Processor
     const IVR_OTP_CARD_PAYMENTS_VIA_PGROUTER = 'ivr_otp_card_payments_via_pg_router_v2';
 
     /**
+     * Razorx flag to indicate if a raas payment should go via PG Router and CPS or just via API service
+     */
+    const RAAS_CARD_PAYMENTS_VIA_PGROUTER = 'raas_card_payments_via_pg_router';
+
+    /**
      * User consent flag indicates whether the user has given consent to tokenise
      * the card or not.
      */
@@ -449,7 +454,6 @@ class Processor
                 ((empty($input['auth_type']) === false) and ($input['auth_type'] !== "3ds")) or
                 ($merchant->isFeeBearerPlatform() === false) or
                 ($merchant->isRazorpayOrgId() === false) or
-                ($merchant->isFeatureEnabled('raas') === true) or
                 ($merchant->isFeatureEnabled('openwallet') === true) or
                 ($merchant->isMarketplace() === true))
             {
@@ -526,6 +530,14 @@ class Processor
             if ((bool) Admin\ConfigKey::get(Admin\ConfigKey::PG_ROUTER_SERVICE_ENABLED, false) === false)
             {
                 return false;
+            }
+
+            if ($merchant->isFeatureEnabled('raas') === true) {
+                $raasResult = $this->app->razorx->getTreatment($merchant->getId(), self::RAAS_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
+
+                if ($raasResult !== 'on') {
+                    return false;
+                }
             }
 
             $isRupay = ($iin->getNetworkCode() === Card\Network::RUPAY);
