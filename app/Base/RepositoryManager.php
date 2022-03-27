@@ -194,6 +194,7 @@ use RZP\Base\Database\Connectors\MySqlConnector;
  * @property Models\Offer\Repository                                  $offer
  * @property Models\Offer\EntityOffer\Repository                      $entity_offer
  * @property Models\Transaction\Statement\Ledger\Journal\Repository         $journal
+ * @property Models\Transaction\Statement\Ledger\Account\Repository         $ledger_account
  * @property Models\Transaction\Statement\Ledger\AccountDetail\Repository   $account_detail
  * @property Models\Transaction\Statement\Ledger\Statement\Repository       $ledger_statement
  * @property Models\Internal\Repository                               $internal

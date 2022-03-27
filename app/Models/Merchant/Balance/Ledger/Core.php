@@ -8,10 +8,12 @@ use Ramsey\Uuid\Uuid;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Base\ConnectionType;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Exception\ServerErrorException;
 use RZP\Services\Ledger as LedgerService;
 use RZP\Models\Merchant\Entity as Merchant;
+use RZP\Models\Transaction\Processor\Ledger;
 use RZP\Models\BankingAccount\Entity as BankingAccount;
 use RZP\Models\Merchant\Credits\Balance\Entity as CreditEntity;
 use RZP\Models\BankingAccountStatement\Details\Entity as BankingAccountStatementDetails;
@@ -438,7 +440,6 @@ class Core extends Base\Core
                 }
 
                 $ledgerResponse = $response[LedgerService::RESPONSE_BODY];
-
             }
             catch (\Throwable $e)
             {
@@ -450,6 +451,14 @@ class Core extends Base\Core
                         self::MERCHANT_ID        => $merchantId,
                         self::BANKING_ACCOUNT_ID => $bankingAccountId
                     ]);
+
+                $this->trace->info(TraceCode::LEDGER_ACCOUNT_FETCH_BALANCE_FROM_TIDB,
+                [
+                    self::MERCHANT_ID        => $merchantId,
+                    self::BANKING_ACCOUNT_ID => $bankingAccountId
+                ]);
+
+                $ledgerResponse = $this->fetchBalanceFromLedgerTiDB($merchantId, $bankingAccountId);
             }
             finally
             {
@@ -472,6 +481,81 @@ class Core extends Base\Core
         {
             $creditBalance[CreditEntity::BALANCE] = (int) $ledgerResponse[self::REWARD_BALANCE][self::BALANCE];
         }
+    }
+
+    /**
+     * This function will fetch balance from ledger TiDB when ledger service is down.
+     * The array returned by this function is same as the response returned by the ledger service.
+     * @param string $merchantId
+     * @param string $bankingAccountId
+     * @return array
+     */
+    private function fetchBalanceFromLedgerTiDB(string $merchantId, string $bankingAccountId) :array
+    {
+        $balanceResponse = [];
+        $startTime = millitime();
+
+        try
+        {
+            $accounts = $this->repo->account_detail->fetchBalance($merchantId, $bankingAccountId, ConnectionType::RX_DATA_WAREHOUSE_MERCHANT);
+            $merchantBalance = [];
+            $rewardBalance = [];
+            foreach($accounts as $account)
+            {
+                $entities = json_decode($account[Ledger\Base::ENTITIES], true);
+
+                if((empty($entities[Ledger\Base::FUND_ACCOUNT_TYPE]) === true) ||
+                    (empty($entities[Ledger\Base::ACCOUNT_TYPE]) === true))
+                {
+                    continue;
+                }
+
+                if (($entities[Ledger\Base::FUND_ACCOUNT_TYPE][0] === Ledger\Base::MERCHANT_VA) and
+                    ($entities[Ledger\Base::ACCOUNT_TYPE][0] === Ledger\Base::PAYABLE))
+                {
+                    $merchantBalance = [
+                        Ledger\Base::BALANCE     => $account[Ledger\Base::BALANCE],
+                        Ledger\Base::MIN_BALANCE => $account[Ledger\Base::MIN_BALANCE],
+                    ];
+                }
+
+                if (($entities[Ledger\Base::FUND_ACCOUNT_TYPE][0] === Ledger\Base::REWARD) and
+                    ($entities[Ledger\Base::ACCOUNT_TYPE][0] === Ledger\Base::PAYABLE))
+                {
+                    $rewardBalance = [
+                        Ledger\Base::BALANCE     => $account[Ledger\Base::BALANCE],
+                        Ledger\Base::MIN_BALANCE => $account[Ledger\Base::MIN_BALANCE],
+                    ];
+                }
+            }
+
+            $balanceResponse = [
+                Ledger\Base::MERCHANT_ID      => $merchantId,
+                Ledger\Base::MERCHANT_BALANCE => $merchantBalance,
+                Ledger\Base::REWARD_BALANCE   => $rewardBalance,
+            ];
+
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::LEDGER_ACCOUNT_FETCH_BALANCE_FROM_TIDB_ERROR,
+                [
+                    self::MERCHANT_ID        => $merchantId,
+                    self::BANKING_ACCOUNT_ID => $bankingAccountId
+                ]);
+        }
+        finally
+        {
+            $this->trace->info(
+                TraceCode::LEDGER_ACCOUNT_FETCH_BALANCE_FROM_TIDB_TIME_TAKEN,
+                [
+                    self::TIME_TAKEN => millitime() - $startTime,
+                ]);
+        }
+        return $balanceResponse;
     }
 
     /**

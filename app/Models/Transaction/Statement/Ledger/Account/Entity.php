@@ -16,7 +16,7 @@ use RZP\Exception\LogicException;
  */
 class Entity extends Base\PublicEntity
 {
-    protected $entity = 'accounts';
+    protected $entity = 'ledger_account';
 
     const MERCHANT_ID       = 'merchant_id';
     const STATUS            = 'status';

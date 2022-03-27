@@ -420,6 +420,7 @@ class Table
 
     // Ledger
     const JOURNAL           = 'journal';
+    const LEDGER_ACCOUNT    = 'accounts';
     const ACCOUNT_DETAIL    = 'account_details';
     const LEDGER_ENTRY      = 'ledger_entries';
     const LEDGER_STATEMENT  = 'ledger_entries';
@@ -490,7 +491,7 @@ class Table
 
     public static function isLedgerTableName($tableName)
     {
-        if (in_array($tableName, [self::JOURNAL, self::ACCOUNT_DETAIL, self::LEDGER_ENTRY]) === true)
+        if (in_array($tableName, [self::JOURNAL, self::ACCOUNT_DETAIL, self::LEDGER_ENTRY, self::LEDGER_ACCOUNT]) === true)
         {
             return true;
         }

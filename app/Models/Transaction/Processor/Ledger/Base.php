@@ -79,7 +79,12 @@ class Base extends Core
     const FUND_ACCOUNT_TYPE = 'fund_account_type';
     const PAYABLE           = 'payable';
     const MERCHANT_VA       = 'merchant_va';
+
     const BALANCE           = 'balance';
+    const MIN_BALANCE       = 'min_balance';
+    const MERCHANT_BALANCE  = 'merchant_balance';
+    const REWARD_BALANCE    = 'reward_balance';
+    const ENTITIES          = 'entities';
 
     // Ledger sync retry
     const DEFAULT_MAX_RETRY_COUNT = 3;

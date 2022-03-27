@@ -645,6 +645,7 @@ class Entity
     const JOURNAL           = 'journal';
     const LEDGER_ENTRY      = 'ledger_entry';
     const ACCOUNT_DETAIL    = 'account_detail';
+    const LEDGER_ACCOUNT    = 'ledger_account';
     const LEDGER_STATEMENT  = 'ledger_statement';
 
     const MERCHANT_1CC_AUTH_CONFIGS    = 'merchant_1cc_auth_configs';
@@ -799,6 +800,7 @@ class Entity
         self::STATEMENT                 => \RZP\Models\Transaction\Statement::class,
         self::JOURNAL                   => \RZP\Models\Transaction\Statement\Ledger\Journal::class,
         self::LEDGER_ENTRY              => \RZP\Models\Transaction\Statement\Ledger\LedgerEntry::class,
+        self::LEDGER_ACCOUNT            => \RZP\Models\Transaction\Statement\Ledger\Account::class,
         self::ACCOUNT_DETAIL            => \RZP\Models\Transaction\Statement\Ledger\AccountDetail::class,
         self::LEDGER_STATEMENT          => \RZP\Models\Transaction\Statement\Ledger\Statement::class,
         self::INVITATION                => \RZP\Models\Invitation::class,

@@ -1451,7 +1451,7 @@ class Ledger extends BaseLedger
 
     public function fetchMerchantAccounts($input, bool $throwExceptionOnFailure = false): array {
         $response = [
-            "merchant_id"      => "I7Z8xLJXBYmFhW",
+            "merchant_id"      => "10000000000000",
             "merchant_balance" => [
                 "balance"      => "160.000000",
                 "min_balance"  => "10000.000000"
