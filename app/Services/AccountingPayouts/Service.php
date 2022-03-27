@@ -46,6 +46,7 @@ class Service
     const SET_DOMAIN                  = 'SetAccountingAppDomain';
     const GET_ORGANISATION_INFO       = 'GetOrganisationsAccountingApp';
     const SET_ORGANISATION_INFO       = 'SetOrganisationInfoAccountingApp';
+    const GET_TALLY_CASHFLOW_ENTRIES  = 'GetTallyCashFlowEntries';
     const TALLY_ACK_CASHFLOW_ENTRIES  = 'AcknowledgeCashFlowTallyEntries';
     const TALLY_UPDATE_MAPPING        = 'CashFlowUpdateMappingTally';
     const GET_CHART_OF_ACCOUNTS       = 'GetChartOfAccounts';
@@ -89,6 +90,13 @@ class Service
     public function updateMappingCashFlowEntries(MerchantEntity $merchant, array $input)
     {
         $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::TALLY_UPDATE_MAPPING);
+
+        return $this->makeRequest($merchant, $url, $input, null, [], 'POST', MODE::LIVE);
+    }
+
+    public function getCashFlowEntries(MerchantEntity $merchant, array $input)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::GET_TALLY_CASHFLOW_ENTRIES);
 
         return $this->makeRequest($merchant, $url, $input, null, [], 'POST', MODE::LIVE);
     }

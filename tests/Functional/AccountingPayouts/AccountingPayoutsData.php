@@ -239,6 +239,16 @@ return [
         ]
     ],
 
+    'testGetCashFlowEntriesServiceMethod' => [
+        'request' => [
+            'method' => 'GET',
+            'url' => '/accounting-integration/tally/cashflow/entries',
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+
     'testFetchTallyInvoiceServiceMethod' => [
         'request'  => [
             'server' => [

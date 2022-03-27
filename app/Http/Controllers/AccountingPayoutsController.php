@@ -119,6 +119,11 @@ class AccountingPayoutsController extends Controller
         return $this->service->getTaxSlabs($this->ba->getMerchant(), $this->input);
     }
 
+    public function getCashFlowEntries()
+    {
+        return $this->service->getCashFlowEntries($this->ba->getMerchant(), $this->input);
+    }
+
     public function fetchTallyInvoice()
     {
         return $this->service->fetchTallyInvoice($this->ba->getMerchant(), $this->input);

@@ -361,6 +361,21 @@ class AccountingPayoutsTest extends TestCase
         $apMock->shouldHaveReceived('fetchSyncStatus');
     }
 
+    public function testGetCashFlowEntriesServiceMethod()
+    {
+        $this->ba->privateAuth();
+
+        $apMock = Mockery::mock('RZP\Services\AccountingPayouts');
+
+        $apMock->shouldReceive('getCashFlowEntries')->andReturn([]);
+
+        $this->app->instance('accounting-payouts', $apMock);
+
+        $this->startTest();
+
+        $apMock->shouldHaveReceived('getCashFlowEntries');
+    }
+
     public function testFetchTallyInvoiceServiceMethod()
     {
         $this->ba->privateAuth();

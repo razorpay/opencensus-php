@@ -86,6 +86,7 @@ class OAuthScopes
 
         'accounting_integration_tally_cash_flow_acknowledge'    => [self::TALLY_READ_WRITE],
         'accounting_integration_tally_cash_flow_update_mapping' => [self::TALLY_READ_WRITE],
+        'accounting_integration_tally_fetch_cash_flow_entries'  => [self::TALLY_READ_WRITE],
         'accounting_integration_tally_invoices'            => [self::TALLY_READ_WRITE],
         'accounting_integration_tally_fetch_invoice'       => [self::TALLY_READ_ONLY, self::TALLY_READ_WRITE],
         'accounting_integration_tally_cancel_invoice'      => [self::TALLY_READ_WRITE],
