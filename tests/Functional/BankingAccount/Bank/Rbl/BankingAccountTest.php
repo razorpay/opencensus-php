@@ -6398,6 +6398,52 @@ class BankingAccountTest extends TestCase
         $this->startTest();
     }
 
+    public function testFetchBankingAccountBeneficiaryViaAccountNumberandIfsc()
+    {
+        $ba1 = $this->fixtures->create('banking_account', [
+            'account_number'        => '2224440041626905',
+            'account_type'          => 'current',
+            'merchant_id'           => '10000000000000',
+            'channel'               => 'yesbank',
+            'status'                => 'created',
+            'pincode'               => '1',
+            'bank_reference_number' => '',
+            'account_ifsc'          => 'RATN0000156',
+            'beneficiary_name'      => 'ACME PVT Ltd',
+        ]);
+
+        $this->fixtures->edit('banking_account', $ba1->getId(), [
+            'account_number' => '2224440041626905',
+        ]);
+
+        $this->ba->bvsAppAuth();
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/banking_accounts_beneficiary/' . '2224440041626905' .'/RATN0000156';
+
+        $response = $this->startTest();
+
+        $this->assertEquals($response['beneficiary_name'], 'ACME PVT Ltd');
+
+    }
+
+    public function testFetchBankingAccountBeneficiaryViaAccountNumberandInvalidIfsc()
+    {
+        $this->ba->bvsAppAuth();
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/banking_accounts_beneficiary/' . '2224440041626905' .'/1';
+
+        $this->startTest();
+    }
+
+    public function testFetchBankingAccountBeneficiaryViaInvalidAccountNumber()
+    {
+        $this->ba->bvsAppAuth();
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/banking_accounts_beneficiary/' . '222' .'/RATN0000156';
+
+        $this->startTest();
+    }
+
     public function testNotifyToSPOC()
     {
         Mail::fake();

@@ -729,6 +729,14 @@ class Repository extends Base\Repository
                     ->firstOrFail();
     }
 
+    public function getBankingAccountViaAccountNumberAndIfsc($accountNumber, $ifsc)
+    {
+        return $this->newQuery()
+            ->where(Entity::ACCOUNT_NUMBER, $accountNumber)
+            ->where(Entity::ACCOUNT_IFSC, $ifsc)
+            ->first();
+    }
+
     public function fetchBankingAccountByMerchantIdAccountTypeChannelAndStatus(string $merchantId, string $channel, string $accountType, string $status = null)
     {
         $query = $this->newQuery()

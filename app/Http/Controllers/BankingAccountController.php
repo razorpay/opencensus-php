@@ -219,6 +219,13 @@ class BankingAccountController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function getBankingAccountBeneficiary(string $accountNumber, string $ifsc)
+    {
+        $response = $this->service()->fetchBankingAccountBeneficiary($accountNumber, $ifsc);
+
+        return ApiResponse::json($response);
+    }
+
     public function sendNotificationToSPOC()
     {
         $response = $this->service()->notifyToSPOC();

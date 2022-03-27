@@ -2776,6 +2776,7 @@ class Route
 
         // Create for payout service
         'banking_account_fetch_by_account_number' => ['get',      'banking_accounts/{account_number}/{merchant_id}',           'BankingAccountController@getBankingAccountForAccountNumber'],
+        'banking_account_beneficiary_fetch'       => ['get',      'banking_accounts_beneficiary/{account_number}/{ifsc}',           'BankingAccountController@getBankingAccountBeneficiary'],
 
 
         'rbl_current_account_serviceability_get'  => ['get',      'banking_accounts/serviceability/rbl/pincode/{pincode}',      'BankingAccountController@checkPincodeServiceabilityByRBL'       ],
@@ -3825,6 +3826,7 @@ class Route
         'contact_create',
         'contact_update',
         //'contact_delete',
+        'banking_account_beneficiary_fetch',
         'fund_account_validate',
         'fund_account_validate_fetch',
         'fund_account_validate_fetch_by_id',
@@ -3977,6 +3979,7 @@ class Route
         'internal_feature_bulk_assign',
         'internal_feature_bulk_remove',
         'internal_feature_get_all',
+        'banking_account_beneficiary_fetch',
         'user_fetch_by_verified_contact_internal',
         'merchant_risk_alerts_foh_workflow_trigger_nc',
         'buy_pricing_assign_bulk',
@@ -6792,6 +6795,7 @@ class Route
         'merchant_aov_config'                      => Permission::VIEW_MERCHANT,
         'merchant_fetch'                           => Permission::VIEW_MERCHANT,
         'rbl_current_account_serviceability_get_admin'   => Permission::VIEW_MERCHANT,
+        'banking_account_beneficiary_fetch'        => Permission::FUND_ACCOUNT_VALIDATION,
         'admin_get_file'                           => Permission::ADMIN_GET_FILE,
         'admin_change_password'                    => Permission::AUTH_LOCAL_ADMIN,
         'merchant_fetch_users'                     => Permission::VIEW_MERCHANT,
@@ -8683,6 +8687,7 @@ class Route
             'fund_account_get',
             'fund_account_list',
             'fund_account_update',
+            'banking_account_beneficiary_fetch',
             'fund_account_validate',
             'fund_account_validate_fetch',
             'fund_account_validate_fetch_by_id',
@@ -9560,6 +9565,7 @@ class Route
             'banking_account_service_routes',
             'banking_account_service_pincode_serviceability_check',
             'rbl_current_account_serviceability_get_admin',
+            'fetch_banking_account_beneficiary',
             'merchant_business_detail_fetch',
             'merchant_business_detail_save',
             'admin_merchant_get_preferences',
@@ -10044,6 +10050,7 @@ class Route
             'fund_account_get',
             'fund_account_list',
             'fund_account_update',
+            'banking_account_beneficiary_fetch',
             'fund_account_validate',
             'fund_account_validate_bulk_patch_status',
             'fund_account_validate_fetch',
@@ -12321,6 +12328,7 @@ class Route
 
         'bvs' => [
             'fund_account_validate',
+            'banking_account_beneficiary_fetch',
         ],
 
         'account_service' => [
@@ -12906,6 +12914,7 @@ class Route
         'payout_create',
         'payout_create_with_otp',
         'fund_account_validate',
+        'banking_account_beneficiary_fetch',
     ];
 
     /**
@@ -13115,6 +13124,7 @@ class Route
         'contact_types_post',
         'contact_create_internal',
 
+        'banking_account_beneficiary_fetch',
         'fund_account_validate',
         'fund_account_validate_fetch',
         'fund_account_validate_fetch_by_id',

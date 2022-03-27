@@ -26,6 +26,8 @@ class Validator extends Base\Validator
 
     const FETCH_BANKING_ACCOUNT_PAYOUT_SERVICE  = 'fetch_banking_account_payout_service';
 
+    const FETCH_BANKING_ACCOUNT_IFSC_SERVICE  = 'fetch_banking_account_ifsc_service';
+
     /**
      * Regular expression for valid names:
      * - Must start with a-z/A-Z/0-9
@@ -217,6 +219,11 @@ class Validator extends Base\Validator
     protected static $fetchBankingAccountPayoutServiceRules = [
         Entity::MERCHANT_ID    => 'required|alpha_num|size:14',
         Entity::ACCOUNT_NUMBER => 'required|alpha_num|between:5,40'
+    ];
+
+    protected static $fetchBankingAccountIfscServiceRules = [
+        Entity::ACCOUNT_NUMBER => 'required|alpha_num|between:5,40',
+        Entity::ACCOUNT_IFSC   => 'required|alpha_num|size:11'
     ];
 
     protected static $dispatchGatewayBalanceRules = [

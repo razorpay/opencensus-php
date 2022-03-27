@@ -3492,6 +3492,58 @@ return [
         ],
     ],
 
+    'testFetchBankingAccountBeneficiaryViaAccountNumberandIfsc' => [
+        'request' => [
+            'url'     => '/banking_accounts_beneficiary/',
+            'method'  => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'beneficiary_name'           => 'ACME PVT Ltd',
+            ],
+        ],
+    ],
+
+    'testFetchBankingAccountBeneficiaryViaAccountNumberandInvalidIfsc' => [
+        'request' => [
+            'url'     => '/banking_accounts/',
+            'method'  => 'GET',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The account ifsc must be 11 characters.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testFetchBankingAccountBeneficiaryViaInvalidAccountNumber' => [
+        'request' => [
+            'url'     => '/banking_accounts/',
+            'method'  => 'GET',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The account number must be between 5 and 40 characters.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testNotifyToSPOC' => [
         'request' => [
             'url'     => '/banking_accounts/send_notification',

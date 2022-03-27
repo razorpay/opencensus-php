@@ -5,7 +5,6 @@ namespace RZP\Models\BankingAccount;
 use Carbon\Carbon;
 use Mail;
 
-
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Feature;
@@ -973,6 +972,48 @@ class Service extends Base\Service
             Entity::ACCOUNT_TYPE         => $bankingAccount->balance->getAccountType(),
             Entity::BALANCE_TYPE         => $bankingAccount->balance->getType(),
             Entity::FTS_FUND_ACCOUNT_ID  => $bankingAccount->getFtsFundAccountId()
+        ];
+    }
+
+    /**
+     * Get banking account Beneficiary from account number and ifsc
+     *
+     * @param string $accountNumber
+     * @param string $ifsc
+     * @return array
+     */
+    public function fetchBankingAccountBeneficiary(string $accountNumber, string $ifsc)
+    {
+        $errorMessage = "Account Number/IFSC combination not present";
+
+        (new Validator)->setStrictFalse()->validateInput(Validator::FETCH_BANKING_ACCOUNT_IFSC_SERVICE,
+            [
+                Entity::ACCOUNT_NUMBER          => $accountNumber,
+                Entity::ACCOUNT_IFSC            => $ifsc
+            ]);
+
+        $bankingAccount = $this->repo->banking_account->getBankingAccountViaAccountNumberAndIfsc($accountNumber, $ifsc);
+
+        if (is_null($bankingAccount) === true) {
+
+            return [
+                Entity::BENEFICIARY_NAME        => null,
+                Entity::STATUS                  => null,
+                'errorMessage'                  => $errorMessage
+            ];
+        }
+
+        $this->trace->info(
+            TraceCode::FETCHED_BANKING_ACCOUNT_BENEFICIARY,
+            [
+                Entity::ACCOUNT_IFSC            => $ifsc,
+                Entity::BANKING_ACCOUNT_ID      => $bankingAccount->getId()
+            ]);
+
+        return [
+            Entity::BENEFICIARY_NAME            => $bankingAccount->getBeneficiaryName(),
+            Entity::STATUS                      => $bankingAccount->getStatus(),
+            'errorMessage'                      => null
         ];
     }
 

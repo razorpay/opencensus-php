@@ -205,6 +205,11 @@ class Authorization
         $this->appAuth($user, \Config::get('applications.banking_account_service')['secret']);
     }
 
+    public function bvsAppAuth($user = 'rzp_test')
+    {
+        $this->appAuth($user, \Config::get('applications.bvs')['secret']);
+    }
+
     public function pgRouterAuth($mode = 'test')
     {
         $pgRouterConfig = \Config::get('applications.pg_router');
