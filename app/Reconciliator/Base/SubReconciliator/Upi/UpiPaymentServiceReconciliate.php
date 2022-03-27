@@ -183,7 +183,7 @@ class UpiPaymentServiceReconciliate extends SubReconciliator\PaymentReconciliate
             return;
         }
 
-        if (empty($npciRefId) === true)
+        if (empty($dbNpciRefId) === true)
         {
             $dataToUpdate[Constants::CUSTOMER_REFERENCE] = $referenceNumber;
         }

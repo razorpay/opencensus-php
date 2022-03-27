@@ -43,7 +43,7 @@ class PaymentReconciliate extends Upi\UpiPaymentServiceReconciliate
         }
     }
 
-    protected function getGatewayTransactionId(array $row)
+    protected function getGatewayPaymentId(array $row)
     {
         return $row[self::COLUMN_GATEWAY_PAYMENT_ID] ?? null;
     }
@@ -77,7 +77,7 @@ class PaymentReconciliate extends Upi\UpiPaymentServiceReconciliate
         $gatewayPayment->setNpciReferenceId($referenceNumber);
     }
 
-    protected function setGatewayTransactionId(string $gatewayPaymentId, PublicEntity $gatewayPayment)
+    protected function setGatewayPaymentId(string $gatewayPaymentId, PublicEntity $gatewayPayment)
     {
         $dbGatewayTransactionId = trim($gatewayPayment->getGatewayPaymentId());
 
