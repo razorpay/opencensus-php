@@ -17,6 +17,4 @@ class Header
     const ACCESS_CONTROL_ALLOW_ORIGIN   = 'Access-Control-Allow-Origin';
     // Uses obscure abbreviation because it is temporarily returned to public requests .
     const X_PASSPORT_ATTRS_MISMATCH     = 'X-PAM';
-    // User for internal use. This will be consumed by edge layer
-    const X_ROUTE_NAME                  = 'X-Route-Name';
 }

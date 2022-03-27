@@ -92,14 +92,6 @@ return [
         'apikey' => env('EDGE_THROTTLER_API_KEY'),
     ],
 
-    'developer_console' => [
-        'host'     => env('DEVELOPER_CONSOLE_HOST'),
-        'username' => env('DEVELOPER_CONSOLE_USERNAME'),
-        'password' => env('DEVELOPER_CONSOLE_PASSWORD'),
-        'username_maintenance' => env('DEVELOPER_CONSOLE_MAINTENANCE_USERNAME'),
-        'password_maintenance' => env('DEVELOPER_CONSOLE_MAINTENANCE_PASSWORD'),
-    ],
-
     //check razorpay/business_verification_service
     'business_verification_service' => [
         'mock'         => env('BVS_MOCK', false),

@@ -4428,10 +4428,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const EDGE_RATE_LIMITER_ERROR                               = 'EDGE_RATE_LIMITER_ERROR';
     const EDGE_RATE_LIMITER_REQUEST                             = 'EDGE_RATE_LIMITER_REQUEST';
 
-    // DeveloperConsole
-    const DEVELOPER_CONSOLE_REQUEST                             = 'DEVELOPER_CONSOLE_REQUEST';
-    const DEVELOPER_CONSOLE_ERROR                               = 'DEVELOPER_CONSOLE_ERROR';
-
     const EDGE_CONTROLLER_WORKFLOW_REQUEST                      = 'EDGE_CONTROLLER_WORKFLOW_REQUEST';
     const EDGE_CONTROLLER_WORKFLOW_CREATE_REQUEST               = 'EDGE_CONTROLLER_WORKFLOW_CREATE_REQUEST';
 
