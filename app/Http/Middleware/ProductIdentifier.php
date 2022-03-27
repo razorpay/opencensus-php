@@ -151,14 +151,10 @@ class ProductIdentifier
          * It's required after the 22nd Oct changes as we have a strict check for every route tagged to a defined roles.
          * batch -> api calls like payout_bulk_approve, payout_bulk_create etc authorized on the user roles
          * Todo: Is this required for the internal banking apps in the future?
-         * Also for mob service and merchant_preferences route, origin product needs to be set as banking
          */
         if (($this->internalAppName === 'batch' and
            $this->request->headers->get(RequestHeader::X_Creator_Type) == 'user' and
-           array_key_exists($routeName, $bankingRoutes) === true) ||
-            ($this->internalAppName === 'master_onboarding' and
-                ($routeName === 'merchant_post_preferences' ||
-                    $routeName === 'merchant_get_preferences')))
+           array_key_exists($routeName, $bankingRoutes) === true))
         {
             $product = ProductType::BANKING;
             $this->ba->setRequestOriginProduct($product);

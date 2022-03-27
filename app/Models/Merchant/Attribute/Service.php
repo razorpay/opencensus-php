@@ -66,6 +66,12 @@ class Service extends Base\Service
     {
         $merchant = $this->merchant;
         $product =  $saveProduct ?? $this->auth->getRequestOriginProduct();
+
+        if (in_array($group, [Group::X_MERCHANT_CURRENT_ACCOUNTS], true) === true)
+        {
+            $product = Product::BANKING;
+        }
+
         $attributeInputValidator = new Validator();
 
         $this->trace->info(TraceCode::MERCHANT_ATTRIBUTES, [
@@ -182,6 +188,11 @@ class Service extends Base\Service
         if (in_array($group, [Group::X_MERCHANT_SOURCE, Group::X_MERCHANT_INTENT], true) === true)
         {
             $column = Entity::CREATED_AT;
+        }
+
+        if (in_array($group, [Group::X_MERCHANT_CURRENT_ACCOUNTS], true) === true)
+        {
+            $product = Product::BANKING;
         }
 
         return $this->core->fetchKeyValues($merchant, $product, $group, $type, $column);
