@@ -788,7 +788,8 @@ class Entity extends Base\PublicEntity
         /** @var BasicAuth $basicAuth */
         $basicAuth = app('basicauth');
 
-        if ($basicAuth->isStrictPrivateAuth() === true)
+        if ($basicAuth->isStrictPrivateAuth() === true and
+            $basicAuth->isAppleWatchApp() === false)
         {
             unset($array[self::BALANCE]);
 

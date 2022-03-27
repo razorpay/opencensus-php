@@ -6,6 +6,7 @@ use RZP\Models\Contact;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Constants\Table;
+use Razorpay\OAuth\Client;
 use RZP\Constants\Timezone;
 use RZP\Models\BankingAccount;
 use RZP\Models\Merchant\Core as MerchantCore;
@@ -16,8 +17,10 @@ use RZP\Tests\Functional\TestCase;
 use Illuminate\Support\Facades\Mail;
 use RZP\Models\BankingAccount\Entity;
 use RZP\Models\BankingAccount\Status;
+use Illuminate\Database\Eloquent\Factory;
 use RZP\Models\BankingAccount\Gateway\Rbl;
 use RZP\Models\BankingAccount\AccountType;
+use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Mail\BankingAccount\XProActivation;
 use RZP\Models\BankingAccount\Activation\MIS;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
@@ -47,6 +50,7 @@ use RZP\Mail\BankingAccount\StatusNotifications\Factory as StatusUpdateMailerFac
 
 class BankingAccountTest extends TestCase
 {
+    use OAuthTrait;
     use PaymentTrait;
     use DbEntityFetchTrait;
     use EventsTrait;
@@ -4151,6 +4155,55 @@ class BankingAccountTest extends TestCase
         ]);
 
         $this->assertNull($bankingAccount);
+    }
+
+    public function testBankingAccountFetchOnAppleWatchOAuth()
+    {
+        $xBalance1 = $this->fixtures->on(Mode::LIVE)->create('balance',
+            [
+                'id'                => 'JBLee6cC0erMpg',
+                'merchant_id'       => '10000000000000',
+                'type'              => 'banking',
+                'account_type'      => 'shared',
+                'account_number'    => '2224440041626905',
+                'balance'           => 200,
+            ]);
+
+        $ba1 = $this->fixtures->on(Mode::LIVE)->create('banking_account', [
+            'account_number'        => '2224440041626905',
+            'account_type'          => 'current',
+            'merchant_id'           => '10000000000000',
+            'channel'               => 'yesbank',
+            'status'                => 'activated',
+            'pincode'               => '1',
+            'bank_reference_number' => '',
+            'account_ifsc'          => 'RATN0000156',
+        ]);
+
+        $this->fixtures->on(Mode::LIVE)->edit('banking_account', $ba1->getId(), [
+            'account_number' => '2224440041626905',
+            'balance_id'     => $xBalance1->getId(),
+        ]);
+
+        $factoryPath = base_path() . '/vendor/razorpay/oauth/database/factories';
+
+        $this->app->make(Factory::class)->load($factoryPath);
+
+        $client = factory(Client\Entity::class)->create(['environment' => 'prod']);
+
+        $this->fixtures->on('live')->merchant->edit('10000000000000', ['activated' => 1]);
+
+        $accessToken = $this->generateOAuthAccessToken(['scopes'=> ['apple_watch_read_write'], 'mode' => 'live', 'client_id' => $client->getId()], 'prod');
+
+        $this->fixtures->feature->create([
+            Feature\Entity::ENTITY_TYPE => Feature\Constants::APPLICATION,
+            Feature\Entity::ENTITY_ID   => $client->application_id,
+            Feature\Entity::NAME        => Feature\Constants::RAZORPAYX_FLOWS_VIA_OAUTH
+        ]);
+
+        $this->ba->oauthBearerAuth($accessToken);
+
+        $this->startTest();
     }
 
     public function testBankingAccountFetchCheckFieldLastFetchedAtInBalance()

@@ -2493,6 +2493,30 @@ return [
         ],
     ],
 
+    'testBankingAccountFetchOnAppleWatchOAuth' => [
+        'request'  => [
+            'url'     => '/banking_accounts',
+            'method'  => 'GET',
+            'server' => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'balance' => [
+                            'id'      => 'JBLee6cC0erMpg',
+                            'balance' => 200
+                        ]
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testBankingAccountFetchCheckFieldLastFetchedAtInBalance' => [
         'request'  => [
             'url'     => '/banking_accounts',
