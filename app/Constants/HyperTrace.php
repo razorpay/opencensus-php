@@ -122,6 +122,7 @@ class HyperTrace
     const FETCH_REQUIREMENTS                                    = 'fetch_requirements';
     const GET_PAYMENT_METHODS                                   = 'get_payment_methods';
     const HANDLE_PRODUCT_CONFIG_RESPONSE                        = 'handle_product_config_response';
+    const VALIDATE_AND_FETCH_DEFAULT_CONFIG                     = 'validate_and_fetch_default_config';
 
     const FETCH_BU_TNC                                          = 'fetch_business_unit_tnc';
 

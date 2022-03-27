@@ -3267,4 +3267,14 @@ class Entity extends Base\PublicEntity
     {
         return $this->isFeatureEnabled(Feature\Constants::RECURRING_CARD_MANDATE_BILLDESK_SIHUB);
     }
+
+    public function isFieldHasValue($field): bool
+    {
+        if (!empty($field))
+        {
+            return $this->isAttributeNotNull($field);
+        }
+
+        return false;
+    }
 }

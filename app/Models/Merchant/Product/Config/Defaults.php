@@ -2,6 +2,9 @@
 
 namespace RZP\Models\Merchant\Product\Config;
 
+use RZP\Models\Merchant\Product\Util\Constants;
+use RZP\Models\Merchant\Entity;
+
 class Defaults
 {
     const PAYMENT_GATEWAY = [
@@ -16,6 +19,10 @@ class Defaults
         'checkout' => [
             'theme_color' => '#FFFFFF'
         ]
+    ];
+
+    const PRODUCT_CONFIG_MERCHANT_FIELD_MAPPING = [
+        Constants::THEME_COLOR => Entity::BRAND_COLOR
     ];
 
     private const PAYMENT_METHODS = [

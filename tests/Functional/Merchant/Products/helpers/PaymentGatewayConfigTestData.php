@@ -40,7 +40,7 @@ return [
                     ],
                 ],
                 'brand'                         => [
-                    'color' => 'FFFFFF',
+                    'color' => '000000',
                 ],
                 'contact_info'                  => [
                     'chargeback' => [
@@ -104,7 +104,7 @@ return [
                     ],
                 ],
                 'brand'                         => [
-                    'color' => '#FFFFFF',
+                    'color' => '#000000',
                 ],
                 'contact_info'                  => [
                     'chargeback' => [
@@ -158,7 +158,7 @@ return [
                         'whatsapp' => false
                     ],
                     'checkout'        => [
-                        'theme_color'    => '#FFFFFF',
+                        'theme_color'    => '#000000',
                         'flash_checkout' => true
                     ],
                     'refund'          => [
@@ -211,7 +211,7 @@ return [
                         'whatsapp' => false
                     ],
                     'checkout'        => [
-                        'theme_color'    => '#FFFFFF',
+                        'theme_color'    => '#000000',
                         'flash_checkout' => true
                     ],
                     'refund'          => [
@@ -265,7 +265,7 @@ return [
                         'whatsapp' => false
                     ],
                     'checkout'        => [
-                        'theme_color'    => '#FFFFFF',
+                        'theme_color'    => '#000000',
                         'flash_checkout' => false,
                     ],
                     'refund'          => [
@@ -412,7 +412,7 @@ return [
                         'whatsapp' => false
                     ],
                     'checkout'        => [
-                        'theme_color' => '#FFFFFF'
+                        'theme_color' => '#000000'
                     ],
                     'refund'          => [
                         'default_refund_speed' => 'normal'
@@ -478,7 +478,7 @@ return [
                         'whatsapp' => false
                     ],
                     'checkout'        => [
-                        'theme_color' => '#FFFFFF'
+                        'theme_color' => '#000000'
                     ],
                     'refund'        => [
                         'default_refund_speed' => 'normal'
@@ -943,7 +943,7 @@ return [
                     ],
                 ],
                 'brand'                         => [
-                    'color' => 'FFFFFF',
+                    'color' => '000000',
                 ],
                 'contact_info'                  => [
                     'chargeback' => [
@@ -1026,7 +1026,7 @@ return [
                     ],
                 ],
                 'brand'                         => [
-                    'color' => '#FFFFFF',
+                    'color' => '#000000',
                 ],
                 'contact_info'                  => [
                     'chargeback' => [
@@ -1457,7 +1457,7 @@ return [
                         'whatsapp' => false
                     ],
                     'checkout'        => [
-                        'theme_color'    => '#FFFFFF',
+                        'theme_color'    => '#000000',
                         'flash_checkout' => true
                     ],
                     'refund'          => [
@@ -1543,4 +1543,161 @@ return [
             ]
         ]
     ],
+    'createAccountWithoutBrandColor' => [
+        'request'  => [
+            'url'     => '/v2/accounts',
+            'method'  => 'POST',
+            'content' => [
+                'email'                         => 'testcreateaccountaa@razorpay.com',
+                'phone'                         => '9999999999',
+                'legal_business_name'           => 'Acme Corp Pvt Ltd',
+                'customer_facing_business_name' => 'Acme',
+                'business_type'                 => 'individual',
+                'contact_name'                  => 'contactname',
+                'profile'                       => [
+                    'category'       => 'healthcare',
+                    'subcategory'    => 'clinic',
+                    'description'    => 'Healthcare E-commerce platform',
+                    'business_model' => 'b2c',
+                    'addresses'      => [
+                        'operation'  => [
+                            'street1'     => '507, Koramangala 1st block',
+                            'street2'     => 'MG Road',
+                            'city'        => 'Bengaluru',
+                            'state'       => 'Karnataka',
+                            'postal_code' => 560034,
+                            'country'     => 'IN'
+                        ],
+                        'registered' => [
+                            'street1'     => '507, Koramangala 1st block',
+                            'street2'     => 'MG Road',
+                            'city'        => 'Bengaluru',
+                            'state'       => 'Karnataka',
+                            'postal_code' => 560034,
+                            'country'     => 'IN'
+                        ]
+                    ],
+                ],
+                'contact_info'                  => [
+                    'chargeback' => [
+                        'email'      => 'cb@acme.org',
+                        'phone'      => '8951496311',
+                        'policy_url' => 'https://www.google.com'
+                    ],
+                    'refund'     => [
+                        'email'      => 'cb@acme.org',
+                        'phone'      => '8951496311',
+                        'policy_url' => 'https://www.google.com'
+                    ],
+                    'support'    => [
+                        'email'      => 'support@acme.org',
+                        'phone'      => '8951496311',
+                        'policy_url' => 'https://www.google.com'
+                    ]
+                ],
+                'notes'                         => [
+                    'business_details' => 'This is a test business',
+                    'key2'             => 'value2',
+                    'account_access'   => 1,
+                ],
+                'tos_acceptance'                => [
+                    'date'       => '1561110415',
+                    'ip'         => '201.189.12.23',
+                    'user_agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_4]',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'type'                          => 'standard',
+                'status'                        => 'created',
+                'email'                         => 'testcreateaccountaa@razorpay.com',
+                'phone'                         => '9999999999',
+                'legal_business_name'           => 'Acme Corp Pvt Ltd',
+                'customer_facing_business_name' => 'Acme',
+                'business_type'                 => 'individual',
+                'contact_name'                  => 'contactname',
+                'profile'                       => [
+                    'description'    => 'Healthcare E-commerce platform',
+                    'business_model' => 'b2c',
+                    'addresses'      => [
+                        'operation'  => [
+                            'street1'     => '507, Koramangala 1st block',
+                            'street2'     => 'MG Road',
+                            'city'        => 'Bengaluru',
+                            'state'       => 'KARNATAKA',
+                            'postal_code' => 560034,
+                            'country'     => 'IN'
+                        ],
+                        'registered' => [
+                            'street1'     => '507, Koramangala 1st block',
+                            'street2'     => 'MG Road',
+                            'city'        => 'Bengaluru',
+                            'state'       => 'KARNATAKA',
+                            'postal_code' => 560034,
+                            'country'     => 'IN'
+                        ]
+                    ],
+                ],
+                'contact_info'                  => [
+                    'chargeback' => [
+                        'email'      => 'cb@acme.org',
+                        'phone'      => '8951496311',
+                        'policy_url' => 'https://www.google.com'
+                    ],
+                    'refund'     => [
+                        'email'      => 'cb@acme.org',
+                        'phone'      => '8951496311',
+                        'policy_url' => 'https://www.google.com'
+                    ],
+                    'support'    => [
+                        'email'      => 'support@acme.org',
+                        'phone'      => '8951496311',
+                        'policy_url' => 'https://www.google.com'
+                    ]
+                ],
+                'notes'                         => [
+                    'business_details' => 'This is a test business',
+                    'key2'             => 'value2',
+                    'account_access'   => 1,
+                ],
+                'tos_acceptance'                => [
+                    'date'       => '1561110415',
+                    'ip'         => '201.189.12.23',
+                    'user_agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_4]',
+                ],
+            ],
+        ],
+    ],
+    'testCreateDefaultPaymentConfig' => [
+        'request'  => [
+            'url'     => '/v2/accounts/{accountId}/products',
+            'method'  => 'POST',
+            'content' => [
+                'product_name' => 'payment_gateway'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'active_configuration' => [
+                    'payment_capture' => [
+                        'mode'                    => 'automatic',
+                        'refund_speed'            => 'normal',
+                        'automatic_expiry_period' => 7200
+                    ],
+                    'notifications'   => [
+                        'sms'      => false,
+                        'whatsapp' => false
+                    ],
+                    'checkout'        => [
+                        'theme_color'    => '#FFFFFF',
+                        'flash_checkout' => true
+                    ],
+                    'refund'          => [
+                        'default_refund_speed' => 'normal'
+                    ]
+                ]
+            ],
+        ]
+    ]
 ];

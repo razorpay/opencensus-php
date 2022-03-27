@@ -111,7 +111,9 @@ class Service extends Base\Service
 
         else
         {
-            $payload = $this->getProductConfigPayload($payload, $productName);
+            $payload = Tracer::inspan(['name' => HyperTrace::VALIDATE_AND_FETCH_DEFAULT_CONFIG], function() use ($payload, $productName, $merchant) {
+                return $this->getProductConfigPayload($payload, $productName, $merchant);
+            });
 
             $merchantProduct = (new Entity)->generateId();
 
@@ -163,11 +165,11 @@ class Service extends Base\Service
      *
      * @return array
      */
-    private function getProductConfigPayload(array $input, string $productName): array
+    private function getProductConfigPayload(array $input, string $productName, Merchant\Entity $partner): array
     {
-        if( empty($input) === true)
+        if (empty($input) === true)
         {
-            $input = $this->getDefaultConfiguration($productName);
+            $input = (new Config\DefaultConfigurationHelper)->getDefaultConfiguration($productName, $input, $partner);
         }
 
         return $input;

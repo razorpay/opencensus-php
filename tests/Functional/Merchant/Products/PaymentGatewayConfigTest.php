@@ -5,6 +5,7 @@ namespace Functional\Merchant\Products;
 use Mail;
 use Event;
 use RZP\Constants\Mode;
+use RZP\Models\Merchant\Product\Config\DefaultConfigurationHelper;
 use RZP\Models\User\Role;
 use RZP\Models\Merchant\Methods;
 use Illuminate\Http\UploadedFile;
@@ -987,6 +988,49 @@ class PaymentGatewayConfigTest extends OAuthTestCase
         return [
             'product' => $productName,
         ];
+    }
+
+
+    public function testDefaultBrandColorForAMerchant()
+    {
+        Mail::fake();
+
+        $this->mockTerminalServiceResponse();
+
+        $metricsMock = $this->createMetricsMock();
+
+        $this->setupPrivateAuthForPartner();
+
+        $testData = $this->testData['createAccountWithoutBrandColor'];
+
+        $accountResponse = $this->runRequestResponseFlow($testData);
+
+        $accountId = $accountResponse['id'];
+
+        $testData = $this->testData['testCreateDefaultPaymentConfig'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products';
+
+        $metricCaptured = false;
+
+        $expectedMetricData = $this->getMerchantProductMetricData('payment_gateway');
+
+        $this->mockAndCaptureCountMetric(Metric::PRODUCT_CONFIG_CREATE_SUCCESS_TOTAL, $metricsMock, $metricCaptured, $expectedMetricData);
+
+        $this->runRequestResponseFlow($testData);
+
+        $this->assertTrue($metricCaptured);
+
+        $merchantProduct = $this->getDbLastEntity('merchant_product');
+
+        $merchantProductRequest = $this->getDbLastEntity('merchant_product_request');
+
+        $this->validateMerchantProductRequest($merchantProduct, $merchantProductRequest);
+
+        $merchant = $this->getDbEntity('merchant', ['id' => $merchantProduct->getMerchantId()]);
+
+        // The below function call is idempotent
+        (new Methods\Core())->setDefaultMethods($merchant);
     }
 }
 
