@@ -75,7 +75,9 @@ WHERE
   AND merchant_id IN (%s)
   AND created_date > '%s'
 GROUP BY
-  merchant_id;
+  merchant_id
+LIMIT 
+  %d
 EOT;
 
 
@@ -1771,7 +1773,7 @@ EOT;
 
         $commaSeparatedMerchantIds = "'" . implode("', '", $merchantIds) . "'";
 
-        $sql = sprintf(self::SUCCESSFUL_PAYMENTS_COUNT_SQL, $commaSeparatedMerchantIds, $createdDate);
+        $sql = sprintf(self::SUCCESSFUL_PAYMENTS_COUNT_SQL, $commaSeparatedMerchantIds, $createdDate, count($merchantIds));
 
         $queryResult = app('datalake.presto')->getDataFromDataLake($sql);
 
