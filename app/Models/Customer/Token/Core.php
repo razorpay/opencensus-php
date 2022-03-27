@@ -170,6 +170,14 @@ class Core extends Base\Core
 
         $token->merchant()->associate($customer->merchant);
 
+        $this->trace->info(
+            TraceCode::MISC_TRACE_CODE,
+            [
+                'token'     => $token->toArrayPublic(),
+                'message'   => 'Post token build',
+            ]
+        );
+
         if ($validateExisting === true)
         {
             $existingToken = $this->validateExistingToken($token);
@@ -987,6 +995,14 @@ class Core extends Base\Core
     {
         $customer = $token->customer;
 
+        $this->trace->info(
+            TraceCode::MISC_TRACE_CODE,
+            [
+                'message'           => 'fetching existing tokens',
+                'is_customer_null'  => is_null($customer),
+            ]
+        );
+
         if ($customer !== null)
         {
             $existingTokens = $this->repo->token->getByMethodAndCustomerId(
@@ -1001,6 +1017,14 @@ class Core extends Base\Core
 
             $existingTokens = $this->repo->token->getByMethodAndCustomerIdIsNull($token->getMethod(),$token->getMerchantId(), $token->card->getVaultToken());
         }
+
+        $this->trace->info(
+            TraceCode::MISC_TRACE_CODE,
+            [
+                'message'                   => 'fetched existing tokens',
+                'existing_tokens_count'     => count($existingTokens),
+            ]
+        );
 
         $func = 'validateExistingToken' . studly_case($token->getMethod());
 
@@ -1102,6 +1126,13 @@ class Core extends Base\Core
         // saved vpa, we dont want to create a new token if a token already exists.
         if ($newToken->isSaveVpaToken() === false)
         {
+            $this->trace->info(
+                TraceCode::MISC_TRACE_CODE,
+                [
+                    'message'           => 'saving and returning new token',
+                    'is_save_vpa_token' => 'false',
+                ]
+            );
             return null;
         }
 
