@@ -172,6 +172,7 @@ class Validator extends Base\Validator
         Entity::BALANCE_THRESHOLD                     => 'sometimes|integer|nullable|min:0',
         Entity::PARTNERSHIP_URL                       => 'sometimes|max:2000',
         'reset_methods'                               => 'sometimes|boolean',
+        'reset_pricing_plan'                          => 'sometimes|boolean',
         Entity::PURPOSE_CODE                          => 'sometimes|string|max:5',
 //        Entity::EMAIL                                 => 'sometimes|email|unique:merchants',
     ];

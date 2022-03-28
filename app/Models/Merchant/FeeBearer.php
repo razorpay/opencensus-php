@@ -8,6 +8,13 @@ class FeeBearer
     const CUSTOMER = 'customer';
     const DYNAMIC  = 'dynamic';
     const NA       = 'na';
+    const MERCHANT = 'merchant'; //aka platform
+    const PAYER = 'payer'; //aka customer
+
+    const FEE_BEARER_TYPE_MAP = [
+        'merchant' => self::PLATFORM,
+        'payer' => self::CUSTOMER,
+    ];
 
     protected static $values = [
         self::NA       => -1,

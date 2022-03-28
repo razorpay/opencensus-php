@@ -1494,6 +1494,11 @@ class Base extends BaseModel\Core
         $firstRow = str_getcsv(current($rows), $delimiter);
         $diff     = array_values(array_diff($headings, $firstRow));
 
+        if ($diff === [Batch\Header::FEE_BEARER])
+        {
+            $headings = $firstRow;
+        }
+
         //
         // In case of notes, the diff would be just 'notes' or 'speed'(for batch refunds), as the actual row will have values like notes[<key>].
         // Todo: This is because of allowing(early bad decision) optional header row in CSV.

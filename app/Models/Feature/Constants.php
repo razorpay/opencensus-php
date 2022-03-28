@@ -1257,6 +1257,11 @@ class Constants
     const ACCEPT_ONLY_3DS_PAYMENTS = 'accept_only_3ds_payments';
 
     /**
+     * Feature flag to enable pricing automation at sub merchant bulk upload
+     */
+    const SUB_MERCHANT_PRICING_AUTOMATION = 'subm_pricing_automation';
+
+    /**
      * Feature flag disables a merchant from creating linked accounts with existing emails
      */
     const DISALLOW_LINKED_ACCOUNT_WITH_DUPLICATE_EMAILS = 'no_la_for_existing_emails';
@@ -1737,6 +1742,7 @@ class Constants
         self::RECURRING_CARD_MANDATE_BILLDESK_SIHUB => true,
         self::RAZORPAYX_FLOWS_VIA_OAUTH       => true,
         self::ACCEPT_ONLY_3DS_PAYMENTS        => true,
+        self::SUB_MERCHANT_PRICING_AUTOMATION => true,
         self::BLOCKLIST_FOR_WORKFLOW_SERVICE  => true,
     ];
 

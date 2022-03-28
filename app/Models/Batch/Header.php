@@ -140,7 +140,7 @@ class Header
     const ACTIVATED_AT                  = 'activated_at';
 
     // Sub-merchant headers
-    const REFERENCE1               = 'reference1';
+    const FEE_BEARER               = 'fee_bearer';
     const MERCHANT_NAME            = 'merchant_name';
     const MERCHANT_EMAIL           = 'merchant_email';
     const MERCHANT_ID              = 'merchant_id';
@@ -2742,7 +2742,7 @@ class Header
         Type::SUB_MERCHANT => [
 
             self::INPUT  => [
-                self::REFERENCE1,
+                self::FEE_BEARER,
                 self::MERCHANT_NAME,
                 self::MERCHANT_EMAIL,
                 self::CONTACT_NAME,
@@ -2779,7 +2779,7 @@ class Header
             ],
 
             self::OUTPUT => [
-                self::REFERENCE1,
+                self::FEE_BEARER,
                 self::MERCHANT_ID,
                 self::MERCHANT_NAME,
                 self::MERCHANT_EMAIL,
@@ -4493,6 +4493,14 @@ class Header
             ((in_array(self::MERCHANT_ID, $actualHeaders, true) === true)))
         {
             $expectedHeaders[] = self::MERCHANT_ID;
+        }
+
+        if (($type === Type::SUB_MERCHANT) and
+            (in_array(self::FEE_BEARER, $expectedHeaders, true) === true) and
+            (in_array(self::FEE_BEARER, $actualHeaders, true) === false))
+        {
+            $expectedHeaders[] = 'reference1';
+            $expectedHeaders = array_diff($expectedHeaders, [self::FEE_BEARER]);
         }
 
         // TODO: Update the batch header once FE changes for the same are deployed on prod.

@@ -8779,6 +8779,125 @@ return [
         ],
     ],
 
+    'testEditMerchantCategoryShouldResetPricingPlan' => [
+        'request'  => [
+            'raw'    => json_encode([
+                'category2'     => 'ecommerce',
+                'reset_pricing_plan' => true,
+            ]),
+            'url'    => '/merchants/1X4hRFHFx4UiXt',
+            'method' => 'put',
+            'server' => [
+                // Case: In sign-up case we will not have any other headers
+                // (eg. X-Dashboard-User-Email etc) from dashboard.
+                'CONTENT_TYPE'     => 'application/json',
+                'HTTP_X-Dashboard' => 'true',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'id'        => '1X4hRFHFx4UiXt',
+                'entity'    => 'merchant',
+                'category2' => 'ecommerce',
+            ]
+        ]
+    ],
+
+    'testEditMerchantFeeBearerShouldResetPricingPlan' => [
+        'request'  => [
+            'raw'    => json_encode([
+                'fee_bearer'     => 'platform',
+                'reset_pricing_plan' => true,
+            ]),
+            'url'    => '/merchants/1X4hRFHFx4UiXt',
+            'method' => 'put',
+            'server' => [
+                // Case: In sign-up case we will not have any other headers
+                // (eg. X-Dashboard-User-Email etc) from dashboard.
+                'CONTENT_TYPE'     => 'application/json',
+                'HTTP_X-Dashboard' => 'true',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'id'        => '1X4hRFHFx4UiXt',
+                'entity'    => 'merchant',
+                'fee_bearer' => 'platform',
+            ]
+        ]
+    ],
+
+    'testEditMerchantCategoryShouldNotResetPricingIfResetPricingPlanInInputIsFalse' => [
+        'request'  => [
+            'raw'    => json_encode([
+                'category2'     => 'ecommerce',
+                'reset_pricing_plan' => false,
+            ]),
+            'url'    => '/merchants/1X4hRFHFx4UiXt',
+            'method' => 'put',
+            'server' => [
+                // Case: In sign-up case we will not have any other headers
+                // (eg. X-Dashboard-User-Email etc) from dashboard.
+                'CONTENT_TYPE'     => 'application/json',
+                'HTTP_X-Dashboard' => 'true',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'id'        => '1X4hRFHFx4UiXt',
+                'entity'    => 'merchant',
+                'category2' => 'ecommerce',
+            ]
+        ]
+    ],
+
+
+    'testEditMerchantFeeBearerShouldNotResetPricingIfResetPricingPlanInInputIsFalse' => [
+        'request'  => [
+            'raw'    => json_encode([
+                'fee_bearer'     => 'platform',
+                'reset_pricing_plan' => false,
+            ]),
+            'url'    => '/merchants/1X4hRFHFx4UiXt',
+            'method' => 'put',
+            'server' => [
+                // Case: In sign-up case we will not have any other headers
+                // (eg. X-Dashboard-User-Email etc) from dashboard.
+                'CONTENT_TYPE'     => 'application/json',
+                'HTTP_X-Dashboard' => 'true',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'id'        => '1X4hRFHFx4UiXt',
+                'entity'    => 'merchant',
+                'fee_bearer'     => 'platform',
+            ]
+        ]
+    ],
+
+    'testEditMerchantCategoryFeeBearerShouldResetPricingPlanValidationFailure' => [
+        'request'  => [
+            'raw'    => json_encode([
+                'category2'     => 'mutual_funds',
+                'reset_pricing_plan' => 'yes'
+            ]),
+            'url'    => '/merchants/1X4hRFHFx4UiXt',
+            'method' => 'put',
+            'server' => [
+                // Case: In sign-up case we will not have any other headers
+                // (eg. X-Dashboard-User-Email etc) from dashboard.
+                'CONTENT_TYPE'     => 'application/json',
+                'HTTP_X-Dashboard' => 'true',
+            ]
+        ],
+        'response' => [
+            'content' => [
+
+            ]
+        ],
+    ],
+
     'testGetCheckoutPreferencesIINDetails'           => [
         'request'  => [
             'url'     => '/preferences',

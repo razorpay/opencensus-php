@@ -4,6 +4,8 @@ namespace RZP\Models\Pricing;
 
 use RZP\Http\BasicAuth;
 
+use RZP\Models\Terminal\Category;
+use RZP\Models\Merchant\FeeBearer;
 use RZP\Models\Payout;
 use RZP\Models\Admin\Org;
 use RZP\Models\Merchant\Balance\AccountType;
@@ -20,6 +22,34 @@ class DefaultPlan
     const SUBMERCHANT_PRICING_OF_ONBOARDED_PARTNERS     = 'C4uidYkQYsDdgX';
 
     const SUBMERCHANT_PROMOTIONAL_PRICING_PLAN          = 'EGBQtZbvBrGPHf';
+
+    //TODO - add B2B, govt e tendering
+    const SUB_MERCHANT_DEFAULT_PRICING_PLAN_MAP = [
+        FeeBearer::PLATFORM => [
+            Category::ECOMMERCE => 'EcomPLATnewINTMAIN',
+            Category::UTILITIES => 'UtilityPlatNewINTone',
+            Category::INSURANCE => 'InsurPLAT',
+            Category::MUTUAL_FUNDS => 'MutualFundPLAT',
+            Category::EDUCATION => 'NewICICEduPLATINTOne',
+            Category::GOVERNMENT => 'GovPlatNewINTONE',
+            Category::GROCERY => 'ICICIgroceryPLATint',
+            Category::HOUSING => 'ICICIHousplatNewINT',
+            Category::TRAVEL_AGENCY => 'ICICtoursPLTintNEW',
+            Category::CORPORATE => 'B2BplatNewINT',
+        ],
+        FeeBearer::CUSTOMER => [
+            Category::ECOMMERCE => 'EcomCustNewINT',
+            Category::UTILITIES => 'UtilityCustNewINTone',
+            Category::INSURANCE => 'InsurCUST',
+            Category::MUTUAL_FUNDS => 'MutualFundCUST',
+            Category::EDUCATION => 'NewICICEDUcustNewINT',
+            Category::GOVERNMENT => 'GovCUSTNewINTONe',
+            Category::GROCERY => 'ICICIgroceryCUSTint',
+            Category::HOUSING => 'ICICIHousCustNewINT',
+            Category::TRAVEL_AGENCY => 'ICICtoursCUSintNEW',
+            Category::CORPORATE => 'B2BcustNewINT',
+        ],
+    ];
 
     public static function getPricingSeedData()
     {

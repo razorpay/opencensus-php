@@ -638,6 +638,23 @@ class Pricing extends Base
         $this->addPricingRulesToDb($rows);
     }
 
+    public function createPricingPlanForICICISubMerchant()
+    {
+        $rows = [
+            [
+                'id'                  => '1GuENK6Hl2BWGg',
+                'plan_id'             => '1ycviEdCgurrFI',
+                'plan_name'           => 'EcomPLATnewINTMAIN',
+                'feature'             => 'icici_pricing_automation',
+                'payment_method'      => 'fund_transfer',
+                'percent_rate'        => 200,
+                'org_id'              => '100000razorpay',
+            ],
+        ];
+
+        $this->addPricingRulesToDb($rows);
+    }
+
     public function createInstantRefundsPricingPlanWithDefaultMethodNull()
     {
         $pricingPlanId = self::DEFAULT_PRICING_PLAN_ID;

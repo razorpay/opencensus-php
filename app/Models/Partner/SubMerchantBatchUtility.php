@@ -438,6 +438,16 @@ class SubMerchantBatchUtility extends Base\Core
             }
         }
 
+        if ($subMerchant->org->isFeatureEnabled(Feature\Constants::SUB_MERCHANT_PRICING_AUTOMATION))
+        {
+            if (empty($entry[Header::FEE_BEARER]) !== true)
+            {
+                $this->merchantCore->updateSubMerchantFeeBearer($subMerchant, $entry[Header::FEE_BEARER]);
+            }
+            
+            $this->merchantCore->updateSubMerhantPricingPlanBasedOnFeeBearerAndSubcategory($subMerchant);
+        }
+
         if (($this->useMerchantEmailAsDummy === true) and (empty($entry[Header::MERCHANT_EMAIL]) === false))
         {
             $emailInput = [

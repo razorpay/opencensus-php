@@ -65,6 +65,7 @@ use RZP\Models\Pricing;
 use RZP\Constants\Mode;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
+use RZP\Tests\Functional\Fixtures\Entity\Pricing as TestPricing;
 use RZP\Models\Settings;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
@@ -11849,6 +11850,105 @@ IFSC Code  ICIC0001206
 
         $this->expectExceptionMessage(
             'The reset methods field must be true or false.');
+
+        $this->startTest();
+    }
+
+    public function testEditMerchantCategoryShouldResetPricingPlan()
+    {
+        $this->fixtures->create('feature', [
+            'name' => Feature\Constants::SUB_MERCHANT_PRICING_AUTOMATION,
+            'entity_id' => '100000razorpay',
+            'entity_type' => 'org',
+        ]);
+
+        $this->fixtures->pricing->createPricingPlanForICICISubMerchant();
+
+        $this->createMerchant();
+
+        $this->startTest();
+
+        $merchant = $this->getLastEntity('merchant', true);
+
+        $this->assertEquals('1ycviEdCgurrFI', $merchant['pricing_plan_id']);
+    }
+
+    public function testEditMerchantFeeBearerShouldResetPricingPlan()
+    {
+        $this->fixtures->create('feature', [
+            'name' => Feature\Constants::SUB_MERCHANT_PRICING_AUTOMATION,
+            'entity_id' => '100000razorpay',
+            'entity_type' => 'org',
+        ]);
+
+        $this->fixtures->pricing->createPricingPlanForICICISubMerchant();
+
+        $this->createMerchant();
+
+        $this->startTest();
+
+        $merchant = $this->getLastEntity('merchant', true);
+
+        $this->assertEquals('1ycviEdCgurrFI', $merchant['pricing_plan_id']);
+    }
+
+    public function testEditMerchantCategoryShouldNotResetPricingIfResetPricingPlanInInputIsFalse()
+    {
+        $this->fixtures->create('feature', [
+            'name' => Feature\Constants::SUB_MERCHANT_PRICING_AUTOMATION,
+            'entity_id' => '100000razorpay',
+            'entity_type' => 'org',
+        ]);
+
+        $this->fixtures->pricing->createPricingPlanForICICISubMerchant();
+
+        $this->createMerchant();
+
+        $this->startTest();
+
+        $merchant = $this->getLastEntity('merchant', true);
+
+        $this->assertEquals(TestPricing::DEFAULT_PRICING_PLAN_ID, $merchant['pricing_plan_id']);
+    }
+
+    public function testEditMerchantFeeBearerShouldNotResetPricingIfResetPricingPlanInInputIsFalse()
+    {
+        $this->fixtures->create('feature', [
+            'name' => Feature\Constants::SUB_MERCHANT_PRICING_AUTOMATION,
+            'entity_id' => '100000razorpay',
+            'entity_type' => 'org',
+        ]);
+
+        $this->fixtures->pricing->createPricingPlanForICICISubMerchant();
+
+        $this->createMerchant();
+
+        $this->startTest();
+
+        $merchant = $this->getLastEntity('merchant', true);
+
+        $this->assertEquals(TestPricing::DEFAULT_PRICING_PLAN_ID, $merchant['pricing_plan_id']);
+    }
+
+    public function testEditMerchantCategoryFeeBearerShouldResetPricingPlanValidationFailure()
+    {
+        $this->fixtures->create('feature', [
+            'name' => Feature\Constants::SUB_MERCHANT_PRICING_AUTOMATION,
+            'entity_id' => '100000razorpay',
+            'entity_type' => 'org',
+        ]);
+
+        $this->fixtures->pricing->createPricingPlanForICICISubMerchant();
+
+        $this->createMerchant();
+
+        $this->expectException(BadRequestValidationFailureException::class);
+
+        $this->expectExceptionCode(
+            ErrorCode::BAD_REQUEST_VALIDATION_FAILURE);
+
+        $this->expectExceptionMessage(
+            'The reset pricing plan field must be true or false.');
 
         $this->startTest();
     }

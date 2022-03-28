@@ -50,6 +50,8 @@ use RZP\Constants\Entity as CE;
 use RZP\Jobs\MailingListUpdate;
 use RZP\Models\Admin\AdminLead;
 use RZP\Models\Merchant\Detail;
+use RZP\Models\Merchant\FeeBearer;
+use RZP\Models\Terminal\Category;
 use RZP\Models\User\BankingRole;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Settlement\Bucket;
@@ -1400,6 +1402,64 @@ class Core extends Base\Core
         $subMerchant->setPricingPlan($pricingPlan);
     }
 
+    public function updateSubMerhantPricingPlanBasedOnFeeBearerAndSubcategory($subMerchant)
+    {
+        $feeBearer = FeeBearer::PLATFORM;
+
+        if (isset($subMerchant['fee_bearer']) === true )
+        {
+            $feeBearer = $subMerchant['fee_bearer'];
+        }
+
+        if ($feeBearer === FeeBearer::DYNAMIC)
+        {
+            return;
+        }
+
+        $category2 = Category::ECOMMERCE;
+
+        if (isset($subMerchant['category2']) === true)
+        {
+            $category2 = $subMerchant['category2'];
+        }
+
+        $pricingPlanName = Pricing\DefaultPlan::SUB_MERCHANT_DEFAULT_PRICING_PLAN_MAP[$feeBearer][$category2] ?? Pricing\DefaultPlan::SUB_MERCHANT_DEFAULT_PRICING_PLAN_MAP[FeeBearer::PLATFORM][Category::ECOMMERCE];
+
+        $pricingPlans = (new Pricing\Repository)->getPlanByName($pricingPlanName);
+
+        if ($pricingPlans->count() === 0)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_BUY_PRICING_PLAN_WITH_NAME_DOES_NOT_EXIST);
+        }
+
+        (new Pricing\Validator())->validBuyPricingRules($pricingPlans->toArray());
+
+        $pricingPlanId = $pricingPlans->getId();
+
+        $subMerchant->setPricingPlan($pricingPlanId);
+
+        $this->repo->saveOrFail($subMerchant);
+
+    }
+
+    public function updateSubMerchantFeeBearer($subMerchant, $feeBearer = FeeBearer::PLATFORM)
+    {
+        if ($feeBearer === FeeBearer::DYNAMIC)
+        {
+            return;
+        }
+
+        if (in_array(strtolower($feeBearer), array_keys(FeeBearer::FEE_BEARER_TYPE_MAP)))
+        {
+            $feeBearer = FeeBearer::FEE_BEARER_TYPE_MAP[strtolower($feeBearer)];
+        }
+
+        $subMerchant->setFeeBearer($feeBearer);
+
+        $this->repo->saveOrFail($subMerchant);
+    }
+
     public function addMerchantSupportingEntitiesAsync(Entity $merchant, Entity $aggregatorMerchant = null)
     {
         $this->repo->transactionOnLiveAndTest(function() use($merchant, $aggregatorMerchant) {
@@ -1860,6 +1920,17 @@ class Core extends Base\Core
                     $merchant->setDefaultMethodsBasedOnCategory();
                 }
                 unset($input['reset_methods']);
+            }
+
+            if (empty($input['reset_pricing_plan']) !== true)
+            {
+                if ($merchant->org->isFeatureEnabled(FeatureConstants::SUB_MERCHANT_PRICING_AUTOMATION))
+                {
+                    if ((isset($input[Entity::FEE_BEARER]) === true) or (isset($input[Entity::CATEGORY2]) === true))
+                    {
+                        $this->updateSubMerhantPricingPlanBasedOnFeeBearerAndSubcategory($merchant);
+                    }
+                }
             }
 
 
