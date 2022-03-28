@@ -2784,6 +2784,7 @@ class Route
         'rbl_current_account_serviceability_get'  => ['get',      'banking_accounts/serviceability/rbl/pincode/{pincode}',      'BankingAccountController@checkPincodeServiceabilityByRBL'       ],
 
         'rbl_current_account_serviceability_get_admin'  => ['get',      'banking_accounts_admin/serviceability/rbl/pincode/{pincode}',      'BankingAccountController@checkPincodeServiceabilityByRBL'       ],
+        'archive_icici_bank_account'              => ['post', 'banking_account/{balance_id}/archive', 'BankingAccountController@archiveICICIAccountsByBankingAccount'],
 
         'fetch_throttle_settings'                 => ['get',      'throttle/settings',                                         'ThrottleController@list'                                   ],
         'edit_throttle_settings'                  => ['put',      'throttle/settings',                                         'ThrottleController@create'                                 ],
@@ -4615,6 +4616,9 @@ class Route
         'payments_card_es_sync_cron',
 
         'payment_upi_authorize_failed',
+
+        // to archive ICICI account application
+        'archive_icici_bank_account',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -12382,6 +12386,7 @@ class Route
             'bas_banking_accounts_create',
             'merchant_fetch_internal',
             'internal_merchant_fetch',
+            'archive_icici_bank_account',
         ],
 
         'myoperator' => [

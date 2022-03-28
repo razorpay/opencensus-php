@@ -3576,4 +3576,14 @@ return [
             'status_code' => 200,
         ],
     ],
+    'testArchiveAccount' => [
+        'request' => [
+            'url'      => '/banking_account/{id}/archive',
+            'method'   => 'POST',
+        ],
+        'response'  => [
+            'content'  => [],
+            'status_code' => 200,
+        ]
+    ]
 ];

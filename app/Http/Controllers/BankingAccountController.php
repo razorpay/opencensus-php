@@ -11,7 +11,7 @@ use RZP\Models\BankingAccount\Activation\Detail as ActivationDetail;
 
 class BankingAccountController extends Controller
 {
-    /** @var ActivationDetail\Service $activationDetailService  */
+    /** @var ActivationDetail\Service $activationDetailService */
     protected $activationDetailService;
 
     public function __construct()
@@ -191,7 +191,7 @@ class BankingAccountController extends Controller
 
     public function checkPincodeServiceabilityByRBL($pincode)
     {
-        $data =  $this->service()->CheckServiceableByRBL($pincode, true);
+        $data = $this->service()->CheckServiceableByRBL($pincode, true);
 
         return ApiResponse::json($data);
     }
@@ -240,5 +240,12 @@ class BankingAccountController extends Controller
         $response = $this->service()->fetchActivatedAccounts($input);
 
         return $response;
+    }
+
+    public function archiveICICIAccountsByBankingAccount(string $bankingAccountId)
+    {
+        $input = Request::all();
+        $data = $this->service()->archiveBankingAccount($bankingAccountId, $input);
+        return ApiResponse::json($data);
     }
 }

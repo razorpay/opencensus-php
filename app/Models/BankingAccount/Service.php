@@ -27,8 +27,8 @@ use RZP\Models\Merchant\Balance\Ledger\Core as LedgerCore;
 use RZP\Models\BankingAccount\Activation\Notification\Event;
 use RZP\Models\BankingAccount\Activation\Detail as ActivationDetail;
 use RZP\Mail\BankingAccount\StatusNotificationsToSPOC\DiscrepancyInDoc;
-use RZP\Mail\BankingAccount\StatusNotificationsToSPOC\MerchantNotAvailable;
 use RZP\Mail\BankingAccount\StatusNotificationsToSPOC\MerchantPreparingDoc;
+use RZP\Models\Settlement\Channel as FTAChannel;
 
 class Service extends Base\Service
 {
@@ -194,6 +194,10 @@ class Service extends Base\Service
             }
         }
 
+        if ($this->checkIfAccountIsArchived($previousStatus, $input)) {
+            $this->archiveBankingAccount($bankingAccount->getId(), array(Entity::CHANNEL => FTAChannel::RBL, Entity::MERCHANT_ID => $account->getMerchantId()));
+        }
+
         return $account->toArrayPublic();
     }
 
@@ -312,6 +316,9 @@ class Service extends Base\Service
         $bankingAccounts = $this->merchant->bankingAccounts;
 
         $bankingAccounts = (new BankingAccountService\Service())->fetchAccountDetailsFromBas($this->merchant->getMerchantId(), $bankingAccounts);
+        if (!$this->app['basicauth']->isAdminAuth()) {
+            $bankingAccounts = $bankingAccounts->where(Entity::STATUS, '!=', Status::ARCHIVED);
+        }
 
         $bankingAccounts = $bankingAccounts->load(Entity::BALANCE);
 
@@ -1222,5 +1229,28 @@ class Service extends Base\Service
                 Mail::queue($mailable);
             }
         }
+    }
+
+    /**
+     *
+     * @param string $bankingAccountId
+     * @param array $input
+     * @return array
+     */
+
+    public function archiveBankingAccount(string $bankingAccountId, array $input)
+    {
+        (new Validator)->setStrictFalse()->validateInput(Validator::ARCHIVE_ACCOUNT, $input);
+        $merchant = $this->repo->merchant->fetchMerchantFromId($input[Entity::MERCHANT_ID]);
+        // todo add check for merchant and bankingAccountId
+        //$balance = $this->repo->balance->getBalanceByMerchantIdChannelAndAccountType($input[Entity::MERCHANT_ID], $input[Entity::CHANNEL], Balance\AccountType::DIRECT);
+        $balance = null;
+        return $this->core->archiveBankingAccount($balance, $merchant);
+    }
+
+    private function checkIfAccountIsArchived(string $previousStatus, array $input): bool
+    {
+        return isset($input[Entity::STATUS]) && $input[Entity::STATUS] == Status::ARCHIVED &&
+            $previousStatus != $input[Entity::STATUS];
     }
 }

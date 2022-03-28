@@ -26,39 +26,40 @@ class Repository extends Base\Repository
     public function getFromBalanceId(string $balanceId)
     {
         return $this->newQuery()
-                    ->where(Entity::BALANCE_ID, '=', $balanceId)
-                    ->first();
+            ->where(Entity::BALANCE_ID, '=', $balanceId)
+            ->where(Entity::STATUS, '!=', Status::ARCHIVED)
+            ->first();
     }
 
     public function findByAccountNumberAndChannel(string $accountNumber, string $channel)
     {
         return $this->whereAccountNumberAndChannelAre($accountNumber, $channel)
-                    ->firstOrFail();
+            ->firstOrFail();
     }
 
     public function findByMerchantAndAccountNumberPublic(Merchant\Entity $merchant, string $accountNumber)
     {
         return $this->newQuery()
-                    ->where(Entity::MERCHANT_ID, '=', $merchant->getId())
-                    ->where(Entity::ACCOUNT_NUMBER , '=' , $accountNumber)
-                    ->first();
+            ->where(Entity::MERCHANT_ID, '=', $merchant->getId())
+            ->where(Entity::ACCOUNT_NUMBER, '=', $accountNumber)
+            ->first();
     }
 
     public function findByAccountNumberAndChannelPublic(string $accountNumber, string $channel)
     {
         return $this->whereAccountNumberAndChannelAre($accountNumber, $channel)
-                    ->firstOrFailPublic();
+            ->firstOrFailPublic();
     }
 
     public function whereAccountNumberAndChannelAre($accountNumber, $channel)
     {
         return $this->newQuery()
-                    ->where(Entity::ACCOUNT_NUMBER, '=', $accountNumber)
-                    ->where(Entity::CHANNEL, '=', $channel);
+            ->where(Entity::ACCOUNT_NUMBER, '=', $accountNumber)
+            ->where(Entity::CHANNEL, '=', $channel);
     }
 
     /**
-     * @param string      $channel
+     * @param string $channel
      * @param string|null $bankReference
      *
      * @return Entity
@@ -66,97 +67,98 @@ class Repository extends Base\Repository
     public function findByBankReferenceAndChannel(string $channel, string $bankReference = null)
     {
         return $this->newQuery()
-                    ->where(Entity::BANK_REFERENCE_NUMBER, '=', $bankReference)
-                    ->where(Entity::CHANNEL, '=', $channel)
-                    ->first();
+            ->where(Entity::BANK_REFERENCE_NUMBER, '=', $bankReference)
+            ->where(Entity::CHANNEL, '=', $channel)
+            ->first();
     }
 
     public function getBankingAccountOfMerchant(Merchant\Entity $merchant, string $channel)
     {
         return $this->newQuery()
-                    ->where(Entity::MERCHANT_ID, '=', $merchant->getId())
-                    ->where(Entity::CHANNEL, '=', $channel)
-                    ->first();
+            ->where(Entity::MERCHANT_ID, '=', $merchant->getId())
+            ->where(Entity::CHANNEL, '=', $channel)
+            ->where(Entity::STATUS, '!=', Status::ARCHIVED)
+            ->first();
     }
 
     public function getLatestInsertedBankingAccountEntity(string $channel)
     {
         return $this->newQuery()
-                    ->where(Entity::CHANNEL, '=', $channel)
-                    ->whereNotNull(Entity::BANK_REFERENCE_NUMBER)
-                    ->latest(Entity::CREATED_AT)
-                    ->first();
+            ->where(Entity::CHANNEL, '=', $channel)
+            ->whereNotNull(Entity::BANK_REFERENCE_NUMBER)
+            ->latest(Entity::CREATED_AT)
+            ->first();
     }
 
     public function getBankingAccountsWithBalance($merchantId)
     {
         return $this->newQuery()
-                    ->with(['balance'])
-                    ->where(Entity::MERCHANT_ID, $merchantId)
-                    ->get();
+            ->with(['balance'])
+            ->where(Entity::MERCHANT_ID, $merchantId)
+            ->get();
     }
 
     public function getBankingAccountByMerchantIdAndChannel($merchantId, string $channel)
     {
         $bankingAccountBalanceIdColumn = $this->dbColumn(Entity::BALANCE_ID);
-        $channelColumn                 = $this->dbColumn(Entity::CHANNEL);
-        $merchantIdColumn              = $this->dbColumn(Entity::MERCHANT_ID);
+        $channelColumn = $this->dbColumn(Entity::CHANNEL);
+        $merchantIdColumn = $this->dbColumn(Entity::MERCHANT_ID);
 
-        $balanceIdColumn            = $this->repo->balance->dbColumn(Entity::ID);
-        $balanceAccountTypeColumn   = $this->repo->balance->dbColumn(Merchant\Balance\Entity::ACCOUNT_TYPE);
-        $balanceTypeColumn          = $this->repo->balance->dbColumn(Merchant\Balance\Entity::TYPE);
+        $balanceIdColumn = $this->repo->balance->dbColumn(Entity::ID);
+        $balanceAccountTypeColumn = $this->repo->balance->dbColumn(Merchant\Balance\Entity::ACCOUNT_TYPE);
+        $balanceTypeColumn = $this->repo->balance->dbColumn(Merchant\Balance\Entity::TYPE);
 
         $bankingAccountAttrs = $this->dbColumn('*');
 
         return $this->newQuery()
-                    ->select($bankingAccountAttrs)
-                    ->where($merchantIdColumn, '=', $merchantId)
-                    ->join(Table::BALANCE, $bankingAccountBalanceIdColumn, '=', $balanceIdColumn)
-                    ->where($balanceAccountTypeColumn, '=', Merchant\Balance\AccountType::DIRECT)
-                    ->where($balanceTypeColumn, '=', Merchant\Balance\Type::BANKING)
-                    ->where($channelColumn, '=', $channel)
-                    ->first();
+            ->select($bankingAccountAttrs)
+            ->where($merchantIdColumn, '=', $merchantId)
+            ->join(Table::BALANCE, $bankingAccountBalanceIdColumn, '=', $balanceIdColumn)
+            ->where($balanceAccountTypeColumn, '=', Merchant\Balance\AccountType::DIRECT)
+            ->where($balanceTypeColumn, '=', Merchant\Balance\Type::BANKING)
+            ->where($channelColumn, '=', $channel)
+            ->first();
     }
 
     public function getMerchantIdsByChannel($channel, $limit)
     {
         $bankingAccountBalanceIdColumn = $this->dbColumn(Entity::BALANCE_ID);
-        $channelColumn                 = $this->dbColumn(Entity::CHANNEL);
-        $merchantIdColumn              = $this->dbColumn(Entity::MERCHANT_ID);
+        $channelColumn = $this->dbColumn(Entity::CHANNEL);
+        $merchantIdColumn = $this->dbColumn(Entity::MERCHANT_ID);
 
-        $balanceIdColumn                = $this->repo->balance->dbColumn(Entity::ID);
-        $accountTypeColumn              = $this->repo->balance->dbColumn(Merchant\Balance\Entity::ACCOUNT_TYPE);
-        $balanceTypeColumn              = $this->repo->balance->dbColumn(Merchant\Balance\Entity::TYPE);
+        $balanceIdColumn = $this->repo->balance->dbColumn(Entity::ID);
+        $accountTypeColumn = $this->repo->balance->dbColumn(Merchant\Balance\Entity::ACCOUNT_TYPE);
+        $balanceTypeColumn = $this->repo->balance->dbColumn(Merchant\Balance\Entity::TYPE);
 
         $bankingAccountAttrs = $this->dbColumn('*');
 
         return $this->newQuery()
-                    ->select($bankingAccountAttrs)
-                    ->where($channelColumn, '=', $channel)
-                    ->where(Entity::STATUS, '=', Status::ACTIVATED)
-                    ->join(Table::BALANCE, $bankingAccountBalanceIdColumn, '=', $balanceIdColumn)
-                    ->where($accountTypeColumn, '=', Merchant\Balance\AccountType::DIRECT)
-                    ->where($balanceTypeColumn, '=', Merchant\Balance\Type::BANKING)
-                    ->oldest(Entity::BALANCE_LAST_FETCHED_AT)
-                    ->limit($limit)
-                    ->pluck($merchantIdColumn);
+            ->select($bankingAccountAttrs)
+            ->where($channelColumn, '=', $channel)
+            ->where(Entity::STATUS, '=', Status::ACTIVATED)
+            ->join(Table::BALANCE, $bankingAccountBalanceIdColumn, '=', $balanceIdColumn)
+            ->where($accountTypeColumn, '=', Merchant\Balance\AccountType::DIRECT)
+            ->where($balanceTypeColumn, '=', Merchant\Balance\Type::BANKING)
+            ->oldest(Entity::BALANCE_LAST_FETCHED_AT)
+            ->limit($limit)
+            ->pluck($merchantIdColumn);
     }
 
     public function fetchByMerchantIdAndAccountType(string $merchantId, string $accountType)
     {
         $bankingAccountBalanceIdColumn = $this->dbColumn(Entity::BALANCE_ID);
-        $merchantIdColumn              = $this->dbColumn(Entity::MERCHANT_ID);
+        $merchantIdColumn = $this->dbColumn(Entity::MERCHANT_ID);
 
-        $balanceIdColumn                = $this->repo->balance->dbColumn(Entity::ID);
-        $balanceAccountTypeColumn       = $this->repo->balance->dbColumn(Merchant\Balance\Entity::ACCOUNT_TYPE);
-        $balanceTypeColumn              = $this->repo->balance->dbColumn(Merchant\Balance\Entity::TYPE);
+        $balanceIdColumn = $this->repo->balance->dbColumn(Entity::ID);
+        $balanceAccountTypeColumn = $this->repo->balance->dbColumn(Merchant\Balance\Entity::ACCOUNT_TYPE);
+        $balanceTypeColumn = $this->repo->balance->dbColumn(Merchant\Balance\Entity::TYPE);
 
         return $this->newQuery()
-                    ->join(Table::BALANCE, $bankingAccountBalanceIdColumn, '=', $balanceIdColumn)
-                    ->where($merchantIdColumn, '=', $merchantId)
-                    ->where($balanceTypeColumn, '=', Merchant\Balance\Type::BANKING)
-                    ->where($balanceAccountTypeColumn, '=', $accountType)
-                    ->get();
+            ->join(Table::BALANCE, $bankingAccountBalanceIdColumn, '=', $balanceIdColumn)
+            ->where($merchantIdColumn, '=', $merchantId)
+            ->where($balanceTypeColumn, '=', Merchant\Balance\Type::BANKING)
+            ->where($balanceAccountTypeColumn, '=', $accountType)
+            ->get();
     }
 
     public function addQueryParamReviewerId($query, $params)
@@ -167,9 +169,9 @@ class Repository extends Base\Repository
             $q->select('admin_id')
                 ->from(Table::ADMIN_AUDIT_MAP)
                 ->where('admin_id', '=', $params[Entity::REVIEWER_ID])
-                ->where(Entity::AUDITOR_TYPE,'=','reviewer')
-                ->where('entity_type','=','banking_account')
-                ->whereRaw(Table::BANKING_ACCOUNT.'.'.Entity::ID.' = '.Table::ADMIN_AUDIT_MAP.'.'.Entity::ENTITY_ID);
+                ->where(Entity::AUDITOR_TYPE, '=', 'reviewer')
+                ->where('entity_type', '=', 'banking_account')
+                ->whereRaw(Table::BANKING_ACCOUNT . '.' . Entity::ID . ' = ' . Table::ADMIN_AUDIT_MAP . '.' . Entity::ENTITY_ID);
         });
     }
 
@@ -181,9 +183,9 @@ class Repository extends Base\Repository
             $q->select('admin_id')
                 ->from(Table::ADMIN_AUDIT_MAP)
                 ->where('admin_id', '=', $params[Entity::SALES_POC_ID])
-                ->where(Entity::AUDITOR_TYPE,'=','spoc')
-                ->where('entity_type','=','banking_account')
-                ->whereRaw(Table::BANKING_ACCOUNT.'.'.Entity::ID.' = '.Table::ADMIN_AUDIT_MAP.'.'.Entity::ENTITY_ID);
+                ->where(Entity::AUDITOR_TYPE, '=', 'spoc')
+                ->where('entity_type', '=', 'banking_account')
+                ->whereRaw(Table::BANKING_ACCOUNT . '.' . Entity::ID . ' = ' . Table::ADMIN_AUDIT_MAP . '.' . Entity::ENTITY_ID);
         });
     }
 
@@ -249,12 +251,10 @@ class Repository extends Base\Repository
 
         $sortSlotBooked = $params[Entity::SORT_SLOT_BOOKED];
 
-        if ($sortSlotBooked === 'asc')
-        {
+        if ($sortSlotBooked === 'asc') {
             $query->orderBy($slotBookingColumn, 'asc');
         }
-        if ($sortSlotBooked === 'desc')
-        {
+        if ($sortSlotBooked === 'desc') {
             $query->orderBy($slotBookingColumn, 'desc');
         }
     }
@@ -272,12 +272,10 @@ class Repository extends Base\Repository
 
         $filterSlotBooked = $params[Entity::FILTER_SLOT_BOOKED];
 
-        if ($filterSlotBooked === '1')
-        {
+        if ($filterSlotBooked === '1') {
             $query->where($slotBookingColumn, '!=', null);
         }
-        if ($filterSlotBooked === '0')
-        {
+        if ($filterSlotBooked === '0') {
             $query->where($slotBookingColumn, '=', null);
         }
     }
@@ -324,12 +322,10 @@ class Repository extends Base\Repository
 
         $sortFollowUpDate = $params[Entity::SORT_FOLLOW_UP_DATE];
 
-        if ($sortFollowUpDate === 'asc')
-        {
+        if ($sortFollowUpDate === 'asc') {
             $query->orderBy($followUpDateColumn, 'asc');
         }
-        if ($sortFollowUpDate === 'desc')
-        {
+        if ($sortFollowUpDate === 'desc') {
             $query->orderBy($followUpDateColumn, 'desc');
         }
     }
@@ -343,29 +339,28 @@ class Repository extends Base\Repository
      */
     public function getBalanceIdsWhereGatewayBalanceUpdatedRecently(array $balanceIdList)
     {
-        $statusColumn    = $this->dbColumn(Entity::STATUS);
+        $statusColumn = $this->dbColumn(Entity::STATUS);
         $balanceIdColumn = $this->dbColumn(Entity::BALANCE_ID);
         $updatedAtColumn = $this->dbColumn(Entity::UPDATED_AT);
 
         $oneDayEarlierTimeStamp = Carbon::now(Timezone::IST)->subHours(24)->getTimestamp();
 
         return $this->newQuery()
-                    ->select($balanceIdColumn)
-                    ->whereIn($balanceIdColumn, $balanceIdList)
-                    ->where($updatedAtColumn, '>=', $oneDayEarlierTimeStamp)
-                    ->where($statusColumn, '=', Status::ACTIVATED)
-                    ->distinct()
-                    ->get()
-                    ->pluck(Entity::BALANCE_ID)
-                    ->toArray();
+            ->select($balanceIdColumn)
+            ->whereIn($balanceIdColumn, $balanceIdList)
+            ->where($updatedAtColumn, '>=', $oneDayEarlierTimeStamp)
+            ->where($statusColumn, '=', Status::ACTIVATED)
+            ->distinct()
+            ->get()
+            ->pluck(Entity::BALANCE_ID)
+            ->toArray();
     }
 
     protected function joinQueryMerchantDetail(Base\BuilderEx $query)
     {
         $merchantDetailTable = $this->repo->merchant_detail->getTableName();
 
-        if ($query->hasJoin($merchantDetailTable) === true)
-        {
+        if ($query->hasJoin($merchantDetailTable) === true) {
             return;
         }
 
@@ -380,8 +375,7 @@ class Repository extends Base\Repository
     {
         $merchantTable = $this->repo->merchant->getTableName();
 
-        if ($query->hasJoin($merchantTable) === true)
-        {
+        if ($query->hasJoin($merchantTable) === true) {
             return;
         }
 
@@ -396,8 +390,7 @@ class Repository extends Base\Repository
     {
         $activationDetailTable = $this->repo->banking_account_activation_detail->getTableName();
 
-        if ($query->hasJoin($activationDetailTable) === true)
-        {
+        if ($query->hasJoin($activationDetailTable) === true) {
             return;
         }
 
@@ -412,8 +405,7 @@ class Repository extends Base\Repository
     {
         $activationDetailCallLogTable = $this->repo->banking_account_call_log->getTableName();
 
-        if ($query->hasJoin($activationDetailCallLogTable) === true)
-        {
+        if ($query->hasJoin($activationDetailCallLogTable) === true) {
             return;
         }
 
@@ -440,7 +432,7 @@ class Repository extends Base\Repository
         $merchantBusinessname = mb_strtolower($params[Entity::MERCHANT_BUSINESS_NAME]);
 
         // case insensitive partial match for merchant name
-        $query->whereRaw("LOWER(".$merchantBusinessNameColumn.") LIKE '%".$merchantBusinessname."%'");
+        $query->whereRaw("LOWER(" . $merchantBusinessNameColumn . ") LIKE '%" . $merchantBusinessname . "%'");
     }
 
     public function addQueryParamMerchantEmail(Base\BuilderEx $query, array $params)
@@ -507,12 +499,9 @@ class Repository extends Base\Repository
         // is different for Bangalore and Non-Bangalore. Hence, this temporary provision
         // to allow not check.
         // In future, once processes get streamlined, this may be unnecessary.
-        if ($merchantCity[0] === '!')
-        {
+        if ($merchantCity[0] === '!') {
             $query->where($merchantCityColumn, '!=', substr($merchantCity, 1));
-        }
-        else
-        {
+        } else {
             $query->where($merchantCityColumn, '=', $merchantCity);
         }
     }
@@ -628,7 +617,7 @@ class Repository extends Base\Repository
      *        `merchant_id` in (?)
      *         order by `merchant_id` asc
      *
-     * @param array  $merchantIds
+     * @param array $merchantIds
      * @param string $channel
      * @param string $accountType
      *
@@ -637,40 +626,40 @@ class Repository extends Base\Repository
     public function fetchActiveCurrentAccountForMerchantIds(array $merchantIds, string $channel, string $accountType): array
     {
         return $this->newQuery()
-                    ->where(Entity::CHANNEL, '=', $channel)
-                    ->where(Entity::ACCOUNT_TYPE, $accountType)
-                    ->where(Entity::STATUS, 'activated')
-                    ->whereIn(Entity::MERCHANT_ID, $merchantIds)
-                    ->distinct()
-                    ->pluck(Entity::MERCHANT_ID)
-                    ->toArray();
+            ->where(Entity::CHANNEL, '=', $channel)
+            ->where(Entity::ACCOUNT_TYPE, $accountType)
+            ->where(Entity::STATUS, 'activated')
+            ->whereIn(Entity::MERCHANT_ID, $merchantIds)
+            ->distinct()
+            ->pluck(Entity::MERCHANT_ID)
+            ->toArray();
 
     }
 
     public function fetchMerchantBankingAccounts(string $merchantId)
     {
         return $this->newQuery()
-                    ->where(Entity::MERCHANT_ID, $merchantId)
-                    ->orderBy(Entity::CREATED_AT, 'desc')
-                    ->get([Entity::ACCOUNT_NUMBER, Entity::ACCOUNT_TYPE, Entity::CHANNEL, Entity::STATUS])
-                    ->toArray();
+            ->where(Entity::MERCHANT_ID, $merchantId)
+            ->orderBy(Entity::CREATED_AT, 'desc')
+            ->get([Entity::ACCOUNT_NUMBER, Entity::ACCOUNT_TYPE, Entity::CHANNEL, Entity::STATUS])
+            ->toArray();
     }
 
     public function fetchByAccountNumberAndChannel(string $accountNumber, string $channel)
     {
         return $this->whereAccountNumberAndChannelAre($accountNumber, $channel)
-                    ->first();
+            ->first();
     }
 
     public function getCAOnboardCohortList(int $startTime, int $endTime)
     {
-        $balanceIdColumn                    = $this->repo->balance->dbColumn(Entity::ID);
-        $balanceCreatedColumn               = $this->repo->balance->dbColumn(Entity::CREATED_AT);
-        $bankingAccountsBalanceIdColumn     = $this->dbColumn(Entity::BALANCE_ID);
-        $activationStatus                   = $this->dbColumn(Entity::STATUS);
-        $accountTypeColumn                  = $this->dbColumn(Entity::ACCOUNT_TYPE);
+        $balanceIdColumn = $this->repo->balance->dbColumn(Entity::ID);
+        $balanceCreatedColumn = $this->repo->balance->dbColumn(Entity::CREATED_AT);
+        $bankingAccountsBalanceIdColumn = $this->dbColumn(Entity::BALANCE_ID);
+        $activationStatus = $this->dbColumn(Entity::STATUS);
+        $accountTypeColumn = $this->dbColumn(Entity::ACCOUNT_TYPE);
 
-        $selectAttr                 = [
+        $selectAttr = [
             $this->dbColumn(Entity::MERCHANT_ID),
         ];
 
@@ -686,14 +675,14 @@ class Repository extends Base\Repository
 
     public function getCAArchivedCohortList(int $startTime, int $endTime)
     {
-        $bankingAccountStateStatusColumn                    = $this->repo->banking_account_state->dbColumn(BankingAccountState\Entity::STATUS);
-        $bankingAccountStateCreatedAtColumn                 = $this->repo->banking_account_state->dbColumn(BankingAccountState\Entity::CREATED_AT);
-        $bankingAccountStateBankingAccountIdColumn          = $this->repo->banking_account_state->dbColumn(BankingAccountState\Entity::BANKING_ACCOUNT_ID);
-        $activationStatus                                   = $this->dbColumn(Entity::STATUS);
-        $accountTypeColumn                                  = $this->dbColumn(Entity::ACCOUNT_TYPE);
-        $idColumn                                           = $this->dbColumn(Entity::ID);
+        $bankingAccountStateStatusColumn = $this->repo->banking_account_state->dbColumn(BankingAccountState\Entity::STATUS);
+        $bankingAccountStateCreatedAtColumn = $this->repo->banking_account_state->dbColumn(BankingAccountState\Entity::CREATED_AT);
+        $bankingAccountStateBankingAccountIdColumn = $this->repo->banking_account_state->dbColumn(BankingAccountState\Entity::BANKING_ACCOUNT_ID);
+        $activationStatus = $this->dbColumn(Entity::STATUS);
+        $accountTypeColumn = $this->dbColumn(Entity::ACCOUNT_TYPE);
+        $idColumn = $this->dbColumn(Entity::ID);
 
-        $selectAttr                 = [
+        $selectAttr = [
             $this->dbColumn(Entity::MERCHANT_ID),
         ];
 
@@ -710,23 +699,23 @@ class Repository extends Base\Repository
 
     public function getStatusWithMerchantId(string $merchantId)
     {
-        $activationStatus      = $this->dbColumn(Entity::STATUS);
-        $merchantIdColumn      = $this->dbColumn(Entity::MERCHANT_ID);
+        $activationStatus = $this->dbColumn(Entity::STATUS);
+        $merchantIdColumn = $this->dbColumn(Entity::MERCHANT_ID);
 
         return $this->newQuery()
-                    ->select([$activationStatus])
-                    ->where($merchantIdColumn, '=', $merchantId)
-                    ->get()
-                    ->pluck(Entity::STATUS);
+            ->select([$activationStatus])
+            ->where($merchantIdColumn, '=', $merchantId)
+            ->get()
+            ->pluck(Entity::STATUS);
     }
 
     public function getBankingAccountWithBalanceViaAccountNumberAndMerchantId($accountNumber, $merchantId)
     {
         return $this->newQuery()
-                    ->with(['balance'])
-                    ->where(Entity::ACCOUNT_NUMBER, $accountNumber)
-                    ->where(Entity::MERCHANT_ID, $merchantId)
-                    ->firstOrFail();
+            ->with(['balance'])
+            ->where(Entity::ACCOUNT_NUMBER, $accountNumber)
+            ->where(Entity::MERCHANT_ID, $merchantId)
+            ->firstOrFail();
     }
 
     public function getBankingAccountViaAccountNumberAndIfsc($accountNumber, $ifsc)
@@ -740,12 +729,11 @@ class Repository extends Base\Repository
     public function fetchBankingAccountByMerchantIdAccountTypeChannelAndStatus(string $merchantId, string $channel, string $accountType, string $status = null)
     {
         $query = $this->newQuery()
-                      ->where(Entity::MERCHANT_ID, $merchantId)
-                      ->where(Entity::CHANNEL, $channel)
-                      ->where(Entity::ACCOUNT_TYPE, $accountType);
+            ->where(Entity::MERCHANT_ID, $merchantId)
+            ->where(Entity::CHANNEL, $channel)
+            ->where(Entity::ACCOUNT_TYPE, $accountType);
 
-        if (empty($status) === false)
-        {
+        if (empty($status) === false) {
             $query->where(Entity::STATUS, $status);
         }
 
@@ -772,7 +760,7 @@ class Repository extends Base\Repository
 
         return [
             ActivationDetail\Entity::MERCHANT_POC_EMAIL => $query->pluck(ActivationDetail\Entity::MERCHANT_POC_EMAIL)->first(),
-            Entity::BENEFICIARY_EMAIL                   => $query->pluck(Entity::BENEFICIARY_EMAIL)->first()
+            Entity::BENEFICIARY_EMAIL => $query->pluck(Entity::BENEFICIARY_EMAIL)->first()
         ];
     }
 
@@ -792,27 +780,24 @@ class Repository extends Base\Repository
         $merchantIdColumn = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
         $bankingAccountMerchantIdColumn = $this->repo->banking_account->dbColumn(Entity::MERCHANT_ID);
 
-        $query =  $this->newQuery()
+        $query = $this->newQuery()
             ->join(Table::MERCHANT, $bankingAccountMerchantIdColumn, '=', $merchantIdColumn)
             ->where($channelColumn, '=', $channel)
             ->where($accountTypeColumn, '=', $accountType)
             ->where($statusColumn, '=', Status::ACTIVATED)
             ->where($merchantActivatedColumn, '=', 0)
-            ->where(function ($query)
-            {
+            ->where(function ($query) {
                 $query->whereNotIn(Merchant\Entity::PARENT_ID, Preferences::NO_MERCHANT_INVOICE_PARENT_MIDS)
                     ->orWhereNull(Merchant\Entity::PARENT_ID);
             })
             ->take($limit)
             ->skip($skip);
 
-        if (empty($merchantIds) === false)
-        {
+        if (empty($merchantIds) === false) {
             $query = $query->whereIn($merchantIdColumn, $merchantIds);
         }
 
-        if (empty($merchantIdsExcluded) === false)
-        {
+        if (empty($merchantIdsExcluded) === false) {
             $query = $query->whereNotIn($merchantIdColumn, $merchantIdsExcluded);
         }
 
