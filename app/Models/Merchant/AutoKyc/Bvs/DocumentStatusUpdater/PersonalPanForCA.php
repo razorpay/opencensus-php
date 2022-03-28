@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant\AutoKyc\Bvs\DocumentStatusUpdater;
 
+use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\Detail;
@@ -60,6 +61,8 @@ class PersonalPanForCA extends BaseStatusUpdater
 
                 $this->FireHubspotEvent($documentValidationStatus);
 
+                $this->fireSegmentEvent($documentValidationStatus);
+
                 $verificationMetrics = [
                     Constant::ARTEFACT_TYPE                     => $this->artefactType,
                     Constants::BVS_DOCUMENT_VERIFICATION_STATUS => $documentValidationStatus
@@ -81,6 +84,29 @@ class PersonalPanForCA extends BaseStatusUpdater
         $this->bankingAccountActivationDetail->setPanVerificationStatus(Constants::PENDING);
 
         $this->updateStakeholderStatusIfApplicable(Constants::PENDING);
+    }
+
+    protected function fireSegmentEvent(string $documentValidationStatus)
+    {
+        if ($documentValidationStatus === Constants::FAILED) {
+            return; // No event push required if BVS call fails.
+        }
+
+        $properties = [];
+        if ($documentValidationStatus === Constants::VERIFIED) {
+            $properties["document_verification_status"] = Constants::VERIFIED;
+        } else if ($documentValidationStatus === Constants::INCORRECT_DETAILS
+            or $documentValidationStatus === Constants::NOT_MATCHED) {
+            $properties["document_verification_status"] = Constants::FAILED;
+        }
+
+        $this->trace->info(TraceCode::SEGMENT_EVENT_PUSH, [
+            'eventName' => SegmentEvent::BANKING_ACCOUNT_DOCUMENT_VERIFICATION_STATUS,
+            'properties' => $properties
+        ]);
+
+        $this->app['x-segment']->pushIdentifyAndTrackEvent($this->merchant, $properties,
+            SegmentEvent::BANKING_ACCOUNT_DOCUMENT_VERIFICATION_STATUS);
     }
 
     protected function FireHubspotEvent(string $documentValidationStatus)

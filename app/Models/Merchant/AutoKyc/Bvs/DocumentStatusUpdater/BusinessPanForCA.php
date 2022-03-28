@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant\AutoKyc\Bvs\DocumentStatusUpdater;
 
 use Carbon\Carbon;
+use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Constants\Entity as E;
@@ -18,13 +19,13 @@ class BusinessPanForCA extends BaseStatusUpdater
 
     protected $bankingAccountActivationDetail;
 
-    public function __construct(MerchantEntity $merchant,
-                                Detail\Entity $merchantDetails,
-                                string $documentTypeStatusKey,
+    public function __construct(MerchantEntity       $merchant,
+                                Detail\Entity        $merchantDetails,
+                                string               $documentTypeStatusKey,
                                 BvsValidation\Entity $validation,
-                                string $entity = E::BANKING_ACCOUNT_ACTIVATION_DETAIL)
+                                string               $entity = E::BANKING_ACCOUNT_ACTIVATION_DETAIL)
     {
-        parent::__construct($merchant,$merchantDetails, $validation);
+        parent::__construct($merchant, $merchantDetails, $validation);
 
         $this->documentTypeStatusKey = $documentTypeStatusKey;
 
@@ -47,23 +48,23 @@ class BusinessPanForCA extends BaseStatusUpdater
             Constant::BANKING_ACCOUNT,
             $this->artefactType);
 
-        if (empty($validation) === false)
-        {
+        if (empty($validation) === false) {
             $documentValidationStatus = $this->getDocumentValidationStatus($validation);
 
             //
             // if $documentValidationStatus is null then don't send any metrics
             //
-            if (empty($documentValidationStatus) === false)
-            {
+            if (empty($documentValidationStatus) === false) {
                 $this->bankingAccountActivationDetail->setPanVerificationStatus($documentValidationStatus);
 
                 $this->repo->saveOrFail($this->bankingAccountActivationDetail);
 
                 $this->FireHubspotEvent($documentValidationStatus);
 
+                $this->fireSegmentEvent($documentValidationStatus);
+
                 $verificationMetrics = [
-                    Constant::ARTEFACT_TYPE                     => $this->artefactType,
+                    Constant::ARTEFACT_TYPE => $this->artefactType,
                     Constants::BVS_DOCUMENT_VERIFICATION_STATUS => $documentValidationStatus
                 ];
 
@@ -71,8 +72,8 @@ class BusinessPanForCA extends BaseStatusUpdater
             }
 
             $this->trace->info(TraceCode::BANKING_ACCOUNT_BVS_PAN_VERIFICATION_STATUS, [
-                'merchant_id'                  => $this->merchantDetails->getId(),
-                'artefact_type'                => $this->artefactType,
+                'merchant_id' => $this->merchantDetails->getId(),
+                'artefact_type' => $this->artefactType,
                 'document_verification_status' => $documentValidationStatus
             ]);
         }
@@ -85,25 +86,44 @@ class BusinessPanForCA extends BaseStatusUpdater
         $this->updateStakeholderStatusIfApplicable(Constants::PENDING);
     }
 
+    protected function fireSegmentEvent(string $documentValidationStatus)
+    {
+        if ($documentValidationStatus === Constants::FAILED) {
+            return; // No event push required if BVS call fails.
+        }
+
+        $properties = [];
+        if ($documentValidationStatus === Constants::VERIFIED) {
+            $properties["document_verification_status"] = Constants::VERIFIED;
+        } else if ($documentValidationStatus === Constants::INCORRECT_DETAILS
+            or $documentValidationStatus === Constants::NOT_MATCHED) {
+            $properties["document_verification_status"] = Constants::FAILED;
+        }
+
+        $this->trace->info(TraceCode::SEGMENT_EVENT_PUSH, [
+            'eventName' => SegmentEvent::BANKING_ACCOUNT_DOCUMENT_VERIFICATION_STATUS,
+            'properties' => $properties
+        ]);
+
+        $this->app['x-segment']->pushIdentifyAndTrackEvent($this->merchant, $properties,
+            SegmentEvent::BANKING_ACCOUNT_DOCUMENT_VERIFICATION_STATUS);
+    }
+
     protected function FireHubspotEvent(string $documentValidationStatus)
     {
         $this->trace->info(TraceCode::NEOSTONE_HUBSPOT_REQUEST, [
-            'merchant_id'                  => $this->merchantDetails->getId(),
+            'merchant_id' => $this->merchantDetails->getId(),
             'document_verification_status' => $documentValidationStatus
         ]);
 
-        if ($documentValidationStatus === Constants::VERIFIED)
-        {
+        if ($documentValidationStatus === Constants::VERIFIED) {
             $merchantEmail = $this->merchant->getEmail();
 
             $payload = ['ca_pan_validation_failed' => 'FALSE'];
 
             $this->app->hubspot->trackHubspotEvent($merchantEmail, $payload);
-        }
-        else
-        {
-            if ($documentValidationStatus === Constants::INCORRECT_DETAILS or $documentValidationStatus === Constants::NOT_MATCHED)
-            {
+        } else {
+            if ($documentValidationStatus === Constants::INCORRECT_DETAILS or $documentValidationStatus === Constants::NOT_MATCHED) {
                 $merchantEmail = $this->merchant->getEmail();
 
                 $payload = ['ca_pan_validation_failed' => 'TRUE'];

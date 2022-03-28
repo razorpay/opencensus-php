@@ -17,14 +17,14 @@ class DocumentStatusUpdaterForBASTest extends TestCase
     private function processKafkaEvent($validationStatus)
     {
         $bvsValidation = $this->fixtures->create('bvs_validation',
-                                                 [
-                                                     'owner_id'      => '35dfe4t5wdsf4',
-                                                     'artefact_type' => Constant::PERSONAL_PAN,
-                                                     'owner_type'    => Constant::BAS_DOCUMENT
-                                                 ]);
+            [
+                'owner_id'      => '35dfe4t5wdsf4',
+                'artefact_type' => Constant::PERSONAL_PAN,
+                'owner_type'    => Constant::BAS_DOCUMENT
+            ]);
 
         $kafkaEventPayload = [
-            'data'  => [
+            'data' => [
                 'validation_id'     => $bvsValidation->getValidationId(),
                 'status'            => $validationStatus,
                 'error_description' => '',
