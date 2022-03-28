@@ -94,6 +94,15 @@ trait AuthorizePush
 
         $gateway = $terminal->getGateway();
 
+        // We validate duplicate unexpected payment creation for amount mismatch in authorizePush
+        // We might not be able to verify the payment with gateway if this is multiple credit
+        if ((empty($callbackData['meta']['version']) === false) and
+            ($callbackData['meta']['version'] === 'api_v2') and
+            $gateway === 'upi_icici')
+        {
+            return;
+        }
+
         $this->app['gateway']->call($gateway, Payment\Action::VALIDATE_PUSH, $callbackData, $mode, $terminal);
     }
 

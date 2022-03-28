@@ -1240,6 +1240,12 @@ class Gateway extends Base\Gateway
     {
         list($paymentId , $callbackData) = $input;
 
+        if ((empty($callbackData['meta']['version']) === false) and
+            ($callbackData['meta']['version'] === 'api_v2'))
+        {
+            return $this->authorizePushV2($input);
+        }
+
         $gatewayInput = [
             'payment' => [
                 'id'     => $paymentId,
@@ -1265,6 +1271,79 @@ class Gateway extends Base\Gateway
         $gatewayPayment = $this->createGatewayPaymentEntity($attributes, null, false);
 
         $this->checkCallbackResponseStatus($callbackData);
+
+        return [
+            'acquirer' => [
+                Payment\Entity::VPA         => $gatewayPayment->getVpa(),
+                Payment\Entity::REFERENCE16 => $gatewayPayment->getNpciReferenceId(),
+            ]
+        ];
+    }
+
+    /** AuthorizePushV2 is triggered for
+     * reconciliation happening via ART
+     * @param array $input
+     * @return array[]
+     * @throws Exception\LogicException
+     */
+    protected function authorizePushV2(array $input)
+    {
+        list($paymentId, $callbackData) = $input;
+
+        $callbackData['payment']['id'] = $paymentId;
+
+        $gatewayInput = [
+            'payment' => [
+                'id'     => $paymentId,
+                'vpa'    => $callbackData['upi']['vpa'],
+                'amount' => (int) ($callbackData['payment']['amount']),
+            ],
+        ];
+
+        parent::action($gatewayInput, Action::AUTHORIZE);
+
+        $attributes = [
+            Entity::TYPE                => Base\Type::PAY,
+            Entity::RECEIVED            => 1,
+            Entity::GATEWAY_DATA        => [],
+        ];
+
+        $attributes = array_merge($attributes, $callbackData['upi']);
+
+        $rrn = $callbackData['upi']['npci_reference_id'];
+
+        $gateway = $callbackData['terminal']['gateway'];
+
+        $upiEntity = $this->repo->fetchByNpciReferenceIdAndGateway($rrn, $gateway);
+
+        $gatewayPayment = $this->repo->transaction(function () use ($upiEntity, $callbackData, $attributes)
+        {
+            if (empty($upiEntity) === false)
+            {
+                // Checking this for duplicate payment
+                if ($upiEntity->getAmount() === (int)($callbackData['payment']['amount']))
+                {
+                    throw new Exception\LogicException(
+                        'Duplicate Unexpected payment with same amount',
+                        null,
+                        [
+                            'gateway'           => $callbackData['terminal']['gateway'],
+                            'npci_reference_id' => $callbackData['upi']['npci_reference_id'],
+                        ]
+                    );
+                }
+                // When upi entity is not empty and
+                // rrn already already exists with different payment amount
+                //Its a case of amount mismatch.
+                //Unsetting the rrn since amount tampered is a failed payment and creating new payment with recon rrn,
+                //so system will hold unique rrn per payment
+                $upiEntity->setNpciReferenceId('');
+
+                $this->repo->saveOrFail($upiEntity);
+            }
+
+            return $this->createGatewayPaymentEntity($attributes, null, false);
+        });
 
         return [
             'acquirer' => [
@@ -1624,7 +1703,17 @@ class Gateway extends Base\Gateway
             return true;
         }
 
-        $attr = array_only($input['gateway'], $this->forceFillable);
+        $attr = null;
+
+        if ((empty($input['gateway']['meta']['version']) === false) and
+            ($input['gateway']['meta']['version'] === 'api_v2'))
+        {
+            $attr = array_only($input['gateway']['upi'], $this->forceFillable);
+        }
+        else
+        {
+            $attr = array_only($input['gateway'], $this->forceFillable);
+        }
 
         $attr[Entity::STATUS_CODE] = Status::SUCCESS;
 
