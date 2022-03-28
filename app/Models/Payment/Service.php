@@ -206,6 +206,14 @@ class Service extends Base\Service
      */
     public function otpResend($id, $input)
     {
+        $payment = $this->repo->payment->findByPublicIdAndMerchant(
+            $id, $this->merchant);
+
+        if ((empty($payment) === false) and
+            ($payment->isExternal() === true))
+        {
+            return $this->app['pg_router']->otpResendPrivate($id, $input);
+        }
         return $this->getNewProcessor()->otpResend($id, $input);
     }
 
@@ -3891,10 +3899,18 @@ class Service extends Base\Service
 
     public function processOtpSubmitPrivate($id, $hash, $input)
     {
+        $payment = $this->repo->payment->findByPublicIdAndMerchant(
+            $id, $this->merchant);
+
+        if ((empty($payment) === false) and
+            ($payment->isExternal() === true))
+        {
+            return $this->app['pg_router']->otpSubmitPrivate($id, $input);
+        }
+
         $data = $this->callback($id, $hash, $input);
 
-        if ($this->merchant->isFeatureEnabled(Feature\Constants::OTP_SUBMIT_RESPONSE) === true)
-        {
+        if ($this->merchant->isFeatureEnabled(Feature\Constants::OTP_SUBMIT_RESPONSE) === true) {
             Entity::verifyIdAndSilentlyStripSign($id);
 
             $payment = $this->repo->payment->findOrFailPublic($id);
@@ -4904,6 +4920,7 @@ class Service extends Base\Service
         }
 
         $response = $this->app['card.payments']->fetchEntityForEsSync($backfill);
+
         $successCount = 0;
         $failedCount = 0;
 

@@ -1979,6 +1979,206 @@ class PaymentCreateTest extends TestCase
         $this->assertEquals($content['data']['pg_router'], 'true');
     }
 
+    public function testRearchPaymentCreateJson()
+    {
+        $this->fixtures->iin->edit('401200',[
+            'country' => 'IN',
+            'issuer'  => 'SBIN',
+            'network' => 'Visa',
+            'flows'   => [
+                '3ds'          => '1',
+                'headless_otp' => '1',
+            ]
+        ]);
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        // we are ramping up auth terminal selection hence to make sure all test cases passes
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function ($mid, $feature, $mode)
+                {
+                    if ($feature === 'headless_s2s_card_payments_via_pg_router_v2')
+                    {
+                        return 'on';
+                    }
+                    return 'off';
+                }));
+
+        $order = $this->fixtures->order->createPaymentCaptureOrder();
+
+        $this->enablePgRouterConfig();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['order_id'] = 'order_'.$order->getId();
+
+        $pgService = \Mockery::mock('RZP\Services\PGRouter')->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $this->app->instance('pg_router', $pgService);
+
+        $pgService->shouldReceive('sendRequest')
+            ->with(Mockery::type('string'), Mockery::type('string'), Mockery::type('array'), Mockery::type('bool'))
+            ->andReturnUsing(function (string $endpoint, string $method, array $data, bool $throwExceptionOnFailure)
+            {
+                return [
+                    'body' => [
+                        "data" => [
+                            "pg_router" => true,
+                            "payment" => [
+                                'id' => 'JCWpeYcasrmYFb',
+                                'merchant_id' => '10000000000000',
+                                'amount' => 50000,
+                                'currency' => 'INR',
+                                'base_amount' => 50000,
+                                'method' => 'card',
+                                'status' => 'captured',
+                                'two_factor_auth' => 'not_applicable',
+                                'order_id' => NULL,
+                                'invoice_id' => NULL,
+                                'transfer_id' => NULL,
+                                'payment_link_id' => NULL,
+                                'receiver_id' => NULL,
+                                'receiver_type' => NULL,
+                                'international' => FALSE,
+                                'amount_authorized' => 50000,
+                                'amount_refunded' => 0,
+                                'base_amount_refunded' => 0,
+                                'amount_transferred' => 0,
+                                'amount_paidout' => 0,
+                                'refund_status' => NULL,
+                                'description' => 'description',
+                                'bank' => NULL,
+                                'wallet' => NULL,
+                                'vpa' => NULL,
+                                'on_hold' => FALSE,
+                                'on_hold_until' => NULL,
+                                'emi_plan_id' => NULL,
+                                'emi_subvention' => NULL,
+                                'error_code' => NULL,
+                                'internal_error_code' => NULL,
+                                'error_description' => NULL,
+                                'global_customer_id' => NULL,
+                                'app_token' => NULL,
+                                'global_token_id' => NULL,
+                                'email' => 'a@b.com',
+                                'contact' => '+919918899029',
+                                'notes' => [
+                                    'merchant_order_id' => 'id',
+                                ],
+                                'authorized_at' => 1614253879,
+                                'auto_captured' => FALSE,
+                                'captured_at' => 1614253880,
+                                'gateway' => 'hdfc',
+                                'terminal_id' => '1n25f6uN5S1Z5a',
+                                'authentication_gateway' => NULL,
+                                'batch_id' => NULL,
+                                'reference1' => NULL,
+                                'reference2' => NULL,
+                                'cps_route' => 0,
+                                'signed' => FALSE,
+                                'verified' => NULL,
+                                'gateway_captured' => TRUE,
+                                'verify_bucket' => 0,
+                                'verify_at' => 1614253880,
+                                'callback_url' => NULL,
+                                'fee' => 1000,
+                                'mdr' => 1000,
+                                'tax' => 0,
+                                'otp_attempts' => NULL,
+                                'otp_count' => NULL,
+                                'recurring' => FALSE,
+                                'save' => FALSE,
+                                'late_authorized' => FALSE,
+                                'convert_currency' => NULL,
+                                'disputed' => FALSE,
+                                'recurring_type' => NULL,
+                                'auth_type' => NULL,
+                                'acknowledged_at' => NULL,
+                                'refund_at' => NULL,
+                                'reference13' => NULL,
+                                'settled_by' => 'Razorpay',
+                                'reference16' => NULL,
+                                'reference17' => NULL,
+                                'created_at' => 1614253879,
+                                'updated_at' => 1614253880,
+                                'captured' => TRUE,
+                                'reference2' => '12343123',
+                                'entity' => 'payment',
+                                'fee_bearer' => 'platform',
+                                'error_source' => NULL,
+                                'error_step' => NULL,
+                                'error_reason' => NULL,
+                                'dcc' => FALSE,
+                                'gateway_amount' => 50000,
+                                'gateway_currency' => 'INR',
+                                'forex_rate' => NULL,
+                                'dcc_offered' => NULL,
+                                'dcc_mark_up_percent' => NULL,
+                                'dcc_markup_amount' => NULL,
+                                'mcc' => FALSE,
+                                'forex_rate_received' => NULL,
+                                'forex_rate_applied' => NULL,
+                            ]
+                        ]
+                    ]
+                ];
+            });
+
+        $request = [
+            'content' => $payment,
+            'url'     => '/payments/create/json',
+            'method'  => 'post'
+        ];
+
+        $this->fixtures->merchant->addFeatures(['s2s', 's2s_json', 'otp_auth_default']);
+
+        $this->ba->privateAuth();
+
+        $response = $this->makeRequestParent($request);
+
+        $content = $this->getJsonContentFromResponse($response);
+
+        $this->assertEquals($content['data']['pg_router'], true);
+
+        //otp resend
+        $this->ba->privateAuth();
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/pay_JCWpeYcasrmYFb/otp/resend',
+            'content' => []
+        ];
+
+        $response = $this->makeRequestParent($request);
+
+        $content = $this->getJsonContentFromResponse($response);
+
+        $this->assertEquals($content['body']['data']['pg_router'], true);
+
+        //otp submit
+        $this->ba->privateAuth();
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/pay_JCWpeYcasrmYFb/otp/submit',
+            'content' => [
+                'otp' => 123456
+            ]
+        ];
+
+        $response = $this->makeRequestParent($request);
+
+        $content = $this->getJsonContentFromResponse($response);
+
+        $this->assertEquals($content['body']['data']['pg_router'], true);
+    }
+
     protected function mockGatewayException()
     {
         $gateway = Mockery::mock('RZP\Gateway\GatewayManager');

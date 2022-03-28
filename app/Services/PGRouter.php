@@ -76,6 +76,10 @@ class PGRouter
 
     const PGRouterPaymentCreateRedirect = 'v1/payments/create/redirect';
 
+    const PGRouterOTPResendPrivate = "v1/payments/%s/otp/resend";
+
+    const PGRouterOTPSubmitPrivate = "v1/payments/%s/otp/submit";
+
     const PG_ROUTER_FAILURE_STATUS_CODE = "pg_router_failure_status_code";
 
     const PG_ROUTER_REQUEST_FAILURE = "pg_router_request_failure";
@@ -131,6 +135,8 @@ class PGRouter
      */
     public function validateAndCreatePayment(array $input, bool $throwExceptionOnFailure = false): array
     {
+        $this->updateIpandUserAgent($input);
+
         $output = $this->sendRequest(self::PGRouterValidateAndCreatePayment, Requests::POST, $input, $throwExceptionOnFailure);
 
         return $output['body'];
@@ -146,6 +152,8 @@ class PGRouter
 
     public function validateAndCreatePaymentJson(array $input, bool $throwExceptionOnFailure = false): array
     {
+        $this->updateIpandUserAgent($input, true);
+
         $output = $this->sendRequest(self::PGRouterPaymentCreateJson, Requests::POST, $input, $throwExceptionOnFailure);
 
         return $output['body'];
@@ -153,9 +161,33 @@ class PGRouter
 
     public function validateAndCreatePaymentRedirect(array $input, bool $throwExceptionOnFailure = false): array
     {
+        $this->updateIpandUserAgent($input, true);
+
         $output = $this->sendRequest(self::PGRouterPaymentCreateRedirect, Requests::POST, $input, $throwExceptionOnFailure);
 
         return $output['body'];
+    }
+
+    protected function updateIpandUserAgent(array & $input, $s2s = false)
+    {
+        $ip = null;
+        $userAgent = null;
+
+        if (empty($this->request) == false)
+        {
+            $input['_']['ip']         =  $this->request->ip();
+            $input['_']['user_agent'] = $this->request->userAgent();
+
+        }
+
+        if ($s2s === true)
+        {
+            $ip = $input['ip'] ?? null;
+            $userAgent = $input['user_agent'] ?? null;
+        }
+
+        $input['_']['ip'] = $ip;
+        $input['_']['user_agent'] = $userAgent;
     }
 
     /**
@@ -456,6 +488,18 @@ class PGRouter
         }
 
         return $order;
+    }
+
+    public function otpSubmitPrivate($id, array $input, bool $throwExceptionOnFailure = false): array
+    {
+        $url = sprintf(self::PGRouterOTPSubmitPrivate, $id);
+        return $this->sendRequest($url, Requests::POST, $input, $throwExceptionOnFailure);
+    }
+
+    public function otpResendPrivate($id, array $input, bool $throwExceptionOnFailure = false): array
+    {
+        $url = sprintf(self::PGRouterOTPResendPrivate, $id);
+        return $this->sendRequest($url, Requests::POST, $input, $throwExceptionOnFailure);
     }
 
     /**
