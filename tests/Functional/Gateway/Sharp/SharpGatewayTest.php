@@ -478,33 +478,7 @@ class SharpGatewayTest extends TestCase
         $this->startTest();
     }
 
-    public function validateVpaCardNumberDetected()
-    {
-        return $cases = [
-            'actual_card_number_without_special_character'  => ['4012001038443335@razorpay'],
-            'actual_card_number_with_hyphen'                => ['4012-0010-3844-3335@razorpay'],
-            'actual_card_number_with_prefix'                => ['ccpay.4012001038443335@razorpay'],
-            'actual_card_number_with_suffix'                => ['4012-0010-3844-3335.ccpay@razorpay'],
-        ];
-    }
 
-    /**
-     * @dataProvider validateVpaCardNumberDetected
-     */
-    public function testValidateVpaCardNumberDetected($vpa)
-    {
-        $this->ba->privateAuth();
-
-        $this->fixtures->merchant->addFeatures(['enable_vpa_validate']);
-
-        $this->startTest([
-            'request' => [
-                'content' => [
-                    'vpa'   => $vpa,
-                ],
-            ],
-        ]);
-    }
 
     public function validateVpaCardNumberLikeVpa()
     {

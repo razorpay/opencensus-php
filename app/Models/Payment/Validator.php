@@ -729,33 +729,6 @@ class Validator extends Base\Validator
             return;
         }
 
-        // First we remove all the non-numeric chars from the string
-        // +/- are considered numeric chars, we need to remove these separately
-        // Now, we are left we only numbers
-        $number = str_replace(['+', '-'], '', filter_var($vpaParts[0], FILTER_SANITIZE_NUMBER_INT));
-
-        // As per card validator the minimum length is 12
-        if (strlen($number) >= 12)
-        {
-            // This pattern is taken from \RZP\Trace\CardNumberScrubProcessor::CARD_REGEX
-            $pattern = \RZP\Trace\CardNumberScrubProcessor::CARD_REGEX;
-
-            $response = preg_match($pattern, $number, $matched, PREG_UNMATCHED_AS_NULL);
-
-            if (is_null($response) === false)
-            {
-                // If any number matches the pattern, We can run that by Luhn's algo to verify.
-                if (Base\Luhn::isValid($number) === true)
-                {
-                    throw new Exception\BadRequestException(
-                        ErrorCode::BAD_REQUEST_PAYMENT_UPI_INVALID_VPA,
-                        $attribute,
-                        [
-                            'reason' => 'card_number_detected_in_vpa',
-                        ]);
-                }
-            }
-        }
     }
 
     protected function validateCallbackUrl($attributes, $callbackUrl)
