@@ -8,14 +8,33 @@ import { openModal as fnOpenModal } from 'merchant_common/reducers/modals';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import SettlementDetail from 'merchant/views/Settlements/Settlements/components/SettlementDetail';
-import { fetchSettlementConfig as fnFetchSettlementConfig } from 'merchant/reducers/settlements/details';
+import SettlementTimeline from 'merchant/views/Settlements/components/SettlementTimeline';
+import {
+  fetchSettlementConfig as fnFetchSettlementConfig,
+  fetchSettlementTimeline as fnFetchSettlementTimeline,
+} from 'merchant/reducers/settlements/details';
 import { fetchBankAccountChangeStatus as fnFetchBankAccountChangeStatus } from 'merchant/reducers/profile';
+import { TIMELINE_EVENTS } from './utils';
 
 class SettlementInfo extends Component {
   componentDidMount() {
-    const { user, fetchSettlementConfig, fetchBankAccountChangeStatus } = this.props;
+    const {
+      user,
+      data,
+      fetchSettlementConfig,
+      fetchBankAccountChangeStatus,
+      fetchSettlementTimeline,
+    } = this.props;
     fetchSettlementConfig();
     fetchBankAccountChangeStatus(user.id);
+    if (!data?.transaction?.on_hold) {
+      const { id, created_at } = data?.transaction;
+      const payload = {
+        transaction_id: id?.split('_')[1],
+        created_at,
+      };
+      fetchSettlementTimeline(payload);
+    }
   }
 
   onViewDetailsClick = () => {
@@ -33,7 +52,16 @@ class SettlementInfo extends Component {
   };
 
   render() {
-    const { data, settlement_amount, settlementConfig, user, terminalProviders } = this.props;
+    const {
+      data,
+      settlement_amount,
+      settlementConfig,
+      showTimeline = false,
+      entityType,
+      settlementTimelineDetails,
+      user,
+      terminalProviders,
+    } = this.props;
 
     const { no_settlement } = settlement_amount.data;
 
@@ -41,48 +69,73 @@ class SettlementInfo extends Component {
 
     const isOnHold = no_settlement?.on_hold;
     const isSettlementOnHold = isOnHold || isOnTemporaryHold;
+    const rescheduled = settlementTimelineDetails?.holidays?.length > 0;
+
+    const timelineEvents = [
+      TIMELINE_EVENTS.PAYMENT_CAPTURED,
+      TIMELINE_EVENTS.SCHEDULE_INFO,
+      TIMELINE_EVENTS.SETTLEMENT_INFO,
+    ];
+
+    if (entityType === 'refund') timelineEvents[0] = TIMELINE_EVENTS.REFUND_PROCESSED;
+    if (rescheduled) timelineEvents.splice(2, 0, TIMELINE_EVENTS.HOLIDAY_INFO);
 
     let status, jsx;
-    if (data.transaction && data.transaction.settlement) {
+    if (data?.transaction && data.transaction.settlement) {
       status = data.transaction.settlement.status;
     }
-    if (data.transaction.on_hold) {
+    if (data?.transaction?.on_hold) {
       status = 'on_hold';
-    }
-
-    if (data.transaction.settlement) {
       jsx = (
         <div className="settlement-detail-toggle">
           <SettlementStatusLabel status={status} />
           {data.on_hold_until ? <a className="nav-link">Hold until {data.on_hold_until}</a> : null}
-
-          {!data.transaction.on_hold ? (
-            // false
-            <Fragment>
-              <br />
-              <ContentToggler onToggleClick={this.props.viewSettlementOverview}>
-                <span>
-                  Settled on{' '}
-                  <Time
-                    value={
-                      user.isSingleReconEnabled && user.isOptimizerEnabled
-                        ? data.transaction.settlement.created_at
-                        : data.transaction.settled_at
-                    }
-                    format="DD MMM YYYY"
-                  />
-                </span>
-                <SettlementOverview
-                  payment={data}
-                  terminalProviders={terminalProviders}
-                  user={user}
+          <a className="nav-link" onClick={this.onViewDetailsClick}>
+            View Details
+          </a>
+        </div>
+      );
+    } else if (data?.transaction?.settlement) {
+      jsx = (
+        <div className="settlement-detail-toggle">
+          <SettlementStatusLabel status={status} />
+          <br />
+          {showTimeline && settlementTimelineDetails && settlementTimelineDetails.eligible_at ? (
+            <ContentToggler>
+              <span>
+                <span> Settled on </span>
+                <Time
+                  value={parseInt(settlementTimelineDetails.settled_at, 10)}
+                  format="DD MMM YYYY"
                 />
-              </ContentToggler>
-            </Fragment>
+              </span>
+
+              <SettlementTimeline
+                data={data}
+                events={timelineEvents}
+                entityType={entityType}
+                settlementDetails={settlementTimelineDetails}
+              />
+            </ContentToggler>
           ) : (
-            <a className="nav-link" onClick={this.onViewDetailsClick}>
-              View Details
-            </a>
+            <ContentToggler onToggleClick={this.props.viewSettlementOverview}>
+              <span>
+                Settled on{' '}
+                <Time
+                  value={
+                    user.isSingleReconEnabled && user.isOptimizerEnabled
+                      ? data.transaction.settlement.created_at
+                      : data.transaction.settled_at
+                  }
+                  format="DD MMM YYYY"
+                />
+              </span>
+              <SettlementOverview
+                payment={data}
+                terminalProviders={terminalProviders}
+                user={user}
+              />
+            </ContentToggler>
           )}
         </div>
       );
@@ -103,14 +156,35 @@ class SettlementInfo extends Component {
     ) {
       jsx = (
         <Fragment>
-          {!(data.transaction && data.transaction.settlement) ? (
+          {!(data?.transaction && data?.transaction?.settlement) ? (
             <Fragment>
               <SettlementStatusLabel status="scheduled" /> <br />
             </Fragment>
           ) : null}
-          <span className="link">
-            To be settled on <Time value={data?.transaction?.settled_at} format="DD MMM YYYY" />
-          </span>
+          {showTimeline && settlementTimelineDetails && settlementTimelineDetails.eligible_at ? (
+            <>
+              <span className="link">
+                <span>To be settled on </span>
+                <Time
+                  value={parseInt(settlementTimelineDetails.eligible_at, 10)}
+                  format="DD MMM YYYY"
+                />
+              </span>
+              <ContentToggler>
+                {rescheduled ? 'Rescheduled due to bank holidays' : 'View settlement timeline'}
+                <SettlementTimeline
+                  data={data}
+                  events={timelineEvents}
+                  entityType={entityType}
+                  settlementDetails={settlementTimelineDetails}
+                />
+              </ContentToggler>
+            </>
+          ) : (
+            <span className="link">
+              To be settled on <Time value={data.transaction.settled_at} format="DD MMM YYYY" />
+            </span>
+          )}
         </Fragment>
       );
     } else if (
@@ -157,6 +231,7 @@ const mapStateToProps = (state) => {
     user: state.session.user,
     settlement_amount: state.home.settlement_amount,
     settlementConfig: state.settlement.config,
+    settlementTimelineDetails: state.settlement.timeline.data,
     terminalProviders: state.navigator.terminalProviders,
   };
 };
@@ -167,6 +242,7 @@ const mapDispatchToProps = (dispatch) => {
       openModal: fnOpenModal,
       fetchSettlementConfig: fnFetchSettlementConfig,
       fetchBankAccountChangeStatus: fnFetchBankAccountChangeStatus,
+      fetchSettlementTimeline: fnFetchSettlementTimeline,
     },
     dispatch,
   );

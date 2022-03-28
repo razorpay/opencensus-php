@@ -277,7 +277,7 @@ function PaymentDetails(props) {
                   }
                 >
                   <EntityDetailRow label="Settlement Details">
-                    <SettlementInfo data={payment} />
+                    <SettlementInfo data={payment} entityType="payment" showTimeline />
                   </EntityDetailRow>
                 </ShowWhen>
                 <EntityDetailRow label="Description">{payment.description}</EntityDetailRow>

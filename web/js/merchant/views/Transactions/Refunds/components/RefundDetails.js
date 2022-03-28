@@ -128,7 +128,7 @@ class PaymentDetailsContainer extends Component {
 
                   {refund.transaction && this.props.user.isUxRevampPhase2Enabled && (
                     <EntityDetailRow label="Settlement Details">
-                      <SettlementInfo data={refund} />
+                      <SettlementInfo data={refund} entityType="refund" showTimeline />
                     </EntityDetailRow>
                   )}
 

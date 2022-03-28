@@ -7,6 +7,7 @@ const SETTLEMENT_BREAKUP_FETCH = 'SETTLEMENT_BREAKUP_FETCH';
 const SETTLEMENT_SCHEDULE_FETCH = 'SETTLEMENT_SCHEDULE_FETCH';
 const HOLIDAY_LIST_FETCH = 'HOLIDAY_LIST_FETCH';
 const SETTLEMENT_CONFIG_FETCH = 'SETTLEMENT_CONFIG_FETCH';
+const SETTLEMENT_TIMELINE_FETCH = 'SETTLEMENT_TIMELINE_FETCH';
 
 const INVALID_MERCHANT_CALL = 'INVALID_MERCHANT_CALL';
 
@@ -52,6 +53,17 @@ export const fetchSettlementConfig = () => {
   };
 };
 
+export const fetchSettlementTimeline = (payload) => {
+  return {
+    type: SETTLEMENT_TIMELINE_FETCH,
+    payload: merchantFetch({
+      url: 'settlements/fetch_details',
+      method: 'post',
+      data: payload,
+    }),
+  };
+};
+
 const initialState = {
   loading: true,
   settlement: {},
@@ -75,6 +87,11 @@ const initialState = {
   config: {
     loading: false,
     data: {},
+    error: null,
+  },
+  timeline: {
+    loading: false,
+    data: null,
     error: null,
   },
 };
@@ -202,6 +219,20 @@ export default (state = initialState, action) => {
       return set(state, 'config', {
         loading: false,
         data: {},
+        error: action.payload?.errors,
+      });
+
+    case `${SETTLEMENT_TIMELINE_FETCH}::SUCCESS`:
+      return set(state, 'timeline', {
+        loading: false,
+        data: action.payload?.data,
+        error: null,
+      });
+
+    case `${SETTLEMENT_TIMELINE_FETCH}::ERROR`:
+      return set(state, 'timeline', {
+        loading: false,
+        data: null,
         error: action.payload?.errors,
       });
 
