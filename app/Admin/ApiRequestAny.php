@@ -559,7 +559,7 @@ class ApiRequestAny
             $exception = $e;
             $json = $e->getResponse()->json();
             $httpCode = $e->getResponse()->getStatusCode();
-            $errors = [$json['error']['description'], "Status Code: {$httpCode}"];
+            $errors = [ $this->getApiErrorDescription($json), "Status Code: {$httpCode}"];
 
             Trace::error(
                 TraceCode::API_GUZZLE_EXCEPTION,
@@ -574,7 +574,7 @@ class ApiRequestAny
         {
             $json = $e->getResponse()->json();
             $httpCode = $e->getResponse()->getStatusCode();
-            $errors = [$json['error']['description'], "Status Code: {$httpCode}"];
+            $errors = [ $this->getApiErrorDescription($json), "Status Code: {$httpCode}"];
 
             //in case of 2fa api calls we need the _internal passed by the api
             // and dashboard will consume that _internal. For eg.
@@ -586,7 +586,7 @@ class ApiRequestAny
             {
                 $errors = [
                     self::INTERNAL_ERROR_CODE => $json['error']['_internal'][self::INTERNAL_ERROR_CODE],
-                    'description'             => $json['error']['description'],
+                    'description'             => $this->getApiErrorDescription($json),
                     'status_code'             => $httpCode,
                     'code'                    => $json['error']['code'],
                     '_internal'               => $json['error']['_internal'] ?? [],
@@ -749,5 +749,17 @@ class ApiRequestAny
                 }
             }
         }
+    }
+
+    private function getApiErrorDescription($exceptionData)
+    {
+        $errorDescription = 'Something went wrong';
+
+        if (empty($exceptionData['error']['description']) === false)
+        {
+            $errorDescription = $exceptionData['error']['description'];
+        }
+
+        return $errorDescription;
     }
 }
