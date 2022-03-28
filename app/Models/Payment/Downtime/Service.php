@@ -208,7 +208,10 @@ class Service extends Base\Service
             // @see getMerchantsSubscribingToWebhookEvent method.
             if($downtime->getMerchantId() === null)
             {
-                $merchantIds = $this->getMerchantsSubscribingToWebhookEvent(Event::PAYMENT_DOWNTIME_STARTED);
+                $merchantIds = array_merge(
+                    $this->getMerchantsSubscribingToWebhookEvent(Event::PAYMENT_DOWNTIME_STARTED),
+                    $this->getAdditionalMerchantsSubscribingToWebhook()
+                );
             }
             else
             {
@@ -262,7 +265,10 @@ class Service extends Base\Service
 
             if($downtime->getMerchantId() === null)
             {
-                $merchantIds = $this->getMerchantsSubscribingToWebhookEvent(Event::PAYMENT_DOWNTIME_UPDATED);
+                $merchantIds = array_merge(
+                    $this->getMerchantsSubscribingToWebhookEvent(Event::PAYMENT_DOWNTIME_UPDATED),
+                    $this->getAdditionalMerchantsSubscribingToWebhook()
+                );
             }
             else
             {
@@ -301,7 +307,10 @@ class Service extends Base\Service
             // @see getMerchantsSubscribingToWebhookEvent method.
             if($downtime->getMerchantId() === null)
             {
-                $merchantIds = $this->getMerchantsSubscribingToWebhookEvent(Event::PAYMENT_DOWNTIME_RESOLVED);
+                $merchantIds = array_merge(
+                    $this->getMerchantsSubscribingToWebhookEvent(Event::PAYMENT_DOWNTIME_RESOLVED),
+                    $this->getAdditionalMerchantsSubscribingToWebhook()
+                );
             }
             else
             {
@@ -413,6 +422,10 @@ class Service extends Base\Service
         return  array_values(array_unique(array_pluck($webhooks, 'owner_id')));
     }
 
+    protected function getAdditionalMerchantsSubscribingToWebhook(): array
+    {
+        return array("HscZ2md6SOPF3U", "8RerE9oY0d7rbC");
+    }
 
     protected function increaseAllowedSystemLimits()
     {
