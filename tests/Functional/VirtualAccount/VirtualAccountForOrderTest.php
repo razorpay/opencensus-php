@@ -3,12 +3,15 @@
 namespace RZP\Tests\Functional\VirtualAccount;
 
 use Carbon\Carbon;
+use DB;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Merchant\FeeBearer;
 use RZP\Models\VirtualAccount\Status;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
 use RZP\Tests\Functional\TestCase;
+use RZP\Error\ErrorCode;
 
 class VirtualAccountForOrderTest extends TestCase
 {
@@ -204,4 +207,105 @@ class VirtualAccountForOrderTest extends TestCase
         $this->assertEquals('captured', $payment2['status']);
         $this->assertEquals('order_' . $order2['id'], $payment2['order_id']);;
     }
+
+    public function testCreateVAFromCheckoutForOffline()
+    {
+        $this->fixtures->merchant->addFeatures(['offline_checkout']);
+
+        $this->ba->privateAuth();
+
+        $resp = $this->starttest();
+
+        $terminalCreteData = [
+            'gateway'                  => 'offline',
+            'gateway_merchant_id'      => '12345678',
+            'gateway_secure_secret'    => '12345',
+            'offline'                  =>  1,
+            'merchant_id'              =>  '10000000000000',
+        ];
+
+        $this->fixtures->create(
+            'terminal', $terminalCreteData);
+
+        $this->fixtures->merchant->enableOffline();
+
+        $virtualAccount = $this->createVirtualAccountForOfflineOrder($resp['id'], ['customer_id' => $this->customer['id'],'receivers' => ['offline_challan']]);
+
+        $this->assertEquals('offline_challan', $virtualAccount['receivers'][0]['entity']);
+
+        $offlineData = [
+        'property_id' => '12345',
+        'property_value' => 'abc',
+         ];
+
+        $this->assertEquals($offlineData, $virtualAccount['order']['customer_additional_info']);
+
+        $offlineData = DB::select('select * from offline_challans')[0];
+
+        $this->assertEquals($offlineData->id, $virtualAccount['receivers'][0]['id']);
+
+        $virtualAccountData = DB::select('select * from virtual_accounts')[0];
+
+        $this->assertEquals($offlineData->id, $virtualAccountData->offline_challan_id);
+    }
+
+    public function testCreateVAFromCheckoutForOfflineWithoutMethod()
+    {
+        $this->fixtures->merchant->addFeatures(['offline_checkout']);
+
+        $data = $this->testData["testCreateVAFromCheckoutForOffline"];
+        $this->ba->privateAuth();
+
+        $resp = $this->starttest($data);
+
+
+        try
+        {
+            $this->createVirtualAccountForOfflineOrder($resp['id'], ['customer_id' => $this->customer['id'],'receivers' => ['offline_challan']]);
+        }
+        catch (\Exception $e)
+        {
+            $this->assertEquals(ErrorCode::BAD_REQUEST_PAYMENT_OFFLINE_NOT_ENABLED_FOR_MERCHANT, $e->getCode());
+        }
+
+    }
+
+    public function testCreateVAFromCheckoutForOfflineNoReceiver()
+    {
+        $this->fixtures->merchant->addFeatures(['offline_checkout']);
+
+        $data = $this->testData["testCreateVAFromCheckoutForOffline"];
+
+        $this->ba->privateAuth();
+
+        $resp = $this->starttest($data);
+
+        $this->fixtures->merchant->enableOffline();
+
+        $virtualAccount = $this->createVirtualAccountForOfflineOrder($resp['id'], ['customer_id' => $this->customer['id']]);
+
+        $this->assertEquals('bank_account', $virtualAccount['receivers'][0]['entity']);
+    }
+
+    public function testCreateVAFromCheckoutForOfflineWithoutMetadata()
+    {
+        $this->fixtures->merchant->addFeatures(['offline_checkout']);
+
+        $this->ba->privateAuth();
+
+        $resp = $this->starttest();
+
+        $this->fixtures->merchant->enableOffline();
+
+
+        try
+        {
+            $this->createVirtualAccountForOfflineOrder($resp['id'], ['customer_id' => $this->customer['id'],'receivers' => ['offline_challan']]);
+        }
+        catch (\Exception $e)
+        {
+            $this->assertEquals(ErrorCode::BAD_REQUEST_CUSTOMER_ADDITIONAL_INFO_NOT_PROVIDED, $e->getCode());
+        }
+    }
+
 }

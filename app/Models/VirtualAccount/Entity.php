@@ -40,6 +40,7 @@ class Entity extends Base\PublicEntity
     const AMOUNT_REVERSED      = 'amount_reversed';
     const BANK_ACCOUNT_ID      = 'bank_account_id';
     const BANK_ACCOUNT_ID2     = 'bank_account_id_2';
+    const OFFLINE_CHALLAN_ID   = 'offline_challan_id';
     const VPA_ID               = 'vpa_id';
     const QR_CODE_ID           = 'qr_code_id';
     const CUSTOMER_ID          = 'customer_id';
@@ -160,6 +161,11 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\BankAccount\Entity', 'bank_account_id_2')->withTrashed();
     }
 
+    public function offlineChallan()
+    {
+        return $this->belongsTo('RZP\Models\OfflineChallan\Entity');
+    }
+
     public function qrCode()
     {
         return $this->belongsTo('RZP\Models\QrCode\Entity');
@@ -231,6 +237,11 @@ class Entity extends Base\PublicEntity
     public function hasBankAccount2()
     {
         return ($this->isAttributeNotNull(self::BANK_ACCOUNT_ID2));
+    }
+
+    public function hasOfflineChallan()
+    {
+        return ($this->isAttributeNotNull(self::OFFLINE_CHALLAN_ID));
     }
 
     public function hasQrCode()

@@ -10,6 +10,7 @@ use RZP\Constants\HyperTrace;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Base\PublicCollection;
+use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Order;
 use RZP\Models\Admin;
 use RZP\Constants\Mode;
@@ -37,6 +38,7 @@ use RZP\Trace\Tracer;
 class Service extends Base\Service
 {
     protected $core;
+    protected $entity;
 
     const DEFAULT_RECEIVER_TYPES = [
         Receiver::BANK_ACCOUNT,
@@ -51,6 +53,8 @@ class Service extends Base\Service
         parent::__construct();
 
         $this->core = new Core;
+
+        $this->entity = new Entity();
 
         $this->mutex = $this->app['api.mutex'];
     }
@@ -99,6 +103,9 @@ class Service extends Base\Service
                 ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_DISALLOWED_FOR_ORDER);
         }
 
+        //check if receiver is offline_challan
+        $offlineInfo = (new Receiver($this->entity))->checkReceiverIsOfflineChallan($orderId, $input);
+
         $response = $this->mutex->acquireAndRelease(
             $orderId,
             function() use ($order, $input)
@@ -125,12 +132,24 @@ class Service extends Base\Service
                     Entity::ORDER_ID        => $order->getPublicId(),
                     Entity::AMOUNT_EXPECTED => $order->getAmountDue(),
                     Entity::NOTES           => $input[Entity::NOTES] ?? [],
-                    Entity::RECEIVERS       => [
+                ];
+
+                if ((isset($input[Entity::RECEIVERS]) === true) and
+                    ($input[Entity::RECEIVERS][0] === Receiver::OFFLINE_CHALLAN))
+                {
+                    $createArray[Entity::RECEIVERS] = [
+                        Entity::TYPES => [
+                            Receiver::OFFLINE_CHALLAN,
+                        ],
+                    ];
+
+                } else {
+                    $createArray[Entity::RECEIVERS] = [
                         Entity::TYPES => [
                             Receiver::BANK_ACCOUNT,
                         ],
-                    ],
-                ];
+                    ];
+                }
 
                 $this->addCloseBy($createArray, $input);
 
@@ -148,6 +167,12 @@ class Service extends Base\Service
             60,
             ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_OPERATION_IN_PROGRESS);
 
+        //add ordermeta in VA for offline_challan
+        if ($response[Entity::RECEIVERS][0][Entity::ENTITY] === EntityConstants::OFFLINE_CHALLAN)
+        {
+            if($offlineInfo !== null)
+            $response[EntityConstants::ORDER][Order\Entity::CUSTOMER_ADDITIONAL_INFO] = $offlineInfo->value;
+        }
         return $response;
     }
 
@@ -1098,6 +1123,11 @@ class Service extends Base\Service
         if ($this->merchant->isFeatureEnabled(Constants::CHECKOUT_VA_WITH_CUSTOMER) === false)
         {
             $this->trace->info(TraceCode::MERCHANT_FEATURE_NOT_EXIST);
+            return null;
+        }
+
+        if (isset($input[Order\Entity::CUSTOMER_ADDITIONAL_INFO]) === true)
+        {
             return null;
         }
 

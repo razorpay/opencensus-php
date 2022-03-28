@@ -2611,6 +2611,9 @@ ALTER TABLE merchant_details
 ALTER TABLE virtual_accounts
     ADD COLUMN qr_code_id CHAR(14) DEFAULT NULL after bank_account_id;
 
+ALTER TABLE virtual_accounts
+    ADD COLUMN offline_challan_id CHAR(14) DEFAULT NULL after qr_code_id;
+
 ALTER TABLE fund_transfer_attempts
 	ADD mode VARCHAR(30) DEFAULT NULL AFTER bank_status_code;
 
@@ -6674,3 +6677,18 @@ ALTER TABLE promotions ADD COLUMN creator_email VARCHAR(255) DEFAULT NULL;
 ALTER TABLE addresses ADD COLUMN source_id CHAR(14) collate utf8mb4_bin DEFAULT NULL;
 
 ALTER TABLE addresses ADD COLUMN source_type varchar(20) DEFAULT NULL;
+CREATE TABLE offline_challans
+(
+    id char(14) NOT NULL collate utf8mb4_bin,
+    virtual_account_id char(14) NOT NULL collate utf8mb4_bin,
+    challan_number char(16) NOT NULL,
+    status varchar(50) NOT NULL,
+    bank_name varchar(50) NOT NULL,
+    client_code varchar(50) NOT NULL,
+    created_at int NOT NULL,
+    updated_at int NOT NULL,
+    deleted_at int DEFAULT NULL,
+    PRIMARY KEY (id),
+    ADD INDEX offline_challans_virtual_account_id_index ('virtual_account_id')
+    ADD INDEX offline_challans_challan_number_index ('challan_number')
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;

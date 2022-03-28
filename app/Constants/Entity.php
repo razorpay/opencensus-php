@@ -112,6 +112,7 @@ class Entity
     const ENTITY_ORIGIN              = 'entity_origin';
     const GATEWAY_TOKEN              = 'gateway_token';
     const BANK_TRANSFER              = 'bank_transfer';
+    const OFFLINE_CHALLAN            = 'offline_challan';
     const SCHEDULE_TASK              = 'schedule_task';
     const LINE_ITEM_TAX              = 'line_item_tax';
     const MERCHANT_USER              = 'merchant_user';
@@ -808,6 +809,7 @@ class Entity
         self::FEE_BREAKUP               => \RZP\Models\Transaction\FeeBreakup::class,
         self::ENTITY_OFFER              => \RZP\Models\Offer\EntityOffer::class,
         self::BANK_ACCOUNT              => \RZP\Models\BankAccount::class,
+        self::OFFLINE_CHALLAN           => \RZP\Models\OfflineChallan::class,
         self::SUBSCRIPTION              => \RZP\Models\Plan\Subscription::class,
         self::PAYMENT_LINK              => \RZP\Models\PaymentLink::class,
         self::PAYOUT_LINK               => \RZP\Models\PayoutLink::class,

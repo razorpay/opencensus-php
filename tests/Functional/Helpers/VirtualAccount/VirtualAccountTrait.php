@@ -131,6 +131,21 @@ trait VirtualAccountTrait
         return $response;
     }
 
+   private function createVirtualAccountForOfflineOrder(string $orderId, array $input = [])
+    {
+        $this->ba->publicAuth();
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/orders/' . $orderId . '/virtual_accounts',
+            'content' => $input,
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        return $response;
+    }
+
     private function createVirtualAccountOldFormat(array $input = [])
     {
         $defaultValues = $this->getOldVirtualAccountRequestArray();

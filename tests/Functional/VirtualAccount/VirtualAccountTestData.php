@@ -1672,4 +1672,51 @@ return [
         ],
         ],
 
+    'testCreateVAFromCheckoutForOffline' => [
+    'request'  => [
+        'convertContentToString' => false,
+        'url'                    => '/orders',
+        'method'                 => 'POST',
+        'content'                => [
+            'amount'           => 1000,
+            'currency'         => 'INR',
+            'receipt'          => 'rec1',
+            'customer_additional_info' => [
+                'property_id' => '12345',
+                'property_value' => 'abc',
+            ],
+        ],
+    ],
+    'response' => [
+        'content' => [
+            'amount'           => 1000,
+            'currency'         => 'INR',
+            'receipt'          => 'rec1',
+            'customer_additional_info' => [
+                'property_id' => '12345',
+                'property_value' => 'abc',
+            ],
+        ],
+    ],
+],
+
+    'testCreateVAFromCheckoutForOfflineWithoutMetadata' => [
+        'request'  => [
+            'convertContentToString' => false,
+            'url'                    => '/orders',
+            'method'                 => 'POST',
+            'content'                => [
+                'amount'           => 1000,
+                'currency'         => 'INR',
+                'receipt'          => 'rec1',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'amount'           => 1000,
+                'currency'         => 'INR',
+                'receipt'          => 'rec1',
+            ],
+        ],
+    ],
 ];

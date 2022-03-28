@@ -159,6 +159,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_UPI_COLLECT_NOT_ENABLED_FOR_MERCHANT              = 'UPI collect transactions are not enabled for the merchant';
     const BAD_REQUEST_PAYMENT_UPI_INTENT_NOT_ENABLED_FOR_MERCHANT               = 'UPI intent transactions are not enabled for the merchant';
     const BAD_REQUEST_PAYMENT_BANK_TRANSFER_NOT_ENABLED_FOR_MERCHANT            = 'Bank transfers are not enabled for the merchant';
+    const BAD_REQUEST_PAYMENT_OFFLINE_NOT_ENABLED_FOR_MERCHANT                  = 'Offline method is not enabled for the merchant';
     const BAD_REQUEST_PAYMENT_BHARAT_QR_NOT_ENABLED_FOR_MERCHANT                = 'Bharat Qr is not enabled for merchant';
     const BAD_REQUEST_PAYMENT_VIRTUAL_VPA_NOT_ENABLED_FOR_MERCHANT              = 'Virtual VPA is not enabled for merchant';
     const BAD_REQUEST_PAYMENT_BANK_NOT_PROVIDED                                 = 'Bank not provided for net banking payment';

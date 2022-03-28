@@ -242,6 +242,20 @@ class Core extends Base\Core
 
             $balance = $balance ?: $virtualAccount->merchant->primaryBalance;
 
+            if (($balance !== null) and
+                ($balance->getType() !== Balance\Type::PRIMARY) and
+                ($input[Entity::RECEIVERS] === Receiver::OFFLINE_CHALLAN))
+            {
+                throw new Exception\LogicException(
+                    'Invalid balance type, could not process payment.',
+                    null,
+                    [
+                        'balanceType' => $balance->getType(),
+                        'merchantId'  => $this->merchant->getId(),
+                        'orderId'     => $order->getId()
+                    ]);
+            }
+
             $virtualAccount->balance()->associate($balance);
 
             $this->buildReceivers($virtualAccount, $input[Entity::RECEIVERS]);
@@ -429,6 +443,10 @@ class Core extends Base\Core
                 $this->verifyVPAEnabled($virtualAccount->merchant);
                 break;
 
+            case Receiver::OFFLINE_CHALLAN:
+                $this->verifyOfflineEnabled($virtualAccount->merchant);
+                break;
+
             default:
                 // We don't throw exception here
                 // because receiver is already validated
@@ -526,6 +544,19 @@ class Core extends Base\Core
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_VIRTUAL_VPA_NOT_ENABLED_FOR_MERCHANT);
         }
+    }
+
+    protected function verifyOfflineEnabled(Merchant $merchant)
+    {
+
+        $merchantMethods = $merchant->getMethods();
+
+       if ($merchantMethods->isMethodEnabled('offline') === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_OFFLINE_NOT_ENABLED_FOR_MERCHANT);
+        }
+
     }
 
     public function eventVirtualAccountCredited(Payment $payment)

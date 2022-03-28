@@ -17,6 +17,7 @@ class EsRepository extends Base\EsRepository
         Entity::CREATED_AT,
         Entity::DESCRIPTION,
         Entity::BANK_ACCOUNT_ID,
+        Entity::OFFLINE_CHALLAN_ID,
         Entity::VPA_ID,
         Entity::QR_CODE_ID,
         Customer\Entity::EMAIL,

@@ -4,22 +4,29 @@ namespace RZP\Models\VirtualAccount;
 
 use App;
 
+use RZP\Error\ErrorCode;
 use RZP\Models\Vpa;
 use RZP\Models\Base;
 use RZP\Models\QrCode;
+use RZP\Models\OfflineChallan;
 use RZP\Models\BankAccount\Generator;
 use RZP\Models\BankAccount\Entity as BankAccount;
+use RZP\Models\VirtualAccount\Entity as VAEntity;
+Use RZP\Models\Order;
+use RZP\Exception;
 
 class Receiver extends Base\Core
 {
     const BANK_ACCOUNT      = 'bank_account';
     const VPA               = 'vpa';
     const QR_CODE           = 'qr_code';
+    const OFFLINE_CHALLAN   = 'offline_challan';
 
     const TYPES = [
         self::BANK_ACCOUNT,
         self::VPA,
         self::QR_CODE,
+        self::OFFLINE_CHALLAN,
     ];
 
     protected $app;
@@ -91,6 +98,12 @@ class Receiver extends Base\Core
         return (new Vpa\Generator($this->merchant, $options))->generate($virtualAccount);
     }
 
+    public function buildOfflineChallan(Entity $virtualAccount, array $options): OfflineChallan\Entity
+    {
+
+        return (new OfflineChallan\Generator())->generate($virtualAccount);
+    }
+
     protected function getQrCodeEntityParams(Entity $virtualAccount, array $options): array
     {
         $provider = self::isOnlyUpiQrCode($options) ? Provider::UPI_QR : Provider::BHARAT_QR;
@@ -117,5 +130,22 @@ class Receiver extends Base\Core
     public function getBankAccountConfigs(Entity $virtualAccount)
     {
         return (new Generator($this->merchant, []))->getConfigs($virtualAccount);
+    }
+
+
+    public function checkReceiverIsOfflineChallan(string $orderId, array $input)
+    {
+        $offlineInfo = null;
+        if ((isset($input[VAEntity::RECEIVERS]) === true) and
+            ($input[VAEntity::RECEIVERS][0] === self::OFFLINE_CHALLAN))
+        {
+            $offlineInfo = $this->repo->order_meta->findByPublicOrderIdAndType($orderId, Order\OrderMeta\Type::CUSTOMER_ADDITIONAL_INFO);
+            if($offlineInfo === null)
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_CUSTOMER_ADDITIONAL_INFO_NOT_PROVIDED);
+            }
+        }
+
+        return $offlineInfo;
     }
 }

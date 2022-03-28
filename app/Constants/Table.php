@@ -106,6 +106,7 @@ class Table
     const TRANSACTION               = 'transactions';
     const APP_TOKEN                 = 'customer_apps';
     const BANK_ACCOUNT              = 'bank_accounts';
+    const OFFLINE_CHALLAN           = 'offline_challans';
     const SETTLEMENT_BUCKET         = 'settlement_bucket';
     const SETTLEMENT_TRANSFER       = 'settlement_transfer';
     const SETTLEMENT_DESTINATION    = 'settlement_destination';
