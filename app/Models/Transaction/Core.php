@@ -148,13 +148,20 @@ class Core extends Base\Core
     {
         list($txn, $feesSplit) = $this->createTransactionForSource($payment);
 
-        // async balance update worker will set details of txn that's why we are pushing txn now.
-        if($payment->merchant->isFeatureEnabled(Feature\Constants::ASYNC_TXN_FILL_DETAILS) === false)
+        $shouldDispatchSettlementBucket = true;
+
+        // We need not to dispatch for settlement if ASYNC_TXN_FILL_DETAILS is enabled and payment is processed in rearch
+        if((($payment->merchant->isFeatureEnabled(Feature\Constants::ASYNC_TXN_FILL_DETAILS) === true) and
+            ($payment->isExternal() === false)))
+        {
+            $shouldDispatchSettlementBucket = false;
+        }
+
+        if ($shouldDispatchSettlementBucket === true)
         {
             // dispatch this transaction for settlement.
             $this->dispatchForSettlementBucketing($txn);
         }
-
         return [$txn, $feesSplit];
     }
 

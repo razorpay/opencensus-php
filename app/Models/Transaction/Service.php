@@ -443,7 +443,6 @@ class Service extends Base\Service
                 [
                     'data' => $ex->getMessage()
                 ]);
-
             $dimensions =  (new Payment\Metric)->getDefaultExceptionDimensions($ex);
 
             $this->trace->count(self::PG_ROUTER_TRANSACTION_FAILURE, $dimensions);

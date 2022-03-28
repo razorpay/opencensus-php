@@ -37,7 +37,8 @@ class Payment extends Base
 
         $this->repo->saveOrFail($this->txn);
 
-        if ($this->txn->merchant->isFeatureEnabled(Feature\Constants::ASYNC_TXN_FILL_DETAILS) === false)
+        if (($this->txn->merchant->isFeatureEnabled(Feature\Constants::ASYNC_TXN_FILL_DETAILS) === false) or
+            $this->source->isExternal() === true)
         {
             $this->fillSettledAtInfo();
         }
