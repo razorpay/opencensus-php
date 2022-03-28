@@ -16,7 +16,7 @@ const OffersPage = ({ prev }) => {
 
   const handleGetStartedButton = () => {
     analyticsTrack({
-      objectName: 'RazorayX Get Started',
+      objectName: 'RazorpayX Get Started',
       actionName: 'Clicked',
       screen: 'RazorpayX Onboarding',
       properties: {
