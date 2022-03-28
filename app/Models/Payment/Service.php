@@ -1892,6 +1892,8 @@ class Service extends Base\Service
         //Check if Address is required for DCC transaction
         $data['avs_required'] = $this->isAddressRequired($library, $iin, $merchant);
 
+        $data['show_mor_tnc'] = $merchant->isShowMorTncEnabled();
+
         return $data;
     }
 
@@ -1929,6 +1931,7 @@ class Service extends Base\Service
         $data['nobranding'] = $merchant->isFeatureEnabled(Feature\Constants::PAYMENT_NOBRANDING);
         $data['merchant_id'] = $merchant->getId();
         $data['merchant'] = $merchant->getBillingLabel();
+        $data['show_mor_tnc'] = $merchant->isShowMorTncEnabled();
 
         return $data;
     }

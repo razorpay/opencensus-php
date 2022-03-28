@@ -1013,6 +1013,11 @@ class Entity extends Base\PublicEntity
         return ($this->isFeatureEnabled(Feature\Constants::DISABLE_COLLECT_CONSENT) === false);
     }
 
+    public function isShowMorTncEnabled(): bool
+    {
+        return ($this->isFeatureEnabled(Feature\Constants::SHOW_MOR_TNC) === true);
+    }
+
     /**
      * Get the non-pureplatform partner if it exists
      *

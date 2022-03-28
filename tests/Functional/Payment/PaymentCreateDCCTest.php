@@ -1351,4 +1351,80 @@ class PaymentCreateDCCTest extends TestCase
         $this->assertTrue(array_key_exists('currency_request_id', $responseContent) === false);
         $this->assertTrue(array_key_exists('all_currencies', $responseContent) === false);
     }
+
+    public function testShowMorTncForS2S()
+    {
+        $payment = $this->payment;
+        $this->fixtures->merchant->addFeatures(['s2s','s2s_json','show_mor_tnc']);
+
+        $responseContent = $this->doS2SPrivateAuthJsonPayment($payment);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $responseContent);
+        $this->assertArrayHasKey('next', $responseContent);
+        $this->assertArrayHasKey('action', $responseContent['next'][0]);
+        $this->assertArrayHasKey('url', $responseContent['next'][0]);
+
+        $redirectContent = $responseContent['next'][0];
+
+        $this->assertTrue($this->isRedirectToDCCInfoUrl($redirectContent['url']));
+
+        $id = getTextBetweenStrings($redirectContent['url'], '/payments/', '/dcc_info');
+
+        $this->redirectToDCCInfo = true;
+
+        $url = $this->getPaymentRedirectToDCCInfoUrl($id);
+
+        $this->ba->directAuth();
+
+        $request = [
+            'url'   => $url,
+            'method' => 'get',
+            'content' => [],
+        ];
+
+        $infoResponse = $this->makeRequestParent($request);
+        $this->ba->publicAuth();
+
+        $content = $infoResponse->getContent();
+        
+        $this->assertTrue(str_contains($content, 'show_mor_tnc'));
+    }
+
+    public function testNegativeFlowShowMorTncForS2S()
+    {
+        $payment = $this->payment;
+        $this->fixtures->merchant->addFeatures(['s2s','s2s_json']);
+
+        $responseContent = $this->doS2SPrivateAuthJsonPayment($payment);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $responseContent);
+        $this->assertArrayHasKey('next', $responseContent);
+        $this->assertArrayHasKey('action', $responseContent['next'][0]);
+        $this->assertArrayHasKey('url', $responseContent['next'][0]);
+
+        $redirectContent = $responseContent['next'][0];
+
+        $this->assertTrue($this->isRedirectToDCCInfoUrl($redirectContent['url']));
+
+        $id = getTextBetweenStrings($redirectContent['url'], '/payments/', '/dcc_info');
+
+        $this->redirectToDCCInfo = true;
+
+        $url = $this->getPaymentRedirectToDCCInfoUrl($id);
+
+        $this->ba->directAuth();
+
+        $request = [
+            'url'   => $url,
+            'method' => 'get',
+            'content' => [],
+        ];
+
+        $infoResponse = $this->makeRequestParent($request);
+        $this->ba->publicAuth();
+
+        $content = $infoResponse->getContent();
+        
+        $this->assertFalse(str_contains($content, 'show_mor_tnc'));
+    }
 }
