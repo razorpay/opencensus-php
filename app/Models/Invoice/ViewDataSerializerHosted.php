@@ -80,6 +80,7 @@ class ViewDataSerializerHosted extends Base\Core
         $this->invoice  = $invoice;
         $this->merchant = $invoice->merchant;
         $this->options  = new Options\Core();
+        $this->core     = new Core();
     }
 
     public function serializeForHosted(): array
