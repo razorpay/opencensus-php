@@ -146,59 +146,23 @@ class ThirdWatchService
             // set unique id for caching if not present
             $this->getAddressId($orderId, $address);
 
-            //TODO : Need to replace kafka logic by sending http request once rto prediction service is live.
-            $key = $this->getCacheKey($address);
-            $cacheResponse = $this->cache->get($key);
-
-            if (empty($cacheResponse) === false)
-            {
-                $this->trace->count(
-                    TraceCode::TW_ADDRESS_COD_VALIDITY_CACHE_GET_TOTAL,
-                    [self::CACHE_RESULT_TAG_KEY => self::CACHE_RESULT_TAG_VALUE_HIT]
-                );
-
-                return ['cod' => $cacheResponse['label'] === 'green'];
-            }
-
-            $this->trace->count(
-                TraceCode::TW_ADDRESS_COD_VALIDITY_CACHE_GET_TOTAL,
-                [self::CACHE_RESULT_TAG_KEY => self::CACHE_RESULT_TAG_VALUE_MISS]
-            );
-
-            $this->enrichAddressForTW($orderId, $address);
-            $kafkaResult = (new ThirdWatchClient())->sendAddressToKafka($key, $address);
-
             try
             {
                 $response = $this->app['rto_prediction_provider_service']->evaluate($input);
-//                if (strcmp($response['result']['action'], "allow") == 0)
-//                {
-//                    return ['cod' => true];
-//                }
-//                return ['cod' => false];
+                if (strcmp($response['result']['action'], "allow") == 0)
+                {
+                    return ['cod' => true];
+                }
             }
             catch (Exception\BadRequestException $e)
             {
-//                return ['cod' => false];
+                return ['cod' => false];
             }
             catch (\Exception $e)
             {
-//                return ['cod' => true];
+                return ['cod' => true];
             }
-
-            if ($kafkaResult === false)
-            {
-                return ['cod' => false];
-            }
-
-            $response = $this->pollCacheForThirdWatchResponse($key);
-
-            if (empty($response) === true)
-            {
-                return ['cod' => false];
-            }
-
-            return $response;
+            return ['cod' => false];
         }
         finally
         {
