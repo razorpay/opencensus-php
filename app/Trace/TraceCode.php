@@ -498,6 +498,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CHECK_BALANCE_RESPONSE                                = 'CHECK_BALANCE_RESPONSE';
     const FETCH_TOKEN_REQUEST                                   = 'FETCH_TOKEN_REQUEST';
     const FETCH_TOKEN_RESPONSE                                  = 'FETCH_TOKEN_RESPONSE';
+    const FETCH_NETWORK_TOKEN                                   = 'FETCH_NETWORK_TOKEN';
+    const FETCH_PAR_VALUE                                       = 'FETCH_PAR_VALUE';
     const HITACHI_BHARAT_QR_FAILED_PAYMENT_ALERT                = 'HITACHI_BHARAT_QR_FAILED_PAYMENT_ALERT';
     const HITACHI_ONBOARD_REQUEST_CREATION_ERROR                = 'HITACHI_ONBOARD_REQUEST_CREATION_ERROR';
     const SKIPPING_HITACHI_AUTOMATIC_ONBOARDING                 = 'SKIPPING_HITACHI_AUTOMATIC_ONBOARDING';

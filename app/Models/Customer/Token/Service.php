@@ -553,12 +553,12 @@ class Service extends Base\Service
 
     public function decryptCardNumberIfApplicable(& $input)
     {
-        if (empty($input['card']['encrypted_number']) === true)
+        if (empty($input['encrypted_number']) === true)
         {
             return;
         }
 
-        $this->trace->info(TraceCode::TOKEN_REQUESTOR_CARD_NUMBER_DECRYPTION, [$input["card"]["encrypted_number"]]);
+        $this->trace->info(TraceCode::TOKEN_REQUESTOR_CARD_NUMBER_DECRYPTION, [$input["encrypted_number"]]);
 
         try
         {
@@ -568,7 +568,7 @@ class Service extends Base\Service
                 AESEncryption::SECRET => $this->app['config']->get('applications.tokenisation.flipkart_secure_key'),
             ];
 
-            $cipher = base64_decode($input["card"]["encrypted_number"]);
+            $cipher = base64_decode($input["encrypted_number"]);
 
             $Decryptor = new Encryption\AESEncryption($params);
 
@@ -584,15 +584,15 @@ class Service extends Base\Service
             throw new \Exception(ErrorCode::BAD_REQUEST_INPUT_VALIDATION_FAILURE);
         }
 
-        unset($input["card"]["encrypted_number"]);
+        unset($input["encrypted_number"]);
 
-        $input["card"]["number"] = $plainText;
+        $input["number"] = $plainText;
     }
 
     // todo Rename this to createTokenAndTokenizeCard
     public function createNetworkToken($input)
     {
-        $this->decryptCardNumberIfApplicable($input);
+        $this->decryptCardNumberIfApplicable($input["card"]);
 
         if ($this->merchant->isFeatureEnabled(Feature\Constants::NETWORK_TOKENIZATION_LIVE) === true)
         {
@@ -608,7 +608,7 @@ class Service extends Base\Service
         return $this->generateMockResponse($token);
     }
 
-    public function fetchNetworkToken($input)
+    public function fetchNetworkToken($input, $isPar = false)
     {
         if ($this->merchant->isFeatureEnabled(Feature\Constants::NETWORK_TOKENIZATION_LIVE) === true)
         {
@@ -623,20 +623,93 @@ class Service extends Base\Service
                 $serviceProviderTokens = $this->core->fetchToken($token);
             }
 
+            if(!$isPar && !empty($serviceProviderTokens[0]["provider_data"]["network_reference_id"])){
+                unset($serviceProviderTokens[0]["provider_data"]["network_reference_id"]);
+            }
+
             return $token->toArrayPublicTokenizedCard($serviceProviderTokens);
+        }
+
+        if ($isPar)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR, null, null, "network_tokenization_live feature is not enabled for this merchant");
         }
 
         $this->validateMode();
 
         $token = $this->repo->token->getByPublicIdAndMerchant($input['id'], $this->merchant);
 
-        if ($token === null)
+        if ($token === null || $isPar)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Token not found');
         }
 
         return $this->generateMockResponse($token);
+    }
+
+    public function getNetwork($network) {
+
+        if($network == 'visa'){
+            return Card\Network::$fullName[Card\Network::VISA];
+        }
+        if($network == 'rupay'){
+            return Card\Network::$fullName[Card\Network::RUPAY];
+        }
+        if($network == 'mastercard'){
+            return Card\Network::$fullName[Card\Network::MC];
+        }
+
+        throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_IIN_NOT_EXISTS);
+    }
+
+    // To do : We need to add the logic to get provider_name on the basis of provider_type
+    public function fetchParValue($input)
+    {
+
+
+        $this->decryptCardNumberIfApplicable($input);
+
+        // If we are getting token_id in input then we can get PAR Or Fingerprint from fetchToken api
+        // If we have card number then we will have to hit fetchParApi to get PAR/Fingerprint from the network
+        if($this->merchant->isFeatureEnabled(Feature\Constants::CARD_FINGERPRINTS)===false) {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR, null, null, "card_fingerprints feature is not enabled for this merchant");
+        }
+
+        $network = null;
+
+        if (empty($input["token"]) == false) {
+
+            $this->trace->info(TraceCode::FETCH_NETWORK_TOKEN, [
+                "token" => $input["token"]
+            ]);
+
+            $input["id"] = $input["token"];
+
+            unset($input["token"]);
+
+            $data = $this->fetchNetworkToken($input, true);
+
+            $network = $data["service_provider_tokens"][0]["provider_name"];
+
+            $result["provider"] = $this->getNetwork($network);
+        }
+        else {
+            $this->trace->info(TraceCode::FETCH_PAR_VALUE);
+
+             list($network, $data) = $this->core->fetchParValue($input);
+
+            $result["network"] = $this->getNetwork($network);
+        }
+
+        $data = $data["service_provider_tokens"][0]["provider_data"];
+
+        $result["network_reference_id"] = $data["network_reference_id"]??null;
+
+        $result["payment_account_reference"] = $data["payment_account_reference"]??null;
+
+        return $result;
     }
 
     public function fetchCryptoGram($input)

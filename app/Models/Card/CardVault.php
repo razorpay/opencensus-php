@@ -243,6 +243,10 @@ class CardVault extends Base\Core
         return $response['service_provider_tokens'][0]['provider_data'];
     }
 
+    public function fetchParValueFromVault($input){
+        return $this->app['card.cardVault']->fetchParValue($input);
+    }
+
     public function fetchToken($cardVaultToken)
     {
         $input['token'] = $cardVaultToken;

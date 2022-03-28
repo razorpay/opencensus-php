@@ -13,4 +13,5 @@ class Constants
     const TOKENS_FETCH      = 'tokens/fetch';
     const TOKENS_DELETE     = 'tokens/delete';
     const TOKENS_UPDATE     = 'tokens/update';
+    const FETCH_PAR_VAL     = 'cards/fingerprints';
 }

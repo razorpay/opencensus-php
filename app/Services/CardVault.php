@@ -41,7 +41,7 @@ class CardVault
     const MPAN      =   'mpan';
     const RAZORPAYX =   'razorpayx';
 
-    const TOKENIZATION_ROUTES = array(Card\Constants::TOKENS_CRYPTOGRAM, Card\Constants::TOKENS, Card\Constants::TOKENS_MIGRATE, Card\Constants::TOKENS_FETCH, Card\Constants::TOKENS_DELETE, Card\Constants::TOKENS_UPDATE);
+    const TOKENIZATION_ROUTES = array(Card\Constants::FETCH_PAR_VAL, Card\Constants::TOKENS_CRYPTOGRAM, Card\Constants::TOKENS, Card\Constants::TOKENS_MIGRATE, Card\Constants::TOKENS_FETCH, Card\Constants::TOKENS_DELETE, Card\Constants::TOKENS_UPDATE);
 
     protected $baseUrl;
 
@@ -298,6 +298,7 @@ class CardVault
         $this->trace->info(TraceCode::CARD_VAULT_REQUEST, [
             'url' => $request['url'],
             'namespace' => $this->namespace,
+            'request' => $request,
         ]);
 
         $response = $this->sendCardVaultRequest($request);
@@ -534,6 +535,13 @@ class CardVault
         $this->trace->info(TraceCode::VAULT_FETCH_TOKEN);
 
         $response = $this->sendRequest(Card\Constants::TOKENS_FETCH, 'post', $input);
+
+        return $response;
+    }
+
+    public function fetchParValue($input) : array
+    {
+        $response = $this->sendRequest(Card\Constants::FETCH_PAR_VAL, 'post', $input);
 
         return $response;
     }

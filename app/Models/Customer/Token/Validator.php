@@ -12,6 +12,7 @@ use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Processor\Wallet;
 use RZP\Models\PaperMandate\Constants as PaperMandateConstants;
 use RZP\Models\Merchant;
+use RZP\Models\Card;
 
 class Validator extends Base\Validator
 {
@@ -25,12 +26,17 @@ class Validator extends Base\Validator
     const FETCH_TOKEN                                   = 'fetch_token';
     const DELETE_TOKEN                                  = 'delete_token';
     const GET_STATUS                                    = 'get_status';
+    const FETCH_PAR_VALUE                               = 'fetch_par_value';
 
     /**
      * token epoch constrains :
      * min : Sat Jan  1 05:30:00 IST 2000
      * max : 17 August 292278994 - max for 64 bit signed int
     **/
+
+    protected static $fetchParValueRules = [
+        Card\Entity::NUMBER          => 'required|numeric|luhn|digits_between:12,19',
+    ];
 
     protected static $createRules = [
         Entity::METHOD              => 'required|in:card,emandate,wallet,nach,upi',

@@ -3350,6 +3350,8 @@ class Route
         'token_fetch_cryptogram'                  => ['post',        'tokens/service_provider_tokens/token_transactional_data',  'TokenController@fetchCryptoGram'                          ],
         'token_delete'                            => ['post',        'tokens/delete',                                            'TokenController@delete'                                   ],
         'token_status'                            => ['post',        'internal/tokens/status',                                   'TokenController@updateStatus'                             ],
+        'par_api'                                 => ['post',        'cards/fingerprints',                                       'TokenController@fetchParValue'                            ],
+
 
        'token_pause_not_supported_card_tokens'    => ['post',        'tokens/pause_not_supported/card',                          'TokenController@pauseNotSupportedCardTokens'                                                         ],
 
@@ -3950,6 +3952,7 @@ class Route
         'product_config_tnc_accept_v2',
 
         // network tokenization routes
+        'par_api',
         'token_create',
         'token_fetch',
         'token_fetch_cryptogram',

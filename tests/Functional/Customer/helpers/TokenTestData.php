@@ -28,6 +28,55 @@ return [
         ],
     ],
 
+    'testParApiWithCardNumber' => [
+        'request' => [
+            'url' => '/cards/fingerprints',
+            'method' => 'post',
+            'content' => [
+                'number'=> '4854980604708430'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'network' => 'Visa',
+                'network_reference_id' => null,
+                'payment_account_reference' => '50014EES0F4P295H2FQG7Q37823B9'
+            ],
+        ],
+    ],
+
+    'testParApiWithEncryptedCardNumber' => [
+        'request' => [
+            'url' => '/cards/fingerprints',
+            'method' => 'post',
+            'content' => [
+                'encrypted_number'=> 'QIfoeA8AR7vkw0Rq9gs0btihYQ6wL9ONUNQ9cjaqAeI='
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'network' => 'Visa',
+                'network_reference_id' => null,
+                'payment_account_reference' => '50014EES0F4P295H2FQG7Q37823B9'
+            ],
+        ],
+    ],
+
+    'testParApiWithTokenIdTestData' => [
+        'request' => [
+            'url' => '/cards/fingerprints',
+            'method' => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'provider' => 'Visa',
+                'network_reference_id' => null,
+                'payment_account_reference' => '=ETdmZ3MvlmMtF2QsJTS'
+            ],
+        ],
+    ],
+
     'testCreateTokenEncrypted' => [
         'request' => [
             'url' => '/tokens',

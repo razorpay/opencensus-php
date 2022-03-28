@@ -38,6 +38,15 @@ class TokenController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function fetchParValue()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->fetchParValue($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function delete()
     {
         $input = Request::all();

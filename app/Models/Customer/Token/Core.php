@@ -1562,6 +1562,10 @@ class Core extends Base\Core
 
         list($card, $serviceProviderTokens) = (new Card\Core)->createTokenizedCard($input, $this->merchant);
 
+        if(!empty($serviceProviderTokens[0]["provider_data"]["network_reference_id"])){
+            unset($serviceProviderTokens[0]["provider_data"]["network_reference_id"]);
+        }
+
          $this->trace->info(
             TraceCode::TOKEN_CREATE_FOR_TOKENIZED_CARD
         );
@@ -1642,6 +1646,26 @@ class Core extends Base\Core
         $this->repo->saveOrFail($card);
 
         $this->repo->saveOrFail($token);
+    }
+
+    public function fetchParValue($input)
+    {
+        (new Validator)->validateInput(Validator::FETCH_PAR_VALUE, $input);
+
+        $number = $input["number"];
+
+        $iin = substr($number, 0, 6);
+
+        $network = Card\Network::detectNetwork($iin);
+
+        if($network === "UNKNOWN"){
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_IIN_NOT_EXISTS, ["iin" => $iin]);
+        }
+
+        $input["network"] = strtolower($network);
+
+        return [$input["network"], (new Card\Core)->fetchParValue($input)];
+        // hit the vault with number and the network
     }
 
     public function createNetworkToken($input)

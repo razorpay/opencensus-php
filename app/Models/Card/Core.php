@@ -54,6 +54,11 @@ class Core extends Base\Core
         return $this->migrationCardToTokenisedCard($card, $input, $merchant, $response);
     }
 
+    public function fetchParValue($input)
+    {
+        return (new Card\CardVault)->fetchParValueFromVault($input);e;
+    }
+
     public function createTokenizedCard($input, $merchant)
     {
         $response = $this->getTokenizedCardResponseFromVault($input, $merchant);

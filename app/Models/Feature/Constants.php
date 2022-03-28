@@ -126,6 +126,7 @@ class Constants
     const GOOGLE_PAY                      = 'google_pay';
     const EMANDATE_MRN                    = 'emandate_mrn';
     const DIWALI_PROMOTIONAL_PLAN         = 'diwali_promotional_plan';
+    const CARD_FINGERPRINTS               = 'card_fingerprints';
     const CUSTOMER_ADDRESS                = 'customer_address';
     const IRCTC_METHODS                   = 'irctc_methods';
     const SKIP_CVV                        = 'skip_cvv';
@@ -1416,6 +1417,7 @@ class Constants
         self::GOOGLE_PAY                      => true,
         self::EMANDATE_MRN                    => true,
         self::DIWALI_PROMOTIONAL_PLAN         => true,
+        self::CARD_FINGERPRINTS               => true,
         self::CUSTOMER_ADDRESS                => true,
         self::IRCTC_METHODS                   => true,
         self::SKIP_CVV                        => true,

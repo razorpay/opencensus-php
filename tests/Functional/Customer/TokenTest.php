@@ -131,6 +131,155 @@ class TokenTest extends TestCase
         $this->assertEquals(null, $MCResponse['expired_at']);
     }
 
+    public function testParApiWithTokenId()
+    {
+        $this->setUpMockPar();
+
+        $this->ba->privateAuth();
+
+        $createPayload = $this->testData['testCreateTokenAndTokenizeCard'];
+
+        $response = $this->startTest($createPayload);
+
+        $parApiPayload = $this->testData['testParApiWithTokenIdTestData'];
+
+        $parApiPayload['request']['content'] = ['token' => $response['id']];
+
+        $parApiResponse = $this->startTest($parApiPayload);
+
+        $this->assertEquals($parApiResponse['payment_account_reference'], '=ETdmZ3MvlmMtF2QsJTS');
+    }
+
+    private function setUpMockPar()
+    {
+        $cardVault = Mockery::mock('RZP\Services\CardVault', [$this->app])->makePartial();
+
+        $this->app->instance('mpan.cardVault', $cardVault);
+
+        $callable = function ($route, $method, $input) {
+            $response = [];
+
+            if($route === "tokens") {
+                $response['success'] = true;
+
+                $token = base64_encode($input['card']['number']);
+                $response['token']  = $token;
+                $response['length'] = '16';
+
+                $response['fingerprint'] = strrev($token);
+                $token_iin = substr($input['card']['number'] ?? null, 0, 6);
+
+                $expiry_year = $input['card']['expiry_year'];
+                if (strlen($expiry_year) == 2)
+                {
+                    $expiry_year = '20' . $expiry_year;
+                }
+
+                $response['service_provider_tokens'] = [
+                    [
+                        'id'             => 'spt_1234abcd',
+                        'entity'         => 'service_provider_token',
+                        'provider_type'  => 'network',
+                        'provider_name'  => 'visa',
+                        'status'                 => 'activated',
+                        'interoperable'          => true,
+                        'provider_data'  => [
+                            'token_reference_number'     => $token,
+                            'payment_account_reference'  => strrev($token),
+                            'card_reference_number'      => strrev($token),
+                            'token_expiry_month'         => '11',
+                            'token_expiry_year'          => '2022',
+                            'token_iin'                  => $token_iin,
+                            'token_number'               => $input['card']['number'],
+                            'cryptogram_value'           => '',
+                        ],
+                    ]
+                ];
+            }
+            if($route === "cards/fingerprints")
+            {
+                $response = ["service_provider_tokens" => [
+                    [
+                        'provider_data' => [
+                            'payment_account_reference' => '50014EES0F4P295H2FQG7Q37823B9'
+                        ]
+                    ]
+                ]];
+            }
+           if($route === "tokens/fetch")
+           {
+               $response['success'] = true;
+               $token = base64_encode('I2lCam2io3vfu1');
+
+               $response['token'] = 'I2lCam2io3vfu1';
+               $response['fingerprint'] = strrev($token);
+               $response['status'] = 'activated';
+
+               $response['service_provider_tokens'] = [
+                   [
+                       'id'             => 'spt_1234abcd',
+                       'entity'         => 'service_provider_token',
+                       'provider_type'  => 'network',
+                       'provider_name'  => 'visa',
+                       'interoperable'  => true,
+                       'status'         => 'activated',
+                       'provider_data'  => [
+                           'token_reference_number'     => $token,
+                           'payment_account_reference'  => strrev($token),
+                           'card_reference_number'  => strrev($token),
+                           'token_iin'              => '400000',
+                           'token_expiry_month'     => '12',
+                           'token_expiry_year'      => '2023',
+                       ],
+                   ]
+               ];
+            }
+            return $response;
+        };
+
+        $cardVault->shouldReceive('sendRequest')
+            ->with(Mockery::type('string'), 'post', Mockery::type('array'))
+            ->andReturnUsing($callable);
+
+        $this->app->instance('card.cardVault', $cardVault);
+
+        $this->fixtures->iin->create([
+            'iin'     => '414366',
+            'country' => 'IN',
+            'issuer'  => 'ICIC',
+            'network' => 'Visa',
+            'flows'   => [
+                '3ds'  => '1',
+                'headless_otp'  => '1',
+            ]
+        ]);
+
+        $this->fixtures->merchant->addFeatures(['card_fingerprints','network_tokenization_live']);
+    }
+
+
+    public function testParApiWithEncryptedCardNumber()
+    {
+        $this->setUpMockPar();
+
+        $this->ba->privateAuth();
+
+        $parApiResponse = $this->startTest();
+
+        $this->assertEquals($parApiResponse["payment_account_reference"], "50014EES0F4P295H2FQG7Q37823B9");
+    }
+
+    public function testParApiWithCardNumber()
+    {
+        $this->setUpMockPar();
+
+        $this->ba->privateAuth();
+
+        $parApiResponse = $this->startTest();
+
+        $this->assertEquals($parApiResponse["payment_account_reference"], "50014EES0F4P295H2FQG7Q37823B9");
+    }
+
     public function testCreateToken()
     {
         $this->ba->privateAuth();
