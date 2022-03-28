@@ -140,6 +140,9 @@ class Constants
     const TRACE_CODE                = "trace_code";
     const METRIC_CONSTANT           = "metric_constant";
     const METRIC_DURATION_CONSTANT  = "metric_duration_constant";
+    const APP                       = "app";
+    const WEBSITE                   = "website";
+    const UNKNOWN_PLATFORM          = "unknown_platform";
 
     const SUCCESS_SUFFIX   = "_success";
     const FAILED_SUFFIX    = "_failed";

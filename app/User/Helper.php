@@ -205,6 +205,7 @@ class Helper
                 $mediumLabel                => $medium,
                 $methodLabel                => $traceDetails[Constants::METHOD],
                 MetricConstants::PRODUCT    => $product,
+                MetricConstants::PLATFORM   => self::getPlatform(),
             ];
 
             $traceCode  = $traceDetails[Constants::TRACE_CODE];
@@ -214,6 +215,7 @@ class Helper
                 $mediumLabel                => $medium,
                 $methodLabel                => $traceDetails[Constants::METHOD],
                 MetricConstants::PRODUCT    => $product,
+                MetricConstants::PLATFORM   => self::getPlatform(),
             ];
 
             if($traceDetails[Constants::SUCCESS] === false)
@@ -245,5 +247,22 @@ class Helper
                 ]
             );
         }
+    }
+
+    public static function getPlatform()
+    {
+        $user_agent = \Request::header('User-Agent');
+
+        if(empty($user_agent) === false)
+        {
+            if(str_contains(strtolower($user_agent), 'node-fetch'))
+            {
+                return Constants::APP;
+            }
+
+            return Constants::WEBSITE;
+        }
+
+        return Constants::UNKNOWN_PLATFORM;
     }
 }

@@ -29,7 +29,8 @@ class Constants
   const USER_REGISTER_REQUEST_WITHOUT_CAPTCHA_COUNT     = 'user_register_request_without_captcha_count';
   const USER_REGISTER_REQUEST_WITH_OAUTH_PROVIDER_COUNT = 'user_register_request_with_oauth_provider_count';
   const USER_LOGIN_REQUEST_WITH_OAUTH_PROVIDER_COUNT    = 'user_login_request_with_oauth_provider_count';
-  const PRODUCT                                         =  'product';
+  const PRODUCT                                         = 'product';
+  const PLATFORM                                        = 'platform';
   const USER_SIGNUP_DURATION                            = 'user_signup_duration';
   const SEND_SIGNUP_OTP_TRIGGERED_COUNT                 = 'send_signup_otp_triggered_count';
   const SEND_SIGNUP_OTP_FAILED_COUNT                    = 'send_signup_otp_failed_count';
