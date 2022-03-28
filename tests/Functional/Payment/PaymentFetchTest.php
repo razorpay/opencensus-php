@@ -1416,6 +1416,12 @@ class PaymentFetchTest extends TestCase
             'entity_type'   => 'merchant',
         ]);
 
+        $this->fixtures->on('live')->create('feature', [
+            'name'          => Feature::ENABLE_SINGLE_RECON,
+            'entity_id'     => $merchantId,
+            'entity_type'   => 'merchant',
+        ]);
+
         $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId, [], 'owner', 'live');
 
         $payment = $this->fixtures->on('live')->create('payment:authorized', [
@@ -1425,9 +1431,6 @@ class PaymentFetchTest extends TestCase
         $this->testData[__FUNCTION__]['request']['url'] .= $payment->getPublicId();
 
         $this->ba->proxyAuth('rzp_live_'.$merchantId, $merchantUser->getId());
-
-        $this->mockRazorxWith(
-            'optimizer_single_recon', 'on');
 
         $this->startTest();
     }

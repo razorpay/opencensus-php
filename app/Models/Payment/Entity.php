@@ -3712,16 +3712,10 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $app = \App::getFacadeRoot();
 
         if($app['basicauth']->isProxyAuth() === true and
-            $this->merchant->isFeatureEnabled(Features::RAAS) === true)
+            $this->merchant->isFeatureEnabled(Features::RAAS) === true and
+            $this->merchant->isFeatureEnabled(Features::ENABLE_SINGLE_RECON) === true)
         {
-
-            $experimentResult = $app['razorx']->getTreatment($this->merchant->getId(),
-                'optimizer_single_recon', $app['rzp.mode']);
-
-            if($experimentResult === 'on')
-            {
-                return true;
-            }
+            return true;
         }
 
         return false;

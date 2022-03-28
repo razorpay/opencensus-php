@@ -202,6 +202,7 @@ class Constants
     const RAAS                            = 'raas';
     const OPTIMIZER_SMART_ROUTER          = 'optimizer_smart_router';
     const SKIP_NOTES_MERGING              = 'skip_notes_merging';
+    const ENABLE_SINGLE_RECON             = 'enable_single_recon';
 
     // Ledger constants
     const IDEMPOTENCY_KEY       = 'idempotency_key';
@@ -1513,6 +1514,7 @@ class Constants
         self::RAAS                            => true,
         self::OPTIMIZER_SMART_ROUTER          => true,
         self::SKIP_NOTES_MERGING              => true,
+        self::ENABLE_SINGLE_RECON             => true,
         self::PAYMENTLINKS_V2                 => true,
         self::RECURRING_DEBIT_UMRN            => true,
         self::NACH_FORM_DIRECT_DOWNLOAD       => true,
@@ -2135,6 +2137,11 @@ class Constants
         self::SKIP_NOTES_MERGING => [
             'feature'       => self::SKIP_NOTES_MERGING,
             'display_name'  => 'Skip notes merging',
+            'documentation' => '',
+        ],
+        self::ENABLE_SINGLE_RECON => [
+            'feature'       => self::ENABLE_SINGLE_RECON,
+            'display_name'  => 'Enable Single Recon For Merchant',
             'documentation' => '',
         ],
         self::RX_SHOW_PAYOUT_SOURCE => [
