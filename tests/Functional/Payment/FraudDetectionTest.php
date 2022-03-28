@@ -235,7 +235,7 @@ class FraudDetectionTest extends TestCase
         );
     }
 
-    public function runFraudDetectedByShieldWebsiteMismatch($mobileSignUpTest = false, $unregisteredBusiness = false)
+    public function runFraudDetectedByShieldWebsiteMismatch($mobileSignUpTest = false, $unregisteredBusiness = false, $ruleID = 'rule_F1fgTZ9p7tj2es')
     {
         if (($mobileSignUpTest === false) and ($unregisteredBusiness === false))
         {
@@ -263,7 +263,7 @@ class FraudDetectionTest extends TestCase
         $shieldClient = Mockery::mock('RZP\Services\Mock\ShieldClient')->makePartial();
 
         $shieldClient->shouldReceive('evaluateRules')
-            ->andReturnUsing(function ($payload) {
+            ->andReturnUsing(function ($payload) use ($ruleID) {
                 return [
                         "action"                => 'block',
                         "max_rule_weight"       => 0,
@@ -272,7 +272,7 @@ class FraudDetectionTest extends TestCase
                         "triggered_rules"       => [
                             "block"   => [
                                 [
-                                    "rule_id"     => 'rule_F1fgTZ9p7tj2es',
+                                    "rule_id"     => $ruleID,
                                     "rule_code"   => "Your payment was not successful as this Seller is not allowed to accept payments. We suggest not going ahead with this transaction."
                                 ],
                             ],
@@ -414,6 +414,11 @@ class FraudDetectionTest extends TestCase
     public function testFraudDetectedByShieldWebsiteMismatch()
     {
         $this->runFraudDetectedByShieldWebsiteMismatch();
+    }
+
+    public function testFraudDetectedByShieldWebsiteMismatchWithNewRuleId()
+    {
+        $this->runFraudDetectedByShieldWebsiteMismatch(false, false, 'rule_J2yeMfz5AxeSN6');
     }
 
     public function testFraudDetectedByShieldWebsiteMismatchMobileSignup()

@@ -128,4 +128,10 @@ final class Shield
     const EVALUATION_PAYLOAD    = 'evaluation_payload';
     const MOBILE_SDK = 'mobile_sdk';
     const ANDROID = 'android';
+
+    const RULE_IDS_FOR_FRAUD_WEBSITE_MISMATCH = [
+        'rule_F1fgTZ9p7tj2es',
+        'rule_J2yeMfz5AxeSN6',
+        'rule_IJ2Jr5h6qohz1W'
+    ];
 }

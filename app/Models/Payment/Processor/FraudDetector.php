@@ -280,7 +280,7 @@ trait FraudDetector
         foreach ($triggeredRules[Shield::ACTION_BLOCK] as $blockRule)
         {
             // https://razorpay.slack.com/archives/C9AKQB8BH/p1591871493389700
-            if ($blockRule[Shield::RULE_ID] === 'rule_F1fgTZ9p7tj2es')
+            if (in_array($blockRule[Shield::RULE_ID],Shield::RULE_IDS_FOR_FRAUD_WEBSITE_MISMATCH) === true)
             {
                 return true;
             }
