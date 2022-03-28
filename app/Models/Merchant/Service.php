@@ -1192,6 +1192,12 @@ class Service extends Base\Service
 
     public function editConfig(array $input): array
     {
+        if (empty($input[Merchant\Entity::LOGO_URL]) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_INPUT_LOGO_URL);
+        }
+
         // Adds uploaded logo's url to the input.
         $this->uploadLogoIfFound($input);
 

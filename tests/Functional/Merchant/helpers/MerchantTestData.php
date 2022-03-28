@@ -1836,6 +1836,28 @@ return [
         ]
     ],
 
+    'testEditMerchantLogoUpdateConfigFailure' => [
+        'request'  => [
+            'content' => [
+                'logo_url'            => 'https://www.example.com',
+            ],
+            'url'     => '/account/config',
+            'method'  => 'put',
+            'server'  => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Invalid request to update merchant logo url.',
+                ],
+            ],
+        ]
+    ],
+
     'testEditMerchantConfigSellerAppRoleFail' => [
         'request'  => [
             'content' => [

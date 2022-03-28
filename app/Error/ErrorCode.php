@@ -2563,6 +2563,9 @@ class ErrorCode
     const BAD_REQUEST_INVALID_INPUT_FOR_FUND_ADDITION                               = 'BAD_REQUEST_INVALID_INPUT_FOR_FUND_ADDITION';
     const BAD_REQUEST_INVALID_AMOUNT_FOR_FUND_ADDITION                              = 'BAD_REQUEST_INVALID_AMOUNT_FOR_FUND_ADDITION';
 
+    // Merchant Config Error codes
+    const BAD_REQUEST_INVALID_INPUT_LOGO_URL                                       =  'BAD_REQUEST_INVALID_INPUT_LOGO_URL';
+
     static function getConstants()
     {
         $oClass = new \ReflectionClass(__CLASS__);

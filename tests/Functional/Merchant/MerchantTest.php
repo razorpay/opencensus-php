@@ -2430,6 +2430,15 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testEditMerchantLogoUpdateConfigFailure()
+    {
+        $this->createMerchant();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
     public function testEditMerchantConfigSellerAppRoleFail()
     {
         $merchant = $this->fixtures->create('merchant');
