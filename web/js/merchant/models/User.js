@@ -839,7 +839,7 @@ export default class User {
   }
 
   get isSingleReconEnabled() {
-    return this.getExpStatus('optimizer_single_recon');
+    return this.isFeatureEnabled('enable_single_recon');
   }
 
   get isOndemandSettlementEnabled() {
