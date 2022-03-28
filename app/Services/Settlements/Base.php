@@ -36,6 +36,7 @@ class Base
     const OPTIMIZER_EXTERNAL_SETTLEMENTS_EXECUTION = '/twirp/rzp.settlements.optimizer_settlements.v1.ExecuteOptimizerSettlementsAPI/Execute';
 
     const GET_NEXT_SETTLEMENT_AMOUNT = '/twirp/rzp.settlements.transaction.v1.TransactionService/GetNextSettlementAmount';
+    const GET_SETTLEMENT_TIMELINE_MODAL     = '/twirp/rzp.settlements.transaction.v1.TransactionService/GetSettlementTimelineModal';
 
 
     protected $trace;

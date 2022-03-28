@@ -375,6 +375,7 @@ class RouteTeamMap
         'merchant_international_enablement_submit'        => [self::TEAM_PAYMENTS_RISK],
 
         //settlements route
+        'setl_fetch_details'                              => [self::TEAM_PAYMENTS_SETTLEMENTS],
         'setl_fetch_multiple'                             => [self::TEAM_PAYMENTS_SETTLEMENTS],
         'setl_amount'                                     => [self::TEAM_PAYMENTS_SETTLEMENTS],
         'setl_retry'                                      => [self::TEAM_PAYMENTS_SETTLEMENTS],

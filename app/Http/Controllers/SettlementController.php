@@ -388,6 +388,15 @@ class SettlementController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function fetchSettlementDetails()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->settlementTimeline($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function merchantConfigGetScheduleableEntities()
     {
         $data = $this->service()->merchantConfigGetScheduleableEntities();

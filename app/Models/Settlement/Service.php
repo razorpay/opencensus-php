@@ -1004,6 +1004,60 @@ class Service extends Base\Service
         return app('settlements_dashboard')->merchantConfigGet($input);
     }
 
+    public function settlementTimelineModalGet(array $input) : array
+    {
+        return app('settlements_merchant_dashboard')->settlementTimelineModalGet($input);
+    }
+
+    public function settlementTimeline(array $input) : array
+    {
+        $merchant = $this->merchant;
+        $merchantId = $merchant->getId();
+
+        $isNewService = $this->repo->feature->getMerchantIdsHavingFeature(Constants::NEW_SETTLEMENT_SERVICE, array($merchantId));
+
+        // check if the merchant is in new service
+        if(empty($isNewService) === true){
+            return ['status' => false];
+        }
+
+        $transactionId = $input['transaction_id'];
+        $createdAt = $input['created_at'];
+
+        $settlementTimeLineModalInput = [
+            'merchant_id' => $merchantId,
+            'transaction_id' => $transactionId,
+            'created_at' => $createdAt
+        ];
+
+        $this->trace->info(TraceCode::SETTLEMENT_TIMELINE_REQ, [
+            'settlement_timeline_req' => $settlementTimeLineModalInput,
+        ]);
+
+        $settlementTimeLineModal = ['status' => false];
+
+        try
+        {
+            $settlementTimeLineModal = $this->settlementTimelineModalGet($settlementTimeLineModalInput);
+        }
+        catch (\Exception $exception)
+        {
+            $this->trace->traceException(
+                $exception,
+                null,
+                TraceCode:: SETTLEMENT_TIMELINE_MODAL_FAILED,
+                [
+                    'merchant_id'       => $merchantId,
+                    'transaction_id'    => $transactionId,
+                    'created_at'       => $createdAt,
+                ]
+            );
+        }
+
+        return $settlementTimeLineModal;
+    }
+
+
     // RSR-1970 merchant config from merchant dashboard
     public function merchantDashboardConfigGet(array $input) : array
     {

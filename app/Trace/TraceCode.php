@@ -1960,6 +1960,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const DASHBOARD_INTEGRATION_ERROR                           = 'DASHBOARD_INTEGRATION_ERROR';
     const DASHBOARD_MERCHANT_APP_AUTH_UNEXPECTED                = 'DASHBOARD_MERCHANT_APP_AUTH_UNEXPECTED';
 
+    //settlement timeline modal
+    const SETTLEMENT_TIMELINE_REQ                               = 'SETTLEMENT_TIMELINE_REQ';
+    const SETTLEMENT_TIMELINE_MODAL_FAILED                      = 'SETTLEMENT_TIMELINE_MODAL_FAILED';
+
     // New Basic auth flow for app auth using passport
     const APP_AUTHENTICATION_FROM_JWT_PASSED                    = 'APP_AUTHENTICATION_FROM_JWT_PASSED';
     const NO_PASSPORT_FOUND                                     = 'NO_PASSPORT_FOUND';
