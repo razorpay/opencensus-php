@@ -17,6 +17,7 @@ export const OptimizerDetails = ({ payment, terminalProviders, scrolledToBottom 
       <EntityDetailRow label="Processed by">
         <PaymentOptimizerProvider
           terminal_id={payment.optimizer_provider}
+          settled_by={payment.settled_by}
           terminalProviders={terminalProviders}
           isDetailView={true}
         />

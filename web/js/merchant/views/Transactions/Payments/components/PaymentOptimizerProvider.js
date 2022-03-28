@@ -32,7 +32,7 @@ export default ({ terminal_id, settled_by, terminalProviders, hideExternalLink, 
   if (isDetailView && !hideExternalLink) {
     if (provider?.Provider_name?.length > 23) {
       providerName = `${provider.Provider_name.substr(0, 20)}...`;
-    } else {
+    } else if (provider) {
       providerName = provider.Provider_name;
     }
   }
