@@ -97,7 +97,7 @@ class Service extends Base\Service
          */
         if (empty($user) === true)
         {
-            if (empty($input[Entity::OAUTH_PROVIDER]) === true)
+            if (empty($input[Entity::PASSWORD]) === false && empty($input[Entity::OAUTH_PROVIDER]) === true)
             {
                 $input[Entity::PASSWORD_CONFIRMATION] = $input[Entity::PASSWORD];
             }

@@ -208,6 +208,13 @@ class UserTest extends TestCase
         $this->startTest();
     }
 
+    public function testRegisterWithoutPassword()
+    {
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+    }
+
     public function testSignupSourceShowingUpInMerchantAfterRegistration()
     {
         //Given
