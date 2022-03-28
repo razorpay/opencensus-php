@@ -234,7 +234,7 @@ class TypeformTest extends TestCase
         ];
 
         $expectedContent = [
-            'group_id'        => 82000147768,
+            'group_id'        => 82000656452,
             'tags'            => ['intl_auto_mailer', 'intl_approved'],
             'priority'        => 1,
             'phone'           => '9991119991',
@@ -457,7 +457,7 @@ class TypeformTest extends TestCase
         ];
 
         $expectedContent = [
-            'group_id'        => 82000147768,
+            'group_id'        => 82000656452,
             'tags'            => ['intl_auto_mailer', 'intl_approved'],
             'priority'        => 1,
             'custom_fields'   => [

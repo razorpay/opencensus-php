@@ -767,7 +767,7 @@ class BulkFraudNotifyTest extends TestCase
         ];
 
         $expectedContent = [
-            'group_id'        => 82000147768,
+            'group_id'        => 82000656452,
             'tags'            => ['bulk_fraud_email'],
             'priority'        => 1,
             'phone'           => '9991119991',
@@ -787,7 +787,7 @@ class BulkFraudNotifyTest extends TestCase
                                                     [
                                                         'id'        => 123,
                                                         'priority'  => 1,
-                                                        'fr_due_by' => 'today',
+                                                        'fr_due_by' => 'today'
                                                     ]);
 
         $this->prepareAndDoTest($fileData, $expectedOutputFileRows, 1, true, true);
@@ -842,12 +842,46 @@ class BulkFraudNotifyTest extends TestCase
 
         $payment = $this->fixtures->create('payment');
 
+        $this->fixtures->edit('merchant', '10000000000000', [
+            'name' => 'test name',
+        ]);
+
         $this->fixtures->create('payment_fraud', [
             'payment_id'    => $payment->getId(),
             'batch_id'      => '100000Razorpay',
         ]);
 
-        $this->mockFreshdesk(1);
+        $expectedContent = [
+            'status'          => 6,
+            'type'            => 'Service request',
+            'email'           => "test@razorpay.com",
+            'priority'        => 3,
+            'tags'            => ['bulk_fraud_email'],
+            'group_id'        => 82000656452,
+            'email_config_id' => 82000098661,
+            'custom_fields'   => [
+                'cf_ticket_queue' => 'Merchant',
+                'cf_merchant_id'  => '10000000000000',
+                'cf_category'     => 'Risk Report_Merchant',
+                'cf_subcategory'  => 'Fraud alerts',
+                'cf_product'      => 'Payment Gateway',
+            ],
+            'subject'         =>    'Razorpay: Cross-Border Fraud transactions alert from the Card Schemes/Networks | 10000000000000 | test name',
+        ];
+
+        $this->expectFreshdeskRequestAndRespondWith('tickets/outbound_email', 'post',
+            $expectedContent,
+            [
+                'id'        => 123,
+                'priority'  => 1,
+                'fr_due_by' => 'today',
+                'spam' => false,
+                'fr_escalated' => false,
+                'group_id' => 82000147768,
+                'requester_id' => 82009627521,
+                'company_id' => 82000331265,
+                'subject' => 'Razorpay: Cross-Border Fraud transactions alert from the Card Schemes/Networks | 10000000000000 | test name'
+            ]);
 
         $this->startTest();
 

@@ -291,7 +291,7 @@ class FraudDetectionTest extends TestCase
         $data = $this->testData['testFraudDetectedByShieldWebsiteMismatch'];
 
         $expectedContent = [
-            'group_id'        => 82000147768,
+            'group_id'        => 82000656452,
             'tags'            => ['website_mismatch'],
             'priority'        => 1,
             'phone'           => '9999999999',

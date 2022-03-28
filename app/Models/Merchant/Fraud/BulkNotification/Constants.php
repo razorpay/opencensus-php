@@ -95,11 +95,13 @@ class Constants
     const MERCHANT_DATA_KEY_CUSTOMER_CONTACT       = 'customer_contact';
     const MERCHANT_DATA_KEY_TRANSACTION_DATE       = 'transaction_date';
     const MERCHANT_DATA_KEY_SOURCE_OF_NOTIFICATION = 'source_of_notification';
+    const MERCHANT_DATA_KEY_CURRENCY = 'currency';
 
     const VISA_FRAUD_FILE_SOURCE        = 'Hitachi_VISA_TC_40_Report';
     const MASTERCARD_FRAUD_FILE_SOURCE  = 'Hitachi_SAFE_Report';
 
-    const FRESHDESK_EMAIL_SUBJECT   = 'Razorpay | Unauthorized transaction Alert - %s [%s] | %s';
+    const FRESHDESK_EMAIL_SUBJECT_DEFAULT = 'Razorpay | Unauthorized transaction Alert - %s [%s] | %s';
+    const FRESHDESK_EMAIL_SUBJECT_CARD_NETWORK = 'Razorpay: Cross-Border Fraud transactions alert from the Card Schemes/Networks | %s | %s';
     const SMS_TEMPLATE              = 'sms.risk.fraud_notification_mobile_signup';
     const WHATSAPP_TEMPLATE_NAME    = 'whatsapp_risk_fraud_notification_mobile_signup';
     const WHATSAPP_TEMPLATE         = 'Hi {merchantName}, we have received an unauthorised transaction alert on the payments processed on your Razorpay Account. We request you to kindly stop the specified transactions and issue a refund for the same. Please check link {supportTicketLink} for more details';

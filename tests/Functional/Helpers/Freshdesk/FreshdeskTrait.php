@@ -27,7 +27,7 @@ trait FreshdeskTrait
                     return false;
                 }
 
-                return $this->validateMethodAndContent($request,$expectedMethod,$expectedContent, $checkHtmlTag);
+                return $this->validateMethodAndContent($request, $expectedMethod, $expectedContent, $checkHtmlTag);
             }))
             ->andReturnUsing(function () use ($respondWith) {
                 $response = new \Requests_Response;

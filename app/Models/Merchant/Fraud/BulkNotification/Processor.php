@@ -172,6 +172,7 @@ class Processor extends Base\Core
             Constants::MERCHANT_DATA_KEY_CUSTOMER_CONTACT       => $payment->getContact(),
             Constants::MERCHANT_DATA_KEY_TRANSACTION_DATE       => $payment->getDateInFormatDMY(Payment\Entity::CREATED_AT),
             Constants::MERCHANT_DATA_KEY_SOURCE_OF_NOTIFICATION => $source,
+            Constants::MERCHANT_DATA_KEY_CURRENCY               => $payment->getCurrency(),
         ];
     }
 

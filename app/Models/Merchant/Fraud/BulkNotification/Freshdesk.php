@@ -39,11 +39,13 @@ class Freshdesk extends Base\Core
 
     public function notify(array $aggregatedData, array &$output = null)
     {
+        // determine request type to select email template later
+        $isCardNetworkRequest = (isset($this->batchId) === true);
         foreach ($aggregatedData as $merchantId => $merchantData)
         {
             try
             {
-                $fdTicketId = $this->notifySingle($merchantData, $merchantId);
+                $fdTicketId = $this->notifySingle($merchantData, $merchantId, $isCardNetworkRequest);
 
                 if (isset($output) === true)
                 {
@@ -66,7 +68,7 @@ class Freshdesk extends Base\Core
         }
     }
 
-    protected function sendNotificationForMobileSignup($merchant, $merchantData)
+    protected function sendNotificationForMobileSignup($merchant, $merchantData, $isCardNetworkRequest = false)
     {
         try
         {
@@ -79,10 +81,10 @@ class Freshdesk extends Base\Core
 
             $fdTicket = (new Merchant\RiskMobileSignupHelper())->createFdTicket($merchant,
                                                                                 null,
-                                                                                sprintf(Constants::FRESHDESK_EMAIL_SUBJECT, $merchant->getName(), $merchant->getId(), Carbon::now(Timezone::IST)->format('d/m/Y')),
+                                                                                $this->getEmailSubject($merchant, $isCardNetworkRequest),
                                                                                 $merchantData,
                                                                                 $requestParams,
-                                                                                $this->renderBody($merchantData));
+                                                                                $this->renderBody($merchantData, $isCardNetworkRequest));
 
             $supportTicketLink = (new Merchant\RiskMobileSignupHelper())->getSupportTicketLink($fdTicket, $merchant);
 
@@ -127,7 +129,7 @@ class Freshdesk extends Base\Core
         }
     }
 
-    public function notifySingle(array $merchantData, string $merchantId)
+    public function notifySingle(array $merchantData, string $merchantId,  bool $isCardNetworkRequest = false)
     {
         $redisKey = sprintf(Constants::REDIS_KEY_FMT, Carbon::now(Timezone::IST)->format("d_m_Y"), $merchantId);
 
@@ -136,16 +138,17 @@ class Freshdesk extends Base\Core
         /** @var Merchant\Entity $merchant */
         $merchant = $this->repo->merchant->findOrFail($merchantId);
 
-        $fdOutboundEmailRequest = $this->getFdRequestPayload($merchant, $merchantData);
+        $fdOutboundEmailRequest = $this->getFdRequestPayload($merchant, $merchantData, $isCardNetworkRequest);
 
         $this->trace->debug(TraceCode::MERCHANT_BULK_FRAUD_NOTIFICATION_FRESHDESK_REQUEST, [
             'entity_id'       => $this->batchId ?? $this->entity->getId(),
             'request_payload' => $fdOutboundEmailRequest,
+            'isCardNetworkRequest' => $isCardNetworkRequest
         ]);
 
         if (Merchant\RiskMobileSignupHelper::isEligibleForMobileSignUp($merchant) === true)
         {
-            $fdTicketId = $this->sendNotificationForMobileSignup($merchant, $merchantData);
+            $fdTicketId = $this->sendNotificationForMobileSignup($merchant, $merchantData, $isCardNetworkRequest);
         }
         else
         {
@@ -165,9 +168,11 @@ class Freshdesk extends Base\Core
         return $fdTicketId;
     }
 
-    private function renderBody(array $merchantData): string
+    private function renderBody(array $merchantData,  bool $isCardNetworkRequest): string
     {
-        return \View::make('merchant.fraud.bulk_notification')->with(['merchantDataTable' => $merchantData])->render();
+        return ($isCardNetworkRequest === false)
+            ? \View::make('merchant.fraud.bulk_notification')->with(['merchantDataTable' => $merchantData])->render()
+            : \View::make('merchant.fraud.bulk_notification_card_network')->with(['merchantDataTable' => $merchantData])->render();
     }
 
     private function validateLastNotified(string $redisKey): int
@@ -236,11 +241,18 @@ class Freshdesk extends Base\Core
         }
     }
 
-    private function getFdRequestPayload(Merchant\Entity $merchant, array $merchantData): array
+    protected function getEmailSubject($merchant, $isCardNetworkRequest): string
     {
-        $mailSubject = sprintf(Constants::FRESHDESK_EMAIL_SUBJECT, $merchant->getName(), $merchant->getId(), Carbon::now(Timezone::IST)->format('d/m/Y'));
+        return ($isCardNetworkRequest === false)
+            ? sprintf(Constants::FRESHDESK_EMAIL_SUBJECT_DEFAULT, $merchant->getName(), $merchant->getId(), Carbon::now(Timezone::IST)->format('d/m/Y'))
+            : sprintf(Constants::FRESHDESK_EMAIL_SUBJECT_CARD_NETWORK, $merchant->getId(), $merchant->getName());
+    }
 
-        $mailBody = $this->renderBody($merchantData);
+    private function getFdRequestPayload(Merchant\Entity $merchant, array $merchantData, bool $isCardNetworkRequest = false): array
+    {
+        $mailSubject = $this->getEmailSubject($merchant, $isCardNetworkRequest);
+
+        $mailBody = $this->renderBody($merchantData, $isCardNetworkRequest);
 
         $emailIds = $this->getEmailIdsWithSalesPOC($merchant);
 

@@ -5,6 +5,7 @@ namespace RZP\Models\Payment\Fraud;
 use RZP\Models\Base;
 use RZP\Diag\EventCode;
 use RZP\Models\Merchant\Fraud\BulkNotification;
+use RZP\Models\Merchant\Fraud\BulkNotification\Constants;
 
 class Core extends Base\Core
 {
@@ -14,7 +15,16 @@ class Core extends Base\Core
 
         $fraudRowResult = BulkNotification\Processor::getFraudNotificationRowData($payment, $fraudEntity);
 
-        (new BulkNotification\Freshdesk(new BulkNotification\Entity(), null))->notifySingle([$fraudRowResult], $payment->getMerchantId());
+        if ($fraudRowResult[Constants::MERCHANT_DATA_KEY_SOURCE_OF_NOTIFICATION] === Constants::SOURCE_BANK)
+        {
+            $isCardNetworkRequest = true;
+        }
+        else
+        {
+            $isCardNetworkRequest = false;
+        }
+
+        (new BulkNotification\Freshdesk(new BulkNotification\Entity(), null))->notifySingle([$fraudRowResult], $payment->getMerchantId(), $isCardNetworkRequest);
     }
 
     public function createOrUpdateFraudEntity($input): array
