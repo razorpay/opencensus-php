@@ -1029,6 +1029,29 @@ class MerchantCreateTest extends TestCase
         $this->assertEquals('customer', $submerchant['fee_bearer']);
     }
 
+    public function testCaptchaValidationForCreateSubMerchantByAdminForAggregatorBatch()
+    {
+        Mail::fake();
+
+        $testData = $this->testData['testCreateSubMerchantByAdminForAggregatorBatch'];
+
+        $userValidator = \Mockery::mock('RZP\Models\User\Validator')->shouldAllowMockingProtectedMethods();
+
+        $app = $this->markPartnerAndCreateAppAndUserMapping('aggregator');
+
+        $configAttributes = [
+            PartnerConfig\Entity::DEFAULT_PLAN_ID => Pricing::DEFAULT_PRICING_PLAN_ID,
+        ];
+
+        $this->createConfigForPartnerApp($app->getId(), null, $configAttributes);
+
+        $this->ba->batchAppAuth();
+
+        $this->startTest($testData);
+
+        $userValidator->shouldNotReceive('validateCaptcha');
+    }
+
     public function testCreateSubMerchantWithInvalidEmailByAdminForAggregatorBatch()
     {
         Mail::fake();

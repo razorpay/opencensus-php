@@ -4,8 +4,10 @@ namespace RZP\Models\Partner;
 
 use Razorpay\OAuth;
 
-use RZP\Constants\Entity as EntityName;
+use Request;
+
 use RZP\Models\Base;
+use RZP\Models\User;
 use RZP\Models\Feature;
 use RZP\Trace\Tracer;
 use RZP\Trace\TraceCode;
@@ -231,6 +233,8 @@ class SubMerchantBatchUtility extends Base\Core
 
         if (empty($entry[Header::MERCHANT_ID]) === true or $entry[Header::MERCHANT_ID] === self::STATIC_BATCH_MID)
         {
+            Request::instance()->request->add([User\Entity::SKIP_CAPTCHA_VALIDATION => true]);
+
             $subMerchantArray = $this->merchantService->createSubMerchant($input, $this->partner, PartnerConstants::BULK_ONBOARDING_ADMIN);
 
             $subMerchant = $this->repo->merchant->findOrFailPublic(
@@ -388,7 +392,7 @@ class SubMerchantBatchUtility extends Base\Core
             // more context here https://razorpay.slack.com/archives/C4MSCSHSL/p1646395661750039
             // Submit activation form
             $submitData = [
-                EntityName::STAKEHOLDER => [
+                CE::STAKEHOLDER => [
                     Stakeholder\Entity::AADHAAR_LINKED => 0,
                 ],
                 MerchantDetail::SUBMIT => '1'
