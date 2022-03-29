@@ -62,7 +62,6 @@ class Processor extends Base\Core
                 'year'        => $this->year,
             ]);
 
-
         foreach ($this->invoiceBreakup as $balanceId => & $details)
         {
             try

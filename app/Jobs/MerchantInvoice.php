@@ -69,16 +69,6 @@ class MerchantInvoice extends Job
                 ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS
                 );
         }
-        catch (BadRequestException $e)
-        {
-            if($e->getCode() === ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS)
-            {
-                if($this->attempts() <= self::MAX_ALLOWED_ATTEMPTS)
-                {
-                    $this->release(self::RETRY_INTERVAL);
-                }
-            }
-        }
         catch (\Throwable $e)
         {
             $this->trace->traceException(
@@ -101,8 +91,41 @@ class MerchantInvoice extends Job
                     'month'       => $this->month,
                     'year'        => $this->year,
                 ]);
+        }
+    }
+    /**
+     * This method override the parent method if the queue job timeout being observed in the Job
+     * check no of attempts not exceeds max_allowed_attempts then
+     * release the job back into the queue else delete from queue
+     */
+    protected function beforeJobKillCleanUp()
+    {
+        if($this->attempts() <= self::MAX_ALLOWED_ATTEMPTS)
+        {
+            $this->trace->info(
+                TraceCode::MERCHANT_INVOICE_RETRY_QUEUE_JOB_TIMEOUT,
+                [
+                    'merchant_id' => $this->merchantId,
+                    'month'       => $this->month,
+                    'year'        => $this->year,
+                    'attempt'     => $this->attempts()
+                ]);
+
+            $this->release(self::RETRY_INTERVAL);
+        }
+        else
+        {
+            $this->trace->info(
+                TraceCode::MERCHANT_INVOICE_CREATE_MESSAGE_DELETE,
+                [
+                    'merchant_id' => $this->merchantId,
+                    'month'       => $this->month,
+                    'year'        => $this->year,
+                ]);
 
             $this->delete();
         }
+
+        parent::beforeJobKillCleanUp();
     }
 }
