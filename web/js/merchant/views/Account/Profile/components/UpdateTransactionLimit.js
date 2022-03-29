@@ -12,31 +12,39 @@ import { getCommonAnalyticsProperties, rupeesToPaise } from 'common/utils/rzp-ut
 import { analyticsTrack } from 'common/utils/analytics';
 
 function UpdateTransactionLimit(props) {
+  const { user, transactionType, showNotification, closeModal, onComplete } = props;
   const [file, setfile] = useState(null);
   const [isReasonValid, setisReasonValid] = useState(null); // Validity => minimum 100 words
+  const isTypeDomestic = transactionType === 'domestic';
+  const modalTitle = isTypeDomestic
+    ? 'Increase Domestic Transaction Limit'
+    : 'Increase International Transaction Limit';
+  const amountValue = isTypeDomestic
+    ? user.merchant.max_payment_amount
+    : user.merchant.max_international_payment_amount;
 
   const save = async (e) => {
     e.preventDefault();
-
     const formFieldValues = Array.from(e.target.elements).reduce((acc, ele) => {
       acc[ele.name] = ele.value;
       return acc;
     }, {});
-
     const formData = new FormData();
-
     if (file instanceof File) formData.append('transaction_limit_increase_invoice_url', file);
 
     formData.append('new_transaction_limit_by_merchant', rupeesToPaise(+formFieldValues.limit));
     formData.append('transaction_limit_increase_reason', formFieldValues.reason);
+    formData.append('transaction_type', transactionType);
 
     // Track when limit is submitted
     analyticsTrack({
-      objectName: 'Transaction limit submitted',
+      objectName: isTypeDomestic
+        ? 'Transaction limit submitted'
+        : 'International Transaction limit submitted',
       actionName: 'merchant clicks on submit',
       screen: 'My account screen',
       properties: {
-        currentLimit: `${props.user.merchant.max_payment_amount}`,
+        currentLimit: `${amountValue}`,
         newLimit: `${formFieldValues.limit}`,
         limitReason: `${formFieldValues.description}`,
         ...getCommonAnalyticsProperties(window.rzp_user),
@@ -49,14 +57,13 @@ function UpdateTransactionLimit(props) {
       mode: 'live',
       data: formData,
     }).catch(({ errors }) => {
-      props.showNotification({
-        type: 'error',
-        message: errors,
-      });
+      showNotification({ type: 'error', message: errors });
 
       // Track API failure
       analyticsTrack({
-        objectName: 'Transaction limit workflow created',
+        objectName: isTypeDomestic
+          ? 'Transaction limit workflow created'
+          : 'International Transaction limit workflow created',
         actionName: 'API response',
         screen: 'My account screen',
         properties: {
@@ -67,16 +74,18 @@ function UpdateTransactionLimit(props) {
       });
     });
     if (response) {
-      props.showNotification({
+      showNotification({
         type: 'success',
         message: `Request sent successfully`,
       });
-      props.onComplete();
-      props.closeModal();
+      onComplete();
+      closeModal();
 
       // Track API success
       analyticsTrack({
-        objectName: 'Transaction limit workflow created',
+        objectName: isTypeDomestic
+          ? 'Transaction limit workflow created'
+          : 'International Transaction limit workflow created',
         actionName: 'API response',
         screen: 'My account screen',
         properties: {
@@ -88,14 +97,12 @@ function UpdateTransactionLimit(props) {
     }
   };
 
-  const { user: usr } = props;
-
   const handleFileChange = (uploadedFile, _) => {
     setfile(uploadedFile);
 
     // Track file upload
     analyticsTrack({
-      objectName: 'Upload invoice',
+      objectName: isTypeDomestic ? 'Upload invoice' : 'Change International transaction limit',
       actionName: 'Upload invoice clicked',
       screen: 'My account screen',
       properties: {
@@ -121,23 +128,21 @@ function UpdateTransactionLimit(props) {
 
   return (
     <div>
-      <ModalHeader title="Increase Transaction Limit" onCloseClick={props.closeModal} />
-
-      <div class="modal-body transaction-limit-update-form">
+      <ModalHeader title={modalTitle} onCloseClick={closeModal} />
+      <div className="modal-body transaction-limit-update-form">
         <form onSubmit={save}>
           <div>
             You can request to increase the transaction limit per payment made to you once in 30
             days.
           </div>
 
-          <span class="highlight-limit">
-            {' '}
-            Current limit: <Amount value={usr.merchant.max_payment_amount} currency="INR" />
+          <span className="highlight-limit">
+            Current limit:
+            <Amount value={amountValue} currency="INR" />
           </span>
 
-          <div class="actions-header">
+          <div className="actions-header">
             <Input name="limit" label="Required limit" required type="number" addonBefore="₹" />
-
             <Input.Textarea
               placeholder="Min 100 Words"
               label="Why do you want to increase limit?"
@@ -145,9 +150,9 @@ function UpdateTransactionLimit(props) {
               name="reason"
               onBlur={onTextInputBlur}
             />
-            {isReasonValid === false && <p class="notify-error">Minimum 100 words required</p>}
+            {isReasonValid === false && <p className="notify-error">Minimum 100 words required</p>}
 
-            <div class="note">
+            <div className="note">
               Attach an invoice which has amount close to limit required by you
             </div>
 
@@ -162,13 +167,13 @@ function UpdateTransactionLimit(props) {
               onFileChange={handleFileChange}
               onCloseClick={onCloseClick}
             />
-            {file?.message ? <p class="notify-error">{file.message}</p> : null}
+            {file?.message && <p className="notify-error">{file.message}</p>}
           </div>
 
-          <div class="Modal__actions">
+          <div className="Modal__actions">
             <button
               type="submit"
-              class="btn btn-primary btn-block"
+              className="btn btn-primary btn-block"
               disabled={isReasonValid === false}
             >
               Submit Details

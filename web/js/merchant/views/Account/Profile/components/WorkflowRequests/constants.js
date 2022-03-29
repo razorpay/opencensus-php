@@ -13,6 +13,7 @@ import {
  */
 export const WORKFLOW_TYPES = {
   INCREASE_TRANSACTION_LIMIT: 'increase_transaction_limit',
+  INCREASE_INTERNATIONAL_TRANSACTION_LIMIT: 'increase_international_transaction_limit',
   BANK_DETAIL_UPDATE: 'bank_detail_update',
   ADD_ADDITIONAL_WEBSITE: 'add_additional_website',
   UPDATE_BUSINESS_WEBSITE: 'additional_website', // this is a little confusing but this is set by the backend

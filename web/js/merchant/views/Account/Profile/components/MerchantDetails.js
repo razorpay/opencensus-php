@@ -5,7 +5,6 @@ import rTracking from 'react-tracking';
 import Time from 'common/ui/Time';
 import { ProgressBar } from 'common/ui/ProgressBar';
 import Popover, { PopoverBody } from 'common/ui/Popover';
-import Amount from 'common/ui/Amount';
 import { titleCase, isPresent, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import DetailRow from 'merchant/components/DetailRow';
 import { ActivationStatusLabel } from 'merchant/components/StatusLabel';
@@ -23,20 +22,18 @@ import {
   EMAIL_UPDATE,
   CONTACT_NUMBER_UPDATE,
   BILLING_LABEL,
-  NC_INCREASE_TXN_LIMIT,
   NC_UPDATE_WEBSITE,
   NC_ADD_WEBSITE,
   NC_ADD_ADDITIONAL_WEBSITE,
   RR_UPDATE_WEBSITE,
   RR_ADD_WEBSITE,
-  RR_INCREASE_TXN_LIMIT,
   RR_ADD_ADDITIONAL_WEBSITE,
 } from '../deeplink-constants';
 import IntoView from 'common/ui/IntoView';
 import TextHighlighter from 'common/ui/TextHighlighter';
 import InitiateWebsiteChange from './WebsiteSelfServe/InitiateWebsiteChange';
+import EditTransactionLimit from './EditTransactionLimit';
 import { FLOWS } from './WebsiteSelfServe/Constants';
-import UpdateTransactionLimit from './UpdateTransactionLimit';
 import EditWebsiteDetailsModal from 'merchant/views/Account/Profile/components/EditWebsiteDetailsModal';
 import { isMobileDevice } from 'merchant/components/Home/data';
 import NeedsClarificationModal from 'merchant/views/Account/Profile/components/WorkflowRequests/NeedsClarificationModal';
@@ -70,11 +67,12 @@ function renderWebsites(user, handleEditWebsite, websiteWorkflow) {
         user.isAccepted &&
         user.isWebsiteSelfServeOn && (
           <Button.Transparent
+            type="button"
             onClick={() => {
               handleEditWebsite(FLOWS.BUSINESS_WEBSITE);
             }}
           >
-            <i class="i i-edit p-l" />
+            <i className="i i-edit p-l" />
           </Button.Transparent>
         )}
     </div>
@@ -153,7 +151,7 @@ const MerchantDetails = ({
     activationName = 'Activation';
     trackerName = 'act.form_fill';
   }
-  const increaseTxnLimitWorkflow = workflows[WORKFLOW_TYPES.INCREASE_TRANSACTION_LIMIT];
+
   const businessWebsiteWorkflow = workflows[WORKFLOW_TYPES.UPDATE_BUSINESS_WEBSITE];
   const additionalWebsiteWorkflow = workflows[WORKFLOW_TYPES.ADD_ADDITIONAL_WEBSITE];
 
@@ -215,29 +213,6 @@ const MerchantDetails = ({
     analyticsTrack(analyticsObject);
   };
 
-  const onUpdateTransactionLimitClick = () => {
-    openModal({
-      size: 'small',
-      component: (
-        <UpdateTransactionLimit
-          onComplete={() => fetchWorkflowStatus(WORKFLOW_TYPES.INCREASE_TRANSACTION_LIMIT)}
-          closeModal={closeModal}
-        />
-      ),
-    });
-
-    // Track when user click on edit limit
-    analyticsTrack({
-      objectName: 'Transaction limit edit',
-      actionName: 'Merchant clicks on edit',
-      screen: 'My account screen',
-      properties: {
-        currentLimit: `${user?.merchant?.max_payment_amount}`,
-        ...getCommonAnalyticsProperties(window.rzp_user),
-      },
-    });
-  };
-
   const showGenerateTnCModal = (eventName) => {
     openModal({
       size: 'small',
@@ -262,27 +237,6 @@ const MerchantDetails = ({
   const labelHandler = (hashedWith, content) => (
     <TextHighlighter hashedWith={hashedWith}>{content}</TextHighlighter>
   );
-
-  const isMerchantAllowedToEditLimit = () => {
-    // Unregistered government and gaming merchants aren't allowed to edit transaction limit
-    if (
-      user.isUnregisteredBusiness &&
-      (user.business_category === 'government' || user.business_category === 'gaming')
-    )
-      return false;
-
-    return true;
-  };
-
-  const showTransactionLimitEdit =
-    user.role === 'owner' &&
-    user.isOrgRZP &&
-    user.isTransactionLimitUpdateSelfServeOn &&
-    (workflows.increase_transaction_limit?.workflow_exists === false ||
-      !['open', 'approved'].includes(workflows.increase_transaction_limit?.workflow_status)) &&
-    isMerchantAllowedToEditLimit();
-
-  const isActivated = user.activation_status === 'activated';
 
   return (
     <div class="list-group details-row-container">
@@ -611,48 +565,11 @@ const MerchantDetails = ({
           </IntoView>
         )}
 
-      {user.merchant && (
-        <IntoView hashedWith={[NC_INCREASE_TXN_LIMIT, RR_INCREASE_TXN_LIMIT]}>
-          <DetailRow
-            label={() => (
-              <div class="transaction-limit">
-                <span>Limit per transaction</span>
-                <small class="help-content">
-                  <i class="i i-info-circle" />
-                  <Popover align="top" theme="dark">
-                    <PopoverBody>
-                      <div>The maximum INR limit for only a single transaction.</div>
-                    </PopoverBody>
-                  </Popover>
-                </small>
-                <WorkflowStatus
-                  roles={[rolesList.OWNER]}
-                  workflowType={WORKFLOW_TYPES.INCREASE_TRANSACTION_LIMIT}
-                  reviewStatus="You request to increase to transaction limit has been received. Our team is going through the information provided by you."
-                  onReplyClick={() =>
-                    openNeedsClarificationModal({
-                      workflowType: WORKFLOW_TYPES.INCREASE_TRANSACTION_LIMIT,
-                      workflowName: 'Increase Transaction Limit',
-                    })
-                  }
-                />
-              </div>
-            )}
-            value={() => (
-              <div>
-                <Amount value={user.merchant.max_payment_amount} currency="INR" />
-                {isWorkflowChangeAllowed(increaseTxnLimitWorkflow) &&
-                  showTransactionLimitEdit &&
-                  isActivated && (
-                    <Button.Transparent onClick={onUpdateTransactionLimitClick}>
-                      <i className="i i-edit p-l" />
-                    </Button.Transparent>
-                  )}
-              </div>
-            )}
-          />
-        </IntoView>
-      )}
+      <EditTransactionLimit transactionType="domestic" replyHandler={openNeedsClarificationModal} />
+      <EditTransactionLimit
+        transactionType="international"
+        replyHandler={openNeedsClarificationModal}
+      />
 
       {user.canGenerateTnCPage && !user.business_website && !user.isAccepted && (
         <DetailRow

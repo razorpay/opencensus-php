@@ -10,6 +10,10 @@ const initialState = {
     loading: true,
     error: null,
   },
+  increase_international_transaction_limit: {
+    loading: true,
+    error: null,
+  },
   add_additional_website: {
     loading: true,
     error: null,
