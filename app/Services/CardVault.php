@@ -297,8 +297,7 @@ class CardVault
 
         $this->trace->info(TraceCode::CARD_VAULT_REQUEST, [
             'url' => $request['url'],
-            'namespace' => $this->namespace,
-            'request' => $request,
+            'namespace' => $this->namespace
         ]);
 
         $response = $this->sendCardVaultRequest($request);
