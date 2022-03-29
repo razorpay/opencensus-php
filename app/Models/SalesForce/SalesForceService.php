@@ -42,6 +42,7 @@ class SalesForceService {
         switch ($salesForceEventRequestType->getValue()) {
             case 'LOS_NEW_APPLICATION':
             case 'CURRENT_ACCOUNT_INTEREST':
+            case 'SHOPIFY_MIGRATION_REQUEST':
                 $DATE_FORMAT = 'Y-m-d';
                 $eventPayload = [
                     'merchant_id'           => $merchant->getId(),
