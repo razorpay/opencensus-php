@@ -86,7 +86,6 @@ class StatementTest extends TestCase
         $user =  (new User())->createBankingUserForMerchant('10000000000000', [
             'contact_mobile' => '8888888888',
         ],'admin');
-        
 
         $this->fixtures->create('merchant_attribute',
             [

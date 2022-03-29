@@ -130,7 +130,7 @@ class Repository extends Transaction\Repository
     {
         $this->setBaseQueryIfApplicable($merchantId);
 
-        $this->forceIndexForXDashboardDefaultRequests($input, $balance);
+        $this->forceIndexForXDashboardDefaultRequests($input ,$balance);
 
         $startTimeMs = round(microtime(true) * 1000);
 
@@ -185,8 +185,8 @@ class Repository extends Transaction\Repository
         if( ($balance != null and $balance->isTypeBanking())
             and (array_key_exists(self::FROM, $input) or $this->checkDefaultFilters($input)) )
         {
-            $this->baseQuery = $this->newQueryWithConnection($this->getSlaveConnection())
-                ->from(\DB::raw(Table::TRANSACTION.' USE INDEX (transactions_merchant_id_created_at_index)'));
+            $this->baseQuery = $this->newQueryWithConnection($this->getPaymentFetchReplicaConnection())
+                ->from(\DB::raw(Table::TRANSACTION.' USE INDEX (transactions_merchant_id_balance_id_created_at_index)'));
         }
     }
 
