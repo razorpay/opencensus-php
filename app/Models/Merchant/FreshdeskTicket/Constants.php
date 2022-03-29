@@ -139,6 +139,8 @@ class Constants
     const ROUTE             = 'route';
     const RESPONSE_CODE     = 'response_code';
 
+    const MAX_OPEN_TICKETS_FOR_MERCHANT = 10;
+
     // Webhook response
     const SUCCESS    = 'success';
 
@@ -148,6 +150,7 @@ class Constants
     const RAZORX_FLAG_FRESHDESK_CUSTOMER_TICKET_CREATION_SERVER_PICK  = 'Freshdesk_Customer_Ticket_Creation_Server_Pick';
     const RAZORX_FLAG_FRESHDESK_RZPSOL_RZP_MERGED                     = 'freshdesk_rzpsol_rzp_merged';
     const RAZORX_FLAG_TO_ADD_PLUGIN_MERCHANT_TAG                      = 'freshdesk_add_plugin_merchant_tag';
+    const RAZORX_FLAG_TO_LIMIT_NO_OF_OPEN_FRESHDESK_TICKETS           = 'limit_no_of_open_freshdesk_tickets';
 
     // values for account recovery flow
     const MERCHANT          = 'Merchant';

@@ -1417,6 +1417,7 @@ class PublicErrorDescription
     const BAD_REQUEST_NO_TICKETS_FOUND_FOR_CUSTOMER                                  = 'No ticket found for the given customer';
     const BAD_REQUEST_FRESHDESK_TICKET_UPDATE_FAILED                                 = 'Failed to update freshdesk ticket';
     const BAD_REQUEST_FRESHDESK_TICKET_ALREADY_CLOSED                                = 'Bad request, the ticket is already closed';
+    const BAD_REQUEST_OPEN_TICKETS_LIMIT_EXCEEDED                                    = 'Bad request open tickets limit exceeded';
     const BAD_REQUEST_BALANCE_CONFIG_ALREADY_EXISTS_FOR_BALANCE                      = 'Balance Config already exists for this Balance';
     const BAD_REQUEST_BALANCE_CONFIG_INVALID_NEGATIVE_LIMIT                          = 'Invalid negative limit for Balance Config creation';
     const BAD_REQUEST_BALANCE_CONFIG_INVALID_NEGATIVE_TRANSACTION_FLOW               = 'Invalid transaction flows for Balance Config creation';

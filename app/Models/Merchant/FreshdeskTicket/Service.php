@@ -497,6 +497,43 @@ class Service extends Base\Service
         return $freshdeskTicketResponse;
     }
 
+    public function checkEligibilityForPostTicket($type)
+    {
+        $variant = $this->app['razorx']->getTreatment($this->app['basicauth']->getMerchantId(),
+                                                      Constants::RAZORX_FLAG_TO_LIMIT_NO_OF_OPEN_FRESHDESK_TICKETS,
+                                                      $app['rzp.mode'] ?? Mode::LIVE);
+
+        $this->trace->info(TraceCode::FRESHDESK_LIMIT_OPEN_TICKETS_EXPERIMENT_STATUS, [
+            'variant'                           => $variant,
+        ]);
+
+        if ($variant === 'on')
+        {
+            $payload = [
+                Constants::STATUS => 2,
+            ];
+
+            $openTickets = $this->getTickets($payload, $type);
+
+            $openMerchantTicketCount = 0;
+
+            foreach ($openTickets[Constants::RESULTS] as $ticket)
+            {
+                if ($ticket[Constants::CUSTOM_FIELDS][Constants::CF_CREATED_BY] != Constants::AGENT)
+                {
+                    $openMerchantTicketCount++;
+                }
+            }
+
+            $this->trace->info(TraceCode::FRESHDESK_EXISTING_OPEN_TICKETS, ['count' => $openMerchantTicketCount]);
+
+            if ($openMerchantTicketCount >= Constants::MAX_OPEN_TICKETS_FOR_MERCHANT)
+            {
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_OPEN_TICKETS_LIMIT_EXCEEDED);
+            }
+        }
+    }
+
     public function postTicketV2($type, $input, $keepHtmlTags = false)
     {
         $function = 'makeInputFor' . studly_case($type) . 'PostTicket';
@@ -509,6 +546,8 @@ class Service extends Base\Service
         {
             $input = $this->$function($input);
         }
+
+        $this->checkEligibilityForPostTicket($type);
 
         if($this->merchant->isSignupViaEmail() === true)
         {

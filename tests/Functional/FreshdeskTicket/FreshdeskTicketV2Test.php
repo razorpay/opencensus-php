@@ -33,6 +33,7 @@ class FreshdeskTicketV2Test extends TestCase
 
     const RZP_CREATE_TICKET_MOBILE_SIGNUP = 'rzp_create_ticket_mobile_signup';
 
+    const RZP_FETCH_OPEN_TICKETS                        = 'rzp_fetch_open_tickets';
     const RZP_CREATE_TICKET_CHECKING_CC_EMAILS          = 'rzp_create_ticket_checking_cc_emails';
     const RZP_CREATE_TICKET_SALESFORCE                  = 'rzp_create_ticket_salesforce';
     const RZP_CREATE_TICKET_INTERNAL_AUTH               = 'rzp_create_ticket_internal_auth';
@@ -586,6 +587,20 @@ class FreshdeskTicketV2Test extends TestCase
         ]);
 
         $this->startTest();
+    }
+
+    public function testCreateTicketOpenTicketLimitExceeded()
+    {
+        $this->createFiveTicketsToFetch();
+
+        $expectedRequestResponse    =   $this->getExpectedRequestResponse(self::RZP_FETCH_OPEN_TICKETS);
+
+        $this->expectFreshdeskRequestAndRespondWith('search/tickets?query=%22custom_string%3Amerchant_dashboard_10000000000000+AND+%28status%3A2%29%22&page=1', 'get',
+                                                    $expectedRequestResponse['request'], $expectedRequestResponse['response'], 3);
+
+        $this->mockRazorxTreatment('on');
+
+        $response = $this->startTest();
     }
 
     public function testCreateTicketRzpMobileSignup()
@@ -2100,6 +2115,68 @@ class FreshdeskTicketV2Test extends TestCase
 
             ];
         }
+        else if ($key === self::RZP_FETCH_OPEN_TICKETS)
+        {
+            return [
+                'request'  => [],
+                'response' => [
+                    'results' => [
+                        [
+                            'id'        => 35,
+                            'body'      => 'some random body 12',
+                            'custom_fields' =>  [
+                                "cf_requestor_subcategory"  => "Activation",
+                                "cf_requester_category"     => "Merchant",
+                                "cf_created_by"             => "merchant"
+                            ],
+                            'fr_due_by' => '2020-12-08T16:04:20Z',
+
+                        ],
+                        [
+                            'id'        => 36,
+                            'body'      => 'some random body 34',
+                            'custom_fields' =>  [
+                                "cf_requestor_subcategory"  => "Merchant Activation",
+                                "cf_requester_category"     => "Merchant",
+                                "cf_created_by"             => "merchant"
+                            ],
+                            'fr_due_by' => '2020-12-08T16:04:20Z',
+
+                        ],
+                        [
+                            'id'        => 37,
+                            'body'      => 'some random body 37',
+                            'custom_fields' =>  [
+                                "cf_requestor_subcategory"  => "Activation",
+                                "cf_requester_category"     => "Merchant",
+                                "cf_created_by"             => "merchant"
+                            ],
+                            'fr_due_by' => '2020-12-08T16:04:20Z',
+                        ],
+                        [
+                            'id'        => 38,
+                            'body'      => 'some random body 38',
+                            'custom_fields' =>  [
+                                "cf_requestor_subcategory"  => "Activation",
+                                "cf_requester_category"     => "Merchant",
+                                "cf_created_by"             => "merchant"
+                            ],
+                            'fr_due_by' => '2020-12-08T16:04:20Z',
+                        ],
+                        [
+                            'id'        => 39,
+                            'body'      => 'some random body 39',
+                            'custom_fields' =>  [
+                                "cf_requestor_subcategory"  => "Activation",
+                                "cf_requester_category"     => "Merchant",
+                                "cf_created_by"             => "merchant"
+                            ],
+                            'fr_due_by' => '2020-12-08T16:04:20Z',
+                        ],
+                    ],
+
+                ]];
+        }
         else if ($key === self::RZP_FETCH_TICKET)
         {
             return [
@@ -2529,6 +2606,51 @@ class FreshdeskTicketV2Test extends TestCase
 
                 ]];
         }
+    }
+
+    protected function createFiveTicketsToFetch()
+    {
+        $ticketDetails["fd_instance"] = "rzpind";
+
+        $this->fixtures->create('merchant_freshdesk_tickets', [
+            'id'             => 'razorpayid0035',
+            'ticket_id'      => '35',
+            'merchant_id'    => '10000000000000',
+            'type'           => 'support_dashboard',
+            'ticket_details' => $ticketDetails,
+        ]);
+
+        $this->fixtures->create('merchant_freshdesk_tickets', [
+            'id'             => 'razorpayid0036',
+            'ticket_id'      => '36',
+            'merchant_id'    => '10000000000000',
+            'type'           => 'support_dashboard',
+            'ticket_details' => $ticketDetails,
+        ]);
+
+        $this->fixtures->create('merchant_freshdesk_tickets', [
+            'id'             => 'razorpayid0037',
+            'ticket_id'      => '37',
+            'merchant_id'    => '10000000000000',
+            'type'           => 'support_dashboard',
+            'ticket_details' => $ticketDetails,
+        ]);
+
+        $this->fixtures->create('merchant_freshdesk_tickets', [
+            'id'             => 'razorpayid0038',
+            'ticket_id'      => '38',
+            'merchant_id'    => '10000000000000',
+            'type'           => 'support_dashboard',
+            'ticket_details' => $ticketDetails,
+        ]);
+
+        $this->fixtures->create('merchant_freshdesk_tickets', [
+            'id'             => 'razorpayid0039',
+            'ticket_id'      => '39',
+            'merchant_id'    => '10000000000000',
+            'type'           => 'support_dashboard',
+            'ticket_details' => $ticketDetails,
+        ]);
     }
 
     protected function createTicketsToFetch()

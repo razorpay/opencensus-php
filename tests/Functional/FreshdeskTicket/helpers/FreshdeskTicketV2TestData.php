@@ -457,6 +457,34 @@ return [
         ],
     ],
 
+    'testCreateTicketOpenTicketLimitExceeded' => [
+        'request' => [
+            'url'     => '/fd/support_dashboard/ticket/',
+            'method'  => 'POST',
+            'content' => [
+                'description'   => 'ticket description',
+                'subject'       => 'ticket subject',
+                'custom_fields' => [
+                    'cf_requester_category'       => 'Merchant',
+                    'cf_requestor_subcategory'    => 'Activation'
+                ],
+            ],
+        ],
+        'response' => [
+            'content'       => [
+                'error' => [
+                    'description' => 'Bad request open tickets limit exceeded',
+                    'code'        => 'BAD_REQUEST_ERROR',
+                ],
+            ],
+            'status_code'   => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => 'BAD_REQUEST_OPEN_TICKETS_LIMIT_EXCEEDED',
+        ],
+    ],
+
     'testCreateTicketRzpWithHtmlTagsAndNoMerchantName' => [
         'request' => [
             'url'     => '/fd/support_dashboard/ticket/',
