@@ -637,6 +637,7 @@ class Type
             self::ICICI_EMI_FILE_MAIL,
             self::SBI_EMI_OUTPUT_FILE,
             self::EMI_FILE,
+            self::HSBC_EMI_FILE,
         ],
 
         self::BATCH_SERVICE_BUCKET_CONFIG => [
