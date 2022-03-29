@@ -4477,30 +4477,43 @@ class Core extends Base\Core
         return $summary;
     }
 
+    /**
+     * @throws ServerErrorException
+     */
     public function sendXMobileAppDownloadLinkSms(array $input, $merchant)
     {
-        $payload = [
-            'receiver' => $input['contact_number'],
-            'source'   => "api",
-            'template' => "sms.user.mobile_app_download_link",
-            'sender' => "RZPAYX",
-            'params'   => [],
+        $smsPayload = [
+            'ownerId'               => $merchant->getId(),
+            'ownerType'             => 'merchant',
+            'templateName'          => 'sms.user.x-app_download',
+            'templateNamespace'     => 'razorpayx_apps',
+            'orgId'                 => $merchant->getOrgId(),
+            'destination'           => $input['contact_number'],
+            'sender'                => 'RZPAYX',
+            'language'              => 'english',
+            'contentParams'         => [
+                'app_link'  => 'https://bit.ly/RX-APP',
+            ],
         ];
 
-        try
+        /** @var $stork \RZP\Services\Stork */
+        $stork = $this->app['stork_service'];
+
+        $storkResponse = $stork->sendSms($this->mode,$smsPayload);
+
+        if (empty($storkResponse))
         {
-            $response = $this->app->raven->sendSms($payload);
-        }
-        catch (\Exception $ex)
-        {
-            $this->trace->traceException(
-                $ex,
-                Trace::ERROR,
-                TraceCode::USER_X_MOBILE_APP_DOWNLOAD_LINK_SENDING_FAILED,
+            throw new ServerErrorException('Failed to send SMS',
+                ErrorCode::SERVER_ERROR_USER_X_MOBILE_APP_DOWNLOAD_LINK_SENDING_FAILED,
                 [
                     'merchant_id' => $merchant->getMerchantId(),
-                ]);
+                ]
+            );
         }
+
+        $response = [
+            'sms_id' => $storkResponse[$stork::MESSAGE_ID]
+        ];
 
         $this->trace->info(TraceCode::USER_X_MOBILE_APP_DOWNLOAD_LINK, $response);
 
