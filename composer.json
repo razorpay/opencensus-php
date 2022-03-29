@@ -29,7 +29,7 @@
         "doctrine/dbal": "^2.5",
         "guzzlehttp/promises": "1.2.0",
         "mikehaertl/phpwkhtmltopdf": "^2.2",
-        "mustache/mustache": "^2.11",
+        "mustache/mustache": "^2.14",
         "maxmind/minfraud": "^1.3",
         "php-http/discovery": "^1.7",
         "ext-gmp": "*",
