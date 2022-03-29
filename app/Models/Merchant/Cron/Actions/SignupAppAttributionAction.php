@@ -21,6 +21,13 @@ class SignupAppAttributionAction extends BaseAction
 
         $appAttributionData = $appAttributionCollector->getData();
 
+        $this->pushEvent($appAttributionData, "identify");
+        $this->pushEvent($appAttributionData, "track");
+
+        return new ActionDto(Constants::SUCCESS);
+    }
+
+    private function pushEvent($appAttributionData, $eventType){
         foreach ($appAttributionData as $data)
         {
             $merchantId = $data['merchant_id'];
@@ -28,8 +35,6 @@ class SignupAppAttributionAction extends BaseAction
             unset($data['merchant_id']);
 
             $segmentProperties = [];
-
-            $timestamp = null;
 
             $campaignAttributes = $data[Attribution\Entity::CAMPAIGN_ATTRIBUTES] ?? [];
 
@@ -41,7 +46,6 @@ class SignupAppAttributionAction extends BaseAction
                 unset($data[Attribution\Entity::CAMPAIGN_ATTRIBUTES]);
             }
 
-            $timestamp = $data[Attribution\Entity::CREATED_AT];
             unset($data[Attribution\Entity::CREATED_AT]);
 
             foreach ($data as $key => $value)
@@ -51,12 +55,19 @@ class SignupAppAttributionAction extends BaseAction
 
             $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
-            $this->app['segment-analytics']->pushIdentifyAndTrackEvent($merchant, $segmentProperties, SegmentEvent::SIGNUP_ATTRIBUTED, $timestamp);
+            $timestamp = $merchant->getCreatedAt();
+
+            if($eventType === 'identify')
+            {
+                $this->app['segment-analytics']->pushIdentifyEvent($merchant, $segmentProperties, $timestamp);
+            }
+            else if($eventType === 'track')
+            {
+                $this->app['segment-analytics']->pushTrackEvent($merchant, $segmentProperties, SegmentEvent::SIGNUP_ATTRIBUTED, $timestamp);
+            }
         }
 
 
         $this->app['segment-analytics']->buildRequestAndSend();
-
-        return new ActionDto(Constants::SUCCESS);
     }
 }

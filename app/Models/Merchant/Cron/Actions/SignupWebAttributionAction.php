@@ -20,6 +20,14 @@ class SignupWebAttributionAction extends BaseAction
 
         $lakeData = $dataLakeCollector->getData();
 
+        $this->pushEvent($lakeData, "identify");
+        $this->pushEvent($lakeData, "track");
+
+        return new ActionDto(Constants::SUCCESS);
+    }
+
+    private function pushEvent($lakeData, $eventType)
+    {
         foreach ($lakeData as $data)
         {
             $merchantId = $data['id'];
@@ -37,12 +45,14 @@ class SignupWebAttributionAction extends BaseAction
 
             $timestamp = $merchant->getCreatedAt();
 
-
-            $this->app['segment-analytics']->pushIdentifyAndTrackEvent($merchant, $segmentProperties, SegmentEvent::SIGNUP_ATTRIBUTED, $timestamp);
+            if($eventType === 'identify') {
+                $this->app['segment-analytics']->pushIdentifyEvent($merchant, $segmentProperties, $timestamp);
+            }
+            else if($eventType === 'track') {
+                $this->app['segment-analytics']->pushTrackEvent($merchant, $segmentProperties, SegmentEvent::SIGNUP_ATTRIBUTED, $timestamp);
+            }
         }
 
         $this->app['segment-analytics']->buildRequestAndSend();
-
-        return new ActionDto(Constants::SUCCESS);
     }
 }
