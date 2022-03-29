@@ -281,6 +281,7 @@ class Tracing
             'account_fetch',
             'account_edit',
             'account_fetch_by_external_id',
+            'fetch_partner_first_user_experience',
 
             //Onboarding APIs
             'account_create_v2',

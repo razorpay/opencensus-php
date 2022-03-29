@@ -251,6 +251,19 @@ class Repository extends Base\Repository
                     ->exists();
     }
 
+    public function isLiveSubmerchantPresentForPartner(string $partnerId)
+    {
+        $accessMapsMerchantId = $this->dbColumn(Entity::MERCHANT_ID);
+        $merchantsId = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
+        $merchantsLive = Table::MERCHANT . '.' . Merchant\Entity::LIVE;
+
+        return $this->newQuery()
+                    ->where(Entity::ENTITY_OWNER_ID, $partnerId)
+                    ->join(Table::MERCHANT, $accessMapsMerchantId, $merchantsId)
+                    ->where($merchantsLive, true)
+                    ->exists();
+    }
+
     public function getAllMappingsByEntityIdAndEntityOwnerId(string $entityId, string $entityOwnerId)
     {
         return $this->newQuery()

@@ -9179,6 +9179,9 @@ class Service extends Base\Service
 
         $response['api_integration'] = $this->repo->entity_origin->isOriginApplicationPresentForPartner($partnerId);
 
+        $response['first_submerchant_accept_payments'] = $this->repo->merchant_access_map
+            ->isLiveSubmerchantPresentForPartner($partnerId);
+
         return $response;
     }
 

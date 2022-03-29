@@ -2934,7 +2934,9 @@ class MerchantController extends Controller
 
     public function getFUXDetailsForPartner()
     {
-        $response = $this->service()->getFUXDetailsForPartner();
+        $response = Tracer::inspan(['name' => HyperTrace::GET_FUX_DETAILS_FOR_PARTNER_SERVICE], function() {
+            return $this->service()->getFUXDetailsForPartner();
+        });
 
         return ApiResponse::json($response);
     }

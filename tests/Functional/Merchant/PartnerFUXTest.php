@@ -41,7 +41,22 @@ class PartnerFUXTest extends OAuthTestCase
     public function testPartnerFUXDetailsAfterSubmerchantsAreAdded()
     {
 
-        $this->createResellerPartnerSubmerchant();
+        $this->createResellerPartnerSubmerchant(['email' => 'testing@example.com']);
+
+        $this->ba->proxyAuth();
+
+        $this->runRequestResponseFlow($this->testData[__FUNCTION__]);
+    }
+
+    public function testPartnerFUXDetailsAfterSubmerchantsAreLive()
+    {
+
+        $this->createResellerPartnerSubmerchant(
+            [
+                'email' => 'testing@example.com',
+                'live'         => true
+            ]
+        );
 
         $this->ba->proxyAuth();
 
@@ -113,7 +128,9 @@ class PartnerFUXTest extends OAuthTestCase
 
     public function testResellerPartnerFUXDetailsAfterEarningsAreGenerated()
     {
-        list($partner, $config, $payment) = $this->createPartnerWithPaymentBySubmerchant(['partner_type' => 'reseller']);
+        list($partner, $config, $payment) = $this->createPartnerWithPaymentBySubmerchant(
+            ['partner_type' => 'reseller'], ['live' => true]
+        );
 
         $commissionAttributes = [
             'source_id'         => $payment->getId(),
@@ -130,7 +147,7 @@ class PartnerFUXTest extends OAuthTestCase
 
     public function testAggregatorPartnerFUXDetailsAfterEarningsAreGenerated()
     {
-        list($partner, $config, $payment) = $this->createPartnerWithPaymentBySubmerchant();
+        list($partner, $config, $payment) = $this->createPartnerWithPaymentBySubmerchant([], ['live' => true]);
 
         $commissionAttributes = [
             'source_id'         => $payment->getId(),
@@ -145,7 +162,7 @@ class PartnerFUXTest extends OAuthTestCase
         $this->runRequestResponseFlow($this->testData[__FUNCTION__]);
     }
 
-    public function createResellerPartnerSubmerchant()
+    public function createResellerPartnerSubmerchant($subMerchantAttributes = [])
     {
         $merchantId = self::DEFAULT_MERCHANT_ID;
 
@@ -158,9 +175,7 @@ class PartnerFUXTest extends OAuthTestCase
             'email'        => 'test@example.com',
         ]);
 
-        $this->fixtures->merchant->edit(self::DEFAULT_SUBMERCHANT_ID, [
-            'email' => 'testing@example.com',
-        ]);
+        $this->fixtures->merchant->edit(self::DEFAULT_SUBMERCHANT_ID, $subMerchantAttributes);
 
         $this->ba->proxyAuth('rzp_test_' . $merchantId);
 
@@ -221,13 +236,13 @@ class PartnerFUXTest extends OAuthTestCase
         ]);
     }
 
-    public function createPartnerWithPaymentBySubmerchant($partnerAttributes = [])
+    public function createPartnerWithPaymentBySubmerchant($partnerAttributes = [], $subMerchantAttributes = [])
     {
         list($partner, $app) = $this->createPartnerAndApplication($partnerAttributes);
 
         $config = $this->createConfigForPartnerApp($app->getId());
 
-        list($subMerchant) = $this->createSubMerchant($partner, $app);
+        list($subMerchant) = $this->createSubMerchant($partner, $app, $subMerchantAttributes);
 
         $dt = Carbon::today(Timezone::IST)->subDays(50);
 
