@@ -76,7 +76,7 @@ class Core extends Base\Core
         });
     }
 
-    public function edit(Entity $address, $input)
+    public function edit(Entity $address, $input, $entityType)
     {
         if ((isset($input[Entity::TYPE]) === true) and ($address->getType() !== $input[Entity::TYPE] ))
         {
@@ -85,8 +85,13 @@ class Core extends Base\Core
 
         unset($input[Entity::TYPE]);
 
-        return $this->repo->transaction(function () use ($address, $input) {
-            $address->edit($input);
+        return $this->repo->transaction(function () use ($entityType, $address, $input) {
+            if($entityType === Type::CUSTOMER)
+            {
+                $address->editForCustomer($input);
+            } else{
+                $address->edit($input);
+            }
 
             if ($address->isPrimary() === true)
             {
@@ -144,6 +149,15 @@ class Core extends Base\Core
     public function setPrimaryAddress(Entity $address)
     {
         $this->handlePrimaryAddressSwitch($address);
+
+        return $address;
+    }
+
+    protected function editForCustomer(array $input)
+    {
+        $address = (new Entity)->editForCustomer($input);
+
+        $this->repo->saveOrFail($address);
 
         return $address;
     }
