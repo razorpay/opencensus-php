@@ -661,26 +661,11 @@ class Core extends Base\Core
 
     public function postPaymentCaptureUpdatePaymentPage(Payment\Entity $payment)
     {
-        $merchant = $payment->merchant;
-
-        $variant = $this->app->razorx->getTreatment(
-            $merchant->getId(),
-            self::RAZORX_ASYNC_UPDATE_EXPERIMENT,
-            $this->mode
-        );
-
-        if ($variant === 'on')
-        {
-            PaymentPageProcessor::dispatch($this->mode, [
-                'payment_id'    => $payment->getId(),
-                'start_time'    => millitime(),
-                'event'         => PaymentPageProcessor::PAYMENT_CAPTURE_EVENT,
-            ]);
-
-            return;
-        }
-
-        $this->postPaymentCaptureAttemptProcessing($payment);
+        PaymentPageProcessor::dispatch($this->mode, [
+            'payment_id'    => $payment->getId(),
+            'start_time'    => millitime(),
+            'event'         => PaymentPageProcessor::PAYMENT_CAPTURE_EVENT,
+        ]);
     }
 
     public function postPaymentRefundUpdatePaymentPageDispatcher(Payment\Refund\Entity $refund)
