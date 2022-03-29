@@ -1299,4 +1299,88 @@ return [
             ],
         ],
     ],
+
+    'testEditAccountHavingNonEnglishDescription' => [
+        'request'  => [
+            'url'     => '/v2/accounts/{accountId}',
+            'method'  => 'PATCH',
+            'content' => [
+                'description' => 'Laravel 不错',
+                'profile' => [
+                    'addresses'      => [
+                        'registered' => [
+                            'street1'     => '507, Malad 1st block',
+                            'street2'     => 'SV Road',
+                            'city'        => 'Mumbai',
+                            'state'       => 'Maharashtra',
+                            'postal_code' => 400064,
+                            'country'     => 'IN'
+                        ]
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'type'                => 'standard',
+                'status'              => 'created',
+                'email'               => 'testcreateaccountaa@razorpay.com',
+                'legal_business_name' => 'Acme Corp Pvt Ltd',
+                'customer_facing_business_name'   => 'Acme',
+                'business_type'       => 'individual',
+                'profile'             => [
+                    'category'       => 'healthcare',
+                    'subcategory'    => 'clinic',
+                    'description' => 'Laravel 不错',
+                    'addresses'      => [
+                        'registered' => [
+                            'street1'     => '507, Malad 1st block',
+                            'street2'     => 'SV Road',
+                            'city'        => 'Mumbai',
+                            'state'       => 'MAHARASHTRA',
+                            'postal_code' => 400064,
+                            'country'     => 'IN'
+                        ]
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testEditAccountHavingEmojiInContactName' => [
+        'request'  => [
+            'url'     => '/v2/accounts/{accountId}',
+            'method'  => 'PATCH',
+            "contact_name"=> "😀 Shivam Kumar",
+            'content' => [
+                'description' => 'Laravel 不错',
+                'profile' => [
+                    'addresses'      => [
+                        'registered' => [
+                            'street1'     => '507, Malad 1st block',
+                            'street2'     => 'SV Road',
+                            'city'        => 'Mumbai',
+                            'state'       => 'Maharashtra',
+                            'postal_code' => 400064,
+                            'country'     => 'IN'
+                        ]
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'status_code' => 400,
+            'content' => [
+                'error' => [
+                    'code' => 'BAD_REQUEST_ERROR',
+                    'description' => 'The contact name format is invalid.',
+                    'source' => 'business',
+                    'step' => 'payment_initiation',
+                    'reason' => 'input_validation_failed',
+                    'metadata' => [],
+                    'field' => 'contact_name',
+                ],
+            ],
+        ],
+    ],
 ];

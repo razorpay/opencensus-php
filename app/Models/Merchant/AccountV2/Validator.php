@@ -17,7 +17,7 @@ class Validator extends Merchant\Validator
         Constants::REFERENCE_ID                    => 'sometimes',
         Constants::EMAIL                           => 'required|email',
         Constants::PHONE                           => 'required|numeric',
-        Constants::CONTACT_NAME                    => 'sometimes|string',
+        Constants::CONTACT_NAME                    =>  array ('sometimes','regex:/^[\p{L} ,@#-.%\/]{1,255}$/u'),
         Constants::LEGAL_BUSINESS_NAME             => 'required|string',
         Constants::CUSTOMER_FACING_BUSINESS_NAME   => 'sometimes|string',
         Constants::BUSINESS_TYPE                   => 'required|string',
@@ -33,7 +33,7 @@ class Validator extends Merchant\Validator
 
     protected static $editAccountRules = [
         Constants::PHONE                           => 'filled|numeric',
-        Constants::CONTACT_NAME                    => 'sometimes|string',
+        Constants::CONTACT_NAME                    =>  array ('sometimes','regex:/^[\p{L} ,@#-.%\/]{1,255}$/u'),
         Constants::LEGAL_BUSINESS_NAME             => 'sometimes|string',
         Constants::CUSTOMER_FACING_BUSINESS_NAME   => 'sometimes|string',
         Constants::PROFILE                         => 'sometimes|array',
@@ -50,7 +50,7 @@ class Validator extends Merchant\Validator
         Constants::ADDRESSES . '.*'  => 'filled|array',
         Constants::CATEGORY          => 'required|string',
         Constants::SUBCATEGORY       => 'required|string',
-        Constants::DESCRIPTION       => 'sometimes|string',
+        Constants::DESCRIPTION       =>  array ('sometimes','regex:/^[\p{L} ,@#-.%\/]{1,255}$/u'),
         Constants::BUSINESS_MODEL    => 'sometimes|string|custom',
     ];
 
@@ -59,8 +59,8 @@ class Validator extends Merchant\Validator
         Constants::ADDRESSES . '.*'  => 'filled|array',
         Constants::CATEGORY          => 'sometimes|string',
         Constants::SUBCATEGORY       => 'sometimes|string',
-        Constants::DESCRIPTION       => 'sometimes|string',
-        Constants::BUSINESS_MODEL    => 'sometimes|string|custom',
+        Constants::DESCRIPTION       =>  array ('sometimes','regex:/^[\p{L} ,@#-.%\/]{1,255}$/u'),
+        Constants::BUSINESS_MODEL    => 'sometimes|string|custom'
     ];
 
     protected static $accountAddressRules = [

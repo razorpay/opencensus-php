@@ -399,4 +399,55 @@ class AccountV2Test extends TestCase
         $this->assertEquals([],$data[1]);
         $this->assertEquals([],$data[2]);
     }
+
+
+    public function testEditAccountHavingNonEnglishDescription()
+    {
+        $this->setUpPartnerWithKycHandled();
+
+        $metricsMock = $this->createMetricsMock();
+
+        $expectedMetricData = $this->getDimensionsForAccountV2Metrics();
+
+        $metricCaptured = false;
+
+        $this->mockAndCaptureCountMetric(Metric::ACCOUNT_V2_EDIT_SUCCESS_TOTAL, $metricsMock, $metricCaptured, $expectedMetricData);
+
+        $testData = $this->testData['testCreateAccountV2ForCompletelyFilledRequest'];
+
+        $result = $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/v2/accounts/' . $result['id'];
+
+        $this->startTest($testData);
+
+        $this->assertTrue($metricCaptured);
+    }
+
+    public function testEditAccountHavingEmojiInContactName () {
+
+        $this->setUpPartnerWithKycHandled();
+
+        $metricsMock = $this->createMetricsMock();
+
+        $expectedMetricData = $this->getDimensionsForAccountV2Metrics();
+
+        $metricCaptured = false;
+
+        $this->mockAndCaptureCountMetric(Metric::ACCOUNT_V2_EDIT_SUCCESS_TOTAL, $metricsMock, $metricCaptured, $expectedMetricData);
+
+        $testData = $this->testData['testCreateAccountV2ForCompletelyFilledRequest'];
+
+        $result = $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/v2/accounts/' . $result['id'];
+
+        $this->startTest($testData);
+
+        $this->assertTrue($metricCaptured);
+    }
 }
