@@ -450,4 +450,34 @@ class AccountV2Test extends TestCase
 
         $this->assertTrue($metricCaptured);
     }
+
+    public function testSetMaxPaymentAmountForUnregisteredSubMerchant()
+    {
+        $this->setUpPartnerWithKycHandled();
+
+        $response= $this->startTest();
+
+        $accountId = $response['id'];
+
+        Account\Entity::verifyIdAndSilentlyStripSign($accountId);
+
+        $merchant = $this->getDbEntity('merchant', ['id' => $accountId]);
+
+        $this->assertEquals(20000000, $merchant->getMaxPaymentAmount());
+    }
+
+    public function testSetMaxPaymentAmountDefaultForRegisteredSubMerchant()
+    {
+        $this->setUpPartnerWithKycHandled();
+
+        $response= $this->startTest();
+
+        $accountId = $response['id'];
+
+        Account\Entity::verifyIdAndSilentlyStripSign($accountId);
+
+        $merchant = $this->getDbEntity('merchant', ['id' => $accountId]);
+
+        $this->assertNotEquals(20000000, $merchant->getMaxPaymentAmount());
+    }
 }

@@ -26,6 +26,13 @@ class InputHelper
             $data[Merchant\Entity::CODE] = $input[Constants::REFERENCE_ID];
         }
 
+        if (isset($input[Constants::BUSINESS_TYPE]) === true)
+        {
+            $businessType = $input[Constants::BUSINESS_TYPE];
+
+            $data[Detail\Entity::BUSINESS_TYPE] = $businessType;
+        }
+
         return $data;
     }
 

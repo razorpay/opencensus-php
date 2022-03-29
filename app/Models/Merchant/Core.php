@@ -340,6 +340,9 @@ class Core extends Base\Core
             );
         }
 
+        $subMerchantBusinessType = $input[Detail\Entity::BUSINESS_TYPE] ?? '';
+        unset($input[Detail\Entity::BUSINESS_TYPE]);
+
         $subMerchant = $entity->build($input);
 
         $has24x7SettlementFeature = $aggregatorMerchant->isFeatureEnabled(Feature\Constants::SETTLEMENT_24X7);
@@ -366,6 +369,8 @@ class Core extends Base\Core
 
             $subMerchant->parent()->associate($aggregatorMerchant);
         }
+
+        $this->setSubMerchantMaxPaymentAmount($aggregatorMerchant,$subMerchant,$subMerchantBusinessType);
 
         $aggregatorOrgId = $aggregatorMerchant->getOrgId();
 
@@ -5102,6 +5107,14 @@ class Core extends Base\Core
             return true;
         }
         return false;
+    }
+
+    protected function setSubMerchantMaxPaymentAmount(Entity $partner,Entity $subMerchant,string $subMerchantBusinessType)
+    {
+        if($partner->getId() === env('MAX_PAYMENT_AMOUNT_PARTNER_ID') && Detail\BusinessType::isUnregisteredBusiness($subMerchantBusinessType))
+        {
+            $subMerchant->setMaxPaymentAmount(env('SUB_MERCHANT_MAX_PAYMENT_AMOUNT'));
+        }
     }
 
     /**
