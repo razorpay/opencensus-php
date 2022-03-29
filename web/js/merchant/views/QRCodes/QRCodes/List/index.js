@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { withRouter, NavLink } from 'react-router-dom';
 import RTracking from 'react-tracking';
+import { withRouter, NavLink } from 'react-router-dom';
 import HeaderAction from 'common/ui/HeaderAction';
 import DataTable from 'common/ui/Table/DataTable';
 import Pager from 'common/ui/Pager';
@@ -45,9 +45,16 @@ export const status = {
 };
 
 @withRouter
-@connect((state) => ({ ...state.qr_codes, ...state.session }), {
-  fetchAll,
-})
+@connect(
+  (state) => ({
+    ...state.qr_codes,
+    ...state.session,
+    isMobileResolution: state.app.isMobileResolution,
+  }),
+  {
+    fetchAll,
+  },
+)
 @RTracking(() => window.rzpQ.component('QRCodesListContainer'))
 export default class QRCodesListContainer extends ListContainer {
   componentDidMount() {
@@ -110,10 +117,12 @@ export default class QRCodesListContainer extends ListContainer {
         />
 
         <DataTable
-          title="QR Codes"
-          columns={[qrCodeId, description, qrUsage, amountReceived, createdAt, status]}
           {...this.props}
+          title="QR Codes"
           EmptyComponent={EmptyComponent}
+          mobileColumns={[qrCodeId, status]}
+          isMobileResolution={this.props.isMobileResolution}
+          columns={[qrCodeId, description, qrUsage, amountReceived, createdAt, status]}
         />
 
         <Pager

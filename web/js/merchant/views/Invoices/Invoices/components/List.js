@@ -10,6 +10,7 @@ import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
 import EntityItemRow from 'merchant/containers/EntityItemRow';
 import Icon from '@razorpay/blade-old/src/atoms/Icon';
 import { getCustomerDisplayName, truncatedString } from 'common/utils/rzp-utils';
+import MobileListView from 'common/ui/MobileListView';
 import copyToClipboard from 'common/utils/copyToClipboard';
 import { isMobileDevice } from 'merchant/components/Home/data';
 
@@ -27,28 +28,35 @@ const shareURL = (url, title) => {
   }
 };
 
-const InvoiceListItem = (props) => {
-  const { invoice, onCopy, label } = props;
-  const customer = invoice.customer_details;
-  const paymentLinkMobileTableListView = (
-    <EntityItemRow id={invoice.id}>
+const commonListItem = (item) => {
+  return (
+    <>
       <td>
-        <NavLink
-          to={
-            ['link', 'ecod'].indexOf(invoice.type) !== -1
-              ? `/paymentlinks/${invoice.id}`
-              : `/invoices/${invoice.id}`
-          }
-        >
-          <code>{invoice.id}</code>
+        <Amount value={item?.amount} currency={item?.currency} />
+      </td>
+      <td>
+        <InvoiceStatusLabel status={item?.status ? item.status.toLowerCase() : null} />
+      </td>
+    </>
+  );
+};
+
+const PaymentLinkMobileTableListView = (items) => {
+  const { item } = items;
+
+  return (
+    <EntityItemRow id={item?.id}>
+      <td>
+        <NavLink to={`/paymentlinks/${item?.id}`}>
+          <code>{item?.id}</code>
         </NavLink>
-        <tr class="mobile-text">{customer?.customer_contact}</tr>
-        <tr class="mobile-text">{truncatedString(customer?.customer_email)}</tr>
-        {invoice.short_url && (
+        <tr class="mobile-text">{item?.customer_details?.customer_contact}</tr>
+        <tr class="mobile-text">{truncatedString(item?.customer_details?.customer_email)}</tr>
+        {item?.short_url && (
           <View
             className="link-container"
             data-tip="Copied"
-            onClick={() => shareURL(invoice.short_url, invoice.id)}
+            onClick={() => shareURL(item.short_url, item?.id)}
           >
             <Flex alignItems="center">
               <Text size="small">
@@ -61,18 +69,16 @@ const InvoiceListItem = (props) => {
           </View>
         )}
       </td>
-      <td>
-        <Amount value={invoice.amount} currency={invoice.currency} />
-      </td>
-      <td>
-        <InvoiceStatusLabel status={invoice.status ? invoice.status.toLowerCase() : null} />
-      </td>
+      {commonListItem(item)}
     </EntityItemRow>
   );
+};
 
-  return isMobileDevice() && label === 'Payment Link' ? (
-    paymentLinkMobileTableListView
-  ) : (
+const InvoiceListItem = (props) => {
+  const { invoice, onCopy } = props;
+  const customer = invoice.customer_details;
+
+  return (
     <EntityItemRow id={invoice.id}>
       <td>
         <NavLink
@@ -87,9 +93,6 @@ const InvoiceListItem = (props) => {
       </td>
       <td>
         <Time value={invoice.date || invoice.created_at} />
-      </td>
-      <td>
-        <Amount value={invoice.amount} currency={invoice.currency} />
       </td>
       <td>{invoice.receipt}</td>
       <td>
@@ -112,39 +115,10 @@ const InvoiceListItem = (props) => {
           />
         )}
       </td>
-      <td>
-        <InvoiceStatusLabel status={invoice.status ? invoice.status.toLowerCase() : null} />
-      </td>
+      {commonListItem(invoice)}
     </EntityItemRow>
   );
 };
-
-const desktopListViewHeaders = (desktopListViewChildren, label, isPaymentlinksV2Enabled) => {
-  return desktopListViewChildren ? (
-    desktopListViewChildren
-  ) : (
-    <tr>
-      <th>{label} Id</th>
-      <th>Created Date</th>
-      <th>Amount</th>
-      <th>{isPaymentlinksV2Enabled ? 'Reference Id' : 'Receipt No.'}</th>
-      <th>Customer</th>
-      <th>Payment Link</th>
-      <th>Status</th>
-    </tr>
-  );
-};
-
-const mobileListViewHeaders = (mobileListViewChildren) =>
-  mobileListViewChildren ? (
-    mobileListViewChildren
-  ) : (
-    <tr>
-      <th>Payment Link Id</th>
-      <th>Amount</th>
-      <th>Status</th>
-    </tr>
-  );
 
 export default (props) => {
   const {
@@ -154,19 +128,31 @@ export default (props) => {
     onCopy = () => {},
     EmptyList,
     isPaymentlinksV2Enabled,
-    mobileListViewChildren,
-    desktopListViewChildren,
   } = props;
   const isPaymentLinksType = type === 'link';
   const label = isPaymentLinksType ? 'Payment Link' : 'Invoice';
   const listStyle = label === 'Payment Link' ? 'Payment-link-list' : 'Invoice-list';
-  return (
-    <div class={`${listStyle} table-responsive`}>
+  return isMobileDevice() && label === 'Payment Link' ? (
+    <MobileListView
+      headers={['Payment Link Id', 'Amount', 'Status']}
+      TableListItem={PaymentLinkMobileTableListView}
+      tableWrapperClass={listStyle}
+      items={invoices}
+      {...props}
+    />
+  ) : (
+    <div class="table-responsive">
       <table class="table table-hover">
         <thead>
-          {isMobileDevice() && isPaymentLinksType
-            ? mobileListViewHeaders(mobileListViewChildren)
-            : desktopListViewHeaders(desktopListViewChildren, label, isPaymentlinksV2Enabled)}
+          <tr>
+            <th>{label} Id</th>
+            <th>Created Date</th>
+            <th>Amount</th>
+            <th>{isPaymentlinksV2Enabled ? 'Reference Id' : 'Receipt No.'}</th>
+            <th>Customer</th>
+            <th>Payment Link</th>
+            <th>Status</th>
+          </tr>
         </thead>
         <TableBody isLoading={isLoading} colSpan={8} rows={invoices} emptyTableRow={EmptyList}>
           {invoices.map((invoice) => (

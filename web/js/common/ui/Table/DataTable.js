@@ -2,18 +2,17 @@ import Spinner from 'common/ui/Spinner';
 import Pager from 'common/ui/Pager';
 import Alert from 'common/ui/Forms/Alert';
 import Table from 'common/ui/Table/Index';
-import { NavLink } from 'react-router-dom';
 
 /*
   // Usage: Check slider/details view of payments, plans, etc.
   // Constraint:
-     1. Pass props 'progressLoader' to <Table> only when progress loaders is shown instead of <Spinner>.
-     2. Passing props 'customClass' is advised so as to have more control on `progress loader` length
-     3. Passing props 'panelHeading = {title:, subTitle}' is kind of header but it's not table th (Check subscriptions dual view)
+    1. Pass props 'progressLoader' to <Table> only when progress loaders is shown instead of <Spinner>.
+    2. Passing props 'customClass' is advised so as to have more control on `progress loader` length
+    3. Passing props 'panelHeading = {title:, subTitle}' is kind of header but it's not table th (Check subscriptions dual view)
 */
 
 export default function DataTable(props) {
-  let {
+  const {
     error,
     loading,
     items,
@@ -31,6 +30,9 @@ export default function DataTable(props) {
     panelHeading,
     EmptyComponent, //-render empty component when the items are 0. see batch list
     onErrorCloseClick,
+    isMobileResolution,
+    customMobileRow,
+    mobileColumns,
   } = props;
 
   const classes = `${noStripe ? '' : 'table-striped'} ${columns ? customClass : ''}`;
@@ -55,6 +57,9 @@ export default function DataTable(props) {
         progressLoader={progressLoader}
         loading={loading}
         className={classes}
+        mobileColumns={mobileColumns}
+        customMobileRow={customMobileRow}
+        isMobileResolution={isMobileResolution}
       />
       {!progressLoader && loading && (
         <div style={{ padding: 77 }} class="text-center">
