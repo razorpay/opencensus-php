@@ -240,6 +240,7 @@ export default class ButtonDetails extends React.Component {
             }}
             autoFocus={!paymentButtonId}
             required
+            onBlur={track.buttonTitle}
           />
 
           <InputDropdown

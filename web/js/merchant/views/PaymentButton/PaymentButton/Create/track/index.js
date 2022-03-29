@@ -78,6 +78,10 @@ function _track() {
       sendToLumberjack('setup.text_button', { value });
       sendToSegment('text in button', 'input', { value });
     },
+    buttonTitle: () => {
+      sendToLumberjack('setup.title');
+      sendToSegment('title', 'input');
+    },
     buttonAmount: (options) => {
       sendToLumberjack('setup.amount_button', options);
       sendToSegment('amount', 'input', { options });
@@ -137,6 +141,16 @@ function _track() {
     amountScreenBackSuccess: () => {
       sendToLumberjack('amount.back_success');
       sendToSegment('amount back button', 'click');
+    },
+
+    // 2.1 donation details
+    donationScreenNextSuccess: () => {
+      sendToLumberjack('donation.next_success');
+      sendToSegment('donation next button', 'click');
+    },
+    donationScreenBackSuccess: () => {
+      sendToLumberjack('donation.back_success');
+      sendToSegment('donation back button', 'click');
     },
 
     // 3. customer details

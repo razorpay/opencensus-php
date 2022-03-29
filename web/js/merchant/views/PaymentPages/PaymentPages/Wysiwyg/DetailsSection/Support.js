@@ -6,6 +6,7 @@ import { isEmail, isPhone } from 'common/utils/validators';
 
 import { prefillContactDetails } from 'merchant/reducers/wysiwyg';
 import { fetchSupportDetail } from 'merchant/reducers/support_detail';
+import track from '../track';
 
 const phoneIcon = (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
@@ -50,7 +51,25 @@ export default class extends React.PureComponent {
       support_contact: this.props.support_contact || this.props.globalSupportDetails.phone,
     };
     this.props.prefillContactDetails(contactDetails);
+
+    // if both values are present, we fire prefill event
+    if (contactDetails.support_email && contactDetails.support_contact) {
+      track.wysiwyg.supportEmail(contactDetails.support_email, true);
+      track.wysiwyg.supportPhone(contactDetails.support_contact, true);
+    }
   }
+
+  onSupportFieldBlur = (e) => {
+    this.props.updateData(e);
+
+    const value = e.target.value;
+
+    if (e.target.name === 'support_email') {
+      track.wysiwyg.supportEmail(value);
+    } else {
+      track.wysiwyg.supportPhone(value);
+    }
+  };
 
   render() {
     const { support_email, support_contact, supportPhoneRef, supportEmailRef } = this.props;
@@ -64,7 +83,7 @@ export default class extends React.PureComponent {
           placeholder="Enter support email"
           icon={emailIcon}
           defaultValue={support_email}
-          onBlur={this.props.updateData}
+          onBlur={this.onSupportFieldBlur}
           addButtonLabel="Add Support Email"
           validator={(val) => {
             if (val && !isEmail(val)) {
@@ -83,7 +102,7 @@ export default class extends React.PureComponent {
           placeholder="Enter support phone"
           icon={phoneIcon}
           defaultValue={support_contact}
-          onBlur={this.props.updateData}
+          onBlur={this.onSupportFieldBlur}
           addButtonLabel="Add Support Phone"
           validator={(val) => {
             if (val && !isPhone(val)) {

@@ -212,6 +212,14 @@ function _track() {
         sendToLumberjack('title.fail', { title, error });
         sendToSegment('title fail', 'input', { title, error });
       },
+      supportEmail: (text, is_prefill = false) => {
+        sendToLumberjack('support.email', { text, is_prefill });
+        sendToSegment('support email', 'input', { text, is_prefill });
+      },
+      supportPhone: (text, is_prefill = false) => {
+        sendToLumberjack('support.phone', { text, is_prefill });
+        sendToSegment('support phone', 'input', { text, is_prefill });
+      },
       addImageSuccess: () => {
         sendToLumberjack('description.image_upload.success');
         sendToSegment(' description image upload', 'success');

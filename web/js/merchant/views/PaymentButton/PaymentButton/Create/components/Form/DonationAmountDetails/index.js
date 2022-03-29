@@ -1,6 +1,7 @@
+import React from 'react';
 import { connect } from 'react-redux';
 
-import { Label, Description } from 'common/new-ui/Input';
+import { Description } from 'common/new-ui/Input';
 import SwitchField from 'common/ui/Forms/SwitchField';
 import Button from 'common/new-ui/Button';
 import MainAmountField from './Fields/MainAmountField';
@@ -17,6 +18,8 @@ import {
   updateStepReviewProgress,
 } from 'merchant/reducers/paymentbuttons/create';
 
+import track from '../../../track';
+
 @connect(null, {
   updateAmountField,
   deleteAmountField,
@@ -26,12 +29,11 @@ export default class AmountDetails extends React.Component {
   maxItemsLimit = 5;
   state = {
     disableSubmit: false,
-    hasPresetAmountFields:
-      this.props.amountFields && this.props.amountFields.length > 1,
+    hasPresetAmountFields: this.props.amountFields && this.props.amountFields.length > 1,
   };
 
   validateSameTitleExists = (title, indexInOrder) => {
-    const allFieldsTitles = this.props.amountFields.map(field => {
+    const allFieldsTitles = this.props.amountFields.map((field) => {
       return field.item.name.toLowerCase();
     });
 
@@ -40,12 +42,15 @@ export default class AmountDetails extends React.Component {
     if (sameTitleIndex > -1 && sameTitleIndex !== indexInOrder) {
       return true;
     }
+    return false;
   };
 
   goNext = () => {
     this.props.goNext();
 
     this.markReviewDone();
+
+    track.donationScreenNextSuccess();
   };
 
   markReviewDone = () => {
@@ -58,15 +63,13 @@ export default class AmountDetails extends React.Component {
     setTimeout(this.toggleSubmitBtn); // Validate form for input errors via class change in DOM, hence delayed.
   };
 
-  handleAddPresetAmountField = presetIndexInOrder => {
+  handleAddPresetAmountField = (presetIndexInOrder) => {
     if (typeof presetIndexInOrder !== 'number') {
       const totalPresets = this.props.amountFields.length - 1;
       presetIndexInOrder = totalPresets + 1;
     }
 
-    const newAmountField = getBaseFieldForAmountFieldType(
-      FIELD_TYPES.fixed_price.key
-    );
+    const newAmountField = getBaseFieldForAmountFieldType(FIELD_TYPES.fixed_price.key);
     newAmountField.mandatory = false; // Optional
     newAmountField.item.amount = presetIndexInOrder * 500; // Note: Adding some amount is important otherwise it would get treated as dynamic amount field in Preview
 
@@ -78,7 +81,7 @@ export default class AmountDetails extends React.Component {
     setTimeout(this.toggleSubmitBtn);
   };
 
-  handleRemovePresetAmountField = indexInOrder => {
+  handleRemovePresetAmountField = (indexInOrder) => {
     this.props.deleteAmountField(indexInOrder);
   };
 
@@ -102,10 +105,7 @@ export default class AmountDetails extends React.Component {
     }
   }
 
-  debounce_addRemovePresetAmountFields = debounce(
-    this.addRemovePresetAmountFields.bind(this),
-    400
-  );
+  debounce_addRemovePresetAmountFields = debounce(this.addRemovePresetAmountFields.bind(this), 400);
 
   toggleMainAmountFieldMandatory = () => {
     const mainAmountField = this.props.amountFields[0];
@@ -127,6 +127,7 @@ export default class AmountDetails extends React.Component {
   };
 
   toggleAddPresetAmountFields = () => {
+    // eslint-disable-next-line react/no-access-state-in-setstate
     const hasPresetAmountFields = !this.state.hasPresetAmountFields;
 
     this.setState(
@@ -140,22 +141,22 @@ export default class AmountDetails extends React.Component {
         // 2.
         // Instantly add the fields, but have delay while removing fields so that data is retained in accidental clicks
         if (hasPresetAmountFields) {
-          this.addRemovePresetAmountFields.call(this);
+          this.addRemovePresetAmountFields();
         } else {
           this.debounce_addRemovePresetAmountFields();
         }
-      }
+      },
     );
   };
 
   toggleSubmitBtn = () => {
     const form = this.formContainerEl;
-    let disableSubmit = !!form.querySelectorAll('.is-invalid').length;
+    const disableSubmit = !!form.querySelectorAll('.is-invalid').length;
 
     this.setState({ disableSubmit });
   };
 
-  setRefFormContainer = el => (this.formContainerEl = el);
+  setRefFormContainer = (el) => (this.formContainerEl = el);
 
   render() {
     const { amountFields, paymentButtonEntity } = this.props;
@@ -203,9 +204,7 @@ export default class AmountDetails extends React.Component {
                 currency={currency}
                 validateSameTitleExists={this.validateSameTitleExists}
                 onChange={this.onChange}
-                handleRemovePresetAmountField={
-                  this.handleRemovePresetAmountField
-                }
+                handleRemovePresetAmountField={this.handleRemovePresetAmountField}
                 disabled={!hasPresetAmountFields}
               />
             );
@@ -225,15 +224,18 @@ export default class AmountDetails extends React.Component {
         </div>
 
         <div class="Form-controls">
-          <Button.Transparent type="button" onClick={this.props.goBack}>
+          <Button.Transparent
+            type="button"
+            onClick={() => {
+              this.props.goBack();
+
+              track.donationScreenBackSuccess();
+            }}
+          >
             Back
           </Button.Transparent>
 
-          <Button.Primary
-            type="button"
-            onClick={this.goNext}
-            disabled={this.state.disableSubmit}
-          >
+          <Button.Primary type="button" onClick={this.goNext} disabled={this.state.disableSubmit}>
             Next <i class="i i-chevron-right" />
           </Button.Primary>
         </div>
