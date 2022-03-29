@@ -653,9 +653,9 @@ export default class AddEditExperiment extends React.Component {
                     <div className="flex-row">
                       <Field
                         type="text"
-                        label="Weight"
+                        label="Weight Percentage"
                         name="variantWeight"
-                        placeholder="Variant Weight"
+                        placeholder="Variant Weight Percentage"
                         value={variant.weight}
                         onChange={(e) => {
                           const newVariants = [...variants];

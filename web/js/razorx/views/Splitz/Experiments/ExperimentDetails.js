@@ -353,7 +353,7 @@ export default class ExperimentDetails extends React.Component {
                   </div>
                   <div>
                     <span className="square-pills label-semi-muted">
-                      <b>Weight:</b> {variant.weight}
+                      <b>Weight Percentage:</b> {variant.weight}
                     </span>
                   </div>
                   {variant.variables ? (
