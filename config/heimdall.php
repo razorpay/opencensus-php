@@ -1436,6 +1436,10 @@ return [
                 'description' => 'To be used to hit any route that needs tech admin route access.',
                 'assignable'  => true,
             ],
+            Permission::MOB_ADMIN => [
+                'description' => 'To perform CRUD operations on kycBundle/productBundle in MOB',
+                'assignable'  => true,
+            ],
         ],
 
         PermissionCategory::RAZORPAYX_APPS => [
