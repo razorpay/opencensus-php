@@ -157,6 +157,24 @@ return [
         'Date Time'                     => Carbon::today()->format("d/m/Y H:i:s")
     ],
 
+    'testKotakRefundRecon' => [
+        'Count'                         => '1',
+        'FILE NAME'                     => 'INTERNET',
+        'FILE RECEIVED DATE'            =>  Carbon::today()->format("'d-M-y'"),
+        'MERCHANT ID'                   => 'OSRAZORPAY',
+        'MERCHANT REF NO'               => '',
+        'FROM APAC'                     => '06410910000362',
+        'TO APAC'                       => '06410910000362',
+        'PROCESSED FLAG'                => 'Y',
+        'AMOUNT'                        => '500',
+        'PROCESSED DATE'                => Carbon::today()->format("'d-M-y'"),
+        'PROC REMARKS'                  => 'Your funds have been received towards your payment as per details below.',
+        'AUTHORIZED BY'                 => 'NET',
+        'AUTHORIZED DATE'               => Carbon::today()->format("'d-M-y'"),
+        'BANK REF NO'                   => '0006293741',
+        'ACTUAL TXN AMOUNT'             => '1000'
+    ],
+
     'testDlbSuccessRecon' => [
         'Sr.NO'                     => '1',
         'BankMerchantId'            => 'RAZORPG',

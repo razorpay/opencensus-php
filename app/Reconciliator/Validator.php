@@ -12,7 +12,7 @@ class Validator extends Base\Core
 {
     const ACCEPTED_EXTENSIONS_MAP = [
         'csv'  => ['text/csv', 'text/x-comma-separated-values', 'text/comma-separated-values', 'text/plain'],
-        'txt'  => ['text/plain', 'application/octet-stream', 'audio/x-unknown'],
+        'txt'  => ['text/plain', 'application/octet-stream', 'audio/x-unknown', 'text/x-Algol68', 'text/x-algol68'],
         // Ensure that this is always above 'xlsx' because of `getExtensionFromContentType`
         'zip'  => ['application/x-compressed', 'application/x-zip-compressed', 'application/zip', 'multipart/x-zip'],
         'xlsx' => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
@@ -39,7 +39,7 @@ class Validator extends Base\Core
                                                         "/^'{0,1}Email MPR as of [0-9]{2}-"
                                                         . "(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-20[0-9]{2}/"
                                                      ],
-        RequestProcessor\Base::KOTAK              => ["/^PG Transaction File/"],
+        RequestProcessor\Base::KOTAK              => ["/^PG Transaction File/", "/^PG Online Refund/"],
         RequestProcessor\Base::OLAMONEY           => ["/^Merchant Settlement File/"],
         RequestProcessor\Base::FREECHARGE         => ["/^Merchant Settlement Report/"],
         RequestProcessor\Base::NETBANKING_AXIS    => [

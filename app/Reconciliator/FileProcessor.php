@@ -64,7 +64,8 @@ class FileProcessor
             'text/csv',
             'text/x-comma-separated-values',
             'text/comma-separated-values',
-            'text/plain'
+            'text/plain',
+            'text/x-algol68'
         ]
     ];
 

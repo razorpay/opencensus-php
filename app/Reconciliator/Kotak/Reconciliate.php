@@ -3,6 +3,7 @@
 namespace RZP\Reconciliator\Kotak;
 
 use RZP\Reconciliator\Base;
+use RZP\Reconciliator\FileProcessor;
 
 class Reconciliate extends Base\Reconciliate
 {
@@ -22,6 +23,24 @@ class Reconciliate extends Base\Reconciliate
         'combined_details',
         'bank_reference_no',
         'date_time',
+    ];
+
+    const REFUND_COLUMN_HEADERS = [
+        'Count',
+        'FILE NAME',
+        'FILE RECEIVED DATE',
+        'MERCHANT ID',
+        'MERCHANT REF NO',
+        'FROM APAC',
+        'TO APAC',
+        'PROCESSED FLAG',
+        'AMOUNT',
+        'PROCESSED DATE',
+        'PROC REMARKS',
+        'AUTHORIZED BY',
+        'AUTHORIZED DATE',
+        'BANK REF NO',
+        'ACTUAL TXN AMOUNT',
     ];
 
     /**
@@ -63,6 +82,28 @@ class Reconciliate extends Base\Reconciliate
             $columnHeaders = self::PAYMENT_COLUMN_HEADERS;
         }
 
+        else if ($type === self::REFUND)
+        {
+            $columnHeaders = self::REFUND_COLUMN_HEADERS;
+        }
+
         return $columnHeaders;
+    }
+
+    public function getNumLinesToSkip(array $fileDetails)
+    {
+        $type = $this->getTypeName($fileDetails['file_name']);
+
+        if ($type === self::REFUND)
+        {
+            return [
+                FileProcessor::LINES_FROM_TOP       => 1,
+                FileProcessor::LINES_FROM_BOTTOM    => 0
+            ];
+        }
+        else
+        {
+            return parent::getNumLinesToSkip($fileDetails);
+        }
     }
 }

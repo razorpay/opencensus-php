@@ -65,7 +65,7 @@ class Format
         self::JPEG    => ['image/jpeg', 'application/pgp'],
         self::PDF     => ['application/pdf', 'application/x-pdf', 'application/pgp'],
         self::PNG     => ['image/png', 'application/pgp'],
-        self::TXT     => ['text/plain', 'application/pgp', 'application/octet-stream', 'audio/x-unknown'],
+        self::TXT     => ['text/plain', 'application/pgp', 'application/octet-stream', 'audio/x-unknown', 'text/x-Algol68', 'text/x-algol68'],
         self::IN      => ['text/plain', 'application/pgp'],
         // Adding all possible type of mime type as current library we are using to create xlsx file will not take
         // care of mime
