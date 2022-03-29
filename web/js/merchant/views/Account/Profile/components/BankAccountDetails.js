@@ -24,6 +24,7 @@ const BankAccountDetails = ({
   bankAccountChangeStatus,
   settlementConfig,
   openModal,
+  org,
 }) => {
   const bankAccountSectionRef = useRef(null);
 
@@ -66,13 +67,8 @@ const BankAccountDetails = ({
 
   const isOnTemporaryHold = settlementConfig?.data?.config?.features?.hold?.status;
 
-  // Hide "Request change" button for Axis, HDFC Collect Now, ICICI & SIB Org
-  const hideRequestChange =
-    user.isOrgAxis ||
-    user.isOrgHDFCCollectNow ||
-    user.isOrgICICI ||
-    user.isOrgSIB ||
-    user.isOrgKotak;
+  // Hide Bank Account "Request Change" button if org feature is enabled
+  const hideRequestChange = org.features.indexOf('block_account_update') > -1;
 
   const showRequestChange =
     !isSettlementOnHold &&
@@ -162,6 +158,7 @@ const mapStateToProps = (state) => ({
   settlementConfig: state.settlement.config,
   workflows: state.workflows,
   bank_detail_update_workflow: state.workflows[WORKFLOW_TYPES.BANK_DETAIL_UPDATE],
+  org: state.session.org,
 });
 
 export default withRouter(
