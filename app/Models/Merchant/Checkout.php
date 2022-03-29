@@ -665,7 +665,7 @@ class Checkout
         catch (\Exception $ex)
         {
             $this->trace->traceException(
-                $ex, Trace::WARNING, TraceCode::CHECKOUT_PREFERENCES_EXCEPTION, $input);
+                $ex, Trace::ERROR, TraceCode::CHECKOUT_PREFERENCES_EXCEPTION, $input);
         }
 
         return $custData;

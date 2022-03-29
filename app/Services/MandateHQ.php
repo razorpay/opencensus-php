@@ -91,6 +91,14 @@ class MandateHQ
         return false;
     }
 
+    /**
+     * @param $bin
+     *
+     * @return bool
+     * @throws Exception\BadRequestException
+     * @throws Exception\RuntimeException
+     * @throws Exception\ServerErrorException
+     */
     public function isBinSupported($bin): bool
     {
         $header = [];
@@ -152,13 +160,15 @@ class MandateHQ
     }
 
     /**
-     * @param      $url
-     * @param      $method
-     * @param      $inputData
+     * @param string $url
+     * @param string $method
+     * @param array  $inputData
+     * @param array  $headers
      *
      * @return array|mixed
+     * @throws Exception\BadRequestException
      * @throws Exception\RuntimeException
-     * @throws \Requests_Exception
+     * @throws Exception\ServerErrorException
      */
     public function sendRequest($url, $method, array $inputData = [],$headers = [])
     {
@@ -242,6 +252,12 @@ class MandateHQ
         return $decodedResponse;
     }
 
+    /**
+     * @param $request
+     *
+     * @return mixed
+     * @throws Exception\ServerErrorException
+     */
     protected function sendMandateHQRequest($request)
     {
         $method = $request['method'];

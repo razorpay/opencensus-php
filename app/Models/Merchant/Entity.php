@@ -2929,7 +2929,13 @@ class Entity extends Base\PublicEntity
             $data[IIN\Constants::OTP] = true;
         }
 
-        $data[IIN\Entity::RECURRING] = (new Card\Entity)->isRecurringSupportedOnIIN($this, $iin);
+        try {
+            $data[IIN\Entity::RECURRING] = (new Card\Entity)->isRecurringSupportedOnIIN($this, $iin);
+        } catch (\Exception $exception) {
+            app('trace')->traceException($exception, Logger::ERROR, TraceCode::IIN_RECURRING_CHECK_FAILED);
+
+            $data[IIN\Entity::RECURRING] = false;
+        }
 
         /*
          * Iframe is only cosumed by checkout public auth.
