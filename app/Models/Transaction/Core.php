@@ -215,7 +215,27 @@ class Core extends Base\Core
 
         if ($this->app->runningUnitTests() === false)
         {
-            CardsPaymentTransaction::dispatch($data);
+            if ($payment->isCard() === true)
+            {
+                CardsPaymentTransaction::dispatch($data);
+            }
+            else if ($payment->isNetbanking() === true)
+            {
+                $queueName = $this->app['config']->get('queue.payment_nbplus_api_reconciliation.' . $this->mode);
+
+                $data["entity_name"] = "transaction";
+
+                $this->app['queue']->connection('sqs')->pushRaw(json_encode($data), $queueName);
+
+                $this->trace->info(
+                    TraceCode::TRANSACTION_INFO,
+                    [
+                        'queue'      => $queueName,
+                        'payment_id' => $data['payment_id'],
+                        'gateway'    => $payment->getGateway(),
+                    ]
+                );
+            }
         }
     }
 

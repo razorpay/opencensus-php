@@ -221,6 +221,11 @@ class Processor
     const CARD_PAYMENTS_VIA_PGROUTER = 'card_payments_via_pg_router_v2';
 
     /**
+     * Razorx flag to indicate if a payment should go via PG Router and NB+ Service or just via API service, during Payment creation
+     */
+    const NETBANKING_PAYMENTS_VIA_PGROUTER = 'netbanking_payments_via_pg_router';
+
+    /**
      * Razorx flag to indicate if a payment should go via PG Router and CPS or just via API service for headless or Rupay, during Payment creation
      */
     const HEADLESS_CARD_PAYMENTS_VIA_PGROUTER = 'headless_card_payments_via_pg_router_v2';
@@ -595,6 +600,81 @@ class Processor
         return false;
     }
 
+    private function canRouteThroughNbPlusRearchFlow($input): bool
+    {
+        $shouldRoute = false;
+
+        $currentRouteName = $this->route->getCurrentRouteName();
+        $merchant = $this->app['basicauth']->getMerchant();
+
+        if (($this->ba->getOAuthClientId() !== null) or
+            ($this->ba->isPartnerAuth() === true))
+        {
+            return false;
+        }
+
+        if ((app()->isEnvironmentProduction() === true) and
+            ($this->mode === Mode::TEST))
+        {
+            return false;
+        }
+
+        if (($this->route->isNbRearchRoute($currentRouteName) === true) and
+            ($merchant->isRazorpayOrgId() === true) and
+            ($merchant->isFeeBearerPlatform() === true) and
+            (empty($input[Payment\Entity::METHOD]) === false) and
+            ($input[Payment\Entity::METHOD] === Payment\METHOD::NETBANKING) and
+            ($merchant->isTPVRequired() === false) and
+            (empty($input[Payment\Entity::SUBSCRIPTION_ID]) === true) and
+            (empty($input[Payment\Entity::INVOICE_ID]) === true) and
+            (empty($input[Payment\Entity::PAYMENT_LINK_ID]) === true) and
+            (empty($input['reward_ids']) === true) and
+            ($merchant->isFeatureEnabled('raas') === false) and
+            ($merchant->isFeatureEnabled('openwallet') === false) and
+            (empty($input[Payment\Entity::META]) === true) and
+            (empty($input['signature']) === true) and
+            (empty($input[Payment\Entity::BILLING_ADDRESS]) === true) and
+            ($merchant->isMarketplace() === false) and
+            (empty($input[Payment\Entity::BANK]) === false) and
+            (Netbanking::isNbRearchBank($input[Payment\Entity::BANK]) === true))
+        {
+            if (empty($input[Payment\Entity::ORDER_ID]) === true)
+            {
+                $shouldRoute = false; // disabling for now till pg-router raise the fix
+            }
+            else
+            {
+                $order = $this->fetchOrderFromInput($input);
+
+                // offers are not supported in initial ramp
+                if ((empty($order) === false) and
+                    (($order->hasOffers() === false) and
+                        ($order->isDiscountApplicable() === false) and
+                        ($order->getProductId() === null) and
+                        ($order->getFeeConfigId() === null))
+                )
+                {
+                    $shouldRoute = true;
+                }
+            }
+
+        }
+
+        if ($shouldRoute === false)
+        {
+            return false;
+        }
+
+        if ((bool) Admin\ConfigKey::get(Admin\ConfigKey::PG_ROUTER_SERVICE_ENABLED, false) === false)
+        {
+            return false;
+        }
+
+        $result = $this->app->razorx->getTreatment($this->app['request']->getTaskId(), self::NETBANKING_PAYMENTS_VIA_PGROUTER, $this->mode);
+
+        return ($result === 'on');
+    }
+
     private function processPaymentViaPGRouter(array $input, $startTime)
     {
         (new Payment\Metric)->pushCreateMetricsViaPGRouter($input);
@@ -696,7 +776,8 @@ class Processor
 
             $this->validateLavbBankPayments($input);
 
-            if ($this->canRouteThroughRearchFlow($input) === true)
+            if (($this->canRouteThroughRearchFlow($input) === true) or
+                ($this->canRouteThroughNbPlusRearchFlow($input) === true))
             {
                 $this->app['diag']->trackPaymentEventV2(EventCode::REARCH_PAYMENT_CREATION_INITIATED,  null, null, $meta);
 

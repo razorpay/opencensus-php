@@ -534,6 +534,7 @@ class Entity
     const INSTALLMENT                    = 'installment';
     const CHARGE                         = 'charge';
 
+    const PAYMENTS_NBPLUS_PAYMENTS     = 'payments_nbplus.payments';
     const PAYMENTS_NBPLUS_NETBANKING   = 'payments_nbplus.netbanking';
     const NBPLUS_EMANDATE_REGISTRATION = 'payments_nbplus.emandate_registration';
     const NBPLUS_EMANDATE_DEBIT        = 'payments_nbplus.emandate_debit';
@@ -1289,6 +1290,7 @@ class Entity
         self::FTS_CHANNEL_INFORMATION_STATUS_LOGS => \RZP\Services\FTS\FtsAdminClient::class,
         self::FTS_FAIL_FAST_STATUS_LOGS     => \RZP\Services\FTS\FtsAdminClient::class,
         self::UFH_FILES                     => \RZP\Services\UfhClient::class,
+        self::PAYMENTS_NBPLUS_PAYMENTS      => \RZP\Services\NbPlus\Service::class,
         self::PAYMENTS_NBPLUS_NETBANKING    => \RZP\Services\NbPlus\Netbanking::class,
         self::NBPLUS_EMANDATE_REGISTRATION  => \RZP\Services\NbPlus\Emandate::class,
         self::NBPLUS_EMANDATE_DEBIT         => \RZP\Services\NbPlus\Emandate::class,

@@ -588,6 +588,10 @@ class AdminFetch
                 ],
             ],
 
+            Entity::PAYMENTS_NBPLUS_PAYMENTS => [
+                'payment_id' => Fetch::FIELD_PAYMENT_ID,
+            ],
+
             Entity::PAYMENTS_NBPLUS_NETBANKING => [
                 'payment_id'   => Fetch::FIELD_PAYMENT_ID,
             ],

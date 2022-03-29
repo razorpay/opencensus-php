@@ -12507,6 +12507,10 @@ class Route
         'payment_create_checkout',
     ];
 
+    protected static $nbRearchRoutes = [
+        'payment_create_ajax',
+    ];
+
     /**
      * A route can belong to multiple features, mapped here
      */
@@ -14032,6 +14036,11 @@ class Route
         $rearchRoutes = self::$rearchRoutes;
 
         return (in_array($route, $rearchRoutes, true) === true);
+    }
+
+    public static function isNbRearchRoute($route): bool
+    {
+        return (in_array($route, self::$nbRearchRoutes, true) === true);
     }
 
     public static function isJsonRoute($route)

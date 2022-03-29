@@ -2,15 +2,13 @@
 
 namespace RZP\Models\Payment\Processor;
 
-use RZP\Constants\Mode;
+use Razorpay\IFSC\Bank;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Bank\Name;
-use RZP\Models\Payment\Method;
 use RZP\Models\Merchant\Entity;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Terminal\TpvType;
 use RZP\Models\Feature\Constants;
-use RZP\Models\Terminal\Category;
 use RZP\Models\Terminal\BankingType;
 
 class Netbanking
@@ -1548,8 +1546,17 @@ class Netbanking
         return $banks;
     }
 
-    public static function getGatewaySupportedBankList()
+    public static function getGatewaySupportedBankList(): array
     {
         return self::$gatewaySupportedBanks;
+    }
+
+    public static function isNbRearchBank(string $bank): bool
+    {
+        $rearchBanks = [
+            Bank::YESB,
+        ];
+
+        return in_array($bank, $rearchBanks, true);
     }
 }
