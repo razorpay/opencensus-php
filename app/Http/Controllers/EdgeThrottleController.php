@@ -124,6 +124,7 @@ class EdgeThrottleController extends Controller
             'enabled',
             'created_at',
             'updated_at',
+            'priority',
         ]);
     }
 
@@ -151,6 +152,7 @@ class EdgeThrottleController extends Controller
             'enabled',
             'created_at',
             'updated_at',
+            'priority'
         ], true);
     }
 
@@ -184,6 +186,7 @@ class EdgeThrottleController extends Controller
             'enabled',
             'created_at',
             'updated_at',
+            'priority'
         ]);
     }
 
