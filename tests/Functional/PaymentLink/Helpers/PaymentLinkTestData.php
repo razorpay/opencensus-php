@@ -3016,6 +3016,163 @@ return [
         ],
     ],
 
+    'testPaymentHandleCreationApi'    => [
+        'request' => [
+            'url'      => '/payment_handle',
+            'method'   => 'post',
+        ],
+        'response'  => [
+            'content'  => [
+                'title' => 'Test Merchant',
+                'slug'  => '@testmerchant',
+                'url'   => 'https://razorpay.me/@testmerchant',
+            ]
+        ]
+    ],
+
+    'testPaymentHandleCreationApiCallAfterActivation'  => [
+        'request' => [
+            'url'      => '/payment_handle',
+            'method'   => 'post',
+        ],
+        'response'  => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => "Payment Handle already created for this merchant"
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testPaymentHandleCreationWhenPaymentHandleAlreadyExists'    => [
+        'request' => [
+            'url'      => '/payment_handle',
+            'method'   => 'post',
+        ],
+        'response'  => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => "Payment Handle already created for this merchant"
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testPaymentHandleCreationFromTestMode'    => [
+        'request' => [
+            'url'      => '/payment_handle',
+            'method'   => 'post',
+        ],
+        'response'  => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Payment Handle can be created in live mode only.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testPaymentHandleUpdateWithWrongSlug' => [
+        'request' => [
+            'url'    => '/payment_handle',
+            'method' => 'patch',
+            'content'  => [
+                'slug' => 'updateHandle'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => "Slug must contain @ at beginning",
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testPaymentHandleUpdateSlugLengthLessThanFour' => [
+        'request' => [
+            'url'    => '/payment_handle',
+            'method' => 'patch',
+            'content'  => [
+                'slug' => '@xy'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => "Slug must contain @ at beginning",
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testPaymentHandleUpdateSlugLengthGreaterThanThirty' => [
+        'request' => [
+            'url'    => '/payment_handle',
+            'method' => 'patch',
+            'content'  => [
+                'slug' => '@updatedHandleGreaterThanThirtyCharacters'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => "Slug must contain @ at beginning",
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testPaymentHandleSuggestionApiWithBillingLabelLengthMoreThanThirty' => [
+        'request' => [
+            'url'    => '/payment_handle/suggestion',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'suggestions'  => [
+                    "@handlegreaterthanthirtycharac"
+                ]
+            ],
+        ],
+    ],
+
     'testPaymentHandleFetch'       => [
         'request'  => [
             'url'     => '/payment_handle',
@@ -3023,9 +3180,9 @@ return [
         ],
         'response' => [
             'content'   => [
-                'title'      =>    'Test Label 123',
-                'slug'       =>    '@testlabel123',
-                'url'        =>    'https://razorpay.me/@testlabel123'
+                'title'      =>    'Test Merchant',
+                'slug'       =>    '@testmerchant',
+                'url'        =>    'https://razorpay.me/@testmerchant'
             ]
         ]
     ],

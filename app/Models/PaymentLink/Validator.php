@@ -556,7 +556,7 @@ class Validator extends Base\Validator
         if($slug[0] !== '@')
         {
             throw new BadRequestValidationFailureException(
-                'Name must contain @ at beginning'
+                'Slug must contain @ at beginning'
             );
         }
 

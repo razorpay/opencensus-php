@@ -611,6 +611,10 @@ class Service extends Base\Service
 
             $startTime = millitime();
 
+            $validator = new Validator();
+
+            $validator->validatePaymentHandleCreatedForMerchant($this->merchant);
+
             $precreatedHandle = $this->core->getHandleFromTestMode();
 
             $input = $this->getDefaultValuesPaymentHandle();
@@ -632,11 +636,7 @@ class Service extends Base\Service
 
             // TODO: change this with validatepaymenthandle later
 
-            $validator = new Validator();
-
             $validator->isValidPaymentHandle($input[Entity::SLUG]);
-
-            $validator->validatePaymentHandleCreatedForMerchant($this->merchant);
 
             $paymentHandle = $this->core->createPaymentHandle($input, $this->merchant);
 

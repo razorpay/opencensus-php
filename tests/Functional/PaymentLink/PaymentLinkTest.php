@@ -1938,6 +1938,33 @@ class PaymentLinkTest extends TestCase
         $this->assertEquals('@testlabel123', $ph->getSlugFromShortUrl());
     }
 
+    public function testPaymentHandleCreationApi()
+    {
+        $this->mockGimliPaymentHandle('Test Merchant');
+
+        $this->ba->proxyAuthLive();
+
+        $this->startTest();
+    }
+
+    public function testPaymentHandleCreationApiCallAfterActivation()
+    {
+        $this->activateMerchantToTriggerPaymentHandleCreation();
+
+        $this->ba->proxyAuthLive();
+
+        $this->startTest();
+    }
+
+    public function testPaymentHandleCreationWhenPaymentHandleAlreadyExists()
+    {
+        $this->makeRequestToCreatePaymentHandle();
+
+        $this->ba->proxyAuthLive();
+
+        $this->startTest();
+    }
+
     public function testPaymentHandleCreationBillingLabelLengthMoreThanThirty()
     {
         $this->ba->proxyAuthLive();
@@ -1945,6 +1972,13 @@ class PaymentLinkTest extends TestCase
         $this->mockGimliPaymentHandle('Test Billing Label Private Limited');
 
         $this->fixtures->merchant->edit('10000000000000', ['billing_label' => 'Test Billing Label Private Limited']);
+
+        $this->startTest();
+    }
+
+    public function testPaymentHandleCreationFromTestMode()
+    {
+        $this->ba->proxyAuthTest();
 
         $this->startTest();
     }
@@ -2041,9 +2075,49 @@ class PaymentLinkTest extends TestCase
         $this->assertEquals($content[Entity::URL], $handleUrl);
     }
 
+    //@ missing in slug
+    public function testPaymentHandleUpdateWithWrongSlug()
+    {
+        $this->makeRequestToCreatePaymentHandle();
+
+        $this->ba->proxyAuthLive();
+
+        $this->startTest();
+
+    }
+
+    public function testPaymentHandleUpdateSlugLengthLessThanFour()
+    {
+        $this->makeRequestToCreatePaymentHandle();
+
+        $this->ba->proxyAuthLive();
+
+        $this->startTest();
+    }
+
+    public function testPaymentHandleUpdateSlugLengthGreaterThanThirty()
+    {
+        $this->makeRequestToCreatePaymentHandle();
+
+        $this->ba->proxyAuthLive();
+
+        $this->startTest();
+    }
+
+    public function testPaymentHandleSuggestionApiWithBillingLabelLengthMoreThanThirty()
+    {
+        $this->mockGimliPaymentHandle();
+
+        $this->fixtures->merchant->edit('10000000000000', ['billing_label' => 'Handle Greater Than Thirty Characters Private Limited']);
+
+        $this->ba->proxyAuthLive();
+
+        $this->startTest();
+    }
+
     public function testPaymentHandleFetch()
     {
-        $this->testPaymentHandleCreation();
+        $this->makeRequestToCreatePaymentHandle();
 
         $this->ba->proxyAuth('rzp_live_10000000000000');
 
@@ -2667,6 +2741,20 @@ class PaymentLinkTest extends TestCase
     }
 
     // -------------------- Protected methods --------------------
+
+    protected function makeRequestToCreatePaymentHandle(string $billingLabel = 'Test Merchant')
+    {
+        $this->ba->proxyAuthLive($billingLabel);
+
+        $this->mockGimliPaymentHandle();
+
+        $request = [
+            'method' => 'POST',
+            'url' => '/v1/payment_handle',
+        ];
+
+        return $this->makeRequestAndGetContent($request);
+    }
 
     protected function setupPartnerWebhookSettingTestCase(array $webhookSettings, bool $validUdf = true)
     {
