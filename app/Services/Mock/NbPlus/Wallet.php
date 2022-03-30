@@ -100,15 +100,21 @@ class Wallet extends WalletBase
                 ],
             ];
         }
-        elseif (isset($input['input']['gateway'])) {
+        elseif (isset($input['input']['gateway']) && $input['input']['gateway']['type'] === "otp") {
             return [
                 'response' => [
-                    'data' => null,
-                    'token' => [
-                        'access_token' => "57lI6LcL9JWVgBODyUOumbD5Ig3abjQHmH-aqeTmJWQmryPG1hWs11PBIaKdmz1jtPxKhKPY2_RS0sjty1VMq1GGA16X35K9HloZGK7uSZdAWIKRK2hM3Xh8fGGEr0bp",
-                        'refresh_token'=> "cdVUIEk_X71Gh74NupywppswQ1C3zKJJLkY4xh5fVx1sVLkNGcOfi_DG9AuSXcWhbwYwGCNhFuD7T9biqy7DLw",
-                        'access_token_expiry'=> "1672397708",
-                    ]
+                    'data' => [
+                        'token' => [
+                            'method'                 => "wallet",
+                            'wallet'                 => "freecharge",
+                            'terminal_id'            => "100FrchrgeTmnl",
+                            'gateway_token'          => "57lI6LcL9JWVgBODyUOumbD5Ig3abjQHmH-aqeTmJWQmryPG1hWs11PBIaKdmz1jtPxKhKPY2_RS0sjty1VMq1GGA16X35K9HloZGK7uSZdAWIKRK2hM3Xh8fGGEr0bp",
+                            'gateway_token2'         => "cdVUIEk_X71Gh74NupywppswQ1C3zKJJLkY4xh5fVx1sVLkNGcOfi_DG9AuSXcWhbwYwGCNhFuD7T9biqy7DLw",
+                            'expired_at'    => "1672397708",
+                        ],
+                        'gateway_reference_number'   => null,
+                        'gateway_status'=> false,
+                    ],
                 ],
                 'error' => null
             ];

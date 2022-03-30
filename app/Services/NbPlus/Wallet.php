@@ -28,6 +28,7 @@ class Wallet extends Service
     const CREDIT_ACCOUNT_NUMBER  = 'credit_account_number';
     const CUSTOMER_ID            = 'customer_id';
     const OTP_ATTEMPTS           = 'otp_attempts';
+    const TOKEN                  = 'token';
 
     public function action(string $method, string $gateway, string $action, array $input)
     {
@@ -141,25 +142,22 @@ class Wallet extends Service
     {
         $callbackResponseData = $this->getAcquirerData($response);
 
-        if(isset($response[Response::TOKEN]) and isset($response[Response::TOKEN][Response::ACCESS_TOKEN]))
-        {
-            $input = $this->input;
-            $content = $response[Response::TOKEN];
-
-            $attributes = array(
-                Token\Entity::METHOD           => PAYMENT\METHOD::WALLET,
-                Token\Entity::WALLET           => $input['payment']['wallet'],
-                Token\Entity::TERMINAL_ID      => $input['terminal']['id'],
-                Token\Entity::GATEWAY_TOKEN    => $content[Response::ACCESS_TOKEN],
-                Token\Entity::GATEWAY_TOKEN2   => $content[Response::REFRESH_TOKEN],
-                Token\Entity::EXPIRED_AT       => $content[Response::ACCESS_TOKEN_EXPIRY],
-            );
-            $callbackResponseData['token'] = $attributes;
-        }
-
         $callbackResponseData[Payment\Entity::TWO_FACTOR_AUTH] = Payment\TwoFactorAuth::PASSED;
 
-        return $callbackResponseData;
+        $tokenData = $this->getTokenData($response);
+
+        return array_merge($callbackResponseData, $tokenData);
+    }
+
+    protected function getTokenData($response): array
+    {
+        if (isset($response[Response::DATA][self::TOKEN]) === true)
+        {
+            return [
+                'token' => $response[Response::DATA][self::TOKEN]
+            ];
+        }
+        return [];
     }
 
     // ----------------------- Verify ---------------------------------------------
