@@ -22,7 +22,7 @@ RUN set -eux && \
 # Copy rest of the source code
 ADD . .
 
-RUN cd /go/pkg/mod/github.com/razorpay/goutils/itf@v0.0.8/cmd/reporter && go install
+RUN cd /go/pkg/mod/github.com/razorpay/goutils/itf@v0.0.11/cmd/reporter && go install
 
 ENTRYPOINT set -euo pipefail && \
     go test -v -json ./... -args -parallel | \

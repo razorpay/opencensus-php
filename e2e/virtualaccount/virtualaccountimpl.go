@@ -84,4 +84,57 @@ func FetchAllVirtualAccount(t *testing.T) VirtualAccountEntityResponse {
 	json.Unmarshal([]byte(obj.Raw()), &virtualAccountRes)
 	return virtualAccountRes
 }
+// Fetch Va by parameter
+func FetchAllVirtualAccountParameter(t *testing.T) VirtualAccountEntityResponse {
+	var virtualAccountRes VirtualAccountEntityResponse
+	Initialize(t)
+	obj := virtualAccountHost.GET("/v1/virtual_accounts").
+		WithBasicAuth(e2e.Config.VirtualAccount.Username, e2e.Config.VirtualAccount.Password).
+		WithQueryObject(query).
+		WithHeaders(header).
+		Expect().
+		Status(http.StatusOK).Body()
+	json.Unmarshal([]byte(obj.Raw()), &virtualAccountRes)
+	return virtualAccountRes
+}
+// create order
+func CreateOrder(t *testing.T, orderReq OrderRequest) OrderResponse {
+	var orderRes OrderResponse
+	Initialize(t)
+	obj := virtualAccountHost.POST("/v1/orders").
+		WithBasicAuth(e2e.Config.VirtualAccount.Username, e2e.Config.VirtualAccount.Password).
+		WithHeaders(header).
+		WithJSON(orderReq).
+		Expect().
+		Status(http.StatusOK).Body()
+	json.Unmarshal([]byte(obj.Raw()), &orderRes)
+	return orderRes
+}
+
+// create order
+func CreateVAForOrder(t *testing.T, orderReq OrderVARequest,response OrderResponse) VirtualAccountResponse {
+	var virtualAccountResponse VirtualAccountResponse
+	Initialize(t)
+	obj := virtualAccountHost.POST(fmt.Sprintf("/v1/orders/%s/virtual_accounts",response.ID)).
+		WithBasicAuth(e2e.Config.VirtualAccount.Username,"").
+		WithHeaders(header).
+		WithJSON(orderReq).
+		Expect().
+		Status(http.StatusOK).Body()
+	json.Unmarshal([]byte(obj.Raw()), &virtualAccountResponse)
+	return virtualAccountResponse
+}
+
+func CreateVAForOrderNegative(t *testing.T, orderReq OrderVARequest,response OrderResponse) ErrorResponse {
+	var virtualAccountResponse ErrorResponse
+	Initialize(t)
+	obj := virtualAccountHost.POST(fmt.Sprintf("/v1/orders/%s/virtual_accounts",response.ID)).
+		WithBasicAuth(e2e.Config.VirtualAccount.Username,"").
+		WithHeaders(header).
+		WithJSON(orderReq).
+		Expect().
+		Status(http.StatusBadRequest).Body()
+	json.Unmarshal([]byte(obj.Raw()), &virtualAccountResponse)
+	return virtualAccountResponse
+}
 

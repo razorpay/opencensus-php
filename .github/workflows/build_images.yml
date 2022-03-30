@@ -177,10 +177,23 @@ jobs:
     runs-on: [ self-hosted ]
     needs: [ build-e2e ]
     steps:
-      - uses: actions/checkout@v2
       - name: Triggers rundeck's webhook to execute e2e tests
-        run: |
-          ./.github/scripts/rundeck.sh ${{ github.sha }}
+        uses: fjogeleit/http-request-action@master
+        with:
+          url: 'https://rundeck.dev.razorpay.in/api/40/webhook/hPvwyx4HOyR8M8C1EYKsYYAyGr5tCGPZ#E2E_Test_Execution_V2'
+          method: 'POST'
+          data: >
+            {
+               "self": {
+                   "name": "api",
+                   "commit_id": "${{ github.sha }}",
+                   "chart_values": {
+                      "web_requests_cpu": "100m",
+                      "web_requests_memory": "100Mi"
+                   }
+               },
+               "dependencies": []
+            }
 
   trigger_regression_suite:
    runs-on: [self-hosted]
