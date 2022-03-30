@@ -823,14 +823,31 @@ class InstrumentRequestProxyTest extends TestCase
 
         $testCases = [
             [
-                // smart dashboard razorx
+                // Create iir_discrepancy_answers on admin KAM dashboard
                 self::REQUEST       => [
-                    'url'       => '/terminals/proxy/merchants/1231/smart_dashboard/razorx/admin',
-                    'method'    => \Requests::GET,
+                    'url'       => '/terminals/proxy/iir_discrepancy_answers/admin',
+                    'method'    => \Requests::POST,
+                    'content'  => [
+                        'data' => json_encode([
+                            [
+                                'answer_field_value' => 'swiggy.cmo/policy',
+                                'answered_comment'   => 'provided private policy link',
+                                'file'   => 'file' // TODO: Test content-type: multipart form data
+                            ],
+                        ])
+                    ]
                 ],
-                self::EXPECTED_REQUEST_PATH_TERMINALS_SERVICE      => 'v2/merchants/1231/smart_dashboard/razorx/admin',
-                self::EXPECTED_REQUEST_METHOD_TERMINALS_SERVICE    => \Requests::GET,
-                self::EXPECTED_REQUEST_CONTENT_TERMINALS_SERVICE   => ''
+                self::EXPECTED_REQUEST_PATH_TERMINALS_SERVICE      => 'v2/iir_discrepancy_answers',
+                self::EXPECTED_REQUEST_METHOD_TERMINALS_SERVICE    => \Requests::POST,
+                self::EXPECTED_REQUEST_CONTENT_TERMINALS_SERVICE   => [
+                    'data' => json_encode([
+                        [
+                            'answer_field_value' => 'swiggy.cmo/policy',
+                            'answered_comment'   => 'provided private policy link',
+                            'file'   => 'file' // TODO: Test content-type: multipart form data
+                        ],
+                    ])
+                ],
             ],
             [
                 // get discrepancy static list
@@ -918,31 +935,59 @@ class InstrumentRequestProxyTest extends TestCase
 
             $this->testData[__FUNCTION__]['request'] = $testCase[self::REQUEST];
 
-            $this->mockTerminalsServiceSendRequest(function ($path, $content, $method, $additionalOptions = [], $additionalHeaders) use ($testCase) {
+            if($testCase['request']['url'] === '/terminals/proxy/iir_discrepancy_answers/admin')
+            {
+                $this->testData[__FUNCTION__]['response'] = ['content' => ['data' => ['testKey' => 'testValue']]];
 
-                $this->assertEquals($testCase[self::EXPECTED_REQUEST_PATH_TERMINALS_SERVICE], $path);
-                $this->assertEquals($testCase[self::EXPECTED_REQUEST_METHOD_TERMINALS_SERVICE], $method);
+                $this->mockTerminalsServiceSendFormRequest(function ($path, $content, $method, $additionalOptions = [], $additionalHeaders) use ($testCase) {
 
-                if ($method !== \Requests::DELETE)
-                {
-                    $this->assertEquals($testCase[self::EXPECTED_REQUEST_CONTENT_TERMINALS_SERVICE], json_decode($content, true));
-                }
-                else
-                {
+                    $this->assertEquals($testCase[self::EXPECTED_REQUEST_PATH_TERMINALS_SERVICE], $path);
+
+                    $this->assertEquals($testCase[self::EXPECTED_REQUEST_METHOD_TERMINALS_SERVICE], $method);
+
                     $this->assertEquals($testCase[self::EXPECTED_REQUEST_CONTENT_TERMINALS_SERVICE], $content);
-                }
 
-                $response = new \Requests_Response;
+                    $body = '
+                    {
+                     "data": {
+                        "testKey": "testValue"
+                     }
+                 }';
 
-                $response->body = '
-                       {
-                        "data": {
-                           "testKey": "testValue"
-                        }
-                    }';
+                    $response = new Response(200, [], $body);
 
-                return $response;
-            }, 1);
+                    return $response;
+
+                }, 1);
+            }
+            else
+            {
+                $this->mockTerminalsServiceSendRequest(function ($path, $content, $method, $additionalOptions = [], $additionalHeaders) use ($testCase) {
+
+                    $this->assertEquals($testCase[self::EXPECTED_REQUEST_PATH_TERMINALS_SERVICE], $path);
+                    $this->assertEquals($testCase[self::EXPECTED_REQUEST_METHOD_TERMINALS_SERVICE], $method);
+
+                    if ($method !== \Requests::DELETE)
+                    {
+                        $this->assertEquals($testCase[self::EXPECTED_REQUEST_CONTENT_TERMINALS_SERVICE], json_decode($content, true));
+                    }
+                    else
+                    {
+                        $this->assertEquals($testCase[self::EXPECTED_REQUEST_CONTENT_TERMINALS_SERVICE], $content);
+                    }
+
+                    $response = new \Requests_Response;
+
+                    $response->body = '
+                           {
+                            "data": {
+                               "testKey": "testValue"
+                            }
+                        }';
+
+                    return $response;
+                }, 1);
+            }
 
             $this->startTest();
 

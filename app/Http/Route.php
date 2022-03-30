@@ -3035,7 +3035,6 @@ class Route
         'merchant_instrument_request_update_by_id'          =>  ['patch',   'merchant_instrument_request/{id}',                 'InstrumentRequestController@patchMerchantInstrumentRequestById' ],
         'fetch_merchant_instrument_requests'                       =>  ['post',    'merchant_instrument_request_fetch',                              'InstrumentRequestController@getMerchantInstruments'             ],
 
-        'smart_dashboard_razorx_admin'            => ['get',       'terminals/proxy/merchants/{id}/smart_dashboard/razorx/admin',              'TerminalController@proxyV2TerminalService' ],
         'get_discrepancy_list'                    => ['get',       'terminals/proxy/discrepancy_list',                                         'TerminalController@proxyV2TerminalService' ],
         'get_discrepancy_list_merchant'           => ['get',       'terminals/proxy/discrepancy_list_merchant',                                'TerminalController@proxyV2TerminalService' ],
         'create_iir_discrepancy'                  => ['post',      'terminals/proxy/iir_discrepancies',                                        'TerminalController@proxyV2TerminalService' ],
@@ -3045,6 +3044,7 @@ class Route
         'patch_iir_discrepancy_by_id'             => ['patch',     'terminals/proxy/iir_discrepancies/{id}',                                   'TerminalController@proxyV2TerminalService' ],
         'fetch_iir_discrepancies_of_mir'          => ['get',       'terminals/proxy/merchant_instrument_request/{id}/iir_discrepancies',       'TerminalController@proxyV2TerminalService' ],
         'create_iir_discrepancy_answer'           => ['post',      'terminals/proxy/iir_discrepancy_answers',                                  'TerminalController@proxyV2TerminalService' ],
+        'create_iir_discrepancy_answer_admin'     => ['post',      'terminals/proxy/iir_discrepancy_answers/admin',                            'TerminalController@proxyV2TerminalService' ],
         'create_static_discrepancy'               => ['post',      'terminals/proxy/discrepancy',                                              'TerminalController@proxyV2TerminalService' ],
         'edit_static_discrepancy'                 => ['patch',     'terminals/proxy/discrepancy/{id}',                                              'TerminalController@proxyV2TerminalService' ],
 
@@ -6311,7 +6311,7 @@ class Route
         'wfs_config_get_admin',
         'payout_workflow_retry_admin_bulk',
         'payout_wf_config_migrate',
-        'smart_dashboard_razorx_admin',
+        'create_iir_discrepancy_answer_admin',
         'get_discrepancy_list',
         'create_iir_discrepancy',
         'create_iir_discrepancy_bulk',
@@ -7538,7 +7538,7 @@ class Route
         'mir_instrument_set'                          => Permission::VIEW_INTERNAL_INSTRUMENT_REQUEST,
         'fetch_merchant_instrument_requests'          => Permission::VIEW_MERCHANT_INSTRUMENT_REQUEST,
 
-        'smart_dashboard_razorx_admin'                => Permission::VIEW_IIR_DISCREPANCY,
+        'create_iir_discrepancy_answer_admin'         => Permission::VIEW_IIR_DISCREPANCY,
         'get_discrepancy_list'                        => Permission::VIEW_IIR_DISCREPANCY,
         'create_iir_discrepancy'                      => Permission::CREATE_IIR_DISCREPANCY,
         'create_iir_discrepancy_bulk'                 => Permission::CREATE_IIR_DISCREPANCY,
@@ -10604,7 +10604,7 @@ class Route
             'pause_internal_instrument_request_by_id',
             'patch_internal_instrument_requests',
             'bulk_cancel_internal_instrument_requests',
-            'smart_dashboard_razorx_admin',
+            'create_iir_discrepancy_answer_admin',
             'get_discrepancy_list',
             'create_iir_discrepancy',
             'create_iir_discrepancy_bulk',
@@ -13606,6 +13606,7 @@ class Route
 
     public static $terminalsServiceFormRequestsRoutes = [
         'create_iir_discrepancy_answer',
+        'create_iir_discrepancy_answer_admin',
     ];
 
     /*

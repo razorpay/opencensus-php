@@ -279,6 +279,12 @@ class TerminalController extends Controller
 
         $path = str_replace("v1/terminals/proxy","v2", $path);
 
+        // For some routes exposed on both merchant and admin, we have appended /admin in admin auth endpoints. Simply removing /admin so that it hits same endpoint on TS
+        if(str_ends_with($path, '/admin'))
+        {
+            $path = str_replace('/admin', '', $path);
+        }
+
         if ($path === 'v2/discrepancy_list_merchant')
         {
             $path = 'v2/discrepancy_list'; // both terminals/proxy/discrepancy_list and terminals/proxy/discrepancy_list_merchant calls same route on TS
