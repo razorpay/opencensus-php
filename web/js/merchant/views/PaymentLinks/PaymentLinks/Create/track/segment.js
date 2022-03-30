@@ -1,5 +1,5 @@
 import { analyticsTrack } from 'common/utils/analytics';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { getCommonAnalyticsProperties, humanize } from 'common/utils/rzp-utils';
 
 function _segmentTrack() {
   function send(objectName, actionName, properties = {}) {
@@ -18,21 +18,15 @@ function _segmentTrack() {
     // Fields
     fields: (fieldName, duplicate) => {
       let actionName = 'added';
-      let objectName = fieldName;
-      if (objectName === 'sms_notify') {
-        objectName = 'sms notify';
-        actionName = 'changed';
-      } else if (objectName === 'email_notify') {
-        objectName = 'email notify';
-        actionName = 'changed';
-      } else if (objectName === 'partial_payment') {
-        objectName = 'partial payment';
-        actionName = 'changed';
-      } else if (objectName === 'reminder_enable') {
-        objectName = 'reminder enable';
+      if (
+        fieldName === 'sms_notify' ||
+        fieldName === 'email_notify' ||
+        fieldName === 'partial_payment' ||
+        fieldName === 'reminder_enable'
+      ) {
         actionName = 'changed';
       }
-      return send(objectName, actionName, { duplicate });
+      return send(`${humanize(fieldName)}`, actionName, { duplicate });
     },
 
     // Form
