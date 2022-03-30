@@ -6,6 +6,7 @@ use DB;
 use App;
 use Config;
 
+use Illuminate\Database\Query\Builder;
 use RZP\Models;
 use RZP\Exception;
 use RZP\Jobs\EsSync;
@@ -432,7 +433,7 @@ class Repository extends \Razorpay\Spine\Repository
      * @param null $lagThreshold To be give in Milliseconds.
      *                           For example, 5 minutes lag threshold is 300000 milliseconds
      *
-     * @return mixed
+     * @return Builder
      * @throws Exception\ServerErrorException
      */
     public function newQueryOnSlave($lagThreshold = null)

@@ -2010,7 +2010,7 @@ class Core extends Base\Core
      * @return array
      * @throws \Exception
      */
-    public function fetchConsentReceivedTokenIdsForTokenisation(string $merchantId, int $offset, int $retryCount = 0): array
+    public function fetchConsentReceivedLocalTokenIdsForTokenisation(string $merchantId, int $offset, int $retryCount = 0): array
     {
         try
         {
@@ -2021,6 +2021,12 @@ class Core extends Base\Core
             if (empty($onboardedNetworkNames))
             {
                 return [];
+            }
+
+            if ($merchantId === Merchant\Account::SHARED_ACCOUNT) {
+                throw new Exception\LogicException(
+                    'Please use fetchConsentReceivedGlobalTokenIdsForTokenisation() for fetching global tokens'
+                );
             }
 
             return $this->executeDataLakeQueryToFetchConsentReceivedTokenIds($merchantId, $onboardedNetworkNames, $offset);
@@ -2036,11 +2042,31 @@ class Core extends Base\Core
             // One retry is made before throwing exception
             if ($retryCount < 1)
             {
-                return $this->fetchConsentReceivedTokenIdsForTokenisation($merchantId, $offset, $retryCount + 1);
+                return $this->fetchConsentReceivedLocalTokenIdsForTokenisation($merchantId, $offset, $retryCount + 1);
             }
 
             throw $ex;
         }
+    }
+
+    /**
+     * @param string $lastProcessedTokenId The last processed token id which will
+     *                                     be used as an offset to fetch next set of tokens.
+     * @param int    $limit                Number of tokens to fetch. Default 1000.
+     *
+     * @return array List of consent received global token ids
+     */
+    public function fetchConsentReceivedGlobalTokenIdsForTokenisation(
+        string $lastProcessedTokenId,
+        int $limit = Entity::GLOBAL_MERCHANT_ASYNC_TOKENISATION_QUERY_LIMIT
+    ): array {
+        return $this->repo->token->fetchConsentReceivedGlobalTokenIds(
+            Card\Network::getFullNames(
+                Card\Network::getGlobalMerchantTokenisationNetworks()
+            ),
+            $lastProcessedTokenId,
+            $limit
+        );
     }
 
     /**

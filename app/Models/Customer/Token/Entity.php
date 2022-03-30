@@ -152,6 +152,9 @@ class Entity extends Base\PublicEntity
     public const BULK_TOKENISATION_INPUT_LIMIT = 100000;
     public const MERCHANT_ASYNC_TOKENISATION_QUERY_LIMIT = 100000;
 
+    /** @var int Number of tokens to fetch for global merchant in one SQL query. */
+    public const GLOBAL_MERCHANT_ASYNC_TOKENISATION_QUERY_LIMIT = 1000;
+
     /*
      * service provider tokens attributes
      */

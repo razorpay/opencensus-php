@@ -4,6 +4,7 @@ namespace RZP\Models\Customer\Token;
 
 use DB;
 
+use Illuminate\Database\Eloquent\Builder;
 use RZP\Models\Base;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Card;
@@ -695,5 +696,67 @@ class Repository extends Base\Repository
                     ->get();
 
         return $result->getIds();
+    }
+
+    /**
+     * Fetch a list of global token ids which have received consents for token
+     * provisioning.
+     *
+     * @param array  $networks List of network names which support global tokens.
+     * @param string $offset   Last processed global token id.
+     * @param int    $limit    Number of tokens to fetch.
+     *
+     * @return array List of global token ids
+     */
+    public function fetchConsentReceivedGlobalTokenIds(array $networks, string $offset, int $limit): array
+    {
+        if (empty($networks)) {
+            return [];
+        }
+
+        // SELECT t.id
+        // FROM   tokens t
+        //        INNER JOIN cards c
+        //                ON t.card_id = c.id
+        // WHERE  t.method = 'card'
+        //     AND t.acknowledged_at IS NOT NULL
+        //     AND t.merchant_id = '100000Razorpay'
+        //     AND c.network IN ('MasterCard', 'Visa')
+        //     AND c.vault = 'rzpvault'
+        //     AND (c.international = 0 OR c.international IS NULL)
+        //     AND t.id > 'last_cron_token_id'
+        // ORDER BY t.id ASC
+        // LIMIT  1000;
+
+        $cardsTable               = $this->repo->card->getTableName();
+        $cardsIdColumn            = $this->repo->card->dbColumn(Card\Entity::ID);
+        $cardsInternationalColumn = $this->repo->card->dbColumn(Card\Entity::INTERNATIONAL);
+        $cardsNetworkColumn       = $this->repo->card->dbColumn(Card\Entity::NETWORK);
+        $cardsVaultColumn         = $this->repo->card->dbColumn(Card\Entity::VAULT);
+
+        $tokensAcknowledgedAtColumn = $this->dbColumn(Entity::ACKNOWLEDGED_AT);
+        $tokensCardIdColumn         = $this->dbColumn(Entity::CARD_ID);
+        $tokensIdColumn             = $this->dbColumn(Entity::ID);
+        $tokensMerchantIdColumn     = $this->dbColumn(Entity::MERCHANT_ID);
+        $tokensMethodColumn         = $this->dbColumn(Entity::METHOD);
+
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+            ->join($cardsTable, $tokensCardIdColumn, '=', $cardsIdColumn)
+            ->where([
+                $cardsVaultColumn => Card\Vault::RZP_VAULT,
+                $tokensMethodColumn => Entity::CARD,
+                $tokensMerchantIdColumn => Merchant\Account::SHARED_ACCOUNT,
+            ])
+            ->where(static function (Builder $query) use ($cardsInternationalColumn) {
+                 $query->where($cardsInternationalColumn, '=', 0)
+                    ->orWhereNull($cardsInternationalColumn);
+            })
+            ->whereIn($cardsNetworkColumn, $networks)
+            ->whereNotNull($tokensAcknowledgedAtColumn)
+            ->where($tokensIdColumn, '>', $offset)
+            ->orderBy($tokensIdColumn)
+            ->limit($limit)
+            ->pluck($tokensIdColumn)
+            ->toArray();
     }
 }

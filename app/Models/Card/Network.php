@@ -4,6 +4,8 @@ namespace RZP\Models\Card;
 
 use RZP\Exception;
 use RZP\Models\Card;
+use RZP\Models\Merchant\Account;
+use RZP\Models\Terminal\Core as TerminalCore;
 
 class Network
 {
@@ -26,6 +28,11 @@ class Network
      * Bin => 1011100
      */
     const DEFAULT_CARD_NETWORKS = 92;
+
+    public const NETWORKS_SUPPORTING_GLOBAL_TOKENS = [
+        self::MC, // MasterCard
+        self::VISA, // Visa
+    ];
 
     public static $fullName = [
         self::AMEX    => 'American Express',
@@ -120,6 +127,23 @@ class Network
         self::MC,
         self::VISA,
     ];
+
+    /**
+     * Returns enabled networks Supporting tokenisation on global merchant.
+     *
+     * @return array
+     */
+    public static function getGlobalMerchantTokenisationNetworks(): array
+    {
+        $onboardedNetworks = (new TerminalCore())->getMerchantTokenisationOnboardedNetworks(
+            Account::SHARED_ACCOUNT
+        );
+
+        return array_intersect(
+            $onboardedNetworks,
+            self::NETWORKS_SUPPORTING_GLOBAL_TOKENS
+        );
+    }
 
     private static function detectNetworkFromDatabase($iin)
     {

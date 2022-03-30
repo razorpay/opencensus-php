@@ -2,7 +2,7 @@
 
 namespace RZP\Jobs;
 
-use App;
+use Illuminate\Support\Facades\Cache;
 use RZP\Diag\EventCode;
 use RZP\Models\Merchant\Account;
 use RZP\Trace\TraceCode;
@@ -12,6 +12,17 @@ use Throwable;
 
 class MerchantAsyncTokenisationJob extends Job
 {
+    /**
+     * Cache key used to store the last processed token id which is used as an
+     * offset to fetch next set of tokens.
+     *
+     * @var string
+     */
+    public const LAST_DISPATCHED_GLOBAL_TOKEN_CACHE_KEY = 'global_cards_tokenisation_last_dispatched_token_id';
+
+    /** @var int Cache TTL of 30 days in seconds. */
+    public const LAST_DISPATCHED_GLOBAL_TOKEN_CACHE_TTL = 30 * 24 * 60 * 60;
+
     protected $queueConfigKey = 'merchant_async_tokenisation';
 
     public $timeout = 2700;
@@ -62,9 +73,12 @@ class MerchantAsyncTokenisationJob extends Job
                 'async_tokenization_job_id' => $this->asyncTokenisationJobId,
             ]);
 
-            if($merchantId === Account::SHARED_ACCOUNT)
+            if ($merchantId === Account::SHARED_ACCOUNT)
             {
+                $this->handleGlobalMerchant();
+
                 $this->delete();
+
                 return;
             }
 
@@ -80,7 +94,7 @@ class MerchantAsyncTokenisationJob extends Job
              */
             while ($tokensCount === $queryLimit)
             {
-                $tokenIds = $this->tokenCore->fetchConsentReceivedTokenIdsForTokenisation($merchantId, $offset);
+                $tokenIds = $this->tokenCore->fetchConsentReceivedLocalTokenIdsForTokenisation($merchantId, $offset);
 
                 $this->trace->info(TraceCode::ASYNC_TOKENISATION_TOKEN_FETCH_SUCCESS, [
                     'merchantId'    => $this->merchantId,
@@ -127,6 +141,90 @@ class MerchantAsyncTokenisationJob extends Job
         }
 
         $this->delete();
+    }
+
+    /**
+     * Handle processing of global saved card tokens.
+     */
+    protected function handleGlobalMerchant(): void
+    {
+        // @TODO: Remove this when the test cases are written in CE-5323 for
+        // global cards async tokenisation
+        return;
+
+        try {
+            $lastDispatchedTokenId = Cache::get(self::LAST_DISPATCHED_GLOBAL_TOKEN_CACHE_KEY, '');
+
+            $globalTokens = $this->tokenCore->fetchConsentReceivedGlobalTokenIdsForTokenisation($lastDispatchedTokenId);
+
+            $tokensCount = count($globalTokens);
+
+            if ($tokensCount === 0) {
+                $this->trace->warning(
+                    TraceCode::MERCHANT_ASYNC_TOKENISATION_JOB_ERROR,
+                    ['reason' => 'No tokens found for global shared merchant.']
+                );
+
+                return;
+            }
+
+            $this->logInfo(TraceCode::ASYNC_TOKENISATION_TOKEN_FETCH_SUCCESS, $tokensCount, $lastDispatchedTokenId);
+
+            $this->tokenCore->pushTokenIdsToQueueForTokenisation($globalTokens, $this->asyncTokenisationJobId);
+
+            $offset = $lastDispatchedTokenId;
+
+            $lastDispatchedTokenId = $globalTokens[$tokensCount - 1];
+
+            $this->triggerEvent(EventCode::ASYNC_TOKENISATION_MERCHANT_COMPLETED, [
+                'total_tokens_dispatched' => $tokensCount,
+            ]);
+
+            Cache::put(
+                self::LAST_DISPATCHED_GLOBAL_TOKEN_CACHE_KEY,
+                $lastDispatchedTokenId,
+                self::LAST_DISPATCHED_GLOBAL_TOKEN_CACHE_TTL
+            );
+
+            $this->logInfo(
+                TraceCode::MERCHANT_ASYNC_TOKENISATION_JOB_SUCCESS,
+                $tokensCount,
+                $offset,
+                ['last_dispatched_token_id' => $lastDispatchedTokenId]
+            );
+        } catch (Throwable $exception) {
+            $this->trackAsyncTokenisationJobErrorEvent($exception, 0);
+
+            $this->trace->traceException(
+                $exception,
+                Trace::ERROR,
+                TraceCode::MERCHANT_ASYNC_TOKENISATION_JOB_ERROR,
+                [
+                    'mode'       => $this->mode,
+                    'merchantId' => $this->merchantId,
+                ]
+            );
+        }
+    }
+
+    /**
+     * @param string     $message
+     * @param int        $tokensCount
+     * @param int|string $offset
+     * @param array      $customProperties
+     */
+    protected function logInfo(string $message, int $tokensCount, $offset, array $customProperties = []): void
+    {
+        $properties = [
+            'mode'          => $this->mode,
+            'merchantId'    => $this->merchantId,
+            'tokensCount'   => $tokensCount,
+            'offset'        => $offset,
+        ];
+
+        $properties = array_merge($properties, $customProperties);
+
+        $this->trace->info($message, $properties);
     }
 
     protected function trackAsyncTokenisationJobErrorEvent(Throwable $e, int $totalTokensDispatched): void
