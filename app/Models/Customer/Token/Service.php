@@ -640,7 +640,7 @@ class Service extends Base\Service
 
         $token = $this->repo->token->getByPublicIdAndMerchant($input['id'], $this->merchant);
 
-        if ($token === null || $isPar)
+        if ($token === null)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Token not found');
@@ -649,26 +649,9 @@ class Service extends Base\Service
         return $this->generateMockResponse($token);
     }
 
-    public function getNetwork($network) {
-
-        if($network == 'visa'){
-            return Card\Network::$fullName[Card\Network::VISA];
-        }
-        if($network == 'rupay'){
-            return Card\Network::$fullName[Card\Network::RUPAY];
-        }
-        if($network == 'mastercard'){
-            return Card\Network::$fullName[Card\Network::MC];
-        }
-
-        throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_IIN_NOT_EXISTS);
-    }
-
     // To do : We need to add the logic to get provider_name on the basis of provider_type
     public function fetchParValue($input)
     {
-
-
         $this->decryptCardNumberIfApplicable($input);
 
         // If we are getting token_id in input then we can get PAR Or Fingerprint from fetchToken api
@@ -691,16 +674,14 @@ class Service extends Base\Service
 
             $data = $this->fetchNetworkToken($input, true);
 
-            $network = $data["service_provider_tokens"][0]["provider_name"];
-
-            $result["provider"] = $this->getNetwork($network);
+            $result["provider"] = $data["card"]["network"];
         }
         else {
             $this->trace->info(TraceCode::FETCH_PAR_VALUE);
 
              list($network, $data) = $this->core->fetchParValue($input);
 
-            $result["network"] = $this->getNetwork($network);
+            $result["network"] = $network;
         }
 
         $data = $data["service_provider_tokens"][0]["provider_data"];

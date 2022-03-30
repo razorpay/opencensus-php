@@ -1648,13 +1648,22 @@ class Core extends Base\Core
         $this->repo->saveOrFail($token);
     }
 
+    public function getIIN($input)
+    {
+        $iin = substr($input["number"], 0, 6);
+
+        $tokenizedRange = substr($input['number'], 0, 9);
+
+        $result = Card\IIN\IIN::getTransactingIinforRange($tokenizedRange) ?? $iin;
+
+        return [$result, $result !== $iin];
+    }
+
     public function fetchParValue($input)
     {
         (new Validator)->validateInput(Validator::FETCH_PAR_VALUE, $input);
 
-        $number = $input["number"];
-
-        $iin = substr($number, 0, 6);
+        list($iin, $isTokenized) = $this->getIIN($input);
 
         $network = Card\Network::detectNetwork($iin);
 
@@ -1662,9 +1671,12 @@ class Core extends Base\Core
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_IIN_NOT_EXISTS, ["iin" => $iin]);
         }
 
-        $input["network"] = strtolower($network);
+        $network = Card\Network::$fullName[$network];
 
-        return [$input["network"], (new Card\Core)->fetchParValue($input)];
+        $input["network"] = strtolower($network);
+        $input["tokenized"] = $isTokenized;
+
+        return [$network, (new Card\Core)->fetchParValue($input)];
         // hit the vault with number and the network
     }
 
