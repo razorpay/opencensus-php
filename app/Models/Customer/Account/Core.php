@@ -907,6 +907,6 @@ class Core extends Base\Core
                 ErrorCode::BAD_REQUEST_ERROR,null,null,PublicErrorDescription::BAD_REQUEST_CUSTOMER_ADDRESS_NOT_FOUND);
         }
 
-        return $addressCore->edit($address, $input, Address\Type::CUSTOMER);
+        return $addressCore->edit($address, $input);
     }
 }
