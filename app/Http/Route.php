@@ -12085,6 +12085,7 @@ class Route
             'apspdcl_bridge',
             'webhook_fetch',
             'webhook_fetch_multiple',
+            'internal_feature_bulk_assign',
         ],
 
         //

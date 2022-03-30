@@ -3075,6 +3075,22 @@ Regards,
         $this->startTest();
     }
 
+    public function testOrderReceiptUniqueFeatureFlag()
+    {
+        $this->fixtures->create('merchant', ['id' => '10000000000001']);
+
+        $this->ba->hostedProxyAuth('rzp_test');
+
+        $this->startTest();
+    }
+
+    public function testOrderReceiptUniqueFeatureFlagFailedInvalidMerchantId()
+    {
+        $this->ba->hostedProxyAuth('rzp_test');
+
+        $this->startTest();
+    }
+
     public function testPayoutServiceFeatureAdditionWhenLedgerReverseShadowIsEnabled()
     {
         $this->fixtures->merchant->addFeatures(['ledger_reverse_shadow']);
@@ -3110,6 +3126,5 @@ Regards,
 
         $this->startTest();
     }
-
 
 }

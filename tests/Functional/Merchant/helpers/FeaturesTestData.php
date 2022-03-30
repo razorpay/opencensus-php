@@ -2564,6 +2564,50 @@ return [
         ]
     ],
 
+    'testOrderReceiptUniqueFeatureFlag' => [
+        'request'  => [
+            'content' => [
+                'name'        => 'order_receipt_unique',
+                'entity_ids'  => ['10000000000001'],
+                'entity_type' => 'merchant'
+            ],
+            'url'     => '/internal/features/assign',
+            'method'  => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'successful' => [
+                    'order_receipt_unique' => [
+                        '10000000000001'
+                    ],
+                ],
+                'failed'     => [],
+            ]
+        ]
+    ],
+
+    'testOrderReceiptUniqueFeatureFlagFailedInvalidMerchantId' => [
+        'request'  => [
+            'content' => [
+                'name'        => 'order_receipt_unique',
+                'entity_ids'  => ['10000000000001'],
+                'entity_type' => 'merchant'
+            ],
+            'url'     => '/internal/features/assign',
+            'method'  => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'successful' => [],
+                'failed'     => [
+                    'order_receipt_unique' => [
+                        '10000000000001'
+                    ],
+                ],
+            ]
+        ]
+    ],
+
     'testPayoutServiceFeatureAdditionWhenLedgerReverseShadowIsEnabled' => [
         'request'   => [
             'content' => [
