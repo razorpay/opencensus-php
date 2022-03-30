@@ -5,6 +5,7 @@ import { withRouter } from 'react-router-dom';
 import adminFetch from 'razorx/helpers/admin-fetch';
 import { formatDate } from 'razorx/helpers/utils';
 import { splitzFetch } from 'razorx/helpers/fetch';
+import { notifyError, notifySuccess } from 'razorx/components/Modal';
 
 @withRouter
 export default class SegmentDetails extends React.Component {
@@ -95,6 +96,23 @@ export default class SegmentDetails extends React.Component {
       })
       .catch((err) => {
         console.error('File Download Error: ', err);
+      });
+  };
+
+  deleteSegment = () => {
+    const { segmentId } = this.props;
+    splitzFetch({
+      url: 'segment.v1.SegmentAPI/Delete',
+      data: {
+        segmentID: segmentId,
+      },
+    })
+      .then(() => {
+        this.fetch(segmentId);
+        notifySuccess('Success: Segment deleted!');
+      })
+      .catch((err) => {
+        notifyError(err);
       });
   };
 
@@ -194,6 +212,11 @@ export default class SegmentDetails extends React.Component {
           )}
           <br />
           <br />
+          <div>
+            <button type="button" className="btn-delete" onClick={this.deleteSegment}>
+              Delete Segment
+            </button>
+          </div>
         </div>
       );
     }
