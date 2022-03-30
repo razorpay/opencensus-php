@@ -191,7 +191,7 @@ class Service extends Base\Service
                     $decodedResponse = ['addresses' => []];
                 }
 
-                if (json_last_error() !== JSON_ERROR_NONE || $response->status_code !== 200)
+                if (json_last_error() !== JSON_ERROR_NONE || !isset($response) || $response->status_code !== 200)
                 {
                     $this->trace->count(Metric::MERCHANT_EXTERNAL_SHIPPING_INFO_CALL_FAILURE_COUNT,
                         ['errorcode' => ErrorCode::SERVER_ERROR_MERCHANT_SERVICEABILITY_EXTERNAL_CALL_EXCEPTION]);
