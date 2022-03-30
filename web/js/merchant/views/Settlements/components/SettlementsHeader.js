@@ -1,13 +1,13 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
-import { bindActionCreators } from 'redux';
 import TestModeBanner from 'merchant/components/TestModeBanner';
-import { openModal as fnOpenModal, closeModal } from 'merchant_common/reducers/modals';
+import { openModal as fnOpenModal } from 'merchant_common/reducers/modals';
 import SettlementScheduleV2 from 'merchant/views/Settlements/components/SettlementScheduleV2';
 import { handleAnalytics } from '../Settlements/analytics';
 import SettlementsBanner from './SettlementsBanner';
 import BalanceDetails from './BalanceDetails';
 import SettleNow from './SettleNow';
+import { fetchOnDemandBlocked as fnFetchOnDemandBlocked } from 'merchant/reducers/settlements/details';
 
 function SettlementsHeader(props) {
   const {
@@ -18,7 +18,11 @@ function SettlementsHeader(props) {
     settlementExists,
     checkIfFirstEverSettlement,
     esOndemandSettlementEnabled,
+    settleNowDisabled,
+    fetchOnDemandBlocked,
   } = props;
+
+  const isNodalAccountBalanceLowBlocked = settleNowDisabled?.data?.blocked;
 
   const { no_settlement } = settlement_amount.data;
 
@@ -40,6 +44,10 @@ function SettlementsHeader(props) {
     handleAnalytics('settlement cycle', 'clicked');
   };
 
+  useEffect(() => {
+    fetchOnDemandBlocked();
+  }, []);
+
   return (
     <div className="settlements-header">
       <div>
@@ -59,6 +67,7 @@ function SettlementsHeader(props) {
                         settlementExists={settlementExists}
                         esOndemandSettlementEnabled={esOndemandSettlementEnabled}
                         checkIfFirstEverSettlement={checkIfFirstEverSettlement}
+                        isNodalAccountLowBalanceBlocked={isNodalAccountBalanceLowBlocked}
                       />
                     )}
                   <br />
@@ -98,11 +107,11 @@ const mapStateToProps = (state) => {
     holidayList: state.settlement.holidayList,
     ...state.home,
     settlementConfig: state.settlement.config,
+    settleNowDisabled: state?.settlement?.settleNowButtonDisabled,
   };
 };
 
-const mapDispatchToProps = (dispatch) => {
-  return bindActionCreators({ openModal: fnOpenModal, closeModal }, dispatch);
-};
-
-export default connect(mapStateToProps, mapDispatchToProps)(SettlementsHeader);
+export default connect(mapStateToProps, {
+  openModal: fnOpenModal,
+  fetchOnDemandBlocked: fnFetchOnDemandBlocked,
+})(SettlementsHeader);

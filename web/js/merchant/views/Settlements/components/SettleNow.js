@@ -19,13 +19,16 @@ const SettleNow = (props) => {
     esOndemandSettlementEnabled,
     openModal,
     fetchOndemandRestrictions,
+    isNodalAccountLowBalanceBlocked,
   } = props;
 
   const isOnDemandDisabled = () => {
     return restrictedFeatures.some((feature) => user.isFeatureEnabled(feature));
   };
   const settlementRestricted =
-    user.isFeatureEnabled('es_on_demand_restricted') || isOnDemandDisabled();
+    user.isFeatureEnabled('es_on_demand_restricted') ||
+    isOnDemandDisabled() ||
+    isNodalAccountLowBalanceBlocked;
 
   const attemptsLeft =
     settlementRestricted && ondemand_restrictions && ondemand_restrictions.data.attempts_left;
@@ -77,6 +80,7 @@ const SettleNow = (props) => {
     ondemand_restrictions,
     isOnDemandDisabled,
     user,
+    isNodalAccountLowBalanceBlocked,
   );
 
   useEffect(() => {

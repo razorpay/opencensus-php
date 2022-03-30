@@ -17,6 +17,7 @@ export const settleNowRestrictionMsgFn = (
   ondemand_restrictions,
   isOnDemandDisabled,
   user,
+  isNodalAccountBalanceLow,
 ) => {
   if (!settlementRestricted) return null;
   const {
@@ -59,6 +60,8 @@ export const settleNowRestrictionMsgFn = (
         Please complete the repayments to re-enable Instant Settlements.
       </div>
     );
+  } else if (isNodalAccountBalanceLow) {
+    return 'We are temporarily offline. Will be back soon!';
   } else if (!attempts_left && !settlable_amount) {
     return `You’ve already settled your maximum allowed limit of ${getFormattedAmountNew(
       max_amount_limit,
