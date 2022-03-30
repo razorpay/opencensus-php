@@ -4,6 +4,7 @@ import Spinner from 'common/ui/Spinner';
 import { Component } from 'react';
 import Alert from 'common/ui/Forms/Alert';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
+import ShowWhen from 'merchant/components/ShowWhen';
 import { Link, withRouter } from 'react-router-dom';
 import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
 import RefundStatusTimeline from 'merchant/views/Transactions/Refunds/components/RefundTimeline';
@@ -20,7 +21,8 @@ import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 class PaymentDetailsContainer extends Component {
   componentDidUpdate() {
-    if (this.props.refund && this.props.refund.id) {
+    const { refund } = this.props;
+    if (refund?.id) {
       analyticsTrack({
         objectName: 'refund details',
         actionName: 'fetched',
@@ -28,32 +30,37 @@ class PaymentDetailsContainer extends Component {
         properties: {
           location: 'refunds',
           status: 'success',
-          ...this.props.refund.analyticsPayload(),
+          ...refund?.analyticsPayload(),
           ...getCommonAnalyticsProperties(window.rzp_user),
         },
       });
     }
   }
 
+  isFeatureEnabled = () => {
+    const { org } = this.props;
+    return org?.features?.indexOf('show_refnd_lateauth_param') > -1;
+  };
+
   render() {
-    const { refund } = this.props;
+    const { isLoading, statusMsg, viewRefundHistory, refund, user } = this.props;
 
     return (
-      <div class="content-wrapper content-sm txn-details">
-        {this.props.isLoading ? (
-          <div class="page-spinner-container">
+      <div className="content-wrapper content-sm txn-details">
+        {isLoading ? (
+          <div className="page-spinner-container">
             <Spinner />
           </div>
         ) : (
-          <div class="panel panel-default SliderPanel">
-            <div class="panel-heading">
+          <div className="panel panel-default SliderPanel">
+            <div className="panel-heading">
               Refund Id: <b>{refund.id}</b>
             </div>
 
-            <div class="SliderPanel__Body">
-              <div class="panel-body">
-                <Alert type={this.props.statusMsg.type} message={this.props.statusMsg.message} />
-                <div class="list-group details-row-container">
+            <div className="SliderPanel__Body">
+              <div className="panel-body">
+                <Alert type={statusMsg?.type} message={statusMsg?.message} />
+                <div className="list-group details-row-container">
                   <EntityDetailRow
                     label="Payment"
                     value={() => (
@@ -65,7 +72,7 @@ class PaymentDetailsContainer extends Component {
                   <EntityDetailRow
                     label="Status"
                     value={() => (
-                      <ContentToggler onToggleClick={this.props.viewRefundHistory}>
+                      <ContentToggler onToggleClick={viewRefundHistory}>
                         <span>View History</span>
                         <RefundStatusTimeline refund={refund} />
                       </ContentToggler>
@@ -98,7 +105,7 @@ class PaymentDetailsContainer extends Component {
                       return (
                         <span>
                           {refundSpeed === 'instant' || refundSpeed === null ? (
-                            <i style={{ fontSize: '18px' }} class="i i-instant-refund" />
+                            <i style={{ fontSize: '18px' }} className="i i-instant-refund" />
                           ) : null}{' '}
                           {/* added check for if speed_processed = undefined */}
                           {refundSpeed !== null
@@ -120,13 +127,14 @@ class PaymentDetailsContainer extends Component {
                     )}
                   />
 
-                  <EntityDetailRow label="Processed at">
-                    <Time value={refund.created_at} format="DD MMM YYYY, hh:mm:ss a" />
-                  </EntityDetailRow>
+                  <ShowWhen additionalCondition={this.isFeatureEnabled}>
+                    <EntityDetailRow label="Refund Type" value={refund.refund_type} />
+                    <EntityDetailRow label="Processed at">
+                      <Time value={refund.created_at} format="DD MMM YYYY, hh:mm:ss a" />
+                    </EntityDetailRow>
+                  </ShowWhen>
 
-                  <EntityDetailRow label="Refund Type" value={refund.refund_type} />
-
-                  {refund.transaction && this.props.user.isUxRevampPhase2Enabled && (
+                  {refund.transaction && user?.isUxRevampPhase2Enabled && (
                     <EntityDetailRow label="Settlement Details">
                       <SettlementInfo data={refund} entityType="refund" showTimeline />
                     </EntityDetailRow>

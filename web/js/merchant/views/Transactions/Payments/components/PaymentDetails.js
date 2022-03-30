@@ -1,3 +1,4 @@
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, withRouter } from 'react-router-dom';
 import Amount from 'common/ui/Amount';
 import Time from 'common/ui/Time';
@@ -19,7 +20,6 @@ import ContentToggler from 'common/ui/Toggler/ContentToggler';
 import SettlementOverview from './SettlementOverview';
 import AnnouncementBar from 'merchant/components/AnnouncementBar';
 import SettlementInfo from 'merchant/views/Settlements/components/SettlementInfo';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { OptimizerDetails } from 'merchant/views/Transactions/Payments/components/OptimizerDetails';
@@ -41,6 +41,7 @@ function PaymentDetails(props) {
     isRoleAllowedEdit,
     viewSettlementOverview,
     user,
+    org,
     location,
     terminalProviders,
   } = props;
@@ -85,6 +86,10 @@ function PaymentDetails(props) {
       });
     }
   }, [isFromHomePage, payment, user, handleScroll]);
+
+  const isFeatureEnabled = useCallback(() => {
+    return org?.features?.indexOf('show_late_auth_attributes') > -1;
+  }, [org?.features]);
 
   return (
     <div className="content-wrapper content-sm txn-details" ref={scroller}>
@@ -247,25 +252,27 @@ function PaymentDetails(props) {
                   <Time value={payment.created_at} format="DD MMM YYYY, hh:mm:ss a" />
                 </EntityDetailRow>
 
-                <EntityDetailRow label="Late Authorized">
-                  <Definition>
-                    <span>{payment.late_authorized ? 'Yes' : 'No'}</span>
-                  </Definition>
-                </EntityDetailRow>
+                <ShowWhen additionalCondition={isFeatureEnabled}>
+                  <EntityDetailRow label="Late Authorized">
+                    <Definition>
+                      <span>{payment.late_authorized ? 'Yes' : 'No'}</span>
+                    </Definition>
+                  </EntityDetailRow>
 
-                <EntityDetailRow label="Authorised At">
-                  <Time value={payment.authorized_at} format="DD MMM YYYY, hh:mm:ss a" />
-                </EntityDetailRow>
+                  <EntityDetailRow label="Authorised At">
+                    <Time value={payment.authorized_at} format="DD MMM YYYY, hh:mm:ss a" />
+                  </EntityDetailRow>
 
-                <EntityDetailRow label="Auto Captured">
-                  <Definition>
-                    <span>{payment.auto_captured ? 'Yes' : 'No'}</span>
-                  </Definition>
-                </EntityDetailRow>
+                  <EntityDetailRow label="Auto Captured">
+                    <Definition>
+                      <span>{payment.auto_captured ? 'Yes' : 'No'}</span>
+                    </Definition>
+                  </EntityDetailRow>
 
-                <EntityDetailRow label="Captured At">
-                  <Time value={payment.captured_at} format="DD MMM YYYY, hh:mm:ss a" />
-                </EntityDetailRow>
+                  <EntityDetailRow label="Captured At">
+                    <Time value={payment.captured_at} format="DD MMM YYYY, hh:mm:ss a" />
+                  </EntityDetailRow>
+                </ShowWhen>
 
                 <ShowWhen
                   additionalCondition={() =>
