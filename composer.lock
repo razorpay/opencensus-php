@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d861b9c8ef10fe9e14650cf3490df375",
+    "content-hash": "e43faddf825cb76ffca20e0285c7a74e",
     "packages": [
         {
             "name": "anlutro/l4-settings",
@@ -8216,24 +8216,25 @@
         },
         {
             "name": "razorpay/oauth",
-            "version": "2.1.0",
+            "version": "2.1.0.20",
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/oauth.git",
-                "reference": "7f02be48b4aa19a71d04581dce88c95d20819cf7"
+                "reference": "a7f0bcc207b9d13cc4eb1212bbda2c3129e143c0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/oauth/zipball/7f02be48b4aa19a71d04581dce88c95d20819cf7",
-                "reference": "7f02be48b4aa19a71d04581dce88c95d20819cf7",
+                "url": "https://api.github.com/repos/razorpay/oauth/zipball/a7f0bcc207b9d13cc4eb1212bbda2c3129e143c0",
+                "reference": "a7f0bcc207b9d13cc4eb1212bbda2c3129e143c0",
                 "shasum": ""
             },
             "require": {
                 "laravel/framework": "^6.0",
                 "lcobucci/jwt": "~3.3.1",
                 "league/oauth2-server": "^6.0",
+                "monolog/monolog": "^1.12",
                 "php": ">=7.2",
-                "razorpay/outbox-php": "^0.1.2",
+                "razorpay/outbox-php": "v0.2.3",
                 "razorpay/spine": "1.0.1",
                 "zendframework/zend-diactoros": "^1.4"
             },
@@ -8263,28 +8264,29 @@
                 "service"
             ],
             "support": {
-                "source": "https://github.com/razorpay/oauth/tree/2.1.0",
+                "source": "https://github.com/razorpay/oauth/tree/2.1.0.20",
                 "issues": "https://github.com/razorpay/oauth/issues"
             },
-            "time": "2021-06-24T07:57:15+00:00"
+            "time": "2022-03-22T10:30:12+00:00"
         },
         {
             "name": "razorpay/outbox-php",
-            "version": "0.1.3",
+            "version": "v0.2.3",
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/outbox-php.git",
-                "reference": "5c12589a9092d75059dd590106c9a0f7a06ce79d"
+                "reference": "299dcbb9b59b24d04e51400d3426119e084f04c0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/outbox-php/zipball/5c12589a9092d75059dd590106c9a0f7a06ce79d",
-                "reference": "5c12589a9092d75059dd590106c9a0f7a06ce79d",
+                "url": "https://api.github.com/repos/razorpay/outbox-php/zipball/299dcbb9b59b24d04e51400d3426119e084f04c0",
+                "reference": "299dcbb9b59b24d04e51400d3426119e084f04c0",
                 "shasum": ""
             },
             "require": {
                 "illuminate/database": "^6.0",
-                "php": ">=7.2"
+                "php": ">=7.2",
+                "razorpay/trace": "3.2.1"
             },
             "require-dev": {
                 "mockery/mockery": "^0.9.9",
@@ -8305,10 +8307,10 @@
             ],
             "description": "PHP SDK for sending outbox jobs.",
             "support": {
-                "source": "https://github.com/razorpay/outbox-php/tree/0.1.3",
+                "source": "https://github.com/razorpay/outbox-php/tree/v0.2.3",
                 "issues": "https://github.com/razorpay/outbox-php/issues"
             },
-            "time": "2021-06-14T08:25:49+00:00"
+            "time": "2022-03-22T10:21:21+00:00"
         },
         {
             "name": "razorpay/razorpay",
@@ -14968,7 +14970,9 @@
         "php": ">=7.2",
         "ext-gmp": "*",
         "ext-zip": "*",
-        "ext-json": "*"
+        "ext-json": "*",
+        "ext-dom": "*",
+        "ext-libxml": "*"
     },
     "platform-dev": [],
     "plugin-api-version": "2.1.0"
