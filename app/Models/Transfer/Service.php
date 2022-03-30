@@ -2,10 +2,6 @@
 
 namespace RZP\Models\Transfer;
 
-use RZP\Jobs;
-use Carbon\Carbon;
-use RZP\Exception;
-use RZP\Error\Error;
 use RZP\Models\Base;
 use RZP\Trace\Tracer;
 use RZP\Models\Payment;
@@ -13,14 +9,10 @@ use RZP\Models\Merchant;
 use RZP\Models\Reversal;
 use RZP\Models\Transfer;
 use RZP\Trace\TraceCode;
-use RZP\Error\ErrorCode;
-use RZP\Constants\Timezone;
-use RZP\Base\ConnectionType;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Jobs\Transfers\TransferRecon;
 use RZP\Constants\Entity as EntityConstant;
-use RZP\Jobs\Transfers\TransferBackfillJob;
 use RZP\Models\Settlement\Entity as Settlement;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 use RZP\Jobs\Transfers\LinkedAccountBankVerificationStatusBackfill;
@@ -829,70 +821,6 @@ class Service extends Base\Service
         ];
 
         $this->app['events']->dispatch('api.transfer.settled', $eventPayload);
-    }
-
-    public function transferRecon(array $input)
-    {
-        $hours = 24;
-
-        if (isset($input['hours']) === true)
-        {
-            $hours = $input['hours'];
-        }
-
-        $linkedAccountSettlementIds = $this->core->getLinkedAccountSettlementIds($hours);
-
-        if (empty($linkedAccountSettlementIds) === true)
-        {
-            return 0;
-        }
-
-        $settlementIdsToQueue = [];
-
-        foreach ($linkedAccountSettlementIds as $recipientSettlementId)
-        {
-            if ($this->core->isReconDoneForSettlementId($recipientSettlementId) === false)
-            {
-                $settlementIdsToQueue[] = $recipientSettlementId;
-            }
-        }
-
-        if (empty($settlementIdsToQueue) === true)
-        {
-            $this->trace->info(
-                TraceCode::LINKED_ACCOUNT_SETTLEMENTS_ALREADY_RECONCILED,
-                [
-                    'settlement_ids' => $linkedAccountSettlementIds,
-                ]
-            );
-
-            return 0;
-        }
-
-        try
-        {
-            TransferRecon::dispatch($settlementIdsToQueue, $this->mode);
-        }
-        catch (\Exception $ex)
-        {
-            $this->trace->traceException(
-                $ex,
-                Trace::CRITICAL,
-                TraceCode::LINKED_ACCOUNT_SETTLEMENTS_PUSH_TO_QUEUE_FAILED,
-                [
-                    'settlement_ids' => $settlementIdsToQueue,
-                ]
-            );
-        }
-
-        $this->trace->info(
-            TraceCode::LINKED_ACCOUNT_SETTLEMENTS_PUSHED_TO_QUEUE,
-            [
-                'settlement_ids' => $settlementIdsToQueue,
-            ]
-        );
-
-        return count($settlementIdsToQueue);
     }
 
     public function createReversalFromBatch(string $transferId, array $input)

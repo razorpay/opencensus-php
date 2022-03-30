@@ -6,7 +6,6 @@ use ApiResponse;
 use RZP\Constants\Mode;
 use RZP\Constants\Entity;
 use Illuminate\Routing\Router;
-use RZP\Constants\Environment;
 use RZP\Models\IdempotencyKey;
 use RZP\Http\Request\Requests;
 use RZP\Foundation\Application;
@@ -1772,7 +1771,6 @@ class Route
         'reversal_fetch'                           => ['get',      'reversals/{id}',                                 'ReversalController@getReversal'                                    ],
         'reversal_fetch_multiple'                  => ['get',      'reversals',                                      'ReversalController@getReversals'                                   ],
         'transfer_debug'                           => ['post',     'transfer_debug',                                 'TransferController@debugRoute'                                     ],
-        'transfer_recon'                           => ['post',     'transfers/recon',                                'TransferController@transferRecon'                                  ],
 
         'payment_update_on_hold'                   => ['post',     'payments/on_hold/update',                        'PaymentController@updateOnHold'                                    ],
         'payment_on_hold_bulk_update'              => ['post',     'payments/on_hold/bulk_update',                   'PaymentController@updateOnHoldBulkUpdate'                          ],
@@ -4258,7 +4256,6 @@ class Route
         'transfer_payment_pending_process',
         'transfer_settlements_update',
         'transfer_failed_process',
-        'transfer_recon',
         'merchant_mtu_update',
         'webhook_send_email',
         'transaction_settled_data_fix',
@@ -11759,7 +11756,6 @@ class Route
             'transfer_pending_process',
             'transfer_payment_pending_process',
             'transfer_failed_process',
-            'transfer_recon',
             'banking_account_statement_process_cron',
             'banking_account_statement_process_pool',
             'banking_account_send_notification_to_spoc_cron',

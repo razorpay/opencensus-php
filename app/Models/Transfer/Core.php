@@ -4,13 +4,11 @@ namespace RZP\Models\Transfer;
 
 use RZP\Constants;
 use RZP\Exception;
-use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\Order;
 use RZP\Trace\Tracer;
 use RZP\Models\Feature;
 use RZP\Models\Payment;
-use RZP\Models\Pricing;
 use RZP\Error\ErrorCode;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
@@ -900,45 +898,6 @@ class Core extends Base\Core
         $transfers->callOnEveryItem('incrementAttempts');
 
         $this->repo->saveOrFailCollection($transfers);
-    }
-
-    public function getLinkedAccountSettlementIds($hours)
-    {
-        $createdAt = Carbon::now()->addHours(-1 * $hours)->getTimestamp();
-
-        $settlements = $this->repo->settlement->getSettlementsCreatedInGivenTimePeriod($createdAt);
-
-        $linkedAccountSettlementIds = [];
-
-        foreach ($settlements as $settlement)
-        {
-            if ($settlement->merchant->isLinkedAccount() === true)
-            {
-                $linkedAccountSettlementIds[] = $settlement->getId();
-            }
-        }
-
-        $this->trace->info(
-            TraceCode::LINKED_ACCOUNT_SETTLEMENTS_CREATED_IN_TIME_PERIOD,
-            [
-                'time_period'       => $hours,
-                'settlement_ids'    => $linkedAccountSettlementIds,
-            ]
-        );
-
-        return $linkedAccountSettlementIds;
-    }
-
-    public function isReconDoneForSettlementId($settlementId)
-    {
-        $count = $this->repo->transfer->getCountTransfersByRecipientSettlementId($settlementId);
-
-        if ($count !== 0)
-        {
-            return true;
-        }
-
-        return false;
     }
 
     public function updateSettlementStatusInTransfers(string $settlementId)

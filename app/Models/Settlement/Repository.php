@@ -138,13 +138,4 @@ class Repository extends Base\Repository
                     ->where(Entity::ID, $settlementId)
                     ->get();
     }
-
-    public function getSettlementsCreatedInGivenTimePeriod($createdAt)
-    {
-        $query = $this->newQuery()
-                      ->where(Entity::CREATED_AT, '>=', $createdAt)
-                      ->get();
-
-        return $query;
-    }
 }

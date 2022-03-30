@@ -157,15 +157,6 @@ class TransferController extends Controller
 //        );
     }
 
-    public function transferRecon()
-    {
-        $input = Request::all();
-
-        $response = $this->service()->transferRecon($input);
-
-        return ApiResponse::json($response);
-    }
-
     public function createTransferReversalFromBatch($id)
     {
         $input = Request::all();

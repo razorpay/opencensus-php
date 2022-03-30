@@ -248,15 +248,6 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function getCountTransfersByRecipientSettlementId(string $recipientSettlementId)
-    {
-        $query = $this->newQueryWithConnection($this->getSlaveConnection())
-                      ->where(Entity::RECIPIENT_SETTLEMENT_ID, $recipientSettlementId)
-                      ->count(Entity::ID);
-
-        return $query;
-    }
-
     public function getIdsByRecipientSettlementId(string $settlementId, array $status = [])
     {
         $query = $this->newQuery()
