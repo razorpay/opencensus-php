@@ -627,6 +627,11 @@ class Entity extends Base\PublicEntity
         return ($this->getMerchantId() !== Account::SHARED_ACCOUNT);
     }
 
+    public function isGlobal()
+    {
+        return ($this->getMerchantId() === Account::SHARED_ACCOUNT);
+    }
+
     public function isCard()
     {
         return ($this->getAttribute(self::METHOD) === Payment\Method::CARD);

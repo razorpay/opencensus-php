@@ -500,4 +500,7 @@ final class RazorxTreatment
     // Experiment to allow linked account creation with existing email id
     const ALLOW_LINKED_ACCOUNT_CREATION_FOR_EXISTING_EMAILS = 'allow_linked_account_creation_for_existing_emails';
 
+    // Experiment to control payment process through actual card number/tokenised card number for tokenised cards
+    const PAYMENT_PROCESS_THROUGH_TOKENISED_CARD = 'payment_process_through_tokenised_card';
+
 }

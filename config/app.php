@@ -377,6 +377,8 @@ return array(
 
     'shopify_1cc_sqs_splitz_experiment_id' => env('SHOPIFY_1CC_SQS_SPLITZ_EXPERIMENT_ID'),
 
+    'global_card_payment_splitz_experiment_id' => env('GLOBAL_CARD_PAYMENT_SPLITZ_EXPERIMENT_ID'),
+
     'payment_handle_domain' => env('PAYMENT_HANDLE_DOMAIN'),
 
     'nocode' => [

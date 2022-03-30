@@ -1,0 +1,132 @@
+<?php
+
+namespace RZP\Models\Payment;
+
+use App;
+use RZP\Models\Base\UniqueIdEntity;
+use RZP\Trace\TraceCode;
+use RZP\Models\Merchant;
+use RZP\Models\Customer\Token;
+use RZP\Models\Card;
+
+class TokenisationExperiment
+{
+    protected $app;
+    protected $trace;
+    protected $mode;
+
+    public function __construct()
+    {
+        $this->app = App::getFacadeRoot();
+        $this->trace = $this->app['trace'];
+        $this->mode = $this->app['rzp.mode'] ?? '';
+    }
+
+    /**
+     * This decides if the card payments should go through actual card numbers
+     * or tokenised card number based on two experiments
+     *
+     * Experiment 1 - for tokenised global saved card payments,
+     * only y% of traffic will go through tokenised card
+     *
+     * Experiment 2 - for tokenised global and local saved card payments,
+     * based on the combination of (issuer, network, card type),
+     * three lists are maintained -
+     * 1. Blacklist - (100% will go through actual card)
+     * 2. Ramp up list - x% traffic will go through tokenised card
+     * 3. Whitelist - everything else will go through tokenised card
+     *
+     * @param  Token\Entity $token
+     * @return bool
+     */
+    public function shouldPaymentProcessThroughTokenisedCard(Token\Entity $token): bool
+    {
+        if (($token->isGlobal() === true) and
+            ($this->shouldGlobalCardPaymentGoThroughTokenisedCardExp() === false))
+        {
+            return false;
+        }
+
+        return $this->shouldPaymentGoThroughTokenisedCardIssuerNetworkTypeExp($token->card);
+    }
+
+    /**
+     * Splitz experiment - for tokenised global saved card payments,
+     * only y% of traffic will go through tokenised card
+     *
+     * @return bool
+     */
+    protected function shouldGlobalCardPaymentGoThroughTokenisedCardExp(): bool
+    {
+        try
+        {
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.global_card_payment_splitz_experiment_id'),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            if ($variant === 'variant_on')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::GLOBAL_CARD_PAYMENT_PROCESS_SPLITZ_ERROR
+            );
+        }
+
+        return false;
+    }
+
+    /**
+     * Razorx experiment - for tokenised global and local saved card payments,
+     * based on the combination of (issuer, network, card type),
+     * three lists are maintained -
+     * 1. Blacklist - (100% will go through actual card)
+     * 2. Ramp up list - x% traffic will go through tokenised card
+     * 3. Whitelist - everything else will go through tokenised card
+     *
+     * @param  Card\Entity $card
+     * @return bool
+     */
+    protected function shouldPaymentGoThroughTokenisedCardIssuerNetworkTypeExp(Card\Entity $card): bool
+    {
+        try
+        {
+            $experimentKey = implode('_', [
+                $card->getIssuer(),
+                $card->getNetworkCode(),
+                $card->getType()
+            ]);
+
+            $variant = $this->app->razorx->getTreatment(
+                $experimentKey,
+                Merchant\RazorxTreatment::PAYMENT_PROCESS_THROUGH_TOKENISED_CARD,
+                $this->mode
+            );
+
+            if ($variant === 'on')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::ISSUER_NETWORK_TYPE_RAZORX_EXPERIMENT_ERROR
+            );
+        }
+
+        return false;
+    }
+}
