@@ -251,7 +251,8 @@ class Type
     const BATCH_SERVICE_BUCKET_CONFIG           = 'batch_service_bucket_config';
     const FUND_TRANSFER_SFTP_BUCKET_CONFIG      = 'fund_transfer_sftp_bucket_config';
     const RECON_SFTP_INPUT_BUCKET_CONFIG        = 'recon_sftp_input_bucket';
-    const DATA_LAKE_SEGMENTS_BUCKET_CONFIG       = 'data_lake_segments_bucket_config';
+    const DATA_LAKE_SEGMENTS_BUCKET_CONFIG      = 'data_lake_segments_bucket_config';
+    const PAYOUTS_BUCKET_CONFIG                 = 'payouts_bucket_config';
 
     const PAYOUT_SAMPLE                         = 'payout_sample';
 
@@ -755,6 +756,10 @@ class Type
             self::DATA_LAKE_SEGMENT_FILE,
             self::RBL_MERCHANT_MASTER_FIRS,
         ],
+
+        self::PAYOUTS_BUCKET_CONFIG => [
+            self::PAYOUT_SAMPLE,
+        ]
     ];
 
     /**

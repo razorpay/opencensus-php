@@ -80,6 +80,10 @@ return [
             'region' => env('AWS_S3_DATA_LAKE_SEGMENT_REGION', 'ap-south-1'),
             'credentials'=>$memoizedProvider
         ],
+        'payouts_bucket_config' => [
+            'name'   => env('AWS_S3_PAYOUTS_BUCKET'),
+            'region' => env('AWS_S3_PAYOUTS_REGION', 'ap-south-1'),
+        ],
     ],
 
     'local' => [

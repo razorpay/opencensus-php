@@ -602,7 +602,7 @@ class Creator extends Base\Core
 
         $url = $this->storageHandler->getSignedUrl($bucketConfig, $this->file->getLocation(), $duration);
 
-        // For Tetsing this will return Local File Path instead of Signed Url
+        // For Testing this will return Local File Path instead of Signed Url
         // TODO: Do this in a better way
         if ($this->env === 'testing')
         {

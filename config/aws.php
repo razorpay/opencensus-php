@@ -44,6 +44,8 @@ return [
 
     'fund_transfer_sftp_bucket_config'    => env('AWS_S3_FUND_TRANSFER_SFTP_BUCKET'),
 
+    'payouts_bucket_config' => env('AWS_S3_PAYOUTS_BUCKET'),
+
     'sns_target_arn'        => [
         'sms'                    => [
             'live' => env('AWS_RAVEN_TARGET_ARN'),
