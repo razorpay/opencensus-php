@@ -14,6 +14,7 @@ class LocationService
     const CACHE_PREFIX             = "locations:states_by_country";
     const CACHE_PREFIX_AUTOSUGGEST = "locations:autosuggest";
     const CACHE_TTL                = 86400 * 60;
+    const CACHE_TTL_30_DAY         = 86400 * 30;
 
     protected $cache;
 
@@ -80,7 +81,7 @@ class LocationService
             try
             {
                 $suggestions = (new GoogleMapsClient())->fetchAddressSuggestions($addressQuery, $zipcode, $country);
-                $this->cache->put($cacheKey, $suggestions);
+                $this->cache->put($cacheKey, $suggestions, self::CACHE_TTL_30_DAY);
             }
             catch (\Exception $e)
             {
