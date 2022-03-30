@@ -696,7 +696,6 @@ class M2MReferralTest extends TestCase
         $this->ba->noAuth();
         $promotions = $this->mockCoupon();
 
-        $this->expectException(BadRequestException::class);
         $this->startTest();
 
         $repo = new Repository();
@@ -753,7 +752,6 @@ class M2MReferralTest extends TestCase
 
         $this->ba->noAuth();
 
-        $this->expectException(BadRequestException::class);
         $this->startTest();
         $repo = new Repository();
 
@@ -808,6 +806,7 @@ class M2MReferralTest extends TestCase
         $this->ba->noAuth();
 
         $this->expectException(BadRequestException::class);
+
         $this->startTest();
 
         $m2mReferral = $this->getDbLastEntity('m2m_referral');
@@ -1116,52 +1115,6 @@ class M2MReferralTest extends TestCase
     {
         $promotions = $this->mockCoupon();
         $this->ba->dashboardGuestAppAuth();
-        $this->startTest();
-    }
-
-    public function testRateLimitExhausted()
-    {
-        $refereeMerchant  = $this->createMerchant('I0qYGdG9IGaVxz');
-        $referrerMerchant = $this->createMerchant('Hm9Bv6kFufFS36');
-        $randomMerchant   = $this->createMerchant('HucXhpLFHt8tQp');
-
-        $input = [
-            M2MReferralEntity::STATUS          => M2MEntityStatus::REWARDED,
-            M2MReferralEntity::REFERRER_STATUS => M2MEntityStatus::REWARDED,
-            M2MReferralEntity::REFERRER_ID     => $referrerMerchant->getMerchantId(),
-        ];
-        (new Core())->createM2MReferral($randomMerchant, $input);
-
-        $input = [
-            M2MReferralEntity::STATUS      => M2MEntityStatus::MTU_EVENT_SENT,
-            M2MReferralEntity::REFERRER_ID => $referrerMerchant->getMerchantId(),
-            M2MReferralEntity::METADATA    => [
-                M2MConstants::REFERRAL_CODE => 'zawdfd8x',
-                FBConstants::EMAIL          => $refereeMerchant->getEmail()
-            ]
-        ];
-        (new Core())->createM2MReferral($refereeMerchant, $input);
-
-        $promotions = $this->mockCoupon();
-
-        $data = [
-            StoreConstants::NAMESPACE                    => StoreConfigKey::ONBOARDING_NAMESPACE,
-            StoreConfigKey::REFERRED_COUNT               => 1,
-            StoreConfigKey::REFERRAL_SUCCESS_POPUP_COUNT => 0,
-            StoreConfigKey::REFEREE_NAME                 => [$randomMerchant->getName()],
-            StoreConfigKey::REFEREE_ID                   => [$randomMerchant->getId()],
-            StoreConfigKey::REFERRAL_AMOUNT              => 100
-        ];
-
-        (new StoreCore())->updateMerchantStore($referrerMerchant->getId(), $data, StoreConstants::INTERNAL);
-
-        $this->ba->noAuth();
-
-        $this->app['cache']->put(RewardValidationRequest::ATTEMPT_COUNT_REDIS_KEY_PREFIX,
-                                 RewardValidationRequest::MAX_ATTEMPT + 1,
-                                 RewardValidationRequest::ATTEMPT_COUNT_TTL_IN_SEC);
-
-
         $this->startTest();
     }
 }

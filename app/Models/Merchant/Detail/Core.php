@@ -5231,16 +5231,6 @@ class Core extends Base\Core
         {
             $merchantDetail = $this->merchant->merchantDetail;
 
-            //if experiment is enabled then only probe for gst details
-            $isGetGstDetailsRazorxExperimentEnabled = (new Merchant\Core())->isRazorxExperimentEnable(
-                $this->merchant->getId(),
-                RazorxTreatment::BVS_GET_GST_DETAILS);
-
-            if ($isGetGstDetailsRazorxExperimentEnabled === false)
-            {
-                return [Constant::RESULTS => $gstDetails];
-            }
-
             $keys = [
                 ConfigKey::GET_GST_DETAILS_FROM_BVS_ATTEMPT_COUNT
             ];

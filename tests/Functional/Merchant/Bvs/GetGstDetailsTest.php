@@ -47,8 +47,7 @@ class GetGstDetailsTest extends TestCase
                           ->will($this->returnCallback(
                               function($mid, $feature, $mode) {
                                   if ($feature === RazorxTreatment::KARZA_BANK_ACCOUNT_VERIFICATION or
-                                      $feature === RazorxTreatment::BVS_PENNY_TESTING or
-                                      $feature === RazorxTreatment::BVS_GET_GST_DETAILS)
+                                      $feature === RazorxTreatment::BVS_PENNY_TESTING)
                                   {
                                       return 'on';
                                   }

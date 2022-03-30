@@ -15,11 +15,7 @@ use RZP\Models\Merchant\M2MReferral\FriendBuy\FriendBuyService;
 
 class RewardValidationRequest extends FormRequest
 {
-    const ATTEMPT_COUNT_TTL_IN_SEC       = 900;
-    const MAX_ATTEMPT                    = 30;
-    const ATTEMPT_COUNT_REDIS_KEY_PREFIX = 'attempt_count';
-
-    /**
+     /**
      * Determine if the user is authorized to make this request.
      *
      * @return bool
@@ -32,49 +28,7 @@ class RewardValidationRequest extends FormRequest
             'request' => $this->getContent()
         ]);
 
-        $attempts = $this->getAttempts();
-
-        if ($attempts > self::MAX_ATTEMPT)
-        {
-            $app['trace']->count(DetailMetric::REWARD_VALIDATION_EXHAUSTED);
-
-            $app['trace']->info(TraceCode::REWARD_VALIDATION_EXHAUSTED);
-
-            throw new \RZP\Exception\ServerErrorException(ErrorCode::BAD_REQUEST_RATE_LIMIT_EXCEEDED,500);
-        }
-
-        $this->increaseAttempt();
-
         return (new FriendBuyService())->validateSignature($this);
-    }
-
-    /**
-     * @return string
-     */
-    public function getRateLimiterKey(): string
-    {
-        return self::ATTEMPT_COUNT_REDIS_KEY_PREFIX;
-    }
-
-    /**
-     * @return int
-     */
-    public function getAttempts(): int
-    {
-        $attemptRedisKey = $this->getRateLimiterKey();
-
-        return App::getFacadeRoot()['cache']->get($attemptRedisKey) ?? 0;
-    }
-
-    public function increaseAttempt()
-    {
-        $attemptRedisKey = $this->getRateLimiterKey();
-
-        $attempt = $this->getAttempts() + 1;
-
-        App::getFacadeRoot()['cache']->put($attemptRedisKey,
-                                 $attempt,
-                                 self::ATTEMPT_COUNT_TTL_IN_SEC);
     }
 
     /**

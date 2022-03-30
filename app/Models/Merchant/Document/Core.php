@@ -324,14 +324,6 @@ class Core extends Base\Core
             return false;
         }
 
-        if ($document->getDocumentType() === Merchant\Document\Type::MSME_CERTIFICATE)
-        {
-            $isExperimentEnabled = $this->merchantCore->isRazorxExperimentEnable($merchantDetails->getMerchantId(),
-                                                                                 RazorxTreatment::MSME_DOC_VERIFICATION);
-
-            return ($isExperimentEnabled === true);
-        }
-
         return true;
     }
 

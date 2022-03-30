@@ -44,9 +44,6 @@ final class RazorxTreatment
     //Razorx treatment constant, allows system to call bvs for trust and society autokyc.
     const AUTO_KYC_TRUST_SOCIETY = "auto_kyc_trust_society";
 
-    //Razorx treatment constant, allows system to auto populate gst number from pan.
-    const BVS_GET_GST_DETAILS = "bvs_get_gst_details";
-
     // Razorx treatment constant, allows merchant to submit support call requests.
     const SUPPORT_CALL = 'support_call';
 
@@ -266,9 +263,6 @@ final class RazorxTreatment
 
     // experiment to enable instant activations on L1 submit;
     const INSTANT_ACTIVATION_FUNCTIONALITY = 'instant-activations-functionality';
-
-    // experiment to enable msme doc verification through OCR;
-    const MSME_DOC_VERIFICATION = 'MSME_DOC_VERIFICATION';
 
     // experiment to enable shop estb doc verification through OCR;
     const SHOP_ESTABLISHMENT_DOC_VERIFICATION = 'shop_establishment_doc_verification';

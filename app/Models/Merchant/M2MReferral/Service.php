@@ -12,6 +12,7 @@ use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
 use RZP\Models\User\Entity as UserEntity;
 use RZP\Models\Merchant\Account;
+use RZP\Exception\GatewayErrorException;
 use RZP\Models\Feature\Core as FeatureCore;
 use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Models\Feature\Constants as FeatureConstants;
@@ -280,8 +281,7 @@ class Service extends Base\Service
             if (empty($m2mReferral) === true or
                 ($m2mReferral->getRefereeStatus() <> Status::MTU_EVENT_SENT and $m2mReferral->getRefereeStatus() <> Status::MTU))
             {
-                throw new BadRequestException(
-                    ErrorCode::BAD_REQUEST_INVALID_ACTION);
+                throw new GatewayErrorException(ErrorCode::GATEWAY_ERROR_REQUEST_ERROR);
             }
 
             if (empty($m2mReferral->getReferrerId()))
