@@ -13,6 +13,7 @@ use RZP\Models\Terminal;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
 use RZP\Constants\Table;
+use RZP\Base\ConnectionType;
 use RZP\Models\Customer\Token;
 use RZP\Models\Payment\Method;
 use RZP\Exception\ServerErrorException;
@@ -188,6 +189,28 @@ class Repository extends Base\Repository
                     ->orderBy(Token\Entity::CREATED_AT, 'desc')
                     ->orderBy(Token\Entity::ID, 'desc')
                     ->get();
+    }
+
+    /**
+     * @param $method
+     * @param $customer
+     * @param $vpaId
+     *
+     * This is the method to get token by merchant id, customer id and vpa id
+     *
+     * @return mixed
+     */
+    public function getByMethodCustomerIdAndVpaId($method, $customer, $vpaId)
+    {
+        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
+            ->from(\DB::raw('`tokens` FORCE INDEX (tokens_merchant_id_index)'))
+            ->where(Entity::METHOD, '=', $method)
+            ->where(Entity::CUSTOMER_ID, '=', $customer->getId())
+            ->where(Entity::MERCHANT_ID, '=', $customer->merchant->getId())
+            ->where(Entity::VPA_ID, '=', $vpaId)
+            ->orderBy(Token\Entity::CREATED_AT, 'desc')
+            ->orderBy(Token\Entity::ID, 'desc')
+            ->first();
     }
 
 

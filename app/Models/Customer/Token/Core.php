@@ -1003,6 +1003,11 @@ class Core extends Base\Core
             ]
         );
 
+        if ($token->getMethod() === Method::UPI)
+        {
+            return $this->validateExistingTokenUpi($token);
+        }
+
         if ($customer !== null)
         {
             $existingTokens = $this->repo->token->getByMethodAndCustomerId(
@@ -1120,7 +1125,7 @@ class Core extends Base\Core
         return null;
     }
 
-    protected function validateExistingTokenUpi($existingTokens, $newToken)
+    protected function validateExistingTokenUpi($newToken)
     {
         // If the token being created is for recurring payment, we want to create new token. But if the token is for
         // saved vpa, we dont want to create a new token if a token already exists.
@@ -1136,15 +1141,10 @@ class Core extends Base\Core
             return null;
         }
 
-        foreach ($existingTokens as $token)
-        {
-            if ($token->getVpaId() === $newToken->getVpaId())
-            {
-                return $token;
-            }
-        }
+        $existingToken = $this->repo->token->getByMethodCustomerIdAndVpaId(
+            $newToken->getMethod(), $newToken->customer, $newToken->getVpaId());
 
-        return null;
+        return $existingToken;
     }
 
     protected function validateExistingTokenNach($existingTokens, $newToken)
