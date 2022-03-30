@@ -11,7 +11,7 @@ use Razorpay\Trace\Logger as Trace;
  * Es sync job class.
  * Receives insert/update/delete events of models and syncs the same change to ES.
  */
-class EsSync extends Job
+class EsSyncPgEinvoiceQueue extends Job
 {
     const MAX_JOB_ATTEMPTS = 3;
     const JOB_RELEASE_WAIT = 30;
@@ -27,6 +27,12 @@ class EsSync extends Job
     private $rearch;
 
     public $timeout = 4000;
+
+    //changing queue to pg_invoice queue instead of the default queue
+    /**
+     * @var string
+     */
+    protected $queueConfigKey = 'pg_einvoice';
 
     public function __construct(
         string $mode,
@@ -63,7 +69,7 @@ class EsSync extends Job
 
         try
         {
-            $this->trace->debug(TraceCode::ES_SYNC_REQUEST, $tracePayload);
+            $this->trace->debug(TraceCode::ES_SYNC_REQUEST_PG_INVOICE_QUEUE, $tracePayload);
 
             $this->setRepoAndEsRepo();
 
@@ -74,10 +80,10 @@ class EsSync extends Job
         catch(\Throwable $e)
         {
             $this->trace->traceException(
-                            $e,
-                            null,
-                            TraceCode::ES_SYNC_FAILED,
-                            $tracePayload);
+                $e,
+                null,
+                TraceCode::ES_SYNC_FAILED,
+                $tracePayload);
 
             // If it's logical error or maximum number of retries has happened
             // just delete the job, else retry the job after a wait.

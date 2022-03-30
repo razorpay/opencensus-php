@@ -2136,6 +2136,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ES_SYNC_PUSH_FAILED                                   = 'ES_SYNC_PUSH_FAILED';
     const ES_SYNC_FAILED                                        = 'ES_SYNC_FAILED';
     const ES_SYNC_REQUEST                                       = 'ES_SYNC_REQUEST';
+    const ES_SYNC_REQUEST_PG_INVOICE_QUEUE                      = 'ES_SYNC_REQUEST_PG_INVOICE_QUEUE';
     const ES_BULK_UPDATE_FAILED                                 = 'ES_BULK_UPDATE_FAILED';
     const ES_MYSQL_RESULTS_MISMATCH                             = 'ES_MYSQL_RESULTS_MISMATCH';
     const ES_REQUEST_PARAMS                                     = 'ES_REQUEST_PARAMS';
