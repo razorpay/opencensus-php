@@ -250,6 +250,9 @@ class ConfigKey
 
     const REARCH_CARD_PAYMENTS = self::PREFIX.'rearch_card_payments';
 
+    // this is to route 0loc traffic to scrooge service
+    const SCROOGE_0LOC_ENABLED = self::PREFIX.'scrooge_0loc_enabled';
+
     //Admin config used to control visibility of dcc markup on frontend
     const PAYMENT_SHOW_DCC_MARKUP = self::PREFIX.'payment_show_dcc_markup';
 
@@ -396,6 +399,7 @@ class ConfigKey
         self::SUB_BALANCES_MAP,
         self::BAS_CREDIT_BEFORE_DEBIT_UTRS,
         self::PAYER_ACCOUNT_NAME_INVALID_REGEXES,
+        self::SCROOGE_0LOC_ENABLED,
     ];
 
     const REDIS_CONFIG_MAP = [

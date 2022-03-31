@@ -170,6 +170,71 @@ class Scrooge extends BaseScrooge
             }',true);
     }
 
+    public function fetchRefundInternal($input)
+    {
+        return [
+            'code'     => 200,
+            'body'     => [
+                'data' => [
+                    [
+                    'id'                        =>$input['query']['refunds']['id'] ?? 'abcdeferhthjkt',
+                    'payment_id'                =>$input['query']['refunds']['payment_id'] ?? '5UWttxtCjkrldV',
+                    'merchant_id'               =>'8byazTDARv4Io0',
+                    'amount'                    =>69400,
+                    'base_amount'               =>69400,
+                    'currency'                  =>'INR',
+                    'gateway'                   =>'card_fss',
+                    'refund_gateway'            =>'card_fss',
+                    'gateway_acquirer'          =>'barb',
+                    'status'                    =>'processed',
+                    'public_status'             =>'',
+                    'method'                    =>'card',
+                    'bank'                      =>'',
+                    'reconciled_at'             =>'',
+                    'attempts'                  =>1,
+                    'speed_requested'           =>'normal',
+                    'mode_requested'            =>'',
+                    'speed'                     =>'normal',
+                    'fee'                       =>0,
+                    'tax'                       =>0,
+                    'processed_source'          =>'GATEWAY_REFUND_UNSUPPORTED_FUNDS_MOVED_TO_X',
+                    'next_attempt_at'           =>'',
+                    'last_attempted_at'         =>1545478867,
+                    'processed_at'              =>1594903122,
+                    'payment_amount'            =>2905225,
+                    'payment_base_amount'       =>2905225,
+                    'payment_gateway_captured'  =>1,
+                    'payment_service_route'     =>0,
+                    'payment_created_at'        =>1527089260,
+                    'payment_authorized_at'     =>1527089297,
+                    'on_hold_reason'            =>'',
+                    'arn'                       =>'',
+                    'created_at'                =>1545473781,
+                    'updated_at'                =>1628187697,
+                    'gateway_amount'            =>'',
+                    'gateway_currency'          =>'',
+                    'payment_gateway_amount'    =>'',
+                    'batch_id'                  =>'BambQLcZFz2aF0',
+                    'notes'                     =>'{"refund_type": "C", "reservation_id": "2000614752", "cancellation_id": "9500238892", "cancellation_date": "20181220"}',
+                    'meta'                      =>'',
+                    'initiation_type'           =>0,
+                    'arn_updated_at'            =>'',
+                    'debit_validation_batch_id' =>'',
+                    'gateway_refund_file_time'  =>'',
+                    'terminal_id'               =>'9xU2t8VzevNSUw',
+                    'reference1'                =>'',
+                    'settled_by'                =>'Razorpay',
+                    'receipt'                   =>'9500238892_2000614752',
+                    'transaction_id'            =>'BambpNC2hqpZgX',
+                    'speed_decisioned'          =>'normal',
+                    'payment_captured_at'       =>1527242197,
+                    'deleted_at'                =>'',
+                    ],
+                ],
+            ],
+        ];
+    }
+
     public function getRefund(string $id): array
     {
         return json_decode('{

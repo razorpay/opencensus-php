@@ -239,4 +239,14 @@ class TestCase extends IlluminateTestCase
     {
         (new Admin\Service())->setConfigKeys([Admin\ConfigKey::PG_ROUTER_SERVICE_ENABLED => 0]);
     }
+
+    public function enableScroogeRelationalLoadConfig()
+    {
+        (new Admin\Service())->setConfigKeys([Admin\ConfigKey::SCROOGE_0LOC_ENABLED => 1]);
+    }
+
+    public function disableScroogeRelationalLoadConfig()
+    {
+        (new Admin\Service())->setConfigKeys([Admin\ConfigKey::SCROOGE_0LOC_ENABLED => 0]);
+    }
 }

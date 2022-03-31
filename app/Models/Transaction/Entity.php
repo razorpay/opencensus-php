@@ -438,6 +438,15 @@ class Entity extends Base\PublicEntity
             return $this->getRelation('source');
         }
 
+        if ($this->getType() === Constants\Entity::REFUND)
+        {
+            $refund = (new Refund\Repository())->findOrFailPublic($this->getEntityId());
+
+            $this->source()->associate($refund);
+
+            return $refund;
+        }
+
         $source = $this->source()->first();
 
         if (empty($source) === false)

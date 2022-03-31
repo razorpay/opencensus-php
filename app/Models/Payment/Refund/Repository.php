@@ -23,9 +23,12 @@ use RZP\Gateway\Upi\Base\Entity as UpiEntity;
 use RZP\Models\Reversal\Entity as ReversalEntity;
 use RZP\Gateway\Wallet\Base\Entity as WalletEntity;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
+use RZP\Models\Base\Traits\ExternalScroogeRepo;
 
 class Repository extends Base\Repository
 {
+    use ExternalScroogeRepo;
+    use ScroogeRepo;
     protected $entity = 'refund';
 
     protected $entityFetchParamRules = [
@@ -257,7 +260,7 @@ class Repository extends Base\Repository
         return $this->findForPaymentId($payment->getId());
     }
 
-    public function findForPaymentId(string $paymentId)
+    public function findForPaymentIdFromAPI(string $paymentId)
     {
         return $this->newQuery()
                     ->where(Refund\Entity::PAYMENT_ID, '=', $paymentId)

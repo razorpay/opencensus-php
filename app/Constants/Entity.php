@@ -1235,12 +1235,14 @@ class Entity
         self::PAYMENT => 'pg_router',
         self::CARD    => 'pg_router',
         self::ORDER   => 'pg_router',
+        self::REFUND  => 'scrooge',
     ];
 
     protected static $externalRepoConfigKey = [
         self::PAYMENT => Models\Admin\ConfigKey::PG_ROUTER_SERVICE_ENABLED,
         self::CARD    => Models\Admin\ConfigKey::PG_ROUTER_SERVICE_ENABLED,
         self::ORDER   => Models\Admin\ConfigKey::PG_ROUTER_SERVICE_ENABLED,
+        self::REFUND  => Models\Admin\ConfigKey::SCROOGE_0LOC_ENABLED,
     ];
 
     protected static $externalServiceClass = [

@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Refund;
 
+use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -459,5 +460,81 @@ class ScroogeRefundCreationTest extends TestCase
         $this->assertEquals(50000, $payment['base_amount_refunded']);
         $this->assertEquals('refunded', $payment['status']);
         $this->assertEquals('full', $payment['refund_status']);
+    }
+
+    public function testRelationalLoadFromScroogeService()
+    {
+        $this->enableScroogeRelationalLoadConfig();
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $dummyRefundId = 'dummyRefundId0';
+        $internalPaymentId = substr($payment['id'], 4);
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function ($mid, $feature, $mode)
+                {
+                    if ($feature === 'entity_relational_load_from_scrooge')
+                    {
+                        return 'on';
+                    }
+                    return 'off';
+                }));
+
+        $this->ba->scroogeAuth();
+
+        // full refund
+        $this->testData['callScroogeRefundTransactionCreate']['request']['content'] = [
+            'id'               => $dummyRefundId,
+            'payment_id'       => $internalPaymentId,
+            'amount'           => '50000',
+            'base_amount'      => '50000',
+            'gateway'          => $payment['gateway'],
+            'speed_decisioned' => 'normal',
+        ];
+
+        $response = $this->runRequestResponseFlow($this->testData['callScroogeRefundTransactionCreate']);
+
+        $this->assertNull($response['error']);
+        $this->assertNotNull($response['data']['transaction_id']);
+        $this->assertFalse($response['data']['compensate_payment']);
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $this->assertEquals(50000, $payment['amount_refunded']);
+        $this->assertEquals(50000, $payment['base_amount_refunded']);
+        $this->assertEquals('refunded', $payment['status']);
+        $this->assertEquals('full', $payment['refund_status']);
+
+        $transaction = $this->getDbLastEntity('transaction');
+
+        $this->assertEquals(50000, $transaction['debit']);
+        $this->assertEquals(0, $transaction['credit']);
+        $this->assertEquals(0, $transaction['fee_credits']);
+        $this->assertEquals(0, $transaction['fee']);
+        $this->assertEquals(0, $transaction['tax']);
+        $this->assertEquals('10000000000000', $transaction['balance_id']);
+
+        $transactionSource = $transaction->source;
+
+        $this->assertEquals($dummyRefundId, $transactionSource->getId());
+
+        $refunds = $payment->refunds;
+
+        foreach ($refunds as $refund)
+        {
+            $this->assertEquals($payment->getId(), $refund->getPaymentId());
+        }
+
+        $this->disableScroogeRelationalLoadConfig();
     }
 }

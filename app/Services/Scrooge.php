@@ -2,11 +2,12 @@
 
 namespace RZP\Services;
 
-use RZP\Http\Request\Requests;
 use RZP\Exception;
-use RZP\Models\Payout\Entity;
 use RZP\Trace\TraceCode;
+use RZP\Models\Payout\Entity;
+use RZP\Http\Request\Requests;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Base\PublicCollection;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
 use RZP\Models\Payment\Refund\Constants as RefundConstants;
 
@@ -69,6 +70,8 @@ class Scrooge
         'retry_with_attempt_appended_id'       => 'retry/with_attempt_appended_id',
         'create_new_refund_v2'                 => 'create-new-refund-v2',
         'payouts_status_update'                => 'payouts/status_update',
+        // route use for fetching refund based on payment and refund entity
+        'refund_internal_fetch'                => 'internal/fetch',
     ];
 
     // Headers
@@ -550,6 +553,71 @@ class Scrooge
             self::RefundsBaseURL . '/' . self::URLS['create_new_refund_v2'],
             Requests::POST,
             $input);
+    }
+
+    public function fetchRefundInternal($input)
+    {
+        $resp = $this->sendRequest(
+            self::RefundsBaseURL. '/'. self::URLS['refund_internal_fetch'],
+            Requests::POST,
+            $input,
+            true
+        );
+
+        if(empty($resp['body']['data']) == true)
+        {
+            return new Exception\RuntimeException(
+                'Unexpected response code received from Scrooge service.',
+                [
+                    'input'         => $input,
+                    'response_body' => json_decode($resp['body']),
+                ]);
+        }
+
+        return $resp;
+    }
+
+    public function fetchRefunds($input)
+    {
+        $resp = $this->fetchRefundInternal($input);
+
+        $refunds = new PublicCollection();
+
+        foreach ($resp['body']['data'] as $ref)
+        {
+            $refund = $this->forceFillRefundFromResponse($ref);
+
+            $refunds->add($refund);
+        }
+
+        return $refunds;
+    }
+
+    public function fetchRefund($input)
+    {
+        $resp = $this->fetchRefundInternal($input);
+
+        return $this->forceFillRefundFromResponse($resp['body']['data'][0]);
+    }
+
+    private function forceFillRefundFromResponse($response)
+    {
+        if (empty($response) === false)
+        {
+            if ((isset($response['notes']) === true) and (is_array($response['notes']) === false))
+            {
+                $response['notes'] = json_decode($response['notes']);
+            }
+
+            // adding this layer since speed on scrooge is mapped to speed requested on API
+            if(isset($response['speed']) === true)
+            {
+                $response['speed_processed'] = $response['speed'];
+            }
+
+            return (new RefundEntity())->forceFill($response);
+        }
+        return null;
     }
 
     /**

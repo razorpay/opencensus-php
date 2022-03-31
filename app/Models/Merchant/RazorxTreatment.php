@@ -487,6 +487,9 @@ final class RazorxTreatment
     // payout service will be consuming status independently from kafka
     const DISABLE_STATUS_UPDATE_TO_PAYOUT_SERVICE = 'disable_status_update_to_payout_service';
 
+    // razorx treatment for fetch from scrooge service
+    const ENTITY_RELATIONAL_LOAD_FROM_SCROOGE = 'entity_relational_load_from_scrooge';
+
     // Razorx treatment constant to send a single request to bvs for validating aadhaar
     // document, rather than sending a single one.
     const AADHAAR_FRONT_AND_BACK_JOINT_VALIDATION = "aadhaar_front_and_back_joint_validation";

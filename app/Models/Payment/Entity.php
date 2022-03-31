@@ -1579,6 +1579,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $this->setAttribute(self::CPS_ROUTE, 2);
     }
 
+    public function getRefundsAttribute()
+    {
+        return (new Refund\Repository())->findForPaymentId($this->getId());
+    }
+
     public function enableNbPlusService()
     {
         $this->setAttribute(self::CPS_ROUTE, 3);
