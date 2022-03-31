@@ -3125,7 +3125,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => "Slug must contain @ at beginning",
+                    'description' => "The slug must be at least 4 characters.",
                 ],
             ],
             'status_code' => 400,
@@ -3148,7 +3148,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => "Slug must contain @ at beginning",
+                    'description' => "The slug may not be greater than 30 characters.",
                 ],
             ],
             'status_code' => 400,

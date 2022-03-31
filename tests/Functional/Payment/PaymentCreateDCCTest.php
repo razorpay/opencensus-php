@@ -1386,8 +1386,8 @@ class PaymentCreateDCCTest extends TestCase
         $this->ba->publicAuth();
 
         $content = $infoResponse->getContent();
-        
-        $this->assertTrue(str_contains($content, 'show_mor_tnc'));
+
+        $this->assertTrue(str_contains($content, '"show_mor_tnc":true'));
     }
 
     public function testNegativeFlowShowMorTncForS2S()
@@ -1424,7 +1424,7 @@ class PaymentCreateDCCTest extends TestCase
         $this->ba->publicAuth();
 
         $content = $infoResponse->getContent();
-        
-        $this->assertFalse(str_contains($content, 'show_mor_tnc'));
+
+        $this->assertTrue(str_contains($content, '"show_mor_tnc":false'));
     }
 }
