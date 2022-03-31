@@ -3,6 +3,7 @@
 namespace RZP\Models\Emi;
 
 use RZP\Exception;
+use RZP\Models\Bank\IFSC;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Models\Card\IIN;
@@ -181,9 +182,11 @@ class Repository extends Base\Repository
 
     public function fetchDurationsByMerchantAndIssuer(string $merchantId, string $issuer)
     {
+        $bank = IFSC::getIssuingBank($issuer);
+
         $cpsData = (new Migration)->handleMigration(Migration::EMI_QUERY,null, '', [
             Migration::MERCHANT_IDS => [$merchantId, Account::SHARED_ACCOUNT],
-            Entity::BANK            => $issuer,
+            Entity::BANK            => $bank,
         ]);
 
         if($cpsData != null)
@@ -194,7 +197,7 @@ class Repository extends Base\Repository
         return $this->newQuery()
             ->select(Entity::DURATION)
             ->whereIn(Entity::MERCHANT_ID, [$merchantId, Account::SHARED_ACCOUNT])
-            ->where(Entity::BANK, '=', $issuer)
+            ->where(Entity::BANK, '=', $bank)
             ->pluck(Entity::DURATION)
             ->all();
     }

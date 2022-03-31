@@ -208,6 +208,17 @@ class EmiPlan extends Base
             'merchant_id'        => '10000000000000',
             'bank'               => null,
         ],
+        [
+            'id'                => '20101010101011',
+            'duration'          => '6',
+            'rate'              => '1200',
+            'methods'           => 'card',
+            'type'              => 'debit',
+            'bank'              => 'HDFC',
+            'min_amount'        => 500000,
+            'merchant_payback'  => 0,
+            'merchant_id'       => '100000Razorpay',
+        ],
     ];
 
     public function createDefaultEmiPlans()

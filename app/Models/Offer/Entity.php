@@ -4,6 +4,7 @@ namespace RZP\Models\Offer;
 
 use Carbon\Carbon;
 
+use RZP\Models\Bank\IFSC;
 use RZP\Models\Emi;
 use RZP\Models\Base;
 use RZP\Models\Offer\SubscriptionOffer\Entity as SubscriptionOfferEntity;
@@ -577,6 +578,27 @@ class Entity extends Base\PublicEntity
         }
     }
 
+    /**
+     * Get the issuer this offer is valid on.
+     *
+     * @param string|null $issuer
+     *
+     * @return string|null
+     */
+    public function getIssuerAttribute(?string $issuer): ?string
+    {
+        if ($this->{self::PAYMENT_METHOD_TYPE} === Emi\Type::DEBIT) {
+            // return _DC equivalents of issuer banks
+            if ($issuer === IFSC::HDFC) {
+                return IFSC::HDFC_DC;
+            } elseif ($issuer === IFSC::UTIB) {
+                return IFSC::UTIB_DC;
+            }
+        }
+
+        return $issuer;
+    }
+
 // ----------------------- Mutators --------------------------------------------
 
     protected function setIinsAttribute(array $iins)
@@ -589,6 +611,21 @@ class Entity extends Base\PublicEntity
         }
 
         $this->attributes[self::IINS] = json_encode(array_values($iins));
+    }
+
+    /**
+     * Set the Issuer Attribute.
+     *
+     * @param string|null $issuer
+     */
+    protected function setIssuerAttribute(?string $issuer): void
+    {
+        if (IFSC::isDebitCardIssuer($issuer)) {
+            // _DC issuers are hacks for differentiating between debit & credit card EMI's
+            $this->attributes[self::PAYMENT_METHOD_TYPE] = Emi\Type::DEBIT;
+        }
+
+        $this->attributes[self::ISSUER] = IFSC::getIssuingBank($issuer);
     }
 
     protected function setEmiDurationsAttribute($emiDurations)
@@ -636,7 +673,7 @@ class Entity extends Base\PublicEntity
             return;
         }
 
-        $bank = $input[self::ISSUER] ?? null;
+        $bank = IFSC::getIssuingBank($input[self::ISSUER] ?? '');
 
         $network = $input[self::PAYMENT_NETWORK] ?? null;
 

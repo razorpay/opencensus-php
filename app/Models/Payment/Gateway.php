@@ -2851,6 +2851,7 @@ class Gateway
 
     public static $emiBanks = [
         IFSC::HDFC,
+        IFSC::HDFC_DC,
         IFSC::HSBC,
         IFSC::ICIC,
         IFSC::INDB,

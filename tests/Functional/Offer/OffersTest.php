@@ -54,6 +54,15 @@ class OffersTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateHDFCDebitCardNoCostEMIOffer(): void
+    {
+        $this->fixtures->merchant->enableEmi();
+
+        $this->fixtures->create('emi_plan:merchant_specific_emi_plans');
+
+        $this->startTest();
+    }
+
     public function testCreateCardOfferWithMaxPaymentCount()
     {
         $this->startTest();

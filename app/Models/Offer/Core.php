@@ -5,6 +5,7 @@ namespace RZP\Models\Offer;
 use Carbon\Carbon;
 use Illuminate\Support\Arr;
 use RZP\Exception;
+use RZP\Models\Bank\IFSC;
 use RZP\Models\Emi;
 use RZP\Models\Base;
 use RZP\Models\Order;
@@ -56,6 +57,8 @@ class Core extends Base\Core
                     }
 
                     $this->verifyIdAndStripSignForLinkedOfferIds($input);
+
+                    $this->setPaymentMethodTypeForDebitCardIssuers($input);
 
                     $offer = new Entity;
 
@@ -450,6 +453,20 @@ class Core extends Base\Core
         {
             throw new Exception\BadRequestValidationFailureException(
                 'linked_offer_ids are not valid');
+        }
+    }
+
+
+    /**
+     * @param array $input
+     */
+    protected function setPaymentMethodTypeForDebitCardIssuers(array &$input): void
+    {
+        $issuer = $input[Entity::ISSUER] ?? '';
+
+        if (IFSC::isDebitCardIssuer($issuer)) {
+            // HDFC_DC & UTIB_DC are hacks to differentiate between credit & debit card EMI plans
+            $input[Entity::PAYMENT_METHOD_TYPE] = Emi\Type::DEBIT;
         }
     }
 

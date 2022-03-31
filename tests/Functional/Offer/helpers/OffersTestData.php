@@ -402,7 +402,39 @@ return [
             ]
         ]
     ],
-
+    'testCreateHDFCDebitCardNoCostEMIOffer' => [
+        'request' => [
+            'content' => [
+                'name'                => 'Test Offer',
+                'payment_method'      => 'emi',
+                'issuer'              => 'HDFC_DC',
+                'emi_subvention'      => true,
+                'emi_durations'       => [6],
+                'max_payment_count'   => 2,
+                'processing_time'     => '1',
+                'ends_at'             => Carbon::tomorrow()->getTimestamp(),
+                'display_text'        => 'HDFC Debit Card Emi Subvention offers',
+                'terms'               => 'Some more details',
+                'block'               =>  1,
+                'type'                => 'instant'
+            ],
+            'url'    => '/offers',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'active'              => true,
+                'name'                => 'Test Offer',
+                'payment_method'      => 'emi',
+                'issuer'              => 'HDFC_DC',
+                'emi_durations'       => [6],
+                'max_payment_count'   => 2,
+                'min_amount'          => 500000,
+                'display_text'        => 'HDFC Debit Card Emi Subvention offers',
+                'terms'               => 'Some more details'
+            ],
+        ],
+    ],
     'testCreateWalletOffer' => [
         'request' => [
             'content' => [
