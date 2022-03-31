@@ -388,4 +388,15 @@ class Entity extends Base\PublicEntity
 
         return $this;
     }
+
+    public function editForCustomer($input)
+    {
+        $this->validateInput('edit_for_customer', $input);
+
+        $this->unsetInput('edit_for_customer', $input);
+
+        $this->fill($input);
+
+        return $this;
+    }
 }

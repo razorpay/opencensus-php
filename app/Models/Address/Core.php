@@ -86,7 +86,14 @@ class Core extends Base\Core
         unset($input[Entity::TYPE]);
 
         return $this->repo->transaction(function () use ($address, $input) {
-            $address->edit($input);
+
+            if($address->getEntityType() === Type::CUSTOMER)
+            {
+                $address->editForCustomer($input);
+            }
+            else{
+                $address->edit($input);
+            }
 
             if ($address->isPrimary() === true)
             {

@@ -69,6 +69,22 @@ class Validator extends Base\Validator
         Entity::SOURCE_TYPE => 'sometimes|in:bulk_upload,payment_pages,thirdwatch',
     ];
 
+    protected static $editForCustomerRules = [
+        UniqueIdEntity::ID  => 'required|string',
+        Entity::NAME        => 'sometimes|string|between:2,64',
+        Entity::CONTACT     => 'sometimes|contact_syntax',
+        Entity::TYPE        => 'sometimes|string',
+        Entity::LINE1       => 'required|string|between:1,255',
+        Entity::LINE2       => 'sometimes|string|between:1,255',
+        Entity::CITY        => 'sometimes|string|between:2,32',
+        Entity::ZIPCODE     => 'sometimes|string|between:0,16',
+        Entity::STATE       => 'required|string|between:2,32',
+        Entity::COUNTRY     => 'required|string|between:2,64|custom',
+        Entity::TAG         => 'sometimes|string|between:2,32',
+        Entity::LANDMARK    => 'sometimes|string|between:2,255',
+        Entity::PRIMARY     => 'sometimes|in:0,1',
+    ];
+
     protected static $codServiceabilityCheckRules = [
       Entity::NAME             => 'sometimes|string|between:2,64',
       Entity::CONTACT          => 'sometimes|contact_syntax',
