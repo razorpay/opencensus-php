@@ -76,7 +76,7 @@ class FailedToAuthorized extends Base
     protected function getParamsForStork(): array
     {
         $data = $this->data;
-        
+
         $storkParams = [
             'template_namespace'                => 'payments_core',
             'org_id'                            => $data['org']['id'],
@@ -116,6 +116,47 @@ class FailedToAuthorized extends Base
         }
 
         $storkParams['template_name'] = 'payments_failed_to_authorize';
+
+        if ($this->isMerchantEmail === false)
+        {
+            $storkParams['params']['payment']['amount_symbol'] = $data['payment']['amount_spread'][0];
+
+            $storkParams['params']['payment']['amount_units'] = $data['payment']['amount_spread'][1];
+
+            $storkParams['params']['payment']['amount_subunits'] = $data['payment']['amount_spread'][2];
+
+            $storkParams['params']['payment']['created_at_formatted'] = $data['payment']['created_at_formatted'];
+
+            $storkParams['params']['payment']['method']['first_value'] = $data['payment']['method'][0];
+
+            $storkParams['params']['payment']['method']['second_value'] = $data['payment']['method'][1];
+
+            $storkParams['params']['payment']['unsigned_id'] = $data['payment']['id'];
+
+            $storkParams['params']['merchant']['billing_label'] = $data['merchant']['billing_label'];
+
+            $storkParams['params']['merchant']['brand_color'] = $data['merchant']['brand_color'];
+
+            $storkParams['params']['merchant']['brand_contrast_color'] = $data['merchant']['contrast_color'];
+
+            $storkParams['params']['merchant']['report_url'] = $data['merchant']['report_url'];
+
+            if (isset($data['merchant']['support_details']))
+            {
+                $storkParams['params']['merchant']['support_details'] = $data['merchant']['support_details'];
+            }
+
+            if (isset($data['rewards']) === true)
+            {
+                $storkParams['params']['rewards'] = $data['rewards'];
+
+                $storkParams['template_name'] = 'customer.payment.authorized_with_rewards';
+            }
+            else
+            {
+                $storkParams['template_name'] = 'customer.payment.authorized_without_rewards';
+            }
+        }
 
         return $storkParams;
     }
