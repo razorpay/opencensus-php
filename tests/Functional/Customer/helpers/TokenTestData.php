@@ -11,7 +11,7 @@ return [
             'content' => [
                 'method' => 'card',
                 'card' => [
-                    'number' => '6073849700004947',
+                    'number' => '4143660000123456',
                     'cvv' => '123',
                     'expiry_month' => '12',
                     'expiry_year' => '23',
@@ -41,6 +41,36 @@ return [
                 'network' => 'Visa',
                 'network_reference_id' => null,
                 'payment_account_reference' => '50014EES0F4P295H2FQG7Q37823B9'
+            ],
+        ],
+    ],
+
+    'testParApiWithCardNumberWithTokenisedFalseTestData' => [
+        'request' => [
+            'url' => '/cards/fingerprints',
+            'method' => 'post',
+            'content' => [
+                "number" => "4143660026123456",
+                "tokenised" => false,
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testParApiWithTokenPanWithTokenisedTrueTestData' => [
+        'request' => [
+            'url' => '/cards/fingerprints',
+            'method' => 'post',
+            'content' => [
+                'number' => '4610151724696781',
+                'tokenised' => true
+            ],
+        ],
+        'response' => [
+            'content' => [
             ],
         ],
     ],

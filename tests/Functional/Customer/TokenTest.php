@@ -234,6 +234,31 @@ class TokenTest extends TestCase
                    ]
                ];
             }
+           if($route === "tokens/cryptogram") {
+               $dummyCardNumber = '4610151724696781';
+
+               $response['success'] = true;
+               $response['service_provider_tokens'] = [
+                   [
+                       'id' => 'spt_IW48g8IeV3uUHA',
+                       'entity' => '',
+                       'interoperable' => '',
+                       'provider_type'  => 'network',
+                       'provider_name'  => 'Visa',
+                       'provider_data'  => [
+                           'token_reference_number'    => '',
+                           'payment_account_reference' => '',
+                           'card_reference_number'     => '',
+                           'token_iin' => '',
+                           'token_number' => $dummyCardNumber,
+                           'cryptogram_value' => 12,
+                           'token_expiry_month' => 12,
+                           'token_expiry_year' => 2021,
+                       ],
+                       'status' => '',
+                   ],
+               ];
+           }
             return $response;
         };
 
@@ -278,6 +303,44 @@ class TokenTest extends TestCase
         $parApiResponse = $this->startTest();
 
         $this->assertEquals($parApiResponse["payment_account_reference"], "50014EES0F4P295H2FQG7Q37823B9");
+    }
+
+    public function  testParApiWithTokenPanWithTokenisedTrue()
+    {
+        $this->setUpMockPar();
+
+        $this->ba->privateAuth();
+
+        $createPayload = $this->testData['testCreateToken'];
+
+        unset($createPayload["request"]["content"]["card"]["name"]);
+
+        $response = $this->startTest($createPayload);
+
+        $fetchPayload = $this->testData['testFetchCryptogramLive'];
+
+        $fetchPayload['request']['content'] = ['id' => 'spt_IW48g8IeV3uUHA'];
+
+        $response = $this->startTest($fetchPayload);
+
+        $fetchParPayload = $this->testData["testParApiWithTokenPanWithTokenisedTrueTestData"];
+
+        $fetchParResponse = $this->startTest($fetchParPayload);
+
+        $this->assertEquals($fetchParResponse["payment_account_reference"], "50014EES0F4P295H2FQG7Q37823B9");
+    }
+
+    public function testParApiWithCardNumberWithTokenisedFalse()
+    {
+        $this->setUpMockPar();
+
+        $this->ba->privateAuth();
+
+        $fetchParPayload = $this->testData["testParApiWithCardNumberWithTokenisedFalseTestData"];
+
+        $fetchParResponse = $this->startTest($fetchParPayload);
+
+        $this->assertEquals($fetchParResponse["payment_account_reference"], "50014EES0F4P295H2FQG7Q37823B9");
     }
 
     public function testCreateToken()

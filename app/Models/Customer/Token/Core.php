@@ -1654,9 +1654,20 @@ class Core extends Base\Core
 
         $tokenizedRange = substr($input['number'], 0, 9);
 
+        if(isset($input["tokenised"]) === true)
+        {
+            if($input["tokenised"] === false) {
+                return [$iin, false];
+            }
+            else{
+                $result = Card\IIN\IIN::getTransactingIinforRange($tokenizedRange);
+                return [$result, true];
+            }
+        }
+
         $result = Card\IIN\IIN::getTransactingIinforRange($tokenizedRange) ?? $iin;
 
-        return [$result, $result !== $iin];
+        return [$result, $result != $iin];
     }
 
     public function fetchParValue($input)
@@ -1674,7 +1685,8 @@ class Core extends Base\Core
         $network = Card\Network::$fullName[$network];
 
         $input["network"] = strtolower($network);
-        $input["tokenized"] = $isTokenized;
+
+        $input["tokenised"] = $isTokenized;
 
         return [$network, (new Card\Core)->fetchParValue($input)];
         // hit the vault with number and the network
