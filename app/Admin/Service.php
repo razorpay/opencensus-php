@@ -110,7 +110,9 @@ class Service extends Base\Service
 
             list($error, $data) = $request->processInput($input)->send('admin/authenticate', 'POST');
 
-            if(isset($error)){
+            $validate2FAparams = $this->validate2FAparams($input);
+
+            if(isset($error) === true and $validate2FAparams){
                 $tag1  = '';
                 $tag2  = '';
                 $iv1 = $this->getIv();
@@ -156,6 +158,14 @@ class Service extends Base\Service
         }
         return  $this->handleLoginResponse($error,$data);
 
+    }
+
+    function validate2FAparams($input)
+    {
+        if(isset($input['username']) === true and
+        isset($input['password']) === true)
+            return true;
+        return false;
     }
 
     function handleLoginResponse($error,$data){
