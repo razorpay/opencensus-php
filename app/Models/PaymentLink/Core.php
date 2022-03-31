@@ -5,6 +5,7 @@ namespace RZP\Models\PaymentLink;
 use Cache;
 use Carbon\Carbon;
 use phpseclib\Crypt\AES;
+use RZP\Constants\Environment;
 use RZP\Encryption\AESEncryption;
 use RZP\Models\Base;
 use RZP\Models\Item;
@@ -661,6 +662,15 @@ class Core extends Base\Core
 
     public function postPaymentCaptureUpdatePaymentPage(Payment\Entity $payment)
     {
+        $env = $this->app['env'];
+
+        if ($env === Environment::FUNC or $env === Environment::AUTOMATION or $env === Environment::BVT)
+        {
+            $this->postPaymentCaptureAttemptProcessing($payment);
+
+            return;
+        }
+
         PaymentPageProcessor::dispatch($this->mode, [
             'payment_id'    => $payment->getId(),
             'start_time'    => millitime(),
