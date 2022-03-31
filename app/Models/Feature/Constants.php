@@ -1017,6 +1017,9 @@ class Constants
      */
     const DISABLE_SIFT_JS   =   'disable_sift_js';
 
+    // Merchant feature used to rollout the Cybersource JS Integration and Integration via Cybersource DM API, Fraud Marking API
+    const SHIELD_CYBERSOURCE_ROLLOUT    =   'shield_cbs_rollout';
+
     /**
      * Merchant feature used to disable paypal as a backup in case of Intl card failure
      */
@@ -1303,6 +1306,7 @@ class Constants
         self::ONE_CC_MANDATORY_LOGIN,
         self::ONE_CC_GA_ANALYTICS,
         self::ONE_CC_FB_ANALYTICS,
+        self::SHIELD_CYBERSOURCE_ROLLOUT,
     ];
 
     // TODO: Use this instead of allFeatures once in final code change pr
@@ -1683,6 +1687,7 @@ class Constants
         self::SOURCED_BY_WALNUT369            => true,
         self::M2M_REFERRAL                    => true,
         self::ENABLE_SIFT_JS                  => true,
+        self::SHIELD_CYBERSOURCE_ROLLOUT      => true,
         self::DISABLE_SIFT_JS                 => true,
         self::API_BULK_APPROVALS              => true,
         self::NETWORK_TOKENIZATION            => true,

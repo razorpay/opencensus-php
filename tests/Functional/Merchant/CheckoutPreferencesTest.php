@@ -1632,6 +1632,15 @@ class CheckoutPreferencesTest extends TestCase
         $this->assertEquals($response['features']['disable_sift_js'],true);
     }
 
+    public function testGetCheckoutPreferencesForCybersourceIntegration()
+    {
+        $this->fixtures->merchant->addFeatures(Constants::SHIELD_CYBERSOURCE_ROLLOUT);
+
+        $response = $this->getPreferences();
+
+        $this->assertEquals($response['features']['shield_cbs_rollout'], true);
+    }
+
     public function testGetCheckoutPreferencesForMORdisplay()
     {
         $this->fixtures->merchant->addFeatures(Constants::SHOW_MOR_TNC);
