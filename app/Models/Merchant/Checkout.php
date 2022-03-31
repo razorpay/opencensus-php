@@ -6,6 +6,7 @@ use App;
 use Request;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Constants\Mode;
 use RZP\Models\Locale\Core as Locale;
 use Session;
@@ -1373,6 +1374,13 @@ class Checkout
                 $data['features'][$feature] = true;
             }
         }
+
+        //adding this condition temp for the zestmoney reintegration will remove once we are full live so checking this with the razorx call
+        if(($this->app['cache']->get(ConfigKey::REDIRECT_TO_ZESTMONEY)) == true)
+        {
+            $data['features'][Feature\Constants::REDIRECT_TO_ZESTMONEY] = true;
+        }
+
     }
 
     protected function updateCurrencyMethodsIfApplicable($input, $merchant, array & $data)

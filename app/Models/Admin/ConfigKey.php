@@ -276,6 +276,9 @@ class ConfigKey
     // This key will be a flag for creating a DB connection with master instead of slave
     const USE_MASTER_DB_CONNECTION = self::PREFIX . 'use_master_db_connection';
 
+    // This key will be a flag for migrating new payment to the zestmoney this is temp will change once migrated
+    const  REDIRECT_TO_ZESTMONEY = self::PREFIX . 'redirect_to_zestmoney';
+
 
     const PUBLIC_KEYS = [
         self::ASYNC_ESCALATION_HANDLING_ENABLED,
@@ -308,6 +311,7 @@ class ConfigKey
         self::FTS_PAYOUT_BANK_ACCOUNT,
         self::CARD_PAYMENT_SERVICE_ENABLED,
         self::NB_PLUS_SERVICE_ENABLED,
+        self::REDIRECT_TO_ZESTMONEY,
         self::PG_ROUTER_SERVICE_ENABLED,
         self::BANKING_ACCOUNT_STATEMENT_RATE_LIMIT,
         self::LOW_BALANCE_RX_EMAIL,

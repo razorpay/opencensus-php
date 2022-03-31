@@ -1275,8 +1275,7 @@ class Processor
         $input['payment_id'] = $payment->getPublicId();
 
         //adding this to redirecting to gateway via nbplus
-        if (($payment->getWallet() === CardlessEmi::ZESTMONEY) and
-            ($payment->merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::REDIRECT_TO_ZESTMONEY)))
+        if ($payment->getWallet() === CardlessEmi::ZESTMONEY and $this->isRedirecctToZestmoneyConfigEnabled())
         {
             $terminals = (new TerminalProcessor)->getTerminalsForPayment($payment);
 
@@ -2282,12 +2281,29 @@ class Processor
             return;
         }
 
-        if(($payment->getWallet() === CardlessEmi::ZESTMONEY) and
-            ($payment->merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::REDIRECT_TO_ZESTMONEY)))
+        if($payment->getWallet() === CardlessEmi::ZESTMONEY)
         {
-            $this->setPaymentService($payment, 'nbplusps');
+            if(($payment->merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::REDIRECT_TO_ZESTMONEY)) === true)
+            {
+                $this->setPaymentService($payment, 'nbplusps');
 
-            return;
+                return;
+            }
+            elseif ($this->isRedirecctToZestmoneyConfigEnabled() === true)
+            {
+                $this->setPaymentService($payment, 'nbplusps');
+
+                $traceData = [
+                    'ConfigEnabled'   => $this->isRedirecctToZestmoneyConfigEnabled(),
+                    'payment_id'      => $payment->getId(),
+                    'merchant_id'     => $payment->getMerchantId(),
+                    'gateway'         => $payment->getGateway(),
+                ];
+                $this->trace->info(TraceCode::MISC_TRACE_CODE, $traceData);
+
+                return;
+            }
+
         }
 
         if(Payment\Gateway::gatewayMigratedToNbPlusOnMerchantLevel($payment->getGateway()) === true)
@@ -2345,6 +2361,11 @@ class Processor
     protected function isNbPlusServiceConfigEnabled(): bool
     {
         return (bool) Admin\ConfigKey::get(Admin\ConfigKey::NB_PLUS_SERVICE_ENABLED, false);
+    }
+
+    protected function isRedirecctToZestmoneyConfigEnabled(): bool
+    {
+        return $this->app['cache']->get(ConfigKey::REDIRECT_TO_ZESTMONEY);
     }
 
     protected function isUpiPaymentServiceEnabled(): bool
