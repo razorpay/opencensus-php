@@ -17,6 +17,7 @@ RUN set -eux && \
     echo 'exec echo ${GIT_TOKEN}' > /tmp/askpass.sh && \
     chmod +x /tmp/askpass.sh && \
     export GIT_ASKPASS=/tmp/askpass.sh && \
+    export GOPRIVATE="github.com/razorpay/*" && \
     go mod download
 
 # Copy rest of the source code

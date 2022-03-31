@@ -524,6 +524,7 @@ class UserRolesScope
             'banking_draft_invitations_create'                     => [Role::OWNER, Role::ADMIN],
             'bbps_bill_payments'                                   => [Role::OWNER, Role::ADMIN],
             'beta_account_create'                                  => [Role::OWNER, Role::ADMIN],
+            'mock_bvs_validation_event'                            => [Role::OWNER, Role::ADMIN],
             'beta_account_fetch_multiple'                          => [Role::OWNER, Role::ADMIN],
             'beta_account_fetch_setl_destinations'                 => [Role::OWNER, Role::ADMIN],
             'beta_account_post_bank_account'                       => [Role::OWNER, Role::ADMIN],

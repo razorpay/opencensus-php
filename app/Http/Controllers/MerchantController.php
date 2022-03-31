@@ -169,6 +169,18 @@ class MerchantController extends Controller
 
         return ApiResponse::json($data);
     }
+    /*
+     * Adding this as part of mocking penny testing validation
+     * events as part of ITF test cases
+     * */
+    public function mockBvsValidationEvent()
+    {
+        $input = Request::all();
+
+        $data = $this->service(E::MERCHANT_DETAIL)->mockBvsValidationEvent($input);
+
+        return ApiResponse::json($data);
+    }
 
     public function patchMerchantBillingLabelAndDba()
     {

@@ -1,11 +1,15 @@
 package e2e
 
-type Configuration struct {
-	App         AppConfig
-	PaymentPage PaymentPageConfig
-	SubMerchant LinkedAccountConfig
-	VirtualAccount VirtualAccountConfig
+import (
+	"github.com/razorpay/goutils/spine/db"
+)
 
+type Configuration struct {
+	App            AppConfig
+	PaymentPage    PaymentPageConfig
+	SubMerchant    LinkedAccountConfig
+	ApiDb          db.Config
+	VirtualAccount VirtualAccountConfig
 }
 
 type AppConfig struct {
@@ -25,6 +29,7 @@ type LinkedAccountConfig struct {
 	User           string
 	Role           string
 	Username       string
+	LiveUsername   string
 	Password       string
 	RzpSuperKey    string
 	RzpSuperSecret string
@@ -32,9 +37,9 @@ type LinkedAccountConfig struct {
 
 type VirtualAccountConfig struct {
 	// user for creating PP
-	User     string
-	Role     string
-	Username string
-	Password string
+	User       string
+	Role       string
+	Username   string
+	Password   string
 	MerchantId string
 }

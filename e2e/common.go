@@ -1,6 +1,8 @@
 package e2e
 
 import (
+	"os"
+
 	configpkg "github.com/razorpay/api/e2e/config"
 )
 
@@ -14,4 +16,8 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
+	Config.ApiDb.ConnectionConfig.Password = os.Getenv("API_DB_TEST_PASSWORD")
+
+	//initialize API db and BVS db
+	InitApiDb()
 }

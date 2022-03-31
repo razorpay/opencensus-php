@@ -1,4 +1,4 @@
-package e2e
+package linked_account_activation
 
 import (
 	"encoding/json"
@@ -17,4 +17,6 @@ func GetLinkedAccountCreateRequest(fixtureName string) (LinkedAccountCreateReque
 
 const (
 	TagLinkedAccount = "linkedaccount"
+	GetBvsValidationIdSelectQuery = "SELECT validation_id FROM bvs_validation WHERE  owner_id = '%s' AND owner_type = 'merchant' AND artefact_type = 'bank_account'"
+	GetBvsValidationStatusSelectQuery = "SELECT validation_status FROM bvs_validation WHERE  validation_id = '%s' AND owner_type = 'merchant' AND artefact_type = 'bank_account'"
 )

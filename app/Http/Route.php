@@ -862,6 +862,7 @@ class Route
         'mock_hdfc_auth_enrolled'                  => ['post',     'gateway/mock_hdfc/auth_enrolled',                'MockGatewayController@authEnrolled'                                ],
         'mock_hdfc_3dsecure'                       => ['post',     'gateway/3dsecure',                               'MockGatewayController@post3dSecure'                                ],
         'mock_acs'                                 => ['post',     'gateway/acs/{gateway}',                          'MockGatewayController@postAcs'                                     ],
+        'mock_bvs_validation_event'                => ['post',     'mock-bvs-validation',                            'MerchantController@mockBvsValidationEvent'                         ],
         'mock_atom_payment'                        => ['post',     'gateway/mockanb/payment',                        'MockGatewayController@postAtomPayment'                             ],
         'mock_axis_migs_payment'                   => ['post',     'gateway/mockaxismigs/payment',                   'MockGatewayController@postAxisPayment'                             ],
         'mock_first_data_payment'                  => ['post',     'gateway/mockfirstdata/payment',                  'MockGatewayController@postFirstDataPayment'                        ],
@@ -3603,6 +3604,7 @@ class Route
     ];
 
     public static $private = [
+        'mock_bvs_validation_event',
         'bulk_migrate_aggregator_to_reseller',
         'bulk_migrate_reseller_to_aggregator',
         'qr_configs_create',

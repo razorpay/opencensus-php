@@ -35,6 +35,7 @@ use Illuminate\Support\Facades\Mail;
 use RZP\Error\PublicErrorDescription;
 use RZP\Mail\Merchant as MerchantMail;
 use RZP\Exception\BadRequestException;
+use RZP\Services\KafkaMessageProcessor;
 use RZP\Models\Merchant\Action as Action;
 use RZP\Models\Workflow\Action\MakerType;
 use RZP\Models\Comment\Core as CommentCore;
@@ -3003,5 +3004,25 @@ class Service extends Base\Service
 
         return $core->getBusinessTypes($merchant_id);
 
+    }
+    /**
+     * This is used as part of ITF test cases to mock penny testing validation events from BVS.
+     * Sample Input
+     * [
+        'data' => [
+            'validation_id' => 'JCWowgGD7ccKNL',
+            'error_code' => 'INPUT_DATA_ISSUE',
+            'error_description' => 'invalid data submitted',
+            'status' => 'failed',
+        ],
+    ]
+     * @param array $input
+     * @return boolean
+     * */
+    public function mockBvsValidationEvent($input)
+    {
+        (new KafkaMessageProcessor)->process(KafkaMessageProcessor::API_BVS_EVENTS, $input, $this->mode);
+
+        return true;
     }
 }
