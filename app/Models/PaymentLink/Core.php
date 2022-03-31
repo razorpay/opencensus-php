@@ -1371,9 +1371,7 @@ class Core extends Base\Core
     {
         $params = $this->getPaymentHandleCustomAmountEncryptionHeaders();
 
-        $decryptedAmount = urldecode($encryptedAmount);
-
-        $decryptedAmount = base64_decode($decryptedAmount);
+        $decryptedAmount = base64_decode($encryptedAmount);
 
         $decryptedAmount = (new AESEncryption($params))->decrypt($decryptedAmount);
 

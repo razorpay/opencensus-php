@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Unit\Models\PaymentLink;
 
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Payment;
 use RZP\Models\PaymentLink;
 use RZP\Tests\Traits\PaymentLinkTestTrait;
@@ -11,6 +12,8 @@ class ServiceTest extends BaseTest
 {
     use PaymentTrait;
     use PaymentLinkTestTrait;
+
+    protected $datahelperPath   = '/Helpers/ServiceTestData.php';
 
     const TEST_PL_ID    = '100000000000pl';
     const TEST_PL_ID_2  = '100000000001pl';
@@ -24,9 +27,12 @@ class ServiceTest extends BaseTest
     {
         parent::setUp();
 
-        $this->service = $this->app->make(PaymentLink\Service::class);;
+        $this->service = $this->app->make(PaymentLink\Service::class);
     }
 
+    /**
+     * @group nocode_pp_service
+     */
     public function testAppendAmountIfPossible()
     {
         $data       = $this->createPaymentLinkAndOrderForThat();
@@ -38,5 +44,48 @@ class ServiceTest extends BaseTest
             'razorpay_payment_id'   => $payment[Payment\Entity::ID]
         ], $payload);
         $this->assertEquals(15000, array_get($payload, PaymentLink\Entity::REQUEST_PARAMS.'.'.PaymentLink\Entity::AMOUNT));
+    }
+
+    /**
+     * @dataProvider getData
+     * @group nocode_pp_service
+     */
+    public function testCustomAmountEncryptionDecryption($amount, $isValid)
+    {
+        $input = [PaymentLink\Entity::AMOUNT => $amount];
+
+        if($isValid === false)
+        {
+            $this->expectException(BadRequestValidationFailureException::class);
+
+            $this->expectExceptionMessage('The amount must be valid integer between 0 and 4294967295.');
+        }
+
+        $encryptedAmount = $this->service->encryptAmountForPaymentHandle($input);
+
+        $encryptedAmount = $encryptedAmount[PaymentLink\Entity::ENCRYPTED_AMOUNT];
+
+        if($isValid === true)
+        {
+            // url decoding encrypted amount manually, as this happens automatically when query params come to service
+            $decryptedAmount = $this->getDecryptedAmount(urldecode($encryptedAmount));
+
+            $this->assertEquals($amount, $decryptedAmount);
+        }
+    }
+
+    protected function getDecryptedAmount(string $encryptedAmount)
+    {
+        $input = [PaymentLink\Entity::AMOUNT => $encryptedAmount];
+
+        $this->core = $this->app->make(PaymentLink\Core::class);
+
+        $host = config('app.payment_handle_domain');
+
+        $payload = [];
+
+        $this->core->addCustomAmountForPaymentHandleIfRequired($payload, $host, $input);
+
+        return $payload['data'][PaymentLink\Entity::PAYMENT_HANDLE_AMOUNT];
     }
 }
