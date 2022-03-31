@@ -629,7 +629,11 @@ class Core extends Base\Core
 
     public function bankAccountUpdate(MerchantEntity $merchant, array $input)
     {
-        $this->validateFeatureForAccountUpdate($merchant);
+        // If auth type is not admin then only validate feature for account update request.
+        if($this->app['basicauth']->isAdminAuth() === false)
+        {
+            $this->validateFeatureForAccountUpdate($merchant);
+        }
 
         $this->trace->info(TraceCode::BANK_ACCOUNT_UPDATE_FUNDS_ON_HOLD, [
             Merchant\Entity::HOLD_FUNDS => $merchant->getHoldFunds()
