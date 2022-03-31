@@ -729,6 +729,149 @@ class Service extends Base\Service
         return $this->core->updateScroogeBatchSummary($batchId, $totalSuccessCount, $totalFailureCount);
     }
 
+    /**
+     * Update post reconciliation data from ART
+     * @param array $input
+     * @return array
+     * @throws \Throwable
+     */
+    public function updateUpiReconciliationData(array $input)
+    {
+        (new Validator)->validateUpdateUpiReconData($input);
+
+        $paymentId = $input['payment_id'];
+
+        $payment = $this->repo->payment->findOrFail($paymentId);
+
+        $transaction = $payment->transaction;
+
+        if ((empty($transaction) === false) and
+            ($transaction->isReconciled() === true))
+        {
+            return [
+                'success'        => false,
+                'gateway'        => $payment->getGateway(),
+                'error' => [
+                    'code'        => InfoCode::ALREADY_RECONCILED,
+                    'description' => 'Upi payment is already reconciled'
+                ],
+            ];
+        }
+
+        $this->trace->info(
+            TraceCode::RECON_UPDATE_RECONCILIATION_DATA_STARTED,
+            $input
+        );
+
+        try
+        {
+            $this->repo->transaction(function () use ($paymentId, $input, $payment)
+            {
+                $this->updateGatewayData($input);
+
+                $this->updateTransactionData($input, $payment);
+            });
+
+            $this->core->pushSuccessPaymentReconMetrics($payment,"art");
+
+            return [
+                'success'     => true,
+                'gateway'     => $payment->getGateway(),
+
+            ];
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::RECON_UPDATE_RECONCILIATION_DATA_FAILED,
+                [
+                    'paymentId' => $paymentId,
+                    'gateway'   => $payment->getGateway(),
+                ]
+            );
+            throw $ex;
+        }
+    }
+
+    /** Persist/update gateway data post recon
+     * @param array $input
+     * @throws Exception\BadRequestException
+     */
+    protected function updateGatewayData(array $input)
+    {
+        $paymentId = $input['payment_id'];
+
+        $gatewayPayment = $this->repo->upi->findByPaymentIdAndAction($paymentId, 'authorize');
+
+        if (empty($gatewayPayment) === true)
+        {
+            throw new Exception\BadRequestException(
+                'Upi gateway payment not found',
+                $input);
+        }
+
+        // We do not need to update the reconciled at if it is already saved
+        if (empty($gatewayPayment->getReconciledAt()) === false)
+        {
+            return;
+        }
+
+        if (empty($input['upi']['gateway_payment_id']) === false)
+        {
+            $gatewayPayment->setGatewayPaymentId($input['upi']['gateway_payment_id']);
+        }
+
+        if (empty($input['upi']['npci_txn_id']) === false)
+        {
+            $gatewayPayment->setNpciTransactionId($input['upi']['npci_txn_id']);
+        }
+
+        if (empty($input['upi']['npci_reference_id']) === false)
+        {
+            $gatewayPayment->setNpciReferenceId($input['upi']['npci_reference_id']);
+        }
+
+        $gatewayPayment->setReconciledAt($input['reconciled_at']);
+
+        $this->repo->saveOrFail($gatewayPayment);
+    }
+
+    /** Persist/update transaction data post recon
+     * @param array $input
+     * @param Payment\Entity $payment
+     * @throws Exception\BadRequestException
+     * @throws \Throwable
+     */
+    protected function updateTransactionData(array $input, Payment\Entity $payment)
+    {
+        $transaction = $payment->transaction;
+
+        if (empty($transaction) === true)
+        {
+            throw new Exception\BadRequestException(
+                'Payment upi transaction not found',
+                $input);
+        }
+
+        $isReconciled = $transaction->isReconciled();
+
+        // We do not need to update the reconciled at if it is already saved
+        if ($isReconciled === true)
+        {
+            return;
+        }
+
+        $transaction->setReconciledAt($input['reconciled_at']);
+
+        $transaction->setReconciledType($input['reconciled_type']);
+
+        $transaction->setGatewayAmount($input['amount']);
+
+        $this->repo->saveOrFail($transaction);
+    }
+
     protected function getRequestSource(array $input): string
     {
         if ($this->isManualRequest($input))

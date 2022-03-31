@@ -222,6 +222,8 @@ class InfoCode
 
     const GATEWAY_CAPTURED_MISMATCH                     = 'GATEWAY_CAPTURED_MISMATCH';
 
+    const RECON_UPDATE_RECONCILIATION_DATA_FAILED       = 'RECON_UPDATE_RECONCILIATION_DATA_FAILED';
+
     public static $fileBasedReconInfoCodes = [
         self::COLUMN_HEADER_MISMATCH,
         self::RECON_BLACKLISTED_COLUMNS_NOT_DEFINED,

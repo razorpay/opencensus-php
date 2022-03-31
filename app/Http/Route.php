@@ -953,6 +953,7 @@ class Route
         'reconciliate_via_batch_service'           => ['post',     'reconciliate/batch_service/bulk',                'ReconciliatorController@postBulkReconciliationViaBatchService'     ],
         'recon_fetch_batchs_files_multiple'        => ['get',      'reconciliate/batches',                           'ReconciliatorController@getReconBatches'],
         'recon_fetch_files_count'                  => ['get',      'reconciliate/files',                             'ReconciliatorController@getReconFiles'],
+        'recon_update_upi_data'                    => ['post',     'reconciliate/update/upi/data',                   'ReconciliatorController@updateUpiReconciliationData'               ],
         'refunds_reconcile_bulk'                   => ['post',     'reconciliate/refunds/bulk',                      'ReconciliatorController@postBulkRefundsReconciliation'             ],
         'dummy_return_callback'                    => ['post',     'return/callback',                                'PaymentController@postDummyReturnCallback'                         ],
         'dummy_critical_error'                     => ['get',      'trigger/error',                                  'AdminController@getTriggerError'                                   ],
@@ -4612,6 +4613,8 @@ class Route
         'payments_card_es_sync_cron',
 
         'payment_upi_authorize_failed',
+
+        'recon_update_upi_data',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -12314,6 +12317,7 @@ class Route
             'internal_validate_order_checkout_config',
             'internal_validate_order_tpv',
             'internal_create_order_relations',
+            'recon_update_upi_data',
         ],
 
         'freshdesk_webhook' => [

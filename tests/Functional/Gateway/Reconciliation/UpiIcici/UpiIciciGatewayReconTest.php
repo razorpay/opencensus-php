@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Gateway\Reconciliation\UpiIcici;
 
 use Carbon\Carbon;
+use RZP\Exception;
 use Illuminate\Http\UploadedFile;
 
 use RZP\Models\Batch;
@@ -785,6 +786,99 @@ class UpiIciciGatewayReconTest extends TestCase
         }
     }
 
+    public function testInvalidUpiIciciUpdateReconData()
+    {
+        $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
+
+        $rrn = '734122607521';
+
+        // We make just one payment
+        $paymentId = $this->makeUpiIciciPaymentsSince($createdAt, $rrn, 1)[0];
+
+        $content = $this->getDefaultUpiPostReconArray();
+
+        $content['payment_id'] = $paymentId;
+
+        unset($content['upi']['npci_reference_id']);
+        unset($content['reconciled_at']);
+
+        $this->makeRequestAndCatchException(function() use ($content)
+        {
+            $request = [
+                'url' => '/reconciliate/update/upi/data',
+                'method' => 'POST',
+                'content' => $content,
+            ];
+
+            $this->ba->appAuth();
+
+            $this->makeRequestAndGetContent($request);
+        }, Exception\BadRequestValidationFailureException::class);
+    }
+
+    public function testUpiIciciUpdateAlreadyReconciled()
+    {
+        $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
+
+        $rrn = '734122607521';
+
+        // We make just one payment
+        $paymentId = $this->makeUpiIciciPaymentsSince($createdAt, $rrn, 1)[0];
+
+        $transaction = $this->getDbLastEntity('transaction');
+
+        $this->fixtures->edit('transaction', $transaction['id'], ['reconciled_at' => Carbon::now(Timezone::IST)->getTimestamp()]);
+
+        $content = $this->getDefaultUpiPostReconArray();
+
+        $content['payment_id'] = $paymentId;
+
+        $response = $this->makeUpdatePostReconRequestAndGetContent($content);
+
+        $this->assertFalse($response['success']);
+
+        $this->assertEquals('ALREADY_RECONCILED', $response['error']['code']);
+    }
+
+    public function testUpiIciciUpdatePostReconData()
+    {
+        $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
+
+        $rrn = '734122607521';
+
+        // We make just one payment
+        $paymentId = $this->makeUpiIciciPaymentsSince($createdAt, $rrn, 1)[0];
+
+        $content = $this->getDefaultUpiPostReconArray();
+
+        $content['payment_id'] = $paymentId;
+
+        $content['reconciled_at'] = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $currentTransactionEntity = $this->getDbLastEntity('transaction');
+
+        // The reconciled_at is not persisted yet
+        $this->assertEmpty($currentTransactionEntity['reconciled_at']);
+
+        $response = $this->makeUpdatePostReconRequestAndGetContent($content);
+
+        $upiEntity = $this->getDbLastEntity('upi');
+
+        $this->assertNotEmpty($upiEntity['reconciled_at']);
+
+        $this->assertEquals($content['upi']['npci_reference_id'], $upiEntity['npci_reference_id']);
+
+        $this->assertEquals($content['upi']['gateway_payment_id'], $upiEntity['gateway_payment_id']);
+
+        $updatedTransactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertEquals($content['reconciled_at'],$updatedTransactionEntity['reconciled_at']);
+
+        $this->assertNotEmpty($updatedTransactionEntity['reconciled_at']);
+
+        $this->assertTrue($response['success']);
+    }
+
     private function assertFailedPaymentRecon()
     {
         $fileContents = $this->generateReconFile(['type' => 'payment']);
@@ -1033,5 +1127,18 @@ class UpiIciciGatewayReconTest extends TestCase
         $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
 
         $this->reconcile($uploadedFile, 'UpiIcici');
+    }
+
+    private function makeUpdatePostReconRequestAndGetContent(array $input)
+    {
+        $request = [
+            'method'  => 'POST',
+            'content' => $input,
+            'url'     => '/reconciliate/update/upi/data',
+        ];
+
+        $this->ba->appAuth();
+
+        return $this->makeRequestAndGetContent($request);
     }
 }

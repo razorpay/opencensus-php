@@ -64,4 +64,13 @@ class ReconciliatorController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function updateUpiReconciliationData()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->updateUpiReconciliationData($input);
+
+        return ApiResponse::generateResponse($response);
+    }
 }

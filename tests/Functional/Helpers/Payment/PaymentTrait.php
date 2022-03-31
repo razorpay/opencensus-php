@@ -2023,6 +2023,21 @@ trait PaymentTrait
         ];
     }
 
+    protected function getDefaultUpiPostReconArray()
+    {
+        return [
+            'upi' => [
+                'npci_reference_id'     => '123456789012',
+                'gateway_payment_id'    => '4531245576',
+                'npci_txn_id'           => 'AXId27bf16312dc428ab7a305ea57e20393',
+            ],
+                'payment_id'      => 'IShcnbF6tsOy',
+                'reconciled_type' => 'mis',
+                'amount'          => 50000,
+                'reconciled_at'   => '1642476459',
+        ];
+    }
+
     protected function sendRequest($request, &$callback = null)
     {
         $this->checkAndSetUrl($request);

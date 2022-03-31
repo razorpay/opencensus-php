@@ -225,6 +225,17 @@ class Validator extends Base\Core
         RequestProcessor\Base::FORCE_AUTHORIZE . '.*'   => 'sometimes|public_id'
     ];
 
+    const UPDATE_UPI_RECON_DATA_RULES = [
+        'payment_id'                    => 'required|string|size:14',
+        'upi'                           => 'required|array',
+        'upi.npci_reference_id'         => 'required',
+        'upi.gateway_payment_id'        => 'sometimes',
+        'upi.npci_txn_id'               => 'sometimes',
+        'reconciled_type'               => 'required|string',
+        'amount'                        => 'required',
+        'reconciled_at'                 => 'required|filled|epoch',
+    ];
+
     public function filterEmails(array $emailDetails)
     {
         $from = $emailDetails[RequestProcessor\Mailgun::FROM];
@@ -941,6 +952,14 @@ class Validator extends Base\Core
                           ->caller($this)
                           ->input($input)
                           ->validate();
+    }
+
+    public function validateUpdateUpiReconData(array $input)
+    {
+        (new JitValidator)->rules(self::UPDATE_UPI_RECON_DATA_RULES)
+            ->caller($this)
+            ->input($input)
+            ->validate();
     }
 
     public function validateGateway($attribute, $value, $parameters)
