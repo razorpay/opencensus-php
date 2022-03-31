@@ -3,7 +3,6 @@
 namespace RZP\Jobs\Transfers;
 
 use RZP\Jobs\Job;
-use Carbon\Carbon;
 use RZP\Trace\TraceCode;
 use RZP\Models\Transfer\Service as Transfers;
 
@@ -48,8 +47,11 @@ class TransferRecon extends Job
             }
             else
             {
-                // Here $this->txnIds actually contains settlement IDs.
-                (new Transfers())->updateTransfersWithSettlementIdOldFlow($this->txnIds);
+                $this->trace->info(
+                TraceCode::TRANSFER_RECON_JOB_UNEXPECTED,
+                [
+                    'transaction_ids'    => $this->txnIds,
+                ]);
             }
         }
         catch (\Throwable $e)

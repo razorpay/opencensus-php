@@ -10,7 +10,6 @@ use RZP\Base\ConnectionType;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Base\Common;
-use RZP\Constants\Mode;
 use RZP\Base\BuilderEx;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
@@ -2102,28 +2101,6 @@ class Repository extends Base\Repository
                       ->skip($skip * Constant::CHUNK)
                       ->take(Constant::CHUNK)
                       ->get();
-    }
-
-    public function fetchLinkedAccountTransactionIdsBySettlementId(string $settlementId, int $skip = 0)
-    {
-        $paymentIdColumn        = $this->repo->payment->dbColumn(Payment\Entity::ID);
-        $transferIdColumn       = $this->repo->payment->dbColumn(Payment\Entity::TRANSFER_ID);
-
-        $transactionIdColumn    = $this->dbColumn(Entity::ID);
-        $typeColumn             = $this->dbColumn(Entity::TYPE);
-        $entityIdColumn         = $this->dbColumn(Entity::ENTITY_ID);
-        $settlementIdColumn     = $this->dbColumn(Entity::SETTLEMENT_ID);
-
-        $query = $this->newQuery()
-                      ->join(Table::PAYMENT, $entityIdColumn, '=', $paymentIdColumn)
-                      ->select($transactionIdColumn)
-                      ->where($typeColumn, Type::PAYMENT)
-                      ->where($settlementIdColumn, $settlementId)
-                      ->whereNotNull($transferIdColumn)
-                      ->skip($skip)
-                      ->take(Constant::CHUNK);
-
-        return $query->pluck(Entity::ID);
     }
 
     public function getTransactionBalanceType(string $transactionId)
