@@ -1,3 +1,5 @@
+import React from 'react';
+import PropTypes from 'prop-types';
 import { withRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
@@ -13,7 +15,7 @@ import Spinner from 'common/ui/Spinner';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 
 import { classList } from 'common/utils/rzp-utils';
-import { validateAlphanumericWithMaxLength, validateAlphanumeric } from 'common/utils/validators';
+import { validateAlphanumeric } from 'common/utils/validators';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
@@ -41,6 +43,15 @@ import {
 } from 'merchant/views/SmartCollect/VirtualAccounts/helpers';
 
 import { fetchFeatureStatus } from 'merchant/reducers/config';
+
+const CustomCustomerOption = ({ option }) => {
+  return (
+    <div class="custom-powerselect-options">
+      {option.name && <b>{option.name} : </b>}
+      {option.email || option.contact}
+    </div>
+  );
+};
 
 @withRouter
 @connect(
@@ -101,22 +112,19 @@ export default class CreateVirtualAccount extends React.Component {
     this.track('open');
 
     // check TPV org feature
-      if(this.props.org.features.indexOf("axis_tpv") > -1 ){
-        this.setState(
-          {
-            isTPVOrg: true,
-          }
-        );
-        // check TPV MID feature
-        this.props
+    if (this.props.org.features.indexOf('axis_tpv') > -1) {
+      // eslint-disable-next-line react/no-did-mount-set-state
+      this.setState({
+        isTPVOrg: true,
+      });
+      // check TPV MID feature
+      this.props
         .fetchFeatureStatus(this.props.user.id, 'axis_tpv_enable')
         .then((detail) => {
-          if(detail["data"]["status"]){
-            this.setState(
-              {
-                isTPVMid: true,
-              }
-            );
+          if (detail.data?.status) {
+            this.setState({
+              isTPVMid: true,
+            });
           }
         })
         .catch((err) => {
@@ -127,7 +135,7 @@ export default class CreateVirtualAccount extends React.Component {
             });
           }
         });
-      }
+    }
   }
 
   componentWillUnmount() {
@@ -173,7 +181,7 @@ export default class CreateVirtualAccount extends React.Component {
       const modalEle = document.querySelector('.Modal-container--VirtualAccountV2');
 
       if (modalEle) {
-        modalEle.style['max-height'] = formEle.offsetHeight + 156 + 'px';
+        modalEle.style['max-height'] = `${formEle.offsetHeight + 156}px`;
       }
     });
   };
@@ -241,7 +249,7 @@ export default class CreateVirtualAccount extends React.Component {
 
         this.props.luminateRow(entityId);
 
-        const redirectUrl = '/virtualaccounts/' + entityId;
+        const redirectUrl = `/virtualaccounts/${entityId}`;
         this.props.history.push(redirectUrl);
 
         this.track('advance.notes.submit.success');
@@ -284,7 +292,7 @@ export default class CreateVirtualAccount extends React.Component {
 
   selectCustomerAndCloseModal = (customer) => {
     this.setState({
-      customer: customer,
+      customer,
     });
 
     this.track('customer.add');
@@ -319,7 +327,6 @@ export default class CreateVirtualAccount extends React.Component {
 
   handleSelectCustomer = ({ option }) => {
     this.setState({
-      customer_id: option ? option.id : null,
       customer: option,
     });
 
@@ -342,12 +349,12 @@ export default class CreateVirtualAccount extends React.Component {
 
   handlePaymentMethod = (name) => () => {
     this.setState(
-      {
+      (prevState) => ({
         _internals: {
-          ...this.state._internals,
-          [name]: !this.state._internals[name],
+          ...prevState._internals,
+          [name]: !prevState._internals[name],
         },
-      },
+      }),
       this.setModalHeight,
     );
 
@@ -357,12 +364,15 @@ export default class CreateVirtualAccount extends React.Component {
   };
 
   handleDescriptor = (name) => (event) => {
-    this.setState({
-      descriptors: {
-        ...this.state.descriptors,
-        [name]: event.target.value,
-      },
-    });
+    this.setState(
+      (prevState) => ({
+        descriptors: {
+          ...prevState.descriptors,
+          [name]: event.target.value,
+        },
+      }),
+      this.setModalHeight,
+    );
   };
 
   handleAdditionalOptions = () => {
@@ -403,11 +413,10 @@ export default class CreateVirtualAccount extends React.Component {
               block: 'nearest',
             });
           }
-
-          return;
         }, 100);
       },
     );
+    return false;
   };
 
   handleAddNewNote = (freshPairs) => {
@@ -478,7 +487,7 @@ export default class CreateVirtualAccount extends React.Component {
   };
 
   render() {
-    let { customers = [], onClose, va_config, user, isTestMode } = this.props;
+    const { customers = [], onClose, va_config, user, isTestMode } = this.props;
 
     const IS_MODAL_VIEW = !!onClose;
 
@@ -599,13 +608,15 @@ export default class CreateVirtualAccount extends React.Component {
                       }
                       description={
                         <>
-                          {_internals.hasVPA && showVPAPrefix && (
+                          {_internals.hasVPA &&
+                          showVPAPrefix &&
+                          vpaConfig &&
+                          vpaConfig.merchant_prefix ? (
                             <>
                               To update <strong>"{vpaConfig.merchant_prefix}"</strong> prefix{' '}
                               <a onClick={this.openVPAPrefixModal}>click here</a>
                             </>
-                          )}
-
+                          ) : null}
                           {!_internals.hasVPA && <>Get a VPA to accept fund transfers via UPI.</>}
                         </>
                       }
@@ -702,85 +713,78 @@ export default class CreateVirtualAccount extends React.Component {
                         showAdditionalOptions ? 'i-chevron-up' : 'i-chevron-down',
                       )}
                     />
-                  </div> 
+                  </div>
 
                   {showAdditionalOptions && (
                     <div class="AdditionalOptions">
+                      {!this.state.isTPVOrg || (this.state.isTPVOrg && this.state.isTPVMid) ? (
+                        <div class="third-party-validation">
+                          <div>
+                            <strong>Third Party Validation</strong>
 
-                       {((!this.state.isTPVOrg) ||
-              (this.state.isTPVOrg && this.state.isTPVMid)) ? (
-                      <>
-                      <div class="third-party-validation">
-                        <div>
-                          <strong>Third Party Validation</strong>
+                            <span class="m-l">
+                              <i
+                                class="i i-info-outline"
+                                onClick={() => {
+                                  this.track('advance.tpv_info');
+                                }}
+                              />
+                              <Popover
+                                align="top"
+                                theme="dark"
+                                parentQuerySelector={IS_MODAL_VIEW && '.VirtualAccount--CreateV2'}
+                              >
+                                <PopoverBody>
+                                  Only authorised accounts will be able to make payments to this
+                                  virtual account.
+                                </PopoverBody>
+                              </Popover>
+                            </span>
+                          </div>
 
-                          <span class="m-l">
-                            <i
-                              class="i i-info-outline"
-                              onClick={() => {
-                                this.track('advance.tpv_info');
-                              }}
-                            />
-                            <Popover
-                              align="top"
-                              theme="dark"
-                              parentQuerySelector={IS_MODAL_VIEW && '.VirtualAccount--CreateV2'}
-                            >
-                              <PopoverBody>
-                                Only authorised accounts will be able to make payments to this
-                                virtual account.
-                              </PopoverBody>
-                            </Popover>
-                          </span>
-                        </div>
+                          <div class="description">
+                            {!!allowedPayers.length
+                              ? `Configured with ${allowedPayers.length} authorised accounts.`
+                              : 'Not Configured'}
 
-                        <div class="description">
-                          {!!allowedPayers.length
-                            ? `Configured with ${allowedPayers.length} authorised accounts.`
-                            : 'Not Configured'}
-
-                          <div class="actions">
-                            {!!allowedPayers.length ? (
-                              <>
+                            <div class="actions">
+                              {!!allowedPayers.length ? (
+                                <>
+                                  <button
+                                    type="button"
+                                    class="btn-link"
+                                    onClick={() => {
+                                      this.openConfigureBankAccountsModal();
+                                      this.track('advance.tpv.edit');
+                                    }}
+                                  >
+                                    Edit
+                                  </button>{' '}
+                                  |
+                                  <button
+                                    type="button"
+                                    class="btn-link"
+                                    onClick={this.handleRemoveAllowedPayers}
+                                  >
+                                    Remove
+                                  </button>
+                                </>
+                              ) : (
                                 <button
                                   type="button"
                                   class="btn-link"
                                   onClick={() => {
                                     this.openConfigureBankAccountsModal();
-
-                                    this.track('advance.tpv.edit');
+                                    this.track('advance.tpv.configure');
                                   }}
                                 >
-                                  Edit
-                                </button>{' '}
-                                |
-                                <button
-                                  type="button"
-                                  class="btn-link"
-                                  onClick={this.handleRemoveAllowedPayers}
-                                >
-                                  Remove
+                                  Configure
                                 </button>
-                              </>
-                            ) : (
-                              <button
-                                type="button"
-                                class="btn-link"
-                                onClick={() => {
-                                  this.openConfigureBankAccountsModal();
-
-                                  this.track('advance.tpv.configure');
-                                }}
-                              >
-                                Configure
-                              </button>
-                            )}
+                              )}
+                            </div>
                           </div>
                         </div>
-                      </div>
-
-                      </>
-                  ) : null }
+                      ) : null}
                       <hr />
 
                       <Input.TextareaAutoResize
@@ -821,7 +825,6 @@ export default class CreateVirtualAccount extends React.Component {
                       />
                     </div>
                   )}
-               
                 </>
               )}
             </div>
@@ -867,6 +870,7 @@ function validateCustomVPA(descriptorLimit_VPA) {
     if (!isValidAlphanumeric) {
       return 'Special characters not allowed';
     }
+    return false;
   };
 }
 
@@ -881,14 +885,6 @@ function validateCustomBankAccountNumber(descriptorLimit_BankAccount) {
     if (!isValidAlphanumeric) {
       return 'Special characters not allowed';
     }
+    return '';
   };
 }
-
-const CustomCustomerOption = ({ option }) => {
-  return (
-    <div class="custom-powerselect-options">
-      {option.name && <b>{option.name} : </b>}
-      {option.email || option.contact}
-    </div>
-  );
-};
