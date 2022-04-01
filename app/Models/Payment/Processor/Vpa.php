@@ -47,10 +47,10 @@ trait Vpa
             return $existing;
         }
 
-        $tracable = [];
+        $traceable = [];
 
         // Retrieve terminals for validate VPA.
-        $terminals = $this->getTerminalsForValidateVpa($input[Payment\Entity::VPA], $tracable);
+        $terminals = $this->getTerminalsForValidateVpa($input[Payment\Entity::VPA], $traceable);
 
         $count = count($terminals);
 
@@ -78,18 +78,18 @@ trait Vpa
             {
                 $gateway = $terminal->getGateway();
 
-                $tracable['gateway'] = $gateway;
+                $traceable['gateway'] = $gateway;
 
                 // Invalid vpa on MindGate and SBI thrown back with GatewayError
                 $gatewayResponse = $this->app['gateway']->call($gateway, $action, $gatewayData, $this->mode, $terminal);
 
-                $tracable['time'] = Carbon::now()->diffInRealSeconds($startTime);
+                $traceable['time'] = Carbon::now()->diffInRealSeconds($startTime);
 
-                $tracable['success'] = true;
+                $traceable['success'] = true;
 
-                $tracable['gatewayResponse'] = $gatewayResponse;
+                $traceable['gatewayResponse'] = $gatewayResponse;
 
-                $this->trace->info(TraceCode::VALIDATE_VPA_REQUEST, $tracable);
+                $this->trace->info(TraceCode::VALIDATE_VPA_REQUEST, $traceable);
 
                 $success = true;
 
@@ -104,9 +104,9 @@ trait Vpa
                 {
                     break;
                 }
-                $tracable['time'] = Carbon::now()->diffInRealSeconds($startTime);
+                $traceable['time'] = Carbon::now()->diffInRealSeconds($startTime);
 
-                $this->trace->traceException($exception, Trace::INFO, TraceCode::RECOVERABLE_EXCEPTION, $tracable);
+                $this->trace->traceException($exception, Trace::INFO, TraceCode::RECOVERABLE_EXCEPTION, $traceable);
 
                 // Throwing gateway exception now as we couldn't validate vpa on any of the applicable terminals
                 if ($index === ($count - 1))
@@ -134,14 +134,14 @@ trait Vpa
             return false;
         }
 
-        $tracable = [
+        $traceable = [
             'code'          => TraceCode::VALIDATE_VPA_REQUEST,
             'variant'       => 'cache',
             'vpa'           => mask_vpa($input['vpa']),
             'success'       => true,
         ];
 
-        $this->trace->info(TraceCode::VALIDATE_VPA_REQUEST, $tracable);
+        $this->trace->info(TraceCode::VALIDATE_VPA_REQUEST, $traceable);
 
         return [
             'vpa'               => $vpa->getAddress(),
@@ -153,10 +153,10 @@ trait Vpa
     /**
      * Return terminals to perform VPA validation.
      * @param string $vpa
-     * @param $tracable
+     * @param $traceable
      * @return mixed
      */
-    protected function getTerminalsForValidateVpa(string $vpa, &$tracable)
+    protected function getTerminalsForValidateVpa(string $vpa, &$traceable)
     {
         // Get terminals stored in env
         $terminalIds = Payment\Gateway::getTerminalsForValidateVpaForMode($this->mode);
@@ -165,7 +165,7 @@ trait Vpa
             'validate_vpa_routing_v2',
             Mode::LIVE);
 
-        $tracable = [
+        $traceable = [
             'code'          => TraceCode::VALIDATE_VPA_REQUEST,
             'variant'       => $variant,
             'vpa'           => mask_vpa($vpa),
@@ -206,7 +206,9 @@ trait Vpa
             return array_search($terminal->getId(), $terminalIds);
         });
 
-        return $terminals;
+        $selectedTerminals = $terminals->values();
+
+        return $selectedTerminals;
     }
 
     /**

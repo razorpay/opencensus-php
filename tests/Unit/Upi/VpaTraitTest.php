@@ -79,6 +79,8 @@ class VpaTraitTest extends TestCase
 
         $this->assertCount(self::NUMBER_OF_GATEWAYS, $terminals);
 
+        $this->assertEquals([0, 1, 2], array_keys($terminals->toArray()));
+
         $this->assertContains($this->sbiTerminal->getId(), $terminals->getIds());
 
         $this->assertContains($this->iciciTerminal->getId(), $terminals->getIds());
