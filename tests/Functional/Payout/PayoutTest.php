@@ -10908,6 +10908,8 @@ class PayoutTest extends OAuthTestCase
 
     public function testCompositePayoutCreationViaNewCompositeFlowV1ForPayoutsToCard()
     {
+        Queue::fake();
+
         $this->fixtures->merchant->addFeatures([Feature\Constants::HIGH_TPS_COMPOSITE_PAYOUT]);
 
         $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_PROCESS_ASYNC]);
@@ -10939,6 +10941,31 @@ class PayoutTest extends OAuthTestCase
 
         $response = $this->makeRequestAndGetContent($request);
 
+        $payoutId = substr($response['id'], 5);
+
+        $fundAccountDetails = $response[Payout\Entity::FUND_ACCOUNT];
+
+        $metadata = [
+            Payout\Entity::PAYOUT       => [
+                Payout\Entity::ID         => $payoutId,
+                Payout\Entity::CREATED_AT => $response[Payout\Entity::CREATED_AT],
+            ],
+            Payout\Entity::CONTACT      => [
+                Payout\Entity::ID         => substr($fundAccountDetails[Payout\Entity::CONTACT][Payout\Entity::ID], 5),
+                Payout\Entity::CREATED_AT => $fundAccountDetails[Payout\Entity::CONTACT][Payout\Entity::CREATED_AT]
+            ],
+            Payout\Entity::FUND_ACCOUNT => [
+                Payout\Entity::ID         => substr($fundAccountDetails[Payout\Entity::ID], 3),
+                Payout\Entity::CREATED_AT => $fundAccountDetails[Payout\Entity::CREATED_AT]
+            ]
+        ];
+
+        $merchantId = $this->bankingBalance->merchant->getId();
+
+        $payoutRequest = $request['content'];
+
+        (new PayoutPostCreateProcessLowPriority('test', $payoutId, 'false', $metadata, $merchantId, $payoutRequest))->handle();
+
         $payout = $this->getDbLastEntity(Constants\Entity::PAYOUT);
         $contact = $this->getDbLastEntity(Constants\Entity::CONTACT);
         $fundAccount = $this->getDbLastEntity(Constants\Entity::FUND_ACCOUNT);
@@ -10950,6 +10977,8 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals($response[PayoutEntity::FUND_ACCOUNT][PayoutEntity::CONTACT][PayoutEntity::ID],
                             $contact->getPublicId());
         $this->assertEquals($fundAccount->account->getId(), $card->getId());
+
+        Queue::assertPushed(PayoutPostCreateProcessLowPriority::class, 1);
     }
 
     public function testCompositePayoutCreationViaNewCompositeFlowV1()

@@ -439,9 +439,9 @@ class Core extends Base\Core
                 break;
 
             case Type::CARD:
-                $this->blockTokenisedFlow($accountInput);
+                $this->blockTokenisedFlow($merchant, $accountInput);
 
-                $this->maskCardNameWithContactName($accountInput, $source);
+                $this->maskCardNameWithContactName($merchant, $accountInput, $source);
 
                 if (isset($accountInput[Card\Entity::TOKEN]) === true)
                 {
@@ -483,9 +483,9 @@ class Core extends Base\Core
         return $account;
     }
 
-    protected function maskCardNameWithContactName(&$accountInput, $source)
+    protected function maskCardNameWithContactName($merchant, &$accountInput, $source)
     {
-        if ($this->merchant->isFeatureEnabled(Feature\Constants::ALLOW_CARD_NAME_CHANGES) === true)
+        if ($merchant->isFeatureEnabled(Feature\Constants::ALLOW_CARD_NAME_CHANGES) === true)
         {
             if (($source !== null) and
                 ($source->getEntity() === Entity::CONTACT) and
@@ -507,9 +507,9 @@ class Core extends Base\Core
         }
     }
 
-    public function blockTokenisedFlow($accountInput)
+    public function blockTokenisedFlow($merchant, $accountInput)
     {
-        if (($this->merchant->isFeatureEnabled(Feature\Constants::ALLOW_NON_SAVED_CARDS) === true) and
+        if (($merchant->isFeatureEnabled(Feature\Constants::ALLOW_NON_SAVED_CARDS) === true) and
             ((isset($accountInput[Card\Entity::TOKENISED]) === true) and
              ($accountInput[Card\Entity::TOKENISED] === true)))
         {
