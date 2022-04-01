@@ -28,17 +28,17 @@ const shareURL = (url, title) => {
   }
 };
 
-const commonListItem = (item) => {
-  return (
-    <>
-      <td>
-        <Amount value={item?.amount} currency={item?.currency} />
-      </td>
-      <td>
-        <InvoiceStatusLabel status={item?.status ? item.status.toLowerCase() : null} />
-      </td>
-    </>
-  );
+const commonListItem = {
+  amount: (item) => (
+    <td>
+      <Amount value={item?.amount} currency={item?.currency} />
+    </td>
+  ),
+  statusLabel: (item) => (
+    <td>
+      <InvoiceStatusLabel status={item?.status ? item.status.toLowerCase() : null} />
+    </td>
+  ),
 };
 
 const PaymentLinkMobileTableListView = (items) => {
@@ -69,7 +69,8 @@ const PaymentLinkMobileTableListView = (items) => {
           </View>
         )}
       </td>
-      {commonListItem(item)}
+      {commonListItem.amount(item)}
+      {commonListItem.statusLabel(item)}
     </EntityItemRow>
   );
 };
@@ -94,6 +95,7 @@ const InvoiceListItem = (props) => {
       <td>
         <Time value={invoice.date || invoice.created_at} />
       </td>
+      {commonListItem.amount(invoice)}
       <td>{invoice.receipt}</td>
       <td>
         {getCustomerDisplayName({
@@ -115,7 +117,7 @@ const InvoiceListItem = (props) => {
           />
         )}
       </td>
-      {commonListItem(invoice)}
+      {commonListItem.statusLabel(invoice)}
     </EntityItemRow>
   );
 };
