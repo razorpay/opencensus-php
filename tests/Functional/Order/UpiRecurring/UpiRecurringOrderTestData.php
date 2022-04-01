@@ -100,38 +100,6 @@ return [
         ],
     ],
 
-    'testCreateOrderWithIncorrectFrequency' => [
-        'request' => [
-            'content' => [
-                'amount'          => 50000,
-                'currency'        => 'INR',
-                'method'          => 'upi',
-                'customer_id'     => 'cust_100000customer',
-                'payment_capture' => 1,
-                'token'           => [
-                    'max_amount'      => 150000,
-                    'frequency'       => 'montly',
-                    'start_at'        => Carbon::now()->addDay(1)->getTimestamp(),
-                    'expire_at'       => Carbon::now()->addDay(60)->getTimestamp(),
-                ]
-            ],
-            'method'    => 'POST',
-            'url'       => '/orders',
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Not a valid frequency: montly',
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class' => 'RZP\Exception\BadRequestValidationFailureException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
-        ],
-    ],
     'testCreateOrderWithInvalidRecurringType' => [
         'request' => [
             'content' => [
@@ -280,29 +248,6 @@ return [
                 'payment_capture' => 1,
                 'token'           => [
                     'max_amount'      => 150000,
-                ]
-            ],
-            'method'    => 'POST',
-            'url'       => '/orders',
-        ],
-        'response' => [
-            'content' => [
-                'amount'        => 50000,
-                'currency'      => 'INR',
-            ],
-        ],
-    ],
-    'testCreateOrderWithDailyFrequency' => [
-        'request' => [
-            'content' => [
-                'amount'          => 50000,
-                'currency'        => 'INR',
-                'method'          => 'upi',
-                'customer_id'     => 'cust_100000customer',
-                'payment_capture' => 1,
-                'token'           => [
-                    'max_amount'      => 150000,
-                    'frequency'       => 'daily',
                 ]
             ],
             'method'    => 'POST',

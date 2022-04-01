@@ -700,7 +700,7 @@ return [
                 'subscription_registration' => [
                     'method'     => 'upi',
                     'max_amount' => 21000000,
-                    'frequency'  => 'yearly'
+                    'frequency'  => 'monthly'
                 ],
             ],
         ],

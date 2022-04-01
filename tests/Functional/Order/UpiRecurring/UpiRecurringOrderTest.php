@@ -5,7 +5,10 @@ namespace RZP\Tests\Functional\Order;
 use Carbon\Carbon;
 use RZP\Models\Order;
 use RZP\Models\UpiMandate;
+use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorCode;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\UpiMandate\Frequency;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -82,19 +85,6 @@ class UpiRecurringOrderTest extends TestCase
         $this->assertNull($order);
     }
 
-    public function testCreateOrderWithIncorrectFrequency()
-    {
-        $this->startTest();
-
-        $upiMandate = $this->getDbLastEntity('upi_mandate');
-
-        $order = $this->getDbLastEntity('order');
-
-        $this->assertNull($upiMandate);
-
-        $this->assertNull($order);
-    }
-
     public function testCreateOrderWithStartTimeGreaterThanEndTime()
     {
         $this->startTest();
@@ -119,25 +109,6 @@ class UpiRecurringOrderTest extends TestCase
         $this->assertNotNull($upiMandate['start_time']);
 
         $this->assertNotNull($upiMandate['end_time']);
-    }
-
-    public function testCreateOrderWithDailyFrequency()
-    {
-        $this->startTest();
-
-        $upiMandate = $this->getDbLastEntity('upi_mandate');
-
-        $order = $this->getDbLastEntity('order');
-
-        $this->assertNotNull($upiMandate);
-
-        $this->assertNotNull($order);
-
-        $this->assertNotNull($upiMandate['start_time']);
-
-        $this->assertNotNull($upiMandate['end_time']);
-
-        $this->assertEquals(null, $upiMandate['recurring_value']);
     }
 
     public function testCreateOrderWithAsPresentedFrequency()
@@ -248,4 +219,209 @@ class UpiRecurringOrderTest extends TestCase
 
         $this->startTest($testData);
     }
+
+    /**
+     * Function to generate unsupported frequency testdata
+     * @return array
+     */
+    public function functionGenerateUnsupportedFrequency()
+    {
+        $cases = [];
+
+        $cases['daily'] = [
+            Frequency::DAILY,
+            PublicErrorCode::BAD_REQUEST_ERROR,
+            'Not a valid frequency: daily'
+        ];
+
+        $cases['weekly'] = [
+            Frequency::WEEKLY,
+            PublicErrorCode::BAD_REQUEST_ERROR,
+            'Not a valid frequency: weekly'
+        ];
+
+        $cases['bimonthly'] = [
+            Frequency::BIMONTHLY,
+            PublicErrorCode::BAD_REQUEST_ERROR,
+            'Not a valid frequency: bimonthly'
+        ];
+
+        $cases['quarterly'] = [
+            Frequency::QUARTERLY,
+            PublicErrorCode::BAD_REQUEST_ERROR,
+            'Not a valid frequency: quarterly'
+        ];
+
+        $cases['half_yearly'] = [
+            Frequency::HALF_YEARLY,
+            PublicErrorCode::BAD_REQUEST_ERROR,
+            'Not a valid frequency: half_yearly'
+        ];
+
+        $cases['yearly'] = [
+            Frequency::YEARLY,
+            PublicErrorCode::BAD_REQUEST_ERROR,
+            'Not a valid frequency: yearly'
+        ];
+
+        $cases['invalid_frequency'] = [
+            'random',
+            PublicErrorCode::BAD_REQUEST_ERROR,
+            'Not a valid frequency: random'
+        ];
+
+        $cases['empty_frequency'] = [
+            '',
+            PublicErrorCode::BAD_REQUEST_ERROR,
+            'The frequency field is required.',
+        ];
+
+        return $cases;
+    }
+
+    /**
+     * @dataProvider functionGenerateUnsupportedFrequency
+     *
+     * @param      $frequency
+     * @param null $exceptionCode
+     * @param null $exceptionMessage
+     */
+    public function testCreateOrderWithUnsupportedFrequency($frequency, $exceptionCode = null, $exceptionMessage = null)
+    {
+        $testData['request'] = $this->getRequestForRecurringOrder([
+             'content'  => [
+                 'token'   =>  [
+                     'max_amount' => 150000,
+                     'frequency'  => $frequency,
+                 ]
+             ]
+          ]);
+
+        $testData['response'] = $this->getResponsePayloadForFailedRecurringOrder([
+            'content'   => [
+                'error'    => [
+                    'code'        => $exceptionCode,
+                    'description' => $exceptionMessage,
+                ]
+             ]
+           ]);
+
+        $testData['exception'] = [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ];
+
+        $this->runRequestResponseFlow($testData);
+
+        $upiMandate = $this->getDbLastEntity('upi_mandate');
+
+        $order = $this->getDbLastEntity('order');
+
+        $this->assertNull($upiMandate);
+
+        $this->assertNull($order);
+    }
+
+    /**
+     * Function to generate supported frequency testdata
+     * @return array
+     */
+    public function functionGenerateSupportedFrequency()
+    {
+        $cases['as_presented'] = [
+            Frequency::AS_PRESENTED,
+        ];
+
+        $cases['monthly'] = [
+            Frequency::MONTHLY,
+        ];
+
+        return $cases;
+    }
+
+    /**
+     * @dataProvider functionGenerateSupportedFrequency
+     *
+     * @param $frequency
+     */
+    public function testCreateOrderWithSupportedFrequency($frequency)
+    {
+        $testData['request'] =  $this->getRequestForRecurringOrder([
+              'content' => [
+                  'token'  => [
+                      'max_amount' => 150000,
+                      'frequency'  => $frequency,
+                  ]
+              ]
+            ]
+        );
+
+        $testData['response'] = $this->getResponsePayloadForSuccessfulRecurringOrder();
+
+        $this->runRequestResponseFlow($testData);
+
+        $upiMandate = $this->getDbLastEntity('upi_mandate');
+
+        $order = $this->getDbLastOrder();
+
+        $this->assertNotNull($upiMandate);
+
+        $this->assertNotNull($order);
+
+        $this->assertNotNull($upiMandate['start_time']);
+
+        $this->assertNotNull($upiMandate['end_time']);
+
+        $this->assertSame($frequency, $upiMandate['frequency']);
+    }
+
+    /**
+     * helper testdata function to get recurring order details
+     * @return array[]
+     */
+    private function getRequestForRecurringOrder($overrideWith = []): array
+    {
+        $request =  [
+            'content' => [
+                'amount'          => 50000,
+                'currency'        => 'INR',
+                'method'          => 'upi',
+                'customer_id'     => 'cust_100000customer',
+                'payment_capture' => 1,
+            ],
+            'method'  => 'POST',
+            'url'     => '/orders',
+        ];
+
+        return array_merge_recursive($request, $overrideWith);
+    }
+
+    /**
+     * Helper test data function to return failure response
+     * @return array
+     */
+    private function getResponsePayloadForFailedRecurringOrder($overrideWith = []){
+        $response = [
+            'status_code' => 400,
+        ];
+
+        return array_merge_recursive($response, $overrideWith);
+
+    }
+
+    /**
+     * Helper test data function to return successful response.
+     * @return array
+     */
+    private function getResponsePayloadForSuccessfulRecurringOrder(){
+        return [
+            'content'     => [
+                'amount'    => 50000,
+                'currency'  => 'INR',
+            ],
+            'status_code' => 200,
+        ];
+    }
+
 }
+

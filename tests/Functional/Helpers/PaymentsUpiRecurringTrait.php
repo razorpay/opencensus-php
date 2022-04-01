@@ -431,9 +431,6 @@ trait PaymentsUpiRecurringTrait
                 $confirmedAt = Carbon::parse('first day of last month', 'UTC');
                 break;
 
-            case UpiMandate\Frequency::DAILY:
-                $confirmedAt = Carbon::now()->subDays(2);
-                break;
             case UpiMandate\Frequency::AS_PRESENTED:
                 //Choose a time between now() and 10 minutes.
                 $confirmedAt = Carbon::now()->addMinute(2);

@@ -23,9 +23,10 @@ class SequenceNumberTest extends TestCase
     {
         $testcases = [];
 
-        /****************** Daily *******************/
+        //Commenting these tests as the supported frequency are only monthly and as_presented
 
-        $testcases['daily_base_case'] = [
+        /****************** Daily *******************/
+        /*   $testcases['daily_base_case'] = [
             Frequency::DAILY,
             Carbon::createFromDate(2020, 1, 2),
             Carbon::createFromDate(2020, 1, 2),
@@ -52,11 +53,11 @@ class SequenceNumberTest extends TestCase
             Carbon::createFromDate(2015, 3, 1),
             3,
         ];
-
+        */
 
         /***************** Weekly *******************/
 
-        $testcases['weekly_base_case'] = [
+      /*  $testcases['weekly_base_case'] = [
             Frequency::WEEKLY,
             Carbon::createFromDate(2021, 1, 4),
             Carbon::createFromDate(2021, 1, 8),
@@ -103,7 +104,7 @@ class SequenceNumberTest extends TestCase
             Carbon::createFromDate(2020, 2, 29),
             Carbon::createFromDate(2020, 3, 3),
             2,
-        ];
+        ];*/
 
         /****************** Monthly *******************/
 
@@ -158,7 +159,7 @@ class SequenceNumberTest extends TestCase
 
         /******************  Bimonthly *****************/
 
-        $testcases['bimonthy_same_cycle'] = [
+      /*  $testcases['bimonthy_same_cycle'] = [
             Frequency::BIMONTHLY,
             Carbon::createFromDate(2021, 8, 8),
             Carbon::createFromDate(2021, 8, 10),
@@ -226,10 +227,10 @@ class SequenceNumberTest extends TestCase
             Carbon::createFromDate(2020, 7, 31),
             4,
         ];
-
+        */
         /******************  Quarterly *****************/
 
-        $testcases['quarterly_same_dates'] = [
+      /*  $testcases['quarterly_same_dates'] = [
             Frequency::QUARTERLY,
             Carbon::createFromDate(2021, 8, 8),
             Carbon::createFromDate(2021, 8, 8),
@@ -303,9 +304,9 @@ class SequenceNumberTest extends TestCase
             Carbon::createFromDate(2021, 11, 1),
             2,
         ];
-
+        */
         /******************  Half-Yearly *****************/
-
+        /*
         $testcases['halfyearly_same_dates'] = [
             Frequency::HALF_YEARLY,
             Carbon::createFromDate(2021, 8, 8),
@@ -382,9 +383,9 @@ class SequenceNumberTest extends TestCase
             Carbon::createFromDate(2022, 01, 1),
             2,
         ];
-
+        */
         /****************** Yearly *****************/
-
+        /*
         $testcases['yearly_same_year'] = [
             Frequency::YEARLY,
             Carbon::createFromDate(2021, 8, 1),
@@ -419,7 +420,7 @@ class SequenceNumberTest extends TestCase
             Carbon::createFromDate(2025, 2, 28),
             6,
         ];
-
+        */
         /************** sanity testcases **********/
 
         $testcases['invalid_freq'] = [
@@ -444,17 +445,17 @@ class SequenceNumberTest extends TestCase
         ];
 
         $testcases['null_date_params'] = [
-            Frequency::DAILY,
+            Frequency::MONTHLY,
             null,
             null,
             1,
         ];
 
         $testcases['mixed_date_formats'] = [
-            Frequency::DAILY,
+            Frequency::MONTHLY,
             1607373614,
             Carbon::createFromFormat('Y-m-d H:i:s' , '2020-12-9 00:00:00'),
-            3,
+            1,
         ];
 
         // frequencies as_presented should always return 1 as these will be implemented in future
@@ -468,7 +469,7 @@ class SequenceNumberTest extends TestCase
         /********************** Edge cases ********************/
         // Time dependent edge cases to check when start time is 23:59:59PM and end time is 00:00:01 AM
 
-        $testcases['daily_start_date_23:59PM_to_end_date_12:01AM'] = [
+       /* $testcases['daily_start_date_23:59PM_to_end_date_12:01AM'] = [
             Frequency::DAILY,
             Carbon::createFromFormat('Y-m-d H:i:s' , '2021-01-1 23:59:59'),
             Carbon::createFromFormat('Y-m-d H:i:s' , '2021-01-2 00:00:01'),
@@ -480,7 +481,7 @@ class SequenceNumberTest extends TestCase
             Carbon::createFromFormat('Y-m-d H:i:s' , '2021-01-3 23:59:59'),
             Carbon::createFromFormat('Y-m-d H:i:s' , '2021-01-4 00:00:01'),
             2,
-        ];
+        ];*/
 
         $testcases['monthly_monthEnd_23:59PM_to_next_monthStart_12:01AM'] = [
             Frequency::MONTHLY,
@@ -494,6 +495,51 @@ class SequenceNumberTest extends TestCase
             Carbon::createFromFormat('Y-m-d H:i:s' , '2020-12-31 23:59:59'),
             Carbon::createFromFormat('Y-m-d H:i:s' , '2021-1-1 00:00:01'),
             2,
+        ];
+
+        /********************** Unsupported Frequencies *******************/
+        //Frequencies other than as_presnted and monthly are not supported, hence they should return null
+
+        $testcases['unsupported_daily'] = [
+            Frequency::DAILY,
+            Carbon::createFromDate(2020, 12, 9),
+            Carbon::createFromDate(2020, 12, 9),
+            null,
+        ];
+
+        $testcases['unsupported_weekly'] = [
+            Frequency::WEEKLY,
+            Carbon::createFromDate(2020, 12, 9),
+            Carbon::createFromDate(2020, 12, 20),
+            null,
+        ];
+
+        $testcases['unsupported_bimonthly'] = [
+            Frequency::BIMONTHLY,
+            Carbon::createFromDate(2020, 8, 9),
+            Carbon::createFromDate(2020, 12, 9),
+            null,
+        ];
+
+        $testcases['unsupported_quarterly'] = [
+            Frequency::QUARTERLY,
+            Carbon::createFromDate(2020, 2, 9),
+            Carbon::createFromDate(2020, 12, 9),
+            null,
+        ];
+
+        $testcases['unsupported_half_yearly'] = [
+            Frequency::HALF_YEARLY,
+            Carbon::createFromDate(2020, 12, 9),
+            Carbon::createFromDate(2021, 04, 9),
+            null,
+        ];
+
+        $testcases['unsupported_yearly'] = [
+            Frequency::YEARLY,
+            Carbon::createFromDate(2020, 12, 9),
+            Carbon::createFromDate(2024, 12, 9),
+            null,
         ];
 
         return $testcases;

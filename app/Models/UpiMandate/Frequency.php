@@ -13,6 +13,15 @@ class Frequency
     const HALF_YEARLY  = 'half_yearly';
     const YEARLY       = 'yearly';
 
+    /**
+     * Autopay supports only selected frequencies as maintained in this array
+     * @var string[]
+     */
+    public static $allowedFrequencies = [
+         self::AS_PRESENTED,
+         self::MONTHLY,
+    ];
+
     public static $frequencyToRecurringValueMap = [
         self::WEEKLY       => 7,
         self::BIMONTHLY    => 15,
@@ -27,7 +36,9 @@ class Frequency
 
     public static function isValid($frequency)
     {
-        return (defined(Frequency::class.'::'.strtoupper($frequency)));
+        $key = strtolower($frequency);
+
+        return (in_array($key, self::$allowedFrequencies, true) === true);
     }
 
     public static function shouldSkipNotify(string $gateway, string $frequency): bool
