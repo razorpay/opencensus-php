@@ -753,8 +753,8 @@ class Service
 
         $data = $response[Response::DATA][Response::DATA];
 
-        $acquirer[Payment\Entity::VPA]  = $data[Entity::UPI][Base\Entity::NPCI_REFERENCE_ID];
-        $acquirer[Payment\Entity::REFERENCE16] = $data[Entity::UPI][Base\Entity::NPCI_REFERENCE_ID];
+        $acquirer[Payment\Entity::VPA]  = $data[Entity::UPI][Base\Entity::VPA] ?? '';
+        $acquirer[Payment\Entity::REFERENCE16] = $data[Entity::UPI][Base\Entity::NPCI_REFERENCE_ID] ?? '';
 
         $returnResponse['acquirer'] = $acquirer;
 

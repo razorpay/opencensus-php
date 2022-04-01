@@ -241,9 +241,9 @@ class Service extends UpiPaymentService
 
         $responseData['data'] = [
             'upi' => [
-                'vpa' => $data['payment']['vpa'] ?? '',
+                'vpa' => $data['payment']['vpa'] ?? 'forceauth@upi',
                 'status_code' => '000',
-                'npci_reference_id' => '987654321',
+                'npci_reference_id' => '22712135190',
                 'merchant_reference' => $data['payment']['id'],
             ],
             'payment' => [

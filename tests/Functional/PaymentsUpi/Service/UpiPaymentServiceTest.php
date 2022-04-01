@@ -659,6 +659,7 @@ class UpiPaymentServiceTest extends TestCase
     {
         $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
 
+        // rrn to be used
         $rrn = '22712135190';
 
         $this->gateway = 'upi_airtel';
@@ -690,7 +691,15 @@ class UpiPaymentServiceTest extends TestCase
 
         $payment = $payments['items'][0];
 
-        $this->assertEquals(Entity::UPI_PAYMENT_SERVICE, $payment['cps_route']);
+        $this->assertArraySelectiveEquals(
+            [
+                'cps_route'       => Entity::UPI_PAYMENT_SERVICE,
+                'gateway'         => 'upi_airtel',
+                'vpa'             => 'forceauth@upi',
+                'reference16'     => '22712135190',
+            ],
+            $payment
+        );
 
         $transactionId = $payment['transaction_id'];
 
