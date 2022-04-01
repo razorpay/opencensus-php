@@ -130,7 +130,7 @@ class Notifier extends Base\Core
 
         $template = $this->getTemplateForSMS($amount);
 
-        return [
+        $payload = [
             'receiver' => $contact,
             'source'   => "api.{$this->mode}.payment_link",
             // The template for invoice & payment_link is same, we are continuing to use the same for now
@@ -142,6 +142,16 @@ class Notifier extends Base\Core
                 'currency'      => $paymentLink->getCurrency(),
             ],
         ];
+
+        $orgId = $merchant->getMerchantOrgId();
+
+        // appending orgId in stork context to be used on stork to select org specific sms gateway.
+        if (empty($orgId) === false)
+        {
+            $payload['stork']['context']['org_id'] = $orgId;
+        }
+
+        return $payload;
     }
 
     protected function getTemplateForSMS($amount = null)

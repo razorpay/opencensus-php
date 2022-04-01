@@ -552,7 +552,7 @@ class Notifier extends Base\Core
         // appending orgId in stork context to be used on stork to select org specific sms gateway.
         if (empty($orgId) === false)
         {
-            $payload['stork']['context']['org_id'] = $orgId;
+            $request['stork']['context']['org_id'] = $orgId;
         }
 
         if ($customSender !== null)

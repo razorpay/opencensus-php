@@ -114,6 +114,14 @@ class Raven extends Base\Core
             $request['params']['provider'] = $input['provider'] === Gateway::GETSIMPL ? 'Simpl' : $input['provider'];
         }
 
+        $orgId = $merchant->getMerchantOrgId();
+
+        // appending orgId in stork context to be used on stork to select org specific sms gateway.
+        if (empty($orgId) === false)
+        {
+            $request['stork']['context']['org_id'] = $orgId;
+        }
+
         return $request;
     }
 
