@@ -6668,6 +6668,8 @@ ALTER TABLE merchant_business_details
 ALTER TABLE merchant_details
    ADD COLUMN iec_code VARCHAR(20) DEFAULT NULL;
 
+ALTER TABLE merchant_attributes modify value varchar(255) null;
+
 ALTER TABLE coupons ADD COLUMN is_internal tinyint(1) DEFAULT 0;
 
 ALTER TABLE coupons ADD COLUMN alerts json DEFAULT NULL;

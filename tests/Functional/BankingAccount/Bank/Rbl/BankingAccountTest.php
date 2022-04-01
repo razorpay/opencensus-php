@@ -6576,4 +6576,23 @@ class BankingAccountTest extends TestCase
             return $mail->hasTo('superadmin@razorpay.com');
         });
     }
+
+    public function testArchiveAccount()
+    {
+        $bankingAccount            = $this->createBankingAccount();
+        $bankingAccount            = $this->getDbLastEntity('banking_account');
+        $dataToReplace = [
+            'request' => [
+                'url'     => '/banking_account/' . $bankingAccount->getId() . '/archive',
+                'content' => [
+                    "channel"     => "rbl",
+                    "merchant_id" => $bankingAccount->getMerchantId()
+                ]
+            ]
+        ];
+        $this->ba->bankingAccountServiceAppAuth();
+        $response = $this->startTest($dataToReplace);
+
+        $this->assertArrayKeysExist($response, ["deactivated_merchant_attributes"]);
+    }
 }

@@ -474,6 +474,18 @@ class Repository extends Base\Repository
                     ->first();
     }
 
+    public function getBalancesByMerchantIdChannelAndAccountType(string $merchantId,
+                                                                 string $channel,
+                                                                 string $accountType){
+        return $this->newQuery()
+            ->where(Entity::CHANNEL, $channel)
+            ->where(Entity::ACCOUNT_TYPE, $accountType)
+            ->merchantIdAndType($merchantId, Type::BANKING)
+            ->get()
+            ->toArray();
+
+    }
+
     public function getMerchantsWithBalanceUpdatedInTimeRange($from, $to)
     {
         $startTime = microtime(true);
