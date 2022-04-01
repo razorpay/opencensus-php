@@ -78,16 +78,10 @@ class SalesForceService {
             {
                 $partnerId = $partner->getId();
 
-                $isExpEnabled = $merchantCore->isRazorxExperimentEnable($partnerId,
-                    RazorxTreatment::SEND_PARTNER_AND_SOURCE_DETAILS_TO_SALESFORCE);
+                // data to create opportunity for partnership leads on SF
+                $data = ['partner_id' => $partnerId, 'source_detail' => 'banking'];
 
-                if ($isExpEnabled === true)
-                {
-                    // data to create opportunity for partnership leads on SF
-                    $data = ['partner_id' => $partnerId, 'source_detail' => 'banking'];
-
-                    $payload = array_merge($payload, $data);
-                }
+                $payload = array_merge($payload, $data);
             }
         }
     }

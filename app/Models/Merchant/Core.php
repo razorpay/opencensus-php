@@ -7034,11 +7034,8 @@ class Core extends Base\Core
     {
         $merchantId = Account\Entity::SilentlyStripSign($merchantId);
 
-        $isExpEnabled = $this->isRazorxExperimentEnable($partnerId,
-            RazorxTreatment::SEND_PARTNER_AND_SOURCE_DETAILS_TO_SALESFORCE);
-
         // send only X leads
-        if (($product !== Product::BANKING) or ($isExpEnabled !== true))
+        if ($product !== Product::BANKING)
         {
             return;
         }

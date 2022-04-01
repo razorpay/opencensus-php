@@ -465,9 +465,6 @@ final class RazorxTreatment
     //Experiment for enabling dcc on various libraries
     const DCC_ON_INTERNATIONAL = 'dcc_on_international';
 
-    // experiment to send partner and source details to SF on each lead (sub-merchant) & opportunity creation
-    const SEND_PARTNER_AND_SOURCE_DETAILS_TO_SALESFORCE = 'send_partner_and_source_details_to_salesforce';
-
     // experiment to send uploaded signed form nach payment in fetch token api
     const SEND_NACH_SIGNED_FORM_TO_MERCHANT_IN_RESPONSE_AUTHLINK = 'send_nach_signed_form_to_merchant_in_response_authlink';
 
