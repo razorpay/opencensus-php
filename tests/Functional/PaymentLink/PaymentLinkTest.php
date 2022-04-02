@@ -853,9 +853,6 @@ class PaymentLinkTest extends TestCase
 
     public function testPaymentLinkPaymentRefundAfterNoStock()
     {
-        //TODO : Testcase has to be fixed
-        $this->markTestSkipped("Skipping Testcase, Need to be fixed");
-
         $data = $this->createPaymentLinkAndOrderForThat(
             ['id' => self::TEST_PL_ID,
                 PaymentLink\Entity::PAYMENT_PAGE_ITEMS => [
@@ -1389,9 +1386,6 @@ class PaymentLinkTest extends TestCase
 
     public function testZapierPaymentPagePaidWebhook()
     {
-        //TODO : Testcase has to be fixed
-        $this->markTestSkipped("Skipping Testcase, Need to be fixed");
-
         $data = $this->createPaymentLinkAndOrderForThat(['view_type' => 'page']);
 
         $paymentLink = $data['payment_link'];
@@ -1444,9 +1438,6 @@ class PaymentLinkTest extends TestCase
 
     public function testShiprocketPaymentPagePaidWebhookEnabled()
     {
-        //TODO : Testcase has to be fixed
-        $this->markTestSkipped("Skipping Testcase, Need to be fixed");
-
         $data = $this->createPaymentLinkAndOrderForThat(['view_type' => 'page']);
 
         $paymentLink = $data['payment_link'];

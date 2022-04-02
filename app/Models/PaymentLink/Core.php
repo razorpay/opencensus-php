@@ -664,7 +664,7 @@ class Core extends Base\Core
     {
         $env = $this->app['env'];
 
-        if ($env === Environment::FUNC or $env === Environment::AUTOMATION or $env === Environment::BVT)
+        if (Environment::isEnvironmentQA($env) || $env === Environment::TESTING)
         {
             $this->postPaymentCaptureAttemptProcessing($payment);
 
