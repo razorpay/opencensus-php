@@ -7317,4 +7317,24 @@ class Core extends Base\Core
 
         $this->createPartnerConfig($application, $merchant, $config);
     }
+
+    public function get1ccMerchantPreferences(Merchant\Entity $merchant): array
+    {
+        $data = ['mode' => $this->mode];
+
+        $this->fillEnabled1ccFeatures($merchant, $data);
+
+        return $data;
+    }
+
+    protected function fillEnabled1ccFeatures(Merchant\Entity $merchant, array &$data)
+    {
+        foreach (FeatureConstants::ONE_CC_FEATURES as $feature)
+        {
+            if ($merchant->isFeatureEnabled($feature) === true)
+            {
+                $data['features'][$feature] = true;
+            }
+        }
+    }
 }

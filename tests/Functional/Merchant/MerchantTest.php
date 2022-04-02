@@ -15304,5 +15304,25 @@ The same has been enabled for the account.
         $this->assertMerchantTransactionCountForLastMonthFromCache($merchantId, 3);
     }
 
+    public function test1ccPreferencesForNon1ccMerchant()
+    {
+        $this->ba->privateAuth();
 
+        $this->startTest();
+    }
+
+    public function test1ccPreferencesFor1ccMerchant()
+    {
+        $this->fixtures->merchant->addFeatures(['one_click_checkout']);
+
+        $this->fixtures->merchant->addFeatures(['one_cc_ga_analytics']);
+
+        $this->fixtures->merchant->addFeatures(['one_cc_fb_analytics']);
+
+        $this->fixtures->merchant->addFeatures(['one_cc_merchant_dashboard']);
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
 }

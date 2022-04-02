@@ -11998,4 +11998,36 @@ return [
             ],
         ],
     ],
+    'test1ccPreferencesFor1ccMerchant' => [
+        'request' => [
+            'url' => '/merchant/1cc_preferences',
+            'method' => 'get',
+            'content' => [
+                'mode'     => 'test',
+                'features' => [
+                    'one_click_checkout'        => true,
+                    'one_cc_ga_analytics'       => true,
+                    'one_cc_fb_analytics'       => true,
+                    'one_cc_merchant_dashboard' => true,
+                ],
+            ],
+        ],
+        'response' => [
+            'content'     => [],
+            'status_code' => 200
+        ],
+    ],
+    'test1ccPreferencesForNon1ccMerchant' => [
+        'request' => [
+            'url' => '/merchant/1cc_preferences',
+            'method' => 'get',
+            'content' => [
+                'mode' => 'test',
+            ],
+        ],
+        'response' => [
+            'content'     => [],
+            'status_code' => 200
+        ],
+    ],
 ];

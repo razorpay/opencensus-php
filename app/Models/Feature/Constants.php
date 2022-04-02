@@ -1309,6 +1309,15 @@ class Constants
         self::SHIELD_CYBERSOURCE_ROLLOUT,
     ];
 
+    const ONE_CC_FEATURES = [
+        self::ONE_CLICK_CHECKOUT,
+        self::ONE_CC_MERCHANT_DASHBOARD,
+        self::ONE_CC_COUPONS,
+        self::ONE_CC_MANDATORY_LOGIN,
+        self::ONE_CC_GA_ANALYTICS,
+        self::ONE_CC_FB_ANALYTICS,
+    ];
+
     // TODO: Use this instead of allFeatures once in final code change pr
     /**
      * This map defines the feature's value when it is added through an incoming request (add/remove feature request).

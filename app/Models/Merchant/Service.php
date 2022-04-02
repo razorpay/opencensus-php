@@ -9333,4 +9333,13 @@ class Service extends Base\Service
     {
         return Constants::MERCHANT_SEGMENT_TYPE . ':' . $merchantId;
     }
+
+    public function get1ccMerchantPreferences(): array
+    {
+        $merchant = $this->merchant;
+
+        $preferences = (new Core)->get1ccMerchantPreferences($merchant);
+
+        return $preferences;
+    }
 }

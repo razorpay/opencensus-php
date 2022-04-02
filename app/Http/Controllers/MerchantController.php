@@ -2944,6 +2944,13 @@ class MerchantController extends Controller
         return (new Merchant\OneClickCheckout\Config\Service())->get1ccConfig();
     }
 
+    public function get1ccMerchantPreferences()
+    {
+        $data = $this->service()->get1ccMerchantPreferences();
+
+        return ApiResponse::json($data);
+    }
+
     public function getFUXDetailsForPartner()
     {
         $response = Tracer::inspan(['name' => HyperTrace::GET_FUX_DETAILS_FOR_PARTNER_SERVICE], function() {
