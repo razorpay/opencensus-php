@@ -4668,15 +4668,17 @@ class Service extends Base\Service
 
     public function reviveOrderViaPL($id)
     {
+        $payment_id = Payment\Entity::getSign().Payment\Entity::getDelimiter().$id;
+
         try {
-            $payment = $this->repo->payment->findByPublicId($id);
+            $payment = $this->repo->payment->findByPublicId($payment_id);
         } catch (\Throwable $e) {
             $this->trace->traceException(
                 $e,
                 Trace::ERROR,
                 TraceCode::FAILED_PAYMENT_PL_CREATION_FAILED,
                 [
-                    'payment_id'         => $id
+                    'payment_id'         => $payment_id
                 ]
             );
             return false;
