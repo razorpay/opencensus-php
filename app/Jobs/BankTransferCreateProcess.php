@@ -4,8 +4,10 @@ namespace RZP\Jobs;
 
 use App;
 
+use Carbon\Carbon;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankTransfer;
+use RZP\Models\VirtualAccount\Metric;
 use RZP\Error\PublicErrorDescription;
 
 class BankTransferCreateProcess extends Job
@@ -35,9 +37,13 @@ class BankTransferCreateProcess extends Job
             ]
         );
 
+        $errorMessage = null;
+
         try
         {
             $bankTransferRequest = $this->getBankTransferRequestEntity();
+
+            $bankTransferCreatedAt = $bankTransferRequest->getCreatedAt();
 
             $this->trace->info(
                 TraceCode::BANK_TRANSFER_PROCESS_QUEUE,
@@ -69,9 +75,16 @@ class BankTransferCreateProcess extends Job
                     'bank_transfer_request_id' => $this->bankTransferRequestId,
                 ]
             );
+
+            $errorMessage = $ex->getMessage();
         }
         finally
         {
+            (new Metric())->pushQueueTimeMetrics($bankTransferCreatedAt,
+                                                 Carbon::now()->getTimestamp(),
+                                                 $bankTransferRequest->getGateway(),
+                                                 $errorMessage);
+
             if ($isDeleteFromQueue === true)
             {
                 $this->delete();

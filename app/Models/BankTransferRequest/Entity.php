@@ -243,6 +243,11 @@ class Entity extends Base\PublicEntity
 
     // -------------------- End Setters --------------------
 
+    public function getCreatedAt()
+    {
+        return $this->getAttribute(self::CREATED_AT);
+    }
+
     public function getTransactionIdAttribute()
     {
         return $this->getAttribute(self::UTR);

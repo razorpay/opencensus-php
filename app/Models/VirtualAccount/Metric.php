@@ -7,19 +7,25 @@ use RZP\Models\Base;
 
 class Metric extends Base\Core
 {
-    const VIRTUAL_ACCOUNT_CREATE_SUCCESS        = 'virtual_account_create_success';
-    const VIRTUAL_ACCOUNT_CREATE_FAILED         = 'virtual_account_create_failed';
-    const VIRTUAL_ACCOUNT_CLOSE_SUCCESS         = 'virtual_account_close_success';
-    const VIRTUAL_ACCOUNT_CLOSE_FAILED          = 'virtual_account_close_failed';
-    const VIRTUAL_ACCOUNT_PAYMENT               = 'virtual_account_payment';
-    const VIRTUAL_ACCOUNT_REFUND                = 'virtual_account_refund';
-    const VIRTUAL_ACCOUNT_PAYMENT_SQS_PUSH      = 'virtual_account_payment_sqs_push';
+    const VIRTUAL_ACCOUNT_CREATE_SUCCESS          = 'virtual_account_create_success';
+    const VIRTUAL_ACCOUNT_CREATE_FAILED           = 'virtual_account_create_failed';
+    const VIRTUAL_ACCOUNT_CLOSE_SUCCESS           = 'virtual_account_close_success';
+    const VIRTUAL_ACCOUNT_CLOSE_FAILED            = 'virtual_account_close_failed';
+    const VIRTUAL_ACCOUNT_PAYMENT                 = 'virtual_account_payment';
+    const VIRTUAL_ACCOUNT_REFUND                  = 'virtual_account_refund';
+    const VIRTUAL_ACCOUNT_PAYMENT_SQS_PUSH        = 'virtual_account_payment_sqs_push';
+    const VIRTUAL_ACCOUNT_PAYMENT_PROCESSING_TIME = 'virtual_account_payment_processing_time';
 
     const LABEL_TRACE_CODE                  = 'code';
     const LABEL_HAS_BANK_ACCOUNT            = 'has_bank_account';
     const LABEL_HAS_QR_CODE                 = 'has_qr_code';
     const LABEL_HAS_VPA                     = 'has_vpa';
     const LABEL_MERCHANT_ID                 = 'merchant_id';
+
+    const LABEL_GATEWAY_REQUEST_CREATED_AT      = 'callback_request_created_at';
+    const LABEL_GATEWAY_REQUEST_COMPLETED_AT    = 'callback_request_completed_at';
+    const LABEL_GATEWAY                         = 'gateway';
+    const LABEL_ERROR_MESSAGE                   = 'error_message';
 
     protected function getDefaultDimensions(array $input): array
     {
@@ -133,6 +139,22 @@ class Metric extends Base\Core
 
         $this->trace->count(
             Metric::VIRTUAL_ACCOUNT_PAYMENT_SQS_PUSH,
+            $dimensions
+        );
+    }
+
+    public function pushQueueTimeMetrics(int $created_at, int $completed_at, string $gateway, string $errorMessage = null)
+    {
+        $dimensions = [
+            Metric::LABEL_GATEWAY_REQUEST_CREATED_AT      => $created_at,
+            Metric::LABEL_GATEWAY_REQUEST_COMPLETED_AT    => $completed_at,
+            Metric::LABEL_GATEWAY                         => $gateway,
+            Metric::LABEL_ERROR_MESSAGE                   => $errorMessage,
+        ];
+
+        $this->trace->histogram(
+            Metric::VIRTUAL_ACCOUNT_PAYMENT_PROCESSING_TIME,
+            $completed_at - $created_at,
             $dimensions
         );
     }
