@@ -19,6 +19,8 @@ class Paylater extends Service
     const GATEWAY_REFERENCE_NUMBER    = 'gateway_reference_number';
     const PROVIDER_REFERENCE_NUMBER   = 'provider_reference_number';
     const ADDITIONAL_DATA             = 'additional_data';
+    const TOKEN                       = 'token';
+
 
     public function action(string $method, string $gateway, string $action, array $input)
     {
@@ -126,10 +128,15 @@ class Paylater extends Service
 
     protected function processAuthorizeResponse($response)
     {
+        if (isset($response[RESPONSE::DATA]) === false)
+        {
+            return null;
+        }
         if (isset($response[RESPONSE::DATA][RESPONSE::NEXT]) === true)
         {
             return $response[RESPONSE::DATA][RESPONSE::NEXT][RESPONSE::REDIRECT];
         }
+
         // for s2s flows
         return [
             "url"       => $response["data"][RESPONSE::OTP_SUBMIT_URL],
@@ -221,7 +228,9 @@ class Paylater extends Service
 
         $additionData = $this->getAdditionalData($response);
 
-        return array_merge($acquirerData, $additionData);
+        $tokenData = $this->getTokenData($response);
+
+        return array_merge($acquirerData, $additionData, $tokenData);
     }
 
     protected function getAdditionalData($response): array
@@ -229,6 +238,16 @@ class Paylater extends Service
         if (isset($response[Response::DATA][self::ADDITIONAL_DATA]) === true) {
             return [
                 'additional_data' => $response[Response::DATA][self::ADDITIONAL_DATA]
+            ];
+        }
+        return [];
+    }
+
+    protected function getTokenData($response): array
+    {
+        if (isset($response[Response::DATA][self::TOKEN]) === true) {
+            return [
+                'token' => $response[Response::DATA][self::TOKEN]
             ];
         }
         return [];

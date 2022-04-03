@@ -9,6 +9,7 @@ use RZP\Exception;
 use RZP\Models\Bank;
 use RZP\Error\ErrorCode;
 use RZP\Models\Payment\Method;
+use RZP\Models\Payment\Processor\PayLater;
 use RZP\Models\Payment\Processor\Wallet;
 use RZP\Models\PaperMandate\Constants as PaperMandateConstants;
 use RZP\Models\Merchant;
@@ -40,13 +41,13 @@ class Validator extends Base\Validator
     ];
 
     protected static $createRules = [
-        Entity::METHOD              => 'required|in:card,emandate,wallet,nach,upi',
+        Entity::METHOD              => 'required|in:card,emandate,wallet,nach,upi,paylater',
         Entity::CARD_ID             => 'required_only_if:method,card|alpha_num|size:14',
         Entity::BANK                => 'required_only_if:method,emandate,nach|custom',
         Entity::VPA_ID              => 'required_only_if:method,upi|alpha_num|size:14',
         // We generate it if max_amount is not present and method is emandate or nach or upi or card
         Entity::MAX_AMOUNT          => 'sometimes_if:method,emandate,nach,upi,card',
-        Entity::WALLET              => 'required_only_if:method,wallet|custom',
+        Entity::WALLET              => 'required_only_if:method,wallet,paylater|custom',
         Entity::AUTH_TYPE           => 'required_only_if:method,emandate,nach|string|filled|in:netbanking,aadhaar,debitcard,physical,migrated',
         Entity::RECURRING           => 'sometimes|boolean',
         Entity::GATEWAY_TOKEN       => 'required_if:auth_type,migrated|string',
@@ -161,7 +162,7 @@ class Validator extends Base\Validator
 
     protected function validateWallet($attribute, $value)
     {
-        if (Wallet::exists($value) === false)
+        if ((Wallet::exists($value) === false) and (PayLater::exists($value) === false))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_WALLET_NOT_SUPPORTED);

@@ -3824,6 +3824,11 @@ class Gateway
     {
         $gateway = $payment->getGateway();
 
+        if ($gateway === Method::PAYLATER)
+        {
+            $gateway = $payment->getWallet();
+        }
+
         // We support power wallet flow if we can topup and autodebit.
         // Generally, power wallets allow topup of requests.
         if (self::isAutoDebitPowerWallet($gateway) === true)

@@ -144,6 +144,14 @@ class Core extends Base\Core
         // and if the association is done before the build, the
         // association will get overridden as null.
         //
+
+
+        //We need to set wallet before since for lazypay we want to encrypt gateway_token
+        if (isset($input[Token\Entity::WALLET]) === true)
+        {
+            $token->setWallet($input[Token\Entity::WALLET]);
+        }
+
         $token->build($input);
 
         if ($card !== null)
@@ -1112,6 +1120,20 @@ class Core extends Base\Core
     }
 
     protected function validateExistingTokenWallet($existingTokens, $newToken)
+    {
+        foreach ($existingTokens as $token)
+        {
+            if (($token->getWallet() === $newToken->getWallet()) and
+                ($token->terminal() === $newToken->terminal()))
+            {
+                return $token;
+            }
+        }
+
+        return null;
+    }
+
+    protected function validateExistingTokenPaylater($existingTokens, $newToken)
     {
         foreach ($existingTokens as $token)
         {

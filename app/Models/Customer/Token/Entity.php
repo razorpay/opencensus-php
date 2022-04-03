@@ -497,12 +497,55 @@ class Entity extends Base\PublicEntity
 
     public function getGatewayToken()
     {
+        if ($this->getWallet() === Payment\Processor\PayLater::LAZYPAY)
+        {
+            $encryptedToken = $this->getAttribute(self::GATEWAY_TOKEN);
+
+            // We want to encrypt token for lazypay
+            return Crypt::decrypt($encryptedToken, true, $this);
+        }
+
         return $this->getAttribute(self::GATEWAY_TOKEN);
     }
 
     public function setGatewayToken($gatewayToken)
     {
+        if ($this->getWallet() === Payment\Processor\PayLater::LAZYPAY)
+        {
+            // We want to encrypt token for lazypay
+            $encryptedToken = Crypt::encrypt($gatewayToken, true, $this);
+
+            return $this->setAttribute(self::GATEWAY_TOKEN, $encryptedToken);
+        }
+
         return $this->setAttribute(self::GATEWAY_TOKEN, $gatewayToken);
+    }
+
+    protected function setGatewayTokenAttribute($gatewayToken)
+    {
+        if ($this->getWallet() === Payment\Processor\PayLater::LAZYPAY)
+        {
+            // We want to encrypt token for lazypay
+            $encryptedToken = Crypt::encrypt($gatewayToken, true, $this);
+
+            $this->attributes[self::GATEWAY_TOKEN] =  $encryptedToken;
+            return;
+        }
+
+        $this->attributes[self::GATEWAY_TOKEN] =  $gatewayToken;
+    }
+
+    public function getGatewayTokenAttribute()
+    {
+        if ($this->getWallet() === Payment\Processor\PayLater::LAZYPAY)
+        {
+            $encryptedToken = $this->attributes[self::GATEWAY_TOKEN];
+
+            // We want to decrypt token for lazypay
+            return Crypt::decrypt($encryptedToken, true, $this);
+        }
+
+        return $this->attributes[self::GATEWAY_TOKEN] ?? null;
     }
 
     public function getGatewayToken2()
@@ -728,6 +771,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::ACKNOWLEDGED_AT, $timestamp);
     }
 
+    public function setWallet($wallet)
+    {
+        $this->setAttribute(self::WALLET, $wallet);
+    }
+
     public function setUsedAt($timestamp)
     {
         $this->setAttribute(self::USED_AT, $timestamp);
@@ -872,7 +920,8 @@ class Entity extends Base\PublicEntity
     protected function setPublicExpiredAtAttribute(array & $array)
     {
         if( ($this->getMethod() !== Payment\Method::EMANDATE) and
-            ($this->getMethod() !== Payment\Method::CARD) )
+            ($this->getMethod() !== Payment\Method::CARD) and
+            ($this->getWallet() !== Payment\Processor\PayLater::LAZYPAY))
         {
             unset($array[self::EXPIRED_AT]);
         }
