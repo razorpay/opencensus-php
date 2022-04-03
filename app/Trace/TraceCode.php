@@ -6501,6 +6501,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SHOPIFY_1CC_PLACE_ORDER_JOB                         = 'SHOPIFY_1CC_PLACE_ORDER_JOB';
     const SHOPIFY_1CC_PLACE_ORDER_JOB_EXCEPTION               = 'SHOPIFY_1CC_PLACE_ORDER_JOB_EXCEPTION';
     const SHOPIFY_1CC_DISPATCH_JOB_FAILED                     = 'SHOPIFY_1CC_DISPATCH_JOB_FAILED';
+    const SHOPIFY_1CC_UPDATE_CHECKOUT                         = 'SHOPIFY_1CC_UPDATE_CHECKOUT';
 
     const EMAIL_LOGIN_OTP_REDIS_ERROR                         = 'EMAIL_LOGIN_OTP_REDIS_ERROR';
     const EMAIL_VERIFICATION_OTP_REDIS_ERROR                  = 'EMAIL_VERIFICATION_OTP_REDIS_ERROR';

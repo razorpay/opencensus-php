@@ -3399,6 +3399,7 @@ class Route
 
         // 1 click checkout shopify integration
         '1cc_shopify_checkout'                      => ['post',       '1cc/shopify/checkout',                                  'OneClickCheckoutController@shopifyCreateCheckout'                ],
+        '1cc_shopify_checkout_update'               => ['patch',      '1cc/shopify/checkout',                                  'OneClickCheckoutController@shopifyUpdateCheckout'                ],
         '1cc_shopify_complete'                      => ['post',       '1cc/shopify/complete',                                  'OneClickCheckoutController@shopifyCompleteCheckout'                ],
         '1cc_shopify_oauth_redirect'                => ['get',        '1cc/shopify/oauth/redirect',                              'OneClickCheckoutController@shopifyOAuthRedirect'                ],
         '1cc_shopify_oauth_callback'                => ['get',        '1cc/shopify/oauth/callback',                              'OneClickCheckoutController@shopifyOAuthRedirect'                ],
@@ -3558,6 +3559,7 @@ class Route
         'states_by_country',
         'country_fetch',
         'state_fetch',
+        '1cc_shopify_checkout_update',
     ];
 
     public static $device = [

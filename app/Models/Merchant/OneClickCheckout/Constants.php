@@ -37,6 +37,9 @@ class Constants
     const ADMIN_REST                        = 'admin_rest';
     const ADMIN_GRAPHQL                     = 'admin_graphql';
 
+    // entities
+    const ORDER_ID                          = 'order_id';
+
     const SHOPIFY_API_TYPES = [
         self::STOREFRONT,
         self::ADMIN_REST,

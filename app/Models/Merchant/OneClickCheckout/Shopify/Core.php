@@ -13,6 +13,7 @@ use RZP\Models\Merchant\OneClickCheckout;
 use RZP\Models\Merchant\OneClickCheckout\AuthConfig;
 use RZP\Models\Payment\Method as PaymentMethod;
 use RZP\Models\Payment\Status as PaymentStatus;
+use RZP\Models\Order\OrderMeta\Type as OrderMetaType;
 
 class Core extends Base\Core
 {
@@ -245,8 +246,11 @@ class Core extends Base\Core
         return $client->sendStorefrontRequest(json_encode($graphqlQuery));
     }
 
+    // TODO: check update condition to handle concurrency issues when checkoutId changes
     public function updateCheckoutEmail(string $checkoutId, string $email)
     {
+        $start = millitime();
+
         $client = $this->getShopifyClientByMerchant();
 
         $mutation = (new Mutations)->getcheckoutEmailUpdateMutation();
@@ -255,14 +259,13 @@ class Core extends Base\Core
             'query' => $mutation,
             'variables' => [
                 'checkoutId' => $checkoutId,
-                'email' => $email,
+                'email'      => $email,
             ],
         ];
 
         $this->trace->info(
             TraceCode::SHOPIFY_1CC_UPDATE_EMAIL_BODY,
-            ['checkoutId' => $checkoutId]
-        );
+            ['checkoutId' => $checkoutId, 'time' => millitime() - $start]);
 
         return $client->sendStorefrontRequest(json_encode($graphqlQuery));
     }
@@ -284,18 +287,22 @@ class Core extends Base\Core
     public function updateShippingAddress($checkoutId, $address)
     {
         $client = $this->getShopifyClientByMerchant();
+
         $mutation = (new Mutations)->getUpdateShippingAddressMutation();
 
         // name and address1 are compulsory fields but we don't collect it from
         // user at this time so we put default value
+        // province field can take state code or full state name depending on what is passed
         $shippingAddress = [
-            'firstName' => 'name',
-            'lastName'  => 'not entered',
-            'address1'  => 'address not entered',
+            'firstName' => $address['first_name'] ?? 'name',
+            'lastName'  => $address['last_name']  ?? 'not entered',
+            'address1'  => $address['line1']      ?? 'address not entered',
+            'address2'  => $address['line2']      ?? '',
             'country'   => $address['country'],
-            'province'  => $address['state_code'],
+            'province'  => $address['state_code'] ?? $address['state'],
             'zip'       => $address['zipcode'],
             'city'      => $address['city'],
+            'phone'     => $address['contact'] ?? '',
         ];
 
         $graphqlQuery = [
@@ -308,8 +315,7 @@ class Core extends Base\Core
 
         $this->trace->info(
             TraceCode::SHOPIFY_1CC_UPDATE_SHIPPING_BODY,
-            ['checkoutId' => $checkoutId, 'shippingAddress' => $shippingAddress]
-        );
+            ['checkoutId' => $checkoutId, 'shippingAddress' => $shippingAddress]);
 
         return $client->sendStorefrontRequest(json_encode($graphqlQuery));
     }
@@ -459,14 +465,15 @@ class Core extends Base\Core
         );
     }
 
-    public function verifyHmacSignature(array $input)
+    // TODO: Split this function
+    public function verifyHmacSignature(array $input, bool $useKeyId = true)
     {
         $config = (new Core)->getShopifyAuthByMerchant();
 
         $secret = $config[OneClickCheckout\Constants::API_SECRET];
 
         $query = ''
-            .'key_id=' . $input['key']
+            . ($useKeyId === true ? 'key_id=' . $input['key'] : '')
             .'path_prefix=' . $input['path_prefix']
             .'shop=' . $input['shop']
             .'timestamp=' . $input['timestamp']
@@ -476,7 +483,7 @@ class Core extends Base\Core
 
         if ($hmac !== $input['signature'])
         {
-            $this->trace->info(
+            $this->trace->error(
                 TraceCode::SHOPIFY_1CC_HMAC_VALIDATION_FAILED,
                 [
                     'query'     => $query,
@@ -487,7 +494,6 @@ class Core extends Base\Core
             );
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
         }
-        return;
     }
 
     public function canShopifyOrderBePlaced($order, $fromShopifyApi)
@@ -812,5 +818,84 @@ class Core extends Base\Core
         }
 
         throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
+    }
+
+    public function updateCheckout(array $input)
+    {
+        $orderId = $input['order_id'];
+
+        $order = $this->repo->order->findByPublicIdAndMerchant($orderId, $this->merchant);
+
+        $customerDetails = $this->getCustomerDetailsFromOrderMeta($order);
+
+        if (empty($customerDetails) === true)
+        {
+            $this->trace->info(
+                TraceCode::SHOPIFY_1CC_UPDATE_CHECKOUT,
+                ['input' => $input, 'status' => 'not_updated']);
+
+            return;
+        }
+
+        $checkoutId = $this->getCheckoutIdFromOrder($order);
+
+        $checkout = $this->getShopifyCheckout($checkoutId);
+
+        $this->updateCheckoutEmail($checkoutId, $customerDetails['email']);
+
+        // overwrite contact as we want to link the abandoned Shopify checkout contact
+        // with the contact used to initiate Rzp checkout
+        // This is imp for WhatsApp and SMS retargeting
+        $customerDetails['shipping_address']['contact'] = $customerDetails['contact'];
+
+        $this->updateShippingAddress($checkoutId, $this->formatShippingAddressForCheckout($customerDetails['shipping_address']));
+
+        $this->trace->info(
+            TraceCode::SHOPIFY_1CC_UPDATE_CHECKOUT,
+            ['input' => $input, 'status' => 'updated']);
+    }
+
+    protected function formatShippingAddressForCheckout($shippingAddress): array
+    {
+        $splitNames = $this->splitName($shippingAddress['name']);
+
+        unset($shippingAddress['name']);
+
+        return array_merge(
+            $shippingAddress,
+            [
+                'first_name' => $splitNames[0],
+                'last_name'  => $splitNames[1],
+                'line2'      => $shippingAddress['line2'] ?? ''
+            ]);
+    }
+
+    protected function getCustomerDetailsFromOrderMeta($order): array
+    {
+        $meta1cc = [];
+
+        foreach ($order->orderMetas as $orderMeta)
+        {
+            if ($orderMeta->getType() === OrderMetaType::ONE_CLICK_CHECKOUT)
+            {
+                $meta1cc = $orderMeta->getValue();
+
+                break;
+            }
+        }
+
+        return $meta1cc['customer_details'] ?? [];
+    }
+
+    protected function getCheckoutIdFromOrder($order): string
+    {
+        return $order->toArrayPublic()['notes']['storefront_id'];
+    }
+
+    protected function getShopifyCheckout(string $checkoutId): array
+    {
+        $checkout = json_decode($this->getOrderDetailsFromCheckout($checkoutId), true);
+
+        return $checkout['data']['node'] ?? [];
     }
 }

@@ -83,6 +83,30 @@ class Service extends Base\Service
         ];
     }
 
+    public function updateCheckout(array $input): array
+    {
+        try
+        {
+            (new Validator)->setStrictFalse()->validateInput(Validator::UPDATE_CHECKOUT, $input);
+
+            (new Core)->verifyHmacSignature($input, false);
+
+            (new Core)->updateCheckout($input);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->error(
+                TraceCode::SHOPIFY_1CC_API_ERROR,
+                [
+                    'type'  => 'update_checkout_failed',
+                    'input' => $input,
+                    'error' => $e->getMessage()
+                ]);
+        }
+
+        return [];
+    }
+
     public function completeCheckoutWithLock(array $input, bool $fromShopifyApi = true): array
     {
         $key = (new Core)->getMutexKeyForOrder($input['razorpay_order_id']);
