@@ -11922,6 +11922,7 @@ class Route
             'invoice_send_notification_proxy',
             'virtual_account_create_for_internal',
             'payment_links_sign_payload_internal',
+            'payment_refund',
         ],
 
         'mandate_hq' => [
