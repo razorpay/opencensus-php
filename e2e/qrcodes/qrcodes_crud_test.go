@@ -40,6 +40,18 @@ func (s *QrCodesAPITestSuite) TestQrCodeClose() {
 	})
 }
 
+func (s *QrCodesAPITestSuite) TestQrCodeFetch() {
+	for _, scenario := range FetchQrCodesTests {
+		s.Run(scenario.description, func() {
+			for _, qrCreateRequest := range scenario.createRequests {
+				CreateQrCode(s.T(), qrCreateRequest)
+			}
+			qrFetchResponse := FetchQrCode(s.T(), scenario.fetchRequest)
+			verifyFetchQrCodeResponse(s.T(), qrFetchResponse, scenario.fetchResponse)
+		})
+	}
+}
+
 func verifyErrorResponse(t *testing.T, expected ErrorResponse, actual ErrorResponse) {
 	assert.Equal(t, expected.Error.Code, actual.Error.Code)
 	assert.Equal(t, expected.Error.Description, actual.Error.Description)
@@ -56,6 +68,10 @@ func verifyCreatedQrCode(t *testing.T, req QrCodeCreateRequest, res QrCodeCreate
 	assert.Equal(t, req.Description, res.Description)
 	assert.Equal(t, "active", res.Status)
 	assert.Equal(t, req.CustomerId, res.CustomerId)
+}
+
+func verifyFetchQrCodeResponse(t *testing.T, actual QrCodeFetchResponse, expected QrCodeFetchResponse) {
+	assert.Equal(t, actual.Count, expected.Count)
 }
 
 func TestQrCodeAPI(t *testing.T) {

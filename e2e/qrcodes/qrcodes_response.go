@@ -17,3 +17,9 @@ type QrCodeCreateResponse struct {
 	FixedAmount            bool   `json:"fixed_amount"`
 	PaymentAmount          int64  `json:"payment_amount"`
 }
+
+type QrCodeFetchResponse struct {
+	Entity string                 `json:"entity"`
+	Count  int                    `json:"count"`
+	Items  []QrCodeCreateResponse `json:"items"`
+}

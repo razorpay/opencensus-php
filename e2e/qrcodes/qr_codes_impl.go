@@ -35,7 +35,8 @@ func CreateQrCodeNegative(t *testing.T, req QrCodeCreateRequest) ErrorResponse {
 
 func CloseQrCodePositive(t *testing.T, qrCodeId string) QrCodeCreateResponse {
 	var qrCodeCreateResponse QrCodeCreateResponse
-	obj := qrCodesHost.POST("/v1/payments/qr_codes/" + qrCodeId + "/close").
+	Initialize(t)
+	obj := qrCodesHost.POST("/v1/payments/qr_codes/"+qrCodeId+"/close").
 		WithBasicAuth(e2e.Config.VirtualAccount.Username, e2e.Config.VirtualAccount.Password).
 		Expect().
 		Status(http.StatusOK).Body()
@@ -45,10 +46,24 @@ func CloseQrCodePositive(t *testing.T, qrCodeId string) QrCodeCreateResponse {
 
 func CloseQrCodeNegative(t *testing.T, qrCodeId string) ErrorResponse {
 	var errorResponse ErrorResponse
-	obj := qrCodesHost.POST("/v1/payments/qr_codes/" + qrCodeId + "/close").
+	Initialize(t)
+	obj := qrCodesHost.POST("/v1/payments/qr_codes/"+qrCodeId+"/close").
 		WithBasicAuth(e2e.Config.VirtualAccount.Username, e2e.Config.VirtualAccount.Password).
 		Expect().
 		Status(http.StatusBadRequest).Body()
 	json.Unmarshal([]byte(obj.Raw()), &errorResponse)
 	return errorResponse
+}
+
+func FetchQrCode(t *testing.T, req QrCodeFetchRequest) QrCodeFetchResponse {
+	var qrCodeFetchResponse QrCodeFetchResponse
+	Initialize(t)
+	obj := qrCodesHost.GET("/v1/payments/qr_codes").
+		WithBasicAuth(e2e.Config.VirtualAccount.Username, e2e.Config.VirtualAccount.Password).
+		WithJSON(req).
+		Expect().
+		Status(http.StatusOK).
+		Body()
+	json.Unmarshal([]byte(obj.Raw()), &qrCodeFetchResponse)
+	return qrCodeFetchResponse
 }

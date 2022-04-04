@@ -10,3 +10,12 @@ type QrCodeCreateRequest struct {
 	PaymentAmount int64  `json:"payment_amount,omitempty"`
 	CustomerId    string `json:"customer_id,omitempty"`
 }
+
+type QrCodeFetchRequest struct {
+	Name            string `json:"name,omitempty"`
+	CustomerId      string `json:"customer_id,omitempty"`
+	Status          string `json:"status,omitempty"`
+	CustomerName    string `json:"cust_name,omitempty"`
+	CustomerEmail   string `json:"cust_email,omitempty"`
+	CustomerContact string `json:"cust_contact,omitempty"`
+}

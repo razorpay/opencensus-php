@@ -46,7 +46,7 @@ var CreateQrCodesPositiveTests = []struct {
 			Type:          "upi_qr",
 			Name:          "Test UPI QR",
 			Description:   "This is a test QR code",
-			CustomerId:    "cust_Iwf3ydmuCV3y8R",
+			CustomerId:    "cust_CuJcM0RDVAylfm",
 			FixedAmount:   true,
 			PaymentAmount: 1000,
 			CloseBy:       1681615838,
@@ -140,6 +140,58 @@ var CreateQrCodesNegativeTests = []struct {
 				Step:        "payment_initiation",
 				Reason:      "input_validation_failed",
 			},
+		},
+	},
+}
+
+var FetchQrCodesTests = []struct {
+	description    string
+	createRequests []QrCodeCreateRequest
+	fetchRequest   QrCodeFetchRequest
+	fetchResponse  QrCodeFetchResponse
+}{
+	{
+		description:    "Search by name",
+		createRequests: []QrCodeCreateRequest{},
+		fetchRequest: QrCodeFetchRequest{
+			Name: "megastore",
+		},
+		fetchResponse: QrCodeFetchResponse{
+			Entity: "collection",
+			Count:  10,
+		},
+	},
+	{
+		description:    "Search by Customer name",
+		createRequests: []QrCodeCreateRequest{},
+		fetchRequest: QrCodeFetchRequest{
+			CustomerName: "Gaurav",
+		},
+		fetchResponse: QrCodeFetchResponse{
+			Entity: "collection",
+			Count:  10,
+		},
+	},
+	{
+		description:    "Search by Customer contact",
+		createRequests: []QrCodeCreateRequest{},
+		fetchRequest: QrCodeFetchRequest{
+			CustomerContact: "9123456780",
+		},
+		fetchResponse: QrCodeFetchResponse{
+			Entity: "collection",
+			Count:  10,
+		},
+	},
+	{
+		description:    "Search by Customer email",
+		createRequests: []QrCodeCreateRequest{},
+		fetchRequest: QrCodeFetchRequest{
+			CustomerEmail: "gaurav.kumar@example.com",
+		},
+		fetchResponse: QrCodeFetchResponse{
+			Entity: "collection",
+			Count:  10,
 		},
 	},
 }
