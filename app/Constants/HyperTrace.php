@@ -138,6 +138,19 @@ class HyperTrace
     const CREATE_ADDITIONAL_USER_OR_FETCH_IF_APPLICABLE        = 'create_additional_user_or_fetch_if_applicable';
     const GET_FUX_DETAILS_FOR_PARTNER_SERVICE                  = 'fetch_partner_first_user_experience.service';
 
+    const CREATE_OAUTH_TOKEN                                   = 'create_oauth_token.service';
+    const CREATE_OAUTH_TOKEN_CORE                              = 'create_oauth_token.core';
+    const CREATE_OAUTH_MIGRATION_TOKEN                         = 'create_oauth_migration_token';
+    const ADD_MAPPING_FOR_OAUTH_APP                            = 'add_mapping_for_oauth_app';
+    const ASSIGN_S2S_IF_APPLICABLE                             = 'assign_s2s_if_applicable';
+    const FETCH_FEATURE                                        = 'fetch_feature';
+    const SAVE_AND_SYNC_FEATURE                                = 'save_and_sync_feature';
+    const APPROVE_FEATURE_ONBOARDING_REQUEST                   = 'approve_feature_onboarding_request';
+    const SKIP_SUBM_ONBOARDING_COMMUNICATION                   = 'skip_subm_onboarding_communication';
+    const CREATE_ACCESS_MAP_CORE                               = 'create_access_map.core';
+    const GET_OAUTH_TOKENS                                     = 'get_oauth_tokens';
+    const REVOKE_OAUTH_TOKEN                                   = 'revoke_oauth_token';
+
     /* Partner Type Update  */
     const CREATE_PARTNER_ACTIVATION                            = 'create_partner_activation';
     const CREATE_DEFAULT_FEATURE_FOR_PARTNER                   = 'default_feature_for_partner';
@@ -187,4 +200,5 @@ class HyperTrace
 
     const GET_MERCHANT_DETAILS_CORE                            = 'get_merchant_details.core';
     const CREATE_MERCHANT_DETAILS_CORE                         = 'create_merchant_details.core';
+
 }

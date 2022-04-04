@@ -6,10 +6,12 @@ use Request;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Trace\Tracer;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Product;
 use RZP\Models\User as User;
+use RZP\Constants\HyperTrace;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 
 
@@ -32,7 +34,10 @@ class Service extends Base\Service
     {
         $input = Request::all();
 
-        $entity = $this->core()->create($input);
+        $entity = Tracer::inspan(['name' => HyperTrace::CREATE_OAUTH_TOKEN_CORE], function () use($input) {
+
+            $this->core()->create($input);
+        });
 
         return $entity;
     }

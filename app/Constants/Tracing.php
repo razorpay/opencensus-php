@@ -283,6 +283,10 @@ class Tracing
             'account_fetch_by_external_id',
             'fetch_partner_first_user_experience',
 
+            'oauth_token_create',
+            'oauth_token_fetch_multiple',
+            'oauth_token_revoke',
+
             //Onboarding APIs
             'account_create_v2',
             'account_fetch_v2',

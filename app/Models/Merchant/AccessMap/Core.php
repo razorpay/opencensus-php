@@ -8,11 +8,13 @@ use Config;
 use RZP\Exception;
 use RZP\Constants;
 use RZP\Models\Base;
+use RZP\Trace\Tracer;
 use RZP\Models\Merchant;
 use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Http\OAuthScopes;
+use RZP\Constants\HyperTrace;
 use RZP\Models\Merchant\MerchantApplications;
 
 use Razorpay\OAuth\Token;
@@ -122,7 +124,10 @@ class Core extends Base\Core
             Entity::ENTITY_ID   => $input[Entity::APPLICATION_ID],
         ];
 
-        return $this->create($entityOwner, $merchant, $data);
+        return Tracer::inspan(['name' => HyperTrace::CREATE_ACCESS_MAP_CORE], function () use($entityOwner, $merchant, $data) {
+
+            return $this->create($entityOwner, $merchant, $data);
+        });
     }
 
     /**

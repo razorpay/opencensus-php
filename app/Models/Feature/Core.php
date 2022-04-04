@@ -8,6 +8,7 @@ use Config;
 use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Trace\Tracer;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
@@ -15,6 +16,7 @@ use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Mail\Merchant\FullES;
+use RZP\Constants\HyperTrace;
 use RZP\Mail\Los\LoanEligible;
 use RZP\Jobs\MailingListUpdate;
 use RZP\Exception\LogicException;
@@ -107,7 +109,10 @@ class Core extends Base\Core
 
         $feature->generateId();
 
-        $existingFeatures = $this->repo->feature->fetchByEntityTypeAndEntityId($entityType, $entityId);
+        $existingFeatures = Tracer::inspan(['name' => HyperTrace::FETCH_FEATURE], function () use ($entityType, $entityId) {
+
+            return $this->repo->feature->fetchByEntityTypeAndEntityId($entityType, $entityId);
+        });
 
         $assignedFeatureNames = $existingFeatures->pluck(Entity::NAME)->toArray();
 
@@ -136,12 +141,18 @@ class Core extends Base\Core
 
         $this->checkCollectionsAuthTypeForCreationIfApplicable($feature);
 
-        $this->repo->feature->saveAndSyncIfApplicableOrFail(
-            $feature,
-            $assignedFeatureNames,
-            $shouldSync);
+        Tracer::inspan(['name' => HyperTrace::SAVE_AND_SYNC_FEATURE], function () use ($feature, $assignedFeatureNames, $shouldSync) {
 
-        $this->approveFeatureOnboardingRequestIfApplicable($feature, $shouldSync);
+            $this->repo->feature->saveAndSyncIfApplicableOrFail(
+                $feature,
+                $assignedFeatureNames,
+                $shouldSync);
+        });
+
+        Tracer::inspan(['name' => HyperTrace::APPROVE_FEATURE_ONBOARDING_REQUEST], function () use ($feature, $shouldSync) {
+
+            $this->approveFeatureOnboardingRequestIfApplicable($feature, $shouldSync);
+        });
 
         $this->notifyFeatureUpdateOnSlack($feature);
 
@@ -157,26 +168,27 @@ class Core extends Base\Core
             (new OndemandFundAccount\Service)->dispatchSettlementOndemandFundAccountCreateJob($feature->getEntityId());
         }
 
-        if (($feature->getName() === Feature::SKIP_SUBM_ONBOARDING_COMM) && ($feature->getEntityType() === Constants::MERCHANT)
-            && ($this->mode === Mode::LIVE))
-        {
-            $partner = $this->repo->merchant->findOrFailPublic($entityId);
+        Tracer::inspan(['name' => HyperTrace::SKIP_SUBM_ONBOARDING_COMMUNICATION], function () use ($feature, $entityId) {
 
-            $partnerEmail = $partner->getEmail();
+            if (($feature->getName() === Feature::SKIP_SUBM_ONBOARDING_COMM) && ($feature->getEntityType() === Constants::MERCHANT)
+                && ($this->mode === Mode::LIVE)) {
+                $partner = $this->repo->merchant->findOrFailPublic($entityId);
 
-            $appIds = (new Merchant\Core())->getPartnerApplicationIds($partner);
+                $partnerEmail = $partner->getEmail();
 
-            $subMerchants = $this->repo->merchant->fetchSubmerchantsByAppIds($appIds);
+                $appIds = (new Merchant\Core())->getPartnerApplicationIds($partner);
 
-            $subMerchantEmails = $subMerchants->pluck(Merchant\Entity::EMAIL)->toArray();
+                $subMerchants = $this->repo->merchant->fetchSubmerchantsByAppIds($appIds);
 
-            $subMerchantEmailChunks = array_chunk($subMerchantEmails, 500);
+                $subMerchantEmails = $subMerchants->pluck(Merchant\Entity::EMAIL)->toArray();
 
-            foreach ($subMerchantEmailChunks as $subMerchantEmailChunk)
-            {
-                SkipOnboardingCommFromHubSpot::dispatch($this->mode, $entityId, $partnerEmail, $subMerchantEmailChunk);
+                $subMerchantEmailChunks = array_chunk($subMerchantEmails, 500);
+
+                foreach ($subMerchantEmailChunks as $subMerchantEmailChunk) {
+                    SkipOnboardingCommFromHubSpot::dispatch($this->mode, $entityId, $partnerEmail, $subMerchantEmailChunk);
+                }
             }
-        }
+        });
 
         if($feature->getName() === Feature::ONBOARD_TOKENIZATION && $feature->isMerchantFeature() === true)
         {

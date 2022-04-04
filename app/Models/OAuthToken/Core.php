@@ -4,10 +4,12 @@ namespace RZP\Models\OAuthToken;
 
 use Mail;
 use RZP\Models\Base;
+use RZP\Trace\Tracer;
 use RZP\Trace\TraceCode;
 use RZP\Models\Batch\Type;
 use RZP\Models\Batch\Header;
 use RZP\Models\Batch\Status;
+use RZP\Constants\HyperTrace;
 use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\AccessMap;
 use RZP\Models\Feature\Core as FCore;
@@ -39,7 +41,10 @@ class Core extends Base\Core
             $subMerchant = $this->repo->merchant->findOrFailPublic($tokenInput[Header::MERCHANT_ID]);
             $entityOwner = $this->repo->merchant->findOrFailPublic($tokenInput[H::PARTNER_MERCHANT_ID]);
 
-            $token = $this->app['authservice']->createOAuthMigrationToken($tokenInput);
+            $token = Tracer::inspan(['name' => HyperTrace::CREATE_OAUTH_MIGRATION_TOKEN], function () use($tokenInput) {
+
+                return $this->app['authservice']->createOAuthMigrationToken($tokenInput);
+            });
 
             //Set Client and App
             $client = (new OAuthClient\Repository)->findOrFail($input[H::CLIENT_ID]);
@@ -49,9 +54,15 @@ class Core extends Base\Core
             //connect merchant to partner
             $mapInput = [OAuthClient\Entity::APPLICATION_ID => $appId];
 
-            (new AccessMap\Core)->addMappingForOAuthApp($entityOwner, $subMerchant, $mapInput);
+            Tracer::inspan(['name' => HyperTrace::ADD_MAPPING_FOR_OAUTH_APP], function () use($entityOwner, $subMerchant, $mapInput) {
 
-            $this->assignS2SIfApplicable($input, $appId);
+                (new AccessMap\Core)->addMappingForOAuthApp($entityOwner, $subMerchant, $mapInput);
+            });
+
+            Tracer::inspan(['name' => HyperTrace::ASSIGN_S2S_IF_APPLICABLE], function () use($input, $appId) {
+
+                $this->assignS2SIfApplicable($input, $appId);
+            });
 
             $this->updateOutputData($input, $token);
 
@@ -85,7 +96,10 @@ class Core extends Base\Core
             FEntity::NAME        => FConstants::ALLOW_S2S_APPS
         ];
 
-        $featureCore->create($featureParams, true);
+        Tracer::inspan(['name' => HyperTrace::ADD_FEATURE_REQUEST], function () use ($featureCore, $featureParams) {
+
+            $featureCore->create($featureParams, true);
+        });
     }
 
     protected function updateOutputData(array & $entry, array $token)
