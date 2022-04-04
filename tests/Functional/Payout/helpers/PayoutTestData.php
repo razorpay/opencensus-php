@@ -14973,6 +14973,37 @@ return [
         ],
     ],
 
+    'testBlockVAtoVirtualAccountVpaPayout' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'UPI',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Payouts to RazorpayX Virtual Account is not enabled for your account. Please contact support for any further assistance',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VA_TO_VA_PAYOUTS_BLOCKED,
+        ],
+    ],
+
     'testBlockVAtoVACompositePayouts' => [
         'request'  => [
             'method'  => 'POST',

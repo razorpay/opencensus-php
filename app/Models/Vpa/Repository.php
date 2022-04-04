@@ -97,4 +97,17 @@ class Repository extends Base\Repository
 
         return $query->first();
     }
+
+    public function checkIfVpaBelongsToVirtualAccount(Entity $vpa)
+    {
+        $type                 = $this->repo->vpa->dbColumn(Entity::ENTITY_TYPE);
+        $username             = $this->repo->vpa->dbColumn(Entity::USERNAME);
+        $handle               = $this->repo->vpa->dbColumn(Entity::HANDLE);
+
+        return $this->newQuery()
+                    ->where($type, '=', 'virtual_account')
+                    ->where($username, '=', $vpa->getUsername())
+                    ->where($handle, '=', $vpa->getHandle())
+                    ->exists();
+    }
 }

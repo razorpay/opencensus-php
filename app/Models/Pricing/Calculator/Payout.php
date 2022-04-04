@@ -97,7 +97,7 @@ class Payout extends Base
         // rules only and so on.
         // And for a filter if any rule matches the value being passed
         // but some other rules match default value in that case
-        // only those roles will be returned from the applyFiltersOnRules
+        // only those rules will be returned from the applyFiltersOnRules
         // function which match the value being passed. If no rule matches
         // the value being passed and some rules match the default value.
         // Only then those rules matching default value will be returned.

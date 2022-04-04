@@ -14455,6 +14455,35 @@ class PayoutTest extends OAuthTestCase
         $this->startTest($testData);
     }
 
+    public function testBlockVAtoVirtualAccountVpaPayout()
+    {
+        $this->ba->privateAuth();
+
+        $this->createContact();
+
+        $this->fundAccount = $this->createVpaFundAccount();
+
+        $destinationVirtualAccount = $this->fixtures->create('virtual_account',
+            [
+                'merchant_id' => '100000Razorpay'
+            ]);
+
+        $destinationVpa = $this->fixtures->create('vpa',
+            [
+                'entity_type'       => 'virtual_account',
+                'entity_id'         => $destinationVirtualAccount['id'],
+                'username'          => $this->fundAccount->account->getUsername(),
+                'handle'            => $this->fundAccount->account->getHandle(),
+                'merchant_id'       => $destinationVirtualAccount['merchant_id'],
+            ]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['fund_account_id'] = $this->fundAccount->getPublicId();
+
+        $this->startTest();
+    }
+
     // Since this is a VA to VA payout and razorx returns control, we shall fail this payout
     public function testBlockVAtoVACompositePayouts()
     {

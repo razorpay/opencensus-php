@@ -2545,6 +2545,24 @@ class Base extends BaseCore
                     }
                 }
             }
+
+            if($fundAccount->getAccountType() === FundAccount\Type::VPA)
+            {
+                $vpa = $fundAccount->account;
+
+                $doesVpaBelongsToVa = $this->repo->vpa->checkIfVpaBelongsToVirtualAccount($vpa);
+
+                if($doesVpaBelongsToVa === true)
+                {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_VA_TO_VA_PAYOUTS_BLOCKED,
+                        null,
+                        [
+                            'merchant_id'       => $payout->getMerchantId(),
+                            'fund_account_id'   => $fundAccount->getId()
+                        ]);
+                }
+            }
         }
 
         // Below mentioned variable will only be true when destination accountNumber is of type VA and the
