@@ -203,7 +203,7 @@ class BulkFraudNotifyTest extends TestCase
                             'id'                      => $fraud->id,
                             'payment_id' => $fraud->payment_id,
                             'reported_to_razorpay_at' => $fraud->reported_to_razorpay_at ?? $fraud->created_at,
-                            'reported_to_issuer_at'   => (int) $fraud->reported_to_issuer_at ?? $fraud->reported_to_razorpay_at ?? $fraud->created_at,
+                            'reported_to_issuer_at'   => (int) ($fraud->reported_to_issuer_at ?? $fraud->reported_to_razorpay_at ?? $fraud->created_at),
                         ],
                         'payment'       => [
                             'id'          => $payment->getPublicId(),

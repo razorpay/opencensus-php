@@ -142,6 +142,10 @@ class Core extends Base\Core
         else
         {
             $row[Fraud\Entity::SOURCE] = Constants::VISA_FRAUD_FILE_SOURCE;
+            // this is not a mandatory field and only takes integer value
+            if (empty($row[Constants::BATCH_KEY_REPORTED_TO_ISSUER_AT]) == true or is_integer($row[Constants::BATCH_KEY_REPORTED_TO_ISSUER_AT]) == false) {
+                $row[Fraud\Entity::REPORTED_TO_ISSUER_AT] = null;
+            }
         }
 
         return (new Fraud\Core())->createOrUpdateFraudEntity($row);
