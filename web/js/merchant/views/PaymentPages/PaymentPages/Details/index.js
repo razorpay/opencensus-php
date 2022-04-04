@@ -158,7 +158,11 @@ export default class extends React.Component {
               throw new Error('Please Reload the page'); // index must index, so this Shouldn't happen though
             }
           } else {
-            newPaymentPageEntity = resp.data;
+            // maintaining settings as the api doesn't return settings
+            newPaymentPageEntity = {
+              settings: this.state.paymentPageEntity.settings,
+              ...resp.data,
+            };
           }
 
           this.props.updatePPInReduxList(newPaymentPageEntity, false);
