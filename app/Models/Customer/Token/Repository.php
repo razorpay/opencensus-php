@@ -202,15 +202,14 @@ class Repository extends Base\Repository
      */
     public function getByMethodCustomerIdAndVpaId($method, $customer, $vpaId)
     {
-        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
-            ->from(\DB::raw('`tokens` FORCE INDEX (tokens_merchant_id_index)'))
-            ->where(Entity::METHOD, '=', $method)
-            ->where(Entity::CUSTOMER_ID, '=', $customer->getId())
-            ->where(Entity::MERCHANT_ID, '=', $customer->merchant->getId())
-            ->where(Entity::VPA_ID, '=', $vpaId)
-            ->orderBy(Token\Entity::CREATED_AT, 'desc')
-            ->orderBy(Token\Entity::ID, 'desc')
-            ->first();
+	return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::REPLICA))
+		->where(Entity::METHOD, '=', $method)
+		->where(Entity::CUSTOMER_ID, '=', $customer->getId())
+		->where(Entity::MERCHANT_ID, '=', $customer->merchant->getId())
+		->where(Entity::VPA_ID, '=', $vpaId)
+		->orderBy(Token\Entity::CREATED_AT, 'desc')
+		->orderBy(Token\Entity::ID, 'desc')
+		->first();
     }
 
 
