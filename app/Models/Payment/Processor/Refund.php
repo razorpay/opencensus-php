@@ -1119,14 +1119,11 @@ trait Refund
         //
         if (($refund->payment->hasBeenCaptured() === false) or
             (($refund->transaction->getDebit() === 0) and
-             ($refund->transaction->getCreditType() === Transaction\CreditType::DEFAULT)))
-        {
+                ($refund->transaction->getCreditType() === Transaction\CreditType::DEFAULT)) or (($feeOnlyReversal === true) and ($refund->getFee() === 0))) {
             return null;
         }
 
-        if (($refund->isStatusReversed() === true) or
-            (($feeOnlyReversal === true) and ($refund->getFee() === 0)))
-        {
+        if (($refund->isStatusReversed() === true)) {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_ERROR,
                 null,
