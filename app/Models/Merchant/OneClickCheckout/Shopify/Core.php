@@ -32,10 +32,6 @@ class Core extends Base\Core
 
     const MUTEX_KEY = 'shopify_1cc_place_order_mutex';
 
-    const CONTENT_TYPE_PRODUCT = 'product';
-
-    const CONTENT_TYPE_VARIANT = 'variant';
-
     public function placeShopifyCheckout(array $input): array
     {
         $start = millitime();
@@ -99,90 +95,55 @@ class Core extends Base\Core
         return $checkoutCreate['checkout'];
     }
 
-    public function getOrderDetailsFromCheckout($checkoutId)
+    // Fire and forget API so we silently catch the Throwable
+    public function addMagicCheckoutUrlToShopifyCheckout(array $input): void
+    {
+        try
+        {
+          $input['shop_id'] = (new Utils)->stripAndReturnShopId($input['shop_id']);
+
+          $checkoutUrl = $this->getMagicCheckoutUrl($input);
+
+          $this->updateCheckoutWithUrl($checkoutUrl, $input['checkout_id']);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->error(
+                TraceCode::SHOPIFY_1CC_API_ERROR,
+                [
+                    'type'  => 'update_attributes_failed',
+                    'input' => $input,
+                ]);
+        }
+    }
+
+    protected function getMagicCheckoutUrl(array $input): string
+    {
+        return 'https://' . $input['shop_id'] . '.myshopify.com/cart?magic_order_id=' . $input['order_id'];
+    }
+
+    protected function updateCheckoutWithUrl(string $checkoutUrl, string $checkoutId)
     {
         $client = $this->getShopifyClientByMerchant();
 
-        $mutation = (new Mutations)->getCheckoutMutation();
+        $mutation = (new Mutations)->checkoutAttributesUpdateMutation();
 
         $graphqlQuery = [
-            'query' => $mutation,
+            'query'     => $mutation,
             'variables' => [
-                'id'=> $checkoutId
+                'checkoutId' => $checkoutId,
+                'input'      => [
+                    'customAttributes' => [
+                        [
+                          'key'   => 'magic_checkout_url',
+                          'value' => $checkoutUrl
+                        ]
+                    ]
+                ]
             ]
         ];
 
         return $client->sendStorefrontRequest(json_encode($graphqlQuery));
-    }
-
-    // non critical flow so we add a catch for Throwable
-    public function getDataForFbPixels(array $checkout): array
-    {
-        try
-        {
-            $lineItems = $checkout['lineItems']['edges'];
-
-            $items = [];
-
-            foreach ($lineItems as $lineItem)
-            {
-                $item = $lineItem['node'];
-
-                $variant = $item['variant'];
-
-                $items[] = [
-                    'id'         => $this->getContentId($variant['product']['id'], self::CONTENT_TYPE_PRODUCT),
-                    'variant_id' => $this->getContentId($variant['id'], self::CONTENT_TYPE_VARIANT),
-                    'name'       => $item['title'],
-                    'value'      => $variant['priceV2']['amount'],
-                    'quantity'   => $item['quantity'],
-                ];
-            }
-
-            return [
-                'currency'     => $checkout['currencyCode'],
-                'value'        => $checkout['totalPriceV2']['amount'],
-                'content_type' => 'product',
-                'contents'     => $items,
-            ];
-
-        }
-        catch (\Throwable $e)
-        {
-            return [];
-        }
-    }
-
-    protected function getContentId(string $id, string $type): int
-    {
-        $base = $type === self::CONTENT_TYPE_PRODUCT ? 'gid://shopify/Product/' : 'gid://shopify/ProductVariant/';
-
-        return (int)str_replace($base, '', base64_decode($id));
-    }
-
-    public function getNotesForCheckout(array $checkout): array
-    {
-        $notes = ['storefront_id'  => $checkout['id']];
-
-        $lineItems = $checkout['lineItems']['edges'];
-
-        foreach ($lineItems as $lineItem)
-        {
-            $item = $lineItem['node'];
-
-            $title = $this->getVariantName($item);
-
-            $notes[$title] = 'Quantity: ' . strval($item['quantity']);
-        }
-
-        return $notes;
-    }
-
-    protected function getVariantName($item): string
-    {
-        $variantName = $item['variant']['title'] !== 'Default Title' ? ': ' . $item['variant']['title'] : '';
-
-        return $item['title'] . $variantName;
     }
 
     public function getAvailableShippingRates($checkoutId)
@@ -465,7 +426,21 @@ class Core extends Base\Core
         );
     }
 
-    // TODO: Split this function
+    public function validateCheckoutOptionsRequest(array $input)
+    {
+        if (isset($input['order_id']) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException('order_id is a compulsory field');
+        }
+
+        $config = (new Core)->getShopifyAuthByMerchant();
+
+        if ((new Utils)->stripAndReturnShopId($input['shop']) !== $config[OneClickCheckout\Constants::SHOP_ID])
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
+        }
+    }
+
     public function verifyHmacSignature(array $input, bool $useKeyId = true)
     {
         $config = (new Core)->getShopifyAuthByMerchant();
@@ -575,7 +550,9 @@ class Core extends Base\Core
     protected function getCreateOrderPayload($rzpOrder, string $paymentMethod): array
     {
         $checkoutId = $rzpOrder['notes']['storefront_id'];
-        $checkout = json_decode($this->getOrderDetailsFromCheckout($checkoutId), true);
+
+        $checkout = (new Checkout)->getCheckoutbyStorefrontId($checkoutId);
+
         if (empty($checkout['data']['node']) === true)
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
@@ -894,7 +871,7 @@ class Core extends Base\Core
 
     protected function getShopifyCheckout(string $checkoutId): array
     {
-        $checkout = json_decode($this->getOrderDetailsFromCheckout($checkoutId), true);
+        $checkout = (new Checkout)->getCheckoutbyStorefrontId($checkoutId);
 
         return $checkout['data']['node'] ?? [];
     }

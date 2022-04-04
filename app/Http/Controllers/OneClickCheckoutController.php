@@ -18,6 +18,15 @@ class OneClickCheckoutController
         return ApiResponse::json($response, 200);
     }
 
+    public function shopifyGetCheckoutOptions()
+    {
+        $input = Request::all();
+
+        $response = (new Shopify\Service)->shopifyGetCheckoutOptions($input);
+
+        return ApiResponse::json($response, 200);
+    }
+
     public function shopifyCompleteCheckout()
     {
         $input = Request::all();

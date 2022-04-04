@@ -125,6 +125,11 @@ class Mutations
                         amount
                         currencyCode
                       }
+                      product {
+                        id
+                        handle
+                        title
+                      }
                     }
                     customAttributes {
                       key
@@ -193,6 +198,28 @@ class Mutations
             }
           }
         }');
+     }
+
+     public function checkoutAttributesUpdateMutation()
+     {
+        return $this->sanitizeMutation('
+            mutation checkoutAttributesUpdate($checkoutId: ID!, $input: CheckoutAttributesUpdateInput!) {
+                checkoutAttributesUpdate(checkoutId: $checkoutId, input: $input) {
+                  checkout {
+                    id
+                    customAttributes {
+                      key
+                      value
+                    }
+                    note
+                  }
+                  checkoutUserErrors {
+                    code
+                    field
+                    message
+                  }
+                }
+              }');
      }
 
      // fetch one or more SKUs to capture details

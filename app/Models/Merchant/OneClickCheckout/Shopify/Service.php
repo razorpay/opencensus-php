@@ -60,7 +60,7 @@ class Service extends Base\Service
             'currency'         => 'INR',
             'payment_capture'  => 1,
             'line_items_total' => $amount,
-            'notes'            => (new Core)->getNotesForCheckout($checkout),
+            'notes'            => (new Checkout)->getNotesForCheckout($checkout),
         ])->toArrayPublic();
 
         $this->trace->info(
@@ -68,19 +68,52 @@ class Service extends Base\Service
             ['order_id' => $rzporder['id'], 'time' => millitime() - $start]
         );
 
-        return [
-            'order_id'    => $rzporder['id'],
-            'currency'    => 'INR',
-            'name'        => $this->merchant->getBillingLabel(),
-            'description' => '',
-            'prefill'     => [
-                'name'    => '',
-                'email'   => '',
-                'contact' => '',
-            ],
+        $checkoutParams = [
+            'order_id'           => $rzporder['id'],
+            'currency'           => 'INR',
+            'name'               => $this->merchant->getBillingLabel(),
+            'checkout_id'        => $checkout['id'],
+            'shop_id'            => $input['shop'],
             'one_click_checkout' => true,
-            'customer_cart'      => (new Core)->getDataForFbPixels($checkout),
+            'customer_cart'      => (new Pixels)->getDataForFbPixels($checkout),
         ];
+
+        (new Core)->addMagicCheckoutUrlToShopifyCheckout($checkoutParams);
+
+        unset($checkoutParams['checkout_id']);
+
+        unset($checkoutParams['shop_id']);
+
+        return $checkoutParams;
+    }
+
+    public function shopifyGetCheckoutOptions(array $input): array
+    {
+        $this->trace->info(
+            TraceCode::SHOPIFY_1CC_RETARGETING_URL_HIT,
+            ['input' => $input]);
+
+        (new Core)->validateCheckoutOptionsRequest($input);
+
+        $order = $this->repo->order->findByPublicIdAndMerchant($input['order_id'], $this->merchant);
+
+        $checkoutId = $order->getNotes()['storefront_id'];
+
+        $checkout = (new Checkout)->getCheckoutFromAdminApi($checkoutId);
+
+        $checkoutParams = [
+            'order_id'           => $input['order_id'],
+            'currency'           => 'INR',
+            'name'               => $this->merchant->getBillingLabel(),
+            'one_click_checkout' => true,
+            'customer_cart'      => (new Pixels)->getDataForFbPixels($checkout),
+            'prefill'            => [
+                'email'   => $checkout['email'] ?? '',
+                'contact' => $checkout['phone'] ?? '',
+            ],
+        ];
+
+        return $checkoutParams;
     }
 
     public function updateCheckout(array $input): array
@@ -199,12 +232,9 @@ class Service extends Base\Service
     // returns list of coupons, filter out personal and shipping coupons
     public function getShopifyCoupons(array $input, string $merchantId = ''): array
     {
-
         $checkoutId = $input['order_id'];
 
-        $checkout = (new Core)->getOrderDetailsFromCheckout($checkoutId);
-
-        $checkout = json_decode($checkout, true);
+        $checkout = (new Checkout)->getCheckoutbyStorefrontId($checkoutId);
 
         // TODO: discuss proper error for this
         if (empty($checkout['data']['node']) === true)
@@ -228,8 +258,7 @@ class Service extends Base\Service
         {
             try
             {
-                $emailRes = (new Core)->updateCheckoutEmail($checkoutId, $input['email']);
-                $emailRes = json_decode($emailRes, true);
+                (new Checkout)->updateCheckoutEmail($checkoutId, $input['email']);
             }
             catch (\Exception $e)
             {
@@ -243,7 +272,6 @@ class Service extends Base\Service
         {
             return ['promotions' => []];
         }
-
 
         $amount = $checkoutNode['subtotalPrice'];
 
@@ -341,7 +369,7 @@ class Service extends Base\Service
         {
             try
             {
-                $emailRes = (new Core)->updateCheckoutEmail($checkoutId, $input['email']);
+                $emailRes = (new Checkout)->updateCheckoutEmail($checkoutId, $input['email']);
                 $emailRes = json_decode($emailRes, true);
             }
             catch (\Exception $e)

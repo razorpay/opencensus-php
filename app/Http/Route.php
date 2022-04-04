@@ -3401,6 +3401,7 @@ class Route
         '1cc_shopify_checkout'                      => ['post',       '1cc/shopify/checkout',                                  'OneClickCheckoutController@shopifyCreateCheckout'                ],
         '1cc_shopify_checkout_update'               => ['patch',      '1cc/shopify/checkout',                                  'OneClickCheckoutController@shopifyUpdateCheckout'                ],
         '1cc_shopify_complete'                      => ['post',       '1cc/shopify/complete',                                  'OneClickCheckoutController@shopifyCompleteCheckout'                ],
+        '1cc_shopify_checkout_options'              => ['get',        '1cc/shopify/checkout_options',                          'OneClickCheckoutController@shopifyGetCheckoutOptions'                ],
         '1cc_shopify_oauth_redirect'                => ['get',        '1cc/shopify/oauth/redirect',                              'OneClickCheckoutController@shopifyOAuthRedirect'                ],
         '1cc_shopify_oauth_callback'                => ['get',        '1cc/shopify/oauth/callback',                              'OneClickCheckoutController@shopifyOAuthRedirect'                ],
         'update_shopify_1cc_config'               => ['post',         'merchant/1cc/shopify/config',                                 'MerchantController@updateShopify1ccConfig'                   ],
@@ -3438,6 +3439,7 @@ class Route
 
     public static $public = [
         '1cc_shopify_checkout',
+        '1cc_shopify_checkout_options',
         '1cc_shopify_complete',
         '1cc_shopify_oauth_redirect',
         '1cc_shopify_oauth_callback',
