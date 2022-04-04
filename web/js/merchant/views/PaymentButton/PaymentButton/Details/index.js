@@ -190,9 +190,13 @@ export default class PaymentButtonDetails extends React.Component {
                 if (resp.data) {
                   this.props.updatePBInReduxList(resp.data, false);
 
-                  this.setState({
-                    paymentButtonEntity: resp.data,
-                  });
+                  // explicitly maintaining settings from previous state as API doesn't return settings
+                  this.setState((prevState) => ({
+                    paymentButtonEntity: {
+                      settings: prevState.paymentButtonEntity.settings,
+                      ...resp.data,
+                    },
+                  }));
 
                   this.props.showNotification({
                     type: 'success',
@@ -393,9 +397,13 @@ export default class PaymentButtonDetails extends React.Component {
 
               this.props.updatePBInReduxList(resp.data, false);
 
-              this.setState({
-                paymentButtonEntity: resp.data,
-              });
+              // explicitly maintaining settings from previous state as API doesn't return settings
+              this.setState((prevState) => ({
+                paymentButtonEntity: {
+                  settings: prevState.paymentButtonEntity.settings,
+                  ...resp.data,
+                },
+              }));
             }
             return resp;
           })
