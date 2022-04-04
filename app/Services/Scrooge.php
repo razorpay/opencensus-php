@@ -7,6 +7,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Payout\Entity;
 use RZP\Http\Request\Requests;
 use Razorpay\Trace\Logger as Trace;
+use Razorpay\Edge\Passport\Passport;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
 use RZP\Models\Payment\Refund\Constants as RefundConstants;
@@ -93,10 +94,6 @@ class Scrooge
 
     const PASSPORT_AUD = 'scrooge';
     const PAYMENT_PAGE = 'Payment-Page';
-
-    const RAW_PASSPORT          = 'raw_passport';
-    const GET_PASSPORT_FROM_JOB = 'get_passport_from_job';
-    const GET_PASSPORT_JWT      = 'get_passport_jwt';
 
     /**
      * Scrooge constructor.
@@ -678,13 +675,6 @@ class Scrooge
      */
     protected function enablePassport()
     {
-        $this->trace->info(TraceCode::SCROOGE_PASSPORT_TRACE, [
-            self::RAW_PASSPORT          => $this->auth->getPassport(),
-            self::GET_PASSPORT_FROM_JOB => $this->auth->getPassportFromJob(),
-            self::GET_PASSPORT_JWT      => $this->auth->getPassportJwt(self::PASSPORT_AUD),
-
-        ]);
-
         $passportHeader = (empty($this->auth->getPassportFromJob()) === false) ? $this->auth->getPassportFromJob() : $this->auth->getPassportJwt(self::PASSPORT_AUD);
 
         $customHeader = [
@@ -737,6 +727,8 @@ class Scrooge
     protected function traceRequest(array $request)
     {
         unset($request['options']['auth']);
+
+        unset($request['headers'][Passport::PASSPORT_JWT_V1 ]);
 
         $this->trace->info(TraceCode::SCROOGE_REQUEST, $request);
     }
