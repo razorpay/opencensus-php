@@ -25,6 +25,7 @@ use RZP\Models\Merchant\Balance;
 use RZP\Models\Merchant\AccessMap;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\InheritanceMap;
+use RZP\Services\SumoLogic\Service as SumoLogicService;
 
 
 class MerchantController extends Controller
@@ -1136,6 +1137,30 @@ class MerchantController extends Controller
     public function getBusinessTypes($id = null)
     {
         $response = $this->service(E::MERCHANT_DETAIL)->getBusinessTypes($id);
+
+        return $response;
+    }
+
+    public function getmerchantInfo($id)
+    {
+        $response = $this->service(E::MERCHANT_DETAIL)->getMerchantInfo($id);
+
+        return $response;
+    }
+
+    public function createLogSearch()
+    {
+
+        $input = Request::all();
+
+        return (new SumoLogicService())->logSearch($input);
+    }
+
+    public function getMerchantLogs()
+    {
+        $input = Request::all();
+
+        $response = (new SumoLogicService())->logSearch($input);
 
         return $response;
     }

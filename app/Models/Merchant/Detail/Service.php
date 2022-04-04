@@ -3005,6 +3005,13 @@ class Service extends Base\Service
         return $core->getBusinessTypes($merchant_id);
 
     }
+
+    public function getMerchantInfo($merchant_id)
+    {
+        $core = new Core();
+
+        return $core->getMerchantInfo($merchant_id);
+    }
     /**
      * This is used as part of ITF test cases to mock penny testing validation events from BVS.
      * Sample Input

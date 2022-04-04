@@ -42,6 +42,20 @@ class Repository extends Base\Repository
 
     }
 
+    /**
+     * @param string $merchantId
+     *
+     * @return mixed
+     */
+    public function getReferralsFromReferrerId(string $merchantId)
+    {
+        return $this->newQueryOnSlave()
+                    ->where(Entity::REFERRER_ID, '=', $merchantId)
+                    ->get()
+                    ->callOnEveryItem('toArrayPublic');
+
+    }
+
     public function filterMerchantsInReferralState(array $merchantIdList, array $status)
     {
         return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))

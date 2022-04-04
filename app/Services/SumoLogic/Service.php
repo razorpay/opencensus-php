@@ -46,6 +46,55 @@ class Service
         return [];
     }
 
+    public function logSearch(array $input)
+    {
+        $query = $input['merchant_id'] ?? null;
+
+        $fromTimestamp = $input['fromTimestamp'] ?? Carbon::today(Timezone::IST)->startOfDay()->getTimestamp();
+
+        $toTimestamp = $input['toTimestamp'] ?? Carbon::now(Timezone::IST)->getTimestamp();
+
+        $jobId = $input['job_id'] ?? null;
+
+        $offset = $input['offset'] ?? 0;
+
+        $limit = $input['limit'] ?? 10000;
+
+        if (empty($jobId) === true)
+        {
+            $payload = $this->preparePayload($query, $fromTimestamp, $toTimestamp);
+
+            $jobId = $this->sumoClient->createSearchjob($payload);
+        }
+
+        if (empty($jobId) === false)
+        {
+            return $this->fetchMessagesResult($jobId, $offset, $limit);
+        }
+        return [];
+    }
+
+    protected function fetchMessagesResult(string $jobId,int $offset,int $limit)
+    {
+        $result = $this->sumoClient->fetchJobResult($jobId);
+
+        $pending = ["state" => "pending", "job_id" => $jobId];
+
+        if (empty($result) === false)
+        {
+            if ($result['state'] === Constants::DONE_GATHERING_RESULTS)
+            {
+                return $this->sumoClient->fetchJobMessages($jobId, $offset, $limit);
+            }
+
+            return $pending;
+        }
+        else
+        {
+            return $pending;
+        }
+    }
+
     protected function processJob(string $jobId, int $jobTimeout)
     {
         $totalWaitTime = 0;

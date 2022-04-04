@@ -59,6 +59,20 @@ class Client
         return null;
     }
 
+    public function fetchJobMessages(string $jobId,int $offset,int $limit): ?array
+    {
+        $url = $this->config['url'] . self::SEARCH_JOB_PATH . '/' . $jobId . '/messages?offset=' . $offset . '&limit=' . $limit;
+
+        $response = $this->request($url, 'GET');
+
+        if ($response->status_code >= 200 && $response->status_code < 299)
+        {
+            return json_decode($response->body, true);
+        }
+
+        return null;
+    }
+
     private function request(string $url, string $method, array $payload = [])
     {
         $headers = $this->getHeaders();

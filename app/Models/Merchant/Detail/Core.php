@@ -121,9 +121,9 @@ class Core extends Base\Core
 
     protected $mutex;
 
-    private $mrclient;
+    private   $mrclient;
 
-    private $mcore;
+    private   $mcore;
 
     protected $dedupeCore;
 
@@ -169,7 +169,7 @@ class Core extends Base\Core
 
         $factory = new Merchant\AutoKyc\Bvs\requestDispatcher\Factory();
 
-        $requestDispatcher =  $factory->getBvsRequestDispatcherForArtefact(
+        $requestDispatcher = $factory->getBvsRequestDispatcherForArtefact(
             $validationArtefact, $merchant, $merchant->merchantDetail);
 
         return $requestDispatcher->fetchValidationDetails($validationId);
@@ -206,7 +206,7 @@ class Core extends Base\Core
         {
             $maskedInput[$key] = $value;
 
-            if(empty($value) === false and in_array($key, DEConstants::SENSITIVE_FIELDS_FOR_LOGGING, true) === true)
+            if (empty($value) === false and in_array($key, DEConstants::SENSITIVE_FIELDS_FOR_LOGGING, true) === true)
             {
                 $maskedInput[$key] = mask_except_last4($value);
             }
@@ -249,26 +249,27 @@ class Core extends Base\Core
         //isolating business details
         $businessDetailsInput = [];
 
-        $urlsInput = [BusinessDetailConstants::PLAYSTORE_URL, BusinessDetailConstants::APPSTORE_URL];
+        $urlsInput           = [BusinessDetailConstants::PLAYSTORE_URL, BusinessDetailConstants::APPSTORE_URL];
         $paymentsAvenueInput = [BusinessDetailConstants::SOCIAL_MEDIA, BusinessDetailConstants::PHYSICAL_STORE,
                                 BusinessDetailConstants::WEBSITE_OR_APP];
 
-        foreach ($urlsInput as $url){
-            if(isset($input[$url]) === true)
+        foreach ($urlsInput as $url)
+        {
+            if (isset($input[$url]) === true)
             {
                 $businessDetailsInput[BusinessDetailEntity::APP_URLS][$url] = $input[$url];
                 unset($input[$url]);
             }
         }
 
-        foreach ($paymentsAvenueInput as $payInput){
-            if(isset($input[$payInput]) === true)
+        foreach ($paymentsAvenueInput as $payInput)
+        {
+            if (isset($input[$payInput]) === true)
             {
                 $businessDetailsInput[BusinessDetailEntity::WEBSITE_DETAILS][$payInput] = $input[$payInput];
                 unset($input[$payInput]);
             }
         }
-
 
         $businessDetailsInput[BusinessDetailEntity::BUSINESS_PARENT_CATEGORY] = $input[BusinessDetailEntity::BUSINESS_PARENT_CATEGORY] ?? null;
         unset($input[BusinessDetailEntity::BUSINESS_PARENT_CATEGORY]);
@@ -277,23 +278,25 @@ class Core extends Base\Core
             empty($businessDetailsInput[BusinessDetailEntity::WEBSITE_DETAILS]) === false or
             empty($businessDetailsInput[BusinessDetailEntity::BUSINESS_PARENT_CATEGORY]) === false)
         {
-            if(array_key_exists(BusinessDetailEntity::APP_URLS,$businessDetailsInput)) {
+            if (array_key_exists(BusinessDetailEntity::APP_URLS, $businessDetailsInput))
+            {
                 $this->checkForCorrectAppUrls($businessDetailsInput[BusinessDetailEntity::APP_URLS]);
             }
 
-            $businessDetails = Tracer::inspan(['name' => HyperTrace::SAVE_BUSINESS_DETAILS_FOR_MERCHANT], function () use ($merchant, $businessDetailsInput) {
+            $businessDetails = Tracer::inspan(['name' => HyperTrace::SAVE_BUSINESS_DETAILS_FOR_MERCHANT], function() use ($merchant, $businessDetailsInput) {
 
                 //save App Urls Details
                 $businessDetailService = new Service();
+
                 return $businessDetailService->saveBusinessDetailsForMerchant($merchant->getId(), $businessDetailsInput);
             });
 
             //Calling App Checker Service during onboarding
             (new HealthChecker\Core())->notifyRiskChecker(
                 $merchant->getId(), HealthCheckerConstants::PERFORM_HEALTH_CHECK_JOB, [
-                                      HealthCheckerConstants::RETRY_COUNT_KEY          => HealthCheckerConstants::MAX_RISK_CHECK_RETRIES,
-                                      HealthCheckerConstants::EVENT_TYPE               => HealthCheckerConstants::ONBOARDING_CHECKER_EVENT,
-                                      HealthCheckerConstants::CHECKER_TYPE             => HealthCheckerConstants::APP_CHECKER,
+                                      HealthCheckerConstants::RETRY_COUNT_KEY => HealthCheckerConstants::MAX_RISK_CHECK_RETRIES,
+                                      HealthCheckerConstants::EVENT_TYPE      => HealthCheckerConstants::ONBOARDING_CHECKER_EVENT,
+                                      HealthCheckerConstants::CHECKER_TYPE    => HealthCheckerConstants::APP_CHECKER,
                                   ]
             );
         }
@@ -308,7 +311,7 @@ class Core extends Base\Core
 
         $merchantDetails->edit($input);
 
-        Tracer::inspan(['name' => HyperTrace::PERFORM_KYC_VERIFICATION], function () use ($merchantDetails, $merchant, $input) {
+        Tracer::inspan(['name' => HyperTrace::PERFORM_KYC_VERIFICATION], function() use ($merchantDetails, $merchant, $input) {
 
             $verificationStartTime = microtime(true);
             // do pan validation
@@ -359,7 +362,7 @@ class Core extends Base\Core
                         'merchant_id'             => $merchant->getId()
                     ]);
 
-                    $merchantDetails = Tracer::inspan(['name' => HyperTrace::EDIT_MERCHANT_DETAIL_FIELDS], function () use ($merchant, $input) {
+                    $merchantDetails = Tracer::inspan(['name' => HyperTrace::EDIT_MERCHANT_DETAIL_FIELDS], function() use ($merchant, $input) {
 
                         return $this->editMerchantDetailFields($merchant, $input);
                     });
@@ -375,7 +378,7 @@ class Core extends Base\Core
                         // blacklisted merchant should not be allowed to submit l2 form
                         $merchantDetails->getValidator()->validateFullActivationForm($merchant);
 
-                        $response = Tracer::inspan(['name' => HyperTrace::SUBMIT_ACTIVATION_FORM], function () use ($merchant, $input, $originProduct) {
+                        $response = Tracer::inspan(['name' => HyperTrace::SUBMIT_ACTIVATION_FORM], function() use ($merchant, $input, $originProduct) {
 
                             return $this->submitActivationForm($merchant, $input, $originProduct);
                         });
@@ -383,7 +386,7 @@ class Core extends Base\Core
                         // If activation status changes to under_review and previous activation status is
                         // Needs Clarification, then it means merchant has responded to Needs Clarification.
                         // If merchant is NC responded then we want to trigger activation workflow
-                        if($this->isNcResponded($oldActivationStatus, $merchantDetails->getActivationStatus()))
+                        if ($this->isNcResponded($oldActivationStatus, $merchantDetails->getActivationStatus()))
                         {
                             $this->triggerNeedsClarificationRespondedWorkflow($merchant, $oldMerchantDetails);
                         }
@@ -400,6 +403,7 @@ class Core extends Base\Core
                         'duration_after_lock_acquire' => (microtime(true) - $startTimePostAcquiringMutexLock) * 1000,
                         'overall_duration'            => (microtime(true) - $startTime) * 1000,
                     ]);
+
                     return $response;
                 });
             },
@@ -436,7 +440,7 @@ class Core extends Base\Core
         // agent who marked NC will be the maker of activation workflow
         $maker = $this->getNcMarkedAgent($statusChangeLogs);
 
-        if(empty($maker))
+        if (empty($maker))
         {
             return;
         }
@@ -464,7 +468,7 @@ class Core extends Base\Core
         {
             $this->app['workflow']->handle();
         }
-        catch(Exception\EarlyWorkflowResponse $e)
+        catch (Exception\EarlyWorkflowResponse $e)
         {
             // Catching exception because we do not want to abort the code flow
             $workflowActionData = json_decode($e->getMessage(), true);
@@ -475,43 +479,48 @@ class Core extends Base\Core
     /**
      * Method that returns whether merchant has responded on penny testing failure
      * or Manual NC
+     *
      * @param string $ncrCountTag
-     * @param $merchant
+     * @param        $merchant
+     *
      * @return bool
      */
     protected function isNcrOnPennyTesting(string $ncrCountTag, $merchantDetails)
     {
-        if($ncrCountTag === 'NCR1')
+        if ($ncrCountTag === 'NCR1')
         {
             $bankDetailsVerificationStatus = $merchantDetails->getBankDetailsVerificationStatus();
 
             return ($bankDetailsVerificationStatus !== BankDetailsVerificationStatus::VERIFIED);
         }
+
         return false;
     }
 
     protected function getNcRespondedTags($merchantDetails, $statusChangeLogs, $maker)
     {
         $ncrCountTag = $this->getNcRespondedCountTag($statusChangeLogs);
-        $tags = [
+        $tags        = [
             $ncrCountTag,
             $this->getNcMarkedAgentTag($maker)
         ];
 
-        if($this->isNcrOnPennyTesting($ncrCountTag, $merchantDetails))
+        if ($this->isNcrOnPennyTesting($ncrCountTag, $merchantDetails))
         {
             $tags[] = "Auto NC";
         }
 
-        if ($this->canAddAutoKycTag($merchantDetails)) {
+        if ($this->canAddAutoKycTag($merchantDetails))
+        {
             $tags[] = "auto-kyc";
         }
+
         return $tags;
     }
 
     protected function canAddAutoKycTag($merchantDetails)
     {
-        $autoKyc = $this->isAutoKycDone($merchantDetails);
+        $autoKyc       = $this->isAutoKycDone($merchantDetails);
         $isWhitelisted = ($merchantDetails->getActivationFlow() === ActivationFlow::WHITELIST);
 
         return ($autoKyc === true and $isWhitelisted === true);
@@ -527,28 +536,28 @@ class Core extends Base\Core
 
     protected function getNcRespondedCountTag($statusChangeLogs)
     {
-        $count = 0;
+        $count   = 0;
         $ncFound = false;
         foreach ($statusChangeLogs as $statusData)
         {
-            if($statusData[State\Entity::NAME] === Status::NEEDS_CLARIFICATION)
+            if ($statusData[State\Entity::NAME] === Status::NEEDS_CLARIFICATION)
             {
                 $ncFound = true;
                 continue;
             }
-            if($statusData[State\Entity::NAME] === Status::UNDER_REVIEW and $ncFound)
+            if ($statusData[State\Entity::NAME] === Status::UNDER_REVIEW and $ncFound)
             {
                 $count++;
                 $ncFound = false;
             }
         }
 
-        if($count >= 3)
+        if ($count >= 3)
         {
             return "NCR3_greater";
         }
 
-        return "NCR".$count;
+        return "NCR" . $count;
     }
 
     protected function getNcMarkedAgent($statusChangeLogs)
@@ -556,21 +565,23 @@ class Core extends Base\Core
         $adminId = null;
         foreach ($statusChangeLogs as $statusData)
         {
-            if($statusData[State\Entity::NAME] === Status::NEEDS_CLARIFICATION){
+            if ($statusData[State\Entity::NAME] === Status::NEEDS_CLARIFICATION)
+            {
                 $adminId = $statusData[State\Entity::ADMIN_ID];    // get the latest admin who marked NC
             }
         }
 
-        if(!empty($adminId))
+        if (!empty($adminId))
         {
             return $this->repo->admin->findOrFailPublic($adminId);
         }
+
         return null;
     }
 
     protected function getNcMarkedAgentTag($maker)
     {
-        return "NCR_".$maker->getName();
+        return "NCR_" . $maker->getName();
     }
 
     protected function verifyAadhaarWithPanIfApplicable(Merchant\Entity $merchant, Entity $merchantDetails)
@@ -583,25 +594,25 @@ class Core extends Base\Core
         $businessType = $merchantDetails->getBusinessType();
 
         // If aadhaar esign is not required then, aadhar with pan is also not required
-        if(BusinessType::isAadhaarEsignVerificationRequired($businessType) === false)
+        if (BusinessType::isAadhaarEsignVerificationRequired($businessType) === false)
         {
             return;
         }
 
         $stakeholder = $merchantDetails->stakeholder;
 
-        if(empty($stakeholder) === true)
+        if (empty($stakeholder) === true)
         {
             return;
         }
 
-        if(empty($stakeholder->getBvsProbeId()) === true)
+        if (empty($stakeholder->getBvsProbeId()) === true)
         {
             return;
         }
 
         // If already verified then skip it
-        if($stakeholder->getAadhaarVerificationWithPanStatus() === 'verified')
+        if ($stakeholder->getAadhaarVerificationWithPanStatus() === 'verified')
         {
             return;
         }
@@ -616,7 +627,7 @@ class Core extends Base\Core
             ],
         ];
 
-        $bvsValidation = (new AutoKyc\Bvs\Core($merchant,$merchantDetails))->verify($merchantDetails->getId(), $payload);
+        $bvsValidation = (new AutoKyc\Bvs\Core($merchant, $merchantDetails))->verify($merchantDetails->getId(), $payload);
 
     }
 
@@ -650,6 +661,7 @@ class Core extends Base\Core
             {
                 return true;
             }
+
             return false;
         }
         else
@@ -658,6 +670,7 @@ class Core extends Base\Core
             {
                 return true;
             }
+
             return false;
         }
     }
@@ -739,12 +752,13 @@ class Core extends Base\Core
             'duration'    => (microtime(true) - $startTime) * 1000,
             'start_time'  => $startTime * 1000
         ]);
+
         return $response;
     }
 
     public function initializeValidationDetailsForNoDocOnboarding(Entity $merchantDetails): ?array
     {
-        if($merchantDetails->merchant->isNoDocOnboardingEnabled() === false)
+        if ($merchantDetails->merchant->isNoDocOnboardingEnabled() === false)
         {
             return null;
         }
@@ -757,8 +771,8 @@ class Core extends Base\Core
         ];
 
         $data = [
-            ConfigKey::NO_DOC_ONBOARDING_INFO   => $noDocData,
-            StoreConstants::NAMESPACE           => ConfigKey::ONBOARDING_NAMESPACE
+            ConfigKey::NO_DOC_ONBOARDING_INFO => $noDocData,
+            StoreConstants::NAMESPACE         => ConfigKey::ONBOARDING_NAMESPACE
         ];
 
         (new StoreCore())->updateMerchantStore($merchantDetails->getMerchantId(), $data, StoreConstants::INTERNAL);
@@ -798,8 +812,8 @@ class Core extends Base\Core
 
         if (isset($input[Entity::BUSINESS_CATEGORY]) === true)
         {
-            $legalEntityInput[LegalEntity\Entity::MCC]                  = $merchant->getCategory();
-            $legalEntityInput[LegalEntity\Entity::BUSINESS_CATEGORY]    = $input[Entity::BUSINESS_CATEGORY];
+            $legalEntityInput[LegalEntity\Entity::MCC]               = $merchant->getCategory();
+            $legalEntityInput[LegalEntity\Entity::BUSINESS_CATEGORY] = $input[Entity::BUSINESS_CATEGORY];
 
             if (isset($input[Entity::BUSINESS_SUBCATEGORY]) === true)
             {
@@ -827,11 +841,11 @@ class Core extends Base\Core
      *
      * For unregistered business bucket we skip activation flow
      *
-     * @param Merchant\Entity $merchant
-     * @param Entity|null $merchantDetails
+     * @param Merchant\Entity      $merchant
+     * @param Entity|null          $merchantDetails
      * @param Merchant\Entity|null $partner
-     * @param array|string[] $activationFlowTypes
-     * @param bool $batchFlow
+     * @param array|string[]       $activationFlowTypes
+     * @param bool                 $batchFlow
      */
     public function autoUpdateMerchantActivationFlows(Merchant\Entity $merchant,
                                                       Merchant\Detail\Entity $merchantDetails = null,
@@ -938,7 +952,7 @@ class Core extends Base\Core
      *
      * @param Entity $merchantDetails
      */
-    public function updateToDefaultDepartmentVolumeIfApplicable(Entity & $merchantDetails)
+    public function updateToDefaultDepartmentVolumeIfApplicable(Entity &$merchantDetails)
     {
         if ($merchantDetails->isDirty([Entity::BUSINESS_TYPE]) === true)
         {
@@ -1023,7 +1037,7 @@ class Core extends Base\Core
 
         $this->validateEmailVerificationIfApplicable($merchant);
 
-        return $this->transactionInstantActivationDetails($input,$merchantDetails, $merchant);
+        return $this->transactionInstantActivationDetails($input, $merchantDetails, $merchant);
     }
 
     protected function validateEmailVerificationIfApplicable(Merchant\Entity $merchant)
@@ -1033,12 +1047,12 @@ class Core extends Base\Core
         /*
          * If auth is not merchant auth then we'll skip this
          */
-        if(empty($merchant->getEmail()) === true)
+        if (empty($merchant->getEmail()) === true)
         {
             return;
         }
 
-        if(empty($user) === true)
+        if (empty($user) === true)
         {
             return;
         }
@@ -1062,12 +1076,12 @@ class Core extends Base\Core
 
         $isSignedUpViaEmail = (bool) $user->getAttribute(UserEntity::SIGNUP_VIA_EMAIL);
 
-        if($isSignedUpViaEmail === true)
+        if ($isSignedUpViaEmail === true)
         {
             return;
         }
 
-        if($user->getConfirmedAttribute() === false)
+        if ($user->getConfirmedAttribute() === false)
         {
             throw new Exception\BadRequestValidationFailureException('Email is not verified');
         }
@@ -1277,17 +1291,17 @@ class Core extends Base\Core
         }
 
         $eventAttributes = [
-            'dedupe'                 => true,
-            DeDupe\Constants::ACTION => $action,
+            'dedupe'                                 => true,
+            DeDupe\Constants::ACTION                 => $action,
             Detail\Entity::ACTIVATION_FORM_MILESTONE => $merchantDetails->getActivationFormMilestone()
         ];
 
         $this->app['diag']->trackOnboardingEvent(EventCode::MERCHANT_DEDUPE, $merchant, null, $eventAttributes);
 
         $properties = [
-            'dedupe_status'     => $dedupeTag,
-            'dedupe_timestamp'  => Carbon::now()->getTimestamp(),
-            'fields'            => $this->dedupeCore->getDedupeMatchedFields($merchant)
+            'dedupe_status'    => $dedupeTag,
+            'dedupe_timestamp' => Carbon::now()->getTimestamp(),
+            'fields'           => $this->dedupeCore->getDedupeMatchedFields($merchant)
         ];
 
         $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
@@ -1300,7 +1314,7 @@ class Core extends Base\Core
             $merchant->getId(), 'merchant_detail', [Permission\Name::IMPERSONATING_MERCHANT_DEDUPE]);
         $actions = $actions->toArray();
 
-        if(empty($actions) === false)
+        if (empty($actions) === false)
         {
             // If a workflow is already created, then do not create the same workflow;
             return;
@@ -1318,10 +1332,11 @@ class Core extends Base\Core
             ->setOriginal([])
             ->setDirty($merchantDetails);
 
-        try {
+        try
+        {
             $this->app['workflow']->handle();
         }
-        catch(Exception\EarlyWorkflowResponse $e)
+        catch (Exception\EarlyWorkflowResponse $e)
         {
             // Catching exception because we do not want to abort the code flow
             $workflowActionData = json_decode($e->getMessage(), true);
@@ -1345,7 +1360,7 @@ class Core extends Base\Core
         $merchantDetails = $merchant->merchantDetail;
 
         $this->autoUpdateMerchantActivationFlows(
-            $merchant, $merchantDetails, null,Detail\Constants::ACTIVATION_FLOWS, $batchFlow);
+            $merchant, $merchantDetails, null, Detail\Constants::ACTIVATION_FLOWS, $batchFlow);
 
         $this->trace->info(TraceCode::MERCHANT_PROCESS_WHITELIST_ACTIVATION);
 
@@ -1371,7 +1386,6 @@ class Core extends Base\Core
                 return true;
         }
     }
-
 
 
     /**
@@ -1413,7 +1427,7 @@ class Core extends Base\Core
         }
 
         $this->updateDocumentVerificationStatus(
-            $merchant, $merchantDetails,Constant::PERSONAL_PAN, BvsValidationConstants::IDENTIFIER);
+            $merchant, $merchantDetails, Constant::PERSONAL_PAN, BvsValidationConstants::IDENTIFIER);
 
         $eventAttributes = [
             'time_stamp'    => Carbon::now()->getTimestamp(),
@@ -1461,7 +1475,7 @@ class Core extends Base\Core
             return;
         }
 
-        $this->updateDocumentVerificationStatus($merchant,$merchantDetails, Constant::BUSINESS_PAN);
+        $this->updateDocumentVerificationStatus($merchant, $merchantDetails, Constant::BUSINESS_PAN);
 
         $eventAttributes = [
             'time_stamp'    => Carbon::now()->getTimestamp(),
@@ -1500,9 +1514,9 @@ class Core extends Base\Core
         {
             $this->trace->info(
                 TraceCode::MERCHANT_DETAIL_DOES_NOT_EXIST,
-                [ 'merchant_id'    => $merchant->getId() ]);
+                ['merchant_id' => $merchant->getId()]);
 
-            $merchantDetails = Tracer::inspan(['name' => HyperTrace::CREATE_MERCHANT_DETAILS_CORE], function () use ($merchant, $input) {
+            $merchantDetails = Tracer::inspan(['name' => HyperTrace::CREATE_MERCHANT_DETAILS_CORE], function() use ($merchant, $input) {
 
                 return $this->createMerchantDetails($merchant, $input);
             });
@@ -1518,7 +1532,7 @@ class Core extends Base\Core
      * This function is used to patch merchant details fields
      *
      * @param Merchant\Entity $merchant
-     * @param array  $input
+     * @param array           $input
      *
      * @return Entity
      * @throws \RZP\Exception\BadRequestException
@@ -1549,7 +1563,7 @@ class Core extends Base\Core
      * in both merchant and merchantDetail entities
      *
      * @param Merchant\Entity $merchant
-     * @param array $input
+     * @param array           $input
      *
      * @return Entity
      */
@@ -1620,19 +1634,20 @@ class Core extends Base\Core
     {
         $merchantDetails = $this->repo->merchant_detail->findByPublicId($merchantId);
 
-        $existingKycClarifications         = $merchantDetails->getKycClarificationReasons() ?? [];
-        $existingReasons                   = $existingKycClarifications[Entity::CLARIFICATION_REASONS] ?? null;
-        $existingAdditionalDetails         = $existingKycClarifications[Entity::ADDITIONAL_DETAILS] ?? null;
-        $existingClarificationReasonsV2    = $existingKycClarifications[Entity::CLARIFICATION_REASONS_V2] ?? null;
+        $existingKycClarifications      = $merchantDetails->getKycClarificationReasons() ?? [];
+        $existingReasons                = $existingKycClarifications[Entity::CLARIFICATION_REASONS] ?? null;
+        $existingAdditionalDetails      = $existingKycClarifications[Entity::ADDITIONAL_DETAILS] ?? null;
+        $existingClarificationReasonsV2 = $existingKycClarifications[Entity::CLARIFICATION_REASONS_V2] ?? null;
 
-        $newKycClarifications              = $input[Entity::KYC_CLARIFICATION_REASONS] ?? [];
-        $newAdditionalDetails              = $newKycClarifications[Entity::ADDITIONAL_DETAILS] ?? null;
-        $newReasons                        = $newKycClarifications[Entity::CLARIFICATION_REASONS] ?? null;
+        $newKycClarifications = $input[Entity::KYC_CLARIFICATION_REASONS] ?? [];
+        $newAdditionalDetails = $newKycClarifications[Entity::ADDITIONAL_DETAILS] ?? null;
+        $newReasons           = $newKycClarifications[Entity::CLARIFICATION_REASONS] ?? null;
 
-        if((empty($existingClarificationReasonsV2) === true)
-           && ((empty($existingReasons) === false) || (empty($existingAdditionalDetails) === false))) {
+        if ((empty($existingClarificationReasonsV2) === true)
+            && ((empty($existingReasons) === false) || (empty($existingAdditionalDetails) === false)))
+        {
             //add existing clarificationReasons And AdditionalDetails in clarification_reasons_v2
-            $existingClarificationReasonsV2 = $this->getClarificationReasonsV2($existingReasons ?? [],$existingAdditionalDetails ?? []);
+            $existingClarificationReasonsV2                              = $this->getClarificationReasonsV2($existingReasons ?? [], $existingAdditionalDetails ?? []);
             $existingKycClarifications[Entity::CLARIFICATION_REASONS_V2] = $existingClarificationReasonsV2;
         }
 
@@ -1641,104 +1656,133 @@ class Core extends Base\Core
             return $existingKycClarifications;
         }
 
-        $newClarificationReasonsV2 = $this->getClarificationReasonsV2($newReasons ?? [],$newAdditionalDetails ?? []);
+        $newClarificationReasonsV2 = $this->getClarificationReasonsV2($newReasons ?? [], $newAdditionalDetails ?? []);
 
         $statusChangeLogs = (new Merchant\Core)->getActivationStatusChangeLog($merchantDetails->merchant);
 
         $ncCount = $this->getStatusChangeCount($statusChangeLogs, Status::NEEDS_CLARIFICATION);
         $ncCount++;
-        $clarificationReasons = $this->getClarificationReasons($existingReasons, $newReasons, $ncCount, $source);
-        $additionalDetails = $this->getClarificationReasons($existingAdditionalDetails, $newAdditionalDetails, $ncCount, $source);
+        $clarificationReasons   = $this->getClarificationReasons($existingReasons, $newReasons, $ncCount, $source);
+        $additionalDetails      = $this->getClarificationReasons($existingAdditionalDetails, $newAdditionalDetails, $ncCount, $source);
         $clarificationReasonsV2 = $this->getClarificationReasons($existingClarificationReasonsV2, $newClarificationReasonsV2, $ncCount, $source);
 
         return [
-            Entity::CLARIFICATION_REASONS     =>  $clarificationReasons,
-            Entity::ADDITIONAL_DETAILS        =>  $additionalDetails,
-            Entity::CLARIFICATION_REASONS_V2  => $clarificationReasonsV2,
-            Merchant\Constants::NC_COUNT      =>  $ncCount
+            Entity::CLARIFICATION_REASONS    => $clarificationReasons,
+            Entity::ADDITIONAL_DETAILS       => $additionalDetails,
+            Entity::CLARIFICATION_REASONS_V2 => $clarificationReasonsV2,
+            Merchant\Constants::NC_COUNT     => $ncCount
         ];
     }
 
-    protected function getClarificationReasonsV2(array $clarificationReasons,array $additionalDetails)
+    protected function getClarificationReasonsV2(array $clarificationReasons, array $additionalDetails)
     {
-        $fieldsWhichAreQueriedUpon = array_unique(array_merge(array_keys($clarificationReasons), array_keys($additionalDetails)));
+        $fieldsWhichAreQueriedUpon           = array_unique(array_merge(array_keys($clarificationReasons), array_keys($additionalDetails)));
         $fieldsWhichCannotExistIndependently = $this->getFieldsWhichCannotExistIndependently($fieldsWhichAreQueriedUpon);
-        foreach($fieldsWhichCannotExistIndependently as $field){
-            if(in_array($field, $fieldsWhichAreQueriedUpon) === true) {
+        foreach ($fieldsWhichCannotExistIndependently as $field)
+        {
+            if (in_array($field, $fieldsWhichAreQueriedUpon) === true)
+            {
                 unset($fieldsWhichAreQueriedUpon[array_search($field, $fieldsWhichAreQueriedUpon)]);
             }
         }
+
         return $this->createClarificationReasonsV2($clarificationReasons, $additionalDetails, $fieldsWhichAreQueriedUpon);
     }
 
     protected function getFieldsWhichCannotExistIndependently(array $fieldsWhichAreQueriedUpon)
     {
         $fieldsWhichCannotExistIndependently = [];
-        foreach($fieldsWhichAreQueriedUpon as $field){
+        foreach ($fieldsWhichAreQueriedUpon as $field)
+        {
             $related_fields_data = NeedsClarificationMetaData::RELATED_FIELDS_METADATA[$field][NCConstants::RELATED_FIELDS] ?? null;
-            if(empty($related_fields_data) === false){
-                foreach($related_fields_data as $related_field_data){
-                    if($related_field_data[NCConstants::CAN_RF_EXIST_INDEPENDENTLY] === false){
-                        array_push($fieldsWhichCannotExistIndependently,$related_field_data[NCConstants::FIELD_NAME]);
+            if (empty($related_fields_data) === false)
+            {
+                foreach ($related_fields_data as $related_field_data)
+                {
+                    if ($related_field_data[NCConstants::CAN_RF_EXIST_INDEPENDENTLY] === false)
+                    {
+                        array_push($fieldsWhichCannotExistIndependently, $related_field_data[NCConstants::FIELD_NAME]);
                     }
                 }
             }
         }
+
         return $fieldsWhichCannotExistIndependently;
     }
 
     protected function createClarificationReasonsV2(array $clarificationReasons, array $additionalDetails, array $fieldsToBePresentInV2)
     {
         $modifiedGroupedDetails = [];
-        foreach($additionalDetails as $additionalDetail => $values){
-            if(in_array($additionalDetail, $fieldsToBePresentInV2) === true){
-                if (isset($modifiedGroupedDetails[$additionalDetail]) === true) {
+        foreach ($additionalDetails as $additionalDetail => $values)
+        {
+            if (in_array($additionalDetail, $fieldsToBePresentInV2) === true)
+            {
+                if (isset($modifiedGroupedDetails[$additionalDetail]) === true)
+                {
                     array_push($modifiedGroupedDetails[$additionalDetail], ...$values);
-                } else {
+                }
+                else
+                {
                     $modifiedGroupedDetails[$additionalDetail] = $values;
                 }
             }
         }
-        foreach($clarificationReasons as $clarificationReason => $values){
-            if(in_array($clarificationReason, $fieldsToBePresentInV2) === true){
-                if (isset($modifiedGroupedDetails[$clarificationReason]) === true) {
+        foreach ($clarificationReasons as $clarificationReason => $values)
+        {
+            if (in_array($clarificationReason, $fieldsToBePresentInV2) === true)
+            {
+                if (isset($modifiedGroupedDetails[$clarificationReason]) === true)
+                {
                     array_push($modifiedGroupedDetails[$clarificationReason], ...$values);
-                } else {
+                }
+                else
+                {
                     $modifiedGroupedDetails[$clarificationReason] = $values;
                 }
             }
         }
+
         return $this->addRelatedFieldsInV2($modifiedGroupedDetails);
     }
 
     protected function addRelatedFieldsInV2(array $clarification_reasons_v2)
     {
-        foreach($clarification_reasons_v2 as $clarification_reason_v2 => $values) {
+        foreach ($clarification_reasons_v2 as $clarification_reason_v2 => $values)
+        {
             $related_fields_data = NeedsClarificationMetaData::RELATED_FIELDS_METADATA[$clarification_reason_v2][NCConstants::RELATED_FIELDS] ?? null;
-            if(empty($related_fields_data) === false){
+            if (empty($related_fields_data) === false)
+            {
                 $ncCountReferenceArray = $this->getNcCountRefernceArray($clarification_reasons_v2, $related_fields_data);
-                foreach($values as &$value){
+                foreach ($values as &$value)
+                {
                     $value[NCConstants::RELATED_FIELDS] = [];
-                    foreach($related_fields_data as $related_field_data){
-                        $related_field = $related_field_data[NCConstants::FIELD_NAME];
+                    foreach ($related_fields_data as $related_field_data)
+                    {
+                        $related_field              = $related_field_data[NCConstants::FIELD_NAME];
                         $can_rf_exist_independently = $related_field_data[NCConstants::CAN_RF_EXIST_INDEPENDENTLY];
-                        if($can_rf_exist_independently === false){
-                            array_push($value[NCConstants::RELATED_FIELDS],[
+                        if ($can_rf_exist_independently === false)
+                        {
+                            array_push($value[NCConstants::RELATED_FIELDS], [
                                 Merchant\Constants::FIELD_NAME => $related_field,
                             ]);
                         }
-                        else{
-                            if(isset($value[Merchant\Constants::NC_COUNT]) === true){
+                        else
+                        {
+                            if (isset($value[Merchant\Constants::NC_COUNT]) === true)
+                            {
                                 $currNcCount = $value[Merchant\Constants::NC_COUNT];
-                                if(in_array($currNcCount.'$'.$value[Entity::CREATED_AT],$ncCountReferenceArray[$related_field]) === false){
+                                if (in_array($currNcCount . '$' . $value[Entity::CREATED_AT], $ncCountReferenceArray[$related_field]) === false)
+                                {
                                     array_push($value[NCConstants::RELATED_FIELDS], [
                                         Merchant\Constants::FIELD_NAME => $related_field,
                                     ]);
                                 }
                             }
-                            else{
-                                if(array_key_exists($related_field, $clarification_reasons_v2) === false){
-                                    array_push($value[NCConstants::RELATED_FIELDS],[
+                            else
+                            {
+                                if (array_key_exists($related_field, $clarification_reasons_v2) === false)
+                                {
+                                    array_push($value[NCConstants::RELATED_FIELDS], [
                                         Merchant\Constants::FIELD_NAME => $related_field,
                                     ]);
                                 }
@@ -1749,25 +1793,31 @@ class Core extends Base\Core
                 $clarification_reasons_v2[$clarification_reason_v2] = $values;
             }
         }
+
         return $clarification_reasons_v2;
     }
 
-    protected function getNcCountRefernceArray(array $clarification_reasons_v2, array  $related_fields_data)
+    protected function getNcCountRefernceArray(array $clarification_reasons_v2, array $related_fields_data)
     {
         $refArray = [];
-        foreach($related_fields_data as $related_field_data){
-            $related_field = $related_field_data[NCConstants::FIELD_NAME];
+        foreach ($related_fields_data as $related_field_data)
+        {
+            $related_field              = $related_field_data[NCConstants::FIELD_NAME];
             $can_rf_exist_independently = $related_field_data[NCConstants::CAN_RF_EXIST_INDEPENDENTLY];
-            $refArray[$related_field]=[];
-            if(($can_rf_exist_independently === true) && (array_key_exists($related_field,$clarification_reasons_v2)) === true){
+            $refArray[$related_field]   = [];
+            if (($can_rf_exist_independently === true) && (array_key_exists($related_field, $clarification_reasons_v2)) === true)
+            {
                 $relatedFieldObjs = $clarification_reasons_v2[$related_field];
-                foreach($relatedFieldObjs as $relatedFieldObj){
-                    if(isset($relatedFieldObj[Merchant\Constants::NC_COUNT]) === true) {
-                        array_push($refArray[$related_field], $relatedFieldObj[Merchant\Constants::NC_COUNT].'$'.$relatedFieldObj[Entity::CREATED_AT]);
+                foreach ($relatedFieldObjs as $relatedFieldObj)
+                {
+                    if (isset($relatedFieldObj[Merchant\Constants::NC_COUNT]) === true)
+                    {
+                        array_push($refArray[$related_field], $relatedFieldObj[Merchant\Constants::NC_COUNT] . '$' . $relatedFieldObj[Entity::CREATED_AT]);
                     }
                 }
             }
         }
+
         return $refArray;
     }
 
@@ -1778,27 +1828,36 @@ class Core extends Base\Core
         //
         $existingReasons = $existingReasons ?? [];
 
-        foreach ($existingReasons as $key => $values) {
-            foreach ($values as &$val) {
-                if (isset($val[Merchant\Constants::NC_COUNT]) and $val[Merchant\Constants::NC_COUNT] !== $ncCount) {
+        foreach ($existingReasons as $key => $values)
+        {
+            foreach ($values as &$val)
+            {
+                if (isset($val[Merchant\Constants::NC_COUNT]) and $val[Merchant\Constants::NC_COUNT] !== $ncCount)
+                {
                     $val[Merchant\Constants::IS_CURRENT] = false;
                 }
             }
 
             $existingReasons[$key] = $values;
         }
-        if (empty($newReasons) === false) {
-            foreach ($newReasons as $key => $values) {
-                foreach ($values as &$val) {
+        if (empty($newReasons) === false)
+        {
+            foreach ($newReasons as $key => $values)
+            {
+                foreach ($values as &$val)
+                {
                     $val[Merchant\Constants::REASON_FROM] = $this->getSender($source);
-                    $val[Entity::CREATED_AT] = Carbon::now(Timezone::IST)->getTimestamp();
-                    $val[Merchant\Constants::NC_COUNT] = $ncCount;
-                    $val[Merchant\Constants::IS_CURRENT] = true;
+                    $val[Entity::CREATED_AT]              = Carbon::now(Timezone::IST)->getTimestamp();
+                    $val[Merchant\Constants::NC_COUNT]    = $ncCount;
+                    $val[Merchant\Constants::IS_CURRENT]  = true;
                 }
 
-                if (isset($existingReasons[$key]) === true) {
+                if (isset($existingReasons[$key]) === true)
+                {
                     array_push($existingReasons[$key], ...$values);
-                } else {
+                }
+                else
+                {
                     $existingReasons[$key] = $values;
                 }
             }
@@ -1809,7 +1868,7 @@ class Core extends Base\Core
 
     public function editMerchantDetailFields(Merchant\Entity $merchant, array $input): Entity
     {
-        $merchantDetails = Tracer::inspan(['name' => HyperTrace::GET_MERCHANT_DETAILS_CORE], function () use ($merchant, $input) {
+        $merchantDetails = Tracer::inspan(['name' => HyperTrace::GET_MERCHANT_DETAILS_CORE], function() use ($merchant, $input) {
 
             return $this->getMerchantDetails($merchant, $input);
         });
@@ -1843,19 +1902,19 @@ class Core extends Base\Core
 
         $merchantDetails->edit($input);
 
-        $kycClarificationReasons = Tracer::inspan(['name' => HyperTrace::GET_UPDATED_KYC_CLARIFICATION_REASONS], function () use ($input, $merchantDetails) {
+        $kycClarificationReasons = Tracer::inspan(['name' => HyperTrace::GET_UPDATED_KYC_CLARIFICATION_REASONS], function() use ($input, $merchantDetails) {
 
             return $this->getUpdatedKycClarificationReasons($input, $merchantDetails->getMerchantId());
         });
 
-        if(empty($kycClarificationReasons) === false)
+        if (empty($kycClarificationReasons) === false)
         {
             $merchantDetails->setKycClarificationReasons($kycClarificationReasons);
         }
 
         $this->updateBusinessCategory($merchantDetails, $input);
 
-        Tracer::inspan(['name' => HyperTrace::AUTO_UPDATE_MERCHANT_CATEGORY_DETAILS_IF_APPLICABLE], function () use ($merchantDetails, $merchant) {
+        Tracer::inspan(['name' => HyperTrace::AUTO_UPDATE_MERCHANT_CATEGORY_DETAILS_IF_APPLICABLE], function() use ($merchantDetails, $merchant) {
 
             $this->autoUpdateMerchantCategoryDetailsIfApplicable($merchantDetails, $merchant);
         });
@@ -1867,15 +1926,15 @@ class Core extends Base\Core
         // Sync few input fields to merchant entity
         (new Merchant\Core)->syncMerchantEntityFields($merchant, $input);
 
-        Tracer::inspan(['name' => HyperTrace::SYNC_MERCHANT_DETAIL_FIELDS_TO_STAKEHOLDER], function () use ($merchantDetails, $input) {
+        Tracer::inspan(['name' => HyperTrace::SYNC_MERCHANT_DETAIL_FIELDS_TO_STAKEHOLDER], function() use ($merchantDetails, $input) {
 
             // dual write promoter related fields to stakeholder entity
             (new Stakeholder\Core)->syncMerchantDetailFieldsToStakeholder($merchantDetails, $input);
         });
 
-        if(isset($input['stakeholder']) === true)
+        if (isset($input['stakeholder']) === true)
         {
-            Tracer::inspan(['name' => HyperTrace::SAVE_STAKEHOLDER], function () use ($merchant, $input) {
+            Tracer::inspan(['name' => HyperTrace::SAVE_STAKEHOLDER], function() use ($merchant, $input) {
 
                 (new Stakeholder\Core)->saveStakeholder(null, $merchant->getId(), $input['stakeholder'], 'activation');
             });
@@ -1902,7 +1961,6 @@ class Core extends Base\Core
             }
         }
 
-
         $this->repo->saveOrFail($merchant);
 
         $segmentProperties = $this->getSegmentPropertiesForFormSubmit($merchant, $input);
@@ -1910,7 +1968,8 @@ class Core extends Base\Core
         $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
             $merchant, $segmentProperties, SegmentEvent::KYC_FORM_SAVED);
 
-        $this->triggerRequestToBvs($merchant,Status::NEEDS_CLARIFICATION,$input);
+        $this->triggerRequestToBvs($merchant, Status::NEEDS_CLARIFICATION, $input);
+
         return $merchantDetails;
     }
 
@@ -1920,7 +1979,7 @@ class Core extends Base\Core
 
         foreach (DEConstants::KYC_FORM_SUBMIT_SEGMENT_PROPERTIES as $key)
         {
-            if(isset($input[$key]) === true)
+            if (isset($input[$key]) === true)
             {
                 $properties[$key] = $input[$key];
             }
@@ -2112,9 +2171,12 @@ class Core extends Base\Core
             {
                 Mail::queue(new L2SubmissionWhitelist($merchant->getId()));
             }
-            else if ($activationFlow === ActivationFlow::GREYLIST)
+            else
             {
-                Mail::queue(new L2SubmissionGreylist($merchant->getId()));
+                if ($activationFlow === ActivationFlow::GREYLIST)
+                {
+                    Mail::queue(new L2SubmissionGreylist($merchant->getId()));
+                }
             }
         }
     }
@@ -2156,7 +2218,7 @@ class Core extends Base\Core
             [
                 'business_website' => $merchantDetails->getWebsite(),
                 'has_key_access'   => $merchant->getHasKeyAccess(),
-                'merchant_id' => $merchant->getId()
+                'merchant_id'      => $merchant->getId()
             ]);
 
         if (empty($merchantDetails->getWebsite()) === true)
@@ -2202,38 +2264,46 @@ class Core extends Base\Core
 
     /**
      * Trigger request to BVS to inform about Manual Verification event
+     *
      * @param Merchant\Entity $merchant
-     * @param string $activationStatus
-     * @param array $data
+     * @param string          $activationStatus
+     * @param array           $data
      */
-    protected function triggerRequestToBvs(Merchant\Entity $merchant, string $activationStatus, $data = []) : void {
-        try {
+    protected function triggerRequestToBvs(Merchant\Entity $merchant, string $activationStatus, $data = []): void
+    {
+        try
+        {
             $variant = $this->app->razorx->getTreatment(
                 $merchant->getId(),
                 RazorxTreatment::BVS_MANUAL_VERIFICATION_DATA,
                 $this->app['basicauth']->getMode() ?? "live"
             );
 
-            if(strcmp($variant, Constant::ON) != 0) {
+            if (strcmp($variant, Constant::ON) != 0)
+            {
                 return;
             }
 
-            if(!isset($data)){
+            if (!isset($data))
+            {
                 $data = [];
             }
 
-            $requestContext =  $this->app['request.ctx'];
-            $request        =  $this->app['request'];
+            $requestContext = $this->app['request.ctx'];
+            $request        = $this->app['request'];
 
-            if(isset($requestContext) === false or isset($request) === false){
+            if (isset($requestContext) === false or isset($request) === false)
+            {
                 return;
             }
 
-            if($this->app['basicauth']->isAdminLoggedInAsMerchantOnDashboard() === true){
+            if ($this->app['basicauth']->isAdminLoggedInAsMerchantOnDashboard() === true)
+            {
                 return;
             }
 
-            if(!($requestContext->isAdminDashboard() || $requestContext->getInternalAppName()==='dashboard')){
+            if (!($requestContext->isAdminDashboard() || $requestContext->getInternalAppName() === 'dashboard'))
+            {
                 return;
             }
 
@@ -2255,16 +2325,17 @@ class Core extends Base\Core
                     break;
             }
         }
-        catch(\Throwable $e)
+        catch (\Throwable $e)
         {
-            $this->trace->traceException($e,  Trace::CRITICAL, TraceCode::BVS_MANUAL_VERIFICATION_REQUEST_ERROR);
+            $this->trace->traceException($e, Trace::CRITICAL, TraceCode::BVS_MANUAL_VERIFICATION_REQUEST_ERROR);
         }
     }
 
     /**
      * This function is used for archiving merchant activation form
-     * @param Entity $merchantDetails
-     * @param array $input
+     *
+     * @param Entity      $merchantDetails
+     * @param array       $input
      * @param AdminEntity $admin
      *
      * @return Entity
@@ -2412,11 +2483,12 @@ class Core extends Base\Core
 
                 (new Merchant\Activate)->activate($merchant, true, $shouldSave);
 
-                $this->triggerRequestToBvs($merchant,Status::ACTIVATED);
+                $this->triggerRequestToBvs($merchant, Status::ACTIVATED);
                 // request for default instruments when merchant is activated
                 $this->app['terminals_service']->requestDefaultMerchantInstruments($merchant->getId());
 
-                if(!$isMerchantPreviouslyActivated) {
+                if (!$isMerchantPreviouslyActivated)
+                {
                     $this->paymentEnabledEvent($merchant, $oldMerchantDetails, $newMerchantDetails);
                 }
             }
@@ -2430,16 +2502,17 @@ class Core extends Base\Core
 
                 $shouldSave = true;
 
-                $this->triggerRequestToBvs($merchant,Status::ACTIVATED_MCC_PENDING);
+                $this->triggerRequestToBvs($merchant, Status::ACTIVATED_MCC_PENDING);
                 // request for default instruments when merchant is activated
                 $this->app['terminals_service']->requestDefaultMerchantInstruments($merchant->getId());
 
-                if(!$isMerchantPreviouslyActivated) {
+                if (!$isMerchantPreviouslyActivated)
+                {
                     $this->paymentEnabledEvent($merchant, $oldMerchantDetails, $newMerchantDetails);
                 }
             }
 
-            if($input[Entity::ACTIVATION_STATUS] === Status::ACTIVATED_KYC_PENDING)
+            if ($input[Entity::ACTIVATION_STATUS] === Status::ACTIVATED_KYC_PENDING)
             {
                 (new Merchant\Activate)->activate($merchant, false, $shouldSave);
             }
@@ -2572,8 +2645,7 @@ class Core extends Base\Core
             'merchant'         => $merchant
         ];
 
-        Tracer::inSpan(['name' => 'onboarding_notification_handler_send'], function () use ($args)
-        {
+        Tracer::inSpan(['name' => 'onboarding_notification_handler_send'], function() use ($args) {
             (new OnboardingNotificationHandler($args))->send();
         });
 
@@ -2596,9 +2668,9 @@ class Core extends Base\Core
     {
 
         $properties = [
-            'previousActivationStatus'    => $oldMerchantDetails->getActivationStatus(),
-            'currentActivationStatus'     => $newMerchantDetails->getActivationStatus(),
-            'activated_at'                => $merchant->getActivatedAt(),
+            'previousActivationStatus' => $oldMerchantDetails->getActivationStatus(),
+            'currentActivationStatus'  => $newMerchantDetails->getActivationStatus(),
+            'activated_at'             => $merchant->getActivatedAt(),
         ];
 
         $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
@@ -2608,16 +2680,16 @@ class Core extends Base\Core
 
     protected function pushHubspotEvent($merchant, $merchantDetails)
     {
-        if(empty($merchant->getEmail()) === true)
+        if (empty($merchant->getEmail()) === true)
         {
             return;
         }
 
         $properties = [
-            'live'  => $merchant->isLive()
+            'live' => $merchant->isLive()
         ];
 
-        if($merchantDetails->getActivationStatus() === Status::INSTANTLY_ACTIVATED)
+        if ($merchantDetails->getActivationStatus() === Status::INSTANTLY_ACTIVATED)
         {
             $properties['instant_activation'] = 1;
         }
@@ -2628,16 +2700,16 @@ class Core extends Base\Core
     protected function getSegmentEventPropertiesforActivationStatusChange($merchant, $merchantDetails, $previousActivationStatus)
     {
         $activationStatus = $merchantDetails->getActivationStatus();
-        $properties = [
-            'activation_status'         => $merchantDetails->getActivationStatus(),
-            'previous_activation_status'=> $previousActivationStatus,
-            'mcc'                       => $merchant->getCategory()
+        $properties       = [
+            'activation_status'          => $merchantDetails->getActivationStatus(),
+            'previous_activation_status' => $previousActivationStatus,
+            'mcc'                        => $merchant->getCategory()
         ];
         if ($activationStatus === Status::INSTANTLY_ACTIVATED)
         {
             $properties['instant_activation'] = true;
         }
-        if($activationStatus === Status::ACTIVATED_MCC_PENDING)
+        if ($activationStatus === Status::ACTIVATED_MCC_PENDING)
         {
             $properties['activated_mcc_pending'] = true;
         }
@@ -2645,6 +2717,7 @@ class Core extends Base\Core
         {
             $properties['needs_clarification'] = true;
         }
+
         return $properties;
     }
 
@@ -2653,7 +2726,8 @@ class Core extends Base\Core
      */
     public function sendNeedsClarificationEmail(Merchant\Entity $merchant)
     {
-        if($merchant->getEmail() == null){
+        if ($merchant->getEmail() == null)
+        {
             return;
         }
 
@@ -2668,7 +2742,7 @@ class Core extends Base\Core
 
         $merchantDetail = $merchant->merchantDetail;
 
-        $clarificationCore = New Detail\NeedsClarification\Core();
+        $clarificationCore = new Detail\NeedsClarification\Core();
 
         $clarificationReasons = $clarificationCore->getFormattedKycClarificationReasons(
             $merchantDetail->getKycClarificationReasons());
@@ -2792,8 +2866,7 @@ class Core extends Base\Core
                 ->handle($originalMerchantDetails, $dirtyMerchantDetails);
         }
 
-        return $this->repo->transactionOnLiveAndTest(function() use ($merchantDetails, $input)
-        {
+        return $this->repo->transactionOnLiveAndTest(function() use ($merchantDetails, $input) {
             $this->repo->saveOrFail($merchantDetails);
 
             $merchant = $merchantDetails->merchant;
@@ -2809,10 +2882,10 @@ class Core extends Base\Core
                 ($merchantDetails->getActivationStatus() === Status::ACTIVATED))
             {
                 $args = [
-                    Constants::MERCHANT         => $this->merchant,
-                    DashboardNotificationEvent::EVENT     => DashboardNotificationEvent::MERCHANT_BUSINESS_WEBSITE_ADD,
-                    Constants::PARAMS           => [
-                        DashboardNotificationConstants::UPDATED_BUSINESS_WEBSITE   => $input[Entity::BUSINESS_WEBSITE]
+                    Constants::MERCHANT               => $this->merchant,
+                    DashboardNotificationEvent::EVENT => DashboardNotificationEvent::MERCHANT_BUSINESS_WEBSITE_ADD,
+                    Constants::PARAMS                 => [
+                        DashboardNotificationConstants::UPDATED_BUSINESS_WEBSITE => $input[Entity::BUSINESS_WEBSITE]
                     ]
                 ];
 
@@ -2870,17 +2943,17 @@ class Core extends Base\Core
     {
         // @todo: Activation flow will define its own validation fields
 
-       // If no doc onboarding feature is enabled and gmv limit is not exhausted then pick only the specified validation fields.
-       if ($merchantDetails->merchant->isNoDocOnboardingEnabled() === true)
-       {
-           $isGmvLimitExhausted = (new Merchant\AccountV2\Core())->isNoDocOnboardingGmvLimitExhausted($merchantDetails->getMerchantId());
+        // If no doc onboarding feature is enabled and gmv limit is not exhausted then pick only the specified validation fields.
+        if ($merchantDetails->merchant->isNoDocOnboardingEnabled() === true)
+        {
+            $isGmvLimitExhausted = (new Merchant\AccountV2\Core())->isNoDocOnboardingGmvLimitExhausted($merchantDetails->getMerchantId());
 
-           if ($isGmvLimitExhausted === false)
-           {
-               [$validationFields, $validationSelectiveRequiredFields, $validationOptionalFields] = ValidationFields::getValidationFieldsForNoDocOnboarding($merchantDetails);
+            if ($isGmvLimitExhausted === false)
+            {
+                [$validationFields, $validationSelectiveRequiredFields, $validationOptionalFields] = ValidationFields::getValidationFieldsForNoDocOnboarding($merchantDetails);
 
-               return [$validationFields, $validationSelectiveRequiredFields, $validationOptionalFields];
-           }
+                return [$validationFields, $validationSelectiveRequiredFields, $validationOptionalFields];
+            }
         }
 
         [$validationFields, $validationSelectiveRequiredFields, $validationOptionalFields] = ValidationFields::getValidationFields($merchantDetails);
@@ -2890,30 +2963,30 @@ class Core extends Base\Core
             $validationFields = array_diff($validationFields, RequiredFields::BANK_ACCOUNT_FIELDS);
         }
 
-        if(self::shouldSkipKycDocuments($merchantDetails) === true)
+        if (self::shouldSkipKycDocuments($merchantDetails) === true)
         {
             $validationFields = array_diff($validationFields, RequiredFields::KYC_DOCUMENT_FIELDS);
         }
 
-        if($this->shouldSkipPOADocuments($merchantDetails) === true)
+        if ($this->shouldSkipPOADocuments($merchantDetails) === true)
         {
             unset($validationSelectiveRequiredFields[SelectiveRequiredFields::POA_DOCUMENTS]);
         }
 
         $merchant = $merchantDetails->merchant;
 
-        if($addMissingRequirements === true)
+        if ($addMissingRequirements === true)
         {
             $businessType = $merchantDetails->getBusinessType();
 
             array_push($validationFields, Entity::PROMOTER_PAN);
 
-            if(in_array($businessType, BusinessType::$ValidateCompanyPanBusinessType) === true)
+            if (in_array($businessType, BusinessType::$ValidateCompanyPanBusinessType) === true)
             {
                 array_push($validationFields, Entity::COMPANY_PAN);
             }
 
-            if(in_array($businessType, BusinessType::$ValidateCINBusinessType) === true)
+            if (in_array($businessType, BusinessType::$ValidateCINBusinessType) === true)
             {
                 array_push($validationFields, Entity::COMPANY_CIN);
             }
@@ -2930,9 +3003,9 @@ class Core extends Base\Core
 
         if ($merchant->isLinkedAccount() === true)
         {
-            $validationFields         = RequiredFields::MARKETPLACE_ACCOUNT_FIELDS;
+            $validationFields                  = RequiredFields::MARKETPLACE_ACCOUNT_FIELDS;
             $validationSelectiveRequiredFields = [];
-            $validationOptionalFields = [];
+            $validationOptionalFields          = [];
 
             $parentMerchant = $merchant->parent;
 
@@ -2959,14 +3032,14 @@ class Core extends Base\Core
 
         $bankDetailsVerificationStatus = $merchantDetails->getBankDetailsVerificationStatus();
 
-        if($activationStatus === null)
+        if ($activationStatus === null)
         {
             return null;
         }
 
         $combinedActivationStatus = null;
 
-        switch ([$activationStatus , $bankDetailsVerificationStatus])
+        switch ([$activationStatus, $bankDetailsVerificationStatus])
         {
             case [Status::ACTIVATED, BvsValidationConstants::VERIFIED]:
             {
@@ -2986,7 +3059,7 @@ class Core extends Base\Core
     {
         $startTime = microtime(true);
 
-        list($response, $merchantDetails) = Tracer::inSpan(['name' => 'create_response.refreshing_entities'], function() use($merchantDetails) {
+        list($response, $merchantDetails) = Tracer::inSpan(['name' => 'create_response.refreshing_entities'], function() use ($merchantDetails) {
 
             $response = $merchantDetails->toArrayPublic();
             //
@@ -3006,7 +3079,7 @@ class Core extends Base\Core
             return [$response, $merchantDetails];
         });
 
-        $merchant = $merchantDetails->merchant;
+        $merchant                = $merchantDetails->merchant;
         $merchantBusinessDetails = $merchantDetails->businessDetail;
 
         if ($merchant->isLinkedAccount() === true)
@@ -3017,11 +3090,10 @@ class Core extends Base\Core
             // set key `need_kyc` for the client to determine where full KYC is needed
             // for a linked accounts activation
             //
-            $response['need_kyc']                   = (int) $parentMerchant->linkedAccountsRequireKyc();
-            $response['linked_account']             = true;
-            $response['marketplace_merchant_name']  = $parentMerchant->getName();
-            $response['marketplace_merchant_id']    = $parentMerchant->getId();
-
+            $response['need_kyc']                  = (int) $parentMerchant->linkedAccountsRequireKyc();
+            $response['linked_account']            = true;
+            $response['marketplace_merchant_name'] = $parentMerchant->getName();
+            $response['marketplace_merchant_id']   = $parentMerchant->getId();
 
             // If linked account and penny testing feature enabled on parent merchant, modify the activation_status based
             // on bank_detail_verification_status and
@@ -3044,22 +3116,21 @@ class Core extends Base\Core
             $response[Entity::REJECTION_REASONS] = $rejectionReasons->toArrayPublic();
         }
 
-        $response = Tracer::inSpan(['name' => 'create_response.set_verification_details'], function() use($merchantDetails, $merchant, $response) {
+        $response = Tracer::inSpan(['name' => 'create_response.set_verification_details'], function() use ($merchantDetails, $merchant, $response) {
 
             $response = $this->setVerificationDetails($merchantDetails, $merchant, $response);
 
             return $response;
         });
 
-
-        $response = Tracer::inSpan(['name' => 'create_response.adding_relevant_entity_details'], function() use($merchant, $merchantDetails, $response, $merchantBusinessDetails) {
+        $response = Tracer::inSpan(['name' => 'create_response.adding_relevant_entity_details'], function() use ($merchant, $merchantDetails, $response, $merchantBusinessDetails) {
 
             $hardEscalationLevel4 = $this->repo->merchant_auto_kyc_escalations->fetchEscalationsForMerchantAndTypeAndLevel
             ($merchant->getMerchantId(), Merchant\AutoKyc\Escalations\Constants::HARD_LIMIT, 4);
 
             $isDedupeBlocked = $this->dedupeCore->isDedupeBlocked($merchant);
 
-            if($merchantDetails->getActivationFormMilestone() === DEConstants::L1_SUBMISSION)
+            if ($merchantDetails->getActivationFormMilestone() === DEConstants::L1_SUBMISSION)
             {
                 /*
                  * After L1 submission we do not want to block users even if they are dedupe-blocked case
@@ -3067,29 +3138,29 @@ class Core extends Base\Core
                 $isDedupeBlocked = false;
             }
 
-            $isDedupeMatch   = $this->dedupeCore->isMerchantImpersonated($merchant);
-            $dedupe          = [
+            $isDedupeMatch = $this->dedupeCore->isMerchantImpersonated($merchant);
+            $dedupe        = [
                 'isMatch'       => $isDedupeMatch,
                 'isUnderReview' => !$isDedupeBlocked
             ];
 
-            $response[Merchant\Entity::ACTIVATED]                   = (int) $merchant->isActivated();
-            $response[Merchant\Entity::LIVE]                        = $merchant->isLive();
-            $response[Merchant\Entity::INTERNATIONAL]               = $merchant->isInternational();
-            $response[Constants::MERCHANT]                          = $merchant->toArrayPublic();
-            $response[Entity::STAKEHOLDER]                          = $merchantDetails->stakeholder;
-            $response[Entity::MERCHANT_AVG_ORDER_VALUE]             = $merchantDetails->avgOrderValue;
-            $response[Entity::ACTIVATION_PROGRESS]                  = $response['verification'][Entity::ACTIVATION_PROGRESS];
-            $response[Entity::MERCHANT_VERIFICATION_DETAIL]         = $merchantDetails->verificationDetail;
-            $response['dedupe']                                     = $dedupe;
-            $response['isDedupe']                                   = $isDedupeBlocked;
-            $response['isAutoKycDone']                              = $this->isAutoKycDone($merchantDetails);
-            $response['isHardLimitReached']                         = empty($hardEscalationLevel4) ? false : true;
-            $response['activationStatusChangeLogs']                 = $this->getStatusChangeLogs($merchant);
-            $response[Entity::MERCHANT_BUSINESS_DETAIL]             = $merchantBusinessDetails;
+            $response[Merchant\Entity::ACTIVATED]                     = (int) $merchant->isActivated();
+            $response[Merchant\Entity::LIVE]                          = $merchant->isLive();
+            $response[Merchant\Entity::INTERNATIONAL]                 = $merchant->isInternational();
+            $response[Constants::MERCHANT]                            = $merchant->toArrayPublic();
+            $response[Entity::STAKEHOLDER]                            = $merchantDetails->stakeholder;
+            $response[Entity::MERCHANT_AVG_ORDER_VALUE]               = $merchantDetails->avgOrderValue;
+            $response[Entity::ACTIVATION_PROGRESS]                    = $response['verification'][Entity::ACTIVATION_PROGRESS];
+            $response[Entity::MERCHANT_VERIFICATION_DETAIL]           = $merchantDetails->verificationDetail;
+            $response['dedupe']                                       = $dedupe;
+            $response['isDedupe']                                     = $isDedupeBlocked;
+            $response['isAutoKycDone']                                = $this->isAutoKycDone($merchantDetails);
+            $response['isHardLimitReached']                           = empty($hardEscalationLevel4) ? false : true;
+            $response['activationStatusChangeLogs']                   = $this->getStatusChangeLogs($merchant);
+            $response[Entity::MERCHANT_BUSINESS_DETAIL]               = $merchantBusinessDetails;
             $response[BusinessDetailEntity::BUSINESS_PARENT_CATEGORY] = $merchantBusinessDetails[BusinessDetailEntity::BUSINESS_PARENT_CATEGORY];
 
-            if(empty($merchantDetails->getKycClarificationReasons()) === false)
+            if (empty($merchantDetails->getKycClarificationReasons()) === false)
             {
                 $response[Entity::KYC_CLARIFICATION_REASONS] = $this->getUpdatedKycClarificationReasons([], $merchantDetails->getMerchantId());
             }
@@ -3097,10 +3168,11 @@ class Core extends Base\Core
             return $response;
         });
 
-        $response = Tracer::inSpan(['name' =>  'create_response.extra_details'], function() use($response, $merchant, $merchantBusinessDetails, $merchantDetails) {
+        $response = Tracer::inSpan(['name' => 'create_response.extra_details'], function() use ($response, $merchant, $merchantBusinessDetails, $merchantDetails) {
             $appUrls = [BusinessDetailConstants::PLAYSTORE_URL, BusinessDetailConstants::APPSTORE_URL];
 
-            foreach ($appUrls as $url){
+            foreach ($appUrls as $url)
+            {
                 $response[$url] = $merchantBusinessDetails[BusinessDetailEntity::APP_URLS][$url] ?? '';
             }
 
@@ -3146,6 +3218,7 @@ class Core extends Base\Core
             'merchant_id' => $merchantDetails->getId(),
             'duration'    => (microtime(true) - $startTime) * 1000,
         ]);
+
         return $response;
     }
 
@@ -3174,16 +3247,16 @@ class Core extends Base\Core
             return false;
         }
 
-        if((new Merchant\M2MReferral\Service())->isReferralMerchant($merchant) === true)
+        if ((new Merchant\M2MReferral\Service())->isReferralMerchant($merchant) === true)
         {
             return false;
         }
 
         $query = [
-            'filters' => [
+            'filters'      => [
                 'default' => [
                     [
-                        'created_at' => [
+                        'created_at'    => [
                             'gte' => $merchant->getCreatedAt(),
                             'lte' => Carbon::now()->getTimestamp()
                         ],
@@ -3196,11 +3269,11 @@ class Core extends Base\Core
             'aggregations' => [
                 'firstTransaction' => [
                     'agg_type' => 'oldest',
-                    'details' => [
-                        'index' => 'payments',
-                        'column' => 'created_at',
-                        'mode' => 'live',
-                        'limit' => 1,
+                    'details'  => [
+                        'index'         => 'payments',
+                        'column'        => 'created_at',
+                        'mode'          => 'live',
+                        'limit'         => 1,
                         'result_fields' => ['base_amount'],
                     ],
                 ],
@@ -3320,7 +3393,7 @@ class Core extends Base\Core
      */
     public function bulkAssignReviewer(string $reviewerId, array $merchants): array
     {
-        $success     = 0;
+        $success = 0;
 
         $failedItems = [];
 
@@ -3387,23 +3460,23 @@ class Core extends Base\Core
 
                 $success++;
 
-                $this->trace->info(TraceCode::MERCHANT_MTU_UPDATE_SUCCESS,['id' => $merchantId]);
+                $this->trace->info(TraceCode::MERCHANT_MTU_UPDATE_SUCCESS, ['id' => $merchantId]);
             }
-            catch(\Exception $e)
+            catch (\Exception $e)
             {
                 $failedItems[] = [
                     Entity::MERCHANT_ID => $merchantId,
                     'error'             => $e->getMessage()
                 ];
 
-                $this->trace->info(TraceCode::MERCHANT_MTU_UPDATE_FAILURE,['id' => $merchantId]);
+                $this->trace->info(TraceCode::MERCHANT_MTU_UPDATE_FAILURE, ['id' => $merchantId]);
             }
         }
 
         $response = [
-            'success'       => $success,
-            'failed'        => count($failedItems),
-            'failedItems'   => $failedItems,
+            'success'     => $success,
+            'failed'      => count($failedItems),
+            'failedItems' => $failedItems,
         ];
 
         return $response;
@@ -3427,7 +3500,7 @@ class Core extends Base\Core
      * This function is used for creating activation flow metric dimensions
      *
      * @param string(activation flow)
-     * @param array  $extra
+     * @param array $extra
      *
      * @return array
      *
@@ -3445,7 +3518,7 @@ class Core extends Base\Core
      *
      * @param string $previous_status
      * @param string $updated_status
-     * @param array $extra
+     * @param array  $extra
      *
      * @return array
      *
@@ -3465,12 +3538,12 @@ class Core extends Base\Core
     {
         $orgId = $merchantDetails->merchant->getOrgId();
 
-        if(empty($orgId) === true)
+        if (empty($orgId) === true)
         {
             return false;
         }
 
-        if($orgId === ORG_ENTITY::AXIS_ORG_ID)
+        if ($orgId === ORG_ENTITY::AXIS_ORG_ID)
         {
             return true;
         }
@@ -3501,14 +3574,14 @@ class Core extends Base\Core
 
     protected function shouldSkipPOADocuments(Entity $merchantDetails): bool
     {
-        if($this->isAadhaarEsignVerificationRequired($merchantDetails) === false)
+        if ($this->isAadhaarEsignVerificationRequired($merchantDetails) === false)
         {
             return false;
         }
 
         $stakeholder = $merchantDetails->stakeholder;
 
-        if(empty($stakeholder) === true)
+        if (empty($stakeholder) === true)
         {
             return false;
         }
@@ -3516,7 +3589,7 @@ class Core extends Base\Core
         $experimentEnabled = $this->mcore->isRazorxExperimentEnable($merchantDetails->getMerchantId(),
                                                                     RazorxTreatment::SKIP_POA_DOCUMENT_FUNCTIONALITY);
 
-        if($experimentEnabled === false)
+        if ($experimentEnabled === false)
         {
             return false;
         }
@@ -3524,7 +3597,7 @@ class Core extends Base\Core
         return $stakeholder->getAadhaarEsignStatus() === 'verified';
     }
 
-    public function publicAttemptPennyTesting(Entity $merchantDetails, Merchant\Entity $merchant, $bankDetailsUpdated=false)
+    public function publicAttemptPennyTesting(Entity $merchantDetails, Merchant\Entity $merchant, $bankDetailsUpdated = false)
     {
         $this->attemptPennyTesting($merchantDetails, $merchant, $bankDetailsUpdated);
     }
@@ -3541,8 +3614,8 @@ class Core extends Base\Core
      */
     protected function attemptPennyTesting(Entity $merchantDetails, Merchant\Entity $merchant, $bankDetailsUpdated = false, array $input = [])
     {
-        if($merchant->isLinkedAccount() === true and
-           $merchant->isFeatureEnabledOnParentMerchant(FeatureConstants::ROUTE_LA_PENNY_TESTING) === false)
+        if ($merchant->isLinkedAccount() === true and
+            $merchant->isFeatureEnabledOnParentMerchant(FeatureConstants::ROUTE_LA_PENNY_TESTING) === false)
         {
             return;
         }
@@ -3552,12 +3625,12 @@ class Core extends Base\Core
             Entity::BANK_BRANCH_IFSC
         ];
 
-        $isAutoKycAttemptRequired=$this->isAutoKycAttemptRequired($requiredFields,
-                                                         $requiredFields,
-                                                         $input,
-                                                         DetailEntity::BANK_DETAILS_VERIFICATION_STATUS,
-                                                         [BvsValidationConstants::FAILED],
-                                                                  $merchant->getId());
+        $isAutoKycAttemptRequired = $this->isAutoKycAttemptRequired($requiredFields,
+                                                                    $requiredFields,
+                                                                    $input,
+                                                                    DetailEntity::BANK_DETAILS_VERIFICATION_STATUS,
+                                                                    [BvsValidationConstants::FAILED],
+                                                                    $merchant->getId());
 
         if (($merchantDetails->getBankDetailsVerificationStatus() === DEConstants::VERIFIED or
              $merchantDetails->getBankDetailsVerificationStatus() === BvsValidationConstants::INITIATED) and
@@ -3602,7 +3675,7 @@ class Core extends Base\Core
             return;
         }
 
-        if ($isAutoKycAttemptRequired===true or
+        if ($isAutoKycAttemptRequired === true or
             ($pennyTestingAttemptsCount == 0 and $merchantDetails->isSubmitted() === false) or
             $bankDetailsUpdated === true)
         {
@@ -3757,7 +3830,7 @@ class Core extends Base\Core
 
         if ($autoKycDone === true)
         {
-            if($merchantDetails->getGstinVerificationStatus() === DetailConstants::VERIFIED)
+            if ($merchantDetails->getGstinVerificationStatus() === DetailConstants::VERIFIED)
             {
                 return Status::ACTIVATED;
             }
@@ -3856,6 +3929,7 @@ class Core extends Base\Core
                 return false;
             }
         }
+
         return true;
     }
 
@@ -3877,9 +3951,9 @@ class Core extends Base\Core
 
         $isGstStatusInTerminalState = $updateContextRequirement->isArtifactStatusInTerminalState($merchantDetails->getGstinVerificationStatus());
 
-        if($isGstValidationCompleted === true and $isGstStatusInTerminalState === true)
+        if ($isGstValidationCompleted === true and $isGstStatusInTerminalState === true)
         {
-            $conditions = array_merge($conditions[Operator::AND], [Entity::GSTIN_VERIFICATION_STATUS => AutoKyc\Constants::GSTIN_CONDITION]);
+            $conditions = array_merge($conditions[Operator:: AND], [Entity::GSTIN_VERIFICATION_STATUS => AutoKyc\Constants::GSTIN_CONDITION]);
         }
 
         return $conditions;
@@ -3891,12 +3965,12 @@ class Core extends Base\Core
 
         [$type, $identifier] = explode('|', $key);
 
-        if((in_array($businessType, BusinessType::getCOIApplicableBusinessTypes(), true) === true) && ($type == Constant::CERTIFICATE_OF_INCORPORATION))
+        if ((in_array($businessType, BusinessType::getCOIApplicableBusinessTypes(), true) === true) && ($type == Constant::CERTIFICATE_OF_INCORPORATION))
         {
             $isExperimentEnabledForCOI = (new Merchant\Core)->isRazorxExperimentEnable($merchantDetails->getMerchantId(),
                                                                                        RazorxTreatment::AUTO_KYC_COI);
 
-            $this->trace->info(TraceCode::COI_EXPERIMENT,[
+            $this->trace->info(TraceCode::COI_EXPERIMENT, [
                 "merchantId"                 => $merchantDetails->getMerchantId(),
                 "isExperimentEnabledForCOI"  => $isExperimentEnabledForCOI,
                 "type"                       => $type,
@@ -3904,7 +3978,7 @@ class Core extends Base\Core
                 "bizzType"                   => $businessType,
             ]);
 
-            if($isExperimentEnabledForCOI === false)
+            if ($isExperimentEnabledForCOI === false)
             {
                 return false;
             }
@@ -3932,12 +4006,12 @@ class Core extends Base\Core
     {
         $isAadhaarEsignRequired = $this->isAadhaarEsignVerificationRequired($merchantDetails);
 
-        if($isAadhaarEsignRequired === true and $key === DetailEntity::POA_VERIFICATION_STATUS)
+        if ($isAadhaarEsignRequired === true and $key === DetailEntity::POA_VERIFICATION_STATUS)
         {
             $isExperimentEnabled = $this->mcore->isRazorxExperimentEnable(
                 $merchantDetails->getMerchantId(), RazorxTreatment::POA_VERIFICATION_AUTO_KYC);
 
-            if($isExperimentEnabled === false)
+            if ($isExperimentEnabled === false)
             {
                 return false;
             }
@@ -3981,9 +4055,9 @@ class Core extends Base\Core
      * $documentGroup         :   ["document_type6","document_type7"]
      *
      * @param Merchant\Entity $merchant
-     * @param $validationDocumentFields
-     * @param $documentsResponse
-     * @param $requiredFields
+     * @param                 $validationDocumentFields
+     * @param                 $documentsResponse
+     * @param                 $requiredFields
      */
     protected function calculateRequiredDocumentFields(Merchant\Entity $merchant, $validationDocumentFields, $documentsResponse, &$requiredFields): void
     {
@@ -3993,8 +4067,7 @@ class Core extends Base\Core
             // if merchant uploads all documents of a document group then
             // we consider  required document field to be filled
             //
-            $isFieldPresent = array_reduce($documentGroups, function($isFieldPresent, $documentGroup) use ($documentsResponse)
-            {
+            $isFieldPresent = array_reduce($documentGroups, function($isFieldPresent, $documentGroup) use ($documentsResponse) {
                 $isDocumentGroupFilled = count(array_diff($documentGroup, array_keys($documentsResponse))) === 0;
 
                 $isFieldPresent = ($isFieldPresent or $isDocumentGroupFilled);
@@ -4047,7 +4120,7 @@ class Core extends Base\Core
                 [
                     'Additional_website' => $input[Entity::ADDITIONAL_WEBSITE],
                     'has_key_access'     => $merchant->getHasKeyAccess(),
-                    'merchant_id' => $merchant->getId()
+                    'merchant_id'        => $merchant->getId()
                 ]);
 
             $merchant->setHasKeyAccess(true);
@@ -4153,16 +4226,17 @@ class Core extends Base\Core
 
     public function sendRejectionEmail($merchant)
     {
-        if($merchant->getEmail() == null){
+        if ($merchant->getEmail() == null)
+        {
             return;
         }
 
         $org = $merchant->org ?: $this->repo->org->getRazorpayOrg();
 
         $data = [
-            'name'  => $merchant->getName(),
-            'email' => $merchant->getEmail(),
-            'id'    => $merchant->getId(),
+            'name'   => $merchant->getName(),
+            'email'  => $merchant->getEmail(),
+            'id'     => $merchant->getId(),
             'org_id' => $org->getId(),
         ];
 
@@ -4237,11 +4311,11 @@ class Core extends Base\Core
 
 
     /**
-     * @param Merchant\Entity $merchant
-     * @param Entity $merchantDetails
+     * @param Merchant\Entity      $merchant
+     * @param Entity               $merchantDetails
      * @param Merchant\Entity|null $partner
-     * @param array|string[] $activationFlowTypes
-     * @param bool $batchFlow
+     * @param array|string[]       $activationFlowTypes
+     * @param bool                 $batchFlow
      */
     protected function updateActivationFlows(Merchant\Entity $merchant, Merchant\Detail\Entity $merchantDetails,
                                              Merchant\Entity $partner = null,
@@ -4383,7 +4457,7 @@ class Core extends Base\Core
 
         $verificationStatus = $merchantDetails->getAttribute($documentVerificationStatusFieldKey);
 
-        if(array_search($verificationStatus, $retriableVerificationStatus, true) !== false)
+        if (array_search($verificationStatus, $retriableVerificationStatus, true) !== false)
         {
             return true;
         }
@@ -4443,13 +4517,13 @@ class Core extends Base\Core
 
         $stakeholder = $merchantDetails->stakeholder;
 
-        if(empty($stakeholder) === true)
+        if (empty($stakeholder) === true)
         {
             return false;
         }
 
         // if aadhaar is not linked we say verification is done
-        if((bool)$stakeholder->getAadhaarLinked() === false)
+        if ((bool) $stakeholder->getAadhaarLinked() === false)
         {
             return true;
         }
@@ -4480,7 +4554,7 @@ class Core extends Base\Core
         {
             $isAadhaarEsignEnabled = $this->mcore->isRazorxExperimentEnable($merchantDetails->getMerchantId(),
                                                                             $experimentName);
-            if($isAadhaarEsignEnabled === false)
+            if ($isAadhaarEsignEnabled === false)
             {
                 return false;
             }
@@ -4494,7 +4568,7 @@ class Core extends Base\Core
         Entity $merchantDetails, Merchant\Entity $merchant, $requiredFields)
     {
 
-        if(count($requiredFields) > 0)
+        if (count($requiredFields) > 0)
         {
             return false;
         }
@@ -4503,31 +4577,32 @@ class Core extends Base\Core
             $merchantDetails,
             FormSubmissionValidStatusesMap::DOCUMENT_LIST_L2);
 
-        if($merchantDetails->isUnregisteredBusiness() === false and $isValidDocumentsStatus === false)
+        if ($merchantDetails->isUnregisteredBusiness() === false and $isValidDocumentsStatus === false)
         {
             return false;
         }
 
         $activationFlow = null;
-        if($merchantDetails->canDetermineActivationFlow())
+        if ($merchantDetails->canDetermineActivationFlow())
         {
-            if($merchantDetails->isUnregisteredBusiness())
+            if ($merchantDetails->isUnregisteredBusiness())
             {
                 $activationFlow = $this->getActivationFlowForUnregistered($merchant, $merchantDetails);
             }
-            else{
+            else
+            {
                 $activationFlow = $this->getActivationFlow($merchant, $merchantDetails, null, false);
             }
         }
 
-        if($activationFlow === ActivationFlow::BLACKLIST)
+        if ($activationFlow === ActivationFlow::BLACKLIST)
         {
             return false;
         }
 
-        if($merchant->isLinkedAccount() === false)
+        if ($merchant->isLinkedAccount() === false)
         {
-            if($this->isAadhaarEsignVerificationRequired($merchantDetails) === true)
+            if ($this->isAadhaarEsignVerificationRequired($merchantDetails) === true)
             {
                 return $this->isAadhaarEsignVerificationDone($merchantDetails);
             }
@@ -4546,7 +4621,7 @@ class Core extends Base\Core
 
         $totalFields = count($validationFields) + count($validationSelectiveRequiredFields);
 
-        $documentsResponse = Tracer::inSpan(['name' => 'fetch_document_response'], function() use($merchant) {
+        $documentsResponse = Tracer::inSpan(['name' => 'fetch_document_response'], function() use ($merchant) {
             return $this->documentCore()->documentResponse($merchant);
         });
 
@@ -4819,13 +4894,13 @@ class Core extends Base\Core
         $fieldType = ($this->isLLPBusinessType($merchantDetails->getBusinessType()) === true) ?
             Constant::LLPIN : Constant::CIN;
 
-        $this->updateDocumentVerificationStatus($merchant,$merchantDetails, $fieldType);
+        $this->updateDocumentVerificationStatus($merchant, $merchantDetails, $fieldType);
     }
 
     /**
      * Returns true if llp business type
      *
-     * @param string $businessType`
+     * @param string $businessType `
      *
      * @return bool
      */
@@ -4954,7 +5029,7 @@ class Core extends Base\Core
      *
      * @return array
      */
-    public function getMerchantAndDetailEntities(string $merchantId) : array
+    public function getMerchantAndDetailEntities(string $merchantId): array
     {
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
@@ -5016,6 +5091,7 @@ class Core extends Base\Core
             );
         }
     }
+
     /**
      * @param string|null $oldActivationStatus
      * @param Entity      $merchantDetail
@@ -5119,7 +5195,7 @@ class Core extends Base\Core
                 break;
         }
 
-        if(empty($smsTemplateName) === false)
+        if (empty($smsTemplateName) === false)
         {
             $this->sendOnboardingJourneySms($merchantDetail, $smsTemplateName);
 
@@ -5139,7 +5215,7 @@ class Core extends Base\Core
      *
      * @return array
      */
-    public function getBusinessDetails(array $input) : array
+    public function getBusinessDetails(array $input): array
     {
         (new Validator())->validateInput('search_business_details', $input);
 
@@ -5320,6 +5396,7 @@ class Core extends Base\Core
 
         return $activationFlow;
     }
+
     /**
      * @param Merchant\Entity $merchant
      * @param Entity          $merchantDetails
@@ -5380,7 +5457,7 @@ class Core extends Base\Core
      *
      * @return bool
      */
-    public function isPromoCodeActive(string $merchantId) : bool
+    public function isPromoCodeActive(string $merchantId): bool
     {
         $isCouponActive = (new Coupon\Repository())
             ->isPromoCodeActiveForMerchant($merchantId, Entity::PROMO_COUPON_CODE);
@@ -5516,7 +5593,7 @@ class Core extends Base\Core
             return;
         }
 
-        $this->updateDocumentVerificationStatus($merchant, $merchantDetails,Entity::SHOP_ESTABLISHMENT_NUMBER);
+        $this->updateDocumentVerificationStatus($merchant, $merchantDetails, Entity::SHOP_ESTABLISHMENT_NUMBER);
     }
 
     /**
@@ -5550,15 +5627,15 @@ class Core extends Base\Core
             }
 
             $this->trace->info(TraceCode::ONBOARDING_FIELD_VERIFICATION_REQUEST_RECEIVED, [
-                'field' => $field,
-                "merchant_id"=>$merchant->getId()
+                'field'       => $field,
+                "merchant_id" => $merchant->getId()
             ]);
 
             $artefactDetails = Constant::FIELD_ARTEFACT_DETAILS_MAP[$field];
 
             $validation = new Merchant\BvsValidation\Entity();
 
-            if(empty($validationUnit) === true)
+            if (empty($validationUnit) === true)
             {
                 $validationUnit = $artefactDetails[Constant::VALIDATION_UNIT];
             }
@@ -5590,16 +5667,16 @@ class Core extends Base\Core
     {
         $redis = $this->app['redis']->Connection();
 
-        $key = 'aadhar_esign_session_'.$merchantId;
+        $key = 'aadhar_esign_session_' . $merchantId;
 
-        $redis->set($key, $sessionId, 'ex', 60*10);
+        $redis->set($key, $sessionId, 'ex', 60 * 10);
     }
 
     public function getEsignAadhaarSession(string $merchantId)
     {
         $redis = $this->app['redis']->Connection();
 
-        $key = 'aadhar_esign_session_'.$merchantId;
+        $key = 'aadhar_esign_session_' . $merchantId;
 
         return $redis->get($key);
     }
@@ -5607,9 +5684,9 @@ class Core extends Base\Core
     public function processEsignAadhaarVerification(string $merchantId, string $pin, string $fileUrl, string $probeId)
     {
         $stakeholderInput = [
-            Stakeholder\Entity::AADHAAR_ESIGN_STATUS  => 'verified',
-            Stakeholder\Entity::AADHAAR_PIN           => $pin,
-            Stakeholder\Entity::BVS_PROBE_ID          => $probeId
+            Stakeholder\Entity::AADHAAR_ESIGN_STATUS => 'verified',
+            Stakeholder\Entity::AADHAAR_PIN          => $pin,
+            Stakeholder\Entity::BVS_PROBE_ID         => $probeId
         ];
 
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
@@ -5618,8 +5695,8 @@ class Core extends Base\Core
         $xml = $this->extractXmlFromZip($merchantId, $pin, $zip);
         $this->encryptFile($xml);
 
-        $this->uploadAadharEsignDocument($merchant,Document\Type::AADHAR_ZIP, $zip);
-        $this->uploadAadharEsignDocument($merchant,Document\Type::AADHAR_XML, $xml);
+        $this->uploadAadharEsignDocument($merchant, Document\Type::AADHAR_ZIP, $zip);
+        $this->uploadAadharEsignDocument($merchant, Document\Type::AADHAR_XML, $xml);
 
         (new Stakeholder\Core)->saveStakeholder(null, $merchantId, $stakeholderInput);
     }
@@ -5628,7 +5705,7 @@ class Core extends Base\Core
     {
         $input = [
             'document_type' => $document_type,
-            'file'      => $file
+            'file'          => $file
         ];
 
         $this->documentCore()->uploadActivationFile($merchant, $input, true, 'aadharUpload');
@@ -5636,8 +5713,8 @@ class Core extends Base\Core
 
     private function getFileFromUrl(string $merchantId, string $fileUrl)
     {
-        $tmpZipFilePath = '/tmp/'.$merchantId.'zip';
-        if(file_put_contents($tmpZipFilePath, file_get_contents($fileUrl)))
+        $tmpZipFilePath = '/tmp/' . $merchantId . 'zip';
+        if (file_put_contents($tmpZipFilePath, file_get_contents($fileUrl)))
         {
             return new UploadedFile($tmpZipFilePath, 'file.zip', null, null, null, true);
         }
@@ -5647,20 +5724,23 @@ class Core extends Base\Core
 
     private function extractXmlFromZip(string $merchantId, string $pin, $zip)
     {
-        $tmpFolder = '/tmp/'.$merchantId;
+        $tmpFolder = '/tmp/' . $merchantId;
 
         $zipArchive = new \ZipArchive();
 
-        if($zipArchive->open($zip->getPath().'/'.$zip->getFilename()) === TRUE) {
+        if ($zipArchive->open($zip->getPath() . '/' . $zip->getFilename()) === true)
+        {
             $zipArchive->setPassword($pin);
             // Unzip Path
             $zipArchive->extractTo($tmpFolder);
             $zipArchive->close();
 
             $allFiles = scandir($tmpFolder);
-            foreach ($allFiles as $xmlFile) {
-                if (ends_with($xmlFile, 'xml')) {
-                    return new UploadedFile($tmpFolder. '/' . $xmlFile,
+            foreach ($allFiles as $xmlFile)
+            {
+                if (ends_with($xmlFile, 'xml'))
+                {
+                    return new UploadedFile($tmpFolder . '/' . $xmlFile,
                                             'file.xml', null, null, null, true);
                 }
             }
@@ -5681,7 +5761,7 @@ class Core extends Base\Core
 
         $handler = new Encryption\Handler(Encryption\Type::AES_ENCRYPTION, $params);
 
-        $handler->encryptFile($file->getPath().'/'.$file->getFilename());
+        $handler->encryptFile($file->getPath() . '/' . $file->getFilename());
     }
 
     /**
@@ -5715,7 +5795,7 @@ class Core extends Base\Core
     {
         $org = $merchant->getOrgId() ?: $this->app['basicauth']->getOrgId();
 
-        if(array_key_exists($org, DEConstants::TNC_ORG_ID_EXP_MAP) === false)
+        if (array_key_exists($org, DEConstants::TNC_ORG_ID_EXP_MAP) === false)
         {
             return false;
         }
@@ -5767,19 +5847,22 @@ class Core extends Base\Core
                 $commonFields = DEConstants::COMMON_FIELDS_WITH_PARTNER_ACTIVATION[$businessType];
             }
         }
-        else if ($entity->getEntityName() === E::MERCHANT_DETAIL)
+        else
         {
-            // if L1 form is submitted then do not allow verified PAN fields to be editable in the partner KYC form
-            if ($merchantDetail->getActivationFormMilestone() === DetailConstants::L1_SUBMISSION)
+            if ($entity->getEntityName() === E::MERCHANT_DETAIL)
             {
-                if ($merchantDetail->getPoiVerificationStatus() === DetailConstants::VERIFIED)
+                // if L1 form is submitted then do not allow verified PAN fields to be editable in the partner KYC form
+                if ($merchantDetail->getActivationFormMilestone() === DetailConstants::L1_SUBMISSION)
                 {
-                    array_push($commonFields, DetailEntity::PROMOTER_PAN, DetailEntity::PROMOTER_PAN_NAME);
-                }
+                    if ($merchantDetail->getPoiVerificationStatus() === DetailConstants::VERIFIED)
+                    {
+                        array_push($commonFields, DetailEntity::PROMOTER_PAN, DetailEntity::PROMOTER_PAN_NAME);
+                    }
 
-                if ($merchantDetail->getCompanyPanVerificationStatus() === DetailConstants::VERIFIED)
-                {
-                    array_push($commonFields, DetailEntity::COMPANY_PAN, DetailEntity::BUSINESS_NAME);
+                    if ($merchantDetail->getCompanyPanVerificationStatus() === DetailConstants::VERIFIED)
+                    {
+                        array_push($commonFields, DetailEntity::COMPANY_PAN, DetailEntity::BUSINESS_NAME);
+                    }
                 }
             }
         }
@@ -5787,13 +5870,13 @@ class Core extends Base\Core
         return $commonFields;
     }
 
-    private function addCommentForBusinessWebsiteSave(string $urlType, string $permissionName, Entity $merchantDetails, string $dedupeFlaggedMIDs, array  $input)
+    private function addCommentForBusinessWebsiteSave(string $urlType, string $permissionName, Entity $merchantDetails, string $dedupeFlaggedMIDs, array $input)
     {
         $businessDetailsComment = '';
 
         $testCredentialComment = '';
 
-        if($urlType === DetailConstants::URL_TYPE_WEBSITE)
+        if ($urlType === DetailConstants::URL_TYPE_WEBSITE)
         {
             $businessDetailsComment = sprintf(DetailConstants::MERCHANT_BUSINESS_WEBSITE_COMMENT,
                                               $input[DetailConstants::BUSINESS_WEBSITE_MAIN_PAGE],
@@ -5843,19 +5926,19 @@ class Core extends Base\Core
         )->first();
 
         $businessDetailsCommentEntity = (new CommentCore())->create([
-                                                                        CommentEntity::COMMENT =>  $businessDetailsComment,
+                                                                        CommentEntity::COMMENT => $businessDetailsComment,
                                                                     ]);
 
         $businessDetailsCommentEntity->entity()->associate($workFlowAction);
 
         $this->repo->saveOrFail($businessDetailsCommentEntity);
 
-        if(empty($testCredentialComment) === false)
+        if (empty($testCredentialComment) === false)
         {
             $encryptedComment = DetailConstants::ENCRYPTED_WEBSITE_DETAILS_IDENTIFIER . encrypt($testCredentialComment);
 
             $testCredentialCommentEntity = (new CommentCore())->create([
-                                                                           CommentEntity::COMMENT =>  $encryptedComment,
+                                                                           CommentEntity::COMMENT => $encryptedComment,
                                                                        ]);
 
             $testCredentialCommentEntity->entity()->associate($workFlowAction);
@@ -5943,11 +6026,11 @@ class Core extends Base\Core
         $this->repo->merchant_detail->saveOrFail($merchant->merchantDetail);
 
         $args = [
-            Constants::MERCHANT                             => $merchant,
-            DashboardNotificationEvent::EVENT               => DashboardNotificationEvent::UPDATE_MERCHANT_CONTACT_FROM_ADMIN,
-            Constants::PARAMS                               => [
-                DetailConstants::OLD_CONTACT_NUMBER         => $oldMerchantContact,
-                DetailConstants::NEW_CONTACT_NUMBER         => $newMerchantContact,
+            Constants::MERCHANT               => $merchant,
+            DashboardNotificationEvent::EVENT => DashboardNotificationEvent::UPDATE_MERCHANT_CONTACT_FROM_ADMIN,
+            Constants::PARAMS                 => [
+                DetailConstants::OLD_CONTACT_NUMBER => $oldMerchantContact,
+                DetailConstants::NEW_CONTACT_NUMBER => $newMerchantContact,
             ]
         ];
 
@@ -5969,11 +6052,11 @@ class Core extends Base\Core
             TraceCode::MERCHANT_SAVE_BUSINESS_WEBSITE,
             ['input' => $input]);
 
-        $isRequestToUpdateWebsite  = !empty($this->merchant->merchantDetail->getWebsite());
+        $isRequestToUpdateWebsite = !empty($this->merchant->merchantDetail->getWebsite());
 
-        $input = array_merge($input , [DetailConstants::URL_TYPE => $urlType]);
+        $input = array_merge($input, [DetailConstants::URL_TYPE => $urlType]);
 
-        if($urlType === DetailConstants::URL_TYPE_WEBSITE)
+        if ($urlType === DetailConstants::URL_TYPE_WEBSITE)
         {
             $this->merchant->merchantDetail->getValidator()->validateInput('business_websites_check', $input);
         }
@@ -5984,13 +6067,13 @@ class Core extends Base\Core
 
         $permissionName = Permission\Name::EDIT_MERCHANT_WEBSITE_DETAIL;
 
-        $newUrl = ($urlType === DetailConstants::URL_TYPE_WEBSITE) ?  $input[DetailConstants::BUSINESS_WEBSITE_MAIN_PAGE] : $input[DetailConstants::BUSINESS_APP_URL];
+        $newUrl = ($urlType === DetailConstants::URL_TYPE_WEBSITE) ? $input[DetailConstants::BUSINESS_WEBSITE_MAIN_PAGE] : $input[DetailConstants::BUSINESS_APP_URL];
 
-        if($isRequestToUpdateWebsite === true)
+        if ($isRequestToUpdateWebsite === true)
         {
-            if($this->merchant->getHasKeyAccess() === false)
+            if ($this->merchant->getHasKeyAccess() === false)
             {
-                ( new KeyValidator)->checkHasKeyAccess($this->merchant, $this->mode);
+                (new KeyValidator)->checkHasKeyAccess($this->merchant, $this->mode);
             }
 
             $permissionName = Permission\Name::UPDATE_MERCHANT_WEBSITE;
@@ -6000,28 +6083,27 @@ class Core extends Base\Core
 
         $this->merchant->merchantDetail->setWebsite($newUrl);
 
-        $dirtyMerchantDetails  = [DetailConstants::BUSINESS_WEBSITE_MAIN_PAGE => $this->merchant->merchantDetail->getWebsite()];
+        $dirtyMerchantDetails = [DetailConstants::BUSINESS_WEBSITE_MAIN_PAGE => $this->merchant->merchantDetail->getWebsite()];
 
-        [$status , $matchedMerchantIds] = $this->dedupeCore->matchAndGetMatchedMIDs($this->merchant);
+        [$status, $matchedMerchantIds] = $this->dedupeCore->matchAndGetMatchedMIDs($this->merchant);
 
         $this->merchant->merchantDetail->setWebsite($originalMerchantDetails[DetailConstants::BUSINESS_WEBSITE_MAIN_PAGE]);
 
-        $dedupeFlaggedMIDs = implode(',' , $matchedMerchantIds);
+        $dedupeFlaggedMIDs = implode(',', $matchedMerchantIds);
 
         $this->app['workflow']
             ->setPermission($permissionName)
             ->setEntityAndId($this->merchant->merchantDetail->getEntity(), $this->merchant->merchantDetail->getMerchantId())
             ->setController(DetailConstants::UPDATE_BUSINESS_WEBSITE_CONTROLLER)
             ->setInput($input)
-            ->handle($originalMerchantDetails, $dirtyMerchantDetails , true);
+            ->handle($originalMerchantDetails, $dirtyMerchantDetails, true);
 
-        $this->addCommentForBusinessWebsiteSave($urlType, $permissionName, $this->merchant->merchantDetail, $dedupeFlaggedMIDs, $input );
+        $this->addCommentForBusinessWebsiteSave($urlType, $permissionName, $this->merchant->merchantDetail, $dedupeFlaggedMIDs, $input);
     }
 
-    public function updateBusinessWebsite(Merchant\Entity $merchant , string $newUrl)
+    public function updateBusinessWebsite(Merchant\Entity $merchant, string $newUrl)
     {
-        $this->repo->transactionOnLiveAndTest(function() use ($merchant, $newUrl)
-        {
+        $this->repo->transactionOnLiveAndTest(function() use ($merchant, $newUrl) {
             $this->merchant->merchantDetail->setWebsite($newUrl);
 
             $this->repo->merchant_detail->saveOrFail($this->merchant->merchantDetail);
@@ -6039,7 +6121,7 @@ class Core extends Base\Core
     {
         foreach ($comments as $comment)
         {
-            if(empty($comment->comment) == false and strpos($comment->comment, DetailConstants::ENCRYPTED_WEBSITE_DETAILS_IDENTIFIER) === 0)
+            if (empty($comment->comment) == false and strpos($comment->comment, DetailConstants::ENCRYPTED_WEBSITE_DETAILS_IDENTIFIER) === 0)
             {
                 $decryptedWebsiteInfo = decrypt(substr($comment->comment, strlen(DetailConstants::ENCRYPTED_WEBSITE_DETAILS_IDENTIFIER)));
 
@@ -6059,8 +6141,9 @@ class Core extends Base\Core
      *         submit the partner activation form
      * Case 3: Partner activation form is not submitted (null)
      *       - Only submit the partner activation form
+     *
      * @param Merchant\Entity $merchant
-     * @param array|null $input
+     * @param array|null      $input
      *
      * @throws \Throwable
      */
@@ -6113,7 +6196,7 @@ class Core extends Base\Core
 
         $input = array_merge($input, [DetailConstants::URL_TYPE => $urlType]);
 
-        if($urlType === DetailConstants::URL_TYPE_WEBSITE)
+        if ($urlType === DetailConstants::URL_TYPE_WEBSITE)
         {
             $merchantDetails->getValidator()->validateInput('additional_website_check', $input);
 
@@ -6143,11 +6226,11 @@ class Core extends Base\Core
             ->setController(DetailConstants::ADD_ADDITIONAL_WEBSITE_CONTROLLER)
             ->handle($oldMerchantDetails, $newMerchantDetails, true);
 
-        [$status , $matchedMerchantIds] = $this->dedupeCheckForAdditionalWebsite($merchant, $newUrl);
+        [$status, $matchedMerchantIds] = $this->dedupeCheckForAdditionalWebsite($merchant, $newUrl);
 
         $input[DetailConstants::DEDUPE_STATUS] = $status;
 
-        $input[DetailConstants::DEDUPE_FLAGGED_MIDS] = implode(',' , $matchedMerchantIds);
+        $input[DetailConstants::DEDUPE_FLAGGED_MIDS] = implode(',', $matchedMerchantIds);
 
         $this->addCommentForAddAdditionalWebsitePostWorkflowCreation($merchantDetails, $input, $urlType);
 
@@ -6269,7 +6352,7 @@ class Core extends Base\Core
 
     protected function createCommentForAddAdditionalWebsiteTestCredentials(WorkFlowActionEntity $workFlowAction, array $input, string $urlType)
     {
-        if($urlType === DetailConstants::URL_TYPE_WEBSITE)
+        if ($urlType === DetailConstants::URL_TYPE_WEBSITE)
         {
             $comment = sprintf(DetailConstants::ADD_ADDITIONAL_WEBSITE_WORKFLOW_TEST_CREDENTIALS_COMMENT_STRUCTURE,
                                $input[DetailConstants::ADDITIONAL_WEBSITE_TEST_USERNAME],
@@ -6297,7 +6380,7 @@ class Core extends Base\Core
 
     protected function createCommentForAddAdditionalWebsiteReason(WorkFlowActionEntity $workFlowAction, array $input, string $urlType)
     {
-        if($urlType === DetailConstants::URL_TYPE_WEBSITE)
+        if ($urlType === DetailConstants::URL_TYPE_WEBSITE)
         {
             $comment = sprintf(DetailConstants::ADD_ADDITIONAL_WEBSITE_WORKFLOW_REASON_COMMENT_STRUCTURE,
                                $input[DetailConstants::ADDITIONAL_WEBSITE_REASON]
@@ -6309,7 +6392,6 @@ class Core extends Base\Core
                                $input[DetailConstants::ADDITIONAL_APP_REASON]
             );
         }
-
 
         $commentEntity = (new CommentCore())->create([
                                                          DetailConstants::COMMENT => $comment,
@@ -6344,13 +6426,13 @@ class Core extends Base\Core
             Constant::MERCHANT,
             Constant::BANK_ACCOUNT
         );
-        if($validation === null)
+        if ($validation === null)
         {
             return null;
         }
         $error_description = null;
 
-        if($validation->getErrorCode() === BvsValidationConstants::INPUT_DATA_ISSUE)
+        if ($validation->getErrorCode() === BvsValidationConstants::INPUT_DATA_ISSUE)
         {
             $error_description = $validation->getErrorDescription();
         }
@@ -6358,10 +6440,11 @@ class Core extends Base\Core
         {
             $error_description = $validation->getErrorCode();
         }
+
         return $error_description;
     }
 
-    public function getBusinessTypes(string $merchantId) : array
+    public function getBusinessTypes(string $merchantId): array
     {
         $result = [];
 
@@ -6400,6 +6483,7 @@ class Core extends Base\Core
 
         return $result;
     }
+
     /*
      * This function builds the response error code in the event there exists an error in the validation
      * It queries the latest validation for the supported artefact types and checks if it has error,
@@ -6459,5 +6543,82 @@ class Core extends Base\Core
         }
 
         return $errorCodes;
+    }
+
+    public function getMerchantInfo(string $merchantId): array
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $merchantDetails = $merchant->merchantDetail;
+
+        $response['merchant_details'] = $this->createResponse($merchantDetails);
+
+        $users = (new Merchant\Core())->getUsers($merchant);
+
+        $finalUsers = [];
+
+        foreach ($users as $user)
+        {
+            try
+            {
+                $contact = $user['contact_mobile'];
+
+                $user['whatsapp_optin_status']=false;
+
+                if (empty($contact) === false)
+                {
+                    $user['whatsapp_optin_status'] = app('stork_service')->optInStatusForWhatsapp($this->mode, $contact, "pg.onboarding.presignup")['consent_status'];
+                }
+            }
+            catch (\Exception $e){
+
+            }
+            array_push($finalUsers, $user);
+        }
+
+        $response['users'] = $finalUsers;
+
+        //escalations
+        $onboardingescalations   = (new Merchant\Escalations\Core)->fetchAllEscalationsForMerchant($merchant);
+        $autoKycescalations      = $this->repo->merchant_auto_kyc_escalations->fetchEscalationsForMerchant($merchantId)->callOnEveryItem('toArrayPublic');
+
+        $response['escalations'] = array_merge($onboardingescalations, $autoKycescalations);
+
+        $response['features'] = (new Feature\Service())->getFeaturesForMerchantPublic($merchant)["features"];
+
+        $response['invitations'] = $this->repo->invitation->fetchInvitations(Product::PRIMARY, $merchant->getMerchantId());
+
+        $input                    = [
+            "count" => 10,
+            "skip"  => 0
+        ];
+
+        $response['transactions'] = $this->repo->payment->fetch($input, $merchantId)->toArrayPublic()['items'];
+
+        $response['refunds']      = $this->repo->refund->fetch($input, $merchantId)->toArrayPublic()['items'];
+
+        $response['disputes']     = $this->repo->dispute->fetch($input, $merchantId)->toArrayPublic()['items'];
+
+        $response['credits']      = $creditsLogs = $this->repo->credits->fetch($input, $merchantId)->toArrayPublic()['items'];
+
+        $response['settlements']  = $this->repo->settlement->fetch($input, $merchantId)->toArrayPublic()['items'];
+
+        $input['phase']           = 'chargeback';
+        $response['chargebacks']  = $this->repo->dispute->fetch($input, $merchantId)->toArrayPublic()['items'];
+
+        $data         = [
+            StoreConstants::NAMESPACE => Merchant\Store\ConfigKey::ONBOARDING_NAMESPACE
+        ];
+
+        $response['config'] = (new StoreCore())->fetchMerchantStore($merchantId, $data, StoreConstants::INTERNAL);
+
+        $response['referees']=$this->repo->m2m_referral->getReferralsFromReferrerId($merchantId);
+
+        $referral=$this->repo->m2m_referral->getReferralDetailsFromMerchantId($merchantId);
+
+        $response['referral']=$referral!=null?$referral->toArrayPublic():[];
+
+        return $response;
+
     }
 }

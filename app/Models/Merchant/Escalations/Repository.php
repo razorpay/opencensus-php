@@ -26,6 +26,14 @@ class Repository extends Base\Repository
             ->first();
     }
 
+    public function fetchEscalations(string $merchantId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::MERCHANT_ID, $merchantId)
+                    ->orderBy(Entity::CREATED_AT, 'desc')
+                    ->get();
+    }
+
     public function fetchEscalationForThresholdAndMilestone(string $merchantId, string $milestone, int $threshold)
     {
         return $this->newQuery()

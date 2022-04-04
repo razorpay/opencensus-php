@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant\Detail;
 
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Models\Merchant\Store\ConfigKey;
 use RZP\Models\Admin\Org\Entity as ORG_ENTITY;
 use RZP\Models\Merchant\Tnc\Entity as TncEntity;
 use RZP\Models\Merchant\Email\Entity as EmailEntity;
@@ -14,12 +15,12 @@ use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstants;
 
 class Constants
 {
-    const BANK_ACCOUNT_VERIFICATION_MAX_ATTEMPT_COUNT='BANK_ACCOUNT_VERIFICATION_MAX_ATTEMPT_COUNT';
+    const BANK_ACCOUNT_VERIFICATION_MAX_ATTEMPT_COUNT = 'BANK_ACCOUNT_VERIFICATION_MAX_ATTEMPT_COUNT';
 
     const ADMIN  = 'admin';
     const SYSTEM = 'system';
 
-    const OWNER  = 'owner';
+    const OWNER = 'owner';
 
     const OLD_CONTACT_NUMBER = 'old_contact_number';
     const NEW_CONTACT_NUMBER = 'new_contact_number';
@@ -66,10 +67,10 @@ class Constants
     const FAILURE           = 'failure';
     const INVALID           = 'invalid';
 
-    const TOKEN                         = 'token';
+    const TOKEN = 'token';
     //token timeout duration in mins
-    const TOKEN_TTL                     = 15;
-    const COUPON_CODE_CACHE_KEY_PREFIX  = 'COUPON_CODE_';
+    const TOKEN_TTL                    = 15;
+    const COUPON_CODE_CACHE_KEY_PREFIX = 'COUPON_CODE_';
 
     const SIGNED_URL             = 'signed_url';
     const PASSPORT_FRONT         = 'passport_front';
@@ -105,13 +106,13 @@ class Constants
     const PENNY_TESTING_REASON                          = 'penny_testing_reason';
 
     // penny testing reasons
-    const PENNY_TESTING_REASON_ONBOARDING               = 'onboarding';
-    const PENNY_TESTING_REASON_BANK_ACCOUNT_UPDATE      = 'bank_account_update';
+    const PENNY_TESTING_REASON_ONBOARDING          = 'onboarding';
+    const PENNY_TESTING_REASON_BANK_ACCOUNT_UPDATE = 'bank_account_update';
 
     // merchant verification
-    const VERIFICATION    = 'verification';
+    const VERIFICATION             = 'verification';
     const VERIFICATION_ERROR_CODES = 'verification_error_codes';
-    const REQUIRED_FIELDS = 'required_fields';
+    const REQUIRED_FIELDS          = 'required_fields';
 
     const DUMMY_ACTIVATION_FILE = '100000000Dummy';
 
@@ -143,20 +144,20 @@ class Constants
     const ADDRESS             = 'address';
 
     // GSTIN update self serve flow related constants
-    const GSTIN_SELF_SERVE_INPUT_CACHE_TTL                  =  6 * 60 * 60; // 6 hours (in seconds)
-    const GSTIN_SELF_SERVE_INPUT_CACHE_KEY_FORMAT           = 'gstin_self_serve_input_%s';
-    const GSTIN_SELF_SERVE_STATUS_NOT_STARTED               = 'not_started';
-    const GSTIN_SELF_SERVE_STATUS_IN_PROGRESS               = 'in_progress';
-    const GSTIN_SELF_SERVE_CERTIFICATE                      = 'gstin_self_serve_certificate';
-    const GSTIN_CERTIFICATE_FILE_ID                         = 'gstin_certificate_file_id';
-    const REJECTION_REASON                                  = 'rejection_reason';
-    const STATUS                                            = 'status';
-    const IS_ADD_GSTIN_OPERATION                            = 'is_add_gstin_operation';
-    const GSTIN_OPERATION                                   = 'gstin_operation';
-    const ADDED                                             = 'added';
-    const UPDATED                                           = 'updated';
-    const CACHE_KEY                                         = 'cache_key';
-    const CACHE_DATA                                        = 'cache_data';
+    const GSTIN_SELF_SERVE_INPUT_CACHE_TTL        = 6 * 60 * 60; // 6 hours (in seconds)
+    const GSTIN_SELF_SERVE_INPUT_CACHE_KEY_FORMAT = 'gstin_self_serve_input_%s';
+    const GSTIN_SELF_SERVE_STATUS_NOT_STARTED     = 'not_started';
+    const GSTIN_SELF_SERVE_STATUS_IN_PROGRESS     = 'in_progress';
+    const GSTIN_SELF_SERVE_CERTIFICATE            = 'gstin_self_serve_certificate';
+    const GSTIN_CERTIFICATE_FILE_ID               = 'gstin_certificate_file_id';
+    const REJECTION_REASON                        = 'rejection_reason';
+    const STATUS                                  = 'status';
+    const IS_ADD_GSTIN_OPERATION                  = 'is_add_gstin_operation';
+    const GSTIN_OPERATION                         = 'gstin_operation';
+    const ADDED                                   = 'added';
+    const UPDATED                                 = 'updated';
+    const CACHE_KEY                               = 'cache_key';
+    const CACHE_DATA                              = 'cache_data';
 
     const DOCUMENT_VERIFICATION_STATUS          = 'document_verification_status';
     const OCR_MATCHING_PERCENTAGE_WITH_PAN_NAME = 'ocr_match_percentage_with_pan_name';
@@ -219,7 +220,7 @@ class Constants
     const POA            = 'POA';
     const REGISTER       = 'REGISTER';
     const CIN            = 'CIN';
-    const GSTIN           = 'GSTIN';
+    const GSTIN          = 'GSTIN';
 
     // kyc service document type
     const PERSONAL_PAN    = 'PERSONAL_PAN';
@@ -269,55 +270,55 @@ class Constants
         self::L2_SUBMISSION
     ];
 
-    const ACTIVATION_ROUTE_NAME                = 'merchant_activation_status';
-    const ACTIVATION_CONTROLLER                = 'RZP\Http\Controllers\MerchantController@updateActivationStatus';
+    const ACTIVATION_ROUTE_NAME = 'merchant_activation_status';
+    const ACTIVATION_CONTROLLER = 'RZP\Http\Controllers\MerchantController@updateActivationStatus';
 
-    const  UPDATE_BUSINESS_WEBSITE_CONTROLLER  = 'RZP\Http\Controllers\MerchantController@putBusinessWebsiteUpdatePostWorkflow';
-    const  UPDATE_CONTACT_CONTROLLER           = 'RZP\Http\Controllers\MerchantController@putMerchantContactUpdatePostWorkflow';
+    const  UPDATE_BUSINESS_WEBSITE_CONTROLLER = 'RZP\Http\Controllers\MerchantController@putBusinessWebsiteUpdatePostWorkflow';
+    const  UPDATE_CONTACT_CONTROLLER          = 'RZP\Http\Controllers\MerchantController@putMerchantContactUpdatePostWorkflow';
 
-    const ADD_ADDITIONAL_WEBSITE_CONTROLLER     = 'RZP\Http\Controllers\MerchantController@putAddAdditionalWebsiteSelfServePostWorkflowApproval';
+    const ADD_ADDITIONAL_WEBSITE_CONTROLLER = 'RZP\Http\Controllers\MerchantController@putAddAdditionalWebsiteSelfServePostWorkflowApproval';
 
-    const ADDITIONAL_WEBSITE_MAIN_PAGE          = 'additional_website_main_page';
-    const ADDITIONAL_WEBSITE_ABOUT_US           = 'additional_website_about_us';
-    const ADDITIONAL_WEBSITE_CONTACT_US         = 'additional_website_contact_us';
-    const ADDITIONAL_WEBSITE_PRICING_DETAILS    = 'additional_website_pricing_details';
-    const ADDITIONAL_WEBSITE_PRIVACY_POLICY     = 'additional_website_privacy_policy';
-    const ADDITIONAL_WEBSITE_TNC                = 'additional_website_tnc';
-    const ADDITIONAL_WEBSITE_REFUND_POLICY      = 'additional_website_refund_policy';
-    const ADDITIONAL_WEBSITE_TEST_USERNAME      = 'additional_website_test_username';
-    const ADDITIONAL_WEBSITE_TEST_PASSWORD      = 'additional_website_test_password';
-    const ADDITIONAL_WEBSITE_REASON             = 'additional_website_reason';
-    const ADDITIONAL_WEBSITE_PROOF_URL          = 'additional_website_proof_url';
+    const ADDITIONAL_WEBSITE_MAIN_PAGE       = 'additional_website_main_page';
+    const ADDITIONAL_WEBSITE_ABOUT_US        = 'additional_website_about_us';
+    const ADDITIONAL_WEBSITE_CONTACT_US      = 'additional_website_contact_us';
+    const ADDITIONAL_WEBSITE_PRICING_DETAILS = 'additional_website_pricing_details';
+    const ADDITIONAL_WEBSITE_PRIVACY_POLICY  = 'additional_website_privacy_policy';
+    const ADDITIONAL_WEBSITE_TNC             = 'additional_website_tnc';
+    const ADDITIONAL_WEBSITE_REFUND_POLICY   = 'additional_website_refund_policy';
+    const ADDITIONAL_WEBSITE_TEST_USERNAME   = 'additional_website_test_username';
+    const ADDITIONAL_WEBSITE_TEST_PASSWORD   = 'additional_website_test_password';
+    const ADDITIONAL_WEBSITE_REASON          = 'additional_website_reason';
+    const ADDITIONAL_WEBSITE_PROOF_URL       = 'additional_website_proof_url';
 
-    const DEDUPE_STATUS                         = 'dedupe_status';
-    const DEDUPE_FLAGGED_MIDS                   = 'dedupe_flagged_MIDs';
-    const DEDUPE_STATUS_FALSE                   = 'Dedupe Status: false';
+    const DEDUPE_STATUS       = 'dedupe_status';
+    const DEDUPE_FLAGGED_MIDS = 'dedupe_flagged_MIDs';
+    const DEDUPE_STATUS_FALSE = 'Dedupe Status: false';
 
-    const ADDITIONAL_APP_URL                    = 'additional_app_url';
-    const ADDITIONAL_APP_TEST_USERNAME          = 'additional_app_test_username';
-    const ADDITIONAL_APP_TEST_PASSWORD          = 'additional_app_test_password';
-    const ADDITIONAL_APP_REASON                 = 'additional_app_reason';
+    const ADDITIONAL_APP_URL           = 'additional_app_url';
+    const ADDITIONAL_APP_TEST_USERNAME = 'additional_app_test_username';
+    const ADDITIONAL_APP_TEST_PASSWORD = 'additional_app_test_password';
+    const ADDITIONAL_APP_REASON        = 'additional_app_reason';
 
-    const COMMENT                               = 'comment';
-    const INPUT                                 = 'input';
+    const COMMENT = 'comment';
+    const INPUT   = 'input';
 
-    const ADD_ADDITIONAL_WEBSITE_WORKFLOW_PAGES_COMMENT_STRUCTURE             = 'Main Page: %s, About Us Page: %s, Contact Us Page: %s, Pricing Details Page: %s, Privacy Policy Page: %s,Terms and Condition Page: %s, Refund Policy Page: %s';
-    const ADD_ADDITIONAL_APP_WORKFLOW_PAGE_COMMENT_STRUCTURE                  = 'App URL: %s';
-    const ADD_ADDITIONAL_WEBSITE_WORKFLOW_DEDUPE_COMMENT_STRUCTURE            = 'Dedupe Status: true, Dedupe Flagged MIDs: %s';
-    const ADD_ADDITIONAL_WEBSITE_WORKFLOW_TEST_CREDENTIALS_COMMENT_STRUCTURE  = 'Test Username: %s, Test Password: %s';
-    const ADD_ADDITIONAL_WEBSITE_WORKFLOW_REASON_COMMENT_STRUCTURE            = 'Reason for adding: %s';
-    const ADD_ADDITIONAL_WEBSITE_WORKFLOW_URL_COMMENT_STRUCTURE               = 'Domain Registration/Ownership Proof URL: %sadmin/entity/ufh.files/live/file_%s';
+    const ADD_ADDITIONAL_WEBSITE_WORKFLOW_PAGES_COMMENT_STRUCTURE            = 'Main Page: %s, About Us Page: %s, Contact Us Page: %s, Pricing Details Page: %s, Privacy Policy Page: %s,Terms and Condition Page: %s, Refund Policy Page: %s';
+    const ADD_ADDITIONAL_APP_WORKFLOW_PAGE_COMMENT_STRUCTURE                 = 'App URL: %s';
+    const ADD_ADDITIONAL_WEBSITE_WORKFLOW_DEDUPE_COMMENT_STRUCTURE           = 'Dedupe Status: true, Dedupe Flagged MIDs: %s';
+    const ADD_ADDITIONAL_WEBSITE_WORKFLOW_TEST_CREDENTIALS_COMMENT_STRUCTURE = 'Test Username: %s, Test Password: %s';
+    const ADD_ADDITIONAL_WEBSITE_WORKFLOW_REASON_COMMENT_STRUCTURE           = 'Reason for adding: %s';
+    const ADD_ADDITIONAL_WEBSITE_WORKFLOW_URL_COMMENT_STRUCTURE              = 'Domain Registration/Ownership Proof URL: %sadmin/entity/ufh.files/live/file_%s';
 
-    const ENCRYPTED_ADDITIONAL_WEBSITE_CREDENTIALS_IDENTIFIER                 = 'additional_website_credentials_.';
+    const ENCRYPTED_ADDITIONAL_WEBSITE_CREDENTIALS_IDENTIFIER = 'additional_website_credentials_.';
 
     const COMPANY_SEARCH_ATTEMPT_COUNT_REDIS_KEY_PREFIX = 'company_search_attempt_count';
     const COMPANY_SEARCH_ATTEMPT_COUNT_TTL_IN_SEC       = 10800;
     const COMPANY_SEARCH_MAX_ATTEMPT                    = 30;
 
-    const GET_GST_DETAILS_MAX_ATTEMPT                    = 30;
+    const GET_GST_DETAILS_MAX_ATTEMPT = 30;
 
-    const ACCOUNT_PREFIX    = "account_prefix";
-    const IFSC_PREFIX       = "ifsc_prefix";
+    const ACCOUNT_PREFIX = "account_prefix";
+    const IFSC_PREFIX    = "ifsc_prefix";
 
     const VIRTUAL_BANK_ACCOUNTS_PREFIX = [
         [
@@ -367,12 +368,12 @@ class Constants
     ];
 
     const TNC_ORG_ID_EXP_MAP = [
-        ORG_ENTITY::AXIS_ORG_ID      => RazorxTreatment::MERCHANT_TNC,
-        ORG_ENTITY::RAZORPAY_ORG_ID  => RazorxTreatment::RAZORPAY_TNC,
+        ORG_ENTITY::AXIS_ORG_ID     => RazorxTreatment::MERCHANT_TNC,
+        ORG_ENTITY::RAZORPAY_ORG_ID => RazorxTreatment::RAZORPAY_TNC,
     ];
 
     const PUBLIC_TNC_DETAILS = [
-        'tnc' => [
+        'tnc'            => [
             TncEntity::DELIVERABLE_TYPE,
             TncEntity::SHIPPING_PERIOD,
             TncEntity::REFUND_REQUEST_PERIOD,
@@ -390,7 +391,7 @@ class Constants
             Entity::BUSINESS_SUBCATEGORY,
             Entity::BUSINESS_MODEL,
         ],
-        'merchantEmail' => [
+        'merchantEmail'  => [
             EmailEntity::EMAIL,
         ]
     ];
@@ -407,7 +408,7 @@ class Constants
             Entity::PROMOTER_PAN,
             Entity::PROMOTER_PAN_NAME
         ],
-        BusinessType::PROPRIETORSHIP => [
+        BusinessType::PROPRIETORSHIP     => [
             Entity::CONTACT_NAME,
             Entity::CONTACT_MOBILE,
             Entity::CONTACT_EMAIL,
@@ -419,7 +420,7 @@ class Constants
             Entity::PROMOTER_PAN_NAME,
             Entity::GSTIN
         ],
-        MerchantConstants::DEFAULT => [
+        MerchantConstants::DEFAULT       => [
             Entity::CONTACT_NAME,
             Entity::CONTACT_MOBILE,
             Entity::CONTACT_EMAIL,
@@ -435,36 +436,36 @@ class Constants
 
     // For both app url and business website url we use business_website key.
     // Following identifiers identifies type of url business_website/app_url.
-    const URL_TYPE_APP                             = 'app';
+    const URL_TYPE_APP = 'app';
 
-    const URL_TYPE_WEBSITE                         = 'website';
+    const URL_TYPE_WEBSITE = 'website';
 
-    const MERCHANT_APP_URL_COMMENT                 = ' app_url : %s,        dedupe_flagged_MIDs : %s';
+    const MERCHANT_APP_URL_COMMENT = ' app_url : %s,        dedupe_flagged_MIDs : %s';
 
-    const MERCHANT_BUSINESS_WEBSITE_COMMENT        = ' main_page : %s,      about_us : %s,      contact_us : %s,        pricing_details : %s,       privacy_policy : %s,        tnc : %s,       refund_policy : %s,     dedupe_flagged_MIDs : %s';
+    const MERCHANT_BUSINESS_WEBSITE_COMMENT = ' main_page : %s,      about_us : %s,      contact_us : %s,        pricing_details : %s,       privacy_policy : %s,        tnc : %s,       refund_policy : %s,     dedupe_flagged_MIDs : %s';
 
     const MERCHANT_WEBSITE_TEST_CREDENTIAL_COMMENT = " website_username : %s,       website_username's_password : %s,";
 
-    const MERCHANT_APP_TEST_CREDENTIAL_COMMENT     = " app_username : %s,       app_username's_password : %s,";
+    const MERCHANT_APP_TEST_CREDENTIAL_COMMENT = " app_username : %s,       app_username's_password : %s,";
 
-    const BUSINESS_WEBSITE_MAIN_PAGE               = 'business_website_main_page';
-    const BUSINESS_WEBSITE_ABOUT_US                = 'business_website_about_us';
-    const BUSINESS_WEBSITE_CONTACT_US              = 'business_website_contact_us';
-    const BUSINESS_WEBSITE_PRICING_DETAILS         = 'business_website_pricing_details';
-    const BUSINESS_WEBSITE_PRIVACY_POLICY          = 'business_website_privacy_policy';
-    const BUSINESS_WEBSITE_TNC                     = 'business_website_tnc';
-    const BUSINESS_WEBSITE_REFUND_POLICY           = 'business_website_refund_policy';
-    const BUSINESS_WEBSITE_USERNAME                = 'business_website_username';
-    const BUSINESS_WEBSITE_PASSWORD                = 'business_website_password';
+    const BUSINESS_WEBSITE_MAIN_PAGE       = 'business_website_main_page';
+    const BUSINESS_WEBSITE_ABOUT_US        = 'business_website_about_us';
+    const BUSINESS_WEBSITE_CONTACT_US      = 'business_website_contact_us';
+    const BUSINESS_WEBSITE_PRICING_DETAILS = 'business_website_pricing_details';
+    const BUSINESS_WEBSITE_PRIVACY_POLICY  = 'business_website_privacy_policy';
+    const BUSINESS_WEBSITE_TNC             = 'business_website_tnc';
+    const BUSINESS_WEBSITE_REFUND_POLICY   = 'business_website_refund_policy';
+    const BUSINESS_WEBSITE_USERNAME        = 'business_website_username';
+    const BUSINESS_WEBSITE_PASSWORD        = 'business_website_password';
 
-    const URL_TYPE                                 = 'url_type';
+    const URL_TYPE = 'url_type';
 
-    const BUSINESS_APP_URL                         = 'business_app_url';
-    const BUSINESS_APP_USERNAME                    = 'business_app_username';
-    const BUSINESS_APP_PASSWORD                    = 'business_app_password';
+    const BUSINESS_APP_URL      = 'business_app_url';
+    const BUSINESS_APP_USERNAME = 'business_app_username';
+    const BUSINESS_APP_PASSWORD = 'business_app_password';
 
     //Encryper business website comment on workflow request start with following
-    const ENCRYPTED_WEBSITE_DETAILS_IDENTIFIER     = 'business_website_credentials_.';
+    const ENCRYPTED_WEBSITE_DETAILS_IDENTIFIER = 'business_website_credentials_.';
 
     const KYC_FORM_SUBMIT_SEGMENT_PROPERTIES = [
         Entity::BUSINESS_TYPE,
@@ -487,13 +488,13 @@ class Constants
 
     const AADHAAR_ESIGN_BUSINESS_TYPES_EXPERIMENT_MAPPING = [
         BusinessType::NOT_YET_REGISTERED => RazorxTreatment::ESIGN_AADHAR_FUNCTIONALITY,
-        BusinessType::INDIVIDUAL => RazorxTreatment::ESIGN_AADHAR_FUNCTIONALITY,
-        BusinessType::PROPRIETORSHIP =>RazorxTreatment::ESIGN_AADHAR_FUNCTIONALITY,
-        BusinessType::PARTNERSHIP =>RazorxTreatment::ESIGN_AADHAR_FUNCTIONALITY,
-        BusinessType::HUF =>RazorxTreatment::HUF_BUSINESS_TYPE,
-        BusinessType::PUBLIC_LIMITED =>RazorxTreatment::AADHAAR_EKYC_FOR_REG_BUSINESS_TYPES,
-        BusinessType::PRIVATE_LIMITED => RazorxTreatment::AADHAAR_EKYC_FOR_REG_BUSINESS_TYPES,
-        BusinessType::LLP =>RazorxTreatment::AADHAAR_EKYC_FOR_REG_BUSINESS_TYPES
+        BusinessType::INDIVIDUAL         => RazorxTreatment::ESIGN_AADHAR_FUNCTIONALITY,
+        BusinessType::PROPRIETORSHIP     => RazorxTreatment::ESIGN_AADHAR_FUNCTIONALITY,
+        BusinessType::PARTNERSHIP        => RazorxTreatment::ESIGN_AADHAR_FUNCTIONALITY,
+        BusinessType::HUF                => RazorxTreatment::HUF_BUSINESS_TYPE,
+        BusinessType::PUBLIC_LIMITED     => RazorxTreatment::AADHAAR_EKYC_FOR_REG_BUSINESS_TYPES,
+        BusinessType::PRIVATE_LIMITED    => RazorxTreatment::AADHAAR_EKYC_FOR_REG_BUSINESS_TYPES,
+        BusinessType::LLP                => RazorxTreatment::AADHAAR_EKYC_FOR_REG_BUSINESS_TYPES
     ];
 
     const SUPPORTED_VERIFICATION_RESPONSE_TYPES = [
@@ -501,32 +502,33 @@ class Constants
     ];
 
     const VERIFICATION_RESPONSE_KEYS = [
-        BVSConstants::AADHAAR . BvsValidationConstants::PROOF => Entity::POA_VERIFICATION_STATUS,
+        BVSConstants::AADHAAR . BvsValidationConstants::PROOF      => Entity::POA_VERIFICATION_STATUS,
         BVSConstants::AADHAAR . BvsValidationConstants::IDENTIFIER => Entity::POA_VERIFICATION_STATUS,
     ];
 
     const VERIFICATION_RESPONSE_ERROR_CODES = [
         BVSConstants::AADHAAR . BvsValidationConstants::PROOF . 'Karza gateway request failed with http code - 504 error - Internal Server Error' => 'AADHAAR_KARZA_GATEWAY_TIMEOUT',
-        BVSConstants::AADHAAR . BvsValidationConstants::PROOF . 'Karza gateway request failed with http code - 502 error - Internal Server Error' =>  'AADHAAR_KARZA_BAD_GATEWAY',
-        BVSConstants::AADHAAR . BvsValidationConstants::PROOF . 'Karza gateway request failed with http code - 503 error - Service Unavailable' =>  'AADHAAR_KARZA_SERVICE_UNAVAILABLE',
-        BVSConstants::AADHAAR . BvsValidationConstants::PROOF . 'Karza gateway request failed with http code - 400 error - Bad Request' =>  'AADHAAR_KARZA_BAD_REQUEST',
-        BVSConstants::AADHAAR . BvsValidationConstants::PROOF . 'Karza gateway request failed with http code - 500 error - Internal Server Error' =>  'AADHAAR_KARZA_INTERNAL_ERROR',
-        BVSConstants::AADHAAR . BvsValidationConstants::PROOF . 'bad request sent to karza' =>  'AADHAAR_KARZA_BAD_REQUEST_SENT',
-        BVSConstants::AADHAAR . BvsValidationConstants::PROOF . 'Karza gateway call failed with http code 400' =>  'AADHAAR_KARZA_BAD_REQUEST',
-        BVSConstants::AADHAAR . BvsValidationConstants::PROOF . 'Karza gateway call failed with http code 502' =>  'AADHAAR_KARZA_BAD_GATEWAY',
-        BVSConstants::AADHAAR . BvsValidationConstants::PROOF . 'Karza gateway call failed with http code 504' =>  'AADHAAR_KARZA_GATEWAY_TIMEOUT',
-        BVSConstants::AADHAAR . BvsValidationConstants::PROOF . 'Karza gateway call failed with http code 500' =>  'AADHAAR_KARZA_INTERNAL_ERROR',
-        BVSConstants::AADHAAR . BvsValidationConstants::PROOF . 'REQUEST_FAILED' =>  'AADHAAR_EXTERNAL_SERVICE_REQUEST_FAILED',
-        BVSConstants::AADHAAR . BvsValidationConstants::PROOF . 'input document does not match  AadhaarBack document' =>  'AADHAAR_BACK_NOT_MATCHED',
-        BVSConstants::AADHAAR . BvsValidationConstants::PROOF . 'input document does not match  AadhaarFrontBottom document' =>  'AADHAAR_FRONT_NOT_MATCHED',
-        BVSConstants::AADHAAR . BvsValidationConstants::PROOF . 'input document is not a valid AadhaarFrontBottom document' =>  'AADHAAR_FRONT_INVALID',
-        BVSConstants::AADHAAR . BvsValidationConstants::PROOF . 'input document is not a valid AadhaarBack document' =>  'AADHAAR_BACK_INVALID',
-        BVSConstants::AADHAAR . BvsValidationConstants::PROOF . 'parameter 1 of equals is not string type - rule - 0 failed' =>  'AADHAAR_NAME_MISMATCH',
-        BVSConstants::AADHAAR . BvsValidationConstants::PROOF . 'parameter 2 in fuzzy_suzzy is not a string type - rule - 0 failed' =>  'AADHAAR_NUMBER_MISMATCH',
-        BVSConstants::AADHAAR . BvsValidationConstants::PROOF . 'input image type and artefact type doesn\'t match' =>  'AADHAAR_NOT_VALID',
-        BVSConstants::AADHAAR . BvsValidationConstants::PROOF . 'hystrix: timeout' =>  'AADHAAR_HYSTRIX_TIMEOUT',
-        BVSConstants::AADHAAR . BvsValidationConstants::PROOF . 'name: cannot be blank.' =>  'AADHAAR_NAME_MISMATCH',
-        BVSConstants::AADHAAR . BvsValidationConstants::PROOF . 'invalid image submitted' =>  'AADHAAR_NUMBER_MISMATCH'
+        BVSConstants::AADHAAR . BvsValidationConstants::PROOF . 'Karza gateway request failed with http code - 502 error - Internal Server Error' => 'AADHAAR_KARZA_BAD_GATEWAY',
+        BVSConstants::AADHAAR . BvsValidationConstants::PROOF . 'Karza gateway request failed with http code - 503 error - Service Unavailable'   => 'AADHAAR_KARZA_SERVICE_UNAVAILABLE',
+        BVSConstants::AADHAAR . BvsValidationConstants::PROOF . 'Karza gateway request failed with http code - 400 error - Bad Request'           => 'AADHAAR_KARZA_BAD_REQUEST',
+        BVSConstants::AADHAAR . BvsValidationConstants::PROOF . 'Karza gateway request failed with http code - 500 error - Internal Server Error' => 'AADHAAR_KARZA_INTERNAL_ERROR',
+        BVSConstants::AADHAAR . BvsValidationConstants::PROOF . 'bad request sent to karza'                                                       => 'AADHAAR_KARZA_BAD_REQUEST_SENT',
+        BVSConstants::AADHAAR . BvsValidationConstants::PROOF . 'Karza gateway call failed with http code 400'                                    => 'AADHAAR_KARZA_BAD_REQUEST',
+        BVSConstants::AADHAAR . BvsValidationConstants::PROOF . 'Karza gateway call failed with http code 502'                                    => 'AADHAAR_KARZA_BAD_GATEWAY',
+        BVSConstants::AADHAAR . BvsValidationConstants::PROOF . 'Karza gateway call failed with http code 504'                                    => 'AADHAAR_KARZA_GATEWAY_TIMEOUT',
+        BVSConstants::AADHAAR . BvsValidationConstants::PROOF . 'Karza gateway call failed with http code 500'                                    => 'AADHAAR_KARZA_INTERNAL_ERROR',
+        BVSConstants::AADHAAR . BvsValidationConstants::PROOF . 'REQUEST_FAILED'                                                                  => 'AADHAAR_EXTERNAL_SERVICE_REQUEST_FAILED',
+        BVSConstants::AADHAAR . BvsValidationConstants::PROOF . 'input document does not match  AadhaarBack document'                             => 'AADHAAR_BACK_NOT_MATCHED',
+        BVSConstants::AADHAAR . BvsValidationConstants::PROOF . 'input document does not match  AadhaarFrontBottom document'                      => 'AADHAAR_FRONT_NOT_MATCHED',
+        BVSConstants::AADHAAR . BvsValidationConstants::PROOF . 'input document is not a valid AadhaarFrontBottom document'                       => 'AADHAAR_FRONT_INVALID',
+        BVSConstants::AADHAAR . BvsValidationConstants::PROOF . 'input document is not a valid AadhaarBack document'                              => 'AADHAAR_BACK_INVALID',
+        BVSConstants::AADHAAR . BvsValidationConstants::PROOF . 'parameter 1 of equals is not string type - rule - 0 failed'                      => 'AADHAAR_NAME_MISMATCH',
+        BVSConstants::AADHAAR . BvsValidationConstants::PROOF . 'parameter 2 in fuzzy_suzzy is not a string type - rule - 0 failed'               => 'AADHAAR_NUMBER_MISMATCH',
+        BVSConstants::AADHAAR . BvsValidationConstants::PROOF . 'input image type and artefact type doesn\'t match'                               => 'AADHAAR_NOT_VALID',
+        BVSConstants::AADHAAR . BvsValidationConstants::PROOF . 'hystrix: timeout'                                                                => 'AADHAAR_HYSTRIX_TIMEOUT',
+        BVSConstants::AADHAAR . BvsValidationConstants::PROOF . 'name: cannot be blank.'                                                          => 'AADHAAR_NAME_MISMATCH',
+        BVSConstants::AADHAAR . BvsValidationConstants::PROOF . 'invalid image submitted'                                                         => 'AADHAAR_NUMBER_MISMATCH'
     ];
+
 }
 

@@ -110,6 +110,56 @@ class Core extends Base\Core
         return $response;
     }
 
+    public function fetchAllEscalationsForMerchant($merchant)
+    {
+        $response = [];
+
+        $escalations = $this->repo->merchant_onboarding_escalations->fetchEscalations($merchant->getId());
+
+        if (empty($escalations) === false)
+        {
+            foreach ($escalations as $escalation)
+            {
+                $action = $this->repo->onboarding_escalation_actions->fetchActionForEscalation($escalation->getId());
+
+                $escalationDetails = $escalation->toArray();
+
+                if (empty($action) === false)
+                {
+                    $escalationDetails['action'] = [
+                        ActionEntity::STATUS => $action->getAttribute(ActionEntity::STATUS)
+                    ];
+                }
+            }
+        }
+
+        return $response;
+    }
+
+    public function fetchEscalationsForMerchant($merchant)
+    {
+        $response = [];
+
+        $escalation = $this->repo->merchant_onboarding_escalations->fetchLatestEscalation($merchant->getId());
+
+        if (empty($escalation) === false)
+        {
+            $action = $this->repo->onboarding_escalation_actions->fetchActionForEscalation($escalation->getId());
+
+            $response = $escalation->toArray();
+
+            if (empty($action) === false)
+            {
+                $response['action'] = [
+                    ActionEntity::STATUS => $action->getAttribute(ActionEntity::STATUS)
+                ];
+            }
+        }
+
+        $response['limit'] = $this->getLimitOnEscalationMilestone($merchant);
+
+        return $response;
+    }
     private function fetchEscalationMapForMerchants(array $merchantIdList)
     {
         $escalations = $this->repo->merchant_onboarding_escalations->fetchEscalationsForMerchants($merchantIdList);

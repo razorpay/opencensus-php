@@ -653,6 +653,9 @@ class UserRolesScope
             'list_merchant_notification_config'                    => [Role::OWNER, Role::ADMIN],
             'merchant_business_types'                              => array_merge(Role::ALL_ROLES, BankingRole::getAllRoles(), Role::LINKED_ACCOUNT_ROLES,Role::RBL_ROLES),
             'merchant_business_types_admin'                        => array_merge(Role::ALL_ROLES, BankingRole::getAllRoles(), Role::LINKED_ACCOUNT_ROLES,Role::RBL_ROLES),
+            'merchant_info'                                        => array_merge(Role::ALL_ROLES, BankingRole::getAllRoles(), Role::LINKED_ACCOUNT_ROLES,Role::RBL_ROLES),
+            'merchant_logs_search'                                 => array_merge(Role::ALL_ROLES, BankingRole::getAllRoles(), Role::LINKED_ACCOUNT_ROLES,Role::RBL_ROLES),
+            'merchant_logs_fetch'                                  => array_merge(Role::ALL_ROLES, BankingRole::getAllRoles(), Role::LINKED_ACCOUNT_ROLES,Role::RBL_ROLES),
             'merchant_activation_business_details'                 => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE],
             'merchant_activation_company_search'                   => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE],
             'merchant_activation_needs_clarification'              => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE],
@@ -1096,7 +1099,10 @@ class UserRolesScope
             'merchant_activation_save'         => true,
             'merchant_document_upload'         => true,
             'merchant_business_types'          => true,
-            'merchant_business_types_admin'    => true
+            'merchant_business_types_admin'    => true,
+            'merchant_info'                    => true,
+            'merchant_logs_search'             => true,
+            'merchant_logs_fetch'              => true,
         ];
     }
 
