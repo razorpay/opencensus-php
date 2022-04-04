@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Models\Base;
 use RZP\Diag\EventCode;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Order\Entity;
 use RZP\Models\Payment;
 use RZP\Services\KafkaProducer;
@@ -496,19 +497,23 @@ class Core extends Base\Core
 
         $paymentFailedConfig = (new Config\Core())->getPaymentFailedConfig($payment->getMerchantId());
 
-        if ($paymentFailedConfig === false or
-            (isset($paymentFailedConfig['retry_payment_links']) === false and
-                (isset($paymentFailedConfig['retry_payment_links']['send_after']) === false))
-        ) {
+        $sendAfterSeconds = $this->app->razorx->getTreatment($payment->getMerchantId(), RazorxTreatment::PL_MISSED_ORDER_SEND_AFTER_SECONDS, $this->mode);
+
+        if ($sendAfterSeconds != 'control') {
+            $createPlSeconds = (int) $sendAfterSeconds;
+        } elseif ($paymentFailedConfig != false and
+            (isset($paymentFailedConfig['retry_payment_links']) === true and
+                isset($paymentFailedConfig['retry_payment_links']['send_after']) === true)) {
+            $createPlSeconds = $paymentFailedConfig['retry_payment_links']['send_after'];
+        } else
             return false;
-        }
 
         $data = [
             Constants::NAMESPACE    => $namespace,
             Constants::ENTITY_ID    => $payment->getId(),
             Constants::ENTITY_TYPE  => 'payments',
             Constants::REMINDER_DATA => [
-                Constants::CREATE_PL_AT      => Carbon::now()->addSeconds($paymentFailedConfig['retry_payment_links']['send_after'])->getTimestamp()
+                Constants::CREATE_PL_AT      => Carbon::now()->addSeconds($createPlSeconds)->getTimestamp()
             ],
         ];
 

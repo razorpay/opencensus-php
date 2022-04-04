@@ -230,6 +230,9 @@ final class RazorxTreatment
     // experiment for sending UPI links to customers while created missed order payment links
     const PL_MISSED_ORDER_UPI_LINK = 'pl_missed_order_upi_link';
 
+    // experiment for controlling delay seconds for missed order payment link creation
+    const PL_MISSED_ORDER_SEND_AFTER_SECONDS = 'pl_missed_order_send_after_seconds';
+
     // experiment for merchant when trim migration in progress
     const TRIM_MIGRATION_IN_PROGRESS = 'trim_migration_in_progress';
 
