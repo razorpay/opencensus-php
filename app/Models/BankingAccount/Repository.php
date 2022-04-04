@@ -26,9 +26,8 @@ class Repository extends Base\Repository
     public function getFromBalanceId(string $balanceId)
     {
         return $this->newQuery()
-            ->where(Entity::BALANCE_ID, '=', $balanceId)
-            ->where(Entity::STATUS, '!=', Status::ARCHIVED)
-            ->first();
+                    ->where(Entity::BALANCE_ID, '=', $balanceId)
+                    ->first();
     }
 
     public function findByAccountNumberAndChannel(string $accountNumber, string $channel)

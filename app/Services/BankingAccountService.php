@@ -11,12 +11,13 @@ use Illuminate\Http\Request;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Http\Request\Requests;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\Detail\Entity;
+use RZP\Exception\IntegrationException;
 use RZP\Models\BankingAccountService\Core;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\BankingAccount\Gateway\Icici;
 use RZP\Models\BankingAccountService\Channel;
-use RZP\Models\BankingAccountService\Constants;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Merchant\Balance\Entity as BalanceEntity;
 use RZP\Models\BankingAccountService\Constants as Fields;
@@ -63,25 +64,16 @@ class BankingAccountService
     {
         $repo = new BalanceRepo();
 
-        $balances = $repo->getBalancesByMerchantIdChannelAndAccountType($merchantId, Channel::ICICI, AccountType::DIRECT);
+        $balance = $repo->getBalanceByMerchantIdChannelAndAccountType($merchantId, Channel::ICICI, AccountType::DIRECT);
 
-        if (empty($balances) === true)
+        if(empty($balance) === true)
         {
             return [];
         }
 
         $this->isBusinessExists($merchantId);
-        $account = [];
-        foreach ($balances as $balance)
-        {
-            $account = $this->fetchBankingAccountByAccountNumberAndChannel($merchantId, $balance->getAccountNumber(), $balance->getChannel());
-            if ($account[Constants::STATUS] === "ACTIVE")
-            {
-                return $account;
-            }
-        }
 
-        return $account;
+        return $this->fetchBankingAccountByAccountNumberAndChannel($merchantId, $balance->getAccountNumber(), $balance->getChannel());
     }
 
     /**

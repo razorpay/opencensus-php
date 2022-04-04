@@ -52,9 +52,6 @@ use RZP\Models\BankingAccount\Activation\Detail as ActivationDetail;
 use RZP\Mail\BankingAccount\StatusNotificationsToSPOC\MerchantNotAvailable;
 use RZP\Mail\BankingAccount\StatusNotifications\Factory as StatusUpdateMailerFactory;
 use RZP\Constants\Mode;
-use RZP\Models\Merchant\Attribute\Core as MerchantAttributeCore;
-use \RZP\Models\Merchant\Attribute\Type as MerchantAttributeType;
-use RZP\Models\BankingAccountStatement\Details\Core as BankingAccountStatementDetailsCore;
 
 class Core extends Base\Core
 {
@@ -2034,30 +2031,5 @@ class Core extends Base\Core
                     'event_name' => SegmentEvent::CA_ACTIVATED,
                 ]);
         }
-    }
-
-
-    /**
-     * Actions taken after updating state of any banking account (Used for both RBL and ICICI accounts)
-     * Currently updating state of Baking Account Statement Details table
-     * @param Balance\Entity|null $balance
-     * @param Merchant\Entity $merchant
-     * @return array[Optional[banking_account_statement_details]]
-     */
-
-    public function archiveBankingAccount(?Balance\Entity $balance, Merchant\Entity $merchant)
-    {
-        $data = array();
-        if (!empty($balance)) {
-            $banking_account_statement_obj = $this->repo->banking_account_statement_details->fetchAccountStatementByBalance($balance->getId());
-            if (!empty($banking_account_statement_obj)) {
-                $data["banking_account_statement_details"] = (new BankingAccountStatementDetailsCore())->archiveStatementDetail($banking_account_statement_obj)->toArray();
-            }
-        }
-
-        $data["deactivated_merchant_attributes"] = (new MerchantAttributeCore)->deactivateMerchantAttributeByGroupAndTypes($merchant->getMerchantId(),
-            Merchant\Attribute\Group::X_MERCHANT_CURRENT_ACCOUNTS,
-            [MerchantAttributeType::CA_ALLOCATED_BANK, MerchantAttributeType::CA_PROCEEDED_BANK]);
-        return $data;
     }
 }

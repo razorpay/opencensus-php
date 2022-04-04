@@ -7,14 +7,12 @@ use RZP\Exception;
 class Status
 {
     const ACTIVE = 'active';
-    const ARCHIVED = 'archived';
     const INACTIVE = 'inactive';
 
     public static function getStatuses()
     {
         return [
             self::ACTIVE,
-            self::ARCHIVED,
             self::INACTIVE,
         ];
     }

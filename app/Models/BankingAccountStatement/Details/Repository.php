@@ -11,12 +11,6 @@ class Repository extends Base\Repository
 {
     protected $entity = Constants\Entity::BANKING_ACCOUNT_STATEMENT_DETAILS;
 
-    public function fetchAccountStatementByBalance(string $balanceId) : Entity{
-        return $this->newQuery()
-            ->where(Entity::BALANCE_ID, '=', $balanceId)
-            ->first();
-    }
-
     public function fetchByAccountNumberAndChannel(string $accountNumber, string $channel)
     {
         $accountNumberColumn = $this->dbColumn(Entity::ACCOUNT_NUMBER);

@@ -24,7 +24,7 @@ class Validator extends Base\Validator{
         Entity::PRODUCT => 'required|string|in:primary,banking',
         Entity::GROUP => 'required|string',
         Entity::TYPE => 'required|string',
-        Entity::VALUE => 'string|nullable'
+        Entity::VALUE => 'required|string'
     ];
 
     protected static $upsertInputValidationRules = [
