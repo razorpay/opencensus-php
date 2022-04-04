@@ -42,6 +42,10 @@ class SignUpEventRequest extends FriendBuyRequest
         {
             $arrayRequest[Constants::EMAIL] = $this->email;
         }
+        else
+        {
+            $arrayRequest[Constants::EMAIL] = $this->customerId . "@email.com";
+        }
         if (empty($this->customerId) === false)
         {
             $arrayRequest[Constants::CUSTOMER_ID] = $this->customerId;

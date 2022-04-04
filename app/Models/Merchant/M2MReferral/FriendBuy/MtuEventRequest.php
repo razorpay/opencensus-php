@@ -5,21 +5,21 @@ use RZP\Models\Merchant\M2MReferral\Constants as M2MConstants;
 use RZP\Models\Merchant\M2MReferral\Entity as M2MEntity;
 class MtuEventRequest extends FriendBuyRequest
 {
-    public $orderId;
+    public    $orderId;
 
-    public $customerId;
+    public    $customerId;
 
-    public $amount;
+    public    $amount;
 
-    public $currency;
+    public    $currency;
 
-    public $email;
+    public    $email;
 
-    public $isNewCustomer;
+    public    $isNewCustomer;
 
-    public $referralCode;
+    public    $referralCode;
 
-    public $authToken;
+    public    $authToken;
 
     protected $name;
 
@@ -35,7 +35,7 @@ class MtuEventRequest extends FriendBuyRequest
 
         $this->referralCode = $m2mEntity->getValueFromMetaData(M2MConstants::REFERRAL_CODE);
 
-        $this->amount   = $m2mEntity->getValueFromMetaData(Constants::AMOUNT);
+        $this->amount = $m2mEntity->getValueFromMetaData(Constants::AMOUNT);
 
         $this->currency = $m2mEntity->getValueFromMetaData(Constants::CURRENCY);
 
@@ -57,6 +57,10 @@ class MtuEventRequest extends FriendBuyRequest
         {
             $arrayRequest[Constants::EMAIL] = $this->email;
         }
+        else
+        {
+            $arrayRequest[Constants::EMAIL] = $this->customerId . "@email.com";
+        }
         if (empty($this->customerId) === false)
         {
             $arrayRequest[Constants::CUSTOMER_ID] = $this->customerId;
@@ -71,7 +75,7 @@ class MtuEventRequest extends FriendBuyRequest
         }
         if (empty($this->amount) === false)
         {
-            $arrayRequest[Constants::AMOUNT] = ($this->amount)/100;
+            $arrayRequest[Constants::AMOUNT] = ($this->amount) / 100;
         }
         if (empty($this->currency) === false)
         {
@@ -85,6 +89,7 @@ class MtuEventRequest extends FriendBuyRequest
         {
             $arrayRequest[M2MConstants::FIRST_NAME] = $this->name;
         }
+
         return $arrayRequest;
     }
 
