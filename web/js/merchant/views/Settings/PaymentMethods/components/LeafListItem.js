@@ -32,7 +32,6 @@ import {
   CANCELLED,
   GREYED,
 } from '../constants';
-import { CreateTicketEmitter } from 'merchant/views/TicketSupport/utils';
 import { RequestedStatus } from './InstrumentStatuses/RequestedStatus';
 import RejectedAndActionRequired from './InstrumentStatuses/RejectedAndActionRequired';
 
@@ -280,17 +279,6 @@ class LeafListItem extends React.Component {
       .catch(() => {});
   };
 
-  handleRaiseRequest = (instrument) => {
-    this.tracker('Raise Request from Instrument Dashboard', 'clicked', 'settings', {
-      actionName: 'No',
-      instrumentName: instrument.name,
-      status: instrument.status,
-    });
-    if (window.rzpTicketSystem) {
-      CreateTicketEmitter.emit('create-ticket', 'tickets');
-    }
-  };
-
   render() {
     const { instrument, intermediateInstrument, instrumentsTat } = this.props;
     const ctaClass = {
@@ -350,7 +338,6 @@ class LeafListItem extends React.Component {
       }
     };
 
-    const shouldRaiseRequest = instrument.status === REJECTED && instrument.comment;
     const shouldReinitiateRequest =
       instrument.status === ACTION_REQUIRED && !instrument.should_show_smart_dashboard_flow;
     return (
@@ -392,11 +379,6 @@ class LeafListItem extends React.Component {
               ) : null} */}
               {instrument.description && <p>{instrument.description}</p>}
             </div>
-            {shouldRaiseRequest && (
-              <button className="btn btn-link" onClick={() => this.handleRaiseRequest(instrument)}>
-                Raise Request
-              </button>
-            )}
             {shouldReinitiateRequest && (
               <button
                 className="btn btn-link"
