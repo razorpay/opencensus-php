@@ -47,9 +47,12 @@ const getXCAStatus = (user: User): XCAStatus => {
 
 export const getDerivedStatus = (data) => {
   const {
-    banking_account_activation_details: { business_pan_validation, declaration_step },
+    banking_account_activation_details: {
+      business_pan_validation = '',
+      declaration_step = '',
+    } = {},
     status = '',
-  } = data;
+  } = data || {};
   const {
     panValidationFailureStatus,
     derivedCaApplicationStatus,

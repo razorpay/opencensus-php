@@ -10,6 +10,7 @@ export enum Teams {
   CHECKOUT = 'Checkout',
   APPS = 'Apps',
   GROWTH = 'Growth',
+  PLATFORM_GROWTH = 'Platform Growth',
   CARE = 'Care',
   PARTNERSHIP = 'Partnership',
   RISK = 'Risk',
@@ -145,4 +146,7 @@ export const RoutesConfig = {
   '/trustedbadge': Teams.CHECKOUT,
 
   '/webhooks': Teams.PG_DASHBOARD,
+
+  '/connected-banking': Teams.PLATFORM_GROWTH,
+  '/announcements': Teams.PLATFORM_GROWTH,
 };

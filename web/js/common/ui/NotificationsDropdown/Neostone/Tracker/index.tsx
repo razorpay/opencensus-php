@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import isObject from 'is-object';
 import TrackerLeftIllustration from './components/TrackerLeftIllus';
 import TrackerStatus from './components/TrackerStatus';
+import ErrorBoundary, { Teams } from 'common/new-ui/ErrorBoundary';
 import {
   bankNamesMap,
   RBL_STATUS,
@@ -356,29 +357,40 @@ const NeoStoneTracker = ({ proceededBank, user, showNotification }) => {
     }
   }, []);
 
-  switch (showState) {
-    case 'loading':
-      return <NeoStoneTrackerShimmer />;
-    case 'tracker':
-      return (
-        <div className="nss-tracker" id="nss-tracker">
-          <TrackerLeftIllustration proceededBank={proceededBank} />
-          <TrackerStatus
-            proceededBank={proceededBank}
-            bankStatusForCTA={bankStatus}
-            viewLessStatus={rblActiveStatus}
-            viewMoreStatus={rblState}
-            iciciPan={iciciPanStatus}
-            campaignType={campaignType}
-          />
-        </div>
-      );
-    case 'error':
-    default:
-      return null;
-  }
+  const renderComponent = () => {
+    switch (showState) {
+      case 'loading':
+        return <NeoStoneTrackerShimmer />;
+      case 'tracker':
+        return (
+          <div className="nss-tracker" id="nss-tracker">
+            <TrackerLeftIllustration proceededBank={proceededBank} />
+            <TrackerStatus
+              proceededBank={proceededBank}
+              bankStatusForCTA={bankStatus}
+              viewLessStatus={rblActiveStatus}
+              viewMoreStatus={rblState}
+              iciciPan={iciciPanStatus}
+              campaignType={campaignType}
+            />
+          </div>
+        );
+      case 'error':
+      default:
+        return null;
+    }
+  };
+  return (
+    <ErrorBoundary
+      team={Teams?.PLATFORM_GROWTH}
+      FallbackComponent={() => {
+        return null;
+      }}
+    >
+      {renderComponent()}
+    </ErrorBoundary>
+  );
 };
-
 export default compose(
   connect(null, {
     showNotification: showNotificationProp,

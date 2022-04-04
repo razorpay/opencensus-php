@@ -710,7 +710,6 @@ class AnalyticsDesktop extends Component {
           {user.isCovidFeatureEnabled && <CovidCampaignAnnouncement userId={user.current} />}
           {/* Free Credits Repayments Banner */}
           {user.isRepaymentBannerEnabled && <RepaymentAnnouncment userId={user.current} />}
-
           {/* Announcement - Enable International Cards */}
           <ShowWhen
             additionalCondition={(usr) =>
@@ -725,7 +724,6 @@ class AnalyticsDesktop extends Component {
               internationalSettingStatus={this.props.internationalSettingStatus}
             />
           </ShowWhen>
-
           {/* Announcement - Link Paypal */}
           <ShowWhen
             additionalCondition={(usr) =>
@@ -743,13 +741,7 @@ class AnalyticsDesktop extends Component {
 
           {showNitroStatusTracker && (
             <div className="nss-tracker-wrapper">
-              <ErrorBoundary
-                FallbackComponent={() => {
-                  return null;
-                }}
-              >
-                <NeoStoneTracker proceededBank={proceededBank} user={user} />
-              </ErrorBoundary>
+              <NeoStoneTracker proceededBank={proceededBank} user={user} />
             </div>
           )}
           {this.props.can_refer ? <M2MBanner /> : null}
@@ -783,14 +775,12 @@ class AnalyticsDesktop extends Component {
               {user.isProductRecommendationEnabled && <ProductRecommendationnCard user={user} />}
             </>
           )}
-
           <ShowWhen additionalCondition={(usr) => usr.isOrgRZP && Boolean(usr.activated)}>
             <IntlPaymentsRecommendation
               user={user}
               internationalSettingStatus={this.props.internationalSettingStatus}
             />
           </ShowWhen>
-
           {hasSecondaryBanner && (
             <div className="secondary-announcement-banner">
               <PersonaliseBanner track={trackPersonaliseBanner} />
