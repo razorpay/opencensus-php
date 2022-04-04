@@ -269,6 +269,62 @@ class Repository extends Base\Repository
         return $data;
     }
 
+    /**
+     * Returns the sum of unused, non-expired credits for a merchant, for each credit type
+     * This function is explicitly only called by payment flow
+     * Sample return array:
+     * [
+     *  'amount' => 1000
+     *  'fee'    => 550
+     * ]
+     *
+     * @param Merchant\Entity $merchant
+     *
+     * @return array
+     */
+    public function getTypeAggregatedMerchantCreditsForPayment(Merchant\Entity $merchant): array
+    {
+        assertTrue($this->isTransactionActive());
+
+        $merchantsCredits = $this->newQuery()
+            ->merchantId($merchant->getId())
+            ->get();
+
+       //filtering only amount and fee credit, since these are two credits used in payment flow
+        $creditsFiltered = $merchantsCredits->filter(function ($item) {
+            return ($item->getUnusedCredits() > 0) and (($item->getExpiredAt() == null) or
+                    ($item->getExpiredAt() > time())) and (($item->getType() == Type::AMOUNT)
+                or ($item->getType() == Type::FEE));
+        });
+
+        $creditIds = $creditsFiltered->getStringAttributesByKey('id');
+
+        $creditIds = array_keys($creditIds);
+
+        $data = [];
+
+        if (count($creditIds) > 0)
+        {
+            $credits = Entity::lockForUpdate()->newQuery()
+                ->whereIn(Entity::ID, $creditIds)
+                ->get();
+
+            foreach ($credits as $credit)
+            {
+                if (isset($data[$credit->getType()]) === false)
+                {
+                    $data[$credit->getType()] = 0;
+                }
+
+                $data[$credit->getType()] += $credit->getUnusedCredits();
+            }
+        }
+
+        return $data;
+    }
+
+
+
     public function getTypeAggregatedMerchantCreditsForProduct(string $merchantId, string $product): array
     {
         $results =  $this->newQuery()

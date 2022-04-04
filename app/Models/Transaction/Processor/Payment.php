@@ -10,6 +10,7 @@ use RZP\Models\Card;
 use RZP\Models\Merchant;
 use RZP\Models\Transaction;
 use RZP\Models\Payment\Gateway;
+use RZP\Models\Merchant\Credits;
 use RZP\Models\Base as BaseCollection;
 use RZP\Models\Payment as PaymentEntity;
 use RZP\Models\Transaction\ReconciledType;
@@ -229,6 +230,36 @@ class Payment extends Base
         parent::fillDetails();
 
         $this->txn->setFeeBearer($this->source->getFeeBearer());
+    }
+
+
+    protected function setMerchantCredits()
+    {
+        // TODO: There's no lock being taken here for balance!
+
+        $this->setMerchantBalance();
+
+        $merchant = $this->merchantBalance->merchant;
+
+        $feature = Feature\Constants::OLD_CREDITS_FLOW;
+
+        if ($merchant->isFeatureEnabled($feature) === true)
+        {
+            $amountCredits = $this->merchantBalance->getAmountCredits();
+
+            $feeCredits = $this->merchantBalance->getFeeCredits();
+        }
+        else
+        {
+            $credits = $this->repo->credits->getTypeAggregatedMerchantCreditsForPayment($this->merchantBalance->merchant);
+
+            $amountCredits =  $credits[Credits\Type::AMOUNT] ?? 0;
+
+            $feeCredits = $credits[Credits\Type::FEE] ?? 0;
+        }
+
+        $this->amountCredits = $amountCredits;
+        $this->feeCredits = $feeCredits;
     }
 
     public function calculateFees()
