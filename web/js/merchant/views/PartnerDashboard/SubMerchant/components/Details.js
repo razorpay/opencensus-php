@@ -142,13 +142,15 @@ export default (props) => {
                 </ShowWhen>
 
                 {/* application details for pure platform partners */}
-                {submerchant.application && (
-                  <EntityDetailRow label="Application Id">
-                    <Link to={`/submerchants/applications/${submerchant.application.id}`}>
-                      {submerchant.application.id}
-                    </Link>
-                  </EntityDetailRow>
-                )}
+                <ShowWhen additionalCondition={(user) => user.isPartner('pure_platform')}>
+                  {submerchant?.application?.id && (
+                    <EntityDetailRow label="Application Id">
+                      <Link to={`/partners/applications/${submerchant.application.id}`}>
+                        {submerchant.application.id}
+                      </Link>
+                    </EntityDetailRow>
+                  )}
+                </ShowWhen>
 
                 <ShowWhen
                   myRole="owner admin manager"
