@@ -2,6 +2,7 @@
 
 namespace RZP\Http\Controllers;
 
+use App;
 use Request;
 use ApiResponse;
 use RZP\Exception;
@@ -16,15 +17,20 @@ use RZP\Http\Controllers\Processors\PreProcessor;
 use RZP\Http\Request\Requests;
 use RZP\Trace\TraceCode;
 
-abstract class BaseProxyController extends Controller {
+abstract class BaseProxyController extends Controller
+{
     protected $service;
+
     protected $serviceConfig;
 
     protected $routesMap;
+
     protected $merchantRoutes;
+
     protected $adminRoutes;
 
     protected $preProcessor;
+
     protected $postProcessor;
 
     protected $maskErrors;
@@ -33,17 +39,35 @@ abstract class BaseProxyController extends Controller {
 
     protected $pathTimeoutMap;
 
-    public function __construct(string $service, $maskErrors=false)
+    /**
+     * @var mixed
+     */
+    protected $circuitBreaker;
+
+    /**
+     * @var mixed
+     */
+    protected $app;
+
+    protected $serviceName = null;
+
+    public function __construct(string $service, $maskErrors = false)
     {
         parent::__construct();
 
-        $this->service = $service;
-        $this->serviceConfig = config('services.'.$service);
+        $this->service       = $service;
+
+        $this->serviceConfig = config('services.' . $service);
 
         $this->maskErrors = $maskErrors;
+
+        $this->app = App::getFacadeRoot();
+
+        $this->circuitBreaker = $this->app['circuit_breaker'];
+
     }
 
-    protected function getBaseUrl() : string
+    protected function getBaseUrl(): string
     {
         return $this->serviceConfig['url'];
     }
@@ -60,14 +84,16 @@ abstract class BaseProxyController extends Controller {
         $this->merchantRoutes = $routes;
     }
 
-    protected function registerProcessors(PreProcessor $preProcessor, PostProcessor $postProcessor)
+    protected function registerProcessors(PreProcessor $preProcessor, PostProcessor $postProcessor, $serviceName)
     {
-        $this->preProcessor = $preProcessor;
+        $this->preProcessor  = $preProcessor;
         $this->postProcessor = $postProcessor;
+        $this->serviceName   = $serviceName;
     }
 
     /**
      * Setting default timeout for all paths in seconds
+     *
      * @param $timeout
      */
     protected function setDefaultTimeout($timeout)
@@ -98,7 +124,7 @@ abstract class BaseProxyController extends Controller {
         ];
     }
 
-    protected function getRoute($path = null):string
+    protected function getRoute($path = null): string
     {
         foreach ($this->merchantRoutes as $route)
         {
@@ -111,7 +137,8 @@ abstract class BaseProxyController extends Controller {
         return '';
     }
 
-    public function handleDashboardProxyRequests($path = null){
+    public function handleDashboardProxyRequests($path = null)
+    {
         $request = Request::instance();
         $body    = $request->all();
 
@@ -141,50 +168,66 @@ abstract class BaseProxyController extends Controller {
         array $headers = [],
         array $options = [])
     {
-        if(empty($this->preProcessor) === false)
+        $this->circuitBreaker->canPass($this->serviceName);
+
+        try
         {
-            $body = $this->preProcessor->process($route, $body, []);
+            if (empty($this->preProcessor) === false)
+
+            {
+                $body = $this->preProcessor->process($route, $body, []);
+            }
+
+            $options = array_merge($options, $this->getOptions($route));
+
+            $resp = $this->sendRequest($headers, $path, $method, $body, $options);
+
+            $parsedResponse = $this->parseResponse($resp->status_code, $resp->body);
+
+            if ($resp->status_code === 200 and empty($this->postProcessor) === false)
+            {
+                $this->circuitBreaker->succeed($this->serviceName);
+
+                return $this->postProcessor->process($route, $body, $parsedResponse);
+            }
+            else
+            {
+                $this->circuitBreaker->failed($this->serviceName);
+
+                return $parsedResponse;
+            }
         }
-
-        $options = array_merge($options, $this->getOptions($route));
-
-        $resp = $this->sendRequest($headers, $path, $method, $body, $options);
-
-        $parsedResponse = $this->parseResponse($resp->status_code, $resp->body);
-
-        if($resp->status_code === 200 and empty($this->postProcessor) === false)
+        catch (\Exception $e)
         {
-            return $this->postProcessor->process($route, $body, $parsedResponse);
-        }
-        else
-        {
-            return $parsedResponse;
+            $this->circuitBreaker->failed($this->serviceName);
+
+            throw $e;
         }
     }
 
     protected function sendRequest($headers, $path, $method, $body, $options = [])
     {
         $this->trace->info(TraceCode::PROXY_REQUEST, [
-            'path'      => $path,
-            'method'    => $method,
-            'service'   => $this->service,
-            'options'   => $options
+            'path'    => $path,
+            'method'  => $method,
+            'service' => $this->service,
+            'options' => $options
         ]);
 
         $arrHeaders = new ArrayHeaders($headers);
-        $headers = $arrHeaders->toArray();
+        $headers    = $arrHeaders->toArray();
 
         $baseUrl = $this->getBaseUrl();
-        $url = $baseUrl.'/'.$path;
-        $body = empty($body) ? '{}' : json_encode($body);
+        $url     = $baseUrl . '/' . $path;
+        $body    = empty($body) ? '{}' : json_encode($body);
 
         $resp = Requests::request($url, $headers, $body, $method, $options);
 
         $this->trace->info(TraceCode::PROXY_RESPONSE, [
-            'status_code'   => $resp->status_code,
-            'path'          => $path,
-            'method'        => $method,
-            'service'       => $this->service
+            'status_code' => $resp->status_code,
+            'path'        => $path,
+            'method'      => $method,
+            'service'     => $this->service
         ]);
 
         return $resp;
@@ -195,11 +238,11 @@ abstract class BaseProxyController extends Controller {
         $timeout = $this->pathTimeoutMap[$routeName] ?? $this->defaultTimeout;
 
         return [
-            'timeout'   => $timeout
+            'timeout' => $timeout
         ];
     }
 
-    protected function newRequest( string $method, string $url, string $reqBody, array $headers): RequestInterface
+    protected function newRequest(string $method, string $url, string $reqBody, array $headers): RequestInterface
     {
         $requestFactory = Psr17FactoryDiscovery::findRequestFactory();
 
@@ -209,7 +252,8 @@ abstract class BaseProxyController extends Controller {
 
         $req = $requestFactory->createRequest($method, $url);
 
-        foreach ($headers as $key => $value) {
+        foreach ($headers as $key => $value)
+        {
             $req = $req->withHeader($key, $value);
         }
 
@@ -220,12 +264,19 @@ abstract class BaseProxyController extends Controller {
     {
         $body = json_decode($body, true);
 
-        if($this->maskErrors) {
+        if ($this->maskErrors)
+        {
             // throwing exception to keep the error response format consistent
-            if ($code === 404) {
+            if ($code === 404)
+            {
                 throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
-            } else if ($code !== 200) {
-                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_REQUEST_BODY);
+            }
+            else
+            {
+                if ($code !== 200)
+                {
+                    throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_REQUEST_BODY);
+                }
             }
         }
 

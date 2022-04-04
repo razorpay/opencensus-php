@@ -2,6 +2,7 @@
 
 namespace RZP\Http\Controllers;
 
+use RZP\Trace\TraceCode;
 use RZP\Http\Controllers\Processors\BvsProxyPostProcessors;
 use RZP\Http\Controllers\Processors\BvsProxyPreProcessors;
 use RZP\Models\Merchant\AutoKyc\Bvs\Core as BvsCore;
@@ -33,6 +34,7 @@ class BvsProxyController extends BaseProxyController {
         self::VERIFY_CAPTCHA_GET_OTP    => 30
     ];
 
+
     public function __construct()
     {
         parent::__construct("business_verification_service");
@@ -43,11 +45,25 @@ class BvsProxyController extends BaseProxyController {
         $this->setPathTimeoutMap(self::PATH_TIMEOUT_MAP);
         $this->setDefaultTimeout(30);
 
+        $config=config('circuit_breaker');
+
+        $serviceName='aadhaar_ekyc';
+
+        $settings = [
+            'exceptions_on' => $config[$serviceName]['exceptions_on'],
+            'time_window' => $config[$serviceName]['time_window'],
+            'time_out_open' => $config[$serviceName]['time_out_open'],
+            'time_out_half_open' => $config[$serviceName]['time_out_half_open'],
+            'total_failures' => $config[$serviceName]['total_failures']
+        ];
+
+        $this->circuitBreaker->changeConfiguration($settings);
+
         $this->registerProcessors(
             new BvsProxyPreProcessors($this->app),
-            new BvsProxyPostProcessors($this->app)
+            new BvsProxyPostProcessors($this->app),
+            $serviceName
         );
-
     }
 
     protected function getAuthorizationHeader()

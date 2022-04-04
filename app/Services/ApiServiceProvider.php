@@ -20,10 +20,13 @@ use Razorpay\Outbox\Encoder\JsonEncoder;
 use Razorpay\Edge\Passport\KeylessHeader;
 use Http\Discovery\Psr17FactoryDiscovery;
 use Razorpay\Outbox\Encrypt\AES256GCMEncrypt;
+use RZP\Services\CircuitBreaker\CircuitBreakerClient;
 use Symfony\Component\Cache\Adapter\Psr16Adapter;
 use Illuminate\Contracts\Support\DeferrableProvider;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use RZP\Services\CircuitBreaker\Store\CircuitBreakerRedisStore;
 use RZP\Services\Mock\DruidService as MockDruidService;
+use RZP\Services\CircuitBreaker\Store\CircuitBreakerStore;
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 use Illuminate\Database\MySqlConnection as IlluminateMySqlConnection;
 
@@ -467,6 +470,23 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
                 hex2bin($sender_public_key),
                 hex2bin($sender_private_key)
             );
+        });
+
+        $this->app->singleton('circuit_breaker', function ($app) {
+
+            $settings = [
+                'exceptions_on' => config('circuit_breaker.default.exceptions_on'),
+                'time_window' => config('circuit_breaker.default.time_window'),
+                'time_out_open' => config('circuit_breaker.default.time_out_open'),
+                'time_out_half_open' => config('circuit_breaker.default.time_out_half_open'),
+                'total_failures' => config('circuit_breaker.default.total_failures')
+            ];
+
+            return new CircuitBreakerClient(
+                new CircuitBreakerRedisStore(),
+                $settings
+            );
+
         });
 
         $this->app->singleton(Acs\SyncEventManager::SINGLETON_NAME, function($app)
