@@ -6,15 +6,30 @@ export default user;
 export const org = observable.shallowBox(window.org).get();
 
 export function isSuperAdmin() {
-  let roles = user.roles || [];
+  const roles = user.roles || [];
 
-  var isPresent = roles.some(function(element) {
+  const isPresent = roles.some((element) => {
     return element.toLowerCase().match('superadmin');
   });
 
   if (isPresent) {
     return true;
   }
+
+  return null;
+}
+
+export function isRzpApprover() {
+  const roles = user.roles;
+
+  const isPresent = roles.some((element) => {
+    return (
+      element?.toLowerCase()?.match('splitz_admin') ||
+      element?.toLowerCase()?.match('razorx_approvers')
+    );
+  });
+
+  return isPresent;
 }
 
 export function isOrgRazorpay() {

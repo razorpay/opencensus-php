@@ -4,20 +4,25 @@ import { withRouter, Link } from 'react-router-dom';
 import AddEditExperiment from './AddEditExperiment';
 import WhitelistExperiment from './WhitelistExperiment';
 import * as experimentHelpers from './experimentHelpers';
-import { openModal, notifyError } from 'razorx/components/Modal';
+import { openModal, notifyError, notifySuccess } from 'razorx/components/Modal';
 import { formatDate } from 'razorx/helpers/utils';
 import { splitzFetch } from 'razorx/helpers/fetch';
 import AsyncButton from 'razorx/components/ui/AsyncButton';
 import ExperimentsModal from 'razorx/views/Experiments/Modal';
 import { statusPill } from 'razorx/helpers/data';
+import { TextAreaField } from 'razorx/components/ui/Field';
+import { isRzpApprover } from '../../../user';
 
 @withRouter
 export default class ExperimentDetails extends React.Component {
+  optionalRemarks = null;
+
   state = {
     isFetchingExperiment: false,
     isFetchingProject: false,
     isFetchingExclusionGroup: false,
     data: null, // experiment
+    workflowStatus: null,
     project: null,
     exclusionGroup: null,
   };
@@ -44,16 +49,19 @@ export default class ExperimentDetails extends React.Component {
       data: null,
       project: null,
       exclusionGroup: null,
+      workflowStatus: null,
     });
 
     splitzFetch({
       url: 'experiment.v1.ExperimentAPI/Get',
       data: {
         id: experimentId,
+        expands: ['workflow'],
       },
     })
       .then((res) => {
         this.setState({
+          workflowStatus: res.workflows[0]?.workflow?.status || [],
           isFetchingExperiment: false,
           data: res.experiment,
         });
@@ -97,30 +105,73 @@ export default class ExperimentDetails extends React.Component {
       });
   }
 
-  activateExperiment = () => {
+  submitExperiment = () => {
+    const { data } = this.state;
+    const { experimentId, collection } = this.props;
+
+    splitzFetch({
+      url: 'experiment.v1.ExperimentAPI/SubmitForApproval',
+      data: {
+        id: data?.id,
+      },
+    }).then(() => {
+      this.fetch(experimentId);
+      collection.fetch();
+    });
+  };
+
+  approveRejectExperiment = (approvalStatus) => {
+    const { data } = this.state;
+    const { experimentId, collection } = this.props;
+
     splitzFetch({
       url: 'experiment.v1.ExperimentAPI/Action',
       data: {
-        id: this.state.data.id,
-        status: 'activated',
+        id: data?.id,
+        approval_status: approvalStatus,
+        comment: this.optionalRemarks,
+      },
+    })
+      .then(() => {
+        this.fetch(experimentId);
+        collection.fetch();
+        notifySuccess('Success: Please refresh the page if you do not see your changes.');
+      })
+      .catch((err) => {
+        notifyError(err);
+      });
+  };
+
+  updateExperimentStatus = (experimentStatus) => {
+    const { data } = this.state;
+    const { experimentId, collection } = this.props;
+
+    splitzFetch({
+      url: 'experiment.v1.ExperimentAPI/Action',
+      data: {
+        id: data?.id,
+        status: experimentStatus,
       },
     }).then(() => {
-      this.fetch(this.props.experimentId);
-      this.props.collection.fetch();
+      this.fetch(experimentId);
+      collection.fetch();
     });
   };
 
   terminateExperiment = () => {
+    const { data } = this.state;
+    const { experimentId, collection } = this.props;
+
     splitzFetch({
       url: 'experiment.v1.ExperimentAPI/Action',
       data: {
-        id: this.state.data.id,
+        id: data?.id,
         status: 'terminated',
       },
+    }).then(() => {
+      this.fetch(experimentId);
+      collection.fetch();
     });
-
-    this.fetch(this.props.experimentId);
-    this.props.collection.fetch();
   };
 
   showAddExperiment = () => openModal(<ExperimentsModal experimentId={this.state.data} />);
@@ -189,6 +240,7 @@ export default class ExperimentDetails extends React.Component {
       data,
       project,
       exclusionGroup,
+      workflowStatus,
     } = this.state;
     const { experimentId } = this.props;
 
@@ -259,12 +311,16 @@ export default class ExperimentDetails extends React.Component {
           </div>
           <br />
           {statusPill(data.status)}
+          {['initiated', 'created'].includes(workflowStatus) ? (
+            <span className="pill">Pending</span>
+          ) : null}
           <br />
           <br />
           {data.status === 'activated' ? (
             <div>
               <AsyncButton
-                class="link info text-info text-bold"
+                type="button"
+                className="link info text-info text-bold"
                 pendingClass="link info-faded text-info text-bold btn-pending"
                 onClick={this.showWhitelisting}
               >
@@ -277,24 +333,69 @@ export default class ExperimentDetails extends React.Component {
               </div>
             </div>
           ) : null}
-          <br />
-          {data.status === 'created' || data.status === 'terminated' ? (
-            <AsyncButton
-              class="link danger text-danger text-bold"
-              pendingClass="link danger-faded text-danger text-bold btn-pending"
-              confirm={`Do you want to Activate Experiment id "${data.id}"?`}
-              onClick={this.activateExperiment}
-            >
-              Activate Experiment
-              <span className="dot-loader">.</span>
-            </AsyncButton>
+          {['created', 'terminated'].includes(data.status) &&
+          (['rejected', 'processed'].includes(workflowStatus) || !workflowStatus.length) ? (
+            <>
+              <br />
+              <AsyncButton
+                type="button"
+                className="link text-bold"
+                pendingClass="link danger-faded text-danger text-bold btn-pending"
+                onClick={this.submitExperiment}
+              >
+                Submit for Approval
+                <span className="dot-loader">.</span>
+              </AsyncButton>
+            </>
+          ) : null}
+          {['initiated', 'created'].includes(workflowStatus) ? (
+            <>
+              <br />
+              <form>
+                <TextAreaField
+                  fieldClass="approval-form"
+                  label="Optional Remarks"
+                  name="remarks"
+                  onChange={(e) => {
+                    this.optionalRemarks = e.target.value;
+                  }}
+                />
+                <br />
+                {isRzpApprover() === true ? (
+                  <>
+                    <AsyncButton
+                      type="button"
+                      className="link text-bold text-success"
+                      onClick={() => {
+                        this.approveRejectExperiment('approved');
+                      }}
+                    >
+                      Approve
+                    </AsyncButton>
+                    <br />
+                  </>
+                ) : null}
+                <AsyncButton
+                  type="button"
+                  className="link text-bold text-danger"
+                  onClick={() => {
+                    this.approveRejectExperiment('rejected');
+                  }}
+                >
+                  Reject
+                </AsyncButton>
+              </form>
+            </>
           ) : null}
           {data.status === 'activated' ? (
             <AsyncButton
-              class="link danger text-danger text-bold"
+              type="button"
+              className="link danger text-danger text-bold"
               pendingClass="link danger-faded text-danger text-bold btn-pending"
               confirm={`Do you want to Terminate Experiment id "${data.id}"?`}
-              onClick={this.terminateExperiment}
+              onClick={() => {
+                this.updateExperimentStatus('terminated');
+              }}
             >
               Terminate Experiment
               <span className="dot-loader">.</span>
@@ -323,7 +424,7 @@ export default class ExperimentDetails extends React.Component {
                   <b>ID: </b> {project.id}
                 </div>
               </div>
-              <Link class="link" to={`/splitz/projects/${project.id}`}>
+              <Link className="link" to={`/splitz/projects/${project.id}`}>
                 View Project
               </Link>
             </div>
@@ -443,7 +544,7 @@ export default class ExperimentDetails extends React.Component {
                       <b>ID: </b> {exclusionGroup.id}
                     </div>
                   </div>
-                  <Link class="link" to={`/splitz/groups/${exclusionGroup.id}`}>
+                  <Link className="link" to={`/splitz/groups/${exclusionGroup.id}`}>
                     View Exclusion Group
                   </Link>
                 </div>
