@@ -62,6 +62,8 @@ class BatchUpload extends Component {
     this.props.closeModal();
   };
   render() {
+    const accept = this.props.accept;
+
     const docLink = getCustomURL(this.props.docUrl);
     return (
       <div class={`batch-upload-modal ${this.state.currentStatus}`}>
@@ -74,6 +76,7 @@ class BatchUpload extends Component {
             case 'validate':
               return (
                 <BatchValidate
+                  accept={accept}
                   onValidation={this.handleValidation}
                   batchType={this.props.batchType}
                   batchTypeText={this.props.batchTypeText}

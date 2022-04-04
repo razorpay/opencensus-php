@@ -31,6 +31,7 @@ const openBatchUploadModal = (createBatch, validateBatch, openModal) => {
     size: 'large',
     component: (
       <BatchUpload
+        accept={['xlsx']}
         sampleUrl={SAMPLE_BATCH_UPLOAD_FILE}
         closeUrl="/magic"
         ctaText="Create Batch"

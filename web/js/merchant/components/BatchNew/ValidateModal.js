@@ -40,6 +40,7 @@ class BatchValidateModal extends Component {
       user,
       batchClass,
       acceptFileInfo,
+      accept,
     } = this.props;
 
     let { batchTypeText = '' } = this.props;
@@ -53,7 +54,7 @@ class BatchValidateModal extends Component {
         {!batchClass ? <h4 className="modal-heading">UPLOAD FILE</h4> : null}
         <div className="modal-file" onClick={this.uploadFileModalClick}>
           <FileUpload
-            accept={['csv', 'xlsx']}
+            accept={accept || ['csv', 'xlsx']}
             acceptFileInfo={acceptFileInfo}
             size="large"
             uploadedFileName="Upload File here"
