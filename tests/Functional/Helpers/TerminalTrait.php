@@ -374,4 +374,13 @@ trait TerminalTrait
         return $terminalEntity->toArrayWithPassword();
     }
 
+    protected function mockFetchMerchantTokenisationOnboardedNetworks(array $gateways)
+    {
+        $terminalsServiceMock = $this->getTerminalsServiceMock();
+
+        $terminalsServiceMock->shouldReceive('fetchMerchantTokenisationOnboardedNetworks')
+            ->andReturnUsing(static function() use ($gateways) {
+                return $gateways;
+            });
+    }
 }

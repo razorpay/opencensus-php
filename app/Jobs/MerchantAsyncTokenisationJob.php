@@ -148,10 +148,6 @@ class MerchantAsyncTokenisationJob extends Job
      */
     protected function handleGlobalMerchant(): void
     {
-        // @TODO: Remove this when the test cases are written in CE-5323 for
-        // global cards async tokenisation
-        return;
-
         try {
             $lastDispatchedTokenId = Cache::get(self::LAST_DISPATCHED_GLOBAL_TOKEN_CACHE_KEY, '');
 

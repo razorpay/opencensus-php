@@ -6,6 +6,10 @@ use App;
 use Mockery;
 use Carbon\Carbon;
 use Requests_Response;
+use RZP\Models\Card\Network;
+use RZP\Models\Card\Vault;
+use RZP\Models\Gateway\Terminal\Constants;
+use RZP\Models\Merchant\Account;
 use RZP\Services\CardVault;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -40,11 +44,9 @@ class TokenisationTest extends TestCase
 
         $this->ba->adminAuth();
 
-        $gateways = ['tokenisation_visa'];
-
         extract($this->setUpDataForTokenisation());
 
-        $this->mockTerminalServiceForMakeRequest($gateways);
+        $this->mockFetchMerchantTokenisationOnboardedNetworks([Network::VISA]);
 
         $this->prepareData($merchantId);
 
@@ -69,11 +71,9 @@ class TokenisationTest extends TestCase
 
         $this->ba->adminAuth();
 
-        $gateways = ['tokenisation_visa'];
-
         extract($this->setUpDataForTokenisation('10000000000001'));
 
-        $this->mockTerminalServiceForMakeRequest($gateways);
+        $this->mockFetchMerchantTokenisationOnboardedNetworks([Network::VISA]);
 
         $this->prepareData($merchantId);
 
@@ -98,13 +98,11 @@ class TokenisationTest extends TestCase
 
         $this->ba->adminAuth();
 
-        $gateways = ['tokenisation_visa'];
-
         $timestamp = Carbon::now()->getTimestamp();
 
         extract($this->setUpDataForTokenisation('100000Razorpay', $timestamp));
 
-        $this->mockTerminalServiceForMakeRequest($gateways);
+        $this->mockFetchMerchantTokenisationOnboardedNetworks([Network::VISA]);
 
         $this->prepareData($merchantId);
 
@@ -127,11 +125,9 @@ class TokenisationTest extends TestCase
 
         $this->ba->adminAuth();
 
-        $gateways = ['tokenisation_visa'];
-
         extract($this->setUpDataForTokenisation());
 
-        $this->mockTerminalServiceForMakeRequest($gateways);
+        $this->mockFetchMerchantTokenisationOnboardedNetworks([Network::VISA]);
 
         $this->prepareData($merchantId);
 
@@ -156,11 +152,9 @@ class TokenisationTest extends TestCase
 
         $this->ba->adminAuth();
 
-        $gateways = ['tokenisation_mastercard'];
-
         extract($this->setUpDataForTokenisation());
 
-        $this->mockTerminalServiceForMakeRequest($gateways);
+        $this->mockFetchMerchantTokenisationOnboardedNetworks([Network::MC]);
 
         $this->prepareData($merchantId);
 
@@ -185,11 +179,9 @@ class TokenisationTest extends TestCase
 
         $this->ba->adminAuth();
 
-        $gateways = ['tokenisation_visa'];
-
         extract($this->setUpDataForTokenisation());
 
-        $this->mockTerminalServiceForMakeRequest($gateways);
+        $this->mockFetchMerchantTokenisationOnboardedNetworks([Network::VISA]);
 
         $this->prepareData($merchantId);
 
@@ -214,11 +206,9 @@ class TokenisationTest extends TestCase
 
         $this->ba->adminAuth();
 
-        $gateways = ['tokenisation_rupay'];
-
         extract($this->setUpDataForTokenisation('10000000000000',null, 'RuPay'));
 
-        $this->mockTerminalServiceForMakeRequest($gateways);
+        $this->mockFetchMerchantTokenisationOnboardedNetworks([Network::RUPAY]);
 
         $this->prepareData($merchantId);
 
@@ -245,11 +235,9 @@ class TokenisationTest extends TestCase
 
         $this->ba->adminAuth();
 
-        $gateways = ['tokenisation_visa'];
-
         extract($this->setUpDataForTokenisation('10000000000000',null));
 
-        $this->mockTerminalServiceForMakeRequest($gateways);
+        $this->mockFetchMerchantTokenisationOnboardedNetworks([Network::VISA]);
 
         $this->prepareData($merchantId);
 
@@ -276,9 +264,7 @@ class TokenisationTest extends TestCase
 
         $this->ba->adminAuth();
 
-        $gateways = ['tokenisation_visa', 'tokenisation_mastercard', 'tokenisation_rupay'];
-
-        $this->mockTerminalServiceForMakeRequest($gateways);
+        $this->mockFetchMerchantTokenisationOnboardedNetworks([Network::VISA, Network::MC, Network::RUPAY]);
 
         $tokenNames = ['10008cardToken', '10009cardToken', '10010cardToken', '10011cardToken'];
 
@@ -345,11 +331,9 @@ class TokenisationTest extends TestCase
 
         $this->ba->adminAuth();
 
-        $gateways = ['tokenisation_visa'];
-
         extract($this->setUpDataForTokenisation('10000000000000', null, 'Visa', 'visa'));
 
-        $this->mockTerminalServiceForMakeRequest($gateways);
+        $this->mockFetchMerchantTokenisationOnboardedNetworks([Network::VISA]);
 
         $this->prepareData($merchantId);
 
@@ -370,13 +354,11 @@ class TokenisationTest extends TestCase
 
         $this->ba->appAuth();
 
-        $gateways = ['tokenisation_visa'];
-
         $timestamp = Carbon::now()->getTimestamp();
 
         extract($this->setUpDataForTokenisation('10000000000000',$timestamp));
 
-        $this->mockTerminalServiceForMakeRequest($gateways);
+        $this->mockFetchMerchantTokenisationOnboardedNetworks([Network::VISA]);
 
         $this->prepareData($merchantId,true);
 
@@ -428,13 +410,11 @@ class TokenisationTest extends TestCase
 
         $this->ba->appAuth();
 
-        $gateways = ['tokenisation_visa'];
-
         $timestamp = Carbon::now()->getTimestamp();
 
         extract($this->setUpDataForTokenisation('10000000000000',$timestamp));
 
-        $this->mockTerminalServiceForMakeRequest($gateways);
+        $this->mockFetchMerchantTokenisationOnboardedNetworks([Network::VISA]);
 
         $this->prepareData($merchantId,false);
 
@@ -455,13 +435,11 @@ class TokenisationTest extends TestCase
 
         $this->ba->appAuth();
 
-        $gateways = ['tokenisation_mastercard'];
-
         $timestamp = Carbon::now()->getTimestamp();
 
         extract($this->setUpDataForTokenisation('10000000000000',$timestamp));
 
-        $this->mockTerminalServiceForMakeRequest($gateways);
+        $this->mockFetchMerchantTokenisationOnboardedNetworks([Network::MC]);
 
         $this->prepareData($merchantId,true);
 
@@ -482,13 +460,11 @@ class TokenisationTest extends TestCase
 
         $this->ba->appAuth();
 
-        $gateways = ['tokenisation_visa'];
-
         $timestamp = Carbon::now()->getTimestamp();
 
         extract($this->setUpDataForTokenisation('10000000000000', $timestamp));
 
-        $this->mockTerminalServiceForMakeRequest($gateways);
+        $this->mockFetchMerchantTokenisationOnboardedNetworks([Network::VISA]);
 
         $this->prepareData($merchantId,true);
 
@@ -509,11 +485,9 @@ class TokenisationTest extends TestCase
 
         $this->ba->appAuth();
 
-        $gateways = ['tokenisation_visa'];
-
         extract($this->setUpDataForTokenisation());
 
-        $this->mockTerminalServiceForMakeRequest($gateways);
+        $this->mockFetchMerchantTokenisationOnboardedNetworks([Network::VISA]);
 
         $this->prepareData($merchantId,true);
 
@@ -534,11 +508,9 @@ class TokenisationTest extends TestCase
 
         $this->ba->appAuth();
 
-        $gateways = ['tokenisation_visa'];
-
         extract($this->setUpDataForTokenisation());
 
-        $this->mockTerminalServiceForMakeRequest($gateways);
+        $this->mockFetchMerchantTokenisationOnboardedNetworks([Network::VISA]);
 
         $this->prepareData($merchantId,true);
 
@@ -559,13 +531,11 @@ class TokenisationTest extends TestCase
 
         $this->ba->appAuth();
 
-        $gateways = ['tokenisation_rupay'];
-
         $timestamp = Carbon::now()->getTimestamp();
 
         extract($this->setUpDataForTokenisation('10000000000000',$timestamp, 'RuPay'));
 
-        $this->mockTerminalServiceForMakeRequest($gateways);
+        $this->mockFetchMerchantTokenisationOnboardedNetworks([Network::RUPAY]);
 
         $this->prepareData($merchantId,true);
 
@@ -588,13 +558,11 @@ class TokenisationTest extends TestCase
 
         $this->ba->appAuth();
 
-        $gateways = ['tokenisation_visa'];
-
         $timestamp = Carbon::now()->getTimestamp();
 
         extract($this->setUpDataForTokenisation('10000000000000',$timestamp));
 
-        $this->mockTerminalServiceForMakeRequest($gateways);
+        $this->mockFetchMerchantTokenisationOnboardedNetworks([Network::VISA]);
 
         $this->prepareData($merchantId,true);
 
@@ -615,8 +583,6 @@ class TokenisationTest extends TestCase
 
         $this->ba->appAuth();
 
-        $gateways = ['tokenisation_visa', 'tokenisation_mastercard', 'tokenisation_rupay'];
-
         $timestamp = Carbon::now()->getTimestamp();
 
         $merchant = $this->fixtures->create('merchant', ['id' => '10000000000099']);
@@ -627,7 +593,7 @@ class TokenisationTest extends TestCase
 
         $this->mockDataLakeToReturnTokenIds();
 
-        $this->mockTerminalServiceForMakeRequest($gateways);
+        $this->mockFetchMerchantTokenisationOnboardedNetworks([Network::VISA, Network::MC, Network::RUPAY]);
 
         $tokenNames = ['10008cardToken', '10009cardToken', '10010cardToken', '10011cardToken'];
 
@@ -667,11 +633,9 @@ class TokenisationTest extends TestCase
 
         $this->ba->appAuth();
 
-        $gateways = ['tokenisation_visa', 'tokenisation_mastercard', 'tokenisation_rupay'];
-
         $timestamp = Carbon::now()->getTimestamp();
 
-        $this->mockTerminalServiceForMakeRequest($gateways);
+        $this->mockFetchMerchantTokenisationOnboardedNetworks([Network::VISA, Network::MC, Network::RUPAY]);
 
         $tokenNames = ['10008cardToken', '10009cardToken', '10010cardToken', '10011cardToken'];
 
@@ -733,8 +697,6 @@ class TokenisationTest extends TestCase
 
         $this->ba->appAuth();
 
-        $gateways = ['tokenisation_visa', 'tokenisation_mastercard', 'tokenisation_rupay'];
-
         $timestamp = Carbon::now()->getTimestamp();
 
         $networkVsVault = [
@@ -752,7 +714,7 @@ class TokenisationTest extends TestCase
 
         $this->mockDataLakeToReturnTokenIds();
 
-        $this->mockTerminalServiceForMakeRequest($gateways);
+        $this->mockFetchMerchantTokenisationOnboardedNetworks([Network::VISA, Network::MC, Network::RUPAY]);
 
         $tokenNames = ['10008cardToken', '10009cardToken', '10010cardToken', '10011cardToken'];
 
@@ -814,6 +776,329 @@ class TokenisationTest extends TestCase
         $this->buildData($network, $merchantId, $vault, $methodTest, $tokenId, $timestamp);
 
         $this->mockDataLakeToReturnTokenIds();
+
+        $response = $this->runRequestResponseFlow($testData);
+    }
+
+    public function testGlobalCardAsyncTokenisationSuccess(): void
+    {
+        $testData = $this->testData['testGlobalCardsAsyncTokenisation'];
+
+        $this->ba->appAuth();
+
+        $timestamp = Carbon::now()->getTimestamp();
+
+        extract($this->setUpDataForTokenisation(Account::SHARED_ACCOUNT, $timestamp));
+
+        $this->mockFetchMerchantTokenisationOnboardedNetworks([Network::VISA]);
+
+        $this->prepareData($merchantId);
+
+        $this->buildData($network, $merchantId, $vault, $methodTest, $tokenId, $timestamp, 'IN', 0);
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $card = $this->getLastEntity('card', true);
+
+        $this->assertEquals($card['vault'], 'visa');
+
+        $this->assertEquals($card['merchant_id'], $merchantId);
+    }
+
+    public function testGlobalCardAsyncTokenisationWhenValidTokenFetchOnboardedNetworksFromCacheExpectsTokenisationSuccess(): void
+    {
+        $testData = $this->testData['testGlobalCardsAsyncTokenisation'];
+
+        $this->ba->appAuth();
+
+        $timestamp = Carbon::now()->getTimestamp();
+
+        extract($this->setUpDataForTokenisation(Account::SHARED_ACCOUNT, $timestamp));
+
+        $cacheKey = $merchantId . '_tokenisation_onboarded_networks';
+
+        $this->app['cache']->put($cacheKey, json_encode(['MC','VISA']));
+
+        $this->prepareData($merchantId);
+
+        $this->buildData($network, $merchantId, $vault, $methodTest, $tokenId, $timestamp);
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $card = $this->getLastEntity('card', true);
+
+        $this->assertEquals($card['vault'], 'visa');
+
+        $this->assertEquals($card['merchant_id'], $merchantId);
+    }
+
+    public function testGlobalCardAsyncTokenisationWhenMerchantNotOnboardedOnRequiredNetworkExpectsTokenisationFailure(): void
+    {
+        $testData = $this->testData['testGlobalCardsAsyncTokenisation'];
+
+        $this->ba->appAuth();
+
+        $timestamp = Carbon::now()->getTimestamp();
+
+        extract($this->setUpDataForTokenisation(Account::SHARED_ACCOUNT, $timestamp));
+
+        $this->mockFetchMerchantTokenisationOnboardedNetworks([Network::MC]);
+
+        $this->prepareData($merchantId);
+
+        $this->buildData($network, $merchantId, $vault, $methodTest, $tokenId, $timestamp);
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $card = $this->getLastEntity('card', true);
+
+        $this->assertEquals($card['vault'], 'rzpvault');
+    }
+
+    public function testGlobalCardAsyncTokenisationWhenTokenBelongsToInternationalCardExpectsTokenisationFailure(): void
+    {
+        $testData = $this->testData['testGlobalCardsAsyncTokenisation'];
+
+        $this->ba->appAuth();
+
+        $timestamp = Carbon::now()->getTimestamp();
+
+        extract($this->setUpDataForTokenisation(Account::SHARED_ACCOUNT, $timestamp));
+
+        $this->mockFetchMerchantTokenisationOnboardedNetworks([Network::VISA]);
+
+        $this->prepareData($merchantId);
+
+        $this->buildData($network, $merchantId, $vault, $methodTest, $tokenId, $timestamp, 'US', 1);
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $card = $this->getLastEntity('card', true);
+
+        $this->assertEquals($card['vault'], 'rzpvault');
+    }
+
+    public function testGlobalCardAsyncTokenisationWhenTokenConsentIsNotReceivedExpectsTokenisationFailure(): void
+    {
+        $testData = $this->testData['testGlobalCardsAsyncTokenisation'];
+
+        $this->ba->appAuth();
+
+        extract($this->setUpDataForTokenisation(Account::SHARED_ACCOUNT));
+
+        $this->mockFetchMerchantTokenisationOnboardedNetworks([Network::VISA]);
+
+        $this->prepareData($merchantId);
+
+        $this->buildData($network, $merchantId, $vault, $methodTest, $tokenId, $timestamp);
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $card = $this->getLastEntity('card', true);
+
+        $this->assertEquals($card['vault'], 'rzpvault');
+    }
+
+    public function testGlobalCardAsyncTokenisationWhenTokenMethodIsNotCardExpectsTokenisationFailure(): void
+    {
+        $testData = $this->testData['testGlobalCardsAsyncTokenisation'];
+
+        $this->ba->appAuth();
+
+        extract($this->setUpDataForTokenisation(Account::SHARED_ACCOUNT));
+
+        $this->mockFetchMerchantTokenisationOnboardedNetworks([Network::VISA]);
+
+        $this->prepareData($merchantId);
+
+        $this->buildData($network, $merchantId, $vault, 'wallet', $tokenId, $timestamp);
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $card = $this->getLastEntity('card', true);
+
+        $this->assertEquals($card['vault'], 'rzpvault');
+    }
+
+    public function testGlobalCardAsyncTokenisationWhenTokenIsRecurringAndRupayExpectsTokenisationFailure(): void
+    {
+        $testData = $this->testData['testGlobalCardsAsyncTokenisation'];
+
+        $this->ba->appAuth();
+
+        $timestamp = Carbon::now()->getTimestamp();
+
+        extract(
+            $this->setUpDataForTokenisation(
+                Account::SHARED_ACCOUNT,
+                $timestamp,
+                Network::getFullName(Network::RUPAY)
+            )
+        );
+
+        $this->mockFetchMerchantTokenisationOnboardedNetworks([Network::RUPAY]);
+
+        $this->prepareData($merchantId);
+
+        $this->buildData('RuPay', $merchantId, $vault, $methodTest, $tokenId, $timestamp, 'IN', null, '100000007lcard', '411140', '10007cardToken', true);
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $card = $this->getLastEntity('card', true);
+
+        $this->assertEquals($card['vault'], 'rzpvault');
+    }
+
+    public function testGlobalCardAsyncTokenisationForMultipleTokensExpectsTokenisationSuccess(): void
+    {
+        $testData = $this->testData['testGlobalCardsAsyncTokenisation'];
+
+        $this->ba->appAuth();
+
+        $timestamp = Carbon::now()->getTimestamp();
+
+        $this->prepareData('100000Razorpay');
+
+        $merchantId = '100000Razorpay';
+
+        $this->mockFetchMerchantTokenisationOnboardedNetworks([Network::VISA, Network::MC]);
+
+        $tokenNames = ['10008cardToken', '10009cardToken', '10010cardToken', '10011cardToken'];
+
+        $tokenIds = ['100021custcard', '100023custcard', '100024custcard', '100026custcard'];
+
+        $cardIds = ['100000011lcard', '100000013lcard', '100000014lcard', '100000015lcard'];
+
+        $iinIds = ['411140', '411141', '411142', '411143'];
+
+        $tokenIdsCount = count($tokenIds);
+
+        $cardIdsCount = count($cardIds);
+
+        for ($i = 0; $i < $tokenIdsCount; $i++)
+        {
+            extract(
+                $this->setUpDataForTokenisation(
+                    Account::SHARED_ACCOUNT,
+                    $timestamp,
+                    Network::getFullName(Network::VISA),
+                    Vault::RZP_VAULT,
+                    $tokenIds[$i]
+                )
+            );
+
+            $this->buildData($network, $merchantId, $vault, $methodTest, $tokenId, $timestamp, 'IN', null, $cardIds[$i], $iinIds[$i], $tokenNames[$i]);
+        }
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        for ($i = 0; $i < $cardIdsCount; $i++)
+        {
+            $token = $this->getDbEntityById('token', $tokenIds[$i]);
+
+            $card = $this->getDbEntityById('card', 'card_' . $token->getCardId());
+
+            $this->assertEquals($card->getVault(), 'visa');
+
+            $this->assertEquals($card->getMerchantId(), '100000Razorpay');
+        }
+    }
+
+    public function testGlobalCardAsyncTokenisationWhenMultipleTokensOfDifferentNetworksExpectsTokenisationSuccess(): void
+    {
+        $testData = $this->testData['testGlobalCardsAsyncTokenisation'];
+
+        $this->ba->appAuth();
+
+        $timestamp = Carbon::now()->getTimestamp();
+
+        $networkVsVault = [
+            'Visa'       => 'visa',
+            'MasterCard' => 'mastercard',
+            'RuPay'      => 'rzpvault',
+            'Discover'   => 'rzpvault'
+        ];
+
+        $this->prepareData('100000Razorpay');
+
+        $merchantId = '100000Razorpay';
+
+        $this->mockFetchMerchantTokenisationOnboardedNetworks([Network::VISA, Network::MC]);
+
+        $tokenNames = ['10008cardToken', '10009cardToken', '10010cardToken', '10011cardToken'];
+
+        $networks = ['Visa', 'RuPay', 'MasterCard', 'Discover'];
+
+        $tokenIds = ['100021custcard', '100023custcard', '100024custcard', '100026custcard'];
+
+        $cardIds = ['100000011lcard', '100000013lcard', '100000014lcard', '100000015lcard'];
+
+        $iinIds = ['411140', '411141', '411142', '411143'];
+
+        $tokenIdsCount = count($tokenIds);
+
+        $cardIdsCount = count($cardIds);
+
+        for ($i = 0; $i < $tokenIdsCount; $i++)
+        {
+            extract(
+                $this->setUpDataForTokenisation(
+                    Account::SHARED_ACCOUNT,
+                    $timestamp,
+                    $networks[$i],
+                    Vault::RZP_VAULT,
+                    $tokenIds[$i]
+                )
+            );
+
+            $this->buildData($network, $merchantId, $vault, $methodTest, $tokenId, $timestamp, 'IN', null, $cardIds[$i], $iinIds[$i], $tokenNames[$i]);
+        }
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        for ($i = 0; $i < $cardIdsCount; $i++)
+        {
+            $token = $this->getDbEntityById('token', $tokenIds[$i]);
+
+            $card = $this->getDbEntityById('card', 'card_' . $token->getCardId());
+
+            $this->assertEquals($card->getVault(), $networkVsVault[$networks[$i]]);
+
+            $this->assertEquals($card->getMerchantId(), '100000Razorpay');
+        }
+    }
+
+    public function testGlobalCardAsyncTokenisationWhenTokenIsAlreadyTokenisedExpectsTokenisationFailure(): void
+    {
+        $terminalService = \Mockery::mock(TerminalsService::class, [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('terminals_service', $terminalService);
+
+        $terminalService->shouldReceive('fetchMerchantTokenisationOnboardedNetworks')
+            ->times(1)
+            ->andReturnUsing(function ()
+            {
+                return ['VISA', 'MC'];
+            });
+
+        $testData = $this->testData['testGlobalCardsAsyncTokenisation'];
+
+        $this->ba->appAuth();
+
+        $timestamp = Carbon::now()->getTimestamp();
+
+        extract(
+            $this->setUpDataForTokenisation(
+                Account::SHARED_ACCOUNT,
+                $timestamp,
+                Network::getFullName(Network::VISA),
+                Constants::VISA
+            )
+        );
+
+        $this->prepareData($merchantId);
+
+        $this->buildData($network, $merchantId, $vault, $methodTest, $tokenId, $timestamp);
 
         $response = $this->runRequestResponseFlow($testData);
     }
@@ -1086,26 +1371,5 @@ class TokenisationTest extends TestCase
             'network'    => $network,
             'vault'      => $vault,
         ];
-    }
-
-    public function testGlobalCardAsyncTokenisationSuccess(): void
-    {
-        $testData = $this->testData['testGlobalCardsAsyncTokenisation'];
-
-        $this->ba->appAuth();
-
-        $gateways = ['tokenisation_visa'];
-
-        $timestamp = Carbon::now()->getTimestamp();
-
-        extract($this->setUpDataForTokenisation('100000Razorpay', $timestamp));
-
-        $this->mockTerminalServiceForMakeRequest($gateways);
-
-        $this->prepareData($merchantId, true);
-
-        $this->buildData($network, $merchantId, $vault, $methodTest, $tokenId, $timestamp);
-
-        $response = $this->runRequestResponseFlow($testData);
     }
 }
