@@ -188,6 +188,7 @@ jobs:
                    "name": "api",
                    "commit_id": "${{ github.sha }}",
                    "chart_values": {
+                      "replicas": 2,
                       "web_requests_cpu": "100m",
                       "web_requests_memory": "100Mi"
                    }
