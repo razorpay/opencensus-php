@@ -328,6 +328,7 @@ class Service
                 $data = [
                     'data'      => $input,
                     'gateway'   => $input['payment']['gateway'],
+                    'action'    => $this->action,
                 ];
                 break;
             case self::ENTITY_FETCH:
