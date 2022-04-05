@@ -17,7 +17,7 @@ class RblCorp extends NetbankingBase
 {
     use FileHandler;
 
-    const FILE_NAME              = 'Rbl_Netbanking_Claims';
+    const FILE_NAME              = 'Rbl_Corp_Netbanking_Claims';
     const EXTENSION              = FileStore\Format::TXT;
     const FILE_TYPE              = FileStore\Type::RBL_CORP_NETBANKING_CLAIM;
     const GATEWAY                = Payment\Gateway::NETBANKING_RBL;

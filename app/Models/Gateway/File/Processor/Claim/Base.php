@@ -54,6 +54,7 @@ class Base extends BaseProcessor
         Constants::BDBL,
         Constants::UCO,
         Constants::HDFC_CORP,
+        Constants::RBL_CORP,
     ];
 
     public function fetchEntities(): PublicCollection

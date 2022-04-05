@@ -109,11 +109,11 @@ class NetbankingRblCorpCombinedFileTest extends StaticCallbackNbplusGatewayTest
             'items' => [
                 [
                     'type' => 'rbl_corp_netbanking_claim',
-                    'location' => 'Rbl/Claims/Netbanking/Rbl_Netbanking_Claims_test' . '_' . $time . '.txt',
+                    'location' => 'Rbl/Claims/Netbanking/Rbl_Corp_Netbanking_Claims_test' . '_' . $time . '.txt',
                 ],
                 [
                     'type' => 'rbl_corp_netbanking_refund',
-                    'location' => 'Rbl/Refund/Netbanking/Rbl_Netbanking_Refunds_test' . '_' . $time . '.xlsx',
+                    'location' => 'Rbl/Refund/Netbanking/Rbl_Corp_Netbanking_Refunds_test' . '_' . $time . '.xlsx',
                 ],
             ],
         ];

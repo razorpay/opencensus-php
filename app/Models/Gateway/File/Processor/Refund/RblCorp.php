@@ -13,7 +13,7 @@ use RZP\Gateway\Netbanking\Rbl\RefundFields;
 
 class RblCorp extends Base
 {
-    const FILE_NAME              = 'Rbl_Netbanking_Refunds';
+    const FILE_NAME              = 'Rbl_Corp_Netbanking_Refunds';
     const EXTENSION              = FileStore\Format::XLSX;
     const FILE_TYPE              = FileStore\Type::RBL_CORP_NETBANKING_REFUND;
     const GATEWAY                = Payment\Gateway::NETBANKING_RBL;
