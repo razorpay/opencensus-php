@@ -55,7 +55,6 @@ class Event
     const PAYMENT_DISPUTE_UNDER_REVIEW      = 'payment.dispute.under_review';
     const PAYMENT_DISPUTE_ACTION_REQUIRED   = 'payment.dispute.action_required';
     const TRANSACTION_CREATED               = 'transaction.created';
-    const PAYOUT_CREATED                    = 'payout.created';
     const PAYOUT_PROCESSED                  = 'payout.processed';
     const PAYOUT_REVERSED                   = 'payout.reversed';
     const PAYOUT_FAILED                     = 'payout.failed';
@@ -186,7 +185,6 @@ class Event
         self::PAYMENT_DISPUTE_UNDER_REVIEW,
         self::PAYMENT_DISPUTE_ACTION_REQUIRED,
         self::TRANSACTION_CREATED,
-        self::PAYOUT_CREATED,
         self::PAYOUT_PROCESSED,
         self::PAYOUT_REVERSED,
         self::PAYOUT_FAILED,
@@ -316,7 +314,6 @@ class Event
         self::PAYMENT_DISPUTE_UNDER_REVIEW,
         self::PAYMENT_DISPUTE_ACTION_REQUIRED,
         self::TRANSACTION_CREATED,
-        self::PAYOUT_CREATED,
         self::PAYOUT_PROCESSED,
         self::PAYOUT_REVERSED,
         self::PAYOUT_FAILED,
@@ -431,7 +428,6 @@ class Event
         self::PAYMENT_DISPUTE_LOST              => 26,
         self::PAYMENT_DISPUTE_CLOSED            => 27,
         self::TRANSACTION_CREATED               => 28,
-        self::PAYOUT_CREATED                    => 29,
         self::PAYOUT_PROCESSED                  => 30,
         self::PAYOUT_REVERSED                   => 31,
         self::FUND_ACCOUNT_VALIDATION_COMPLETED => 32,
@@ -574,8 +570,6 @@ class Event
         self::FUND_ACCOUNT_VALIDATION_COMPLETED => [Product::PRIMARY, Product::BANKING],
         self::FUND_ACCOUNT_VALIDATION_FAILED    => [Product::PRIMARY, Product::BANKING],
         self::TRANSACTION_CREATED               => [Product::BANKING],
-        // TODO: Remove this once the Rollout treatment is removed.
-        self::PAYOUT_CREATED                    => [Product::PRIMARY, Product::BANKING],
         self::PAYOUT_PROCESSED                  => [Product::PRIMARY, Product::BANKING],
         self::PAYOUT_REVERSED                   => [Product::PRIMARY, Product::BANKING],
         self::PAYOUT_FAILED                     => [Product::BANKING],
@@ -701,7 +695,6 @@ class Event
         self::PAYMENT_DISPUTE_UNDER_REVIEW      => Entity::DISPUTE,
         self::PAYMENT_DISPUTE_ACTION_REQUIRED   => Entity::DISPUTE,
         self::TRANSACTION_CREATED               => Entity::TRANSACTION,
-        self::PAYOUT_CREATED                    => Entity::PAYOUT,
         self::PAYOUT_PROCESSED                  => Entity::PAYOUT,
         self::PAYOUT_REVERSED                   => Entity::PAYOUT,
         self::PAYOUT_FAILED                     => Entity::PAYOUT,
@@ -798,7 +791,6 @@ class Event
         self::VIRTUAL_ACCOUNT_CREATED           => Feature\Constants::VIRTUAL_ACCOUNTS,
         self::VIRTUAL_ACCOUNT_CLOSED            => Feature\Constants::VIRTUAL_ACCOUNTS,
         self::SETTLEMENT_PROCESSED              => Feature\Constants::MARKETPLACE,
-        self::PAYOUT_CREATED                    => Feature\Constants::PAYOUT,
         self::PAYOUT_PROCESSED                  => Feature\Constants::PAYOUT,
         self::PAYOUT_REVERSED                   => Feature\Constants::PAYOUT,
         self::PAYOUT_FAILED                     => Feature\Constants::PAYOUT,

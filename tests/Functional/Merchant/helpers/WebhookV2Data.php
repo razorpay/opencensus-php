@@ -392,7 +392,6 @@ return [
                      'fund_account.validation.completed',
                      'fund_account.validation.failed',
                      'transaction.created',
-                     'payout.created',
                      'payout.processed',
                      'payout.reversed',
                      'payout.failed',
@@ -537,6 +536,66 @@ return [
         ],
         'response' => [
             'content' => $sampleApiWebhookResponseForBanking,
+        ],
+    ],
+
+    'testCreateWebhookWithPayoutCreatedEvent' => [
+        'request' => [
+            'method' => 'POST',
+            'url'    => '/v1/webhooks',
+            'server' => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
+            'content' => [
+                'url'    => 'http://webhook.com/v1/dummy/route',
+                'secret' => 'xxxxx',
+                'events' => [
+                    'payout.created' => '1',
+                ],
+            ]
+        ],
+        'response' => [
+            'content'  => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Invalid event name/names: payout.created'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testUpdateWebhookWithPayoutCreatedEvent' => [
+        'request' => [
+            'url'  => '/v1/webhooks/webhook0000001',
+            'server' => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
+            'method' => 'PUT',
+            'content' => [
+                'url'    => 'http://webhook.com/v1/dummy/route',
+                'secret' => 'xxxxx',
+                'events' => [
+                    'payout.created' => '1',
+                ],
+            ],
+        ],
+        'response' => [
+            'content'  => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Invalid event name/names: payout.created'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 
@@ -1527,6 +1586,26 @@ return [
         ],
         'response' => [
             'content' => []
+        ],
+    ],
+
+    'testDeleteWebhookForProductBanking' => [
+        'request' => [
+            'url' => '/webhooks/{wk_id}',
+            'method'  => 'DELETE',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_FORBIDDEN,
+                ],
+            ],
+            'status_code' => 403,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_FORBIDDEN,
         ],
     ],
 

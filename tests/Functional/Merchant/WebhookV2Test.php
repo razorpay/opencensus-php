@@ -203,6 +203,31 @@ class WebhookV2Test extends TestCase
         $this->startTest();
     }
 
+    public function testCreateWebhookWithPayoutCreatedEvent()
+    {
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id' => '10000000000000',
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
+        ]);
+
+        $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
+
+        $this->startTest();
+    }
+
+    public function testUpdateWebhookWithPayoutCreatedEvent()
+    {
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id' => '10000000000000',
+            'contact_name'=> 'Aditya',
+            'business_type' => 4
+        ]);
+        $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
+
+        $this->startTest();
+    }
+
     public function testCreateWebhookForBankingAlreadyExistsFailure()
     {
         $this->fixtures->create('merchant_detail',[
@@ -718,6 +743,18 @@ class WebhookV2Test extends TestCase
 
         // deleting a sub-merchant webhook
         $this->runRequestResponseFlow($testData);
+    }
+
+    public function testDeleteWebhookForProductBanking()
+    {
+        $this->testCreateWebhookForBanking();
+
+        $testData = $this->testData['testDeleteWebhookForProductBanking'];
+        $testData['request']['url'] = '/webhooks/' . 'webhook0000001';
+
+        $this->ba->addXOriginHeader();
+
+        $this->startTest();
     }
 
     private function setPurePlatformContext(): void

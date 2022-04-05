@@ -264,9 +264,19 @@ class Service extends Base\Service
      * deletes a webhook having id = $webhookId
      * @param string $webhookId
      * @param string|null $merchantId
+     * @throws Exception\BadRequestException
      */
     public function delete(string $webhookId, string $merchantId = null)
     {
+        if ($this->auth->isProductBanking() === true)
+        {
+            /*
+            * Delete webhook is used in PG product only.
+            * Throw exception if banking product tries to hit
+            * Fix for https://razorpay.atlassian.net/browse/SBB-945
+            */
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FORBIDDEN);
+        }
         $merchantId = $merchantId ?? $this->merchant->getId();
 
         $this->traceOperationEntry('delete', ['webhook_id' => $webhookId ?? '', AccountEntity::MERCHANT_ID => $merchantId]);
