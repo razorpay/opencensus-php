@@ -666,7 +666,7 @@ export const LOANS_SECTIONS = {
   REPAYMENTS_HISTORY: 'history',
 };
 
-export const DEFAULT_COUNT = 25;
+export const DEFAULT_COUNT = 15;
 
 export const getBreakupByBalanceType = (breakups, balanceType) => {
   return breakups

@@ -38,21 +38,15 @@ export default {
       'get',
     );
   },
-  getRepayments({ count, skip, product_entity_reference_id }) {
-    return request(
-      `${COLLECTIONS_BASE_URL}/repayments`,
-      {
-        params: {
-          count,
-          skip,
-          product_entity_reference_id,
-          product_entity_type: COLLECTIONS_PRODUCT_ENTITY_TYPE.DISBURSAL,
-          order_by_field: 'ORDER_BY_FIELD_CREATED_AT',
-          order_by_type: 'ORDER_BY_TYPE_ASC',
-        },
+  getRepayments(params = {}) {
+    return request(`${COLLECTIONS_BASE_URL}/repayments`, {
+      params: {
+        product_entity_type: COLLECTIONS_PRODUCT_ENTITY_TYPE.DISBURSAL,
+        order_by_field: 'ORDER_BY_FIELD_CREATED_AT',
+        order_by_type: 'ORDER_BY_TYPE_DESC',
+        ...params, // should contain product_entity_reference_id
       },
-      'get',
-    );
+    });
   },
   getRepaymentDetails({ id }) {
     return request(`${COLLECTIONS_BASE_URL}/repayments/${id}`);

@@ -5,8 +5,14 @@ import LoanSummary from './LoanSummary';
 import OverviewStatus from './OverviewStatus/index';
 import RecentRepayments from './RecentRepayments';
 
-export default function Overview({ plan, installments, repayments, upcomingPayments, onRefresh }) {
-  const lastFiveRepayments = getGroupedRepayments(repayments, 5);
+export default function Overview({
+  plan,
+  installments,
+  recentRepayments,
+  upcomingPayments,
+  onRefresh,
+}) {
+  const lastFiveRecentRepayments = getGroupedRepayments(recentRepayments, 5);
   return (
     <div className="overview-wrapper">
       <div className="overview-left">
@@ -14,10 +20,10 @@ export default function Overview({ plan, installments, repayments, upcomingPayme
           plan={plan}
           installment={installments}
           upcomingPayments={upcomingPayments}
-          lastRepayment={repayments[repayments.length - 1]} // that is latest repayment, api gives in asc order
+          lastRepayment={recentRepayments[0]} // that is latest repayment, api gives in desc order
           onRefresh={onRefresh}
         />
-        <RecentRepayments repayments={lastFiveRepayments} />
+        <RecentRepayments repayments={lastFiveRecentRepayments} />
       </div>
       <div className="overview-right">
         <LoanCollectionSummary plan={plan} installment={installments} />

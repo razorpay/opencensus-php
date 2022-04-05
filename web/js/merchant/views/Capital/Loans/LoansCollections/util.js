@@ -9,30 +9,7 @@ import {
 import { titleCase } from 'common/utils/rzp-utils';
 import moment from 'moment';
 
-export function fetchRepayments(product_entity_reference_id) {
-  const ITEMS_PER_PAGE = 100;
-
-  const fetchPaginatedRepayments = (skip) => {
-    return api.getRepayments({
-      product_entity_reference_id,
-      count: ITEMS_PER_PAGE,
-      skip,
-    });
-  };
-
-  const fetchAllRepayments = async (allRepayments = [], start = 0) => {
-    const skip = start * ITEMS_PER_PAGE;
-    const {
-      data: { repayments = [] },
-    } = await fetchPaginatedRepayments(skip);
-    allRepayments = [...allRepayments, ...repayments];
-    return repayments.length === ITEMS_PER_PAGE
-      ? fetchAllRepayments(allRepayments, start + 1)
-      : allRepayments;
-  };
-
-  return fetchAllRepayments();
-}
+export const fetchRepayments = (params) => api.getRepayments(params);
 
 //eslint-disable-next-line
 export async function fetchPlanAndInstallment() {
@@ -70,12 +47,18 @@ export async function fetchLoanData() {
       const installmentId = currentInstallment && currentInstallment.id;
       const product_entity_reference_id = res.plan.product_entity_reference_id; // Change this
       return Promise.all([
-        fetchRepayments(product_entity_reference_id),
+        fetchRepayments({
+          product_entity_reference_id,
+          count: 10,
+          skip: 0,
+          statuses: PAYMENT_STATUS.SUCCESS, // need collected & settled - no multiple params support yet. but settled applicable only for cards as of now.
+        }).then(({ data: { repayments } }) => repayments || []), // get recentRepayments
         currentInstallment ? api.getUpcomingPayments(installmentId) : { data: { schedule: [] } },
       ]);
     })
     .then(([repaymentsResponse, upcomingPaymentsResponse]) => {
-      response.repayments = repaymentsResponse.filter(isRepaymentSuccess);
+      // response.recentRepayments = repaymentsResponse.filter(isRepaymentSuccess); // filters here since as of now statuses filter doesnt support mutiple values(api proxy issue)
+      response.recentRepayments = repaymentsResponse;
       response.upcomingPayments = upcomingPaymentsResponse.data;
       return Promise.resolve(response);
     })
@@ -85,7 +68,7 @@ export async function fetchLoanData() {
   Response - {
       plans,
       installments,
-      repayments,
+      recentRepayments,
       upcomingPayments
     } 
   */
@@ -129,19 +112,18 @@ export function getCollectionMethod(repayment) {
 }
 
 export function sortRepayments(repayments) {
-  return repayments.sort((a, b) => a.created_at - b.created_at);
+  return repayments.sort((a, b) => b.created_at - a.created_at); // desc
 }
 
 export function getGroupedRepayments(repayments, n) {
-  const sortedRepayments = [...repayments].reverse();
   const groupedRepayments = {};
   const payment_mode_key = {
     PAYMENT_MODE_MANUAL: 'manual',
     PAYMENT_MODE_AUTOCOLLECTION: 'auto',
   };
 
-  sortedRepayments.forEach((repayment, i) => {
-    const day = moment.unix(sortedRepayments[i].created_at).format('D MMM');
+  repayments.forEach((repayment) => {
+    const day = moment.unix(repayment.created_at).format('D MMM');
     const paymentMode = payment_mode_key[repayment.payment_mode];
     const otherPaymentMode = paymentMode === 'manual' ? 'auto' : 'manual';
     const dayExists = day in groupedRepayments;
@@ -166,7 +148,7 @@ export function getGroupedRepayments(repayments, n) {
     }, [])
     .slice(0, n);
 
-  return sortRepayments(lastNRepayments).reverse();
+  return sortRepayments(lastNRepayments);
 }
 
 export function calculateLoanBreakup(installments) {

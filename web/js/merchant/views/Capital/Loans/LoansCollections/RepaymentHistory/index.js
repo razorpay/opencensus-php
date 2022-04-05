@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import moment from 'moment';
 import { withRouter } from 'react-router-dom';
 import RepaymentFilters from './RepaymentFilters';
@@ -6,9 +6,14 @@ import RepaymentList from './RepaymentList';
 import fileDownload from 'common/utils/file-download';
 import { arrayObjToCsv, getURLQueryParams } from 'common/utils/rzp-utils';
 import { DEFAULT_COUNT, getBreakupByBalanceType, STATUS_LABELS } from '../../constants';
-import { getCollectionMethod, getRepaymentsWithOutstandingBalance } from '../util';
 import OverviewStatus from '../Overview/OverviewStatus';
 import LoanCollectionSummary from '../Overview/LoanCollectionSummary';
+import { usePromise } from 'merchant/views/Capital/components/Await';
+import {
+  fetchRepayments,
+  getCollectionMethod,
+} from 'merchant/views/Capital/Loans/LoansCollections/util';
+import { REPAYMENT_STATUES } from '../../../CashAdvance/constants';
 
 const exportAsCSV = (repayments) => {
   const reportData = repayments.map(
@@ -34,33 +39,62 @@ const exportAsCSV = (repayments) => {
   fileDownload(csvData, 'repayments_export.csv');
 };
 
+const pendingPromise = new Promise((_) => {});
 function RepaymentHistory({
   plan,
   installments,
-  repayments,
+  recentRepayments,
   upcomingPayments,
-  loanAmount = 0,
   location: { search = {} },
   onRefresh,
 }) {
-  const [filteredRepayments, setFilteredRepayments] = useState(repayments);
+  // nosemgrep
+  const filterConfig = useRef({
+    product_entity_reference_id: plan.product_entity_reference_id,
+    count: DEFAULT_COUNT,
+    skip: 0,
+    // then others such as statuses, repayments id etc. used when user click of pagination next/back button to remeber previous filters
+  });
 
-  const onSubmit = ({ reference_id, status, count }) => {
-    let newRepayments = getRepaymentsWithOutstandingBalance(repayments, loanAmount);
-    if (reference_id)
-      newRepayments = newRepayments.filter((r) =>
-        r.id.toLowerCase().includes(reference_id.toLowerCase()),
-      );
-    if (status) newRepayments = newRepayments.filter((r) => r.status === status);
-    if (count) newRepayments = newRepayments.slice(0, count);
+  const state = usePromise(pendingPromise);
 
-    setFilteredRepayments(newRepayments);
+  const { value, loading, error, setPromise } = state;
+  let repayments = value ? value.data.repayments : [];
+
+  const onSearch = (filters = {}, resetPagination = true) => {
+    resetPagination && (filterConfig.current.skip = 0); // initiating new filter such as id, status, period so reset pagination
+    const baseParams = {
+      product_entity_reference_id: filterConfig.current.product_entity_reference_id,
+      skip: filterConfig.current.skip,
+      count: filters.count ? parseInt(filters.count, 10) : filterConfig.current.count,
+    };
+    ['reference_id', 'statuses'].forEach((key) => {
+      if (filters[key]) {
+        baseParams[key] = filters[key];
+      }
+    });
+    if (!baseParams.statuses) {
+      baseParams.statuses_not_in = REPAYMENT_STATUES.STATUS_PENDING; // status: all applied so get repaid and failed repayments only - used till multiple params is fixed
+    }
+    const promise = fetchRepayments(baseParams);
+    filterConfig.current = baseParams;
+    setPromise(promise);
+    return promise;
   };
 
   useEffect(() => {
-    const filters = getURLQueryParams(search);
-    onSubmit(filters);
+    onSearch(getURLQueryParams(search));
   }, []);
+
+  const handlePaginate = (params) => {
+    filterConfig.current.skip = params.skip;
+    onSearch(filterConfig.current, false);
+  };
+
+  const repaymentID = filterConfig.current.reference_id; // api doesnt support reference_id filter so filter manually
+  if (repaymentID) {
+    repayments = repayments.filter((r) => r.id.toLowerCase().includes(repaymentID.toLowerCase()));
+  }
 
   return (
     <div className="repayments-history">
@@ -69,19 +103,20 @@ function RepaymentHistory({
           plan={plan}
           installment={installments}
           upcomingPayments={upcomingPayments}
-          lastRepayment={repayments[0]}
+          lastRepayment={recentRepayments[0]}
           onRefresh={onRefresh}
           showHeader={false}
           showFooter={false}
         />
         <LoanCollectionSummary plan={plan} installment={installments} showHeader={false} />
       </div>
-      <div className="content-wrapper cash-advance-repayments">
+
+      <div className="content-wrapper cash-advance-repayments loans-repayments-history__list-wrapper">
         <div className="filters-wrapper">
           <RepaymentFilters
             form="loansRepaymentListFilter"
-            count={DEFAULT_COUNT}
-            onSubmit={onSubmit}
+            count={filterConfig.current.count}
+            onSubmit={onSearch}
           />
           <button
             disabled={!repayments.length}
@@ -91,7 +126,16 @@ function RepaymentHistory({
             <i className="i i-download" /> Export
           </button>
         </div>
-        <RepaymentList repayments={filteredRepayments} loanAmount={loanAmount} />
+        <RepaymentList
+          repayments={repayments}
+          isLoading={loading}
+          isError={error}
+          paginationConfig={{
+            count: filterConfig.current.count,
+            skip: filterConfig.current.skip,
+          }}
+          onPaginate={handlePaginate}
+        />
       </div>
     </div>
   );

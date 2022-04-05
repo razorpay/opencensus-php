@@ -13,7 +13,7 @@ export default function RepaymentFilters({ onSubmit, repayments, ...props }) {
       </div>
       <div className="form-group list-filter-item">
         <label>Status</label>
-        <Field name="status" component="select" class="form-control input-sm">
+        <Field name="statuses" component="select" class="form-control input-sm">
           <option value="">All</option>
           {Object.entries(REPAYMENT_FILTER_STATUS_OPTIONS).map(([value, label]) => (
             <option key={value} value={value}>
@@ -29,7 +29,7 @@ export default function RepaymentFilters({ onSubmit, repayments, ...props }) {
           name="count"
           component="input"
           min={10}
-          max={1000}
+          max={25}
           type="number"
           class="form-control input-sm"
         />
