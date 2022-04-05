@@ -372,12 +372,20 @@ class Base
 
         $beneMobilePattern  = '/[^a-zA-Z0-9]/';
 
+        $beneEmailPattern   ='/^([a-zA-Z0-9_+\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$/';
+
         $dummyBeneMobile    = '9999999999';
+
+        $dummyEmail         = 'razorpayDummy@gmail.com';
 
         //TODO : Fix at NSS-OSS , Name-Contact length checker of 40 characters. Should be 50
         $beneName           = trim($ba->getBeneficiaryName());
 
         $beneName           = $this->getAppropriateBeneNameOfMerchant($beneName);
+
+        $beneEmail          = $ba->getBeneficiaryEmail() ?? '';
+
+        $beneEmail          = $this->replaceWithDummyForBAAttribute($beneEmail,5,255,$beneEmailPattern,$dummyEmail);
 
         // in case there are characters like '+' , '-' replacing and removing such characters.If length inappropriate, replace with dummy mobile
         $beneMobile         = strval($ba->getBeneficiaryMobile())??'';
@@ -400,7 +408,7 @@ class Base
             'beneficiary_city'    => $beneCity,
             'beneficiary_state'   => $ba->getBeneficiaryState() ?? '',
             'beneficiary_country' => $ba->getBeneficiaryCountry() ?? '',
-            'beneficiary_email'   => $ba->getBeneficiaryEmail() ?? '',
+            'beneficiary_email'   => $beneEmail,
             'beneficiary_mobile'  => $beneMobile,
             'accepted_currency'   => Currency::INR,
             'extra_info'          => [
