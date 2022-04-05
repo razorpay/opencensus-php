@@ -13,17 +13,17 @@ const FircFiles = (props) => {
             found
           </div>
           <div className="scroll-list">
-            {files.map((file, idx) => (
-              <div key={file.id} className="file">
+            {files.map((file) => (
+              <div key={file?.id} className="file">
                 <div>
                   <i className="i i-file-sheet file-icon" />
-                  <span>FIRC - {idx + 1}</span>
+                  <span>{file?.name}</span>
                 </div>
                 <div>
                   <i
                     className="i-download-blue download-icon"
                     onClick={() => {
-                      downloadFiles({ month, year, document_id: file.id });
+                      downloadFiles({ month, year, document_id: file?.id });
                     }}
                   />
                 </div>

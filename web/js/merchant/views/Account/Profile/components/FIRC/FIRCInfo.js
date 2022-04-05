@@ -1,50 +1,30 @@
-import React from 'react';
-
+import { useCallback, memo } from 'react';
 import { CreateTicketEmitter } from 'merchant/views/TicketSupport/utils';
 
-const openSupport = (closeModal) => {
-  closeModal();
-  CreateTicketEmitter.emit('create-ticket', 'tickets');
-};
-
-const FIRCInfo = (props) => {
-  const { isInvalidDate, closeModal } = props;
+const FIRCInfo = ({ isInvalidDate, closeModal }) => {
+  const openSupport = useCallback(() => {
+    closeModal();
+    CreateTicketEmitter.emit('create-ticket', 'tickets');
+  }, [closeModal]);
 
   return (
     <div className="info-container">
-      {!isInvalidDate ? (
-        <>
-          <span>Not able to view your FIRC here? FIRCs are usually issued in the</span>
-          <b> first week of every month.</b>
-          <span> If you still need any help, please </span>
+      {isInvalidDate ? (
+        <div>
+          To get FIRCs for transactions before June 2021, please
           <b>
-            <a
-              onClick={() => {
-                openSupport(closeModal);
-              }}
-            >
-              reach out
-            </a>
+            <a onClick={openSupport}> reach out </a>
           </b>
-          <span> to our support team.</span>
-        </>
+          to our support team and we will get back to you at the earliest.
+        </div>
       ) : (
-        <>
-          <span>To get FIRCs for transactions before June 2021, please </span>
-          <b>
-            <a
-              onClick={() => {
-                openSupport(closeModal);
-              }}
-            >
-              reach out
-            </a>
-          </b>
-          <span> to our support team and we will get back to you at the earliest.</span>
-        </>
+        <div>
+          FIRC will be available for only international transactions and not for domestic card
+          transactions. Will be available by <b>first half of the next month. </b>
+        </div>
       )}
     </div>
   );
 };
 
-export default React.memo(FIRCInfo);
+export default memo(FIRCInfo);

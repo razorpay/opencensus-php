@@ -29,12 +29,40 @@ export const getDataFromAPI = (response) => {
   } else throw new Error('FIRC API call failed');
 };
 
+//This function reorders the files array based on the document type
+//firs_file on top - firs_icici_zip in bottom
+export const organiseFiles = (files) => {
+  let transformed_files = [];
+
+  if (Array.isArray(files)) {
+    const single_files = files.filter((file) => file?.document_type === 'firs_file');
+    const zip_files = files.filter((file) => file?.document_type === 'firs_icici_zip');
+
+    transformed_files = transformed_files.concat(
+      single_files.map((file, index) => ({
+        ...file,
+        name: `FIRC - ${index + 1}`,
+      })),
+    );
+
+    transformed_files = transformed_files.concat(
+      zip_files.map((file, index) => ({
+        ...file,
+        name: `FIRC - ZIP - ${index + 1}`,
+      })),
+    );
+  }
+
+  return transformed_files;
+};
+
 export const getListOfYears = (startYear = 2021) => {
   const date = new Date();
   const currentYear = date.getFullYear();
   const years = [];
   while (startYear <= currentYear) {
-    years.push(startYear++);
+    years.push({ label: startYear, value: startYear });
+    startYear += 1;
   }
   return years || [];
 };

@@ -1,140 +1,104 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, useMemo } from 'react';
 import { connect } from 'react-redux';
+import { closeModal } from 'merchant_common/reducers/modals';
+import { fetchFircFiles } from './service';
+import { MONTHS, getDataFromAPI, getListOfYears, organiseFiles } from './utility';
 import moment from 'moment';
-
-import Button from 'common/new-ui/Button';
+import { Label } from 'common/new-ui/Input/index';
 import Form from 'common/new-ui/Form';
 import Spinner from 'common/ui/Spinner';
 import ModalHeader from 'common/ui/ModalHeader';
-import { Label } from 'common/new-ui/Input/index';
-import { closeModal } from 'merchant_common/reducers/modals';
-import { classList } from 'common/utils/rzp-utils';
 import FIRCInfo from './FIRCInfo';
 import FircFiles from './FircFiles';
-import { fetchFircFiles, downloadFiles } from './service';
-import { MONTHS, getDataFromAPI, getListOfYears } from './utility';
 
 const START_YEAR = 2021;
-const LIST_OF_YEARS = getListOfYears(START_YEAR);
+const YEARS = getListOfYears(START_YEAR);
 
-const DownloadFIRCForm = (props) => {
+const DownloadFIRCForm = ({ closeModal }) => {
   const [year, setYear] = useState(moment().format('YYYY'));
   const [month, setMonth] = useState(moment().subtract(1, 'months').format('MM'));
-  const [showSupportInfo, setShowSupportInfo] = useState(false);
-  const [files, setFiles] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [isInvalidDate, setIsInvalidDate] = useState(false);
+  const [files, setFiles] = useState({ data: [], isLoading: true });
 
-  const getFircFiles = useCallback(() => {
-    fetchFircFiles(month, year)
-      .then((response) => {
-        const data = getDataFromAPI(response);
-        setFiles(data);
-        setShowSupportInfo(data.length === 0);
-        setLoading(false);
-      })
-      .catch((err) => {
-        setLoading(false);
-        setShowSupportInfo(true);
-        throw new Error(err);
-      });
-  }, [month, year]);
-
-  const checkWhetherInvalidDate = useCallback(() => {
-    // Check whether date is before June 2021 - In that case, show text asking to raise ticket
-    const isInvalid =
-      Number(year) < START_YEAR || (Number(year) === START_YEAR && Number(month) < 7);
-    setFiles([]);
-    if (isInvalid) {
-      setIsInvalidDate(true);
-      setShowSupportInfo(true);
-      setLoading(false);
-    } else {
-      setIsInvalidDate(false);
-      setShowSupportInfo(false);
-      setLoading(true);
-      getFircFiles();
-    }
-  }, [month, year, getFircFiles]);
-
-  const handleYear = useCallback(
-    (event) => {
-      const selectedYear = event.target.value;
-      setYear(selectedYear);
-    },
-    [setYear],
+  const isInvalidDate = useMemo(
+    () => Number(year) < START_YEAR || (Number(year) === START_YEAR && Number(month) < 7),
+    [year, month],
   );
 
-  const handleMonth = useCallback(
-    (event) => {
-      const selectedMonth = event.target.value;
-      setMonth(selectedMonth);
-    },
-    [setMonth],
+  const getFircFiles = useCallback(async () => {
+    try {
+      const response = await fetchFircFiles(month, year);
+      const data = getDataFromAPI(response);
+      setFiles({ data: organiseFiles(data), isLoading: false });
+    } catch (error) {
+      setFiles({ data: [], isLoading: false });
+    }
+  }, [month, year]);
+
+  const checkIfInvalidDate = useCallback(() => {
+    setFiles({ data: [], isLoading: !isInvalidDate });
+    if (!isInvalidDate) {
+      getFircFiles();
+    }
+  }, [month, year]);
+
+  const handleYear = useCallback((event) => {
+    const selectedYear = event.target.value;
+    setYear(selectedYear);
+  }, []);
+
+  const handleMonth = useCallback((event) => {
+    const selectedMonth = event.target.value;
+    setMonth(selectedMonth);
+  }, []);
+
+  const Dropdown = useCallback(
+    ({ label, value, list, handleChange, classList }) => (
+      <div>
+        <Label text={label} className="label" />
+        <select className={`select ${classList}`} value={value} onChange={handleChange}>
+          {list.map((item) => (
+            <option value={item.value} key={item.value}>
+              {item.label}
+            </option>
+          ))}
+        </select>
+      </div>
+    ),
+    [],
   );
 
   useEffect(() => {
-    checkWhetherInvalidDate();
-  }, [checkWhetherInvalidDate]);
-
-  const { closeModal: closeModalProp } = props;
+    checkIfInvalidDate();
+  }, [year, month]);
 
   return (
     <Form>
-      <ModalHeader title="Download FIRC" onCloseClick={closeModalProp} />
+      <ModalHeader title="Download FIRC" onCloseClick={closeModal} />
       <div className="firc-form-container">
         <div className="dropdown-container">
-          <div>
-            <Label text="Year" className="label" />
-            <select className="select" value={year} onChange={handleYear}>
-              {LIST_OF_YEARS.map((yr) => (
-                <option value={yr} key={yr}>
-                  {yr}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <Label text="Month" className="label" />
-            <select
-              className={classList('select', showSupportInfo && isInvalidDate && 'select--invalid')}
-              value={month}
-              onChange={handleMonth}
-            >
-              {MONTHS.map((m) => (
-                <option key={m.value} value={m.value}>
-                  {m.label}
-                </option>
-              ))}
-            </select>
-          </div>
+          <Dropdown label="Year" list={YEARS} value={year} handleChange={handleYear} />
+          <Dropdown
+            label="Month"
+            list={MONTHS}
+            value={month}
+            handleChange={handleMonth}
+            classList={isInvalidDate && 'select--invalid'}
+          />
         </div>
 
-        {loading && (
+        {files.isLoading && (
           <div className="spinner-container">
             <Spinner />
           </div>
         )}
 
-        {/* Support flow info for docs before June 2021 */}
-        {showSupportInfo && (
-          <FIRCInfo
-            closeModal={closeModalProp}
-            filesNotFound={files.length > 0}
-            loading={loading}
-            isInvalidDate={isInvalidDate}
-          />
+        {files.data.length === 0 && !files.isLoading && (
+          <FIRCInfo closeModal={closeModal} isInvalidDate={isInvalidDate} />
         )}
 
-        {!showSupportInfo && !loading && <FircFiles files={files} month={month} year={year} />}
-
-        <Button.Primary
-          className="btn btn-primary btn-block"
-          disabled={files.length === 0}
-          onClick={() => downloadFiles({ month, year })}
-        >
-          {files.length > 1 ? 'Download All' : 'Download'}
-        </Button.Primary>
+        {files.data.length !== 0 && !files.isLoading && (
+          <FircFiles files={files.data} month={month} year={year} />
+        )}
       </div>
     </Form>
   );
