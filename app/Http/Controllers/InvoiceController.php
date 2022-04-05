@@ -666,7 +666,7 @@ class InvoiceController extends Controller
         {
             if ($checkForInput === true)
             {
-                return $this->checkInputHasTypeLink($input);
+                return $this->checkInputHasTypeLinkOREcod($input);
             }
 
             if ($id !== null)
@@ -687,10 +687,10 @@ class InvoiceController extends Controller
         return false;
     }
 
-    protected function checkInputHasTypeLink(array $input): bool
+    protected function checkInputHasTypeLinkOREcod(array $input): bool
     {
         if ((isset($input[Entity::TYPE]) === true)
-            && ($input[Entity::TYPE] === Type::LINK))
+            && (Type::isPaymentLinkType($input[Entity::TYPE]) === true))
         {
             return true;
         }
@@ -698,6 +698,11 @@ class InvoiceController extends Controller
         if ((isset($input[Entity::TYPES]) === true) && (is_array($input[Entity::TYPES]) === true))
         {
             if (in_array(Type::LINK, $input[Entity::TYPES]) === true)
+            {
+                return true;
+            }
+
+            if(in_array(Type::ECOD, $input[Entity::TYPES]) === true)
             {
                 return true;
             }
