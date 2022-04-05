@@ -220,6 +220,7 @@
             <directory>./tests/Functional/BankingAccountTpv/</directory>
             <directory>./tests/Functional/RequestLog/</directory>
             <directory>./tests/Functional/BankTransfer/</directory>
+            <directory>./tests/Unit/Models/Contact</directory>
             <file>./tests/Functional/Merchant/BalanceTest.php</file>
             <file>./tests/Functional/Merchant/MerchantBankingInvoiceTest.php</file>
             <file>./tests/Functional/Merchant/LowBalanceConfigTest.php</file>
