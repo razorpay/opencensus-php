@@ -209,4 +209,12 @@ class Provider
 
         return $paymentProcessor->processAndReturnTerminal($paymentArray);
     }
+
+    public static function getUnsuportedProviderByRazorpay()
+    {
+        return [
+            self::IFSC[Provider::YESBANK],
+            self::IFSC[Provider::ICICI]
+        ];
+    }
 }

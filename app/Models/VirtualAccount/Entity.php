@@ -8,6 +8,7 @@ use RZP\Models\Base;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
+use RZP\Models\Bank\IFSC;
 use RZP\Models\BankAccount;
 use RZP\Models\BankTransfer;
 use RZP\Constants\Entity as Constants;
@@ -354,6 +355,8 @@ class Entity extends Base\PublicEntity
     {
         $receivers = [];
 
+        $isRemoveBankAccount = false;
+
         foreach (Receiver::TYPES as $receiverType)
         {
             $assoc = studly_case($receiverType);
@@ -382,6 +385,24 @@ class Entity extends Base\PublicEntity
             {
                 $receivers = array_merge($receivers, $bankAccount2Array);
             }
+            $isRemoveBankAccount = true;
+        }
+
+        /*
+         * As we are not supporting Yesbank and ICICI VA's
+         * we need to remove them from the Existing Fetch API
+         */
+        if (($this->isBalanceTypeBanking() === false) and ($isRemoveBankAccount === true) and (sizeof($receivers) > 1))
+        {
+            foreach ($receivers as $index => $receiverObject)
+            {
+                if (array_key_exists(BankAccount\Entity::IFSC, $receiverObject) and
+                    (in_array($receiverObject[BankAccount\Entity::IFSC], Provider::getUnsuportedProviderByRazorpay())))
+                {
+                    unset($receivers[$index]);
+                }
+            }
+            $receivers = array_values($receivers);
         }
 
         return $receivers;
