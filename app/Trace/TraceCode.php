@@ -519,6 +519,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const SETTLEMENT_SERVICE_TRANSACTIONS_UPDATED               = 'SETTLEMENT_SERVICE_TRANSACTIONS_UPDATED';
     const SETTLEMENT_SERVICE_TRANSACTIONS_UPDATE_FAILED         = 'SETTLEMENT_SERVICE_TRANSACTIONS_UPDATE_FAILED';
+    const SETTLEMENTS_EVENTS_CRON_STARTED                       = 'SETTLEMENTS_EVENTS_CRON_STARTED';
+    const SETTLEMENTS_EVENTS_CRON_SELECTED_MERCHANT_IDS         = 'SETTLEMENTS_EVENTS_CRON_SELECTED_MERCHANT_IDS';
+    const SETTLEMENTS_EVENTS_CRON_RESULT                        = 'SETTLEMENTS_EVENTS_CRON_RESULT';
+
 
     const FTA_MODE_SET                                          = 'FTA_MODE_SET';
     const FTA_SLA_EXPIRED                                       = 'FTA_SLA_EXPIRED';
@@ -6678,6 +6682,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_USER_APP_INTRO_SESSION_CACHE_DATA  = 'MERCHANT_USER_APP_INTRO_SESSION_CACHE_DATA';
     const MERCHANT_USER_APP_PAYMENT_WITH_SOURCE_START = 'MERCHANT_USER_APP_PAYMENT_WITH_SOURCE_START';
     const MERCHANT_USER_APP_PAYMENT_WITH_SOURCE_END   = 'MERCHANT_USER_APP_PAYMENT_WITH_SOURCE_END';
+
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',

@@ -197,6 +197,7 @@ class Service extends Base\Service
     ];
 
     const LINKED_ACCOUNT_CREATE = 'linked_account_create_%s';
+    const MERCHANT_SETTLEMENTS_EVENTS_CRON_LAST_RUN_AT_KEY = 'merchant_settlements_events_cron_last_run_at';
 
     const LINKED_ACCOUNT_BANK_ACCOUNT_UPDATE = 'linked_account_bank_account_update_%s';
 
@@ -5780,7 +5781,6 @@ class Service extends Base\Service
         unset($input[Entity::PRODUCT]);
 
         list($subMerchant, $newUser, $createdNew) = Tracer::inspan(['name' => HyperTrace::CREATE_SUBMERCHANT_AND_SET_RELATIONS], function () use ($optimizeCreationFlow, $input, $merchant, $isLinkedAccount, $ownerId, $product) {
-
             if ($optimizeCreationFlow === false) {
                 [$subMerchant, $newUser, $createdNew] = $this->repo->transactionOnLiveAndTest(function () use (
                     $input,
@@ -6818,6 +6818,15 @@ class Service extends Base\Service
                 $merchant
             );
         }
+    }
+
+    protected function getLastRunAtKeyForSettlementsEventsCron(): string
+    {
+        $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
+
+        $lastRunAtKey = self::MERCHANT_SETTLEMENTS_EVENTS_CRON_LAST_RUN_AT_KEY . '_' . $mode;
+
+        return $lastRunAtKey;
     }
 
     private function isXRegistrationBlocked(bool $currentlyEnabled = false, bool $trace = false) :bool
@@ -9301,6 +9310,108 @@ class Service extends Base\Service
         }
 
         return $data;
+    }
+
+    public function settlementsEventsCron($input)
+    {
+
+        $cronLastRunAt = $this->getSettlementsEventsCronLastRunAt($input);
+
+        $this->app['trace']->info(TraceCode::SETTLEMENTS_EVENTS_CRON_STARTED, [
+            'last_run_at' => $cronLastRunAt,
+        ]);
+
+        $now = Carbon::now()->getTimestamp();
+
+        $merchantsCollection = $this->repo->merchant->getMerchantsForSettlementsEventsCron($cronLastRunAt, $now);
+
+        $merchantsCollection = $merchantsCollection->filter(function ($merchant)
+        {
+           return $merchant->isFeatureEnabled(Feature\Constants::NEW_SETTLEMENT_SERVICE) === true;
+        });
+
+        $this->app['trace']->info(TraceCode::SETTLEMENTS_EVENTS_CRON_SELECTED_MERCHANT_IDS, [
+            'merchant_ids' => $merchantsCollection->pluck('id')->toArray(),
+        ]);
+
+        $resultsTrace = [];
+
+        foreach ($merchantsCollection->chunk(10) as $merchants)
+        {
+            // going with hardcoding the output structure as the number of attribute is expected to be
+            // at 3-4 max.
+            $result = [
+                [
+                    'merchant_ids' => $merchants->filter(function ($merchant)
+                    {
+                        return $merchant->getHoldFunds() === true;
+                    })->pluck('id')->toArray(),
+                    'attribute'   => [
+                        Entity::HOLD_FUNDS => true,
+                    ],
+                ],
+                [
+                    'merchant_ids' => $merchants->filter(function ($merchant)
+                    {
+                        return $merchant->getHoldFunds() === false;
+                    })->pluck('id')->toArray(),
+                    'attribute'   => [
+                        Entity::HOLD_FUNDS => false,
+                    ],
+                ],
+            ];
+
+            $result = array_values(array_filter($result, function ($resultElement)
+            {
+               return count($resultElement['merchant_ids']) > 0;
+            }));
+
+            $this->app['sns']->publish(json_encode($result), 'settlements_merchants_events');
+
+            $resultsTrace[] = $result;
+        }
+
+        if (count($merchantsCollection) > 0)
+        {
+            $newLastRunAt = max($merchantsCollection->pluck(Entity::UPDATED_AT)->toArray());
+
+            $this->updateSettlementsEventsCronLastRunAt($newLastRunAt);
+
+            $this->app['trace']->info(TraceCode::SETTLEMENTS_EVENTS_CRON_RESULT, [
+                'results'         => $resultsTrace,
+                'new_last_run_at' => $newLastRunAt,
+            ]);
+        }
+
+        return ['success' => true];
+    }
+
+    protected function getSettlementsEventsCronLastRunAt($input = []): int
+    {
+        $lastRunAtKey = $this->getLastRunAtKeyForSettlementsEventsCron();
+
+        $lastRunAt = $this->app['cache']->get($lastRunAtKey);
+
+        if (is_null($lastRunAt) === false)
+        {
+            return $lastRunAt;
+        }
+
+        return Carbon::now()->getTimestamp() - ($input['lookback_seconds'] ?? 600);
+    }
+
+    protected function updateSettlementsEventsCronLastRunAt($lastRunAt)
+    {
+        $previousLastRunAt = $this->getSettlementsEventsCronLastRunAt();
+
+        if ($lastRunAt <= $previousLastRunAt)
+        {
+            return;
+        }
+
+        $lastRunAtKey = $this->getLastRunAtKeyForSettlementsEventsCron();
+
+        $this->app['cache']->set($lastRunAtKey, $lastRunAt);
     }
 
     /**

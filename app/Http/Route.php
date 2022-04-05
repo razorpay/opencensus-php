@@ -2213,6 +2213,7 @@ class Route
 
         'merchant_analytics'                       => ['post',     'merchant/analytics',                             'MerchantController@postAnalytics'                                  ],
         'get_merchant_data_for_segment'            => ['get',      'merchant/data_for_segment',                      'MerchantController@getMerchantDataForSegment'                      ],
+        'merchant_settlements_events_cron'         => ['post',     'merchant/settlements_events_cron',               'MerchantController@postSettlementsEventsCron'                      ],
 
         // Merchant Requests Routes
         'merchant_requests_get'                    => ['get',      'merchant/requests/{id}',                         'MerchantRequestController@get'                                     ],
@@ -3982,6 +3983,7 @@ class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        'merchant_settlements_events_cron',
         'mob_to_bas_routes',
         'coupon_expiry_alert',
         'upi_transfer_process_internal',
@@ -11650,6 +11652,7 @@ class Route
         ],
 
         'cron' => [
+            'merchant_settlements_events_cron',
             'coupon_expiry_alert',
             'fd_consume_webhook',
             // Not actually a cron, but added in this list

@@ -1524,6 +1524,17 @@ class Repository extends Base\Repository
         return $query->pluck($merchantId);
     }
 
+    public function getMerchantsForSettlementsEventsCron($updatedAtFrom, $updateAtTo)
+    {
+        $query = $this->newQueryWithConnection($this->getReportingReplicaConnection())
+                      ->where(Entity::UPDATED_AT, '>=', $updatedAtFrom)
+                      ->where(Entity::UPDATED_AT, '<=', $updateAtTo)
+                      ->limit(200)
+                      ->orderBy(Entity::UPDATED_AT, 'asc');
+
+        return $query->get();
+    }
+
     public function fetchMerchantsCreatedBetweenOfOrg($from, $to, $org = Org\Entity::RAZORPAY_ORG_ID)
     {
         return $this->newQueryWithConnection($this->getSlaveConnection())
@@ -1533,5 +1544,6 @@ class Repository extends Base\Repository
             ->get()
             ->pluck(Entity::ID)
             ->toArray();
+
     }
 }

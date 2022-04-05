@@ -11955,6 +11955,54 @@ return [
             ],
         ],
     ],
+
+    'testMerchantsSettlementsEventsCron' => [
+        'request' => [
+            'content' => [
+                'lookback_seconds' => 300,
+            ],
+            'url'     => '/merchant/settlements_events_cron',
+            'method'  => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'success' => true,
+            ],
+        ],
+    ],
+
+    'testMerchantsSettlementsEventsCronNoEligibleMerchantForAttribute' => [
+        'request' => [
+            'content' => [
+                'lookback_seconds' => 300,
+            ],
+            'url'     => '/merchant/settlements_events_cron',
+            'method'  => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'success' => true,
+            ],
+        ],
+    ],
+
+      'testMerchantSettlementsEventsCronWithLastRunAtKeyAbsentInRedis' => [
+        'request' => [
+            'content' => [
+                'lookback_seconds' => 1600,
+            ],
+            'url'     => '/merchant/settlements_events_cron',
+            'method'  => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'success' => true,
+            ],
+
+        ],
+    ],
+
+
     'testBankAccountUpdateWithFeatureFlag' => [
         'request'  => [
             'content' => [
@@ -12030,4 +12078,5 @@ return [
             'status_code' => 200
         ],
     ],
+
 ];

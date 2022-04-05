@@ -13,6 +13,7 @@ use Carbon\Carbon;
 use RZP\Services\Mock;
 use RZP\Models\Comment;
 use RZP\Models\User\Role;
+use RZP\Services\Aws\Sns;
 use RZP\Models\Base\EsDao;
 use RZP\Services\Mock\Raven;
 use RZP\Services\UfhService;
@@ -15187,6 +15188,109 @@ The same has been enabled for the account.
 
     }
 
+    public function testMerchantsSettlementsEventsCron()
+    {
+        $this->setupForMerchantsSettlementsEventsCronTest();
+
+        $this->app['cache']->put('merchant_settlements_events_cron_last_run_at_test', 1600001500, 1000);
+
+        $sns = \Mockery::mock('RZP\Services\Aws\Sns');
+
+        $this->app->instance('sns', $sns);
+
+        $sns->shouldReceive('publish')
+            ->once()
+            ->withArgs(['[{"merchant_ids":["nssAtribteMid2"],"attribute":{"hold_funds":true}},{"merchant_ids":["nssAtribteMid3"],"attribute":{"hold_funds":false}}]', 'settlements_merchants_events']);
+
+        $this->startTest();
+
+        $lastSuccessfulTimestamp = $this->app['cache']->get('merchant_settlements_events_cron_last_run_at_test');
+
+        $this->assertEquals(1600003000, $lastSuccessfulTimestamp);
+    }
+
+    public function testMerchantsSettlementsEventsCronNoEligibleMerchantForAttribute()
+    {
+        $this->setupForMerchantsSettlementsEventsCronTest();
+
+        $this->app['cache']->put('merchant_settlements_events_cron_last_run_at_test', 1600003000, 1000);
+
+        $sns = \Mockery::mock('RZP\Services\Aws\Sns');
+
+        $this->app->instance('sns', $sns);
+
+        $sns->shouldReceive('publish')
+            ->once()
+            ->withArgs(['[{"merchant_ids":["nssAtribteMid3"],"attribute":{"hold_funds":false}}]', 'settlements_merchants_events']);
+
+
+        $this->startTest();
+
+    }
+
+    public function testMerchantSettlementsEventsCronWithLastRunAtKeyAbsentInRedis()
+    {
+        $this->setupForMerchantsSettlementsEventsCronTest();
+
+        $this->assertNull($this->app['cache']->get('merchant_settlements_events_cron_last_run_at_test'));
+
+        $sns = \Mockery::mock('RZP\Services\Aws\Sns');
+
+        $this->app->instance('sns', $sns);
+
+        $sns->shouldReceive('publish')
+            ->once()
+            ->withArgs(['[{"merchant_ids":["nssAtribteMid2"],"attribute":{"hold_funds":true}},{"merchant_ids":["nssAtribteMid3"],"attribute":{"hold_funds":false}}]', 'settlements_merchants_events']);
+
+        $this->startTest();
+
+        $lastSuccessfulTimestamp = $this->app['cache']->get('merchant_settlements_events_cron_last_run_at_test');
+
+        $this->assertEquals(1600003000, $lastSuccessfulTimestamp);
+    }
+
+    protected function setupForMerchantsSettlementsEventsCronTest(): void
+    {
+        $merchants[] = $this->fixtures->merchant->create([
+                'id'         => 'nssAtribteMid1',
+                'updated_at' => 1600001000,
+                'hold_funds' => true,
+            ]
+        );
+
+        $merchants[] = $this->fixtures->merchant->create([
+                'id'         => 'nssAtribteMid2',
+                'updated_at' => 1600002000,
+                'hold_funds' => true,
+            ]
+        );
+
+        $merchants[] = $this->fixtures->merchant->create([
+                'id'         => 'nssAtribteMid3',
+                'updated_at' => 1600003000,
+                'hold_funds' => false,
+            ]
+        );
+
+        $merchants[] = $this->fixtures->merchant->create([
+                'id'         => 'nssAtribteMid4',
+                'updated_at' => 1600004000,
+                'hold_funds' => false,
+            ]
+        );
+
+        $this->ba->cronAuth();
+
+
+
+        foreach ($merchants as $merchant)
+        {
+            $this->fixtures->merchant->addFeatures('new_settlement_service', $merchant->getId());
+        }
+
+        Carbon::setTestNow(Carbon::createFromTimestampUTC(1600003500));
+    }
+
     public function testBankAccountUpdateWithFeatureFlag()
     {
         $this->markTestSkipped('Test was not passing on CI because the error code data wasn\'t getting fetched from error-mapping-module repo correctly.');
@@ -15225,6 +15329,7 @@ The same has been enabled for the account.
         $this->startTest();
 
         $this->assertTrue($this->getBankAccountChangeStatusForMerchant('10000000000000'));
+
     }
 
     protected function assertMerchantTransactionCountForLastMonthFromCache($merchantId, $expectedTransactionCount)
@@ -15265,6 +15370,7 @@ The same has been enabled for the account.
         $this->assertMerchantTransactionCountForLastMonthFromCache($merchantId, 3);
     }
 
+
     public function test1ccPreferencesForNon1ccMerchant()
     {
         $this->ba->privateAuth();
@@ -15286,4 +15392,5 @@ The same has been enabled for the account.
 
         $this->startTest();
     }
+
 }

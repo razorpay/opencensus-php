@@ -74,6 +74,10 @@ return [
         'ledger_account_onboarding' => [
             'live' => env('LEDGER_ACCOUNT_ONBOARDING_LIVE'),
             'test' => env('LEDGER_ACCOUNT_ONBOARDING_TEST'),
+        ],
+        'settlements_merchants_events' => [
+            'live' => env('SNS_SETTLEMENTS_MERCHANTS_EVENTS_LIVE'),
+            'test' => env('SNS_SETTLEMENTS_MERCHANTS_EVENTS_TEST'),
         ]
     ],
 

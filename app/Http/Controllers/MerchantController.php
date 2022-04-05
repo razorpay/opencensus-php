@@ -3012,6 +3012,15 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function postSettlementsEventsCron()
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT)->settlementsEventsCron($input);
+
+        return ApiResponse::json($response);
+    }
+
     public function getEnhancedMerchantActivationDetails(string $merchantId)
     {
 
@@ -3048,4 +3057,5 @@ class MerchantController extends Controller
             );
         }
     }
+
 }
