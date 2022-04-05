@@ -6,6 +6,7 @@ import adminFetch from 'razorx/helpers/admin-fetch';
 import { formatDate } from 'razorx/helpers/utils';
 import { splitzFetch } from 'razorx/helpers/fetch';
 import { notifyError, notifySuccess } from 'razorx/components/Modal';
+import AsyncButton from 'razorx/components/ui/AsyncButton';
 
 @withRouter
 export default class SegmentDetails extends React.Component {
@@ -213,9 +214,14 @@ export default class SegmentDetails extends React.Component {
           <br />
           <br />
           <div>
-            <button type="button" className="btn-delete" onClick={this.deleteSegment}>
+            <AsyncButton
+              type="button"
+              className="btn btn-delete"
+              confirm="Are you sure you want to delete the segment?"
+              onClick={this.deleteSegment}
+            >
               Delete Segment
-            </button>
+            </AsyncButton>
           </div>
         </div>
       );
