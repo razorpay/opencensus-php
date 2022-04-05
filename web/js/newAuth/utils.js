@@ -101,18 +101,6 @@ export const getHostName = () => {
   return window.location.hostname;
 };
 
-/**
- * mobile signup is enabled when in below cases
- * #1. ?mobile-signup = true
- * #2. window.isMobileSignup = true
- * isMobileSignup is set by google optimize for A/B
- * @returns {boolean}.
- */
-export const isMobileSignupEnabled = () => {
-  const { 'mobile-signup': isMobileSignupParam } = getURLQueryParams(window.location.search);
-  return !!window.isMobileSignup || isMobileSignupParam === 'true';
-};
-
 export const isPasswordUXImprovementEnabled = () => {
   return window.isPasswordUXExpEnabled || location.search.includes('password_ux=true'); // set from optimize
 };

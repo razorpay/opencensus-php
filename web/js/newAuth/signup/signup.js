@@ -10,12 +10,7 @@ import { AbsoluteView, RelativeView, Container } from './styles';
 import Header from './components/Header';
 import InfoContainer from './components/InfoContainer';
 import RefereeBanner from './components/RefereeBanner';
-import {
-  getURLQueryParams,
-  isMobileSignupEnabled,
-  isPasswordUXImprovementEnabled,
-  isTestEnvironment,
-} from '../utils';
+import { getURLQueryParams, isPasswordUXImprovementEnabled, isTestEnvironment } from '../utils';
 import { setCookie } from 'common/utils/cookies';
 
 const SignUp = () => {
@@ -115,9 +110,9 @@ const SignUp = () => {
                       appName="dashboard"
                       authClientId={window.OAUTH_CLIENT_ID}
                       oneTapInfo={oneTapInfo}
-                      showMobileSignup={isMobileSignupEnabled()}
                       showPasswordRules={isPasswordUXImprovementEnabled()}
                       skipCaptcha={isTestEnvironment()}
+                      showMobileSignup
                     />
                   </AbsoluteView>
                   <InfoContainer handleContactUsClick={handleContactUsClick} />
