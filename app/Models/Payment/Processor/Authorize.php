@@ -91,6 +91,7 @@ use RZP\Models\Order as Order;
 use RZP\Models\Payment\PaymentMeta;
 use RZP\Jobs\OneCCShopifyCreateOrder;
 use RZP\Models\Base\UniqueIdEntity;
+use RZP\Models\Payment\TokenisationExperiment;
 
 trait Authorize
 {
@@ -7945,7 +7946,7 @@ trait Authorize
 
         if ($card->isRzpSavedCard() === false)
         {
-            return $this->createCardForNetworkToken($card, $input);
+            return $this->createCardEntityForTokenisedCard($token, $input);
         }
 
         $cardNumber = (new Card\CardVault)->getCardNumber($card->getVaultToken());
@@ -7978,6 +7979,76 @@ trait Authorize
     }
 
     /**
+     * Creates card entity from tokenised card and associates it to payment
+     * Calls experiment and creates card entity using either
+     * 1. Tokenised card number (OR)
+     * 2. Actual card number
+     *
+     * @param  Token\Entity  $token
+     * @param $input
+     * @return array
+     * @throws Exception\BadRequestException
+     */
+    protected function createCardEntityForTokenisedCard(Token\Entity $token, $input): array
+    {
+        $card = $token->card;
+
+        if((new TokenisationExperiment())->shouldPaymentProcessThroughTokenisedCard($token) === true)
+        {
+            $this->logTokenisedCardPaymentRoutingInfo($token, false);
+
+            return $this->createCardForNetworkToken($card, $input);
+        }
+
+        $this->logTokenisedCardPaymentRoutingInfo($token, true);
+
+        return $this->createActualCardFromTokenisedCard($card, $input);
+    }
+
+    protected function logTokenisedCardPaymentRoutingInfo(Token\Entity $token, bool $isActualCard): void
+    {
+        $card = $token->card;
+
+        $this->trace->info(TraceCode::TOKENISED_CARD_PAYMENT_ROUTING_INFO, [
+            'paymentId'     => $this->payment->getId(),
+            'tokenId'       => $token->getId(),
+            'isGlobal'      => $token->isGlobal(),
+            'routedThrough' => $isActualCard ? 'actualCard' : 'tokenisedCard',
+            'cardInfo'      => [
+                'issuer'    => $card->getIssuer(),
+                'network'   => $card->getNetworkCode(),
+                'type'      => $card->getType(),
+            ],
+        ]);
+    }
+
+    /**
+     * Payment processing through actual card number for tokenised card
+     * Fetches the actual card number for tokenised card from vault service
+     * Creates a card entity with actual card number and associates it to payment
+     * Returns card details for gatewayInput for further payment processing
+     *
+     * @param  Card\Entity  $card
+     * @param $input
+     * @return array
+     * @throws Exception\BadRequestException
+     */
+    protected function createActualCardFromTokenisedCard(Card\Entity $card, $input): array
+    {
+        $actualCardNumber = (new Card\CardVault)->getCardNumber($card->getVaultToken());
+
+        $cardInput = [
+            Card\Entity::NUMBER           => $actualCardNumber,
+            Card\Entity::NAME             => $card->getName(),
+            Card\Entity::EXPIRY_MONTH     => $card->getExpiryMonth(),
+            Card\Entity::EXPIRY_YEAR      => $card->getExpiryYear(),
+            Card\Entity::CVV              => $input['card']['cvv'] ?? Card\Entity::DUMMY_CVV,
+        ];
+
+        return $this->createCardEntity($cardInput, true, $this->merchant, $input);
+    }
+
+    /**
      * creates gateway input using saved card token, this method is used for
      * global card saving. we need to create a new card entity for merchant
      * and associate with the payment
@@ -7994,7 +8065,7 @@ trait Authorize
 
         if ($card->isRzpSavedCard() === false)
         {
-            return $this->createCardForNetworkToken($card, $input);
+            return $this->createCardEntityForTokenisedCard($token, $input);
         }
 
         $cardNumber = (new Card\CardVault)->getCardNumber($card->getVaultToken());
