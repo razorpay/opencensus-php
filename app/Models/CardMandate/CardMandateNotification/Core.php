@@ -37,7 +37,7 @@ class Core extends Base\Core
 
         if (empty($input[Entity::DEBIT_AT]) === true)
         {
-            $input[Entity::DEBIT_AT] = $this->getDebitTime($input);
+            $input[Entity::DEBIT_AT] = $this->getDebitTime($input, $cardMandate);
         }
 
         try
@@ -323,13 +323,18 @@ class Core extends Base\Core
         return $cardMandateNotification;
     }
 
-    protected function getDebitTime($input)
+    protected function getDebitTime($input, CardMandate\Entity $cardMandate)
     {
         $time = Carbon::now();
-        if ($input[Payment\Entity::AMOUNT] > Constants::WITHOUT_AFA_AMOUNT_LIMIT) {
-            $time->addDays(3);
-        } else {
+
+        if ($cardMandate->getMandateHub() === MandateHubs\MandateHubs::BILLDESK_SIHUB) {
             $time->addDay();
+        } else {
+            if ($input[Payment\Entity::AMOUNT] > Constants::WITHOUT_AFA_AMOUNT_LIMIT) {
+                $time->addDays(3);
+            } else {
+                $time->addDay();
+            }
         }
 
         return $time->unix();
