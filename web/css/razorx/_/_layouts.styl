@@ -1,3 +1,5 @@
+$timeline-green = #009c5c;
+
 .RazorX-container.RazorX-container
   .page-center
     position: absolute
@@ -116,6 +118,7 @@
           font-size: 20px
           font-weight: 500
           margin-bottom: 8px
+          z-index: 10
 
           &::after
             content: ''
@@ -127,6 +130,91 @@
 
         .description
           line-height: 20px
+
+        .timeline-header
+          cursor: pointer
+          list-style: none
+          padding-top: 4px
+
+        .timeline-accordion[open] 
+          > .timeline-header
+            > .timeline-arrow
+              transform: rotate(180deg)
+
+        .timeline-arrow
+          width: auto
+          margin: 4px 4px 8px
+
+        .timeline-description
+          font-style: italic
+          font-weight: 400
+          font-size: 16px
+          line-height: 20px
+          color: #000000
+
+        .timeline-item-container
+          display: flex
+          position: relative
+          margin-top: 4px
+
+        .timeline-point-current
+          background: #1566f1
+          border-radius: 50%
+          height: 6px
+          width: 6px
+          position: relative
+          box-shadow: 0 0 0 5px #e7effd
+          margin: 10px
+
+        .timeline-point-previous
+          height: 15px
+          width: 15px
+          padding: 3px
+          color: $timeline-green
+          background-color: #e5f5ef
+          margin: 5.5px
+          border: 1px solid 
+          border-radius: 50%
+          
+        .timeline-point-terminated
+          background: #fe6650
+          border-radius: 50%
+          height: 6px
+          width: 6px
+          position: relative
+          box-shadow: 0 0 0 5px #fff0f0
+          margin: 10px
+
+        .timeline-line
+          position: absolute;
+          height: 100%
+          border: 1px solid $timeline-green
+          left: 12px
+          top: 20px
+
+        .timeline-item-text-container
+          display: flex;
+          flex-direction: column;
+          margin-left: 8px
+
+        .timeline-item-title
+          font-weight: 700
+          font-size: 16px
+          line-height: 24px
+          color: #213554
+
+        .timeline-item-subtitle
+          margin-top: 0
+          font-weight: 400
+          font-size: 14px
+          line-height: 20px
+          color: #5d6d86
+
+        .timeline-item-previous
+          color: #162f5661;
+
+        .timeline-item-terminated
+          color: #d13821
 
         .sub-description
           margin-top: 0

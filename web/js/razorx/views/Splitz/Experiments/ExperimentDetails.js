@@ -5,11 +5,11 @@ import AddEditExperiment from './AddEditExperiment';
 import WhitelistExperiment from './WhitelistExperiment';
 import * as experimentHelpers from './experimentHelpers';
 import { openModal, notifyError, notifySuccess } from 'razorx/components/Modal';
-import { formatDate } from 'razorx/helpers/utils';
 import { splitzFetch } from 'razorx/helpers/fetch';
 import AsyncButton from 'razorx/components/ui/AsyncButton';
 import ExperimentsModal from 'razorx/views/Experiments/Modal';
 import { statusPill } from 'razorx/helpers/data';
+import Timeline from 'razorx/components/ui/Timeline';
 import { TextAreaField } from 'razorx/components/ui/Field';
 import { isRzpApprover } from '../../../user';
 
@@ -25,6 +25,7 @@ export default class ExperimentDetails extends React.Component {
     workflowStatus: null,
     project: null,
     exclusionGroup: null,
+    stateLogs: null,
   };
 
   componentDidMount() {
@@ -56,7 +57,7 @@ export default class ExperimentDetails extends React.Component {
       url: 'experiment.v1.ExperimentAPI/Get',
       data: {
         id: experimentId,
-        expands: ['workflow'],
+        expands: ['workflow', 'state_change_log'],
       },
     })
       .then((res) => {
@@ -64,6 +65,7 @@ export default class ExperimentDetails extends React.Component {
           workflowStatus: res.workflows[0]?.workflow?.status || [],
           isFetchingExperiment: false,
           data: res.experiment,
+          stateLogs: res.state_change_logs,
         });
 
         return Promise.all(
@@ -238,9 +240,10 @@ export default class ExperimentDetails extends React.Component {
       isFetchingProject,
       isFetchingExclusionGroup,
       data,
+      workflowStatus,
       project,
       exclusionGroup,
-      workflowStatus,
+      stateLogs,
     } = this.state;
     const { experimentId } = this.props;
 
@@ -304,9 +307,7 @@ export default class ExperimentDetails extends React.Component {
             <div className="title">{data.name}</div>
             <div className="description">
               {data.description}
-              <div className="sub-description">
-                <b>Created at</b> {formatDate(data.created_at)}
-              </div>
+              <Timeline data={data} stateLogs={stateLogs} />
             </div>
           </div>
           <br />
