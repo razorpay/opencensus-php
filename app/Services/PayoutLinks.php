@@ -1422,36 +1422,62 @@ class PayoutLinks
             }
         }
 
-        if ($isPayoutInExpandArray === true && sizeof($payoutLink[self::PAYOUTS]) === 0)
+        if ($isPayoutInExpandArray === true)
         {
-            $payoutLink[self::PAYOUTS] = [
+            $defaultPayoutsCollection = [
                 'entity' => 'collection',
                 'count' => 0,
                 'items' => [],
             ];
-        }
 
-        if ($isPayoutInExpandArray === false)
+            $payoutsInfo = array_pull($payoutLink, self::PAYOUTS, []);
+
+            if (sizeof($payoutsInfo) === 0)
+            {
+                $payoutLink[self::PAYOUTS] = $defaultPayoutsCollection;
+            }
+            else
+            {
+                $payoutLink[self::PAYOUTS] = $payoutsInfo;
+            }
+        }
+        else
         {
             unset($payoutLink[self::PAYOUTS]);
         }
 
-        if ($isUserInExpandArray === true && sizeof($payoutLink[self::USER]) === 0)
+        if ($isUserInExpandArray === true)
         {
-            $payoutLink[self::USER] = null;
-        }
+            $userInfo = array_pull($payoutLink, self::USER, []);
 
-        if ($isUserInExpandArray === false)
+            if (sizeof($userInfo) === 0)
+            {
+                $payoutLink[self::USER] = null;
+            }
+            else
+            {
+                $payoutLink[self::USER] = $userInfo;
+            }
+        }
+        else
         {
             unset($payoutLink[self::USER]);
         }
 
-        if ($isFundAccountInExpandArray === true && sizeof($payoutLink[self::FUND_ACCOUNT]) === 0)
+        if ($isFundAccountInExpandArray === true)
         {
-            $payoutLink[self::FUND_ACCOUNT] = null;
-        }
+            $fundAccountInfo = array_pull($payoutLink, self::FUND_ACCOUNT, []);
 
-        if ($isFundAccountInExpandArray === false)
+            if (sizeof($fundAccountInfo) === 0)
+            {
+                $payoutLink[self::FUND_ACCOUNT] = null;
+            }
+            else
+            {
+                $payoutLink[self::FUND_ACCOUNT] = $fundAccountInfo;
+            }
+        }
+        else
         {
             unset($payoutLink[self::FUND_ACCOUNT]);
         }
