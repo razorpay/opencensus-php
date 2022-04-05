@@ -252,7 +252,6 @@ class PennyTesting extends Base\Core
      * @param Entity          $merchantDetails
      * @param Merchant\Entity $merchant
      *
-     * @throws LogicException
      * @throws Throwable
      */
     public function updateMerchantContext(Entity $merchantDetails, Merchant\Entity $merchant)
@@ -288,10 +287,10 @@ class PennyTesting extends Base\Core
 
                 $additionalDetails = [
                     Merchant\Document\Type::CANCELLED_CHEQUE => [[
-                                                                     Merchant\Constants::REASON_TYPE => Merchant\Constants::PREDEFINED_REASON_TYPE,
-                                                                     Merchant\Constants::FIELD_TYPE  => Merchant\Constants::DOCUMENT,
-                                                                     Merchant\Constants::REASON_CODE => NeedsClarificationReasonsList::UNABLE_TO_VALIDATE_ACC_NUMBER,
-                                                                 ]],
+                        Merchant\Constants::REASON_TYPE => Merchant\Constants::PREDEFINED_REASON_TYPE,
+                        Merchant\Constants::FIELD_TYPE  => Merchant\Constants::DOCUMENT,
+                        Merchant\Constants::REASON_CODE => NeedsClarificationReasonsList::UNABLE_TO_VALIDATE_ACC_NUMBER,
+                    ]],
                 ];
 
                 $clarificationCore = New Merchant\Detail\NeedsClarification\Core();
@@ -353,7 +352,6 @@ class PennyTesting extends Base\Core
         $this->repo->merchant->saveOrFail($merchant);
 
         $this->repo->merchant_detail->saveOrFail($merchantDetails);
-
     }
 
     /**

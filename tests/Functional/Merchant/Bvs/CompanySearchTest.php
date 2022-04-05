@@ -49,11 +49,6 @@ class CompanySearchTest extends TestCase
         Config::set('services.bvs.mock', true);
         Config::set('services.bvs.response', Constant::SUCCESS);
 
-        $this->mockRazorX('testCompanySearchSuccess',
-                          'bvs_company_search',
-                          'on',
-                          $merchantDetail["merchant_id"]);
-
         $this->startTest();
     }
 
@@ -72,11 +67,6 @@ class CompanySearchTest extends TestCase
         Config::set('services.bvs.mock', true);
         Config::set('services.bvs.response', Constant::FAILURE);
 
-        $this->mockRazorX('testCompanySearchFailure',
-                          'bvs_company_search',
-                          'on',
-                          $merchantDetail["merchant_id"]);
-
         $this->startTest();
     }
 
@@ -93,11 +83,6 @@ class CompanySearchTest extends TestCase
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
 
         Config::set('services.bvs.mock', true);
-
-        $this->mockRazorX('testCompanySearchRateLimitExhausted',
-                          'bvs_company_search',
-                          'on',
-                          $merchantDetail["merchant_id"]);
 
         $this->app['cache']->put(DetailConstants::COMPANY_SEARCH_ATTEMPT_COUNT_REDIS_KEY_PREFIX .
                                  $merchantDetail['merchant_id'],
@@ -120,11 +105,6 @@ class CompanySearchTest extends TestCase
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
 
         Config::set('services.bvs.mock', true);
-
-        $this->mockRazorX('testCompanySearchRateLimitExhausted',
-                          'bvs_company_search',
-                          'on',
-                          $merchantDetail["merchant_id"]);
 
         $this->app['cache']->put(DetailConstants::COMPANY_SEARCH_ATTEMPT_COUNT_REDIS_KEY_PREFIX .
                                  $merchantDetail['merchant_id'],

@@ -1362,39 +1362,6 @@ class MerchantTest extends TestCase
         $this->assertTrue($userEntity->isSecondFactorAuthEnforced());
     }
 
-    public function testFailedMerchant2faEnableInvalidPass()
-    {
-        $merchant = $this->fixtures->create('merchant', [
-            MerchantEntity::SECOND_FACTOR_AUTH      => 0,
-        ]);
-
-        $user = $this->fixtures->user->createUserForMerchant($merchant['id'], [
-            UserEntity::SECOND_FACTOR_AUTH      => 0,
-            UserEntity::CONTACT_MOBILE_VERIFIED => 1,
-            UserEntity::CONTACT_MOBILE          => '9999999999',
-            UserEntity::PASSWORD                => 'hello123',
-        ], 'owner');
-
-        $testData = & $this->testData[__FUNCTION__];
-
-        $content =  [
-            MerchantEntity::SECOND_FACTOR_AUTH => 1,
-            UserEntity::PASSWORD               => 'hello1234',
-        ];
-
-        $testData['request']['content'] = $content;
-
-        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $user['id']);
-
-        $this->startTest();
-
-        $userEntity = $this->getDbEntityById('user', $user['id']);
-        $merchantEntity = $this->getDbEntityById('merchant', $merchant['id']);
-
-        $this->assertFalse($merchantEntity->isSecondFactorAuth());
-        $this->assertFalse($userEntity->isSecondFactorAuthEnforced());
-    }
-
     public function testMerchant2faEnableAsCriticalAction()
     {
         $merchant = $this->fixtures->create('merchant', [
@@ -1407,9 +1374,6 @@ class MerchantTest extends TestCase
             UserEntity::CONTACT_MOBILE          => '9999999999',
             UserEntity::PASSWORD                => 'hello123',
         ], 'owner');
-
-        $this->enableRazorXTreatmentForFeature(
-            Merchant\RazorxTreatment::VALIDATE_USER_2FA_STATUS, 'on');
 
         $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $user['id']);
 
@@ -1434,9 +1398,6 @@ class MerchantTest extends TestCase
             UserEntity::CONTACT_MOBILE          => '9999999999',
             UserEntity::PASSWORD                => 'hello123',
         ], 'owner');
-
-        $this->enableRazorXTreatmentForFeature(
-            Merchant\RazorxTreatment::VALIDATE_USER_2FA_STATUS, 'on');
 
         $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $user['id']);
 

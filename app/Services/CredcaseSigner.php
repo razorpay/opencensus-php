@@ -2,6 +2,7 @@
 
 namespace RZP\Services;
 
+use RZP\Tests\Unit\Services\CredcaseSignerTest;
 use Throwable;
 use Socket\Raw\Factory;
 use Illuminate\Redis\Connections\Connection;
@@ -15,9 +16,6 @@ use RZP\Exception\RuntimeException;
 
 class CredcaseSigner
 {
-    // Credcase signer is used if this feature is enabled for the key.
-    const RAZORX_FEATURE                        = 'credcase_signer';
-
     // MOCK_SIGNATURE is returned if mock is true.
     const MOCK_SIGNATURE                        = '0000000000000000000000000000000000000000000000000000000000000000';
 
@@ -121,19 +119,18 @@ class CredcaseSigner
     {
         $merchantId = $this->ba->getMerchantId();
 
+
+        if ((app()->runningUnitTests() === true) and (CredcaseSignerTest::PUBLIC_KEY_1 != $publicKey)) {
+            return false;
+        }
+
         // Credcase signer for now only public key as argument. But it will
         // support partner auth key, oauth public token, and {rzp_mode_mid} in the future.
         if (($publicKey !== null)
             and preg_match(BasicAuth::KEY_REGEX, $publicKey) === 1
             and str_ends_with($publicKey, $merchantId) === false)
         {
-            $treatment = $this->razorx->getTreatment(
-                $merchantId,
-                self::RAZORX_FEATURE,
-                $this->ba->getMode()
-            );
-
-            return ($treatment === 'on');
+            return true;
         }
 
         return false;

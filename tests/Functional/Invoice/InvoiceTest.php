@@ -2218,7 +2218,7 @@ class InvoiceTest extends TestCase
         $this->callViewUrlAndMakeAssertions(
                 self::TEST_INV_ID,
                 200,
-                'Payment Link Cancelled');
+                'this payment link was cancelled');
     }
 
     public function testGetLinkViewExpired()
@@ -2230,7 +2230,7 @@ class InvoiceTest extends TestCase
         $this->callViewUrlAndMakeAssertions(
                 self::TEST_INV_ID,
                 200,
-                'Payment Link Expired');
+                'this payment link was expired');
     }
 
     // Merchant has feature `block_pl_pay_post_expiry`.

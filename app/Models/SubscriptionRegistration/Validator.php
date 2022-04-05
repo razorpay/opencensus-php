@@ -464,16 +464,6 @@ class Validator extends Base\Validator
                 throw new BadRequestValidationFailureException(
                     'The selected account type is invalid.');
             }
-
-            $variant = app('razorx')->getTreatment($merchant->getId(),
-                RazorxTreatment::RECURRING_MORE_ACCOUNT_TYPE,
-                app('rzp.mode'));
-
-            if ($variant !== 'on')
-            {
-                throw new BadRequestValidationFailureException(
-                    'The selected account type is invalid.');
-            }
         }
     }
 }

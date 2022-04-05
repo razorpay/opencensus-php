@@ -414,20 +414,13 @@ class Core extends Base\Core
 
     private function isNotificationEnabled(Action\Entity $action, string $treatmentId)
     {
-        $mode = $this->app['rzp.mode'];
-
-        $variant = $this->app->razorx->getTreatment(
-            $treatmentId,
-            Constants::INTERNATIONAL_ENABLEMENT_NOTIFICATION_FEATURE_FLAG,
-            $mode);
-
         $this->trace->info(TraceCode::INTERNATIONAL_ENABLEMENT_NOTIFICATION_RAZORX_VARIANT, [
             'workflow_action_id' => $action->getId(),
             'treatment_id'       => $treatmentId,
-            'razorx_variant'     => $variant,
+            'razorx_variant'     => 'notify',
         ]);
 
-        return ($variant === Constants::INTERNATIONAL_ENABLEMENT_NOTIFICATION_FEATURE_FLAG_NOTIFY_VARIANT);
+        return true;
     }
 
     private function getInternationalEnablementRequestTag(Action\Entity $action)

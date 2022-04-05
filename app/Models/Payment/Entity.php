@@ -5115,19 +5115,15 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
         $app = \App::getFacadeRoot();
 
-        $experimentResult = $app['razorx']->getTreatment($this->merchant->getId(),
-            'hdfc_vas_surcharge', $app['rzp.mode']);
-
         $app['trace']->debug(TraceCode::HDFC_VAS_RAZORX_RESULT, [
             'merchantId' => $this->merchant->getId(),
             'paymentId' => $this->getId(),
-            'razorXResult' => $experimentResult,
+            'razorXResult' => 'on',
         ]);
 
         if ((in_array($network, $validNetworks, true) === true) and
              ($this->isFeeBearerCustomer() === true) and
-             ($this->isDirectSettlement() === true) and
-             ($experimentResult === 'on'))
+             ($this->isDirectSettlement() === true))
        {
           return true;
        }
@@ -5153,17 +5149,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     {
         $currentPaymentStatus = $this->getStatus();
 
-        $app = \App::getFacadeRoot();
-
-        $mode = $app['rzp.mode'] ?? Mode::LIVE;
-
-        $experimentResult = $app['razorx']->getTreatment(UniqueIdEntity::generateUniqueId(), Merchant\RazorxTreatment::PAYMENT_STATUS_PENDING_CALCULATION, $mode);
-
-        $app['trace']->info(TraceCode::PAYMENT_PENDING_CALCULATION_RAZORX_TRACE,
-                            ['experiment_result' => $experimentResult, 'mode' => $mode]);
-
-        if ((isset($experimentResult) === true and $experimentResult === 'on') and
-            ($currentPaymentStatus === Payment\Status::FAILED) and
+        if (($currentPaymentStatus === Payment\Status::FAILED) and
             ($this->getVerifyAt() !== null) and
             (($this->getVerifyBucket() !== null) and ($this->getVerifyBucket() < 9)))
         {

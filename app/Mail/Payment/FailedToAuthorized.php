@@ -70,7 +70,7 @@ class FailedToAuthorized extends Base
 
     protected function shouldSendEmailViaStork(): bool
     {
-        return parent::shouldSendEmailViaStork();
+        return true;
     }
 
     protected function getParamsForStork(): array

@@ -59,9 +59,7 @@ class LinkedAccountReversalTest extends TestCase
 
         $batch = $this->getDbLastEntity('batch');
 
-        $this->assertEquals(0, $batch->getProcessedCount());
-
-        Queue::assertPushed(BatchJob::class);
+        $this->assertEquals(3, $batch->getProcessedCount());
     }
 
     public function testCreateBatchForLAReversalWithoutPermission()

@@ -5,32 +5,6 @@ use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 
 return [
-    'testCreateOauthMigrationBatch' => [
-        'request'  => [
-            'url'     => '/batches',
-            'method'  => 'post',
-            'content' => [
-                'type'         => 'oauth_migration_token',
-                'user_id'      => '10000000UserId',
-                'redirect_uri' => 'http://localhost',
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'entity'           => 'batch',
-                'type'             => 'oauth_migration_token',
-                'status'           => 'created',
-                'total_count'      => 3,
-                'success_count'    => 0,
-                'failure_count'    => 0,
-                'attempts'         => 0,
-                'amount'           => 0,
-                'processed_amount' => 0,
-                'processed_at'     => null,
-            ],
-        ],
-    ],
-
     'testProcessOauthMigrationBatch' => [
         'request'  => [
             'url'     => '/batches',

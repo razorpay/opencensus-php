@@ -25,7 +25,6 @@ class DowntimeServiceProcessor implements ProcessorInterface
     const STATUS_RESOLVE = 'RESOLVE';
 
     const STATUS_CREATE                      = 'CREATE';
-    const RAZORX_DUPLICATE_PLATFORM_DOWNTIME = 'RAZORX_DUPLICATE_PLATFORM_DOWNTIME';
 
     protected $app;
 
@@ -415,20 +414,16 @@ class DowntimeServiceProcessor implements ProcessorInterface
 
     private function checkOngoingPlatformDowntime(array $data)
     {
-        $platformDowntimeCheck = $this->app->razorx->getTreatment("platform_downtime", self::RAZORX_DUPLICATE_PLATFORM_DOWNTIME, $this->mode);
-        if($platformDowntimeCheck === 'enabled')
+        $platformDowntime = $this->core->fetchMostRecentActive($data, DowntimeService::PLATFORM_DOWNTIME_UNIQUE_KEYS);
+        if(is_null($platformDowntime)===false)
         {
-            $platformDowntime = $this->core->fetchMostRecentActive($data, DowntimeService::PLATFORM_DOWNTIME_UNIQUE_KEYS);
-            if(is_null($platformDowntime)===false)
-            {
-                throw new Exception\LogicException(
-                    'Creating merchant downtime during ongoing Platform downtime',
-                    null,
-                    [
-                        'DowntimeData' => $data,
-                    ]
-                );
-            }
+            throw new Exception\LogicException(
+                'Creating merchant downtime during ongoing Platform downtime',
+                null,
+                [
+                    'DowntimeData' => $data,
+                ]
+            );
         }
     }
 }

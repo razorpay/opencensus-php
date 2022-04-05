@@ -30,8 +30,6 @@ class HdfcVasPaymentTest extends TestCase
         $this->app->make(Factory::class)->load($factoryPath);
 
         $this->ba->publicAuth();
-
-        $this->mockRazorxTreatmentV2('hdfc_vas_surcharge', 'on');
     }
 
     public function testHdfcVasSurchargePaymentHappy()

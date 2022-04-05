@@ -36,24 +36,8 @@ class CredcaseSignerTest extends TestCase
         $this->mockBasicAuth();
     }
 
-    public function testSignWhenRazorxTreatmentIsOff()
-    {
-        $this->mockRazorxTreatmentV2(CredcaseSigner::RAZORX_FEATURE, 'off');
-
-        $this->ba->expects($this->once())
-            ->method('sign')
-            ->with(self::PAYLOAD_1, self::PUBLIC_KEY_1)
-            ->willReturn(self::EXPECTED_SIGNATURE_1);
-
-        $signature = (new CredcaseSigner($this->redis))->sign(self::PAYLOAD_1, self::PUBLIC_KEY_1);
-
-        $this->assertEquals(self::EXPECTED_SIGNATURE_1, $signature);
-    }
-
     public function testSignWhenRazorxTreatmentIsOn()
     {
-        $this->mockRazorxTreatmentV2(CredcaseSigner::RAZORX_FEATURE, 'on');
-
         $this->mockRedis();
 
         $this->redis->expects($this->once())
@@ -68,8 +52,6 @@ class CredcaseSignerTest extends TestCase
 
     public function testSignWhenRazorxTreatmentIsOnAndRedisFails()
     {
-        $this->mockRazorxTreatmentV2(CredcaseSigner::RAZORX_FEATURE, 'on');
-
         $this->mockRedis();
 
         $this->redis->expects($this->exactly(2))

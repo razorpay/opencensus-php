@@ -146,11 +146,6 @@ class PaymentLinkTest extends TestCase
         $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
 
         $this->startTest();
-
-        // Just asserting that job is being pushed on creation of batch entity
-        // for payment link type.
-
-        Queue::assertPushed(BatchJob::class);
     }
 
     public function testCreateBatchOfPaymentLinkType2()

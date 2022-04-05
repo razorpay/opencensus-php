@@ -84,9 +84,6 @@ class TerminalsService
     const PAYPAL_ONBOARDING_NOT_ALLOWED_FOR_YOUR_ACCOUNT           = 'PayPal Onboarding is not allowed for your account.';
     const DUPLICATE_TERMINAL_EXIST                                 = "Duplicate Terminal Exist";
 
-    // razorx flags
-    const RAZORX_FLAG_MERCHANT_INSTRUMENT_REQUEST = 'instrument_request_merchant_dashboard';
-
     // terminals service error descriptions mapped with exception that needs to be raised by api
     const TERMINALS_API_ERROR_CODE_MAPPING     =    [
         self::MERCHANT_HAS_ALREADY_COMPLETED_PAYPAL_ONBOARDING      =>  ErrorCode::BAD_REQUEST_TERMINAL_ONBOARDING_ALREADY_REQUESTED,
@@ -828,13 +825,7 @@ class TerminalsService
 
     protected function isMerchantRampedForInstrumentRequests(string $merchantId) : bool
     {
-        $response = $this->app->razorx->getTreatment($merchantId, self::RAZORX_FLAG_MERCHANT_INSTRUMENT_REQUEST, $this->getMode());
-
-        $this->trace->info(TraceCode::TERMINALS_SERVICE_MERCHANT_INSTRUMENT_RAZORX_RESPONSE, [
-            'variant' => $response
-        ]);
-
-        return $response === 'on';
+        return true;
     }
 
     protected function getMerchantHeadersForInstrumentRequest(string $merchantId) : array

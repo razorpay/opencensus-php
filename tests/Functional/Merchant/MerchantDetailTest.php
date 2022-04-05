@@ -468,21 +468,6 @@ class MerchantDetailTest extends OAuthTestCase
 
         $this->app->instance('razorx', $razorxMock);
 
-        $this->app->razorx->method('getTreatment')
-            ->will($this->returnCallback(
-                function ($mid, $feature, $mode)
-                {
-                    if ($feature === 'instrument_request_merchant_dashboard')
-                    {
-                        return 'on';
-                    }
-                    else
-                    {
-                        return 'control';
-                    }
-
-                }) );
-
         $this->terminalsServiceMock = $this->getTerminalsServiceMock();
 
         $expectedResponse = [
@@ -2049,7 +2034,7 @@ We look forward to transacting with you!
         $merchantUser = $this->fixtures->user->createBankingUserForMerchant($merchantDetail[MerchantDetails::MERCHANT_ID], [], 'owner', 'live');
 
         $razorxMock = $this->getMockBuilder(Core::class)
-            ->setMethods(['getTreatment'])
+            ->setMethods(['isRazorxExperimentEnable'])
             ->getMock();
 
         $razorxMock->expects($this->any())
@@ -2778,7 +2763,7 @@ Team Razorpay', '1234567890');
         $this->ba->proxyAuth('rzp_test_' . $referredSubMerchantId, $merchantUser['id']);
 
         $razorxMock = $this->getMockBuilder(Core::class)
-            ->setMethods(['getTreatment'])
+            ->setMethods(['isRazorxExperimentEnable'])
             ->getMock();
 
         $razorxMock->expects($this->any())

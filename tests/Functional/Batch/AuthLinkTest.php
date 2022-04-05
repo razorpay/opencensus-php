@@ -44,8 +44,6 @@ class AuthLinkTest extends TestCase
         $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
 
         $response = $this->startTest();
-
-        Queue::assertPushed(BatchJob::class);
     }
 
     public function testBatchFileValidation()

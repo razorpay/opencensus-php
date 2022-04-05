@@ -23,4 +23,8 @@ class Expired extends Base
 
         return $this;
     }
+
+    protected function shouldSendEmailViaStork(): bool {
+        return true;
+    }
 }

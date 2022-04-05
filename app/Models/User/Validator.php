@@ -219,10 +219,6 @@ class Validator extends Base\Validator
         Entity::SECOND_FACTOR_AUTH    => 'required|boolean',
     ];
 
-    protected static $change2faSettingValidators = [
-        Entity::PASSWORD,
-    ];
-
     protected static $resetIncorrectPasswordCountRules = [
         'emails'   => 'required|array|max:500',
         'emails.*' => 'required|email',
@@ -1047,45 +1043,6 @@ class Validator extends Base\Validator
         }
 
         return config('app.signup.nocaptcha_secret');
-    }
-
-    protected static function validatePassword($input)
-    {
-        $app = App::getFacadeRoot();
-        $ba = $app['basicauth'];
-        $merchantId = $ba->getMerchantId();
-
-        $user2FaCheckExperimentIsOn = (new Merchant\Core)->isRazorxExperimentEnable(
-            $merchantId,
-            Merchant\RazorxTreatment::VALIDATE_USER_2FA_STATUS
-        );
-
-        if ($user2FaCheckExperimentIsOn !== true)
-        {
-            if (isset($input[Entity::PASSWORD]) === true)
-            {
-                $inputPassword = $input[Entity::PASSWORD];
-                $userPassword = $ba->getUser()->getPassword();
-                $isPasswordEqual = (new BcryptHasher)
-                                    ->check($inputPassword, $userPassword);
-
-                if ($isPasswordEqual === false)
-                {
-                    throw new Exception\BadRequestException(
-                        ErrorCode::BAD_REQUEST_INVALID_PASSWORD);
-                }
-
-                return;
-            }
-            else
-            {
-                throw new BadRequestValidationFailureException(
-                    'The password fields is required');
-            }
-        }
-
-        return;
-
     }
 
     public function validatePasswordResetToken($user, $token)

@@ -1712,22 +1712,7 @@ class Service extends Base\Service
                 'input'       => $input,
             ]);
 
-        $variant = $this->app->razorx->getTreatment($id, RazorxTreatment::UPDATE_LINKED_ACCOUNT_SCHEDULES_FEATURE, $this->mode ?? Mode::LIVE);
-
-        if(strtolower($variant) === 'on')
-        {
-            return $this->assignSettlementScheduleIncludingLinkedAccounts($id, $input);
-        }
-        else
-        {
-            $merchant = $this->repo->merchant->findByIdAndOrgId($id, $this->auth->getOrgId());
-
-            $input[ScheduleTask\Entity::TYPE] = ScheduleTask\Type::SETTLEMENT;
-
-            $scheduleTask = (new ScheduleTask\Core)->createOrUpdate($merchant, $merchant, $input);
-
-            return $scheduleTask->toArrayPublic();
-        }
+        return $this->assignSettlementScheduleIncludingLinkedAccounts($id, $input);
     }
 
     public function bulkAssignSchedule(array $input): array

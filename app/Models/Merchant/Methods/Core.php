@@ -629,12 +629,7 @@ class Core extends Base\Core
             $defaultMethods[Entity::PHONEPE] = false;
         }
 
-        $variantFlag = $this->app->razorx->getTreatment($merchant->getId(), 'PRICING_PLAN_DEFAULT_METHODS', $mode);
-
-        if ($variantFlag === 'on')
-        {
-            $this->resetDefaultMethodsBasedOnMerchantPricingPlan($merchant, $defaultMethods);
-        }
+        $this->resetDefaultMethodsBasedOnMerchantPricingPlan($merchant, $defaultMethods);
 
         if ((is_null($methods) === true) or (is_null($defaultMethods) === true))
         {

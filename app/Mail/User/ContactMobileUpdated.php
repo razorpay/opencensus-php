@@ -61,6 +61,11 @@ class ContactMobileUpdated extends Mailable
     return $this;
   }
 
+  protected function shouldSendEmailViaStork(): bool
+  {
+      return true;
+  }
+
   protected function getParamsForStork(): array
   {
       return [

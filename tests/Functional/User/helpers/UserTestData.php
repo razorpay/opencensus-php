@@ -1762,27 +1762,6 @@ return [
         ],
     ],
 
-    'testFailedUserEnable2faIncorrectPass' => [
-        'request' => [
-            'url'     => '/users/2fa',
-            'method'  => 'PATCH',
-            'content' => [],
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_PASSWORD,
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_PASSWORD,
-        ],
-    ],
-
     'testUserDisable2fa' => [
         'request' => [
             'url'     => '/users/2fa',

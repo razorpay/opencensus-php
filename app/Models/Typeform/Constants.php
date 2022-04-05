@@ -46,9 +46,6 @@ class Constants
         self::REJECTION_TAG_BUSINESS_MODEL_MISMATCH,
     ];
 
-    const INTERNATIONAL_ENABLEMENT_NOTIFICATION_FEATURE_FLAG                = 'international_enablement_notification';
-    const INTERNATIONAL_ENABLEMENT_NOTIFICATION_FEATURE_FLAG_NOTIFY_VARIANT = 'notify';
-
     const AUTO_MERCHANT_NOTIFICATION_ENABLED  = 'auto_merchant_notification_enabled';
     const AUTO_MERCHANT_NOTIFICATION_DISABLED = 'auto_merchant_notification_disabled';
 

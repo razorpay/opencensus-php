@@ -792,9 +792,6 @@ class BasicAuthTest extends TestCase
 
     public function testRequestWithTwoFaRequiredWithTwoFaVerifiedTrue()
     {
-        $this->mockRazorxWith(
-            Merchant\RazorxTreatment::VALIDATE_USER_2FA_STATUS, 'on');
-
         $merchant = $this->fixtures->create('merchant:with_keys', [
             // Required for updating keys in live mode
             Merchant\Entity::HAS_KEY_ACCESS => true,
@@ -820,9 +817,6 @@ class BasicAuthTest extends TestCase
 
     public function testRequestWithTwoFaRequiredWithTwoFaVerifiedFalse()
     {
-        $this->mockRazorxWith(
-            Merchant\RazorxTreatment::VALIDATE_USER_2FA_STATUS);
-
         $merchant = $this->fixtures->create('merchant:with_keys', [
             // Required for updating keys in live mode
             Merchant\Entity::HAS_KEY_ACCESS => true,
@@ -848,9 +842,6 @@ class BasicAuthTest extends TestCase
 
     public function testRequestWithTwoFaRequiredWithTwoFaVerifiedFalseFromBanking()
     {
-        $this->mockRazorxWith(
-            Merchant\RazorxTreatment::VALIDATE_USER_2FA_STATUS);
-
         $merchant = $this->fixtures->create('merchant:with_keys', [
             // Required for updating keys in live mode
             Merchant\Entity::HAS_KEY_ACCESS => true,
@@ -880,9 +871,6 @@ class BasicAuthTest extends TestCase
     // since key update is a critical action only in live mode and not in test mode
     public function testRequestWithTwoFaRequiredOnlyOnLiveWithTwoFaVerifiedFalse()
     {
-        $this->mockRazorxWith(
-            Merchant\RazorxTreatment::VALIDATE_USER_2FA_STATUS);
-
         $merchant = $this->fixtures->create('merchant:with_keys');
         $merchantId = $merchant->getId();
 
@@ -952,24 +940,6 @@ class BasicAuthTest extends TestCase
         $this->replaceValuesRecursively($testData, $testDataToReplace);
 
         return $this->runRequestResponseFlow($testData);
-    }
-
-    private function mockRazorxWith(string $featureUnderTest, string $value = 'on')
-    {
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
-            ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')->will(
-            $this->returnCallback(
-                function (string $mid, string $feature, string $mode) use ($featureUnderTest, $value)
-                {
-                    return $feature === $featureUnderTest ? $value : 'control';
-                }
-            ));
     }
 
     private function sampleConsumerPassportJwtBuilder(string $consumer_id = '', string $consumer_type = 'merchant',

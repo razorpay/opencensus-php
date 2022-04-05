@@ -34,9 +34,6 @@ class InstantActivationTest extends TestCase
         $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
 
         $this->startTest();
-
-        // Asserting job is being pushed on creation of batch entity for instant activation type.
-        Queue::assertPushed(BatchJob::class);
     }
 
     /**

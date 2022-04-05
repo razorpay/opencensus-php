@@ -21,12 +21,6 @@ return [
     ],
 
     'stork_whitelist' => [
-        'emails.payment.merchant'                          => RazorxTreatment::API_STORK_MAIL_PAYMENT_CAPTURE,
-        'emails.mjml.merchant.user.contact_mobile_updated' => RazorxTreatment::API_STORK_MAIL_CONTACT_MOBILE_UPDATED,
-        'emails.mjml.customer.payment'                     => RazorxTreatment::API_STORK_MAIL_CUSTOMER_PAYMENT,
         'emails.invoice.customer.notification'             => RazorxTreatment::API_STORK_MAIL_CUSTOMER_INVOICE,
-        'emails.mjml.customer.failure'                     => RazorxTreatment::API_STORK_MAIL_PAYMENT_FAILURE,
-        'emails.payment.merchant_failure'                  => RazorxTreatment::API_STORK_MAIL_PAYMENT_FAILURE,
-        'emails.payment.failed_to_authorized'              => RazorxTreatment::API_STORK_MAIL_PAYMENT_FAILURE,
     ],
 ];

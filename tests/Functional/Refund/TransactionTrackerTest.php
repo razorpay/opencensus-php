@@ -548,9 +548,7 @@ class TransactionTrackerTest extends TestCase
             'order_id' => $merchantTransactionId
         ]]);
 
-        $rzpPayment['secondary_message'] = 'Your payment of ₹ 500'.
-            ' was not successful since we did not receive the successful callback from the issuing bank. '.
-            'The amount will be refunded back to your account in 5-7 business days.';
+        $rzpPayment['secondary_message'] = 'We are awaiting confirmation on the status of your payment from our Banking partners.';
 
         $this->setUpEsMockForPaymentNotes($rzpPaymentId);
 
@@ -560,9 +558,6 @@ class TransactionTrackerTest extends TestCase
     public function testPaymentFetchDetailsForCustomerFromRazorpayIdPendingPaymentCase()
     {
         // Failed Payment
-        $this->enableRazorXTreatmentForFeature(
-            RazorxTreatment::PAYMENT_STATUS_PENDING_CALCULATION, 'on');
-
         $this->testCreateOrder();
         $order = $this->getLastEntity('order');
 

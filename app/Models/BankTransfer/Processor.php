@@ -973,9 +973,9 @@ class Processor extends VirtualAccount\Processor
                     $this->setParamsToEnsurePaymentIsNotCaptured($bankTransfer);
 
                     $nonTpvRefundsViaX = $this->app['razorx']->getTreatment($actualMerchantId,
-                                                                            RazorxTreatment::NON_TPV_REFUNDS_VIA_X,
-                                                                            $this->mode,
-                                                                            3);
+                        RazorxTreatment::NON_TPV_REFUNDS_VIA_X,
+                        $this->mode,
+                        3);
 
                     $this->trace->info(
                         TraceCode::RAZORX_RESPONSE_FOR_NON_TPV_REFUND_VIA_X,

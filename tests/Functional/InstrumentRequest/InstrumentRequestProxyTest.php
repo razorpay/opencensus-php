@@ -260,13 +260,10 @@ class InstrumentRequestProxyTest extends TestCase
                     'url'      => '/internal_instrument_request/',
                     'method'   => \Requests::PATCH,
                     'content'  => [
-                        'query'  => 'gateway=hitachi&merchant_ids=a,b,c&method=cards&start_time=123&endTime=456&has_special_pricing_request=true',
-                        'body'   => [
-                            'status' => 'pending',
-                        ],
+                        'status' => 'pending',
                     ],
                 ],
-                self::EXPECTED_REQUEST_PATH_TERMINALS_SERVICE      => 'v2/internal_instrument_request?gateway=hitachi&merchant_ids=a,b,c&method=cards&start_time=123&endTime=456&has_special_pricing_request=true',
+                self::EXPECTED_REQUEST_PATH_TERMINALS_SERVICE      => 'v2/internal_instrument_request_v2',
                 self::EXPECTED_REQUEST_METHOD_TERMINALS_SERVICE    => \Requests::PATCH,
                 self::EXPECTED_REQUEST_CONTENT_TERMINALS_SERVICE   => [
                     'status' => 'pending',

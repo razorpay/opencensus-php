@@ -88,9 +88,6 @@ class Reporting implements ExternalService
         'reporting_config_edit_bulk',
     ];
 
-    //RazorX Experiments
-    const ENABLE_REPORT_REQUEST_VALIDATION = "enable_report_request_validation";
-
     /**
      * @var array
      */
@@ -1440,21 +1437,12 @@ class Reporting implements ExternalService
 
     protected function validateInput(array $input)
     {
-        $exp = $this->app->razorx->getTreatment(
-            $this->headers[self::CONSUMER_HEADER] ?? '',
-            self::ENABLE_REPORT_REQUEST_VALIDATION,
-            $this->mode
-        );
+        $validator = ValidationFactory::getReportTypeBasedValidator(
+            $this->headers[self::REPORT_TYPE_HEADER] ?? '',
+            $input);
 
-        if ($exp === "on")
-        {
-            $validator = ValidationFactory::getReportTypeBasedValidator(
-                $this->headers[self::REPORT_TYPE_HEADER] ?? '',
-                $input);
-
-            if ($validator !== null) {
-                $validator->validate();
-            }
+        if ($validator !== null) {
+            $validator->validate();
         }
     }
 }

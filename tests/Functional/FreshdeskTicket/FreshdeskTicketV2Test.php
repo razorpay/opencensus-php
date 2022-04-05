@@ -826,11 +826,6 @@ class FreshdeskTicketV2Test extends TestCase
     {
         $testCases = [
             [
-                'fd_instance' => 'rzpsol',
-                'razorx'      => 'control',
-                'group_id'      => 14000000007644,
-            ],
-            [
                 'fd_instance' => 'rzpind',
                 'razorx'      => 'on',
                 'group_id'      => 14000000007644,

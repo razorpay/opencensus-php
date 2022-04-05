@@ -249,10 +249,6 @@ class Validator extends Base\Validator
         Entity::SECOND_FACTOR_AUTH    => 'required|boolean',
     ];
 
-    protected static $change2faSettingValidators = [
-        User\Entity::PASSWORD,
-    ];
-
     protected static $bulkTagRules = [
         'action'         => 'required|string|filled|max:10|in:insert,delete',
         'name'           => 'required|string|filled',
@@ -2350,47 +2346,6 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestValidationFailureException(
                 ErrorCode::BAD_REQUEST_INVALID_WORKFLOW_TYPE);
         }
-    }
-
-    /**
-     * Validates password for $change2faSetting rules on the basis of a razorx experiment
-     * @param $input
-     */
-    protected function validatePassword($input)
-    {
-        $app = App::getFacadeRoot();
-        $razorx = $app['razorx'];
-        $ba = $app['basicauth'];
-
-        $merchantId = $ba->getMerchantId();
-
-        $variant = $razorx->getTreatment(
-            $merchantId,
-            RazorxTreatment::VALIDATE_USER_2FA_STATUS,
-            $ba->getMode());
-
-        if (strtolower($variant) !== 'on')
-        {
-            if (isset($input[User\Entity::PASSWORD]) === true)
-            {
-                $inputPassword = $input[User\Entity::PASSWORD];
-                $userPassword = $ba->getUser()->getPassword();
-
-                if (Hash::check($inputPassword, $userPassword) === false)
-                {
-                    throw new Exception\BadRequestException(
-                        ErrorCode::BAD_REQUEST_INVALID_PASSWORD);
-                }
-
-            }
-            else
-            {
-                throw new BadRequestValidationFailureException(
-                    'The password field is required');
-            }
-        }
-
-        return;
     }
 
     public function validateCode($key, $value)

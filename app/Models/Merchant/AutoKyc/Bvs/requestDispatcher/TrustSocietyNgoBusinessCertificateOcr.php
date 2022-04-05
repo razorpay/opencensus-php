@@ -43,8 +43,7 @@ class TrustSocietyNgoBusinessCertificateOcr extends Base
         ]);
 
         return (($this->document->getPublicFileStoreId() !== null) and
-            (in_array($this->merchantDetails->getBusinessType(), BusinessType::getTrustSocietyNgoBusinessCertificateApplicableBusinessTypes(), true) === true)
-            and $isExperimentEnabledForTrustSocietyNgo === true);
+            (in_array($this->merchantDetails->getBusinessType(), BusinessType::getTrustSocietyNgoBusinessCertificateApplicableBusinessTypes(), true) === true) and $isExperimentEnabledForTrustSocietyNgo === true);
     }
 
     /**

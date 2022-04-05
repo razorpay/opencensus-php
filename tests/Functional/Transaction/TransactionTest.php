@@ -1287,7 +1287,6 @@ class TransactionTest extends TestCase
         Mail::assertQueued(BalanceThresholdAlert::class, function ($mail)
         {
             $viewData = $mail->viewData;
-            s($viewData);
             $this->assertEquals(['test@razorpay.com'], $viewData['email']);
 
             $this->assertEquals(10000000000000, $viewData['merchant_id']);

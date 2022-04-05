@@ -13308,8 +13308,6 @@ class Route
     // so add only proxy auth routes which have merchant Id
     public static $twoFactorAuthRequiredRoutes = [
         'merchant_replace_key'                  => [Mode::LIVE],
-        'user_2fa_change_setting'               => [Mode::LIVE, Mode::TEST],
-        'merchant_2fa_change_setting'           => [Mode::LIVE, Mode::TEST],
         'merchant_bank_account_update'          => [Mode::LIVE, Mode::TEST],
         'merchant_edit_email_self_serve'        => [Mode::LIVE, Mode::TEST],
         'email_user_status_for_email_update'    => [Mode::LIVE, Mode::TEST],

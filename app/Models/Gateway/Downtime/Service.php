@@ -14,7 +14,6 @@ use RZP\Jobs\DynamicNetBankingUrlUpdater;
 
 class Service extends Base\Service
 {
-    const RAZORX_DOWNTIME_SLACK_NOTIFICATIONS = "RAZORX_DOWNTIME_SLACK_NOTIFICATIONS";
     protected $processor;
 
     public function create(array $input)
@@ -190,21 +189,13 @@ class Service extends Base\Service
 
     private function notifyOnSlack(array $input): void
     {
-        $slackNotification = $this->app->razorx->getTreatment("slack", self::RAZORX_DOWNTIME_SLACK_NOTIFICATIONS, $this->core()::getMode());
-        if ($slackNotification === "enable")
+        try
         {
-            try
-            {
-                $this->app['downtimeSlackNotification']->notifyPaymentDowntime($input);
-            }
-            catch (\Throwable $e)
-            {
-                $this->trace->traceException($e, null, TraceCode::FAILED_DOWNTIME_SLACK_NOTIFICATION, ["downtime" => $input]);
-            }
+            $this->app['downtimeSlackNotification']->notifyPaymentDowntime($input);
         }
-        else
+        catch (\Throwable $e)
         {
-            $this->trace->info(TraceCode::DOWNTIME_SLACK_NOTIFICATION_EXP_OFF, ["downtime" => $input, "expVal" => $slackNotification]);
+            $this->trace->traceException($e, null, TraceCode::FAILED_DOWNTIME_SLACK_NOTIFICATION, ["downtime" => $input]);
         }
     }
 }

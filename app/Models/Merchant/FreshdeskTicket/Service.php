@@ -1813,14 +1813,7 @@ class Service extends Base\Service
             return $fdInstance;
         }
 
-        $result = $this->app->razorx->getTreatment($merchantId, Constants::RAZORX_FLAG_FRESHDESK_RZPSOL_RZP_MERGED, Mode::LIVE);
-
-        if ($result === "on")
-        {
-            $fdInstance = Constants::RZPIND;
-        }
-
-        return $fdInstance;
+        return Constants::RZPIND;
     }
 
     protected function modifyRequestForCapital(array $input)

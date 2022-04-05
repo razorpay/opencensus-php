@@ -8421,22 +8421,22 @@ class BankTransferTest extends TestCase
     protected function enableRazorXTreatmentForNonTpvRefundsViaX()
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
-                           ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment'])
-                           ->getMock();
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
 
         $this->app->razorx->method('getTreatment')
-                          ->will($this->returnCallback(
-                              function($mid, $feature, $mode) {
-                                  if ($feature === 'non_tpv_refunds_via_x')
-                                  {
-                                      return 'on';
-                                  }
+            ->will($this->returnCallback(
+                function($mid, $feature, $mode) {
+                    if ($feature === 'non_tpv_refunds_via_x')
+                    {
+                        return 'on';
+                    }
 
-                                  return 'control';
-                              }));
+                    return 'control';
+                }));
     }
 
     public function testAdminTestBankTransferPayment()

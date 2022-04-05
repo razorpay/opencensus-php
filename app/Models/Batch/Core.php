@@ -297,30 +297,10 @@ class Core extends Base\Core
     {
         if (Type::isKubernetesJobGroup($batch->getType()) === true)
         {
-            // admin batches will not have merchantId, so use random string instead
-            if ($this->merchant !== null)
-            {
-                $id = $this->merchant->getId();
-            }
-            else
-            {
-                $id = $this->app['request']->getId();
-            }
+            unset($input[Entity::FILE]);
+            $this->app->k8s_client->createJob($this->mode, $batch->getId(), $input, $batch->getType());
 
-            // Get razorx treatment
-            $variant = $this->app->razorx->getTreatment(
-                $id,
-                Merchant\RazorxTreatment::K8S_BATCH_TREATMENT,
-                $this->mode
-            );
-
-            if (strtolower($variant) === 'on')
-            {
-                unset($input[Entity::FILE]);
-                $this->app->k8s_client->createJob($this->mode, $batch->getId(), $input, $batch->getType());
-
-                return;
-            }
+            return;
         }
 
         if (Type::isKubernetesJobQueueGroup($batch->getType()) === true)

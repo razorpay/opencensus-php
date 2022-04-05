@@ -374,14 +374,7 @@ class Validator extends Base\Validator
 
     protected function shouldValidateAttachment(): bool
     {
-        $app = \App::getFacadeRoot();
-
-        $taskId = $app['request']->getTaskId();
-
-        $variant = $app['razorx']->getTreatment($taskId, Constants::RAZORX_FLAG_VALIDATE_FRESHDESK_ATTACHMENT_EXTENSION,
-            $app['rzp.mode'] ?? Mode::LIVE);
-
-        return $variant !== 'control';
+        return true;
     }
 
     protected function validateResponderId($attribute, $value)

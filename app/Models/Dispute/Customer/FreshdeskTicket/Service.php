@@ -45,17 +45,13 @@ class Service extends Base\Service
 
     private function shouldProcessFreshdeskTicket(Entity $freshdeskTicket): bool
     {
-        $mode = $this->app['rzp.mode'];
-
-        $variant = $this->app->razorx->getTreatment($freshdeskTicket->getPaymentId(), 'freshdesk_dispute_ticket_automation', $mode);
-
         $this->trace->info(TraceCode::FRESHDESK_DISPUTE_AUTOMATION_RAZORX_VARIANT, [
             'freshdesk_ticket_id' => $freshdeskTicket->getTicketId(),
             'payment_id'          => $freshdeskTicket->getPaymentId(),
-            'razorx_variant'      => $variant,
+            'razorx_variant'      => 'on',
         ]);
 
-        return ($variant === 'automate');
+        return true;
     }
 
     private static function parseInput(array $input)

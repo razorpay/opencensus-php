@@ -48,8 +48,6 @@ class VirtualBankAccountTest extends TestCase
         $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
 
         $this->startTest();
-
-        Queue::assertPushed(BatchJob::class);
     }
 
     public function testCreateBatchOfVirtualBankAccountTypeStatus()

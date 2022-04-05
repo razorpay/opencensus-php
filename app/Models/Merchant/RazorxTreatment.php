@@ -90,10 +90,6 @@ final class RazorxTreatment
     const BVS_SHOP_ESTB_AUTH         = 'bvs_shop_estb_auth';
     const BVS_PENNY_TESTING          = 'bvs_penny_testing';
 
-    // this experiment is used to enable/disable company search
-
-    const BVS_COMPANY_SEARCH = "bvs_company_search";
-
     // Decides if increased cap for allowed line items in invoice to be used for merchant's invoice.
     const INV_INCREASED_LINE_ITEMS_CAP = 'inv_increased_line_items_cap';
 
@@ -170,12 +166,6 @@ final class RazorxTreatment
 
     const RAZORPAY_X_ENABLE_YESBANK_PAYOUTS = 'razorpay_x_enable_yesbank_payouts';
 
-    // Decides if should forward passport(jwt) received from edge to subscriptions service.
-    const FORWARD_PASSPORT_TO_SUBSCRIPTIONS = 'forward_passport_to_subscriptions';
-
-    // Experiment for 2FA on critical actions
-    const VALIDATE_USER_2FA_STATUS = 'validate_user_2fa_status';
-
     // Experiment to skip payroll payouts in the payouts list/detail view
     const RX_SKIP_PAYROLL_PAYOUTS = 'rx_skip_payroll_payouts';
 
@@ -238,9 +228,6 @@ final class RazorxTreatment
 
     const PAYOUT_TO_CARDS_VIA_RBL = 'payout_to_cards_via_rbl';
 
-    // experiment to ramping pg persistent invoice
-    const PG_PERSISTENT_INVOICE = 'pg_persistent_invoice';
-
     // experiment for opting out of settlement notification
     const SETTLEMENT_NOTIFICATION_OPT_OUT = 'settlement_notification_opt_out';
 
@@ -250,8 +237,6 @@ final class RazorxTreatment
 
     // experiment to enable webhooks on route gateway_payment_static_s2scallback_post/gateway_payment_static_s2scallback_get
     const ENABLE_WEBHOOKS = 'enable_webhooks';
-
-    const PAYMENT_STATUS_PENDING_CALCULATION = 'payment_status_pending_calculation';
 
     const BULK_PAYOUTS_IMPROVEMENTS_ROLLOUT = 'bulk_payouts_improvements_rollout';
 
@@ -303,9 +288,6 @@ final class RazorxTreatment
     // Check if Offers is enabled for subscription
     const OFFER_ON_SUBSCRIPTION = 'offer_on_subscription';
 
-    // Check if Offers is enabled for subscription
-    const RECURRING_MORE_ACCOUNT_TYPE = 'recurring_more_account_type';
-
     const SYSTEM_BASED_NEEDS_CLARIFICATION = 'system_based_needs_clarification';
 
     const SYSTEM_BASED_NEEDS_CLARIFICATION_FOR_PARTNER = 'system_based_needs_clarification_for_partner';
@@ -313,8 +295,6 @@ final class RazorxTreatment
     const PARTNER_KYC_COMMUNICATION = 'partner_kyc_communication';
 
     const PARTNER_SUBMERCHANT_INVITE_SMS = 'partner_submerchant_invite_sms';
-
-    const PRICING_PLAN_DEFAULT_METHODS = 'PRICING_PLAN_DEFAULT_METHODS';
 
     // Experiment to verify bank account via karza
     const KARZA_BANK_ACCOUNT_VERIFICATION = 'KARZA_BANK_ACCOUNT_VERIFICATION';
@@ -335,7 +315,7 @@ final class RazorxTreatment
 
     const GSTIN_SELF_SERVE_V2 = 'gstin_self_serve_v2';
 
-    const SYSTEM_BASED_NEEDS_CLARIFICATION_NOT_MATCHED  = 'system_based_needs_clarification_not_matched';
+    const SYSTEM_BASED_NEEDS_CLARIFICATION_NOT_MATCHED = 'system_based_needs_clarification_not_matched';
 
     // to a/b test between offer tile vs subtext for cred
     const CRED_OFFER_SUBTEXT = 'cred_offer_subtext';
@@ -368,8 +348,6 @@ final class RazorxTreatment
     const SMS_SUPPORT_NOTIFICATIONS = 'sms_support_notifications';
 
     const SHOW_CREATE_TICKET_POPUP = 'show_create_ticket_popup';
-
-    const  PAYMENT_LINK_END_STATE_VIEW_CHANGE = 'payment_link_end_state_view_change';
 
     const NON_TPV_REFUNDS_VIA_X = 'non_tpv_refunds_via_x';
 
@@ -413,9 +391,6 @@ final class RazorxTreatment
 
     // Experiment to save transaction app urls in merchant business detail
     const SAVE_TXN_APP_URLS = 'save_txn_app_urls';
-
-    // Experiment to update linked account schedules when parent merchant schedule is updated
-    const UPDATE_LINKED_ACCOUNT_SCHEDULES_FEATURE = 'UPDATE_LINKED_ACCOUNT_SCHEDULES_FEATURE';
 
     // Experiment for transfers state machine.
     const ROUTE_TRANSFER_STATE = 'route_transfer_state';

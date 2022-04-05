@@ -1033,17 +1033,7 @@ class Validator extends Base\Validator
             throw new BadRequestValidationFailureException("This account is suspended");
         }
 
-        $app = App::getFacadeRoot();
-
-        $mode = $app['rzp.mode'];
-
-        $variant = app()->razorx->getTreatment(
-            $invoice->getMerchantId(),
-            Merchant\RazorxTreatment::PAYMENT_LINK_END_STATE_VIEW_CHANGE,
-            $mode
-        );
-
-        if (($variant === 'on') && ($invoice->isTypeLink() === true))
+        if ($invoice->isTypeLink() === true)
         {
             if ($invoice->isExpired() === true)
             {

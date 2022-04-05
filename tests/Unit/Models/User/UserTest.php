@@ -2527,28 +2527,6 @@ class UserTest extends TestCase
         $r->invoke($this->userValidator, ['user_id' => '100002Razorpay']);
     }
 
-    public function testValidatePasswordExceptionWithoutPasswordField()
-    {
-        $this->expectException(BadRequestValidationFailureException::class);
-
-        $this->expectExceptionMessage('The password fields is required');
-
-        $r = $this->getReflectionObj('RZP\Models\User\Validator', 'validatePassword');
-
-        $r->invoke(null, []);
-    }
-
-    public function testValidatePasswordExceptionInvalidPassword()
-    {
-        $this->expectException(BadRequestException::class);
-
-        $this->expectExceptionMessage(PublicErrorDescription::BAD_REQUEST_INVALID_PASSWORD);
-
-        $r = $this->getReflectionObj('RZP\Models\User\Validator', 'validatePassword');
-
-        $r->invoke(null, [Entity::PASSWORD => '12345']);
-    }
-
     public function testValidateCaptchaWithAllFailures()
     {
         $this->expectException(\Requests_Exception::class);

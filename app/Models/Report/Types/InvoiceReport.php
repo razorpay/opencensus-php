@@ -511,10 +511,6 @@ class InvoiceReport extends BaseReport
 
     public function isNewFlowEnabledForPgInvoice($merchantId)
     {
-        $variant = $this->app->razorx->getTreatment($merchantId,
-            RazorxTreatment::PG_PERSISTENT_INVOICE,
-            $this->mode);
-
-        return (strtolower($variant) === 'on');
+        return true;
     }
 }

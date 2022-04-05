@@ -116,8 +116,7 @@ class ActivationTest extends OAuthTestCase
         $this->app->razorx->method('getTreatment')
             ->will($this->returnCallback(
                 function($mid, $feature, $mode) {
-                    if ($feature === RazorxTreatment::PRICING_PLAN_DEFAULT_METHODS or
-                        $feature === RazorxTreatment::INSTANT_ACTIVATION_FUNCTIONALITY or
+                    if ($feature === RazorxTreatment::INSTANT_ACTIVATION_FUNCTIONALITY or
                         $feature === RazorxTreatment::LITE_ONBOARDING or
                         $feature === RazorxTreatment::UPDATED_LITE_ONBOARDING)
                     {
@@ -4100,7 +4099,6 @@ class ActivationTest extends OAuthTestCase
 
     // whenever merchant submits action form/kyc form, we need to call Terminals Service to process instrument requests related
     // information. This test asserts that that Terminals Service is called with the right parameters
-    // this should happen only when razorx `instrument_request_merchant_dashboard` returns 'on'
     public function testInternalInstrumentStatusUpdateRequestedOnMerchantActivationFormSubmission()
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
@@ -4109,21 +4107,6 @@ class ActivationTest extends OAuthTestCase
             ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-            ->will($this->returnCallback(
-                function ($mid, $feature, $mode)
-                {
-                    if ($feature === 'instrument_request_merchant_dashboard')
-                    {
-                        return 'on';
-                    }
-                    else
-                    {
-                        return 'control';
-                    }
-
-                }) );
 
         $this->terminalsServiceMock = $this->getTerminalsServiceMock();
 
@@ -4162,48 +4145,6 @@ class ActivationTest extends OAuthTestCase
         $this->assertEquals('v2/internal_instrument_request?status=action_required&merchant_ids=1cXSLlUU8V9sXl', $receivedPath);
 
         $this->assertEquals('{"status":"requested"}', $receivedContent);
-    }
-
-
-    // whenever merchant submits action form/kyc form, we need to call Terminals Service to process instrument requests related
-    // information. This test asserts that that Terminals Service is called with the right parameters
-    // this should not happen when  razorx `instrument_request_merchant_dashboard` returns 'control'
-    public function testInternalInstrumentStatusUpdateRequestedOnMerchantActivationFormSubmissionRazorxControl()
-    {
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
-            ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-            ->will($this->returnCallback(
-                function ($mid, $feature, $mode)
-                {
-                    return 'control';
-
-                }) );
-
-        $this->terminalsServiceMock = $this->getTerminalsServiceMock();
-
-        // cannot assert within mock as exception failures thrown are handled in code somewhere else, leading to silent failure of assertions failures
-        $this->mockTerminalsServiceSendRequest(function($path, $content, $method) use (&$receivedPath, &$receivedContent, &$receivedMethod) {
-        }, 0);
-
-        $merchantId = '1cXSLlUU8V9sXl';
-
-        $this->fixtures->create('merchant_detail',[
-            'merchant_id' => '1cXSLlUU8V9sXl',
-            'contact_name'=> 'Aditya',
-            'business_type' => 2
-        ]);
-
-        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
-
-        $this->ba->proxyAuth('rzp_test_' . $merchantId, $merchantUser['id']);
-
-        $this->startTest();
     }
 
     public function testAddingVirtualAccountInLinkedAccount()

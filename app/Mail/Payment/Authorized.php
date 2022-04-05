@@ -68,7 +68,7 @@ class Authorized extends Base
             return false;
         }
 
-        return parent::shouldSendEmailViaStork();
+        return true;
     }
 
     protected function getParamsForStork(): array

@@ -3662,7 +3662,7 @@ class Core extends Base\Core
         }
 
         $experimentEnabled = $this->mcore->isRazorxExperimentEnable($merchantDetails->getMerchantId(),
-                                                                    RazorxTreatment::SKIP_POA_DOCUMENT_FUNCTIONALITY);
+            RazorxTreatment::SKIP_POA_DOCUMENT_FUNCTIONALITY);
 
         if ($experimentEnabled === false)
         {
@@ -4623,19 +4623,17 @@ class Core extends Base\Core
             return false;
         }
 
-        $experimentName = DetailConstants::AADHAAR_ESIGN_BUSINESS_TYPES_EXPERIMENT_MAPPING[$merchantDetails->getBusinessType()];
-
-        if (empty($experimentName) === false)
+        if (array_key_exists($merchantDetails->getBusinessType(), DetailConstants::AADHAAR_ESIGN_BUSINESS_TYPES_EXPERIMENT_MAPPING) === true)
         {
-            $isAadhaarEsignEnabled = $this->mcore->isRazorxExperimentEnable($merchantDetails->getMerchantId(),
-                                                                            $experimentName);
+            $experimentName = DetailConstants::AADHAAR_ESIGN_BUSINESS_TYPES_EXPERIMENT_MAPPING[$merchantDetails->getBusinessType()];
+
+            $isAadhaarEsignEnabled = $this->mcore->isRazorxExperimentEnable($merchantDetails->getMerchantId(), $experimentName);
+
             if ($isAadhaarEsignEnabled === false)
             {
                 return false;
             }
-
         }
-
         return true;
     }
 
@@ -5319,15 +5317,6 @@ class Core extends Base\Core
         $businessType = $this->merchant->merchantDetail->getBusinessType();
 
         if (BusinessType::isValidCompanySearchBusinessType($businessType) === false)
-        {
-            return $companySearchList;
-        }
-
-        $isCompanySearchRazorxExperimentEnabled = (new Merchant\Core())->isRazorxExperimentEnable(
-            $this->merchant->getId(),
-            RazorxTreatment::BVS_COMPANY_SEARCH);
-
-        if ($isCompanySearchRazorxExperimentEnabled === false)
         {
             return $companySearchList;
         }

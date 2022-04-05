@@ -577,6 +577,9 @@ return [
                 'set_contact_email'      => true,
                 'reattach_current_owner' => true
             ],
+            'server'    => [
+                'HTTP_X-Dashboard-User-2FA-Verified'    => 'true',
+            ],
             'url' => '/merchants/email_user/status',
             'method' => 'POST',
         ],
@@ -1653,27 +1656,6 @@ return [
         ],
     ],
 
-    'testFailedMerchant2faEnableInvalidPass' => [
-        'request' => [
-            'url'     => '/merchants/2fa',
-            'method'  => 'PATCH',
-            'content' => [],
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_PASSWORD,
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_PASSWORD,
-        ],
-    ],
-
     'testMerchant2faEnableAsCriticalAction'     => [
         'request'       => [
             'url'       => '/merchants/2fa',
@@ -2637,6 +2619,9 @@ return [
                 'account_number'   => '0000009999999999999',
                 'beneficiary_name' => 'Test R4zorpay:',
             ],
+            'server'    => [
+                'HTTP_X-Dashboard-User-2FA-Verified'    => 'true',
+            ],
             'url'     => '/merchants/bank_account/update',
             'method'  => 'POST'
         ],
@@ -2663,7 +2648,10 @@ return [
                 'beneficiary_name' => 'Test R4zorpay:',
             ],
             'url'     => '/merchants/bank_account/update',
-            'method'  => 'POST'
+            'method'  => 'POST',
+            'server'    => [
+                'HTTP_X-Dashboard-User-2FA-Verified'    => 'true',
+            ],
         ],
         'response' => [
             'content' => [
@@ -2680,6 +2668,9 @@ return [
                 'ifsc_code'        => 'ICIC0001206',
                 'account_number'   => '0000009999999999999',
                 'beneficiary_name' => 'Test R4zorpay:',
+            ],
+            'server'    => [
+                'HTTP_X-Dashboard-User-2FA-Verified'    => 'true',
             ],
             'url'     => '/merchants/bank_account/update',
             'method'  => 'POST'
@@ -2706,6 +2697,9 @@ return [
                 'account_number'   => '0000009999999999999',
                 'beneficiary_name' => 'Test R4zorpay:',
             ],
+            'server'    => [
+                'HTTP_X-Dashboard-User-2FA-Verified'    => 'true',
+            ],
             'url'     => '/merchants/bank_account/update',
             'method'  => 'POST'
         ],
@@ -2730,6 +2724,9 @@ return [
                 'ifsc_code'        => 'ICIC0001206',
                 'account_number'   => '0000009999999999999',
                 'beneficiary_name' => 'Test R4zorpay:',
+            ],
+            'server'    => [
+                'HTTP_X-Dashboard-User-2FA-Verified'    => 'true',
             ],
             'url'     => '/merchants/bank_account/update',
             'method'  => 'POST'
@@ -11985,6 +11982,9 @@ return [
                 'ifsc_code'        => 'HDFC0001206',
                 'account_number'   => '0002020000304030434',
                 'beneficiary_name' => 'Test Merchant',
+            ],
+            'server'    => [
+                'HTTP_X-Dashboard-User-2FA-Verified'    => 'true',
             ],
             'url'     => '/merchants/bank_account/update',
             'method'  => 'POST'

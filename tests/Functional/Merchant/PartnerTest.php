@@ -1609,7 +1609,7 @@ class PartnerTest extends OAuthTestCase
         $this->ba->proxyAuth();
 
         $razorxMock = $this->getMockBuilder(Merchant\Core::class)
-            ->setMethods(['getTreatment'])
+            ->setMethods(['isRazorxExperimentEnable'])
             ->getMock();
 
         $razorxMock->expects($this->any())

@@ -3558,23 +3558,6 @@ return [
         ],
     ],
 
-    'testInternalInstrumentStatusUpdateRequestedOnMerchantActivationFormSubmissionRazorxControl' => [
-        'request'  => [
-            'content' => [
-                'submit' => true,
-            ],
-            'url'     => '/merchant/activation',
-            'method'  => 'POST',
-            'server'  => [
-                'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com',
-            ],
-        ],
-        'response' => [
-            'content' => [
-            ],
-        ],
-    ],
-
     'testPostInstantActivationBlockedOrg' => [
         'request'     => [
             'method'  => 'POST',

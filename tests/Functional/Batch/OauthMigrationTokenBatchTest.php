@@ -34,36 +34,6 @@ class OauthMigrationTokenBatchTest extends TestCase
         $this->authServiceMock = $this->createAuthServiceMock(['sendRequest']);
     }
 
-    public function testCreateOauthMigrationBatch()
-    {
-        Queue::fake();
-
-        $client = $this->createOAuthApplicationAndGetClientByEnv('dev');
-
-        $testData = $this->testData[__FUNCTION__];
-
-        $testData['request']['content']['client_id'] = $client->getId();
-
-        $this->fixtures->user->createUserForMerchant('10000000000000', ['id' => '10000000UserId']);
-
-        $entries = $this->getOAuthMigrationBatchFileEntries();
-
-        $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
-
-        $this->ba->proxyAuth();
-
-        $this->startTest($testData);
-
-        Queue::assertPushed(BatchJob::class);
-
-        $batch = $this->getLastEntity('batch', true);
-
-        $this->assertEquals(0, $batch['processed_count']);
-        $this->assertEquals(0, $batch['success_count']);
-        $this->assertEquals(0, $batch['failure_count']);
-        $this->assertEquals('created', $batch['status']);
-    }
-
     public function testProcessOauthMigrationBatch()
     {
         Mail::fake();

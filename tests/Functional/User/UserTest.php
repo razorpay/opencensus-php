@@ -2540,36 +2540,6 @@ class UserTest extends TestCase
         $this->assertFalse($user->isSecondFactorAuth());
     }
 
-    public function testFailedUserEnable2faIncorrectPass()
-    {
-        $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID,
-            [
-                UserEntity::CONTACT_MOBILE_VERIFIED => 1,
-                UserEntity::CONTACT_MOBILE          => '9999999999',
-                UserEntity::SECOND_FACTOR_AUTH      => 0,
-                UserEntity::PASSWORD                => 'hello123',
-            ]);
-
-        $this->fixtures->edit('merchant', '10000000000000', [MerchantEntity::SECOND_FACTOR_AUTH => 0]);
-
-        $testData = & $this->testData[__FUNCTION__];
-
-        $content =  [
-            UserEntity::SECOND_FACTOR_AUTH => true,
-            UserEntity::PASSWORD           => 'hello1234',
-        ];
-
-        $testData['request']['content'] = $content;
-
-        $this->ba->proxyAuth();
-
-        $this->startTest();
-
-        $user = $this->getDbEntityById('user', UserFixture::MERCHANT_USER_ID);
-
-        $this->assertFalse($user->isSecondFactorAuth());
-    }
-
     public function testFailedUserEnable2faMerchant2faEnforced()
     {
         $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID,

@@ -263,40 +263,27 @@ class UserAccess
         $user = $this->ba->getUser();
         $userId = $user->getId();
 
-        $merchantId = $this->ba->getMerchantId();
+        $user2FaVerified = $this->reqCtx->getUser2FAVerified();
 
-        // currently keeping this feature under razorx
-        // keeping this razorx under merchantId for consistency with dashboard
-        // dashboard sends all razorx request with merchant context
-        $user2FaCheckExperimentVariant = $this->razorx->getTreatment(
-            $merchantId,
-            RazorxTreatment::VALIDATE_USER_2FA_STATUS,
-            $this->ba->getMode());
+        $this->trace->count(UserMetricCode::USER_ACCESS_CRITICAL_ROUTE, [
+            'rote_name'             => $this->router->currentRouteName(),
+            'user_2fa_verified'     => $user2FaVerified,
+        ]);
 
-        if (strtolower($user2FaCheckExperimentVariant) === 'on')
+        if ($user2FaVerified === false)
         {
-            $user2FaVerified = $this->reqCtx->getUser2FAVerified();
+            $errorData = [
+                'internal_error_code'       => ErrorCode::BAD_REQUEST_USER_2FA_VALIDATION_REQUIRED,
+                'user'              => [
+                    'id'                => $userId,
+                    'contact_mobile'   => $user->getMaskedContactMobile(),
+                ]
+            ];
 
-            $this->trace->count(UserMetricCode::USER_ACCESS_CRITICAL_ROUTE, [
-                'rote_name'             => $this->router->currentRouteName(),
-                'user_2fa_verified'     => $user2FaVerified,
-            ]);
-
-            if ($user2FaVerified === false)
-            {
-                $errorData = [
-                    'internal_error_code'       => ErrorCode::BAD_REQUEST_USER_2FA_VALIDATION_REQUIRED,
-                    'user'              => [
-                        'id'                => $userId,
-                        'contact_mobile'   => $user->getMaskedContactMobile(),
-                    ]
-                ];
-
-                throw new BadRequestException(
-                    ErrorCode::BAD_REQUEST_USER_2FA_VALIDATION_REQUIRED,
-                    null,
-                    $errorData);
-            }
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_USER_2FA_VALIDATION_REQUIRED,
+                null,
+                $errorData);
         }
 
     }
