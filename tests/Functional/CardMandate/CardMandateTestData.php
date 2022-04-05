@@ -340,4 +340,40 @@ return [
             'content' => [],
         ],
     ],
+    'testCreateCardMandateAutoPaymentDuplicateNotificationDeliveryCallback' => [
+        'request' => [
+            'content' => [
+                "entity" => "event",
+                "event"=> "notification.delivered",
+                "contains"=> [
+                    "mandate.notification"
+                ],
+                "payload"=> [
+                    "mandate.notification"=> [
+                        "entity"=> [
+                            "id"=> "Hs76F3W7cORX0P",
+                            "entity"=> "mandate.notification",
+                            "status"=> "delivered",
+                            "delivered_at"=> 1630693800,
+                            "afa_required"=> false,
+                            "afa_status"=> null,
+                            "afa_completed_at"=> 0,
+                            "amount" => 5000,
+                            "currency" => "INR",
+                            "purpose" => "test",
+                            "notes" => [
+                                "key" => "value",
+                            ],
+                        ]
+                    ]
+                ],
+                "created_at" => 1620712957,
+            ],
+            'method'    => 'POST',
+            'url'       => '/mandate_hq/callback',
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
 ];

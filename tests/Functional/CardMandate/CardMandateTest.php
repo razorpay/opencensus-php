@@ -1184,6 +1184,61 @@ class CardMandateTest extends TestCase
         $this->assertEquals('captured', $payment->getStatus());
     }
 
+    public function testCreateCardMandateAutoPaymentDuplicateNotificationDeliveryCallback()
+    {
+        $this->testCreateCardMandatePayment();
+
+        $this->mockCreatePreDebitNotification(true, false, true);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $tokenId = $paymentEntity[Payment::TOKEN_ID];
+
+        $paymentInput = $this->getDefaultRecurringPaymentArray();
+        unset($paymentInput[Payment::CARD]);
+        unset($paymentInput[Payment::BANK]);
+
+        $paymentInput[Payment::TOKEN] = $tokenId;
+
+        $order = $this->fixtures->create('order', [
+            'amount' => 50000,
+            'payment_capture' => 1,
+        ]);
+        $paymentInput[Payment::ORDER_ID] = $order->getPublicId();
+
+        $this->ba->privateAuth();
+
+        $content = $this->doS2SRecurringPayment($paymentInput);
+        $this->assertNotEmpty($content['razorpay_payment_id']);
+
+        $payment = $this->getDbLastEntity('payment');
+        $this->assertEquals('auto', $payment->getRecurringType());
+        $this->assertEquals('created', $payment->getStatus());
+
+        $cardMandateNotification = $this->getDbLastEntity('card_mandate_notification');
+        $this->assertEquals('created', $cardMandateNotification->getStatus());
+        $this->assertEquals('ratn_PP3VC146gmBVGG', $cardMandateNotification->notification_id);
+        $this->assertNull($cardMandateNotification->reminder_id);
+
+        $this->testData[__FUNCTION__]['request']['content']['payload']['mandate.notification']['entity']['id'] = $cardMandateNotification->getNotificationId();
+
+        $this->startTest();
+
+        $cardMandateNotification = $this->getDbLastEntity('card_mandate_notification');
+        $this->assertEquals('notified', $cardMandateNotification->getStatus());
+        $this->assertEquals('ratn_PP3VC146gmBVGG', $cardMandateNotification->notification_id);
+        $this->assertNotNull($cardMandateNotification->reminder_id);
+        $this->assertNotEmpty($cardMandateNotification->notified_at);
+
+        $this->mockReminder();
+
+        $this->startTest();
+
+        $cardMandateNotification2 = $this->getDbLastEntity('card_mandate_notification');
+
+        $this->assertEquals($cardMandateNotification->reminder_id, $cardMandateNotification2->reminder_id);
+    }
+
     public function testCreateCardMandateAutoPaymentWithAfa()
     {
         $this->testCreateCardMandatePayment();
@@ -1853,13 +1908,19 @@ class CardMandateTest extends TestCase
         return $this->mockMandateHQ($callable, 'reportPayment');
     }
 
-    protected function mockCreatePreDebitNotification($success = true, $afaRequired = false)
+    protected function mockCreatePreDebitNotification($success = true, $afaRequired = false, $isPending = false)
     {
-        $callable = function ($mandateId, $input) use ($success, $afaRequired)
+        $callable = function ($mandateId, $input) use ($success, $afaRequired, $isPending)
         {
+            $status = $success ? 'delivered' : 'failed';
+
+            if ($isPending) {
+                $status = 'created';
+            }
+
             return [
                 'id' => 'ratn_PP3VC146gmBVGG',
-                'status' => $success ? 'delivered' : 'failed',
+                'status' => $status,
                 'delivered_at' => Carbon::now()->timestamp,
                 'afa_status' => 'created',
                 'afa_required' => $afaRequired,
@@ -2201,5 +2262,29 @@ class CardMandateTest extends TestCase
             ->andReturnUsing($callable);
     }
 
+    protected function mockReminder($success = false)
+    {
+        $reminders = Mockery::mock('RZP\Services\Reminders')->makePartial();
+
+        $this->app->instance('reminders', $reminders);
+
+        $reminders->shouldReceive('createReminder')
+            ->with(Mockery::type('array'), Mockery::type('string'))
+            ->andReturnUsing(function ($request, $merchantId) use ($success) {
+                if (!$success) {
+                    throw new BadRequestValidationFailureException('reminder create failed');
+                }
+
+                $this->mockedRemindersRequest = [$request, $merchantId];
+
+                $response = [
+                    'success'   => true
+                ];
+
+                return $response;
+            });
+
+        $this->app->instance('reminders', $reminders);
+    }
 }
 

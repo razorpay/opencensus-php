@@ -246,8 +246,10 @@ class Core extends Base\Core
 
         $isApproved = false;
 
+        $isNotified = false;
+
         $this->repo->transaction(
-            function () use ($cardMandateNotification, $status, $notification, &$isApproved) {
+            function () use ($cardMandateNotification, $status, $notification, &$isApproved, &$isNotified) {
                 $this->repo->card_mandate_notification->lockForUpdateAndReload($cardMandateNotification);
 
                 if (($cardMandateNotification->getStatus() === Status::CREATED or
@@ -259,6 +261,8 @@ class Core extends Base\Core
                     if ($cardMandateNotification->getStatus() === Status::NOTIFIED)
                     {
                         $cardMandateNotification->setNotifiedAt($notification->getNotifiedAt());
+
+                        $isNotified = true;
                     }
                 }
 
@@ -286,7 +290,8 @@ class Core extends Base\Core
             if ($cardMandateNotification->payment !== null and
                 !$cardMandateNotification->isAfaRequired() and
                 $cardMandateNotification->getStatus() === Status::NOTIFIED and
-                $cardMandateNotification->getAfaStatus() !== AfaStatus::REJECTED)
+                $cardMandateNotification->getAfaStatus() !== AfaStatus::REJECTED and
+                $isNotified === true)
             {
                 $reminderId = $this->setCardAutoRecurringReminder($cardMandateNotification);
 
