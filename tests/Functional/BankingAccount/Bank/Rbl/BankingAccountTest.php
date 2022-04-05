@@ -1,6 +1,7 @@
 <?php
 
 use Carbon\Carbon;
+use RZP\Models\Admin;
 use RZP\Constants\Mode;
 use RZP\Models\Contact;
 use RZP\Models\Feature;
@@ -9,10 +10,10 @@ use RZP\Constants\Table;
 use Razorpay\OAuth\Client;
 use RZP\Constants\Timezone;
 use RZP\Models\BankingAccount;
-use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Services\HubspotClient;
 use RZP\Models\Admin\Permission;
 use RZP\Services\RazorXClient;
+use RZP\Models\Settlement\Channel;
 use RZP\Tests\Functional\TestCase;
 use Illuminate\Support\Facades\Mail;
 use RZP\Models\BankingAccount\Entity;
@@ -22,6 +23,7 @@ use RZP\Models\BankingAccount\Gateway\Rbl;
 use RZP\Models\BankingAccount\AccountType;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Mail\BankingAccount\XProActivation;
+use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\BankingAccount\Activation\MIS;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Fixtures\Entity\User;
@@ -1518,15 +1520,7 @@ class BankingAccountTest extends TestCase
 
     public function testActivateWithLedgerShadow()
     {
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
-            ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-            ->willReturn('on');
+        $this->enableRazorXTreatmentForXOnboarding('on', 'off');
 
         $ledgerSnsPayloadArray = [];
         $this->mockLedgerSns(1, $ledgerSnsPayloadArray);
@@ -1690,6 +1684,185 @@ class BankingAccountTest extends TestCase
 
         // Assert that the da_ledger_journal_writes feature is enabled
         $this->assertContains('da_ledger_journal_writes', $testFeaturesArray);
+
+        // assert ledger sns request
+        for ($index = 0; $index<count($ledgerSnsPayloadArray); $index++)
+        {
+            $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
+
+            $this->assertEquals('10000000000000', $ledgerRequestPayload['merchant_id']);
+            $this->assertEquals('X', $ledgerRequestPayload['tenant']);
+            $this->assertEquals('direct_merchant_onboarding', $ledgerRequestPayload['event']['name']);
+            $this->assertEquals($bankingAccountStmtDetails->getPublicId(), $ledgerRequestPayload['event']['entities']['banking_account_stmt_detail_id'][0]);
+        }
+    }
+
+    public function testActivateWithLedgerReverseShadow()
+    {
+        $this->enableRazorXTreatmentForXOnboarding('off', 'on');
+
+        $ledgerSnsPayloadArray = [];
+        $this->mockLedgerSns(1, $ledgerSnsPayloadArray);
+
+        Mail::fake();
+
+        $this->mockRaven();
+
+        $attribute = ['activation_status' => 'activated'];
+
+        $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000', $attribute);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
+
+        $this->ba->addXOriginHeader();
+
+        (new User())->createBankingUserForMerchant($merchantDetail->merchant['id'], [
+            'contact_mobile' => '8888888888',
+        ]);
+
+        $this->testCreateActivationDetail();
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->fixtures->edit('banking_account', $bankingAccount->getId(), [
+            'account_number'        => '1234567890',
+            'beneficiary_state'     => 'karnataka',
+            'beneficiary_country'   => 'india',
+            'status'                => 'processed',
+            'sub_status'            => 'api_onboarding_in_progress'
+        ]);
+
+        $this->setupDataForActivation($bankingAccount);
+
+        $schedule = $this->setupDefaultScheduleForFeeRecovery();
+
+        $dataToReplace = [
+            'request' => [
+                'url' => '/banking_accounts/' . $bankingAccount->getPublicId() . '/activate'
+            ]
+        ];
+
+        $this->mockFundAccountService();
+
+        $expectedHubspotCall = false;
+        $this->mockHubspotAndAssertForChangeEvent($expectedHubspotCall);
+
+        $this->mockCardVault(function ()
+        {
+            return [
+                'success' => true,
+                'token'   => 'random'
+            ];
+        });
+
+        $mozartResponse = $this->getMozartMockedResponse(camel_case(Rbl\Action::ACCOUNT_BALANCE . '_' .
+            Rbl\Status::SUCCESS));
+
+        $this->setMozartMockResponse($mozartResponse);
+
+        $this->ba->adminAuth();
+
+        $this->startTest($dataToReplace);
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $bankingAccountStmtDetails = $this->getDbLastEntity('banking_account_statement_details');
+
+        $this->assertEquals(RZP\Models\BankingAccount\Status::ACTIVATED, $bankingAccount['status']);
+
+        $bankingAccountStatementDetails = $this->getDbLastEntity(Table::BANKING_ACCOUNT_STATEMENT_DETAILS);
+
+        $this->assertNotNull($bankingAccountStatementDetails);
+
+        $this->assertEquals(BasDetails\Status::ACTIVE, $bankingAccountStatementDetails->getStatus());
+
+        $bankingAccountActivationDetail = $this->getDbLastEntity('banking_account_activation_detail');
+
+        $this->assertEquals(null, $bankingAccountActivationDetail['assignee_team']);
+
+        $this->assertTrue($expectedHubspotCall);
+
+        $balance = $this->getDbLastEntity('balance');
+
+        $this->assertEquals('rbl', $balance[RZP\Models\Merchant\Balance\Entity::CHANNEL]);
+
+        $this->assertEquals('direct', $balance[RZP\Models\Merchant\Balance\Entity::ACCOUNT_TYPE]);
+
+        $this->assertEquals($balance[RZP\Models\Merchant\Balance\Entity::ID],
+            $bankingAccount[RZP\Models\BankingAccount\Entity::BALANCE_ID]);
+
+        $this->assertNotNull($bankingAccount[RZP\Models\BankingAccount\Entity::FTS_FUND_ACCOUNT_ID]);
+
+        $request  = [
+            'url'     => '/banking_accounts/activation/' . 'bacc_' . $bankingAccount['id'] . '/status_change_log',
+            'method'  => 'GET',
+            'content' => []
+        ];
+
+        $this->ba->adminAuth();
+
+        $logs = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals('created', $logs['items'][0]['status']);
+        $this->assertEquals('activated', $logs['items'][1]['status']);
+        $this->assertEquals(null, $logs['items'][1]['sub_status']);
+
+        $this->assertNotNull($bankingAccount[RZP\Models\BankingAccount\Entity::FTS_FUND_ACCOUNT_ID]);
+        $this->assertNotNull($bankingAccount[RZP\Models\BankingAccount\Entity::FTS_FUND_ACCOUNT_ID]);
+
+        $contact = $this->getDbLastEntity('contact')->toArray();
+
+        $this->assertEquals($contact['type'], Contact\Type::RZP_FEES);
+        $this->assertEquals($contact['active'], true);
+        $this->assertEquals($contact['merchant_id'], $merchantDetail->merchant['id']);
+        $this->assertEquals($contact['name'], config('banking_account.razorpayx_fee_details.name'));
+
+        $fundAccount = $this->getDbLastEntity('fund_account')->toArray();
+
+        $this->assertEquals($fundAccount['merchant_id'], $merchantDetail->merchant['id']);
+        $this->assertEquals($fundAccount['source_type'], 'contact');
+        $this->assertEquals($fundAccount['source_id'], $contact['id']);
+        $this->assertEquals($fundAccount['active'], true);
+
+        $account = $this->getDbLastEntity('bank_account')->toArray();
+
+        $this->assertEquals($account['account_number'], config('banking_account.razorpayx_fee_details.rbl.account_number'));
+        $this->assertEquals($account['name'], config('banking_account.razorpayx_fee_details.name'));
+        $this->assertEquals($account['ifsc'], config('banking_account.razorpayx_fee_details.rbl.ifsc'));
+        $this->assertEquals($account['merchant_id'], $merchantDetail->merchant['id']);
+        $this->assertEquals($account['entity_id'], $contact['id']);
+
+        $scheduleTask = $this->getDbLastEntity('schedule_task')->toArray();
+
+        // Every activated merchant should have a default schedule task for fee recovery purposes.
+        $this->assertEquals($scheduleTask['merchant_id'], $merchantDetail->merchant['id']);
+        $this->assertEquals($scheduleTask['entity_id'], $balance['id']);
+        $this->assertEquals($scheduleTask['entity_type'], 'balance');
+        $this->assertEquals($scheduleTask['schedule_id'], $schedule['id']);
+
+        $counter = $this->getDbLastEntity('counter')->toArray();
+
+        // Counter creation check
+        $this->assertEquals($counter['balance_id'], $balance['id']);
+        $this->assertEquals($counter['account_type'], $balance['account_type']);
+
+        Mail::assertQueued(Activated::class);
+
+        Mail::assertQueued(ActivationMails\StatusChange::class, function ($mail) use($bankingAccount)
+        {
+            $mail->build();
+
+            return $mail->hasTo($bankingAccount->spocs()->first()['email']);
+        });
+
+        $testFeaturesArray = $this->getDbEntity('feature',
+            [
+                'entity_id' => '10000000000000',
+                'entity_type' => 'merchant'
+            ])->pluck('name')->toArray();
+
+        // Assert that the da_ledger_journal_writes feature is enabled
+        $this->assertContains('da_ledger_reverse_shadow', $testFeaturesArray);
 
         // assert ledger sns request
         for ($index = 0; $index<count($ledgerSnsPayloadArray); $index++)
@@ -6575,5 +6748,33 @@ class BankingAccountTest extends TestCase
             $mail->build();
             return $mail->hasTo('superadmin@razorpay.com');
         });
+    }
+
+    protected function enableRazorXTreatmentForXOnboarding($ledgerOnboardingValue = 'control',
+                                                           $ledgerReverseShadowOnboardingValue = 'control')
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function ($mid, $feature, $mode) use ($ledgerOnboardingValue, $ledgerReverseShadowOnboardingValue)
+                {
+                    if ($feature == Merchant\RazorxTreatment::DA_LEDGER_ONBOARDING)
+                    {
+                        return $ledgerOnboardingValue;
+                    }
+
+                    if ($feature == Merchant\RazorxTreatment::DA_LEDGER_ONBOARDING_REVERSE_SHADOW)
+                    {
+                        return $ledgerReverseShadowOnboardingValue;
+                    }
+
+                    return 'off';
+                }));
     }
 }

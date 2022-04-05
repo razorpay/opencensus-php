@@ -173,9 +173,9 @@ class Service extends Base\Service
 
                     case 'da_shadow_merchant_onboard':
                         // first sending the request to ledger because if anything fails we don't add the feature
-                        $this->ledgerAccountCreateRequestForDirect($merchant);
+                        $this->ledgerAccountCreateRequestForDirect($merchant, Constants::DA_LEDGER_JOURNAL_WRITES);
 
-                        // Add LEDGER_JOURNAL_WRITES feature to merchant
+                        // Add DA_LEDGER_JOURNAL_WRITES feature to merchant
                         (new Core)->create(
                             [
                                 Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
@@ -184,10 +184,35 @@ class Service extends Base\Service
                             ]);
                         break;
 
-                    //The case below removes feature flag from merchant
+                    // The case below removes feature flag from merchant
                     case 'da_shadow_merchant_offboard':
-
                         $featureFlag = Constants::DA_LEDGER_JOURNAL_WRITES;
+                        $feature = $this->repo->feature->findByEntityTypeEntityIdAndNameOrFail(
+                            EntityConstants::MERCHANT,
+                            $merchant->getId(),
+                            $featureFlag);
+
+                        if (!empty($feature)) {
+                            (new Core)->delete($feature);
+                        }
+                        break;
+
+                    case 'da_reverse_shadow_merchant_onboard':
+                        // first sending the request to ledger because if anything fails we don't add the feature
+                        $this->ledgerAccountCreateRequestForDirect($merchant, Constants::DA_LEDGER_REVERSE_SHADOW);
+
+                        // Add DA_LEDGER_REVERSE_SHADOW feature to merchant
+                        (new Core)->create(
+                            [
+                                Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
+                                Entity::ENTITY_ID => $merchant->getId(),
+                                Entity::NAME => Constants::DA_LEDGER_REVERSE_SHADOW,
+                            ]);
+                        break;
+
+                    // The case below removes feature flag from merchant
+                    case 'da_reverse_shadow_merchant_offboard':
+                        $featureFlag = Constants::DA_LEDGER_REVERSE_SHADOW;
                         $feature = $this->repo->feature->findByEntityTypeEntityIdAndNameOrFail(
                             EntityConstants::MERCHANT,
                             $merchant->getId(),
@@ -292,7 +317,7 @@ class Service extends Base\Service
             $currentMerchantCredits);
     }
 
-    private function ledgerAccountCreateRequestForDirect($merchant)
+    private function ledgerAccountCreateRequestForDirect($merchant, $featureName)
     {
         // Fetch Merchant balances. Required to generate request body for direct accounts creation on ledger
         $balances = $this->repo->balance->getMerchantBalancesByTypeAndAccountType(
@@ -306,19 +331,32 @@ class Service extends Base\Service
             // Fetch Merchant banking account. Required to generate request body for account creation on ledger
             $bankingAccStmtDetails = $this->repo->banking_account_statement_details->getDirectBasDetailEntityByMerchantAndBalanceId($merchant->getId(), $balance->getId());
 
-            $this->trace->info(TraceCode::DA_LEDGER_JOURNAL_WRITES_FEATURE_ASSIGNED,
+            // credit balance initialized (rewards)
+            $currentMerchantCredits = 0;
+
+            // Fetch Merchant Credit balance. And update the balance value if the credit has 1 element
+            $creditBalances = $this->repo->credits->getTypeAggregatedMerchantCreditsForProductForDashboard($merchant->getId(), BalanceType::BANKING);
+
+            foreach ($creditBalances as $creditBalance)
+            {
+                $currentMerchantCredits += $creditBalance[BalanceEntity::BALANCE];
+            }
+
+            $this->trace->info(TraceCode::DA_LEDGER_FEATURE_ASSIGNED,
                 [
-                    Constants::MERCHANT_ID => $merchant->getId(),
-                    Constants::MODE => $this->mode,
-                    'balance_id' => $balance->getId(),
-                    'banking_account_stmt_detail_id' => $bankingAccStmtDetails->getId(),
+                    Constants::MERCHANT_ID              => $merchant->getId(),
+                    Constants::MODE                     => $this->mode,
+                    'balance_id'                        => $balance->getId(),
+                    'banking_account_stmt_detail_id'    => $bankingAccStmtDetails->getId(),
+                    'feature_name'                      => $featureName
                 ]);
 
             (new Merchant\Balance\Ledger\Core)->createXLedgerAccountForDirect(
                 $merchant,
                 $bankingAccStmtDetails,
                 $this->mode,
-                $balance->getBalance());
+                $balance->getBalance(),
+                $currentMerchantCredits);
         }
     }
 

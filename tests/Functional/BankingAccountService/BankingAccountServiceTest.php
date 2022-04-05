@@ -7,6 +7,8 @@ use Carbon\Carbon;
 
 use Illuminate\Support\Facades\Mail;
 use RZP\Error\ErrorCode;
+use RZP\Models\Admin;
+use RZP\Models\Merchant;
 use RZP\Mail\BankingAccount\CurrentAccount;
 use RZP\Mail\Gateway\DailyFile as DailyFileMail;
 use RZP\Services\SalesForceClient;
@@ -15,6 +17,7 @@ use RZP\Exception\BadRequestException;
 use RZP\Models\Schedule;
 use RZP\Constants\Timezone;
 use RZP\Services\RazorXClient;
+use RZP\Models\Settlement\Channel;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\BankingAccountService\Constants;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
@@ -123,15 +126,7 @@ class BankingAccountServiceTest extends TestCase
 
     public function testCreateBankingEntitiesWithLedgerShadow()
     {
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
-            ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-            ->willReturn('on');
+        $this->enableRazorXTreatmentForXOnboarding('on', 'off');
 
         $ledgerSnsPayloadArray = [];
         $this->mockLedgerSns(1, $ledgerSnsPayloadArray);
@@ -180,6 +175,70 @@ class BankingAccountServiceTest extends TestCase
 
         // Assert that the da_ledger_journal_writes feature is enabled
         $this->assertContains('da_ledger_journal_writes', $testFeaturesArray);
+
+        // assert ledger sns request
+        for ($index = 0; $index<count($ledgerSnsPayloadArray); $index++)
+        {
+            $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
+
+            $this->assertEquals('10000000000000', $ledgerRequestPayload['merchant_id']);
+            $this->assertEquals('X', $ledgerRequestPayload['tenant']);
+            $this->assertEquals('direct_merchant_onboarding', $ledgerRequestPayload['event']['name']);
+            $this->assertEquals($bankingAccountStmtDetails->getPublicId(), $ledgerRequestPayload['event']['entities']['banking_account_stmt_detail_id'][0]);
+        }
+    }
+
+    public function testCreateBankingEntitiesWithLedgerReverseShadow()
+    {
+        $this->enableRazorXTreatmentForXOnboarding('off', 'on');
+
+        $ledgerSnsPayloadArray = [];
+        $this->mockLedgerSns(1, $ledgerSnsPayloadArray);
+
+        $schedule = $this->setupDefaultScheduleForFeeRecovery();
+
+        $this->ba->bankingAccountServiceAppAuth();
+
+        $response = $this->startTest();
+
+        $balance = $this->getDbEntity('balance',
+            [
+                'merchant_id'    => '10000000000000',
+                'channel'        => 'icici',
+                'account_type'   => 'direct',
+                'account_number' => '12345678903833',
+            ]);
+
+        $this->assertNotNull($balance);
+
+        $this->assertEquals($balance->getId(), $response['balance_id']);
+
+        $bankingAccountStmtDetails = $this->getDbEntity('banking_account_statement_details',
+            [
+                'merchant_id'    => '10000000000000',
+                'channel'        => 'icici',
+                'balance_id'     => $balance->getId(),
+                'account_number' => '12345678903833',
+            ]);
+
+        $this->assertNotNull($bankingAccountStmtDetails);
+
+        $scheduleTask = $this->getDbLastEntity('schedule_task')->toArray();
+
+        // Every activated merchant should have a default schedule task for fee recovery purposes.
+        $this->assertEquals(10000000000000, $scheduleTask['merchant_id']);
+        $this->assertEquals($balance->getId(), $scheduleTask['entity_id']);
+        $this->assertEquals('balance', $scheduleTask['entity_type']);
+        $this->assertEquals($schedule['id'], $scheduleTask['schedule_id']);
+
+        $testFeaturesArray = $this->getDbEntity('feature',
+            [
+                'entity_id' => '10000000000000',
+                'entity_type' => 'merchant'
+            ])->pluck('name')->toArray();
+
+        // Assert that the da_ledger_journal_writes feature is enabled
+        $this->assertContains('da_ledger_reverse_shadow', $testFeaturesArray);
 
         // assert ledger sns request
         for ($index = 0; $index<count($ledgerSnsPayloadArray); $index++)
@@ -1289,5 +1348,33 @@ class BankingAccountServiceTest extends TestCase
         $this->app->instance('salesforce', $salesforceClientMock);
 
         $salesforceClientMock->expects($this->exactly($count))->method($method);
+    }
+
+    protected function enableRazorXTreatmentForXOnboarding($ledgerOnboardingValue = 'control',
+                                                           $ledgerReverseShadowOnboardingValue = 'control')
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function ($mid, $feature, $mode) use ($ledgerOnboardingValue, $ledgerReverseShadowOnboardingValue)
+                {
+                    if ($feature == Merchant\RazorxTreatment::DA_LEDGER_ONBOARDING)
+                    {
+                        return $ledgerOnboardingValue;
+                    }
+
+                    if ($feature == Merchant\RazorxTreatment::DA_LEDGER_ONBOARDING_REVERSE_SHADOW)
+                    {
+                        return $ledgerReverseShadowOnboardingValue;
+                    }
+
+                    return 'off';
+                }));
     }
 }

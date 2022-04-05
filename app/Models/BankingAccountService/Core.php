@@ -46,30 +46,26 @@ class Core extends Base\Core
             return [$balance, $createdNow, $basDetailEntity];
         });
 
-        // check experiment and onboard to ledger in shadow mode
-        if (($createdNow === true) && ($this->onBoardDAMerchantOnLedgerInShadow($balance->merchant, $this->app['rzp.mode']) === true))
-        {
-            $merchant = $balance->merchant;
-            // assign DA_LEDGER_JOURNAL_WRITES feature for the merchant to be onboarded in
-            // shadow mode for direct accounting
-            if ($merchant->isFeatureEnabled(Feature\Constants::DA_LEDGER_JOURNAL_WRITES) === false)
-            {
-                (new Feature\Core)->create(
-                    [
-                        Feature\Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
-                        Feature\Entity::ENTITY_ID   => $merchant->getId(),
-                        Feature\Entity::NAME        => Feature\Constants::DA_LEDGER_JOURNAL_WRITES,
-                    ]);
+        // check experiment and onboard DA to ledger in reverse shadow or shadow mode
+        $onboardToLedger = false;
+        $merchant = $balance->merchant;
 
-                $this->trace->info(
-                    TraceCode::DA_LEDGER_JOURNAL_WRITES_FEATURE_ASSIGNED,
-                    [
-                        'merchant_id'       => $merchant->getId(),
-                        'mode'              => $this->app['rzp.mode'],
-                    ]);
-
-                (new Merchant\Balance\Ledger\Core)->createXLedgerAccountForDirect($merchant, $basDetailEntity, $this->app['rzp.mode'], $balance->getBalance(),0,false);
+        if ($createdNow === true) {
+            if ($this->onBoardDAMerchantOnLedgerInReverseShadow($balance->merchant, $this->app['rzp.mode']) === true) {
+                (new BankingAccount\Core())->assginLedgerFeatureForMerchant($merchant, Feature\Constants::DA_LEDGER_REVERSE_SHADOW, Feature\Constants::DA_LEDGER_JOURNAL_WRITES);
+                $onboardToLedger = true;
             }
+            else if ($this->onBoardDAMerchantOnLedgerInShadow($balance->merchant, $this->app['rzp.mode']) === true)
+            {
+                (new BankingAccount\Core())->assginLedgerFeatureForMerchant($merchant, Feature\Constants::DA_LEDGER_JOURNAL_WRITES, Feature\Constants::DA_LEDGER_REVERSE_SHADOW);
+                $onboardToLedger = true;
+            }
+        }
+
+        // onboard DA to ledger in reverse shadow or shadow mode
+        if ($onboardToLedger === true)
+        {
+            (new Merchant\Balance\Ledger\Core)->createXLedgerAccountForDirect($merchant, $basDetailEntity, $this->app['rzp.mode'], $balance->getBalance(),0,false);
         }
 
         return [
@@ -82,6 +78,17 @@ class Core extends Base\Core
     {
         $variant = $this->app->razorx->getTreatment($merchant->getId(),
             Merchant\RazorxTreatment::DA_LEDGER_ONBOARDING,
+            $mode
+        );
+
+        return (strtolower($variant) === 'on');
+    }
+
+    // Returns true if experiment and env variable to onboard direct accounting merchant on ledger in reverse shadow is running.
+    protected function onBoardDAMerchantOnLedgerInReverseShadow($merchant, string $mode): bool
+    {
+        $variant = $this->app->razorx->getTreatment($merchant->getId(),
+            Merchant\RazorxTreatment::DA_LEDGER_ONBOARDING_REVERSE_SHADOW,
             $mode
         );
 
