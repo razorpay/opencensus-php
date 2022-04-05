@@ -2161,6 +2161,15 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function fetchPartnerReferralViaBatch()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->fetchPartnerReferralViaBatch($input);
+
+        return ApiResponse::json($response);
+    }
+
     /**
      * @param string $merchantId
      *

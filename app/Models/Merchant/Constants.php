@@ -176,7 +176,6 @@ final class Constants
     const TRANSACTION_LIMIT_INCREASE_REASON_COMMENT                 = 'Transaction Limit Increase Reason: %s';
     const TRANSACTION_LIMIT_INCREASE_SUPPORT_DOCUMENT_URL_COMMENT   = 'Support Document (Invoice) URL: %sadmin/entity/ufh.files/live/file_%s';
 
-
     const PAYMENTS_ENABLED_AND_FREQUENTLY_TRANSACTED = 'payments_enabled_and_frequently_transacted';
     const PAYMENTS_ENABLED_AND_TRANSACTED            = 'payments_enabled_and_transacted';
     const PAYMENTS_ENABLED_AND_NOT_TRANSACTED        = 'payments_enabled_and_not_transacted';

@@ -477,6 +477,7 @@ class PublicErrorDescription
     const BAD_REQUEST_NOT_SUPPORTED_FEATURE                                     = 'Server error while performing operation';
     const BAD_REQUEST_PAYMENT_INVALID_MERCHANT_NAME                             = 'Invalid merchant name sent to the gateway';
     const BAD_REQUEST_GSTIN_SELF_SERVE_IN_PROGRESS                              = 'A previous request to update your gstin is already in progress';
+    const BAD_REQUEST_PARTNER_REFERRAL_DOES_NOT_EXIST                           = 'Partner referral does not exist';
 
     // Debit EMI errors
     const BAD_REQUEST_DEBIT_EMI_CUSTOMER_NOT_ELIGIBLE                           = 'Debit Card EMI offer is not available for the entered details';

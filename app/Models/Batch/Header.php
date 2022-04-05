@@ -175,6 +175,13 @@ class Header
     const COMPANY_PAN              = 'company_pan';
 
     //
+    //Partner referral fetch headers
+    //
+    const REFERRAL_ID       = 'referral_id';
+    const REF_CODE          = 'ref_code';
+    const REFERRAL_PRODUCT  = 'product';
+
+    //
     // Mpan Bulk creation headers
     //
     const MPAN_ID                      =   'mpan_id';
@@ -2890,6 +2897,24 @@ class Header
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,
             ],
+        ],
+
+        Type::PARTNER_REFERRAL_FETCH => [
+            self::INPUT => [
+                self::MERCHANT_ID,
+                self::REFERRAL_PRODUCT
+            ],
+
+            self::OUTPUT => [
+                self::MERCHANT_ID,
+                self::REFERRAL_PRODUCT,
+                self::REFERRAL_ID,
+                self::REF_CODE,
+                self::URL,
+                self::STATUS,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION
+            ]
         ],
 
         Type::ENTITY_MAPPING => [

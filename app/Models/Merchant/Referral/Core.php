@@ -249,4 +249,22 @@ class Core extends Base\Core
         }
         return array($missingReferralConfig, $existingReferralsMap);
     }
+
+    public function fetchPartnerReferral(Merchant\Entity $merchant, string $product)
+    {
+        $merchantValidator = new Merchant\Validator();
+
+        $merchantValidator->validateIsPartner($merchant);
+
+        $merchantValidator->validateMerchantProduct($product);
+
+        $referrals = $this->repo->referrals->getReferralByMerchantIdAndProduct($merchant->getId(), $product);
+
+        if ($referrals->isEmpty() === true)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PARTNER_REFERRAL_DOES_NOT_EXIST);
+        }
+
+        return $referrals->first();
+    }
 }

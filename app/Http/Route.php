@@ -2460,7 +2460,7 @@ class Route
         'partner_config_fetch'                     => ['get',      'partner_configs',                                'PartnerConfigController@getConfig'                                 ],
         'partner_config_edit'                      => ['put',      'partner_configs/{id}',                           'PartnerConfigController@update'                                    ],
         'fetch_partner_first_user_experience'      => ['get',      'partner/first_user_experience',                  'MerchantController@getFUXDetailsForPartner'              ],
-
+        'fetch_partner_referral_batch'             => ['post',     'partner_referral/bulk',                          'MerchantController@fetchPartnerReferralViaBatch'                   ],
         //Partner activation routes
         'partner_activation_status'                => ['patch',    'partner/activation/{id}/status',                 'PartnerActivationController@updatePartnerActivationStatus'         ],
         'partner_activation_update'                => ['put',      'partner/activation/{id}',                        'PartnerActivationController@editPartnerActivationDetails'          ],
@@ -4343,6 +4343,7 @@ class Route
         'retry_penny_testing_cron',
         'merchant_methods_edit_internal',
         'refund_create_batch_service',
+        'fetch_partner_referral_batch',
         'credits_create_bulk_batch',
         'terminal_create_bulk',
         'mpans_bulk',
@@ -12210,6 +12211,7 @@ class Route
             'linked_account_create_batch',
             'payment_transfer_batch',
             'transfer_create_reversal_batch',
+            'fetch_partner_referral_batch',
 
             'app_merchant_mapping_create',
             'app_merchant_mapping_update',

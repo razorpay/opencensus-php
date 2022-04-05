@@ -577,6 +577,7 @@ class AdminFetch
                         'chargeback_poc',
                         'whitelisted_domain',
                         'create_payment_fraud',
+                        'partner_referral_fetch',
                     ],
                 ],
             ],

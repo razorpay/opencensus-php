@@ -7277,6 +7277,61 @@ class Service extends Base\Service
     }
 
     /**
+     * @param array $input
+     *
+     * @return array
+     * @throws Exception\BadRequestException
+     */
+    public function fetchPartnerReferralViaBatch(array $input): array
+    {
+        $merchantId = $input[Entity::MERCHANT_ID];
+        $product = $input[Entity::PRODUCT];
+
+        $product = empty($product) ? Product::PRIMARY : $product;
+        $product = strtolower($product);
+
+        $this->trace->info(TraceCode::BATCH_PARTNER_REFERRAL_FETCH_REQUEST, $input);
+
+        try
+        {
+            Entity::verifyUniqueId($merchantId, true);
+
+            $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+            $referral = (new Referral\Core())->fetchPartnerReferral($merchant, $product);
+
+            $response = [
+                BatchHeader::MERCHANT_ID        => $merchantId,
+                BatchHeader::REFERRAL_ID        => $referral[BatchHeader::ID],
+                BatchHeader::REF_CODE           => $referral[BatchHeader::REF_CODE],
+                BatchHeader::URL                => $referral[BatchHeader::URL],
+                BatchHeader::REFERRAL_PRODUCT   => $referral[BatchHeader::REFERRAL_PRODUCT],
+                BatchHeader::STATUS             => 'Success',
+            ];
+
+            $this->trace->info(TraceCode::BATCH_PARTNER_REFERRAL_FETCH_RESPONSE, $response);
+        }
+        catch(\Exception $e)
+        {
+            $error = $e->getError();
+
+            $response = [
+                BatchHeader::MERCHANT_ID                 => $merchantId,
+                BatchHeader::REFERRAL_PRODUCT            => $product,
+                BatchHeader::STATUS                      => 'Failure',
+                BatchHeader::ERROR_CODE                  => $error->getPublicErrorCode(),
+                BatchHeader::ERROR_DESCRIPTION           => $error->getDescription(),
+            ];
+
+            $this->trace->traceException($e, null, TraceCode::BATCH_PROCESSING_ERROR, $response);
+        }
+        finally
+        {
+            return $response;
+        }
+    }
+
+    /**
      * @param array $record
      */
     public function actionPerform(array $record)

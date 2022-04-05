@@ -76,6 +76,64 @@ class MerchantReferralTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testFetchMerchantReferralBatch()
+    {
+        $this->fixtures->merchant->edit(Constants::DEFAULT_MERCHANT_ID, ['partner_type' => 'reseller']);
+
+        $merchantId = Constants::DEFAULT_MERCHANT_ID;
+
+        $this->fixtures->create(
+            'referrals'
+        );
+
+        $this->ba->batchAppAuth();
+
+        $response = $this->startTest();
+
+        $pgReferral = $this->getDbEntity('referrals',
+            [
+                'merchant_id' => $merchantId
+            ], 'test');
+
+
+        $this->assertEquals($pgReferral->getReferralCode(), $response['ref_code']);
+        $this->assertEquals($pgReferral->getReferralLink(), $response['url']);
+    }
+
+    public function testFetchMerchantReferralBatchFailureReferralNotFound()
+    {
+        $this->fixtures->merchant->edit(Constants::DEFAULT_MERCHANT_ID, ['partner_type' => 'reseller']);
+
+        $this->ba->batchAppAuth();
+
+        $this->startTest();
+    }
+
+    public function testFetchMerchantReferralBatchFailureMerchantNotFound()
+    {
+        $this->ba->batchAppAuth();
+
+        $this->startTest();
+    }
+
+    public function testFetchMerchantReferralBatchFailureInvalidId()
+    {
+        $this->fixtures->merchant->edit(Constants::DEFAULT_MERCHANT_ID, ['partner_type' => 'reseller']);
+
+        $this->ba->batchAppAuth();
+
+        $this->startTest();
+    }
+
+    public function testFetchMerchantReferralBatchFailureMerchantNotPartner()
+    {
+        $this->fixtures->merchant->edit(Constants::DEFAULT_MERCHANT_ID);
+
+        $this->ba->batchAppAuth();
+
+        $this->startTest();
+    }
+
     /**
      * creating Referral for not reseller partner
      */

@@ -29,6 +29,99 @@ return [
         ],
     ],
 
+    'testFetchMerchantReferralBatch' => [
+        'request'  => [
+            'url'    => '/partner_referral/bulk',
+            'method' => 'POST',
+            'content' => [
+                'merchant_id' => '10000000000000',
+                'product'     => 'Primary'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id' => '10000000000000',
+                'Status'      => 'Success'
+            ],
+        ],
+    ],
+
+    'testFetchMerchantReferralBatchFailureReferralNotFound' => [
+        'request'  => [
+            'url'    => '/partner_referral/bulk',
+            'method' => 'POST',
+            'content' => [
+                'merchant_id' => '10000000000000',
+                'product'     => 'primary'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id'       => '10000000000000',
+                'Error Code'        => ErrorCode::BAD_REQUEST_ERROR,
+                'Error Description' => 'Partner referral does not exist',
+                'Status'            => 'Failure',
+            ],
+        ],
+    ],
+
+    'testFetchMerchantReferralBatchFailureMerchantNotFound' => [
+        'request'  => [
+            'url'    => '/partner_referral/bulk',
+            'method' => 'POST',
+            'content' => [
+                'merchant_id' => '10000000000098',
+                'product'     => 'primary'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id'       => '10000000000098',
+                'Error Code'        => ErrorCode::BAD_REQUEST_ERROR,
+                'Error Description' => 'The id provided does not exist',
+                'Status'            => 'Failure',
+            ],
+        ],
+    ],
+
+    'testFetchMerchantReferralBatchFailureInvalidId' => [
+        'request'  => [
+            'url'    => '/partner_referral/bulk',
+            'method' => 'POST',
+            'content' => [
+                'merchant_id' => '10000',
+                'product'     => 'primary'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id'       => '10000',
+                'Error Code'        => ErrorCode::BAD_REQUEST_ERROR,
+                'Error Description' => '10000 is not a valid id',
+                'Status'            => 'Failure',
+            ],
+        ],
+    ],
+
+    'testFetchMerchantReferralBatchFailureMerchantNotPartner' => [
+        'request'  => [
+            'url'    => '/partner_referral/bulk',
+            'method' => 'POST',
+            'content' => [
+                'merchant_id' => '10000000000000',
+                'product'     => 'primary'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id'         => '10000000000000',
+                'Error Code'          => ErrorCode::BAD_REQUEST_ERROR,
+                'Error Description'   => 'Merchant is not a partner',
+                'Status'              => 'Failure',
+            ],
+        ],
+    ],
+
     'testCreateReferralNonResellerPartner' => [
         'request'   => [
             'url'    => '/merchant/referral',

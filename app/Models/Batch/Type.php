@@ -99,6 +99,8 @@ class Type
 
     const PARTNER_SUBMERCHANT_INVITE = 'partner_submerchant_invite';
 
+    const PARTNER_REFERRAL_FETCH = 'partner_referral_fetch';
+
     const CONTACT               = 'contact';
 
     const FUND_ACCOUNT          = 'fund_account';
@@ -276,6 +278,7 @@ class Type
         self::WHITELISTED_DOMAIN,
         self::DEBIT_NOTE,
         self::CREATE_PAYMENT_FRAUD,
+        self::PARTNER_REFERRAL_FETCH,
     ];
 
     /**
@@ -476,6 +479,7 @@ class Type
         self::RECURRING_CHARGE_AXIS,
         self::EMANDATE_DEBIT_HDFC,
         self::LEDGER_ONBOARD_OLD_ACCOUNT,
+        self::PARTNER_REFERRAL_FETCH,
     ];
 
     /**
@@ -546,6 +550,7 @@ class Type
         self::WHITELISTED_DOMAIN,
         self::DEBIT_NOTE,
         self::CREATE_PAYMENT_FRAUD,
+        self::PARTNER_REFERRAL_FETCH
     ];
 
     // For following batches, sensitive data is encrypted in storeInputFileAndSaveBatchWithSettings() so that file with sensitive/PCI data
@@ -616,6 +621,7 @@ class Type
         self::MERCHANT_ONBOARDING                => Name::MERCHANT_ONBOARDING,
         self::MERCHANT_STATUS_ACTIVATION         => Name::MERCHANT_STATUS_ACTIVATION,
         self::PRICING_RULE                       => Name::PRICING_RULE,
+        self::PARTNER_REFERRAL_FETCH             => Name::ADMIN_BATCH_CREATE,
 
         self::DEBIT_NOTE                         => Name::CREATE_DEBIT_NOTE,
         self::NACH_MIGRATION                     => Name::ADMIN_BATCH_CREATE,
