@@ -4,9 +4,11 @@ namespace RZP\Tests\Functional\BankTransfer;
 
 use DB;
 use Mail;
+use Cache;
 use Mockery;
 use Queue as MockQueue;
 use Carbon\Carbon;
+use RZP\Models\Terminal;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Queue;
 
@@ -14,6 +16,7 @@ use RZP\Jobs\Transactions;
 use RZP\Models\Admin;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Feature;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Pricing\Fee;
 use RZP\Constants\Timezone;
 use RZP\Models\Batch\Header;
@@ -8672,4 +8675,73 @@ class BankTransferTest extends TestCase
         $this->assertEquals($balance1['balance'] + $bankTransfer['amount'],
             $updatedMerchantBankingBalance['balance']);
     }
+
+    public function testBankTransferProcessPgWithTerminalCaching()
+    {
+        $this->enableRazorXTreatmentForCaching();
+
+        $cacheKey = VirtualAccount\Constant::TERMINAL_CACHE_PREFIX . '_' . '10000000000000';
+
+        $store = $this->app['cache'];
+
+        $pickedFromTerminalCache = false;
+
+        \Cache::shouldReceive('driver')
+              ->andReturnUsing(function($driver = null) use ($store) {
+                  return $store;
+              });
+
+        \Cache::shouldReceive('get')
+              ->andReturnUsing(function($key, $default = null) use ($cacheKey, $store, &$pickedFromTerminalCache) {
+                  if ($key === $cacheKey)
+                  {
+                      $pickedFromTerminalCache = true;
+                      return [
+                          [
+                              'id'                     => 'SHRDBANKACC3DS',
+                              Terminal\Entity::GATEWAY => 'bt_dashboard'
+                          ]
+                      ];
+                  }
+
+                  return $store->get($key, $default);
+
+              })
+              ->shouldReceive('store')
+              ->withAnyArgs()
+              ->andReturn($store)
+              ->shouldReceive('put')
+              ->withAnyArgs()
+              ->andReturn($store);
+
+        $accountNumber = $this->bankAccount['account_number'];
+        $ifsc          = $this->bankAccount['ifsc'];
+
+        // Process API always returns true
+        $this->processBankTransfer($accountNumber, $ifsc);
+
+        $this->assertTrue($pickedFromTerminalCache);
+    }
+
+    protected function enableRazorXTreatmentForCaching()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->will($this->returnCallback(
+                              function($mid, $feature, $mode) {
+                                  if ($feature === RazorxTreatment::SMART_COLLECT_TERMINAL_CACHING)
+                                  {
+                                      return 'on';
+                                  }
+
+                                  return 'off';
+                              }));
+    }
+
 }

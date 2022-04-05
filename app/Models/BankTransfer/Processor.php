@@ -14,6 +14,8 @@ use RZP\Models\Payment;
 use RZP\Diag\EventCode;
 use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant;
+use RZP\Models\Terminal;
 use RZP\Error\ErrorCode;
 use RZP\Jobs\Transactions;
 use RZP\Models\BankAccount;
@@ -350,7 +352,7 @@ class Processor extends VirtualAccount\Processor
             // Prepares payment input and creates payment and its transaction etc.
             $paymentInput = $this->getPaymentArray($bankTransfer);
 
-            $terminal = (new TerminalProcessor())->getTerminalForBankTransfer($bankTransfer);
+            $terminal = $this->fetchTerminal($bankTransfer);
 
             $gatewayData[Payment\Entity::TERMINAL_ID] = $terminal->getId();
 
@@ -1140,5 +1142,43 @@ class Processor extends VirtualAccount\Processor
                                                          LedgerFundLoading::FUND_LOADING_PROCESSED,
                                                          $terminalId,
                                                          $terminalAccountType);
+    }
+
+    /**
+     * fetch terminal from cache if experiment in on.
+     * @param Entity $bankTransfer
+     *
+     * @return mixed|Terminal\Entity
+     */
+    protected function fetchTerminal(Entity $bankTransfer)
+    {
+        $gateway    = Payment\Gateway::$bankTransferProviderGateway[$bankTransfer->getGateway()];
+        $merchantId = $bankTransfer->getMerchantId();
+
+        $terminalCaching = $this->app->razorx->getTreatment(
+            $merchantId,
+            Merchant\RazorxTreatment::SMART_COLLECT_TERMINAL_CACHING,
+            $this->mode);
+
+        $getTerminalCallback = function() use ($bankTransfer)
+        {
+            return (new TerminalProcessor())->getTerminalForBankTransfer($bankTransfer);
+        };
+
+        $terminalFilters = function($terminalAttributes) use ($gateway)
+        {
+            return ($terminalAttributes[Terminal\Entity::GATEWAY] === $gateway);
+        };
+
+        if ($terminalCaching === Merchant\RazorxTreatment::RAZORX_VARIANT_ON)
+        {
+            $terminal = (new VirtualAccount\Provider())->getTerminals($merchantId, $getTerminalCallback, $terminalFilters);
+        }
+        else
+        {
+            $terminal = $getTerminalCallback();
+        }
+
+        return $terminal;
     }
 }

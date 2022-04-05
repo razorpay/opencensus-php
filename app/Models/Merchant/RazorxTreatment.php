@@ -478,4 +478,6 @@ final class RazorxTreatment
     // Experiment to control payment process through actual card number/tokenised card number for tokenised cards
     const PAYMENT_PROCESS_THROUGH_TOKENISED_CARD = 'payment_process_through_tokenised_card';
 
+    // Experiment to cache terminals for bank Transfer
+    const SMART_COLLECT_TERMINAL_CACHING = 'smart_collect_terminal_caching';
 }

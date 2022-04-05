@@ -2,12 +2,13 @@
 
 namespace RZP\Models\BankAccount;
 
+use Cache;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant;
 use RZP\Models\Terminal;
 use RZP\Error\ErrorCode;
-use RZP\Models\Merchant;
 use RZP\Models\Payment\Method;
 use RZP\Models\VirtualAccount;
 use RZP\Error\PublicErrorDescription;
@@ -114,7 +115,21 @@ class Generator extends Base\Core
 
         $bankAccount = $this->buildBankAccountEntity($entity);
 
-        $terminal = $this->getTerminalForBankAccount($bankAccount);
+        $isBalanceTypeBanking = $this->options[self::BANKING] !== null ? $this->options[self::BANKING] : false;
+
+        $terminal = $this->fetchTerminal($bankAccount, $isBalanceTypeBanking);
+
+        if ($terminal === null)
+        {
+            throw new Exception\LogicException(
+                'No Terminal applicable.',
+                null,
+                [
+                    'merchant_id'   => $this->merchant->getId(),
+                    'method'        => Method::BANK_TRANSFER,
+                    'options'       => $this->options,
+                ]);
+        }
 
         $attempts = 0;
 
@@ -390,5 +405,39 @@ class Generator extends Base\Core
             'prefix'              => $this->getRoot($terminal) . $this->getHandle($terminal),
             'isDescriptorEnabled' => ($terminal->isShared() === false),
         ];
+    }
+
+    /**
+     * @param Entity $bankAccount
+     *
+     * @return mixed|Terminal\Entity
+     */
+    protected function fetchTerminal(Entity $bankAccount, $isBalanceTypeBanking)
+    {
+        $merchantId = $bankAccount->getMerchantId();
+
+        $terminalCaching = $this->app->razorx->getTreatment(
+            $merchantId,
+            Merchant\RazorxTreatment::SMART_COLLECT_TERMINAL_CACHING,
+            $this->mode);
+
+        $fetchTerminals = function() use ($bankAccount) {
+            return (new VirtualAccount\Provider())->getTerminalForMethod(
+                Method::BANK_TRANSFER,
+                $bankAccount,
+                null,
+                $this->options);
+        };
+
+        if (($terminalCaching === Merchant\RazorxTreatment::RAZORX_VARIANT_ON) and ($isBalanceTypeBanking !== true))
+        {
+            $terminal = (new VirtualAccount\Provider())->getTerminals($merchantId, $fetchTerminals);
+        }
+        else
+        {
+            $terminal = $fetchTerminals();
+        }
+
+        return $terminal;
     }
 }

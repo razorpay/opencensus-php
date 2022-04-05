@@ -1303,6 +1303,37 @@ class Entity extends Base\PublicEntity
         return $this;
     }
 
+    public function buildFromAttributes(array $input = array())
+    {
+        $this->setForemostAttributes($input);
+
+        $this->modify($input);
+
+        $this->generateDefaultAttributes($input);
+
+        foreach ($this->getVisible() as $key)
+        {
+            if ((array_key_exists($key, $input) === true) and (empty($input[$key]) !== true) and ($key !== 'type'))
+            {
+                $this->setAttribute($key, $input[$key]);
+            }
+        }
+        return $this;
+    }
+
+    public function exportAttributes(): array
+    {
+        $attributes =[];
+        foreach ($this->getVisible() as $key)
+        {
+            if ((empty($this->attributes[$key]) !== true) and ($key !== 'type'))
+            {
+                $attributes[$key] = $this->attributes[$key];
+            }
+        }
+        return $attributes;
+    }
+
     // See test testGetEntityFromTerminalServiceResponseShouldUseOrgKeyForEncryption
     public function setForemostAttributes(array $input = array())
     {

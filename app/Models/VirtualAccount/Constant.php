@@ -18,4 +18,8 @@ class Constant
     const BATCH_ERROR_DESCRIPTION     = 'description';
     const BATCH_SUCCESS               = 'success';
     const BATCH_HTTP_STATUS_CODE      = 'http_status_code';
+
+    // Terminal Caching
+    const TERMINAL_CACHE_PREFIX       = "TERMINAL_CACHE_V1";
+    const TERMINAL_CACHE_TTL          = 30 * 60; // In seconds.
 }

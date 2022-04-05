@@ -7,19 +7,25 @@ use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
+use RZP\Trace\TraceCode;
+use RZP\Models\VirtualAccount;
 use RZP\Models\Base\PublicEntity;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\BankAccount\Entity as BankAccount;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
 class Provider
 {
     protected $trace;
+    protected $cache;
 
     public function __construct()
     {
         $app = App::getFacadeRoot();
 
         $this->trace = $app['trace'];
+
+        $this->cache = $app['cache'];
     }
 
     // Bank Account Providers
@@ -209,7 +215,68 @@ class Provider
 
         return $paymentProcessor->processAndReturnTerminal($paymentArray);
     }
+  
+    /**
+     * function will return terminal from cache is present,
+     * if not will call the callabck method and get terminals.
+     * if will apply filters if present in function call parameters
+     *
+     * @param      $merchantId
+     * @param      $getTerminalsCallback
+     * @param null $filters
+     *
+     * @return mixed|\RZP\Models\Terminal\Entity
+     */
+    public function getTerminals($merchantId, $getTerminalsCallback, $filters = null): Terminal\Entity
+    {
+        try
+        {
+            $cacheKey          = VirtualAccount\Constant::TERMINAL_CACHE_PREFIX . '_' . $merchantId;
+            $terminals         = $this->cache->get($cacheKey);
+            $filteredTerminals = $terminals === null ? [] : $terminals;
 
+            $this->trace->info(TraceCode::SMART_COLLECT_TERMINAL_CACHING, [
+                'merchantId'        => $merchantId,
+                'cacheKey'          => $cacheKey,
+                'cacheValuePresent' => !empty($terminals)
+            ]);
+
+            if ((count($filteredTerminals) > 0) and $filters !== null)
+            {
+                $filteredTerminals = array_filter($terminals, function($terminalAttributes) use ($filters)
+                {
+                    return $filters($terminalAttributes);
+                });
+            }
+            if (count($filteredTerminals) === 0)
+            {
+                $terminal    = $getTerminalsCallback();
+                $terminals   = $terminals === null ? [] : $terminals;
+                $terminals[] = $terminal->exportAttributes();
+                $this->cache->set($cacheKey, $terminals, VirtualAccount\Constant::TERMINAL_CACHE_TTL);
+
+                return $terminal;
+            }
+            else
+            {
+                $terminalAttributes = head($filteredTerminals);
+
+                return (new Terminal\Entity())->buildFromAttributes($terminalAttributes);
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e,
+                                         Trace::ERROR,
+                                         TraceCode::SMART_COLLECT_TERMINAL_CACHING_UNAVAILABLE,
+                                         [
+                                             'merchant_id' => $merchantId,
+                                         ]
+            );
+        }
+        return $getTerminalsCallback();
+    }
+  
     public static function getUnsuportedProviderByRazorpay()
     {
         return [
@@ -217,4 +284,5 @@ class Provider
             self::IFSC[Provider::ICICI]
         ];
     }
+
 }

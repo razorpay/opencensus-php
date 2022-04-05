@@ -3,11 +3,14 @@
 namespace RZP\Tests\Functional\VirtualAccount;
 
 use Hash;
+use Cache;
 use Carbon\Carbon;
 use RZP\Models\Feature;
+use RZP\Models\Terminal;
 use RZP\Constants\Timezone;
 use RZP\Models\BankTransfer;
 use RZP\Models\Terminal\Type;
+use RZP\Models\VirtualAccount;
 use RZP\Services\RazorXClient;
 use RZP\Models\Customer\Entity;
 use RZP\Models\Payment\Gateway;
@@ -2868,5 +2871,79 @@ class VirtualAccountTest extends TestCase
         $this->assertEquals($response['Message'], 'VALID');
         $this->assertEquals($response['CustName'], 'Test Merchant');
         $this->assertEquals($response['TxnId'], 'YBL457b50e1fa8b452ab996560a0c9bc8be');
+    }
+
+    public function testCreateVirtualAccountWithTerminalCaching()
+    {
+        $this->enableRazorXTreatmentForCaching();
+
+        $cacheKey = VirtualAccount\Constant::TERMINAL_CACHE_PREFIX . '_' . '10000000000000';
+
+        $store = $this->app['cache'];
+
+        $pickedFromTerminalCache = false;
+
+        \Cache::shouldReceive('driver')
+              ->andReturnUsing(function($driver = null) use ($store) {
+                  return $store;
+              });
+
+        \Cache::shouldReceive('get')
+              ->andReturnUsing(function($key, $default = null) use ($cacheKey, $store, &$pickedFromTerminalCache) {
+                  if ($key === $cacheKey)
+                  {
+                      $pickedFromTerminalCache = true;
+
+                      return [
+                          [
+                              'id'                     => 'SHRDBANKACC3DS',
+                              Terminal\Entity::GATEWAY => 'bt_dashboard',
+                              'merchant_id'            => '100000Razorpay',
+                              'org_id'                 => '100000razorpay',
+                              'procurer'               => 'razorpay',
+                              'used_count'             => 0,
+                              'used'                   => 0,
+                              'gateway_merchant_id'    => '111222',
+                              'gateway_merchant_id2'   => '00',
+                              'gateway_terminal_id'    => 'quis'
+                          ]
+                      ];
+                  }
+
+                  return $store->get($key, $default);
+              })
+              ->shouldReceive('store')
+              ->withAnyArgs()
+              ->andReturn($store)
+              ->shouldReceive('put')
+              ->withAnyArgs()
+              ->andReturn($store);
+
+        $response = $this->createVirtualAccount();
+
+        $expectedResponse = $this->testData[__FUNCTION__];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
+
+        $this->verifyEntityOrigin($response['id'], 'merchant', '10000000000000');
+
+        $this->assertTrue($pickedFromTerminalCache);
+    }
+
+    protected function enableRazorXTreatmentForCaching()
+    {
+        $razorx = \Mockery::mock(RazorXClient::class)->makePartial();
+
+        $this->app->instance('razorx', $razorx);
+
+        $razorx->shouldReceive('getTreatment')
+               ->andReturnUsing(function(string $id, string $featureFlag, string $mode) {
+                   if ($featureFlag === (RazorxTreatment::SMART_COLLECT_TERMINAL_CACHING))
+                   {
+                       return 'on';
+                   }
+
+                   return 'control';
+               });
     }
 }

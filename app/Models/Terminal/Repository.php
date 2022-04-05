@@ -1032,7 +1032,7 @@ class Repository extends Base\Repository
     public function getAllBankTransferTerminals($gateway, $merchantIds = []): PublicCollection
     {
         $query = $this->newQuery()
-                      ->select([Entity::ID, Entity::GATEWAY_MERCHANT_ID, Entity::GATEWAY_MERCHANT_ID2, Entity::MERCHANT_ID, Entity::ACCOUNT_TYPE])
+                      ->select([Entity::ID, Entity::GATEWAY_MERCHANT_ID, Entity::GATEWAY, Entity::GATEWAY_MERCHANT_ID2, Entity::MERCHANT_ID, Entity::ACCOUNT_TYPE])
                       ->where(Entity::BANK_TRANSFER, true)
                       ->where(Entity::GATEWAY, $gateway);
 
