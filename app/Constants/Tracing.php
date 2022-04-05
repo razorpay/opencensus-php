@@ -267,6 +267,7 @@ class Tracing
             'virtual_account_delete_allowed_payer',
             'virtual_account_add_receivers',
             'payment_refund',
+            'upi_transfer_process',
 
             // Partner routes
             'merchant_bulk_onboarding_admin',
