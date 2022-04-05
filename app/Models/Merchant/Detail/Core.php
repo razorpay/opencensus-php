@@ -291,6 +291,12 @@ class Core extends Base\Core
                 return $businessDetailService->saveBusinessDetailsForMerchant($merchant->getId(), $businessDetailsInput);
             });
 
+            $this->trace->info(TraceCode::ACTIVATION_DETAILS_SAVE_BUSINESS_DETAILS_LATENCY, [
+                'merchant_id'                 => $merchant->getId(),
+                'start_time'                  => $startTime * 1000,
+                'overall_duration'            => (microtime(true) - $startTime) * 1000,
+            ]);
+
             //Calling App Checker Service during onboarding
             (new HealthChecker\Core())->notifyRiskChecker(
                 $merchant->getId(), HealthCheckerConstants::PERFORM_HEALTH_CHECK_JOB, [
@@ -299,6 +305,12 @@ class Core extends Base\Core
                                       HealthCheckerConstants::CHECKER_TYPE    => HealthCheckerConstants::APP_CHECKER,
                                   ]
             );
+
+            $this->trace->info(TraceCode::ACTIVATION_DETAILS_RISK_CHECKER_LATENCY, [
+                'merchant_id'                 => $merchant->getId(),
+                'start_time'                  => $startTime * 1000,
+                'overall_duration'            => (microtime(true) - $startTime) * 1000,
+            ]);
         }
 
         if (empty($input['business_website']) === false)
@@ -309,7 +321,20 @@ class Core extends Base\Core
 
         unset($input[Entity::ACTIVATION_FORM_MILESTONE]);
 
+        $this->trace->info(TraceCode::MERCHANT_SAVE_ACTIVATION_DETAILS_EDIT_REQUEST, [
+            'merchant_id'                 => $merchant->getId(),
+            'start_time'                  => $startTime * 1000,
+            'overall_duration'            => (microtime(true) - $startTime) * 1000,
+            'input'                       => $input,
+        ]);
+
         $merchantDetails->edit($input);
+
+        $this->trace->info(TraceCode::MERCHANT_SAVE_ACTIVATION_DETAILS_EDITED, [
+            'merchant_id'                 => $merchant->getId(),
+            'start_time'                  => $startTime * 1000,
+            'overall_duration'            => (microtime(true) - $startTime) * 1000,
+        ]);
 
         Tracer::inspan(['name' => HyperTrace::PERFORM_KYC_VERIFICATION], function() use ($merchantDetails, $merchant, $input) {
 
@@ -370,6 +395,13 @@ class Core extends Base\Core
                     $oldActivationStatus = $merchantDetails->getActivationStatus();
 
                     $response = $this->createResponse($merchantDetails);
+
+                    $this->trace->info(TraceCode::MERCHANT_SAVE_ACTIVATION_DETAILS_RESPONSE, [
+                        'merchant_id'                 => $merchant->getId(),
+                        'start_time'                  => $startTime * 1000,
+                        'overall_duration'            => (microtime(true) - $startTime) * 1000,
+                        'response'                    => $response,
+                    ]);
 
                     if ($this->canSubmit($input, $response, $activationFormMilestone) === true)
                     {
@@ -685,6 +717,14 @@ class Core extends Base\Core
 
         [$isRiskyMerchant, $action] = $this->dedupeCore->match($merchant);
 
+        $this->trace->info(TraceCode::MERCHANT_FORM_DEDUPE_MATCH, [
+            'merchant_id'     => $merchant->getId(),
+            'duration'        => (microtime(true) - $startTime) * 1000,
+            'start_time'      => $startTime * 1000,
+            'isRiskyMerchant' => $isRiskyMerchant,
+            'action'          => $action,
+        ]);
+
         if ($this->canActivateMerchant($merchantDetails, $isRiskyMerchant) === true)
         {
             $merchant->activate();
@@ -984,6 +1024,8 @@ class Core extends Base\Core
                 'input' => $input,
             ]);
 
+        $startTime = microtime(true);
+
         $merchantDetails = $this->getMerchantDetails($merchant, $input);
 
         $this->convertStatesToStatesCode($input);
@@ -1037,7 +1079,13 @@ class Core extends Base\Core
 
         $this->validateEmailVerificationIfApplicable($merchant);
 
-        return $this->transactionInstantActivationDetails($input, $merchantDetails, $merchant);
+        $response = $this->transactionInstantActivationDetails($input, $merchantDetails, $merchant);
+
+        $this->trace->info(TraceCode::MERCHANT_SAVE_INSTANT_ACTIVATION_DETAILS_LATENCY, [
+            'duration'    => (microtime(true) - $startTime) * 1000,
+        ]);
+
+        return $response;
     }
 
     protected function validateEmailVerificationIfApplicable(Merchant\Entity $merchant)
@@ -2424,7 +2472,19 @@ class Core extends Base\Core
 
         $oldMerchantDetails = clone $merchantDetails;
 
+        $this->trace->info(TraceCode::UPDATE_ACTIVATION_MERCHANT_DETAILS_EDIT_REQUEST, [
+            'input'       => $input,
+            'merchant_id' => $merchant->getId(),
+            'duration'    => (microtime(true) - $startTime) * 1000,
+        ]);
+
         $merchantDetails->edit($input);
+
+        $this->trace->info(TraceCode::UPDATE_ACTIVATION_MERCHANT_DETAILS_EDITED, [
+            'input'       => $input,
+            'merchant_id' => $merchant->getId(),
+            'duration'    => (microtime(true) - $startTime) * 1000,
+        ]);
 
         $newMerchantDetails = clone $merchantDetails;
 
@@ -2481,7 +2541,17 @@ class Core extends Base\Core
 
                 $isMerchantPreviouslyActivated = $merchant->isActivated();
 
+                $this->trace->info(TraceCode::MERCHANT_UPDATE_ACTIVATE_LOG, [
+                    'text'     => 'before activating merchant',
+                    'shouldSave'       => $shouldSave,
+                ]);
+
                 (new Merchant\Activate)->activate($merchant, true, $shouldSave);
+
+                $this->trace->info(TraceCode::MERCHANT_UPDATE_ACTIVATE_LOG, [
+                    'text'     => 'after activating merchant',
+                    'shouldSave'       => $shouldSave,
+                ]);
 
                 $this->triggerRequestToBvs($merchant, Status::ACTIVATED);
                 // request for default instruments when merchant is activated
@@ -2644,6 +2714,11 @@ class Core extends Base\Core
             'activationStatus' => $currentActivationStatus,
             'merchant'         => $merchant
         ];
+
+        $this->trace->info(TraceCode::MERCHANT_ACTIVATION_ONBOARDING_NOTIFICATION, [
+            'duration'    => (microtime(true) - $startTime) * 1000,
+            'start_time'  => $startTime
+        ]);
 
         Tracer::inSpan(['name' => 'onboarding_notification_handler_send'], function() use ($args) {
             (new OnboardingNotificationHandler($args))->send();

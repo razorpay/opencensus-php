@@ -145,12 +145,30 @@ class SubMerchantBatchUtility extends Base\Core
             return $subMerchant;
         });
 
+        $this->trace->info(
+            TraceCode::BATCH_SERVICE_SUBMERCHANT_CREATED,
+            [
+                'subMerchantId' => $subMerchant->getId(),
+            ]
+        );
+
         Tracer::inSpan(
             ['name' => 'submerchant_onboarding_batch.process_sub_merchant.invalidate_cache'],
             function () use ($subMerchant)
             {
                 $this->invalidateAffectedOwnersCache($subMerchant->getId());
             }
+        );
+
+        $this->trace->info(
+            TraceCode::BATCH_SERVICE_SUBMERCHANT_CREATE_CACHE_INVALIDATED,
+            [
+                'subMerchantId' => $subMerchant->getId(),
+                'status'         => $entry[Header::STATUS],
+                'merchant_id'    => $entry[Header::MERCHANT_ID],
+                'merchant_email' => $entry[Header::MERCHANT_EMAIL],
+                'partner_id'     => $configs[Header::PARTNER_ID],
+            ]
         );
 
         $subMerchantDetails = (new MerchantDetailCore)->getMerchantDetails($subMerchant);
@@ -448,7 +466,7 @@ class SubMerchantBatchUtility extends Base\Core
             {
                 $this->merchantCore->updateSubMerchantFeeBearer($subMerchant, $entry[Header::FEE_BEARER]);
             }
-            
+
             $this->merchantCore->updateSubMerhantPricingPlanBasedOnFeeBearerAndSubcategory($subMerchant);
         }
 
