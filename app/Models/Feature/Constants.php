@@ -1307,6 +1307,7 @@ class Constants
         self::ONE_CC_GA_ANALYTICS,
         self::ONE_CC_FB_ANALYTICS,
         self::SHIELD_CYBERSOURCE_ROLLOUT,
+        self::RECURRING_CARD_MANDATE_BILLDESK_SIHUB
     ];
 
     const ONE_CC_FEATURES = [
