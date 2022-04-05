@@ -356,6 +356,7 @@ class Name
     const FTS_TRANSFER_ATTEMPT_BULK_UPDATE    = 'fts_transfer_attempt_bulk_update';
     const FTS_ROUTING_RULES_UPDATE            = 'fts_routing_rules_update';
     const FTS_FAIL_QUEUED_TRANSFER            = 'fts_fail_queued_transfer';
+    const FTS_MERCHANT_CONFIGURATIONS_UPDATE  = "FTS_MERCHANT_CONFIGURATIONS_UPDATE";
     const MANAGE_RENDERING_PREFERENCES  	  = 'manage_rendering_preferences';
     const ADJUSTMENT_BATCH_UPLOAD             = 'adjustment_batch_upload';
     const CREATE_BULK_ADJUSTMENT              = 'create_bulk_adjustment';
