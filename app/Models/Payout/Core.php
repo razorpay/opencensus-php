@@ -3840,7 +3840,8 @@ class Core extends Base\Core
         // fts status to failed or reversed based on fts info passed
         // and send payout.failed to ledger in such cases
         // This is to avoid sending payout.processed and payout.reversed to ledger
-        if (($payout->getStatus() === Status::INITIATED) and
+        if ((($payout->getStatus() === Status::INITIATED) or
+            ($payout->getStatus() === Status::CREATED)) and
             ($status === Status::REVERSED))
         {
             if (($ftsSourceInformation[Attempt\Constants::FTS_ACCOUNT_TYPE] !== null) and

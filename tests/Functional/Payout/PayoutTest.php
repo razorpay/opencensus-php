@@ -8760,6 +8760,30 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals('initiated', $fta->getStatus());
     }
 
+    public function testUpdatePayoutStatusToReversedManuallyFromCreated()
+    {
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $request = [
+            'url'       => '/payouts/' . $payout['id'] . '/manual/status',
+            'method'    => 'PATCH',
+            'content'   => [
+                'status'                => 'reversed',
+            ]
+        ];
+
+        $this->ba->adminAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $payout->reload();
+
+        // Assert that payout status was updated.
+        $this->assertEquals('reversed', $payout->getStatus());
+    }
+
     public function testUpdatePayoutToSomeIntermediateStatus()
     {
         $this->testCreatePayout();
