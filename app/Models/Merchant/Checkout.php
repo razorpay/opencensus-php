@@ -631,8 +631,7 @@ class Checkout
 
             $savedTokens = $tokenCore->fetchTokensByCustomer($customer, $merchant);
 
-            $savedAddresses = $this->repo->address->fetchAddressesForEntity($customer, $input);
-            $savedAddresses = $savedAddresses->sortByDesc(Entity::UPDATED_AT, 1)->values()->all();
+            $savedAddresses = (new Customer\Core)->fetchAddressesFor1CC($customer, $input);
 
             //
             // TODO: Remove this later when we start handling the below case.
@@ -785,18 +784,10 @@ class Checkout
                         $data['customer']['tokens'] = $tokensWithoutCardName;
                     }
                 }
-                // add saved addresses
+                // add saved addresses status
                 if ($response['saved_address'] === true)
                 {
-                    $merchant = $this->repo->merchant->getSharedAccount();
-
-                    $contact = Customer\Validator::validateAndParseContact($input['contact']);
-
-                    $customer = $this->repo->customer->findByContactAndMerchant($contact, $merchant);
-
-                    $addresses = $this->repo->address->fetchAddressesForEntity($customer, $input);
-
-                    $data['customer']['addresses'] = $addresses;
+                    $data['customer']['saved_address'] = true;
                 }
             }
             $treatment = $this->app->razorx->getTreatment(

@@ -301,11 +301,22 @@ class Core extends Base\Core
             $response['session_id'] = $this->getTemporarySessionToken();
         }
 
-        $addresses = $this->repo->address->fetchAddressesForEntity($customer, $input);
-
-        $response['addresses'] = $addresses->sortByDesc(Entity::UPDATED_AT, 1)->values()->all();
-
+        $response['addresses'] = $this->fetchAddressesFor1CC($customer, $input);
         return $response;
+    }
+
+    public function fetchAddressesFor1CC($customer, $input)
+    {
+
+        $addresses = $this->repo->address->fetchAddressesForEntity($customer, $input);
+        // Temp fix to ensure thirdwatch addresses do not show up
+        $addresses = $addresses->filter(function ($address, $key)
+        {
+            $addressArray = $address->toArray();
+            return $addressArray[Address\Entity::SOURCE_TYPE] === null or
+                $addressArray[Address\Entity::SOURCE_TYPE] === "bulk_upload";
+        });
+        return $addresses->sortByDesc(Entity::UPDATED_AT, 1)->values()->all();
     }
 
     /**
