@@ -39,6 +39,24 @@ return [
                     ],
                 ],
 
+                'edge_ngram_analyzer_without_token_chars' => [
+                    'type'      => 'custom',
+                    'tokenizer' => 'edge_ngram_tokenizer_without_token_chars',
+                    'filter'    => [
+                        'lowercase',
+                        'en_stopwords',
+                    ],
+                ],
+
+                'ngram_analyzer_digit_only' => [
+                    'type'      => 'custom',
+                    'tokenizer' => 'ngram_tokenizer_digit_only',
+                    'filter'    => [
+                        'lowercase',
+                        'en_stopwords',
+                    ],
+                ],
+
                 //
                 // Generally index analysis and search analysis should be same.
                 // But for better match against combination of query, we decided
@@ -83,6 +101,19 @@ return [
                     'max_gram'    => 50,
                     'token_chars' => [
                         'letter',
+                        'digit',
+                    ],
+                ],
+                'edge_ngram_tokenizer_without_token_chars' => [
+                    'type'        => 'edge_ngram',
+                    'min_gram'    => 2,
+                    'max_gram'    => 50,
+                ],
+                'ngram_tokenizer_digit_only' => [
+                    'type'        => 'ngram',
+                    'min_gram'    => 2,
+                    'max_gram'    => 20,
+                    'token_chars' => [
                         'digit',
                     ],
                 ],
@@ -613,11 +644,23 @@ return [
                     'raw' => [
                         'type'  => 'keyword',
                         'index' => 'not_analyzed'
+                    ],
+                    'partial_search' => [
+                        'type'            => 'text',
+                        'analyzer'        => 'edge_ngram_analyzer_without_token_chars',
+                        'search_analyzer' => 'keyword',
                     ]
                 ]
             ],
             'contact' => [
-                'type' => 'keyword',
+                'type'            => 'keyword',
+                'fields'          => [
+                    'partial_search' => [
+                        'type'            => 'text',
+                        'analyzer'        => 'ngram_analyzer_digit_only',
+                        'search_analyzer' => 'keyword',
+                    ]
+                ]
             ],
             'type' => [
                 'type' => 'keyword',
@@ -652,6 +695,11 @@ return [
                 'search_analyzer' => 'standard_custom',
                 'index_options'   => 'offsets',
             ],
+            'contact_phone' => [
+                'type'            => 'text',
+                'analyzer'        => 'ngram_analyzer_digit_only',
+                'search_analyzer' => 'keyword',
+            ],
             'contact_email' => [
                 'type'            => 'text',
                 'analyzer'        => 'edge_ngram_analyzer',
@@ -661,8 +709,33 @@ return [
                     'raw' => [
                         'type'  => 'keyword',
                         'index' => 'not_analyzed'
+                    ],
+                    'partial_search' => [
+                        'type'            => 'text',
+                        'analyzer'        => 'edge_ngram_analyzer_without_token_chars',
+                        'search_analyzer' => 'keyword',
                     ]
                 ]
+            ],
+            'fund_account_number' => [
+                'type'            => 'text',
+                'analyzer'        => 'edge_ngram_analyzer_without_token_chars',
+                'search_analyzer' => 'keyword',
+            ],
+            'notes' => [
+                'type'       => 'object',
+                'dynamic'    => false,
+                'properties' => [
+                    'key' => [
+                        'type'     => 'text',
+                        'analyzer' => 'lowercase_keyword',
+                    ],
+                    'value' => [
+                        'type'            => 'text',
+                        'analyzer'        => 'edge_ngram_analyzer',
+                        'search_analyzer' => 'standard_custom',
+                    ],
+                ],
             ],
             'source_type' => [
                 'type' => 'keyword',
@@ -718,6 +791,11 @@ return [
                 'search_analyzer' => 'standard_custom',
                 'index_options'   => 'offsets',
             ],
+            'contact_phone' => [
+                'type'            => 'text',
+                'analyzer'        => 'ngram_analyzer_digit_only',
+                'search_analyzer' => 'keyword',
+            ],
             'contact_email' => [
                 'type'            => 'text',
                 'analyzer'        => 'edge_ngram_analyzer',
@@ -727,8 +805,33 @@ return [
                     'raw' => [
                         'type'  => 'keyword',
                         'index' => 'not_analyzed'
+                    ],
+                    'partial_search' => [
+                        'type'            => 'text',
+                        'analyzer'        => 'edge_ngram_analyzer_without_token_chars',
+                        'search_analyzer' => 'keyword',
                     ]
                 ]
+            ],
+            'fund_account_number' => [
+                'type'            => 'text',
+                'analyzer'        => 'edge_ngram_analyzer_without_token_chars',
+                'search_analyzer' => 'keyword',
+            ],
+            'notes' => [
+                'type'       => 'object',
+                'dynamic'    => false,
+                'properties' => [
+                    'key' => [
+                        'type'     => 'text',
+                        'analyzer' => 'lowercase_keyword',
+                    ],
+                    'value' => [
+                        'type'            => 'text',
+                        'analyzer'        => 'edge_ngram_analyzer',
+                        'search_analyzer' => 'standard_custom',
+                    ],
+                ],
             ],
             'utr' => [
                 'type'  => 'keyword',
