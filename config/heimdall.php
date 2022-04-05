@@ -1480,6 +1480,16 @@ return [
                 'assignable'  => true,
             ],
 
+            Permission::SCORECARD_CLI_CLD_VIEW => [
+                'description' => 'Allow access to download CLI/CLD files from dashboard',
+                'assignable'  => true,
+            ],
+
+            Permission::SCORECARD_CLI_CLD_REVIEW => [
+                'description' => 'Allow access to download and upload CLI/CLD files from dashboard',
+                'assignable'  => true,
+            ],
+
             Permission::CAPITAL_CREATE_PAYMENT_LINK => [
                 'description' => 'Allow capital to create payment link',
                 'assignable'  => true,

@@ -485,6 +485,12 @@ class Name
     // Permission to access capital-scorecard service
     const CAPITAL_SCORECARD                   = 'capital_scorecard';
 
+    // Permissions to access download of CLI/CLD files
+    const SCORECARD_CLI_CLD_VIEW              = 'scorecard_cli_cld_view';
+
+    // Permissions to access upload and download of CLI/CLD files
+    const SCORECARD_CLI_CLD_REVIEW            = 'scorecard_cli_cld_review';
+
     // Permission to access wallet admin actions
     const WALLETS                              = 'wallet';
 
