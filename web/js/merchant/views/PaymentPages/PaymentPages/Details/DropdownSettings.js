@@ -1,18 +1,21 @@
 import React from 'react';
 import { withRouter } from 'react-router';
+
 import Dropdown, { DropdownTrigger, DropdownContent } from 'common/ui/Dropdown';
 import Button from 'common/new-ui/Button';
 import Tooltip from 'common/ui/Tooltip';
 
-const DropdownSettings = ({ onShow, onHide, history, paymentPageEntity }) => {
+import track from './track';
+
+const onShow = () => {
+  track.settingsDropdown();
+};
+
+const DropdownSettings = ({ history, paymentPageEntity }) => {
   return (
     <span className="d-inline-block">
-      <Dropdown closeOnClick={false} onShow={onShow} onHide={onHide}>
-        <DropdownTrigger
-          className={`dropdown-toggle Dropdown--Notifications-toggle${
-            false ? ' dropdown-toggle--large-icon' : ''
-          }`}
-        >
+      <Dropdown closeOnClick={false} onShow={onShow}>
+        <DropdownTrigger className="dropdown-toggle Dropdown--Notifications-toggle}">
           <Button class="Button--primary--invert">
             <i className="i i-settings-outline" />
             <i className="i i-chevron-down" />
@@ -27,22 +30,28 @@ const DropdownSettings = ({ onShow, onHide, history, paymentPageEntity }) => {
             <li
               type="button"
               class="btn"
-              onClick={() =>
-                history.push(`/paymentpages/${paymentPageEntity.id}/edit?modal=receipt`)
-              }
+              onClick={() => {
+                track.receiptSettings();
+
+                history.push(`/paymentpages/${paymentPageEntity.id}/edit?modal=receipt`);
+              }}
             >
               <Button.Transparent className="button--highlight">
-                <i className="i i-receipt mr-10"></i>
+                <i className="i i-receipt mr-10" />
                 Receipt Settings
               </Button.Transparent>
             </li>
             <li
               type="button"
               class="btn"
-              onClick={() => history.push(`/paymentpages/${paymentPageEntity.id}/edit?modal=page`)}
+              onClick={() => {
+                track.pageSettings();
+
+                history.push(`/paymentpages/${paymentPageEntity.id}/edit?modal=page`);
+              }}
             >
               <Button.Transparent className="button--highlight">
-                <i className="i i-settings-outline mr-10"></i>
+                <i className="i i-settings-outline mr-10" />
                 Page Settings
               </Button.Transparent>
             </li>

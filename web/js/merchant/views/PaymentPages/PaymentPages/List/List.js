@@ -8,6 +8,7 @@ import CustomClipboard from 'common/ui/Clipboard/Custom';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 
 import { trackListActions } from '../ga';
+import track from './track';
 import { isMobileDevice } from 'merchant/components/Home/data';
 
 // import mockPaymentPagesList from './data-mock';
@@ -136,6 +137,7 @@ export default ({ paymentPages, loading }) => {
                       value={item.short_url}
                       onCopy={() => {
                         trackListActions('Click Copy URL');
+                        track.copyUrl();
                       }}
                     >
                       <button class="btn btn-default btn-xs">copy</button>

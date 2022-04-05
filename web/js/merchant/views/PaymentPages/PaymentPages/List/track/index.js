@@ -27,17 +27,21 @@ function _track() {
   }
 
   return {
-    searchCount: () => {
-      sendToLumberjack('search.count');
-      sendToSegment('search with count', 'click');
+    searchCount: (event) => {
+      sendToLumberjack('search.count', { value: event.target.value });
+      sendToSegment('search with count', 'input', { value: event.target.value });
     },
-    searchStatus: () => {
-      sendToLumberjack('search.status');
-      sendToSegment('search with status', 'click');
+    searchStatus: (event) => {
+      sendToLumberjack('search.status', { value: event.target.value || 'all' });
+      sendToSegment('search with status', 'click', { value: event.target.value || 'all' });
     },
-    searchTitle: () => {
-      sendToLumberjack('search.title');
-      sendToSegment('search with title', 'click');
+    searchTitle: (event) => {
+      sendToLumberjack('search.title', { value: event.target.value });
+      sendToSegment('search with title', 'input', { value: event.target.value });
+    },
+    search: (params) => {
+      sendToLumberjack('search', params);
+      sendToSegment('search ', 'click', params);
     },
     searchClear: () => {
       sendToLumberjack('search.clear');
@@ -59,6 +63,10 @@ function _track() {
     viewDoc: () => {
       sendToLumberjack('list.view_documentation');
       sendToSegment('view documentation', 'clicked');
+    },
+    copyUrl: () => {
+      sendToLumberjack('list.copy_url');
+      sendToSegment('copy url', 'clicked');
     },
 
     init(_lumberjackTrack) {

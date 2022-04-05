@@ -184,7 +184,7 @@ export default class PaymentReceipt extends React.Component {
 
     if (trackingDetails) {
       if (trackingDetails.isPaymentPage) {
-        track.receipt.checkInputFields();
+        track.receipt.checkInputFields(e.target.checked);
       } else {
         trackPB.inputFieldCheckbox(trackingDetails.via, e.target.checked);
       }

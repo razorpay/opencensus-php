@@ -36,8 +36,9 @@ export default class PaymentPageSettings extends React.Component {
   }
 
   updateDate = (newDate) => {
-    track.settings.clickExpiryDate();
     this.setState({ expire_by: newDate });
+
+    track.settings.clickExpiryDate(!!newDate);
   };
 
   onChange = () => {
@@ -186,6 +187,7 @@ export default class PaymentPageSettings extends React.Component {
                       }
                       return '';
                     }}
+                    onBlur={track.settings.enterCustomUrl}
                   />
                   {isTestMode && (
                     <div style={{ marginTop: 4, fontSize: 13 }}>

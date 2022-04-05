@@ -128,17 +128,7 @@ export default class PaymentPagesContainer extends ListContainer {
       trackListActions('Search', label);
     }
 
-    if (params.count) {
-      track.searchCount();
-    }
-
-    if (params.status) {
-      track.searchStatus();
-    }
-
-    if (params.title) {
-      track.searchTitle();
-    }
+    track.search(params);
   };
 
   onClearAnalytics = () => {
@@ -250,12 +240,22 @@ export default class PaymentPagesContainer extends ListContainer {
           >
             <div class="form-group list-filter-item">
               <label>Title</label>
-              <Field name="title" component="input" class="form-control input-sm" />
+              <Field
+                name="title"
+                component="input"
+                class="form-control input-sm"
+                onBlur={track.searchTitle}
+              />
             </div>
 
             <div class="form-group list-filter-item">
               <label>Status</label>
-              <Field name="status" component="select" class="form-control input-sm">
+              <Field
+                name="status"
+                component="select"
+                class="form-control input-sm"
+                onChange={track.searchStatus}
+              >
                 <option value="">All</option>
                 <option value="active">Active</option>
                 <option value="inactive">Inactive</option>
@@ -271,6 +271,7 @@ export default class PaymentPagesContainer extends ListContainer {
                 max={100}
                 type="number"
                 class="form-control input-sm"
+                onBlur={track.searchCount}
               />
             </div>
           </ListFilter>

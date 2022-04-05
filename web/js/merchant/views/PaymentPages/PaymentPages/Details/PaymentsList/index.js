@@ -5,31 +5,32 @@ import { fetchPayments as fetchAll } from 'merchant/reducers/collection';
 import ListContainer from 'merchant/containers/ListContainer';
 import PaymentsListFilter from './PaymentsListFilter';
 
-import {
-  paymentId,
-  amount,
-  customer,
-  createdAtShort,
-  status,
-} from 'common/ui/item/pair';
+import { paymentId, amount, customer, createdAtShort, status } from 'common/ui/item/pair';
 
 import EntityTable from 'merchant/components/EntityTable';
+import track from '../track';
 
-const PaymentsTable = props => {
-  let paymentColumns = [paymentId, amount, customer, createdAtShort, status];
+// wrapper to trigger analytics event on click
+const _paymentId = {
+  title: paymentId.title,
+  value: (item) => {
+    const intermediateElement = paymentId.value(item);
+
+    return <div onClick={track.paymentIdClick}>{intermediateElement}</div>;
+  },
+};
+
+const PaymentsTable = (props) => {
+  const paymentColumns = [_paymentId, amount, customer, createdAtShort, status];
 
   return <EntityTable title="Payments" columns={paymentColumns} {...props} />;
 };
 
 @withRouter
-@connect(state => state.payments, { fetchAll })
+@connect((state) => state.payments, { fetchAll })
 export default class PaymentsList extends ListContainer {
-  constructor(props) {
-    super(props);
-  }
-
   // Hook to modify fetchAll of ListContainer
-  fetchEntityList = params => {
+  fetchEntityList = (params) => {
     return this.props.fetchAll({
       ...params,
       payment_link_id: this.props.paymentPageId,

@@ -33,6 +33,16 @@ export default class EditExpiry extends React.Component {
 
   updateDate = (newDate) => {
     this.setState({ expire_by: newDate });
+
+    const { trackerFn } = this.props;
+
+    if (trackerFn) {
+      if (newDate) {
+        trackerFn(null, 'Update Date');
+      } else {
+        trackerFn(null, 'No Expiry');
+      }
+    }
   };
 
   render() {

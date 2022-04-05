@@ -104,6 +104,7 @@ export default class PluginsAndAddOns extends React.Component {
                     placeholder="Add ID here"
                     defaultValue={pp_fb_pixel_tracking_id}
                     validator={validateFbId}
+                    onBlur={track.settings.enterFBPixel}
                   />
                 </Input.Group>
                 <span class="help-text">Tracking ID is a string like 1234567890.</span>
@@ -150,6 +151,7 @@ export default class PluginsAndAddOns extends React.Component {
                     placeholder="Add ID here"
                     defaultValue={pp_ga_pixel_tracking_id}
                     validator={validateGaId}
+                    onBlur={track.settings.enterGAPixel}
                   />
                 </Input.Group>
                 <span class="help-text">Tracking ID is a string like UA-000000-2.</span>

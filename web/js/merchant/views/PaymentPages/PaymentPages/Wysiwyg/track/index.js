@@ -81,7 +81,10 @@ function _track() {
         sendToSegment('receipts 80-G', 'clicked');
         sendToLumberjack(`receipt.${label}`);
       },
-      checkInputFields: () => sendToSegment('receipts input field', 'chosen'),
+      checkInputFields: (checked) => {
+        sendToLumberjack('receipt.show_customer_info', { checked });
+        sendToSegment('receipts input field', 'chosen', { checked });
+      },
     },
 
     modal80G: {
@@ -125,6 +128,10 @@ function _track() {
         sendToSegment('settings', 'saved');
       },
       close: () => sendToSegment('settings', 'closed'),
+      enterCustomUrl: (event) => {
+        sendToLumberjack('settings.custom_url', { value: event.target.value });
+        sendToSegment('settings custom url', 'input', { value: event.target.value });
+      },
       checkCustomMessage: (value) => {
         const label = value ? 'checked' : 'unchecked';
         sendToLumberjack(`settings.custom_message.${label}`);
@@ -139,12 +146,24 @@ function _track() {
         sendToLumberjack(`settings.plugins.configure`);
         sendToSegment('settings', `configure plugins`);
       },
+      enterFBPixel: (event) => {
+        sendToLumberjack(`settings.plugins.fb_pixel`, { value: event.target.value });
+        sendToSegment('settings plugins fb pixel', `input`, { value: event.target.value });
+      },
+      enterGAPixel: (event) => {
+        sendToLumberjack(`settings.plugins.ga_pixel`, { value: event.target.value });
+        sendToSegment('settings plugins ga pixel', `input`, { value: event.target.value });
+      },
       clickCreateHyperlinkButton: () => {
         sendToLumberjack(`settings.button.create`);
         sendToSegment('settings', `create hyperlink`);
       },
-      clickExpiryDate: () => sendToSegment('settings expiry', 'added'),
+      clickExpiryDate: (checked) => {
+        sendToLumberjack('settings.expiry_date', { checked });
+        sendToSegment('settings expiry', 'added', { checked });
+      },
       clickShiprocketEnable: () => {
+        sendToLumberjack('settings.enable_shiprocket');
         sendToSegment('settings', 'shiprocket enable');
       },
       clickShiprocketEnableConfirm: () => {
@@ -261,6 +280,10 @@ function _track() {
       },
       clickShiprocketDocsLink: (via) => {
         sendToSegment('shiprocket docs', 'link', { via }); // for shiprocket fields
+      },
+      addSocialMediaIcons: () => {
+        sendToLumberjack('add_social_icons');
+        sendToSegment('add social icons', 'click');
       },
     },
 

@@ -1,8 +1,12 @@
+import React from 'react';
+
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import Button from 'common/new-ui/Button';
 import RemoveBtn from 'merchant/views/PaymentPages/PaymentPages/components/RemoveBtn';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+
+import track from '../track';
 
 export default class extends React.PureComponent {
   onUpdate = (allowSocialShare) => {
@@ -12,6 +16,8 @@ export default class extends React.PureComponent {
         value: allowSocialShare,
       },
     });
+
+    allowSocialShare && track.wysiwyg.addSocialMediaIcons();
   };
 
   render() {

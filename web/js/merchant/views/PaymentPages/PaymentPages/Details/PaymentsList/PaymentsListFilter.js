@@ -1,29 +1,37 @@
 import ListFilter from 'merchant/components/ListFilter';
 import { Field } from 'redux-form';
 
+import track from '../track';
+
 export default ({ showBatchIdFilter, ...props }) => {
   return (
-    <ListFilter {...props} hideClear>
+    <ListFilter {...props} hideClear onSubmit={track.search}>
       <div class="form-group list-filter-item">
         <label>Payment Id</label>
-        <Field name="id" component="input" class="form-control input-sm" />
+        <Field
+          name="id"
+          component="input"
+          class="form-control input-sm"
+          onBlur={track.searchPaymentId}
+        />
       </div>
 
       {/* used in emndate payments */}
       {showBatchIdFilter && (
         <div class="form-group list-filter-item">
           <label>Batch Id</label>
-          <Field
-            name="batch_id"
-            component="input"
-            class="form-control input-sm"
-          />
+          <Field name="batch_id" component="input" class="form-control input-sm" />
         </div>
       )}
 
       <div class="form-group list-filter-item">
         <label>Status</label>
-        <Field name="status" component="select" class="form-control input-sm">
+        <Field
+          name="status"
+          component="select"
+          class="form-control input-sm"
+          onChange={track.searchStatus}
+        >
           <option value="">All</option>
           <option value="authorized">Authorized</option>
           <option value="captured">Captured</option>
@@ -39,6 +47,7 @@ export default ({ showBatchIdFilter, ...props }) => {
           component="input"
           type="email"
           class="form-control input-sm"
+          onBlur={track.searchEmail}
         />
       </div>
 
@@ -51,6 +60,7 @@ export default ({ showBatchIdFilter, ...props }) => {
           max={100}
           type="number"
           class="form-control input-sm"
+          onBlur={track.searchCount}
         />
       </div>
     </ListFilter>

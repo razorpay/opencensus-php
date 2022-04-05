@@ -49,6 +49,12 @@ const inActiveStatusReasonMap = {
   deactivated: 'You manually deactivated the link',
 };
 
+const trackStock = (action, eventLabel) => {
+  trackDetailViewEdits(action, eventLabel);
+
+  action === 'Edit Stock' && track.updateStock();
+};
+
 @connect(
   (state) => ({
     user: state.session.user,
@@ -153,6 +159,8 @@ export default class PaymentPagesV3Entity extends React.Component {
         message: 'Some error in downloading report',
       });
     }
+
+    track.downloadReport(extension);
   };
 
   openEmbedButtonView = () => {
@@ -172,7 +180,7 @@ export default class PaymentPagesV3Entity extends React.Component {
 
   openShareView = () => {
     const { paymentPageEntity } = this.props;
-    trackDetailViewEdits('Click Share');
+
     this.props.openModal({
       size: 'small',
       component: (
@@ -189,11 +197,26 @@ export default class PaymentPagesV3Entity extends React.Component {
         />
       ),
     });
+
+    trackDetailViewEdits('Click Share');
+    track.share();
   };
 
   trackDateUpdate = (date, type) => {
     if (type === 'Cancel Expiry') {
       track.cancelExpiry();
+
+      return;
+    }
+
+    if (type === 'No Expiry') {
+      track.noExpiry();
+
+      return;
+    }
+
+    if (type === 'Update Date') {
+      track.updateDate();
 
       return;
     }
@@ -218,6 +241,10 @@ export default class PaymentPagesV3Entity extends React.Component {
 
     if (changeType === 'Delete Notes (Cancelled)') {
       track.cancelDeleteNotes();
+    }
+
+    if (changeType === 'Add New Notes') {
+      track.addNewNote();
     }
   };
 
@@ -282,13 +309,7 @@ export default class PaymentPagesV3Entity extends React.Component {
                   </Link>
                 )}
 
-                {isRoleAllowedEdit && (
-                  <DropdownSettings
-                    onShow={this.onShow}
-                    onHide={this.onHide}
-                    paymentPageEntity={paymentPageEntity}
-                  />
-                )}
+                {isRoleAllowedEdit && <DropdownSettings paymentPageEntity={paymentPageEntity} />}
 
                 {isRoleAllowedEdit && (
                   <Link to={`/paymentpages/${paymentPageEntity.id}/edit`}>
@@ -309,6 +330,7 @@ export default class PaymentPagesV3Entity extends React.Component {
                       url={paymentPageEntity.short_url}
                       onCopy={() => {
                         trackDetailViewEdits('Click Copy');
+                        track.copyUrl();
                       }}
                     />
                   )}
@@ -439,7 +461,7 @@ export default class PaymentPagesV3Entity extends React.Component {
                           quantitySold={pi.quantity_sold}
                           editFn={editPaymentPage}
                           paymentPageItemId={pi.id}
-                          trackerFn={trackDetailViewEdits}
+                          trackerFn={trackStock}
                           isRoleAllowedEdit={isRoleAllowedEdit}
                         />
                       </div>
@@ -452,9 +474,11 @@ export default class PaymentPagesV3Entity extends React.Component {
           <button
             type="button"
             class="btn-primary btn-sm panel-collapser"
-            onClick={() =>
-              this.setState((prevState) => ({ detailsCollapse: !prevState.detailsCollapse }))
-            }
+            onClick={() => {
+              this.state.detailsCollapse && track.showMore();
+
+              this.setState((prevState) => ({ detailsCollapse: !prevState.detailsCollapse }));
+            }}
           >
             {this.state.detailsCollapse ? (
               <span>
