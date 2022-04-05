@@ -127,26 +127,4 @@ class CoreTest extends TestCase
 
         $this->assertTrue($shouldPerformOCR);
     }
-
-    public function testShouldPerformOcrForMsmeDocumentTypeAndExperimentIsDisabled()
-    {
-        //TODO : Testcase has to be fixed
-        $this->markTestSkipped("Skipping Testcase, Need to be fixed");
-
-        $mocks = $this->createAndFetchMocks(false);
-
-        $merchantDetail = $this->getMerchantDetailFixture(11);
-        $document = $this->fixtures->create('merchant_document', [
-            'document_type' => 'msme_certificate',
-            'file_store_id' => '123123',
-            'merchant_id'   => $merchantDetail->getMerchantId(),
-        ]);
-
-        $documentCore = new DocumentCore();
-        $documentCore->setMerchantCore($mocks['merchantCoreMock']);
-
-        $shouldPerformOCR = $documentCore->shouldPerfomOcrOnDocumentUpload($document, $merchantDetail->merchant, $merchantDetail);
-
-        $this->assertFalse($shouldPerformOCR);
-    }
 }

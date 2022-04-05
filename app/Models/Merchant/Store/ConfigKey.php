@@ -34,7 +34,7 @@ class ConfigKey
     const GET_GST_DETAILS_FROM_BVS_ATTEMPT_COUNT  = 'get_gst_details_from_bvs_attempt_count';
     const BANK_ACCOUNT_VERIFICATION_ATTEMPT_COUNT = 'bank_account_verification_attempt_count';
 
-    const NO_DOC_ONBOARDING_INFO                  = 'no_doc_onboarding_info';
+    const NO_DOC_ONBOARDING_INFO = 'no_doc_onboarding_info';
     /*
      * config that defines which key belongs to which namespace
      * Read : tells who can view the data. if it is empty it is public
@@ -52,41 +52,51 @@ class ConfigKey
             self::REFERRAL_CODE                   => [
                 Constants::STORE => Constants::REDIS,
                 Constants::READ  => [Constants::INTERNAL],
-                Constants::WRITE => [Constants::INTERNAL]
+                Constants::WRITE => [Constants::INTERNAL],
+                Constants::TTL   => Constants::REFERRAL_TTL_IN_SECONDS
             ],
             self::REFERRAL_LINK                   => [
                 Constants::STORE => Constants::REDIS,
-                Constants::WRITE => [Constants::INTERNAL]
+                Constants::WRITE => [Constants::INTERNAL],
+                Constants::TTL   => Constants::REFERRAL_TTL_IN_SECONDS
             ],
             self::REFERRED_COUNT                  => [
                 Constants::STORE => Constants::REDIS,
-                Constants::WRITE => [Constants::INTERNAL]
+                Constants::WRITE => [Constants::INTERNAL],
+                Constants::TTL   => Constants::REFERRAL_TTL_IN_SECONDS
             ],
             self::REFERRAL_SUCCESS_POPUP_COUNT    => [
-                Constants::STORE => Constants::REDIS
+                Constants::STORE => Constants::REDIS,
+                Constants::TTL   => Constants::REFERRAL_TTL_IN_SECONDS
             ],
             self::REFEREE_SUCCESS_POPUP_COUNT     => [
-                Constants::STORE => Constants::REDIS
+                Constants::STORE => Constants::REDIS,
+                Constants::TTL   => Constants::REFERRAL_TTL_IN_SECONDS
             ],
             self::REFEREE_NAME                    => [
                 Constants::STORE => Constants::REDIS,
                 Constants::WRITE => [Constants::INTERNAL],
+                Constants::TTL   => Constants::REFERRAL_TTL_IN_SECONDS
             ],
             self::REFEREE_ID                      => [
                 Constants::STORE => Constants::REDIS,
                 Constants::WRITE => [Constants::INTERNAL],
+                Constants::TTL   => Constants::REFERRAL_TTL_IN_SECONDS
             ],
             self::REFERRAL_AMOUNT                 => [
                 Constants::STORE => Constants::REDIS,
-                Constants::WRITE => [Constants::INTERNAL]
+                Constants::WRITE => [Constants::INTERNAL],
+                Constants::TTL   => Constants::REFERRAL_TTL_IN_SECONDS
             ],
             self::REFERRAL_AMOUNT_CURRENCY        => [
                 Constants::STORE => Constants::REDIS,
-                Constants::WRITE => [Constants::INTERNAL]
+                Constants::WRITE => [Constants::INTERNAL],
+                Constants::TTL   => Constants::REFERRAL_TTL_IN_SECONDS
             ],
             self::IS_SIGNED_UP_REFEREE            => [
                 Constants::STORE => Constants::REDIS,
-                Constants::WRITE => [Constants::INTERNAL]
+                Constants::WRITE => [Constants::INTERNAL],
+                Constants::TTL   => Constants::REFERRAL_TTL_IN_SECONDS
             ],
             self::GST_DETAILS_FROM_PAN            => [
                 Constants::STORE => Constants::REDIS,

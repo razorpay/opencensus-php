@@ -16,6 +16,7 @@ class Constants
     const WRITE          = 'write';
 
     const TTL                                                    = 'ttl';
+    const REFERRAL_TTL_IN_SECONDS                                = 7776000;
     const GET_GST_DETAILS_FROM_BVS_ATTEMPT_COUNT_TTL_IN_SECONDS  = 108800;
     const GST_DETAILS_FROM_PAN_TTL_IN_SECONDS                    = 43200;
     const BANK_ACCOUNT_VERIFICATION_ATTEMPT_COUNT_TTL_IN_SECONDS = 7776000;
