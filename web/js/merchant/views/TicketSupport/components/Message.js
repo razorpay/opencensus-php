@@ -3,6 +3,7 @@ import moment from 'moment';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import Attachment from './Attachment';
+import sanitizer from 'common/utils/xss-sanitizer';
 
 const RAZORPAY_LOGO = `https://razorpay.com/assets/razorpay-glyph.svg`;
 @withRouter
@@ -35,7 +36,7 @@ export default class Message extends React.Component {
             showCompleteReply || this.props.showExpandedReply ? '' : 'truncate'
           }`}
           dangerouslySetInnerHTML={{
-            __html: `<div>${body}</div>`,
+            __html: `<div>${sanitizer(body)}</div>`,
           }}
         />
       );

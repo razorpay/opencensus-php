@@ -10,6 +10,7 @@ import debounce from 'common/utils/debounce';
 import { connect } from 'react-redux';
 import { sendDataToSalesForce } from 'common/utils/common-api';
 import { getNotificationTrackingProperties } from '../../../common/ui/WhatsNew/common';
+import sanitizer from 'common/utils/xss-sanitizer';
 
 const getButtonClass = (type) => {
   switch (type) {
@@ -219,7 +220,7 @@ export default class AnnouncementDetails extends React.Component {
               this.handleContentScroll(target, notificationId, title);
             }}
           >
-            <div dangerouslySetInnerHTML={{ __html: content }} />
+            <div dangerouslySetInnerHTML={{ __html: sanitizer(content) }} />
           </div>
           {buttons && (
             <div className="announcement-details__footer action-buttons">

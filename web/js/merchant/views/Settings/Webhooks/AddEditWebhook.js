@@ -17,6 +17,7 @@ import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import DocsLink from 'merchant/components/DocsLink';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import sanitizer from 'common/utils/xss-sanitizer';
 
 class webhookForm extends Component {
   state = {
@@ -573,9 +574,11 @@ class webhookForm extends Component {
                                 {searchEventsQuery.length > 0 ? (
                                   <p
                                     dangerouslySetInnerHTML={{
-                                      __html: eventName.replace(
-                                        new RegExp(searchEventsQuery, 'gi'),
-                                        (match) => `<b style="background: #FEFFDE;">${match}</b>`,
+                                      __html: sanitizer(
+                                        eventName.replace(
+                                          new RegExp(searchEventsQuery, 'gi'),
+                                          (match) => `<b style="background: #FEFFDE;">${match}</b>`,
+                                        ),
                                       ),
                                     }}
                                   />

@@ -12,6 +12,7 @@ import {
 import CarouselModal from 'common/components/Carousel/CarouselModal';
 import { isMobileDevice } from 'merchant/components/Home/data';
 import { getAssetTrackingProperties } from '../../../merchant/models/GrowthService/commonUtils';
+import sanitizer from 'common/utils/xss-sanitizer';
 
 let slideIndex = 0;
 const trackerBannerFirstImpression = {};
@@ -160,7 +161,7 @@ const Carousel = ({ carouselItem, openModal, tracking, history }): React.ReactEl
       <div className="carouselCard" id={id} data-bannerOrder={index + 1} key={`${id}_${index}`}>
         <div className="carouselCard__content">
           <div>{title}</div>
-          <div dangerouslySetInnerHTML={{ __html: description }} />
+          <div dangerouslySetInnerHTML={{ __html: sanitizer(description) }} />
           <div>
             {buttons.map(({ label, id: ctaId, url, target, reload, style }) => (
               <Button

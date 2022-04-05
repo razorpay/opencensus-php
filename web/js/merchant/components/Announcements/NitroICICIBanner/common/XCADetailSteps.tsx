@@ -1,5 +1,6 @@
 import React from 'react';
 import { XCADetailStepsProps } from '../TypeDeclare/XCATypeDeclare';
+import sanitizer from 'common/utils/xss-sanitizer';
 
 const XCADetailSteps = ({ steps }: XCADetailStepsProps): React.ReactElement => (
   <div className="xcaSteps">
@@ -8,7 +9,7 @@ const XCADetailSteps = ({ steps }: XCADetailStepsProps): React.ReactElement => (
         <div>
           <img src={item?.imagePath} alt={item?.imageAlt} />
         </div>
-        <p dangerouslySetInnerHTML={{ __html: item?.stepDetails }} />
+        <p dangerouslySetInnerHTML={{ __html: sanitizer(item?.stepDetails) }} />
       </div>
     ))}
   </div>

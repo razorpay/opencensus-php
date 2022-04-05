@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import sanitizer from 'common/utils/xss-sanitizer';
 
 const Details = (props) => {
   return (
@@ -12,7 +13,7 @@ const Details = (props) => {
         <div className="section-list">
           {props.details.map((listItem, index) => (
             <div key={index} className="list-item">
-              <span dangerouslySetInnerHTML={{ __html: listItem }} />
+              <span dangerouslySetInnerHTML={{ __html: sanitizer(listItem) }} />
             </div>
           ))}
         </div>

@@ -4,6 +4,7 @@ import { AsyncBtn } from 'common/new-ui/Button';
 import XCATooltip from './XCAtoolTip';
 import XCATrustedBy from './XCATrustedBy';
 import { XCATrustedBrandList } from '../constant/XCAConstant';
+import sanitizer from 'common/utils/xss-sanitizer';
 
 const XCAInterested = ({
   XCAMainText,
@@ -18,9 +19,9 @@ const XCAInterested = ({
 
   return (
     <div className="xcaMainSection">
-      <h3 dangerouslySetInnerHTML={{ __html: XCAMainText }} />
+      <h3 dangerouslySetInnerHTML={{ __html: sanitizer(XCAMainText) }} />
       <div className="xcaMainSection--strike" />
-      <p dangerouslySetInnerHTML={{ __html: XCASubText }} />
+      <p dangerouslySetInnerHTML={{ __html: sanitizer(XCASubText) }} />
       <div className="btn-wrapper">
         <AsyncBtn.Primary type="submit" class="btn btn-primary" onClick={trackCTAClick}>
           I am Interested ✨

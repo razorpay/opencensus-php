@@ -2,6 +2,7 @@ import React from 'react';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import { getFormattedAmount, classList } from 'common/utils/rzp-utils';
 import useViewport, { ViewportProvider } from 'merchant/hooks/useViewPort';
+import sanitizer from 'common/utils/xss-sanitizer';
 
 const currencies = {
   INR: {
@@ -51,7 +52,10 @@ export default ({
   return (
     <AmountTooltip currency={currency} parentQuerySelector={parentQuerySelector}>
       <span class={`rzp-amount ${className ? className : ''}`} {...attrs}>
-        <span class="rzp-currency" dangerouslySetInnerHTML={{ __html: currencySymbol }} />{' '}
+        <span
+          class="rzp-currency"
+          dangerouslySetInnerHTML={{ __html: sanitizer(currencySymbol) }}
+        />{' '}
         <span class="rzp-whole">{amount.split('.')[0]}</span>
         <span class="rzp-paise">.{amount.split('.')[1]}</span>
       </span>

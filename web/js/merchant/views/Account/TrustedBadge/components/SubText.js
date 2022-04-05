@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import sanitizer from 'common/utils/xss-sanitizer';
 
 const SubText = (props) => {
   let text = props.text;
@@ -18,7 +19,7 @@ const SubText = (props) => {
       <div
         onClick={props.handleOptOut}
         className={`trusted-sub-text ${props.className || ''}`}
-        dangerouslySetInnerHTML={{ __html: text }}
+        dangerouslySetInnerHTML={{ __html: sanitizer(text) }}
       />
       {props.showDocTnCLink && (
         <div className="sub-text-link">
