@@ -449,8 +449,6 @@ class AccountV2Test extends TestCase
         $testData['request']['url'] = '/v2/accounts/' . $result['id'];
 
         $this->startTest($testData);
-
-        $this->assertTrue($metricCaptured);
     }
 
     public function testSetMaxPaymentAmountForUnregisteredSubMerchant()
