@@ -17,13 +17,12 @@ use OpenCensus\Trace\Tracer;
 |
 */
 
-
-
 Route::get('/onboard', function () {
     // Creates a detached span
     $span = Tracer::startSpan(['name' => 'onboard-customer']);
     $scope = Tracer::withSpan($span);
     try {
+        pushMessageSns();
         createUser($scope);
         incrementRedisCount($scope);
         pushMessageSQS($scope);
@@ -36,6 +35,40 @@ Route::get('/onboard', function () {
     makeAsyncClientCall();
     return '';
 });
+
+
+function pushMessageSns()
+{
+    $push = array("aps" => "s");
+    $push_json = json_encode($push);
+        $args = [
+            'profile' => 'default',
+            'region' => 'us-east-1',
+            'version' => '2010-03-31',
+            'endpoint' => "http://localhost:4566",
+            'topic_arns'=> ["arn:aws:sns:us-east-1:000000000000:test"],
+            'credentials' => [
+                'key'    => '',
+                'secret' => '',
+            ],
+            'timeout'     => 13.0,
+            'http'        => [
+                'timeout' => 1.0,
+            ],
+        ];
+
+        $sdk = new \Aws\Sdk();
+
+        $client = $sdk->createClient('sns', $args);
+
+         $result = $client->publish(
+            [
+                'Message'   => $push_json,
+                'TargetArn' =>'arn:aws:sns:us-east-1:000000000000:test',
+                'TopicArn'=> "arn:aws:sns:us-east-1:000000000000:test"
+            ])->toArray();
+
+}
 
 
 function pushMessageSQS($scope)
@@ -68,7 +101,7 @@ function pushMessageSQS($scope)
                 ]
             ],
             'MessageBody' => "Information about current NY Times fiction bestseller for week of 12/11/2016.",
-            'QueueUrl' => 'http://localhost:4566/000000000000/test'
+            'QueueUrl' => 'http://localhost:4566/000000000000/test1'
         ];
 
         try {
@@ -111,7 +144,7 @@ function pushMessageSQS($scope)
                 ]
             ],
             'MessageBody' => "Information",
-            'QueueUrl' => 'http://localhost:4566/000000000000/test'
+            'QueueUrl' => 'http://localhost:4566/000000000000/test1'
         ];
 
         try {

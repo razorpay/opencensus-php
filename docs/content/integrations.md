@@ -17,3 +17,4 @@ menu:
 ## Tools
 
 * [Guzzle](integrating-guzzle)
+* [sns](integrating-sns.md)

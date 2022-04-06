@@ -25,6 +25,7 @@ use OpenCensus\Trace\Integrations\Grpc;
 
 use OpenCensus\Trace\Integrations\Postgres;
 use OpenCensus\Trace\Integrations\Redis;
+use OpenCensus\Trace\Integrations\Sns;
 use OpenCensus\Trace\Integrations\Sqs;
 use OpenCensus\Trace\Propagator\JaegerPropagator;
 use OpenCensus\Trace\Tracer;
@@ -50,11 +51,11 @@ class OpenCensusProvider extends ServiceProvider
         Postgres::load();
         Redis::load();
         Sqs::load();
+        Sns::load();
         // Start the request tracing for this request
         $propagator = new JaegerPropagator();
         $tracerOptions = ['propagator' => $propagator];
         Tracer::start(new JaegerExporter('demo-service'));
-
         // Create a span that starts from when Laravel first boots (public/index.php)
         Tracer::inSpan(['name' => 'bootstrap', 'startTime' => LARAVEL_START], function () {});
 
