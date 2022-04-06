@@ -244,6 +244,7 @@ class Service extends Base\Service
             'reserve_bal_self_serve',
             'disable_msme_upload',
             'adharEkyc_for_reg_businessTypes',
+            'rx_referral_variant',
             'rx_search_enhancement_phase1',
             'rx_slack_integration_gtm',
             'rx_acc_statement_date_filter',
