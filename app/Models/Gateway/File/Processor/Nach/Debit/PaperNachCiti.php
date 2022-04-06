@@ -82,6 +82,15 @@ class PaperNachCiti extends Debit\Base
 
                 while ($presentCount < $totalCount)
                 {
+                    if ($presentCount % 50000 === 0)
+                    {
+                        $this->trace->info(TraceCode::NACH_DEBIT_REQUEST, [
+                            'index'        => $presentCount,
+                            'utility_code' => $key,
+                            'total_count'  => $totalCount,
+                        ]);
+                    }
+
                     $fileDataPerSheet = array_slice($fileData, $presentCount, $this->pageCount, true);
 
                     $fileHeader = $this->getFileHeader($key, $fileDataPerSheet);
