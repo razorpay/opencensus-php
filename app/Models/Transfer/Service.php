@@ -11,7 +11,6 @@ use RZP\Models\Transfer;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Listeners\ApiEventSubscriber;
-use RZP\Jobs\Transfers\TransferRecon;
 use RZP\Constants\Entity as EntityConstant;
 use RZP\Models\Settlement\Entity as Settlement;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
@@ -758,86 +757,6 @@ class Service extends Base\Service
         );
 
         return $reversal;
-    }
-
-    public function pushTransactionIdsIntoQueue(array $input)
-    {
-        $settlementIds = $input['settlement_ids'];
-
-        $allTransactionIds = [];
-
-        foreach ($settlementIds as $settlementId)
-        {
-            $allTransactionIds[$settlementId] = $this->repo->transaction->fetchTransactionIdsForSettlementId($settlementId);
-
-            $this->trace->info(
-                TraceCode::TRANSACTION_IDS_FETCHED_FOR_SETTLEMENT_ID,
-                [
-                    'settlement_id'         => $settlementId,
-                    'transactions_count'    => count($allTransactionIds[$settlementId]),
-                ]
-            );
-        }
-
-        foreach ($allTransactionIds as $settlementId => $transactionIds)
-        {
-            $this->trace->info(
-                TraceCode::TRANSACTION_IDS_DISPATCH_REQUEST,
-                [
-                    'settlement_id'         => $settlementId,
-                    'transactions_count'    => count($transactionIds),
-                ]
-            );
-
-            $this->dispatchTransactionIdsInChunks($settlementId, $transactionIds, $input['chunk']);
-        }
-    }
-
-    protected function dispatchTransactionIdsInChunks(string $settlementId, array $transactionIds, $chunk = 1000)
-    {
-        $transactionIdChunks = array_chunk($transactionIds, $chunk);
-
-        $count = 0;
-
-        foreach ($transactionIdChunks as $transactionIdChunk)
-        {
-            $input['transaction_ids'] = $transactionIdChunk;
-
-            try
-            {
-                TransferRecon::dispatch($input, $this->mode);
-
-                $count += count($transactionIdChunk);
-
-                $this->trace->info(
-                    TraceCode::TRANSACTION_IDS_DISPATCHED_FOR_TRANSFER_RECON,
-                    [
-                        'settlement_id'     => $settlementId,
-                        'transaction_ids'   => $transactionIdChunk,
-                    ]
-                );
-            }
-            catch (\Exception $ex)
-            {
-                $this->trace->traceException(
-                    $ex,
-                    Trace::INFO,
-                    TraceCode::TRANSACTION_IDS_DISPATCH_FOR_TRANSFER_RECON_FAILED,
-                    [
-                        'settlement_id'     => $settlementId,
-                        'transactions_ids'  => $transactionIdChunk,
-                    ]
-                );
-            }
-        }
-
-        $this->trace->info(
-            TraceCode::TRANSACTION_IDS_DISPATCH_SUMMARY,
-            [
-                'settlement_id'         => $settlementId,
-                'dispatched_txns_count' => $count,
-            ]
-        );
     }
 
     /**

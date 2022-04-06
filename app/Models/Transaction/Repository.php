@@ -2536,15 +2536,6 @@ class Repository extends Base\Repository
                      ->get();
     }
 
-    public function fetchTransactionIdsForSettlementId(string $settlementId)
-    {
-        $query = $this->newQueryWithConnection($this->getSlaveConnection())
-                      ->select(Entity::ID)
-                      ->where(Entity::SETTLEMENT_ID, $settlementId);
-
-        return $query->pluck(Entity::ID)->toArray();
-    }
-
     public function findById($id)
     {
         $idColumn = $this->repo->transaction->dbColumn(Entity::ID);
