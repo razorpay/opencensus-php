@@ -6684,6 +6684,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_USER_APP_PAYMENT_WITH_SOURCE_START = 'MERCHANT_USER_APP_PAYMENT_WITH_SOURCE_START';
     const MERCHANT_USER_APP_PAYMENT_WITH_SOURCE_END   = 'MERCHANT_USER_APP_PAYMENT_WITH_SOURCE_END';
 
+    const SDK_CALL_TO_PREFERENCES_ENDPOINT = 'SDK_CALL_TO_PREFERENCES_ENDPOINT';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',

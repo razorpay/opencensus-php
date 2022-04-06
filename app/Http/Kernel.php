@@ -33,7 +33,7 @@ class Kernel extends HttpKernel
             Middleware\EncryptCookies::class,
             \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
             Middleware\SameSiteSession::class,
-            \Illuminate\Session\Middleware\StartSession::class,
+            Middleware\StartSession::class,
             Middleware\TemporaryStartSession::class,
             // \Illuminate\View\Middleware\ShareErrorsFromSession::class,
             // \RZP\Http\Middleware\VerifyCsrfToken::class,
