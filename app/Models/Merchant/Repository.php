@@ -749,10 +749,13 @@ class Repository extends Base\Repository
     {
         $product = $product ?? $this->auth->getRequestOriginProduct();
 
-        $query = $this->newQuery()
-                      ->find($merchantId)
-                      ->users()
-                      ->where(Entity::ID, $userId);
+        $mode = $this->app['rzp.mode'] ?? MODE::LIVE;
+
+        $query = $useWritePdo === true ?  $this->newQueryWithConnection($mode)->useWritePdo() : $this->newQuery();
+
+        $query = $query->find($merchantId)
+                       ->users()
+                       ->where(Entity::ID, $userId);
 
         if (empty($role) === false)
         {
@@ -764,12 +767,15 @@ class Repository extends Base\Repository
             $query->where(Entity::PRODUCT, $product);
         }
 
-        if ($useWritePdo === true)
-        {
-            $query->useWritePdo();
-        }
+        $mapping =  $query->first();
 
-        return $query->first();
+        $this->trace->info(
+            TraceCode::MERCHANT_USER_MAPPING,
+            [
+                'mapping' => $mapping,
+            ]);
+
+        return $mapping;
     }
 
     public function findByIdAndOrgId(string $id, string $orgId)

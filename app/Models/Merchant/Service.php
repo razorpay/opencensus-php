@@ -9121,6 +9121,13 @@ class Service extends Base\Service
 
                 while ($currentAttempt <= self::MERCHANT_USER_FETCH_RETRY)
                 {
+                    $this->trace->info(
+                        TraceCode::MERCHANT_USER_FETCH_RETRY_COUNT,
+                        [
+                            'merchant_id' => $merchant->getId(),
+                            'currentAttempt' => $currentAttempt
+                        ]);
+
                     $mapping = $this->getMerchantUserMappingForProduct($product, $merchant->getId(), null, true);
 
                     if (empty($mapping) === true)
