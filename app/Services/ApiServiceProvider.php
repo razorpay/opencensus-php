@@ -89,6 +89,7 @@ use RZP\Services\VendorPayments\Service as VendorPaymentService;
 use RZP\Models\Merchant\OneClickCheckout\ShippingProvider\Service as ShippingProviderService;
 use RZP\Models\Merchant\OneClickCheckout\FulfillmentOrder\Service as FulfillmentOrderService;
 use RZP\Models\Merchant\OneClickCheckout\ShippingMethodProvider\Service as ShippingMethodProviderService;
+use RZP\Models\Merchant\OneClickCheckout\ShippingMethods\Service as ShippingMethodsService;
 use RZP\Models\Merchant\OneClickCheckout\ShippingService\Client as ShippingServiceClient;
 use RZP\Models\Merchant\OneClickCheckout\RtoPredictionProvider\Service as RtoPredictionProviderService;
 use RZP\Models\Merchant\OneClickCheckout\RtoPredictionService\Client as RtoPredictionServiceClient;
@@ -567,6 +568,8 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->registerShippingProviderService();
 
         $this->registerShippingMethodProviderService();
+
+        $this->registerShippingMethodsService();
 
         $this->registerShippingServiceClient();
 
@@ -1405,6 +1408,14 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->app->singleton('shipping_method_provider_service', function($app)
         {
             return new ShippingMethodProviderService($app);
+        });
+    }
+
+    protected function registerShippingMethodsService()
+    {
+        $this->app->singleton('shipping_methods_service', function($app)
+        {
+            return new ShippingMethodsService($app);
         });
     }
 

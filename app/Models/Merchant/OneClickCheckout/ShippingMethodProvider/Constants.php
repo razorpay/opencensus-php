@@ -14,6 +14,7 @@ class Constants
     const WAREHOUSE_PINCODE     = 'warehouse_pincode';
     const FLAT_FEE              = 'flat';
     const SLABS                 = 'slabs';
+    const PROVIDER_TYPE         = 'provider_type';
 
 
     const FLAT_FEE_RULE_TYPE         = 'flat';

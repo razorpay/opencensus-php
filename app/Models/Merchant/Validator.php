@@ -609,7 +609,6 @@ class Validator extends Base\Validator
     ];
 
     protected static $addressShippingInfoResponseRules = [
-        'id'                           => 'required|integer',
         'serviceable'                  => 'required|boolean',
         'cod'                          => 'required|boolean',
         'cod_fee'                      => 'sometimes|integer|nullable',

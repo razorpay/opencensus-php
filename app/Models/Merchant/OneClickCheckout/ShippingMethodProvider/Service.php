@@ -89,17 +89,22 @@ class Service extends Base\Service
 
         $input[Constants::ID] = $id;
 
-        $pincode = $input[Constants::WAREHOUSE_PINCODE];
+        $pincode = $input[Constants::WAREHOUSE_PINCODE] ?? null;
         $pincodeValidator = new Pincode\Validator(Pincode\Pincode::IN);
-        if ($pincodeValidator->validate($pincode) === false)
+        if ($pincode !== null and $pincodeValidator->validate($pincode) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 $pincode . ' is not valid.');
         }
 
-        $shippingFee = $input[Constants::SHIPPING_FEE_RULE];
-        $shippingFeeRule = new FeeRule($shippingFee);
-        $shippingFeeRule->validate();
+        $shippingFee = $input[Constants::SHIPPING_FEE_RULE] ?? null;
+        $shippingFeeRule = null;
+        if ($shippingFee !== null)
+        {
+            $shippingFeeRule = new FeeRule($shippingFee);
+            $shippingFeeRule->validate();
+        }
+
 
         $codFeeRule = null;
         if (isset($input[Constants::ENABLE_COD]) and $input[Constants::ENABLE_COD] === true)
@@ -126,7 +131,7 @@ class Service extends Base\Service
                 $merchantService->updateCodSlabs($codSlabs);
             }
 
-            if ($shippingFeeRule->isSlabRuleType())
+            if ($shippingFeeRule !== null and $shippingFeeRule->isSlabRuleType())
             {
                 $shippingSlabs = $shippingFeeRule->adaptToSlabsTableEntity();
                 $this->app['trace']->info(TraceCode::MERCHANT_SHIPPING_SLABS, $shippingSlabs);

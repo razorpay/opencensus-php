@@ -15,6 +15,8 @@ use RZP\Models\Merchant\Validator;
 use RZP\Models\Merchant\OneClickCheckout\Shopify;
 use RZP\Models\Merchant\Merchant1ccConfig;
 use RZP\Models\Feature\Constants as FeatureConstants;
+use RZP\Models\Merchant\OneClickCheckout\ShippingMethodProvider\Type;
+use RZP\Models\Merchant\OneClickCheckout\ShippingMethodProvider\Constants;
 
 class Service extends Base\Service
 {
@@ -23,10 +25,11 @@ class Service extends Base\Service
     const MINUTE    = 60 * self::SECOND;
     const HOUR      = 60 * self::MINUTE;
 
-    const SHIPPING_INFO_ID                              = 'id';
-    const SHIPPING_INFO_ADDRESSES                       = 'addresses';
-    const SHIPPING_INFO_CACHE_KEY_PREFIX                = 'SHIPPING_INFO_';
-    const SHIPPING_INFO_CACHE_VALIDITY = 30 * self::MINUTE; // 30 minutes
+    const SHIPPING_INFO_ID               = 'id';
+    const SHIPPING_INFO_ADDRESSES        = 'addresses';
+    const SHIPPING_INFO_ADDRESS          = 'address';
+    const SHIPPING_INFO_CACHE_KEY_PREFIX = 'SHIPPING_INFO_';
+    const SHIPPING_INFO_CACHE_VALIDITY   = 30 * self::MINUTE; // 30 minutes
 
 
     /**
@@ -97,53 +100,39 @@ class Service extends Base\Service
 
         $input['order_id'] = $merchantOrderId;
 
+        // Leaving the bulk contract for backward compatibility
         $addresses = $input[self::SHIPPING_INFO_ADDRESSES];
+        if (count($addresses) !== 1)
+        {
+            $this->trace->count(Metric::MERCHANT_EXTERNAL_SHIPPING_INFO_CALL_INVALID_REQUEST_COUNT);
 
-        $this->validateShippingInfoRequest($addresses);
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_SERVICEABILITY_INVALID_INPUT
+            );
+        }
 
-        $addresses = $this->getPincodeAndState($addresses);
+        $address = $addresses[0];
+        (new Validator())->setStrictFalse()->validateInput("shippingInfoRequest", $address);
 
-        $groupedAddresses = self::group_by(
-            function (&$address) use ($orderId)
-            {
-                $address['cod'] = false;
+        $address = $this->getPincodeAndState($address);
 
-                $cachedResponse = $this->getShippingInfoFromCache($orderId, $address);
+        $cachedResponse = $this->getShippingInfoFromCache($orderId, $address);
 
-                if (!empty($cachedResponse))
-                {
-                    $address['serviceable'] = $cachedResponse['serviceable'];
-
-                    $address['cod'] = $cachedResponse['cod'];
-
-                    $address['cod_fee'] = $cachedResponse['cod_fee'] ?? null;
-
-                    $address['shipping_fee'] = $cachedResponse['shipping_fee'];
-
-                    return 'cached';
-                }
-                return 'noncached';
-            },
-            $addresses);
-
-        $cachedAddresses = $groupedAddresses['cached'] ?? [];
-
-        $nonCachedAddresses = $groupedAddresses['noncached'] ?? [];
-
-        if(empty($nonCachedAddresses) === true)
+        if (!empty($cachedResponse))
         {
             $this->trace->debug(TraceCode::MERCHANT_SHIPPING_INFO_NO_UNCACHED_ADDRESS, ["order_id" => $orderId]);
 
             $this->traceResponseTime(Metric::MERCHANT_SHIPPING_INFO_CHECK_TIME_MILLIS, $serviceabilityCheckStartTime);
 
-            return [self::SHIPPING_INFO_ADDRESSES => array_merge($nonCachedAddresses, $cachedAddresses)];
-        }
+            /*
+             * // Will be enabled once multiple shipping is launched
+            $address['shipping_methods'] = $cachedResponse['shipping_methods'];
+            */
 
-        array_walk($nonCachedAddresses,
-            function (&$address, $id)
-            {
-                $address[self::SHIPPING_INFO_ID] = $id;
-            });
+            return [
+                self::SHIPPING_INFO_ADDRESSES => [$cachedResponse],
+            ];
+        }
 
         $platformConfig = $this->merchant->getMerchantPlatformConfig();
 
@@ -151,7 +140,7 @@ class Service extends Base\Service
         {
             $decodedResponse = (new Shopify\Service)->getShippingInfo([
                 'order_id' => $order->toArrayPublic()['notes']['storefront_id'],
-                'addresses' => $nonCachedAddresses
+                'address' => array_merge($address, [self::SHIPPING_INFO_ID => 0]),
             ]);
         }
         else
@@ -159,10 +148,22 @@ class Service extends Base\Service
             $shippingMethodProviderConfig = $this->merchant->getShippingMethodProvider();
             if ($shippingMethodProviderConfig !== null)
             {
-
-                $decodedResponse = $this->getShippingInfoForShippingMethodProvider($shippingMethodProviderConfig,
-                    $nonCachedAddresses, $orderId);
-
+                $shippingMethodProviderConfigJson = $shippingMethodProviderConfig->getValueJson();
+                $shippingProviderType = $shippingMethodProviderConfigJson[Constants::PROVIDER_TYPE] ?? Type::SHIPROCKET;
+                switch ($shippingProviderType)
+                {
+                    case Type::RAZORPAY:
+                        $decodedResponse = $this->getShippingMethods(
+                            $shippingMethodProviderConfigJson,
+                            $address,
+                            $orderId,
+                            $orderMeta->getValue()['line_items_total']);
+                        break;
+                    default:
+                        $decodedResponse = $this->getShippingInfoForShippingMethodProvider($shippingMethodProviderConfig,
+                            $address, $orderId);
+                        break;
+                }
             }
             else
             {
@@ -179,16 +180,26 @@ class Service extends Base\Service
 
                 try
                 {
-                    $response = $this->sendMerchantShippingInfoRequest($merchantOrderId, $nonCachedAddresses, $serviceabilityUrl, $mockResponse);
+                    // Sending array for backward compatibility (bulk api)
+                    $response = $this->sendMerchantShippingInfoRequest(
+                        $merchantOrderId,
+                        [self::SHIPPING_INFO_ADDRESSES => [array_merge($address, [self::SHIPPING_INFO_ID => 0])]],
+                        $serviceabilityUrl,
+                        $mockResponse);
 
                     $decodedResponse = json_decode($response->body, true);
+                    $decodedResponse = $decodedResponse[self::SHIPPING_INFO_ADDRESSES][0];
+                    if (isset($decodedResponse[self::SHIPPING_INFO_ID]))
+                    {
+                        unset($decodedResponse[self::SHIPPING_INFO_ID]);
+                    }
                 }
                 catch(Throwable $exception)
                 {
                     // Swallowing the exception to allow the request to go through in case merchant call fails
                     $this->trace->error(TraceCode::ERROR_EXCEPTION, ['error' => $exception->getMessage()]);
 
-                    $decodedResponse = ['addresses' => []];
+                    $decodedResponse = [];
                 }
 
                 if (json_last_error() !== JSON_ERROR_NONE || !isset($response) || $response->status_code !== 200)
@@ -196,74 +207,52 @@ class Service extends Base\Service
                     $this->trace->count(Metric::MERCHANT_EXTERNAL_SHIPPING_INFO_CALL_FAILURE_COUNT,
                         ['errorcode' => ErrorCode::SERVER_ERROR_MERCHANT_SERVICEABILITY_EXTERNAL_CALL_EXCEPTION]);
 
-                    $decodedResponse = ['addresses' => []];
+                    $decodedResponse = [];
+                }
+
+                try
+                {
+                    (new Validator())->setStrictFalse()->validateInput("addressShippingInfoResponse", $decodedResponse);
+                }
+                catch (Throwable $e)
+                {
+                    $this->trace->count(Metric::MERCHANT_EXTERNAL_SHIPPING_INFO_CALL_FAILURE_COUNT,
+                        ['errorcode' => ErrorCode::SERVER_ERROR_MERCHANT_SERVICEABILITY_EXTERNAL_CALL_EXCEPTION]);
+                    $decodedResponse = [];
                 }
             }
         }
 
-        try
+        // Backwards compatibility for merchant serviceability url/shopify that does not return methods
+        $decodedResponse = $this->convertOldFormatToShippingMethods($decodedResponse);
+
+        $address = array_merge($decodedResponse, $address);
+        foreach ($address['shipping_methods'] as &$method)
         {
-            $this->validateDecodedMerchantShippingInfoResponse($decodedResponse);
-        }
-        catch (Throwable $e)
-        {
-            $this->trace->count(Metric::MERCHANT_EXTERNAL_SHIPPING_INFO_CALL_FAILURE_COUNT,
-                ['errorcode' => ErrorCode::SERVER_ERROR_MERCHANT_SERVICEABILITY_EXTERNAL_CALL_EXCEPTION]);
-
-            $decodedResponse = ['addresses' => []];
-        }
-
-        $serviceability = self::array_map_assoc(
-            function ($address) {
-                return [$address[self::SHIPPING_INFO_ID] => $address];
-            },
-            $decodedResponse['addresses']);
-
-        array_walk($nonCachedAddresses,
-            function (&$address) use ($orderMeta, $orderId, $serviceability)
+            if (isset($method['cod_fee']) === false)
             {
-                $id = $address[self::SHIPPING_INFO_ID];
+                $method['cod_fee'] = $this->getFeeFromSlab(
+                    $orderMeta->getValue()['line_items_total'],
+                    Slab\Type::COD_SLAB);
+            }
 
-                if (isset($serviceability[$id]))
-                {
-                    $address['serviceable'] = $serviceability[$id]['serviceable'];
+            if (isset($method['shipping_fee']) === false)
+            {
+                $method['shipping_fee'] = $this->getFeeFromSlab(
+                    $orderMeta->getValue()['line_items_total'],
+                    Slab\Type::SHIPPING_SLAB);
+            }
 
-                    $address['cod'] = $serviceability[$id]['cod'];
+            if (isset($method['serviceable']) === false)
+            {
+                $method['serviceable'] = true;
+            }
 
-                    if(isset($serviceability[$id]['cod_fee']) === true and $serviceability[$id]['cod_fee'] !== null)
-                    {
-                        $address['cod_fee'] = $serviceability[$id]['cod_fee'];
-                    }
-
-                    if (isset($serviceability[$id]['shipping_fee']) === true and $serviceability[$id]['shipping_fee'] !== null)
-                    {
-                        $address['shipping_fee'] = $serviceability[$id]['shipping_fee'];
-                    }
-                }
-
-                if (isset($address['cod_fee']) === false)
-                {
-                    $address['cod_fee'] = $this->getFeeFromSlab(
-                        $orderMeta->getValue()['line_items_total'],
-                        Slab\Type::COD_SLAB);
-                }
-
-                if (isset($address['shipping_fee']) === false)
-                {
-                    $address['shipping_fee'] = $this->getFeeFromSlab(
-                        $orderMeta->getValue()['line_items_total'],
-                        Slab\Type::SHIPPING_SLAB);
-                }
-
-                if (isset($address['serviceable']) === false)
-                {
-                    $address['serviceable'] = true;
-                }
-
-                $this->cacheMerchantShippingInfo($orderId, $address);
-
-                unset($address[self::SHIPPING_INFO_ID]);
-            });
+            if (isset($method['cod']) === false)
+            {
+                $method['cod'] = false;
+            }
+        }
 
         $dimensions = [];
 
@@ -278,27 +267,139 @@ class Service extends Base\Service
             $dimensions
         );
 
-        return [self::SHIPPING_INFO_ADDRESSES => array_merge($nonCachedAddresses, $cachedAddresses)];
+        // TODO: Remove this once the api contract change is finalized
+        $address = $this->convertShippingMethodsToOldFormat($address);
+
+        $this->cacheMerchantShippingInfo($orderId, $address);
+
+        return [self::SHIPPING_INFO_ADDRESSES => [$address]];
     }
 
-    protected function getShippingInfoForShippingMethodProvider($shippingMethodProviderEntity, $addresses, $orderId): array
+    protected function convertOldFormatToShippingMethods(array $address): array
     {
-        if (count($addresses) > 1)
+        if (isset($address['shipping_methods']) === true)
         {
-            return ['addresses' => []];
+            return $address;
         }
+
+        $shippingInfo = [
+            'shipping_methods' => [
+                [
+                    'name' => 'default',
+                    'description' => 'default',
+                ]
+            ]
+        ];
+        foreach (['shipping_fee',
+                  'serviceable',
+                  'cod',
+                  'cod_fee',] as $key)
+        {
+            if (isset($address[$key]) === true)
+            {
+                $shippingInfo['shipping_methods'][0][$key] = $address[$key];
+            }
+        }
+        return $shippingInfo;
+    }
+
+    protected function convertShippingMethodsToOldFormat(array $address): array
+    {
+        if (isset($address['shipping_methods']) === false)
+        {
+            return $address;
+        }
+
+        foreach ([
+                     'shipping_fee',
+                     'serviceable',
+                     'cod',
+                     'cod_fee',
+                 ] as $key)
+        {
+            $address[$key] = $address['shipping_methods'][0][$key];
+        }
+
+        unset($address['shipping_methods']);
+
+        return $address;
+    }
+
+    protected function getShippingInfoForShippingMethodProvider($shippingMethodProviderEntity, $address, $orderId): array
+    {
 
         $shippingMethodProvider = $shippingMethodProviderEntity->getValueJson();
         $merchantId = $this->merchant->getId();
         $input = [
             'order_id' => $orderId,
-            'address' => $addresses[0]
+            'address' => $address
         ];
         $shippingInfo = $this->app['shipping_method_provider_service']
             ->getShippingInfoForAddress($shippingMethodProvider, $input, $merchantId);
 
-        $res = array_merge($input['address'], $shippingInfo);
-        return ['addresses'=> [$res]];
+        return array_merge($input['address'], $shippingInfo);
+    }
+
+    protected function getShippingMethods($shippingMethodProviderConfig, $address, $orderId, $lineItemsTotal): array
+    {
+        $address['country_code'] = $address['country'];
+        unset($address['country']);
+
+        $address['zip_code'] = $address['zipcode'];
+        unset($address['zipcode']);
+
+        $shippingInfo = $this->app['shipping_methods_service']->evaluate(
+            $shippingMethodProviderConfig['shipping_provider_id'],
+            $address,
+            $lineItemsTotal,
+            $orderId,
+            $this->merchant->getId());
+        $address['country'] = $address['country_code'];
+        unset($address['country_code']);
+        $address['zipcode'] = $address['zip_code'];
+        unset($address['zip_code']);
+
+        $keys = [
+            'shipping_fee',
+            'serviceable',
+            'cod',
+            'cod_fee',
+            'name',
+            'description',
+        ];
+
+        // Filling empty values as protobuf omits empty fields and converting strings to ints due to protobuf serialization
+        for ($i = 0; $i < count($shippingInfo['shipping_methods']); $i++)
+        {
+            foreach ($keys as $key)
+            {
+                if (isset($shippingInfo['shipping_methods'][$i][$key]) === false)
+                {
+                    switch ($key)
+                    {
+                        case 'name':
+                            $shippingInfo['shipping_methods'][$i][$key] = 'default';
+                            break;
+                        case 'description':
+                            $shippingInfo['shipping_methods'][$i][$key] = '';
+                            break;
+                        case 'cod_fee':
+                        case 'shipping_fee':
+                            $shippingInfo['shipping_methods'][$i][$key] = 0;
+                            break;
+                        case 'cod':
+                        case 'serviceable':
+                            $shippingInfo['shipping_methods'][$i][$key] = false;
+                            break;
+                    }
+                }
+                elseif ($key === 'shipping_fee' or $key === 'cod_fee')
+                {
+                    $shippingInfo['shipping_methods'][$i][$key] = (int)$shippingInfo['shipping_methods'][$i][$key];
+                }
+            }
+        }
+        return array_merge($address, $shippingInfo);
     }
 
     protected function getFeeFromSlab(int $amount, string $type): int
@@ -331,8 +432,14 @@ class Service extends Base\Service
     }
 
     public function getShippingInfoFromCache($orderId, $address){
-        return $this->app['cache']->get(
+        // TODO: Adapt old cached format to methods.
+        $res = $this->app['cache']->get(
             $this->getShippingInfoCacheKey($orderId, $address));
+        if($res !== null)
+        {
+            $res = $this->convertOldFormatToShippingMethods($res);
+        }
+        return $res;
     }
 
     /**
@@ -521,33 +628,28 @@ class Service extends Base\Service
     }
 
     /**
-     * @param $addresses
+     * @param $address
      * @return mixed
      */
-    protected function getPincodeAndState($addresses)
+    protected function getPincodeAndState($address)
     {
-        array_walk(
-            $addresses,
-            function (&$address)
-            {
-                try
-                {
-                    $response = $this->app['pincodesearch']->fetchCityAndStateFromPincode($address['zipcode'], true, true, $address['country']);
-                }
-                catch (Throwable $e)
-                {
-                    $this->trace->error(TraceCode::PINCODE_SEARCH_ERROR,
-                        ['error' => $e->getMessage()]);
-                    $response = ['city' => '', 'state' => '', 'state_code' => ''];
-                }
+        try
+        {
+            $response = $this->app['pincodesearch']->fetchCityAndStateFromPincode($address['zipcode'], true, true, $address['country']);
+        }
+        catch (Throwable $e)
+        {
+            $this->trace->error(TraceCode::PINCODE_SEARCH_ERROR,
+                ['error' => $e->getMessage()]);
+            $response = ['city' => '', 'state' => '', 'state_code' => ''];
+        }
 
-                $address['city'] = $response['city'];
+        $address['city'] = $response['city'];
 
-                $address['state'] = $response['state'];
+        $address['state'] = $response['state'];
 
-                $address['state_code'] = $response['state_code'];
-            });
-        return $addresses;
+        $address['state_code'] = $response['state_code'];
+        return $address;
     }
 
     protected function traceResponseTime(string $metric, int $startTime, $extraDimensions = [])

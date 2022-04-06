@@ -29,7 +29,7 @@ return [
                                 'cod' => true,
                                 'cod_fee' => 50,
                                 'shipping_fee' => 90,
-                            ]
+                            ],
                         ],
                     ],
                     'status_code' => 200,
@@ -43,13 +43,13 @@ return [
                         'zipcode' => '560102',
                         'state' => 'Delhi',
                         'state_code' => 'DL',
-                        'city'  => 'South West Delhi',
+                        'city' => 'South West Delhi',
                         'country' => 'in',
                         'serviceable' => true,
                         'cod' => true,
                         'cod_fee' => 50,
                         'shipping_fee' => 90,
-                    ]
+                    ],
                 ],
             ],
             'status_code' => 200
@@ -95,18 +95,19 @@ return [
                         'zipcode' => '560102',
                         'state' => '',
                         'state_code' => '',
-                        'city'  => '',
+                        'city' => '',
                         'country' => 'in',
                         'serviceable' => true,
                         'cod' => true,
                         'cod_fee' => 50,
                         'shipping_fee' => 90,
-                    ]
+                    ],
                 ],
             ],
-            'status_code' => 200
         ],
+        'status_code' => 200
     ],
+
     'testGetShippingInfoWithoutValidOrderId' => [
         'request' => [
             'url' => '/merchant/shipping_info',
@@ -178,8 +179,9 @@ return [
                         'serviceable'  => true,
                         'cod_fee'      => 0,
                         'shipping_fee' => 0,
+
                     ],
-                ]
+                ],
             ],
             'status_code' => 200
         ],

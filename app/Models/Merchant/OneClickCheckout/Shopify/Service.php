@@ -430,13 +430,9 @@ class Service extends Base\Service
     public function getShippingInfo(array $input)
     {
         $checkoutId = $input['order_id'];
-        $addresses = $input['addresses'];
+        $address = $input['address'];
 
-        foreach ($addresses as $address)
-        {
-            $finalVal[] = $this->getShippingForOneAddress($checkoutId, $address);
-        }
-        return ['addresses' => $finalVal];
+        return $this->getShippingForOneAddress($checkoutId, $address);
     }
 
     // get serviceability and fee for single address
