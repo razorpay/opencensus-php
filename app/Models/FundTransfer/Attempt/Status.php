@@ -20,6 +20,12 @@ class Status
         self::REVERSED,
     ];
 
+    const TERMINAL_STATUSES = [
+        self::FAILED,
+        self::PROCESSED,
+        self::REVERSED,
+    ];
+
     // allowed state transition when webhook is fired from fts
     const ALLOWED_STATE_TRANSITION = [
         self::CREATED   => [self::CREATED, self::INITIATED, self::PROCESSED, self::FAILED],

@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\FundTransfer;
 
 use Queue;
 use Redis;
+use Mockery;
 use Carbon\Carbon;
 
 use RZP\Jobs\BeamJob;
@@ -19,12 +20,15 @@ use RZP\Models\Settlement\Channel;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Jobs\FTS\FundTransfer as FtsFundTransfer;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 
 class AttemptTest extends TestCase
 {
     use AttemptTrait;
+    use DbEntityFetchTrait;
     use TestsBusinessBanking;
+
 
     protected function setUp(): void
     {
@@ -662,5 +666,71 @@ class AttemptTest extends TestCase
         $this->assertEquals("1", $fileStore['count']);
         $this->assertEquals("text/plain", $fileStore['items'][0]['mime']);
         $this->assertEquals("rzp-api-settlement", $fileStore['items'][0]['bucket']);
+    }
+
+    public function testFundTransferAttemptForAsyncWhenStateIsTerminal()
+    {
+        $this->setUpMerchantForBusinessBankingLive(
+            false,
+            900000000,
+            AccountType::SHARED);
+
+        $this->app['rzp.mode'] = EnvMode::LIVE;
+
+        $this->fixtures->on('live')->create('fund_account:bank_account',
+            [
+                'id'          => 'D6Z9Jfir2egAUT',
+                'source_type' => 'contact',
+                'source_id'   => 'Dsp92d4N1Mmm6Q',
+                'merchant_id' => '10000000000000'
+            ]);
+
+        $this->fixtures->on('live')->create('payout',
+            [
+                'id'              => 'DuuYxmO7Yegu3x',
+                'fund_account_id' => 'D6Z9Jfir2egAUT',
+                'pricing_rule_id' => '1nvp2XPMmaRLxb',
+                'type'            => 'default',
+                'amount'          => 100,
+                'balance_id'      => $this->bankingBalance->getId(),
+                'status'          => 'created'
+            ]);
+
+
+        $this->fixtures->on('live')->create('fund_transfer_attempt',
+            [
+                'id'                => '90whtP7hFXopAW',
+                'source_id'         => 'DuuYxmO7Yegu3x',
+                'source_type'       => 'payout',
+                'merchant_id'       => '10000000000000',
+                'purpose'           => 'payout',
+                'channel'           => 'yesbank',
+                'mode'              => 'IMPS',
+                'initiate_at'       => 1643288943,
+                'bank_account_id'   => '1000000lcustba',
+            ]);
+
+        $mock = Mockery::mock(\RZP\Services\FTS\FundTransfer::class, [$this->app])->makePartial();
+        $mock = $mock->shouldAllowMockingProtectedMethods();
+        $mock->shouldReceive('createAndSendRequest')->once()->andReturn(
+           [
+               'body' => [
+                    'status'           => 'processed',
+                    'fund_transfer_id' => 123,
+                    'fund_account_id'  => 'D6Z9Jfir2egAUT'
+               ],
+               'code' => 201,
+           ]
+        );
+
+        $this->app->instance('fts_fund_transfer', $mock);
+
+        $ftsCreateTransfer = new FtsFundTransfer(EnvMode::LIVE, '90whtP7hFXopAW');
+
+        $ftsCreateTransfer->handle();
+
+        $payout = $this->getDbLastEntityToArray('payout', 'live');
+
+        $this->assertEquals('initiated', $payout['status']);
     }
 }

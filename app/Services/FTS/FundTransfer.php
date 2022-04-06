@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Entity;
 use RZP\Constants\Timezone;
+use RZP\Models\Payout\Status;
 use RZP\Http\Request\Requests;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Merchant\Balance;
@@ -648,6 +649,19 @@ class FundTransfer extends Base
             {
                 $sourceCore->updateStatusAfterFtaInitiated($source, $this->fta);
             }
+        }
+        elseif (in_array($this->fta->getStatus(), FundTransferAttempt\Status::TERMINAL_STATUSES))
+        {
+            // We have received a terminal status via FTS when the async fund transfer request was done.
+            // Skip source processing and allow it to be processed by the webhook invoked by FTS.
+            $this->trace->info(
+                TraceCode::FTS_FUND_TRANSFER_SOURCE_UPDATE_SKIPPED,
+                [
+                    "fund_transfer_status" => $this->fta->getStatus(),
+                ]
+            );
+
+            return;
         }
         else
         {
