@@ -4,6 +4,8 @@ namespace RZP\Http\Controllers;
 
 use Request;
 use ApiResponse;
+use RZP\Trace\Tracer;
+use RZP\Constants\HyperTrace;
 
 class CommissionInvoiceController extends Controller
 {
@@ -20,7 +22,10 @@ class CommissionInvoiceController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service()->changeStatus($id, $input);
+        $data = Tracer::inspan(['name' => HyperTrace::COMMISSION_INVOICE_CHANGE_STATUS], function () use ($id, $input) {
+
+            return $this->service()->changeStatus($id, $input);
+        });
 
         return ApiResponse::json($data);
     }
@@ -29,7 +34,10 @@ class CommissionInvoiceController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service()->clearOnHoldForInvoiceBulk($input);
+        $data = Tracer::inspan(['name' => HyperTrace::CLEAR_ON_HOLD_COMMISSION_INVOICE_BULK], function () use ($input) {
+
+            return $this->service()->clearOnHoldForInvoiceBulk($input);
+        });
 
         return ApiResponse::json($data);
     }
@@ -38,7 +46,10 @@ class CommissionInvoiceController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service()->fetch($id, $input);
+        $data = Tracer::inspan(['name' => HyperTrace::COMMISSION_INVOICE_FETCH], function () use ($id, $input) {
+
+            return $this->service()->fetch($id, $input);
+        });
 
         return ApiResponse::json($data);
     }

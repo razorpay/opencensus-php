@@ -4,6 +4,8 @@ namespace RZP\Http\Controllers;
 
 use Request;
 use ApiResponse;
+use RZP\Trace\Tracer;
+use RZP\Constants\HyperTrace;
 
 class CommissionController extends Controller
 {
@@ -25,7 +27,10 @@ class CommissionController extends Controller
 
     public function capture(string $id)
     {
-        $entity = $this->service()->capture($id);
+        $entity = Tracer::inspan(['name' => HyperTrace::COMMISSIONS_CAPTURE], function () use ($id) {
+
+            return $this->service()->capture($id);
+        });
 
         return ApiResponse::json($entity);
     }
@@ -43,7 +48,10 @@ class CommissionController extends Controller
     {
         $input = Request::all();
 
-        $count = $this->service()->bulkCaptureByPartner($input);
+        $count = Tracer::inspan(['name' => HyperTrace::BULK_CAPTURE_BY_PARTNER], function () use ($input) {
+
+            return $this->service()->bulkCaptureByPartner($input);
+        });
 
         $response = ['count' => $count];
 
@@ -54,7 +62,10 @@ class CommissionController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service()->clearOnHoldForPartner($partnerId, $input);
+        $data = Tracer::inspan(['name' => HyperTrace::CLEAR_ON_HOLD_FOR_PARTNER], function () use ($partnerId, $input) {
+
+            return $this->service()->clearOnHoldForPartner($partnerId, $input);
+        });
 
         return ApiResponse::json($data);
     }

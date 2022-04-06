@@ -3,8 +3,10 @@
 namespace RZP\Models\Partner\Commission;
 
 use RZP\Models\Base;
+use RZP\Trace\Tracer;
 use RZP\Constants\Mode;
 use RZP\Models\Merchant;
+use RZP\Constants\HyperTrace;
 use RZP\Models\Partner\Metric;
 use RZP\Exception\LogicException;
 use RZP\Models\Base\Repository as BaseRepository;
@@ -58,14 +60,20 @@ class Service extends Base\Service
     {
         $commission = $this->repo->commission->findByPublicId($id);
 
-        return $this->core()->capture($commission)->toArrayPublic();
+        return Tracer::inspan(['name' => HyperTrace::COMMISSIONS_CAPTURE_CORE], function () use ($commission) {
+
+            return $this->core()->capture($commission)->toArrayPublic();
+        });
     }
 
     public function clearOnHoldForPartner(string $partnerId, array $input): array
     {
         $partner = $this->repo->merchant->findOrFailPublic($partnerId);
 
-        return $this->core()->clearOnHoldForPartner($partner, $input);
+        return Tracer::inspan(['name' => HyperTrace::CLEAR_ON_HOLD_FOR_PARTNER_CORE], function () use ($partner, $input) {
+
+            return $this->core()->clearOnHoldForPartner($partner, $input);
+        });
     }
 
     public function fetchAggregateCommissionDetails(string $partnerId, array $input)

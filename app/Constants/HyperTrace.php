@@ -201,4 +201,20 @@ class HyperTrace
     const GET_MERCHANT_DETAILS_CORE                            = 'get_merchant_details.core';
     const CREATE_MERCHANT_DETAILS_CORE                         = 'create_merchant_details.core';
 
+    const BULK_CAPTURE_BY_PARTNER                              = 'bulk_capture_by_partner.service';
+    const COMMISSIONS_CAPTURE                                  = 'commissions_capture.service';
+    const COMMISSIONS_CAPTURE_CORE                             = 'commissions_capture.core';
+    const CLEAR_ON_HOLD_FOR_PARTNER                            = 'clear_on_hold_for_partner.service';
+    const CLEAR_ON_HOLD_FOR_PARTNER_CORE                       = 'clear_on_hold_for_partner.core';
+    const VALIDATE_TDS_DEFINED                                 = 'validate_tds_defined';
+    const COMMISSION_TDS_SETTLEMENT                            = 'commission_tds_settlement';
+    const COMMISSION_FINANCE_TRIGGERED_ONHOLD_CLEAR            = 'commission_finance_triggered_onhold_clear';
+    const CLEAR_ON_HOLD_COMMISSION_INVOICE_BULK                = 'clear_on_hold_commission_invoice_bulk.service';
+    const CLEAR_ON_HOLD_COMMISSION_INVOICE_BULK_CORE           = 'clear_on_hold_commission_invoice_bulk.core';
+    const COMMISSION_INVOICE_CHANGE_STATUS                     = 'commission_invoice_change_status.service';
+    const COMMISSION_INVOICE_CHANGE_STATUS_CORE                = 'commission_invoice_change_status.core';
+    const COMMISSION_INVOICE_ACTION                            = 'commission_invoice_action';
+    const TRIGGER_COMMISSION_INVOICE_ACTION                    = 'trigger_commission_invoice_action';
+    const COMMISSION_INVOICE_FETCH                             = 'commission_invoice_fetch.service';
+
 }

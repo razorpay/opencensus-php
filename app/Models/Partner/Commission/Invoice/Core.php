@@ -8,6 +8,7 @@ use Mail;
 use RZP\Exception;
 use RZP\Models\Tax;
 use RZP\Models\Base;
+use RZP\Trace\Tracer;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
@@ -15,6 +16,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\LineItem;
 use RZP\Constants\Timezone;
 use RZP\Base\RuntimeManager;
+use RZP\Constants\HyperTrace;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Partner\Commission;
 use RZP\Models\Pricing\Calculator;
@@ -108,8 +110,11 @@ class Core extends Base\Core
 
             $this->repo->saveOrFail($invoice);
 
-            // clear on Hold For Partner after workflow is approved
-            (new Commission\Core)->clearOnHoldForPartner($merchant, [Commission\Constants::INVOICE_ID => $invoice->getId()]);
+            Tracer::inspan(['name' => HyperTrace::CLEAR_ON_HOLD_FOR_PARTNER_CORE], function () use ($merchant, $invoice) {
+
+                // clear on Hold For Partner after workflow is approved
+                (new Commission\Core)->clearOnHoldForPartner($merchant, [Commission\Constants::INVOICE_ID => $invoice->getId()]);
+            });
 
             return ['success' => 'true'];
         }
@@ -120,9 +125,20 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($invoice);
 
-        CommissionInvoiceAction::dispatch($this->mode, $invoice->getStatus(), $invoice->getId())->delay(self::COMMISSION_INVOICE_ACTION_DELAY);
+        $attrs = [
+            'invoiceId'        =>  $invoice->getId(),
+            'invoiceStatus'    =>  $invoice->getStatus(),
+            'merchantId'       => $merchant->getId()
+        ];
+        Tracer::inspan(['name' => HyperTrace::COMMISSION_INVOICE_ACTION, 'attributes' => $attrs], function () use ($invoice) {
 
-        $this->triggerWorkflowActionIfApplicable($invoice, $merchant);
+            CommissionInvoiceAction::dispatch($this->mode, $invoice->getStatus(), $invoice->getId())->delay(self::COMMISSION_INVOICE_ACTION_DELAY);
+        });
+
+        Tracer::inspan(['name' => HyperTrace::TRIGGER_COMMISSION_INVOICE_ACTION, 'attributes' => $attrs], function () use ($invoice, $merchant) {
+
+            $this->triggerWorkflowActionIfApplicable($invoice, $merchant);
+        });
 
         return ['success' => 'true'];
     }
@@ -530,7 +546,14 @@ class Core extends Base\Core
             $data[Constants::CREATE_TDS] = $createTds;
             $data[Constants::SKIP_PROCESSED] = $skipProcessed;
 
-            CommissionTdsSettlement::dispatch($this->mode, $invoice->getMerchantId(), $data);
+            $attrs = [
+                'partnerId'        =>  $invoice->getMerchantId(),
+                'invoiceId'        =>  $data[Constants::INVOICE_ID]
+            ];
+            Tracer::inspan(['name' => HyperTrace::COMMISSION_TDS_SETTLEMENT, 'attributes' => $attrs], function () use ($invoice, $data) {
+
+                CommissionTdsSettlement::dispatch($this->mode, $invoice->getMerchantId(), $data);
+            });
         }
 
         return [];

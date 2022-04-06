@@ -4,12 +4,14 @@ namespace RZP\Models\Partner\Commission;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Trace\Tracer;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\Adjustment;
 use RZP\Models\Transaction;
+use RZP\Constants\HyperTrace;
 use RZP\Models\Partner\Metric;
 use RZP\Models\Merchant\Detail;
 use RZP\Jobs\CommissionCapture;
@@ -127,7 +129,10 @@ class Core extends Base\Core
     {
         (new Validator)->validateInput('mark_for_settlement', $input);
 
-        $this->validateTdsDefined($partner);
+        Tracer::inspan(['name' => HyperTrace::VALIDATE_TDS_DEFINED], function () use ($partner) {
+
+            $this->validateTdsDefined($partner);
+        });
 
         // For clearing commission, use invoice Id if present.
         if (isset($input[Constants::INVOICE_ID]) === true)
@@ -138,12 +143,25 @@ class Core extends Base\Core
 
             $data[Constants::INVOICE_ID] = $input[Constants::INVOICE_ID];
 
-            CommissionTdsSettlement::dispatch($this->mode, $partner->getId(), $data);
+            $attrs = [
+                'partnerId'        =>  $partner->getId(),
+                'invoiceId'        =>  $data[Constants::INVOICE_ID]
+            ];
+            Tracer::inspan(['name' => HyperTrace::COMMISSION_TDS_SETTLEMENT, 'attributes' => $attrs], function () use ($partner, $data) {
+
+                CommissionTdsSettlement::dispatch($this->mode, $partner->getId(), $data);
+            });
         }
         else
         {
-            // finance triggered payout.
-            CommissionFinanceTriggeredOnHoldClear::dispatch($this->mode, $partner->getId(), $input);
+            $attrs = [
+                'partnerId'        =>  $partner->getId()
+            ];
+            Tracer::inspan(['name' => HyperTrace::COMMISSION_FINANCE_TRIGGERED_ONHOLD_CLEAR, 'attributes' => $attrs], function () use ($partner, $input) {
+
+                // finance triggered payout.
+                CommissionFinanceTriggeredOnHoldClear::dispatch($this->mode, $partner->getId(), $input);
+            });
         }
 
         return [];
@@ -269,6 +287,10 @@ class Core extends Base\Core
 
         $batches = array_chunk($commissionIds, self::COMMISSIONS_BULK_CAPTURE_LIMIT, true);
 
+        $attrs = [
+            'partnerId'        =>  $partner->getId()
+        ];
+
         foreach ($batches as $batch)
         {
             CommissionCapture::dispatch($this->mode, $batch);
@@ -311,7 +333,10 @@ class Core extends Base\Core
                 return $commission;
             }
 
-            list($txn, $feeSplit) = (new Transaction\Core)->createTransactionForSource($commission);
+            list($txn, $feeSplit) = Tracer::inspan(['name' => HyperTrace::COMMISSIONS_CAPTURE_CORE], function () use ($commission) {
+
+                return (new Transaction\Core)->createTransactionForSource($commission);
+            });
 
             $this->repo->saveOrFail($txn);
 

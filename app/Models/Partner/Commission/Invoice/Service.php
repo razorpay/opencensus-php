@@ -3,8 +3,10 @@
 namespace RZP\Models\Partner\Commission\Invoice;
 
 use RZP\Models\Base;
+use RZP\Trace\Tracer;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
+use RZP\Constants\HyperTrace;
 use RZP\Models\Partner\Metric;
 use RZP\Exception\LogicException;
 use RZP\Models\Partner\Activation;
@@ -22,15 +24,21 @@ class Service extends Base\Service
         $invoice = $this->repo->commission_invoice->findByIdAndMerchant($id, $this->merchant);
 
         (new Validator)->validateInput('change_status', $input);
-        
-        return (new Core)->changeInvoiceStatus($invoice, $input);
+
+        return Tracer::inspan(['name' => HyperTrace::COMMISSION_INVOICE_CHANGE_STATUS_CORE], function () use ($invoice, $input) {
+
+            return (new Core)->changeInvoiceStatus($invoice, $input);
+        });
     }
 
     public function clearOnHoldForInvoiceBulk(array $input)
     {
         (new Validator)->validateInput('bulk_on_hold_clear', $input);
 
-        return (new Core)->clearOnHoldForInvoiceBulk($input);
+        return Tracer::inspan(['name' => HyperTrace::CLEAR_ON_HOLD_COMMISSION_INVOICE_BULK_CORE], function () use ($input) {
+
+            return (new Core)->clearOnHoldForInvoiceBulk($input);
+        });
     }
 
     public function fetch($id)

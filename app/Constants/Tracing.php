@@ -282,6 +282,12 @@ class Tracing
             'account_fetch',
             'account_edit',
             'account_fetch_by_external_id',
+            'commissions_bulk_capture_by_partner',
+            'commissions_capture',
+            'commissions_mark_for_settlement',
+            'invoice_on_hold_clear_bulk',
+            'commissions_invoice_status_change',
+            'commissions_invoice_fetch',
             'fetch_partner_first_user_experience',
 
             'oauth_token_create',
