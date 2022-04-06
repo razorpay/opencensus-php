@@ -1,0 +1,104 @@
+{
+  "Only_Mandatory_Fields": {
+    "email": "rahul@acme.com",
+    "phone": "9820142324",
+    "legal_business_name": "Acme Corp Pvt Ltd",
+    "business_type": "partnership",
+    "reference_id": "randomId",
+    "profile": {
+      "category": "healthcare",
+      "subcategory": "clinic",
+      "addresses": {
+        "registered": {
+          "street1": "507, Koramangala 1st block",
+          "street2": "MG Road",
+          "city": "Bengaluru",
+          "state": "Karnataka",
+          "postal_code": 560034,
+          "country": "IN"
+        }
+      }
+    }
+  },
+  "All_Fields": {
+    "email": "rahul@acme.org",
+    "phone": "9820142324",
+    "legal_business_name": "Acme Corp Pvt Ltd",
+    "customer_facing_business_name": "Acme",
+    "business_type": "proprietorship",
+    "reference_id": "account_COdeRandom",
+    "profile": {
+      "category": "healthcare",
+      "subcategory": "clinic",
+      "description": "Healthcare E-commerce platform",
+      "addresses": {
+        "operation": {
+          "street1": "507, Koramangala 1st block",
+          "street2": "MG Road",
+          "city": "Bengaluru",
+          "state": "Karnataka",
+          "postal_code": 560034,
+          "country": "IN"
+        },
+        "registered": {
+          "street1": "507, Koramangala 1st block",
+          "street2": "MG Road",
+          "city": "Bengaluru",
+          "state": "Karnataka",
+          "postal_code": 560034,
+          "country": "IN"
+        }
+      },
+      "business_model": "b2c"
+    },
+    "legal_info": {
+      "pan": "ABCCD1234A",
+      "gst": "01AADCB1234M1ZX"
+    },
+    "brand": {
+      "color": "FFFFFF"
+    },
+    "notes": {
+      "internal_ref_id": "123123"
+    },
+    "tos_acceptance": {
+      "date": null,
+      "ip": null,
+      "user_agent": "rohit"
+    },
+    "contact_info": {
+      "chargeback": {
+        "email": "cb@acme.org",
+        "phone": "8951496311",
+        "policy_url": "https://www.google.com"
+      },
+      "refund": {
+        "email": "cb@acme.org",
+        "phone": "8951496311",
+        "policy_url": "https://www.google.com"
+      },
+      "support": {
+        "email": "support@acme.org",
+        "phone": "8951496311",
+        "policy_url": "https://www.google.com"
+      }
+    },
+    "apps": {
+      "websites": [
+        "https://www.acme.org"
+      ],
+      "android": [
+        {
+          "url": "playstore.acme.org",
+          "name": "Acme"
+        }
+      ],
+      "ios": [
+        {
+          "url": "appstore.acme.org",
+          "name": "Acme"
+        }
+      ]
+    }
+  }
+}

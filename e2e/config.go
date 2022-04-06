@@ -5,11 +5,12 @@ import (
 )
 
 type Configuration struct {
-	App            AppConfig
-	PaymentPage    PaymentPageConfig
-	SubMerchant    LinkedAccountConfig
-	ApiDb          db.Config
-	VirtualAccount VirtualAccountConfig
+	App                   AppConfig
+	PaymentPage           PaymentPageConfig
+	SubMerchant           LinkedAccountConfig
+	ApiDb                 db.Config
+	VirtualAccount        VirtualAccountConfig
+	OnboardingAPIsPartner OnboardingAPIsPartnerConfig
 }
 
 type AppConfig struct {
@@ -37,6 +38,15 @@ type LinkedAccountConfig struct {
 
 type VirtualAccountConfig struct {
 	// user for creating PP
+	User       string
+	Role       string
+	Username   string
+	Password   string
+	MerchantId string
+}
+
+type OnboardingAPIsPartnerConfig struct {
+	// user for hitting Onboarding APIs
 	User       string
 	Role       string
 	Username   string

@@ -37,3 +37,10 @@
     merchantId = "CeSoV4pBMpqFJ4"
     username = "rzp_test_DHhCyWXE8tHLWv"
     password = "FFT58bebohD5w6UiiVBFYNbL"
+
+[onboardingapispartner]
+    user = "JDzj3b88zZ3Fo1"
+    role = "owner"
+    merchantId = "JDzj3kKN0oQAYj"
+    username = "rzp_test_1quyh5ckoYoMKE"
+    password = "nSbIJNOcyd4aJYU7FN6CFVDR"
