@@ -44,9 +44,6 @@ class SavedVpaPaymentCreateTest extends TestCase
 
     public function testLocalSavedVpaPaymentCreateWithSaveFlag()
     {
-        //TODO : Testcase has to be fixed
-        $this->markTestSkipped("Skipping Testcase, Need to be fixed");
-
         // To verify that save vpa flow does not get affected by validateVpa
         $this->validateVpa('vishnu@icici');
         $validated = $this->getDbLastEntity('payments_upi_vpa');
@@ -159,9 +156,6 @@ class SavedVpaPaymentCreateTest extends TestCase
 
     public function testGlobalSavedVpaPaymentCreateWithSaveMethod()
     {
-        //TODO : Testcase has to be fixed
-        $this->markTestSkipped("Skipping Testcase, Need to be fixed");
-
         $this->mockSession();
 
         $this->payment = $this->getDefaultUpiPaymentArray();
