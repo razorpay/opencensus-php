@@ -792,7 +792,7 @@ class Repository extends Base\Repository
         $merchantIdColumn = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
         $bankingAccountMerchantIdColumn = $this->repo->banking_account->dbColumn(Entity::MERCHANT_ID);
 
-        $query =  $this->newQuery()
+        $query =  $this->newQueryWithConnection($this->getSlaveConnection())
             ->join(Table::MERCHANT, $bankingAccountMerchantIdColumn, '=', $merchantIdColumn)
             ->where($channelColumn, '=', $channel)
             ->where($accountTypeColumn, '=', $accountType)

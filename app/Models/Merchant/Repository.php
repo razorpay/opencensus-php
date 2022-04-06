@@ -142,7 +142,7 @@ class Repository extends Base\Repository
       array $merchantIds = [],
       array $merchantIdsExcluded = []): array
     {
-        $query = $this->newQuery()
+        $query = $this->newQueryWithConnection($this->getSlaveConnection())
                       ->select(Entity::ID)
                       ->where(Entity::ACTIVATED, '=', 1)
                       ->where(Entity::ACTIVATED_AT, '<=', $end)
