@@ -10,8 +10,8 @@ export const validateModalInfo = (maxRows, sampleUrl) => (
         for the template.
       </li>
       <li>
-        Contact, Address Line1, City, State, Country and Zipcode are mandatory fields, can’t be left
-        blank.
+        Name, Contact, Address Line1, City, State, Country and Zipcode are mandatory fields, can’t
+        be left blank.
       </li>
       <li>
         For “address_type”, recommended values are home, office and other, if labels are available.
