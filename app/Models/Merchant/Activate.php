@@ -825,6 +825,9 @@ class Activate extends Base\Core
                                     'mode'              => $mode,
                                 ]);
                         }
+
+                        // Removing ledger shadow features because merchant is being onboarded in reverse shadow.
+                        $this->deleteLedgerManuallyAssignedFeature($merchant, Feature\Constants::LEDGER_JOURNAL_WRITES);
                     }
                     catch (Exception\BadRequestValidationFailureException $e)
                     {
@@ -864,6 +867,11 @@ class Activate extends Base\Core
                                 ]);
                         }
 
+                        // Removing ledger reverse shadow features because merchant is being onboarded in shadow mode.
+                        $this->deleteLedgerManuallyAssignedFeature($merchant, Feature\Constants::LEDGER_REVERSE_SHADOW);
+
+                        $this->deleteLedgerManuallyAssignedFeature($merchant, Feature\Constants::LEDGER_JOURNAL_READS);
+
                         (new Merchant\Balance\Ledger\Core)->createXLedgerAccount($merchant, $bankingAccount, $mode);
                     }
                 }
@@ -893,6 +901,38 @@ class Activate extends Base\Core
             {
                 $this->sendBankingVaActivationSmsIfApplicable($merchant);
             }
+        }
+    }
+
+    /***
+     * This function delete feature if already present before merchant came on RX
+     * It is possible only if feature is wrongly assigned due to manual flow from ops team.
+     * @param $merchant
+     * @param string $featureToRemove
+     */
+    protected function deleteLedgerManuallyAssignedFeature($merchant, string $featureToRemove) {
+        try
+        {
+            $feature = $this->repo->feature->findByEntityTypeEntityIdAndNameOrFail(
+                EntityConstants::MERCHANT,
+                $merchant->getId(),
+                $featureToRemove);
+
+            if (empty($feature) === false)
+            {
+                (new Feature\Core)->delete($feature);
+            }
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::LEDGER_DELETE_MANUALLY_ASSIGNED_FEATURE_FAILED,
+                [
+                    'merchant_id'          => $merchant->getId(),
+                    'feature'              => $featureToRemove
+                ]);
         }
     }
 
