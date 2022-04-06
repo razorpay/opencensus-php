@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import { getFormattedAmount, classList } from 'common/utils/rzp-utils';
 import useViewport, { ViewportProvider } from 'merchant/hooks/useViewPort';
@@ -22,6 +22,8 @@ const currencies = {
     symbol: '€',
   },
 };
+
+const RTL_CURRENCIES = ['BHD', 'KWD', 'OMR'];
 
 export function getCurrency(currencyISO) {
   return window.currencyList[currencyISO] || {};
@@ -48,16 +50,23 @@ export default ({
     currencySymbol = window.currencyList[currency].symbol;
   }
 
+  const getDirection = useCallback(() => {
+    if (RTL_CURRENCIES.includes(currency)) {
+      return 'rtl';
+    }
+    return 'ltr';
+  }, [currency]);
+
   // TODO: pointer-events: allow, but cursor be as per inherit
   return (
     <AmountTooltip currency={currency} parentQuerySelector={parentQuerySelector}>
-      <span class={`rzp-amount ${className ? className : ''}`} {...attrs}>
+      <span className={`rzp-amount ${className ? className : ''}`} dir={getDirection()} {...attrs}>
         <span
-          class="rzp-currency"
+          className="rzp-currency"
           dangerouslySetInnerHTML={{ __html: sanitizer(currencySymbol) }}
         />{' '}
-        <span class="rzp-whole">{amount.split('.')[0]}</span>
-        <span class="rzp-paise">.{amount.split('.')[1]}</span>
+        <span className="rzp-whole">{amount.split('.')[0]}</span>
+        <span className="rzp-paise">.{amount.split('.')[1]}</span>
       </span>
     </AmountTooltip>
   );
