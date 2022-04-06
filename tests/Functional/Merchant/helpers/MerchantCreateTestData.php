@@ -1504,7 +1504,7 @@ return [
                 Header::PAYMENTS_FOR              => 'business',
                 Header::BUSINESS_MODEL            => 'acme',
                 Header::BUSINESS_CATEGORY         => 'financial_services',
-                Header::BUSINESS_SUB_CATEGORY     => 'insurance',
+                Header::BUSINESS_SUB_CATEGORY     => 'lending',
                 Header::REGISTERED_ADDRESS        => 'acme',
                 Header::REGISTERED_CITY           => 'bangalore',
                 Header::REGISTERED_STATE          => 'karnataka',
