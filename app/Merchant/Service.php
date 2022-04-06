@@ -689,13 +689,11 @@ class Service extends Base\Service
         if (empty($error) === false)
         {
 
-            $this->trace->info(TraceCode::GET_CAMPAIGNS_ROUTE_INFO, [
-                'action'              => 'FetchFailed',
-                'error_description'   => $error[0],
-                'controller'          => app('request')->route()->getAction()['controller']
+            $this->trace->warning(TraceCode::GET_CAMPAIGNS_ROUTE_INFO, [
+                'action'            => 'FetchFailed',
+                'error_description' => $error[0],
+                'controller'        => app('request')->route()->getAction()['controller']
             ]);
-
-            $this->trace->warning(ErrorCode::BAD_REQUEST_ERROR, ['error' => $error]);
 
             return [];
         }
