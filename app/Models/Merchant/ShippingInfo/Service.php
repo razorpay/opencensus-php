@@ -432,14 +432,8 @@ class Service extends Base\Service
     }
 
     public function getShippingInfoFromCache($orderId, $address){
-        // TODO: Adapt old cached format to methods.
-        $res = $this->app['cache']->get(
+        return $this->app['cache']->get(
             $this->getShippingInfoCacheKey($orderId, $address));
-        if($res !== null)
-        {
-            $res = $this->convertOldFormatToShippingMethods($res);
-        }
-        return $res;
     }
 
     /**
