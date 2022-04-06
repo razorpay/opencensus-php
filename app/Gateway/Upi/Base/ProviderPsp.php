@@ -18,6 +18,7 @@ class ProviderPsp
     const BHIM_AXISPAY      = 'bhim_axispay';
     const DAKPAY_UPI_IPBB   = 'dakpay_upi_ipbb';
     const MOBIKWIK          = 'mobikwik';
+    const DIGI_BANK         = 'digi_bank';
 
     // used only for testing.
     const RAZORPAY      = 'razorpay';
