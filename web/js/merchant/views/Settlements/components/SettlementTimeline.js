@@ -64,11 +64,11 @@ const SettlementTimeline = ({
                 <div>
                   <span className="capitalize">{method} </span>
                   <span>payment takes </span>
-                  <strong>{schedule} working days</strong>
+                  <strong>{schedule} working day(s)</strong>
                 </div>
               ) : (
                 <div>
-                  Takes <strong>{schedule} working days</strong> to get adjusted from your
+                  Takes <strong>{schedule} working day(s)</strong> to get adjusted from your
                   settlement
                 </div>
               )}
