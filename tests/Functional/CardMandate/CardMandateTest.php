@@ -11,7 +11,9 @@ use RZP\Constants\Entity;
 use RZP\Error\ErrorCode;
 use RZP\Models\Bank\IFSC;
 use RZP\Constants\Entity as E;
+use RZP\Models\Card\Network;
 use RZP\Models\Currency\Currency;
+use RZP\Tests\Functional\Helpers\TerminalTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\CardMandate\Status;
 use RZP\Exception\BadRequestException;
@@ -28,6 +30,7 @@ class CardMandateTest extends TestCase
     use PaymentTrait;
     use DbEntityFetchTrait;
     use TestsWebhookEvents;
+    use TerminalTrait;
 
     /**
      * @var array
@@ -898,6 +901,7 @@ class CardMandateTest extends TestCase
             'network' => "RuPay",
         ]);
 
+        $this->mockFetchMerchantTokenisationOnboardedNetworks([Network::RUPAY]);
 
         $this->mockCheckBin();
 

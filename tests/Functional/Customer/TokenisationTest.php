@@ -1398,6 +1398,8 @@ class TokenisationTest extends TestCase
 
     protected function doFirstPaymentThroughTokenisingTheCard($isLocal = false)
     {
+        $this->mockFetchMerchantTokenisationOnboardedNetworks([Network::VISA]);
+
         $payment = $this->getDefaultPaymentArray();
         $payment['_']['library'] = 'razorpayjs';
         $payment['save'] = 1;

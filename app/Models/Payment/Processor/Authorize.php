@@ -6545,31 +6545,9 @@ trait Authorize
                 return;
             }
 
-            // migration to be done only when user has given consent to save the card
-            // this check "$token->isRecurring()" will be removed once consent changes for recurring will go live
-            if ($token->hasBeenAcknowledged() === false)
-            {
-                return;
-            }
-
             $card = $token->card;
 
-            if (($card->isVisa() === false) and
-                ($card->isMasterCard() === false) and
-                ($card->isRuPay() === false) and
-                ($card->isDiners() === false))
-            {
-                return;
-            }
-
-            // this if code block to be removed once we onboard other networks
-            if (($card->isRupay() === false) and
-                ($token->isRecurring() === true))
-            {
-                return;
-            }
-
-            if ($card->isRzpTokenisedCard() === false)
+            if ((new Token\Core())->checkIfTokenisationApplicable($token) === false)
             {
                 return;
             }

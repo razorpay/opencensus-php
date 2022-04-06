@@ -2217,14 +2217,15 @@ class Core extends Base\Core
             return false;
         }
 
-        $onboardedNetworks = (new Terminal\Core())->getMerchantTokenisationOnboardedNetworks($token->getMerchantId());
+        $networkCode = $card->getNetworkCode();
 
-        if(in_array($card->getNetworkCode(), $onboardedNetworks, true) === false)
-        {
+        if (in_array($networkCode, Card\Network::NETWORKS_SUPPORTING_TOKEN_PROVISIONING, true) === false) {
             return false;
         }
 
-        return true;
+        $onboardedNetworks = (new Terminal\Core())->getMerchantTokenisationOnboardedNetworks($token->getMerchantId());
+
+        return in_array($networkCode, $onboardedNetworks, true);
     }
 
     /**

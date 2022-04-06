@@ -34,6 +34,13 @@ class Network
         self::VISA, // Visa
     ];
 
+    public const NETWORKS_SUPPORTING_TOKEN_PROVISIONING = [
+        self::DICL, // Diners
+        self::MC, // MasterCard
+        self::RUPAY, // RuPay
+        self::VISA, // Visa
+    ];
+
     public static $fullName = [
         self::AMEX    => 'American Express',
         self::DICL    => 'Diners Club',

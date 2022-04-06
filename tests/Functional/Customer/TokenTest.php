@@ -8,7 +8,9 @@ use Requests_Response;
 use RZP\Error\Error;
 use RZP\Exception;
 use RZP\Models\Card\Constants;
+use RZP\Models\Card\Network;
 use RZP\Models\Customer\Token;
+use RZP\Tests\Functional\Helpers\TerminalTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -18,6 +20,7 @@ class TokenTest extends TestCase
 {
     use PaymentTrait;
     use TestsWebhookEvents;
+    use TerminalTrait;
 
     protected function setUp(): void
     {
@@ -525,6 +528,8 @@ class TokenTest extends TestCase
         $this->mockCardVaultWithMigrateToken();
 
         $this->fixtures->merchant->addFeatures(['network_tokenization_live']);
+
+        $this->mockFetchMerchantTokenisationOnboardedNetworks([Network::VISA, Network::MC, Network::RUPAY]);
 
         $payment = $this->getDefaultPaymentArray();
 
@@ -1874,5 +1879,36 @@ class TokenTest extends TestCase
         $this->ba->appAuth('rzp_test','');
 
         $statusResponse = $this->startTest($statusPayload);
+    }
+
+    public function testMigrateTokenWithoutNetworkOnboardingShouldFail()
+    {
+        $this->mockCardVaultWithMigrateToken();
+
+        $this->fixtures->merchant->addFeatures(['network_tokenization_live']);
+
+        $this->mockFetchMerchantTokenisationOnboardedNetworks([Network::RUPAY]);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['_']['library'] = 'razorpayjs';
+
+        $payment['save'] = 1;
+
+        $payment['customer_id']='cust_100000customer';
+
+        $response = $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertNotNull($payment['token_id']);
+
+        $token = $this->getLastEntity('token', true);
+
+        $card = $this->getLastEntity('card', true);
+
+        $this->assertEquals('card_' . $token['card_id'], $card['id']);
+
+        $this->assertEquals($card['vault'], 'rzpvault');
     }
 }
