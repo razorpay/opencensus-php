@@ -94,7 +94,6 @@ Route::group(['middleware' => ['web']], function () {
         Route::post('/register/otp/verify', 'UserController@postRegisterVerifyOtp')->name('user_register_otp_verify'); // ePOS
         Route::post('/oauth-signin', 'UserController@postOauthSignIn')->name('user_oauth_signin');
         Route::post('/oauth-register', 'UserController@postOauthRegister')->name('user_oauth_register');
-        Route::post('/2fa_setup/verify-mobile', 'UserController@postSetup2faVerifyMobile')->name('user_2fa_setup_verify_mobile');
         Route::post('/2fa/otp-verify', 'UserController@postSetup2faVerifyOtp')->name('user_2fa_otp_verify');
         Route::post('/2fa', 'userController@post2faOtp')->name('user_2fa');
         Route::patch('/2fa/contact', 'UserController@postUpdate2faContact')->name('user_2fa_contact');
