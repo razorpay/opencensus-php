@@ -92,8 +92,7 @@ class Entity extends Base\PublicEntity
     //
     // merchant id index for live and test db
     //
-    const TOKENS_MERCHANT_ID_INDEX_LIVE  = 'tokens_merchant_id_index';
-    const TOKENS_MERCHANT_ID_INDEX_TEST  = 'tokens_merchant_id_foreign';
+    const TOKENS_MERCHANT_ID_INDEX  = 'tokens_merchant_id_index';
 
     //
     // These values goes in the account_type field

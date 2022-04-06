@@ -145,12 +145,7 @@ class Repository extends Base\Repository
     public function getByGatewayTokenAndMerchantIdWithForceIndex(string $gatewayToken, string $merchantId, string $mode)
     {
 
-        $index = Token\Entity::TOKENS_MERCHANT_ID_INDEX_LIVE;
-
-        if ($mode === 'test')
-        {
-            $index = Token\Entity::TOKENS_MERCHANT_ID_INDEX_TEST;
-        }
+        $index = Token\Entity::TOKENS_MERCHANT_ID_INDEX;
 
         return $this->newQuery()
             ->from(\DB::raw("`tokens` FORCE INDEX ($index)"))
