@@ -157,7 +157,11 @@ class Core extends Base\Core
 
     public function updateWithDetailsBeforeFtaRecon(Entity $entity, array $ftaData)
     {
-        $entity->setUtr($ftaData[Attempt\Constants::UTR]);
+        if ((isset($ftaData[Attempt\Constants::FTA_STATUS]) === true) and
+            ($ftaData[Attempt\Constants::FTA_STATUS] === Attempt\Status::PROCESSED))
+        {
+            $entity->setUtr($ftaData[Attempt\Constants::UTR]);
+        }
 
         $entity->setRemarks($ftaData[Attempt\Constants::REMARKS]);
 
