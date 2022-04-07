@@ -6539,22 +6539,24 @@ trait Authorize
                 return;
             }
 
-            if ($token->isLocal() === false) {
-                // @TODO: Remove this check when we add the experiment to control
-                // token provisioning for global saved cards.
+            $core = (new Token\Core());
+
+            if ($core->checkIfTokenisationApplicable($token) === false)
+            {
                 return;
             }
 
-            $card = $token->card;
-
-            if ((new Token\Core())->checkIfTokenisationApplicable($token) === false)
-            {
+            if (($token->isGlobal() === true) &&
+                ((new Payment\TokenisationExperiment())->shouldProvisionGlobalToken($token->card) === false)
+            ) {
+                // Sync. provisioning of globals network tokens is controlled using a razorx contextramp experiment
+                // to control the amount of traffic we send to the networks & gradually ramp it up.
                 return;
             }
 
             [$authReferenceNumber, $isTokenizationAllowed] = $this->getAuthenticationReferenceNumber($callbackData);
 
-            if ($card->isRupay() === true)
+            if ($token->card->isRupay() === true)
             {
                 if ($isTokenizationAllowed === false or $authReferenceNumber === '')
                 {
@@ -6577,8 +6579,6 @@ trait Authorize
                 'name'                            => $input['card']['name'] ?? null,
                 'authentication_reference_number' => $authReferenceNumber,
             ];
-
-            $core = (new Token\Core);
 
             $core->migrateToTokenizedCard($token, $cardInput);
         }

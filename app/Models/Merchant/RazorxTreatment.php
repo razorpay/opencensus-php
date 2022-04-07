@@ -480,4 +480,7 @@ final class RazorxTreatment
 
     // Experiment to cache terminals for bank Transfer
     const SMART_COLLECT_TERMINAL_CACHING = 'smart_collect_terminal_caching';
+
+    /** @var string Experiment to control the provisioning of network tokens for global saved cards. */
+    public const PROVISION_GLOBAL_NETWORK_TOKEN = 'provision_global_network_token';
 }

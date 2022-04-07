@@ -3,6 +3,7 @@
 namespace RZP\Models\Payment;
 
 use App;
+use Illuminate\Support\Str;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
@@ -124,6 +125,40 @@ class TokenisationExperiment
                 $e,
                 null,
                 TraceCode::ISSUER_NETWORK_TYPE_RAZORX_EXPERIMENT_ERROR
+            );
+        }
+
+        return false;
+    }
+
+    /**
+     * Runs a razorx contextramp experiment to help control & gradually ramp-up
+     * sync. provisioning of network tokens for global saved cards.
+     *
+     * @param Card\Entity $card
+     *
+     * @return bool
+     */
+    public function shouldProvisionGlobalToken(Card\Entity $card): bool
+    {
+        try
+        {
+            $variant = $this->app->razorx->getTreatment(
+                $card->getNetworkCode(),
+                Merchant\RazorxTreatment::PROVISION_GLOBAL_NETWORK_TOKEN,
+                $this->mode
+            );
+
+            if (Str::startsWith($variant, 'on_')) {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::GLOBAL_CARD_PAYMENT_PROCESS_SPLITZ_ERROR
             );
         }
 

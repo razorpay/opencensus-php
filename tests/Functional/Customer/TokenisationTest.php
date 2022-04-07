@@ -1509,8 +1509,6 @@ class TokenisationTest extends TestCase
      */
     public function testIsRepeatPaymentProcessedWithTokenisedCardOnGlobalMerchantWhenExp1AndExp2ReturnsTrue()
     {
-        $this->markTestSkipped('Will enable in CE-5400 when we add experiment for global token provisioning');
-
         $this->mockSession();
 
         $this->mockCardVaultWithMigrateToken();
@@ -1634,8 +1632,6 @@ class TokenisationTest extends TestCase
      */
     public function testIsRepeatPaymentProcessedWithActualCardOnGlobalMerchantWhenExp1ReturnFalseExp2ReturnsTrue()
     {
-        $this->markTestSkipped('Will enable in CE-5400 when we add experiment for global token provisioning');
-
         $this->mockSession();
 
         $output = [];
@@ -1696,8 +1692,6 @@ class TokenisationTest extends TestCase
      */
     public function testIsRepeatPaymentProcessedWithActualCardOnGlobalMerchantWhenExp1ReturnFalseExp2ReturnsFalse()
     {
-        $this->markTestSkipped('Will enable in CE-5400 when we add experiment for global token provisioning');
-
         $this->mockSession();
 
         $output = [];
@@ -1759,8 +1753,6 @@ class TokenisationTest extends TestCase
      */
     public function testIsRepeatPaymentProcessedWithActualCardOnGlobalMerchantWhenExp1ReturnTrueExp2ReturnsFalse()
     {
-        $this->markTestSkipped('Will enable in CE-5400 when we add experiment for global token provisioning');
-
         $this->mockSession();
 
         $output = [
@@ -1840,7 +1832,7 @@ class TokenisationTest extends TestCase
             ->andReturn($output);
     }
 
-    protected function mockRazorXTreatment($value = 'on')
+    protected function mockRazorXTreatment($value = 'on'): void
     {
         $this->ba->proxyAuth();
 
@@ -1852,24 +1844,29 @@ class TokenisationTest extends TestCase
         $this->app->instance('razorx', $razorxMock);
 
         $this->app->razorx->method('getTreatment')
-            ->will($this->returnCallback(
-                function ($mid, $feature, $mode) use ($value) {
-                    if ($feature === 'card_payments_authorize_all_terminals')
-                    {
-                        return 'off';
-                    }
-                    if ($feature === RazorxTreatment::PAYMENT_PROCESS_THROUGH_TOKENISED_CARD)
-                    {
-                        if ($mid = 'HDFC_VISA_debit')
-                        {
-                            return $value;
-                        }
-                        return 'off';
+            ->willReturnCallback(static function ($mid, $feature, $mode) use ($value) {
+                if ($feature === 'card_payments_authorize_all_terminals') {
+                    return 'off';
+                }
+
+                if ($feature === RazorxTreatment::PAYMENT_PROCESS_THROUGH_TOKENISED_CARD) {
+                    if ($mid === 'HDFC_VISA_credit') {
+                        return $value;
                     }
 
+                    return 'off';
+                }
+
+                if ($feature === RazorxTreatment::PROVISION_GLOBAL_NETWORK_TOKEN) {
+                    if (in_array($mid, Network::NETWORKS_SUPPORTING_GLOBAL_TOKENS, true)) {
+                        return 'on_' . strtolower($mid);
+                    }
+
+                    return 'off';
+                }
+
                 return 'on';
-            }
-        ));
+            });
     }
 
     protected function mockCardVaultService()
