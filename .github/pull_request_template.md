@@ -5,6 +5,8 @@ Tag Payment Dashboard PR Reviewers(@dashboard-pr-reviewers) user group.
 
 Please don't review this PR until and unless you are from @dashboard-pr-reviewers group.
 
+If your changes are regarding any home page widgets like announcements, banners, slider etc [growth assets](https://docs.google.com/document/d/1jj3LZRgDrd8AQCTDZ6r7uAIbLPLu_PaaBuxRLcngmjg/edit#), please call out the Platform Growth team (@dashboard-widgets-team in Slack).
+
 ---
 
 **Description**
