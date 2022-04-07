@@ -5406,7 +5406,7 @@ class Core extends Base\Core
             if (empty($pan) == false && $merchantDetail->getCompanyPanVerificationStatus() == DetailConstants::VERIFIED)
             {
                 $gstDetailsForCompanyPan =
-                    $bvsCore->probeGetGstDetails($pan);
+                    $bvsCore->artefactCuratorProbeGetGstDetails($pan,"Active");
             }
 
             //get personal pan associated gstin
@@ -5415,7 +5415,7 @@ class Core extends Base\Core
             if (empty($pan) == false && $merchantDetail->getPoiVerificationStatus() == DetailConstants::VERIFIED)
             {
                 $gstDetailsForPersonalPan =
-                    $bvsCore->probeGetGstDetails($pan);
+                    $bvsCore->artefactCuratorProbeGetGstDetails($pan,"Active");
             }
 
             //merge both with company pan associated gstin given more priority

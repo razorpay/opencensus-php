@@ -25,6 +25,7 @@ use RZP\Models\Merchant\AutoKyc\Bvs\ProbeMocks\CompanySearchMock;
 use RZP\Models\Merchant\AutoKyc\Bvs\ProbeMocks\GetGstDetailsMock;
 use RZP\Models\Merchant\AutoKyc\Bvs\BaseResponse\CompanySearchBaseResponse;
 use RZP\Models\Merchant\AutoKyc\Bvs\BaseResponse\GetGstDetailsBaseResponse;
+use RZP\Models\Merchant\AutoKyc\Bvs\BaseResponse\GetGstDetailsArtefactCuratorBaseResponse;
 
 class Core extends Base\Core
 {
@@ -297,6 +298,74 @@ class Core extends Base\Core
                 $getGstDetailsBase = new GetGstDetailsBaseResponse($response);
 
                 $gstDetails = $getGstDetailsBase->geGstDetailsResponse();
+
+                $data = [
+                    Constants::NAMESPACE            => ConfigKey::ONBOARDING_NAMESPACE,
+                    ConfigKey::GST_DETAILS_FROM_PAN => json_encode($gstDetails),
+                ];
+
+                $data = (new StoreCore())->updateMerchantStore($pan, $data, Constants::INTERNAL);
+            }
+
+            return json_decode($data[ConfigKey::GST_DETAILS_FROM_PAN]);
+
+        }
+    }
+
+
+    /**
+     * @param string $pan
+     * @param string|null $authStatus
+     *
+     * @return array
+     * @throws Exception\InvalidPermissionException
+     * @throws IntegrationException
+     */
+    public function artefactCuratorProbeGetGstDetails(string $pan, ?string $authStatus = null): array
+    {
+        $this->trace->info(TraceCode::BVS_GET_GST_DETAILS_REQUEST, ['input' => $pan]);
+
+        $app = App::getFacadeRoot();
+
+        $mock = $app['config']['services.bvs.mock'];
+
+        $response = null;
+
+        if ($mock === true)
+        {
+            //
+            // This config is not defined in application config , this is used in test case only
+            //
+            $mockStatus = $app['config']['services.bvs.response'] ?? Constant::SUCCESS;
+
+            $getGstDetailsMock = new GetGstDetailsMock($pan, $mockStatus);
+
+            $response = $getGstDetailsMock->getResponse();
+
+            $getGstDetailsBase = new GetGstDetailsBaseResponse($response);
+
+            return $getGstDetailsBase->geGstDetailsResponse();
+        }
+        else
+        {
+            $keys = [
+                ConfigKey::GST_DETAILS_FROM_PAN
+            ];
+
+            $data = (new StoreCore())->fetchValuesFromStore($pan,
+                ConfigKey::ONBOARDING_NAMESPACE,
+                $keys,
+                Constants::INTERNAL);
+
+            $this->trace->info(TraceCode::MERCHANT_STORE_GET_DETAILS, ['data' => $data]);
+
+            if (empty($data[ConfigKey::GST_DETAILS_FROM_PAN]))
+            {
+                $response = (new BvsProbeClient())->artefactCuratorGetGstDetails($pan, $authStatus);
+
+                $getGstDetailsBase = new GetGstDetailsArtefactCuratorBaseResponse($response);
+
+                $gstDetails = $getGstDetailsBase->getGstDetailsResponse();
 
                 $data = [
                     Constants::NAMESPACE            => ConfigKey::ONBOARDING_NAMESPACE,
