@@ -183,7 +183,7 @@ class Service extends Base\Service
                     // Sending array for backward compatibility (bulk api)
                     $response = $this->sendMerchantShippingInfoRequest(
                         $merchantOrderId,
-                        [self::SHIPPING_INFO_ADDRESSES => [array_merge($address, [self::SHIPPING_INFO_ID => 0])]],
+                        [array_merge($address, [self::SHIPPING_INFO_ID => 0])],
                         $serviceabilityUrl,
                         $mockResponse);
 
