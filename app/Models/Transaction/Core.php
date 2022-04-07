@@ -830,7 +830,9 @@ class Core extends Base\Core
         {
             $paymentTxn = $transfer->source->transaction;
 
-            if ($paymentTxn->isSettled() === false)
+            // Setting current timestamp to transfer settled_at when $paymentTxn->getSettledAt() is null to support async_txn_fill_details feature
+            // Slack ref - https://razorpay.slack.com/archives/CNXC0JHQF/p1649241605237939?thread_ts=1648804095.677009&cid=CNXC0JHQF
+            if ($paymentTxn->isSettled() === false && $paymentTxn->getSettledAt() !== null)
             {
                 $settledAt = $paymentTxn->getSettledAt();
             }

@@ -79,7 +79,9 @@ class Refund extends Base
         {
             $paymentTxn = $payment->transaction;
 
-            return ($paymentTxn->isSettled() ? $nowTimestamp : $paymentTxn->getSettledAt());
+            // Setting current timestamp to refund settled_at when $paymentTxn->getSettledAt() is null to support async_txn_fill_details feature
+            // Slack ref - https://razorpay.slack.com/archives/CNXC0JHQF/p1649241605237939?thread_ts=1648804095.677009&cid=CNXC0JHQF
+            return ($paymentTxn->isSettled() || $paymentTxn->getSettledAt() === null ? $nowTimestamp : $paymentTxn->getSettledAt());
         }
 
         if (($payment->hasBeenAuthorized() === true) and
