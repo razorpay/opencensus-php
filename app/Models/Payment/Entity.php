@@ -3699,7 +3699,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
         if ($this->merchant->isFeatureEnabled(Feature\Constants::EXPOSE_SETTLED_BY) === false)
         {
-            if($this->isOptimiserDashboardPayment() === false)
+            $app = \App::getFacadeRoot();
+            if($app['basicauth']->isOptimiserDashboardRequest() === false)
             {
                 unset($array[self::SETTLED_BY]);
                 return;
@@ -3710,20 +3711,6 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         {
             $array[self::SETTLED_BY] = Payment\Gateway::DIRECT_SETTLEMENT_ORG_NAME[$array[self::SETTLED_BY]];
         }
-    }
-
-    public function isOptimiserDashboardPayment()
-    {
-        $app = \App::getFacadeRoot();
-
-        if($app['basicauth']->isProxyAuth() === true and
-            $this->merchant->isFeatureEnabled(Features::RAAS) === true and
-            $this->merchant->isFeatureEnabled(Features::ENABLE_SINGLE_RECON) === true)
-        {
-            return true;
-        }
-
-        return false;
     }
 
     public function setPublicAccountIdAttribute(array & $array)
@@ -3813,7 +3800,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
         // We only want to set the Provider while serving requests from optimiser dashboard
 
-        if($this->isOptimiserDashboardPayment() === true)
+        if($app['basicauth']->isOptimiserDashboardRequest() === true)
         {
             if($this->terminal->getProcurer() === 'merchant')
             {

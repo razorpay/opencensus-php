@@ -29,6 +29,8 @@ use RZP\Models\FundTransfer\Kotak;
 use RZP\Jobs\Settlement\LedgerRecon;
 use RZP\Models\Report\Types\BasicEntityReport;
 use RZP\Models\Report\Types\SettlementReconReport;
+use RZP\Models\Base\PublicCollection;
+use RZP\Models\Feature\Constants as Features;
 use RZP\Models\Schedule\Task as scheduleTask;
 
 class Service extends Base\Service
@@ -237,6 +239,17 @@ class Service extends Base\Service
 
     public function fetch($id)
     {
+        if($this->auth->isOptimiserDashboardRequest())
+        {
+            $fetchInput = $this->createFetchInput($id);
+
+            $settlement = app('settlements_dashboard')->fetch($fetchInput);
+
+            $settlement = $this->setPublicAttributes($settlement['entity']);
+
+            return $settlement->toArrayPublic();
+        }
+
         $setl = $this->repo->settlement->findByPublicIdAndMerchant($id, $this->merchant);
 
         return $setl->toArrayPublic();
@@ -266,6 +279,17 @@ class Service extends Base\Service
 
     public function fetchMultiple($input)
     {
+        if($this->auth->isOptimiserDashboardRequest()){
+
+            $fetchInput = $this->createFetchMultipleInput($input);
+
+            $settlements = app('settlements_dashboard')->fetchMultiple($fetchInput);
+
+            $settlements = $this->convertToCollection($settlements);
+
+            return $settlements->toArrayPublic();
+        }
+
         $settlements = $this->repo->settlement->fetch($input, $this->merchant->getKey());
 
         return $settlements->toArrayPublic();
@@ -1711,5 +1735,84 @@ class Service extends Base\Service
     public function settlementsInitiate($input)
     {
         return app('settlements_dashboard')->settlementsInitiate($input);
+    }
+
+    public function setPublicAttributes($settlement)
+    {
+        $entity = new Settlement\Entity($settlement);
+
+        $entity->setId($settlement['id']);
+        $entity->setUtr($settlement['utr']);
+        $entity->setFees($settlement['fee']);
+        $entity->setCreatedAt($settlement['created_at']);
+
+        $entity->setSettledBy($settlement['settled_by']);
+
+        if($settlement['settled_by'] === 'Razorpay')
+        {
+            $entity->setOptimiserProvider('Razorpay');
+        }
+        else
+        {
+            $entity->setOptimiserProvider($settlement['provider']);
+        }
+
+        return $entity;
+    }
+
+    public function createFetchInput($id)
+    {
+        $id = $this->repo->settlement->verifyIdAndStripSign($id);
+
+        return [
+            'id' => $id,
+            'entity_name' => 'settlement',
+        ];
+    }
+
+    public function createFetchMultipleInput($input)
+    {
+        $fetchInput = [
+            'entity_name' => 'settlement',
+            'filter' => [
+                'merchant_id' => $this->merchant->getId(),
+            ],
+        ];
+
+        if(isset( $input['count']) && isset($input['skip']))
+        {
+            $fetchInput['pagination'] = [
+                'limit'=> $input['count'],
+                'skip' => $input['skip'],
+            ];
+        }
+
+        if(isset($input['settled_by']) === true)
+        {
+            $fetchInput['filter']['settled_by'] = $input['settled_by'];
+        }
+
+        if(isset($input['terminal_id']) === true)
+        {
+            $fetchInput['filter']['provider'] = $input['terminal_id'];
+        }
+
+        return $fetchInput;
+    }
+
+    public function convertToCollection($settlements)
+    {
+        $collectionEntity = [];
+
+        foreach($settlements['entities']['settlements'] as $settlementsEntity)
+        {
+            $entity = $this->setPublicAttributes($settlementsEntity);
+
+            array_push($collectionEntity, $entity);
+        }
+
+        $collection = collect($collectionEntity);
+
+        return new PublicCollection($collection);
     }
 }

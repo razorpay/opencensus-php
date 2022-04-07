@@ -1171,4 +1171,13 @@ trait RepositoryFetch
             $params['count'] = $count;
         }
     }
+
+    public function verifyIdAndStripSign(string $id)
+    {
+        $entity = $this->getEntityClass();
+
+        $id = $entity::verifyIdAndStripSign($id);
+
+        return $id;
+    }
 }

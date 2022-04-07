@@ -34,6 +34,8 @@ class Entity extends Base\PublicEntity
     const FTS_TRANSFER_ID        = 'fts_transfer_id';
     const BALANCE_ID             = 'balance_id';
     const IS_NEW_SERVICE         = 'is_new_service';
+    const SETTLED_BY             = 'settled_by';
+    const OPTIMIZER_PROVIDER     = 'optimizer_provider';
 
     // Nodal Nodal Settlement Constants
     const GATEWAY                = 'gateway';
@@ -72,6 +74,8 @@ class Entity extends Base\PublicEntity
         self::UTR,
         self::BALANCE_ID,
         self::PROCESSED_AT,
+        self::SETTLED_BY,
+        self::OPTIMIZER_PROVIDER,
         self::SETTLED_ON,
         self::CREATED_AT,
         self::UPDATED_AT,
@@ -86,6 +90,8 @@ class Entity extends Base\PublicEntity
         self::FEES,
         self::TAX,
         self::UTR,
+        self::SETTLED_BY,
+        self::OPTIMIZER_PROVIDER,
         self::CREATED_AT,
     ];
 
@@ -315,6 +321,16 @@ class Entity extends Base\PublicEntity
     public function setFTSTransferId($ftsTransferId)
     {
         $this->setAttribute(self::FTS_TRANSFER_ID, $ftsTransferId);
+    }
+
+    public function setSettledBy($settledBy)
+    {
+        $this->setAttribute(self::SETTLED_BY, $settledBy);
+    }
+
+    public function setOptimiserProvider($optimiserProvider)
+    {
+        $this->setAttribute(self::OPTIMIZER_PROVIDER, $optimiserProvider);
     }
 
     public function setId($id)

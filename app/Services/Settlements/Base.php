@@ -231,14 +231,25 @@ class Base
     /**
      * Method to set user headers in the request
      */
-    protected function setAdminHeader()
+    protected function setHeader()
     {
-        $this->headers[RequestHeader::X_USER_EMAIL] = $this->getAdminEmail();
+        if( $this->auth->isOptimiserDashboardRequest() === true)
+        {
+            $this->headers[RequestHeader::X_USER_EMAIL] = $this->getMerchantEmail();
+        }
+        else {
+            $this->headers[RequestHeader::X_USER_EMAIL] = $this->getAdminEmail();
+        }
     }
 
     protected function getAdminEmail(): string
     {
         return $this->auth->getDashboardHeaders()[self::ADMIN_EMAIL] ?? '';
+    }
+
+    protected function getMerchantEmail(): string
+    {
+        return $this->auth->getUser()->getEmail() ?? '';
     }
 
     /**

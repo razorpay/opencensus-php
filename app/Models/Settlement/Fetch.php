@@ -17,6 +17,8 @@ class Fetch extends BaseFetch
             Entity::UTR                    => 'sometimes|alpha_num',
             Entity::CHANNEL                => 'sometimes|string',
             Entity::BALANCE_ID             => 'sometimes|alpha_dash|min:14|max:18',
+            Entity::SETTLED_BY             => 'sometimes|string',
+            Entity::OPTIMIZER_PROVIDER     => 'sometimes|alpha_num|size:14'
         ],
     ];
 

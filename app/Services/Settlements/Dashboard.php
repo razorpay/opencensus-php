@@ -60,7 +60,7 @@ class Dashboard extends Base
     {
         parent::__construct($app);
 
-        $this->setAdminHeader();
+        $this->setHeader();
     }
 
     /**

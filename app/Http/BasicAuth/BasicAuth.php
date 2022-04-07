@@ -1838,6 +1838,13 @@ class BasicAuth
         return $this->applicationId;
     }
 
+    public function isOptimiserDashboardRequest()
+    {
+        return ($this->isProxyAuth() === true and
+                ((new Feature\Service())->checkFeatureEnabled(Feature\Constants::MERCHANT, $this->getMerchantId(), Feature\Constants::RAAS))['status'] and
+                ((new Feature\Service())->checkFeatureEnabled(Feature\Constants::MERCHANT, $this->getMerchantId(), Feature\Constants::ENABLE_SINGLE_RECON))['status']);
+    }
+
     /**
      * Checks if request is coming via a lambda trigger
      *
