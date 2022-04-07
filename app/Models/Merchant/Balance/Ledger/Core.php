@@ -586,13 +586,19 @@ class Core extends Base\Core
 
             if ($balance != null)
             {
-                $payload[self::BALANCE] = $balance;
+                $payload[self::BALANCE] = (string) $balance;
             }
 
             if ($minBalance != null)
             {
-                $payload[self::MIN_BALANCE] = $minBalance;
+                $payload[self::MIN_BALANCE] = (string) $minBalance;
             }
+
+            $this->trace->info(
+                TraceCode::LEDGER_ACCOUNT_UPDATE_REQUEST,
+                [
+                    'request' => $payload,
+                ]);
 
             $ledgerService = $this->app['ledger'];
             $ledgerService->setTenantHeader('X');
