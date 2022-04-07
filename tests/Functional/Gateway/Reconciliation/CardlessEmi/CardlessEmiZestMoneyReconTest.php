@@ -40,6 +40,8 @@ Class CardlessEmiZestMoneyReconTest extends TestCase
 
         $this->provider = 'zestmoney';
 
+        $this->disableRedirectToZestmoneyConfig();
+
         $this->sharedTerminal = $this->fixtures->create('terminal:cardlessEmiZestMoneyTerminal');
 
         $this->payment = $this->getDefaultCardlessEmiPaymentArray($this->provider);
@@ -55,8 +57,6 @@ Class CardlessEmiZestMoneyReconTest extends TestCase
 
     public function testZestMoneyCombinedReconSuccess()
     {
-        //TODO : Testcase has to be fixed
-        $this->markTestSkipped("Skipping Testcase, Need to be fixed");
 
         $this->doAuthPayment($this->payment);
 

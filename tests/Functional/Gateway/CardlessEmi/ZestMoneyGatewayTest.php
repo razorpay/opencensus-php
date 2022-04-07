@@ -8,10 +8,9 @@ class ZestMoneyGatewayTest extends CardlessEmiGatewayTest
 
     protected function setUp(): void
     {
-        //TODO : Testcase has to be fixed
-        $this->markTestSkipped("Skipping Testcase, Need to be fixed");
-
         parent::setUp();
+
+        $this->disableRedirectToZestmoneyConfig();
 
         $this->sharedTerminal = $this->fixtures->create('terminal:cardlessEmiZestMoneyTerminal');
 
@@ -20,8 +19,6 @@ class ZestMoneyGatewayTest extends CardlessEmiGatewayTest
 
     public function testCheckAccount()
     {
-        //TODO : Testcase has to be fixed
-        $this->markTestSkipped("Skipping Testcase, Need to be fixed");
 
         $data = $this->getCheckAccountArray($this->provider);
 
@@ -42,8 +39,6 @@ class ZestMoneyGatewayTest extends CardlessEmiGatewayTest
 
     public function testPayment()
     {
-        //TODO : Testcase has to be fixed
-        $this->markTestSkipped("Skipping Testcase, Need to be fixed");
 
         $payment = $this->getDefaultCardlessEmiPaymentArray($this->provider);
 
@@ -64,8 +59,6 @@ class ZestMoneyGatewayTest extends CardlessEmiGatewayTest
 
     public function testPaymentForSubMerchant()
     {
-        //TODO : Testcase has to be fixed
-        $this->markTestSkipped("Skipping Testcase, Need to be fixed");
 
         $this->createSubMerchant();
 
@@ -90,8 +83,6 @@ class ZestMoneyGatewayTest extends CardlessEmiGatewayTest
 
     public function testRefundPayment()
     {
-        //TODO : Testcase has to be fixed
-        $this->markTestSkipped("Skipping Testcase, Need to be fixed");
 
         $payment = $this->getDefaultCardlessEmiPaymentArray($this->provider);
         $payment['contact'] = '+91' . $payment['contact'];
@@ -115,8 +106,6 @@ class ZestMoneyGatewayTest extends CardlessEmiGatewayTest
 
     public function testReversePayment()
     {
-        //TODO : Testcase has to be fixed
-        $this->markTestSkipped("Skipping Testcase, Need to be fixed");
 
         $payment = $this->getDefaultCardlessEmiPaymentArray($this->provider);
         $payment['contact'] = '+91' . $payment['contact'];
@@ -138,8 +127,6 @@ class ZestMoneyGatewayTest extends CardlessEmiGatewayTest
 
     public function testRefundFailed()
     {
-        //TODO : Testcase has to be fixed
-        $this->markTestSkipped("Skipping Testcase, Need to be fixed");
 
         $data = $this->testData[__FUNCTION__];
 
@@ -184,9 +171,7 @@ class ZestMoneyGatewayTest extends CardlessEmiGatewayTest
 
     public function testVerifyRefundPayment()
     {
-        //TODO : Testcase has to be fixed
-        $this->markTestSkipped("Skipping Testcase, Need to be fixed");
-        
+
         $payment = $this->getDefaultCardlessEmiPaymentArray($this->provider);
         $payment['contact'] = '+91' . $payment['contact'];
 
