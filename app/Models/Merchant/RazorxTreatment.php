@@ -437,9 +437,6 @@ final class RazorxTreatment
     // Experiment to block customer prefill on authlink checkout
     const BLOCK_CUSTOMER_PREFILL_IN_AUTHLINK = 'block_customer_prefill_in_authlink';
 
-    //Experiment for throwing exception of an invoice link older than six months is fetched
-    const FAIL_OLD_INVOICE_ID_FETCH = 'fail_old_invoice_id_fetch';
-
     // Experiment for RX Rearch (Ledger <> RX integration)
     const RX_REARCH_TIDB_EXPERIMENT = 'rx_rearch_fetch_tidb';
 

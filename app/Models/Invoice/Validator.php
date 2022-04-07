@@ -1332,17 +1332,6 @@ class Validator extends Base\Validator
 
         $mode = $app['rzp.mode'];
 
-        $variant = $app->razorx->getTreatment(
-            $invoice->getMerchantId(),
-            Merchant\RazorxTreatment::FAIL_OLD_INVOICE_ID_FETCH,
-            $mode
-        );
-
-        if ($variant !== 'on')
-        {
-            return;
-        }
-
         if (($invoice->getType() === Type::LINK) &&
             (in_array($invoice->getStatus(), Entity::UPDATE_BLOCKED_END_STATES) === true))
         {

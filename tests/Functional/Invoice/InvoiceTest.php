@@ -3016,8 +3016,6 @@ class InvoiceTest extends TestCase
 
     public function testFetchIssuedLinkOlderThanSixMonths()
     {
-        $this->mockRazorxTreatmentV2(RazorxTreatment::FAIL_OLD_INVOICE_ID_FETCH, 'on');
-
         $this->testCreateIssuedLinkWithAmountAndDesc();
 
         $invoice = $this->getDbLastEntity('invoice');
@@ -3033,8 +3031,6 @@ class InvoiceTest extends TestCase
 
     public function testFetchCancelledAndExpiredLinkOlderThanSixMonths()
     {
-        $this->mockRazorxTreatmentV2(RazorxTreatment::FAIL_OLD_INVOICE_ID_FETCH, 'on');
-
         $this->testCreateIssuedLinkWithAmountAndDesc();
 
         $invoice = $this->getDbLastEntity('invoice');
