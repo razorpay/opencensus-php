@@ -34,29 +34,6 @@ class Generator extends QrCode\Generator
     const VPA_NUM_CHAR_SPACE   = '0123456789';
     const GATEWAY              = Gateway::UPI_ICICI;
 
-    protected function getVpaSetting($gateway)
-    {
-        try
-        {
-            $vpaSetting = $this->fetchVpaSetting($gateway);
-
-            if (empty($vpaSetting[$gateway]) === true)
-            {
-                $terminal = (new TerminalProcessor())->getTerminalForUpiTransfer(null, $gateway);
-
-                $vpaSetting = $this->generateVpaForQrCode($terminal, $vpaSetting);
-            }
-        }
-        catch (\Exception $ex)
-        {
-            $this->trace->traceException($ex);
-
-            throw $ex;
-        }
-
-        return $vpaSetting[$gateway];
-    }
-
     /**
      * Fetches Bharat QR UPI identifiers for merchant
      * @param Entity $qrCode
@@ -141,101 +118,7 @@ class Generator extends QrCode\Generator
 
         return 'upi://pay?' . str_replace(' ', '', urldecode(http_build_query($content)));
     }
-
-    /**
-     * Response is json storing VPA for gateways
-     * {
-     *      "upi_icici": "rpy.qrmoremegatore123@icici",
-     *      "upi_mindgate": "rpy.qrmoremegatore123@hdfcbank"
-     * }
-     *
-     * @param $gateway
-     *
-     * @return mixed
-     * @throws \Exception
-     */
-    private function fetchVpaSetting($gateway)
-    {
-        try
-        {
-            $response = (new Settings\Service())->get(Settings\Module::QR_CODE, self::VPA);
-
-            $response = json_decode($response['settings'], true);
-        }
-        catch (\Exception $ex)
-        {
-            $this->trace->traceException($ex, Trace::ERROR, TraceCode::QR_CODE_VPA_SETTING_FETCH_FAILED, [
-                'gateway' => $gateway
-            ]);
-
-            throw $ex;
-        }
-
-        return $response;
-    }
-
-    private function generateVpaForQrCode(Terminal\Entity $terminal, $vpaSetting)
-    {
-        $this->trace->info(TraceCode::QR_CODE_VPA_GENERATION_REQUEST);
-
-        try
-        {
-            $vpa = $this->generateVpaSettingValue($terminal);
-
-            $vpaSetting[$terminal->getGateway()] = $vpa;
-
-            $setting[self::VPA] = json_encode($vpaSetting);
-
-            (new Settings\Service())->upsert(Settings\Module::QR_CODE, $setting);
-        }
-        catch (\Exception $ex)
-        {
-            $this->trace->traceException($ex, Trace::ERROR, TraceCode::QR_CODE_VPA_GENERATION_FAILED, [
-                'terminal_id' => $terminal->getId()
-            ]);
-
-            throw $ex;
-        }
-
-        $this->trace->info(TraceCode::QR_CODE_VPA_GENERATION_SUCCESS, $setting);
-
-        return $vpaSetting;
-    }
-
-    private function generateVpaSettingValue(Terminal\Entity $terminal)
-    {
-        $merchantIdentifier = preg_replace('/[^A-Za-z0-9]/', '', $this->merchant->getBillingLabel());
-
-        $merchantIdentifier = self::QR . substr($merchantIdentifier, 0, self::BILLING_LABEL_LENGTH);
-
-        $descriptor = $this->generateDescriptor(self::MAX_VPA_LENGTH - strlen($merchantIdentifier));
-
-        $prefix = $terminal->getVirtualUpiRoot() . $merchantIdentifier;
-
-        $handle = $terminal->getVirtualUpiHandle();
-
-        return strtolower($prefix . $descriptor . self::AROBASE . $handle);
-    }
-
-    protected function generateDescriptor(int $desiredLength): string
-    {
-        $pad = '';
-
-        $charSpace = $this->getCharSpace();
-
-        while (strlen($pad) < $desiredLength)
-        {
-            $pad .= $charSpace[array_rand($charSpace)];
-        }
-
-        return $pad;
-    }
-
-    protected function getCharSpace(): array
-    {
-        return str_split(self::VPA_NUM_CHAR_SPACE);
-    }
-
+    
     public function generateUpiQrCodeImage($qrCode)
     {
         $localFilePath = $this->getLocalSaveDir() . '/' . $qrCode->getId() . '.' . Constants::QR_CODE_EXTENSION;

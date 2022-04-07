@@ -163,6 +163,8 @@ class Entity extends QrCode\Entity
 
     public function generateUsageType($input)
     {
+        UsageType::checkUsageType($input[self::REQ_USAGE_TYPE]);
+
         $this->setAttribute(self::USAGE_TYPE, $input[self::REQ_USAGE_TYPE]);
     }
 
