@@ -118,3 +118,41 @@ jobs:
           -d '{ "state" : "success" , "context" : "github/combined-status-check" , "description" : "github/combined-status-check", "target_url" : "https://github.com/${{ github.repository }}" }' \
           https://api.github.com/repos/${{ github.repository }}/statuses/${{ github.sha }}
           exit 0
+
+  build-e2e:
+    name: E2E test build
+    runs-on: [ self-hosted ]
+    needs: [build]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build and push
+        uses: docker/build-push-action@v1
+        with:
+          registry: c.rzp.io
+          username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+          password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+          repository: ${{ github.repository }}
+          dockerfile: ./e2e/Dockerfile
+          path: e2e
+          build_args: GIT_TOKEN=${{ secrets.CI_BOT_TOKEN }}
+          push: true
+          tags: e2e_${{ github.sha }}
+  e2e-test-webhook:
+    name: E2E test webhook
+    runs-on: [ self-hosted ]
+    needs: [ build-e2e ]
+    steps:
+      - name: Triggers rundeck's webhook to execute e2e tests
+        uses: fjogeleit/http-request-action@master
+        with:
+          url: 'https://rundeck.dev.razorpay.in/api/40/webhook/PhbYCu9Cb0r9mbEp58ge5y20DHeoOOsv#E2E_Test_Execution'
+          method: 'POST'
+          data: >
+            {
+               "self": {
+                   "name": "dashboard",
+                   "commit_id": "${{ github.sha }}",
+                   "repository_name": "${{ github.repository }}"
+               },
+               "dependencies": []
+            }
