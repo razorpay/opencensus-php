@@ -13815,6 +13815,18 @@ class Route
         'user_fetch_entity',
     ];
 
+    /*
+     * Routes added in this list will not fetch refunds data from
+     * scrooge microservice instead it will use from api Monolith
+     */
+    public static $forceRefundsLoadFromApiRoutes = [
+        'scrooge_entities',
+        'payment_fetch_refunds',
+        'payment_fetch_refund_by_id',
+        'refund_fetch_multiple',
+        'refund_fetch_by_id',
+    ];
+
     public static $skipApiDocumentation = [
 
     ];
