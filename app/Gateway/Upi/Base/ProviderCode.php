@@ -164,6 +164,7 @@ class ProviderCode
     const YESB               = 'yesb';
     const NSDL               = 'nsdl';
     const TIMECOSMOS         = 'timecosmos';
+    const TAPICICI           = 'tapicici';
 
     //Only for test Upi
     const RAZORPAY         = 'razorpay';
@@ -316,6 +317,7 @@ class ProviderCode
         self::YESB               => IFSC::YESB,
         self::NSDL               => IFSC::NSPB,
         self::TIMECOSMOS         => IFSC::COSB,
+        self::TAPICICI           => IFSC::ICIC,
     ];
 
     /**
