@@ -1641,6 +1641,15 @@ class CheckoutPreferencesTest extends TestCase
         $this->assertEquals($response['features']['shield_cbs_rollout'], true);
     }
 
+    public function testGetCheckoutPreferencesForHDFCCheckout2()
+    {
+        $this->fixtures->merchant->addFeatures(Constants::HDFC_CHECKOUT_2);
+
+        $response = $this->getPreferences();
+
+        $this->assertEquals($response['features']['hdfc_checkout_2'], true);
+    }
+
     public function testGetCheckoutPreferencesForMORdisplay()
     {
         $this->fixtures->merchant->addFeatures(Constants::SHOW_MOR_TNC);
