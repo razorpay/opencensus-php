@@ -33,4 +33,12 @@ class InternalController extends Controller
         return ApiResponse::json($entity);
     }
 
+    public function receive(string $id)
+    {
+        $input = Request::all();
+
+        $entity = $this->service()->receive($id, $input);
+
+        return ApiResponse::json($entity);
+    }
 }

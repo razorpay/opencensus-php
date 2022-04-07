@@ -61,6 +61,10 @@ class Payout extends Base
     const DA_EXT_FEE_PAYOUT_PROCESSED   = "da_ext_fee_payout_processed";
     const DA_EXT_FEE_PAYOUT_REVERSED    = "da_ext_fee_payout_reversed";
 
+    protected $eventsWithoutFtsInfo = [self::PAYOUT_FAILED,
+                                       self::PAYOUT_INITIATED,
+                                       self::INTER_ACCOUNT_PAYOUT_INITIATED];
+
     public function pushTransactionToLedger(Entity $payout,
                                             string $transactorEvent,
                                             Reversal\Entity $reversal = null,
@@ -412,7 +416,8 @@ class Payout extends Base
 
 
         // Ledger doesn't need fts information in case of payout initiated or payout failed events
-        if (($transactorEvent !== self::PAYOUT_INITIATED) || ($transactorEvent !== self::PAYOUT_FAILED)) {
+        if (in_array($transactorEvent, $this->eventsWithoutFtsInfo, true) === false)
+        {
             $identifiers = array_merge($identifiers, $ftsSourceAccountData);
         }
 

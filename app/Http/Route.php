@@ -20,7 +20,8 @@ class Route
         // internal
         'internal_create'    => ['post', 'internal', 'InternalController@create'],
         'internal_fail'      => ['post', 'internal/{id}/fail', 'InternalController@fail'],
-        'internal_reconcile' => ['post', 'internal/{id}/reconcile', 'InternalController@reconcile'],
+        'internal_reconcile' => ['patch', 'internal/{id}/reconcile', 'InternalController@reconcile'],
+        'internal_receive'   => ['patch', 'internal/{id}/receive', 'InternalController@receive'],
 
         //friend buy
         'friend_buy_reward_validation'  =>  ['post',    'friendbuy/reward_validation',  'ReferralController@performRewardValidation' ],
@@ -4607,6 +4608,7 @@ class Route
         'internal_create',
         'internal_fail',
         'internal_reconcile',
+        'internal_receive',
 
         'update_shopify_1cc_config',
 
@@ -12493,6 +12495,7 @@ class Route
             'payment_upi_authorize_failed',
             'internal_fail',
             'internal_reconcile',
+            'internal_receive',
         ]
     ];
 

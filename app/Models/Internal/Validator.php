@@ -19,8 +19,4 @@ class Validator extends Base\Validator
         Entity::ENTITY_ID        => 'required|filled|string',
         Entity::ENTITY_TYPE      => 'required|filled|string',
     ];
-
-    protected static $reconcileRules = [
-        Entity::STATUS        => 'required|filled|string|in:failed,received',
-    ];
 }

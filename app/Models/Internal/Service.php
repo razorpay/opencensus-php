@@ -151,6 +151,8 @@ class Service extends Base\Service
 
         }, self::MUTEX_LOCK_TIMEOUT, ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS);
 
+        $this->trace->info(TraceCode::INTERNAL_ENTITY_CREATED, $internal->toArray());
+
         return $internal->toArray();
     }
 
@@ -192,11 +194,24 @@ class Service extends Base\Service
         return $internal->toArray();
     }
 
-    public function reconcile(string $id, array $input): array
+    public function reconcile(string $id): array
     {
-        // perform validation
-        (new Validator)->validateInput('reconcile', $input);
+        // fetch internal entity from the id
+        $internal = $this->repo->internal->find($id);
+        if ($internal == null)
+        {
+            // throw exception
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_INTERNAL_ENTITY_NOT_FOUND);
+        }
 
+        $internal[Entity::RECONCILED_AT]  = time();
+        $this->repo->saveOrFail($internal);
+
+        return $internal->toArray();
+    }
+
+    public function receive(string $id): array
+    {
         // fetch internal entity from the id
         $internal = $this->repo->internal->find($id);
         if ($internal == null)
@@ -230,16 +245,12 @@ class Service extends Base\Service
             self::TRANSACTOR_ID      => $internal->getPublicId(),
             self::TRANSACTOR_EVENT   => self::TRANSACTOR_EVENT_NAME,
             Entity::TRANSACTION_DATE => strval($internal[Entity::TRANSACTION_DATE]),
-            self::IDENTIFIERS        => [
-                self::BANKING_ACCOUNT_ID => $bankingAccount->getPublicId(),
-            ],
             self::TENANT             => self::X,
         ]);
 
         // update the internal entity with journal_id
         $internal[Entity::TRANSACTION_ID] = $journal[Base\UniqueIdEntity::ID];
-        $internal[Entity::STATUS]         = $input[Entity::STATUS];
-        $internal[Entity::RECONCILED_AT]  = time();
+        $internal[Entity::STATUS]         = self::STATUS_RECEIVED;
         $this->repo->saveOrFail($internal);
 
         return $internal->toArray();

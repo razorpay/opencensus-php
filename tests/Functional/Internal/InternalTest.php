@@ -2,6 +2,7 @@
 
 namespace RZP\Test\Functional\Internal;
 
+use RZP\Models\Feature;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -110,18 +111,54 @@ class InternalTest extends TestCase
         $requestData = [
             'request' => [
                 'content' => [
-                    "status"        => "received",
                 ],
                 'url'    => '/internal/'.$internal->getId().'/reconcile',
-                'method' => 'POST',
+                'method' => 'PATCH',
             ],
             'response' => [
                 'content' => [
                     'id'               => $internal->getId(),
                     'merchant_id'      => $internal->getMerchantId(),
-                    'status'           => 'received',
                     'type'             => 'credit',
                     'currency'         => 'INR',
+                    'amount'           => 1,
+                    'base_amount'      => 1,
+                    'utr'              => '999999999',
+                ],
+            ],
+        ];
+
+        $this->runRequestResponseFlow($requestData);
+
+        $internalEntity = $this->getDbEntity('internal');
+
+        $this->assertNotNull($internalEntity['reconciled_at']);
+    }
+
+    public function testInternalEntityReceive()
+    {
+        $defaultValues = [
+            'status'           => 'expected',
+            'type'             => 'credit',
+        ];
+
+        // create internal entity
+        $internal = $this->fixtures->create('internal', $defaultValues);
+
+        $requestData = [
+            'request' => [
+                'content' => [
+                ],
+                'url'    => '/internal/'.$internal->getId().'/receive',
+                'method' => 'PATCH',
+            ],
+            'response' => [
+                'content' => [
+                    'id'               => $internal->getId(),
+                    'merchant_id'      => $internal->getMerchantId(),
+                    'type'             => 'credit',
+                    'currency'         => 'INR',
+                    'status'           => 'received',
                     'amount'           => 1,
                     'base_amount'      => 1,
                     'utr'              => '999999999',
