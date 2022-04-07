@@ -1134,9 +1134,9 @@ class MerchantController extends Controller
         return $response;
     }
 
-    public function getBusinessTypes($id = null)
+    public function getBusinessTypes()
     {
-        $response = $this->service(E::MERCHANT_DETAIL)->getBusinessTypes($id);
+        $response = $this->service(E::MERCHANT_DETAIL)->getBusinessTypes();
 
         return $response;
     }

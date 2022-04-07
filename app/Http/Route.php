@@ -693,7 +693,7 @@ class Route
         'merchant_activation_company_search'       => ['get',      'merchant/activation/company_search',             'MerchantController@getCompanySearchList'                           ],
         'merchant_activation_gst_details'          => ['get',      'merchant/activation/gst_details',                'MerchantController@getGstInList'                                   ],
         'merchant_business_types'                  => ['get',      'merchant/onboarding/business_types',             'MerchantController@getBusinessTypes'                               ],
-        'merchant_business_types_admin'            => ['get',      'merchant/{id}/onboarding/business_types',        'MerchantController@getBusinessTypes'                               ],
+        'merchant_business_types_admin'            => ['get',      'merchant/onboarding/business_types/admin',        'MerchantController@getBusinessTypes'                               ],
         'merchant_info'                            => ['get',      'merchant/{id}/info',                             'MerchantController@getMerchantInfo'                                ],
         'merchant_logs_search'                     => ['post',     'merchant/logs',                             'MerchantController@createLogSearch'                                ],
         'merchant_logs_fetch'                      => ['get',      'merchant/logs',                             'MerchantController@getMerchantLogs'                         ],

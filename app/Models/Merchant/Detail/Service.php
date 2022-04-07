@@ -2996,11 +2996,16 @@ class Service extends Base\Service
         return $result;
     }
 
-    public function getBusinessTypes($merchant_id)
+    public function getBusinessTypes()
     {
         $core = new Core();
 
-        $merchant_id = $merchant_id ?? $this->merchant->getId();
+        $merchant_id=null;
+
+        if($this->ba->isAdminAuth()===false)
+        {
+            $merchant_id = $this->merchant->getId();
+        }
 
         return $core->getBusinessTypes($merchant_id);
 
