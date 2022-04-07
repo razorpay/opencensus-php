@@ -1837,7 +1837,12 @@ return [
                     'description' => 'Invalid request to update merchant logo url.',
                 ],
             ],
-        ]
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_INPUT_LOGO_URL,
+        ],
     ],
 
     'testEditMerchantConfigSellerAppRoleFail' => [
