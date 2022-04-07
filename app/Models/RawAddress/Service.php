@@ -43,6 +43,9 @@ class Service extends Base\Service
         {
             $this->validateForAddressEntity($input);
             $this->validateForUnicode($input);
+            $input[Entity::CONTACT] = $this->checkAndGetValidContact($input[Entity::CONTACT]);
+            $raw_address->setContact($input[Entity::CONTACT]);
+            $this->repo->raw_address->saveOrFail($raw_address);
 
             return $raw_address->toArrayPublic();
         }catch (\Exception $e)
@@ -88,7 +91,7 @@ class Service extends Base\Service
         unset($addressObject['deleted_at']);
         unset($addressObject['updated_at']);
 
-        $this->trace->info(TraceCode::RAW_ADDRESS_CREATE_REQUEST,$addressObject);
+        $this->trace->info(TraceCode::RAW_ADDRESS_CREATE_REQUEST,[]);
         (new RawAddress\Validator())->validateInput("create_for_address",$addressObject);
     }
 
@@ -101,5 +104,34 @@ class Service extends Base\Service
                 throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
             }
         }
+    }
+
+    private function checkAndGetValidContact(string $contact)
+    {
+        $contact = str_replace(' ', '', $contact); // Remove spaces
+        $contact =  preg_replace('/[^A-Za-z0-9\-]/', '', $contact); // Removes special chars
+
+        if (is_numeric($contact) === false)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR,
+                                                    null,null,"Not a valid contact number");
+        }
+
+        if (str_starts_with($contact,"91") && strlen($contact) === 12)
+        {
+            return "+".$contact;
+        }
+        if (str_starts_with($contact, "0") && strlen($contact) == 11 )
+        {
+            $contact = ltrim($contact, '0');
+            return "+91".$contact;
+	    }
+
+        if( strlen($contact) == 10 )
+        {
+		    return "+91".$contact;
+        }
+        throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR,
+                                            null,null,"Not a valid Indian contact number");
     }
 }

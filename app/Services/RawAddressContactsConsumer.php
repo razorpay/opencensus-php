@@ -25,8 +25,7 @@ class RawAddressContactsConsumer extends Job
         ];
 
         $this->trace->info(TraceCode::RAW_ADDRESS_KAFKA_CONSUME_REQUEST,[
-            "message"=> "consume started",
-            "payload"=>$tracePayload]);
+            "message"=> "consume started"]);
 
         (new BulkUploadClient())->uploadAddressesToKafka($this->getPayload());
     }

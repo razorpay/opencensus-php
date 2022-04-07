@@ -54,14 +54,16 @@ class Repository  extends Base\Repository
                     ->first();
     }
 
-    public function updateStatus(array $contacts , string $status)
+    public function updateStatus(array $contacts ,string $oldStatus, string $newStatus)
     {
         $contactCol = $this->dbColumn(Entity::CONTACT);
         $statusCol  = $this->dbColumn(Entity::STATUS);
+        $createdAtCol = $this->dbColumn(Entity::CREATED_AT) ;
 
         return $this->newQueryWithoutTimestamps()
             ->whereIn($contactCol, $contacts)
-            ->update([$statusCol => $status]);
+            ->where($statusCol,$oldStatus)
+            ->update([$statusCol => $newStatus]);
 
     }
 

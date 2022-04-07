@@ -21,8 +21,7 @@ class BulkUploadConsumer extends Job
         parent::handle();
         $tracePayload = [
             'job_attempts' => $this->attempts(),
-            'mode' => $this->mode,
-            'payload' => $this->getPayload()
+            'mode' => $this->mode
         ];
 
         $this->trace->info(TraceCode::RAW_ADDRESS_KAFKA_CONSUME_REQUEST,$tracePayload);

@@ -31,10 +31,7 @@ class Core extends Base\Core
     public function create(array $input): Entity
     {
         $this->trace->info(
-            TraceCode::RAW_ADDRESS_CREATE_REQUEST,
-            [
-                'input'      => $input,
-            ]);
+            TraceCode::RAW_ADDRESS_CREATE_REQUEST, []);
 
             $raw_address = new Entity();
 

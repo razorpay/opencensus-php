@@ -13,6 +13,7 @@ use RZP\Http\Response;
 use RZP\Models\RawAddress;
 use RZP\Models\Address;
 use RZP\Models\Merchant\Account;
+use RZP\Models\RawAddress\Constants;
 
 class BulkUploadClient extends Job
 {
@@ -22,6 +23,7 @@ class BulkUploadClient extends Job
     const STATUS_PROCESSING      = 'processing';
     const STATUS_PROCESSED       = 'processed';
     const STATUS_INVALID         = 'invalid';
+    const PROCESSING_DELAY       = 50;
 
     protected $trace;
 
@@ -86,7 +88,7 @@ class BulkUploadClient extends Job
 
             (new KafkaProducer($topic, stringify($contactArray)))->Produce();
 
-            $this->repoManager->raw_address->updateStatus($contactArray,self::STATUS_PROCESSING);
+            $this->repoManager->raw_address->updateStatus($contactArray,self::STATUS_PENDING,self::STATUS_PROCESSING);
         }
         catch (\Exception $e)
         {
@@ -165,9 +167,17 @@ class BulkUploadClient extends Job
         {
             try
             {
-                $address['is_raw_address']=true;
-                $address[Address\Entity::SOURCE_ID] = $address['id'];
-                $address[Address\Entity::SOURCE_TYPE] = "bulk_upload";
+                $address[Constants::ADDRESS_TYPE]=Constants::ADDRESS_TYPE_RAW;
+                $address[Address\Entity::SOURCE_ID] = $address[RawAddress\Entity::ID];
+                $address[Address\Entity::SOURCE_TYPE] = Constants::ADDRESS_SOURCE_TYPE_BULK_UPLOAD;
+                unset($address[RawAddress\Entity::ID]);
+                unset($address[RawAddress\Entity::MERCHANT_ID]);
+                unset($address[RawAddress\Entity::BATCH_ID]);
+                unset($address[RawAddress\Entity::CONTACT]);
+                unset($address[RawAddress\Entity::STATUS]);
+                unset($address[RawAddress\Entity::CREATED_AT]);
+                unset($address[RawAddress\Entity::UPDATED_AT]);
+                unset($address[RawAddress\Entity::DELETED_AT]);
                 array_push($json["addresses"],$address);
             }
             catch (\Throwable $e)
@@ -182,7 +192,26 @@ class BulkUploadClient extends Job
         {
             try
             {
-                $address['is_raw_address']=false;
+                $address[Constants::ADDRESS_TYPE]=Constants::ADDRESS_TYPE_OLD;
+                unset($address[Address\Entity::ID]);
+                unset($address[Address\Entity::ENTITY_ID]);
+                unset($address[Address\Entity::ENTITY_TYPE]);
+                unset($address[Address\Entity::TYPE]);
+                unset($address[Address\Entity::PRIMARY]);
+                unset($address[Address\Entity::CONTACT]);
+                unset($address[Address\Entity::CREATED_AT]);
+                unset($address[Address\Entity::UPDATED_AT]);
+                unset($address[Address\Entity::DELETED_AT]);
+
+                if(is_null($address[Address\Entity::SOURCE_ID]) === true)
+                {
+                    $address[Address\Entity::SOURCE_ID] = "";
+                }
+                if(is_null($address[Address\Entity::SOURCE_TYPE]) === true)
+                {
+                    $address[Address\Entity::SOURCE_TYPE] = "";
+                }
+
                 array_push($json["addresses"],$address);
             }
             catch (\Throwable $e)
@@ -240,7 +269,8 @@ class BulkUploadClient extends Job
                 if ($containsAddressEntity === false)
                 {
                     $firstAddress = $this->unsetNullKeys($firstAddress);
-                    $this->createNewAddress($firstAddress);
+                    $this->createNewAddress($firstAddress,$kafkaMessage['contact']);
+                    usleep(self::PROCESSING_DELAY*1000);
                 }
                 //new loop to mark raw_addresses as processed
                 $this->updateStatusToProcessed($addressCluster);
@@ -254,38 +284,40 @@ class BulkUploadClient extends Job
         }
     }
 
-    protected function createNewAddress(array $firstAddress)
+    protected function createNewAddress(array $firstAddress, string $contact)
     {
         //create new Address
         $entity_id = null;
         try
         {
             $firstAddress['type'] = Type::SHIPPING_ADDRESS;
-            $entity_id = stringify($firstAddress['id']);
-            $raw_address = (new RawAddress\Repository())->findOrFail($entity_id);
-            $merchantId = $firstAddress['merchant_id'];
-            unset($firstAddress['id']);
-            unset($firstAddress['merchant_id']);
-            unset($firstAddress['batch_id']);
-            unset($firstAddress['status']);
-            unset($firstAddress['created_at']);
-            unset($firstAddress['deleted_at']);
-            unset($firstAddress['updated_at']);
-            unset($firstAddress['is_raw_address']);
+            $firstAddress['contact'] = $contact;
+            $source_id = stringify($firstAddress[Address\Entity::SOURCE_ID]);
+            $source_type = stringify($firstAddress[Address\Entity::SOURCE_TYPE]);
+            $raw_address = null;
+            if ($firstAddress[Constants::ADDRESS_TYPE] === Constants::ADDRESS_TYPE_RAW)
+            {
+                $raw_address = (new RawAddress\Repository())->findOrFail($source_id);
+            }
+            unset($firstAddress[Constants::ADDRESS_TYPE]);
 
-            if ($raw_address['status'] !== BulkUploadClient::STATUS_PROCESSED)
+
+            // new->tw,pp; raw
+            if ( (is_null($raw_address) === true && $firstAddress[Constants::ADDRESS_TYPE] === Constants::ADDRESS_TYPE_NEW )
+                 || $raw_address[RawAddress\Entity::STATUS] !== BulkUploadClient::STATUS_PROCESSED)
             {
                 $this->trace->info(TraceCode::RAW_ADDRESS_TO_ADDRESS_CREATION,[
-                    "raw_address_entity_id" => $entity_id,
-                    "merchant_id" => $merchantId,
+                    "source_id" => $source_id,
+                    "source_type" => $source_type,
                 ]);
 
-                $customer = (new Customer\Repository())->findByContactAndMerchantId($firstAddress['contact'],Account::SHARED_ACCOUNT);
-                if ($customer !== null){
-                    (new Address\Core)->create($customer, Type::CUSTOMER, $firstAddress,true);
-                }else {
-                    throw new \InvalidArgumentException("null customer");
+                $customer = (new Customer\Repository())->findByContactAndMerchantId($contact,Account::SHARED_ACCOUNT);
+                if ($customer == null)
+                {
+                    $details = array('contact' => $contact);
+                    $customer = (new Customer\Core)->createGlobalCustomer($details, true);
                 }
+                (new Address\Core)->create($customer, Type::CUSTOMER, $firstAddress,true);
             }
         }
         catch (\Exception $e)
@@ -300,7 +332,7 @@ class BulkUploadClient extends Job
         $addressEntity = false;
         foreach ($addressCluster as $address)
         {
-            if ($address['is_raw_address']===false)
+            if ($address[Constants::ADDRESS_TYPE] === Constants::ADDRESS_TYPE_OLD)
             {
                 $addressEntity = true;
                 break;
@@ -313,9 +345,9 @@ class BulkUploadClient extends Job
     {
         foreach ($addressCluster as $address)
         {
-            if ($address['is_raw_address'] === true)
+            if ($address[Constants::ADDRESS_TYPE] === Constants::ADDRESS_TYPE_RAW)
             {
-                $this->updateStatus(stringify($address[RawAddress\Entity::ID]), self::STATUS_PROCESSED);
+                $this->updateStatus(stringify($address[Address\Entity::SOURCE_ID]), self::STATUS_PROCESSED);
             }
 
         }
