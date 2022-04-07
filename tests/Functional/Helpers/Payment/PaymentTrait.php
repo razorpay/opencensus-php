@@ -3452,7 +3452,8 @@ trait PaymentTrait
             "yesbankltd",
             "yesb",
             "nsdl",
-            "razorpay"
+            "razorpay",
+            "timecosmos"
         ];
 
         return $vpaHandles;

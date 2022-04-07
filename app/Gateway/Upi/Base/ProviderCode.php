@@ -163,6 +163,7 @@ class ProviderCode
     const YESBANKLTD         = 'yesbankltd';
     const YESB               = 'yesb';
     const NSDL               = 'nsdl';
+    const TIMECOSMOS         = 'timecosmos';
 
     //Only for test Upi
     const RAZORPAY         = 'razorpay';
@@ -314,6 +315,7 @@ class ProviderCode
         self::RAZORPAY           => 'RZPY',
         self::YESB               => IFSC::YESB,
         self::NSDL               => IFSC::NSPB,
+        self::TIMECOSMOS         => IFSC::COSB,
     ];
 
     /**
