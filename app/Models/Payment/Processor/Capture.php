@@ -840,7 +840,10 @@ trait Capture
 
         $this->handleAsyncUpdateBalanceIfApplicable($payment, $payment->transaction);
 
-        $this->processTransferIfApplicable($payment);
+        if ($payment->merchant->isFeatureEnabled(Feature\Constants::ASYNC_TXN_FILL_DETAILS) === false)
+        {
+            $this->processTransferIfApplicable($payment);
+        }
 
         $this->tracePaymentInfo(TraceCode::PAYMENT_CAPTURE_SUCCESS);
     }
@@ -931,7 +934,10 @@ trait Capture
                 $this->calculateAndSetMdrFeeIfApplicable($payment, $txn);
 
                 $this->repo->saveOrFail($payment);
+
                 $this->repo->saveOrFail($txn);
+
+                $this->processTransferIfApplicable($payment);
 
                 // dispatching txn data to new settlement service after updating credit and debit value
                 (new Transaction\Core)->dispatchForSettlementBucketing($txn);
