@@ -64,6 +64,7 @@ use RZP\Models\Merchant\Store\ConfigKey as StoreConfigKey;
 use RZP\Tests\Functional\Fixtures\Entity\User as UserFixture;
 use RZP\Models\Merchant\M2MReferral\Status as M2MEntityStatus;
 use RZP\Models\Merchant\M2MReferral\Entity as M2MReferralEntity;
+use RZP\Models\Merchant\MerchantUser\Entity as MerchantUserEntity;
 use function GuzzleHttp\json_decode;
 
 class UserTest extends TestCase
@@ -3749,6 +3750,46 @@ class UserTest extends TestCase
 
             return true;
         });
+    }
+
+    public function testResendEmailOtpVerificationMailThresholdExhausted()
+    {
+        $user = $this->fixtures->edit(
+            'user',
+            UserFixture::MERCHANT_USER_ID,
+            [
+                UserEntity::CONFIRM_TOKEN   => 'testing123456789',
+                UserEntity::EMAIL           => 'abc@rzp.com'
+            ]
+        );
+
+        $merchant = $this->fixtures->create(
+            'merchant',
+            [
+                MerchantEntity::ID    => '10000000000002',
+                MerchantEntity::EMAIL => 'abc@rzp.com'
+            ]
+        );
+
+        $mappingData = [
+            MerchantUserEntity::USER_ID     => $user->getId(),
+            MerchantUserEntity::MERCHANT_ID => $merchant->getId(),
+            MerchantUserEntity::ROLE        => Role::OWNER,
+            MerchantUserEntity::PRODUCT     => Product::PRIMARY,
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $redis = Redis::connection('mutex_redis')->client();
+
+        $redis->set($user->getId().Constants::SEND_EMAIL_OTP_VERIFICATION_RATE_LIMIT_SUFFIX, Constants::EMAIL_VERIFICATION_OTP_SEND_THRESHOLD);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        $redis->del($user->getId().Constants::SEND_EMAIL_OTP_VERIFICATION_RATE_LIMIT_SUFFIX);
+
     }
 
     public function testResendOtpVerificationMailForSignupFlowInX()

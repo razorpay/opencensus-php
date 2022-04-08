@@ -2509,6 +2509,29 @@ return [
         ],
     ],
 
+    'testResendEmailOtpVerificationMailThresholdExhausted' => [
+        'request' => [
+            'url'     => '/users/resend-verification-otp',
+            'method'  => 'post',
+            'content' => [
+                'token'=>'BUIj3m2Nx2VvVj'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_EMAIL_VERIFICATION_OTP_SEND_THRESHOLD_EXHAUSTED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_EMAIL_VERIFICATION_OTP_SEND_THRESHOLD_EXHAUSTED,
+        ],
+    ],
+
     'testResendOtpVerificationMailForSignupFlowInX' => [
         'request' => [
             'url'     => '/users/resend-verification-otp',

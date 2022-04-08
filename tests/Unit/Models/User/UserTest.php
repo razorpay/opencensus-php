@@ -1339,6 +1339,8 @@ class UserTest extends TestCase
 
         $this->app->instance('diag', $diagMock);
 
+        $this->userEntityMock->shouldReceive('getId')->withAnyArgs()->andReturn('100002Razorpay');
+
         $this->userEntityMock->shouldReceive('getConfirmedAttribute')->withAnyArgs()->andReturn(false);
 
         $this->userEntityMock->shouldReceive('getValidator')->withAnyArgs()->andReturn($this->userValidator);
@@ -2101,6 +2103,8 @@ class UserTest extends TestCase
         ];
 
         $this->userEntityMock->shouldReceive('getValidator')->withAnyArgs()->andReturn($this->userValidator);
+
+        $this->userEntityMock->shouldReceive('getId')->withAnyArgs()->andReturn('100002Razorpay');
 
         $this->userValidator->shouldReceive('validateResendEmailWithOtpOperation')->withAnyArgs()->andReturn([]);
 

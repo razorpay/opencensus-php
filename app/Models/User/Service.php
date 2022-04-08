@@ -1070,6 +1070,13 @@ class Service extends Base\Service
 
         $user = $this->repo->user->findOrFailPublic($dashboardHeaders['user_id']);
 
+        LoginSignupRateLimit::validateKeyLimitExceeded(
+            $user->getId(),
+            Constants::SEND_EMAIL_OTP_VERIFICATION_RATE_LIMIT_SUFFIX,
+            Constants::EMAIL_VERIFICATION_OTP_SEND_TTL,
+            Constants::EMAIL_VERIFICATION_OTP_SEND_THRESHOLD
+        );
+
         if (empty($input['token']) === false)
         {
             $merchantData['token'] = $input['token'];
@@ -1685,6 +1692,8 @@ class Service extends Base\Service
             $action = ($requestOriginProduct === Product::BANKING) ? 'x_verify_email' : 'verify_email';
 
             $this->core()->verifyEmailWithOtp($input, $this->merchant, $this->user, $action);
+
+            LoginSignupRateLimit::resetKey($this->user->getId(), Constants::SEND_EMAIL_OTP_VERIFICATION_RATE_LIMIT_SUFFIX);
         }
         $response['user'] = $this->user->toArrayPublic();
 
