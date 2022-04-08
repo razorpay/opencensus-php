@@ -161,17 +161,6 @@ class Core extends Base\Core
         return $client->sendStorefrontRequest(json_encode($graphqlQuery));
     }
 
-    public function getCoupons($input)
-    {
-        $client = $this->getShopifyClientByMerchant();
-
-        $mutation = (new Mutations)->getCouponListMutation();
-
-        $graphqlQuery = array('query' => $mutation);
-
-        return $client->sendGraphqlRequest(json_encode($graphqlQuery));
-    }
-
     public function applyCoupon($input, $checkoutId)
     {
         $client = $this->getShopifyClientByMerchant();

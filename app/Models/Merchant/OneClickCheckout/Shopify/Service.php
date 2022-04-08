@@ -274,7 +274,8 @@ class Service extends Base\Service
             return ['promotions' => []];
         }
 
-        $amount = $checkoutNode['subtotalPrice'];
+
+        $input['amount'] = $checkoutNode['subtotalPrice'];
 
         $countryCode = $checkoutNode['currencyCode'];
 
@@ -286,75 +287,9 @@ class Service extends Base\Service
             $orderQuantity += $item['quantity'];
         }
 
-        // get all discount codes
-        $response = (new Core)->getCoupons($input);
-        $discounts = json_decode(json_encode(json_decode($response)), true);
-        $discountData = array();
+        $input['order_quantity'] = $orderQuantity;
 
-        foreach($discounts['data']['priceRules']['edges'] as $value)
-        {
-            $value = $value['node'];
-            $discountMinAmount = floatval($value['prerequisiteSubtotalRange']['greaterThanOrEqualTo']);
-            $minQuantityRange = floatval($value['prerequisiteQuantityRange']['greaterThanOrEqualTo']);
-            $discountStartDate = $value['startsAt'];
-            $dicountEndDate = $value['endsAt'];
-
-            if (($value['customerSelection']['forAllCustomers'] !== null && $value['customerSelection']['forAllCustomers'] === false)
-            || ($value['itemEntitlements']['targetAllLineItems'] !== null && $value['itemEntitlements']['targetAllLineItems'] === false)){
-                continue;
-            }
-
-            // skip free shipping in v1
-            if ($value['target'] == 'SHIPPING_LINE')
-            {
-                continue;
-                // if(($value['prerequisiteShippingPriceRange'] !== null && $value['prerequisiteShippingPriceRange']['lessThanOrEqualTo'] > $amount)
-                // || (empty($value['shippingEntitlements']['countryCodes']) === false && in_array($countryCode,$value['shippingEntitlements']['countryCodes']) === false)
-                // ){
-                //     continue;
-                // }
-            }
-
-            // validation for min amount and expire date
-            $dateTimeNow = date('Y-m-d H:i:s');
-            if (($amount < $discountMinAmount)
-                || ($minQuantityRange !== null && $minQuantityRange > $orderQuantity )
-                || ($discountStartDate !== null && $discountStartDate > time())
-                || ($dicountEndDate !== null && $dicountEndDate < $dateTimeNow)
-                ) {
-                continue;
-            }
-
-            $count = $value['usageCount'];
-
-            $limit = $value['usageLimit'];
-
-            if (!empty($count) && !empty($limit))
-            {
-                $remaining = $limit - $count;
-                if ($remaining <=  0)
-                {
-                    continue;
-                }
-            }
-
-            foreach($value['discountCodes']['edges'] as $node)
-            {
-                $discountCodeNode = $node['node'];
-                if (empty($discountCodeNode) === false)
-                {
-                    array_push(
-                      $discountData,
-                      [
-                          'code' => $discountCodeNode['code'],
-                          'summary' => $value['summary'],
-                          'tnc'=> []
-                      ]
-                    );
-                }
-            }
-        }
-        return ['promotions' => $discountData];
+        return (new Coupons)->getCoupons($input);
     }
 
     public function applyShopifyCoupon(array $input):array
@@ -370,55 +305,17 @@ class Service extends Base\Service
         {
             try
             {
-                $emailRes = (new Checkout)->updateCheckoutEmail($checkoutId, $input['email']);
-                $emailRes = json_decode($emailRes, true);
+                (new Checkout)->updateCheckoutEmail($checkoutId, $input['email']);
             }
             catch (\Exception $e)
             {
-                $this->trace->info(
+                $this->trace->error(
                     TraceCode::SHOPIFY_1CC_UPDATE_EMAIL_FAILED,
                     ['checkoutId' => $checkoutId, 'reason' => $e.getMessage()]);
             }
         }
 
-        $response = (new Core)->applyCoupon($input, $checkoutId);
-
-        $response = json_decode($response, true);
-
-        if (empty($response['errors']) === false)
-        {
-            return (new Errors)->getInvalidCouponApplicationResponse();
-        }
-
-        $data = $response['data']['checkoutDiscountCodeApplyV2'];
-
-        if (empty($data['checkoutUserErrors']) === false)
-        {
-            return (new Errors)->getInvalidCouponApplicationResponse();
-        }
-
-        $checkout = $data['checkout'];
-
-        $discountData = $checkout['discountApplications']['edges'][0]['node'];
-
-        if ($discountData['applicable'] === true)
-        {
-            $value = (new Utils)->formatNumber($checkout['lineItemsSubtotalPrice']['amount'] - $checkout['subtotalPrice']) * 100;
-            return [
-                'response' => [
-                    'promotion' => [
-                        'code'          => $discountData['code'],
-                        'reference_id'  => $discountData['code'],
-                        'value'         => (int)$value,
-                    ],
-                ],
-                'status_code' => 200,
-            ];
-        }
-        else
-        {
-            return (new Errors)->getInvalidCouponApplicationResponse();
-        }
+        return (new Coupons)->applyCoupon($input, $checkoutId);
     }
 
     /**

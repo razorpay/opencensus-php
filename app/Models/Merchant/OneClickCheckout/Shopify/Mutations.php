@@ -82,7 +82,7 @@ class Mutations
                       applicable
                     }
                     ... on ScriptDiscountApplication {
-                      description
+                      title
                     }
                     ... on AutomaticDiscountApplication {
                       title
@@ -162,7 +162,7 @@ class Mutations
                           applicable
                         }
                         ... on ScriptDiscountApplication {
-                          description
+                          title
                         }
                         ... on AutomaticDiscountApplication {
                           title
@@ -232,6 +232,9 @@ class Mutations
               id
               title
               target
+              app {
+                developerName
+              }
               allocationMethod
               allocationLimit
               usageLimit
@@ -383,7 +386,7 @@ class Mutations
                     applicable
                   }
                   ... on ScriptDiscountApplication {
-                    description
+                    title
                   }
                   ... on AutomaticDiscountApplication {
                     title
@@ -495,7 +498,7 @@ class Mutations
                         applicable
                       }
                       ... on ScriptDiscountApplication {
-                        description
+                        title
                       }
                       ... on AutomaticDiscountApplication {
                         title
@@ -681,7 +684,7 @@ class Mutations
                     applicable
                   }
                   ... on ScriptDiscountApplication {
-                    description
+                    title
                   }
                   ... on AutomaticDiscountApplication {
                     title
@@ -806,7 +809,7 @@ class Mutations
                         applicable
                       }
                       ... on ScriptDiscountApplication {
-                        description
+                        title
                       }
                       ... on AutomaticDiscountApplication {
                         title
