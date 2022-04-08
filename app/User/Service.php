@@ -460,7 +460,13 @@ class Service extends Base\Service
         return [$error, $data];
     }
 
-    public function resendEmailOtp($input)
+    /**
+     * @param $input
+     *
+     * @return array
+     * @throws BadRequestError
+     */
+    public function resendEmailOtp($input): array
     {
         $request = new \App\Admin\ApiRequestAny(['client_type' => 'merchant']);
 
@@ -468,9 +474,18 @@ class Service extends Base\Service
 
         if (empty($error) === false)
         {
-            throw new \Razorpay\Api\Errors\BadRequestError(
+            if ((array_key_exists(Constants::INTERNAL_ERROR_CODE, $error) === true) and
+                (empty($error[Constants::INTERNAL_ERROR_CODE]) === false))
+            {
+                throw new BadRequestError(
+                    $error[Constants::DESCRIPTION],
+                    ErrorCode::BAD_REQUEST_ERROR,
+                    400
+                );
+            }
+            throw new BadRequestError(
                 $error[0],
-                \Razorpay\Api\Errors\ErrorCode::BAD_REQUEST_ERROR,
+                ErrorCode::BAD_REQUEST_ERROR,
                 400
             );
         }
