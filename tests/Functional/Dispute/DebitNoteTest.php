@@ -115,12 +115,12 @@ class DebitNoteTest extends TestCase
                     'bulk_debit_note',
                     'chargeback_debit_note',
                 ],
-                'group_id'        => 82000655429,
-                'email_config_id' => 82000098661,
+                'group_id'        => 82000147776,
+                'email_config_id' => 82000098669,
                 'custom_fields'   => [
                     'cf_ticket_queue' => 'Merchant',
-                    'cf_category'     => 'Risk Report_Merchant',
-                    'cf_subcategory'  => 'Funds on hold',
+                    'cf_category'     => 'Chargebacks',
+                    'cf_subcategory'  => 'Service Chargeback',
                     'cf_product'      => 'Payment Gateway',
                 ],
             ]
@@ -238,7 +238,7 @@ class DebitNoteTest extends TestCase
                     'bulk_debit_note',
                     'chargeback_debit_note',
                 ],
-                'group_id' => 82000655429,
+                'group_id' => 82000147776,
             ]
         );
 

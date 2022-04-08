@@ -62,7 +62,7 @@
 
                     ' . $rowColumnStyle . '
                     <a href='. $paymentLink . ' target="_blank" style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; text-decoration: none; color: #39ACE5;">
-                    '. $data['payment_id'] . ' </a>
+                    '. 'pay_' . $data['payment_id'] . ' </a>
                     </td>
                     ' . $rowColumnStyle . 'INR ' . $data['amount'] . '</td>
                   </tr>';

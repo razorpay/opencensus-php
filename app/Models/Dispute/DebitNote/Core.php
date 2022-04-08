@@ -10,6 +10,7 @@ use RZP\Models\Merchant;
 use mikehaertl\wkhtmlto\Pdf;
 use RZP\Models\PaperMandate\HyperVerge;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use RZP\Models\Merchant\FreshdeskTicket\Constants as FreshdeskConstants;
 
 class Core extends Base\Core
 {
@@ -94,9 +95,11 @@ class Core extends Base\Core
             $action,
             $communicationData,
             [
-                'type'        => 'Incident',
-                'tags'        => ['bulk_debit_note', 'chargeback_debit_note'],
-                'attachments' => [
+                'type'         => 'Incident',
+                'tags'         => ['bulk_debit_note', 'chargeback_debit_note'],
+                'category'     => FreshdeskConstants::CHARGEBACKS_CATEGORY,
+                'sub_category' => FreshdeskConstants::SERVICE_CHARGEBACK_SUBCATEGORY,
+                'attachments'  => [
                     new UploadedFile($pdfPath, $debitNote->getPublicId() . '.pdf'),
                 ],
             ]);

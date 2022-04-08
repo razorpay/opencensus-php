@@ -437,14 +437,16 @@ return [
                 'foh'           => env('FRESHDESK_IND_GROUP_FOH_NOTIFICATION_ID'),
                 'byers_risk'    => env('FRESHDESK_IND_GROUP_BUYERS_RISK_ID'),
                 'chargeback'    => env('FRESHDESK_IND_GROUP_CHARGEBACK_ID'),
+                'debit_note'    => env('FRESHDESK_IND_GROUP_DEBIT_NOTE_ID')
             ]
         ],
 
         'email_config_ids' => [
             'risk_notification' => env('FRESHDESK_EMAIL_CONFIG_RISK_NOTIFICATION_ID'),
             'rzpind' => [
-                'risk_notification' => env('FRESHDESK_IND_EMAIL_CONFIG_RISK_NOTIFICATION_ID'),
-                'foh_notification'  => env('FRESHDESK_IND_EMAIL_CONFIG_FOH_NOTIFICATION_ID'),
+                'risk_notification'       => env('FRESHDESK_IND_EMAIL_CONFIG_RISK_NOTIFICATION_ID'),
+                'foh_notification'        => env('FRESHDESK_IND_EMAIL_CONFIG_FOH_NOTIFICATION_ID'),
+                'debit_note_notification' => env('FRESHDESK_IND_EMAIL_CONFIG_DEBIT_NOTE_NOTIFICATION_ID')
             ]
         ],
     ],
