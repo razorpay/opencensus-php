@@ -8,12 +8,14 @@ import Pager from 'common/ui/Pager';
 import Alert from 'common/ui/Forms/Alert';
 import { RZPFeatures } from 'merchant/helpers/data';
 import { QRCodeStatusLabel } from 'merchant/components/StatusLabel';
+import { truncatedString } from 'common/utils/rzp-utils';
 import { fetchQRCodes as fetchAll } from 'merchant/reducers/qrCodes/list';
 import { qrCodeId, description, qrUsage, amountReceived, createdAt } from 'common/ui/item/pair';
 
 import ShowWhen from 'merchant/components/ShowWhen';
 import DocsLink from 'merchant/components/DocsLink';
 import { triggerHotjarRecording } from 'common/utils/hotjar';
+import EntityItemRow from 'merchant/containers/EntityItemRow';
 import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
 
 import ListContainer from 'merchant/containers/ListContainer';
@@ -25,6 +27,22 @@ import track from './track';
 const QR_CODE_CREATE_HOTJAR = {
   trigger: 'QR_Creation',
   tags: ['QR_Creation'],
+};
+
+const QRCodeMobileListItem = (item) => {
+  return (
+    <EntityItemRow id={item.id}>
+      <td>
+        <NavLink to={`/qr_codes/${item.id}`}>
+          <code>{item.id}</code>
+        </NavLink>
+        <tr className="mobile-text">{item.name || truncatedString(item.description)}</tr>
+      </td>
+      <td>
+        <QRCodeStatusLabel status={item.status} />
+      </td>
+    </EntityItemRow>
+  );
 };
 
 // TODO: Update colSpan if no of columns are changes
@@ -121,6 +139,7 @@ export default class QRCodesListContainer extends ListContainer {
           title="QR Codes"
           EmptyComponent={EmptyComponent}
           mobileColumns={[qrCodeId, status]}
+          customMobileRow={QRCodeMobileListItem}
           isMobileResolution={this.props.isMobileResolution}
           columns={[qrCodeId, description, qrUsage, amountReceived, createdAt, status]}
         />
