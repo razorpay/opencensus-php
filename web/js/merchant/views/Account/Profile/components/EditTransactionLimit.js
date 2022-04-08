@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import IntoView from 'common/ui/IntoView';
@@ -17,14 +17,6 @@ import { WORKFLOW_TYPES } from 'merchant/views/Account/Profile/components/Workfl
 import { NC_INCREASE_TXN_LIMIT, RR_INCREASE_TXN_LIMIT } from '../deeplink-constants';
 import { bindActionCreators } from 'redux';
 
-function isWorkflowChangeAllowed(workflow) {
-  return (
-    !workflow?.loading &&
-    (workflow?.workflow_exists === false ||
-      !['open', 'approved'].includes(workflow?.workflow_status))
-  );
-}
-
 function linkHandler() {
   analyticsTrack({
     objectName: 'Apply for international',
@@ -37,66 +29,51 @@ function linkHandler() {
 }
 
 const EditTransactionLimit = (props) => {
-  const { transactionType, workflows, user } = props;
+  const { transactionType, workflows, user, openModal } = props;
+  const { merchant: { max_payment_amount, max_international_payment_amount } = {} } = user;
   const isTypeDomestic = transactionType === 'domestic';
+  const workflowKey = isTypeDomestic
+    ? WORKFLOW_TYPES.INCREASE_TRANSACTION_LIMIT
+    : WORKFLOW_TYPES.INCREASE_INTERNATIONAL_TRANSACTION_LIMIT;
 
-  const amountValue = isTypeDomestic
-    ? user.merchant.max_payment_amount
-    : user.merchant.max_international_payment_amount;
+  const amountValue = useMemo(
+    () => (isTypeDomestic ? max_payment_amount : max_international_payment_amount),
+    [isTypeDomestic, max_international_payment_amount, max_payment_amount],
+  );
 
-  const showTransactionLimitEdit = useCallback(() => {
-    const increaseTxnLimitWorkflow = workflows[WORKFLOW_TYPES.INCREASE_TRANSACTION_LIMIT];
-    const increaseIntlTxnLimitWorkflow = user?.international
-      ? workflows[WORKFLOW_TYPES.INCREASE_INTERNATIONAL_TRANSACTION_LIMIT]
-      : null;
-
-    const canEdit = isTypeDomestic
-      ? isWorkflowChangeAllowed(increaseTxnLimitWorkflow)
-      : isWorkflowChangeAllowed(increaseIntlTxnLimitWorkflow);
-
-    const key = isTypeDomestic
-      ? 'increase_transaction_limit'
-      : 'increase_international_transaction_limit';
-
-    const workflowCheck =
-      workflows[key]?.workflow_exists === false ||
-      !['open', 'approved'].includes(workflows[key]?.workflow_status);
+  const showTransactionLimitEdit = useMemo(() => {
+    const { loading, workflow_exists, workflow_status } = workflows[workflowKey] ?? {};
+    const isWorkflowChangeAllowed =
+      !loading && (!workflow_exists || !['open', 'approved'].includes(workflow_status));
 
     // Unregistered government and gaming merchants aren't allowed to edit transaction limit
-    const isMerchantAllowedToEditLimit =
-      user.isUnregisteredBusiness && ['government', 'gaming'].includes(user.business_category);
+    const isMerchantAllowedToEditLimit = !(
+      user.isUnregisteredBusiness && ['government', 'gaming'].includes(user.business_category)
+    );
 
     const showTransactionLimit =
       user.role === 'owner' &&
       user.isOrgRZP &&
       user.isTransactionLimitUpdateSelfServeOn &&
-      workflowCheck &&
-      isMerchantAllowedToEditLimit &&
-      canEdit;
+      isWorkflowChangeAllowed &&
+      isMerchantAllowedToEditLimit;
 
-    if (showTransactionLimit) return true;
-
-    return false;
+    return showTransactionLimit;
   }, [
-    isTypeDomestic,
     user.business_category,
-    user.international,
     user.isOrgRZP,
     user.isTransactionLimitUpdateSelfServeOn,
     user.isUnregisteredBusiness,
     user.role,
+    workflowKey,
     workflows,
   ]);
 
   const updateHandler = useCallback(() => {
-    const key = isTypeDomestic
-      ? 'INCREASE_TRANSACTION_LIMIT'
-      : 'INCREASE_INTERNATIONAL_TRANSACTION_LIMIT';
-
-    props.openModal({
+    openModal({
       component: (
         <UpdateTransactionLimit
-          onComplete={() => fetchWorkflowStatus(WORKFLOW_TYPES[key])}
+          onComplete={() => fetchWorkflowStatus(workflowKey)}
           closeModal={closeModal}
           transactionType={transactionType}
         />
@@ -115,7 +92,7 @@ const EditTransactionLimit = (props) => {
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
     });
-  }, [amountValue, isTypeDomestic, transactionType]);
+  }, [amountValue, isTypeDomestic, openModal, transactionType, workflowKey]);
 
   return (
     <IntoView hashedWith={[NC_INCREASE_TXN_LIMIT, RR_INCREASE_TXN_LIMIT]}>
@@ -133,17 +110,11 @@ const EditTransactionLimit = (props) => {
             </small>
             <WorkflowStatus
               roles={[rolesList.OWNER]}
-              workflowType={
-                isTypeDomestic
-                  ? WORKFLOW_TYPES.INCREASE_TRANSACTION_LIMIT
-                  : WORKFLOW_TYPES.INCREASE_INTERNATIONAL_TRANSACTION_LIMIT
-              }
-              reviewStatus="You request to increase to transaction limit has been received. Our team is going through the information provided by you."
+              workflowType={workflowKey}
+              reviewStatus="Your request to increase transaction limit has been received. Our team is going through the information provided by you."
               onReplyClick={() =>
                 props.replyHandler({
-                  workflowType: isTypeDomestic
-                    ? WORKFLOW_TYPES.INCREASE_TRANSACTION_LIMIT
-                    : WORKFLOW_TYPES.INCREASE_INTERNATIONAL_TRANSACTION_LIMIT,
+                  workflowType: workflowKey,
                   workflowName: 'Increase Transaction Limit',
                 })
               }
@@ -159,8 +130,8 @@ const EditTransactionLimit = (props) => {
             </span>
           ) : (
             <div>
-              <Amount value={amountValue} currency="INR" />
-              {showTransactionLimitEdit() && (
+              {amountValue ? <Amount value={amountValue} currency="INR" /> : 'Not Updated'}
+              {showTransactionLimitEdit && (
                 <Button.Transparent type="button" onClick={updateHandler}>
                   <i className="i i-edit p-l" />
                 </Button.Transparent>

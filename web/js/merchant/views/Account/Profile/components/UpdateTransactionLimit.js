@@ -13,7 +13,7 @@ import { analyticsTrack } from 'common/utils/analytics';
 
 function UpdateTransactionLimit(props) {
   const { user, transactionType, showNotification, closeModal, onComplete } = props;
-  const [file, setfile] = useState(null);
+  const [file, setFile] = useState(null);
   const [isReasonValid, setisReasonValid] = useState(null); // Validity => minimum 100 words
   const isTypeDomestic = transactionType === 'domestic';
   const modalTitle = isTypeDomestic
@@ -98,7 +98,7 @@ function UpdateTransactionLimit(props) {
   };
 
   const handleFileChange = (uploadedFile, _) => {
-    setfile(uploadedFile);
+    setFile(uploadedFile);
 
     // Track file upload
     analyticsTrack({
@@ -111,11 +111,11 @@ function UpdateTransactionLimit(props) {
     });
   };
 
-  const onCloseClick = () => setfile(null);
+  const onCloseClick = () => setFile(null);
 
   const onBiggerFileSize = () => {
     const err = new Error('Document too large. Max limit 1MB', { cause: 'FILE_SIZE_EXCEEDED' });
-    setfile(err);
+    setFile(err);
   };
 
   const onTextInputBlur = (e) => {
