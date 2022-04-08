@@ -91,6 +91,7 @@ class FileBasedErrorCodes
     const DE02  = '02';
     const DE03  = '03';
     const DE04  = '04';
+    const DE4   = '4';
     const DE05  = '05';
     const DE06  = '06';
     const DE07  = '07';
@@ -238,6 +239,7 @@ class FileBasedErrorCodes
         self::DE02  => 'No such account',
         self::DE03  => 'Account description does not tally',
         self::DE04  => 'Balance insufficient',
+        self::DE4   => 'Balance insufficient',
         self::DE05  => 'Not arranged for',
         self::DE06  => 'Payment stopped by drawer',
         self::DE07  => 'Payment stopped under court order/Account under litigation',
@@ -387,6 +389,7 @@ class FileBasedErrorCodes
         self::DE02  => ErrorCode::BAD_REQUEST_PAYMENT_INVALID_ACCOUNT,
         self::DE03  => ErrorCode::BAD_REQUEST_PAYMENT_INVALID_WITHDRAWER_DATA,
         self::DE04  => ErrorCode::BAD_REQUEST_PAYMENT_ACCOUNT_INSUFFICIENT_BALANCE,
+        self::DE4   => ErrorCode::BAD_REQUEST_PAYMENT_ACCOUNT_INSUFFICIENT_BALANCE,
         self::DE05  => ErrorCode::GATEWAY_ERROR_DEBIT_FAILED,
         self::DE06  => ErrorCode::BAD_REQUEST_PAYMENT_CANCELLED_BY_CUSTOMER,
         self::DE07  => ErrorCode::BAD_REQUEST_PAYMENT_ACCOUNT_WITHDRAWAL_FROZEN,
