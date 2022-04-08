@@ -28,6 +28,7 @@ class EventCode
     const ADVOCATE_REFERRAL_CREDITS = 'Advocate Referral Credits';
     const ADVOCATE_REFERRAL = 'Advocate Referral';
     const MTU_TRANSACTED = 'MTU Transacted';
+    const MONTH_FIRST_MTU_TRANSACTED = 'Month First MTU';
     const PURCHASE_EVENT_SENT = 'Purchase Event Sent';
     const M2M_ENABLED = 'M2M  ENABLED';
     const M2M_ENABLED_EXPERIMENT = 'M2M EXPERIMENT ENABLED';

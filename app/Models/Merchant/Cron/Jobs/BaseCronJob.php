@@ -135,6 +135,7 @@ class BaseCronJob
 
         try
         {
+
             $this->initCron();
 
             $this->updateLastCronTimeIfApplicable($this->cronStartTime);

@@ -4,6 +4,7 @@
 namespace RZP\Models\Merchant\Cron;
 
 use RZP\Base\RuntimeManager;
+use RZP\Models\Merchant\Cron\Jobs\MonthFirstMtuCronJob;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Merchant\Cron\Jobs\AadharDetailsNotSubmittedCronJob;
 use RZP\Models\Merchant\Cron\Jobs\BankDetailsNotSubmittedCronJob;
@@ -37,6 +38,9 @@ class Factory
         switch ($cronType) {
             case "mtu-transacted":
                 return (new MtuTransactedCronJob($input));
+            case "month-first-mtu-transacted":
+                RuntimeManager::setMaxExecTime(1200);
+                return (new MonthFirstMtuCronJob($input));
             case "mtu-transacted-recon":
                 return (new MtuTransactedEventReconJob($input));
             case "first-touch-product":
