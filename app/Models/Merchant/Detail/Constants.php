@@ -17,6 +17,8 @@ class Constants
 {
     const BANK_ACCOUNT_VERIFICATION_MAX_ATTEMPT_COUNT = 'BANK_ACCOUNT_VERIFICATION_MAX_ATTEMPT_COUNT';
 
+    const MRS_PROFANITY_CHECKER_DEPTH = 1;
+
     const ADMIN  = 'admin';
     const SYSTEM = 'system';
 

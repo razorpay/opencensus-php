@@ -316,7 +316,7 @@ class Core extends Base\Core
         if (empty($input['business_website']) === false)
         {
             //Calling Profanity Checker during onboarding
-            (new MRS())->enqueueProfanityCheckerRequest($merchant->getId(), 'site', 'merchant', $merchant->getId(), $input['business_website'], 2, Constants::MERCHANT_ONBOARDING);
+            (new MRS())->enqueueProfanityCheckerRequest($merchant->getId(), 'site', 'merchant', $merchant->getId(), $input['business_website'], DEConstants:: MRS_PROFANITY_CHECKER_DEPTH, Constants::MERCHANT_ONBOARDING);
         }
 
         unset($input[Entity::ACTIVATION_FORM_MILESTONE]);
