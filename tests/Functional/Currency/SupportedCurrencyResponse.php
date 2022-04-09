@@ -65,14 +65,6 @@ $responseContent = [
         'symbol'         => '৳',
         'name'           => 'Bangladeshi Taka',
     ],
-    'BHD' => [
-        'code'           => '048',
-        'min_value'      => 1,
-        'min_auth_value' => 1,
-        'denomination'   => 100,
-        'symbol'         => '.د.ب',
-        'name'           => 'Bahraini Dinar',
-    ],
     'BMD' => [
         'code'           => '060',
         'min_value'      => 10,
@@ -369,14 +361,6 @@ $responseContent = [
         'symbol'         => '៛',
         'name'           => 'Cambodian Riel',
     ],
-    'KWD' => [
-        'code'           => '414',
-        'min_value'      => 1,
-        'min_auth_value' => 1,
-        'denomination'   => 100,
-        'symbol'         => 'د.ك',
-        'name'           => 'Kuwaiti Dinar',
-    ],
     'KYD' => [
         'code'           => '136',
         'min_value'      => 10,
@@ -560,14 +544,6 @@ $responseContent = [
         'denomination'   => 100,
         'symbol'         => 'NZ$',
         'name'           => 'New Zealand Dollar',
-    ],
-    'OMR' => [
-        'code'           => '512',
-        'min_value'      => 1,
-        'min_auth_value' => 1,
-        'denomination'   => 100,
-        'symbol'         => 'ر.ع.',
-        'name'           => 'Rial Omani',
     ],
     'PEN' => [
         'code'           => '604',

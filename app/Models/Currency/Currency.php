@@ -14,7 +14,6 @@ class Currency
     const AWG = 'AWG';
     const BBD = 'BBD';
     const BDT = 'BDT';
-    const BHD = 'BHD';
     const BMD = 'BMD';
     const BND = 'BND';
     const BOB = 'BOB';
@@ -53,7 +52,6 @@ class Currency
     const KES = 'KES';
     const KGS = 'KGS';
     const KHR = 'KHR';
-    const KWD = 'KWD';
     const KYD = 'KYD';
     const KZT = 'KZT';
     const LAK = 'LAK';
@@ -78,7 +76,6 @@ class Currency
     const NOK = 'NOK';
     const NPR = 'NPR';
     const NZD = 'NZD';
-    const OMR = 'OMR';
     const PEN = 'PEN';
     const PGK = 'PGK';
     const PHP = 'PHP';
@@ -112,7 +109,6 @@ class Currency
         self::AWG,
         self::BBD,
         self::BDT,
-        self::BHD,
         self::BMD,
         self::BND,
         self::BOB,
@@ -151,7 +147,6 @@ class Currency
         self::KES,
         self::KGS,
         self::KHR,
-        self::KWD,
         self::KYD,
         self::KZT,
         self::LAK,
@@ -175,7 +170,6 @@ class Currency
         self::NOK,
         self::NPR,
         self::NZD,
-        self::OMR,
         self::PEN,
         self::PGK,
         self::PHP,
@@ -210,7 +204,6 @@ class Currency
         self::AWG => '533',
         self::BBD => '052',
         self::BDT => '050',
-        self::BHD => '048',
         self::BMD => '060',
         self::BND => '096',
         self::BOB => '068',
@@ -249,7 +242,6 @@ class Currency
         self::KES => '404',
         self::KGS => '417',
         self::KHR => '116',
-        self::KWD => '414',
         self::KYD => '136',
         self::KZT => '398',
         self::LAK => '418',
@@ -273,7 +265,6 @@ class Currency
         self::NOK => '578',
         self::NPR => '524',
         self::NZD => '554',
-        self::OMR => '512',
         self::PEN => '604',
         self::PGK => '598',
         self::PHP => '608',
@@ -312,7 +303,6 @@ class Currency
         Country::BB => self::BBD,
         Country::BD => self::BDT,
         Country::BE => self::EUR,
-        Country::BH => self::BHD,
         Country::BL => self::EUR,
         Country::BM => self::BMD,
         Country::BN => self::BND,
@@ -362,7 +352,6 @@ class Currency
         Country::KE => self::KES,
         Country::KG => self::KGS,
         Country::KH => self::KHR,
-        Country::KW => self::KWD,
         Country::KY => self::KYD,
         Country::KZ => self::KZT,
         Country::LA => self::LAK,
@@ -395,7 +384,6 @@ class Currency
         Country::NO => self::NOK,
         Country::NP => self::NPR,
         Country::NZ => self::NZD,
-        Country::OM => self::OMR,
         Country::PE => self::PEN,
         Country::PG => self::PGK,
         Country::PH => self::PHP,
@@ -441,7 +429,6 @@ class Currency
         self::AWG => 100,
         self::BBD => 100,
         self::BDT => 100,
-        self::BHD => 100,
         self::BMD => 100,
         self::BND => 100,
         self::BOB => 100,
@@ -480,7 +467,6 @@ class Currency
         self::KES => 100,
         self::KGS => 100,
         self::KHR => 100,
-        self::KWD => 100,
         self::KYD => 100,
         self::KZT => 100,
         self::LAK => 100,
@@ -504,7 +490,6 @@ class Currency
         self::NOK => 100,
         self::NPR => 100,
         self::NZD => 100,
-        self::OMR => 100,
         self::PEN => 100,
         self::PGK => 100,
         self::PHP => 100,
@@ -541,7 +526,6 @@ class Currency
         self::AWG => 2,
         self::BBD => 2,
         self::BDT => 2,
-        self::BHD => 2,
         self::BMD => 2,
         self::BND => 2,
         self::BOB => 2,
@@ -580,7 +564,6 @@ class Currency
         self::KES => 2,
         self::KGS => 2,
         self::KHR => 2,
-        self::KWD => 2,
         self::KYD => 2,
         self::KZT => 2,
         self::LAK => 2,
@@ -604,7 +587,6 @@ class Currency
         self::NOK => 2,
         self::NPR => 2,
         self::NZD => 2,
-        self::OMR => 2,
         self::PEN => 2,
         self::PGK => 2,
         self::PHP => 2,
@@ -640,7 +622,6 @@ class Currency
         self::AWG => 10,
         self::BBD => 10,
         self::BDT => 168,
-        self::BHD => 1,
         self::BMD => 10,
         self::BND => 10,
         self::BOB => 14,
@@ -679,7 +660,6 @@ class Currency
         self::KES => 201,
         self::KGS => 140,
         self::KHR => 1000,
-        self::KWD => 1,
         self::KYD => 10,
         self::KZT => 759,
         self::LAK => 1000,
@@ -703,7 +683,6 @@ class Currency
         self::NOK => 300,
         self::NPR => 221,
         self::NZD => 50,
-        self::OMR => 1,
         self::PEN => 10,
         self::PGK => 10,
         self::PHP => 106,
@@ -739,7 +718,6 @@ class Currency
         self::AWG => 10,
         self::BBD => 10,
         self::BDT => 168,
-        self::BHD => 1,
         self::BMD => 10,
         self::BND => 10,
         self::BOB => 14,
@@ -778,7 +756,6 @@ class Currency
         self::KES => 201,
         self::KGS => 140,
         self::KHR => 1000,
-        self::KWD => 1,
         self::KYD => 10,
         self::KZT => 759,
         self::LAK => 1000,
@@ -802,7 +779,6 @@ class Currency
         self::NOK => 300,
         self::NPR => 221,
         self::NZD => 50,
-        self::OMR => 1,
         self::PEN => 10,
         self::PGK => 10,
         self::PHP => 106,
@@ -837,7 +813,6 @@ class Currency
         self::AWG => 'Afl.',
         self::BBD => '$',
         self::BDT => '৳',
-        self::BHD => '.د.ب',
         self::BMD => '$',
         self::BND => 'BND',
         self::BOB => 'Bs',
@@ -876,7 +851,6 @@ class Currency
         self::KES => 'Ksh',
         self::KGS => 'Лв',
         self::KHR => '៛',
-        self::KWD => 'د.ك',
         self::KYD => 'CI$',
         self::KZT => '₸',
         self::LAK => '₭',
@@ -900,7 +874,6 @@ class Currency
         self::NOK => 'NOK',
         self::NPR => 'रू',
         self::NZD => 'NZ$',
-        self::OMR => 'ر.ع.',
         self::PEN => 'S/',
         self::PGK => 'PGK',
         self::PHP => '₱',
@@ -935,7 +908,6 @@ class Currency
         self::AWG => 'Aruban or Dutch Guilder',
         self::BBD => 'Barbadian or Bajan Dollar',
         self::BDT => 'Bangladeshi Taka',
-        self::BHD => 'Bahraini Dinar',
         self::BMD => 'Bermudian Dollar',
         self::BND => 'Bruneian Dollar',
         self::BOB => 'Bolivian Bolíviano',
@@ -974,7 +946,6 @@ class Currency
         self::KES => 'Kenyan Shilling',
         self::KGS => 'Kyrgyzstani Som',
         self::KHR => 'Cambodian Riel',
-        self::KWD => 'Kuwaiti Dinar',
         self::KYD => 'Caymanian Dollar',
         self::KZT => 'Kazakhstani Tenge',
         self::LAK => 'Lao Kip',
@@ -998,7 +969,6 @@ class Currency
         self::NOK => 'Norwegian Krone',
         self::NPR => 'Nepalese Rupee',
         self::NZD => 'New Zealand Dollar',
-        self::OMR => 'Rial Omani',
         self::PEN => 'Peruvian Sol',
         self::PGK => 'Papua New Guinean Kina',
         self::PHP => 'Philippine Peso',
