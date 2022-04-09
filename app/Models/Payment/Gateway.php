@@ -2103,6 +2103,7 @@ class Gateway
         IFSC::INDB,
         IFSC::HDFC,
         IFSC::BARB,
+        IFSC::ALLA,
     ];
 
     public static $directDebitCardNetworks = [
