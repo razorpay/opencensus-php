@@ -3470,7 +3470,7 @@ class Service extends Base\Service
         {
             $this->trace->info(TraceCode::TRANSACTION_BALANCE_ALREADY_UPDATED,
                 [
-                    'merchant_id'           => $paymentId->getMerchantId(),
+                    'merchant_id'           => $payment->getMerchantId(),
                     'payment_id'            => $paymentId,
                 ]
             );
