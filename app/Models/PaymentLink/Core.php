@@ -63,7 +63,7 @@ class Core extends Base\Core
 
     const RAZORX_ASYNC_UPDATE_EXPERIMENT = 'pp_async_update_experiment';
 
-    const RAZORX_ASYNC_PAYMENT_PAGE_CREATE_DEDUPE = 'RAZORX_ASYNC_PAYMENT_PAGE_CREATE_DEDUPE';
+    const RAZORX_PP_PAYMENT_REQUIRED_AMOUNT_QUANTITY_CHECK = 'pp_payment_required_amount_quantity_check';
 
     public function __construct()
     {
@@ -657,6 +657,13 @@ class Core extends Base\Core
                     'order does not belongs to the given payment page'
                 );
             }
+        }
+
+        if ($this->hasRequiredAmountAndQuantity($paymentLink, $order) === false)
+        {
+            throw new BadRequestValidationFailureException(
+                "Amount or quantity has been tempered. Please try again."
+            );
         }
     }
 
@@ -1554,6 +1561,100 @@ class Core extends Base\Core
         }
 
         return true;
+    }
+
+    /**
+     * @param \RZP\Models\PaymentLink\Entity $paymentLink
+     * @param \RZP\Models\Order\Entity       $order
+     *
+     * @return bool
+     */
+    protected function hasRequiredAmountAndQuantity(Entity $paymentLink, Order\Entity $order): bool
+    {
+        $variant = $this->app->razorx->getTreatment(
+            $paymentLink->merchant->getId(),
+            self::RAZORX_PP_PAYMENT_REQUIRED_AMOUNT_QUANTITY_CHECK,
+            $this->mode
+        );
+
+        /**
+         * Perform validation only for the merchants which have the experiment enabled.
+         */
+        if ($variant !== 'on')
+        {
+            return true;
+        }
+
+        // represents the computed required minimum amount of the payment page.
+        $minimumPageAmount = 0;
+
+        /**
+         * this map will contain all payment page item's
+         * mandaotry, required amount and required quantity values
+         */
+        $requiredItemsMap = [];
+
+        foreach ($paymentLink->paymentPageItems as $pageItem)
+        {
+            $mandatory      = $pageItem->getAttribute(PaymentPageItem\Entity::MANDATORY);
+
+            $minPurchase    = $pageItem->getMinPurchase();
+
+            $item = $pageItem->item;
+
+            $itemAmount = $item->getAmount() ?? 0;
+
+            if ($mandatory && $pageItem->getMinAmount() !== 0 && $itemAmount === 0)
+            {
+                $itemAmount = $pageItem->getMinAmount();
+            }
+
+            $requiredMinQuantity = $minPurchase ?? 1;
+
+            // add all payment page items in the map
+            $requiredItemsMap[$pageItem->getId()] = [
+                'mandatory'             => $mandatory,
+                'required_min_amount'   => $itemAmount,
+                'required_min_quantity' => $requiredMinQuantity,
+            ];
+
+            if ($mandatory === true)
+            {
+                // only if the item is mandatory add calculated amount to the $minimumPageAmount
+                $minimumPageAmount += $itemAmount * $requiredMinQuantity;
+            }
+        }
+
+        // represents the computed amount of the order WRT line items.
+        $orderRequiredFieldsAmount = 0;
+
+        foreach ($order->lineItems as $lineItem)
+        {
+            $refId = $lineItem->getAttribute(\RZP\Models\LineItem\Entity::REF_ID);
+
+            if (array_get($requiredItemsMap, $refId) === null)
+            {
+                /**
+                 * since $requiredItemsMap contains all items mapped
+                 * any item which is not part of $requiredItemsMap
+                 * does not belong to the payment  page
+                 */
+                throw new BadRequestValidationFailureException(
+                    "Amount or quantity has been tempered. Please try again."
+                );
+            }
+
+            if (! $this->isValidLineItemAgainstPageItem($requiredItemsMap[$refId], $lineItem))
+            {
+                return false;
+            }
+
+            $orderRequiredFieldsAmount += $lineItem->getQuantity() * $lineItem->getAmount();
+        }
+
+        return $orderRequiredFieldsAmount >= $minimumPageAmount
+            && $order->getAmount() === $orderRequiredFieldsAmount
+            && $order->getAmount() >= $minimumPageAmount;
     }
 
     protected function getActivePaymentQuantityCount($payments): array
@@ -2962,5 +3063,38 @@ class Core extends Base\Core
     private function shouldCacheHostedResponse(Entity $paymentLink): bool
     {
         return $paymentLink->getViewType() === ViewType::PAGE;
+    }
+
+    /**
+     * @param array                       $item
+     * @param \RZP\Models\LineItem\Entity $lineItem
+     *
+     * @return bool
+     */
+    private function isValidLineItemAgainstPageItem(array $item, LineItem\Entity $lineItem): bool
+    {
+        $requiredQuantity   = $item['required_min_quantity'];
+
+        $requiredAmount     = $item['required_min_amount'];
+
+        $lineAmount         = $lineItem->getAmount();
+
+        $lineQuantity       = $lineItem->getQuantity();
+
+        if ($lineQuantity < $requiredQuantity || $lineAmount < $requiredAmount)
+        {
+            return false;
+        }
+
+        $requiredTotal = $requiredAmount * $requiredQuantity;
+
+        $lineItemTotal = $lineAmount * $lineQuantity;
+
+        if ($requiredAmount !== 0 && $requiredQuantity === $lineQuantity && $requiredTotal !== $lineItemTotal)
+        {
+            return false;
+        }
+
+        return true;
     }
 }

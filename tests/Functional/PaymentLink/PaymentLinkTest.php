@@ -2740,7 +2740,223 @@ class PaymentLinkTest extends TestCase
         ]);
     }
 
+    /**
+     * @group pp_payment_amount_quantity_check
+     * @return void
+     */
+    public function testOnPaymentFlowValidateLatestAmount()
+    {
+        $this->mockRazorxExperiments([PaymentLink\Core::RAZORX_PP_PAYMENT_REQUIRED_AMOUNT_QUANTITY_CHECK => 'on']);
+
+        $this->assertManipulateOrderItemAndMakePayment(
+            "Amount or quantity has been tempered. Please try again."
+        );
+    }
+
+    /**
+     * @group pp_payment_amount_quantity_check
+     * @return void
+     */
+    public function testOnPaymentFlowValidateLatestAmountWithFixedAmountNotMandatory()
+    {
+        $this->mockRazorxExperiments([PaymentLink\Core::RAZORX_PP_PAYMENT_REQUIRED_AMOUNT_QUANTITY_CHECK => 'on']);
+
+        $attributes = [
+            PaymentLinkModel\Entity::PAYMENT_PAGE_ITEMS => [
+                [
+                    PaymentLinkModel\PaymentPageItem\Entity::ID   => self::TEST_PPI_ID,
+                    PaymentLinkModel\PaymentPageItem\Entity::MANDATORY   => false,
+                    PaymentLinkModel\PaymentPageItem\Entity::ITEM => [
+                        Item\Entity::NAME => 'Fixed',
+                        Item\Entity::AMOUNT => 5000,
+                    ]
+                ],
+                [
+                    PaymentLinkModel\PaymentPageItem\Entity::ID   => self::TEST_PPI_ID_2,
+                    PaymentLinkModel\PaymentPageItem\Entity::MANDATORY   => false,
+                    PaymentLinkModel\PaymentPageItem\Entity::MIN_AMOUNT   => 100,
+                    PaymentLinkModel\PaymentPageItem\Entity::ITEM => [
+                        Item\Entity::AMOUNT => null,
+                        Item\Entity::NAME => 'Variable',
+                    ]
+                ]
+            ]
+        ];
+
+        $this->assertManipulateOrderItemAndMakePayment(
+            "Amount or quantity has been tempered. Please try again.",
+            1000,
+            $attributes
+        );
+    }
+
+    /**
+     * @group pp_payment_amount_quantity_check
+     * @return void
+     */
+    public function testOnPaymentFlowValidateLatestAmountWithFixedAmountMandatory()
+    {
+        $this->mockRazorxExperiments([PaymentLink\Core::RAZORX_PP_PAYMENT_REQUIRED_AMOUNT_QUANTITY_CHECK => 'on']);
+
+        $attributes = [
+            PaymentLinkModel\Entity::PAYMENT_PAGE_ITEMS => [
+                [
+                    PaymentLinkModel\PaymentPageItem\Entity::ID   => self::TEST_PPI_ID,
+                    PaymentLinkModel\PaymentPageItem\Entity::MANDATORY   => true,
+                    PaymentLinkModel\PaymentPageItem\Entity::ITEM => [
+                        Item\Entity::NAME => 'Fixed',
+                        Item\Entity::AMOUNT => 5000,
+                    ]
+                ],
+                [
+                    PaymentLinkModel\PaymentPageItem\Entity::ID   => self::TEST_PPI_ID_2,
+                    PaymentLinkModel\PaymentPageItem\Entity::MANDATORY   => true,
+                    PaymentLinkModel\PaymentPageItem\Entity::MIN_AMOUNT   => 100,
+                    PaymentLinkModel\PaymentPageItem\Entity::ITEM => [
+                        Item\Entity::AMOUNT => null,
+                        Item\Entity::NAME => 'Variable',
+                    ]
+                ]
+            ]
+        ];
+
+        $this->assertManipulateOrderItemAndMakePayment(
+            "Amount or quantity has been tempered. Please try again.",
+            1000,
+            $attributes
+        );
+    }
+
+    /**
+     * @group pp_payment_amount_quantity_check
+     * @return void
+     */
+    public function testOnPaymentFlowValidateLatestAmountWithOrderLineItemReduced()
+    {
+        $this->mockRazorxExperiments([PaymentLink\Core::RAZORX_PP_PAYMENT_REQUIRED_AMOUNT_QUANTITY_CHECK => 'on']);
+
+        $attributes = [
+            PaymentLinkModel\Entity::PAYMENT_PAGE_ITEMS => [
+                [
+                    PaymentLinkModel\PaymentPageItem\Entity::ID   => self::TEST_PPI_ID,
+                    PaymentLinkModel\PaymentPageItem\Entity::MANDATORY   => true,
+                    PaymentLinkModel\PaymentPageItem\Entity::ITEM => [
+                        Item\Entity::NAME => 'Fixed',
+                        Item\Entity::AMOUNT => 5000,
+                    ]
+                ],
+                [
+                    PaymentLinkModel\PaymentPageItem\Entity::ID   => self::TEST_PPI_ID_2,
+                    PaymentLinkModel\PaymentPageItem\Entity::MANDATORY   => true,
+                    PaymentLinkModel\PaymentPageItem\Entity::MIN_AMOUNT   => 100,
+                    PaymentLinkModel\PaymentPageItem\Entity::ITEM => [
+                        Item\Entity::AMOUNT => null,
+                        Item\Entity::NAME => 'Variable',
+                    ]
+                ]
+            ]
+        ];
+
+        $data = $this->createPaymentLinkAndOrderForThat($attributes);
+
+        $order  = $data['payment_link_order']['order'];
+
+        $order->lineItems[1]->delete();
+
+        $page   = $data['payment_link'];
+
+        $this->expectException(BadRequestValidationFailureException::class);
+
+        $this->expectErrorMessage("Amount or quantity has been tempered. Please try again.");
+
+        $this->makePaymentForPaymentLinkWithOrderAndAssert(
+            $page,
+            $this->getDbEntityById('order', $order->getId())
+        );
+    }
+
+    /**
+     * @group pp_payment_amount_quantity_check
+     * @return void
+     */
+    public function testOnPaymentFlowValidateLatestAmountWithNonMandatoryOrderLineItemReduced()
+    {
+        $this->mockRazorxExperiments([PaymentLink\Core::RAZORX_PP_PAYMENT_REQUIRED_AMOUNT_QUANTITY_CHECK => 'on']);
+
+        $attributes = [
+            PaymentLinkModel\Entity::PAYMENT_PAGE_ITEMS => [
+                [
+                    PaymentLinkModel\PaymentPageItem\Entity::ID   => self::TEST_PPI_ID,
+                    PaymentLinkModel\PaymentPageItem\Entity::MANDATORY   => true,
+                    PaymentLinkModel\PaymentPageItem\Entity::ITEM => [
+                        Item\Entity::NAME => 'Fixed',
+                        Item\Entity::AMOUNT => 5000,
+                    ]
+                ],
+                [
+                    PaymentLinkModel\PaymentPageItem\Entity::ID   => self::TEST_PPI_ID_2,
+                    PaymentLinkModel\PaymentPageItem\Entity::MANDATORY   => false,
+                    PaymentLinkModel\PaymentPageItem\Entity::MIN_AMOUNT   => null,
+                    PaymentLinkModel\PaymentPageItem\Entity::ITEM => [
+                        Item\Entity::AMOUNT => 1000,
+                        Item\Entity::NAME => 'Fixed 1',
+                    ]
+                ]
+            ]
+        ];
+
+        $data = $this->createPaymentLinkAndOrderForThat($attributes);
+
+        $order  = $data['payment_link_order']['order'];
+
+        $order->lineItems[1]->delete();
+
+        $page   = $data['payment_link'];
+
+        $this->expectException(BadRequestValidationFailureException::class);
+
+        $this->expectErrorMessage("Amount or quantity has been tempered. Please try again.");
+
+        $this->makePaymentForPaymentLinkWithOrderAndAssert(
+            $page,
+            $this->getDbEntityById('order', $order->getId())
+        );
+    }
+
     // -------------------- Protected methods --------------------
+
+    protected function assertManipulateOrderItemAndMakePayment(
+        string $exceptionMessage = "",
+        int $updateAmount = 10000,
+        array $attributes = [],
+        string $exceptionClass = BadRequestValidationFailureException::class
+    )
+    {
+        $data = $this->createPaymentLinkAndOrderForThat($attributes);
+
+        $order  = $data['payment_link_order']['order'];
+
+        $page   = $data['payment_link'];
+
+        // edit the page to change the amount
+        $repo = new PaymentLink\PaymentPageItem\Repository();
+
+        $ppiEntity = $repo->find(self::TEST_PPI_ID);
+
+        $ppiEntity->item->setAttribute('amount', $updateAmount);
+
+        // now the total amount has changed
+        $ppiEntity->item->save();
+
+        $this->expectException($exceptionClass);
+
+        $this->expectErrorMessage($exceptionMessage);
+
+        $this->makePaymentForPaymentLinkWithOrderAndAssert(
+            $page,
+            $this->getDbEntityById('order', $order->getId())
+        );
+    }
 
     protected function makeRequestToCreatePaymentHandle(string $billingLabel = 'Test Merchant')
     {
