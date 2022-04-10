@@ -95,6 +95,8 @@ class Scrooge
     const PASSPORT_AUD = 'scrooge';
     const PAYMENT_PAGE = 'Payment-Page';
 
+    const TERMINAL_ID = 'terminal_id';
+
     /**
      * Scrooge constructor.
      *
@@ -405,6 +407,35 @@ class Scrooge
         $id = RefundEntity::verifyIdAndStripSign($id);
 
         return $this->sendRequest(self::RefundBaseURL . '/' . $id, Requests::GET, $queryParams);
+    }
+
+    /**
+     * @param string $id
+     * @param array $params
+     * @return array
+     * @throws Exception\RuntimeException
+     * @throws \Requests_Exception
+     */
+    public function getRefundTerminalId(string $id, array $params = []): string
+    {
+        $id = RefundEntity::verifyIdAndStripSign($id);
+
+        $scroogeResponse = $this->sendRequest(self::RefundBaseURL . '/' . $id, Requests::GET);
+
+        $scroogeResponseCode = $scroogeResponse[self::RESPONSE_CODE];
+
+        if (in_array($scroogeResponseCode, [200, 201, 204], true) === true)
+        {
+            $scroogeResponseBody = $scroogeResponse[self::RESPONSE_BODY];
+
+            $scroogeTerminalId =
+                (empty($scroogeResponseBody[self::TERMINAL_ID]) === false) ? $scroogeResponseBody[self::TERMINAL_ID] : '';
+
+
+            return $scroogeTerminalId;
+        }
+
+        return '';
     }
 
     /**

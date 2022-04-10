@@ -44,6 +44,8 @@ class Repository extends Base\Repository
         self::EXPAND . '.*'                 => 'filled|string|in:reversal,transaction,transaction.settlement|custom:expand',
         ReversalEntity::INITIATOR_ID        => 'sometimes|string|min:14|max:18',
         ReversalEntity::CUSTOMER_REFUND_ID  => 'filled|string|size:19',
+        Entity::TERMINAL_ID                 => 'sometimes|alpha_dash|min:14|max:18',
+        Entity::SETTLED_BY                  => 'sometimes|string'
     ];
 
     protected $appFetchParamRules = [
@@ -162,6 +164,19 @@ class Repository extends Base\Repository
         $this->joinQueryPayment($query);
 
         $query->where($paymentGateway, '=', $gateway);
+
+        $query->select($query->getModel()->getTable().'.*');
+    }
+
+    protected function addQueryParamTerminalId($query, $params)
+    {
+        $terminalId = $params[Refund\Entity::TERMINAL_ID];
+
+        $paymentTerminalId = $this->repo->payment->dbColumn(Payment\Entity::TERMINAL_ID);
+
+        $this->joinQueryPayment($query);
+
+        $query->where($paymentTerminalId, '=', $terminalId);
 
         $query->select($query->getModel()->getTable().'.*');
     }

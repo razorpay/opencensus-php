@@ -505,12 +505,56 @@ class Service extends Base\Service
             $this->addParamsForDashboard($refundArray);
         }
 
+        if ($this->app['basicauth']->isOptimiserDashboardRequest() === true)
+        {
+            $refundArray = $this->setSettlementDetailsForOptimizer($refundArray);
+        }
+
         if ($experiment === true)
         {
             $this->compareAndLogRefundResponses($refundArray, $scroogeRefundArray);
         }
 
         return $refundArray;
+    }
+
+    public function setSettlementDetailsForOptimizer($refundArray)
+    {
+        try {
+            if (isset($refundArray['transaction']) === true) {
+                $fetchInput = [
+                    'id' => str_replace("txn_", "", $refundArray['transaction']['id']),
+                    'entity_name' => 'transaction',
+                    'expand' => true
+                ];
+
+                $transactionEntity = app('settlements_dashboard')->fetch($fetchInput);
+
+                $transaction = $transactionEntity['entity'];
+
+                unset($refundArray['transaction']['settlement_id']);
+                unset($refundArray['transaction']['settlement']);
+
+                if ($transaction['settlement'] != null) {
+                    $refundArray['transaction']['settlement'] = $transaction['settlement'];
+                }
+
+                if ($transaction['settlement_id'] != null) {
+                    $refundArray['transaction']['settlement_id'] = $transaction['settlement_id'];
+                }
+            }
+
+        } catch (\Throwable $e) {
+            $this->trace->traceException(
+                $e,
+                Trace::WARNING,
+                TraceCode::GET_SETTLEMENT_DETAILS_FOR_REFUND_FAILED,
+                [
+                    'transaction_id' => $refundArray['transaction']['id'],
+                ]);
+        } finally {
+            return $refundArray;
+        }
     }
 
     public function compareAndLogRefundResponses($refundArray, $scroogeRefundArray)

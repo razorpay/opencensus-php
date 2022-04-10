@@ -79,6 +79,9 @@ class Entity extends Base\PublicEntity
     const RRN                    = 'rrn';
     const UTR                    = 'utr';
 
+    const TERMINAL_ID            = 'terminal_id';
+    const OPTIMIZER_PROVIDER     = 'optimizer_provider';
+
     /**
      * Holds the value of Reference number sent by bank for eg for upi, it contains npci_upi_txn_id
      */
@@ -186,7 +189,7 @@ class Entity extends Base\PublicEntity
         self::ACQUIRER_DATA,
         self::REVERSAL,
         self::CREATED_AT,
-        self::BATCH_ID
+        self::BATCH_ID,
     ];
 
     protected $reconAppInternal = [
@@ -338,6 +341,25 @@ class Entity extends Base\PublicEntity
      */
     public function processArrayPublicAndReturn(array $response)
     {
+        $app = \App::getFacadeRoot();
+
+        if ($app['basicauth']->isOptimiserDashboardRequest() === true)
+        {
+            $response[self::SETTLED_BY] = $this->getSettledBy();
+            if (isset($response[self::SETTLED_BY]) && $response[self::SETTLED_BY] == 'Razorpay') {
+                $response[self::OPTIMIZER_PROVIDER]  = 'Razorpay';
+            } else {
+                $provider = $this->getOptimizerProvider($response[self::ID]);
+                if (empty($provider) === false) {
+                    $response[self::OPTIMIZER_PROVIDER] = $provider;
+                } else {
+                    $response[self::OPTIMIZER_PROVIDER] = $this->payment->getTerminalId();
+
+                }
+            }
+        }
+
+
         $refundPublicStatusFeatureEnabled = $this->merchant->isFeatureEnabled(Feature::SHOW_REFUND_PUBLIC_STATUS);
         $refundPendingStatusFeatureEnabled = $this->merchant->isFeatureEnabled(Feature::REFUND_PENDING_STATUS);
 
@@ -345,8 +367,6 @@ class Entity extends Base\PublicEntity
             Constants::REFUND_PUBLIC_STATUS_FEATURE_ENABLED => $refundPublicStatusFeatureEnabled,
             Constants::REFUND_PENDING_STATUS_FEATURE_ENABLED => $refundPendingStatusFeatureEnabled,
         ];
-
-        $app = \App::getFacadeRoot();
 
         $exposeExtraAttributes = (new Merchant\Core())->isShowRefundTypeParamFeatureEnabled($this->merchant);
 
@@ -363,6 +383,28 @@ class Entity extends Base\PublicEntity
         }
 
         return $this->getPublicStatus($response, $data);
+    }
+
+    public function getOptimizerProvider(string $id) {
+
+        $app   = App::getFacadeRoot();
+        $trace = $app['trace'];
+
+        try
+        {
+            return $app['scrooge']->getRefundTerminalId($id);
+        }
+        catch(\Throwable $e)
+        {
+            $trace->traceException(
+                $e,
+                Trace::WARNING,
+                TraceCode::SCROOGE_GET_REFUND_TERMINAL_ID_REQUEST_FAILED,
+                [
+                    'refund_id' => $id,
+                ]);
+            return '';
+        }
     }
 
     protected function generateAmount($input)

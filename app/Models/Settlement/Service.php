@@ -7,6 +7,7 @@ use Config;
 use Carbon\Carbon;
 use phpseclib\Crypt\RSA;
 use phpseclib\Net\SFTP;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payment;
 use RZP\Base\ConnectionType;
 use RZP\Models\Schedule;
@@ -239,15 +240,26 @@ class Service extends Base\Service
 
     public function fetch($id)
     {
-        if($this->auth->isOptimiserDashboardRequest())
-        {
-            $fetchInput = $this->createFetchInput($id);
+        if ($this->auth->isOptimiserDashboardRequest()) {
+            try {
+                $fetchInput = $this->createFetchInput($id);
 
-            $settlement = app('settlements_dashboard')->fetch($fetchInput);
+                $settlement = app('settlements_dashboard')->fetch($fetchInput);
 
-            $settlement = $this->setPublicAttributes($settlement['entity']);
+                $settlement = $this->setPublicAttributes($settlement['entity']);
 
-            return $settlement->toArrayPublic();
+                return $settlement->toArrayPublic();
+
+            } catch (\Throwable $e) {
+                $this->trace->traceException(
+                    $e,
+                    Trace::WARNING,
+                    TraceCode::GET_SETTLEMENTS_FOR_OPTIMIZER_DASHBOARD_FAILED,
+                    [
+                        'id' => $id,
+                    ]);
+            }
+
         }
 
         $setl = $this->repo->settlement->findByPublicIdAndMerchant($id, $this->merchant);
@@ -279,15 +291,26 @@ class Service extends Base\Service
 
     public function fetchMultiple($input)
     {
-        if($this->auth->isOptimiserDashboardRequest()){
+        if ($this->auth->isOptimiserDashboardRequest()) {
 
-            $fetchInput = $this->createFetchMultipleInput($input);
+            try {
+                $fetchInput = $this->createFetchMultipleInput($input);
 
-            $settlements = app('settlements_dashboard')->fetchMultiple($fetchInput);
+                $settlements = app('settlements_dashboard')->fetchMultiple($fetchInput);
 
-            $settlements = $this->convertToCollection($settlements);
+                $settlements = $this->convertToCollection($settlements);
 
-            return $settlements->toArrayPublic();
+                return $settlements->toArrayPublic();
+
+            } catch (\Throwable $e) {
+                $this->trace->traceException(
+                    $e,
+                    Trace::WARNING,
+                    TraceCode::GET_SETTLEMENTS_FOR_OPTIMIZER_DASHBOARD_FAILED,
+                    [
+                        '$input' => $input,
+                    ]);
+            }
         }
 
         $settlements = $this->repo->settlement->fetch($input, $this->merchant->getKey());
@@ -1741,20 +1764,29 @@ class Service extends Base\Service
     {
         $entity = new Settlement\Entity($settlement);
 
-        $entity->setId($settlement['id']);
-        $entity->setUtr($settlement['utr']);
-        $entity->setFees($settlement['fee']);
-        $entity->setCreatedAt($settlement['created_at']);
+        if (isset($settlement['id']))
+            $entity->setId($settlement['id']);
 
-        $entity->setSettledBy($settlement['settled_by']);
 
-        if($settlement['settled_by'] === 'Razorpay')
-        {
-            $entity->setOptimiserProvider('Razorpay');
-        }
-        else
-        {
-            $entity->setOptimiserProvider($settlement['provider']);
+        if (isset($settlement['utr']))
+            $entity->setUtr($settlement['utr']);
+
+        if (isset($settlement['fee']))
+            $entity->setFees($settlement['fee']);
+
+        if (isset($settlement['created_at']))
+            $entity->setCreatedAt($settlement['created_at']);
+
+        if (isset($settlement['settled_by'])) {
+            $entity->setSettledBy($settlement['settled_by']);
+
+            if ($settlement['settled_by'] === 'Razorpay') {
+                $entity->setOptimiserProvider('Razorpay');
+            } else if (isset($settlement['provider'])) {
+                $entity->setOptimiserProvider($settlement['provider']);
+            } else {
+                $entity->setOptimiserProvider('');
+            }
         }
 
         return $entity;
@@ -1779,22 +1811,25 @@ class Service extends Base\Service
             ],
         ];
 
-        if(isset( $input['count']) && isset($input['skip']))
+        if(isset( $input['count']) )
         {
-            $fetchInput['pagination'] = [
-                'limit'=> $input['count'],
-                'skip' => $input['skip'],
-            ];
+            $fetchInput['pagination']['limit'] = $input['count'];
         }
 
-        if(isset($input['settled_by']) === true)
+        if(isset( $input['skip']) )
         {
-            $fetchInput['filter']['settled_by'] = $input['settled_by'];
+            $fetchInput['pagination']['skip'] = $input['skip'];
         }
 
-        if(isset($input['terminal_id']) === true)
+        foreach ($input as $key => $val)
         {
-            $fetchInput['filter']['provider'] = $input['terminal_id'];
+            if ($key == 'count' || $key == 'skip') {
+                continue;
+            }
+            if ($key == 'terminal_id') {
+                $key = 'provider';
+            }
+            $fetchInput['filter'][$key] = $input[$val];
         }
 
         return $fetchInput;

@@ -4,6 +4,7 @@ namespace RZP\Models\Payment;
 
 use Carbon\Carbon;
 use Lib\PhoneBook;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Constants\Mode;
 use RZP\Error\Error;
 use RZP\Error\ErrorCode;
@@ -3798,19 +3799,33 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     {
         $app = \App::getFacadeRoot();
 
-        // We only want to set the Provider while serving requests from optimiser dashboard
+        try{
+            // We only want to set the Provider while serving requests from optimiser dashboard
 
-        if($app['basicauth']->isOptimiserDashboardRequest() === true)
+            if($app['basicauth']->isOptimiserDashboardRequest() === true)
+            {
+                if($this->terminal->getProcurer() === 'merchant')
+                {
+                    $array[self::OPTIMIZER_PROVIDER] = $this->terminal->getId();
+                }
+                else
+                {
+                    $array[self::OPTIMIZER_PROVIDER] = "Razorpay";
+                }
+            }
+        } catch(\Throwable $e)
         {
-            if($this->terminal->getProcurer() === 'merchant')
-            {
-                $array[self::OPTIMIZER_PROVIDER] = $this->terminal->getId();
-            }
-            else
-            {
-                $array[self::OPTIMIZER_PROVIDER] = "Razorpay";
-            }
+            $app['trace']->traceException(
+                $e,
+                Trace::WARNING,
+                TraceCode::FETCH_PAYMENTS_FAILED_TO_SET_OPTIMIZER_PROVIDER,
+                [
+                    'payment_id' => $this->getId(),
+                ]);
+            $array[self::OPTIMIZER_PROVIDER] = '';
         }
+
+
     }
 
     public function associateTerminal($terminal)
