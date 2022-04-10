@@ -270,6 +270,14 @@ class Base extends BaseCore
 
                 $this->repo->saveOrFail($payout);
 
+                $this->trace->info(
+                    TraceCode::PAYOUT_STATUS_CHANGED_TO_BATCH_SUBMITTED,
+                    [
+                        'payout_id'     => $payout->getId(),
+                        'merchant_id'   => $payout->getMerchantId(),
+                        'batch_id'      => $payout->getBatchId(),
+                    ]);
+
                 return $payout;
             }
 
@@ -1483,7 +1491,9 @@ class Base extends BaseCore
                         $this->trace->info(
                             TraceCode::PENDING_PAYOUT_TO_BATCH_SUBMITTED,
                             [
-                                'payout_id' => $payout->getId(),
+                                'payout_id'     => $payout->getId(),
+                                'merchant_id'   => $payout->getMerchantId(),
+                                'batch_id'      => $payout->getBatchId(),
                             ]);
 
                         return $payout;

@@ -3703,6 +3703,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYOUT_SCHEDULED_DISPATCH_FAILED                          = 'PAYOUT_SCHEDULED_DISPATCH_FAILED';
     const SCHEDULED_PAYOUT_AUTO_REJECTED                            = 'SCHEDULED_PAYOUT_AUTO_REJECTED';
     const SCHEDULED_PAYOUT_TO_BATCH_SUBMITTED                       = 'SCHEDULED_PAYOUT_TO_BATCH_SUBMITTED';
+    const PAYOUT_STATUS_CHANGED_TO_BATCH_SUBMITTED                  = 'PAYOUT_STATUS_CHANGED_TO_BATCH_SUBMITTED';
     const PAYOUT_FAILED_EMAIL                                       = 'PAYOUT_FAILED_EMAIL';
     const PAYOUT_AUTO_REJECTED_EMAIL                                = 'PAYOUT_AUTO_REJECTED_EMAIL';
 

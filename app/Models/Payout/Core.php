@@ -1319,7 +1319,9 @@ class Core extends Base\Core
                     $this->trace->info(
                         TraceCode::SCHEDULED_PAYOUT_TO_BATCH_SUBMITTED,
                         [
-                            'payout_id' => $payout->getId(),
+                            'payout_id'     => $payout->getId(),
+                            'merchant_id'   => $payout->getMerchantId(),
+                            'batch_id'      => $payout->getBatchId(),
                         ]);
 
                     return $payout;
