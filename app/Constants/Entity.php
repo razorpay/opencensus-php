@@ -98,6 +98,7 @@ class Entity
     const SUB_VIRTUAL_ACCOUNT        = 'sub_virtual_account';
     const LEGAL_ENTITY               = 'legal_entity';
     const PAYMENT_LINK               = 'payment_link';
+    const NOCODE_CUSTOM_URL          = 'nocode_custom_url';
     const PAYMENT_PAGE               = 'payment_page';
     const GATEWAY_RULE               = 'gateway_rule';
     const GATEWAY_FILE               = 'gateway_file';
@@ -813,6 +814,7 @@ class Entity
         self::OFFLINE_CHALLAN           => \RZP\Models\OfflineChallan::class,
         self::SUBSCRIPTION              => \RZP\Models\Plan\Subscription::class,
         self::PAYMENT_LINK              => \RZP\Models\PaymentLink::class,
+        self::NOCODE_CUSTOM_URL         => \RZP\Models\PaymentLink\NocodeCustomUrl::class,
         self::PAYOUT_LINK               => \RZP\Models\PayoutLink::class,
         self::SETTINGS                  => \RZP\Models\Settings::class,
         self::PAYMENT_PAGE_ITEM         => \RZP\Models\PaymentLink\PaymentPageItem::class,

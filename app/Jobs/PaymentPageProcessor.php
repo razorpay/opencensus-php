@@ -23,6 +23,9 @@ class PaymentPageProcessor extends Job
     const PAYMENT_PAGE_CREATE_DEDUPE    = 'PAYMENT_PAGE_CREATE_DEDUPE';
     const PAYMENT_PAGE_HOSTED_CACHE     = 'PAYMENT_PAGE_HOSTED_CACHE';
 
+    // Once all slugs are migrated this const will be removed
+    const NOCODE_CUSTOM_URL_UPSERT_FROM_HOSTED_FLOW = 'NOCODE_CUSTOM_URL_UPSERT_FROM_HOSTED_FLOW';
+
     /**
      * {@inheritDoc}
      */
@@ -310,6 +313,38 @@ class PaymentPageProcessor extends Job
         }
 
         $this->delete();
+    }
+
+    /**
+     * Runs the custom URL migration in batches.
+     * Once all slugs are migrated this method will be removed
+     *
+     * @return void
+     */
+    protected function handleNocodeCustomUrlUpsertFromHostedFlow()
+    {
+        $this->trace->info(TraceCode::NOCODE_CUSTOM_URL_UPSERT_INIT);
+
+        $input = $this->params->get('gimli_response', []);
+
+        try
+        {
+            (new PaymentLink\NocodeCustomUrl\DataMigrator())->insertForHostedFlowWithGimliResponse($input);
+
+            $this->trace->info(TraceCode::NOCODE_CUSTOM_URL_UPSERT_COMPLETED, $this->params->toArray());
+
+            $this->trace->count(PaymentLink\METRIC::PAYMENT_PAGE_PROCESSOR_JOB_SUCCESS_COUNT_TOTAL, $this->context);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, null, null, [
+                'params'    => $this->params->toArray(),
+            ]);
+
+            $this->trace->error(TraceCode::NOCODE_CUSTOM_URL_UPSERT_FAILED, $this->params->toArray());
+
+            $this->trace->count(PaymentLink\METRIC::PAYMENT_PAGE_PROCESSOR_JOB_FAIL_COUNT_TOTAL, $this->context);
+        }
     }
 
     protected function setMerchant(Merchant\Entity $merchant)

@@ -56,4 +56,9 @@ final class Metric
     const PAYMENT_PAGE_HOSTED_CACHE_HIT_COUNT   = 'payment_page_hosted_cache_hit_count';
     const PAYMENT_PAGE_HOSTED_CACHE_MISS_COUNT  = 'payment_page_hosted_cache_miss_count';
     const PAYMENT_PAGE_HOSTED_CACHE_BUILD_COUNT = 'payment_page_hosted_cache_build_count';
+
+    // custom url cache metrics
+    const NOCODE_CUSTOM_URL_CACHE_HIT_COUNT         = 'nocode_custom_url_cache_hit_count';
+    const NOCODE_CUSTOM_URL_CACHE_MISS_COUNT        = 'nocode_custom_url_cache_miss_count';
+    const NOCODE_CUSTOM_URL_CACHE_BUILD_COUNT       = 'nocode_custom_url_cache_build_count';
 }

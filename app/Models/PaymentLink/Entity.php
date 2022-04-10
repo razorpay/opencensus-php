@@ -455,6 +455,14 @@ class Entity extends Base\PublicEntity
         return $this->hasMany(PaymentPageItem\Entity::class);
     }
 
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function nocodeCustomUrl()
+    {
+        return $this->hasOne(NocodeCustomUrl\Entity::class, NocodeCustomUrl\Entity::PRODUCT_ID);
+    }
+
     // -------------------------------------- End Relations ---------------------------
 
     // ----------------------------------------- Getters ------------------------------

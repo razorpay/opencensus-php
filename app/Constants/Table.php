@@ -429,6 +429,9 @@ class Table
     // Payment Fraud Entity
     const PAYMENT_FRAUD = 'payment_fraud';
 
+    // Nocode slug management table
+    const NOCODE_CUSTOM_URL = 'nocode_custom_urls';
+
     protected static $entityToTableMap = [
         Entity::AXIS_MIGS                          => self::MIGS,
         Entity::AXIS_GENIUS                        => self::MIGS,

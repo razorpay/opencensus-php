@@ -34,6 +34,8 @@ class Constants
     const HT_PPI_UPDATE_STATUS          = 'payment_pages.ppi.update.change_status';
     const HT_PPI_UPDATE_SAVE            = 'payment_pages.ppi.update.save_or_fail';
 
+    const HT_PP_NOCODE_CUSTOM_URL_UPSERT    = 'payment_pages.ncu.upsert';
+
     const HT_PH_CREATE_REQUEST_PRECREATE               = 'payment_handle.create_request.precreate';
     const HT_PH_CREATE_REQUEST_CREATE                  = 'payment_handle.create_request.create';
     const HT_PH_GET                                    = 'payment_handle.get';

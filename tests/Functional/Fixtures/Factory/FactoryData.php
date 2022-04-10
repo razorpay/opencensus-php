@@ -2083,5 +2083,14 @@ final class FactoryData
             'banking_account_statement_id'  => 'J3J9XVuHZHWOoo',
         ]);
 
+
+        $factory(\RZP\Models\PaymentLink\NocodeCustomUrl\Entity::class, [
+            'id'            => $faker->uniqueid,
+            'merchant_id'   => '10000000000000',
+            'slug'          => $faker->unique()->slug(2),
+            'domain'        => $faker->unique()->url,
+            'product'       => 'page',
+            'product_id'    => $faker->uniqueid,
+        ]);
     }
 }

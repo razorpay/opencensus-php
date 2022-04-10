@@ -75,6 +75,7 @@ use RZP\Base\Database\Connectors\MySqlConnector;
  * @property Models\BankingAccount\State\Repository              $banking_account_state
  * @property Models\Item\Repository                              $item
  * @property Models\PaymentLink\PaymentPageItem\Repository       $payment_page_item
+ * @property Models\PaymentLink\NocodeCustomUrl\Repository       $nocode_custom_url
  * @property Models\BankingAccountStatement\Repository           $banking_account_statement
  * @property Models\BankingAccountStatement\Pool\Rbl\Repository  $banking_account_statement_pool_rbl
  * @property Models\BankingAccountStatement\Pool\Icici\Repository $banking_account_statement_pool_icici
