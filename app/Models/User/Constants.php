@@ -406,7 +406,9 @@ class Constants
     const VERIFY_LOGIN_SIGNUP_OTP_METRICS = [
         self::SIGNUP_OTP_ACTION         => Metric::VERIFY_SIGNUP_INCORRECT_OTP,
         self::LOGIN_OTP_ACTION          => Metric::VERIFY_LOGIN_INCORRECT_OTP,
+        self::X_LOGIN_OTP_ACTION        => Metric::VERIFY_LOGIN_INCORRECT_OTP,
         self::VERIFY_USER_ACTION        => Metric::VERIFY_LOGIN_INCORRECT_OTP,
+        self::X_VERIFY_USER_ACTION      => Metric::VERIFY_LOGIN_INCORRECT_OTP,
     ];
 
     // Ras Signup
@@ -418,4 +420,20 @@ class Constants
     const SUPPORTED_COUNTRY_CODES_SIGNUP    = [
         'IN'
     ];
+
+    const X_SECOND_FACTOR_AUTH_ACTION   = 'x_second_factor_auth';
+    const X_LOGIN_OTP_ACTION            = 'x_login_otp';
+    const X_VERIFY_USER_ACTION          = 'x_verify_user';
+
+    const SEND_SMS_VIA_STORK            = [
+        self::X_SECOND_FACTOR_AUTH_ACTION,
+        self::X_LOGIN_OTP_ACTION,
+        self::X_VERIFY_USER_ACTION
+    ];
+
+    const THROW_SMS_EXCEPTION_IN_STORK     = 'THROW_SMS_EXCEPTION_IN_STORK';
+
+    const STORK_RESOURCE_EXHAUSTED_MESSAGE = 'twirp error resource_exhausted: request to send sms has been denied. maximum limit reached';
+
+    const API_STORK_RX_SEND_SMS_RAZORX_EXP = 'api_stork_rx_send_sms';
 }

@@ -595,9 +595,17 @@ class Core extends Base\Core
     {
         $this->checkUserAccountNotLockedOrThrowException($user);
 
+        $medium = $this->get2FaAuthMode();
+
+        $action = ($medium === Org\Constants::SMS and
+                   $this->app['basicauth']->getRequestOriginProduct() === ProductType::BANKING and
+                   $this->app['razorx']->getTreatment($this->app['request']->getTaskId(), Constants::API_STORK_RX_SEND_SMS_RAZORX_EXP , Mode::LIVE) === 'on')
+                  ? Constants::X_SECOND_FACTOR_AUTH_ACTION
+                  : Entity::SECOND_FACTOR_AUTH;
+
         $input = [
-            Entity::MEDIUM => $this->get2FaAuthMode(),
-            Entity::ACTION => Entity::SECOND_FACTOR_AUTH,
+            Entity::MEDIUM => $medium,
+            Entity::ACTION => $action,
             Entity::TOKEN => $user->getId()
         ];
 
@@ -1095,13 +1103,32 @@ class Core extends Base\Core
 
         $input = array_merge($input, $this->getLoginSignupOtpPayload($input, Constants::LOGIN_OTP_ACTION));
 
+        $sendViaHelperMethod = false;
+
+        if ($this->app['basicauth']->getRequestOriginProduct() === ProductType::BANKING and
+            $this->app['razorx']->getTreatment($this->app['request']->getTaskId(), Constants::API_STORK_RX_SEND_SMS_RAZORX_EXP , Mode::LIVE) === 'on')
+        {
+            $input[Entity::ACTION] = Constants::X_LOGIN_OTP_ACTION;
+
+            $sendViaHelperMethod = true;
+        }
+
         $otp = $this->generateOtpForLoginSignup($user->getId(), $input);
 
+        // Raven payload
         $payload = $this->getSmsPayload($input, $otp);
 
         try
         {
-            $this->app->raven->sendOtp($payload);
+            if ($sendViaHelperMethod === true)
+            {
+                $token = $this->sendOtpViaSms($input,null,$user,$otp);
+            }
+            else
+            {
+                $this->app->raven->sendOtp($payload);
+            }
+
         }
         catch (\Throwable $e)
         {
@@ -1119,26 +1146,52 @@ class Core extends Base\Core
                 compact('input')
             );
 
-            switch ($e->getCode())
+            if ($sendViaHelperMethod === true)
             {
-                case ErrorCode::BAD_REQUEST_RESOURCE_EXHAUSTED:
-                case ErrorCode::BAD_REQUEST_MAXIMUM_SMS_LIMIT_REACHED:
-                    throw new Exception\BadRequestException(
-                        ErrorCode::BAD_REQUEST_MAXIMUM_SMS_LIMIT_REACHED,
-                        null,
-                        [
-                            "internal_error_code" => ErrorCode::BAD_REQUEST_MAXIMUM_SMS_LIMIT_REACHED
-                        ],
-                        $e->getMessage()
-                    );
-                default:
-                    throw new Exception\BadRequestException(
-                        ErrorCode::BAD_REQUEST_SMS_OTP_FAILED,
-                        null,
-                        null,
-                        $e->getMessage()
-                    );
+                switch ($e->getMessage())
+                {
+                    case Constants::STORK_RESOURCE_EXHAUSTED_MESSAGE:
+                        throw new Exception\BadRequestException(
+                            ErrorCode::BAD_REQUEST_MAXIMUM_SMS_LIMIT_REACHED,
+                            null,
+                            [
+                                "internal_error_code" => ErrorCode::BAD_REQUEST_MAXIMUM_SMS_LIMIT_REACHED
+                            ],
+                            $e->getMessage()
+                        );
+                    default:
+                        throw new Exception\BadRequestException(
+                            ErrorCode::BAD_REQUEST_SMS_OTP_FAILED,
+                            null,
+                            null,
+                            $e->getMessage()
+                        );
+                }
             }
+            else
+            {
+                switch ($e->getCode())
+                {
+                    case ErrorCode::BAD_REQUEST_RESOURCE_EXHAUSTED:
+                    case ErrorCode::BAD_REQUEST_MAXIMUM_SMS_LIMIT_REACHED:
+                        throw new Exception\BadRequestException(
+                            ErrorCode::BAD_REQUEST_MAXIMUM_SMS_LIMIT_REACHED,
+                            null,
+                            [
+                                "internal_error_code" => ErrorCode::BAD_REQUEST_MAXIMUM_SMS_LIMIT_REACHED
+                            ],
+                            $e->getMessage()
+                        );
+                    default:
+                        throw new Exception\BadRequestException(
+                            ErrorCode::BAD_REQUEST_SMS_OTP_FAILED,
+                            null,
+                            null,
+                            $e->getMessage()
+                        );
+                }
+            }
+
         }
 
         $maskedInput[Entity::CONTACT_MOBILE] = $user->getMaskedContactMobile();
@@ -1146,6 +1199,11 @@ class Core extends Base\Core
         $this->trace->count(Metric::USER_SMS_OTP_SENT);
 
         $this->traceMobileLoginRoute($maskedInput, TraceCode::USER_SEND_SMS_OTP_FOR_LOGIN);
+
+        if ($sendViaHelperMethod === true)
+        {
+            return $token;
+        }
 
         return array_only($otp, 'token');
     }
@@ -1523,6 +1581,13 @@ class Core extends Base\Core
 
         $input = array_merge($input, $this->getLoginSignupOtpPayload($input, Constants::LOGIN_OTP_ACTION));
 
+        if ($input[Entity::MEDIUM] === Org\Constants::SMS and
+            $this->app['basicauth']->getRequestOriginProduct() === ProductType::BANKING and
+            $this->app['razorx']->getTreatment($this->app['request']->getTaskId(), Constants::API_STORK_RX_SEND_SMS_RAZORX_EXP, Mode::LIVE) === 'on')
+        {
+            $input[Entity::ACTION] = Constants::X_LOGIN_OTP_ACTION;
+        }
+
         $this->verifyLoginSignupOtp($receiver, $input, $user->getId());
 
         LoginSignupRateLimit::resetKey($receiver, Constants::VERIFY_LOGIN_OTP_RATE_LIMIT_SUFFIX);
@@ -1710,13 +1775,32 @@ class Core extends Base\Core
 
         $input = array_merge($input, $this->getLoginSignupOtpPayload($input, Constants::VERIFY_USER_ACTION));
 
+        $sendViaHelperMethod = false;
+
+        if ($this->app['basicauth']->getRequestOriginProduct() === ProductType::BANKING and
+            $this->app['razorx']->getTreatment($this->app['request']->getTaskId(), Constants::API_STORK_RX_SEND_SMS_RAZORX_EXP , Mode::LIVE) === 'on')
+        {
+            $input[Entity::ACTION] = Constants::X_VERIFY_USER_ACTION;
+
+            $sendViaHelperMethod = true;
+        }
+
         $otp = $this->generateOtpForLoginSignup($user->getId(), $input);
 
         $payload = $this->getSmsPayload($input, $otp);
 
         try
         {
-            $this->app->raven->sendOtp($payload);
+
+            if ($sendViaHelperMethod === true)
+            {
+                $token = $this->sendOtpViaSms($input,null,$user,$otp);
+            }
+            else
+            {
+                $this->app->raven->sendOtp($payload);
+            }
+
         }
         catch (\Throwable $e)
         {
@@ -1734,31 +1818,61 @@ class Core extends Base\Core
                 compact('input')
             );
 
-            switch ($e->getCode())
+            if ($sendViaHelperMethod === true)
             {
-                case ErrorCode::BAD_REQUEST_RESOURCE_EXHAUSTED:
-                case ErrorCode::BAD_REQUEST_MAXIMUM_SMS_LIMIT_REACHED:
-                    throw new Exception\BadRequestException(
-                        ErrorCode::BAD_REQUEST_MAXIMUM_SMS_LIMIT_REACHED,
-                        null,
-                        [
-                            "internal_error_code" => ErrorCode::BAD_REQUEST_MAXIMUM_SMS_LIMIT_REACHED
-                        ],
-                        $e->getMessage()
-                    );
-                default:
-                    throw new Exception\BadRequestException(
-                        ErrorCode::BAD_REQUEST_SMS_OTP_FAILED,
-                        null,
-                        null,
-                        $e->getMessage()
-                    );
+                switch ($e->getMessage())
+                {
+                    case Constants::STORK_RESOURCE_EXHAUSTED_MESSAGE:
+                        throw new Exception\BadRequestException(
+                            ErrorCode::BAD_REQUEST_MAXIMUM_SMS_LIMIT_REACHED,
+                            null,
+                            [
+                                "internal_error_code" => ErrorCode::BAD_REQUEST_MAXIMUM_SMS_LIMIT_REACHED
+                            ],
+                            $e->getMessage()
+                        );
+                    default:
+                        throw new Exception\BadRequestException(
+                            ErrorCode::BAD_REQUEST_SMS_OTP_FAILED,
+                            null,
+                            null,
+                            $e->getMessage()
+                        );
+                }
+            }
+            else
+            {
+                switch ($e->getCode())
+                {
+                    case ErrorCode::BAD_REQUEST_RESOURCE_EXHAUSTED:
+                    case ErrorCode::BAD_REQUEST_MAXIMUM_SMS_LIMIT_REACHED:
+                        throw new Exception\BadRequestException(
+                            ErrorCode::BAD_REQUEST_MAXIMUM_SMS_LIMIT_REACHED,
+                            null,
+                            [
+                                "internal_error_code" => ErrorCode::BAD_REQUEST_MAXIMUM_SMS_LIMIT_REACHED
+                            ],
+                            $e->getMessage()
+                        );
+                    default:
+                        throw new Exception\BadRequestException(
+                            ErrorCode::BAD_REQUEST_SMS_OTP_FAILED,
+                            null,
+                            null,
+                            $e->getMessage()
+                        );
+                }
             }
         }
 
         $maskedInput[Entity::CONTACT_MOBILE] = $user->getMaskedContactMobile();
 
         $this->traceMobileLoginRoute($maskedInput, TraceCode::USER_SEND_SMS_OTP_FOR_VERIFICATION);
+
+        if ($sendViaHelperMethod === true)
+        {
+            return $token;
+        }
 
         return array_only($otp, 'token');
     }
@@ -1996,6 +2110,13 @@ class Core extends Base\Core
         $this->checkVerifyOtpVerificationLimitExceeded($receiver, $dimensionsForUserLogin[Constants::MEDIUM], $user->getId());
 
         $input = array_merge($input, $this->getLoginSignupOtpPayload($input, Constants::VERIFY_USER_ACTION));
+
+        if ($input[Entity::MEDIUM] === Org\Constants::SMS and
+            $this->app['basicauth']->getRequestOriginProduct() === ProductType::BANKING and
+            $this->app['razorx']->getTreatment($this->app['request']->getTaskId(), Constants::API_STORK_RX_SEND_SMS_RAZORX_EXP , Mode::LIVE) === 'on')
+        {
+            $input[Entity::ACTION] = Constants::X_VERIFY_USER_ACTION;
+        }
 
         $this->verifyLoginSignupOtp($receiver, $input, $user->getId());
 
@@ -2319,6 +2440,13 @@ class Core extends Base\Core
             Entity::OTP    => $input[Entity::OTP],
         ];
 
+        if ($medium === Org\Constants::SMS and
+            $this->app['basicauth']->getRequestOriginProduct() === ProductType::BANKING and
+            $this->app['razorx']->getTreatment($this->app['request']->getTaskId(), Constants::API_STORK_RX_SEND_SMS_RAZORX_EXP , Mode::LIVE) === 'on')
+        {
+            $data[Entity::ACTION] = Constants::X_SECOND_FACTOR_AUTH_ACTION;
+        }
+
         try
         {
             $response = $this->verifyOtp($data, null, $user);
@@ -2337,7 +2465,7 @@ class Core extends Base\Core
         {
             $this->app['trace']->info(TraceCode::VERIFY_2FA_OTP_SMS_FOR_ACTION_FAILED, [
                 'exception' => $e->getMessage(),
-                'action'    => 'second_factor_auth',
+                'action'    => $data[Entity::ACTION],
             ]);
 
             $success = false;
@@ -2363,9 +2491,15 @@ class Core extends Base\Core
             $medium = Org\Constants::SMS;
         }
 
+        $action = ($medium === Org\Constants::SMS and
+            $this->app['basicauth']->getRequestOriginProduct() === ProductType::BANKING and
+            $this->app['razorx']->getTreatment($this->app['request']->getTaskId(), Constants::API_STORK_RX_SEND_SMS_RAZORX_EXP , Mode::LIVE) === 'on')
+            ? Constants::X_SECOND_FACTOR_AUTH_ACTION
+            : Entity::SECOND_FACTOR_AUTH;
+
         $input = [
             Entity::MEDIUM => $medium,
-            Entity::ACTION => Entity::SECOND_FACTOR_AUTH,
+            Entity::ACTION => $action,
             Entity::TOKEN => $user->getId()
         ];
 
@@ -3326,6 +3460,9 @@ class Core extends Base\Core
         return $this->$func($input, $merchant, $user);
     }
 
+    /**
+     * @throws Throwable
+     */
     public function sendOtpViaSmsAndEmail(array $input, $merchant, Entity $user): array
     {
         $otp = $this->generateOtpFromRaven($input, $merchant, $user);
@@ -3367,6 +3504,7 @@ class Core extends Base\Core
      * @param  Entity          $user
      * @param  array|null      $otp
      * @return array
+     * @throws Throwable
      */
     public function sendOtpViaSms(array $input, $merchant, Entity $user, array $otp = null): array
     {
@@ -3380,19 +3518,36 @@ class Core extends Base\Core
         // Optimization: Do just one call to raven when input.medium = sms.
         $otp = $otp ?: $this->generateOtpFromRaven($input, $merchant, $user);
 
-        $payload = [
-            'receiver' => $user->getContactMobile(),
-            'source'   => "api.user.{$input['action']}",
-            'template' => 'sms.user.' . $input[Entity::ACTION],
-            'params'   => [
+        if (in_array($input[Entity::ACTION],Constants::SEND_SMS_VIA_STORK,true) === true)
+        {
+            $smsPayload = $this->generateStorkSmsPayload($input,$merchant,$user);
+
+            $smsPayload['contentParams'] += [
                 'otp'      => $otp['otp'],
                 'validity' => Carbon::createFromTimestamp($otp['expires_at'], Timezone::IST)->format('H:i:s'),
-            ],
-        ];
+            ];
 
-        $payload['params'] += $this->getExtraRavenSmsPayload($input, $merchant);
+            /** @var $stork \RZP\Services\Stork */
+            $stork = $this->app['stork_service'];
 
-        $this->app->raven->sendSms($payload);
+            $stork->sendSms($this->mode,$smsPayload);
+        }
+        else
+        {
+            $payload = [
+                'receiver' => $user->getContactMobile(),
+                'source'   => "api.user.{$input['action']}",
+                'template' => 'sms.user.' . $input[Entity::ACTION],
+                'params'   => [
+                    'otp'      => $otp['otp'],
+                    'validity' => Carbon::createFromTimestamp($otp['expires_at'], Timezone::IST)->format('H:i:s'),
+                ],
+            ];
+
+            $payload['params'] += $this->getExtraRavenSmsPayload($input, $merchant);
+
+            $this->app->raven->sendSms($payload);
+        }
 
         return array_only($otp, 'token');
     }
@@ -3741,6 +3896,60 @@ class Core extends Base\Core
         }
 
         return $payload;
+    }
+
+    /**
+     * Add default stork payload parameters and parameters than are generated during runtime
+     *
+     * @param  array            $input
+     * @param  ?Merchant\Entity $merchant
+     * @param  Entity           $user
+     * @return array
+     */
+    public function generateStorkSmsPayload(array $input, ?Merchant\Entity $merchant,Entity $user): array
+    {
+        if (is_null($merchant) === true)
+        {
+            $orgId = $this->app['basicauth']->getOrgId();
+            // Stork only support merchant and application ownerType hence sending userId
+            // since merchant can be null in some flows
+            $ownerId = $user->getId();
+        }
+        else
+        {
+            $orgId = $merchant->getOrgId();
+
+            $ownerId = $merchant->getId();
+        }
+
+        $smsPayload = [
+            'ownerId'               => $ownerId,
+            'ownerType'             => 'merchant',
+            'templateName'          => 'sms.user.' . $input[Entity::ACTION],
+            'templateNamespace'     => '',
+            'orgId'                 => $orgId,
+            'destination'           => $user->getContactMobile(),
+            'sender'                => 'RZRPAY',
+            'language'              => 'english',
+            'contentParams'         => [
+            ],
+        ];
+
+        switch ($input[Entity::ACTION])
+        {
+            case Constants::X_LOGIN_OTP_ACTION:
+            case Constants::X_VERIFY_USER_ACTION:
+                $smsPayload[Constants::THROW_SMS_EXCEPTION_IN_STORK] = true;
+                $smsPayload['templateNamespace'] = 'razorpayx_acquisition';
+                break;
+
+            case Constants::X_SECOND_FACTOR_AUTH_ACTION:
+                $smsPayload['templateNamespace'] = 'razorpayx_acquisition';
+                break;
+
+        }
+
+        return $smsPayload;
     }
 
     /**

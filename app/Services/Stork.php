@@ -46,6 +46,8 @@ class Stork
     const TEST_TEMPLATE       = 'sms.test.template';
     const CONTEXT             = 'context';
 
+    const THROW_SMS_EXCEPTION_IN_STORK  = 'THROW_SMS_EXCEPTION_IN_STORK';
+
     /**
      * Name of owning service for requests to stork.
      * @var string
@@ -230,6 +232,7 @@ class Stork
      * @param array        $input
      * @param bool|boolean $mockInTestMode
      *
+     * @throws Throwable
      * @return array
      */
     public function sendSms(string $mode, array $input, bool $mockInTestMode = true): array
@@ -277,6 +280,15 @@ class Stork
                     Trace::CRITICAL,
                     TraceCode::STORK_SMS_REQUEST_FAILED
                 );
+
+                // Raven throws exception hence
+                if (empty($input[self::THROW_SMS_EXCEPTION_IN_STORK]) === false and
+                    $input[self::THROW_SMS_EXCEPTION_IN_STORK] === true)
+                {
+                    throw $e;
+                }
+
+                return [];
             }
         }
     }

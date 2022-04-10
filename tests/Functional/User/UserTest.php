@@ -1099,6 +1099,43 @@ class UserTest extends TestCase
         return $this->startTest();
     }
 
+    public function testMobileVerifyOtpForXWithNewSmsTemplate()
+    {
+        $this->enableRazorXTreatmentForRazorX();
+
+        $this->fixtures->create('user', [
+            'id'                      => '10000000000000',
+            'password'                => 'hello123',
+            'contact_mobile'          => '+919999999999',
+            'contact_mobile_verified' => true,
+        ]);
+
+        $this->ba->appAuth();
+
+        $smsPayload = [
+            'success'    => true,
+            'otp'        => '0007',
+            'expires_at' => Carbon::now()->addMinutes(30)->timestamp,
+            'context'    => 'user_id:x_login_otp:token',
+        ];
+
+        $ravenMock = $this->getMockBuilder(Raven::class)
+            ->setConstructorArgs([$this->app])
+            ->onlyMethods(['verifyOtp'])
+            ->getMock();
+
+        $this->app->instance('raven', $ravenMock);
+
+        $ravenMock->expects($this->once())->method('verifyOtp')->with([
+            'receiver'  => '+919999999999',
+            'context'   => '10000000000000:x_login_otp:10000000000000',
+            'source'    => 'api.user.x_login_otp',
+            'otp'       => '0007'
+        ])->willReturn($smsPayload);
+
+        $this->startTest();
+    }
+
     public function testMobileLoginVerifyOtpForXReturnsOtpAuthToken()
     {
         $testData = & $this->testData['testMobileLoginVerifyOtp'];
@@ -1716,6 +1753,27 @@ class UserTest extends TestCase
         $this->startTest();
     }
 
+    public function testMobileSendVerificationOtpForXWithNewSmsTemplateAndSendViaStork()
+    {
+        $this->enableRazorXTreatmentForRazorX();
+
+        $this->fixtures->create('user', [
+            'email'                   => 'user@domain.com',
+            'password'                => 'hello123',
+            'contact_mobile'          => '+919999999999',
+        ]);
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('stork_service', $storkMock);
+
+        $this->expectStorkSendSmsRequest($storkMock, 'sms.user.x_verify_user', '+919999999999', []);
+
+        $this->startTest();
+    }
+
     public function testMobileSendVerificationOtpMultipleAccounts()
     {
         $user1 = $this->fixtures->create('user', ['contact_mobile' => '9012345678', 'password' => 'hello123', 'contact_mobile_verified' => true]);
@@ -1772,6 +1830,42 @@ class UserTest extends TestCase
         $user = $this->getDbEntityById('user',  $user['id']);
 
         $this->assertTrue($user->getConfirmedAttribute());
+    }
+
+    public function testVerificationMobileVerifyOtpForXWithNewSmsTemplate()
+    {
+        $this->enableRazorXTreatmentForRazorX();
+
+        $this->fixtures->create('user', [
+            'id'                      => '10000000000000',
+            'password'                => 'hello123',
+            'contact_mobile'          => '+919999999999',
+        ]);
+
+        $this->ba->appAuth();
+
+        $smsPayload = [
+            'success'    => true,
+            'otp'        => '0007',
+            'expires_at' => Carbon::now()->addMinutes(30)->timestamp,
+            'context'    => 'user_id:x_verify_user:token',
+        ];
+
+        $ravenMock = $this->getMockBuilder(Raven::class)
+            ->setConstructorArgs([$this->app])
+            ->onlyMethods(['verifyOtp'])
+            ->getMock();
+
+        $this->app->instance('raven', $ravenMock);
+
+        $ravenMock->expects($this->once())->method('verifyOtp')->with([
+            'receiver'  => '+919999999999',
+            'context'   => '10000000000000:x_verify_user:10000000000000',
+            'source'    => 'api.user.x_verify_user',
+            'otp'       => '0007'
+        ])->willReturn($smsPayload);
+
+        $this->startTest();
     }
 
     public function testVerificationMobileVerifyOtp()
@@ -2968,6 +3062,68 @@ class UserTest extends TestCase
         $testData['request']['content'] = $content;
 
         $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+    }
+
+    public function testFailedLogin2faForXWithNewSmsTemplateAndSendsViaStork()
+    {
+        $this->enableRazorXTreatmentForRazorX();
+
+        $this->fixtures->create('user', [
+            'email'                   => 'user@domain.com',
+            'password'                => 'hello123',
+            'second_factor_auth'      => true,
+            'contact_mobile'          => '9999999999',
+            'contact_mobile_verified' => true,
+        ]);
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('stork_service', $storkMock);
+
+        $this->expectStorkSendSmsRequest($storkMock, 'sms.user.x_second_factor_auth', '9999999999', []);
+
+        $this->startTest();
+    }
+
+    public function testVerify2faForXWithNewSmsTemplate()
+    {
+        $this->enableRazorXTreatmentForRazorX();
+
+        $this->fixtures->create('user', [
+            'id'                      => '10000000000000',
+            'email'                   => 'user@domain.com',
+            'password'                => 'hello123',
+            'second_factor_auth'      => true,
+            'contact_mobile'          => '9999999999',
+            'contact_mobile_verified' => true,
+        ]);
+
+        $this->ba->appAuth();
+
+        $smsPayload = [
+            'success'    => true,
+            'otp'        => '0007',
+            'expires_at' => Carbon::now()->addMinutes(30)->timestamp,
+            'context'    => 'user_id:x_second_factor_auth:token',
+        ];
+
+        $ravenMock = $this->getMockBuilder(Raven::class)
+            ->setConstructorArgs([$this->app])
+            ->onlyMethods(['verifyOtp'])
+            ->getMock();
+
+        $this->app->instance('raven', $ravenMock);
+
+        $ravenMock->expects($this->once())->method('verifyOtp')->with([
+            'receiver'  => '9999999999',
+            'context'   => '10000000000000:x_second_factor_auth:10000000000000',
+            'source'    => 'api',
+            'otp'       => '0007'
+        ],false)->willReturn($smsPayload);
 
         $this->startTest();
     }
@@ -6367,6 +6523,30 @@ class UserTest extends TestCase
         $testData['request']['content'] = $content;
 
         $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+    }
+
+    public function testMobileLoginForXWithNewSmsTemplateAndSendsViaStork()
+    {
+        $this->enableRazorXTreatmentForRazorX();
+
+        $this->fixtures->create('user', [
+            'id'                      => '10000000000000',
+            'email'                   => 'user@domain.com',
+            'password'                => 'hello123',
+            'second_factor_auth'      => true,
+            'contact_mobile'          => '9999999999',
+            'contact_mobile_verified' => true,
+        ]);
+
+        $this->ba->appAuth();
+
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('stork_service', $storkMock);
+
+        $this->expectStorkSendSmsRequest($storkMock, 'sms.user.x_login_otp', '9999999999', []);
 
         $this->startTest();
     }

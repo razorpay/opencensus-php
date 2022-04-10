@@ -740,6 +740,23 @@ return [
         ],
     ],
 
+    'testMobileLoginForXWithNewSmsTemplateAndSendsViaStork' => [
+        'request' => [
+            'url'     => '/users/login/otp',
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
+            ],
+            'content' => [
+                'contact_mobile'        => '9999999999',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
+
     'testMobileLoginVerifyOtp' => [
         'request' => [
             'url'     => '/users/login/otp/verify',
@@ -748,6 +765,35 @@ return [
                 'otp'            => '0007',
                 'token'          => 'Gvt61zZ3Iwzcqy',
                 'contact_mobile' => '9012345678',
+                'captcha'        => 'faked'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'confirmed'               => true,
+                'merchants'               => [
+                    [
+                        'activated'    => false,
+                        'archived_at'  => null,
+                        'suspended_at' => null,
+                        'role'         => 'owner'
+                    ]
+                ]
+            ],
+        ],
+    ],
+
+    'testMobileVerifyOtpForXWithNewSmsTemplate' => [
+        'request' => [
+            'url'     => '/users/login/otp/verify',
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
+            ],
+            'content' => [
+                'otp'            => '0007',
+                'token'          => '10000000000000',
+                'contact_mobile' => '+919999999999',
                 'captcha'        => 'faked'
             ],
         ],
@@ -1087,6 +1133,24 @@ return [
         ],
     ],
 
+    'testMobileSendVerificationOtpForXWithNewSmsTemplateAndSendViaStork' => [
+        'request' => [
+            'url'     => '/users/login/verification-otp',
+            'method'  => 'POST',
+            'server'        => [
+                'HTTP_X-Request-Origin'     => config('applications.banking_service_url'),
+            ],
+            'content' => [
+                'contact_mobile'    => '+919999999999',
+                'password'          => 'hello123'
+            ],
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ]
+    ],
+
     'testMobileSendVerificationOtpMultipleAccounts' => [
         'request' => [
             'url'     => '/users/login/otp',
@@ -1116,6 +1180,35 @@ return [
                 'otp'            => '0007',
                 'token'          => 'Gvt61zZ3Iwzcqy',
                 'email'          => 'a@gmail.com',
+                'captcha'        => 'faked',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'confirmed'               => true,
+                'merchants'               => [
+                    [
+                        'activated'    => false,
+                        'archived_at'  => null,
+                        'suspended_at' => null,
+                        'role'         => 'owner'
+                    ]
+                ]
+            ],
+        ],
+    ],
+
+    'testVerificationMobileVerifyOtpForXWithNewSmsTemplate' => [
+        'request' => [
+            'url'     => '/users/login/verification-otp/verify',
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
+            ],
+            'content' => [
+                'otp'            => '0007',
+                'token'          => '10000000000000',
+                'contact_mobile' => '+919999999999',
                 'captcha'        => 'faked',
             ],
         ],
@@ -2117,6 +2210,52 @@ return [
             'class'               => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_USER_2FA_SETUP_REQUIRED,
         ],
+    ],
+
+    'testFailedLogin2faForXWithNewSmsTemplateAndSendsViaStork' => [
+        'request' => [
+            'url'     => '/users/login',
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
+            ],
+            'content' => [
+                'email'                 => 'user@domain.com',
+                'password'              => 'hello123',
+                'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_USER_2FA_LOGIN_OTP_REQUIRED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_USER_2FA_LOGIN_OTP_REQUIRED,
+        ],
+    ],
+
+    'testVerify2faForXWithNewSmsTemplate' => [
+        'request' => [
+            'url'     => '/users/2fa/verify',
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Request-Origin'     => config('applications.banking_service_url'),
+                'HTTP_X-Dashboard-User-Id'  => '10000000000000'
+            ],
+            'content' => [
+                'otp'            => '0007',
+            ],
+        ],
+        'response' => [
+            'content'     => [],
+            'status_code' => 200,
+        ]
     ],
 
     'testFailed2faSetupVerifyMobileWrongOtp' => [
