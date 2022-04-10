@@ -129,7 +129,15 @@ class Payout extends Base
 
         $spreadsheet = $reader->load($filePath);
 
-        assertTrue($spreadsheet->getSheetCount() === 1);
+        if ($spreadsheet->getSheetCount() !== 1)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_VALIDATION_FAILED,
+                null,
+                null,
+                "No of sheets should be 1"
+            );
+        }
 
         $rows = $spreadsheet->getActiveSheet()->toArray(null, false);
 
