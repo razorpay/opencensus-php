@@ -924,6 +924,7 @@ class Name
     const BULK_REGENERATE_API_KEYS              = 'bulk_regenerate_api_keys';
 
     const ADD_MERCHANT_EMAIL                    = 'add_merchant_email';
+    const MANAGE_TOKEN_IINS                     = 'manage_token_iins';
 
     // Permission to allow use of master DB instead of slave
     const USE_MASTER_DB_CONNECTION              = 'use_master_db_connection';

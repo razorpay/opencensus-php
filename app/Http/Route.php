@@ -3413,6 +3413,13 @@ class Route
 
         'get_affordability_suite'                 => ['get',          'affordability',                                         'AffordabilityController@__invoke'                             ],
 
+
+     //Tokenisation Bin internal routes
+        'create_token_iin'                          =>  ['post',       'tokens/iin',                                       'TokenisedIinController@createIin'                                    ],
+        'fetch_token_iin'                           =>  ['post',       'tokens/iin/fetch/{iin}',                           'TokenisedIinController@fetchIin'                                     ],
+        'update_token_iin'                          =>  ['post',       'tokens/iin/update/{iin}',                          'TokenisedIinController@updateIin'                                    ],
+        'fetch_token_iin_by_range'                  =>  ['post',       'tokens/iin/{iin}',                                 'TokenisedIinController@fetchbyTokenIin'                              ],
+
         'shipping_provider_list'                   => ['get',      '1cc/shipping_providers',                              'ShippingProviderController@list'                           ],
         'shipping_provider_post'                   => ['post',     '1cc/shipping_providers',                              'ShippingProviderController@create'                           ],
         'shipping_provider_patch'                  => ['put',      '1cc/shipping_providers/{id}',                        'ShippingProviderController@update'                           ],
@@ -3978,6 +3985,12 @@ class Route
 
         'user_fetch_self',
         '1cc_merchant_preferences',
+
+          // Tokenisation Bin crud routes
+        'create_token_iin',
+        'fetch_token_iin',
+        'update_token_iin',
+        'fetch_token_iin_by_range',
     ];
 
     // Only routes defined in internalApps go here
@@ -6558,6 +6571,7 @@ class Route
         'purpose_code_admin',
 
         'update_merchant_sla_for_on_hold_payouts',
+
     ];
 
     public static $routePermission = [
@@ -7762,7 +7776,6 @@ class Route
         'admin_patch_purpose_code'            => Permission::EDIT_MERCHANT,
 
         'update_merchant_sla_for_on_hold_payouts'           => Permission::SET_MERCHANT_SLA_FOR_ON_HOLD_PAYOUTS,
-
     ];
 
     public static $bankingRoutePermissions = [

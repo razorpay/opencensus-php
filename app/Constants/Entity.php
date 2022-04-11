@@ -165,9 +165,9 @@ class Entity
     const UPI_TRANSFER_REQUEST       = 'upi_transfer_request';
     const BANKING_ACCOUNT_COMMENT    = 'banking_account_comment';
     const ORDER_META                 = 'order_meta';
+    const TOKENISED_IIN              = 'tokenised_iin';
+  
     const RAW_ADDRESS                = 'raw_address';
-
-
     const FUND_TRANSFER_ATTEMPT      = 'fund_transfer_attempt';
     const BANK_TRANSFER_HISTORY      = 'bank_transfer_history';
     const BANK_TRANSFER_REQUEST      = 'bank_transfer_request';
@@ -780,6 +780,7 @@ class Entity
     ];
 
     public static $namespace = [
+        self::TOKENISED_IIN             => \RZP\Models\Card\TokenisedIIN::class,
         self::IIN                       => \RZP\Models\Card\IIN::class,
         self::P2P                       => \RZP\Models\P2p::class,
         self::VPA                       => \RZP\Models\Vpa::class,

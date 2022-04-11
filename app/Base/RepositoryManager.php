@@ -194,6 +194,7 @@ use RZP\Base\Database\Connectors\MySqlConnector;
  * @property Models\VirtualAccountProducts\Repository                 $virtual_account_products
  * @property Models\Merchant\OneClickCheckout\AuthConfig\Repository   $merchant_1cc_auth_configs
  * @property Models\Offer\Repository                                  $offer
+ * @property Models\Card\TokenisedIIN\Repository                      $tokenised_iin;
  * @property Models\Offer\EntityOffer\Repository                      $entity_offer
  * @property Models\Transaction\Statement\Ledger\Journal\Repository         $journal
  * @property Models\Transaction\Statement\Ledger\Account\Repository         $ledger_account

@@ -417,6 +417,8 @@ class Table
     // Merchant configs for 1cc
     const MERCHANT_SLABS = 'merchant_slabs';
     const MERCHANT_1CC_CONFIGS = 'merchant_1cc_configs';
+
+    const TOKENISED_IIN = 'tokenised_iins';
     const MERCHANT_1CC_AUTH_CONFIGS = 'merchant_1cc_auth_configs';
 
     // Ledger
