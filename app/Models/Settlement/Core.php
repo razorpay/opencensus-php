@@ -775,7 +775,7 @@ class Core extends Base\Core
         return $timestamp;
     }
 
-    public function MigrateMerchantConfiguration($merchantId, $via, $mode)
+    public function MigrateMerchantConfiguration($merchantId, $via, $mode,&$bankAccountFailurePutOnHold)
     {
         $merchant = $this->repo->merchant->fetchMerchantOnConnection($merchantId, $mode);
 
@@ -832,6 +832,12 @@ class Core extends Base\Core
             $response['config']['features']['block']['reason'] = 'merchants opted out on settlement';
         }
 
+        if ($bankAccountFailurePutOnHold[$mode] === true)
+        {
+            $response['config']['features']['hold']['status'] = true;
+            $response['config']['features']['hold']['reason'] = 'merchant BA details incorrect';
+        }
+
         $payoutSupportedChannels = [
             Channel::AXIS,
             Channel::RBL,
@@ -878,6 +884,14 @@ class Core extends Base\Core
         }
 
         $request = array_merge($req, $response);
+
+        $this->trace->info(
+            TraceCode::SETTLEMENT_SERVICE_MC_MIGRATION_UPDATE_REQUEST,
+            [
+                'merchant' => $merchant->getId(),
+                'request'  => $request,
+                'mode'     => $mode,
+            ]);
 
         $result = app('settlements_api')->migrateMerchantConfigUpdate($request, $mode);
 

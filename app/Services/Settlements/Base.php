@@ -71,6 +71,12 @@ class Base
     // RSR-1970 merchant dashboard AUTH
     const SERVICE_MERCHANT_DASHBOARD     = 'merchant_dashboard';
 
+    const DUMMY_ACCOUNT_NUMBER           = 'RzpAccountNumber12345679';
+    const DUMMY_BENE_NAME                = 'Razorpay Temp Bene Name';
+    const DUMMY_IFSC_CODE                = 'ABCD0123456';
+    const IFSC_REGEX                     = '/^[A-Z]{4}0[A-Z0-9]{6}$/';
+    const ACC_NUMBER_REGEX               = '/^[a-zA-Z0-9]$/';
+
     /**
      * Settlements Base constructor.
      *
@@ -326,25 +332,6 @@ class Base
         return $attributeValue;
     }
 
-    public function stringPadInMiddle($attribute,$minLength,$character)
-    {
-        // if length is lesser than 2
-        while (strlen($attribute)<=1)
-        {
-            // we can throw exception as well,but might cause migration fails. Post data fix , all such merchants will be put on Hold.
-           $attribute=$attribute.'0';
-        }
-
-        //if length is at-least 2, but less than minimum length. So insert characters in the middle of string till length becomes appropriate.
-        //similar to what we do currently
-        while (strlen($attribute)<$minLength)
-        {
-            $attribute = substr_replace($attribute, $character, strlen($attribute)/2, 0);
-        }
-
-        return $attribute;
-    }
-
     public function replaceWithDummyForBAAttribute($attribute,$minLength,$maxLength,$pattern,$dummyValue)
     {
         if (strlen($attribute)<$minLength || strlen($attribute)>$maxLength )
@@ -356,25 +343,6 @@ class Base
             return $dummyValue;
         }
         return $attribute;
-    }
-
-    public function getAppropriateBeneNameOfMerchant($beneName)
-    {
-        //regex : over length , and second : can begin with alphanumeric and end with alphanumeric or '.' Special characters only allowed at the middle.
-        // all valid characters which can be present in bene name
-        $pattern            ='/[^a-zA-Z0-9-_.&,()\' ]/';
-
-        //only valid characters, should be allowed. So invalid characters are removed, and length trimmed to max 40
-        $beneName           = $this->getBAAttributeAppropriateToNSS($beneName,$pattern,'',40);
-
-        $beneName           = ltrim($beneName,'-_.&,()\' ');
-
-        //bene name can terminate with '.'
-        $beneName           = rtrim($beneName,'-_&,()\' ');
-
-        $beneName           = (strlen($beneName)<4)?$this->stringPadInMiddle($beneName, 4, ' '):$beneName;
-
-        return $beneName;
     }
 
     public function getBankAccountCreateRequestForSettlementService($ba, $via = 'payout')

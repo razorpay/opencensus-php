@@ -207,41 +207,14 @@ class migration extends Job
                 $resource,
                 function () use($featureResult, &$migrationResult, &$isFailure)
                 {
-                    if($this->migrateMerchantConfig === true)
-                    {
-                        try
-                        {
-                            (new Core)->MigrateMerchantConfiguration($this->merchantId, $this->via, Mode::LIVE);
 
-                            $migrationResult[self::SUCCESSFUL_STEPS][Mode::LIVE][self::MERCHANT_CONFIG_MIGRATION] = true;
-                        }
-                        catch(\Throwable $e)
-                        {
-                            $isFailure = true;
-                            $migrationResult[self::FAILED_STEPS][Mode::LIVE][self::MERCHANT_CONFIG_MIGRATION][self::STATUS] = true;
-                            $migrationResult[self::FAILED_STEPS][Mode::LIVE][self::MERCHANT_CONFIG_MIGRATION][self::REASON] = $e->getMessage();
-                        }
-
-                        try
-                        {
-                            (new Core)->MigrateMerchantConfiguration($this->merchantId, $this->via, Mode::TEST);
-
-                            $migrationResult[self::SUCCESSFUL_STEPS][Mode::TEST][self::MERCHANT_CONFIG_MIGRATION] = true;
-
-                        }
-                        catch(\Throwable $e)
-                        {
-                            $isFailure = true;
-                            $migrationResult[self::FAILED_STEPS][Mode::TEST][self::MERCHANT_CONFIG_MIGRATION][self::STATUS] = true;
-                            $migrationResult[self::FAILED_STEPS][Mode::TEST][self::MERCHANT_CONFIG_MIGRATION][self::REASON] = $e->getMessage();
-                        }
-                    }
+                    $bankAccountFailurePutOnHold = array(Mode::LIVE=>false,Mode::TEST=>false);
 
                     if($this->migrateBankAccount === true)
                     {
                         try
                         {
-                            (new BankAccount)->MigrateBankAccountsToSettlementService($this->merchantId, $this->via, Mode::LIVE);
+                            (new BankAccount)->MigrateBankAccountsToSettlementService($this->merchantId, $this->via, Mode::LIVE,$bankAccountFailurePutOnHold);
 
                             $migrationResult[self::SUCCESSFUL_STEPS][Mode::LIVE][self::BANK_ACCOUNT_MIGRATION] = true;
                         }
@@ -254,7 +227,7 @@ class migration extends Job
 
                         try
                         {
-                            (new BankAccount)->MigrateBankAccountsToSettlementService($this->merchantId, $this->via, Mode::TEST);
+                            (new BankAccount)->MigrateBankAccountsToSettlementService($this->merchantId, $this->via, Mode::TEST,$bankAccountFailurePutOnHold);
 
                             $migrationResult[self::SUCCESSFUL_STEPS][Mode::TEST][self::BANK_ACCOUNT_MIGRATION] = true;
                         }
@@ -263,6 +236,36 @@ class migration extends Job
                             $isFailure = true;
                             $migrationResult[self::FAILED_STEPS][Mode::TEST][self::BANK_ACCOUNT_MIGRATION][self::STATUS] = true;
                             $migrationResult[self::FAILED_STEPS][Mode::TEST][self::BANK_ACCOUNT_MIGRATION][self::REASON] = $e->getMessage();
+                        }
+                    }
+
+                    if($this->migrateMerchantConfig === true)
+                    {
+                        try
+                        {
+                            (new Core)->MigrateMerchantConfiguration($this->merchantId, $this->via, Mode::LIVE,$bankAccountFailurePutOnHold);
+
+                            $migrationResult[self::SUCCESSFUL_STEPS][Mode::LIVE][self::MERCHANT_CONFIG_MIGRATION] = true;
+                        }
+                        catch(\Throwable $e)
+                        {
+                            $isFailure = true;
+                            $migrationResult[self::FAILED_STEPS][Mode::LIVE][self::MERCHANT_CONFIG_MIGRATION][self::STATUS] = true;
+                            $migrationResult[self::FAILED_STEPS][Mode::LIVE][self::MERCHANT_CONFIG_MIGRATION][self::REASON] = $e->getMessage();
+                        }
+
+                        try
+                        {
+                            (new Core)->MigrateMerchantConfiguration($this->merchantId, $this->via, Mode::TEST,$bankAccountFailurePutOnHold);
+
+                            $migrationResult[self::SUCCESSFUL_STEPS][Mode::TEST][self::MERCHANT_CONFIG_MIGRATION] = true;
+
+                        }
+                        catch(\Throwable $e)
+                        {
+                            $isFailure = true;
+                            $migrationResult[self::FAILED_STEPS][Mode::TEST][self::MERCHANT_CONFIG_MIGRATION][self::STATUS] = true;
+                            $migrationResult[self::FAILED_STEPS][Mode::TEST][self::MERCHANT_CONFIG_MIGRATION][self::REASON] = $e->getMessage();
                         }
                     }
                 },

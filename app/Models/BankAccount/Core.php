@@ -597,7 +597,90 @@ class Core extends Base\Core
         return (new Bucket\Core)->shouldProcessViaNewService($merchantId);
     }
 
-    public function MigrateBankAccountsToSettlementService($merchantId, $via , $mode)
+    public function verifyCriticalDetailsForSettlementElseReplaceAndOnHold($ba,$mid,$mode,&$putOnHold)
+    {
+        $dummyAccNumber= \RZP\Services\Settlements\Base::DUMMY_ACCOUNT_NUMBER;
+
+        $dummyBeneName=\RZP\Services\Settlements\Base::DUMMY_BENE_NAME;
+
+        $dummyIfscCode=\RZP\Services\Settlements\Base::DUMMY_IFSC_CODE;
+
+        if ($putOnHold[$mode]===true)
+        {
+            // In this mode no BA is present
+            $input=null;
+
+            $input[BankAccount\Entity::BENEFICIARY_NAME]=$dummyBeneName;
+
+            $input[BankAccount\Entity::IFSC_CODE]=$dummyIfscCode;
+
+            $input[BankAccount\Entity::ACCOUNT_NUMBER]=$dummyAccNumber;
+
+            $ba=(new BankAccount\Entity())->build($input);
+
+            $ba->setAttribute(BankAccount\Entity::TYPE,Type::MERCHANT);
+
+            $ba->setAttribute(BankAccount\Entity::MERCHANT_ID,$mid);
+
+            $this->trace->info(
+                TraceCode::SETTLEMENT_SERVICE_BA_MIGRATION_MISSING,
+                [
+                    'Ba'          => $ba,
+                    'mode'        => $mode,
+                    'on hold'     => $putOnHold,
+                    'message'     => 'merchant put on Hold in this mode,as BA missing.'
+                ]);
+
+            return $ba;
+        }
+
+        $accNumber = $ba->getAccountNumber();
+
+        $ifscCode  = $ba->getIfscCode();
+
+        $beneName  = $ba->getBeneficiaryName();
+
+        $ifscCodePattern = \RZP\Services\Settlements\Base::IFSC_REGEX;
+
+        $accNumberPattern = \RZP\Services\Settlements\Base::ACC_NUMBER_REGEX;
+
+        $beneNamePattern = fundAccountValidator::NAME_REGEX;
+
+        if (preg_match($accNumberPattern, $accNumber)!=1 || strlen($accNumber)<1 || strlen($accNumber)>40)
+        {
+            $ba->setAccountNumber($dummyAccNumber);
+
+            $putOnHold[$mode]=true;
+        }
+
+        if (preg_match($ifscCodePattern, $ifscCode)!=1)
+        {
+            $ba->setIfscAttribute($dummyIfscCode);
+
+            $putOnHold[$mode]=true;
+        }
+
+        if (preg_match($beneNamePattern, $beneName)!=1 || strlen($beneName)>40 || strlen($beneName)<4)
+        {
+            $ba->setBeneficiaryName($dummyBeneName);
+
+            $putOnHold[$mode]=true;
+        }
+
+        $this->trace->info(
+            TraceCode::SETTLEMENT_SERVICE_BA_MIGRATION_MISSING,
+            [
+                'Ba'          => $ba,
+                'mode'        => $mode,
+                'on hold'     => $putOnHold,
+                'message'     => 'merchant put on Hold in this mode,as BA critical details are invalid.'
+            ]);
+
+
+        return $ba;
+    }
+
+    public function MigrateBankAccountsToSettlementService($merchantId, $via , $mode,&$bankAccountFailurePutOnHold)
     {
         $merchant = $this->repo->merchant->fetchMerchantOnConnection($merchantId, $mode);
 
@@ -606,24 +689,45 @@ class Core extends Base\Core
         if($ba === null)
         {
             $this->trace->info(
-                TraceCode::SETTLEMENT_SERVICE_BA_MIGRATION_SKIPPED,
+                TraceCode::SETTLEMENT_SERVICE_BA_MIGRATION_MISSING,
                 [
                     'merchant_id' => $merchant->getId(),
                     'mode'        => $mode,
                     'via'         => $via,
+                    'message'     => 'merchant put on Hold in this mode,as BA is missing.'
                 ]);
 
-            return;
+            $bankAccountFailurePutOnHold[$mode]=true;
         }
+        $this->trace->info(
+            TraceCode::SETTLEMENT_SERVICE_BA_MIGRATION_CRITICAL_DETAILS,
+            [
+                'merchant_id' => $merchant->getId(),
+                'mode'        => $mode,
+                'message'     => 'STARTING VERIFICATION',
+                'BA'          => $ba,
+            ]);
+
+        $ba=$this->verifyCriticalDetailsForSettlementElseReplaceAndOnHold($ba,$merchantId,$mode,$bankAccountFailurePutOnHold);
+
+        $this->trace->info(
+            TraceCode::SETTLEMENT_SERVICE_BA_MIGRATION_CRITICAL_DETAILS,
+            [
+                'merchant_id' => $merchant->getId(),
+                'mode'        => $mode,
+                'bank type'   => gettype($ba),
+                'message'     => 'VERIFYING CRITICAL DETAILS DONE'
+            ]);
 
         app('settlements_api')->migrateBankAccount($ba, $mode, $via);
 
         $this->trace->info(
             TraceCode::SETTLEMENT_SERVICE_BA_MIGRATION_SUCCESS,
             [
-                'merchant_id' => $merchant->getId(),
-                'mode'        => $mode,
-                'via'         => $via,
+                'merchant_id'            => $merchant->getId(),
+                'mode'                   => $mode,
+                'via'                    => $via,
+                'merchant on hold'       => $bankAccountFailurePutOnHold
             ]);
     }
 
