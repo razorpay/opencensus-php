@@ -231,6 +231,10 @@ export const offerId = {
   title: 'Offer Id',
   value: makeIdLink('offer'),
 };
+export const OfferIdWithoutLink = {
+  title: 'Offer Id',
+  value: (item) => item[`${item.entity === 'offer' ? '' : `offer_`}id`],
+};
 export const offerTitle = {
   title: 'Title',
   value: (item) => item.name,
