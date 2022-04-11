@@ -490,37 +490,28 @@ class ViewDataSerializerHosted extends Base\Core
             $serialized[Entity::CUSTOMER_DETAILS] = '';
         }
 
-        $treatment = $this->app->razorx->getTreatment(
-            $this->merchant->getId(),
-            Merchant\RazorxTreatment::BLOCK_CUSTOMER_PREFILL,
-            $this->mode ?? Mode::LIVE
-        );
-
-        if ($treatment === 'on')
+        // Unsets customer_details
+        if (!empty($serialized[Entity::CUSTOMER_DETAILS]) === true)
         {
-            // Unsets customer_details if block_customer_prefill experiment is enabled
-            if (!empty($serialized[Entity::CUSTOMER_DETAILS]) === true)
+            // make is_contact_or_email_present is true
+            // so that it can be used to pass customer_id to checkout
+            if (isset($serialized[Entity::CUSTOMER_DETAILS][Entity::CUSTOMER_CONTACT]) === true or
+                isset($serialized[Entity::CUSTOMER_DETAILS][Entity::CUSTOMER_EMAIL]) === true)
             {
-                // make is_contact_or_email_present is true
-                // so that it can be used to pass customer_id to checkout
-                if (isset($serialized[Entity::CUSTOMER_DETAILS][Entity::CUSTOMER_CONTACT]) === true or
-                    isset($serialized[Entity::CUSTOMER_DETAILS][Entity::CUSTOMER_EMAIL]) === true)
-                {
-                    $serialized[Entity::CUSTOMER_DETAILS][Entity::IS_CONTACT_OR_EMAIL_PRESENT] = true;
-                }
-                else
-                {
-                    $serialized[Entity::CUSTOMER_DETAILS][Entity::IS_CONTACT_OR_EMAIL_PRESENT] = false;
-                }
-
-                $serialized[Entity::CUSTOMER_DETAILS][Entity::NAME] = '';
-                $serialized[Entity::CUSTOMER_DETAILS][Entity::EMAIL] = '';
-                $serialized[Entity::CUSTOMER_DETAILS][Entity::CONTACT] = '';
-
-                $serialized[Entity::CUSTOMER_DETAILS][Entity::CUSTOMER_NAME] = '';
-                $serialized[Entity::CUSTOMER_DETAILS][Entity::CUSTOMER_EMAIL] = '';
-                $serialized[Entity::CUSTOMER_DETAILS][Entity::CUSTOMER_CONTACT] = '';
+                $serialized[Entity::CUSTOMER_DETAILS][Entity::IS_CONTACT_OR_EMAIL_PRESENT] = true;
             }
+            else
+            {
+                $serialized[Entity::CUSTOMER_DETAILS][Entity::IS_CONTACT_OR_EMAIL_PRESENT] = false;
+            }
+
+            $serialized[Entity::CUSTOMER_DETAILS][Entity::NAME] = '';
+            $serialized[Entity::CUSTOMER_DETAILS][Entity::EMAIL] = '';
+            $serialized[Entity::CUSTOMER_DETAILS][Entity::CONTACT] = '';
+
+            $serialized[Entity::CUSTOMER_DETAILS][Entity::CUSTOMER_NAME] = '';
+            $serialized[Entity::CUSTOMER_DETAILS][Entity::CUSTOMER_EMAIL] = '';
+            $serialized[Entity::CUSTOMER_DETAILS][Entity::CUSTOMER_CONTACT] = '';
         }
 
         // Unsets Customer_id for all the status if FF 'skip_customer_id_checkout' is true

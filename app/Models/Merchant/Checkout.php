@@ -505,21 +505,12 @@ class Checkout
             }
         }
 
-        $treatment = $this->app->razorx->getTreatment(
-            $merchant->getId(),
-            Merchant\RazorxTreatment::BLOCK_CUSTOMER_PREFILL,
-            $mode
-        );
-
-        if ($treatment === 'on')
+        // Unsets Customer email, name and contact
+        if (isset($data['customer']) === true)
         {
-            // Unsets Customer email, name and contact if block_customer_prefill experiment is enabled
-            if (isset($data['customer']) === true)
-            {
-                $data['customer']['email'] = '';
-                $data['customer']['contact'] = '';
-                $data['customer']['name'] = '';
-            }
+            $data['customer']['email'] = '';
+            $data['customer']['contact'] = '';
+            $data['customer']['name'] = '';
         }
 
         // Add invoice's order details

@@ -64,6 +64,9 @@ return [
         ],
         'invoice' => [
             'customer_details' => [
+                'name'                         => '',
+                'email'                        => '',
+                'contact'                      => '',
                 'billing_address' => [
                     'type'    => 'billing_address',
                     'line1'   => 'billing address line 1',

@@ -373,9 +373,6 @@ final class RazorxTreatment
     // Experiment to enable on_hold payouts creation via payouts service
     const ENABLE_ON_HOLD_PAYOUTS_VIA_PAYOUTS_SERVICE = 'enable_on_hold_payouts_via_payouts_service';
 
-    // Experiment to block customer prefill on checkout
-    const BLOCK_CUSTOMER_PREFILL = 'block_customer_prefill';
-
     const ROUTE_ORDER_TO_PG_ROUTER = "route_order_to_pg_router";
 
     //Experiment to allow mtu coupon code application
