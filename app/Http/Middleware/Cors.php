@@ -103,7 +103,8 @@ class Cors
                 'x-send-email-otp',
                 // Added to allow access to users api for non confirmed user
                 'x-signup-flow-v2',
-                'x-xsrf-token'
+                'x-xsrf-token',
+                'request-start-time'
             ];
 
             $headers = [
