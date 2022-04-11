@@ -9233,7 +9233,9 @@ class Service extends Base\Service
 
         $response['first_commission_payout'] = $this->repo->commission->isCommissionPayoutPresentForPartner($partnerId);
 
-        $response['api_integration'] = $this->repo->entity_origin->isOriginApplicationPresentForPartner($partnerId);
+        $entityOrigins = $this->repo->entity_origin->fetchOriginApplicationsForPartner($partnerId, 2);
+
+        $response['api_integration'] = count($entityOrigins) > 0;
 
         $response['first_submerchant_accept_payments'] = $this->repo->merchant_access_map
             ->isLiveSubmerchantPresentForPartner($partnerId);

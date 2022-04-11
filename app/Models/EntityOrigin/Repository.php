@@ -26,15 +26,16 @@ class Repository extends BaseRepository
                     ->first();
     }
 
-    public function isOriginApplicationPresentForPartner(string $partnerId)
+    public function fetchOriginApplicationsForPartner(string $partnerId, int $limit = 100)
     {
         $merchantApplicationIdColumn = $this->repo->merchant_application->dbColumn(MerchantApplicationsEntity::APPLICATION_ID);
         $originIdColumn = $this->dbColumn(Entity::ORIGIN_ID);
         $merchantIdColumn = $this->repo->merchant_application->dbColumn(MerchantApplicationsEntity::MERCHANT_ID);
-        return $this->newQuery()
+        return $this->newQueryWithConnection($this->getPaymentFetchReplicaConnection())
                     ->join(Constants\Table::MERCHANT_APPLICATION, $originIdColumn, '=', $merchantApplicationIdColumn)
                     ->where(Entity::ORIGIN_TYPE, EntityOriginConstants::APPLICATION)
                     ->where($merchantIdColumn, '=', $partnerId)
-                    ->exists();
+                    ->limit($limit)
+                    ->get();
     }
 }
