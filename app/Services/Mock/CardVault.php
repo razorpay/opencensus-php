@@ -102,7 +102,6 @@ class CardVault extends BaseCardVault
                 'provider_data'  => [
                     'token_reference_number'     => $token,
                     'payment_account_reference'  => strrev($token),
-                    'card_reference_number'      => strrev($token),
                     'token_iin'                  => '453335',
                     'token_expiry_month'         => 12,
                     'token_expiry_year'          => 2021,
@@ -141,7 +140,6 @@ class CardVault extends BaseCardVault
                 'provider_data'  => [
                     'token_reference_number'     => $token,
                     'payment_account_reference'  => strrev($token),
-                    'card_reference_number'      => strrev($token),
                     'token_iin'                  => '453335',
                     'token_expiry_month'         => 12,
                     'token_expiry_year'          => 2021,
@@ -191,7 +189,6 @@ class CardVault extends BaseCardVault
                 'data'  => [
                     'token_reference_number'     => $token,
                     'payment_account_reference'  => strrev($token),
-                    'card_reference_number'      => strrev($token),
                     'interoperable'              => true,
                 ]
             ]

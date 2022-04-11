@@ -189,7 +189,6 @@ class TokenTest extends TestCase
                         'provider_data'  => [
                             'token_reference_number'     => $token,
                             'payment_account_reference'  => strrev($token),
-                            'card_reference_number'      => strrev($token),
                             'token_expiry_month'         => '11',
                             'token_expiry_year'          => '2022',
                             'token_iin'                  => $token_iin,
@@ -229,7 +228,6 @@ class TokenTest extends TestCase
                        'provider_data'  => [
                            'token_reference_number'     => $token,
                            'payment_account_reference'  => strrev($token),
-                           'card_reference_number'  => strrev($token),
                            'token_iin'              => '400000',
                            'token_expiry_month'     => '12',
                            'token_expiry_year'      => '2023',
@@ -251,7 +249,6 @@ class TokenTest extends TestCase
                        'provider_data'  => [
                            'token_reference_number'    => '',
                            'payment_account_reference' => '',
-                           'card_reference_number'     => '',
                            'token_iin' => '',
                            'token_number' => $dummyCardNumber,
                            'cryptogram_value' => 12,
@@ -484,7 +481,6 @@ class TokenTest extends TestCase
                     'provider_data'  => [
                         'token_reference_number'     => $token,
                         'payment_account_reference'  => strrev($token),
-                        'card_reference_number'      => strrev($token),
                         'token_expiry_month'         => $input['card']['expiry_month'],
                         'token_expiry_year'          => $expiry_year,
                         'token_iin'                  => $token_iin,
@@ -690,7 +686,6 @@ class TokenTest extends TestCase
                     'provider_data'  => [
                         'token_reference_number'     => $token,
                         'payment_account_reference'  => strrev($token),
-                        'card_reference_number'      => strrev($token),
                         'token_expiry_month'         => '11',
                         'token_expiry_year'          => '2022',
                         'token_iin'                  => $token_iin,
@@ -904,7 +899,6 @@ class TokenTest extends TestCase
                     'provider_data'  => [
                         'token_reference_number'     => $token,
                         'payment_account_reference'  => strrev($token),
-                        'card_reference_number'      => strrev($token),
                         'token_expiry_month' => 0,
                         'token_expiry_year' => 0,
                         'token_iin' => "",
@@ -985,7 +979,6 @@ class TokenTest extends TestCase
                     'provider_data'  => [
                         'token_reference_number'     => $token,
                         'payment_account_reference'  => strrev($token),
-                        'card_reference_number'      => strrev($token),
                         'token_expiry_month'         => $input['card']['expiry_month'],
                         'token_expiry_year'          => $expiry_year,
                         'token_iin'                  => $token_iin,
@@ -1070,7 +1063,6 @@ class TokenTest extends TestCase
                     'provider_data'  => [
                         'token_reference_number'     => $token,
                         'payment_account_reference'  => strrev($token),
-                        'card_reference_number'      => strrev($token),
                         'token_expiry_month'         => $input['card']['expiry_month'],
                         'token_expiry_year'          => $expiry_year,
                         'token_iin'                  => $token_iin,
@@ -1190,7 +1182,6 @@ class TokenTest extends TestCase
                     'provider_data'  => [
                         'token_reference_number'    => '',
                         'payment_account_reference' => '',
-                        'card_reference_number'     => '',
                         'token_iin' => '',
                         'token_number' => $dummyCardNumber,
                         'cryptogram_value' => 12,
@@ -1433,7 +1424,6 @@ class TokenTest extends TestCase
                     'provider_data'  => [
                         'token_reference_number'     => $token,
                         'payment_account_reference'  => strrev($token),
-                        'card_reference_number'  => strrev($token),
                         'token_iin'              => '400000',
                         'token_expiry_month'     => '12',
                         'token_expiry_year'      => '2023',
@@ -1499,7 +1489,6 @@ class TokenTest extends TestCase
                     'provider_data' => [
                         'token_reference_number'     => $token,
                         'payment_account_reference'  => strrev($token),
-                        'card_reference_number'      => strrev($token),
                         'token_iin'                  => '400000',
                         'token_expiry_month'         => '12',
                         'token_expiry_year'          => '2023',
@@ -1808,7 +1797,6 @@ class TokenTest extends TestCase
                     'provider_data'  => [
                         'token_reference_number'     => $token,
                         'payment_account_reference'  => strrev($token),
-                        'card_reference_number'      => strrev($token),
                         'token_iin'                  => '400000',
                         'token_expiry_month'         => '12',
                         'token_expiry_year'          => '2023',

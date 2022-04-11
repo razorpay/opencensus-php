@@ -1176,8 +1176,8 @@ class TokenisationTest extends TestCase
                             'status'         => 'created',
                             'interoperable'  => true,
                             'provider_data'  => [
-                                'token_reference_number' => $token,
-                                'card_reference_number'  => strrev($token),
+                                'token_reference_number'     => $token,
+                                'payment_account_reference'  => strrev($token),
                                 'token_expiry_month'     => $input['card']['expiry_month'],
                                 'token_expiry_year'      => $expiry_year,
                                 'token_iin'              => $token_iin,

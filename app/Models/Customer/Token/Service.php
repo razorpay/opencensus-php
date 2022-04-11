@@ -816,7 +816,6 @@ class Service extends Base\Service
                 $response['service_provider_tokens'][0]['provider_data'] = [
                     'token_reference_number'     => $token->card->getVaultToken(),
                     'payment_account_reference'  => $token->card->getGlobalFingerPrint(),
-                    'card_reference_number'      => $token->card->getGlobalFingerPrint(),
                     'token_iin'                  => null,
                     'token_expiry_month'         => null,
                     'token_expiry_year'          => null,
@@ -829,7 +828,6 @@ class Service extends Base\Service
                 $response['service_provider_tokens'][0]['provider_data'] = [
                     'token_reference_number'     => $token->card->getVaultToken(),
                     'payment_account_reference'  => $token->card->getGlobalFingerPrint(),
-                    'card_reference_number'      => $token->card->getGlobalFingerPrint(),
                     'token_iin'                  => $token->card->getIin(),
                     'token_expiry_month'         => $token->card->getExpiryMonth(),
                     'token_expiry_year'          => $token->card->getExpiryYear(),
