@@ -21,6 +21,7 @@ echo "eslint check successful"
 stylelint web/js/merchant/views/TermsAndCondition/**/*.{js,jsx,ts,tsx} \
   web/js/merchant/views/referral/**/*.{js,jsx,ts,tsx} \
   web/js/merchant/views/onboarding/**/*.{js,jsx,ts,tsx} \
+  web/js/merchant/views/PartnerDashboard/Home/**/*.{js,jsx,ts,tsx} \
   web/js/common/hooks/**/*.{js,jsx,ts,tsx} \
   web/js/common/context/**/*.{js,jsx,ts,tsx} \
   web/js/common/components/**/*.{js,jsx,ts,tsx} \

@@ -30,6 +30,7 @@
     "js/merchant/views/referral",
     "js/merchant/views/onboarding",
     "js/merchant/views/Settlements",
+    "js/merchant/views/PartnerDashboard",
     "js/merchant/views/Navigator",
     "js/merchant/hooks",
     "js/common/hooks",

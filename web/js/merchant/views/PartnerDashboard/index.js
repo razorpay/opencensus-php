@@ -1,6 +1,8 @@
-import { Route, Switch, Redirect } from 'react-router-dom';
+import store from 'merchant/store';
+import { Route, Switch } from 'react-router-dom';
 
 import { ShowWhenRoute } from 'merchant/components/ShowWhen';
+import { ShowWhenRoute as showWhenRoutex } from 'merchant_common/components/ShowWhen';
 
 import SubMerchantList from './SubMerchant/List';
 import Settings from './Settings';
@@ -8,13 +10,21 @@ import Earnings from './Earnings';
 import Subvention from './Subvention';
 import Applications from './Applications';
 import Reports from './Reports';
+import Home from './Home';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
+
+const PartnerShowWhenRoute = showWhenRoutex(store, '/partners/submerchants');
 
 export default function PartnerDashboard() {
   return (
     <ErrorBoundary resetOnProps>
       <Switch>
-        <Redirect to="/partners/submerchants" from="/partners" exact />
+        <PartnerShowWhenRoute
+          additionalCondition={(user) => user.isPartner() && user.isPartnershipFUX}
+          path="/partners"
+          component={Home}
+          exact
+        />
         <ShowWhenRoute
           additionalCondition={(user) => user.isPartner('aggregator', 'fully_managed')}
           path="/partners/settings"

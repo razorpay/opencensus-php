@@ -1,0 +1,268 @@
+.partner-dashboard-home {
+  $screen-xs-max = 767px;
+  $desktop-wide = 1170px;
+
+  .no-break {
+    white-space: nowrap;
+  }
+
+  .page-heading {
+    font-size: 24px;
+    font-weight: 700;
+    color: #162f563d;
+    margin: 22px;
+    padding-top: 16px;
+
+    @media screen and (max-width: $screen-xs-max) {
+      padding-top: 50px;
+    }
+  }
+
+  .referral-guide-card {
+    display: flex;
+    background: url('https://cdn.razorpay.com/static/assets/partner-dashboard/fux-cards/referral-guide-bg.svg') no-repeat top left / 90% 100% #fff;
+    padding-bottom: 50px;
+    box-shadow: 0 2px 12px -8px;
+    border-radius: 4px;
+    margin: 22px;
+    overflow: hidden;
+
+    @media screen and (max-width: $desktop-wide) {
+      display: block;
+    }
+
+    @media screen and (max-width: $screen-xs-max) {
+      background-image: unset;
+    }
+
+    .content-title {
+      color: #58666E;
+      font-size: 16px;
+      font-weight: 700;
+      padding-bottom: 2px;
+    }
+
+    .content-sub-title {
+      color: #6f7691;
+    }
+
+    .referral-guide {
+      width: 50%;
+      padding: 25px 0 0 40px;
+
+      @media screen and (max-width: $desktop-wide) {
+        width: 100%;
+        padding: 16px;
+      }
+
+      &__title {
+        color: #162f56de;
+        font-weight: 700;
+        font-size: 18px;
+      }
+
+      &__sub-title {
+        color: #162f568a;
+        font-weight: 400;
+        font-size: 13px;
+      }
+
+      .referral-action {
+        background: url('https://cdn.razorpay.com/static/assets/partner-dashboard/fux-cards/referral-action-bg.svg') center left -10px / 108% 115%;
+        max-width: 510px;
+        display: flex;
+        margin-top: 15px;
+        border-radius: 4px;
+        box-shadow: 0 2px 12px -8px;
+        padding: 25px 40px;
+
+        @media screen and (max-width: $desktop-wide) {
+          padding: 16px;
+        }
+
+        &__icon {
+          position: relative;
+          height: 50px;
+          width: 25px;
+
+          @media screen and (max-width: $desktop-wide) {
+            margin-right: 20px;
+          }
+
+          > img {
+            position: absolute;
+            left: -70px;
+            top: 8px;
+
+            @media screen and (max-width: $desktop-wide) {
+              left: -50px;
+            }
+          }
+        }
+
+        .referral-content {
+          margin-left: 18px;
+
+          @media screen and (max-width: $desktop-wide) {
+            margin-left: 12px;
+            margin-top: 16px;
+          }
+
+          &__cta {
+            padding-top: 6px;
+          }
+        }
+      }
+    }
+
+    .product-list {
+      margin-top: 45px;
+      width: 50%;
+      position: relative;
+
+      @media screen and (max-width: $desktop-wide) {
+        margin-top: 0;
+        width: 100%;
+        padding: 0 16px;
+        background-image: none;
+      }
+
+      .product-icon {
+        position: absolute;
+        bottom: -75px;
+        right: -5px;
+
+        @media screen and (max-width: $desktop-wide) {
+          display: none;
+        }
+      }
+
+      .product-container {
+        width: 100%;
+        margin-top: 35px;
+        margin-left: 18px;
+
+        @media screen and (max-width: $desktop-wide) {
+          margin-top: 16px;
+          width: 100%;
+        }
+
+        .product-list-item {
+          display: flex;
+          margin-top: 25px;
+
+          @media screen and (max-width: $desktop-wide) {
+            margin-top: 0;
+          }
+
+          > img {
+            height: 32px;
+          }
+
+          .product-item {
+            display: flex;
+            cursor: pointer;
+
+            @media screen and (max-width: $desktop-wide) {
+              flex-wrap: wrap;
+              width: 100%;
+            }
+
+            .product-cta {
+              padding-top: 6px;
+              font-weight: 700;
+              color: #2b83ea;
+              display: flex;
+              align-items: center;
+
+              @media screen and (max-width: $desktop-wide) {
+                margin-left: 18px;
+              }
+
+              &__content {
+                margin-right: 18px;
+                background: none;
+                border: none;
+              }
+            }
+
+            .content-group {
+              margin-left: 18px;
+              width: 265px;
+
+              @media screen and (max-width: $desktop-wide) {
+                max-width: 100%;
+                width: 70%;
+              }
+            }
+          }
+
+          &:not(:first-child) {
+            margin-top: 20px;
+
+            @media screen and (max-width: $desktop-wide) {
+              margin-top: 10px;
+            }
+          }
+        }
+      }
+    }
+
+    .api-loader {
+      position: relative;
+      right: 6px;
+    }
+  }
+
+  .recommendation-shimmer {
+    .primary-shimmer {
+      margin-right: 8px;
+
+      .side-space {
+        width: 70%;
+
+        .shimmer-loader {
+          &:first-child {
+            height: 12px;
+            width: 70%;
+          }
+
+          &:not(:first-child):not(:last-child) {
+            width: 100%;
+            height: 10px;
+            margin: 16px 0;
+          }
+
+          &:last-child {
+            width: 50%;
+            height: 10px;
+            margin-top: 24px;
+          }
+        }
+      }
+    }
+
+    .secondary-shimmer {
+      .sec-content {
+        margin-top: 24px;
+      }
+
+      .side-space {
+        width: 70%;
+
+        .shimmer-loader {
+          &:first-child {
+            width: 70%;
+            height: 12px;
+          }
+
+          &:not(:first-child) {
+            width: 100%;
+            height: 10px;
+            margin-top: 10px;
+          }
+        }
+      }
+    }
+  }
+}

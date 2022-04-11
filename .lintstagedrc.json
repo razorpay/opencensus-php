@@ -2,6 +2,7 @@
   "web/js/merchant/views/TermsAndCondition/**/*.(js|jsx|ts|tsx)": ["eslint", "stylelint"],
   "web/js/merchant/views/referral/**/*.(js|jsx|ts|tsx)": ["eslint", "stylelint"],
   "web/js/merchant/views/onboarding/**/*.(js|jsx|ts|tsx)": ["eslint", "stylelint"],
+  "web/js/merchant/views/PartnerDashboard/Home/**/*.(js|jsx|ts|tsx)": ["eslint", "stylelint"],
   "web/js/common/hooks/**/*.(js|jsx|ts|tsx)": ["eslint", "stylelint"],
   "web/js/common/context/**/*.(js|jsx|ts|tsx)": ["eslint", "stylelint"],
   "web/js/common/services/**/*.(js|jsx|ts|tsx)": ["eslint", "stylelint"],

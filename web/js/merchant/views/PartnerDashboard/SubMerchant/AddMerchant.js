@@ -57,9 +57,23 @@ export default class AddMerchant extends Component {
       referralData: '',
       isFormValid: false,
     };
-    if (!props.user.isPartnershipForXEnabled) {
-      state.step = 2;
-      state.merchantType = PRODUCT_TYPE.PG;
+    switch (props.addType) {
+      case PRODUCT_TYPE.PG: {
+        state.step = 2;
+        state.merchantType = PRODUCT_TYPE.PG;
+        break;
+      }
+      case PRODUCT_TYPE.X: {
+        state.step = 2;
+        state.merchantType = PRODUCT_TYPE.X;
+        break;
+      }
+      default: {
+        if (!props.user.isPartnershipForXEnabled) {
+          state.step = 2;
+          state.merchantType = PRODUCT_TYPE.PG;
+        }
+      }
     }
     this.state = state;
   }
