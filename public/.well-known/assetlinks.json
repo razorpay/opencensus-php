@@ -1,0 +1,13 @@
+[
+  {
+    "target": {
+      "package_name": "com.razorpay.payments.app",
+      "sha256_cert_fingerprints": [
+        "F8:6A:B7:49:17:F5:93:51:3B:6E:D6:A3:75:7F:0B:76:F4:55:A9:78:BF:CB:49:4B:EB:B9:C6:B0:AD:99:C0:56",
+        "C9:67:A2:35:1C:47:84:85:4A:44:69:F0:FC:11:FF:B8:47:BF:B0:5D:FD:F8:40:00:B2:6B:47:1F:AB:2A:E8:5E"
+      ],
+      "namespace": "android_app"
+    },
+    "relation": ["delegate_permission/common.handle_all_urls"]
+  }
+]
