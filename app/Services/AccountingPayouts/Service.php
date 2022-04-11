@@ -84,7 +84,9 @@ class Service
     {
         $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::TALLY_ACK_CASHFLOW_ENTRIES);
 
-        return $this->makeRequest($merchant, $url, $input, null, [], 'POST', MODE::LIVE);
+        $app = array_pull($input, 'app', '');
+
+        return $this->makeRequest($merchant, $url, $input, $app, [], 'POST', MODE::LIVE);
     }
 
     public function updateMappingCashFlowEntries(MerchantEntity $merchant, array $input)
