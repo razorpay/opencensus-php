@@ -51,7 +51,7 @@ class Validator extends Merchant\Validator
         Constants::CATEGORY          => 'required|string',
         Constants::SUBCATEGORY       => 'required|string',
         Constants::DESCRIPTION       =>  array ('sometimes','regex:/^[\p{L} ,@#-.%\/]{1,255}$/u'),
-        Constants::BUSINESS_MODEL    => 'sometimes|string|custom',
+        Constants::BUSINESS_MODEL    => 'sometimes|string',
     ];
 
     protected static $editProfileRules = [
@@ -60,7 +60,7 @@ class Validator extends Merchant\Validator
         Constants::CATEGORY          => 'sometimes|string',
         Constants::SUBCATEGORY       => 'sometimes|string',
         Constants::DESCRIPTION       =>  array ('sometimes','regex:/^[\p{L} ,@#-.%\/]{1,255}$/u'),
-        Constants::BUSINESS_MODEL    => 'sometimes|string|custom'
+        Constants::BUSINESS_MODEL    => 'sometimes|string'
     ];
 
     protected static $accountAddressRules = [
@@ -240,14 +240,6 @@ class Validator extends Merchant\Validator
         $tosAcceptance = $input[Constants::TOS_ACCEPTANCE];
 
         $this->validateInput('tosAcceptance', $tosAcceptance);
-    }
-
-    protected function validateBusinessModel($attribute, $value)
-    {
-        if (in_array(strtoupper($value), Constants::$validBusinessModels, true) === false)
-        {
-            throw new BadRequestValidationFailureException('Invalid business model: ' . $value, Constants::BUSINESS_MODEL);
-        }
     }
 
     protected function validateContactInfo(array $input, string $action = '')
