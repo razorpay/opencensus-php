@@ -11,9 +11,8 @@ class Validator extends Base\Validator
         Constants::SHIPPING_PROVIDER_ID     => 'required|string|size:14',
         Constants::ENABLE_COD               => 'sometimes|boolean',
         Constants::COD_FEE_RULE             => 'required_if:enable_cod,true',
-        Constants::SHIPPING_FEE_RULE        => 'required_if:provider_type,shiprocket',
-        Constants::WAREHOUSE_PINCODE        => 'required_if:provider_type,shiprocket|string|size:6',
-        Constants::PROVIDER_TYPE            => 'required|string|in:razorpay,shiprocket,merchant',
+        Constants::SHIPPING_FEE_RULE        => 'required',
+        Constants::WAREHOUSE_PINCODE        => 'required|string|size:6',
     ];
 
     protected static $feeRuleRules = [
