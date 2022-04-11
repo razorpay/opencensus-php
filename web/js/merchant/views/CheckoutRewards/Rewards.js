@@ -309,9 +309,9 @@ export default class Rewards extends Component {
     }
 
     if (isSlideUp) {
-      $(`.Rewards--list--item-${subsection}`).slideUp();
+      $(`.Rewards--list--item-${subsection}`).slideUp(); // nosemgrep : javascript.jquery.security.audit.jquery-insecure-selector.jquery-insecure-selector
     } else {
-      $(`.Rewards--list--item-${subsection}`).slideDown();
+      $(`.Rewards--list--item-${subsection}`).slideDown(); // nosemgrep : javascript.jquery.security.audit.jquery-insecure-selector.jquery-insecure-selector
     }
 
     this.setState({

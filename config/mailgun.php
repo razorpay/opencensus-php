@@ -26,7 +26,7 @@ return [
      * Mailgun public API key
      *
      */
-    'public_api_key' => env('MAILGUN_PUBLIC_KEY', 'pubkey-69fd2327dc8d9680275d619cc5ff90fe'),
+    'public_api_key' => env('MAILGUN_PUBLIC_KEY', 'pubkey-69fd2327dc8d9680275d619cc5ff90fe'), // nosemgrep : generic.secrets.security.detected-mailgun-api-key.detected-mailgun-api-key
 
     /**
      * Domain name registered with Mailgun

@@ -150,11 +150,11 @@ class WithdrawalsRoot extends Component {
       if (wcError) {
         return 'Error while loading WC.';
       }
-      return <Redirect to={`${CASH_ADVANCE_BASE_URL}${CASH_ADVANCE_SECTIONS.OVERVIEW}`} />;
+      return <Redirect to={`${CASH_ADVANCE_BASE_URL}${CASH_ADVANCE_SECTIONS.OVERVIEW}`} />; // nosemgrep : https://semgrep.dev/s/w48P
     } else if (hasLOCStage2Feature) {
       return OnboardingSection;
     } else if (isLOSEnabled && isLOCEnabled) {
-      return <Redirect to={`${CASH_ADVANCE_BASE_URL}apply`} />;
+      return <Redirect to={`${CASH_ADVANCE_BASE_URL}apply`} />; // nosemgrep : https://semgrep.dev/s/w48P
     } else {
       return <Redirect to="/" />;
     }

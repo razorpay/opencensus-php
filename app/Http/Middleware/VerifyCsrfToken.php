@@ -167,7 +167,7 @@ class VerifyCsrfToken extends BaseVerifier
 
         $xsrfCookieToken = $request->cookie('XSRF-TOKEN');
 
-        app('trace')->info(TraceCode::MISMATCHED_VERIFY_TOKEN, [
+        app('trace')->info(TraceCode::MISMATCHED_VERIFY_TOKEN, [ // nosemgrep : php.lang.security.weak-crypto.weak-crypto
             'session_token' => md5($sessionToken ?? ''),
             'verify_token'  => md5($token ?? ''),
             'xsrf_token'    => md5($xsrfCookieToken ?? ''),
@@ -207,7 +207,7 @@ class VerifyCsrfToken extends BaseVerifier
             return false;
         }
 
-        app('trace')->info(TraceCode::TOKEN_MATCH_TRACE, [
+        app('trace')->info(TraceCode::TOKEN_MATCH_TRACE, [ // nosemgrep : php.lang.security.weak-crypto.weak-crypto
             'session_token'      => md5($sessionToken ?? ''),
             '_token'             => md5($request->input('_token') ?? ''),
             'x_csrf_token'       => md5($request->header('X-CSRF-TOKEN') ?? ''),
