@@ -1,0 +1,4 @@
+URL/URL Path to exclude: https://invoices.razorpay.com/
+time period of domain ownership: 2013-08-23 to Present
+Period to exclude: 2013-08-23 to Future
+
