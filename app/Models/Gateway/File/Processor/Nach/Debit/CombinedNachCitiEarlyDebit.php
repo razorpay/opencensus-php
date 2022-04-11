@@ -111,7 +111,7 @@ class CombinedNachCitiEarlyDebit extends PaperNachCiti
         return $fileName;
     }
 
-    protected function getDate()
+    protected function getDate(): string
     {
         return Carbon::now(Timezone::IST)->addDay()->format('dmY');
     }

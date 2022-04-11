@@ -22,7 +22,6 @@ use RZP\Exception\GatewayErrorException;
 use RZP\Gateway\Enach\Citi\HeadingsLength;
 use RZP\Mail\Gateway\Nach\Base as NachMail;
 use RZP\Gateway\Enach\Citi\Fields as Fields;
-use RZP\Gateway\Base\Action as GatewayAction;
 use RZP\Mail\Base\Constants as MailConstants;
 use RZP\Services\Beam\Service as BeamService;
 use RZP\Models\Gateway\File\Processor\Nach\Debit;
@@ -384,10 +383,7 @@ class PaperNachCiti extends Debit\Base
         return $rows;
     }
 
-    public function getNachDebitData(
-        Token\Entity $token,
-        string $paymentId
-    )
+    public function getNachDebitData(Token\Entity $token, string $paymentId): array
     {
         $isValid = $this->validateData($token);
 
@@ -462,7 +458,7 @@ class PaperNachCiti extends Debit\Base
         return substr($pad_str, 0, $size);
     }
 
-    public function getTextData($data, $prependLine = '', string $glue = '|')
+    public function getTextData($data, $prependLine = '', string $glue = '|'): string
     {
         $ignoreLastNewline = true;
 
@@ -564,93 +560,9 @@ class PaperNachCiti extends Debit\Base
         return $tokens;
     }
 
-
-    public function generateData(PublicCollection $tokens): PublicCollection
-    {
-        try
-        {
-            $data = $tokens;
-
-            // Create gateway entities
-            $this->createGatewayEntities($tokens);
-
-            return $data;
-        }
-        catch (\Throwable $e)
-        {
-            throw new GatewayFileException(
-                ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_DATA,
-                [
-                    'id' => $this->gatewayFile->getId(),
-                ],
-                $e);
-        }
-    }
-
-    protected function createGatewayEntities(PublicCollection $tokens)
-    {
-        foreach ($tokens as $token)
-        {
-            if ($token['terminal']->getGateway() === Payment\Gateway::ENACH_NPCI_NETBANKING)
-            {
-                $paymentId = $token['payment_id'];
-
-                $gatewayPayment = $this->repo->enach->findByPaymentIdAndAction(
-                    $paymentId, GatewayAction::AUTHORIZE);
-
-                //
-                // If gatewayPayment already exists then skip its creation.
-                // This case will arise when we retry sending some payments to the bank
-                //
-                if ($gatewayPayment !== null)
-                {
-                    continue;
-                }
-
-                $this->createGatewayEntity($token);
-            }
-        }
-    }
-
-    protected function createGatewayEntity($token)
-    {
-        $paymentId = $token['payment_id'];
-
-        $gatewayPayment = $this->getNewGatewayPaymentEntity();
-
-        $gatewayPayment->setPaymentId($paymentId);
-
-        $gatewayPayment->setAction(GatewayAction::AUTHORIZE);
-
-        $gatewayPayment->setBank($token['bank']);
-
-        $gatewayPayment->setAmount($token['payment_amount']);
-
-        $attributes = $this->getGatewayAttributes($token);
-
-        $gatewayPayment->fill($attributes);
-
-        $this->repo->saveOrFail($gatewayPayment);
-
-        return $gatewayPayment;
-    }
-
-    protected function getNewGatewayPaymentEntity()
-    {
-        return new Enach\Base\Entity;
-    }
-
-    protected function getGatewayAttributes($token): array
-    {
-        return [
-            Enach\Base\Entity::ACQUIRER => Payment\Gateway::ACQUIRER_CITI,
-            Enach\Base\Entity::UMRN     => $token['gateway_token'],
-        ];
-    }
-
     protected function increaseAllowedSystemLimits()
     {
-        RuntimeManager::setMemoryLimit('14336'); // 14GB
+        RuntimeManager::setMemoryLimit('20480'); // 20GB
 
         RuntimeManager::setTimeLimit(7200);
 
@@ -667,7 +579,7 @@ class PaperNachCiti extends Debit\Base
         return true;
     }
 
-    protected function getDate()
+    protected function getDate(): string
     {
         return Carbon::now(Timezone::IST)->format('dmY');
     }
