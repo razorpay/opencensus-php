@@ -1129,6 +1129,23 @@ class Service extends Base\Service
 
     public function retrieveRefundByIdAndPaymentId($paymentId, $rfndId)
     {
+        $scroogeRefundArray = [];
+        $experiment = false;
+
+        $variant = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(),
+            RefundConstants::RAZORX_KEY_REFUND_FETCH_BY_ID_AND_PAYMENT_FROM_SCROOGE,
+            $this->mode
+        );
+
+        if ($variant === RefundConstants::RAZORX_VARIANT_ON)
+        {
+            $experiment = true;
+
+            $scroogeResponse = $this->app['scrooge']->refundsFetchByIdAndPayment($paymentId, $rfndId);
+
+            $scroogeRefundArray = $scroogeResponse['body'];
+        }
+
         Payment\Entity::verifyIdAndStripSign($paymentId);
         Refund\Entity::verifyIdAndStripSign($rfndId);
 
@@ -1137,7 +1154,14 @@ class Service extends Base\Service
                                     $paymentId,
                                     $this->merchant->getKey());
 
-        return $refund->toArrayPublic();
+        $refundArray = $refund->toArrayPublic();
+
+        if ($experiment === true)
+        {
+            (new Refund\Service())->compareRefundsAndLogDifference([$refundArray], [$scroogeRefundArray]);
+        }
+
+        return $refundArray;
     }
 
     public function getCardForPayment($id)
@@ -1154,8 +1178,34 @@ class Service extends Base\Service
         return $card->toArrayPublic();
     }
 
-    public function retrieveRefundsForPayment($id)
+    public function retrieveRefundsForPayment($id, array $input = [])
     {
+        $scroogeRefundsArray = [];
+        $experiment = false;
+
+        // Route only private auth and not proxy auth requests to scrooge
+        if ($this->app['basicauth']->isStrictPrivateAuth() === true)
+        {
+            // Expands is not supported in strict private auth, but requests could still come at the moment
+            // Not moving them to scrooge right away. Need to handle validation part on scrooge for such additional params
+            if (empty($input) === true)
+            {
+                $variant = $this->app->razorx->getTreatment($id,
+                    RefundConstants::RAZORX_KEY_REFUND_FETCH_BY_PAYMENT_FROM_SCROOGE,
+                    $this->mode
+                );
+
+                if ($variant === RefundConstants::RAZORX_VARIANT_ON)
+                {
+                    $experiment = true;
+
+                    $scroogeResponse = $this->app['scrooge']->refundsFetchByPayment($id, $input);
+
+                    $scroogeRefundsArray = $scroogeResponse['body'];
+                }
+            }
+        }
+
         $payment = $this->repo->payment->findByPublicIdAndMerchant($id, $this->merchant);
 
         $refunds = $this->repo->refund->findForPaymentAndMerchant($payment, $this->merchant);
@@ -1165,6 +1215,11 @@ class Service extends Base\Service
         if ($this->app['basicauth']->isProxyAuth() === true)
         {
             (new Payment\Refund\Service())->addModeAndPublicStatus($refundsArray);
+        }
+
+        if ($experiment === true)
+        {
+            (new Refund\Service())->compareRefundsAndLogDifference($refundsArray['items'], $scroogeRefundsArray['items'] ?? []);
         }
 
         return $refundsArray;

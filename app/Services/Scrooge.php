@@ -36,6 +36,7 @@ class Scrooge
 
     const RefundBaseURL = 'refund';
     const RefundsBaseURL = 'refunds';
+    const PaymentsBaseURL = 'payments';
     const ListBaseURL = 'list';
     const MerchantsBaseURL = 'merchants';
 
@@ -883,5 +884,29 @@ class Scrooge
             self::RefundsBaseURL . '/' . $id,
             Requests::GET,
             $input);
+    }
+
+    public function refundsFetchMultiple(array $input): array
+    {
+        return $this->sendRequest(
+            self::RefundsBaseURL,
+            Requests::GET,
+            $input);
+    }
+
+    public function refundsFetchByPayment($paymentId, array $input): array
+    {
+        return $this->sendRequest(
+            self::PaymentsBaseURL . '/' . $paymentId . '/' . self::URLS['get_refunds'],
+            Requests::GET,
+            $input);
+    }
+
+    public function refundsFetchByIdAndPayment($paymentId, $refundId): array
+    {
+        return $this->sendRequest(
+            self::PaymentsBaseURL . '/' . $paymentId . '/' . self::URLS['get_refunds'] . '/' . $refundId,
+            Requests::GET,
+            []);
     }
 }

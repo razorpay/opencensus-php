@@ -253,7 +253,9 @@ class PaymentController extends Controller
 
     public function getRefundsForPayment($paymentId)
     {
-        $refunds = $this->service()->retrieveRefundsForPayment($paymentId);
+        $input = Request::all();
+
+        $refunds = $this->service()->retrieveRefundsForPayment($paymentId, $input);
 
         return ApiResponse::json($refunds);
     }

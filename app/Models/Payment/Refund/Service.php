@@ -28,6 +28,7 @@ use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Refund;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Jobs\ScroogeRefundUpdate;
+use RZP\Models\Base\UniqueIdEntity;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Error\PublicErrorDescription;
 use RZP\Jobs\BulkScroogeVerifyRefund;
@@ -471,6 +472,11 @@ class Service extends Base\Service
 
     public function fetch($id, array $input = [])
     {
+        if (empty($input) === false)
+        {
+            $this->trace->info(TraceCode::REFUNDS_FETCH_BY_ID_ADDITIONAL_PARAMS, $input);
+        }
+
         $scroogeRefundArray = [];
         $experiment = false;
 
@@ -481,7 +487,7 @@ class Service extends Base\Service
             // Not moving them to scrooge right away. Need to handle validation part on scrooge for such additional params
             if (empty($input) === true)
             {
-                $variant = $this->app->razorx->getTreatment($id,
+                $variant = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(),
                     RefundConstants::RAZORX_KEY_REFUND_FETCH_BY_ID_FROM_SCROOGE,
                     $this->mode
                 );
@@ -512,7 +518,7 @@ class Service extends Base\Service
 
         if ($experiment === true)
         {
-            $this->compareAndLogRefundResponses($refundArray, $scroogeRefundArray);
+            $this->compareRefundsAndLogDifference([$refundArray], [$scroogeRefundArray]);
         }
 
         return $refundArray;
@@ -557,13 +563,78 @@ class Service extends Base\Service
         }
     }
 
-    public function compareAndLogRefundResponses($refundArray, $scroogeRefundArray)
+    /***
+     * @param array $apiRefundsArray api db refunds array
+     * @param array $scroogeRefundsArray scrooge db refunds array
+     * @param array $extraTrace additional trace info to log
+     * @return void
+     */
+    public function compareRefundsAndLogDifference(array $apiRefundsArray, array $scroogeRefundsArray, array $extraTrace = [])
     {
         // Compare scrooge and api response
+        $inconsistentParams = [];
+
+        if (count($apiRefundsArray) !== count($scroogeRefundsArray))
+        {
+            $inconsistentParams['api_refunds_collection_length'] = count($apiRefundsArray);
+            $inconsistentParams['scrooge_refunds_collection_length'] = count($scroogeRefundsArray);
+        }
+
+        foreach ($apiRefundsArray as $apiRefundArray)
+        {
+            $idx = 0;
+
+            foreach ($scroogeRefundsArray as $scroogeRefundArray)
+            {
+                $scroogeRefundId = $scroogeRefundArray[RefundEntity::ID] ?? '';
+
+                if ($apiRefundArray[RefundEntity::ID] === $scroogeRefundId)
+                {
+                    $diffKeys = $this->differenceKeysOfRefunds($apiRefundArray, $scroogeRefundArray);
+
+                    if (empty($diffKeys) === false)
+                    {
+                        $inconsistentParams[$apiRefundArray[RefundEntity::ID]] = $diffKeys;
+                    }
+
+                    break;
+                }
+
+                $idx += 1;
+            }
+
+            if ($idx === count($scroogeRefundsArray))
+            {
+                $inconsistentParams[$apiRefundArray[RefundEntity::ID]] = null;
+            }
+        }
+
+        if (empty($inconsistentParams) === false)
+        {
+            $this->trace->info(TraceCode::SCROOGE_AND_API_REFUNDS_INCONSISTENCY, [
+                'diff'        => $inconsistentParams,
+                'route_name'  => $this->app['api.route']->getCurrentRouteName(),
+                'extra_trace' => $extraTrace,
+            ]);
+        }
+    }
+
+    public function differenceKeysOfRefunds($apiRefundArray, $scroogeRefundArray) : array
+    {
         $responseDiff = [];
 
-        foreach ($refundArray as $key => $value)
+        foreach ($apiRefundArray as $key => $value)
         {
+            if ($key === RefundEntity::NOTES)
+            {
+                if ($scroogeRefundArray[$key] != $value)
+                {
+                    $responseDiff[$key] = $value;
+                }
+
+                continue;
+            }
+
             if ($key === RefundEntity::ACQUIRER_DATA)
             {
                 // casting this to array as acquirer_data is a spine dictionary object, compare would fail
@@ -576,14 +647,7 @@ class Service extends Base\Service
             }
         }
 
-        if (empty($responseDiff) === false)
-        {
-            $this->trace->info(TraceCode::SCROOGE_REFUND_FETCH_BY_ID_INCONSISTENCY, [
-                'diff_keys'        => array_keys($responseDiff),
-                'api_response'     => $refundArray,
-                'scrooge_response' => $scroogeRefundArray,
-            ]);
-        }
+        return array_keys($responseDiff);
     }
 
     public function fetchEntity($id)
@@ -1349,6 +1413,8 @@ class Service extends Base\Service
 
     public function fetchMultiple($input)
     {
+        $this->trace->info(TraceCode::REFUNDS_FETCH_MULTIPLE_REQUEST_BODY, $input);
+
         // We are masking status for merchants
         if ((($this->app['basicauth']->isProxyAuth() === true) or
              ($this->app['basicauth']->isPrivateAuth() === true)) and
@@ -1359,6 +1425,27 @@ class Service extends Base\Service
             unset($input[Entity::STATUS]);
         }
 
+        $scroogeRefundsArray = [];
+        $experiment = false;
+
+        // Route only private auth and not proxy auth requests to scrooge
+        if ($this->app['basicauth']->isStrictPrivateAuth() === true)
+        {
+            $variant = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(),
+                RefundConstants::RAZORX_KEY_REFUND_FETCH_MULTIPLE_FROM_SCROOGE,
+                $this->mode
+            );
+
+            if ($variant === RefundConstants::RAZORX_VARIANT_ON)
+            {
+                $experiment = true;
+
+                $scroogeResponse = $this->app['scrooge']->refundsFetchMultiple($input);
+
+                $scroogeRefundsArray = $scroogeResponse['body'];
+            }
+        }
+
         $refunds = $this->repo->refund->fetch($input, $this->merchant->getId());
 
         $refundsArray = $refunds->toArrayPublic();
@@ -1367,6 +1454,11 @@ class Service extends Base\Service
         if ($this->app['basicauth']->isProxyAuth() === true)
         {
             $this->addPublicStatus($refundsArray, $input);
+        }
+
+        if ($experiment === true)
+        {
+            $this->compareRefundsAndLogDifference($refundsArray['items'], $scroogeRefundsArray['items'] ?? []);
         }
 
         return $refundsArray;

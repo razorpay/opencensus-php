@@ -458,4 +458,118 @@ class Scrooge extends BaseScrooge
             'body' => $scroogeResponseBody
         ];
     }
+
+    public function refundsFetchMultiple(array $input): array
+    {
+        $scroogeResponseBody = [
+            "count" => 2,
+            "entity" => "collection",
+            "items" => [
+                [
+                    "acquirer_data"   => [],
+                    "amount"          => 100,
+                    "batch_id"        => "",
+                    "created_at"      => 1626357774,
+                    "currency"        => "INR",
+                    "entity"          => "refund",
+                    "id"              => "rfnd_JGSYige61Z8Qkr",
+                    "notes"           => [],
+                    "payment_id"      => "pay_HZETs6HPiyDr8n",
+                    "receipt"         => "",
+                    "speed_processed" => "normal",
+                    "speed_requested" => "optimum",
+                    "status"          => "processed"
+                ],
+                [
+                    "acquirer_data"   => [],
+                    "amount"          => 100,
+                    "batch_id"        => "",
+                    "created_at"      => 1626357775,
+                    "currency"        => "INR",
+                    "entity"          => "refund",
+                    "id"              => "rfnd_JGSYige61Z8Qkr",
+                    "notes"           => [],
+                    "payment_id"      => "pay_HZETs6HPiyDr8n",
+                    "receipt"         => "",
+                    "speed_processed" => "normal",
+                    "speed_requested" => "optimum",
+                    "status"          => "processed"
+                ],
+            ]
+        ];
+
+        return [
+            'code' => 200,
+            'body' => $scroogeResponseBody
+        ];
+    }
+
+    public function refundsFetchByPayment($paymentId, array $input): array
+    {
+        $scroogeResponseBody = [
+            "count" => 2,
+            "entity" => "collection",
+            "items" => [
+                [
+                    "acquirer_data"   => [],
+                    "amount"          => 100,
+                    "batch_id"        => "",
+                    "created_at"      => 1626357774,
+                    "currency"        => "INR",
+                    "entity"          => "refund",
+                    "id"              => "rfnd_JGSYige61Z8Qkr",
+                    "notes"           => [],
+                    "payment_id"      => $paymentId,
+                    "receipt"         => "",
+                    "speed_processed" => "normal",
+                    "speed_requested" => "optimum",
+                    "status"          => "processed"
+                ],
+                [
+                    "acquirer_data"   => [],
+                    "amount"          => 100,
+                    "batch_id"        => "",
+                    "created_at"      => 1626357775,
+                    "currency"        => "INR",
+                    "entity"          => "refund",
+                    "id"              => "rfnd_JGSYige61Z8Qkr",
+                    "notes"           => [],
+                    "payment_id"      => $paymentId,
+                    "receipt"         => "",
+                    "speed_processed" => "normal",
+                    "speed_requested" => "optimum",
+                    "status"          => "processed"
+                ],
+            ]
+        ];
+
+        return [
+            'code' => 200,
+            'body' => $scroogeResponseBody
+        ];
+    }
+
+    public function refundsFetchByIdAndPayment($paymentId, $refundId): array
+    {
+        $scroogeResponseBody = [
+            "acquirer_data"   => [],
+            "amount"          => 100,
+            "batch_id"        => "",
+            "created_at"      => 1626357774,
+            "currency"        => "INR",
+            "entity"          => "refund",
+            "id"              => $refundId,
+            "notes"           => [],
+            "payment_id"      => $paymentId,
+            "receipt"         => "",
+            "speed_processed" => "normal",
+            "speed_requested" => "optimum",
+            "status"          => "processed"
+        ];
+
+        return [
+            'code' => 200,
+            'body' => $scroogeResponseBody
+        ];
+    }
 }
