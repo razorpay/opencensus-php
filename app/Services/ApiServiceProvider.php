@@ -95,6 +95,7 @@ use RZP\Models\Merchant\OneClickCheckout\RtoPredictionProvider\Service as RtoPre
 use RZP\Models\Merchant\OneClickCheckout\RtoPredictionService\Client as RtoPredictionServiceClient;
 use RZP\Models\Base\EntityInstrumentationObserver;
 use RZP\Modules\Acs;
+use RZP\Models\Base\DbMigrationMetricsObserver;
 
 class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvider
 {
@@ -135,6 +136,13 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         {
             $entityClass = E::getEntityClass($entity);
             $entityClass::observe(EntityInstrumentationObserver::class);
+        }
+
+        // attach DB Migration metrics observer to DB migration entities
+        foreach (E::DB_MIGRATION_ENTITIES as $entity)
+        {
+            $entityClass = E::getEntityClass($entity);
+            $entityClass::observe(DbMigrationMetricsObserver::class);
         }
 
         // attach account service sync event observer to entities synced between API and account service
@@ -494,6 +502,12 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         {
             return new Acs\SyncEventManager($app);
         });
+
+        $this->app->singleton(DbRequestsBeforeMigrationMetric::class, function($app)
+        {
+            return new DbRequestsBeforeMigrationMetric($app);
+        });
+
 
         $this->registerShield();
 

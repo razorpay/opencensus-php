@@ -1823,4 +1823,32 @@ return [
             ],
         ],
     ],
+
+    'testDbRequestsBeforeMigrationMetric' => [
+        'request' => [
+            'url'      => '/offers',
+            'method'   => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'active'              => true,
+                        'name'                => 'Test Offer',
+                        'payment_method'      => 'card',
+                        'payment_method_type' => 'credit',
+                        'payment_network'     => 'VISA',
+                        'issuer'              => 'HDFC',
+                        'percent_rate'        => 1000,
+                        'processing_time'     => 86400,
+                        'max_payment_count'   => 2,
+                        'starts_at'           => 1514764800,
+                        'ends_at'             => 1546300800,
+                    ]
+                ]
+            ]
+        ]
+    ],
 ];

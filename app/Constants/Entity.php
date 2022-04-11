@@ -759,6 +759,26 @@ class Entity
         Entity::PAYMENT,
     ];
 
+    /**
+     * Entities for which DB migration metric is emitted
+     */
+    const DB_MIGRATION_ENTITIES = [
+        Entity::MERCHANT_SLABS,
+        Entity::APP_STORE,
+        Entity::MERCHANT_1CC_AUTH_CONFIGS,
+        Entity::MERCHANT_1CC_CONFIGS,
+        Entity::MERCHANT_CHECKOUT_DETAIL,
+        Entity::MERCHANT_TNC,
+        Entity::MERCHANT_TNC_ACCEPTANCE,
+        Entity::OFFER,
+        Entity::OFFLINE_DEVICE,
+        Entity::REWARD_COUPON,
+        Entity::REWARD,
+        Entity::MERCHANT_FRESHDESK_TICKETS,
+        Entity::MERCHANT_NOTIFICATION_CONFIG,
+        Entity::MERCHANT_AVG_ORDER_VALUE
+    ];
+
     public static $namespace = [
         self::IIN                       => \RZP\Models\Card\IIN::class,
         self::P2P                       => \RZP\Models\P2p::class,

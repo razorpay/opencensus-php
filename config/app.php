@@ -389,4 +389,6 @@ return array(
             'custom_url_ttl'    => env('NOCODE_CUSTOM_URL_CACHE_TTL', 86400),
         ]
     ],
+
+    'db_migration_metrics_sampling_percent' => env('DB_MIGRATION_METRIC_SAMPLING_PERCENT', 0.1),
 );

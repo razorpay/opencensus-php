@@ -8,6 +8,10 @@ use RZP\Exception\BadRequestException;
 use RZP\Tests\Functional\Helpers\RazorxTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use Illuminate\Support\Facades\Config;
+use RZP\Services\DbRequestsBeforeMigrationMetric;
+use Illuminate\Support\Facades\App;
+use Razorpay\Trace\Facades\Trace;
 
 class OffersTest extends TestCase
 {
@@ -27,6 +31,7 @@ class OffersTest extends TestCase
         // Because in test cases offers start date is set
         // to Feb 2018 and it should always be in future
         Carbon::setTestNow("1-1-2018 00:00:00");
+        Config::set('app.db_migration_metrics_sampling_percent', 100);
     }
 
     public function testCreateCardOffer()
@@ -458,5 +463,32 @@ class OffersTest extends TestCase
         $this->expectExceptionMessage('Offer already exists. Please check the values and try again');
 
         $this->startTest();
+    }
+
+    //The following test case is not related to offer, but adding it here because it has been tested for the get offers route
+    public function testDbRequestsBeforeMigrationMetric()
+    {
+        Trace::shouldReceive('histogram')->zeroOrMoreTimes();
+
+        Trace::shouldReceive('info', 'debug', 'addRecord', 'error')->zeroOrMoreTimes();
+
+        $actualData = [];
+
+        Trace::shouldReceive('count')->andReturnUsing(function ($metric, $data, $count = 1) use (&$actualData)
+        {
+            $data['count'] = $count;
+            $actualData[$metric] = $data;
+        });
+
+        $offer = $this->fixtures->create('offer:card');
+        $this->startTest();
+        App::forgetInstance(DbRequestsBeforeMigrationMetric::class);
+
+        $this->assertArrayHasKey('db_requests_before_migration', $actualData);
+        $this->assertEquals('offer_fetch_multiple', $actualData['db_requests_before_migration']['route']);
+        $this->assertEquals('offer', $actualData['db_requests_before_migration']['table_name']);
+        $this->assertEquals('read', $actualData['db_requests_before_migration']['action']);
+        $this->assertGreaterThanOrEqual(1, $actualData['db_requests_before_migration']['count']);
+
     }
 }
