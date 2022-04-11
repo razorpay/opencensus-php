@@ -41,3 +41,9 @@ var CreateLinkedAccountNegativeTestCases = []struct {
 		},
 	},
 }
+
+var BankDetailsUpdateRequestData = BankDetailsUpdateRequest{
+	BeneficiaryName: "Emma Stone",
+	AccountNumber: "1234567893",
+	IfscCode: "SBIN0000004",
+}

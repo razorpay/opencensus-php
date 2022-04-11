@@ -17,6 +17,12 @@ import (
 var BankAccountToBvsValidationStatusMap = map[string]string{
 	"1234567890": "success",
 	"1234567892": "failed",
+	"1234567893": "success",
+}
+
+type HoldFundsData struct {
+	HoldFunds       int
+	HoldFundsReason string
 }
 
 func SendMockBvsValidationEvent(t *testing.T, laReq LinkedAccountCreateRequest, validationId string) {
@@ -85,6 +91,16 @@ func GetBvsValidationIdWithOwnerId(merchantId string) string {
 	return bvsValidationId
 }
 
+func GetHoldFundsData(merchantId string) HoldFundsData {
+	var holdFundsData HoldFundsData
+	trimmedMerchantId := strings.Trim(merchantId, "acc_")
+	selectHoldFundsDataQuery := fmt.Sprintf(GetHoldFundsDataQuery, trimmedMerchantId)
+	e2e.ApiDB.Instance(context.Background()).
+		Raw(selectHoldFundsDataQuery).
+		Scan(&holdFundsData)
+	return holdFundsData
+}
+
 func CreateLinkedAccount(t *testing.T, laReq LinkedAccountCreateRequest) LinkedAccountCreateResponse {
 	Initialize(t)
 	var laRes LinkedAccountCreateResponse
@@ -115,4 +131,22 @@ func FetchMerchantActivationDetails(t *testing.T, linkedAccount LinkedAccountCre
 
 	json.Unmarshal([]byte(res.Raw()), &laRes)
 	return laRes
+}
+
+func UpdateLinkedAccountBankDetails(t *testing.T, merchantId string, bankDetailsUpdateReq BankDetailsUpdateRequest) BankDetailsUpdateResponse {
+	Initialize(t)
+	var bankDetailsUpdateRes BankDetailsUpdateResponse
+	updateUrl := fmt.Sprintf("/v1/linked_accounts/%s/bank_account", merchantId)
+	res := linkedAccountHost.POST(updateUrl).
+		WithBasicAuth(e2e.Config.SubMerchant.Username, e2e.Config.SubMerchant.Password).
+		WithHeaders(map[string]string{
+			"X-Dashboard-User-id":   e2e.Config.SubMerchant.User,
+			"X-Dashboard-User-Role": e2e.Config.SubMerchant.Role,
+		}).
+		WithJSON(bankDetailsUpdateReq).
+		Expect().
+		Status(http.StatusOK).Body()
+
+	json.Unmarshal([]byte(res.Raw()), &bankDetailsUpdateRes)
+	return bankDetailsUpdateRes
 }

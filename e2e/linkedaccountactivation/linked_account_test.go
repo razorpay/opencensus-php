@@ -85,6 +85,33 @@ func (s *LinkedAccountPennyTestingApiTestSuite) TestVerificationSuccessStatus() 
 	assert.Equal(s.T(), "", laRes.BankDetailsVerificationError)
 }
 
+func (s *LinkedAccountPennyTestingApiTestSuite) TestLinkedAccountBankDetailsUpdate() {
+	//Updates Bank Details of Linked Account and activation status to verification pending
+	laReq := CreateLinkedAccountPositiveTestCases[0].Req
+	uniqueId := strconv.FormatInt(time.Now().Unix(), 10)
+	laReq.Email = "la-" + uniqueId + "@email.com"
+	laObj := CreateLinkedAccount(s.T(), laReq)
+	bankDetailsUpdateReq := BankDetailsUpdateRequestData
+	bankDetailsUpdateRes := UpdateLinkedAccountBankDetails(s.T(), laObj.Id, bankDetailsUpdateReq)
+	verifyBankDetailsUpdateResponse(s.T(), bankDetailsUpdateReq, bankDetailsUpdateRes)
+}
+
+func (s *LinkedAccountPennyTestingApiTestSuite) TestLinkedAccountHoldFundsAfterBankUpdate() {
+	//Updates Bank Details of Linked Account and activation status to verification pending
+	laReq := CreateLinkedAccountPositiveTestCases[0].Req
+	uniqueId := strconv.FormatInt(time.Now().Unix(), 10)
+	laReq.Email = "la-" + uniqueId + "@email.com"
+	laObj := CreateLinkedAccount(s.T(), laReq)
+	bvsValidationId := GetBvsValidationIdWithOwnerId(laObj.Id)
+	bankDetailsUpdateReq := BankDetailsUpdateRequestData
+	UpdateLinkedAccountBankDetails(s.T(), laObj.Id, bankDetailsUpdateReq)
+	holdFundsData := GetHoldFundsData(laObj.Id)
+	assert.Equal(s.T(), 1, holdFundsData.HoldFunds)
+	assert.Equal(s.T(), "linked_account_penny_testing", holdFundsData.HoldFundsReason)
+	SendMockBvsValidationEvent(s.T(), laReq, bvsValidationId)
+	holdFundsDataAfterVerification := GetHoldFundsData(laObj.Id)
+	assert.Equal(s.T(), 0, holdFundsDataAfterVerification.HoldFunds)
+}
 
 func verifyActivationPendingStatus(t *testing.T, expectedStatus string, actualStatus string, linkedAccount LinkedAccountCreateResponse) {
 	// asserts verification pending status, if the status is not verification pending
@@ -96,6 +123,12 @@ func verifyActivationPendingStatus(t *testing.T, expectedStatus string, actualSt
 	} else {
 		assert.Equal(t, expectedStatus, actualStatus)
 	}
+}
+
+func verifyBankDetailsUpdateResponse(t *testing.T, expected BankDetailsUpdateRequest, actual BankDetailsUpdateResponse) {
+	assert.Equal(t, expected.AccountNumber, actual.AccountNumber)
+	assert.Equal(t, expected.BeneficiaryName, actual.BeneficiaryName)
+	assert.Equal(t, expected.IfscCode, actual.IfscCode)
 }
 
 func TestLinkedAccountPennyTestingAPI(t *testing.T) {

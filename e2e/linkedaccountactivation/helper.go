@@ -19,4 +19,5 @@ const (
 	TagLinkedAccount = "linkedaccount"
 	GetBvsValidationIdSelectQuery = "SELECT validation_id FROM bvs_validation WHERE  owner_id = '%s' AND owner_type = 'merchant' AND artefact_type = 'bank_account'"
 	GetBvsValidationStatusSelectQuery = "SELECT validation_status FROM bvs_validation WHERE  validation_id = '%s' AND owner_type = 'merchant' AND artefact_type = 'bank_account'"
+	GetHoldFundsDataQuery = "SELECT hold_funds,hold_funds_reason from merchants where id='%s'"
 )

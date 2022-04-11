@@ -30,3 +30,16 @@ type MockBvsRequestData struct {
 	ErrorDescription string `json:"error_description"`
 	Status           string `json:"status"`
 }
+
+type BankDetailsUpdateRequest struct {
+	BeneficiaryName string `json:"beneficiary_name"`
+	AccountNumber   string `json:"account_number"`
+	IfscCode        string `json:"ifsc_code"`
+}
+
+type BankDetailsUpdateResponse struct {
+	Status          string `json:"status"`
+	BeneficiaryName string `json:"beneficiary_name"`
+	AccountNumber   string `json:"account_number"`
+	IfscCode        string `json:"ifsc_code"`
+}
