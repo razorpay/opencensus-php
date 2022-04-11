@@ -20,7 +20,9 @@ use RZP\Models\Merchant\Detail\NeedsClarification;
 use RZP\Jobs\ProductConfig\AutoUpdateMerchantProducts;
 use RZP\Models\Gateway\File\Constants as GatewayConstants;
 use RZP\Trace\Tracer;
-
+use Carbon\Carbon;
+use RZP\Constants\Timezone;
+use RZP\Jobs\MerchantFirsDocumentsZip;
 
 class Service extends Base\Service
 {
@@ -311,7 +313,7 @@ class Service extends Base\Service
     //month and year.
     public function fetchFIRSDocuments(array $input)
     {
-        (new Validator)->validateInput('firsDocumentRequest',$input);
+        (new Validator)->validateInput('firsDocumentFetchRequest',$input);
 
         $merchantId = $this->merchant->getId();
 
@@ -334,42 +336,35 @@ class Service extends Base\Service
             array_push($documentMetaData,$documentResponse);
         }
 
+        $zippedICICIFIRSdocuments = $this->repo->merchant_document->findDocumentsForMerchantIdAndDocumentTypeAndDate($merchantId,'firs_icici_zip',$from,$to);
+
+        foreach ($zippedICICIFIRSdocuments as $zipDocument)
+        {
+            if($this->checkZippedFirsDocumentStatus($zipDocument) === true)
+            {    
+                $documentResponse = [
+                    Entity::ID              => $zipDocument->getId(),
+                    Entity::DOCUMENT_TYPE   => $zipDocument->getDocumentType(),
+                    Entity::MERCHANT_ID     => $zipDocument->getMerchantId(),
+                    Entity::FILE_STORE_ID   => $zipDocument->getFileStoreId(),
+                    Entity::CREATED_AT      => $zipDocument->getCreatedAt(),
+                ];
+                
+                array_push($documentMetaData,$documentResponse);
+            }
+        }
+
         return $documentMetaData;
     }
 
     //This function returns signed_url to download/view the FIRS documents in a particular month and year
-    //for both individual files and as a zip.
+    //for individual files.
     public function downloadFIRSDocuments(array $input)
     {
-        (new Validator)->validateInput('firsDocumentRequest',$input);
+        (new Validator)->validateInput('firsDocumentDownloadRequest',$input);
 
-        $merchantId = $this->merchant->getId();
-        $document = null;
-
-        if(isset($input['document_id'])===true)
-        {
-            $document = $this->repo->merchant_document->findDocumentById($input['document_id']);
-
-            $signedURL = (new GenericDocument\Service)->getDocumentDownloadLinkFromUFH([], $document->getPublicFileStoreId(), $document->getMerchantId());
-        }
-        else {
-
-            $from = strtotime($input['month'].'/01/'.$input['year']);
-            $to = strtotime("+1 Month",$from);
-
-            $documents = $this->repo->merchant_document->findDocumentsForMerchantIdAndDocumentTypeAndDate($merchantId,'firs_zip',$from,$to);
-
-            if(isset($documents[0])){
-                foreach ($documents as $file)
-                {
-                    $signedURL = (new GenericDocument\Service)->getDocumentDownloadLinkFromUFH([], $file->getPublicFileStoreId(), $file->getMerchantId());
-                    $document = $file;
-                    break;
-                }
-            }else{
-                list($signedURL,$document) = $this->downloadZipFIRSFiles($input,$merchantId);
-            }
-        }
+        $document = $this->repo->merchant_document->findDocumentById($input['document_id']);
+        $signedURL = (new GenericDocument\Service)->getDocumentDownloadLinkFromUFH([], $document->getPublicFileStoreId(), $document->getMerchantId());
 
         $documentMetaData = [
             Entity::ID              => $document->getId(),
@@ -385,7 +380,12 @@ class Service extends Base\Service
         return $documentMetaData;
     }
 
-    //Function returns the signed_url to download the FIRS zip files for a month and year.
+    /*  Function returns the signed_url to download the FIRS zip files for a month and year.
+        Disabling Use of this function because removing download all option from frontend
+        which was to used to zip individual documents in realtime, removing now because of 
+        zipped files are now shown for icici firs documents.
+    */
+
     protected function downloadZipFIRSFiles(array $input, string $merchantId)
     {
         $from = strtotime($input['month'].'/01/'.$input['year']);
@@ -421,4 +421,123 @@ class Service extends Base\Service
         return [$signedURL,$document];
 
     }
+
+    /*
+     * Cron Executes and Start Collecting all the Merchant Ids that have received
+     * ICICI FIRS Files in the last month and dispatch those merchant Ids with month
+     * and year for collecting file Ids and zipping them for future download.
+    */
+    public function collectAndZipFIRSDocuments(array $input)
+    {
+
+        (new Validator)->validateInput('firsZippingCronRequest',$input);
+
+        /* 
+         * Job is responsible for creating zip files by aggregating individual pdf files and
+         * expects merchant_id, month, year and force_create.
+         * 
+         * force_create flag is responsible for deleting older zip files and its entries and 
+         * creating new ones. This is just a failsafe to ensure, if any zip_file was stuck or
+         * wasn't able to process gracefully.
+        */ 
+
+        $this->trace->info(TraceCode::FIRS_DOCUMENTS_BULK_ZIPPING_CRON_REQUEST,[
+            'input'   => $input
+        ]);
+
+        $minimumDelay = 15;
+
+        if(isset($input['force_create']) && $input['force_create'] === true)
+        {
+            $month = $input['month'];
+            $year = $input['year'];
+            
+            $iterationNumber = 0;
+            
+            foreach ($input['merchant_ids'] as $merchantId)
+            {
+                $payload = [
+                    'merchant_id'   => $merchantId,
+                    'month'         => $month,
+                    'year'          => $year,
+                    'force_create'  => true 
+                ];
+
+                // Assign a delay between 0 & 900 so that tasks are distributed over 15 minute period
+                MerchantFirsDocumentsZip::dispatch($payload)->delay($iterationNumber*$minimumDelay % 901);
+                
+                $iterationNumber++;
+
+                $this->trace->info(TraceCode::FIRS_DOCUMENTS_BULK_ZIPPING_JOB_DISPATCH,$payload);
+            }
+        }
+        else
+        {
+            $currentTimeStamp = Carbon::now(Timezone::IST)->getTimeStamp();
+            $currentMonth = explode('/',date('m/d/Y', $currentTimeStamp))[0];
+            $currentYear = explode('/',date('m/d/Y', $currentTimeStamp))[2];
+    
+            $previousMonth = Carbon::now(Timezone::IST)->subMonth();
+            
+            // year and month for which we are generating firs zipped file containing all icici firs documents
+            $year  = $previousMonth->year;
+            $month = $previousMonth->month;
+    
+            $from = strtotime($month.'/01/'.$year);
+            $to = $currentTimeStamp;
+            $documentType = 'firs_icici_file';
+            
+            $merchantEntries = $this->repo->merchant_document->findAllMerchantsAndDistinctDatedDocumentsAddedInRangeWithDocumentType($documentType,$from,$to);
+    
+            $iterationNumber = 0;
+            
+            foreach ($merchantEntries as $entry)
+            {
+                $merchantId = $entry[Entity::MERCHANT_ID];
+                $documentDate = $entry[Entity::DOCUMENT_DATE];
+                
+                list($month,$date,$year) = explode('/',date('m/d/Y', $documentDate));
+    
+                if($month === $currentMonth && $year === $currentYear){
+                    continue;
+                }
+
+                $payload = [
+                    'merchant_id'   => $merchantId,
+                    'month'         => $month,
+                    'year'          => $year,
+                    'force_create'  => false 
+                ];
+
+                // Assign a delay between 0 & 900 so that tasks are distributed over 15 minute period
+                MerchantFirsDocumentsZip::dispatch($payload)->delay($iterationNumber*$minimumDelay % 901);
+            
+                $iterationNumber++;
+                
+                $this->trace->info(TraceCode::FIRS_DOCUMENTS_BULK_ZIPPING_JOB_DISPATCH,$payload);
+            }
+        }
+        
+        return ['success' => true];
+    }
+
+    protected function checkZippedFirsDocumentStatus($document)
+    {
+        $ufhFileStoreEntity = (new GenericDocument\Service)->getDocumentDownloadLinkFromUFH([], $document->getPublicFileStoreId(), $document->getMerchantId());
+
+        if((isset($ufhFileStoreEntity['status']) === true) && ($ufhFileStoreEntity['status'] === 'uploaded'))
+        {
+            return true;
+        }
+        else
+        {
+            $this->trace->info(TraceCode::FETCH_ZIPPED_FIRS_DOCUMENT_STATUS_FAILED,[
+                'merchant_id'   => $document->getMerchantId(),
+                'file_store_id'  => $document->getPublicFileStoreId(),
+                'status'        => $ufhFileStoreEntity['status'],
+            ]);
+            return false;
+        }
+    }
+ 
 }

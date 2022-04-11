@@ -527,6 +527,10 @@ class MerchantDocumentTest Extends TestCase
 
     }
 
+    /*
+     * Disabling Test Case Because removing zipping functionality on merchant dashboard
+     * because of already generated ICICI Zipped FIRS Documents
+     *
     public function testDownloadFIRSDocumentsZIP()
     {
         $merchantDetail = $this->fixtures->create('merchant_detail');
@@ -562,6 +566,12 @@ class MerchantDocumentTest Extends TestCase
 
     }
 
+    */
+
+    /*
+     * Disabling Test Case Because removing zipping functionality on merchant dashboard
+     * because of already generated ICICI Zipped FIRS Documents
+     *
     public function testDownloadFIRSDocumentsZIPFileNotPresent()
     {
         $merchantDetail = $this->fixtures->create('merchant_detail');
@@ -598,6 +608,111 @@ class MerchantDocumentTest Extends TestCase
         $this->assertEquals('firs_zip',$content['document_type']);
         $this->assertEquals('firs/'.$merchantDetail['merchant_id'].'/'.date('Y').'/'.date('m').'/'."random_name.zip",$content['signed_url']);
         $this->assertArrayKeysExist($content,['signed_url','file_store_id','id', 'document_type', 'merchant_id', 'created_at']);
+
+    }
+
+    */
+
+    public function testFetchFIRSDocumentsWithICICIZippedDocument()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+
+        $this->fixtures->create('merchant_document', [
+            'document_type' => 'firs_file',
+            'merchant_id'   => $merchantDetail['merchant_id'],
+            'document_date' =>  time(),
+            'file_store_id' => 'DM6dXJfU4WzeAF',
+        ]);
+
+        $this->fixtures->create('merchant_document', [
+            'document_type' => 'firs_icici_file',
+            'merchant_id'   => $merchantDetail['merchant_id'],
+            'document_date' =>  time(),
+            'file_store_id' => 'DO6dXJfU4WzeAK',
+        ]);
+
+        $this->fixtures->create('merchant_document', [
+            'document_type' => 'firs_icici_zip',
+            'merchant_id'   => $merchantDetail['merchant_id'],
+            'document_date' =>  time(),
+            'file_store_id' => 'DO6dXJfU4WmePS',
+        ]);
+
+
+        $request = $this->testData[__FUNCTION__]['request'];
+
+        $request['url'] = sprintf($request['url'], date('m'),date('Y'));
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+
+        $ufhService = \Mockery::mock('RZP\Services\UfhService')->makePartial();
+
+        $this->app->instance('ufh.service',$ufhService);
+
+        $ufhService->shouldReceive('getSignedUrl')->andReturn([
+            'status' => 'uploaded',
+            'signed_url' => 'firs/'.$merchantDetail['merchant_id'].'/'.date('Y').'/'.date('m').'/'."random_name.zip"
+        ]);
+
+        $response = $this->sendRequest($request);
+
+        $content = $this->getJsonContentFromResponse($response);
+
+        $this->assertCount(2,$content);
+        $this->assertEquals('firs_file',$content[0]['document_type']);
+        $this->assertEquals('firs_icici_zip',$content[1]['document_type']);
+
+    }
+
+    public function testFetchFIRSDocumentsWithICICIZippedDocumentInCreatedState()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+
+        $this->fixtures->create('merchant_document', [
+            'document_type' => 'firs_file',
+            'merchant_id'   => $merchantDetail['merchant_id'],
+            'document_date' =>  time(),
+            'file_store_id' => 'DM6dXJfU4WzeAF',
+        ]);
+
+        $this->fixtures->create('merchant_document', [
+            'document_type' => 'firs_icici_file',
+            'merchant_id'   => $merchantDetail['merchant_id'],
+            'document_date' =>  time(),
+            'file_store_id' => 'DO6dXJfU4WzeAK',
+        ]);
+
+        $this->fixtures->create('merchant_document', [
+            'document_type' => 'firs_icici_zip',
+            'merchant_id'   => $merchantDetail['merchant_id'],
+            'document_date' =>  time(),
+            'file_store_id' => 'DO6dXJfU4WmePS',
+        ]);
+
+
+        $request = $this->testData[__FUNCTION__]['request'];
+
+        $request['url'] = sprintf($request['url'], date('m'),date('Y'));
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+
+        $ufhService = \Mockery::mock('RZP\Services\UfhService')->makePartial();
+
+        $this->app->instance('ufh.service',$ufhService);
+
+        $ufhService->shouldReceive('getSignedUrl')->andReturn([
+            'status' => 'created',
+            'signed_url' => 'firs/'.$merchantDetail['merchant_id'].'/'.date('Y').'/'.date('m').'/'."random_name.zip"
+        ]);
+
+        $response = $this->sendRequest($request);
+
+        $content = $this->getJsonContentFromResponse($response);
+
+        $this->assertCount(1,$content);
+        $this->assertEquals('firs_file',$content[0]['document_type']);
 
     }
 

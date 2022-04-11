@@ -284,7 +284,7 @@ class UfhService
             TraceCode::UFH_FILE_UPLOAD,
             array_except($requestData, [self::FILE]));
 
-        if($type == 'firs_file')
+        if($type == 'firs_file' || $type === 'firs_icici_file')
         {
             $this->merchantId = $requestData[self::ENTITY_ID];
         }
@@ -355,7 +355,7 @@ class UfhService
                 self::FILE_ID => $fileId,
             ]);
 
-        if($type == 'firs_zip')
+        if($type === 'firs_zip' || $type === 'firs_icici_zip')
         {
             $this->merchantId = $merchantId;
             $this->ufhClient = $this->createUfhClient();
@@ -494,7 +494,7 @@ class UfhService
         return $requestData;
     }
 
-    public function downloadFiles(array $fileIds, string $merchantId, string $prefix = "Firs")
+    public function downloadFiles(array $fileIds, string $merchantId, string $prefix = "Firs", string $type=null)
     {
         $input = [
             self::FILE_IDS          => $fileIds,
@@ -503,6 +503,12 @@ class UfhService
             self::MERCHANT_ID       => $merchantId,
             self::PREFIX            => $prefix,
         ];
+
+        if($type === 'firs_icici_zip')
+        {
+            $this->merchantId = $merchantId;
+            $this->ufhClient = $this->createUfhClient();
+        }
 
         $response = $this->ufhClient->download($input);
 

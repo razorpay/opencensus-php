@@ -49,6 +49,9 @@ class Service extends Base\Service
         Batch\Type::NACH
     ];
 
+    const RBL = "rbl";
+    const ICICI = "icici";
+    
     protected static $headers = [
         'MID',
         'Merchant name',
@@ -293,27 +296,65 @@ class Service extends Base\Service
 
         $ufhService = $this->app['ufh.service'];
 
-        list($company, $gatewayMerchantId, $date) = explode('_',$filename);
+       if($input['gateway'] === self::RBL)
+       {
+            list($company, $gatewayMerchantId, $date) = explode('_',$filename);
 
-        $part = str_split($date,2);
+            $part = str_split($date,2);
 
-        $terminal = $this->repo->terminal->findMerchantIdByGatewayMerchantIDAll($gatewayMerchantId);
-        $merchantId = $terminal->getMerchantId();
-        $merchant = $this->repo->merchant->find($merchantId);
-        $storageFileName = 'FIRS/'.$merchantId.'/'.$part[1].'/'.$part[0].'/'.$filename;
-        $type = 'firs_file';
-        $documentDate = strtotime($part[0].'/'.date('d').'/'.$part[1]);
+            $terminal = $this->repo->terminal->findMerchantIdByGatewayMerchantIDAll($gatewayMerchantId);
+            $merchantId = $terminal->getMerchantId();
+            $merchant = $this->repo->merchant->find($merchantId);
+            $storageFileName = 'FIRS/'.$merchantId.'/'.$part[1].'/'.$part[0].'/'.$filename;
+            $type = 'firs_file';
+            $documentDate = strtotime($part[0].'/'.date('d').'/'.$part[1]);
 
-        $response = $ufhService->uploadFileAndGetResponse($file, $storageFileName, $type, $merchant);
+            $response = $ufhService->uploadFileAndGetResponse($file, $storageFileName, $type, $merchant);
 
-        $this->trace->info(TraceCode::UPLOAD_FILE_DETAILS,
-            [
-                'success'           => isset($response[GatewayConstants::ID]),
-            ]);
+            $this->trace->info(TraceCode::UPLOAD_FILE_DETAILS,
+                [
+                    'success'           => isset($response[GatewayConstants::ID]),
+                ]);
 
-        $this->deleteExistingZipFile($merchantId,$part);
+            /*    
+             * Commenting it out, because for now we are removing zip file generation logic
+             * for RBL Files.
+             * 
+             * $this->deleteExistingZipFile($merchantId,$part);
+            */
 
-        $document = (new Document\Core)->saveInMerchantDocument($response,$merchantId,$type,$documentDate);
+            $document = (new Document\Core)->saveInMerchantDocument($response,$merchantId,$type,$documentDate);
+       }
+
+       if($input['gateway'] === self::ICICI)
+       {
+            list($tag, $referenceNumber, $utrNumberAndFileExtension) = explode('_',$filename);
+                
+            $utrNumberAndFileExtension = ltrim($utrNumberAndFileExtension);
+            $utrNumberAndFileExtension = rtrim($utrNumberAndFileExtension);
+            list($utrNumber, $fileExtension) = explode('.',$utrNumberAndFileExtension);
+
+            $settlement =  $this->repo->settlement->findSettlementByUTR($utrNumber);
+            $merchantId = $settlement->getMerchantId();
+            $merchant = $this->repo->merchant->find($merchantId);
+
+            $firs_date = date('m/d/Y', $settlement->getUpdatedAt());
+
+            list($month,$date,$year) = explode('/',$firs_date);
+            
+            $storageFileName = 'FIRS/'.$merchantId.'/'.$year.'/'.$month.'/'.$filename;
+            $type = 'firs_icici_file';
+            $documentDate = strtotime($month.'/'.'01'.'/'.$year);
+
+            $response = $ufhService->uploadFileAndGetResponse($file, $storageFileName, $type, $merchant);
+
+            $this->trace->info(TraceCode::UPLOAD_FILE_DETAILS,
+                [
+                    'success'           => isset($response[GatewayConstants::ID]),
+                ]);
+
+            $document = (new Document\Core)->saveInMerchantDocument($response,$merchantId,$type,$documentDate);
+       }
 
         return $document;
     }

@@ -1949,6 +1949,8 @@ class Route
         'firs_document_categorize'                 => ['post',      'merchant/firs',                                 'LambdaController@processLambdaFIRS'                                ],
         'firs_document_fetch'                      => ['get',       'merchant/firs',                                 'DocumentController@fetchFIRSDocuments'                             ],
         'firs_document_download'                   => ['get',       'merchant/firs/content',                         'DocumentController@DownloadFIRSDocuments'                          ],
+        'firs_collect_and_zip_cron'                => ['post',      'merchant/firs/collect/cron',                    'DocumentController@collectAndZipFIRSDocuments'                 ],
+        
         'automate_merchant_master_firs'            => ['post',      'rbl/update_merchant_master/firs',               'LambdaController@processLambdaMerchantMasterFIRS'                  ],
 
         // Shield routes
@@ -4644,6 +4646,8 @@ class Route
         'payment_upi_authorize_failed',
 
         'recon_update_upi_data',
+        
+        'firs_collect_and_zip_cron',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -11887,7 +11891,9 @@ class Route
             'bank_transfer_process_test_x_demo_cron',
             'payouts_batch_create_x_demo_cron',
             'growth_filter_and_sync_cron',
-            'payments_card_es_sync_cron'
+            'payments_card_es_sync_cron',
+
+            'firs_collect_and_zip_cron'
         ],
 
         'subscriptions' => [

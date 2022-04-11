@@ -247,6 +247,24 @@ class Core extends Base\Core
     }
 
     /**
+     * this function takes fileStoreId and delete the document.
+     *
+     * @param string $fileStoreId
+     */
+    public function deleteDocument(string $fileStoreId)
+    {   
+        $document = $this->repo->merchant_document->findDocumentByFileStoreId($fileStoreId);
+
+        if (isset($document) === true)
+        {
+            $this->trace->info(TraceCode::DOCUMENT_DELETE_REQUEST, ['id' => $document->getId()]);
+
+            $this->repo->deleteOrFail($document);
+        }
+    }
+
+
+    /**
      * @param Merchant\Entity $merchant
      *
      * @return array

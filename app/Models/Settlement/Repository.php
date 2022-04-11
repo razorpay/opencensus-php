@@ -138,4 +138,13 @@ class Repository extends Base\Repository
                     ->where(Entity::ID, $settlementId)
                     ->get();
     }
+
+    public function findSettlementByUTR(string $utr)
+    {
+        $query = $this->newQuery()
+                    ->where(Entity::UTR, $utr);
+
+        return $query->first();
+    }
+
 }

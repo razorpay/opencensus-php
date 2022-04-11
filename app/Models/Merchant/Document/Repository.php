@@ -152,4 +152,15 @@ class Repository extends Base\Repository
             ->first();
     }
 
+    public function findAllMerchantsAndDistinctDatedDocumentsAddedInRangeWithDocumentType(string $documentType,string $from, string $to)
+    {
+        return $this->newQuery()
+            ->select(Entity::MERCHANT_ID,Entity::DOCUMENT_DATE)
+            ->distinct()
+            ->where(Entity::DOCUMENT_TYPE, $documentType)
+            ->whereBetween(Entity::CREATED_AT, [$from, $to])
+            ->whereNull(Entity::DELETED_AT)
+            ->get();
+    }
+
 }

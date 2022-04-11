@@ -117,9 +117,18 @@ class MerchantFirsDocuments extends Job
 
     protected function getFirsDocumentData(array $payload)
     {
+        $key = $payload['Records'][0]['s3']['object']['key'];
+        
+        /* Sample Key For Different Gateway
+            rbl     - rbl/FIRS/filename.pdf
+            icici   - icici/FIRS/filename.pdf
+        */
+        
+        $gateway = explode('/',$key)[0];
+        
         return [
             'source'  => 'lambda',
-            'gateway' => 'rbl',
+            'gateway' => $gateway,
             'region' => $payload['Records'][0]['awsRegion'],
             'key'    => $payload['Records'][0]['s3']['object']['key'],
             'bucket' => $payload['Records'][0]['s3']['bucket']['name'],

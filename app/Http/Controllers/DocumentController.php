@@ -93,4 +93,13 @@ class DocumentController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function collectAndZipFIRSDocuments()
+    {
+        $input = Request::all();
+
+        $response = $this->service(Entity::MERCHANT_DOCUMENT)->collectAndZipFIRSDocuments($input);
+
+        return ApiResponse::json($response);
+    }
 }

@@ -45,10 +45,22 @@ class Validator extends Base\Validator
         Entity::FILE          => 'required|file',
     ];
 
-    protected static $firsDocumentRequestRules = [
+    protected static $firsDocumentFetchRequestRules = [
         'month'       => 'required|min:1|max:12',
         'year'        => 'required|digits:4',
-        'document_id' => 'sometimes|string'
+    ];
+
+    protected static $firsDocumentDownloadRequestRules = [
+        'month'       => 'required|min:1|max:12',
+        'year'        => 'required|digits:4',
+        'document_id' => 'required'
+    ];
+
+    protected static $firsZippingCronRequestRules = [
+        'month'         => 'required_with:force_create|min:1|max:12',
+        'year'          => 'required_with:force_create|digits:4',
+        'merchant_ids'  => 'required_with:force_create|array',
+        'force_create'  => 'sometimes|boolean'
     ];
 
     /**

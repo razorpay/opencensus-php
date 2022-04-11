@@ -76,6 +76,9 @@ class Type
     const FIRS_FILE                             = 'firs_file';
     const FIRS_ZIP                              = 'firs_zip';
 
+    const FIRS_ICICI_FILE                             = 'firs_icici_file';
+    const FIRS_ICICI_ZIP                              = 'firs_icici_zip';
+    
     const PROOF_TYPES = [
         self::INDIVIDUAL_PROOF_OF_ADDRESS,
         self::INDIVIDUAL_PROOF_OF_IDENTIFICATION,
@@ -149,6 +152,9 @@ class Type
 
         self::WEBSITE_SCREENSHOT,
         self::OTHER,
+
+        self::FIRS_ICICI_FILE,
+        self::FIRS_ICICI_ZIP,
     ];
 
     const DOCUMENT_TYPE_TO_PROOF_TYPE_MAPPING = [
@@ -204,6 +210,9 @@ class Type
 
         self::OTHER                           => self::ADDITIONAL_DOCUMENTS,
         self::WEBSITE_SCREENSHOT              => self::ADDITIONAL_DOCUMENTS,
+        
+        self::FIRS_ICICI_FILE                 => self::ADDITIONAL_DOCUMENTS,
+        self::FIRS_ICICI_ZIP                  => self::ADDITIONAL_DOCUMENTS,
     ];
 
     /**

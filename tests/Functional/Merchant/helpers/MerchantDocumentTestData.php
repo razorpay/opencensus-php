@@ -326,4 +326,28 @@ return [
             ]
         ],
     ],
+
+    'testFetchFIRSDocumentsWithICICIZippedDocument' => [
+        'request'  => [
+            'url'       => '/merchant/firs?month=%s&year=%s',
+            'method'    => 'GET',
+        ],
+        'response' => [
+            'content' => [
+
+            ]
+        ],
+    ],
+
+    'testFetchFIRSDocumentsWithICICIZippedDocumentInCreatedState' => [
+        'request'  => [
+            'url'       => '/merchant/firs?month=%s&year=%s',
+            'method'    => 'GET',
+        ],
+        'response' => [
+            'content' => [
+
+            ]
+        ],
+    ]
 ];
