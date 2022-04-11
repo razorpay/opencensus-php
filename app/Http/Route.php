@@ -7339,6 +7339,12 @@ class Route
         'router_gateway_downtime_fetch'            => Permission::VIEW_GATEWAY_RULE,
         'router_refresh_cron'                     =>  Permission::VIEW_GATEWAY_RULE,
 
+        'terminals_proxy_get_merchant_optimizer_provider'   => Permission::VIEW_GATEWAY_RULE,
+        'terminals_proxy_get_optimizer_gateways'            => Permission::VIEW_GATEWAY_RULE,
+        'terminals_proxy_add_optimizer_provider'            => Permission::VIEW_GATEWAY_RULE,
+        'terminals_proxy_update_optimizer_provider'         => Permission::VIEW_GATEWAY_RULE,
+        'terminals_proxy_get_optimizer_merchant_methods'    => Permission::VIEW_GATEWAY_RULE,
+
         //Enable maker/checker for payouts
         'payout_create'                            => Permission::CREATE_PAYOUT,
         'payout_validate'                          => Permission::CREATE_PAYOUT,
@@ -10234,6 +10240,11 @@ class Route
             'router_gateway_downtime_delete',
             'router_gateway_downtime_fetch',
             'router_refresh_cron',
+            'terminals_proxy_get_merchant_optimizer_provider',
+            'terminals_proxy_get_optimizer_gateways',
+            'terminals_proxy_add_optimizer_provider',
+            'terminals_proxy_update_optimizer_provider',
+            'terminals_proxy_get_optimizer_merchant_methods',
             'gratis_postpaid_transactions',
             'group_create',
             'group_delete',
