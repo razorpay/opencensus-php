@@ -299,13 +299,13 @@ class BulkUploadClient extends Job
             {
                 $raw_address = (new RawAddress\Repository())->findOrFail($source_id);
             }
-            unset($firstAddress[Constants::ADDRESS_TYPE]);
-
 
             // new->tw,pp; raw
             if ( (is_null($raw_address) === true && $firstAddress[Constants::ADDRESS_TYPE] === Constants::ADDRESS_TYPE_NEW )
                  || $raw_address[RawAddress\Entity::STATUS] !== BulkUploadClient::STATUS_PROCESSED)
             {
+                unset($firstAddress[Constants::ADDRESS_TYPE]);
+
                 $this->trace->info(TraceCode::RAW_ADDRESS_TO_ADDRESS_CREATION,[
                     "source_id" => $source_id,
                     "source_type" => $source_type,
