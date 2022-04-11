@@ -76,7 +76,7 @@ class Freshdesk extends Base\Core
                 'type'            => 'Service request',
                 'priority'        => 3,
                 'tags'            => ['bulk_fraud_email'],
-                'group_id'        => $this->getGroupId($merchantData[0][Constants::MERCHANT_DATA_KEY_SOURCE_OF_NOTIFICATION]),
+                'groupId'        => $this->getGroupId($merchantData[0][Constants::MERCHANT_DATA_KEY_SOURCE_OF_NOTIFICATION]),
             ];
 
             $fdTicket = (new Merchant\RiskMobileSignupHelper())->createFdTicket($merchant,
@@ -220,7 +220,7 @@ class Freshdesk extends Base\Core
 
         if ($source === Constants::SOURCE_BANK)
         {
-            $groupId = (int) $this->app['config']->get('applications.freshdesk')['group_ids']['rzpind']['merchant_risk'];
+            $groupId = (int) $this->app['config']->get('applications.freshdesk')['group_ids']['rzpind']['merchant_risk_transaction'];
         }
         else if ($source === Constants::SOURCE_CYBERCELL)
         {
