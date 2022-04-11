@@ -902,7 +902,7 @@ const BusinessDetails = ({
           }) ? (
             <FormSection title="Company Details" last disabled={isFormLocked}>
               <Field last>
-                {isGstinAutoPopulate && gstinDetails?.gstinList ? (
+                {isGstinAutoPopulate && gstinDetails?.gstinList && data.gstin !== '' ? (
                   <GstinAutoPopulate
                     gstin={formikProps.values.gstin}
                     gstinDetails={gstinDetails}

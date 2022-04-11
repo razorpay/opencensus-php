@@ -419,7 +419,8 @@ function canShowCustomGstinField(activation) {
     activation.props.user.isGstinAutoPopulate &&
     !activation.isOnKYCTab() &&
     gstinList &&
-    Array.isArray(gstinList)
+    Array.isArray(gstinList) &&
+    activation.props.data.gstin !== ''
   ) {
     return true;
   }
