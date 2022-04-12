@@ -14,11 +14,17 @@ import EntitySchedule from './EntitySchedule';
 const paymentTypes = ['domestic', 'international'];
 const specialScheduleNames = ['instant']; // these schedules names doesn't have T in their name so we don't want to communicate the info on T
 
+const transferReversalCommunication =
+  'The fund transfer happens internally as per the given schedule, the credit to linked accounts will happen as per the settlement schedule of the linked accounts.';
+
 const SettlementScheduleV2 = (props) => {
-  const { closeModal, openModal, holidayList, config: settlementConfig } = props;
+  const { closeModal, openModal, holidayList, config: settlementConfig, user } = props;
   const [showExample, setShowExample] = useState(false);
 
   const schedules = settlementConfig?.data?.config?.schedules;
+  const refundSchedule = schedules?.refund?.default;
+  const reversalSchedule = schedules?.reversal?.default;
+  const transferSchedule = schedules?.transfer?.default;
 
   const toggleExample = () => {
     setShowExample(!showExample);
@@ -31,10 +37,16 @@ const SettlementScheduleV2 = (props) => {
     });
   };
 
+  // For non-special names we need to show information about T
   const showScheduleInfoCommunication = () => {
+    const showRefunds = !specialScheduleNames.includes(refundSchedule?.toLowerCase());
+    // Consider transfer and reversal only for Route merchants
+    const showReversals =
+      user.isMarketplaceEnabled && !specialScheduleNames.includes(reversalSchedule?.toLowerCase());
+    const showTransfers =
+      user.isMarketplaceEnabled && !specialScheduleNames.includes(transferSchedule?.toLowerCase());
     // If atleast one schedule name has T we should communicate the info about T
-    if (!specialScheduleNames.includes(schedules?.refund?.default.toLowerCase())) return true;
-    return false;
+    return showRefunds || showReversals || showTransfers;
   };
 
   return (
@@ -56,19 +68,38 @@ const SettlementScheduleV2 = (props) => {
                   );
                 })}
                 <div className="schedule-info">
-                  <span class="text-danger">*</span>T is the date of payment capture
+                  <span className="text-danger">*</span>T is the date of payment capture
                 </div>
               </li>
             )}
-            {schedules?.refund?.default && (
+            {(refundSchedule ||
+              (user.isMarketplaceEnabled && (reversalSchedule || transferSchedule))) && (
               <li>
                 Other Settlement cycle
                 {schedules?.refund?.default && (
-                  <EntitySchedule entityType="refunds" schedule={schedules.refund.default} />
+                  <EntitySchedule entityType="refunds" schedule={refundSchedule} />
+                )}
+                {user.isMarketplaceEnabled && (
+                  <>
+                    {reversalSchedule && (
+                      <EntitySchedule
+                        entityType="reversals"
+                        schedule={reversalSchedule}
+                        info={transferReversalCommunication}
+                      />
+                    )}
+                    {transferSchedule && (
+                      <EntitySchedule
+                        entityType="transfers"
+                        schedule={transferSchedule}
+                        info={transferReversalCommunication}
+                      />
+                    )}
+                  </>
                 )}
                 {showScheduleInfoCommunication() && (
                   <div className="schedule-info">
-                    <span class="text-danger">*</span>T is the date of initiation
+                    <span className="text-danger">*</span>T is the date of initiation
                   </div>
                 )}
               </li>
@@ -119,7 +150,7 @@ const SettlementScheduleV2 = (props) => {
   );
 };
 
-const mapStateToProps = (state) => state.settlement;
+const mapStateToProps = (state) => ({ ...state.settlement, user: state.session.user });
 
 const mapDispatchToProps = (dispatch) => {
   return bindActionCreators({ closeModal: fnCloseModal, openModal: fnOpenModal }, dispatch);
