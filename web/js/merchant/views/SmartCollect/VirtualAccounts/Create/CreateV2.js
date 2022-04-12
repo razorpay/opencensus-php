@@ -525,6 +525,8 @@ export default class CreateVirtualAccount extends React.Component {
       showVPAPrefix = false;
     }
 
+    const bankAccountLengthCheck = vpaConfig?.account_number_length || descriptorLimit_BankAccount;
+
     const content = (
       <div class="VirtualAccount--CreateV2 Wizard">
         <Form onChange={this.props.onChange} onSubmit={this.handleSubmit} ref={this.setRefForm}>
@@ -564,7 +566,7 @@ export default class CreateVirtualAccount extends React.Component {
                         description={
                           <>
                             <div class="remaining-count">
-                              {descriptors.bank_account.length} / {descriptorLimit_BankAccount}
+                              {descriptors.bank_account.length} / {bankAccountLengthCheck}
                             </div>
                             <br />
                             If left blank, an account number will be auto generated
@@ -572,7 +574,7 @@ export default class CreateVirtualAccount extends React.Component {
                         }
                         style={getStyle_DescriptorInput_BankAccount(va_config)}
                         onChange={this.handleDescriptor('bank_account')}
-                        validator={validateCustomBankAccountNumber(descriptorLimit_BankAccount)}
+                        validator={validateCustomBankAccountNumber(bankAccountLengthCheck)}
                         addonBefore={
                           <span style={getStyle_AddOnBefore_BankAccount(va_config)}>
                             {bankAccountConfig.prefix}
@@ -581,9 +583,9 @@ export default class CreateVirtualAccount extends React.Component {
                         onBlur={(event) => {
                           this.track('bank_number');
 
-                          const message = validateCustomBankAccountNumber(
-                            descriptorLimit_BankAccount,
-                          )(event.target.value);
+                          const message = validateCustomBankAccountNumber(bankAccountLengthCheck)(
+                            event.target.value,
+                          );
 
                           if (message) {
                             this.track('bank_account.error', {
@@ -613,7 +615,7 @@ export default class CreateVirtualAccount extends React.Component {
                           vpaConfig &&
                           vpaConfig.merchant_prefix ? (
                             <>
-                              To update <strong>"{vpaConfig.merchant_prefix}"</strong> prefix{' '}
+                              To update <strong>{`"${vpaConfig.merchant_prefix}"`}</strong> prefix{' '}
                               <a onClick={this.openVPAPrefixModal}>click here</a>
                             </>
                           ) : null}
