@@ -3,10 +3,9 @@ import { AsyncBtn } from 'common/new-ui/Button';
 export default ({ isSaveBtnDisable, onSaveClick, scheduledTime }) => (
   <div className="ReminderSettings-Footer">
     <div className="content">
-      Reminders will be sent to customers between {scheduledTime}. You can turn ON/OFF reminders for
-      any individual customer.{' '}
+      Note: Reminders are sent only between {scheduledTime}. If required, you can turn a reminder on
+      or off for specific customer.{' '}
     </div>
-
     <AsyncBtn.Primary disabled={isSaveBtnDisable} onClick={onSaveClick}>
       Save Changes
     </AsyncBtn.Primary>

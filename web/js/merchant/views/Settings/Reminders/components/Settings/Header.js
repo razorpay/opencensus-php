@@ -6,7 +6,6 @@ export default ({ disabled, type, isEnabled, onToggle }) => (
     <span className="title">
       {type === 'Payment Links' ? `${type} reminders` : `Reminders for ${type}`}
     </span>
-
     <span className="enable-wrapper">
       <SwitchField
         class="m-l"
@@ -15,9 +14,12 @@ export default ({ disabled, type, isEnabled, onToggle }) => (
         disabled={disabled}
         onChange={onToggle}
       />
-      <span className="status-text">{isEnabled ? 'Enabled' : 'Disabled'}</span>
+      <span className="status-text">{isEnabled ? 'On' : 'Off'}</span>
     </span>
 
-    <p className="description">Send automated reminders for unpaid {type} and get paid on time.</p>
+    <p className="description">
+      Send collection reminders to customers automatically if a{' '}
+      {type === 'Payment Links' ? 'payment link' : type} hasnt been paid.
+    </p>
   </React.Fragment>
 );

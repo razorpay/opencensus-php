@@ -16,7 +16,7 @@ export default ({ channels, onChannelChange }) => (
                 <Input.Check
                   key={channelName}
                   name={channelName}
-                  fieldLabel={channelName.toUpperCase()}
+                  fieldLabel={channelName === 'email' ? 'Email' : channelName.toUpperCase()}
                   checked={channels[channelName]}
                   onChange={onChannelChange(channelName)}
                 />
