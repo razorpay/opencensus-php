@@ -756,6 +756,7 @@ class Repository extends Base\Repository
         $tokensIdColumn             = $this->dbColumn(Entity::ID);
         $tokensMerchantIdColumn     = $this->dbColumn(Entity::MERCHANT_ID);
         $tokensMethodColumn         = $this->dbColumn(Entity::METHOD);
+        $tokensExpiredAtColumn      = $this->dbColumn(Entity::EXPIRED_AT);
 
         return $this->newQueryWithConnection($this->getSlaveConnection())
             ->join($cardsTable, $tokensCardIdColumn, '=', $cardsIdColumn)
@@ -767,6 +768,10 @@ class Repository extends Base\Repository
             ->where(static function (Builder $query) use ($cardsInternationalColumn) {
                  $query->where($cardsInternationalColumn, '=', 0)
                     ->orWhereNull($cardsInternationalColumn);
+            })
+            ->where(static function (Builder $query) use ($tokensExpiredAtColumn) {
+                $query->whereNull($tokensExpiredAtColumn)
+                    ->orWhere($tokensExpiredAtColumn, '>', time());
             })
             ->whereIn($cardsNetworkColumn, $networks)
             ->whereNotNull($tokensAcknowledgedAtColumn)

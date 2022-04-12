@@ -351,6 +351,34 @@ class TokenisationTest extends TestCase
         $this->assertEquals($response['triggeredTokenIdsCount'],1);
     }
 
+    public function testBulkTokenisationWhenTokenExpiredFailure(): void
+    {
+        $testData = $this->testData['testBulkTokenisation'];
+
+        $this->ba->adminAuth();
+
+        extract($this->setUpDataForTokenisation());
+
+        $this->mockFetchMerchantTokenisationOnboardedNetworks([Network::VISA]);
+
+        $this->prepareData($merchantId);
+
+        $this->buildData($network, $merchantId, $vault, $methodTest, $tokenId, $timestamp, 'IN',
+            null, '100000007lcard', 411140, '10007cardToken', false, '1639686868');
+
+        $testData['request']['content']['token_ids'][] = $tokenId;
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $card = $this->getLastEntity('card', true);
+
+        $this->assertEquals($card['vault'], 'rzpvault');
+
+        $this->assertEquals($response['inputTokenIdsCount'], 1);
+
+        $this->assertEquals($response['triggeredTokenIdsCount'],1);
+    }
+
     public function testAsyncTokenisationWhenValidTokenBelongsToValidMerchantExpectsTokenisationSuccess(): void
     {
         $testData = $this->testData['testAsyncTokenisation'];
@@ -570,6 +598,32 @@ class TokenisationTest extends TestCase
         $this->prepareData($merchantId,true);
 
         $this->buildData($network, $merchantId, $vault, $methodTest, $tokenId, $timestamp, 'IN', null, '100000007lcard', '411140', '10007cardToken', true);
+
+        $this->mockDataLakeToReturnTokenIds();
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $card = $this->getLastEntity('card', true);
+
+        $this->assertEquals($card['vault'], 'rzpvault');
+    }
+
+    public function testAsyncTokenisationWhenTokenExpiredFailure(): void
+    {
+        $testData = $this->testData['testAsyncTokenisation'];
+
+        $this->ba->appAuth();
+
+        $timestamp = Carbon::now()->getTimestamp();
+
+        extract($this->setUpDataForTokenisation('10000000000000', $timestamp));
+
+        $this->mockFetchMerchantTokenisationOnboardedNetworks([Network::VISA]);
+
+        $this->prepareData($merchantId,true);
+
+        $this->buildData($network, $merchantId, $vault, $methodTest, $tokenId, $timestamp, 'IN',
+            null, '100000007lcard', 411140, '10007cardToken', false, '1639686868');
 
         $this->mockDataLakeToReturnTokenIds();
 
@@ -952,6 +1006,28 @@ class TokenisationTest extends TestCase
         $this->assertEquals($card['vault'], 'rzpvault');
     }
 
+    public function testGlobalTokenisationWhenTokenExpiredFailure(): void
+    {
+        $testData = $this->testData['testGlobalCardsAsyncTokenisation'];
+
+        $this->ba->appAuth();
+
+        extract($this->setUpDataForTokenisation(Account::SHARED_ACCOUNT));
+
+        $this->mockFetchMerchantTokenisationOnboardedNetworks([Network::VISA]);
+
+        $this->prepareData($merchantId);
+
+        $this->buildData($network, $merchantId, $vault, $methodTest, $tokenId, $timestamp, 'IN',
+            null, '100000007lcard', 411140, '10007cardToken', false, '1639686868');
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $card = $this->getLastEntity('card', true);
+
+        $this->assertEquals($card['vault'], 'rzpvault');
+    }
+
     public function testGlobalCardAsyncTokenisationForMultipleTokensExpectsTokenisationSuccess(): void
     {
         $testData = $this->testData['testGlobalCardsAsyncTokenisation'];
@@ -1319,7 +1395,8 @@ class TokenisationTest extends TestCase
         $cardId = '100000007lcard',
         $iinId = '411140',
         $tokenName = '10007cardToken',
-        $recurring = false
+        $recurring = false,
+        $expiredAt = '9999999999'
     ): void
     {
         $iin_test = $this->fixtures->iin->create(
@@ -1364,7 +1441,8 @@ class TokenisationTest extends TestCase
                 'used_at'         => 10,
                 'merchant_id'     => $merchantId,
                 'acknowledged_at' => $timestamp,
-                'recurring'       => $recurring
+                'recurring'       => $recurring,
+                'expired_at'      => $expiredAt
             ]
         );
     }

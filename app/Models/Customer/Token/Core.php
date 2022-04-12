@@ -2201,6 +2201,11 @@ class Core extends Base\Core
             return false;
         }
 
+        if ($token->isExpired() === true)
+        {
+            return false;
+        }
+
         $card = $token->card;
 
         // If card is already tokenised or card is international card, then it is not applicable for tokenisation
