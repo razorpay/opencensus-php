@@ -19,3 +19,9 @@ type QrCodeFetchRequest struct {
 	CustomerEmail   string `json:"cust_email,omitempty"`
 	CustomerContact string `json:"cust_contact,omitempty"`
 }
+
+type QrPaymentRequestSharp struct {
+	Reference string `json:"reference"`
+	Method    string `json:"method"`
+	Amount    string `json:"amount"`
+}

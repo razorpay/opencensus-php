@@ -52,6 +52,23 @@ func (s *QrCodesAPITestSuite) TestQrCodeFetch() {
 	}
 }
 
+func (s *QrCodesAPITestSuite) TestQrPaymentSharpGateway() {
+	for _, scenario := range QrPaymentSharpPos {
+		s.Run(scenario.description, func() {
+			createResponse := CreateQrCode(s.T(), scenario.createReq)
+			paymentData := scenario.payRequest
+			paymentData.Reference = createResponse.Id[3:] + "qrv2"
+			ProcessPaymentCallbackSharpGateway(s.T(), paymentData)
+			qrPaymentFetchResponse := FetchQrPaymentsForQrCode(s.T(), createResponse.Id)
+			verifyQrPaymentResponse(s.T(), qrPaymentFetchResponse)
+		})
+	}
+}
+
+func verifyQrPaymentResponse(t *testing.T, actual QrPaymentFetchResponse) {
+	assert.Equal(t, 1, actual.Count)
+}
+
 func verifyErrorResponse(t *testing.T, expected ErrorResponse, actual ErrorResponse) {
 	assert.Equal(t, expected.Error.Code, actual.Error.Code)
 	assert.Equal(t, expected.Error.Description, actual.Error.Description)
@@ -71,7 +88,7 @@ func verifyCreatedQrCode(t *testing.T, req QrCodeCreateRequest, res QrCodeCreate
 }
 
 func verifyFetchQrCodeResponse(t *testing.T, actual QrCodeFetchResponse, expected QrCodeFetchResponse) {
-	assert.Equal(t, actual.Count, expected.Count)
+	assert.Equal(t, expected.Count, actual.Count)
 }
 
 func TestQrCodeAPI(t *testing.T) {

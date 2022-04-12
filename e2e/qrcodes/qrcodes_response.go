@@ -23,3 +23,8 @@ type QrCodeFetchResponse struct {
 	Count  int                    `json:"count"`
 	Items  []QrCodeCreateResponse `json:"items"`
 }
+
+type QrPaymentFetchResponse struct {
+	Entity string                 `json:"entity"`
+	Count  int                    `json:"count"`
+}

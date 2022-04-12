@@ -195,3 +195,25 @@ var FetchQrCodesTests = []struct {
 		},
 	},
 }
+
+var QrPaymentSharpPos = []struct {
+	description string
+	createReq   QrCodeCreateRequest
+	payRequest  QrPaymentRequestSharp
+}{
+	{
+		description: "Upi Payment",
+		createReq: QrCodeCreateRequest{
+			Usage:       "multiple_use",
+			Type:        "upi_qr",
+			Name:        "Test UPI QR",
+			Description: "This is a test QR code",
+			FixedAmount: false,
+			CloseBy:     1681615838,
+		},
+		payRequest: QrPaymentRequestSharp{
+			Method: "upi",
+			Amount: "100",
+		},
+	},
+}

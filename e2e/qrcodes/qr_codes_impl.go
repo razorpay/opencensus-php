@@ -67,3 +67,25 @@ func FetchQrCode(t *testing.T, req QrCodeFetchRequest) QrCodeFetchResponse {
 	json.Unmarshal([]byte(obj.Raw()), &qrCodeFetchResponse)
 	return qrCodeFetchResponse
 }
+
+func ProcessPaymentCallbackSharpGateway(t *testing.T, paymentRequest QrPaymentRequestSharp) {
+	Initialize(t)
+	qrCodesHost.POST("/v1/bharatqr/pay/test").
+		WithBasicAuth(e2e.Config.VirtualAccount.Username, e2e.Config.VirtualAccount.Password).
+		WithJSON(paymentRequest).
+		Expect().
+		Status(http.StatusOK).
+		Body()
+}
+
+func FetchQrPaymentsForQrCode(t *testing.T, qrCodeId string) QrPaymentFetchResponse {
+	var qrPaymentFetchResponse QrPaymentFetchResponse
+	Initialize(t)
+	obj := qrCodesHost.GET("/v1/payments/qr_codes/"+qrCodeId+"/payments").
+		WithBasicAuth(e2e.Config.VirtualAccount.Username, e2e.Config.VirtualAccount.Password).
+		Expect().
+		Status(http.StatusOK).
+		Body()
+	json.Unmarshal([]byte(obj.Raw()), &qrPaymentFetchResponse)
+	return qrPaymentFetchResponse
+}
