@@ -27,6 +27,7 @@ use RZP\Error\ErrorCode;
 use RZP\Constants\Entity;
 use RZP\Models\PaymentsUpi;
 use RZP\Models\CardMandate;
+use RZP\Gateway\Base\Metric as BaseMetric;
 use RZP\Models\CardMandate\CardMandateNotification;
 
 class Service extends Base\Service
@@ -592,61 +593,101 @@ class Service extends Base\Service
     // todo Rename this to createTokenAndTokenizeCard
     public function createNetworkToken($input)
     {
-        $this->decryptCardNumberIfApplicable($input["card"]);
+        $startTime = microtime(true);
 
-        if ($this->merchant->isFeatureEnabled(Feature\Constants::NETWORK_TOKENIZATION_LIVE) === true)
+        try
         {
-            list($token, $serviceProviderTokens) = $this->core->createTokenAndTokenizedCard($input);
+            $this->decryptCardNumberIfApplicable($input["card"]);
 
-            return $token->toArrayPublicTokenizedCard($serviceProviderTokens);
+            if ($this->merchant->isFeatureEnabled(Feature\Constants::NETWORK_TOKENIZATION_LIVE) === true)
+            {
+                list($token, $serviceProviderTokens) = $this->core->createTokenAndTokenizedCard($input);
+
+                (new Metric())->pushTokenHQResponseTimeMetrics($startTime, BaseMetric::SUCCESS, Token\Action::CREATE);
+
+                return $token->toArrayPublicTokenizedCard($serviceProviderTokens);
+            }
+
+            $this->validateMode();
+
+            $token = $this->core->createNetworkToken($input);
+
+            return $this->generateMockResponse($token);
         }
 
-        $this->validateMode();
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::TOKEN_CREATE_FOR_TOKENIZED_CARD_EXCEPTION);
 
-        $token = $this->core->createNetworkToken($input);
+            (new Metric())->pushTokenHQResponseTimeMetrics($startTime, BaseMetric::FAILED, Token\Action::CREATE);
 
-        return $this->generateMockResponse($token);
+            throw $e;
+        }
     }
 
     public function fetchNetworkToken($input, $isPar = false)
     {
-        if ($this->merchant->isFeatureEnabled(Feature\Constants::NETWORK_TOKENIZATION_LIVE) === true)
+        $startTime = microtime(true);
+
+        try
         {
-            (new Validator)->validateInput(Validator::FETCH_TOKEN, $input);
-
-            $token = $this->repo->token->findOrFailByPublicIdAndMerchant($input['id'], $this->merchant);
-
-            $serviceProviderTokens = [];
-
-            if ($this->merchant->isFeatureEnabled(Feature\Constants::ALLOW_NETWORK_TOKENS) === true || $isPar)
+            if ($this->merchant->isFeatureEnabled(Feature\Constants::NETWORK_TOKENIZATION_LIVE) === true)
             {
-                $serviceProviderTokens = $this->core->fetchToken($token);
+                (new Validator)->validateInput(Validator::FETCH_TOKEN, $input);
+
+                $token = $this->repo->token->findOrFailByPublicIdAndMerchant($input['id'], $this->merchant);
+
+                $serviceProviderTokens = [];
+
+                if ($this->merchant->isFeatureEnabled(Feature\Constants::ALLOW_NETWORK_TOKENS) === true || $isPar)
+                {
+                    $serviceProviderTokens = $this->core->fetchToken($token);
+                }
+
+                if(!$isPar && !empty($serviceProviderTokens[0]["provider_data"]["network_reference_id"]))
+                {
+                    unset($serviceProviderTokens[0]["provider_data"]["network_reference_id"]);
+                }
+
+                (new Metric())->pushTokenHQResponseTimeMetrics($startTime, BaseMetric::SUCCESS, Token\Action::FETCH);
+
+                return $token->toArrayPublicTokenizedCard($serviceProviderTokens);
             }
 
-            if(!$isPar && !empty($serviceProviderTokens[0]["provider_data"]["network_reference_id"])){
-                unset($serviceProviderTokens[0]["provider_data"]["network_reference_id"]);
+            if ($isPar)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_ERROR, null, null, "network_tokenization_live feature is not enabled for this merchant");
             }
 
-            return $token->toArrayPublicTokenizedCard($serviceProviderTokens);
+            $this->validateMode();
+
+            $token = $this->repo->token->getByPublicIdAndMerchant($input['id'], $this->merchant);
+
+            if ($token === null)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Token not found');
+            }
+
+            return $this->generateMockResponse($token);
         }
 
-        if ($isPar)
+
+        catch (\Throwable $e)
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_ERROR, null, null, "network_tokenization_live feature is not enabled for this merchant");
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::TOKEN_FETCH_EXCEPTION);
+
+            (new Metric())->pushTokenHQResponseTimeMetrics($startTime, BaseMetric::FAILED, Token\Action::FETCH);
+
+            throw $e;
         }
-
-        $this->validateMode();
-
-        $token = $this->repo->token->getByPublicIdAndMerchant($input['id'], $this->merchant);
-
-        if ($token === null)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Token not found');
-        }
-
-        return $this->generateMockResponse($token);
     }
 
     // To do : We need to add the logic to get provider_name on the basis of provider_type
@@ -695,54 +736,90 @@ class Service extends Base\Service
 
     public function fetchCryptoGram($input)
     {
-        if ($this->merchant->isFeatureEnabled(Feature\Constants::NETWORK_TOKENIZATION_LIVE) === true)
+        $startTime = microtime(true);
+
+        try
         {
-            (new Validator)->validateInput(Validator::FETCH_CRYPTOGRAM, $input);
+            if ($this->merchant->isFeatureEnabled(Feature\Constants::NETWORK_TOKENIZATION_LIVE) === true)
+            {
+                (new Validator)->validateInput(Validator::FETCH_CRYPTOGRAM, $input);
 
-            $serviceProviderToken = $this->core->fetchCryptogram($input, $this->merchant);
+                $serviceProviderToken = $this->core->fetchCryptogram($input, $this->merchant);
 
-            return $this->generateCryptogramResponse($serviceProviderToken);
+                (new Metric())->pushTokenHQResponseTimeMetrics($startTime, BaseMetric::SUCCESS, Token\Action::CRYPTOGRAM);
+
+                return $this->generateCryptogramResponse($serviceProviderToken);
+            }
+
+            $this->validateMode();
+
+            $token = $this->repo->token->getByPublicIdAndMerchant($input['id'], $this->merchant);
+
+            if ($token === null)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Token not found');
+            }
+
+            return $this->generateMockResponseForCryptoGram($token);
         }
-
-        $this->validateMode();
-
-        $token = $this->repo->token->getByPublicIdAndMerchant($input['id'], $this->merchant);
-
-        if ($token === null)
+        catch (\Throwable $e)
         {
-            throw new Exception\BadRequestValidationFailureException(
-                'Token not found');
-        }
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::TOKEN_CRYPTOGRAM_EXCEPTION);
 
-        return $this->generateMockResponseForCryptoGram($token);
+            (new Metric())->pushTokenHQResponseTimeMetrics($startTime, BaseMetric::FAILED, Token\Action::CRYPTOGRAM);
+
+            throw $e;
+        }
     }
 
     public function deleteNetworkToken($input)
     {
-        if ($this->merchant->isFeatureEnabled(Feature\Constants::NETWORK_TOKENIZATION_LIVE) === true)
+        $startTime = microtime(true);
+
+        try
         {
-            (new Validator)->validateInput(Validator::FETCH_TOKEN, $input);
+            if ($this->merchant->isFeatureEnabled(Feature\Constants::NETWORK_TOKENIZATION_LIVE) === true)
+            {
+                (new Validator)->validateInput(Validator::FETCH_TOKEN, $input);
 
-            $token = $this->repo->token->findOrFailByPublicIdAndMerchant($input['id'], $this->merchant);
+                $token = $this->repo->token->findOrFailByPublicIdAndMerchant($input['id'], $this->merchant);
 
-            $this->core->deleteToken($token);
+                $this->core->deleteToken($token);
+
+                (new Metric())->pushTokenHQResponseTimeMetrics($startTime, BaseMetric::SUCCESS, Token\Action::DELETE);
+
+                return [];
+            }
+
+            $this->validateMode();
+
+            $token = $this->repo->token->getByPublicIdAndMerchant($input['id'], $this->merchant);
+
+            if ($token === null)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Token not found');
+            }
+
+            $token = $this->repo->token->deleteOrFail($token);
 
             return [];
         }
-
-        $this->validateMode();
-
-        $token = $this->repo->token->getByPublicIdAndMerchant($input['id'], $this->merchant);
-
-        if ($token === null)
+        catch (\Throwable $e)
         {
-            throw new Exception\BadRequestValidationFailureException(
-                'Token not found');
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::TOKEN_DELETE_EXCEPTION);
+
+            (new Metric())->pushTokenHQResponseTimeMetrics($startTime, BaseMetric::FAILED, Token\Action::DELETE);
+
+            throw $e;
         }
-
-        $token = $this->repo->token->deleteOrFail($token);
-
-        return [];
     }
 
 

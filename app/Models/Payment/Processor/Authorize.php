@@ -12,6 +12,7 @@ use Carbon\Carbon;
 use Lib\PhoneBook;
 
 use RZP\Constants\Procurer;
+use RZP\Gateway\Base\Metric as BaseMetric;
 use RZP\Jobs;
 use RZP\Error;
 use RZP\Exception;
@@ -68,6 +69,7 @@ use RZP\Models\Payment\Analytics;
 use RZP\Models\Payment\UpiMetadata;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Services\CardPaymentService;
+use RZP\Models\Customer\Token\Metric;
 use RZP\Models\Payment\TwoFactorAuth;
 use RZP\Models\Payment\RecurringType;
 use RZP\Listeners\ApiEventSubscriber;
@@ -6524,6 +6526,8 @@ trait Authorize
      */
     protected function migrateTokenIfApplicable($payment, $callbackData): void
     {
+        $startTime = microtime(true);
+
         try
         {
             $token = $payment->getGlobalOrLocalTokenEntity();
@@ -6581,6 +6585,8 @@ trait Authorize
             ];
 
             $core->migrateToTokenizedCard($token, $cardInput);
+
+            (new Metric())->pushTokenHQResponseTimeMetrics($startTime, BaseMetric::SUCCESS, Token\Action::MIGRATE);
         }
         catch (\Throwable $e)
         {
@@ -6589,6 +6595,8 @@ trait Authorize
                 'level' => Trace::WARNING,
                 'payment_id' => $payment->getId()
                 ]);
+
+            (new Metric())->pushTokenHQResponseTimeMetrics($startTime, BaseMetric::FAILED, Token\Action::MIGRATE);
         }
     }
 

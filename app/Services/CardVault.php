@@ -15,6 +15,8 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Card\Validator;
 use RZP\Http\Request\Requests;
 use RZP\Models\Payment;
+use RZP\Gateway\Base\Metric;
+use RZP\Models\Customer\Token;
 
 class CardVault
 {
@@ -310,7 +312,10 @@ class CardVault
         }
 
         if(in_array($tokenizationUrl, self::TOKENIZATION_ROUTES)) {
-            $this->handleVaultResponse($response,  $network);
+
+            $action =  $this->getTokenizationAction($tokenizationUrl);
+
+            $this->handleVaultResponse($request, $response, $network, $action);
         }
         else {
             $this->checkErrors($response);
@@ -459,7 +464,7 @@ class CardVault
     {
         $this->trace->info(TraceCode::VAULT_MIGRATE_TOKEN);
 
-        $response = $this->sendRequest('tokens/migrate', 'post', $input);
+        $response = $this->sendRequest(Card\Constants::TOKENS_MIGRATE, 'post', $input);
 
         if ($response[self::SUCCESS] === false)
         {
@@ -563,7 +568,7 @@ class CardVault
         return $response;
     }
 
-    protected function handleVaultResponse($response, $network = null)
+    protected function handleVaultResponse($request, $response, $network = null, $action = null)
     {
         if(empty($response) === true)
         {
@@ -574,14 +579,21 @@ class CardVault
             );
         }
 
+        $statusCode = $response->status_code;
+
         try {
 
             $this->checkForErrors($response);
+
+            $this->pushDimensions($request, Metric::SUCCESS, $statusCode, $action);
+
         }
         catch(Exception\BaseException $e) {
             $error = $e->getError();
 
             $this->trace->info(TraceCode::ERROR_EXCEPTION, [$e->getError()]);
+
+            $this->pushDimensions($request, Metric::FAILED, $statusCode, $action, $e);
 
             $internalErrorCode = $error->getInternalErrorCode();
 
@@ -720,5 +732,36 @@ class CardVault
             $description,
             $code,
             $data);
+    }
+
+    protected function pushDimensions($request, $status, $statusCode = null, $action = null, $exe = null)
+    {
+        if (($this->mode === Mode::TEST) and
+            ($this->app->runningUnitTests() === false))
+        {
+            return;
+        }
+
+        (new Token\Metric)->pushTokenHQDimensions($request['content'], $status, $statusCode, $action, $exe);
+    }
+
+    /**
+     * @param string $url
+     * @return false|string
+     */
+    protected function getTokenizationAction(string $url)
+    {
+        $action = '';
+
+        if ($url === 'tokens')
+        {
+            $action = 'create';
+        }
+        else if (strlen($url) >6 && substr($url, 0, 6) == 'tokens')
+        {
+            $action = substr($url, 7, strlen($url));
+        }
+
+        return $action;
     }
 }
