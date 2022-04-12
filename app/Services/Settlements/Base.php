@@ -360,8 +360,6 @@ class Base
         //TODO : Fix at NSS-OSS , Name-Contact length checker of 40 characters. Should be 50
         $beneName           = trim($ba->getBeneficiaryName());
 
-        $beneName           = $this->getAppropriateBeneNameOfMerchant($beneName);
-
         $beneEmail          = $ba->getBeneficiaryEmail() ?? '';
 
         $beneEmail          = $this->replaceWithDummyForBAAttribute($beneEmail,5,255,$beneEmailPattern,$dummyEmail);
