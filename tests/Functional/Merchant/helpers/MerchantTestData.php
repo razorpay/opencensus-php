@@ -12051,6 +12051,175 @@ return [
             ],
         ],
     ],
+
+    'testGetCheckoutPersonalisationForNonLoggedInAustralianUsers' => [
+        'request'  => [
+            'url'     => '/personalisation',
+            'method'  => 'get',
+            'content' => [
+                'order_id' => 'null',
+                'contact'  => '+618888888888',
+                'country_code'=>'au'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'preferred_methods' => [
+                    '+618888888888' => [
+                        'instruments' => [
+                            [
+                                'instrument' => 'poli',
+                                'method'     => 'app',
+                            ],
+                            [
+                                'instrument' => 'paypal',
+                                'method'     => 'wallet',
+                            ],
+                            [
+                                'instrument' => 'paytm',
+                                'method'     => 'wallet',
+                            ],
+                            [
+                                'instrument' => null,
+                                'method'     => 'netbanking',
+                            ],
+                            [
+                                'instrument' => null,
+                                'method'     => 'card',
+                                'issuer'     => null,
+                                'type'       => 'debit',
+                                'network'    => 'Visa',
+                            ],
+                        ],
+                    ],
+                ]
+            ],
+        ],
+    ],
+
+    'testGetCheckoutPersonalisationForNonLoggedInEuropeanUsers' => [
+        'request'  => [
+            'url'     => '/personalisation',
+            'method'  => 'get',
+            'content' => [
+                'order_id' => 'null',
+                'contact'  => '+348888888888',
+                'country_code'=>'es'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'preferred_methods' => [
+                    '+348888888888' => [
+                        'instruments' => [
+                            [
+                                'instrument' => 'trustly',
+                                'method'     => 'app',
+                            ],
+                            [
+                                'instrument' => 'paypal',
+                                'method'     => 'wallet',
+                            ],
+                            [
+                                'instrument' => 'paytm',
+                                'method'     => 'wallet',
+                            ],
+                            [
+                                'instrument' => null,
+                                'method'     => 'netbanking',
+                            ],
+                            [
+                                'instrument' => null,
+                                'method'     => 'card',
+                                'issuer'     => null,
+                                'type'       => 'debit',
+                                'network'    => 'Visa',
+                            ],
+                        ],
+                    ],
+                ]
+            ],
+        ],
+    ],
+
+    'testGetCheckoutPersonalisationForNonLoggedInIndianUsers' => [
+        'request'  => [
+            'url'     => '/personalisation',
+            'method'  => 'get',
+            'content' => [
+                'order_id' => 'null',
+                'contact'  => '+918888888888',
+                'country_code'=>'in'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'preferred_methods' => [
+                    '+918888888888' => [
+                        'instruments' => [
+                            [
+                                'instrument' => 'paytm',
+                                'method'     => 'wallet',
+                            ],
+                            [
+                                'instrument' => null,
+                                'method'     => 'netbanking',
+                            ],
+                            [
+                                'instrument' => null,
+                                'method'     => 'card',
+                                'issuer'     => null,
+                                'type'       => 'debit',
+                                'network'    => 'Visa',
+                            ],
+                        ],
+                    ],
+                ]
+            ],
+        ],
+    ],
+
+    "testGetCheckoutPersonalisationForNonLoggedInInternationalUser" => [
+        'request'  => [
+            'url'     => '/personalisation',
+            'method'  => 'get',
+            'content' => [
+                'order_id' => 'null',
+                'contact'  => '+338888888888',
+                'country_code'=>'us',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'preferred_methods' => [
+                    '+338888888888' => [
+                        'instruments' => [
+                            [
+                                'instrument' => 'paypal',
+                                'method'     => 'wallet',
+                            ],
+                            [
+                                'instrument' => 'paytm',
+                                'method'     => 'wallet',
+                            ],
+                            [
+                                'instrument' => null,
+                                'method'     => 'netbanking',
+                            ],
+                            [
+                                'instrument' => null,
+                                'method'     => 'card',
+                                'issuer'     => null,
+                                'type'       => 'debit',
+                                'network'    => 'Visa',
+                            ],
+                        ],
+                    ],
+                ]
+            ]
+        ]
+    ],
+
     'test1ccPreferencesFor1ccMerchant' => [
         'request' => [
             'url' => '/merchant/1cc_preferences',
@@ -12070,6 +12239,7 @@ return [
             'status_code' => 200
         ],
     ],
+
     'test1ccPreferencesForNon1ccMerchant' => [
         'request' => [
             'url' => '/merchant/1cc_preferences',

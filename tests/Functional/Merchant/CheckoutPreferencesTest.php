@@ -1750,6 +1750,58 @@ class CheckoutPreferencesTest extends TestCase
         $response = $this->runRequestResponseFlow($testData);
     }
 
+    public function testGetCheckoutPersonalisationForNonLoggedInInternationalUser()
+    {
+        $this->ba->publicAuth();
+
+        $order = $this->fixtures->order->create();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['order_id'] = $order->getPublicId();
+
+        $response = $this->runRequestResponseFlow($testData);
+    }
+
+    public function testGetCheckoutPersonalisationForNonLoggedInAustralianUsers()
+    {
+        $this->ba->publicAuth();
+
+        $order = $this->fixtures->order->create();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['order_id'] = $order->getPublicId();
+
+        $response = $this->runRequestResponseFlow($testData);
+    }
+
+    public function testGetCheckoutPersonalisationForNonLoggedInEuropeanUsers()
+    {
+        $this->ba->publicAuth();
+
+        $order = $this->fixtures->order->create();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['order_id'] = $order->getPublicId();
+
+        $response = $this->runRequestResponseFlow($testData);
+    }
+
+    public function testGetCheckoutPersonalisationForNonLoggedInIndianUsers()
+    {
+        $this->ba->publicAuth();
+
+        $order = $this->fixtures->order->create();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['order_id'] = $order->getPublicId();
+
+        $response = $this->runRequestResponseFlow($testData);
+    }
+
     public function testGetCheckoutPersonalisationForContact()
     {
         $this->ba->publicAuth();

@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant;
 use App;
 use Request;
 use Carbon\Carbon;
+use RZP\Constants\Country;
 use RZP\Constants\Timezone;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Constants\Mode;
@@ -72,6 +73,30 @@ class Checkout
     protected $order;
 
     protected $isCardVaultUp;
+
+    /**
+     * @var array[]
+     */
+    private $alternatePaymentInstrumentCountryMapping = array(
+        Payment\Gateway::TRUSTLY=>[Country::BE,Country::AT,Country::DE,Country::IT,Country::NL,Country::PL,Country::ES,Country::CH],
+        Payment\Gateway::POLI =>[Country::AU],
+    );
+
+    /**
+     * @var array[]
+     */
+    private $instrumentMethodMapping = array(
+        Payment\Gateway::TRUSTLY=>Payment\Method::APP,
+        Payment\Gateway::POLI=>Payment\Method::APP,
+        Payment\Gateway::PAYPAL=>Payment\Method::WALLET);
+
+    /**
+     * @var array
+     */
+    private $instrumentPriority = array(
+        1=>Payment\Gateway::TRUSTLY,
+        2=>Payment\Gateway::POLI,
+        3=> Payment\Gateway::PAYPAL);
 
     public function __construct()
     {
@@ -1619,7 +1644,7 @@ class Checkout
                     $pos = $pos + 1;
                 }
 
-                $preferences = $this->enrichPznRespForInternational($preferences, $contact);
+                $preferences = $this->enrichPznRespForInternational($preferences,$contact, $input);
 
                 $contact = $contact ?: 'default';
 
@@ -1644,34 +1669,80 @@ class Checkout
 
     /**
      * Function to enrich personalisation preferred method response,
-     * if contact dialing code is non indian add paypal in preferred methods
+     * if country code is international add additional payment methods
+     * paypal is added by default.
      * @param $preferences
      * @param $contact
+     * @param $input
      * @return mixed
      */
-    private function enrichPznRespForInternational(& $preferences, $contact)
+    private function enrichPznRespForInternational(& $preferences,$contact,$input)
     {
-        if ((empty($contact) === true) or
-            (strpos($contact,'+') !== 0) or
-            (strpos($contact,'+91') === 0)){
-            return $preferences;
+        $result = array();
+        if(isset($input['country_code']) === true) {
+            $countryCode = strtolower($input['country_code']);
+            if ($this->isNativeCountryCode($countryCode)) {
+                return $preferences;
+            }
+            $result = $this->getPreferredAPMForInternationalNumbers($preferences, $countryCode);
+        } else {
+            // for backward compatibility
+            if(empty($contact) === true ||
+                strpos($contact,'+') !== 0 ||
+                strpos($contact,'+91') === 0) {
+                return $preferences;
+            }
+            $this->removePaymentMethod($preferences,Payment\Gateway::PAYPAL,
+                (string)$this->instrumentMethodMapping[Payment\Gateway::PAYPAL]);
+
+            $result = array([
+                "instrument"=> Payment\Gateway::PAYPAL,
+                "method"    => $this->instrumentMethodMapping[Payment\Gateway::PAYPAL]
+            ]);
         }
 
-        $result  = array_first($preferences, function ($preference) use (&$value){
-           return ($preference["method"] === Payment\Method::WALLET) and
-               ($preference["instrument"] === Merchant\Methods\Entity::PAYPAL);
-        });
-
-        //check for if paypal already added in response, skip adding it again
-        if (empty($result) === true){
-            $paypalPreference = [
-                "method"    => Payment\Method::WALLET,
-                "instrument"=> Merchant\Methods\Entity::PAYPAL,
-            ];
-            array_unshift($preferences, $paypalPreference);
+        if(empty($result) !== true) {
+            $preferences = array_merge($result,$preferences);
         }
-
         return $preferences;
+    }
+
+    /**
+     * Function returns additional payment methods for international Customers
+     * based on the country code. currently supports Trustly and Poli as payment methods
+     * Adds PayPal by default
+     * @param $preferences
+     * @param $countryCode
+     * @return array
+     */
+    private function getPreferredAPMForInternationalNumbers(&$preferences, $countryCode) : array
+    {
+        $paymentList = array();
+        foreach($this->instrumentPriority as $order=>$paymentInstrument) {
+            if(($paymentInstrument === Payment\Gateway::PAYPAL||
+                    in_array($countryCode, $this->alternatePaymentInstrumentCountryMapping[$paymentInstrument]))) {
+
+                $this->removePaymentMethod($preferences,
+                    $paymentInstrument, (string)$this->instrumentMethodMapping[$paymentInstrument]);
+
+                array_push($paymentList,[
+                    "instrument"=>$paymentInstrument,
+                    "method"    =>$this->instrumentMethodMapping[$paymentInstrument]
+                    ]);
+            }
+        }
+        return $paymentList;
+    }
+
+    private function isNativeCountryCode(string $countryCode) : bool {
+        return $countryCode === Country::IN;
+    }
+
+    private function removePaymentMethod(&$preferences,string $instrument,string $method):void {
+        $index =  array_search(array("instrument"=>$instrument,"method"=>$method),$preferences,true);
+        if($index!==false) {
+            unset($preferences[$index]);
+        }
     }
 
     protected function sortByScore(array $preferences) : array
