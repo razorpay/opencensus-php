@@ -1057,6 +1057,13 @@ class Processor
                 $subscriptionPaymentRecurringType = 'initial';
             }
 
+            else if((isset($input[Subscription\Entity::SUBSCRIPTION_CARD_CHANGE]) === true) and
+                ($input[Payment\Entity::METHOD] === Payment\Method::EMANDATE) and
+                $subscriptionPaymentRecurringType === 'card_change')
+            {
+                $subscriptionPaymentRecurringType = 'initial';
+            }
+
             $payment->setRecurringType($subscriptionPaymentRecurringType);
 
             $this->addOrderIdToInputForExternalSubscription($input);
@@ -1067,15 +1074,16 @@ class Processor
     {
         assert($this->subscription->isExternal() === true); // nosemgrep :assert-fix-false-positives
 
+        $cardChange = boolval($input[Subscription\Entity::SUBSCRIPTION_CARD_CHANGE] ?? false);
+
         // For subscription card change, we donot need to add order id
         // for the following subscription states. (For these states, we will be
         // using default auth amount as card change amount)
         if (($this->subscription->isActive() === true) or
             ($this->subscription->isHalted() === true) or
-            ($this->subscription->isAuthenticated() === true))
+            ($this->subscription->isAuthenticated() === true) or
+            ($cardChange === true && $input['method'] === Constants::EMANDATE))
         {
-            $cardChange = boolval($input[Subscription\Entity::SUBSCRIPTION_CARD_CHANGE] ?? false);
-
             if ($cardChange === true)
             {
                 // Adding this to support UPI card change
@@ -1084,6 +1092,23 @@ class Processor
                     $orderPayLoad = [
                         Order\Entity::AMOUNT          => $input['amount'],
                         Order\Entity::CURRENCY        => $input['currency'],
+                        Order\Entity::PAYMENT_CAPTURE => true,
+                        Order\Entity::PRODUCT_ID      => $this->subscription->getId(),
+                        Order\Entity::PRODUCT_TYPE    => Constants::SUBSCRIPTION
+                    ];
+
+                    $order = (new Order\Core)->create($orderPayLoad, $this->merchant);
+
+                    $input[Payment\Entity::ORDER_ID] = Order\Entity::getSignedId($order->getId());
+                }
+
+                // Adding this to support Card to emandate method change
+                else if($input['method'] === Constants::EMANDATE)
+                {
+                    $orderPayLoad = [
+                        Order\Entity::AMOUNT          => $input['amount'],
+                        Order\Entity::CURRENCY        => $input['currency'],
+                        Order\Entity::METHOD          => Payment\Method::EMANDATE,
                         Order\Entity::PAYMENT_CAPTURE => true,
                         Order\Entity::PRODUCT_ID      => $this->subscription->getId(),
                         Order\Entity::PRODUCT_TYPE    => Constants::SUBSCRIPTION
