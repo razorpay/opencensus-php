@@ -76,7 +76,7 @@ WHERE
   AND created_date > '%s'
 GROUP BY
   merchant_id
-LIMIT 
+LIMIT
   %d
 EOT;
 
@@ -663,9 +663,13 @@ EOT;
                 $query->where(Payment\Entity::RECURRING_TYPE, '=', $emandateRecurringType);
             }
 
-            if ($filterPaymentPushedToKafka === true)
+            if ($filterPaymentPushedToKafka == true)
             {
-                $query->whereIn(Payment\Entity::IS_PUSHED_TO_KAFKA, [Payment\Processor\Constants::NOTHING_VIA_SCHEDULER, Payment\Processor\Constants::VERIFY_VIA_SCHEDULER]);
+                $query->where(function ($query)
+                {
+                    $query->where(Payment\Entity::IS_PUSHED_TO_KAFKA, '=', Payment\Processor\Constants::VERIFY_VIA_SCHEDULER)
+                        ->orWhereNull(Payment\Entity::IS_PUSHED_TO_KAFKA);
+                });
             }
 
             return $query->with(['merchant', 'merchant.features'])
@@ -737,9 +741,13 @@ EOT;
                 $query->where(Payment\Entity::RECURRING_TYPE, '=', $emandateRecurringType);
             }
 
-            if ($filterPaymentPushedToKafka === true)
+            if ($filterPaymentPushedToKafka == true)
             {
-                $query->whereIn(Payment\Entity::IS_PUSHED_TO_KAFKA, [Payment\Processor\Constants::NOTHING_VIA_SCHEDULER, Payment\Processor\Constants::VERIFY_VIA_SCHEDULER]);
+                $query->where(function ($query)
+                {
+                    $query->where(Payment\Entity::IS_PUSHED_TO_KAFKA, '=', Payment\Processor\Constants::VERIFY_VIA_SCHEDULER)
+                        ->orWhereNull(Payment\Entity::IS_PUSHED_TO_KAFKA);
+                });
             }
 
             return $query->min(Entity::CREATED_AT);
@@ -955,9 +963,13 @@ EOT;
             $query->whereIn(Payment\Entity::STATUS, $filterStatus);
         }
 
-        if ($filterPaymentPushedToKafka === true)
+        if ($filterPaymentPushedToKafka == true)
         {
-            $query->whereIn(Payment\Entity::IS_PUSHED_TO_KAFKA, [Payment\Processor\Constants::NOTHING_VIA_SCHEDULER, Payment\Processor\Constants::TIMEOUT_VIA_SCHEDULER]);
+            $query->where(function ($query)
+            {
+                $query->where(Payment\Entity::IS_PUSHED_TO_KAFKA, '=', Payment\Processor\Constants::TIMEOUT_VIA_SCHEDULER)
+                    ->orWhereNull(Payment\Entity::IS_PUSHED_TO_KAFKA);
+            });
         }
 
         return $query->take($count)
