@@ -1950,7 +1950,7 @@ class Route
         'firs_document_fetch'                      => ['get',       'merchant/firs',                                 'DocumentController@fetchFIRSDocuments'                             ],
         'firs_document_download'                   => ['get',       'merchant/firs/content',                         'DocumentController@DownloadFIRSDocuments'                          ],
         'firs_collect_and_zip_cron'                => ['post',      'merchant/firs/collect/cron',                    'DocumentController@collectAndZipFIRSDocuments'                 ],
-        
+
         'automate_merchant_master_firs'            => ['post',      'rbl/update_merchant_master/firs',               'LambdaController@processLambdaMerchantMasterFIRS'                  ],
 
         // Shield routes
@@ -4646,7 +4646,7 @@ class Route
         'payment_upi_authorize_failed',
 
         'recon_update_upi_data',
-        
+
         'firs_collect_and_zip_cron',
     ];
 
@@ -7341,8 +7341,8 @@ class Route
 
         'terminals_proxy_get_merchant_optimizer_provider'   => Permission::VIEW_GATEWAY_RULE,
         'terminals_proxy_get_optimizer_gateways'            => Permission::VIEW_GATEWAY_RULE,
-        'terminals_proxy_add_optimizer_provider'            => Permission::VIEW_GATEWAY_RULE,
-        'terminals_proxy_update_optimizer_provider'         => Permission::VIEW_GATEWAY_RULE,
+        'terminals_proxy_add_optimizer_provider'            => Permission::CREATE_GATEWAY_RULE,
+        'terminals_proxy_update_optimizer_provider'         => Permission::EDIT_GATEWAY_RULE,
         'terminals_proxy_get_optimizer_merchant_methods'    => Permission::VIEW_GATEWAY_RULE,
 
         //Enable maker/checker for payouts
