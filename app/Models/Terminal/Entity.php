@@ -1305,17 +1305,11 @@ class Entity extends Base\PublicEntity
 
     public function buildFromAttributes(array $input = array())
     {
-        $this->setForemostAttributes($input);
-
-        $this->modify($input);
-
-        $this->generateDefaultAttributes($input);
-
         foreach ($this->getVisible() as $key)
         {
-            if ((array_key_exists($key, $input) === true) and (empty($input[$key]) !== true) and ($key !== 'type'))
+            if ((array_key_exists($key, $input) === true) and (empty($input[$key]) !== true) and ($key !== self::TYPE))
             {
-                $this->setAttribute($key, $input[$key]);
+                $this->attributes[$key] = $input[$key];
             }
         }
         return $this;
