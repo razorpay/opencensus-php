@@ -2621,6 +2621,15 @@ class Gateway
         Gateway::CHECKOUT_DOT_COM,
     ];
 
+    /**
+     * Gateways/Apps which supports void refunds for AVS failed
+     *
+     * @var array
+     */
+    public static $internationalAVSVoidSupported = [
+        Gateway::HITACHI,
+    ];
+
      /**
      * Gateways/Apps which support international payments
      *

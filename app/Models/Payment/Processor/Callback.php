@@ -303,6 +303,12 @@ trait Callback
 
             $this->app['segment']->trackPayment($payment, TraceCode::PAYMENT_CALLBACK_RETRY_SUCCESS);
 
+            if($payment->getInternalErrorCode()===ErrorCode::BAD_REQUEST_PAYMENT_FAILED_BY_AVS)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_FAILED_BY_AVS);
+            }
+
             return $this->postPaymentAuthorizeProcessing($payment);
         }
 

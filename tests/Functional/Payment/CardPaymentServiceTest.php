@@ -1330,6 +1330,101 @@ class CardPaymentServiceTest extends TestCase
         $this->assertTrue($this->assertSatisfied);
     }
 
+    public function testAuthorizeWithFailedAVSBillingAddressParam()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function ($mid, $feature, $mode)
+                {
+                    if ($feature === 'merchants_refund_create_v1.1')
+                    {
+                        return 'off';
+                    }
+                    return 'on';
+                }));
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'variant_on',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($output);
+
+        $this->enableCpsConfig();
+
+        $this->fixtures->merchant->addFeatures(['avs']);
+        $this->fixtures->merchant->addFeatures([\RZP\Models\Feature\Constants::DISABLE_NATIVE_CURRENCY]);
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $terminal = $this->fixtures->create('terminal:shared_hitachi_terminal', [
+            'type' => [
+                'non_recurring' => '1',
+            ]
+        ]);
+
+        $paymentArray = $this->getAVSPaymentArray();
+
+        $cardService = \Mockery::mock('RZP\Services\CardPaymentService')->makePartial();
+
+        $this->app->instance('card.payments', $cardService);
+
+        $this->assertSatisfied = false;
+
+        $cardService->shouldReceive('sendRequest')
+            ->with('POST', Mockery::type('string'), Mockery::type('array'))
+            ->andReturnUsing(function (string $method, string $url, array $input) use ($terminal, $paymentArray) {
+
+                $this->assertEquals('authorize', $url);
+                $this->assertEquals('POST', $method);
+                $this->assertEquals($paymentArray['billing_address'], $input['input']['payment']['billing_address']);
+
+                $this->assertSatisfied = true;
+
+                return [
+                    'data' => [
+                        'acquirer' => [
+                            'reference2' => 'test'
+                        ],
+                        'avs_result' => 'A'
+                    ],
+                    'payment' => [
+                        'terminal_id' => $terminal->getId(),
+                        'auth_type' => null,
+                        'authentication_gateway' => 'mpi_blade'
+                    ],
+                ];
+            });
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow( $testData, function () use ($paymentArray)
+        {
+            $this->doAuthPayment($paymentArray);
+        });
+
+        $payment = $this->getDbLastPayment();
+
+        $this->assertEquals("refunded",$payment->getStatus());
+
+        $this->assertEquals(ErrorCode::BAD_REQUEST_PAYMENT_FAILED_BY_AVS, $payment->getInternalErrorCode());
+
+        $this->assertEquals(Payment\Entity::CARD_PAYMENT_SERVICE, $payment->getCpsRoute());
+
+        $this->assertEquals('mpi_blade', $payment['authentication_gateway']);
+
+        $this->assertTrue($this->assertSatisfied);
+    }
+
     public function testAuthorizeWithoutAVSBillingAddressParam()
     {
         $this->enableCpsConfig();
@@ -3524,7 +3619,7 @@ class CardPaymentServiceTest extends TestCase
                     if($useActualCard == true)
                     {
                         $response['value'] = '4012001038443335';
-                        break;    
+                        break;
                     }
                     $response['value'] = base64_decode($input['token']);
                     break;

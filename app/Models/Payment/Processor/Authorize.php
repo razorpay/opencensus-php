@@ -6411,8 +6411,22 @@ trait Authorize
 
         try {
             $this->validateAvsResponseAndRemoveBillingAddressIfRequired($this->payment, $data);
-        } catch (Exception\BadRequestException $e) {
-            $this->updatePaymentOnExceptionAndThrow($e);
+        }
+        catch (Exception\BadRequestException $e) {
+
+            if(in_array($this->payment->getGateway(), Gateway::$internationalAVSVoidSupported,true) && $this->ShouldCallRefundForAVSFailedPayments())
+            {
+                // Updates payment entity to authorized and adds a transaction.
+                $updated = $this->updatePaymentAuthorized($data, $wasFailed);
+
+                $this->refundAuthorizedPayment($this->payment,[]);
+                $this->payment->setError(ErrorCode::BAD_REQUEST_ERROR,Error\PublicErrorDescription::BAD_REQUEST_PAYMENT_FAILED_BY_AVS,ErrorCode::BAD_REQUEST_PAYMENT_FAILED_BY_AVS);
+                $this->payment->saveOrFail();
+                throw $e;
+            }
+            else{
+                $this->updatePaymentOnExceptionAndThrow($e);
+            }
         }
 
         // Updates payment entity to authorized and adds a transaction.
@@ -10991,5 +11005,35 @@ trait Authorize
         $variant = $response['response']['variant']['name'] ?? '';
 
         return $variant === 'enable';
+    }
+
+    protected function ShouldCallRefundForAVSFailedPayments(): bool
+    {
+        try
+        {
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.void_refund_avs_failed_experiment_id'),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            if ($variant === 'variant_on')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::GLOBAL_CARD_PAYMENT_PROCESS_SPLITZ_ERROR
+            );
+        }
+
+        return false;
     }
 }
