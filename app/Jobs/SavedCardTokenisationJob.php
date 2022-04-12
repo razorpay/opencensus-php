@@ -26,6 +26,12 @@ class SavedCardTokenisationJob extends Job
 
     protected $asyncTokenisationJobId;
 
+    protected const TOKENISATION_NO_RETRY_ERROR_CODES = [
+        'BAD_REQUEST_CARD_INVALID',
+        'BAD_REQUEST_CARD_NOT_ELIGIBLE',
+        'BAD_REQUEST_INVALID_CARD_EXPIRY',
+    ];
+
     /**
      * @var Token\Core
      */
@@ -119,15 +125,15 @@ class SavedCardTokenisationJob extends Job
                 ]
             );
 
-            $this->checkRetry();
+            $this->checkRetry($e);
         }
     }
 
-    protected function checkRetry(): void
+    protected function checkRetry(Throwable $e): void
     {
-        if ($this->attempts() > self::MAX_RETRY_ATTEMPT)
+        if (($this->attempts() > self::MAX_RETRY_ATTEMPT) or
+            (in_array($e->getCode(), self::TOKENISATION_NO_RETRY_ERROR_CODES, true)))
         {
-            // @TODO: Add analytics event later to show job failure
             $this->trace->error(TraceCode::SAVED_CARD_TOKENISATION_JOB_FAILED, [
                 'tokenId'       => $this->tokenId,
                 'merchantId'    => $this->merchantId,
