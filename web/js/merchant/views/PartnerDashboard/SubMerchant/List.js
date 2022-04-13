@@ -59,9 +59,11 @@ export default class SubMerchantsList extends Component {
       toCleverTap: true,
     });
     trackAddNewMerchantEvents('Click - Navbar');
+    const { closeModal } = this.props;
+    const { referralData } = this.state;
     this.props.openModal({
       size: 'med-large',
-      component: <AddMerchant closeModal={this.props.closeModal} />,
+      component: <AddMerchant closeModal={closeModal} referralData={referralData} />,
     });
   };
 

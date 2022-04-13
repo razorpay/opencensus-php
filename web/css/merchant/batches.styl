@@ -22,10 +22,13 @@ $stats-border = #eaeff0;
         width: 350px
 
 .partner-submerchant-modal
-  .add-single-block
-    margin-top: 32px
+  &.fixed-height-modal
+    height: 480px
+    @media (max-width: 500px)
+      height: auto
+      min-height: 470px
   .batch-upload-modal
-    background: inherit;
+    background: inherit
     margin-top: 32px
     ol
       font-size: 12px;
@@ -58,7 +61,7 @@ $stats-border = #eaeff0;
       display: inline
       color: rgba(22, 47, 86, 0.54)
       font-weight: bold
-      margin-right: 24px
+      margin-right: 22px
       font-size: 14px
       line-height: 20px
       position: relative
@@ -77,6 +80,31 @@ $stats-border = #eaeff0;
           position: absolute
 
   .modal-body
+    .step
+      .flex-col-between
+        display: flex
+        flex-direction: column
+        justify-content: space-between
+      .type-selection
+        height: 418px
+        &__content
+          margin: 40px 0
+        &__actions
+          text-align: right
+          margin-bottom: 25px
+      .add-single-block
+        margin-top: 32px
+        height: 350px
+        .modal-actions
+          text-align: right
+          margin-bottom: 18px
+      .add-batch-block
+        .success-message
+          height: 280px
+        .bulk-actions
+          text-align: right
+          margin-bottom: 8px
+
     .success-message
       p
         margin: 16px 0 6px 0
