@@ -869,7 +869,8 @@ return [
         'url'                    => env('APP_PAYOUT_LINKS_URL', 'http://localhost:8000'),
         'secret'                 => env('APP_PAYOUT_LINKS_INTERNAL_SECRET'),
         'micro_service_endpoint' => env('PAYOUT_LINKS_MICRO_SERVICE_URL', 'http://localhost:8000'),
-        'app_demo_payout_link_fe_endpoint' => env('APP_DEMO_PAYOUT_LINK_FE_ENDPOINT', '')
+        'app_demo_payout_link_fe_endpoint' => env('APP_DEMO_PAYOUT_LINK_FE_ENDPOINT', ''),
+        'timeout'                => env('PAYOUT_LINKS_URL_TIMEOUT_SECS', 25)
     ],
 
     'vajra' => [

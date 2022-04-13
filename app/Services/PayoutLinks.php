@@ -206,6 +206,8 @@ class PayoutLinks
 
         $this->secret  = $payoutLinkConfig['secret'];
 
+        $this->timeout  = $payoutLinkConfig['timeout'];
+
         $this->repo  = $app['repo'];
 
         $this->app = $app;
@@ -1324,7 +1326,7 @@ class PayoutLinks
             ],
             // Increasing timeout to 25 seconds. Temporary fix.
             // Final FIX: https://jira.corp.razorpay.com/browse/RX-4320
-            'timeout' => 25,
+            'timeout' => $this->timeout,
         ];
 
         $this->trace->info(TraceCode::PAYOUT_LINKS_REQUEST,

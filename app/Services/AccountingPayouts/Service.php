@@ -479,7 +479,10 @@ class Service
 
         $headers[self::X_ORG_ID] = $this->app['basicauth']->getOrgId();
 
-        $options = ['auth' => ['api', $this->config['secret']]];
+        $options = [
+            'auth' => ['api', $this->config['secret']],
+            'timeout' => $this->config['timeout'],
+        ];
 
         $dataLogged = $data;
 
