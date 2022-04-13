@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import store from 'merchant/store';
 import { Route, Switch } from 'react-router-dom';
 
@@ -16,6 +17,19 @@ import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 const PartnerShowWhenRoute = showWhenRoutex(store, '/partners/submerchants');
 
 export default function PartnerDashboard() {
+  const user = store.getState().session.user;
+  const isPartnershipFUX = user?.isPartnershipFUX || false;
+
+  useEffect(() => {
+    if (isPartnershipFUX) {
+      document.body.style.backgroundColor = '#eaedff';
+    }
+    return () => {
+      if (isPartnershipFUX) {
+        document.body.style.backgroundColor = null;
+      }
+    };
+  }, [isPartnershipFUX]);
   return (
     <ErrorBoundary resetOnProps>
       <Switch>

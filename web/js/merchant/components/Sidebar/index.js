@@ -278,14 +278,12 @@ class PartnerSidebar extends Component {
 
   render() {
     const props = this.props;
+    const isPartnershipFUX = props?.user?.isPartnershipFUX || false;
+    const fuxEnabledClass = isPartnershipFUX ? 'fux-enabled' : '';
     return (
-      <>
+      <div className={`nav-group ${fuxEnabledClass}`}>
         <MainNavLinkGroup
-          title={
-            <>
-              <i class="i i-partner text-primary" /> Partner
-            </>
-          }
+          title={<>{isPartnershipFUX ? null : <i class="i i-partner text-primary" />}Partner</>}
           onToggleClick={this.toggle('partnerOpen')}
           value={this.state.partnerOpen}
         >
@@ -293,17 +291,13 @@ class PartnerSidebar extends Component {
         </MainNavLinkGroup>
 
         <MainNavLinkGroup
-          title={
-            <>
-              <i class="i i-products text-success" /> Products
-            </>
-          }
+          title={<>{isPartnershipFUX ? null : <i class="i i-products text-success" />}Products</>}
           onToggleClick={this.toggle('merchantOpen')}
           value={this.state.merchantOpen}
         >
           <MerchantNavLinks {...props.merchantNavLinkProps} user={props.user} />
         </MainNavLinkGroup>
-      </>
+      </div>
     );
   }
 }

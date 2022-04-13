@@ -4,6 +4,16 @@ export default function PartnerNavLinks() {
   return (
     <>
       <MainNavLink
+        label="Home"
+        icon="i i-chart text-info"
+        to="/partners"
+        exact
+        type="general"
+        additionalCondition={(user) => user.isAllowedView('submerchants') && user.isPartnershipFUX}
+        isNew={true}
+      />
+
+      <MainNavLink
         label="Affiliate Accounts"
         icon="i i-account-balance text-success"
         to="/partners/submerchants"
