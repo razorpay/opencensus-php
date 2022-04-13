@@ -64,11 +64,6 @@ return [
                     'key2'             => 'value2',
                     'account_access'   => 1,
                 ],
-                'tos_acceptance'                => [
-                    'date'       => '1561110415',
-                    'ip'         => '201.189.12.23',
-                    'user_agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_4]',
-                ],
             ],
         ],
         'response' => [
@@ -127,11 +122,6 @@ return [
                     'business_details' => 'This is a test business',
                     'key2'             => 'value2',
                     'account_access'   => 1,
-                ],
-                'tos_acceptance'                => [
-                    'date'       => '1561110415',
-                    'ip'         => '201.189.12.23',
-                    'user_agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_4]',
                 ],
             ],
         ],
@@ -984,11 +974,6 @@ return [
                     'key2'             => 'value2',
                     'account_access'   => 1,
                 ],
-                'tos_acceptance'                => [
-                    'date'       => '1561110415',
-                    'ip'         => '201.189.12.23',
-                    'user_agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_4]',
-                ],
             ],
         ],
         'response' => [
@@ -1066,11 +1051,6 @@ return [
                     'business_details' => 'This is a test business',
                     'key2'             => 'value2',
                     'account_access'   => 1,
-                ],
-                'tos_acceptance'                => [
-                    'date'       => '1561110415',
-                    'ip'         => '201.189.12.23',
-                    'user_agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_4]',
                 ],
             ],
         ],
@@ -1600,11 +1580,6 @@ return [
                     'key2'             => 'value2',
                     'account_access'   => 1,
                 ],
-                'tos_acceptance'                => [
-                    'date'       => '1561110415',
-                    'ip'         => '201.189.12.23',
-                    'user_agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_4]',
-                ],
             ],
         ],
         'response' => [
@@ -1660,11 +1635,6 @@ return [
                     'business_details' => 'This is a test business',
                     'key2'             => 'value2',
                     'account_access'   => 1,
-                ],
-                'tos_acceptance'                => [
-                    'date'       => '1561110415',
-                    'ip'         => '201.189.12.23',
-                    'user_agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_4]',
                 ],
             ],
         ],

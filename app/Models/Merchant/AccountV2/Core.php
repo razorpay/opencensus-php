@@ -34,6 +34,8 @@ class Core extends Merchant\Core
 
         (new Validator)->validateInput('create_account', $input);
 
+        $this->executeTosAcceptanceExperiment($input, $partner);
+
         // Calling downstream validation to be in sync with them. https://razorpay.slack.com/archives/C021KESTRLH/p1647518134264949
         $subMerchantInput = InputHelper::getSubMerchantInput($input);
         $detailInput = InputHelper::getSubMerchantDetailInput($input);
@@ -47,6 +49,7 @@ class Core extends Merchant\Core
         {
             $subMerchant = $this->createSubmerchantAndAssociatedEntities($partner, $input);
 
+            unset($input[Constants::IS_IGNORE_TOS_ACCEPTANCE]);
             return $subMerchant;
         });
 
@@ -115,11 +118,14 @@ class Core extends Merchant\Core
 
         $validationDuration = (microtime(true) - $functionStartTime) * 1000;
 
+        $this->executeTosAcceptanceExperiment($input, $partner);
         $account = $this->repo->transactionOnLiveAndTest(function () use ($input, $partner, $accountId, $subMerchantDetails)
         {
             $subMerchant = Tracer::inspan(['name' => HyperTrace::FILL_SUBMERCHANT_DETAILS], function () use ($input, $accountId) {
                 $subMerchant = $this->fillSubMerchant($accountId, $input);
                 $subMerchant = $this->fillSubMerchantDetails($subMerchant, $input);
+
+                unset($input[Constants::IS_IGNORE_TOS_ACCEPTANCE]);
                 return $subMerchant;
             });
 
@@ -256,6 +262,18 @@ class Core extends Merchant\Core
         ]);
 
         return $subMerchant;
+    }
+
+    protected function executeTosAcceptanceExperiment(&$input, Merchant\Entity $partner)
+    {
+        $partnerId = $partner->getId();
+        $isIgnoreTosAcceptance = $this->app->razorx->getTreatment(
+            $partner->getId(),
+            Merchant\RazorxTreatment::IGNORE_TOS_ACCEPTANCE,
+            $this->mode
+        );
+
+        $input[Constants::IS_IGNORE_TOS_ACCEPTANCE] = $isIgnoreTosAcceptance;
     }
 
     /**

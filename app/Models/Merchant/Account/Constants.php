@@ -141,6 +141,8 @@ class Constants
     const SUSPENDED            = 'suspended';
     const SUSPENDED_AT         = 'suspended_at';
 
+    const IS_IGNORE_TOS_ACCEPTANCE         = 'isIgnoreTosAcceptance';
+
     public static $validBusinessModels = [
         self::B2B,
         self::B2C,
