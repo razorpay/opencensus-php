@@ -24,7 +24,7 @@ use RZP\Models\Merchant\Cron\Jobs\FriendBuySendPurchaseEventsCronJob;
 use RZP\Models\Merchant\Cron\Jobs\EnableM2MReferralCronJob;
 use RZP\Models\Merchant\Cron\Jobs\FirstPaymentOfferCronJob;
 use RZP\Models\Merchant\Cron\Jobs\BVSPartlyExecutedValidationCronJob;
-use RZP\Models\Merchant\Cron\Jobs\SaveMerchantSegmentTypeForPGMerchants;
+use RZP\Models\Merchant\Cron\Jobs\SaveMerchantTransactionCountForSegmentType;
 
 class Factory
 {
@@ -78,7 +78,7 @@ class Factory
                 RuntimeManager::setMaxExecTime(900);
                 return (new BVSPartlyExecutedValidationCronJob($input));
             case Constants::MERCHANT_SEGMENT_TYPE_CRON_JOB_NAME:
-                return (new SaveMerchantSegmentTypeForPGMerchants($input));
+                return (new SaveMerchantTransactionCountForSegmentType($input));
         }
 
         throw new BadRequestValidationFailureException("invalid cron");

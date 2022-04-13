@@ -9491,7 +9491,7 @@ class Service extends Base\Service
 
     public function getMerchantTransactionsInLastMonthKey($merchantId)
     {
-        return Constants::MERCHANT_SEGMENT_TYPE . ':' . $merchantId;
+        return Constants::MERCHANT_SEGMENT_TRANSACTION_COUNT . ':' . $merchantId;
     }
 
     public function get1ccMerchantPreferences(): array

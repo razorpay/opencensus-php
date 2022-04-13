@@ -55,6 +55,7 @@ use RZP\Models\Workflow\Observer\MerchantActionObserver;
 use RZP\Tests\Functional\Helpers\Org\CustomBrandingTrait;
 use RZP\Tests\Functional\Helpers\Freshdesk\FreshdeskTrait;
 use RZP\Models\Merchant\Detail\Status as ActivationStatus;
+use RZP\Services\Mock\DataLakePresto as DataLakePrestoMock;
 use RZP\Models\Workflow\Observer\MerchantSelfServeObserver;
 use RZP\Models\Workflow\Observer\PaymentMethodChangeObserver;
 use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
@@ -109,6 +110,8 @@ use RZP\Models\Merchant\Methods\Repository as MethodRepo;
 use RZP\Mail\Banking\BeneficiaryFile as BeneficiaryFileMail;
 use RZP\Mail\InstrumentRequest\StatusNotify as StatusNotifyMail;
 use RZP\Mail\User\PasswordAndEmailReset as PasswordAndEmailResetMail;
+use RZP\Models\Merchant\Cron\Actions as CronActions;
+use RZP\Models\Merchant\Cron\Collectors as CronDataCollector;
 
 use RZP\Exception\GatewayErrorException;
 use RZP\Exception\GatewayTimeoutException;
@@ -523,21 +526,11 @@ class MerchantTest extends TestCase
 
     private function createMerchantTransactionAndAssertCacheData($merchantId)
     {
-        $paymentAttributes = [
-            'merchant_id' => $merchantId,
-            'amount'      => 100
-        ];
+        $transactionCount = 3;
 
-        $daysBefore = [0, 1, 10, 31];
+        $this->runMerchantTransactionCountCronForSegmentType($merchantId, $transactionCount);
 
-        foreach ($daysBefore as $day)
-        {
-            $this->fixtures->create('payment:authorized', array_merge($paymentAttributes, ['created_at' => Carbon::now()->subDay($day)->getTimestamp()]));
-        }
-
-        $this->runMerchantTransactionCountCronForPGAppMerchants();
-
-        $this->assertMerchantTransactionCountForLastMonthFromCache($merchantId, 3);
+        $this->assertMerchantTransactionCountForLastMonthFromCache($merchantId, $transactionCount);
     }
 
     public function testGetMerchantConfigForActivatedMerchantOwnerRoleWithTransactionsAndFTUXDone()
@@ -15333,16 +15326,56 @@ The same has been enabled for the account.
     {
         $app = App::getFacadeRoot();
 
-        $cacheData = $app['cache']->get('merchant_segment_type:' . $merchantId);
+        $cacheData = $app['cache']->get('merchant_segment_transaction_count:' . $merchantId);
 
         $this->assertEquals($expectedTransactionCount, $cacheData);
     }
 
-    protected function runMerchantTransactionCountCronForPGAppMerchants()
+    protected function runMerchantTransactionCountCronForSegmentType($merchantId, $transactionCount)
     {
+        $startTimeStamp =  Carbon::now()->subDay(30)->getTimestamp();
+
+        $endTimeStamp   = Carbon::now()->getTimestamp();
+
+        $prestoService = $this->getMockBuilder(DataLakePrestoMock::class)
+            ->setConstructorArgs([$this->app])
+            ->onlyMethods(['getDataFromDataLake'])
+            ->getMock();
+
+        $callback = static function ($query) use ($merchantId, $startTimeStamp, $transactionCount) {
+
+            $transactionCount   = [ [ 'merchant_id'=> $merchantId, 'transaction_count' => $transactionCount ] ];
+
+            $merchantIdLists    = [ ['merchant_id' => $merchantId] ];
+
+            $merchantIdChunks   = array_chunk([$merchantId], 10);
+
+            foreach ($merchantIdChunks as $merchantIdChunk)
+            {
+                $strMerchantIds     = implode(', ', array_map(function ($val) { return sprintf('\'%s\'', $val);}, $merchantIdChunk));
+
+                if ($query === sprintf(CronActions\SaveMerchantAuthorizedTransactionCount::DATALAKE_QUERY, $strMerchantIds, $startTimeStamp))
+                {
+                    return $transactionCount;
+                }
+            }
+
+            if ($query === sprintf(CronDataCollector\AuthorizedPaymentsMerchantDataCollector::DATALAKE_QUERY, $startTimeStamp))
+            {
+                return $merchantIdLists;
+            }
+
+            return [];
+        };
+
+        $prestoService->method( 'getDataFromDataLake')
+            ->willReturnCallback($callback);
+
+        $this->app->instance('datalake.presto', $prestoService);
+
         (new CronJobHandler\Core())->handleCron("save-merchant-segment-type-cron", [
-            "start_time" => Carbon::now()->subDay(30)->getTimestamp(),
-            "end_time"   => Carbon::now()->getTimestamp(),
+            "start_time" => $startTimeStamp,
+            "end_time"   => $endTimeStamp,
         ]);
     }
 
@@ -15350,23 +15383,12 @@ The same has been enabled for the account.
     {
         [$merchantId, $userId] = $this->setupMerchantWithMerchantDetails([], ['activation_status' => 'activated']);
 
-        $paymentAttributes = [
-            'merchant_id' => $merchantId,
-            'amount'      => 100
-        ];
+        $transactionCount      = 3;
 
-        $daysBefore = [ 0, 1, 10, 31 ];
+        $this->runMerchantTransactionCountCronForSegmentType($merchantId, $transactionCount);
 
-        foreach ($daysBefore as $day)
-        {
-            $this->fixtures->create('payment:authorized', array_merge($paymentAttributes, [ 'created_at' => Carbon::now()->subDay($day)->getTimestamp()]) );
-        }
-
-        $this->runMerchantTransactionCountCronForPGAppMerchants();
-
-        $this->assertMerchantTransactionCountForLastMonthFromCache($merchantId, 3);
+        $this->assertMerchantTransactionCountForLastMonthFromCache($merchantId, $transactionCount);
     }
-
 
     public function test1ccPreferencesForNon1ccMerchant()
     {

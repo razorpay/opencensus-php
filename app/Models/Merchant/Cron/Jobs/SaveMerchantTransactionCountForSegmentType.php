@@ -6,10 +6,10 @@ namespace RZP\Models\Merchant\Cron\Jobs;
 
 use Carbon\Carbon;
 use RZP\Models\Merchant\Cron\Traits\RetryMechanismTrait;
-use RZP\Models\Merchant\Cron\Actions\SaveMerchantSegmentTypeAction;
+use RZP\Models\Merchant\Cron\Actions\SaveMerchantAuthorizedTransactionCount;
 use RZP\Models\Merchant\Cron\Collectors\AuthorizedPaymentsMerchantDataCollector;
 
-class SaveMerchantSegmentTypeForPGMerchants extends BaseCronJob
+class SaveMerchantTransactionCountForSegmentType extends BaseCronJob
 {
     use RetryMechanismTrait;
 
@@ -17,7 +17,7 @@ class SaveMerchantSegmentTypeForPGMerchants extends BaseCronJob
         "authorized_payments_merchants"   => AuthorizedPaymentsMerchantDataCollector::class
     ];
 
-    protected $actions = [SaveMerchantSegmentTypeAction::class];
+    protected $actions = [SaveMerchantAuthorizedTransactionCount::class];
 
     protected $lastCronTimestampCacheKey = "merchant_segment_cron_timestamp";
 

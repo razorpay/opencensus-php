@@ -206,7 +206,7 @@ final class Constants
     const PAYMENT_GATEWAY                            = 'payment_gateway';
     const IS_NEW_PRODUCT                             = 'is_new_product';
     const SESSION_COUNT_PREFIX                       = 'session_count_prefix';
-    const MERCHANT_SEGMENT_TYPE                      = 'merchant_segment_type';
+    const MERCHANT_SEGMENT_TRANSACTION_COUNT         = 'merchant_segment_transaction_count';
     const TOTAL_TRANSACTIONS_IN_LAST_MONTH_TTL       = 60 * 60 * 24 * 2; //two days
 
     //Merchant tags

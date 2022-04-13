@@ -2934,40 +2934,4 @@ EOT;
             'did_use_elastic'   => $didUseElasticSearch,
         ]);
     }
-
-    public function getAuthorizedPaymentsMerchants($timeStamp)
-    {
-        $merchantDetails                    = $this->repo->merchant_detail;
-
-        $merchantDetailsTableName           = $merchantDetails->getTableName();
-
-        $merchantDetailsId                  = $merchantDetails->dbColumn(Entity::MERCHANT_ID);
-
-        $paymentsMerchantId                 = $this->dbColumn(Entity::MERCHANT_ID);
-
-        $paymentsCreatedAt                  = $this->dbColumn(Entity::CREATED_AT);
-
-        $merchantDetailsActivationStatus    = $merchantDetails->dbColumn(MerchantDetail\Entity::ACTIVATION_STATUS);
-
-        $paymentStatus                      = $this->dbColumn(Entity::STATUS);
-
-        return $this->newQuery()
-            ->join($merchantDetailsTableName, $paymentsMerchantId, '=', $merchantDetailsId)
-            ->whereIn($merchantDetailsActivationStatus, [MerchantDetail\Status::ACTIVATED, MerchantDetail\Status::INSTANTLY_ACTIVATED, MerchantDetail\Status::ACTIVATED_MCC_PENDING])
-            ->where($paymentStatus, '=', Status::AUTHORIZED)
-            ->where($paymentsCreatedAt, '>', $timeStamp)
-            ->distinct()
-            ->pluck($paymentsMerchantId)
-            ->toArray();
-    }
-
-    public function getTotalAuthorizedPaymentCountOfMerchant($merchantId, $timeStamp)
-    {
-        return $this->newQuery()
-                ->where(Entity::STATUS, '=', Status::AUTHORIZED)
-                ->where(Entity::MERCHANT_ID, $merchantId)
-                ->where(Entity::CREATED_AT, '>', $timeStamp)
-                ->count();
-    }
-
 }
