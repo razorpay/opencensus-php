@@ -440,7 +440,7 @@ export default class Content extends Component {
           <ShowWhenRoute
             path="/qr_codes"
             component={QRCodes}
-            additionalCondition={(user) => user.isAllowedView('qr_codes') && user.isQRCodesEnabled}
+            additionalCondition={(user) => user.isAllowedView('qr_codes')}
           />
 
           <ShowWhenRoute

@@ -107,7 +107,6 @@ class Service extends Base\Service
             'bank_account_update_merchant_dashboard',
             'app_switcher',
             'subscription_expiry',
-            'qr_code_coming_soon',
             'rbl_migration_banner',
             'qr_code',
             'caw_tpv',

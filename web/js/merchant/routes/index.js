@@ -358,7 +358,6 @@ const entityDetailsMap = {
   // QR Code
   '/qr_codes/:id(qr_.+)': {
     component: QRCodeDetails,
-    additionalCondition: (user) => user.isQRCodesEnabled,
   },
   '/plans/new': { component: PlanNew },
   '/plans/:id': { component: PlanDetails },

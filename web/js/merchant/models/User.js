@@ -1130,15 +1130,6 @@ export default class User {
     return this.getExpStatus('caw_tpv');
   }
 
-  get isQRCodesEnabled() {
-    if (this.isQRCodeComingSoonExpEnabled) {
-      return true;
-    }
-
-    // TODO: remove this
-    return this.getExpStatus('qr_codes');
-  }
-
   get isBharatQREnabled() {
     return this.isFeatureEnabled('bharat_qr');
   }
@@ -1151,14 +1142,6 @@ export default class User {
     const status = !!getItem(`QR-codes-${mode}-${this.current}`);
 
     return status;
-  }
-
-  get isQRCodeComingSoonExpEnabled() {
-    if (this.isQRCodeProductEnabled) {
-      return true;
-    }
-
-    return this.getExpStatus('qr_code_coming_soon');
   }
 
   get isPaymentLinkCreationV2Enabled() {
