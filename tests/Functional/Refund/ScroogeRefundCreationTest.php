@@ -466,12 +466,17 @@ class ScroogeRefundCreationTest extends TestCase
     {
         $this->enableScroogeRelationalLoadConfig();
         $payment = $this->defaultAuthPayment();
-        $payment = $this->capturePayment($payment['id'], $payment['amount']);
-
-        $dummyRefundId = 'dummyRefundId0';
-        $internalPaymentId = substr($payment['id'], 4);
+        $capPayment = $this->capturePayment($payment['id'], $payment['amount']);
 
         $payment = $this->getDbLastEntity('payment');
+
+        $this->assertEquals(substr($capPayment['id'],4) ,$payment['id']);
+
+        $response = $this->refundPayment($payment->getPublicId(), $payment['amount'], ['is_fta' => true]);
+
+        $refund  = $this->getLastEntity('refund', true);
+
+        $this->assertEquals($refund['id'], $response['id']);
 
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
@@ -492,22 +497,6 @@ class ScroogeRefundCreationTest extends TestCase
 
         $this->ba->scroogeAuth();
 
-        // full refund
-        $this->testData['callScroogeRefundTransactionCreate']['request']['content'] = [
-            'id'               => $dummyRefundId,
-            'payment_id'       => $internalPaymentId,
-            'amount'           => '50000',
-            'base_amount'      => '50000',
-            'gateway'          => $payment['gateway'],
-            'speed_decisioned' => 'normal',
-        ];
-
-        $response = $this->runRequestResponseFlow($this->testData['callScroogeRefundTransactionCreate']);
-
-        $this->assertNull($response['error']);
-        $this->assertNotNull($response['data']['transaction_id']);
-        $this->assertFalse($response['data']['compensate_payment']);
-
         $payment = $this->getDbLastEntity('payment');
 
         $this->assertEquals(50000, $payment['amount_refunded']);
@@ -526,7 +515,7 @@ class ScroogeRefundCreationTest extends TestCase
 
         $transactionSource = $transaction->source;
 
-        $this->assertEquals($dummyRefundId, $transactionSource->getId());
+        $this->assertEquals($refund['id'], $transactionSource->getPublicId());
 
         $refunds = $payment->refunds;
 

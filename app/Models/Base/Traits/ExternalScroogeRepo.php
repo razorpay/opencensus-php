@@ -9,6 +9,7 @@ use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Base\UniqueIdEntity;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Payment\Refund\Service;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Merchant\Entity as MerchantEntity;
@@ -30,7 +31,7 @@ trait ExternalScroogeRepo
             $this->trace->info(
                 TraceCode::SCROOGE_RELATIONAL_LOAD_METHOD_CALL,
                 [
-                        'method_name'     => 'findByPublicId',
+                        'method_name'     => __FUNCTION__,
                         'id'              => $id,
                         'route_name'      => $routeName,
                         'force_route_api' => $forceLoadFromApi,
@@ -40,7 +41,13 @@ trait ExternalScroogeRepo
                 (Entity::validateExternalRepoEntity($this->entityName) === true) and
                 ($forceLoadFromApi === false))
             {
-                return $this->fetchExternalRefundById($id);
+                $scroogeResponse =  $this->fetchExternalRefundById($id);
+                $apiResponse     = parent::findByPublicId($id);
+
+                (new Service())->compareRefundsAndLogDifference(
+                    [$apiResponse->toArray()], [$scroogeResponse->toArray()], ['method_name' => __FUNCTION__]);
+
+                return $apiResponse;
             }
         }
         catch (\Throwable $e)
@@ -70,7 +77,7 @@ trait ExternalScroogeRepo
             $this->trace->info(
                 TraceCode::SCROOGE_RELATIONAL_LOAD_METHOD_CALL,
                 [
-                    'method_name'     => 'findByPublicIdAndMerchant',
+                    'method_name'     => __FUNCTION__,
                     'id'              => $id,
                     'merchant_id'     => $merchant->getId(),
                     'route_name'      => $routeName,
@@ -81,7 +88,13 @@ trait ExternalScroogeRepo
                 (Entity::validateExternalRepoEntity($this->entityName) === true) and
                 ($forceLoadFromApi === false))
             {
-                return $this->fetchExternalRefundById($id, $merchant->getId());
+                $scroogeResponse = $this->fetchExternalRefundById($id, $merchant->getId());
+                $apiResponse     = parent::findByPublicIdAndMerchant($id, $merchant, $params);
+
+                (new Service())->compareRefundsAndLogDifference(
+                    [$apiResponse->toArray()], [$scroogeResponse->toArray()], ['method_name' => __FUNCTION__]);
+
+                return $apiResponse;
             }
         }
         catch (\Throwable $e)
@@ -112,7 +125,7 @@ trait ExternalScroogeRepo
             $this->trace->info(
                 TraceCode::SCROOGE_RELATIONAL_LOAD_METHOD_CALL,
                 [
-                    'method_name'     => 'findByIdAndMerchant',
+                    'method_name'     => __FUNCTION__,
                     'id'              => $id,
                     'merchant_id'     => $merchant->getId(),
                     'route_name'      => $routeName,
@@ -123,7 +136,13 @@ trait ExternalScroogeRepo
                 (Entity::validateExternalRepoEntity($this->entityName) === true) and
                 ($forceLoadFromApi === false))
             {
-                return $this->fetchExternalRefundById($id, $merchant->getId());
+                $scroogeResponse = $this->fetchExternalRefundById($id, $merchant->getId());
+                $apiResponse     = parent::findByIdAndMerchant($id, $merchant, $params);
+
+                (new Service())->compareRefundsAndLogDifference(
+                    [$apiResponse->toArray()], [$scroogeResponse->toArray()], ['method_name' => __FUNCTION__]);
+
+                return $apiResponse;
             }
         }
         catch (\Throwable $e)
@@ -154,7 +173,7 @@ trait ExternalScroogeRepo
             $this->trace->info(
                 TraceCode::SCROOGE_RELATIONAL_LOAD_METHOD_CALL,
                 [
-                    'method_name'     => 'findByIdAndMerchantId',
+                    'method_name'     => __FUNCTION__,
                     'id'              => $id,
                     'merchant_id'     => $merchantId,
                     'route_name'      => $routeName,
@@ -165,7 +184,13 @@ trait ExternalScroogeRepo
                 (Entity::validateExternalRepoEntity($this->entityName) === true) and
                 ($forceLoadFromApi === false))
             {
-                return $this->fetchExternalRefundById($id, $merchantId);
+                $scroogeResponse = $this->fetchExternalRefundById($id, $merchantId);;
+                $apiResponse     = parent::findByIdAndMerchantId($id, $merchantId);
+
+                (new Service())->compareRefundsAndLogDifference(
+                    [$apiResponse->toArray()], [$scroogeResponse->toArray()], ['method_name' => __FUNCTION__]);
+
+                return $apiResponse;
             }
         }
         catch (\Throwable $e)
@@ -196,7 +221,7 @@ trait ExternalScroogeRepo
             $this->trace->info(
                 TraceCode::SCROOGE_RELATIONAL_LOAD_METHOD_CALL,
                 [
-                    'method_name'     => 'findOrFailByPublicIdWithParams',
+                    'method_name'     => __FUNCTION__,
                     'id'              => $id,
                     'params'          => $params,
                     'route_name'      => $routeName,
@@ -207,7 +232,13 @@ trait ExternalScroogeRepo
                 (Entity::validateExternalRepoEntity($this->entityName) === true) and
                 ($forceLoadFromApi === false))
             {
-                return $this->fetchExternalRefundById($id, '', $params);
+                $scroogeResponse = $this->fetchExternalRefundById($id, '', $params);;
+                $apiResponse     = parent::findOrFailByPublicIdWithParams($id, $params, $connectionType);
+
+                (new Service())->compareRefundsAndLogDifference(
+                    [$apiResponse->toArray()], [$scroogeResponse->toArray()], ['method_name' => __FUNCTION__]);
+
+                return $apiResponse;
             }
         }
         catch (\Throwable $e)
@@ -237,7 +268,7 @@ trait ExternalScroogeRepo
             $this->trace->info(
                 TraceCode::SCROOGE_RELATIONAL_LOAD_METHOD_CALL,
                 [
-                    'method_name'     => 'findOrFailPublic',
+                    'method_name'     => __FUNCTION__,
                     'id'              => $id,
                     'columns'         => $columns,
                     'route_name'      => $routeName,
@@ -248,7 +279,13 @@ trait ExternalScroogeRepo
                 (Entity::validateExternalRepoEntity($this->entityName) === true) and
                 ($forceLoadFromApi === false))
             {
-                return $this->fetchExternalRefundById($id);
+                $scroogeResponse = $this->fetchExternalRefundById($id);
+                $apiResponse     = parent::findOrFailPublic($id);
+
+                (new Service())->compareRefundsAndLogDifference(
+                    [$apiResponse->toArray()], [$scroogeResponse->toArray()], ['method_name' => __FUNCTION__]);
+
+                return $apiResponse;
             }
         }
         catch (\Throwable $e)
@@ -278,7 +315,7 @@ trait ExternalScroogeRepo
             $this->trace->info(
                 TraceCode::SCROOGE_RELATIONAL_LOAD_METHOD_CALL,
                 [
-                    'method_name'     => 'findOrFail',
+                    'method_name'     => __FUNCTION__,
                     'id'              => $id,
                     'columns'         => $columns,
                     'route_name'      => $routeName,
@@ -289,7 +326,13 @@ trait ExternalScroogeRepo
                 (Entity::validateExternalRepoEntity($this->entityName) === true) and
                 ($forceLoadFromApi === false))
             {
-                return $this->fetchExternalRefundById($id);
+                $scroogeResponse = $this->fetchExternalRefundById($id);
+                $apiResponse     = parent::findOrFail($id);
+
+                (new Service())->compareRefundsAndLogDifference(
+                    [$apiResponse->toArray()], [$scroogeResponse->toArray()], ['method_name' => __FUNCTION__]);
+
+                return $apiResponse;
             }
         }
         catch (\Throwable $e)

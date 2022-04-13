@@ -13858,6 +13858,10 @@ class Route
         'payment_fetch_refund_by_id',
         'refund_fetch_multiple',
         'refund_fetch_by_id',
+
+        // following route will soon deprecate the usage of refunds table
+        // https://razorpay.slack.com/archives/CNXC0JHQF/p1649071336054049
+        'payment_verify_new',
     ];
 
     public static $skipApiDocumentation = [

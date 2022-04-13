@@ -21,7 +21,7 @@ trait ScroogeRepo
             $this->trace->info(
                 TraceCode::SCROOGE_RELATIONAL_LOAD_METHOD_CALL,
                 [
-                    'method_name'     => 'findForPaymentId',
+                    'method_name'     => __FUNCTION__,
                     'payment_id'      => $paymentId,
                     'route_name'      => $routeName,
                     'force_route_api' => $forceLoadFromApi
@@ -31,7 +31,13 @@ trait ScroogeRepo
                 (EntityConstants::validateExternalRepoEntity($this->entityName) === true) and
                 ($forceLoadFromApi === false))
             {
-                return $this->fetchExternalRefundForPayment($paymentId);
+                $scroogeResponse = $this->fetchExternalRefundForPayment($paymentId);
+                $apiResponse     = $this->findForPaymentIdFromAPI($paymentId);
+
+                (new Service())->compareRefundsAndLogDifference(
+                    $apiResponse->toArray(), $scroogeResponse->toArray(), ['method_name' => __FUNCTION__]);
+
+                return $apiResponse;
             }
         }
         catch (\Throwable $e)

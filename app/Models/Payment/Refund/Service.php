@@ -603,6 +603,8 @@ class Service extends Base\Service
                 $idx += 1;
             }
 
+            // here if the value is null that mean the refund is not present in scrooge
+            // and is present on API monolith
             if ($idx === count($scroogeRefundsArray))
             {
                 $inconsistentParams[$apiRefundArray[RefundEntity::ID]] = null;
@@ -623,6 +625,8 @@ class Service extends Base\Service
     {
         $responseDiff = [];
 
+        $apiDataNotPresentOnScrooge = [];
+
         foreach ($apiRefundArray as $key => $value)
         {
             if ($key === RefundEntity::NOTES)
@@ -641,10 +645,25 @@ class Service extends Base\Service
                 $value = $value->toArray();
             }
 
-            if ($scroogeRefundArray[$key] !== $value)
+            if (isset($scroogeRefundArray[$key]) === true)
             {
-                $responseDiff[$key] = $value;
+                if ($scroogeRefundArray[$key] !== $value)
+                {
+                    $responseDiff[$key] = $value;
+                }
             }
+            else
+            {
+                $apiDataNotPresentOnScrooge[] = $key;
+            }
+        }
+
+        if (empty($apiDataNotPresentOnScrooge) === false)
+        {
+            $this->trace->info(TraceCode::API_DATA_NOT_PRESENT_ON_SCROOGE,
+                [
+                    'data'   => $apiDataNotPresentOnScrooge
+                ]);
         }
 
         return array_keys($responseDiff);
