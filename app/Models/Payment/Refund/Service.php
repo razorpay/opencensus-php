@@ -3282,10 +3282,16 @@ class Service extends Base\Service
                 );
 
                 // Adding to failed entities if reference1 is not as expected and failed to update
-                if (($refundEntity->getReference1() !== $refund[Refund\Entity::REFERENCE1]) and
-                    ($this->repo->refund->updateRefundReference1($refund) !== 1))
-                {
-                    $updateFailures[] = $refund;
+                if ($refundEntity->getReference1() !== $refund[Refund\Entity::REFERENCE1]) {
+                    if ($this->repo->refund->updateRefundReference1($refund) !== 1)
+                    {
+                        $updateFailures[] = $refund;
+                    }
+                    else
+                    {
+                        // trigger arn updated webhook
+                        $this->getNewProcessor($refund->merchant)->eventRefundArnUpdated($refund);
+                    }
                 }
             }
             catch (\Exception $exception)
