@@ -20,7 +20,7 @@
           document.form1.action = base + 'redirect_callback';
           document.form1.submit();
         }
-      }
+      };
       x.open('get', base + 'cancel');
       x.send();
     }
