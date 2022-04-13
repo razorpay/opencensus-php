@@ -90,7 +90,7 @@ export function ShowWhenRoute(store, defaultPath = '/dashboard') {
         showWhenUtil(store)(rest) ? (
           <Component {...rest} />
         ) : (
-          <Redirect
+          <Redirect // nosemgrep : https://semgrep.dev/s/razorpay:rzp-react-router-redirect
             to={{
               pathname: defaultPath,
               state: { from: rest.location, was404: true },

@@ -408,7 +408,7 @@ export default class AddProvider extends React.Component {
       allDetailsValid,
     } = this.state;
     if (redirect) {
-      return <Redirect to={redirect} />;
+      return <Redirect to={redirect} />; // nosemgrep : https://semgrep.dev/s/razorpay:rzp-react-router-redirect
     }
 
     return (

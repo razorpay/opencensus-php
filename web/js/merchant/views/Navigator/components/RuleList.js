@@ -83,7 +83,7 @@ export default class RuleList extends React.Component {
     const { isCollapsed } = this.state;
     const { providers, terminalProviders } = this.props;
     if (this.state.redirect) {
-      return <Redirect to={this.state.redirect} />;
+      return <Redirect to={this.state.redirect} />; // nosemgrep : https://semgrep.dev/s/razorpay:rzp-react-router-redirect
     }
     const isAddProviderEnabled = this.props.user.isAddProviderEnabled;
     return (

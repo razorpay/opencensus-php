@@ -518,7 +518,7 @@ export default class CreateRule extends React.Component {
 
   render() {
     if (this.state.redirect) {
-      return <Redirect to={this.state.redirect} />;
+      return <Redirect to={this.state.redirect} />; // nosemgrep : https://semgrep.dev/s/razorpay:rzp-react-router-redirect
     }
 
     const { PARAMETERS } = this.state;

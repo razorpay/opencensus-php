@@ -122,7 +122,7 @@ export default class RuleDetail extends Component {
 
   render() {
     if (this.state.redirect) {
-      return <Redirect to={this.state.redirect} />;
+      return <Redirect to={this.state.redirect} />; // nosemgrep : https://semgrep.dev/s/razorpay:rzp-react-router-redirect
     }
     const { user, providers, terminalProviders } = this.props;
     const MAPPED_PROVIDERS = createMappedProviders(

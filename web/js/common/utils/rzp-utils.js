@@ -1136,7 +1136,7 @@ export function stringToObj(path, value, srcObj) {
       // assigning an array if upcoming part is number
       obj[part] = isNaN(parts[0]) ? {} : [];
     }
-    obj = obj[part];
+    obj = obj[part]; // nosemgrep : javascript.lang.security.audit.prototype-pollution.prototype-pollution-loop.prototype-pollution-loop
   }
   obj[last] = value;
   var parts, part;
