@@ -182,9 +182,11 @@ class HyperTrace
 
     const LIST_SUBMERCHANTS                                    = 'list_submerchants.service';
     const LIST_SUBMERCHANTS_CORE                               = 'list_submerchants.core';
+    const FETCH_SUBMERCHANTS_ON_APP_IDS                        = 'fetch_submerchants_on_app_ids';
     const FILTER_SUBMERCHANTS_ON_PRODUCT                       = 'filter_submerchants_on_product';
     const GET_PARTNER_SUBMERCHANT_DATA                         = 'get_partner_submerchant_data';
     const GET_SUBMERCHANT_OWNER_DATA                           = 'get_submerchant_owner_data';
+    const GET_REDUCED_SUBMERCHANT_OWNER_DATA                   = 'get_reduced_submerchant_owner_data';
     const GET_BANKING_ACCOUNT_STATUS                           = 'get_banking_account_status';
     const GET_MERCHANT_BANKING_ACCOUNT_STATUS                  = 'get_merchant_banking_account_status';
 

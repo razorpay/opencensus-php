@@ -411,9 +411,7 @@ return [
                     'activation_status' => null,
                 ],
                 'user'             => [
-                    'name'      => 'Submerchant',
                     'email'     => 'testsub@razorpay.com',
-                    'confirmed' => false,
                 ],
                 'dashboard_access' => true,
                 'pricing_plan_id'  => \RZP\Tests\Functional\Fixtures\Entity\Pricing::DEFAULT_PRICING_PLAN_ID,
@@ -441,9 +439,7 @@ return [
                     'activation_status' => null,
                 ],
                 'user'             => [
-                    'name'      => 'Submerchant',
                     'email'     => 'testsub@razorpay.com',
-                    'confirmed' => false,
                 ],
                 'dashboard_access' => true,
                 'pricing_plan_id'  => \RZP\Tests\Functional\Fixtures\Entity\Pricing::DEFAULT_PRICING_PLAN_ID,
@@ -471,7 +467,6 @@ return [
                 ],
                 'user'             => [
                     'email'     => 'testsub@razorpay.com',
-                    'confirmed' => true,
                 ],
                 'dashboard_access' => true,
                 'pricing_plan_id'  => \RZP\Tests\Functional\Fixtures\Entity\Pricing::DEFAULT_PRICING_PLAN_ID,
@@ -500,7 +495,6 @@ return [
                 ],
                 'user'             => [
                     'email'     => 'testsub@razorpay.com',
-                    'confirmed' => true,
                 ],
                 'dashboard_access' => true,
                 'pricing_plan_id'  => \RZP\Tests\Functional\Fixtures\Entity\Pricing::DEFAULT_PRICING_PLAN_ID,
@@ -528,7 +522,6 @@ return [
                 ],
                 'user'             => [
                     'email'     => 'testsub@razorpay.com',
-                    'confirmed' => false,
                 ],
                 'dashboard_access' => true,
                 'pricing_plan_id'  => \RZP\Tests\Functional\Fixtures\Entity\Pricing::DEFAULT_PRICING_PLAN_ID,
@@ -557,7 +550,6 @@ return [
                 ],
                 'user'             => [
                     'email'     => 'testsub@razorpay.com',
-                    'confirmed' => false,
                 ],
                 'dashboard_access' => true,
                 'pricing_plan_id'  => \RZP\Tests\Functional\Fixtures\Entity\Pricing::DEFAULT_PRICING_PLAN_ID,
@@ -586,7 +578,6 @@ return [
                 ],
                 'user'             => [
                     'email'     => 'testsub@razorpay.com',
-                    'confirmed' => false,
                 ],
                 'dashboard_access' => false,
                 'pricing_plan_id'  => \RZP\Tests\Functional\Fixtures\Entity\Pricing::DEFAULT_PRICING_PLAN_ID,

@@ -4243,6 +4243,8 @@ class Core extends Base\Core
      */
     public function listSubmerchants(Entity $partner, array $params)
     {
+        $offset = $params['skip'] ?? 0;
+
         $appIds = $this->getPartnerApplicationIds($partner);
 
         $this->trace->info(TraceCode::PARTNER_FETCH_SUBMERCHANTS,
@@ -4276,7 +4278,13 @@ class Core extends Base\Core
 
         $product = $params[ENTITY::PRODUCT] ?? Product::PRIMARY;
 
-        if ($applyProductFilter === true)
+        $checkingProductUsage = array_key_exists(Constants::IS_USED, $params);
+
+        $isExpEnabled = $this->isRazorxExperimentEnable($partner->getId(), RazorxTreatment::SUBMERCHANTS_FETCH_API_LATENCY_IMPROVE);
+
+        $reqStartAt = millitime();
+
+        if ($applyProductFilter === true and ($isExpEnabled !== true or $checkingProductUsage === true))
         {
             list($offset, $merchants) = Tracer::inspan(['name' => HyperTrace::FILTER_SUBMERCHANTS_ON_PRODUCT], function () use ($params, $appIds, $partner) {
 
@@ -4285,24 +4293,56 @@ class Core extends Base\Core
         }
         else
         {
-            $merchants = $this->repo->merchant->fetchSubmerchantsByAppIds($appIds, $params);
+            unset($params[Constants::IS_USED]);
+
+            $merchants = Tracer::inspan(['name' => HyperTrace::FETCH_SUBMERCHANTS_ON_APP_IDS], function () use ($params, $appIds, $partner) {
+
+                return $this->repo->merchant->fetchSubmerchantsByAppIds($appIds, $params);
+            });
         }
 
-        $partnerUser = $partner->primaryOwner();
+        $fetchSubMerchantsLatency = millitime() - $reqStartAt;
 
-        $checkingProductUsage = array_key_exists(Constants::IS_USED, $params);
+        $this->trace->info(
+            TraceCode::PARTNER_FETCH_SUBMERCHANTS_LATENCY,
+            [
+                'partner_id'  => $partner->getId(),
+                'app_ids'     => $appIds,
+                'product'     => $product,
+                'latency'     => $fetchSubMerchantsLatency,
+                'exp_enabled' => $isExpEnabled
+            ]
+        );
+
+        $partnerUser = $partner->primaryOwner();
 
         // if fetching sub-merchants based on product usage status, no need to fetch additional
         // details such as dashboard access, kyc access, banking account status etc.
         if ($checkingProductUsage === false)
         {
-            $merchants = $merchants->map(function($submerchant) use ($partnerUser, $product, $partner)
-            {
-                return Tracer::inspan(['name' => HyperTrace::GET_PARTNER_SUBMERCHANT_DATA], function () use ($submerchant, $partner, $partnerUser, $product) {
+            $reqStartAt = millitime();
 
-                    return $this->getPartnerSubmerchantData($submerchant, $partner, $partnerUser, $product);
+            $merchants = $merchants->map(function($submerchant) use ($partnerUser, $product, $partner, $isExpEnabled)
+            {
+                return Tracer::inspan(['name' => HyperTrace::GET_PARTNER_SUBMERCHANT_DATA], function () use
+                ($submerchant, $partner, $partnerUser, $product, $isExpEnabled) {
+
+                    return $this->getPartnerSubmerchantData($submerchant, $partner, $partnerUser, $product, $isExpEnabled);
                 });
             });
+
+            $fetchSubMerchantsDataLatency = millitime() - $reqStartAt;
+
+            $this->trace->info(
+                TraceCode::PARTNER_FETCH_SUBMERCHANTS_DATA_LATENCY,
+                [
+                    'partner_id'      => $partner->getId(),
+                    'product'         => $product,
+                    'latency'         => $fetchSubMerchantsDataLatency,
+                    'overall_latency' => $fetchSubMerchantsLatency + $fetchSubMerchantsDataLatency,
+                    'exp_enabled'     => $isExpEnabled
+                ]
+            );
         }
 
         return $applyProductFilter ? [$merchants, 'offset' => $offset] : [$merchants];
@@ -4392,56 +4432,67 @@ class Core extends Base\Core
     /**
      * Sets the partner attributes in the instance of Merchant\Entity so that toArrayPartner() can be used later.
      *
-     * @param Entity $submerchant
-     * @param Entity $partner
+     * @param Entity      $submerchant
+     * @param Entity      $partner
      * @param User\Entity $partnerUser
-     *
      * @param string|null $product
+     * @param bool        $isExpEnabled // experiment to enable the low latency flow
+     *
      * @return Entity
      */
-    protected function getPartnerSubmerchantData(Entity $submerchant, Entity $partner, User\Entity $partnerUser, string $product = null): Entity
+    protected function getPartnerSubmerchantData(Entity $submerchant, Entity $partner, User\Entity $partnerUser,
+                                                 string $product = null, bool $isExpEnabled = false): Entity
     {
         $submerchant[Entity::DETAILS] = [
             Detail\Entity::ACTIVATION_STATUS => $submerchant->getAttribute(Detail\Entity::ACTIVATION_STATUS),
         ];
 
-        $submerchant[Entity::USER] = Tracer::inspan(['name' => HyperTrace::GET_SUBMERCHANT_OWNER_DATA], function () use ($submerchant, $partnerUser, $product) {
+        $subMerchantOwner = $this->getNonPartnerOwner($submerchant, $partnerUser, $product);
 
-            $subMerchantOwner = $this->getNonPartnerOwner($submerchant, $partnerUser, $product);
+        if (empty($subMerchantOwner) === true)
+        {
+            $submerchant[Entity::USER] = null;
+        }
+        else if ($isExpEnabled === true)
+        {
+            $submerchant[Entity::USER] = Tracer::inspan(['name' => HyperTrace::GET_REDUCED_SUBMERCHANT_OWNER_DATA], function () use ($subMerchantOwner) {
 
-            if (empty($subMerchantOwner) === true)
-            {
-                return null;
-            }
+                // reducing the submerchant owner response and removing toArrayPublic call to improve latency
+                return [
+                    User\Entity::EMAIL          => $subMerchantOwner->email,
+                    User\Entity::CONTACT_MOBILE => $subMerchantOwner->contact_mobile
+                ];
+            });
+        }
+        else
+        {
+            $submerchant[Entity::USER] = Tracer::inspan(['name' => HyperTrace::GET_SUBMERCHANT_OWNER_DATA], function () use ($subMerchantOwner) {
 
-            return $subMerchantOwner->toArrayPublic();
-        });
+                return $subMerchantOwner->toArrayPublic();
+            });
+        }
 
         $submerchant[Entity::DASHBOARD_ACCESS] = $this->hasSubmerchantDashboardAccess($submerchant);
 
-        $submerchant[Entity::APPLICATION] = [
-            OAuthApp\Entity::ID => $submerchant->getAttribute(Constants::APPLICATION_ID),
-        ];
+        $submerchant[Entity::APPLICATION] = [OAuthApp\Entity::ID => $submerchant->getAttribute(Constants::APPLICATION_ID)];
 
         $submerchant[Entity::KYC_ACCESS] = null;
 
         $accessRequest = $this->repo->partner_kyc_access_state->findByPartnerIdAndEntityId($partner->getId(), $submerchant->getId())->first();
 
-        if(empty($accessRequest) === false)
+        if (empty($accessRequest) === false)
         {
             $submerchant[Entity::KYC_ACCESS] = $accessRequest->toArrayPublic();
         }
 
-        if($product === Product::BANKING)
+        if ($product === Product::BANKING)
         {
             $caStatus = Tracer::inspan(['name' => HyperTrace::GET_BANKING_ACCOUNT_STATUS], function () use ($submerchant) {
 
                 return $this->getBankingAccountStatus($submerchant);
             });
 
-            $submerchant[Entity::BANKING_ACCOUNT] = [
-                ENTITY::CA_STATUS => $caStatus
-            ];
+            $submerchant[Entity::BANKING_ACCOUNT] = [ENTITY::CA_STATUS => $caStatus];
         }
 
         return $submerchant;

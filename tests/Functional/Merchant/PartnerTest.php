@@ -1277,7 +1277,10 @@ class PartnerTest extends OAuthTestCase
 
         $testData = $this->testData[__FUNCTION__];
 
-        $testData['response']['content']['user'] = $submerchantUser->toArrayPublic();
+        $testData['response']['content']['user'] = [
+            'email'          => $submerchantUser->email,
+            'contact_mobile' => $submerchantUser->contact_mobile
+        ];
 
         $this->startTest($testData);
     }

@@ -2,33 +2,34 @@
 
 namespace RZP\Models\Merchant;
 
-use Carbon\Carbon;
 use DB;
 use Closure;
+use Carbon\Carbon;
 
-use RZP\Base\ConnectionType;
 use RZP\Exception;
 use RZP\Base\Common;
 use RZP\Models\Base;
 use RZP\Base\BuilderEx;
 use RZP\Constants\Mode;
 use RZP\Models\Pricing;
+use RZP\Trace\TraceCode;
 use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
 use RZP\Models\Admin\Org;
+use RZP\Constants\Product;
 use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
 use RZP\Models\Admin\Group;
+use RZP\Base\ConnectionType;
+use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\Detail;
-use RZP\Models\Merchant\BusinessDetail;
+use RZP\Models\Terminal\Category;
 use RZP\Models\Partner\Activation;
+use RZP\Models\Merchant\BusinessDetail;
 use RZP\Models\Base\QueryCache\CacheQueries;
 use RZP\Models\Partner\Config as PartnerConfig;
 use RZP\Exception\BadRequestValidationFailureException;
-use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\Fraud\HealthChecker as HealthChecker;
-use RZP\Models\Terminal\Category;
-use RZP\Trace\TraceCode;
 
 class Repository extends Base\Repository
 {
@@ -357,6 +358,10 @@ class Repository extends Base\Repository
         $query->where($feeModel, '=', FeeModel::getValueForFeeModelString($params[Entity::FEE_MODEL]));
     }
 
+    protected function addQueryParamProduct($query, $params)
+    {
+        $this->joinMerchantUsers($query, $params[Entity::PRODUCT]);
+    }
 
     /**
      * Returns all the emails and names for all Merchants
@@ -1198,6 +1203,21 @@ class Repository extends Base\Repository
                      ->where($partnerConfigEntityType, PartnerConfig\Constants::MERCHANT)
                      ->where($partnerConfigOriginType, PartnerConfig\Constants::APPLICATION);
             });
+    }
+
+    private function joinMerchantUsers(BuilderEx & $query, string $product = Product::PRIMARY)
+    {
+        $merchantUsersRepo = $this->repo->merchant_user;
+
+        $merchantUsersMerchantId = $merchantUsersRepo->dbColumn(MerchantUser\Entity::MERCHANT_ID);
+
+        $merchantUsersProduct = $merchantUsersRepo->dbColumn(MerchantUser\Entity::PRODUCT);
+
+        $merchantsMerchantId = $this->dbColumn(Entity::ID);
+
+        $query->join(Table::MERCHANT_USERS, $merchantsMerchantId, '=', $merchantUsersMerchantId)
+              ->where($merchantUsersProduct, $product)
+              ->distinct();
     }
 
     public function fetchAllSuspendedMerchants($input)
