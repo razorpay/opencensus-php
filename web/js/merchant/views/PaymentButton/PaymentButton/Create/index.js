@@ -80,6 +80,7 @@ export default class PaymentButtonCreate extends React.Component {
     isSuccessViewOpened: false,
     isSuccessViewOpenedForExistingId: false,
     activeTabIndex: 0,
+    isEntityLoaded: false,
   };
 
   UNSAFE_componentWillMount() {
@@ -176,6 +177,7 @@ export default class PaymentButtonCreate extends React.Component {
    * */
 
   fetchDetails = (id) => {
+    this.setState({ isEntityLoaded: false });
     const promise = this.props.fetchPaymentButtonDetails(id, this.isIntentDuplicate); // Auto reinitialise store if id doesn't exist.
 
     if (promise instanceof Promise) {
@@ -185,7 +187,7 @@ export default class PaymentButtonCreate extends React.Component {
             setWindowTitle(`${docTitles.EDIT} - ${this.paymentButtonId}`);
           }
         })
-        .catch(() => {});
+        .finally(() => this.setState({ isEntityLoaded: true }));
     }
   };
 
@@ -601,7 +603,10 @@ export default class PaymentButtonCreate extends React.Component {
   }
 
   get actionButtons() {
-    const { user } = this.props;
+    const { user, payment_button } = this.props;
+    const { isEntityLoaded } = this.state;
+
+    if (isEntityLoaded && payment_button.paymentButtonEntity === null) return '';
 
     const actionButtons = user.isPaymentPageReceiptsEnabled ? (
       <Button.Transparent
@@ -609,6 +614,7 @@ export default class PaymentButtonCreate extends React.Component {
         style={{ color: '#fff' }}
         class="payment-receipt-btn"
         onClick={this.handleTogglePageReceiptModal}
+        disabled={!isEntityLoaded}
       >
         <span>
           <i class="i i-document" /> Payment Receipts
@@ -665,16 +671,19 @@ export default class PaymentButtonCreate extends React.Component {
 
   get ContentView() {
     const { payment_button } = this.props;
-    const { activeTabIndex, isSuccessViewOpened, isSuccessViewOpenedForExistingId } = this.state;
-
-    const isPageLoading = this.paymentButtonId && !payment_button.paymentButtonEntity.title;
+    const {
+      activeTabIndex,
+      isSuccessViewOpened,
+      isSuccessViewOpenedForExistingId,
+      isEntityLoaded,
+    } = this.state;
 
     const isEditExistingId = !!this.paymentButtonId;
 
     return (
       <div class="PaymentButton-Create-Content">
         <div class="PaymentButton-Create-Content-container">
-          {isPageLoading ? (
+          {!isEntityLoaded ? (
             <div class="page-center">
               <Spinner />
             </div>

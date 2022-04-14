@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unsafe */
 import React from 'react';
 import PropTypes from 'prop-types';
 import { withRouter } from 'react-router';
@@ -108,6 +109,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     merchant_tnc: null,
     isMerchantDataLoaded: false,
     formItemsBackup: [],
+    isEntityLoaded: false,
   };
 
   UNSAFE_componentWillMount() {
@@ -202,6 +204,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
   }
 
   fetchEntity = (id, isInitialLoad) => {
+    this.setState({ isEntityLoaded: false });
     const promise = this.props.fetchPaymentPage(id, this.isIntentDuplicate); // Auto reinitialise store if id doesn't exist.
 
     if (promise instanceof Promise) {
@@ -231,6 +234,9 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
           this.setState({
             isPageLoadError: ERROR.INVALID_ENTITY,
           });
+        })
+        .finally(() => {
+          this.setState({ isEntityLoaded: true });
         });
     }
   };
@@ -894,6 +900,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       onSvelteAppMount,
       merchant_tnc,
       isMerchantDataLoaded,
+      isEntityLoaded,
     } = this.state;
     const { paymentPageEntity, id: payment_page_id, user, FORM_ITEMS } = this.props;
 
@@ -921,6 +928,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
               style={{ color: '#fff' }}
               onClick={this.togglePageReceiptModal}
               className="Button--header"
+              disabled={!isEntityLoaded}
             >
               <i className="i i-receipt" />
               <span>Payment Receipts</span>
@@ -932,6 +940,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
             style={{ color: '#fff' }}
             onClick={this.togglePageSettings}
             className="Button--header"
+            disabled={!isEntityLoaded}
           >
             <i className="i i-settings-outline" />
             <span>Page Settings</span>
@@ -942,7 +951,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
                 payment_page_id ? 'Save and Update Page' : 'Create and Publish Page',
               );
             }}
-            disabled={!isAllowedToSubmit}
+            disabled={!isAllowedToSubmit || !isEntityLoaded}
             pendingState="Publishing"
             class="hidden-xs"
           >
@@ -1056,6 +1065,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
           actionBtns={actionBtns}
           isPageReady={isPageReady}
           handleClose={this.handleClose}
+          isPageLoadError={isPageLoadError}
         />
         {content}
       </div>
@@ -1063,7 +1073,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
   }
 }
 
-const Header = ({ title, actionBtns, handleClose, isPageReady, children }) => {
+const Header = ({ title, actionBtns, handleClose, isPageReady, children, isPageLoadError }) => {
   return (
     <div class="page-nav-container">
       {children}
@@ -1071,13 +1081,13 @@ const Header = ({ title, actionBtns, handleClose, isPageReady, children }) => {
         <div class="page-size">
           <div class="page-title">{title}</div>
 
-          {isPageReady && !!actionBtns && <div class="page-action">{actionBtns}</div>}
-
-          {isPageReady && !!handleClose && (
-            <span class="close-btn" onClick={handleClose}>
-              ×
-            </span>
+          {!isPageLoadError && isPageReady && !!actionBtns && (
+            <div class="page-action">{actionBtns}</div>
           )}
+
+          <span class="close-btn" onClick={handleClose}>
+            ×
+          </span>
         </div>
       </div>
     </div>
