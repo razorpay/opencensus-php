@@ -192,7 +192,9 @@ class PaymentLinkController extends Controller
      */
     public function viewBySlug(string $slug)
     {
-        $slugMetadata = $this->service()->getSlugMetaData($slug);
+        $host = request()->url();
+
+        $slugMetadata = $this->service()->getSlugMetaData($slug, $host);
 
         // Renders 404 if no metadata available(error/exception at Gimli side)
         if ($slugMetadata === null)

@@ -2923,6 +2923,54 @@ class PaymentLinkTest extends TestCase
         );
     }
 
+    /**
+     * @group pp_ncu
+     * @group nocode_ncu
+     * @return void
+     */
+    public function testOnCreateWithSlugNocodeCustomUrlShouldBeCreated()
+    {
+        $this->ba->proxyAuthLive();
+
+        $data = $this->startTest();
+
+        $this->assertNotNull($data[Entity::SHORT_URL]);
+    }
+
+    /**
+     * @group pp_ncu
+     * @group nocode_ncu
+     * @return void
+     */
+    public function testOnCreateWithExistingDeletedSlugNocodeCustomUrlShouldBeCreated()
+    {
+        $hostedUrl  = config()->get('app.payment_link_hosted_base_url');
+        $domain     = PaymentLink\NocodeCustomUrl\Entity::determineDomainFromUrl($hostedUrl);
+        $slug       = 'testslug12';
+        $entity     = new PaymentLink\NocodeCustomUrl\Entity;
+
+        $entity->generateAndSetUniqueId();
+
+        $input = [
+            PaymentLink\NocodeCustomUrl\Entity::ID              => $entity->getId(),
+            PaymentLink\NocodeCustomUrl\Entity::MERCHANT_ID     => '10000000000000',
+            PaymentLink\NocodeCustomUrl\Entity::SLUG            => $slug,
+            PaymentLink\NocodeCustomUrl\Entity::DELETED_AT      => Carbon::now()->addHours(-1)->getTimestamp(),
+            PaymentLink\NocodeCustomUrl\Entity::DOMAIN          => $domain,
+            PaymentLink\NocodeCustomUrl\Entity::PRODUCT_ID      => self::TEST_PL_ID_2,
+            PaymentLink\NocodeCustomUrl\Entity::PRODUCT         => PaymentLink\ViewType::PAGE,
+            PaymentLink\NocodeCustomUrl\Entity::META_DATA       => [],
+        ];
+
+        $this->fixtures->create('nocode_custom_url', $input);
+
+        $this->ba->proxyAuthLive();
+
+        $data = $this->startTest();
+
+        $this->assertNotNull(array_get($data, Entity::SHORT_URL));
+    }
+
     // -------------------- Protected methods --------------------
 
     protected function assertManipulateOrderItemAndMakePayment(

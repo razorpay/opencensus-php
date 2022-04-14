@@ -132,6 +132,8 @@ class Core extends Base\Core
             Tracer::inSpan(['name' => 'payment_page.create.create_items'], function() use ($input, $paymentLink) {
                 $this->createPaymentPageItems($input, $paymentLink);
             });
+
+            $this->createCustomUrl($paymentLink, $input[Entity::SLUG] ?? null);
         });
 
         Tracer::inSpan(['name' => 'payment_page.create.load_relations'], function() use ($paymentLink) {
@@ -382,6 +384,12 @@ class Core extends Base\Core
             });
 
             $this->updateShortUrlIfApplicable($paymentLink, $input);
+
+            $this->repo->transaction(function () use ($paymentLink, $input) {
+                $this->repo->payment_link->lockForUpdateAndReload($paymentLink);
+
+                $this->createCustomUrl($paymentLink, $input[Entity::SLUG] ?? null);
+            });
 
             Tracer::inSpan(['name' => 'payment_page.update.load_relations'], function() use($paymentLink)
             {
@@ -1729,7 +1737,26 @@ class Core extends Base\Core
             $slug = null;
         }
 
-        list($url, $params, $fail) = $this->getShortenUrlRequestParams($paymentLink, $slug);
+        [$url, $params, $fail] = $this->getShortenUrlRequestParams($paymentLink, $slug);
+
+        try {
+            $skipShortning = $this->shouldSkipShortner($paymentLink, $slug, $url);
+
+            $useCustomUrlModule = $this->shouldUseCustomUrlModule($paymentLink);
+
+            if ($skipShortning || ! $useCustomUrlModule)
+            {
+                $this->updateExistingShortUrl($slug, $paymentLink);
+
+                return;
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->count(Metric::NOCODE_CUSTOM_URL_CALLS_FAILED_COUNT);
+
+            $this->trace->traceException($e);
+        }
 
         try
         {
@@ -3096,5 +3123,94 @@ class Core extends Base\Core
         }
 
         return true;
+    }
+
+    /**
+     * @param \RZP\Models\PaymentLink\Entity $paymentLink
+     * @param string|null                    $slug
+     *
+     * @return void
+     */
+    private function createCustomUrl(Entity $paymentLink, ?string $slug)
+    {
+        if ($this->mode !== Mode::LIVE || empty($slug) === true || ! $this->shouldUseCustomUrlModule($paymentLink))
+        {
+            return;
+        }
+
+        Tracer::inSpan(['name' => Constants::HT_PP_NOCODE_CUSTOM_URL_UPSERT], function() use($paymentLink, $slug) {
+            $customUrlCore = new NocodeCustomUrl\Core();
+
+            [$url, $params, $fail] = $this->getShortenUrlRequestParams($paymentLink, $slug);
+
+            try {
+                $customUrlCore->upsert([
+                    NocodeCustomUrl\Entity::SLUG        => $slug,
+                    NocodeCustomUrl\Entity::DOMAIN      => NocodeCustomUrl\Entity::determineDomainFromUrl($url),
+                    NocodeCustomUrl\Entity::META_DATA   => array_get($params, 'metadata', []),
+                ], $this->merchant, $paymentLink);
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->count(Metric::NOCODE_CUSTOM_URL_CALLS_FAILED_COUNT);
+
+                $this->trace->traceException($e);
+            }
+        });
+    }
+
+    /**
+     * @param \RZP\Models\PaymentLink\Entity $paymentLink
+     *
+     * @return bool
+     */
+    private function shouldUseCustomUrlModule(Entity $paymentLink): bool
+    {
+        return $paymentLink->getViewType() === ViewType::PAGE;
+    }
+
+    /**
+     * @param \RZP\Models\PaymentLink\Entity $paymentLink
+     * @param string|null                    $slug
+     * @param string                         $url
+     *
+     * @return bool
+     * @throws \RZP\Exception\BadRequestValidationFailureException
+     */
+    private function shouldSkipShortner(Entity $paymentLink, ?string $slug, string $url): bool
+    {
+        if (empty($slug) === true || $this->isTestMode())
+        {
+            return false;
+        }
+
+        $core = new NocodeCustomUrl\Core;
+
+        $isvalid = $core->validateAndDetermineShouldCreate(
+            $slug,
+            NocodeCustomUrl\Entity::determineDomainFromUrl($url),
+            $paymentLink,
+            $this->merchant
+        );
+
+        return ! $isvalid;
+    }
+
+    /**
+     * @param string|null                    $slug
+     * @param \RZP\Models\PaymentLink\Entity $paymentLink
+     *
+     * @return void
+     */
+    private function updateExistingShortUrl(?string $slug, Entity $paymentLink)
+    {
+        if (empty($slug) === true)
+        {
+            return;
+        }
+
+        $shortUrl = $this->config->get('applications.elfin.gimli.short_url') . '/' . $slug;
+
+        $paymentLink->setShortUrl($shortUrl);
     }
 }

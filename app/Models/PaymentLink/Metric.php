@@ -61,4 +61,7 @@ final class Metric
     const NOCODE_CUSTOM_URL_CACHE_HIT_COUNT         = 'nocode_custom_url_cache_hit_count';
     const NOCODE_CUSTOM_URL_CACHE_MISS_COUNT        = 'nocode_custom_url_cache_miss_count';
     const NOCODE_CUSTOM_URL_CACHE_BUILD_COUNT       = 'nocode_custom_url_cache_build_count';
+    const NOCODE_CUSTOM_URL_CONSIDERED_COUNT        = 'nocode_custom_url_considered_count';
+    const NOCODE_CUSTOM_URL_NOT_CONSIDERED_COUNT    = 'nocode_custom_url_not_considered_count';
+    const NOCODE_CUSTOM_URL_CALLS_FAILED_COUNT      = 'nocode_custom_url_calls_failed_count';
 }

@@ -346,8 +346,9 @@ return [
         'mock'     => env('ELFIN_MOCK', true),
         'services' => env('ELFIN_SERVICES', 'gimli,bitly'),
         'gimli'    => [
-            'secret'   => env('GIMLI_SECRET'),
-            'base_url' => env('GIMLI_BASE_URL')
+            'secret'    => env('GIMLI_SECRET'),
+            'base_url'  => env('GIMLI_BASE_URL'),
+            'short_url' => env('GIMLI_SHORT_URL'),
         ],
         'bitly'    => [
             'secret'   => env('BITLY_ACCESS_TOKEN_PUBLIC'),

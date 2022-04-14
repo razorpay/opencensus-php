@@ -2,6 +2,9 @@
 
 namespace RZP\Models\PaymentLink;
 
+use RZP\Constants\Mode;
+use RZP\Trace\TraceCode;
+use RZP\Jobs\PaymentPageProcessor;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Config;
 use RZP\Services\Elfin\Service as ElfinService;
@@ -83,16 +86,31 @@ final class ElfinWrapper
     }
 
     /**
-     * @param string $hash
+     * @param string      $hash
+     * @param string|null $domain
      *
-     * @return array|null
+     * @return array|mixed|void
+     * @throws \RZP\Exception\BadRequestValidationFailureException
      */
-    public function expandAndGetMetadata(string $hash)
+    public function expandAndGetMetadata(string $hash, ?string $domain = null)
     {
+        $details = $this->getFromCustomUrl($hash, $domain);
+
+        if ($details !== null)
+        {
+            $this->trace->count(Metric::NOCODE_CUSTOM_URL_CONSIDERED_COUNT);
+
+            return $details->trashed() ? null : $details->getMetaData();
+        }
+
         $details = $this->expand($hash);
 
         if ($details !== null)
         {
+            $this->trace->count(Metric::NOCODE_CUSTOM_URL_NOT_CONSIDERED_COUNT);
+
+            $this->dispatchCustomUrlUpsert($details);
+
             return $details['url_aliases'][0]['metadata'];
         }
     }
@@ -201,5 +219,52 @@ final class ElfinWrapper
         $parts = explode('/', $url);
 
         return end($parts) ?: null;
+    }
+
+    /**
+     * @param string      $slug
+     * @param string|null $domain
+     *
+     * @return \RZP\Models\PaymentLink\NocodeCustomUrl\Entity|null
+     * @throws \RZP\Exception\BadRequestValidationFailureException
+     */
+    private function getFromCustomUrl(string $slug, ?string $domain): ?NocodeCustomUrl\Entity
+    {
+        if (empty($domain) === true)
+        {
+            return null;
+        }
+
+        try {
+            return (new NocodeCustomUrl\Core())->getForHosted($slug, $domain);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->count(Metric::NOCODE_CUSTOM_URL_CALLS_FAILED_COUNT);
+
+            $this->trace->traceException($e);
+        }
+    }
+
+    /**
+     * @param array $gimliResponse
+     *
+     * @return void
+     */
+    private function dispatchCustomUrlUpsert(array $gimliResponse): void
+    {
+        if (empty($gimliResponse) === true)
+        {
+            return;
+        }
+
+        $this->trace->info(TraceCode::NOCODE_CUSTOM_URL_UPSERT_QUEUED, $gimliResponse);
+
+        $this->app->instance('rzp.mode', Mode::LIVE);
+
+        PaymentPageProcessor::dispatch(Mode::LIVE, [
+            'event'             => PaymentPageProcessor::NOCODE_CUSTOM_URL_UPSERT_FROM_HOSTED_FLOW,
+            'gimli_response'    => $gimliResponse,
+        ]);
     }
 }

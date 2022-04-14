@@ -825,14 +825,22 @@ class Service extends Base\Service
     /**
      * Retrieves slug's metadata from Gimli which contains entity, id & mode
      *
-     * @param string $slug
+     * @param string      $slug
+     * @param string|null $host
      *
      * @return array|null
      */
-    public function getSlugMetaData(string $slug): ?array
+    public function getSlugMetaData(string $slug, string $host = null): ?array
     {
-        return Tracer::inSpan(['name' => Constants::HT_PP_HOSTED_SLUG_DATA], function() use ($slug) {
-            return (new ElfinWrapper(ElfinService::GIMLI))->expandAndGetMetadata($slug);
+        return Tracer::inSpan(['name' => Constants::HT_PP_HOSTED_SLUG_DATA], function() use ($slug, $host) {
+            $domain = null;
+
+            if (empty($host) !== true)
+            {
+                $domain = NocodeCustomUrl\Entity::determineDomainFromUrl($host);
+            }
+
+            return (new ElfinWrapper(ElfinService::GIMLI))->expandAndGetMetadata($slug, $domain);
         });
     }
 }
