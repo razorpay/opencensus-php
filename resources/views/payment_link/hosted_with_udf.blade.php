@@ -97,7 +97,7 @@
 
                 <link rel="preconnect" href="https://fonts.googleapis.com"/>
                 <link href="https://fonts.googleapis.com/css?family=Muli:400,700&display=swap" rel="stylesheet">
-                <script src="https://cdn.quilljs.com/1.3.6/quill.min.js" defer ></script>
+                <script src="https://cdn.razorpay.com/static/assets/quilljs/1.3.6/quill.min.js" defer ></script>
 
                 <script src="{{env('AWS_CF_CDN_URL')}}/static/hosted/wysiwyg.js" onload="renderPaymentPage()" defer></script>
                 <link rel="stylesheet" href="https://cdn.razorpay.com/static/assets/social-share/icons.css" />
