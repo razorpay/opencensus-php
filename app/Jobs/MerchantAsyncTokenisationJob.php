@@ -36,13 +36,17 @@ class MerchantAsyncTokenisationJob extends Job
 
     protected $asyncTokenisationJobId;
 
-    public function __construct(string $mode, string $merchantId, string $asyncTokenisationJobId)
+    protected $batchSize;
+
+    public function __construct(string $mode, string $merchantId, string $asyncTokenisationJobId, int $batchSize = Token\Entity::GLOBAL_MERCHANT_ASYNC_TOKENISATION_QUERY_LIMIT)
     {
         parent::__construct($mode);
 
         $this->merchantId = $merchantId;
 
         $this->asyncTokenisationJobId = $asyncTokenisationJobId;
+
+        $this->batchSize = $batchSize;
     }
 
     public function init(): void
@@ -151,7 +155,7 @@ class MerchantAsyncTokenisationJob extends Job
         try {
             $lastDispatchedTokenId = Cache::get(self::LAST_DISPATCHED_GLOBAL_TOKEN_CACHE_KEY, '');
 
-            $globalTokens = $this->tokenCore->fetchConsentReceivedGlobalTokenIdsForTokenisation($lastDispatchedTokenId);
+            $globalTokens = $this->tokenCore->fetchConsentReceivedGlobalTokenIdsForTokenisation($lastDispatchedTokenId, $this->batchSize);
 
             $tokensCount = count($globalTokens);
 

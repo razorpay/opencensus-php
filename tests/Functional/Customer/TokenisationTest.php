@@ -837,9 +837,11 @@ class TokenisationTest extends TestCase
         $response = $this->runRequestResponseFlow($testData);
     }
 
-    public function testGlobalCardAsyncTokenisationSuccess(): void
+    public function testGlobalCardAsyncTokenisationPassingBatchSizeSuccess(): void
     {
         $testData = $this->testData['testGlobalCardsAsyncTokenisation'];
+
+        $testData['request']['content']['batch_size'] = '10';
 
         $this->ba->appAuth();
 
@@ -887,6 +889,15 @@ class TokenisationTest extends TestCase
         $this->assertEquals($card['vault'], 'visa');
 
         $this->assertEquals($card['merchant_id'], $merchantId);
+    }
+
+    public function testGlobalCardAsyncTokenisationWhenBatchSizeGreaterThan10000ValidationFailure(): void
+    {
+        $testData = $this->testData['testGlobalCardsAsyncTokenisationValidationFailure'];
+
+        $this->ba->appAuth();
+
+        $response = $this->runRequestResponseFlow($testData);
     }
 
     public function testGlobalCardAsyncTokenisationWhenMerchantNotOnboardedOnRequiredNetworkExpectsTokenisationFailure(): void

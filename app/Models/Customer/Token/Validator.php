@@ -151,6 +151,10 @@ class Validator extends Base\Validator
         'token_ids'     => 'required|filled|array|max:' . Entity::BULK_TOKENISATION_INPUT_LIMIT,
     ];
 
+    protected static $validateGlobalSavedCardAsyncTokenisationRules = [
+        'batch_size'    => 'sometimes|integer|max:10000'
+    ];
+
     protected static function validateBank($attribute, $value)
     {
         if (Bank\IFSC::exists($value) === false)

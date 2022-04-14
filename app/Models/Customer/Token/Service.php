@@ -1112,8 +1112,10 @@ class Service extends Base\Service
         }
     }
 
-    public function globalSavedCardAsyncTokenisation(): array
+    public function globalSavedCardAsyncTokenisation(array $input): array
     {
+        (new Validator())->validateInput('validate_global_saved_card_async_tokenisation', $input);
+
         try
         {
             $asyncTokenisationJobId = UniqueIdEntity::generateUniqueId();
@@ -1128,7 +1130,9 @@ class Service extends Base\Service
                 'async_tokenization_job_id' => $asyncTokenisationJobId,
             ]);
 
-            MerchantAsyncTokenisationJob::dispatch($this->mode, Merchant\Account::SHARED_ACCOUNT, $asyncTokenisationJobId);
+            $batchSize = $input['batch_size'] ?? Token\Entity::GLOBAL_MERCHANT_ASYNC_TOKENISATION_QUERY_LIMIT;
+
+            MerchantAsyncTokenisationJob::dispatch($this->mode, Merchant\Account::SHARED_ACCOUNT, $asyncTokenisationJobId, $batchSize);
 
             $this->trace->info(TraceCode::ASYNC_GLOBAL_TOKENISATION_DISPATCH_SUCCESS, [
                 'async_tokenization_job_id' => $asyncTokenisationJobId,

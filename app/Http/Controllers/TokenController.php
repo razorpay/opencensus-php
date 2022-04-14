@@ -101,7 +101,9 @@ class TokenController extends Controller
 
     public function globalSavedCardAsyncTokenisation()
     {
-        $data = $this->service()->globalSavedCardAsyncTokenisation();
+        $input = Request::all();
+
+        $data = $this->service()->globalSavedCardAsyncTokenisation($input);
 
         return ApiResponse::json($data);
     }

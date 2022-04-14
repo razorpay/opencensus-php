@@ -656,4 +656,26 @@ return [
             ],
         ],
     ],
+
+    'testGlobalCardsAsyncTokenisationValidationFailure' => [
+        'request'  => [
+            'url'      => '/tokenisation/global_cards',
+            'method'   => 'post',
+            'content' => [
+                'batch_size' => '20000',
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'description' => 'The batch size may not be greater than 10000.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => \RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code'   => 'BAD_REQUEST_VALIDATION_FAILURE',
+        ],
+    ],
 ];
