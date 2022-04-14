@@ -87,7 +87,7 @@ class Repository extends Base\Repository
 
            $faActiveColumn = $this->dbColumn(Entity::ACTIVE);
 
-           $account = $this->newQueryWithConnection($this->getReportingReplicaConnection())
+           $account = $this->newQueryWithConnection($this->getSlaveConnection())
                            ->select($allFundAccountAttributes)
                            ->where($faUniqueHashColumn, '=', $uniqueHash)
                            ->orderBy($faActiveColumn, 'desc')
