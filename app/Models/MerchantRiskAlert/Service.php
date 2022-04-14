@@ -925,7 +925,7 @@ class Service extends Base\Service
 
     public function updateRule($ruleId, $input)
     {
-        $input['rule_id'] = $ruleId;
+        $input['id'] = $ruleId;
 
         return $this->app['merchant_risk_alerts']->sendRequest(Constants::UPDATE_RULE_URL, $input);
     }
@@ -933,7 +933,7 @@ class Service extends Base\Service
     public function deleteRule($ruleId)
     {
         return $this->app['merchant_risk_alerts']->sendRequest(Constants::DELETE_RULE_URL, [
-            'rule_id'   =>  $ruleId,
+            'id'   =>  $ruleId,
         ]);
     }
 
