@@ -158,15 +158,16 @@ jobs:
             })
             const latestCommit = response.data.head.sha
             return String(latestCommit)
-    - name: Get Build Image Workflow Status
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
-        BRANCH: ${{ github.event.pull_request.head.ref }}
-        WORKFLOW: build_images.yml
-      run: |
-        echo "WORKFLOW_STATUS=$(sh ./.github/actions/getWorkflowStatus.sh)" >> $GITHUB_ENV
-    - name: Check Workflow Status
-      run: echo $WORKFLOW_STATUS
+#   Disabling get Build Image status until this (https://razorpay.slack.com/archives/C6QPQKVLZ/p1649827922152949?thread_ts=1649824519.897919&cid=C6QPQKVLZ) gets resolved
+#    - name: Get Build Image Workflow Status
+#      env:
+#        GITHUB_TOKEN: ${{ github.token }}
+#        BRANCH: ${{ github.event.pull_request.head.ref }}
+#        WORKFLOW: build_images.yml
+#      run: |
+#        echo "WORKFLOW_STATUS=$(sh ./.github/actions/getWorkflowStatus.sh)" >> $GITHUB_ENV
+#    - name: Check Workflow Status
+#      run: echo $WORKFLOW_STATUS
     # Get the API Instance from Spinnaker
     - name: Get API Instance from Spinnaker
       env:
@@ -177,8 +178,8 @@ jobs:
     - name: Print Instance value
       run: echo $API_INSTANCE
     - name: Run bvt suite if PR approved && Build Image workflow succeeded
-      if: env.WORKFLOW_STATUS == 'success' &&
-        startsWith(github.event.pull_request.head.ref,'beta_') != true
+      if: startsWith(github.event.pull_request.head.ref,'beta_') != true
+#        env.WORKFLOW_STATUS == 'success'
       env:
         SPINNAKER_PASSWORD: ${{ secrets.SPINNAKER_PASSWORD }}
         WEBHOOK_TRIGGER : api-pr-commit
