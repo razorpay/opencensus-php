@@ -108,6 +108,7 @@ return [
         'wallet_jiomoney',
         'wallet_sbibuddy',
         'wallet_openwallet',
+        'wallet_razorpaywallet',
         'wallet_mpesa',
         'wallet_phonepe',
         'wallet_phonepeswitch',

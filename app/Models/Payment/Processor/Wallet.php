@@ -20,6 +20,7 @@ class Wallet
     const JIOMONEY          = 'jiomoney';
     const SBIBUDDY          = 'sbibuddy';
     const OPENWALLET        = 'openwallet';
+    const RAZORPAYWALLET    = 'razorpaywallet';
     const MPESA             = 'mpesa';
     const PHONEPE           = 'phonepe';
     const PAYPAL            = 'paypal';
@@ -43,6 +44,7 @@ class Wallet
         self::JIOMONEY          => 'JioMoney',
         self::SBIBUDDY          => 'SBI Buddy',
         self::OPENWALLET        => 'RZP Open Wallet',
+        self::RAZORPAYWALLET    => 'Razorpay Wallet',
         self::MPESA             => 'Vodafone mPesa',
         self::AMAZONPAY         => 'AmazonPay',
         self::PHONEPE           => 'PhonePe',
@@ -66,6 +68,7 @@ class Wallet
         self::JIOMONEY,
         self::SBIBUDDY,
         self::OPENWALLET,
+        self::RAZORPAYWALLET,
         self::MPESA,
     );
 
@@ -82,6 +85,7 @@ class Wallet
         self::MPESA,
         self::OLAMONEY,
         self::OPENWALLET,
+        self::RAZORPAYWALLET,
         self::PAYTM,
         self::PAYZAPP,
         self::PAYUMONEY,

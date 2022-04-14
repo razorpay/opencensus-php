@@ -590,6 +590,22 @@ return [
         ],
     ],
 
+    'testEnableRazorpaywallet' => [
+        'request' => [
+            'url' => '/merchants/10000000000000/methods',
+            'method' => 'PUT',
+            'content' => [
+                'razorpaywallet' => 1,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id' => '10000000000000',
+                'razorpaywallet' => true,
+            ],
+        ],
+    ],
+
     'testEnableOfflineMethod' => [
         'request' => [
             'url' => '/merchants/10000000000000/methods',

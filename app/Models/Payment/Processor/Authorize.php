@@ -4184,6 +4184,11 @@ trait Authorize
         {
             $this->preProcessPaymentForSubscriptionWithoutCustomer($payment, $input, $gatewayInput);
         }
+        else if (($customer === null) and
+                 ($payment->isRazorpaywalletPayment() === true))
+        {
+            $payment->setReference14($input['wallet_user_id']);
+        }
         else if ($customer === null)
         {
             $this->preProcessPaymentWithoutCustomer($payment, $input, $gatewayInput);

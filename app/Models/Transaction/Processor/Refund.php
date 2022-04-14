@@ -59,7 +59,7 @@ class Refund extends Base
 
     protected function checkAndSetTxnReconciliation()
     {
-        if ($this->source->getGateway() === Gateway::WALLET_OPENWALLET)
+        if (($this->source->getGateway() === Gateway::WALLET_OPENWALLET))
         {
             $this->txn->setReconciledAt(time());
 

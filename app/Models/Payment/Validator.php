@@ -132,6 +132,7 @@ class Validator extends Base\Validator
         'meta'                          => 'sometimes|array',
         'authentication'                => 'required_if:application,visasafeclick|array',
         'reward_ids'                    => 'sometimes|array',
+        'wallet_user_id'                => 'filled|unsigned_id|custom',
         'user_consent_for_tokenisation' => 'sometimes|in:0,1', // temporary - for taking saved card consent till Dec 31st 2021
         'consent_to_save_card'          => 'sometimes|in:0,1',
         'authentication.cavv'                                        => 'required_if:application,visasafeclick|size:28|string',
@@ -602,6 +603,15 @@ class Validator extends Base\Validator
         // email of person making a payment
         if ((isset($input[Entity::RECEIVER]) === true) and
             (empty($input[Entity::RECEIVER]['type']) === false))
+        {
+            return;
+        }
+
+        //
+        // When razorpay_wallet feature is enabled, payment request has
+        // only the wallet_user_id which is sent over to wallet service.
+        //
+        if ($this->entity->merchant->hasRazorpaywalletFeature() === true)
         {
             return;
         }
@@ -1163,6 +1173,15 @@ class Validator extends Base\Validator
             return;
         }
 
+        //
+        // When razorpay_wallet feature is enabled, payment request has
+        // only the wallet_user_id which is sent over to wallet service.
+        //
+        if ($this->entity->merchant->hasRazorpaywalletFeature() === true)
+        {
+            return;
+        }
+
         $allowedPaymentMethods = [
             Payment\Method::AEPS,
             Payment\Method::TRANSFER,
@@ -1221,6 +1240,23 @@ class Validator extends Base\Validator
             }
 
             return;
+        }
+
+        //
+        // customer_id should not be sent for a razorpaywallet payment.
+        // wallet_user_id should be sent instead.
+        //
+        if ((isset($input[Entity::WALLET]) === true) and
+            ($input[Entity::WALLET] === Wallet::RAZORPAYWALLET))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'customer_id is not required and should not be sent.',
+                'customer_id',
+                [
+                    'customer_id'   => $input[Entity::CUSTOMER_ID],
+                    'wallet'        => $input[Entity::WALLET],
+                ]
+            );
         }
 
         //
@@ -1680,6 +1716,17 @@ class Validator extends Base\Validator
                 PublicErrorDescription::BAD_REQUEST_UPI_END_TIME_OUT_OF_RANGE,
                 'upi.end_time',
                 ['input' => $input]
+            );
+        }
+    }
+
+    protected function validateWalletUserId()
+    {
+        if ($this->entity->merchant->hasRazorpaywalletFeature() === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'wallet_user_id is not required and should not be sent.',
+                'wallet_user_id'
             );
         }
     }

@@ -168,7 +168,7 @@ class Constants
     const GPAY                            = 'gpay';
     const PAYPAL_CC                       = 'paypal_cc';
     const SOURCED_BY_WALNUT369            = 'sourced_by_walnut369';
-    const WALLET                          = 'wallet';
+    const RAZORPAY_WALLET                 = 'razorpay_wallet';
     const SR_SENSITIVE_BUCKET_1           = 'sr_sensitive_bucket_1';
     const SR_SENSITIVE_BUCKET_2           = 'sr_sensitive_bucket_2';
     const SR_SENSITIVE_BUCKET_3           = 'sr_sensitive_bucket_3';
@@ -1611,7 +1611,7 @@ class Constants
         self::P2P_UPI                         => true,
         self::PAYPAL_GTM_NOTIFICATION         => true,
         self::REWARD_MERCHANT_DASHBOARD       => true,
-        self::WALLET                          => true,
+        self::RAZORPAY_WALLET                 => true,
         self::OFFER_ON_SUBSCRIPTION           => true,
         self::AUTOMATED_LOC_ELIGIBLE          => true,
         self::PREVENT_TEST_MODE               => true,

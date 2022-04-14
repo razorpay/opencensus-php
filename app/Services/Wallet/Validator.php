@@ -19,6 +19,7 @@ class Validator extends Base\Validator
         'user_id'           => 'required|alpha_num|size:14',
         'payment_id'        => 'required|alpha_num|size:14',
         'amount'            => 'required|integer|min:0',
+        'customer_consent'  => 'required|bool',
         'notes'             => 'sometimes|string',
     ];
 

@@ -146,8 +146,9 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const FEE_BEARER            = 'fee_bearer';
     //Reference13 has been used to store detailed error fields of combination of source, step and reason.
     const REFERENCE13           = 'reference13';
-    // From 14 to 17 are blank columns of various types(refer migration file) to be consumed after renaming when needed
+    // Reference14 has been used to store razorpay wallet user id
     const REFERENCE14           = 'reference14';
+    // From 15 to 17 are blank columns of various types(refer migration file) to be consumed after renaming when needed
     const REFERENCE16           = 'reference16';
     const REFERENCE17           = 'reference17'; // used to store gateway_error_code and gateway_error_description
     const SIGNED                = 'signed';
@@ -403,6 +404,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::BATCH_ID,
         self::REFERENCE1,
         self::REFERENCE2,
+        self::REFERENCE14,
         self::REFERENCE16,
         self::REFERENCE17,
         self::CPS_ROUTE,
@@ -1554,6 +1556,12 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $this->setAttribute(self::REFERENCE2, $reference2);
     }
 
+    // set function for wallet_user_id sent in payment create request from razorpaywallet
+    public function setReference14($walletUserId)
+    {
+        $this->setAttribute(self::REFERENCE14, $walletUserId);
+    }
+
     public function setReference16(string $reference16)
     {
         $this->setAttribute(self::REFERENCE16, $reference16);
@@ -2565,6 +2573,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function isOpenWalletPayment()
     {
         return ($this->getWallet() === Processor\Wallet::OPENWALLET);
+    }
+
+    public function isRazorpaywalletPayment()
+    {
+        return ($this->getWallet() === Processor\Wallet::RAZORPAYWALLET);
     }
 
     public function isCustomerMailAbsent(): bool

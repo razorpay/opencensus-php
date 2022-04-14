@@ -133,6 +133,7 @@ class Gateway
     const WALLET_MPESA              = 'wallet_mpesa';
     const WALLET_OLAMONEY           = 'wallet_olamoney';
     const WALLET_OPENWALLET         = 'wallet_openwallet';
+    const WALLET_RAZORPAYWALLET     = 'wallet_razorpaywallet';
     const WALLET_PAYUMONEY          = 'wallet_payumoney';
     const WALLET_PAYZAPP            = 'wallet_payzapp';
     const WALLET_PHONEPE            = 'wallet_phonepe';
@@ -504,6 +505,7 @@ class Gateway
         self::NETBANKING_AIRTEL,
         self::WALLET_AIRTELMONEY,
         self::WALLET_OPENWALLET,
+        self::WALLET_RAZORPAYWALLET,
         self::CARDLESS_EMI,
         self::NETBANKING_CORPORATION,
         self::HITACHI,
@@ -575,6 +577,7 @@ class Gateway
         Payment\Gateway::WALLET_FREECHARGE,
         Payment\Gateway::WALLET_AMAZONPAY,
         Payment\Gateway::WALLET_OPENWALLET,
+        Payment\Gateway::WALLET_RAZORPAYWALLET,
         Payment\Gateway::UPI_MINDGATE,
         Payment\Gateway::HITACHI,
         Payment\Gateway::UPI_HULK,
@@ -1328,6 +1331,7 @@ class Gateway
         self::WALLET_AIRTELMONEY  => Settlement\Channel::KOTAK,
         self::WALLET_JIOMONEY     => Settlement\Channel::KOTAK,
         self::WALLET_OPENWALLET   => Settlement\Channel::KOTAK,
+        self::WALLET_RAZORPAYWALLET => Settlement\Channel::KOTAK,
         self::WALLET_MPESA        => Settlement\Channel::KOTAK,
         self::FIRST_DATA          => Settlement\Channel::KOTAK,
         self::UPI_MINDGATE        => Settlement\Channel::KOTAK,
@@ -1448,6 +1452,7 @@ class Gateway
             self::WALLET_JIOMONEY,
             self::WALLET_SBIBUDDY,
             self::WALLET_OPENWALLET,
+            self::WALLET_RAZORPAYWALLET,
             self::WALLET_MPESA,
             self::WALLET_AMAZONPAY,
             self::WALLET_PHONEPE,
@@ -1550,6 +1555,7 @@ class Gateway
             self::NOT_SUPPORTED => [Network::MAES, Network::RUPAY]
         ],
         self::WALLET_OPENWALLET     => [],
+        self::WALLET_RAZORPAYWALLET => [],
         self::HITACHI               => [],
         self::MPGS                  => [],
         self::ISG                   => [],
@@ -1604,6 +1610,7 @@ class Gateway
         self::AXIS_MIGS,
         self::AMEX,
         self::WALLET_OPENWALLET,
+        self::WALLET_RAZORPAYWALLET,
         self::HITACHI,
         self::CARDLESS_EMI,
     ];
@@ -1904,6 +1911,7 @@ class Gateway
         Wallet::JIOMONEY           => Gateway::WALLET_JIOMONEY,
         Wallet::SBIBUDDY           => Gateway::WALLET_SBIBUDDY,
         Wallet::OPENWALLET         => Gateway::WALLET_OPENWALLET,
+        Wallet::RAZORPAYWALLET     => Gateway::WALLET_RAZORPAYWALLET,
         Wallet::MPESA              => Gateway::WALLET_MPESA,
         Wallet::AMAZONPAY          => Gateway::WALLET_AMAZONPAY,
         Wallet::PHONEPE            => Gateway::WALLET_PHONEPE,
@@ -1971,6 +1979,7 @@ class Gateway
 
     public static $verifyDisabled = [
         self::WALLET_OPENWALLET,
+        self::WALLET_RAZORPAYWALLET,
         self::NETBANKING_RBL,
         self::NETBANKING_ALLAHABAD,
         self::NETBANKING_CORPORATION,
@@ -3075,6 +3084,9 @@ class Gateway
         ],
         self::WALLET_OPENWALLET  =>  [
             Wallet::OPENWALLET
+        ],
+        self::WALLET_RAZORPAYWALLET  =>  [
+            Wallet::RAZORPAYWALLET
         ],
         self::WALLET_PAYUMONEY  =>  [
             Wallet::PAYUMONEY

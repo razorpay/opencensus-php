@@ -354,6 +354,7 @@ class Entity
     const WALLET_PAYUMONEY       = 'wallet_payumoney';
     const WALLET_FREECHARGE      = 'wallet_freecharge';
     const WALLET_OPENWALLET      = 'wallet_openwallet';
+    const WALLET_RAZORPAYWALLET  = 'wallet_razorpaywallet';
     const NETBANKING_BOB_V2      = 'netbanking_bob_v2';
     const NETBANKING_CANARA      = 'netbanking_canara';
     const NETBANKING_VIJAYA      = 'netbanking_vijaya';
@@ -1013,6 +1014,7 @@ class Entity
         self::NETBANKING_JSB         => \RZP\Gateway\Mozart::class,
         self::WALLET_PAYUMONEY       => \RZP\Gateway\Wallet\Payumoney::class,
         self::WALLET_OPENWALLET      => \RZP\Gateway\Wallet\Openwallet::class,
+        self::WALLET_RAZORPAYWALLET  => \RZP\Gateway\Wallet\Razorpaywallet::class,
         self::WALLET_FREECHARGE      => \RZP\Gateway\Wallet\Freecharge::class,
         self::WALLET_AIRTELMONEY     => \RZP\Gateway\Wallet\Airtelmoney::class,
         self::WALLET_MPESA           => \RZP\Gateway\Wallet\Mpesa::class,

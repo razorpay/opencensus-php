@@ -2542,7 +2542,8 @@ class Validator extends Base\Validator
         $nonCardPurchaseExceptions = [
             Gateway::SHARP,
             Gateway::ATOM,
-            Gateway::WALLET_OPENWALLET
+            Gateway::WALLET_OPENWALLET,
+            Gateway::WALLET_RAZORPAYWALLET, // ?
         ];
 
         $isNonCardNonMockGateway = ((Gateway::isMethodSupported(Payment\Method::CARD, $gateway)) and
@@ -2553,6 +2554,7 @@ class Validator extends Base\Validator
         $authCaptureOnly = [
             Gateway::AMEX,
             Gateway::WALLET_OPENWALLET,
+            Gateway::WALLET_RAZORPAYWALLET, // ?
             Gateway::CARDLESS_EMI,
             Gateway::FULCRUM,
         ];

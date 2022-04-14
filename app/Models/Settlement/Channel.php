@@ -42,6 +42,7 @@ class Channel
             Payment\Gateway::WALLET_FREECHARGE,
             Payment\Gateway::WALLET_JIOMONEY,
             Payment\Gateway::WALLET_OPENWALLET,
+            Payment\Gateway::WALLET_RAZORPAYWALLET,
         ],
         self::ATOM  => [
             Payment\Gateway::ATOM

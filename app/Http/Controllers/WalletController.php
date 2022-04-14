@@ -41,9 +41,9 @@ class WalletController extends Controller
 
     const ROUTES_URL_MAP = [
         // merchant routes
-        self::CREATE_USER       => 'users',
-        self::SEND_OTP          => 'otp',
-        self::VERIFY_OTP        => 'users/(\w+)/verify',
+        self::CREATE_USER       => 'user',
+        self::SEND_OTP          => 'user/otp',
+        self::VERIFY_OTP        => 'user/(\w+)/verify',
         self::CREATE_WALLET     => 'wallet',
 
         // admin route

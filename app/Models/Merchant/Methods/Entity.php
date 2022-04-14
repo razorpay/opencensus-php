@@ -96,6 +96,7 @@ class Entity extends Base\PublicEntity
         self::JIOMONEY,
         self::SBIBUDDY,
         self::OPENWALLET,
+        self::RAZORPAYWALLET,
         self::MPESA,
         self::EMI,
         self::UPI,
@@ -138,6 +139,7 @@ class Entity extends Base\PublicEntity
         self::JIOMONEY,
         self::SBIBUDDY,
         self::OPENWALLET,
+        self::RAZORPAYWALLET,
         self::MPESA,
         self::EMI,
         self::UPI,
@@ -184,6 +186,7 @@ class Entity extends Base\PublicEntity
         self::JIOMONEY,
         self::SBIBUDDY,
         self::OPENWALLET,
+        self::RAZORPAYWALLET,
         self::MPESA,
         self::EMI,
         self::UPI,
@@ -242,6 +245,7 @@ class Entity extends Base\PublicEntity
         self::JIOMONEY       => false,
         self::SBIBUDDY       => false,
         self::OPENWALLET     => false,
+        self::RAZORPAYWALLET => false,
         self::MPESA          => false,
         self::DISABLED_BANKS => NetbankingProcessor::DEFAULT_DISABLED_BANKS,
         self::BANKS          => '[]',
@@ -282,6 +286,7 @@ class Entity extends Base\PublicEntity
         self::JIOMONEY       => false,
         self::SBIBUDDY       => false,
         self::OPENWALLET     => false,
+        self::RAZORPAYWALLET => false,
         self::MPESA          => false,
         self::DISABLED_BANKS => NetbankingProcessor::DEFAULT_DISABLED_BANKS,
         self::EMI            => EmiType::DEFAULT_TYPES,
@@ -318,6 +323,7 @@ class Entity extends Base\PublicEntity
         self::JIOMONEY,
         self::SBIBUDDY,
         self::OPENWALLET,
+        self::RAZORPAYWALLET,
         self::MPESA,
         self::PHONEPE,
         self::PAYPAL,
@@ -383,6 +389,7 @@ class Entity extends Base\PublicEntity
         self::JIOMONEY      => 'bool',
         self::SBIBUDDY      => 'bool',
         self::OPENWALLET    => 'bool',
+        self::RAZORPAYWALLET=> 'bool',
         self::MPESA         => 'bool',
         self::EMI           => 'int',
         self::UPI           => 'bool',
@@ -591,6 +598,11 @@ class Entity extends Base\PublicEntity
     public function isOpenwalletEnabled()
     {
         return $this->getAttribute(self::OPENWALLET);
+    }
+
+    public function isRazorpaywalletEnabled()
+    {
+        return $this->getAttribute(self::RAZORPAYWALLET);
     }
 
     public function isJiomoneyEnabled()
@@ -859,6 +871,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::OPENWALLET);
     }
 
+    public function getRazorpaywallet()
+    {
+        return $this->getAttribute(self::RAZORPAYWALLET);
+    }
+
     public function getWallets()
     {
         $walletsStatus = array();
@@ -1103,6 +1120,11 @@ class Entity extends Base\PublicEntity
     public function setOpenwallet($value)
     {
         $this->setAttribute(self::OPENWALLET, $value);
+    }
+
+    public function setRazorpaywallet($value)
+    {
+        $this->setAttribute(self::RAZORPAYWALLET, $value);
     }
 
     public function setCreditCard($card)

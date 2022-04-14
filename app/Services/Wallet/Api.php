@@ -54,6 +54,7 @@ class Api extends Base
             'user_id'       => $data['user_id'],
             'reference_id'  => $data['payment_id'],
             'amount'        => $data['amount'],
+            'customer_consent' => $data['customer_consent'],
             'notes'         => isset($data['notes']) ? $data['notes'] : null,
         ];
 

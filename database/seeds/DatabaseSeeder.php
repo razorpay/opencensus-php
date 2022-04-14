@@ -1268,6 +1268,7 @@ class DatabaseSeeder extends Seeder
         $this->createJiomoneyTerminals();
         $this->createSbibuddyTerminals();
         $this->createOpenwalletTerminals();
+        $this->createRazorpaywalletTerminals();
         $this->createVodafoneMpesaTerminal();
         $this->createNetbankingSibTerminal();
         $this->createNetbankingCbiTerminal();
@@ -2496,6 +2497,38 @@ class DatabaseSeeder extends Seeder
                 'id'                        => Terminal\Shared::OPENWALLET_RAZORPAY_TERMINAL,
                 'merchant_id'               => Account::DEMO_ACCOUNT,
                 'gateway'                   => Gateway::WALLET_OPENWALLET,
+                'card'                      => '0',
+                'netbanking'                => '0',
+                'gateway_terminal_id'       => null,
+                'gateway_terminal_password' => null,
+                'created_at'                => time(),
+                'updated_at'                => time(),
+            )
+        );
+    }
+
+    protected function createRazorpaywalletTerminals()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            array(
+                'id'                        => '3cbUIQ3b0jEfYs',
+                'merchant_id'               => Account::TEST_ACCOUNT,
+                'gateway'                   => Gateway::WALLET_RAZORPAYWALLET,
+                'card'                      => '0',
+                'gateway_terminal_id'       => null,
+                'gateway_terminal_password' => null,
+                'created_at'                => time(),
+                'updated_at'                => time(),
+                'category'                  => 1000,
+                'shared'                    => '1',
+            )
+        );
+
+        DB::table(Table::TERMINAL)->insert(
+            array(
+                'id'                        => Terminal\Shared::RAZORPAYWALLET_RAZORPAY_TERMINAL,
+                'merchant_id'               => Account::DEMO_ACCOUNT,
+                'gateway'                   => Gateway::WALLET_RAZORPAYWALLET,
                 'card'                      => '0',
                 'netbanking'                => '0',
                 'gateway_terminal_id'       => null,

@@ -676,7 +676,7 @@ class MethodsTest extends TestCase
             }
             return true;
         });
-        
+
 
         $this->doAuthPayment($payment);
 
@@ -873,6 +873,25 @@ class MethodsTest extends TestCase
 
         $this->assertTrue(isset($response['custom_text']['cred']));
         $this->assertEquals('discount of 10% with CRED coins', $response['custom_text']['cred']);
+    }
+
+    public function testEnableRazorpaywallet()
+    {
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
+
+        $admin = $this->ba->getAdmin();
+
+        $admin->merchants()->attach('10000000000000');
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        $merchantMethods = $this->getDbEntityById('merchant', '10000000000000')->getMethods();
+
+        $this->assertTrue($merchantMethods->isRazorpaywalletEnabled());
     }
 
     public function testEnableItzcash()

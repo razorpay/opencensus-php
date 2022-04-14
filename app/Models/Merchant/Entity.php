@@ -2186,6 +2186,11 @@ class Entity extends Base\PublicEntity
         return ($this->isFeatureEnabled(Feature\Constants::AGGREGATOR));
     }
 
+    public function hasRazorpaywalletFeature(): bool
+    {
+        return ($this->isFeatureEnabled(Feature\Constants::RAZORPAY_WALLET));
+    }
+
     public function hasOptionalSubmerchantEmailFeature(): bool
     {
         return ($this->isFeatureEnabled(Feature\Constants::ALLOW_SUBMERCHANT_WITHOUT_EMAIL));
