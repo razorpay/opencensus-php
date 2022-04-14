@@ -446,7 +446,9 @@ class Core extends Base\Core
 
         $expiryAt = Carbon::now()->addHours($plExpireAfterHours)->getTimestamp();
 
-        $title = sprintf("Complete your order on %s", $payment->merchant->getDisplayNameElseName());
+        $merchant = $payment -> merchant;
+
+        $title = sprintf("Complete your order on %s", $merchant->getBillingLabel() ?? $merchant->getName());
 
         $createUpiLink = $this->app->razorx->getTreatment($payment->getMerchantId(), Merchant\RazorxTreatment::PL_MISSED_ORDER_UPI_LINK, $this->mode);
 
