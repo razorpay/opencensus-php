@@ -70,4 +70,5 @@ class Category
     const OFFER                        = 'offer';
     const REFUND                       = 'refund';
     const RULE_VISIBILITY              = 'rule_visibility';
+    const NOCODE                        = 'nocode';
 }

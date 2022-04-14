@@ -431,4 +431,17 @@ class PaymentLinkController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    /**
+     * @return mixed
+     */
+    public function nocodeDebugHandler()
+    {
+        $input = Request::all();
+
+        return ApiResponse::json([
+            'msg'   => 'Nocode debug route. Use this route for debugging/data corrections via dark',
+            'input' => $input
+        ]);
+    }
 }

@@ -2050,6 +2050,13 @@ return [
                 'assignable'  => true,
             ],
         ],
+
+        PermissionCategory::NOCODE => [
+            Permission::DEBUG_NOCODE_ROUTES => [
+                'description' => 'To be used for debugging / data correction of payment pages / buttons / subscription buttons',
+                'assignable'  => true,
+            ],
+        ],
     ],
 
     'workflows' => [

@@ -1179,6 +1179,8 @@ class Route
         'payment_handle_suggestion'                => ['get',      'payment_handle/suggestion',                               'PaymentLinkController@suggestionPaymentHandle'            ],
         'payment_handle_amount_encryption'         => ['post',     'payment_handle/custom_amount',                            'PaymentLinkController@encryptAmountForPaymentHandle'      ],
 
+        // Debugging route: needs permission to access this route
+        'nocode_debugging_route'                    => ['post',     'nocode/debug',                                            'PaymentLinkController@nocodeDebugHandler'                ],
         // end of payment page section
 
         //Store Dashboard section
@@ -5495,6 +5497,7 @@ class Route
     // of X-Admin-Token being passed.
     //
     public static $admin = [
+        'nocode_debugging_route',
         'merchant_enhanced_activation_details',
         'mob_admin_routes',
         'merchant_business_types_admin',
@@ -6579,6 +6582,7 @@ class Route
     ];
 
     public static $routePermission = [
+        'nocode_debugging_route'                    => Permission::DEBUG_NOCODE_ROUTES,
         'merchant_enhanced_activation_details'     => Permission::VIEW_MERCHANT,
         'mob_admin_routes'                          => Permission::MOB_ADMIN,
         'admin_trigger_2fa_otp'                    => Permission::AUTH_LOCAL_ADMIN,

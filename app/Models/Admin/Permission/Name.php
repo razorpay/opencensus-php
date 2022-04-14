@@ -938,6 +938,8 @@ class Name
 
     const SET_MERCHANT_SLA_FOR_ON_HOLD_PAYOUTS  = 'set_merchant_sla_for_on_hold_payouts';
 
+    const DEBUG_NOCODE_ROUTES                   = 'debug_nocode_routes';
+
     public static $actionMap = [
         Merchant\Action::ARCHIVE                            => self::EDIT_MERCHANT_ARCHIVE,
         Merchant\Action::UNARCHIVE                          => self::EDIT_MERCHANT_UNARCHIVE,

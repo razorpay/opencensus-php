@@ -677,6 +677,10 @@ class Core extends Base\Core
 
     public function postPaymentCaptureUpdatePaymentPage(Payment\Entity $payment)
     {
+        $this->trace->info(TraceCode::PAYMENT_LINK_POST_PAYMENT_CAPTURE_EVENT_RECIEVED, [
+            'payment'   => $this->getPaymentContextForLogging($payment),
+        ]);
+
         $env = $this->app['env'];
 
         if (Environment::isEnvironmentQA($env) || $env === Environment::TESTING)
@@ -755,10 +759,11 @@ class Core extends Base\Core
         $this->trace->info(
             TraceCode::PAYMENT_LINK_PAYMENT_CAPTURE_PROCESS,
             [
-                'payment_id'     => $payment->getId(),
-                'payment_status' => $payment->getStatus(),
-                'payment_link'   => $paymentLink->toArrayPublic(),
-                'async'          => $async,
+                'payment_id'        => $payment->getId(),
+                'payment_status'    => $payment->getStatus(),
+                'payment_link'      => $paymentLink->toArrayPublic(),
+                'async'             => $async,
+                'payment'           => $this->getPaymentContextForLogging($payment),
             ]);
 
         //
@@ -3212,5 +3217,34 @@ class Core extends Base\Core
         $shortUrl = $this->config->get('applications.elfin.gimli.short_url') . '/' . $slug;
 
         $paymentLink->setShortUrl($shortUrl);
+    }
+
+    /**
+     * @param \RZP\Models\Payment\Entity $payment
+     *
+     * @return array
+     */
+    private function getPaymentContextForLogging(Payment\Entity $payment): array
+    {
+        return [
+            "id"                => $payment->getId(),
+            "status"            => $payment->getStatus(),
+            "amount"            => $payment->getAmount(),
+            "currency"          => $payment->getCurrency(),
+            "order_id"          => $payment->getOrderId(),
+            "method"            => $payment->getMethod(),
+            "amount_refunded"   => $payment->getAmountRefunded(),
+            "refund_status"     => $payment->getRefundStatus(),
+            "captured"          => $payment->getCapture(),
+            "fee"               => $payment->getFee(),
+            "tax"               => $payment->getTax(),
+            "late_authorized"   => $payment->isLateAuthorized(),
+            "disputed"          => $payment->isDisputed(),
+            "auto_captured"     => $payment->getAutoCaptured(),
+            "authorized_at"     => $payment->getAuthorizeTimestamp(),
+            "authenticated_at"  => $payment->getAuthenticatedTimestamp(),
+            "error_code"        => $payment->getErrorCode(),
+            "error_description" => $payment->getErrorDescription(),
+        ];
     }
 }
