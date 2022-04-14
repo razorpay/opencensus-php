@@ -2,7 +2,9 @@
 
 namespace RZP\Mail\Transaction;
 
+use Carbon\Carbon;
 use RZP\Constants\Mode;
+use RZP\Constants\Timezone;
 use RZP\Mail\Base\Constants;
 use RZP\Exception\LogicException;
 use RZP\Models\Merchant\Webhook\Event;
@@ -17,6 +19,8 @@ class Payout extends Transaction
      */
     protected $fundAccount;
 
+    const DATE_FORMAT = 'M d, Y (h:i A)';
+
     public function  __construct(string $event, array $balance, array $txn, array $source, array $merchant)
     {
         parent::__construct($event, $balance, $txn, $source, $merchant);
@@ -24,6 +28,8 @@ class Payout extends Transaction
         $this->addFundAccountAttributes();
 
         $this->modifySourceAttributes();
+
+        $this->modifyTxnAttributes();
     }
 
     protected function getSubject(): string
@@ -59,6 +65,12 @@ class Payout extends Transaction
     protected function modifySourceAttributes()
     {
         $this->source = (new ViewDataSerializer($this->source))->serializePayoutForPublic();
+    }
+
+    protected function modifyTxnAttributes()
+    {
+        $this->txn['created_at_formatted'] = Carbon::createFromTimestamp(
+            $this->txn['created_at'] , Timezone::IST)->format(self::DATE_FORMAT);
     }
 
     protected function addMailData()

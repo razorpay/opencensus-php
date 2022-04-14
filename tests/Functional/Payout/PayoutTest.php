@@ -19826,4 +19826,52 @@ class PayoutTest extends OAuthTestCase
 
         $this->startTest();
     }
+
+    public function testPayoutProcessedEmailNotification()
+    {
+        Mail::fake();
+
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated']);
+
+        $this->updateFtaAndSource($payout->getId(), Payout\Status::PROCESSED, '933815383814');
+
+        $payout->reload();
+
+        $this->assertEquals('933815383814', $payout->getUtr());
+
+        $this->assertEquals(Payout\Status::PROCESSED, $payout->getStatus());
+
+        Mail::assertQueued(PayoutMail::class, function($mail)
+        {
+            $viewData = $mail->viewData;
+
+            $this->assertEquals($mail->originProduct, 'banking');
+
+            $this->assertEquals('2001062', $viewData['txn']['amount']); // raw amount
+            $this->assertEquals('20,010.62', amount_format_IN($viewData['txn']['amount'])); // formatted amount
+
+            $payout = $this->getDbLastEntity('payout');
+
+            $this->assertEquals('pout_' . $payout->getId(), $viewData['source']['id']);
+            $this->assertEquals($payout->getFailureReason(), $viewData['source']['failure_reason']);
+
+            $expectedData = [
+                'txn' => [
+                    'entity_id' => $payout->getId(),
+                ]
+            ];
+
+            $this->assertArraySelectiveEquals($expectedData, $viewData);
+
+            $this->assertArrayHasKey('created_at_formatted', $viewData['txn']);
+
+            $this->assertEquals('emails.transaction.payout_processed', $mail->view);
+
+            return true;
+        });
+    }
  }

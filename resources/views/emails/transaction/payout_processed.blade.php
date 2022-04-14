@@ -9,7 +9,7 @@
 
 <div>
     <p>
-        INR {{ amount_format_IN($txn['amount']) }} has been debited from account {{ mask_except_last4($balance['account_number']) }} to {{ $fundAccount['account_type_formatted'] }} {{ $fundAccount['destination'] }} on {{ $source['created_at_formatted'] }}.
+        INR {{ amount_format_IN($txn['amount']) }} has been debited from account {{ mask_except_last4($balance['account_number']) }} to {{ $fundAccount['account_type_formatted'] }} {{ $fundAccount['destination'] }} on {{ $txn['created_at_formatted'] }}.
     </p>
     <p>
         Your transaction reference number is {{ $source['id'] }}.
