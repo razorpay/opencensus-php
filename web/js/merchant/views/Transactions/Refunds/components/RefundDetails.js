@@ -18,6 +18,7 @@ import Definition from 'common/ui/Definition';
 import { bindActionCreators } from 'redux';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { OptimizerDetails } from 'merchant/views/Transactions/Payments/components/OptimizerDetails';
 
 class PaymentDetailsContainer extends Component {
   componentDidUpdate() {
@@ -43,7 +44,7 @@ class PaymentDetailsContainer extends Component {
   };
 
   render() {
-    const { isLoading, statusMsg, viewRefundHistory, refund, user } = this.props;
+    const { isLoading, statusMsg, viewRefundHistory, refund, user, terminalProviders } = this.props;
 
     return (
       <div className="content-wrapper content-sm txn-details">
@@ -52,15 +53,31 @@ class PaymentDetailsContainer extends Component {
             <Spinner />
           </div>
         ) : (
-          <div className="panel panel-default SliderPanel">
+          <div
+            className={`panel panel-default SliderPanel${
+              user?.isSingleReconEnabled && user?.isOptimizerEnabled ? ' opt-remove-margin' : ''
+            }`}
+          >
             <div className="panel-heading">
               Refund Id: <b>{refund.id}</b>
             </div>
 
             <div className="SliderPanel__Body">
-              <div className="panel-body">
+              <div
+                className={`panel-body${
+                  user?.isSingleReconEnabled && user?.isOptimizerEnabled
+                    ? ' optimizer-refund-panel-body'
+                    : ''
+                }`}
+              >
                 <Alert type={statusMsg?.type} message={statusMsg?.message} />
-                <div className="list-group details-row-container">
+                <div
+                  className={`list-group details-row-container${
+                    user?.isSingleReconEnabled && user?.isOptimizerEnabled
+                      ? ' opt-remove-margin'
+                      : ''
+                  }`}
+                >
                   <EntityDetailRow
                     label="Payment"
                     value={() => (
@@ -134,15 +151,28 @@ class PaymentDetailsContainer extends Component {
                     </EntityDetailRow>
                   </ShowWhen>
 
-                  {refund.transaction && user?.isUxRevampPhase2Enabled && (
-                    <EntityDetailRow label="Settlement Details">
-                      <SettlementInfo data={refund} entityType="refund" showTimeline />
-                    </EntityDetailRow>
-                  )}
+                  {refund.transaction &&
+                    user?.isUxRevampPhase2Enabled &&
+                    (!user?.isSingleReconEnabled ||
+                      !user?.isOptimizerEnabled ||
+                      refund?.optimizer_provider === 'Razorpay') && (
+                      <EntityDetailRow label="Settlement Details">
+                        <SettlementInfo data={refund} entityType="refund" showTimeline />
+                      </EntityDetailRow>
+                    )}
 
                   <NestedEntityDetailRow label="Acquirer Data" value={refund.acquirer_data} />
                   <NestedEntityDetailRow label="Notes" value={refund.notes} />
                 </div>
+                {user?.isSingleReconEnabled &&
+                  user?.isOptimizerEnabled &&
+                  refund?.optimizer_provider && (
+                    <OptimizerDetails
+                      payment={refund}
+                      terminalProviders={terminalProviders}
+                      scrolledToBottom={true}
+                    />
+                  )}
               </div>
             </div>
           </div>
@@ -161,12 +191,14 @@ class PaymentDetailsContainer extends Component {
 }
 
 const mapStateToProps = (state) => {
+  const { payment, session, config, navigator } = state;
   return {
-    ...state.payment,
-    user: state.session.user,
-    org: state.session.org,
-    default_refund_speed: state.config.config.default_refund_speed,
-    config: state.config.config,
+    ...payment,
+    user: session.user,
+    org: session.org,
+    default_refund_speed: config.config.default_refund_speed,
+    config: config.config,
+    terminalProviders: navigator.terminalProviders,
   };
 };
 

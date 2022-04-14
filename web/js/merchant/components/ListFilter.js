@@ -74,7 +74,7 @@ class ListFilter extends Component {
       if (provider.value === 'razorpay') {
         delete props.terminal_id;
         props.settled_by = 'Razorpay';
-      } else {
+      } else if (provider.value || provider.value === '') {
         delete props.settled_by;
         props.terminal_id = provider.value;
       }

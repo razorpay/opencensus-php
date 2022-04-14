@@ -9,6 +9,7 @@ import { withRouter } from 'react-router-dom';
 import { openModal } from 'merchant_common/reducers/modals';
 import { analyticsTrack } from 'common/utils/analytics';
 import { bindActionCreators } from 'redux';
+import PaymentOptimizerProvider from 'merchant/views/Transactions/Payments/components/PaymentOptimizerProvider';
 
 class RefundsListContainer extends ListContainer {
   componentDidMount() {
@@ -43,6 +44,22 @@ class RefundsListContainer extends ListContainer {
   render() {
     const columns = [refundId, paymentId, amount, createdAt];
     columns.push(status);
+
+    const { user, terminalProviders } = this.props;
+
+    if (user?.isSingleReconEnabled && user?.isOptimizerEnabled) {
+      columns.splice(1, 0, {
+        title: 'Payment Provider',
+        value: (item) => (
+          <PaymentOptimizerProvider
+            terminal_id={item.optimizer_provider}
+            settled_by={item.settled_by}
+            terminalProviders={terminalProviders}
+            hideExternalLink={true}
+          />
+        ),
+      });
+    }
 
     return (
       <div class="content-wrapper">
@@ -110,7 +127,14 @@ class RefundsListContainer extends ListContainer {
   }
 }
 
-const mapStateToProps = (state) => state.refunds;
+const mapStateToProps = (state) => {
+  const { refunds, session, navigator } = state;
+  return {
+    ...refunds,
+    user: session.user,
+    terminalProviders: navigator.terminalProviders,
+  };
+};
 
 const mapDispatchToProps = (dispatch) => bindActionCreators({ fetchAll, openModal }, dispatch);
 

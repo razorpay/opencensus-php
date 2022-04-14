@@ -15,7 +15,7 @@ export const findProviderDetails = (terminalProviders, terminal_id, settled_by) 
   if (!provider && settled_by) {
     provider = {
       Provider_name: titleCase(settled_by),
-      Gateway: settled_by,
+      Gateway: settled_by === 'Razorpay' ? 'razorpay' : settled_by,
     };
   }
   return provider;

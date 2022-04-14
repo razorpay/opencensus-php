@@ -430,7 +430,7 @@ class RefundModal extends Component {
     return '';
   };
 
-  showInstantRefund = (payment, isInstantDisabled) => {
+  showInstantRefund = (payment, isInstantDisabled, user) => {
     const instant_refund_supported =
       payment.instant_refund_support && payment.instant_refund_support === true;
     const refund_check_disabled = isInstantDisabled || !instant_refund_supported;
@@ -551,6 +551,16 @@ class RefundModal extends Component {
                     currency={payment.currency}
                   />
                   &nbsp; will be deducted
+                  {user?.isSingleReconEnabled &&
+                    user?.isOptimizerEnabled &&
+                    payment?.optimizer_provider?.toLowerCase() !== 'razorpay' && (
+                      <>
+                        {` from your `}
+                        <span className="external-gateway-instant-refund">
+                          Razorpay Current balance
+                        </span>
+                      </>
+                    )}
                   <div style={{ display: 'inline', marginLeft: '5px' }}>
                     <i
                       onMouseEnter={() => {
@@ -697,7 +707,7 @@ class RefundModal extends Component {
   };
 
   render() {
-    const { handleSubmit, payment, transfers } = this.props;
+    const { handleSubmit, payment, transfers, user } = this.props;
     const {
       gateway_refund_support,
       payment_age_limit_for_gateway_refund,
@@ -839,7 +849,7 @@ class RefundModal extends Component {
                   </div>
                 </div>
               )}
-              {this.showInstantRefund(payment, isInstantDisabled)}
+              {this.showInstantRefund(payment, isInstantDisabled, user)}
             </div>
 
             <div
