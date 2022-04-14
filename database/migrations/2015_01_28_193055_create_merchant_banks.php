@@ -65,6 +65,9 @@ class CreateMerchantBanks extends Migration
             $table->tinyInteger(Methods::OPENWALLET)
                   ->default(0);
 
+            $table->tinyInteger(Methods::RAZORPAYWALLET)
+                  ->default(0);
+
             $table->tinyInteger(Methods::AIRTELMONEY)
                   ->default(0);
 

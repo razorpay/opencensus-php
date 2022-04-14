@@ -34,6 +34,7 @@ class Entity extends Base\PublicEntity
     const JIOMONEY          = 'jiomoney';
     const SBIBUDDY          = 'sbibuddy';
     const OPENWALLET        = 'openwallet';
+    const RAZORPAYWALLET    = 'razorpaywallet';
     const MPESA             = 'mpesa';
     const EMI               = 'emi';
     const OFFLINE           = 'offline';

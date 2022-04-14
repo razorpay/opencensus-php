@@ -6692,3 +6692,6 @@ CREATE TABLE offline_challans
     ADD INDEX offline_challans_virtual_account_id_index ('virtual_account_id')
     ADD INDEX offline_challans_challan_number_index ('challan_number')
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+
+ALTER TABLE `merchant_banks`
+    ADD COLUMN `razorpaywallet` TINYINT DEFAULT 0;
