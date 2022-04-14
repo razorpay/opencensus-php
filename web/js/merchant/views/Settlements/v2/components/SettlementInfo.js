@@ -8,19 +8,21 @@ import * as SettlementActions from 'merchant/reducers/settlements/details';
 import Spinner from 'common/ui/Spinner';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { handleAnalytics, propertiesPayload } from '../../Settlements/analytics';
+import PaymentOptimizerProvider from 'merchant/views/Transactions/Payments/components/PaymentOptimizerProvider';
 
 const SettlementInfo = (props) => {
+  const { error, loading, settlement, user, terminalProviders } = props;
   useEffect(() => {
     settlementInfo();
   }, []);
 
   useEffect(() => {
-    if (props.error)
+    if (error)
       props.showNotification({
         type: 'error',
-        message: props.error,
+        message: error,
       });
-  }, [props.error]);
+  }, [error]);
 
   async function settlementInfo() {
     const objectName = 'settlement details fetched';
@@ -40,7 +42,7 @@ const SettlementInfo = (props) => {
   }
 
   // show spinner unless settlements data is available
-  if (props.loading) {
+  if (loading) {
     return (
       <div class="div--loading">
         <Spinner />
@@ -48,40 +50,57 @@ const SettlementInfo = (props) => {
     );
   }
 
-  if (props.error) return null;
+  if (error) return null;
 
   return (
     <React.Fragment>
       <EntityDetailRow
         label="Status"
-        value={() => <SettlementStatusLabel status={props.settlement.status} />}
+        value={() => <SettlementStatusLabel status={settlement?.status} />}
       />
 
       <EntityDetailRow
         label="Created At"
-        value={() => <Time value={props.settlement.created_at} format="DD MMM YYYY, hh:mm:ss a" />}
+        value={() => <Time value={settlement?.created_at} format="DD MMM YYYY, hh:mm:ss a" />}
       />
+
+      {user?.isSingleReconEnabled && user?.isOptimizerEnabled && settlement?.optimizer_provider && (
+        <EntityDetailRow
+          label="Payment Provider"
+          value={() => (
+            <PaymentOptimizerProvider
+              terminal_id={settlement?.optimizer_provider}
+              settled_by={settlement?.settled_by}
+              terminalProviders={terminalProviders}
+              hideExternalLink={true}
+            />
+          )}
+        />
+      )}
 
       <EntityDetailRow
         label="Fees"
-        value={() => <Amount value={props.settlement.fees} currency="INR" />}
+        value={() => <Amount value={settlement?.fees} currency="INR" />}
       />
 
       <EntityDetailRow
         label="Tax"
-        value={() => <Amount value={props.settlement.tax} currency="INR" />}
+        value={() => <Amount value={settlement?.tax} currency="INR" />}
       />
 
-      <EntityDetailRow label="UTR" value={props.settlement.utr} />
+      <EntityDetailRow label="UTR" value={settlement?.utr} />
     </React.Fragment>
   );
 };
 
 const mapStateToProps = (state) => {
+  const { settlement, session, navigator } = state;
   return {
-    settlement: state.settlement.settlement,
-    loading: state.settlement.loading,
-    error: state.settlement.error,
+    settlement: settlement.settlement,
+    loading: settlement.loading,
+    error: settlement.error,
+    user: session.user,
+    terminalProviders: navigator.terminalProviders,
   };
 };
 

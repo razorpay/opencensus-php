@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 import TotalAmount from './components/TotalAmount';
@@ -10,9 +10,35 @@ import { classList } from 'common/utils/rzp-utils';
 import LoaderDots from 'common/ui/LoaderDots';
 import TestModeBanner from 'merchant/components/TestModeBanner';
 import Amount from 'common/ui/Amount';
+import { bindActionCreators } from 'redux';
+import { fetchTerminalProviders } from 'merchant/reducers/navigator/details';
+import { MismatchBanner } from './components/MismatchBanner';
+import { merchantFetch } from 'merchant/utils/ajax';
 
 const SettlementDetails = (props) => {
   const [detailsCollapse, setdetailsCollapse] = useState(true);
+  const [checkAmounts, setCheckAmounts] = useState({});
+
+  useEffect(() => {
+    const { user, fetchProviders, match } = props;
+    if (user?.isSingleReconEnabled && user?.isOptimizerEnabled) {
+      fetchProviders();
+      const params = {
+        url: 'settlements/amount_check',
+        method: 'post',
+        data: {
+          settlement_id: match?.params?.id,
+        },
+      };
+      merchantFetch(params).then((response) => {
+        const { settlementAmount, totalTransactionAmount } = response.data;
+        setCheckAmounts({
+          settlementAmount,
+          totalTransactionAmount,
+        });
+      });
+    }
+  }, []);
 
   const calculateSettledAmount = (items, isNew) => {
     if (!isNew) {
@@ -40,13 +66,17 @@ const SettlementDetails = (props) => {
   const toggleShowMore = () => setdetailsCollapse(!detailsCollapse);
 
   const {
+    settlement,
     breakupDetails: { items, isBreakupNew, loading },
+    user,
   } = props;
 
   const shouldShowMore = () => items.length <= 2;
 
   const calculatedAmounts = calculateCreditDebitAmount(items, isBreakupNew);
   const totalAmount = calculateSettledAmount(items, isBreakupNew);
+
+  const { settlementAmount, totalTransactionAmount } = checkAmounts;
 
   return (
     <React.Fragment>
@@ -62,6 +92,17 @@ const SettlementDetails = (props) => {
           </Link>
           <i class="i i-chevron-right" /> Settlement Id: {props.match.params.id}
         </div>
+        {user?.isSingleReconEnabled &&
+          user?.isOptimizerEnabled &&
+          settlementAmount &&
+          totalTransactionAmount &&
+          settlementAmount > totalTransactionAmount && (
+            <MismatchBanner
+              totalAmount={settlementAmount}
+              calculatedAmounts={totalTransactionAmount}
+              gatewayName={settlement?.settled_by || ''}
+            />
+          )}
         <div class="panel panel-default">
           {props.mode === 'test' && <TestModeBanner />}
           <div class="panel-heading">
@@ -154,10 +195,17 @@ const InfoComponent = ({ creditAmount, debitAmount, totalAmount, isNew }) => {
 };
 
 const mapStateToProps = (state) => {
+  const { settlement, session } = state;
   return {
-    breakupDetails: state.settlement.breakupDetails,
-    mode: state.session.mode,
+    breakupDetails: settlement.breakupDetails,
+    settlement: settlement.settlement,
+    mode: session.mode,
+    user: session.user,
   };
 };
 
-export default connect(mapStateToProps, null)(SettlementDetails);
+const mapDispatchToProps = (dispatch) => {
+  return bindActionCreators({ fetchProviders: fetchTerminalProviders }, dispatch);
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(SettlementDetails);

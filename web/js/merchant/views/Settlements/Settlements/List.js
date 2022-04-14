@@ -33,6 +33,7 @@ import OndemandModal from 'merchant/views/Settlements/Settlements/components/Mod
 import SettlementScheduleV2 from 'merchant/views/Settlements/components/SettlementScheduleV2';
 import SettlementGuideText from 'merchant_common/components/SettlementGuideText';
 import { handleAnalytics } from './analytics';
+import { fetchTerminalProviders } from 'merchant/reducers/navigator/details';
 
 class SettlementsListContainer extends ListContainer {
   state = {
@@ -160,6 +161,8 @@ class SettlementsListContainer extends ListContainer {
       fetchSettlementAmount,
       fetchHolidayList,
       location,
+      user,
+      fetchProviders,
     } = this.props;
 
     window.rzpAnalytics?.({
@@ -171,6 +174,9 @@ class SettlementsListContainer extends ListContainer {
 
     fetchSchedule();
     fetchBalanceConfig();
+    if (user?.isSingleReconEnabled && user?.isOptimizerEnabled) {
+      fetchProviders();
+    }
 
     if (location.hash === '#requestearlyaccess') {
       this.showRequestEarySettlementForm();
@@ -346,7 +352,7 @@ class SettlementsListContainer extends ListContainer {
     handleAnalytics('pagination', 'clicked', properties);
   };
   render() {
-    const { loading, items, error, current_balance } = this.props;
+    const { loading, items, error, current_balance, user, terminalProviders } = this.props;
 
     let balance = current_balance.data.balance || 0;
 
@@ -363,13 +369,21 @@ class SettlementsListContainer extends ListContainer {
             onSubmit={this.handleSearch}
             onSearchAnalytics={this.onSearchAnalytics}
             onClearAnalytics={this.onClearAnalytics}
+            user={user}
+            terminalProviders={terminalProviders}
           />
 
           <div className="clearfix" />
 
           {error && <Alert type="error" message={error} />}
 
-          <SettlementsList settlements={items} isLoading={loading} showBreakup={this.showBreakup} />
+          <SettlementsList
+            settlements={items}
+            isLoading={loading}
+            showBreakup={this.showBreakup}
+            user={user}
+            terminalProviders={terminalProviders}
+          />
 
           <Pager
             count={this.state.count}
@@ -397,6 +411,7 @@ const mapStateToProps = (state) => {
     payments: state.payments,
     ...state.home,
     ...state.settlements,
+    terminalProviders: state.navigator.terminalProviders,
   };
 };
 
@@ -411,6 +426,7 @@ const mapDispatchToProps = (dispatch) => {
       fetchHolidayList: fnFetchHolidayList,
       fetchBalanceConfig: fnFetchBalanceConfig,
       fetchOndemandRestrictions,
+      fetchProviders: fetchTerminalProviders,
     },
     dispatch,
   );

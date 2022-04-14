@@ -6,8 +6,9 @@ import TableBody from 'common/ui/TableBody';
 import EntityItemRow from 'merchant/containers/EntityItemRow';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import PaymentOptimizerProvider from 'merchant/views/Transactions/Payments/components/PaymentOptimizerProvider';
 
-const SettlementsListItem = ({ settlement, handleBreakupClick }) => {
+const SettlementsListItem = ({ settlement, handleBreakupClick, user, terminalProviders }) => {
   const handleTracking = () => {
     analyticsTrack({
       objectName: 'settlement id',
@@ -27,6 +28,16 @@ const SettlementsListItem = ({ settlement, handleBreakupClick }) => {
           <code>{settlement.id}</code>
         </Link>
       </td>
+      {user?.isSingleReconEnabled && user?.isOptimizerEnabled && (
+        <td>
+          <PaymentOptimizerProvider
+            terminal_id={settlement?.optimizer_provider}
+            settled_by={settlement?.settled_by}
+            terminalProviders={terminalProviders}
+            hideExternalLink={true}
+          />
+        </td>
+      )}
       <td class="text-right">
         <Amount value={settlement.amount} currency="INR" />
       </td>
@@ -52,7 +63,7 @@ const SettlementsListItem = ({ settlement, handleBreakupClick }) => {
 };
 
 export default (props) => {
-  const { settlements, isLoading, showBreakup } = props;
+  const { settlements, isLoading, showBreakup, user, terminalProviders } = props;
 
   return (
     <div class="table-responsive">
@@ -60,6 +71,7 @@ export default (props) => {
         <thead>
           <tr>
             <th>Settlement Id</th>
+            {user?.isSingleReconEnabled && user?.isOptimizerEnabled && <th>Payment Provider</th>}
             <th class="text-right">Amount</th>
             <th class="text-right">Fees</th>
             <th class="text-right">Tax</th>
@@ -79,6 +91,8 @@ export default (props) => {
               key={settlement.id}
               settlement={settlement}
               handleBreakupClick={() => showBreakup(settlement)}
+              user={user}
+              terminalProviders={terminalProviders}
             />
           ))}
         </TableBody>
