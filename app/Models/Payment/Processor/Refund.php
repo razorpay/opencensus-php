@@ -3134,17 +3134,16 @@ trait Refund
             $scroogeResponse->setStatusCode(Payment\Refund\Status::INITIATED)
                             ->setRefundGateway($refundGateway)
                             ->setGatewayResponse(json_encode($fta->attributesToArray()));
+
+            // todo : do we need to store in gateway keys also?
         }
         catch (Exception\BaseException $e)
         {
-            $this->trace->info(
-                TraceCode::REFUND_FTA_CREATE_EXCEPTION,
-                [
-                    Payment\Refund\Entity::ID          => $refund->getId(),
-                    Payment\Refund\Entity::PAYMENT_ID  => $payment->getId(),
-                    Payment\Refund\Entity::MERCHANT_ID => $payment->getMerchantId(),
-                ]
-            );
+            $this->app['segment']->trackPayment($this->payment, TraceCode::PAYMENT_REFUND_FAILURE);
+
+            $this->tracePaymentFailed($e->getError(), TraceCode::PAYMENT_REFUND_FAILURE);
+
+            $this->refund->setStatus(Payment\Refund\Status::FAILED);
         }
 
         $scroogeResponse->setSuccess($refunded);

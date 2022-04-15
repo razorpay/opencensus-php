@@ -3308,8 +3308,11 @@ class Service extends Base\Service
                     }
                     else
                     {
+                        // reload refund entity for webhook
+                        $refundEntity = $this->repo->refund->findOrFail($internalId);
+
                         // trigger arn updated webhook
-                        $this->getNewProcessor($refund->merchant)->eventRefundArnUpdated($refund);
+                        $this->getNewProcessor($refundEntity->merchant)->eventRefundArnUpdated($refundEntity);
                     }
                 }
             }
