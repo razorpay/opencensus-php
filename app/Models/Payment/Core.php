@@ -232,7 +232,7 @@ class Core extends Base\Core
             $this->trace->info(
                 TraceCode::PAYMENT_VERIFY_MESSAGE,
                 [
-                    'timeout_message'    => $verifyReminderData
+                    'verify_message'    => $verifyReminderData
                 ]
             );
 

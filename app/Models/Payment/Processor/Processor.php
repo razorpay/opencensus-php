@@ -6060,6 +6060,11 @@ class Processor
             $isReminderTimeoutPayment = true;
         }
 
+        if($payment->isCardAutoRecurring() === true)
+        {
+            $isReminderTimeoutPayment = false;
+        }
+
         $this->trace->info(
             TraceCode::PAYMENT_KAFKA_PUSH_INITIATED,
             [
