@@ -42,6 +42,11 @@ class Service
             unset($input[Header::FULFILLMENT_ORDER_UPDATED_AT]);
         }
 
+        if (isset($input[Header::FULFILLMENT_ORDER_STATUS]) == true)
+        {
+            $input[Header::FULFILLMENT_ORDER_STATUS] = strtolower($input[Header::FULFILLMENT_ORDER_STATUS]);
+        }
+
         $params = self::PARAMS[self::UPDATE_FULFILLMENT_ORDER];
 
         return $this->app['shipping_service_client']->sendRequest($params[self::PATH], $input, Requests::POST);
