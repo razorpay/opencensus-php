@@ -9,8 +9,10 @@ use RZP\Models\Merchant;
 use RZP\Models\Reversal;
 use RZP\Models\Transfer;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Listeners\ApiEventSubscriber;
+use RZP\Exception\BadRequestException;
 use RZP\Constants\Entity as EntityConstant;
 use RZP\Models\Settlement\Entity as Settlement;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
@@ -803,6 +805,36 @@ class Service extends Base\Service
                 'count'        => count($merchantIds)
             ]);
     }
+
+    public function getTransferInput(string $transferId)
+    {
+        $transfer = $this->repo->transfer->findByPublicId($transferId);
+
+        if ($transfer->isFailed() === false)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_ONLY_FAILED_TRANSFER_EXPECTED,
+                null,
+                [
+                    'transfer_id' => $transferId,
+                ]
+            );
+        }
+
+        if ($transfer->getSourceType() !== Constant::PAYMENT)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_ONLY_PAYMENT_TRANSFER_EXPECTED,
+                null,
+                [
+                    'transfer_id' => $transferId,
+                ]
+            );
+        }
+
+        return $this->core->getTransferInput($transfer);
+    }
+
 //    public function dispatchBackfillJob(array $input)
 //    {
 //        $midJun     = Carbon::createFromDate(2021, 6, 16, Timezone::IST)->getTimestamp();

@@ -1780,6 +1780,7 @@ class Route
         'reversal_fetch'                           => ['get',      'reversals/{id}',                                 'ReversalController@getReversal'                                    ],
         'reversal_fetch_multiple'                  => ['get',      'reversals',                                      'ReversalController@getReversals'                                   ],
         'transfer_debug'                           => ['post',     'transfer_debug',                                 'TransferController@debugRoute'                                     ],
+        'payment_transfer_retry_batch'             => ['post',     'payment_transfers/{id}/retry',                   'TransferController@retryPaymentTransfer'                           ],
 
         'payment_update_on_hold'                   => ['post',     'payments/on_hold/update',                        'PaymentController@updateOnHold'                                    ],
         'payment_on_hold_bulk_update'              => ['post',     'payments/on_hold/bulk_update',                   'PaymentController@updateOnHoldBulkUpdate'                          ],
@@ -4652,6 +4653,7 @@ class Route
         'payment_upi_authorize_failed',
 
         'recon_update_upi_data',
+        'payment_transfer_retry_batch',
 
         'firs_collect_and_zip_cron',
     ];
@@ -11581,7 +11583,7 @@ class Route
 
 
             // Growth Assets
-            'growth_get_asset_details'
+            'growth_get_asset_details',
         ],
 
         //
@@ -12279,6 +12281,7 @@ class Route
             'debit_note_batch',
             'create_fraud_batch',
             'post_batch_bulk_fraud_notify',
+            'payment_transfer_retry_batch',
         ],
 
         'stork' => [

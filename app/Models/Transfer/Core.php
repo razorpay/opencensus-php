@@ -1046,4 +1046,60 @@ class Core extends Base\Core
             );
         }
     }
+
+    public function getTransferInput(Entity $transfer)
+    {
+        $sourceId = Payment\Entity::getSignedId($transfer->getSourceId());
+
+        $input = [
+            ToType::ACCOUNT                 => Merchant\Account\Entity::getSignedId($transfer->getToId()),
+            Entity::AMOUNT                  => $transfer->getAmount(),
+            Entity::CURRENCY                => $transfer->getCurrency(),
+            Entity::ON_HOLD                 => $transfer->getOnHold(),
+        ];
+
+        if (empty($transfer->getOnHoldUntil()) === false)
+        {
+            $input[Entity::ON_HOLD_UNTIL] = $transfer->getOnHoldUntil();
+        }
+
+        $notes = [];
+
+        if (empty($transfer->getNotes()) === false)
+        {
+            $notes = $transfer->getNotes()->toArray();
+
+            if (isset($notes[Entity::LINKED_ACCOUNT_NOTES]) === true)
+            {
+                unset($notes[Entity::LINKED_ACCOUNT_NOTES]);
+            }
+        }
+
+        $laNotes = $transfer->getLinkedAccountNotes();
+
+        if (empty($notes) === false)
+        {
+            $input[Entity::NOTES] = $notes;
+        }
+
+        if (empty($laNotes) === false)
+        {
+            $input[Entity::LINKED_ACCOUNT_NOTES] = $laNotes;
+        }
+
+        $this->trace->info(
+            TraceCode::PAYMENT_TRANSFER_RETRY_INPUT,
+            [
+                'transfer_id'   => $transfer->getId(),
+                'source_id'     => $sourceId,
+                'input'         => $input,
+            ]
+        );
+
+        $input = [
+            'transfers' => array($input),
+        ];
+
+        return [$sourceId, $input, $transfer->getMerchantId()];
+    }
 }

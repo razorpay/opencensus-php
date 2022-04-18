@@ -165,4 +165,17 @@ class TransferController extends Controller
 
         return ApiResponse::json($reversal);
     }
+
+    public function retryPaymentTransfer($transferId)
+    {
+        [$paymentId, $input, $merchantId] = $this->service()->getTransferInput($transferId);
+
+        $this->app['basicauth']->setMerchantById($merchantId);
+
+        $transfers = $this->service(Entity::PAYMENT)->transfer($paymentId, $input);
+
+        $transfer = $transfers['items'][0];
+
+        return ApiResponse::json($transfer);
+    }
 }

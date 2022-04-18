@@ -1245,6 +1245,10 @@ class Header
     const TRANSFER_ID_2         = 'transfer_id';
     const REVERSAL_NOTES        = 'reversal_notes';
 
+    // Payment Transfer Retry Headers
+    const TRANSFER_ID_OLD       = 'transfer_id_old';
+    const TRANSFER_ID_NEW       = 'transfer_id_new';
+
     // Bulk Payout Links Creation
     const PAYOUT_LINK_BULK_CONTACT_NAME        = 'Name of Contact';
     const PAYOUT_LINK_BULK_CONTACT_NUMBER      = 'Contact Phone Number';
@@ -4225,6 +4229,18 @@ class Header
                 self::REVERSAL_NOTES,
                 self::LINKED_ACCOUNT_NOTES,
                 self::CREATED_AT_2,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ],
+        ],
+
+        Type::PAYMENT_TRANSFER_RETRY => [
+            self::INPUT => [
+                self::TRANSFER_ID_2,
+            ],
+            self::OUTPUT => [
+                self::TRANSFER_ID_OLD,
+                self::TRANSFER_ID_NEW,
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,
             ],

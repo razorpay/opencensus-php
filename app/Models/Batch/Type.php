@@ -194,6 +194,8 @@ class Type
 
     const TRANSFER_REVERSAL = 'transfer_reversal';
 
+    const PAYMENT_TRANSFER_RETRY = 'payment_transfer_retry';
+
     const WEBSITE_CHECKER = 'website_checker';
 
     const CREATE_EXEC_RISK_ACTION = 'create_exec_risk_action';
@@ -278,6 +280,7 @@ class Type
         self::WHITELISTED_DOMAIN,
         self::DEBIT_NOTE,
         self::CREATE_PAYMENT_FRAUD,
+        self::PAYMENT_TRANSFER_RETRY,
         self::PARTNER_REFERRAL_FETCH,
     ];
 
@@ -476,6 +479,7 @@ class Type
         self::UPI_TERMINAL_ONBOARDING,
         self::PAYMENT_TRANSFER,
         self::TRANSFER_REVERSAL,
+        self::PAYMENT_TRANSFER_RETRY,
         self::RECURRING_CHARGE_AXIS,
         self::EMANDATE_DEBIT_HDFC,
         self::LEDGER_ONBOARD_OLD_ACCOUNT,
@@ -537,6 +541,7 @@ class Type
         self::UPI_TERMINAL_ONBOARDING,
         self::PAYMENT_TRANSFER,
         self::TRANSFER_REVERSAL,
+        self::PAYMENT_TRANSFER_RETRY,
         self::SUB_MERCHANT,
         self::RECURRING_CHARGE_AXIS,
         self::WEBSITE_CHECKER,
@@ -632,6 +637,7 @@ class Type
         self::IRCTC_DELTA_REFUND                  => Name::MERCHANT_BATCH_UPLOAD,
         self::IRCTC_SETTLEMENT                    => Name::MERCHANT_BATCH_UPLOAD,
         self::ICICI_STP_MIS                       => Name::ADMIN_BATCH_CREATE,
+        self::PAYMENT_TRANSFER_RETRY              => Name::ADMIN_BATCH_CREATE,
     ];
 
     public static $workflowApplicableBatchTypes = [

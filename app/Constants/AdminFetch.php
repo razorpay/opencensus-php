@@ -595,6 +595,7 @@ class AdminFetch
                         'linked_account_create',
                         'payment_transfer',
                         'transfer_reversal',
+                        'payment_transfer_retry',
                         'chargeback_poc',
                         'whitelisted_domain',
                         'create_payment_fraud',
