@@ -106,7 +106,7 @@ class StatementTest extends TestCase
         ]);
 
         // One the first two transactions should appear in response.
-        $this->ba->proxyAuth('rzp_test_10000000000000', $user['id']);
+        $this->ba->privateAuth();
 
         $response = $this->startTest();
 

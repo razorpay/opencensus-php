@@ -3872,6 +3872,7 @@ class Route
         //'fund_account_delete',
         'transaction_statement_fetch',
         'transaction_statement_fetch_multiple',
+        'transaction_statement_fetch_multiple_for_banking',
         'create_credit_note',
         'credit_note_list',
         'credit_note_get',
@@ -5496,8 +5497,6 @@ class Route
         'payout_status_to_reason_mapping',
 
         'oauth_token_create_for_apple_watch',
-
-        'transaction_statement_fetch_multiple_for_banking',
     ];
     // These will run on internal auth with the assurance
     // of X-Admin-Token being passed.
@@ -11303,6 +11302,7 @@ class Route
             'transaction_create_fees_breakup',
             'transaction_statement_fetch',
             'transaction_statement_fetch_multiple',
+            'transaction_statement_fetch_multiple_for_banking',
             'transfer_create',
             'transfer_create_reversal',
             'transfer_debug',
