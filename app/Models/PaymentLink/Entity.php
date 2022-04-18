@@ -124,6 +124,7 @@ class Entity extends Base\PublicEntity
     const SUGGESTIONS                             = 'suggestions';
     const HANDLE                                  = 'handle';
     const MAX_SLUG_LENGTH                         = 30;
+    const RETRIES                                 = 'retries';
 
     //Settings applicable to Payment Button only
     const PP_BUTTON_DISABLE_BRANDING   = 'pp_button_disable_branding';

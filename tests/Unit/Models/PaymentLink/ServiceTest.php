@@ -61,6 +61,8 @@ class ServiceTest extends BaseTest
             $this->expectExceptionMessage('The amount must be valid integer between 0 and 4294967295.');
         }
 
+        $this->merchant = $this->fixtures->create('merchant');
+
         $encryptedAmount = $this->service->encryptAmountForPaymentHandle($input);
 
         $encryptedAmount = $encryptedAmount[PaymentLink\Entity::ENCRYPTED_AMOUNT];

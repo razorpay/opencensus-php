@@ -48,6 +48,9 @@ final class Metric
     const PAYMENT_HANDLE_SHORTENING_UNSUCCESSFUL_COUNT     = 'payment_handle_shortening_unsuccessful_count';
     const PAYMENT_HANDLE_SHORTENING_SUCCESSFUL_COUNT       = 'payment_handle_shortening_successful_count';
 
+    const PAYMENT_HANDLE_DECRYPTION_SUCCESSFUL_TOTAL             = 'payment_handle_decryption_successful_total';
+    const PAYMENT_HANDLE_DECRYPTION_UNSUCCESSFUL_TOTAL           = 'payment_handle_decryption_unsuccessful_total';
+
     // Gimli Caching Metrics
     const PAYMENT_PAGE_GIMLI_CACHE_HIT_COUNT    = 'PAYMENT_PAGE_GIMLI_CACHE_HIT_COUNT';
     const PAYMENT_PAGE_GIMLI_CACHE_MISS_COUNT   = 'PAYMENT_PAGE_GIMLI_CACHE_MISS_COUNT';

@@ -465,14 +465,16 @@ class Service extends Base\Service
 
         $startTime = millitime();
 
-        $prevBasicAuth = $this->getPrevAuthAndSetVariables($merchantId);
-
-        $prevMode = $this->mode;
+        $prevMode = null;
 
         $modifiedResponse = [];
 
         try
         {
+            $prevBasicAuth = $this->getPrevAuthAndSetVariables($merchantId);
+
+            $prevMode = $this->mode;
+
             $input = $this->getDefaultValuesPaymentHandle();
 
             $validator = (new Validator);
@@ -532,7 +534,9 @@ class Service extends Base\Service
                 null);
         }
 
-        $this->trace->count(Metric::PAYMENT_HANDLE_UPDATE_TOTAL_REQUEST);
+        $this->trace->info(TraceCode::PAYMENT_HANDLE_UPDATE_INITIATED,[
+            Entity::MERCHANT_ID    => $this->merchant->getId(),
+        ]);
 
         $validator = (new Validator);
 
@@ -546,7 +550,10 @@ class Service extends Base\Service
             return $this->core->updatePaymentHandle($input);
         });
 
-        $this->trace->count(Metric::PAYMENT_HANDLE_UPDATE_TOTAL_SUCCESSFUL_REQUEST);
+        $this->trace->info(TraceCode::PAYMENT_HANDLE_UPDATE_SUCCESSFUL,[
+           Entity::MERCHANT_ID     => $this->merchant->getId(),
+           Entity::SLUG            => $response[Entity::SLUG]
+        ]);
 
         return $response;
     }
@@ -562,6 +569,10 @@ class Service extends Base\Service
                 null);
         }
 
+        $this->trace->info(TraceCode::PAYMENT_HANDLE_GET_REQUEST_INITIATED, [
+            Entity::MERCHANT_ID     => $this->merchant->getId(),
+        ]);
+
         $response = Tracer::inSpan(['name' => Constants::HT_PH_GET], function()
         {
             return $this->core->getPaymentHandleByMerchant($this->merchant);
@@ -572,6 +583,10 @@ class Service extends Base\Service
 
     public function suggestionPaymentHandle($input)
     {
+        $this->trace->info(TraceCode::PAYMENT_HANDLE_SUGGESTION_INITIATED, [
+            Entity::MERCHANT_ID  => $this->merchant->getId()
+        ]);
+
         $count = Entity::DEFAULT_PAYMENT_HANDLE_SUGGESTION_COUNT;
 
         if(array_key_exists(Entity::COUNT, $input) === true)
@@ -660,6 +675,11 @@ class Service extends Base\Service
 
     public function getPaymentHandlePreviewPage(string $slug, string $merchantId)
     {
+        $this->trace->info(TraceCode::PAYMENT_HANDLE_PREVIEW_PAGE,[
+            Entity::MERCHANT_ID     => $merchantId,
+            Entity::SLUG            => $slug
+        ] );
+
         $input[Entity::SLUG]  = $slug;
 
         $merchant = $this->repo->merchant->findByPublicId($merchantId);
@@ -680,6 +700,10 @@ class Service extends Base\Service
         (new Validator)->validateInput('encryptAmountForPaymentHandle', $input);
 
         $this->trace->count(Metric::PAYMENT_HANDLE_AMOUNT_ENCRYPTION_TOTAL_REQUEST);
+
+        $this->trace->info(TraceCode::PAYMENT_HANDLE_AMOUNT_ENCRYPTION,[
+            Entity::AMOUNT      => $input[Entity::AMOUNT]
+        ]);
 
         return $this->core->encryptAmountForPaymentHandle($input);
     }

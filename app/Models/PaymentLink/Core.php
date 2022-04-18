@@ -247,6 +247,10 @@ class Core extends Base\Core
                 'Payment Handle does not exists for this merchant. Please create a new one');
         }
 
+        $this->trace->info(TraceCode::PAYMENT_HANDLE_MERCHANT_SETTINGS, [
+            Entity::SETTINGS  => array_get($merchantSettings, Entity::DEFAULT_PAYMENT_HANDLE),
+        ]);
+
         $response[Entity::TITLE] = $merchant->getBillingLabel();
 
         $response[Entity::SLUG] =  $merchantSettings[ENTITY::DEFAULT_PAYMENT_HANDLE][Entity::DEFAULT_PAYMENT_HANDLE];
@@ -1360,6 +1364,12 @@ class Core extends Base\Core
 
             if($decryptedAmount === '')
             {
+                $this->trace->count(Metric::PAYMENT_HANDLE_DECRYPTION_UNSUCCESSFUL_TOTAL);
+
+                $this->trace->info(TraceCode::PAYMENT_HANDLE_DECRYPTION_FAILED, [
+                    'encryptedAmount'    => $input[Entity::AMOUNT],
+                ]);
+
                 throw new BadRequestException(
                     ErrorCode::BAD_REQUEST_ERROR,
                     null,
@@ -1371,6 +1381,12 @@ class Core extends Base\Core
             }
 
             $payload['data'][Entity::PAYMENT_HANDLE_AMOUNT] = $decryptedAmount;
+
+            $this->trace->count(Metric::PAYMENT_HANDLE_DECRYPTION_SUCCESSFUL_TOTAL);
+
+            $this->trace->info(TraceCode::PAYMENT_HANDLE_DECRYPTION_SUCCESSFUL, [
+                'encryptedAmount'    => $input[Entity::AMOUNT],
+            ]);
         }
     }
 
@@ -2642,6 +2658,10 @@ class Core extends Base\Core
             $input[Entity::DEFAULT_PAYMENT_HANDLE_PAGE_ID] = $handlePageId;
         }
 
+        $this->trace->info(TraceCode::PAYMENT_HANDLE_UPSERT_MERCHANT_SETTING, [
+            Entity::SLUG   => $slug
+        ]);
+
         Tracer::inSpan(['name' => Constants::HT_PH_UPSERT_MERCHANT_SETTINGS], function() use($input)
         {
             Settings\Accessor::for($this->merchant, Settings\Module::PAYMENT_LINK)
@@ -2835,25 +2855,29 @@ class Core extends Base\Core
 
         $retry = $retryTotal;
 
+        $shortUrl = "";
+
         while($retry > 0)
         {
             try
             {
+                $this->trace->info(TraceCode::PAYMENT_HANDLE_GIMLI_MAPPING_INITIATED, [
+                    Entity::INPUT    => $params
+                ]);
+
                 $shortUrl = Tracer::inSpan(['name' => Constants::HT_PH_SHORTEN], function() use($url, $params, $fail)
                 {
                     return $this->elfin->shorten($url, $params, $fail);
                 });
 
-                if($shortUrl !== "")
+                if(empty($shortUrl) === false)
                 {
-                    $this->trace->count(Metric::PAYMENT_HANDLE_SHORTENING_SUCCESSFUL_COUNT, [
-                        'slug'    => $handle,
-                        'retries' => $retryTotal - $retry
-                    ]);
+                    $this->trace->count(Metric::PAYMENT_HANDLE_SHORTENING_SUCCESSFUL_COUNT);
 
                     $this->trace->info(TraceCode::PAYMENT_HANDLE_GIMLI_MAPPING_CREATION_SUCCESSFUL, [
-                        'slug'    => $handle,
-                        'retries' => $retryTotal - $retry
+                        Entity::SLUG        => $handle,
+                        Entity::RETRIES     => $retryTotal - $retry,
+                        Entity::SHORT_URL   => $shortUrl,
                     ]);
 
                     return;
@@ -2862,9 +2886,10 @@ class Core extends Base\Core
             catch (\Throwable $e)
             {
                 $this->trace->info(TraceCode::PAYMENT_HANDLE_CREATE_GIMLI_MAPPING_RETRY,[
-                    "slug"   => $handle,
-                    "retry"  => $retryTotal - $retry,
-                    "error"  => $e->getMessage()
+                    Entity::SLUG         => $handle,
+                    Entity::RETRIES      => $retryTotal - $retry,
+                    Entity::ERROR        => $e->getMessage(),
+                    Entity::SHORT_URL    => $shortUrl
                 ]);
             }
 
@@ -2877,11 +2902,17 @@ class Core extends Base\Core
 
         $this->trace->count(Metric::PAYMENT_HANDLE_SHORTENING_UNSUCCESSFUL_COUNT);
 
+        $this->trace->info(TraceCode::PAYMENT_HANDLE_CREATE_GIMLI_MAPPING_FAILED,[
+            Entity::SLUG      => $handle,
+            Entity::SHORT_URL => $shortUrl
+        ]);
+
         throw new BadRequestException(
             ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
             ViewType::PAYMENT_HANDLE,
             [
-                Entity::SLUG => $handle,
+                Entity::SLUG      => $handle,
+                Entity::SHORT_URL => $shortUrl
             ]
         );
     }
@@ -2937,6 +2968,11 @@ class Core extends Base\Core
 
         try
         {
+            $this->trace->info(TraceCode::PAYMENT_HANDLE_GIMLI_MAPPING_UPDATE, [
+                Entity::HANDLE        => $handle,
+                Entity::MERCHANT_ID   =>$this->merchant->getId(),
+            ]);
+
             Tracer::inSpan(['name' => Constants::HT_PH_GIMLI_UPDATE], function() use($input, $handle, $gimli)
             {
                 $gimli->update($handle, $input);
