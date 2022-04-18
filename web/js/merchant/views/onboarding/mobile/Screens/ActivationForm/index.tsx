@@ -123,9 +123,9 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
       eventAction: 'success',
       properties: {
         result: 'success',
+        submerchant_id: submerchantId,
       },
       activationType,
-      isLJReqiuired: false,
     });
   };
 
@@ -260,6 +260,7 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
             screen: 'home page',
             properties: {
               status: 'sucess',
+              submerchant_id: submerchantId,
             },
             toCleverTap: true,
           });
