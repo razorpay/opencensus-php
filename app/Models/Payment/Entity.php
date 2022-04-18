@@ -1839,6 +1839,14 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
                 break;
 
+            case Method::EMI:
+
+                $acquirerData = [
+                    'auth_code' => $this->getAttribute(self::REFERENCE2),
+                ];
+
+                break;
+
             case Method::NETBANKING:
 
                 $acquirerData = [
