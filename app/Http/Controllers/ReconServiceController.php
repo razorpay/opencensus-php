@@ -31,11 +31,26 @@ class ReconServiceController extends Controller
             '^journal_voucher$',
             '^workspaces$',
             '^merchants$',
+            '^sources$',
             '^file_types$',
             '^signed_url$',
+            '^file_types\/[[:alnum:]]{14}$',
+            '^workflow_config$',
+            '^recon_rules$',
+            '^recon_rules\/\d+$',
         ],
         self::POST => [
             '^output_email$',
+            '^file_types$',
+            '^sample_file_parser$',
+            '^recon_rules$',
+            '^workflow_config$',
+        ],
+        self::PATCH => [
+            '^file_types\/[[:alnum:]]{14}$',
+            '^recon_rules$',
+            '^recon_rules\/\d+$',
+            '^rule_state_map\/\d+$',
         ]
     ];
 

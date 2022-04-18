@@ -42,6 +42,8 @@ class ReconService
 
     const FILE_TYPE_URL = 'file_types';
 
+    const SAMPLE_FILE_PARSER_URL = 'sample_file_parser';
+
     const POST = 'POST';
 
     const GET = 'GET';
@@ -51,6 +53,8 @@ class ReconService
     const AUTH_TYPE = 'auth_type';
 
     const API = 'api';
+
+    const NULL = 'null';
 
     const MATCHER = 'matcher';
 
@@ -105,10 +109,13 @@ class ReconService
             unset($input[self::FILE]);
         }
 
-        if ($url == self::FILE_TYPE_URL and in_array($method, $allowed_methods))
+        if (in_array($url, [self::FILE_TYPE_URL, self::SAMPLE_FILE_PARSER_URL]) and in_array($method, $allowed_methods))
         {
-            $data->sample_file_path = $this->uploadSampleFile($input);
-            unset($input[self::FILE]);
+            if(!(is_null($input[self::FILE]) or  $input[self::FILE] == self::NULL))
+            {
+                $data->sample_file_path = $this->uploadSampleFile($input);
+                unset($input[self::FILE]);
+            }
         }
 
         $this->trace->info(
