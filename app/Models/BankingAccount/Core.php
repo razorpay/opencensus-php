@@ -386,6 +386,7 @@ class Core extends Base\Core
             $this->notifier->notify($bankingAccount, Event::SUBSTATUS_CHANGE);
         }
 
+        $this->sendSegmentEvent($bankingAccount, $merchant);
 
         return $bankingAccount;
     }
@@ -1327,13 +1328,7 @@ class Core extends Base\Core
 
             $merchant = $bankingAccount->merchant;
 
-            $currentBankingAccountStatus = $bankingAccount->getStatus();
-
-            $currentBankingAccountSubStatus = $bankingAccount->getSubStatus();
-
-            $properties = $this->getSegmentEventPropertiesForBankingAccountStatusChange($bankingAccount, $currentBankingAccountStatus, $currentBankingAccountSubStatus);
-
-            $this->app['x-segment']->sendEventToSegment(SegmentEvent::BANKING_ACCOUNT_STATUS_CHANGE, $merchant, $properties);
+            $this->sendSegmentEvent($bankingAccount, $merchant);
         }
     }
 
@@ -2088,5 +2083,22 @@ class Core extends Base\Core
                     'event_name' => SegmentEvent::CA_ACTIVATED,
                 ]);
         }
+    }
+
+    /**
+     * @param Entity          $bankingAccount
+     * @param Merchant\Entity $merchant
+     *
+     * @return void
+     */
+    private function sendSegmentEvent(Entity $bankingAccount, Merchant\Entity $merchant): void
+    {
+        $currentBankingAccountStatus = $bankingAccount->getStatus();
+
+        $currentBankingAccountSubStatus = $bankingAccount->getSubStatus();
+
+        $properties = $this->getSegmentEventPropertiesForBankingAccountStatusChange($bankingAccount, $currentBankingAccountStatus, $currentBankingAccountSubStatus);
+
+        $this->app['x-segment']->sendEventToSegment(SegmentEvent::BANKING_ACCOUNT_STATUS_CHANGE, $merchant, $properties);
     }
 }
