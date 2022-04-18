@@ -2,14 +2,13 @@ import React from 'react';
 import { NOOP } from 'merchant/views/Capital/Loans/constants';
 import PropTypes from 'prop-types';
 import lockIcon from '../../../../../../icons/merchant/lock-filled.svg';
-import RazorpayLogo from '../../../../../../icons/merchant/razorpay-logo-short.svg';
 import LeegalityIcon from '../../../../../../css/assets/capital/leegality.png';
 import Button from 'common/new-ui/Button';
-import LocalStorageService from 'common/utils/localStorage';
+import { setItem } from 'common/utils/localStorage';
 
 const GromorRedirectConfirmation = ({ onClose, eSignUrl, email_id, name }) => {
   const handleClick = () => {
-    LocalStorageService.setItem('loc_esign_clicked', true);
+    setItem('loc_esign_clicked', true);
   };
   return (
     <div>
@@ -22,7 +21,10 @@ const GromorRedirectConfirmation = ({ onClose, eSignUrl, email_id, name }) => {
         <div className="flex leegality-redirect-inner-wrapper">
           <div className="flex leegality-redirect-inner-header">
             <div className="leegality-redirect-razorpaylogo leegality-redirect-logo-wrapper">
-              <img alt="razorpay-logo" src={RazorpayLogo} />
+              <img
+                alt="razorpay-logo"
+                src={`${window.cdnBaseUrl}/static/assets/cash-advance/razorpayLogo.svg}`}
+              />
             </div>
             <div className="leegality-redirect-leegality-logo leegality-redirect-logo-wrapper">
               <img src={LeegalityIcon} alt="leegality_logo" />

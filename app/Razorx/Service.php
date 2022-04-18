@@ -254,7 +254,8 @@ class Service extends Base\Service
             'rx_revamped_help_and_support_widget',
             'rx_cohesive_fullscreen_payout',
             'rx_payout_link_workflow_ga',
-            'pb_direct_plugin_links'
+            'pb_direct_plugin_links',
+            'capital_loc_x_migration'
         ];
 
         $experimentsResults = $this->getBulkTreatment($features);

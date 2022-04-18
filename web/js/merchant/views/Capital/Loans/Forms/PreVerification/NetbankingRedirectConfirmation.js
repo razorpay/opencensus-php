@@ -2,12 +2,12 @@ import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
 
 import lockIcon from '../../../../../../../icons/merchant/lock-filled.svg';
-import RazorpayLogo from '../../../../../../../icons/merchant/razorpay-logo-short.svg';
 import PerfiosLogo from '../../../../../../../css/assets/capital/perfios-logo.svg';
 
 import { Modal, ModalMask } from 'common/new-ui/Modal';
 import { NOOP } from 'merchant/views/Capital/Loans/constants';
 import { trackNetbankingModalSubmission, trackNetbankingModalLoad } from './ga';
+
 const NetbankingRedirectConfirmation = ({ onClick, onClose }) => {
   useEffect(() => trackNetbankingModalLoad, []);
 
@@ -25,7 +25,10 @@ const NetbankingRedirectConfirmation = ({ onClick, onClose }) => {
           <div className="flex perfios__modal-inner--wrapper">
             <div className="flex perfios__modal-inner--header">
               <div className="perfios__modal-razorpaylogo perfios__modal-logo-wrapper">
-                <img alt="razorpay-logo" src={RazorpayLogo} />
+                <img
+                  alt="razorpay-logo"
+                  src={`${window.cdnBaseUrl}/static/assets/cash-advance/razorpayLogo.svg}`}
+                />
               </div>
               <div className="perfios__modal-perfios--logo perfios__modal-logo-wrapper">
                 <img src={PerfiosLogo} alt="perfios_logo" />

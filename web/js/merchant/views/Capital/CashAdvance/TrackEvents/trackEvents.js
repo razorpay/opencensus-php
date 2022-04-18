@@ -437,3 +437,14 @@ export const trackCheckoutFlowSuccess = (fromWhere, repayAmount) => {
     });
   }
 };
+
+export const trackLandingonCashAdvanceV1 = () =>
+  trackEvent({
+    objectName: 'Cash Advance Homepage current',
+    actionName: 'Rendered',
+    screen: 'Cash Advance || Home Screen',
+    properties: {
+      tab: 'Cash Advance Homescreen',
+      location: 'Begin',
+    },
+  });

@@ -1,3 +1,5 @@
+@import './LogoAnimation.styl';
+
 .cash-advance-container, .cash-advance-repayments-schedule
   .cash-advance-gromor-esign-wrapper
     .announcement-banner-container
@@ -389,16 +391,6 @@
     animation: smooth-collide-inner 800ms 1s forwards;
     transform: translateX(-100%);
 
-    @keyframes smooth-collide-inner {
-        0% {
-          transform: translateX(-100%)
-        }
-
-        100% {
-          transform: translateX(9%);
-        }
-      }
-
     img {
       width: 17.63px;
       height: 19.83px;
@@ -409,17 +401,6 @@
     animation: smooth-collide-outside 800ms 1s forwards;
     transform: translateX(100%);
     background-color: white;
-
-    @keyframes smooth-collide-outside {
-        0% {
-          transform: translateX(100%)
-        }
-
-        100% {
-          transform: translateX(-9%);
-        }
-      }
-
 
     img {
       width: 31.21px;

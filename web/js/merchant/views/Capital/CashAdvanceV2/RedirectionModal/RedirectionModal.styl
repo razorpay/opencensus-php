@@ -1,0 +1,86 @@
+.cash-x-migration-wrapper {
+  min-width: 480px;
+  max-width: 512px;
+
+  .ca-x-migration-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    background: #f6f8fc;
+    align-items: center;
+    padding: 24px 40px;
+    position: relative;
+
+    .close {
+      position: absolute;
+      right: 13px;
+      top: 13px;
+    }
+
+    h1 {
+      font-weight: 700;
+      font-size: 18px;
+      line-height: 22px;
+      color: #162f56;
+      margin: 0;
+    }
+
+    h3 {
+      font-weight: 400;
+      font-size: 14px;
+      line-height: 20px;
+      color: #162f56de;
+      margin-top: 2px;
+    }
+
+    .ca-x-migration-inner-wrapper {
+      margin-top: 20px;
+      padding: 32px;
+      background: #ffffff;
+      border: 1px solid #adbcc93d;
+      border-radius: 3px;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+
+      button {
+        padding: 8px 48px;
+        font-weight: 700;
+        font-size: 14px;
+        line-height: 20px;
+      }
+
+      .ca-x-migration-inner-text {
+        font-size: 14px;
+        line-height: 20px;
+        text-align: center;
+        font-weight: 400;
+        flex-direction: column;
+        color: #162f56bd;
+        margin: 32px 0 16px;
+        
+        b {
+          font-weight: 700;
+        }
+      }
+
+      .ca-x-migration-logo-wrapper {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+      }
+    }
+  }
+
+  .razorpay-logo-animation {
+    animation: smooth-collide-inner 800ms 1s forwards;
+    transform: translateX(-100%);
+  }
+
+  img {
+    height: 100%;
+  }
+}

@@ -1,6 +1,9 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
+import lazy from 'merchant/routes/LazyLoader';
+import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
+
 import getApplicationProgressPercentage from '../utils/ProgressPercentageCalculator';
 import ApplicationOverviewLoadingSkeleton from '../components/ApplicationOverviewLoadingSkeleton';
 import { getDisabledReasons, getProductNames, isCashAdvanceProduct, isLoanProduct } from '../utils';
@@ -36,6 +39,10 @@ import { triggerHotjarRecording } from 'common/utils/hotjar';
 import api from './LoansCollections/api';
 import { PLAN_STATUS } from './LoansCollections/constants';
 
+const CashAdvanceV2 = lazy(() =>
+  import(/* webpackChunkName: 'CashAdvanceV2' */ '../CashAdvanceV2'),
+);
+
 const REDIRECTABLE_APPLICATION_STATES = [
   APPLICATION_STATES.CREDIT_DISBURSED,
   APPLICATION_STATES.RZP_REJECTED,
@@ -48,11 +55,11 @@ export const PROS = [
     <span>Get competitive interest rates for your risk profile</span>
   </React.Fragment>,
   <React.Fragment key={2}>
-    <i class="i i-bullet" />
+    <i className="i i-bullet" />
     <span>Apply online in 5 minutes with support when you need</span>
   </React.Fragment>,
   <React.Fragment key={3}>
-    <i class="i i-bullet" />
+    <i className="i i-bullet" />
     <span>Repay easily from daily settlements with more options</span>
   </React.Fragment>,
 ];
@@ -114,7 +121,6 @@ export default class LoanApplicationOverview extends React.Component {
     this.props.closeModal();
     this.initApplication(this.getProductCode());
     triggerHotjarRecording(HOTJAR_TRIGGERS.LOAN_APPLICATION_PAGE_OPEN);
-
     document.querySelector('.pagefooter').style.display = 'none';
     this.isLoanDisabled &&
       getDisabledReasons(this.props.user).then((reasons) => {
@@ -443,7 +449,7 @@ export default class LoanApplicationOverview extends React.Component {
           </div>
         )}
         <div
-          class={
+          className={
             applicationRejected || applicationClosed
               ? 'loan-application-disabled-body'
               : 'loan-onboarding-content-body'
@@ -495,7 +501,7 @@ export default class LoanApplicationOverview extends React.Component {
             )}
           </div>
         </div>
-        <div class="loan-application-disabled-body loan-application-disabled-body--dpd">
+        <div className="loan-application-disabled-body loan-application-disabled-body--dpd">
           <div className="loan-application-disabled-wrapper">
             <div className="flex title-wrapper">
               <i className="i i-error" />
@@ -518,11 +524,11 @@ export default class LoanApplicationOverview extends React.Component {
   };
 
   render() {
-    const { loanApplicationDetails } = this.props;
+    const { loanApplicationDetails, user = {} } = this.props;
 
     if (loanApplicationDetails.products.loading || loanApplicationDetails.meta.loading)
       return (
-        <div class="capital-landing-spinner-container">
+        <div className="capital-landing-spinner-container">
           <Spinner />
         </div>
       );
@@ -531,41 +537,57 @@ export default class LoanApplicationOverview extends React.Component {
     const isLoanApplicationDisabledDueToDPD = this.isLoanDisabled;
     const isFetchingLoanDisabledReason = this.state.loanDisabledReason.fetching;
 
-    return (
-      <OnBoardingWrapper class="Loans">
-        <div className="Landing--Image">
-          <div class="image-wrapper">
-            <img src={UIConfig.product.heroImageSource} alt="landing-image" />
-          </div>
-        </div>
+    const isCAXExperimentEnabled = user.isCashAdvanceXMigrationEnabled;
+    const hasApplication = loanApplicationDetails?.meta?.data?.application;
+    const isProductCashAdvance = isCashAdvanceProduct(loanApplicationDetails?.meta?.product);
 
-        <div className="Product--Details">
-          <div className="Details-title">
-            {UIConfig.product.title}
-            <div className="divider" />
-          </div>
-          {UIConfig.product.summary}
-          <hr />
-          <DataList>{UIConfig.product.pros}</DataList>
-        </div>
+    const { status } = parseApplicationMetaData(loanApplicationDetails);
+    const applicationRejected = status === APPLICATION_STATES.RZP_REJECTED;
+    const applicationClosed = status === APPLICATION_STATES.CLOSED;
 
-        <div
-          className={`loan-application-home ${
-            this.isLoanApplicationDisabled(loanApplicationDetails) &&
-            'loan-application-home-top-border'
-          }`}
-        >
-          {loanApplicationDetails.meta.loading ||
-          loanApplicationDetails.products.loading ||
-          isFetchingLoanDisabledReason ? (
-            <ApplicationOverviewLoadingSkeleton />
-          ) : isLoanApplicationDisabledDueToDPD ? (
-            this.renderLoanApplicationDisabledDueToDPDUI()
-          ) : (
-            this.getApplicationOverview()
-          )}
-        </div>
-      </OnBoardingWrapper>
-    );
+    if (isCAXExperimentEnabled && isProductCashAdvance) {
+      const showApplyNow = applicationRejected || applicationClosed || !hasApplication;
+      return (
+        <SuspenseWithLoader>
+          <CashAdvanceV2 showApplyNow={showApplyNow} />;
+        </SuspenseWithLoader>
+      );
+    } else
+      return (
+        <OnBoardingWrapper className="Loans">
+          <div className="Landing--Image">
+            <div className="image-wrapper">
+              <img src={UIConfig.product.heroImageSource} alt="landing-image" />
+            </div>
+          </div>
+
+          <div className="Product--Details">
+            <div className="Details-title">
+              {UIConfig.product.title}
+              <div className="divider" />
+            </div>
+            {UIConfig.product.summary}
+            <hr />
+            <DataList>{UIConfig.product.pros}</DataList>
+          </div>
+
+          <div
+            className={`loan-application-home ${
+              this.isLoanApplicationDisabled(loanApplicationDetails) &&
+              'loan-application-home-top-border'
+            }`}
+          >
+            {loanApplicationDetails.meta.loading ||
+            loanApplicationDetails.products.loading ||
+            isFetchingLoanDisabledReason ? (
+              <ApplicationOverviewLoadingSkeleton />
+            ) : isLoanApplicationDisabledDueToDPD ? (
+              this.renderLoanApplicationDisabledDueToDPDUI()
+            ) : (
+              this.getApplicationOverview()
+            )}
+          </div>
+        </OnBoardingWrapper>
+      );
   }
 }
