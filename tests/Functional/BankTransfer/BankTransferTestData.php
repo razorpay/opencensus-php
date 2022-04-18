@@ -1402,7 +1402,7 @@ return [
             'payee_account'  => null,
             'payee_ifsc'     => null,
             'payer_name'     => '533/1 NEFT CASH FOR NON CUSTOMER',
-            'payer_account'  => '533/1 NEFT CASH FOR NON CUSTOMER',
+            'payer_account'  => '123',
             'payer_ifsc'     => 'PJSB0000003',
             'mode'           => 'rtgs',
             'transaction_id' => strtoupper(random_alphanum_string(22)),
@@ -2365,6 +2365,30 @@ return [
                 'transaction_id' => 'RANDOMUTR012345',
                 'amount'         => 50000,
                 'description'    => 'IMPS payment of 50,000 rupees',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'valid'   => true,
+            ],
+        ],
+    ],
+
+    'testBankTransferYesBankWhenPayerAccountContainsPayerNameForPJSB' => [
+        'request'  => [
+            'url'     => '/ecollect/validate',
+            'method'  => 'post',
+            'content' => [
+                'payee_account'  => '3434123412341234',
+                'payee_ifsc'     => 'YESB0CMSNOC',
+                'payer_name'     => 'John Doe',
+                'payer_account'  => '123456543217890John Doe',
+                'payer_ifsc'     => 'PJSB0000055',
+                'mode'           => 'NEFT',
+                'time'           => 148415544000,
+                'transaction_id' => 'RANDOMUTR012345',
+                'amount'         => 50000,
+                'description'    => 'NEFT payment of 50,000 rupees',
             ],
         ],
         'response' => [

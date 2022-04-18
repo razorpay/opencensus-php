@@ -6,6 +6,7 @@ use Cache;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Models\Bank\BankCodes;
+use RZP\Models\Bank\IFSC;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Trace\Tracer;
@@ -121,6 +122,8 @@ class Service extends Base\Service
             $this->removeInvalidRegexFromPayerAccount($input);
 
             $this->extractPayerNameAndAccountFromPayerName($input);
+
+            $this->modifyInvalidInputForPJSB($input);
 
             $bankAccount = $this->getQrBankAccount($input);
 
@@ -864,5 +867,22 @@ class Service extends Base\Service
     public function createBankTransferViaLedgerCronJob(array $blacklistIds, array $forcedMerchantIds, int $limit)
     {
         $this->core->createBankTransferViaLedgerCronJob($blacklistIds, $forcedMerchantIds, $limit);
+    }
+
+    public function modifyInvalidInputForPJSB(&$input)
+    {
+        if (starts_with($input[Entity::PAYER_IFSC], IFSC::PJSB))
+        {
+            if (str_contains(strtolower($input[Entity::PAYER_ACCOUNT]), strtolower($input[Entity::PAYER_NAME])))
+            {
+                $payer_account = str_replace(strtolower(addslashes($input[Entity::PAYER_NAME])),'', strtolower($input[Entity::PAYER_ACCOUNT]));
+
+                $this->trace->info(TraceCode::BANK_TRANSFER_REQUEST_PJSB_INVALID_INPUT_MODIFICATION, [
+                    'field'         => Entity::PAYER_ACCOUNT,
+                ]);
+
+                $input[Entity::PAYER_ACCOUNT] = $payer_account;
+            }
+        }
     }
 }
