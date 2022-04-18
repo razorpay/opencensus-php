@@ -1761,15 +1761,18 @@ class Core extends Base\Core
         [$url, $params, $fail] = $this->getShortenUrlRequestParams($paymentLink, $slug);
 
         try {
-            $skipShortning = $this->shouldSkipShortner($paymentLink, $slug, $url);
-
             $useCustomUrlModule = $this->shouldUseCustomUrlModule($paymentLink);
 
-            if ($skipShortning || ! $useCustomUrlModule)
+            if ($useCustomUrlModule)
             {
-                $this->updateExistingShortUrl($slug, $paymentLink);
+                $skipShortning = $this->shouldSkipShortner($paymentLink, $slug, $url);
 
-                return;
+                if ($skipShortning)
+                {
+                    $this->updateExistingShortUrl($slug, $paymentLink);
+
+                    return;
+                }
             }
         }
         catch (\Throwable $e)
