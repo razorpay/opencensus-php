@@ -31,26 +31,40 @@ class Repository extends Base\Repository
             ->get();
     }
 
-    public function fetchMerchantIdsNotEscalatedToType(string $type)
-    {
-        $escalations = $this->fetchEscalationsForType($type);
-        $excludeList = [];
-        if(empty($escalations) === false)
-        {
-            $excludeList = $escalations
-                ->pluck(Entity::MERCHANT_ID)
-                ->toArray();
-        }
 
+    public function fetchAllEscalatedMerchantIds()
+    {
         return $this->newQueryWithConnection($this->getMasterReplicaConnection())
             ->select(Entity::MERCHANT_ID)
-            ->whereNotIn(Entity::MERCHANT_ID, $excludeList)
-            ->whereIn(Entity::ESCALATION_TYPE, Constants::LOWER_ESCALATION_TYPE_MAP[$type])
+            ->distinct()
             ->get()
             ->pluck(Entity::MERCHANT_ID)
             ->toArray();
     }
 
+    public function fetchAllEscalatedMerchantIdsOfType($type)
+    {
+        return $this->newQueryWithConnection($this->getMasterReplicaConnection())
+            ->select(Entity::MERCHANT_ID)
+            ->where($this->dbColumn(Entity::ESCALATION_TYPE), '=', $type)
+            ->distinct()
+            ->get()
+            ->pluck(Entity::MERCHANT_ID)
+            ->toArray();
+    }
+
+
+    public function fetchMerchantIdsNotEscalatedToType(string $type)
+    {
+        $allEscalatedMerchants = $this->fetchAllEscalatedMerchantIds();
+
+        $typeEscalatedMerchants = $this->fetchAllEscalatedMerchantIdsOfType($type);
+
+        $finalResult = array_diff($allEscalatedMerchants, $typeEscalatedMerchants);
+
+        return $finalResult;
+    }
+    
     public function fetchEscalationsForMerchantAndTypeAndLevel(string $merchantId, string $type, string $level)
     {
         return $this->newQuery()
