@@ -62,6 +62,25 @@ class BankTransferController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function processYesbankBankTransfer()
+    {
+        $this->app['basicauth']->setModeAndDbConnection(Mode::LIVE);
+
+        $input = Request::all();
+
+        $input[Entity::MODE] = strtolower($input[Entity::MODE]);
+
+        $this->trace->info(TraceCode::YESBANK_VA_MIS, [
+            Entity::INPUT           => $input,
+            Entity::REQUEST_SOURCE  => Entity::FILE,
+            Entity::GATEWAY         => Provider::YESBANK,
+        ]);
+
+        $response = $this->service()->saveRequestAndProcess($input, Provider::YESBANK, false, $input);
+
+        return ApiResponse::json($response);
+    }
+
     public function processIciciBankTransfer()
     {
         $this->app['basicauth']->setModeAndDbConnection(Mode::LIVE);

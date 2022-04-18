@@ -870,6 +870,65 @@ class BankTransferTest extends TestCase
         $this->assertEquals(4000000, $payment['amount_refunded']);
     }
 
+    public function testBankTransferYesbankMIS()
+    {
+        $ifsc = Provider::IFSC[Provider::YESBANK];
+
+        $balance1 = $this->getDbEntity('balance',
+                                       [
+                                           'merchant_id' => '10000000000000',
+                                       ], 'live');
+
+        $this->fixtures->on('live')->edit('balance', $balance1->getId(), [
+            'type'           => 'banking',
+            'account_number' => 4564562235678281,
+        ]);
+
+        $ba = $this->fixtures->on('live')->create('bank_account',
+                                                  [
+                                                      'merchant_id'    => '10000000000000',
+                                                      'entity_id'      => '100000000000va',
+                                                      'type'           => 'virtual_account',
+                                                      'ifsc_code'      => $ifsc,
+                                                      'account_number' => 4564562235678281,
+                                                  ]);
+
+        $this->fixtures->on('live')->create('virtual_account',
+                                            [
+                                                'id'              => '100000000000va',
+                                                'merchant_id'     => '10000000000000',
+                                                'status'          => 'active',
+                                                'bank_account_id' => $ba->getId(),
+                                                'balance_id'      => $balance1->getId(),
+                                            ]);
+
+        $this->fixtures->on('live')->create('banking_account_tpv',
+                                            [
+                                                'balance_id' => $balance1->getId(),
+                                                'status'     => 'approved',
+                                                'payer_ifsc' => 'HDFC0000001',
+                                                'payer_account_number' => '9876543210123456789'
+                                            ]);
+
+        $request = $this->testData[__FUNCTION__];
+
+        $request['content']['payee_account'] = 4564562235678281;
+
+        $request['content']['payee_ifsc'] = $ifsc;
+
+        $this->ba->batchAppAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertTrue($response['valid']);
+        $this->assertEquals($request['content']['transaction_id'], $response['transaction_id']);
+
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true, 'live');
+
+        $this->assertEquals(5000000, $bankTransfer['amount']);
+        $this->assertEquals("HDFC0000001", $bankTransfer['payer_ifsc']);
+    }
+
     public function testBankTransferImpsUnmappedBankCode()
     {
         $accountNumber = $this->bankAccount['account_number'];

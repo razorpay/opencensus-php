@@ -1639,6 +1639,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BANK_TRANSFER_YES_BANK_VA_INPUT                       = 'BANK_TRANSFER_YES_BANK_VA_INPUT';
     const BANK_TRANSFER_YES_BANK_VA_RESPONSE                    = 'BANK_TRANSFER_YES_BANK_VA_RESPONSE';
     const ICICI_VA_MIS                                          = 'ICICI_VA_MIS';
+    const YESBANK_VA_MIS                                        = 'YESBANK_VA_MIS';
     const ICICI_VA_MIS_RESPONSE                                 = 'ICICI_VA_MIS_RESPONSE';
 
     const BANK_TRANSFER_PROCESS_SQS_PUSH_INIT                   = 'BANK_TRANSFER_PROCESS_SQS_PUSH_INIT';

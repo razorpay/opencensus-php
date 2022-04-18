@@ -276,6 +276,7 @@ class Entity extends Base\PublicEntity
 
             case 'bank_transfer_process_rbl_internal':
             case 'bank_transfer_process_icici_internal':
+            case 'bank_transfer_process_yesbank_internal':
                 $requestSource = [
                     'source'        => 'file',
                     'request_from'  => 'bank',
