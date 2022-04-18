@@ -163,9 +163,14 @@ class Processor extends Base\Core
 
         $respondBy = $respondBy->addDay()->timezone(Timezone::IST)->format('d/m/Y');
 
+        // use the original currency amount converted to the respective higher unit
+        $currency = $payment->getCurrency();
+        $originalAmount = (float) ($payment->getAmount() / Currency\Currency::getDenomination($currency));
+        $formatAmount = number_format($originalAmount, 2, '.', '');
+
         return [
             Constants::MERCHANT_DATA_KEY_NOTES                  => json_encode($payment->getNotes()),
-            Constants::MERCHANT_DATA_KEY_AMOUNT                 => $fraud->getBaseAmount() / 100,
+            Constants::MERCHANT_DATA_KEY_AMOUNT                 => $formatAmount,
             Constants::MERCHANT_DATA_KEY_RESPOND_BY             => $respondBy,
             Constants::MERCHANT_DATA_KEY_PAYMENT_ID             => $payment->getPublicId(),
             Constants::MERCHANT_DATA_KEY_ORDER_RECEIPT          => $orderReceipt,
