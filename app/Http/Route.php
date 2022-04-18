@@ -3423,6 +3423,7 @@ class Route
         'fetch_token_iin'                           =>  ['post',       'tokens/iin/fetch/{iin}',                           'TokenisedIinController@fetchIin'                                     ],
         'update_token_iin'                          =>  ['post',       'tokens/iin/update/{iin}',                          'TokenisedIinController@updateIin'                                    ],
         'fetch_token_iin_by_range'                  =>  ['post',       'tokens/iin/{iin}',                                 'TokenisedIinController@fetchbyTokenIin'                              ],
+        'add_token_iin_bulk'                        =>  ['post',       'tokens/bulk/iin',                                  'TokenisedIinController@addIinBulk'                                   ],
 
         'shipping_provider_list'                   => ['get',      '1cc/shipping_providers',                              'ShippingProviderController@list'                           ],
         'shipping_provider_post'                   => ['post',     '1cc/shipping_providers',                              'ShippingProviderController@create'                           ],
@@ -3995,6 +3996,7 @@ class Route
         'fetch_token_iin',
         'update_token_iin',
         'fetch_token_iin_by_range',
+        'add_token_iin_bulk'
     ];
 
     // Only routes defined in internalApps go here

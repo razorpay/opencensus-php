@@ -47,4 +47,14 @@ class TokenisedIinController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function addIinBulk()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->addIinBulk($input);
+
+        return ApiResponse::json($data);
+    }
+
 }

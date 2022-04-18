@@ -39,6 +39,7 @@ class Service extends Base\Service
         else
         {
             return $this->updateIin($id, $input);
+
         }
     }
 
@@ -51,11 +52,12 @@ class Service extends Base\Service
         return $response;
     }
 
-    public function fetchbyTokenIin($tokenIin){
+    public function fetchbyTokenIin($tokenIin)
+    {
 
         $iin = $this->repo->tokenised_iin->findbyTokenIin($tokenIin);
 
-        $response =  $this->getBasicDetails($iin);
+        $response = $this->getBasicDetails($iin);
 
         return $response;
     }
@@ -70,4 +72,38 @@ class Service extends Base\Service
 
         return $response;
     }
+
+    public function addIinBulk($input): array
+    {
+
+        $returnData = [];
+
+        foreach ($input['iins'] as $iin) {
+
+            try
+            {
+
+                $iincreateResponse = $this->createIin($iin);
+
+                $returnData[$iin['iin']] = $iincreateResponse;
+
+            }
+            catch (\Exception $e)
+            {
+                $returnData[$iin['iin']] = $e->getMessage();
+
+                $this->trace->error(
+                    TraceCode::TOKENISED_IIN_BULK_ADDITION_FAILED,
+                    [
+                        'iin' => $iin,
+                        'error' => $e->getMessage(),
+                    ]
+                );
+            }
+
+        }
+
+        return $returnData;
+    }
+
 }
