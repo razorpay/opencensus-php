@@ -181,6 +181,7 @@ export default class PaymentButtonCreate extends React.Component {
     const promise = this.props.fetchPaymentButtonDetails(id, this.isIntentDuplicate); // Auto reinitialise store if id doesn't exist.
 
     if (promise instanceof Promise) {
+      // edit or duplicate case
       promise
         .then(({ data }) => {
           if (data) {
@@ -188,6 +189,9 @@ export default class PaymentButtonCreate extends React.Component {
           }
         })
         .finally(() => this.setState({ isEntityLoaded: true }));
+    } else {
+      // create case
+      this.setState({ isEntityLoaded: true });
     }
   };
 
@@ -205,6 +209,10 @@ export default class PaymentButtonCreate extends React.Component {
 
       this.fetchDetails(entityIdToDuplicate);
     } else {
+      // create flow (during any life cycle)
+      this.setState({
+        isEntityLoaded: true,
+      });
       setWindowTitle(docTitles.CREATE);
     }
   }

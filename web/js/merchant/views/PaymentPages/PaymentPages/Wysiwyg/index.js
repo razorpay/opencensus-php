@@ -208,6 +208,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     const promise = this.props.fetchPaymentPage(id, this.isIntentDuplicate); // Auto reinitialise store if id doesn't exist.
 
     if (promise instanceof Promise) {
+      // edit & duplicate case
       promise
         .then(({ data }) => {
           // on page load -> open modal if present in query params
@@ -238,6 +239,9 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
         .finally(() => {
           this.setState({ isEntityLoaded: true });
         });
+    } else {
+      // create case
+      this.setState({ isEntityLoaded: true });
     }
   };
 
