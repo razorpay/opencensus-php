@@ -60,20 +60,6 @@ class Repository extends Base\Repository
         $query->select($this->getTableName().'.*');
     }
 
-    public function findByUtrAndPayerIfsc(string $utr, string $payerIfsc, bool $useWritePdo = false)
-    {
-        $query = $this->newQuery()
-                      ->where(Entity::UTR, '=', $utr)
-                      ->where(Entity::PAYER_IFSC, '=', $payerIfsc);
-
-        if ($useWritePdo === true)
-        {
-            $query->useWritePdo();
-        }
-
-        return $query->first();
-    }
-
     public function findByUtrAndPayeeAccountAndAmount(string $utr, $payeeAccount, int $amount, bool $useWritePdo = false)
     {
         $payeeAccount = strtoupper(str_replace(' ', '', $payeeAccount));
@@ -95,33 +81,6 @@ class Repository extends Base\Repository
     {
         $query =  $this->newQuery()
                        ->where(Entity::UTR, '=', $utr);
-
-        if ($useWritePdo === true)
-        {
-            $query->useWritePdo();
-        }
-
-        return $query->first();
-    }
-
-    public function findByNarration(string $narration, bool $useWritePdo = false)
-    {
-        $query = $this->newQuery()
-                      ->where(Entity::NARRATION, '=', $narration);
-
-        if ($useWritePdo === true)
-        {
-            $query->useWritePdo();
-        }
-
-        return $query->first();
-    }
-
-    public function findByNarrationAndIfsc(string $narration, string $payerIfsc, bool $useWritePdo = false)
-    {
-        $query = $this->newQuery()
-                      ->where(Entity::NARRATION, '=', $narration)
-                      ->where(Entity::PAYER_IFSC, '=', $payerIfsc);
 
         if ($useWritePdo === true)
         {
