@@ -178,7 +178,11 @@ class Core extends Base\Core
 
         $statusUpdater->updateValidationStatus();
 
+        $this->trace->info(TraceCode::MERCHANT_UPDATE_VALIDATION_STATUS,$merchantDetails->getDirty());
+
         $this->repo->saveOrFail($merchantDetails);
+
+        $this->trace->info(TraceCode::MERCHANT_UPDATE_VALIDATION_STATUS_DONE,$merchantDetails->getDirty());
 
         $this->releaseLinkedAccountHoldFundsIfApplicable($merchant, $merchantDetails);
 

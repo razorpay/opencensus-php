@@ -6,6 +6,9 @@ use RZP\Exception\InvalidArgumentException;
 
 class TraceCode extends \Razorpay\Trace\TraceCode
 {
+    const MERCHANT_UPDATE_VALIDATION_STATUS                     = 'MERCHANT_UPDATE_VALIDATION_STATUS';
+    const MERCHANT_UPDATE_VALIDATION_STATUS_DONE                = 'MERCHANT_UPDATE_VALIDATION_STATUS_DONE';
+
     const FTS_HOLIDAY_DEBUG                                     = "FTS_HOLIDAY_DEBUG";
 
     const RAZORX_EXPERIMENT_RESULT = "RAZORX_EXPERIMENT_RESULT";
