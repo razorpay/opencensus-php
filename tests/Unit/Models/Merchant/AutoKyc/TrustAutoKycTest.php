@@ -198,13 +198,14 @@ class TrustAutoKycTest extends TestCase
 
     }
 
-    public function testAutoKycForTrustIfPoaVerified()
+    public function testAutoKycForTrustIfPoaVerifiedAndAadharEkycNotVerified()
     {
         $this->mockRazorxTreatment();
 
         $fixtures = $this->createAndFetchFixtures([
-            Detail\Entity::COMPANY_PAN_VERIFICATION_STATUS => 'verified'
-        ], []);
+            Detail\Entity::POA_VERIFICATION_STATUS => 'verified'
+        ], [],['aadhaar_esign_status'              => 'failed',
+            'aadhaar_verification_with_pan_status' => 'failed']);
 
         $core = new Detail\Core();
 
@@ -214,13 +215,32 @@ class TrustAutoKycTest extends TestCase
 
     }
 
-    public function testAutoKycForTrustIfPoaNotVerified()
+    public function testAutoKycForTrustIfPoaNotVerifiedAndAadharEkycVerified()
     {
         $this->mockRazorxTreatment();
 
         $fixtures = $this->createAndFetchFixtures([
-            Detail\Entity::COMPANY_PAN_VERIFICATION_STATUS => 'failed'
-        ], []);
+            Detail\Entity::POA_VERIFICATION_STATUS => 'failed'
+        ], [], ['aadhaar_esign_status'             => 'verified',
+            'aadhaar_verification_with_pan_status' => 'verified']);
+
+
+        $core = new Detail\Core();
+
+        $merchantDetail = $fixtures['merchant_detail'];
+        $isAutoKycDone  = $core->isAutoKycDone($merchantDetail);
+        $this->assertTrue($isAutoKycDone);
+
+    }
+
+    public function testAutoKycForTrustIfPoaNotVerifiedAndAadharEkycNotVerified()
+    {
+        $this->mockRazorxTreatment();
+
+        $fixtures = $this->createAndFetchFixtures([
+            Detail\Entity::POA_VERIFICATION_STATUS => 'failed'
+        ], [],['aadhaar_esign_status'              => 'failed',
+            'aadhaar_verification_with_pan_status' => 'failed']);
 
         $core = new Detail\Core();
 

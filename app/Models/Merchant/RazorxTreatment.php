@@ -5,7 +5,8 @@ namespace RZP\Models\Merchant;
 final class RazorxTreatment
 {
     const HUF_BUSINESS_TYPE = 'huf_business_type';
-    const AADHAAR_EKYC_FOR_REG_BUSINESS_TYPES='adharEkyc_for_reg_businessTypes';
+    const AADHAAR_EKYC_FOR_REG_BUSINESS_TYPES  = 'adharEkyc_for_reg_businessTypes';
+    const AADHAAR_EKYC_FOR_TRUST_SOCIETY_NGO   = 'aadharEkyc_for_trust_society_ngo';
 
     //Razorx treatment constant, whether to make sync call or not
 

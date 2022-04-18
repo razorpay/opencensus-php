@@ -152,7 +152,7 @@ class Constants
             Operator:: AND => [
                 Entity::POI_VERIFICATION_STATUS             => self::POI_CONDITION,
                 Entity::COMPANY_PAN_VERIFICATION_STATUS     => self::COMPANY_PAN_CONDITION,
-                Entity::POA_VERIFICATION_STATUS             => self::POA_CONDITION,
+                Operator:: OR                               => self::POA_VERIFICATION_CONDITION,
                 Entity::BANK_DETAILS_VERIFICATION_STATUS    => self::DEFAULT_CONDITION,
                 'trust_society_ngo_business_certificate|doc'=> self::DEFAULT_VERIFICATION_DETAIL_CONDITION,
             ]
@@ -162,7 +162,7 @@ class Constants
             Operator:: AND => [
                 Entity::POI_VERIFICATION_STATUS             => self::POI_CONDITION,
                 Entity::COMPANY_PAN_VERIFICATION_STATUS     => self::COMPANY_PAN_CONDITION,
-                Entity::POA_VERIFICATION_STATUS             => self::POA_CONDITION,
+                Operator:: OR                               => self::POA_VERIFICATION_CONDITION,
                 Entity::BANK_DETAILS_VERIFICATION_STATUS    => self::DEFAULT_CONDITION,
                 'trust_society_ngo_business_certificate|doc'=> self::DEFAULT_VERIFICATION_DETAIL_CONDITION
             ]

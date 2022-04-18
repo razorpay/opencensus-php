@@ -496,7 +496,10 @@ class Constants
         BusinessType::HUF                => RazorxTreatment::HUF_BUSINESS_TYPE,
         BusinessType::PUBLIC_LIMITED     => RazorxTreatment::AADHAAR_EKYC_FOR_REG_BUSINESS_TYPES,
         BusinessType::PRIVATE_LIMITED    => RazorxTreatment::AADHAAR_EKYC_FOR_REG_BUSINESS_TYPES,
-        BusinessType::LLP                => RazorxTreatment::AADHAAR_EKYC_FOR_REG_BUSINESS_TYPES
+        BusinessType::LLP                => RazorxTreatment::AADHAAR_EKYC_FOR_REG_BUSINESS_TYPES,
+        BusinessType::TRUST              => RazorxTreatment::AADHAAR_EKYC_FOR_TRUST_SOCIETY_NGO,
+        BusinessType::SOCIETY            => RazorxTreatment::AADHAAR_EKYC_FOR_TRUST_SOCIETY_NGO,
+        BusinessType::NGO                => RazorxTreatment::AADHAAR_EKYC_FOR_TRUST_SOCIETY_NGO
     ];
 
     const SUPPORTED_VERIFICATION_RESPONSE_TYPES = [

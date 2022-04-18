@@ -144,7 +144,10 @@ class BusinessType
         self::HUF,
         self::PUBLIC_LIMITED,
         self::PRIVATE_LIMITED,
-        self::LLP
+        self::LLP,
+        self::TRUST,
+        self::SOCIETY,
+        self::NGO
     ];
 
     public static function isAadhaarEsignVerificationRequired($businessType)

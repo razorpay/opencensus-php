@@ -8,9 +8,25 @@ use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\Detail\Core as DetailCore;
 use RZP\Models\Merchant\Detail\BusinessType;
+use RZP\Models\Merchant\AutoKyc\Bvs;
+use RZP\Services\RazorXClient;
 
 class AadhaarVerificationTest extends TestCase
 {
+    protected function mockRazorxTreatment()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->willReturn('on');
+    }
+
+
     protected function createAndFetchMocks()
     {
         $mockMC = $this->getMockBuilder(MerchantCore::class)
@@ -33,8 +49,8 @@ class AadhaarVerificationTest extends TestCase
             'bank_details_verification_status'     => 'verified',
             'gstin_verification_status'            => 'verified',
             'company_pan_verification_status'      => 'verified',
-            'bank_details_doc_verification_status' => null,
-            Entity::CIN_VERIFICATION_STATUS  => 'verified',
+            'bank_details_doc_verification_status' =>  null,
+            Entity::CIN_VERIFICATION_STATUS        => 'verified',
             'business_type'                        => BusinessType::getIndexFromKey($businessType)
         ];
 
@@ -49,9 +65,24 @@ class AadhaarVerificationTest extends TestCase
         $stakeholderAttributes        = array_merge($defaultStakeHolderAttributes, $customerStakeholderAttributes);
         $stakeholder                  = $this->fixtures->create('stakeholder', $stakeholderAttributes);
 
+        $verificationDetail = null;
+
+        if($businessType === BusinessType::TRUST or $businessType === BusinessType::SOCIETY or $businessType === BusinessType::NGO  )
+        {
+            $customVerificationDetailAttributes = [
+                'merchant_id'         => $mid,
+                'artefact_type'       => Bvs\Constant::TRUST_SOCIETY_NGO_BUSINESS_CERTIFICATE,
+                'status'              => 'verified',
+                'artefact_identifier' => 'doc',
+            ];
+            $verificationDetail = $this->fixtures->create(
+                'merchant_verification_detail',$customVerificationDetailAttributes);
+        }
+
         return [
             "merchant_detail" => $merchantDetail,
-            "stakeholder"     => $stakeholder
+            "stakeholder"     => $stakeholder,
+            'verificationDetail' => $verificationDetail
         ];
     }
 
@@ -480,6 +511,198 @@ class AadhaarVerificationTest extends TestCase
     {
         $fixtures = $this->createAndFetchFixtures(
             BusinessType::LLP,
+            [
+                "poa_verification_status" => 'verified'
+            ],
+            [
+                "aadhaar_linked"                       => 0,
+                "aadhaar_esign_status"                 => null,
+                "aadhaar_verification_with_pan_status" => null,
+            ]);
+
+        $mocks = $this->createAndFetchMocks();
+        $core  = new DetailCore();
+        $core->setMerchantCoreForRazorx($mocks['merchantCoreMock']);
+
+        $merchantDetail = $fixtures['merchant_detail'];
+        $isAutoKycDone  = $core->isAutoKycDone($merchantDetail);
+        $this->assertTrue($isAutoKycDone);
+    }
+
+    public function testAutoKycForTrustAadhaarNotLinked()
+    {
+        $this->mockRazorxTreatment();
+
+        $fixtures = $this->createAndFetchFixtures(BusinessType::TRUST, [], [
+            "aadhaar_linked"       => 0,
+            "aadhaar_esign_status" => null
+        ]);
+        $mocks    = $this->createAndFetchMocks();
+        $core     = new DetailCore();
+        $core->setMerchantCoreForRazorx($mocks['merchantCoreMock']);
+
+        $merchantDetail = $fixtures['merchant_detail'];
+        $isAutoKycDone  = $core->isAutoKycDone($merchantDetail);
+        $this->assertFalse($isAutoKycDone);
+    }
+    public function testAutoKycForTrustAadhaarLinkedAndNotVerified()
+    {
+        $this->mockRazorxTreatment();
+
+        $fixtures = $this->createAndFetchFixtures(BusinessType::TRUST, [], [
+            "aadhaar_linked"       => 1,
+            "aadhaar_esign_status" => null
+        ]);
+        $mocks    = $this->createAndFetchMocks();
+        $core     = new DetailCore();
+        $core->setMerchantCoreForRazorx($mocks['merchantCoreMock']);
+
+        $merchantDetail = $fixtures['merchant_detail'];
+        $isAutoKycDone  = $core->isAutoKycDone($merchantDetail);
+        $this->assertFalse($isAutoKycDone);
+    }
+
+    public function testAutoKycForTrustAadhaarLinkedAndXmlNotVerified()
+    {
+        $this->mockRazorxTreatment();
+
+        $fixtures = $this->createAndFetchFixtures(BusinessType::TRUST, [], [
+            "aadhaar_linked"                       => 1,
+            "aadhaar_esign_status"                 => 'verified',
+            "aadhaar_verification_with_pan_status" => null
+        ]);
+        $mocks    = $this->createAndFetchMocks();
+        $core     = new DetailCore();
+        $core->setMerchantCoreForRazorx($mocks['merchantCoreMock']);
+
+        $merchantDetail = $fixtures['merchant_detail'];
+        $isAutoKycDone  = $core->isAutoKycDone($merchantDetail);
+        $this->assertFalse($isAutoKycDone);
+    }
+
+    public function testAutoKycForTrustAadhaarLinkedAndVerified()
+    {
+        $this->mockRazorxTreatment();
+        $fixtures = $this->createAndFetchFixtures(BusinessType::TRUST, [], [
+            "aadhaar_linked"                       => 1,
+            "aadhaar_esign_status"                 => 'verified',
+            "aadhaar_verification_with_pan_status" => 'verified'
+        ]);
+        $mocks    = $this->createAndFetchMocks();
+        $core     = new DetailCore();
+        $core->setMerchantCoreForRazorx($mocks['merchantCoreMock']);
+
+        $merchantDetail = $fixtures['merchant_detail'];
+        $isAutoKycDone  = $core->isAutoKycDone($merchantDetail);
+        $this->assertTrue($isAutoKycDone);
+    }
+
+    /*
+     * Scenario:
+     *  - trust business type
+     *  - aadhaar is not verified but poa is verified
+     */
+    public function testAutoKycForTrustAadhaarNotVerifiedPoaVerified()
+    {
+        $this->mockRazorxTreatment();
+        $fixtures = $this->createAndFetchFixtures(
+            BusinessType::TRUST,
+            [
+                "poa_verification_status" => 'verified'
+            ],
+            [
+                "aadhaar_linked"                       => 0,
+                "aadhaar_esign_status"                 => null,
+                "aadhaar_verification_with_pan_status" => null,
+            ]);
+
+        $mocks = $this->createAndFetchMocks();
+        $core  = new DetailCore();
+        $core->setMerchantCoreForRazorx($mocks['merchantCoreMock']);
+
+        $merchantDetail = $fixtures['merchant_detail'];
+        $isAutoKycDone  = $core->isAutoKycDone($merchantDetail);
+        $this->assertTrue($isAutoKycDone);
+    }
+
+    public function testAutoKycForSocietyAadhaarNotLinked()
+    {
+        $this->mockRazorxTreatment();
+
+        $fixtures = $this->createAndFetchFixtures(BusinessType::SOCIETY, [], [
+            "aadhaar_linked"       => 0,
+            "aadhaar_esign_status" => null
+        ]);
+        $mocks    = $this->createAndFetchMocks();
+        $core     = new DetailCore();
+        $core->setMerchantCoreForRazorx($mocks['merchantCoreMock']);
+
+        $merchantDetail = $fixtures['merchant_detail'];
+        $isAutoKycDone  = $core->isAutoKycDone($merchantDetail);
+        $this->assertFalse($isAutoKycDone);
+    }
+    public function testAutoKycForSocietyAadhaarLinkedAndNotVerified()
+    {
+        $this->mockRazorxTreatment();
+
+        $fixtures = $this->createAndFetchFixtures(BusinessType::SOCIETY, [], [
+            "aadhaar_linked"       => 1,
+            "aadhaar_esign_status" => null
+        ]);
+        $mocks    = $this->createAndFetchMocks();
+        $core     = new DetailCore();
+        $core->setMerchantCoreForRazorx($mocks['merchantCoreMock']);
+
+        $merchantDetail = $fixtures['merchant_detail'];
+        $isAutoKycDone  = $core->isAutoKycDone($merchantDetail);
+        $this->assertFalse($isAutoKycDone);
+    }
+
+    public function testAutoKycForSocietyAadhaarLinkedAndXmlNotVerified()
+    {
+        $this->mockRazorxTreatment();
+
+        $fixtures = $this->createAndFetchFixtures(BusinessType::SOCIETY, [], [
+            "aadhaar_linked"                       => 1,
+            "aadhaar_esign_status"                 => 'verified',
+            "aadhaar_verification_with_pan_status" => null
+        ]);
+        $mocks    = $this->createAndFetchMocks();
+        $core     = new DetailCore();
+        $core->setMerchantCoreForRazorx($mocks['merchantCoreMock']);
+
+        $merchantDetail = $fixtures['merchant_detail'];
+        $isAutoKycDone  = $core->isAutoKycDone($merchantDetail);
+        $this->assertFalse($isAutoKycDone);
+    }
+
+    public function testAutoKycForSocietyAadhaarLinkedAndVerified()
+    {
+        $this->mockRazorxTreatment();
+        $fixtures = $this->createAndFetchFixtures(BusinessType::SOCIETY, [], [
+            "aadhaar_linked"                       => 1,
+            "aadhaar_esign_status"                 => 'verified',
+            "aadhaar_verification_with_pan_status" => 'verified'
+        ]);
+        $mocks    = $this->createAndFetchMocks();
+        $core     = new DetailCore();
+        $core->setMerchantCoreForRazorx($mocks['merchantCoreMock']);
+
+        $merchantDetail = $fixtures['merchant_detail'];
+        $isAutoKycDone  = $core->isAutoKycDone($merchantDetail);
+        $this->assertTrue($isAutoKycDone);
+    }
+
+    /*
+     * Scenario:
+     *  - society business type
+     *  - aadhaar is not verified but poa is verified
+     */
+    public function testAutoKycForSocietyAadhaarNotVerifiedPoaVerified()
+    {
+        $this->mockRazorxTreatment();
+        $fixtures = $this->createAndFetchFixtures(
+            BusinessType::SOCIETY,
             [
                 "poa_verification_status" => 'verified'
             ],
