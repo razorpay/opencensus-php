@@ -140,6 +140,17 @@ class Helper
     }
 
     /**
+     * Remove all non-alphanumeric characters from the error description.
+     *
+     * @param string $errorDescription
+     * @return array|string|string[]|null
+     */
+    public static function sanitizeErrorDescription(string $errorDescription)
+    {
+        return preg_replace( '/[^a-zA-Z0-9 ]/i', '', $errorDescription);
+    }
+
+    /**
      * @param string $flow which flow is pushing the metrics
      * @param array $input input array; sensitive data is masked off before usage
      * @param array|null $error error array as received from API requests;
@@ -176,7 +187,7 @@ class Helper
                     }
                     else
                     {
-                        $traceDetails[Constants::ERROR_CODE] = $error[0];
+                        $traceDetails[Constants::ERROR_CODE] = self::sanitizeErrorDescription($error[0]);
                     }
                 }
             }
