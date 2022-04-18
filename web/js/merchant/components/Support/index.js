@@ -1,5 +1,5 @@
 import { connect } from 'react-redux';
-import { Component } from 'react';
+import { Component, lazy, Suspense } from 'react';
 import { trackSupportButton } from './ga';
 import { withRouter } from 'react-router-dom';
 import { analyticsTrack } from 'common/utils/analytics';
@@ -11,12 +11,12 @@ import {
   fetchCallSlots,
 } from 'merchant/reducers/config';
 import SupportHeader from 'merchant/components/Support/components/SupportHeader';
-import SupportBody from 'merchant/components/Support/components/SupportBody';
 import { merchantFetch } from 'merchant/utils/ajax';
-
 import { COMDEL_URL } from './constants';
-import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
-
+import getMobileDetect from 'common/utils/mobileDetect';
+import SupportLoader from 'merchant/components/Support/components/Loader';
+const SupportBody = lazy(() => import('merchant/components/Support/components/SupportBody'));
+const SupportBodyOld = lazy(() => import('merchant/components/Support/components/SupportBodyOld'));
 @withRouter
 @connect(
   (state) => {
@@ -47,6 +47,7 @@ export default class Support extends Component {
       no_of_days_for_activation: '3 to 5',
       loaded: false,
     },
+    isWebView: false,
   };
 
   componentDidMount() {
@@ -81,6 +82,18 @@ export default class Support extends Component {
           },
         });
       });
+
+    if (getMobileDetect().isWebView()) {
+      // eslint-disable-next-line react/no-did-mount-set-state
+      this.setState({ isWebView: true });
+    }
+    //@NOTE: below lines will be uncommented with 100% live of new ui on webview
+    // const shouldOpenSupportOnMount = this.props?.history?.location?.pathname?.includes(
+    //   '/app-support',
+    // );
+    // if (shouldOpenSupportOnMount) {
+    //   this.handleToggle();
+    // }
   }
 
   bindEvents = () => {
@@ -109,6 +122,14 @@ export default class Support extends Component {
     }, 500);
   };
 
+  disableScrolling = () => {
+    document.body.classList.add('overflow-hidden');
+  };
+
+  enableScrolling = () => {
+    document.body.classList.remove('overflow-hidden');
+  };
+
   // eslint-disable-next-line consistent-return
   handleToggle = () => {
     const { user } = this.props;
@@ -119,6 +140,9 @@ export default class Support extends Component {
 
     if (!isOpened) {
       trackSupportButton();
+      this.disableScrolling();
+    } else {
+      this.enableScrolling();
     }
 
     this.setState({
@@ -167,6 +191,10 @@ export default class Support extends Component {
     if (isOnBoardingRevampScreen) {
       return null;
     }
+
+    const shouldOpenRaiseAQueryOnMount = history?.location?.pathname?.includes('/app-support');
+
+    const showNewSupport = this.state.isWebView ? false : user.showNewTicketCreationUI;
     return (
       <div className={classList('support', isHidden && 'hidden')}>
         <SupportHeader
@@ -175,20 +203,38 @@ export default class Support extends Component {
           notifyCount={notifyCount}
           isOnBoardingRevampScreen={isOnBoardingRevampScreen}
           showComdelPopover={user.isComdelApiEnabled}
+          isWebView={this.state.isWebView}
         />
-        <SuspenseWithLoader>
-          <SupportBody
-            onToggle={this.handleToggle}
-            isOpened={isOpened}
-            botIsLoaded={this.state.botIsLoaded}
-            onChat={this.handleChat}
-            notifyCount={notifyCount}
-            isCallEnabled={isCallEnabled}
-            scheduleCallConfig={this.props.scheduleCallConfig}
-            supportFlags={this.state.supportFlags}
-            user={this.props.user}
-          />
-        </SuspenseWithLoader>
+        <Suspense fallback={<SupportLoader isOpened={isOpened} />}>
+          {showNewSupport ? (
+            <SupportBody
+              onToggle={this.handleToggle}
+              isOpened={isOpened}
+              botIsLoaded={this.state.botIsLoaded}
+              onChat={this.handleChat}
+              notifyCount={notifyCount}
+              isCallEnabled={isCallEnabled}
+              scheduleCallConfig={this.props.scheduleCallConfig}
+              supportFlags={this.state.supportFlags}
+              user={this.props.user}
+              isWebView={this.state.isWebView}
+            />
+          ) : (
+            <SupportBodyOld
+              onToggle={this.handleToggle}
+              isOpened={isOpened}
+              botIsLoaded={this.state.botIsLoaded}
+              onChat={this.handleChat}
+              notifyCount={notifyCount}
+              isCallEnabled={isCallEnabled}
+              scheduleCallConfig={this.props.scheduleCallConfig}
+              supportFlags={this.state.supportFlags}
+              user={this.props.user}
+              isWebView={this.state.isWebView}
+              shouldOpenRaiseAQueryOnMount={shouldOpenRaiseAQueryOnMount}
+            />
+          )}
+        </Suspense>
       </div>
     );
   }

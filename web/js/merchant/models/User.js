@@ -695,6 +695,9 @@ export default class User {
   get isFrontendCareActive() {
     return this.getExpStatus('frontend_care_active');
   }
+  get showNewTicketCreationUI() {
+    return this.getExpStatus('care_ticket_ui_revamp');
+  }
 
   get isClickToCallActive() {
     return this.getExpStatus('click_to_call_active');

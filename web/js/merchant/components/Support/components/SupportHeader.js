@@ -49,18 +49,21 @@ export default class SupportHeader extends Component {
       onToggle,
       isOnBoardingRevampScreen,
       showComdelPopover,
+      isWebView,
     } = this.props;
     const content = (
       <>
         {notifyCount ? <span class="notify-icon">{notifyCount}</span> : null}
         <div class="open-icon">
-          <i class="i i-headset" />
-        </div>
-        <div class="close-icon">
-          <i class="i i-close " />
+          <span class="support-icon" />
+          <span class="support-help">Help</span>
         </div>
       </>
     );
+
+    if (isWebView) {
+      return null;
+    }
 
     return (
       <div

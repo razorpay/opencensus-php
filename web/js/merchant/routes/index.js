@@ -288,6 +288,10 @@ const StoresProductsCreate = lazy(() =>
   import(/* webpackChunkName: "StoresProductsCreate" */ 'merchant/views/Stores/Create/'),
 );
 
+const AppSupport = lazy(() =>
+  import(/* webpackChunkName: "AppSupport" */ 'merchant/views/AppSupport'),
+);
+
 /*
  * NOTE: entityDetailsMap and entityModalsMap must be mutually exclusive sets
  * */
@@ -584,6 +588,9 @@ const fullPageViewsMap = {
   '/partners/submerchants/onboarding/:submerchantId(acc_.+)/form': {
     component: ActivationForm,
     additionalCondition: (user) => user.isSubMerchantKycResellerEnabled,
+  },
+  '/app-support': {
+    component: AppSupport,
   },
 };
 

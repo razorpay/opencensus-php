@@ -3,6 +3,7 @@ import { getCookie } from 'common/utils/cookies';
 import errorService from '@razorpay/universe-utils/errorService';
 import { Teams, Ranks } from 'common/new-ui/ErrorBoundary';
 import { isMobileDevice } from 'merchant/components/Home/data';
+import getMobileDetect from 'common/utils/mobileDetect';
 
 export const sendToLumberjack = ({ eventName, properties = {} }) => {
   const body = {
@@ -111,6 +112,9 @@ export const initAnalytics = () => {
   });
 };
 
+let isWebView = null;
+let isAndroid = false;
+
 export const analyticsTrack = ({
   objectName,
   actionName,
@@ -144,6 +148,23 @@ export const analyticsTrack = ({
     return; // Don't capture the event if the actionName contains a "_".
   }
 
+  if (isWebView === null) {
+    // added this null condition so that we do not getMobileDetect().isWebView() everytime we call analyticsTrack function.
+    // we will only compute once and then use the same variable untill user leave the application or user refreshes the page.
+    isWebView = getMobileDetect().isWebView();
+
+    if (isWebView) {
+      isAndroid = getMobileDetect().isAndroid();
+    }
+  }
+
+  let source;
+  if (isWebView) {
+    source = isAndroid ? 'Webview - Android' : 'Webview - iOS';
+  } else {
+    source = isMobileDevice(1020) ? 'Mobile Dashboard' : 'Dashboard';
+  }
+
   const eventTimestamp = new Date().toISOString();
   const eventName = titleCase(`${objectName} ${actionName}`);
   if (window.analytics && window.analytics.track) {
@@ -157,7 +178,7 @@ export const analyticsTrack = ({
         // TODO: Deprecated, remove once all iterations are migrated
         // We use 1020px, as we mark tablets and mobile as mweb (in analytics)
         device_type: isMobileDevice(1020) ? 'mweb' : 'dweb',
-        source: isMobileDevice(1020) ? 'Mobile Dashboard' : 'Dashboard',
+        source,
         userId: properties.userId || 'UNKNWON_USER',
       },
       {

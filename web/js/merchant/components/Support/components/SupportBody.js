@@ -3,7 +3,6 @@ import { classList, getCommonAnalyticsProperties } from 'common/utils/rzp-utils'
 import { merchantFetch } from 'merchant/utils/ajax';
 import { trackSupportOptions } from 'merchant/components/Support/ga';
 import { fetchTicketsRaisedByAgents } from 'merchant/reducers/config';
-import ShowWhen from 'merchant/components/ShowWhen';
 import { analyticsTrack } from 'common/utils/analytics';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { connect } from 'react-redux';
@@ -12,11 +11,10 @@ import { CreateTicketEmitter } from '../../../views/TicketSupport/utils';
 import { initCare, TicketSystemEmitter } from '../../../care/init';
 import ErrorBoundary, { Ranks, Teams, InlineFallbackComponent } from 'common/new-ui/ErrorBoundary';
 import { Modal, ModalBody } from 'common/components/Modal';
+import errorService from '@razorpay/universe-utils/errorService';
+import SupportActions from './SupportActions';
 
-const SupportSection = lazy(
-  () => import('@razorpay/frontend-care'),
-  // This will be replaced by @razorpay/care in prod
-);
+const SupportSection = lazy(() => import('@razorpay/frontend-care-new'));
 
 const isWorkingDay = () => {
   return window.RZP && window.RZP.holidays && window.RZP.holidays.isExtendedWorkingDay;
@@ -89,6 +87,31 @@ class SupportBody extends Component {
     }
   };
 
+  handleCloseCareSupportSection = () => {
+    this.setState(
+      {
+        careSupportSection: null,
+      },
+      () => {
+        if (this.props.isOpened) {
+          this.props.onToggle();
+        }
+        if (this.props.isWebView) {
+          try {
+            window.ReactNativeWebView.postMessage(JSON.stringify({ eventType: 'EXIT' }));
+          } catch (error) {
+            errorService.captureError(error, {
+              tags: {
+                team: Teams.CARE,
+              },
+              rank: Ranks.P2,
+            });
+          }
+        }
+      },
+    );
+  };
+
   componentDidMount() {
     window.rzpTicketSystem = {
       openModal: (id, data) => {
@@ -105,17 +128,25 @@ class SupportBody extends Component {
       this.createTicket(id, pcb, lcb);
     });
     TicketSystemEmitter.on('openModal', (module, initialData) => {
-      this.setState({
-        careSupportSection: {
-          module,
-          initialData,
+      this.setState(
+        {
+          careSupportSection: {
+            module,
+            initialData,
+          },
         },
-      });
+        () => {
+          if (
+            ['#ticket', 'ticket', 'tickets', '#tickets'].includes(module) &&
+            !this.props.isOpened
+          ) {
+            this.props.onToggle();
+          }
+        },
+      );
     });
     TicketSystemEmitter.on('closeModal', () => {
-      this.setState({
-        careSupportSection: null,
-      });
+      this.handleCloseCareSupportSection();
     });
     const timingConfigParam = {
       url: 'merchants/chat/timings_config',
@@ -146,8 +177,9 @@ class SupportBody extends Component {
   }
 
   handleClick = (id) => {
-    const { onToggle, onChat, notifyCount } = this.props;
+    const { onChat, notifyCount } = this.props;
     const rzpTicketSystem = window.rzpTicketSystem;
+    this.handleCloseCareSupportSection();
     if (rzpTicketSystem) {
       trackSupportOptions(id);
       if (id === 'call') {
@@ -157,11 +189,27 @@ class SupportBody extends Component {
       }
 
       if (id === 'schedule-call') {
+        analyticsTrack({
+          objectName: 'request a call',
+          actionName: 'clicked',
+          screen: 'home page',
+          properties: {
+            ...getCommonAnalyticsProperties(window.rzp_user),
+          },
+        });
         // eslint-disable-next-line consistent-return
         return rzpTicketSystem.openModal(`#schedule-call`);
       }
 
       if (id === 'click-to-call') {
+        analyticsTrack({
+          objectName: 'click to call',
+          actionName: 'clicked',
+          screen: 'home page',
+          properties: {
+            ...getCommonAnalyticsProperties(window.rzp_user),
+          },
+        });
         // eslint-disable-next-line consistent-return
         return rzpTicketSystem.openModal(`#click-to-call`);
       }
@@ -180,59 +228,22 @@ class SupportBody extends Component {
           return;
         }
 
-        onToggle();
         onChat();
         return;
       }
-      onToggle();
       this.createTicket(id);
     } else {
       console.log('RZP TICKET SYSTEM INIT FAILED');
     }
   };
 
-  handleFeedback = () => {
-    const { onToggle } = this.props;
-    analyticsTrack({
-      objectName: 'share feedback',
-      actionName: 'clicked',
-      screen: 'home page',
-      properties: {
-        location: 'Help and Support',
-        ...getCommonAnalyticsProperties(window.rzp_user),
-      },
-    });
-    trackSupportOptions('feedback');
-
-    try {
-      document.querySelector('[class$="feedback_minimized_label"]').click();
-    } catch (err) {
-      console.log(err);
-    }
-
-    onToggle();
-  };
-
-  handleFaqs = () => {
-    analyticsTrack({
-      objectName: 'faqs',
-      actionName: 'clicked',
-      screen: 'home page',
-      properties: {
-        location: 'Help and Support',
-        ...getCommonAnalyticsProperties(window.rzp_user),
-      },
-    });
-    window.open('https://razorpay.com/knowledgebase/#merchant', '_blank');
-    trackSupportOptions('faqs');
-  };
-
   handleTicketCreatingSuccess = (data) => {
     TicketSystemEmitter.emit('ticket-created', data);
   };
+
   render() {
-    const { notifyCount, isOpened, onToggle, isCallEnabled, scheduleCallConfig, user } = this.props;
-    const { handleClick, openDashboardGuide } = this;
+    const { notifyCount, isOpened, isCallEnabled, scheduleCallConfig, user } = this.props;
+    const { handleClick } = this;
     const { careSupportSection } = this.state;
     const shouldDisable = !isWorkingDay();
     let scheduleCallbackReason =
@@ -283,9 +294,7 @@ class SupportBody extends Component {
                 isOpen={isOpen}
                 onClose={() => {
                   setIsOpen(false);
-                  this.setState({
-                    careSupportSection: null,
-                  });
+                  this.handleCloseCareSupportSection();
                 }}
               >
                 <ModalBody>
@@ -295,179 +304,45 @@ class SupportBody extends Component {
             );
           }}
         >
-          {careSupportSection ? (
-            <SupportSection
-              user={{
-                experiments: user.experiments,
-                email: user.email,
-                name: user.name,
-                id: user.id,
-                contact_mobile: user?.user?.contact_mobile,
-              }}
-              analyticsInstance={analyticsTrack}
-              // removing hash to support frontend care package
-              module={careSupportSection.module?.replace('#', '')}
-              initialData={careSupportSection.initialData}
-              onSuccess={this.handleTicketCreatingSuccess}
-              onClose={() => {
-                this.setState({
-                  careSupportSection: null,
-                });
-              }}
-            />
-          ) : null}
+          <SupportSection
+            user={{
+              experiments: user.experiments,
+              email: user.email,
+              name: user.name,
+              id: user.id,
+              contact_mobile: user?.user?.contact_mobile,
+            }}
+            analyticsInstance={analyticsTrack}
+            // removing hash to support frontend care package
+            module={careSupportSection?.module?.replace('#', '')}
+            initialData={careSupportSection?.initialData}
+            onSuccess={this.handleTicketCreatingSuccess}
+            onClose={this.handleCloseCareSupportSection}
+            shouldOpenExistingTicketsOnNewTab={!this.props.isWebView}
+            shouldPersistSearchString={this.props.isWebView}
+            supportComponents={
+              this.props.isWebView
+                ? []
+                : [
+                    <SupportActions
+                      key="SupportActions"
+                      notifyCount={notifyCount}
+                      isCallEnabled={isCallEnabled}
+                      handleClick={handleClick}
+                      shouldDisable={shouldDisable}
+                      scheduleCallbackReason={scheduleCallbackReason}
+                      openClickToCall={this.state.openClickToCall}
+                      user={this.props.user}
+                      supportFlags={this.props.supportFlags}
+                      botIsLoaded={this.props.botIsLoaded}
+                      timings={this.state.timings}
+                      date={date}
+                      isEligible={scheduleCallConfig.is_eligible}
+                    />,
+                  ]
+            }
+          />
         </ErrorBoundary>
-
-        <header>
-          <i className="i i-headset m-r" /> Help and Support{' '}
-          <i className="i i-close pull-right mob-close" onClick={onToggle} />
-        </header>
-        <ul className="support-list">
-          <li
-            className={`support-item p-all ticket ${
-              !this.props.supportFlags.loaded ? 'disabled' : ''
-            }`}
-            onClick={() => {
-              analyticsTrack({
-                objectName: 'have a query',
-                actionName: 'clicked',
-                screen: 'home page',
-                properties: {
-                  location: 'Help and Support',
-                  ...getCommonAnalyticsProperties(window.rzp_user),
-                },
-              });
-              handleClick('tickets');
-            }}
-          >
-            Have a query? <small className="help-block">Check existing query/raise a new one</small>
-          </li>
-          <ShowWhen
-            myRole="owner admin"
-            additionalCondition={() =>
-              !(this.props.user.isClickToCallActive || this.state.openClickToCall) &&
-              !(
-                scheduleCallbackReason === 'NOT_FETCHED_YET' ||
-                (scheduleCallbackReason === 'NOT_APPLICABLE' && !scheduleCallConfig.is_eligible)
-              )
-            }
-          >
-            <li
-              onClick={() => {
-                analyticsTrack({
-                  objectName: 'request a call',
-                  actionName: 'clicked',
-                  screen: 'home page',
-                  properties: {
-                    ...getCommonAnalyticsProperties(window.rzp_user),
-                  },
-                });
-                handleClick('schedule-call');
-              }}
-            >
-              <span>
-                Request a call <span className="badge">Recommended</span>
-              </span>
-              <small className="help-block">{scheduleCallbackReason}</small>
-            </li>
-          </ShowWhen>
-          <ShowWhen
-            myRole="owner admin"
-            additionalCondition={() =>
-              this.props.user.isFrontendCareActive &&
-              this.props.user.isClickToCallActive &&
-              this.state.openClickToCall
-            }
-          >
-            <li
-              className="support-item p-all callback "
-              onClick={() => {
-                analyticsTrack({
-                  objectName: 'click to call',
-                  actionName: 'clicked',
-                  screen: 'home page',
-                  properties: {
-                    ...getCommonAnalyticsProperties(window.rzp_user),
-                  },
-                });
-                handleClick('click-to-call');
-              }}
-            >
-              <span>
-                Click to call <span className="badge">Recommended</span>
-              </span>
-              <small className="help-block">Click to call instantly</small>
-            </li>
-          </ShowWhen>
-          {window.rzp_user ? (
-            ['activated', 'under_review', 'instantly_activated', 'needs_clarification'].indexOf(
-              window.rzp_user.activation_status,
-            ) > -1 && this.props.supportFlags.show_chat ? (
-              <li
-                className={`support-item p-all chat ${
-                  (!this.props.supportFlags.show_chat && notifyCount < 1) ||
-                  (this.props.user.isChatbotLive && !this.props.botIsLoaded)
-                    ? 'disabled'
-                    : ''
-                }`}
-                onClick={() => {
-                  analyticsTrack({
-                    objectName: 'chat with us',
-                    actionName: 'clicked',
-                    screen: 'home page',
-                    properties: {
-                      location: 'Help and Support',
-                      ...getCommonAnalyticsProperties(window.rzp_user),
-                    },
-                  });
-                  handleClick('chat');
-                }}
-              >
-                Chat with us
-                {this.state.timings.length ? (
-                  <small className="help-content">
-                    ({date.start} {date.start_zone} - {date.end} {date.end_zone})
-                  </small>
-                ) : null}
-                {notifyCount > 0 && <span className="notify-icon m-l">{notifyCount}</span>}
-                <small className="help-block">
-                  {!this.props.supportFlags.show_chat && notifyCount < 1
-                    ? 'Currently unavailable'
-                    : 'For quick questions or help on dashboard'}
-                </small>
-              </li>
-            ) : null
-          ) : null}
-          {isCallEnabled ? (
-            <li
-              className={`support-item p-all call ${shouldDisable ? 'disabled' : ''}`}
-              onClick={() => handleClick('call')}
-            >
-              Call Support <small className="help-content">(9am-9pm, working days)</small>
-              <small className="help-block">
-                {shouldDisable ? 'Currently unavailable' : 'For queries and help on the dashboard'}
-              </small>
-            </li>
-          ) : null}
-          <li
-            className="support-item p-all dashboard_guide"
-            onClick={() => {
-              openDashboardGuide();
-            }}
-          >
-            Dashboard Guide{' '}
-            <small className="help-block">Read more about how to use the dashboard</small>
-          </li>
-        </ul>
-
-        <div className="support-feedback">
-          <button className="btn btn-default pull-left" onClick={this.handleFeedback}>
-            <i className="i i-voice-record m-r" /> Share Feedback
-          </button>
-          <button className="btn btn-default pull-right" onClick={this.handleFaqs}>
-            <i className="i i-help  m-r" /> FAQs
-          </button>
-        </div>
       </div>
     );
   }

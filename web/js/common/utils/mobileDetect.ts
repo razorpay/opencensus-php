@@ -4,6 +4,7 @@ type MobileDetect = {
   isAndroid: () => boolean;
   isIos: () => boolean;
   isSSR: () => boolean;
+  isWebView: () => boolean;
 };
 
 const getMobileDetect = (userAgent: string = navigator.userAgent): MobileDetect => {
@@ -15,6 +16,9 @@ const getMobileDetect = (userAgent: string = navigator.userAgent): MobileDetect 
 
   const isMobile = (): boolean => Boolean(isAndroid() || isIos() || isOpera() || isWindows());
   const isDesktop = (): boolean => Boolean(!isMobile() && !isSSR());
+  // we are specifically expecting source = webview in query params from app team when ever they open pages in webview.
+  const isWebView = (): boolean =>
+    Boolean(userAgent.includes('wv') || window.location.search.includes('source=webview'));
 
   return {
     isMobile,
@@ -22,6 +26,7 @@ const getMobileDetect = (userAgent: string = navigator.userAgent): MobileDetect 
     isAndroid,
     isIos,
     isSSR,
+    isWebView,
   };
 };
 

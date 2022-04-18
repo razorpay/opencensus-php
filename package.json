@@ -2,6 +2,10 @@
   "name": "dashboard",
   "author": "Team Razorpay",
   "private": true,
+  "engines": {
+    "node": ">=16.13.1",
+    "npm": ">=8.1.2"
+  },
   "dependencies": {
     "@typeform/embed": "1.10.0",
     "croppie": "^2.6.4",

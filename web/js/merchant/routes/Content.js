@@ -20,7 +20,6 @@ import RepaymentsSchedule from '../views/Capital/CashAdvance/RepaymentsSchedule'
 import HandleIndex from './HandleIndex';
 import lazy from './LazyLoader';
 import { getXCAStatus } from 'common/ui/NotificationsDropdown/Neostone/common/utils';
-
 const PartnerDashboard = lazy(() =>
   import(/* webpackChunkName: "PartnerDashboard" */ 'merchant/views/PartnerDashboard'),
 );
@@ -642,7 +641,7 @@ export default class Content extends Component {
   };
 
   render() {
-    const { user, fullPageView } = this.props;
+    const { user, fullPageView, isWebView } = this.props;
 
     let DetailView = this.detailView;
     const BaseView = this.baseLocation ? this.getBaseView() : null;
@@ -689,7 +688,7 @@ export default class Content extends Component {
       // to add a new class alognside main-content if we are in the test mode and in m-web
       <main
         class={classList(
-          !fullPageView && 'main-content',
+          !fullPageView && !isWebView && 'main-content',
           this.props.mode === 'test' && isMobileDevice() ? 'test-mode' : '',
         )}
       >

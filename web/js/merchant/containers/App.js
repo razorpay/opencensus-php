@@ -1,4 +1,4 @@
-import { Component, Suspense } from 'react';
+import { Component, Suspense, lazy } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 import moment from 'moment';
@@ -55,6 +55,11 @@ import PartnerActivationRequiredModal from 'merchant/views/PartnerDashboard/Acti
 import _refiner from 'refiner-js';
 import { getCookie, setCookie } from 'common/utils/cookies';
 import RequestEmailModal from 'merchant_common/containers/ReportsAsync/GenerateReportPanel/AddEmail/RequestEmailModal';
+import getMobileDetect from 'common/utils/mobileDetect';
+
+// const WebViewHeader = lazy(() =>
+//   import(/* webpackChunkName: 'webview header' */ 'merchant/components/HeaderNav/WebViewHeader'),
+// );
 
 initSentry('Merchant');
 
@@ -94,6 +99,7 @@ class App extends Component {
         this.props.location.pathname.startsWith('/partners/') &&
         this.props?.user?.isIndependentPartnerKYCEnabled,
       isPartnerKYCActivated: false,
+      isWebView: false,
     };
 
     this.handleResize = debounce(this.handleResize.bind(this), 200);
@@ -421,6 +427,10 @@ class App extends Component {
       const merchantsSettlementStatus = JSON.parse(
         LocalStorageService.getItem('merchantsSettlementStatus'),
       );
+
+      if (getMobileDetect().isWebView()) {
+        this.setState({ isWebView: true });
+      }
 
       const esOndemandSettlementDisabled = (user.features || []).indexOf('es_on_demand') === -1;
       if (esOndemandSettlementDisabled) return;
@@ -959,7 +969,7 @@ class App extends Component {
       >
         <div className={classList('layout', this.orgCode, this.renderFullPageView && 'layout--fp')}>
           <TwoFactorVerificationProvider merchantFetch={merchantFetch} ajax={ajax}>
-            {!this.renderFullPageView && (
+            {!this.renderFullPageView && !this.state.isWebView && (
               <React.Fragment>
                 <HeaderNav
                   user={user}
@@ -980,15 +990,22 @@ class App extends Component {
               </React.Fragment>
             )}
 
+            {/* {this.state.isWebView && ( //@NOTE: this will be uncommented when we go live with new ui on webview.
+              <Suspense fallback={null}>
+                <WebViewHeader history={this.props.history} />
+              </Suspense>
+            )} */}
+
             {this.getSurveyForm()}
 
             <Content
               user={user}
               modeFormatted={currentModeFormatted}
               fullPageView={this.renderFullPageView}
+              isWebView={this.state.isWebView}
             />
 
-            {!this.renderFullPageView && (
+            {!this.renderFullPageView && !this.state.isWebView && (
               <Footer showMobileNav={this.props.windowWidth < 950} user={user} />
             )}
 
