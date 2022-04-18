@@ -498,6 +498,13 @@ class Core extends Base\Core
         try
         {
             $accounts = $this->repo->account_detail->fetchBalance($merchantId, $bankingAccountId, ConnectionType::RX_DATA_WAREHOUSE_MERCHANT);
+
+            $this->trace->info(TraceCode::LEDGER_ACCOUNT_FETCH_BALANCE_FROM_TIDB_RESPONSE,
+                [
+                    'response' => $accounts,
+                ]
+            );
+
             $merchantBalance = [];
             $rewardBalance = [];
             foreach($accounts as $account)
