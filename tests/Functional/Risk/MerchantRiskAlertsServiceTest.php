@@ -111,6 +111,63 @@ class MerchantRiskAlertsServiceTest extends TestCase
         $this->assertEquals([], $this->makeRequestAndGetContent($input));
     }
 
+    public function testGetMerchantDetails()
+    {
+        //default => live is false, hold_funds is false, and no foh_workflow is open
+        $response = $this->startTest();
+        $this->assertEquals(false, $response["merchant_live"]); //default is false
+        $this->assertEquals(false, $response["merchant_foh"]);
+        $this->assertEquals(false, $response["merchant_suspended"]);
+        $this->assertEquals(false, $response["merchant_foh_workflow_open"]);
+
+        //live is true, hold_funds is false, suspended at is false and no foh_workflow is open
+        $this->fixtures->edit('merchant', '10000000000000', [
+            'live' => 1,
+        ]);
+
+        $response = $this->startTest();
+        $this->assertEquals(true, $response["merchant_live"]);
+        $this->assertEquals(false, $response["merchant_foh"]);
+        $this->assertEquals(false, $response["merchant_suspended"]);
+        $this->assertEquals(false, $response["merchant_foh_workflow_open"]);
+
+        //live is true, hold_funds is true, suspended at is false and no foh_workflow is open
+        $this->fixtures->edit('merchant', '10000000000000', [
+            'hold_funds' => 1,
+        ]);
+
+        $response = $this->startTest();
+        $this->assertEquals(true, $response["merchant_live"]);
+        $this->assertEquals(true, $response["merchant_foh"]);
+        $this->assertEquals(false, $response["merchant_suspended"]);
+        $this->assertEquals(false, $response["merchant_foh_workflow_open"]);
+
+
+        //live is true, hold_funds is false, suspended at is true and no foh_workflow is open
+        $this->fixtures->edit('merchant', '10000000000000', [
+            'hold_funds'   => 0,
+            'suspended_at' => time(),
+        ]);
+        $response = $this->startTest();
+        $this->assertEquals(true, $response["merchant_live"]);
+        $this->assertEquals(false, $response["merchant_foh"]);
+        $this->assertEquals(true, $response["merchant_suspended"]);
+        $this->assertEquals(false, $response["merchant_foh_workflow_open"]);
+
+        //live = true, hold_funds = false, suspended at is false and foh_workflow is open
+        $this->fixtures->edit('merchant', '10000000000000', [
+            'suspended_at' => null
+        ]);
+
+        $this->createMerchantRiskAlertsFoHWorkflow();
+
+        $response = $this->startTest();
+        $this->assertEquals(true, $response["merchant_live"]);
+        $this->assertEquals(false, $response["merchant_foh"]);
+        $this->assertEquals(false, $response["merchant_suspended"]);
+        $this->assertEquals(true, $response["merchant_foh_workflow_open"]);
+    }
+
     /**
      * Feature: https://docs.google.com/document/d/1DH4lbyePwYk8ngm-g6FwRXeAnnCg8HmpyasqM36LxRE/edit#
      */

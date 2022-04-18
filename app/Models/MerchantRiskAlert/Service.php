@@ -133,6 +133,8 @@ class Service extends Base\Service
 
         $details = [
             Constants::MERCHANT_FOH_KEY          => $merchant->isFundsOnHold(),
+            Constants::MERCHANT_LIVE_KEY         => $merchant->isLive(),
+            Constants::MERCHANT_SUSPENDED_KEY    => $merchant->isSuspended(),
             Constants::MERCHANT_FOH_WORKFLOW_KEY => $workflowActions->isNotEmpty() === true,
             Constants::MERCHANT_CREATED_AT       => $merchant->getCreatedAt(),
             Constants::MERCHANT_HAS_AOV          => false,

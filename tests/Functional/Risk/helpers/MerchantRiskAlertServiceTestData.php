@@ -53,5 +53,16 @@ return [
             ],
         ],
         'status_code' => 200,
+    ],
+
+    'testGetMerchantDetails' => [
+        'request'     => [
+            'method'  => 'get',
+            'url'     => '/merchant_risk_alerts/merchant/10000000000000/details',
+        ],
+        'response'    => [
+            'content' => [],
+        ],
+        'status_code' => 200,
     ]
 ];

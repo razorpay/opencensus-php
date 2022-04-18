@@ -5,6 +5,8 @@ namespace RZP\Models\MerchantRiskAlert;
 class Constants
 {
     const MERCHANT_FOH_KEY          = 'merchant_foh';
+    const MERCHANT_LIVE_KEY         = 'merchant_live';
+    const MERCHANT_SUSPENDED_KEY    = 'merchant_suspended';
     const MERCHANT_FOH_WORKFLOW_KEY = 'merchant_foh_workflow_open';
     const MERCHANT_CREATED_AT       = 'merchant_created_at';
     const MERCHANT_MIN_AOV          = 'merchant_min_aov';
