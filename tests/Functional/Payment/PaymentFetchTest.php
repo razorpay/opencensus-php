@@ -2,12 +2,17 @@
 
 namespace RZP\Tests\Functional\Payment;
 
+use Cache;
 use Mockery;
 use Illuminate\Database\Eloquent\Factory;
 
 use RZP\Error\ErrorCode;
 use RZP\Services\RazorXClient;
+use RZP\Constants\Entity as E;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Currency\Currency;
+use RZP\Models\Admin\Role\TenantRoles;
+use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Helpers\Org\CustomBrandingTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
@@ -32,6 +37,8 @@ class PaymentFetchTest extends TestCase
 
     protected function setUp(): void
     {
+        ConfigKey::resetFetchedKeys();
+
         $this->testDataFilePath = __DIR__.'/helpers/PaymentFetchTestData.php';
 
         parent::setUp();
@@ -76,6 +83,212 @@ class PaymentFetchTest extends TestCase
         $content = $this->startTest();
 
         $this->assertEquals('pay_' . $pay1['id'], $content['items'][0]['id']);
+    }
+
+    /**
+     * RX/PG Isolation: Negative test.
+     * - Admin trying to fetch the payment entity
+     * - Admin does NOT have tenant:payments role
+     * - The payment entity is mapped to the role, as in scope
+     *
+     * Access should be denied.
+     */
+    public function testFetchPaymentsWithNoTenantRole()
+    {
+        $this->ba->adminAuth();
+
+        $this->fixtures->create('payment', ['method' => 'netbanking', 'bank' => 'rzp']);
+
+        $store = Cache::store('redis');
+
+        Cache::shouldReceive('store')
+             ->withAnyArgs()
+             ->andReturn($store);
+
+        Cache::shouldReceive('get')
+             ->once()
+             ->with(ConfigKey::TENANT_ROLES_ENTITY)
+             ->andReturn([
+                             E::PAYMENT => [TenantRoles::ENTITY_PAYMENTS],
+                             E::REFUND  => [TenantRoles::ENTITY_PAYMENTS],
+                         ]);
+
+        $this->startTest();
+    }
+
+    /**
+     * RX/PG Isolation: Negative test.
+     * - Admin trying to fetch a single payment entity
+     * - Admin does NOT have tenant:payments role
+     * - The payment entity is mapped to the role, as in scope
+     *
+     * Access should be denied.
+     */
+    public function testFetchSinglePaymentWithNoTenantRole()
+    {
+        $this->ba->adminAuth();
+
+        $payment = $this->fixtures->create('payment', ['method' => 'netbanking', 'bank' => 'rzp']);
+
+        $store = Cache::store('redis');
+
+        Cache::shouldReceive('store')
+             ->withAnyArgs()
+             ->andReturn($store);
+
+        Cache::shouldReceive('get')
+             ->once()
+             ->with(ConfigKey::TENANT_ROLES_ENTITY)
+             ->andReturn([
+                             E::PAYMENT => [TenantRoles::ENTITY_PAYMENTS],
+                             E::REFUND  => [TenantRoles::ENTITY_PAYMENTS],
+                         ]);
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/admin/payment/' . $payment['id'];
+        $this->startTest();
+    }
+
+    /**
+     * RX/PG Isolation: Positive test.
+     * - Admin trying to fetch the payment entity
+     * - Admin has the tenant:payments role
+     * - The payment entity is mapped to the role, as in scope
+     *
+     * Access should be allowed.
+     */
+    public function testFetchPaymentsWithTenantRole()
+    {
+        $this->ba->adminAuth();
+
+        $paymentsTenantRole = $this->fixtures->create('role', [
+            'org_id' => Org::RZP_ORG,
+            'name'   => TenantRoles::ENTITY_PAYMENTS,
+        ]);
+
+        $this->ba->getAdmin()->roles()->attach($paymentsTenantRole);
+
+        $this->fixtures->create('payment', ['method' => 'netbanking', 'bank' => 'rzp']);
+
+        $store = Cache::store('redis');
+
+        Cache::shouldReceive('store')
+             ->withAnyArgs()
+             ->andReturn($store);
+
+        Cache::shouldReceive('get')
+             ->once()
+             ->with(ConfigKey::TENANT_ROLES_ENTITY)
+             ->andReturn([
+                             E::PAYMENT => [TenantRoles::ENTITY_PAYMENTS],
+                             E::REFUND  => [TenantRoles::ENTITY_PAYMENTS],
+                         ]);
+
+        $this->startTest();
+    }
+
+    /**
+     * RX/PG Isolation: Positive test.
+     * - Admin trying to fetch a single payment entity
+     * - Admin has the tenant:payments role
+     * - The payment entity is mapped to the role, as in scope
+     *
+     * Access should be allowed.
+     */
+    public function testFetchSinglePaymentWithTenantRole()
+    {
+        $this->ba->adminAuth();
+
+        $paymentsTenantRole = $this->fixtures->create('role', [
+            'org_id' => Org::RZP_ORG,
+            'name'   => TenantRoles::ENTITY_PAYMENTS,
+        ]);
+
+        $this->ba->getAdmin()->roles()->attach($paymentsTenantRole);
+
+        $payment = $this->fixtures->create('payment', ['method' => 'netbanking', 'bank' => 'rzp']);
+
+        $store = Cache::store('redis');
+        Cache::shouldReceive('store')
+             ->withAnyArgs()
+             ->andReturn($store);
+
+        Cache::shouldReceive('get')
+             ->once()
+             ->with(ConfigKey::TENANT_ROLES_ENTITY)
+             ->andReturn([
+                             E::PAYMENT => [TenantRoles::ENTITY_PAYMENTS],
+                             E::REFUND  => [TenantRoles::ENTITY_PAYMENTS],
+                         ]);
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/admin/payment/' . $payment['id'];
+        $this->startTest();
+    }
+
+    /**
+     * RX/PG Isolation: Positive test on Route access.
+     * - Admin trying to access an admin route: payment_verify
+     * - Admin has the tenant:payments role
+     * - The payment_verify route is marked to the tenant:payments role, as in scope
+     *
+     * Access should be allowed.
+     */
+    public function testPaymentVerifyAdminWithTenantRole()
+    {
+        $this->ba->adminAuth();
+
+        $paymentsTenantRole = $this->fixtures->create('role', [
+            'org_id' => Org::RZP_ORG,
+            'name'   => TenantRoles::ENTITY_PAYMENTS,
+        ]);
+
+        $this->ba->getAdmin()->roles()->attach($paymentsTenantRole);
+
+        $payment = $this->fixtures->create('payment', ['method' => 'netbanking', 'bank' => 'rzp']);
+
+        $store = Cache::store('redis');
+        Cache::shouldReceive('store')
+             ->withAnyArgs()
+             ->andReturn($store);
+
+        Cache::shouldReceive('get')
+             ->once()
+             ->with(ConfigKey::TENANT_ROLES_ROUTES)
+             ->andReturn(['payment_verify' => [TenantRoles::ENTITY_PAYMENTS]]);
+
+        $testData                   = &$this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/payments/' . $payment['id'] . '/verify';
+        $this->startTest();
+    }
+
+    /**
+     * RX/PG Isolation: Negative test on Route access.
+     * - Admin trying to access an admin route: payment_verify
+     * - Admin does not have the tenant:payments role
+     * - The payment_verify route is marked to the tenant:payments role, as in scope
+     *
+     * Access should be denied.
+     */
+    public function testPaymentVerifyAdminWithNoTenantRole()
+    {
+        $this->ba->adminAuth();
+
+        $payment = $this->fixtures->create('payment', ['method' => 'netbanking', 'bank' => 'rzp']);
+
+        $store = Cache::store('redis');
+        Cache::shouldReceive('store')
+             ->withAnyArgs()
+             ->andReturn($store);
+
+        Cache::shouldReceive('get')
+             ->once()
+             ->with(ConfigKey::TENANT_ROLES_ROUTES)
+             ->andReturn(['payment_verify' => [TenantRoles::ENTITY_PAYMENTS]]);
+
+        $testData                   = &$this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/payments/' . $payment['id'] . '/verify';
+        $this->startTest();
     }
 
     public function testFetchForAdminAuthRestrictedFilterAcquirerData()

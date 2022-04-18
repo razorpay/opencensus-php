@@ -60,6 +60,8 @@ class Validator extends Base\Validator
     ];
 
     protected static $setConfigKeysRules = [
+        ConfigKey::TENANT_ROLES_ENTITY                  => 'filled|array',
+        ConfigKey::TENANT_ROLES_ROUTES                  => 'filled|array',
         ConfigKey::ASYNC_ESCALATION_HANDLING_ENABLED    => 'filled|boolean',
         ConfigKey::TERMINAL_SELECTION_LOG_VERBOSE       => 'filled|boolean',
         ConfigKey::PRICING_RULE_SELECTION_LOG_VERBOSE   => 'filled|boolean',

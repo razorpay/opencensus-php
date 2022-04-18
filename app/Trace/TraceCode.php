@@ -6765,6 +6765,13 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const FETCH_PAYMENTS_FAILED_TO_SET_OPTIMIZER_PROVIDER    = 'FETCH_PAYMENTs_FAILED_TO_SET_OPTIMIZER_PROVIDER';
 
+    // Tenant roles codes
+    const TENANT_ENTITY_ACCESS_DENIED                           = 'TENANT_ENTITY_ACCESS_DENIED';
+    const TENANT_ENTITY_ROLES_NOT_MAPPED                        = 'TENANT_ENTITY_ROLES_NOT_MAPPED';
+    const TENANT_ENTITY_NO_ADMIN_ROLES_SET                      = 'TENANT_ENTITY_NO_ADMIN_ROLES_SET';
+    const TENANT_ROUTE_ROLES_RESOLVED                           = 'TENANT_ROUTE_ROLES_RESOLVED';
+    const TENANT_ROUTE_ACCESS_DENIED                            = 'TENANT_ROUTE_ACCESS_DENIED';
+    const TENANT_ROUTE_ROLES_NOT_MAPPED                         = 'TENANT_ROUTE_ROLES_NOT_MAPPED';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',

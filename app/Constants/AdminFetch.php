@@ -3,6 +3,7 @@
 namespace RZP\Constants;
 
 use RZP\Base\Fetch;
+use RZP\Models\Admin\EntityRoleScope;
 use RZP\Models\Payout;
 use RZP\Models\Dispute;
 use RZP\Models\External;
@@ -238,6 +239,26 @@ class AdminFetch
         }, $response[PublicCollection::ITEMS] ?? []);
 
         return $response;
+    }
+
+    public static function filterEntitiesByRole(array $entities, array $adminRoles): array
+    {
+        $filtered = array_filter($entities, function(string $entity) use ($adminRoles) {
+            $entityRoles = EntityRoleScope::getEntityRoles($entity);
+
+            // If no roles are defined for the entity, we assume that no enforcement
+            // is needed. i.e. this is currently an allowlist (while we're rolling it out)
+            // TODO: ideally, move this to a denylist once this goes fully live.
+            if ($entityRoles === null)
+            {
+                app('trace')->info(TraceCode::TENANT_ENTITY_ROLES_NOT_MAPPED, ['entity' => $entity]);
+                return true;
+            }
+
+            return (count(array_intersect($entityRoles, $adminRoles)) > 0);
+        }, ARRAY_FILTER_USE_KEY);
+
+         return $filtered;
     }
 
     public static function externalEntities()

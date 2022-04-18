@@ -19,6 +19,11 @@ class ConfigKey
 
     const PREFIX                                = 'config:';
 
+    // Tenant Role isolation config keys
+    // (created for RX/PG isolation)
+    const TENANT_ROLES_ENTITY                   = SELF::PREFIX . 'tenant_roles_entity';
+    const TENANT_ROLES_ROUTES                   = SELF::PREFIX . 'tenant_roles_routes';
+
     // Logs
     const TERMINAL_SELECTION_LOG_VERBOSE        = self::PREFIX . 'terminal_selection_log_verbose';
     const PRICING_RULE_SELECTION_LOG_VERBOSE    = self::PREFIX . 'pricing_rule_selection_log_verbose';
@@ -284,6 +289,8 @@ class ConfigKey
 
 
     const PUBLIC_KEYS = [
+        self::TENANT_ROLES_ENTITY,
+        self::TENANT_ROLES_ROUTES,
         self::ASYNC_ESCALATION_HANDLING_ENABLED,
         self::TERMINAL_SELECTION_LOG_VERBOSE,
         self::PRICING_RULE_SELECTION_LOG_VERBOSE,
@@ -424,6 +431,8 @@ class ConfigKey
         self::USE_MASTER_DB_CONNECTION => [Name::USE_MASTER_DB_CONNECTION],
         self::PAYER_ACCOUNT_NAME_INVALID_REGEXES => [Name::SET_PAYER_NAME_INVALID_REGEX],
         self::RX_ON_HOLD_PAYOUTS_MERCHANT_SLA => [Name::SET_MERCHANT_SLA_FOR_ON_HOLD_PAYOUTS],
+        self::TENANT_ROLES_ENTITY => [Name::SET_TENANT_ROLES_CONFIG],
+        self::TENANT_ROLES_ROUTES => [Name::SET_TENANT_ROLES_CONFIG],
     ];
 
     /**

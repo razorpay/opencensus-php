@@ -36,6 +36,113 @@ return [
         ],
     ],
 
+    'testFetchPaymentsWithNoTenantRole' => [
+        'request'   => [
+            'url'     => '/admin/payment',
+            'method'  => 'get',
+            'content' => [
+                'status' => 'created',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ACCESS_DENIED,
+        ],
+    ],
+
+    'testFetchSinglePaymentWithNoTenantRole' => [
+        'request'   => [
+            'url'    => '/admin/payment/:id',
+            'method' => 'get',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ACCESS_DENIED,
+        ],
+    ],
+
+    'testFetchPaymentsWithTenantRole' => [
+        'request'  => [
+            'url'     => '/admin/payment',
+            'method'  => 'get',
+            'content' => [
+                'status' => 'created',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+            ],
+        ],
+    ],
+
+    'testFetchSinglePaymentWithTenantRole' => [
+        'request'  => [
+            'url'     => '/admin/payment',
+            'method'  => 'get',
+            'content' => [
+                'status' => 'created',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'created',
+            ],
+        ],
+    ],
+
+    'testPaymentVerifyAdminWithTenantRole' => [
+        'request'  => [
+            'url'     => '',
+            'method'  => 'get',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'payment' => [
+                    'status' => 'created',
+                ]
+            ],
+        ],
+    ],
+
+    'testPaymentVerifyAdminWithNoTenantRole' => [
+        'request'  => [
+            'url'     => '',
+            'method'  => 'get',
+            'content' => [],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ACCESS_DENIED,
+        ],
+    ],
+
     'testFetchForAdminAuthRestrictedFilterAcquirerData' => [
         'request' => [
             'url'     => '/admin/payment',

@@ -672,6 +672,7 @@ class Name
     const SET_SHARED_ACCOUNT_ALLOWED_CHANNELS = 'set_shared_account_allowed_channels';
     const SET_PAYER_ACCOUNT_INVALID_REGEX     = 'set_payer_account_invalid_regex';
     const SET_PAYER_NAME_INVALID_REGEX        = 'set_payer_name_invalid_regex';
+    const SET_TENANT_ROLES_CONFIG             = 'set_tenant_roles_config';
 
     // Low Balance Config
     const CREATE_LOW_BALANCE_CONFIG           = 'create_low_balance_config';

@@ -12,8 +12,11 @@ use RZP\Exception;
 use RZP\Http\Route;
 use RZP\Models\Admin;
 use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
 use RZP\Models\Admin\Org;
+use RZP\Http\RouteRoleScope;
 use RZP\Http\BasicAuth\BasicAuth;
+use Razorpay\Trace\Logger as Trace;
 
 class AdminAccess
 {
@@ -34,9 +37,14 @@ class AdminAccess
     /** @var Router */
     protected $router;
 
+    /** @var Trace */
+    protected $trace;
+
     public function __construct(Application $app)
     {
         $this->app = $app;
+
+        $this->trace = $app['trace'];
 
         $this->repo = $app['repo'];
 
@@ -54,36 +62,38 @@ class AdminAccess
 
         $this->setOrgType($orgId);
 
-        if ($this->ba->isAdminAuth() === true)
+        if ($this->ba->isAdminAuth() === false)
         {
-            /** @var Admin\Admin\Entity $admin */
-            $admin = $this->ba->getAdmin();
+            return $next($request);
+        }
 
-            if ($admin->isLocked() === true)
-            {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_USER_ACCOUNT_LOCKED);
-            }
+        /** @var Admin\Admin\Entity $admin */
+        $admin = $this->ba->getAdmin();
 
-            $routeName = $this->router->currentRouteName();
+        if ($admin->isLocked() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_USER_ACCOUNT_LOCKED);
+        }
 
-            if ($admin->isDisabled() === true)
-            {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_USER_ACCOUNT_DISABLED);
-            }
+        $routeName = $this->router->currentRouteName();
 
-            $this->validateAdminBelongsToSameOrg($routeName, $admin, $request);
+        if ($admin->isDisabled() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_USER_ACCOUNT_DISABLED);
+        }
 
-            $merchant = $this->getMerchant($request);
+        $this->validateAdminBelongsToSameOrg($routeName, $admin, $request);
 
-            $authorized = $this->policyChecker($routeName, $admin, $merchant);
+        $merchant = $this->getMerchant($request);
 
-            if ($authorized === false)
-            {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_ACCESS_DENIED);
-            }
+        $authorized = $this->policyChecker($routeName, $admin, $merchant);
+
+        if ($authorized === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ACCESS_DENIED);
         }
 
         return $next($request);
@@ -272,6 +282,14 @@ class AdminAccess
         // set admin roles in passport
         $this->ba->setPassportRoles($adminRoles);
 
+        // For Razorpay org admins, check if the admin has the roles required to access this routeName
+        if (($admin->getOrgId() === Org\Entity::RAZORPAY_ORG_ID) and
+            ($this->checkTenantRoleAllowed($routeName, $adminRoles) === false))
+        {
+            $this->trace->info(TraceCode::TENANT_ROUTE_ACCESS_DENIED, ['route' => $routeName, 'admin_roles' => $adminRoles]);
+            return false;
+        }
+
         // 2. Check if the specified permissions exist in our
         // generated white list
 
@@ -290,6 +308,34 @@ class AdminAccess
         }
 
         return $policyPassed;
+    }
+
+    /**
+     * Certain routes are restricted to be accessed by defined tenant roles only.
+     * This enforcement is in addition to existing permission-based checks, and comes prior.
+     *
+     * This allows us to do things like enforce RBAC for resources that need to be accessed by admins under
+     * a certain legal entity. Ex - /payments/* routes to be access by payments BU admins alone.
+     * @param string $routeName
+     * @param array  $adminRoles
+     *
+     * @return bool
+     */
+    private function checkTenantRoleAllowed(string $routeName, array $adminRoles): bool
+    {
+        $routeRoles = RouteRoleScope::getRoles($routeName);
+
+        // If no roles are defined for the route, we assume that no enforcement
+        // is needed. i.e. this is currently an allowlist (while we're rolling it out)
+        // TODO: ideally, move this to a denylist once this goes fully live.
+        if ($routeRoles === null)
+        {
+            $this->trace->info(TraceCode::TENANT_ROUTE_ROLES_NOT_MAPPED, ['route' => $routeName]);
+            return true;
+        }
+
+        $this->trace->info(TraceCode::TENANT_ROUTE_ROLES_RESOLVED, ['route' => $routeName, 'route_roles' => $routeRoles]);
+        return count(array_intersect($routeRoles, $adminRoles)) > 0;
     }
 
     private function checkPermissionAllowed(string $toCheck, array $haystack, string $routeName)

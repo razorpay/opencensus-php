@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Redis;
 
 use RZP\Base\Repository;
 use RZP\Constants\Mode;
+use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Jobs;
 use RZP\Models;
 use RZP\Exception;
@@ -76,6 +77,21 @@ class Service extends Base\Service
         if ($isExternalAdmin === true)
         {
             $mergedEntities = AdminFetch::filterEntitiesForExternalAdmin($mergedEntities);
+        }
+
+        /** @var BasicAuth $basicAuth */
+        $basicAuth  = app('basicauth');
+        $adminRoles = $basicAuth->getPassport()['roles'] ?? [];
+        if (empty($adminRoles) === true)
+        {
+            $this->trace->info(TraceCode::TENANT_ENTITY_NO_ADMIN_ROLES_SET);
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ACCESS_DENIED);
+        }
+
+        // For Razorpay org admins, run a tenant role-based filter
+        if ($basicAuth->getAdmin()->getOrgId() === Org\Entity::RAZORPAY_ORG_ID)
+        {
+            $mergedEntities = AdminFetch::filterEntitiesByRole($mergedEntities, $adminRoles);
         }
 
         return [
@@ -198,6 +214,15 @@ class Service extends Base\Service
         if ($isExternalAdmin === true)
         {
             (new Validator)->validateEntityTypeForExternalAdmin($entityType);
+        }
+
+        // Run tenant role-based validation for Razorpay org admins only
+        /** @var BasicAuth $basicAuth */
+        $basicAuth  = app('basicauth');
+        if (($basicAuth->isAdminAuth() === true) and
+            ($basicAuth->getAdmin()->getOrgId() === Org\Entity::RAZORPAY_ORG_ID))
+        {
+            $this->validateEntityAccess($entity);
         }
 
         $retEntity = $this->handleExternalEntity($entity, $input, $id);
@@ -396,6 +421,15 @@ class Service extends Base\Service
 
         Entity::validateEntityOrFailPublic($entity);
 
+        // Run tenant role-based validation for Razorpay org admins only
+        /** @var BasicAuth $basicAuth */
+        $basicAuth  = app('basicauth');
+        if (($basicAuth->isAdminAuth() === true) and
+            ($basicAuth->getAdmin()->getOrgId() === Org\Entity::RAZORPAY_ORG_ID))
+        {
+            $this->validateEntityAccess($entity);
+        }
+
         if ( $entity === Entity::PAYMENT OR $entity === Entity::ORDER )
         {
             $entities = $this->repo->$entity->fetch($input, null, ConnectionType::DATA_WAREHOUSE_ADMIN_REPLICA);
@@ -419,6 +453,44 @@ class Service extends Base\Service
         }
 
         return $response;
+    }
+
+    /**
+     * Validates if an admin can access an entity, based on mapping
+     * from EntityRoleScope
+     *
+     * @param string $entity
+     *
+     * @throws Exception\BadRequestException
+     * @see EntityRoleScope
+     */
+    protected function validateEntityAccess(string $entity)
+    {
+        $entityRoles = EntityRoleScope::getEntityRoles($entity);
+
+        if ($entityRoles === null)
+        {
+            $this->trace->info(TraceCode::TENANT_ENTITY_ROLES_NOT_MAPPED, ['entity' => $entity]);
+            return;
+        }
+
+        /** @var BasicAuth $basicAuth */
+        $basicAuth  = app('basicauth');
+        $adminRoles = $basicAuth->getPassport()['roles'];
+        if (empty($adminRoles) === true)
+        {
+            $this->trace->info(TraceCode::TENANT_ENTITY_NO_ADMIN_ROLES_SET,
+                               ['entity' => $entity, 'entity_roles' => $entityRoles]);
+            return;
+        }
+
+        if (count(array_intersect($entityRoles, $adminRoles)) === 0)
+        {
+            $this->trace->info(TraceCode::TENANT_ENTITY_ACCESS_DENIED,
+                                ['entity' => $entity, 'entity_roles'=> $entityRoles, 'admin_roles' => $adminRoles]);
+
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ACCESS_DENIED);
+        }
     }
 
     protected function validateEntityTypeForRestrictedOrg(string $entity)

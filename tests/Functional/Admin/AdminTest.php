@@ -15,10 +15,13 @@ use RZP\Models\Admin\Admin;
 use RZP\Models\Admin\Group;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Services\RazorXClient;
+use RZP\Constants\Entity as E;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Base\UniqueIdEntity;
 use Illuminate\Support\Facades\Crypt;
 use RZP\Error\PublicErrorDescription;
+use RZP\Models\Admin\Role\TenantRoles;
 use RZP\Mail\Admin\Account as AdminMail;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
@@ -45,6 +48,8 @@ class AdminTest extends TestCase
 
     protected function setUp(): void
     {
+        ConfigKey::resetFetchedKeys();
+
         $this->testDataFilePath = __DIR__.'/helpers/AdminData.php';
 
         parent::setUp();
@@ -1109,6 +1114,49 @@ class AdminTest extends TestCase
         return 'secondTokenAdminToken1234';
     }
 
+    public function createRazorpayOrgAdminForTenantRoleChecks(array $permissions, array $roles = []) : string
+    {
+        $admin = $this->fixtures->create('admin', [
+            'id' => 'RzrpyOrgAdmnId',
+            'org_id' => Org::RZP_ORG,
+            'name' => 'Test admin'
+        ]);
+
+        $this->fixtures->create('admin_token', [
+            'id'        => 'AdminToken1234',
+            'token'     => Hash::make('secondToken'),
+            'admin_id'  => $admin->getId(),
+        ]);
+
+        $defaultRole = $this->fixtures->create('role', [
+            'org_id' => Org::RZP_ORG,
+            'name'   => 'Tenant admin role',
+        ]);
+
+        foreach ($permissions as $permission)
+        {
+            $permissionEntity = $this->fixtures->create('permission',[
+                'name'   => $permission
+            ]);
+
+            $defaultRole->permissions()->attach($permissionEntity->getId());
+        }
+
+        $admin->roles()->attach($defaultRole);
+
+        foreach ($roles as $role)
+        {
+            $roleEntity = $this->fixtures->create('role', [
+                'org_id' => Org::RZP_ORG,
+                'name'   => $role,
+            ]);
+
+            $admin->roles()->attach($roleEntity);
+        }
+
+        return 'secondTokenAdminToken1234';
+    }
+
     public function testConfigKeysSetWithAdminWithOnlyUpdateConfigKeyPermission()
     {
         $token = $this->createAdminWithRedisConfigPermissions([
@@ -1276,6 +1324,79 @@ class AdminTest extends TestCase
         $this->assertCount(11, $result['fields']);
 
         $this->assertGreaterThan(351, $result['entities']);
+    }
+
+    public function testAdminAllEntitiesApiNoPaymentTenantRolesNonRzpOrg()
+    {
+        // The admin is from a non-razorpay org, and should see the payment entity on the list.
+        $store = Cache::store('redis');
+
+        Cache::shouldReceive('store')
+             ->withAnyArgs()
+             ->andReturn($store);
+
+        Cache::shouldReceive('get')
+             ->zeroOrMoreTimes()
+             ->with(ConfigKey::TENANT_ROLES_ENTITY)
+             ->andReturn([E::PAYMENT => [Role\TenantRoles::ENTITY_PAYMENTS]]);
+
+        $result = $this->startTest();
+
+        $this->assertCount(11, $result['fields']);
+
+        $this->assertGreaterThan(351, $result['entities']);
+
+        $this->assertContains('payment', array_keys($result['entities']));
+    }
+
+    public function testAdminAllEntitiesApiNoPaymentTenantRoles()
+    {
+        $store = Cache::store('redis');
+
+        Cache::shouldReceive('store')
+             ->withAnyArgs()
+             ->andReturn($store);
+
+        Cache::shouldReceive('get')
+             ->once()
+             ->with(ConfigKey::TENANT_ROLES_ENTITY)
+             ->andReturn([E::PAYMENT => [Role\TenantRoles::ENTITY_PAYMENTS]]);
+
+        $token = $this->createRazorpayOrgAdminForTenantRoleChecks([Permission::VIEW_ALL_ENTITY]);
+        $this->ba->adminAuth('test', $token);
+
+        $result = $this->startTest();
+
+        $this->assertCount(11, $result['fields']);
+
+        $this->assertGreaterThan(351, $result['entities']);
+
+        $this->assertNotContains('payment', array_keys($result['entities']));
+    }
+
+    public function testAdminAllEntitiesApiWithPaymentsTenantRole()
+    {
+        $store = Cache::store('redis');
+
+        Cache::shouldReceive('store')
+             ->withAnyArgs()
+             ->andReturn($store);
+
+        Cache::shouldReceive('get')
+             ->once()
+             ->with(ConfigKey::TENANT_ROLES_ENTITY)
+             ->andReturn([E::PAYMENT => [TenantRoles::ENTITY_PAYMENTS]]);
+
+        $token = $this->createRazorpayOrgAdminForTenantRoleChecks([Permission::VIEW_ALL_ENTITY], [TenantRoles::ENTITY_PAYMENTS]);
+        $this->ba->adminAuth('test', $token);
+
+        $result = $this->startTest();
+
+        $this->assertCount(11, $result['fields']);
+
+        $this->assertGreaterThan(351, $result['entities']);
+
+        $this->assertContains('payment', array_keys($result['entities']));
     }
 
     public function testFetchSoftDeletedEntityForAdmin()
