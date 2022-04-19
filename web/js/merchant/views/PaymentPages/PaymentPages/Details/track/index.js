@@ -33,21 +33,25 @@ function _track() {
       sendToLumberjack(`status.${type}`);
       sendToSegment(`page status ${type}`, 'click');
     },
+    changeExpiry: () => {
+      sendToLumberjack('expiry_date_change');
+      sendToSegment('change expiry', 'click');
+    },
+    noExpiry: (value) => {
+      sendToLumberjack('no_expiry_checkbox_click', { value });
+      sendToSegment('no expire', 'click', { value });
+    },
+    updateDate: () => {
+      sendToLumberjack('expiry_date_select');
+      sendToSegment('update date', 'click');
+    },
     cancelExpiry: () => {
       sendToLumberjack('expiry_cancel');
       sendToSegment('cancel expiry', 'click');
     },
-    tickExpiry: () => {
-      sendToLumberjack('expiry_tick');
-      sendToSegment('tick expiry', 'click');
-    },
-    updateDate: () => {
-      sendToLumberjack('update_date');
-      sendToSegment('update date', 'click');
-    },
-    noExpiry: () => {
-      sendToLumberjack('no_expire');
-      sendToSegment('no expire', 'click');
+    saveExpiry: () => {
+      sendToLumberjack('expiry_date_save');
+      sendToSegment('save expiry', 'click');
     },
     duplicatePage: () => {
       sendToLumberjack('duplicate_page');
@@ -82,7 +86,7 @@ function _track() {
       sendToSegment('show more', 'clicked');
     },
     updateStock: () => {
-      sendToLumberjack('update_stock');
+      sendToLumberjack('update_stock_click');
       sendToSegment('update stock', 'clicked');
     },
     downloadReport: (extension) => {
@@ -102,19 +106,19 @@ function _track() {
       sendToSegment('page settings', 'clicked');
     },
     searchPaymentId: (event) => {
-      sendToLumberjack('search.payment_id', { value: event.target.value });
+      sendToLumberjack('payment_id_enter', { value: event.target.value });
       sendToSegment('search with payment id', 'input', { value: event.target.value });
     },
     searchStatus: (event) => {
-      sendToLumberjack('search.status', { value: event.target.value || 'all' });
+      sendToLumberjack('status_click', { value: event.target.value || 'all' });
       sendToSegment('search with status', 'click', { value: event.target.value || 'all' });
     },
     searchEmail: (event) => {
-      sendToLumberjack('search.email', { value: event.target.value });
+      sendToLumberjack('email_id_enter', { value: event.target.value });
       sendToSegment('search with email', 'input', { value: event.target.value });
     },
     searchCount: (event) => {
-      sendToLumberjack('search.count', { value: event.target.value });
+      sendToLumberjack('count_enter', { value: event.target.value });
       sendToSegment('search with count', 'input', { value: event.target.value });
     },
     search: (params) => {

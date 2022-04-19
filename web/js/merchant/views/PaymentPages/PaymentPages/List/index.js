@@ -55,6 +55,7 @@ export default class PaymentPagesContainer extends ListContainer {
     this.initPaymentPagesOnboarding();
 
     track.init(this.props.tracking.trackEvent);
+    track.load();
   }
 
   UNSAFE_componentWillReceiveProps(nextProps) {

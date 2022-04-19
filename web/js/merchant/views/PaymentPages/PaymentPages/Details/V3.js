@@ -209,26 +209,24 @@ export default class PaymentPagesV3Entity extends React.Component {
   };
 
   trackDateUpdate = (date, type) => {
+    /* 
+      common component sometimes returning type in 
+      first param and sometimes in second. needs to be fixed.
+    */
+
     if (type === 'Cancel Expiry') {
       track.cancelExpiry();
-
-      return;
-    }
-
-    if (type === 'No Expiry') {
-      track.noExpiry();
-
-      return;
-    }
-
-    if (type === 'Update Date') {
+    } else if (type === 'No Expiry') {
+      track.noExpiry(true);
+    } else if (type === 'Update Date') {
       track.updateDate();
-
-      return;
+      track.noExpiry(false);
     }
 
-    if (!date) {
-      track.tickExpiry();
+    if (date === 'Edit Expiry') {
+      track.changeExpiry();
+    } else if (date === 'Edit Expiry (Saved)') {
+      track.saveExpiry();
     }
   };
 

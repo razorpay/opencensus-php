@@ -38,7 +38,14 @@ export default class PaymentPageSettings extends React.Component {
   updateDate = (newDate) => {
     this.setState({ expire_by: newDate });
 
-    track.settings.clickExpiryDate(!!newDate);
+    /*
+      newDate get's passed only when 'No Expiry' is unchecked
+      AND a date is selected in the date picker
+    */
+    if (newDate) {
+      track.settings.selectExpiryDate();
+    }
+    track.settings.noExpiry(!newDate);
   };
 
   onChange = () => {

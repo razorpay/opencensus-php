@@ -158,9 +158,13 @@ function _track() {
         sendToLumberjack(`settings.button.create`);
         sendToSegment('settings', `create hyperlink`);
       },
-      clickExpiryDate: (checked) => {
-        sendToLumberjack('settings.expiry_date', { checked });
-        sendToSegment('settings expiry', 'added', { checked });
+      noExpiry: (value) => {
+        sendToLumberjack('settings.no_expiry_checkbox_click', { value });
+        sendToSegment('settings expiry', 'added', { value });
+      },
+      selectExpiryDate: () => {
+        sendToLumberjack('settings.expiry_date_select');
+        sendToSegment('settings expiry date', 'select');
       },
       clickShiprocketEnable: () => {
         sendToLumberjack('settings.enable_shiprocket');

@@ -27,16 +27,20 @@ function _track() {
   }
 
   return {
+    load: () => {
+      sendToLumberjack('list.load');
+      sendToSegment('intial', 'load');
+    },
     searchCount: (event) => {
-      sendToLumberjack('search.count', { value: event.target.value });
+      sendToLumberjack('list.count_enter', { value: event.target.value });
       sendToSegment('search with count', 'input', { value: event.target.value });
     },
     searchStatus: (event) => {
-      sendToLumberjack('search.status', { value: event.target.value || 'all' });
+      sendToLumberjack('list.status_click', { value: event.target.value || 'all' });
       sendToSegment('search with status', 'click', { value: event.target.value || 'all' });
     },
     searchTitle: (event) => {
-      sendToLumberjack('search.title', { value: event.target.value });
+      sendToLumberjack('list.title_enter', { value: event.target.value });
       sendToSegment('search with title', 'input', { value: event.target.value });
     },
     search: (params) => {
