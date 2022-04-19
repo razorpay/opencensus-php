@@ -2077,7 +2077,6 @@ class MerchantCreateTest extends TestCase
      */
     public function testCreateLinkedAccountForExistingEmailsWithoutDashboardAccess()
     {
-        $this->mockRazorxTreatment();
         $this->fixtures->merchant->addFeatures(['marketplace']);
 
         $existingMerchant = $this->fixtures->create('merchant', ['id' => '10000000000002', 'email' => 'test2@razorpay.com']);
@@ -2105,7 +2104,6 @@ class MerchantCreateTest extends TestCase
      */
     public function testCreateLinkedAccountForExistingEmailsWithDashboardAccess()
     {
-        $this->mockRazorxTreatment();
         $this->fixtures->merchant->addFeatures(['marketplace']);
         Mail::fake();
 
@@ -2150,7 +2148,6 @@ class MerchantCreateTest extends TestCase
      */
     public function testCreateLinkedAccountForExistingEmailWithoutDashboardAccessHavingExistingLinkedAccount()
     {
-        $this->mockRazorxTreatment();
         $this->fixtures->merchant->addFeatures(['marketplace']);
 
         $existingParentMerchant = $this->fixtures->create('merchant', [
@@ -2188,7 +2185,6 @@ class MerchantCreateTest extends TestCase
      */
     public function testCreateLinkedAccountForExistingEmailWithDashboardAccessHavingExistingLinkedAccount()
     {
-        $this->mockRazorxTreatment();
         $this->fixtures->merchant->addFeatures(['marketplace']);
         Mail::fake();
 
@@ -2231,7 +2227,6 @@ class MerchantCreateTest extends TestCase
      */
     public function testCreateLinkedAccountForExistingEmailsOtherLinkedAccountExistsForSameParent()
     {
-        $this->mockRazorxTreatment();
         $this->fixtures->merchant->addFeatures(['marketplace']);
 
         $existingLAMerchant = $this->fixtures->create('merchant', [
@@ -2253,7 +2248,6 @@ class MerchantCreateTest extends TestCase
      */
     public function testLinkedAccountDashboardAccessRevokeDoesNotAffectOtherUsers()
     {
-        $this->mockRazorxTreatment();
         $this->fixtures->merchant->addFeatures(['marketplace']);
 
         $user = $this->fixtures->create('user', ['email' => 'test2@razorpay.com']);
@@ -2304,7 +2298,6 @@ class MerchantCreateTest extends TestCase
      */
     public function testLinkedAccountDashboardAccessAllowDoesNotAffectOtherUsers()
     {
-        $this->mockRazorxTreatment();
         $this->fixtures->merchant->addFeatures(['marketplace']);
 
         $existingLAMerchant1 = $this->fixtures->create('merchant', [

@@ -467,9 +467,6 @@ final class RazorxTreatment
     // document, rather than sending a single one.
     const AADHAAR_FRONT_AND_BACK_JOINT_VALIDATION = "aadhaar_front_and_back_joint_validation";
 
-    // Experiment to allow linked account creation with existing email id
-    const ALLOW_LINKED_ACCOUNT_CREATION_FOR_EXISTING_EMAILS = 'allow_linked_account_creation_for_existing_emails';
-
     // Experiment to use the flow in which there is improvement in GET - /submerchants latency
     const SUBMERCHANTS_FETCH_API_LATENCY_IMPROVE = 'submerchants_fetch_api_latency_improve';
 

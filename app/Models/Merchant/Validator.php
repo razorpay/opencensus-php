@@ -12,9 +12,7 @@ use RZP\Constants\Country;
 use RZP\Exception;
 use RZP\Models\Bank\BankCodes;
 use RZP\Models\Order\Status;
-use RZP\Models\Order\Entity as OrderEntity;
 use RZP\Models\Bank\IFSC;
-use RZP\Models\Bank\Name as BankName;
 use RZP\Models\Merchant\PurposeCode\PurposeCodeList;
 use RZP\Models\User;
 use FuzzyWuzzy\Fuzz;
@@ -1235,21 +1233,13 @@ class Validator extends Base\Validator
         {
             $this->validateEmptyEmailFlow($input, $linkedAccount);
         }
+        else if ($linkedAccount === true)
+        {
+            $this->validateExistingLinkedAccountWithRequestingMerchant($input[Entity::EMAIL]);
+        }
         else
         {
-            $merchant = $this->entity;
-            $experimentIsOn = (new Core())->isRazorxExperimentEnable(
-                $merchant->getId(), RazorxTreatment::ALLOW_LINKED_ACCOUNT_CREATION_FOR_EXISTING_EMAILS
-            );
-
-            if (($linkedAccount === true) and ($experimentIsOn === true))
-            {
-                $this->validateExistingLinkedAccountWithRequestingMerchant($input[Entity::EMAIL]);
-            }
-            else
-            {
-                $this->validateInput('unique_email', array_only($input, Entity::EMAIL));
-            }
+            $this->validateInput('unique_email', array_only($input, Entity::EMAIL));
         }
 
         $this->validateInput('edit_name', array_only($input, Entity::NAME));
