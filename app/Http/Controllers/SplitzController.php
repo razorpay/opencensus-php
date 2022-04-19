@@ -9,7 +9,10 @@ use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Http\RequestHeader;
+use RZP\Services\UfhService;
 use RZP\Services\SplitzService;
+use RZP\Models\Base\UniqueIdEntity;
+use RZP\Services\Mock\UfhService as MockUfhService;
 
 class SplitzController extends Controller
 {
@@ -47,6 +50,43 @@ class SplitzController extends Controller
         $this->key            = $splitzConfig['username'];
         $this->secret         = $splitzConfig['secret'];
         $this->requestTimeout = $splitzConfig['request_timeout'];
+    }
+
+    public function uploadFileAndGetUrl()
+    {
+        $input = Request::all();
+        $app = $this->app;
+        $ufhServiceMock = $app['config']->get('applications.ufh.mock');
+
+        $file = $input['file'];
+
+        if ($ufhServiceMock === true)
+        {
+            $ufhService = new MockUfhService($app);
+        }
+        else
+        {
+            $ufhService = new UfhService($app);
+        }
+
+        //
+        // Adding a prefix id for filename to avoid overwrites to the same fileName on S3.
+        //
+        $partial = UniqueIdEntity::generateUniqueId();
+
+        $fileIdentifier = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+
+        $fileName = 'splitz_segment/' . $partial . '/' . $fileIdentifier;
+
+        $extension = strtolower($file->getClientOriginalExtension());
+        if (empty($extension) === false)
+        {
+            $fileName .= '.'. $extension;
+        }
+
+        $response = $ufhService->uploadFileAndGetUrl($input['file'], $fileName, 'splitz_segment', null);
+
+        return ApiResponse::json($response);
     }
 
     public function allowCors()

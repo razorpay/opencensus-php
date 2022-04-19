@@ -2344,6 +2344,7 @@ class Route
         'splitz_evaluate'                          => ['post',     'splitz/evaluate',                                'SplitzController@evaluateRequest'                                  ],
         'splitz_evaluate_bulk'                     => ['post',     'splitz/bulkEvaluate',                            'SplitzController@evaluateRequestBulk'                              ],
         'splitz_preflight'                         => ['options',  'splitz/evaluate',                                'SplitzController@allowCors'                                        ],
+        'splitz_upload_segment_file'               => ['post',     'splitz/segment/upload',                          'SplitzController@uploadFileAndGetUrl'                              ],
 
         //splitz bulk evaluate route for proxy auth
         'splitz_evaluate_bulk_proxy'               => ['post',     'splitz/bulkEvaluateProxy',                       'SplitzController@evaluateRequestBulk'                              ],
@@ -5951,6 +5952,7 @@ class Route
 
         'razorx_route',
         'splitz_route',
+        'splitz_upload_segment_file',
         'user_fetch_admin',
         'merchant_requests_list',
         'merchant_requests_update',
@@ -7208,6 +7210,7 @@ class Route
         'growth_admin'                             => Permission::MANAGE_CAMPAIGNHQ_OPERATIONS,
         'razorx_route'                             => Permission::MANAGE_RAZORX_OPERATIONS,
         'splitz_route'                             => Permission::MANAGE_RAZORX_OPERATIONS,
+        'splitz_upload_segment_file'               => Permission::MANAGE_RAZORX_OPERATIONS,
         'invoice_cancel_by_batch_admin'            => Permission::CANCEL_BATCH,
         'token_registration_token_associate'       => Permission::TOKEN_REGISTRATION_ACTIONS,
         'token_registration_tokens_authenticate'   => Permission::TOKEN_REGISTRATION_ACTIONS,
@@ -11159,6 +11162,7 @@ class Route
             'splitz_evaluate',
             'splitz_preflight',
             'splitz_route',
+            'splitz_upload_segment_file',
             'stakeholder_create_v2',
             'stakeholder_fetch_all_v2',
             'stakeholder_fetch_v2',
