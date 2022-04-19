@@ -1113,31 +1113,21 @@ export const gatewayDetailsMapping = {
   },
 };
 
-export const createMappedProviders = (isAddProviderEnabled, providers, terminalProviders) => {
+export const createMappedProviders = (terminalProviders) => {
   let MAPPED_PROVIDERS = [];
-  if (isAddProviderEnabled) {
-    MAPPED_PROVIDERS = terminalProviders.map((p) => {
-      if (rzpGateways.includes(p.Gateway)) {
-        return {
-          id: p.Gateway,
-          name: p.Provider_name,
-          value: p.Gateway,
-        };
-      }
+  MAPPED_PROVIDERS = terminalProviders.map((p) => {
+    if (rzpGateways.includes(p.Gateway)) {
       return {
-        id: `${p.Gateway}_${p.Terminal_id}`,
-        name: p.Provider_name || p.Gateway,
-        value: `${p.Gateway}_${p.Terminal_id}`,
+        id: p.Gateway,
+        name: p.Provider_name,
+        value: p.Gateway,
       };
-    });
-  } else {
-    MAPPED_PROVIDERS = providers.map((p) => {
-      return {
-        id: p.id,
-        name: p.id,
-        value: p.id,
-      };
-    });
-  }
+    }
+    return {
+      id: `${p.Gateway}_${p.Terminal_id}`,
+      name: p.Provider_name || p.Gateway,
+      value: `${p.Gateway}_${p.Terminal_id}`,
+    };
+  });
   return MAPPED_PROVIDERS;
 };

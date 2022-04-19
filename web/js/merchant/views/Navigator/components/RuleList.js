@@ -1,27 +1,14 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Link, Redirect } from 'react-router-dom';
-import PropTypes from 'prop-types';
+import moment from 'moment';
 import DataTable from 'common/ui/Table/DataTable';
-import {
-  getValue,
-  getRuleStatus,
-  removeMid,
-  uniqueArray,
-  SMART_ROUTER,
-  findProviderName,
-} from './util';
-import { titleCase } from 'common/utils/rzp-utils';
-import Provider from './Provider';
+import { getValue, getRuleStatus, removeMid, uniqueArray, findProviderName } from './util';
 import ProviderNewView from './ProviderNewView';
 import { idItem } from 'common/ui/item/id';
-import {
-  fetchRules,
-  fetchRuleProviders,
-  fetchTerminalProviders,
-} from 'merchant/reducers/navigator/details';
+import { fetchTerminalProviders } from 'merchant/reducers/navigator/details';
 import Spinner from 'common/ui/Spinner';
-import moment from 'moment';
 
 @connect(
   (state) => {
@@ -29,14 +16,11 @@ import moment from 'moment';
       rules: state.navigator.rules,
       isLoading: state.navigator.loading,
       default_rule: state.navigator.default_rule,
-      providers: state.navigator.providers,
       terminalProviders: state.navigator.terminalProviders,
       user: state.session.user,
     };
   },
   {
-    fetchRules,
-    fetchRuleProviders,
     fetchTerminalProviders,
   },
 )
@@ -49,15 +33,14 @@ export default class RuleList extends React.Component {
     isCollapsed: true,
   };
   componentDidMount() {
-    if (this.props.location.search.includes('?redirect')) {
-      const id = this.props.location.search.replace('?redirect=', '');
+    const { location, fetchTerminalProviders } = this.props;
+    if (location?.search?.includes('?redirect')) {
+      const id = location.search.replace('?redirect=', '');
       setTimeout(() => {
         this.setState({ redirect: `/optimizer/rules/${id}` });
       }, 1000);
     }
-    if (this.props.user.isAddProviderEnabled) {
-      this.props.fetchTerminalProviders();
-    }
+    fetchTerminalProviders();
   }
 
   addGateway = () => {
@@ -81,11 +64,10 @@ export default class RuleList extends React.Component {
 
   render() {
     const { isCollapsed } = this.state;
-    const { providers, terminalProviders } = this.props;
+    const { terminalProviders } = this.props;
     if (this.state.redirect) {
       return <Redirect to={this.state.redirect} />; // nosemgrep : https://semgrep.dev/s/razorpay:rzp-react-router-redirect
     }
-    const isAddProviderEnabled = this.props.user.isAddProviderEnabled;
     return (
       <div>
         <div class="panel gateway-list" style={{ borderLeft: 0, borderRight: 0 }}>
@@ -93,31 +75,22 @@ export default class RuleList extends React.Component {
             <h2 class="payment-gateway-title" style={{ marginTop: '20px' }}>
               <span className="provider-title">
                 Payment Provider
-                {isAddProviderEnabled && ` (${terminalProviders.length})`}
+                {` (${terminalProviders.length})`}
               </span>
-              {isAddProviderEnabled
-                ? terminalProviders.length > 4 && (
-                    <span className="collapse-action-span" onClick={this.collapse}>
-                      {isCollapsed ? 'View All' : 'Hide All'}
-                      <img
-                        src="https://cdn.razorpay.com/static/assets/rewards/rewards_list_up_vector.svg"
-                        className={`arrow-img ${isCollapsed ? 'arrow-img-rotate' : ''}`}
-                      />
-                    </span>
-                  )
-                : null}
-              {isAddProviderEnabled ? (
-                <Link to="/optimizer/add-provider" class="pull-right">
-                  <button className="pull-right no-border create-rule-act">
-                    <i className="i i-plus" /> Add provider
-                  </button>
-                </Link>
-              ) : (
-                <button onClick={this.addGateway} className="pull-right no-border create-rule-act">
-                  {' '}
-                  Add New Gateway
-                </button>
+              {terminalProviders.length > 4 && (
+                <span className="collapse-action-span" onClick={this.collapse}>
+                  {isCollapsed ? 'View All' : 'Hide All'}
+                  <img
+                    src="https://cdn.razorpay.com/static/assets/rewards/rewards_list_up_vector.svg"
+                    className={`arrow-img${isCollapsed ? ' arrow-img-rotate' : ''}`}
+                  />
+                </span>
               )}
+              <Link to="/optimizer/add-provider" className="pull-right">
+                <button className="pull-right no-border create-rule-act">
+                  <i className="i i-plus" /> Add provider
+                </button>
+              </Link>
             </h2>
           </div>
           <div
@@ -127,29 +100,15 @@ export default class RuleList extends React.Component {
               padding: '10px 30px 15px !important',
             }}
           >
-            {isAddProviderEnabled ? (
-              <div
-                className={`row active-providers-list ${
-                  isCollapsed ? 'collapsed-providers-view' : 'expand-providers-view'
-                }`}
-                style={{ marginBottom: '10px' }}
-              >
-                {terminalProviders.map((g, i) => (
-                  <ProviderNewView provider={g} key={i} />
-                ))}
-              </div>
-            ) : (
-              <div
-                class="row"
-                style={{ marginBottom: '10px', display: 'flex', overflowX: 'scroll' }}
-              >
-                {providers
-                  .filter((p) => p.id !== SMART_ROUTER)
-                  .map((g, i) => (
-                    <Provider provider={g} key={i} />
-                  ))}
-              </div>
-            )}
+            <div
+              className={`row active-providers-list ${
+                isCollapsed ? 'collapsed-providers-view' : 'expand-providers-view'
+              }`}
+            >
+              {terminalProviders.map((provider, index) => (
+                <ProviderNewView provider={provider} key={index} />
+              ))}
+            </div>
           </div>
 
           <div class="panel-header">
@@ -172,13 +131,11 @@ export default class RuleList extends React.Component {
                           .filter((i) => i.expression.operands[0].operands)
                           .map((i) => {
                             let id = i.expression.operands[0].operands[1].value;
-                            if (isAddProviderEnabled) {
-                              if (id.split('_')[1]) {
-                                id = id.split('_')[1];
-                              }
-                              return findProviderName(terminalProviders, id);
+                            const id_arr = id?.split('_');
+                            if (id_arr?.length > 0) {
+                              id = id_arr[id_arr?.length - 1];
                             }
-                            return titleCase(id);
+                            return findProviderName(terminalProviders, id);
                           }),
                       ).join(', ')}
                     </span>
@@ -196,7 +153,7 @@ export default class RuleList extends React.Component {
               style={{ marginTop: '20px !important' }}
             >
               <span className="provider-title">All Custom Rules</span>
-              <Link to="/optimizer/create-rule" class="pull-right">
+              <Link to="/optimizer/create-rule" className="pull-right">
                 <button className="btn btn-primary">
                   <i className="i i-plus" /> Add New Rule
                 </button>
@@ -269,32 +226,20 @@ export default class RuleList extends React.Component {
                         },
                         {
                           title: 'Provider Used',
-                          value: isAddProviderEnabled
-                            ? (v) => (
-                                <div class="rule-table-overflow">
-                                  {/*
-                                    for new self serve providers we pass gateway with terminal id to rule so we filter on ID
-                                    and show the name on the UI, just to be on safe side if filter fail then we show value direct
-                                    instead breaking the UI
-                                  */}
-                                  {uniqueArray(
-                                    v.rules.map((i) => {
-                                      let id = i.expression.operands[0].operands[1].value;
-                                      if (id.split('_')[1]) {
-                                        id = id.split('_')[1];
-                                      }
-                                      return findProviderName(terminalProviders, id);
-                                    }),
-                                  ).join(', ')}
-                                </div>
-                              )
-                            : (v) => (
-                                <div class="rule-table-overflow">
-                                  {uniqueArray(
-                                    v.rules.map((i) => i.expression.operands[0].operands[1].value),
-                                  ).join(', ')}
-                                </div>
-                              ),
+                          value: (val) => (
+                            <div className="rule-table-overflow">
+                              {uniqueArray(
+                                val.rules.map((i) => {
+                                  let id = i.expression.operands[0].operands[1].value;
+                                  const id_arr = id?.split('_');
+                                  if (id_arr?.length > 0) {
+                                    id = id_arr[id_arr?.length - 1];
+                                  }
+                                  return findProviderName(terminalProviders, id);
+                                }),
+                              ).join(', ')}
+                            </div>
+                          ),
                         },
                         {
                           title: 'Created At',

@@ -19,7 +19,6 @@ export default class Select extends React.Component {
       options,
       multiple,
       select,
-      session,
     } = this.props;
 
     let selected = {};
@@ -89,13 +88,11 @@ export default class Select extends React.Component {
                         <div>
                           <div className="row">
                             <div className="col-xs-10">
-                              {session?.user?.isAddProviderEnabled &&
-                                option?.id != SMART_ROUTER &&
-                                gateway && (
-                                  <div className="recommended-provider-img-block">
-                                    <img src={gatewayLogos[gateway]} />
-                                  </div>
-                                )}
+                              {option?.id != SMART_ROUTER && gateway && (
+                                <div className="recommended-provider-img-block">
+                                  <img src={gatewayLogos[gateway]} alt={gateway} />
+                                </div>
+                              )}
                               <b className="optn-text">{option.name}</b>
                               {option.id === SMART_ROUTER ? (
                                 <span className="recommended-provider">

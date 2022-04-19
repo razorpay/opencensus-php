@@ -11,7 +11,6 @@ const FETCH_RULE = 'FETCH_RULE';
 const FETCH_RULES = 'FETCH_RULES';
 const REORDER_RULES = 'REORDER_RULES';
 const RULE_RESET = 'RULE_RESET';
-const FETCH_RULE_PROVIDERS = 'FETCH_RULE_PROVIDERS';
 const FETCH_TERMINAL_PROVIDERS = 'FETCH_TERMINAL_PROVIDERS';
 const CHANGE_RULE_MODE = 'CHANGE_RULE_MODE';
 const DELETE_RULE = 'DELETE_RULE';
@@ -90,14 +89,6 @@ export const reorderRuleGroups = (rules, rule) => {
   return merchantFetch(params).then(() => getRules());
 };
 
-export const getRuleProviders = () => {
-  const params = {
-    url: `merchant/mid/providers`,
-    method: 'get',
-  };
-  return merchantFetch(params).then((d) => d.data);
-};
-
 export const getTerminalProviders = () => {
   const params = {
     url: 'terminals/proxy/optimizer/list/mid/provider',
@@ -166,13 +157,6 @@ export const reorderRules = (rules, rule) => {
   };
 };
 
-export const fetchRuleProviders = () => {
-  return {
-    type: FETCH_RULE_PROVIDERS,
-    payload: getRuleProviders(),
-  };
-};
-
 export const fetchTerminalProviders = () => {
   return {
     type: FETCH_TERMINAL_PROVIDERS,
@@ -201,14 +185,6 @@ const initialState = {
     precondition: {},
     rules: [],
   },
-  providers: [
-    {
-      id: 'payu',
-    },
-    {
-      id: 'razorpay',
-    },
-  ],
   terminalProviders: [],
   rule,
   error: null,
@@ -339,18 +315,6 @@ export default function navigatorReducer(state = initialState, action) {
         loading: false,
         deactivate_loading: false,
         error: action.payload.errors,
-      });
-
-    case `${FETCH_RULE_PROVIDERS}::SUCCESS`:
-      return merge(state, {
-        loading: false,
-        providers: action.payload,
-        error: null,
-      });
-
-    case `${FETCH_RULE_PROVIDERS}::PENDING`:
-      return merge(state, {
-        loading: true,
       });
 
     case `${FETCH_TERMINAL_PROVIDERS}::SUCCESS`:

@@ -833,10 +833,6 @@ export default class User {
     return ((this.experiments || user?.experiments || {})[name] || {}).result === 'on';
   }
 
-  get isAddProviderEnabled() {
-    return this.getExpStatus('optimizer_add_provider');
-  }
-
   get isOptimizerEnabled() {
     return this.findTag('raas');
   }

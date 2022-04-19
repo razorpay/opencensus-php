@@ -2,12 +2,11 @@ import Spinner from 'common/ui/Spinner';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import React, { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
-import moment from 'moment';
 import { withRouter, Link, Redirect } from 'react-router-dom';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import Popover, { PopoverBody } from 'common/ui/Popover';
-
+import moment from 'moment';
 import {
   fetchRule,
   reorderRules,
@@ -18,8 +17,6 @@ import {
 import Precondition from './Precondition';
 
 import ProviderRules from './ProviderRules';
-// eslint-disable-next-line no-duplicate-imports
-import { openModal } from 'merchant_common/reducers/modals';
 import { ReorderRules } from './ReorderRule';
 import PropTypes from 'prop-types';
 import { deepClone } from 'common/utils/rzp-utils';
@@ -39,7 +36,6 @@ import DeactivateRule from './DeactivateRule';
   (state) => {
     return {
       ...state.payment,
-      user: state.session.user,
       default_refund_speed: state.config.config.default_refund_speed,
       config: state.config.config,
       rules: state.navigator.rules,
@@ -47,7 +43,6 @@ import DeactivateRule from './DeactivateRule';
       rules_loaded: state.navigator.rules_loaded,
       default_rule: state.navigator.default_rule,
       rule: state.navigator.rule,
-      providers: state.navigator.providers,
       terminalProviders: state.navigator.terminalProviders,
     };
   },
@@ -59,7 +54,6 @@ import DeactivateRule from './DeactivateRule';
     fetchRules,
     deleteRule,
     changeRuleMode,
-    openModal,
   },
 )
 export default class RuleDetail extends Component {
@@ -89,13 +83,10 @@ export default class RuleDetail extends Component {
         }
         rules[provider_priority].push(r);
       });
-      // eslint-disable-next-line react/no-unused-state
-      this.setState({ rules });
     });
   };
 
-  // eslint-disable-next-line react/no-unused-state
-  state = { rules: {}, redirect: null };
+  state = { redirect: null };
 
   deactivateRule = (cb) => {
     this.props.openModal({
@@ -124,12 +115,8 @@ export default class RuleDetail extends Component {
     if (this.state.redirect) {
       return <Redirect to={this.state.redirect} />; // nosemgrep : https://semgrep.dev/s/razorpay:rzp-react-router-redirect
     }
-    const { user, providers, terminalProviders } = this.props;
-    const MAPPED_PROVIDERS = createMappedProviders(
-      user.isAddProviderEnabled,
-      providers,
-      terminalProviders,
-    );
+    const { terminalProviders } = this.props;
+    const MAPPED_PROVIDERS = createMappedProviders(terminalProviders);
 
     const rules = deepClone(this.props.rules);
     rules.forEach((r) => {

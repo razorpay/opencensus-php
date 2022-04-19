@@ -1,10 +1,8 @@
 import { createMappedProviders, findProviderName } from 'merchant/views/Navigator/components/util';
 import { TERMINAL_PROVIDERS } from 'merchant/views/Navigator/tests/data/mockData';
 
-const isAddProviderEnabled = true; // razorx experiment for self serve
-
 test('Map providers for dropdown', () => {
-  const MAPPED_PROVIDERS = createMappedProviders(isAddProviderEnabled, [], TERMINAL_PROVIDERS);
+  const MAPPED_PROVIDERS = createMappedProviders(TERMINAL_PROVIDERS);
 
   expect(MAPPED_PROVIDERS).toStrictEqual([
     {

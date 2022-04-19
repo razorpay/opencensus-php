@@ -170,7 +170,6 @@ class Service extends Base\Service
             'mandatory_gstin_input',
             'sync_experiment',
             'recurring_more_account_type',
-            'optimizer_add_provider',
             'mtu_coupon_code',
             'auto_open_mtu_coupon',
             'dispute_presentment',

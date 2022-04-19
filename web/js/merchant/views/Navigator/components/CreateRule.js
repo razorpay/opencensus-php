@@ -53,9 +53,7 @@ import FullPageCoverHeader from './FullPageCoverHeader';
       rule: state.navigator.rule,
       loading: state.navigator.create_rule_loading,
       // isLoading: true,
-      providers: state.navigator.providers,
       terminalProviders: state.navigator.terminalProviders,
-      user: state.session.user,
     };
   },
   {
@@ -538,12 +536,8 @@ export default class CreateRule extends React.Component {
     const { PARAMETERS } = this.state;
     const rules = deepClone(this.props.rules);
 
-    const { user, providers, terminalProviders } = this.props;
-    let MAPPED_PROVIDERS = createMappedProviders(
-      user.isAddProviderEnabled,
-      providers,
-      terminalProviders,
-    );
+    const { terminalProviders } = this.props;
+    let MAPPED_PROVIDERS = createMappedProviders(terminalProviders);
 
     const selectedWallets = [];
     const selectedCurrencies = [];
