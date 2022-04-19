@@ -453,7 +453,7 @@ class AccountingPayoutsTest extends TestCase
 
     public function testDeleteIntegrationTallyServiceMethod()
     {
-        $this->ba->privateAuth();
+        $this->ba->proxyAuth();
 
         $apMock = Mockery::mock('RZP\Services\AccountingPayouts');
 

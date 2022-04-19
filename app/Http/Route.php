@@ -3950,7 +3950,7 @@ class Route
         'accounting_integration_tally_fetch_payment',
         'accounting_integration_tally_acknowledge_payment',
         'accounting_integration_tally_integrate',
-        'accounting_integration_tally_delete_integration',
+
         'accounting_integration_tally_cash_flow_acknowledge',
         'accounting_integration_tally_cash_flow_update_mapping',
         'accounting_integration_tally_fetch_cash_flow_entries',
@@ -5321,6 +5321,7 @@ class Route
 
         //Tally App
         'accounting_integration_get_all_settings',
+        'accounting_integration_tally_delete_integration',
 
         'accounting_integration_get_organization',
         'accounting_integration_set_organization',
@@ -7824,12 +7825,13 @@ class Route
         'accounting_payouts_sync'                      => Permission::SYNC_ACCOUNTING_INTEGRATION,
         'accounting_payouts_waitlist'                  => Permission::WAITLIST_ACCOUNTING_INTEGRATION,
 
-        'accounting_integration_get_organization'      => Permission::VIEW_ACCOUNTING_INTEGRATION,
-        'accounting_integration_set_organization'      => Permission::CREATE_ACCOUNTING_INTEGRATION,
-        'accounting_integration_get_chart_of_accounts' => Permission::VIEW_ACCOUNTING_INTEGRATION,
-        'accounting_integration_put_chart_of_accounts' => Permission::UPDATE_ACCOUNTING_INTEGRATION,
-        'accounting_integration_sync_chart_of_accounts'=> Permission::SYNC_ACCOUNTING_INTEGRATION,
-        'accounting_integration_get_all_settings'      => Permission::VIEW_ACCOUNTING_INTEGRATION,
+        'accounting_integration_get_organization'         => Permission::VIEW_ACCOUNTING_INTEGRATION,
+        'accounting_integration_set_organization'         => Permission::CREATE_ACCOUNTING_INTEGRATION,
+        'accounting_integration_get_chart_of_accounts'    => Permission::VIEW_ACCOUNTING_INTEGRATION,
+        'accounting_integration_put_chart_of_accounts'    => Permission::UPDATE_ACCOUNTING_INTEGRATION,
+        'accounting_integration_sync_chart_of_accounts'   => Permission::SYNC_ACCOUNTING_INTEGRATION,
+        'accounting_integration_get_all_settings'         => Permission::VIEW_ACCOUNTING_INTEGRATION,
+        'accounting_integration_tally_delete_integration' => Permission::DELETE_ACCOUNTING_INTEGRATION,
 
         'merchant_primary_balance_fetch'               => '*',
         'ufh_upload_file'                              => '*',
@@ -9662,6 +9664,7 @@ class Route
             'accounting_payouts_integration_app_initiate',
             'accounting_payouts_integration_status',
             'accounting_integration_get_all_settings',
+            'accounting_integration_tally_delete_integration',
             'accounting_payouts_integration_status_app',
             'accounting_payouts_sync',
             'accounting_payouts_sync_status',
@@ -13046,7 +13049,6 @@ class Route
         'accounting_integration_tally_fetch_payment',
         'accounting_integration_tally_acknowledge_payment',
         'accounting_integration_tally_integrate',
-        'accounting_integration_tally_delete_integration',
         'accounting_integration_tally_cash_flow_acknowledge',
         'accounting_integration_tally_cash_flow_update_mapping',
         'accounting_integration_tally_fetch_cash_flow_entries',
