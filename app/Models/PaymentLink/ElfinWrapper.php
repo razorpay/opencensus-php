@@ -96,9 +96,16 @@ final class ElfinWrapper
     {
         $details = $this->getFromCustomUrl($hash, $domain);
 
+        $context = [
+            'hash'      => $hash,
+            'domain'    => $domain,
+        ];
+
         if ($details !== null)
         {
             $this->trace->count(Metric::NOCODE_CUSTOM_URL_CONSIDERED_COUNT);
+
+            $this->trace->info(TraceCode::NOCODE_CUSTOM_URL_CONSIDERED, $context);
 
             return $details->trashed() ? null : $details->getMetaData();
         }
@@ -108,6 +115,8 @@ final class ElfinWrapper
         if ($details !== null)
         {
             $this->trace->count(Metric::NOCODE_CUSTOM_URL_NOT_CONSIDERED_COUNT);
+
+            $this->trace->info(TraceCode::NOCODE_CUSTOM_URL_NOT_CONSIDERED, $context);
 
             $this->dispatchCustomUrlUpsert($details);
 
@@ -241,6 +250,11 @@ final class ElfinWrapper
         catch (\Throwable $e)
         {
             $this->trace->count(Metric::NOCODE_CUSTOM_URL_CALLS_FAILED_COUNT);
+
+            $this->trace->error(TraceCode::NOCODE_CUSTOM_URL_UPSERT_FAILED, [
+                'slug'      => $slug,
+                'domain'    => $domain,
+            ]);
 
             $this->trace->traceException($e);
         }

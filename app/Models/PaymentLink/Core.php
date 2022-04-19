@@ -1779,6 +1779,8 @@ class Core extends Base\Core
         {
             $this->trace->count(Metric::NOCODE_CUSTOM_URL_CALLS_FAILED_COUNT);
 
+            $this->trace->error(TraceCode::NOCODE_CUSTOM_URL_UPSERT_FAILED, $this->getCustomUrlFailedContext($paymentLink, $slug));
+
             $this->trace->traceException($e);
         }
 
@@ -3198,6 +3200,8 @@ class Core extends Base\Core
             {
                 $this->trace->count(Metric::NOCODE_CUSTOM_URL_CALLS_FAILED_COUNT);
 
+                $this->trace->error(TraceCode::NOCODE_CUSTOM_URL_UPSERT_FAILED, $this->getCustomUrlFailedContext($paymentLink, $slug));
+
                 $this->trace->traceException($e);
             }
         });
@@ -3284,6 +3288,21 @@ class Core extends Base\Core
             "authenticated_at"  => $payment->getAuthenticatedTimestamp(),
             "error_code"        => $payment->getErrorCode(),
             "error_description" => $payment->getErrorDescription(),
+        ];
+    }
+
+    /**
+     * @param \RZP\Models\PaymentLink\Entity $paymentLink
+     * @param string|null                    $slug
+     *
+     * @return array
+     */
+    private function getCustomUrlFailedContext(Entity $paymentLink, ?string $slug): array
+    {
+        return [
+            Entity::ID              => $paymentLink->getPublicId(),
+            Entity::SHORT_URL       => $paymentLink->getShortUrl(),
+            Entity::SLUG            => $slug,
         ];
     }
 }

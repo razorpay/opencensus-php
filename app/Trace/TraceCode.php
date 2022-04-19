@@ -6778,6 +6778,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const NOCODE_CUSTOM_URL_UPSERT_INIT                         = 'NOCODE_CUSTOM_URL_UPSERT_INIT';
     const NOCODE_CUSTOM_URL_UPSERT_FAILED                       = 'NOCODE_CUSTOM_URL_UPSERT_FAILED';
     const NOCODE_CUSTOM_URL_UPSERT_COMPLETED                    = 'NOCODE_CUSTOM_URL_UPSERT_COMPLETED';
+    const NOCODE_CUSTOM_URL_CONSIDERED                          = 'NOCODE_CUSTOM_URL_CONSIDERED';
+    const NOCODE_CUSTOM_URL_NOT_CONSIDERED                      = 'NOCODE_CUSTOM_URL_NOT_CONSIDERED';
 
     // app scalability config
     const MERCHANT_USER_APP_CONFIG                                      = 'MERCHANT_USER_APP_CONFIG';
