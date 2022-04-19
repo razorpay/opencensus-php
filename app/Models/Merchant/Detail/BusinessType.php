@@ -68,6 +68,21 @@ class BusinessType
         self::HUF                    => 13,
     ];
 
+    protected static $displayNameMap = [
+        self::PROPRIETORSHIP         => "Proprietorship",
+        self::INDIVIDUAL             => "Individual",
+        self::PARTNERSHIP            => "Partnership",
+        self::PRIVATE_LIMITED        => "Private Limited",
+        self::PUBLIC_LIMITED         => "Public Limited",
+        self::LLP                    => "LLP",
+        self::NGO                    => "NGO",
+        self::EDUCATIONAL_INSTITUTES => "Educational Institutes",
+        self::TRUST                  => "Trust",
+        self::SOCIETY                => "Society",
+        self::NOT_YET_REGISTERED     => "Not Yet Registered",
+        self::OTHER                  => "Other",
+        self::HUF                    => "HUF",
+    ];
     const REGISTERED   = 'registered';
     const UNREGISTERED = 'unregistered';
 
@@ -353,5 +368,24 @@ class BusinessType
             self::TRUST,
             self::SOCIETY
         ];
+    }
+
+    /**
+     * Given a key, it will return the display name that the key corresponds to
+     *
+     * @param string $key
+     *
+     * @return mixed
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    public static function getDisplayNameFromKey(string $key)
+    {
+        if (isset(self::$displayNameMap[$key]) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                "Invalid business type: $key", Entity::BUSINESS_TYPE, ['type' => $key]);
+        }
+
+        return self::$displayNameMap[$key];
     }
 }

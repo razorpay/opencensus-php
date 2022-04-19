@@ -16,59 +16,85 @@ return [
         ],
         'response' => [
             'content'     => [
-                "registered"     => [
-                    "proprietorship"     => [
+                "registered"=> [
+                    [
+                        "name"=> "proprietorship",
                         "id"=> 1,
+                        "display_name"=> "Proprietorship",
                         "status"=> "active"
                     ],
-                    "partnership"     => [
+                    [
+                        "name"=> "partnership",
                         "id"=> 3,
+                        "display_name"=> "Partnership",
                         "status"=> "active"
                     ],
-                    "private_limited"     => [
+                    [
+                        "name"=> "private_limited",
                         "id"=> 4,
-                        "status"=>"active"
+                        "display_name"=> "Private Limited",
+                        "status"=> "active"
                     ],
-                    "public_limited"     => [
+                    [
+                        "name"=> "public_limited",
                         "id"=> 5,
+                        "display_name"=> "Public Limited",
                         "status"=> "active"
                     ],
-                    "llp"     => [
+                    [
+                        "name"=> "llp",
                         "id"=> 6,
-                        "status"=>"active"
+                        "display_name"=> "LLP",
+                        "status"=> "active"
                     ],
-                    "educational_institutes"     => [
+                    [
+                        "name"=> "educational_institutes",
                         "id"=> 8,
+                        "display_name"=> "Educational Institutes",
                         "status"=> "active"
                     ],
-                    "trust"     => [
+                    [
+                        "name"=> "trust",
                         "id"=> 9,
+                        "display_name"=> "Trust",
                         "status"=> "active"
                     ],
-                    "society"     => [
+                    [
+                        "name"=> "society",
                         "id"=> 10,
+                        "display_name"=> "Society",
                         "status"=> "active"
                     ],
-                    "other"     => [
+                    [
+                        "name"=> "other",
                         "id"=> 12,
+                        "display_name"=> "Other",
                         "status"=> "active"
                     ],
-                    "ngo"     => [
+                    [
+                        "name"=> "ngo",
                         "id"=> 7,
+                        "display_name"=> "NGO",
                         "status"=> "active"
                     ],
-                    "huf"     => [
+                    [
+                        "name"=> "huf",
                         "id"=> 13,
-                        "status"=>"active"
+                        "display_name"=> "HUF",
+                        "status"=> "active"
                     ]
                 ],
-                "unregistered"     => [
-                    "individual"     => [
+                "unregistered"=> [
+                    [
+                        "name"=> "individual",
                         "id"=> 2,
+                        "display_name"=> "Individual",
                         "status"=> "active"
                     ],
-                    "not_yet_registered"     => [
+                    [
+                        "name"=> "not_yet_registered",
                         "id"=> 11,
+                        "display_name"=> "Not Yet Registered",
                         "status"=> "active"
                     ]
                 ]
@@ -83,59 +109,85 @@ return [
         ],
         'response' => [
             'content'     => [
-                "registered"     => [
-                    "proprietorship"     => [
+                "registered"=> [
+                    [
+                        "name"=> "proprietorship",
                         "id"=> 1,
+                        "display_name"=> "Proprietorship",
                         "status"=> "active"
                     ],
-                    "partnership"     => [
+                    [
+                        "name"=> "partnership",
                         "id"=> 3,
+                        "display_name"=> "Partnership",
                         "status"=> "active"
                     ],
-                    "private_limited"     => [
+                    [
+                        "name"=> "private_limited",
                         "id"=> 4,
-                        "status"=>"active"
+                        "display_name"=> "Private Limited",
+                        "status"=> "active"
                     ],
-                    "public_limited"     => [
+                    [
+                        "name"=> "public_limited",
                         "id"=> 5,
+                        "display_name"=> "Public Limited",
                         "status"=> "active"
                     ],
-                    "llp"     => [
+                    [
+                        "name"=> "llp",
                         "id"=> 6,
-                        "status"=>"active"
+                        "display_name"=> "LLP",
+                        "status"=> "active"
                     ],
-                    "educational_institutes"     => [
+                    [
+                        "name"=> "educational_institutes",
                         "id"=> 8,
+                        "display_name"=> "Educational Institutes",
                         "status"=> "active"
                     ],
-                    "trust"     => [
+                    [
+                        "name"=> "trust",
                         "id"=> 9,
+                        "display_name"=> "Trust",
                         "status"=> "active"
                     ],
-                    "society"     => [
+                    [
+                        "name"=> "society",
                         "id"=> 10,
+                        "display_name"=> "Society",
                         "status"=> "active"
                     ],
-                    "other"     => [
+                    [
+                        "name"=> "other",
                         "id"=> 12,
+                        "display_name"=> "Other",
                         "status"=> "active"
                     ],
-                    "ngo"     => [
+                    [
+                        "name"=> "ngo",
                         "id"=> 7,
+                        "display_name"=> "NGO",
                         "status"=> "active"
                     ],
-                    "huf"     => [
+                    [
+                        "name"=> "huf",
                         "id"=> 13,
-                        "status"=>"inactive"
+                        "display_name"=> "HUF",
+                        "status"=> "inactive"
                     ]
                 ],
-                "unregistered"     => [
-                    "individual"     => [
+                "unregistered"=> [
+                    [
+                        "name"=> "individual",
                         "id"=> 2,
+                        "display_name"=> "Individual",
                         "status"=> "active"
                     ],
-                    "not_yet_registered"     => [
+                    [
+                        "name"=> "not_yet_registered",
                         "id"=> 11,
+                        "display_name"=> "Not Yet Registered",
                         "status"=> "active"
                     ]
                 ]

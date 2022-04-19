@@ -6523,7 +6523,7 @@ class Core extends Base\Core
 
             foreach ($businessTypes as $businessType)
             {
-                if (empty($merchantId)===false and
+                if (empty($merchantId) === false and
                     array_key_exists($businessType, BusinessType::$businessTypeExperiments))
                 {
                     $experimentName            = BusinessType::$businessTypeExperiments[$businessType];
@@ -6537,31 +6537,37 @@ class Core extends Base\Core
 
                     if ($isRazorxExperimentEnabled === true)
                     {
-                        $result[$bucketName] = array_merge($result[$bucketName], [
-                            $businessType => [
-                                "id"=> BusinessType::getIndexFromKey($businessType),
-                                "status"=>'active'
-                            ]
-                        ]);
+                        array_push($result[$bucketName],
+                                   [
+                                       "name"   => $businessType,
+                                       "id"      => BusinessType::getIndexFromKey($businessType),
+                                       "display_name" => BusinessType::getDisplayNameFromKey($businessType),
+                                       "status"  => 'active'
+                                   ]
+                        );
                     }
                     else
                     {
-                        $result[$bucketName] = array_merge($result[$bucketName], [
-                            $businessType => [
-                                "id"=> BusinessType::getIndexFromKey($businessType),
-                                "status"=>'inactive'
-                            ]
-                        ]);
+                        array_push($result[$bucketName],
+                                   [
+                                       "name"   => $businessType,
+                                       "id"      => BusinessType::getIndexFromKey($businessType),
+                                       "display_name" => BusinessType::getDisplayNameFromKey($businessType),
+                                       "status"  => 'inactive'
+                                   ]
+                        );
                     }
                 }
                 else
                 {
-                    $result[$bucketName] = array_merge($result[$bucketName], [
-                        $businessType => [
-                            "id"=> BusinessType::getIndexFromKey($businessType),
-                            "status"=>'active'
-                        ]
-                    ]);
+                    array_push($result[$bucketName],
+                               [
+                                   "name"   => $businessType,
+                                   "id"      => BusinessType::getIndexFromKey($businessType),
+                                   "display_name" => BusinessType::getDisplayNameFromKey($businessType),
+                                   "status"  => 'active'
+                               ]
+                    );
                 }
             }
         }
