@@ -196,10 +196,7 @@ class Core extends Base\Core
 
            (new Token\Core())->onboardMerchant($merchant, $tokenizationGateways);
         }
-
-
-
-        if(str_contains($feature->getName(), Feature::ONBOARD_TOKENIZATION) && $feature->isMerchantFeature() === true)
+        else if(str_contains($feature->getName(), Feature::ONBOARD_TOKENIZATION) && $feature->isMerchantFeature() === true)
         {
             $merchant = $this->repo->merchant->findOrFailPublic($entityId);
 
