@@ -30,6 +30,11 @@ class Base extends BaseCore
         return $this->createTransaction($payout);
     }
 
+    public function processTransactionWithIdAndLedgerBalance(Entity $payout, string $txnId, int $balance)
+    {
+        return $this->createTransactionWithIdAndLedgerBalance($payout, $txnId, $balance);
+    }
+
     public function processCreateFundTransferAttempt(Entity $payout, PublicEntity $ftaAccount)
     {
         $this->createFundTransferAttempt($payout, $ftaAccount);
@@ -39,45 +44,14 @@ class Base extends BaseCore
     {
         list ($txn, $feeSplit) = (new Transaction\Processor\Payout($payout))->createTransaction();
 
-        $payout->setFees($txn->getFee());
-        $payout->setTax($txn->getTax());
+        $this->saveCreatedTxn($payout, $txn, $feeSplit);
+    }
 
-        // In case of high TPS composite API merchants, we calculate this much earlier
-        // and we wish to use the existing values itself.
-        if ($payout->isBalancePreDeducted() === true)
-        {
-            /** @var Transaction\Entity $txn */
-            $transactionId        = $payout->getTransactionIdWhenBalancePreDeducted();
-            $transactionCreatedAt = $payout->getTransactionCreatedAtWhenBalancePreDeducted();
-            $closingBalance       = $payout->getClosingBalanceWhenBalancePreDeducted();
+    protected function createTransactionWithIdAndLedgerBalance(Entity $payout, string $txnId, int $balance)
+    {
+        list ($txn, $feeSplit) = (new Transaction\Processor\Payout($payout))->createTransactionWithIdAndLedgerBalance($txnId, $balance);
 
-            $this->trace->info(TraceCode::PAYOUT_INTERMEDIATE_TRANSACTIONS_SETTING_TRANSACTION_DETAILS,
-                               [
-                                   'payout_id'              => $payout->getId(),
-                                   'closing_balance'        => $closingBalance,
-                                   'transaction_id'         => $transactionId,
-                                   'transaction_created_at' => $transactionCreatedAt,
-                               ]);
-
-            if (($transactionId !== '') and
-                ($transactionCreatedAt !== 0))
-            {
-                $txn->setId($transactionId);
-                $txn->setCreatedAt($transactionCreatedAt);
-                $txn->setBalance($closingBalance);
-                $payout->transaction()->associate($txn);
-            }
-        }
-
-        $this->repo->saveOrFail($txn);
-
-        if ($payout->isBalancePreDeducted() === false)
-        {
-            // We are skipping saving the fees breakup for high TPS composite API merchants.
-            (new Transaction\Core)->saveFeeDetails($txn, $feeSplit);
-        }
-
-        $this->postTransactionCreationProcessing($txn, $payout);
+        return $this->saveCreatedTxn($payout, $txn, $feeSplit);
     }
 
     protected function createFundTransferAttempt(Entity $payout, $ftaAccount)
@@ -220,5 +194,53 @@ class Base extends BaseCore
         ]);
 
         return $newIfsc;
+    }
+
+    /**
+     * @param Entity $payout
+     * @param $txn
+     * @param $feeSplit
+     * @throws Exception\LogicException
+     */
+    protected function saveCreatedTxn(Entity $payout, $txn, $feeSplit)
+    {
+        $payout->setFees($txn->getFee());
+        $payout->setTax($txn->getTax());
+
+        // In case of high TPS composite API merchants, we calculate this much earlier
+        // and we wish to use the existing values itself.
+        if ($payout->isBalancePreDeducted() === true) {
+            /** @var Transaction\Entity $txn */
+            $transactionId = $payout->getTransactionIdWhenBalancePreDeducted();
+            $transactionCreatedAt = $payout->getTransactionCreatedAtWhenBalancePreDeducted();
+            $closingBalance = $payout->getClosingBalanceWhenBalancePreDeducted();
+
+            $this->trace->info(TraceCode::PAYOUT_INTERMEDIATE_TRANSACTIONS_SETTING_TRANSACTION_DETAILS,
+                [
+                    'payout_id' => $payout->getId(),
+                    'closing_balance' => $closingBalance,
+                    'transaction_id' => $transactionId,
+                    'transaction_created_at' => $transactionCreatedAt,
+                ]);
+
+            if (($transactionId !== '') and
+                ($transactionCreatedAt !== 0)) {
+                $txn->setId($transactionId);
+                $txn->setCreatedAt($transactionCreatedAt);
+                $txn->setBalance($closingBalance);
+                $payout->transaction()->associate($txn);
+            }
+        }
+
+        $this->repo->saveOrFail($txn);
+
+        if ($payout->isBalancePreDeducted() === false) {
+            // We are skipping saving the fees breakup for high TPS composite API merchants.
+            (new Transaction\Core)->saveFeeDetails($txn, $feeSplit);
+        }
+
+        $this->postTransactionCreationProcessing($txn, $payout);
+
+        return $txn;
     }
 }

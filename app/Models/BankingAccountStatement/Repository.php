@@ -341,4 +341,13 @@ class Repository extends Base\Repository
                     ->where(Entity::TYPE, $type)
                     ->get();
     }
+
+    public function fetchByEntityIDAndEntityType(string $entityID, string $entityType, string $channel)
+    {
+        return $this->newQuery()
+            ->where(Entity::ENTITY_ID, $entityID)
+            ->where(Entity::ENTITY_TYPE, $entityType)
+            ->where(Entity::CHANNEL, $channel)
+            ->first();
+    }
 }

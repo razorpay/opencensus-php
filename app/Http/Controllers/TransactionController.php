@@ -106,4 +106,13 @@ class TransactionController extends Controller
 
         return ApiResponse::json($entities);
     }
+
+    public function transactionsWebhook()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->updateEntitiesWithTransaction($input);
+
+        return ApiResponse::json($response);
+    }
 }

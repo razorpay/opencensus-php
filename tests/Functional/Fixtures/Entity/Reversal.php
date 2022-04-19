@@ -21,18 +21,27 @@ class Reversal extends Base
 
         $reversal = $this->build('reversal', $attributes);
 
-        $entity = E::getEntityClass('payment');
-        $payment = $entity::where('transfer_id', $reversal->getEntityId())->first();
+        if ($attributes['entity_type'] !== 'payout') {
+            $entity = E::getEntityClass('payment');
+            $payment = $entity::where('transfer_id', $reversal->getEntityId())->first();
 
-        $this->fixtures->create(
-            'refund:from_transfer_payment',
-            [
-                'amount'        => $reversal->getAmount(),
-                'payment'       => $payment,
-                'created_at'    => $reversal->getCreatedAt(),
-            ]);
+            $this->fixtures->create(
+                'refund:from_transfer_payment',
+                [
+                    'amount' => $reversal->getAmount(),
+                    'payment' => $payment,
+                    'created_at' => $reversal->getCreatedAt(),
+                ]);
+        }
 
-        $txn = $this->createTransactionOnReversal($reversal);
+        $txn = null;
+        if ($attributes['entity_type'] !== 'payout') {
+            $txn = $this->createTransactionOnReversal($reversal);
+        }
+        else
+        {
+            $txn = $this->createTransactionOnPayoutReversal($reversal);
+        }
 
         $txn->saveOrFail();
 

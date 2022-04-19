@@ -186,6 +186,11 @@ class Entity extends Base\PublicEntity
 
     // -------------------- Getters -----------------------------
 
+    public function getEntitySign(): string
+    {
+        return self::$sign;
+    }
+
     public function getAmount()
     {
         return $this->getAttribute(self::AMOUNT);
@@ -287,6 +292,11 @@ class Entity extends Base\PublicEntity
     // -------------------- End Setters --------------------------
 
     // -------------------- Public Setters ------------------------------
+
+    public function setTransactionId($txnId)
+    {
+        return $this->setAttribute(self::TRANSACTION_ID, $txnId);
+    }
 
     public function setPublicTransferIdAttribute(array & $array)
     {

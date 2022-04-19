@@ -29,7 +29,8 @@ class CreateExternalTable extends Migration
 
             $table->char(Entity::MERCHANT_ID, Merchant\Entity::ID_LENGTH);
 
-            $table->char(Entity::TRANSACTION_ID, Transaction\Entity::ID_LENGTH);
+            $table->char(Entity::TRANSACTION_ID, Transaction\Entity::ID_LENGTH)
+                ->nullable();
 
             $table->string(Entity::CHANNEL, 255);
 
@@ -73,8 +74,6 @@ class CreateExternalTable extends Migration
             $table->index(Entity::DELETED_AT);
             $table->index(Entity::CHANNEL);
 
-            $table->index(Entity::TRANSACTION_ID);
-
             $table->index([Entity::MERCHANT_ID, Entity::CREATED_AT]);
 
             // Foreign Key relations
@@ -87,11 +86,6 @@ class CreateExternalTable extends Migration
             $table->foreign(Entity::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)
                   ->on(Table::MERCHANT)
-                  ->on_delete('restrict');
-
-            $table->foreign(Entity::TRANSACTION_ID)
-                  ->references(Transaction\Entity::ID)
-                  ->on(Table::TRANSACTION)
                   ->on_delete('restrict');
         });
     }
@@ -108,8 +102,6 @@ class CreateExternalTable extends Migration
             $table->dropForeign(Table::EXTERNAL . '_' . Entity::BALANCE_ID . '_foreign');
 
             $table->dropForeign(Table::EXTERNAL . '_' . Entity::MERCHANT_ID . '_foreign');
-
-            $table->dropForeign(Table::EXTERNAL . '_' . Entity::TRANSACTION_ID . '_foreign');
         });
 
         Schema::dropIfExists(Table::EXTERNAL);

@@ -126,6 +126,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::REMARKS, $remarks);
     }
 
+    public function getEntitySign(): string
+    {
+        return self::$sign;
+    }
+
     public function getChannel()
     {
         return $this->getAttribute(self::CHANNEL);
@@ -159,5 +164,10 @@ class Entity extends Base\PublicEntity
     public function getBalanceId()
     {
         return $this->getAttribute(self::BALANCE_ID);
+    }
+
+    public function hasTransaction()
+    {
+        return ($this->isAttributeNotNull(self::TRANSACTION_ID) === true);
     }
 }

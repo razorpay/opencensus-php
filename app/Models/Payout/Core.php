@@ -2257,18 +2257,7 @@ class Core extends Base\Core
             // send event to ledger in shadow mode for direct acc
             // if $bankAccStmt was found for the payout, it indicates that we mapped an existing external transaction to razorpay payout
             // so corresponding event needs to be sent to ledger
-            if (($payout->isBalanceAccountTypeDirect() === true) and ($bankAccStmt !== null))
-            {
-                if ($payout->getPurpose() === Purpose::RZP_FEES)
-                {
-                    $this->processLedgerPayoutForDirect($payout, Transaction\Processor\Ledger\Payout::DA_EXT_FEE_PAYOUT_PROCESSED, null, null, $bankAccStmt);
-                }
-                else
-                {
-                    $this->processLedgerPayoutForDirect($payout, Transaction\Processor\Ledger\Payout::DA_EXT_PAYOUT_PROCESSED, null, null, $bankAccStmt);
-                    $this->processLedgerPayoutForDirect($payout, Transaction\Processor\Ledger\Payout::DA_PAYOUT_PROCESSED_RECON, null, null, $bankAccStmt);
-                }
-            }
+            $this->sendExtToPayoutEventToLedger($payout, $bankAccStmt);
 
             $this->app->events->dispatch('api.payout.processed', [$payout]);
 
@@ -2423,8 +2412,9 @@ class Core extends Base\Core
             return;
         }
 
-        // If the mode is not live OR the merchant does not have the DA's ledger journal write feature, we return.
-        if ($payout->merchant->isFeatureEnabled(Feature\Constants::DA_LEDGER_JOURNAL_WRITES) === false)
+        // If the mode is not live OR the merchant does not have any of the DA's ledger shadow or reverse shadow feature, we return.
+        if (($payout->merchant->isFeatureEnabled(Feature\Constants::DA_LEDGER_JOURNAL_WRITES) === false) and
+            ($payout->merchant->isFeatureEnabled(Feature\Constants::DA_LEDGER_REVERSE_SHADOW) === false))
         {
             return;
         }
@@ -2541,7 +2531,12 @@ class Core extends Base\Core
                 ]);
         }
 
-        $this->updateTransactionAndSourceToPayout($payout, $transaction);
+        // do relinking of same txn from external to payout if merchant is not on ledger reverse shadow
+        // else the relinking will happen in the ledger webhook flow
+        if ($payout->merchant->isFeatureEnabled(Feature\Constants::DA_LEDGER_REVERSE_SHADOW) === false)
+        {
+            $this->updateTransactionAndSourceToPayout($payout, $transaction);
+        }
 
         return $transaction->bankingAccountStatement;
     }
@@ -2629,7 +2624,12 @@ class Core extends Base\Core
                 ]);
         }
 
-        $this->updateTransactionAndSourceToReversal($reversal, $transaction);
+        // do relinking of same txn from external to reversal if merchant is not on ledger reverse shadow
+        // else the relinking will happen in the ledger webhook flow
+        if ($reversal->merchant->isFeatureEnabled(Feature\Constants::DA_LEDGER_REVERSE_SHADOW) === false)
+        {
+            $this->updateTransactionAndSourceToReversal($reversal, $transaction);
+        }
 
         return [$transaction->bankingAccountStatement, $bankAccStmtForPayout];
     }
@@ -2656,13 +2656,13 @@ class Core extends Base\Core
         return [$payout->transaction, $bankAccStmt];
     }
 
-    public function updateTransactionAndSourceToPayout(Entity $payout, Transaction\Entity $transaction)
+    public function updateTransactionAndSourceToPayout(Entity $payout, Transaction\Entity $transaction, $traceCode = TraceCode::TRANSACTION_FOUND_DURING_PAYOUT_PROCESSED)
     {
         /** @var External\Entity $source */
         $source = $transaction->source;
 
         $this->trace->warning(
-            TraceCode::TRANSACTION_FOUND_DURING_PAYOUT_PROCESSED,
+            $traceCode,
             [
                 'payout_id'         => $payout->getId(),
                 'transaction_id'    => $transaction->getId(),
@@ -2687,16 +2687,20 @@ class Core extends Base\Core
                 $this->updateBankingAccountStatementLinkedEntity($transaction->bankingAccountStatement, $payout);
             });
 
-        (new Transaction\Core)->dispatchEventForTransactionCreatedWithoutEmailOrSmsNotification($payout->transaction);
+        // send this webhook if merchant is not on ledger reverse shadow
+        // else this webhook will be sent in the ledger webhook flow
+        if ($payout->merchant->isFeatureEnabled(Feature\Constants::DA_LEDGER_REVERSE_SHADOW) === false) {
+            (new Transaction\Core)->dispatchEventForTransactionCreatedWithoutEmailOrSmsNotification($payout->transaction);
+        }
     }
 
-    public function updateTransactionAndSourceToReversal(Reversal\Entity $reversal, Transaction\Entity $transaction)
+    public function updateTransactionAndSourceToReversal(Reversal\Entity $reversal, Transaction\Entity $transaction, $traceCode = TraceCode::TRANSACTION_FOUND_DURING_PAYOUT_REVERSED)
     {
         /** @var External\Entity $source */
         $source = $transaction->source;
 
         $this->trace->warning(
-            TraceCode::TRANSACTION_FOUND_DURING_PAYOUT_REVERSED,
+            $traceCode,
             [
                 'reversal_id'       => $reversal->getId(),
                 'payout_id'         => $reversal->entity->getId(),
@@ -2725,7 +2729,11 @@ class Core extends Base\Core
                 $this->updateBankingAccountStatementLinkedEntity($transaction->bankingAccountStatement, $reversal);
             });
 
-        (new Transaction\Core)->dispatchEventForTransactionCreatedWithoutEmailOrSmsNotification($reversal->transaction);
+        // send this webhook if merchant is not on ledger reverse shadow
+        // else this webhook will be sent in the ledger webhook flow
+        if ($reversal->merchant->isFeatureEnabled(Feature\Constants::DA_LEDGER_REVERSE_SHADOW) === false) {
+            (new Transaction\Core)->dispatchEventForTransactionCreatedWithoutEmailOrSmsNotification($reversal->transaction);
+        }
     }
 
     protected function getDummyTransactionAndFeesBreakupForPayout(Entity $payout)
@@ -3358,32 +3366,10 @@ class Core extends Base\Core
         );
 
         // send event to ledger in shadow mode for direct acc
-        if (($payout->isBalanceAccountTypeDirect() === true) and ($bankAccStmtForPayout !== null))
-        {
-            if ($payout->getPurpose() === Purpose::RZP_FEES)
-            {
-                $this->processLedgerPayoutForDirect($payout, Transaction\Processor\Ledger\Payout::DA_EXT_FEE_PAYOUT_PROCESSED, null, null, $bankAccStmtForPayout);
-            }
-            else
-            {
-                $this->processLedgerPayoutForDirect($payout, Transaction\Processor\Ledger\Payout::DA_EXT_PAYOUT_PROCESSED, null, null, $bankAccStmtForPayout);
-                $this->processLedgerPayoutForDirect($payout, Transaction\Processor\Ledger\Payout::DA_PAYOUT_PROCESSED_RECON, null, null, $bankAccStmtForPayout);
-            }
-        }
+        $this->sendExtToPayoutEventToLedger($payout, $bankAccStmtForPayout);
 
         // send event to ledger in shadow mode for direct acc
-        if (($payout->isBalanceAccountTypeDirect() === true) and ($bankAccStmtForReversal !== null))
-        {
-            if ($payout->getPurpose() === Purpose::RZP_FEES)
-            {
-                $this->processLedgerPayoutForDirect($payout, Transaction\Processor\Ledger\Payout::DA_EXT_FEE_PAYOUT_REVERSED, $reversal, null, $bankAccStmtForReversal);
-            }
-            else
-            {
-                $this->processLedgerPayoutForDirect($payout, Transaction\Processor\Ledger\Payout::DA_EXT_PAYOUT_REVERSED, $reversal, null, $bankAccStmtForReversal);
-                $this->processLedgerPayoutForDirect($payout, Transaction\Processor\Ledger\Payout::DA_PAYOUT_REVERSED_RECON, $reversal, null, $bankAccStmtForReversal);
-            }
-        }
+        $this->sendExtToReversalEventToLedger($payout, $bankAccStmtForReversal, $reversal);
 
     }
 
@@ -5238,6 +5224,47 @@ class Core extends Base\Core
 
                     continue;
                 }
+            }
+        }
+    }
+
+    /**
+     * @param Entity $payout
+     * @param $bankAccStmt
+     */
+    public function sendExtToPayoutEventToLedger(Entity $payout, $bankAccStmt)
+    {
+        if (($payout->isBalanceAccountTypeDirect() === true) and ($bankAccStmt !== null))
+        {
+            if ($payout->getPurpose() === Purpose::RZP_FEES)
+            {
+                $this->processLedgerPayoutForDirect($payout, Transaction\Processor\Ledger\Payout::DA_EXT_FEE_PAYOUT_PROCESSED, null, null, $bankAccStmt);
+            }
+            else
+            {
+                $this->processLedgerPayoutForDirect($payout, Transaction\Processor\Ledger\Payout::DA_EXT_PAYOUT_PROCESSED, null, null, $bankAccStmt);
+                $this->processLedgerPayoutForDirect($payout, Transaction\Processor\Ledger\Payout::DA_PAYOUT_PROCESSED_RECON, null, null, $bankAccStmt);
+            }
+        }
+    }
+
+    /**
+     * @param Entity $payout
+     * @param $bankAccStmtForReversal
+     * @param $reversal
+     */
+    public function sendExtToReversalEventToLedger(Entity $payout, $bankAccStmtForReversal, $reversal): void
+    {
+        if (($payout->isBalanceAccountTypeDirect() === true) and ($bankAccStmtForReversal !== null))
+        {
+            if ($payout->getPurpose() === Purpose::RZP_FEES)
+            {
+                $this->processLedgerPayoutForDirect($payout, Transaction\Processor\Ledger\Payout::DA_EXT_FEE_PAYOUT_REVERSED, $reversal, null, $bankAccStmtForReversal);
+            }
+            else
+            {
+                $this->processLedgerPayoutForDirect($payout, Transaction\Processor\Ledger\Payout::DA_EXT_PAYOUT_REVERSED, $reversal, null, $bankAccStmtForReversal);
+                $this->processLedgerPayoutForDirect($payout, Transaction\Processor\Ledger\Payout::DA_PAYOUT_REVERSED_RECON, $reversal, null, $bankAccStmtForReversal);
             }
         }
     }

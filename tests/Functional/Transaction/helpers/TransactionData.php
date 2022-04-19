@@ -28,6 +28,350 @@ return [
         ],
     ],
 
+    'testLedgerTransactionWebhookForPayout' => [
+        'request' => [
+            'content' => [
+                'ledger_response' => [
+                    "id" => "JAUgIvMSZ2olX1",
+                    "created_at" => "1648030496",
+                    "updated_at" => "1648030496",
+                    "amount" => "120",
+                    "currency" => "INR",
+                    "tenant" => "X",
+                    "transactor_id" => "pout_D3QkY4PmpkulAA",
+                    "transactor_event" => "da_payout_processed",
+                    "transaction_date" => "1611132045",
+                    "ledger_entry" => [
+                        [
+                            "id" => "JAUgIvWCO5WQiQ",
+                            "balance" => "100",
+                            "balance_updated" => true,
+                            "account_entities" => [
+                              "account_type" => [
+                                  "payable"
+                              ],
+                              "banking_account_stmt_detail_id" => [
+                                  "basd_HyUSeBRYwtJaeX"
+                              ],
+                              "fund_account_type" => [
+                                  "merchant_da"
+                              ]
+                            ]
+                        ]
+                    ]
+                ],
+            ],
+            'url' => '/ledger/transactions_webhook',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'journal_id' => 'JAUgIvMSZ2olX1'
+            ],
+        ],
+    ],
+
+    'testLedgerTransactionWebhookForReversal' => [
+        'request' => [
+            'content' => [
+                'ledger_response' => [
+                    "id" => "JAUgIvMSZ2olX1",
+                    "created_at" => "1648030496",
+                    "updated_at" => "1648030496",
+                    "amount" => "120",
+                    "currency" => "INR",
+                    "tenant" => "X",
+                    "transactor_id" => "rvrsl_D3QkY4PmpkulAA",
+                    "transactor_event" => "da_payout_reversed",
+                    "transaction_date" => "1611132045",
+                    "ledger_entry" => [
+                        [
+                            "id" => "JAUgIvWCO5WQiQ",
+                            "balance" => "100",
+                            "balance_updated" => true,
+                            "account_entities" => [
+                                "account_type" => [
+                                    "payable"
+                                ],
+                                "banking_account_stmt_detail_id" => [
+                                    "basd_HyUSeBRYwtJaeX"
+                                ],
+                                "fund_account_type" => [
+                                    "merchant_da"
+                                ]
+                            ]
+                        ]
+                    ]
+                ],
+            ],
+            'url' => '/ledger/transactions_webhook',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'journal_id' => 'JAUgIvMSZ2olX1'
+            ],
+        ],
+    ],
+
+    'testLedgerTransactionWebhookForExternalOnly' => [
+        'request' => [
+            'content' => [
+                'ledger_response' => [
+                    "id" => "JAUgIvMSZ2olX1",
+                    "created_at" => "1648030496",
+                    "updated_at" => "1648030496",
+                    "amount" => "120",
+                    "currency" => "INR",
+                    "tenant" => "X",
+                    "transactor_id" => "ext_D3QkY4PmpkulAA",
+                    "transactor_event" => "da_ext_credit",
+                    "transaction_date" => "1611132045",
+                    "ledger_entry" => [
+                        [
+                            "id" => "JAUgIvWCO5WQiQ",
+                            "balance" => "100",
+                            "balance_updated" => true,
+                            "account_entities" => [
+                                "account_type" => [
+                                    "payable"
+                                ],
+                                "banking_account_stmt_detail_id" => [
+                                    "basd_HyUSeBRYwtJaeX"
+                                ],
+                                "fund_account_type" => [
+                                    "merchant_da"
+                                ]
+                            ]
+                        ]
+                    ]
+                ],
+            ],
+            'url' => '/ledger/transactions_webhook',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'journal_id' => 'JAUgIvMSZ2olX1'
+            ],
+        ],
+    ],
+
+    'testLedgerTransactionWebhookForExternalAndRelinkingToPayout' => [
+        'request' => [
+            'content' => [
+                'ledger_response' => [
+                    "id" => "JAUgIvMSZ2olX1",
+                    "created_at" => "1648030496",
+                    "updated_at" => "1648030496",
+                    "amount" => "120",
+                    "currency" => "INR",
+                    "tenant" => "X",
+                    "transactor_id" => "ext_D3QkY4PmpkulAA",
+                    "transactor_event" => "da_ext_credit",
+                    "transaction_date" => "1611132045",
+                    "ledger_entry" => [
+                        [
+                            "id" => "JAUgIvWCO5WQiQ",
+                            "balance" => "100",
+                            "balance_updated" => true,
+                            "account_entities" => [
+                                "account_type" => [
+                                    "payable"
+                                ],
+                                "banking_account_stmt_detail_id" => [
+                                    "basd_HyUSeBRYwtJaeX"
+                                ],
+                                "fund_account_type" => [
+                                    "merchant_da"
+                                ]
+                            ]
+                        ]
+                    ]
+                ],
+            ],
+            'url' => '/ledger/transactions_webhook',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'journal_id' => 'JAUgIvMSZ2olX1'
+            ],
+        ],
+    ],
+
+    'testLedgerTransactionWebhookForExternalAndRelinkingToFailedPayout' => [
+    'request' => [
+        'content' => [
+            'ledger_response' => [
+                "id" => "JAUgIvMSZ2olX1",
+                "created_at" => "1648030496",
+                "updated_at" => "1648030496",
+                "amount" => "120",
+                "currency" => "INR",
+                "tenant" => "X",
+                "transactor_id" => "ext_D3QkY4PmpkulAA",
+                "transactor_event" => "da_ext_credit",
+                "transaction_date" => "1611132045",
+                "ledger_entry" => [
+                    [
+                        "id" => "JAUgIvWCO5WQiQ",
+                        "balance" => "100",
+                        "balance_updated" => true,
+                        "account_entities" => [
+                            "account_type" => [
+                                "payable"
+                            ],
+                            "banking_account_stmt_detail_id" => [
+                                "basd_HyUSeBRYwtJaeX"
+                            ],
+                            "fund_account_type" => [
+                                "merchant_da"
+                            ]
+                        ]
+                    ]
+                ]
+            ],
+        ],
+        'url' => '/ledger/transactions_webhook',
+        'method' => 'POST'
+    ],
+    'response' => [
+        'content' => [
+            'journal_id' => 'JAUgIvMSZ2olX1'
+        ],
+    ],
+],
+
+    'testLedgerTransactionWebhookForExternalToPayout' => [
+        'request' => [
+            'content' => [
+                'ledger_response' => [
+                    "id" => "JAUgIvMSZ2olX1",
+                    "created_at" => "1648030496",
+                    "updated_at" => "1648030496",
+                    "amount" => "120",
+                    "currency" => "INR",
+                    "tenant" => "X",
+                    "transactor_id" => "pout_D3QkY4PmPayout",
+                    "transactor_event" => "da_ext_payout_processed",
+                    "transaction_date" => "1611132045",
+                    "ledger_entry" => [
+                        [
+                            "id" => "JAUgIvWCO5WQiQ",
+                            "balance" => "100",
+                            "balance_updated" => true,
+                            "account_entities" => [
+                                "account_type" => [
+                                    "payable"
+                                ],
+                                "banking_account_stmt_detail_id" => [
+                                    "basd_HyUSeBRYwtJaeX"
+                                ],
+                                "fund_account_type" => [
+                                    "merchant_da"
+                                ]
+                            ]
+                        ]
+                    ]
+                ],
+            ],
+            'url' => '/ledger/transactions_webhook',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'journal_id' => 'JAUgIvMSZ2olX1'
+            ],
+        ],
+    ],
+
+    'testLedgerTransactionWebhookForExternalAndRelinkingToReversal' => [
+        'request' => [
+            'content' => [
+                'ledger_response' => [
+                    "id" => "JAUgIvMSZ2olX1",
+                    "created_at" => "1648030496",
+                    "updated_at" => "1648030496",
+                    "amount" => "120",
+                    "currency" => "INR",
+                    "tenant" => "X",
+                    "transactor_id" => "ext_D3QkY4PmpkulAA",
+                    "transactor_event" => "da_ext_credit",
+                    "transaction_date" => "1611132045",
+                    "ledger_entry" => [
+                        [
+                            "id" => "JAUgIvWCO5WQiQ",
+                            "balance" => "100",
+                            "balance_updated" => true,
+                            "account_entities" => [
+                                "account_type" => [
+                                    "payable"
+                                ],
+                                "banking_account_stmt_detail_id" => [
+                                    "basd_HyUSeBRYwtJaeX"
+                                ],
+                                "fund_account_type" => [
+                                    "merchant_da"
+                                ]
+                            ]
+                        ]
+                    ]
+                ],
+            ],
+            'url' => '/ledger/transactions_webhook',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'journal_id' => 'JAUgIvMSZ2olX1'
+            ],
+        ],
+    ],
+
+    'testLedgerTransactionWebhookForExternalToReversal' => [
+        'request' => [
+            'content' => [
+                'ledger_response' => [
+                    "id" => "JAUgIvMSZ2olX1",
+                    "created_at" => "1648030496",
+                    "updated_at" => "1648030496",
+                    "amount" => "120",
+                    "currency" => "INR",
+                    "tenant" => "X",
+                    "transactor_id" => "rvrsl_D3QkY4PmpRvrsl",
+                    "transactor_event" => "da_ext_payout_reversed",
+                    "transaction_date" => "1611132045",
+                    "ledger_entry" => [
+                        [
+                            "id" => "JAUgIvWCO5WQiQ",
+                            "balance" => "100",
+                            "balance_updated" => true,
+                            "account_entities" => [
+                                "account_type" => [
+                                    "payable"
+                                ],
+                                "banking_account_stmt_detail_id" => [
+                                    "basd_HyUSeBRYwtJaeX"
+                                ],
+                                "fund_account_type" => [
+                                    "merchant_da"
+                                ]
+                            ]
+                        ]
+                    ]
+                ],
+            ],
+            'url' => '/ledger/transactions_webhook',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'journal_id' => 'JAUgIvMSZ2olX1'
+            ],
+        ],
+    ],
+
     'testGetAdjustmentWithTransaction' => [
         'request' => [
             'content' => [
@@ -628,6 +972,61 @@ return [
                 'card_issuer' => "hdfc",
                 'card_type' => "debit",
                 'dispute_id' => NULL,
+            ],
+        ],
+    ],
+
+    'testTransactionCreatedWebhookForSuccessfulMappingToPayout' => [
+        'entity'   => 'event',
+        'event'    => 'transaction.created',
+        'contains' => [
+            'transaction',
+        ],
+        'payload'  => [
+            'transaction' => [
+                'entity' => [
+                    'entity' => 'transaction',
+                    'source'   => [
+                        'entity' => 'payout',
+                        'status' => 'processed',
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testTransactionCreatedWebhookForSuccessfulMappingToReversal' => [
+        'entity'   => 'event',
+        'event'    => 'transaction.created',
+        'contains' => [
+            'transaction',
+        ],
+        'payload'  => [
+            'transaction' => [
+                'entity' => [
+                    'entity' => 'transaction',
+                    'source'   => [
+                        'entity' => 'reversal',
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testTransactionCreatedWebhookForSuccessfulMappingToExternal' => [
+        'entity'   => 'event',
+        'event'    => 'transaction.created',
+        'contains' => [
+            'transaction',
+        ],
+        'payload'  => [
+            'transaction' => [
+                'entity' => [
+                    'entity' => 'transaction',
+                    'source'   => [
+                        'entity' => 'external',
+                    ],
+                ],
             ],
         ],
     ],

@@ -79,6 +79,7 @@ class Base extends Core
     const FUND_ACCOUNT_TYPE = 'fund_account_type';
     const PAYABLE           = 'payable';
     const MERCHANT_VA       = 'merchant_va';
+    const MERCHANT_DA       = 'merchant_da';
 
     const BALANCE           = 'balance';
     const MIN_BALANCE       = 'min_balance';
@@ -94,14 +95,14 @@ class Base extends Core
 
     const LEDGER_DEBIT_EVENTS = [Payout::PAYOUT_INITIATED, FundAccountValidation::FAV_INITIATED, Adjustment::NEGATIVE_ADJUSTMENT_PROCESSED];
 
-    public static function getMerchantBalanceFromLedgerResponse(array $ledgerResponse)
+    public static function getMerchantBalanceFromLedgerResponse(array $ledgerResponse, string $merchantIdentifier = self::MERCHANT_VA)
     {
         foreach($ledgerResponse[self::LEDGER_ENTRY] as $ledgerEntry)
         {
             if ((empty($ledgerEntry[self::ACCOUNT_ENTITIES][self::ACCOUNT_TYPE]) === false) and
                 (empty($ledgerEntry[self::ACCOUNT_ENTITIES][self::FUND_ACCOUNT_TYPE]) === false) and
                 ($ledgerEntry[self::ACCOUNT_ENTITIES][self::ACCOUNT_TYPE][0] === self::PAYABLE) and
-                ($ledgerEntry[self::ACCOUNT_ENTITIES][self::FUND_ACCOUNT_TYPE][0] === self::MERCHANT_VA))
+                ($ledgerEntry[self::ACCOUNT_ENTITIES][self::FUND_ACCOUNT_TYPE][0] === $merchantIdentifier))
             {
                 return $ledgerEntry[self::BALANCE];
             }

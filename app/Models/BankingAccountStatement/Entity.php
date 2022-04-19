@@ -282,6 +282,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TRANSACTION_ID);
     }
 
+    public function hasTransaction()
+    {
+        return ($this->isAttributeNotNull(self::TRANSACTION_ID) === true);
+    }
+
     public function getBankTransactionId()
     {
         return $this->getAttribute(self::BANK_TRANSACTION_ID);

@@ -7,9 +7,12 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Trace\Tracer;
+use RZP\Models\Payout;
 use RZP\Services\Mutex;
 use RZP\Models\Feature;
 use RZP\Models\Payment;
+use RZP\Models\Reversal;
+use RZP\Models\External;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
@@ -19,10 +22,12 @@ use RZP\Models\Pricing\Fee;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Payment\Refund;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\BankingAccountStatement;
 use RZP\Jobs\Settlement\LedgerReconJob2;
 use RZP\Models\FundAccount\Validation\Core;
 use RZP\Models\Report\Types\BasicEntityReport;
 use Razorpay\Spine\Exception\DbQueryException;
+use RZP\Models\Payout\Processor\DownstreamProcessor\DownstreamProcessor;
 
 class Service extends Base\Service
 {
@@ -520,6 +525,550 @@ class Service extends Base\Service
         $resp['items'] = $txn->toArray();
 
         return $resp;
+    }
+
+    /**
+     * @throws Exception\RuntimeException
+     */
+    public function updateEntitiesWithTransaction(array $input)
+    {
+        $this->trace->info(
+            TraceCode::LEDGER_TRANSACTIONS_WEBHOOK_REQUEST,
+            [
+                'request'       => $input,
+                'mode'          => $this->mode
+            ]);
+
+        $startTimeMs = round(microtime(true) * 1000);
+
+        $journalId = null;
+        try {
+            $ledgerResponse = $input[Transaction\Processor\Ledger\Base::LEDGER_RESPONSE];
+            $transactorId = $ledgerResponse[Transaction\Processor\Ledger\Base::TRANSACTOR_ID];
+
+            $entityInfoArray = explode('_', $transactorId);
+            $transactorEvent = $ledgerResponse[Transaction\Processor\Ledger\Base::TRANSACTOR_EVENT];
+            $entityPrefix = $entityInfoArray[0];
+            $entityID = $entityInfoArray[1];
+
+            $journalId = $ledgerResponse["id"];
+            $balance = Transaction\Processor\Ledger\Base::getMerchantBalanceFromLedgerResponse($ledgerResponse, Transaction\Processor\Ledger\Base::MERCHANT_DA);
+
+            switch ($entityPrefix)
+            {
+                case Payout\Entity::getSign():
+
+                    switch ($transactorEvent)
+                    {
+                        case Transaction\Processor\Ledger\Payout::DA_EXT_PAYOUT_PROCESSED:
+                        case Transaction\Processor\Ledger\Payout::DA_EXT_FEE_PAYOUT_PROCESSED:
+                            // ext to payout processed webhook
+                            $this->updateTxnIdForExternalToPayoutProcessedLedgerEvent($transactorId, $journalId);
+                            break;
+
+                        default:
+                            // payout processed webhook
+                            $this->updateTxnIdForPayoutProcessedLedgerEvent($transactorId, $entityID, $journalId, $balance);
+                    }
+
+                    break;
+
+                case Reversal\Entity::getSign():
+
+                    switch ($transactorEvent) {
+                        case Transaction\Processor\Ledger\Payout::DA_EXT_PAYOUT_REVERSED:
+                        case Transaction\Processor\Ledger\Payout::DA_EXT_FEE_PAYOUT_REVERSED:
+                            // ext to payout reversed webhook
+                            $this->updateTxnIdForExternalToPayoutReversedLedgerEvent($transactorId, $journalId);
+                            break;
+
+                        default:
+                            // payout reversed webhook
+                            $this->updateTxnIdForPayoutReversedLedgerEvent($transactorId, $entityID, $journalId, $balance);
+                    }
+
+                    break;
+
+                case External\Entity::getSign():
+                    // external webhook
+                    $this->updateTxnIdForExternalLedgerEvent($transactorId, $entityID, $journalId, $balance);
+
+                    break;
+
+                default:
+                    $this->trace->traceException(
+                        null,
+                        Trace::ERROR,
+                        TraceCode::LEDGER_TRANSACTIONS_WEBHOOK_INVALID_REQUEST,
+                        [
+                            'request' => $input,
+                            'mode' => $this->mode
+                        ]
+                    );
+                    throw new Exception\RuntimeException(
+                        'Invalid entity received in request',
+                        [
+                            'journal_id' => $journalId,
+                        ]
+                    );
+            }
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::LEDGER_TRANSACTIONS_WEBHOOK_EXCEPTION,
+                [
+                    'request' => $input,
+                    'mode' => $this->mode
+                ]
+            );
+            throw new Exception\RuntimeException(
+                'Exception while processing request:'.$ex->getTraceAsString(),
+                [
+                    'journal_id' => $journalId,
+                ]
+            );
+        }
+
+        $endTimeMs = round(microtime(true) * 1000);
+
+        $this->trace->info(TraceCode::LEDGER_TRANSACTIONS_WEBHOOK_RESPONSE, [
+            'journal_id'                => $journalId,
+            'execution_time_ms'         => $endTimeMs - $startTimeMs,
+        ]);
+
+        return [
+            'journal_id' => $journalId,
+        ];
+    }
+
+    protected function externalToPayoutOrReversalRelinking($basEntity)
+    {
+        $this->trace->info(
+            TraceCode::RELINKING_EXT_TO_SOURCE_ENTITY,
+            [
+                'bas_id'      => $basEntity->getId(),
+            ]);
+
+        $createExternalSource = false;
+        $remarks = null;
+        if ($basEntity->isTypeDebit() === true)
+        {
+            // check for payouts
+            $payout = (new BankingAccountStatement\Core)->fetchExistingPayoutForAccountStatement($basEntity, $createExternalSource, $remarks);
+            if ($createExternalSource === true or $payout === null)
+            {
+                return null;
+            }
+
+            if ($payout->hasTransaction() === true)
+            {
+                $this->trace->info(
+                    TraceCode::EXT_TRANSACTION_ALREADY_LINKED_WITH_PAYOUT,
+                    [
+                        'payout_id'      => $payout->getId(),
+                        'transaction_id' => $payout->getTransactionId(),
+                    ]);
+                return null;
+            }
+
+            return $payout;
+        }
+
+        // check for reversal
+        $reversal = (new BankingAccountStatement\Core)->fetchExistingReversalIfPresent($basEntity, $createExternalSource, $remarks);
+        if ($createExternalSource === true or $reversal === null)
+        {
+            // nothing to relink if no reversal is found
+            return null;
+        }
+
+        if ($reversal->hasTransaction() === true)
+        {
+            $this->trace->info(
+                TraceCode::EXT_TRANSACTION_ALREADY_LINKED_WITH_REVERSAL,
+                [
+                    'reversal_id'    => $reversal->getId(),
+                    'transaction_id' => $reversal->getTransactionId(),
+                ]);
+            return null;
+        }
+
+        return $reversal;
+    }
+
+    protected function updateTxnIdForExternalToPayoutProcessedLedgerEvent($transactorId, $journalId)
+    {
+        // Ledger webhook for relink ext to payout event
+        $payout = $this->repo->payout->findByPublicId($transactorId);
+
+        if ($this->merchantHasDALedgerReverseShadowFeature($payout) === false)
+        {
+            $this->trace->info(TraceCode::LEDGER_WEBHOOK_FOR_MERCHANT_NOT_ON_REVERSE_SHADOW, [
+                'entity_name'       => 'payout',
+                'entity_id'         => $payout->getId(),
+                'journal_id'        => $journalId,
+            ]);
+            return;
+        }
+
+        // Fetch BAS for this payout
+        $bas = null;
+        if (empty($payout->getUtr()) === false)
+        {
+            $bas = $this->repo->banking_account_statement->fetchByUtrForPayout($payout);
+        }
+        if ($bas === null)
+        {
+            $bas = $this->repo->banking_account_statement->fetchByCmsRefNumForPayout($payout);
+        }
+
+        if ($payout->hasTransaction() === true)
+        {
+            $this->trace->info(TraceCode::PAYOUT_ALREADY_LINKED, [
+                'payout_id'                 => $payout->getId(),
+                'linked_transaction_id'     => $payout->getTransactionId(),
+            ]);
+            return;
+        }
+
+        $externalTransaction = $this->repo->transaction(function () use ($payout, $bas, $journalId) {
+            $this->trace->info(TraceCode::LEDGER_TRANSACTIONS_WEBHOOK_RELINK_EXT_TO_PAYOUT, ['payout_id' => $payout->getId()]);
+            $externalTransaction = $bas->transaction;
+
+            if ($externalTransaction === null)
+            {
+                throw new Exception\LogicException(
+                    'bas row selected is not linked to any transaction!',
+                    ErrorCode::SERVER_ERROR_TRANSACTION_WRONG_SOURCE,
+                    [
+                        'bas_id'            => $bas->getId(),
+                        'payout_id'         => $payout->getId(),
+                    ]);
+            }
+
+            $source = $externalTransaction->source;
+
+            if ($source->getEntity() !== Constants\Entity::EXTERNAL)
+            {
+                throw new Exception\LogicException(
+                    'payout transaction created for some other source other than external!',
+                    ErrorCode::SERVER_ERROR_TRANSACTION_WRONG_SOURCE,
+                    [
+                        'transaction_id'    => $externalTransaction->getId(),
+                        'bas_id'            => $bas->getId(),
+                        'payout_id'         => $payout->getId(),
+                    ]);
+            }
+
+            $basEntity = $externalTransaction->bankingAccountStatement;
+
+            // For this ledger transactor event: A new transaction gets created on ledger side, but same transaction  (of external) was relinked to payout on API side
+            // se we relink the payout and bas with new transaction id (say journal id) in RX DA<>Ledger integration
+            (new Payout\Core)->updateTransactionAndSourceToPayout($payout, $externalTransaction, TraceCode::TXN_FOUND_FOR_PAYOUT_PROCESSED_IN_LEDGER_WEBHOOK);
+
+            $payout->setTransactionId($journalId);
+            $this->repo->saveOrFail($payout);
+            $basEntity->setTransactionId($journalId);
+            $this->repo->saveOrFail($basEntity);
+
+            return $externalTransaction;
+        });
+
+        $externalTransaction->reload();
+        $transactionForMerchantWebhook = clone $externalTransaction;
+        $transactionForMerchantWebhook->setId($journalId);
+        (new Transaction\Core)->dispatchEventForTransactionCreatedWithoutEmailOrSmsNotification($transactionForMerchantWebhook);
+    }
+
+    protected function updateTxnIdForPayoutProcessedLedgerEvent($transactorId, $entityID, $journalId, $balance)
+    {
+        // payout processed webhook
+        $payout = $this->repo->payout->findByPublicId($transactorId);
+
+        if ($this->merchantHasDALedgerReverseShadowFeature($payout) === false)
+        {
+            $this->trace->info(TraceCode::LEDGER_WEBHOOK_FOR_MERCHANT_NOT_ON_REVERSE_SHADOW, [
+                'entity_name'       => 'payout',
+                'entity_id'         => $payout->getId(),
+                'journal_id'        => $journalId,
+            ]);
+            return;
+        }
+
+        $basEntity = $this->repo->banking_account_statement->fetchByEntityIDAndEntityType($entityID, 'payout', $payout->getChannel());
+
+        if ($payout->hasTransaction() === true)
+        {
+            $this->trace->info(TraceCode::PAYOUT_ALREADY_LINKED, [
+                'payout_id'             => $payout->getId(),
+                'linked_transaction_id' => $payout->getTransactionId(),
+            ]);
+            return;
+        }
+
+        $downstreamProcessor = new DownstreamProcessor('fund_account_payout', $payout, $this->mode);
+        $subProcessor = $downstreamProcessor->getSubProcessorClass();
+
+        $this->repo->transaction(function () use ($payout, $basEntity, $journalId, $balance, $subProcessor) {
+            // create transaction and update balance
+            $transaction = $subProcessor->processTransactionWithIdAndLedgerBalance($payout, $journalId, intval($balance));
+
+            // link transaction with entity
+            $this->repo->saveOrFail($payout);
+
+            // link with bas
+            if ($basEntity->hasTransaction() === true)
+            {
+                $this->trace->info(TraceCode::BAS_ALREADY_LINKED, [
+                    'bas_id'                => $basEntity->getId(),
+                    'linked_transaction_id' => $basEntity->getTransactionId(),
+                ]);
+            }
+            else
+            {
+                $basEntity->transaction()->associate($transaction);
+                if ($basEntity->getPostedDate() !== null)
+                {
+                    (new Transaction\Core)->updatePostedDate($payout, $basEntity->getPostedDate());
+                }
+                $this->repo->saveOrFail($basEntity);
+            }
+        });
+        (new BankingAccountStatement\Core())->fireWebhooksAfterSuccessfulMappingOfSourceEntity($payout, true);
+    }
+
+    protected function updateTxnIdForExternalToPayoutReversedLedgerEvent($transactorId, $journalId)
+    {
+        // Ledger webhook for relink ext to reversal event
+        $reversal = $this->repo->reversal->findByPublicId($transactorId);
+
+        if ($this->merchantHasDALedgerReverseShadowFeature($reversal) === false)
+        {
+            $this->trace->info(TraceCode::LEDGER_WEBHOOK_FOR_MERCHANT_NOT_ON_REVERSE_SHADOW, [
+                'entity_name'       => 'reversal',
+                'entity_id'         => $reversal->getId(),
+                'journal_id'        => $journalId,
+            ]);
+            return;
+        }
+
+        $bas = $this->repo->banking_account_statement->fetchByUtrForReversal($reversal)->first() ??
+            $this->repo->banking_account_statement->fetchByCmsRefNumForReversal($reversal)->first();
+
+        if ($reversal->hasTransaction() === true)
+        {
+            $this->trace->info(TraceCode::REVERSAL_ALREADY_LINKED, [
+                'reversal_id'           => $reversal->getId(),
+                'linked_transaction_id' => $reversal->getTransactionId(),
+            ]);
+            return;
+        }
+
+        $externalTransaction = $this->repo->transaction(function () use ($reversal, $bas, $journalId) {
+            $this->trace->info(TraceCode::LEDGER_TRANSACTIONS_WEBHOOK_RELINK_EXT_TO_REVERSAL, ['reversal_id' => $reversal->getId()]);
+            $externalTransaction = $bas->transaction;
+
+            if ($externalTransaction === null)
+            {
+                throw new Exception\LogicException(
+                    'bas row selected is not linked to any transaction!',
+                    ErrorCode::SERVER_ERROR_TRANSACTION_WRONG_SOURCE,
+                    [
+                        'bas_id'        => $bas->getId(),
+                        'reversal_id'   => $reversal->getId(),
+                    ]);
+            }
+
+            $source = $externalTransaction->source;
+            if ($source->getEntity() !== Constants\Entity::EXTERNAL)
+            {
+                throw new Exception\LogicException(
+                    'reversal transaction created for some other source other than external!',
+                    ErrorCode::SERVER_ERROR_TRANSACTION_WRONG_SOURCE,
+                    [
+                        'transaction_id'        => $externalTransaction->getId(),
+                        'bas_id'                => $bas->getId(),
+                        'reversal_id'           => $reversal->getId(),
+                    ]);
+            }
+
+            $basEntity = $externalTransaction->bankingAccountStatement;
+
+            // For this ledger transactor event: A new transaction gets created on ledger side, but same transaction  (of external) was relinked to payout on API side
+            // se we relink the payout and bas with new transaction id (say journal id) in RX DA<>Ledger integration
+            (new Payout\Core)->updateTransactionAndSourceToReversal($reversal, $externalTransaction, TraceCode::TXN_FOUND_FOR_PAYOUT_REVERSED_IN_LEDGER_WEBHOOK);
+
+            $reversal->setTransactionId($journalId);
+            $this->repo->saveOrFail($reversal);
+            $basEntity->setTransactionId($journalId);
+            $this->repo->saveOrFail($basEntity);
+
+            return $externalTransaction;
+        });
+
+        $externalTransaction->reload();
+        $transactionForMerchantWebhook = clone $externalTransaction;
+        $transactionForMerchantWebhook->setId($journalId);
+        (new Transaction\Core)->dispatchEventForTransactionCreatedWithoutEmailOrSmsNotification($transactionForMerchantWebhook);
+    }
+
+    protected function updateTxnIdForPayoutReversedLedgerEvent($transactorId, $entityID, $journalId, $balance)
+    {
+        $reversal = $this->repo->reversal->findByPublicId($transactorId);
+
+        if ($this->merchantHasDALedgerReverseShadowFeature($reversal) === false)
+        {
+            $this->trace->info(TraceCode::LEDGER_WEBHOOK_FOR_MERCHANT_NOT_ON_REVERSE_SHADOW, [
+                'entity_name'       => 'reversal',
+                'entity_id'         => $reversal->getId(),
+                'journal_id'        => $journalId,
+            ]);
+            return;
+        }
+
+        $basEntity = $this->repo->banking_account_statement->fetchByEntityIDAndEntityType($entityID, 'reversal', $reversal->getChannel());
+
+        if ($reversal->hasTransaction() === true)
+        {
+            $this->trace->info(TraceCode::REVERSAL_ALREADY_LINKED, [
+                'reversal_id' => $reversal->getId(),
+                'linked_transaction_id' => $reversal->getTransactionId(),
+            ]);
+            return;
+        }
+
+        $txnCore = (new Transaction\Core);
+
+        $this->repo->transaction(function () use ($reversal, $basEntity, $journalId, $balance, $txnCore) {
+            // create transaction and update balance
+            $transaction = $txnCore->createFromPayoutReversalWithIdAndLedgerBalance($reversal, $journalId, $balance);
+            $this->repo->saveOrFail($transaction);
+
+            // link transaction with entity
+            $this->repo->saveOrFail($reversal);
+
+            // link with bas
+            if ($basEntity->hasTransaction() === true)
+            {
+                $this->trace->info(TraceCode::BAS_ALREADY_LINKED, [
+                    'bas_id'                => $basEntity->getId(),
+                    'linked_transaction_id' => $basEntity->getTransactionId(),
+                ]);
+            }
+            else
+            {
+                $basEntity->transaction()->associate($transaction);
+                if ($basEntity->getPostedDate() !== null)
+                {
+                    (new Transaction\Core)->updatePostedDate($reversal, $basEntity->getPostedDate());
+                }
+                $this->repo->saveOrFail($basEntity);
+            }
+        });
+        (new BankingAccountStatement\Core())->fireWebhooksAfterSuccessfulMappingOfSourceEntity($reversal, true);
+    }
+
+    protected function updateTxnIdForExternalLedgerEvent($transactorId, $entityID, $journalId, $balance)
+    {
+        $external = $this->repo->external->findByPublicId($transactorId);
+
+        if ($this->merchantHasDALedgerReverseShadowFeature($external) === false)
+        {
+            $this->trace->info(TraceCode::LEDGER_WEBHOOK_FOR_MERCHANT_NOT_ON_REVERSE_SHADOW, [
+                'entity_name'       => 'external',
+                'entity_id'         => $external->getId(),
+                'journal_id'        => $journalId,
+            ]);
+            return;
+        }
+
+        $basEntity = $this->repo->banking_account_statement->fetchByEntityIDAndEntityType($entityID, 'external', $external->getChannel());
+
+        if ($external->hasTransaction() === true)
+        {
+            $this->trace->info(TraceCode::EXT_ALREADY_LINKED, [
+                'external_id'               => $external->getId(),
+                'linked_transaction_id'     => $external->getTransactionId(),
+            ]);
+            return;
+        }
+
+        $basEntity = $this->repo->transaction(function () use ($external, $basEntity, $journalId, $balance) {
+
+            // create transaction and update balance
+            list ($transaction, $feeSplit) = (new Transaction\Processor\External($external))->createTransactionWithIdAndLedgerBalance($journalId, $balance);
+            $this->repo->saveOrFail($transaction);
+
+            // If external was already linked and meanwhile FTS webhook didnt come, there is a rare possibility that this ledger webhook
+            // and fts webhook happened at same time and re liniking was missed from both places
+            // so bas row was linked to external, now when we hit this route again manually, we will find that external entity now already has a txn but we still
+            // want to re link to source entity, so this check will appropriately skip external entity linking and just re link the source entity using externalToPayoutOrReversalRelinking
+
+            // link transaction with entity
+            $this->repo->saveOrFail($external);
+
+            // link with bas
+            if ($basEntity->hasTransaction() === true)
+            {
+                $this->trace->info(TraceCode::BAS_ALREADY_LINKED, [
+                    'bas_id'                => $basEntity->getId(),
+                    'linked_transaction_id' => $basEntity->getTransactionId(),
+                ]);
+            }
+            else
+            {
+                $basEntity->transaction()->associate($transaction);
+                if ($basEntity->getPostedDate() !== null)
+                {
+                    (new Transaction\Core)->updatePostedDate($external, $basEntity->getPostedDate());
+                }
+                $this->repo->saveOrFail($basEntity);
+            }
+
+            return $basEntity;
+        });
+        (new BankingAccountStatement\Core())->fireWebhooksAfterSuccessfulMappingOfSourceEntity($external, true);
+
+        // Check if FTS webhook already arrived by the time ledger sent this webhook
+        // If yes, then the FTS webhook flow wouldn't have been able to relinking from external to payout/reversal due to missing txn
+        // So, now that we have webhook from ledger (and thus the transaction), we can complete what the FTS webhook flow couldn't
+        // i.e we will check and do the relinking from external to payout/reversal here
+        // check if payout has apt status
+        $relinkedEntity = $this->externalToPayoutOrReversalRelinking($basEntity);
+
+        if ($relinkedEntity !== null)
+        {
+            $this->trace->info(TraceCode::SEND_RELINKING_EVENTS_TO_LEDGER_FROM_WEBHOOK_FLOW, [
+                'entity_id'     => $relinkedEntity->getPublicId(),
+                'entity_name'   => $relinkedEntity->getEntityName()
+            ]);
+
+            if ($relinkedEntity->getEntityName() === Constants\Entity::PAYOUT)
+            {
+                // send ext to reversal event to ledger
+                (new Payout\Core)->sendExtToPayoutEventToLedger($relinkedEntity, $basEntity);
+            }
+            else
+            {
+                // send ext to reversal event to ledger
+                /** @var Payout\Entity $payout */
+                $payout = $relinkedEntity->entity;
+                (new Payout\Core)->sendExtToReversalEventToLedger($payout, $basEntity, $relinkedEntity);
+            }
+        }
+    }
+
+    // $sourceEntity should be payout, reversal or external
+    protected function merchantHasDALedgerReverseShadowFeature($sourceEntity)
+    {
+        if ($sourceEntity->merchant->isFeatureEnabled(Feature\Constants::DA_LEDGER_REVERSE_SHADOW) === true)
+        {
+            return true;
+        }
+        return false;
     }
 
     public function dispatchIdealLedgerJob(array $input)

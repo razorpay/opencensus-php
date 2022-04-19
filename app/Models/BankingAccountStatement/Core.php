@@ -1148,7 +1148,7 @@ class Core extends Base\Core
         }
     }
 
-    protected function fireWebhooksAfterSuccessfulMappingOfSourceEntity($sourceEntity, $isSourceAlreadyCreated)
+    public function fireWebhooksAfterSuccessfulMappingOfSourceEntity($sourceEntity, $isSourceAlreadyCreated)
     {
         $sourceTransaction = $sourceEntity->transaction;
 
@@ -1473,7 +1473,7 @@ class Core extends Base\Core
      *
      * @return mixed|null
      */
-    protected function fetchExistingReversalIfPresent(Entity $basEntity,
+    public function fetchExistingReversalIfPresent(Entity $basEntity,
                                                       & $createExternalSource = false,
                                                       & $remarks = null)
     {
@@ -1846,7 +1846,7 @@ class Core extends Base\Core
      * @throws Exception\LogicException
      */
 
-    protected function fetchExistingPayoutForAccountStatement(Entity $basEntity,
+    public function fetchExistingPayoutForAccountStatement(Entity $basEntity,
                                                               &$createExternalSource,
                                                               &$remarks,
                                                               bool $checkCmsRefNo = true)

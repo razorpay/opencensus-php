@@ -117,11 +117,6 @@ class CreateBankingAccountStatementTable extends Migration
                 ->references(Merchant\Entity::ID)
                 ->on(Table::MERCHANT)
                 ->on_delete('restrict');
-
-            $table->foreign(Entity::TRANSACTION_ID)
-                ->references(Transaction\Entity::ID)
-                ->on(Table::TRANSACTION)
-                ->on_delete('restrict');
         });
     }
 
@@ -135,8 +130,6 @@ class CreateBankingAccountStatementTable extends Migration
         Schema::table(Table::BANKING_ACCOUNT_STATEMENT, function($table)
         {
             $table->dropForeign(Table::BANKING_ACCOUNT_STATEMENT . '_' . Entity::MERCHANT_ID . '_foreign');
-
-            $table->dropForeign(Table::BANKING_ACCOUNT_STATEMENT . '_' . Entity::TRANSACTION_ID . '_foreign');
         });
 
         Schema::dropIfExists(Table::BANKING_ACCOUNT_STATEMENT);

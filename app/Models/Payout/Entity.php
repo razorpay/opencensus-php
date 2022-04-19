@@ -824,6 +824,11 @@ class Entity extends Base\PublicEntity
 
     // ============================= GETTERS =============================
 
+    public function getEntitySign(): string
+    {
+        return self::$sign;
+    }
+
     public function getIsPayoutService(): bool
     {
         return ($this->getAttribute(self::IS_PAYOUT_SERVICE) === 1);
@@ -1705,6 +1710,11 @@ class Entity extends Base\PublicEntity
     public function setId($id)
     {
         $this->setAttribute(self::ID, $id);
+    }
+
+    public function setTransactionId($txnId)
+    {
+        return $this->setAttribute(self::TRANSACTION_ID, $txnId);
     }
 
     public function setStatusDetailsId($id)
