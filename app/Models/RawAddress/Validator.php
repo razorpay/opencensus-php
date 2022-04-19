@@ -35,7 +35,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $createForAddressRules = [
-        Entity::NAME             => 'sometimes|string|between:2,64',
+        Entity::NAME             => 'required|string|between:2,64',
         Entity::CONTACT          => 'required|contact_syntax',
         Address\Entity::TYPE     => 'sometimes|string',
         Entity::LINE1            => 'required|string|between:1,255',
