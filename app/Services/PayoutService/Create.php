@@ -15,7 +15,7 @@ use RZP\Models\Base\PublicEntity;
 class Create extends Base
 {
     const CREATE_PAYOUT_SERVICE_URI = '/payouts';
-
+    const CREATE_INTERNAL_PAYOUT_SERVICE_URI = '/payouts/internal_contact_payout';
     // payout create service name for singleton class
     const PAYOUT_SERVICE_CREATE = 'payout_service_create';
 
@@ -47,6 +47,37 @@ class Create extends Base
         );
 
         return $response;
+    }
+
+    /**
+     * Create internal contact payout via microservice
+     *
+     * @param array $input
+     * @param string $merchantId
+     * @return array
+     */
+    public function createInternalContactPayoutViaMicroservice(array $input, string $merchantId)
+    {
+        $data = $input;
+
+        unset($data[Payout\Entity::ACCOUNT_NUMBER]);
+
+        $this->trace->info(TraceCode::INTERNAL_PAYOUT_CREATE_VIA_MICROSERVICE_REQUEST,
+            [
+                'input' => $data,
+            ]);
+
+        $request = $this->createRequestBody($input, $merchantId);
+
+        $headers = [Passport::PASSPORT_JWT_V1 => $this->app['basicauth']->getPassportJwt($this->baseUrl)];
+
+        return $this->makeRequestAndGetContent(
+            $request,
+            self::CREATE_INTERNAL_PAYOUT_SERVICE_URI,
+            Requests::POST,
+            $headers
+        );
+
     }
 
     /**

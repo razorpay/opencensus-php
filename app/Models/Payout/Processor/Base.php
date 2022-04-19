@@ -3097,6 +3097,13 @@ class Base extends BaseCore
                     return false;
                 }
 
+                // internal payout contact check for payout service
+                $internalPayoutServiceEnabled = $this->merchant->isFeatureEnabled(Feature::INTERNAL_CONTACT_VIA_PS);
+                if ($this->isInternal === true and $internalPayoutServiceEnabled === false)
+                {
+                    return false;
+                }
+
                 // workflow payout skip
                 if ($this->isWorkflowEnabled === true)
                 {
@@ -3211,7 +3218,10 @@ class Base extends BaseCore
 
             if ($this->balance->getAccountType() === AccountType::SHARED)
             {
-                $response = $this->payoutCreateServiceClient->createPayoutViaMicroservice($input, $this->merchant->getId());
+                if ($this->isInternal === true)
+                    $response = $this->payoutCreateServiceClient->createInternalContactPayoutViaMicroservice($input, $this->merchant->getId());
+                else
+                    $response = $this->payoutCreateServiceClient->createPayoutViaMicroservice($input, $this->merchant->getId());
 
                 $this->trace->info(
                     TraceCode::PAYOUT_CREATE_RESPONSE_FROM_MICROSERVICE,

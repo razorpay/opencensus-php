@@ -809,6 +809,11 @@ class Constants
     const PAYOUT_SERVICE_ENABLED           = 'payout_service_enabled';
 
     /**
+     * Internal Contact Payout Service enables for merchant
+     */
+    const INTERNAL_CONTACT_VIA_PS         = 'internal_contact_via_ps';
+
+    /**
      * Skips Risk check for merchants
      */
     const APPS_EXTEMPT_RISK_CHECK ='apps_exempt_risk_check';
@@ -1640,6 +1645,7 @@ class Constants
         self::FTS_REQUEST_NOTES               => true,
         self::RBL_CA_UPI                      => true,
         self::PAYOUT_SERVICE_ENABLED          => true,
+        self::INTERNAL_CONTACT_VIA_PS         => true,
         self::WHITE_LABELLED_INVOICES         => true,
         self::WHITE_LABELLED_ROUTE            => true,
         self::WHITE_LABELLED_VA               => true,

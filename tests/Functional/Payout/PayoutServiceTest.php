@@ -582,6 +582,53 @@ class PayoutServiceTest extends TestCase
         return $payout;
     }
 
+    public function testCreatePayoutInternalContactWithoutFeatureFlag()
+    {
+
+        $this->ba->appAuthLive($this->config['applications.vendor_payments.secret']);
+
+        $this->fixtures->on('live')->edit('contact', '1000001contact', ['type' => 'rzp_tax_pay']);
+
+        $this->startTest();
+
+        $payout = $this->getDbLastEntity('payout', 'live');
+
+
+        $this->assertEquals($payout['merchant_id'], '10000000000000');
+        $this->assertEquals($payout['fees'], 590);
+        $this->assertEquals($payout['is_payout_service'], 0);
+
+
+    }
+
+    public function testCreatePayoutInternalContact()
+    {
+        $this->mockPayoutServiceCreate();
+
+        $this->testCreatePayoutServiceFtaCreation();
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::WORKFLOW_VIA_PAYOUTS_MS]);
+        $this->fixtures->merchant->addFeatures([Feature\Constants::INTERNAL_CONTACT_VIA_PS]);
+
+        $this->setupWorkflowForLiveMode();
+
+        $this->ba->appAuthLive($this->config['applications.vendor_payments.secret']);
+
+        $this->fixtures->on('live')->edit('contact', '1000001contact', ['type' => 'rzp_tax_pay']);
+
+        $this->startTest();
+
+        $payout = $this->getDbLastEntity('payout', 'live');
+
+
+        $this->assertEquals(Status::CREATED, $payout->getStatus());
+        $this->assertEquals($payout['merchant_id'], '10000000000000');
+        $this->assertEquals($payout['fees'], 590);
+        $this->assertEquals($payout['is_payout_service'], 1);
+
+
+    }
+
     public function testCreatePayoutServiceFailure()
     {
         $this->mockPayoutServiceCreate(true);

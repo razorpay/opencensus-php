@@ -135,6 +135,75 @@ return [
         ],
     ],
 
+    'testCreatePayoutInternalContact' => [
+        'request'  => [
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Razorpay-Account'   => '10000000000000',
+            ],
+            'url'     => '/internalContactPayout',
+            'content' => [
+                'account_number'                       => '2224440041626905',
+                'amount'                               => 100,
+                'currency'                             => 'INR',
+                'purpose'                              => 'refund',
+                'narration'                            => 'test Merchant Fund Transfer',
+                'mode'                                 => 'IMPS',
+                'enable_workflow_for_internal_contact' => true,
+                'fund_account_id'                      => 'fa_100000000000fa',
+                'origin'                               => 'api',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 100,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'narration'       => 'test Merchant Fund Transfer',
+                'purpose'         => 'refund',
+                'status'          => 'processing',
+                'mode'            => 'IMPS',
+                'tax'             => 90,
+                'fees'            => 590,
+                'origin'          => 'api',
+            ],
+        ],
+    ],
+
+    'testCreatePayoutInternalContactWithoutFeatureFlag' => [
+        'request'  => [
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Razorpay-Account'   => '10000000000000',
+            ],
+            'url'     => '/internalContactPayout',
+            'content' => [
+                'account_number'                       => '2224440041626905',
+                'amount'                               => 100,
+                'currency'                             => 'INR',
+                'purpose'                              => 'refund',
+                'narration'                            => 'Batman',
+                'mode'                                 => 'IMPS',
+                'enable_workflow_for_internal_contact' => false,
+                'fund_account_id'                      => 'fa_100000000000fa',
+                'origin'                               => 'api',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 100,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'narration'       => 'Batman',
+                'purpose'         => 'refund',
+                'mode'            => 'IMPS',
+                'origin'          => 'api',
+            ],
+        ],
+    ],
+
     'testGetPayoutById' => [
         'request'  => [
             'method'  => 'GET',
