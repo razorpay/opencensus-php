@@ -84,6 +84,10 @@ return [
             'name'   => env('AWS_S3_PAYOUTS_BUCKET'),
             'region' => env('AWS_S3_PAYOUTS_REGION', 'ap-south-1'),
         ],
+        'non_migrated_batch_bucket_config' => [
+            'name'   => env('AWS_S3_NON_MIGRATED_BATCH_BUCKET'),
+            'region' => env('AWS_BUCKET_REGION', 'ap-south-1'),
+        ],
     ],
 
     'local' => [

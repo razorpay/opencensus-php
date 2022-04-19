@@ -19,6 +19,7 @@ class Constants
     const BATCH_ACTION                   = 'batch_action';
     const ENTITY                         = 'entity';
     const ACTION                         = 'action';
+    const NON_MIGRATED_BATCH             = 'non_migrated_batch';
 
     // Validate Batch filename
     const BATCH_TYPE_ID                  = 'batch_type_id';

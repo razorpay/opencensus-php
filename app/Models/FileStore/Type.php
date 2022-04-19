@@ -198,6 +198,7 @@ class Type
     const BATCH_VALIDATED                       = 'batch_validated';
     const RECONCILIATION_BATCH_INPUT            = 'reconciliation_batch_input';
     const BATCH_SERVICE                         = 'batch_service';
+    const NON_MIGRATED_BATCH                    = 'non_migrated_batch';
     const RECONCILIATION_BATCH_ANALYTICS_OUTPUT = 'reconciliation_batch_analytics_output';
     const RECONCILIATION_BATCH_TXN_FILE         = 'reconciliation_batch_txn_file';
 
@@ -253,6 +254,7 @@ class Type
     const RECON_SFTP_INPUT_BUCKET_CONFIG        = 'recon_sftp_input_bucket';
     const DATA_LAKE_SEGMENTS_BUCKET_CONFIG      = 'data_lake_segments_bucket_config';
     const PAYOUTS_BUCKET_CONFIG                 = 'payouts_bucket_config';
+    const NON_MIGRATED_BATCH_BUCKET_CONFIG      = 'non_migrated_batch_bucket_config';
 
     const PAYOUT_SAMPLE                         = 'payout_sample';
 
@@ -582,6 +584,7 @@ class Type
      * Bucket Config Mapping for file types
      */
     const BUCKET_CONFIG_TYPE_MAPPING = [
+       
         self::SETTLEMENT_BUCKET_CONFIG => [
             self::REPORT,
             self::BATCH_INPUT,
@@ -643,6 +646,10 @@ class Type
 
         self::BATCH_SERVICE_BUCKET_CONFIG => [
             self::BATCH_SERVICE,
+        ],
+
+        self::NON_MIGRATED_BATCH_BUCKET_CONFIG => [
+            self::NON_MIGRATED_BATCH,
         ],
 
         self::FUND_TRANSFER_SFTP_BUCKET_CONFIG => [

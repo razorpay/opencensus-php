@@ -1387,7 +1387,11 @@ class Base extends BaseModel\Core
 
         if ($this->shouldSendToBatchService())
         {
-           $ufh->addBucketConfigForBatchService(Batch\Constants::BATCH_SERVICE);
+            $ufh->addBucketConfigForBatchService(Batch\Constants::BATCH_SERVICE);
+        }
+        else
+        {
+            $ufh->addBucketConfigForBatchService(Batch\Constants::NON_MIGRATED_BATCH);
         }
 
         $ufh->localFilePath($filePath)
