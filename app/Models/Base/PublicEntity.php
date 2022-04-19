@@ -158,6 +158,19 @@ class PublicEntity extends UniqueIdEntity
         return $this->arrangePublicAttributes($array);
     }
 
+    public function toArrayInternal()
+    {
+        $attributes = $this->attributesToArray();
+
+        $relations = $this->relationsToArrayPublic();
+
+        $array = array_merge($attributes, $relations);
+
+        $this->setInternalAttributes($array);
+
+        return $this->arrangeInternalAttributes($array);
+    }
+
     /**
      * Returns relations with public array based on expand[] query param in
      * fetch routes (eg. transaction, transaction.settlement with payment fetch),
@@ -363,6 +376,16 @@ class PublicEntity extends UniqueIdEntity
         }
     }
 
+    public function setInternalAttributes(array & $array)
+    {
+        foreach ($this->internalSetters as $attr)
+        {
+            $func = 'setInternal' . studly_case($attr) . 'Attribute';
+
+            $this->$func($array);
+        }
+    }
+
     /**
      * Relations of the fetched entity.
      *
@@ -487,9 +510,19 @@ class PublicEntity extends UniqueIdEntity
         $array[static::ID] = $this->getPublicId();
     }
 
+    public function setInternalIdAttribute(array & $array)
+    {
+        $this->setPublicIdAttribute($array);
+    }
+
     public function setPublicEntityAttribute(array & $array)
     {
         $array[static::ENTITY] = $this->entity;
+    }
+
+    public function setInternalEntityAttribute(array & $array)
+    {
+        $this->setPublicEntityAttribute($array);
     }
 
     public function arrangeExpandAttributes(array $array, array & $publicArray)
@@ -520,6 +553,11 @@ class PublicEntity extends UniqueIdEntity
         $this->authRelatedChecks($publicArray);
 
         return $publicArray;
+    }
+
+    public function arrangeInternalAttributes(array $array)
+    {
+       return $this->arrangePublicAttributes($array);
     }
 
     protected function authRelatedChecks(array & $publicArray)

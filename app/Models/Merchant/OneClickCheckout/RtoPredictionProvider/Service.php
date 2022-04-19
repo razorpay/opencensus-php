@@ -44,7 +44,7 @@ class Service
 
         $address = $input['address'];
 
-        $orderDetails = (new Order\Service())->fetchById($orderId);
+        $orderDetails = (new Order\Service())->fetchByIdInternal($orderId);
 
         $uniqueId = $orderId . ':' . Str::uuid();
 

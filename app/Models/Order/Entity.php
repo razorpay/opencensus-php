@@ -7,6 +7,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Item;
 use RZP\Models\Offer;
+use RZP\Models\Order\OrderMeta\Order1cc\Fields;
 use RZP\Models\Payment;
 use RZP\Models\Invoice;
 use RZP\Models\Transfer;
@@ -282,6 +283,20 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $publicSetters = [
+        self::ID,
+        self::ENTITY,
+        self::OFFERS,
+        self::CHECKOUT_CONFIG_ID,
+        self::PRODUCTS,
+        // This is likely needed for the merchant,
+        // but still needs to be discussed.
+        // self::DISCOUNT,
+        self::TAX_INVOICE,
+        self::ORDER_META_1CC,
+        self::TRANSFERS,
+    ];
+
+    protected $internalSetters = [
         self::ID,
         self::ENTITY,
         self::OFFERS,
@@ -816,6 +831,11 @@ class Entity extends Base\PublicEntity
         }
     }
 
+    protected function setInternalOffersAttribute(array & $array)
+    {
+        $this->setPublicOffersAttribute($array);
+    }
+
     protected function setPublicDiscountAttribute(array & $array)
     {
         if ($this->getAttribute(self::DISCOUNT) === true)
@@ -826,6 +846,11 @@ class Entity extends Base\PublicEntity
         {
             unset($array[self::DISCOUNT]);
         }
+    }
+
+    protected function setInternalDiscountAttribute(array & $array)
+    {
+        $this->setPublicDiscountAttribute($array);
     }
 
     public function setPublicCheckoutConfigIdAttribute(array & $array)
@@ -841,6 +866,11 @@ class Entity extends Base\PublicEntity
             }
         }
 
+    public function setInternalCheckoutConfigIdAttribute(array & $array)
+    {
+        $this->setPublicCheckoutConfigIdAttribute($array);
+    }
+
     public function setPublicProductsAttribute(array & $array)
     {
         if (($this->products !== null) and
@@ -852,6 +882,11 @@ class Entity extends Base\PublicEntity
         {
             unset($array[self::PRODUCTS]);
         }
+    }
+
+    public function setInternalProductsAttribute(array & $array)
+    {
+        $this->setPublicProductsAttribute($array);
     }
 
     public function setPublicTaxInvoiceAttribute(array & $array)
@@ -875,6 +910,11 @@ class Entity extends Base\PublicEntity
         unset($array[Type::TAX_INVOICE]);
     }
 
+    public function setInternalTaxInvoiceAttribute(array & $array)
+    {
+        $this->setPublicTaxInvoiceAttribute($array);
+    }
+
     public function setPublicTransfersAttribute(array & $array)
     {
         if (isset($array[self::TRANSFERS]) === false)
@@ -883,7 +923,48 @@ class Entity extends Base\PublicEntity
         }
     }
 
+    public function setInternalTransfersAttribute(array & $array)
+    {
+        $this->setPublicTransfersAttribute($array);
+    }
+
     public function setPublicOrderMeta1ccAttribute(array & $array)
+    {
+        $orderMetaArray = $this->orderMetas;
+
+        if (($orderMetaArray !== null) and
+            (count($orderMetaArray) > 0))
+        {
+            foreach ($orderMetaArray as $orderMeta)
+            {
+                if ($orderMeta->getType() === Type::ONE_CLICK_CHECKOUT)
+                {
+                    $value = $orderMeta->getValue();
+
+                    foreach ($value as $key => $val)
+                    {
+                        if($key === Fields::CUSTOMER_DETAILS)
+                        {
+                            foreach ($val as $customerDetailsKey => $customerDetailsVal)
+                            {
+                                if($customerDetailsKey !== Fields::CUSTOMER_DETAILS_DEVICE)
+                                {
+                                    $array[$key][$customerDetailsKey] = $customerDetailsVal;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            $array[$key] = $val;
+                        }
+                    }
+                    return;
+                }
+            }
+        }
+    }
+
+    public function setInternalOrderMeta1ccAttribute(array & $array)
     {
         $orderMetaArray = $this->orderMetas;
 
