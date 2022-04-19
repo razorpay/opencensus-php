@@ -385,6 +385,7 @@ export const assetNames = {
   BANNER: 'BANNER',
   EXCLUSIVE_OFFER: 'EXCLUSIVE_OFFER',
   BANNER_CAROUSEL_ITEM: 'BANNER_CAROUSEL_ITEM',
+  MODAL: 'GS_MODAL',
 };
 
 const trackingDataSchema = yup

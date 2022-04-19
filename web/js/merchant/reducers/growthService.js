@@ -7,6 +7,7 @@ const FETCH_ANNOUNCEMENTS = 'FETCH_ANNOUNCEMENTS';
 const FETCH_BANNERS = 'FETCH_BANNERS';
 const FETCH_EXCLUSIVE_OFFER = 'FETCH_EXCLUSIVE_OFFER';
 const FETCH_BANNERS_CAROUSEL = 'FETCH_BANNERS_CAROUSEL';
+const FETCH_GS_MODAL = 'FETCH_GS_MODAL';
 
 const updateAssets = (status, assetName) => (state, action) => {
   const key = `${assetName.toLowerCase()}s`;
@@ -40,6 +41,7 @@ const updateAnnouncements = (status) => updateAssets(status, assetNames.ANNOUNCE
 const updateBanners = (status) => updateAssets(status, assetNames.BANNER);
 const updateExclusiveOffer = (status) => updateAssets(status, assetNames.EXCLUSIVE_OFFER);
 const updateCarouselBanners = (status) => updateAssets(status, assetNames.BANNER_CAROUSEL_ITEM);
+const updateGSModal = (status) => updateAssets(status, assetNames.MODAL);
 
 export const fetchAnnouncements = ({ fromWhere = 'home' }) => {
   const growthService = new GrowthService();
@@ -72,6 +74,14 @@ export const fetchExclusiveOffer = ({ fromWhere = 'home' }) => {
   };
 };
 
+export const fetchGSModal = ({ template_id }) => {
+  const growthService = new GrowthService();
+  return {
+    type: FETCH_GS_MODAL,
+    payload: growthService.getGSModal(template_id),
+  };
+};
+
 const initialState = {
   announcements: {
     loading: false,
@@ -88,6 +98,10 @@ const initialState = {
   banner_carousel_items: {
     loading: false,
     banner_carousel_items: [],
+  },
+  gs_modals: {
+    loading: false,
+    gs_modals: {},
   },
 };
 
@@ -106,6 +120,9 @@ export default makeEntityReducer(
     [`${FETCH_BANNERS_CAROUSEL}::PENDING`]: updateCarouselBanners('PENDING'),
     [`${FETCH_BANNERS_CAROUSEL}::SUCCESS`]: updateCarouselBanners('SUCCESS'),
     [`${FETCH_BANNERS_CAROUSEL}::ERROR`]: updateCarouselBanners('ERROR'),
+    [`${FETCH_GS_MODAL}::PENDING`]: updateGSModal('PENDING'),
+    [`${FETCH_GS_MODAL}::SUCCESS`]: updateGSModal('SUCCESS'),
+    [`${FETCH_GS_MODAL}::ERROR`]: updateGSModal('ERROR'),
   },
   initialState,
 );

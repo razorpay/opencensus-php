@@ -1,3 +1,5 @@
+$black-color = #000000;
+
 .Modal {
   margin: 65px auto;
   padding: 0;
@@ -95,12 +97,23 @@
 }
 
 .GSExclusiveOffer--Modal {
-  background-color: #000000;
+  background-color: $black-color;
   max-width: fit-content
 
   .nitro-self-serve {
     width: 1106px;
-    background: #000000;
+    background: $black-color;
+  }
+}
+
+.GS--Modal {
+  background-color: #00000080;
+  width: 1020px
+  max-width: 100vw
+
+  .nitro-self-serve {
+    width: 1106px;
+    background: $black-color;
   }
 }
 

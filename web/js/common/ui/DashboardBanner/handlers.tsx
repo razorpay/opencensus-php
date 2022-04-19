@@ -12,8 +12,10 @@ import RazorpayXNitroAnnouncement from '../NotificationsDropdown/RazorpayXNitroA
 import { sendDataToSalesForce } from '../../utils/common-api';
 import CatalystCampaign from '../GrowthCustomizeModal/CatalystCampaign';
 import ExclusiveOffer from '../ExclusiveOffer';
+import GrowthServiceModal from '../GrowthServiceModal';
+import GrowthServiceCenterCTAModal from '../GrowthServiceModal/CenterCTAModal';
 
-const getClickHandler = (id = '') => {
+const getClickHandler = (id = '', type = '', variant = '') => {
   const user = getUser();
   const openModal = (payload) => store.dispatch(openModalProp(payload));
   const closeModal = (payload) => store.dispatch(closeModalProp(payload));
@@ -45,10 +47,38 @@ const getClickHandler = (id = '') => {
     });
   };
 
+  const showGSModal = () => {
+    openModal({
+      component: <GrowthServiceModal template_id={id} />,
+      className: 'GS--Modal',
+    });
+  };
+
+  const showGSCenterCTAModal = () => {
+    openModal({
+      component: <GrowthServiceCenterCTAModal template_id={id} />,
+      className: 'GS--Modal',
+    });
+  };
+
   const handleConnectedBankingFlow = () => {
     setBaseLocation('/connected-banking/icici-linked-ca');
     setActivePageName('Connected Banking');
   };
+
+  switch (type) {
+    case 'MODAL':
+      switch (variant) {
+        case 'default':
+          return showGSModal;
+        case 'center-cta':
+          return showGSCenterCTAModal;
+        default:
+          break;
+      }
+      break;
+    default:
+  }
 
   switch (id) {
     case 'OCT-NITRO-CARDOFFER':

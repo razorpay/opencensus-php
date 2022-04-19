@@ -72,6 +72,21 @@ export default class GrowthService extends GenericEntity {
       .catch((_) => null);
   };
 
+  fetchTemplateDataById = (template_id) => {
+    this.resourceUrl = `growth/templates/${template_id}`;
+    return this.makeGenericAjaxCall({
+      method: 'get',
+      mode: 'live',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+      .then((response) => {
+        return response?.data?.response?.template?.data;
+      })
+      .catch((_) => null);
+  };
+
   getAnnouncements = async (fromWhere) => {
     let announcements = [];
 
@@ -114,7 +129,6 @@ export default class GrowthService extends GenericEntity {
     banners = banners.filter((banner) => isValidAssetData(banner, assetNames.BANNER));
     sortAssetData(banners, assetNames.BANNER);
     if (banners.length) banners = banners.slice(0, totalBannersLimit);
-
     return banners;
   };
 
@@ -144,5 +158,10 @@ export default class GrowthService extends GenericEntity {
       carouselBanner = [...carouselBanner.slice(0, 5)];
     }
     return sortCarouselBanner(carouselBanner);
+  };
+  getGSModal = async (template_id) => {
+    let gs_modal = {};
+    gs_modal = await this.fetchTemplateDataById(template_id);
+    return gs_modal;
   };
 }

@@ -10,6 +10,7 @@ interface BannerButton {
   label: string;
   style?: string;
   url?: string;
+  sub_asset?: SubAsset;
 }
 
 interface BannerContent {
@@ -46,6 +47,10 @@ interface Banner {
   content: BannerContent;
   text_link?: BannerTextLink;
   tracking_data: TrackingDataType;
+}
+interface SubAsset {
+  type: string;
+  variant: string;
 }
 
 interface DashboardBannerProps {
