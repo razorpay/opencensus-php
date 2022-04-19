@@ -254,6 +254,7 @@ class Service extends Base\Service
             'rx_cohesive_fullscreen_payout',
             'rx_payout_link_workflow_ga',
             'pb_direct_plugin_links',
+            'aadharEkyc_for_trust_society_ngo',
             'capital_loc_x_migration'
         ];
 

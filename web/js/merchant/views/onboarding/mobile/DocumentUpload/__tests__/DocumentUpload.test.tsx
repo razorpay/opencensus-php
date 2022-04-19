@@ -1,5 +1,4 @@
 import React from 'react';
-import '@testing-library/jest-dom/extend-expect';
 import { ADDRESS_PROOF_TYPES, BUSINESS_PROOF_TYPE_DOCS } from '../../Constants/OnboardingConstants';
 import DocumentUpload from '..';
 import useActivation from '../../hooks/useActivation';
@@ -128,4 +127,14 @@ test('should show aadhaar error message', async () => {
   render(<App />, {});
   await waitForLoadingToFinish();
   expect(screen.queryByText('Input document does not match Aadhaar back')).toBeInTheDocument();
+});
+
+test('should show aadhaar ekyc for Trust Business Type', async () => {
+  ActivationDB.update({
+    business_type: '9',
+    activation_form_milestone: 'L1',
+  });
+  render(<App />, {});
+  await waitForLoadingToFinish();
+  expect(screen.queryByText('Aadhaar Verification ( via OTP )')).toBeInTheDocument();
 });

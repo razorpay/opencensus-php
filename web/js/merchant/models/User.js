@@ -1201,6 +1201,13 @@ export default class User {
     return this.isOrgRZP && this.getExpStatus('adharEkyc_for_reg_businessTypes');
   }
 
+  get isAdharEkycRequiredForTrustSocietyNgo() {
+    if (this.isSourceRX || this.isPartner() || this.isSubMerchant) {
+      return false;
+    }
+    return this.getExpStatus('aadharEkyc_for_trust_society_ngo') && this.isOrgRZP;
+  }
+
   get isInternalStatusPageEnabled() {
     return this.getExpStatus('status_page_enable');
   }

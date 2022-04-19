@@ -40,9 +40,14 @@ const eKycAdharRequired = (activation, currentBusinessType) => {
     E_SIGN_AADHAR.push(PUBLIC_LIMITED, PRIVATE_LIMITED, LLP);
   }
 
+  if (activation.props.user.isAdharEkycRequiredForTrustSocietyNgo) {
+    E_SIGN_AADHAR.push(...ORG_BusinessTypes);
+  }
+
   if (E_SIGN_AADHAR.includes(Number(currentBusinessType))) {
     return true;
-  } else return false;
+  }
+  return false;
 };
 
 function differentAddress(activation) {

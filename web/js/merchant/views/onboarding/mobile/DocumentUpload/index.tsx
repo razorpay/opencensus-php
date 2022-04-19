@@ -30,6 +30,7 @@ import {
   PUBLIC,
   LLP,
   NOT_REGISTERED,
+  ORG_BusinessTypes,
 } from '../Constants/OnboardingConstants';
 import useActivation from '../hooks/useActivation';
 import {
@@ -79,6 +80,7 @@ const DocumentUpload = ({ isFormLocked }: IDocumentUploadProps): React.ReactElem
       isEmailNonMandatoryOnL2Form,
       isMsmeDisabled,
       isAdharEkycRequired,
+      isAdharEkycRequiredForTrustSocietyNgo,
     },
   } = useApp();
   const { gstinDetails } = useGstin();
@@ -346,6 +348,10 @@ const DocumentUpload = ({ isFormLocked }: IDocumentUploadProps): React.ReactElem
 
   if (isAdharEkycRequired) {
     ekycRequiredforBusinessType.push(LLP, PRIVATE, PUBLIC);
+  }
+
+  if (isAdharEkycRequiredForTrustSocietyNgo) {
+    ekycRequiredforBusinessType.push(...ORG_BusinessTypes);
   }
 
   const shouldShowEsignFlow = ekycRequiredforBusinessType.includes(

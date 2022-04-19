@@ -926,6 +926,7 @@ class App extends Component {
       isActivationMccPendingProgressbarDisabled: user.isActivationMccPendingProgressbarDisabled,
       isMsmeDisabled: user.isMsmeDisabled,
       isAdharEkycRequired: user.isAdharEkycRequired,
+      isAdharEkycRequiredForTrustSocietyNgo: user.isAdharEkycRequiredForTrustSocietyNgo,
     };
   };
 

@@ -44,6 +44,7 @@ const customRender = (
       isCinSyncFlowEnabled: true,
       isActivationMccPendingProgressbarDisabled: true,
       isMsmeDisabled: true,
+      isAdharEkycRequiredForTrustSocietyNgo: true,
     };
     return (
       <Provider store={reduxStore}>
