@@ -16971,6 +16971,7 @@ return [
             'mode'          => 'live',
             'identified'    => true,
             'authenticated' => true,
+            'domain'        => 'razorpay',
             'consumer'      => [
                 'type' => 'merchant',
                 'id'   => '10000000000000',
@@ -17097,6 +17098,7 @@ return [
             'mode'          => 'test',
             'identified'    => true,
             'authenticated' => true,
+            'domain'        => 'razorpay',
             'consumer'      => [
                 'type' => 'merchant',
                 'id'   => '10000000000000',

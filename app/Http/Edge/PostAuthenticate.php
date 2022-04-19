@@ -41,6 +41,7 @@ final class PostAuthenticate
 
     const CONSUMER_TYPE_MERCHANT = "merchant";
     const PRINCIPAL_TYPE_PARTNER = "partner";
+    const DEFAULT_DOMAIN         = "razorpay";
 
     /**
      * @return void
@@ -67,6 +68,7 @@ final class PostAuthenticate
         $this->ensureRequestContextAdditionalAttrs($request);
         $this->ensureRequestContextPassport($authenticated);
         $this->reportAuthorizationEnforcementMismatches($authenticated, $request);
+        $this->updateAPIPassport();
 
         $this->trace->histogram(Metric::MIDDLEWARE_POSTAUTH_DURATION_MS, millitime() - $funcStartedAt);
     }
@@ -81,6 +83,30 @@ final class PostAuthenticate
         $currentRoute = app('router')->currentRouteName();
 
         return (in_array($currentRoute, Route::$publicCallback, true) === true);
+    }
+
+
+    /**
+     * Directly updates the API passport with the details from the Edge passport.
+     * Also sets the default value if not present in the Edge passport
+     *
+     * Currently, fields that are directly updates are
+     *  - domain
+     *
+     * @return void
+     */
+    private function updateAPIPassport()
+    {
+        $edgePassport = & $this->reqCtx->passport;
+        if ( $edgePassport == null ) {
+            // set the default domain
+            $this->ba->setPassportDomain(self::DEFAULT_DOMAIN);
+            return;
+        }
+
+        // set the domain info
+        $domain = $edgePassport->domain ?: self::DEFAULT_DOMAIN;
+        $this->ba->setPassportDomain($domain);
     }
 
     /**

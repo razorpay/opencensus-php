@@ -91,6 +91,7 @@ return [
             'mode'          => 'test',
             'identified'    => true,
             'authenticated' => true,
+            'domain'        => 'razorpay',
             'consumer'      => [
                 'type' => 'admin',
                 'id'   => 'RzrpySprAdmnId',
@@ -115,6 +116,7 @@ return [
             'mode'          => 'test',
             'identified'    => true,
             'authenticated' => true,
+            'domain'        => 'razorpay',
             'consumer'      => [
                 'type' => 'application',
                 'id'   => 'admin_dashboard',
@@ -146,6 +148,7 @@ return [
             'mode'          => 'test',
             'identified'    => true,
             'authenticated' => true,
+            'domain'        => 'razorpay',
             'consumer'      => [
                 'type' => 'application',
                 'id'   => 'admin_dashboard',
@@ -263,6 +266,7 @@ return [
             'mode'          => 'test',
             'identified'    => true,
             'authenticated' => false,
+            'domain'        => 'razorpay',
             'consumer'      => [
                 'type' => 'merchant',
                 'id'   => '10000000000000',
@@ -286,6 +290,7 @@ return [
             'mode'          => 'test',
             'identified'    => true,
             'authenticated' => true,
+            'domain'        => 'razorpay',
             'consumer'      => [
                 'type' => 'application',
                 'id'   => 'cron',
@@ -312,6 +317,7 @@ return [
             'mode'          => 'test',
             'identified'    => true,
             'authenticated' => true,
+            'domain'        => 'razorpay',
             'consumer'      => [
                 'type' => 'application',
                 'id'   => 'cron',
@@ -554,6 +560,7 @@ return [
             'mode'          => 'test',
             'identified'    => true,
             'authenticated' => true,
+            'domain'        => 'razorpay',
             'consumer'      => [
                 'type' => 'user',
                 'id'   => 'MerchantUser01',
@@ -603,6 +610,7 @@ return [
             'mode'          => 'test',
             'identified'    => true,
             'authenticated' => true,
+            'domain'        => 'razorpay',
             'consumer'      => [
                 'type' => 'user',
                 'id'   => 'MerchantUser01',
@@ -640,6 +648,7 @@ return [
             'mode'          => 'test',
             'identified'    => true,
             'authenticated' => true,
+            'domain'        => 'razorpay',
             'consumer'      => [
                 'type' => 'merchant',
                 'id'   => '10000000000000',
@@ -685,6 +694,7 @@ return [
             'mode'          => 'test',
             'identified'    => true,
             'authenticated' => true,
+            'domain'        => 'razorpay',
             'consumer'      => [
                 'type' => 'merchant',
                 'id'   => '10000000000000',
@@ -805,6 +815,7 @@ return [
             'mode'          => 'test',
             'identified'    => true,
             'authenticated' => true,
+            'domain'        => 'razorpay',
             'consumer'      => [
                 'type' => 'admin',
                 'id'   => 'RzrpySprAdmnId',
@@ -1379,6 +1390,7 @@ return [
             'mode'          => 'test',
             'identified'    => true,
             'authenticated' => true,
+            'domain'        => 'razorpay',
             'consumer'      => [
                 'type' => 'merchant',
                 'id'   => '10000000000000',

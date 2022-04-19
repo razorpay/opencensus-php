@@ -3027,6 +3027,15 @@ class BasicAuth
     }
 
     /**
+     * Sets passport's domain.
+     * @param string $domain
+     */
+    public function setPassportDomain(string $domain)
+    {
+        $this->passport['domain'] = $domain;
+    }
+
+    /**
      * Returns passport jwt which can be forwarded to upstream request. It is
      * similar to passport received by edge. It is signed by different private
      * key. The upstream is expected to configure both public keys i.e.

@@ -213,6 +213,7 @@ return [
             'mode'          => 'test',
             'identified'    => true,
             'authenticated' => true,
+            'domain'        => 'razorpay',
             'consumer'      => [
                 'type' => 'merchant',
                 'id'   => '10000000000000',
@@ -552,7 +553,7 @@ return [
                     'description'   => 'Invalid Terminal ID',
                 ],
             ],
-            'status_code' => 502    
+            'status_code' => 502
         ],
         'exception' => [
             'class'               => RZP\Exception\BadRequestException::class,
@@ -643,4 +644,4 @@ return [
         ],
     ],
 ];
-       
+

@@ -53,6 +53,7 @@ class PostAuthenticateTest extends TestCase
         $ba->expects($this->any())->method('getMerchantId')->willReturn($expectedMerchantId);
         $ba->expects($this->atLeastOnce())->method('getAuthType')->willReturn($expectedAuth);
         $ba->expects($this->atLeastOnce())->method('isProxyAuth')->willReturn($expectedProxy);
+        $ba->expects($this->once())->method('setPassportDomain')->with($this->equalTo('razorpay'));
 
         // Asserts that no exceptions are thrown.
         (new PostAuthenticate)->handle($expectedAuthenticated, $request);
@@ -89,6 +90,7 @@ class PostAuthenticateTest extends TestCase
         $passport3->consumer = new Passport\ConsumerClaims;
         $passport3->consumer->id = '10000000000000';
         $passport3->consumer->type = 'merchant';
+        $passport3->domain = 'razorpay';
 
         $passport4 = clone $passport3;
 
