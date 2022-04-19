@@ -3237,4 +3237,94 @@ return [
             'status_code' => 200,
         ],
     ],
+
+    'testUpdateAttachmentsForPayoutLinkSuccessProxyAuth' => [
+        'request'  => [
+            'method' => 'PATCH',
+            'url'    => '/payout-links/poutlk_12345678912345/attachments',
+            'content' => [
+                'attachments' => [
+                    [
+                      "file_id" => "file_test",
+                      "file_name" => "test.pdf"
+                    ],
+                ]
+            ]
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testUpdateAttachmentsForPayoutLinkFailPrivateAuth' => [
+        'request'  => [
+            'method' => 'PATCH',
+            'url'    => '/payout-links/poutlk_12345678912345/attachments',
+            'content' => [
+                'attachments' => [
+                    [
+                        "file_id" => "file_test",
+                        "file_name" => "test.pdf"
+                    ],
+                ]
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    "code" => "BAD_REQUEST_ERROR",
+                    "description" => "The requested URL was not found on the server."
+                ]
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
+    'testUploadAttachmentFailPrivateAuth' => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/payout-links/attachment',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    "code" => "BAD_REQUEST_ERROR",
+                    "description" => "The requested URL was not found on the server."
+                ]
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
+    'testGetSignedUrlSuccessProxyAuth' => [
+        'request'  => [
+            'method' => 'GET',
+            'url'    => '/payout-links/poutlk_12345678912345/file/file_test/get-signed-url',
+        ],
+        'response' => [
+            'content' => [
+                'signed_url' => 'https://ufh-deafult/ndckd',
+                'mime' => 'application/pdf'
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testGetSignedUrlFailPrivateAuth' => [
+        'request'  => [
+            'method' => 'GET',
+            'url'    => '/payout-links/poutlk_12345678912345/file/file_test/get-signed-url',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    "code" => "BAD_REQUEST_ERROR",
+                    "description" => "The requested URL was not found on the server."
+                ]
+            ],
+            'status_code' => 400,
+        ],
+    ],
 ];

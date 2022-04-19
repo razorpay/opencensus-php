@@ -76,6 +76,9 @@ class PayoutLinks
     const BULK_REJECT_PATH                         = 'twirp/payoutlinks.Payoutlinks/RejectBulkPayoutLinks';
     const APPROVE_OTP_PATH                         = 'twirp/payoutlinks.Payoutlinks/OtpForApproval';
     const BULK_APPROVE_OTP_PATH                    = 'twirp/payoutlinks.Payoutlinks/OtpForBulkApproval';
+    const UPLOAD_ATTACHMENT_PATH                   = 'twirp/payoutlinks.Payoutlinks/UploadAttachment';
+    const GET_SIGNED_URL_PATH                      = 'twirp/payoutlinks.Payoutlinks/GetSignedUrlForAttachment';
+    const UPDATE_ATTACHMENTS_PATH                  = 'twirp/payoutlinks.Payoutlinks/UpdateAttachments';
     const INTEGRATE_APP_PATH                       = 'twirp/payoutlinks.Payoutlinks/IntegrateApp';
     const EXPIRE_CALLBACK_PATH                     = 'twirp/payoutlinks.Payoutlinks/ExpireCallback';
     const UPDATE_PAYOUT_LINK_PATH                  = 'twirp/payoutlinks.Payoutlinks/UpdatePayoutLink';
@@ -167,6 +170,17 @@ class PayoutLinks
     const NOT_INITIATED                            = 'not-initiated';
 
     const EXPAND                                   = 'expand';
+
+    const TDS                                      = 'tds';
+    const ATTACHMENTS                              = 'attachments';
+    const FILE_ID                                  = 'file_id';
+    const MIME_TYPE                                = 'mime_type';
+    const FILE                                     = 'file';
+    const FILE_NAME                                = 'file_name';
+    const SUBTOTAL_AMOUNT                          = 'subtotal_amount';
+    const AMOUNT                                   = 'amount';
+    const META                                     = 'meta';
+    const TAX_PAYMENT_ID                           = 'tax_payment_id';
 
     public static $statusValidForSupportDetailsInHostedPage = [
         self::STATUS_EXPIRED,
@@ -394,6 +408,43 @@ class PayoutLinks
         $input[self::USER_DETAILS] = $userDetails;
 
         return $this->makeRequest($url, $input);
+    }
+
+    public function getSignedUrl(MerchantEntity $merchant, string $payoutLinkId, string $fileId)
+    {
+        $url = $this->getConstructedUrl(self::GET_SIGNED_URL_PATH);
+
+        $input[self::MERCHANT_ID] = $merchant->getId();
+
+        $input[self::PAYOUT_LINK_ID] = $payoutLinkId;
+
+        $input[self::FILE_ID] = $fileId;
+
+        return $this->makeRequest($url, $input, [], self::POST, $this->getMode());
+    }
+
+    public function uploadAttachment(MerchantEntity $merchant, array $input)
+    {
+        $url = $this->getConstructedUrl(self::UPLOAD_ATTACHMENT_PATH);
+
+        $input[self::FILE] = base64_encode(file_get_contents($_FILES['file']['tmp_name']));
+
+        $input[self::FILE_NAME] = $_FILES['file']['name'];
+
+        $input[self::MIME_TYPE] = $_FILES['file']['type'];
+
+        $input[self::MERCHANT_ID] = $merchant->getId();
+
+        return $this->makeRequest($url, $input, [], self::POST, $this->getMode());
+    }
+
+    public function updateAttachments(string $payoutLinkId, array $input)
+    {
+        $input[self::PAYOUT_LINK_ID] = $payoutLinkId;
+
+        $url = $this->getConstructedUrl(self::UPDATE_ATTACHMENTS_PATH);
+
+        return $this->makeRequest($url, $input, [], self::POST, $this->getMode());
     }
 
     public function fetchPendingPayoutLinks(string $merchantId)
@@ -1440,6 +1491,8 @@ class PayoutLinks
             }
             else
             {
+                $this->populatePayoutsMetaInfo($payoutsInfo, $isDashboardRequest);
+
                 $payoutLink[self::PAYOUTS] = $payoutsInfo;
             }
         }
@@ -1551,6 +1604,12 @@ class PayoutLinks
             unset($payoutLink[self::WORKFLOW_HISTORY]);
 
             unset($payoutLink[self::PENDING_ON_USER]);
+
+            unset($payoutLink[self::TDS]);
+
+            unset($payoutLink[self::ATTACHMENTS]);
+
+            unset($payoutLink[self::SUBTOTAL_AMOUNT]);
         }
         else
         {
@@ -1561,6 +1620,17 @@ class PayoutLinks
             $payoutLink[self::PENDING_ON_USER] = array_pull($payoutLink, self::PENDING_ON_USER, false);
 
             $payoutLink[self::WORKFLOW_HISTORY] = array_pull($payoutLink, self::WORKFLOW_HISTORY, []);
+
+            $payoutLink[self::TDS] = array_pull($payoutLink, self::TDS, null);
+
+            if($payoutLink[self::TDS] !== null)
+            {
+                $payoutLink[self::TDS][self::AMOUNT] = array_pull($payoutLink[self::TDS], self::AMOUNT, 0);
+            }
+
+            $payoutLink[self::ATTACHMENTS] = array_pull($payoutLink, self::ATTACHMENTS, []);
+
+            $payoutLink[self::SUBTOTAL_AMOUNT] = array_pull($payoutLink, self::SUBTOTAL_AMOUNT, 0);
         }
     }
 
@@ -1984,6 +2054,25 @@ class PayoutLinks
                 ],
                 self::TEST_MODE_ERROR_MESSAGE
             );
+        }
+    }
+
+    protected function populatePayoutsMetaInfo(array &$payoutsInfo, bool $isDashboardRequest = false)
+    {
+        for ($i = 0; $i < sizeof($payoutsInfo['items']); $i++)
+        {
+            if ($isDashboardRequest === false)
+            {
+                unset($payoutsInfo['items'][$i][self::META]);
+            }
+            else
+            {
+                $meta = array_pull($payoutsInfo['items'][$i], self::META, []);
+
+                $meta[self::TAX_PAYMENT_ID] = array_pull($meta, self::TAX_PAYMENT_ID, "");
+
+                $payoutsInfo['items'][$i][self::META] = $meta;
+            }
         }
     }
 }

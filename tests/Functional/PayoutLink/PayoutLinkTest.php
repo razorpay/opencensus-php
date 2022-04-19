@@ -4067,5 +4067,51 @@ class PayoutLinkTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testUpdateAttachmentsForPayoutLinkSuccessProxyAuth()
+    {
+        $plMock = $this->getMockedServiceMakeRequestSuccessResponse([]);
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->proxyAuth('rzp_live_10000000000000');
+
+        $this->startTest();
+    }
+
+    public function testUpdateAttachmentsForPayoutLinkFailPrivateAuth()
+    {
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $this->startTest();
+    }
+
+    public function testUploadAttachmentFailPrivateAuth()
+    {
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $this->startTest();
+    }
+
+    public function testGetSignedUrlSuccessProxyAuth()
+    {
+        $plMock = $this->getMockedServiceMakeRequestSuccessResponse([
+            'signed_url' => 'https://ufh-deafult/ndckd',
+            'mime' => 'application/pdf'
+        ]);
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->proxyAuth('rzp_live_10000000000000');
+
+        $this->startTest();
+    }
+
+    public function testGetSignedUrlFailPrivateAuth()
+    {
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $this->startTest();
+    }
 }
 

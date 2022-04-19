@@ -186,6 +186,52 @@ class PayoutLinkController extends Controller
     }
 
     /**
+     * Route for getting signed url of attachment for payout-link
+     * @param string $payoutLinkId
+     * @param string $fileId
+     * @return
+     */
+    public function getSignedUrl(string $payoutLinkId, string $fileId)
+    {
+        $response =  $this->app['payout-links']->getSignedUrl(
+            $this->ba->getMerchant(),
+            $payoutLinkId,
+            $fileId
+        );
+
+        return ApiResponse::json($response);
+    }
+
+    /**
+     * Route to upload attachment
+     * @return
+     */
+    public function uploadAttachment()
+    {
+        $response = $this->app['payout-links']->uploadAttachment(
+            $this->ba->getMerchant(),
+            $this->input
+        );
+
+        return ApiResponse::json($response);
+    }
+
+    /**
+     * Route to update attachments for payout-link
+     * @param string $payoutLinkId
+     * @return
+     */
+    public function updateAttachmentsForPayoutLink(string $payoutLinkId)
+    {
+        $response = $this->app['payout-links']->updateAttachments(
+            $payoutLinkId,
+            $this->input
+        );
+
+        return ApiResponse::json($response);
+    }
+
+    /**
      * This api call will take the fund-account details, and initiate the payout
      * @param string $payoutLinkId
      * @return array
