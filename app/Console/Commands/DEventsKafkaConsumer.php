@@ -125,6 +125,25 @@ class DEventsKafkaConsumer extends Command
         // different partitions.
         $conf->set('group.id', env('QUEUE_KAFKA_COSUMER_GROUP'));
 
+        // Overwriting consumer group & offset config for address-dedupe topic
+        $topics = $this->argument('topics');
+
+        if(count($topics) == 1 && $topics[0] == env('DEDUPE_KAFKA_TOPIC_NAME')){
+
+            $consumerGroup = env('DEDUPE_KAFKA_CONSUMER_GROUP');
+
+            $this->info('setting consumer group : '.$consumerGroup. ' for topic : '.$topics[0]);
+
+            $conf->set('group.id', $consumerGroup);
+
+            $conf->set('auto.offset.reset', 'largest');
+
+            $conf->set('session.timeout.ms', env('DEDUPE_KAFKA_SESSION_TIMEOUT_MS'));
+
+            $conf->set('fetch.message.max.bytes', env('DEDUPE_KAFKA_FETCH_MESSAGE_MAX_BYTES'));
+
+        }
+
         return $conf;
 
     }
@@ -181,9 +200,16 @@ class DEventsKafkaConsumer extends Command
             return true;
         }
         // Call Processor for processing the message.
+        if(env('DEDUPE_KAFKA_TOPIC_NAME') == $kafkaMessage->topic_name){
 
-        $this->info('processing message from - '.
-            $kafkaMessage->topic_name. ' topic with payload - '. $kafkaMessage->payload);
+            $this->info('processing message from - '.$kafkaMessage->topic_name);
+
+        }else {
+
+            $this->info('processing message from - ' .
+                $kafkaMessage->topic_name . ' topic with payload - ' . $kafkaMessage->payload);
+
+        }
 
         $appMode = env('APP_MODE', 'prod');
 
