@@ -3038,6 +3038,15 @@ class MerchantController extends Controller
         return ApiResponse::json([]);
     }
 
+    public function removeSubmerchantDashboardAccessOfPartner()
+    {
+        $input = Request::all();
+
+        $this->service()->removeSubmerchantDashboardAccessOfPartner($input);
+
+        return ApiResponse::json([]);
+    }
+
     private function validateRoleForPutMerchantConfig(array $input)
     {
         $ba = $this->app['basicauth'];

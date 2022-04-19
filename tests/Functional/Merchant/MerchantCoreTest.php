@@ -6,6 +6,7 @@ namespace Functional\Merchant;
 use RZP\Models\Merchant\Core;
 use RZP\Models\Merchant\MerchantApplications;
 
+use RZP\Tests\Functional\Fixtures\Entity\User;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\OAuth\OAuthTestCase;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
@@ -96,6 +97,40 @@ class MerchantCoreTest extends OAuthTestCase
         $this->assertEquals($managedAppId, $accessMaps[0]['entity_id']);
     }
 
+    public function testDeleteSwitchMerchantAccessForPartner()
+    {
+        list($merchantId) = $this->createResellerPartnerAndSubmerchant();
+
+        $this->fixtures->user->createUserForMerchant('101submerchant');
+
+        $this->fixtures->create('user:user_merchant_mapping', [
+            'user_id'     => User::MERCHANT_USER_ID,
+            'merchant_id' => '101submerchant',
+            'role'        => 'owner',
+        ]);
+
+        $this->core->removeSubmerchantDashboardAccessOfPartner($merchantId);
+
+        // verify partner submerchant mapping is present
+        $accessMaps = $this->getDbEntities('merchant_access_map',
+                                           ['entity_type' => 'application', 'entity_owner_id' => $merchantId])->toArray();
+        $this->assertCount(1, $accessMaps);
+
+        // verify partner user mapping is present
+        $partnerUserMapping = $this->fixtures
+            ->user
+            ->getMerchantUserMapping($merchantId, User::MERCHANT_USER_ID)
+            ->toArray();
+        $this->assertNotEmpty($partnerUserMapping);
+
+        // verify that the merchant user mappings have been deleted
+        $submerchantUserMapping = $this->fixtures
+            ->user
+            ->getMerchantUserMapping('101submerchant', User::MERCHANT_USER_ID)
+            ->toArray();
+        $this->assertEmpty($submerchantUserMapping);
+    }
+
     protected function createAggregatorPartnerAndSubmerchantAndFetchMocks(string $merchantId = '10000000000000', string $submerchantId = '100submerchant', string $newAppId = '8ckeirnw84ifke')
     {
         $client = $this->setUpNonPurePlatformPartnerAndSubmerchant($merchantId, $submerchantId);
@@ -171,19 +206,7 @@ class MerchantCoreTest extends OAuthTestCase
 
     private function createResellerPartnerAndSubmerchantAndFetchMocks(string $submerchantId = '101submerchant')
     {
-        list($partner, $app) = $this->createPartnerAndApplication(['partner_type' => 'reseller']);
-
-        $merchantId = $partner->getId();
-
-        $this->fixtures->merchant->edit($merchantId, ['name' => 'et', 'website' => 'http://www.monahan.com/harum-fuga-quae-culpa-quod']);
-
-        $this->createConfigForPartnerApp($app->getId());
-
-        $this->createSubMerchant($partner, $app, ['id' => '101submerchant'], ['id' => 'J00dqRlTeStNzb']);
-
-        $this->ba->adminAuth();
-
-        $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'reseller', 'id' => '9reeiryr64ifke']);
+        list($merchantId, $app) = $this->createResellerPartnerAndSubmerchant($submerchantId);
 
         $createParams = [
             'website' => 'http://www.monahan.com/harum-fuga-quae-culpa-quod',
@@ -208,5 +231,24 @@ class MerchantCoreTest extends OAuthTestCase
             ->willReturnOnConsecutiveCalls($app = ['id'=> $managedAppId], ['id'=> $referredAppId], []);
 
         return [$merchantId, $managedAppId];
+    }
+
+    private function createResellerPartnerAndSubmerchant(string $submerchantId = '101submerchant')
+    {
+        list($partner, $app) = $this->createPartnerAndApplication(['partner_type' => 'reseller']);
+
+        $merchantId = $partner->getId();
+
+        $this->fixtures->merchant->edit($merchantId, ['name' => 'et', 'website' => 'http://www.monahan.com/harum-fuga-quae-culpa-quod']);
+
+        $this->createConfigForPartnerApp($app->getId());
+
+        $this->createSubMerchant($partner, $app, ['id' => $submerchantId], ['id' => 'J00dqRlTeStNzb']);
+
+        $this->ba->adminAuth();
+
+        $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'reseller', 'id' => '9reeiryr64ifke']);
+
+        return [$merchantId, $app];
     }
 }

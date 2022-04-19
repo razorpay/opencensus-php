@@ -7388,4 +7388,27 @@ class Core extends Base\Core
             }
         }
     }
+
+    public function removeSubmerchantDashboardAccessOfPartner(string $partnerId)
+    {
+        $this->trace->info(TraceCode::REMOVE_SUBMERCHANT_DASHBOARD_ACCESS_PARTNER_REQUEST,
+                           [ 'partner_id' => $partnerId ]);
+
+        $partner = $this->repo->merchant->find($partnerId);
+
+        if ($partner == null)
+        {
+            $this->trace->info(TraceCode::REMOVE_SUBMERCHANT_DASHBOARD_ACCESS_INVALID_PARTNER,
+                               [ 'partner_id' => $partnerId ]);
+        }
+
+        $submerchantIds = $this->repo->merchant_access_map->getMerchantIdForSubmerchantsOfAPartner($partnerId)->toArray();
+
+        $submerchants = $this->repo->merchant->findMany($submerchantIds);
+
+        $this->deletePartnerDashboardAccessOnSubmerchants($partner, $submerchants);
+
+        $this->trace->info(TraceCode::REMOVE_SUBMERCHANT_DASHBOARD_ACCESS_PARTNER_SUCCESS,
+                           [ 'partner_id' => $partnerId ]);
+    }
 }

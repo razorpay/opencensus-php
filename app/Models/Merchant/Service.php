@@ -92,6 +92,7 @@ use RZP\Models\RiskWorkflowAction as RiskAction;
 use RZP\Models\Pricing\Feature as PricingFeature;
 use RZP\Models\Settlement\Ondemand\FeatureConfig;
 use Razorpay\OAuth\Application as OAuthApplication;
+use RZP\Jobs\RemoveSubmerchantDashboardAccessJob;
 use RZP\Models\Admin\Permission\Name as Permission;
 use RZP\Models\Workflow\Service as WorkflowService;
 use RZP\Models\Merchant\PurposeCode\PurposeCodeList;
@@ -9501,5 +9502,12 @@ class Service extends Base\Service
         $preferences = (new Core)->get1ccMerchantPreferences($merchant);
 
         return $preferences;
+    }
+
+    public function removeSubmerchantDashboardAccessOfPartner(array $input)
+    {
+        $partnerIds = $input['partner_ids'];
+
+        RemoveSubmerchantDashboardAccessJob::dispatch($partnerIds);
     }
 }

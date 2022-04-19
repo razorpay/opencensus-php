@@ -271,4 +271,12 @@ class Repository extends Base\Repository
                     ->where(Entity::ENTITY_OWNER_ID, $entityOwnerId)
                     ->get();
     }
+
+    public function getMerchantIdForSubmerchantsOfAPartner(string $partnerId)
+    {
+        return $this->newQuery()
+                    ->select(Entity::MERCHANT_ID)
+                    ->where(Entity::ENTITY_OWNER_ID, $partnerId)
+                    ->get();
+    }
 }
