@@ -11,16 +11,27 @@ export default class Select extends React.Component {
   state = { show_list: false };
   tick = `https://cdn.razorpay.com/static/assets/razorpayx/payout-links/tick.svg`;
   render() {
+    const { show_list } = this.state;
+    const {
+      selected: props_selected,
+      class: custom_class,
+      placeholder,
+      options,
+      multiple,
+      select,
+      session,
+    } = this.props;
+
     let selected = {};
-    if (this.props.selected && this.props.selected.length) {
-      this.props.selected.forEach((s, index, obj) => {
-        selected[s.id] = s;
-        if (s.disabled) {
+    if (props_selected?.length > 0) {
+      props_selected.forEach((option, index, obj) => {
+        selected[option.id] = option;
+        if (option.disabled) {
           obj.splice(index, 1);
         }
       });
     }
-    const VALUE = this.props.selected ? this.props.selected.map((s) => s.name) : null;
+    const VALUE = props_selected?.map((option) => option.name) || null;
     const IDS = ['upi_intent', 'upi_collect', 'BARB_R', 'PUNB_R'];
     return (
       <ClickOutside
@@ -33,54 +44,63 @@ export default class Select extends React.Component {
             readOnly
             type="text"
             size="half_big"
-            class={`Input--vTop form-control ${this.props.class ? this.props.class : ''}`}
+            className={`Input--vTop form-control${custom_class ? ` ${custom_class}` : ''}`}
             name="select-input"
             value={VALUE}
             onFocus={() => this.setState({ show_list: true })}
-            placeholder={this.props.placeholder}
+            placeholder={placeholder}
           />
           <i className="select-chev i i-chevron-down" />
-          {this.state.show_list && (
+          {show_list && (
             <div className="input-select">
-              <ul class="unlisted">
-                {this.props.options.map((o, index) => {
+              <ul className="unlisted">
+                {options?.map((option, index) => {
+                  let gateway;
+                  if (
+                    (typeof option?.id === 'string' &&
+                      (option?.id?.split('_').length === 2 ||
+                        option?.id?.split('_').length === 3) &&
+                      IDS.indexOf(option?.id) === -1) ||
+                    option?.id === 'razorpay'
+                  ) {
+                    gateway = option?.id?.startsWith('upi_mindgate')
+                      ? 'upi_mindgate'
+                      : option?.id?.split('_')[0];
+                  }
                   return (
                     <span key={index}>
                       <li
-                        class={o.disabled ? 'disabled' : ''}
+                        className={option.disabled ? 'disabled' : ''}
                         key={index}
                         onClick={() => {
-                          if (!o.disabled) {
-                            if (!this.props.multiple) {
-                              selected = { [o.id]: o };
-                            } else if (selected[o.id]) {
-                              delete selected[o.id];
+                          if (!option.disabled) {
+                            if (!multiple) {
+                              selected = { [option.id]: option };
+                            } else if (selected[option.id]) {
+                              delete selected[option.id];
                             } else {
-                              selected[o.id] = o;
+                              selected[option.id] = option;
                             }
                             const value = Object.keys(selected).map((key) => selected[key]);
-                            this.props.select(value);
+                            select(value);
                           }
                         }}
                       >
                         <div>
                           <div className="row">
                             <div className="col-xs-10">
-                              {this.props.session.user.isAddProviderEnabled &&
-                                ((o.id != SMART_ROUTER &&
-                                  typeof o.id == 'string' &&
-                                  o.id.split('_').length === 2 &&
-                                  IDS.indexOf(o.id) === -1) ||
-                                  o.id === 'razorpay') && (
+                              {session?.user?.isAddProviderEnabled &&
+                                option?.id != SMART_ROUTER &&
+                                gateway && (
                                   <div className="recommended-provider-img-block">
-                                    <img src={gatewayLogos[o.id.split('_')[0]]} />
+                                    <img src={gatewayLogos[gateway]} />
                                   </div>
                                 )}
-                              <b class="optn-text">{o.name}</b>
-                              {o.id === SMART_ROUTER ? (
+                              <b className="optn-text">{option.name}</b>
+                              {option.id === SMART_ROUTER ? (
                                 <span className="recommended-provider">
                                   <span className="recommended-provider-text">RECOMMENDED</span>
-                                  {!o.disabled ? (
+                                  {!option.disabled ? (
                                     <Popover theme="dark" align="right">
                                       <PopoverBody>
                                         <div>Recommended for better success rate</div>
@@ -91,16 +111,18 @@ export default class Select extends React.Component {
                               ) : null}
                             </div>
                             <div className="col-xs-2">
-                              {selected[o.id] ? <i className="i i-tick select-tick" /> : null}
+                              {selected[option.id] ? <i className="i i-tick select-tick" /> : null}
                             </div>
                           </div>
                         </div>
-                        {o.description ? <div class="sub-p">{o.description}</div> : null}
+                        {option.description ? (
+                          <div className="sub-p">{option.description}</div>
+                        ) : null}
                       </li>
-                      {o.disabled ? (
+                      {option.disabled ? (
                         <Popover theme="dark" align="right">
                           <PopoverBody>
-                            <div>{o.disabled_message}</div>
+                            <div>{option.disabled_message}</div>
                           </PopoverBody>
                         </Popover>
                       ) : null}

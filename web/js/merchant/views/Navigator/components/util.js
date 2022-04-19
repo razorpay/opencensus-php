@@ -1,9 +1,5 @@
 import { Operand } from '../models/Operand';
 
-const getExpStatus = (name) => {
-  return (((window.rzp_user && window.rzp_user.experiments) || {})[name] || {}).result === 'on';
-};
-
 export const operators = [
   {
     name: 'One Of',
@@ -330,32 +326,30 @@ const internationalParameter = [
   },
 ];
 
-const currencyParameter = getExpStatus('optimizer_currency')
-  ? [
-      {
-        name: 'Currency',
-        value: '$payment.optimizer_currency',
-        description: 'INR, USD',
-        id: 16,
-        values: [],
-        operators: {
-          '==': {
-            multiple: false,
-            type: 'dropdown',
-          },
-          '!=': {
-            multiple: false,
-            type: 'dropdown',
-          },
-          in: {
-            multiple: true,
-            type: 'dropdown',
-          },
-        },
-        type: 'string',
+const currencyParameter = [
+  {
+    name: 'Currency',
+    value: '$payment.optimizer_currency',
+    description: 'INR, USD',
+    id: 16,
+    values: [],
+    operators: {
+      '==': {
+        multiple: false,
+        type: 'dropdown',
       },
-    ]
-  : [];
+      '!=': {
+        multiple: false,
+        type: 'dropdown',
+      },
+      in: {
+        multiple: true,
+        type: 'dropdown',
+      },
+    },
+    type: 'string',
+  },
+];
 
 export const parameters = [
   {

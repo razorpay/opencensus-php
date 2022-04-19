@@ -218,7 +218,6 @@ class Service extends Base\Service
             'rx_icici_auto_kyc',
             'rx_icici_auto_kyc',
             'updated_lite_onboarding',
-            'optimizer_currency',
             'show_multiple_vas_on_x',
             'rx_undo_payout_feature',
             'rx_command_palette',
