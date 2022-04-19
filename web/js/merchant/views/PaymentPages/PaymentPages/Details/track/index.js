@@ -1,5 +1,5 @@
 import { analyticsTrack } from 'common/utils/analytics';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { getCommonAnalyticsProperties, titleCase } from 'common/utils/rzp-utils';
 
 function _track() {
   let lumberjackTrack = () => {};
@@ -124,6 +124,10 @@ function _track() {
     paymentIdClick: () => {
       sendToLumberjack('payment_id_click');
       sendToSegment('payment id', 'click');
+    },
+    shareModalEvents: (eventName, data) => {
+      sendToLumberjack(`share_${eventName}`, data);
+      sendToSegment(`share ${titleCase(eventName)}`, data);
     },
 
     init(_lumberjackTrack) {

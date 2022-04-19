@@ -1,6 +1,8 @@
+import React from 'react';
+
 import { Link } from 'react-router-dom';
 import ModalHeader from 'common/ui/ModalHeader';
-import Button, { AsyncBtn } from 'common/new-ui/Button';
+import Button from 'common/new-ui/Button';
 import Form from 'common/new-ui/Form';
 import Input from 'common/new-ui/Input';
 import CustomClipboard from 'common/ui/Clipboard/Custom';
@@ -9,15 +11,17 @@ import Popover, { PopoverBody } from 'common/ui/Popover';
 import CreateEmbedButton from '../CreateEmbedButton';
 
 import { isEmail, isPhone } from 'common/utils/validators';
-import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
 
 import SocialShareOptions from './SocialShareOptions';
 
 export default class extends React.PureComponent {
   state = {};
 
+  static defaultProps = {
+    trackerFn: () => {},
+  };
+
   onSubmit = (formData) => {
-    const reqPayload = {};
     const msg = [];
 
     formData.contact && msg.push('Mobile');
@@ -32,16 +36,16 @@ export default class extends React.PureComponent {
       return;
     }
 
-    return this.props
+    this.props
       .handleAction(formData)
       .then((resp) => {
         if (resp.data) {
           this.props.showNotification({
             type: 'success',
-            message: 'URL is successfully sent via ' + msg.join(' and '),
+            message: `URL is successfully sent via ${msg.join(' and ')}`,
           });
 
-          this.props.trackerFn('Send', getKeysSeparatedByPipe(formData));
+          this.props.trackerFn('send', formData);
           this.props.handleClose();
         }
       })
@@ -131,7 +135,7 @@ export default class extends React.PureComponent {
             )
           }
           onCloseClick={() => {
-            this.props.trackerFn('Close');
+            this.props.trackerFn('close');
             return handleClose();
           }}
         />
@@ -149,7 +153,7 @@ export default class extends React.PureComponent {
                     onCopy={() => {
                       const ele = document.getElementsByName('short_url');
                       ele[0] && ele[0].focus();
-                      this.props.trackerFn('Click Copy URL');
+                      this.props.trackerFn('click_copy_url');
                     }}
                   >
                     <Input
@@ -225,6 +229,7 @@ export default class extends React.PureComponent {
                   if (!isPhone(val)) {
                     return 'Invalid phone';
                   }
+                  return '';
                 }}
               />
 
@@ -237,6 +242,7 @@ export default class extends React.PureComponent {
                   if (!isEmail(val)) {
                     return 'Invalid email';
                   }
+                  return '';
                 }}
               />
               {!isPaymentPagesV2 && (

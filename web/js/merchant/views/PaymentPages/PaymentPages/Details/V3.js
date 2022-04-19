@@ -55,6 +55,12 @@ const trackStock = (action, eventLabel) => {
   action === 'Edit Stock' && track.updateStock();
 };
 
+const trackShare = (eventName, data) => {
+  trackShareActions(eventName, data);
+
+  track.shareModalEvents(eventName, data);
+};
+
 @connect(
   (state) => ({
     user: state.session.user,
@@ -191,7 +197,7 @@ export default class PaymentPagesV3Entity extends React.Component {
           showNotification={this.props.showNotification}
           title={paymentPageEntity.title}
           description={paymentPageEntity.description}
-          trackerFn={trackShareActions}
+          trackerFn={trackShare}
           openEmbedButton={this.openEmbedButtonView}
           url={paymentPageEntity.short_url}
         />
