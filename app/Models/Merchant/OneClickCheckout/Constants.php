@@ -18,6 +18,8 @@ class Constants
 
     const SHOPIFY_TEMP_RECEIPT = 'Order Pending';
 
+    const COD_INTELLIGENCE = 'cod_intelligence';
+
     // common auth keys
     const API_KEY        = 'api_key';
     const API_SECRET     = 'api_secret';

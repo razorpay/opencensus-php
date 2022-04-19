@@ -257,6 +257,27 @@ class Core extends Base\Core
             [Order\Entity::AMOUNT => $orderMeta->getValue()[Order1cc\Fields::NET_PRICE]]);
     }
 
+    public function updateCODIntelligence(string $orderId, array $codIntelligenceInput): array
+    {
+        $orderMeta = $this->repo->transaction(function () use ($orderId, $codIntelligenceInput)
+        {
+            $orderId = Order\Entity::verifyIdAndSilentlyStripSign($orderId);
+            $orderMeta = $this->repo->order_meta->findByOrderIdAndType($orderId, Type::ONE_CLICK_CHECKOUT);
+            if ($orderMeta === null)
+            {
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_1CC_ORDER);
+            }
+            $value = $orderMeta->getValue();
+            $value[Order\OrderMeta\Order1cc\Fields::COD_INTELLIGENCE] = $codIntelligenceInput;
+            $orderMeta->setValue($value);
+            $this->repo->order_meta->saveOrFail($orderMeta);
+
+            return $orderMeta;
+        });
+
+        return $orderMeta->getValue();
+    }
+
     public function validateOfflineAdditionalInfo(array $offlineInfo)
     {
         foreach (Order\OrderMeta\OfflineAdditionalInfo\Fields::$dataFields as $key)

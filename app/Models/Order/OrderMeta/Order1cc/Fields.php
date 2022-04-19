@@ -15,6 +15,7 @@ class Fields
     const NET_PRICE                         = 'net_price';
     const SHIPPING_FEE                      = 'shipping_fee';
     const CUSTOMER_DETAILS                  = 'customer_details';
+    const COD_INTELLIGENCE                  = 'cod_intelligence';
     const PROMOTIONS                        = 'promotions';
     // Line Item fields
     const LINE_ITEM_TYPE                    = 'type';
@@ -51,6 +52,9 @@ class Fields
     const CUSTOMER_DETAILS_BILLING_ADDRESS  = 'billing_address';
     const CUSTOMER_DETAILS_DEVICE           = 'device';
     const CUSTOMER_DETAILS_DEVICE_ID        = 'id';
+    //Cod Intelligence Fields
+    const COD_INTELLIGENCE_ENABLED = 'enabled';
+    const COD_ELIGIBLE = 'cod_eligible';
 
     const ONE_CLICK_CHECKOUT = 'one_click_checkout';
 

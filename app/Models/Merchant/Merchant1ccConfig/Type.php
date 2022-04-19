@@ -8,6 +8,7 @@ class Type {
     const FETCH_COUPONS_URL = 'fetch_coupons_url';
     const APPLY_COUPON_URL  = 'apply_coupon_url';
     const PLATFORM          = 'platform';
+    const COD_INTELLIGENCE = 'cod_intelligence';
 
     // supported platform types
     const NATIVE            = 'native';

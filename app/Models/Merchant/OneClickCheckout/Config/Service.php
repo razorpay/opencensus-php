@@ -33,6 +33,8 @@ class Service extends Base\Service
         $this->repo->transaction(
             function () use ($input)
             {
+                $reset = false;
+
                 $updatePlatform = $input['platform'];
 
                 $merchantPlatform = null;
@@ -54,6 +56,9 @@ class Service extends Base\Service
                     }
 
                     $this->reset1ccConfig();
+
+                    $reset = true;
+
                     if ($merchantPlatformConfig !== null)
                     {
                         $this->repo->merchant_1cc_configs->delete($merchantPlatformConfig);
@@ -116,6 +121,20 @@ class Service extends Base\Service
                         ]
                     );
                 }
+
+                $updatedCodIntelligenceEnabledFlag = isset($input[Type::COD_INTELLIGENCE]) &&
+                    $input[Type::COD_INTELLIGENCE] === true;
+
+                $currentCodIntelligenceEnabledFlag = $this->merchant->getCODIntelligenceConfig();
+
+                if(($reset === true ) || ($currentCodIntelligenceEnabledFlag !== $updatedCodIntelligenceEnabledFlag))
+                {
+                    (new Core)->associateMerchant1ccConfig(
+                        Type::COD_INTELLIGENCE,
+                        $updatedCodIntelligenceEnabledFlag
+                    );
+                }
+
             }
         );
     }
@@ -124,6 +143,9 @@ class Service extends Base\Service
     {
         // Special handling for Shopify
         $merchantPlatformConfig = $this->merchant->getMerchantPlatformConfig();
+
+        $codIntelligenceEnabled = $this->merchant->getCODIntelligenceConfig();
+
         if ($merchantPlatformConfig !== null and $merchantPlatformConfig->getValue() === Constants::SHOPIFY)
         {
             $config = $this->repo->merchant_1cc_auth_configs->findByConfig(
@@ -136,6 +158,7 @@ class Service extends Base\Service
                 return [
                     'platform'         => Constants::SHOPIFY,
                     Constants::SHOP_ID => $config->getValue(),
+                    Constants::COD_INTELLIGENCE => $codIntelligenceEnabled,
                 ];
             }
             else
@@ -143,6 +166,7 @@ class Service extends Base\Service
                 return [
                     'platform'         => Constants::SHOPIFY,
                     Constants::SHOP_ID => '',
+                    Constants::COD_INTELLIGENCE => $codIntelligenceEnabled,
                 ];
             }
         }
@@ -188,6 +212,7 @@ class Service extends Base\Service
             "apply_promotion" => $applyCouponUrl,
             "cod_slabs"       => $codSlabs,
             "platform"        => $merchantPlatform,
+            Constants::COD_INTELLIGENCE => $codIntelligenceEnabled,
         ];
     }
 
@@ -207,6 +232,13 @@ class Service extends Base\Service
         {
             $slab->delete();
         }
+    }
+
+    public function getCODIntelligenceConfig(string $merchantId) : bool
+    {
+        $codIntelligenceConfig =  $this->repo->merchant_1cc_configs->
+        findByMerchantAndConfigType($merchantId, Type::COD_INTELLIGENCE);
+        return $codIntelligenceConfig !==  null && $codIntelligenceConfig->getValue() === "1";
     }
 
 }

@@ -5,11 +5,14 @@ namespace RZP\Services;
 use App;
 
 use RZP\Exception;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Address;
 use RZP\Models\Address\Entity;
 use RZP\Trace\TraceCode;
 use Illuminate\Support\Str;
 use RZP\Models\Order\OrderMeta\Order1cc;
+use RZP\Models\Merchant\OneClickCheckout\Config;
+use RZP\Models\Order\OrderMeta;
 
 /**
  * Used by 1cc
@@ -146,23 +149,48 @@ class ThirdWatchService
             // set unique id for caching if not present
             $this->getAddressId($orderId, $address);
 
+            $rtoPredictionServiceResponse = false;
+
             try
             {
                 $response = $this->app['rto_prediction_provider_service']->evaluate($input);
                 if (strcmp($response['result']['action'], "allow") == 0)
                 {
-                    return ['cod' => true];
+                    $rtoPredictionServiceResponse = true;
                 }
             }
             catch (Exception\BadRequestException $e)
             {
-                return ['cod' => false];
+                $this->trace->count(TraceCode::RTO_PREDICTION_SERVICE_ERROR);
             }
             catch (\Exception $e)
             {
-                return ['cod' => true];
+                $rtoPredictionServiceResponse = true;
             }
-            return ['cod' => false];
+
+            if($rtoPredictionServiceResponse == true)
+            {
+                $this->trace->count(TraceCode::RTO_PREDICTION_SERVICE_RESPONSE_GREEN);
+            }
+            else
+            {
+                $this->trace->count(TraceCode::RTO_PREDICTION_SERVICE_RESPONSE_RED);
+            }
+
+            $merchantId = $this->app['basicauth']->getMerchantId();
+
+            $codIntelligenceEnabled = (new Config\Service())->getCODIntelligenceConfig($merchantId);
+
+            $codEligible = $this->evaluateCodEligibility($codIntelligenceEnabled, $rtoPredictionServiceResponse);
+
+            $codIntelligenceData = [
+                Order1cc\Fields::COD_INTELLIGENCE_ENABLED => $codIntelligenceEnabled,
+                Order1cc\Fields::COD_ELIGIBLE => $codEligible,
+                ];
+
+            $this->updateCODIntelligenceDataFor1ccOrder($orderId, $codIntelligenceData);
+
+            return ['cod' => $codEligible ];
         }
         finally
         {
@@ -170,6 +198,18 @@ class ThirdWatchService
                 TraceCode::TW_ADDRESS_COD_VALIDITY_TOTAL_DURATION,
                 $this->getCurrentTimeInMillis() - $serviceStart
             );
+        }
+    }
+
+    protected function evaluateCodEligibility(bool $codIntelligenceEnabled, bool $rtoPredictionSvcResponse) : bool
+    {
+        if($codIntelligenceEnabled === false)
+        {
+            return true;
+        }
+        else
+        {
+            return $rtoPredictionSvcResponse;
         }
     }
 
@@ -254,6 +294,42 @@ class ThirdWatchService
         $address['order_id'] = $orderId;
         if (isset($address[Entity::LINE2]) === false) {
             $address[Entity::LINE2] = "";
+        }
+    }
+
+    /**
+     * @param $orderId
+     * @param array $codIntelligenceData
+     * @return void
+     */
+    public function updateCODIntelligenceDataFor1ccOrder($orderId, array $codIntelligenceData): void
+    {
+        try
+        {
+            (new OrderMeta\Core())->updateCODIntelligence($orderId, $codIntelligenceData);
+        }
+        catch (BadRequestException $e)
+        {
+            $data = [
+                'exception' => $e->getMessage(),
+                'order_id' => $orderId,
+            ];
+
+            $this->trace->error(TraceCode::INVALID_1CC_ORDER, $data);
+
+            $this->trace->count(TraceCode::INVALID_1CC_ORDER);
+        }
+        catch (\Exception $e)
+        {
+            $data = [
+                'exception' => $e->getMessage(),
+                'order_id' => $orderId,
+                'cod_intelligence_data' => $codIntelligenceData,
+            ];
+
+            $this->trace->error(TraceCode::FAILED_TO_UPDATE_COD_INTELLIGENCE_FLAG_API, $data);
+
+            $this->trace->count(TraceCode::FAILED_TO_UPDATE_COD_INTELLIGENCE_FLAG_API);
         }
     }
 }
