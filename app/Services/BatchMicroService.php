@@ -112,6 +112,14 @@ class BatchMicroService
                 ]
             ];
 
+            // Ecollect Yesbank MIS file has an extension of .xls but the underlying content type
+            // matches to Office 2007(.xlsx). Hence manually setting the extension to
+            // avoid conversion errors at batch service.
+            if ($input[Batch\Entity::TYPE] === Batch\Type::ECOLLECT_YESBANK)
+            {
+                $multipartData[0]['filename'] = $ufhFile->getName() . '.xlsx';
+            }
+
             $relativeUri = '/'. self::BATCH_URLS['batch'] . '?' . http_build_query($data);
         }
 

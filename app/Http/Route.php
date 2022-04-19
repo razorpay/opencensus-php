@@ -534,6 +534,7 @@ class Route
         'bank_transfer_process_hdfc_ecms'          => ['post',     'ecollect/validate/hdfc/ecms',                    'BankTransferController@processHdfcEcmsBankTransfer'                ],
         'bank_transfer_process_file'               => ['post',     'ecollect/validate/file',                         'BankTransferController@processBankTransferFile'                    ],
         'bank_transfer_process_file_rbl'           => ['post',     'ecollect/validate/file/rbl',                     'BankTransferController@processBankTransferFileRbl'                 ],
+        'bank_transfer_process_file_yesbank'       => ['post',     'ecollect/validate/file/yesbank',                 'BankTransferController@processBankTransferFileYesbank'             ],
         'bank_transfer_process_rbl'                => ['post',     'ecollect/validate/rbl',                          'BankTransferController@processRblBankTransferLive'                 ],
         'bank_transfer_process_rbl_test'           => ['post',     'ecollect/validate/rbl/test',                     'BankTransferController@processRblBankTransferTest'                 ],
         'bank_transfer_process_rbl_internal'       => ['post',     'ecollect/validate/rbl/internal',                 'BankTransferController@processRblBankTransferInternal'             ],
@@ -4105,6 +4106,7 @@ class Route
         'bank_transfer_process',
         'bank_transfer_process_file',
         'bank_transfer_process_file_rbl',
+        'bank_transfer_process_file_yesbank',
         'bank_transfer_process_rbl_internal',
         'bank_transfer_process_icici',
         'bank_transfer_process_icici_internal',
@@ -12084,6 +12086,7 @@ class Route
             'emandate_debit_reconcile',
             'bank_transfer_process_file',
             'bank_transfer_process_file_rbl',
+            'bank_transfer_process_file_yesbank',
             'vendor_payment_email_integration_webhook'
         ],
 
@@ -12166,6 +12169,7 @@ class Route
             'reconciliate',
             'setl_notify_h2h',
             'bank_transfer_process_file_rbl',
+            'bank_transfer_process_file_yesbank',
             'bank_transfer_process_file',
             'segment_create_update',
             'firs_document_categorize',

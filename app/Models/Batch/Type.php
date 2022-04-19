@@ -150,6 +150,8 @@ class Type
 
     const ECOLLECT_RBL          = 'ecollect_rbl';
 
+    const ECOLLECT_YESBANK      = 'ecollect_yesbank';
+
     const REPORT                = 'report';
 
     const BANK_TRANSFER_EDIT    = 'bank_transfer_edit';
@@ -255,6 +257,7 @@ class Type
         self::MERCHANT_CAPITAL_TAGS,
         self::ECOLLECT_ICICI,
         self::ECOLLECT_RBL,
+        self::ECOLLECT_YESBANK,
         self::BANK_TRANSFER_EDIT,
         self::CREDIT,
         self::MERCHANT_STATUS_ACTION,
@@ -457,6 +460,7 @@ class Type
         self::RECURRING_CHARGE_BSE,
         self::ECOLLECT_ICICI,
         self::ECOLLECT_RBL,
+        self::ECOLLECT_YESBANK,
         self::REPORT,
         self::ADMIN_BATCH,
         self::RECONCILIATION,
@@ -514,6 +518,7 @@ class Type
         self::RECURRING_CHARGE_BSE,
         self::ECOLLECT_ICICI,
         self::ECOLLECT_RBL,
+        self::ECOLLECT_YESBANK,
         self::REPORT,
         self::ADMIN_BATCH,
         self::BANK_TRANSFER_EDIT,
@@ -603,6 +608,7 @@ class Type
         self::PARTNER_SUBMERCHANTS               => Name::ADMIN_MANAGE_PARTNERS,
         self::ECOLLECT_ICICI                     => Name::ECOLLECT_ICICI_BATCH_UPLOAD,
         self::ECOLLECT_RBL                       => Name::ECOLLECT_RBL_BATCH_UPLOAD,
+        self::ECOLLECT_YESBANK                   => Name::ECOLLECT_YESBANK_BATCH_UPLOAD,
         self::VIRTUAL_BANK_ACCOUNT               => Name::VIRTUAL_BANK_ACCOUNT_BATCH_UPLOAD,
         self::BANK_TRANSFER_EDIT                 => Name::BANK_TRANSFER_INSERT,
         self::BANK_TRANSFER                      => Name::BANK_TRANSFER_INSERT,

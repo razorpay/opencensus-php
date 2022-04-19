@@ -2009,6 +2009,49 @@ return [
         ]
     ],
 
+    'testEcollectYesbankBatchCreate' => [
+        'request'  => [
+            'url'     => '/ecollect/validate/file/yesbank',
+            'method'  => 'post',
+            'content' => [
+                'source' => 'lambda',
+                'key'    => 'yesbank/filename.xlsx',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'ecollectYesbankBatchData' => [
+        [
+            'CUST CODE'          => '787878',
+            'REMITTER CODE'      => '0060604653',
+            'CUSTOMER SUBCODE'   => null,
+            'INVOICE NO'         => null,
+            'BENE ACCOUNT NO'    => '7878780060604653',
+            'AMOUNT'             => '235647.89',
+            'RMTR ACCOUNT NO'    => '917020041206002',
+            'RMTR ACCOUNT IFSC'  => 'UTIB0001506',
+            'TRANSACTION REF NO' => 'UTIB202202175000338730',
+            'TRANS RECEIVED AT'  => '2/17/2022 5:12:27 PM',
+            'TRANS STATUS'       => 'CREDITED',
+            'VALIDATION STATUS'  => 'VALIDATED: OK',
+            'TRANSFER TYPE'      => 'RTGS',
+            'CREDIT REF'         => '00136990540',
+            'NOTIFY STATUS'      => 'NOTIFIED: OK',
+            'NOTIFY RESULT'      => null,
+            'RETURN REF'         => null,
+            'RETURNED AT'        => null,
+            'RMTR FULL NAME'     => 'RAZORPAY SOFTWARE PRIVATE LIMITED -',
+            'RMTR ADD'           => 'MUNICIPAL NO.22 LASKAR HOSUR ROAD.AFTER FARUMMALLOPPOSITE TATA DOCOMO,',
+            'UDF11'              => null,
+            'UDF12'              => null,
+            'UDF13'              => null,
+            'UDF14'              => null
+        ]
+    ],
+
     'testProcessBankTransferInvalidPayerIfsc' => [
         'url'     => '/ecollect/validate/test',
         'method'  => 'post',

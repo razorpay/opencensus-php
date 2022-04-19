@@ -62,6 +62,15 @@ class BankTransferController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function processBankTransferFileYesbank()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->processFile($input, Batch\Type::ECOLLECT_YESBANK);
+  
+        return ApiResponse::json($response);
+    }
+
     public function processYesbankBankTransfer()
     {
         $this->app['basicauth']->setModeAndDbConnection(Mode::LIVE);
