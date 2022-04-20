@@ -1,8 +1,9 @@
+import React from 'react';
 import { connect } from 'react-redux';
 
 import { RZPFeatures, PossibleStatuses } from 'merchant/helpers/data';
 
-import QuickGuide, {
+import withQuickGuide, {
   setQuickGuideIsClosedInLocalStorage,
   getQuickGuideIsClosedFromLocalStorage,
 } from 'merchant/components/QuickGuide';
@@ -16,32 +17,15 @@ import { getQuickGuideData } from './data';
 
 const { done, locked, active, loading } = PossibleStatuses;
 
-@connect(state => ({
-  user: state.session.user,
-  mode: state.session.mode,
-  invoices: state.invoices,
-}))
-@QuickGuide({
-  feature: RZPFeatures.PP,
-  data_points: ['paymentPages'],
-  dataTransformer: (key, state) => {
-    return {
-      ...state.invoices,
-      items: state.invoices.paymentPages,
-    };
-  },
-})
-export default class PaymentPagesQuickGuide extends React.Component {
-  getCloseBtn = isCompleted => {
-    return (
-      <QuickGuideCloseBtn
-        isCompleted={isCompleted}
-        onClick={this.props.onClickClose}
-      />
-    );
+const Title = <QuickGuideTitle />;
+
+class PaymentPagesQuickGuide extends React.Component {
+  getCloseBtn = (isCompleted) => {
+    return <QuickGuideCloseBtn isCompleted={isCompleted} onClick={this.props.onClickClose} />;
   };
 
   render() {
+    const { className = '' } = this.props;
     const { paymentPageStatus, paymentReceiveStatus } = getStatus(this.props);
 
     const CloseBtn = this.getCloseBtn(paymentReceiveStatus === done);
@@ -55,7 +39,7 @@ export default class PaymentPagesQuickGuide extends React.Component {
     return (
       <QuickStepGuide
         activeStep={activeStep}
-        class="PaymetPages"
+        class={`PaymetPages ${className}`}
         title={Title}
         closeBtn={CloseBtn}
       >
@@ -63,44 +47,40 @@ export default class PaymentPagesQuickGuide extends React.Component {
           status={paymentPageStatus}
           step="PaymentPage"
           feature={RZPFeatures.PP}
-          {...getQuickGuideData.PaymentPage(paymentPageStatus)}
+          {...getQuickGuideData.paymentPage(paymentPageStatus)}
         />
 
         <QuickGuideStep
           status={paymentReceiveStatus}
           step="PaymentReceive"
           feature={RZPFeatures.PP}
-          {...getQuickGuideData.ReceivePayments(paymentReceiveStatus)}
+          {...getQuickGuideData.receivePayments(paymentReceiveStatus)}
         />
       </QuickStepGuide>
     );
   }
 }
 
-const Title = <QuickGuideTitle />;
-
-export const getPaymentPageQuickGuideIsClosed = props => {
-  let isClosed = getQuickGuideIsClosedFromLocalStorage(RZPFeatures.PP);
+export const getPaymentPageQuickGuideIsClosed = (props) => {
+  const isClosed = getQuickGuideIsClosedFromLocalStorage(RZPFeatures.PP);
 
   // Check if transfers non created state count is more then or equal to 2
   if (isClosed || props.paymentPages.length <= 2) {
     return isClosed;
   }
 
-  props.paymentPages.forEach(page => {
+  props.paymentPages.forEach((page) => {
     if (page.times_paid) {
       setQuickGuideIsClosedInLocalStorage(RZPFeatures.PP, true);
-
-      return false;
     }
   });
 
   return true;
 };
 
-const getStatus = ({ paymentPages, invoices }) => {
-  let paymentPageStatus = loading,
-    paymentReceiveStatus = loading;
+function getStatus({ paymentPages, invoices }) {
+  let paymentPageStatus = loading;
+  let paymentReceiveStatus = loading;
 
   if (invoices.loading) {
     return {
@@ -113,11 +93,9 @@ const getStatus = ({ paymentPages, invoices }) => {
     paymentPageStatus = done;
     paymentReceiveStatus = active;
 
-    paymentPages.items.forEach(page => {
+    paymentPages.items.forEach((page) => {
       if (page.times_paid) {
         paymentReceiveStatus = done;
-
-        return false;
       }
     });
   } else {
@@ -129,4 +107,25 @@ const getStatus = ({ paymentPages, invoices }) => {
     paymentPageStatus,
     paymentReceiveStatus,
   };
+}
+
+const mapDispatchToProps = (state) => ({
+  user: state.session.user,
+  mode: state.session.mode,
+  invoices: state.invoices,
+});
+
+const quickGuideSettings = {
+  feature: RZPFeatures.PP,
+  data_points: ['paymentPages'],
+  dataTransformer: (key, state) => {
+    return {
+      ...state.invoices,
+      items: state.invoices.paymentPages,
+    };
+  },
 };
+
+export default connect(mapDispatchToProps)(
+  withQuickGuide(quickGuideSettings)(PaymentPagesQuickGuide),
+);

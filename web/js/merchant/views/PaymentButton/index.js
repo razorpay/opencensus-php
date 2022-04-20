@@ -1,10 +1,9 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { Route, Switch, NavLink } from 'react-router-dom';
+import { Route, Switch } from 'react-router-dom';
 
 import { RZPFeatures } from 'merchant/helpers/data';
 
-import TestModeBanner from 'merchant/components/TestModeBanner';
 import PaymentButtonList from 'merchant/views/PaymentButton/PaymentButton/List';
 import SubscriptionButtonList from 'merchant/views/PaymentButton/SubscriptionButton/List';
 
@@ -118,34 +117,20 @@ export default class PaymentButtonsContainer extends React.Component {
           )}
         </div>
 
-        <tabbed-container>
-          {isQuickGuideOpen && <QuickGuide mid={this.props.user.current} mode={this.props.mode} />}
+        {isQuickGuideOpen && (
+          <QuickGuide
+            mid={this.props.user.current}
+            mode={this.props.mode}
+            className="QuickGuide-v2"
+          />
+        )}
 
-          <header id="link-header">
-            {this.props.user.isPaymentButtonEnabledByRazorX && (
-              <NavLink exact to="/paymentbuttons">
-                Payment Buttons
-              </NavLink>
-            )}
-
-            {this.props.user.isSubscriptionButtonEnabled && (
-              <NavLink exact to="/subscription_buttons">
-                Subscription Buttons
-              </NavLink>
-            )}
-          </header>
-
-          <TestModeBanner />
-
-          <content>
-            <ErrorBoundary resetOnProps>
-              <Switch>
-                <Route path="/paymentbuttons" component={PaymentButtonList} />
-                <Route path="/subscription_buttons" component={SubscriptionButtonList} />
-              </Switch>
-            </ErrorBoundary>
-          </content>
-        </tabbed-container>
+        <ErrorBoundary resetOnProps>
+          <Switch>
+            <Route path="/paymentbuttons" component={PaymentButtonList} />
+            <Route path="/subscription_buttons" component={SubscriptionButtonList} />
+          </Switch>
+        </ErrorBoundary>
       </>
     );
   }

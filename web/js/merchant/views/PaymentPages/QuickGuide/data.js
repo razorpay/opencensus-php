@@ -3,7 +3,7 @@ import { PossibleStatuses } from 'merchant/helpers/data';
 const { done } = PossibleStatuses;
 
 export const getQuickGuideData = {
-  PaymentPage: status => {
+  paymentPage: (status) => {
     if (status === done) {
       return {
         title: '1. Payment Page Created',
@@ -18,7 +18,7 @@ export const getQuickGuideData = {
         'Create your own custom pages by adding fields to collect relevant customer information.',
     };
   },
-  ReceivePayments: status => {
+  receivePayments: (status) => {
     if (status === done) {
       return {
         title: '2. Payments Received',

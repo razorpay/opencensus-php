@@ -47,3 +47,27 @@ tabbed-container {
     background-color: #fff;
   }
 }
+
+tabbed-container.updated {
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    padding: 0;
+
+    .header-left {
+      padding-left: 12px;
+    }
+    .header-right {
+      padding-left: 16px;
+      padding-right: 12px;
+      &.mobile {
+        background-color: #f8f9fb;
+        padding: 10px;
+        padding-left: 26px;
+        width: 100%
+      }
+    }
+  }
+}

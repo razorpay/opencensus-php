@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { Field } from 'redux-form';
-import HeaderAction from 'common/ui/HeaderAction';
+import ProductWrapper from 'common/ui/ProductWrapper';
 import RTracking from 'react-tracking';
 import track from './track';
 import Pager from 'common/ui/Pager';
@@ -29,6 +29,9 @@ import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { trackListActions } from '../ga';
 import { RZPFeatures } from 'merchant/helpers/data';
+import TestModeBanner from 'merchant/components/TestModeBanner';
+
+const tabsData = [{ title: 'Payment Pages', url: '/paymentpages' }];
 
 @withRouter
 @connect(
@@ -290,9 +293,10 @@ export default class PaymentPagesContainer extends ListContainer {
     }
 
     return (
-      <div class="content-wrapper">
-        <HeaderAction responsive>
-          <div class="btn-toolbar pull-right">
+      <ProductWrapper
+        tabsData={tabsData}
+        extra={
+          <>
             <ShowWhen additionalCondition={() => !user.isOrgAxis}>
               <TakeATourButton feature={RZPFeatures.PP} onClick={track.takeTour} />
             </ShowWhen>
@@ -317,11 +321,16 @@ export default class PaymentPagesContainer extends ListContainer {
                 </span>
               </span>
             )}
+          </>
+        }
+      >
+        <content>
+          <div class="content-wrapper">
+            <TestModeBanner />
+            {content}
           </div>
-        </HeaderAction>
-
-        {content}
-      </div>
+        </content>
+      </ProductWrapper>
     );
   }
 }

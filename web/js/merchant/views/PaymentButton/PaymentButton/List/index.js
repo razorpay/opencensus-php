@@ -7,12 +7,13 @@ import { buttonTitle, itemName, unitsSold, createdAt } from 'common/ui/item/pair
 
 import Amount from 'common/ui/Amount';
 import DataTable from 'common/ui/Table/DataTable';
-import HeaderAction from 'common/ui/HeaderAction';
+import ProductWrapper from 'common/ui/ProductWrapper';
 import DocsLink, { DocLink } from 'merchant/components/DocsLink';
 import ShowWhen from 'merchant/components/ShowWhen';
 import ListContainer from 'merchant/containers/ListContainer';
 import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
 import { PaymentPagesStatusLabel } from 'merchant/components/StatusLabel';
+import TestModeBanner from 'merchant/components/TestModeBanner';
 
 import ListFilter from './ListFilter';
 import GetCodeModal from '../components/GetCodeModal'; // SuccessModal
@@ -22,6 +23,11 @@ import { handleProductQuickGuide } from 'merchant/reducers/onboarding';
 import { fetchPaymentButtonsList as fetchAll } from 'merchant/reducers/paymentbuttons/list';
 import { setIsPaymentButtonCodeUsed } from '../../utils';
 import track from './track';
+
+const tabsData = [
+  { title: 'Payment Buttons', url: '/paymentbuttons' },
+  { title: 'Subscription Buttons', url: '/subscription_buttons' },
+];
 
 const getActions = (openGetCodeModal) => ({
   title: 'Actions',
@@ -138,10 +144,21 @@ export default class PaymentButtonsList extends ListContainer {
     const { user } = this.props;
     const isRoleAllowedEdit = user.isAllowedEdit('payment_buttons');
 
+    const columns = [
+      buttonTitle,
+      totalSales,
+      itemName,
+      unitsSold,
+      createdAt,
+      status,
+      getActions(this.openGetCodeModal),
+    ];
+
     return (
-      <div class="PaymentButtons--ListingPage content-wrapper">
-        <HeaderAction responsive>
-          <div class="btn-toolbar pull-right">
+      <ProductWrapper
+        tabsData={tabsData}
+        extra={
+          <>
             <ShowWhen additionalCondition={(_user) => !_user.isOrgAxis}>
               <TakeATourButton feature={RZPFeatures.PB} onSuccess={this.resetCopyPasteCodeStatus} />
             </ShowWhen>
@@ -156,42 +173,39 @@ export default class PaymentButtonsList extends ListContainer {
                 </span>
               </span>
             )}
+          </>
+        }
+      >
+        <content>
+          <div class="PaymentButtons--ListingPage content-wrapper">
+            <TestModeBanner />
+            {/* an example of passing custom value to the filter length for mobile for ListFilter Component */}
+            <ListFilter
+              form="paymentButtonListFilter"
+              count={this.state.count}
+              onClearAnalytics={track.searchClear}
+              onSubmit={this.search}
+              maxMwebFiltersLength={3}
+            />
+            <DataTable
+              title="Payment Buttons"
+              columns={columns}
+              paginate={(params, type) => {
+                track.paginate(params, type);
+
+                this.paginate(params, type);
+              }}
+              {...this.props}
+              count={this.state.count}
+              skip={this.state.skip}
+              EmptyComponent={EmptyComponent}
+              onErrorCloseClick={() => {
+                track.errorCloseClick(this.state.status.message);
+              }}
+            />
           </div>
-        </HeaderAction>
-        {/* an example of passing custom value to the filter length for mobile for ListFilter Component */}
-        <ListFilter
-          form="paymentButtonListFilter"
-          count={this.state.count}
-          onClearAnalytics={track.searchClear}
-          onSubmit={this.search}
-          maxMwebFiltersLength={3}
-        />
-
-        <DataTable
-          title="Payment Buttons"
-          columns={[
-            buttonTitle,
-            totalSales,
-            itemName,
-            unitsSold,
-            createdAt,
-            status,
-            getActions(this.openGetCodeModal),
-          ]}
-          paginate={(params, type) => {
-            track.paginate(params, type);
-
-            this.paginate(params, type);
-          }}
-          {...this.props}
-          count={this.state.count}
-          skip={this.state.skip}
-          EmptyComponent={EmptyComponent}
-          onErrorCloseClick={() => {
-            track.errorCloseClick(this.state.status.message);
-          }}
-        />
-      </div>
+        </content>
+      </ProductWrapper>
     );
   }
 }

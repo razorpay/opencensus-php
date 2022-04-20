@@ -1,12 +1,11 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
-import { Route, Switch, NavLink } from 'react-router-dom';
+import { Route, Switch } from 'react-router-dom';
 
 import { RZPFeatures } from 'merchant/helpers/data';
 
 import { getCurrentProductOnBoardingDetails } from 'merchant/reducers/onboarding';
 
-import TestModeBanner from 'merchant/components/TestModeBanner';
 import OnBoarding from './OnBoarding';
 import QuickGuide from './QuickGuide';
 
@@ -37,24 +36,14 @@ export default class PaymentPagesContainer extends Component {
           <ShiprocketBanner userId={user?.current} />
           <DashboardBanner />
         </div>
-        <tabbed-container>
-          {isQuickGuideOpen && <QuickGuide />}
-          <header id="link-header">
-            <NavLink exact to="/paymentpages">
-              Payment Pages
-            </NavLink>
-          </header>
 
-          <TestModeBanner />
+        {isQuickGuideOpen && <QuickGuide className="QuickGuide-v2" />}
 
-          <content>
-            <ErrorBoundary resetOnProps>
-              <Switch>
-                <Route path="/paymentpages" exact component={PaymentPagesList} />
-              </Switch>
-            </ErrorBoundary>
-          </content>
-        </tabbed-container>
+        <ErrorBoundary resetOnProps>
+          <Switch>
+            <Route path="/paymentpages" exact component={PaymentPagesList} />
+          </Switch>
+        </ErrorBoundary>
       </>
     );
   }

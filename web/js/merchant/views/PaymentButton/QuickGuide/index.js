@@ -1,6 +1,7 @@
+import React from 'react';
 import { RZPFeatures, PossibleStatuses } from 'merchant/helpers/data';
 
-import QuickGuide, {
+import withQuickGuide, {
   setQuickGuideIsClosedInLocalStorage,
   getQuickGuideIsClosedFromLocalStorage,
 } from 'merchant/components/QuickGuide';
@@ -15,26 +16,18 @@ import { getIsPaymentButtonCodeUsed } from '../utils';
 
 const { done, locked, active, loading } = PossibleStatuses;
 
-@QuickGuide({
-  feature: RZPFeatures.PB,
-  data_points: ['paymentbuttons'],
-})
-export default class PaymentButtonsQuickGuide extends React.Component {
-  getCloseBtn = isCompleted => {
-    return (
-      <QuickGuideCloseBtn
-        isCompleted={isCompleted}
-        onClick={this.props.onClickClose}
-      />
-    );
+const Title = <QuickGuideTitle />;
+
+class PaymentButtonsQuickGuide extends React.Component {
+  getCloseBtn = (isCompleted) => {
+    return <QuickGuideCloseBtn isCompleted={isCompleted} onClick={this.props.onClickClose} />;
   };
 
   render() {
-    const {
-      paymentButtonStatus,
-      copyAndPasteTheCodeStatus,
-      paymentReceiveStatus,
-    } = getStatus(this.props);
+    const { className = '' } = this.props;
+    const { paymentButtonStatus, copyAndPasteTheCodeStatus, paymentReceiveStatus } = getStatus(
+      this.props,
+    );
 
     const CloseBtn = this.getCloseBtn(paymentReceiveStatus === done);
 
@@ -51,7 +44,7 @@ export default class PaymentButtonsQuickGuide extends React.Component {
     return (
       <QuickStepGuide
         activeStep={activeStep}
-        class="PaymentButton"
+        class={`PaymentButton ${className}`}
         title={Title}
         closeBtn={CloseBtn}
       >
@@ -59,7 +52,7 @@ export default class PaymentButtonsQuickGuide extends React.Component {
           status={paymentButtonStatus}
           step="PaymentButton"
           feature={RZPFeatures.PB}
-          {...getQuickGuideData.CreateButton(paymentButtonStatus)}
+          {...getQuickGuideData.createButton(paymentButtonStatus)}
         />
 
         <QuickGuideStep
@@ -73,16 +66,14 @@ export default class PaymentButtonsQuickGuide extends React.Component {
           status={paymentReceiveStatus}
           step="PaymentReceive"
           feature={RZPFeatures.PB}
-          {...getQuickGuideData.ReceivePayments(paymentReceiveStatus)}
+          {...getQuickGuideData.receivePayments(paymentReceiveStatus)}
         />
       </QuickStepGuide>
     );
   }
 }
 
-const Title = <QuickGuideTitle />;
-
-export const getPaymentButtonsQuickGuideIsClosed = props => {
+export const getPaymentButtonsQuickGuideIsClosed = (props) => {
   let isClosed = getQuickGuideIsClosedFromLocalStorage(RZPFeatures.PB);
 
   // Check if transfers non created state count is more then or equal to 2
@@ -90,7 +81,7 @@ export const getPaymentButtonsQuickGuideIsClosed = props => {
     return isClosed;
   }
 
-  props.paymentbuttons.items.forEach(page => {
+  props.paymentbuttons.items.forEach((page) => {
     if (isClosed) {
       return;
     }
@@ -107,10 +98,10 @@ export const getPaymentButtonsQuickGuideIsClosed = props => {
   return isClosed;
 };
 
-const getStatus = ({ paymentbuttons, mid, mode }) => {
-  let paymentButtonStatus = loading,
-    copyAndPasteTheCodeStatus = loading,
-    paymentReceiveStatus = loading;
+function getStatus({ paymentbuttons, mid, mode }) {
+  let paymentButtonStatus = loading;
+  let copyAndPasteTheCodeStatus = loading;
+  let paymentReceiveStatus = loading;
 
   if (paymentbuttons.loading) {
     return {
@@ -131,7 +122,7 @@ const getStatus = ({ paymentbuttons, mid, mode }) => {
     copyAndPasteTheCodeStatus = done;
     paymentReceiveStatus = active;
 
-    paymentbuttons.items.forEach(page => {
+    paymentbuttons.items.forEach((page) => {
       if (page.total_amount_paid) {
         paymentReceiveStatus = done;
         copyAndPasteTheCodeStatus = done;
@@ -140,9 +131,7 @@ const getStatus = ({ paymentbuttons, mid, mode }) => {
   } else {
     paymentButtonStatus = active;
     copyAndPasteTheCodeStatus =
-      paymentButtonStatus !== done
-        ? locked
-        : isPaymentButtonCodeUsed ? done : active;
+      paymentButtonStatus !== done ? locked : isPaymentButtonCodeUsed ? done : active;
     paymentReceiveStatus = copyAndPasteTheCodeStatus === done ? active : locked;
   }
 
@@ -151,4 +140,11 @@ const getStatus = ({ paymentbuttons, mid, mode }) => {
     copyAndPasteTheCodeStatus,
     paymentReceiveStatus,
   };
+}
+
+const quickGuideSettings = {
+  feature: RZPFeatures.PB,
+  data_points: ['paymentbuttons'],
 };
+
+export default withQuickGuide(quickGuideSettings)(PaymentButtonsQuickGuide);

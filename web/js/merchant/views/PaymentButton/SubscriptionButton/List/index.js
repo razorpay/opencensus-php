@@ -7,11 +7,12 @@ import { RZPFeatures } from 'merchant/helpers/data';
 import { subscriptionButtonTitle, createdAt } from 'common/ui/item/pair';
 
 import DataTable from 'common/ui/Table/DataTable';
-import HeaderAction from 'common/ui/HeaderAction';
+import ProductWrapper from 'common/ui/ProductWrapper';
 import DocsLink, { DocLink } from 'merchant/components/DocsLink';
 import ListContainer from 'merchant/containers/ListContainer';
 import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
 import { PaymentPagesStatusLabel } from 'merchant/components/StatusLabel';
+import TestModeBanner from 'merchant/components/TestModeBanner';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 
 import ListFilter from './ListFilter';
@@ -24,6 +25,11 @@ import { fetchSubscriptionButtonsList as fetchAll } from 'merchant/reducers/subs
 import { setIsPaymentButtonCodeUsed } from '../../utils';
 import { isMobileDevice } from 'merchant/components/Home/data';
 import track from './track';
+
+const tabsData = [
+  { title: 'Payment Buttons', url: '/paymentbuttons' },
+  { title: 'Subscription Buttons', url: '/subscription_buttons' },
+];
 
 const getActions = (openGetCodeModal) => ({
   title: 'Actions',
@@ -222,10 +228,20 @@ export default class SubscriptionButtonsList extends ListContainer {
     const { user } = this.props;
     const isRoleAllowedEdit = user.isAllowedEdit('subscription_buttons');
 
+    const columns = [
+      subscriptionButtonTitle,
+      itemNames,
+      totalTransactions,
+      createdAt,
+      status,
+      getActions(this.openGetCodeModal),
+    ];
+
     return (
-      <div class="PaymentButtons--ListingPage content-wrapper">
-        <HeaderAction responsive>
-          <div class="btn-toolbar pull-right">
+      <ProductWrapper
+        tabsData={tabsData}
+        extra={
+          <>
             <TakeATourButton feature={RZPFeatures.PB} onSuccess={this.resetCopyPasteCodeStatus} />
 
             <DocsLink url="https://razorpay.com/docs/payment-button/subscription-buttons/" />
@@ -238,40 +254,38 @@ export default class SubscriptionButtonsList extends ListContainer {
                 </span>
               </span>
             )}
+          </>
+        }
+      >
+        <content>
+          <div class="PaymentButtons--ListingPage content-wrapper">
+            <TestModeBanner />
+            <ListFilter
+              form="paymentButtonListFilter"
+              count={this.state.count}
+              onClearAnalytics={track.lj.trackSearchClear}
+              onSubmit={this.search}
+            />
+
+            <DataTable
+              title="Subscription Buttons"
+              columns={columns}
+              paginate={(params, type) => {
+                track.lj.trackPaginate(params, type);
+
+                this.paginate(params, type);
+              }}
+              {...this.props}
+              count={this.state.count}
+              skip={this.state.skip}
+              EmptyComponent={EmptyComponent}
+              onErrorCloseClick={() => {
+                track.lj.trackErrorCloseClick(this.state.status.message);
+              }}
+            />
           </div>
-        </HeaderAction>
-
-        <ListFilter
-          form="paymentButtonListFilter"
-          count={this.state.count}
-          onClearAnalytics={track.lj.trackSearchClear}
-          onSubmit={this.search}
-        />
-
-        <DataTable
-          title="Subscription Buttons"
-          columns={[
-            subscriptionButtonTitle,
-            itemNames,
-            totalTransactions,
-            createdAt,
-            status,
-            getActions(this.openGetCodeModal),
-          ]}
-          paginate={(params, type) => {
-            track.lj.trackPaginate(params, type);
-
-            this.paginate(params, type);
-          }}
-          {...this.props}
-          count={this.state.count}
-          skip={this.state.skip}
-          EmptyComponent={EmptyComponent}
-          onErrorCloseClick={() => {
-            track.lj.trackErrorCloseClick(this.state.status.message);
-          }}
-        />
-      </div>
+        </content>
+      </ProductWrapper>
     );
   }
 }

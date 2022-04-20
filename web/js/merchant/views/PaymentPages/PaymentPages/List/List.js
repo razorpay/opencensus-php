@@ -9,7 +9,6 @@ import Popover, { PopoverBody } from 'common/ui/Popover';
 
 import { trackListActions } from '../ga';
 import track from './track';
-import { isMobileDevice } from 'merchant/components/Home/data';
 
 // import mockPaymentPagesList from './data-mock';
 
@@ -72,7 +71,7 @@ export default ({ paymentPages, loading }) => {
                               <b>+ {item.payment_page_items.length - 2} more</b>
                             </span>
 
-                            <Popover align={isMobileDevice() ? 'top' : 'right'}>
+                            <Popover>
                               <PopoverBody>
                                 <div class="more-items">
                                   <div>
