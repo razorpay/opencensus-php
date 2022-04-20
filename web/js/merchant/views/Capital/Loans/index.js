@@ -350,7 +350,7 @@ export default class LoanApplicationOverview extends React.Component {
 
   getProgressPercentage = () => {
     const { meta } = this.props.loanApplicationDetails;
-    if (!meta.data.application.status) return 0;
+    if (!meta.data.application || !meta.data.application.status) return 0;
     return getApplicationProgressPercentage(
       meta.data.application.status,
       meta.configuration.getApplicationStateGroups(),
@@ -406,6 +406,7 @@ export default class LoanApplicationOverview extends React.Component {
         />
       );
     }
+
     const { status } = parseApplicationMetaData(loanApplicationDetails);
     const applicationRejected = status === APPLICATION_STATES.RZP_REJECTED;
     const applicationClosed = status === APPLICATION_STATES.CLOSED;
@@ -539,9 +540,10 @@ export default class LoanApplicationOverview extends React.Component {
 
     const isCAXExperimentEnabled = user.isCashAdvanceXMigrationEnabled;
     const hasApplication = loanApplicationDetails?.meta?.data?.application;
-    const isProductCashAdvance = isCashAdvanceProduct(loanApplicationDetails?.meta?.product);
+    const isProductCashAdvance = window.location.pathname.includes('cash-advance');
 
-    const { status } = parseApplicationMetaData(loanApplicationDetails);
+    const parsedMetaData = hasApplication && parseApplicationMetaData(loanApplicationDetails);
+    const status = parsedMetaData && parsedMetaData.status;
     const applicationRejected = status === APPLICATION_STATES.RZP_REJECTED;
     const applicationClosed = status === APPLICATION_STATES.CLOSED;
 
