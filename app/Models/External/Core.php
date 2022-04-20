@@ -4,6 +4,7 @@ namespace RZP\Models\External;
 
 use RZP\Models\Base;
 use RZP\Models\External;
+use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Transaction;
@@ -17,21 +18,25 @@ class Core extends Base\Core
      */
     protected $merchant;
 
-    public function create(BAS\Entity $basEntity): External\Entity
+    public function create(BAS\Entity $basEntity, $withTxnBool = true): External\Entity
     {
-        $external = $this->repo->transaction(function () use ($basEntity)
+        $external = $this->repo->transaction(function () use ($basEntity, $withTxnBool)
         {
             $external = $this->createExternalEntity($basEntity);
 
-            list ($txn, $feeSplit) = (new Transaction\Processor\External($external))->createTransaction();
-
-            $this->repo->saveOrFail($txn);
+            // Create external entity with transaction only if $withTxnBool is set
+            // default behaviour is to create transaction
+            if ($withTxnBool === true)
+            {
+                list ($txn, $feeSplit) = (new Transaction\Processor\External($external))->createTransaction();
+                $this->repo->saveOrFail($txn);
+            }
 
             $this->trace->info(TraceCode::EXTERNAL_SAVE, $external->toArray());
 
             //
             // Note that the external entity should be saved only after the transaction
-            // has been saved since the transaction_id is not nullable in external.
+            // has been saved, to ensure txn is linked to external entity
             //
             $this->repo->saveOrFail($external);
 

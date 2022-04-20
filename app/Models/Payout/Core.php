@@ -2424,7 +2424,7 @@ class Core extends Base\Core
             return;
         }
 
-        // If the mode is not live OR the merchant does not have any of the DA's ledger shadow or reverse shadow feature, we return.
+        // If the merchant does not have any of the DA's ledger shadow or reverse shadow feature, we return.
         if (($payout->merchant->isFeatureEnabled(Feature\Constants::DA_LEDGER_JOURNAL_WRITES) === false) and
             ($payout->merchant->isFeatureEnabled(Feature\Constants::DA_LEDGER_REVERSE_SHADOW) === false))
         {
@@ -2447,6 +2447,18 @@ class Core extends Base\Core
             ($payout->getBalanceType() === Merchant\Balance\Type::BANKING) and
             ($payout->getBalanceAccountType() === Merchant\Balance\AccountType::SHARED) and
             ($payout->getIsPayoutService() === false))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function shouldPayoutGoThroughLedgerReverseShadowFlowForDirect($payout)
+    {
+        if (($payout->merchant->isFeatureEnabled(FeatureConstants::DA_LEDGER_REVERSE_SHADOW) === true) and
+            ($payout->getBalanceType() === Merchant\Balance\Type::BANKING) and
+            ($payout->getBalanceAccountType() === Merchant\Balance\AccountType::DIRECT))
         {
             return true;
         }
@@ -2520,6 +2532,13 @@ class Core extends Base\Core
 
         if ($transaction === null)
         {
+            // If merchant is on reverse shadow, its possible that bas is unlinked due to delay in webhook from ledger
+            // we simply return in this case and let the leger webhook flow do the re linking from external to payout
+            if ($payout->merchant->isFeatureEnabled(FeatureConstants::DA_LEDGER_REVERSE_SHADOW) === true)
+            {
+                return null;
+            }
+
             throw new Exception\LogicException(
                 'bas row selected is not linked to any transaction!',
                 ErrorCode::SERVER_ERROR_TRANSACTION_WRONG_SOURCE,
@@ -2612,6 +2631,13 @@ class Core extends Base\Core
 
         if ($transaction === null)
         {
+            // If merchant is on reverse shadow, its possible that bas is unlinked due to delay in webhook from ledger
+            // we simply return in this case and let the leger webhook flow do the re linking from external to reversal
+            if ($reversal->merchant->isFeatureEnabled(FeatureConstants::DA_LEDGER_REVERSE_SHADOW) === true)
+            {
+                return [null, $bankAccStmtForPayout];
+            }
+
             throw new Exception\LogicException(
                 'bas row selected is not linked to any transaction!',
                 ErrorCode::SERVER_ERROR_TRANSACTION_WRONG_SOURCE,

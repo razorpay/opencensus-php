@@ -837,7 +837,8 @@ class Service extends Base\Service
                 $this->repo->saveOrFail($basEntity);
             }
         });
-        (new BankingAccountStatement\Core())->fireWebhooksAfterSuccessfulMappingOfSourceEntity($payout, true);
+
+        (new BankingAccountStatement\Core())->fireWebhooksAfterSuccessfulMappingOfSourceEntity($payout, true, true);
     }
 
     protected function updateTxnIdForExternalToPayoutReversedLedgerEvent($transactorId, $journalId)
@@ -968,7 +969,7 @@ class Service extends Base\Service
                 $this->repo->saveOrFail($basEntity);
             }
         });
-        (new BankingAccountStatement\Core())->fireWebhooksAfterSuccessfulMappingOfSourceEntity($reversal, true);
+        (new BankingAccountStatement\Core())->fireWebhooksAfterSuccessfulMappingOfSourceEntity($reversal, true, true);
     }
 
     protected function updateTxnIdForExternalLedgerEvent($transactorId, $entityID, $journalId, $balance)
@@ -1030,7 +1031,7 @@ class Service extends Base\Service
 
             return $basEntity;
         });
-        (new BankingAccountStatement\Core())->fireWebhooksAfterSuccessfulMappingOfSourceEntity($external, true);
+        (new BankingAccountStatement\Core())->fireWebhooksAfterSuccessfulMappingOfSourceEntity($external, true, true);
 
         // Check if FTS webhook already arrived by the time ledger sent this webhook
         // If yes, then the FTS webhook flow wouldn't have been able to relinking from external to payout/reversal due to missing txn

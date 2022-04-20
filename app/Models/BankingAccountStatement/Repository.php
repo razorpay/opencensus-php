@@ -111,6 +111,18 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function fetchUnlinkedBasRecordsBySourceEntity(string $accountNumber, string $channel, $limit)
+    {
+        return $this->newQuery()
+            ->where(Entity::ACCOUNT_NUMBER, $accountNumber)
+            ->where(Entity::CHANNEL, $channel)
+            ->whereNull(Entity::ENTITY_TYPE)
+            ->whereNull(Entity::ENTITY_ID)
+            ->orderBy(Entity::ID)
+            ->limit($limit)
+            ->get();
+    }
+
     public function fetchByUtrForPayout(Payout\Entity $payout)
     {
         $query = $this->newQuery()

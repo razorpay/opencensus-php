@@ -186,6 +186,11 @@ class Entity extends Base\PublicEntity
 
     // -------------------- Getters -----------------------------
 
+    public function getBalanceId()
+    {
+        return $this->getAttribute(self::BALANCE_ID);
+    }
+
     public function getEntitySign(): string
     {
         return self::$sign;

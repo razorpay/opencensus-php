@@ -464,9 +464,120 @@ class RblBankingAccountStatementTest extends TestCase
             $this->assertEquals($externalsCreated[$index]->getPublicId(), $ledgerRequestPayload['transactor_id']);
             $this->assertEquals('10000000000000', $ledgerRequestPayload['merchant_id']);
             $this->assertEquals('INR', $ledgerRequestPayload['currency']);
+            $this->assertEquals($externalsCreated[$index]->getTransactionId(), $ledgerRequestPayload['api_transaction_id']);
             $this->assertEmpty($ledgerRequestPayload['commission']);
             $this->assertEmpty($ledgerRequestPayload['tax']);
             $this->assertEquals($transactorTypeArray[$index], $ledgerRequestPayload['transactor_event']);
+            $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload['additional_params']);
+        }
+    }
+
+    /**
+     * Case where the response from RBL is success with ledger shadow
+     * asserting external credit, external debit events to ledger
+     */
+    public function testRblAccountStatementExternalWithLedgerReverseShadow()
+    {
+        $testData = $this->testData['testRblAccountStatementCase1'];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->fixtures->merchant->addFeatures([Features::DA_LEDGER_REVERSE_SHADOW]);
+
+        $ledgerSnsPayloadArray = [];
+        $this->mockLedgerSns(2, $ledgerSnsPayloadArray);
+
+        $mockedResponse = $this->getRblDataResponse();
+
+        $this->setMozartMockResponse($mockedResponse);
+
+        $baBeforeTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT, true);
+
+        $this->assertNull($baBeforeTest[BaEntity::LAST_STATEMENT_ATTEMPT_AT]);
+
+        $basdBeforeTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS, true);
+
+        $this->assertNull($basdBeforeTest[BasDetails\Entity::LAST_STATEMENT_ATTEMPT_AT]);
+
+        $this->ba->cronAuth();
+
+        $this->setupForRblAccountStatement();
+
+        $this->dontExpectWebhookEvent('transaction.created');
+
+        $this->startTest();
+
+        $transactions = $mockedResponse['data']['PayGenRes']['Body']['transactionDetails'];
+
+        $txn = last($transactions);
+
+        $basActual = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT, true);
+
+        $externalActual = $this->getLastEntity(EntityConstants::EXTERNAL, true);
+
+        $externalId = str_after($externalActual[ExternalEntity::ID], 'ext_');
+
+        $externalTxnId = $externalActual[ExternalEntity::TRANSACTION_ID];
+
+        $this->assertNull($externalTxnId);
+
+        $baAfterTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT, true);
+
+        $this->assertNotNull($baAfterTest[BaEntity::LAST_STATEMENT_ATTEMPT_AT]);
+
+        $basdAfterTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS, true);
+
+        $this->assertNotNull($basdAfterTest[BasDetails\Entity::LAST_STATEMENT_ATTEMPT_AT]);
+
+        $basExpected = [
+            BasEntity::MERCHANT_ID           => $externalActual[TransactionEntity::MERCHANT_ID],
+            BasEntity::BANK_TRANSACTION_ID   => trim($txn['txnId']),
+            BasEntity::TYPE                  => 'debit',
+            BasEntity::AMOUNT                => 10095,
+            BasEntity::BALANCE               => 11355,
+            BasEntity::POSTED_DATE           => 1451937993,
+            BasEntity::TRANSACTION_DATE      => 1451932200,
+            BasEntity::DESCRIPTION           => trim($txn['transactionSummary']['txnDesc']),
+            BasEntity::CHANNEL               => 'rbl',
+            BasEntity::ENTITY_ID             => $externalId,
+            BasEntity::ENTITY_TYPE           => $externalActual[ExternalEntity::ENTITY],
+        ];
+
+        $this->assertArraySubset($basExpected, $basActual, true);
+
+        $externalExpected = [
+            BasEntity::MERCHANT_ID                => $basActual[BasEntity::MERCHANT_ID],
+            ExternalEntity::BALANCE_ID            => $this->balance->getId(),
+            ExternalEntity::BANK_REFERENCE_NUMBER => $basActual[BasEntity::BANK_TRANSACTION_ID],
+            ExternalEntity::TYPE                  => $basActual[BasEntity::TYPE],
+            ExternalEntity::AMOUNT                => $basActual[BasEntity::AMOUNT],
+            ExternalEntity::CHANNEL               => $basActual[BasEntity::CHANNEL],
+        ];
+
+        $this->assertArraySubset($externalExpected, $externalActual, true);
+
+        $externalsCreated = $this->getDbEntities('external');
+
+        $transactorTypeArray = [
+            'da_ext_credit',
+            'da_ext_debit',
+        ];
+
+        for ($index = 0; $index<count($ledgerSnsPayloadArray); $index++)
+        {
+            $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
+
+            $ledgerRequestPayload['additional_params'] = json_decode($ledgerRequestPayload['additional_params'], true);
+
+            $this->assertEquals('X', $ledgerRequestPayload['tenant']);
+            $this->assertEquals('test', $ledgerRequestPayload['mode']);
+            $this->assertEquals($externalsCreated[$index]->getPublicId(), $ledgerRequestPayload['transactor_id']);
+            $this->assertEquals('10000000000000', $ledgerRequestPayload['merchant_id']);
+            $this->assertEquals('INR', $ledgerRequestPayload['currency']);
+            $this->assertEmpty($ledgerRequestPayload['commission']);
+            $this->assertEmpty($ledgerRequestPayload['tax']);
+            $this->assertEquals($transactorTypeArray[$index], $ledgerRequestPayload['transactor_event']);
+            $this->assertArrayNotHasKey('api_transaction_id', $ledgerRequestPayload);
             $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload['additional_params']);
         }
     }
@@ -3095,6 +3206,13 @@ class RblBankingAccountStatementTest extends TestCase
             $reversal->getPublicId(),
         ];
 
+        $apiTransactionIdArray = [
+            $payout->getTransactionId(),
+            null,
+            $reversal->getTransactionId(),
+            null,
+        ];
+
         for ($index = 0; $index<count($ledgerSnsPayloadArray); $index++)
         {
             $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
@@ -3110,6 +3228,146 @@ class RblBankingAccountStatementTest extends TestCase
             $this->assertEquals('270', $ledgerRequestPayload['tax']);
             $this->assertEquals($transactorTypeArray[$index], $ledgerRequestPayload['transactor_event']);
             $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload['additional_params']);
+            if (!empty($apiTransactionIdArray[$index])) {
+                $this->assertEquals($apiTransactionIdArray[$index], $ledgerRequestPayload['api_transaction_id']);
+            } else {
+                $this->assertArrayNotHasKey('api_transaction_id', $ledgerRequestPayload);
+            }
+        }
+    }
+
+    /**
+     * Bank is not sending cms ref number in the single payments api response for IFT mode. Hence FTS is appending
+     * gateway reference number at the end of description of IFT transactions. Recon needs to happen by picking
+     * the end 10 characters and match with gateway ref no. in fta table.
+     *
+     * Only for IFT mode.
+     *
+     * asserting payout and reversal events to ledger
+     */
+    public function testRblAccountStatementTxnMappingForIFTUsingGatewayRefNoWithLedgerReverseShadow()
+    {
+        $this->fixtures->merchant->addFeatures([Features::DA_LEDGER_REVERSE_SHADOW]);
+
+        $ledgerSnsPayloadArray = [];
+        $this->mockLedgerSns(4, $ledgerSnsPayloadArray);
+
+        $channel = Channel::RBL;
+
+        $this->setupForRblPayout($channel, 20000000, FundTransfer\Mode::RTGS);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals(1770, $payout['fees']);
+        $this->assertEquals(270, $payout['tax']);
+        $this->assertEquals('Bbg7e4oKCgaube', $payout['pricing_rule_id']);
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->fixtures->edit('payout', $payout['id'], [
+            'status'       => 'initiated',
+            'amount'       => '104',
+            'utr'          => 'UTIBH20106341692',
+            'initiated_at' => 1451937960]);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit('fund_transfer_attempt', $attempt['id'], [
+            'cms_ref_no'     => 'S5',
+            'utr'            => 'UTIBH20106341692',
+            'gateway_ref_no' => 'jaMesBond7',
+            'mode'           => Payout\Mode::IFT]);
+
+        $this->fixtures->edit('balance', $payout['balance_id'], ['balance' => 30019995]);
+
+        $ftsCreateTransfer = new FtsFundTransfer(
+            EnvMode::TEST,
+            $attempt['id']);
+
+        $ftsCreateTransfer->handle();
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->assertEquals(Attempt\Status::INITIATED, $attempt['status']);
+
+        // Fetch account statement from RBL
+        $mockedResponse = $this->getRblPayoutMappingResponseRTGS();
+
+        // changing utr so it doesn't match regex.
+        // Appending gateway ref. no. at the end of description.
+        $txn = $mockedResponse['data']['PayGenRes']['Body']['transactionDetails'][0];
+        $txn['transactionSummary']['txnDesc'] = 'UTIBH20106341692 Vivek Karna HDFC RZPJAMESBOND7    ';
+        $mockedResponse['data']['PayGenRes']['Body']['transactionDetails'][0] = $txn;
+
+        $txn['txnBalance']['amountValue'] = '300199.95';
+        $txn['transactionSummary']['txnType'] = 'C';
+        $txn['txnSrlNo'] = '2';
+        $mockedResponse['data']['PayGenRes']['Body']['transactionDetails'][1] = $txn;
+
+        $this->setMozartMockResponse($mockedResponse);
+
+        $testData = $this->testData['testRblAccountStatementTxnMappingCase1'];
+
+        $this->testData[__FUNCTION__] = $testData;
+        $this->ba->cronAuth();
+
+        $eventTestDataKey = 'testPayoutReversedWebhookForSuccessfulMappingToReversal';
+        $this->dontExpectWebhookEvent('transaction.created');
+        $this->expectWebhookEventWithContents('payout.reversed', $eventTestDataKey);
+
+        $this->startTest();
+
+        $basEntries = $this->getDbEntities('banking_account_statement', ['account_number' => '2224440041626905']);
+        $payout = $this->getDbLastEntity('payout');
+        $reversal = $this->getDbLastEntity('reversal');
+
+        $this->assertEquals(EntityConstants::PAYOUT, $basEntries[0]['entity_type']);
+        $this->assertEquals($payout['id'], $basEntries[0]['entity_id']);
+        $this->assertEquals(EntityConstants::REVERSAL, $basEntries[1]['entity_type']);
+        $this->assertEquals($reversal['id'], $basEntries[1]['entity_id']);
+        $this->assertEquals(Payout\Status::REVERSED, $payout[Payout\Entity::STATUS]);
+        $this->assertEquals(Payout\Mode::RTGS, $payout[Payout\Entity::MODE]);
+
+        $this->assertNull($payout['transaction_id']);
+        $this->assertNull($reversal['transaction_id']);
+        foreach ($basEntries as $basEntry)
+        {
+            $this->assertNull($basEntry['transaction_id']);
+        }
+
+        $this->assertEquals(EntityConstants::REVERSAL, $basEntries[1]['entity_type']);
+        $this->assertEquals($payout['id'], $reversal['entity_id']);
+
+        $transactorTypeArray = [
+            'da_payout_processed',
+            'da_payout_processed_recon',
+            'da_payout_reversed',
+            'da_payout_reversed_recon',
+        ];
+
+        $transactorIdArray = [
+            $payout->getPublicId(),
+            $payout->getPublicId(),
+            $reversal->getPublicId(),
+            $reversal->getPublicId(),
+        ];
+
+        for ($index = 0; $index<count($ledgerSnsPayloadArray); $index++)
+        {
+            $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
+
+            $ledgerRequestPayload['additional_params'] = json_decode($ledgerRequestPayload['additional_params'], true);
+
+            $this->assertEquals('X', $ledgerRequestPayload['tenant']);
+            $this->assertEquals('test', $ledgerRequestPayload['mode']);
+            $this->assertEquals($transactorIdArray[$index], $ledgerRequestPayload['transactor_id']);
+            $this->assertEquals('10000000000000', $ledgerRequestPayload['merchant_id']);
+            $this->assertEquals('INR', $ledgerRequestPayload['currency']);
+            $this->assertEquals('1770', $ledgerRequestPayload['commission']);
+            $this->assertEquals('270', $ledgerRequestPayload['tax']);
+            $this->assertEquals($transactorTypeArray[$index], $ledgerRequestPayload['transactor_event']);
+            $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload['additional_params']);
+            $this->assertArrayNotHasKey('api_transaction_id', $ledgerRequestPayload);
         }
     }
 
@@ -3205,6 +3463,136 @@ class RblBankingAccountStatementTest extends TestCase
             $reversal->getPublicId(),
         ];
 
+        $apiTransactionIdArray = [
+            $payout->getTransactionId(),
+            $reversal->getTransactionId(),
+        ];
+
+        for ($index = 0; $index<count($ledgerSnsPayloadArray); $index++)
+        {
+            $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
+
+            $ledgerRequestPayload['additional_params'] = json_decode($ledgerRequestPayload['additional_params'], true);
+
+            $this->assertEquals('X', $ledgerRequestPayload['tenant']);
+            $this->assertEquals('test', $ledgerRequestPayload['mode']);
+            $this->assertEquals($transactorIdArray[$index], $ledgerRequestPayload['transactor_id']);
+            $this->assertEquals('10000000000000', $ledgerRequestPayload['merchant_id']);
+            $this->assertEquals('INR', $ledgerRequestPayload['currency']);
+            $this->assertEquals('1770', $ledgerRequestPayload['commission']);
+            $this->assertEquals('104', $ledgerRequestPayload['amount']);
+            $this->assertEquals('270', $ledgerRequestPayload['tax']);
+            $this->assertEquals($apiTransactionIdArray[$index], $ledgerRequestPayload['api_transaction_id']);
+            $this->assertEquals($transactorTypeArray[$index], $ledgerRequestPayload['transactor_event']);
+            $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload['additional_params']);
+        }
+    }
+
+    public function testRblAccountStatementTxnMappingForIFTFeePayoutUsingGatewayRefNoWithLedgerReverseShadow()
+    {
+        $this->fixtures->merchant->addFeatures([Features::DA_LEDGER_REVERSE_SHADOW]);
+
+        $ledgerSnsPayloadArray = [];
+        $this->mockLedgerSns(2, $ledgerSnsPayloadArray);
+
+        $channel = Channel::RBL;
+
+        $this->setupForRblPayout($channel, 20000000, FundTransfer\Mode::RTGS);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals(1770, $payout['fees']);
+        $this->assertEquals(270, $payout['tax']);
+        $this->assertEquals('Bbg7e4oKCgaube', $payout['pricing_rule_id']);
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->fixtures->edit('payout', $payout['id'], [
+            'status'       => 'initiated',
+            'amount'       => '104',
+            'utr'          => 'UTIBH20106341692',
+            'purpose'      => 'rzp_fees',
+            'initiated_at' => 1451937960,
+        ]);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit('fund_transfer_attempt', $attempt['id'], [
+            'cms_ref_no'     => 'S5',
+            'utr'            => 'UTIBH20106341692',
+            'gateway_ref_no' => 'jaMesBond7',
+            'mode'           => Payout\Mode::IFT]);
+
+        $this->fixtures->edit('balance', $payout['balance_id'], ['balance' => 30019995]);
+
+        $ftsCreateTransfer = new FtsFundTransfer(
+            EnvMode::TEST,
+            $attempt['id']);
+
+        $ftsCreateTransfer->handle();
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->assertEquals(Attempt\Status::INITIATED, $attempt['status']);
+
+        // Fetch account statement from RBL
+        $mockedResponse = $this->getRblPayoutMappingResponseRTGS();
+
+        // changing utr so it doesn't match regex.
+        // Appending gateway ref. no. at the end of description.
+        $txn = $mockedResponse['data']['PayGenRes']['Body']['transactionDetails'][0];
+        $txn['transactionSummary']['txnDesc'] = 'UTIBH20106341692 Vivek Karna HDFC RZPJAMESBOND7    ';
+        $mockedResponse['data']['PayGenRes']['Body']['transactionDetails'][0] = $txn;
+
+        $txn['txnBalance']['amountValue'] = '300199.95';
+        $txn['transactionSummary']['txnType'] = 'C';
+        $txn['txnSrlNo'] = '2';
+        $mockedResponse['data']['PayGenRes']['Body']['transactionDetails'][1] = $txn;
+
+        $this->setMozartMockResponse($mockedResponse);
+
+        $testData = $this->testData['testRblAccountStatementTxnMappingCase1'];
+
+        $this->testData[__FUNCTION__] = $testData;
+        $this->ba->cronAuth();
+
+        $eventTestDataKey = 'testPayoutReversedWebhookForSuccessfulMappingToReversal';
+        $this->dontExpectWebhookEvent('transaction.created');
+        $this->expectWebhookEventWithContents('payout.reversed', $eventTestDataKey);
+
+        $this->startTest();
+
+        $basEntries = $this->getDbEntities('banking_account_statement', ['account_number' => '2224440041626905']);
+        $payout = $this->getDbLastEntity('payout');
+        $reversal = $this->getDbLastEntity('reversal');
+
+        $this->assertEquals(EntityConstants::PAYOUT, $basEntries[0]['entity_type']);
+        $this->assertEquals($payout['id'], $basEntries[0]['entity_id']);
+        $this->assertEquals(EntityConstants::REVERSAL, $basEntries[1]['entity_type']);
+        $this->assertEquals($reversal['id'], $basEntries[1]['entity_id']);
+        $this->assertEquals(Payout\Status::REVERSED, $payout[Payout\Entity::STATUS]);
+        $this->assertEquals(Payout\Mode::RTGS, $payout[Payout\Entity::MODE]);
+
+        $this->assertEquals(EntityConstants::REVERSAL, $basEntries[1]['entity_type']);
+        $this->assertEquals($payout['id'], $reversal['entity_id']);
+
+        $this->assertNull($payout['transaction_id']);
+        $this->assertNull($reversal['transaction_id']);
+        foreach ($basEntries as $basEntry)
+        {
+            $this->assertNull($basEntry['transaction_id']);
+        }
+
+        $transactorTypeArray = [
+            'da_fee_payout_processed',
+            'da_fee_payout_reversed',
+        ];
+
+        $transactorIdArray = [
+            $payout->getPublicId(),
+            $reversal->getPublicId(),
+        ];
+
         for ($index = 0; $index<count($ledgerSnsPayloadArray); $index++)
         {
             $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
@@ -3221,6 +3609,7 @@ class RblBankingAccountStatementTest extends TestCase
             $this->assertEquals('270', $ledgerRequestPayload['tax']);
             $this->assertEquals($transactorTypeArray[$index], $ledgerRequestPayload['transactor_event']);
             $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload['additional_params']);
+            $this->assertArrayNotHasKey('api_transaction_id', $ledgerRequestPayload);
         }
     }
 

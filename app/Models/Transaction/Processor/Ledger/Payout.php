@@ -332,7 +332,7 @@ class Payout extends Base
             $payload[self::TRANSACTION_DATE]   = $transactorDate;
 
             // Only sending api_transaction ID in case of processed and reversed (when txn is created on api)
-            // This remains null for payout_processed event
+            // This will not be set for ext to payout/reversal events, recon events and reverse shadow case
             if (empty($apiTransactionId) === false)
             {
                 $payload[self::API_TRANSACTION_ID] = $apiTransactionId;
