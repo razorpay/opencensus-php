@@ -380,4 +380,16 @@ export default {
     // prod experiment id
     'J7Kt1EpzaLk9dQ',
   ],
+  ultra_exclusiveoffer_card_a: [
+    // prod
+    'JIswqOkKfeIiRG',
+  ],
+  ultra_exclusiveoffer_card_b: [
+    // prod
+    'JIt7Ul9iIt6gUG',
+  ],
+  ultra_exclusiveoffer_loc_test: [
+    // prod
+    'JJCnl2fwyUMPvm',
+  ],
 };

@@ -337,6 +337,9 @@ export const nitroCampaignId = () => {
 
 export const getCampaignID = () => {
   const user = getUser();
+  if (user.isUltraEOCardAEnabled) return 'Ultra_ExclusiveOffer_Card_A';
+  if (user.isUltraEOCardBEnabled) return 'Ultra_ExclusiveOffer_Card_B';
+  if (user.isUltraEOCardLOCTestEnabled) return 'Ultra_ExclusiveOffer_LOC';
   if (user.isUCCapitalCardsOnlyCampaignEnabled) return 'Ultra_ExclusiveOffer_Card';
   if (user.isUCCapitalLOCOnlyCampaignEnabled) return 'Ultra_ExclusiveOffer_LOC';
   if (user.isICICILinkedCAEnabled) return 'Nitro_ICICIConnected';

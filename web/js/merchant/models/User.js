@@ -520,6 +520,19 @@ export default class User {
   get isPartOfNeostone() {
     return getSplitzExperimentVariant('neostone_experiment')?.variables?.result === 'on';
   }
+
+  get isUltraEOCardAEnabled() {
+    return getSplitzExperimentVariant('ultra_exclusiveoffer_card_a')?.variables?.result === 'on';
+  }
+
+  get isUltraEOCardBEnabled() {
+    return getSplitzExperimentVariant('ultra_exclusiveoffer_card_b')?.variables?.result === 'on';
+  }
+
+  get isUltraEOCardLOCTestEnabled() {
+    return getSplitzExperimentVariant('ultra_exclusiveoffer_loc_test')?.variables?.result === 'on';
+  }
+
   get isQrCodeEnable() {
     return getSplitzExperimentVariant('QR_code_experiment')?.variables?.result === 'on';
   }

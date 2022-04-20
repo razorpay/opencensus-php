@@ -126,7 +126,6 @@ export default compose(
   connect(
     (state) => {
       return {
-        ...state?.session.user,
         ...state?.growthService?.exclusive_offers,
       };
     },
