@@ -796,7 +796,6 @@ class Entity
         self::OFFER                     => \RZP\Models\Offer::class,
         self::ORDER                     => \RZP\Models\Order::class,
         self::ORDER_META                => \RZP\Models\Order\OrderMeta::class,
-        self::RAW_ADDRESS               => \RZP\Models\RawAddress::class,
         self::TOKEN                     => \RZP\Models\Customer\Token::class,
         self::GEO_IP                    => \RZP\Models\GeoIP::class,
         self::REFUND                    => \RZP\Models\Payment\Refund::class,
