@@ -10,6 +10,7 @@ import FeeConfiguration from 'merchant/views/MagicCheckout/common/components/Fee
 import { FEE_RULES, DEFAULT_RULE } from 'merchant/views/MagicCheckout/constants';
 import { isFeeRuleValid } from 'merchant/views/MagicCheckout/common/feeUtils';
 import Popover, { PopoverBody } from 'common/ui/Popover';
+import CodIntelligenceToggle from 'merchant/views/MagicCheckout/MagicSettings/components/CodIntelligenceToggle';
 
 const isUrlValid = (value) => {
   if (!isUrlLenient(value)) {
@@ -27,6 +28,11 @@ const WoocSettingsForm = ({ settings, updateSettings }) => {
   const [listPromotionsUrl, setListPromotionsUrl] = useState('');
   const [applyPromotionUrl, setApplyPromotionUrl] = useState('');
   const [feeRule, setFeeRule] = useState(DEFAULT_RULE);
+  const [codIntelligence, setCodIntelligence] = useState(false);
+
+  const switchMode = () => {
+    setCodIntelligence((prevState) => !prevState);
+  };
 
   const updateRule = useCallback((_, value) => {
     const rule = {
@@ -64,6 +70,9 @@ const WoocSettingsForm = ({ settings, updateSettings }) => {
       if (settings.cod_slabs) {
         setFeeRule(settings.cod_slabs);
       }
+      if (settings.cod_intelligence) {
+        setCodIntelligence(settings.cod_intelligence);
+      }
     }
   }, [settings.platform, settings.status]);
 
@@ -74,8 +83,9 @@ const WoocSettingsForm = ({ settings, updateSettings }) => {
       list_promotions: listPromotionsUrl,
       apply_promotion: applyPromotionUrl,
       cod_slabs: feeRule,
+      cod_intelligence: codIntelligence,
     });
-  }, [updateSettings, shippingUrl, listPromotionsUrl, applyPromotionUrl, feeRule]);
+  }, [updateSettings, shippingUrl, listPromotionsUrl, applyPromotionUrl, feeRule, codIntelligence]);
 
   return (
     <EditSettings
@@ -141,6 +151,11 @@ const WoocSettingsForm = ({ settings, updateSettings }) => {
         type={FEE_RULES.COD_FEE_RULE}
         updateUserFeeRule={updateRule}
         feeRule={feeRule}
+      />
+      <CodIntelligenceToggle
+        platform={PLATFORMS.VALUES.WOOCOMMERCE}
+        checked={codIntelligence}
+        switchMode={switchMode}
       />
     </EditSettings>
   );

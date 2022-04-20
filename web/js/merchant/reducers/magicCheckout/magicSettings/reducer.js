@@ -20,6 +20,7 @@ const initialState = {
   shop_id: '',
   error: null,
   has_saved_config: false,
+  cod_intelligence: false,
 };
 
 export default function magicSettingsReducer(state = initialState, action) {

@@ -16,6 +16,10 @@ const WoocSettingsCard = ({ settings, ...rest }) => {
           <SettingsCard.Item label="API For Display Promotions" value={settings.list_promotions} />
           <SettingsCard.Item label="API For Apply Promotions" value={settings.apply_promotion} />
           <SettingsCard.Item label="API For Shipping Info" value={settings.shipping_info} />
+          <SettingsCard.Item
+            label="COD Intelligence"
+            value={settings.cod_intelligence ? 'Enabled' : 'Disabled'}
+          />
         </div>
         <div className="p--14">
           <FeeDetails {...settings.cod_slabs} type="cod" label="COD" />

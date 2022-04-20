@@ -6,8 +6,11 @@ const ShopifySettingsCard = ({ settings, ...rest }) => (
   <SettingsCard settings={settings} platform={PLATFORMS.VALUES.SHOPIFY} {...rest}>
     <div className="flex flex--column gap--12 border-bottom-light p--14">
       <div className="flex flex--column gap--12">
-        <div className="setting-label">Shop ID</div>
-        <div className="setting-value">{settings.shop_id}</div>
+        <SettingsCard.Item label="Shop_ID" value={settings.shop_id} />
+        <SettingsCard.Item
+          label="COD Intelligence"
+          value={settings.cod_intelligence ? 'Enabled' : 'Disabled'}
+        />
       </div>
     </div>
   </SettingsCard>

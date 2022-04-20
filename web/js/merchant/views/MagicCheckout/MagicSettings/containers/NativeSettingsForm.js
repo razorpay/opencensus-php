@@ -7,6 +7,7 @@ import { updateMagicSettings } from 'merchant/reducers/magicCheckout/magicSettin
 import EditSettings from 'merchant/views/MagicCheckout/MagicSettings/components/EditSettings';
 import { PLATFORMS } from 'merchant/views/MagicCheckout/MagicSettings/constants';
 import { SettingsInputLabel } from 'merchant/views/MagicCheckout/MagicSettings/components/SettingsInputLabel';
+import CodIntelligenceToggle from 'merchant/views/MagicCheckout/MagicSettings/components/CodIntelligenceToggle';
 
 const isUrlValid = (value) => {
   if (!isUrlLenient(value)) {
@@ -24,6 +25,11 @@ const NativeSettingsForm = ({ settings, updateSettings }) => {
   const [shippingUrl, setShippingUrl] = useState('');
   const [listPromotionsUrl, setListPromotionsUrl] = useState('');
   const [applyPromotionUrl, setApplyPromotionUrl] = useState('');
+  const [codIntelligence, setCodIntelligence] = useState(false);
+
+  const switchMode = () => {
+    setCodIntelligence((prevState) => !prevState);
+  };
 
   const onChange = useCallback(
     (setStore) => (e) => {
@@ -49,6 +55,7 @@ const NativeSettingsForm = ({ settings, updateSettings }) => {
       setShippingUrl(settings.shipping_info);
       setListPromotionsUrl(settings.list_promotions);
       setApplyPromotionUrl(settings.apply_promotion);
+      setCodIntelligence(settings.cod_intelligence);
     }
   }, [settings]);
 
@@ -58,8 +65,9 @@ const NativeSettingsForm = ({ settings, updateSettings }) => {
       shipping_info: shippingUrl,
       list_promotions: listPromotionsUrl,
       apply_promotion: applyPromotionUrl,
+      cod_intelligence: codIntelligence,
     });
-  }, [updateSettings, shippingUrl, listPromotionsUrl, applyPromotionUrl]);
+  }, [updateSettings, shippingUrl, listPromotionsUrl, applyPromotionUrl, codIntelligence]);
 
   return (
     <EditSettings
@@ -112,6 +120,11 @@ const NativeSettingsForm = ({ settings, updateSettings }) => {
         placeholder="Enter API URL for shipping info"
         id="shipping_info_url"
         className="Magic-Settings--Input"
+      />
+      <CodIntelligenceToggle
+        platform={PLATFORMS.VALUES.NATIVE}
+        checked={codIntelligence}
+        switchMode={switchMode}
       />
     </EditSettings>
   );

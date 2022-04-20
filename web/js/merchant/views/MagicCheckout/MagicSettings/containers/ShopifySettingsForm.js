@@ -5,6 +5,7 @@ import { bindActionCreators } from 'redux';
 import { updateMagicSettings } from 'merchant/reducers/magicCheckout/magicSettings/actions';
 import EditSettings from 'merchant/views/MagicCheckout/MagicSettings/components/EditSettings';
 import { PLATFORMS } from 'merchant/views/MagicCheckout/MagicSettings/constants';
+import CodIntelligenceToggle from 'merchant/views/MagicCheckout/MagicSettings/components/CodIntelligenceToggle';
 
 const SHOPIFY_ID_REGEX = new RegExp(/([A-Za-z0-9]+)(.myshopify.com)/);
 
@@ -32,6 +33,11 @@ const validateShopId = (input) => {
 const ShopifySettingsForm = ({ settings, updateSettings }) => {
   const [formValid, setFormValid] = useState(false);
   const [shopId, setShopId] = useState('');
+  const [codIntelligence, setCodIntelligence] = useState(false);
+
+  const switchMode = () => {
+    setCodIntelligence((prevState) => !prevState);
+  };
 
   const onShopIdInput = useCallback(
     (e) => {
@@ -46,12 +52,14 @@ const ShopifySettingsForm = ({ settings, updateSettings }) => {
     updateSettings({
       platform: PLATFORMS.VALUES.SHOPIFY,
       shop_id: `${shopId}.myshopify.com`,
+      cod_intelligence: codIntelligence,
     });
-  }, [updateSettings, shopId]);
+  }, [updateSettings, shopId, codIntelligence]);
 
   useEffect(() => {
     if (settings.platform === PLATFORMS.VALUES.SHOPIFY && settings.shop_id) {
       setShopId(settings.shop_id.split('.')[0]);
+      setCodIntelligence(settings.cod_intelligence);
     }
   }, [settings, setShopId]);
 
@@ -73,6 +81,11 @@ const ShopifySettingsForm = ({ settings, updateSettings }) => {
         id="shop_id"
         className="Input--Shopify"
         addonAfter=".myshopify.com"
+      />
+      <CodIntelligenceToggle
+        platform={PLATFORMS.VALUES.SHOPIFY}
+        checked={codIntelligence}
+        switchMode={switchMode}
       />
     </EditSettings>
   );
