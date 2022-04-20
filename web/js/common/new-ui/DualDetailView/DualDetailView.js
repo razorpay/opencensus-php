@@ -2,7 +2,11 @@ import React, { Component, cloneElement } from 'react';
 import { findDOMNode } from 'react-dom';
 import { expandSlider, compactSlider } from 'merchant_common/reducers/slider';
 import { connect } from 'react-redux';
+import { analyticsTrack } from 'common/utils/analytics';
 
+const PrimaryView = ({ children, ...rest }) => cloneElement(children, rest);
+const SecondaryView = ({ children, activeEntityName, entityName, ...rest }) =>
+  activeEntityName === entityName && cloneElement(children, rest);
 class DualViewContainer extends Component {
   componentDidMount() {
     this.checkSecView(this.props);
@@ -10,18 +14,41 @@ class DualViewContainer extends Component {
 
   checkSecView(props) {
     if (!props.secondaryView) {
+      // this is temporary for tracing purposes
+      analyticsTrack({
+        screen: 'DualDetailView',
+        objectName: 'checkSecView without secondaryView',
+        actionName: 'started',
+      });
       this.props.compactSlider();
-
       // To avoid not toggling issue when browser back btn is clicked when
       // secondary view is overlayed in dual view while small-screen
       if (this.secViewRef && findDOMNode(this.secViewRef)) {
+        // this is temporary for tracing purposes
+        analyticsTrack({
+          screen: 'DualDetailView',
+          objectName: 'checkSecView without secondaryView',
+          actionName: 'toggled',
+        });
         findDOMNode(this.secViewRef).classList.add('toggle-slider');
       }
     } else {
+      // this is temporary for tracing purposes
+      analyticsTrack({
+        screen: 'DualDetailView',
+        objectName: `checkSecView with secondaryView ${props?.secondaryView}`,
+        actionName: 'started',
+      });
       this.props.expandSlider();
       // To avoid not toggling issue when browser back btn is clicked when
       // secondary view is overlayed in dual view while small-screen
       if (this.secViewRef && findDOMNode(this.secViewRef)) {
+        // this is temporary for tracing purposes
+        analyticsTrack({
+          screen: 'DualDetailView',
+          objectName: `checkSecView with secondaryView ${props?.secondaryView}`,
+          actionName: 'toggled',
+        });
         findDOMNode(this.secViewRef).classList.remove('toggle-slider');
       }
     }
@@ -65,10 +92,6 @@ const DualDetailView = (props) => {
     return null;
   });
 };
-
-const PrimaryView = ({ children, ...rest }) => cloneElement(children, rest);
-const SecondaryView = ({ children, activeEntityName, entityName, ...rest }) =>
-  activeEntityName === entityName && cloneElement(children, rest);
 
 export { PrimaryView, SecondaryView };
 export default connect(null, { compactSlider, expandSlider })(DualDetailView);
