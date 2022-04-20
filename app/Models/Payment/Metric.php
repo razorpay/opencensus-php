@@ -22,6 +22,8 @@ class Metric extends Base\Core
     const LABEL_PAYMENT_STATUS                  = 'status';
     const LABEL_CARD_TYPE                       = 'card_type';
     const LABEL_CARD_NETWORK                    = 'card_network';
+    const LABEL_CARD_TOKENISED                  = 'card_tokenised';
+    const LABEL_CARD_VAULT                      = 'card_vault';
     const LABEL_PAYMENT_LATE_AUTHORIZED         = 'late_authorized';
     const LABEL_PAYMENT_AUTO_CAPTURED           = 'auto_captured';
     const LABEL_PAYMENT_GATEWAY_CAPTURED        = 'gateway_captured';
@@ -270,11 +272,18 @@ class Metric extends Base\Core
             $network = $card->getNetwork();
 
             $iin = $card->getIin();
+
+            $tokenised = $card->isTokenPan();
+
+            $vault = $card->getVault();
         }
 
         $dimensions += [
-            self::LABEL_CARD_NETWORK => $network  ?? null,
-            self::LABEL_CARD_TYPE    => $cardType ?? null,
+            self::LABEL_CARD_NETWORK    => $network  ?? null,
+            self::LABEL_CARD_TYPE       => $cardType ?? null,
+            self::LABEL_CARD_TOKENISED  => $tokenised ?? null,
+            self::LABEL_CARD_VAULT      => $vault ?? null
+
         ];
 
         $upiDimensions = $this->getDefaultUpiDimensions($payment);
