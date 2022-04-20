@@ -2607,6 +2607,35 @@ return [
         ],
     ],
 
+    'testUpdateUserRoleByOwner' => [
+        'request' => [
+            'url'    => '/users/id/update',
+            'method' => 'PUT'
+        ],
+        'response' => [
+            'content' => [
+                'contact_mobile' => null,
+                'confirmed'      => true
+            ],
+        ],
+    ],
+
+    'testUpdateUserRoleByNonOwner' => [
+        'request' => [
+            'url'    => '/users/id/update',
+            'method' => 'PUT'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_UNAUTHORIZED,
+                ],
+            ],
+            'status_code' => 400,
+        ]
+    ],
+
     'testUpdateMerchant' => [
         'request' => [
             'url'    => '/users/id/update',

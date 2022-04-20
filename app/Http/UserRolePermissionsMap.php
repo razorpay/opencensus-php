@@ -143,6 +143,7 @@ class UserRolePermissionsMap
 
                  Permission::ADD_MERCHANT_EMAIL,
                  Permission::MERCHANT_GET_OAUTH_TOKEN,
+                 Permission::UPDATE_USER_ROLE
              ],
 
              BankingRole::ADMIN => [

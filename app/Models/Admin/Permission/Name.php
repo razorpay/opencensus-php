@@ -739,6 +739,8 @@ class Name
     const SYNC_ACCOUNTING_INTEGRATION     = 'sync_accounting_integration';
     const WAITLIST_ACCOUNTING_INTEGRATION = 'waitlist_accounting_integration';
 
+    const UPDATE_USER_ROLE = 'update_user_role';
+
     // Allow coupon validation for X
     const COUPON_VALIDATE                   = 'coupon_validate';
 

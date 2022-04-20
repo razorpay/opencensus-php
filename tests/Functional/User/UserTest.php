@@ -3822,7 +3822,92 @@ class UserTest extends TestCase
         $this->assertEquals($merchants['manager'], $merchant['id']);
     }
 
-    protected function createUserMerchantMapping(string $userId, string $merchantId, string $role)
+    public function testUpdateUserRoleByOwner()
+    {
+        $user = $this->fixtures->create('user');
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $ownerUser = $this->fixtures->create('user');
+
+        $mappingData = [
+            'user_id'     => $ownerUser['id'],
+            'merchant_id' => $merchant['id'],
+            'role'        => 'owner',
+            'product'     => 'banking'
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $this->createUserMerchantMapping($user['id'], $merchant['id'], 'finance_l1', 'banking');
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = [
+            'role'=> 'admin',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $testData['request']['url'] = '/users/' . $user['id'] . '/update';
+
+        $testData['request']['server']['HTTP_X-Request-Origin'] = 'https://x.razorpay.com';
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id']);
+
+        $this->startTest();
+
+        $merchantUsers = DB::table('merchant_users')
+            ->where('merchant_id', '=', $merchant['id'])
+            ->pluck('user_id', 'role');
+
+        $this->assertEquals(count($merchantUsers), 2);
+
+        $this->assertEquals($merchantUsers['admin'], $user['id']);
+    }
+
+    public function testUpdateUserRoleByNonOwner()
+    {
+        $this->enableRazorXTreatmentForRazorX();
+        $user = $this->fixtures->create('user');
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $ownerUser = $this->fixtures->create('user');
+
+        $dummyUser = $this->fixtures->create('user');
+
+        $mappingData = [
+            'user_id'     => $ownerUser['id'],
+            'merchant_id' => $merchant['id'],
+            'role'        => 'owner',
+            'product'     => 'banking'
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $this->createUserMerchantMapping($user['id'], $merchant['id'], 'finance_l1', 'banking');
+
+        $this->createUserMerchantMapping($dummyUser['id'], $merchant['id'], 'view_only', 'banking');
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = [
+            'role'=> 'admin',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $testData['request']['url'] = '/users/' . $user['id'] . '/update';
+
+        $testData['request']['server']['HTTP_X-Request-Origin'] = 'https://x.razorpay.com';
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $dummyUser['id']);
+
+        $this->startTest();
+    }
+
+    protected function createUserMerchantMapping(string $userId, string $merchantId, string $role, string $product='primary')
     {
         DB::table('merchant_users')
             ->insert(
@@ -3830,6 +3915,7 @@ class UserTest extends TestCase
                 'merchant_id' => $merchantId,
                 'user_id'     => $userId,
                 'role'        => $role,
+                'product'     => $product,
                 'created_at'  => 1493805150,
                 'updated_at'  => 1493805150
                 ]

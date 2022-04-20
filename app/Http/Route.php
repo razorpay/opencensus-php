@@ -8064,7 +8064,7 @@ class Route
         'rbl_current_account_serviceability_get'       => '*',
         'merchant_activation_upload_file'              => '*',
         'user_verify_contact'                          => '*',
-        'user_merchant_mapping_action'                 => '*',
+        'user_merchant_mapping_action'                 => Permission::UPDATE_USER_ROLE,
         'merchant_activation_save'                     => '*',
         'bvs_service_dashboard'                        => '*',
         'merchant_razorx_bulk_evaluate'                => '*',
