@@ -1,0 +1,50 @@
+# Managed by @spine-edge team
+# In case of any issues or changes here, reach out to #platform_spine_edge
+name: Edge Notification for Route Changes
+on:
+  pull_request:
+    paths:
+      - 'app/Http/Route.php'
+
+jobs:
+  slack-notify:
+    name: Notify Edge team
+    runs-on: [ self-hosted ]
+    if: ${{ github.event.pull_request.merged }}
+    steps:
+      - uses: rtCamp/action-slack-notify@v2.2.0
+        env:
+          SLACK_MESSAGE: '@spine-edge-oncall New changes on API routes. Please check.'
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_LINK_NAMES: true
+          SLACK_USERNAME: Edge Notifier # Optional. (defaults to webhook app)
+          SLACK_CHANNEL: edge_oncall # Optional. (defaults to webhook)
+          SLACK_ICON: https://avatars2.githubusercontent.com/u/2181346?s=200&v=4 # Optional. can be (repository, sender, an URL) (defaults to webhook app avatar)
+  user-notify:
+    name: Notify change maker
+    runs-on: [ self-hosted ]
+    steps:
+      - uses: mshick/add-pr-comment@v1
+        with:
+          message: |
+            ### 🌏 Edge Notification for Route Changes
+            > This notification is expected to be raised on any route changes in API. In case, this is not related to your changes, please let us know at [#platform_spine_edge](https://razorpay.slack.com/archives/C012ZGQQFDJ)
+
+            It is the responsibility of PR owner that below suggestions are addressed before merging to _master_. Teams are responsible for setting up required changes for API routes owned by them.
+
+            #### 1️⃣ Changes around public or direct auth routes?
+            All public and direct auth routes need to have rate limits (IP level or route level) set up on Edge to protect against DDoS attacks. This is important as any one unprotected route makes API infra wide open for DDoS attacks. You'll need to do the following:
+            - Onboard route to Edge (if not already). You'll need to identify which host is used for the route. Based on that, changes need to be added in corresponding service entity on Edge. Refer [this doc](https://docs.google.com/document/d/1NMv94LQw5ipg4bNjVl-0wpFWVJrHu2B-t0-60cY0KW4/edit#heading=h.5mtr7jyo8fy8) for more details on how to onboard routes to Edge.
+
+            - Once the above is done, setup rate limits for the onboarded route. If defining a route level limit you can use `route_name` rule, where limit key will be `{yourRouteName}`. Else if defining a IP level limit you can use `route_name::client_ip` rule, where limit key will be `{yourRouteName}::*`. Refer [this doc](https://docs.google.com/document/d/1W8NuyKXOnnAb1UJN0fQHpnX4qQ0VhQ8etiD9JO_M9X8/edit) for more details on how to setup rate limits.
+
+            #### 2️⃣ Changes around private auth routes?
+            As part of the API decomposition effort, we've started rejecting invalid authentication requests at Edge itself. All private auth routes that require authentication need to be onboarded to Edge. Else, authentication might break for customers. You'll need to do the following:
+            - Onboard route to Edge (if not already). You'll need to identify which host is used for the route. Based on that, changes need to be added in corresponding service entity on Edge. Refer [this doc](https://docs.google.com/document/d/1NMv94LQw5ipg4bNjVl-0wpFWVJrHu2B-t0-60cY0KW4/edit#heading=h.5mtr7jyo8fy8) for more details on how to onboard routes to Edge.
+
+            #### 🪧 Other changes?
+            Ignore this notification.
+
+            ### 😕 Confused?
+            Reach out to us at [#platform_spine_edge](https://razorpay.slack.com/archives/C012ZGQQFDJ). 
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
