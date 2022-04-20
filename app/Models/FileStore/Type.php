@@ -268,6 +268,8 @@ class Type
     const FEATURE_ONBOARDING                = FeatureConstants::ONBOARDING;
     const MARKETPLACE_VENDOR_AGREEMENT      = FeatureConstants::MARKETPLACE . '.' . FeatureConstants::VENDOR_AGREEMENT;
 
+    const PAYOUT_ATTACHMENTS = 'payout_attachments';
+
     /**
      * Map of types allowed for each entity.
      */

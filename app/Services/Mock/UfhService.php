@@ -158,4 +158,9 @@ class UfhService extends BaseUfhClient
     {
         return (in_array($fileId, self::DISPUTE_EVIDENCE_FILE_IDS, true) === true);
     }
+
+    public function renameFile(string $fileId, string $fileName)
+    {
+        return null;
+    }
 }

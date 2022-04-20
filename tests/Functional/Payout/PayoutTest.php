@@ -82,6 +82,7 @@ use RZP\Models\Transaction\Entity as TransactionEntity;
 use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
 use RZP\Mail\Payout\PayoutProcessedContactCommunication;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
+use RZP\Models\PayoutSource\Entity as PayoutSourceEntity;
 use RZP\Services\PayoutService\OnHoldBeneEvent as OnHoldBeneEventService;
 use RZP\Models\Payout\Notifications\PayoutProcessedContactCommunication as PayoutProcessedNotification;
 
@@ -99,21 +100,21 @@ class PayoutTest extends OAuthTestCase
     use DbEntityFetchTrait;
     use TestsBusinessBanking;
 
-    private $checkerRoleUser;
+    private   $checkerRoleUser;
 
-    private $ownerRoleUser;
+    private   $ownerRoleUser;
 
-    private $finL1RoleUser;
+    private   $finL1RoleUser;
 
-    private $finL2RoleUser;
+    private   $finL2RoleUser;
 
-    private $finL3RoleUser;
+    private   $finL3RoleUser;
 
     protected $slackApp;
 
     protected $payoutService;
 
-    private $unitTestCase;
+    private   $unitTestCase;
 
     protected function setUp(): void
     {
@@ -166,7 +167,7 @@ class PayoutTest extends OAuthTestCase
 
         $transferredAt = $payout->transferred_at;
 
-        self::assertEquals(true,$transferredAt>=$currentTime);
+        self::assertEquals(true, $transferredAt >= $currentTime);
     }
 
     public function testCreatePayout(): array
@@ -190,7 +191,7 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals($payout['channel'], 'yesbank');
 
         // Verify transaction entity
-        $txn = $this->getLastEntity('transaction', true);
+        $txn   = $this->getLastEntity('transaction', true);
         $txnId = str_after($txn['id'], 'txn_');
 
         $this->assertEquals($payout['transaction_id'], $txn['id']);
@@ -240,7 +241,7 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals($payout['amount'], 49000000000);
 
         // Verify transaction entity
-        $txn = $this->getLastEntity('transaction', true);
+        $txn   = $this->getLastEntity('transaction', true);
         $txnId = str_after($txn['id'], 'txn_');
 
         $this->assertEquals($payout['transaction_id'], $txn['id']);
@@ -300,25 +301,25 @@ class PayoutTest extends OAuthTestCase
 
     public function testStatusSummaryObjectInGetPayout()
     {
-        $this->setmockRazorxTreatment(['status_details_timeline_view' => 'on'],'control');
+        $this->setmockRazorxTreatment(['status_details_timeline_view' => 'on'], 'control');
 
         $this->testCreatePayout();
 
-        $payout = $this->getLastEntity('payout',true);
+        $payout = $this->getLastEntity('payout', true);
 
         $payout1 = $this->getDbLastEntity('payout');
         (new Payout\Core)->updateWithDetailsBeforeFtaRecon($payout1, [
-            'source_type' => 'payout',
-            'source_id' => $payout1->getId(),
-            'fta_status' => 'initiated',
-            'channel' => 'rbl',
-            'failure_reason' => '',
-            'utr' => 928337183,
-            'mode' => 'RTGS',
-            'remarks' => '',
+            'source_type'      => 'payout',
+            'source_id'        => $payout1->getId(),
+            'fta_status'       => 'initiated',
+            'channel'          => 'rbl',
+            'failure_reason'   => '',
+            'utr'              => 928337183,
+            'mode'             => 'RTGS',
+            'remarks'          => '',
             'bank_status_code' => 'SUCCESS',
-            'status_details' => [
-                'reason' => 'beneficiary_bank_confirmation_pending',
+            'status_details'   => [
+                'reason'     => 'beneficiary_bank_confirmation_pending',
                 'parameters' => [
                     'processed_by_time' => '1636481743',
                 ],
@@ -326,13 +327,13 @@ class PayoutTest extends OAuthTestCase
         ]);
 
         $this->ba->proxyAuth();
-        $request = & $this->testData[__FUNCTION__]['request'];
-        $request['url'] = '/payouts/'. $payout['id'];
+        $request        = &$this->testData[__FUNCTION__]['request'];
+        $request['url'] = '/payouts/' . $payout['id'];
 
         $payout2 = $this->startTest();
         $this->assertArrayHasKey(Payout\Entity::STATUS_SUMMARY, $payout2);
-        $this->assertEquals('beneficiary_bank_confirmation_pending',$payout2['status_summary']['processing'][0]['reason']);
-        $this->assertEquals('Confirmation of credit to the beneficiary is pending from beneficiary bank. Please check the status after 09th November 2021',$payout2['status_summary']['processing'][0]['description']);
+        $this->assertEquals('beneficiary_bank_confirmation_pending', $payout2['status_summary']['processing'][0]['reason']);
+        $this->assertEquals('Confirmation of credit to the beneficiary is pending from beneficiary bank. Please check the status after 09th November 2021', $payout2['status_summary']['processing'][0]['description']);
     }
 
     public function testPayoutStatusReasonMapping()
@@ -373,16 +374,16 @@ class PayoutTest extends OAuthTestCase
         ];
 
         $request = [
-            'url'       => '/payouts',
-            'method'    => 'POST',
-            'content'   => $content
+            'url'     => '/payouts',
+            'method'  => 'POST',
+            'content' => $content
         ];
 
         $this->makeRequestAndGetContent($request);
 
-        $payout1 = $this->getDbLastEntity('payout');
+        $payout1  = $this->getDbLastEntity('payout');
         $beneBank = $payout1->provideBeneBankName();
-        $this->assertEquals('beneficiary bank',$beneBank);
+        $this->assertEquals('beneficiary bank', $beneBank);
     }
 
     public function testCreatePayoutWithNarrationNull()
@@ -523,7 +524,7 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals($payout['channel'], 'icici');
 
         // Verify transaction entity
-        $txn = $this->getLastEntity('transaction', true, 'live');
+        $txn   = $this->getLastEntity('transaction', true, 'live');
         $txnId = str_after($txn['id'], 'txn_');
 
         $this->assertEquals($payout['transaction_id'], $txn['id']);
@@ -578,7 +579,7 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals($payout['channel'], 'yesbank');
 
         // Verify transaction entity
-        $txn = $this->getLastEntity('transaction', true);
+        $txn   = $this->getLastEntity('transaction', true);
         $txnId = str_after($txn['id'], 'txn_');
 
         $this->assertEquals($payout['transaction_id'], $txn['id']);
@@ -607,7 +608,7 @@ class PayoutTest extends OAuthTestCase
     public function testCreatePayoutWithIKeyHeader($ikeyValue = 'check', $amount = null)
     {
         $headers = [
-            'HTTP_' . RequestHeader::X_PAYOUT_IDEMPOTENCY    => $ikeyValue,
+            'HTTP_' . RequestHeader::X_PAYOUT_IDEMPOTENCY => $ikeyValue,
         ];
 
         // append headers
@@ -653,7 +654,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->ba->privateAuth();
 
-        $payout =  $this->startTest();
+        $payout = $this->startTest();
 
         $this->assertTrue(isset($payout['meta']) === false);
 
@@ -665,7 +666,7 @@ class PayoutTest extends OAuthTestCase
     {
         $payout = $this->testCreatePartnerPayout();
 
-        $request = & $this->testData[__FUNCTION__]['request'];
+        $request = &$this->testData[__FUNCTION__]['request'];
 
         $request['url'] = '/payouts/' . $payout['id'];
 
@@ -720,7 +721,7 @@ class PayoutTest extends OAuthTestCase
         $this->testCreatePayoutWithIKeyHeader('samekey');
 
         $headers = [
-            'HTTP_' . RequestHeader::X_PAYOUT_IDEMPOTENCY    => 'samekey',
+            'HTTP_' . RequestHeader::X_PAYOUT_IDEMPOTENCY => 'samekey',
         ];
 
         // append headers
@@ -787,11 +788,11 @@ class PayoutTest extends OAuthTestCase
 
         $payoutsCreated = $this->getDbEntities('payout');
 
-        for ($index = 0; $index<count($ledgerSnsPayloadArray); $index++)
+        for ($index = 0; $index < count($ledgerSnsPayloadArray); $index++)
         {
             $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
 
-            $ledgerRequestPayload['identifiers'] = json_decode($ledgerRequestPayload['identifiers'], true);
+            $ledgerRequestPayload['identifiers']       = json_decode($ledgerRequestPayload['identifiers'], true);
             $ledgerRequestPayload['additional_params'] = json_decode($ledgerRequestPayload['additional_params'], true);
 
             $this->assertEquals('X', $ledgerRequestPayload['tenant']);
@@ -824,11 +825,11 @@ class PayoutTest extends OAuthTestCase
 
         $payoutsCreated = $this->getDbEntities('payout');
 
-        for ($index = 0; $index<count($ledgerSnsPayloadArray); $index++)
+        for ($index = 0; $index < count($ledgerSnsPayloadArray); $index++)
         {
             $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
 
-            $ledgerRequestPayload['identifiers'] = json_decode($ledgerRequestPayload['identifiers'], true);
+            $ledgerRequestPayload['identifiers']       = json_decode($ledgerRequestPayload['identifiers'], true);
             $ledgerRequestPayload['additional_params'] = json_decode($ledgerRequestPayload['additional_params'], true);
 
             $this->assertEquals('X', $ledgerRequestPayload['tenant']);
@@ -844,6 +845,7 @@ class PayoutTest extends OAuthTestCase
             $this->assertArrayNotHasKey('fts_account_type', $ledgerRequestPayload['identifiers']);
         }
     }
+
     public function testInterAccountPayoutReversal()
     {
         (new AdminService)->setConfigKeys(
@@ -870,15 +872,15 @@ class PayoutTest extends OAuthTestCase
         $payoutId = $payout->getId();
 
         (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
-            'fta_status' => 'failed',
-            'failure_reason' => '',
+            'fta_status'       => 'failed',
+            'failure_reason'   => '',
             'bank_status_code' => 'YB_NS_E10282323'
         ]);
 
         $updatedPayout = $this->getDbEntityById('payout', $payoutId)->toArray();
 
         $this->assertEquals($updatedPayout[Payout\Entity::FAILURE_REASON],
-            'Payout failed. Contact support for help.');
+                            'Payout failed. Contact support for help.');
         $this->assertEquals($updatedPayout[Payout\Entity::STATUS], Payout\Status::REVERSED);
         $this->assertNotNull($updatedPayout[Payout\Entity::REVERSED_AT]);
 
@@ -905,7 +907,8 @@ class PayoutTest extends OAuthTestCase
             $reversalCreated->getPublicId(),
         ];
 
-        for ($index = 0; $index < count($ledgerSnsPayloadArray); $index++) {
+        for ($index = 0; $index < count($ledgerSnsPayloadArray); $index++)
+        {
             $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
 
             $this->assertEquals('X', $ledgerRequestPayload['tenant']);
@@ -946,11 +949,11 @@ class PayoutTest extends OAuthTestCase
 
         $payoutsCreated = $this->getDbEntities('payout');
 
-        for ($index = 0; $index<count($ledgerSnsPayloadArray); $index++)
+        for ($index = 0; $index < count($ledgerSnsPayloadArray); $index++)
         {
             $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
 
-            $ledgerRequestPayload['identifiers'] = json_decode($ledgerRequestPayload['identifiers'], true);
+            $ledgerRequestPayload['identifiers']       = json_decode($ledgerRequestPayload['identifiers'], true);
             $ledgerRequestPayload['additional_params'] = json_decode($ledgerRequestPayload['additional_params'], true);
 
             $this->assertEquals('X', $ledgerRequestPayload['tenant']);
@@ -995,7 +998,7 @@ class PayoutTest extends OAuthTestCase
                 'active'       => 1,
             ]);
 
-        $this->fixtures->create('bank_account',['id' => '100000000000ba']);
+        $this->fixtures->create('bank_account', ['id' => '100000000000ba']);
 
         // Not asserting the data, just the count.
         $this->mockLedgerSns(0);
@@ -1012,18 +1015,17 @@ class PayoutTest extends OAuthTestCase
         $payoutId = $payout->getId();
 
         (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
-            'fta_status'        => 'failed',
-            'failure_reason'    => '',
-            'bank_status_code'  => 'YB_NS_E1028'
+            'fta_status'       => 'failed',
+            'failure_reason'   => '',
+            'bank_status_code' => 'YB_NS_E1028'
         ]);
 
-        $updatedPayout = $this->getDbEntityById('payout',$payoutId)->toArray();
+        $updatedPayout = $this->getDbEntityById('payout', $payoutId)->toArray();
 
         $this->assertEquals($updatedPayout[Payout\Entity::FAILURE_REASON],
-            'IMPS is not enabled on Beneficiary Account');
-        $this->assertEquals($updatedPayout[Payout\Entity::STATUS],Payout\Status::REVERSED);
+                            'IMPS is not enabled on Beneficiary Account');
+        $this->assertEquals($updatedPayout[Payout\Entity::STATUS], Payout\Status::REVERSED);
         $this->assertNotNull($updatedPayout[Payout\Entity::REVERSED_AT]);
-
 
         //get reversal and check posted_at in reversal txn
         $payoutReversal = $this->getDbLastEntity('reversal');
@@ -1041,16 +1043,16 @@ class PayoutTest extends OAuthTestCase
         $payoutId = $payout->getId();
 
         (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
-            'fta_status'        => 'failed',
-            'failure_reason'    => '',
-            'bank_status_code'  => 'YB_NS_E10282323'
+            'fta_status'       => 'failed',
+            'failure_reason'   => '',
+            'bank_status_code' => 'YB_NS_E10282323'
         ]);
 
-        $updatedPayout = $this->getDbEntityById('payout',$payoutId)->toArray();
+        $updatedPayout = $this->getDbEntityById('payout', $payoutId)->toArray();
 
         $this->assertEquals($updatedPayout[Payout\Entity::FAILURE_REASON],
-            'Payout failed. Contact support for help.');
-        $this->assertEquals($updatedPayout[Payout\Entity::STATUS],Payout\Status::REVERSED);
+                            'Payout failed. Contact support for help.');
+        $this->assertEquals($updatedPayout[Payout\Entity::STATUS], Payout\Status::REVERSED);
         $this->assertNotNull($updatedPayout[Payout\Entity::REVERSED_AT]);
 
         //get reversal and check posted_at in reversal txn
@@ -1068,7 +1070,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->fixtures->edit('card', '100000000lcard', ['last4' => '1112']);
 
-        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 1500 , 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
+        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 1500, 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
 
         $creditEntity = $this->getDbLastEntity('credits');
 
@@ -1094,7 +1096,6 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals('reward_fee', $txn['credit_type']);
         $this->assertEquals(900, $txn['fee_credits']);
 
-
         $balance = $this->getLastEntity('balance', true);
         $this->assertEquals('shared', $balance['account_type']);
 
@@ -1113,16 +1114,16 @@ class PayoutTest extends OAuthTestCase
         $payoutId = $payout->getId();
 
         (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
-            'fta_status'        => 'failed',
-            'failure_reason'    => '',
-            'bank_status_code'  => 'YB_NS_E10282323'
+            'fta_status'       => 'failed',
+            'failure_reason'   => '',
+            'bank_status_code' => 'YB_NS_E10282323'
         ]);
 
-        $updatedPayout = $this->getDbEntityById('payout',$payoutId)->toArray();
+        $updatedPayout = $this->getDbEntityById('payout', $payoutId)->toArray();
 
         $this->assertEquals($updatedPayout[Payout\Entity::FAILURE_REASON],
-            'Payout failed. Contact support for help.');
-        $this->assertEquals($updatedPayout[Payout\Entity::STATUS],Payout\Status::REVERSED);
+                            'Payout failed. Contact support for help.');
+        $this->assertEquals($updatedPayout[Payout\Entity::STATUS], Payout\Status::REVERSED);
         $this->assertNotNull($updatedPayout[Payout\Entity::REVERSED_AT]);
 
         //get reversal and check posted_at in reversal txn
@@ -1158,11 +1159,11 @@ class PayoutTest extends OAuthTestCase
             $reversalCreated->getPublicId()
         ];
 
-        for ($index = 0; $index<count($ledgerSnsPayloadArray); $index++)
+        for ($index = 0; $index < count($ledgerSnsPayloadArray); $index++)
         {
             $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
 
-            $ledgerRequestPayload['identifiers'] = json_decode($ledgerRequestPayload['identifiers'], true);
+            $ledgerRequestPayload['identifiers']       = json_decode($ledgerRequestPayload['identifiers'], true);
             $ledgerRequestPayload['additional_params'] = json_decode($ledgerRequestPayload['additional_params'], true);
 
             $this->assertEquals('X', $ledgerRequestPayload['tenant']);
@@ -1196,11 +1197,11 @@ class PayoutTest extends OAuthTestCase
     {
         $this->fixtures->edit('card', '100000000lcard', ['last4' => '1112']);
 
-        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 100 , 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
+        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 100, 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
 
         $creditEntity = $this->getDbLastEntity('credits');
 
-        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 1400 , 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
+        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 1400, 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
 
         $creditEntity = $this->getDbLastEntity('credits');
 
@@ -1247,16 +1248,16 @@ class PayoutTest extends OAuthTestCase
         $payoutId = $payout->getId();
 
         (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
-            'fta_status'        => 'failed',
-            'failure_reason'    => '',
-            'bank_status_code'  => 'YB_NS_E10282323'
+            'fta_status'       => 'failed',
+            'failure_reason'   => '',
+            'bank_status_code' => 'YB_NS_E10282323'
         ]);
 
         $updatedPayout = $this->getDbEntityById('payout', $payoutId)->toArray();
 
         $this->assertEquals($updatedPayout[Payout\Entity::FAILURE_REASON],
-            'Payout failed. Contact support for help.');
-        $this->assertEquals($updatedPayout[Payout\Entity::STATUS],Payout\Status::REVERSED);
+                            'Payout failed. Contact support for help.');
+        $this->assertEquals($updatedPayout[Payout\Entity::STATUS], Payout\Status::REVERSED);
         $this->assertNotNull($updatedPayout[Payout\Entity::REVERSED_AT]);
 
         //get reversal and check posted_at in reversal txn
@@ -1286,15 +1287,15 @@ class PayoutTest extends OAuthTestCase
         $payoutId = $payout->getId();
 
         (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
-            'fta_status'        => 'failed',
-            'failure_reason'    => 'Beneficiary bank\'s systems are down. Please retry after some time.',
-            'bank_status_code'  => 'YB_SFMS_E59'
+            'fta_status'       => 'failed',
+            'failure_reason'   => 'Beneficiary bank\'s systems are down. Please retry after some time.',
+            'bank_status_code' => 'YB_SFMS_E59'
         ]);
 
-        $updatedPayout = $this->getDbEntityById('payout',$payoutId)->toArray();
+        $updatedPayout = $this->getDbEntityById('payout', $payoutId)->toArray();
 
         $this->assertEquals($updatedPayout[Payout\Entity::FAILURE_REASON], 'Beneficiary bank\'s systems are down. Please retry after some time.');
-        $this->assertEquals($updatedPayout[Payout\Entity::STATUS],Payout\Status::REVERSED);
+        $this->assertEquals($updatedPayout[Payout\Entity::STATUS], Payout\Status::REVERSED);
         $this->assertNotNull($updatedPayout[Payout\Entity::REVERSED_AT]);
 
         //get reversal and check posted_at in reversal txn
@@ -1313,15 +1314,15 @@ class PayoutTest extends OAuthTestCase
         $payoutId = $payout->getId();
 
         (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
-            'fta_status'        => 'failed',
-            'failure_reason'    => '',
+            'fta_status'     => 'failed',
+            'failure_reason' => '',
         ]);
 
-        $updatedPayout = $this->getDbEntityById('payout',$payoutId)->toArray();
+        $updatedPayout = $this->getDbEntityById('payout', $payoutId)->toArray();
 
         $this->assertEquals($updatedPayout[Payout\Entity::FAILURE_REASON],
-            'Payout failed. Contact support for help.');
-        $this->assertEquals($updatedPayout[Payout\Entity::STATUS],Payout\Status::REVERSED);
+                            'Payout failed. Contact support for help.');
+        $this->assertEquals($updatedPayout[Payout\Entity::STATUS], Payout\Status::REVERSED);
         $this->assertNotNull($updatedPayout[Payout\Entity::REVERSED_AT]);
 
         //get reversal and check posted_at in reversal txn
@@ -1339,8 +1340,8 @@ class PayoutTest extends OAuthTestCase
 
         // Setting current time as 15th Aug Independence day holiday
         $holidayDateTime = Carbon::createFromDate(2019, 8, 15., Timezone::IST)
-            ->hour(18)
-            ->minute(14);
+                                 ->hour(18)
+                                 ->minute(14);
 
         Carbon::setTestNow($holidayDateTime);
 
@@ -1359,13 +1360,12 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals($payout['merchant_id'], $payoutAttempt['merchant_id']);
         $this->assertEquals($payout['channel'], 'yesbank');
 
-
         $this->assertEquals('NEFT', $payoutAttempt['mode']);
         //Attempt should be in created state as its an holiday
         $this->assertEquals('created', $payoutAttempt['status']);
 
         // Verify transaction entity
-        $txn = $this->getLastEntity('transaction', true);
+        $txn   = $this->getLastEntity('transaction', true);
         $txnId = str_after($txn['id'], 'txn_');
 
         $this->assertEquals($payout['transaction_id'], $txn['id']);
@@ -1382,8 +1382,8 @@ class PayoutTest extends OAuthTestCase
 
         // Date time set as non banking holiday and inside NEFT timings
         $holidayDateTime = Carbon::createFromDate(2019, 8, 16., Timezone::IST)
-            ->hour(17)
-            ->minute(55);
+                                 ->hour(17)
+                                 ->minute(55);
 
         Carbon::setTestNow($holidayDateTime);
 
@@ -1402,12 +1402,11 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals($payout['merchant_id'], $payoutAttempt['merchant_id']);
         $this->assertEquals($payout['channel'], 'yesbank');
 
-
         $this->assertEquals('NEFT', $payoutAttempt['mode']);
         $this->assertEquals('created', $payoutAttempt['status']);
 
         // Verify transaction entity
-        $txn = $this->getLastEntity('transaction', true);
+        $txn   = $this->getLastEntity('transaction', true);
         $txnId = str_after($txn['id'], 'txn_');
 
         $this->assertEquals($payout['transaction_id'], $txn['id']);
@@ -1424,8 +1423,8 @@ class PayoutTest extends OAuthTestCase
 
         // Date time set as non banking holiday and outside NEFT timings
         $holidayDateTime = Carbon::createFromDate(2019, 8, 16., Timezone::IST)
-            ->hour(19)
-            ->minute(55);
+                                 ->hour(19)
+                                 ->minute(55);
 
         Carbon::setTestNow($holidayDateTime);
 
@@ -1444,12 +1443,11 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals($payout['merchant_id'], $payoutAttempt['merchant_id']);
         $this->assertEquals($payout['channel'], 'yesbank');
 
-
         $this->assertEquals('NEFT', $payoutAttempt['mode']);
         $this->assertEquals('created', $payoutAttempt['status']);
 
         // Verify transaction entity
-        $txn = $this->getLastEntity('transaction', true);
+        $txn   = $this->getLastEntity('transaction', true);
         $txnId = str_after($txn['id'], 'txn_');
 
         $this->assertEquals($payout['transaction_id'], $txn['id']);
@@ -1470,9 +1468,9 @@ class PayoutTest extends OAuthTestCase
         $contactId = $this->getDbLastEntity('contact')->getId();
 
         $this->fixtures->create('fund_account:vpa', [
-            'id'            => '100000000003fa',
-            'source_type'   => 'contact',
-            'source_id'     => $contactId,
+            'id'          => '100000000003fa',
+            'source_type' => 'contact',
+            'source_id'   => $contactId,
         ]);
 
         $this->startTest();
@@ -1503,21 +1501,21 @@ class PayoutTest extends OAuthTestCase
         $this->fixtures
             ->on('live')
             ->create('bank_account',
-                [
-                    'ifsc_code'         => 'ORBC0101685',
-                    'account_number'    => '2224440041626905',
-                    'beneficiary_name'  => 'Ambar',
-                    'type'              => 'customer',
-                    'entity_id'         => 'GHz4VlBkkiUBwh',
-                ]);
+                     [
+                         'ifsc_code'        => 'ORBC0101685',
+                         'account_number'   => '2224440041626905',
+                         'beneficiary_name' => 'Ambar',
+                         'type'             => 'customer',
+                         'entity_id'        => 'GHz4VlBkkiUBwh',
+                     ]);
 
         $bankAccount = $this->getDbLastEntity('bank_account', 'live');
 
         $this->fixtures->on('live')
-            ->edit('fund_account', '100000000000fa',
-                [
-                    'account_id' => $bankAccount->getId()
-                ]);
+                       ->edit('fund_account', '100000000000fa',
+                              [
+                                  'account_id' => $bankAccount->getId()
+                              ]);
 
         // creating payout from a primary balance in queued state
         $payout = $this->createCustomerWalletPayout();
@@ -1535,8 +1533,8 @@ class PayoutTest extends OAuthTestCase
         // creating payout from a primary balance in queued state
         $payout = $this->createCustomerWalletPayout();
 
-        $this->fixtures->on('live')->edit('payout', $payout['id'],[
-            'status' => 'queued',
+        $this->fixtures->on('live')->edit('payout', $payout['id'], [
+            'status'    => 'queued',
             'queued_at' => time()
         ]);
 
@@ -1546,7 +1544,7 @@ class PayoutTest extends OAuthTestCase
         $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
 
         $this->fixtures->edit('banking_account', '1000000lcustba',
-            ['status'=>'activated']);
+                              ['status' => 'activated']);
 
         $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
 
@@ -1562,28 +1560,27 @@ class PayoutTest extends OAuthTestCase
         $this->liveSetUp();
 
         $bankingAccountAttributes = [
-            'id'                    =>  'ABCde1234ABCde',
-            'account_number'        =>  '2224440041626998',
-            'balance_id'            =>  $this->bankingBalance->getId(),
-            'account_type'          =>  'nodal',
+            'id'             => 'ABCde1234ABCde',
+            'account_number' => '2224440041626998',
+            'balance_id'     => $this->bankingBalance->getId(),
+            'account_type'   => 'nodal',
         ];
 
         $this->createBankingAccount($bankingAccountAttributes, 'live');
 
         $this->createPayoutWorkflowWithBankingUsersLiveMode();
 
-        $this->createPayoutWithWorkflowEntities(12345,'2224440041626905',Payout\Purpose::CASHBACK, 'FXMwu4HMK7ZT0C');
-        $this->createPayoutWithWorkflowEntities(23456,'2224440041626905',Payout\Purpose::CASHBACK,'FXMwu4HMK7ZT0D');
-        $this->createPayoutWithWorkflowEntities(11111,'2224440041626905',Payout\Purpose::SALARY,'FXMwu4HMK7ZT0F');
-        $this->createPayoutWithWorkflowEntities(50000,'2224440041626905',Payout\Purpose::SALARY,'FXMwu4HMK7ZT0G');
-        $this->createPayoutWithWorkflowEntities(65432,'2224440041626905',Payout\Purpose::REFUND,'FXMwu4HMK7ZT0H');
+        $this->createPayoutWithWorkflowEntities(12345, '2224440041626905', Payout\Purpose::CASHBACK, 'FXMwu4HMK7ZT0C');
+        $this->createPayoutWithWorkflowEntities(23456, '2224440041626905', Payout\Purpose::CASHBACK, 'FXMwu4HMK7ZT0D');
+        $this->createPayoutWithWorkflowEntities(11111, '2224440041626905', Payout\Purpose::SALARY, 'FXMwu4HMK7ZT0F');
+        $this->createPayoutWithWorkflowEntities(50000, '2224440041626905', Payout\Purpose::SALARY, 'FXMwu4HMK7ZT0G');
+        $this->createPayoutWithWorkflowEntities(65432, '2224440041626905', Payout\Purpose::REFUND, 'FXMwu4HMK7ZT0H');
 
         $this->ba->cronAuth('live');
 
         $this->startTest();
 
-        Mail::assertQueued(PendingApprovals::class, function ($mail)
-        {
+        Mail::assertQueued(PendingApprovals::class, function($mail) {
             $this->assertArrayHasKey('user_id', $mail->viewData);
 
             $this->assertArrayHasKey('merchant_id', $mail->viewData);
@@ -1612,21 +1609,21 @@ class PayoutTest extends OAuthTestCase
         $this->liveSetUp();
 
         $bankingAccountAttributes = [
-            'id'                    =>  'ABCde1234ABCde',
-            'account_number'        =>  '2224440041626998',
-            'balance_id'            =>  $this->bankingBalance->getId(),
-            'account_type'          =>  'nodal',
+            'id'             => 'ABCde1234ABCde',
+            'account_number' => '2224440041626998',
+            'balance_id'     => $this->bankingBalance->getId(),
+            'account_type'   => 'nodal',
         ];
 
         $this->createBankingAccount($bankingAccountAttributes, 'live');
 
         $this->createPayoutWorkflowWithBankingUsersLiveMode();
 
-        $this->createPayoutWithWorkflowEntities(12345,'2224440041626905',Payout\Purpose::CASHBACK, 'FXMwu4HMK7ZT0C');
-        $this->createPayoutWithWorkflowEntities(23456,'2224440041626905',Payout\Purpose::CASHBACK,'FXMwu4HMK7ZT0D');
-        $this->createPayoutWithWorkflowEntities(11111,'2224440041626905',Payout\Purpose::SALARY,'FXMwu4HMK7ZT0F');
-        $this->createPayoutWithWorkflowEntities(50000,'2224440041626905',Payout\Purpose::SALARY,'FXMwu4HMK7ZT0G');
-        $this->createPayoutWithWorkflowEntities(65432,'2224440041626905',Payout\Purpose::REFUND,'FXMwu4HMK7ZT0H');
+        $this->createPayoutWithWorkflowEntities(12345, '2224440041626905', Payout\Purpose::CASHBACK, 'FXMwu4HMK7ZT0C');
+        $this->createPayoutWithWorkflowEntities(23456, '2224440041626905', Payout\Purpose::CASHBACK, 'FXMwu4HMK7ZT0D');
+        $this->createPayoutWithWorkflowEntities(11111, '2224440041626905', Payout\Purpose::SALARY, 'FXMwu4HMK7ZT0F');
+        $this->createPayoutWithWorkflowEntities(50000, '2224440041626905', Payout\Purpose::SALARY, 'FXMwu4HMK7ZT0G');
+        $this->createPayoutWithWorkflowEntities(65432, '2224440041626905', Payout\Purpose::REFUND, 'FXMwu4HMK7ZT0H');
 
         $this->ba->cronAuth('live');
 
@@ -1638,21 +1635,21 @@ class PayoutTest extends OAuthTestCase
         $this->fixtures->on('live')->create(
             'workflow_config',
             [
-                'config_id'     => 'FVLeJYoM0GPWUb', // Should exist in the new WF service
-                'created_at'    => 1598967658
+                'config_id'  => 'FVLeJYoM0GPWUb', // Should exist in the new WF service
+                'created_at' => 1598967658
             ]);
 
         $p = $this->createPayoutWithWorkflow(
             [
-                'account_number'        =>  $account ?? '2224440041626905',
-                'amount'                =>  $amount ?? 1000,
-                'purpose'               =>  $purpose ?? 'refund',
-                'status'                =>  'pending'
+                'account_number' => $account ?? '2224440041626905',
+                'amount'         => $amount ?? 1000,
+                'purpose'        => $purpose ?? 'refund',
+                'status'         => 'pending'
 
             ],
             'rzp_live_TheLiveAuthKey');
 
-        $we = $this->fixtures->on('live')->create('workflow_entity_map', ['entity_id' => substr($p['id'], 5), 'workflow_id' => $workflowId, 'entity_type' => 'payout', ])->toArray();
+        $we = $this->fixtures->on('live')->create('workflow_entity_map', ['entity_id' => substr($p['id'], 5), 'workflow_id' => $workflowId, 'entity_type' => 'payout',])->toArray();
 
         $ws = $this->fixtures->on('live')->create('workflow_state_map', ['workflow_id' => $we['workflow_id'], 'actor_type_value' => 'owner', 'status' => 'created'])->toArray();
 
@@ -1670,22 +1667,22 @@ class PayoutTest extends OAuthTestCase
         // Creating 2 banking accounts. First for the existing bankingBalance and second for the secondBankingBalance
 
         $bankingAccountAttributes = [
-            'id'                    =>  'ABCde1234ABCde',
-            'account_number'        =>  '2224440041626998',
-            'balance_id'            =>  $this->bankingBalance->getId(),
-            'account_type'          =>  'nodal',
+            'id'             => 'ABCde1234ABCde',
+            'account_number' => '2224440041626998',
+            'balance_id'     => $this->bankingBalance->getId(),
+            'account_type'   => 'nodal',
         ];
 
         $bankingAccount = $this->createBankingAccount($bankingAccountAttributes, 'live');
 
         $secondBankingAccountAttributes = [
-            'id'                    =>  'DEcba4321DEcba',
-            'account_number'        =>  '2224440041626999',
-            'balance_id'            =>  $secondBankingBalance->getId(),
-            'account_type'          =>  'current',
+            'id'             => 'DEcba4321DEcba',
+            'account_number' => '2224440041626999',
+            'balance_id'     => $secondBankingBalance->getId(),
+            'account_type'   => 'current',
         ];
 
-        $this->fixtures->on('live')->create('banking_account_statement_details',[
+        $this->fixtures->on('live')->create('banking_account_statement_details', [
             Details\Entity::ID             => 'xbas0000000002',
             Details\Entity::MERCHANT_ID    => '10000000000000',
             Details\Entity::BALANCE_ID     => $secondBankingBalance->getId(),
@@ -1699,17 +1696,17 @@ class PayoutTest extends OAuthTestCase
         // Create two queued payouts
 
         $firstQueuedPayoutAttributes = [
-            'account_number'        =>  '2224440041626905',
-            'amount'                =>  20000099,
-            'queue_if_low_balance'  =>  1,
+            'account_number'       => '2224440041626905',
+            'amount'               => 20000099,
+            'queue_if_low_balance' => 1,
         ];
 
         $this->createQueuedOrPendingPayout($firstQueuedPayoutAttributes, 'rzp_live_TheLiveAuthKey');
 
         $secondQueuedPayoutAttributes = [
-            'account_number'        =>  '2224440041626906',
-            'amount'                =>  30000099,
-            'queue_if_low_balance'  =>  1,
+            'account_number'       => '2224440041626906',
+            'amount'               => 30000099,
+            'queue_if_low_balance' => 1,
         ];
 
         $this->createQueuedOrPendingPayout($secondQueuedPayoutAttributes, 'rzp_live_TheLiveAuthKey');
@@ -1720,51 +1717,50 @@ class PayoutTest extends OAuthTestCase
 
         $this->createPayoutWithWorkflow(
             [
-                'account_number'        =>  '2224440041626905',
-                'amount'                =>  54321
+                'account_number' => '2224440041626905',
+                'amount'         => 54321
             ],
             'rzp_live_TheLiveAuthKey');
 
         $this->createPayoutWithWorkflow(
             [
-                'account_number'        =>  '2224440041626906',
-                'amount'                =>  12345
+                'account_number' => '2224440041626906',
+                'amount'         => 12345
             ],
             'rzp_live_TheLiveAuthKey');
 
-        $merchantUser = $this->getDbEntity('merchant_user',['role' => 'owner','product' => 'banking'],'live')->toArray();
+        $merchantUser = $this->getDbEntity('merchant_user', ['role' => 'owner', 'product' => 'banking'], 'live')->toArray();
 
         $userId = $merchantUser['user_id'];
 
-        $this->ba->proxyAuth('rzp_live_10000000000000',$userId);
+        $this->ba->proxyAuth('rzp_live_10000000000000', $userId);
 
         $completeSummary = $this->startTest();
 
         $firstBankingAccountId = $this->getDbEntity('banking_account',
-            ['account_number' => '2224440041626905'],
-            'live')->getPublicId();
+                                                    ['account_number' => '2224440041626905'],
+                                                    'live')->getPublicId();
 
         $secondBankingAccountId = $secondBankingAccount->getPublicId();
 
-        $queuedSummaryFirstAccount = $completeSummary[$firstBankingAccountId][Payout\Status::QUEUED];
-        $pendingSummaryFirstAccount = $completeSummary[$firstBankingAccountId][Payout\Status::PENDING];
-        $queuedSummarySecondAccount = $completeSummary[$secondBankingAccountId][Payout\Status::QUEUED];
+        $queuedSummaryFirstAccount   = $completeSummary[$firstBankingAccountId][Payout\Status::QUEUED];
+        $pendingSummaryFirstAccount  = $completeSummary[$firstBankingAccountId][Payout\Status::PENDING];
+        $queuedSummarySecondAccount  = $completeSummary[$secondBankingAccountId][Payout\Status::QUEUED];
         $pendingSummarySecondAccount = $completeSummary[$secondBankingAccountId][Payout\Status::PENDING];
 
+        $this->assertEquals($queuedSummaryFirstAccount['low_balance']['count'], 1);
+        $this->assertEquals($queuedSummaryFirstAccount['low_balance']['total_amount'], 20000099);
+        $this->assertEquals($queuedSummaryFirstAccount['low_balance']['balance'], "10000000");
 
-        $this->assertEquals($queuedSummaryFirstAccount['low_balance']['count'],1);
-        $this->assertEquals($queuedSummaryFirstAccount['low_balance']['total_amount'],20000099);
-        $this->assertEquals($queuedSummaryFirstAccount['low_balance']['balance'],"10000000");
+        $this->assertEquals($pendingSummaryFirstAccount['count'], 1);
+        $this->assertEquals($pendingSummaryFirstAccount['total_amount'], 54321);
 
-        $this->assertEquals($pendingSummaryFirstAccount['count'],1);
-        $this->assertEquals($pendingSummaryFirstAccount['total_amount'],54321);
+        $this->assertEquals($queuedSummarySecondAccount['low_balance']['count'], 1);
+        $this->assertEquals($queuedSummarySecondAccount['low_balance']['total_amount'], 30000099);
+        $this->assertEquals($queuedSummarySecondAccount['low_balance']['balance'], "10000000");
 
-        $this->assertEquals($queuedSummarySecondAccount['low_balance']['count'],1);
-        $this->assertEquals($queuedSummarySecondAccount['low_balance']['total_amount'],30000099);
-        $this->assertEquals($queuedSummarySecondAccount['low_balance']['balance'],"10000000");
-
-        $this->assertEquals($pendingSummarySecondAccount['count'],1);
-        $this->assertEquals($pendingSummarySecondAccount['total_amount'],12345);
+        $this->assertEquals($pendingSummarySecondAccount['count'], 1);
+        $this->assertEquals($pendingSummarySecondAccount['total_amount'], 12345);
     }
 
     /**
@@ -1859,11 +1855,11 @@ class PayoutTest extends OAuthTestCase
 
         $payoutsCreated = $this->getDbEntities('payout', ['status' => 'created']);
 
-        for ($index = 0; $index<count($ledgerSnsPayloadArray); $index++)
+        for ($index = 0; $index < count($ledgerSnsPayloadArray); $index++)
         {
             $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
 
-            $ledgerRequestPayload['identifiers'] = json_decode($ledgerRequestPayload['identifiers'], true);
+            $ledgerRequestPayload['identifiers']       = json_decode($ledgerRequestPayload['identifiers'], true);
             $ledgerRequestPayload['additional_params'] = json_decode($ledgerRequestPayload['additional_params'], true);
 
             $this->assertEquals('X', $ledgerRequestPayload['tenant']);
@@ -1894,9 +1890,9 @@ class PayoutTest extends OAuthTestCase
 
         $this->mockLedgerSns(2, $ledgerSnsPayloadArray);
 
-        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 100 , 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
+        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 100, 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
 
-        $this->fixtures->create('credit_balance', ['merchant_id' => '10000000000000', 'balance' => 2000 ]);
+        $this->fixtures->create('credit_balance', ['merchant_id' => '10000000000000', 'balance' => 2000]);
 
         $creditBalanceEntity = $this->getDbLastEntity('credit_balance');
 
@@ -1906,7 +1902,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->fixtures->edit('credits', $creditEntity['id'], ['balance_id' => $creditBalanceEntity['id']]);
 
-        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 1900 , 'campaign' => 'test rewards type', 'type' => 'reward_fee', 'product' => 'banking']);
+        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 1900, 'campaign' => 'test rewards type', 'type' => 'reward_fee', 'product' => 'banking']);
 
         $creditEntity = $this->getDbLastEntity('credits');
 
@@ -1922,7 +1918,7 @@ class PayoutTest extends OAuthTestCase
         $currentBalance = $this->getDbLastEntity('balance');
 
         $response = $this->startTest();
-        $payout = $this->getDbLastEntity('payout');
+        $payout   = $this->getDbLastEntity('payout');
         $this->assertEquals(0, $payout['fees']);
         $this->assertEquals(0, $payout['tax']);
         $this->assertNull($payout['pricing_rule_id']);
@@ -2022,7 +2018,7 @@ class PayoutTest extends OAuthTestCase
 
         $payoutsCreated = $this->getDbEntities('payout', ['status' => 'created']);
 
-        for ($index = 0; $index<count($ledgerSnsPayloadArray); $index++)
+        for ($index = 0; $index < count($ledgerSnsPayloadArray); $index++)
         {
             $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
 
@@ -2071,7 +2067,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->startTest();
 
-        $payoutDetails=$this->getDbLastEntity('payouts_details');
+        $payoutDetails = $this->getDbLastEntity('payouts_details');
 
         $this->assertNotNull($payoutDetails);
         $this->assertEquals(true, $payoutDetails->getQueueIfLowBalanceFlag());
@@ -2122,15 +2118,15 @@ class PayoutTest extends OAuthTestCase
         $bankingAccount = $this->getDbLastEntity('banking_account');
 
         $secondBankingAccountAttributes = [
-            'id'                    =>  'DEcba4321DEcba',
-            'account_number'        =>  '2224440041626906',
-            'balance_id'            =>  $balanceId2,
-            'account_type'          =>  'current',
+            'id'             => 'DEcba4321DEcba',
+            'account_number' => '2224440041626906',
+            'balance_id'     => $balanceId2,
+            'account_type'   => 'current',
         ];
 
         $secondBankingAccount = $this->createBankingAccount($secondBankingAccountAttributes);
 
-        $this->fixtures->create('banking_account_statement_details',[
+        $this->fixtures->create('banking_account_statement_details', [
             Details\Entity::ID             => 'xbas0000000002',
             Details\Entity::MERCHANT_ID    => '10000000000000',
             Details\Entity::BALANCE_ID     => $secondBankingBalance->getId(),
@@ -2142,7 +2138,7 @@ class PayoutTest extends OAuthTestCase
         $this->fixtures->create(
             'counter',
             [
-                'balance_id' => $secondBankingBalance->getId(),
+                'balance_id'   => $secondBankingBalance->getId(),
                 'account_type' => $secondBankingBalance->getAccountType(),
             ]
         );
@@ -2150,17 +2146,17 @@ class PayoutTest extends OAuthTestCase
         // Create two queued payouts
 
         $firstQueuedPayoutAttributes = [
-            'account_number'        =>  '2224440041626905',
-            'amount'                =>  20000099,
-            'queue_if_low_balance'  =>  1,
+            'account_number'       => '2224440041626905',
+            'amount'               => 20000099,
+            'queue_if_low_balance' => 1,
         ];
 
         $this->createQueuedOrPendingPayout($firstQueuedPayoutAttributes);
 
         $secondQueuedPayoutAttributes = [
-            'account_number'        =>  '2224440041626906',
-            'amount'                =>  30000099,
-            'queue_if_low_balance'  =>  1,
+            'account_number'       => '2224440041626906',
+            'amount'               => 30000099,
+            'queue_if_low_balance' => 1,
         ];
 
         $this->createQueuedOrPendingPayout($secondQueuedPayoutAttributes);
@@ -2174,14 +2170,14 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals(30000099, $summary1[$secondBankingAccount->getPublicId()][Payout\Status::QUEUED]['low_balance']['total_amount']);
 
         // Add enough balance for both balanceIds so that the payouts can go through
-        $this->fixtures->edit('balance', $balanceId1,[
-            'balance'       => 50000099,
-            'updated_at'    => Carbon::now()->getTimestamp()
+        $this->fixtures->edit('balance', $balanceId1, [
+            'balance'    => 50000099,
+            'updated_at' => Carbon::now()->getTimestamp()
         ]);
 
-        $this->fixtures->edit('balance', $balanceId2,[
-            'balance'       => 50000099,
-            'updated_at'    => Carbon::now()->getTimestamp()
+        $this->fixtures->edit('balance', $balanceId2, [
+            'balance'    => 50000099,
+            'updated_at' => Carbon::now()->getTimestamp()
         ]);
 
         $dispatchResponse = $this->dispatchQueuedPayoutsWithBlacklist($balanceId1);
@@ -2216,15 +2212,15 @@ class PayoutTest extends OAuthTestCase
         $bankingAccount = $this->getDbLastEntity('banking_account');
 
         $secondBankingAccountAttributes = [
-            'id'                    =>  'DEcba4321DEcba',
-            'account_number'        =>  '2224440041626906',
-            'balance_id'            =>  $balanceId2,
-            'account_type'          =>  'current',
+            'id'             => 'DEcba4321DEcba',
+            'account_number' => '2224440041626906',
+            'balance_id'     => $balanceId2,
+            'account_type'   => 'current',
         ];
 
         $secondBankingAccount = $this->createBankingAccount($secondBankingAccountAttributes);
 
-        $this->fixtures->create('banking_account_statement_details',[
+        $this->fixtures->create('banking_account_statement_details', [
             Details\Entity::ID             => 'xbas0000000002',
             Details\Entity::MERCHANT_ID    => '10000000000000',
             Details\Entity::BALANCE_ID     => $secondBankingBalance->getId(),
@@ -2236,17 +2232,17 @@ class PayoutTest extends OAuthTestCase
         // Create two queued payouts
 
         $firstQueuedPayoutAttributes = [
-            'account_number'        =>  '2224440041626905',
-            'amount'                =>  20000099,
-            'queue_if_low_balance'  =>  1,
+            'account_number'       => '2224440041626905',
+            'amount'               => 20000099,
+            'queue_if_low_balance' => 1,
         ];
 
         $this->createQueuedOrPendingPayout($firstQueuedPayoutAttributes);
 
         $secondQueuedPayoutAttributes = [
-            'account_number'        =>  '2224440041626906',
-            'amount'                =>  30000099,
-            'queue_if_low_balance'  =>  1,
+            'account_number'       => '2224440041626906',
+            'amount'               => 30000099,
+            'queue_if_low_balance' => 1,
         ];
 
         $this->createQueuedOrPendingPayout($secondQueuedPayoutAttributes);
@@ -2260,14 +2256,14 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals(30000099, $summary1[$secondBankingAccount->getPublicId()][Payout\Status::QUEUED]['low_balance']['total_amount']);
 
         // Add enough balance for both balanceIds so that the payouts can go through
-        $this->fixtures->edit('balance', $balanceId1,[
-            'balance'       => 50000099,
-            'updated_at'    => Carbon::now()->getTimestamp()
+        $this->fixtures->edit('balance', $balanceId1, [
+            'balance'    => 50000099,
+            'updated_at' => Carbon::now()->getTimestamp()
         ]);
 
-        $this->fixtures->edit('balance', $balanceId2,[
-            'balance'       => 50000099,
-            'updated_at'    => Carbon::now()->getTimestamp()
+        $this->fixtures->edit('balance', $balanceId2, [
+            'balance'    => 50000099,
+            'updated_at' => Carbon::now()->getTimestamp()
         ]);
 
         $dispatchResponse = $this->dispatchQueuedPayoutsWithWhitelist($balanceId1);
@@ -2286,11 +2282,11 @@ class PayoutTest extends OAuthTestCase
 
         $payoutsCreated = $this->getDbEntities('payout', ['status' => 'created']);
 
-        for ($index = 0; $index<count($ledgerSnsPayloadArray); $index++)
+        for ($index = 0; $index < count($ledgerSnsPayloadArray); $index++)
         {
             $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
 
-            $ledgerRequestPayload['identifiers'] = json_decode($ledgerRequestPayload['identifiers'], true);
+            $ledgerRequestPayload['identifiers']       = json_decode($ledgerRequestPayload['identifiers'], true);
             $ledgerRequestPayload['additional_params'] = json_decode($ledgerRequestPayload['additional_params'], true);
 
             $this->assertEquals('X', $ledgerRequestPayload['tenant']);
@@ -2327,15 +2323,15 @@ class PayoutTest extends OAuthTestCase
         $bankingAccount = $this->getDbLastEntity('banking_account');
 
         $secondBankingAccountAttributes = [
-            'id'                    =>  'DEcba4321DEcba',
-            'account_number'        =>  '2224440041626906',
-            'balance_id'            =>  $balanceId2,
-            'account_type'          =>  'current',
+            'id'             => 'DEcba4321DEcba',
+            'account_number' => '2224440041626906',
+            'balance_id'     => $balanceId2,
+            'account_type'   => 'current',
         ];
 
         $secondBankingAccount = $this->createBankingAccount($secondBankingAccountAttributes);
 
-        $this->fixtures->create('banking_account_statement_details',[
+        $this->fixtures->create('banking_account_statement_details', [
             Details\Entity::ID             => 'xbas0000000002',
             Details\Entity::MERCHANT_ID    => '10000000000000',
             Details\Entity::BALANCE_ID     => $secondBankingBalance->getId(),
@@ -2347,17 +2343,17 @@ class PayoutTest extends OAuthTestCase
         // Create two queued payouts
 
         $firstQueuedPayoutAttributes = [
-            'account_number'        =>  '2224440041626905',
-            'amount'                =>  20000099,
-            'queue_if_low_balance'  =>  1,
+            'account_number'       => '2224440041626905',
+            'amount'               => 20000099,
+            'queue_if_low_balance' => 1,
         ];
 
         $this->createQueuedOrPendingPayout($firstQueuedPayoutAttributes);
 
         $secondQueuedPayoutAttributes = [
-            'account_number'        =>  '2224440041626906',
-            'amount'                =>  30000099,
-            'queue_if_low_balance'  =>  1,
+            'account_number'       => '2224440041626906',
+            'amount'               => 30000099,
+            'queue_if_low_balance' => 1,
         ];
 
         $this->createQueuedOrPendingPayout($secondQueuedPayoutAttributes);
@@ -2371,19 +2367,19 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals(30000099, $summary1[$secondBankingAccount->getPublicId()][Payout\Status::QUEUED]['low_balance']['total_amount']);
 
         // Add enough balance for both balanceIds so that the payout amounts = balance for both balances.
-        $this->fixtures->edit('balance', $balanceId1,[
-            'balance'       => 20000099,
-            'updated_at'    => Carbon::now()->getTimestamp()
+        $this->fixtures->edit('balance', $balanceId1, [
+            'balance'    => 20000099,
+            'updated_at' => Carbon::now()->getTimestamp()
         ]);
 
-        $this->fixtures->edit('balance', $balanceId2,[
-            'balance'       => 30000099,
-            'updated_at'    => Carbon::now()->getTimestamp()
+        $this->fixtures->edit('balance', $balanceId2, [
+            'balance'    => 30000099,
+            'updated_at' => Carbon::now()->getTimestamp()
         ]);
 
         // Update both counters to 300
         $counter1 = $this->getDbEntity('counter', ['balance_id' => $balanceId1]);
-        $counter2 =  $this->getDbEntity('counter', ['balance_id' => $balanceId2]);
+        $counter2 = $this->getDbEntity('counter', ['balance_id' => $balanceId2]);
         $this->fixtures->edit('counter', $counter1->getId(), ['free_payouts_consumed' => 300]);
         $this->fixtures->edit('counter', $counter2->getId(), ['free_payouts_consumed' => 300]);
 
@@ -2427,11 +2423,11 @@ class PayoutTest extends OAuthTestCase
 
         $payoutsCreated = $this->getDbEntities('payout', ['status' => 'created']);
 
-        for ($index = 0; $index<count($ledgerSnsPayloadArray); $index++)
+        for ($index = 0; $index < count($ledgerSnsPayloadArray); $index++)
         {
             $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
 
-            $ledgerRequestPayload['identifiers'] = json_decode($ledgerRequestPayload['identifiers'], true);
+            $ledgerRequestPayload['identifiers']       = json_decode($ledgerRequestPayload['identifiers'], true);
             $ledgerRequestPayload['additional_params'] = json_decode($ledgerRequestPayload['additional_params'], true);
 
             $this->assertEquals('X', $ledgerRequestPayload['tenant']);
@@ -2457,11 +2453,11 @@ class PayoutTest extends OAuthTestCase
 
         $cancellationUser = $this->getDbEntityById('user', 'MerchantUser01')->toArrayPublic();
 
-        $testData = & $this->testData[__FUNCTION__];
+        $testData                   = &$this->testData[__FUNCTION__];
         $testData['request']['url'] = '/payouts/' . $queuedPayout->getPublicId() . '/cancel';
 
         $testData['response']['content']['cancellation_user_id'] = 'MerchantUser01';
-        $testData['response']['content']['cancellation_user'] = $cancellationUser;
+        $testData['response']['content']['cancellation_user']    = $cancellationUser;
 
         $this->ba->proxyAuth();
 
@@ -2512,7 +2508,7 @@ class PayoutTest extends OAuthTestCase
 
         $queuedPayout = $this->getDbLastEntity('payout');
 
-        $testData = & $this->testData[__FUNCTION__];
+        $testData                   = &$this->testData[__FUNCTION__];
         $testData['request']['url'] = '/payouts/' . $queuedPayout->getPublicId() . '/cancel';
 
         $this->app->forgetInstance('basicauth');
@@ -2543,13 +2539,13 @@ class PayoutTest extends OAuthTestCase
 
         $userComment = "Payout cancelled by Mehul";
 
-        $testData = & $this->testData[__FUNCTION__];
-        $testData['request']['url'] = '/payouts/' . $queuedPayout->getPublicId() . '/cancel';
+        $testData                                  = &$this->testData[__FUNCTION__];
+        $testData['request']['url']                = '/payouts/' . $queuedPayout->getPublicId() . '/cancel';
         $testData['request']['content']['remarks'] = $userComment;
 
-        $testData['response']['content']['remarks'] = $userComment;
+        $testData['response']['content']['remarks']              = $userComment;
         $testData['response']['content']['cancellation_user_id'] = 'MerchantUser01';
-        $testData['response']['content']['cancellation_user'] = $cancellationUser;
+        $testData['response']['content']['cancellation_user']    = $cancellationUser;
 
         $this->ba->proxyAuth();
 
@@ -2594,7 +2590,7 @@ class PayoutTest extends OAuthTestCase
                 'active'       => 1,
             ]);
 
-        $this->fixtures->create('bank_account',['id' => '100000000000ba']);
+        $this->fixtures->create('bank_account', ['id' => '100000000000ba']);
 
         $this->startTest();
     }
@@ -2657,7 +2653,7 @@ class PayoutTest extends OAuthTestCase
 
     public function testCreatePayoutWithOtp()
     {
-        $testData = $this->testData['testCreatePayoutWithOtp'];
+        $testData                                = $this->testData['testCreatePayoutWithOtp'];
         $testData['request']['url']              = '/payouts_with_otp';
         $testData['request']['content']['token'] = 'BUIj3m2Nx2VvVj';
         $testData['request']['content']['otp']   = '0007';
@@ -2678,7 +2674,7 @@ class PayoutTest extends OAuthTestCase
     // Create Undoable payout testcase
     public function testCreateUndoablePayoutWithOtp()
     {
-        $testData = $this->testData['testCreateUndoablePayoutWithOtp'];
+        $testData                                = $this->testData['testCreateUndoablePayoutWithOtp'];
         $testData['request']['url']              = '/payouts_with_otp';
         $testData['request']['content']['token'] = 'BUIj3m2Nx2VvVj';
         $testData['request']['content']['otp']   = '0007';
@@ -2686,22 +2682,23 @@ class PayoutTest extends OAuthTestCase
         $this->testData[__FUNCTION__] = $testData;
         $this->setMockRazorxTreatment(['rx_undo_payout_feature' => 'on', 'imps_mode_payout_filter' => 'control']);
         $this->fixtures->create('merchant_attribute',
-            [
-                'merchant_id' => '10000000000000',
-                'product'     => 'banking',
-                'group'       => 'x_merchant_preferences',
-                'type'        => 'undo_payouts',
-                'value'       => 'true'
-            ]);
+                                [
+                                    'merchant_id' => '10000000000000',
+                                    'product'     => 'banking',
+                                    'group'       => 'x_merchant_preferences',
+                                    'type'        => 'undo_payouts',
+                                    'value'       => 'true'
+                                ]);
         $this->ba->proxyAuth();
         $this->startTest();
         $payout = $this->getLastEntity('payout_outbox', true);
+
         return $payout;
     }
 
     public function testCreatePayoutWithOtpAndUndoPayoutPreferenceFalse()
     {
-        $testData = $this->testData['testCreatePayoutWithOtpAndUndoPayoutPreferenceFalse'];
+        $testData                                = $this->testData['testCreatePayoutWithOtpAndUndoPayoutPreferenceFalse'];
         $testData['request']['url']              = '/payouts_with_otp';
         $testData['request']['content']['token'] = 'BUIj3m2Nx2VvVj';
         $testData['request']['content']['otp']   = '0007';
@@ -2709,13 +2706,13 @@ class PayoutTest extends OAuthTestCase
         $this->testData[__FUNCTION__] = $testData;
         $this->setMockRazorxTreatment(['rx_undo_payout_feature' => 'on', 'imps_mode_payout_filter' => 'control']);
         $this->fixtures->create('merchant_attribute',
-            [
-                'merchant_id' => '10000000000000',
-                'product'     => 'banking',
-                'group'       => 'x_merchant_preferences',
-                'type'        => 'undo_payouts',
-                'value'       => 'false'
-            ]);
+                                [
+                                    'merchant_id' => '10000000000000',
+                                    'product'     => 'banking',
+                                    'group'       => 'x_merchant_preferences',
+                                    'type'        => 'undo_payouts',
+                                    'value'       => 'false'
+                                ]);
         $this->ba->proxyAuth();
         $this->startTest();
         $payout = $this->getLastEntity('payout', true);
@@ -2723,11 +2720,12 @@ class PayoutTest extends OAuthTestCase
     }
 
     // Undo payout testcases
-    public function testUndoPayout() {
+    public function testUndoPayout()
+    {
         $payout = $this->testCreateUndoablePayoutWithOtp();
 
-        $testData = $this->testData['testUndoPayout'];
-        $testData['request']['url'] = '/payouts/'. $payout['id'] . '/undo';
+        $testData                   = $this->testData['testUndoPayout'];
+        $testData['request']['url'] = '/payouts/' . $payout['id'] . '/undo';
 
         $this->testData[__FUNCTION__] = $testData;
 
@@ -2737,9 +2735,10 @@ class PayoutTest extends OAuthTestCase
     }
 
     // this is a helper func. Not a standalone test
-    private function testUndoPayoutWithId($id) {
-        $testData = $this->testData['testUndoPayout'];
-        $testData['request']['url'] = '/payouts/'. $id . '/undo';
+    private function testUndoPayoutWithId($id)
+    {
+        $testData                   = $this->testData['testUndoPayout'];
+        $testData['request']['url'] = '/payouts/' . $id . '/undo';
 
         $this->testData[__FUNCTION__] = $testData;
 
@@ -2748,15 +2747,16 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals(true, $response['deleted']);
     }
 
-    public function testUndoOnSamePayoutMultipleTimes() {
+    public function testUndoOnSamePayoutMultipleTimes()
+    {
         $payout = $this->testCreateUndoablePayoutWithOtp();
 
         // Undo the payout for the 1st time
         $this->testUndoPayoutWithId($payout['id']);
 
         // trying again for the same id - should throw exception
-        $testData = $this->testData['testUndoOnSamePayoutMultipleTimes'];
-        $testData['request']['url'] = '/payouts/'. $payout['id'] . '/undo';
+        $testData                   = $this->testData['testUndoOnSamePayoutMultipleTimes'];
+        $testData['request']['url'] = '/payouts/' . $payout['id'] . '/undo';
 
         $this->testData[__FUNCTION__] = $testData;
 
@@ -2764,11 +2764,12 @@ class PayoutTest extends OAuthTestCase
         $this->startTest();
     }
 
-    public function testUndoPayoutWithInvalidId() {
+    public function testUndoPayoutWithInvalidId()
+    {
         $this->setMockRazorxTreatment(['rx_undo_payout_feature' => 'on', 'imps_mode_payout_filter' => 'control']);
 
-        $testData = $this->testData['testUndoPayoutWithInvalidId'];
-        $testData['request']['url'] = '/payouts/'. 123 . '/undo';
+        $testData                   = $this->testData['testUndoPayoutWithInvalidId'];
+        $testData['request']['url'] = '/payouts/' . 123 . '/undo';
 
         $this->testData[__FUNCTION__] = $testData;
 
@@ -2776,11 +2777,12 @@ class PayoutTest extends OAuthTestCase
         $this->startTest();
     }
 
-    public function testUndoPayoutWithValidIdPostExpiryTime() {
+    public function testUndoPayoutWithValidIdPostExpiryTime()
+    {
         $payout = $this->testCreateUndoablePayoutWithOtp();
         sleep(PayoutOutboxConstants::DEFAULT_PAYOUT_OUTBOX_EXPIRY_IN_SECONDS + 2);
-        $testData = $this->testData['testUndoPayoutWithValidIdPostExpiryTime'];
-        $testData['request']['url'] = '/payouts/'. $payout['id'] . '/undo';
+        $testData                   = $this->testData['testUndoPayoutWithValidIdPostExpiryTime'];
+        $testData['request']['url'] = '/payouts/' . $payout['id'] . '/undo';
 
         $this->testData[__FUNCTION__] = $testData;
 
@@ -2789,11 +2791,12 @@ class PayoutTest extends OAuthTestCase
     }
 
     // Resume payout testcases
-    public function testResumePayout() {
+    public function testResumePayout()
+    {
         $payout = $this->testCreateUndoablePayoutWithOtp();
 
-        $testData = $this->testData['testResumePayout'];
-        $testData['request']['url'] = '/payouts/'. $payout['id'] . '/resume';
+        $testData                   = $this->testData['testResumePayout'];
+        $testData['request']['url'] = '/payouts/' . $payout['id'] . '/resume';
 
         $this->testData[__FUNCTION__] = $testData;
 
@@ -2802,9 +2805,10 @@ class PayoutTest extends OAuthTestCase
     }
 
     // this is a helper func. Not a standalone test
-    private function testResumePayoutWithId($id) {
-        $testData = $this->testData['testResumePayout'];
-        $testData['request']['url'] = '/payouts/'. $id . '/resume';
+    private function testResumePayoutWithId($id)
+    {
+        $testData                   = $this->testData['testResumePayout'];
+        $testData['request']['url'] = '/payouts/' . $id . '/resume';
 
         $this->testData[__FUNCTION__] = $testData;
 
@@ -2812,15 +2816,16 @@ class PayoutTest extends OAuthTestCase
         $this->startTest();
     }
 
-    public function testResumeOnSamePayoutMultipleTimes() {
+    public function testResumeOnSamePayoutMultipleTimes()
+    {
         $payout = $this->testCreateUndoablePayoutWithOtp();
 
         // Resume the payout for the 1st time
         $this->testResumePayoutWithId($payout['id']);
 
         // trying again for the same id - should throw exception
-        $testData = $this->testData['testResumeOnSamePayoutMultipleTimes'];
-        $testData['request']['url'] = '/payouts/'. $payout['id'] . '/resume';
+        $testData                   = $this->testData['testResumeOnSamePayoutMultipleTimes'];
+        $testData['request']['url'] = '/payouts/' . $payout['id'] . '/resume';
 
         $this->testData[__FUNCTION__] = $testData;
 
@@ -2836,27 +2841,26 @@ class PayoutTest extends OAuthTestCase
 
         $client = factory(Client\Entity::class)->create(['environment' => 'prod']);
 
-        $accessToken = $this->generateOAuthAccessToken(['scopes'    => ['rx_read_write', 'read_write'], 'mode' => 'live', 'client_id' => $client->getId()], 'prod');
+        $accessToken = $this->generateOAuthAccessToken(['scopes' => ['rx_read_write', 'read_write'], 'mode' => 'live', 'client_id' => $client->getId()], 'prod');
 
         $this->fixtures->on('live')->create('feature', [
-            'entity_id'     => $client->application_id,
-            'entity_type'   => 'application',
-            'name'          => Feature\Constants::PUBLIC_SETTERS_VIA_OAUTH]);
-
-
-        $this->fixtures->on('live')->create('feature', [
-            'entity_id' => $client->application_id,
+            'entity_id'   => $client->application_id,
             'entity_type' => 'application',
-            'name'  => Feature\Constants::RAZORPAYX_FLOWS_VIA_OAUTH]);
+            'name'        => Feature\Constants::PUBLIC_SETTERS_VIA_OAUTH]);
 
-        $this->fixtures->user->createUserForMerchant('10000000000000', ['id' => '20000000000000', 'contact_mobile' => 9999999999],'owner', 'live');
+        $this->fixtures->on('live')->create('feature', [
+            'entity_id'   => $client->application_id,
+            'entity_type' => 'application',
+            'name'        => Feature\Constants::RAZORPAYX_FLOWS_VIA_OAUTH]);
+
+        $this->fixtures->user->createUserForMerchant('10000000000000', ['id' => '20000000000000', 'contact_mobile' => 9999999999], 'owner', 'live');
 
         $this->fixtures->user->createUserMerchantMapping([
-            'user_id'     => '20000000000000',
-            'merchant_id' => '10000000000000',
-            'product'     => 'banking',
-            'role'       => 'owner'
-        ], 'live');
+                                                             'user_id'     => '20000000000000',
+                                                             'merchant_id' => '10000000000000',
+                                                             'product'     => 'banking',
+                                                             'role'        => 'owner'
+                                                         ], 'live');
 
         $this->testData[__FUNCTION__]['request']['url'] = '/balances';
 
@@ -2868,11 +2872,11 @@ class PayoutTest extends OAuthTestCase
             'error_code' => 'SUCCESS',
             'properties' => [
                 'merchant_id' => '10000000000000',
-                'request' => 'balance_fetch_multiple',
-                'user_id' => '20000000000000',
-                'user_role' => 'owner',
-                'channel' => 'slack_app',
-                'filters' => [
+                'request'     => 'balance_fetch_multiple',
+                'user_id'     => '20000000000000',
+                'user_role'   => 'owner',
+                'channel'     => 'slack_app',
+                'filters'     => [
                     'type' => 'banking',
                 ]
             ]
@@ -2891,27 +2895,26 @@ class PayoutTest extends OAuthTestCase
 
         $client = factory(Client\Entity::class)->create(['environment' => 'prod']);
 
-        $accessToken = $this->generateOAuthAccessToken(['scopes'    => ['rx_read_write', 'read_write'], 'mode' => 'live', 'client_id' => $client->getId()], 'prod');
+        $accessToken = $this->generateOAuthAccessToken(['scopes' => ['rx_read_write', 'read_write'], 'mode' => 'live', 'client_id' => $client->getId()], 'prod');
 
         $this->fixtures->on('live')->create('feature', [
-            'entity_id'     => $client->application_id,
-            'entity_type'   => 'application',
-            'name'          => Feature\Constants::PUBLIC_SETTERS_VIA_OAUTH]);
-
-
-        $this->fixtures->on('live')->create('feature', [
-            'entity_id' => $client->application_id,
+            'entity_id'   => $client->application_id,
             'entity_type' => 'application',
-            'name'  => Feature\Constants::RAZORPAYX_FLOWS_VIA_OAUTH]);
+            'name'        => Feature\Constants::PUBLIC_SETTERS_VIA_OAUTH]);
 
-        $this->fixtures->user->createUserForMerchant('10000000000000', ['id' => '20000000000000', 'contact_mobile' => 9999999999],'owner', 'live');
+        $this->fixtures->on('live')->create('feature', [
+            'entity_id'   => $client->application_id,
+            'entity_type' => 'application',
+            'name'        => Feature\Constants::RAZORPAYX_FLOWS_VIA_OAUTH]);
+
+        $this->fixtures->user->createUserForMerchant('10000000000000', ['id' => '20000000000000', 'contact_mobile' => 9999999999], 'owner', 'live');
 
         $this->fixtures->user->createUserMerchantMapping([
-            'user_id'     => '20000000000000',
-            'merchant_id' => '10000000000000',
-            'product'     => 'banking',
-            'role'       => 'owner'
-        ], 'live');
+                                                             'user_id'     => '20000000000000',
+                                                             'merchant_id' => '10000000000000',
+                                                             'product'     => 'banking',
+                                                             'role'        => 'owner'
+                                                         ], 'live');
 
         $this->createPayoutWorkflowWithBankingUsersLiveMode();
 
@@ -2920,27 +2923,27 @@ class PayoutTest extends OAuthTestCase
         $this->ba->oauthBearerAuth($accessToken);
 
         $expectedProperties = [
-            'payout' => [
-                'status' => 'pending',
+            'payout'     => [
+                'status'     => 'pending',
                 'created_by' => 'api_user',
             ],
-            'merchant' => [
-                'id' => '10000000000000',
+            'merchant'   => [
+                'id'   => '10000000000000',
                 'name' => 'Test Merchant',
             ],
             'error_code' => 'SUCCESS',
             'properties' => [
                 'merchant_id' => '10000000000000',
-                'request' => 'payout_approve',
-                'user_id' => '20000000000000',
-                'user_role' => 'owner',
-                'channel' => 'slack_app',
+                'request'     => 'payout_approve',
+                'user_id'     => '20000000000000',
+                'user_role'   => 'owner',
+                'channel'     => 'slack_app',
             ]
         ];
 
         $this->verifyPayoutsEvent($expectedProperties);
 
-        $testData = & $this->testData[__FUNCTION__];
+        $testData                   = &$this->testData[__FUNCTION__];
         $testData['request']['url'] = '/payouts/' . $payout['id'] . '/approve';
 
         $firstApprovalResponse = $this->startTest();
@@ -2959,26 +2962,26 @@ class PayoutTest extends OAuthTestCase
 
         $client = factory(Client\Entity::class)->create(['environment' => 'prod']);
 
-        $accessToken = $this->generateOAuthAccessToken(['scopes'    => ['rx_read_write', 'read_write'], 'mode' => 'live', 'client_id' => $client->getId()], 'prod');
+        $accessToken = $this->generateOAuthAccessToken(['scopes' => ['rx_read_write', 'read_write'], 'mode' => 'live', 'client_id' => $client->getId()], 'prod');
 
         $this->fixtures->on('live')->create('feature', [
-            'entity_id' => $client->application_id,
+            'entity_id'   => $client->application_id,
             'entity_type' => 'application',
-            'name'  => Feature\Constants::PUBLIC_SETTERS_VIA_OAUTH]);
+            'name'        => Feature\Constants::PUBLIC_SETTERS_VIA_OAUTH]);
 
         $this->fixtures->on('live')->create('feature', [
-            'entity_id' => $client->application_id,
+            'entity_id'   => $client->application_id,
             'entity_type' => 'application',
-            'name'  => Feature\Constants::RAZORPAYX_FLOWS_VIA_OAUTH]);
+            'name'        => Feature\Constants::RAZORPAYX_FLOWS_VIA_OAUTH]);
 
-        $this->fixtures->user->createUserForMerchant('10000000000000', ['id' => '20000000000000', 'contact_mobile' => 9999999999],'owner', 'live');
+        $this->fixtures->user->createUserForMerchant('10000000000000', ['id' => '20000000000000', 'contact_mobile' => 9999999999], 'owner', 'live');
 
         $this->fixtures->user->createUserMerchantMapping([
-            'user_id'     => '20000000000000',
-            'merchant_id' => '10000000000000',
-            'product'     => 'banking',
-            'role'       => 'owner'
-        ], 'live');
+                                                             'user_id'     => '20000000000000',
+                                                             'merchant_id' => '10000000000000',
+                                                             'product'     => 'banking',
+                                                             'role'        => 'owner'
+                                                         ], 'live');
 
         $this->createPayoutWorkflowWithBankingUsersLiveMode();
 
@@ -2987,27 +2990,27 @@ class PayoutTest extends OAuthTestCase
         $this->ba->oauthBearerAuth($accessToken);
 
         $expectedProperties = [
-            'payout' => [
-                'status' => 'pending',
+            'payout'     => [
+                'status'     => 'pending',
                 'created_by' => 'api_user',
             ],
-            'merchant' => [
-                'id' => '10000000000000',
+            'merchant'   => [
+                'id'   => '10000000000000',
                 'name' => 'Test Merchant',
             ],
             'error_code' => 'SUCCESS',
             'properties' => [
                 'merchant_id' => '10000000000000',
-                'request' => 'payout_reject',
-                'user_id' => '20000000000000',
-                'user_role' => 'owner',
-                'channel' => 'slack_app',
+                'request'     => 'payout_reject',
+                'user_id'     => '20000000000000',
+                'user_role'   => 'owner',
+                'channel'     => 'slack_app',
             ]
         ];
 
         $this->verifyPayoutsEvent($expectedProperties);
 
-        $testData = & $this->testData[__FUNCTION__];
+        $testData                   = &$this->testData[__FUNCTION__];
         $testData['request']['url'] = '/payouts/' . $payout['id'] . '/reject';
 
         $firstApprovalResponse = $this->startTest();
@@ -3026,31 +3029,31 @@ class PayoutTest extends OAuthTestCase
 
         $client = factory(Client\Entity::class)->create(['environment' => 'prod']);
 
-        $accessToken = $this->generateOAuthAccessToken(['scopes'=> ['apple_watch_read_write'], 'mode' => 'live', 'client_id' => $client->getId()], 'prod');
+        $accessToken = $this->generateOAuthAccessToken(['scopes' => ['apple_watch_read_write'], 'mode' => 'live', 'client_id' => $client->getId()], 'prod');
 
         $this->fixtures->feature->create([
-            Feature\Entity::ENTITY_TYPE => Feature\Constants::APPLICATION,
-            Feature\Entity::ENTITY_ID   => $client->application_id,
-            Feature\Entity::NAME        => Feature\Constants::RAZORPAYX_FLOWS_VIA_OAUTH
-        ]);
+                                             Feature\Entity::ENTITY_TYPE => Feature\Constants::APPLICATION,
+                                             Feature\Entity::ENTITY_ID   => $client->application_id,
+                                             Feature\Entity::NAME        => Feature\Constants::RAZORPAYX_FLOWS_VIA_OAUTH
+                                         ]);
 
-        $this->fixtures->user->createUserForMerchant('10000000000000', ['id' => '20000000000000', 'contact_mobile' => 9999999999],'owner', 'live');
+        $this->fixtures->user->createUserForMerchant('10000000000000', ['id' => '20000000000000', 'contact_mobile' => 9999999999], 'owner', 'live');
 
-        $this->fixtures->user->createUserForMerchant('10000000000000', ['id' => '70000000000000', 'contact_mobile' => 9999999999],'owner', 'live');
-
-        $this->fixtures->user->createUserMerchantMapping([
-            'user_id'     => '20000000000000',
-            'merchant_id' => '10000000000000',
-            'product'     => 'banking',
-            'role'       => 'owner'
-        ], 'live');
+        $this->fixtures->user->createUserForMerchant('10000000000000', ['id' => '70000000000000', 'contact_mobile' => 9999999999], 'owner', 'live');
 
         $this->fixtures->user->createUserMerchantMapping([
-            'user_id'     => '70000000000000',
-            'merchant_id' => '10000000000000',
-            'product'     => 'banking',
-            'role'       => 'admin'
-        ], 'live');
+                                                             'user_id'     => '20000000000000',
+                                                             'merchant_id' => '10000000000000',
+                                                             'product'     => 'banking',
+                                                             'role'        => 'owner'
+                                                         ], 'live');
+
+        $this->fixtures->user->createUserMerchantMapping([
+                                                             'user_id'     => '70000000000000',
+                                                             'merchant_id' => '10000000000000',
+                                                             'product'     => 'banking',
+                                                             'role'        => 'admin'
+                                                         ], 'live');
 
         $this->createPayoutWorkflowWithBankingUsersLiveMode();
 
@@ -3059,26 +3062,26 @@ class PayoutTest extends OAuthTestCase
         $this->ba->oauthBearerAuth($accessToken);
 
         $expectedProperties = [
-            'payout' => [
-                'status' => 'pending',
+            'payout'     => [
+                'status'     => 'pending',
                 'created_by' => 'api_user',
             ],
-            'merchant' => [
-                'id' => '10000000000000',
+            'merchant'   => [
+                'id'   => '10000000000000',
                 'name' => 'Test Merchant',
             ],
             'error_code' => 'SUCCESS',
             'properties' => [
                 'merchant_id' => '10000000000000',
-                'request' => 'payout_approve',
-                'user_role' => 'owner',
-                'channel' => 'apple_watch',
+                'request'     => 'payout_approve',
+                'user_role'   => 'owner',
+                'channel'     => 'apple_watch',
             ]
         ];
 
         $this->verifyPayoutsEvent($expectedProperties);
 
-        $testData = & $this->testData[__FUNCTION__];
+        $testData                   = &$this->testData[__FUNCTION__];
         $testData['request']['url'] = '/payouts/' . $payout['id'] . '/approve';
 
         $firstApprovalResponse = $this->startTest();
@@ -3098,33 +3101,33 @@ class PayoutTest extends OAuthTestCase
         $client = factory(Client\Entity::class)->create(['environment' => 'prod']);
 
         $this->fixtures->feature->create([
-            Feature\Entity::ENTITY_TYPE => Feature\Constants::APPLICATION,
-            Feature\Entity::ENTITY_ID   => $client->application_id,
-            Feature\Entity::NAME        => Feature\Constants::RAZORPAYX_FLOWS_VIA_OAUTH
-        ]);
+                                             Feature\Entity::ENTITY_TYPE => Feature\Constants::APPLICATION,
+                                             Feature\Entity::ENTITY_ID   => $client->application_id,
+                                             Feature\Entity::NAME        => Feature\Constants::RAZORPAYX_FLOWS_VIA_OAUTH
+                                         ]);
 
-        $accessToken = $this->generateOAuthAccessToken(['scopes'=>['apple_watch_read_write'], 'mode' => 'live', 'client_id' => $client->getId()], 'prod');
+        $accessToken = $this->generateOAuthAccessToken(['scopes' => ['apple_watch_read_write'], 'mode' => 'live', 'client_id' => $client->getId()], 'prod');
 
         $this->fixtures->feature->create([
-            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => Feature\Constants::RAZORPAYX_FLOWS_VIA_OAUTH]);
+                                             'entity_type' => 'merchant', 'entity_id' => '10000000000000', 'name' => Feature\Constants::RAZORPAYX_FLOWS_VIA_OAUTH]);
 
-        $this->fixtures->user->createUserForMerchant('10000000000000', ['id' => '20000000000000', 'contact_mobile' => 9999999999],'owner', 'live');
+        $this->fixtures->user->createUserForMerchant('10000000000000', ['id' => '20000000000000', 'contact_mobile' => 9999999999], 'owner', 'live');
 
-        $this->fixtures->user->createUserForMerchant('10000000000000', ['id' => '70000000000000', 'contact_mobile' => 9999999999],'owner', 'live');
-
-        $this->fixtures->user->createUserMerchantMapping([
-            'user_id'     => '20000000000000',
-            'merchant_id' => '10000000000000',
-            'product'     => 'banking',
-            'role'       => 'owner'
-        ], 'live');
+        $this->fixtures->user->createUserForMerchant('10000000000000', ['id' => '70000000000000', 'contact_mobile' => 9999999999], 'owner', 'live');
 
         $this->fixtures->user->createUserMerchantMapping([
-            'user_id'     => '70000000000000',
-            'merchant_id' => '10000000000000',
-            'product'     => 'banking',
-            'role'       => 'admin'
-        ], 'live');
+                                                             'user_id'     => '20000000000000',
+                                                             'merchant_id' => '10000000000000',
+                                                             'product'     => 'banking',
+                                                             'role'        => 'owner'
+                                                         ], 'live');
+
+        $this->fixtures->user->createUserMerchantMapping([
+                                                             'user_id'     => '70000000000000',
+                                                             'merchant_id' => '10000000000000',
+                                                             'product'     => 'banking',
+                                                             'role'        => 'admin'
+                                                         ], 'live');
 
         $this->createPayoutWorkflowWithBankingUsersLiveMode();
 
@@ -3133,26 +3136,26 @@ class PayoutTest extends OAuthTestCase
         $this->ba->oauthBearerAuth($accessToken);
 
         $expectedProperties = [
-            'payout' => [
-                'status' => 'pending',
+            'payout'     => [
+                'status'     => 'pending',
                 'created_by' => 'api_user',
             ],
-            'merchant' => [
-                'id' => '10000000000000',
+            'merchant'   => [
+                'id'   => '10000000000000',
                 'name' => 'Test Merchant',
             ],
             'error_code' => 'SUCCESS',
             'properties' => [
                 'merchant_id' => '10000000000000',
-                'request' => 'payout_reject',
-                'user_role' => 'owner',
-                'channel' => 'apple_watch',
+                'request'     => 'payout_reject',
+                'user_role'   => 'owner',
+                'channel'     => 'apple_watch',
             ]
         ];
 
         $this->verifyPayoutsEvent($expectedProperties);
 
-        $testData = & $this->testData[__FUNCTION__];
+        $testData                   = &$this->testData[__FUNCTION__];
         $testData['request']['url'] = '/payouts/' . $payout['id'] . '/reject';
 
         $firstApprovalResponse = $this->startTest();
@@ -3177,44 +3180,43 @@ class PayoutTest extends OAuthTestCase
 
         $p = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
 
-        $this->fixtures->on('live')->edit('payout', $p['id'],['user_id' => $user['id']]);
+        $this->fixtures->on('live')->edit('payout', $p['id'], ['user_id' => $user['id']]);
 
         $client = factory(Client\Entity::class)->create(['environment' => 'prod']);
 
-        $accessToken = $this->generateOAuthAccessToken(['scopes'    => ['rx_read_write', 'read_write'], 'mode' => 'live', 'client_id' => $client->getId()], 'prod');
+        $accessToken = $this->generateOAuthAccessToken(['scopes' => ['rx_read_write', 'read_write'], 'mode' => 'live', 'client_id' => $client->getId()], 'prod');
 
         $this->fixtures->on('live')->create('feature', [
-            'entity_id' => $client->application_id,
+            'entity_id'   => $client->application_id,
             'entity_type' => 'application',
-            'name'  => Feature\Constants::PUBLIC_SETTERS_VIA_OAUTH]);
-
+            'name'        => Feature\Constants::PUBLIC_SETTERS_VIA_OAUTH]);
 
         $this->fixtures->on('live')->create('feature', [
-            'entity_id' => $client->application_id,
+            'entity_id'   => $client->application_id,
             'entity_type' => 'application',
-            'name'  => Feature\Constants::RAZORPAYX_FLOWS_VIA_OAUTH]);
+            'name'        => Feature\Constants::RAZORPAYX_FLOWS_VIA_OAUTH]);
 
         $this->fixtures->user->createUserForMerchant('10000000000000', ['id' => '20000000000000', 'contact_mobile' => 9999999999]);
 
         $this->fixtures->user->createUserMerchantMapping([
-            'user_id'     => '20000000000000',
-            'merchant_id' => '10000000000000',
-            'product'     => 'banking',
-            'role'        => 'owner'
-        ], 'live');
+                                                             'user_id'     => '20000000000000',
+                                                             'merchant_id' => '10000000000000',
+                                                             'product'     => 'banking',
+                                                             'role'        => 'owner'
+                                                         ], 'live');
 
         $expectedProperties = [
             'error_code' => 'SUCCESS',
             'properties' => [
                 'merchant_id' => '10000000000000',
-                'request' => 'payout_fetch_multiple',
-                'user_id' => '20000000000000',
-                'user_role' => 'owner',
-                'channel' => 'slack_app',
-                'filters' => [
+                'request'     => 'payout_fetch_multiple',
+                'user_id'     => '20000000000000',
+                'user_role'   => 'owner',
+                'channel'     => 'slack_app',
+                'filters'     => [
                     'product' => 'banking',
-                    'count' => '10',
-                    'expand' => [
+                    'count'   => '10',
+                    'expand'  => [
                         0 => 'fund_account.contact',
                         1 => 'user',
                     ]
@@ -3247,25 +3249,25 @@ class PayoutTest extends OAuthTestCase
 
         $p = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
 
-        $this->fixtures->on('live')->edit('payout', $p['id'],['user_id' => $user['id']]);
+        $this->fixtures->on('live')->edit('payout', $p['id'], ['user_id' => $user['id']]);
 
         $client = factory(Client\Entity::class)->create(['environment' => 'prod']);
 
-        $accessToken = $this->generateOAuthAccessToken(['scopes'    => ['rx_read_write', 'read_write'], 'mode' => 'live', 'client_id' => $client->getId()], 'prod');
+        $accessToken = $this->generateOAuthAccessToken(['scopes' => ['rx_read_write', 'read_write'], 'mode' => 'live', 'client_id' => $client->getId()], 'prod');
 
         $this->fixtures->on('live')->create('feature', [
-            'entity_id' => $client->application_id,
+            'entity_id'   => $client->application_id,
             'entity_type' => 'application',
-            'name'  => Feature\Constants::PUBLIC_SETTERS_VIA_OAUTH]);
+            'name'        => Feature\Constants::PUBLIC_SETTERS_VIA_OAUTH]);
 
         $this->fixtures->user->createUserForMerchant('10000000000000', ['id' => '20000000000000', 'contact_mobile' => 9999999999]);
 
         $this->fixtures->user->createUserMerchantMapping([
-            'user_id'     => '20000000000000',
-            'merchant_id' => '10000000000000',
-            'product'     => 'banking',
-            'role'        => 'owner'
-        ], 'live');
+                                                             'user_id'     => '20000000000000',
+                                                             'merchant_id' => '10000000000000',
+                                                             'product'     => 'banking',
+                                                             'role'        => 'owner'
+                                                         ], 'live');
 
         $this->ba->oauthBearerAuth($accessToken);
 
@@ -3274,23 +3276,23 @@ class PayoutTest extends OAuthTestCase
 
     public function testCreatePayoutWithOtpBearerAuth()
     {
-        $accessToken = $this->generateOAuthAccessToken(['scopes'    => ['read_write', 'rx_read_write']]);
+        $accessToken = $this->generateOAuthAccessToken(['scopes' => ['read_write', 'rx_read_write']]);
 
         $this->ba->oauthBearerAuth($accessToken);
 
         $this->fixtures->user->createUserForMerchant('10000000000000', ['id' => '20000000000000', 'contact_mobile' => 9999999999]);
 
         $this->fixtures->create('feature', [
-            'entity_id' => '10000000000000',
+            'entity_id'   => '10000000000000',
             'entity_type' => 'application',
-            'name'  => Feature\Constants::PUBLIC_SETTERS_VIA_OAUTH]);
+            'name'        => Feature\Constants::PUBLIC_SETTERS_VIA_OAUTH]);
 
         $this->fixtures->create('feature', [
-            'entity_id' => '10000000000000',
+            'entity_id'   => '10000000000000',
             'entity_type' => 'application',
-            'name'  => Feature\Constants::RAZORPAYX_FLOWS_VIA_OAUTH]);
+            'name'        => Feature\Constants::RAZORPAYX_FLOWS_VIA_OAUTH]);
 
-        $testData = $this->testData[__FUNCTION__];
+        $testData                                = $this->testData[__FUNCTION__];
         $testData['request']['content']['token'] = 'BUIj3m2Nx2VvVj';
         $testData['request']['content']['otp']   = '0007';
 
@@ -3312,7 +3314,7 @@ class PayoutTest extends OAuthTestCase
 
     public function testCreatePayoutWithInvalidOtp()
     {
-        $testData = $this->testData['testCreatePayout'];
+        $testData                                = $this->testData['testCreatePayout'];
         $testData['request']['url']              = '/payouts_with_otp';
         $testData['request']['content']['token'] = 'BUIj3m2Nx2VvVj';
         $testData['request']['content']['otp']   = '1234';
@@ -3339,7 +3341,7 @@ class PayoutTest extends OAuthTestCase
         // Approve with Owner role user
         $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
 
-        $testData = & $this->testData[__FUNCTION__];
+        $testData                   = &$this->testData[__FUNCTION__];
         $testData['request']['url'] = '/payouts/' . $payout['id'] . '/approve';
 
         $firstApprovalResponse = $this->startTest();
@@ -3396,7 +3398,7 @@ class PayoutTest extends OAuthTestCase
             'payout_processed'
         ];
 
-        for ($index = 0; $index<count($ledgerSnsPayloadArray); $index++)
+        for ($index = 0; $index < count($ledgerSnsPayloadArray); $index++)
         {
             $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
 
@@ -3459,7 +3461,7 @@ class PayoutTest extends OAuthTestCase
         // Approve with Owner role user
         $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
 
-        $testData = & $this->testData[__FUNCTION__];
+        $testData                   = &$this->testData[__FUNCTION__];
         $testData['request']['url'] = '/payouts/' . $payout['id'] . '/approve';
 
         $approvalResponse = $this->startTest();
@@ -3476,7 +3478,7 @@ class PayoutTest extends OAuthTestCase
 
         $payout = $this->testCreatePayout();
 
-        $testData = & $this->testData[__FUNCTION__];
+        $testData                   = &$this->testData[__FUNCTION__];
         $testData['request']['url'] = '/payouts/' . $payout['id'] . '/approve';
 
         $this->fixtures->edit(
@@ -3502,46 +3504,47 @@ class PayoutTest extends OAuthTestCase
         $mock = $this->createMetricsMock();
 
         $mock->method('histogram')
-             ->will($this->returnCallback(function (string $metric, float $times, array $dimensions = []) {
+             ->will($this->returnCallback(function(string $metric, float $times, array $dimensions = []) {
                  if ($metric === WorkflowService::WORKFLOW_SERVICE_REQUEST_MILLISECONDS)
                  {
                      $this->assertEquals(100, $times);
                      $this->assertEquals([], $dimensions);
                  }
+
                  return true;
              }));
 
         $this->fixtures->on('live')->create(
             'workflow_config',
             [
-                'config_id'     => 'FVLeJYoM0GPWUb', // Should exist in the new WF service
-                'created_at'    => 1598967658
+                'config_id'  => 'FVLeJYoM0GPWUb', // Should exist in the new WF service
+                'created_at' => 1598967658
             ]);
 
         $this->fixtures->on('live')->create(
             'workflow_config',
             [
-                'config_id'     => 'FVLeJYoM0GPWUc', // Should exist in the new WF service
-                'created_at'    => 1598967657
+                'config_id'  => 'FVLeJYoM0GPWUc', // Should exist in the new WF service
+                'created_at' => 1598967657
             ]);
 
         $payout = $this->createPayoutWithWorkflow([
-            'notes' => [
-                "random_key1" => "Hello",
-                "random_key2" => "Hi"
-            ]
-        ], 'rzp_live_TheLiveAuthKey');
+                                                      'notes' => [
+                                                          "random_key1" => "Hello",
+                                                          "random_key2" => "Hi"
+                                                      ]
+                                                  ], 'rzp_live_TheLiveAuthKey');
 
         $this->fixtures->on('live')->create(
             'workflow_entity_map',
             [
-                'entity_id' =>substr($payout["id"], 5), //pout_FUj82QLoJgRcM0 => FUj82QLoJgRcM0
+                'entity_id' => substr($payout["id"], 5), //pout_FUj82QLoJgRcM0 => FUj82QLoJgRcM0
             ]);
 
         // Approve with Owner role user
         $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
 
-        $testData = & $this->testData[__FUNCTION__];
+        $testData                   = &$this->testData[__FUNCTION__];
         $testData['request']['url'] = '/payouts/' . $payout['id'] . '/approve';
 
         $this->startTest();
@@ -3558,7 +3561,7 @@ class PayoutTest extends OAuthTestCase
         $this->fixtures->on('live')->create(
             'workflow_config',
             [
-                'config_id'     => 'FVLeJYoM0GPWUb',  // Should exist in the new WF service
+                'config_id' => 'FVLeJYoM0GPWUb',  // Should exist in the new WF service
             ]);
 
         $payout = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
@@ -3566,13 +3569,13 @@ class PayoutTest extends OAuthTestCase
         $this->fixtures->on('live')->create(
             'workflow_entity_map',
             [
-                'entity_id' =>substr($payout["id"], 5), //pout_FUj82QLoJgRcM0 => FUj82QLoJgRcM0
+                'entity_id' => substr($payout["id"], 5), //pout_FUj82QLoJgRcM0 => FUj82QLoJgRcM0
             ]);
 
         // Approve with Owner role user
         $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
 
-        $testData = & $this->testData[__FUNCTION__];
+        $testData                   = &$this->testData[__FUNCTION__];
         $testData['request']['url'] = '/payouts/' . $payout['id'] . '/reject';
 
         $this->startTest();
@@ -3604,7 +3607,7 @@ class PayoutTest extends OAuthTestCase
         $this->fixtures->on('live')->create(
             'workflow_config',
             [
-                'config_id'     => 'FVLeJYoM0GPWUb',  // Should exist in the new WF service
+                'config_id' => 'FVLeJYoM0GPWUb',  // Should exist in the new WF service
             ]);
 
         $payout = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
@@ -3612,12 +3615,12 @@ class PayoutTest extends OAuthTestCase
         $this->fixtures->on('live')->create(
             'workflow_entity_map',
             [
-                'entity_id' =>substr($payout["id"], 5), //pout_FUj82QLoJgRcM0 => FUj82QLoJgRcM0
+                'entity_id' => substr($payout["id"], 5), //pout_FUj82QLoJgRcM0 => FUj82QLoJgRcM0
             ]);
 
         $this->ba->appAuthLive($this->config['applications.workflows.secret']);
 
-        $testData = & $this->testData[__FUNCTION__];
+        $testData                   = &$this->testData[__FUNCTION__];
         $testData['request']['url'] = '/payouts_internal/' . $payout["id"] . '/reject';
 
         $this->mockWFS(substr($payout["id"], 5), $testData['request']['content']['user_comment']);
@@ -3655,7 +3658,7 @@ class PayoutTest extends OAuthTestCase
         $this->fixtures->on('live')->create(
             'workflow_config',
             [
-                'config_id'     => 'FVLeJYoM0GPWUb',  // Should exist in the new WF service
+                'config_id' => 'FVLeJYoM0GPWUb',  // Should exist in the new WF service
             ]);
 
         $payout = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
@@ -3663,15 +3666,15 @@ class PayoutTest extends OAuthTestCase
         $this->fixtures->on('live')->create(
             'workflow_entity_map',
             [
-                'entity_id' =>substr($payout["id"], 5), //pout_FUj82QLoJgRcM0 => FUj82QLoJgRcM0
+                'entity_id' => substr($payout["id"], 5), //pout_FUj82QLoJgRcM0 => FUj82QLoJgRcM0
             ]);
 
         $this->ba->appAuthLive($this->config['applications.workflows.secret']);
 
-        $testData = & $this->testData[__FUNCTION__];
+        $testData                   = &$this->testData[__FUNCTION__];
         $testData['request']['url'] = '/payouts_internal/' . $payout["id"] . '/reject';
 
-        $this->mockWFS(substr($payout["id"], 5),  $testData['request']['content']['user_comment'] ?? "null");
+        $this->mockWFS(substr($payout["id"], 5), $testData['request']['content']['user_comment'] ?? "null");
 
         $eventTestDataKey = 'testFiringOfWebhookOnRejectionOfPayoutWithoutCommentInWebhookEventData';
 
@@ -3688,7 +3691,7 @@ class PayoutTest extends OAuthTestCase
 
         $payout = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
 
-        $testData = & $this->testData[__FUNCTION__];
+        $testData                   = &$this->testData[__FUNCTION__];
         $testData['request']['url'] = '/payouts/' . $payout['id'] . '/reject';
 
         $this->mockRazorxTreatment(
@@ -3731,7 +3734,7 @@ class PayoutTest extends OAuthTestCase
 
         $payout = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
 
-        $testData = & $this->testData[__FUNCTION__];
+        $testData                   = &$this->testData[__FUNCTION__];
         $testData['request']['url'] = '/payouts/' . $payout['id'] . '/reject';
 
         $this->mockRazorxTreatment(
@@ -3777,7 +3780,7 @@ class PayoutTest extends OAuthTestCase
         $this->fixtures->on('live')->create(
             'workflow_config',
             [
-                'config_id'     => 'FVLeJYoM0GPWUb',
+                'config_id' => 'FVLeJYoM0GPWUb',
             ]);
 
         $payout = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
@@ -3785,7 +3788,7 @@ class PayoutTest extends OAuthTestCase
         // Approve with Owner role user
         $this->ba->appAuthLive($this->config['applications.workflows.secret']);
 
-        $testData = & $this->testData[__FUNCTION__];
+        $testData                   = &$this->testData[__FUNCTION__];
         $testData['request']['url'] = '/payouts_internal/' . $payout["id"] . '/approve';
 
         $this->startTest();
@@ -3802,7 +3805,7 @@ class PayoutTest extends OAuthTestCase
         $this->fixtures->on('live')->create(
             'workflow_config',
             [
-                'config_id'     => 'FVLeJYoM0GPWUb',
+                'config_id' => 'FVLeJYoM0GPWUb',
             ]);
 
         $payout = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
@@ -3813,7 +3816,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->expectWebhookEventWithContents('payout.rejected', $eventTestDataKey);
 
-        $testData = & $this->testData[__FUNCTION__];
+        $testData                   = &$this->testData[__FUNCTION__];
         $testData['request']['url'] = '/payouts_internal/' . $payout["id"] . '/reject';
 
         $this->startTest();
@@ -3825,7 +3828,7 @@ class PayoutTest extends OAuthTestCase
 
         $payout = $this->getDbLastEntity('payout', 'live');
 
-        $testData = & $this->testData[__FUNCTION__];
+        $testData                   = &$this->testData[__FUNCTION__];
         $testData['request']['url'] = '/payouts_internal/pout_' . $payout->getId() . '/reject';
 
         $this->startTest();
@@ -3844,7 +3847,7 @@ class PayoutTest extends OAuthTestCase
         $this->fixtures->on('live')->create(
             'workflow_config',
             [
-                'config_id'     => 'FVLeJYoM0GPWUb',
+                'config_id' => 'FVLeJYoM0GPWUb',
             ]);
 
         $payout = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
@@ -3852,13 +3855,13 @@ class PayoutTest extends OAuthTestCase
         $this->fixtures->on('live')->create(
             'workflow_entity_map',
             [
-                'entity_id' =>substr($payout["id"], 5), //pout_FUj82QLoJgRcM0 => FUj82QLoJgRcM0
+                'entity_id' => substr($payout["id"], 5), //pout_FUj82QLoJgRcM0 => FUj82QLoJgRcM0
             ]);
 
         // Approve with Owner role user
         $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
 
-        $testData = & $this->testData[__FUNCTION__];
+        $testData                   = &$this->testData[__FUNCTION__];
         $testData['request']['url'] = '/payouts/' . $payout['id'] . '/history';
 
         $this->startTest();
@@ -3875,7 +3878,7 @@ class PayoutTest extends OAuthTestCase
         $this->fixtures->on('live')->create(
             'workflow_config',
             [
-                'config_id'     => 'FVLeJYoM0GPWUb',
+                'config_id' => 'FVLeJYoM0GPWUb',
             ]);
 
         $payout1 = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
@@ -3884,17 +3887,16 @@ class PayoutTest extends OAuthTestCase
         $this->fixtures->on('live')->create(
             'workflow_entity_map',
             [
-                'entity_id' =>substr($payout1["id"], 5), //pout_FUj82QLoJgRcM0 => FUj82QLoJgRcM0
+                'entity_id' => substr($payout1["id"], 5), //pout_FUj82QLoJgRcM0 => FUj82QLoJgRcM0
             ]);
 
         $this->fixtures->on('live')->create(
             'workflow_entity_map',
             [
-                'entity_id' =>substr($payout2["id"], 5), //pout_FUj82QLoJgRcM0 => FUj82QLoJgRcM0
+                'entity_id' => substr($payout2["id"], 5), //pout_FUj82QLoJgRcM0 => FUj82QLoJgRcM0
             ]);
 
-
-        $testData = & $this->testData[__FUNCTION__];
+        $testData = &$this->testData[__FUNCTION__];
 
         $testData['request']['content']['payout_ids'] = [$payout1['id'], $payout2['id']];
 
@@ -3907,8 +3909,8 @@ class PayoutTest extends OAuthTestCase
         $this->app['config']->set('database.default', 'live');
 
         $adminToken = $this->fixtures->on('test')->create('admin_token', [
-            'admin_id'   => $adminForTest->getId(),
-            'token'      => Hash::make('ThisIsATokenForTest'),
+            'admin_id' => $adminForTest->getId(),
+            'token'    => Hash::make('ThisIsATokenForTest'),
         ]);
 
         $token = 'ThisIsATokenForTest' . $adminToken->getId();
@@ -3929,7 +3931,7 @@ class PayoutTest extends OAuthTestCase
         $this->fixtures->on('live')->create(
             'workflow_config',
             [
-                'config_id'     => 'FVLeJYoM0GPWUb',
+                'config_id' => 'FVLeJYoM0GPWUb',
             ]);
 
         $payout1 = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
@@ -3938,17 +3940,16 @@ class PayoutTest extends OAuthTestCase
         $this->fixtures->on('live')->create(
             'workflow_entity_map',
             [
-                'entity_id' =>substr($payout1["id"], 5), //pout_FUj82QLoJgRcM0 => FUj82QLoJgRcM0
+                'entity_id' => substr($payout1["id"], 5), //pout_FUj82QLoJgRcM0 => FUj82QLoJgRcM0
             ]);
 
         $this->fixtures->on('live')->create(
             'workflow_entity_map',
             [
-                'entity_id' =>substr($payout2["id"], 5), //pout_FUj82QLoJgRcM0 => FUj82QLoJgRcM0
+                'entity_id' => substr($payout2["id"], 5), //pout_FUj82QLoJgRcM0 => FUj82QLoJgRcM0
             ]);
 
-
-        $testData = & $this->testData[__FUNCTION__];
+        $testData = &$this->testData[__FUNCTION__];
 
         $testData['request']['content']['payout_ids'] = [$payout1['id'], $payout2['id']];
 
@@ -3961,8 +3962,8 @@ class PayoutTest extends OAuthTestCase
         $this->app['config']->set('database.default', 'live');
 
         $adminToken = $this->fixtures->on('test')->create('admin_token', [
-            'admin_id'   => $adminForLive->getId(),
-            'token'      => Hash::make('ThisIsATokenForTest'),
+            'admin_id' => $adminForLive->getId(),
+            'token'    => Hash::make('ThisIsATokenForTest'),
         ]);
 
         $token = 'ThisIsATokenForTest' . $adminToken->getId();
@@ -3983,7 +3984,7 @@ class PayoutTest extends OAuthTestCase
         $this->fixtures->on('live')->create(
             'workflow_config',
             [
-                'config_id'     => 'FVLeJYoM0GPWUb',
+                'config_id' => 'FVLeJYoM0GPWUb',
             ]);
 
         $payout1 = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
@@ -3991,21 +3992,21 @@ class PayoutTest extends OAuthTestCase
         $this->fixtures->on('live')->create(
             'workflow_entity_map',
             [
-                'entity_id' =>substr($payout1["id"], 5), //pout_FUj82QLoJgRcM0 => FUj82QLoJgRcM0
+                'entity_id' => substr($payout1["id"], 5), //pout_FUj82QLoJgRcM0 => FUj82QLoJgRcM0
             ]);
 
         // Approve with Owner role user
         $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
 
         $request = [
-            'method' => 'POST',
-            'url' => '/payouts/'.$payout1['id'].'/approve',
-            'server' => [
+            'method'  => 'POST',
+            'url'     => '/payouts/' . $payout1['id'] . '/approve',
+            'server'  => [
                 'HTTP_X-Request-Origin' => config('applications.banking_service_url')
             ],
             'content' => [
-                'token' => 'BUIj3m2Nx2VvVj',
-                'otp' => '0007',
+                'token'        => 'BUIj3m2Nx2VvVj',
+                'otp'          => '0007',
                 'user_comment' => 'Approving',
             ],
         ];
@@ -4015,15 +4016,15 @@ class PayoutTest extends OAuthTestCase
         $this->ba->batchAuth('rzp_live_10000000000000');
 
         $headers = [
-            'HTTP_X_Batch_Id'          => 'C0zv9I46W4wiOq',
-            'HTTP_X_Creator_Type'      => 'user',
-            'HTTP_X_Creator_Id'        => $this->finL3RoleUser->getId()
+            'HTTP_X_Batch_Id'     => 'C0zv9I46W4wiOq',
+            'HTTP_X_Creator_Type' => 'user',
+            'HTTP_X_Creator_Id'   => $this->finL3RoleUser->getId()
         ];
 
-        $testData = & $this->testData[__FUNCTION__];
-        $testData['request']['server'] = $headers;
+        $testData                                          = &$this->testData[__FUNCTION__];
+        $testData['request']['server']                     = $headers;
         $testData['request']['content'][0]['payout']['id'] = $payout1['id'];
-        $testData['request']['content'][0]['fund']['id'] = $payout1['fund_account_id'];
+        $testData['request']['content'][0]['fund']['id']   = $payout1['fund_account_id'];
 
         $this->startTest();
     }
@@ -4039,13 +4040,13 @@ class PayoutTest extends OAuthTestCase
         $this->fixtures->on('live')->create(
             'workflow_config',
             [
-                'config_id'     => 'FVLeJYoM0GPWUb',
+                'config_id' => 'FVLeJYoM0GPWUb',
             ]);
 
         $this->ba->batchAuth('rzp_live_10000000000000');
 
         $headers = [
-            'HTTP_X_Batch_Id'    => 'C0zv9I46W4wiOq',
+            'HTTP_X_Batch_Id'     => 'C0zv9I46W4wiOq',
             'HTTP_X_Creator_Type' => 'user',
             'HTTP_X_Creator_Id'   => 'MerchantUser01'
         ];
@@ -4067,34 +4068,34 @@ class PayoutTest extends OAuthTestCase
         $this->fixtures->on('live')->create(
             'workflow_config',
             [
-                'config_id'     => 'FVLeJYoM0GPWUb', // Should exist in the new WF service
-                'created_at'    => 1598967658
+                'config_id'  => 'FVLeJYoM0GPWUb', // Should exist in the new WF service
+                'created_at' => 1598967658
             ]);
 
         $this->fixtures->on('live')->create(
             'workflow_config',
             [
-                'config_id'     => 'FVLeJYoM0GPWUc', // Should exist in the new WF service
-                'created_at'    => 1598967657
+                'config_id'  => 'FVLeJYoM0GPWUc', // Should exist in the new WF service
+                'created_at' => 1598967657
             ]);
 
         $payout = $this->createPayoutWithWorkflow([
-            'notes' => [
-                "random_key1" => "Hello",
-                "random_key2" => "Hi"
-            ]
-        ], 'rzp_live_TheLiveAuthKey');
+                                                      'notes' => [
+                                                          "random_key1" => "Hello",
+                                                          "random_key2" => "Hi"
+                                                      ]
+                                                  ], 'rzp_live_TheLiveAuthKey');
 
         $this->fixtures->on('live')->create(
             'workflow_entity_map',
             [
-                'entity_id' =>substr($payout["id"], 5), //pout_FUj82QLoJgRcM0 => FUj82QLoJgRcM0
+                'entity_id' => substr($payout["id"], 5), //pout_FUj82QLoJgRcM0 => FUj82QLoJgRcM0
             ]);
 
         // Approve with Owner role user
         $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
 
-        $testData = & $this->testData[__FUNCTION__];
+        $testData                   = &$this->testData[__FUNCTION__];
         $testData['request']['url'] = '/payouts/' . $payout['id'] . '/approve';
 
         $this->startTest();
@@ -4111,34 +4112,34 @@ class PayoutTest extends OAuthTestCase
         $this->fixtures->on('live')->create(
             'workflow_config',
             [
-                'config_id'     => 'FVLeJYoM0GPWUb', // Should exist in the new WF service
-                'created_at'    => 1598967658
+                'config_id'  => 'FVLeJYoM0GPWUb', // Should exist in the new WF service
+                'created_at' => 1598967658
             ]);
 
         $this->fixtures->on('live')->create(
             'workflow_config',
             [
-                'config_id'     => 'FVLeJYoM0GPWUc', // Should exist in the new WF service
-                'created_at'    => 1598967657
+                'config_id'  => 'FVLeJYoM0GPWUc', // Should exist in the new WF service
+                'created_at' => 1598967657
             ]);
 
         $payout = $this->createPayoutWithWorkflow([
-            'notes' => [
-                "random_key1" => "Hello",
-                "random_key2" => "Hi"
-            ]
-        ], 'rzp_live_TheLiveAuthKey');
+                                                      'notes' => [
+                                                          "random_key1" => "Hello",
+                                                          "random_key2" => "Hi"
+                                                      ]
+                                                  ], 'rzp_live_TheLiveAuthKey');
 
         $this->fixtures->on('live')->create(
             'workflow_entity_map',
             [
-                'entity_id' =>substr($payout["id"], 5), //pout_FUj82QLoJgRcM0 => FUj82QLoJgRcM0
+                'entity_id' => substr($payout["id"], 5), //pout_FUj82QLoJgRcM0 => FUj82QLoJgRcM0
             ]);
 
         // Approve with Owner role user
         $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
 
-        $testData = & $this->testData[__FUNCTION__];
+        $testData                   = &$this->testData[__FUNCTION__];
         $testData['request']['url'] = '/payouts/' . $payout['id'] . '/approve';
 
         $this->startTest();
@@ -4161,18 +4162,18 @@ class PayoutTest extends OAuthTestCase
         $this->fixtures->on('live')->create(
             'workflow_config',
             [
-                'config_id'     => 'FVLeJYoM0GPWUb', // Should exist in the new WF service
-                'created_at'    => 1598967658
+                'config_id'  => 'FVLeJYoM0GPWUb', // Should exist in the new WF service
+                'created_at' => 1598967658
             ]);
 
         //2. I Create a Payout
-        $payout = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
+        $payout           = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
         $expectedPayoutId = $payout["id"];
 
         $this->fixtures->on('live')->create(
             'workflow_entity_map',
             [
-                'entity_id' =>substr($payout["id"], 5), //pout_FUj82QLoJgRcM0 => FUj82QLoJgRcM0
+                'entity_id' => substr($payout["id"], 5), //pout_FUj82QLoJgRcM0 => FUj82QLoJgRcM0
             ]);
 
         $this->fixtures->on('live')->create('workflow_state_map', ['actor_type_value' => 'finance_l3']);
@@ -4186,7 +4187,7 @@ class PayoutTest extends OAuthTestCase
 
         $request = [
             'method'  => 'get',
-            'server' => [
+            'server'  => [
                 'HTTP_X-Request-Origin' => config('applications.banking_service_url')
             ],
             'content' => [
@@ -4198,7 +4199,7 @@ class PayoutTest extends OAuthTestCase
         ];
 
         $response = $this->sendRequest($request);
-        $payout = json_decode($response->getContent(), true);
+        $payout   = json_decode($response->getContent(), true);
 
         $this->assertEmpty($payout["items"]);
 
@@ -4206,7 +4207,7 @@ class PayoutTest extends OAuthTestCase
 
         $request = [
             'method'  => 'get',
-            'server' => [
+            'server'  => [
                 'HTTP_X-Request-Origin' => config('applications.banking_service_url')
             ],
             'content' => [
@@ -4218,7 +4219,7 @@ class PayoutTest extends OAuthTestCase
         ];
 
         $response = $this->sendRequest($request);
-        $payout = json_decode($response->getContent(), false);
+        $payout   = json_decode($response->getContent(), false);
         $this->assertEquals(2, count($payout->items));
         $this->assertTrue($payout->items[0]->created_at >= $payout->items[1]->created_at);
         $this->assertEquals($expectedPayoutId, $payout->items[0]->id);
@@ -4229,7 +4230,7 @@ class PayoutTest extends OAuthTestCase
         $request = [
             'method'  => 'POST',
             'url'     => "/payouts/{$expectedPayoutId}/approve",
-            'server' => [
+            'server'  => [
                 'HTTP_X-Request-Origin' => config('applications.banking_service_url')
             ],
             'content' => [
@@ -4250,7 +4251,7 @@ class PayoutTest extends OAuthTestCase
 
         $request = [
             'method'  => 'get',
-            'server' => [
+            'server'  => [
                 'HTTP_X-Request-Origin' => config('applications.banking_service_url')
             ],
             'content' => [
@@ -4262,7 +4263,7 @@ class PayoutTest extends OAuthTestCase
         ];
 
         $response = $this->sendRequest($request);
-        $payout = json_decode($response->getContent(), false);
+        $payout   = json_decode($response->getContent(), false);
 
         $this->assertEquals(1, count($payout->items));
     }
@@ -4276,7 +4277,7 @@ class PayoutTest extends OAuthTestCase
         $payout1 = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
         $payout2 = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
 
-        $testData = & $this->testData[__FUNCTION__];
+        $testData                                     = &$this->testData[__FUNCTION__];
         $testData['request']['content']['payout_ids'] = [$payout1['id'], $payout2['id']];
 
         // Approve with Owner role user
@@ -4298,7 +4299,7 @@ class PayoutTest extends OAuthTestCase
         $payout1 = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
         $payout2 = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
 
-        $testData = & $this->testData[__FUNCTION__];
+        $testData                                     = &$this->testData[__FUNCTION__];
         $testData['request']['content']['payout_ids'] = [$payout1['id'], $payout2['id']];
 
         // Approve with Owner role user
@@ -4320,7 +4321,7 @@ class PayoutTest extends OAuthTestCase
         $payout1 = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
         $payout2 = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
 
-        $testData = & $this->testData[__FUNCTION__];
+        $testData                                     = &$this->testData[__FUNCTION__];
         $testData['request']['content']['payout_ids'] = [$payout1['id'], $payout2['id']];
 
         // Approve with Owner role user
@@ -4341,7 +4342,7 @@ class PayoutTest extends OAuthTestCase
 
         $payout = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
 
-        $testData = & $this->testData[__FUNCTION__];
+        $testData                   = &$this->testData[__FUNCTION__];
         $testData['request']['url'] = '/payouts/' . $payout['id'] . '/reject';
 
         $this->mockRazorxTreatment('yesbank', 'on');
@@ -4369,7 +4370,7 @@ class PayoutTest extends OAuthTestCase
 
         $payout = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
 
-        $testData = & $this->testData[__FUNCTION__];
+        $testData                   = &$this->testData[__FUNCTION__];
         $testData['request']['url'] = '/payouts/' . $payout['id'] . '/reject';
 
         $this->mockRazorxTreatment('yesbank', 'on');
@@ -4397,7 +4398,7 @@ class PayoutTest extends OAuthTestCase
 
         $payout = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
 
-        $testData = & $this->testData[__FUNCTION__];
+        $testData                   = &$this->testData[__FUNCTION__];
         $testData['request']['url'] = '/payouts/' . $payout['id'] . '/reject';
 
         $this->mockRazorxTreatment('yesbank', 'on');
@@ -4426,8 +4427,7 @@ class PayoutTest extends OAuthTestCase
         $payout1 = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
         $payout2 = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
 
-
-        $testData = & $this->testData[__FUNCTION__];
+        $testData                                     = &$this->testData[__FUNCTION__];
         $testData['request']['content']['payout_ids'] = [$payout1['id'], $payout2['id']];
 
         $this->mockRazorxTreatment('yesbank', 'on');
@@ -4456,7 +4456,7 @@ class PayoutTest extends OAuthTestCase
         $payout1 = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
         $payout2 = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
 
-        $testData = & $this->testData[__FUNCTION__];
+        $testData                                     = &$this->testData[__FUNCTION__];
         $testData['request']['content']['payout_ids'] = [$payout1['id'], $payout2['id']];
 
         $this->mockRazorxTreatment('yesbank', 'on');
@@ -4478,7 +4478,7 @@ class PayoutTest extends OAuthTestCase
 
     public function testRetryPayout(): array
     {
-        $payout = $this->testCreatePayout();
+        $payout        = $this->testCreatePayout();
         $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
 
         $this->fixtures->edit(
@@ -4672,19 +4672,19 @@ class PayoutTest extends OAuthTestCase
         ]);
 
         $this->fixtures->create('card', [
-            'merchant_id'           =>'10000000000000',
-            'name'                  =>'name1',
-            'expiry_month'          =>4,
-            'expiry_year'           =>2024,
-            'vault_token'           =>'MzQwMTY5NTcwOTkwMTM3==',
+            'merchant_id'  => '10000000000000',
+            'name'         => 'name1',
+            'expiry_month' => 4,
+            'expiry_year'  => 2024,
+            'vault_token'  => 'MzQwMTY5NTcwOTkwMTM3==',
         ]);
 
         $this->fixtures->create('card', [
-            'merchant_id'           =>'10000000000000',
-            'name'                  =>'name2',
-            'expiry_month'          =>9,
-            'expiry_year'           =>2030,
-            'vault_token'           =>'MzQwMTY5NTcwOTkwMTM3==',
+            'merchant_id'  => '10000000000000',
+            'name'         => 'name2',
+            'expiry_month' => 9,
+            'expiry_year'  => 2030,
+            'vault_token'  => 'MzQwMTY5NTcwOTkwMTM3==',
         ]);
 
         $this->mockCardVault();
@@ -4721,8 +4721,8 @@ class PayoutTest extends OAuthTestCase
         Queue::fake();
 
         $payout = $this->fixtures->create('payout', [
-            'status'            =>      'created',
-            'pricing_rule_id'   =>      '1nvp2XPMmaRLxb',
+            'status'          => 'created',
+            'pricing_rule_id' => '1nvp2XPMmaRLxb',
         ]);
 
         $payout->setStatus(Status::PROCESSING);
@@ -4731,12 +4731,12 @@ class PayoutTest extends OAuthTestCase
 
         // now adding payout source and QueuePush Should Happen
         $this->fixtures->create('payout_source',
-            [
-                'payout_id'   => $payout->getId(),
-                'source_id'   => 'vdpm_1',
-                'source_type' => 'refund',
-                'priority'    => 1
-            ]);
+                                [
+                                    'payout_id'   => $payout->getId(),
+                                    'source_id'   => 'vdpm_1',
+                                    'source_type' => 'refund',
+                                    'priority'    => 1
+                                ]);
 
         $payout->setStatus(Status::PROCESSED);
 
@@ -4748,9 +4748,9 @@ class PayoutTest extends OAuthTestCase
         $contactId = $this->getDbLastEntity('contact')->getId();
 
         $this->fixtures->create('fund_account:vpa', [
-            'id'            => '100000000003fa',
-            'source_type'   => 'contact',
-            'source_id'     => $contactId,
+            'id'          => '100000000003fa',
+            'source_type' => 'contact',
+            'source_id'   => $contactId,
         ]);
 
         $this->fixtures->merchant->holdFunds();
@@ -4861,7 +4861,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->fixtures->edit('payout', $payout3['id'], ['reference_id' => 'WckD']);
 
-        $this->testData[__FUNCTION__]['request']['url'] = $this->testData[__FUNCTION__]['request']['url'].'&reference_id=WckD';
+        $this->testData[__FUNCTION__]['request']['url'] = $this->testData[__FUNCTION__]['request']['url'] . '&reference_id=WckD';
 
         $this->ba->proxyAuth();
 
@@ -4891,22 +4891,22 @@ class PayoutTest extends OAuthTestCase
         $this->reversePayout($payout);
 
         $reversal = $this->fixtures->reversal->createPayoutReversal([
-            'merchant_id'   => '10000000000000',
-            'entity_id'     => $payout['id'],
-            'entity_type'   => 'payout',
-            'amount'        => $payout['amount'],
-            'fee'           => 0,
-            'tax'           => 0,
-            'channel'       => 'rbl',
-        ]);
+                                                                        'merchant_id' => '10000000000000',
+                                                                        'entity_id'   => $payout['id'],
+                                                                        'entity_type' => 'payout',
+                                                                        'amount'      => $payout['amount'],
+                                                                        'fee'         => 0,
+                                                                        'tax'         => 0,
+                                                                        'channel'     => 'rbl',
+                                                                    ]);
 
         $this->ba->proxyAuth();
 
-        $this->testData[__FUNCTION__]['request']['url'] = $this->testData[__FUNCTION__]['request']['url'].'rvrsl_'.$reversal['id'];
+        $this->testData[__FUNCTION__]['request']['url'] = $this->testData[__FUNCTION__]['request']['url'] . 'rvrsl_' . $reversal['id'];
 
         $payouts = $this->startTest();
 
-        $this->assertEquals('pout_'.$reversal['entity_id'], $payouts['items'][0]['id']);
+        $this->assertEquals('pout_' . $reversal['entity_id'], $payouts['items'][0]['id']);
 
         $this->assertEquals('reversed', $payouts['items'][0]['status']);
 
@@ -4917,7 +4917,8 @@ class PayoutTest extends OAuthTestCase
         $this->assertNotEquals($payouts['items'], null);
     }
 
-    public function testGetPayoutsForPendingOnRoles() {
+    public function testGetPayoutsForPendingOnRoles()
+    {
         //Given
 
         //1. I have a Workflow
@@ -4927,7 +4928,7 @@ class PayoutTest extends OAuthTestCase
         $this->setupWorkflowForLiveMode($this->getWorkflow1());
 
         //2. I Create a Payout
-        $payout = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
+        $payout           = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
         $expectedPayoutId = $payout["id"];
 
         //When
@@ -4938,7 +4939,7 @@ class PayoutTest extends OAuthTestCase
         $request = [
             'method'  => 'POST',
             'url'     => "/payouts/{$payout['id']}/approve",
-            'server' => [
+            'server'  => [
                 'HTTP_X-Request-Origin' => config('applications.banking_service_url')
             ],
             'content' => [
@@ -4955,7 +4956,7 @@ class PayoutTest extends OAuthTestCase
         $request = [
             'method'  => 'POST',
             'url'     => "/payouts/{$payout['id']}/approve",
-            'server' => [
+            'server'  => [
                 'HTTP_X-Request-Origin' => config('applications.banking_service_url')
             ],
             'content' => [
@@ -4975,7 +4976,7 @@ class PayoutTest extends OAuthTestCase
 
         $request = [
             'method'  => 'get',
-            'server' => [
+            'server'  => [
                 'HTTP_X-Request-Origin' => config('applications.banking_service_url')
             ],
             'content' => [
@@ -4987,7 +4988,7 @@ class PayoutTest extends OAuthTestCase
         ];
 
         $response = $this->sendRequest($request);
-        $payout = json_decode($response->getContent(), true);
+        $payout   = json_decode($response->getContent(), true);
 
         $this->assertEmpty($payout["items"]);
 
@@ -4995,7 +4996,7 @@ class PayoutTest extends OAuthTestCase
 
         $request = [
             'method'  => 'get',
-            'server' => [
+            'server'  => [
                 'HTTP_X-Request-Origin' => config('applications.banking_service_url')
             ],
             'content' => [
@@ -5007,12 +5008,13 @@ class PayoutTest extends OAuthTestCase
         ];
 
         $response = $this->sendRequest($request);
-        $payout = json_decode($response->getContent(), false);
+        $payout   = json_decode($response->getContent(), false);
 
         $this->assertEquals($expectedPayoutId, $payout->items[0]->id);
     }
 
-    private function getWorkflow1() {
+    private function getWorkflow1()
+    {
         return [
             'org_id'      => '100000razorpay',
             'name'        => 'some workflow',
@@ -5066,9 +5068,9 @@ class PayoutTest extends OAuthTestCase
 
         $this->ba->privateAuth();
 
-        $request = & $this->testData[__FUNCTION__]['request'];
+        $request = &$this->testData[__FUNCTION__]['request'];
 
-        $request['url'] = '/payouts/'. $payout['id'];
+        $request['url'] = '/payouts/' . $payout['id'];
 
         $payout2 = $this->startTest();
 
@@ -5147,9 +5149,9 @@ class PayoutTest extends OAuthTestCase
         $this->startTest();
     }
 
-    public function setPaymentPayoutUrl($payment, & $request)
+    public function setPaymentPayoutUrl($payment, &$request)
     {
-        $request['url'] = '/payments/'. $payment->getPublicId() . '/payouts';
+        $request['url'] = '/payments/' . $payment->getPublicId() . '/payouts';
     }
 
     public function testCreatePayoutAttemptSuccess()
@@ -5210,7 +5212,7 @@ class PayoutTest extends OAuthTestCase
     {
         $payout = $this->testCreatePayout();
 
-        $request = & $this->testData[__FUNCTION__]['request'];
+        $request        = &$this->testData[__FUNCTION__]['request'];
         $request['url'] = '/payouts?transaction_id=' . $payout['transaction_id'] . '&account_number=2224440041626905';
 
         $this->ba->privateAuth();
@@ -5232,7 +5234,7 @@ class PayoutTest extends OAuthTestCase
 
         $payout = $this->testCreatePayout();
 
-        $request = & $this->testData[__FUNCTION__]['request'];
+        $request = &$this->testData[__FUNCTION__]['request'];
 
         $request['url'] = '/payouts?status=processed&account_number=2224440041626905';
 
@@ -5251,7 +5253,7 @@ class PayoutTest extends OAuthTestCase
 
     public function testSearchPayoutByPayoutStatusReason()
     {
-        $this->setmockRazorxTreatment(['enable_status_details_feature' => 'on'],'control');
+        $this->setmockRazorxTreatment(['enable_status_details_feature' => 'on'], 'control');
 
         $this->testCreatePayout();
         $payout = $this->getDbLastEntity('payout');
@@ -5259,40 +5261,40 @@ class PayoutTest extends OAuthTestCase
         $this->testCreatePayout();
         $payout1 = $this->getDbLastEntity('payout');
         (new Payout\Core)->updateWithDetailsBeforeFtaRecon($payout, [
-            'source_type' => 'payout',
-            'source_id' => $payout->getId(),
-            'fta_status' => 'initiated',
-            'channel' => 'rbl',
-            'failure_reason' => '',
-            'utr' => 928337183,
-            'remarks' => '',
+            'source_type'      => 'payout',
+            'source_id'        => $payout->getId(),
+            'fta_status'       => 'initiated',
+            'channel'          => 'rbl',
+            'failure_reason'   => '',
+            'utr'              => 928337183,
+            'remarks'          => '',
             'bank_status_code' => 'SUCCESS',
-            'status_details' => [
-                'reason' => 'bank_window_closed',
+            'status_details'   => [
+                'reason'     => 'bank_window_closed',
                 'parameters' => [
                     'processed_by_time' => '1636472623',
                 ],
             ],
         ]);
 
-        $request = & $this->testData[__FUNCTION__]['request'];
+        $request        = &$this->testData[__FUNCTION__]['request'];
         $request['url'] = '/payouts?status=processing&reason=bank_window_closed&account_number=2224440041626905';
         $this->ba->privateAuth();
         $response = $this->startTest();
         $this->assertEquals(1, $response['count']);
-        $this->assertEquals('pout_'.$payout['id'],$response['items'][0]['id']);
+        $this->assertEquals('pout_' . $payout['id'], $response['items'][0]['id']);
 
         (new Payout\Core)->updateWithDetailsBeforeFtaRecon($payout1, [
-            'source_type' => 'payout',
-            'source_id' => $payout1->getId(),
-            'fta_status' => 'initiated',
-            'channel' => 'rbl',
-            'failure_reason' => '',
-            'utr' => 928337183,
-            'remarks' => '',
+            'source_type'      => 'payout',
+            'source_id'        => $payout1->getId(),
+            'fta_status'       => 'initiated',
+            'channel'          => 'rbl',
+            'failure_reason'   => '',
+            'utr'              => 928337183,
+            'remarks'          => '',
             'bank_status_code' => 'SUCCESS',
-            'status_details' => [
-                'reason' => 'bank_window_closed',
+            'status_details'   => [
+                'reason'     => 'bank_window_closed',
                 'parameters' => [
                     'processed_by_time' => '1636472623',
                 ],
@@ -5305,17 +5307,17 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals(2, $response8['count']);
 
         (new Payout\Core)->updateWithDetailsBeforeFtaRecon($payout, [
-            'source_type' => 'payout',
-            'source_id' => $payout->getId(),
-            'fta_status' => 'initiated',
-            'channel' => 'rbl',
-            'failure_reason' => '',
-            'utr' => 928337183,
-            'mode' => 'RTGS',
-            'remarks' => '',
+            'source_type'      => 'payout',
+            'source_id'        => $payout->getId(),
+            'fta_status'       => 'initiated',
+            'channel'          => 'rbl',
+            'failure_reason'   => '',
+            'utr'              => 928337183,
+            'mode'             => 'RTGS',
+            'remarks'          => '',
             'bank_status_code' => 'SUCCESS',
-            'status_details' => [
-                'reason' => 'beneficiary_bank_confirmation_pending',
+            'status_details'   => [
+                'reason'     => 'beneficiary_bank_confirmation_pending',
                 'parameters' => [
                     'processed_by_time' => '1636481743',
                 ],
@@ -5326,7 +5328,7 @@ class PayoutTest extends OAuthTestCase
         $this->ba->privateAuth();
         $response1 = $this->startTest();
         $this->assertEquals(1, $response1['count']);
-        $this->assertEquals('pout_'.$payout['id'],$response1['items'][0]['id']);
+        $this->assertEquals('pout_' . $payout['id'], $response1['items'][0]['id']);
 
         $request['url'] = '/payouts?status=processing&reason=bank_window_closed&account_number=2224440041626905';
         $this->ba->privateAuth();
@@ -5334,16 +5336,16 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals(1, $response2['count']);
 
         (new Payout\Core)->updateWithDetailsBeforeFtaRecon($payout, [
-            'source_type' => 'payout',
-            'source_id' => $payout->getId(),
-            'fta_status' => 'initiated',
-            'channel' => 'rbl',
-            'failure_reason' => '',
-            'utr' => 928337183,
-            'remarks' => '',
+            'source_type'      => 'payout',
+            'source_id'        => $payout->getId(),
+            'fta_status'       => 'initiated',
+            'channel'          => 'rbl',
+            'failure_reason'   => '',
+            'utr'              => 928337183,
+            'remarks'          => '',
             'bank_status_code' => 'SUCCESS',
-            'status_details' => [
-                'reason' => 'payout_bank_processing',
+            'status_details'   => [
+                'reason'     => 'payout_bank_processing',
                 'parameters' => [
                     'processed_by_time' => '1636472623',
                 ],
@@ -5354,25 +5356,25 @@ class PayoutTest extends OAuthTestCase
         $this->ba->privateAuth();
         $response10 = $this->startTest();
         $this->assertEquals(1, $response10['count']);
-        $this->assertEquals('pout_'.$payout['id'],$response10['items'][0]['id']);
+        $this->assertEquals('pout_' . $payout['id'], $response10['items'][0]['id']);
 
         $request['url'] = '/payouts?status=processing&reason=bank_window_closed&account_number=2224440041626905';
         $this->ba->privateAuth();
         $response9 = $this->startTest();
         $this->assertEquals(1, $response9['count']);
-        $this->assertEquals('pout_'.$payout1['id'],$response9['items'][0]['id']);
+        $this->assertEquals('pout_' . $payout1['id'], $response9['items'][0]['id']);
 
         (new Payout\Core)->updateWithDetailsBeforeFtaRecon($payout1, [
-            'source_type' => 'payout',
-            'source_id' => $payout1->getId(),
-            'fta_status' => 'initiated',
-            'channel' => 'rbl',
-            'failure_reason' => '',
-            'utr' => 928337183,
-            'remarks' => '',
+            'source_type'      => 'payout',
+            'source_id'        => $payout1->getId(),
+            'fta_status'       => 'initiated',
+            'channel'          => 'rbl',
+            'failure_reason'   => '',
+            'utr'              => 928337183,
+            'remarks'          => '',
             'bank_status_code' => 'SUCCESS',
-            'status_details' => [
-                'reason' => 'payout_bank_processing',
+            'status_details'   => [
+                'reason'     => 'payout_bank_processing',
                 'parameters' => [
                     'processed_by_time' => '1636472623',
                 ],
@@ -5383,8 +5385,8 @@ class PayoutTest extends OAuthTestCase
         $this->ba->privateAuth();
         $response3 = $this->startTest();
         $this->assertEquals(2, $response3['count']);
-        $this->assertEquals('pout_'.$payout1['id'],$response3['items'][0]['id']);
-        $this->assertEquals('pout_'.$payout['id'],$response3['items'][1]['id']);
+        $this->assertEquals('pout_' . $payout1['id'], $response3['items'][0]['id']);
+        $this->assertEquals('pout_' . $payout['id'], $response3['items'][1]['id']);
 
         $request['url'] = '/payouts?status=processing&reason=bank_window_closed&account_number=2224440041626905';
         $this->ba->privateAuth();
@@ -5397,8 +5399,8 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals(0, $response5['count']);
 
         (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
-            'fta_status' => 'processed',
-            'failure_reason' => null,
+            'fta_status'       => 'processed',
+            'failure_reason'   => null,
             'bank_status_code' => null
         ]);
 
@@ -5406,35 +5408,35 @@ class PayoutTest extends OAuthTestCase
         $this->ba->privateAuth();
         $response6 = $this->startTest();
         $this->assertEquals(1, $response6['count']);
-        $this->assertEquals('pout_'.$payout1['id'],$response6['items'][0]['id']);
+        $this->assertEquals('pout_' . $payout1['id'], $response6['items'][0]['id']);
 
         $request['url'] = '/payouts?status=processed&reason=payout_processed&account_number=2224440041626905';
         $this->ba->privateAuth();
         $response7 = $this->startTest();
         $this->assertEquals(1, $response7['count']);
-        $this->assertEquals('pout_'.$payout['id'],$response7['items'][0]['id']);
+        $this->assertEquals('pout_' . $payout['id'], $response7['items'][0]['id']);
 
     }
 
     public function testSearchPayoutByPayoutContactType()
     {
         $contact = $this->fixtures->create('contact', [
-            'id' => '1000005contact', 'email' => 'test@test5.com',
+            'id'      => '1000005contact', 'email' => 'test@test5.com',
             'contact' => '8888888888', 'name' => 'test user',
-            'type' => 'customer'
+            'type'    => 'customer'
         ]);
 
         $this->fixtures->edit(
             'fund_account',
             '100000000000fa',
             [
-                'source_id' => '1000005contact',
+                'source_id'   => '1000005contact',
                 'source_type' => 'contact',
             ]);
 
         $payout = $this->testCreatePayout();
 
-        $request = & $this->testData[__FUNCTION__]['request'];
+        $request = &$this->testData[__FUNCTION__]['request'];
 
         $request['url'] = '/payouts?contact_type=customer&account_number=2224440041626905';
 
@@ -5462,7 +5464,7 @@ class PayoutTest extends OAuthTestCase
                 'utr' => '1234567890'
             ]);
 
-        $request = & $this->testData[__FUNCTION__]['request'];
+        $request = &$this->testData[__FUNCTION__]['request'];
 
         $request['url'] = '/payouts?utr=1234567890&account_number=2224440041626905';
 
@@ -5482,22 +5484,22 @@ class PayoutTest extends OAuthTestCase
     public function testSearchPayoutByContactId()
     {
         $this->fixtures->create('contact', [
-            'id' => '1000010contact', 'email' => 'test@test5.com',
+            'id'      => '1000010contact', 'email' => 'test@test5.com',
             'contact' => '8888888888', 'name' => 'test user',
-            'type' => 'customer'
+            'type'    => 'customer'
         ]);
 
         $this->fixtures->edit(
             'fund_account',
             '100000000000fa',
             [
-                'source_id' => '1000010contact',
+                'source_id'   => '1000010contact',
                 'source_type' => 'contact',
             ]);
 
         $payout = $this->testCreatePayout();
 
-        $request = & $this->testData[__FUNCTION__]['request'];
+        $request = &$this->testData[__FUNCTION__]['request'];
 
         $request['url'] = '/payouts?contact_id=cont_1000010contact&account_number=2224440041626905';
 
@@ -5522,13 +5524,13 @@ class PayoutTest extends OAuthTestCase
             'fund_account',
             '100000000000fa',
             [
-                'source_id' => '1000005contact',
+                'source_id'   => '1000005contact',
                 'source_type' => 'contact',
             ]);
 
         $payout = $this->testCreatePayout();
 
-        $request = & $this->testData[__FUNCTION__]['request'];
+        $request = &$this->testData[__FUNCTION__]['request'];
 
         $request['url'] = '/payouts?contact_name=test&account_number=2224440041626905';
 
@@ -5553,14 +5555,13 @@ class PayoutTest extends OAuthTestCase
             'fund_account',
             '100000000000fa',
             [
-                'source_id' => '1000005contact',
+                'source_id'   => '1000005contact',
                 'source_type' => 'contact',
             ]);
 
-
         $payout = $this->testCreatePayout();
 
-        $request = & $this->testData[__FUNCTION__]['request'];
+        $request = &$this->testData[__FUNCTION__]['request'];
 
         $request['url'] = '/payouts?contact_phone=8888888888&account_number=2224440041626905';
 
@@ -5585,14 +5586,13 @@ class PayoutTest extends OAuthTestCase
             'fund_account',
             '100000000000fa',
             [
-                'source_id' => '1000005contact',
+                'source_id'   => '1000005contact',
                 'source_type' => 'contact',
             ]);
 
-
         $payout = $this->testCreatePayout();
 
-        $request = & $this->testData[__FUNCTION__]['request'];
+        $request = &$this->testData[__FUNCTION__]['request'];
 
         $request['url'] = '/payouts?contact_email=test@payout.com&account_number=2224440041626905';
 
@@ -5609,21 +5609,21 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals($payout['fees'], $responsePayout['fees']);
     }
 
-    public function testSearchPayoutByContactEmailExactMatch($email1='user1@payout.com',
-                                                             $email2='user2@payout.com')
+    public function testSearchPayoutByContactEmailExactMatch($email1 = 'user1@payout.com',
+                                                             $email2 = 'user2@payout.com')
     {
         $contact1 = $this->fixtures->create('contact',
-            ['id' => '1000005contact', 'email' => $email1, 'contact' => '8888888888', 'name' => 'test user1']);
+                                            ['id' => '1000005contact', 'email' => $email1, 'contact' => '8888888888', 'name' => 'test user1']);
 
         $contact2 = $this->fixtures->create('contact',
-            ['id' => '1000006contact', 'email' => $email2, 'contact' => '8888888889', 'name' => 'test user2']);
+                                            ['id' => '1000006contact', 'email' => $email2, 'contact' => '8888888889', 'name' => 'test user2']);
 
         $this->fixtures->edit(
             'fund_account',
             '100000000000fa',
             [
-                'source_id'     => $contact1->id,
-                'source_type'   => 'contact',
+                'source_id'   => $contact1->id,
+                'source_type' => 'contact',
             ]);
 
         $this->fixtures->create(
@@ -5658,7 +5658,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->createEsIndex();
 
-        $request = & $this->testData[__FUNCTION__]['request'];
+        $request = &$this->testData[__FUNCTION__]['request'];
 
         $request['url'] = "/payouts?contact_email={$email1}&account_number=2224440041626905";
 
@@ -5690,13 +5690,13 @@ class PayoutTest extends OAuthTestCase
             'fund_account',
             '100000000000fa',
             [
-                'source_id' => '1000005contact',
+                'source_id'   => '1000005contact',
                 'source_type' => 'contact',
             ]);
 
         $payout = $this->testCreateXpayrollPayoutWithSourceDetails();
 
-        $request = & $this->testData[__FUNCTION__]['request'];
+        $request = &$this->testData[__FUNCTION__]['request'];
 
         $request['url'] = '/payouts?contact_email=test@payout.com&account_number=2224440041626905';
 
@@ -5716,13 +5716,13 @@ class PayoutTest extends OAuthTestCase
             'fund_account',
             '100000000000fa',
             [
-                'source_id' => '1000005contact',
+                'source_id'   => '1000005contact',
                 'source_type' => 'contact',
             ]);
 
         $payout = $this->testCreatePayoutWithMultipleSourceDetails();
 
-        $request = & $this->testData[__FUNCTION__]['request'];
+        $request = &$this->testData[__FUNCTION__]['request'];
 
         $request['url'] = '/payouts?contact_email=test@payout.com&account_number=2224440041626905';
 
@@ -5742,13 +5742,13 @@ class PayoutTest extends OAuthTestCase
             'fund_account',
             '100000000000fa',
             [
-                'source_id' => '1000005contact',
+                'source_id'   => '1000005contact',
                 'source_type' => 'contact',
             ]);
 
         $payout = $this->testCreatePayout();
 
-        $request = & $this->testData[__FUNCTION__]['request'];
+        $request = &$this->testData[__FUNCTION__]['request'];
 
         $request['url'] = '/payouts?contact_email=test@payout.com&account_number=2224440041626905';
 
@@ -5767,14 +5767,13 @@ class PayoutTest extends OAuthTestCase
             'fund_account',
             '100000000000fa',
             [
-                'source_id' => '1000005contact',
+                'source_id'   => '1000005contact',
                 'source_type' => 'contact',
             ]);
 
-
         $payout = $this->testCreatePayout();
 
-        $request = & $this->testData[__FUNCTION__]['request'];
+        $request = &$this->testData[__FUNCTION__]['request'];
 
         $request['url'] = '/payouts?fund_account_id=' . $payout['fund_account_id'] . '&account_number=2224440041626905';
 
@@ -5829,15 +5828,15 @@ class PayoutTest extends OAuthTestCase
 
         $viewOnlyRoleUser = $this->fixtures->user->createBankingUserForMerchant('10000000000000', [], 'view_only');
 
-        $this->fixtures->create('merchant_detail',[
-            'merchant_id' => '10000000000000',
-            'contact_name'=> 'Aditya',
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'   => '10000000000000',
+            'contact_name'  => 'Aditya',
             'business_type' => 3
         ]);
 
         $userId = $viewOnlyRoleUser['id'];
 
-        $this->ba->proxyAuth('rzp_test_10000000000000',$userId);
+        $this->ba->proxyAuth('rzp_test_10000000000000', $userId);
         $this->startTest();
     }
 
@@ -5938,7 +5937,7 @@ class PayoutTest extends OAuthTestCase
         $this->ba->batchAuth();
 
         $headers = [
-            'HTTP_X_Batch_Id'    => 'C0zv9I46W4wiOq',
+            'HTTP_X_Batch_Id' => 'C0zv9I46W4wiOq',
         ];
 
         // append headers
@@ -5980,7 +5979,7 @@ class PayoutTest extends OAuthTestCase
         $this->ba->batchAuth();
 
         $headers = [
-            'HTTP_X_Batch_Id'    => 'C0zv9I46W4wiOq',
+            'HTTP_X_Batch_Id'     => 'C0zv9I46W4wiOq',
             'HTTP_X_Creator_Type' => 'user',
             'HTTP_X_Creator_Id'   => 'MerchantUser01'
         ];
@@ -6003,14 +6002,14 @@ class PayoutTest extends OAuthTestCase
         $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
 
         $request = [
-            'method' => 'POST',
-            'url' => '/payouts/'.$payout1['id'].'/approve',
-            'server' => [
+            'method'  => 'POST',
+            'url'     => '/payouts/' . $payout1['id'] . '/approve',
+            'server'  => [
                 'HTTP_X-Request-Origin' => config('applications.banking_service_url')
             ],
             'content' => [
-                'token' => 'BUIj3m2Nx2VvVj',
-                'otp' => '0007',
+                'token'        => 'BUIj3m2Nx2VvVj',
+                'otp'          => '0007',
                 'user_comment' => 'Approving',
             ],
         ];
@@ -6020,15 +6019,15 @@ class PayoutTest extends OAuthTestCase
         $this->ba->batchAuth('rzp_live_10000000000000');
 
         $headers = [
-            'HTTP_X_Batch_Id'          => 'C0zv9I46W4wiOq',
-            'HTTP_X_Creator_Type'      => 'user',
-            'HTTP_X_Creator_Id'        => $this->finL3RoleUser->getId()
+            'HTTP_X_Batch_Id'     => 'C0zv9I46W4wiOq',
+            'HTTP_X_Creator_Type' => 'user',
+            'HTTP_X_Creator_Id'   => $this->finL3RoleUser->getId()
         ];
 
-        $testData = & $this->testData[__FUNCTION__];
-        $testData['request']['server'] = $headers;
+        $testData                                          = &$this->testData[__FUNCTION__];
+        $testData['request']['server']                     = $headers;
         $testData['request']['content'][0]['payout']['id'] = $payout1['id'];
-        $testData['request']['content'][0]['fund']['id'] = $payout1['fund_account_id'];
+        $testData['request']['content'][0]['fund']['id']   = $payout1['fund_account_id'];
 
         $this->startTest();
 
@@ -6048,14 +6047,14 @@ class PayoutTest extends OAuthTestCase
         $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
 
         $request = [
-            'method' => 'POST',
-            'url' => '/payouts/'.$payout1['id'].'/approve',
-            'server' => [
+            'method'  => 'POST',
+            'url'     => '/payouts/' . $payout1['id'] . '/approve',
+            'server'  => [
                 'HTTP_X-Request-Origin' => config('applications.banking_service_url')
             ],
             'content' => [
-                'token' => 'BUIj3m2Nx2VvVj',
-                'otp' => '0007',
+                'token'        => 'BUIj3m2Nx2VvVj',
+                'otp'          => '0007',
                 'user_comment' => 'Approving',
             ],
         ];
@@ -6065,15 +6064,15 @@ class PayoutTest extends OAuthTestCase
         $this->ba->batchAuth('rzp_live_10000000000000');
 
         $headers = [
-            'HTTP_X_Batch_Id'          => 'C0zv9I46W4wiOq',
-            'HTTP_X_Creator_Type'      => 'user',
-            'HTTP_X_Creator_Id'        => $this->finL3RoleUser->getId()
+            'HTTP_X_Batch_Id'     => 'C0zv9I46W4wiOq',
+            'HTTP_X_Creator_Type' => 'user',
+            'HTTP_X_Creator_Id'   => $this->finL3RoleUser->getId()
         ];
 
-        $testData = & $this->testData[__FUNCTION__];
-        $testData['request']['server'] = $headers;
+        $testData                                          = &$this->testData[__FUNCTION__];
+        $testData['request']['server']                     = $headers;
         $testData['request']['content'][0]['payout']['id'] = $payout1['id'];
-        $testData['request']['content'][0]['fund']['id'] = $payout1['fund_account_id'];
+        $testData['request']['content'][0]['fund']['id']   = $payout1['fund_account_id'];
 
         $this->startTest();
 
@@ -6096,19 +6095,19 @@ class PayoutTest extends OAuthTestCase
         $this->fixtures->create(
             'fund_transfer_attempt',
             [
-                'channel'                   => 'yesbank',
-                'source_id'                 => $payout->getId(),
-                'bank_account_id'           => $payout->getDestinationId(),
-                'merchant_id'               => $payout->getMerchantId(),
-                'purpose'                   => Attempt\Purpose::REFUND,
-                'status'                    => Attempt\Status::CREATED,
-                'source_type'               => Attempt\Type::PAYOUT,
-                'is_fts'                    => '1',
-                'initiate_at'               => Carbon::now(Timezone::IST)->getTimestamp(),
+                'channel'         => 'yesbank',
+                'source_id'       => $payout->getId(),
+                'bank_account_id' => $payout->getDestinationId(),
+                'merchant_id'     => $payout->getMerchantId(),
+                'purpose'         => Attempt\Purpose::REFUND,
+                'status'          => Attempt\Status::CREATED,
+                'source_type'     => Attempt\Type::PAYOUT,
+                'is_fts'          => '1',
+                'initiate_at'     => Carbon::now(Timezone::IST)->getTimestamp(),
             ]
         );
 
-        $testData = & $this->testData[__FUNCTION__];
+        $testData                   = &$this->testData[__FUNCTION__];
         $testData['request']['url'] = '/payouts/' . $payout->getPublicId() . '/status';
 
         $this->ba->proxyAuth();
@@ -6121,11 +6120,11 @@ class PayoutTest extends OAuthTestCase
 
         $payoutCreated = $this->getDbLastEntity('payout');
 
-        for ($index = 0; $index<count($ledgerSnsPayloadArray); $index++)
+        for ($index = 0; $index < count($ledgerSnsPayloadArray); $index++)
         {
             $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
 
-            $ledgerRequestPayload['identifiers'] = json_decode($ledgerRequestPayload['identifiers'], true);
+            $ledgerRequestPayload['identifiers']       = json_decode($ledgerRequestPayload['identifiers'], true);
             $ledgerRequestPayload['additional_params'] = json_decode($ledgerRequestPayload['additional_params'], true);
 
             $this->assertEquals('X', $ledgerRequestPayload['tenant']);
@@ -6147,9 +6146,9 @@ class PayoutTest extends OAuthTestCase
         $this->testPayoutStatusUpdate();
 
         $this->fixtures->edit('contact', '1000010contact',
-            [
-                'id' => '1000011contact',
-            ]);
+                              [
+                                  'id' => '1000011contact',
+                              ]);
 
         $this->testPayoutStatusUpdate();
     }
@@ -6161,12 +6160,12 @@ class PayoutTest extends OAuthTestCase
         $payout = $this->getDbLastEntity('payout');
 
         $this->fixtures->edit('payout',
-            $payout->getId(),
-            [
-                'status' => Payout\Status::QUEUED,
-            ]);
+                              $payout->getId(),
+                              [
+                                  'status' => Payout\Status::QUEUED,
+                              ]);
 
-        $testData = & $this->testData[__FUNCTION__];
+        $testData                   = &$this->testData[__FUNCTION__];
         $testData['request']['url'] = '/payouts/' . $payout->getPublicId() . '/status';
 
         $this->ba->proxyAuth();
@@ -6179,7 +6178,7 @@ class PayoutTest extends OAuthTestCase
 
         $payout = $this->getDbLastEntity('payout');
 
-        $testData = & $this->testData[__FUNCTION__];
+        $testData                   = &$this->testData[__FUNCTION__];
         $testData['request']['url'] = '/payouts/' . $payout->getPublicId() . '/status';
 
         $this->ba->privateAuth();
@@ -6193,17 +6192,17 @@ class PayoutTest extends OAuthTestCase
         $balance = $this->getDbLastEntity('balance', 'live');
 
         $this->fixtures->on('live')->create('payout', [
-            'id'                =>      '12345678901234',
-            'balance_id'        =>      $balance->getId(),
-            'merchant_id'       =>      '10000000000000',
-            'amount'            =>      1,
-            'status'            =>      'created',
-            'pricing_rule_id'   =>      '1nvp2XPMmaRLxb',
+            'id'              => '12345678901234',
+            'balance_id'      => $balance->getId(),
+            'merchant_id'     => '10000000000000',
+            'amount'          => 1,
+            'status'          => 'created',
+            'pricing_rule_id' => '1nvp2XPMmaRLxb',
         ]);
 
         $payout = $this->getDbLastEntity('payout', 'live');
 
-        $testData = & $this->testData[__FUNCTION__];
+        $testData                   = &$this->testData[__FUNCTION__];
         $testData['request']['url'] = '/payouts/' . $payout->getPublicId() . '/status';
 
         $this->ba->proxyAuth('rzp_live_10000000000000');
@@ -6284,20 +6283,20 @@ class PayoutTest extends OAuthTestCase
     public function testCreateRblPayoutWithModeNotSet()
     {
         $balanceAttributes = [
-            'balance' => 10000000,
+            'balance'     => 10000000,
             'balanceType' => 'direct',
-            'channel' => 'rbl',
+            'channel'     => 'rbl',
         ];
 
         $bankingBalance = $this->fixtures->merchant->createBalanceOfBankingType(
             $balanceAttributes["balance"],
             '10000000000000',
-            $balanceAttributes["balanceType"] ,
+            $balanceAttributes["balanceType"],
             $balanceAttributes["channel"]
         );
 
-        $virtualAccount = $this->fixtures->create('virtual_account');
-        $secondBankAccount    = $this->fixtures->create(
+        $virtualAccount    = $this->fixtures->create('virtual_account');
+        $secondBankAccount = $this->fixtures->create(
             'bank_account',
             [
                 'type'           => 'virtual_account',
@@ -6325,20 +6324,20 @@ class PayoutTest extends OAuthTestCase
         $this->mockRazorxTreatment('payout_to_cards_via_rbl');
 
         $balanceAttributes = [
-            'balance' => 10000000,
+            'balance'     => 10000000,
             'balanceType' => 'direct',
-            'channel' => 'rbl',
+            'channel'     => 'rbl',
         ];
 
         $bankingBalance = $this->fixtures->merchant->createBalanceOfBankingType(
             $balanceAttributes["balance"],
             '10000000000000',
-            $balanceAttributes["balanceType"] ,
+            $balanceAttributes["balanceType"],
             $balanceAttributes["channel"]
         );
 
-        $virtualAccount = $this->fixtures->create('virtual_account');
-        $secondBankAccount    = $this->fixtures->create(
+        $virtualAccount    = $this->fixtures->create('virtual_account');
+        $secondBankAccount = $this->fixtures->create(
             'bank_account',
             [
                 'type'           => 'virtual_account',
@@ -6403,9 +6402,9 @@ class PayoutTest extends OAuthTestCase
         $contactId = $this->getDbLastEntity('contact')->getId();
 
         $this->fixtures->create('fund_account:wallet_account', [
-            'id'            => '100000000003fb',
-            'source_type'   => 'contact',
-            'source_id'     => $contactId,
+            'id'          => '100000000003fb',
+            'source_type' => 'contact',
+            'source_id'   => $contactId,
         ]);
 
         $fundAccount = $this->getDbLastEntity('fund_account');
@@ -6433,9 +6432,9 @@ class PayoutTest extends OAuthTestCase
         $contactId = $this->getDbLastEntity('contact')->getId();
 
         $this->fixtures->create('fund_account:vpa', [
-            'id'            => '100000000003fa',
-            'source_type'   => 'contact',
-            'source_id'     => $contactId,
+            'id'          => '100000000003fa',
+            'source_type' => 'contact',
+            'source_id'   => $contactId,
         ]);
 
         $balance = $this->getDbLastEntity('balance');
@@ -6451,7 +6450,7 @@ class PayoutTest extends OAuthTestCase
     {
         $payout = $this->testCreatePayout();
 
-        $request = & $this->testData[__FUNCTION__]['request'];
+        $request        = &$this->testData[__FUNCTION__]['request'];
         $request['url'] = '/payouts?mode=' . $payout['mode'] . '&account_number=2224440041626905';
 
         $this->ba->privateAuth();
@@ -6473,7 +6472,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->fixtures->edit('payout', $payout['id'], ['reference_id' => 'WckD']);
 
-        $request = & $this->testData[__FUNCTION__]['request'];
+        $request        = &$this->testData[__FUNCTION__]['request'];
         $request['url'] = '/payouts?account_number=2224440041626905&reference_id=WckD';
 
         $this->ba->privateAuth();
@@ -6508,7 +6507,7 @@ class PayoutTest extends OAuthTestCase
     {
         $this->ba->appAuth();
 
-        $request = & $this->testData[__FUNCTION__]['request'];
+        $request        = &$this->testData[__FUNCTION__]['request'];
         $request['url'] = '/payouts/purposes/10000000000000';
 
         $this->startTest();
@@ -6522,7 +6521,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->ba->appAuth();
 
-        $request = & $this->testData[__FUNCTION__]['request'];
+        $request        = &$this->testData[__FUNCTION__]['request'];
         $request['url'] = '/payouts/purposes/10000000000000';
 
         $this->startTest();
@@ -6541,29 +6540,29 @@ class PayoutTest extends OAuthTestCase
 
         $data = $this->testData[__FUNCTION__];
 
-        $data['request']['content']['purpose'] = 'Payout Purpose 1';
+        $data['request']['content']['purpose']      = 'Payout Purpose 1';
         $data['request']['content']['purpose_type'] = 'settlement';
 
         $response = $this->startTest($data);
 
         $this->assertEquals(in_array('Payout Purpose 1', array_column($response['items'], 'purpose'), true), true);
-        $this->assertEquals(in_array('settlement', array_column($response['items'], 'purpose_type'), true),true);
+        $this->assertEquals(in_array('settlement', array_column($response['items'], 'purpose_type'), true), true);
 
-        $data['request']['content']['purpose'] = 1234;
+        $data['request']['content']['purpose']      = 1234;
         $data['request']['content']['purpose_type'] = 'settlement';
 
         $response = $this->startTest($data);
 
         $this->assertEquals(in_array('1234', array_column($response['items'], 'purpose'), false), true);
-        $this->assertEquals(in_array('settlement', array_column($response['items'], 'purpose_type'), true),true);
+        $this->assertEquals(in_array('settlement', array_column($response['items'], 'purpose_type'), true), true);
 
-        $data['request']['content']['purpose'] = 'Payout Purpose 2';
+        $data['request']['content']['purpose']      = 'Payout Purpose 2';
         $data['request']['content']['purpose_type'] = 'settlement';
 
         $response = $this->startTest($data);
 
         $this->assertEquals(in_array('Payout Purpose 2', array_column($response['items'], 'purpose'), true), true);
-        $this->assertEquals(in_array('settlement', array_column($response['items'], 'purpose_type'), true),true);
+        $this->assertEquals(in_array('settlement', array_column($response['items'], 'purpose_type'), true), true);
     }
 
     public function testAddCustomPayoutPurposeThatAlreadyExists()
@@ -6579,7 +6578,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->ba->appAuth();
 
-        $request = & $this->testData[__FUNCTION__]['request'];
+        $request        = &$this->testData[__FUNCTION__]['request'];
         $request['url'] = '/payouts/purposes/10000000000000';
 
         $this->startTest();
@@ -6589,7 +6588,7 @@ class PayoutTest extends OAuthTestCase
     {
         for ($count = 0; $count < Payout\Validator::MAX_PURPOSES_ALLOWED; $count++)
         {
-            $this->addCustomPayoutPurpose('Give Bonus To Mehul '. $count, 'settlement');
+            $this->addCustomPayoutPurpose('Give Bonus To Mehul ' . $count, 'settlement');
         }
 
         $this->startTest();
@@ -6601,8 +6600,8 @@ class PayoutTest extends OAuthTestCase
             'method'  => 'POST',
             'url'     => '/payouts/purposes',
             'content' => [
-                'purpose'        => $purpose,
-                'purpose_type'   => $purposeType,
+                'purpose'      => $purpose,
+                'purpose_type' => $purposeType,
             ]
         ];
 
@@ -6615,12 +6614,12 @@ class PayoutTest extends OAuthTestCase
     {
         for ($count = 0; $count < Payout\Validator::MAX_PURPOSES_ALLOWED + Payout\Validator::MAX_PURPOSES_ALLOWED_TO_XPAYROLL; $count++)
         {
-            $this->addCustomPayoutBulkPurpose('Give Bonus To Mehul '. $count, 'settlement');
+            $this->addCustomPayoutBulkPurpose('Give Bonus To Mehul ' . $count, 'settlement');
         }
 
         $this->ba->appAuth();
 
-        $request = & $this->testData[__FUNCTION__]['request'];
+        $request        = &$this->testData[__FUNCTION__]['request'];
         $request['url'] = '/payouts/purposes/10000000000000';
 
         $this->startTest();
@@ -6628,13 +6627,13 @@ class PayoutTest extends OAuthTestCase
 
     protected function addCustomPayoutBulkPurpose($purpose, $purposeType)
     {
-        $request = [
+        $request        = [
             'method'  => 'POST',
             'url'     => '/payouts/purposes/{merchant_id}',
             'content' => [
                 [
-                    'purpose'        => $purpose,
-                    'purpose_type'   => $purposeType,
+                    'purpose'      => $purpose,
+                    'purpose_type' => $purposeType,
                 ]
             ]
         ];
@@ -6671,7 +6670,7 @@ class PayoutTest extends OAuthTestCase
             'fund_transfer_attempt',
             $fta->getId(),
             [
-                'utr'    => null,
+                'utr' => null,
             ]);
 
         $this->expectWebhookEventWithContents('payout.updated', $eventTestDataKey);
@@ -6680,7 +6679,7 @@ class PayoutTest extends OAuthTestCase
 
         $request = [
             'method'  => 'POST',
-            'url'     =>  '/update_fts_fund_transfer',
+            'url'     => '/update_fts_fund_transfer',
             'content' => [
                 'bank_processed_time' => '2019-12-04 15:51:21',
                 'bank_status_code'    => 'SUCCESS',
@@ -6704,7 +6703,7 @@ class PayoutTest extends OAuthTestCase
         $this->makeRequestAndGetContent($request);
 
         $payout = $this->getDbEntityById('payout', $payoutId);
-        $fta = $this->getDbEntityById('fund_transfer_attempt', $fta->getId());
+        $fta    = $this->getDbEntityById('fund_transfer_attempt', $fta->getId());
 
         $this->assertEquals('933815233814', $payout->getUtr());
         $this->assertEquals('933815233814', $fta->getUtr());
@@ -6735,7 +6734,7 @@ class PayoutTest extends OAuthTestCase
 
         $request = [
             'method'  => 'POST',
-            'url'     =>  '/update_fts_fund_transfer',
+            'url'     => '/update_fts_fund_transfer',
             'content' => [
                 'bank_processed_time' => '2019-12-04 15:51:21',
                 'bank_status_code'    => 'SUCCESS',
@@ -6773,14 +6772,14 @@ class PayoutTest extends OAuthTestCase
         $utr = $payout->getUtr();
 
         (new Payout\Core)->updateWithDetailsBeforeFtaRecon($payout, [
-            'fta_status'        => 'failed',
-            'failure_reason'    => '',
-            'utr'               => $utr,
-            'remarks'           => 'testing failed mapping',
-            'channel'           => 'yesbank',
+            'fta_status'     => 'failed',
+            'failure_reason' => '',
+            'utr'            => $utr,
+            'remarks'        => 'testing failed mapping',
+            'channel'        => 'yesbank',
         ]);
 
-        $updatedPayout = $this->getDbEntityById('payout',$payoutId)->toArray();
+        $updatedPayout = $this->getDbEntityById('payout', $payoutId)->toArray();
 
         $this->assertNull($updatedPayout[Payout\Entity::FAILURE_REASON]);
     }
@@ -6798,14 +6797,14 @@ class PayoutTest extends OAuthTestCase
         $utr = $payout->getUtr();
 
         (new Payout\Core)->updateWithDetailsBeforeFtaRecon($payout, [
-            'fta_status'        => 'failed',
-            'failure_reason'    => 'Beneficiary bank\'s systems are down. Please retry after some time.',
-            'utr'               =>  $utr,
-            'remarks'           => 'testing failed mapping',
-            'channel'           => 'yesbank',
+            'fta_status'     => 'failed',
+            'failure_reason' => 'Beneficiary bank\'s systems are down. Please retry after some time.',
+            'utr'            => $utr,
+            'remarks'        => 'testing failed mapping',
+            'channel'        => 'yesbank',
         ]);
 
-        $updatedPayout = $this->getDbEntityById('payout',$payoutId)->toArray();
+        $updatedPayout = $this->getDbEntityById('payout', $payoutId)->toArray();
 
         $this->assertNotNull($updatedPayout[Payout\Entity::FAILURE_REASON]);
     }
@@ -6883,7 +6882,7 @@ class PayoutTest extends OAuthTestCase
 
         $payout = $this->getDbLastEntity('payout');
 
-        $testData = & $this->testData[__FUNCTION__];
+        $testData                   = &$this->testData[__FUNCTION__];
         $testData['request']['url'] = '/payouts/' . $payout->getPublicId() . '/cancel';
 
         $this->ba->proxyAuth();
@@ -6901,7 +6900,7 @@ class PayoutTest extends OAuthTestCase
         // We need the ownerRoleUser to reject the payout which gets created inside this method.
         $this->createPayoutWorkflowWithBankingUsersLiveMode();
 
-        $testData = & $this->testData[__FUNCTION__];
+        $testData                   = &$this->testData[__FUNCTION__];
         $testData['request']['url'] = '/payouts/' . $payout['id'] . '/reject';
 
         // Reject with Owner role user
@@ -6917,13 +6916,13 @@ class PayoutTest extends OAuthTestCase
         $payout = $this->getDbLastEntity('payout');
 
         $this->fixtures->edit('payout', $payout->getId(), [
-            'status'    => 'queued',
-            'purpose'   => 'rzp_fees',
+            'status'  => 'queued',
+            'purpose' => 'rzp_fees',
         ]);
 
-        $request = & $this->testData[__FUNCTION__]['request'];
+        $request = &$this->testData[__FUNCTION__]['request'];
 
-        $request['url'] = '/payouts/' . $payout->getPublicId() .'/cancel';
+        $request['url'] = '/payouts/' . $payout->getPublicId() . '/cancel';
 
         $this->ba->privateAuth();
 
@@ -6967,7 +6966,7 @@ class PayoutTest extends OAuthTestCase
         $workflow = $this->getDbLastEntity('workflow');
 
         $this->fixtures->create('workflow_payout_amount_rules', ['workflow_id' => $workflow['id'],
-            'min_amount' => '0', 'max_amount' => '5000000']);
+                                                                 'min_amount'  => '0', 'max_amount' => '5000000']);
 
         $this->createPayoutWithWorkflow($workflow);
     }
@@ -6979,18 +6978,18 @@ class PayoutTest extends OAuthTestCase
         $balance = $this->createDirectBankingBalance()->toArray();
 
         $bankingAccountParams = [
-            'id' => 'xba00000000000',
-            'merchant_id' => '10000000000000',
-            'account_ifsc' => 'RATN0000088',
+            'id'             => 'xba00000000000',
+            'merchant_id'    => '10000000000000',
+            'account_ifsc'   => 'RATN0000088',
             'account_number' => '2224440041626906',
-            'status' => 'active',
-            'channel' => 'rbl',
-            'balance_id' => $balance['id'],
+            'status'         => 'active',
+            'channel'        => 'rbl',
+            'balance_id'     => $balance['id'],
         ];
 
         $bankingAccount = $this->createBankingAccount($bankingAccountParams);
 
-        $this->fixtures->create('banking_account_statement_details',[
+        $this->fixtures->create('banking_account_statement_details', [
             Details\Entity::ID             => 'xbas0000000002',
             Details\Entity::MERCHANT_ID    => '10000000000000',
             Details\Entity::BALANCE_ID     => $balance['id'],
@@ -7065,18 +7064,18 @@ class PayoutTest extends OAuthTestCase
         $balance = $this->createDirectBankingBalance()->toArray();
 
         $bankingAccountParams = [
-            'id' => 'xba00000000000',
-            'merchant_id' => '10000000000000',
-            'account_ifsc' => 'RATN0000088',
+            'id'             => 'xba00000000000',
+            'merchant_id'    => '10000000000000',
+            'account_ifsc'   => 'RATN0000088',
             'account_number' => '2224440041626906',
-            'status' => 'active',
-            'channel' => 'rbl',
-            'balance_id' => $balance['id'],
+            'status'         => 'active',
+            'channel'        => 'rbl',
+            'balance_id'     => $balance['id'],
         ];
 
         $bankingAccount = $this->createBankingAccount($bankingAccountParams);
 
-        $this->fixtures->create('banking_account_statement_details',[
+        $this->fixtures->create('banking_account_statement_details', [
             Details\Entity::ID             => 'xbas0000000002',
             Details\Entity::MERCHANT_ID    => '10000000000000',
             Details\Entity::BALANCE_ID     => $balance['id'],
@@ -7093,7 +7092,7 @@ class PayoutTest extends OAuthTestCase
 
         $payoutData = [
             'queue_if_low_balance' => 1,
-            'account_number'        => 2224440041626906,
+            'account_number'       => 2224440041626906,
         ];
 
         $this->createQueuedOrPendingPayout($payoutData);
@@ -7101,9 +7100,9 @@ class PayoutTest extends OAuthTestCase
         $payout1 = $this->getDbLastEntity('payout')->toArray();
 
         $payoutDataHigherAmount = [
-            'queue_if_low_balance'  => 1,
-            'amount'                => 530000,
-            'account_number'        => 2224440041626906,
+            'queue_if_low_balance' => 1,
+            'amount'               => 530000,
+            'account_number'       => 2224440041626906,
         ];
 
         $this->createQueuedOrPendingPayout($payoutDataHigherAmount);
@@ -7153,22 +7152,22 @@ class PayoutTest extends OAuthTestCase
     {
         // Create second Balance
         $balanceAttributes = [
-            'balance' => 10000000,
+            'balance'     => 10000000,
             'balanceType' => 'direct',
-            'channel' => 'rbl',
+            'channel'     => 'rbl',
         ];
 
         $secondBankingBalance = $this->fixtures->merchant->createBalanceOfBankingType(
             $balanceAttributes["balance"],
             '10000000000000',
-            $balanceAttributes["balanceType"] ,
+            $balanceAttributes["balanceType"],
             $balanceAttributes["channel"]
         );
 
         // Create Second Bank Account
 
-        $virtualAccount = $this->fixtures->create('virtual_account');
-        $secondBankAccount    = $this->fixtures->create(
+        $virtualAccount    = $this->fixtures->create('virtual_account');
+        $secondBankAccount = $this->fixtures->create(
             'bank_account',
             [
                 'type'           => 'virtual_account',
@@ -7188,10 +7187,10 @@ class PayoutTest extends OAuthTestCase
         $mode = $this->getConnection()->getName();
 
         $balance = $this->getDbEntity('balance', [
-            'merchant_id'   => '10000000000000',
-            'account_type'  => 'direct'
+            'merchant_id'  => '10000000000000',
+            'account_type' => 'direct'
         ],
-            $mode);
+                                      $mode);
 
         return $balance;
     }
@@ -7223,21 +7222,20 @@ class PayoutTest extends OAuthTestCase
         // When WebhookViaStork experiment is turned on, webhook setting is skipped and
         // stork is called regardless event setting is enabled or not
         //statusdetails experiment is also turned on
-        $this->mockRazorxTreatment('yesbank', 'on', 'on','off', 'off',
-            'on', 'on', 'off', 'on',
-            'on', 'off', 'on', 'on',
-            'off', 'control', 'on',
-            'on', 'off', 'control',
-            'on');
+        $this->mockRazorxTreatment('yesbank', 'on', 'on', 'off', 'off',
+                                   'on', 'on', 'off', 'on',
+                                   'on', 'off', 'on', 'on',
+                                   'off', 'control', 'on',
+                                   'on', 'off', 'control',
+                                   'on');
 
         $payoutQueuedEventData = $this->testData['testFiringOfWebhookOnQueuedPayoutEventData'];
 
-        $payoutInitiatedEventData = $this->testData['testFiringOfWebhookOnInitiatedPayoutEventData'];
+        $payoutInitiatedEventData          = $this->testData['testFiringOfWebhookOnInitiatedPayoutEventData'];
         $payoutTransactionCreatedEventData = $this->testData['testFiringOfWebhookOnCreatedTransactionPayoutEventData'];
 
         $this->mockServiceStorkRequest(
-            function ($path, $payload) use ($payoutQueuedEventData, $payoutInitiatedEventData, $payoutTransactionCreatedEventData)
-            {
+            function($path, $payload) use ($payoutQueuedEventData, $payoutInitiatedEventData, $payoutTransactionCreatedEventData) {
                 $this->assertContains($payload['event']['name'],
                                       [
                                           'virtual_account.created',
@@ -7268,7 +7266,6 @@ class PayoutTest extends OAuthTestCase
                 return new \Requests_Response();
             })->times(7);
 
-
         $this->testCreateAndProcessQueuedPayout();
 
         // checking whether status details entity is created and value is getting saved
@@ -7283,12 +7280,11 @@ class PayoutTest extends OAuthTestCase
         // stork is called regardless event setting is enabled or not
         $this->mockRazorxTreatment('yesbank', 'on', 'on');
 
-        $payoutUpdatedEventData = $this->testData['testFiringOfWebhookOnUpdateOfPayoutEventData'];
+        $payoutUpdatedEventData   = $this->testData['testFiringOfWebhookOnUpdateOfPayoutEventData'];
         $payoutProcessedEventData = $this->testData['testFiringOfWebhookOnProcessPayoutEventData'];
 
         $this->mockServiceStorkRequest(
-            function ($path, $payload) use ($payoutUpdatedEventData, $payoutProcessedEventData)
-            {
+            function($path, $payload) use ($payoutUpdatedEventData, $payoutProcessedEventData) {
                 $this->assertContains($payload['event']['name'], ['payout.updated', 'payout.processed']);
                 switch ($payload['event']['name'])
                 {
@@ -7316,7 +7312,7 @@ class PayoutTest extends OAuthTestCase
 
         $payout = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
 
-        $testData = & $this->testData[__FUNCTION__];
+        $testData                   = &$this->testData[__FUNCTION__];
         $testData['request']['url'] = '/payouts/' . $payout['id'] . '/reject';
 
         $this->mockRazorxTreatment('yesbank', 'on', 'on');
@@ -7324,8 +7320,7 @@ class PayoutTest extends OAuthTestCase
         $eventData = $this->testData['testFiringOfWebhookOnRejectionOfPayoutEventData'];
 
         $this->mockServiceStorkRequest(
-            function ($path, $payload) use ($eventData)
-            {
+            function($path, $payload) use ($eventData) {
                 $this->validateStorkWebhookFireEvent('payout.rejected', $eventData, $payload, 'live');
 
                 return new \Requests_Response();
@@ -7346,8 +7341,7 @@ class PayoutTest extends OAuthTestCase
         $testData = $this->testData['testFiringOfWebhookOnCreationOfPendingPayoutEventData'];
 
         $this->mockServiceStorkRequest(
-            function ($path, $payload) use ($testData)
-            {
+            function($path, $payload) use ($testData) {
                 $this->validateStorkWebhookFireEvent('payout.pending', $testData, $payload, 'live');
 
                 return new \Requests_Response();
@@ -7371,7 +7365,7 @@ class PayoutTest extends OAuthTestCase
         // Approve with Checker role user
         $this->ba->proxyAuth('rzp_live_10000000000000', $this->checkerRoleUser->getId());
 
-        $testData = & $this->testData[__FUNCTION__];
+        $testData                   = &$this->testData[__FUNCTION__];
         $testData['request']['url'] = '/payouts/' . $payout['id'] . '/approve';
 
         $this->startTest();
@@ -7391,7 +7385,7 @@ class PayoutTest extends OAuthTestCase
             'entity_type' => 'merchant',
         ]);
 
-        $this->mockRazorxTreatment('yesbank', 'on' , 'off' , 'off', 'off', 'on');
+        $this->mockRazorxTreatment('yesbank', 'on', 'off', 'off', 'off', 'on');
 
         $this->ba->privateAuth();
 
@@ -7412,7 +7406,7 @@ class PayoutTest extends OAuthTestCase
             'entity_type' => 'merchant',
         ]);
 
-        $this->mockRazorxTreatment('yesbank', 'on' , 'off' , 'off', 'off', 'on');
+        $this->mockRazorxTreatment('yesbank', 'on', 'off', 'off', 'off', 'on');
 
         $this->ba->privateAuth();
 
@@ -7508,9 +7502,9 @@ class PayoutTest extends OAuthTestCase
     public function prepareAdminForPayoutWorkflow($mode)
     {
         $admin = $this->fixtures->on($mode)->create('admin', [
-            'id' => 'poutRejtAdmnId',
+            'id'     => 'poutRejtAdmnId',
             'org_id' => Org::RZP_ORG,
-            'name' => 'Payout Rejecting Admin'
+            'name'   => 'Payout Rejecting Admin'
         ]);
 
         $role = $this->fixtures->on($mode)->create('role', [
@@ -7519,20 +7513,20 @@ class PayoutTest extends OAuthTestCase
             'name'   => 'Payout Reject Admin',
         ]);
 
-        $permission = $this->fixtures->on($mode)->create('permission',[
-            'name'   => 'reject_payout_bulk'
+        $permission = $this->fixtures->on($mode)->create('permission', [
+            'name' => 'reject_payout_bulk'
         ]);
 
-        $permission2 = $this->fixtures->on($mode)->create('permission',[
-            'name'   => 'retry_payout_workflow_bulk'
+        $permission2 = $this->fixtures->on($mode)->create('permission', [
+            'name' => 'retry_payout_workflow_bulk'
         ]);
 
-        $permission3 = $this->fixtures->on($mode)->create('permission',[
-            'name'   => 'wfs_config_create'
+        $permission3 = $this->fixtures->on($mode)->create('permission', [
+            'name' => 'wfs_config_create'
         ]);
 
-        $permission4 = $this->fixtures->on($mode)->create('permission',[
-            'name'   => 'wfs_config_update'
+        $permission4 = $this->fixtures->on($mode)->create('permission', [
+            'name' => 'wfs_config_update'
         ]);
 
         $role->permissions()->attach($permission->getId());
@@ -7554,7 +7548,7 @@ class PayoutTest extends OAuthTestCase
         $payout1 = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
         $payout2 = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
 
-        $testData = & $this->testData[__FUNCTION__];
+        $testData = &$this->testData[__FUNCTION__];
 
         $testData['request']['content']['payout_ids'] = [$payout1['id'], $payout2['id']];
 
@@ -7574,8 +7568,8 @@ class PayoutTest extends OAuthTestCase
         $this->app['config']->set('database.default', 'live');
 
         $adminToken = $this->fixtures->on('test')->create('admin_token', [
-            'admin_id'   => $adminForTest->getId(),
-            'token'      => Hash::make('ThisIsATokenForTest'),
+            'admin_id' => $adminForTest->getId(),
+            'token'    => Hash::make('ThisIsATokenForTest'),
         ]);
 
         $token = 'ThisIsATokenForTest' . $adminToken->getId();
@@ -7584,16 +7578,16 @@ class PayoutTest extends OAuthTestCase
 
         $this->startTest();
 
-        $payout1 = $this->getDbEntityById('payout',$payout1['id'],'live');
-        $payout2 = $this->getDbEntityById('payout',$payout2['id'],'live');
-        $actionState = $this->getDbLastEntity('action_state','live');
-        $wfAction = $this->getDbLastEntity('workflow_action','live');
-        $actionChecker = $this->getDbLastEntity('action_checker','live');
+        $payout1       = $this->getDbEntityById('payout', $payout1['id'], 'live');
+        $payout2       = $this->getDbEntityById('payout', $payout2['id'], 'live');
+        $actionState   = $this->getDbLastEntity('action_state', 'live');
+        $wfAction      = $this->getDbLastEntity('workflow_action', 'live');
+        $actionChecker = $this->getDbLastEntity('action_checker', 'live');
 
-        $this->assertEquals($payout1['status'],'rejected');
-        $this->assertEquals($payout2['status'],'rejected');
-        $this->assertEquals($actionState['admin_id'],'poutRejtAdmnId');
-        $this->assertEquals($actionState['name'],'rejected');
+        $this->assertEquals($payout1['status'], 'rejected');
+        $this->assertEquals($payout2['status'], 'rejected');
+        $this->assertEquals($actionState['admin_id'], 'poutRejtAdmnId');
+        $this->assertEquals($actionState['name'], 'rejected');
         $this->assertNull($actionState['merchant_id']);
         $this->assertNull($actionState['user_id']);
         $this->assertEquals($wfAction['state'], 'rejected');
@@ -7612,7 +7606,7 @@ class PayoutTest extends OAuthTestCase
         $payout1 = $this->createPayoutWithWorkflow(['amount' => '5000001'], 'rzp_live_TheLiveAuthKey');
         $payout2 = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
 
-        $testData = & $this->testData[__FUNCTION__];
+        $testData = &$this->testData[__FUNCTION__];
 
         $testData['request']['content']['payout_ids'] = [$payout1['id'], $payout2['id']];
 
@@ -7627,8 +7621,8 @@ class PayoutTest extends OAuthTestCase
         $this->app['config']->set('database.default', 'live');
 
         $adminToken = $this->fixtures->on('test')->create('admin_token', [
-            'admin_id'   => $adminForTest->getId(),
-            'token'      => Hash::make('ThisIsATokenForTest'),
+            'admin_id' => $adminForTest->getId(),
+            'token'    => Hash::make('ThisIsATokenForTest'),
         ]);
 
         $token = 'ThisIsATokenForTest' . $adminToken->getId();
@@ -7641,10 +7635,10 @@ class PayoutTest extends OAuthTestCase
     protected function setupRedisMock()
     {
         $redisMock = $this->getMockBuilder(Redis::class)->setMethods(['get'])
-            ->getMock();
+                          ->getMock();
 
         Redis::shouldReceive('connection')
-            ->andReturn($redisMock);
+             ->andReturn($redisMock);
 
         $redisMock->method('get')->will($this->returnValue('true'));
     }
@@ -7659,24 +7653,24 @@ class PayoutTest extends OAuthTestCase
         // Creating 2 banking accounts. First for the existing bankingBalance and second for the secondBankingBalance
 
         $bankingAccountAttributes = [
-            'id'                    =>  'ABCde1234ABCde',
-            'account_number'        =>  '2224440041626998',
-            'balance_id'            =>  $this->bankingBalance->getId(),
-            'account_type'          =>  'nodal',
+            'id'             => 'ABCde1234ABCde',
+            'account_number' => '2224440041626998',
+            'balance_id'     => $this->bankingBalance->getId(),
+            'account_type'   => 'nodal',
         ];
 
         $bankingAccount = $this->createBankingAccount($bankingAccountAttributes, 'live');
 
         $secondBankingAccountAttributes = [
-            'id'                    =>  'DEcba4321DEcba',
-            'account_number'        =>  '2224440041626999',
-            'balance_id'            =>  $secondBankingBalance->getId(),
-            'account_type'          =>  'current',
+            'id'             => 'DEcba4321DEcba',
+            'account_number' => '2224440041626999',
+            'balance_id'     => $secondBankingBalance->getId(),
+            'account_type'   => 'current',
         ];
 
         $secondBankingAccount = $this->createBankingAccount($secondBankingAccountAttributes, 'live');
 
-        $this->fixtures->on('live')->create('banking_account_statement_details',[
+        $this->fixtures->on('live')->create('banking_account_statement_details', [
             Details\Entity::ID             => 'xbas0000000002',
             Details\Entity::MERCHANT_ID    => '10000000000000',
             Details\Entity::BALANCE_ID     => $secondBankingBalance->getId(),
@@ -7688,17 +7682,17 @@ class PayoutTest extends OAuthTestCase
         // Create two queued payouts
 
         $firstQueuedPayoutAttributes = [
-            'account_number'        =>  '2224440041626905',
-            'amount'                =>  20000099,
-            'queue_if_low_balance'  =>  1,
+            'account_number'       => '2224440041626905',
+            'amount'               => 20000099,
+            'queue_if_low_balance' => 1,
         ];
 
         $this->createQueuedOrPendingPayout($firstQueuedPayoutAttributes, 'rzp_live_TheLiveAuthKey');
 
         $secondQueuedPayoutAttributes = [
-            'account_number'        =>  '2224440041626906',
-            'amount'                =>  30000099,
-            'queue_if_low_balance'  =>  1,
+            'account_number'       => '2224440041626906',
+            'amount'               => 30000099,
+            'queue_if_low_balance' => 1,
         ];
 
         $this->createQueuedOrPendingPayout($secondQueuedPayoutAttributes, 'rzp_live_TheLiveAuthKey');
@@ -7708,51 +7702,50 @@ class PayoutTest extends OAuthTestCase
 
         $this->createPayoutWithWorkflow(
             [
-                'account_number'        =>  '2224440041626905',
-                'amount'                =>  54321
+                'account_number' => '2224440041626905',
+                'amount'         => 54321
             ],
             'rzp_live_TheLiveAuthKey');
 
         $this->createPayoutWithWorkflow(
             [
-                'account_number'        =>  '2224440041626906',
-                'amount'                =>  12345
+                'account_number' => '2224440041626906',
+                'amount'         => 12345
             ],
             'rzp_live_TheLiveAuthKey');
 
-        $viewOnlyRoleUser = $this->fixtures->user->createBankingUserForMerchant('10000000000000', [], 'view_only','live');
+        $viewOnlyRoleUser = $this->fixtures->user->createBankingUserForMerchant('10000000000000', [], 'view_only', 'live');
 
         $userId = $viewOnlyRoleUser['id'];
 
-        $this->ba->proxyAuth('rzp_live_10000000000000',$userId);
+        $this->ba->proxyAuth('rzp_live_10000000000000', $userId);
 
         $completeSummary = $this->startTest();
 
         $firstBankingAccountId = $this->getDbEntity('banking_account',
-                                                           ['account_number' => '2224440041626905'],
+                                                    ['account_number' => '2224440041626905'],
                                                     'live')->getPublicId();
 
         $secondBankingAccountId = $secondBankingAccount->getPublicId();
 
-        $queuedSummaryFirstAccount = $completeSummary[$firstBankingAccountId][Payout\Status::QUEUED];
-        $pendingSummaryFirstAccount = $completeSummary[$firstBankingAccountId][Payout\Status::PENDING];
-        $queuedSummarySecondAccount = $completeSummary[$secondBankingAccountId][Payout\Status::QUEUED];
+        $queuedSummaryFirstAccount   = $completeSummary[$firstBankingAccountId][Payout\Status::QUEUED];
+        $pendingSummaryFirstAccount  = $completeSummary[$firstBankingAccountId][Payout\Status::PENDING];
+        $queuedSummarySecondAccount  = $completeSummary[$secondBankingAccountId][Payout\Status::QUEUED];
         $pendingSummarySecondAccount = $completeSummary[$secondBankingAccountId][Payout\Status::PENDING];
 
+        $this->assertEquals($queuedSummaryFirstAccount['low_balance']['count'], 1);
+        $this->assertEquals($queuedSummaryFirstAccount['low_balance']['total_amount'], 20000099);
+        $this->assertEquals($queuedSummaryFirstAccount['low_balance']['balance'], "10000000");
 
-        $this->assertEquals($queuedSummaryFirstAccount['low_balance']['count'],1);
-        $this->assertEquals($queuedSummaryFirstAccount['low_balance']['total_amount'],20000099);
-        $this->assertEquals($queuedSummaryFirstAccount['low_balance']['balance'],"10000000");
+        $this->assertEquals($pendingSummaryFirstAccount['count'], 0);
+        $this->assertEquals($pendingSummaryFirstAccount['total_amount'], 0);
 
-        $this->assertEquals($pendingSummaryFirstAccount['count'],0);
-        $this->assertEquals($pendingSummaryFirstAccount['total_amount'],0);
+        $this->assertEquals($queuedSummarySecondAccount['low_balance']['count'], 1);
+        $this->assertEquals($queuedSummarySecondAccount['low_balance']['total_amount'], 30000099);
+        $this->assertEquals($queuedSummarySecondAccount['low_balance']['balance'], "10000000");
 
-        $this->assertEquals($queuedSummarySecondAccount['low_balance']['count'],1);
-        $this->assertEquals($queuedSummarySecondAccount['low_balance']['total_amount'],30000099);
-        $this->assertEquals($queuedSummarySecondAccount['low_balance']['balance'],"10000000");
-
-        $this->assertEquals($pendingSummarySecondAccount['count'],0);
-        $this->assertEquals($pendingSummarySecondAccount['total_amount'],0);
+        $this->assertEquals($pendingSummarySecondAccount['count'], 0);
+        $this->assertEquals($pendingSummarySecondAccount['total_amount'], 0);
     }
 
     public function testFiringOfWebhooksAndEmailOnPayoutReversal()
@@ -7778,8 +7771,7 @@ class PayoutTest extends OAuthTestCase
         $payoutReversedEventTestDataKey = $this->testData['testFiringOfWebhooksAndEmailOnPayoutReversalPayoutReversedEventData'];
 
         $this->mockServiceStorkRequest(
-            function ($path, $payload) use ($transactionCreatedEventTestDataKey, $payoutReversedEventTestDataKey)
-            {
+            function($path, $payload) use ($transactionCreatedEventTestDataKey, $payoutReversedEventTestDataKey) {
                 $this->assertContains($payload['event']['name'], ['transaction.created', 'payout.reversed']);
                 switch ($payload['event']['name'])
                 {
@@ -7805,8 +7797,7 @@ class PayoutTest extends OAuthTestCase
         $this->ba->ftsAuth();
         $this->startTest();
 
-        Mail::assertQueued(PayoutMail::class, function($mail)
-        {
+        Mail::assertQueued(PayoutMail::class, function($mail) {
             $viewData = $mail->viewData;
 
             $this->assertEquals($mail->originProduct, 'banking');
@@ -7869,8 +7860,7 @@ class PayoutTest extends OAuthTestCase
         $payoutReversedEventTestDataKey = $this->testData['testTransactionCreatedWebhookAndPayoutReversedEmailNotFiringForCurrentAccountPayoutEventData'];
 
         $this->mockServiceStorkRequest(
-            function ($path, $payload) use ($payoutReversedEventTestDataKey)
-            {
+            function($path, $payload) use ($payoutReversedEventTestDataKey) {
                 $this->validateStorkWebhookFireEvent('payout.reversed',
                                                      $payoutReversedEventTestDataKey,
                                                      $payload);
@@ -7919,20 +7909,20 @@ class PayoutTest extends OAuthTestCase
     protected function setupDirectAccount()
     {
         $balanceAttributes = [
-            'balance' => 10000000,
+            'balance'     => 10000000,
             'balanceType' => 'direct',
-            'channel' => 'rbl',
+            'channel'     => 'rbl',
         ];
 
         $bankingBalance = $this->fixtures->merchant->createBalanceOfBankingType(
             $balanceAttributes["balance"],
             '10000000000000',
-            $balanceAttributes["balanceType"] ,
+            $balanceAttributes["balanceType"],
             $balanceAttributes["channel"]
         );
 
-        $virtualAccount = $this->fixtures->create('virtual_account');
-        $secondBankAccount    = $this->fixtures->create(
+        $virtualAccount    = $this->fixtures->create('virtual_account');
+        $secondBankAccount = $this->fixtures->create(
             'bank_account',
             [
                 'type'           => 'virtual_account',
@@ -7967,14 +7957,14 @@ class PayoutTest extends OAuthTestCase
             'method'  => 'POST',
             'url'     => '/payouts',
             'content' => [
-                'account_number'        => '2224440041626905',
-                'amount'                => 10000,
-                'currency'              => 'INR',
-                'purpose'               => 'refund',
-                'fund_account_id'       => 'fa_100000000000fa',
-                'mode'                  => 'NEFT',
-                'queue_if_low_balance'  => 0,
-                'notes'                 => [
+                'account_number'       => '2224440041626905',
+                'amount'               => 10000,
+                'currency'             => 'INR',
+                'purpose'              => 'refund',
+                'fund_account_id'      => 'fa_100000000000fa',
+                'mode'                 => 'NEFT',
+                'queue_if_low_balance' => 0,
+                'notes'                => [
                     0   => 'Test',
                     1   => 'Test1',
                     ''  => 'Test2',
@@ -7988,7 +7978,7 @@ class PayoutTest extends OAuthTestCase
         // create a payout with custom notes
         $response = $this->sendRequest($request);
 
-        $payout =  json_decode($response->getContent(), true);
+        $payout = json_decode($response->getContent(), true);
 
         $request = [
             'method'  => 'POST',
@@ -8012,9 +8002,8 @@ class PayoutTest extends OAuthTestCase
                        ->where('entity_name', 'payout')
                        ->first();
 
-
         // fetch diff using wf_action
-        $testData = & $this->testData[__FUNCTION__];
+        $testData                   = &$this->testData[__FUNCTION__];
         $testData['request']['url'] = "/w-actions/w_action_{$wfAction->id}/diff";
 
         $this->ba->adminAuth('live');
@@ -8036,14 +8025,14 @@ class PayoutTest extends OAuthTestCase
             'method'  => 'POST',
             'url'     => '/payouts',
             'content' => [
-                'account_number'        => '2224440041626905',
-                'amount'                => 10000,
-                'currency'              => 'INR',
-                'purpose'               => 'refund',
-                'fund_account_id'       => 'fa_100000000000fa',
-                'mode'                  => 'NEFT',
-                'queue_if_low_balance'  => 0,
-                'notes'                 => [
+                'account_number'       => '2224440041626905',
+                'amount'               => 10000,
+                'currency'             => 'INR',
+                'purpose'              => 'refund',
+                'fund_account_id'      => 'fa_100000000000fa',
+                'mode'                 => 'NEFT',
+                'queue_if_low_balance' => 0,
+                'notes'                => [
                     'Test',
                     'Test1',
                     'Test2',
@@ -8057,7 +8046,7 @@ class PayoutTest extends OAuthTestCase
         // create a payout with custom notes
         $response = $this->sendRequest($request);
 
-        $payout =  json_decode($response->getContent(), true);
+        $payout = json_decode($response->getContent(), true);
 
         $request = [
             'method'  => 'POST',
@@ -8077,13 +8066,12 @@ class PayoutTest extends OAuthTestCase
         json_decode($response->getContent(), true);
 
         $wfAction = \DB::connection('live')->table('workflow_actions')
-            ->where('entity_id', str_after($payout['id'], 'pout_'))
-            ->where('entity_name', 'payout')
-            ->first();
-
+                       ->where('entity_id', str_after($payout['id'], 'pout_'))
+                       ->where('entity_name', 'payout')
+                       ->first();
 
         // fetch diff using wf_action
-        $testData = & $this->testData[__FUNCTION__];
+        $testData                   = &$this->testData[__FUNCTION__];
         $testData['request']['url'] = "/w-actions/w_action_{$wfAction->id}/diff";
 
         $this->ba->adminAuth('live');
@@ -8130,9 +8118,9 @@ class PayoutTest extends OAuthTestCase
 
         $this->ba->privateAuth();
 
-        $request = & $this->testData[__FUNCTION__]['request'];
+        $request = &$this->testData[__FUNCTION__]['request'];
 
-        $request['url'] = '/payouts/'. $payout_data['id']. '/reversals';
+        $request['url'] = '/payouts/' . $payout_data['id'] . '/reversals';
 
         $response = $this->startTest();
 
@@ -8176,9 +8164,9 @@ class PayoutTest extends OAuthTestCase
 
         $this->ba->privateAuth();
 
-        $request = & $this->testData[__FUNCTION__]['request'];
+        $request = &$this->testData[__FUNCTION__]['request'];
 
-        $request['url'] = '/payouts/'. $payout_data['id']. '/reversals';
+        $request['url'] = '/payouts/' . $payout_data['id'] . '/reversals';
 
         $this->startTest();
     }
@@ -8188,7 +8176,7 @@ class PayoutTest extends OAuthTestCase
         $this->ba->batchAuth();
 
         $headers = [
-            'HTTP_X_Batch_Id' => 'C0zv9I46W4wiOq',
+            'HTTP_X_Batch_Id'     => 'C0zv9I46W4wiOq',
             'HTTP_X_Creator_Type' => 'user',
             'HTTP_X_Creator_Id'   => 'MerchantUser01'
         ];
@@ -8225,7 +8213,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->fixtures->edit('credits', $creditEntity['id'], ['balance_id' => $creditBalanceEntity['id']]);
 
-        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 600 , 'campaign' => 'test rewards type', 'type' => 'reward_fee', 'product' => 'banking']);
+        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 600, 'campaign' => 'test rewards type', 'type' => 'reward_fee', 'product' => 'banking']);
 
         $creditEntity = $this->getDbLastEntity('credits');
 
@@ -8258,7 +8246,7 @@ class PayoutTest extends OAuthTestCase
 
         //$this->fixtures->edit('payout', $payout['id'], ['reference_id' => 'WckD']);
 
-        $request = & $this->testData[__FUNCTION__]['request'];
+        $request        = &$this->testData[__FUNCTION__]['request'];
         $request['url'] = '/payouts/' . $payout['id'];
 
         $this->ba->privateAuth();
@@ -8295,7 +8283,7 @@ class PayoutTest extends OAuthTestCase
 
         $payout2 = $this->makeRequestAndGetContent($request);
 
-        $request = & $this->testData[__FUNCTION__]['request'];
+        $request = &$this->testData[__FUNCTION__]['request'];
 
         $request['url'] = '/payouts?mode=NEFT&account_number=2224440041626905';
 
@@ -8326,13 +8314,13 @@ class PayoutTest extends OAuthTestCase
         $txn = $this->getLastEntity('transaction', true);
 
         (new Payout\Core)->updateWithDetailsBeforeFtaRecon($payout, [
-            'channel'           => 'icici',
-            'failure_reason'    => '',
-            'utr'               => $utr,
-            'remarks'           => '',
+            'channel'        => 'icici',
+            'failure_reason' => '',
+            'utr'            => $utr,
+            'remarks'        => '',
         ]);
 
-        $updatedPayout = $this->getDbEntityById('payout',$payoutId)->toArray();
+        $updatedPayout = $this->getDbEntityById('payout', $payoutId)->toArray();
 
         // Verify transaction entity
         $updatedTxn = $this->getLastEntity('transaction', true);
@@ -8354,19 +8342,18 @@ class PayoutTest extends OAuthTestCase
 
         $utr = $payout->getUtr();
 
-        $this->makeRequestAndCatchException(function() use ($payout, $utr)
-        {
+        $this->makeRequestAndCatchException(function() use ($payout, $utr) {
             (new Payout\Core)->updateWithDetailsBeforeFtaRecon($payout, [
-            'channel'           => 'yesbank',
-            'failure_reason'    => '',
-            'utr'               => $utr,
-            'remarks'           => '',
+                'channel'        => 'yesbank',
+                'failure_reason' => '',
+                'utr'            => $utr,
+                'remarks'        => '',
             ]);
         },
-        \RZP\Exception\LogicException::class,
-        'Different channel passed by FTS for CA payouts');
+            \RZP\Exception\LogicException::class,
+            'Different channel passed by FTS for CA payouts');
 
-        $updatedPayout = $this->getDbEntityById('payout',$payoutId)->toArray();
+        $updatedPayout = $this->getDbEntityById('payout', $payoutId)->toArray();
 
         $this->assertEquals($payout[Payout\Entity::CHANNEL], 'rbl');
 
@@ -8424,7 +8411,7 @@ class PayoutTest extends OAuthTestCase
 
         $response = $this->startTest();
 
-        $this->assertEquals(($existing_purposes_count + 1 ), $response['count']);
+        $this->assertEquals(($existing_purposes_count + 1), $response['count']);
 
         return $this->testData[__FUNCTION__]['request']['content']['purpose'];
     }
@@ -8446,20 +8433,20 @@ class PayoutTest extends OAuthTestCase
     public function testCreateRblPayoutSuccessfully()
     {
         $balanceAttributes = [
-            'balance' => 10000000,
+            'balance'     => 10000000,
             'balanceType' => 'direct',
-            'channel' => 'rbl',
+            'channel'     => 'rbl',
         ];
 
         $bankingBalance = $this->fixtures->merchant->createBalanceOfBankingType(
             $balanceAttributes["balance"],
             '10000000000000',
-            $balanceAttributes["balanceType"] ,
+            $balanceAttributes["balanceType"],
             $balanceAttributes["channel"]
         );
 
-        $virtualAccount = $this->fixtures->create('virtual_account');
-        $secondBankAccount    = $this->fixtures->create(
+        $virtualAccount    = $this->fixtures->create('virtual_account');
+        $secondBankAccount = $this->fixtures->create(
             'bank_account',
             [
                 'type'           => 'virtual_account',
@@ -8613,9 +8600,9 @@ class PayoutTest extends OAuthTestCase
     {
         $this->testBulkPayoutWithThrottling();
 
-        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 100 , 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
+        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 100, 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
 
-        $this->fixtures->create('credit_balance', ['merchant_id' => '10000000000000', 'balance' => 700 ]);
+        $this->fixtures->create('credit_balance', ['merchant_id' => '10000000000000', 'balance' => 700]);
 
         $creditBalanceEntity = $this->getDbLastEntity('credit_balance');
 
@@ -8625,7 +8612,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->fixtures->edit('credits', $creditEntity['id'], ['balance_id' => $creditBalanceEntity['id']]);
 
-        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 600 , 'campaign' => 'test rewards type', 'type' => 'reward_fee', 'product' => 'banking']);
+        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 600, 'campaign' => 'test rewards type', 'type' => 'reward_fee', 'product' => 'banking']);
 
         $creditEntity = $this->getDbLastEntity('credits');
 
@@ -8678,12 +8665,12 @@ class PayoutTest extends OAuthTestCase
         $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated']);
 
         $request = [
-            'url'       => '/payouts/' . $payout['id'] . '/manual/status',
-            'method'    => 'PATCH',
-            'content'   => [
-                'status'                => 'processed',
-                'fts_fund_account_id'   => '12345',
-                'fts_account_type'      => 'NODAL',
+            'url'     => '/payouts/' . $payout['id'] . '/manual/status',
+            'method'  => 'PATCH',
+            'content' => [
+                'status'              => 'processed',
+                'fts_fund_account_id' => '12345',
+                'fts_account_type'    => 'NODAL',
             ]
         ];
 
@@ -8711,9 +8698,9 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals('create_request_submitted', $payout->getStatus());
 
         $request = [
-            'url'       => '/payouts/' . $payout['id'] . '/manual/status',
-            'method'    => 'PATCH',
-            'content'   => [
+            'url'     => '/payouts/' . $payout['id'] . '/manual/status',
+            'method'  => 'PATCH',
+            'content' => [
                 'status' => 'failed',
             ]
         ];
@@ -8743,7 +8730,7 @@ class PayoutTest extends OAuthTestCase
 
         $request = $this->testData[__FUNCTION__];
 
-        $request['request']['url']= '/payouts/' . $payout['id'] . '/manual/status';
+        $request['request']['url'] = '/payouts/' . $payout['id'] . '/manual/status';
 
         $this->ba->adminAuth();
 
@@ -8767,10 +8754,10 @@ class PayoutTest extends OAuthTestCase
         $payout = $this->getDbLastEntity('payout');
 
         $request = [
-            'url'       => '/payouts/' . $payout['id'] . '/manual/status',
-            'method'    => 'PATCH',
-            'content'   => [
-                'status'                => 'reversed',
+            'url'     => '/payouts/' . $payout['id'] . '/manual/status',
+            'method'  => 'PATCH',
+            'content' => [
+                'status' => 'reversed',
             ]
         ];
 
@@ -8835,9 +8822,9 @@ class PayoutTest extends OAuthTestCase
             'url'     => '/payouts/' . $payout['id'] . '/manual/status',
             'method'  => 'PATCH',
             'content' => [
-                'status'                => 'processed',
-                'fts_fund_account_id'   => '12345',
-                'fts_account_type'      => 'NODAL',
+                'status'              => 'processed',
+                'fts_fund_account_id' => '12345',
+                'fts_account_type'    => 'NODAL',
             ]
         ];
 
@@ -8859,10 +8846,10 @@ class PayoutTest extends OAuthTestCase
             'url'     => '/payouts/' . $payout['id'] . '/manual/status',
             'method'  => 'PATCH',
             'content' => [
-                'status'                => 'reversed',
-                'failure_reason'        => 'payout reversed at bank',
-                'fts_fund_account_id'   => '     12345',
-                'fts_account_type'      => 'NODAL',
+                'status'              => 'reversed',
+                'failure_reason'      => 'payout reversed at bank',
+                'fts_fund_account_id' => '     12345',
+                'fts_account_type'    => 'NODAL',
             ]
         ];
 
@@ -8905,11 +8892,11 @@ class PayoutTest extends OAuthTestCase
             $reversalCreated->getPublicId()
         ];
 
-        for ($index = 0; $index<count($ledgerSnsPayloadArray); $index++)
+        for ($index = 0; $index < count($ledgerSnsPayloadArray); $index++)
         {
             $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
 
-            $ledgerRequestPayload['identifiers'] = json_decode($ledgerRequestPayload['identifiers'], true);
+            $ledgerRequestPayload['identifiers']       = json_decode($ledgerRequestPayload['identifiers'], true);
             $ledgerRequestPayload['additional_params'] = json_decode($ledgerRequestPayload['additional_params'], true);
 
             $this->assertEquals('X', $ledgerRequestPayload['tenant']);
@@ -8982,8 +8969,8 @@ class PayoutTest extends OAuthTestCase
             'url'     => '/payouts/' . $payout['id'] . '/manual/status',
             'method'  => 'PATCH',
             'content' => [
-                'status'                => 'reversed',
-                'failure_reason'        => 'manually marked as failed',
+                'status'         => 'reversed',
+                'failure_reason' => 'manually marked as failed',
             ]
         ];
 
@@ -9021,11 +9008,11 @@ class PayoutTest extends OAuthTestCase
             $reversalCreated->getPublicId()
         ];
 
-        for ($index = 0; $index<count($ledgerSnsPayloadArray); $index++)
+        for ($index = 0; $index < count($ledgerSnsPayloadArray); $index++)
         {
             $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
 
-            $ledgerRequestPayload['identifiers'] = json_decode($ledgerRequestPayload['identifiers'], true);
+            $ledgerRequestPayload['identifiers']       = json_decode($ledgerRequestPayload['identifiers'], true);
             $ledgerRequestPayload['additional_params'] = json_decode($ledgerRequestPayload['additional_params'], true);
 
             $this->assertEquals('X', $ledgerRequestPayload['tenant']);
@@ -9079,7 +9066,7 @@ class PayoutTest extends OAuthTestCase
     {
         $customPurpose = ' leading trailing ';
 
-        $purpose = & $this->testData[__FUNCTION__]['request']['content']['purpose'];
+        $purpose = &$this->testData[__FUNCTION__]['request']['content']['purpose'];
 
         $purpose = $customPurpose;
 
@@ -9087,7 +9074,7 @@ class PayoutTest extends OAuthTestCase
 
         $response = $this->startTest();
 
-        $this->assertEquals(in_array(['purpose' => trim($customPurpose), 'purpose_type'  => 'refund'], $response['items'], true), true);
+        $this->assertEquals(in_array(['purpose' => trim($customPurpose), 'purpose_type' => 'refund'], $response['items'], true), true);
     }
 
     // check trimming in payout purpose creation.
@@ -9124,7 +9111,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->startTest();
 
-        $payouts = $this->getDbEntities('payout', [],'live');
+        $payouts = $this->getDbEntities('payout', [], 'live');
 
         // Assert status of all 3 payouts. All three should go to 'pending' state
         $this->assertEquals(Payout\Status::PENDING, $payouts[0]['status']);
@@ -9143,11 +9130,11 @@ class PayoutTest extends OAuthTestCase
         // Approve with Owner role user
         $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
 
-        $payouts = $this->getDbEntities('payout', [],'live');
+        $payouts = $this->getDbEntities('payout', [], 'live');
 
         $payoutIds = $payouts->getPublicIds();
 
-        $testData = & $this->testData[__FUNCTION__];
+        $testData                                     = &$this->testData[__FUNCTION__];
         $testData['request']['content']['payout_ids'] = $payoutIds;
 
         $firstApprovalResponse = $this->startTest();
@@ -9159,7 +9146,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->app['config']->set('database.default', 'live');
 
-        $testData = & $this->testData[__FUNCTION__];
+        $testData                                     = &$this->testData[__FUNCTION__];
         $testData['request']['content']['payout_ids'] = $payoutIds;
 
         // Make Request to Approve pending payout for second level from Finance L3 role
@@ -9171,7 +9158,7 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals(3, $secondApprovalResponse['total_count']);
         $this->assertEquals(true, $secondActionChecker['approved']);
 
-        $updatedPayouts = $this->getDbEntities('payout', [],'live');
+        $updatedPayouts = $this->getDbEntities('payout', [], 'live');
 
         $this->assertEquals(Status::BATCH_SUBMITTED, $updatedPayouts[0]['status']);
         $this->assertEquals(Status::BATCH_SUBMITTED, $updatedPayouts[1]['status']);
@@ -9206,7 +9193,7 @@ class PayoutTest extends OAuthTestCase
 
     public function testPricingRuleAuthTypeForProxyAuthPayout()
     {
-        $testData = $this->testData['testPricingRuleAuthTypeForProxyAuthPayout'];
+        $testData                                = $this->testData['testPricingRuleAuthTypeForProxyAuthPayout'];
         $testData['request']['url']              = '/payouts_with_otp';
         $testData['request']['content']['token'] = 'BUIj3m2Nx2VvVj';
         $testData['request']['content']['otp']   = '0007';
@@ -9297,9 +9284,9 @@ class PayoutTest extends OAuthTestCase
      */
     public function testCreateFreePayoutForNEFTModeSharedAccountPrivateAuthWithNewCreditsFlow()
     {
-        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 100 , 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
+        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 100, 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
 
-        $this->fixtures->create('credit_balance', ['merchant_id' => '10000000000000', 'balance' => 700 ]);
+        $this->fixtures->create('credit_balance', ['merchant_id' => '10000000000000', 'balance' => 700]);
 
         $creditBalanceEntity = $this->getDbLastEntity('credit_balance');
 
@@ -9309,7 +9296,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->fixtures->edit('credits', $creditEntity['id'], ['balance_id' => $creditBalanceEntity['id']]);
 
-        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 600 , 'campaign' => 'test rewards type', 'type' => 'reward_fee', 'product' => 'banking']);
+        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 600, 'campaign' => 'test rewards type', 'type' => 'reward_fee', 'product' => 'banking']);
 
         $creditEntity = $this->getDbLastEntity('credits');
 
@@ -9335,10 +9322,10 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals(Payout\Entity::FREE_PAYOUT, $payout->getFeeType());
 
         $counter = $this->getDbEntities('counter',
-            [
-                'account_type' => 'shared',
-                'balance_id'   => $balanceId,
-            ])->first();
+                                        [
+                                            'account_type' => 'shared',
+                                            'balance_id'   => $balanceId,
+                                        ])->first();
 
         // Assert that one free payout has been consumed
         $this->assertEquals(1, $counter->getFreePayoutsConsumed());
@@ -9381,9 +9368,9 @@ class PayoutTest extends OAuthTestCase
      */
     public function testCreateFreePayoutForNEFTModeSharedAccountPrivateAuthWithOldCreditsFlow()
     {
-        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 100 , 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
+        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 100, 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
 
-        $this->fixtures->create('credit_balance', ['merchant_id' => '10000000000000', 'balance' => 700 ]);
+        $this->fixtures->create('credit_balance', ['merchant_id' => '10000000000000', 'balance' => 700]);
 
         $creditBalanceEntity = $this->getDbLastEntity('credit_balance');
 
@@ -9393,7 +9380,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->fixtures->edit('credits', $creditEntity['id'], ['balance_id' => $creditBalanceEntity['id']]);
 
-        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 600 , 'campaign' => 'test rewards type', 'type' => 'reward_fee', 'product' => 'banking']);
+        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 600, 'campaign' => 'test rewards type', 'type' => 'reward_fee', 'product' => 'banking']);
 
         $creditEntity = $this->getDbLastEntity('credits');
 
@@ -9418,10 +9405,10 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals(Payout\Entity::FREE_PAYOUT, $payout->getFeeType());
 
         $counter = $this->getDbEntities('counter',
-            [
-                'account_type' => 'shared',
-                'balance_id'   => $balanceId,
-            ])->first();
+                                        [
+                                            'account_type' => 'shared',
+                                            'balance_id'   => $balanceId,
+                                        ])->first();
 
         // Assert that one free payout has been consumed
         $this->assertEquals(1, $counter->getFreePayoutsConsumed());
@@ -9482,7 +9469,7 @@ class PayoutTest extends OAuthTestCase
 
         $testData = $this->testData[__FUNCTION__];
 
-        $testData['request']['content']['fund_account_id'] = $fundAccount['id'];
+        $testData['request']['content']['fund_account_id']  = $fundAccount['id'];
         $testData['response']['content']['fund_account_id'] = $fundAccount['id'];
 
         $this->testData[__FUNCTION__] = $testData;
@@ -9544,7 +9531,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->setUpCounterAndFreePayoutsCount('shared', $balanceId);
 
-        $testData = $this->testData['testCreateFreePayoutForIMPSModeSharedAccountProxyAuth'];
+        $testData                                = $this->testData['testCreateFreePayoutForIMPSModeSharedAccountProxyAuth'];
         $testData['request']['url']              = '/payouts_with_otp';
         $testData['request']['content']['token'] = 'BUIj3m2Nx2VvVj';
         $testData['request']['content']['otp']   = '0007';
@@ -9600,7 +9587,7 @@ class PayoutTest extends OAuthTestCase
 
     public function testCreateFreePayoutForNEFTModeDirectAccountProxyAuth()
     {
-        $testData = $this->testData['testCreateFreePayoutForNEFTModeDirectAccountProxyAuth'];
+        $testData                                = $this->testData['testCreateFreePayoutForNEFTModeDirectAccountProxyAuth'];
         $testData['request']['url']              = '/payouts_with_otp';
         $testData['request']['content']['token'] = 'BUIj3m2Nx2VvVj';
         $testData['request']['content']['otp']   = '0007';
@@ -9608,11 +9595,11 @@ class PayoutTest extends OAuthTestCase
         $this->setupDirectAccount();
 
         $balance = $this->getDbEntities('balance',
-                                                   [
-                                                       'merchant_id'  => "10000000000000",
-                                                       'account_type' => 'direct',
-                                                       'channel'      => 'rbl'
-                                                   ])->first();
+                                        [
+                                            'merchant_id'  => "10000000000000",
+                                            'account_type' => 'direct',
+                                            'channel'      => 'rbl'
+                                        ])->first();
 
         $balanceId = $balance->getId();
 
@@ -9693,7 +9680,7 @@ class PayoutTest extends OAuthTestCase
 
     public function testCreateFreePayoutForIMPSModeDirectAccountProxyAuth()
     {
-        $testData = $this->testData['testCreateFreePayoutForIMPSModeDirectAccountProxyAuth'];
+        $testData                                = $this->testData['testCreateFreePayoutForIMPSModeDirectAccountProxyAuth'];
         $testData['request']['url']              = '/payouts_with_otp';
         $testData['request']['content']['token'] = 'BUIj3m2Nx2VvVj';
         $testData['request']['content']['otp']   = '0007';
@@ -10033,7 +10020,7 @@ class PayoutTest extends OAuthTestCase
         // Assert that earlier the free_payouts_consumed_last_reset_at was null.
         $this->assertEquals($someOldDate, $counter->getFreePayoutsConsumedLastResetAt());
 
-        $testData = $this->testData['testCreateFreePayoutForNEFTModeSharedAccountPrivateAuth'];
+        $testData                                = $this->testData['testCreateFreePayoutForNEFTModeSharedAccountPrivateAuth'];
         $testData['request']['url']              = '/payouts_with_otp';
         $testData['request']['content']['token'] = 'BUIj3m2Nx2VvVj';
         $testData['request']['content']['otp']   = '0007';
@@ -10182,13 +10169,13 @@ class PayoutTest extends OAuthTestCase
             'method'  => 'POST',
             'url'     => '/payouts',
             'content' => [
-                'account_number'       => '2224440041626905',
-                'amount'               => 2000000,
-                'currency'             => 'INR',
-                'purpose'              => 'refund',
-                'mode'                 => 'NEFT',
-                'fund_account_id'      => 'fa_100000000000fa',
-                'notes'                => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'mode'            => 'NEFT',
+                'fund_account_id' => 'fa_100000000000fa',
+                'notes'           => [
                     'abc' => 'xyz',
                 ],
             ],
@@ -10419,7 +10406,7 @@ class PayoutTest extends OAuthTestCase
         // Approve with Owner role user
         $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
 
-        $testData = & $this->testData[__FUNCTION__];
+        $testData                   = &$this->testData[__FUNCTION__];
         $testData['request']['url'] = '/payouts/' . $payout['id'] . '/approve';
 
         $firstApprovalResponse = $this->startTest();
@@ -10470,21 +10457,21 @@ class PayoutTest extends OAuthTestCase
 
         $responseForFirstFreeCreatedBulkPayout = $testData['response']['content']['items'][2];
 
-        $responseForFirstFreeCreatedBulkPayout['transaction']['amount'] = 100;
-        $responseForFirstFreeCreatedBulkPayout['transaction']['debit'] = 100;
+        $responseForFirstFreeCreatedBulkPayout['transaction']['amount']  = 100;
+        $responseForFirstFreeCreatedBulkPayout['transaction']['debit']   = 100;
         $responseForFirstFreeCreatedBulkPayout['transaction']['balance'] = 9999900;
-        $responseForFirstFreeCreatedBulkPayout['fees'] = 0;
-        $responseForFirstFreeCreatedBulkPayout['tax'] = 0;
+        $responseForFirstFreeCreatedBulkPayout['fees']                   = 0;
+        $responseForFirstFreeCreatedBulkPayout['tax']                    = 0;
 
         $testData['response']['content']['items'][2] = $responseForFirstFreeCreatedBulkPayout;
 
         $responseForSecondFreeCreatedBulkPayout = $testData['response']['content']['items'][3];
 
-        $responseForSecondFreeCreatedBulkPayout['transaction']['amount'] = 100;
-        $responseForSecondFreeCreatedBulkPayout['transaction']['debit'] = 100;
+        $responseForSecondFreeCreatedBulkPayout['transaction']['amount']  = 100;
+        $responseForSecondFreeCreatedBulkPayout['transaction']['debit']   = 100;
         $responseForSecondFreeCreatedBulkPayout['transaction']['balance'] = 9999800;
-        $responseForSecondFreeCreatedBulkPayout['fees'] = 0;
-        $responseForSecondFreeCreatedBulkPayout['tax'] = 0;
+        $responseForSecondFreeCreatedBulkPayout['fees']                   = 0;
+        $responseForSecondFreeCreatedBulkPayout['tax']                    = 0;
 
         $testData['response']['content']['items'][3] = $responseForSecondFreeCreatedBulkPayout;
 
@@ -10530,7 +10517,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->startTest();
 
-        $payouts = $this->getDbEntities('payout', [],'live');
+        $payouts = $this->getDbEntities('payout', [], 'live');
 
         // Assert status of all 3 payouts. All three should go to 'pending' state
         $this->assertEquals(Payout\Status::PENDING, $payouts[0]['status']);
@@ -10552,11 +10539,11 @@ class PayoutTest extends OAuthTestCase
         // Approve with Owner role user
         $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
 
-        $payouts = $this->getDbEntities('payout', [],'live');
+        $payouts = $this->getDbEntities('payout', [], 'live');
 
         $payoutIds = $payouts->getPublicIds();
 
-        $testData = & $this->testData[__FUNCTION__];
+        $testData                                     = &$this->testData[__FUNCTION__];
         $testData['request']['content']['payout_ids'] = $payoutIds;
 
         $firstApprovalResponse = $this->startTest();
@@ -10568,7 +10555,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->app['config']->set('database.default', 'live');
 
-        $testData = & $this->testData[__FUNCTION__];
+        $testData                                     = &$this->testData[__FUNCTION__];
         $testData['request']['content']['payout_ids'] = $payoutIds;
 
         // Make Request to Approve pending payout for second level from Finance L3 role
@@ -10580,7 +10567,7 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals(3, $secondApprovalResponse['total_count']);
         $this->assertEquals(true, $secondActionChecker['approved']);
 
-        $updatedPayouts = $this->getDbEntities('payout', [],'live');
+        $updatedPayouts = $this->getDbEntities('payout', [], 'live');
 
         $this->assertEquals(Status::BATCH_SUBMITTED, $updatedPayouts[0]['status']);
         $this->assertEquals(Status::BATCH_SUBMITTED, $updatedPayouts[1]['status']);
@@ -10759,7 +10746,8 @@ class PayoutTest extends OAuthTestCase
         $payout = $this->getDbEntityById('payout', $response['id'])->toArray();
 
         $this->assertEquals(WorkflowFeature::WORKFLOW_FEATURES[Feature\Constants::SKIP_WF_AT_PAYOUTS],
-            $payout[Payout\Entity::WORKFLOW_FEATURE]);    }
+                            $payout[Payout\Entity::WORKFLOW_FEATURE]);
+    }
 
     public function testSkipWorkflowForPayoutEnabledRequestValueFalse()
     {
@@ -10823,7 +10811,7 @@ class PayoutTest extends OAuthTestCase
 
     public function testCreatePayoutWithoutOriginFieldProxyAuth()
     {
-        $testData = $this->testData['testCreatePayoutWithoutOriginFieldPrivateAuth'];
+        $testData                                = $this->testData['testCreatePayoutWithoutOriginFieldPrivateAuth'];
         $testData['request']['url']              = '/payouts_with_otp';
         $testData['request']['content']['token'] = 'BUIj3m2Nx2VvVj';
         $testData['request']['content']['otp']   = '0007';
@@ -10854,10 +10842,10 @@ class PayoutTest extends OAuthTestCase
 
     public function testCreatePayoutWithIncorrectOriginFieldProxyAuth()
     {
-        $testData                                 = $this->testData['testCreatePayoutWithOriginFieldPrivateAuth'];
-        $testData['request']['url']               = '/payouts_with_otp';
-        $testData['request']['content']['token']  = 'BUIj3m2Nx2VvVj';
-        $testData['request']['content']['otp']    = '0007';
+        $testData                                = $this->testData['testCreatePayoutWithOriginFieldPrivateAuth'];
+        $testData['request']['url']              = '/payouts_with_otp';
+        $testData['request']['content']['token'] = 'BUIj3m2Nx2VvVj';
+        $testData['request']['content']['otp']   = '0007';
 
         $testData['response']['content']['error']['description'] = 'The selected origin is invalid.';
 
@@ -10873,7 +10861,7 @@ class PayoutTest extends OAuthTestCase
 
         $payout = $this->getDbLastEntity('payout', 'live');
 
-        $testData = & $this->testData[__FUNCTION__];
+        $testData = &$this->testData[__FUNCTION__];
 
         $testData['request']['url'] = '/payouts_internal/' . $payout->getPublicId();
 
@@ -10990,11 +10978,10 @@ class PayoutTest extends OAuthTestCase
 
         (new PayoutPostCreateProcessLowPriority('test', $payoutId, 'false', $metadata, $merchantId, $payoutRequest))->handle();
 
-        $payout = $this->getDbLastEntity(Constants\Entity::PAYOUT);
-        $contact = $this->getDbLastEntity(Constants\Entity::CONTACT);
+        $payout      = $this->getDbLastEntity(Constants\Entity::PAYOUT);
+        $contact     = $this->getDbLastEntity(Constants\Entity::CONTACT);
         $fundAccount = $this->getDbLastEntity(Constants\Entity::FUND_ACCOUNT);
-        $card = $this->getDbLastEntity(Constants\Entity::CARD);
-
+        $card        = $this->getDbLastEntity(Constants\Entity::CARD);
 
         $this->assertEquals($response[PayoutEntity::ID], $payout->getPublicId());
         $this->assertEquals($response[PayoutEntity::FUND_ACCOUNT][PayoutEntity::ID], $fundAccount->getPublicId());
@@ -11019,8 +11006,8 @@ class PayoutTest extends OAuthTestCase
 
         $response = $this->makeRequestAndGetContent($request);
 
-        $payout = $this->getDbLastEntity(Constants\Entity::PAYOUT);
-        $contact = $this->getDbLastEntity(Constants\Entity::CONTACT);
+        $payout      = $this->getDbLastEntity(Constants\Entity::PAYOUT);
+        $contact     = $this->getDbLastEntity(Constants\Entity::CONTACT);
         $fundAccount = $this->getDbLastEntity(Constants\Entity::FUND_ACCOUNT);
 
         $this->assertEquals($response[PayoutEntity::ID], $payout->getPublicId());
@@ -11034,13 +11021,13 @@ class PayoutTest extends OAuthTestCase
         $this->ba->privateAuth();
 
         $this->mockRazorxTreatment('yesbank',
-                                            'on',
-                                            'on',
-                                            'off',
-                                            'off',
-                                            'on',
-                                            'on',
-                                            'on');
+                                   'on',
+                                   'on',
+                                   'off',
+                                   'off',
+                                   'on',
+                                   'on',
+                                   'on');
 
         if ($isLpQueue === true)
         {
@@ -11130,14 +11117,14 @@ class PayoutTest extends OAuthTestCase
         $intermeditateTransaction = $this->getDbLastEntity(Constants\Entity::PAYOUTS_INTERMEDIATE_TRANSACTIONS);
 
         $this->assertEquals($balance->getbalance(), $updatedBalance->getbalance() + $transaction->getAmount());
-        $this->assertEquals(PayoutsIntermediateTransactions\Status::COMPLETED ,$intermeditateTransaction->getStatus());
+        $this->assertEquals(PayoutsIntermediateTransactions\Status::COMPLETED, $intermeditateTransaction->getStatus());
         $this->assertNotNull($intermeditateTransaction->getAttribute(PayoutsIntermediateTransactions\Entity::PENDING_AT));
         $this->assertNotNull($intermeditateTransaction->getAttribute(PayoutsIntermediateTransactions\Entity::COMPLETED_AT));
         $this->assertNull($intermeditateTransaction->getAttribute(PayoutsIntermediateTransactions\Entity::REVERSED_AT));
-        $this->assertEquals($balance->getBalance()+$transaction->getNetAmount() ,$transaction->getBalance());
+        $this->assertEquals($balance->getBalance() + $transaction->getNetAmount(), $transaction->getBalance());
 
         $this->assertEquals($transaction->getBalanceId(), $payout->getBalanceId());
-        $this->assertEquals($transaction->getAmount(), $payout->getAmount()+$payout->getFees());
+        $this->assertEquals($transaction->getAmount(), $payout->getAmount() + $payout->getFees());
         $this->assertEquals($transaction->getAmount(), $intermeditateTransaction->getAttribute(PayoutsIntermediateTransactions\Entity::AMOUNT));
 
     }
@@ -11148,9 +11135,9 @@ class PayoutTest extends OAuthTestCase
      */
     public function testProcessingOfCreateRequestSubmittedPayoutWithNewCreditsFlowButNotEqualToFees()
     {
-        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 100 , 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
+        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 100, 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
 
-        $this->fixtures->create('credit_balance', ['merchant_id' => '10000000000000', 'balance' => 700 ]);
+        $this->fixtures->create('credit_balance', ['merchant_id' => '10000000000000', 'balance' => 700]);
 
         $creditBalanceEntity = $this->getDbLastEntity('credit_balance');
 
@@ -11160,7 +11147,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->fixtures->edit('credits', $creditEntity['id'], ['balance_id' => $creditBalanceEntity['id']]);
 
-        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 600 , 'campaign' => 'test rewards type', 'type' => 'reward_fee', 'product' => 'banking']);
+        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 600, 'campaign' => 'test rewards type', 'type' => 'reward_fee', 'product' => 'banking']);
 
         $creditEntity = $this->getDbLastEntity('credits');
 
@@ -11204,9 +11191,9 @@ class PayoutTest extends OAuthTestCase
      */
     public function testProcessingOfCreateRequestSubmittedPayoutWithNewCreditsFlow()
     {
-        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 300 , 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
+        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 300, 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
 
-        $this->fixtures->create('credit_balance', ['merchant_id' => '10000000000000', 'balance' => 900 ]);
+        $this->fixtures->create('credit_balance', ['merchant_id' => '10000000000000', 'balance' => 900]);
 
         $creditBalanceEntity = $this->getDbLastEntity('credit_balance');
 
@@ -11216,7 +11203,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->fixtures->edit('credits', $creditEntity['id'], ['balance_id' => $creditBalanceEntity['id']]);
 
-        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 600 , 'campaign' => 'test rewards type', 'type' => 'reward_fee', 'product' => 'banking']);
+        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 600, 'campaign' => 'test rewards type', 'type' => 'reward_fee', 'product' => 'banking']);
 
         $creditEntity = $this->getDbLastEntity('credits');
 
@@ -11245,11 +11232,11 @@ class PayoutTest extends OAuthTestCase
 
         $creditTxnEntities = $this->getDbEntities('credit_transaction');
         $this->assertEquals('payout', $creditTxnEntities[0]['entity_type']);
-        $this->assertEquals($payout['id'],  $creditTxnEntities[0]['entity_id']);
+        $this->assertEquals($payout['id'], $creditTxnEntities[0]['entity_id']);
         $this->assertEquals(300, $creditTxnEntities[0]['credits_used']);
 
         $this->assertEquals('payout', $creditTxnEntities[1]['entity_type']);
-        $this->assertEquals($payout['id'],  $creditTxnEntities[1]['entity_id']);
+        $this->assertEquals($payout['id'], $creditTxnEntities[1]['entity_id']);
         $this->assertEquals(600, $creditTxnEntities[1]['credits_used']);
 
         $publicResponse = $payout->toArrayPublic();
@@ -11379,7 +11366,7 @@ class PayoutTest extends OAuthTestCase
     {
         $this->ba->proxyAuth();
 
-        $testData = $this->testData['testCreatePayoutOnPrivateAuthWithSourceDetails'];
+        $testData                                = $this->testData['testCreatePayoutOnPrivateAuthWithSourceDetails'];
         $testData['request']['url']              = '/payouts_with_otp';
         $testData['request']['content']['token'] = 'BUIj3m2Nx2VvVj';
         $testData['request']['content']['otp']   = '0007';
@@ -11425,7 +11412,7 @@ class PayoutTest extends OAuthTestCase
                 'utr'    => 928337183,
             ]);
 
-        $testData = & $this->testData[__FUNCTION__];
+        $testData = &$this->testData[__FUNCTION__];
 
         $testData['request']['content']['source_id'] = $payout->getId();
 
@@ -11482,7 +11469,7 @@ class PayoutTest extends OAuthTestCase
 
         $payoutSources = $payout2->getSourceDetails()->toArray();
 
-        $testData = & $this->testData[__FUNCTION__];
+        $testData = &$this->testData[__FUNCTION__];
 
         $testData['request']['url'] = '/payouts_internal?product=banking&source_id=' . $payoutSources[0]['source_id'] .
                                       '&source_type=' . $payoutSources[0]['source_type'];
@@ -11514,7 +11501,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->testCreatePayoutLinkPayoutWithSourceDetails();
 
-        $testData = & $this->testData[__FUNCTION__];
+        $testData = &$this->testData[__FUNCTION__];
 
         $testData['request']['url'] = '/payouts?product=banking';
 
@@ -11540,11 +11527,11 @@ class PayoutTest extends OAuthTestCase
     {
 
         $merchant = $this->fixtures->create('merchant',
-            [
-                'id'               => 'Hrw2ujXW6LGEk7',
-                'pricing_plan_id'  => '1hDYlICobzOCYt',
-                'business_banking' => 1
-            ]);
+                                            [
+                                                'id'               => 'Hrw2ujXW6LGEk7',
+                                                'pricing_plan_id'  => '1hDYlICobzOCYt',
+                                                'business_banking' => 1
+                                            ]);
 
         $this->fixtures->create('feature', [
             'name'        => Feature\Constants::PAYOUT,
@@ -11553,26 +11540,26 @@ class PayoutTest extends OAuthTestCase
         ]);
 
         $xBalance = $this->fixtures->create('balance',
-            [
-                'merchant_id'       => $merchant['id'],
-                'type'              => 'banking',
-                'account_type'      => 'shared',
-                'account_number'    => '2224440041626905',
-                'balance'           => 3000000,
-            ]);
+                                            [
+                                                'merchant_id'    => $merchant['id'],
+                                                'type'           => 'banking',
+                                                'account_type'   => 'shared',
+                                                'account_number' => '2224440041626905',
+                                                'balance'        => 3000000,
+                                            ]);
 
         $user = $this->fixtures->user->createUserForMerchant($merchant['id']);
 
         $this->fixtures->create('contact',
-            ['id' => '1000002contact', 'name' => 'Contact X', 'merchant_id' => $merchant['id']]);
+                                ['id' => '1000002contact', 'name' => 'Contact X', 'merchant_id' => $merchant['id']]);
 
         $this->fixtures->create('fund_account:bank_account',
-            [
-                'id'          => 'D6Z9Jfir2egAUT',
-                'source_type' => 'contact',
-                'source_id'   => '1000002contact',
-                'merchant_id' => $merchant['id']
-            ]);
+                                [
+                                    'id'          => 'D6Z9Jfir2egAUT',
+                                    'source_type' => 'contact',
+                                    'source_id'   => '1000002contact',
+                                    'merchant_id' => $merchant['id']
+                                ]);
 
         $this->fixtures->create('payout', [
             'id'              => 'DuuYxmO7Yegu3x',
@@ -11607,7 +11594,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->testData[__FUNCTION__] = $this->testData['testFetchPayoutsOnProxyAuth'];
 
-        $testData = & $this->testData[__FUNCTION__];
+        $testData = &$this->testData[__FUNCTION__];
 
         $accountNumber = $this->bankingBalance->getAccountNumber();
 
@@ -11808,7 +11795,7 @@ class PayoutTest extends OAuthTestCase
 
         $testData = $this->testData[__FUNCTION__];
 
-        $testData['request']['content']['fund_account_id']  = 'fa_100000000001fa';
+        $testData['request']['content']['fund_account_id'] = 'fa_100000000001fa';
 
         $this->testData[__FUNCTION__] = $testData;
 
@@ -11860,7 +11847,7 @@ class PayoutTest extends OAuthTestCase
 
         $testData = $this->testData[__FUNCTION__];
 
-        $testData['request']['content']['fund_account_id']  = 'fa_100000000001fa';
+        $testData['request']['content']['fund_account_id'] = 'fa_100000000001fa';
 
         $this->testData[__FUNCTION__] = $testData;
 
@@ -11907,7 +11894,7 @@ class PayoutTest extends OAuthTestCase
         $sourceDetails = [Payout\Entity::SOURCE_DETAILS => $payout->getSourceDetails()->toArray()];
 
         $this->assertEquals(WorkflowFeature::WORKFLOW_FEATURES[Feature\Constants::SKIP_WF_FOR_PAYROLL],
-            $payout[Payout\Entity::WORKFLOW_FEATURE]);
+                            $payout[Payout\Entity::WORKFLOW_FEATURE]);
 
         $this->assertArraySelectiveEquals($sourceDetails, $response);
     }
@@ -11979,7 +11966,7 @@ class PayoutTest extends OAuthTestCase
     public function testDefaultFlowForInternalContactPayoutCreatedByVendorPayments()
     {
         unset($this->testData['testDisableWorkflowForInternalContactPayoutCreatedByVendorPayments']
-                             ['request']['content']['enable_workflow_for_internal_contact']);
+              ['request']['content']['enable_workflow_for_internal_contact']);
 
         $this->testDisableWorkflowForInternalContactPayoutCreatedByVendorPayments();
     }
@@ -12030,7 +12017,7 @@ class PayoutTest extends OAuthTestCase
 
         $payout = $this->getDbLastEntity('payout');
 
-        $testData = & $this->testData[__FUNCTION__];
+        $testData = &$this->testData[__FUNCTION__];
         // This changes the request body
         $testData['request']['content']['contact']['name'] = 'Test test';
 
@@ -12063,10 +12050,10 @@ class PayoutTest extends OAuthTestCase
         $this->ba->xpayrollAuth();
 
         $contact = $this->fixtures->create('contact',
-            [
-                'name' => 'test name',
-                'type' => \RZP\Models\Contact\Type::XPAYROLL_INTERNAL
-            ]);
+                                           [
+                                               'name' => 'test name',
+                                               'type' => \RZP\Models\Contact\Type::XPAYROLL_INTERNAL
+                                           ]);
 
         $fundAccount = $this->fixtures->fund_account->createBankAccount(
             [
@@ -12159,8 +12146,8 @@ class PayoutTest extends OAuthTestCase
         Queue::fake();
 
         $payout = $this->fixtures->create('payout', [
-            'status'            =>      'created',
-            'pricing_rule_id'   =>      '1nvp2XPMmaRLxb',
+            'status'          => 'created',
+            'pricing_rule_id' => '1nvp2XPMmaRLxb',
         ]);
 
         $payout->setStatus(Status::PROCESSING);
@@ -12193,12 +12180,12 @@ class PayoutTest extends OAuthTestCase
 
         // now adding payout source and QueuePush Should Happen
         $this->fixtures->create('payout_source',
-            [
-                'payout_id'   => $payout->getId(),
-                'source_id'   => 'vdpm_1',
-                'source_type' => 'settlements',
-                'priority'    => 1
-            ]);
+                                [
+                                    'payout_id'   => $payout->getId(),
+                                    'source_id'   => 'vdpm_1',
+                                    'source_type' => 'settlements',
+                                    'priority'    => 1
+                                ]);
 
         $payout->setStatus(Status::PROCESSING);
 
@@ -12214,15 +12201,15 @@ class PayoutTest extends OAuthTestCase
         $contact = $this->getDbLastEntity('contact');
 
         $payoutLink = $this->fixtures->create('payout_link',
-            [
-                'contact_id' => $contact->getId(),
-                'balance_id' => $this->bankingBalance->getId()
-            ]);
+                                              [
+                                                  'contact_id' => $contact->getId(),
+                                                  'balance_id' => $this->bankingBalance->getId()
+                                              ]);
 
         $payout = $this->fixtures->create('payout', [
-            'status'            =>      'created',
-            'payout_link_id'    =>      $payoutLink->getId(),
-            'pricing_rule_id'   =>      '1nvp2XPMmaRLxb',
+            'status'          => 'created',
+            'payout_link_id'  => $payoutLink->getId(),
+            'pricing_rule_id' => '1nvp2XPMmaRLxb',
         ]);
 
         $payout->setStatus(Status::PROCESSING);
@@ -12240,24 +12227,24 @@ class PayoutTest extends OAuthTestCase
         $contact = $this->getDbLastEntity('contact');
 
         $payoutLink = $this->fixtures->create('payout_link',
-            [
-                'contact_id' => $contact->getId(),
-                'balance_id' => $this->bankingBalance->getId()
-            ]);
+                                              [
+                                                  'contact_id' => $contact->getId(),
+                                                  'balance_id' => $this->bankingBalance->getId()
+                                              ]);
 
         $payout = $this->fixtures->create('payout', [
-            'status'            =>      'created',
-            'payout_link_id'    =>      $payoutLink->getId(),
-            'pricing_rule_id'   =>      '1nvp2XPMmaRLxb',
+            'status'          => 'created',
+            'payout_link_id'  => $payoutLink->getId(),
+            'pricing_rule_id' => '1nvp2XPMmaRLxb',
         ]);
 
         $this->fixtures->create('payout_source',
-            [
-                'payout_id'   => $payout->getId(),
-                'source_id'   => $payoutLink->getId(),
-                'source_type' => 'payout_links',
-                'priority'    => 1
-            ]);
+                                [
+                                    'payout_id'   => $payout->getId(),
+                                    'source_id'   => $payoutLink->getId(),
+                                    'source_type' => 'payout_links',
+                                    'priority'    => 1
+                                ]);
 
         $payout->setStatus(Status::PROCESSING);
 
@@ -12271,13 +12258,13 @@ class PayoutTest extends OAuthTestCase
         Queue::fake();
 
         $payout = $this->fixtures->create('payout', [
-            'status'            =>      'initiated',
-            'pricing_rule_id'   =>      '1nvp2XPMmaRLxb',
+            'status'          => 'initiated',
+            'pricing_rule_id' => '1nvp2XPMmaRLxb',
         ]);
 
         $payout->setStatus(Status::CREATED);
 
-        Queue::assertPushed(PayoutSourceUpdaterJob::class,1);
+        Queue::assertPushed(PayoutSourceUpdaterJob::class, 1);
     }
 
     public function testBackFillDataForExistingBulkUsers()
@@ -12341,7 +12328,7 @@ class PayoutTest extends OAuthTestCase
 
         $user = $this->getDbLastEntity('user', 'live');
 
-        $testData = & $this->testData[__FUNCTION__];
+        $testData                   = &$this->testData[__FUNCTION__];
         $testData['request']['url'] = '/users/' . $user->getId();
 
         $this->ba->proxyAuth('rzp_live');
@@ -12365,7 +12352,7 @@ class PayoutTest extends OAuthTestCase
 
         $user = $this->getDbLastEntity('user', 'live');
 
-        $testData = & $this->testData[__FUNCTION__];
+        $testData                   = &$this->testData[__FUNCTION__];
         $testData['request']['url'] = '/users/' . $user->getId();
 
         $this->ba->proxyAuth('rzp_live');
@@ -12402,7 +12389,7 @@ class PayoutTest extends OAuthTestCase
 
         $user = $this->getDbLastEntity('user', 'live');
 
-        $testData = & $this->testData[__FUNCTION__];
+        $testData                   = &$this->testData[__FUNCTION__];
         $testData['request']['url'] = '/users/' . $user->getId();
 
         $this->ba->proxyAuth('rzp_live');
@@ -12439,7 +12426,7 @@ class PayoutTest extends OAuthTestCase
             'content' => [
                 'merchant_ids' => ['10000000000000'],
             ],
-            'server' => [
+            'server'  => [
                 'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
             ],
         ];
@@ -12455,7 +12442,7 @@ class PayoutTest extends OAuthTestCase
 
         $user = $this->getDbLastEntity('user', 'live');
 
-        $testData = & $this->testData[__FUNCTION__];
+        $testData                   = &$this->testData[__FUNCTION__];
         $testData['request']['url'] = '/users/' . $user->getId();
 
         $this->ba->proxyAuth('rzp_live');
@@ -12524,16 +12511,16 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals(5, count($fileContent));
 
         $expectedRowOne = "RazorpayX Account Number,Payout Amount (in Rupees),Payout Currency,Payout Mode,Payout Purpose," .
-            "Fund Account Id,Fund Account Type,Fund Account Name,Fund Account Ifsc," .
-            "Fund Account Number,Fund Account Vpa,Fund Account Phone Number,Contact Name,Payout Narration,Payout Reference Id,Fund Account Email," .
-            "Contact Type,Contact Email,Contact Mobile,Contact Reference Id,notes[place],notes[code]";
+                          "Fund Account Id,Fund Account Type,Fund Account Name,Fund Account Ifsc," .
+                          "Fund Account Number,Fund Account Vpa,Fund Account Phone Number,Contact Name,Payout Narration,Payout Reference Id,Fund Account Email," .
+                          "Contact Type,Contact Email,Contact Mobile,Contact Reference Id,notes[place],notes[code]";
 
         $this->assertEquals($expectedRowOne, trim($fileContent[0]));
 
         // NOTE : Account number is set as a sample : 7878780021057150
         $expectedRowTwo = "7878780021057150,10,INR,NEFT,refund,,bank_account,sample,SBIN0007105," .
-            "1234567890,,,sample,Sample Narration,,,vendor,sample@example.com,9988998899,,Bangalore," .
-            "This is a sample note";
+                          "1234567890,,,sample,Sample Narration,,,vendor,sample@example.com,9988998899,,Bangalore," .
+                          "This is a sample note";
 
         $this->assertEquals($expectedRowTwo, trim($fileContent[1]));
 
@@ -12576,16 +12563,16 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals(4, count($fileContent));
 
         $expectedRowOne = "RazorpayX Account Number,Payout Amount (in Rupees),Payout Currency,Payout Mode,Payout Purpose," .
-            "Fund Account Id,Fund Account Type,Fund Account Name,Fund Account Ifsc," .
-            "Fund Account Number,Fund Account Vpa,Fund Account Phone Number,Contact Name,Payout Narration,Payout Reference Id,Fund Account Email," .
-            "Contact Type,Contact Email,Contact Mobile,Contact Reference Id,notes[place],notes[code]";
+                          "Fund Account Id,Fund Account Type,Fund Account Name,Fund Account Ifsc," .
+                          "Fund Account Number,Fund Account Vpa,Fund Account Phone Number,Contact Name,Payout Narration,Payout Reference Id,Fund Account Email," .
+                          "Contact Type,Contact Email,Contact Mobile,Contact Reference Id,notes[place],notes[code]";
 
         $this->assertEquals($expectedRowOne, trim($fileContent[0]));
 
         // NOTE : Account number is set as a merchant's banking balance's account number : 2224440041626905
         $expectedRowTwo = "2224440041626905,10,INR,NEFT,refund,,bank_account,sample,SBIN0007105," .
-            "1234567890,,,sample,Sample Narration,,,vendor,sample@example.com,9988998899,,Bangalore," .
-            "This is a sample note";
+                          "1234567890,,,sample,Sample Narration,,,vendor,sample@example.com,9988998899,,Bangalore," .
+                          "This is a sample note";
 
         $this->assertEquals($expectedRowTwo, trim($fileContent[1]));
 
@@ -12615,16 +12602,16 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals(5, count($fileContent));
 
         $expectedRowOne = "RazorpayX Account Number,Payout Amount (in Rupees),Payout Currency,Payout Mode,Payout Purpose," .
-            "Fund Account Id,Fund Account Type,Fund Account Name,Fund Account Ifsc," .
-            "Fund Account Number,Fund Account Vpa,Fund Account Phone Number,Contact Name,Payout Narration,Payout Reference Id,Fund Account Email," .
-            "Contact Type,Contact Email,Contact Mobile,Contact Reference Id,notes[place],notes[code]";
+                          "Fund Account Id,Fund Account Type,Fund Account Name,Fund Account Ifsc," .
+                          "Fund Account Number,Fund Account Vpa,Fund Account Phone Number,Contact Name,Payout Narration,Payout Reference Id,Fund Account Email," .
+                          "Contact Type,Contact Email,Contact Mobile,Contact Reference Id,notes[place],notes[code]";
 
         $this->assertEquals($expectedRowOne, trim($fileContent[0]));
 
         // NOTE : Account number is set as a merchant's banking balance's account number : 2224440041626905
         $expectedRowTwo = "2224440041626905,10,INR,NEFT,refund,,bank_account,sample,SBIN0007105," .
-            "1234567890,,,sample,Sample Narration,,,vendor,sample@example.com,9988998899,,Bangalore," .
-            "This is a sample note";
+                          "1234567890,,,sample,Sample Narration,,,vendor,sample@example.com,9988998899,,Bangalore," .
+                          "This is a sample note";
 
         $this->assertEquals($expectedRowTwo, trim($fileContent[1]));
 
@@ -12636,8 +12623,8 @@ class PayoutTest extends OAuthTestCase
 
         // NOTE : Account number is set as a merchant's banking balance's account number : 2224440041626905
         $expectedRowFour = "2224440041626905,10,INR,amazonpay,refund,,wallet,sample,," .
-            ",,+918124632237,sample,Sample Narration,,sample@example.com,vendor,sample@example.com,9988998899,,Bangalore," .
-            "This is a sample note";
+                           ",,+918124632237,sample,Sample Narration,,sample@example.com,vendor,sample@example.com,9988998899,,Bangalore," .
+                           "This is a sample note";
 
         $this->assertEquals($expectedRowFour, trim($fileContent[3]));
 
@@ -12801,7 +12788,7 @@ class PayoutTest extends OAuthTestCase
             {
                 $cellValue = $activeSheet->getCellByColumnAndRow($col, $row, false)->getValue();
 
-                $this->assertEquals($expectedData[$row-1][$col-1], $cellValue);
+                $this->assertEquals($expectedData[$row - 1][$col - 1], $cellValue);
             }
         }
     }
@@ -12977,7 +12964,7 @@ class PayoutTest extends OAuthTestCase
             {
                 $cellValue = $activeSheet->getCellByColumnAndRow($col, $row, false)->getValue();
 
-                $this->assertEquals($expectedData[$row-1][$col-1], $cellValue);
+                $this->assertEquals($expectedData[$row - 1][$col - 1], $cellValue);
             }
         }
     }
@@ -13135,7 +13122,7 @@ class PayoutTest extends OAuthTestCase
             {
                 $cellValue = $activeSheet->getCellByColumnAndRow($col, $row, false)->getValue();
 
-                $this->assertEquals($expectedData[$row-1][$col-1], $cellValue);
+                $this->assertEquals($expectedData[$row - 1][$col - 1], $cellValue);
             }
         }
     }
@@ -13311,7 +13298,7 @@ class PayoutTest extends OAuthTestCase
             {
                 $cellValue = $activeSheet->getCellByColumnAndRow($col, $row, false)->getValue();
 
-                $this->assertEquals($expectedData[$row-1][$col-1], $cellValue);
+                $this->assertEquals($expectedData[$row - 1][$col - 1], $cellValue);
             }
         }
     }
@@ -13337,9 +13324,9 @@ class PayoutTest extends OAuthTestCase
         $contact = $this->getDbLastEntity('contact');
 
         $this->fixtures->create('fund_account:vpa', [
-            'id'            => '100000000003fa',
-            'source_type'   => 'contact',
-            'source_id'     => $contact->getId(),
+            'id'          => '100000000003fa',
+            'source_type' => 'contact',
+            'source_id'   => $contact->getId(),
         ]);
 
         $this->startTest();
@@ -13354,9 +13341,9 @@ class PayoutTest extends OAuthTestCase
         $contact = $this->getDbLastEntity('contact');
 
         $this->fixtures->create('fund_account:wallet_account', [
-            'id'            => '100000000003fa',
-            'source_type'   => 'contact',
-            'source_id'     => $contact->getId(),
+            'id'          => '100000000003fa',
+            'source_type' => 'contact',
+            'source_id'   => $contact->getId(),
         ]);
 
         $this->startTest();
@@ -13375,11 +13362,11 @@ class PayoutTest extends OAuthTestCase
             'payout_processed',
         ];
 
-        for ($index = 0; $index<count($ledgerSnsPayloadArray); $index++)
+        for ($index = 0; $index < count($ledgerSnsPayloadArray); $index++)
         {
             $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
 
-            $ledgerRequestPayload['identifiers'] = json_decode($ledgerRequestPayload['identifiers'], true);
+            $ledgerRequestPayload['identifiers']       = json_decode($ledgerRequestPayload['identifiers'], true);
             $ledgerRequestPayload['additional_params'] = json_decode($ledgerRequestPayload['additional_params'], true);
 
             $this->assertEquals('X', $ledgerRequestPayload['tenant']);
@@ -13412,9 +13399,9 @@ class PayoutTest extends OAuthTestCase
         $contact = $this->getDbLastEntity('contact');
 
         $this->fixtures->create('fund_account:wallet_account', [
-            'id'            => '100000000003fa',
-            'source_type'   => 'contact',
-            'source_id'     => $contact->getId(),
+            'id'          => '100000000003fa',
+            'source_type' => 'contact',
+            'source_id'   => $contact->getId(),
         ]);
 
         $this->fixtures->create('feature', [
@@ -13444,8 +13431,8 @@ class PayoutTest extends OAuthTestCase
         // Assert that comment length is greater than 255 which is the current max limit in the validations.
         $this->assertGreaterThanOrEqual(255, strlen($userComment));
 
-        $testData = & $this->testData[__FUNCTION__];
-        $testData['request']['url'] = '/payouts/' . $queuedPayout->getPublicId() . '/cancel';
+        $testData                                  = &$this->testData[__FUNCTION__];
+        $testData['request']['url']                = '/payouts/' . $queuedPayout->getPublicId() . '/cancel';
         $testData['request']['content']['remarks'] = $userComment;
 
         $this->ba->proxyAuth();
@@ -13461,11 +13448,11 @@ class PayoutTest extends OAuthTestCase
 
         $this->assertEquals('low_balance', $queuedPayout->getQueuedReason());
 
-        $testData = & $this->testData[__FUNCTION__];
+        $testData                   = &$this->testData[__FUNCTION__];
         $testData['request']['url'] = '/payouts/' . $queuedPayout->getPublicId();
 
         $testData['response']['content']['cancellation_user_id'] = null;
-        $testData['response']['content']['cancellation_user'] = [];
+        $testData['response']['content']['cancellation_user']    = [];
 
         $this->app->forgetInstance('basicauth');
 
@@ -13488,15 +13475,15 @@ class PayoutTest extends OAuthTestCase
         $payoutId = $payout->getId();
 
         (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
-            'fta_status' => 'failed',
-            'failure_reason' => '',
+            'fta_status'       => 'failed',
+            'failure_reason'   => '',
             'bank_status_code' => 'YB_NS_E1028'
         ]);
 
         $updatedPayout = $this->getDbEntityById('payout', $payoutId)->toArray();
 
         $this->assertEquals($updatedPayout[Payout\Entity::FAILURE_REASON],
-            'IMPS is not enabled on Beneficiary Account');
+                            'IMPS is not enabled on Beneficiary Account');
         $this->assertEquals($updatedPayout[Payout\Entity::STATUS_CODE], 'YB_NS_E1028');
 
         $this->assertArrayNotHasKey(Payout\Entity::ERROR, $updatedPayout);
@@ -13542,9 +13529,10 @@ class PayoutTest extends OAuthTestCase
         $payloadReversed = null;
 
         $this->mockServiceStorkRequest(
-            function ($path, $payload) use (& $payloadReversed) {
+            function($path, $payload) use (& $payloadReversed) {
                 $this->assertContains($payload['event']['name'], ['payout.reversed']);
-                switch ($payload['event']['name']) {
+                switch ($payload['event']['name'])
+                {
                     case Event::PAYOUT_REVERSED:
                         $payloadReversed = $payload;
                         break;
@@ -13558,15 +13546,15 @@ class PayoutTest extends OAuthTestCase
         $payout = $this->getDbLastEntity('payout');
 
         (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
-            'fta_status' => 'failed',
-            'failure_reason' => '',
+            'fta_status'       => 'failed',
+            'failure_reason'   => '',
             'bank_status_code' => 'TXN_REJECTED_BENE_BANK'
         ]);
 
         $statusDetails = $this->getDbLastEntity('payouts_status_details');
 
-        $this->assertEquals('beneficiary_bank_rejected',$statusDetails['reason']);
-        $this->assertEquals('Payout rejected by beneficiary bank. Please contact beneficiary bank.',$statusDetails['description']);
+        $this->assertEquals('beneficiary_bank_rejected', $statusDetails['reason']);
+        $this->assertEquals('Payout rejected by beneficiary bank. Please contact beneficiary bank.', $statusDetails['description']);
 
         $payoutResponse = $payout->toArrayPublic();
         $this->assertEquals('beneficiary_bank', $payoutResponse['status_details']['source']);
@@ -13596,9 +13584,10 @@ class PayoutTest extends OAuthTestCase
         $payloadReversed = null;
 
         $this->mockServiceStorkRequest(
-            function ($path, $payload) use (& $payloadReversed) {
+            function($path, $payload) use (& $payloadReversed) {
                 $this->assertContains($payload['event']['name'], ['payout.reversed']);
-                switch ($payload['event']['name']) {
+                switch ($payload['event']['name'])
+                {
                     case Event::PAYOUT_REVERSED:
                         $payloadReversed = $payload;
                         break;
@@ -13612,15 +13601,15 @@ class PayoutTest extends OAuthTestCase
         $payout = $this->getDbLastEntity('payout', 'live');
 
         (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
-            'fta_status' => 'failed',
-            'failure_reason' => '',
+            'fta_status'       => 'failed',
+            'failure_reason'   => '',
             'bank_status_code' => 'TXN_REJECTED_BENE_BANK'
         ]);
 
-        $statusDetails = $this->getDbLastEntity('payouts_status_details','live');
+        $statusDetails = $this->getDbLastEntity('payouts_status_details', 'live');
 
-        $this->assertEquals('beneficiary_bank_rejected',$statusDetails['reason']);
-        $this->assertEquals('Payout rejected by beneficiary bank. Please contact beneficiary bank.',$statusDetails['description']);
+        $this->assertEquals('beneficiary_bank_rejected', $statusDetails['reason']);
+        $this->assertEquals('Payout rejected by beneficiary bank. Please contact beneficiary bank.', $statusDetails['description']);
 
         $payoutResponse = $payout->toArrayPublic();
         $this->assertEquals('beneficiary_bank', $payoutResponse['status_details']['source']);
@@ -13702,9 +13691,10 @@ class PayoutTest extends OAuthTestCase
         $payloadReversed = null;
 
         $this->mockServiceStorkRequest(
-            function ($path, $payload) use (& $payloadReversed) {
+            function($path, $payload) use (& $payloadReversed) {
                 $this->assertContains($payload['event']['name'], ['payout.reversed']);
-                switch ($payload['event']['name']) {
+                switch ($payload['event']['name'])
+                {
                     case Event::PAYOUT_REVERSED:
                         $payloadReversed = $payload;
                         break;
@@ -13718,8 +13708,8 @@ class PayoutTest extends OAuthTestCase
         $payout = $this->getDbLastEntity('payout');
 
         (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
-            'fta_status' => 'failed',
-            'failure_reason' => '',
+            'fta_status'       => 'failed',
+            'failure_reason'   => '',
             'bank_status_code' => 'NOT_REGISTERED_ERROR'
         ]);
 
@@ -13739,9 +13729,10 @@ class PayoutTest extends OAuthTestCase
         $payloadReversed = null;
 
         $this->mockServiceStorkRequest(
-            function ($path, $payload) use (& $payloadReversed) {
+            function($path, $payload) use (& $payloadReversed) {
                 $this->assertContains($payload['event']['name'], ['payout.reversed']);
-                switch ($payload['event']['name']) {
+                switch ($payload['event']['name'])
+                {
                     case Event::PAYOUT_REVERSED:
                         $payloadReversed = $payload;
                         break;
@@ -13755,8 +13746,8 @@ class PayoutTest extends OAuthTestCase
         $payout = $this->getDbLastEntity('payout', 'live');
 
         (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
-            'fta_status' => 'failed',
-            'failure_reason' => '',
+            'fta_status'       => 'failed',
+            'failure_reason'   => '',
             'bank_status_code' => 'NOT_REGISTERED_ERROR'
         ]);
 
@@ -13785,9 +13776,10 @@ class PayoutTest extends OAuthTestCase
         $payloadProcessed = null;
 
         $this->mockServiceStorkRequest(
-            function ($path, $payload) use (& $payloadProcessed) {
+            function($path, $payload) use (& $payloadProcessed) {
                 $this->assertContains($payload['event']['name'], ['payout.processed']);
-                switch ($payload['event']['name']) {
+                switch ($payload['event']['name'])
+                {
                     case Event::PAYOUT_PROCESSED:
                         $payloadProcessed = $payload;
                         break;
@@ -13801,15 +13793,15 @@ class PayoutTest extends OAuthTestCase
         $payout = $this->getDbLastEntity('payout');
 
         (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
-            'fta_status' => 'processed',
-            'failure_reason' => null,
+            'fta_status'       => 'processed',
+            'failure_reason'   => null,
             'bank_status_code' => null
         ]);
 
         $statusDetails = $this->getDbLastEntity('payouts_status_details');
 
-        $this->assertEquals('payout_processed',$statusDetails['reason']);
-        $this->assertEquals('Payout is processed and the money has been credited into the beneficiaries account.',$statusDetails['description']);
+        $this->assertEquals('payout_processed', $statusDetails['reason']);
+        $this->assertEquals('Payout is processed and the money has been credited into the beneficiaries account.', $statusDetails['description']);
 
         $payoutProcessedEventData = $this->testData[__FUNCTION__];
 
@@ -13836,9 +13828,10 @@ class PayoutTest extends OAuthTestCase
         $payloadProcessed = null;
 
         $this->mockServiceStorkRequest(
-            function ($path, $payload) use (& $payloadProcessed) {
+            function($path, $payload) use (& $payloadProcessed) {
                 $this->assertContains($payload['event']['name'], ['payout.processed']);
-                switch ($payload['event']['name']) {
+                switch ($payload['event']['name'])
+                {
                     case Event::PAYOUT_PROCESSED:
                         $payloadProcessed = $payload;
                         break;
@@ -13852,21 +13845,21 @@ class PayoutTest extends OAuthTestCase
         $payout = $this->getDbLastEntity('payout', 'live');
 
         (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
-            'fta_status' => 'processed',
-            'failure_reason' => null,
+            'fta_status'       => 'processed',
+            'failure_reason'   => null,
             'bank_status_code' => null
         ]);
 
         (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
-            'fta_status' => 'processed',
-            'failure_reason' => null,
+            'fta_status'       => 'processed',
+            'failure_reason'   => null,
             'bank_status_code' => null
         ]);
 
-        $statusDetails = $this->getDbLastEntity('payouts_status_details','live');
+        $statusDetails = $this->getDbLastEntity('payouts_status_details', 'live');
 
-        $this->assertEquals('payout_processed',$statusDetails['reason']);
-        $this->assertEquals('Payout is processed and the money has been credited into the beneficiaries account.',$statusDetails['description']);
+        $this->assertEquals('payout_processed', $statusDetails['reason']);
+        $this->assertEquals('Payout is processed and the money has been credited into the beneficiaries account.', $statusDetails['description']);
 
         $payoutProcessedEventData = $this->testData[__FUNCTION__];
 
@@ -13884,9 +13877,10 @@ class PayoutTest extends OAuthTestCase
         $payloadUpdated = null;
 
         $this->mockServiceStorkRequest(
-            function ($path, $payload) use (& $payloadUpdated) {
+            function($path, $payload) use (& $payloadUpdated) {
                 $this->assertContains($payload['event']['name'], ['payout.updated']);
-                switch ($payload['event']['name']) {
+                switch ($payload['event']['name'])
+                {
                     case Event::PAYOUT_UPDATED:
                         $payloadUpdated = $payload;
                         break;
@@ -13900,12 +13894,12 @@ class PayoutTest extends OAuthTestCase
         $payout = $this->getDbLastEntity('payout');
 
         (new Payout\Core)->updateWithDetailsBeforeFtaRecon($payout, [
-            'fta_status' => 'processed',
-            'channel'           => 'rbl',
-            'failure_reason'    => '',
-            'utr'               => 928337183,
-            'remarks'           => '',
-            'bank_status_code'  => 'SUCESS'
+            'fta_status'       => 'processed',
+            'channel'          => 'rbl',
+            'failure_reason'   => '',
+            'utr'              => 928337183,
+            'remarks'          => '',
+            'bank_status_code' => 'SUCESS'
         ]);
 
         $payoutUpdatedEventData = $this->testData[__FUNCTION__];
@@ -13918,11 +13912,11 @@ class PayoutTest extends OAuthTestCase
         $user = $this->fixtures->create('user');
 
         $this->fixtures->user->createUserMerchantMapping([
-            'merchant_id' => '10000000000000',
-            'user_id'     => $user->getId(),
-            'product'     => 'banking',
-            'role'        => 'owner',
-        ]);
+                                                             'merchant_id' => '10000000000000',
+                                                             'user_id'     => $user->getId(),
+                                                             'product'     => 'banking',
+                                                             'role'        => 'owner',
+                                                         ]);
 
         $this->assertMetricsSentWithProduct();
 
@@ -13945,31 +13939,33 @@ class PayoutTest extends OAuthTestCase
         $mock = $this->createMetricsMock();
 
         $mock->expects($this->atLeastOnce())
-            ->method('count')
-            ->will($this->returnCallback(function (string $metric, float $times, array $dimensions) {
-                if ($metric === Constants\Metric::HTTP_REQUESTS_TOTAL)
-                {
-                    if (isset($dimensions[Constants\Metric::LABEL_RZP_PRODUCT]) and ($dimensions[Constants\Metric::LABEL_RZP_PRODUCT] === 'banking'))
-                    {
-                        return true;
-                    }
-                    // to make the test fail
-                    throw new \Exception("product not set correctly in metrics");
-                }
-                return true;
-            }));
+             ->method('count')
+             ->will($this->returnCallback(function(string $metric, float $times, array $dimensions) {
+                 if ($metric === Constants\Metric::HTTP_REQUESTS_TOTAL)
+                 {
+                     if (isset($dimensions[Constants\Metric::LABEL_RZP_PRODUCT]) and ($dimensions[Constants\Metric::LABEL_RZP_PRODUCT] === 'banking'))
+                     {
+                         return true;
+                     }
+                     // to make the test fail
+                     throw new \Exception("product not set correctly in metrics");
+                 }
+
+                 return true;
+             }));
     }
 
-    private function mockWFS(string $payoutId = "FV57s8rpBqOD6w" , string $comment = "null")
+    private function mockWFS(string $payoutId = "FV57s8rpBqOD6w", string $comment = "null")
     {
-        if ($comment !== "null") {
+        if ($comment !== "null")
+        {
             $comment = '"' . $comment . '"';
         }
 
         $wfsMock = $this->getMockBuilder(WorkflowService::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['request'])
-            ->getMock();
+                        ->setConstructorArgs([$this->app])
+                        ->setMethods(['request'])
+                        ->getMock();
 
         $this->app->instance('workflow_service', $wfsMock);
 
@@ -14137,7 +14133,7 @@ class PayoutTest extends OAuthTestCase
         $response->body = $content;
 
         $this->app->workflow_service->method('request')
-            ->willReturn($response);
+                                    ->willReturn($response);
     }
 
     public function testCreateBulkPayoutWithErrorInPayoutData()
@@ -14155,8 +14151,8 @@ class PayoutTest extends OAuthTestCase
 
         $this->startTest();
 
-        $payout = $this->getDbEntity('payout', ['idempotency_key' => 'batch_abc124']);
-        $contact = $this->getDbEntity('contact', ['idempotency_key' => 'batch_abc124']);
+        $payout      = $this->getDbEntity('payout', ['idempotency_key' => 'batch_abc124']);
+        $contact     = $this->getDbEntity('contact', ['idempotency_key' => 'batch_abc124']);
         $fundAccount = $this->getDbEntity('fund_account', ['idempotency_key' => 'batch_abc124']);
 
         $this->assertEquals(null, $payout);
@@ -14191,8 +14187,8 @@ class PayoutTest extends OAuthTestCase
 
         $this->startTest();
 
-        $payout = $this->getDbEntity('payout', ['idempotency_key' => 'batch_abc124']);
-        $contact = $this->getDbEntity('contact', ['idempotency_key' => 'batch_abc124']);
+        $payout      = $this->getDbEntity('payout', ['idempotency_key' => 'batch_abc124']);
+        $contact     = $this->getDbEntity('contact', ['idempotency_key' => 'batch_abc124']);
         $fundAccount = $this->getDbEntity('fund_account', ['idempotency_key' => 'batch_abc124']);
 
         $this->assertEquals(null, $payout);
@@ -14267,20 +14263,20 @@ class PayoutTest extends OAuthTestCase
     protected function mockRazorxToAllowVAToVAPayouts()
     {
         $this->mockRazorxTreatment('yesbank',
-            'off' ,
-            'off' ,
-            'off',
-            'off',
-            'on',
-            'on',
-            'off',
-            'on',
-            'on',
-            'off',
-            'on',
-            'on' ,
-            'off',
-            'on');
+                                   'off',
+                                   'off',
+                                   'off',
+                                   'off',
+                                   'on',
+                                   'on',
+                                   'off',
+                                   'on',
+                                   'on',
+                                   'off',
+                                   'on',
+                                   'on',
+                                   'off',
+                                   'on');
     }
 
     protected function createFundAccountOfRBLCA()
@@ -14309,7 +14305,7 @@ class PayoutTest extends OAuthTestCase
 
         $fundAccountId = $fundAccount['id'];
 
-        $testData = & $this->testData[__FUNCTION__];
+        $testData = &$this->testData[__FUNCTION__];
 
         $testData['request']['content']['fund_account_id'] = $fundAccountId;
 
@@ -14325,7 +14321,7 @@ class PayoutTest extends OAuthTestCase
 
         $fundAccountId = $fundAccount['id'];
 
-        $testData = & $this->testData[__FUNCTION__];
+        $testData = &$this->testData[__FUNCTION__];
 
         $testData['request']['content']['fund_account_id'] = $fundAccountId;
 
@@ -14342,7 +14338,7 @@ class PayoutTest extends OAuthTestCase
 
         $fundAccountId = $fundAccount['id'];
 
-        $testData = & $this->testData[__FUNCTION__];
+        $testData = &$this->testData[__FUNCTION__];
 
         $testData['request']['content']['fund_account_id'] = $fundAccountId;
 
@@ -14362,23 +14358,23 @@ class PayoutTest extends OAuthTestCase
         // Using MID 100000Razorpay so that we can white-list it and the payout goes through
         //
         $destinationVirtualAccount = $this->fixtures->create('virtual_account',
-            [
-                'merchant_id' => '100000Razorpay'
-            ]);
+                                                             [
+                                                                 'merchant_id' => '100000Razorpay'
+                                                             ]);
 
         $destinationBankAccount = $this->fixtures->create('bank_account',
-            [
-                'type'              => 'virtual_account',
-                'entity_id'         => $destinationVirtualAccount['id'],
-                'account_number'    => $fundAccountResponse['bank_account']['account_number'],
-                'ifsc_code'         => $fundAccountResponse['bank_account']['ifsc'],
-                'merchant_id'       => $destinationVirtualAccount['merchant_id'],
-            ]);
+                                                          [
+                                                              'type'           => 'virtual_account',
+                                                              'entity_id'      => $destinationVirtualAccount['id'],
+                                                              'account_number' => $fundAccountResponse['bank_account']['account_number'],
+                                                              'ifsc_code'      => $fundAccountResponse['bank_account']['ifsc'],
+                                                              'merchant_id'    => $destinationVirtualAccount['merchant_id'],
+                                                          ]);
 
         $this->fixtures->edit('virtual_account', $destinationVirtualAccount['id'],
-            [
-                'bank_account_id'   => $destinationBankAccount['id']
-            ]);
+                              [
+                                  'bank_account_id' => $destinationBankAccount['id']
+                              ]);
 
         $destinationVirtualAccount = $this->getDbLastEntity('virtual_account');
 
@@ -14388,17 +14384,17 @@ class PayoutTest extends OAuthTestCase
 
         // Whitelisting the MID corresponding to the destination bank account number
         $this->makeRequestAndGetContent([
-            'method'  => 'PUT',
-            'url'     => '/config/keys',
-            'content' => [
-                Admin\ConfigKey::RX_VA_TO_VA_PAYOUTS_WHITELISTED_DESTINATION_MERCHANTS =>
-                    [
-                        $destinationVirtualAccount['merchant_id']
-                    ],
-            ],
-        ]);
+                                            'method'  => 'PUT',
+                                            'url'     => '/config/keys',
+                                            'content' => [
+                                                Admin\ConfigKey::RX_VA_TO_VA_PAYOUTS_WHITELISTED_DESTINATION_MERCHANTS =>
+                                                    [
+                                                        $destinationVirtualAccount['merchant_id']
+                                                    ],
+                                            ],
+                                        ]);
 
-        $testData = & $this->testData[__FUNCTION__];
+        $testData = &$this->testData[__FUNCTION__];
 
         $testData['request']['content']['fund_account_id'] = $fundAccountId;
 
@@ -14417,7 +14413,7 @@ class PayoutTest extends OAuthTestCase
 
         $fundAccountId = $fundAccount['id'];
 
-        $testData = & $this->testData[__FUNCTION__];
+        $testData = &$this->testData[__FUNCTION__];
 
         $testData['request']['content']['fund_account_id'] = $fundAccountId;
 
@@ -14434,7 +14430,7 @@ class PayoutTest extends OAuthTestCase
 
         $fundAccountId = $fundAccount['id'];
 
-        $testData = & $this->testData[__FUNCTION__];
+        $testData = &$this->testData[__FUNCTION__];
 
         $testData['request']['content']['fund_account_id'] = $fundAccountId;
 
@@ -14454,7 +14450,7 @@ class PayoutTest extends OAuthTestCase
 
         $fundAccountId = $fundAccount['id'];
 
-        $testData = & $this->testData[__FUNCTION__];
+        $testData = &$this->testData[__FUNCTION__];
 
         $testData['request']['content']['fund_account_id'] = $fundAccountId;
 
@@ -14470,7 +14466,7 @@ class PayoutTest extends OAuthTestCase
 
         $fundAccountId = $fundAccount['id'];
 
-        $testData = & $this->testData[__FUNCTION__];
+        $testData = &$this->testData[__FUNCTION__];
 
         $testData['request']['content']['fund_account_id'] = $fundAccountId;
 
@@ -14488,20 +14484,20 @@ class PayoutTest extends OAuthTestCase
         $this->fundAccount = $this->createVpaFundAccount();
 
         $destinationVirtualAccount = $this->fixtures->create('virtual_account',
-            [
-                'merchant_id' => '100000Razorpay'
-            ]);
+                                                             [
+                                                                 'merchant_id' => '100000Razorpay'
+                                                             ]);
 
         $destinationVpa = $this->fixtures->create('vpa',
-            [
-                'entity_type'       => 'virtual_account',
-                'entity_id'         => $destinationVirtualAccount['id'],
-                'username'          => $this->fundAccount->account->getUsername(),
-                'handle'            => $this->fundAccount->account->getHandle(),
-                'merchant_id'       => $destinationVirtualAccount['merchant_id'],
-            ]);
+                                                  [
+                                                      'entity_type' => 'virtual_account',
+                                                      'entity_id'   => $destinationVirtualAccount['id'],
+                                                      'username'    => $this->fundAccount->account->getUsername(),
+                                                      'handle'      => $this->fundAccount->account->getHandle(),
+                                                      'merchant_id' => $destinationVirtualAccount['merchant_id'],
+                                                  ]);
 
-        $testData = & $this->testData[__FUNCTION__];
+        $testData = &$this->testData[__FUNCTION__];
 
         $testData['request']['content']['fund_account_id'] = $this->fundAccount->getPublicId();
 
@@ -14536,7 +14532,7 @@ class PayoutTest extends OAuthTestCase
         $this->ba->batchAuth();
 
         $headers = [
-            'HTTP_X_Batch_Id'    => 'C0zv9I46W4wiOq',
+            'HTTP_X_Batch_Id' => 'C0zv9I46W4wiOq',
         ];
 
         // append headers
@@ -14577,7 +14573,7 @@ class PayoutTest extends OAuthTestCase
 
         $payoutSources = $payout2->getSourceDetails()->toArray();
 
-        $testData = & $this->testData[__FUNCTION__];
+        $testData = &$this->testData[__FUNCTION__];
 
         $testData['request']['url'] = '/payouts?product=banking&source_id=' . $payoutSources[0]['source_id'] .
                                       '&source_type=' . $payoutSources[0]['source_type'];
@@ -14615,7 +14611,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->testData[__FUNCTION__] = $this->testData['testFetchPayoutsOnProxyAuth'];
 
-        $testData = & $this->testData[__FUNCTION__];
+        $testData = &$this->testData[__FUNCTION__];
 
         $accountNumber = $this->bankingBalance->getAccountNumber();
 
@@ -14641,7 +14637,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->testData[__FUNCTION__] = $this->testData['testFetchPayoutsOnProxyAuth'];
 
-        $testData = & $this->testData[__FUNCTION__];
+        $testData = &$this->testData[__FUNCTION__];
 
         $accountNumber = $this->bankingBalance->getAccountNumber();
 
@@ -14667,7 +14663,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->testData[__FUNCTION__] = $this->testData['testFetchPayoutsOnProxyAuth'];
 
-        $testData = & $this->testData[__FUNCTION__];
+        $testData = &$this->testData[__FUNCTION__];
 
         $accountNumber = $this->bankingBalance->getAccountNumber();
 
@@ -14691,7 +14687,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->testData[__FUNCTION__] = $this->testData['testFetchPayoutsOnProxyAuth'];
 
-        $testData = & $this->testData[__FUNCTION__];
+        $testData = &$this->testData[__FUNCTION__];
 
         $accountNumber = $this->bankingBalance->getAccountNumber();
 
@@ -14715,7 +14711,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->testData[__FUNCTION__] = $this->testData['testFetchPayoutsOnProxyAuth'];
 
-        $testData = & $this->testData[__FUNCTION__];
+        $testData = &$this->testData[__FUNCTION__];
 
         $accountNumber = $this->bankingBalance->getAccountNumber();
 
@@ -14739,7 +14735,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->testData[__FUNCTION__] = $this->testData['testFetchPayoutsOnProxyAuth'];
 
-        $testData = & $this->testData[__FUNCTION__];
+        $testData = &$this->testData[__FUNCTION__];
 
         $accountNumber = $this->bankingBalance->getAccountNumber();
 
@@ -14763,7 +14759,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->testData[__FUNCTION__] = $this->testData['testFetchPayoutsOnProxyAuth'];
 
-        $testData = & $this->testData[__FUNCTION__];
+        $testData = &$this->testData[__FUNCTION__];
 
         $accountNumber = $this->bankingBalance->getAccountNumber();
 
@@ -14789,7 +14785,7 @@ class PayoutTest extends OAuthTestCase
 
         $accountNumber = $this->bankingBalance->getAccountNumber();
 
-        $testData = & $this->testData[__FUNCTION__];
+        $testData = &$this->testData[__FUNCTION__];
 
         $testData['request']['url'] = '/payouts?account_number=' . $accountNumber . '&source_id=' .
                                       $payoutSources[0]['source_id'] . '&source_type=' .
@@ -14812,9 +14808,9 @@ class PayoutTest extends OAuthTestCase
 
         $this->testData[__FUNCTION__] = $this->testData['testGetXpayrollPayoutWithExperimentOn'];
 
-        $request = & $this->testData[__FUNCTION__]['request'];
+        $request = &$this->testData[__FUNCTION__]['request'];
 
-        $request['url'] = '/payouts/'. $payout['id'];
+        $request['url'] = '/payouts/' . $payout['id'];
 
         $this->startTest();
 
@@ -14832,9 +14828,9 @@ class PayoutTest extends OAuthTestCase
 
         $this->testData[__FUNCTION__] = $this->testData['testGetXpayrollPayoutWithExperimentOff'];
 
-        $request = & $this->testData[__FUNCTION__]['request'];
+        $request = &$this->testData[__FUNCTION__]['request'];
 
-        $request['url'] = '/payouts/'. $payout['id'];
+        $request['url'] = '/payouts/' . $payout['id'];
 
         $result = $this->startTest();
 
@@ -14856,9 +14852,9 @@ class PayoutTest extends OAuthTestCase
 
         $this->assertEquals('processed', $payout->getStatus());
 
-        $this->assertEquals('SUSANTA BHUYAN',$payout->getRegisteredName());
+        $this->assertEquals('SUSANTA BHUYAN', $payout->getRegisteredName());
 
-        $response = $this->getPayoutStatusAPI('pout_'. $payout->getId());
+        $response = $this->getPayoutStatusAPI('pout_' . $payout->getId());
 
         $this->assertEquals('SUSANTA BHUYAN', $response['registered_name']);
     }
@@ -14875,9 +14871,9 @@ class PayoutTest extends OAuthTestCase
 
         $this->assertEquals('processed', $payout->getStatus());
 
-        $this->assertEquals('SUSANTA BHUYAN',$payout->getRegisteredName());
+        $this->assertEquals('SUSANTA BHUYAN', $payout->getRegisteredName());
 
-        $response = $this->getPayoutStatusAPI('pout_'. $payout->getId());
+        $response = $this->getPayoutStatusAPI('pout_' . $payout->getId());
 
         $this->assertNotContains('registered_name', array_keys($response));
     }
@@ -14900,7 +14896,7 @@ class PayoutTest extends OAuthTestCase
             ]
         );
 
-        $response = $this->getPayoutStatusAPI('pout_'. $payout->getId());
+        $response = $this->getPayoutStatusAPI('pout_' . $payout->getId());
 
         $this->assertNotNull($response['queueing_details']);
         $this->assertEquals('low_balance', $response['queueing_details']['reason']);
@@ -14969,12 +14965,12 @@ class PayoutTest extends OAuthTestCase
         $utr = $payout->getUtr();
 
         (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
-            'fta_status' => 'failed',
-            'failure_reason' => '',
+            'fta_status'       => 'failed',
+            'failure_reason'   => '',
             'bank_status_code' => 'INVALID_VPA'
         ]);
 
-        $updatedPayout = $this->getDbEntityById('payout',$payoutId)->toArray();
+        $updatedPayout = $this->getDbEntityById('payout', $payoutId)->toArray();
 
         $this->assertNotNull($updatedPayout[Payout\Entity::FAILURE_REASON]);
         $this->assertEquals(ErrorCodeMapping::$alternateFailureReasonMapping['INVALID_VPA'], $updatedPayout[Payout\Entity::FAILURE_REASON]);
@@ -14993,12 +14989,12 @@ class PayoutTest extends OAuthTestCase
         $utr = $payout->getUtr();
 
         (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
-            'fta_status' => 'failed',
-            'failure_reason' => '',
+            'fta_status'       => 'failed',
+            'failure_reason'   => '',
             'bank_status_code' => 'INVALID_VPA'
         ]);
 
-        $updatedPayout = $this->getDbEntityById('payout',$payoutId)->toArray();
+        $updatedPayout = $this->getDbEntityById('payout', $payoutId)->toArray();
 
         $this->assertNotNull($updatedPayout[Payout\Entity::FAILURE_REASON]);
         $this->assertEquals(ErrorCodeMapping::$failureReasonMapping['INVALID_VPA'], $updatedPayout[Payout\Entity::FAILURE_REASON]);
@@ -15067,13 +15063,13 @@ class PayoutTest extends OAuthTestCase
         $this->fixtures->edit('payout', $payout2['id'], ['status' => 'initiated']);
 
         $request = [
-            'url' => '/payouts/manual/status_update/batch',
-            'method' => 'PATCH',
+            'url'     => '/payouts/manual/status_update/batch',
+            'method'  => 'PATCH',
             'content' => [
-                'payout_ids' => [$payout1['id'], $payout2['id']],
-                'status' => 'processed',
-                'fts_fund_account_id'   => '12345',
-                'fts_account_type'      => 'NODAL',
+                'payout_ids'          => [$payout1['id'], $payout2['id']],
+                'status'              => 'processed',
+                'fts_fund_account_id' => '12345',
+                'fts_account_type'    => 'NODAL',
             ]
         ];
 
@@ -15112,13 +15108,13 @@ class PayoutTest extends OAuthTestCase
         $this->fixtures->edit('payout', $payout2['id'], ['status' => 'initiated']);
 
         $request = [
-            'url' => '/payouts/manual/status_update/batch',
-            'method' => 'PATCH',
+            'url'     => '/payouts/manual/status_update/batch',
+            'method'  => 'PATCH',
             'content' => [
-                'payout_ids' => [$payout1['id'], $payout2['id']],
-                'status' => 'processed',
-                'fts_fund_account_id'   => '12345',
-                'fts_account_type'      => 'NODAL',
+                'payout_ids'          => [$payout1['id'], $payout2['id']],
+                'status'              => 'processed',
+                'fts_fund_account_id' => '12345',
+                'fts_account_type'    => 'NODAL',
             ]
         ];
 
@@ -15135,14 +15131,14 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals('processed', $updatePayout2['status']);
 
         $request = [
-            'url' => '/payouts/manual/status_update/batch',
-            'method' => 'PATCH',
+            'url'     => '/payouts/manual/status_update/batch',
+            'method'  => 'PATCH',
             'content' => [
-                'payout_ids' => [$payout1['id'], $payout2['id']],
-                'status' => 'reversed',
-                'failure_reason' => 'payout reversed at bank',
-                 'fts_fund_account_id'   => '12345',
-                 'fts_account_type'      => 'NODAL',
+                'payout_ids'          => [$payout1['id'], $payout2['id']],
+                'status'              => 'reversed',
+                'failure_reason'      => 'payout reversed at bank',
+                'fts_fund_account_id' => '12345',
+                'fts_account_type'    => 'NODAL',
             ]
         ];
 
@@ -15216,10 +15212,10 @@ class PayoutTest extends OAuthTestCase
 
         $payoutAttempt = $this->getDbLastEntity('fund_transfer_attempt');
 
-        $this->assertEquals($payout['mode'],'card');
+        $this->assertEquals($payout['mode'], 'card');
         $this->assertEquals($payout['channel'], 'm2p');
         $this->assertEquals($payoutAttempt['channel'], 'm2p');
-        $this->assertEquals($payoutAttempt['mode'],'CT');
+        $this->assertEquals($payoutAttempt['mode'], 'CT');
 
         // Process the M2P payout
         $this->updateFtaAndSource($payout['id'], 'processed');
@@ -15233,11 +15229,11 @@ class PayoutTest extends OAuthTestCase
             'payout_processed',
         ];
 
-        for ($index = 0; $index<count($ledgerSnsPayloadArray); $index++)
+        for ($index = 0; $index < count($ledgerSnsPayloadArray); $index++)
         {
             $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
 
-            $ledgerRequestPayload['identifiers'] = json_decode($ledgerRequestPayload['identifiers'], true);
+            $ledgerRequestPayload['identifiers']       = json_decode($ledgerRequestPayload['identifiers'], true);
             $ledgerRequestPayload['additional_params'] = json_decode($ledgerRequestPayload['additional_params'], true);
 
             $this->assertEquals('X', $ledgerRequestPayload['tenant']);
@@ -15294,7 +15290,7 @@ class PayoutTest extends OAuthTestCase
 
         $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
 
-        $this->assertEquals($payout['mode'],'card');
+        $this->assertEquals($payout['mode'], 'card');
         $this->assertEquals($payout['channel'], 'm2p');
         $this->assertEquals($payoutAttempt['channel'], 'm2p');
         $this->assertEquals($payoutAttempt['mode'], 'CT');
@@ -15331,10 +15327,10 @@ class PayoutTest extends OAuthTestCase
 
         $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
 
-        $this->assertEquals($payout['mode'],'card');
+        $this->assertEquals($payout['mode'], 'card');
         $this->assertEquals($payout['channel'], 'm2p');
         $this->assertEquals($payoutAttempt['channel'], 'm2p');
-        $this->assertEquals($payoutAttempt['mode'],'CT');
+        $this->assertEquals($payoutAttempt['mode'], 'CT');
 
     }
 
@@ -15403,7 +15399,7 @@ class PayoutTest extends OAuthTestCase
 
         $testData = $this->testData[__FUNCTION__];
 
-        $testData['request']['content']['fund_account_id']  = $fundAccount['id'];
+        $testData['request']['content']['fund_account_id'] = $fundAccount['id'];
 
         $this->testData[__FUNCTION__] = $testData;
 
@@ -15601,7 +15597,7 @@ class PayoutTest extends OAuthTestCase
 
         $testData['request']['content']['account_number'] = $bankAccount['account_number'];
 
-        $testData['request']['content']['fund_account_id'] = 'fa_'.$fa['id'];
+        $testData['request']['content']['fund_account_id'] = 'fa_' . $fa['id'];
 
         $this->testData[__FUNCTION__] = $testData;
 
@@ -15618,7 +15614,7 @@ class PayoutTest extends OAuthTestCase
 
         $fundAccountId = $fundAccount['id'];
 
-        $testData = & $this->testData[__FUNCTION__];
+        $testData = &$this->testData[__FUNCTION__];
 
         $testData['request']['content']['fund_account_id'] = $fundAccountId;
 
@@ -15651,8 +15647,7 @@ class PayoutTest extends OAuthTestCase
         $payoutReversedEventTestDataKey = $this->testData['testFiringOfWebhooksAndEmailOnPayoutReversalPayoutReversedEventData'];
 
         $this->mockServiceStorkRequest(
-            function ($path, $payload) use ($transactionCreatedEventTestDataKey, $payoutReversedEventTestDataKey)
-            {
+            function($path, $payload) use ($transactionCreatedEventTestDataKey, $payoutReversedEventTestDataKey) {
                 $this->assertContains($payload['event']['name'], ['transaction.created', 'payout.reversed']);
                 switch ($payload['event']['name'])
                 {
@@ -15678,8 +15673,7 @@ class PayoutTest extends OAuthTestCase
         $this->ba->ftsAuth();
         $this->startTest();
 
-        Mail::assertQueued(PayoutMail::class, function($mail)
-        {
+        Mail::assertQueued(PayoutMail::class, function($mail) {
             $viewData = $mail->viewData;
 
             $this->assertEquals($mail->originProduct, 'banking');
@@ -15749,10 +15743,10 @@ class PayoutTest extends OAuthTestCase
         $payout1 = $this->getDbLastEntity('payout')->toArray();
 
         $counter = $this->getDbEntities('counter',
-            [
-                'account_type' => 'shared',
-                'balance_id'   => $balanceId,
-            ])->first();
+                                        [
+                                            'account_type' => 'shared',
+                                            'balance_id'   => $balanceId,
+                                        ])->first();
 
         // Assert that zero free payout has been consumed when payout is in on_hold
         $this->assertEquals(0, $counter->getFreePayoutsConsumed());
@@ -15762,10 +15756,10 @@ class PayoutTest extends OAuthTestCase
         $payout2 = $this->getDbLastEntity('payout')->toArray();
 
         $counter = $this->getDbEntities('counter',
-            [
-                'account_type' => 'shared',
-                'balance_id'   => $balanceId,
-            ])->first();
+                                        [
+                                            'account_type' => 'shared',
+                                            'balance_id'   => $balanceId,
+                                        ])->first();
 
         // Assert that zero free payout has been consumed when payout is in on_hold
         $this->assertEquals(0, $counter->getFreePayoutsConsumed());
@@ -15775,10 +15769,10 @@ class PayoutTest extends OAuthTestCase
         $payout3 = $this->getDbLastEntity('payout')->toArray();
 
         $counter = $this->getDbEntities('counter',
-            [
-                'account_type' => 'shared',
-                'balance_id'   => $balanceId,
-            ])->first();
+                                        [
+                                            'account_type' => 'shared',
+                                            'balance_id'   => $balanceId,
+                                        ])->first();
 
         // Assert that zero free payout has been consumed when payout is in on_hold
         $this->assertEquals(0, $counter->getFreePayoutsConsumed());
@@ -15817,10 +15811,10 @@ class PayoutTest extends OAuthTestCase
         $this->startTest();
 
         $counter = $this->getDbEntities('counter',
-            [
-                'account_type' => 'shared',
-                'balance_id'   => $balanceId,
-            ])->first();
+                                        [
+                                            'account_type' => 'shared',
+                                            'balance_id'   => $balanceId,
+                                        ])->first();
 
         // Assert that zero free payout has been consumed when payout moved from on_hold to failed because of sla breach
         $this->assertEquals(0, $counter->getFreePayoutsConsumed());
@@ -15828,7 +15822,6 @@ class PayoutTest extends OAuthTestCase
         $payout1 = $this->getDbEntityById('payout', $payout1['id'])->toArray();
         $this->assertEquals($payout1['status'], Payout\Status::FAILED);
         $this->assertEquals($payout1['failure_reason'], 'beneficiary_bank_down');
-
 
         $payout2 = $this->getDbEntityById('payout', $payout2['id'])->toArray();
         $this->assertEquals($payout2['status'], Payout\Status::FAILED);
@@ -15851,10 +15844,10 @@ class PayoutTest extends OAuthTestCase
         $payout1 = $this->getDbLastEntity('payout')->toArray();
 
         $counter = $this->getDbEntities('counter',
-            [
-                'account_type' => 'shared',
-                'balance_id' => $balanceId,
-            ])->first();
+                                        [
+                                            'account_type' => 'shared',
+                                            'balance_id'   => $balanceId,
+                                        ])->first();
 
         // Assert that zero free payout has been consumed when payout is on_hold
         $this->assertEquals(0, $counter->getFreePayoutsConsumed());
@@ -15864,10 +15857,10 @@ class PayoutTest extends OAuthTestCase
         $payout2 = $this->getDbLastEntity('payout')->toArray();
 
         $counter = $this->getDbEntities('counter',
-            [
-                'account_type' => 'shared',
-                'balance_id' => $balanceId,
-            ])->first();
+                                        [
+                                            'account_type' => 'shared',
+                                            'balance_id'   => $balanceId,
+                                        ])->first();
 
         // Assert that zero free payout has been consumed when payout is on_hold
         $this->assertEquals(0, $counter->getFreePayoutsConsumed());
@@ -15877,10 +15870,10 @@ class PayoutTest extends OAuthTestCase
         $payout3 = $this->getDbLastEntity('payout')->toArray();
 
         $counter = $this->getDbEntities('counter',
-            [
-                'account_type' => 'shared',
-                'balance_id' => $balanceId,
-            ])->first();
+                                        [
+                                            'account_type' => 'shared',
+                                            'balance_id'   => $balanceId,
+                                        ])->first();
 
         // Assert that zero free payout has been consumed when payout is on_hold
         $this->assertEquals(0, $counter->getFreePayoutsConsumed());
@@ -15908,17 +15901,16 @@ class PayoutTest extends OAuthTestCase
         $this->startTest();
 
         $counter = $this->getDbEntities('counter',
-            [
-                'account_type' => 'shared',
-                'balance_id' => $balanceId,
-            ])->first();
+                                        [
+                                            'account_type' => 'shared',
+                                            'balance_id'   => $balanceId,
+                                        ])->first();
 
         // Assert that 3 free payouts have been consumed when 3 payouts moved from on_hold to created
         $this->assertEquals(3, $counter->getFreePayoutsConsumed());
 
         $payout1 = $this->getDbEntityById('payout', $payout1['id'])->toArray();
         $this->assertEquals($payout1['status'], Payout\Status::CREATED);
-
 
         $payout3 = $this->getDbEntityById('payout', $payout3['id'])->toArray();
         $this->assertEquals($payout3['status'], Payout\Status::CREATED);
@@ -15936,10 +15928,10 @@ class PayoutTest extends OAuthTestCase
         $benebankConfig =
             [
                 "BENEFICIARY" => [
-                    "SBIN" => [
+                    "SBIN"    => [
                         "status" => "started",
                     ],
-                    "RZPB" => [
+                    "RZPB"    => [
                         "status" => "started",
                     ],
                     "default" => "started",
@@ -15968,10 +15960,10 @@ class PayoutTest extends OAuthTestCase
         $benebankConfig =
             [
                 "BENEFICIARY" => [
-                    "SBIN" => [
+                    "SBIN"    => [
                         "status" => "started",
                     ],
-                    "RZPB" => [
+                    "RZPB"    => [
                         "status" => "started",
                     ],
                     "default" => "started",
@@ -16027,10 +16019,10 @@ class PayoutTest extends OAuthTestCase
         $benebankConfig =
             [
                 "BENEFICIARY" => [
-                    "SBIN" => [
+                    "SBIN"    => [
                         "status" => "started",
                     ],
-                    'HDFC' => [
+                    'HDFC'    => [
                         'status' => "started"
                     ],
                     "default" => "started"
@@ -16045,8 +16037,8 @@ class PayoutTest extends OAuthTestCase
         $this->startTest();
 
         $eventConfigFromFTS = (new Admin\Service)->getConfigKey([
-            'key' => Admin\ConfigKey::RX_EVENT_NOTIFICAITON_CONFIG_FTS_TO_PAYOUT
-        ]);
+                                                                    'key' => Admin\ConfigKey::RX_EVENT_NOTIFICAITON_CONFIG_FTS_TO_PAYOUT
+                                                                ]);
 
         $this->assertNotNull($eventConfigFromFTS['BENEFICIARY']['HDFC']);
         $this->assertEquals($eventConfigFromFTS['BENEFICIARY']['HDFC']['status'], 'started');
@@ -16055,35 +16047,35 @@ class PayoutTest extends OAuthTestCase
     public function mockPayoutServiceForOnHold($fail = false, $request = [])
     {
         $payoutServiceOnHoldMock = Mockery::mock('RZP\Services\PayoutService\OnHoldBeneEvent',
-            [$this->app])->makePartial();
+                                                 [$this->app])->makePartial();
 
         $defaultRequest['headers']['X-Passport-JWT-V1'] = "";
 
         $request = array_merge($defaultRequest, $request);
 
         $payoutServiceOnHoldMock->shouldReceive('sendRequest')
-            ->withArgs(
-                function($arg) use ($request) {
-                    try
-                    {
-                        // Using this method only here as we want to check if the keys in the
-                        // request are coming properly or not.
-                        $this->assertArrayKeySelectiveEquals($request, $arg);
+                                ->withArgs(
+                                    function($arg) use ($request) {
+                                        try
+                                        {
+                                            // Using this method only here as we want to check if the keys in the
+                                            // request are coming properly or not.
+                                            $this->assertArrayKeySelectiveEquals($request, $arg);
 
-                        return true;
-                    }
-                    catch (\Throwable $e)
-                    {
-                        return false;
-                    }
-                }
-            )
-            ->andReturn(
-            // We are returning this response only as we don't have a use case of supporting
-            // response based on $request, if needed, that can also be added here using
-            // andReturnUsing method instead of andReturn
-                $this->getResponseForOnHoldPayoutsServiceMock($fail)
-            );
+                                            return true;
+                                        }
+                                        catch (\Throwable $e)
+                                        {
+                                            return false;
+                                        }
+                                    }
+                                )
+                                ->andReturn(
+                                // We are returning this response only as we don't have a use case of supporting
+                                // response based on $request, if needed, that can also be added here using
+                                // andReturnUsing method instead of andReturn
+                                    $this->getResponseForOnHoldPayoutsServiceMock($fail)
+                                );
 
         $this->app->instance(OnHoldBeneEventService::PAYOUT_SERVICE_BENE_EVENT_UPDATE, $payoutServiceOnHoldMock);
     }
@@ -16092,22 +16084,26 @@ class PayoutTest extends OAuthTestCase
     {
         $response = new Requests_Response();
 
-        if ($fail === true) {
-            $response->body = json_encode(
+        if ($fail === true)
+        {
+            $response->body        = json_encode(
                 [
                     "error" =>
                         [
-                            "code" => ErrorCode::BAD_REQUEST_ERROR,
+                            "code"        => ErrorCode::BAD_REQUEST_ERROR,
                             "description" => "Service Failure",
-                            "field" => null
+                            "field"       => null
                         ]
                 ]);
             $response->status_code = 400;
-            $response->success = true;
-        } else {
-            $response->status_code = 200;
-            $response->success = true;
+            $response->success     = true;
         }
+        else
+        {
+            $response->status_code = 200;
+            $response->success     = true;
+        }
+
         return $response;
     }
 
@@ -16137,10 +16133,10 @@ class PayoutTest extends OAuthTestCase
             [
                 "BENEFICIARY" =>
                     [
-                        "SBIN" => [
+                        "SBIN"    => [
                             "status" => "started",
                         ],
-                        'HDFC' => [
+                        'HDFC'    => [
                             'status' => "started"
                         ],
                         "default" => "resolved"
@@ -16153,8 +16149,8 @@ class PayoutTest extends OAuthTestCase
         $this->startTest();
 
         $eventConfigFromFTS = (new Admin\Service)->getConfigKey([
-            'key' => Admin\ConfigKey::RX_EVENT_NOTIFICAITON_CONFIG_FTS_TO_PAYOUT
-        ]);
+                                                                    'key' => Admin\ConfigKey::RX_EVENT_NOTIFICAITON_CONFIG_FTS_TO_PAYOUT
+                                                                ]);
 
         $this->assertNotContains('HDFC', $eventConfigFromFTS['BENEFICIARY'], true);
     }
@@ -16172,10 +16168,10 @@ class PayoutTest extends OAuthTestCase
         $this->assertNull($payout->getFeeType());
 
         $counter = $this->getDbEntities('counter',
-            [
-                'account_type' => 'shared',
-                'balance_id'   => $balanceId,
-            ])->first();
+                                        [
+                                            'account_type' => 'shared',
+                                            'balance_id'   => $balanceId,
+                                        ])->first();
 
         // Assert that zero free payout has been consumed when payout is in create_request_submitted state
         $this->assertEquals(0, $counter->getFreePayoutsConsumed());
@@ -16184,7 +16180,7 @@ class PayoutTest extends OAuthTestCase
 
         $benebankConfig =
             [
-                "BENEFICIARY"=> [
+                "BENEFICIARY" => [
                     "SBIN" => [
                         "status" => "started",
                     ],
@@ -16194,17 +16190,17 @@ class PayoutTest extends OAuthTestCase
                 ]
             ];
 
-        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RX_EVENT_NOTIFICAITON_CONFIG_FTS_TO_PAYOUT =>$benebankConfig]);
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RX_EVENT_NOTIFICAITON_CONFIG_FTS_TO_PAYOUT => $benebankConfig]);
 
         PayoutPostCreateProcessLowPriority::dispatch('test', $payout->getId(), 'false');
 
         $payout->reload();
 
         $counter = $this->getDbEntities('counter',
-            [
-                'account_type' => 'shared',
-                'balance_id'   => $balanceId,
-            ])->first();
+                                        [
+                                            'account_type' => 'shared',
+                                            'balance_id'   => $balanceId,
+                                        ])->first();
 
         // Assert that zero free payout has been consumed when payout moved from create_request_submitted to on_hold
         $this->assertEquals(0, $counter->getFreePayoutsConsumed());
@@ -16300,7 +16296,7 @@ class PayoutTest extends OAuthTestCase
         // Approve with Owner role user
         $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
 
-        $testData = & $this->testData[__FUNCTION__];
+        $testData                   = &$this->testData[__FUNCTION__];
         $testData['request']['url'] = '/payouts/' . $payout['id'] . '/approve';
 
         $firstApprovalResponse = $this->startTest();
@@ -16324,11 +16320,11 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals(true, $secondActionChecker['approved']);
 
         $counter = $this->getDbEntities('counter',
-            [
-                'account_type' => 'shared',
-                'balance_id'   => $balanceId,
-            ],
-            'live')->first();
+                                        [
+                                            'account_type' => 'shared',
+                                            'balance_id'   => $balanceId,
+                                        ],
+                                        'live')->first();
 
         // Assert that the free payout was consumed.
         $this->assertEquals(0, $counter->getFreePayoutsConsumed());
@@ -16358,12 +16354,12 @@ class PayoutTest extends OAuthTestCase
         $payout->getUtr();
 
         (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
-            'fta_status' => 'failed',
-            'failure_reason' => '',
+            'fta_status'       => 'failed',
+            'failure_reason'   => '',
             'bank_status_code' => 'INVALID_VPA'
         ]);
 
-        $updatedPayout = $this->getDbEntityById('payout',$payoutId)->toArray();
+        $updatedPayout = $this->getDbEntityById('payout', $payoutId)->toArray();
 
         $this->assertNotNull($updatedPayout[Payout\Entity::FAILURE_REASON]);
         $this->assertEquals(ErrorCodeMapping::$alternateFailureReasonMapping['INVALID_VPA'], $updatedPayout[Payout\Entity::FAILURE_REASON]);
@@ -16383,9 +16379,9 @@ class PayoutTest extends OAuthTestCase
         $payout = $this->getDbLastEntity('payout');
 
         (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
-            'fta_status'        => 'reversed',
-            'failure_reason'    => '',
-            'bank_status_code'  => 'YB_NS_E1028'
+            'fta_status'       => 'reversed',
+            'failure_reason'   => '',
+            'bank_status_code' => 'YB_NS_E1028'
         ]);
     }
 
@@ -16424,7 +16420,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->expectWebhookEvent(
             'payout.processed',
-            function (array $event) {
+            function(array $event) {
                 $this->assertNotContains('queueing_details', $event['payload']['payout']['entity']);
             }
         );
@@ -16471,7 +16467,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->expectWebhookEvent(
             'payout.processed',
-            function (array $event) {
+            function(array $event) {
                 $this->assertEquals(null, $event['payload']['payout']['entity']['queueing_details']['reason']);
                 $this->assertEquals(null, $event['payload']['payout']['entity']['queueing_details']['description']);
             }
@@ -16502,11 +16498,11 @@ class PayoutTest extends OAuthTestCase
 
         $balanceId = $this->bankingBalance->getId();
 
-        $this->fixtures->edit('balance',$balanceId,['balance' => 0]);
+        $this->fixtures->edit('balance', $balanceId, ['balance' => 0]);
 
         $this->startTest();
 
-        $this->fixtures->edit('balance',$balanceId,['balance' => 1000000]);
+        $this->fixtures->edit('balance', $balanceId, ['balance' => 1000000]);
 
         $dispatchResponse = $this->dispatchQueuedPayouts();
 
@@ -16538,10 +16534,10 @@ class PayoutTest extends OAuthTestCase
         $this->ba->xPayrollAuth();
 
         $contact = $this->fixtures->create('contact',
-            [
-                'name' => 'test name',
-                'type' => \RZP\Models\Contact\Type::XPAYROLL_INTERNAL
-            ]);
+                                           [
+                                               'name' => 'test name',
+                                               'type' => \RZP\Models\Contact\Type::XPAYROLL_INTERNAL
+                                           ]);
 
         $contactDb = $this->getDbLastEntity('contact');
 
@@ -16574,10 +16570,10 @@ class PayoutTest extends OAuthTestCase
         $this->ba->xPayrollAuth();
 
         $contact = $this->fixtures->create('contact',
-            [
-                'name' => 'test name',
-                'type' => \RZP\Models\Contact\Type::XPAYROLL_INTERNAL
-            ]);
+                                           [
+                                               'name' => 'test name',
+                                               'type' => \RZP\Models\Contact\Type::XPAYROLL_INTERNAL
+                                           ]);
 
         $fundAccount = $this->fixtures->fund_account->createBankAccount(
             [
@@ -16614,14 +16610,14 @@ class PayoutTest extends OAuthTestCase
 
         $this->testCreatePayoutForRequestSubmitted();
 
-        $payout = $this->getDbLastEntity('payout');
+        $payout  = $this->getDbLastEntity('payout');
         $balance = $this->getDbEntityById('balance', $this->bankingBalance->getId());
 
         $request = [
             'url'     => '/create_sub_balance',
             'method'  => 'post',
             'content' => [
-                'parent_balance_id'   => $payout->getBalanceId(),
+                'parent_balance_id' => $payout->getBalanceId(),
             ]
         ];
 
@@ -16888,7 +16884,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->testCreatePayoutForRequestSubmitted();
 
-        $payout = $this->getDbLastEntity('payout');
+        $payout  = $this->getDbLastEntity('payout');
         $balance = $this->getDbEntityById('balance', $this->bankingBalance->getId());
 
         // Manually pushing into the queue because this is the only way to do this.
@@ -16937,7 +16933,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->testCreatePayoutForRequestSubmitted();
 
-        $payout = $this->getDbLastEntity('payout');
+        $payout  = $this->getDbLastEntity('payout');
         $balance = $this->getDbEntityById('balance', $this->bankingBalance->getId());
 
         // Manually pushing into the queue because this is the only way to do this.
@@ -16981,7 +16977,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->testCreatePayoutForRequestSubmitted();
 
-        $payout = $this->getDbLastEntity('payout');
+        $payout  = $this->getDbLastEntity('payout');
         $balance = $this->getDbEntityById('balance', $this->bankingBalance->getId());
 
         $this->fixtures->edit('payout', $payout['id'], [
@@ -17000,7 +16996,7 @@ class PayoutTest extends OAuthTestCase
         $reversal = $this->getDbLastEntity(Constants\Entity::REVERSAL);
 
         /** @var TransactionEntity $payoutTxn */
-        $payoutTxn = $this->getDbEntity(Constants\Entity::TRANSACTION, ['type' => 'payout']);
+        $payoutTxn   = $this->getDbEntity(Constants\Entity::TRANSACTION, ['type' => 'payout']);
         $reversalTxn = $this->getDbEntity(Constants\Entity::TRANSACTION, ['type' => 'reversal']);
 
         /** @var Balance\Entity $balanceAfter */
@@ -17053,7 +17049,7 @@ class PayoutTest extends OAuthTestCase
         $this->fixtures->merchant->addFeatures([Feature\Constants::HIGH_TPS_COMPOSITE_PAYOUT]);
         $this->testCreatePayoutForRequestSubmitted();
 
-        $payout = $this->getDbLastEntity('payout');
+        $payout  = $this->getDbLastEntity('payout');
         $balance = $this->getDbEntityById('balance', $this->bankingBalance->getId());
 
         // Manually pushing into the queue because this is the only way to do this.
@@ -17074,7 +17070,7 @@ class PayoutTest extends OAuthTestCase
         $reversal = $this->getDbLastEntity(Constants\Entity::REVERSAL);
 
         /** @var TransactionEntity $payoutTxn */
-        $payoutTxn = $this->getDbEntity(Constants\Entity::TRANSACTION, ['type' => 'payout']);
+        $payoutTxn   = $this->getDbEntity(Constants\Entity::TRANSACTION, ['type' => 'payout']);
         $reversalTxn = $this->getDbEntity(Constants\Entity::TRANSACTION, ['type' => 'reversal']);
 
         /** @var Balance\Entity $balanceAfter */
@@ -17141,73 +17137,15 @@ class PayoutTest extends OAuthTestCase
 
     public function testPayoutUpdatedWebhookWithRazorxExperimentForBeneficiaryBankConfirmationPendingRTGSMode()
     {
-        $this->setmockRazorxTreatment(['enable_status_details_feature' => 'on'],'control');
-
-            $payloadUpdatedOne = null;
-
-            $this->mockServiceStorkRequest(
-                function ($path, $payload) use (& $payloadUpdated) {
-                $this->assertContains($payload['event']['name'], ['payout.updated']);
-                switch ($payload['event']['name']) {
-                    case Event::PAYOUT_UPDATED:
-                        $payloadUpdated = $payload;
-                        break;
-                }
-
-                return new \Requests_Response();
-            })->times(5);
-
-        $this->testCreatePayout();
-
-        $payout = $this->getDbLastEntity('payout');
-
-        $this->fixtures->edit('payout',$payout->getId(),['mode' => 'RTGS']);
-
-        $payout = $this->getDbLastEntity('payout');
-
-        $bankAccount = $payout->fundaccount->account;
-
-        $this->fixtures->edit('bank_account',$bankAccount->getId(), ['ifsc' => 'ICIC0000104']);
-
-        (new Payout\Core)->updateWithDetailsBeforeFtaRecon($payout, [
-                'source_type' => 'payout',
-                'source_id' => $payout->getId(),
-                'fta_status' => 'initiated',
-                'channel' => 'rbl',
-                'failure_reason' => '',
-                'utr' => 928337183,
-                'mode' => 'RTGS',
-                'remarks' => '',
-                'bank_status_code' => 'SUCCESS',
-                'status_details' => [
-                    'reason' => 'beneficiary_bank_confirmation_pending',
-                    'parameters' => [
-                        'processed_by_time' => '1636481743',
-                    ],
-                ],
-            ]);
-
-        $statusDetails = $this->getDbLastEntity('payouts_status_details');
-
-        $this->assertNotNull($statusDetails);
-        $this->assertEquals('beneficiary_bank_confirmation_pending',$statusDetails['reason']);
-        $this->assertEquals('Confirmation of credit to the beneficiary is pending from ICICI Bank. Please check the status after 09th November 2021, 11:45 PM',$statusDetails['description']);
-
-        $payoutUpdatedEventData = $this->testData[__FUNCTION__];
-
-        $this->validateStorkWebhookFireEvent('payout.updated', $payoutUpdatedEventData, $payloadUpdated);
-    }
-
-    public function testPayoutUpdatedWebhookWithRazorxExperimentForBeneficiaryBankConfirmationPendingNEFTMode()
-    {
-        $this->setmockRazorxTreatment(['enable_status_details_feature' => 'on'],'control');
+        $this->setmockRazorxTreatment(['enable_status_details_feature' => 'on'], 'control');
 
         $payloadUpdatedOne = null;
 
         $this->mockServiceStorkRequest(
-            function ($path, $payload) use (& $payloadUpdated) {
+            function($path, $payload) use (& $payloadUpdated) {
                 $this->assertContains($payload['event']['name'], ['payout.updated']);
-                switch ($payload['event']['name']) {
+                switch ($payload['event']['name'])
+                {
                     case Event::PAYOUT_UPDATED:
                         $payloadUpdated = $payload;
                         break;
@@ -17220,28 +17158,26 @@ class PayoutTest extends OAuthTestCase
 
         $payout = $this->getDbLastEntity('payout');
 
-        $this->fixtures->edit('payout',$payout->getId(),['mode' => 'NEFT']);
+        $this->fixtures->edit('payout', $payout->getId(), ['mode' => 'RTGS']);
 
         $payout = $this->getDbLastEntity('payout');
 
         $bankAccount = $payout->fundaccount->account;
 
-        $this->fixtures->edit('bank_account',$bankAccount->getId(), ['ifsc' => 'HDFC0000104']);
-
-
+        $this->fixtures->edit('bank_account', $bankAccount->getId(), ['ifsc' => 'ICIC0000104']);
 
         (new Payout\Core)->updateWithDetailsBeforeFtaRecon($payout, [
-            'source_type' => 'payout',
-            'source_id' => $payout->getId(),
-            'fta_status' => 'initiated',
-            'channel' => 'rbl',
-            'failure_reason' => '',
-            'utr' => 928337183,
-            'mode' => 'NEFT',
-            'remarks' => '',
+            'source_type'      => 'payout',
+            'source_id'        => $payout->getId(),
+            'fta_status'       => 'initiated',
+            'channel'          => 'rbl',
+            'failure_reason'   => '',
+            'utr'              => 928337183,
+            'mode'             => 'RTGS',
+            'remarks'          => '',
             'bank_status_code' => 'SUCCESS',
-            'status_details' => [
-                'reason' => 'beneficiary_bank_confirmation_pending',
+            'status_details'   => [
+                'reason'     => 'beneficiary_bank_confirmation_pending',
                 'parameters' => [
                     'processed_by_time' => '1636481743',
                 ],
@@ -17251,8 +17187,68 @@ class PayoutTest extends OAuthTestCase
         $statusDetails = $this->getDbLastEntity('payouts_status_details');
 
         $this->assertNotNull($statusDetails);
-        $this->assertEquals('beneficiary_bank_confirmation_pending',$statusDetails['reason']);
-        $this->assertEquals('Confirmation of credit to the beneficiary is pending from HDFC Bank. Please check the status after 09th November 2021, 11:45 PM',$statusDetails['description']);
+        $this->assertEquals('beneficiary_bank_confirmation_pending', $statusDetails['reason']);
+        $this->assertEquals('Confirmation of credit to the beneficiary is pending from ICICI Bank. Please check the status after 09th November 2021, 11:45 PM', $statusDetails['description']);
+
+        $payoutUpdatedEventData = $this->testData[__FUNCTION__];
+
+        $this->validateStorkWebhookFireEvent('payout.updated', $payoutUpdatedEventData, $payloadUpdated);
+    }
+
+    public function testPayoutUpdatedWebhookWithRazorxExperimentForBeneficiaryBankConfirmationPendingNEFTMode()
+    {
+        $this->setmockRazorxTreatment(['enable_status_details_feature' => 'on'], 'control');
+
+        $payloadUpdatedOne = null;
+
+        $this->mockServiceStorkRequest(
+            function($path, $payload) use (& $payloadUpdated) {
+                $this->assertContains($payload['event']['name'], ['payout.updated']);
+                switch ($payload['event']['name'])
+                {
+                    case Event::PAYOUT_UPDATED:
+                        $payloadUpdated = $payload;
+                        break;
+                }
+
+                return new \Requests_Response();
+            })->times(5);
+
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit('payout', $payout->getId(), ['mode' => 'NEFT']);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $bankAccount = $payout->fundaccount->account;
+
+        $this->fixtures->edit('bank_account', $bankAccount->getId(), ['ifsc' => 'HDFC0000104']);
+
+        (new Payout\Core)->updateWithDetailsBeforeFtaRecon($payout, [
+            'source_type'      => 'payout',
+            'source_id'        => $payout->getId(),
+            'fta_status'       => 'initiated',
+            'channel'          => 'rbl',
+            'failure_reason'   => '',
+            'utr'              => 928337183,
+            'mode'             => 'NEFT',
+            'remarks'          => '',
+            'bank_status_code' => 'SUCCESS',
+            'status_details'   => [
+                'reason'     => 'beneficiary_bank_confirmation_pending',
+                'parameters' => [
+                    'processed_by_time' => '1636481743',
+                ],
+            ],
+        ]);
+
+        $statusDetails = $this->getDbLastEntity('payouts_status_details');
+
+        $this->assertNotNull($statusDetails);
+        $this->assertEquals('beneficiary_bank_confirmation_pending', $statusDetails['reason']);
+        $this->assertEquals('Confirmation of credit to the beneficiary is pending from HDFC Bank. Please check the status after 09th November 2021, 11:45 PM', $statusDetails['description']);
 
         $payoutUpdatedEventData = $this->testData[__FUNCTION__];
 
@@ -17261,14 +17257,15 @@ class PayoutTest extends OAuthTestCase
 
     public function testPayoutUpdatedWebhookWithRazorxExperimentForBeneficiaryBankConfirmationPendingIMPSMode()
     {
-        $this->setmockRazorxTreatment(['enable_status_details_feature' => 'on'],'control');
+        $this->setmockRazorxTreatment(['enable_status_details_feature' => 'on'], 'control');
 
         $payloadUpdatedOne = null;
 
         $this->mockServiceStorkRequest(
-            function ($path, $payload) use (& $payloadUpdated) {
+            function($path, $payload) use (& $payloadUpdated) {
                 $this->assertContains($payload['event']['name'], ['payout.updated']);
-                switch ($payload['event']['name']) {
+                switch ($payload['event']['name'])
+                {
                     case Event::PAYOUT_UPDATED:
                         $payloadUpdated = $payload;
                         break;
@@ -17287,17 +17284,17 @@ class PayoutTest extends OAuthTestCase
                               $bankAccount->getId(), ['ifsc' => 'ICIC0000104']);
 
         (new Payout\Core)->updateWithDetailsBeforeFtaRecon($payout, [
-            'source_type' => 'payout',
-            'source_id' => $payout->getId(),
-            'fta_status' => 'initiated',
-            'channel' => 'rbl',
-            'failure_reason' => '',
-            'utr' => 928337183,
-            'mode' => 'IMPS',
-            'remarks' => '',
+            'source_type'      => 'payout',
+            'source_id'        => $payout->getId(),
+            'fta_status'       => 'initiated',
+            'channel'          => 'rbl',
+            'failure_reason'   => '',
+            'utr'              => 928337183,
+            'mode'             => 'IMPS',
+            'remarks'          => '',
             'bank_status_code' => 'SUCCESS',
-            'status_details' => [
-                'reason' => 'beneficiary_bank_confirmation_pending',
+            'status_details'   => [
+                'reason'     => 'beneficiary_bank_confirmation_pending',
                 'parameters' => [
                     'processed_by_time' => '1636481743',
                 ],
@@ -17307,8 +17304,8 @@ class PayoutTest extends OAuthTestCase
         $statusDetails = $this->getDbLastEntity('payouts_status_details');
 
         $this->assertNotNull($statusDetails);
-        $this->assertEquals('beneficiary_bank_confirmation_pending',$statusDetails['reason']);
-        $this->assertEquals('Confirmation of credit to the beneficiary is pending from ICICI Bank. Please check the status after 09th November 2021',$statusDetails['description']);
+        $this->assertEquals('beneficiary_bank_confirmation_pending', $statusDetails['reason']);
+        $this->assertEquals('Confirmation of credit to the beneficiary is pending from ICICI Bank. Please check the status after 09th November 2021', $statusDetails['description']);
 
         $payoutUpdatedEventData = $this->testData[__FUNCTION__];
 
@@ -17317,14 +17314,15 @@ class PayoutTest extends OAuthTestCase
 
     public function testPayoutUpdatedWebhookWithRazorxExperimentForBeneficiaryBankConfirmationPendingUPIMode()
     {
-        $this->setmockRazorxTreatment(['enable_status_details_feature' => 'on'],'control');
+        $this->setmockRazorxTreatment(['enable_status_details_feature' => 'on'], 'control');
 
         $payloadUpdatedOne = null;
 
         $this->mockServiceStorkRequest(
-            function ($path, $payload) use (& $payloadUpdated) {
+            function($path, $payload) use (& $payloadUpdated) {
                 $this->assertContains($payload['event']['name'], ['payout.updated']);
-                switch ($payload['event']['name']) {
+                switch ($payload['event']['name'])
+                {
                     case Event::PAYOUT_UPDATED:
                         $payloadUpdated = $payload;
                         break;
@@ -17337,33 +17335,33 @@ class PayoutTest extends OAuthTestCase
 
         $payout = $this->getDbLastEntity('payout');
 
-        $this->fixtures->edit('payout',$payout->getId(),['mode' => 'UPI']);
+        $this->fixtures->edit('payout', $payout->getId(), ['mode' => 'UPI']);
 
         $payout = $this->getDbLastEntity('payout');
 
         (new Payout\Core)->updateWithDetailsBeforeFtaRecon($payout, [
-            'source_type' => 'payout',
-            'source_id' => $payout->getId(),
-            'fta_status' => 'initiated',
-            'channel' => 'rbl',
-            'failure_reason' => '',
-            'utr' => 928337183,
-            'mode' => 'UPI',
-            'remarks' => '',
+            'source_type'      => 'payout',
+            'source_id'        => $payout->getId(),
+            'fta_status'       => 'initiated',
+            'channel'          => 'rbl',
+            'failure_reason'   => '',
+            'utr'              => 928337183,
+            'mode'             => 'UPI',
+            'remarks'          => '',
             'bank_status_code' => 'SUCCESS',
-            'status_details' => [
-                'reason' => 'beneficiary_bank_confirmation_pending',
+            'status_details'   => [
+                'reason'     => 'beneficiary_bank_confirmation_pending',
                 'parameters' => [
                     'processed_by_time' => '1636481743',
                 ],
             ],
         ]);
 
-        $statusDetails =$this->getDbLastEntity('payouts_status_details');
+        $statusDetails = $this->getDbLastEntity('payouts_status_details');
 
         $this->assertNotNull($statusDetails);
-        $this->assertEquals('beneficiary_bank_confirmation_pending',$statusDetails['reason']);
-        $this->assertEquals('Confirmation of credit to the beneficiary is pending from beneficiary bank. Please check the status after 09th November 2021',$statusDetails['description']);
+        $this->assertEquals('beneficiary_bank_confirmation_pending', $statusDetails['reason']);
+        $this->assertEquals('Confirmation of credit to the beneficiary is pending from beneficiary bank. Please check the status after 09th November 2021', $statusDetails['description']);
 
         $payoutUpdatedEventData = $this->testData[__FUNCTION__];
 
@@ -17372,14 +17370,15 @@ class PayoutTest extends OAuthTestCase
 
     public function testPayoutUpdatedWebhookWithRazorxExperimentForBankWindowClosedNEFTMode()
     {
-        $this->setmockRazorxTreatment(['enable_status_details_feature' => 'on'],'control');
+        $this->setmockRazorxTreatment(['enable_status_details_feature' => 'on'], 'control');
 
         $payloadUpdatedOne = null;
 
         $this->mockServiceStorkRequest(
-            function ($path, $payload) use (& $payloadUpdated) {
+            function($path, $payload) use (& $payloadUpdated) {
                 $this->assertContains($payload['event']['name'], ['payout.updated']);
-                switch ($payload['event']['name']) {
+                switch ($payload['event']['name'])
+                {
                     case Event::PAYOUT_UPDATED:
                         $payloadUpdated = $payload;
                         break;
@@ -17392,21 +17391,21 @@ class PayoutTest extends OAuthTestCase
 
         $payout = $this->getDbLastEntity('payout');
 
-        $this->fixtures->edit('payout',$payout->getId(),['mode' => 'NEFT']);
+        $this->fixtures->edit('payout', $payout->getId(), ['mode' => 'NEFT']);
 
         $payout = $this->getDbLastEntity('payout');
 
         (new Payout\Core)->updateWithDetailsBeforeFtaRecon($payout, [
-            'source_type' => 'payout',
-            'source_id' => $payout->getId(),
-            'fta_status' => 'initiated',
-            'channel' => 'rbl',
-            'failure_reason' => '',
-            'utr' => 928337183,
-            'remarks' => '',
+            'source_type'      => 'payout',
+            'source_id'        => $payout->getId(),
+            'fta_status'       => 'initiated',
+            'channel'          => 'rbl',
+            'failure_reason'   => '',
+            'utr'              => 928337183,
+            'remarks'          => '',
             'bank_status_code' => 'SUCCESS',
-            'status_details' => [
-                'reason' => 'bank_window_closed',
+            'status_details'   => [
+                'reason'     => 'bank_window_closed',
                 'parameters' => [
                     'processed_by_time' => '1636472623',
                 ],
@@ -17417,7 +17416,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->assertNotNull($statusDetails);
         $this->assertEquals('bank_window_closed', $statusDetails['reason']);
-        $this->assertEquals('The NEFT window for the day is closed. Please check the status after 09th November 2021, 09:13 PM',$statusDetails['description']);
+        $this->assertEquals('The NEFT window for the day is closed. Please check the status after 09th November 2021, 09:13 PM', $statusDetails['description']);
 
         $payoutUpdatedEventData = $this->testData[__FUNCTION__];
 
@@ -17426,14 +17425,15 @@ class PayoutTest extends OAuthTestCase
 
     public function testPayoutUpdatedWebhookWithRazorxExperimentForBankWindowClosedRTGSMode()
     {
-        $this->setmockRazorxTreatment(['enable_status_details_feature' => 'on'],'control');
+        $this->setmockRazorxTreatment(['enable_status_details_feature' => 'on'], 'control');
 
         $payloadUpdatedOne = null;
 
         $this->mockServiceStorkRequest(
-            function ($path, $payload) use (& $payloadUpdated) {
+            function($path, $payload) use (& $payloadUpdated) {
                 $this->assertContains($payload['event']['name'], ['payout.updated']);
-                switch ($payload['event']['name']) {
+                switch ($payload['event']['name'])
+                {
                     case Event::PAYOUT_UPDATED:
                         $payloadUpdated = $payload;
                         break;
@@ -17446,22 +17446,22 @@ class PayoutTest extends OAuthTestCase
 
         $payout = $this->getDbLastEntity('payout');
 
-        $this->fixtures->edit('payout',$payout->getId(),['mode' => 'RTGS']);
+        $this->fixtures->edit('payout', $payout->getId(), ['mode' => 'RTGS']);
 
         $payout = $this->getDbLastEntity('payout');
 
         (new Payout\Core)->updateWithDetailsBeforeFtaRecon($payout, [
-            'source_type' => 'payout',
-            'source_id' => $payout->getId(),
-            'fta_status' => 'initiated',
-            'channel' => 'rbl',
-            'failure_reason' => '',
-            'utr' => 928337183,
-            'mode' => 'UPI',
-            'remarks' => '',
+            'source_type'      => 'payout',
+            'source_id'        => $payout->getId(),
+            'fta_status'       => 'initiated',
+            'channel'          => 'rbl',
+            'failure_reason'   => '',
+            'utr'              => 928337183,
+            'mode'             => 'UPI',
+            'remarks'          => '',
             'bank_status_code' => 'SUCCESS',
-            'status_details' => [
-                'reason' => 'bank_window_closed',
+            'status_details'   => [
+                'reason'     => 'bank_window_closed',
                 'parameters' => [
                     'processed_by_time' => '1636484602',
                 ],
@@ -17472,7 +17472,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->assertNotNull($statusDetails);
         $this->assertEquals('bank_window_closed', $statusDetails['reason']);
-        $this->assertEquals('The RTGS window for the day is closed. Please check the status after 10th November 2021, 12:33 AM',$statusDetails['description']);
+        $this->assertEquals('The RTGS window for the day is closed. Please check the status after 10th November 2021, 12:33 AM', $statusDetails['description']);
 
         $payoutUpdatedEventData = $this->testData[__FUNCTION__];
 
@@ -17481,14 +17481,15 @@ class PayoutTest extends OAuthTestCase
 
     public function testPayoutUpdatedWebhookWithRazorxExperimentForPayoutProcessing()
     {
-        $this->setmockRazorxTreatment(['enable_status_details_feature' => 'on'],'control');
+        $this->setmockRazorxTreatment(['enable_status_details_feature' => 'on'], 'control');
 
         $payloadUpdatedOne = null;
 
         $this->mockServiceStorkRequest(
-            function ($path, $payload) use (& $payloadUpdated) {
+            function($path, $payload) use (& $payloadUpdated) {
                 $this->assertContains($payload['event']['name'], ['payout.updated']);
-                switch ($payload['event']['name']) {
+                switch ($payload['event']['name'])
+                {
                     case Event::PAYOUT_UPDATED:
                         $payloadUpdated = $payload;
                         break;
@@ -17502,17 +17503,17 @@ class PayoutTest extends OAuthTestCase
         $payout = $this->getDbLastEntity('payout');
 
         (new Payout\Core)->updateWithDetailsBeforeFtaRecon($payout, [
-            'source_type' => 'payout',
-            'source_id' => $payout->getId(),
-            'fta_status' => 'initiated',
-            'channel' => 'rbl',
-            'failure_reason' => '',
-            'utr' => 928337183,
-            'mode' => 'UPI',
-            'remarks' => '',
+            'source_type'      => 'payout',
+            'source_id'        => $payout->getId(),
+            'fta_status'       => 'initiated',
+            'channel'          => 'rbl',
+            'failure_reason'   => '',
+            'utr'              => 928337183,
+            'mode'             => 'UPI',
+            'remarks'          => '',
             'bank_status_code' => 'SUCCESS',
-            'status_details' => [
-                'reason' => 'payout_bank_processing',
+            'status_details'   => [
+                'reason'     => 'payout_bank_processing',
                 'parameters' => [
                     'processed_by_time' => '',
                 ],
@@ -17522,8 +17523,8 @@ class PayoutTest extends OAuthTestCase
         $statusDetails = $this->getDbLastEntity('payouts_status_details');
 
         $this->assertNotNull($statusDetails);
-        $this->assertEquals('payout_bank_processing',$statusDetails['reason']);
-        $this->assertEquals('Payout is being processed by our partner bank. Please check the final status after some time',$statusDetails['description']);
+        $this->assertEquals('payout_bank_processing', $statusDetails['reason']);
+        $this->assertEquals('Payout is being processed by our partner bank. Please check the final status after some time', $statusDetails['description']);
 
         $payoutUpdatedEventData = $this->testData[__FUNCTION__];
 
@@ -17532,14 +17533,15 @@ class PayoutTest extends OAuthTestCase
 
     public function testPayoutUpdatedWebhookWithRazorxExperimentForNullCase()
     {
-        $this->setmockRazorxTreatment(['enable_status_details_feature' => 'on'],'control');
+        $this->setmockRazorxTreatment(['enable_status_details_feature' => 'on'], 'control');
 
         $payloadUpdatedOne = null;
 
         $this->mockServiceStorkRequest(
-            function ($path, $payload) use (& $payloadUpdated) {
+            function($path, $payload) use (& $payloadUpdated) {
                 $this->assertContains($payload['event']['name'], ['payout.updated']);
-                switch ($payload['event']['name']) {
+                switch ($payload['event']['name'])
+                {
                     case Event::PAYOUT_UPDATED:
                         $payloadUpdated = $payload;
                         break;
@@ -17553,14 +17555,14 @@ class PayoutTest extends OAuthTestCase
         $payout = $this->getDbLastEntity('payout');
 
         (new Payout\Core)->updateWithDetailsBeforeFtaRecon($payout, [
-            'source_type' => 'payout',
-            'source_id' => $payout->getId(),
-            'fta_status' => 'initiated',
-            'channel' => 'rbl',
-            'failure_reason' => '',
-            'utr' => 928337183,
-            'mode' => 'UPI',
-            'remarks' => '',
+            'source_type'      => 'payout',
+            'source_id'        => $payout->getId(),
+            'fta_status'       => 'initiated',
+            'channel'          => 'rbl',
+            'failure_reason'   => '',
+            'utr'              => 928337183,
+            'mode'             => 'UPI',
+            'remarks'          => '',
             'bank_status_code' => 'SUCCESS',
         ]);
 
@@ -17579,9 +17581,10 @@ class PayoutTest extends OAuthTestCase
         $payloadUpdatedOne = null;
 
         $this->mockServiceStorkRequest(
-            function ($path, $payload) use (& $payloadUpdated) {
+            function($path, $payload) use (& $payloadUpdated) {
                 $this->assertContains($payload['event']['name'], ['payout.updated']);
-                switch ($payload['event']['name']) {
+                switch ($payload['event']['name'])
+                {
                     case Event::PAYOUT_UPDATED:
                         $payloadUpdated = $payload;
                         break;
@@ -17595,11 +17598,11 @@ class PayoutTest extends OAuthTestCase
         $payout = $this->getDbLastEntity('payout');
 
         (new Payout\Core)->updateWithDetailsBeforeFtaRecon($payout, [
-            'status' => 'initiated',
-            'channel' => 'rbl',
-            'failure_reason' => '',
-            'utr' => 928337183,
-            'remarks' => '',
+            'status'           => 'initiated',
+            'channel'          => 'rbl',
+            'failure_reason'   => '',
+            'utr'              => 928337183,
+            'remarks'          => '',
             'bank_status_code' => 'SUCCESS'
         ]);
 
@@ -17618,45 +17621,45 @@ class PayoutTest extends OAuthTestCase
         ];
 
         $this->slackAppMock->shouldReceive('sendPendingPayoutNotificationRequestToSlack')
-            ->withArgs(function ($payload) use ($expected) {
-                return (($payload['merchant_id'] === $expected['merchant_id']) &&
-                    $payload['count'] === $expected['count']);
-            })->andReturn([]);
+                           ->withArgs(function($payload) use ($expected) {
+                               return (($payload['merchant_id'] === $expected['merchant_id']) &&
+                                       $payload['count'] === $expected['count']);
+                           })->andReturn([]);
 
         $response = new \Requests_Response;
 
         $response->body = json_encode([
-            "status" => 1,
-            "msg" => "success",
-            "data" => [
-                [
-                    "id" =>  1,
-                    "merchant_id" => "acc_10000000000000",
-                    "slack_team_id" => "T025HQJDGKH",
-                    "slack_user_id" => "U02E6JHBV7S"
-                ]
-            ]
-        ]);
+                                          "status" => 1,
+                                          "msg"    => "success",
+                                          "data"   => [
+                                              [
+                                                  "id"            => 1,
+                                                  "merchant_id"   => "acc_10000000000000",
+                                                  "slack_team_id" => "T025HQJDGKH",
+                                                  "slack_user_id" => "U02E6JHBV7S"
+                                              ]
+                                          ]
+                                      ]);
 
         $this->slackAppMock->shouldReceive('sendRequestToSlack')
-            ->andReturn($response);
+                           ->andReturn($response);
 
         $this->testGetPayoutsForPendingOnRoles();
 
         $this->setUpExperimentForNWFS();
 
-        $this->createPayoutWithWorkflowEntities(12345,'2224440041626905',Payout\Purpose::CASHBACK, 'FXMwu4HMK7ZT0C');
-        $this->createPayoutWithWorkflowEntities(23456,'2224440041626905',Payout\Purpose::CASHBACK,'FXMwu4HMK7ZT0D');
-        $this->createPayoutWithWorkflowEntities(11111,'2224440041626905',Payout\Purpose::SALARY,'FXMwu4HMK7ZT0F');
-        $this->createPayoutWithWorkflowEntities(50000,'2224440041626905',Payout\Purpose::SALARY,'FXMwu4HMK7ZT0G');
-        $this->createPayoutWithWorkflowEntities(65432,'2224440041626905',Payout\Purpose::REFUND,'FXMwu4HMK7ZT0H');
+        $this->createPayoutWithWorkflowEntities(12345, '2224440041626905', Payout\Purpose::CASHBACK, 'FXMwu4HMK7ZT0C');
+        $this->createPayoutWithWorkflowEntities(23456, '2224440041626905', Payout\Purpose::CASHBACK, 'FXMwu4HMK7ZT0D');
+        $this->createPayoutWithWorkflowEntities(11111, '2224440041626905', Payout\Purpose::SALARY, 'FXMwu4HMK7ZT0F');
+        $this->createPayoutWithWorkflowEntities(50000, '2224440041626905', Payout\Purpose::SALARY, 'FXMwu4HMK7ZT0G');
+        $this->createPayoutWithWorkflowEntities(65432, '2224440041626905', Payout\Purpose::REFUND, 'FXMwu4HMK7ZT0H');
 
         $this->payoutService->sendPendingPayoutsNotificationToSlack();
     }
 
     private function setupSlackAppMock()
     {
-        $this->app['rzp.mode']= 'live';
+        $this->app['rzp.mode'] = 'live';
 
         $this->payoutService = new Payout\Service();
 
@@ -17677,8 +17680,8 @@ class PayoutTest extends OAuthTestCase
                                                 Feature\Constants::BENE_SMS_NOTIFICATION]);
 
         $attributes = [
-            'bas_business_id'   => '10000000000000',
-            'merchant_id'       => '10000000000000',
+            'bas_business_id' => '10000000000000',
+            'merchant_id'     => '10000000000000',
         ];
 
         $this->fixtures->create('merchant_detail', $attributes);
@@ -17696,8 +17699,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->updateFtaAndSource($payout->getId(), Payout\Status::PROCESSED, '933815383814');
 
-        Mail::assertQueued(PayoutProcessedContactCommunication::class, function ($mail)
-        {
+        Mail::assertQueued(PayoutProcessedContactCommunication::class, function($mail) {
             $mail->build();
             $this->assertEquals($mail->subject, '[Notification] Test Merchant has successfully transferred to you.');
 
@@ -17776,9 +17778,9 @@ class PayoutTest extends OAuthTestCase
     private function mockDiag()
     {
         $diagMock = $this->getMockBuilder(DiagClient::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['trackEvent'])
-            ->getMock();
+                         ->setConstructorArgs([$this->app])
+                         ->setMethods(['trackEvent'])
+                         ->getMock();
 
         $this->app->instance('diag', $diagMock);
     }
@@ -17788,20 +17790,19 @@ class PayoutTest extends OAuthTestCase
         $this->mockDiag();
 
         $this->app->diag->method('trackEvent')
-            ->will($this->returnCallback(
-                function (string $eventType,
-                          string $eventVersion,
-                          array $event,
-                          array $properties) use ($expectedProperties)
-                {
-                    if (($event['group'] === 'payouts') and
-                        ($event['name'] === 'payouts.fetch.request'))
-                    {
-                        $this->assertArraySelectiveEquals($expectedProperties, $properties);
-                    }
+                        ->will($this->returnCallback(
+                            function(string $eventType,
+                                     string $eventVersion,
+                                     array $event,
+                                     array $properties) use ($expectedProperties) {
+                                if (($event['group'] === 'payouts') and
+                                    ($event['name'] === 'payouts.fetch.request'))
+                                {
+                                    $this->assertArraySelectiveEquals($expectedProperties, $properties);
+                                }
 
-                    return;
-                }));
+                                return;
+                            }));
     }
 
     private function verifyBalanceEvent($expectedProperties)
@@ -17809,20 +17810,19 @@ class PayoutTest extends OAuthTestCase
         $this->mockDiag();
 
         $this->app->diag->method('trackEvent')
-            ->will($this->returnCallback(
-                function (string $eventType,
-                          string $eventVersion,
-                          array $event,
-                          array $properties) use ($expectedProperties)
-                {
-                    if (($event['group'] === 'balance') and
-                        ($event['name'] === 'balance.fetch.request'))
-                    {
-                        $this->assertArraySelectiveEquals($expectedProperties, $properties);
-                    }
+                        ->will($this->returnCallback(
+                            function(string $eventType,
+                                     string $eventVersion,
+                                     array $event,
+                                     array $properties) use ($expectedProperties) {
+                                if (($event['group'] === 'balance') and
+                                    ($event['name'] === 'balance.fetch.request'))
+                                {
+                                    $this->assertArraySelectiveEquals($expectedProperties, $properties);
+                                }
 
-                    return;
-                }));
+                                return;
+                            }));
     }
 
     public function testCreatePayoutInLedgerReverseShadowMode()
@@ -17854,8 +17854,8 @@ class PayoutTest extends OAuthTestCase
         $payoutId = $payout->getId();
 
         (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
-            'fta_status' => 'failed',
-            'failure_reason' => '',
+            'fta_status'       => 'failed',
+            'failure_reason'   => '',
             'bank_status_code' => 'YB_NS_E10282323'
         ]);
 
@@ -17891,8 +17891,8 @@ class PayoutTest extends OAuthTestCase
         $payoutId = $payout->getId();
 
         (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
-            'fta_status' => 'processed',
-            'failure_reason' => '',
+            'fta_status'       => 'processed',
+            'failure_reason'   => '',
             'bank_status_code' => 'SUCCESS'
         ]);
 
@@ -17938,36 +17938,36 @@ class PayoutTest extends OAuthTestCase
 
         // create a external for this payout so it gets picked
         $this->fixtures->create('external',
-            [
-                'id'                        => 'randomexternal',
-                'merchant_id'               => $payout->getMerchantId(),
-                'amount'                    => $payout->getAmount(),
-                'channel'                   => $payout->getChannel(),
-                'transaction_id'            => $txnCreated['id'],
-                'utr'                       => $payout->getUtr(),
-                'balance_id'                => $payout->getBalanceId(),
-            ]);
+                                [
+                                    'id'             => 'randomexternal',
+                                    'merchant_id'    => $payout->getMerchantId(),
+                                    'amount'         => $payout->getAmount(),
+                                    'channel'        => $payout->getChannel(),
+                                    'transaction_id' => $txnCreated['id'],
+                                    'utr'            => $payout->getUtr(),
+                                    'balance_id'     => $payout->getBalanceId(),
+                                ]);
 
         $externalCreated = $this->getDbLastEntity('external');
 
         // create a bas for this payout so it gets picked
         $this->fixtures->create('banking_account_statement',
-            [
-                'type'                      => 'debit',
-                'amount'                    => $payout->getAmount(),
-                'channel'                   => $payout->getChannel(),
-                'account_number'            => $payout->balance->getAccountNumber(),
-                'transaction_id'            => $txnCreated['id'],
-                'entity_id'                 => $externalCreated['id'],
-                'entity_type'               => 'external',
-                'bank_transaction_id'       => 'SDHDH',
-                'balance'                   => 30019891,
-                'transaction_date'          => 1584987183,
-                'utr'                       => $payout->getUtr()
-            ]);
+                                [
+                                    'type'                => 'debit',
+                                    'amount'              => $payout->getAmount(),
+                                    'channel'             => $payout->getChannel(),
+                                    'account_number'      => $payout->balance->getAccountNumber(),
+                                    'transaction_id'      => $txnCreated['id'],
+                                    'entity_id'           => $externalCreated['id'],
+                                    'entity_type'         => 'external',
+                                    'bank_transaction_id' => 'SDHDH',
+                                    'balance'             => 30019891,
+                                    'transaction_date'    => 1584987183,
+                                    'utr'                 => $payout->getUtr()
+                                ]);
 
         // create a bas details for this payout so it gets used to pick basd id for ledger
-        $this->fixtures->create('banking_account_statement_details',[
+        $this->fixtures->create('banking_account_statement_details', [
             Details\Entity::ID             => 'xbas0000000002',
             Details\Entity::MERCHANT_ID    => $payout->getMerchantId(),
             Details\Entity::BALANCE_ID     => $payout->getBalanceId(),
@@ -17977,8 +17977,8 @@ class PayoutTest extends OAuthTestCase
         ]);
 
         (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
-            'fta_status' => 'processed',
-            'failure_reason' => '',
+            'fta_status'       => 'processed',
+            'failure_reason'   => '',
             'bank_status_code' => 'SUCCESS'
         ]);
 
@@ -18143,15 +18143,15 @@ class PayoutTest extends OAuthTestCase
             'amount'      => $payout->getAmount(),
             'balance_id'  => $payout->getBalanceId(),
             'type'        => 'payout',
-//            'entity_id'   => $payoutId,
+            //            'entity_id'   => $payoutId,
         ];
         $this->fixtures->create('transaction', $attributes);
         $txnForPayout = $this->getDbLastEntity('transaction');
 
         // update payout with utr and txn, so that we can mover ahead to test reversal
         $this->fixtures->edit('payout', $payoutId, [
-            'utr'               => 'sampleutr876545',
-//            'transaction_id'    => $txnForPayout['id'],
+            'utr' => 'sampleutr876545',
+            //            'transaction_id'    => $txnForPayout['id'],
         ]);
 
         $txnForPayout->sourceAssociate($payout);
@@ -18161,7 +18161,7 @@ class PayoutTest extends OAuthTestCase
         $payout->saveOrFail();
 
         $txnForPayout = $this->getDbLastEntity('transaction');
-        $payout = $this->getDbLastEntity('payout');
+        $payout       = $this->getDbLastEntity('payout');
 
         // create a txn linked to bas and external
         $attributes = [
@@ -18177,37 +18177,37 @@ class PayoutTest extends OAuthTestCase
 
         // create a external for this payout so it gets picked
         $this->fixtures->create('external',
-            [
-                'id'                        => 'randomexternal',
-                'merchant_id'               => $payout->getMerchantId(),
-                'amount'                    => $payout->getAmount(),
-                'channel'                   => $payout->getChannel(),
-                'transaction_id'            => $txnCreated['id'],
-                'utr'                       => $payout->getUtr(),
-                'balance_id'                => $payout->getBalanceId(),
-            ]);
+                                [
+                                    'id'             => 'randomexternal',
+                                    'merchant_id'    => $payout->getMerchantId(),
+                                    'amount'         => $payout->getAmount(),
+                                    'channel'        => $payout->getChannel(),
+                                    'transaction_id' => $txnCreated['id'],
+                                    'utr'            => $payout->getUtr(),
+                                    'balance_id'     => $payout->getBalanceId(),
+                                ]);
 
         $externalCreated = $this->getDbLastEntity('external');
 
         // create a bas for this payout so it gets picked
         $this->fixtures->create('banking_account_statement',
-            [
-                'type'                      => 'credit',
-                'amount'                    => $payout->getAmount(),
-                'channel'                   => $payout->getChannel(),
-                'account_number'            => $payout->balance->getAccountNumber(),
-                'transaction_id'            => $txnCreated['id'],
-                'entity_id'                 => $externalCreated['id'],
-                'entity_type'               => 'external',
-                'bank_transaction_id'       => 'SDHDH',
-                'balance'                   => 30019891,
-                'transaction_date'          => 1584987183,
-                'utr'                       => $payout->getUtr(),
-                'created_at'                => Carbon::now()->getTimestamp() + 3600
-            ]);
+                                [
+                                    'type'                => 'credit',
+                                    'amount'              => $payout->getAmount(),
+                                    'channel'             => $payout->getChannel(),
+                                    'account_number'      => $payout->balance->getAccountNumber(),
+                                    'transaction_id'      => $txnCreated['id'],
+                                    'entity_id'           => $externalCreated['id'],
+                                    'entity_type'         => 'external',
+                                    'bank_transaction_id' => 'SDHDH',
+                                    'balance'             => 30019891,
+                                    'transaction_date'    => 1584987183,
+                                    'utr'                 => $payout->getUtr(),
+                                    'created_at'          => Carbon::now()->getTimestamp() + 3600
+                                ]);
 
         // create a bas details for this payout so it gets used to pick basd id for ledger
-        $this->fixtures->create('banking_account_statement_details',[
+        $this->fixtures->create('banking_account_statement_details', [
             Details\Entity::ID             => 'xbas0000000002',
             Details\Entity::MERCHANT_ID    => $payout->getMerchantId(),
             Details\Entity::BALANCE_ID     => $payout->getBalanceId(),
@@ -18217,8 +18217,8 @@ class PayoutTest extends OAuthTestCase
         ]);
 
         (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
-            'fta_status' => 'reversed',
-            'failure_reason' => '',
+            'fta_status'       => 'reversed',
+            'failure_reason'   => '',
             'bank_status_code' => 'SUCCESS'
         ]);
 
@@ -18403,7 +18403,7 @@ class PayoutTest extends OAuthTestCase
         $payoutId = $payout->getId();
 
         $this->fixtures->edit('payout', $payoutId, [
-            'utr'               => 'sampleutr876545',
+            'utr' => 'sampleutr876545',
         ]);
 
         $payout = $this->getDbLastEntity('payout');
@@ -18422,34 +18422,34 @@ class PayoutTest extends OAuthTestCase
 
         // create a external for this payout so it gets picked
         $this->fixtures->create('external',
-            [
-                'id'                        => 'randomexternal',
-                'merchant_id'               => $payout->getMerchantId(),
-                'amount'                    => $payout->getAmount(),
-                'channel'                   => $payout->getChannel(),
-                'transaction_id'            => $txnCreatedForExternalPayout['id'],
-                'utr'                       => $payout->getUtr(),
-                'balance_id'                => $payout->getBalanceId(),
-            ]);
+                                [
+                                    'id'             => 'randomexternal',
+                                    'merchant_id'    => $payout->getMerchantId(),
+                                    'amount'         => $payout->getAmount(),
+                                    'channel'        => $payout->getChannel(),
+                                    'transaction_id' => $txnCreatedForExternalPayout['id'],
+                                    'utr'            => $payout->getUtr(),
+                                    'balance_id'     => $payout->getBalanceId(),
+                                ]);
 
         $externalCreatedForPayout = $this->getDbLastEntity('external');
 
         // create a bas for this payout so it gets picked
         $this->fixtures->create('banking_account_statement',
-            [
-                'type'                      => 'debit',
-                'amount'                    => $payout->getAmount(),
-                'channel'                   => $payout->getChannel(),
-                'account_number'            => $payout->balance->getAccountNumber(),
-                'transaction_id'            => $txnCreatedForExternalPayout['id'],
-                'entity_id'                 => $externalCreatedForPayout['id'],
-                'entity_type'               => 'external',
-                'bank_transaction_id'       => 'SDHDH',
-                'balance'                   => 30019891,
-                'transaction_date'          => 1584987183,
-                'utr'                       => $payout->getUtr(),
-                'created_at'                => Carbon::now()->getTimestamp() + 3600
-            ]);
+                                [
+                                    'type'                => 'debit',
+                                    'amount'              => $payout->getAmount(),
+                                    'channel'             => $payout->getChannel(),
+                                    'account_number'      => $payout->balance->getAccountNumber(),
+                                    'transaction_id'      => $txnCreatedForExternalPayout['id'],
+                                    'entity_id'           => $externalCreatedForPayout['id'],
+                                    'entity_type'         => 'external',
+                                    'bank_transaction_id' => 'SDHDH',
+                                    'balance'             => 30019891,
+                                    'transaction_date'    => 1584987183,
+                                    'utr'                 => $payout->getUtr(),
+                                    'created_at'          => Carbon::now()->getTimestamp() + 3600
+                                ]);
 
         $banking_account_statement = $this->getDbLastEntity('banking_account_statement');
 
@@ -18467,39 +18467,39 @@ class PayoutTest extends OAuthTestCase
 
         // create a external for this payout so it gets picked
         $this->fixtures->create('external',
-            [
-                'id'                        => 'randomexternl1',
-                'merchant_id'               => $payout->getMerchantId(),
-                'amount'                    => $payout->getAmount(),
-                'channel'                   => $payout->getChannel(),
-                'transaction_id'            => $txnCreatedForExternalReversal['id'],
-                'utr'                       => $payout->getUtr(),
-                'balance_id'                => $payout->getBalanceId(),
-            ]);
+                                [
+                                    'id'             => 'randomexternl1',
+                                    'merchant_id'    => $payout->getMerchantId(),
+                                    'amount'         => $payout->getAmount(),
+                                    'channel'        => $payout->getChannel(),
+                                    'transaction_id' => $txnCreatedForExternalReversal['id'],
+                                    'utr'            => $payout->getUtr(),
+                                    'balance_id'     => $payout->getBalanceId(),
+                                ]);
 
         $externalCreatedForReversal = $this->getDbLastEntity('external');
 
         // create a bas for this payout so it gets picked
         $this->fixtures->create('banking_account_statement',
-            [
-                'type'                      => 'credit',
-                'amount'                    => $payout->getAmount(),
-                'channel'                   => $payout->getChannel(),
-                'account_number'            => $payout->balance->getAccountNumber(),
-                'transaction_id'            => $txnCreatedForExternalReversal['id'],
-                'entity_id'                 => $externalCreatedForReversal['id'],
-                'entity_type'               => 'external',
-                'bank_transaction_id'       => 'SDHDH',
-                'balance'                   => 30019891,
-                'transaction_date'          => 1584987183,
-                'utr'                       => $payout->getUtr(),
-                'created_at'                => Carbon::now()->getTimestamp() + 3600
-            ]);
+                                [
+                                    'type'                => 'credit',
+                                    'amount'              => $payout->getAmount(),
+                                    'channel'             => $payout->getChannel(),
+                                    'account_number'      => $payout->balance->getAccountNumber(),
+                                    'transaction_id'      => $txnCreatedForExternalReversal['id'],
+                                    'entity_id'           => $externalCreatedForReversal['id'],
+                                    'entity_type'         => 'external',
+                                    'bank_transaction_id' => 'SDHDH',
+                                    'balance'             => 30019891,
+                                    'transaction_date'    => 1584987183,
+                                    'utr'                 => $payout->getUtr(),
+                                    'created_at'          => Carbon::now()->getTimestamp() + 3600
+                                ]);
 
         $banking_account_statement_rev = $this->getDbLastEntity('banking_account_statement');
 
         // create a bas details for this payout so it gets used to pick basd id for ledger
-        $this->fixtures->create('banking_account_statement_details',[
+        $this->fixtures->create('banking_account_statement_details', [
             Details\Entity::ID             => 'xbas0000000002',
             Details\Entity::MERCHANT_ID    => $payout->getMerchantId(),
             Details\Entity::BALANCE_ID     => $payout->getBalanceId(),
@@ -18509,8 +18509,8 @@ class PayoutTest extends OAuthTestCase
         ]);
 
         (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
-            'fta_status' => 'reversed',
-            'failure_reason' => '',
+            'fta_status'       => 'reversed',
+            'failure_reason'   => '',
             'bank_status_code' => 'SUCCESS'
         ]);
 
@@ -18535,7 +18535,7 @@ class PayoutTest extends OAuthTestCase
             $reversal->getPublicId(),
         ];
 
-        for ($index = 0; $index<count($ledgerSnsPayloadArray); $index++)
+        for ($index = 0; $index < count($ledgerSnsPayloadArray); $index++)
         {
             $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
 
@@ -18567,8 +18567,8 @@ class PayoutTest extends OAuthTestCase
         $payoutId = $payout->getId();
 
         $this->fixtures->edit('payout', $payoutId, [
-            'utr'               => 'sampleutr876545',
-            'purpose'           => 'rzp_fees',
+            'utr'     => 'sampleutr876545',
+            'purpose' => 'rzp_fees',
         ]);
 
         $payout = $this->getDbLastEntity('payout');
@@ -18587,34 +18587,34 @@ class PayoutTest extends OAuthTestCase
 
         // create a external for this payout so it gets picked
         $this->fixtures->create('external',
-            [
-                'id'                        => 'randomexternal',
-                'merchant_id'               => $payout->getMerchantId(),
-                'amount'                    => $payout->getAmount(),
-                'channel'                   => $payout->getChannel(),
-                'transaction_id'            => $txnCreatedForExternalPayout['id'],
-                'utr'                       => $payout->getUtr(),
-                'balance_id'                => $payout->getBalanceId(),
-            ]);
+                                [
+                                    'id'             => 'randomexternal',
+                                    'merchant_id'    => $payout->getMerchantId(),
+                                    'amount'         => $payout->getAmount(),
+                                    'channel'        => $payout->getChannel(),
+                                    'transaction_id' => $txnCreatedForExternalPayout['id'],
+                                    'utr'            => $payout->getUtr(),
+                                    'balance_id'     => $payout->getBalanceId(),
+                                ]);
 
         $externalCreatedForPayout = $this->getDbLastEntity('external');
 
         // create a bas for this payout so it gets picked
         $this->fixtures->create('banking_account_statement',
-            [
-                'type'                      => 'debit',
-                'amount'                    => $payout->getAmount(),
-                'channel'                   => $payout->getChannel(),
-                'account_number'            => $payout->balance->getAccountNumber(),
-                'transaction_id'            => $txnCreatedForExternalPayout['id'],
-                'entity_id'                 => $externalCreatedForPayout['id'],
-                'entity_type'               => 'external',
-                'bank_transaction_id'       => 'SDHDH',
-                'balance'                   => 30019891,
-                'transaction_date'          => 1584987183,
-                'utr'                       => $payout->getUtr(),
-                'created_at'                => Carbon::now()->getTimestamp() + 3600
-            ]);
+                                [
+                                    'type'                => 'debit',
+                                    'amount'              => $payout->getAmount(),
+                                    'channel'             => $payout->getChannel(),
+                                    'account_number'      => $payout->balance->getAccountNumber(),
+                                    'transaction_id'      => $txnCreatedForExternalPayout['id'],
+                                    'entity_id'           => $externalCreatedForPayout['id'],
+                                    'entity_type'         => 'external',
+                                    'bank_transaction_id' => 'SDHDH',
+                                    'balance'             => 30019891,
+                                    'transaction_date'    => 1584987183,
+                                    'utr'                 => $payout->getUtr(),
+                                    'created_at'          => Carbon::now()->getTimestamp() + 3600
+                                ]);
 
         $banking_account_statement = $this->getDbLastEntity('banking_account_statement');
 
@@ -18632,39 +18632,39 @@ class PayoutTest extends OAuthTestCase
 
         // create a external for this payout so it gets picked
         $this->fixtures->create('external',
-            [
-                'id'                        => 'randomexternl1',
-                'merchant_id'               => $payout->getMerchantId(),
-                'amount'                    => $payout->getAmount(),
-                'channel'                   => $payout->getChannel(),
-                'transaction_id'            => $txnCreatedForExternalReversal['id'],
-                'utr'                       => $payout->getUtr(),
-                'balance_id'                => $payout->getBalanceId(),
-            ]);
+                                [
+                                    'id'             => 'randomexternl1',
+                                    'merchant_id'    => $payout->getMerchantId(),
+                                    'amount'         => $payout->getAmount(),
+                                    'channel'        => $payout->getChannel(),
+                                    'transaction_id' => $txnCreatedForExternalReversal['id'],
+                                    'utr'            => $payout->getUtr(),
+                                    'balance_id'     => $payout->getBalanceId(),
+                                ]);
 
         $externalCreatedForReversal = $this->getDbLastEntity('external');
 
         // create a bas for this payout so it gets picked
         $this->fixtures->create('banking_account_statement',
-            [
-                'type'                      => 'credit',
-                'amount'                    => $payout->getAmount(),
-                'channel'                   => $payout->getChannel(),
-                'account_number'            => $payout->balance->getAccountNumber(),
-                'transaction_id'            => $txnCreatedForExternalReversal['id'],
-                'entity_id'                 => $externalCreatedForReversal['id'],
-                'entity_type'               => 'external',
-                'bank_transaction_id'       => 'SDHDH',
-                'balance'                   => 30019891,
-                'transaction_date'          => 1584987183,
-                'utr'                       => $payout->getUtr(),
-                'created_at'                => Carbon::now()->getTimestamp() + 3600
-            ]);
+                                [
+                                    'type'                => 'credit',
+                                    'amount'              => $payout->getAmount(),
+                                    'channel'             => $payout->getChannel(),
+                                    'account_number'      => $payout->balance->getAccountNumber(),
+                                    'transaction_id'      => $txnCreatedForExternalReversal['id'],
+                                    'entity_id'           => $externalCreatedForReversal['id'],
+                                    'entity_type'         => 'external',
+                                    'bank_transaction_id' => 'SDHDH',
+                                    'balance'             => 30019891,
+                                    'transaction_date'    => 1584987183,
+                                    'utr'                 => $payout->getUtr(),
+                                    'created_at'          => Carbon::now()->getTimestamp() + 3600
+                                ]);
 
         $banking_account_statement_rev = $this->getDbLastEntity('banking_account_statement');
 
         // create a bas details for this payout so it gets used to pick basd id for ledger
-        $this->fixtures->create('banking_account_statement_details',[
+        $this->fixtures->create('banking_account_statement_details', [
             Details\Entity::ID             => 'xbas0000000002',
             Details\Entity::MERCHANT_ID    => $payout->getMerchantId(),
             Details\Entity::BALANCE_ID     => $payout->getBalanceId(),
@@ -18674,8 +18674,8 @@ class PayoutTest extends OAuthTestCase
         ]);
 
         (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
-            'fta_status' => 'reversed',
-            'failure_reason' => '',
+            'fta_status'       => 'reversed',
+            'failure_reason'   => '',
             'bank_status_code' => 'SUCCESS'
         ]);
 
@@ -18696,7 +18696,7 @@ class PayoutTest extends OAuthTestCase
             $reversal->getPublicId(),
         ];
 
-        for ($index = 0; $index<count($ledgerSnsPayloadArray); $index++)
+        for ($index = 0; $index < count($ledgerSnsPayloadArray); $index++)
         {
             $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
 
@@ -18726,7 +18726,7 @@ class PayoutTest extends OAuthTestCase
         $payoutId = $payout->getId();
 
         $this->fixtures->edit('payout', $payoutId, [
-            'utr'               => 'sampleutr876545',
+            'utr' => 'sampleutr876545',
         ]);
 
         $payout = $this->getDbLastEntity('payout');
@@ -18745,34 +18745,34 @@ class PayoutTest extends OAuthTestCase
 
         // create a external for this payout so it gets picked
         $this->fixtures->create('external',
-            [
-                'id'                        => 'randomexternal',
-                'merchant_id'               => $payout->getMerchantId(),
-                'amount'                    => $payout->getAmount(),
-                'channel'                   => $payout->getChannel(),
-                'transaction_id'            => $txnCreatedForExternalPayout['id'],
-                'utr'                       => $payout->getUtr(),
-                'balance_id'                => $payout->getBalanceId(),
-            ]);
+                                [
+                                    'id'             => 'randomexternal',
+                                    'merchant_id'    => $payout->getMerchantId(),
+                                    'amount'         => $payout->getAmount(),
+                                    'channel'        => $payout->getChannel(),
+                                    'transaction_id' => $txnCreatedForExternalPayout['id'],
+                                    'utr'            => $payout->getUtr(),
+                                    'balance_id'     => $payout->getBalanceId(),
+                                ]);
 
         $externalCreatedForPayout = $this->getDbLastEntity('external');
 
         // create a bas for this payout so it gets picked
         $this->fixtures->create('banking_account_statement',
-            [
-                'type'                      => 'debit',
-                'amount'                    => $payout->getAmount(),
-                'channel'                   => $payout->getChannel(),
-                'account_number'            => $payout->balance->getAccountNumber(),
-                'transaction_id'            => $txnCreatedForExternalPayout['id'],
-                'entity_id'                 => $externalCreatedForPayout['id'],
-                'entity_type'               => 'external',
-                'bank_transaction_id'       => 'SDHDH',
-                'balance'                   => 30019891,
-                'transaction_date'          => 1584987183,
-                'utr'                       => $payout->getUtr(),
-                'created_at'                => Carbon::now()->getTimestamp() + 3600
-            ]);
+                                [
+                                    'type'                => 'debit',
+                                    'amount'              => $payout->getAmount(),
+                                    'channel'             => $payout->getChannel(),
+                                    'account_number'      => $payout->balance->getAccountNumber(),
+                                    'transaction_id'      => $txnCreatedForExternalPayout['id'],
+                                    'entity_id'           => $externalCreatedForPayout['id'],
+                                    'entity_type'         => 'external',
+                                    'bank_transaction_id' => 'SDHDH',
+                                    'balance'             => 30019891,
+                                    'transaction_date'    => 1584987183,
+                                    'utr'                 => $payout->getUtr(),
+                                    'created_at'          => Carbon::now()->getTimestamp() + 3600
+                                ]);
 
         $banking_account_statement = $this->getDbLastEntity('banking_account_statement');
 
@@ -18790,39 +18790,39 @@ class PayoutTest extends OAuthTestCase
 
         // create a external for this payout so it gets picked
         $this->fixtures->create('external',
-            [
-                'id'                        => 'randomexternl1',
-                'merchant_id'               => $payout->getMerchantId(),
-                'amount'                    => $payout->getAmount(),
-                'channel'                   => $payout->getChannel(),
-                'transaction_id'            => $txnCreatedForExternalReversal['id'],
-                'utr'                       => $payout->getUtr(),
-                'balance_id'                => $payout->getBalanceId(),
-            ]);
+                                [
+                                    'id'             => 'randomexternl1',
+                                    'merchant_id'    => $payout->getMerchantId(),
+                                    'amount'         => $payout->getAmount(),
+                                    'channel'        => $payout->getChannel(),
+                                    'transaction_id' => $txnCreatedForExternalReversal['id'],
+                                    'utr'            => $payout->getUtr(),
+                                    'balance_id'     => $payout->getBalanceId(),
+                                ]);
 
         $externalCreatedForReversal = $this->getDbLastEntity('external');
 
         // create a bas for this payout so it gets picked
         $this->fixtures->create('banking_account_statement',
-            [
-                'type'                      => 'credit',
-                'amount'                    => $payout->getAmount(),
-                'channel'                   => $payout->getChannel(),
-                'account_number'            => $payout->balance->getAccountNumber(),
-                'transaction_id'            => $txnCreatedForExternalReversal['id'],
-                'entity_id'                 => $externalCreatedForReversal['id'],
-                'entity_type'               => 'external',
-                'bank_transaction_id'       => 'SDHDH',
-                'balance'                   => 30019891,
-                'transaction_date'          => 1584987183,
-                'utr'                       => $payout->getUtr(),
-                'created_at'                => Carbon::now()->getTimestamp() + 3600
-            ]);
+                                [
+                                    'type'                => 'credit',
+                                    'amount'              => $payout->getAmount(),
+                                    'channel'             => $payout->getChannel(),
+                                    'account_number'      => $payout->balance->getAccountNumber(),
+                                    'transaction_id'      => $txnCreatedForExternalReversal['id'],
+                                    'entity_id'           => $externalCreatedForReversal['id'],
+                                    'entity_type'         => 'external',
+                                    'bank_transaction_id' => 'SDHDH',
+                                    'balance'             => 30019891,
+                                    'transaction_date'    => 1584987183,
+                                    'utr'                 => $payout->getUtr(),
+                                    'created_at'          => Carbon::now()->getTimestamp() + 3600
+                                ]);
 
         $banking_account_statement_rev = $this->getDbLastEntity('banking_account_statement');
 
         // create a bas details for this payout so it gets used to pick basd id for ledger
-        $this->fixtures->create('banking_account_statement_details',[
+        $this->fixtures->create('banking_account_statement_details', [
             Details\Entity::ID             => 'xbas0000000002',
             Details\Entity::MERCHANT_ID    => $payout->getMerchantId(),
             Details\Entity::BALANCE_ID     => $payout->getBalanceId(),
@@ -18832,8 +18832,8 @@ class PayoutTest extends OAuthTestCase
         ]);
 
         (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
-            'fta_status' => 'reversed',
-            'failure_reason' => '',
+            'fta_status'       => 'reversed',
+            'failure_reason'   => '',
             'bank_status_code' => 'SUCCESS'
         ]);
 
@@ -18860,7 +18860,7 @@ class PayoutTest extends OAuthTestCase
                                       'status_code'   => 400,
                                       'response_body' => [
                                           'code' => 'invalid_argument',
-                                          'msg' => 'validation_failure: validation_failure: BAD_REQUEST_INSUFFICIENT_BALANCE',
+                                          'msg'  => 'validation_failure: validation_failure: BAD_REQUEST_INSUFFICIENT_BALANCE',
                                       ],
                                   ]
                               ));
@@ -18947,9 +18947,9 @@ class PayoutTest extends OAuthTestCase
 
     public function testFreePayoutsOnLedgerReverseShadowInLiveMode()
     {
-        $this->testData[__FUNCTION__] = $this->testData['testCreatePayoutOnLiveMode'];
+        $this->testData[__FUNCTION__]                                = $this->testData['testCreatePayoutOnLiveMode'];
         $this->testData[__FUNCTION__]['response']['content']['fees'] = 0;
-        $this->testData[__FUNCTION__]['response']['content']['tax'] = 0;
+        $this->testData[__FUNCTION__]['response']['content']['tax']  = 0;
 
         $this->app['config']->set('applications.ledger.enabled', false);
         $this->fixtures->on('live')->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
@@ -18963,11 +18963,11 @@ class PayoutTest extends OAuthTestCase
         $this->setUpCounterAndFreePayoutsCount('shared', $balanceId, null, 'live');
 
         $counter1 = $this->getDbEntities('counter',
-                                        [
-                                            'account_type' => 'shared',
-                                            'balance_id'   => $balanceId,
-                                        ],
-                                        'live')->first();
+                                         [
+                                             'account_type' => 'shared',
+                                             'balance_id'   => $balanceId,
+                                         ],
+                                         'live')->first();
 
         //$freePayoutsCountBefore = $counter1->getFreePayoutsConsumed();
 
@@ -18993,7 +18993,7 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals($payout['channel'], 'icici');
 
         // Verify transaction entity
-        $txn = $this->getLastEntity('transaction', true, 'live');
+        $txn   = $this->getLastEntity('transaction', true, 'live');
         $txnId = str_after($txn['id'], 'txn_');
 
         $this->assertEquals($payout['transaction_id'], $txn['id']);
@@ -19038,7 +19038,7 @@ class PayoutTest extends OAuthTestCase
                                       'status_code'   => 400,
                                       'response_body' => [
                                           'code' => 'invalid_argument',
-                                          'msg' => 'validation_failure: validation_failure: BAD_REQUEST_INSUFFICIENT_BALANCE',
+                                          'msg'  => 'validation_failure: validation_failure: BAD_REQUEST_INSUFFICIENT_BALANCE',
                                       ],
                                   ]
                               ));
@@ -19061,7 +19061,7 @@ class PayoutTest extends OAuthTestCase
                                       'status_code'   => 400,
                                       'response_body' => [
                                           'code' => 'invalid_argument',
-                                          'msg' => 'validation_failure: validation_failure: BAD_REQUEST_INSUFFICIENT_BALANCE',
+                                          'msg'  => 'validation_failure: validation_failure: BAD_REQUEST_INSUFFICIENT_BALANCE',
                                       ],
                                   ]
                               ));
@@ -19211,7 +19211,7 @@ class PayoutTest extends OAuthTestCase
                                       'status_code'   => 400,
                                       'response_body' => [
                                           'code' => 'invalid_argument',
-                                          'msg' => 'validation_failure: validation_failure: BAD_REQUEST_INSUFFICIENT_BALANCE',
+                                          'msg'  => 'validation_failure: validation_failure: BAD_REQUEST_INSUFFICIENT_BALANCE',
                                       ],
                                   ]
                               ));
@@ -19278,7 +19278,6 @@ class PayoutTest extends OAuthTestCase
         $payout1 = $this->getDbEntityById('payout', $payout1['id'])->toArray();
         $this->assertEquals($payout1['status'], Payout\Status::CREATED);
 
-
         $payout3 = $this->getDbEntityById('payout', $payout3['id'])->toArray();
         $this->assertEquals($payout3['status'], Payout\Status::CREATED);
 
@@ -19334,7 +19333,7 @@ class PayoutTest extends OAuthTestCase
                                       'status_code'   => 400,
                                       'response_body' => [
                                           'code' => 'invalid_argument',
-                                          'msg' => 'validation_failure: validation_failure: BAD_REQUEST_INSUFFICIENT_BALANCE',
+                                          'msg'  => 'validation_failure: validation_failure: BAD_REQUEST_INSUFFICIENT_BALANCE',
                                       ],
                                   ]
                               ));
@@ -19347,7 +19346,6 @@ class PayoutTest extends OAuthTestCase
 
         $payout1 = $this->getDbEntityById('payout', $payout1['id'])->toArray();
         $this->assertEquals($payout1['status'], Payout\Status::FAILED);
-
 
         $payout3 = $this->getDbEntityById('payout', $payout3['id'])->toArray();
         $this->assertEquals($payout3['status'], Payout\Status::FAILED);
@@ -19404,7 +19402,7 @@ class PayoutTest extends OAuthTestCase
                                       'status_code'   => 400,
                                       'response_body' => [
                                           'code' => 'invalid_argument',
-                                          'msg' => 'validation_failure: validation_failure: BAD_REQUEST_INSUFFICIENT_BALANCE',
+                                          'msg'  => 'validation_failure: validation_failure: BAD_REQUEST_INSUFFICIENT_BALANCE',
                                       ],
                                   ]
                               ));
@@ -19417,7 +19415,6 @@ class PayoutTest extends OAuthTestCase
 
         $payout1 = $this->getDbEntityById('payout', $payout1['id'])->toArray();
         $this->assertEquals($payout1['status'], Payout\Status::QUEUED);
-
 
         $payout3 = $this->getDbEntityById('payout', $payout3['id'])->toArray();
         $this->assertEquals($payout3['status'], Payout\Status::QUEUED);
@@ -19442,7 +19439,7 @@ class PayoutTest extends OAuthTestCase
         // Approve with Owner role user
         $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
 
-        $this->testData[__FUNCTION__] = $this->testData['testApprovePayoutWithComment'];
+        $this->testData[__FUNCTION__]                   = $this->testData['testApprovePayoutWithComment'];
         $this->testData[__FUNCTION__]['request']['url'] = '/payouts/' . $payout['id'] . '/approve';
 
         $firstApprovalResponse = $this->startTest();
@@ -19465,29 +19462,29 @@ class PayoutTest extends OAuthTestCase
         $this->app->instance('ledger', $mockLedger);
 
         $mockLedger->shouldReceive('createJournal')
-            ->andThrow(new RuntimeException(
-                'Unexpected response code received from Ledger service.',
-                [
-                    'status_code'   => 400,
-                    'response_body' => [
-                        'code' => 'invalid_argument',
-                        'msg' => 'validation_failure: validation_failure: BAD_REQUEST_INSUFFICIENT_BALANCE',
-                    ],
-                ]
-            ));
+                   ->andThrow(new RuntimeException(
+                                  'Unexpected response code received from Ledger service.',
+                                  [
+                                      'status_code'   => 400,
+                                      'response_body' => [
+                                          'code' => 'invalid_argument',
+                                          'msg'  => 'validation_failure: validation_failure: BAD_REQUEST_INSUFFICIENT_BALANCE',
+                                      ],
+                                  ]
+                              ));
 
         $mockLedger->shouldReceive('fetchMerchantAccounts')
-            ->andReturn([
-                "merchant_id"      => "10000000000000",
-                "merchant_balance" => [
-                    "balance"      => "0.000000",
-                    "min_balance"  => "0.000000"
-                ],
-                "reward_balance"  => [
-                    "balance"     => "20.000000",
-                    "min_balance" => "-20.000000"
-                ],
-            ]);
+                   ->andReturn([
+                                   "merchant_id"      => "10000000000000",
+                                   "merchant_balance" => [
+                                       "balance"     => "0.000000",
+                                       "min_balance" => "0.000000"
+                                   ],
+                                   "reward_balance"   => [
+                                       "balance"     => "20.000000",
+                                       "min_balance" => "-20.000000"
+                                   ],
+                               ]);
 
         $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
 
@@ -19624,7 +19621,7 @@ class PayoutTest extends OAuthTestCase
                                       'status_code'   => 400,
                                       'response_body' => [
                                           'code' => 'invalid_argument',
-                                          'msg' => 'validation_failure: validation_failure: BAD_REQUEST_INSUFFICIENT_BALANCE',
+                                          'msg'  => 'validation_failure: validation_failure: BAD_REQUEST_INSUFFICIENT_BALANCE',
                                       ],
                                   ]
                               ));
@@ -19686,7 +19683,7 @@ class PayoutTest extends OAuthTestCase
                                       'status_code'   => 400,
                                       'response_body' => [
                                           'code' => 'invalid_argument',
-                                          'msg' => 'validation_failure: validation_failure: BAD_REQUEST_INSUFFICIENT_BALANCE',
+                                          'msg'  => 'validation_failure: validation_failure: BAD_REQUEST_INSUFFICIENT_BALANCE',
                                       ],
                                   ]
                               ));
@@ -19716,7 +19713,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->ba->privateAuth();
 
-        $this->testData[__FUNCTION__] = $this->testData['testQueuedSharedAccountPayoutCreationAndCheckCounterAttributes'];
+        $this->testData[__FUNCTION__]                                               = $this->testData['testQueuedSharedAccountPayoutCreationAndCheckCounterAttributes'];
         $this->testData[__FUNCTION__]['request']['content']['queue_if_low_balance'] = 0;
 
         $this->startTest();
@@ -19751,8 +19748,8 @@ class PayoutTest extends OAuthTestCase
         $payoutId = $payout->getId();
 
         (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
-            'fta_status' => 'processed',
-            'failure_reason' => '',
+            'fta_status'       => 'processed',
+            'failure_reason'   => '',
             'bank_status_code' => 'SUCCESS'
         ]);
 
@@ -19787,8 +19784,8 @@ class PayoutTest extends OAuthTestCase
         $payoutId = $payout->getId();
 
         (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
-            'fta_status' => 'failed',
-            'failure_reason' => '',
+            'fta_status'       => 'failed',
+            'failure_reason'   => '',
             'bank_status_code' => 'YB_NS_E10282323'
         ]);
 
@@ -19813,7 +19810,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->fixtures->edit('card', '100000000lcard', ['last4' => '1112']);
 
-        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 1500 , 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
+        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 1500, 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
 
         $creditEntity = $this->getDbLastEntity('credits');
 
@@ -19839,7 +19836,6 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals('reward_fee', $txn['credit_type']);
         $this->assertEquals(900, $txn['fee_credits']);
 
-
         $balance = $this->getLastEntity('balance', true);
         $this->assertEquals('shared', $balance['account_type']);
 
@@ -19858,16 +19854,16 @@ class PayoutTest extends OAuthTestCase
         $payoutId = $payout->getId();
 
         (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
-            'fta_status'        => 'failed',
-            'failure_reason'    => '',
-            'bank_status_code'  => 'YB_NS_E10282323'
+            'fta_status'       => 'failed',
+            'failure_reason'   => '',
+            'bank_status_code' => 'YB_NS_E10282323'
         ]);
 
-        $updatedPayout = $this->getDbEntityById('payout',$payoutId)->toArray();
+        $updatedPayout = $this->getDbEntityById('payout', $payoutId)->toArray();
 
         $this->assertEquals($updatedPayout[Payout\Entity::FAILURE_REASON],
                             'Payout failed. Contact support for help.');
-        $this->assertEquals($updatedPayout[Payout\Entity::STATUS],Payout\Status::REVERSED);
+        $this->assertEquals($updatedPayout[Payout\Entity::STATUS], Payout\Status::REVERSED);
         $this->assertNotNull($updatedPayout[Payout\Entity::REVERSED_AT]);
 
         //get reversal and check posted_at in reversal txn
@@ -19906,7 +19902,7 @@ class PayoutTest extends OAuthTestCase
         $this->startTest();
 
         $payout = $this->getLastEntity('payout', true);
-        $txn = $this->getLastEntity('transaction', true);
+        $txn    = $this->getLastEntity('transaction', true);
         $this->assertEquals($payout['transaction_id'], $txn['id']);
     }
 
@@ -19915,19 +19911,19 @@ class PayoutTest extends OAuthTestCase
         $this->ba->capitalCollectionsAuth();
 
         $contact = $this->fixtures->create('contact',
-            [
-                'name' => 'test name',
-                'type' => \RZP\Models\Contact\Type::CAPITAL_COLLECTIONS_INTERNAL_CONTACT
-            ]);
+                                           [
+                                               'name' => 'test name',
+                                               'type' => \RZP\Models\Contact\Type::CAPITAL_COLLECTIONS_INTERNAL_CONTACT
+                                           ]);
 
         $fundAccount = $this->fixtures->fund_account->createBankAccount(
             [
                 'source_type' => 'contact',
-                'source_id' => $contact->getId(),
+                'source_id'   => $contact->getId(),
             ],
             [
-                'name' => 'test',
-                'ifsc' => 'SBIN0007105',
+                'name'           => 'test',
+                'ifsc'           => 'SBIN0007105',
                 'account_number' => '111000',
             ]);
 
@@ -19945,10 +19941,10 @@ class PayoutTest extends OAuthTestCase
         $this->ba->capitalCollectionsAuth();
 
         $contact = $this->fixtures->create('contact',
-            [
-                'name' => 'test name',
-                'type' => \RZP\Models\Contact\Type::CAPITAL_COLLECTIONS_INTERNAL_CONTACT
-            ]);
+                                           [
+                                               'name' => 'test name',
+                                               'type' => \RZP\Models\Contact\Type::CAPITAL_COLLECTIONS_INTERNAL_CONTACT
+                                           ]);
 
         $fundAccount = $this->fixtures->fund_account->createBankAccount(
             [
@@ -20006,7 +20002,7 @@ class PayoutTest extends OAuthTestCase
 
         $merchantSlas = (new Admin\Service)->getConfigKey(['key' => Admin\ConfigKey::RX_ON_HOLD_PAYOUTS_MERCHANT_SLA]);
 
-        $expectedSlas = array(
+        $expectedSlas        = array(
             '90000merchant1' => 10,
             '90000merchant2' => 20,
             '90000merchant3' => 10,
@@ -20021,12 +20017,13 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals($expectedSlas['90000merchant3'], $merchantSlas['90000merchant3']);
         $this->assertEquals($expectedSlas['90000merchant4'], $merchantSlas['90000merchant4']);
 
-        $settingsEntities = $this->getDbEntities('settings');
+        $settingsEntities        = $this->getDbEntities('settings');
         $merchantIdsFromSettings = [];
 
-        foreach($settingsEntities as $settingsEntity) {
+        foreach ($settingsEntities as $settingsEntity)
+        {
             $settingsData = $settingsEntity->toArray();
-            $merchantId = $settingsData['entity_id'];
+            $merchantId   = $settingsData['entity_id'];
             array_push($merchantIdsFromSettings, $merchantId);
             $this->assertEquals($expectedSlas[$merchantId], $settingsData['value']);
             $this->assertEquals(Settings\Module::PAYOUTS, $settingsData['module']);
@@ -20124,4 +20121,1271 @@ class PayoutTest extends OAuthTestCase
             return true;
         });
     }
- }
+
+    public function testCohesiveCreatePayoutWithTdsFailsForPrivateAuth()
+    {
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function testCohesiveCreatePayoutWithTdsPayoutToBeQueuedFailsForPrivateAuth()
+    {
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function testCohesiveCreatePayoutWithoutTdsPayoutToBeQueuedSuccessForPrivateAuth()
+    {
+        $this->ba->privateAuth();
+
+        $this->startTest();
+
+        $payoutDetails = $this->getDbLastEntity('payouts_details');
+
+        $this->assertNotNull($payoutDetails);
+
+        $this->assertEquals(1, $payoutDetails->getAttribute('queue_if_low_balance_flag'));
+
+        $this->assertNull($payoutDetails->getAttribute('tds_category_id'));
+
+        $this->assertNull($payoutDetails->getAttribute('additional_info'));
+    }
+
+    public function testCohesiveCreatePayoutWithAttachmentsFailsForPrivateAuth()
+    {
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function testCohesiveCreatePayoutWithoutTdsSuccessForPrivateAuth()
+    {
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function testCohesiveCreatePayoutWithoutAttachmentSuccessForPrivateAuth()
+    {
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function testCohesiveCreateCompositePayoutWithTdsForPrivateAuth()
+    {
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function testCohesiveCreateCompositePayoutWithAttachmentForPrivateAuth()
+    {
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function testCohesiveCreateCompositePayoutWithoutTdsForPrivateAuth()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::ALLOW_VA_TO_VA_PAYOUTS]);
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+
+        $contact = $this->getDbLastEntity('contact');
+
+        $this->assertNotNull($contact);
+
+        $fundAccount = $this->getDbLastEntity('fund_account');
+
+        $this->assertNotNull($fundAccount);
+
+        $this->assertEquals('contact', $fundAccount->getAttribute('source_type'));
+
+        $this->assertEquals($contact->getAttribute('id'), $fundAccount->getAttribute('source_id'));
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertNotNull($payout);
+
+        $this->assertEquals($fundAccount->getAttribute('id'), $payout->getAttribute('fund_account_id'));
+    }
+
+    public function testCohesiveCreateCompositePayoutWithTdsPayoutToBeQueuedForPrivateAuth()
+    {
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function testCohesiveCreateCompositePayoutWithoutTdsPayoutToBeQueuedForPrivateAuth()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::ALLOW_VA_TO_VA_PAYOUTS]);
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+
+        $contact = $this->getDbLastEntity('contact');
+
+        $this->assertNotNull($contact);
+
+        $fundAccount = $this->getDbLastEntity('fund_account');
+
+        $this->assertNotNull($fundAccount);
+
+        $this->assertEquals('contact', $fundAccount->getAttribute('source_type'));
+
+        $this->assertEquals($contact->getAttribute('id'), $fundAccount->getAttribute('source_id'));
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertNotNull($payout);
+
+        $this->assertEquals($fundAccount->getAttribute('id'), $payout->getAttribute('fund_account_id'));
+
+        $payoutDetails = $this->getDbLastEntity('payouts_details');
+
+        $this->assertNotNull($payoutDetails);
+
+        $this->assertEquals(1, $payoutDetails->getAttribute('queue_if_low_balance_flag'));
+
+        $this->assertNull($payoutDetails->getAttribute('tds_category_id'));
+
+        $this->assertNull($payoutDetails->getAttribute('additional_info'));
+    }
+
+    protected function prepareTdsCategoriesCache()
+    {
+        $tdsCategories = [
+            [
+                'id'   => 1,
+                'slab' => 3.75,
+            ],
+            [
+                'id'   => 2,
+                'slab' => 4,
+            ],
+            [
+                'id'   => 3,
+                'slab' => 4.25,
+            ],
+        ];
+
+        $this->app['cache']->put('tds_category_id_list', $tdsCategories, 60);
+    }
+
+    protected function clearTdsCategoriesCache()
+    {
+        $this->app['cache']->delete('tds_category_id_list');
+    }
+
+    public function testCohesiveCreatePayoutWithTdsSuccessForProxyAuthTdsCategoriesInCache()
+    {
+        $balance = $this->getDbLastEntity('balance');
+
+        $this->fixtures->edit('balance', $balance->getId(), ['balance' => '200000000']);
+
+        $this->prepareTdsCategoriesCache();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        $payoutDetails = $this->getDbLastEntity('payouts_details');
+
+        $this->assertNotNull($payoutDetails);
+
+        $this->assertEquals(1, $payoutDetails->getAttribute('tds_category_id'));
+
+        $this->assertEquals(0, $payoutDetails->getAttribute('queue_if_low_balance_flag'));
+
+        $expectedAdditionalInfo = [
+            'tds_amount'      => 1000,
+            'subtotal_amount' => 10000,
+        ];
+
+        $this->assertEquals($expectedAdditionalInfo, json_decode($payoutDetails->getAttribute('additional_info'), true));
+
+        $this->clearTdsCategoriesCache();
+    }
+
+    protected function mockTaxPaymentsGetTdsCategories()
+    {
+        $tpMock = Mockery::mock('RZP\Services\TaxPayments\Service');
+
+        $tdsCategories = [
+            [
+                'id'              => 1,
+                'name'            => 'Test Category - 1',
+                'extern_goi_code' => '6CK',
+                'slab'            => 3.75,
+            ],
+            [
+                'id'              => 2,
+                'name'            => 'Test Category - 2',
+                'extern_goi_code' => '206CA',
+                'slab'            => 4,
+            ],
+            [
+                'id'              => 3,
+                'name'            => 'Test Category - 3',
+                'extern_goi_code' => '94F',
+                'slab'            => 4.25,
+            ],
+        ];
+
+        $tpMock->shouldReceive('getTdsCategories')->andReturn($tdsCategories);
+
+        $this->app['tax-payments'] = $tpMock;
+    }
+
+    public function testCohesiveCreatePayoutWithTdsSuccessForProxyAuthTdsCategoriesNotInCache()
+    {
+        $this->testData[__FUNCTION__] = $this->testData['testCohesiveCreatePayoutWithTdsSuccessForProxyAuthTdsCategoriesInCache'];
+
+        $balance = $this->getDbLastEntity('balance');
+
+        $this->fixtures->edit('balance', $balance->getId(), ['balance' => '200000000']);
+
+        $this->mockTaxPaymentsGetTdsCategories();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        $payoutDetails = $this->getDbLastEntity('payouts_details');
+
+        $this->assertNotNull($payoutDetails);
+
+        $this->assertEquals(1, $payoutDetails->getAttribute('tds_category_id'));
+
+        $this->assertEquals(0, $payoutDetails->getAttribute('queue_if_low_balance_flag'));
+
+        $expectedAdditionalInfo = [
+            'tds_amount'      => 1000,
+            'subtotal_amount' => 10000,
+        ];
+
+        $this->assertEquals($expectedAdditionalInfo, json_decode($payoutDetails->getAttribute('additional_info'), true));
+
+        $this->clearTdsCategoriesCache();
+    }
+
+    public function testCohesiveCreatePayoutWithAttachmentSuccessForProxyAuth()
+    {
+        $balance = $this->getDbLastEntity('balance');
+
+        $this->fixtures->edit('balance', $balance->getId(), ['balance' => '200000000']);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        $payoutDetails = $this->getDbLastEntity('payouts_details');
+
+        $this->assertNotNull($payoutDetails);
+
+        $expectedAdditionalInfo = [
+            'attachments' => [
+                [
+                    'file_id'   => 'file_testing',
+                    'file_name' => 'not-your-attachment.pdf'
+                ],
+            ],
+        ];
+
+        $this->assertEquals($expectedAdditionalInfo, json_decode($payoutDetails->getAttribute('additional_info'), true));
+    }
+
+    public function testCohesiveCreatePayoutWithoutTdsSuccessForProxyAuth()
+    {
+        $balance = $this->getDbLastEntity('balance');
+
+        $this->fixtures->edit('balance', $balance->getId(), ['balance' => '200000000']);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        $payoutDetails = $this->getDbLastEntity('payouts_details');
+
+        $this->assertNull($payoutDetails);
+    }
+
+    public function testCohesiveCreatePayoutWithTdsMissingTdsAmountForProxyAuth()
+    {
+        $balance = $this->getDbLastEntity('balance');
+
+        $this->fixtures->edit('balance', $balance->getId(), ['balance' => '200000000']);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testCohesiveCreatePayoutWithTdsMissingTdsCategoryIdForProxyAuth()
+    {
+        $balance = $this->getDbLastEntity('balance');
+
+        $this->fixtures->edit('balance', $balance->getId(), ['balance' => '200000000']);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testCohesiveCreatePayoutWithTdsTdsAmountMoreThanPayoutAmountForProxyAuth()
+    {
+        $balance = $this->getDbLastEntity('balance');
+
+        $this->fixtures->edit('balance', $balance->getId(), ['balance' => '200000000']);
+
+        $this->mockTaxPaymentsGetTdsCategories();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testCohesiveCreatePayoutWithTdsIncorrectTdsCategoryIdForProxyAuth()
+    {
+        $balance = $this->getDbLastEntity('balance');
+
+        $this->fixtures->edit('balance', $balance->getId(), ['balance' => '200000000']);
+
+        $this->mockTaxPaymentsGetTdsCategories();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        $this->clearTdsCategoriesCache();
+    }
+
+    public function testCohesiveCreatePayoutWithTdsPayoutToBeQueuedForProxyAuth()
+    {
+        $balance = $this->getDbLastEntity('balance');
+
+        $this->fixtures->edit('balance', $balance->getId(), ['balance' => '200000000']);
+
+        $this->mockTaxPaymentsGetTdsCategories();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        $payoutDetails = $this->getDbLastEntity('payouts_details');
+
+        $this->assertNotNull($payoutDetails);
+
+        $this->assertEquals(1, $payoutDetails->getAttribute('tds_category_id'));
+
+        $this->assertEquals(1, $payoutDetails->getAttribute('queue_if_low_balance_flag'));
+
+        $expectedAdditionalInfo = [
+            'tds_amount'      => 1000,
+            'subtotal_amount' => 10000,
+        ];
+
+        $this->assertEquals($expectedAdditionalInfo, json_decode($payoutDetails->getAttribute('additional_info'), true));
+
+        $this->clearTdsCategoriesCache();
+    }
+
+    public function testCohesiveCreatePayoutWithoutTdsPayoutToBeQueuedForProxyAuth()
+    {
+        $balance = $this->getDbLastEntity('balance');
+
+        $this->fixtures->edit('balance', $balance->getId(), ['balance' => '200000000']);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        $payoutDetails = $this->getDbLastEntity('payouts_details');
+
+        $this->assertNotNull($payoutDetails);
+
+        $this->assertEquals(1, $payoutDetails->getAttribute('queue_if_low_balance_flag'));
+
+        $this->assertNull($payoutDetails->getAttribute('tds_category_id'));
+
+        $this->assertNull($payoutDetails->getAttribute('additional_info'));
+    }
+
+    public function testCohesiveCreatePayoutWithTdsIncorrectTdsCategoryIdForInternalAuth()
+    {
+        $this->ba->appAuthTest($this->config['applications.payout_links.secret']);
+
+        $this->mockTaxPaymentsGetTdsCategories();
+
+        $this->startTest();
+
+        $this->clearTdsCategoriesCache();
+    }
+
+    public function testCohesiveCreatePayoutWithTdsMissingTdsCategoryIdForInternalAuth()
+    {
+        $this->ba->appAuthTest($this->config['applications.payout_links.secret']);
+
+        $this->mockTaxPaymentsGetTdsCategories();
+
+        $this->startTest();
+
+        $this->clearTdsCategoriesCache();
+    }
+
+    public function testCohesiveCreatePayoutWithTdsMissingTdsAmountForInternalAuth()
+    {
+        $this->ba->appAuthTest($this->config['applications.payout_links.secret']);
+
+        $this->mockTaxPaymentsGetTdsCategories();
+
+        $this->startTest();
+
+        $this->clearTdsCategoriesCache();
+    }
+
+    public function testCohesiveCreatePayoutWithTdsTdsAmountMoreThanPayoutAmountForInternalAuth()
+    {
+        $this->ba->appAuthTest($this->config['applications.payout_links.secret']);
+
+        $this->mockTaxPaymentsGetTdsCategories();
+
+        $this->startTest();
+
+        $this->clearTdsCategoriesCache();
+    }
+
+    public function testCohesiveCreatePayoutWithTdsSuccessForInternalAuth()
+    {
+        $this->ba->appAuthTest($this->config['applications.payout_links.secret']);
+
+        $this->prepareTdsCategoriesCache();
+
+        $this->startTest();
+
+        /** @var PayoutEntity $payout */
+        $payout = $this->getDbLastEntity('payout');
+
+        $payoutDetails = $this->getDbLastEntity('payouts_details');
+
+        $this->assertNotNull($payoutDetails);
+
+        $this->assertEquals($payout->getId(), $payoutDetails->getPayoutId());
+
+        $this->assertEquals(1, $payoutDetails->getAttribute('tds_category_id'));
+
+        $this->assertEquals(0, $payoutDetails->getAttribute('queue_if_low_balance_flag'));
+
+        $expectedAdditionalInfo = [
+            'tds_amount'      => 1000,
+            'subtotal_amount' => 10000,
+        ];
+
+        $this->assertEquals($expectedAdditionalInfo, json_decode($payoutDetails->getAttribute('additional_info'), true));
+
+        /** @var PayoutSourceEntity $payoutSource */
+        $payoutSource = $this->getDbLastEntity('payout_source');
+
+        $this->assertEquals('100000000000sa', $payoutSource->getSourceId());
+
+        $this->assertEquals('payout_links', $payoutSource->getSourceType());
+
+        $this->assertEquals(1, $payoutSource->getPriority());
+
+        $this->assertEquals($payout->getId(), $payoutSource->getPayoutId());
+
+        $this->clearTdsCategoriesCache();
+    }
+
+    public function testCohesiveCreatePayoutWithAttachmentSuccessForInternalAuth()
+    {
+        $this->ba->appAuthTest($this->config['applications.payout_links.secret']);
+
+        $this->startTest();
+
+        /** @var PayoutEntity $payout */
+        $payout = $this->getDbLastEntity('payout');
+
+        $payoutDetails = $this->getDbLastEntity('payouts_details');
+
+        $this->assertNotNull($payoutDetails);
+
+        $expectedAdditionalInfo = [
+            'attachments' => [
+                [
+                    'file_id'   => 'file_testing',
+                    'file_name' => 'not-your-attachment.pdf'
+                ],
+            ],
+        ];
+
+        $this->assertEquals($expectedAdditionalInfo, json_decode($payoutDetails->getAttribute('additional_info'), true));
+
+        /** @var PayoutSourceEntity $payoutSource */
+        $payoutSource = $this->getDbLastEntity('payout_source');
+
+        $this->assertEquals('100000000000sa', $payoutSource->getSourceId());
+
+        $this->assertEquals('payout_links', $payoutSource->getSourceType());
+
+        $this->assertEquals(1, $payoutSource->getPriority());
+
+        $this->assertEquals($payout->getId(), $payoutSource->getPayoutId());
+    }
+
+    public function testCohesiveCreatePayoutWithoutTdsSuccessForInternalAuth()
+    {
+        $this->ba->appAuthTest($this->config['applications.payout_links.secret']);
+
+        $this->startTest();
+
+        /** @var PayoutEntity $payout */
+        $payout = $this->getDbLastEntity('payout');
+
+        $payoutDetails = $this->getDbLastEntity('payouts_details');
+
+        $this->assertNull($payoutDetails);
+
+        /** @var PayoutSourceEntity $payoutSource */
+        $payoutSource = $this->getDbLastEntity('payout_source');
+
+        $this->assertEquals('100000000000sa', $payoutSource->getSourceId());
+
+        $this->assertEquals('payout_links', $payoutSource->getSourceType());
+
+        $this->assertEquals(1, $payoutSource->getPriority());
+
+        $this->assertEquals($payout->getId(), $payoutSource->getPayoutId());
+    }
+
+    public function testCohesiveCreatePayoutWithTdsPayoutToBeQueuedForInternalAuth()
+    {
+        $this->ba->appAuthTest($this->config['applications.payout_links.secret']);
+
+        $this->prepareTdsCategoriesCache();
+
+        $this->startTest();
+
+        /** @var PayoutEntity $payout */
+        $payout = $this->getDbLastEntity('payout');
+
+        $payoutDetails = $this->getDbLastEntity('payouts_details');
+
+        $this->assertNotNull($payoutDetails);
+
+        $this->assertEquals($payout->getId(), $payoutDetails->getAttribute('payout_id'));
+
+        $this->assertEquals(1, $payoutDetails->getAttribute('queue_if_low_balance_flag'));
+
+        $this->assertEquals(1, $payoutDetails->getAttribute('tds_category_id'));
+
+        $expectedAdditionalInfo = [
+            'tds_amount'      => 1000,
+            'subtotal_amount' => 10000,
+        ];
+
+        $this->assertEquals($expectedAdditionalInfo, json_decode($payoutDetails->getAttribute('additional_info'), true));
+
+        /** @var PayoutSourceEntity $payoutSource */
+        $payoutSource = $this->getDbLastEntity('payout_source');
+
+        $this->assertEquals('100000000000sa', $payoutSource->getSourceId());
+
+        $this->assertEquals('payout_links', $payoutSource->getSourceType());
+
+        $this->assertEquals(1, $payoutSource->getPriority());
+
+        $this->assertEquals($payout->getId(), $payoutSource->getPayoutId());
+
+        $this->clearTdsCategoriesCache();
+    }
+
+    public function testCohesiveCreatePayoutWithoutTdsPayoutToBeQueuedForInternalAuth()
+    {
+        $this->ba->appAuthTest($this->config['applications.payout_links.secret']);
+
+        $this->startTest();
+
+        /** @var PayoutEntity $payout */
+        $payout = $this->getDbLastEntity('payout');
+
+        $payoutDetails = $this->getDbLastEntity('payouts_details');
+
+        $this->assertNotNull($payoutDetails);
+
+        $this->assertEquals($payout->getId(), $payoutDetails->getAttribute('payout_id'));
+
+        $this->assertEquals(1, $payoutDetails->getAttribute('queue_if_low_balance_flag'));
+
+        $this->assertNull($payoutDetails->getAttribute('tds_category_id'));
+
+        $this->assertNull($payoutDetails->getAttribute('additional_info'));
+
+        /** @var PayoutSourceEntity $payoutSource */
+        $payoutSource = $this->getDbLastEntity('payout_source');
+
+        $this->assertEquals('100000000000sa', $payoutSource->getSourceId());
+
+        $this->assertEquals('payout_links', $payoutSource->getSourceType());
+
+        $this->assertEquals(1, $payoutSource->getPriority());
+
+        $this->assertEquals($payout->getId(), $payoutSource->getPayoutId());
+    }
+
+    protected function createPayoutWithTds()
+    {
+        $this->testCohesiveCreatePayoutWithTdsSuccessForProxyAuthTdsCategoriesInCache();
+    }
+
+    protected function createPayoutWithAttachments()
+    {
+        $this->testCohesiveCreatePayoutWithAttachmentSuccessForProxyAuth();
+    }
+
+    protected function createPayoutWithoutTds()
+    {
+        $this->testCohesiveCreatePayoutWithoutTdsSuccessForProxyAuth();
+    }
+
+    public function testCohesiveFetchPayoutByIdForPayoutWithTdsForProxyAuth()
+    {
+        $this->createPayoutWithTds();
+
+        // validating that the payout got created with TDS
+        /** @var PayoutEntity $payout */
+        $payout = $this->getDbLastEntity('payout');
+
+        $payoutDetails = $this->getDbLastEntity('payouts_details');
+
+        $this->assertEquals($payout->getId(), $payoutDetails->getPayoutId());
+
+        $this->assertNotNull($payoutDetails);
+
+        $this->assertEquals(1, $payoutDetails->getAttribute('tds_category_id'));
+
+        $expectedAdditionalInfo = [
+            'tds_amount'      => 1000,
+            'subtotal_amount' => 10000,
+        ];
+
+        $this->assertEquals($expectedAdditionalInfo, json_decode($payoutDetails->getAttribute('additional_info'), true));
+
+        // fetching by ID
+        $request = array(
+            'url'    => '/payouts/pout_' . $payout['id'],
+            'method' => 'GET');
+
+        $this->ba->proxyAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        // validating that the response for fetch-by-id has TDS details
+        $this->assertArrayHasKey('meta', $content);
+
+        $this->assertArrayHasKey('tds', $content['meta']);
+
+        $this->assertArrayHasKey('category_id', $content['meta']['tds']);
+
+        $this->assertEquals(1, $content['meta']['tds']['category_id']);
+
+        $this->assertArrayHasKey('amount', $content['meta']['tds']);
+
+        $this->assertEquals(1000, $content['meta']['tds']['amount']);
+
+        $this->assertArrayHasKey('subtotal_amount', $content['meta']);
+
+        $this->assertEquals(10000, $content['meta']['subtotal_amount']);
+    }
+
+    public function testCohesiveFetchPayoutByIdForPayoutWithAttachmentsForProxyAuth()
+    {
+        $this->createPayoutWithAttachments();
+
+        // validating that the payout got created with attachments
+        /** @var PayoutEntity $payout */
+        $payout = $this->getDbLastEntity('payout');
+
+        $payoutDetails = $this->getDbLastEntity('payouts_details');
+
+        $this->assertNotNull($payoutDetails);
+
+        $this->assertEquals($payout->getId(), $payoutDetails->getPayoutId());
+
+        $this->assertNull($payoutDetails->getAttribute('tds_category_id'));
+
+        $expectedAdditionalInfo = [
+            'attachments' => [
+                [
+                    'file_id'   => 'file_testing',
+                    'file_name' => 'not-your-attachment.pdf'
+                ],
+            ],
+        ];
+
+        $this->assertEquals($expectedAdditionalInfo, json_decode($payoutDetails->getAttribute('additional_info'), true));
+
+        // fetching by ID
+        $request = array(
+            'url'    => '/payouts/pout_' . $payout['id'],
+            'method' => 'GET');
+
+        $this->ba->proxyAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        // validating that the response for fetch-by-id has Attachments
+        $this->assertArrayHasKey('meta', $content);
+
+        $this->assertArrayHasKey('tds', $content['meta']);
+
+        $this->assertNull($content['meta']['tds']);
+
+        $this->assertArrayHasKey('tax_payment_id', $content['meta']);
+
+        $this->assertNull($content['meta']['tax_payment_id']);
+
+        $this->assertArrayHasKey('subtotal_amount', $content['meta']);
+
+        $this->assertNull($content['meta']['subtotal_amount']);
+
+        $this->assertArrayHasKey('attachments', $content['meta']);
+
+        $this->assertEquals($expectedAdditionalInfo['attachments'], $content['meta']['attachments']);
+    }
+
+    public function testCohesiveFetchPayoutByIdForPayoutWithoutTdsForProxyAuth()
+    {
+        $this->createPayoutWithoutTds();
+
+        // validating that the payout got created without TDS
+        /** @var PayoutEntity $payout */
+        $payout = $this->getDbLastEntity('payout');
+
+        $payoutDetails = $this->getDbLastEntity('payouts_details');
+
+        $this->assertNull($payoutDetails);
+
+        // fetching by ID
+        $request = array(
+            'url'    => '/payouts/pout_' . $payout['id'],
+            'method' => 'GET');
+
+        $this->ba->proxyAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        // validating that the response for fetch-by-id has null TDS details
+        $this->assertArrayHasKey('meta', $content);
+
+        $this->assertArrayHasKey('tds', $content['meta']);
+
+        $this->assertNull($content['meta']['tds']);
+
+        $this->assertArrayHasKey('subtotal_amount', $content['meta']);
+
+        $this->assertNull($content['meta']['subtotal_amount']);
+    }
+
+    public function testCohesiveFetchPayoutByIdForPayoutWithoutAttachmentsForProxyAuth()
+    {
+        $this->createPayoutWithoutTds();
+
+        // validating that the payout got created without TDS
+        /** @var PayoutEntity $payout */
+        $payout = $this->getDbLastEntity('payout');
+
+        $payoutDetails = $this->getDbLastEntity('payouts_details');
+
+        $this->assertNull($payoutDetails);
+
+        // fetching by ID
+        $request = array(
+            'url'    => '/payouts/pout_' . $payout['id'],
+            'method' => 'GET');
+
+        $this->ba->proxyAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        // validating that the response for fetch-by-id has null TDS details
+        $this->assertArrayHasKey('meta', $content);
+
+        $this->assertArrayHasKey('tds', $content['meta']);
+
+        $this->assertNull($content['meta']['tds']);
+
+        $this->assertArrayHasKey('subtotal_amount', $content['meta']);
+
+        $this->assertNull($content['meta']['subtotal_amount']);
+
+        // validating that the response for fetch-by-id has empty attachments
+        $this->assertArrayHasKey('attachments', $content['meta']);
+
+        $this->assertEmpty($content['meta']['attachments']);
+    }
+
+    public function testCohesiveFetchPayoutByIdForPayoutWithTdsForPrivateAuth()
+    {
+        $this->createPayoutWithTds();
+
+        // validating that the payout got created with TDS
+        /** @var PayoutEntity $payout */
+        $payout = $this->getDbLastEntity('payout');
+
+        $payoutDetails = $this->getDbLastEntity('payouts_details');
+
+        $this->assertEquals($payout->getId(), $payoutDetails->getPayoutId());
+
+        $this->assertEquals(1, $payoutDetails->getAttribute('tds_category_id'));
+
+        $expectedAdditionalInfo = [
+            'tds_amount'      => 1000,
+            'subtotal_amount' => 10000,
+        ];
+
+        $this->assertEquals($expectedAdditionalInfo, json_decode($payoutDetails->getAttribute('additional_info'), true));
+
+        // fetching by ID
+        $request = array(
+            'url'    => '/payouts/pout_' . $payout['id'],
+            'method' => 'GET');
+
+        $this->ba->privateAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        // validating that the response for fetch-by-id does not have meta attribute
+        $this->assertArrayNotHasKey('meta', $content);
+    }
+
+    public function testCohesiveFetchPayoutByIdForPayoutWithAttachmentsForPrivateAuth()
+    {
+        $this->createPayoutWithAttachments();
+
+        // validating that the payout got created with TDS
+        /** @var PayoutEntity $payout */
+        $payout = $this->getDbLastEntity('payout');
+
+        $payoutDetails = $this->getDbLastEntity('payouts_details');
+
+        $this->assertNotNull($payoutDetails);
+
+        $this->assertEquals($payout->getId(), $payoutDetails->getPayoutId());
+
+        $this->assertNull($payoutDetails->getAttribute('tds_category_id'));
+
+        $expectedAdditionalInfo = [
+            'attachments' => [
+                [
+                    'file_id'   => 'file_testing',
+                    'file_name' => 'not-your-attachment.pdf'
+                ],
+            ],
+        ];
+
+        $this->assertEquals($expectedAdditionalInfo, json_decode($payoutDetails->getAttribute('additional_info'), true));
+
+        // fetching by ID
+        $request = array(
+            'url'    => '/payouts/pout_' . $payout['id'],
+            'method' => 'GET');
+
+        $this->ba->privateAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        // validating that the response for fetch-by-id does not have meta attribute
+        $this->assertArrayNotHasKey('meta', $content);
+    }
+
+    public function testCohesiveFetchPayoutByIdForPayoutWithoutTdsForPrivateAuth()
+    {
+        $this->createPayoutWithoutTds();
+
+        /** @var PayoutEntity $payout */
+        $payout = $this->getDbLastEntity('payout');
+
+        $payoutDetails = $this->getDbLastEntity('payouts_details');
+
+        $this->assertNull($payoutDetails);
+
+        // fetching by ID
+        $request = array(
+            'url'    => '/payouts/pout_' . $payout['id'],
+            'method' => 'GET');
+
+        $this->ba->privateAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        // validating that the response for fetch-by-id does not have meta attribute
+        $this->assertArrayNotHasKey('meta', $content);
+    }
+
+    public function testCohesiveFetchPayoutByIdForPayoutWithTdsForInternalAppAuth()
+    {
+        $this->createPayoutWithTds();
+
+        // validating that the payout got created with TDS
+        $payout = $this->getDbLastEntity('payout');
+
+        $payoutDetails = $this->getDbLastEntity('payouts_details');
+
+        $this->assertEquals($payout->getId(), $payoutDetails->getPayoutId());
+
+        $this->assertEquals(1, $payoutDetails->getAttribute('tds_category_id'));
+
+        $expectedAdditionalInfo = [
+            'tds_amount'      => 1000,
+            'subtotal_amount' => 10000,
+        ];
+
+        $this->assertEquals($expectedAdditionalInfo, json_decode($payoutDetails->getAttribute('additional_info'), true));
+
+        // fetching by ID
+        $request = array(
+            'url'    => '/payouts_internal/pout_' . $payout['id'],
+            'method' => 'GET',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => '10000000000000',
+                'HTTP_X-Request-Origin'   => config('applications.banking_service_url'),
+            ]);
+
+        $this->ba->appAuthTest($this->config['applications.payout_links.secret']);
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        // validating that the response for fetch-by-id has TDS details
+        $this->assertArrayHasKey('meta', $content);
+
+        $this->assertArrayHasKey('tds', $content['meta']);
+
+        $this->assertArrayHasKey('category_id', $content['meta']['tds']);
+
+        $this->assertEquals(1, $content['meta']['tds']['category_id']);
+
+        $this->assertArrayHasKey('amount', $content['meta']['tds']);
+
+        $this->assertEquals(1000, $content['meta']['tds']['amount']);
+
+        $this->assertArrayHasKey('subtotal_amount', $content['meta']);
+
+        $this->assertEquals(10000, $content['meta']['subtotal_amount']);
+    }
+
+    public function testCohesiveFetchPayoutByIdForPayoutWithoutTdsForInternalAppAuth()
+    {
+        $this->createPayoutWithoutTds();
+
+        // validating that the payout got created with TDS
+        $payout = $this->getDbLastEntity('payout');
+
+        $payoutDetails = $this->getDbLastEntity('payouts_details');
+
+        $this->assertNull($payoutDetails);
+
+        // fetching by ID
+        $request = array(
+            'url'    => '/payouts_internal/pout_' . $payout['id'],
+            'method' => 'GET',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => '10000000000000',
+                'HTTP_X-Request-Origin'   => config('applications.banking_service_url'),
+            ]);
+
+        $this->ba->appAuthTest($this->config['applications.payout_links.secret']);
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        // validating that the response for fetch-by-id has TDS details
+        $this->assertArrayHasKey('meta', $content);
+
+        $this->assertArrayHasKey('tds', $content['meta']);
+
+        $this->assertNull($content['meta']['tds']);
+
+        $this->assertArrayHasKey('subtotal_amount', $content['meta']);
+
+        $this->assertNull($content['meta']['subtotal_amount']);
+    }
+
+    public function testCohesiveFetchMultiplePayoutsForPayoutWithTdsForProxyAuth()
+    {
+        $this->createPayoutWithTds();
+
+        $payoutWithTds = $this->getDbLastEntity('payout');
+
+        // fetching multiple payouts
+        $request = array(
+            'url'    => '/payouts?fund_account_id=fa_100000000000fa&account_number=2224440041626905',
+            'method' => 'GET');
+
+        $this->ba->proxyAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(1, $content['count']);
+
+        $fetchedPayout = $content['items'][0];
+
+        $this->assertEquals($payoutWithTds->getPublicId(), $fetchedPayout['id']);
+
+        $this->assertArrayHasKey('meta', $fetchedPayout);
+
+        $this->assertArrayHasKey('tds', $fetchedPayout['meta']);
+
+        $this->assertArrayHasKey('category_id', $fetchedPayout['meta']['tds']);
+
+        $this->assertEquals(1, $fetchedPayout['meta']['tds']['category_id']);
+
+        $this->assertArrayHasKey('amount', $fetchedPayout['meta']['tds']);
+
+        $this->assertEquals(1000, $fetchedPayout['meta']['tds']['amount']);
+
+        $this->assertArrayHasKey('subtotal_amount', $fetchedPayout['meta']);
+
+        $this->assertEquals(10000, $fetchedPayout['meta']['subtotal_amount']);
+    }
+
+    public function testCohesiveFetchMultiplePayoutsForPayoutWithoutTdsForProxyAuth()
+    {
+        $this->createPayoutWithoutTds();
+
+        $payoutWithTds = $this->getDbLastEntity('payout');
+
+        // fetching multiple payouts
+        $request = array(
+            'url'    => '/payouts?fund_account_id=fa_100000000000fa&account_number=2224440041626905',
+            'method' => 'GET');
+
+        $this->ba->proxyAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(1, $content['count']);
+
+        $fetchedPayout = $content['items'][0];
+
+        $this->assertEquals($payoutWithTds->getPublicId(), $fetchedPayout['id']);
+
+        $this->assertArrayHasKey('meta', $fetchedPayout);
+
+        $this->assertArrayHasKey('tds', $fetchedPayout['meta']);
+
+        $this->assertNull($fetchedPayout['meta']['tds']);
+
+        $this->assertArrayHasKey('subtotal_amount', $fetchedPayout['meta']);
+
+        $this->assertNull($fetchedPayout['meta']['subtotal_amount']);
+    }
+
+    public function testCohesiveFetchMultiplePayoutsForPayoutWithTdsForPrivateAuth()
+    {
+        $this->createPayoutWithTds();
+
+        $payoutWithTds = $this->getDbLastEntity('payout');
+
+        // fetching multiple payouts
+        $request = array(
+            'url'    => '/payouts?fund_account_id=fa_100000000000fa&account_number=2224440041626905',
+            'method' => 'GET');
+
+        $this->ba->privateAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(1, $content['count']);
+
+        $fetchedPayout = $content['items'][0];
+
+        $this->assertEquals($payoutWithTds->getPublicId(), $fetchedPayout['id']);
+
+        $this->assertArrayNotHasKey('meta', $fetchedPayout);
+    }
+
+    public function testCohesiveFetchMultiplePayoutsForPayoutWithoutTdsForPrivateAuth()
+    {
+        $this->createPayoutWithoutTds();
+
+        $payoutWithTds = $this->getDbLastEntity('payout');
+
+        // fetching multiple payouts
+        $request = array(
+            'url'    => '/payouts?fund_account_id=fa_100000000000fa&account_number=2224440041626905',
+            'method' => 'GET');
+
+        $this->ba->privateAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(1, $content['count']);
+
+        $fetchedPayout = $content['items'][0];
+
+        $this->assertEquals($payoutWithTds->getPublicId(), $fetchedPayout['id']);
+
+        $this->assertArrayNotHasKey('meta', $fetchedPayout);
+    }
+
+    public function testCohesiveFetchMultiplePayoutsForPayoutWithTdsForInternalAuth()
+    {
+        $this->createPayoutWithTds();
+
+        $payoutWithTds = $this->getDbLastEntity('payout');
+
+        // fetching multiple payouts
+        $request = array(
+            'url'    => '/payouts_internal?fund_account_id=fa_100000000000fa&account_number=2224440041626905',
+            'method' => 'GET',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => '10000000000000',
+                'HTTP_X-Request-Origin'   => config('applications.banking_service_url'),
+            ]);
+
+        $this->ba->appAuthTest($this->config['applications.payout_links.secret']);
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(1, $content['count']);
+
+        $fetchedPayout = $content['items'][0];
+
+        $this->assertEquals($payoutWithTds->getPublicId(), $fetchedPayout['id']);
+
+        $this->assertArrayHasKey('meta', $fetchedPayout);
+
+        $this->assertArrayHasKey('tds', $fetchedPayout['meta']);
+
+        $this->assertArrayHasKey('category_id', $fetchedPayout['meta']['tds']);
+
+        $this->assertEquals(1, $fetchedPayout['meta']['tds']['category_id']);
+
+        $this->assertArrayHasKey('amount', $fetchedPayout['meta']['tds']);
+
+        $this->assertEquals(1000, $fetchedPayout['meta']['tds']['amount']);
+
+        $this->assertArrayHasKey('subtotal_amount', $fetchedPayout['meta']);
+
+        $this->assertEquals(10000, $fetchedPayout['meta']['subtotal_amount']);
+    }
+
+    public function testCohesiveFetchMultiplePayoutsForPayoutWithoutTdsForInternalAuth()
+    {
+        $this->createPayoutWithoutTds();
+
+        $payoutWithTds = $this->getDbLastEntity('payout');
+
+        // fetching multiple payouts
+        $request = array(
+            'url'    => '/payouts_internal?fund_account_id=fa_100000000000fa&account_number=2224440041626905',
+            'method' => 'GET',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => '10000000000000',
+                'HTTP_X-Request-Origin'   => config('applications.banking_service_url'),
+            ]);
+
+        $this->ba->appAuthTest($this->config['applications.payout_links.secret']);
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(1, $content['count']);
+
+        $fetchedPayout = $content['items'][0];
+
+        $this->assertEquals($payoutWithTds->getPublicId(), $fetchedPayout['id']);
+
+        $this->assertArrayHasKey('meta', $fetchedPayout);
+
+        $this->assertArrayHasKey('tds', $fetchedPayout['meta']);
+
+        $this->assertNull($fetchedPayout['meta']['tds']);
+
+        $this->assertArrayHasKey('subtotal_amount', $fetchedPayout['meta']);
+
+        $this->assertNull($fetchedPayout['meta']['subtotal_amount']);
+    }
+
+    public function testCohesiveFetchMultiplePayoutsWithTdsCategoryIdFilterForProxyAuth()
+    {
+        $this->createPayoutWithTds();
+
+        $payoutWithTds = $this->getDbLastEntity('payout');
+
+        // fetching multiple payouts
+        $request = array(
+            'url'    => '/payouts?tds_category_id=1&account_number=2224440041626905',
+            'method' => 'GET');
+
+        $this->ba->proxyAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(1, $content['count']);
+
+        $fetchedPayout = $content['items'][0];
+
+        $this->assertEquals($payoutWithTds->getPublicId(), $fetchedPayout['id']);
+    }
+
+    public function testCohesiveFetchMultiplePayoutsWithTdsCategoryIdFilterForPrivateAuth()
+    {
+        $this->createPayoutWithTds();
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function testCohesiveFetchMultiplePayoutsWithTaxPaymentIdFilterForProxyAuth()
+    {
+        $this->createPayoutWithTds();
+
+        $payoutWithTds = $this->getDbLastEntity('payout');
+
+        $payoutDetailsCreated = $this->getDbLastEntity('payouts_details');
+
+        $this->assertEquals($payoutWithTds->getId(), $payoutDetailsCreated['payout_id']);
+
+        $this->fixtures->edit('payouts_details', $payoutDetailsCreated['payout_id'], ['tax_payment_id' => '1234']);
+
+        // fetching multiple payouts
+        $request = array(
+            'url'    => '/payouts?tax_payment_id=txpy_1234&account_number=2224440041626905',
+            'method' => 'GET');
+
+        $this->ba->proxyAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(1, $content['count']);
+
+        $fetchedPayout = $content['items'][0];
+
+        $this->assertEquals($payoutWithTds->getPublicId(), $fetchedPayout['id']);
+    }
+
+    public function testCohesiveFetchMultiplePayoutsWithIncorrectTaxPaymentPublicIdFilterForProxyAuth()
+    {
+        $this->createPayoutWithTds();
+
+        $payoutWithTds = $this->getDbLastEntity('payout');
+
+        $payoutDetailsCreated = $this->getDbLastEntity('payouts_details');
+
+        $this->assertEquals($payoutWithTds->getId(), $payoutDetailsCreated['payout_id']);
+
+        $this->fixtures->edit('payouts_details', $payoutDetailsCreated['payout_id'], ['tax_payment_id' => '1234']);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+}

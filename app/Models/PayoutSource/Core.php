@@ -89,4 +89,14 @@ class Core extends Base\Core
             );
         }
     }
+
+    public function getPayoutSource(string $payoutId)
+    {
+        /** @var Entity $payoutSource */
+        $payoutSource = $this->repo->payout_source->getPayoutSourceByPayoutIdAndPriority(
+            $payoutId, 1);
+
+        return $payoutSource;
+    }
+
 }

@@ -3,6 +3,7 @@
 namespace RZP\Models\Payout;
 
 use Carbon\Carbon;
+use RZP\Error\ErrorCode;
 use RZP\Base\ConnectionType;
 use RZP\Models\Feature\Constants;
 use Illuminate\Database\Query\JoinClause;
@@ -36,6 +37,7 @@ use RZP\Models\Workflow\Action\Checker;
 use RZP\Models\FundAccount\Entity as FundAccountEntity;
 use RZP\Models\BankAccount\Entity as BankAccountEntity;
 use RZP\Models\PayoutsStatusDetails as PayoutsStatusDetails;
+use RZP\Models\PayoutsDetails\Entity as PayoutDetailsEntity;
 use RZP\Models\Workflow\Service\StateMap\Entity as WorkflowStateMap;
 use RZP\Models\Workflow\Service\EntityMap\Entity as WorkflowEntityMap;
 
@@ -1462,6 +1464,26 @@ class Repository extends Base\Repository
             });
     }
 
+    protected function joinQueryPayoutDetails(BuilderEx $query)
+    {
+        $payoutDetailsTable = $this->repo->payouts_details->getTableName();
+
+        if ($query->hasJoin($payoutDetailsTable) === true)
+        {
+            return;
+        }
+
+        $query->join(
+            $payoutDetailsTable,
+            function(JoinClause $join)
+            {
+                $payoutDetailPayoutIdColumn = $this->repo->payouts_details->dbColumn(PayoutDetailsEntity::PAYOUT_ID);
+                $payoutIdColumn             = $this->dbColumn(Entity::ID);
+
+                $join->on($payoutDetailPayoutIdColumn, $payoutIdColumn);
+            });
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -1594,6 +1616,41 @@ class Repository extends Base\Repository
         $this->joinQueryPayoutSource($query);
 
         $query->where($payoutSourceSourceTypeColumn, $sourceType);
+    }
+
+    protected function addQueryParamTdsCategoryId($query, $params)
+    {
+        $tdsCategoryId                    = $params[PayoutDetailsEntity::TDS_CATEGORY_ID];
+        $payoutDetailsTdsCategoryIdColumn = $this->repo->payouts_details->dbColumn(PayoutDetailsEntity::TDS_CATEGORY_ID);
+
+        $query->select($this->getTableName() . '.*');
+        $this->joinQueryPayoutDetails($query);
+
+        $query->where($payoutDetailsTdsCategoryIdColumn, $tdsCategoryId);
+    }
+
+    protected function addQueryParamTaxPaymentId($query, $params)
+    {
+        $taxPaymentId                    = $params[PayoutDetailsEntity::TAX_PAYMENT_ID];
+        $this->validateAndStripPublicTaxPaymentId($taxPaymentId);
+        $payoutDetailsTaxPaymentIdColumn = $this->repo->payouts_details->dbColumn(PayoutDetailsEntity::TAX_PAYMENT_ID);
+
+        $query->select($this->getTableName() . '.*');
+        $this->joinQueryPayoutDetails($query);
+
+        $query->where($payoutDetailsTaxPaymentIdColumn, $taxPaymentId);
+    }
+
+    protected function validateAndStripPublicTaxPaymentId(&$taxPaymentId)
+    {
+        if (strpos($taxPaymentId, PayoutDetailsEntity::TAX_PAYMENT_PUBLIC_ID_PREFIX . PayoutDetailsEntity::TAX_PAYMENT_ID_DELIMITER) === false)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_TAX_PAYMENT_ID);
+        }
+
+        $publicPrefixLen = strlen(PayoutDetailsEntity::TAX_PAYMENT_PUBLIC_ID_PREFIX . PayoutDetailsEntity::TAX_PAYMENT_ID_DELIMITER);
+
+        $taxPaymentId = substr($taxPaymentId, $publicPrefixLen);
     }
 
     protected function joinQueryReversal(BuilderEx $query)

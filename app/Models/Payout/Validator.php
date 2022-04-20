@@ -30,7 +30,9 @@ use RZP\Models\Feature\Repository as FeatureRepo;
 use RZP\Models\PayoutSource\Entity as PayoutSource;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\FundTransfer\Base\Initiator\NodalAccount;
+use RZP\Models\PayoutsDetails\Entity as PayoutDetailsEntity;
 use RZP\Models\Workflow\Action\Checker\Entity as ActionChecker;
+use RZP\Models\PayoutsDetails\Validator as PayoutDetailsValidator;
 
 class Validator extends Base\Validator
 {
@@ -54,6 +56,12 @@ class Validator extends Base\Validator
     const BEFORE_CREATE_FUND_ACCOUNT_PAYOUT = 'before_create_fund_account_payout';
 
     const BEFORE_CREATE_FUND_ACCOUNT_PAYOUT_WITH_OTP = 'before_create_fund_account_payout_with_otp';
+
+    const BULK_UPDATE_ATTACHMENTS = 'bulk_update_attachments';
+
+    const UPDATE_REQUEST = 'update_request';
+
+    const UPDATE_TAX_PAYMENT = 'update_tax_payment';
 
     // The max payout amount allowed for merchant payouts is 80 L
     const MAX_LIMIT_MERCHANT_PAYOUT_AMOUNT = 800000000;
@@ -90,6 +98,9 @@ class Validator extends Base\Validator
 
     const AMOUNT_REGEX = '/[^0-9]/';
 
+    const TDS_CATEGORY_ID_CACHE_KEY = 'tds_category_id_list';
+    const TDS_CATEGORY_ID_CACHE_TTL = 12 * 60 * 60;
+
     //
     // This is required for build. Currently, build does not
     // accept ruleName as a parameter. Hence, this list needs
@@ -113,6 +124,9 @@ class Validator extends Base\Validator
         Entity::IDEMPOTENCY_KEY      => 'sometimes|nullable|string',
         Entity::SCHEDULED_AT         => 'sometimes|filled|epoch',
         Entity::ORIGIN               => 'sometimes|filled',
+        PayoutDetailsEntity::TDS              => 'sometimes|filled|array',
+        PayoutDetailsEntity::ATTACHMENTS      => 'sometimes|filled|array',
+        PayoutDetailsEntity::SUBTOTAL_AMOUNT  => 'sometimes|integer'
     ];
 
     /**
@@ -138,7 +152,10 @@ class Validator extends Base\Validator
         Entity::SOURCE_DETAILS                                     => 'sometimes|filled|array',
         Entity::SOURCE_DETAILS . '.*.' . PayoutSource::SOURCE_ID   => 'required|string',
         Entity::SOURCE_DETAILS . '.*.' . PayoutSource::SOURCE_TYPE => 'required|string|',
-        Entity::SOURCE_DETAILS . '.*.' . PayoutSource::PRIORITY    => 'required|integer|min:1'
+        Entity::SOURCE_DETAILS . '.*.' . PayoutSource::PRIORITY    => 'required|integer|min:1',
+        PayoutDetailsEntity::TDS                                   => 'sometimes|filled|array',
+        PayoutDetailsEntity::ATTACHMENTS                           => 'sometimes|filled|array',
+        PayoutDetailsEntity::SUBTOTAL_AMOUNT                       => 'sometimes|integer'
     ];
 
     /**
@@ -149,20 +166,23 @@ class Validator extends Base\Validator
      * @var array
      */
     protected static $fundAccountPayoutRules = [
-        Entity::PURPOSE              => 'required|filled|string|max:30|alpha_dash_space',
-        Entity::AMOUNT               => 'required|integer|custom',
-        Entity::CURRENCY             => 'required|size:3|in:INR',
-        Entity::NOTES                => 'sometimes|notes',
-        Entity::BALANCE_ID           => 'sometimes|filled|size:14',
-        Entity::FUND_ACCOUNT_ID      => 'required|public_id',
-        Entity::MODE                 => 'required|string|custom',
-        Entity::REFERENCE_ID         => 'sometimes|nullable|string|max:40',
-        Entity::NARRATION            => 'sometimes|nullable|string|max:30|regex:/^[a-zA-Z0-9 ]*$/',
-        Entity::IDEMPOTENCY_KEY      => 'sometimes|nullable|string',
-        Entity::PAYOUT_LINK_ID       => 'sometimes|filled|public_id',
-        Entity::QUEUE_IF_LOW_BALANCE => 'sometimes|filled|boolean',
-        Entity::SCHEDULED_AT         => 'sometimes|filled|epoch|custom',
-        Entity::ORIGIN               => 'sometimes|filled',
+        Entity::PURPOSE                         => 'required|filled|string|max:30|alpha_dash_space',
+        Entity::AMOUNT                          => 'required|integer|custom',
+        Entity::CURRENCY                        => 'required|size:3|in:INR',
+        Entity::NOTES                           => 'sometimes|notes',
+        Entity::BALANCE_ID                      => 'sometimes|filled|size:14',
+        Entity::FUND_ACCOUNT_ID                 => 'required|public_id',
+        Entity::MODE                            => 'required|string|custom',
+        Entity::REFERENCE_ID                    => 'sometimes|nullable|string|max:40',
+        Entity::NARRATION                       => 'sometimes|nullable|string|max:30|regex:/^[a-zA-Z0-9 ]*$/',
+        Entity::IDEMPOTENCY_KEY                 => 'sometimes|nullable|string',
+        Entity::PAYOUT_LINK_ID                  => 'sometimes|filled|public_id',
+        Entity::QUEUE_IF_LOW_BALANCE            => 'sometimes|filled|boolean',
+        Entity::SCHEDULED_AT                    => 'sometimes|filled|epoch|custom',
+        Entity::ORIGIN                          => 'sometimes|filled',
+        PayoutDetailsEntity::TDS                => 'sometimes|filled|array',
+        PayoutDetailsEntity::ATTACHMENTS        => 'sometimes|filled|array',
+        PayoutDetailsEntity::SUBTOTAL_AMOUNT    => 'sometimes|integer'
     ];
 
     protected static $customerWalletPayoutRules = [
@@ -184,7 +204,10 @@ class Validator extends Base\Validator
         Entity::SOURCE_DETAILS . '.*.' . PayoutSource::SOURCE_ID   => 'required|string',
         Entity::SOURCE_DETAILS . '.*.' . PayoutSource::SOURCE_TYPE => 'required|string|',
         Entity::SOURCE_DETAILS . '.*.' . PayoutSource::PRIORITY    => 'required|integer|min:1',
-        Entity::ENABLE_WORKFLOW_FOR_INTERNAL_CONTACT               => 'sometimes|boolean'
+        Entity::ENABLE_WORKFLOW_FOR_INTERNAL_CONTACT               => 'sometimes|boolean',
+        PayoutDetailsEntity::TDS                                   => 'sometimes|filled|array',
+        PayoutDetailsEntity::ATTACHMENTS                           => 'sometimes|filled|array',
+        PayoutDetailsEntity::SUBTOTAL_AMOUNT                       => 'sometimes|integer'
     ];
 
     protected static $payoutServiceCreateRules = [
@@ -194,32 +217,56 @@ class Validator extends Base\Validator
 
 
     protected static $beforeCreateFundAccountPayoutWithOtpRules = [
-        Entity::ORIGIN => 'sometimes|filled|in:' . Entity::DASHBOARD,
+        Entity::ORIGIN                       => 'sometimes|filled|in:' . Entity::DASHBOARD,
+        PayoutDetailsEntity::TDS             => 'sometimes|array',
+        PayoutDetailsEntity::ATTACHMENTS_KEY => 'sometimes|array',
+        PayoutDetailsEntity::SUBTOTAL_AMOUNT => 'sometimes|integer'
+    ];
+
+    protected static $bulkUpdateAttachmentsRules = [
+        Entity::PAYOUT_IDS                  => 'required|array',
+        PayoutDetailsEntity::UPDATE_REQUEST => 'required|array',
+    ];
+
+    protected static $updateRequestRules = [
+        PayoutDetailsEntity::ATTACHMENTS_KEY => 'present|array',
+    ];
+
+    protected static $updateTaxPaymentRules = [
+        PayoutDetailsEntity::TAX_PAYMENT_ID => 'required|string|size:19',
     ];
 
     protected static $beforeCreateFundAccountPayoutValidators = [
         'origin',
         'source_details',
+        'tds_details',
+        'attachments',
     ];
 
     protected static $fundAccountPayoutCompositeValidators = [
         'origin',
         'source_details',
         'amount',
-        'amount_as_integer'
+        'amount_as_integer',
+        'tds_details',
+        'attachments',
     ];
 
     protected static $customerWalletPayoutValidators = [
-        'amount_as_integer'
+        'amount_as_integer',
     ];
 
     protected static $fundAccountPayoutValidators = [
         'amount',
-        'amount_as_integer'
+        'amount_as_integer',
+        'tds_details',
+        'attachments',
     ];
 
     protected static $beforeCreateFundAccountPayoutWithOtpValidators = [
         'source_details',
+        'tds_details',
+        'attachments',
     ];
 
     // Both regular(type:default) and on demand(type:on_demand) payouts are validated through merchantPayoutRules.
@@ -359,7 +406,7 @@ class Validator extends Base\Validator
         Entity::PAYOUT_IDS . '.*'       => 'required|string|size:14',
         Entity::STATUS                  => 'required|string',
         Entity::FAILURE_REASON          => 'sometimes|string',
-        Constants::FTS_FUND_ACCOUNT_ID  =>  'sometimes|string',
+        Constants::FTS_FUND_ACCOUNT_ID  => 'sometimes|string',
         Constants::FTS_ACCOUNT_TYPE     => 'sometimes|string',
     ];
 
@@ -1142,6 +1189,135 @@ class Validator extends Base\Validator
             $input[Entity::MODE] = PayoutMode::CARD;
         }
 
+    }
+
+    public function validateTdsDetails(array $input)
+    {
+        if (isset($input[PayoutDetailsEntity::TDS]) === true)
+        {
+            $tdsDetails = $input[PayoutDetailsEntity::TDS];
+
+            $this->validateTdsDetailsForAuth();
+
+            $this->validateTdsDetailsInput($tdsDetails);
+
+            $this->validateTdsCategoryId($tdsDetails);
+
+            $this->validateTdsAmount($input, $tdsDetails);
+        }
+    }
+
+    protected function validateTdsDetailsForAuth()
+    {
+        $app = App::getFacadeRoot();
+
+        // not allowed via private auth
+        if($app['basicauth']->isStrictPrivateAuth() === true)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_AUTH_NOT_SUPPORTED_FOR_PAYOUT_WITH_TDS);
+        }
+    }
+
+    protected function validateTdsDetailsInput(array $tdsDetails)
+    {
+        (new PayoutDetailsValidator)->validateInput(PayoutDetailsValidator::TDS_DETAILS, $tdsDetails);
+    }
+
+    protected function validateTdsCategoryId(array $tdsDetails)
+    {
+        /*
+         * 1. validate against the list from cache
+         * 2. if not found, fetch the tds-categories from tax-payment service
+         * 3. add the fetched list to cache
+         * 4. validate against the freshly fetched list
+         */
+        $inputCategoryId = $tdsDetails[PayoutDetailsEntity::CATEGORY_ID];
+
+        $app = App::getFacadeRoot();
+
+        /*
+         * cache data format: [{"id":1,"slab":7.5},{"id":2,"slab":3.75},{"id":4,"slab":0.75}]
+         */
+        $categoriesListFromCache = $app['cache']->get(self::TDS_CATEGORY_ID_CACHE_KEY);
+
+        if (empty($categoriesListFromCache) === false)
+        {
+            foreach ($categoriesListFromCache as $categoryFromCache)
+            {
+                if ($categoryFromCache['id'] === $inputCategoryId)
+                {
+                    return;
+                }
+            }
+        }
+
+        $fetchedCategories = $app['tax-payments']->getTdsCategories();
+
+        $fetchedCategoriesInfoList = array();
+
+        foreach ($fetchedCategories as $fetchedCategory)
+        {
+            $categoryInfo = [
+                'id'    => $fetchedCategory['id'],
+                'slab'  => $fetchedCategory['slab'],
+            ];
+
+            array_push($fetchedCategoriesInfoList, $categoryInfo);
+        }
+
+        // cache put() expect ttl in seconds => 12hrs TTL
+        $app['cache']->put(self::TDS_CATEGORY_ID_CACHE_KEY, $fetchedCategoriesInfoList, self::TDS_CATEGORY_ID_CACHE_TTL);
+
+        foreach ($fetchedCategoriesInfoList as $fetchedCategoryInfo)
+        {
+            if ($fetchedCategoryInfo['id'] === $inputCategoryId)
+            {
+                return;
+            }
+        }
+
+        throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_TDS_CATEGORY_ID);
+    }
+
+    protected function validateTdsAmount(array $input, array $tdsDetails)
+    {
+        $tdsAmount = $tdsDetails[PayoutDetailsEntity::TDS_AMOUNT];
+
+        if ($input[Entity::AMOUNT] < $tdsAmount)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_TDS_AMOUNT_GREATER_THAN_PAYOUT_AMOUNT);
+        }
+    }
+
+    public function validateAttachments(array $input)
+    {
+        if (isset($input[PayoutDetailsEntity::ATTACHMENTS_KEY]) === true)
+        {
+            $attachments = $input[PayoutDetailsEntity::ATTACHMENTS_KEY];
+
+            $this->validateAttachmentsForAuth();
+
+            $this->validateAttachmentsInput($attachments);
+        }
+    }
+
+    protected function validateAttachmentsForAuth()
+    {
+        $app = App::getFacadeRoot();
+
+        // not allowed via private auth
+        if($app['basicauth']->isStrictPrivateAuth() === true)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_AUTH_NOT_SUPPORTED_FOR_PAYOUT_WITH_ATTACHMENTS);
+        }
+    }
+
+    protected function validateAttachmentsInput(array $attachments)
+    {
+        foreach ($attachments as $attachment)
+        {
+            (new PayoutDetailsValidator)->validateInput(PayoutDetailsValidator::ATTACHMENT, $attachment);
+        }
     }
 
     public function blockAmazonPayPayoutsFromDirectAccounts(Payout\Entity $payout)

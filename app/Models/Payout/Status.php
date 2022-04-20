@@ -50,6 +50,11 @@ class Status
         self::FAILED,
     ];
 
+    public static $moneyTransferredStates = [
+        self::PROCESSED,
+        self::REVERSED,
+    ];
+
     public static $internalToPublicStatusMap = [
         self::PENDING                      => self::PENDING,
         self::CREATED                      => self::PROCESSING,
@@ -374,6 +379,13 @@ class Status
         return in_array($status,
                         self::$finalStates,
                         true);
+    }
+
+    public static function isMoneyTransferredState($status): bool
+    {
+        return in_array($status,
+            self::$moneyTransferredStates,
+            true) === true;
     }
 
     public static function getErrorStatus($status)

@@ -60,6 +60,7 @@ use RZP\Models\PayoutMeta\Core as PayoutMetaCore;
 use RZP\Models\Payout\PayoutsIntermediateTransactions;
 use RZP\Models\PayoutsDetails\Core as PayoutsDetailsCore;
 use RZP\Models\FundTransfer\Metric as FundTransferMetric;
+use RZP\Models\PayoutsDetails\Entity as PayoutsDetailsEntity;
 use RZP\Services\PayoutService\Create as PayoutServiceCreate;
 use RZP\Models\Workflow\Service\Client as WorkflowServiceClient;
 use RZP\Models\Payout\Processor\DownstreamProcessor\DownstreamProcessor;
@@ -1988,13 +1989,13 @@ class Base extends BaseCore
 
         $payout->setExpectedFeeType($feeType);
 
-        if ((isset($input[Payout\Entity::QUEUE_IF_LOW_BALANCE]) === true) and
-            (boolval($input[Payout\Entity::QUEUE_IF_LOW_BALANCE]) === true))
+        if ($this->isPayoutDetailsApplicable($input) === true)
         {
-            $payout->setQueueFlag(true);
+            $this->setPayoutQueueFlag($input, $payout);
 
-            (new PayoutsDetailsCore())->create(true, $payout);
+            $payoutDetailsInput = $this->preparePayoutDetailsFromRequestInput($input);
 
+            (new PayoutsDetailsCore)->create($payoutDetailsInput, $payout);
         }
 
         (new Payout\Purpose)->setPurposeAndTypeForPayout($payout, $payout->getPurpose(), $this->isInternal);
@@ -2054,15 +2055,15 @@ class Base extends BaseCore
 
         $payout->setQueuePayoutCreateRequest($queuePayoutCreateRequest);
 
-
-        if ((isset($input[Payout\Entity::QUEUE_IF_LOW_BALANCE]) === true) and
-            (boolval($input[Payout\Entity::QUEUE_IF_LOW_BALANCE]) === true))
+        if ($this->isPayoutDetailsApplicable($input) === true)
         {
-            $payout->setQueueFlag(true);
-
             if ($compositePayoutSaveOrFail === true)
             {
-                (new PayoutsDetailsCore)->create(true, $payout);
+                $this->setPayoutQueueFlag($input, $payout);
+
+                $payoutDetailsInput = $this->preparePayoutDetailsFromRequestInput($input);
+
+                (new PayoutsDetailsCore)->create($payoutDetailsInput, $payout);
             }
         }
 
@@ -2071,6 +2072,76 @@ class Base extends BaseCore
         $this->checkMerchantEligibilityForPayoutMode($payout);
 
         return $payout;
+    }
+
+    protected function isPayoutDetailsApplicable($input)
+    {
+        $isQueuePayoutParamApplicable = ((isset($input[Payout\Entity::QUEUE_IF_LOW_BALANCE]) === true) and
+                    (boolval($input[Payout\Entity::QUEUE_IF_LOW_BALANCE]) === true));
+
+        $isTdsPresent = (isset($input[PayoutsDetailsEntity::TDS]) === true);
+
+        $isAttachmentPresent = (isset($input[PayoutsDetailsEntity::ATTACHMENTS]) === true);
+
+        $isSubTotalAmountPresent = (isset($input[PayoutsDetailsEntity::SUBTOTAL_AMOUNT]) === true);
+
+        return ($isQueuePayoutParamApplicable or $isTdsPresent or $isAttachmentPresent or $isSubTotalAmountPresent);
+    }
+
+    protected function setPayoutQueueFlag(array $input, Payout\Entity $payout)
+    {
+        if (isset($input[Payout\Entity::QUEUE_IF_LOW_BALANCE]) === true)
+        {
+            $queueIfLowBalanceFlag = boolval($input[Payout\Entity::QUEUE_IF_LOW_BALANCE]);
+
+            if ($queueIfLowBalanceFlag === true)
+            {
+                $payout->setQueueFlag(true);
+            }
+        }
+    }
+
+    protected function preparePayoutDetailsFromRequestInput(array $input)
+    {
+        $payoutDetailsInput = array();
+
+        if (isset($input[Payout\Entity::QUEUE_IF_LOW_BALANCE]) === true)
+        {
+            $queueIfLowBalanceFlag = boolval($input[Payout\Entity::QUEUE_IF_LOW_BALANCE]);
+
+            if ($queueIfLowBalanceFlag === true)
+            {
+                $payoutDetailsInput[PayoutsDetailsEntity::QUEUE_IF_LOW_BALANCE_FLAG] = $queueIfLowBalanceFlag;
+            }
+        }
+
+        $additionalInfo = array();
+
+        if (isset($input[PayoutsDetailsEntity::TDS]) === true)
+        {
+            $tdsDetails = $input[PayoutsDetailsEntity::TDS];
+
+            $payoutDetailsInput[PayoutsDetailsEntity::TDS_CATEGORY_ID] = $tdsDetails[PayoutsDetailsEntity::CATEGORY_ID];
+
+            $additionalInfo[PayoutsDetailsEntity::TDS_AMOUNT_KEY] = (float) $tdsDetails[PayoutsDetailsEntity::TDS_AMOUNT];
+        }
+
+        if (isset($input[PayoutsDetailsEntity::SUBTOTAL_AMOUNT]) === true)
+        {
+            $additionalInfo[PayoutsDetailsEntity::SUBTOTAL_AMOUNT_KEY] = (float) $input[PayoutsDetailsEntity::SUBTOTAL_AMOUNT];
+        }
+
+        if (isset($input[PayoutsDetailsEntity::ATTACHMENTS]) === true)
+        {
+            $additionalInfo[PayoutsDetailsEntity::ATTACHMENTS] = $input[PayoutsDetailsEntity::ATTACHMENTS_KEY];
+        }
+
+        if (empty($additionalInfo) === false)
+        {
+            $payoutDetailsInput[PayoutsDetailsEntity::ADDITIONAL_INFO] = json_encode($additionalInfo, true);
+        }
+
+        return $payoutDetailsInput;
     }
 
     protected function processPayoutLinkId(Payout\Entity & $payout, array & $input)

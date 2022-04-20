@@ -18,4 +18,10 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function updatePayoutDetails(array $payoutIds, $updates)
+    {
+        return $this->newQuery()
+                    ->whereIn(Entity::PAYOUT_ID, $payoutIds)
+                    ->update($updates);
+    }
 }

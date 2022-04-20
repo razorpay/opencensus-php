@@ -1741,6 +1741,7 @@ class BasicAuth
         return (($this->isDashboardApp() === true) or
                 ($this->isFrontendGraphqlApp() === true) or
                 ($this->isVendorPaymentApp() === true) or
+                ($this->isPayoutLinkApp() === true) or
                 ($this->isCapitalCardsApp() === true) or
                 ($this->isMobApp() === true) or
                 ($this->isCapitalLOCApp() === true) or

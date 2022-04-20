@@ -1601,4 +1601,18 @@ class PublicErrorDescription
     const BAD_REQUEST_STANDALONE_PAYOUT_TO_CARDS_NOT_ALLOWED                        = 'Standalone payouts API is not supported for payouts to card numbers, please use the composite API';
     const BAD_REQUEST_CUSTOMER_ADDRESS_NOT_FOUND                                    = 'Address not found/Invalid Address Id';
 
+    const BAD_REQUEST_TDS_AMOUNT_GREATER_THAN_PAYOUT_AMOUNT                         = 'TDS amount cannot be greater than Payout amount';
+    const BAD_REQUEST_INVALID_TDS_CATEGORY_ID                                       = 'Invalid TDS Category';
+    const BAD_REQUEST_UPDATE_PAYOUT_ATTACHMENTS                                     = 'Invalid Update Payout Attachments request';
+    const BAD_REQUEST_INVALID_PAYOUT_SOURCE_FOR_UPDATE                              = 'Invalid Payout Source for Update';
+    const BAD_REQUEST_ATTACHMENT_NOT_LINKED_TO_PAYOUT                               = 'Attachment not linked to payout';
+    const SERVER_ERROR_TAX_PAYMENT_ID_UPDATE_FAILURE                                = 'Failed to update tax payment ID for payout';
+    const SERVER_ERROR_INVALID_UFH_CLIENT                                           = 'Failed to create UFH Client';
+    const SERVER_ERROR_ATTACHMENT_UPDATE_FAILURE                                    = 'Failed to update attachment for payout';
+    const SERVER_ERROR_ATTACHMENT_GET_FAILURE                                       = 'Failed to get attachment for payout';
+    const BAD_REQUEST_PAYOUT_ATTACHMENT_NOT_ALLOWED_FOR_THIS_ROLE                   = 'Update not allowed for the user role in this state';
+    const BAD_REQUEST_INVALID_ATTACHMENT_SIZE                                       = 'File size greater than 5MB cannot be uploaded';
+    const BAD_REQUEST_AUTH_NOT_SUPPORTED_FOR_PAYOUT_WITH_TDS                        = 'Payout with TDS not supported via private auth';
+    const BAD_REQUEST_AUTH_NOT_SUPPORTED_FOR_PAYOUT_WITH_ATTACHMENTS                = 'Payout with attachments not supported via private auth';
+    const BAD_REQUEST_INVALID_TAX_PAYMENT_ID                                        = 'Invalid tax_payment_id';
 }

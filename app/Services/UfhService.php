@@ -80,6 +80,7 @@ class UfhService
 
     const FULLY_ONBOARDED_CLOUDFRONT_NAMESPACES = [
         EntityConstants::QR_CODE,
+        EntityConstants::PAYOUT,
     ];
 
     protected $config;
@@ -513,6 +514,11 @@ class UfhService
         $response = $this->ufhClient->download($input);
 
         return $response;
+    }
+
+    public function renameFile(string $fileId, string $fileName)
+    {
+        return $this->ufhClient->rename($fileId, $fileName);
     }
 
 }

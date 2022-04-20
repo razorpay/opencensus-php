@@ -162,6 +162,9 @@ class Core extends Base\Core
     /** @var PayoutService\Workflow*/
     protected $payoutWorkflowServiceClient;
 
+    /** @var TdsProcessor\Processor*/
+    protected $tdsProcessor;
+
     public function __construct()
     {
         parent::__construct();
@@ -188,6 +191,8 @@ class Core extends Base\Core
             $this->app[PayoutService\QueuedInitiate::PAYOUT_SERVICE_QUEUED_INITIATE];
 
         $this->workflowService = new Workflow\Service\Client;
+
+        $this->tdsProcessor = new TdsProcessor\Processor;
     }
 
     /**
@@ -554,12 +559,17 @@ class Core extends Base\Core
         switch ($status)
         {
             case Status::PROCESSED:
+                $oldStatus = $payout->getStatus();
                 $this->handlePayoutProcessed($payout, null, $ftsSourceAccountInformation);
+                if ($this->isHighTpsMerchant($payout) === false)
+                {
+                    $this->processTdsForPayout($payout, $oldStatus);
+                }
                 break;
 
             case Status::REVERSED:
-                if (($payout->isBalanceAccountTypeShared() === true) and
-                    ($payout->merchant->isFeatureEnabled(Feature\Constants::HIGH_TPS_COMPOSITE_PAYOUT) === true))
+                $oldStatus = $payout->getStatus();
+                if ($this->isHighTpsMerchant($payout) === true)
                 {
                     // this is only on shared account
                     $this->handlePayoutReversedForHighTpsMerchants($payout,
@@ -567,10 +577,12 @@ class Core extends Base\Core
                                                                    $ftaBankStatusCode,
                                                                    null,
                                                                    $ftsSourceAccountInformation);
+
                     break;
                 }
 
                 $this->handlePayoutReversed($payout, $ftaFailureReason, $ftaBankStatusCode, null, $ftsSourceAccountInformation, $ftaStatus);
+                $this->processTdsForPayout($payout, $oldStatus);
                 break;
 
             case Status::FAILED:
@@ -5226,6 +5238,54 @@ class Core extends Base\Core
                 }
             }
         }
+    }
+
+
+    public function processTdsForPayout(Entity $payout, string $oldStatus)
+    {
+        $this->trace->info(
+            TraceCode::TDS_PROCESSOR_PAYOUT_STATE_TRANSITION_DEBUG_INFO,
+            [
+                'payout_id'         => $payout->getId(),
+                'previous_status'   => $oldStatus,
+                'new_status'        => $payout->getStatus(),
+            ]
+        );
+
+        if (Status::isMoneyTransferredState($payout->getStatus()) === true)
+        {
+            try
+            {
+                $this->tdsProcessor->processTds($payout);
+            }
+            catch (\Throwable $e)
+            {
+                $data = [
+                    'payout_id' => $payout->getPublicId(),
+                ];
+
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::ERROR_PROCESSING_TDS_FOR_PAYOUT,
+                    $data
+                );
+
+                (new SlackNotification)->send(
+                    'Failed to process TDS for Payout',
+                    $data,
+                    $e,
+                    1,
+                    'x-alerts');
+            }
+
+        }
+    }
+
+    public function isHighTpsMerchant(Entity $payout): bool
+    {
+        return (($payout->isBalanceAccountTypeShared() === true) and
+                ($payout->merchant->isFeatureEnabled(Feature\Constants::HIGH_TPS_COMPOSITE_PAYOUT) === true));
     }
 
     /**

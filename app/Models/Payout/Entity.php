@@ -43,8 +43,8 @@ use RZP\Exception\UserWorkflowNotApplicableException;
 use RZP\Models\PayoutMeta\Entity as PayoutMetaEntity;
 use Razorpay\OAuth\Application\Repository as AppRepo;
 use RZP\Models\Payout\SourceUpdater\Core as SourceUpdater;
-use RZP\Models\PayoutsDetails\Entity as PayoutsDetailsEntity;
 use RZP\Models\PayoutsStatusDetails as PayoutsStatusDetails;
+use RZP\Models\PayoutsDetails\Entity as PayoutsDetailsEntity;
 
 /**
  * @property Customer\Entity        $customer
@@ -121,6 +121,9 @@ class Entity extends Base\PublicEntity
     const QUEUED_REASON                         = 'queued_reason';
     const SOURCE_TYPE_EXCLUDE                   = 'source_type_exclude';
     const ON_HOLD_AT                            = 'on_hold_at';
+
+    // string constants
+    const PARTNER_APPLICATION    = 'partner_application';
 
     // status code send from bank side
     const STATUS_CODE            = 'status_code';
@@ -1829,6 +1832,8 @@ class Entity extends Base\PublicEntity
 
     public function getPayoutMeta()
     {
+        $meta = array();
+
         $appId = $this->payoutMeta()->pluck(PayoutMetaEntity::APPLICATION_ID)->toArray();
 
         if (empty($appId) === false)
@@ -1839,10 +1844,52 @@ class Entity extends Base\PublicEntity
 
             $appInfo  = array_intersect_key($application, array_flip($allowedKeys));
 
-            return [
-                'partner_application' => $appInfo
-            ];
+            $meta[self::PARTNER_APPLICATION] = $appInfo;
         }
+
+        /*
+         * 1. $payoutDetailsKeysToFetch actual DB columns that we want to fetch
+         * 2. $payoutDetails->toArrayPublic() will do data transformation via $publicSetters
+         * i.e. prepare data in format "tds": {"category_id":<>, "amount":<>}, "attachments": [{}, {}], "subtotal_amount": 123
+         * 3. now we pull the required key from toArrayPublic() using array intersection with $visibleKeys
+         */
+        $payoutDetailsKeysToFetch = [
+            PayoutsDetailsEntity::TDS_CATEGORY_ID,
+            PayoutsDetailsEntity::ADDITIONAL_INFO,
+            PayoutsDetailsEntity::TAX_PAYMENT_ID,
+        ];
+
+        /** @var PayoutsDetailsEntity $payout */
+        $payoutDetails = $this->payoutsDetails()->first($payoutDetailsKeysToFetch);
+
+        if (empty($payoutDetails) === false)
+        {
+            $payoutDetailsArray = $payoutDetails->toArrayPublic();
+
+            $visibleKeys = [
+                PayoutsDetailsEntity::TDS,
+                PayoutsDetailsEntity::ATTACHMENTS,
+                PayoutsDetailsEntity::SUBTOTAL_AMOUNT,
+                PayoutsDetailsEntity::TAX_PAYMENT_ID,
+            ];
+
+            $visiblePayoutDetails = array_intersect_key($payoutDetailsArray, array_flip($visibleKeys));
+
+            $meta = array_merge($meta, $visiblePayoutDetails);
+        }
+        else
+        {
+            $defaultValues = [
+                PayoutsDetailsEntity::TDS               => null,
+                PayoutsDetailsEntity::ATTACHMENTS       => [],
+                PayoutsDetailsEntity::SUBTOTAL_AMOUNT   => null,
+                PayoutsDetailsEntity::TAX_PAYMENT_ID    => null,
+            ];
+
+            $meta = array_merge($meta, $defaultValues);
+        }
+
+        return $meta;
     }
 
     // ============================= END ACCESSORS =============================
@@ -2337,7 +2384,11 @@ class Entity extends Base\PublicEntity
 
     public function setPublicMetaAttribute(array & $attributes)
     {
-        if (app('basicauth')->isProxyAuth() === true)
+        /** @var BasicAuth $basicAuth */
+        $basicAuth = app('basicauth');
+
+        if (($basicAuth->isProxyAuth() === true)
+            or ($basicAuth->isPayoutLinkApp() === true))
         {
             $attributes[self::META] = $this->getPayoutMeta();
         }

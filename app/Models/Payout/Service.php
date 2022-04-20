@@ -31,22 +31,21 @@ use RZP\Models\FundAccount;
 use RZP\Http\RequestHeader;
 use RZP\Constants\Timezone;
 use RZP\Services\PayoutService;
-use RZP\Models\Admin\Permission;
-use RZP\Exception\LogicException;
 use RZP\Exception\DbQueryException;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\BankingAccountService;
-use RZP\Mail\Payout\PendingApprovals;
 use RZP\Models\Base\PublicCollection;
-use RZP\Models\Vpa\Entity as VpaEntity;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Payout\Batch as PayoutsBatch;
 use RZP\Models\Feature\Constants as Features;
+use RZP\Models\PayoutsDetails as PayoutDetails;
 use RZP\Jobs\PayoutPostCreateProcessLowPriority;
 use RZP\Models\Application\ApplicationMerchantMaps;
 use RZP\Models\PayoutsStatusDetails\StatusReasonMap;
-use RZP\Models\BankAccount\Entity as BankAccountEntity;
+use RZP\Models\PayoutSource\Core as PayoutSourceCore;
 use RZP\Models\Payout\BatchHelper as PayoutBatchHelper;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\PayoutSource\Entity as PayoutSourceEntity;
 use RZP\Models\FundAccount\Service as FundAccountService;
 use RZP\Services\RazorpayLabs\SlackApp as SlackAppService;
@@ -78,6 +77,8 @@ class Service extends Base\Service
 
     protected $workflowMigration;
 
+    protected $payoutDetailsCore;
+
     protected $workflowConfigService;
 
     protected const IS_VALID_PURPOSE = "is_valid_purpose";
@@ -89,6 +90,10 @@ class Service extends Base\Service
     protected const PAYOUT_NOTIFICATION_COUNT = 5;
 
     protected $compositePayoutSaveOrFail = true;
+
+    const FILE      = 'file';
+    const FILE_SIZE = 'file_size';
+    const ENTITY    = 'entity';
 
     /**
      * @var PayoutService\OnHoldCron
@@ -114,6 +119,8 @@ class Service extends Base\Service
         $this->slackAppService = new SlackAppService($this->app);
 
         $this->payoutServiceOnHoldCronClient = $this->app[PayoutService\OnHoldCron::PAYOUT_SERVICE_ON_HOLD_CRON];
+
+        $this->payoutDetailsCore = new PayoutDetails\Core();
     }
 
     public function createPayoutEntry($input)
@@ -2289,6 +2296,8 @@ class Service extends Base\Service
 
     protected function updatePayoutAndFTAManually(Entity $payout, array $input) : Entity
     {
+        $oldStatus = $payout->getStatus();
+
         $payout = $this->repo->transaction(
             function() use ($payout, $input)
             {
@@ -2299,6 +2308,8 @@ class Service extends Base\Service
 
                 return $payout;
             });
+
+        $this->core->processTdsForPayout($payout, $oldStatus);
 
         return $payout;
     }
@@ -2793,5 +2804,217 @@ class Service extends Base\Service
         );
 
         return ['success' => true];
+    }
+
+    /**
+     * Gets the signed URL for the attachment added against the payout
+     * @param string $payoutId
+     * @param string $attachmentId
+     *
+     * @return array|string[]
+     * @throws BadRequestValidationFailureException
+     * @throws Exception\ServerErrorException
+     */
+    public function getAttachmentSignedUrl(string $payoutId, string $attachmentId)
+    {
+        $payoutId = Entity::verifyIdAndStripSign($payoutId);
+
+        // validate the attachment ID against the payout
+        $payoutDetailsEntity = $this->payoutDetailsCore->getPayoutDetailsById($payoutId);
+
+        $attachments = $payoutDetailsEntity->getAttachmentsAttribute();
+
+        $found = false;
+
+        foreach ($attachments as $attachment)
+        {
+            if ($attachment[PayoutDetails\Entity::ATTACHMENTS_FILE_ID] === $attachmentId)
+            {
+                $found = true;
+
+                break;
+            }
+        }
+
+        if (!$found)
+        {
+            throw new BadRequestValidationFailureException(
+                ErrorCode::BAD_REQUEST_ATTACHMENT_NOT_LINKED_TO_PAYOUT,
+                PayoutDetails\Entity::ATTACHMENTS_FILE_ID,
+                $attachmentId
+            );
+        }
+
+
+        return $this->payoutDetailsCore
+            ->getAttachmentSignedUrl($attachmentId);
+    }
+
+    public function uploadAttachment(array $input): array
+    {
+        // only files <= 5MB can be uploaded as attachments
+        if ($input[self::FILE]->getSize() > 5000000)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_ATTACHMENT_SIZE,
+                self::FILE_SIZE,
+                $input[self::FILE_SIZE],
+                'File size greater than 5MB cannot be uploaded'
+            );
+        }
+
+        return $this->payoutDetailsCore->uploadAttachment($input[self::FILE],
+            $input['file']->getClientOriginalName(),
+            $this->merchant);
+    }
+
+    /**
+     * Update attachment against the payout
+     * All users can update attachment in non-final/non-processing state
+     * Only Owner and Admin can update attachment in final or processing state
+     * @param string $payoutId
+     * @param array  $input
+     *
+     * @return array
+     * @throws BadRequestException
+     * @throws Exception\ServerErrorException
+     */
+    public function updateAttachments(string $payoutId, array $input): array
+    {
+        $payoutId = Entity::verifyIdAndStripSign($payoutId);
+
+        $this->trace->info(TraceCode::UPDATE_PAYOUT_ATTACHMENTS_INPUT, [
+            'payout_id' => $payoutId,
+            'input'     => $input,
+        ]);
+
+        // updating attachments on payouts is only allowed for vanilla payouts
+        $payoutSource = (new PayoutSourceCore())->getPayoutSource($payoutId);
+
+        if ($payoutSource !== null)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_PAYOUT_SOURCE_FOR_UPDATE,
+                PayoutDetails\Entity::ATTACHMENTS,
+                $payoutSource,
+                'Invalid Payout Source for attachments update');
+        }
+
+        $payout = $this->repo->payout->findByIdAndMerchant($payoutId, $this->app['basicauth']->getMerchant());
+
+        $status = $payout[Entity::STATUS];
+
+        $userRole = $this->auth->getUserRole();
+
+        // only Owner and Admin can update attachment of payout in final or processing state
+        if (($userRole !== User\Role::OWNER and $userRole !== User\Role::ADMIN) and !$payout->isStatusBeforeCreate())
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYOUT_ATTACHMENT_NOT_ALLOWED_FOR_THIS_ROLE,
+                Entity::STATUS,
+                [
+                    'status'    => $status,
+                    'user_role' => $userRole
+                ],
+                'Update not allowed for the user role in this state'
+            );
+        }
+
+        (new Validator)->validateAttachments($input);
+
+        return $this->payoutDetailsCore
+            ->updateAttachments($payoutId, $input);
+    }
+
+    /**
+     * Updates all payouts against Payout Link with the new attachments
+     *
+     * @param array $input
+     *
+     * @return string[]
+     * @throws BadRequestException
+     * @throws Exception\ServerErrorException
+     */
+    public function bulkUpdateAttachments(array $input)
+    {
+        $validator = new Validator();
+
+        $validator->validateInput(Validator::BULK_UPDATE_ATTACHMENTS, $input);
+
+        $payoutIds = $input[PayoutDetails\Entity::PAYOUT_IDS];
+
+        $validPayoutIds = array();
+
+        $invalidPayoutIds = array();
+
+        $payoutsSourceCore = new PayoutSourceCore();
+
+        foreach ($payoutIds as $payoutId)
+        {
+            try
+            {
+                $payoutSource = $payoutsSourceCore->getPayoutSource($payoutId);
+
+                if ($payoutSource === null or $payoutSource->getSourceType() !== PayoutSourceEntity::PAYOUT_LINK)
+                {
+                    throw new BadRequestValidationFailureException(
+                        ErrorCode::BAD_REQUEST_INVALID_PAYOUT_SOURCE_FOR_UPDATE,
+                        PayoutSourceEntity::SOURCE_TYPE,
+                        $payoutSource
+                    );
+                }
+
+                array_push($validPayoutIds, $payoutId);
+            }
+            catch (BadRequestValidationFailureException $bex)
+            {
+                $this->trace->error(
+                    TraceCode::BAD_REQUEST_PAYOUT_INVALID_SOURCE_TYPE,
+                    [
+                        'payout_id' => $payoutId,
+                        'error'     => $bex->getMessage()
+                    ]);
+
+                array_push($invalidPayoutIds, $payoutId);
+            }
+        }
+
+        if (!empty($invalidPayoutIds))
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_UPDATE_PAYOUT_ATTACHMENTS,
+                PayoutDetails\Entity::PAYOUT_IDS,
+                $invalidPayoutIds,
+                'Failed to update payouts'
+            );
+        }
+
+        $validator->validateInput(Validator::UPDATE_REQUEST, $input[PayoutDetails\Entity::UPDATE_REQUEST]);
+
+        $validator->validateAttachments($input[PayoutDetails\Entity::UPDATE_REQUEST]);
+
+        return $this->payoutDetailsCore
+            ->bulkUpdateAttachments($validPayoutIds, $input[PayoutDetails\Entity::UPDATE_REQUEST]);
+    }
+
+    /**
+     * Updates Tax Payment Id against the Payout
+     *
+     * @param string $payoutId
+     * @param array  $input
+     *
+     * @return array
+     * @throws Exception\ServerErrorException
+     */
+    public function updateTaxPayment(string $payoutId, array $input)
+    {
+        $payoutId = Entity::verifyIdAndStripSign($payoutId);
+
+        (new Validator)->validateInput(Validator::UPDATE_TAX_PAYMENT, $input);
+
+        $taxPaymentId = Base\PublicEntity::stripDefaultSign($input[PayoutDetails\Entity::TAX_PAYMENT_ID]);
+
+        return $this->payoutDetailsCore
+            ->updateTaxPayment($payoutId, $taxPaymentId);
     }
 }

@@ -558,7 +558,7 @@ class PayoutController extends Controller
 
         return ApiResponse::json($data);
     }
-
+    
     public function getOnHoldMerchantSlas()
     {
         $input = Request::all();
@@ -584,6 +584,46 @@ class PayoutController extends Controller
         $data = $this->service()->getHolidayDetails($input);
 
         return ApiResponse::json($data);
+    }
+
+    // upload a new file as attachment for the payout
+    public function uploadAttachment()
+    {
+        $input = Request::all();
+
+        return ApiResponse::json($this->service()->uploadAttachment($input));
+    }
+
+    // get the signed url of the attachment uploaded against the payout
+    public function getAttachmentSignedUrl(string $payoutId, string $attachmentId)
+    {
+        $data = $this->service()->getAttachmentSignedUrl($payoutId, $attachmentId);
+
+        return ApiResponse::json($data);
+    }
+
+    // update the attachment on payout
+    public function updateAttachments(string $payoutId)
+    {
+        $input = Request::all();
+
+        return ApiResponse::json($this->service()->updateAttachments($payoutId, $input));
+    }
+
+    // sync attachments on payouts linked with payout-links
+    public function bulkUpdateAttachments()
+    {
+        $input = Request::all();
+
+        return ApiResponse::json($this->service()->bulkUpdateAttachments($input));
+    }
+
+    // update tax payment ID on payout
+    public function updateTaxPayment(string $payoutId)
+    {
+        $input = Request::all();
+
+        return ApiResponse::json($this->service()->updateTaxPayment($payoutId, $input));
     }
 
 }

@@ -8,6 +8,7 @@ use RZP\Models\Settlement\Channel;
 use RZP\Http\BasicAuth\Type as AuthType;
 use RZP\Models\Reversal\Entity as ReversalEntity;
 use RZP\Models\PayoutSource\Entity as PayoutSource;
+use RZP\Models\PayoutsDetails\Entity as PayoutDetails;
 use RZP\Models\PayoutsStatusDetails\Entity as PayoutsStatusDetails;
 
 class Fetch extends BaseFetch
@@ -64,12 +65,14 @@ class Fetch extends BaseFetch
             PayoutSource::SOURCE_ID                 => 'sometimes|string',
             PayoutSource::SOURCE_TYPE               => 'sometimes|string',
             Entity::REVERSAL_ID                     => 'sometimes|public_id|size:20',
+            PayoutDetails::TDS_CATEGORY_ID          => 'sometimes|integer',
+            PayoutDetails::TAX_PAYMENT_ID           => 'sometimes|string',
         ],
         AuthType::PRIVILEGE_AUTH => [
-            Entity::PRODUCT           => 'sometimes|string',
-            Entity::PAYOUT_LINK_ID    => 'sometimes|string',
-            PayoutSource::SOURCE_ID   => 'sometimes|string',
-            PayoutSource::SOURCE_TYPE => 'sometimes|string',
+            Entity::PRODUCT                 => 'sometimes|string',
+            Entity::PAYOUT_LINK_ID          => 'sometimes|string',
+            PayoutSource::SOURCE_ID         => 'sometimes|string',
+            PayoutSource::SOURCE_TYPE       => 'sometimes|string',
         ],
         AuthType::PRIVATE_AUTH => [
             self::EXPAND_EACH                       => 'filled|string|in:user,reversal,fund_account,fund_account.contact,transaction',
@@ -140,6 +143,8 @@ class Fetch extends BaseFetch
             Entity::QUEUED_REASON,
             Entity::REVERSAL_ID,
             PayoutsStatusDetails::REASON,
+            PayoutDetails::TDS_CATEGORY_ID,
+            PayoutDetails::TAX_PAYMENT_ID,
         ],
         AuthType::PRIVILEGE_AUTH => [
             Entity::MERCHANT_ID,
@@ -150,6 +155,8 @@ class Fetch extends BaseFetch
             Entity::PAYOUT_LINK_ID,
             PayoutSource::SOURCE_ID,
             PayoutSource::SOURCE_TYPE,
+            PayoutDetails::TDS_CATEGORY_ID,
+            PayoutDetails::TAX_PAYMENT_ID,
         ],
     ];
 

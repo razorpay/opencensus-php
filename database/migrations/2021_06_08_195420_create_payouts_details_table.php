@@ -30,6 +30,22 @@ class CreatePayoutsDetailsTable extends Migration
 
             $table->integer(Entity::UPDATED_AT);
 
+            $table->string(Entity::TAX_PAYMENT_ID)
+                ->nullable()
+                ->default(null);
+
+            $table->unsignedInteger(Entity::TDS_CATEGORY_ID)
+                ->nullable()
+                ->default(null);
+
+            $table->json(Entity::ADDITIONAL_INFO)
+                ->nullable()
+                ->default(null);
+
+            $table->index(Entity::TDS_CATEGORY_ID);
+
+            $table->index(Entity::TAX_PAYMENT_ID);
+
         });
     }
 

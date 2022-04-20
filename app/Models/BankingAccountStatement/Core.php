@@ -1134,10 +1134,16 @@ class Core extends Base\Core
                 return;
             }
 
-            (new Payout\Core)->handlePayoutReversed($payout,
+            $oldStatus = $payout->getStatus();
+
+            $payoutCore = new Payout\Core;
+
+            $payoutCore->handlePayoutReversed($payout,
                                                     null,
                                                     null,
                                                     $creditBas);
+
+            $payoutCore->processTdsForPayout($payout, $oldStatus);
 
             if (($key = array_search($basEntity->getUtr(), $this->creditBeforeDebitUtrs)) !== false)
             {
@@ -2405,7 +2411,13 @@ class Core extends Base\Core
         }
         else
         {
-            (new Payout\Core)->handlePayoutProcessed($payout, $debit_bas);
+            $oldStatus = $payout->getStatus();
+
+            $payoutCore = new Payout\Core;
+
+            $payoutCore->handlePayoutProcessed($payout, $debit_bas);
+
+            $payoutCore->processTdsForPayout($payout, $oldStatus);
         }
     }
 
@@ -2419,7 +2431,13 @@ class Core extends Base\Core
         }
         else
         {
-            (new Payout\Core)->handlePayoutReversed($payout, null, null, $credit_bas);
+            $oldStatus = $payout->getStatus();
+
+            $payoutCore = new Payout\Core;
+
+            $payoutCore->handlePayoutReversed($payout, null, null, $credit_bas);
+
+            $payoutCore->processTdsForPayout($payout, $oldStatus);
         }
     }
 

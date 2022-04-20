@@ -1490,6 +1490,11 @@ class Route
         'payout_reject_bulk'                       => ['post',     'payouts/reject/bulk',                            'PayoutController@bulkRejectFundAccountPayouts'                     ],
         'payout_approve'                           => ['post',     'payouts/{id}/approve',                           'PayoutController@postApproveFundAccountPayout'                     ],
         'payout_reject'                            => ['post',     'payouts/{id}/reject',                            'PayoutController@postRejectFundAccountPayout'                      ],
+        'payout_update_attachments'                => ['patch',    'payouts/{id}/attachments',                       'PayoutController@updateAttachments'                                ],
+        'payout_bulk_update_attachments'           => ['patch',    'payouts_internal/attachments',                   'PayoutController@bulkUpdateAttachments'                            ],
+        'payout_update_tax_payment_id'             => ['patch',    'payouts_internal/{id}/tax-payment-id',           'PayoutController@updateTaxPayment'                                 ],
+        'payout_upload_attachment'                 => ['post',     'payouts/attachment',                             'PayoutController@uploadAttachment'                                 ],
+        'payout_get_attachment_signed_url'         => ['get',      'payouts/{payout_id}/attachment/{attachment_id}',                    'PayoutController@getAttachmentSignedUrl'                                    ],
         'payout_reject_admin_bulk'                 => ['post',     'admin/payouts/cancel',                           'PayoutController@bulkRejectFundAccountPayouts'                     ],
         'payout_fetch_by_id'                       => ['get',      'payouts/{id}',                                   'PayoutController@getPayout'                                        ],
         'payout_fetch_by_id_internal'              => ['get',      'payouts_internal/{id}',                          'PayoutController@getPayout'                                        ],
@@ -4540,6 +4545,7 @@ class Route
         'create_payment_payout_service_axis_cc',
         'update_payout_payout_service',
         'internal_balances_queued',
+        'payout_bulk_update_attachments',
 
 
         // payment analytics cron creates a new partition and drops oldest partition, runs daily
@@ -4662,7 +4668,9 @@ class Route
         'payments_card_es_sync_cron',
 
         'payment_upi_authorize_failed',
-
+      
+        'payout_update_tax_payment_id',
+      
         'recon_update_upi_data',
         'payment_transfer_retry_batch',
 
@@ -5147,8 +5155,11 @@ class Route
         'user_verify_contact',
         'user_verify_email',
         'payout_create_with_otp',
+        'payout_update_attachments',
+        'payout_upload_attachment',
         'undo_payout_creation',
         'resume_payout_creation',
+        'payout_get_attachment_signed_url',
         'payout_validate',
         'user_send_x_mobile_app_link',
         'payout_approve_bulk',
@@ -7908,6 +7919,9 @@ class Route
         'payout_approve'                               => Permission::APPROVE_PAYOUT,
         'payout_reject'                                => Permission::REJECT_PAYOUT,
         'payout_fetch_by_id'                           => Permission::VIEW_PAYOUT,
+        'payout_update_attachments'                    => Permission::UPDATE_PAYOUT,
+        'payout_upload_attachment'                     => Permission::CREATE_PAYOUT,
+        'payout_get_attachment_signed_url'             => Permission::VIEW_PAYOUT,
         'payout_fetch_multiple'                        => Permission::VIEW_PAYOUT,
         'payout_status_to_reason_mapping'              => Permission::VIEW_PAYOUT,
         'payout_cancel'                                => Permission::CANCEL_PAYOUT,
@@ -8463,6 +8477,7 @@ class Route
             'app_merchant_mapping_update',
             'merchant_fetch_internal_users',
             'user_details_unified',
+            'payout_update_tax_payment_id',
         ],
 
         'dashboard' => [
@@ -9196,8 +9211,11 @@ class Route
             'payout_create',
             'payout_validate',
             'payout_create_with_otp',
+            'payout_update_attachments',
+            'payout_upload_attachment',
             'undo_payout_creation',
             'resume_payout_creation',
+            'payout_get_attachment_signed_url',
             'payout_get_holiday_details',
             'payout_fetch_by_id',
             'payout_fetch_multiple',
@@ -11696,6 +11714,7 @@ class Route
             'banking_accounts_list_internal',
             'app_merchant_mapping_create',
             'app_merchant_mapping_update',
+            'payout_bulk_update_attachments',
         ],
 
         'express' => [
@@ -13336,6 +13355,10 @@ class Route
         'list_low_balance_config_admin',
 
         'oauth_token_create_for_apple_watch',
+
+        'payout_upload_attachment',
+        'payout_update_attachments',
+        'payout_get_attachment_signed_url',
     ];
 
 

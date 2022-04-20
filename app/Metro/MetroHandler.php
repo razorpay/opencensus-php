@@ -37,7 +37,7 @@ class MetroHandler
         $this->pubSubClient = new PubSubClient($config);
 
         unset($config['username']);
-        
+
         unset($config['password']);
     }
 
@@ -58,7 +58,14 @@ class MetroHandler
             'topic' => $topicName
         ]);
 
-        return $topic->publish($message);
+        $response = $topic->publish($message);
+
+        $this->trace->info(TraceCode::MESSAGE_PUBLISHED_TO_TOPIC, [
+            'topic'     => $topicName,
+            'response'  => $response,
+        ]);
+
+        return $response;
     }
 
 }

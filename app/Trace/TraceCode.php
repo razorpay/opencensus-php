@@ -6764,6 +6764,14 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FETCHING_LOGO_FROM_URL                            = 'FETCHING_LOGO_FROM_URL';
     const ERROR_WHILE_FETCHING_LOGO_FROM_URL                = 'ERROR_WHILE_FETCHING_LOGO_FROM_URL';
 
+    const PAYOUT_INVALID_UPDATE                             = 'PAYOUT_INVALID_UPDATE';
+    const PAYOUT_ATTACHMENT_UPLOADED_SUCCESSFULLY           = 'PAYOUT_ATTACHMENT_UPLOADED_SUCCESSFULLY';
+    const PAYOUT_DETAILS_ATTACHMENT_GET_SIGNED_URL_RESPONSE = 'PAYOUT_DETAILS_ATTACHMENT_GET_SIGNED_URL_RESPONSE';
+    const BAD_REQUEST_PAYOUT_INVALID_SOURCE_TYPE            = 'BAD_REQUEST_PAYOUT_INVALID_SOURCE_TYPE';
+    const PAYOUT_DETAILS_UFH_SERVICE_NULL                   = 'PAYOUT_DETAILS_UFH_SERVICE_NULL';
+    const PAYOUT_ATTACHMENT_RENAME_FAILURE                  = 'PAYOUT_ATTACHMENT_RENAME_FAILURE';
+    const UPDATE_PAYOUT_ATTACHMENTS_INPUT                   = 'UPDATE_PAYOUT_ATTACHMENTS_INPUT';
+
     // Nocode custom url migration traces
     const NOCODE_CUSTOM_URL_MIGRATION_START                     = 'NOCODE_CUSTOM_URL_MIGRATION_START';
     const NOCODE_CUSTOM_URL_MIGRATION_COMPLETED                 = 'NOCODE_CUSTOM_URL_MIGRATION_COMPLETED';
@@ -6801,9 +6809,18 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CRON_FETCH_AUTHORIZED_TRANSACTED_MERCHANTS_FAILURE            = 'CRON_FETCH_AUTHORIZED_TRANSACTED_MERCHANTS_FAILURE';
 
 
+    const NO_TDS_FOR_PAYOUT                                 = 'NO_TDS_FOR_PAYOUT';
+    const PROCESSING_TDS_FOR_PAYOUT                         = 'PROCESSING_TDS_FOR_PAYOUT';
+    const NO_PAYOUT_DETAILS_FOR_PAYOUT                      = 'NO_PAYOUT_DETAILS_FOR_PAYOUT';
+    const ERROR_PROCESSING_TDS_FOR_PAYOUT                   = 'ERROR_PROCESSING_TDS_FOR_PAYOUT';
+    const TDS_FOR_PAYOUT_METRO_MESSAGE_PUBLISHED            = 'TDS_FOR_PAYOUT_METRO_MESSAGE_PUBLISHED';
+    const TDS_FOR_PAYOUT_METRO_MESSAGE_PUBLISH_ERROR        = 'TDS_FOR_PAYOUT_METRO_MESSAGE_PUBLISH_ERROR';
+
     const SDK_CALL_TO_PREFERENCES_ENDPOINT = 'SDK_CALL_TO_PREFERENCES_ENDPOINT';
 
     const FETCH_PAYMENTS_FAILED_TO_SET_OPTIMIZER_PROVIDER    = 'FETCH_PAYMENTs_FAILED_TO_SET_OPTIMIZER_PROVIDER';
+
+    const TDS_PROCESSOR_PAYOUT_STATE_TRANSITION_DEBUG_INFO   = 'TDS_PROCESSOR_PAYOUT_STATE_TRANSITION_DEBUG_INFO';
 
     // Tenant roles codes
     const TENANT_ENTITY_ACCESS_DENIED                           = 'TENANT_ENTITY_ACCESS_DENIED';
@@ -6998,6 +7015,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
         self::FAV_UPDATE_FROM_FTS_WEBHOOK_UPDATE_TRANSACTION_INIT   => 'Updating transaction entity for FAV as FTS webhook was received',
         self::FTS_UPDATE_EXISTING_SOURCE_ACCOUNT_TOKENISED_CREDS    => 'Input creds received from vault after tokenisation',
         self::STANDALONE_PAYOUT_TO_CARDS_NOT_ALLOWED                => 'Standalone payouts API is not supported for payouts to card numbers, please use the composite API',
+        self::PAYOUT_INVALID_UPDATE                                 => 'Invalid Update operation on Payout',
+        self::BAD_REQUEST_PAYOUT_INVALID_SOURCE_TYPE                => 'Invalid source type on payout',
+        self::UPDATE_PAYOUT_ATTACHMENTS_INPUT                       => 'Update Payout Attachments request',
         ];
 
     public static $fileBasedReconTraceCodes = [
