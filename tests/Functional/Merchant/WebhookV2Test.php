@@ -128,9 +128,19 @@ class WebhookV2Test extends TestCase
         $this->assertContains('order.paid', $response);
         $this->assertContains('virtual_account.credited', $response);
         $this->assertNotContains('subscription.charged', $response);
+        $this->assertNotContains('payment.pending', $response);
 
         // Events of other products (e.g. banking) should not come in response.
         $this->assertNotContains('transaction.created', $response);
+    }
+
+    public function testGetWebhookEventsFor1CC()
+    {
+        $this->fixtures->merchant->addFeatures(['one_click_checkout']);
+
+        $response = $this->startTest();
+
+        $this->assertContains('payment.pending', $response);
     }
 
     public function testGetWebhookEventsForProductBanking()

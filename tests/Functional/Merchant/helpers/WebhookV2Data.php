@@ -370,6 +370,25 @@ return [
         'response' => [
             'content' => [
                 'payment.authorized',
+                'payment.failed',
+                'payment.captured',
+                'payment.dispute.created',
+                'order.paid',
+                'invoice.paid',
+                'invoice.partially_paid',
+                'invoice.expired',
+            ]
+        ]
+    ],
+
+    'testGetWebhookEventsFor1CC' => [
+        'request' => [
+            'url'   => '/webhooks/events/all',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'payment.authorized',
                 'payment.pending',
                 'payment.failed',
                 'payment.captured',
@@ -1270,7 +1289,6 @@ return [
         'response' => [
             'content' => [
                 'payment.authorized',
-                'payment.pending',
                 'payment.failed',
                 'payment.captured',
                 'payment.dispute.created',

@@ -857,6 +857,7 @@ class Event
         self::TOKEN_SERVICE_PROVIDER_EXPIRY_UPDATED       => Feature\Constants::NETWORK_TOKENIZATION_LIVE,
         self::PAYMENT_GATEWAY_PRODUCT_ACTIVATED_KYC_PENDING => Feature\Constants::SUBMERCHANT_ONBOARDING_V2,
         self::PAYMENT_LINKS_PRODUCT_ACTIVATED_KYC_PENDING   => Feature\Constants::SUBMERCHANT_ONBOARDING_V2,
+        self::PAYMENT_PENDING                               => Feature\Constants::ONE_CLICK_CHECKOUT,
 
     ];
 
