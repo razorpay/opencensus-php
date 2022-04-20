@@ -1387,6 +1387,7 @@ class ErrorCode
     const SERVER_ERROR_SPLITZ_FAILURE                                               = 'SERVER_ERROR_SPLITZ_FAILURE';
     const SERVER_ERROR_GROWTH_FAILURE                                               = 'SERVER_ERROR_GROWTH_FAILURE';
     const SERVER_ERROR_SPLITZ_BULK_FAILURE                                          = 'SERVER_ERROR_SPLITZ_BULK_FAILURE';
+    const SERVER_ERROR_COMMISSION_SERVICE_FAILURE                                   = 'SERVER_ERROR_COMMISSION_SERVICE_FAILURE';
 
     const SERVER_ERROR_SLAVE_LAG_THRESHOLD_BREACHED                                 = 'SERVER_ERROR_SLAVE_LAG_THRESHOLD_BREACHED';
 
