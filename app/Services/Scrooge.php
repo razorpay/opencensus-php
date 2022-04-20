@@ -3,6 +3,7 @@
 namespace RZP\Services;
 
 use RZP\Exception;
+use Requests_Exception;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payout\Entity;
 use RZP\Http\Request\Requests;
@@ -163,7 +164,7 @@ class Scrooge
      *
      * @return array
      * @throws Exception\RuntimeException
-     * @throws \Requests_Exception
+     * @throws Requests_Exception
      */
     public function getReports(array $input): array
     {
@@ -197,7 +198,7 @@ class Scrooge
      * @param bool $throwExceptionOnFailure
      * @return array
      * @throws Exception\RuntimeException
-     * @throws \Requests_Exception
+     * @throws Requests_Exception
      */
     public function bulkUpdateRefundStatus(array $input,  bool $throwExceptionOnFailure = false): array
     {
@@ -224,7 +225,7 @@ class Scrooge
      * @param bool $throwExceptionOnFailure
      * @return array
      * @throws Exception\RuntimeException
-     * @throws \Requests_Exception
+     * @throws Requests_Exception
      */
     public function bulkUpdateRefundReference1(array $input,  bool $throwExceptionOnFailure = false): array
     {
@@ -237,7 +238,7 @@ class Scrooge
      * @param bool $throwExceptionOnFailure
      * @return array
      * @throws Exception\RuntimeException
-     * @throws \Requests_Exception
+     * @throws Requests_Exception
      */
     public function enqueueRefunds(array $input,  bool $throwExceptionOnFailure = false): array
     {
@@ -250,7 +251,7 @@ class Scrooge
      *
      * @return array
      * @throws Exception\RuntimeException
-     * @throws \Requests_Exception
+     * @throws Requests_Exception
      */
     public function getRefunds(array $input): array
     {
@@ -262,7 +263,7 @@ class Scrooge
      *
      * @return array
      * @throws Exception\RuntimeException
-     * @throws \Requests_Exception
+     * @throws Requests_Exception
      */
     public function getFileBasedRefunds(array $input): array
     {
@@ -387,7 +388,7 @@ class Scrooge
      *
      * @return array
      * @throws Exception\RuntimeException
-     * @throws \Requests_Exception
+     * @throws Requests_Exception
      */
     public function getRefund(string $id): array
     {
@@ -399,7 +400,7 @@ class Scrooge
      * @param array $params
      * @return array
      * @throws Exception\RuntimeException
-     * @throws \Requests_Exception
+     * @throws Requests_Exception
      */
     public function getPublicRefund(string $id, array $params = []): array
     {
@@ -413,9 +414,9 @@ class Scrooge
     /**
      * @param string $id
      * @param array $params
-     * @return array
+     * @return string
      * @throws Exception\RuntimeException
-     * @throws \Requests_Exception
+     * @throws Requests_Exception
      */
     public function getRefundTerminalId(string $id, array $params = []): string
     {
@@ -650,12 +651,77 @@ class Scrooge
     }
 
     /**
+     * @param $id
+     * @param array $input
+     * @return array
+     */
+    public function refundsFetchById($id, array $input): array
+    {
+        // send passport token to Scrooge
+        $this->enablePassport();
+
+        return $this->sendRequest(
+            self::RefundsBaseURL . '/' . $id,
+            Requests::GET,
+            $input);
+    }
+
+    /**
+     * @param array $input
+     * @return array
+     */
+    public function refundsFetchMultiple(array $input): array
+    {
+        // send passport token to Scrooge
+        $this->enablePassport();
+
+        return $this->sendRequest(
+            self::RefundsBaseURL,
+            Requests::GET,
+            $input);
+    }
+
+    /**
+     * @param $paymentId
+     * @param array $input
+     * @return array
+     */
+    public function refundsFetchByPayment($paymentId, array $input): array
+    {
+        // send passport token to Scrooge
+        $this->enablePassport();
+
+        return $this->sendRequest(
+            self::PaymentsBaseURL . '/' . $paymentId . '/' . self::URLS['get_refunds'],
+            Requests::GET,
+            $input);
+    }
+
+    /**
+     * @param $paymentId
+     * @param $refundId
+     * @return array
+     */
+    public function refundsFetchByIdAndPayment($paymentId, $refundId): array
+    {
+        // send passport token to Scrooge
+        $this->enablePassport();
+
+        return $this->sendRequest(
+            self::PaymentsBaseURL . '/' . $paymentId . '/' . self::URLS['get_refunds'] . '/' . $refundId,
+            Requests::GET,
+            []);
+    }
+
+    /**
      * @param string $endpoint
      * @param string $method
-     * @param array  $data
-     * @param bool   $throwExceptionOnFailure
+     * @param array $data
+     * @param bool $throwExceptionOnFailure
      *
      * @return array
+     * @throws Exception\RuntimeException
+     * @throws Requests_Exception
      */
     protected function sendRequest(
         string $endpoint,
@@ -721,7 +787,7 @@ class Scrooge
      * @param array $request
      *
      * @return \Requests_Response
-     * @throws \Requests_Exception
+     * @throws Requests_Exception
      */
     protected function sendScroogeRequest(array $request): \Requests_Response
     {
@@ -737,7 +803,7 @@ class Scrooge
                             $request['options']);
         }
         // TODO: Check why are we catching this and rethrowing
-        catch(\Requests_Exception $e)
+        catch(Requests_Exception $e)
         {
             $this->trace->traceException(
                                 $e,
@@ -871,42 +937,5 @@ class Scrooge
             'error_code'        => $payout->getStatusCode(),
             'error_description' => $payout->getFailureReason(),
         ];
-    }
-
-    /**
-     * @param $id
-     * @param array $input
-     * @return array
-     */
-    public function refundsFetchById($id, array $input): array
-    {
-        return $this->sendRequest(
-            self::RefundsBaseURL . '/' . $id,
-            Requests::GET,
-            $input);
-    }
-
-    public function refundsFetchMultiple(array $input): array
-    {
-        return $this->sendRequest(
-            self::RefundsBaseURL,
-            Requests::GET,
-            $input);
-    }
-
-    public function refundsFetchByPayment($paymentId, array $input): array
-    {
-        return $this->sendRequest(
-            self::PaymentsBaseURL . '/' . $paymentId . '/' . self::URLS['get_refunds'],
-            Requests::GET,
-            $input);
-    }
-
-    public function refundsFetchByIdAndPayment($paymentId, $refundId): array
-    {
-        return $this->sendRequest(
-            self::PaymentsBaseURL . '/' . $paymentId . '/' . self::URLS['get_refunds'] . '/' . $refundId,
-            Requests::GET,
-            []);
     }
 }
