@@ -2724,6 +2724,7 @@ trait Refund
             'payment_service_route'     => $payment->getCpsRoute(),
             'sequence_no'               => $refund->getReference3(),
             'payment_gateway_captured'  => $payment->getGatewayCaptured(),
+            'reversal_id'               => $refund->getReversalId(),
         ];
 
         //

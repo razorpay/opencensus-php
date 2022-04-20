@@ -680,6 +680,11 @@ class Entity extends Base\PublicEntity
         return $this->payment->getTerminalId();
     }
 
+    public function getReversalId()
+    {
+        return $this->getAttribute(self::REVERSAL_ID);
+    }
+
     protected function getAcquirerDataAttribute()
     {
         $acquirerData = [];
