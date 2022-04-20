@@ -23,13 +23,10 @@ class GrowthController extends Controller
         $response = [];
 
         try {
-            if (empty($parameters) === false) {
 
-                $response = $this->app->growthService->sendAdminRequest($parameters, $path, Request::method());
+            $response = $this->app->growthService->sendAdminRequest($parameters, $path, Request::method());
+            $response = ApiResponse::json($response);
 
-                $response = ApiResponse::json($response);
-
-            }
         } catch (\Throwable $e) {
             throw new Exception\ServerErrorException('Error completing the request', ErrorCode::SERVER_ERROR_GROWTH_FAILURE, null, $e);
         }
