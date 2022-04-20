@@ -15,12 +15,14 @@ use RZP\Models\Merchant\FreshdeskTicket\Validator as BaseValidator;
 class Validator extends BaseValidator
 {
     protected static $supportTicketFirstAgentReplyRules = [
+        // Make ticket ID required and string in future
         Constants::TICKET_ID        => 'required',
         Constants::PRIORITY         => 'required|custom:priorityString',
         Constants::CUSTOM_FIELDS    => 'required|array',
     ];
 
     protected static $ticketCreateCallbackRules = [
+        // Make ticket ID required and string in future
         Entity::TICKET_ID                                         => 'required',
         Entity::MERCHANT_ID                                       => 'required',
         Entity::TYPE                                              => 'required|custom',
@@ -31,6 +33,7 @@ class Validator extends BaseValidator
     ];
 
     protected static $ticketStatusUpdateCallbackRules = [
+        // Make ticket ID required and string in future
         Entity::TICKET_ID                                         => 'required',
         Entity::MERCHANT_ID                                       => 'required',
         Entity::TYPE                                              => 'required|custom',
@@ -40,10 +43,12 @@ class Validator extends BaseValidator
     ];
 
     protected static $websiteCheckerReplyRules = [
+        // Make ticket ID required and string in future
         Entity::TICKET_ID   => 'required',
     ];
 
     protected static $notifyMerchantRules = [
+        // Make ticket ID required and string in future
         Entity::TICKET_ID             => 'required',
         Constants::NOTIFICATION_EVENT => 'required|custom:NotificationEvent',
         Constants::FD_INSTANCE        => 'required|custom:fd_instance',
