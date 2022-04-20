@@ -235,7 +235,6 @@ class Service extends Base\Service
             'rx_payout_link_workflow',
             'rx_ca_programmatic_engagement',
             'capital_xca_pay_now',
-            'pp_shiprocket',
             'rx_ca_sales_led_welcome_screen',
             'fee_credit_self_serve',
             'refund_credit_self_serve',

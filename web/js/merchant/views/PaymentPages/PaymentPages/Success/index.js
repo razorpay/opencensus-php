@@ -19,7 +19,6 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 import { fetchPaymentPage, updateReceiptDetails, updateData } from 'merchant/reducers/wysiwyg';
 
 import RoundTickImage from '../../../../../../icons/merchant/tick-round.svg';
-import EmbedButtonImage from '../../../../../../icons/merchant/embed-button.svg';
 import ShiprocketImage from '../../../../../../css/assets/payment_pages/shiprocket.svg';
 
 import { autoPrefixUrls, getErrorMessageFromResponse } from 'common/utils/rzp-utils';
@@ -224,7 +223,7 @@ class Success extends React.Component {
   };
 
   render() {
-    const { paymentPageEntity, FORM_ITEMS, user } = this.props;
+    const { paymentPageEntity, FORM_ITEMS } = this.props;
     const { isLoaded, isPageLoadError } = this.state;
 
     let content;
@@ -415,21 +414,10 @@ class Success extends React.Component {
                     <i className="i i-redirect" />
                     <b>Redirect</b> customers to your website after payment <br />
                   </div>
-                  {user.isPPShiprocket ? (
-                    <div className="box--line">
-                      <img
-                        src={ShiprocketImage}
-                        alt="shiprocket-logo"
-                        className="shiprocket-image"
-                      />
-                      <b>Create orders on Shiprocket</b> after customer pays on this page <br />
-                    </div>
-                  ) : (
-                    <div className="box--line">
-                      <img src={EmbedButtonImage} alt="embed-button" className="embed-image" />
-                      <b>Embed a button</b> on your website that links to this payment page <br />
-                    </div>
-                  )}
+                  <div className="box--line">
+                    <img src={ShiprocketImage} alt="shiprocket-logo" className="shiprocket-image" />
+                    <b>Create orders on Shiprocket</b> after customer pays on this page <br />
+                  </div>
                   <div className="box--line">
                     <i className="i i-signal" />
                     Track page usage with <b>Facebook Pixel & Google Analytics</b>

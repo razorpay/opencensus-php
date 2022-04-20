@@ -1041,7 +1041,6 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
             isTestMode={this.props.mode.toLowerCase() === 'test'}
             handleShiprocket={this.handleShiprocket}
             isShiprocket={isShiprocket}
-            isPPShiprocket={user.isPPShiprocket}
           />
         )}
 

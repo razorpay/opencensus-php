@@ -34,7 +34,7 @@ export default class PaymentPagesContainer extends Component {
     return (
       <>
         <div className="banner-container">
-          {user.isPPShiprocket && <ShiprocketBanner userId={user?.current} />}
+          <ShiprocketBanner userId={user?.current} />
           <DashboardBanner />
         </div>
         <tabbed-container>
