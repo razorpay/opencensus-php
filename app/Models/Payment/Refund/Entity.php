@@ -349,13 +349,7 @@ class Entity extends Base\PublicEntity
             if (isset($response[self::SETTLED_BY]) && $response[self::SETTLED_BY] == 'Razorpay') {
                 $response[self::OPTIMIZER_PROVIDER]  = 'Razorpay';
             } else {
-                $provider = $this->getOptimizerProvider($response[self::ID]);
-                if (empty($provider) === false) {
-                    $response[self::OPTIMIZER_PROVIDER] = $provider;
-                } else {
-                    $response[self::OPTIMIZER_PROVIDER] = $this->payment->getTerminalId();
-
-                }
+                $response[self::OPTIMIZER_PROVIDER] = $this->payment->getTerminalId();
             }
         }
 
@@ -385,27 +379,27 @@ class Entity extends Base\PublicEntity
         return $this->getPublicStatus($response, $data);
     }
 
-    public function getOptimizerProvider(string $id) {
-
-        $app   = App::getFacadeRoot();
-        $trace = $app['trace'];
-
-        try
-        {
-            return $app['scrooge']->getRefundTerminalId($id);
-        }
-        catch(\Throwable $e)
-        {
-            $trace->traceException(
-                $e,
-                Trace::WARNING,
-                TraceCode::SCROOGE_GET_REFUND_TERMINAL_ID_REQUEST_FAILED,
-                [
-                    'refund_id' => $id,
-                ]);
-            return '';
-        }
-    }
+//    public function getOptimizerProvider(string $id) {
+//
+//        $app   = App::getFacadeRoot();
+//        $trace = $app['trace'];
+//
+//        try
+//        {
+//            return $app['scrooge']->getRefundTerminalId($id);
+//        }
+//        catch(\Throwable $e)
+//        {
+//            $trace->traceException(
+//                $e,
+//                Trace::WARNING,
+//                TraceCode::SCROOGE_GET_REFUND_TERMINAL_ID_REQUEST_FAILED,
+//                [
+//                    'refund_id' => $id,
+//                ]);
+//            return '';
+//        }
+//    }
 
     protected function generateAmount($input)
     {

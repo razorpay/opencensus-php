@@ -1817,6 +1817,11 @@ class Service extends Base\Service
 
         $entity = $payment->toArrayPublicWithExpand();
 
+        if ($this->app['basicauth']->isOptimiserDashboardRequest() === true)
+        {
+            $entity = $this->setSettlementDetailsForOptimizer($entity, $payment);
+        }
+
         // Adding support to add additional params to payment entity for frontend
         if ($this->app['basicauth']->isProxyAuth() === true)
         {
@@ -1848,6 +1853,45 @@ class Service extends Base\Service
         }
 
         return $entity;
+    }
+
+    public function setSettlementDetailsForOptimizer($paymentArray, $payment)
+    {
+        try {
+            if ($payment->getTransactionId() !== null) {
+                $fetchInput = [
+                    'id' => $payment->getTransactionId(),
+                    'entity_name' => 'transaction',
+                    'expand' => true
+                ];
+
+                $transactionEntity = app('settlements_dashboard')->fetch($fetchInput);
+
+                $transaction = $transactionEntity['entity'];
+
+                unset($paymentArray['transaction']['settlement_id']);
+                unset($paymentArray['transaction']['settlement']);
+
+                if ($transaction['settlement'] != null) {
+                    $paymentArray['transaction']['settlement'] = $transaction['settlement'];
+                }
+
+                if ($transaction['settlement_id'] != null) {
+                    $paymentArray['transaction']['settlement_id'] = $transaction['settlement_id'];
+                }
+            }
+
+        } catch (\Throwable $e) {
+            $this->trace->traceException(
+                $e,
+                Trace::WARNING,
+                TraceCode::GET_SETTLEMENT_DETAILS_FOR_PAYMENT_FAILED,
+                [
+                    'transaction_id' => $payment->getTransactionId(),
+                ]);
+        } finally {
+            return $paymentArray;
+        }
     }
 
     protected function checkAuthMerchantAccessToEntity(string $entityMerchantId)

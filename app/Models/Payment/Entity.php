@@ -3825,9 +3825,12 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
             if($app['basicauth']->isOptimiserDashboardRequest() === true)
             {
-                if($this->terminal->getProcurer() === 'merchant')
+                if($this->terminal != null && $this->terminal->getProcurer() === 'merchant')
                 {
                     $array[self::OPTIMIZER_PROVIDER] = $this->terminal->getId();
+                }
+                else if($this->terminal == null) {
+                    $array[self::OPTIMIZER_PROVIDER] = '';
                 }
                 else
                 {

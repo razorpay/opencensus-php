@@ -254,9 +254,10 @@ class Service extends Base\Service
                 $this->trace->traceException(
                     $e,
                     Trace::WARNING,
-                    TraceCode::GET_SETTLEMENTS_FOR_OPTIMIZER_DASHBOARD_FAILED,
+                    TraceCode::GET_SETTLEMENTS_FOR_OPTIMIZER_MERCHANT_DASHBOARD_FAILED,
                     [
-                        'id' => $id,
+                        'id'        => $id,
+                        'request'   => 'fetch',
                     ]);
             }
 
@@ -306,9 +307,10 @@ class Service extends Base\Service
                 $this->trace->traceException(
                     $e,
                     Trace::WARNING,
-                    TraceCode::GET_SETTLEMENTS_FOR_OPTIMIZER_DASHBOARD_FAILED,
+                    TraceCode::GET_SETTLEMENTS_FOR_OPTIMIZER_MERCHANT_DASHBOARD_FAILED,
                     [
                         '$input' => $input,
+                        'request'=> 'fetchMultiple',
                     ]);
             }
         }
@@ -1829,7 +1831,8 @@ class Service extends Base\Service
             if ($key == 'terminal_id') {
                 $key = 'provider';
             }
-            $fetchInput['filter'][$key] = $input[$val];
+
+            $fetchInput['filter'][$key] = $val;
         }
 
         return $fetchInput;
