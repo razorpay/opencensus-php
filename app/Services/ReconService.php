@@ -2,11 +2,14 @@
 
 namespace RZP\Services;
 
+use Request;
 use RZP\Http\Request\Requests;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\ServerErrorException;
+use RZP\Exception;
+use Symfony\Component\HttpFoundation\Response;
 
 class ReconService
 {
@@ -264,35 +267,27 @@ class ReconService
             'auth'    => $auth,
         );
 
-        try {
-            $response = Requests::request(
-                $url,
-                $headers,
-                $requestPayload,
-                $method,
-                $options);
 
-            $this->trace->info(
-                TraceCode::RECON_SERVICE_REQUEST,
-                [
-                    'url'     => $url,
-                    'body'    => $requestPayload,
-                    'method'  => $method,
-                ]);
+        $response = Requests::request(
+            $url,
+            $headers,
+            $requestPayload,
+            $method,
+            $options);
 
-            return $this->handleResponse($response);
-        }
-        catch(\Requests_Exception $exception)
-        {
-            throw new ServerErrorException(
-                'Unable to connect to recon service',
-                ErrorCode::SERVER_ERROR_RECON_REQUEST_FAILURE,
-                compact('headers', 'method', 'url'));
-        }
+        $this->trace->info(
+            TraceCode::RECON_SERVICE_REQUEST,
+            [
+                'url'     => $url,
+                'body'    => $requestPayload,
+                'method'  => $method,
+            ]);
+
+        return $this->handleResponse($response);
 
     }
 
-    protected function handleResponse($response)
+    protected function handleResponse(\Requests_Response $response)
     {
         $this->trace->info(
             TraceCode::RECON_SERVICE_RESPONSE,
@@ -300,26 +295,50 @@ class ReconService
                 'status_code'     => $response->status_code,
             ]);
 
-        $responseBody = json_decode($response->body);
+        $statusCode = $response->status_code;
 
-        if ($response->status_code >= 500)
+        if (($statusCode >= Response::HTTP_OK) and ($statusCode < Response::HTTP_BAD_REQUEST))
         {
-            throw new ServerErrorException(
-                'Received Server Error in recon service response',
-                ErrorCode::SERVER_ERROR_IN_RECON_RESPONSE,
-                [ 'recon_error'    => $responseBody ]);
+            return json_decode($response->body);
         }
-        else if($response->status_code >= 400)
-        {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_ERROR_IN_RECON_RESPONSE,
-                null,
+        else {
+            $responseBody = json_decode($response->body, true);
+            $this->trace->info(
+                TraceCode::RECON_ERROR_RESPONSE,
                 [
-                    'recon_error'    => $responseBody,
+                    'status_code' => $statusCode,
+                    'response' => $response,
                 ]);
-        }
 
-        return $responseBody;
+            if (($statusCode >= Response::HTTP_BAD_REQUEST) and ($statusCode < Response::HTTP_INTERNAL_SERVER_ERROR))
+            {
+                if (array_key_exists("message", $responseBody)){
+                    $message = json_encode($responseBody['message']);
+                }
+                else{
+                    $message = json_encode($responseBody);
+                }
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_ERROR,
+                    null,
+                    [
+                        'status_code' => $statusCode,
+                        'response_body' => $responseBody,
+                    ],
+                    $message
+                );
+
+            }
+            else
+            {
+                throw new Exception\RuntimeException(
+                    'Unexpected response code received from Ledger service.',
+                    [
+                        'status_code' => $statusCode,
+                        'response_body' => $responseBody,
+                    ]);
+            }
+        }
     }
 
     protected function getPayload($data, $method)

@@ -6321,6 +6321,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GET_MERCHANT_RISK_DATA_DRUID_ERROR                    = 'GET_MERCHANT_RISK_DATA_DRUID_ERROR';
 
     const RECON_SERVICE_RESPONSE                                = 'RECON_SERVICE_RESPONSE';
+    const RECON_ERROR_RESPONSE                                  = 'RECON_ERROR_RESPONSE';
     const RECON_SERVICE_REQUEST                                 = 'RECON_SERVICE_REQUEST';
     const RECON_SEND_REQUEST_DATA                               = 'RECON_SEND_REQUEST_DATA';
     const SLACK_MOCK_SERVICE                                    = "SLACK_MOCK_SERVICE";
