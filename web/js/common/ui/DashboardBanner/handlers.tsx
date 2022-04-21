@@ -12,6 +12,7 @@ import RazorpayXNitroAnnouncement from '../NotificationsDropdown/RazorpayXNitroA
 import { sendDataToSalesForce } from '../../utils/common-api';
 import CatalystCampaign from '../GrowthCustomizeModal/CatalystCampaign';
 import ExclusiveOffer from '../ExclusiveOffer';
+import ThankYouModal from 'merchant/components/Home/ThankYouModal';
 import GrowthServiceModal from '../GrowthServiceModal';
 import GrowthServiceCenterCTAModal from '../GrowthServiceModal/CenterCTAModal';
 
@@ -66,6 +67,27 @@ const getClickHandler = (id = '', type = '', variant = '') => {
     setActivePageName('Connected Banking');
   };
 
+  const showThankYouModal = (trackingPayload, event_type) => {
+    return sendDataToSalesForce(trackingPayload, user, event_type).then((resp) => {
+      const { success } = resp;
+      if (success) {
+        openModal({
+          size: 'medium',
+          component: (
+            <ThankYouModal
+              handleClose={closeModal}
+              imgSrc={`${window.cdnBaseUrl}/static/assets/growth-assets/illustrations/contact_support.svg`}
+              config={{
+                headerText: 'Request received!',
+                bodyText: "We'll be in touch with you about the next steps soon.",
+                primaryCtaText: '', // add cta to show button
+              }}
+            />
+          ),
+        });
+      }
+    });
+  };
   switch (type) {
     case 'MODAL':
       switch (variant) {
@@ -90,6 +112,12 @@ const getClickHandler = (id = '', type = '', variant = '') => {
       return sendPayloadToSalesforce('ultra-campaign-p2-cash-advance', user);
     case 'GS-Exclusive-Offer-modal':
       return showGSExclusiveOfferModal;
+    case 'MAR22-SHOPIFY-RZP-NEW-CTA2':
+      return () =>
+        showThankYouModal(
+          { Campaign_ID: 'MAR22-SHOPIFY-RZP-NEW', product_name: 'Payment Gateway' },
+          'SHOPIFY_MIGRATION_REQUEST',
+        );
     case 'JAN22-ICICI-CONNECTEDBANKING-DB':
       return handleConnectedBankingFlow;
     case 'JAN22-CATALYST-PP-EL-CTA1':

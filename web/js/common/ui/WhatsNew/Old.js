@@ -38,6 +38,7 @@ import getSurveyForm from 'merchant/components/Announcements/CSATSurveyBanner/ge
 import moment from 'moment';
 import { getButtonClass, iconMap, getQueryData, getNotificationTrackingProperties } from './common';
 import ExclusiveOffer from '../ExclusiveOffer';
+import ThankYouModal from 'merchant/components/Home/ThankYouModal';
 
 function _isUnreadNotification(startTS, endTS, lastReadTS) {
   return lastReadTS < startTS && moment().unix() < endTS;
@@ -255,6 +256,29 @@ class WhatsNewOld extends Component {
     this.props.setActivePageName('Connected Banking');
   };
 
+  showThankYouModal = (trackingPayload, event_type) => {
+    const { closeModal, openModal, user } = this.props;
+    return sendDataToSalesForce(trackingPayload, user, event_type).then((resp) => {
+      const { success } = resp;
+      if (success) {
+        openModal({
+          size: 'medium',
+          component: (
+            <ThankYouModal
+              handleClose={closeModal}
+              imgSrc={`${window.cdnBaseUrl}/static/assets/growth-assets/illustrations/contact_support.svg`}
+              config={{
+                headerText: 'Request received!',
+                bodyText: "We'll be in touch with you about the next steps soon.",
+                primaryCtaText: '', // add cta to show button
+              }}
+            />
+          ),
+        });
+      }
+    });
+  };
+
   handleCTA = ({ id, url }) => {
     switch (id) {
       case 'announcement-projectNitro-cta1':
@@ -286,6 +310,12 @@ class WhatsNewOld extends Component {
         break;
       case 'JAN22-ICICI-CONNECTEDBANKING-ANN':
         this.handleConnectedBankingFlow();
+        break;
+      case 'MAR22-SHOPIFY-RZP-NEW-CTA2':
+        this.showThankYouModal(
+          { Campaign_ID: 'MAR22-SHOPIFY-RZP-NEW', product_name: 'Payment Gateway' },
+          'SHOPIFY_MIGRATION_REQUEST',
+        );
         break;
       default:
         break;
