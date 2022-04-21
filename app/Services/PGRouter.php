@@ -361,6 +361,11 @@ class PGRouter
                 $payment->card()->associate($card);
             }
 
+            if ($payment->isFailed() === false)
+            {
+                $payment->setErrorNull();
+            }
+            
             return $payment;
         }
 

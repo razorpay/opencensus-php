@@ -939,11 +939,6 @@ class PaymentFetchTest extends TestCase
                                 ],
                                 'fee' => 1000,
                                 'tax' =>  0,
-                                'error_code' => NULL,
-                                'error_description' => NULL,
-                                'error_source' => NULL,
-                                'error_step' => NULL,
-                                'error_reason' => NULL,
                                 'reference_2' => '599962',
                                 'created_at' => 1614252933,
                                 'authorized_at' => 1614252933,
@@ -955,10 +950,14 @@ class PaymentFetchTest extends TestCase
             });
 
         $paymentFetchResponse = $this->fetchPayment('pay_GfnBMH2PXyCDVE');
-
+        
         $this->assertEquals('pay_GfnBMH2PXyCDVE', $paymentFetchResponse['id']);
 
         $this->assertEquals('599962', $paymentFetchResponse['acquirer_data']['auth_code']);
+
+        $this->assertNull($paymentFetchResponse['error_code']);
+
+        $this->assertNull($paymentFetchResponse['error_description']);
     }
 
     public function testPaymentFetchExternalCallDisabled()

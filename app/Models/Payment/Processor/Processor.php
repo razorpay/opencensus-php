@@ -552,20 +552,7 @@ class Processor
 
             if ($this->app['basicauth']->isPrivateAuth() === false)
             {
-                if ((($isIVR && $merchant->isIvrEnabled() === true) || ($isOTP && $merchant->isAxisExpressPayEnabled() === true)) &&
-                    ($merchant->isFeatureEnabled('otp_auth_default') === true))
-                {
-                    $result = $this->app->razorx->getTreatment($merchant->getId(), self::IVR_OTP_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
-                }
-                elseif (($isRupay === true) || (($isHeadless === true) &&
-                        ($merchant->isFeatureEnabled('otp_auth_default') === true) &&
-                        ($merchant->isHeadlessEnabled() === true)))
-                    {
-                        $result = $this->app->razorx->getTreatment($merchant->getId(), self::HEADLESS_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
-                    }
-                else {
-                    $result = $this->app->razorx->getTreatment($merchant->getId(), self::CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
-                }
+                $result = $this->app->razorx->getTreatment($merchant->getId(), self::CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
             }
             else
             {
