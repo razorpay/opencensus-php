@@ -12,6 +12,7 @@ use RZP\Models\Payment;
 use RZP\Http\BasicAuth;
 use RZP\Models\Invoice;
 use RZP\Error\ErrorCode;
+use RZP\Models\Merchant;
 use RZP\Models\BankAccount;
 use RZP\Http\RequestHeader;
 use RZP\Models\Customer\Token;
@@ -185,6 +186,7 @@ class Service extends Base\Service
     {
         $emandateTerminalEnabled      = $input['emandate_terminal_enabled'];
         $nachTerminalEnabled          = $input['nach_terminal_enabled'];
+        $merchantId                   = $input['merchant_id'];
 
         // Removing case sensitivity
         $input[Token\Entity::ACCOUNT_TYPE]  = strtolower($input[Token\Entity::ACCOUNT_TYPE]);
@@ -202,8 +204,13 @@ class Service extends Base\Service
                                                 'adhoc';
 
         // validate gateway_token
+        $accept_new_axis_umrn_mandate_migration = (new Merchant\Core)->isRazorxExperimentEnable($merchantId,
+                                Merchant\RazorxTreatment::ACCEPT_NEW_AXIS_UMRN_MANDATE_MIGRATION);
+
         if ((ctype_alnum($input[Token\Entity::GATEWAY_TOKEN]) === false) or
-            (strlen($input[Token\Entity::GATEWAY_TOKEN]) !== 20))
+            ((strlen($input[Token\Entity::GATEWAY_TOKEN]) !== 20) and
+             ((strlen($input[Token\Entity::GATEWAY_TOKEN]) !== 15) and
+              ($accept_new_axis_umrn_mandate_migration === false ))))
         {
             throw new Exception\BadRequestValidationFailureException(
                 PublicErrorDescription::BAD_REQUEST_INVALID_UMRN
