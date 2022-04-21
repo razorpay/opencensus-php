@@ -8675,16 +8675,6 @@ trait Authorize
 
             $this->repo->saveOrFail($payment);
 
-            if ($payment->terminal !== null)
-            {
-                if ($payment->terminal->isUsed() === false)
-                {
-                    $payment->terminal->setUsed();
-
-                    $this->repo->saveOrFail($payment->terminal, ['shouldSync'=> false]);
-                }
-            }
-
             $customProperties = $payment->toArrayTraceRelevant();
 
             $this->segment->trackPayment($payment, TraceCode::PAYMENT_AUTHENTICATION_SUCCESS, $customProperties);
@@ -8781,16 +8771,6 @@ trait Authorize
             }
 
             $this->repo->saveOrFail($payment);
-
-            if ($payment->terminal !== null)
-            {
-               if ($payment->terminal->isUsed() === false)
-                {
-                    $payment->terminal->setUsed();
-
-                    $this->repo->saveOrFail($payment->terminal, ['shouldSync'=> false]);
-                }
-             }
 
             $this->updateAssociatedPaymentEntities($payment, $data);
 
