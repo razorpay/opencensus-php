@@ -181,6 +181,7 @@ class Entity extends Base\PublicEntity
 
             switch ($method)
             {
+                case Payment\Method::EMANDATE:
                 case Payment\Method::NETBANKING:
                 case Payment\Method::WALLET:
                 case Payment\Method::UPI:
@@ -202,6 +203,7 @@ class Entity extends Base\PublicEntity
 
             switch ($method)
             {
+                case Payment\Method::EMANDATE:
                 case Payment\Method::NETBANKING:
                 case Payment\Method::WALLET:
                 case Payment\Method::UPI:

@@ -206,6 +206,7 @@ class Validator extends Base\Validator
         switch($method)
         {
             case Method::NETBANKING:
+            case Method::EMANDATE:
 
                 $this->validateNetbankingIssuer($gateway, $issuer);
 

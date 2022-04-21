@@ -77,6 +77,7 @@ class ConfigKey
     const ENABLE_DOWNTIME_SERVICE_CARD          = self::PREFIX . 'enable_downtime_service_card';
     const ENABLE_DOWNTIME_SERVICE_UPI           = self::PREFIX . 'enable_downtime_service_upi';
     const ENABLE_DOWNTIME_SERVICE_NETBANKING    = self::PREFIX . 'enable_downtime_service_netbanking';
+    const ENABLE_DOWNTIME_SERVICE_EMANDATE      = self::PREFIX . 'enable_downtime_service_emandate';
     const USE_MUTEX_FOR_DOWNTIMES               = self::PREFIX . 'use_mutex_for_downtimes';
     const ENABLE_DOWNTIME_WEBHOOKS              = self::PREFIX . 'enable_downtime_webhooks';
 
@@ -369,6 +370,7 @@ class ConfigKey
         self::ENABLE_DOWNTIME_SERVICE,
         self::ENABLE_DOWNTIME_SERVICE_CARD,
         self::ENABLE_DOWNTIME_SERVICE_NETBANKING,
+        self::ENABLE_DOWNTIME_SERVICE_EMANDATE,
         self::ENABLE_DOWNTIME_SERVICE_UPI,
         self::ENABLE_PAYMENT_DOWNTIME_PHONEPE,
         self::RX_BAS_FORCED_FETCH_TIME_IN_HOURS,
@@ -415,6 +417,7 @@ class ConfigKey
         self::DOWNTIME_SLACK_NOTIFICATION_CHANNELS => [Name::CREATE_GATEWAY_DOWNTIME],
         self::ENABLE_DOWNTIME_SERVICE => [Name::CREATE_GATEWAY_DOWNTIME],
         self::ENABLE_DOWNTIME_SERVICE_NETBANKING => [Name::CREATE_GATEWAY_DOWNTIME],
+        self::ENABLE_DOWNTIME_SERVICE_EMANDATE => [Name::CREATE_GATEWAY_DOWNTIME],
         self::ENABLE_DOWNTIME_SERVICE_UPI => [Name::CREATE_GATEWAY_DOWNTIME],
         self::ENABLE_DOWNTIME_SERVICE_CARD => [Name::CREATE_GATEWAY_DOWNTIME],
         self::ENABLE_PAYMENT_DOWNTIME_CARD => [Name::CREATE_GATEWAY_DOWNTIME],

@@ -3,6 +3,7 @@
 namespace RZP\Models\Payment\Downtime;
 
 use RZP\Exception;
+use RZP\Models\Payment\Method;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
@@ -11,8 +12,8 @@ use RZP\Models\Payment\Gateway;
 use RZP\Jobs\PaymentDowntimeEvent;
 use RZP\Gateway\Upi\Base\ProviderPsp;
 use RZP\Models\Gateway\Downtime\Severity;
-use RZP\Models\Gateway\Downtime\ReasonCode;
 use RZP\Models\Payment\Downtime\Constants;
+use RZP\Models\Gateway\Downtime\ReasonCode;
 use RZP\Constants\Entity as EntityConstants;
 use Illuminate\Database\Eloquent\Collection;
 use RZP\Models\Gateway\Downtime\Entity as GatewayDowntime;
@@ -82,12 +83,14 @@ class BaseProcessor extends Base\Core
 
             (new Core)->refreshHistoricalDowntimeCache(3);
 
-            (new Service())->emailDowntime(Constants::RESOLVED, $downtime);
+            if(($downtime->getMethod() !== Method::EMANDATE)){
+                (new Service())->emailDowntime(Constants::RESOLVED, $downtime);
 
-            PaymentDowntimeEvent::dispatch($this->mode, Status::RESOLVED, serialize($downtime));
+                PaymentDowntimeEvent::dispatch($this->mode, Status::RESOLVED, serialize($downtime));
 
-            (new DowntimeManagerService($this->app))->notifyDowntime($downtime, Status::RESOLVED);
-            (new SlackAppService($this->app))->sendDowntimeRequestToSlack($downtime, Status::RESOLVED);
+                (new DowntimeManagerService($this->app))->notifyDowntime($downtime, Status::RESOLVED);
+                (new SlackAppService($this->app))->sendDowntimeRequestToSlack($downtime, Status::RESOLVED);
+            }
         }
     }
 

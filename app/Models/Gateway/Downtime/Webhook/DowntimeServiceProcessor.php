@@ -90,6 +90,9 @@ class DowntimeServiceProcessor implements ProcessorInterface
                 case Method::NETBANKING :
                     $downtimeServiceEnableMethod = (bool) ConfigKey::get(ConfigKey::ENABLE_DOWNTIME_SERVICE_NETBANKING, false);
                     break;
+                case Method::EMANDATE :
+                    $downtimeServiceEnableMethod = (bool) ConfigKey::get(ConfigKey::ENABLE_DOWNTIME_SERVICE_EMANDATE, false);
+                    break;
                 default :
                     $downtimeServiceEnableMethod = false;
             }

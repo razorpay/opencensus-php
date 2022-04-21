@@ -153,6 +153,7 @@ class Entity extends Base\PublicEntity
                 break;
 
             case Method::NETBANKING:
+            case Method::EMANDATE:
                 $instrument[self::BANK] = $this->getIssuer();
                 break;
 

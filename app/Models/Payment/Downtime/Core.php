@@ -8,6 +8,7 @@ use RZP\Constants\Timezone;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Base;
 use RZP\Models\Payment;
+use RZP\Models\Payment\Method;
 use RZP\Trace\TraceCode;
 use RZP\Jobs\PaymentDowntimeEvent;
 use Illuminate\Support\Facades\Redis;
@@ -41,7 +42,7 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($downtime);
 
-        if($downtime->isScheduled() === false)
+        if($downtime->isScheduled() === false && $downtime->getMethod() !== Method::EMANDATE)
         {
             (new Service())->emailDowntime(Constants::CREATED, $downtime);
 
@@ -70,7 +71,7 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($downtime);
 
-        if($downtime->isScheduled() === false)
+        if($downtime->isScheduled() === false && $downtime->getMethod() !== Method::EMANDATE)
         {
             (new Service())->emailDowntime(Constants::CREATED, $downtime, $lastSeverity);
 

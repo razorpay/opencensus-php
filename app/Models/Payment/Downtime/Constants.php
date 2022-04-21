@@ -15,6 +15,7 @@ class Constants
         Method::NETBANKING => Entity::ISSUER,
         Method::WALLET     => Entity::ISSUER,
         Method::UPI        => Entity::VPA_HANDLE,
+        Method::EMANDATE   => Entity::ISSUER,
     ];
 
     // List of active UPI gateways that are being used
@@ -55,6 +56,7 @@ class Constants
             case Method::CARD :
                 return [Entity::NETWORK, Entity::ISSUER];
                 break;
+            case Method::EMANDATE:
             case Method::NETBANKING :
             case Method::WALLET :
                 return  [Entity::ISSUER];
