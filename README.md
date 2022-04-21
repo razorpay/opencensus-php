@@ -66,3 +66,7 @@ STAGE=development REDIRECTOR=true node tools/build.js --project=razorx
 ```
 
 - Go to https://beta-admin-dashboard.stage.razorpay.in/razorx and turn on redirector.
+
+# Deployment Process
+
+https://docs.google.com/document/d/1__-n3Ap8vLKCBLFt8Z2FyxvpQR9GfkimyEPm3C0Cslo/edit
