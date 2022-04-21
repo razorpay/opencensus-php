@@ -3758,6 +3758,22 @@ trait Authorize
 
         $payment->setVerified(true);
 
+        $isLateAuth = true;
+
+        // Handle special case where first gateway success happened using verify flow.
+        // This is for those gateways where callback flow is not implemented,
+        // and we are not aware of the gateway status until hitting their Inquiry API.
+        // In such cases, we want to avoid setting lateAuth flag, 
+        // since these are not true lateAuth cases
+        // - https://razorpay.slack.com/archives/CNP473LRF/p1648449676603789
+        // - https://razorpay.slack.com/archives/CNXC0JHQF/p1648817541865879
+        if (Payment\Gateway::isTransactionPendingGateway($payment->getMethod(), 
+                                                         $payment->getGateway(), 
+                                                         $payment->getInternalErrorCode()))
+        {
+            $isLateAuth = false;
+        }
+
         // handle the special caes when timeout cron marks a payment as failed
         // because of race conditions with verify,
         // We just need to reverse the things done in timeout cron, we dont
@@ -3770,13 +3786,13 @@ trait Authorize
 
             $payment->setStatus(Payment\Status::AUTHORIZED);
 
-            $payment->setLateAuthorized(true);
+            $payment->setLateAuthorized($isLateAuth);
         }
         else
         {
             // The first argument marks the payment as converted from failed
             // to authorized
-            $this->updateAndNotifyPaymentAuthorized($response, true);
+            $this->updateAndNotifyPaymentAuthorized($response, $isLateAuth);
 
             if (($payment->isUpiRecurring() === true) and
                 ($this->shouldHitDebitOnRecurringForUpi($payment) === true))

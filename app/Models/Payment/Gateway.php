@@ -9,6 +9,7 @@ use RZP\Models\Currency\Currency;
 use RZP\Models\Emi;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
+use RZP\Error\ErrorCode;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Settlement;
 use RZP\Models\Card\Issuer;
@@ -4235,5 +4236,31 @@ class Gateway
     public static function isAddressAndNameRequiredGateway($gateway) : bool
     {
         return (in_array($gateway, self::ADDRESS_NAME_REQUIRED_GATEWAYS, true));
+    }
+
+    /* 
+     * Gateways where payment success/failure is not known until we hit their Inquiry API.
+     * These gateways do not support callback flow.
+     *
+     * @param $method - payment method
+     * @param $gateway - payment gateway
+     * @param $errorCode - error code used to define pending status
+     *
+     * @return bool
+     */ 
+    public static function isTransactionPendingGateway($method, $gateway, $errorCode) : bool
+    {
+        $methodGatewayMap = [
+            Method::UPI => [
+                self::PINELABS => ErrorCode::GATEWAY_ERROR_TRANSACTION_PENDING,
+            ],
+        ];
+
+        if (isset($methodGatewayMap[$method][$gateway]) === true)
+        {
+            return $methodGatewayMap[$method][$gateway] === $errorCode;
+        }
+
+        return false;
     }
 }

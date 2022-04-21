@@ -2987,6 +2987,31 @@ class Processor
                 ErrorCode::BAD_REQUEST_INVALID_ID);
         }
 
+        // Handle special case where first gateway success happened using verify flow.
+        // This is for those gateways where callback flow is not implemented,
+        // and we are not aware of the gateway status until hitting their Inquiry API.
+        // In such cases, we dont want to stop polling until we get to know failure/success from gateway. Default timeout applies.
+        // 
+        // PS:- should be before checkForRecentFailedPayment
+        // 
+        // - https://razorpay.slack.com/archives/CNP473LRF/p1648449676603789
+        // - https://razorpay.slack.com/archives/CNXC0JHQF/p1648817541865879
+        if (Payment\Gateway::isTransactionPendingGateway($payment->getMethod(), 
+                                                         $payment->getGateway(), 
+                                                         $payment->getInternalErrorCode()))
+        {
+            $response = [
+                Payment\Entity::STATUS => Payment\Status::CREATED
+            ];
+
+            if ($payment->getMethod() === Payment\Method::UPI)
+            {
+                $this->setUpiStatus($payment->getPublicId(), $response);
+            }
+
+            return $response;
+        }
+
         // If it failed recently, then throw relevant exception
         // directly for the failure.
         $this->checkForRecentFailedPayment($payment);
