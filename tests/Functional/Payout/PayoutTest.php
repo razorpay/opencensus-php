@@ -1763,6 +1763,13 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals($pendingSummarySecondAccount['total_amount'], 12345);
     }
 
+    public function testOptimisedDashboardSummary()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::OPTIMISE_SUMMARY_API]);
+
+        $this->testDashboardSummary();
+    }
+
     /**
      * This test checks for 4 things:
      *      1. Creation of queued payouts

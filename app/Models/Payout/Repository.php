@@ -378,6 +378,29 @@ class Repository extends Base\Repository
                      ->get();
     }
 
+    public function fetchOptimisedQueuedAndOnHoldPayouts(string $merchantId,
+                                                         string $balanceType = Balance\Type::BANKING)
+    {
+        $statusColumn                = $this->repo->payout->dbColumn(Entity::STATUS);
+        $merchantIdColumn            = $this->repo->payout->dbColumn(Entity::MERCHANT_ID);
+        $queuedReasonColumn          = $this->repo->payout->dbColumn(Entity::QUEUED_REASON);
+        $balanceIdPayoutsTableColumn = $this->repo->payout->dbColumn(Entity::BALANCE_ID);
+        $balanceTypeColumn           = $this->repo->balance->dbColumn(Merchant\Balance\Entity::TYPE);
+        $balanceIdColumn             = $this->repo->balance->dbColumn(Merchant\Balance\Entity::ID);
+        $balanceColumn               = $this->repo->balance->dbColumn(Merchant\Balance\Entity::BALANCE);
+        $balanceTable                = $this->repo->balance->getTableName();
+
+        $query = $this->newQueryWithConnection($this->getSlaveConnection())
+                      ->join($balanceTable, $balanceIdPayoutsTableColumn, '=', $balanceIdColumn)
+                      ->selectRaw('SUM(' . Entity::AMOUNT . ') AS amount, COUNT(' . 'payouts.id' . ') AS count, balance_id, queued_reason, balance')
+                      ->where($merchantIdColumn, '=', $merchantId)
+                      ->wherein($statusColumn, [Status::QUEUED, Status::ON_HOLD])
+                      ->where($balanceTypeColumn, '=', $balanceType)
+                      ->groupBy($balanceIdColumn, $queuedReasonColumn, $balanceColumn);
+
+        return $query->get();
+    }
+
     public function fetchQueuedAndOnHoldPayouts(string $merchantId,
                                                 string $balanceType = Balance\Type::BANKING)
     {

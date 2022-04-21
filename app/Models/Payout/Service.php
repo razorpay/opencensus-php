@@ -1629,7 +1629,14 @@ class Service extends Base\Service
                 'description' => 'going to fetch queued payouts',
             ]);
 
-        $queuedPayouts = $this->repo->payout->fetchQueuedAndOnHoldPayouts($merchantId);
+        if ($this->merchant->isFeatureEnabled(Features::OPTIMISE_SUMMARY_API) === true)
+        {
+            $queuedPayouts = $this->repo->payout->fetchOptimisedQueuedAndOnHoldPayouts($merchantId);
+        }
+        else
+        {
+            $queuedPayouts = $this->repo->payout->fetchQueuedAndOnHoldPayouts($merchantId);
+        }
 
         $this->trace->info(
             TraceCode::PAYOUT_SUMMARY_API_ANALYSIS,
@@ -1637,21 +1644,35 @@ class Service extends Base\Service
                 'description' => 'completed fetching queued payouts',
             ]);
 
-        $allQueuedReasons = QueuedReasons::QUEUED_REASONS_WITH_DESCRIPTION;
-
-        $groupedQueuedPayouts = $queuedPayouts->groupBy(Entity::BALANCE_ID);
-
-        foreach ($groupedQueuedPayouts as $balanceId => $queuedPayouts)
+        if ($this->merchant->isFeatureEnabled(Features::OPTIMISE_SUMMARY_API) === true)
         {
-            $bankingAccountId = (new BankingAccountService\Core())->fetchBankingAccountId($balanceId);
-
-            foreach ($allQueuedReasons as $queuedReason=>$queuedDesc)
+            foreach ($queuedPayouts as $payout)
             {
-                $summaryForQueuedReason = $this->processQueuedSummaryForReason($queuedReason, $queuedPayouts);
+                $bankingAccountId = (new BankingAccountService\Core())->fetchBankingAccountId($payout['balance_id']);
 
-                if($summaryForQueuedReason['count'] > 0)
+                $summaryForQueuedReason = $this->processQueuedSummaryAggregate($payout);
+
+                $queuedPayoutsSummary[$bankingAccountId][Status::QUEUED][$payout['queued_reason']] = $summaryForQueuedReason;
+            }
+        }
+        else
+        {
+            $allQueuedReasons = QueuedReasons::QUEUED_REASONS_WITH_DESCRIPTION;
+
+            $groupedQueuedPayouts = $queuedPayouts->groupBy(Entity::BALANCE_ID);
+
+            foreach ($groupedQueuedPayouts as $balanceId => $queuedPayouts)
+            {
+                $bankingAccountId = (new BankingAccountService\Core())->fetchBankingAccountId($balanceId);
+
+                foreach ($allQueuedReasons as $queuedReason => $queuedDesc)
                 {
-                    $queuedPayoutsSummary[$bankingAccountId][Status::QUEUED][$queuedReason] = $summaryForQueuedReason;
+                    $summaryForQueuedReason = $this->processQueuedSummaryForReason($queuedReason, $queuedPayouts);
+
+                    if ($summaryForQueuedReason['count'] > 0)
+                    {
+                        $queuedPayoutsSummary[$bankingAccountId][Status::QUEUED][$queuedReason] = $summaryForQueuedReason;
+                    }
                 }
             }
         }
@@ -1687,6 +1708,16 @@ class Service extends Base\Service
             'count'         => count($queuedPayoutsForReason),
             'total_amount'  => $totalAmount,
             'total_fees'    => $totalFees,
+        ];
+    }
+
+    protected function processQueuedSummaryAggregate($queuedPayouts)
+    {
+        return [
+            'balance'       => $queuedPayouts['balance'],
+            'count'         => $queuedPayouts['count'],
+            'total_amount'  => $queuedPayouts['amount'],
+            'total_fees'    => 0,
         ];
     }
 
@@ -1752,9 +1783,12 @@ class Service extends Base\Service
         {
             $totalAmount += $payout->getAmount();
 
-            list($fees, $tax, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($payout);
+            if($this->merchant->isFeatureEnabled(Features::OPTIMISE_SUMMARY_API) === false)
+            {
+                list($fees, $tax, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($payout);
 
-            $totalFees += $fees;
+                $totalFees += $fees;
+            }
         }
 
         return [
