@@ -981,6 +981,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CAPITAL_SCORECARD_ADMIN_REQUEST                       = 'CAPITAL_SCORECARD_ADMIN_REQUEST';
     const CAPITAL_SCORECARD_REQUEST                             = 'CAPITAL_SCORECARD_REQUEST';
     const CAPITAL_SCORECARD_DEV_ADMIN_REQUEST                   = 'CAPITAL_SCORECARD_DEV_ADMIN_REQUEST';
+    const CAPITAL_LENDER_RESPONSE                               = 'CAPITAL_LENDER_RESPONSE';
+    const CAPITAL_LENDER_ADMIN_REQUEST                          = 'CAPITAL_LENDER_ADMIN_REQUEST';
+    const CAPITAL_LENDER_REQUEST                                = 'CAPITAL_LENDER_REQUEST';
+    const CAPITAL_LENDER_DEV_ADMIN_REQUEST                      = 'CAPITAL_LENDER_DEV_ADMIN_REQUEST';
     const EXTERNAL_SERVICE_PROXY                                = 'EXTERNAL_SERVICE_PROXY';
     const EXTERNAL_SERVICE_PROXY_REQUEST                        = 'EXTERNAL_SERVICE_PROXY_REQUEST';
     const EXTERNAL_SERVICE_PROXY_RESPONSE                       = 'EXTERNAL_SERVICE_PROXY_RESPONSE';

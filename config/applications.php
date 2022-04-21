@@ -792,6 +792,13 @@ return [
         'timeout'       => env('APP_SCORECARD_TIMEOUT', 90),
     ],
 
+    'capital_lender' => [
+        'url'           => env('APP_LENDER_URL'),
+        'username'      => 'api',
+        'secret'        => env('APP_LENDER_SECRET'),
+        'timeout'       => env('APP_LENDER_TIMEOUT', 90),
+    ],
+
     'wallet' => [
         'timeout'     => env('APP_WALLET_TIMEOUT', 60),
         'url'         => [
