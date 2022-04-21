@@ -150,6 +150,9 @@ final class RazorxTreatment
     // Onboard direct accounting merchant on Ledger with reverse shadow
     const DA_LEDGER_ONBOARDING_REVERSE_SHADOW = 'da_ledger_onboarding_reverse_shadow';
 
+    // Fetch balance from ledger TiDB
+    const LEDGER_BALANCE_FETCH_FROM_TIDB = 'ledger_balance_fetch_from_tidb';
+
     // Fund transfer request from payout to fts in sync mode
     const PAYOUT_TO_FTS_SYNC_MODE = 'payout_to_fts_sync_mode';
 

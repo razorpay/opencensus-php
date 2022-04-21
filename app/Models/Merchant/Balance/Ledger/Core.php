@@ -11,6 +11,7 @@ use RZP\Error\ErrorCode;
 use RZP\Base\ConnectionType;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Exception\ServerErrorException;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Services\Ledger as LedgerService;
 use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\Transaction\Processor\Ledger;
@@ -416,6 +417,7 @@ class Core extends Base\Core
     public function fetchBalanceFromLedger(string $merchantId, string $bankingAccountId) :array {
             $startTime = millitime();
             $ledgerResponse = [];
+            $ledgerBalanceFetchTiDBEnabled = false;
 
             try {
 
@@ -425,21 +427,30 @@ class Core extends Base\Core
                     self::BANKING_ACCOUNT_ID => $bankingAccountId,
                 ];
 
-                $response = $this->ledgerService->fetchMerchantAccounts($request);
-                $statusCode = $response[LedgerService::RESPONSE_CODE];
+                $ledgerBalanceFetchTiDBEnabled = $this->isBalanceFetchFromLedgerTiDBEnabled($merchantId, $this->mode);
 
-                if ($statusCode !== 200)
+                if($ledgerBalanceFetchTiDBEnabled)
                 {
-                    throw new ServerErrorException('Received invalid status code',
-                        ErrorCode::SERVER_ERROR_LEDGER_ACCOUNT_FETCH_BALANCES,
-                        [
-                            LedgerService::RESPONSE_CODE => $statusCode,
-                            LedgerService::RESPONSE_BODY => $ledgerResponse,
-                        ]
-                    );
+                    $ledgerResponse = $this->fetchBalanceFromLedgerTiDB($merchantId, $bankingAccountId);
                 }
+                else
+                {
+                    $response = $this->ledgerService->fetchMerchantAccounts($request);
+                    $statusCode = $response[LedgerService::RESPONSE_CODE];
 
-                $ledgerResponse = $response[LedgerService::RESPONSE_BODY];
+                    if ($statusCode !== 200)
+                    {
+                        throw new ServerErrorException('Received invalid status code',
+                            ErrorCode::SERVER_ERROR_LEDGER_ACCOUNT_FETCH_BALANCES,
+                            [
+                                LedgerService::RESPONSE_CODE => $statusCode,
+                                LedgerService::RESPONSE_BODY => $ledgerResponse,
+                            ]
+                        );
+                    }
+
+                    $ledgerResponse = $response[LedgerService::RESPONSE_BODY];
+                }
             }
             catch (\Throwable $e)
             {
@@ -452,13 +463,18 @@ class Core extends Base\Core
                         self::BANKING_ACCOUNT_ID => $bankingAccountId
                     ]);
 
-                $this->trace->info(TraceCode::LEDGER_ACCOUNT_FETCH_BALANCE_FROM_TIDB,
-                [
-                    self::MERCHANT_ID        => $merchantId,
-                    self::BANKING_ACCOUNT_ID => $bankingAccountId
-                ]);
+                if($ledgerBalanceFetchTiDBEnabled === false)
+                {
+                    // Calling Ledger TIDB here, only as fallback if ledger service returns an error.
+                    $this->trace->info(TraceCode::LEDGER_ACCOUNT_FETCH_BALANCE_FROM_TIDB,
+                        [
+                            self::MERCHANT_ID        => $merchantId,
+                            self::BANKING_ACCOUNT_ID => $bankingAccountId
+                        ]);
 
-                $ledgerResponse = $this->fetchBalanceFromLedgerTiDB($merchantId, $bankingAccountId);
+                    $ledgerResponse = $this->fetchBalanceFromLedgerTiDB($merchantId, $bankingAccountId);
+                }
+
             }
             finally
             {
@@ -620,6 +636,17 @@ class Core extends Base\Core
                 $payload);
         }
 
+    }
+
+    // Returns true if experiment and env variable to fetch balance from ledger TiDB is running.
+    protected function isBalanceFetchFromLedgerTiDBEnabled(string $merchantId, string $mode): bool
+    {
+        $variant = $this->app->razorx->getTreatment($merchantId,
+            RazorxTreatment::LEDGER_BALANCE_FETCH_FROM_TIDB,
+            $mode
+        );
+
+        return (strtolower($variant) === 'on');
     }
 
 }
