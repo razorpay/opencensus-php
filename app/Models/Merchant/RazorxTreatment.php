@@ -420,9 +420,6 @@ final class RazorxTreatment
     // Experiment for sending auth header for Stores
     const KEYLESS_HEADER_STORES = 'keyless_header_stores';
 
-    // Experiment for sending auth header for Payment Pages
-    const KEYLESS_HEADER_PP = 'keyless_header_pp';
-
     // Experiment for sending auth header for Payout Link Pages
     const KEYLESS_HEADER_POUTLK = 'keyless_header_poutlk';
 

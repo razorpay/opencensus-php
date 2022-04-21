@@ -61,8 +61,6 @@ class Core extends Base\Core
 
     const PAYMENT_PAGE_ITEM_LAST_SYNC_TIMESTAMP = 'PAYMENT_PAGE_ITEM_LAST_SYNC_TIMESTAMP';
 
-    const RAZORX_ASYNC_UPDATE_EXPERIMENT = 'pp_async_update_experiment';
-
     const RAZORX_PP_PAYMENT_REQUIRED_AMOUNT_QUANTITY_CHECK = 'pp_payment_required_amount_quantity_check';
 
     public function __construct()

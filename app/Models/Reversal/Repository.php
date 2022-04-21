@@ -274,25 +274,4 @@ class Repository extends Base\Repository
                     ->limit($limit)
                     ->get();
     }
-
-    /**
-     * Was used for data backfill activity.
-     * Check updateSettlementStatus() in Models\Transfer\Service.php for more.
-     *
-     * @param string $transferId
-     * @param string $merchantId
-     * @return mixed
-     */
-//    public function getLatestReversalIdForTransfer(string $transferId, string $merchantId)
-//    {
-//        return $this->newQuery()
-//                    ->select(Entity::ID)
-//                    ->where(Entity::ENTITY_TYPE, 'transfer')
-//                    ->where(Entity::ENTITY_ID, $transferId)
-//                    ->where(Entity::MERCHANT_ID, $merchantId)
-//                    ->orderBy(Entity::CREATED_AT, 'desc')
-//                    ->limit(1)
-//                    ->pluck(Entity::ID)
-//                    ->pop();
-//    }
 }
