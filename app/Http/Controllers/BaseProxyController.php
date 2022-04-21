@@ -25,9 +25,9 @@ abstract class BaseProxyController extends Controller
 
     protected $routesMap;
 
-    protected $merchantRoutes;
-
-    protected $adminRoutes;
+    protected $merchantRoutes = [];
+    protected $adminRoutes = [];
+    protected $adminRouteVsPermission;
 
     protected $preProcessor;
 
@@ -84,6 +84,12 @@ abstract class BaseProxyController extends Controller
         $this->merchantRoutes = $routes;
     }
 
+    protected function registerAdminRoutes(array $routes, $adminRouteVsPermission)
+    {
+        $this->adminRoutes = $routes;
+        $this->adminRouteVsPermission = $adminRouteVsPermission;
+    }
+
     protected function registerProcessors(PreProcessor $preProcessor, PostProcessor $postProcessor, $serviceName)
     {
         $this->preProcessor  = $preProcessor;
@@ -126,7 +132,9 @@ abstract class BaseProxyController extends Controller
 
     protected function getRoute($path = null): string
     {
-        foreach ($this->merchantRoutes as $route)
+        $routes = array_merge($this->merchantRoutes,$this->adminRoutes);
+
+        foreach ($routes as $route)
         {
             if (preg_match($this->routesMap[$route], $path, $matches) === 1)
             {
@@ -156,6 +164,29 @@ abstract class BaseProxyController extends Controller
         }
 
         $headers = $this->getHeadersForDashboardRequest($body);
+
+        return $this->sendRequestAndParseResponse($route, $request->method(), $path, $body, $headers);
+    }
+
+    public function handleAdminProxyRequests($path = null){
+        $request = $this->getRequestInstance();
+        $body    = $request->all();
+
+        $route = $this->getRoute($path);
+
+        if (empty($route) === true || empty($this->adminRouteVsPermission[$route]) === true)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
+        }
+
+        $this->ba->getAdmin()->hasPermissionOrFail($this->adminRouteVsPermission[$route]);
+
+        if ($request->method() === 'GET')
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_HTTP_METHOD_NOT_ALLOWED);
+        }
+
+        $headers = $this->getHeadersForAdminRequest($body);
 
         return $this->sendRequestAndParseResponse($route, $request->method(), $path, $body, $headers);
     }
@@ -221,7 +252,7 @@ abstract class BaseProxyController extends Controller
         $url     = $baseUrl . '/' . $path;
         $body    = empty($body) ? '{}' : json_encode($body);
 
-        $resp = Requests::request($url, $headers, $body, $method, $options);
+        $resp = $this->request($url, $headers, $body, $method, $options);
 
         $this->trace->info(TraceCode::PROXY_RESPONSE, [
             'status_code' => $resp->status_code,
@@ -281,5 +312,29 @@ abstract class BaseProxyController extends Controller
         }
 
         return $body;
+    }
+
+    protected function getHeadersForAdminRequest($body)
+    {
+        return [
+            'X-Admin-id'       => optional($this->ba->getAdmin())->getId() ?? '',
+            'X-Task-Id'        => $this->app['request']->getTaskId(),
+            'Content-Type'     => 'application/json',
+            'Accept'           => 'application/json',
+            'Authorization'    => $this->getAuthorizationHeader(),
+            'X-Request-ID'     => Request::getTaskId()
+        ];
+    }
+
+    public function request(string $url, $headers, $body, $method, array $options)
+    {
+        return Requests::request($url, $headers, $body, $method, $options);
+    }
+
+    public function getRequestInstance()
+    {
+        $request = Request::instance();
+
+        return $request;
     }
 }

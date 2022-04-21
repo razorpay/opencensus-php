@@ -802,6 +802,8 @@ class Name
     const BULK_UPDATE_WHITELISTED_DOMAIN                = 'bulk_update_whitelisted_domain';
     const CREATE_DEBIT_NOTE                            = 'create_debit_note';
 
+    const MANAGE_CMMA_SERVICE_CALLBACK                 = 'manager_cmma_service_callback';
+
     const TOKEN_REGISTRATION_ACTIONS = 'token_registration_actions';
 
     //Permission to update merchant risk attributes
@@ -942,6 +944,8 @@ class Name
 
     const SET_MERCHANT_SLA_FOR_ON_HOLD_PAYOUTS  = 'set_merchant_sla_for_on_hold_payouts';
 
+    //cmma admin permission
+    const CMMA_PROCESS_VIEW                    = 'process_view';
     const DEBUG_NOCODE_ROUTES                   = 'debug_nocode_routes';
 
     public static $actionMap = [

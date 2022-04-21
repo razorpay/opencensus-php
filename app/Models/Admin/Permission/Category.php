@@ -71,4 +71,5 @@ class Category
     const REFUND                       = 'refund';
     const RULE_VISIBILITY              = 'rule_visibility';
     const NOCODE                        = 'nocode';
+    const CMMA                         = 'cmma';
 }

@@ -101,6 +101,12 @@ return [
         'client_id'    => env('BVS_CLIENT_ID', 'API')
     ],
 
+    'cmma' => [
+        'url'      => env('CMMA_HOST'),
+        'user'     => env('CMMA_USER'),
+        'password' => env('CMMA_PASSWORD'),
+    ],
+
     'merchants_risk' => [
         // Api url for merchant risks service.
         'url'                => env('MERCHANT_RISKS_URL'),

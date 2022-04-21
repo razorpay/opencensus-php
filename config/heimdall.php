@@ -160,7 +160,7 @@ return [
                 'assignable'  => true,
                 'workflow'    => true,
             ],
-            Permission::PARTNER_ACTIONS => [
+            Permission::PARTNER_ACTIONS                 => [
                 'description' => 'To perform actions on partner activation',
                 'assignable'  => true,
                 'workflow'    => true,
@@ -171,14 +171,14 @@ return [
         ],
 
         PermissionCategory::MERCHANT_DETAIL => [
-            Permission::VIEW_MERCHANT_BALANCE               => [
+            Permission::VIEW_MERCHANT_BALANCE                  => [
                 'description' => 'View merchant balance in merchant details',
                 'assignable'  => true,
             ],
-            Permission::VIEW_MERCHANT_FEATURES              => '',
+            Permission::VIEW_MERCHANT_FEATURES                 => '',
             Permission::FEATURE_ONBOARDING_FETCH_ALL_RESPONSES => '',
-            Permission::VIEW_MERCHANT_BANKS                 => '',
-            Permission::VIEW_NETWORKS                       => '',
+            Permission::VIEW_MERCHANT_BANKS                    => '',
+            Permission::VIEW_NETWORKS                          => '',
             Permission::VIEW_MERCHANT_BANK_ACCOUNTS         => [
                 'assignable' => true,
             ],

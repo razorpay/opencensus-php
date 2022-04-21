@@ -3260,6 +3260,8 @@ class Route
         'care_service_chat_proxy'                 => ['post',    'care_service/chat/{path?}',                               'CareProxyController@postChatProxyRequest',                   ],
         'care_service_dark_proxy'                 => ['post',    'care_service/dark/admin',                                 'CareProxyController@postDarkProxyRequest',                   ],
 
+        'cmma_service_admin_proxy'                => ['post',    'cmma_service/admin/{path?}',                              'CmmaProxyController@handleAdminProxyRequests',               ],
+
         'myoperator_v1_proxy_get'                 => ['get',     'myoperator/{path?}',                                      'MyOperatorController@getProxyCallToMyOperatorV1'              ],
         'myoperator_v2_proxy_post'                => ['post',    'myoperator/campaign/{path?}',                             'MyOperatorController@postProxyCallToMyOperatorV2'              ],
 
@@ -6523,6 +6525,9 @@ class Route
         'care_service_admin_proxy',
         'care_service_dark_proxy',
 
+        // CMMA Service
+        'cmma_service_admin_proxy',
+
         'freshchat_put_chat_timings_config',
         'freshchat_get_chat_timings_config',
         'freshchat_put_chat_holidays_config',
@@ -7732,6 +7737,9 @@ class Route
 
         'care_service_admin_proxy'                            => Permission::MANAGE_CARE_SERVICE_CALLBACK, // todo: have more fine grained permissions at route level
         'care_service_dark_proxy'                             => Permission::CARE_SERVICE_DARK_PROXY,
+
+        'cmma_service_admin_proxy'                            => Permission::MANAGE_CMMA_SERVICE_CALLBACK,
+
         'freshchat_put_chat_timings_config'                   => Permission::MANAGE_FRESHCHAT,
         'freshchat_get_chat_timings_config'                   => Permission::MANAGE_FRESHCHAT,
         'freshchat_put_chat_holidays_config'                  => Permission::MANAGE_FRESHCHAT,
@@ -9895,6 +9903,7 @@ class Route
             'care_service_dashboard_proxy',
             'care_service_admin_proxy',
             'care_service_dark_proxy',
+            'cmma_service_admin_proxy',
             'channel_health_check',
             'checkout',
             'checkout_embedded',
