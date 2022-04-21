@@ -46,7 +46,8 @@ class AddMerchant extends Component {
       referralData: props.referralData || '',
       isFormValid: false,
     };
-    const { isPartnershipForXEnabled, isPartnershipFUX } = props.user;
+    const { user, onAddSuccess = () => {} } = props;
+    const { isPartnershipForXEnabled, isPartnershipFUX } = user;
     switch (props.addType) {
       case PRODUCT_TYPE.PG: {
         state.step = 2;
@@ -66,6 +67,7 @@ class AddMerchant extends Component {
       }
     }
     this.state = state;
+    this.onAddSuccess = onAddSuccess;
     this.isPartnershipForXEnabled = isPartnershipForXEnabled;
     this.isPartnershipFUX = isPartnershipFUX;
   }
@@ -187,6 +189,7 @@ class AddMerchant extends Component {
           }),
         );
         trackAddNewMerchantEvents('Submit Form');
+        this.onAddSuccess();
       })
       .catch(({ errors }) => {
         this.trackUserEvent('partnerships.submerchant.add.product_group.single.action', {
@@ -237,6 +240,7 @@ class AddMerchant extends Component {
           message:
             'Your file has been successfully processed. Status of account creation will be sent to you within 2 hours.',
         });
+        this.onAddSuccess();
         closeModal();
       })
       .catch((error) => {
@@ -319,13 +323,14 @@ class AddMerchant extends Component {
   };
 
   trackUserEvent = (eventName, properties = {}) => {
-    const { user, tracking } = this.props;
+    const { user, tracking, source } = this.props;
     const productGroup = this.getCurrentProduct();
     tracking?.trackEvent(
       window.rzpQ.onbr().interaction(eventName, {
         partnerID: user.id,
         productGroup,
         isPartnershipFUX: this.isPartnershipFUX,
+        source,
         ...properties,
       }),
     );

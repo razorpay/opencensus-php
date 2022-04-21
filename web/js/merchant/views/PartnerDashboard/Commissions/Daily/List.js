@@ -66,7 +66,7 @@ export default class CommissionsDailyList extends ListContainer {
   handleAddMerchant = () => {
     this.props.openModal({
       size: 'med-large',
-      component: <AddMerchant closeModal={this.props.closeModal} />,
+      component: <AddMerchant closeModal={this.props.closeModal} source="daily-earning" />,
     });
   };
 

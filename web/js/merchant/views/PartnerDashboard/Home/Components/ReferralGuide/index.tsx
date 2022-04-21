@@ -1,19 +1,18 @@
 import React from 'react';
 import Button from '@razorpay/blade-old/src/atoms/Button';
 import ProductShimmer from './shimmer';
-import { openModal, closeModal } from 'merchant_common/reducers/modals';
-import { connect } from 'react-redux';
-import AddMerchant from 'merchant/views/PartnerDashboard/SubMerchant/AddMerchant';
 import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
-import { OpenModalT, ProductListItemT } from '../../TypesDeclare/home';
+import {
+  AddMerchantSource,
+  ProductListItemT,
+} from 'merchant/views/PartnerDashboard/Home/TypesDeclare/home';
 import ProductListItem from './ProductListItem';
 
 interface ReferralGuideT {
   partnerName: string;
   isFirstReferralDone: boolean;
   isFetching: boolean;
-  openModal: OpenModalT;
-  closeModal: () => void;
+  handleReferClient: (source: AddMerchantSource, type?: string) => void;
 }
 
 const assetBase = `${window.cdnBaseUrl}/static/assets/partner-dashboard/fux-cards`;
@@ -26,19 +25,11 @@ export const ReferralGuide: React.FC<ReferralGuideT> = ({
   partnerName,
   isFirstReferralDone,
   isFetching,
-  openModal,
-  closeModal,
+  handleReferClient,
 }) => {
   const title = isFirstReferralDone
     ? `Good Job ${partnerName}!! Keep Referring`
     : 'Start Referring';
-
-  const handleReferClient = (type?: string) => {
-    openModal({
-      size: 'med-large',
-      component: <AddMerchant closeModal={closeModal} addType={type} />,
-    });
-  };
 
   const productList: ProductListItemT[] = [
     {
@@ -46,7 +37,7 @@ export const ReferralGuide: React.FC<ReferralGuideT> = ({
       title: 'For Payment Product',
       subTitle: "Refer your clients to leading Razorpay's payment products",
       ctaText: '+ Add new client',
-      onClickCTA: () => handleReferClient(PRODUCT_TYPE.PG),
+      onClickCTA: () => handleReferClient('referral-guide-pg', PRODUCT_TYPE.PG),
     },
     {
       icon: bankingIcon,
@@ -58,7 +49,7 @@ export const ReferralGuide: React.FC<ReferralGuideT> = ({
         </>
       ),
       ctaText: '+ Add new client',
-      onClickCTA: () => handleReferClient(PRODUCT_TYPE.X),
+      onClickCTA: () => handleReferClient('referral-guide-x', PRODUCT_TYPE.X),
     },
   ];
   return (
@@ -86,7 +77,7 @@ export const ReferralGuide: React.FC<ReferralGuideT> = ({
                 <div
                   role="button"
                   className="referral-content__cta"
-                  onClick={() => handleReferClient()}
+                  onClick={() => handleReferClient('referral-guide')}
                 >
                   <Button>+ Refer New Client</Button>
                 </div>
@@ -107,9 +98,4 @@ export const ReferralGuide: React.FC<ReferralGuideT> = ({
   );
 };
 
-const getDispatchToProps = () => ({
-  openModal,
-  closeModal,
-});
-
-export default connect(null, getDispatchToProps())(ReferralGuide);
+export default ReferralGuide;

@@ -21,6 +21,7 @@ describe('<ReferralGuide /> ', () => {
       isFetching: false,
       openModal: () => {},
       closeModal: () => {},
+      handleReferClient: () => {},
     };
     render(setUpComponent(<ReferralGuide {...props} />));
     expect(screen.getByText(`Good Job ${props.partnerName}!! Keep Referring`)).toBeInTheDocument();

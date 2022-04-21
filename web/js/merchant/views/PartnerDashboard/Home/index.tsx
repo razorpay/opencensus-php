@@ -1,23 +1,22 @@
 import React, { useEffect, useState } from 'react';
-import ReferralGuide from './Components/ReferralGuide';
 import { connect } from 'react-redux';
 import { merchantFetch } from 'merchant/utils/ajax';
+import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
+import {
+  AddMerchantSource,
+  FUXStatusStateT,
+  FUXStatusT,
+  PartnerHomeT,
+} from 'merchant/views/PartnerDashboard/Home/TypesDeclare/home';
 import ShowWhen from 'merchant/components/ShowWhen';
+import AddMerchant from 'merchant/views/PartnerDashboard/SubMerchant/AddMerchant';
+import ActivationGuide from 'merchant/views/PartnerDashboard/Home/Components/ActivationGuide';
+import ReferralGuide from 'merchant/views/PartnerDashboard/Home/Components/ReferralGuide/index';
+import { showActivationConfetti } from 'merchant/views/PartnerDashboard/Home/Components/utils';
 import './home.styl';
 
-interface FUXStatusT {
-  api_integration: boolean;
-  first_commission_payout: boolean;
-  first_earning_generated: boolean;
-  first_submerchant_added: boolean;
-}
-interface FUXStatusStateT {
-  value: FUXStatusT | null;
-  isFetching: boolean;
-}
-
-const Home = ({ user, showNotification }) => {
+const Home = ({ user, showNotification, openModal, closeModal }: PartnerHomeT) => {
   const [FUXStatus, setFUXStatus] = useState<FUXStatusStateT>({
     value: null,
     isFetching: true,
@@ -50,16 +49,60 @@ const Home = ({ user, showNotification }) => {
     loadData();
   }, []);
 
+  const onAddMerchantSuccess = () => {
+    showActivationConfetti('start-referring', true);
+    if (FUXStatus.value?.first_submerchant_added === false) {
+      const value = {
+        ...FUXStatus.value,
+        first_submerchant_added: true,
+      };
+      setFUXStatus({
+        isFetching: false,
+        value,
+      });
+    }
+  };
+  const handleReferClient = (source: AddMerchantSource, type?: string): void => {
+    openModal({
+      size: 'med-large',
+      component: (
+        <AddMerchant
+          closeModal={closeModal}
+          addType={type}
+          onAddSuccess={onAddMerchantSuccess}
+          source={source}
+        />
+      ),
+    });
+  };
+
+  const isFirstReferralDone = FUXStatus.value?.first_submerchant_added === true;
   return (
     <div className="partner-dashboard-home">
       <h2 className="page-heading">{`Welcome to Partner dashboard, ${partnerName}!`}</h2>
       <ShowWhen
-        additionalCondition={(currentUser) => currentUser.isPartner('reseller', 'aggregator')}
+        additionalCondition={(currentUser) =>
+          currentUser.isPartner() && !currentUser.isPartner('fully_managed')
+        }
+      >
+        <ActivationGuide
+          handleReferClient={handleReferClient}
+          fuxStatus={FUXStatus}
+          partnerName={partnerName}
+          user={user}
+        />
+      </ShowWhen>
+      <ShowWhen
+        myRole="owner manager admin"
+        additionalCondition={(currentUser) =>
+          currentUser.isPartner() && !currentUser.isPartner('pure_platform')
+        }
       >
         <ReferralGuide
           partnerName={partnerName}
-          isFirstReferralDone={FUXStatus.value?.first_submerchant_added}
+          isFirstReferralDone={isFirstReferralDone}
           isFetching={FUXStatus.isFetching}
+          handleReferClient={handleReferClient}
         />
       </ShowWhen>
     </div>
@@ -72,6 +115,8 @@ const mapStateToProps = (state) => ({
 
 const getDispatchToProps = () => ({
   showNotification,
+  openModal,
+  closeModal,
 });
 
 export default connect(mapStateToProps, getDispatchToProps())(Home);

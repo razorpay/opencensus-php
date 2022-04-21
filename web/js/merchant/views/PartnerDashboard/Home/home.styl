@@ -1,6 +1,7 @@
 .partner-dashboard-home {
   $screen-xs-max = 767px;
   $desktop-wide = 1170px;
+  $desktop-min = 1023px;
 
   .no-break {
     white-space: nowrap;
@@ -263,6 +264,207 @@
           }
         }
       }
+    }
+  }
+
+  .activation-guide-card {
+    display: flex;
+    background-color: #fff;
+    margin: 22px;
+    border-bottom: 8px solid #BBC2FF;
+    border-radius: 4px;
+    box-shadow: 0px 2px 12px -8px;
+
+    @media screen and (max-width: $desktop-min) {
+      flex-wrap: wrap;
+    }
+
+    .title-bar {
+      display: flex;
+      flex-direction: column;
+      background: #F3F5FF;
+      flex: 0 0 30%;
+      align-items: center;
+      padding-top: 40px;
+      position: relative;
+
+      .confetti-wrapper {
+        position: absolute;
+        top: 0;
+        width: 100%;
+        height: 120px;
+
+        @media screen and (min-width: $desktop-min) {
+          display: none;
+        }
+
+        canvas {
+          width: 100%;
+          height: 100%;
+        }
+      }
+
+      @media screen and (max-width: $desktop-min) {
+        flex: 1;
+        align-items: start;
+        padding-top: 8px;
+      }
+
+      &__container {
+        padding: 20px;
+        width: 260px;
+
+        @media screen and (max-width: $desktop-min) {
+          padding-bottom: 8px;
+        }
+
+        .title {
+          font-weight: 600;
+          font-size: 20px;
+
+          &:after {
+            content: ''
+            display: block;
+            width: 36px;
+            height: 4px;
+            background: #F8C33E;
+            border-radius: 4px;
+            margin: 8px 0 16px;
+          }
+        }
+
+        .sub-title {
+          font-weight: 500;
+          font-size: 13px;
+
+          @media screen and (max-width: $desktop-min) {
+            display: none;
+          }
+        }
+
+        img {
+          margin-top: 18px;
+
+          @media screen and (max-width: $desktop-min) {
+            display: none;
+          }
+        }
+      }
+    }
+
+    .activation-steps {
+      display: flex;
+      flex-direction: column;
+      padding-top: 45px;
+      padding-bottom: 30px;
+      width: 100%;
+      position: relative;
+
+      .confetti-wrapper {
+        position: absolute;
+        width: 50%;
+        height: 250px;
+        right: 0;
+        top: 12px;
+
+        @media screen and (max-width: $desktop-min) {
+          display: none;
+        }
+
+        canvas {
+          width: 100%;
+          height: 100%;
+        }
+      }
+
+      @media screen and (max-width: $desktop-min) {
+        padding-top: 8px;
+      }
+
+      .activation-step {
+        display: flex;
+        margin-top: 15px;
+
+        @media screen and (max-width: $desktop-min) {
+          flex-wrap: wrap;
+        }
+
+        &:last-child {
+          .step-connector {
+            display: none;
+          }
+        }
+
+        &__icon {
+          margin-left: 28px;
+          position: relative;
+
+          img {
+            z-index: 1;
+            position: relative;
+          }
+
+          .step-connector {
+            position: absolute;
+            width: 8px;
+            z-index: 0;
+            top: 0;
+            left: 15px;
+            bottom: -20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+
+            .connector {
+              width: 4px;
+              height: 4px;
+              border-radius: 50%;
+              background: #EAEAEA;
+            }
+          }
+        }
+
+        &__content {
+          width: 38%;
+          margin-left: 12px;
+
+          @media screen and (max-width: $screen-xs-max) {
+            width: 70%;
+          }
+        }
+
+        &__title {
+          color: #162F56;
+          font-weight: 600;
+          font-size: 16px;
+        }
+
+        &__sub-title {
+          color: #162f56de;
+          font-weight: 500;
+          font-size: 14px;
+          line-height: 20px;
+          margin-top: 8px;
+
+          .i-info-circle {
+            margin-left: 8px;
+          }
+        }
+
+        &__cta {
+          margin-left: 10%;
+          position: relative;
+
+          @media screen and (max-width: $screen-xs-max) {
+            margin-left: 74px;
+            margin-top: 8px;
+          }
+        }
+      }
+    }
+
+    .activation-step--opaque {
+      opacity: 0.5;
     }
   }
 }
