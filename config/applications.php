@@ -279,6 +279,9 @@ return [
     VirtualAccount\Provider::HDFC_ECMS => [
         'secret'    => env('HDFC_ECMS_SECRET'),
     ],
+    'hdfc_otc' => [
+        'secret'    => env('HDFC_OTC_SECRET'),
+    ],
 
     'rbl_va'    => [
         'org_token' => env('RBL_VA_SECRET'),

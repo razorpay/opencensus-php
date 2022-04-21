@@ -206,6 +206,13 @@ class Repository extends Base\Repository
                     ->all();
     }
 
+    public function fetchByOfflineId(string $offlineId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::OFFLINE_CHALLAN_ID, $offlineId)
+                    ->first();
+    }
+
     public function findActiveVirtualAccountForOrderByCustomer(Customer\Entity $customer)
     {
         return $this->newQuery()

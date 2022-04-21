@@ -531,6 +531,16 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SETTLEMENTS_EVENTS_CRON_SELECTED_MERCHANT_IDS         = 'SETTLEMENTS_EVENTS_CRON_SELECTED_MERCHANT_IDS';
     const SETTLEMENTS_EVENTS_CRON_RESULT                        = 'SETTLEMENTS_EVENTS_CRON_RESULT';
 
+    const OTC_VALIDATION_IDENTIFICATION_ID                      = 'OTC_VALIDATION_IDENTIFICATION_ID';
+    const OTC_VALIDATION_GENERIC_RESPONSE                       = 'OTC_VALIDATION_GENERIC_RESPONSE';
+    const OTC_VALIDATION_OFFLINE_CHALLAN                        = 'OTC_VALIDATION_OFFLINE_CHALLAN';
+    const OTC_VALIDATION_GENERIC_REQUEST                        = 'OTC_VALIDATION_GENERIC_REQUEST';
+    const OTC_VALIDATION_EXCEPTION_DATA                         = 'OTC_VALIDATION_EXCEPTION_DATA';
+    const OTC_VALIDATION_ORDER_DETAILS                          = 'OTC_VALIDATION_ORDER_DETAILS';
+    const OTC_VALIDATION_BANK_RESPONSE                          = 'OTC_VALIDATION_BANK_RESPONSE';
+    const OTC_VALIDATION_BANK_REQUEST                           = 'OTC_VALIDATION_BANK_REQUEST';
+    const OTC_VALIDATION_CLIENT_CODE                            = 'OTC_VALIDATION_CLIENT_CODE';
+
 
     const FTA_MODE_SET                                          = 'FTA_MODE_SET';
     const FTA_SLA_EXPIRED                                       = 'FTA_SLA_EXPIRED';

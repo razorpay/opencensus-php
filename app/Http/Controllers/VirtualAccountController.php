@@ -6,6 +6,11 @@ use Request;
 use ApiResponse;
 use Lib\Formatters\Xml;
 use RZP\Constants\HyperTrace;
+use RZP\Error\ErrorCode;
+use RZP\Exception\BadRequestException;
+use RZP\Exception\ExtraFieldsException;
+use RZP\Models\VirtualAccount\Transformer;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Trace\TraceCode;
 use RZP\Base\JitValidator;
 use RZP\Base\RuntimeManager;
@@ -239,6 +244,44 @@ class VirtualAccountController extends Controller
         $data = $this->service()->bulkCloseVirtualAccount($input);
 
         return ApiResponse::json($data);
+    }
+
+    public function validateBankOfflineChallanRequest()
+    {
+        $input = Request::all();
+
+        try {
+            $genericInput = (new Transformer)->getGenericRequest($input);
+
+            $genericResponse = $this->service()->validateBankOfflineChallanRequest($genericInput);
+
+            $response = (new Transformer)->getCustomResponse($genericResponse);
+        }
+        catch (ExtraFieldsException | BadRequestValidationFailureException | BadRequestException $e) {
+
+            $this->trace->info(TraceCode::OTC_VALIDATION_EXCEPTION_DATA,
+                [
+                    'Exception Data'        => $e->getData(),
+                    'Exception Message'     => $e->getMessage()
+                ]);
+
+            $response = (new Transformer())->genericExceptionHandler( $e->getData()['response'] ?? [],
+                $e->getCode(), $e->getMessage(), 'BAD_REQ_ER',true);
+
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->info(TraceCode::OTC_VALIDATION_EXCEPTION_DATA,
+                [
+                    'Exception Message'     => $e->getMessage()
+                ]);
+
+            $response = (new Transformer())->genericExceptionHandler([], ErrorCode::SERVER_ERROR,
+                null, 'SERVER_ER');
+        }
+
+        return ApiResponse::json($response);
+
     }
 
     public function debugVA()

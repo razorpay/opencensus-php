@@ -8,7 +8,10 @@ use Razorpay\Trace\Logger as Trace;
 
 use RZP\Constants\HyperTrace;
 use RZP\Exception;
+use RZP\Exception\BadRequestException;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Base;
+use RZP\Trace\Tracer;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Order;
@@ -33,7 +36,7 @@ use RZP\Models\VirtualAccountProducts;
 use RZP\Models\VirtualAccount\Constant as VAConstants;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Offline\Device as OfflineDevice;
-use RZP\Trace\Tracer;
+use RZP\Models\OfflineChallan\Repository as OfflineChallanRepo;
 
 class Service extends Base\Service
 {
@@ -47,6 +50,10 @@ class Service extends Base\Service
     const VA_ADD_RECEIVER            = 'va_add_receiver';
     const VA_ADD_ALLOWED_PAYER       = 'va_add_allowed_payer';
     const VA_DELETE_ALLOWED_PAYER    = 'va_delete_allowed_payer';
+
+    protected $authToGateway = [
+        'hdfc_otc' => 'offline_hdfc'
+    ];
 
     public function __construct()
     {
@@ -1277,6 +1284,7 @@ class Service extends Base\Service
         $this->trace->info(TraceCode::VIRTUAL_ACCOUNT_ALLOWED_PAYER_ADDED, $virtualAccount->toArrayPublic());
 
         return $virtualAccount->toArrayPublic();
+        return $virtualAccount->toArrayPublic();
     }
 
     public function deleteAllowedPayer($virtualAccountId, $tpvId)
@@ -1312,6 +1320,194 @@ class Service extends Base\Service
 
         $this->trace->info(TraceCode::VIRTUAL_ACCOUNT_ALLOWED_PAYER_DELETED);
 
+    }
+
+    /**
+     * @throws \Throwable
+     * @throws Exception\BadRequestException
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    public function validateBankOfflineChallanRequest($input): array
+    {
+
+        (new Validator)->validateInput('offline_challan_generic', $input);
+
+        $response = [
+            'challan_number' => '',
+            'amount' => '',
+            'currency' => 'INR',
+            'partial_payment' =>  '',
+            'status' => '',
+            'identification_id' => '',
+            'error' => null
+        ];
+
+        $offlineChallan = (new OfflineChallanRepo)->fetchByChallanNumber($input['challan_number']);
+
+        $response = $this->checkOfflineChallanForBankRequest($input,$response,$offlineChallan);
+
+        $virtualAccount = $this->repo->virtual_account->fetchByOfflineId($offlineChallan['id']);
+
+        $response = $this->checkClientCodeForBankRequest($virtualAccount,$input,$response);
+
+        $order = $this->repo->order->findOrFail($virtualAccount->getEntityId());
+
+        $response = $this->checkIdentificationIdForBankRequest($virtualAccount,$input,$response);
+
+        $response = $this->checkOrderAmountForBankRequest($order,$input,$response);
+
+        $response['status'] = '0';
+
+        $offlineChallan->setStatus('validated');
+
+        $this->repo->offline_challan->saveOrfail($offlineChallan);
+
+        $this->trace->info(TraceCode::OTC_VALIDATION_OFFLINE_CHALLAN,
+            [
+                'Offline Challan status' => $offlineChallan->status
+            ]);
+
+        return $response;
+
+    }
+
+    public function checkOfflineChallanForBankRequest($input,$response,$offlineChallan)
+    {
+        if(isset($offlineChallan) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_CHALLAN_NOT_FOUND,null,[
+                'response' => $response ,
+                'internal_error_code' => ErrorCode::BAD_REQUEST_CHALLAN_NOT_FOUND
+            ]);
+        }
+
+        $challanId = $offlineChallan['id'];
+
+        $virtualAccount = $this->repo->virtual_account->fetchByOfflineId($challanId);
+
+        $response['challan_number'] = $input['challan_number'];
+
+        $this->trace->info(TraceCode::OTC_VALIDATION_OFFLINE_CHALLAN,
+            [
+                'Challan Id' => $challanId,
+                'VA'         => $virtualAccount->getId() ?? 'not set',
+            ]);
+
+        if(isset($virtualAccount) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_CHALLAN_NOT_FOUND,null,[
+                'response' => $response ,
+                'internal_error_code' => ErrorCode::BAD_REQUEST_CHALLAN_NOT_FOUND
+            ]);
+        }
+
+        if ($virtualAccount->getStatus() !== Status::ACTIVE)
+        {
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_CHALLAN_EXPIRED,null,[
+                    'response' => $response ,
+                    'internal_error_code' => ErrorCode::BAD_REQUEST_CHALLAN_EXPIRED
+                ]);
+            }
+        }
+
+        return $response;
+    }
+
+    public function checkClientCodeForBankRequest($virtualAccount,$input,$response)
+    {
+        $auth = $this->auth->getInternalApp();
+        $params['gateway_merchant_id'] = $input['client_code'];
+        $params['offline'] = true;
+        $params['merchant_id'] = $virtualAccount->getMerchantId();
+        $params['status'] = 'activated';
+        $params['enabled'] = true;
+        $params['gateway'] = $this->authToGateway[$auth];
+
+        $terminals = $this->repo->terminal->getByParams($params);
+
+        $this->trace->info(TraceCode::OTC_VALIDATION_CLIENT_CODE,
+            [
+                'Terminal Count'    => $terminals->count() ?? 'Not Set',
+                'Params for fetch'  => $params
+
+            ]);
+
+        if($terminals->count() === 0)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_CLIENT_CODE_NOT_FOUND,null,[
+                'response' => $response ,
+                'internal_error_code' => ErrorCode::BAD_REQUEST_CLIENT_CODE_NOT_FOUND
+            ]);
+        }
+
+        return $response;
+    }
+
+    public function checkIdentificationIdForBankRequest($virtualAccount,$input,$response): array
+    {
+        $metaData = (new Order\OrderMeta\Repository())->findByOrderIdAndType($virtualAccount->getEntityId(),
+            (new Order\OrderMeta\Type)::CUSTOMER_ADDITIONAL_INFO);
+
+        $jsonData = $metaData->value;
+
+        $idList = array_values($jsonData);
+
+        $this->trace->info(TraceCode::OTC_VALIDATION_IDENTIFICATION_ID,
+            [
+                'Id List' => $idList
+            ]);
+
+        if(in_array($input['identification_id'],$idList,true) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_IDENTIFICATION_ID_NOT_FOUND,null,[
+                'response' => $response ,
+                'internal_error_code' => ErrorCode::BAD_REQUEST_IDENTIFICATION_ID_NOT_FOUND
+            ]);
+        }
+
+        $response['identification_id'] = $input['identification_id'];
+
+        return $response;
+    }
+
+    public function checkOrderAmountForBankRequest($order,$input,$response): array
+    {
+        $isPartialPaymentEnabled = $order->isPartialPaymentAllowed();
+
+        $response['partial_payment'] = $isPartialPaymentEnabled;
+
+        $amountFromOrder = $order->getAmountDue();
+
+        $response['amount'] = $input['amount'] ?? $amountFromOrder;
+
+        $this->trace->info(TraceCode::OTC_VALIDATION_ORDER_DETAILS,
+            [
+                'Input has amount'  => isset($input['amount']),
+                'Amount from Order' => $amountFromOrder
+            ]);
+
+        if(isset($input['amount']) === true)
+        {
+            $amt = $input['amount'];
+
+            if(($isPartialPaymentEnabled === true and $amt > $amountFromOrder) or
+                ($isPartialPaymentEnabled === false and $amt !== $amountFromOrder))
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_AMOUNT_MISMATCH,null,[
+                    'response' => $response ,
+                    'internal_error_code' => ErrorCode::BAD_REQUEST_AMOUNT_MISMATCH
+                ]);
+            }
+        }
+
+        return $response;
     }
 
     public function removePiiForLogging(array $input)

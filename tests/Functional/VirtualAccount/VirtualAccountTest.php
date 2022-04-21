@@ -28,6 +28,7 @@ use Illuminate\Database\Eloquent\Factory;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Models\QrCode\Repository as QrCodeRepo;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
@@ -2842,6 +2843,380 @@ class VirtualAccountTest extends TestCase
         $this->ba->proxyAuth();
 
         $this->startTest($testData);
+    }
+
+    public function generateOrderId($input)
+    {
+        $request  = [
+        'convertContentToString' => false,
+        'url'                    => '/orders',
+        'method'                 => 'POST',
+        'content'                => $input,
+    ];
+
+        $this->fixtures->merchant->addFeatures(FeatureConstants::OFFLINE_PAYMENT_ON_CHECKOUT);
+
+        $this->ba->privateAuth();
+
+        $response = $this->sendRequest($request);
+
+        return $response['id'];
+
+    }
+
+    public function testValidateOfflineChallan($functionalRequestContent = null,
+                                               $functionalResponseContent = null, $sendChallanNumber = false)
+    {
+        $content = [
+            'amount' => 1000,
+            'currency' => 'INR',
+            'receipt' => 'rec1',
+            'customer_additional_info' => [
+                'property_id' => '12345',
+                'property_value' => 'abc'
+            ],
+        ];
+
+        $orderId = $this->generateOrderId($content);
+
+        $terminalCreteData = [
+            'gateway'                  => 'offline_hdfc',
+            'gateway_merchant_id'      => '12345678',
+            'gateway_secure_secret'    => '12345',
+            'offline'                   =>  1,
+            'merchant_id'              =>  '10000000000000',
+        ];
+
+        $this->fixtures->create(
+            'terminal', $terminalCreteData);
+
+        $this->fixtures->merchant->enableOffline();
+
+        $virtualAccount = $this->createVirtualAccountForOfflineOrder($orderId, ['customer_id' => $this->customer['id'],'receivers' => ['offline_challan']]);
+
+        $requestContent = [
+            'challan_no' => $virtualAccount['receivers'][0]['challan_number'],
+            'client_code' => $terminalCreteData['gateway_merchant_id'],
+            'identification_id' => '12345',
+
+        ];
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content'] = $functionalRequestContent ?? $requestContent;
+
+        $testData['request']['content']['challan_no'] = $virtualAccount['receivers'][0]['challan_number'];
+
+        if($sendChallanNumber === true)
+            $testData['request']['content']['challan_no'] = 'asdaf1q124314112';
+
+        $responseContent = [
+            'challan_no' => $virtualAccount['receivers'][0]['challan_number'],
+            'expected_amount' => 1000,
+            'currency' => 'INR',
+            'partial_payment' => false,
+            'status' => '0',
+            'error' => null,
+            'identification_id' => '12345'
+        ];
+
+        $testData['response']['content'] = $functionalResponseContent ?? $responseContent;
+
+        if ($sendChallanNumber === false)
+            $testData['response']['content']['challan_no'] = $virtualAccount['receivers'][0]['challan_number'];
+        else
+            $testData['response']['content']['challan_no'] = '';
+
+        $this->ba->hdfcOtcAuth();
+
+        $this->startTest($testData);
+
+    }
+
+    public function testValidateOfflineChallanClientCodeNotFound()
+    {
+        $requestContent = [
+            'client_code' => '12345679',
+            'identification_id' => '12345',
+            'expected_amount' => 1000
+        ];
+
+        $responseContent = [
+            'expected_amount' => '',
+            'currency' => 'INR',
+            'partial_payment' => '',
+            'status' => '1',
+            'identification_id' => '',
+            'error' => [
+                'code' => 'BAD_REQ_ER',
+                'field' => 'client_code',
+                'source' => 'business',
+                'step' => null,
+                'reason' => 'CLIENT_CODE_NOT_FOUND',
+                'metadata' => []
+            ]
+        ];
+
+        $this->testValidateOfflineChallan($requestContent, $responseContent);
+    }
+
+    public function testValidateOfflineChallanAmountMismatch()
+    {
+        $requestContent = [
+            'client_code' => '12345678',
+            'identification_id' => '12345',
+            'expected_amount' => 10000
+        ];
+
+        $responseContent = [
+            'expected_amount' => 10000,
+            'currency' => 'INR',
+            'partial_payment' => false,
+            'status' => '1',
+            'identification_id' => '12345',
+            'error' => [
+                'code' => 'BAD_REQ_ER',
+                'field' => 'amount',
+                'source' => 'business',
+                'step' => null,
+                'reason' => 'AMOUNT_MISMATCH',
+                'metadata' => []
+            ]
+        ];
+
+        $this->testValidateOfflineChallan($requestContent, $responseContent, false);
+
+    }
+
+    public function testValidateOfflineChallanNotFound()
+    {
+        $requestContent = [
+            'client_code' => '12345678',
+            'identification_id' => '12345',
+            'expected_amount' => 1000
+        ];
+
+        $responseContent = [
+            'expected_amount' => '',
+            'currency' => 'INR',
+            'partial_payment' => '',
+            'status' => '1',
+            'identification_id' => '',
+            'error' => [
+                'code' => 'BAD_REQ_ER',
+                'field' => 'challan_no',
+                'source' => 'business',
+                'step' => null,
+                'reason' => 'CHALLAN_NOT_FOUND',
+                'metadata' => []
+            ]
+        ];
+
+        $this->testValidateOfflineChallan($requestContent, $responseContent, true);
+
+    }
+
+    public function testValidateOfflineIdentificationIdNotFound()
+    {
+        $requestContent = [
+            'client_code' => '12345678',
+            'identification_id' => '12346',
+            'expected_amount' => 1000
+        ];
+
+        $responseContent = [
+            'expected_amount' => '',
+            'currency' => 'INR',
+            'partial_payment' => '',
+            'status' => '1',
+            'identification_id' => '',
+            'error' => [
+                'code' => 'BAD_REQ_ER',
+                'field' => 'identification_id',
+                'source' => 'business',
+                'step' => null,
+                'reason' => 'IDENTIFICATION_ID_NOT_FOUND',
+                'metadata' => []
+            ]
+        ];
+
+        $this->testValidateOfflineChallan($requestContent, $responseContent, false);
+
+    }
+
+    public function testValidateOfflineChallanValidationFailure()
+    {
+        $requestContent = [
+            //'client_code' => '12345678',
+            'identification_id' => '12346',
+            'expected_amount' => 1000
+        ];
+
+        $responseContent = [
+            'expected_amount' => '',
+            'currency' => 'INR',
+            'partial_payment' => '',
+            'status' => '1',
+            'identification_id' => '',
+            'error' => [
+                'code' => 'BAD_REQ_ER',
+                'field' => '',
+                'source' => 'business',
+                'step' => null,
+                'reason' => 'VALIDATION_FAILURE',
+                'metadata' => []
+            ]
+        ];
+
+        $this->testValidateOfflineChallan($requestContent, $responseContent, true);
+
+    }
+
+    public function testValidateOfflineChallanWithPartialPayment($functionalRequestContent = null,
+                                               $functionalResponseContent = null, $sendChallanNumber = false)
+    {
+        $content = [
+            'amount' => 1000,
+            'currency' => 'INR',
+            'receipt' => 'rec1',
+            'partial_payment' => true,
+            'customer_additional_info' => [
+                'property_id' => '12345',
+                'property_value' => 'abc'
+            ],
+        ];
+
+        $orderId = $this->generateOrderId($content);
+
+        $terminalCreteData = [
+            'gateway'                  => 'offline_hdfc',
+            'gateway_merchant_id'      => '12345678',
+            'gateway_secure_secret'    => '12345',
+            'offline'                  =>  1,
+            'merchant_id'              => '10000000000000',
+        ];
+
+        $this->fixtures->create(
+            'terminal', $terminalCreteData);
+
+        $this->fixtures->merchant->enableOffline();
+
+        $virtualAccount = $this->createVirtualAccountForOfflineOrder($orderId, ['customer_id' => $this->customer['id'],'receivers' => ['offline_challan']]);
+
+        $requestContent = [
+            'challan_no' => $virtualAccount['receivers'][0]['challan_number'],
+            'client_code' => $terminalCreteData['gateway_merchant_id'],
+            'identification_id' => '12345',
+            'expected_amount'   => 100
+        ];
+
+        $testData = $this->testData['testValidateOfflineChallan'];
+
+        $testData['request']['content'] = $functionalRequestContent ?? $requestContent;
+
+        $testData['request']['content']['challan_no'] = $virtualAccount['receivers'][0]['challan_number'];
+
+        if($sendChallanNumber === true)
+            $testData['request']['content']['challan_no'] = 'asdaf1q124314112';
+
+        $responseContent = [
+            'challan_no' => $virtualAccount['receivers'][0]['challan_number'],
+            'expected_amount' => 100,
+            'currency' => 'INR',
+            'partial_payment' => true,
+            'status' => '0',
+            'error' => null,
+            'identification_id' => '12345'
+        ];
+
+        $testData['response']['content'] = $functionalResponseContent ?? $responseContent;
+
+        if ($sendChallanNumber === false)
+            $testData['response']['content']['challan_no'] = $virtualAccount['receivers'][0]['challan_number'];
+        else
+            $testData['response']['content']['challan_no'] = '';
+
+        $this->ba->hdfcOtcAuth();
+
+        $this->startTest($testData);
+
+    }
+
+    public function testValidateOfflineChallanWithPartialPaymentAmountMismatch($functionalRequestContent = null,
+                                                                 $functionalResponseContent = null, $sendChallanNumber = false)
+    {
+        $content = [
+            'amount' => 1000,
+            'currency' => 'INR',
+            'receipt' => 'rec1',
+            'partial_payment' => true,
+            'customer_additional_info' => [
+                'property_id' => '12345',
+                'property_value' => 'abc'
+            ],
+        ];
+
+        $orderId = $this->generateOrderId($content);
+
+        $terminalCreteData = [
+            'gateway'                  => 'offline_hdfc',
+            'gateway_merchant_id'      => '12345678',
+            'gateway_secure_secret'    => '12345',
+            'offline'                  =>  1,
+            'merchant_id'              => '10000000000000',
+        ];
+
+        $this->fixtures->create(
+            'terminal', $terminalCreteData);
+
+        $this->fixtures->merchant->enableOffline();
+
+        $virtualAccount = $this->createVirtualAccountForOfflineOrder($orderId, ['customer_id' => $this->customer['id'],'receivers' => ['offline_challan']]);
+
+        $requestContent = [
+            'challan_no' => $virtualAccount['receivers'][0]['challan_number'],
+            'client_code' => $terminalCreteData['gateway_merchant_id'],
+            'identification_id' => '12345',
+            'expected_amount'   => 1100
+        ];
+
+        $testData = $this->testData['testValidateOfflineChallan'];
+
+        $testData['request']['content'] = $functionalRequestContent ?? $requestContent;
+
+        $testData['request']['content']['challan_no'] = $virtualAccount['receivers'][0]['challan_number'];
+
+        if($sendChallanNumber === true)
+            $testData['request']['content']['challan_no'] = 'asdaf1q124314112';
+
+        $responseContent = [
+            'challan_no' => $virtualAccount['receivers'][0]['challan_number'],
+            'expected_amount' => 1100,
+            'currency' => 'INR',
+            'partial_payment' => true,
+            'status' => '1',
+            'identification_id' => '12345',
+            'error' => [
+                'code' => 'BAD_REQ_ER',
+                'field' => 'amount',
+                'source' => 'business',
+                'step' => null,
+                'reason' => 'AMOUNT_MISMATCH',
+                'metadata' => []
+            ]
+        ];
+
+        $testData['response']['content'] = $functionalResponseContent ?? $responseContent;
+
+        if ($sendChallanNumber === false)
+            $testData['response']['content']['challan_no'] = $virtualAccount['receivers'][0]['challan_number'];
+        else
+            $testData['response']['content']['challan_no'] = '';
+
+        $this->ba->hdfcOtcAuth();
+
+        $this->startTest($testData);
+
     }
 
     public function testVpaValidationWithDuplicateVpaAddressAndDifferentEntityType()

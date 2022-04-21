@@ -106,6 +106,20 @@ class Validator extends Base\Validator
         Entity::RECEIVER_TYPES,
     ];
 
+    protected static $offlineChallanGenericRules = [
+        'challan_number'                =>  'required|string|size:16',
+        'client_code'                   =>  'required|string',
+        'identification_id'             =>  'required|string',
+        'amount'                        =>  'sometimes|required|integer'
+    ];
+
+    public static $offlineChallanHdfcRules = [
+        'challan_no'                    =>  'required|string|size:16',
+        'client_code'                   =>  'required|string',
+        'identification_id'             =>  'required|string',
+        'expected_amount'               =>  'sometimes|required|integer'
+    ];
+
     protected function validateReceivers(string $key, array $value, array $data)
     {
         if ((isset($value[Entity::TYPES]) === true) and

@@ -1720,6 +1720,14 @@ return [
         ],
     ],
 
+    'testValidateOfflineChallan' => [
+        'request' => [
+            'convertContentToString'    => false,
+            'url'                       => '/validate/ecollect/offline',
+            'method'                    => 'POST'
+        ],
+    ],
+
     'testCreateVirtualAccountWithTerminalCaching' => [
         'name'            => 'Test virtual account',
         'entity'          => 'virtual_account',

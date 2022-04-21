@@ -532,6 +532,7 @@ class Route
         'bank_transfer_process_icici_internal'     => ['post',     'ecollect/validate/icici/internal',               'BankTransferController@processIciciBankTransfer'                   ],
         'process_pending_bank_transfer'            => ['post',     'admin/process_pending_bank_transfer',            'BankTransferController@processPendingBankTransfer'                 ],
         'bank_transfer_process_hdfc_ecms'          => ['post',     'ecollect/validate/hdfc/ecms',                    'BankTransferController@processHdfcEcmsBankTransfer'                ],
+        'offline_challan_validate'                 => ['post',     'validate/ecollect/offline',                      'VirtualAccountController@validateBankOfflineChallanRequest'        ],
         'bank_transfer_process_file'               => ['post',     'ecollect/validate/file',                         'BankTransferController@processBankTransferFile'                    ],
         'bank_transfer_process_file_rbl'           => ['post',     'ecollect/validate/file/rbl',                     'BankTransferController@processBankTransferFileRbl'                 ],
         'bank_transfer_process_file_yesbank'       => ['post',     'ecollect/validate/file/yesbank',                 'BankTransferController@processBankTransferFileYesbank'             ],
@@ -4125,6 +4126,7 @@ class Route
         'bank_transfer_process_icici_internal',
         'bank_transfer_process_yesbank_internal',
         'bank_transfer_process_hdfc_ecms',
+        'offline_challan_validate',
         'bank_transfer_refund_retry',
         'bank_transfer_edit_payer_account_internal',
         'batch_process_file',
@@ -12057,6 +12059,10 @@ class Route
 
         'hdfc_ecms' => [
             'bank_transfer_process_hdfc_ecms',
+        ],
+
+        'hdfc_otc' => [
+            'offline_challan_validate'
         ],
 
         'rbl' => [

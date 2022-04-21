@@ -659,6 +659,15 @@ class Authorization
         $this->appAuth('rzp_'.$mode, $pwd);
     }
 
+    public function hdfcOtcAuth($mode = 'test')
+    {
+        $hdfcOTCConfig = \Config::get('applications.hdfc_otc');
+
+        $pwd = $hdfcOTCConfig['secret'];
+
+        $this->appAuth('rzp_'.$mode, $pwd);
+    }
+
     public function authServiceAuth($mode = 'test')
     {
         $authServiceConfig = \Config::get('applications.auth_service');
