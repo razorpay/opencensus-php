@@ -90,6 +90,13 @@ class ReconService
 
     public function sendAnyRequest($url, $method, $input)
     {
+        $this->trace->info(
+            TraceCode::RECON_SEND_ANY_REQUEST_INPUT_DATA,
+            [
+                'url'       => $url,
+                'method'    => $method,
+                'input'     => $input,
+            ]);
         if (array_key_exists("body", $input))
         {
             $data = json_decode($input['body']);
@@ -114,7 +121,7 @@ class ReconService
 
         if (in_array($url, [self::FILE_TYPE_URL, self::SAMPLE_FILE_PARSER_URL]) and in_array($method, $allowed_methods))
         {
-            if(!(is_null($input[self::FILE]) or  $input[self::FILE] == self::NULL))
+            if(array_key_exists(self::FILE, $input) and !(is_null($input[self::FILE]) or  $input[self::FILE] == self::NULL))
             {
                 $data->sample_file_path = $this->uploadSampleFile($input);
                 unset($input[self::FILE]);
