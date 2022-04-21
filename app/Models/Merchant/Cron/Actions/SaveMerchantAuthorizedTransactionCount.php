@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant\Cron\Actions;
 use Cache;
 use Carbon\Carbon;
 use RZP\Trace\TraceCode;
+use RZP\Base\RuntimeManager;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\Cron\Constants;
 use RZP\Models\Merchant\Cron\Dto\ActionDto;
@@ -18,6 +19,10 @@ class SaveMerchantAuthorizedTransactionCount extends BaseAction
 
     public function execute($data = []): ActionDto
     {
+        RuntimeManager::setMemoryLimit('2048M');
+
+        RuntimeManager::setTimeLimit(20000);
+
         if (empty($data) === true)
         {
             return new ActionDto(Constants::SKIPPED);

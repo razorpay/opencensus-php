@@ -4673,9 +4673,7 @@ class Route
         'payments_card_es_sync_cron',
 
         'payment_upi_authorize_failed',
-      
         'payout_update_tax_payment_id',
-      
         'recon_update_upi_data',
         'payment_transfer_retry_batch',
 
