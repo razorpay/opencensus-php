@@ -5,8 +5,10 @@ namespace RZP\Models\Partner\KycAccessState;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Mail;
 use RZP\Constants\Mode;
+use RZP\Diag\EventCode;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Exception\BaseException;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
@@ -155,6 +157,11 @@ class Core extends Base\Core
 
         $subMerchantKycAccess = $accessRequest->first();
 
+        $eventData = [
+            'partner_id'    => $input[Entity::PARTNER_ID],
+            'submerchant_id'  => $input[Entity::ENTITY_ID],
+        ];
+
         if (isset($input[Entity::APPROVE_TOKEN]) === true)
         {
             $subMerchantKycAccess->setState(State::APPROVED);
@@ -170,6 +177,9 @@ class Core extends Base\Core
                 $this->repo->saveOrFail($subMerchantKycAccess);
                 $this->repo->saveOrFail($accessMapping);
             });
+
+            $eventData['status'] = State::APPROVED;
+            $this->app['diag']->trackOnboardingEvent(EventCode::PARTNER_KYC_ACCESS_APPROVE, null, null, $eventData);
             $this->sendKycRequestConfirmedRejectedEmail($subMerchantKycAccess, true);
         }
         elseif (isset($input[Entity::REJECT_TOKEN]) === true)
@@ -178,6 +188,9 @@ class Core extends Base\Core
             $subMerchantKycAccess->incrementRejectionCount();
 
             $this->repo->saveOrFail($subMerchantKycAccess);
+
+            $eventData['status'] = State::REJECTED;
+            $this->app['diag']->trackOnboardingEvent(EventCode::PARTNER_KYC_ACCESS_REJECT, null, null, $eventData);
             $this->sendKycRequestConfirmedRejectedEmail($subMerchantKycAccess, false);
         }
 

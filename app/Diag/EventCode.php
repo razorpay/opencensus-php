@@ -1181,4 +1181,14 @@ class EventCode
         'group'   => 'async_tokenisation',
         'name'    => 'async_tokenisation.admin_dashboard.tokens.consent_collection_and_tokenisation',
     ];
+
+    const PARTNER_KYC_ACCESS_APPROVE = [
+        'group' => 'onboarding',
+        'name'  => 'partner_kyc_access.approve',
+    ];
+
+    const PARTNER_KYC_ACCESS_REJECT = [
+        'group' => 'onboarding',
+        'name'  => 'partner_kyc_access.reject',
+    ];
 }
