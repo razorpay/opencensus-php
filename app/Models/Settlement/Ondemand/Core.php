@@ -255,8 +255,7 @@ class Core extends Base\Core
 
     public function checkMerchantFundsOnHold()
     {
-        if (($this->merchant->getHoldFunds() === true) or
-            ($this->merchant->isFeatureEnabled(Constants::BLOCK_SETTLEMENTS) === true))
+        if ($this->merchant->getHoldFunds() === true)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_FUNDS_ON_HOLD);
