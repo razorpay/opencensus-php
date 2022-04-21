@@ -215,7 +215,7 @@ class Service extends Base\Service
             $withVpas = true;
         }
 
-        $tokens = $this->repo->token->getByCustomer($customer, $withVpas);
+        $tokens = $this->repo->token->getByCustomer($customer, $withVpas, $this->merchant->getId(), $this->mode);
 
         return $tokens->toArrayPublic();
     }

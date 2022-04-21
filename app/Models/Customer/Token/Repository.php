@@ -35,11 +35,30 @@ class Repository extends Base\Repository
         Entity::RECURRING_STATUS    => 'sometimes|alpha|max:20',
     ];
 
-    public function getByCustomer($customer, bool $withVpas = false)
+    public function getByCustomer($customer, bool $withVpas = false, $merchantId = null, $mode = 'test')
     {
+        $isPassUnusedRejectedTokensExperimentEnabled = '';
+
+        if ($merchantId !== null)
+        {
+            $isPassUnusedRejectedTokensExperimentEnabled = $this->app->razorx->getTreatment(
+                $merchantId,
+                Merchant\RazorxTreatment::PASS_REJECTED_UNUSED_TOKENS,
+                $mode
+            );
+        }
+
         return $this->newQuery()
                     ->where(Token\Entity::CUSTOMER_ID, '=', $customer->getId())
-                    ->whereNotNull(Token\Entity::USED_AT)
+                    ->where(function($query) use ($isPassUnusedRejectedTokensExperimentEnabled)
+                    {
+                        if (strtolower($isPassUnusedRejectedTokensExperimentEnabled) === 'on')
+                        {
+                            $query->whereNull(Token\Entity::USED_AT)
+                                  ->where(Token\Entity::RECURRING_STATUS, '=', Token\RecurringStatus::REJECTED);
+                        }
+                        $query->orWhereNotNull(Token\Entity::USED_AT);
+                    })
                     ->where(function($query)
                     {
                         $query->whereNull(Token\Entity::EXPIRED_AT)

@@ -453,6 +453,9 @@ final class RazorxTreatment
     // Experiment to block pan details in html code
     const BLOCK_PAN_DETAIL_IN_AUTHLINK_HTML = 'block_pan_detail_in_authlink_html';
 
+    // Experiment to pass unused rejected tokens along with regular tokens in fetchTokens api call
+    const PASS_REJECTED_UNUSED_TOKENS = 'pass_rejected_unused_tokens';
+
     // Experiment to disable status update going to payout service via api
     // payout service will be consuming status independently from kafka
     const DISABLE_STATUS_UPDATE_TO_PAYOUT_SERVICE = 'disable_status_update_to_payout_service';
