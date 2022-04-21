@@ -126,6 +126,8 @@ class FileUploadUfh extends Core
                     'Error message' => $ex->getMessage(),
                 ]
             );
+
+            throw $ex;
         }
 
     }

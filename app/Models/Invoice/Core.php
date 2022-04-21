@@ -6,6 +6,7 @@ use Config;
 use Carbon\Carbon;
 
 use App;
+use RZP\Constants\Environment;
 use RZP\Models\Base;
 use RZP\Models\Order;
 use RZP\Models\Offer;
@@ -28,6 +29,7 @@ use RZP\Models\Invoice\Reminder;
 use RZP\Models\Plan\Subscription;
 use RZP\Exception\BadRequestException;
 use RZP\Jobs\Invoice\Job as InvoiceJob;
+use Illuminate\Support\Facades\Storage;
 use RZP\Models\Item\Type as LineItemType;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Jobs\Invoice\BatchJob as InvoiceBatchJob;
@@ -62,6 +64,8 @@ class Core extends Base\Core
     protected $reminders;
 
     const RECEIPT_MUTEX_TIMEOUT  = 5; // 5 seconds timeout
+
+    const SAMPLE_PDF_LINK = 'http://www.africau.edu/images/default/sample.pdf';
 
     public function __construct()
     {
@@ -989,24 +993,14 @@ class Core extends Base\Core
             return null;
         }
 
-        $path = $pdf->getFullFilePath();
+        $signedUrl = (new FileUploadUfh())->getSignedUrl($invoice);
 
-        //
-        // Call to getFreshInvoicePdf() does create new PDF in cases and so
-        // the local file already exists and we don't need to access it again.
-        // Otherwise if it's some old file store entity we need to access it.
-        //
-        if (file_exists($path) === true)
+        if($this->app->environment() == Environment::TESTING)
         {
-            return $path;
+            $signedUrl = self::SAMPLE_PDF_LINK;
         }
-        else
-        {
-            return (new FileStore\Accessor)
-                        ->id($pdf->getId())
-                        ->merchantId($pdf->getMerchantId())
-                        ->getFile();
-        }
+
+        return $signedUrl;
     }
 
     /**
