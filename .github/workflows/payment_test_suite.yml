@@ -62,6 +62,7 @@ jobs:
           LQEXT_TESTING_TXN_SKIP_COUNT: 5
           API_DOCS_FILE_NAME: payment_test_suite.json
       - name: Push UT Metrics
+        if: always()
         run: ci-assets/ut_metrics.sh
         env:
           GIT_COMMIT: ${{ github.sha }}

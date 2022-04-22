@@ -9,3 +9,4 @@ export END_TIME=$(date +%s)
 echo "end-time: ${END_TIME}"
 cat $log_file_name
 echo "${START_TIME},${END_TIME},${TEST_SUITE_STATUS}" >> utMetrics.csv
+exit $TEST_SUITE_STATUS

@@ -62,6 +62,7 @@ jobs:
           LQEXT_TESTING_TXN_SKIP_COUNT: 5
           API_DOCS_FILE_NAME: gateway_3_test_suite.json
       - name: Push UT Metrics
+        if: always()
         run: ci-assets/ut_metrics.sh
         env:
           GIT_COMMIT: ${{ github.sha }}
@@ -137,3 +138,4 @@ jobs:
         image: c.rzp.io/proxy_dockerhub/library/elasticsearch:5.6-alpine
         env:
           ES_JAVA_OPTS: -Xms512m -Xmx512m
+
