@@ -19,6 +19,7 @@ class GrowthService extends Base\Service
     const CONTENT_TYPE_JSON = 'application/json';
 
     const GET_ASSET_URL = 'twirp/rzp.growth.asset.v1.AssetAPI/Get';
+    const GET_TEMPLATE_BY_ID_URL = 'twirp/rzp.growth.template.v1.TemplateAPI/Get';
     const GET_PUBLIC_ASSET_URL = 'twirp/rzp.growth.asset.v1.AssetAPI/GetPublic';
 
     const EDIT_TEMPLATE_URL = 'twirp/rzp.growth.template.v1.TemplateAPI/Update';
@@ -91,6 +92,11 @@ class GrowthService extends Base\Service
     public function getAssetDetails($parameters)
     {
         return $this->sendRequest($parameters, self::GET_ASSET_URL, Requests::POST);
+    }
+
+    public function getTemplateByIdDetails($parameters)
+    {
+        return $this->sendRequest($parameters, self::GET_TEMPLATE_BY_ID_URL, Requests::POST);
     }
 
     public function getPublicAssetDetails($parameters)

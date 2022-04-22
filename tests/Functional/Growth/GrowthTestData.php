@@ -126,7 +126,64 @@ return [
             ],
         ],
     ],
-    
+
+    'testTemplateByIdResponse' => [
+        'request'  => [
+            'url'     => '/growth/template/JFH4eObWRcYlUT',
+            'method'  => 'get'
+        ],
+        'response' => [
+            'content' => [
+                "channel_id"=> "HTdu8cC7FJEIHC",
+                "asset_data"=> [
+                    [
+                        "tracking_data"=> [
+                            "campaign"=> "Test Campaign - Shivam",
+                            "campaign_description"=> "Test Campaign - Shivam",
+                            "sub_campaign"=> "Test SC - Shivam Final",
+                            "sub_campaign_description"=> "Test SC - Shivam Final",
+                            "campaign_id"=> "IF7Nec84wWYRqO",
+                            "sub_campaign_id"=> "IF7Uk0WuK32Eh8"
+                        ],
+                        "templates"=> [
+                            "id"=> "IiY9vty0abj9FX",
+                            "name"=> "Test Login Card",
+                            "description"=> "Test Exclusive Offer",
+                            "data"=> [
+                            "product_name"=> "home",
+                            "label"=> "Qualified for Corporate Cards",
+                            "id"=> "EXCLUSIVE-OFFER-ID",
+                            "type"=> "default",
+                            "image"=> [
+                                "url"=> "https://cdn.razorpay.com/static/assets/final-modal/NitroNewICICIBase.png",
+                                "alt_text"=> "background"
+                                ],
+                            "offer_cta"=> [
+                                "style"=> "bold",
+                                "label"=> "Hello World"
+                            ],
+                            "footer_data"=> [
+                                "style"=> "normal",
+                                "label"=> "Hello World"
+                            ],
+                            "offer"=> [
+                                "background_color"=> "#050d1f",
+                                "cta_background_color"=> "linear-gradient(108.69deg, #FFC13E -96.94%, #FF650F 100%)",
+                                "cta_font_color"=> "#FFFFFF"
+                            ]
+                            ],
+                            "status"=> "DRAFT",
+                            "created_by"=> "Shivam - QA",
+                            "updated_by"=> "Shivam - QA",
+                            "created_at"=> "2021-08-03T05:37:33Z",
+                            "updated_at"=> "2021-08-11T08:03:16Z"
+                        ]
+                    ]
+                ]
+            ],
+        ],
+    ],
+
     "testEnableDowntimeNotificationForXDashboard" =>  [
         'request'  => [
             'url'     => '/growth/assets/enable_downtime_for_x',

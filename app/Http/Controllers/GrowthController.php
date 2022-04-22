@@ -54,6 +54,25 @@ class GrowthController extends Controller
         return $response;
     }
 
+        public function getTemplateByIdDetails($id = null)
+        {
+            $response = [];
+
+            try {
+                if (empty($id) === false) {
+
+                    $response = $this->app->growthService->getTemplateByIdDetails($id);
+
+                    $response = ApiResponse::json($response);
+
+                }
+            } catch (\Throwable $e) {
+                throw new Exception\ServerErrorException('Error completing the getTemplateByIdDetails request', ErrorCode::SERVER_ERROR_GROWTH_FAILURE, null, $e);
+            }
+
+            return $response;
+        }
+
     public function getPublicAssetDetails()
     {
         $parameters = Request::all();

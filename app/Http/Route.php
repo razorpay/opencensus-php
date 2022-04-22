@@ -2362,6 +2362,7 @@ class Route
 
         // Growth service
         'growth_get_asset_details'                          => ['post',     'growth/assets',                                  'GrowthController@getAssetDetails'                                  ],
+        'growth_get_template_by_id'                         => ['get',     'growth/template/{id}',                            'GrowthController@getTemplateByIdDetails'                                  ],
         'growth_get_public_asset_details'                   => ['post',     'growth/public/assets',                                  'GrowthController@getPublicAssetDetails'                                  ],
         'growth_downtime_for_x'                             => ['post',     'growth/assets/enable_downtime_for_x',                     'GrowthController@enableDowntimeNotificationForXDashboard' ],
         'growth_filter_and_sync_cron'                       => ['post',     'growth/assets/sync',                             'GrowthController@filterAndSyncEventsFromPinot'            ],
@@ -5521,6 +5522,7 @@ class Route
 
         //Growth
         'growth_get_asset_details',
+        'growth_get_template_by_id',
 
         //payout status reason mapping
         'payout_status_to_reason_mapping',
@@ -8085,6 +8087,7 @@ class Route
         'bvs_service_dashboard'                        => '*',
         'merchant_razorx_bulk_evaluate'                => '*',
         'growth_get_asset_details'                     => '*',
+        'growth_get_template_by_id'                    => '*',
         'merchant_razorx_evaluate'                     => '*',
         'splitz_evaluate_bulk_proxy'                   => '*',
         'fetch_partner_intent'                         => '*',
@@ -8526,6 +8529,7 @@ class Route
             'corporate_card_update',
             'corporate_card_list',
             'growth_get_asset_details',
+            'growth_get_template_by_id',
             'merchant_activation_otp_send',
             'merchant_coupons_apply',
             'store_create',
@@ -11648,6 +11652,7 @@ class Route
 
             // Growth Assets
             'growth_get_asset_details',
+            'growth_get_template_by_id'
         ],
 
         //

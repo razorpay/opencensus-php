@@ -379,6 +379,7 @@ class UserRolesScope
             'merchant_razorx_evaluate'                      => array_merge(Role::ALL_ROLES, BankingRole::getAllRoles(), Role::LINKED_ACCOUNT_ROLES),
             'splitz_evaluate_bulk_proxy'                    => array_merge(Role::ALL_ROLES, BankingRole::getAllRoles(), Role::LINKED_ACCOUNT_ROLES),
             'growth_get_asset_details'                      => array_merge(Role::ALL_ROLES, BankingRole::getAllRoles(), Role::LINKED_ACCOUNT_ROLES),
+            'growth_get_template_by_id'                      => array_merge(Role::ALL_ROLES, BankingRole::getAllRoles(), Role::LINKED_ACCOUNT_ROLES),
             'merchant_requests_create'                      => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::OPERATIONS,],
             'merchant_store_fetch'                          => [Role::ADMIN, Role::OWNER, Role::SELLERAPP, Role::FINANCE, Role::MANAGER,Role::OPERATIONS],
             'm2m_referral_link_get'                         => [Role::ADMIN, Role::OWNER, Role::SELLERAPP, Role::FINANCE, Role::MANAGER,Role::OPERATIONS],
