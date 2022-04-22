@@ -110,12 +110,12 @@ class DebitNoteTest extends TestCase
         $this->expectFreshdeskCurlRequest(
             [
                 'subject'         => 'Regarding your commercial debit note - 10000000000000',
-                'status'          => 6,
+                'status'          => 2,
                 'tags'            => [
                     'bulk_debit_note',
                     'chargeback_debit_note',
                 ],
-                'group_id'        => 82000147776,
+                'group_id'        => 82000147810,
                 'email_config_id' => 82000098669,
                 'custom_fields'   => [
                     'cf_ticket_queue' => 'Merchant',
@@ -233,12 +233,12 @@ class DebitNoteTest extends TestCase
         $this->expectFreshdeskCurlRequest(
             [
                 'subject'  => 'Regarding your commercial debit note - 10000000000000',
-                'status'   => 6,
+                'status'   => 2,
                 'tags'     => [
                     'bulk_debit_note',
                     'chargeback_debit_note',
                 ],
-                'group_id' => 82000147776,
+                'group_id' => 82000147810,
             ]
         );
 

@@ -97,6 +97,7 @@ class Core extends Base\Core
             [
                 'type'         => 'Incident',
                 'tags'         => ['bulk_debit_note', 'chargeback_debit_note'],
+                'status'       => 2,
                 'category'     => FreshdeskConstants::CHARGEBACKS_CATEGORY,
                 'sub_category' => FreshdeskConstants::SERVICE_CHARGEBACK_SUBCATEGORY,
                 'attachments'  => [

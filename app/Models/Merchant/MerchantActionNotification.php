@@ -198,10 +198,14 @@ class MerchantActionNotification
 
             $tag = $this->getTagsForAction($action);
 
+            # Changes made as per this sheet:
+            # https://docs.google.com/spreadsheets/d/1svnX0-ysdDiL5Nd-GDSsP_c0mr10FqMGO9g54TJ9LkY/edit#gid=0
+            # Refer this thread for Group ID:
+            # https://razorpay.slack.com/archives/C9AKQB8BH/p1650350101494099?thread_ts=1648450855.376439&cid=C9AKQB8BH
             $fdOutboundEmailRequest = [
                 'subject'         => $mailSubject,
                 'description'     => $mailBody,
-                'status'          => 6,
+                'status'          => $requestParams['status'] ?? 6,
                 'type'            => $requestParams['type'] ?? 'Question',
                 'tags'            => $tag,
                 'priority'        => 1,
