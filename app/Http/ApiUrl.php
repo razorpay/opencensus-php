@@ -1,7 +1,6 @@
 <?php
 
 namespace App\Http;
-
 use Config;
 use Request;
 
@@ -20,6 +19,7 @@ class ApiUrl
             'https://beta-api.razorpay.in/v1/',
             'https://beta-api-canary.razorpay.in/v1/',
         ],
+   
         'charlie'    => [
             'https://charlie-api.razorpay.in/v1/',
         ],
@@ -35,6 +35,7 @@ class ApiUrl
             'https://api-dark.razorpay.com/v1/',
             'https://k8s-prod-api.razorpay.com/v1/',
             'https://api-kong.razorpay.com/v1/',
+            'https://api-whatsapp.razopay.com/v1/',
         ],
     ];
 
