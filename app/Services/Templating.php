@@ -18,6 +18,7 @@ class Templating
     const NAMESPACES_PATH        = '/namespaces';
     const TEMPLATE_CONFIGS_PATH  = '/template_configs';
     const TEMPLATE_SEARCH_PATH   = '/templates/search';
+    const TEMPLATE_VIEW_PATH     = '/template_configs/view';
 
 
     public function __construct($app)
@@ -65,6 +66,15 @@ class Templating
         [
             'path'      => self::TEMPLATE_CONFIGS_PATH,
             'data'      => $params,
+            'method'    => 'GET',
+        ]);
+    }
+
+    public function viewTemplateConfig(string $id)
+    {
+        return $this->sendRequest(
+        [
+            'path'      => self::TEMPLATE_VIEW_PATH.'/'.$id,
             'method'    => 'GET',
         ]);
     }

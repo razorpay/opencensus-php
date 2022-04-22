@@ -129,6 +129,22 @@ class TemplatingTest extends TestCase
         $templating->shouldHaveReceived('sendRequest', $expectedArgs);
     }
 
+    public function testViewTemplateConfig()
+    {
+        $templating = $this->getTemplatingWithSendRequestMock();
+
+        $sampleConfigId = 'randomId';
+
+        $templating->viewTemplateConfig($sampleConfigId);
+
+        $expectedArgs = [[
+            'path'      => '/template_configs/view/'.$sampleConfigId,
+            'method'    => 'GET',
+        ]];
+
+        $templating->shouldHaveReceived('sendRequest', $expectedArgs);
+    }
+
     protected function getTemplatingWithSendRequestMock()
     {
         $templating = Mockery::mock('RZP\Services\Templating', [$this->app])->makePartial();

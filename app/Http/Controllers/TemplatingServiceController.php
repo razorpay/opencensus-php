@@ -63,6 +63,15 @@ class TemplatingServiceController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function viewTemplateConfig($id)
+    {
+        $data = $this
+            ->templatingService()
+            ->viewTemplateConfig($id);
+
+        return ApiResponse::json($data);
+    }
+
     protected function templatingService()
     {
         $app = App::getFacadeRoot();
