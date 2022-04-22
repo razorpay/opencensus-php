@@ -131,7 +131,7 @@ function _track() {
     },
     shareModalEvents: (eventName, data) => {
       sendToLumberjack(`share_${eventName}`, data);
-      sendToSegment(`share ${titleCase(eventName)}`, data);
+      sendToSegment(`share ${titleCase(eventName)}`, 'click', data);
     },
 
     init(_lumberjackTrack) {
