@@ -17,7 +17,10 @@ final class Metric
     const PARTNER_CONFIG_CREATE_TOTAL               = 'partner_config_create_total';
     const PARTNER_MARK_REQUEST                      = 'partner_mark_request';
     const ADD_SUB_MERCHANT                          = 'add_sub_merchant';
+    const SETTLE_TO_PARTNER_SUBMERCHANT_TOTAL       = 'settle_to_partner_submerchant_total';
     const SUB_MERCHANT_ADD_TYPE                     = 'sub_merchant_add_type';
+    const SETTLE_TO_PARTNER_SUBMERCHANT_METRIC_PUSH_FAILURE       = 'settle_to_partner_submerchant_metric_push_failure';
+
 
     // General constants used for metrics
     const MARKETPLACE               = 'marketplace';

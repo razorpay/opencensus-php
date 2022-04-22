@@ -1599,6 +1599,7 @@ class Service extends Base\Service
             ];
 
             $this->trace->count(PartnerMetric::SUBMERCHANT_CREATE_TOTAL, $dimension);
+            $merchantCore->pushSettleToPartnerSubmerchantMetrics($partner->getId(), $subMerchant->getId());
 
             $merchantCore->sendPartnerLeadInfoToSalesforce($subMerchant->getId(), $partnerId, $referralProduct);
         }

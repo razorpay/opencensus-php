@@ -416,6 +416,8 @@ class Service extends Base\Service
         ];
 
         $this->trace->count(PartnerMetric::SUBMERCHANT_CREATE_TOTAL, $dimension);
+        $submerchantId = $output['id'] ?? "";
+        $this->core()->pushSettleToPartnerSubmerchantMetrics($merchant->getId(), $submerchantId);
 
         if ($isLinkedAccount === true)
         {

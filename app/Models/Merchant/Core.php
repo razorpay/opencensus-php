@@ -424,6 +424,48 @@ class Core extends Base\Core
         return $subMerchant;
     }
 
+    public function pushSettleToPartnerSubmerchantMetrics(string $partnerId, string $submerchantId)
+    {
+        $dimensions = [
+            'partner_id'     => $partnerId,
+            'submerchant_id' => $submerchantId
+        ];
+
+        try
+        {
+            $properties = [
+                'id'            => $partnerId,
+                'experiment_id' => $this->app['config']->get('app.settle_to_partner_alerting_experiment_id'),
+                'request_data'  => json_encode(
+                    [
+                        'id' => $partnerId,
+                    ]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? null;
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
+
+            if ($variant === "enabled")
+            {
+                $this->trace->info(TraceCode::SETTLE_TO_PARTNER_SUBMERCHANT_METRIC_PUSH, $dimensions);
+
+                $this->trace->count(Metric::SETTLE_TO_PARTNER_SUBMERCHANT_TOTAL, $dimensions);
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::SETTLE_TO_PARTNER_SUBMERCHANT_METRIC_PUSH_FAILURE,
+                $dimensions);
+            $this->trace->count(Metric::SETTLE_TO_PARTNER_SUBMERCHANT_METRIC_PUSH_FAILURE, []);
+        }
+    }
+
     private function getRzpMerchantDetailsBasedOnFundAdditionType($type)
     {
         $fundAdditionAccount = 'banking_account.razorpay_fund_addition_accounts.'. $type;

@@ -6,25 +6,28 @@ use Mail;
 
 use RZP\Models\Feature\Core;
 use RZP\Models\Feature\Entity;
+use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\Service;
-use RZP\Models\Merchant\Detail;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Traits\TestsMetrics;
+use RZP\Tests\Traits\MocksSplitz;
 use RZP\Models\Merchant\AccountV2\Metric;
 use RZP\Models\Merchant\Detail\POIStatus;
 use Illuminate\Database\Eloquent\Factory;
+use RZP\Tests\Functional\Partner\Constants;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Tests\Functional\Partner\PartnerTrait;
+use RZP\Models\Merchant\Metric as MerchantMetric;
 use RZP\Tests\Functional\Fixtures\Entity\Merchant;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Mail\Merchant\CreateSubMerchant as CreateSubMerchantMail;
 
-
 class AccountV2Test extends TestCase
 {
     use TestsMetrics;
+    use MocksSplitz;
     use PartnerTrait;
     use DbEntityFetchTrait;
     use RequestResponseFlowTrait;
@@ -53,6 +56,32 @@ class AccountV2Test extends TestCase
         $this->validateSubMerchantTagging($accountId, '10000000000000');
 
         $this->validateSupportingEntitiesCreation($accountId);
+    }
+
+
+    public function testSettleToPartnerSubmerchantMetrics()
+    {
+        $this->setUpPartnerWithKycHandled();
+
+        $testData = $this->testData['testCreateAccountV2ForMandatoryFilledRequest'];
+
+        $metricCaptured = false;
+
+        $expectedDimensions = [
+            'partner_id'     => '10000000000000',
+        ];
+
+        $this->mockSplitzEvaluation();
+
+        $metricsMock = $this->createMetricsMock();
+
+        $this->mockAndCaptureCountMetric(MerchantMetric::SETTLE_TO_PARTNER_SUBMERCHANT_TOTAL,
+                                         $metricsMock, $metricCaptured, $expectedDimensions);
+
+        $this->runRequestResponseFlow($testData);
+
+        $this->assertTrue($metricCaptured);
+
     }
 
     public function testCreateAccountV2ForCompletelyFilledRequest()
@@ -120,7 +149,7 @@ class AccountV2Test extends TestCase
             Entity::NAME        => 'subm_no_doc_onboarding',
         ];
 
-        (new Core())->create($featureParams,true);
+        (new Core())->create($featureParams, true);
 
         $response = $this->startTest();
 
@@ -154,7 +183,7 @@ class AccountV2Test extends TestCase
             Entity::NAME        => 'subm_no_doc_onboarding',
         ];
 
-        (new Core())->create($featureParams,true);
+        (new Core())->create($featureParams, true);
 
         $testData = $this->testData['testCreateSubmerchantWithNoDocFeature'];
 
@@ -189,7 +218,7 @@ class AccountV2Test extends TestCase
             Entity::NAME        => 'subm_no_doc_onboarding',
         ];
 
-        (new Core())->create($featureParams,true);
+        (new Core())->create($featureParams, true);
 
         $testData = $this->testData['testCreateSubmerchantWithNoDocFeature'];
 
@@ -300,7 +329,7 @@ class AccountV2Test extends TestCase
 
         $testData = $this->testData['testCreateAccountV2ForCompletelyFilledRequest'];
 
-        $result = $this->runRequestResponseFlow($testData);
+        $result    = $this->runRequestResponseFlow($testData);
         $accountId = $result['id'];
 
         $testData = $this->testData['testDeleteAccountV2'];
@@ -349,6 +378,28 @@ class AccountV2Test extends TestCase
         $this->assertTrue(count($features) === 1);
     }
 
+    private function mockSplitzEvaluation()
+    {
+        $input = [
+            "experiment_id" => "JIRYzx7YtMuB18",
+            "id"            => "10000000000000",
+            'request_data'  => json_encode(
+                [
+                    'id' => "10000000000000",
+                ]),
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => "enabled"
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+    }
+
     public function testGetValidationFieldsForNoDocOnboarding()
     {
         $this->setUpPartnerWithKycHandled();
@@ -359,11 +410,11 @@ class AccountV2Test extends TestCase
             Entity::NAME        => 'subm_no_doc_onboarding',
         ];
 
-        (new Core())->create($featureParams,true);
+        (new Core())->create($featureParams, true);
 
         $testData = $this->testData['testCreateSubmerchantWithNoDocFeature'];
 
-        $response =  $this->runRequestResponseFlow($testData);
+        $response = $this->runRequestResponseFlow($testData);
 
         $accountId = $response['id'];
 
@@ -376,13 +427,13 @@ class AccountV2Test extends TestCase
         $expectedRequiredFields = Detail\ValidationFields::DEFAULT_REGISTERED_NO_DOC_FIELDS;
 
         $this->assertNotNull($data);
-        $this->assertEquals($expectedRequiredFields,$data[0]);
-        $this->assertEquals([],$data[1]);
-        $this->assertEquals([],$data[2]);
+        $this->assertEquals($expectedRequiredFields, $data[0]);
+        $this->assertEquals([], $data[1]);
+        $this->assertEquals([], $data[2]);
 
         $testData = $this->testData['testGetValidationFieldsForNoDocOnboarding'];
 
-        $response =  $this->runRequestResponseFlow($testData);
+        $response = $this->runRequestResponseFlow($testData);
 
         $accountId = $response['id'];
 
@@ -395,9 +446,9 @@ class AccountV2Test extends TestCase
         $expectedRequiredFields = Detail\ValidationFields::UNREGISTERED_NO_DOC_FIELDS;
 
         $this->assertNotNull($data);
-        $this->assertEquals($expectedRequiredFields,$data[0]);
-        $this->assertEquals([],$data[1]);
-        $this->assertEquals([],$data[2]);
+        $this->assertEquals($expectedRequiredFields, $data[0]);
+        $this->assertEquals([], $data[1]);
+        $this->assertEquals([], $data[2]);
     }
 
 
@@ -426,7 +477,8 @@ class AccountV2Test extends TestCase
         $this->assertTrue($metricCaptured);
     }
 
-    public function testEditAccountHavingEmojiInContactName () {
+    public function testEditAccountHavingEmojiInContactName()
+    {
         //TODO : Testcase has to be fixed
         $this->markTestSkipped("Skipping Testcase, Need to be fixed");
 
@@ -455,7 +507,7 @@ class AccountV2Test extends TestCase
     {
         $this->setUpPartnerWithKycHandled();
 
-        $response= $this->startTest();
+        $response = $this->startTest();
 
         $accountId = $response['id'];
 
@@ -470,7 +522,7 @@ class AccountV2Test extends TestCase
     {
         $this->setUpPartnerWithKycHandled();
 
-        $response= $this->startTest();
+        $response = $this->startTest();
 
         $accountId = $response['id'];
 

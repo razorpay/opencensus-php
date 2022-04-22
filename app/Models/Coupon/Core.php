@@ -455,7 +455,7 @@ class Core extends Base\Core
             ];
 
             $this->trace->count(PartnerMetric::SUBMERCHANT_CREATE_TOTAL, $dimension);
-
+            $merchantCore->pushSettleToPartnerSubmerchantMetrics($partner->getId(), $merchant->getId());
             $merchantCore->sendPartnerLeadInfoToSalesforce($merchant->getId(), $partner->getId(), $product);
         }
     }
