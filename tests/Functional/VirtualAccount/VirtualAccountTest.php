@@ -7,6 +7,7 @@ use Cache;
 use Carbon\Carbon;
 use RZP\Models\Feature;
 use RZP\Models\Terminal;
+use RZP\Models\Settings;
 use RZP\Constants\Timezone;
 use RZP\Models\BankTransfer;
 use RZP\Models\Terminal\Type;
@@ -233,6 +234,31 @@ class VirtualAccountTest extends TestCase
         $this->assertEquals('RATN0000001', $jswAccount['ifsc_code']);
     }
 
+    public function testCreateVirtualAccountWithCustomAccountNumberLengthForMerchant()
+    {
+        $settingInput =  [
+            [
+                'key' => 'account_number_length',
+                'value' => '17',
+                'merchant_id' => '10000000000000',
+            ]
+        ];
+
+        $this->addCustomAccountNumberSetting($settingInput);
+
+        $response = $this->createVirtualAccount();
+
+        $expectedResponse = $this->testData['testCreateVirtualAccount'];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
+
+        $this->verifyEntityOrigin($response['id'], 'merchant', '10000000000000');
+
+        $bankAccount = $this->getDbLastEntity('bank_account');
+
+        $this->assertEquals(17, strlen($bankAccount['account_number']));
+    }
+
     public function testGetVirtualAccountConfig()
     {
         $terminalAttributes = [
@@ -251,6 +277,44 @@ class VirtualAccountTest extends TestCase
 
         $this->assertEquals('222300', $response['bank_account']['prefix']);
         $this->assertEquals(true, $response['bank_account']['isDescriptorEnabled']);
+        $this->assertEquals(16, $response['bank_account']['accountNumberLength']);
+        $this->assertEquals('rzr.payto00000', $response['vpa']['prefix']);
+        $this->assertEquals('icici', $response['vpa']['handle']);
+        $this->assertEquals(true, $response['vpa']['isDescriptorEnabled']);
+    }
+
+    public function testGetVirtualAccountConfigForMerchantAccountNumberLengthCustomization()
+    {
+        $terminalAttributes = [
+            'gateway'               => Gateway::RBL,
+            'merchant_id'           => '10000000000000',
+            'gateway_merchant_id'   => '2223',
+            'gateway_merchant_id2'  => '00',
+            'type'                  => [
+                Type::NON_RECURRING    => '1',
+                Type::NUMERIC_ACCOUNT  => '1',
+            ]
+        ];
+
+        $settingInput =  [
+            [
+                'key' => 'account_number_length',
+                'value' => '17',
+                'merchant_id' => '10000000000000',
+            ]
+        ];
+
+        $this->fixtures->merchant->activate();
+
+        $this->fixtures->on('test')->create('terminal:bank_account_terminal', $terminalAttributes);
+
+        $this->addCustomAccountNumberSetting($settingInput);
+
+        $response = $this->getVirtualAccountConfig();
+
+        $this->assertEquals('222300', $response['bank_account']['prefix']);
+        $this->assertEquals(true, $response['bank_account']['isDescriptorEnabled']);
+        $this->assertEquals(17, $response['bank_account']['accountNumberLength']);
         $this->assertEquals('rzr.payto00000', $response['vpa']['prefix']);
         $this->assertEquals('icici', $response['vpa']['handle']);
         $this->assertEquals(true, $response['vpa']['isDescriptorEnabled']);

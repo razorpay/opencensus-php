@@ -9,6 +9,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Terminal;
 use RZP\Error\ErrorCode;
+use RZP\Models\Settings;
 use RZP\Models\Payment\Method;
 use RZP\Models\VirtualAccount;
 use RZP\Error\PublicErrorDescription;
@@ -285,7 +286,7 @@ class Generator extends Base\Core
         return str_replace('bt_' , '' , $terminal->getGateway());
     }
 
-    protected function validateDescriptor(Terminal\Entity $terminal)
+    protected function validateDescriptor(Terminal\Entity $terminal, $accountNumberLength)
     {
         $root = $this->getRoot($terminal);
 
@@ -293,9 +294,7 @@ class Generator extends Base\Core
 
         $descriptor = $this->options[Generator::DESCRIPTOR];
 
-        $totalLength = Entity::ACCOUNT_NUMBER_LENGTH;
-
-        $availableLength = $totalLength - strlen($root) - strlen($handle);
+        $availableLength = $accountNumberLength - strlen($root) - strlen($handle);
 
         if (strlen($descriptor) > $availableLength)
         {
@@ -330,7 +329,7 @@ class Generator extends Base\Core
         return $terminal->getGatewayMerchantId2() ?: '';
     }
 
-    protected function getDescriptor(string $handle, string $root): string
+    protected function getDescriptor(string $handle, string $root, $accountNumberLength): string
     {
         $descriptor = $this->options[Generator::DESCRIPTOR];
 
@@ -339,9 +338,7 @@ class Generator extends Base\Core
             return $descriptor;
         }
 
-        $totalLength = Entity::ACCOUNT_NUMBER_LENGTH;
-
-        $availableLength = $totalLength - strlen($root) - strlen($handle);
+        $availableLength = $accountNumberLength - strlen($root) - strlen($handle);
 
         $descriptor = $this->padWithRandomDigits($availableLength);
 
@@ -354,12 +351,14 @@ class Generator extends Base\Core
 
         $handle = $this->getHandle($terminal);
 
+        $accountNumberLength =  $this->getAccountNumberLength();
+
         if ($this->options[Generator::DESCRIPTOR] !== null)
         {
-            $this->validateDescriptor($terminal);
+            $this->validateDescriptor($terminal, $accountNumberLength);
         }
 
-        $descriptor = $this->getDescriptor($handle, $root);
+        $descriptor = $this->getDescriptor($handle, $root, $accountNumberLength);
 
         $accountNumber = strtoupper($root . $handle . $descriptor);
 
@@ -374,14 +373,14 @@ class Generator extends Base\Core
             ]
         );
 
-        if (strlen($accountNumber) > Entity::ACCOUNT_NUMBER_LENGTH)
+        if (strlen($accountNumber) > $accountNumberLength)
         {
             throw new Exception\LogicException(
                 'Error in account number generation.',
                 null,
                 [
                     'account_number'    => $accountNumber,
-                    'max_length'        => Entity::ACCOUNT_NUMBER_LENGTH,
+                    'max_length'        => $accountNumberLength,
                 ]);
         }
 
@@ -404,6 +403,7 @@ class Generator extends Base\Core
         return [
             'prefix'              => $this->getRoot($terminal) . $this->getHandle($terminal),
             'isDescriptorEnabled' => ($terminal->isShared() === false),
+            'accountNumberLength' => $this->getAccountNumberLength(),
         ];
     }
 
@@ -439,5 +439,17 @@ class Generator extends Base\Core
         }
 
         return $terminal;
+    }
+
+    public function getAccountNumberLength()
+    {
+        $accountNumberLength = (new Settings\Service)->getForMerchant(Settings\Module::VIRTUAL_ACCOUNT, Settings\Keys::ACCOUNT_NUMBER_LENGTH, $this->merchant);
+
+        if ($accountNumberLength !== null)
+        {
+            return $accountNumberLength;
+        }
+
+        return Entity::ACCOUNT_NUMBER_LENGTH;
     }
 }

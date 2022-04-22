@@ -4,7 +4,8 @@ namespace RZP\Models\Settings;
 
 use RZP\Models\Base;
 use RZP\Models\Merchant;
-
+use RZP\Error\ErrorCode;
+use RZP\Exception\BadRequestException;
 use Razorpay\Spine\DataTypes\Dictionary;
 
 class Service extends Base\Service
@@ -25,9 +26,11 @@ class Service extends Base\Service
         return ['settings' => $settings];
     }
 
-    public function upsert(string $module, array $input)
+    public function upsert(string $module, array $input, Merchant\Entity $merchant = null)
     {
-        Accessor::for($this->merchant, $module)
+        $merchant = $merchant ?? $this->merchant;
+
+        Accessor::for($merchant, $module)
                 ->upsert($input)
                 ->save();
     }

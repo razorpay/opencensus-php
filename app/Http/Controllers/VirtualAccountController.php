@@ -312,6 +312,15 @@ class VirtualAccountController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function addCustomAccountNumberSettingForMerchant()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->addCustomAccountNumberSettingForMerchant($input);
+
+        return ApiResponse::json($response);
+    }
+
     public function getMerchantDefaultVirtualAccountExpiry()
     {
         $response = $this->service()->getMerchantDefaultVirtualAccountExpiry();

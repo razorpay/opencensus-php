@@ -3,21 +3,21 @@
 namespace RZP\Models\BankAccount;
 
 use App;
-use Razorpay\IFSC\IFSC;
-use Illuminate\Database\Eloquent\SoftDeletes;
-
 use RZP\Models\Vpa;
 use RZP\Models\Base;
+use Razorpay\IFSC\IFSC;
 use RZP\Models\Merchant;
 use RZP\Models\VirtualAccount;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Payment\Processor\Netbanking;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use RZP\Models\QrCode\NonVirtualAccountQrCode as QrV2;
 
 /**
  * @property Merchant\Entity     $merchant
  */
+
 class Entity extends Base\PublicEntity
 {
     use NotesTrait;
@@ -191,7 +191,7 @@ class Entity extends Base\PublicEntity
     protected $pii = [
         self::ACCOUNT_NUMBER,
     ];
-    
+
     protected $generateIdOnCreate = true;
 
     public function build(array $input = [], string $operation = 'addBankAccount')

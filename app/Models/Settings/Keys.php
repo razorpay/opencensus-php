@@ -10,6 +10,8 @@ class Keys
     const OPENWALLET_CLOSED              = 'closed';
     const OPENWALLET_SEMI_CLOSED_LIMITED = 'semi_closed_limited';
     const OPENWALLET_SEMI_CLOSED_KYC     = 'semi_closed_kyc';
+    const ACCOUNT_NUMBER_LENGTH          = 'account_number_length';
+
 
     /**
      * Pre-defined settings and their descriptions

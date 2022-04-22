@@ -475,4 +475,19 @@ trait VirtualAccountTrait
 
         return $response;
     }
+
+    public function addCustomAccountNumberSetting($input = [])
+    {
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/virtual_accounts/setting/account_number',
+            'content' => $input,
+        ];
+
+        $this->ba->adminAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        return $response;
+    }
 }

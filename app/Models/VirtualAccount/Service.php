@@ -20,6 +20,7 @@ use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Diag\EventCode;
 use RZP\Models\Merchant;
+use RZP\Models\Settings\Accessor;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Customer;
@@ -1214,6 +1215,39 @@ class Service extends Base\Service
         return ['success' => true];
     }
 
+   public function addCustomAccountNumberSettingForMerchant(array $input)
+   {
+       if (empty($input) === true)
+       {
+           return ['success' => false];
+       }
+
+       $this->repo->transaction(function () use ($input)
+       {
+           foreach ($input as $value)
+           {
+               $this->trace->info(TraceCode::VIRTUAL_ACCOUNT_MERCHANT_CUSTOM_ACCOUNT_NUMBER_SETTING_UPSERT_REQUEST, $value);
+
+               (new Validator())->validateInput('addCustomAccountNumberSetting', $value);
+
+               $merchant = $this->repo->merchant->findOrFail($value['merchant_id']);
+
+               $data = array($value['key'] => $value['value']);
+
+               (new Settings\Service())->upsert(Module::VIRTUAL_ACCOUNT, $data, $merchant);
+
+               $this->trace->info(TraceCode::VIRTUAL_ACCOUNT_MERCHANT_CUSTOM_ACCOUNT_NUMBER_SETTING_UPSERT_SUCCESS,
+                   [
+                       'merchant_id' => $merchant->getPublicId(),
+                       'success'     => true,
+                       'input'       => $value
+                   ]);
+           }
+       });
+
+       return ['success' => true];
+   }
+
     public function getMerchantDefaultVirtualAccountExpiry()
     {
         try
@@ -1283,7 +1317,6 @@ class Service extends Base\Service
 
         $this->trace->info(TraceCode::VIRTUAL_ACCOUNT_ALLOWED_PAYER_ADDED, $virtualAccount->toArrayPublic());
 
-        return $virtualAccount->toArrayPublic();
         return $virtualAccount->toArrayPublic();
     }
 
