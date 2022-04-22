@@ -76,6 +76,7 @@ export default (props) => {
           settled_by={item.settled_by}
           terminalProviders={props.terminalProviders}
           hideExternalLink={true}
+          isTableView={true}
         />
       ),
     });

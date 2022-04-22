@@ -21,7 +21,14 @@ export const findProviderDetails = (terminalProviders, terminal_id, settled_by) 
   return provider;
 };
 
-export default ({ terminal_id, settled_by, terminalProviders, hideExternalLink, isDetailView }) => {
+export default ({
+  terminal_id,
+  settled_by,
+  terminalProviders,
+  hideExternalLink,
+  isDetailView,
+  isTableView,
+}) => {
   const provider = findProviderDetails(terminalProviders, terminal_id, settled_by);
 
   if (provider?.Provider_name === 'Razorpay') {
@@ -40,7 +47,10 @@ export default ({ terminal_id, settled_by, terminalProviders, hideExternalLink, 
   if (provider) {
     return (
       <>
-        <div className="provider-name">
+        <div
+          className={`provider-name${isTableView ? ' provider-table-view' : ''}`}
+          title={isTableView ? provider.Provider_name : ''}
+        >
           <img
             className="gateway-logo"
             src={gatewayLogos[provider.Gateway]}
