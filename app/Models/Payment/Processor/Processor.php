@@ -4485,21 +4485,6 @@ class Processor
             return;
         }
 
-        $merchantIds = $this->app['config']->get('gateway.upi_icici.intent_recurring_test_merchants');
-
-        // Enabling intent recurring only for test Merchants
-        if ($payment->isFlowIntent() === true and
-            in_array($payment->getMerchantId(), $merchantIds, true) !== true)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Upi recurring does not support intent flow',
-                [
-                    'payment_id'        => $payment->getId(),
-                    'method'            => $payment->getMethod(),
-                    'recurring_type'    => $payment->getRecurringType(),
-                ]);
-        }
-
         if (($this->upiMandate instanceof UpiMandate\Entity) === false)
         {
             $tokenId = $input[Payment\Entity::TOKEN] ?? null;

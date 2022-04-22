@@ -451,7 +451,6 @@ return [
         'live_private_key'                  => env('UPI_ICICI_LIVE_PRIVATE_KEY'),
         'ut_test_private_key'               => env('UPI_ICICI_UPI_TRANSFER_TEST_PRIVATE_KEY'),
         'ut_live_private_key'               => env('UPI_ICICI_UPI_TRANSFER_LIVE_PRIVATE_KEY'),
-        'intent_recurring_test_merchants'   => ['Czoorrm75gC7W2', 'H7whf9Tvds5hxM', 'EQtFMWTd6AnrjP', 'Bq7vcFROUn7eu5', 'FBYspBmKlWefX9', '10000000000000', 'EOQRaXICwJIuoy', '2aTeFCKTYWwfrF', 'AgeBUR39tqKaYu', 'J0CuzKEYq24Z6q', '8TgNt9DVrJB0bl'],
         'recurring_oksbi_test_merchants'    => [
             'EOQRaXICwJIuoy',   // Srikant's Test Merchant
             '2aTeFCKTYWwfrF',   // RZP Demo Merchant

@@ -51,33 +51,6 @@ class UpiIciciRecurringTest extends UpiInitialRecurringTestCase
         );
     }
 
-    public function testRecurringMerchantIdLengths()
-    {
-        //A test to avoid any human error in merchantIDs list updation.
-        $merchantIds = $this->app['config']->get('gateway.upi_icici.intent_recurring_test_merchants');
-
-        foreach ($merchantIds as $merchantId)
-        {
-            $this->assertEquals(strlen($merchantId), 14);
-        }
-    }
-
-    // The below testcase is added temporarily to verify the merchant id check works as expected
-    public function testMerchantFilterForRecurringIntent()
-    {
-        $this->app['config']->set('gateway.upi_icici.intent_recurring_test_merchants', ['10000000000001']);
-
-        $this->goWithTheFlow(
-            [
-                'class'     => BadRequestValidationFailureException::class,
-                'message'   => 'Upi recurring does not support intent flow'
-            ],
-            function() {
-                $this->testRecurringMandateCreateViaIntent(false, false, []);
-            }
-        );
-    }
-
     public function testRecurringTpvMandateCreateWithInvalidAccountNumber()
     {
         $this->enableRecurringTpv();
