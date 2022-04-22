@@ -778,10 +778,6 @@ export default class User {
     return this.getExpStatus('pp_success_page');
   }
 
-  get isPPDonationGoalTracker() {
-    return this.getExpStatus('pp_donation_goal_tracker');
-  }
-
   get isPBDirectPluginLinks() {
     return this.getExpStatus('pb_direct_plugin_links');
   }

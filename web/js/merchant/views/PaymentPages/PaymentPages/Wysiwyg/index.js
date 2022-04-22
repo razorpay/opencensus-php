@@ -1019,7 +1019,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
         class={classList(
           'payment-pages-v2',
           'payment-pages-v3',
-          user.isPPDonationGoalTracker ? 'paymentpage-container-goal-tracker' : '',
+          'paymentpage-container-goal-tracker',
           isMobileDevice() ? '' : 'desktop-view',
         )}
         style={{ backgroundColor: themeColor }}

@@ -65,14 +65,11 @@ export default class View extends React.PureComponent {
             title={paymentPageEntity.title}
             key={paymentPageEntity.id ? `${paymentPageEntity.id}-title` : 'title'}
             updateData={this.updateData}
-            isPPDonationGoalTracker={user.isPPDonationGoalTracker}
           />
-          {user.isPPDonationGoalTracker && (
-            <DonationGoalTracker
-              goal_tracker={paymentPageEntity.settings.goal_tracker}
-              updateData={this.updateData}
-            />
-          )}
+          <DonationGoalTracker
+            goal_tracker={paymentPageEntity.settings.goal_tracker}
+            updateData={this.updateData}
+          />
           <Description
             description={paymentPageEntity.description}
             isPageDirty={isPageDirty}

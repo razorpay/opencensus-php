@@ -427,8 +427,7 @@ export default class PaymentPagesV3Entity extends React.Component {
               </div>
 
               <div class="item-details">
-                {this.props.user.isPPDonationGoalTracker &&
-                  paymentPageEntity.settings &&
+                {paymentPageEntity.settings &&
                   paymentPageEntity.settings.goal_tracker &&
                   paymentPageEntity.settings.goal_tracker.is_active === '1' && (
                     <DonationGoalTrackerPreview
