@@ -63,6 +63,8 @@ class Core extends Base\Core
 
     const RAZORX_PP_PAYMENT_REQUIRED_AMOUNT_QUANTITY_CHECK = 'pp_payment_required_amount_quantity_check';
 
+    const AMOUT_QUANTITY_TAMPERED = "Amount or quantity has been tampered. Please try again.";
+
     public function __construct()
     {
         parent::__construct();
@@ -672,7 +674,7 @@ class Core extends Base\Core
         if ($this->hasRequiredAmountAndQuantity($paymentLink, $order) === false)
         {
             throw new BadRequestValidationFailureException(
-                "Amount or quantity has been tempered. Please try again."
+                self::AMOUT_QUANTITY_TAMPERED
             );
         }
     }
@@ -1667,7 +1669,7 @@ class Core extends Base\Core
                  * does not belong to the payment  page
                  */
                 throw new BadRequestValidationFailureException(
-                    "Amount or quantity has been tempered. Please try again."
+                    self::AMOUT_QUANTITY_TAMPERED
                 );
             }
 

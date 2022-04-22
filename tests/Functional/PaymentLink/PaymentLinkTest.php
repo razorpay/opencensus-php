@@ -2748,9 +2748,7 @@ class PaymentLinkTest extends TestCase
     {
         $this->mockRazorxExperiments([PaymentLink\Core::RAZORX_PP_PAYMENT_REQUIRED_AMOUNT_QUANTITY_CHECK => 'on']);
 
-        $this->assertManipulateOrderItemAndMakePayment(
-            "Amount or quantity has been tempered. Please try again."
-        );
+        $this->assertManipulateOrderItemAndMakePayment(PaymentLink\Core::AMOUT_QUANTITY_TAMPERED);
     }
 
     /**
@@ -2784,7 +2782,7 @@ class PaymentLinkTest extends TestCase
         ];
 
         $this->assertManipulateOrderItemAndMakePayment(
-            "Amount or quantity has been tempered. Please try again.",
+            PaymentLink\Core::AMOUT_QUANTITY_TAMPERED,
             1000,
             $attributes
         );
@@ -2821,7 +2819,7 @@ class PaymentLinkTest extends TestCase
         ];
 
         $this->assertManipulateOrderItemAndMakePayment(
-            "Amount or quantity has been tempered. Please try again.",
+            PaymentLink\Core::AMOUT_QUANTITY_TAMPERED,
             1000,
             $attributes
         );
@@ -2867,7 +2865,7 @@ class PaymentLinkTest extends TestCase
 
         $this->expectException(BadRequestValidationFailureException::class);
 
-        $this->expectErrorMessage("Amount or quantity has been tempered. Please try again.");
+        $this->expectErrorMessage(PaymentLink\Core::AMOUT_QUANTITY_TAMPERED);
 
         $this->makePaymentForPaymentLinkWithOrderAndAssert(
             $page,
@@ -2915,7 +2913,7 @@ class PaymentLinkTest extends TestCase
 
         $this->expectException(BadRequestValidationFailureException::class);
 
-        $this->expectErrorMessage("Amount or quantity has been tempered. Please try again.");
+        $this->expectErrorMessage(PaymentLink\Core::AMOUT_QUANTITY_TAMPERED);
 
         $this->makePaymentForPaymentLinkWithOrderAndAssert(
             $page,
