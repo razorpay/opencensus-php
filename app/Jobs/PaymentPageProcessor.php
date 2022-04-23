@@ -3,6 +3,7 @@
 namespace RZP\Jobs;
 
 use App;
+use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Models\PaymentLink;
 use Illuminate\Support\Str;
@@ -13,7 +14,7 @@ use RZP\Models\Merchant;
  */
 class PaymentPageProcessor extends Job
 {
-    const RETRY_DELAY           = 60;
+    const RETRY_DELAY           = 5;
     const MAX_RETRY_ATTEMPTS    = 5;
 
     const PAYMENT_CAPTURE_EVENT     = 'PAYMENT_CAPTURE_EVENT';
@@ -148,6 +149,20 @@ class PaymentPageProcessor extends Job
                     'payment_page_id'   => $paymentLink->getId(),
                 ];
 
+        if ($payment->getStatus() !== Payment\Status::CAPTURED && $payment->getStatus() !== Payment\Status::REFUNDED)
+        {
+            /**
+             * The status might not have synced yet. Retry the job
+             */
+            $this->retry($this->attempts() * self::RETRY_DELAY);
+
+            $this->trace->info(TraceCode::PAYMENT_LINK_POST_PROCESSOR_RETRY, $traceContext + [
+                "attempt"   => $this->attempts()
+            ]);
+
+            return;
+        }
+
         try
         {
             $this->trace->info(TraceCode::PAYMENT_LINK_PAYMENT_CAPTURE_QUEUE, $traceContext);
@@ -182,6 +197,20 @@ class PaymentPageProcessor extends Job
             'payment_id'        => $refund->payment->getId(),
             'payment_status'    => $refund->payment->getStatus(),
         ];
+
+        if ($refund->payment->getStatus() !== Payment\Status::REFUNDED)
+        {
+            /**
+             * The status might not have synced yet. Retry the job
+             */
+            $this->retry($this->attempts() * self::RETRY_DELAY);
+
+            $this->trace->info(TraceCode::PAYMENT_LINK_POST_PROCESSOR_RETRY, $context + [
+                "attempt"   => $this->attempts()
+            ]);
+
+            return;
+        }
 
         try
         {
@@ -354,5 +383,16 @@ class PaymentPageProcessor extends Job
         $this->app = App::getFacadeRoot();
 
         $this->app['basicauth']->setMerchant($merchant);
+    }
+
+    protected function retry(int $delay)
+    {
+        // if the max attempt is not exhausted then release the job for retry
+        if ($this->attempts() <= self::MAX_RETRY_ATTEMPTS)
+        {
+            $this->trace->count(PaymentLink\METRIC::PAYMENT_PAGE_PROCESSOR_RETRY_COUNT, $this->context);
+
+            $this->release($delay);
+        }
     }
 }
