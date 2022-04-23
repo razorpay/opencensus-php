@@ -2969,6 +2969,75 @@ class PaymentLinkTest extends TestCase
         $this->assertNotNull(array_get($data, Entity::SHORT_URL));
     }
 
+    /**
+     * @group pp_payment_amount_quantity_check
+     * @return void
+     */
+    public function testOnPaymentFlowValidateLatestAmountWithCustomDecidedAmountMandatoryShouldPass()
+    {
+        $this->mockRazorxExperiments([PaymentLink\Core::RAZORX_PP_PAYMENT_REQUIRED_AMOUNT_QUANTITY_CHECK => 'on']);
+
+        $defaultPaymentLinkAttribute = [
+            PaymentLinkModel\Entity::ID     => self::TEST_PL_ID,
+            PaymentLinkModel\Entity::AMOUNT => null,
+            PaymentLinkModel\Entity::PAYMENT_PAGE_ITEMS => [
+                [
+                    PaymentLinkModel\PaymentPageItem\Entity::ID   => self::TEST_PPI_ID,
+                    PaymentLinkModel\PaymentPageItem\Entity::MANDATORY   => true,
+                    PaymentLinkModel\PaymentPageItem\Entity::MIN_AMOUNT   => 100,
+                    PaymentLinkModel\PaymentPageItem\Entity::ITEM => [
+                        Item\Entity::AMOUNT => null,
+                        Item\Entity::NAME => 'Variable',
+                    ]
+                ]
+            ]
+        ];
+
+        $paymentPageItemsAttribute = array_pull($defaultPaymentLinkAttribute, PaymentLinkModel\Entity::PAYMENT_PAGE_ITEMS, []);
+
+        $page = $this->createPaymentLink(self::TEST_PL_ID, $defaultPaymentLinkAttribute);
+
+        $this->createPaymentPageItems(self::TEST_PL_ID, $paymentPageItemsAttribute);
+
+        $totalAmount = 10000;
+
+        $orderAttribute = [
+            'amount' => $totalAmount,
+            Order\Entity::PAYMENT_CAPTURE => true,
+        ];
+
+        $order = $this->fixtures->create('order', $orderAttribute);
+
+        $itemForLineItemAttributes = [
+            Item\Entity::ID     => UniqueIdEntity::generateUniqueId(),
+            Item\Entity::AMOUNT => $totalAmount
+        ];
+
+        $itemForLineItem = $this->fixtures->create('item', $itemForLineItemAttributes);
+
+        $this->fixtures->create('line_item', [
+            LineItem\Entity::ID          => self::TEST_PPI_ID,
+            LineItem\Entity::ITEM_ID     => $itemForLineItem->getId(),
+            LineItem\Entity::REF_TYPE    => 'payment_page_item',
+            LineItem\Entity::REF_ID      => self::TEST_PPI_ID,
+            LineItem\Entity::ENTITY_ID   => $order->getId(),
+            LineItem\Entity::ENTITY_TYPE => 'order',
+            LineItem\Entity::AMOUNT      => $itemForLineItem->getAmount(),
+        ]);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment[Payment\Entity::PAYMENT_LINK_ID] = $page->getPublicId();
+        $payment[Payment\Entity::AMOUNT]          = $totalAmount;
+        $payment[Payment\Entity::ORDER_ID]        = $order->getPublicId();
+        $payment[Payment\Entity::NOTES]           = [];
+
+        $this->doAuthAndGetPayment($payment, [
+            Payment\Entity::STATUS   => Payment\Status::CAPTURED,
+            Payment\Entity::ORDER_ID => $order->getPublicId(),
+        ]);
+    }
+
     // -------------------- Protected methods --------------------
 
     protected function assertManipulateOrderItemAndMakePayment(

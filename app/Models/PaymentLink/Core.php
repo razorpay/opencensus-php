@@ -65,6 +65,10 @@ class Core extends Base\Core
 
     const AMOUT_QUANTITY_TAMPERED = "Amount or quantity has been tampered. Please try again.";
 
+    const REQUIRED_AMOUNT           = 'required_amount';
+    const REQUIRED_MIN_AMOUNT       = 'required_min_amount';
+    const REQUIRED_MIN_QUANTITY     = 'required_min_quantity';
+
     public function __construct()
     {
         parent::__construct();
@@ -1631,20 +1635,20 @@ class Core extends Base\Core
 
             $item = $pageItem->item;
 
-            $itemAmount = $item->getAmount() ?? 0;
+            $itemMinAmount = $itemAmount = $item->getAmount() ?? 0;
 
-            if ($mandatory && $pageItem->getMinAmount() !== 0 && $itemAmount === 0)
+            if ($mandatory && $pageItem->getMinAmount() !== 0 && $itemMinAmount === 0)
             {
-                $itemAmount = $pageItem->getMinAmount();
+                $itemMinAmount = $pageItem->getMinAmount();
             }
 
             $requiredMinQuantity = $minPurchase ?? 1;
 
             // add all payment page items in the map
             $requiredItemsMap[$pageItem->getId()] = [
-                'mandatory'             => $mandatory,
-                'required_min_amount'   => $itemAmount,
-                'required_min_quantity' => $requiredMinQuantity,
+                self::REQUIRED_AMOUNT       => $itemAmount,
+                self::REQUIRED_MIN_AMOUNT   => $itemMinAmount,
+                self::REQUIRED_MIN_QUANTITY => $requiredMinQuantity,
             ];
 
             if ($mandatory === true)
@@ -3146,15 +3150,17 @@ class Core extends Base\Core
      */
     private function isValidLineItemAgainstPageItem(array $item, LineItem\Entity $lineItem): bool
     {
-        $requiredQuantity   = $item['required_min_quantity'];
+        $requiredQuantity   = $item[self::REQUIRED_MIN_QUANTITY];
 
-        $requiredAmount     = $item['required_min_amount'];
+        $requiredMinAmount  = $item[self::REQUIRED_MIN_AMOUNT];
+
+        $requiredAmount     = $item[self::REQUIRED_AMOUNT];
 
         $lineAmount         = $lineItem->getAmount();
 
         $lineQuantity       = $lineItem->getQuantity();
 
-        if ($lineQuantity < $requiredQuantity || $lineAmount < $requiredAmount)
+        if ($lineQuantity < $requiredQuantity || $lineAmount < $requiredMinAmount)
         {
             return false;
         }
@@ -3163,7 +3169,7 @@ class Core extends Base\Core
 
         $lineItemTotal = $lineAmount * $lineQuantity;
 
-        if ($requiredAmount !== 0 && $requiredQuantity === $lineQuantity && $requiredTotal !== $lineItemTotal)
+        if ($requiredTotal !== 0 && $requiredQuantity === $lineQuantity && $requiredTotal !== $lineItemTotal)
         {
             return false;
         }
