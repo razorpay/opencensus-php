@@ -56,7 +56,7 @@ class Core extends Base\Core
 
     public function fetchParValue($input)
     {
-        return (new Card\CardVault)->fetchParValueFromVault($input);e;
+        return (new Card\CardVault)->fetchParValueFromVault($input);
     }
 
     public function createTokenizedCard($input, $merchant)

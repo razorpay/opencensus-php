@@ -12,4 +12,5 @@ class Action
     const FETCH             = 'fetch';
     const DELETE            = 'delete';
     const UPDATE            = 'update';
+    const PAR_API           = 'par_api';
 }

@@ -302,6 +302,16 @@ class CardVault
             'namespace' => $this->namespace
         ]);
 
+        $isTokenisationRoute = in_array($tokenizationUrl, self::TOKENIZATION_ROUTES);
+
+        if($isTokenisationRoute)
+        {
+
+            list($action, $event) = $this->fetchActionAndEvent($isTokenisationRoute, $tokenizationUrl);
+
+            (new Token\Event())->pushEvents($request['content'], $event, "_REQUEST_SENT");
+        }
+
         $response = $this->sendCardVaultRequest($request);
 
         $network = '';
@@ -311,11 +321,10 @@ class CardVault
             $network = $request["content"]["iin"]["network"];
         }
 
-        if(in_array($tokenizationUrl, self::TOKENIZATION_ROUTES)) {
 
-            $action =  $this->getTokenizationAction($tokenizationUrl);
-
-            $this->handleVaultResponse($request, $response, $network, $action);
+        if($isTokenisationRoute)
+        {
+            $this->handleVaultResponse($request, $response, $network, $action, $event);
         }
         else {
             $this->checkErrors($response);
@@ -568,7 +577,8 @@ class CardVault
         return $response;
     }
 
-    protected function handleVaultResponse($request, $response, $network = null, $action = null)
+
+    protected function handleVaultResponse($request, $response, $network = null, $action = null, $event = null)
     {
         if(empty($response) === true)
         {
@@ -587,13 +597,17 @@ class CardVault
 
             $this->pushDimensions($request, Metric::SUCCESS, $statusCode, $action);
 
+            (new Token\Event())->pushEvents($request['content'], $event, "_RESPONSE_RECEIVED", $response);
         }
+
         catch(Exception\BaseException $e) {
             $error = $e->getError();
 
             $this->trace->info(TraceCode::ERROR_EXCEPTION, [$e->getError()]);
 
             $this->pushDimensions($request, Metric::FAILED, $statusCode, $action, $e);
+
+            (new Token\Event())->pushEvents($request['content'], $event, "_RESPONSE_RECEIVED", $response, $e);
 
             $internalErrorCode = $error->getInternalErrorCode();
 
@@ -757,11 +771,45 @@ class CardVault
         {
             $action = 'create';
         }
+
+        if($url === 'cards/fingerprints')
+        {
+            $action = 'par_api';
+        }
+
         else if (strlen($url) >6 && substr($url, 0, 6) == 'tokens')
         {
             $action = substr($url, 7, strlen($url));
         }
 
         return $action;
+    }
+
+    /**
+     * @param string $action
+     * @return false|string
+     */
+    protected function getTokenizationEvent(string $action)
+    {
+        return Token\Event::ACTION_EVENT_MAPPING[$action];
+    }
+
+    /**
+     * @param bool $isTokenisationRoute
+     * @param $tokenizationUrl
+     * @return array
+     */
+    protected function fetchActionAndEvent(bool $isTokenisationRoute, $tokenizationUrl): array
+    {
+        $action = '';
+        $event = '';
+
+        if ($isTokenisationRoute)
+        {
+            $action = $this->getTokenizationAction($tokenizationUrl);
+
+            $event = $this->getTokenizationEvent($action);
+        }
+        return array($action, $event);
     }
 }

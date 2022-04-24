@@ -1692,23 +1692,53 @@ class Core extends Base\Core
         return [$result, $result != $iin];
     }
 
-    public function fetchParValue($input)
+    public function setInstrumentationInput(& $input, $iin, $isTokenized)
+    {
+        $IINEntity = $this->repo->card->retrieveIinDetails($iin);
+
+        $input += [
+            "iin" => [
+                "iin"      => $iin,
+                "network"  => (is_null($IINEntity) === true) ? null : $IINEntity->getNetwork(),
+                "issuer"   => (is_null($IINEntity) === true) ? null : $IINEntity->getIssuer(),
+                "type"     => (is_null($IINEntity) === true) ? null : $IINEntity->getType(),
+            ],
+            "tokenised"    => $isTokenized,
+            "merchant"     => [
+                "id"       => $this->merchant->getId(),
+            ],
+            "internal_service_request" => false,
+        ];
+
+        if($isTokenized)
+        {
+            $input += [
+                "card_data" => [
+                    "token_iin" => substr($input['number'], 0, 9),
+                ]
+            ];
+        }
+    }
+
+    public function fetchParValue(& $input)
     {
         (new Validator)->validateInput(Validator::FETCH_PAR_VALUE, $input);
 
         list($iin, $isTokenized) = $this->getIIN($input);
 
+        $this->setInstrumentationInput($input, $iin, $isTokenized);
+
+        (new Token\Event())->pushEvents($input, Event::PAR_API, "_REQUEST_RECEIVED");
+
         $network = Card\Network::detectNetwork($iin);
 
         if($network === "UNKNOWN"){
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_IIN_NOT_EXISTS, ["iin" => $iin]);
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_IIN_NOT_EXISTS, ["iin" => $input["card_iin"]]);
         }
 
         $network = Card\Network::$fullName[$network];
 
         $input["network"] = strtolower($network);
-
-        $input["tokenised"] = $isTokenized;
 
         return [$network, (new Card\Core)->fetchParValue($input)];
         // hit the vault with number and the network
@@ -1772,12 +1802,10 @@ class Core extends Base\Core
         return $token;
     }
 
-    public function fetchCryptogram($input, $merchant)
+    public function fetchCryptogram($input, $merchant, $token)
     {
         if (empty($input['token_id']) === false)
         {
-            $token = $this->repo->token->getByPublicIdAndMerchant($input['token_id'], $this->merchant);
-
             $vaultToken = $token->card->getVaultToken();
 
             $response = (new Card\Core)->fetchCryptogramForVaultToken($vaultToken, $merchant);

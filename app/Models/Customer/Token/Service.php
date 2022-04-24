@@ -628,7 +628,25 @@ class Service extends Base\Service
         }
     }
 
-    public function fetchNetworkToken($input, $isPar = false)
+    public function pushFetchTokenEvents(& $input, $isPar)
+    {
+        if($isPar){
+            $input += [
+                "tokenised"                => null,
+                "internal_service_request" => false,
+                "merchant"                 => [
+                    "id"                   => $this->merchant->getId(),
+                ],
+            ];
+
+            (new Token\Event())->pushEvents($input, Event::PAR_API, "_REQUEST_RECEIVED");
+        }
+        else{
+            (new Token\Event())->pushEvents($input, Event::FETCH_TOKEN, "_REQUEST_RECEIVED");
+        }
+    }
+
+    public function fetchNetworkToken(& $input, $isPar = false)
     {
         $startTime = microtime(true);
 
@@ -639,6 +657,10 @@ class Service extends Base\Service
                 (new Validator)->validateInput(Validator::FETCH_TOKEN, $input);
 
                 $token = $this->repo->token->findOrFailByPublicIdAndMerchant($input['id'], $this->merchant);
+
+                $this->addAdditionalInputParamsIfPresent($token, $input);
+
+                $this->pushFetchTokenEvents($input, $isPar);
 
                 $serviceProviderTokens = [];
 
@@ -654,7 +676,11 @@ class Service extends Base\Service
 
                 (new Metric())->pushTokenHQResponseTimeMetrics($startTime, BaseMetric::SUCCESS, Token\Action::FETCH);
 
-                return $token->toArrayPublicTokenizedCard($serviceProviderTokens);
+                $response = $token->toArrayPublicTokenizedCard($serviceProviderTokens);
+
+                (new Token\Event())->pushEvents($input, Event::FETCH_TOKEN, "_REQUEST_PROCESSED", $response);
+
+                return $response;
             }
 
             if ($isPar)
@@ -676,7 +702,6 @@ class Service extends Base\Service
             return $this->generateMockResponse($token);
         }
 
-
         catch (\Throwable $e)
         {
             $this->trace->traceException(
@@ -686,6 +711,8 @@ class Service extends Base\Service
 
             (new Metric())->pushTokenHQResponseTimeMetrics($startTime, BaseMetric::FAILED, Token\Action::FETCH);
 
+            (new Token\Event())->pushEvents($input, Event::FETCH_TOKEN, "_REQUEST_PROCESSED", null, $e);
+
             throw $e;
         }
     }
@@ -693,45 +720,69 @@ class Service extends Base\Service
     // To do : We need to add the logic to get provider_name on the basis of provider_type
     public function fetchParValue($input)
     {
-        $this->decryptCardNumberIfApplicable($input);
+        $startTime = microtime(true);
 
-        // If we are getting token_id in input then we can get PAR Or Fingerprint from fetchToken api
-        // If we have card number then we will have to hit fetchParApi to get PAR/Fingerprint from the network
-        if($this->merchant->isFeatureEnabled(Feature\Constants::CARD_FINGERPRINTS)===false) {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR, null, null, "card_fingerprints feature is not enabled for this merchant");
+        $eventData = [];
+
+        try {
+            $this->decryptCardNumberIfApplicable($input);
+
+            // If we are getting token_id in input then we can get PAR Or Fingerprint from fetchToken api
+            // If we have card number then we will have to hit fetchParApi to get PAR/Fingerprint from the network
+            if ($this->merchant->isFeatureEnabled(Feature\Constants::CARD_FINGERPRINTS) === false) {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR, null, null, "card_fingerprints feature is not enabled for this merchant");
+            }
+
+            $network = null;
+
+            $isTokenized = null;
+
+            if (empty($input["token"]) == false)
+            {
+                $this->trace->info(TraceCode::FETCH_NETWORK_TOKEN, [
+                    "token" => $input["token"]
+                ]);
+
+                $input["id"] = $input["token"];
+
+                unset($input["token"]);
+
+                $data = $this->fetchNetworkToken($input, true);
+
+                $result["provider"] = $data["card"]["network"];
+            }
+            else
+            {
+                $this->trace->info(TraceCode::FETCH_PAR_VALUE);
+
+                list($network, $data) = $this->core->fetchParValue($input);
+
+                $result["network"] = $network;
+            }
+
+            $result["network_reference_id"] = $data["service_provider_tokens"][0]["provider_data"]["network_reference_id"]??null;
+
+            $result["payment_account_reference"] = $data["service_provider_tokens"][0]["provider_data"]["payment_account_reference"]??null;
+
+            (new Token\Event())->pushEvents($input, Event::PAR_API, "_RESPONSE_SENT", $data);
+
+            (new Metric())->pushTokenHQResponseTimeMetrics($startTime, BaseMetric::SUCCESS, Token\Action::PAR_API);
+
+            return $result;
         }
+        catch (\Throwable $e){
 
-        $network = null;
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::PAR_FETCH_EXCEPTION);
 
-        if (empty($input["token"]) == false) {
+            (new Token\Event())->pushEvents($input, Event::PAR_API, "_RESPONSE_SENT", null, $e);
 
-            $this->trace->info(TraceCode::FETCH_NETWORK_TOKEN, [
-                "token" => $input["token"]
-            ]);
+            (new Metric())->pushTokenHQResponseTimeMetrics($startTime, BaseMetric::FAILED, Token\Action::PAR_API);
 
-            $input["id"] = $input["token"];
-
-            unset($input["token"]);
-
-            $data = $this->fetchNetworkToken($input, true);
-
-            $result["provider"] = $data["card"]["network"];
+            throw $e;
         }
-        else {
-            $this->trace->info(TraceCode::FETCH_PAR_VALUE);
-
-             list($network, $data) = $this->core->fetchParValue($input);
-
-            $result["network"] = $network;
-        }
-
-        $data = $data["service_provider_tokens"][0]["provider_data"];
-
-        $result["network_reference_id"] = $data["network_reference_id"]??null;
-
-        $result["payment_account_reference"] = $data["payment_account_reference"]??null;
-
-        return $result;
     }
 
     public function fetchCryptoGram($input)
@@ -744,11 +795,23 @@ class Service extends Base\Service
             {
                 (new Validator)->validateInput(Validator::FETCH_CRYPTOGRAM, $input);
 
-                $serviceProviderToken = $this->core->fetchCryptogram($input, $this->merchant);
+                $isSptToken = (isset($input['token_id']) === false);
+
+                $token = $isSptToken ? $input['id'] : $token = $this->repo->token->getByPublicIdAndMerchant($input['token_id'], $this->merchant);
+
+                $this->addAdditionalInputParamsIfPresent($token, $input, $isSptToken);
+
+                (new Token\Event())->pushEvents($input, Event::NETWORK_CRYPTOGRAM, "_REQUEST_RECEIVED");
+
+                $serviceProviderToken = $this->core->fetchCryptogram($input, $this->merchant, $token);
 
                 (new Metric())->pushTokenHQResponseTimeMetrics($startTime, BaseMetric::SUCCESS, Token\Action::CRYPTOGRAM);
 
-                return $this->generateCryptogramResponse($serviceProviderToken);
+                $response = $this->generateCryptogramResponse($serviceProviderToken);
+
+                (new Token\Event())->pushEvents($input, Event::NETWORK_CRYPTOGRAM, "_RESPONSE_SENT", $response);
+
+                return $response;
             }
 
             $this->validateMode();
@@ -771,6 +834,8 @@ class Service extends Base\Service
                 TraceCode::TOKEN_CRYPTOGRAM_EXCEPTION);
 
             (new Metric())->pushTokenHQResponseTimeMetrics($startTime, BaseMetric::FAILED, Token\Action::CRYPTOGRAM);
+
+            (new Token\Event())->pushEvents($input, Event::NETWORK_CRYPTOGRAM, "_RESPONSE_SENT", null, $e);
 
             throw $e;
         }
@@ -1149,6 +1214,62 @@ class Service extends Base\Service
             );
 
             return ['success' => false];
+        }
+    }
+
+    /**
+     * @param $token
+     * @param $input
+     * @param bool $isSptToken
+     */
+    protected function addAdditionalInputParamsIfPresent($token, &$input, $isSptToken = false)
+    {
+        if (isset($token) === false)
+        {
+            return;
+        }
+
+        $input['spt_token'] = $isSptToken;
+
+        if (empty($this->merchant) === false)
+        {
+            $input['merchant'] =
+            [
+                'id' =>  $this->merchant->getMerchantId(),
+            ];
+        }
+
+        if ($isSptToken)
+        {
+            return;
+        }
+
+        if ((isset($token->card)) && (!empty($token->card->getIin())))
+        {
+            $card = $token->card;
+
+            $input['card_data'] = [
+                'iin'      => $card->getIin(),
+                'token_iin'     => $card->getTokenIin(),
+                'payment_account_reference' => $card->getGlobalFingerPrint(),
+            ];
+
+            $iin = $this->repo->card->retrieveIinDetails($token->card->getIin());
+
+            if (isset($iin) === false)
+            {
+                return;
+            }
+
+            $iinInfo = [
+                'issuer' => $iin->getIssuer(),
+                'network' => $iin->getNetwork(),
+                'category' => $iin->getCategory(),
+                'type' => $iin->getType(),
+                'country' => $iin->getCountry(),
+            ];
+
+            $input['iin'] = $iinInfo;
         }
     }
 }

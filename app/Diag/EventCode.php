@@ -1182,6 +1182,96 @@ class EventCode
         'name'    => 'async_tokenisation.admin_dashboard.tokens.consent_collection_and_tokenisation',
     ];
 
+    public const NETWORK_TOKENISATION_REQUEST_SENT = [
+        'group'   => 'token_hq',
+        'name'    => 'NETWORK_TOKENISATION.REQUEST.SENT',
+    ];
+
+    public const NETWORK_TOKENISATION_RESPONSE_RECEIVED = [
+        'group'   => 'token_hq',
+        'name'    => 'NETWORK_TOKENISATION.RESPONSE.RECEIVED',
+    ];
+
+    public const FETCH_TOKEN_REQUEST_RECEIVED = [
+        'group'   => 'token_hq',
+        'name'    => 'FETCH_TOKEN.REQUEST.RECEIVED',
+    ];
+
+    public const FETCH_TOKEN_REQUEST_PROCESSED = [
+        'group'   => 'token_hq',
+        'name'    => 'FETCH_TOKEN.REQUEST.PROCESSED',
+    ];
+
+    public const NETWORK_CRYPTOGRAM_REQUEST_RECEIVED = [
+        'group'   => 'token_hq',
+        'name'    => 'NETWORK_CRYPTOGRAM.REQUEST.RECEIVED',
+    ];
+
+    public const NETWORK_CRYPTOGRAM_REQUEST_SENT = [
+        'group'   => 'token_hq',
+        'name'    => 'NETWORK_CRYPTOGRAM.REQUEST.SENT',
+    ];
+
+    public const NETWORK_CRYPTOGRAM_RESPONSE_RECEIVED = [
+        'group'   => 'token_hq',
+        'name'    => 'NETWORK_CRYPTOGRAM.RESPONSE.RECEIVED',
+    ];
+
+    public const NETWORK_CRYPTOGRAM_RESPONSE_SENT = [
+        'group'   => 'token_hq',
+        'name'    => 'NETWORK_CRYPTOGRAM.RESPONSE.SENT',
+    ];
+
+    public const PAR_API_REQUEST_RECEIVED = [
+        'group'   => 'token_hq',
+        'name'    => 'PAR_API.REQUEST.RECEIVED',
+    ];
+
+    public const PAR_API_REQUEST_SENT = [
+        'group'   => 'token_hq',
+        'name'    => 'PAR_API.REQUEST.SENT',
+    ];
+
+    public const PAR_API_RESPONSE_RECEIVED = [
+        'group'   => 'token_hq',
+        'name'    => 'PAR_API.RESPONSE.RECEIVED',
+    ];
+
+    public const PAR_API_RESPONSE_SENT = [
+        'group'   => 'token_hq',
+        'name'    => 'PAR_API.RESPONSE.SENT',
+    ];
+
+    public const DELETE_TOKEN_REQUEST_SENT = [
+        'group'   => 'token_hq',
+        'name'    => 'DELETE_TOKEN.REQUEST.SENT',
+    ];
+
+    public const DELETE_TOKEN_RESPONSE_RECEIVED = [
+        'group'   => 'token_hq',
+        'name'    => 'DELETE_TOKEN.RESPONSE.RECEIVED',
+    ];
+
+    public const MIGRATE_TOKEN_REQUEST_SENT = [
+        'group'   => 'token_hq',
+        'name'    => 'MIGRATE_TOKEN.REQUEST.SENT',
+    ];
+
+    public const MIGRATE_TOKEN_RESPONSE_RECEIVED = [
+        'group'   => 'token_hq',
+        'name'    => 'MIGRATE_TOKEN.RESPONSE.RECEIVED',
+    ];
+
+    public const UPDATE_TOKEN_REQUEST_SENT = [
+        'group'   => 'token_hq',
+        'name'    => 'UPDATE_TOKEN.REQUEST.SENT',
+    ];
+
+    public const UPDATE_TOKEN_RESPONSE_RECEIVED = [
+        'group'   => 'token_hq',
+        'name'    => 'UPDATE_TOKEN.RESPONSE.RECEIVED',
+    ];
+
     const PARTNER_KYC_ACCESS_APPROVE = [
         'group' => 'onboarding',
         'name'  => 'partner_kyc_access.approve',
