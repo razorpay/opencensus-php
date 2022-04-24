@@ -34,7 +34,7 @@ class Onecard extends Base
     const FILE_TYPE          = FileStore\Type::ONECARD_EMI_FILE;
     const FILE_NAME          = 'Razorpay_';
     const BEAM_FILE_TYPE     = 'emi';
-    const DATE_FORMAT        = 'd/m/y h:i';
+    const DATE_FORMAT        = 'd/m/y H:i';
     const EXTENSION          = FileStore\Format::CSV;
 
     const TEST_ENCRYPTION_KEY = 'T8DIATjuwST8DIATjuwST8DIATjuwS22';
