@@ -39,27 +39,37 @@ class Service extends Base\Service
         else
         {
             return $this->updateIin($id, $input);
-
         }
     }
 
     public function fetchIin($iin)
     {
-        $iins = $this->repo->tokenised_iin->findbyIin($iin);
+        $iin = $this->repo->tokenised_iin->findbyIin($iin);
 
-        $response =  $this->getBasicDetails($iins);
+        if(isset($iin)){
 
-        return $response;
+            $response =  $this->getBasicDetails($iin);
+
+            return $response;
+
+        }
+
+        return null;
     }
 
-    public function fetchbyTokenIin($tokenIin)
-    {
+    public function fetchbyTokenIin($tokenIin){
 
         $iin = $this->repo->tokenised_iin->findbyTokenIin($tokenIin);
 
-        $response = $this->getBasicDetails($iin);
+        if(isset($iin)){
 
-        return $response;
+            $response =  $this->getBasicDetails($iin);
+
+            return $response;
+
+        }
+
+        return null;
     }
 
     protected function getBasicDetails(Entity $iins)

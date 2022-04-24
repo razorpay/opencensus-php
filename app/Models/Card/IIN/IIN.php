@@ -7,6 +7,8 @@ use RZP\Models\Bank;
 use RZP\Error\ErrorCode;
 use RZP\Models\Card\Type;
 use RZP\Models\Card\Issuer;
+use RZP\Trace\TraceCode;
+use RZP\Models\Card\TokenisedIIN\Service;
 
 class IIN
 {
@@ -107945,6 +107947,12 @@ class IIN
 
     public static function getTransactingIinforRange($tokenizedNumber)
     {
+        $cardIin = (new Service)->fetchbyTokenIin($tokenizedNumber);
+
+        $app = \App::getFacadeRoot();
+
+        $iin_static = null;
+
         foreach(self::$tokenisedIinRange as $iinRange)
         {
             if (($tokenizedNumber === $iinRange[0]) or
@@ -107954,9 +107962,52 @@ class IIN
                  (($tokenizedNumber >= $iinRange[0]) and
                   ($tokenizedNumber <= $iinRange[1]))))
             {
-                return $iinRange[2];
+               $iin_static = $iinRange[2];
+
+               break;
             }
         }
+
+        if(isset($cardIin)  && $cardIin['iin'] == $iin_static){
+
+            $app['trace']->info(
+                TraceCode::DB_TOKENISED_IIN_SELECTED,
+                [
+                    'dbIIN' => $cardIin,
+                    'staticiin' => $iin_static
+                ]
+            );
+
+            return $cardIin['iin'];
+
+        }
+        elseif($iin_static != null){
+
+            $app['trace']->info(
+                TraceCode::TOKENISED_IIN_MISMATCH_STATIC_SELECTED,
+                [
+                    'dbIIN' => $cardIin,
+                    'staticiin' => $iin_static
+                ]
+            );
+
+            return $iin_static;
+
+        }
+        elseif(isset($cardIin) ){
+
+            $app['trace']->info(
+                TraceCode::TOKENISED_IIN_MISMATCH_DB_SELECTED,
+                [
+                    'dbIIN' => $cardIin,
+                    'staticiin' => $iin_static
+                ]
+            );
+
+            return $cardIin['iin'];
+
+        }
+
     }
 
     protected static function ignoreIinChecks(Entity $iin)
