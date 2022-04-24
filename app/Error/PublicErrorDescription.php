@@ -1069,6 +1069,7 @@ class PublicErrorDescription
     const BAD_REQUEST_RETRY_ATTEMPT_LIMIT_EXCEEDED                              = 'Retry attempts limit exceeded';
     const BAD_REQUEST_COULD_NOT_READ_CARD_MAGNETIC_STRIPE                       = 'Could not read card magnetic stripe';
     const BAD_REQUEST_INVALID_CARD_DETAILS                                      = 'Invalid card details';
+    const BAD_REQUEST_WEBHOOK_DETAILS_LOCKED_FOR_MFN                            = 'Webhooks are controlled by partner merchant and hence webhook creation is blocked';
     const BAD_REQUEST_PAYOUT_NOT_QUEUED_STATUS                                  = 'The payout is not in queued status';
     const BAD_REQUEST_PAYOUT_NOT_QUEUED_OR_SCHEDULED_STATUS                     = 'The payout is not in queued or scheduled status';
     const BAD_REQUEST_PAYOUT_NOT_PENDING_STATUS                                 = 'The payout is not in pending status';

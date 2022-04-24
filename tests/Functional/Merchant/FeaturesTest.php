@@ -10,6 +10,7 @@ use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Models\Feature\Entity;
+use RZP\Models\Admin;
 use RZP\Services\RazorXClient;
 use RZP\Models\Feature\Constants;
 use RZP\Models\Terminal;
@@ -3087,6 +3088,32 @@ Regards,
     public function testOrderReceiptUniqueFeatureFlagFailedInvalidMerchantId()
     {
         $this->ba->hostedProxyAuth('rzp_test');
+
+        $this->startTest();
+    }
+
+    public function testMFNFeatureAddition()
+    {
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id' => '10000000000000',
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
+        ]);
+
+        $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
+
+        $this->fixtures->merchant->addFeatures(['payout','payouts_batch']);
+
+        $this->ba->adminAuth();
+
+        // Setting webhook URL for MFN,
+        $this->makeRequestAndGetContent([
+            'method'  => 'PUT',
+            'url'     => '/config/keys',
+            'content' => [
+                Admin\ConfigKey::RX_WEBHOOK_URL_FOR_MFN => "https://razorpay.com",
+            ],
+        ]);
 
         $this->startTest();
     }

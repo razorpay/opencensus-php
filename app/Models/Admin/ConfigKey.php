@@ -229,6 +229,8 @@ class ConfigKey
 
     const RX_VA_TO_VA_PAYOUTS_WHITELISTED_DESTINATION_MERCHANTS = self::PREFIX . 'rx_va_to_va_payouts_whitelisted_destination_merchants';
 
+    const RX_WEBHOOK_URL_FOR_MFN = self::PREFIX . 'rx_webhook_url_for_mfn';
+
     const RX_GLOBALLY_WHITELISTED_PAYER_ACCOUNTS_FOR_FUND_LOADING = self::PREFIX . 'rx_globally_whitelisted_payer_accounts_for_fund_loading';
 
     // This will be used to get the number of records to save at once in bulk
@@ -379,6 +381,7 @@ class ConfigKey
         self::BULK_PAYOUTS_NEW_MERCHANT_CUTOFF_TIMESTAMP,
         self::ENABLE_CRED_ELIGIBILITY_CALL,
         self::RX_VA_TO_VA_PAYOUTS_WHITELISTED_DESTINATION_MERCHANTS,
+        self::RX_WEBHOOK_URL_FOR_MFN,
         self::RX_GLOBALLY_WHITELISTED_PAYER_ACCOUNTS_FOR_FUND_LOADING,
         self::RBL_STATEMENT_FETCH_RATE_LIMIT,
         self::RBL_STATEMENT_FETCH_WINDOW_LENGTH,

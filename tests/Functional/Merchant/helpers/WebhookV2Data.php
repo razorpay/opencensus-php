@@ -558,6 +558,30 @@ return [
         ],
     ],
 
+    'testCreateWebhookForBankingWithMFNFeatureEnabled' => [
+        'request' => [
+            'method' => 'POST',
+            'url'    => '/v1/webhooks',
+            'server' => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
+            'content' => $sampleApiWebhookRequestForBanking,
+        ],
+        'response' => [
+            'content'  => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Webhooks are controlled by partner merchant and hence webhook creation is blocked'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_WEBHOOK_DETAILS_LOCKED_FOR_MFN,
+        ],
+    ],
+
     'testCreateWebhookWithPayoutCreatedEvent' => [
         'request' => [
             'method' => 'POST',

@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factory;
 use Mail;
 use RZP\Constants\Mode;
 use RZP\Models\Merchant;
+use RZP\Models\Feature;
 use RZP\Tests\Functional\Partner\Constants;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Traits\TestsMetrics;
@@ -209,6 +210,21 @@ class WebhookV2Test extends TestCase
 
         $this->expectStorkServiceRequestForAction('listWebhookForBankingWhenReturnsNoWebhooks');
         $this->expectStorkServiceRequestForAction('createWebhookForBanking');
+
+        $this->startTest();
+    }
+
+    public function testCreateWebhookForBankingWithMFNFeatureEnabled()
+    {
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id' => '10000000000000',
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
+        ]);
+
+        $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::MFN]);
 
         $this->startTest();
     }

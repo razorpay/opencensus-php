@@ -10,11 +10,16 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Event;
+use RZP\Constants\Mode;
 use RZP\Models\Merchant;
+use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Constants\Product;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Modules\Migrate\Migrate;
 use RZP\Models\Event\Entity as EventEntity;
+use RZP\Models\Admin\Service as AdminService;
 use RZP\Mail\Merchant\Webhook as WebhookMail;
 use RZP\Models\Merchant\Account\Entity as AccountEntity;
 
@@ -118,6 +123,8 @@ class Service extends Base\Service
 
         $this->traceOperationEntry('create_for_merchant', [AccountEntity::MERCHANT_ID => $merchantId]);
 
+        $this->blockWebhookCreationForMFN($this->merchant);
+
         $input = $this->apiToStorkFormat($input);
 
         $this->unsetImplicitFields($input);
@@ -171,6 +178,8 @@ class Service extends Base\Service
         $merchantId = $merchantId ?? $this->merchant->getId();
 
         $this->traceOperationEntry('update', ['webhook_id' => $webhookId ?? '', AccountEntity::MERCHANT_ID => $merchantId]);
+
+        $this->blockWebhookCreationForMFN($this->merchant);
 
         $input = $this->apiToStorkFormat($input);
 
@@ -483,7 +492,13 @@ class Service extends Base\Service
         $webhookCollection = $this->list(['offset' => 0, 'limit' => 2]);
         if ($webhookCollection['count'] > 0)
         {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_STORK_WEBHOOK_ALREADY_CREATED);
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_STORK_WEBHOOK_ALREADY_CREATED,
+                null,
+                [
+                    "webhook_id" => $webhookCollection['items'][0]['id']
+                ]
+            );
         }
     }
 
@@ -925,5 +940,108 @@ class Service extends Base\Service
         ];
 
         return $dimensions;
+    }
+
+    // setting Webhook URL for all MFN merchants
+    public function handleWebhookForMFN(Merchant\Entity $merchantEntity, bool $shouldSync = false)
+    {
+        $mfnWebhookUrl = (new AdminService)->getConfigKey(
+            [
+                'key' => ConfigKey::RX_WEBHOOK_URL_FOR_MFN
+            ]);
+
+        if (empty($mfnWebhookUrl) === true)
+        {
+            $mfnWebhookUrl = Constant::MFN_DEFAULT_CUSTOM_WEBHOOK_URL;
+        }
+
+        $webhookCreateInput = [
+            'url'    => $mfnWebhookUrl,
+            'events' => [
+                'payout.processed'       => '1',
+                'payout.failed'          => '1',
+                'payout.reversed'        => '1',
+                'payout.creation.failed' => '1',
+            ],
+        ];
+
+        $this->trace->info(TraceCode::MFN_WEBHOOK_CREATE_REQUEST,
+            [
+                'merchant_id' => $merchantEntity->getId(),
+                'input'       => $webhookCreateInput
+            ]);
+
+        $this->merchant = $merchantEntity;
+
+        // the requestOriginProduct will be set back to its initial value once the task is done
+        $previousRequestOriginProduct = $this->app['basicauth']->getRequestOriginProduct();
+
+        $this->app['basicauth']->setRequestOriginProduct(Product::BANKING);
+
+        $this->product = Product::BANKING;
+
+        $this->createWebhookForMFN($webhookCreateInput, $merchantEntity->getId());
+
+        if ($shouldSync === true)
+        {
+            // if shouldSync is true we need to add webhooks to both test and live mode
+            // the below written map helps in changing the mode from test to live or vice versa.
+            $invertedModeMapping = [
+                Mode::LIVE => Mode::TEST,
+                Mode::TEST => Mode::LIVE
+            ];
+
+            $this->mode = $invertedModeMapping[$this->mode];
+
+            $this->createWebhookForMFN($webhookCreateInput, $merchantEntity->getId());
+
+            $this->mode = $invertedModeMapping[$this->mode];
+        }
+
+        $this->app['basicauth']->setRequestOriginProduct($previousRequestOriginProduct);
+    }
+
+    protected function createWebhookForMFN(array $webhookCreateInput, string $merchantId)
+    {
+        try
+        {
+            $response = $this->createForMerchant($webhookCreateInput);
+        }
+        catch(\Throwable $throwable)
+        {
+            if ($throwable->getCode() === ErrorCode::BAD_REQUEST_STORK_WEBHOOK_ALREADY_CREATED)
+            {
+                $exceptionData = $throwable->getData();
+
+                $webhookId = $exceptionData['webhook_id'];
+
+                $response = $this->update($webhookId, $webhookCreateInput);
+            }
+            else
+            {
+                throw $throwable;
+            }
+        }
+
+        $this->trace->info(TraceCode::MFN_WEBHOOK_CREATE_SUCCESS,
+            [
+                'merchant_id' => $merchantId,
+                'mode'        => $this->mode,
+                'response'    => $response
+            ]);
+    }
+
+    // we are temporarily blocking webhook creation for MFN feature enabled merchants, this will be removed later
+    protected function blockWebhookCreationForMFN(Merchant\Entity $merchantEntity)
+    {
+        if ($merchantEntity->isFeatureEnabled(Feature\Constants::MFN) === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_WEBHOOK_DETAILS_LOCKED_FOR_MFN,
+                null,
+                [
+                    'merchant_id'       => $this->merchant->getId()
+                ]);
+        }
     }
 }

@@ -1745,7 +1745,7 @@ return [
             Permission::SET_PAYER_NAME_INVALID_REGEX => [
                 'description'   => 'Allows to set invalid regexes that might come as part of Payer Name in Fund Loading',
                 'assignable'    => true,
-            ],
+            ]
         ],
 
         PermissionCategory::UPI => [

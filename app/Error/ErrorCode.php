@@ -443,6 +443,7 @@ class ErrorCode
     const BAD_REQUEST_PERMISSION_ERROR                                              = 'BAD_REQUEST_PERMISSION_ERROR';
     const BAD_REQUEST_APP_TOKEN_NOT_GLOBAL                                          = 'BAD_REQUEST_APP_TOKEN_NOT_GLOBAL';
     const BAD_REQUEST_INVALID_BANK_FOR_EMANDATE                                     = 'BAD_REQUEST_INVALID_BANK_FOR_EMANDATE';
+    const BAD_REQUEST_WEBHOOK_DETAILS_LOCKED_FOR_MFN                                = 'BAD_REQUEST_WEBHOOK_DETAILS_LOCKED_FOR_MFN';
     const BAD_REQUEST_PAYOUT_RETRY_FOR_PAYMENT_NOT_ALLOWED                          = 'BAD_REQUEST_PAYOUT_RETRY_FOR_PAYMENT_NOT_ALLOWED';
     const BAD_REQUEST_PAYOUT_RETRY_NOT_IN_REVERSED                                  = 'BAD_REQUEST_PAYOUT_RETRY_NOT_IN_REVERSED';
     const BAD_REQUEST_PAYOUT_NOT_QUEUED_STATUS                                      = 'BAD_REQUEST_PAYOUT_NOT_QUEUED_STATUS';

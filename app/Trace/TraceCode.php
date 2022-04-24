@@ -1975,6 +1975,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const PAYOUT_OPTIMIZATION_FOR_COMPOSITE_TIME_TAKEN          = 'PAYOUT_OPTIMIZATION_FOR_COMPOSITE_TIME_TAKEN';
     const PAYOUT_ENTITY_CREATION_FAILURE_IN_INGRESS_TO_EGRESS   = 'PAYOUT_ENTITY_CREATION_FAILURE_IN_INGRESS_TO_EGRESS';
+
+    const MFN_WEBHOOK_CREATE_REQUEST                            = 'MFN_WEBHOOK_CREATE_REQUEST';
+    const MFN_WEBHOOK_CREATE_SUCCESS                            = 'MFN_WEBHOOK_CREATE_SUCCESS';
+    const MFN_WEBHOOK_CREATE_FAILURE                            = 'MFN_WEBHOOK_CREATE_FAILURE';
+
     /**
      * New Composite API Trace Codes
      */

@@ -137,6 +137,23 @@ class Core extends Base\Core
             $this->controlFeatureAssignmentForLedger($feature->getName(), $assignedFeatureNames);
         }
 
+        if ($entityType === Constants::MERCHANT and $feature->getName() === Constants::MFN)
+        {
+            try
+            {
+                (new Merchant\WebhookV2\Service())->handleWebhookForMFN($entity, $shouldSync);
+            }
+            catch(\Throwable $throwable)
+            {
+                $this->trace->traceException(
+                    $throwable,
+                    null,
+                    TraceCode::MFN_WEBHOOK_CREATE_FAILURE,
+                    [ 'merchant_id' => $entityId ]
+                );
+            }
+        }
+
         $this->checkAuthTypeIfApplicable($feature);
 
         $this->checkCollectionsAuthTypeForCreationIfApplicable($feature);
