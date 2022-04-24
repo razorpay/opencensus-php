@@ -393,6 +393,16 @@ class PaymentPageProcessor extends Job
             $this->trace->count(PaymentLink\METRIC::PAYMENT_PAGE_PROCESSOR_RETRY_COUNT, $this->context);
 
             $this->release($delay);
+
+            return;
         }
+
+        $this->trace->count(PaymentLink\METRIC::PAYMENT_PAGE_PROCESSOR_JOB_FAIL_COUNT_TOTAL, $this->context);
+
+        $this->trace->error(TraceCode::PAYMENT_LINK_POST_PROCESSOR_FAILED, $this->context + [
+            "reason"    => "Max retries of " . self::MAX_RETRY_ATTEMPTS . " exhausted.",
+        ]);
+
+        $this->delete();
     }
 }
