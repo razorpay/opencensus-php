@@ -889,7 +889,7 @@ class Service extends Base\Service
             $input[Entity::SOURCE_TYPE_EXCLUDE] = PayoutSourceEntity::XPAYROLL;
         }
 
-        $payouts = $this->repo->payout->fetchMultiple($input, $this->merchant->getId(), $useMasterConnection);
+        $payouts = $this->repo->payout->fetchMultiple($input, $this->merchant, $useMasterConnection);
 
         // Since pending payouts can be on both the api workflow system and workflow service
         // therefore we need to fetch and merge payouts from both systems
@@ -2195,7 +2195,7 @@ class Service extends Base\Service
                 unset($input[Entity::PENDING_ON_ME]);
             }
 
-            $pendingPayoutsViaWfs = $this->repo->payout->fetchMultiple($input, $this->merchant->getId(), false);
+            $pendingPayoutsViaWfs = $this->repo->payout->fetchMultiple($input, $this->merchant, false);
         }
 
         $uniquePayouts = [];

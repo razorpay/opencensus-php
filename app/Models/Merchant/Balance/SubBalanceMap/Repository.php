@@ -11,7 +11,7 @@ class Repository extends Base\Repository
 
     public function findByParentBalanceId(string $parentBalanceId)
     {
-        return $this->newQueryOnSlave()
+        return $this->newQueryWithConnection($this->getWhatsappSlaveConnection())
                     ->where(Entity::PARENT_BALANCE_ID, '=', $parentBalanceId)
                     ->get();
     }

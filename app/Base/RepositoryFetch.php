@@ -14,6 +14,7 @@ use Database\Connection;
 use RZP\Constants\Environment;
 use RZP\Constants\Entity as E;
 use RZP\Models\Base\EsRepository;
+use RZP\Models\Feature\Constants;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\InvalidArgumentException;
@@ -893,7 +894,14 @@ trait RepositoryFetch
         Merchant\Entity $merchant,
         array $params = []): PublicEntity
     {
-        $query = $this->getQueryForFindWithParams($params);
+        if ($merchant->isFeatureEnabled(Constants::MERCHANT_ROUTE_WA_INFRA))
+        {
+            $query = $this->getQueryForFindWithParams($params, Connection::RX_WHATSAPP_LIVE);
+        }
+        else
+        {
+            $query = $this->getQueryForFindWithParams($params);
+        }
 
         $entity = $query->merchantId($merchant->getId())
                         ->findOrFailPublic($id);

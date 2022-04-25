@@ -181,11 +181,18 @@ class Entity extends Base\PublicEntity
 
         if ($accountType === AccountType::SHARED)
         {
+            if($this->merchant->isFeatureEnabled(Feature\Constants::MERCHANT_ROUTE_WA_INFRA))
+            {
+               $whatsappParentBalance = (new Repository)->getBalanceByIdFromWhatsappDB($attributes[self::ID]);
+
+               $attributes[self::BALANCE] = $whatsappParentBalance->getBalance();
+            }
+
             $availableSubBalances = (new SubBalanceMap\Core)->getSubBalancesForParentBalance($attributes[self::ID]);
 
             if (count($availableSubBalances) > 0)
             {
-                $subBalancesBalance = (new Repository)->getBalanceSumFromSubBalances($availableSubBalances);
+                $subBalancesBalance = (new Repository)->getBalanceSumFromSubBalances($availableSubBalances,$this->merchant);
 
                 $attributes[self::BALANCE] += $subBalancesBalance;
             }

@@ -69,9 +69,9 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchMultiple(array $input, string $merchantId, bool $useMasterConnection = false)
+    public function fetchMultiple(array $input, Merchant\Entity $merchant, bool $useMasterConnection = false)
     {
-        $this->setBaseQueryIfApplicable($merchantId, $input, $useMasterConnection);
+        $this->setBaseQueryIfApplicable($merchant, $input, $useMasterConnection);
 
         if (array_key_exists(Entity::BALANCE_ID, $input))
         {
@@ -87,12 +87,25 @@ class Repository extends Base\Repository
             }
         }
 
-        return parent::fetch($input, $merchantId);
+        return parent::fetch($input, $merchant->getId());
     }
 
-    protected function setBaseQueryIfApplicable(string $merchantId, array $input, bool $useMasterConnection)
+    protected function setBaseQueryIfApplicable(Merchant\Entity $merchant, array $input, bool $useMasterConnection)
     {
-        if (($useMasterConnection === true) &&
+        //for whatsapp merchant we need to route to new whatsapp db
+        if ($merchant->isFeatureEnabled(Constants::MERCHANT_ROUTE_WA_INFRA))
+        {
+            if ((array_key_exists(Entity::REFERENCE_ID, $input)))
+            {
+                $this->baseQuery = $this->newQueryWithConnection($this->getWhatsappDatabaseConnection())->useWritePdo();
+            }
+            else
+            {
+                $this->baseQuery = $this->newQueryWithConnection($this->getWhatsappSlaveConnection());
+            }
+        }
+
+        else if (($useMasterConnection === true) &&
             (array_key_exists(Entity::REFERENCE_ID, $input)))
         {
             $mode = $this->app['rzp.mode'];
@@ -102,7 +115,6 @@ class Repository extends Base\Repository
         {
             $this->baseQuery = $this->newQueryWithConnection($this->getSlaveConnection());
         }
-
     }
 
     public function fetchReversedPayouts(array $ids)

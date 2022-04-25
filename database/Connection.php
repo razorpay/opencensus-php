@@ -31,6 +31,10 @@ class Connection
 
     const RX_ACCOUNT_STATEMENTS_LIVE = 'rx_account_statements_live';
 
+    const RX_WHATSAPP_LIVE = 'rx_whatsapp_live';
+
+    const RX_WHATSAPP_SLAVE_LIVE = 'rx_whatsapp_slave_live';
+
     const DATA_WAREHOUSE_CONNECTIONS = [
         self::DATA_WAREHOUSE_LIVE,
         self::DATA_WAREHOUSE_TEST,

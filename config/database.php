@@ -570,6 +570,46 @@ return array(
             'transaction_wait_timeout'  => env('DB_TRANSACTION_WAIT_TIMEOUT'),
         ],
 
+        'rx_whatsapp_live' => [
+            'write'  => [
+                'host'     => env('RX_WHATSAPP_LIVE_HOST'),
+                'port'     => env('RX_WHATSAPP_LIVE_PORT'),
+                'username' => env('RX_WHATSAPP_LIVE_USERNAME'),
+                'password' => env('RX_WHATSAPP_LIVE_PASSWORD'),
+            ],
+            'read' => [
+                'host'     => env('RX_WHATSAPP_SLAVE_LIVE_HOST'),
+                'port'     => env('RX_WHATSAPP_SLAVE_LIVE_PORT'),
+                'username' => env('RX_WHATSAPP_SLAVE_LIVE_USERNAME'),
+                'password' => env('RX_WHATSAPP_SLAVE_LIVE_PASSWORD'),
+            ],
+            'sticky'    => true,
+            'database' => env('RX_WHATSAPP_LIVE_DATABASE'),
+            'driver'    => 'mysql',
+            'charset'   => 'utf8',
+            'collation' => 'utf8_bin',
+            'prefix'    => '',
+            'strict'    => true,
+            'wait_timeout'              => env('DB_WAIT_TIMEOUT'),
+            'transaction_wait_timeout'  => env('DB_TRANSACTION_WAIT_TIMEOUT'),
+        ],
+
+        'rx_whatsapp_slave_live' => [
+                // Slave must have the same driver and DB names as the master.
+                'driver'    => 'mysql',
+                'database'  => env('RX_WHATSAPP_LIVE_DATABASE'),
+                'host'      => env('RX_WHATSAPP_SLAVE_LIVE_HOST'),
+                'port'      => env('RX_WHATSAPP_SLAVE_LIVE_PORT'),
+                'username'  => env('RX_WHATSAPP_SLAVE_LIVE_USERNAME'),
+                'password'  => env('RX_WHATSAPP_SLAVE_LIVE_PASSWORD'),
+                'charset'   => 'utf8',
+                'collation' => 'utf8_bin',
+                'prefix'    => '',
+                'strict'    => true,
+                'wait_timeout'              => env('DB_WAIT_TIMEOUT'),
+                'transaction_wait_timeout'  => env('DB_TRANSACTION_WAIT_TIMEOUT'),
+            ],
+
         'proxy_sql_unix_socket' => env('PROXY_SQL_UNIX_SOCKET'),
     ],
 

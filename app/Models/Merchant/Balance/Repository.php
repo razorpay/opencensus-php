@@ -403,11 +403,27 @@ class Repository extends Base\Repository
             ->toArray();
     }
 
-    public function getBalanceSumFromSubBalances(array $balanceIdList)
+    public function getBalanceByIdFromWhatsappDB(string $id)
+    {
+        $idColumn = $this->dbColumn(Entity::ID);
+
+        return $this->newQueryWithConnection($this->getWhatsappDatabaseConnection())
+                    ->where($idColumn, $id)
+                    ->first();
+    }
+
+    public function getBalanceSumFromSubBalances(array $balanceIdList, Merchant\Entity $merchant)
     {
         $idColumn = $this->dbColumn(Entity::ID);
 
         $balanceColumn = $this->dbColumn(Entity::BALANCE);
+
+        if ($merchant->isFeatureEnabled(Feature\Constants::MERCHANT_ROUTE_WA_INFRA))
+        {
+            return $this->newQueryWithConnection($this->getWhatsappDatabaseConnection())
+                        ->whereIn($idColumn, $balanceIdList)
+                        ->sum($balanceColumn);
+        }
 
         return $this->newQuery()
                     ->whereIn($idColumn, $balanceIdList)

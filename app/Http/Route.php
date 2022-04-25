@@ -3104,7 +3104,7 @@ class Route
         'merchant_verify_attributes'              => ['post',    'merchant/verify/{verificationType}',                      'MerchantController@postVerifyMerchantAttributes'              ],
         'checkout_personalisation'                => ['get',     'personalisation',                                         'MerchantController@getPersonalisedMethods'                    ],
         'update_payout_status'                    => ['patch',   'payouts/{id}/manual/status',                              'PayoutController@updatePayoutStatusManually'                  ],
-        'update_payout_status_batch'              => ['patch',   'payouts/manual/status_update/batch',                       'PayoutController@updatePayoutStatusManuallyInBatch'                  ],
+        'update_payout_status_batch'              => ['patch',   'payouts/manual/status_update/batch',                       'PayoutController@updatePayoutStatusManuallyInBatch'          ],
         'salesforce_event'                        => ['post',    'merchant/{mid}/salesforce_event',                         'SalesForceController@sendSalesForceEvent'                     ],
         'salesforce_event_website'                => ['post',    'merchant/{mid}/salesforce_event_website',                 'SalesForceController@sendSalesForceEventWebsite'              ],
         'salesforce_event_website_cors'           => ['options', 'merchant/{mid}/salesforce_event_website',                 'SalesForceController@sendSalesForceEventWebsiteCors'          ],

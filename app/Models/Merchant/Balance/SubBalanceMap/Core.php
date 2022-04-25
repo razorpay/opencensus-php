@@ -123,6 +123,7 @@ class Core extends Base\Core
         {
             if ($fetchFromDb === true)
             {
+                //since this sub balance thing applies only for whatsapp, we are making the connection to whatsapp db
                 $subBalanceMaps = $this->repo->sub_balance_map->findByParentBalanceId($parentBalanceId);
 
                 /** @var Entity $subBalanceMap */

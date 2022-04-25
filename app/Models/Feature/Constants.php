@@ -1143,6 +1143,13 @@ class Constants
      */
     const HIGH_TPS_COMPOSITE_PAYOUT = 'high_tps_composite_payout';
 
+    /**
+     * Used to route whatsapp merchant dashboard and admin dashboard requests to the new infra and new db.
+     * If this flag is enabled the requests for this merchant will go to the new infra
+     * This is just for 2 weeks campaign specifically for whatsapp
+     */
+    const MERCHANT_ROUTE_WA_INFRA = 'merchant_route_wa_infra';
+
     // Feature flag to enable/disable mobile number uniqueness check on contact
     // details page during pre-signup flow
     const UNIQUE_MOBILE_ON_PRESIGNUP    = 'unique_mobile_on_presignup';
@@ -1716,6 +1723,7 @@ class Constants
         self::CREATE_SOURCE_V2                => true,
         self::NETWORK_TOKENIZATION_LIVE       => true,
         self::HIGH_TPS_COMPOSITE_PAYOUT       => true,
+        self::MERCHANT_ROUTE_WA_INFRA         => true,
         self::BENE_EMAIL_NOTIFICATION         => true,
         self::BENE_SMS_NOTIFICATION           => true,
         self::ALLOW_NETWORK_TOKENS            => true,
