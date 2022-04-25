@@ -984,6 +984,14 @@ class PayInitData extends Base\Mock\Server
                    'gateway_error_desc'     => 'Payment failed at gateway'
                 ]);
                 return $response->toArray();
+            case 'collect_request_pending':
+                $response->setSuccess(false);
+                $response->setError([
+                   'internal_error_code'    => ErrorCode::GATEWAY_ERROR_TRANSACTION_PENDING,
+                   'gateway_error_code'     => 'E002',
+                   'gateway_error_desc'     => 'Transaction Pending'
+                ]);
+                return $response->toArray();
 
         }
 
@@ -1003,5 +1011,18 @@ class PayInitData extends Base\Mock\Server
                 'delivered_at' => Carbon::now()->timestamp,
             ],
         ];
+    }
+
+    public function pinelabs($entities)
+    {
+        $method = $entities['payment']['method'];
+
+        if ($method === Payment\Method::UPI)
+        {
+            if ($this->isV2Mock($entities['payment']['description']) === true)
+            {
+                return $this->upiMozartV2($entities);
+            }
+        }
     }
 }

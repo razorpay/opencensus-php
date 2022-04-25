@@ -1858,11 +1858,17 @@ class TerminalTest extends TestCase
 
         $data = [
             'mode' => "2",
+            'upi'  => 1,
+            'type'    => [
+                'non_recurring' => '1'
+            ],
         ];
 
         $content = $this->editTerminal($tid, $data);
 
         $this->assertEquals( "2", $content['mode']);
+        $this->assertEquals( "1", $content['upi']);
+        $this->assertEquals( ["non_recurring", "direct_settlement_with_refund"], $content['type']);
     }
 
     public function testEditIngenicoTerminal()

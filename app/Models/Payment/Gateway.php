@@ -1482,6 +1482,7 @@ class Gateway
             self::CASHFREE,
             self::PAYU,
             self::PAYTM,
+            self::PINELABS,
         ],
 
         Method::AEPS => [
@@ -1649,6 +1650,7 @@ class Gateway
         self::CASHFREE,
         self::PAYU,
         self::PAYTM,
+        self::PINELABS,
     ];
 
     public static $immediateVerifyGateways = [

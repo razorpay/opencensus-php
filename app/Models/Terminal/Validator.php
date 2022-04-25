@@ -367,6 +367,7 @@ class Validator extends Base\Validator
         Entity::STATUS                                  => 'sometimes|in:pending,activated,deactivated,failed',
         Entity::CARD                                    => 'sometimes|boolean|in:0,1',
         Entity::NOTES                                   => 'sometimes|string',
+        Entity::UPI                                     => 'sometimes|boolean|in:1',
     ];
 
     protected static $ingenicoTerminalRules = [
@@ -784,6 +785,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
         Entity::GATEWAY_ACCESS_CODE        => 'sometimes|string',
         Entity::NOTES                      => 'sometimes|string',
+        Entity::UPI                        => 'sometimes|boolean|in:1',
     ];
 
     protected static $ingenicoEditTerminalRules = [

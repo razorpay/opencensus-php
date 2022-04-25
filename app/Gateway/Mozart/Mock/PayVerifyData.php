@@ -925,4 +925,9 @@ class PayVerifyData extends Base\Mock\Server
             ],
         ];
     }
+
+    public function pinelabs($entities)
+    {
+        throw new Exception\LogicException('Gateway does not support pay_verify');
+    }
 }

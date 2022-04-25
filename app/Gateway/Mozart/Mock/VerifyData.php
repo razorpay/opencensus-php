@@ -785,4 +785,12 @@ class VerifyData extends Base\Mock\Server
 
         return $response->toArray();
     }
+
+    public function pinelabs($entities)
+    {
+        if ($this->isV2Mock($entities['payment']['description']))
+        {
+            return $this->upiMozartV2($entities);
+        }
+    }
 }
