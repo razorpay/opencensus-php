@@ -15,7 +15,7 @@ class SaveMerchantAuthorizedTransactionCount extends BaseAction
 {
     const DATALAKE_QUERY =  "SELECT payments.merchant_id, count(*) as transaction_count FROM hive.realtime_hudi_api.payments WHERE status IN ('authorized', 'captured') AND merchant_id IN (%s) AND updated_at >= %s group by payments.merchant_id";
 
-    const MERCHANT_IDS_CHUNK_SIZE = 500;
+    const MERCHANT_IDS_CHUNK_SIZE = 5000;
 
     public function execute($data = []): ActionDto
     {
