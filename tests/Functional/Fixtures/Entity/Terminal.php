@@ -427,6 +427,23 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createBilldeskOptimizerTerminal()
+    {
+        $attributes = [
+            'merchant_id'            => '10000000000000',
+            'gateway'                => 'billdesk_optimizer',
+            'card'                   => 1,
+            'netbanking'             => 0,
+            'gateway_merchant_id'    => 'abcd',
+            'gateway_access_code'    => 'test_access_code',
+            'gateway_secure_secret'  => 'secret',
+            'gateway_access_code'    => 'dummy',
+            'mode'                   => 2,
+        ];
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
     public function createIngenicoTerminal()
     {
         $attributes = [

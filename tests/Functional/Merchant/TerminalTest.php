@@ -1871,6 +1871,33 @@ class TerminalTest extends TestCase
         $this->assertEquals( ["non_recurring", "direct_settlement_with_refund"], $content['type']);
     }
 
+    public function testEditBilldeskOptimizerTerminal()
+    {
+        $terminal = $this->fixtures->create(
+            'terminal',
+            [
+                'id' => 'AqdfGh5460opVt',
+                'merchant_id' => '10000000000000',
+                'gateway' => 'billdesk_optimizer',
+                'gateway_merchant_id' => '250000003',
+                'gateway_secure_secret' => "1231424",
+                'gateway_access_code'   => "dummy",
+                'mode' => 3,
+                'type'    => [
+                    'direct_settlement_with_refund' => '1'
+                ],
+            ]);
+        $tid = $terminal['id'];
+
+        $data = [
+            'mode' => "2",
+        ];
+
+        $content = $this->editTerminal($tid, $data);
+
+        $this->assertEquals( "2", $content['mode']);
+    }
+
     public function testEditIngenicoTerminal()
     {
         $terminal = $this->fixtures->create(

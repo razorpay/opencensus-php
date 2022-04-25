@@ -32,6 +32,7 @@ class Gateway
     const CCAVENUE               = 'ccavenue';
     const PINELABS               = 'pinelabs';
     const INGENICO               = 'ingenico';
+    const BILLDESK_OPTIMIZER     = 'billdesk_optimizer';
     const BHARAT_QR              = 'bharat_qr';
     const AXIS_GENIUS            = 'axis_genius';
     const AXIS_MIGS              = 'axis_migs';
@@ -351,6 +352,7 @@ class Gateway
         self::CCAVENUE              => self::CCAVENUE,
         self::PINELABS              => self::PINELABS,
         self::INGENICO              => self::INGENICO,
+        self::BILLDESK_OPTIMIZER    => self::BILLDESK_OPTIMIZER,
         self::NETBANKING_IDFC       => self::IDFC,
         self::PAYSECURE             => self::ACQUIRER_AXIS,
         self::NETBANKING_SBI        => self::SBIN,
@@ -384,6 +386,7 @@ class Gateway
         self::ZAAKPAY               => self::ZAAKPAY,
         self::PINELABS              => self::PINELABS,
         self::INGENICO              => self::INGENICO,
+        self::BILLDESK_OPTIMIZER    => self::BILLDESK_OPTIMIZER,
         self::OFFLINE_HDFC          => self::HDFC,
     ];
 
@@ -476,6 +479,7 @@ class Gateway
         self::PAYTM,
         self::CCAVENUE,
         self::ZAAKPAY,
+        self::BILLDESK_OPTIMIZER,
     ];
 
     const OPTIMIZER_CARD_GATEWAYS = [
@@ -484,7 +488,8 @@ class Gateway
         self::CCAVENUE,
         self::ZAAKPAY,
         self::PINELABS,
-        self::INGENICO
+        self::INGENICO,
+        self::BILLDESK_OPTIMIZER,
     ];
 
     /**
@@ -1375,6 +1380,7 @@ class Gateway
             self::CHECKOUT_DOT_COM,
             self::FULCRUM,
             self::INGENICO,
+            self::BILLDESK_OPTIMIZER,
         ],
 
         Method::NETBANKING => [
@@ -1867,6 +1873,14 @@ class Gateway
             Network::MAES,
             Network::VISA,
             Network::RUPAY,
+        ],
+        self::BILLDESK_OPTIMIZER => [
+            Network::MC,
+            Network::AMEX,
+            Network::VISA,
+            Network::RUPAY,
+            Network::DICL,
+            Network::MAES,
         ],
     ];
 
@@ -2991,6 +3005,7 @@ class Gateway
         Gateway::PINELABS         => Gateway::PINELABS,
         Gateway::CHECKOUT_DOT_COM => Gateway::CHECKOUT_DOT_COM,
         Gateway::INGENICO         => Gateway::INGENICO,
+        Gateway::BILLDESK_OPTIMIZER => Gateway::BILLDESK_OPTIMIZER,
     ];
 
     // in case of any changes in gateway config, please contact smart routing team
@@ -3886,6 +3901,7 @@ class Gateway
             self::PINELABS,
             self::CHECKOUT_DOT_COM,
             self::INGENICO,
+            self::BILLDESK_OPTIMIZER,
         ];
 
         return (in_array($gateway, $gateways, true));
@@ -3925,6 +3941,7 @@ class Gateway
             self::PINELABS,
             self::CHECKOUT_DOT_COM,
             self::INGENICO,
+            self::BILLDESK_OPTIMIZER,
         ];
 
         return (in_array($gateway, $gateways, true));

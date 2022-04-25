@@ -1584,6 +1584,29 @@ return [
         ]
     ],
 
+    'testCreateBilldeskOptimizerTerminal' => [
+        "request" => [
+            'content' => [
+                'gateway'               => 'billdesk_optimizer',
+                'gateway_merchant_id'   => '100000',
+                'gateway_access_code'   => '12344',
+                'gateway_secure_secret' => '2d2fe54f576ff428d93019f48695870abebb2327',
+                'card'                  => 1,
+                'type'                  => [
+                    'non_recurring' => '1',
+                    'direct_settlement_with_refund' => '1',
+                ],
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content'  => [
+                'gateway_merchant_id'  => '100000',
+                'enabled'              => true,
+            ]
+        ]
+    ],
+
     'testCreateIngenicoCardTerminal' => [
         "request" => [
             'content' => [

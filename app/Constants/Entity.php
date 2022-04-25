@@ -272,6 +272,7 @@ class Entity
     const CCAVENUE               = 'ccavenue';
     const PINELABS               = 'pinelabs';
     const INGENICO               = 'ingenico';
+    const BILLDESK_OPTIMIZER     = 'billdesk_optimizer';
     const ENACH                  = 'enach';
     const SHARP                  = 'sharp';
     const PAYTM                  = 'paytm';
