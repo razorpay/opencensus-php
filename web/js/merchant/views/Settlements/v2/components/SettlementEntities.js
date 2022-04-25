@@ -7,16 +7,27 @@ import LoaderDots from 'common/ui/LoaderDots';
 
 const SettlementEntities = (props) => {
   const [activeTab, setactiveTab] = useState(null);
+  const [noDataFound, setNoDataFound] = useState(false);
+
+  const { items, error, loading } = props?.breakupDetails;
 
   useEffect(() => {
     // sets the first item as active tab by default
-    if (props.breakupDetails.items.length > 0)
-      setactiveTab(props.breakupDetails.items[0].component);
-  }, [props.breakupDetails]);
+    if (items?.length > 0) {
+      setactiveTab(items[0].component);
+      setNoDataFound(false);
+    } else {
+      setNoDataFound(true);
+    }
+  }, [items]);
 
-  const handleTabChange = (e) => setactiveTab(e.currentTarget.textContent.toLowerCase());
+  const handleTabChange = (e) => setactiveTab(e?.currentTarget?.textContent?.toLowerCase());
 
-  if (props.breakupDetails.error) return null;
+  if (error) return null;
+
+  if (!loading && noDataFound) {
+    return <div className="no-transactions-data">No Transactions Data Found</div>;
+  }
 
   return (
     <React.Fragment>
