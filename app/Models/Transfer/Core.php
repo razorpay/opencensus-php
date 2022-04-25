@@ -951,7 +951,20 @@ class Core extends Base\Core
                 ]
             );
 
-            (new Metric())->pushTransferProcessingTimeMetrics($sourceType, $processingTime);
+            $merchant = $transfer->merchant;
+
+            $isCapitalFloatOrSliceRouteMerchant = (($merchant->isCapitalFloatRouteMerchant() === true) or
+                                                   ($merchant->isSliceRouteMerchant() === true));
+
+            if (($isCapitalFloatOrSliceRouteMerchant === true) and
+                ($this->isLiveMode() === true))
+            {
+                (new Metric())->pushTransferProcessingTimeMetricsForCfAndSl($sourceType, $processingTime);
+            }
+            else
+            {
+                (new Metric())->pushTransferProcessingTimeMetrics($sourceType, $processingTime);
+            }
         }
     }
 
