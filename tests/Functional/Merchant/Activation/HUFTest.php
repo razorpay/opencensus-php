@@ -68,6 +68,7 @@ class HUFTest extends OAuthTestCase
 
         $this->startTest();
     }
+
     public function testGetBusinessTypeExperimentOff()
     {
         $merchant = $this->fixtures->create('merchant');
@@ -81,6 +82,13 @@ class HUFTest extends OAuthTestCase
         $merchantUser = $this->fixtures->user->createUserForMerchant($merchant->id);
 
         $this->ba->proxyAuth('rzp_test_' . $merchant->id, $merchantUser['id']);
+
+        $this->startTest();
+    }
+
+    public function testGetBusinessTypeAdmin()
+    {
+        $this->ba->adminAuth();
 
         $this->startTest();
     }

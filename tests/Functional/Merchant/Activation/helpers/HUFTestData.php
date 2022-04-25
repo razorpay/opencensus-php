@@ -18,83 +18,70 @@ return [
             'content'     => [
                 "registered"=> [
                     [
-                        "name"=> "proprietorship",
-                        "id"=> 1,
-                        "display_name"=> "Proprietorship",
+                        "id"=> "1",
+                        "label"=> "Proprietorship",
                         "status"=> "active"
                     ],
                     [
-                        "name"=> "partnership",
-                        "id"=> 3,
-                        "display_name"=> "Partnership",
+                        "id"=> "3",
+                        "label"=> "Partnership",
                         "status"=> "active"
                     ],
                     [
-                        "name"=> "private_limited",
-                        "id"=> 4,
-                        "display_name"=> "Private Limited",
+                        "id"=> "4",
+                        "label"=> "Private Limited",
                         "status"=> "active"
                     ],
                     [
-                        "name"=> "public_limited",
-                        "id"=> 5,
-                        "display_name"=> "Public Limited",
+                        "id"=> "5",
+                        "label"=> "Public Limited",
                         "status"=> "active"
                     ],
                     [
-                        "name"=> "llp",
-                        "id"=> 6,
-                        "display_name"=> "LLP",
+                        "id"=> "6",
+                        "label"=> "LLP",
                         "status"=> "active"
                     ],
                     [
-                        "name"=> "educational_institutes",
-                        "id"=> 8,
-                        "display_name"=> "Educational Institutes",
+                        "id"=> "8",
+                        "label"=> "Educational Institutes",
                         "status"=> "active"
                     ],
                     [
-                        "name"=> "trust",
-                        "id"=> 9,
-                        "display_name"=> "Trust",
+                        "id"=> "9",
+                        "label"=> "Trust",
                         "status"=> "active"
                     ],
                     [
-                        "name"=> "society",
-                        "id"=> 10,
-                        "display_name"=> "Society",
+                        "id"=> "10",
+                        "label"=> "Society",
                         "status"=> "active"
                     ],
                     [
-                        "name"=> "other",
-                        "id"=> 12,
-                        "display_name"=> "Other",
+                        "id"=> "12",
+                        "label"=> "Other",
                         "status"=> "active"
                     ],
                     [
-                        "name"=> "ngo",
-                        "id"=> 7,
-                        "display_name"=> "NGO",
+                        "id"=> "7",
+                        "label"=> "NGO",
                         "status"=> "active"
                     ],
                     [
-                        "name"=> "huf",
-                        "id"=> 13,
-                        "display_name"=> "HUF",
+                        "id"=> "13",
+                        "label"=> "HUF",
                         "status"=> "active"
                     ]
                 ],
                 "unregistered"=> [
                     [
-                        "name"=> "individual",
-                        "id"=> 2,
-                        "display_name"=> "Individual",
+                        "id"=> "2",
+                        "label"=> "Individual",
                         "status"=> "active"
                     ],
                     [
-                        "name"=> "not_yet_registered",
-                        "id"=> 11,
-                        "display_name"=> "Not Yet Registered",
+                        "id"=> "11",
+                        "label"=> "Not Yet Registered",
                         "status"=> "active"
                     ]
                 ]
@@ -111,83 +98,150 @@ return [
             'content'     => [
                 "registered"=> [
                     [
-                        "name"=> "proprietorship",
-                        "id"=> 1,
-                        "display_name"=> "Proprietorship",
+                        "id"=> "1",
+                        "label"=> "Proprietorship",
                         "status"=> "active"
                     ],
                     [
-                        "name"=> "partnership",
-                        "id"=> 3,
-                        "display_name"=> "Partnership",
+                        "id"=> "3",
+                        "label"=> "Partnership",
                         "status"=> "active"
                     ],
                     [
-                        "name"=> "private_limited",
-                        "id"=> 4,
-                        "display_name"=> "Private Limited",
+                        "id"=> "4",
+                        "label"=> "Private Limited",
                         "status"=> "active"
                     ],
                     [
-                        "name"=> "public_limited",
-                        "id"=> 5,
-                        "display_name"=> "Public Limited",
+                        "id"=> "5",
+                        "label"=> "Public Limited",
                         "status"=> "active"
                     ],
                     [
-                        "name"=> "llp",
-                        "id"=> 6,
-                        "display_name"=> "LLP",
+                        "id"=> "6",
+                        "label"=> "LLP",
                         "status"=> "active"
                     ],
                     [
-                        "name"=> "educational_institutes",
-                        "id"=> 8,
-                        "display_name"=> "Educational Institutes",
+                        "id"=> "8",
+                        "label"=> "Educational Institutes",
                         "status"=> "active"
                     ],
                     [
-                        "name"=> "trust",
-                        "id"=> 9,
-                        "display_name"=> "Trust",
+                        "id"=> "9",
+                        "label"=> "Trust",
                         "status"=> "active"
                     ],
                     [
-                        "name"=> "society",
-                        "id"=> 10,
-                        "display_name"=> "Society",
+                        "id"=> "10",
+                        "label"=> "Society",
                         "status"=> "active"
                     ],
                     [
-                        "name"=> "other",
-                        "id"=> 12,
-                        "display_name"=> "Other",
+                        "id"=> "12",
+                        "label"=> "Other",
                         "status"=> "active"
                     ],
                     [
-                        "name"=> "ngo",
-                        "id"=> 7,
-                        "display_name"=> "NGO",
+                        "id"=> "7",
+                        "label"=> "NGO",
                         "status"=> "active"
                     ],
                     [
-                        "name"=> "huf",
-                        "id"=> 13,
-                        "display_name"=> "HUF",
+                        "id"=> "13",
+                        "label"=> "HUF",
                         "status"=> "inactive"
                     ]
                 ],
                 "unregistered"=> [
                     [
-                        "name"=> "individual",
-                        "id"=> 2,
-                        "display_name"=> "Individual",
+                        "id"=> "2",
+                        "label"=> "Individual",
                         "status"=> "active"
                     ],
                     [
-                        "name"=> "not_yet_registered",
-                        "id"=> 11,
-                        "display_name"=> "Not Yet Registered",
+                        "id"=> "11",
+                        "label"=> "Not Yet Registered",
+                        "status"=> "active"
+                    ]
+                ]
+            ],
+            'status_code' => 200,
+        ],
+    ],
+    'testGetBusinessTypeAdmin' => [
+        'request'  => [
+            'method' => 'GET',
+            'url'    => '/merchant/onboarding/business_types/admin',
+        ],
+        'response' => [
+            'content'     => [
+                "registered"=> [
+                    [
+                        "id"=> "1",
+                        "label"=> "Proprietorship",
+                        "status"=> "active"
+                    ],
+                    [
+                        "id"=> "3",
+                        "label"=> "Partnership",
+                        "status"=> "active"
+                    ],
+                    [
+                        "id"=> "4",
+                        "label"=> "Private Limited",
+                        "status"=> "active"
+                    ],
+                    [
+                        "id"=> "5",
+                        "label"=> "Public Limited",
+                        "status"=> "active"
+                    ],
+                    [
+                        "id"=> "6",
+                        "label"=> "LLP",
+                        "status"=> "active"
+                    ],
+                    [
+                        "id"=> "8",
+                        "label"=> "Educational Institutes",
+                        "status"=> "active"
+                    ],
+                    [
+                        "id"=> "9",
+                        "label"=> "Trust",
+                        "status"=> "active"
+                    ],
+                    [
+                        "id"=> "10",
+                        "label"=> "Society",
+                        "status"=> "active"
+                    ],
+                    [
+                        "id"=> "12",
+                        "label"=> "Other",
+                        "status"=> "active"
+                    ],
+                    [
+                        "id"=> "7",
+                        "label"=> "NGO",
+                        "status"=> "active"
+                    ],
+                    [
+                        "id"=> "13",
+                        "label"=> "HUF",
+                        "status"=> "active"
+                    ]
+                ],
+                "unregistered"=> [
+                    [
+                        "id"=> "2",
+                        "label"=> "Individual",
+                        "status"=> "active"
+                    ],
+                    [
+                        "id"=> "11",
+                        "label"=> "Not Yet Registered",
                         "status"=> "active"
                     ]
                 ]

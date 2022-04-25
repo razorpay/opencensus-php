@@ -6539,9 +6539,9 @@ class Core extends Base\Core
                     {
                         array_push($result[$bucketName],
                                    [
-                                       "name"   => $businessType,
-                                       "id"      => BusinessType::getIndexFromKey($businessType),
-                                       "display_name" => BusinessType::getDisplayNameFromKey($businessType),
+
+                                       "id"      =>  strval(BusinessType::getIndexFromKey($businessType)),
+                                       "label" => BusinessType::getDisplayNameFromKey($businessType),
                                        "status"  => 'active'
                                    ]
                         );
@@ -6550,9 +6550,8 @@ class Core extends Base\Core
                     {
                         array_push($result[$bucketName],
                                    [
-                                       "name"   => $businessType,
-                                       "id"      => BusinessType::getIndexFromKey($businessType),
-                                       "display_name" => BusinessType::getDisplayNameFromKey($businessType),
+                                       "id"      =>  strval(BusinessType::getIndexFromKey($businessType)),
+                                       "label" => BusinessType::getDisplayNameFromKey($businessType),
                                        "status"  => 'inactive'
                                    ]
                         );
@@ -6562,9 +6561,8 @@ class Core extends Base\Core
                 {
                     array_push($result[$bucketName],
                                [
-                                   "name"   => $businessType,
-                                   "id"      => BusinessType::getIndexFromKey($businessType),
-                                   "display_name" => BusinessType::getDisplayNameFromKey($businessType),
+                                   "id"      => strval(BusinessType::getIndexFromKey($businessType)),
+                                   "label" => BusinessType::getDisplayNameFromKey($businessType),
                                    "status"  => 'active'
                                ]
                     );
