@@ -188,8 +188,9 @@ class DashboardProxy extends TestCase
         $httpClient->addResponse($mockResponse);
 
         $forwardedContent = [
-            'rule'    => 'consumer_username::route_name',
-            'enabled' => true,
+            'rule'     => 'consumer_username::route_name',
+            'enabled'  => true,
+            'priority' => 10,
         ];
 
         $response = $this->sendRequest([
@@ -206,7 +207,7 @@ class DashboardProxy extends TestCase
 
         $this->assertSame('PATCH', $req->getMethod());
         $this->assertSame('/services/test_service/rate-limit-rules/123', $req->getUri()->getPath());
-        $this->assertSame(json_encode(['enabled' => true,]), $req->getBody()->getContents());
+        $this->assertSame(json_encode(['enabled' => true, 'priority' => 10]), $req->getBody()->getContents());
 
         $response->assertOk();
         $response->assertExactJson($responseArray);

@@ -176,6 +176,12 @@ class EdgeThrottleController extends Controller
            'enabled' => (empty($input['enabled']) === true) ? false : true,
         ];
 
+        // add priority only of provided
+        if (empty($input['priority']) === false)
+        {
+            $body['priority'] = $input['priority'];
+        }
+
         $response = $this->request('PATCH', $path, $body);
 
         return $this->finalizeResponse($response, [
