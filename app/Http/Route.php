@@ -2924,6 +2924,7 @@ class Route
 
         'increase_transaction_limit_self_serve'    => ['post',     'merchant/transaction_limit',                                'MerchantController@postIncreaseTransactionLimitSelfServe' ],
         'merchant_workflow_details'                => ['get',      'merchant/{workflowType}/details',                           'MerchantController@getMerchantWorkflowDetails'            ],
+        'internal_merchant_workflow_details_fetch' => ['get',      'internal/merchant/{workflowType}/{merchantId}/details',     'MerchantController@getMerchantWorkflowDetails'            ],
         'merchant_workflow_clarification'          => ['post',     'merchant/submit_clarification/{workflowType}',              'MerchantController@postMerchantWorkflowClarification'     ],
 
 
@@ -4366,6 +4367,7 @@ class Route
         'feature_delete_entity_internal',
 
         'internal_merchant_fetch',
+        'internal_merchant_workflow_details_fetch',
         'internal_merchant_submission_date',
         'internal_merchant_get_rejection_reasons',
         'internal_merchants_fetch',
@@ -12403,6 +12405,7 @@ class Route
 
         'terminals_service' => [
             'internal_merchant_fetch',
+            'internal_merchant_workflow_details_fetch',
             'internal_merchants_fetch',
             'internal_buy_pricing_get_plan',
             'merchant_create_terminal_internal',

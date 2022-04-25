@@ -2866,6 +2866,21 @@ return [
         ],
     ],
 
+    'testGetMerchantWorkflowDetailsByInternalAuth' => [
+        'request'  => [
+            'content' => [
+            ],
+            'method'  => 'GET',
+        ],
+        'response' => [
+            'content'     => [
+                'workflow_exists' => true,
+                'workflow_status' => 'open'
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testUpdateBusinessWebsiteAppRoleFail' => [
         'request'  => [
             'content' => [

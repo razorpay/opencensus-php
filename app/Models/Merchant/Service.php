@@ -7,6 +7,7 @@ use Mail;
 use Cache;
 use Config;
 use Request;
+use RZP\Http\Controllers\MerchantController;
 use RZP\Models\Merchant\Balance\Type as ProductType;
 use Throwable;
 use Carbon\Carbon;
@@ -8438,13 +8439,14 @@ class Service extends Base\Service
         }
     }
 
-    private function getWebsiteSelfServeWorkflowAction($entityId, $entity)
+    private function getWebsiteSelfServeWorkflowAction($entityId, $entity, $orgId = null)
     {
         $action = (new Action\Core())->fetchLastUpdatedWorkflowActionInPermissionList(
             $entityId,
             $entity,
             [Constants::MERCHANT_WORKFLOWS[Constants::ADDITIONAL_WEBSITE][Constants::PERMISSION],
-             Constants::MERCHANT_WORKFLOWS[Constants::UPDATE_BUSINESS_WEBSITE][Constants::PERMISSION]]);
+             Constants::MERCHANT_WORKFLOWS[Constants::UPDATE_BUSINESS_WEBSITE][Constants::PERMISSION]],
+            $orgId);
 
         return $action;
     }
@@ -8736,9 +8738,9 @@ class Service extends Base\Service
         (new DashboardNotificationHandler($args))->send();
     }
 
-    public function getMerchantWorkflowDetails(string $workflowType)
+    public function getMerchantWorkflowDetails(string $workflowType, string $merchantId = null)
     {
-        $action = $this->getActionForMerchantWorkflow($workflowType);
+        $action = $this->getActionForMerchantWorkflow($workflowType, $merchantId);
 
         $response = (new WorkflowService)->getWorkflowDetailsWithRejectionMessage($action);
 
@@ -8799,9 +8801,21 @@ class Service extends Base\Service
         return $bankAccountCore->isBankAccountUpdatePennyTestingInProgress($this->merchant);
     }
 
-    protected function getActionForMerchantWorkflow($workflowType)
+
+    protected function getActionForMerchantWorkflow($workflowType, $merchantId = null)
     {
-        $merchant = $this->merchant;
+        $orgId = null;
+
+        if ($merchantId !== null)
+        {
+            $merchant = $this->repo->merchant->findOrFail($merchantId);
+            $orgId = $merchant->getOrgId();
+        }
+        else
+        {
+            $merchant = $this->merchant;
+        }
+
 
         $merchantCore = new Merchant\Core;
 
@@ -8811,7 +8825,7 @@ class Service extends Base\Service
             TraceCode::GET_MERCHANT_WORKFLOW_DETAILS,
             [
                 'entity_id'  => $entityId,
-                'entity'     => $entity
+                'entity'     => $entity,
             ]);
 
         switch ($workflowType)
@@ -8820,7 +8834,7 @@ class Service extends Base\Service
                 return $this->getWorkflowActionForGstinUpdateSelfServe($entityId, $entity);
 
             case Constants::ADDITIONAL_WEBSITE :
-                return $this->getWebsiteSelfServeWorkflowAction($entityId, $entity);
+                return $this->getWebsiteSelfServeWorkflowAction($entityId, $entity, $orgId);
 
             default:
                 return  (new Action\Core())->fetchLastUpdatedWorkflowActionInPermissionList(

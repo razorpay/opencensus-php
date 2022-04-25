@@ -2797,9 +2797,9 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
-    public function getMerchantWorkflowDetails(string $workflowType)
+    public function getMerchantWorkflowDetails(string $workflowType, string $merchantId = null)
     {
-        $response = $this->service()->getMerchantWorkflowDetails($workflowType);
+        $response = $this->service()->getMerchantWorkflowDetails($workflowType, $merchantId);
 
         return ApiResponse::json($response);
     }

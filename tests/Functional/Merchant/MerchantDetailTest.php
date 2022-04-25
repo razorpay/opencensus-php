@@ -5664,6 +5664,22 @@ You can now start accepting payments from https://www.example.com.
         $this->startTest();
     }
 
+    public function testGetMerchantWorkflowDetailsByInternalAuth()
+    {
+        $merchantId = $this->saveBusinessWebsiteMakerFlow(['business_website'=> 'https://www.sample.com', 'activation_status' => 'activated'], PermissionName::UPDATE_MERCHANT_WEBSITE);
+
+        $testData = $this->testData['testGetMerchantWorkflowDetailsByInternalAuth'];
+
+        $testData['request']['url'] = '/internal/merchant/additional_website/' . $merchantId . '/details';
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->terminalsAuth();
+
+        $this->startTest();
+    }
+
+
     public function testUpdateBusinessWebsiteAppRoleFail()
     {
         [$merchantId, $userId] = $this->setupMerchantWithMerchantDetails(['has_key_access' => true], ['activation_status' => 'activated'], Role::SELLERAPP);
