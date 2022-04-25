@@ -5745,6 +5745,11 @@ class Service extends Base\Service
             });
         }
 
+        if ($product === Product::BANKING)
+        {
+            $this->enableBusinessBankingIfApplicable($subMerchant, true);
+        }
+
         $this->repo->saveOrFail($subMerchant);
 
         if (($allowReversals === true) and ($isLinkedAccount === true))
@@ -7036,12 +7041,17 @@ class Service extends Base\Service
         }
     }
 
-    protected function enableBusinessBankingIfApplicable(Entity $merchant)
+    /**
+     * @param Entity $merchant
+     * @param bool   $partnerFlow - is true when merchant was onboarded via partner
+     *
+     * @return bool
+     */
+    protected function enableBusinessBankingIfApplicable(Entity $merchant, bool $partnerFlow = false): bool
     {
         $isBanking = $this->auth->isProductBanking();
 
-        if (($isBanking === true) and
-            ($merchant->isBusinessBankingEnabled() === false))
+        if (($isBanking === true or $partnerFlow === true) and $merchant->isBusinessBankingEnabled() === false)
         {
             $this->trace->info(
                 TraceCode::MERCHANT_EDIT,
@@ -7054,6 +7064,7 @@ class Service extends Base\Service
 
             return true;
         }
+
         return false;
     }
 

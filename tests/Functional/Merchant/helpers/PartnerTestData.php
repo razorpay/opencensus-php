@@ -1596,6 +1596,8 @@ return [
         ],
         'response' => [
             'content' => [
+                'name'              => 'random_name_1',
+                'business_banking'  => true,
                 'user' => [
                     'name'           => 'random_name_1',
                     'email'          => 'user@example.com',

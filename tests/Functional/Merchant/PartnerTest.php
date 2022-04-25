@@ -1647,6 +1647,8 @@ class PartnerTest extends OAuthTestCase
         $partnerUser = DB::table('merchant_users')->where('user_id', '=', $partnerUserId)->where('product', '=', 'primary')->get();
 
         $this->assertEquals('primary', $partnerUser[0]->product);
+
+        $this->assertTrue($subMerchant->business_banking);
     }
 
     public function testDeleteRelatedEntitiesOnUnmarkingPartner()
