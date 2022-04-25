@@ -17912,6 +17912,272 @@ class PayoutTest extends OAuthTestCase
         Queue::assertPushed(Transactions::class, 1);
     }
 
+    public function testPayoutChannelChangeWhenTxnNotCreatedInLedgerReverseShadow()
+    {
+        Queue::fake();
+
+        $this->app['config']->set('applications.ledger.enabled', false);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $this->makeRequestAndGetContent($this->testData['testCreatePayout']['request']);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertNotEquals('icici', $payout->getChannel());
+
+        $this->assertNull($payout->transaction);
+
+        $payoutId = $payout->getId();
+
+        $this->ba->ftsAuth();
+
+        $ftsWebhook = [
+            'bank_processed_time' => '',
+            'bank_account_type'   => 'SHARED',
+            'bank_status_code'    => 'SUCCESS',
+            'channel'             => 'ICICI',
+            'extra_info'          => [
+                'beneficiary_name' => 'Pullak',
+                'cms_ref_no'       => '7a452792bee811ec949d0a0047340000',
+                'internal_error'   => false,
+                'ponum'            => '',
+            ],
+            'failure_reason'      => '',
+            'fund_transfer_id'    => 327798418,
+            'gateway_error_code'  => '',
+            'gateway_ref_no'      => 'JKjdVokXZ2KMcP',
+            'mode'                => 'IMPS',
+            'narration'           => '256557209A0A',
+            'remarks'             => '',
+            'return_utr'          => '',
+            'source_account_id'   => 1,
+            'source_id'           => $payout->getId(),
+            'source_type'         => 'payout',
+            'status'              => 'PROCESSED',
+            'utr'                 => '231456121234458',
+            'status_details'      => null,
+        ];
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/update_fts_fund_transfer',
+            'content' => $ftsWebhook,
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $updatedPayout = $this->getDbEntityById('payout', $payoutId)->toArray();
+
+        $this->assertEquals($updatedPayout[Payout\Entity::STATUS], Payout\Status::PROCESSED);
+        $this->assertEquals('icici', $updatedPayout[Payout\Entity::CHANNEL]);
+        $this->assertNull($updatedPayout[Payout\Entity::REVERSED_AT]);
+
+        // pushed once for payout creation
+        Queue::assertPushed(Transactions::class, 1);
+    }
+
+    public function testPayoutChannelChangeViaReversalWhenTxnNotCreatedInLedgerReverseShadow()
+    {
+        Queue::fake();
+
+        $this->app['config']->set('applications.ledger.enabled', false);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $this->makeRequestAndGetContent($this->testData['testCreatePayout']['request']);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertNotEquals('icici', $payout->getChannel());
+
+        $this->assertNull($payout->transaction);
+
+        $payoutId = $payout->getId();
+
+        $this->ba->ftsAuth();
+
+        $ftsWebhook = [
+            'bank_processed_time' => '',
+            'bank_account_type'   => 'SHARED',
+            'bank_status_code'    => 'FAILED',
+            'channel'             => 'ICICI',
+            'extra_info'          => [
+                'beneficiary_name' => '',
+                'cms_ref_no'       => '',
+                'internal_error'   => false,
+                'ponum'            => '',
+            ],
+            'failure_reason'      => 'Gateway rejection',
+            'fund_transfer_id'    => 327798418,
+            'gateway_error_code'  => '',
+            'gateway_ref_no'      => 'JKjdVokXZ2KMcP',
+            'mode'                => 'IMPS',
+            'narration'           => '256557209A0A',
+            'remarks'             => '',
+            'return_utr'          => '',
+            'source_account_id'   => 1,
+            'source_id'           => $payout->getId(),
+            'source_type'         => 'payout',
+            'status'              => 'FAILED',
+            'utr'                 => '231456121234458',
+            'status_details'      => null,
+        ];
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/update_fts_fund_transfer',
+            'content' => $ftsWebhook,
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $updatedPayout = $this->getDbEntityById('payout', $payoutId)->toArray();
+
+        $reversal = $this->getDbLastEntity('reversal');
+
+        $this->assertNull($reversal->transaction);
+
+        $reversal = $reversal->toArray();
+
+        $this->assertEquals($updatedPayout[Payout\Entity::STATUS], Payout\Status::REVERSED);
+        $this->assertEquals('icici', $updatedPayout[Payout\Entity::CHANNEL]);
+
+        $this->assertEquals('icici', $reversal[Payout\Entity::CHANNEL]);
+
+        $this->assertNotNull($updatedPayout[Payout\Entity::REVERSED_AT]);
+
+        // pushed twice, once for payout creation and once for reversal
+        Queue::assertPushed(Transactions::class, 2);
+    }
+
+    public function testPayoutChannelChangeWhenTxnAlreadyCreatedInLedgerReverseShadow()
+    {
+        $this->app['config']->set('applications.ledger.enabled', false);
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $this->makeRequestAndGetContent($this->testData['testCreatePayout']['request']);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertNotEquals('icici', $payout->getChannel());
+
+        $this->assertEquals($payout->getChannel(), $payout->transaction->getChannel());
+
+        $payoutId = $payout->getId();
+
+        $this->ba->ftsAuth();
+
+        $ftsWebhook = [
+            'bank_processed_time' => '',
+            'bank_account_type'   => 'SHARED',
+            'bank_status_code'    => 'SUCCESS',
+            'channel'             => 'ICICI',
+            'extra_info'          => [
+                'beneficiary_name' => 'Pullak',
+                'cms_ref_no'       => '7a452792bee811ec949d0a0047340000',
+                'internal_error'   => false,
+                'ponum'            => '',
+            ],
+            'failure_reason'      => '',
+            'fund_transfer_id'    => 327798418,
+            'gateway_error_code'  => '',
+            'gateway_ref_no'      => 'JKjdVokXZ2KMcP',
+            'mode'                => 'IMPS',
+            'narration'           => '256557209A0A',
+            'remarks'             => '',
+            'return_utr'          => '',
+            'source_account_id'   => 1,
+            'source_id'           => $payout->getId(),
+            'source_type'         => 'payout',
+            'status'              => 'PROCESSED',
+            'utr'                 => '231456121234458',
+            'status_details'      => null,
+        ];
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/update_fts_fund_transfer',
+            'content' => $ftsWebhook,
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $updatedPayout    = $this->getDbEntityById('payout', $payoutId)->toArray();
+        $updatedPayoutTxn = $this->getDbEntity('transaction', ['entity_id' => $payoutId])->toArray();
+
+        $this->assertEquals($updatedPayout[Payout\Entity::STATUS], Payout\Status::PROCESSED);
+        $this->assertEquals('icici', $updatedPayout[Payout\Entity::CHANNEL]);
+        $this->assertEquals('icici', $updatedPayoutTxn[TransactionEntity::CHANNEL]);
+        $this->assertNull($updatedPayout[Payout\Entity::REVERSED_AT]);
+    }
+
+    public function testPayoutChannelChangeViaReversalWhenTxnAlreadyCreatedInLedgerReverseShadow()
+    {
+        $this->app['config']->set('applications.ledger.enabled', false);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $this->makeRequestAndGetContent($this->testData['testCreatePayout']['request']);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertNotEquals('icici', $payout->getChannel());
+
+        $this->assertEquals($payout->getChannel(), $payout->transaction->getChannel());
+
+        $payoutId = $payout->getId();
+
+        $this->ba->ftsAuth();
+
+        $ftsWebhook = [
+            'bank_processed_time' => '',
+            'bank_account_type'   => 'SHARED',
+            'bank_status_code'    => 'FAILED',
+            'channel'             => 'ICICI',
+            'extra_info'          => [
+                'beneficiary_name' => '',
+                'cms_ref_no'       => '',
+                'internal_error'   => false,
+                'ponum'            => '',
+            ],
+            'failure_reason'      => 'Gateway rejection',
+            'fund_transfer_id'    => 327798418,
+            'gateway_error_code'  => '',
+            'gateway_ref_no'      => 'JKjdVokXZ2KMcP',
+            'mode'                => 'IMPS',
+            'narration'           => '256557209A0A',
+            'remarks'             => '',
+            'return_utr'          => '',
+            'source_account_id'   => 1,
+            'source_id'           => $payout->getId(),
+            'source_type'         => 'payout',
+            'status'              => 'FAILED',
+            'utr'                 => '231456121234458',
+            'status_details'      => null,
+        ];
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/update_fts_fund_transfer',
+            'content' => $ftsWebhook,
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $updatedPayout      = $this->getDbEntityById('payout', $payoutId)->toArray();
+        $reversal           = $this->getDbLastEntity('reversal')->toArray();
+        $updatedReversalTxn = $this->getDbEntity('transaction', ['entity_id' => $reversal['id']])->toArray();
+
+        $this->assertEquals($updatedPayout[Payout\Entity::STATUS], Payout\Status::REVERSED);
+        $this->assertEquals('icici', $updatedPayout[Payout\Entity::CHANNEL]);
+
+        $this->assertEquals('icici', $reversal[Payout\Entity::CHANNEL]);
+        $this->assertEquals('icici', $updatedReversalTxn[TransactionEntity::CHANNEL]);
+
+        $this->assertNotNull($updatedPayout[Payout\Entity::REVERSED_AT]);
+    }
+
     public function testDirectAccountPayoutProcessedInLedgerShadowMode()
     {
         $this->fixtures->merchant->addFeatures([Feature\Constants::DA_LEDGER_JOURNAL_WRITES]);

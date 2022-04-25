@@ -3926,9 +3926,11 @@ class Core extends Base\Core
 
             $transaction = $payout->transaction;
 
-            $transaction->setChannel($ftsChannel);
-
-            $this->repo->saveOrFail($transaction);
+            if (empty($transaction) === false)
+            {
+                $transaction->setChannel($ftsChannel);
+                $this->repo->saveOrFail($transaction);
+            }
         }
     }
 

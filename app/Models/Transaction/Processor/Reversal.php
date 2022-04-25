@@ -50,6 +50,14 @@ class Reversal extends Base
 
         $this->setSourceDefaults();
 
+        $channel = $this->source->getChannel();
+
+        if (($this->txn->getType() === E::REVERSAL) and
+            (empty($channel) === false))
+        {
+            $this->txn->setChannel($channel);
+        }
+
         $this->fillDetails();
 
         $this->setCreditDebitDetails($this);

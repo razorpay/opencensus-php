@@ -144,6 +144,17 @@ final class Metric
             $timeDuration,
             $metricDimensions);
     }
+    
+    protected static function pushCreatedToQueuedMetrics(Entity $payout)
+    {
+        $metricDimensions = self::getMetricDimensions($payout);
+        $timeDuration     = $payout->getQueuedAt() - $payout->getCreatedAt();
+
+        app('trace')->histogram(
+            self::PAYOUT_CREATED_TO_QUEUED_DURATION_SECONDS,
+            $timeDuration,
+            $metricDimensions);
+    }
 
     protected static function pushQueuedToCancelledMetrics(Entity $payout)
     {

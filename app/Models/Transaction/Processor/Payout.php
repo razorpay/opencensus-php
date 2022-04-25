@@ -66,6 +66,14 @@ class Payout extends Base
 
         $this->setSourceDefaults();
 
+        $channel = $this->source->getChannel();
+
+        if (($this->txn->getType() === RzpConstants\Entity::PAYOUT) and
+            (empty($channel) === false))
+        {
+            $this->txn->setChannel($channel);
+        }
+
         $this->fillDetails();
 
         $this->setCreditDebitDetails($this);
