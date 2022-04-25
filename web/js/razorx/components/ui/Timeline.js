@@ -7,7 +7,7 @@ export default function Timeline(props) {
   return (
     <details className="timeline-accordion">
       <summary className="timeline-header">
-        <b className="timeline-description">Created at {formatDate(data.created_at)}</b>
+        <b className="timeline-description">Created on {formatDate(data.created_at)}</b>
         <img
           src={`${window.cdnBaseUrl}/static/assets/rewards/rewards_list_up_vector.svg`}
           className="timeline-arrow"
@@ -40,7 +40,7 @@ export default function Timeline(props) {
                   index !== numberOfItems - 1 ? ' timeline-item-previous' : ''
                 }`}
               >
-                {to_status} at {formatDate(created_at)}
+                {to_status} on {formatDate(created_at)}
               </span>
               <p
                 className={`timeline-item-subtitle${

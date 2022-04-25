@@ -1,4 +1,5 @@
 $timeline-green = #009c5c;
+$splitz-brown = #67595d;
 
 .RazorX-container.RazorX-container
   .page-center
@@ -135,7 +136,8 @@ $timeline-green = #009c5c;
           cursor: pointer
           list-style: none
           padding-top: 4px
-          width: 284px
+          width: 316px
+          margin: 8px 0
 
         .timeline-accordion[open] 
           > .timeline-header
@@ -144,7 +146,7 @@ $timeline-green = #009c5c;
 
         .timeline-arrow
           width: auto
-          margin: 4px 4px 8px
+          margin: 4px 12px 8px
           transform: rotate(180deg)
 
         .timeline-description
@@ -152,7 +154,8 @@ $timeline-green = #009c5c;
           font-weight: 400
           font-size: 16px
           line-height: 20px
-          color: #000000
+          color: $splitz-brown
+          font-weight: 600
 
         .timeline-item-container
           display: flex
@@ -201,9 +204,9 @@ $timeline-green = #009c5c;
 
         .timeline-item-title
           font-weight: 700
-          font-size: 16px
+          font-size: 14px
           line-height: 24px
-          color: #213554
+          color: $splitz-brown
 
         .timeline-item-subtitle
           margin-top: 0
