@@ -48,3 +48,51 @@ jobs:
           LABEL_FLAG: ${{steps.devTestingStarted.outputs.flag}}
         run: |
           sh ./.github/actions/labelCheck.sh
+  check_api_migration_label:
+    name: API Migration PR Labels
+    runs-on: [ self-hosted ]
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      - name: Fetch Github Users
+        env:
+          GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }}
+        id: githubUsers
+        run: |
+            USER_CHECK=$(sh ./.github/actions/getGithubusers.sh ${{github.actor}})
+            echo "::set-output name=flaguser::$USER_CHECK"
+
+      - name: Show Github Users Flag
+        env:
+          USER_CHECK: ${{steps.githubUsers.outputs.flaguser}}
+        run: |
+            echo $USER_CHECK
+      - if: contains(github.event.pull_request.labels.*.name, 'Migration')
+        name: Set flag Migration
+        id: migration
+        run: echo "::set-output name=flag::true"
+      - if: contains(github.event.pull_request.labels.*.name, 'Non-Migration')
+        name: Set flag Non-Migration
+        id: nonMigration
+        run: echo "::set-output name=flag::true"
+      - name: Migration or Non-Migration label added
+        env:
+          USER_CHECK: ${{steps.githubUsers.outputs.flaguser}}
+          LABEL_ONE: 'Migration'
+          LABEL_ONE_FLAG: ${{steps.migration.outputs.flag}}
+          LABEL_TWO: 'Non-Migration'
+          LABEL_TWO_FLAG: ${{steps.nonMigration.outputs.flag}}
+        run: |
+          sh ./.github/actions/alternateLabelCheck.sh
+      - if: contains(join(github.event.pull_request.labels.*.name, '::::'), '::::team_') #team name begins with "team_" eg "team_dashboard"
+        name: Set flag team label
+        id: teamLabel
+        run: echo "::set-output name=flag::true"
+      - name: Team label added
+        env:
+          USER_CHECK: ${{steps.githubUsers.outputs.flaguser}}
+          LABEL: "Team name"
+          LABEL_FLAG: ${{steps.teamLabel.outputs.flag}}
+        run: |
+          sh ./.github/actions/labelCheck.sh
