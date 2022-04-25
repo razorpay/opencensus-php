@@ -15,6 +15,7 @@ use RZP\Constants\Timezone;
 use RZP\Models\Merchant\AccessMap;
 use RZP\Error\PublicErrorDescription;
 use RZP\Mail\Merchant\Partner as PartnerEmail;
+use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
@@ -162,6 +163,8 @@ class Core extends Base\Core
             'submerchant_id'  => $input[Entity::ENTITY_ID],
         ];
 
+        $this->mode= Mode::LIVE;
+
         if (isset($input[Entity::APPROVE_TOKEN]) === true)
         {
             $subMerchantKycAccess->setState(State::APPROVED);
@@ -193,6 +196,8 @@ class Core extends Base\Core
             $this->app['diag']->trackOnboardingEvent(EventCode::PARTNER_KYC_ACCESS_REJECT, null, null, $eventData);
             $this->sendKycRequestConfirmedRejectedEmail($subMerchantKycAccess, false);
         }
+
+        $this->trace->info(TraceCode::PARTNER_KYC_ACCESS__REQUEST, ['events_data' => $eventData]);
 
         return $subMerchantKycAccess;
     }

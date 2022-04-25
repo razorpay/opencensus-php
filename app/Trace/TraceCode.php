@@ -6862,6 +6862,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TENANT_ROUTE_ACCESS_DENIED                            = 'TENANT_ROUTE_ACCESS_DENIED';
     const TENANT_ROUTE_ROLES_NOT_MAPPED                         = 'TENANT_ROUTE_ROLES_NOT_MAPPED';
 
+    const PARTNER_KYC_ACCESS__REQUEST                           = 'PARTNER_KYC_ACCESS__REQUEST';
+
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',
