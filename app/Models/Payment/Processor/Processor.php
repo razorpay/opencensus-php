@@ -460,7 +460,8 @@ class Processor
                 ($merchant->isFeeBearerPlatform() === false) or
                 ($merchant->isRazorpayOrgId() === false) or
                 ($merchant->isFeatureEnabled('openwallet') === true) or
-                ($merchant->isMarketplace() === true))
+                ($merchant->isMarketplace() === true) or
+                ($merchant->isFeatureEnabled(Feature::JSON_V2) === true))
             {
                 return false;
             }
