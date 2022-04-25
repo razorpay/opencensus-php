@@ -439,7 +439,7 @@ return [
         ],
     ],
 
-        'testEnableCardnetworksAmexForBlacklistedMccs' => [
+    'testEnableCardnetworksAmexForBlacklistedMccs' => [
             'request' => [
                 'url' => '/merchants/10000000000000/methods',
                 'method' => 'put',
@@ -454,6 +454,29 @@ return [
                     'error' => [
                         'code' => PublicErrorCode::BAD_REQUEST_ERROR,
                         'description' => 'AMEX card network cannot be enabled for this MCC: 4411',
+                    ],
+                ],
+                'status_code' => 400,
+            ],
+            'exception' => [
+                'class' => RZP\Exception\BadRequestValidationFailureException::class,
+                'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            ],
+    ],
+
+    'testEnablePaylaterForBlacklistedMccs' => [
+            'request' => [
+                'url' => '/merchants/10000000000000/methods',
+                'method' => 'put',
+                'content'   => [
+                        'paylater' => '1',
+                ]
+            ],
+            'response'  => [
+                'content' => [
+                    'error' => [
+                        'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                        'description' => 'Paylater cannot be enabled for this MCC: 5960',
                     ],
                 ],
                 'status_code' => 400,

@@ -94,6 +94,10 @@ class Core extends Base\Core
             (new Validator)->validateCategoryForAmexCardNetwork($mcc);
         }
 
+        if (isset($input['paylater']) === true && $input['paylater'] === '1') {
+            (new Validator)->validateCategoryForPaylater($mcc);
+        }
+
         $methods->setMethods($input);
 
         $this->checkPricing($merchant, $methods, false, false);
@@ -1164,3 +1168,4 @@ class Core extends Base\Core
     }
 
 }
+

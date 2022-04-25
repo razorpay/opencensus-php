@@ -11631,6 +11631,16 @@ IFSC Code  ICIC0001206
 
         $this->startTest();
     }
+    public function testGetAutoDisabledMethodsForMerchantWithPaylaterBlockedMccs()
+    {
+        $this->fixtures->merchant->edit('10000000000000', [
+            MerchantEntity::CATEGORY          => '5960',
+        ]);
+
+        $this->ba->terminalsAuth();
+
+        $this->startTest();
+    }
 
     // tests that even if a method is blacklisted in the listed, its not returned if its in ignoreBlacklisted list
     public function testGetAutoDisabledMethodsForMerchantWithIgnoreBlacklistedForInstrument()

@@ -173,15 +173,23 @@ class Validator extends Base\Validator
                 'card_networks');
         }
     }
-
+    
     public function validateEmiOptionsForJewelleryMerchants(string $categoryToBeUpdated, \RZP\Models\Merchant\Entity $merchant)
     {
         $methods = (new Core)->getMethods($merchant);
         $emiTypes = $methods->getEmiTypes();
-
+        
         if(in_array($categoryToBeUpdated, self::$emiBlacklistedCategories) && ($emiTypes['credit'] === true || $emiTypes['debit'] === true)){
             throw new Exception\BadRequestValidationFailureException(
                 'Please disable the EMI in order to update the Category');
+            }
+        }
+        
+    public function validateCategoryForPaylater(string $mcc)
+    {
+        if (in_array($mcc, DefaultMethodsForCategory::PAYLATER_DISABLED_MCCS)) {
+            throw new Exception\BadRequestValidationFailureException(
+                'Paylater cannot be enabled for this MCC: '.$mcc);
         }
     }
 }

@@ -54,6 +54,32 @@ class DefaultMethodsForCategory
             '3513', '3762', '3803', '3801', '3739', '3722', '3596', '6540', '9405'
         ];
 
+        const PAYLATER_DISABLED_MCCS = [
+            '5960',
+            '5961',
+            '6010',
+            '6011',
+            '6050',
+            '6051',
+            '6535',
+            '6211',
+            '7273',
+            '7297',
+            '7800',
+            '7801',
+            '7802',
+            '7995',
+            '8398',
+            '8641',
+            '8651',
+            '8661',
+            '8675',
+            '9405',
+            '6012',
+            '4829',
+            '6534'
+        ];
+
         // map of category to auto prohibited methods i.e. methods which should not be enabled automatically by default
         // for the merchant belonging to that category, however can be enabled by admins
         // key is currently merchant category concatanated by category2, (in future business type etc can also come)
@@ -766,7 +792,6 @@ class DefaultMethodsForCategory
                     ]
                 ],
 
-
                 // if category, category2 does not matches with any of above, add methods which are to be blacklised for all category merchants in this
                 Category::OTHERS  =>  [
                     Category::OTHERS    =>  [
@@ -1038,6 +1063,11 @@ class DefaultMethodsForCategory
             array_push($prohibitedMethods, Entity::AMEX);
         }
 
+        if (in_array($category, self::PAYLATER_DISABLED_MCCS) && !in_array(Entity::PAYLATER, $prohibitedMethods))
+        {
+            array_push($prohibitedMethods, Entity::PAYLATER);
+        }
+
         foreach($orgWiseMethodsForEnablement as $method)
         {
             $methodData[$method] = true;
@@ -1077,6 +1107,11 @@ class DefaultMethodsForCategory
         if (in_array($category, self::AMEX_BLACKLISTED_MCCS) && !in_array(Entity::AMEX, $disabledMethodsForInstrumentRequest))
         {
             array_push($disabledMethodsForInstrumentRequest, Entity::AMEX);
+        }
+
+        if (in_array($category, self::PAYLATER_DISABLED_MCCS) && !in_array(Entity::PAYLATER, $disabledMethodsForInstrumentRequest))
+        {
+            array_push($disabledMethodsForInstrumentRequest, Entity::PAYLATER);
         }
 
         return array_values($disabledMethodsForInstrumentRequest);
