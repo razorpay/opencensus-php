@@ -178,8 +178,23 @@ class Service extends Base\Service
         //add ordermeta in VA for offline_challan
         if ($response[Entity::RECEIVERS][0][Entity::ENTITY] === EntityConstants::OFFLINE_CHALLAN)
         {
-            if($offlineInfo !== null)
-            $response[EntityConstants::ORDER][Order\Entity::CUSTOMER_ADDITIONAL_INFO] = $offlineInfo->value;
+            if($offlineInfo !== null) {
+
+                $response[EntityConstants::ORDER][Order\Entity::CUSTOMER_ADDITIONAL_INFO] = $offlineInfo->value;
+
+                if (!empty($response[Order\Entity::CUSTOMER_ID])){
+
+                    $customerInfo = (new Customer\Service())->fetch($response[Order\Entity::CUSTOMER_ID]);
+
+                    if (!empty($customerInfo)){
+
+                        $response[Customer\Entity::CONTACT] = $customerInfo[Customer\Entity::CONTACT];
+
+                        $response[Customer\Entity::EMAIL] = $customerInfo[Customer\Entity::EMAIL];
+                    }
+                }
+            }
+
         }
         return $response;
     }

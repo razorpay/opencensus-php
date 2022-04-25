@@ -2,8 +2,9 @@
 
 namespace RZP\Tests\Functional\VirtualAccount;
 
-use Carbon\Carbon;
 use DB;
+use Carbon\Carbon;
+use RZP\Models\Customer;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Merchant\FeeBearer;
 use RZP\Models\VirtualAccount\Status;
@@ -269,6 +270,66 @@ class VirtualAccountForOrderTest extends TestCase
         }
 
     }
+
+
+    public function testCheckCustomerInfoReturned() {
+        // customer info should be returned when receivers => offline_challan
+        $terminalCreteData = [
+            'gateway'                  => 'offline',
+            'gateway_merchant_id'      => '12345678',
+            'gateway_secure_secret'    => '12345',
+            'offline'                  =>  1,
+            'merchant_id'              =>  '10000000000000',
+        ];
+
+        $this->fixtures->create(
+            'terminal', $terminalCreteData);
+
+        $this->fixtures->merchant->addFeatures(['offline_checkout']);
+
+        $this->ba->privateAuth();
+
+        $resp = $this->starttest();
+
+        $this->fixtures->merchant->enableOffline();
+
+        $virtualAccount = $this->createVirtualAccountForOfflineOrder($resp['id'], ['customer_id' => 'cust_100000customer','receivers' => ['offline_challan']]);
+
+        $this->assertArrayHasKey( Customer\Entity::CONTACT, $virtualAccount);
+
+        $this->assertArrayHasKey( Customer\Entity::EMAIL, $virtualAccount);
+    }
+
+
+    public function testCheckCustomerInfoNotReturned() {
+        // customer info should not be returned when recievers is not offline_challan
+        $terminalCreteData = [
+            'gateway'                  => 'offline',
+            'gateway_merchant_id'      => '12345678',
+            'gateway_secure_secret'    => '12345',
+            'offline'                  =>  1,
+            'merchant_id'              =>  '10000000000000',
+        ];
+
+        $this->fixtures->create(
+            'terminal', $terminalCreteData);
+
+        $this->fixtures->merchant->addFeatures(['offline_checkout']);
+
+        $this->ba->privateAuth();
+
+        $resp = $this->starttest();
+
+        $this->fixtures->merchant->enableOffline();
+
+        $virtualAccount = $this->createVirtualAccountForOfflineOrder($resp['id'], ['customer_id' => 'cust_100000customer']);
+
+        $this->assertArrayNotHasKey( Customer\Entity::CONTACT, $virtualAccount);
+
+        $this->assertArrayNotHasKey( Customer\Entity::EMAIL, $virtualAccount);
+    }
+
+
 
     public function testCreateVAFromCheckoutForOfflineNoReceiver()
     {

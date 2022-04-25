@@ -1720,6 +1720,7 @@ return [
         ],
     ],
 
+
     'testValidateOfflineChallan' => [
         'request' => [
             'convertContentToString'    => false,
@@ -1727,6 +1728,7 @@ return [
             'method'                    => 'POST'
         ],
     ],
+
 
     'testCreateVirtualAccountWithTerminalCaching' => [
         'name'            => 'Test virtual account',
@@ -1738,6 +1740,65 @@ return [
                 'entity' => 'bank_account',
                 'ifsc'   => 'RAZR0000001',
                 'name'   => 'Test virtual account'
+            ],
+        ],
+    ],
+
+    'testCheckCustomerInfoReturned' => [
+        'request'  => [
+            'convertContentToString' => false,
+            'url'                    => '/orders',
+            'method'                 => 'POST',
+            'content'                => [
+                'amount'           => 1000,
+                'currency'         => 'INR',
+                'receipt'          => 'rec1',
+                'customer_id'      => 'cust_100000customer',
+                'customer_additional_info' => [
+                    'property_id' => '12345',
+                    'property_value' => 'abc',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'amount'           => 1000,
+                'currency'         => 'INR',
+                'receipt'          => 'rec1',
+                'customer_additional_info' => [
+                    'property_id' => '12345',
+                    'property_value' => 'abc',
+                ],
+            ],
+        ],
+    ],
+
+
+    'testCheckCustomerInfoNotReturned' => [
+        'request'  => [
+            'convertContentToString' => false,
+            'url'                    => '/orders',
+            'method'                 => 'POST',
+            'content'                => [
+                'amount'           => 1000,
+                'currency'         => 'INR',
+                'receipt'          => 'rec1',
+                'customer_id'      => 'cust_100000customer',
+                'customer_additional_info' => [
+                    'property_id' => '12345',
+                    'property_value' => 'abc',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'amount'           => 1000,
+                'currency'         => 'INR',
+                'receipt'          => 'rec1',
+                'customer_additional_info' => [
+                    'property_id' => '12345',
+                    'property_value' => 'abc',
+                ],
             ],
         ],
     ],
