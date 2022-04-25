@@ -65,18 +65,22 @@ export default class StandardForm extends React.Component {
           defaultValue={formData.description}
           required={props.isDescriptionRequired}
         />
-        <MWebContactDetails
-          disabled={props.disabled}
-          defaultContactNumber={formData.contact}
-          defaultEmailAddress={formData.email}
-          defaultContactValue={formData.sms_notify}
-          defaultEmailValue={formData.email_notify}
-        />
-        <ContactDetails
-          disabled={props.disabled}
-          defaultContactNumber={formData.contact}
-          defaultEmailAddress={formData.email}
-        />
+        {props.isMobileResolution ? (
+          <MWebContactDetails
+            disabled={props.disabled}
+            defaultContactNumber={formData.contact}
+            defaultEmailAddress={formData.email}
+            defaultContactValue={formData.sms_notify}
+            defaultEmailValue={formData.email_notify}
+          />
+        ) : (
+          <ContactDetails
+            disabled={props.disabled}
+            defaultContactNumber={formData.contact}
+            defaultEmailAddress={formData.email}
+          />
+        )}
+
         <Notify
           disabled={props.disabled}
           defaultContactValue={formData.sms_notify}

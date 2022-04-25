@@ -37,6 +37,7 @@ const PAYMENT_LINK_FORMS = {
     user: state.session.user,
     isTestMode: state.session.mode === 'test',
     reminders: state.reminders,
+    isMobileResolution: state.app.isMobileResolution,
     paymentLinkRemindersConfig: state.reminders.product_configs.payment_link,
   }),
   {
@@ -387,6 +388,7 @@ export default class PaymentLinkCreateV2 extends React.Component {
             onSubmit={this.onFormSubmit}
             updateDate={this.updateDate}
             onChangeNotes={this.onChangeNotes}
+            isMobileResolution={props.isMobileResolution}
             history={props.history}
           />
         )}
