@@ -17,7 +17,7 @@ import rTracking from 'react-tracking';
 import ModalHeader from 'common/ui/ModalHeader';
 import InputField from './components/InputField';
 
-import { required, email, isEmail, isMobile, maxLength } from 'common/utils/validators';
+import { required, email, isEmail, isMobile, maxLength, name } from 'common/utils/validators';
 import ShowWhen, { showWhenUtil } from 'merchant/components/ShowWhen';
 import BatchValidate from 'merchant/containers/BatchNew/Validate';
 import { withRouter } from 'react-router-dom';
@@ -28,6 +28,7 @@ import Button from 'common/new-ui/Button';
 import SocialShareGroup from 'merchant/views/PartnerDashboard/SubMerchant/components/SocialShareGroup';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { PRODUCT_TYPE, ADD_MODE } from 'merchant/views/PartnerDashboard/constants';
+import { minLength } from 'merchant/views/PartnerDashboard/SubMerchant/utils';
 
 const gaEvents = setGaTrack('Dashboard - Partner Submerchant - BU');
 
@@ -496,6 +497,7 @@ class AddMerchant extends Component {
     const partnerID = user?.id;
     const emailMandatory = isEmailMandatory(user);
     const emailValidators = emailMandatory ? [required(), email()] : [];
+    const accountNameValidators = [required(), name(), minLength(4), maxLength(255)];
     const referralUrl = referralData ? referralData[merchantType]?.url : '';
     return (
       <div className="partner-submerchant-modal fixed-height-modal">
@@ -620,7 +622,7 @@ class AddMerchant extends Component {
                         className="form-control"
                         autoFocus
                         placeholder="Affiliate's name"
-                        validate={required()}
+                        validate={accountNameValidators}
                         onChange={this.handleFormChange}
                         onFocus={this.handleFormFocus}
                       />
