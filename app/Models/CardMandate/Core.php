@@ -3,6 +3,7 @@
 namespace RZP\Models\CardMandate;
 
 use Carbon\Carbon;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Feature;
@@ -402,7 +403,28 @@ class Core extends Base\Core
 
         $mandateHub = (new MandateHubs\MandateHubSelector)->GetMandateHubForCardMandate($cardMandate);
 
-        $mandateHub->ReportInitialPayment($cardMandate, $payment);
+        if ($payment->isFailed() === true)
+        {
+            try
+            {
+                $mandateHub->ReportInitialPayment($cardMandate, $payment);
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->traceException($e,
+                    Trace::ERROR,
+                    TraceCode::CARD_MANDATE_REPORT_INITIAL_PAYMENT_FAILED,
+                    [
+                        'card_mandate_id' => $cardMandate->getId(),
+                        'payment_id'      => $payment->getId(),
+                        'exception'       => $e->getMessage(),
+                    ]);
+            }
+        }
+        else
+        {
+            $mandateHub->ReportInitialPayment($cardMandate, $payment);
+        }
 
         if ($payment->isFailed() === false)
         {
@@ -431,7 +453,28 @@ class Core extends Base\Core
 
         $mandateHub = (new MandateHubs\MandateHubSelector)->GetMandateHubForCardMandate($cardMandate);
 
-        return $mandateHub->reportSubsequentPayment($cardMandate, $payment);
+        if ($payment->isFailed() === true)
+        {
+            try
+            {
+               $mandateHub->reportSubsequentPayment($cardMandate, $payment);
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->traceException($e,
+                    Trace::ERROR,
+                    TraceCode::CARD_MANDATE_REPORT_SUBSEQUENT_PAYMENT_FAILED,
+                    [
+                        'card_mandate_id' => $cardMandate->getId(),
+                        'payment_id'      => $payment->getId(),
+                        'exception'       => $e->getMessage(),
+                    ]);
+            }
+        }
+        else
+        {
+            $mandateHub->reportSubsequentPayment($cardMandate, $payment);
+        }
     }
 
     public function cancelMandateBeforeTokenDeletion(Entity $cardMandate)
