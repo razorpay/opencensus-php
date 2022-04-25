@@ -74,7 +74,8 @@ class PreProcess extends Base\Mock\Server
         ]);
 
         $response->setTerminal([
-            Terminal\Entity::GATEWAY_MERCHANT_ID => 'YES0000000012026'
+            Terminal\Entity::VPA     => 'testvpa@yesb',
+            Terminal\Entity::GATEWAY =>'upi_yesbank',
         ]);
 
         if ($input[7] !== '00')
@@ -112,7 +113,7 @@ class PreProcess extends Base\Mock\Server
 
         $data = json_decode($entities['gateway']['payload'], true);
         $response = MozartUpiResponse::getDefaultInstanceForV2();
-        
+
         $response->mergeUpi([
             UpiEntity::VPA                  => $data['payerVPA'] ?? '',
             UpiEntity::STATUS_CODE          => $data['errorCode'],

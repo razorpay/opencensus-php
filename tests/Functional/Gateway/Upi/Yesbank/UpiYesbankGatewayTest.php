@@ -339,6 +339,44 @@ class UpiYesbankGatewayTest extends TestCase
         $this->assertEquals('RZP_DUPLICATE_PAYOUT', $response['response_code']);
     }
 
+    public function testUnexpectedPaymentCallback()
+    {
+        $this->fixtures->merchant->createAccount(Account::DEMO_ACCOUNT);
+
+        $this->fixtures->merchant->enableMethod(Account::DEMO_ACCOUNT, Method::UPI);
+
+        $content = $this->mockServer()->getUnexpectedCallback();
+
+        $response = $this->makeRequestAndGetContent($content);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $upiEntity = $this->getLastEntity('upi', true);
+
+        $this->assertNotNull($upiEntity['merchant_reference']);
+
+        $this->assertSame('107611570997', $paymentEntity['reference16']);
+
+        $transactionEntity = $this->getLastEntity('transaction', true);
+
+        $assertEqualsMap = [
+            'authorized'                           => $paymentEntity['status'],
+            'authorize'                            => $upiEntity['action'],
+            'pay'                                  => $upiEntity['type'],
+            $paymentEntity['id']                   => 'pay_' . $upiEntity['payment_id'],
+            $transactionEntity['id']               => 'txn_' . $paymentEntity['transaction_id'],
+            $transactionEntity['entity_id']        => $paymentEntity['id'],
+            $transactionEntity['type']             => 'payment',
+            $transactionEntity['amount']           => $paymentEntity['amount'],
+            Account::DEMO_ACCOUNT                  => $paymentEntity['merchant_id'],
+        ];
+
+        foreach ($assertEqualsMap as $matchLeft => $matchRight)
+        {
+            $this->assertEquals($matchLeft, $matchRight);
+        }
+    }
+
     protected function getPayoutRequest(array $attributes, string $type)
     {
         $raw = json_encode($attributes);

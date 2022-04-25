@@ -3511,6 +3511,7 @@ class Terminal extends Base
             'gateway_secure_secret'     => 'razorpay_password',
             'gateway_terminal_password' => 'hulk_api_password',
             'upi'                       => true,
+            'vpa'                       => 'testvpa@yesb',
         ];
 
         $attributes = array_merge($defaultValues, $override);

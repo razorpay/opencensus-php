@@ -92,6 +92,25 @@ class Gateway extends Mindgate\Gateway
         return $this->upiPaymentIdFromServerCallback($response);
     }
 
+    /** Check if its duplicate unexpected payment
+     * @param array $input
+     */
+    public function validatePush($input)
+    {
+        parent::action($input, Action::VALIDATE_PUSH);
+
+        $this->upiValidatePush($input);
+    }
+
+    /** AuthroizePush creates gateway entity for the payment
+     * @param array $input
+     * @return array[]
+     */
+    public function authorizePush($input)
+    {
+        return $this->upiAuthorizePush($input);
+    }
+
     /**
      * @param array $input
      * @return array|void
@@ -444,6 +463,11 @@ class Gateway extends Mindgate\Gateway
         }
 
         return $formattedResponse;
+    }
+
+    public function getParsedDataFromUnexpectedCallback($input)
+    {
+        return $this->upiGetParsedDataFromUnexpectedCallback($input);
     }
 
     protected function checkAndUpdateForVerifyStatus(array $input)

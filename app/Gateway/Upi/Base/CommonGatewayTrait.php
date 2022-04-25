@@ -292,7 +292,7 @@ trait CommonGatewayTrait
         ];
 
         // Call to set the input in gateway
-        parent::authorize($input);
+        parent::action($input, Action::AUTHORIZE);
 
         $gatewayPayment = $this->upiCreateGatewayEntity($input, $attributes);
 

@@ -135,6 +135,68 @@ class Server extends Base\Mock\Server
         return $content;
     }
 
+    protected function getUnexpectedCallbackContent()
+    {
+        $status = Status::SUCCESS;
+        $respCode = '00';
+        $errorCode = 'NA';
+        $amount = 1000;
+        $statusDescription = 'UnexpectedCallback';
+
+        $content = [
+            999999999999,
+            str_random(12),
+            'COLLECT_AUTH',
+            $amount,
+            '2017:12:01 00:00:02',
+            $status,
+            $statusDescription,
+            $respCode,
+            $errorCode,
+            random_integer(6), // Approval Number
+            'testvpa@yesb',
+            'YESBBCB47DA7341F3D71E05400144FFB1C1', // NPCI Txn ID
+            '107611570997', // NPCI Reference Id
+            'NA', // Payer mobile number
+            'NA', // Payee mobile number
+            'success', // Note/Remarks provided by the Payer PSP
+            '107712571269', // Unique Customer Ref. No
+            'XXXXXX9999', // Payer Account No
+            'YESB0000002', // Payer IFSC Code
+            'RAHUL AGRAWAL ', // Payer Account Name
+            'unexpected@yesb', // Virtual Address of the Payer
+            'YESB0000001', // Payee IFSC
+            'XXXXXX8888', // Payee Account Number
+            'NA', // Payee AADHAAR
+            'Testcallback', // Payee Name
+            'NA',
+            'NA',
+            'NA',
+            'NA',
+            'NA',
+            'NA',
+            'NA',
+            'NA',
+            'NA',
+            'NA'
+        ];
+        return $content;
+    }
+
+    /**
+     * Get unexpected callback response
+     */
+    public function getUnexpectedCallback()
+    {
+        $this->action = Action::CALLBACK;
+
+        $content = $this->getUnexpectedCallbackContent();
+
+        $this->content($content, 'callback');
+
+        return $this->getCallbackRequest($content);
+    }
+
     protected function encrypt($plaintext, $key = null)
     {
         $ciphertext = $this->getCipherInstance($key)->encrypt($plaintext);
