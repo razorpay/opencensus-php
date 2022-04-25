@@ -10,14 +10,15 @@ import { openModal } from 'merchant_common/reducers/modals';
 import BatchUpload from 'merchant/containers/BatchNew/Upload';
 import { bindActionCreators } from 'redux';
 import setGaTrack from 'merchant/containers/BatchNew/ga';
+import { DocLink } from 'merchant/components/DocsLink';
 const gaEvents = setGaTrack('Dashboard - Batch Expiry Update - BU');
 
 function batchActions({ onDownloadClick }) {
   return {
     title: 'Actions',
     value: (item) => (
-      <div class="btn-toolbar">
-        <button class="btn btn-xs btn-default" onClick={() => onDownloadClick(item.id)}>
+      <div className="btn-toolbar">
+        <button className="btn btn-xs btn-default" onClick={() => onDownloadClick(item.id)}>
           Download Report
         </button>
       </div>
@@ -42,19 +43,20 @@ class BatchList extends Component {
   };
 
   openBatchUploadModal = () => {
+    const { docUrl, sampleUrl, batchType, createVABatch, validateVABatch } = this.props;
     this.props.openModal({
       size: 'large',
       component: (
         <BatchUpload
-          docUrl={this.props.docUrl}
-          sampleUrl={this.props.sampleUrl}
+          docUrl={docUrl}
+          sampleUrl={sampleUrl}
           closeUrl="/smartcollect/batchuploads"
           ctaText="Create Batch"
           pendingText="Creating & Sending..."
-          batchType={this.props.batchType}
+          batchType={batchType}
           maxRows={10000}
-          createBatch={this.props.createVABatch}
-          validateBatch={this.props.validateVABatch}
+          createBatch={createVABatch}
+          validateBatch={validateVABatch}
           gaEvents={gaEvents}
           maxFileSize={10485760}
         />
@@ -63,29 +65,28 @@ class BatchList extends Component {
   };
 
   render() {
-    const { docUrl, count, skip, paginate, onSubmit, sampleUrl } = this.props;
+    const { docUrl, count, skip, paginate, onSubmit, sampleUrl, items } = this.props;
     const handleDownloadClick = this.download;
-    const items = this.props.items;
 
     return (
-      <div class="content-wrapper">
+      <div className="content-wrapper">
         {/* passing the new props to the HeaderAction component to support the m-web view */}
         <HeaderAction responsive>
-          <div class="btn-toolbar pull-right">
+          <div className="btn-toolbar pull-right">
             {sampleUrl && (
-              <a class="btn btn-link" href={sampleUrl}>
+              <a className="btn btn-link" href={sampleUrl}>
                 Download Sample File
               </a>
             )}
 
             {docUrl && (
-              <a class="btn btn-link" href={docUrl} target="_blank" rel="noopener noreferrer">
-                Documentation &nbsp; <i class="i i-external-link" />
-              </a>
+              <DocLink className="btn btn-link" href={docUrl}>
+                Documentation <i className="i i-external-link" />
+              </DocLink>
             )}
 
             <span className="cta-container">
-              <button class="btn btn-primary pull-right" onClick={this.openBatchUploadModal}>
+              <button className="btn btn-primary pull-right" onClick={this.openBatchUploadModal}>
                 Upload New Batch
               </button>
             </span>

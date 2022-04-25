@@ -62,56 +62,75 @@ class BatchUpload extends Component {
     this.props.closeModal();
   };
   render() {
-    const accept = this.props.accept;
+    const {
+      accept,
+      docUrl,
+      batchType,
+      batchTypeText,
+      sampleUrl,
+      gaEvents,
+      validateBatch,
+      maxRows,
+      maxFileSize,
+      acceptFileInfo,
+      validateModalInfo,
+      batchFormInitialValues,
+      renderBatchCreationForm,
+      createBatch,
+      processingOptions,
+      title,
+    } = this.props;
 
-    const docLink = getCustomURL(this.props.docUrl);
+    const { batchName, batch, currentStatus } = this.state;
+
+    const docLink = getCustomURL(docUrl);
     return (
-      <div class={`batch-upload-modal ${this.state.currentStatus}`}>
+      <div className={`batch-upload-modal ${currentStatus}`}>
         <ModalHeader
-          title={this.state.currentStatus !== 'success' ? this.props.title || 'Batch Upload' : ''}
+          title={currentStatus !== 'success' ? title || 'Batch Upload' : ''}
           onCloseClick={this.onModalClose}
         />
         {(() => {
-          switch (this.state.currentStatus) {
+          switch (currentStatus) {
             case 'validate':
               return (
                 <BatchValidate
                   accept={accept}
                   onValidation={this.handleValidation}
-                  batchType={this.props.batchType}
-                  batchTypeText={this.props.batchTypeText}
-                  sampleUrl={this.props.sampleUrl}
-                  docUrl={docLink}
-                  gaEvents={this.props.gaEvents}
-                  validateBatch={this.props.validateBatch}
-                  maxRows={this.props.maxRows}
-                  maxFileSize={this.props.maxFileSize}
-                  acceptFileInfo={this.props.acceptFileInfo}
-                  modalInfo={this.props.validateModalInfo}
+                  batchType={batchType}
+                  batchTypeText={batchTypeText}
+                  sampleUrl={sampleUrl}
+                  docUrl={docUrl}
+                  gaEvents={gaEvents}
+                  validateBatch={validateBatch}
+                  maxRows={maxRows}
+                  maxFileSize={maxFileSize}
+                  acceptFileInfo={acceptFileInfo}
+                  modalInfo={validateModalInfo}
                 />
               );
             case 'create':
               return (
                 <BatchCreate
                   onCreation={this.handleCreation}
-                  batchName={this.state.batchName}
-                  batch={this.state.batch}
-                  batchType={this.props.batchType}
-                  batchFormInitialValues={this.props.batchFormInitialValues}
-                  renderBatchCreationForm={this.props.renderBatchCreationForm}
-                  createBatch={this.props.createBatch}
-                  trackUploadBatch={this.props.gaEvents.trackUploadBatch}
-                  trackSampleInterpretation={this.props.gaEvents.trackSampleInterpretation}
+                  batchName={batchName}
+                  batch={batch}
+                  batchType={batchType}
+                  batchFormInitialValues={batchFormInitialValues}
+                  renderBatchCreationForm={renderBatchCreationForm}
+                  createBatch={createBatch}
+                  trackUploadBatch={gaEvents?.trackUploadBatch}
+                  trackSampleInterpretation={gaEvents?.trackSampleInterpretation}
                   docUrl={docLink}
-                  sampleUrl={this.props.sampleUrl}
-                  processingOptions={this.props.processingOptions}
+                  sampleUrl={sampleUrl}
+                  processingOptions={processingOptions}
                 />
               );
             case 'success':
               return (
                 <SuccessModal onModalClose={this.onModalClose}>
-                  <p class="text-center">
-                    {successMessageMap[this.props.batchType] ||
+                  <p className="text-center">
+                    {successMessageMap[batchType] ||
                       'You can download the output file from batch detail view to check payment links generated. For the links that could not be generated due to some issues, please upload a new batch file.'}
                     <br />
                   </p>

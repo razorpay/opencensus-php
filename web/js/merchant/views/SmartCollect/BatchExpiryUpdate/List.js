@@ -21,7 +21,7 @@ class BatchListContainer extends ListContainer {
           this.search(args);
         }}
         sampleUrl="/files/sample_batch_va_expiry_update.xlsx"
-        docUrl="https://razorpay.com/docs/smart-collect/dashboard/update-expiry/bulk"
+        docUrl="https://razorpay.com/docs/payments/smart-collect/update-expiry/bulk/"
         {...this.props}
       />
     );

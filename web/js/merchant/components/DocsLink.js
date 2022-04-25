@@ -45,8 +45,11 @@ export function getCustomURL(url) {
   return link;
 }
 
-export const DocLink = (props) => (
-  <a {...props} href={getCustomURL(props.href)} rel="noreferrer noopener">
-    {props.children}
-  </a>
-);
+export const DocLink = (props) => {
+  const { href, target = '_blank' } = props;
+  return (
+    <a {...props} href={getCustomURL(href)} rel="noreferrer noopener" target={target}>
+      {props.children}
+    </a>
+  );
+};

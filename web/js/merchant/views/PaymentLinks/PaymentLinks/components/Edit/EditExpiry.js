@@ -4,6 +4,8 @@ import moment from 'moment';
 import Input from 'common/new-ui/Input';
 import Time from 'common/ui/Time';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
+import Popover, { PopoverBody } from 'common/ui/Popover';
+import { DocLink } from 'merchant/components/DocsLink';
 
 export default class EditExpiry extends React.Component {
   state = this.resetState();
@@ -18,17 +20,19 @@ export default class EditExpiry extends React.Component {
   }
 
   UNSAFE_componentWillReceiveProps(nextProps) {
-    if (nextProps.value * 1000 !== this.state.expire_by) {
+    const { expire_by } = this.state;
+    if (nextProps.value * 1000 !== expire_by) {
       this.setState(this.resetState(nextProps));
     }
   }
 
   makeEditable = () => {
+    const { trackerFn } = this.props;
     this.setState({
       isEditableMode: true,
     });
 
-    this.props.trackerFn && this.props.trackerFn('Edit Expiry');
+    trackerFn?.('Edit Expiry');
   };
 
   updateDate = (newDate) => {
@@ -45,69 +49,80 @@ export default class EditExpiry extends React.Component {
     }
   };
 
+  handleCancel = () => {
+    const { trackerFn, entityId } = this.props;
+    const { expire_by, value } = this.state;
+    this.setState(this.resetState());
+    trackerFn?.(entityId, 'Cancel Expiry', expire_by !== value);
+  };
+
+  handleSave = () => {
+    const { editFn, trackerFn } = this.props;
+    const { expire_by } = this.state;
+    return editFn({
+      expire_by,
+    }).then((resp) => {
+      if (resp && resp.data) {
+        this.setState(this.resetState());
+        trackerFn?.('Edit Expiry (Saved)', expire_by);
+      }
+    });
+  };
+
   render() {
-    const { isRoleAllowedEdit, isExpireByRequired, entityName } = this.props;
+    const { isRoleAllowedEdit, isExpireByRequired, entityName, value } = this.props;
+    const { isEditableMode, expire_by } = this.state;
     const label = entityName === 'virtual_account' ? 'No closing date' : 'No Expiry';
+    const docUrl = 'https://razorpay.com/docs/payments/smart-collect/update-individual-expiry/';
     let content = (
       <React.Fragment>
-        {this.props.value ? (
-          <Time value={this.props.value} format="DD MMM YYYY, hh:mm a" class="mr-12" />
+        {value ? (
+          <Time value={value} format="DD MMM YYYY, hh:mm a" className="mr-12" />
         ) : (
           <span className="close-by-value">{label}</span>
         )}
 
         {isRoleAllowedEdit && (
-          <Button.Transparent onClick={this.makeEditable} class="Button--Link">
-            Change
-          </Button.Transparent>
+          <>
+            <Button.Transparent onClick={this.makeEditable} className="Button--Link">
+              Change
+            </Button.Transparent>
+            {entityName === 'virtual_account' && (
+              <small className="help-content">
+                <i className="i i-info-outline" />
+                <Popover align="top" theme="dark">
+                  <PopoverBody>
+                    <DocLink className="btn btn-link" href={docUrl}>
+                      View Documentation <i className="i i-external-link" />
+                    </DocLink>
+                  </PopoverBody>
+                </Popover>
+              </small>
+            )}
+          </>
         )}
       </React.Fragment>
     );
 
-    if (this.state.isEditableMode) {
+    if (isEditableMode) {
       content = (
         <React.Fragment>
           <Input.DateTime
             checkboxFieldLabel={label}
-            value={this.state.expire_by}
-            defaultValue={this.state.expire_by}
+            value={expire_by}
+            defaultValue={expire_by}
             required={isExpireByRequired}
             onChange={this.updateDate}
           />
 
-          <div style={{ textAlign: 'right', marginBottom: 12, width: 192 }}>
-            <Button.Transparent
-              class="Button--Link"
-              onClick={() => {
-                this.setState(this.resetState());
-                this.props.trackerFn &&
-                  this.props.trackerFn(
-                    this.props.entityId,
-                    'Cancel Expiry',
-                    this.state.expire_by !== this.state.value,
-                  );
-              }}
-            >
+          <div className="edit-expiry">
+            <Button.Transparent className="Button--Link" onClick={this.handleCancel}>
               Cancel
             </Button.Transparent>
 
             <AsyncBtn.Primary
-              class="Button--small"
-              style={{ marginRight: 0, marginLeft: 16 }}
-              onClick={() => {
-                return this.props
-                  .editFn({
-                    expire_by: this.state.expire_by,
-                  })
-                  .then((resp) => {
-                    if (resp && resp.data) {
-                      this.setState(this.resetState());
-
-                      this.props.trackerFn &&
-                        this.props.trackerFn('Edit Expiry (Saved)', this.state.expire_by);
-                    }
-                  });
-              }}
+              className="Button--small save"
+              onClick={this.handleSave}
               showLoader={false}
               pendingState="Saving..."
             >
