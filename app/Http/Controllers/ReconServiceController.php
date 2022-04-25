@@ -38,6 +38,8 @@ class ReconServiceController extends Controller
             '^workflow_config$',
             '^recon_rules$',
             '^recon_rules\/\d+$',
+            '^recon_state$',
+            '^recon_state\/\d+$',
         ],
         self::POST => [
             '^output_email$',
