@@ -88,7 +88,7 @@ function InitiateWebsiteChange(props) {
 
   return (
     <div class="website-self-serve-initiate-modal">
-      <ModalHeader title="Update Website/App" onCloseClick={props.closeModal} />
+      <ModalHeader title="Add new Website/App" onCloseClick={props.closeModal} />
       <div class="img-container">
         <img src="https://cdn.razorpay.com/static/assets/website-self-serve/Website-change.svg" />
       </div>
@@ -104,10 +104,6 @@ function InitiateWebsiteChange(props) {
               Open a new Razorpay account if your new website/app falls under a different category
             </li>
           </ol>
-        </span>
-        <span class="note">
-          You would not be able to use your current website/app with this account once the new
-          website is approved
         </span>
       </div>
       <div class="action">
