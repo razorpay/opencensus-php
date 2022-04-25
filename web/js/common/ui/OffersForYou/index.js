@@ -27,6 +27,7 @@ const OffersForYou = ({
   closeModals,
   openModals,
   tracking,
+  exclusive_offers,
   canShowOnboardingOffers,
   user,
   mtuOfferCount,
@@ -166,7 +167,7 @@ const OffersForYou = ({
 
     tracking.trackEvent(
       window.rzpQ.merchantActions().initiated('merchant_dashboard.click_offer_for_you', {
-        ID: getCampaignID(),
+        ID: user.isGSExclusiveOfferEnabled ? exclusive_offers?.id : getCampaignID(),
         flow_type: user.isPartOfNeostone ? 'self_serve' : 'sales_led',
       }),
     );
@@ -190,6 +191,7 @@ export default withRouter(
       (state) => {
         return {
           user: state.session.user,
+          ...state.growthService.exclusive_offers,
         };
       },
       {
