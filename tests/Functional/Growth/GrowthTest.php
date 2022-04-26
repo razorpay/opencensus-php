@@ -145,7 +145,9 @@ class GrowthTest extends TestCase
 
     public function testTemplateByIdResponse()
         {
-            $input = "JFH4eObWRcYlUT";
+            $input = [
+                "template_id"  => "JFH4eObWRcYlUT",
+            ];
 
             $output = [
               "channel_id"=> "HTdu8cC7FJEIHC",

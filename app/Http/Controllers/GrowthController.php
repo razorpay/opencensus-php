@@ -60,8 +60,11 @@ class GrowthController extends Controller
 
             try {
                 if (empty($id) === false) {
+                    $parameters = [
+                        "template_id" => $id
+                    ];
 
-                    $response = $this->app->growthService->getTemplateByIdDetails($id);
+                    $response = $this->app->growthService->getTemplateByIdDetails($parameters);
 
                     $response = ApiResponse::json($response);
 

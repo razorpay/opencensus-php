@@ -96,6 +96,7 @@ class GrowthService extends Base\Service
 
     public function getTemplateByIdDetails($parameters)
     {
+        $this->skipPassport = true;
         return $this->sendRequest($parameters, self::GET_TEMPLATE_BY_ID_URL, Requests::POST);
     }
 
