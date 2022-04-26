@@ -46,7 +46,7 @@ class Axis extends Base
                 Headings::DEBIT_DATE                  => $debitDate,
                 Headings::GATEWAY_MERCHANT_ID         => $token->terminal->getGatewayMerchantId(),
                 Headings::CUSTOMER_UID                => $token->getGatewayToken(),
-                Headings::CUSTOMER_NAME               => $token->customer->getName(),
+                Headings::CUSTOMER_NAME               => $token->customer === null ? "" : $token->customer->getName(),
                 // If the account number starts with 0 and the file is
                 // opened with MS-Excel, it trims the 0 since it treats
                 // the account number as an integer rather than a string.
