@@ -73,7 +73,7 @@ export default class GrowthService extends GenericEntity {
   };
 
   fetchTemplateDataById = (template_id) => {
-    this.resourceUrl = `growth/templates/${template_id}`;
+    this.resourceUrl = `growth/template/${template_id}`;
     return this.makeGenericAjaxCall({
       method: 'get',
       mode: 'live',
@@ -160,8 +160,10 @@ export default class GrowthService extends GenericEntity {
     return sortCarouselBanner(carouselBanner);
   };
   getGSModal = async (template_id) => {
-    let gs_modal = {};
-    gs_modal = await this.fetchTemplateDataById(template_id);
-    return gs_modal;
+    const gs_modal = await this.fetchTemplateDataById(template_id);
+    if (gs_modal !== null) {
+      return gs_modal;
+    }
+    return {};
   };
 }

@@ -46,7 +46,7 @@ const OffersForYou = ({
     if (!canShowOnboardingOffers) {
       tracking.trackEvent(
         window.rzpQ.merchantActions().success('merchant_dashboard.display_offer_for_you', {
-          ID: getCampaignID(),
+          ID: user.isGSExclusiveOfferEnabled ? exclusive_offers?.id : getCampaignID(),
           flow_type: user.isPartOfNeostone ? 'self_serve' : 'sales_led',
         }),
       );

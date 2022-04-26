@@ -74,65 +74,74 @@ const GrowthServiceModal = ({
     );
   };
 
-  if (!loading) {
-    if (Object.keys(gs_modals).length > 0 && activeView === 'detail-view') {
-      return (
-        <>
-          <button type="button" id="gsBtnClose" onClick={closeModal}>
-            <i className="i i-close" />
-          </button>
-          <div id="gsModalBody">
-            <img
-              className="background-img"
-              src={gs_modals?.image?.url}
-              alt={gs_modals?.image?.alt_text}
-            />
-          </div>
-          <div id="gsModalDivider" />
-          <div id="gsModalFooter" style={{ background: gs_modals?.offer?.background_color }}>
-            <div className="para-container">
-              <p
-                className="para"
-                style={{
-                  color: gs_modals?.offer?.footer_text_color,
-                }}
-              >
-                <Description
-                  description={gs_modals?.footer_data?.label}
-                  type={gs_modals?.footer_data?.style}
-                />
-              </p>
-            </div>
-            <div className="btn-container">
-              <button
-                className="btn"
-                type="submit"
-                onClick={() =>
-                  gs_modals?.offer_cta?.url !== undefined
-                    ? trackCTAClickAndOpenUrl(
-                        gs_modals?.id,
-                        gs_modals?.offer_cta?.label,
-                        gs_modals?.offer_cta?.url,
-                      )
-                    : trackCTAClickAndSave(gs_modals?.id, gs_modals?.offer_cta?.label)
-                }
-                style={{
-                  background: gs_modals?.offer?.cta_background_color,
-                  color: gs_modals?.offer?.cta_font_color,
-                }}
-              >
-                <Description
-                  description={gs_modals?.offer_cta?.label}
-                  type={gs_modals?.offer_cta?.style}
-                />
-              </button>
-            </div>
-          </div>
-        </>
+  const buttonHandler = () => {
+    if (gs_modals?.offer_cta?.url !== undefined) {
+      trackCTAClickAndOpenUrl(
+        gs_modals?.id,
+        gs_modals?.offer_cta?.label,
+        gs_modals?.offer_cta?.url,
       );
+    } else {
+      trackCTAClickAndSave(gs_modals?.id, gs_modals?.offer_cta?.label);
     }
-    return <SubmissionSuccessfull handleClose={closeModal} />;
+  };
+
+  if (!loading) {
+    if (Object.keys(gs_modals).length === 0) {
+      closeModal();
+    } else {
+      if (activeView === 'detail-view') {
+        return (
+          <>
+            <button type="button" id="gsBtnClose" onClick={closeModal}>
+              <i className="i i-close" />
+            </button>
+            <div id="gsModalBody">
+              <img
+                className="background-img"
+                src={gs_modals?.image?.url}
+                alt={gs_modals?.image?.alt_text}
+              />
+            </div>
+            <div id="gsModalDivider" />
+            <div id="gsModalFooter" style={{ background: gs_modals?.offer?.background_color }}>
+              <div className="para-container">
+                <p
+                  className="para"
+                  style={{
+                    color: gs_modals?.offer?.footer_text_color,
+                  }}
+                >
+                  <Description
+                    description={gs_modals?.footer_data?.label}
+                    type={gs_modals?.footer_data?.style}
+                  />
+                </p>
+              </div>
+              <div className="btn-container">
+                <button
+                  className="btn"
+                  type="submit"
+                  onClick={buttonHandler}
+                  style={{
+                    background: gs_modals?.offer?.cta_background_color,
+                    color: gs_modals?.offer?.cta_font_color,
+                  }}
+                >
+                  <Description
+                    description={gs_modals?.offer_cta?.label}
+                    type={gs_modals?.offer_cta?.style}
+                  />
+                </button>
+              </div>
+            </div>
+          </>
+        );
+      }
+      return <SubmissionSuccessfull handleClose={closeModal} />;
+    }
   }
+
   return (
     <>
       <button type="button" id="gsBtnClose" onClick={closeModal}>
