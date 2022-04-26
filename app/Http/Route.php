@@ -1489,6 +1489,8 @@ class Route
         'payout_bulk_create'                       => ['post',     'payouts/bulk',                                   'PayoutController@createPayoutBulk'                                 ],
         'payout_bulk_approve'                      => ['post',     'payouts/bulk_approve',                           'PayoutController@approvePayoutBulk'                                ],
         'payout_create_with_otp'                   => ['post',     'payouts_with_otp',                               'PayoutController@postFundAccountPayoutWithOtp'                     ],
+        'orphan_payouts_count_cron'                => ['post',     'payout_outbox/orphan_payouts/count',             'PayoutOutboxController@getOrphanedPayouts'                     ],
+        'orphan_payouts_delete'                    => ['post',     'payout_outbox/orphan_payouts/delete',            'PayoutOutboxController@deleteOrphanedPayouts'                     ],
         'payout_approve_bulk'                      => ['post',     'payouts/approve/bulk',                           'PayoutController@bulkApproveFundAccountPayouts'                    ],
         'payout_reject_bulk'                       => ['post',     'payouts/reject/bulk',                            'PayoutController@bulkRejectFundAccountPayouts'                     ],
         'payout_approve'                           => ['post',     'payouts/{id}/approve',                           'PayoutController@postApproveFundAccountPayout'                     ],
@@ -4568,8 +4570,10 @@ class Route
         'payout_links_batch_process',
         'merchant_methods_hdfc_debit_emi',
 
-                // payout outbox cron creates a new partition and drops oldest partition, runs daily
+        // payout outbox cron creates a new partition and drops oldest partition, runs daily
         'payout_outbox_partition_cron',
+
+         'orphan_payouts_count_cron',
 
         'vendor_payment_email_integration_webhook',
         // ledger route
@@ -5551,6 +5555,7 @@ class Route
         'es_sync_entities',
         'es_transactions_sync',
         'es_payouts_sync',
+        'orphan_payouts_delete',
         'admin_trigger_2fa_otp',
         'admin_account_lock_unlock',
         'workflow_needs_merchant_clarification',
@@ -7062,6 +7067,7 @@ class Route
         'es_transactions_sync'                     => Permission::VIEW_ACTIVATION_FORM,
         'es_payouts_sync'                          => Permission::VIEW_ACTIVATION_FORM,
         'es_sync_entities'                         => Permission::VIEW_ACTIVATION_FORM,
+        'orphan_payouts_delete'                    => Permission::MANAGE_UNDO_PAYOUT,
         'feature_add'                              => Permission::EDIT_MERCHANT_FEATURES,
         'enable_instant_refunds'                   => Permission::EDIT_MERCHANT_FEATURES,
         'feature_bulk_assign'                      => Permission::MANAGE_BULK_FEATURE_MAPPING,
@@ -10087,6 +10093,7 @@ class Route
             'es_sync_entities',
             'es_transactions_sync',
             'es_payouts_sync',
+            'orphan_payouts_delete',
             'excel_store_create_page',
             'excel_store_delete_records',
             'excel_store_get_records',
@@ -11984,6 +11991,7 @@ class Route
             'fraud_checker_milestone_cron',
             'payment_analytics_partition_cron',
             'payout_outbox_partition_cron',
+            'orphan_payouts_count_cron',
             'banking_account_service_cron_routes',
             'merchant_methods_hdfc_debit_emi',
             'merchant_action_notification_cron',

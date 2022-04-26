@@ -8,6 +8,7 @@ use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Base;
 use RZP\Models\Base\RepositoryUpdateTestAndLive;
+use RZP\Models\PayoutOutbox\Constants as PayoutOutboxConstants;
 use RZP\Trace\TraceCode;
 use RZP\Exception;
 
@@ -42,6 +43,58 @@ class Repository extends Base\Repository
                     ->whereNull(Entity::DELETED_AT)
                     ->where(Entity::EXPIRES_AT, ">=", Carbon::now()->timestamp)
                     ->first();
+    }
+
+    /**
+     * Returns the orphan payout - The payout for which no action was taken
+     * Here, we get only orphan payout for a time range, i.e payouts which are orphaned before 15 mins or 30 mins
+     *
+     * select count(*) from payout_outbox where deleted_at = null and expires_at BETWEEN NOW()-ORPHAN_PAYOUT_RANGE_IN_MINUTES AND NOW();
+     *
+     * @return mixed
+     */
+    public function getOrphanedPayoutsFromOutbox() {
+        $mode = $this->app['rzp.mode'];
+        return $this->newQueryWithConnection($mode)
+            ->useWritePdo()
+            ->select(Entity::ID)
+            ->whereNull(Entity::DELETED_AT)
+            ->whereBetween(Entity::EXPIRES_AT, [Carbon::now()->subMinutes(PayoutOutboxConstants::ORPHAN_PAYOUT_RANGE_IN_MINUTES)->timestamp, Carbon::now()->timestamp])
+            ->get();
+    }
+
+    /**
+     * Deletes the orphan payout - The payout for which no action was taken
+     *
+     * @param $payoutIds
+     */
+    public function deleteOrphanedPayouts($payoutIds) {
+        foreach ($payoutIds as $payoutId) {
+            $orphanPayout = $this->fetchPayoutById($payoutId);
+
+            if ($orphanPayout == null || $orphanPayout->trashed()) {
+                $this->trace->info(TraceCode::BAD_REQUEST_INVALID_ORPHAN_PAYOUT_ID, ['id' => $payoutId]);
+            }
+
+            $this->repo->deleteOrFail($orphanPayout);
+
+            $this->trace->info(TraceCode::DELETED_ORPHAN_PAYOUT, $payoutId);
+        }
+    }
+
+    /**
+     * Gets entry from payout_outbox by id
+     *
+     * @param string $id
+     * @return mixed
+     */
+    public function fetchPayoutById(string $id)
+    {
+        $mode = $this->app['rzp.mode'];
+        return $this->newQueryWithConnection($mode)
+            ->useWritePdo()
+            ->where(Entity::ID, $id)
+            ->first();
     }
 
     public function createPayoutInOutbox($input): array

@@ -28,4 +28,18 @@ class PayoutOutboxController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function getOrphanedPayouts() {
+        $response = $this->service()->getOrphanedPayoutsFromOutbox();
+
+        return ApiResponse::json($response);
+    }
+
+    public function deleteOrphanedPayouts() {
+        $input = Request::all();
+
+        $response = $this->service()->deleteOrphanedPayouts($input);
+
+        return ApiResponse::json($response);
+    }
 }

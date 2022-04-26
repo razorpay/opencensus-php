@@ -3120,6 +3120,12 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const RESUME_PAYOUT_CREATION_REQUEST                        = 'RESUME_PAYOUT_CREATION_REQUEST';
     const RESUME_PAYOUT_CREATION                                = 'RESUME_PAYOUT_CREATION';
     const BAD_REQUEST_PAYOUT_DOES_NOT_EXIST_IN_OUTBOX           = 'BAD_REQUEST_PAYOUT_DOES_NOT_EXIST_IN_OUTBOX';
+    const BAD_REQUEST_INVALID_ORPHAN_PAYOUT_ID                  = 'BAD_REQUEST_INVALID_ORPHAN_PAYOUT_ID';
+    const ORPHAN_PAYOUTS_FROM_OUTBOX                            = 'ORPHAN_PAYOUTS_FROM_OUTBOX';
+    const GET_ORPHAN_PAYOUTS_FROM_OUTBOX                        = 'GET_ORPHAN_PAYOUTS_FROM_OUTBOX';
+    const DELETE_ORPHAN_PAYOUTS_FROM_OUTBOX                     = 'DELETE_ORPHAN_PAYOUTS_FROM_OUTBOX';
+    const DELETED_ORPHAN_PAYOUT                                 = 'DELETED_ORPHAN_PAYOUT';
+    const EXCEPTION_DELETE_ORPHAN_PAYOUTS_FROM_OUTBOX           = 'EXCEPTION_DELETE_ORPHAN_PAYOUTS_FROM_OUTBOX';
 
     // Trace code for OAuth and Authentication service
     const AUTH_SERVICE_REQUEST                                  = 'AUTH_SERVICE_REQUEST';

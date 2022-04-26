@@ -120,6 +120,7 @@ class Name
     const PAYMENTS_TERMINAL_BUY_PRICING_PLANS  = 'payments_terminal_buy_pricing_plans';
     const CREATE_RECONCILIATE                 = 'create_reconciliate';
     const VIEW_ACTIVATION_FORM                = 'view_activation_form';
+    const MANAGE_UNDO_PAYOUT                  = 'manage_undo_payout';
     const RESET_WEBHOOK_DATA                  = 'reset_webhook_data';
     const EDIT_MERCHANT_LOCK_ACTIVATION       = 'edit_merchant_lock_activation';
     const EDIT_MERCHANT_UNLOCK_ACTIVATION     = 'edit_merchant_unlock_activation';

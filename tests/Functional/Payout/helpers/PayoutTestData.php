@@ -1109,6 +1109,51 @@ return [
         ],
     ],
 
+    'testGetOrphanPayouts'     =>  [
+        'request' => [
+            'url' => '/payout_outbox/orphan_payouts/count',
+            'method' => 'post',
+            'server' => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
+        ],
+
+        'response' => [
+            'content' => [
+            ]
+        ],
+    ],
+
+    'testGetOrphanPayoutsOutsideTimeRange'     =>  [
+        'request' => [
+            'url' => '/payout_outbox/orphan_payouts/count',
+            'method' => 'post',
+        ],
+
+        'response' => [
+            'content' => [
+            ]
+        ],
+    ],
+
+    'testDeleteOrphanPayouts'     =>  [
+        'request' => [
+            'url' => '/payout_outbox/orphan_payouts/delete',
+            'method' => 'post',
+            'content' => [
+                'ids'           => ['123'],
+            ],
+            'server' => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
+        ],
+
+        'response' => [
+            'content' => [
+            ]
+        ],
+    ],
+
 
     // Undo payout testcases
     'testUndoPayout' => [

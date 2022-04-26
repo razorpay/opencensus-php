@@ -2870,6 +2870,109 @@ class PayoutTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testGetOrphanPayouts() {
+        $testData                                = $this->testData['testGetOrphanPayouts'];
+        $testData['request']['url']              = '/payout_outbox/orphan_payouts/count';
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->createOrphanedPayout([]);
+        $this->ba->cronAuth();
+
+        $response = $this->startTest();
+        $this->assertEquals(1, $response['orphaned_payout_count']);
+    }
+
+
+    public function testGetOrphanPayoutsOutsideTimeRange() {
+        $testData                                = $this->testData['testGetOrphanPayoutsOutsideTimeRange'];
+        $testData['request']['url']              = '/payout_outbox/orphan_payouts/count';
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        // since this payout is orphaned before defined range this will not show in the response
+        $this->createOrphanedPayout(['expires_at' => Carbon::now()->subMinutes(PayoutOutboxConstants::ORPHAN_PAYOUT_RANGE_IN_MINUTES+1)->getTimestamp()]);
+        $this->ba->cronAuth();
+
+        $response = $this->startTest();
+        $this->assertEquals(0, $response['orphaned_payout_count']);
+    }
+
+    public function testDeleteOrphanPayouts() {
+        $testData                                = $this->testData['testDeleteOrphanPayouts'];
+        $testData['request']['url']              = '/payout_outbox/orphan_payouts/delete';
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $adminForTest = $this->prepareAdminForPayoutOutboxDelete('test');
+
+        $this->app['config']->set('database.default', 'test');
+
+        $this->createOrphanedPayout([]);
+
+        $adminToken = $this->fixtures->on('test')->create('admin_token', [
+            'admin_id' => $adminForTest->getId(),
+            'token'    => Hash::make('ThisIsATokenForTest'),
+        ]);
+        $token = 'ThisIsATokenForTest' . $adminToken->getId();
+
+        $this->ba->adminAuth('test', $token);
+
+        $this->startTest();
+    }
+
+    public function prepareAdminForPayoutOutboxDelete($mode)
+    {
+        $admin = $this->fixtures->on($mode)->create('admin', [
+            'id'     => 'poutRejtAdmnId',
+            'org_id' => Org::RZP_ORG,
+            'name'   => 'Payout Outbox Delete Admin'
+        ]);
+
+        $role = $this->fixtures->on($mode)->create('role', [
+            'id'     => 'poutRejtRoleId',
+            'org_id' => '100000razorpay',
+            'name'   => 'Payout Outbox Delete Admin',
+        ]);
+
+        $permission = $this->fixtures->on($mode)->create('permission', [
+            'name' => 'manage_undo_payout'
+        ]);
+
+        $role->permissions()->attach($permission->getId());
+
+        $admin->roles()->attach($role);
+
+        return $admin;
+    }
+
+    // TODO: Move this to fixtures
+    public function createOrphanedPayout(array $attributes, $mode = 'test')
+    {
+        $request_type = $attributes['request_type'] ?? 'payouts';
+
+        $source = $attributes['source'] ?? 'dashboard';
+
+        $product = $attributes['product'] ?? 'primary';
+
+        $created_at = $attributes['created_at'] ?? Carbon::now()->getTimestamp();
+
+        $expires_at = $attributes['expires_at'] ?? Carbon::now()->getTimestamp();
+
+        DB::connection($mode)->table('payout_outbox')
+            ->insert([
+                'id' => '123',
+                'merchant_id'   => '10000000000000',
+                'user_id'       => 'MerchantUser01',
+                'payout_data'   => '{"mode": "amazonpay", "notes": [], "amount": 100, "origin": "dashboard", "purpose": "testing 102", "currency": "INR", "narration": "Aman Fund Transfer", "balance_id": "H1tcrSbxUb7TJi", "fund_account_id": "fa_IzpdqLUJS2Kzdt", "queue_if_low_balance": 1}',
+                'product'       => $product,
+                'source'        => $source,
+                'request_type'  => $request_type,
+                'created_at'    => $created_at,
+                'expires_at'    => $expires_at,
+            ]);
+    }
+
     public function testBalancesWithBearerAuth()
     {
         $this->mockLedgerSns(0);

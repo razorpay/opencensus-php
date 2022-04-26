@@ -41,6 +41,37 @@ class Service extends Base\Service
         return $payout->toArrayPublic();
     }
 
+    public function getOrphanedPayoutsFromOutbox() {
+        $orphanPayouts = $this->repo->payout_outbox->getOrphanedPayoutsFromOutbox();
+
+        $this->trace->info(TraceCode::GET_ORPHAN_PAYOUTS_FROM_OUTBOX);
+
+        if (sizeof($orphanPayouts) != 0) {
+            $listOfIds = [];
+            foreach ($orphanPayouts as $orphanPayout) {
+                array_push($listOfIds, $orphanPayout);
+            }
+            // TODO: Setup Sumo alert on this trace code
+            $this->trace->info(TraceCode::ORPHAN_PAYOUTS_FROM_OUTBOX, $listOfIds);
+        }
+
+        return ['orphaned_payout_count' => sizeof($orphanPayouts)];
+    }
+
+    public function deleteOrphanedPayouts($input) {
+        try {
+            $payoutIds = $input['ids'];
+
+            $this->trace->info(TraceCode::DELETE_ORPHAN_PAYOUTS_FROM_OUTBOX, $payoutIds);
+
+            $this->repo->payout_outbox->deleteOrphanedPayouts($payoutIds);
+        } catch (\Throwable $e) {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::EXCEPTION_DELETE_ORPHAN_PAYOUTS_FROM_OUTBOX);
+            return ['success' => false];
+        }
+        return ['success' => true];
+    }
+
     public function createPayoutOutboxPartition() {
         try
         {
