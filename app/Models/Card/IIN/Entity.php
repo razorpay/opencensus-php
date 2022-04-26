@@ -347,7 +347,7 @@ class Entity extends Base\PublicEntity
         $hubs = MandateHub::getEnabledMandateHubs($this->getMandateHubs());
 
         if ((in_array(MandateHubs::BILLDESK_SIHUB, $hubs, true) === true) &&
-            (($hasSubscription === true) || ($merchant->isBilldeskSIHubEnabled() === false)))
+            ($merchant->isBilldeskSIHubEnabled() === false))
         {
             $hubs = array_diff($hubs, [MandateHubs::BILLDESK_SIHUB]);
         }
