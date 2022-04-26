@@ -4919,9 +4919,21 @@ class Service extends Base\Service
 
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
+        $this->trace->info(TraceCode::MERCHANT_GET_INTERNAL,
+            [
+                'merchant_id' => $merchantId,
+                'merchant'    => $merchant,
+            ]);
+
         $data[EntityConstants::MERCHANT] = $merchant->toArrayPublic();
 
         $merchantDetail = $merchant->merchantDetail;
+
+        $this->trace->info(TraceCode::MERCHANT_GET_INTERNAL,
+            [
+                'merchant_id' => $merchantId,
+                'merchant_detail'    => $merchantDetail,
+            ]);
 
         $data[EntityConstants::MERCHANT_DETAIL] = isset($merchantDetail) === true ? $merchantDetail->toArrayPublic() : [];
 
@@ -4929,10 +4941,28 @@ class Service extends Base\Service
 
         $data[self::SUPPORT_DETAILS] = $supportInformation;
 
+        $this->trace->info(TraceCode::MERCHANT_GET_INTERNAL,
+            [
+                'merchant_id' => $merchantId,
+                'support_details'    => $supportInformation,
+            ]);
+
         $data[EntityConstants::MERCHANT][EntityConstants::FEATURE] = $merchant->getEnabledFeatures();
         $data[EntityConstants::MERCHANT][EntityConstants::METHODS] = $this->repo->methods->getMethodsForMerchant($merchant);
 
+        $this->trace->info(TraceCode::MERCHANT_GET_INTERNAL,
+            [
+                'merchant_id' => $merchantId,
+                'methods'    => $data[EntityConstants::MERCHANT][EntityConstants::METHODS],
+            ]);
+
         $businessDetails = (new BusinessDetail\Service())->fetchBusinessDetailsForMerchant($merchantId);
+
+        $this->trace->info(TraceCode::MERCHANT_GET_INTERNAL,
+            [
+                'merchant_id' => $merchantId,
+                'business_details'    => $businessDetails,
+            ]);
 
         $data[BusinessDetail\Entity::WEBSITE_DETAILS] = $businessDetails->getWebsiteDetails();
 
