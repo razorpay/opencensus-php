@@ -70,14 +70,24 @@ final class Metric
     private const MERCHANT_EXTERNAL_PREFIX = 'merchant_external_';
 
     const MERCHANT_COUPONS_REQUEST_DURATION_MILLIS          = 'merchant_coupons_request_duration_millis';
-    const MERCHANT_COUPONS_REQUEST_COUNT                    = 'merchant_coupons_request_count';
     const MERCHANT_EXTERNAL_COUPONS_REQUEST_DURATION_MILLIS = self::MERCHANT_EXTERNAL_PREFIX . 'coupons_request_duration_millis';
+
+    const FETCH_COUPONS_MERCHANT_REQUEST_COUNT              = 'fetch_coupons_merchant_request_count';
+    const FETCH_COUPONS_MERCHANT_ERROR_COUNT                = 'fetch_coupons_merchant_error_count';
+    const FETCH_COUPONS_REQUEST_COUNT                       = 'fetch_coupons_request_count';
+    const FETCH_COUPONS_ERROR_COUNT                         = 'fetch_coupons_error_count';
+    const FETCH_COUPONS_FAULT_COUNT                         = 'fetch_coupons_fault_count';
+
+    const FETCH_COUPONS_SHOPIFY_REQUEST_COUNT              = 'fetch_coupons_shopify_request_count';
 
     const MERCHANT_COUPON_VALIDITY_REQUEST_DURATION_MILLIS                 = 'merchant_coupon_validity_request_duration_millis';
     const MERCHANT_COUPON_VALIDITY_REQUEST_COUNT                           = 'merchant_coupon_validity_check_request_count';
     const MERCHANT_EXTERNAL_COUPON_VALIDITY_REQUEST_TIME_MILLIS            = self::MERCHANT_EXTERNAL_PREFIX . 'coupon_validity_request_time_millis';
-    const MERCHANT_EXTERNAL_COUPON_VALIDITY_REQUEST_INVALID_REQUEST_COUNT  = self::MERCHANT_EXTERNAL_PREFIX . 'coupon_validity_request_invalid_request_count';
+    const MERCHANT_EXTERNAL_COUPON_VALIDITY_REQUEST_COUNT  = self::MERCHANT_EXTERNAL_PREFIX . 'coupon_validity_request_count';
     const MERCHANT_EXTERNAL_COUPON_VALIDITY_REQUEST_INVALID_RESPONSE_COUNT = self::MERCHANT_EXTERNAL_PREFIX . 'coupon_validity_request_invalid_response_count';
+    const MERCHANT_COUPON_VALIDITY_INVALID_REQUEST_COUNT  = 'merchant_coupon_validity_invalid_request_count';
+    const MERCHANT_COUPON_VALIDITY_ERROR_COUNT  = 'merchant_coupon_validity_error_count';
+    const MERCHANT_COUPON_VALIDITY_SHOPIFY_REQUEST_COUNT              = 'merchant_coupon_validity_shopify_request_count';
 
 
     const MERCHANT_SHIPPING_INFO_CHECK_TIME_MILLIS = 'merchant_shipping_info_check_time_millis';
