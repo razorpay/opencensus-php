@@ -13958,10 +13958,17 @@ class Route
         'refund_fetch_multiple',
         'refund_fetch_by_id',
         'scrooge_refund_reference1_bulk_update',
+        'refund_edit',
+        'refund_update_status',
+        'reconciliate_via_batch_service',
+        'refund_verify_call',
+        'refund_gateway_call',
 
         // following route will soon deprecate the usage of refunds table
         // https://razorpay.slack.com/archives/CNXC0JHQF/p1649071336054049
         'payment_verify_new',
+        'payment_verify_captured',
+        'payment_new_verify_all',
     ];
 
     public static $skipApiDocumentation = [
