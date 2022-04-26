@@ -961,4 +961,82 @@ class Service extends Base\Service
 
         return $this->repo->feature->findMerchantIdsHavingFeatures($featureNames);
     }
+
+
+    /**
+     *
+     * Onboards merchant onto ledger service
+     * Creates feature for the merchant
+     *
+     * @param array $input
+     */
+    public function onboardMerchantOnPG(array $input)
+    {
+        $response = new Base\PublicCollection;
+        $merchantIds = $input["merchant_ids"];
+
+        if(empty($merchantIds))
+        {
+            return [
+              Constants::MESSAGE => Constants::BAD_REQUEST_MERCHANT_ID_ABSENT
+            ];
+        }
+
+        foreach ($merchantIds as $merchantId)
+        {
+
+            $result = [
+                Constants::MERCHANT_ID     => $merchantId,
+                Constants::STATUS          => Constants::SUCCESS,
+                CONSTANTS::FEATURE         => CONSTANTS::PG_LEDGER_JOURNAL_WRITES
+            ];
+
+            try
+            {
+                $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+                if($merchant->isFeatureEnabled(Constants::PG_LEDGER_JOURNAL_WRITES))
+                {
+                    throw new \Exception(Constants::MERCHANT_FEATURE_ALREADY_ENABLED);
+                }
+
+                // Create PG account on ledger service
+                $this->ledgerPGAccountCreateRequest($merchant);
+
+                // Add PG_LEDGER_JOURNAL_WRITES feature to merchant
+                (new Core)->create(
+                    [
+                        Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
+                        Entity::ENTITY_ID => $merchant->getId(),
+                        Entity::NAME => Constants::PG_LEDGER_JOURNAL_WRITES,
+                    ]);
+
+                $this->trace->info(
+                    TraceCode::MERCHANT_ONBOARDED_TO_PG_LEDGER,
+                    [
+                        Constants::MERCHANT_ID  => $merchantId,
+                        CONSTANTS::FEATURE => CONSTANTS::PG_LEDGER_JOURNAL_WRITES
+                    ]
+                );
+
+                $result[Constants::MESSAGE] = CONSTANTS::MERCHANT_ONBOARDED;
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->error(
+                    TraceCode::ACCOUNT_CREATE_OR_FEATURE_ADD_FAILED,
+                    [
+                        "exception"             => $e,
+                        "message"               => $e->getMessage(),
+                        Constants::MERCHANT_ID  => $merchantId
+                    ]
+                );
+
+                $result[Constants::STATUS] = Constants::FAILURE;
+                $result[Constants::MESSAGE] = $e->getMessage();
+            }
+            $response->add($result);
+        }
+        return $response;
+    }
 }

@@ -822,6 +822,9 @@ class Name
     const LEDGER_CLIENT_ACTIONS                        = 'ledger_client_actions';
     const LEDGER_VIEW_DASHBOARD                        = 'ledger_view_dashboard';
 
+    // PG Ledger Permissions
+    const PG_LEDGER_ACTIONS                            = 'pg_ledger_actions';
+
     // Settlement Service permissions
     const SETTLEMENT_SERVICE_MERCHANT_CONFIG_EDIT = 'settlement_service_merchant_config_edit';
 

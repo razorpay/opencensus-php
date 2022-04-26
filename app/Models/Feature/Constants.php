@@ -206,10 +206,13 @@ class Constants
     const ENABLE_SINGLE_RECON             = 'enable_single_recon';
 
     // Ledger constants
-    const IDEMPOTENCY_KEY       = 'idempotency_key';
-    const MERCHANT_ID           = 'merchant_id';
-    const MODE                  = 'mode';
-    const PG_GATEWAY_ONBOARD    = 'pg_gateway_onboard';
+    const IDEMPOTENCY_KEY                   = 'idempotency_key';
+    const MERCHANT_ID                       = 'merchant_id';
+    const MODE                              = 'mode';
+    const PG_GATEWAY_ONBOARD                = 'pg_gateway_onboard';
+    const SUCCESS                           = 'success';
+    const FAILURE                           = 'failure';
+    const MERCHANT_FEATURE_ALREADY_ENABLED  = 'merchant feature already enabled';
 
     const PAYMENT_STATUS_AGGREGATE        = 'payment_status_aggregate';
     const VISA_SAFE_CLICK                 = 'vsc_authorization';
@@ -1292,6 +1295,13 @@ class Constants
      * If the feature is enabled, workflow will be processed via API, else via workflow service
      */
     const BLOCKLIST_FOR_WORKFLOW_SERVICE = 'blocklist_for_wf_service';
+
+    const MESSAGE                        = 'message';
+    const INPUT                          = 'input';
+    const MERCHANT_ONBOARDED             = 'merchant onboarded';
+    const STATUS_CODE                    = 'status_code';
+    const BODY                           = 'body';
+    const BAD_REQUEST_MERCHANT_ID_ABSENT = "BAD_REQUEST_MERCHANT_ID_ABSENT";
 
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,

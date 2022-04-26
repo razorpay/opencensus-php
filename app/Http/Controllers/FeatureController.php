@@ -40,6 +40,22 @@ class FeatureController extends Controller
         return ApiResponse::json($data->toArrayWithItems());
     }
 
+
+    /**
+     * Onboards a merchant on to PG Ledger Service by creating sub accounts
+     * Adds PG_LEDGER_JOURNAL_WRITES features to merchants
+     *
+     * @return ApiResponse
+     */
+    public function onboardMerchantsOnPgLedger()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->onboardMerchantOnPG($input);
+
+        return ApiResponse::json($data->toArrayWithItems());
+    }
+
     /**
      * Adds features to entities
      *

@@ -3349,6 +3349,10 @@ class Route
 
         'merchant_risk_data'                      => ['get',       'merchants/{id}/risk/data',                              'MerchantController@getMerchantRiskData'],
 
+
+        //PG Ledger Routes
+        'pg_onboard_merchant'                           => ['post',     'pg_ledger/merchant/onboard',           'FeatureController@onboardMerchantsOnPgLedger'],
+
         // Recon service proxy route
         'recon_service_request_proxy'             => ['any',        'recon/service/common/{path?}',                         'ReconServiceController@handleAny'                             ],
         'recon_service_file_upload_proxy'          => ['post',       'recon/service/upload_file',                             'ReconServiceController@uploadFile'                            ],
@@ -5765,6 +5769,9 @@ class Route
         'iin_add',
         'emi_plan_add',
         'dummy_critical_error',
+
+        //PG Ledger Routes
+        'pg_onboard_merchant',
         'merchant_tag_add',
         'merchant_tag_delete',
         'merchant_update_key_access',
@@ -7791,6 +7798,9 @@ class Route
 
         'merchant_risk_data'                              => Permission::GET_MERCHANT_RISK_DATA,
         'bulk_fraud_notify'                               => Permission::BULK_FRAUD_NOTIFY,
+
+        // PG Ledger Routes
+        'pg_onboard_merchant'                               => Permission::PG_LEDGER_ACTIONS,
 
         // Metro service Route
         'metro_project_create'                            => Permission::METRO_PROJECT_CREATE,
@@ -10944,6 +10954,7 @@ class Route
             'permission_get_by_type',
             'permission_get_multiple',
             'permission_get_roles',
+            'pg_onboard_merchant',
             'pincode_get',
             'plan_create',
             'plan_fetch',
