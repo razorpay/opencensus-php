@@ -799,14 +799,7 @@ class Service extends Base\Service
 
         $input[Entity::SLUG] = $suggestedPaymentHandle[0];
 
-        $title = $this->merchant->getBillingLabel();
-
-        if(strlen($title) > 80)
-        {
-            $title = substr($title, 0, 80);
-        }
-
-        $input[Entity::TITLE] = $title;
+        $input[Entity::TITLE] = $this->core->getTitleForPaymentHandle($this->merchant);;
 
         return $input;
     }

@@ -1418,6 +1418,23 @@ class Core extends Base\Core
         return $decryptedAmount;
     }
 
+    public function getTitleForPaymentHandle(Merchant\Entity $merchant): string
+    {
+        $title = $merchant->getBillingLabel();
+
+        if(strlen($title) > Entity::MAX_TITLE_LENGTH)
+        {
+            $title = substr($title, 0, 80);
+        }
+
+        if(strlen($title) < Entity::MIN_TITLE_LENGTH)
+        {
+            $title = $title . rand(100, 1000);
+        }
+
+        return $title;
+    }
+
     protected function getInvoiceCreateInput(Entity $paymentLink, Payment\Entity $payment): array
     {
         $type = Invoice\Type::INVOICE;
@@ -2683,20 +2700,7 @@ class Core extends Base\Core
 
     public function suggestionPaymentHandle($count)
     {
-        $merchant = $this->merchant;
-
-        $merchantBillingLabel = $merchant->getBillingLabel();
-
-        // Remove all characters other than a-z, A-Z, 0-9 and space
-        $merchantBillingLabel = preg_replace('/[^a-zA-Z0-9-]+/', '', $merchantBillingLabel);
-
-        // removes spaces
-        $merchantBillingLabel = '@' . strtolower(str_replace(' ', '', $merchantBillingLabel));
-
-        if(strlen($merchantBillingLabel) > Entity::MAX_SLUG_LENGTH)
-        {
-            $merchantBillingLabel = substr($merchantBillingLabel, 0, Entity::MAX_SLUG_LENGTH);
-        }
+        $merchantBillingLabel = $this->getDefaultPHFromBillingLabel($this->merchant);
 
         $suggestions = [];
 
@@ -3310,5 +3314,28 @@ class Core extends Base\Core
             Entity::SHORT_URL       => $paymentLink->getShortUrl(),
             Entity::SLUG            => $slug,
         ];
+    }
+
+    protected function getDefaultPHFromBillingLabel(Merchant\Entity $merchant): string
+    {
+        $billingLabel = $merchant->getBillingLabel();
+
+        // Remove all characters other than a-z, A-Z, 0-9 and space
+        $paymentHandle = preg_replace('/[^a-zA-Z0-9-]+/', '', $billingLabel);
+
+        // removes spaces
+        $paymentHandle = '@' . strtolower(str_replace(' ', '', $paymentHandle));
+
+        if(strlen($paymentHandle) > Entity::MAX_SLUG_LENGTH)
+        {
+            $paymentHandle = substr($paymentHandle, 0, Entity::MAX_SLUG_LENGTH);
+        }
+
+        if(strlen($paymentHandle) < Entity::MIN_SLUG_LENGTH)
+        {
+            $paymentHandle = $paymentHandle . rand(100, 10000);
+        }
+
+        return $paymentHandle;
     }
 }

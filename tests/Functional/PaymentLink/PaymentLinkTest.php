@@ -56,6 +56,8 @@ class PaymentLinkTest extends TestCase
     const TEST_ORDER_ID = '10000000000ord';
     const TEST_PLAN_ID  = '1000000000plan';
 
+    const TEST_MID      = '10000000000000';
+
     protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/Helpers/PaymentLinkTestData.php';
@@ -2019,6 +2021,20 @@ class PaymentLinkTest extends TestCase
         $this->assertEquals('Test Label-123', $ph[Entity::TITLE]);
 
         $this->assertEquals('@testlabel-123', $ph->getSlugFromShortUrl());
+    }
+
+    public function testPaymentHandleCreationWithBillingLabelLengthLessThanFour()
+    {
+        $billingLabel = 'a';
+
+        // merchant detail internally creates merchant entity
+        $this->fixtures->edit('merchant', self::TEST_MID, ['billing_label'  => $billingLabel]);
+
+        $this->mockGimliPaymentHandle($billingLabel);
+
+        $this->ba->proxyAuthLive();
+
+        $this->startTest();
     }
 
     public function testPaymentHandleUpdate()

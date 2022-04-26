@@ -124,6 +124,9 @@ class Entity extends Base\PublicEntity
     const SUGGESTIONS                             = 'suggestions';
     const HANDLE                                  = 'handle';
     const MAX_SLUG_LENGTH                         = 30;
+    const MIN_SLUG_LENGTH                         = 4;
+    const MIN_TITLE_LENGTH                        = 3;
+    const MAX_TITLE_LENGTH                        = 80;
     const RETRIES                                 = 'retries';
 
     //Settings applicable to Payment Button only

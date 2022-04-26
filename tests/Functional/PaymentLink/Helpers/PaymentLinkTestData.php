@@ -3090,6 +3090,17 @@ return [
         ],
     ],
 
+    'testPaymentHandleCreationWithBillingLabelLengthLessThanFour' => [
+        'request' => [
+            'url'      => '/payment_handle',
+            'method'   => 'post',
+        ],
+        'response'  => [
+            'content' => [
+            ],
+        ],
+    ],
+
     'testPaymentHandleUpdateWithWrongSlug' => [
         'request' => [
             'url'    => '/payment_handle',
