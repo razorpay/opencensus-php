@@ -1073,6 +1073,101 @@ class Core extends Base\Core
         return $response;
     }
 
+    public function migrateBlockedTransactions(array $input)
+    {
+        $this->trace->info(
+            TraceCode::SETTLEMENT_SERVICE_BLOCK_TXN_MIGRATE_REQUEST,
+            [
+                'input' => $input
+            ]);
+
+        $response = [
+            'total' => count($input['merchant_ids']),
+            'failed_count_live' => 0,
+            'failed_count_test' => 0
+        ];
+
+        foreach ($input['merchant_ids'] as $merchantId) {
+            $startTime = microtime(true);
+            // check for balance type- Only Primary and Commision
+
+            $balances = $this->repo->balance->getMerchantBalances($merchantId);
+
+            foreach ($balances as $balance)
+            {
+                if (Balance\Type::isSettleableBalanceType($balance->getType()) === true) {
+                    $opt = [
+                        'from' => $input['from'],
+                        'to' => $input['to'],
+                        'balance_type' => $balance->getType(),
+                        'transaction_ids' => [],
+                        'initial_ramp' => true,
+                        'source_type' => null,
+                    ];
+
+                    //$migrationResult this will store the migration results for a merchant in this job
+                    $migrationResult = [
+                        'SUCCESSFUL_STEPS' => [
+                            Mode::LIVE => [
+                                'TRANSACTION_MIGRATION_DISPATCH' => false,
+                            ],
+                            Mode::TEST => [
+                                'TRANSACTION_MIGRATION_DISPATCH' => false,
+                            ],
+                        ],
+                        'FAILED_STEPS' => [
+                            Mode::LIVE => [
+                                'TRANSACTION_MIGRATION_DISPATCH' => [
+                                    'status' => false,
+                                    'reason' => null,
+                                ],
+                            ],
+                            Mode::TEST => [
+                                'TRANSACTION_MIGRATION_DISPATCH' => [
+                                    'status' => false,
+                                    'reason' => null,
+                                ],
+                            ],
+                        ],
+                    ];
+
+                    $isFailure = false;
+                    try {
+                        TransactionMigrationBatch::dispatch(Mode::LIVE, $merchantId, $opt);
+
+                        $migrationResult['SUCCESSFUL_STEPS'][Mode::LIVE]['TRANSACTION_MIGRATION_DISPATCH'] = true;
+                    } catch (\Throwable $e) {
+                        $response['failed_count_live'] += 1;
+                        $isFailure = true;
+                        $migrationResult['FAILED_STEPS'][Mode::LIVE]['TRANSACTION_MIGRATION_DISPATCH']['status'] = true;
+                        $migrationResult['FAILED_STEPS'][Mode::LIVE]['TRANSACTION_MIGRATION_DISPATCH']['reason'] = $e->getMessage();
+                    }
+
+                    try {
+                        TransactionMigrationBatch::dispatch(Mode::TEST, $merchantId, $opt);
+
+                        $migrationResult['SUCCESSFUL_STEPS'][Mode::TEST]['TRANSACTION_MIGRATION_DISPATCH'] = true;
+                    } catch (\Throwable $e) {
+                        $response['failed_count_test'] += 1;
+                        $isFailure = true;
+                        $migrationResult['FAILED_STEPS'][Mode::TEST]['TRANSACTION_MIGRATION_DISPATCH']['status'] = true;
+                        $migrationResult['FAILED_STEPS'][Mode::TEST]['TRANSACTION_MIGRATION_DISPATCH']['reason'] = $e->getMessage();
+                    }
+                    $this->trace->info(
+                        TraceCode::SETTLEMENT_SERVICE_MIGRATION_RESULT,
+                        [
+                            'is_failure'  => $isFailure,
+                            'merchant_id' => $merchantId,
+                            'input'       => $input,
+                            'result'      => $migrationResult,
+                            'time_taken'  => microtime(true) - $startTime,
+                        ]);
+            }
+            }
+        }
+        return $response;
+    }
+
     public function enqueueForReplay(array $input)
     {
         $opt = [

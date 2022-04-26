@@ -41,6 +41,7 @@ class Service extends Base\Service
     const LEDGER_RECON_TRIGGERED_SYSTEM                                = 'system';
     const LEDGER_RECON_TRIGGERED_MANUAL                                = 'manual';
     const SETTLEMENT_OFFSET_MID_CACHE_KEY                              = 'settlement_migration_offset_mid';
+    const SETTLEMENT_BLOCKED_TXN_OFFSET_MID_CACHE_KEY                  = 'settlement_blocked_txn_offset_mid';
 
 
     public function createSettlementEntry($input)
@@ -1354,6 +1355,91 @@ class Service extends Base\Service
         (new Validator)->validateInput('settlements_service_migration', $input);
 
         return (new Core)->migrateConfigurations($input);
+    }
+
+    public function migrateBlockedTransactions(array $input)
+    {
+        (new Validator)->validateInput('settlements_service_blocked_migration', $input);
+
+        $this->trace->info(
+            TraceCode:: SETTLEMENT_SERVICE_BLOCK_TXN_MIGRATE_BEGIN,
+            [
+                'request data'   =>$input
+            ]);
+
+        $redis = $this->app['redis']->Connection('mutex_redis');
+        $cached_id_exists= $redis->exists(self::SETTLEMENT_BLOCKED_TXN_OFFSET_MID_CACHE_KEY);
+        $cached_merchant_id=null;
+
+        if($cached_id_exists === true)
+        {
+            $cached_merchant_id = $redis->get(self::SETTLEMENT_BLOCKED_TXN_OFFSET_MID_CACHE_KEY);
+        }
+
+        $limit=$input['limit'];
+        $offsetID = (isset($input['offset_id']) === false)? $cached_merchant_id : $input['offset_id'];
+
+        if (isset($input['merchant_ids']) === true){
+            $inputMerchantIDs = $input['merchant_ids'];
+            $merchantsOnNSS = $this->repo->feature->getMerchantIdsHavingFeature(Constants::NEW_SETTLEMENT_SERVICE, $inputMerchantIDs);
+            $merchantsTxnToMigrate = $merchantsOnNSS;
+        }
+        else{
+            $allMerchants = $this->repo->merchant->fetchAllMids($offsetID, $limit);
+            $merchantWithBlock = $this->repo->feature->getMerchantIdsHavingFeature(Constants::BLOCK_SETTLEMENTS, $allMerchants);
+            $merchantsOnNSSWithBlock = $this->repo->feature->getMerchantIdsHavingFeature(Constants::NEW_SETTLEMENT_SERVICE, $merchantWithBlock);
+            $merchantsTxnToMigrate = $merchantsOnNSSWithBlock;
+
+            //Finding the last entry for next update. In case reaches end of table, shouldn't update cache value
+            $newOffsetMid = (empty($allMerchants) === false) ? max($allMerchants) : "";
+
+            if(empty($allMerchants) === true)
+            {
+                $this->trace->info(
+                    TraceCode::BLOCKED_TXN_MIGRATE_CRON_FAILURE_NO_MID_TO_MIGRATE,
+                    [
+                        'message'  =>'no merchants IDs found to migrate anymore. Reached EOT probably',
+                    ]);
+            }
+
+            if (empty($merchantsTxnToMigrate) === true)
+            {
+                $this->trace->info(
+                    TraceCode::BLOCKED_TXN_MIGRATE_CRON_FAILURE_NO_MID_TO_MIGRATE,
+                    [
+                        'message'                             =>'no merchants IDs found to migrate in this range',
+                        'offset_id'                           =>$offsetID,
+                        'limit'                               =>$limit,
+                        'all_possible_merchants'              =>$allMerchants
+                    ]);
+
+                if ((isset($input['offset_id'])===false) && (!empty($allMerchants)))
+                {
+                    $redis->set(self::SETTLEMENT_BLOCKED_TXN_OFFSET_MID_CACHE_KEY,$newOffsetMid);
+                }
+
+                return [];
+            }
+        }
+
+        $input_constructed=[
+            'merchant_ids'            =>$merchantsTxnToMigrate,
+            'via'                     =>'payout',
+            'to'                      =>$input['to'],
+            'from'                    =>$input['from']
+        ];
+
+        $output = (new Core)->migrateBlockedTransactions($input_constructed);
+        //only update cache when no issues occurred in migration, and migration was a success.Eg:In cases of timeouts, cache shouldn't be updated
+        //dont update if end of table reached
+        if ((isset($input['offset_id'])===false)      &&
+            (!empty($allMerchants)) &&
+            (isset($input['merchant_ids'])===false))
+        {
+            $redis->set(self::SETTLEMENT_BLOCKED_TXN_OFFSET_MID_CACHE_KEY, $newOffsetMid);
+        }
+
+        return $output;
     }
 
     public function cronRunMigrations(array $input)

@@ -177,6 +177,15 @@ class Validator extends Base\Validator
         'offset_id'          => 'sometimes|string|alpha_num|size:14',
     ];
 
+    protected static $settlementsServiceBlockedMigrationRules = [
+        'limit'              => 'required|integer|max:7000|min:1',
+        'offset_id'          => 'sometimes|string|alpha_num|size:14',
+        'from'              => 'sometimes|epoch',
+        'to'                => 'required_with:from|epoch',
+        'merchant_ids'      => 'sometimes|array',
+        'merchant_ids.*'    => 'required|string|size:14',
+    ];
+
     protected static $settlementLedgerInconsistencyDebugRules = [
         'merchant_ids'      => 'sometimes|array',
         'merchant_ids.*'    => 'required|string|size:14',

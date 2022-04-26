@@ -840,6 +840,7 @@ class Route
         'setl_schedule_get_ids'                    => ['get',      'settlements/schedule/get_ids',                   'SettlementController@scheduleGetIds'                               ],
         'setl_schedule_rename'                     => ['post',     'settlements/schedule/rename',                    'SettlementController@scheduleRename'                               ],
         'setl_service_migration'                   => ['post',     'settlements/service/migration',                  'SettlementController@migrateConfigurations'                        ],
+        'setl_service_blocked_migration'           => ['post',     'settlements/service/blocked_txn_migration',      'SettlementController@migrateBlockedTransactions'                        ],
         'setl_service_migration_admin'             => ['post',     'settlements/service/migration/admin',            'SettlementController@migrateConfigurationsAdmin'                   ],
         'setl_execution_reminder'                  => ['post',     'settlements/reminder/execution',                 'SettlementController@executionReminder'                            ],
         'setl_retry_new_service'                   => ['post',     'settlements/service/retry',                      'SettlementController@settlementRetry'                              ],
@@ -4225,6 +4226,7 @@ class Route
         'setl_reconcile_h2h',
         'setl_reconcile_test',
         'setl_service_migration',
+        'setl_service_blocked_migration',
         'settlement_ondemand_feature_enable',
         'early_settlement_feature_period_create',
         'settlement_ondemand_partial_scheduled',
@@ -6508,7 +6510,6 @@ class Route
         'app_mapping_create',
         'app_mapping_delete',
         'app_tags_delete',
-
        'admin_fund_account_validate',
 
         //TPV - Third party validation
@@ -11938,6 +11939,7 @@ class Route
             'terminal_mpans_tokenize_existing',
             'qr_code_mpans_tokenize_existing',
             'setl_service_migration',
+            'setl_service_blocked_migration',
             'vendor_payment_upcoming_mail_cron',
             'payout_links_expire_cron',
             'tax_payments_add_penalty_cron',
@@ -13783,6 +13785,7 @@ class Route
         'payment_timeout',
         'payment_auth_timeout',
         'setl_service_migration',
+        'setl_service_blocked_migration',
         'contact_list',
         'workflow_get_multiple',
         'payment_capture_gateway_multiple',

@@ -557,6 +557,15 @@ class SettlementController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function migrateBlockedTransactions()
+    {
+        $input = Request::all();
+
+        $data =$this->service()->migrateBlockedTransactions($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function migrateConfigurationsAdmin()
     {
         $input = Request::all();
