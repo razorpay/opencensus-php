@@ -48,231 +48,300 @@ class Service extends Base\Service
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
         }
 
-        $this->trace->info(TraceCode::MERCHANT_ADDRESS_SHIPPING_INFO_REQUEST, $input);
+        $decodedResponse = [];
 
-        $this->trace->count(Metric::MERCHANT_SHIPPING_INFO_CHECK_CALL_COUNT);
+        $ex = '';
 
-        $serviceabilityCheckStartTime = millitime();
+        $dimensions = array_merge($input, ['merchant_id' => $this->merchant->getId()]);
 
-        if(!isset($input[self::SHIPPING_INFO_ADDRESSES]) || !isset($input['order_id']))
-        {
-            $this->trace->count(Metric::MERCHANT_EXTERNAL_SHIPPING_INFO_CALL_INVALID_REQUEST_COUNT);
+        try {
 
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MERCHANT_SERVICEABILITY_INVALID_INPUT
-            );
-        }
+            $this->trace->count(Metric::MERCHANT_SHIPPING_INFO_CHECK_CALL_COUNT, $dimensions);
 
-        $mockResponse = $input['mock_response'] ?? null;
+            $serviceabilityCheckStartTime = millitime();
 
-        unset($input['mock_response']);
-
-        $orderId = $input['order_id'];
-
-        $order = $this->repo->order->findByPublicIdAndMerchant($orderId, $this->merchant);
-
-        $orderMeta = $this->repo->order_meta->findByPublicOrderIdAndType($orderId, FeatureConstants::ONE_CLICK_CHECKOUT);
-
-        if($orderMeta === null)
-        {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_1CC_ORDER);
-        }
-
-        $merchantOrderId = null;
-
-        try
-        {
-            $merchantOrderId = $order->getReceipt();
-        }
-        catch (Throwable $e)
-        {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_1CC_ORDER);
-        }
-
-        if(is_null($merchantOrderId))
-        {
-            $this->trace->count(Metric::MERCHANT_EXTERNAL_SHIPPING_INFO_CALL_INVALID_REQUEST_COUNT);
-
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MERCHANT_SERVICEABILITY_INVALID_INPUT
-            );
-        }
-
-        $input['order_id'] = $merchantOrderId;
-
-        // Leaving the bulk contract for backward compatibility
-        $addresses = $input[self::SHIPPING_INFO_ADDRESSES];
-        if (count($addresses) !== 1)
-        {
-            $this->trace->count(Metric::MERCHANT_EXTERNAL_SHIPPING_INFO_CALL_INVALID_REQUEST_COUNT);
-
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MERCHANT_SERVICEABILITY_INVALID_INPUT
-            );
-        }
-
-        $address = $addresses[0];
-        (new Validator())->setStrictFalse()->validateInput("shippingInfoRequest", $address);
-
-        $address = $this->getPincodeAndState($address);
-
-        $cachedResponse = $this->getShippingInfoFromCache($orderId, $address);
-
-        if (!empty($cachedResponse))
-        {
-            $this->trace->debug(TraceCode::MERCHANT_SHIPPING_INFO_NO_UNCACHED_ADDRESS, ["order_id" => $orderId]);
-
-            $this->traceResponseTime(Metric::MERCHANT_SHIPPING_INFO_CHECK_TIME_MILLIS, $serviceabilityCheckStartTime);
-
-            /*
-             * // Will be enabled once multiple shipping is launched
-            $address['shipping_methods'] = $cachedResponse['shipping_methods'];
-            */
-
-            return [
-                self::SHIPPING_INFO_ADDRESSES => [$cachedResponse],
-            ];
-        }
-
-        $platformConfig = $this->merchant->getMerchantPlatformConfig();
-
-        if ($platformConfig !== null and $platformConfig->getValue() === Merchant1ccConfig\Type::SHOPIFY)
-        {
-            $decodedResponse = (new Shopify\Service)->getShippingInfo([
-                'order_id' => $order->toArrayPublic()['notes']['storefront_id'],
-                'address' => array_merge($address, [self::SHIPPING_INFO_ID => 0]),
-            ]);
-        }
-        else
-        {
-            $shippingMethodProviderConfig = $this->merchant->getShippingMethodProvider();
-            if ($shippingMethodProviderConfig !== null)
+            if(!isset($input[self::SHIPPING_INFO_ADDRESSES]) || !isset($input['order_id']))
             {
-                $shippingMethodProviderConfigJson = $shippingMethodProviderConfig->getValueJson();
-                $shippingProviderType = $shippingMethodProviderConfigJson[Constants::PROVIDER_TYPE] ?? Type::SHIPROCKET;
-                switch ($shippingProviderType)
-                {
-                    case Type::RAZORPAY:
-                        $decodedResponse = $this->getShippingMethods(
-                            $shippingMethodProviderConfigJson,
-                            $address,
-                            $orderId,
-                            $orderMeta->getValue()['line_items_total']);
-                        break;
-                    default:
-                        $decodedResponse = $this->getShippingInfoForShippingMethodProvider($shippingMethodProviderConfig,
-                            $address, $orderId);
-                        break;
-                }
+                $this->trace->count(Metric::MERCHANT_SHIPPING_INFO_CALL_INVALID_REQUEST_COUNT, $dimensions);
+
+                $ex = new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_MERCHANT_SERVICEABILITY_INVALID_INPUT
+                );
+
+                throw $ex;
+            }
+
+            $mockResponse = $input['mock_response'] ?? null;
+
+            unset($input['mock_response']);
+
+            $orderId = $input['order_id'];
+
+            $order = $this->repo->order->findByPublicIdAndMerchant($orderId, $this->merchant);
+
+            $orderMeta = $this->repo->order_meta->findByPublicOrderIdAndType($orderId, FeatureConstants::ONE_CLICK_CHECKOUT);
+
+            if($orderMeta === null)
+            {
+                $this->trace->count(Metric::MERCHANT_SHIPPING_INFO_CALL_INVALID_REQUEST_COUNT,
+                    array_merge($dimensions,
+                        [
+                            'order_meta' => $orderMeta
+                        ])
+                );
+                $ex = new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_1CC_ORDER);
+                throw $ex;
+            }
+
+            $merchantOrderId = null;
+
+            try
+            {
+                $merchantOrderId = $order->getReceipt();
+            }
+            catch (Throwable $e)
+            {
+                $this->trace->count(Metric::MERCHANT_SHIPPING_INFO_CALL_INVALID_REQUEST_COUNT,
+                    array_merge($dimensions,
+                        [
+                            'error' => $e
+                        ])
+                );
+                $ex = new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_1CC_ORDER);
+                throw $ex;
+            }
+
+            if(is_null($merchantOrderId))
+            {
+                $this->trace->count(Metric::MERCHANT_SHIPPING_INFO_CALL_INVALID_REQUEST_COUNT,
+                    array_merge($dimensions, [
+                        'merchant_order_id' => $merchantOrderId
+                    ])
+                );
+                $ex = new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_MERCHANT_SERVICEABILITY_INVALID_INPUT
+                );
+                throw $ex;
+            }
+
+            $input['order_id'] = $merchantOrderId;
+
+            // Leaving the bulk contract for backward compatibility
+            $addresses = $input[self::SHIPPING_INFO_ADDRESSES];
+            if (count($addresses) !== 1)
+            {
+                $this->trace->count(Metric::MERCHANT_SHIPPING_INFO_CALL_INVALID_REQUEST_COUNT, $dimensions);
+                $ex = new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_MERCHANT_SERVICEABILITY_INVALID_INPUT
+                );
+                throw $ex;
+            }
+
+            $address = $addresses[0];
+            (new Validator())->setStrictFalse()->validateInput("shippingInfoRequest", $address);
+
+            $address = $this->getPincodeAndState($address);
+
+            $cachedResponse = $this->getShippingInfoFromCache($orderId, $address);
+
+            if (!empty($cachedResponse))
+            {
+                $this->trace->debug(TraceCode::MERCHANT_SHIPPING_INFO_NO_UNCACHED_ADDRESS, ["order_id" => $orderId]);
+
+                $this->traceResponseTime(Metric::MERCHANT_SHIPPING_INFO_CHECK_TIME_MILLIS, $serviceabilityCheckStartTime, ['merchant_id' => $this->merchant->getId()]);
+
+                /*
+                * // Will be enabled once multiple shipping is launched
+               $address['shipping_methods'] = $cachedResponse['shipping_methods'];
+               */
+
+                $decodedResponse = [self::SHIPPING_INFO_ADDRESSES => [$cachedResponse]];
+
+                return [
+                    self::SHIPPING_INFO_ADDRESSES => [$cachedResponse],
+                ];
+            }
+
+            $platformConfig = $this->merchant->getMerchantPlatformConfig();
+
+            if ($platformConfig !== null and $platformConfig->getValue() === Merchant1ccConfig\Type::SHOPIFY)
+            {
+                $this->trace->count(Metric::MERCHANT_SHIPPING_INFO_SHOPIFY_CALL_COUNT, array_merge(
+                    $dimensions,
+                    [
+                        'platform' => $platformConfig->getValue()
+                    ]
+                ));
+                $decodedResponse = (new Shopify\Service)->getShippingInfo([
+                    'order_id' => $order->toArrayPublic()['notes']['storefront_id'],
+                    'address' => array_merge($address, [self::SHIPPING_INFO_ID => 0]),
+                ]);
             }
             else
             {
-
-                $serviceabilityUrlConfig = $this->merchant->getShippingInfoUrlConfig();
-
-                if ($serviceabilityUrlConfig === null)
+                $shippingMethodProviderConfig = $this->merchant->getShippingMethodProvider();
+                if ($shippingMethodProviderConfig !== null)
                 {
-                    throw new Exception\BadRequestException(
-                        ErrorCode::BAD_REQUEST_MERCHANT_SERVICEABILITY_URL_NOT_CONFIGURED);
-                }
-
-                $serviceabilityUrl = $serviceabilityUrlConfig->getValue();
-
-                try
-                {
-                    // Sending array for backward compatibility (bulk api)
-                    $response = $this->sendMerchantShippingInfoRequest(
-                        $merchantOrderId,
-                        [array_merge($address, [self::SHIPPING_INFO_ID => 0])],
-                        $serviceabilityUrl,
-                        $mockResponse);
-
-                    $decodedResponse = json_decode($response->body, true);
-                    $decodedResponse = $decodedResponse[self::SHIPPING_INFO_ADDRESSES][0];
-                    if (isset($decodedResponse[self::SHIPPING_INFO_ID]))
+                    $shippingMethodProviderConfigJson = $shippingMethodProviderConfig->getValueJson();
+                    $shippingProviderType = $shippingMethodProviderConfigJson[Constants::PROVIDER_TYPE] ?? Type::SHIPROCKET;
+                    $this->trace->count(Metric::SHIPPING_SERVICE_CALL_COUNT, array_merge(
+                        $dimensions,
+                        [
+                            'provider_type' => $shippingProviderType
+                        ]
+                    ));
+                    switch ($shippingProviderType)
                     {
-                        unset($decodedResponse[self::SHIPPING_INFO_ID]);
+                        case Type::RAZORPAY:
+                            $decodedResponse = $this->getShippingMethods(
+                                $shippingMethodProviderConfigJson,
+                                $address,
+                                $orderId,
+                                $orderMeta->getValue()['line_items_total']);
+                            break;
+                        default:
+                            $decodedResponse = $this->getShippingInfoForShippingMethodProvider($shippingMethodProviderConfig,
+                                $address, $orderId);
+                            break;
                     }
                 }
-                catch(Throwable $exception)
+                else
                 {
-                    // Swallowing the exception to allow the request to go through in case merchant call fails
-                    $this->trace->error(TraceCode::ERROR_EXCEPTION, ['error' => $exception->getMessage()]);
 
-                    $decodedResponse = [];
+                    $serviceabilityUrlConfig = $this->merchant->getShippingInfoUrlConfig();
+
+                    if ($serviceabilityUrlConfig === null)
+                    {
+                        $this->trace->count(Metric::MERCHANT_SHIPPING_INFO_CALL_INVALID_REQUEST_COUNT, array_merge(
+                            $dimensions,
+                            [
+                                'shipping_info_url' => $serviceabilityUrlConfig
+                            ]
+                        ));
+                        $ex = new Exception\BadRequestException(
+                            ErrorCode::BAD_REQUEST_MERCHANT_SERVICEABILITY_URL_NOT_CONFIGURED);
+                        throw $ex;
+                    }
+
+                    $serviceabilityUrl = $serviceabilityUrlConfig->getValue();
+
+                    try
+                    {
+                        // Sending array for backward compatibility (bulk api)
+                        $response = $this->sendMerchantShippingInfoRequest(
+                            $merchantOrderId,
+                            [array_merge($address, [self::SHIPPING_INFO_ID => 0])],
+                            $serviceabilityUrl,
+                            $mockResponse);
+
+                        $decodedResponse = json_decode($response->body, true);
+                        $decodedResponse = $decodedResponse[self::SHIPPING_INFO_ADDRESSES][0];
+                        if (isset($decodedResponse[self::SHIPPING_INFO_ID]))
+                        {
+                            unset($decodedResponse[self::SHIPPING_INFO_ID]);
+                        }
+                    }
+                    catch(Throwable $exception)
+                    {
+                        // Swallowing the exception to allow the request to go through in case merchant call fails
+                        $this->trace->error(TraceCode::ERROR_EXCEPTION, ['error' => $exception->getMessage()]);
+
+                        $decodedResponse = [];
+                    }
+
+                    if (json_last_error() !== JSON_ERROR_NONE || !isset($response) || $response->status_code !== 200)
+                    {
+                        $this->trace->count(Metric::MERCHANT_EXTERNAL_SHIPPING_INFO_CALL_FAILURE_COUNT,
+                            array_merge($dimensions,
+                                ['errorcode' => ErrorCode::SERVER_ERROR_MERCHANT_SERVICEABILITY_EXTERNAL_CALL_EXCEPTION]
+                            )
+                        );
+                        $decodedResponse = [];
+                    }
+
+                    try
+                    {
+                        (new Validator())->setStrictFalse()->validateInput("addressShippingInfoResponse", $decodedResponse);
+                    }
+                    catch (Throwable $e)
+                    {
+                        $this->trace->count(Metric::MERCHANT_EXTERNAL_SHIPPING_INFO_CALL_FAILURE_COUNT,
+                            ['errorcode' => ErrorCode::SERVER_ERROR_MERCHANT_SERVICEABILITY_EXTERNAL_CALL_EXCEPTION]);
+                        $decodedResponse = [];
+                    }
+                }
+            }
+
+            // Backwards compatibility for merchant serviceability url/shopify that does not return methods
+            $decodedResponse = $this->convertOldFormatToShippingMethods($decodedResponse);
+
+            $address = array_merge($decodedResponse, $address);
+            foreach ($address['shipping_methods'] as &$method)
+            {
+                if (isset($method['cod_fee']) === false)
+                {
+                    $method['cod_fee'] = $this->getFeeFromSlab(
+                        $orderMeta->getValue()['line_items_total'],
+                        Slab\Type::COD_SLAB);
                 }
 
-                if (json_last_error() !== JSON_ERROR_NONE || !isset($response) || $response->status_code !== 200)
+                if (isset($method['shipping_fee']) === false)
                 {
-                    $this->trace->count(Metric::MERCHANT_EXTERNAL_SHIPPING_INFO_CALL_FAILURE_COUNT,
-                        ['errorcode' => ErrorCode::SERVER_ERROR_MERCHANT_SERVICEABILITY_EXTERNAL_CALL_EXCEPTION]);
-
-                    $decodedResponse = [];
+                    $method['shipping_fee'] = $this->getFeeFromSlab(
+                        $orderMeta->getValue()['line_items_total'],
+                        Slab\Type::SHIPPING_SLAB);
                 }
 
-                try
+                if (isset($method['serviceable']) === false)
                 {
-                    (new Validator())->setStrictFalse()->validateInput("addressShippingInfoResponse", $decodedResponse);
+                    $method['serviceable'] = true;
                 }
-                catch (Throwable $e)
+
+                if (isset($method['cod']) === false)
                 {
-                    $this->trace->count(Metric::MERCHANT_EXTERNAL_SHIPPING_INFO_CALL_FAILURE_COUNT,
-                        ['errorcode' => ErrorCode::SERVER_ERROR_MERCHANT_SERVICEABILITY_EXTERNAL_CALL_EXCEPTION]);
-                    $decodedResponse = [];
+                    $method['cod'] = false;
                 }
+            }
+
+            $platform = [];
+
+            if ($platformConfig !== null)
+            {
+                $platform = ['platform' => $platformConfig->getValue()];
+            }
+
+            $this->traceResponseTime(
+                Metric::MERCHANT_SHIPPING_INFO_CHECK_TIME_MILLIS,
+                $serviceabilityCheckStartTime,
+                $platform
+            );
+
+            // TODO: Remove this once the api contract change is finalized
+            $address = $this->convertShippingMethodsToOldFormat($address);
+
+            $this->cacheMerchantShippingInfo($orderId, $address);
+
+            return [self::SHIPPING_INFO_ADDRESSES => [$address]];
+
+        } finally {
+            if (empty($ex) === true){
+                $this->trace->info(TraceCode::MERCHANT_ADDRESS_SHIPPING_INFO_REQUEST,
+                    array_merge($dimensions,
+                        [
+                            'response' => $decodedResponse,
+                            'exception' => $ex
+                        ])
+                );
+            }else {
+                $this->trace->error(TraceCode::MERCHANT_ADDRESS_SHIPPING_INFO_REQUEST,
+                    array_merge($dimensions,
+                        [
+                            'response' => $decodedResponse,
+                            'exception' => $ex->getTrace()
+                        ])
+                );
             }
         }
-
-        // Backwards compatibility for merchant serviceability url/shopify that does not return methods
-        $decodedResponse = $this->convertOldFormatToShippingMethods($decodedResponse);
-
-        $address = array_merge($decodedResponse, $address);
-        foreach ($address['shipping_methods'] as &$method)
-        {
-            if (isset($method['cod_fee']) === false)
-            {
-                $method['cod_fee'] = $this->getFeeFromSlab(
-                    $orderMeta->getValue()['line_items_total'],
-                    Slab\Type::COD_SLAB);
-            }
-
-            if (isset($method['shipping_fee']) === false)
-            {
-                $method['shipping_fee'] = $this->getFeeFromSlab(
-                    $orderMeta->getValue()['line_items_total'],
-                    Slab\Type::SHIPPING_SLAB);
-            }
-
-            if (isset($method['serviceable']) === false)
-            {
-                $method['serviceable'] = true;
-            }
-
-            if (isset($method['cod']) === false)
-            {
-                $method['cod'] = false;
-            }
-        }
-
-        $dimensions = [];
-
-        if ($platformConfig !== null)
-        {
-            $dimensions = ['platform' => $platformConfig->getValue()];
-        }
-
-        $this->traceResponseTime(
-            Metric::MERCHANT_SHIPPING_INFO_CHECK_TIME_MILLIS,
-            $serviceabilityCheckStartTime,
-            $dimensions
-        );
-
-        // TODO: Remove this once the api contract change is finalized
-        $address = $this->convertShippingMethodsToOldFormat($address);
-
-        $this->cacheMerchantShippingInfo($orderId, $address);
-
-        return [self::SHIPPING_INFO_ADDRESSES => [$address]];
     }
 
     protected function convertOldFormatToShippingMethods(array $address): array

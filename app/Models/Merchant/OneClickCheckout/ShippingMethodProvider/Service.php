@@ -258,6 +258,13 @@ class Service extends Base\Service
                 'data'      => $exception,
             ];
             $this->app['trace']->error(TraceCode::SHIPPING_SERVICE_ERROR, $data);
+            $this->trace->count(Metric::SHIPPING_SERVICE_CALL_FAILURE_COUNT, array_merge(
+                $input,
+                [
+                    'merchant_id' => $merchantId,
+                    'error' => $data
+                ]
+            ));
         }
         catch (\Exception $exception)
         {
@@ -267,6 +274,13 @@ class Service extends Base\Service
             ];
             $this->app['trace']->error(TraceCode::SHIPPING_SERVICE_ERROR, $data);
             $result["serviceable"] = true;
+            $this->trace->count(Metric::SHIPPING_SERVICE_CALL_FAILURE_COUNT, array_merge(
+                $input,
+                [
+                    'merchant_id' => $merchantId,
+                    'error' => $data
+                ]
+            ));
         }
         return $result;
     }
