@@ -408,14 +408,14 @@ class Validator extends Base\Validator
             $bankDetailsVerificationStatus === BvsConstants::NOT_MATCHED or
             $bankDetailsVerificationStatus === BvsConstants::FAILED)
         {
-            throw new Exception\BadRequestValidationFailureException(
-                'Incorrect bank account details for this linked account'
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INCORRECT_BANK_ACCOUNT_DETAILS
             );
         }
-        elseif($bankDetailsVerificationStatus !== BvsConstants::VERIFIED)
+        else if($bankDetailsVerificationStatus !== BvsConstants::VERIFIED)
         {
-            throw new Exception\BadRequestValidationFailureException(
-                'Bank account verification is pending for this linked account'
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_BANK_DETAILS_VERIFICATION_PENDING
             );
         }
     }
