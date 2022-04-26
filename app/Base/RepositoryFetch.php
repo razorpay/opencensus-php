@@ -313,14 +313,6 @@ trait RepositoryFetch
 
                 return $this->getPaymentFetchReplicaConnection();
 
-            case ConnectionType::DATA_WAREHOUSE_ADMIN_REPLICA:
-                if ($this->isExperimentEnabled(self::ADMIN_TIDB_EXPERIMENT) === true)
-                {
-                    return $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_ADMIN);
-                }
-
-                return $this->getMasterReplicaConnection();
-
             case ConnectionType::RX_ACCOUNT_STATEMENTS:
                 return $this->getRxStatementConnection();
         }

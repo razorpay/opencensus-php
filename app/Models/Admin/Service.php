@@ -432,7 +432,7 @@ class Service extends Base\Service
 
         if ( $entity === Entity::PAYMENT OR $entity === Entity::ORDER )
         {
-            $entities = $this->repo->$entity->fetch($input, null, ConnectionType::DATA_WAREHOUSE_ADMIN_REPLICA);
+            $entities = $this->repo->$entity->fetch($input, null, ConnectionType::DATA_WAREHOUSE_ADMIN);
         }
         else if ($entity === Entity::BANKING_ACCOUNT_STATEMENT_POOL_ICICI or $entity === Entity::BANKING_ACCOUNT_STATEMENT_POOL_RBL)
         {
