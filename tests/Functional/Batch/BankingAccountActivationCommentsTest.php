@@ -41,13 +41,13 @@ class BankingAccountActivationCommentsTest extends TestCase
 
     public function testBatchUpload(array $entries = [])
     {
-        $refno = "191919";
+        $refno = '191919';
 
         $ba = $this->createBankingAccount([
-            "bank_reference_number" => $refno
+            'bank_reference_number' => $refno
         ]);
 
-        $comment = "This is a sample comment from the bank.";
+        $comment = 'This is a sample comment from the bank.';
 
         if (empty($entries) === true)
         {
@@ -55,7 +55,7 @@ class BankingAccountActivationCommentsTest extends TestCase
                 [
                     Batch\Header::RZP_REF_NO => $refno,
                     Batch\Header::COMMENT => $comment,
-                    Batch\Header::NEW_BANK_STATUS => 'Merchant is not available',
+                    Batch\Header::NEW_BANK_STATUS => 'merchant is Not Available', // to test case-insensitivity
                     Batch\Header::NEW_STATUS => 'RazorpayProcessing',
                     Batch\Header::NEW_SUBSTATUS => 'Merchant is not Available',
                     Batch\Header::NEW_ASSIGNEE => 'sales',
@@ -70,7 +70,7 @@ class BankingAccountActivationCommentsTest extends TestCase
                     Batch\Header::MID_OFFICE_POC_NAME => 'Name2',
                 ],
                 [
-                    Batch\Header::RZP_REF_NO => "102020", // non-existent
+                    Batch\Header::RZP_REF_NO => '102020', // non-existent
                     Batch\Header::COMMENT => $comment,
                     Batch\Header::NEW_STATUS => 'RazorpayProcessing',
                     Batch\Header::NEW_SUBSTATUS => 'Merchant is not Available',
@@ -95,7 +95,7 @@ class BankingAccountActivationCommentsTest extends TestCase
 
     public function testBatchUploadIcici(array $entries = [])
     {
-        $comment = "This is a sample comment from the icici bank.";
+        $comment = 'This is a sample comment from the icici bank.';
 
         if (empty($entries) === true)
         {
@@ -180,7 +180,8 @@ class BankingAccountActivationCommentsTest extends TestCase
                     Batch\Header::STP_SR_NUMBER                           => 'SR787535989',
                     Batch\Header::STP_SR_STATUS                           => 'Open',
                     Batch\Header::STP_SR_CLOSED_DATE                      => '11/9/2021',
-                    Batch\Header::STP_REMARKS                             => 'Requirement not mentioned in BR and request form, kindly check',
+                    Batch\Header::STP_REMARKS                             => 'Requirement not mentioned in BR and ' .
+                                                                            'request form, kindly check',
                     Batch\Header::STP_CONNECTED_BANKING                   => 'Reg Not done',
                     Batch\Header::STP_T3_DATE                             => '9/3/2021',
                     Batch\Header::STP_HELPDESK_SR_STATUS                  => 'Open',

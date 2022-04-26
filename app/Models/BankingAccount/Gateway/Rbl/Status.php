@@ -33,19 +33,19 @@ class Status
     const DROP_OFF = 'drop_off';
     const REJECTED = 'rejected';
 
-    const MERCHANT_NOT_AVAILABLE_EXTERNAL = 'Merchant is not available';
-    const MERCHANT_PREPARING_DOCS_EXTERNAL = 'Merchant is preparing docs';
-    const YET_TO_PICKUP_DOCS_EXTERNAL = 'Bank yet to pick up docs';
-    const PICKED_UP_DOCS_EXTERNAL = 'Bank has picked up docs';
-    const DISCREPANCY_IN_DOCS_EXTERNAL = 'Discrepancy in docs';
-    const PROCESSING_EXTERNAL = 'CA in Progress';
-    const ACCOUNT_OPENED_EXTERNAL = 'Bank has opened CA';
-    const MERCHANT_PREPARING_API_DOCS_EXTERNAL = 'Merchant is preparing API docs';
-    const DISCREPANCY_IN_API_DOCS_EXTERNAL = 'Discrepancy in API docs';
-    const API_ONBOARDING_IN_PROGRESS_EXTERNAL = 'API Onboarding in progress';
-    const ACTIVATED_EXTERNAL = 'CA Activated';
-    const DROP_OFF_EXTERNAL = 'Drop- Off';
-    const REJECTED_EXTERNAL = 'Bank Rejected due to Compliance';
+    const MERCHANT_NOT_AVAILABLE_EXTERNAL = 'merchant is not available';
+    const MERCHANT_PREPARING_DOCS_EXTERNAL = 'merchant is preparing docs';
+    const YET_TO_PICKUP_DOCS_EXTERNAL = 'bank yet to pick up docs';
+    const PICKED_UP_DOCS_EXTERNAL = 'bank has picked up docs';
+    const DISCREPANCY_IN_DOCS_EXTERNAL = 'discrepancy in docs';
+    const PROCESSING_EXTERNAL = 'ca in progress';
+    const ACCOUNT_OPENED_EXTERNAL = 'bank has opened ca';
+    const MERCHANT_PREPARING_API_DOCS_EXTERNAL = 'merchant is preparing api docs';
+    const DISCREPANCY_IN_API_DOCS_EXTERNAL = 'discrepancy in api docs';
+    const API_ONBOARDING_IN_PROGRESS_EXTERNAL = 'api onboarding in progress';
+    const ACTIVATED_EXTERNAL = 'ca activated';
+    const DROP_OFF_EXTERNAL = 'drop- off';
+    const REJECTED_EXTERNAL = 'bank rejected due to compliance';
 
     //
     // RBL webhook wants the final status of processing from our end.
@@ -247,9 +247,22 @@ class Status
         self::validateInternalBankStatusMappingToStatus($rblStatus, $status, $substatus);
     }
 
+    /**
+     * Transforms given status to lower case and trims whitespace.
+     *
+     * @param string $status
+     * @return string
+     */
+    public static function transformStatusToStandardForm(string $status): string
+    {
+        $status = trim($status);
+        return strtolower($status);
+    }
+
     public static function isValidExternalStatus(string $status)
     {
-        return in_array($status, array_keys(self::$externalToInternalStatusMap));
+        $processedStatus = self::transformStatusToStandardForm($status);
+        return in_array($processedStatus, array_keys(self::$externalToInternalStatusMap));
     }
 
     public static function validateExternalStatus(string $status)
@@ -267,9 +280,10 @@ class Status
 
     public static function transformFromExternalToInternal(string $status)
     {
-        self::validateExternalStatus($status);
+        $processedStatus = self::transformStatusToStandardForm($status);
+        self::validateExternalStatus($processedStatus);
 
-        return self::$externalToInternalStatusMap[$status];
+        return self::$externalToInternalStatusMap[$processedStatus];
     }
 
     public static function getAll(): array
