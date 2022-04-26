@@ -5578,7 +5578,7 @@ class RblBankingAccountStatementTest extends TestCase
         $this->fixtures->payout->createPayoutWithoutTransaction($payoutAttributes);
 
         $this->fixtures->edit('balance', $this->balance->getId(), [
-            'balance' => -299999900
+            'balance' => -899999900
         ]);
 
         $this->ba->cronAuth();

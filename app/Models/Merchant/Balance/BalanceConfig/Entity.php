@@ -25,8 +25,8 @@ class Entity extends Base\PublicEntity
     // current account(RBL) for X. We can't decide on max allowed for each merchant. There By setting a high value
     // 30 lakhs common for each merchant.
     // for more ref https://docs.google.com/document/d/1b_CsSdwC4n-Sld46g7i2TxhtCZQ6Kdeh8VK39HGyk2s/edit
-    const BANKING_MAX_NEGATIVE_FOR_RBL = 300000000;
-    const BANKING_MAX_NEGATIVE_FOR_ICICI = 300000000;
+    const BANKING_MAX_NEGATIVE_FOR_RBL = 900000000;
+    const BANKING_MAX_NEGATIVE_FOR_ICICI = 900000000;
 
     const ID                                   = 'id';
     const BALANCE_ID                           = 'balance_id';
