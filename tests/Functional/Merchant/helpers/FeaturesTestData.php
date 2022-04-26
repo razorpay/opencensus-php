@@ -735,6 +735,11 @@ return [
                         'display_name' => 'Bharat QR'
                     ],
                     [
+                        'feature'      => 'bharat_qr_v2',
+                        'value'        => false,
+                        'display_name' => 'Bharat QRv2'
+                    ],
+                    [
                         'feature'      => 'qr_image_content',
                         'value'        => false,
                         'display_name' => 'QR Intent link response'
@@ -1405,6 +1410,7 @@ return [
                     'disable_rupay',
                     'block_intl_recurring',
                     'bharat_qr',
+                    'bharat_qr_v2',
                     'mobikwik_offers',
                     'skip_hold_funds_on_payout',
                     'report_v2',
@@ -1521,6 +1527,7 @@ return [
                         'disable_rupay',
                         'block_intl_recurring',
                         'bharat_qr',
+                        'bharat_qr_v2',
                         'mobikwik_offers',
                         'skip_hold_funds_on_payout',
                         'report_v2',
@@ -1644,6 +1651,7 @@ return [
                     'disable_rupay',
                     'block_intl_recurring',
                     'bharat_qr',
+                    'bharat_qr_v2',
                     'mobikwik_offers',
                     'skip_hold_funds_on_payout',
                     'report_v2',

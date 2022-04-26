@@ -73,6 +73,7 @@ class Constants
     const DISABLE_RUPAY                   = 'disable_rupay';
     const BLOCK_INTERNATIONAL_RECURRING   = 'block_intl_recurring';
     const BHARAT_QR                       = 'bharat_qr';
+    const BHARAT_QR_V2                    = 'bharat_qr_v2';
     const MOBIKWIK_OFFERS                 = 'mobikwik_offers';
     const SKIP_HOLD_FUNDS_ON_PAYOUT       = 'skip_hold_funds_on_payout';
     const REPORT_V2                       = 'report_v2';
@@ -1397,6 +1398,7 @@ class Constants
         self::DISABLE_RUPAY                   => true,
         self::BLOCK_INTERNATIONAL_RECURRING   => false,
         self::BHARAT_QR                       => true,
+        self::BHARAT_QR_V2                    => true,
         self::MOBIKWIK_OFFERS                 => true,
         self::SKIP_HOLD_FUNDS_ON_PAYOUT       => true,
         self::REPORT_V2                       => true,
@@ -1860,6 +1862,11 @@ class Constants
             'feature'       => self::BHARAT_QR,
             'display_name'  => 'Bharat QR',
             'documentation' => 'qr-codes-bqr',
+        ],
+        self::BHARAT_QR_V2 => [
+            'feature'       => self::BHARAT_QR_V2,
+            'display_name'  => 'Bharat QRv2',
+            'documentation' => 'qr-codes-bqr-v2',
         ],
         self::QR_IMAGE_CONTENT => [
             'feature'       => self::QR_IMAGE_CONTENT,

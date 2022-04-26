@@ -39,7 +39,7 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
         parent::setUp();
 
-        $this->fixtures->merchant->addFeatures(['qr_codes', 'bharat_qr']);
+        $this->fixtures->merchant->addFeatures(['qr_codes', 'bharat_qr_v2', 'bharat_qr']);
 
         $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
 
@@ -52,7 +52,7 @@ class NonVirtualAccountQrCodeTest extends TestCase
         $this->fixtures->merchant->createAccount('LiveAccountMer');
 
         $this->fixtures->on('live')->merchant->edit('LiveAccountMer', ['activated' => true, 'live' => true]);
-        $this->fixtures->on('live')->merchant->addFeatures(['qr_codes', 'bharat_qr'], 'LiveAccountMer');
+        $this->fixtures->on('live')->merchant->addFeatures(['qr_codes', 'bharat_qr_v2', 'bharat_qr'], 'LiveAccountMer');
         $this->fixtures->on('live')->merchant->enableMethod('LiveAccountMer', 'upi');
         $this->fixtures->on('live')->merchant->edit('LiveAccountMer', ['pricing_plan_id' => Fee::DEFAULT_PRICING_PLAN_ID]);
 
