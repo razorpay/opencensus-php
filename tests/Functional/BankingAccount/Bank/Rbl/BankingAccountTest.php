@@ -2702,6 +2702,15 @@ class BankingAccountTest extends TestCase
             Status::NEEDS_CLARIFICATION_FROM_SALES);
     }
 
+    public function testUpdateBankingAccountSubStatusForNeedClarificationfromRZP()
+    {
+        $this->assertUpdateBankingAccountStatusFromTo(
+            Status::INITIATED,
+            Status::INITIATED,
+            null,
+            Status::NEEDS_CLARIFICATION_FROM_RZP);
+    }
+
     public function testUpdateBankingAccountStatusWithSubStatus()
     {
         $this->assertUpdateBankingAccountStatusFromTo(

@@ -38,6 +38,7 @@ class Status
     const MERCHANT_PREPARING_DOCS        = 'merchant_preparing_docs';
     const READY_TO_SEND_TO_BANK          = 'ready_to_send_to_bank';
     const BANK_TO_PICKUP_DOCS            = 'bank_to_pickup_docs';
+    const NEEDS_CLARIFICATION_FROM_RZP   = 'needs_clarification_from_rzp';
     const BANK_PICKED_UP_DOCS            = 'bank_picked_up_docs';
     const DISCREPANCY_IN_DOCS            = 'discrepancy_in_docs';
     const BANK_OPENED_ACCOUNT            = 'bank_opened_account';
@@ -100,6 +101,7 @@ class Status
     const READY_TO_SEND_TO_BANK_EXTRENAL          = 'Ready to send to Bank';
     const BANK_TO_PICKUP_DOCS_EXTERNAL            = 'Bank yet to pick up Docs';
     const BANK_PICKED_UP_DOCS_EXTERNAL            = 'Bank has picked up Docs';
+    const RAZORPAY_DEPENDENT_EXTERNAL             = 'Razorpay Dependent';
     const DISCREPANCY_IN_DOCS_EXTERNAL            = 'Discrepancy in Docs';
     const BANK_OPENED_ACCOUNT_EXTERNAL            = 'Bank Opened Account-Webhook Pending';
     const API_ONBOARDING_PENDING_EXTERNAL         = 'API onboarding is Pending on RZP';
@@ -244,6 +246,7 @@ class Status
         self::MERCHANT_PREPARING_DOCS,
         self::READY_TO_SEND_TO_BANK,
         self::BANK_TO_PICKUP_DOCS,
+        self::NEEDS_CLARIFICATION_FROM_RZP,
         self::BANK_PICKED_UP_DOCS,
         self::DISCREPANCY_IN_DOCS,
         self::BANK_OPENED_ACCOUNT,
@@ -365,6 +368,7 @@ class Status
             self::MERCHANT_PREPARING_DOCS,
             self::BANK_TO_PICKUP_DOCS,
             self::BANK_PICKED_UP_DOCS,
+            self::NEEDS_CLARIFICATION_FROM_RZP,
         ],
         self::PROCESSING => [
             self::DISCREPANCY_IN_DOCS,
@@ -453,6 +457,7 @@ class Status
         self::MERCHANT_PREPARING_DOCS_EXTERNAL        => self::MERCHANT_PREPARING_DOCS,
         self::READY_TO_SEND_TO_BANK_EXTRENAL          => self::READY_TO_SEND_TO_BANK,
         self::BANK_TO_PICKUP_DOCS_EXTERNAL            => self::BANK_TO_PICKUP_DOCS,
+        self::RAZORPAY_DEPENDENT_EXTERNAL             => self::NEEDS_CLARIFICATION_FROM_RZP,
         self::BANK_PICKED_UP_DOCS_EXTERNAL            => self::BANK_PICKED_UP_DOCS,
         self::DISCREPANCY_IN_DOCS_EXTERNAL            => self::DISCREPANCY_IN_DOCS,
         self::BANK_OPENED_ACCOUNT_EXTERNAL            => self::BANK_OPENED_ACCOUNT,
