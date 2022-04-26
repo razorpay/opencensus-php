@@ -99,14 +99,16 @@ class Core extends Base\Core
         {
             $subBalanceMapConfig = $adminService->getConfigKey(['key' => ConfigKey::SUB_BALANCES_MAP]);
 
-            if ((empty($subBalanceMapConfig) === true) or
-                (array_key_exists($parentBalanceId, $subBalanceMapConfig) === false))
+            if (empty($subBalanceMapConfig) === true)
             {
                 $fetchFromDb = true;
             }
             else
             {
-                $childBalances = $subBalanceMapConfig[$parentBalanceId];
+                if(array_key_exists($parentBalanceId, $subBalanceMapConfig) === true)
+                {
+                    $childBalances = $subBalanceMapConfig[$parentBalanceId];
+                }
             }
         }
         catch (\Throwable $exception)
