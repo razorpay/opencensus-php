@@ -10,7 +10,6 @@ use RZP\Models\FileStore\Type;
 use RZP\Exception\ServerErrorException;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Payout\Entity as PayoutEntity;
-use RZP\Models\PayoutSource\Entity as PayoutSourceEntity;
 
 class Core extends Base\Core
 {
@@ -23,27 +22,14 @@ class Core extends Base\Core
     {
         $payoutId = $payout->getId();
 
-        $input[Entity::PAYOUT_ID] = $payoutId;
-
-        $this->trace->info(
-            TraceCode::PAYOUT_DETAILS_ENTITY_CREATE_REQUEST,
-            $input
-        );
-
-        $payoutDetails = (new Entity)->build($input);
-
-        $this->repo->saveOrFail($payoutDetails);
-
-        $this->trace->info(
-            TraceCode::PAYOUT_DETAILS_ENTITY_CREATED,
-            $payoutDetails->toArray()
-        );
+        $payoutDetails = $this->createBaseEntity($input, $payoutId);
 
         $payoutSource = $payout->getInputSourceDetails();
 
-        if (isset($input[Entity::ADDITIONAL_INFO]) and
-            isset($payoutDetails->getAdditionalInfo()[Entity::ATTACHMENTS_KEY]) and
-            !isset($payoutSource))
+        // rename attachment when payout is a vanilla payout .i.e. no payout source
+        if ((isset($input[Entity::ADDITIONAL_INFO]) === true) and
+            (isset($payoutDetails->getAdditionalInfo()[Entity::ATTACHMENTS_KEY]) === true) and
+            (isset($payoutSource) === false))
         {
             try
             {
@@ -55,7 +41,7 @@ class Core extends Base\Core
                     TraceCode::PAYOUT_ATTACHMENT_RENAME_FAILURE,
                     [
                         'payout_id' => $payoutId,
-                        'error' => $ex->getMessage()
+                        'error'     => $ex->getMessage()
                     ]
                 );
             }
@@ -68,14 +54,15 @@ class Core extends Base\Core
 
         $uniqueId = Base\UniqueIdEntity::generateUniqueId();
 
-        // adding uniqueID to file name
-        $modifiedFileName = sprintf('%s_%s', $uniqueId, urlencode(str_replace(' ', '-', $filename)));
+        $modifiedFileName = str_replace(' ', '-', preg_replace('/[^A-Za-z0-9 .]/', '', trim($filename)));
+
+        $modifiedFileName = sprintf('%s_%s', $uniqueId, $modifiedFileName);
 
         $ufhResponse = $ufhService
             ->uploadFileAndGetUrl($file,
-                                 $modifiedFileName,
-                                 Type::PAYOUT_ATTACHMENTS,
-                                 $entity);
+                                  $modifiedFileName,
+                                  Type::PAYOUT_ATTACHMENTS,
+                                  $entity);
 
         $this->trace->info(
             TraceCode::PAYOUT_ATTACHMENT_UPLOADED_SUCCESSFULLY,
@@ -84,26 +71,42 @@ class Core extends Base\Core
 
         $fileId = '';
 
-        if(isset($ufhResponse[Entity::ATTACHMENTS_FILE_ID]))
+        if (isset($ufhResponse[Entity::ATTACHMENTS_FILE_ID]) === true)
         {
             $fileId = $ufhResponse[Entity::ATTACHMENTS_FILE_ID];
         }
 
         return [
-            Entity::ATTACHMENTS_FILE_ID     => $fileId,
-            Entity::ATTACHMENTS_FILE_NAME   => $filename
+            Entity::ATTACHMENTS_FILE_ID   => $fileId,
+            Entity::ATTACHMENTS_FILE_NAME => $filename
         ];
     }
 
     public function updateAttachments(string $payoutId, array $input): array
     {
-        $updateKey = sprintf('%s->%s', Entity::ADDITIONAL_INFO, Entity::ATTACHMENTS_KEY);
-
-        $updates = array($updateKey => $input[Entity::ATTACHMENTS_KEY]);
-
         try
         {
-            $this->repo->payouts_details->updatePayoutDetails([$payoutId], $updates);
+            /** @var Base\PublicCollection $payoutDetails */
+            $payoutDetails = $this->repo->payouts_details->getPayoutDetailsByPayoutId($payoutId);
+
+            if ($payoutDetails->isNotEmpty() === true)
+            {
+                $updateKey = sprintf('%s->%s', Entity::ADDITIONAL_INFO, Entity::ATTACHMENTS_KEY);
+
+                $updates = array($updateKey => $input[Entity::ATTACHMENTS_KEY]);
+
+                $this->repo->payouts_details->updatePayoutDetails([$payoutId], $updates);
+            }
+            else
+            {
+                $additionalInfo = [
+                    Entity::ATTACHMENTS => array_pull($input, Entity::ATTACHMENTS_KEY, [])
+                ];
+
+                $input[Entity::ADDITIONAL_INFO] = json_encode($additionalInfo, true);
+
+                $this->createBaseEntity($input, $payoutId);
+            }
 
             $this->response = [
                 Entity::STATUS => Entity::SUCCESS,
@@ -144,15 +147,36 @@ class Core extends Base\Core
     {
         try
         {
+            // used to store the Payout Ids with existing rows in payouts_details
+            $existingPayoutIds = array();
 
-            $updateKey = sprintf('%s->%s', Entity::ADDITIONAL_INFO, Entity::ATTACHMENTS_KEY);
+            foreach ($validPayoutIds as $payoutId)
+            {
+                /** @var Base\PublicCollection $payoutDetails */
+                $payoutDetails = $this->repo->payouts_details->getPayoutDetailsByPayoutId($payoutId);
 
-            $updates = array($updateKey => $updateRequest[Entity::ATTACHMENTS_KEY]);
+                if ($payoutDetails->isNotEmpty() === true)
+                {
+                    array_push($existingPayoutIds, $payoutId);
+                }
+                else
+                {
+                    $additionalInfo[Entity::ATTACHMENTS] = $updateRequest[Entity::ATTACHMENTS_KEY];
 
-            $this
-                ->repo
-                ->payouts_details
-                ->updatePayoutDetails($validPayoutIds, $updates);
+                    $input[Entity::ADDITIONAL_INFO] = json_encode($additionalInfo, true);
+
+                    $this->createBaseEntity($input, $payoutId);
+                }
+            }
+
+            if (count($existingPayoutIds) > 0)
+            {
+                $updateKey = sprintf('%s->%s', Entity::ADDITIONAL_INFO, Entity::ATTACHMENTS_KEY);
+
+                $updates = array($updateKey => $updateRequest[Entity::ATTACHMENTS_KEY]);
+
+                $this->repo->payouts_details->updatePayoutDetails($existingPayoutIds, $updates);
+            }
 
             $this->response = [
                 Entity::STATUS => 'SUCCESS',
@@ -176,10 +200,7 @@ class Core extends Base\Core
 
     public function getPayoutDetailsById(string $payoutId)
     {
-        return $this->repo
-            ->payouts_details
-            ->getPayoutDetailsByPayoutId($payoutId)
-            ->first();
+        return $this->repo->payouts_details->getPayoutDetailsByPayoutId($payoutId)->first();
     }
 
     public function getAttachmentSignedUrl(string $attachmentId)
@@ -217,8 +238,8 @@ class Core extends Base\Core
         if ($ufhServiceMock === false)
         {
             $this->ufhService = new UfhService($this->app,
-            $this->app['basicauth']->getMerchantId(),
-            EntityConstants::PAYOUT);
+                                               $this->app['basicauth']->getMerchantId(),
+                                               EntityConstants::PAYOUT);
         }
         else
         {
@@ -235,10 +256,10 @@ class Core extends Base\Core
             );
 
             throw new ServerErrorException(
-            'Could not get UFH Client',
-            ErrorCode::SERVER_ERROR_INVALID_UFH_CLIENT,
-            null
-        );
+                'Could not get UFH Client',
+                ErrorCode::SERVER_ERROR_INVALID_UFH_CLIENT,
+                null
+            );
         }
 
         return $this->ufhService;
@@ -254,11 +275,11 @@ class Core extends Base\Core
 
             $uniqueId = Base\UniqueIdEntity::generateUniqueId();
 
-            $modifiedFileName = sprintf('%s_%s_%s',
-                                        sprintf('%s%s', PayoutEntity::getIdPrefix(), $payoutId),
-                                        $uniqueId, urlencode(str_replace(' ', '-', $fileName)));
+            $fileName = str_replace(' ', '-', preg_replace('/[^A-Za-z0-9 .]/', '', trim($fileName)));
 
-            $this->getUfhService()->renameFile($fileId, $modifiedFileName);
+            $fileName = sprintf('%s_%s', $uniqueId, $fileName);
+
+            $this->getUfhService()->renameFile($fileId, $fileName);
         }
     }
 
@@ -284,11 +305,32 @@ class Core extends Base\Core
                 'Could not update tax payment ID for Payout',
                 ErrorCode::SERVER_ERROR_TAX_PAYMENT_ID_UPDATE_FAILURE,
                 [
-                    'payout_id'         => $payoutId,
-                    'tax_payment_id'    => $taxPaymentId,
+                    'payout_id'      => $payoutId,
+                    'tax_payment_id' => $taxPaymentId,
                 ],
                 $ex
             );
         }
+    }
+
+    private function createBaseEntity(array $input, string $payoutId): Entity
+    {
+        $input[Entity::PAYOUT_ID] = $payoutId;
+
+        $this->trace->info(
+            TraceCode::PAYOUT_DETAILS_ENTITY_CREATE_REQUEST,
+            $input
+        );
+
+        $payoutDetails = (new Entity)->build($input);
+
+        $this->repo->saveOrFail($payoutDetails);
+
+        $this->trace->info(
+            TraceCode::PAYOUT_DETAILS_ENTITY_CREATED,
+            $payoutDetails->toArray()
+        );
+
+        return $payoutDetails;
     }
 }

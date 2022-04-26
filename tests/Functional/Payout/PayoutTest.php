@@ -12,6 +12,8 @@ use Mockery;
 use Requests_Response;
 
 use Carbon\Carbon;
+use Illuminate\Http\UploadedFile;
+
 use RZP\Models\PayoutOutbox\Constants as PayoutOutboxConstants;
 use RZP\Services\DiagClient;
 use RZP\Services\Raven;
@@ -39,6 +41,7 @@ use RZP\Models\Card\Issuer;
 use RZP\Models\Card\Network;
 use RZP\Models\Payout\Status;
 use RZP\Services\RazorXClient;
+use RZP\Models\PayoutsDetails;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Services\FTS\FundTransfer;
 use RZP\Constants\Mode as EnvMode;
@@ -72,6 +75,7 @@ use RZP\Models\BankingAccountStatement\Details;
 use RZP\Jobs\PayoutPostCreateProcessLowPriority;
 use RZP\Models\Reversal\Entity as ReversalEntity;
 use RZP\Jobs\FTS\FundTransfer as FtsFundTransferJob;
+use RZP\Tests\Functional\Helpers\PayoutAttachmentTrait;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
 use RZP\Tests\Functional\Helpers\Payout\PayoutTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -96,6 +100,7 @@ class PayoutTest extends OAuthTestCase
     use HeimdallTrait;
     use WorkflowTrait;
     use SettlementTrait;
+    use PayoutAttachmentTrait;
     use TestsWebhookEvents;
     use DbEntityFetchTrait;
     use TestsBusinessBanking;
@@ -2074,7 +2079,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->startTest();
 
-        $payoutDetails = $this->getDbLastEntity('payouts_details');
+        $payoutDetails = $this->getDbLastEntity(Constants\Entity::PAYOUTS_DETAILS);
 
         $this->assertNotNull($payoutDetails);
         $this->assertEquals(true, $payoutDetails->getQueueIfLowBalanceFlag());
@@ -18280,7 +18285,7 @@ class PayoutTest extends OAuthTestCase
             'bank_status_code' => 'SUCCESS'
         ]);
 
-        $updatedPayout = $this->getDbEntityById('payout', $payoutId)->toArray();
+        $updatedPayout      = $this->getDbEntityById('payout', $payoutId)->toArray();
         $updatedTransaction = $this->getDbEntityById('transaction', 'sampleTxnId234')->toArray();
 
         $this->assertEquals($updatedPayout[Payout\Entity::STATUS], Payout\Status::PROCESSED);
@@ -18294,7 +18299,7 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals('sampleTxnId234', $updatedPayout['transaction_id']);
         $this->assertEquals('payout', $updatedTransaction['type']);
 
-        for ($index = 0; $index<count($ledgerSnsPayloadArray); $index++)
+        for ($index = 0; $index < count($ledgerSnsPayloadArray); $index++)
         {
             $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
 
@@ -18345,36 +18350,36 @@ class PayoutTest extends OAuthTestCase
 
         // create a external for this payout so it gets picked
         $this->fixtures->create('external',
-            [
-                'id'                        => 'randomexternal',
-                'merchant_id'               => $payout->getMerchantId(),
-                'amount'                    => $payout->getAmount(),
-                'channel'                   => $payout->getChannel(),
-                'transaction_id'            => $txnCreated['id'],
-                'utr'                       => $payout->getUtr(),
-                'balance_id'                => $payout->getBalanceId(),
-            ]);
+                                [
+                                    'id'             => 'randomexternal',
+                                    'merchant_id'    => $payout->getMerchantId(),
+                                    'amount'         => $payout->getAmount(),
+                                    'channel'        => $payout->getChannel(),
+                                    'transaction_id' => $txnCreated['id'],
+                                    'utr'            => $payout->getUtr(),
+                                    'balance_id'     => $payout->getBalanceId(),
+                                ]);
 
         $externalCreated = $this->getDbLastEntity('external');
 
         // create a bas for this payout so it gets picked
         $this->fixtures->create('banking_account_statement',
-            [
-                'type'                      => 'debit',
-                'amount'                    => $payout->getAmount(),
-                'channel'                   => $payout->getChannel(),
-                'account_number'            => $payout->balance->getAccountNumber(),
-                'transaction_id'            => $txnCreated['id'],
-                'entity_id'                 => $externalCreated['id'],
-                'entity_type'               => 'external',
-                'bank_transaction_id'       => 'SDHDH',
-                'balance'                   => 30019891,
-                'transaction_date'          => 1584987183,
-                'utr'                       => $payout->getUtr()
-            ]);
+                                [
+                                    'type'                => 'debit',
+                                    'amount'              => $payout->getAmount(),
+                                    'channel'             => $payout->getChannel(),
+                                    'account_number'      => $payout->balance->getAccountNumber(),
+                                    'transaction_id'      => $txnCreated['id'],
+                                    'entity_id'           => $externalCreated['id'],
+                                    'entity_type'         => 'external',
+                                    'bank_transaction_id' => 'SDHDH',
+                                    'balance'             => 30019891,
+                                    'transaction_date'    => 1584987183,
+                                    'utr'                 => $payout->getUtr()
+                                ]);
 
         // create a bas details for this payout so it gets used to pick basd id for ledger
-        $this->fixtures->create('banking_account_statement_details',[
+        $this->fixtures->create('banking_account_statement_details', [
             Details\Entity::ID             => 'xbas0000000002',
             Details\Entity::MERCHANT_ID    => $payout->getMerchantId(),
             Details\Entity::BALANCE_ID     => $payout->getBalanceId(),
@@ -18384,13 +18389,13 @@ class PayoutTest extends OAuthTestCase
         ]);
 
         (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
-            'fta_status' => 'processed',
-            'failure_reason' => '',
+            'fta_status'       => 'processed',
+            'failure_reason'   => '',
             'bank_status_code' => 'SUCCESS'
         ]);
 
         $updatedPayout = $this->getDbEntityById('payout', $payoutId)->toArray();
-        $transaction = $this->getDbEntityById('transaction', 'sampleTxnId234')->toArray();
+        $transaction   = $this->getDbEntityById('transaction', 'sampleTxnId234')->toArray();
 
         $this->assertEquals($updatedPayout[Payout\Entity::STATUS], Payout\Status::PROCESSED);
         $this->assertNull($updatedPayout[Payout\Entity::REVERSED_AT]);
@@ -18403,7 +18408,7 @@ class PayoutTest extends OAuthTestCase
         $this->assertNull($updatedPayout['transaction_id']);
         $this->assertEquals('external', $transaction['type']);
 
-        for ($index = 0; $index<count($ledgerSnsPayloadArray); $index++)
+        for ($index = 0; $index < count($ledgerSnsPayloadArray); $index++)
         {
             $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
 
@@ -18520,7 +18525,7 @@ class PayoutTest extends OAuthTestCase
             'bank_status_code' => 'SUCCESS'
         ]);
 
-        $updatedPayout = $this->getDbEntityById('payout', $payoutId)->toArray();
+        $updatedPayout      = $this->getDbEntityById('payout', $payoutId)->toArray();
         $updatedTransaction = $this->getDbEntityById('transaction', 'sampleTxnId235')->toArray();
 
         $reversal = $this->getDbLastEntity('reversal');
@@ -18533,10 +18538,10 @@ class PayoutTest extends OAuthTestCase
             'da_payout_reversed_recon',
         ];
 
-        $this->assertEquals('sampleTxnId235' , $reversal['transaction_id']);
+        $this->assertEquals('sampleTxnId235', $reversal['transaction_id']);
         $this->assertEquals('reversal', $updatedTransaction['type']);
 
-        for ($index = 0; $index<count($ledgerSnsPayloadArray); $index++)
+        for ($index = 0; $index < count($ledgerSnsPayloadArray); $index++)
         {
             $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
 
@@ -18574,15 +18579,15 @@ class PayoutTest extends OAuthTestCase
             'amount'      => $payout->getAmount(),
             'balance_id'  => $payout->getBalanceId(),
             'type'        => 'payout',
-//            'entity_id'   => $payoutId,
+            //            'entity_id'   => $payoutId,
         ];
         $this->fixtures->create('transaction', $attributes);
         $txnForPayout = $this->getDbLastEntity('transaction');
 
         // update payout with utr and txn, so that we can mover ahead to test reversal
         $this->fixtures->edit('payout', $payoutId, [
-            'utr'               => 'sampleutr876545',
-//            'transaction_id'    => $txnForPayout['id'],
+            'utr' => 'sampleutr876545',
+            //            'transaction_id'    => $txnForPayout['id'],
         ]);
 
         $txnForPayout->sourceAssociate($payout);
@@ -18592,7 +18597,7 @@ class PayoutTest extends OAuthTestCase
         $payout->saveOrFail();
 
         $txnForPayout = $this->getDbLastEntity('transaction');
-        $payout = $this->getDbLastEntity('payout');
+        $payout       = $this->getDbLastEntity('payout');
 
         // create a txn linked to bas and external
         $attributes = [
@@ -18608,37 +18613,37 @@ class PayoutTest extends OAuthTestCase
 
         // create a external for this payout so it gets picked
         $this->fixtures->create('external',
-            [
-                'id'                        => 'randomexternal',
-                'merchant_id'               => $payout->getMerchantId(),
-                'amount'                    => $payout->getAmount(),
-                'channel'                   => $payout->getChannel(),
-                'transaction_id'            => $txnCreated['id'],
-                'utr'                       => $payout->getUtr(),
-                'balance_id'                => $payout->getBalanceId(),
-            ]);
+                                [
+                                    'id'             => 'randomexternal',
+                                    'merchant_id'    => $payout->getMerchantId(),
+                                    'amount'         => $payout->getAmount(),
+                                    'channel'        => $payout->getChannel(),
+                                    'transaction_id' => $txnCreated['id'],
+                                    'utr'            => $payout->getUtr(),
+                                    'balance_id'     => $payout->getBalanceId(),
+                                ]);
 
         $externalCreated = $this->getDbLastEntity('external');
 
         // create a bas for this payout so it gets picked
         $this->fixtures->create('banking_account_statement',
-            [
-                'type'                      => 'credit',
-                'amount'                    => $payout->getAmount(),
-                'channel'                   => $payout->getChannel(),
-                'account_number'            => $payout->balance->getAccountNumber(),
-                'transaction_id'            => $txnCreated['id'],
-                'entity_id'                 => $externalCreated['id'],
-                'entity_type'               => 'external',
-                'bank_transaction_id'       => 'SDHDH',
-                'balance'                   => 30019891,
-                'transaction_date'          => 1584987183,
-                'utr'                       => $payout->getUtr(),
-                'created_at'                => Carbon::now()->getTimestamp() + 3600
-            ]);
+                                [
+                                    'type'                => 'credit',
+                                    'amount'              => $payout->getAmount(),
+                                    'channel'             => $payout->getChannel(),
+                                    'account_number'      => $payout->balance->getAccountNumber(),
+                                    'transaction_id'      => $txnCreated['id'],
+                                    'entity_id'           => $externalCreated['id'],
+                                    'entity_type'         => 'external',
+                                    'bank_transaction_id' => 'SDHDH',
+                                    'balance'             => 30019891,
+                                    'transaction_date'    => 1584987183,
+                                    'utr'                 => $payout->getUtr(),
+                                    'created_at'          => Carbon::now()->getTimestamp() + 3600
+                                ]);
 
         // create a bas details for this payout so it gets used to pick basd id for ledger
-        $this->fixtures->create('banking_account_statement_details',[
+        $this->fixtures->create('banking_account_statement_details', [
             Details\Entity::ID             => 'xbas0000000002',
             Details\Entity::MERCHANT_ID    => $payout->getMerchantId(),
             Details\Entity::BALANCE_ID     => $payout->getBalanceId(),
@@ -18648,13 +18653,13 @@ class PayoutTest extends OAuthTestCase
         ]);
 
         (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
-            'fta_status' => 'reversed',
-            'failure_reason' => '',
+            'fta_status'       => 'reversed',
+            'failure_reason'   => '',
             'bank_status_code' => 'SUCCESS'
         ]);
 
         $updatedPayout = $this->getDbEntityById('payout', $payoutId)->toArray();
-        $transaction = $this->getDbEntityById('transaction', 'sampleTxnId235')->toArray();
+        $transaction   = $this->getDbEntityById('transaction', 'sampleTxnId235')->toArray();
 
         $reversal = $this->getDbLastEntity('reversal');
 
@@ -18669,7 +18674,7 @@ class PayoutTest extends OAuthTestCase
         $this->assertNull($reversal['transaction_id']);
         $this->assertEquals('external', $transaction['type']);
 
-        for ($index = 0; $index<count($ledgerSnsPayloadArray); $index++)
+        for ($index = 0; $index < count($ledgerSnsPayloadArray); $index++)
         {
             $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
 
@@ -20390,8 +20395,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->assertEquals(Payout\Status::PROCESSED, $payout->getStatus());
 
-        Mail::assertQueued(PayoutMail::class, function($mail)
-        {
+        Mail::assertQueued(PayoutMail::class, function($mail) {
             $viewData = $mail->viewData;
 
             $this->assertEquals($mail->originProduct, 'banking');
@@ -20440,15 +20444,15 @@ class PayoutTest extends OAuthTestCase
 
         $this->startTest();
 
-        $payoutDetails = $this->getDbLastEntity('payouts_details');
+        $payoutDetails = $this->getDbLastEntity(Constants\Entity::PAYOUTS_DETAILS);
 
         $this->assertNotNull($payoutDetails);
 
-        $this->assertEquals(1, $payoutDetails->getAttribute('queue_if_low_balance_flag'));
+        $this->assertEquals(1, $payoutDetails->getAttribute(PayoutsDetails\Entity::QUEUE_IF_LOW_BALANCE_FLAG));
 
-        $this->assertNull($payoutDetails->getAttribute('tds_category_id'));
+        $this->assertNull($payoutDetails->getAttribute(PayoutsDetails\Entity::TDS_CATEGORY_ID));
 
-        $this->assertNull($payoutDetails->getAttribute('additional_info'));
+        $this->assertNull($payoutDetails->getAttribute(PayoutsDetails\Entity::ADDITIONAL_INFO));
     }
 
     public function testCohesiveCreatePayoutWithAttachmentsFailsForPrivateAuth()
@@ -20506,7 +20510,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->assertEquals($contact->getAttribute('id'), $fundAccount->getAttribute('source_id'));
 
-        $payout = $this->getDbLastEntity('payout');
+        $payout = $this->getDbLastEntity(Constants\Entity::PAYOUT);
 
         $this->assertNotNull($payout);
 
@@ -20540,21 +20544,21 @@ class PayoutTest extends OAuthTestCase
 
         $this->assertEquals($contact->getAttribute('id'), $fundAccount->getAttribute('source_id'));
 
-        $payout = $this->getDbLastEntity('payout');
+        $payout = $this->getDbLastEntity(Constants\Entity::PAYOUT);
 
         $this->assertNotNull($payout);
 
         $this->assertEquals($fundAccount->getAttribute('id'), $payout->getAttribute('fund_account_id'));
 
-        $payoutDetails = $this->getDbLastEntity('payouts_details');
+        $payoutDetails = $this->getDbLastEntity(Constants\Entity::PAYOUTS_DETAILS);
 
         $this->assertNotNull($payoutDetails);
 
-        $this->assertEquals(1, $payoutDetails->getAttribute('queue_if_low_balance_flag'));
+        $this->assertEquals(1, $payoutDetails->getAttribute(PayoutsDetails\Entity::QUEUE_IF_LOW_BALANCE_FLAG));
 
-        $this->assertNull($payoutDetails->getAttribute('tds_category_id'));
+        $this->assertNull($payoutDetails->getAttribute(PayoutsDetails\Entity::TDS_CATEGORY_ID));
 
-        $this->assertNull($payoutDetails->getAttribute('additional_info'));
+        $this->assertNull($payoutDetails->getAttribute(PayoutsDetails\Entity::ADDITIONAL_INFO));
     }
 
     protected function prepareTdsCategoriesCache()
@@ -20594,20 +20598,20 @@ class PayoutTest extends OAuthTestCase
 
         $this->startTest();
 
-        $payoutDetails = $this->getDbLastEntity('payouts_details');
+        $payoutDetails = $this->getDbLastEntity(Constants\Entity::PAYOUTS_DETAILS);
 
         $this->assertNotNull($payoutDetails);
 
-        $this->assertEquals(1, $payoutDetails->getAttribute('tds_category_id'));
+        $this->assertEquals(1, $payoutDetails->getAttribute(PayoutsDetails\Entity::TDS_CATEGORY_ID));
 
-        $this->assertEquals(0, $payoutDetails->getAttribute('queue_if_low_balance_flag'));
+        $this->assertEquals(0, $payoutDetails->getAttribute(PayoutsDetails\Entity::QUEUE_IF_LOW_BALANCE_FLAG));
 
         $expectedAdditionalInfo = [
-            'tds_amount'      => 1000,
-            'subtotal_amount' => 10000,
+            'tds_amount'                           => 1000,
+            PayoutsDetails\Entity::SUBTOTAL_AMOUNT => 10000,
         ];
 
-        $this->assertEquals($expectedAdditionalInfo, json_decode($payoutDetails->getAttribute('additional_info'), true));
+        $this->assertEquals($expectedAdditionalInfo, json_decode($payoutDetails->getAttribute(PayoutsDetails\Entity::ADDITIONAL_INFO), true));
 
         $this->clearTdsCategoriesCache();
     }
@@ -20656,20 +20660,20 @@ class PayoutTest extends OAuthTestCase
 
         $this->startTest();
 
-        $payoutDetails = $this->getDbLastEntity('payouts_details');
+        $payoutDetails = $this->getDbLastEntity(Constants\Entity::PAYOUTS_DETAILS);
 
         $this->assertNotNull($payoutDetails);
 
-        $this->assertEquals(1, $payoutDetails->getAttribute('tds_category_id'));
+        $this->assertEquals(1, $payoutDetails->getAttribute(PayoutsDetails\Entity::TDS_CATEGORY_ID));
 
-        $this->assertEquals(0, $payoutDetails->getAttribute('queue_if_low_balance_flag'));
+        $this->assertEquals(0, $payoutDetails->getAttribute(PayoutsDetails\Entity::QUEUE_IF_LOW_BALANCE_FLAG));
 
         $expectedAdditionalInfo = [
-            'tds_amount'      => 1000,
-            'subtotal_amount' => 10000,
+            'tds_amount'                           => 1000,
+            PayoutsDetails\Entity::SUBTOTAL_AMOUNT => 10000,
         ];
 
-        $this->assertEquals($expectedAdditionalInfo, json_decode($payoutDetails->getAttribute('additional_info'), true));
+        $this->assertEquals($expectedAdditionalInfo, json_decode($payoutDetails->getAttribute(PayoutsDetails\Entity::ADDITIONAL_INFO), true));
 
         $this->clearTdsCategoriesCache();
     }
@@ -20684,20 +20688,20 @@ class PayoutTest extends OAuthTestCase
 
         $this->startTest();
 
-        $payoutDetails = $this->getDbLastEntity('payouts_details');
+        $payoutDetails = $this->getDbLastEntity(Constants\Entity::PAYOUTS_DETAILS);
 
         $this->assertNotNull($payoutDetails);
 
         $expectedAdditionalInfo = [
-            'attachments' => [
+            PayoutsDetails\Entity::ATTACHMENTS_KEY => [
                 [
-                    'file_id'   => 'file_testing',
-                    'file_name' => 'not-your-attachment.pdf'
+                    PayoutsDetails\Entity::ATTACHMENTS_FILE_ID   => 'file_testing',
+                    PayoutsDetails\Entity::ATTACHMENTS_FILE_NAME => 'not-your-attachment.pdf'
                 ],
             ],
         ];
 
-        $this->assertEquals($expectedAdditionalInfo, json_decode($payoutDetails->getAttribute('additional_info'), true));
+        $this->assertEquals($expectedAdditionalInfo, json_decode($payoutDetails->getAttribute(PayoutsDetails\Entity::ADDITIONAL_INFO), true));
     }
 
     public function testCohesiveCreatePayoutWithoutTdsSuccessForProxyAuth()
@@ -20710,7 +20714,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->startTest();
 
-        $payoutDetails = $this->getDbLastEntity('payouts_details');
+        $payoutDetails = $this->getDbLastEntity(Constants\Entity::PAYOUTS_DETAILS);
 
         $this->assertNull($payoutDetails);
     }
@@ -20777,20 +20781,20 @@ class PayoutTest extends OAuthTestCase
 
         $this->startTest();
 
-        $payoutDetails = $this->getDbLastEntity('payouts_details');
+        $payoutDetails = $this->getDbLastEntity(Constants\Entity::PAYOUTS_DETAILS);
 
         $this->assertNotNull($payoutDetails);
 
-        $this->assertEquals(1, $payoutDetails->getAttribute('tds_category_id'));
+        $this->assertEquals(1, $payoutDetails->getAttribute(PayoutsDetails\Entity::TDS_CATEGORY_ID));
 
-        $this->assertEquals(1, $payoutDetails->getAttribute('queue_if_low_balance_flag'));
+        $this->assertEquals(1, $payoutDetails->getAttribute(PayoutsDetails\Entity::QUEUE_IF_LOW_BALANCE_FLAG));
 
         $expectedAdditionalInfo = [
-            'tds_amount'      => 1000,
-            'subtotal_amount' => 10000,
+            'tds_amount'                           => 1000,
+            PayoutsDetails\Entity::SUBTOTAL_AMOUNT => 10000,
         ];
 
-        $this->assertEquals($expectedAdditionalInfo, json_decode($payoutDetails->getAttribute('additional_info'), true));
+        $this->assertEquals($expectedAdditionalInfo, json_decode($payoutDetails->getAttribute(PayoutsDetails\Entity::ADDITIONAL_INFO), true));
 
         $this->clearTdsCategoriesCache();
     }
@@ -20805,15 +20809,15 @@ class PayoutTest extends OAuthTestCase
 
         $this->startTest();
 
-        $payoutDetails = $this->getDbLastEntity('payouts_details');
+        $payoutDetails = $this->getDbLastEntity(Constants\Entity::PAYOUTS_DETAILS);
 
         $this->assertNotNull($payoutDetails);
 
-        $this->assertEquals(1, $payoutDetails->getAttribute('queue_if_low_balance_flag'));
+        $this->assertEquals(1, $payoutDetails->getAttribute(PayoutsDetails\Entity::QUEUE_IF_LOW_BALANCE_FLAG));
 
-        $this->assertNull($payoutDetails->getAttribute('tds_category_id'));
+        $this->assertNull($payoutDetails->getAttribute(PayoutsDetails\Entity::TDS_CATEGORY_ID));
 
-        $this->assertNull($payoutDetails->getAttribute('additional_info'));
+        $this->assertNull($payoutDetails->getAttribute(PayoutsDetails\Entity::ADDITIONAL_INFO));
     }
 
     public function testCohesiveCreatePayoutWithTdsIncorrectTdsCategoryIdForInternalAuth()
@@ -20869,31 +20873,31 @@ class PayoutTest extends OAuthTestCase
         $this->startTest();
 
         /** @var PayoutEntity $payout */
-        $payout = $this->getDbLastEntity('payout');
+        $payout = $this->getDbLastEntity(Constants\Entity::PAYOUT);
 
-        $payoutDetails = $this->getDbLastEntity('payouts_details');
+        $payoutDetails = $this->getDbLastEntity(Constants\Entity::PAYOUTS_DETAILS);
 
         $this->assertNotNull($payoutDetails);
 
         $this->assertEquals($payout->getId(), $payoutDetails->getPayoutId());
 
-        $this->assertEquals(1, $payoutDetails->getAttribute('tds_category_id'));
+        $this->assertEquals(1, $payoutDetails->getAttribute(PayoutsDetails\Entity::TDS_CATEGORY_ID));
 
-        $this->assertEquals(0, $payoutDetails->getAttribute('queue_if_low_balance_flag'));
+        $this->assertEquals(0, $payoutDetails->getAttribute(PayoutsDetails\Entity::QUEUE_IF_LOW_BALANCE_FLAG));
 
         $expectedAdditionalInfo = [
-            'tds_amount'      => 1000,
-            'subtotal_amount' => 10000,
+            'tds_amount'                           => 1000,
+            PayoutsDetails\Entity::SUBTOTAL_AMOUNT => 10000,
         ];
 
-        $this->assertEquals($expectedAdditionalInfo, json_decode($payoutDetails->getAttribute('additional_info'), true));
+        $this->assertEquals($expectedAdditionalInfo, json_decode($payoutDetails->getAttribute(PayoutsDetails\Entity::ADDITIONAL_INFO), true));
 
         /** @var PayoutSourceEntity $payoutSource */
-        $payoutSource = $this->getDbLastEntity('payout_source');
+        $payoutSource = $this->getDbLastEntity(Constants\Entity::PAYOUT_SOURCE);
 
         $this->assertEquals('100000000000sa', $payoutSource->getSourceId());
 
-        $this->assertEquals('payout_links', $payoutSource->getSourceType());
+        $this->assertEquals(PayoutSourceEntity::PAYOUT_LINK, $payoutSource->getSourceType());
 
         $this->assertEquals(1, $payoutSource->getPriority());
 
@@ -20909,29 +20913,29 @@ class PayoutTest extends OAuthTestCase
         $this->startTest();
 
         /** @var PayoutEntity $payout */
-        $payout = $this->getDbLastEntity('payout');
+        $payout = $this->getDbLastEntity(Constants\Entity::PAYOUT);
 
-        $payoutDetails = $this->getDbLastEntity('payouts_details');
+        $payoutDetails = $this->getDbLastEntity(Constants\Entity::PAYOUTS_DETAILS);
 
         $this->assertNotNull($payoutDetails);
 
         $expectedAdditionalInfo = [
-            'attachments' => [
+            PayoutsDetails\Entity::ATTACHMENTS_KEY => [
                 [
-                    'file_id'   => 'file_testing',
-                    'file_name' => 'not-your-attachment.pdf'
+                    PayoutsDetails\Entity::ATTACHMENTS_FILE_ID   => 'file_testing',
+                    PayoutsDetails\Entity::ATTACHMENTS_FILE_NAME => 'not-your-attachment.pdf'
                 ],
             ],
         ];
 
-        $this->assertEquals($expectedAdditionalInfo, json_decode($payoutDetails->getAttribute('additional_info'), true));
+        $this->assertEquals($expectedAdditionalInfo, json_decode($payoutDetails->getAttribute(PayoutsDetails\Entity::ADDITIONAL_INFO), true));
 
         /** @var PayoutSourceEntity $payoutSource */
-        $payoutSource = $this->getDbLastEntity('payout_source');
+        $payoutSource = $this->getDbLastEntity(Constants\Entity::PAYOUT_SOURCE);
 
         $this->assertEquals('100000000000sa', $payoutSource->getSourceId());
 
-        $this->assertEquals('payout_links', $payoutSource->getSourceType());
+        $this->assertEquals(PayoutSourceEntity::PAYOUT_LINK, $payoutSource->getSourceType());
 
         $this->assertEquals(1, $payoutSource->getPriority());
 
@@ -20945,18 +20949,18 @@ class PayoutTest extends OAuthTestCase
         $this->startTest();
 
         /** @var PayoutEntity $payout */
-        $payout = $this->getDbLastEntity('payout');
+        $payout = $this->getDbLastEntity(Constants\Entity::PAYOUT);
 
-        $payoutDetails = $this->getDbLastEntity('payouts_details');
+        $payoutDetails = $this->getDbLastEntity(Constants\Entity::PAYOUTS_DETAILS);
 
         $this->assertNull($payoutDetails);
 
         /** @var PayoutSourceEntity $payoutSource */
-        $payoutSource = $this->getDbLastEntity('payout_source');
+        $payoutSource = $this->getDbLastEntity(Constants\Entity::PAYOUT_SOURCE);
 
         $this->assertEquals('100000000000sa', $payoutSource->getSourceId());
 
-        $this->assertEquals('payout_links', $payoutSource->getSourceType());
+        $this->assertEquals(PayoutSourceEntity::PAYOUT_LINK, $payoutSource->getSourceType());
 
         $this->assertEquals(1, $payoutSource->getPriority());
 
@@ -20972,31 +20976,31 @@ class PayoutTest extends OAuthTestCase
         $this->startTest();
 
         /** @var PayoutEntity $payout */
-        $payout = $this->getDbLastEntity('payout');
+        $payout = $this->getDbLastEntity(Constants\Entity::PAYOUT);
 
-        $payoutDetails = $this->getDbLastEntity('payouts_details');
+        $payoutDetails = $this->getDbLastEntity(Constants\Entity::PAYOUTS_DETAILS);
 
         $this->assertNotNull($payoutDetails);
 
-        $this->assertEquals($payout->getId(), $payoutDetails->getAttribute('payout_id'));
+        $this->assertEquals($payout->getId(), $payoutDetails->getAttribute(PayoutsDetails\Entity::PAYOUT_ID));
 
-        $this->assertEquals(1, $payoutDetails->getAttribute('queue_if_low_balance_flag'));
+        $this->assertEquals(1, $payoutDetails->getAttribute(PayoutsDetails\Entity::QUEUE_IF_LOW_BALANCE_FLAG));
 
-        $this->assertEquals(1, $payoutDetails->getAttribute('tds_category_id'));
+        $this->assertEquals(1, $payoutDetails->getAttribute(PayoutsDetails\Entity::TDS_CATEGORY_ID));
 
         $expectedAdditionalInfo = [
-            'tds_amount'      => 1000,
-            'subtotal_amount' => 10000,
+            PayoutsDetails\Entity::TDS_AMOUNT_KEY  => 1000,
+            PayoutsDetails\Entity::SUBTOTAL_AMOUNT => 10000,
         ];
 
-        $this->assertEquals($expectedAdditionalInfo, json_decode($payoutDetails->getAttribute('additional_info'), true));
+        $this->assertEquals($expectedAdditionalInfo, json_decode($payoutDetails->getAttribute(PayoutsDetails\Entity::ADDITIONAL_INFO), true));
 
         /** @var PayoutSourceEntity $payoutSource */
-        $payoutSource = $this->getDbLastEntity('payout_source');
+        $payoutSource = $this->getDbLastEntity(Constants\Entity::PAYOUT_SOURCE);
 
         $this->assertEquals('100000000000sa', $payoutSource->getSourceId());
 
-        $this->assertEquals('payout_links', $payoutSource->getSourceType());
+        $this->assertEquals(PayoutSourceEntity::PAYOUT_LINK, $payoutSource->getSourceType());
 
         $this->assertEquals(1, $payoutSource->getPriority());
 
@@ -21012,26 +21016,26 @@ class PayoutTest extends OAuthTestCase
         $this->startTest();
 
         /** @var PayoutEntity $payout */
-        $payout = $this->getDbLastEntity('payout');
+        $payout = $this->getDbLastEntity(Constants\Entity::PAYOUT);
 
-        $payoutDetails = $this->getDbLastEntity('payouts_details');
+        $payoutDetails = $this->getDbLastEntity(Constants\Entity::PAYOUTS_DETAILS);
 
         $this->assertNotNull($payoutDetails);
 
-        $this->assertEquals($payout->getId(), $payoutDetails->getAttribute('payout_id'));
+        $this->assertEquals($payout->getId(), $payoutDetails->getAttribute(PayoutsDetails\Entity::PAYOUT_ID));
 
-        $this->assertEquals(1, $payoutDetails->getAttribute('queue_if_low_balance_flag'));
+        $this->assertEquals(1, $payoutDetails->getAttribute(PayoutsDetails\Entity::QUEUE_IF_LOW_BALANCE_FLAG));
 
-        $this->assertNull($payoutDetails->getAttribute('tds_category_id'));
+        $this->assertNull($payoutDetails->getAttribute(PayoutsDetails\Entity::TDS_CATEGORY_ID));
 
-        $this->assertNull($payoutDetails->getAttribute('additional_info'));
+        $this->assertNull($payoutDetails->getAttribute(PayoutsDetails\Entity::ADDITIONAL_INFO));
 
         /** @var PayoutSourceEntity $payoutSource */
-        $payoutSource = $this->getDbLastEntity('payout_source');
+        $payoutSource = $this->getDbLastEntity(Constants\Entity::PAYOUT_SOURCE);
 
         $this->assertEquals('100000000000sa', $payoutSource->getSourceId());
 
-        $this->assertEquals('payout_links', $payoutSource->getSourceType());
+        $this->assertEquals(PayoutSourceEntity::PAYOUT_LINK, $payoutSource->getSourceType());
 
         $this->assertEquals(1, $payoutSource->getPriority());
 
@@ -21059,22 +21063,22 @@ class PayoutTest extends OAuthTestCase
 
         // validating that the payout got created with TDS
         /** @var PayoutEntity $payout */
-        $payout = $this->getDbLastEntity('payout');
+        $payout = $this->getDbLastEntity(Constants\Entity::PAYOUT);
 
-        $payoutDetails = $this->getDbLastEntity('payouts_details');
+        $payoutDetails = $this->getDbLastEntity(Constants\Entity::PAYOUTS_DETAILS);
 
         $this->assertEquals($payout->getId(), $payoutDetails->getPayoutId());
 
         $this->assertNotNull($payoutDetails);
 
-        $this->assertEquals(1, $payoutDetails->getAttribute('tds_category_id'));
+        $this->assertEquals(1, $payoutDetails->getAttribute(PayoutsDetails\Entity::TDS_CATEGORY_ID));
 
         $expectedAdditionalInfo = [
-            'tds_amount'      => 1000,
-            'subtotal_amount' => 10000,
+            PayoutsDetails\Entity::TDS_AMOUNT_KEY  => 1000,
+            PayoutsDetails\Entity::SUBTOTAL_AMOUNT => 10000,
         ];
 
-        $this->assertEquals($expectedAdditionalInfo, json_decode($payoutDetails->getAttribute('additional_info'), true));
+        $this->assertEquals($expectedAdditionalInfo, json_decode($payoutDetails->getAttribute(PayoutsDetails\Entity::ADDITIONAL_INFO), true));
 
         // fetching by ID
         $request = array(
@@ -21086,21 +21090,21 @@ class PayoutTest extends OAuthTestCase
         $content = $this->makeRequestAndGetContent($request);
 
         // validating that the response for fetch-by-id has TDS details
-        $this->assertArrayHasKey('meta', $content);
+        $this->assertArrayHasKey(Payout\Entity::META, $content);
 
-        $this->assertArrayHasKey('tds', $content['meta']);
+        $this->assertArrayHasKey(PayoutsDetails\Entity::TDS, $content[Payout\Entity::META]);
 
-        $this->assertArrayHasKey('category_id', $content['meta']['tds']);
+        $this->assertArrayHasKey(PayoutsDetails\Entity::CATEGORY_ID, $content[Payout\Entity::META][PayoutsDetails\Entity::TDS]);
 
-        $this->assertEquals(1, $content['meta']['tds']['category_id']);
+        $this->assertEquals(1, $content[Payout\Entity::META][PayoutsDetails\Entity::TDS][PayoutsDetails\Entity::CATEGORY_ID]);
 
-        $this->assertArrayHasKey('amount', $content['meta']['tds']);
+        $this->assertArrayHasKey(PayoutsDetails\Entity::TDS_AMOUNT, $content[Payout\Entity::META][PayoutsDetails\Entity::TDS]);
 
-        $this->assertEquals(1000, $content['meta']['tds']['amount']);
+        $this->assertEquals(1000, $content[Payout\Entity::META][PayoutsDetails\Entity::TDS][PayoutsDetails\Entity::TDS_AMOUNT]);
 
-        $this->assertArrayHasKey('subtotal_amount', $content['meta']);
+        $this->assertArrayHasKey(PayoutsDetails\Entity::SUBTOTAL_AMOUNT, $content[Payout\Entity::META]);
 
-        $this->assertEquals(10000, $content['meta']['subtotal_amount']);
+        $this->assertEquals(10000, $content[Payout\Entity::META][PayoutsDetails\Entity::SUBTOTAL_AMOUNT]);
     }
 
     public function testCohesiveFetchPayoutByIdForPayoutWithAttachmentsForProxyAuth()
@@ -21109,26 +21113,26 @@ class PayoutTest extends OAuthTestCase
 
         // validating that the payout got created with attachments
         /** @var PayoutEntity $payout */
-        $payout = $this->getDbLastEntity('payout');
+        $payout = $this->getDbLastEntity(Constants\Entity::PAYOUT);
 
-        $payoutDetails = $this->getDbLastEntity('payouts_details');
+        $payoutDetails = $this->getDbLastEntity(Constants\Entity::PAYOUTS_DETAILS);
 
         $this->assertNotNull($payoutDetails);
 
         $this->assertEquals($payout->getId(), $payoutDetails->getPayoutId());
 
-        $this->assertNull($payoutDetails->getAttribute('tds_category_id'));
+        $this->assertNull($payoutDetails->getAttribute(PayoutsDetails\Entity::TDS_CATEGORY_ID));
 
         $expectedAdditionalInfo = [
-            'attachments' => [
+            PayoutsDetails\Entity::ATTACHMENTS_KEY => [
                 [
-                    'file_id'   => 'file_testing',
-                    'file_name' => 'not-your-attachment.pdf'
+                    PayoutsDetails\Entity::ATTACHMENTS_FILE_ID   => 'file_testing',
+                    PayoutsDetails\Entity::ATTACHMENTS_FILE_NAME => 'not-your-attachment.pdf'
                 ],
             ],
         ];
 
-        $this->assertEquals($expectedAdditionalInfo, json_decode($payoutDetails->getAttribute('additional_info'), true));
+        $this->assertEquals($expectedAdditionalInfo, json_decode($payoutDetails->getAttribute(PayoutsDetails\Entity::ADDITIONAL_INFO), true));
 
         // fetching by ID
         $request = array(
@@ -21140,23 +21144,23 @@ class PayoutTest extends OAuthTestCase
         $content = $this->makeRequestAndGetContent($request);
 
         // validating that the response for fetch-by-id has Attachments
-        $this->assertArrayHasKey('meta', $content);
+        $this->assertArrayHasKey(Payout\Entity::META, $content);
 
-        $this->assertArrayHasKey('tds', $content['meta']);
+        $this->assertArrayHasKey(PayoutsDetails\Entity::TDS, $content[Payout\Entity::META]);
 
-        $this->assertNull($content['meta']['tds']);
+        $this->assertNull($content[Payout\Entity::META][PayoutsDetails\Entity::TDS]);
 
-        $this->assertArrayHasKey('tax_payment_id', $content['meta']);
+        $this->assertArrayHasKey(PayoutsDetails\Entity::TAX_PAYMENT_ID, $content[Payout\Entity::META]);
 
-        $this->assertNull($content['meta']['tax_payment_id']);
+        $this->assertNull($content[Payout\Entity::META][PayoutsDetails\Entity::TAX_PAYMENT_ID]);
 
-        $this->assertArrayHasKey('subtotal_amount', $content['meta']);
+        $this->assertArrayHasKey(PayoutsDetails\Entity::SUBTOTAL_AMOUNT, $content[Payout\Entity::META]);
 
-        $this->assertNull($content['meta']['subtotal_amount']);
+        $this->assertNull($content[Payout\Entity::META][PayoutsDetails\Entity::SUBTOTAL_AMOUNT]);
 
-        $this->assertArrayHasKey('attachments', $content['meta']);
+        $this->assertArrayHasKey(PayoutsDetails\Entity::ATTACHMENTS_KEY, $content[Payout\Entity::META]);
 
-        $this->assertEquals($expectedAdditionalInfo['attachments'], $content['meta']['attachments']);
+        $this->assertEquals($expectedAdditionalInfo[PayoutsDetails\Entity::ATTACHMENTS_KEY], $content[Payout\Entity::META][PayoutsDetails\Entity::ATTACHMENTS_KEY]);
     }
 
     public function testCohesiveFetchPayoutByIdForPayoutWithoutTdsForProxyAuth()
@@ -21165,9 +21169,9 @@ class PayoutTest extends OAuthTestCase
 
         // validating that the payout got created without TDS
         /** @var PayoutEntity $payout */
-        $payout = $this->getDbLastEntity('payout');
+        $payout = $this->getDbLastEntity(Constants\Entity::PAYOUT);
 
-        $payoutDetails = $this->getDbLastEntity('payouts_details');
+        $payoutDetails = $this->getDbLastEntity(Constants\Entity::PAYOUTS_DETAILS);
 
         $this->assertNull($payoutDetails);
 
@@ -21181,15 +21185,15 @@ class PayoutTest extends OAuthTestCase
         $content = $this->makeRequestAndGetContent($request);
 
         // validating that the response for fetch-by-id has null TDS details
-        $this->assertArrayHasKey('meta', $content);
+        $this->assertArrayHasKey(Payout\Entity::META, $content);
 
-        $this->assertArrayHasKey('tds', $content['meta']);
+        $this->assertArrayHasKey(PayoutsDetails\Entity::TDS, $content[Payout\Entity::META]);
 
-        $this->assertNull($content['meta']['tds']);
+        $this->assertNull($content[Payout\Entity::META][PayoutsDetails\Entity::TDS]);
 
-        $this->assertArrayHasKey('subtotal_amount', $content['meta']);
+        $this->assertArrayHasKey(PayoutsDetails\Entity::SUBTOTAL_AMOUNT, $content[Payout\Entity::META]);
 
-        $this->assertNull($content['meta']['subtotal_amount']);
+        $this->assertNull($content[Payout\Entity::META][PayoutsDetails\Entity::SUBTOTAL_AMOUNT]);
     }
 
     public function testCohesiveFetchPayoutByIdForPayoutWithoutAttachmentsForProxyAuth()
@@ -21198,9 +21202,9 @@ class PayoutTest extends OAuthTestCase
 
         // validating that the payout got created without TDS
         /** @var PayoutEntity $payout */
-        $payout = $this->getDbLastEntity('payout');
+        $payout = $this->getDbLastEntity(Constants\Entity::PAYOUT);
 
-        $payoutDetails = $this->getDbLastEntity('payouts_details');
+        $payoutDetails = $this->getDbLastEntity(Constants\Entity::PAYOUTS_DETAILS);
 
         $this->assertNull($payoutDetails);
 
@@ -21214,20 +21218,20 @@ class PayoutTest extends OAuthTestCase
         $content = $this->makeRequestAndGetContent($request);
 
         // validating that the response for fetch-by-id has null TDS details
-        $this->assertArrayHasKey('meta', $content);
+        $this->assertArrayHasKey(Payout\Entity::META, $content);
 
-        $this->assertArrayHasKey('tds', $content['meta']);
+        $this->assertArrayHasKey(PayoutsDetails\Entity::TDS, $content[Payout\Entity::META]);
 
-        $this->assertNull($content['meta']['tds']);
+        $this->assertNull($content[Payout\Entity::META][PayoutsDetails\Entity::TDS]);
 
-        $this->assertArrayHasKey('subtotal_amount', $content['meta']);
+        $this->assertArrayHasKey(PayoutsDetails\Entity::SUBTOTAL_AMOUNT, $content[Payout\Entity::META]);
 
-        $this->assertNull($content['meta']['subtotal_amount']);
+        $this->assertNull($content[Payout\Entity::META][PayoutsDetails\Entity::SUBTOTAL_AMOUNT]);
 
         // validating that the response for fetch-by-id has empty attachments
-        $this->assertArrayHasKey('attachments', $content['meta']);
+        $this->assertArrayHasKey(PayoutsDetails\Entity::ATTACHMENTS_KEY, $content[Payout\Entity::META]);
 
-        $this->assertEmpty($content['meta']['attachments']);
+        $this->assertEmpty($content[Payout\Entity::META][PayoutsDetails\Entity::ATTACHMENTS_KEY]);
     }
 
     public function testCohesiveFetchPayoutByIdForPayoutWithTdsForPrivateAuth()
@@ -21236,20 +21240,20 @@ class PayoutTest extends OAuthTestCase
 
         // validating that the payout got created with TDS
         /** @var PayoutEntity $payout */
-        $payout = $this->getDbLastEntity('payout');
+        $payout = $this->getDbLastEntity(Constants\Entity::PAYOUT);
 
-        $payoutDetails = $this->getDbLastEntity('payouts_details');
+        $payoutDetails = $this->getDbLastEntity(Constants\Entity::PAYOUTS_DETAILS);
 
         $this->assertEquals($payout->getId(), $payoutDetails->getPayoutId());
 
-        $this->assertEquals(1, $payoutDetails->getAttribute('tds_category_id'));
+        $this->assertEquals(1, $payoutDetails->getAttribute(PayoutsDetails\Entity::TDS_CATEGORY_ID));
 
         $expectedAdditionalInfo = [
-            'tds_amount'      => 1000,
-            'subtotal_amount' => 10000,
+            'tds_amount'                           => 1000,
+            PayoutsDetails\Entity::SUBTOTAL_AMOUNT => 10000,
         ];
 
-        $this->assertEquals($expectedAdditionalInfo, json_decode($payoutDetails->getAttribute('additional_info'), true));
+        $this->assertEquals($expectedAdditionalInfo, json_decode($payoutDetails->getAttribute(PayoutsDetails\Entity::ADDITIONAL_INFO), true));
 
         // fetching by ID
         $request = array(
@@ -21261,7 +21265,7 @@ class PayoutTest extends OAuthTestCase
         $content = $this->makeRequestAndGetContent($request);
 
         // validating that the response for fetch-by-id does not have meta attribute
-        $this->assertArrayNotHasKey('meta', $content);
+        $this->assertArrayNotHasKey(Payout\Entity::META, $content);
     }
 
     public function testCohesiveFetchPayoutByIdForPayoutWithAttachmentsForPrivateAuth()
@@ -21270,26 +21274,26 @@ class PayoutTest extends OAuthTestCase
 
         // validating that the payout got created with TDS
         /** @var PayoutEntity $payout */
-        $payout = $this->getDbLastEntity('payout');
+        $payout = $this->getDbLastEntity(Constants\Entity::PAYOUT);
 
-        $payoutDetails = $this->getDbLastEntity('payouts_details');
+        $payoutDetails = $this->getDbLastEntity(Constants\Entity::PAYOUTS_DETAILS);
 
         $this->assertNotNull($payoutDetails);
 
         $this->assertEquals($payout->getId(), $payoutDetails->getPayoutId());
 
-        $this->assertNull($payoutDetails->getAttribute('tds_category_id'));
+        $this->assertNull($payoutDetails->getAttribute(PayoutsDetails\Entity::TDS_CATEGORY_ID));
 
         $expectedAdditionalInfo = [
-            'attachments' => [
+            PayoutsDetails\Entity::ATTACHMENTS_KEY => [
                 [
-                    'file_id'   => 'file_testing',
-                    'file_name' => 'not-your-attachment.pdf'
+                    PayoutsDetails\Entity::ATTACHMENTS_FILE_ID   => 'file_testing',
+                    PayoutsDetails\Entity::ATTACHMENTS_FILE_NAME => 'not-your-attachment.pdf'
                 ],
             ],
         ];
 
-        $this->assertEquals($expectedAdditionalInfo, json_decode($payoutDetails->getAttribute('additional_info'), true));
+        $this->assertEquals($expectedAdditionalInfo, json_decode($payoutDetails->getAttribute(PayoutsDetails\Entity::ADDITIONAL_INFO), true));
 
         // fetching by ID
         $request = array(
@@ -21301,7 +21305,7 @@ class PayoutTest extends OAuthTestCase
         $content = $this->makeRequestAndGetContent($request);
 
         // validating that the response for fetch-by-id does not have meta attribute
-        $this->assertArrayNotHasKey('meta', $content);
+        $this->assertArrayNotHasKey(Payout\Entity::META, $content);
     }
 
     public function testCohesiveFetchPayoutByIdForPayoutWithoutTdsForPrivateAuth()
@@ -21309,9 +21313,9 @@ class PayoutTest extends OAuthTestCase
         $this->createPayoutWithoutTds();
 
         /** @var PayoutEntity $payout */
-        $payout = $this->getDbLastEntity('payout');
+        $payout = $this->getDbLastEntity(Constants\Entity::PAYOUT);
 
-        $payoutDetails = $this->getDbLastEntity('payouts_details');
+        $payoutDetails = $this->getDbLastEntity(Constants\Entity::PAYOUTS_DETAILS);
 
         $this->assertNull($payoutDetails);
 
@@ -21325,7 +21329,7 @@ class PayoutTest extends OAuthTestCase
         $content = $this->makeRequestAndGetContent($request);
 
         // validating that the response for fetch-by-id does not have meta attribute
-        $this->assertArrayNotHasKey('meta', $content);
+        $this->assertArrayNotHasKey(Payout\Entity::META, $content);
     }
 
     public function testCohesiveFetchPayoutByIdForPayoutWithTdsForInternalAppAuth()
@@ -21333,20 +21337,20 @@ class PayoutTest extends OAuthTestCase
         $this->createPayoutWithTds();
 
         // validating that the payout got created with TDS
-        $payout = $this->getDbLastEntity('payout');
+        $payout = $this->getDbLastEntity(Constants\Entity::PAYOUT);
 
-        $payoutDetails = $this->getDbLastEntity('payouts_details');
+        $payoutDetails = $this->getDbLastEntity(Constants\Entity::PAYOUTS_DETAILS);
 
         $this->assertEquals($payout->getId(), $payoutDetails->getPayoutId());
 
-        $this->assertEquals(1, $payoutDetails->getAttribute('tds_category_id'));
+        $this->assertEquals(1, $payoutDetails->getAttribute(PayoutsDetails\Entity::TDS_CATEGORY_ID));
 
         $expectedAdditionalInfo = [
-            'tds_amount'      => 1000,
-            'subtotal_amount' => 10000,
+            PayoutsDetails\Entity::TDS_AMOUNT_KEY  => 1000,
+            PayoutsDetails\Entity::SUBTOTAL_AMOUNT => 10000,
         ];
 
-        $this->assertEquals($expectedAdditionalInfo, json_decode($payoutDetails->getAttribute('additional_info'), true));
+        $this->assertEquals($expectedAdditionalInfo, json_decode($payoutDetails->getAttribute(PayoutsDetails\Entity::ADDITIONAL_INFO), true));
 
         // fetching by ID
         $request = array(
@@ -21362,21 +21366,21 @@ class PayoutTest extends OAuthTestCase
         $content = $this->makeRequestAndGetContent($request);
 
         // validating that the response for fetch-by-id has TDS details
-        $this->assertArrayHasKey('meta', $content);
+        $this->assertArrayHasKey(Payout\Entity::META, $content);
 
-        $this->assertArrayHasKey('tds', $content['meta']);
+        $this->assertArrayHasKey(PayoutsDetails\Entity::TDS, $content[Payout\Entity::META]);
 
-        $this->assertArrayHasKey('category_id', $content['meta']['tds']);
+        $this->assertArrayHasKey(PayoutsDetails\Entity::CATEGORY_ID, $content[Payout\Entity::META][PayoutsDetails\Entity::TDS]);
 
-        $this->assertEquals(1, $content['meta']['tds']['category_id']);
+        $this->assertEquals(1, $content[Payout\Entity::META][PayoutsDetails\Entity::TDS][PayoutsDetails\Entity::CATEGORY_ID]);
 
-        $this->assertArrayHasKey('amount', $content['meta']['tds']);
+        $this->assertArrayHasKey(PayoutsDetails\Entity::TDS_AMOUNT, $content[Payout\Entity::META][PayoutsDetails\Entity::TDS]);
 
-        $this->assertEquals(1000, $content['meta']['tds']['amount']);
+        $this->assertEquals(1000, $content[Payout\Entity::META][PayoutsDetails\Entity::TDS][PayoutsDetails\Entity::TDS_AMOUNT]);
 
-        $this->assertArrayHasKey('subtotal_amount', $content['meta']);
+        $this->assertArrayHasKey(PayoutsDetails\Entity::SUBTOTAL_AMOUNT, $content[Payout\Entity::META]);
 
-        $this->assertEquals(10000, $content['meta']['subtotal_amount']);
+        $this->assertEquals(10000, $content[Payout\Entity::META][PayoutsDetails\Entity::SUBTOTAL_AMOUNT]);
     }
 
     public function testCohesiveFetchPayoutByIdForPayoutWithoutTdsForInternalAppAuth()
@@ -21384,9 +21388,9 @@ class PayoutTest extends OAuthTestCase
         $this->createPayoutWithoutTds();
 
         // validating that the payout got created with TDS
-        $payout = $this->getDbLastEntity('payout');
+        $payout = $this->getDbLastEntity(Constants\Entity::PAYOUT);
 
-        $payoutDetails = $this->getDbLastEntity('payouts_details');
+        $payoutDetails = $this->getDbLastEntity(Constants\Entity::PAYOUTS_DETAILS);
 
         $this->assertNull($payoutDetails);
 
@@ -21404,22 +21408,22 @@ class PayoutTest extends OAuthTestCase
         $content = $this->makeRequestAndGetContent($request);
 
         // validating that the response for fetch-by-id has TDS details
-        $this->assertArrayHasKey('meta', $content);
+        $this->assertArrayHasKey(Payout\Entity::META, $content);
 
-        $this->assertArrayHasKey('tds', $content['meta']);
+        $this->assertArrayHasKey(PayoutsDetails\Entity::TDS, $content[Payout\Entity::META]);
 
-        $this->assertNull($content['meta']['tds']);
+        $this->assertNull($content[Payout\Entity::META][PayoutsDetails\Entity::TDS]);
 
-        $this->assertArrayHasKey('subtotal_amount', $content['meta']);
+        $this->assertArrayHasKey(PayoutsDetails\Entity::SUBTOTAL_AMOUNT, $content[Payout\Entity::META]);
 
-        $this->assertNull($content['meta']['subtotal_amount']);
+        $this->assertNull($content[Payout\Entity::META][PayoutsDetails\Entity::SUBTOTAL_AMOUNT]);
     }
 
     public function testCohesiveFetchMultiplePayoutsForPayoutWithTdsForProxyAuth()
     {
         $this->createPayoutWithTds();
 
-        $payoutWithTds = $this->getDbLastEntity('payout');
+        $payoutWithTds = $this->getDbLastEntity(Constants\Entity::PAYOUT);
 
         // fetching multiple payouts
         $request = array(
@@ -21436,28 +21440,28 @@ class PayoutTest extends OAuthTestCase
 
         $this->assertEquals($payoutWithTds->getPublicId(), $fetchedPayout['id']);
 
-        $this->assertArrayHasKey('meta', $fetchedPayout);
+        $this->assertArrayHasKey(Payout\Entity::META, $fetchedPayout);
 
-        $this->assertArrayHasKey('tds', $fetchedPayout['meta']);
+        $this->assertArrayHasKey(PayoutsDetails\Entity::TDS, $fetchedPayout[Payout\Entity::META]);
 
-        $this->assertArrayHasKey('category_id', $fetchedPayout['meta']['tds']);
+        $this->assertArrayHasKey(PayoutsDetails\Entity::CATEGORY_ID, $fetchedPayout[Payout\Entity::META][PayoutsDetails\Entity::TDS]);
 
-        $this->assertEquals(1, $fetchedPayout['meta']['tds']['category_id']);
+        $this->assertEquals(1, $fetchedPayout[Payout\Entity::META][PayoutsDetails\Entity::TDS][PayoutsDetails\Entity::CATEGORY_ID]);
 
-        $this->assertArrayHasKey('amount', $fetchedPayout['meta']['tds']);
+        $this->assertArrayHasKey(PayoutsDetails\Entity::TDS_AMOUNT, $fetchedPayout[Payout\Entity::META][PayoutsDetails\Entity::TDS]);
 
-        $this->assertEquals(1000, $fetchedPayout['meta']['tds']['amount']);
+        $this->assertEquals(1000, $fetchedPayout[Payout\Entity::META][PayoutsDetails\Entity::TDS][PayoutsDetails\Entity::TDS_AMOUNT]);
 
-        $this->assertArrayHasKey('subtotal_amount', $fetchedPayout['meta']);
+        $this->assertArrayHasKey(PayoutsDetails\Entity::SUBTOTAL_AMOUNT, $fetchedPayout[Payout\Entity::META]);
 
-        $this->assertEquals(10000, $fetchedPayout['meta']['subtotal_amount']);
+        $this->assertEquals(10000, $fetchedPayout[Payout\Entity::META][PayoutsDetails\Entity::SUBTOTAL_AMOUNT]);
     }
 
     public function testCohesiveFetchMultiplePayoutsForPayoutWithoutTdsForProxyAuth()
     {
         $this->createPayoutWithoutTds();
 
-        $payoutWithTds = $this->getDbLastEntity('payout');
+        $payoutWithTds = $this->getDbLastEntity(Constants\Entity::PAYOUT);
 
         // fetching multiple payouts
         $request = array(
@@ -21474,22 +21478,22 @@ class PayoutTest extends OAuthTestCase
 
         $this->assertEquals($payoutWithTds->getPublicId(), $fetchedPayout['id']);
 
-        $this->assertArrayHasKey('meta', $fetchedPayout);
+        $this->assertArrayHasKey(Payout\Entity::META, $fetchedPayout);
 
-        $this->assertArrayHasKey('tds', $fetchedPayout['meta']);
+        $this->assertArrayHasKey(PayoutsDetails\Entity::TDS, $fetchedPayout[Payout\Entity::META]);
 
-        $this->assertNull($fetchedPayout['meta']['tds']);
+        $this->assertNull($fetchedPayout[Payout\Entity::META][PayoutsDetails\Entity::TDS]);
 
-        $this->assertArrayHasKey('subtotal_amount', $fetchedPayout['meta']);
+        $this->assertArrayHasKey(PayoutsDetails\Entity::SUBTOTAL_AMOUNT, $fetchedPayout[Payout\Entity::META]);
 
-        $this->assertNull($fetchedPayout['meta']['subtotal_amount']);
+        $this->assertNull($fetchedPayout[Payout\Entity::META][PayoutsDetails\Entity::SUBTOTAL_AMOUNT]);
     }
 
     public function testCohesiveFetchMultiplePayoutsForPayoutWithTdsForPrivateAuth()
     {
         $this->createPayoutWithTds();
 
-        $payoutWithTds = $this->getDbLastEntity('payout');
+        $payoutWithTds = $this->getDbLastEntity(Constants\Entity::PAYOUT);
 
         // fetching multiple payouts
         $request = array(
@@ -21506,14 +21510,14 @@ class PayoutTest extends OAuthTestCase
 
         $this->assertEquals($payoutWithTds->getPublicId(), $fetchedPayout['id']);
 
-        $this->assertArrayNotHasKey('meta', $fetchedPayout);
+        $this->assertArrayNotHasKey(Payout\Entity::META, $fetchedPayout);
     }
 
     public function testCohesiveFetchMultiplePayoutsForPayoutWithoutTdsForPrivateAuth()
     {
         $this->createPayoutWithoutTds();
 
-        $payoutWithTds = $this->getDbLastEntity('payout');
+        $payoutWithTds = $this->getDbLastEntity(Constants\Entity::PAYOUT);
 
         // fetching multiple payouts
         $request = array(
@@ -21530,14 +21534,14 @@ class PayoutTest extends OAuthTestCase
 
         $this->assertEquals($payoutWithTds->getPublicId(), $fetchedPayout['id']);
 
-        $this->assertArrayNotHasKey('meta', $fetchedPayout);
+        $this->assertArrayNotHasKey(Payout\Entity::META, $fetchedPayout);
     }
 
     public function testCohesiveFetchMultiplePayoutsForPayoutWithTdsForInternalAuth()
     {
         $this->createPayoutWithTds();
 
-        $payoutWithTds = $this->getDbLastEntity('payout');
+        $payoutWithTds = $this->getDbLastEntity(Constants\Entity::PAYOUT);
 
         // fetching multiple payouts
         $request = array(
@@ -21558,28 +21562,28 @@ class PayoutTest extends OAuthTestCase
 
         $this->assertEquals($payoutWithTds->getPublicId(), $fetchedPayout['id']);
 
-        $this->assertArrayHasKey('meta', $fetchedPayout);
+        $this->assertArrayHasKey(Payout\Entity::META, $fetchedPayout);
 
-        $this->assertArrayHasKey('tds', $fetchedPayout['meta']);
+        $this->assertArrayHasKey(PayoutsDetails\Entity::TDS, $fetchedPayout[Payout\Entity::META]);
 
-        $this->assertArrayHasKey('category_id', $fetchedPayout['meta']['tds']);
+        $this->assertArrayHasKey(PayoutsDetails\Entity::CATEGORY_ID, $fetchedPayout[Payout\Entity::META][PayoutsDetails\Entity::TDS]);
 
-        $this->assertEquals(1, $fetchedPayout['meta']['tds']['category_id']);
+        $this->assertEquals(1, $fetchedPayout[Payout\Entity::META][PayoutsDetails\Entity::TDS][PayoutsDetails\Entity::CATEGORY_ID]);
 
-        $this->assertArrayHasKey('amount', $fetchedPayout['meta']['tds']);
+        $this->assertArrayHasKey(PayoutsDetails\Entity::TDS_AMOUNT, $fetchedPayout[Payout\Entity::META][PayoutsDetails\Entity::TDS]);
 
-        $this->assertEquals(1000, $fetchedPayout['meta']['tds']['amount']);
+        $this->assertEquals(1000, $fetchedPayout[Payout\Entity::META][PayoutsDetails\Entity::TDS][PayoutsDetails\Entity::TDS_AMOUNT]);
 
-        $this->assertArrayHasKey('subtotal_amount', $fetchedPayout['meta']);
+        $this->assertArrayHasKey(PayoutsDetails\Entity::SUBTOTAL_AMOUNT, $fetchedPayout[Payout\Entity::META]);
 
-        $this->assertEquals(10000, $fetchedPayout['meta']['subtotal_amount']);
+        $this->assertEquals(10000, $fetchedPayout[Payout\Entity::META][PayoutsDetails\Entity::SUBTOTAL_AMOUNT]);
     }
 
     public function testCohesiveFetchMultiplePayoutsForPayoutWithoutTdsForInternalAuth()
     {
         $this->createPayoutWithoutTds();
 
-        $payoutWithTds = $this->getDbLastEntity('payout');
+        $payoutWithTds = $this->getDbLastEntity(Constants\Entity::PAYOUT);
 
         // fetching multiple payouts
         $request = array(
@@ -21600,22 +21604,22 @@ class PayoutTest extends OAuthTestCase
 
         $this->assertEquals($payoutWithTds->getPublicId(), $fetchedPayout['id']);
 
-        $this->assertArrayHasKey('meta', $fetchedPayout);
+        $this->assertArrayHasKey(Payout\Entity::META, $fetchedPayout);
 
-        $this->assertArrayHasKey('tds', $fetchedPayout['meta']);
+        $this->assertArrayHasKey(PayoutsDetails\Entity::TDS, $fetchedPayout[Payout\Entity::META]);
 
-        $this->assertNull($fetchedPayout['meta']['tds']);
+        $this->assertNull($fetchedPayout[Payout\Entity::META][PayoutsDetails\Entity::TDS]);
 
-        $this->assertArrayHasKey('subtotal_amount', $fetchedPayout['meta']);
+        $this->assertArrayHasKey(PayoutsDetails\Entity::SUBTOTAL_AMOUNT, $fetchedPayout[Payout\Entity::META]);
 
-        $this->assertNull($fetchedPayout['meta']['subtotal_amount']);
+        $this->assertNull($fetchedPayout[Payout\Entity::META][PayoutsDetails\Entity::SUBTOTAL_AMOUNT]);
     }
 
     public function testCohesiveFetchMultiplePayoutsWithTdsCategoryIdFilterForProxyAuth()
     {
         $this->createPayoutWithTds();
 
-        $payoutWithTds = $this->getDbLastEntity('payout');
+        $payoutWithTds = $this->getDbLastEntity(Constants\Entity::PAYOUT);
 
         // fetching multiple payouts
         $request = array(
@@ -21646,13 +21650,13 @@ class PayoutTest extends OAuthTestCase
     {
         $this->createPayoutWithTds();
 
-        $payoutWithTds = $this->getDbLastEntity('payout');
+        $payoutWithTds = $this->getDbLastEntity(Constants\Entity::PAYOUT);
 
-        $payoutDetailsCreated = $this->getDbLastEntity('payouts_details');
+        $payoutDetailsCreated = $this->getDbLastEntity(Constants\Entity::PAYOUTS_DETAILS);
 
-        $this->assertEquals($payoutWithTds->getId(), $payoutDetailsCreated['payout_id']);
+        $this->assertEquals($payoutWithTds->getId(), $payoutDetailsCreated[PayoutsDetails\Entity::PAYOUT_ID]);
 
-        $this->fixtures->edit('payouts_details', $payoutDetailsCreated['payout_id'], ['tax_payment_id' => '1234']);
+        $this->fixtures->edit(Constants\Entity::PAYOUTS_DETAILS, $payoutDetailsCreated[PayoutsDetails\Entity::PAYOUT_ID], [PayoutsDetails\Entity::TAX_PAYMENT_ID => '1234']);
 
         // fetching multiple payouts
         $request = array(
@@ -21674,16 +21678,333 @@ class PayoutTest extends OAuthTestCase
     {
         $this->createPayoutWithTds();
 
-        $payoutWithTds = $this->getDbLastEntity('payout');
+        $payoutWithTds = $this->getDbLastEntity(Constants\Entity::PAYOUT);
 
-        $payoutDetailsCreated = $this->getDbLastEntity('payouts_details');
+        $payoutDetailsCreated = $this->getDbLastEntity(Constants\Entity::PAYOUTS_DETAILS);
 
-        $this->assertEquals($payoutWithTds->getId(), $payoutDetailsCreated['payout_id']);
+        $this->assertEquals($payoutWithTds->getId(), $payoutDetailsCreated[PayoutsDetails\Entity::PAYOUT_ID]);
 
-        $this->fixtures->edit('payouts_details', $payoutDetailsCreated['payout_id'], ['tax_payment_id' => '1234']);
+        $this->fixtures->edit(Constants\Entity::PAYOUTS_DETAILS, $payoutDetailsCreated[PayoutsDetails\Entity::PAYOUT_ID], [PayoutsDetails\Entity::TAX_PAYMENT_ID => '1234']);
 
         $this->ba->proxyAuth();
 
         $this->startTest();
+    }
+
+    public function testUpdateAttachmentWithProxyAuth()
+    {
+        $this->testCohesiveCreatePayoutWithoutTdsSuccessForProxyAuth();
+
+        $payoutDetails = $this->getDbLastEntity(Constants\Entity::PAYOUTS_DETAILS);
+
+        $this->assertNull($payoutDetails);
+
+        $payouts = $this->getDbLastEntity(Constants\Entity::PAYOUT);
+
+        $this->testData[__FUNCTION__]['request']['url'] = sprintf('/payouts/%s/attachments', $payouts->getPublicId());
+
+        $this->startTest();
+
+        $payoutDetails = $this->getDbLastEntity(Constants\Entity::PAYOUTS_DETAILS);
+
+        $this->assertNotNull($payoutDetails);
+
+        $this->assertNull($payoutDetails[PayoutsDetails\Entity::TDS_CATEGORY_ID]);
+
+        $this->assertNull($payoutDetails[PayoutsDetails\Entity::TAX_PAYMENT_ID]);
+
+        $this->assertEquals(0, $payoutDetails[PayoutsDetails\Entity::QUEUE_IF_LOW_BALANCE_FLAG]);
+
+        $this->assertNotNull($payoutDetails[PayoutsDetails\Entity::ADDITIONAL_INFO]);
+
+        $additionalInfo = json_decode($payoutDetails[PayoutsDetails\Entity::ADDITIONAL_INFO], true);
+
+        $this->assertNotNull($additionalInfo[PayoutsDetails\Entity::ATTACHMENTS_KEY]);
+
+        $this->assertEquals('file_JLYYnaOtQ0Xgzt', $additionalInfo[PayoutsDetails\Entity::ATTACHMENTS_KEY][0][PayoutsDetails\Entity::ATTACHMENTS_FILE_ID]);
+
+        $this->assertEquals('new file.pdf', $additionalInfo[PayoutsDetails\Entity::ATTACHMENTS_KEY][0][PayoutsDetails\Entity::ATTACHMENTS_FILE_NAME]);
+    }
+
+    public function testUpdateAttachmentWithTds()
+    {
+        $this->testCohesiveCreatePayoutWithTdsPayoutToBeQueuedForProxyAuth();
+
+        $payoutDetails = $this->getDbLastEntity(Constants\Entity::PAYOUTS_DETAILS);
+
+        $this->assertNotNull($payoutDetails);
+
+        $this->assertTrue($payoutDetails[PayoutsDetails\Entity::QUEUE_IF_LOW_BALANCE_FLAG]);
+
+        $this->assertNotNull($payoutDetails[PayoutsDetails\Entity::TDS_CATEGORY_ID]);
+
+        $this->assertNull($payoutDetails[PayoutsDetails\Entity::TAX_PAYMENT_ID]);
+
+        $this->assertNotNull($payoutDetails[PayoutsDetails\Entity::ADDITIONAL_INFO]);
+
+        $additionalInfo = json_decode($payoutDetails[PayoutsDetails\Entity::ADDITIONAL_INFO], true);
+
+        $this->assertEquals(1000, $additionalInfo[PayoutsDetails\Entity::TDS_AMOUNT_KEY]);
+
+        $this->assertEquals(10000, $additionalInfo[PayoutsDetails\Entity::SUBTOTAL_AMOUNT]);
+
+        $payouts = $this->getDbLastEntity(Constants\Entity::PAYOUT);
+
+        $this->testData[__FUNCTION__]['request']['url'] = sprintf('/payouts/%s/attachments', $payouts->getPublicId());
+
+        $this->startTest();
+
+        $payoutDetails = $this->getDbLastEntity(Constants\Entity::PAYOUTS_DETAILS);
+
+        $this->assertNotNull($payoutDetails);
+
+        $this->assertNotNull($payoutDetails[PayoutsDetails\Entity::TDS_CATEGORY_ID]);
+
+        $this->assertNull($payoutDetails[PayoutsDetails\Entity::TAX_PAYMENT_ID]);
+
+        $this->assertTrue($payoutDetails[PayoutsDetails\Entity::QUEUE_IF_LOW_BALANCE_FLAG]);
+
+        $this->assertNotNull($payoutDetails[PayoutsDetails\Entity::ADDITIONAL_INFO]);
+
+        $additionalInfo = json_decode($payoutDetails[PayoutsDetails\Entity::ADDITIONAL_INFO], true);
+
+        $this->assertNotNull($additionalInfo[PayoutsDetails\Entity::ATTACHMENTS_KEY]);
+
+        $this->assertEquals('file_JLYYnaOtQ0Xgzt', $additionalInfo[PayoutsDetails\Entity::ATTACHMENTS_KEY][0][PayoutsDetails\Entity::ATTACHMENTS_FILE_ID]);
+
+        $this->assertEquals('new file.pdf', $additionalInfo[PayoutsDetails\Entity::ATTACHMENTS_KEY][0][PayoutsDetails\Entity::ATTACHMENTS_FILE_NAME]);
+    }
+
+    public function testUpdateAttachmentForPayoutLink()
+    {
+        $this->testCohesiveCreatePayoutWithTdsSuccessForInternalAuth();
+
+        $payout = $this->getDbLastEntity(Constants\Entity::PAYOUT);
+
+        $payoutDetails = $this->getDbLastEntity(Constants\Entity::PAYOUTS_DETAILS);
+
+        $this->assertNotNull($payoutDetails);
+
+        $this->assertFalse($payoutDetails[PayoutsDetails\Entity::QUEUE_IF_LOW_BALANCE_FLAG]);
+
+        $this->assertNotNull($payoutDetails[PayoutsDetails\Entity::TDS_CATEGORY_ID]);
+
+        $this->assertNull($payoutDetails[PayoutsDetails\Entity::TAX_PAYMENT_ID]);
+
+        $this->assertNotNull($payoutDetails[PayoutsDetails\Entity::ADDITIONAL_INFO]);
+
+        $additionalInfo = json_decode($payoutDetails[PayoutsDetails\Entity::ADDITIONAL_INFO], true);
+
+        $this->assertNotNull($additionalInfo[PayoutsDetails\Entity::TDS_AMOUNT_KEY]);
+
+        $this->assertNotNull($payoutDetails[PayoutsDetails\Entity::SUBTOTAL_AMOUNT]);
+
+        $this->ba->appAuthTest($this->config['applications.payout_links.secret']);
+
+        $this->testData[__FUNCTION__]['request']['content'] = [
+            'payout_ids'     => [
+                $payout->getId()
+            ],
+            'update_request' => [
+                'attachments' => [
+                    [
+                        'file_id'   => 'file_123456',
+                        'file_name' => 'file_name.pdf'
+                    ]
+                ]
+            ]
+        ];
+
+        $this->startTest();
+
+        $payoutDetails = $this->getDbLastEntity(Constants\Entity::PAYOUTS_DETAILS);
+
+        $this->assertNotNull($payoutDetails);
+
+        $this->assertFalse($payoutDetails[PayoutsDetails\Entity::QUEUE_IF_LOW_BALANCE_FLAG]);
+
+        $this->assertNotNull($payoutDetails[PayoutsDetails\Entity::TDS_CATEGORY_ID]);
+
+        $this->assertNull($payoutDetails[PayoutsDetails\Entity::TAX_PAYMENT_ID]);
+
+        $this->assertNotNull($payoutDetails[PayoutsDetails\Entity::ADDITIONAL_INFO]);
+
+        $additionalInfo = json_decode($payoutDetails[PayoutsDetails\Entity::ADDITIONAL_INFO], true);
+
+        $this->assertNotNull($additionalInfo[PayoutsDetails\Entity::ATTACHMENTS_KEY]);
+
+        $this->assertEquals('file_123456', $additionalInfo[PayoutsDetails\Entity::ATTACHMENTS_KEY][0][PayoutsDetails\Entity::ATTACHMENTS_FILE_ID]);
+
+        $this->assertEquals('file_name.pdf', $additionalInfo[PayoutsDetails\Entity::ATTACHMENTS_KEY][0][PayoutsDetails\Entity::ATTACHMENTS_FILE_NAME]);
+    }
+
+    public function testUpdateAttachmentPayoutLinkWithoutPayoutDetails()
+    {
+        $this->testCohesiveCreatePayoutWithoutTdsSuccessForInternalAuth();
+
+        $payout2 = $this->getDbLastEntity(Constants\Entity::PAYOUT);
+
+        $payoutDetails = $this->getDbLastEntity(Constants\Entity::PAYOUTS_DETAILS);
+
+        $this->assertNull($payoutDetails);
+
+        $this->testCohesiveCreatePayoutWithTdsSuccessForInternalAuth();
+
+        $payout1 = $this->getDbLastEntity(Constants\Entity::PAYOUT);
+
+        $payoutDetails = $this->getDbLastEntity(Constants\Entity::PAYOUTS_DETAILS);
+
+        $this->assertNotNull($payoutDetails);
+
+        $this->assertFalse($payoutDetails[PayoutsDetails\Entity::QUEUE_IF_LOW_BALANCE_FLAG]);
+
+        $this->assertNotNull($payoutDetails[PayoutsDetails\Entity::TDS_CATEGORY_ID]);
+
+        $this->assertNull($payoutDetails[PayoutsDetails\Entity::TAX_PAYMENT_ID]);
+
+        $this->ba->appAuthTest($this->config['applications.payout_links.secret']);
+
+        $this->testData[__FUNCTION__]['request']['content'] = [
+            'payout_ids'     => [
+                $payout1->getId(),
+                $payout2->getId(),
+            ],
+            'update_request' => [
+                'attachments' => [
+                    [
+                        'file_id'   => 'file_123456',
+                        'file_name' => 'file_name.pdf'
+                    ]
+                ]
+            ]
+        ];
+
+        $this->startTest();
+
+        $payoutDetails1 = $this->getDbEntity(Constants\Entity::PAYOUTS_DETAILS, [PayoutsDetails\Entity::PAYOUT_ID => $payout1->getId()]);
+
+        $payoutDetails2 = $this->getDbEntity(Constants\Entity::PAYOUTS_DETAILS, [PayoutsDetails\Entity::PAYOUT_ID => $payout2->getId()]);
+
+        $this->assertNotNull($payoutDetails1);
+        $this->assertNotNull($payoutDetails2);
+
+        $this->assertEquals(0, $payoutDetails1[PayoutsDetails\Entity::QUEUE_IF_LOW_BALANCE_FLAG]);
+        $this->assertEquals(0, $payoutDetails2[PayoutsDetails\Entity::QUEUE_IF_LOW_BALANCE_FLAG]);
+
+        $this->assertNotNull($payoutDetails1[PayoutsDetails\Entity::TDS_CATEGORY_ID]);
+        $this->assertNull($payoutDetails2[PayoutsDetails\Entity::TDS_CATEGORY_ID]);
+
+        $this->assertNull($payoutDetails1[PayoutsDetails\Entity::TAX_PAYMENT_ID]);
+        $this->assertNull($payoutDetails2[PayoutsDetails\Entity::TAX_PAYMENT_ID]);
+
+        $this->assertNotNull($payoutDetails1[PayoutsDetails\Entity::ADDITIONAL_INFO]);
+        $this->assertNotNull($payoutDetails2[PayoutsDetails\Entity::ADDITIONAL_INFO]);
+
+        $additionalInfo1 = json_decode($payoutDetails1[PayoutsDetails\Entity::ADDITIONAL_INFO], true);
+        $additionalInfo2 = json_decode($payoutDetails2[PayoutsDetails\Entity::ADDITIONAL_INFO], true);
+
+        $this->assertNotNull($additionalInfo1[PayoutsDetails\Entity::ATTACHMENTS_KEY]);
+        $this->assertNotNull($additionalInfo2[PayoutsDetails\Entity::ATTACHMENTS_KEY]);
+
+        $this->assertEquals('file_123456', $additionalInfo1[PayoutsDetails\Entity::ATTACHMENTS_KEY][0][PayoutsDetails\Entity::ATTACHMENTS_FILE_ID]);
+        $this->assertEquals('file_123456', $additionalInfo2[PayoutsDetails\Entity::ATTACHMENTS_KEY][0][PayoutsDetails\Entity::ATTACHMENTS_FILE_ID]);
+
+        $this->assertEquals('file_name.pdf', $additionalInfo1[PayoutsDetails\Entity::ATTACHMENTS_KEY][0][PayoutsDetails\Entity::ATTACHMENTS_FILE_NAME]);
+        $this->assertEquals('file_name.pdf', $additionalInfo2[PayoutsDetails\Entity::ATTACHMENTS_KEY][0][PayoutsDetails\Entity::ATTACHMENTS_FILE_NAME]);
+    }
+
+    public function testUploadAttachmentOnPayout()
+    {
+        $this->ba->proxyAuth();
+
+        $fileName = 'k.png';
+
+        $localFilePath = __DIR__ . '/../Storage/k.png';
+
+        $request = $this->createUploadFileRequest($fileName, $localFilePath);
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertArrayHasKey(PayoutsDetails\Entity::ATTACHMENTS_FILE_ID, $response);
+
+        $this->assertArrayHasKey(PayoutsDetails\Entity::ATTACHMENTS_FILE_NAME, $response);
+
+        $this->assertEquals($fileName, $response[PayoutsDetails\Entity::ATTACHMENTS_FILE_NAME]);
+    }
+
+    public function testUploadAttachmentOnPayoutWithSpecialCharacters()
+    {
+        $this->ba->proxyAuth();
+
+        $fileName = '%&%^#&eghj89.png';
+
+        $localFilePath = $this->createNewFile($fileName);
+
+        $request = $this->createUploadFileRequest($fileName, $localFilePath);
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertArrayHasKey(PayoutsDetails\Entity::ATTACHMENTS_FILE_ID, $response);
+
+        $this->assertArrayHasKey(PayoutsDetails\Entity::ATTACHMENTS_FILE_NAME, $response);
+
+        $this->assertEquals($fileName, $response[PayoutsDetails\Entity::ATTACHMENTS_FILE_NAME]);
+    }
+
+    public function testUploadAttachmentOnPayoutWithSpecialCharactersAndSpaces()
+    {
+        $this->ba->proxyAuth();
+
+        $fileName = ' %&%^&eghj89 .png';
+
+        $localFilePath = $this->createNewFile($fileName);
+
+        $request = $this->createUploadFileRequest($fileName, $localFilePath);
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertArrayHasKey(PayoutsDetails\Entity::ATTACHMENTS_FILE_ID, $response);
+
+        $this->assertArrayHasKey(PayoutsDetails\Entity::ATTACHMENTS_FILE_NAME, $response);
+
+        $this->assertEquals($fileName, $response[PayoutsDetails\Entity::ATTACHMENTS_FILE_NAME]);
+    }
+
+    public function testUploadAttachmentOnPayoutWithEmojis()
+    {
+        $this->ba->proxyAuth();
+
+        $fileName = '😓😓😓😓.png';
+
+        $localFilePath = $this->createNewFile($fileName);
+
+        $request = $this->createUploadFileRequest($fileName, $localFilePath);
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertArrayHasKey(PayoutsDetails\Entity::ATTACHMENTS_FILE_ID, $response);
+
+        $this->assertArrayHasKey(PayoutsDetails\Entity::ATTACHMENTS_FILE_NAME, $response);
+
+        $this->assertEquals($fileName, $response[PayoutsDetails\Entity::ATTACHMENTS_FILE_NAME]);
+    }
+
+    public function testUploadAttachmentOnPayoutWithMultipleWords()
+    {
+        $this->ba->proxyAuth();
+
+        $fileName = 'invoice file.png';
+
+        $localFilePath = $this->createNewFile($fileName);
+
+        $request = $this->createUploadFileRequest($fileName, $localFilePath);
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertArrayHasKey(PayoutsDetails\Entity::ATTACHMENTS_FILE_ID, $response);
+
+        $this->assertArrayHasKey(PayoutsDetails\Entity::ATTACHMENTS_FILE_NAME, $response);
+
+        $this->assertEquals($fileName, $response[PayoutsDetails\Entity::ATTACHMENTS_FILE_NAME]);
     }
 }

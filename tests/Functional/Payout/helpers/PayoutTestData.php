@@ -17384,7 +17384,7 @@ return [
     ],
 
     'testCohesiveCreatePayoutWithTdsFailsForPrivateAuth' => [
-        'request'  => [
+        'request'   => [
             'method'  => 'POST',
             'url'     => '/payouts',
             'content' => [
@@ -17399,14 +17399,14 @@ return [
                     'abc' => 'xyz',
                 ],
                 'tds'             => [
-                    'category_id'      => 1,
-                    'amount'           => 1000
+                    'category_id' => 1,
+                    'amount'      => 1000
                 ],
-                'subtotal_amount'    => 500,
+                'subtotal_amount' => 500,
             ],
         ],
-        'response' => [
-            'content' => [
+        'response'  => [
+            'content'     => [
                 'error' => [
                     'description' => 'Payout with TDS not supported via private auth',
                 ],
@@ -17420,30 +17420,30 @@ return [
     ],
 
     'testCohesiveCreatePayoutWithTdsPayoutToBeQueuedFailsForPrivateAuth' => [
-        'request'  => [
+        'request'   => [
             'method'  => 'POST',
             'url'     => '/payouts',
             'content' => [
-                'account_number'  => '2224440041626905',
-                'amount'          => 2000000,
-                'currency'        => 'INR',
-                'purpose'         => 'refund',
-                'narration'       => 'Batman',
-                'mode'            => 'IMPS',
-                'fund_account_id' => 'fa_100000000000fa',
-                'notes'           => [
+                'account_number'       => '2224440041626905',
+                'amount'               => 2000000,
+                'currency'             => 'INR',
+                'purpose'              => 'refund',
+                'narration'            => 'Batman',
+                'mode'                 => 'IMPS',
+                'fund_account_id'      => 'fa_100000000000fa',
+                'notes'                => [
                     'abc' => 'xyz',
                 ],
-                'queue_if_low_balance'  => true,
-                'tds'             => [
-                    'category_id'      => 1,
-                    'amount'           => 1000
+                'queue_if_low_balance' => true,
+                'tds'                  => [
+                    'category_id' => 1,
+                    'amount'      => 1000
                 ],
-                'subtotal_amount'    => 500,
+                'subtotal_amount'      => 500,
             ],
         ],
-        'response' => [
-            'content' => [
+        'response'  => [
+            'content'     => [
                 'error' => [
                     'description' => 'Payout with TDS not supported via private auth',
                 ],
@@ -17457,7 +17457,7 @@ return [
     ],
 
     'testCohesiveCreatePayoutWithAttachmentsFailsForPrivateAuth' => [
-        'request'  => [
+        'request'   => [
             'method'  => 'POST',
             'url'     => '/payouts',
             'content' => [
@@ -17479,8 +17479,8 @@ return [
                 ],
             ],
         ],
-        'response' => [
-            'content' => [
+        'response'  => [
+            'content'     => [
                 'error' => [
                     'description' => 'Payout with attachments not supported via private auth',
                 ],
@@ -17534,17 +17534,17 @@ return [
             'method'  => 'POST',
             'url'     => '/payouts',
             'content' => [
-                'account_number'  => '2224440041626905',
-                'amount'          => 2000000,
-                'currency'        => 'INR',
-                'purpose'         => 'refund',
-                'narration'       => 'Batman',
-                'mode'            => 'IMPS',
-                'fund_account_id' => 'fa_100000000000fa',
-                'notes'           => [
+                'account_number'       => '2224440041626905',
+                'amount'               => 2000000,
+                'currency'             => 'INR',
+                'purpose'              => 'refund',
+                'narration'            => 'Batman',
+                'mode'                 => 'IMPS',
+                'fund_account_id'      => 'fa_100000000000fa',
+                'notes'                => [
                     'abc' => 'xyz',
                 ],
-                'queue_if_low_balance'  => true,
+                'queue_if_low_balance' => true,
             ],
         ],
         'response' => [
@@ -17603,20 +17603,20 @@ return [
     ],
 
     'testCohesiveCreateCompositePayoutWithTdsForPrivateAuth' => [
-        'request'  => [
+        'request'   => [
             'method'  => 'POST',
             'url'     => '/payouts',
             'content' => [
-                'account_number' => '2224440041626905',
-                'amount'         => 2000000,
-                'currency'       => 'INR',
-                'purpose'        => 'refund',
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
                 'narration'       => 'test',
-                'mode'           => 'IMPS',
-                'notes'          => [
+                'mode'            => 'IMPS',
+                'notes'           => [
                     'abc' => 'xyz',
                 ],
-                'fund_account'   => [
+                'fund_account'    => [
                     'account_type' => 'bank_account',
                     'bank_account' => [
                         'name'           => 'Name of account holder',
@@ -17633,15 +17633,15 @@ return [
                         ],
                     ],
                 ],
-                'tds' => [
+                'tds'             => [
                     'category_id' => 1,
-                    'amount' => 100,
+                    'amount'      => 100,
                 ],
                 'subtotal_amount' => 150,
             ],
         ],
-        'response' => [
-            'content' => [
+        'response'  => [
+            'content'     => [
                 'error' => [
                     'description' => 'Payout with TDS not supported via private auth',
                 ],
@@ -17655,7 +17655,7 @@ return [
     ],
 
     'testCohesiveCreateCompositePayoutWithAttachmentForPrivateAuth' => [
-        'request'  => [
+        'request'   => [
             'method'  => 'POST',
             'url'     => '/payouts',
             'content' => [
@@ -17663,7 +17663,7 @@ return [
                 'amount'         => 2000000,
                 'currency'       => 'INR',
                 'purpose'        => 'refund',
-                'narration'       => 'test',
+                'narration'      => 'test',
                 'mode'           => 'IMPS',
                 'notes'          => [
                     'abc' => 'xyz',
@@ -17685,7 +17685,7 @@ return [
                         ],
                     ],
                 ],
-                'attachments'     => [
+                'attachments'    => [
                     [
                         'file_id'   => 'file_testing',
                         'file_name' => 'not-your-attachment.pdf'
@@ -17693,8 +17693,8 @@ return [
                 ],
             ],
         ],
-        'response' => [
-            'content' => [
+        'response'  => [
+            'content'     => [
                 'error' => [
                     'description' => 'Payout with attachments not supported via private auth',
                 ],
@@ -17716,7 +17716,7 @@ return [
                 'amount'         => 2000000,
                 'currency'       => 'INR',
                 'purpose'        => 'refund',
-                'narration'       => 'test',
+                'narration'      => 'test',
                 'mode'           => 'IMPS',
                 'notes'          => [
                     'abc' => 'xyz',
@@ -17742,12 +17742,12 @@ return [
         ],
         'response' => [
             'content' => [
-                'entity'          => 'payout',
-                'amount'          => 2000000,
-                'currency'        => 'INR',
-                'purpose'         => 'refund',
-                'mode'            => 'IMPS',
-                'notes'           => [
+                'entity'   => 'payout',
+                'amount'   => 2000000,
+                'currency' => 'INR',
+                'purpose'  => 'refund',
+                'mode'     => 'IMPS',
+                'notes'    => [
                     'abc' => 'xyz',
                 ],
             ],
@@ -17755,20 +17755,20 @@ return [
     ],
 
     'testCohesiveCreateCompositePayoutWithTdsPayoutToBeQueuedForPrivateAuth' => [
-        'request'  => [
+        'request'   => [
             'method'  => 'POST',
             'url'     => '/payouts',
             'content' => [
-                'account_number' => '2224440041626905',
-                'amount'         => 2000000,
-                'currency'       => 'INR',
-                'purpose'        => 'refund',
-                'narration'       => 'test',
-                'mode'           => 'IMPS',
-                'notes'          => [
+                'account_number'       => '2224440041626905',
+                'amount'               => 2000000,
+                'currency'             => 'INR',
+                'purpose'              => 'refund',
+                'narration'            => 'test',
+                'mode'                 => 'IMPS',
+                'notes'                => [
                     'abc' => 'xyz',
                 ],
-                'fund_account'   => [
+                'fund_account'         => [
                     'account_type' => 'bank_account',
                     'bank_account' => [
                         'name'           => 'Name of account holder',
@@ -17785,16 +17785,16 @@ return [
                         ],
                     ],
                 ],
-                'tds' => [
+                'tds'                  => [
                     'category_id' => 1,
-                    'amount' => 100,
+                    'amount'      => 100,
                 ],
-                'subtotal_amount' => 150,
-                'queue_if_low_balance'  => true,
+                'subtotal_amount'      => 150,
+                'queue_if_low_balance' => true,
             ],
         ],
-        'response' => [
-            'content' => [
+        'response'  => [
+            'content'     => [
                 'error' => [
                     'description' => 'Payout with TDS not supported via private auth',
                 ],
@@ -17812,16 +17812,16 @@ return [
             'method'  => 'POST',
             'url'     => '/payouts',
             'content' => [
-                'account_number' => '2224440041626905',
-                'amount'         => 2000000,
-                'currency'       => 'INR',
-                'purpose'        => 'refund',
-                'narration'       => 'test',
-                'mode'           => 'IMPS',
-                'notes'          => [
+                'account_number'       => '2224440041626905',
+                'amount'               => 2000000,
+                'currency'             => 'INR',
+                'purpose'              => 'refund',
+                'narration'            => 'test',
+                'mode'                 => 'IMPS',
+                'notes'                => [
                     'abc' => 'xyz',
                 ],
-                'fund_account'   => [
+                'fund_account'         => [
                     'account_type' => 'bank_account',
                     'bank_account' => [
                         'name'           => 'Name of account holder',
@@ -17838,17 +17838,17 @@ return [
                         ],
                     ],
                 ],
-                'queue_if_low_balance'  => true,
+                'queue_if_low_balance' => true,
             ],
         ],
         'response' => [
             'content' => [
-                'entity'          => 'payout',
-                'amount'          => 2000000,
-                'currency'        => 'INR',
-                'purpose'         => 'refund',
-                'mode'            => 'IMPS',
-                'notes'           => [
+                'entity'   => 'payout',
+                'amount'   => 2000000,
+                'currency' => 'INR',
+                'purpose'  => 'refund',
+                'mode'     => 'IMPS',
+                'notes'    => [
                     'abc' => 'xyz',
                 ],
             ],
@@ -17866,14 +17866,14 @@ return [
                 'purpose'         => 'refund',
                 'mode'            => 'IMPS',
                 'fund_account_id' => 'fa_100000000000fa',
-                'otp' =>'0007',
-                'token' => 'BUIj3m2Nx2VvVj',
+                'otp'             => '0007',
+                'token'           => 'BUIj3m2Nx2VvVj',
                 'notes'           => [
                     'abc' => 'xyz',
                 ],
                 'tds'             => [
-                    'category_id'   => 1,
-                    'amount'        => 1000
+                    'category_id' => 1,
+                    'amount'      => 1000
                 ],
                 'subtotal_amount' => 10000,
             ],
@@ -17892,9 +17892,9 @@ return [
                     'abc' => 'xyz',
                 ],
                 'meta'            => [
-                    'tds' => [
-                        'category_id'   => 1,
-                        'amount'        => 1000
+                    'tds'             => [
+                        'category_id' => 1,
+                        'amount'      => 1000
                     ],
                     'subtotal_amount' => 10000,
                 ]
@@ -17913,14 +17913,14 @@ return [
                 'purpose'         => 'refund',
                 'mode'            => 'IMPS',
                 'fund_account_id' => 'fa_100000000000fa',
-                'otp' =>'0007',
-                'token' => 'BUIj3m2Nx2VvVj',
+                'otp'             => '0007',
+                'token'           => 'BUIj3m2Nx2VvVj',
                 'notes'           => [
                     'abc' => 'xyz',
                 ],
                 'attachments'     => [
                     [
-                        'file_id' => 'file_testing',
+                        'file_id'   => 'file_testing',
                         'file_name' => 'not-your-attachment.pdf'
                     ],
                 ],
@@ -17962,8 +17962,8 @@ return [
                 'purpose'         => 'refund',
                 'mode'            => 'IMPS',
                 'fund_account_id' => 'fa_100000000000fa',
-                'otp' =>'0007',
-                'token' => 'BUIj3m2Nx2VvVj',
+                'otp'             => '0007',
+                'token'           => 'BUIj3m2Nx2VvVj',
                 'notes'           => [
                     'abc' => 'xyz',
                 ],
@@ -17987,7 +17987,7 @@ return [
     ],
 
     'testCohesiveCreatePayoutWithTdsMissingTdsAmountForProxyAuth' => [
-        'request'  => [
+        'request'   => [
             'method'  => 'POST',
             'url'     => '/payouts_with_otp',
             'content' => [
@@ -17997,18 +17997,18 @@ return [
                 'purpose'         => 'refund',
                 'mode'            => 'IMPS',
                 'fund_account_id' => 'fa_100000000000fa',
-                'otp' =>'0007',
-                'token' => 'BUIj3m2Nx2VvVj',
+                'otp'             => '0007',
+                'token'           => 'BUIj3m2Nx2VvVj',
                 'notes'           => [
                     'abc' => 'xyz',
                 ],
-                'tds' => [
+                'tds'             => [
                     'category_id' => 1
                 ],
             ],
         ],
-        'response' => [
-            'content' => [
+        'response'  => [
+            'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'The amount field is required.',
@@ -18017,13 +18017,13 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 
     'testCohesiveCreatePayoutWithTdsMissingTdsCategoryIdForProxyAuth' => [
-        'request'  => [
+        'request'   => [
             'method'  => 'POST',
             'url'     => '/payouts_with_otp',
             'content' => [
@@ -18033,18 +18033,18 @@ return [
                 'purpose'         => 'refund',
                 'mode'            => 'IMPS',
                 'fund_account_id' => 'fa_100000000000fa',
-                'otp' =>'0007',
-                'token' => 'BUIj3m2Nx2VvVj',
+                'otp'             => '0007',
+                'token'           => 'BUIj3m2Nx2VvVj',
                 'notes'           => [
                     'abc' => 'xyz',
                 ],
-                'tds' => [
+                'tds'             => [
                     'amount' => 100,
                 ],
             ],
         ],
-        'response' => [
-            'content' => [
+        'response'  => [
+            'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'The category id field is required.',
@@ -18053,13 +18053,13 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 
     'testCohesiveCreatePayoutWithTdsTdsAmountMoreThanPayoutAmountForProxyAuth' => [
-        'request'  => [
+        'request'   => [
             'method'  => 'POST',
             'url'     => '/payouts_with_otp',
             'content' => [
@@ -18069,19 +18069,19 @@ return [
                 'purpose'         => 'refund',
                 'mode'            => 'IMPS',
                 'fund_account_id' => 'fa_100000000000fa',
-                'otp' =>'0007',
-                'token' => 'BUIj3m2Nx2VvVj',
+                'otp'             => '0007',
+                'token'           => 'BUIj3m2Nx2VvVj',
                 'notes'           => [
                     'abc' => 'xyz',
                 ],
-                'tds' => [
-                    'category_id'   => 1,
-                    'amount'        => 1000
+                'tds'             => [
+                    'category_id' => 1,
+                    'amount'      => 1000
                 ],
             ],
         ],
-        'response' => [
-            'content' => [
+        'response'  => [
+            'content'     => [
                 'error' => [
                     'description' => PublicErrorDescription::BAD_REQUEST_TDS_AMOUNT_GREATER_THAN_PAYOUT_AMOUNT,
                 ],
@@ -18089,13 +18089,13 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => RZP\Exception\BadRequestException::class,
+            'class'               => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_TDS_AMOUNT_GREATER_THAN_PAYOUT_AMOUNT,
         ],
     ],
 
     'testCohesiveCreatePayoutWithTdsIncorrectTdsCategoryIdForProxyAuth' => [
-        'request'  => [
+        'request'   => [
             'method'  => 'POST',
             'url'     => '/payouts_with_otp',
             'content' => [
@@ -18105,20 +18105,20 @@ return [
                 'purpose'         => 'refund',
                 'mode'            => 'IMPS',
                 'fund_account_id' => 'fa_100000000000fa',
-                'otp' =>'0007',
-                'token' => 'BUIj3m2Nx2VvVj',
+                'otp'             => '0007',
+                'token'           => 'BUIj3m2Nx2VvVj',
                 'notes'           => [
                     'abc' => 'xyz',
                 ],
-                'tds' => [
-                    'category_id'   => 5,
-                    'amount'        => 1000
+                'tds'             => [
+                    'category_id' => 5,
+                    'amount'      => 1000
                 ],
-                'subtotal_amount'   => 500,
+                'subtotal_amount' => 500,
             ],
         ],
-        'response' => [
-            'content' => [
+        'response'  => [
+            'content'     => [
                 'error' => [
                     'description' => PublicErrorDescription::BAD_REQUEST_INVALID_TDS_CATEGORY_ID,
                 ],
@@ -18126,7 +18126,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => RZP\Exception\BadRequestException::class,
+            'class'               => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_TDS_CATEGORY_ID,
         ],
     ],
@@ -18136,23 +18136,23 @@ return [
             'method'  => 'POST',
             'url'     => '/payouts_with_otp',
             'content' => [
-                'account_number'  => '2224440041626905',
-                'amount'          => 50000000,
-                'currency'        => 'INR',
-                'purpose'         => 'refund',
-                'mode'            => 'IMPS',
-                'fund_account_id' => 'fa_100000000000fa',
-                'otp' =>'0007',
-                'token' => 'BUIj3m2Nx2VvVj',
-                'notes'           => [
+                'account_number'       => '2224440041626905',
+                'amount'               => 50000000,
+                'currency'             => 'INR',
+                'purpose'              => 'refund',
+                'mode'                 => 'IMPS',
+                'fund_account_id'      => 'fa_100000000000fa',
+                'otp'                  => '0007',
+                'token'                => 'BUIj3m2Nx2VvVj',
+                'notes'                => [
                     'abc' => 'xyz',
                 ],
-                'queue_if_low_balance'  => true,
-                'tds'             => [
-                    'category_id'   => 1,
-                    'amount'        => 1000
+                'queue_if_low_balance' => true,
+                'tds'                  => [
+                    'category_id' => 1,
+                    'amount'      => 1000
                 ],
-                'subtotal_amount' => 10000,
+                'subtotal_amount'      => 10000,
             ],
         ],
         'response' => [
@@ -18169,9 +18169,9 @@ return [
                     'abc' => 'xyz',
                 ],
                 'meta'            => [
-                    'tds' => [
-                        'category_id'   => 1,
-                        'amount'        => 1000
+                    'tds'             => [
+                        'category_id' => 1,
+                        'amount'      => 1000
                     ],
                     'subtotal_amount' => 10000,
                 ]
@@ -18184,18 +18184,18 @@ return [
             'method'  => 'POST',
             'url'     => '/payouts_with_otp',
             'content' => [
-                'account_number'  => '2224440041626905',
-                'amount'          => 50000000,
-                'currency'        => 'INR',
-                'purpose'         => 'refund',
-                'mode'            => 'IMPS',
-                'fund_account_id' => 'fa_100000000000fa',
-                'otp' =>'0007',
-                'token' => 'BUIj3m2Nx2VvVj',
-                'notes'           => [
+                'account_number'       => '2224440041626905',
+                'amount'               => 50000000,
+                'currency'             => 'INR',
+                'purpose'              => 'refund',
+                'mode'                 => 'IMPS',
+                'fund_account_id'      => 'fa_100000000000fa',
+                'otp'                  => '0007',
+                'token'                => 'BUIj3m2Nx2VvVj',
+                'notes'                => [
                     'abc' => 'xyz',
                 ],
-                'queue_if_low_balance'  => true,
+                'queue_if_low_balance' => true,
             ],
         ],
         'response' => [
@@ -18216,10 +18216,10 @@ return [
     ],
 
     'testCohesiveCreatePayoutWithTdsIncorrectTdsCategoryIdForInternalAuth' => [
-        'request'  => [
+        'request'   => [
             'method'  => 'POST',
             'server'  => [
-                'HTTP_X-Razorpay-Account'   => '10000000000000',
+                'HTTP_X-Razorpay-Account' => '10000000000000',
             ],
             'url'     => '/payouts_internal',
             'content' => [
@@ -18241,15 +18241,15 @@ return [
                         'priority'    => 1,
                     ]
                 ],
-                'tds' => [
-                    'category_id'   => 5,
-                    'amount'        => 1000
+                'tds'             => [
+                    'category_id' => 5,
+                    'amount'      => 1000
                 ],
                 'subtotal_amount' => 10000,
             ],
         ],
-        'response' => [
-            'content' => [
+        'response'  => [
+            'content'     => [
                 'error' => [
                     'description' => PublicErrorDescription::BAD_REQUEST_INVALID_TDS_CATEGORY_ID,
                 ],
@@ -18257,16 +18257,16 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => RZP\Exception\BadRequestException::class,
+            'class'               => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_TDS_CATEGORY_ID,
         ],
     ],
 
     'testCohesiveCreatePayoutWithTdsMissingTdsCategoryIdForInternalAuth' => [
-        'request'  => [
+        'request'   => [
             'method'  => 'POST',
             'server'  => [
-                'HTTP_X-Razorpay-Account'   => '10000000000000',
+                'HTTP_X-Razorpay-Account' => '10000000000000',
             ],
             'url'     => '/payouts_internal',
             'content' => [
@@ -18276,8 +18276,8 @@ return [
                 'purpose'         => 'refund',
                 'mode'            => 'IMPS',
                 'fund_account_id' => 'fa_100000000000fa',
-                'otp' =>'0007',
-                'token' => 'BUIj3m2Nx2VvVj',
+                'otp'             => '0007',
+                'token'           => 'BUIj3m2Nx2VvVj',
                 'notes'           => [
                     'abc' => 'xyz',
                 ],
@@ -18288,14 +18288,14 @@ return [
                         'priority'    => 1,
                     ]
                 ],
-                'tds' => [
-                    'amount'        => 1000
+                'tds'             => [
+                    'amount' => 1000
                 ],
                 'subtotal_amount' => 10000,
             ],
         ],
-        'response' => [
-            'content' => [
+        'response'  => [
+            'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'The category id field is required.',
@@ -18304,16 +18304,16 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 
     'testCohesiveCreatePayoutWithTdsMissingTdsAmountForInternalAuth' => [
-        'request'  => [
+        'request'   => [
             'method'  => 'POST',
             'server'  => [
-                'HTTP_X-Razorpay-Account'   => '10000000000000',
+                'HTTP_X-Razorpay-Account' => '10000000000000',
             ],
             'url'     => '/payouts_internal',
             'content' => [
@@ -18323,8 +18323,8 @@ return [
                 'purpose'         => 'refund',
                 'mode'            => 'IMPS',
                 'fund_account_id' => 'fa_100000000000fa',
-                'otp' =>'0007',
-                'token' => 'BUIj3m2Nx2VvVj',
+                'otp'             => '0007',
+                'token'           => 'BUIj3m2Nx2VvVj',
                 'notes'           => [
                     'abc' => 'xyz',
                 ],
@@ -18335,14 +18335,14 @@ return [
                         'priority'    => 1,
                     ]
                 ],
-                'tds' => [
-                    'category_id'        => 1
+                'tds'             => [
+                    'category_id' => 1
                 ],
                 'subtotal_amount' => 10000,
             ],
         ],
-        'response' => [
-            'content' => [
+        'response'  => [
+            'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'The amount field is required.',
@@ -18351,16 +18351,16 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 
     'testCohesiveCreatePayoutWithTdsTdsAmountMoreThanPayoutAmountForInternalAuth' => [
-        'request'  => [
+        'request'   => [
             'method'  => 'POST',
             'server'  => [
-                'HTTP_X-Razorpay-Account'   => '10000000000000',
+                'HTTP_X-Razorpay-Account' => '10000000000000',
             ],
             'url'     => '/payouts_internal',
             'content' => [
@@ -18370,8 +18370,8 @@ return [
                 'purpose'         => 'refund',
                 'mode'            => 'IMPS',
                 'fund_account_id' => 'fa_100000000000fa',
-                'otp' =>'0007',
-                'token' => 'BUIj3m2Nx2VvVj',
+                'otp'             => '0007',
+                'token'           => 'BUIj3m2Nx2VvVj',
                 'notes'           => [
                     'abc' => 'xyz',
                 ],
@@ -18382,15 +18382,15 @@ return [
                         'priority'    => 1,
                     ]
                 ],
-                'tds' => [
-                    'category_id'        => 1,
-                    'amount'             => 50000,
+                'tds'             => [
+                    'category_id' => 1,
+                    'amount'      => 50000,
                 ],
                 'subtotal_amount' => 10000,
             ],
         ],
-        'response' => [
-            'content' => [
+        'response'  => [
+            'content'     => [
                 'error' => [
                     'description' => PublicErrorDescription::BAD_REQUEST_TDS_AMOUNT_GREATER_THAN_PAYOUT_AMOUNT,
                 ],
@@ -18398,7 +18398,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => RZP\Exception\BadRequestException::class,
+            'class'               => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_TDS_AMOUNT_GREATER_THAN_PAYOUT_AMOUNT,
         ],
     ],
@@ -18407,7 +18407,7 @@ return [
         'request'  => [
             'method'  => 'POST',
             'server'  => [
-                'HTTP_X-Razorpay-Account'   => '10000000000000',
+                'HTTP_X-Razorpay-Account' => '10000000000000',
             ],
             'url'     => '/payouts_internal',
             'content' => [
@@ -18429,9 +18429,9 @@ return [
                         'priority'    => 1,
                     ]
                 ],
-                'tds' => [
-                    'category_id'   => 1,
-                    'amount'        => 1000
+                'tds'             => [
+                    'category_id' => 1,
+                    'amount'      => 1000
                 ],
                 'subtotal_amount' => 10000,
             ],
@@ -18459,10 +18459,10 @@ return [
                         'priority'    => 1,
                     ]
                 ],
-                'meta' => [
-                    'tds' => [
-                        'category_id'   => 1,
-                        'amount'        => 1000
+                'meta'            => [
+                    'tds'             => [
+                        'category_id' => 1,
+                        'amount'      => 1000
                     ],
                     'subtotal_amount' => 10000,
                 ]
@@ -18474,7 +18474,7 @@ return [
         'request'  => [
             'method'  => 'POST',
             'server'  => [
-                'HTTP_X-Razorpay-Account'   => '10000000000000',
+                'HTTP_X-Razorpay-Account' => '10000000000000',
             ],
             'url'     => '/payouts_internal',
             'content' => [
@@ -18498,7 +18498,7 @@ return [
                 ],
                 'attachments'     => [
                     [
-                        'file_id' => 'file_testing',
+                        'file_id'   => 'file_testing',
                         'file_name' => 'not-your-attachment.pdf'
                     ],
                 ],
@@ -18535,7 +18535,7 @@ return [
         'request'  => [
             'method'  => 'POST',
             'server'  => [
-                'HTTP_X-Razorpay-Account'   => '10000000000000',
+                'HTTP_X-Razorpay-Account' => '10000000000000',
             ],
             'url'     => '/payouts_internal',
             'content' => [
@@ -18590,22 +18590,22 @@ return [
         'request'  => [
             'method'  => 'POST',
             'server'  => [
-                'HTTP_X-Razorpay-Account'   => '10000000000000',
+                'HTTP_X-Razorpay-Account' => '10000000000000',
             ],
             'url'     => '/payouts_internal',
             'content' => [
-                'account_number'  => '2224440041626905',
-                'amount'          => 2000,
-                'currency'        => 'INR',
-                'purpose'         => 'refund',
-                'narration'       => 'Batman',
-                'mode'            => 'IMPS',
-                'fund_account_id' => 'fa_100000000000fa',
-                'notes'           => [
+                'account_number'       => '2224440041626905',
+                'amount'               => 2000,
+                'currency'             => 'INR',
+                'purpose'              => 'refund',
+                'narration'            => 'Batman',
+                'mode'                 => 'IMPS',
+                'fund_account_id'      => 'fa_100000000000fa',
+                'notes'                => [
                     'abc' => 'xyz',
                 ],
-                'origin'          => 'dashboard',
-                'source_details'  => [
+                'origin'               => 'dashboard',
+                'source_details'       => [
                     [
                         'source_id'   => '100000000000sa',
                         'source_type' => 'payout_links',
@@ -18613,11 +18613,11 @@ return [
                     ]
                 ],
                 'queue_if_low_balance' => true,
-                'tds' => [
-                    'category_id'   => 1,
-                    'amount'        => 1000
+                'tds'                  => [
+                    'category_id' => 1,
+                    'amount'      => 1000
                 ],
-                'subtotal_amount' => 10000,
+                'subtotal_amount'      => 10000,
             ],
         ],
         'response' => [
@@ -18651,22 +18651,22 @@ return [
         'request'  => [
             'method'  => 'POST',
             'server'  => [
-                'HTTP_X-Razorpay-Account'   => '10000000000000',
+                'HTTP_X-Razorpay-Account' => '10000000000000',
             ],
             'url'     => '/payouts_internal',
             'content' => [
-                'account_number'  => '2224440041626905',
-                'amount'          => 2000,
-                'currency'        => 'INR',
-                'purpose'         => 'refund',
-                'narration'       => 'Batman',
-                'mode'            => 'IMPS',
-                'fund_account_id' => 'fa_100000000000fa',
-                'notes'           => [
+                'account_number'       => '2224440041626905',
+                'amount'               => 2000,
+                'currency'             => 'INR',
+                'purpose'              => 'refund',
+                'narration'            => 'Batman',
+                'mode'                 => 'IMPS',
+                'fund_account_id'      => 'fa_100000000000fa',
+                'notes'                => [
                     'abc' => 'xyz',
                 ],
-                'origin'          => 'dashboard',
-                'source_details'  => [
+                'origin'               => 'dashboard',
+                'source_details'       => [
                     [
                         'source_id'   => '100000000000sa',
                         'source_type' => 'payout_links',
@@ -18705,8 +18705,8 @@ return [
 
     'testCohesiveFetchPayoutByIdForPayoutWithoutTdsForProxyAuth' => [
         'request'  => [
-            'method'  => 'GET',
-            'url'     => '/payouts/pout_ID',
+            'method' => 'GET',
+            'url'    => '/payouts/pout_ID',
         ],
         'response' => [
             'content' => [
@@ -18731,8 +18731,8 @@ return [
 
     'testCohesiveFetchPayoutByIdForPayoutWithoutTdsForPrivateAuth' => [
         'request'  => [
-            'method'  => 'GET',
-            'url'     => '/payouts/pout_ID',
+            'method' => 'GET',
+            'url'    => '/payouts/pout_ID',
         ],
         'response' => [
             'content' => [
@@ -18753,7 +18753,7 @@ return [
     ],
 
     'testCohesiveFetchMultiplePayoutsWithTdsCategoryIdFilterForPrivateAuth' => [
-        'request'  => [
+        'request'   => [
             'method'  => 'GET',
             'url'     => '/payouts?tds_category_id=1&account_number=2224440041626905',
             'content' => [],
@@ -18774,7 +18774,7 @@ return [
     ],
 
     'testCohesiveFetchMultiplePayoutsWithIncorrectTaxPaymentPublicIdFilterForProxyAuth' => [
-        'request'  => [
+        'request'   => [
             'method'  => 'GET',
             'url'     => '/payouts?tax_payment_id=tx_1234&account_number=2224440041626905',
             'content' => [],
@@ -18791,6 +18791,118 @@ return [
             'class'               => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_TAX_PAYMENT_ID,
         ],
-    ]
+    ],
 
+    'testCohesiveCreatePayoutWithoutTdsPayoutToBeQueuedFalseForPrivateAuth' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'       => '2224440041626905',
+                'amount'               => 2000000,
+                'currency'             => 'INR',
+                'purpose'              => 'refund',
+                'narration'            => 'Batman',
+                'mode'                 => 'IMPS',
+                'fund_account_id'      => 'fa_100000000000fa',
+                'notes'                => [
+                    'abc' => 'xyz',
+                ],
+                'queue_if_low_balance' => false,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'narration'       => 'Batman',
+                'purpose'         => 'refund',
+                'status'          => 'processing',
+                'mode'            => 'IMPS',
+                'tax'             => 162,
+                'fees'            => 1062,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ]
+        ],
+    ],
+    'testUpdateAttachmentWithProxyAuth'                                     => [
+        'request'  => [
+            'method'  => 'PATCH',
+            'url'     => 'payouts/pout_JLYXwEbdcktqV1/attachments',
+            'content' => [
+                "attachments" => [
+                    [
+                        "file_id"   => "file_JLYYnaOtQ0Xgzt",
+                        "file_name" => "new file.pdf",
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'SUCCESS'
+            ]
+        ],
+    ],
+    'testUpdateAttachmentWithTds'                                           => [
+        'request'  => [
+            'method'  => 'PATCH',
+            'url'     => 'payouts/pout_JLYXwEbdcktqV1/attachments',
+            'content' => [
+                "attachments" => [
+                    [
+                        "file_id"   => "file_JLYYnaOtQ0Xgzt",
+                        "file_name" => "new file.pdf",
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'SUCCESS'
+            ]
+        ],
+    ],
+    'testUpdateAttachmentForPayoutLink'                                     => [
+        'request'  => [
+            'method'  => 'PATCH',
+            'url'     => '/payouts_internal/attachments',
+            'content' => [
+                "attachments" => [
+                    [
+                        "file_id"   => "file_JLYYnaOtQ0Xgzt",
+                        "file_name" => "new file.pdf",
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'SUCCESS'
+            ]
+        ],
+    ],
+    'testUpdateAttachmentPayoutLinkWithoutPayoutDetails'                    => [
+        'request'  => [
+            'method'  => 'PATCH',
+            'url'     => '/payouts_internal/attachments',
+            'content' => [
+                "attachments" => [
+                    [
+                        "file_id"   => "file_JLYYnaOtQ0Xgzt",
+                        "file_name" => "new file.pdf",
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'SUCCESS'
+            ]
+        ],
+    ],
 ];

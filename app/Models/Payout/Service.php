@@ -2943,14 +2943,14 @@ class Service extends Base\Service
 
         // updating attachments on payouts is only allowed for vanilla payouts
         $payoutSource = (new PayoutSourceCore())->getPayoutSource($payoutId);
-
+        
         if ($payoutSource !== null)
         {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_INVALID_PAYOUT_SOURCE_FOR_UPDATE,
-                PayoutDetails\Entity::ATTACHMENTS,
-                $payoutSource,
-                'Invalid Payout Source for attachments update');
+           throw new BadRequestException(
+               ErrorCode::BAD_REQUEST_INVALID_PAYOUT_SOURCE_FOR_UPDATE,
+               PayoutDetails\Entity::ATTACHMENTS,
+               $payoutSource,
+               'Invalid Payout Source for attachments update');
         }
 
         $payout = $this->repo->payout->findByIdAndMerchant($payoutId, $this->app['basicauth']->getMerchant());
