@@ -11749,6 +11749,7 @@ class Route
             'payout_links_send_email',
             'payout_links_send_demo_email',
             'user_fetch',
+            'user_fetch_internal',
             'payout_purpose_validate_internal',
             'banking_accounts_list_internal',
             'app_merchant_mapping_create',
