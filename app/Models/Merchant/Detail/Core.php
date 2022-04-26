@@ -4618,11 +4618,6 @@ class Core extends Base\Core
             return false;
         }
 
-        if ( (new Merchant\Core)->isRegularMerchant($merchantDetails->merchant) === false )
-        {
-            return false;
-        }
-
         if ($merchantDetails->merchant->isLinkedAccount() === true)
         {
             return false;
