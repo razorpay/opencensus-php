@@ -95,6 +95,7 @@ class FileBasedErrorCodes
     const DE05  = '05';
     const DE06  = '06';
     const DE07  = '07';
+    const DE8   = '8';
     const DE08  = '08';
     const DE09  = '09';
     const DE11  = '11';
@@ -243,6 +244,7 @@ class FileBasedErrorCodes
         self::DE05  => 'Not arranged for',
         self::DE06  => 'Payment stopped by drawer',
         self::DE07  => 'Payment stopped under court order/Account under litigation',
+        self::DE8   => 'Mandate not received/UMRN does not exist',
         self::DE08  => 'Mandate not received/UMRN does not exist',
         self::DE09  => 'Miscellaneous - Others',
         self::DE11  => 'Invalid IFSC/MICR code',
@@ -393,6 +395,7 @@ class FileBasedErrorCodes
         self::DE05  => ErrorCode::GATEWAY_ERROR_DEBIT_FAILED,
         self::DE06  => ErrorCode::BAD_REQUEST_PAYMENT_CANCELLED_BY_CUSTOMER,
         self::DE07  => ErrorCode::BAD_REQUEST_PAYMENT_ACCOUNT_WITHDRAWAL_FROZEN,
+        self::DE8   => ErrorCode::BAD_REQUEST_EMANDATE_CANCELLED_INACTIVE,
         self::DE08  => ErrorCode::BAD_REQUEST_EMANDATE_CANCELLED_INACTIVE,
         self::DE09  => ErrorCode::GATEWAY_ERROR_DEBIT_FAILED,
         self::DE11  => ErrorCode::BAD_REQUEST_INVALID_IFSC_CODE,
