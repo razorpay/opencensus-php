@@ -46,9 +46,10 @@ class Service extends Base\Service
 {
     use Base\RepositoryUpdateTestAndLive;
 
-    const FROM_MODE = 'from_mode';
-    const TO_MODE = 'to_mode';
-    const FIELDS_TO_SYNC = 'fields_to_sync';
+    const FROM_MODE                  = 'from_mode';
+    const TO_MODE                    = 'to_mode';
+    const FIELDS_TO_SYNC             = 'fields_to_sync';
+    const WHATSAPP_ENTITY_PREFIX_REG = '/^whatsapp_/';
 
     public function getAllEntities($input, $isExternalAdmin = false)
     {
@@ -203,11 +204,11 @@ class Service extends Base\Service
 
     public function fetchEntityById(string $entity, string $id, array $input = [], $isExternalAdmin = false): array
     {
-        $entityType = $entity;
-
         $data = ["function" => "fetchEntityById", "entity" => $entity];
 
         $this->app['trace']->info(TraceCode::FETCH_ENTITY_BY_ID, $data);
+
+        list($isWhatsappInfra, $entityType) = $this->checkToUseWhatsappInfra($entity);
 
         $this->validateEntityTypeForRestrictedOrg($entity);
 
@@ -232,7 +233,15 @@ class Service extends Base\Service
             return $retEntity;
         }
 
-        $entity = $this->fetchEntityByNameAndId($entity, $id, $input, ConnectionType::REPLICA);
+        if ($isWhatsappInfra === true)
+        {
+            $entity = $this->fetchEntityByNameAndId($entity, $id, $input, ConnectionType::RX_WHATSAPP_LIVE);
+        }
+        else
+        {
+            $entity = $this->fetchEntityByNameAndId($entity, $id, $input, ConnectionType::REPLICA);
+        }
+
 
         $response = $entity->toArrayAdmin();
 
@@ -242,6 +251,18 @@ class Service extends Base\Service
         }
 
         return $response;
+    }
+
+    public function checkToUseWhatsappInfra(string &$entity)
+    {
+        if (preg_match(self::WHATSAPP_ENTITY_PREFIX_REG, $entity) == 1)
+        {
+            $entity = substr($entity, 9);
+
+            return [true, $entity];
+        }
+
+        return [false, $entity];
     }
 
     /**
@@ -395,11 +416,11 @@ class Service extends Base\Service
 
     public function fetchMultipleEntities($entity, $input, $isExternalAdmin = false)
     {
-        $entityType = $entity;
-
         $data = ["function" => "fetchMultipleEntities", "entity" => $entity, "input" => $input];
 
         $this->app['trace']->info(TraceCode::FETCH_MULTIPLE_ENTITIES, $data);
+
+        list($isWhatsappInfra, $entityType) = $this->checkToUseWhatsappInfra($entity);
 
         $this->traceActiveDbConnections();
 
@@ -430,7 +451,11 @@ class Service extends Base\Service
             $this->validateEntityAccess($entity);
         }
 
-        if ( $entity === Entity::PAYMENT OR $entity === Entity::ORDER )
+        if ($isWhatsappInfra === true)
+        {
+            $entities = $this->repo->$entity->fetch($input, null, ConnectionType::RX_WHATSAPP_LIVE);
+        }
+        else if ( $entity === Entity::PAYMENT OR $entity === Entity::ORDER )
         {
             $entities = $this->repo->$entity->fetch($input, null, ConnectionType::DATA_WAREHOUSE_ADMIN);
         }

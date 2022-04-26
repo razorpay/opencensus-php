@@ -315,6 +315,9 @@ trait RepositoryFetch
 
             case ConnectionType::RX_ACCOUNT_STATEMENTS:
                 return $this->getRxStatementConnection();
+
+            case ConnectionType::RX_WHATSAPP_LIVE:
+                return $this->getWhatsappSlaveConnection();
         }
 
         return $connection;

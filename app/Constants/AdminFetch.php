@@ -4586,6 +4586,17 @@ class AdminFetch
             ]
         ];
 
+        // We have separate infra setup for whatsapp alone which is a replication of current API.
+        // Hence to access all entities from admin dashboard we are adding same entities with 'whatsapp' as prefix.
+        $whatsappEntities = [];
+
+        foreach ($entities as $entity => $attributes)
+        {
+            $whatsappEntities['whatsapp_' . $entity] = $attributes;
+        }
+
+        $entities = array_merge($entities, $whatsappEntities);
+
         //
         // Ensures default type and label against each attribute's config exists.
         //
