@@ -607,7 +607,7 @@ class Reconciliation extends Base
         //
         // Processing of file having size around 30M, consuming memory more than 910M.
         //
-        RuntimeManager::setMemoryLimit('1024M');
+        RuntimeManager::setMemoryLimit('2048M');
 
         // As now reconciliation runs as K8s job, increasing time limit to 2 hour.
         // The reconciliation can run for a long time.

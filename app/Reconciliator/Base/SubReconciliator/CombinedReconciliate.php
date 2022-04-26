@@ -9,6 +9,7 @@ use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger;
 use RZP\Reconciliator\Base;
 use RZP\Reconciliator\Orchestrator;
+use RZP\Reconciliator\Base\InfoCode;
 use RZP\Reconciliator\RequestProcessor;
 use RZP\Exception\ReconciliationException;
 
@@ -241,7 +242,16 @@ class CombinedReconciliate extends Base\Foundation\SubReconciliate
 
                     if (empty($extraDetails[Batch\Processor\Reconciliation::BATCH_SERVICE_RECON_REQUEST]) === true)
                     {
-                        throw $ex;
+                        //
+                        // We don't want to terminate the batch processing
+                        // when the transaction creation failed for a single payment
+                        //
+                        if ((empty(static::$reconOutputData[static::$currentRowNumber][self::RECON_ERROR_MSG]) === true) or
+                            ((empty(static::$reconOutputData[static::$currentRowNumber][self::RECON_ERROR_MSG] === false) and
+                                (static::$reconOutputData[static::$currentRowNumber][self::RECON_ERROR_MSG] !== InfoCode::RECON_RECORD_GATEWAY_FEE_TRANSACTION_ABSENT))))
+                        {
+                            throw $ex;
+                        }
                     }
 
                     //
