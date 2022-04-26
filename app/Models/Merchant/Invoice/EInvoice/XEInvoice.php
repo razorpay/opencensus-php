@@ -73,6 +73,8 @@ class XEInvoice extends Core
                 Constants::SGST_AMOUNT => $sgstAmount,
                 Constants::CGST_AMOUNT => $cgstAmount,
                 Constants::TOTAL_ITEM_VALUE => $totalItemValue,
+                Constants::ACCOUNT_TYPE => $invoiceItem[BankingInvoiceReport::ACCOUNT_TYPE],
+                Constants::CHANNEL => $invoiceItem[BankingInvoiceReport::CHANNEL],
             ];
         }
 
@@ -91,13 +93,14 @@ class XEInvoice extends Core
 
         foreach ($items as $index => $values)
         {
-            $items[$index][Constants::UNIT_PRICE]       = $this->getAmountInRupees($values[Constants::UNIT_PRICE]);
-            $items[$index][Constants::TOTAL_AMOUNT]     = $this->getAmountInRupees($values[Constants::TOTAL_AMOUNT]);
-            $items[$index][Constants::ASSESSABLE_VALUE] = $this->getAmountInRupees($values[Constants::ASSESSABLE_VALUE]);
-            $items[$index][Constants::IGST_AMOUNT]      = $this->getAmountInRupees($values[Constants::IGST_AMOUNT]);
-            $items[$index][Constants::SGST_AMOUNT]      = $this->getAmountInRupees($values[Constants::SGST_AMOUNT]);
-            $items[$index][Constants::CGST_AMOUNT]      = $this->getAmountInRupees($values[Constants::CGST_AMOUNT]);
-            $items[$index][Constants::TOTAL_ITEM_VALUE] = $this->getAmountInRupees($values[Constants::TOTAL_ITEM_VALUE]);
+            $items[$index][Constants::PRODUCT_DESCRIPTION]  = $this->getModifiedProductDescription($values[Constants::ACCOUNT_TYPE], $values[Constants::CHANNEL]);
+            $items[$index][Constants::UNIT_PRICE]           = $this->getAmountInRupees($values[Constants::UNIT_PRICE]);
+            $items[$index][Constants::TOTAL_AMOUNT]         = $this->getAmountInRupees($values[Constants::TOTAL_AMOUNT]);
+            $items[$index][Constants::ASSESSABLE_VALUE]     = $this->getAmountInRupees($values[Constants::ASSESSABLE_VALUE]);
+            $items[$index][Constants::IGST_AMOUNT]          = $this->getAmountInRupees($values[Constants::IGST_AMOUNT]);
+            $items[$index][Constants::SGST_AMOUNT]          = $this->getAmountInRupees($values[Constants::SGST_AMOUNT]);
+            $items[$index][Constants::CGST_AMOUNT]          = $this->getAmountInRupees($values[Constants::CGST_AMOUNT]);
+            $items[$index][Constants::TOTAL_ITEM_VALUE]     = $this->getAmountInRupees($values[Constants::TOTAL_ITEM_VALUE]);
         }
 
         return [$items, $valueDetails];
@@ -249,5 +252,15 @@ class XEInvoice extends Core
             'year'       => $eInvoiceEntity->getYear(),
         ]);
         return [null, Constants::RSPL];
+    }
+
+    protected function getModifiedProductDescription($account_type, $channel)
+    {
+        if($account_type === "shared")
+        {
+            return "RazorpayX Virtual Account Transactions";
+        }
+
+        return strtoupper($channel) . " " . "Current Account Transactions";
     }
 }

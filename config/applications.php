@@ -604,7 +604,7 @@ return [
                     'client_id'             => env('GSP_LIVE_ACCESS_TOKEN_CLIENT_ID'),
                     'client_secret'         => env('GSP_LIVE_ACCESS_TOKEN_CLIENT_SECRET'),
                     'grant_type'            => env('GSP_LIVE_ACCESS_TOKEN_GRANT_TYPE'),
-                    'static_access_token'   => env('GSP_LIVE_STATIC_ACCESS_TOKEN'),
+                    'static_access_token'   => env('GSP_LIVE_STATIC_ACCESS_TOKEN_X'),
                 ],
                 'test' => [
                     'username'              => env('GSP_TEST_ACCESS_TOKEN_USERNAME'),
@@ -612,7 +612,7 @@ return [
                     'client_id'             => env('GSP_TEST_ACCESS_TOKEN_CLIENT_ID'),
                     'client_secret'         => env('GSP_TEST_ACCESS_TOKEN_CLIENT_SECRET'),
                     'grant_type'            => env('GSP_TEST_ACCESS_TOKEN_GRANT_TYPE'),
-                    'static_access_token'   => env('GSP_TEST_STATIC_ACCESS_TOKEN'),
+                    'static_access_token'   => env('GSP_TEST_STATIC_ACCESS_TOKEN_X'),
                 ],
             ],
         ],

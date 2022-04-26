@@ -334,6 +334,11 @@ class Core extends Base\Core
                if ($creditNoteAmount > $invoiceAmount)
                {
                   unset($data[BankingInvoiceReport::ROWS][EInvoice\DocumentTypes::CRN]);
+                  $this->trace->info(TraceCode::EINVOICE_REQUIRED_FOR_X, [
+                       'merchant_id'  => $this->merchant->getId(),
+                       'month' => $input['month'],
+                       'year' => $input['year'],
+                   ]);
                }
            }
         }

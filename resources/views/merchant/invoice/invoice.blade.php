@@ -117,13 +117,24 @@
                         <td class="text-right">
                             <strong class="text-black-o-40">From:</strong><br />
                             @if($seller_entity === 'RSPL')
-                                    <span class="text-black-o-80 font-weight-600">Razorpay Software Pvt. Ltd. </span><br>
-                                    #22, 1st Floor, SJR Cyber,<br />
+                                <span class="text-black-o-80 font-weight-600">Razorpay Software Pvt. Ltd. </span><br>
+                                #22, 1st Floor, SJR Cyber,<br />
+                                Laskar Hosur Road, Adugodi,<br />
+                                Bangalore, Karnataka - 560 030.<br /><br />
+                                <span class="font-weight-600 text-black-o-60">GSTIN</span> - 29AAGCR4375J1ZU<br />
+                                <span class="font-weight-600 text-black-o-60">Pan No.</span> - AAGCR4375J<br />
+                                <span class="font-weight-600 text-black-o-60">CIN No.</span> - U72200KA2013PTC097389<br/>
+                            @else
+                                <?php $billing_period_split = explode("/", explode("-", $billing_period)[0]); ?>
+
+                                @if(((int)$billing_period_split[1] >= 4 and (int)$billing_period_split[2] == 2022) or ((int)$billing_period_split[2] > 2022))
+                                    <span class="text-black-o-80 font-weight-600">RZPX PRIVATE LIMITED </span><br>
+                                    #22, Ground Floor, SJR Cyber,<br />
                                     Laskar Hosur Road, Adugodi,<br />
                                     Bangalore, Karnataka - 560 030.<br /><br />
-                                    <span class="font-weight-600 text-black-o-60">GSTIN</span> - 29AAGCR4375J1ZU<br />
-                                    <span class="font-weight-600 text-black-o-60">Pan No.</span> - AAGCR4375J<br />
-                                    <span class="font-weight-600 text-black-o-60">CIN No.</span> - U72200KA2013PTC097389<br/>
+                                    <span class="font-weight-600 text-black-o-60">GSTIN</span> - 29AAKCR4702K1Z1<br />
+                                    <span class="font-weight-600 text-black-o-60">Pan No.</span> - AAKCR4702K<br />
+                                    <span class="font-weight-600 text-black-o-60">CIN No.</span> - U72900KA2020PTC139072<br/>
                                 @else
                                     <span class="text-black-o-80 font-weight-600">RZPX PRIVATE LIMITED </span><br>
                                     #22, 1st Floor, SJR Cyber,<br />
@@ -132,6 +143,7 @@
                                     <span class="font-weight-600 text-black-o-60">GSTIN</span> - 29AAKCR4702K1Z1<br />
                                     <span class="font-weight-600 text-black-o-60">Pan No.</span> - AAKCR4702K<br />
                                     <span class="font-weight-600 text-black-o-60">CIN No.</span> - U72900KA2020PTC139072<br/>
+                                @endif
                             @endif
                             <div style=“position:absolute;bottom:350px;“>
                                 @if (isset($e_invoice_details['QRCodeUrl']))
@@ -330,8 +342,6 @@
 
             <li>All the Invoice, Debit &amp; Credit note values are inclusive of GST.</li>
 
-            <li>In case your GSTIN is not updated then we will generate an SGST &amp; CGST invoice.</li>
-
             <li>Invoicing is per IST timezone</li>
 
             @if($billing_period == '01/12/2020-30/12/2020')
@@ -343,7 +353,7 @@
                     https://razorpay.com/docs/announcements/gst-changes/</a></li><br>
             @endif
             <?php $billing_period_split = explode("/", explode("-", $billing_period)[0]); ?>
-            @if(((int)$billing_period_split[1] >= 8 and (int)$billing_period_split[2] == '2021') or ((int)$billing_period_split[2] > '2021'))
+            @if(((int)$billing_period_split[1] >= 8 and (int)$billing_period_split[2] == 2021) or ((int)$billing_period_split[2] > 2021))
                 <li>Unless otherwise stated, tax on this invoice is not payable under reverse charge.</li>
             @endif
 

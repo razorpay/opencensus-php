@@ -125,7 +125,7 @@ class XEInvoice extends Job
                     return;
                 }
             }
-            if($newSellerEntity === Constants::RSPL)
+            if($newSellerEntity === Constants::RSPL or $newSellerEntity === Constants::RZPL)
             {
                 [$response, $failure] = $this->XEInvoiceCore->generateEInvoice($eInvoiceEntity, $newSellerEntity);
             }

@@ -5023,6 +5023,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const EINVOICE_JOB_DISPATCH_FOR_PG                          = 'EINVOICE_JOB_DISPATCH_FOR_PG';
     const INVOICE_GSTIN_UPDATE_REQUEST                          = 'INVOICE_GSTIN_UPDATE_REQUEST';
     const EINVOICE_PG_JOB_INIT                                  = 'EINVOICE_PG_JOB_INIT';
+    const EINVOICE_REQUIRED_FOR_X                               = 'EINVOICE_REQUIRED_FOR_X';
 
 
     const EINVOICE_FALLBACK_TO_B2C_FOR_X                        = 'EINVOICE_FALLBACK_TO_B2C_FOR_X';

@@ -62,6 +62,9 @@ final class Constants
     const RSPL = 'rspl';
     const RZPL = 'rzpl';
 
+    const CHANNEL = 'channel';
+    const ACCOUNT_TYPE = 'account_type';
+
     const SELLER_ENTITY_DETAILS = [
         self::RSPL       =>   [
                             self::GSTIN         =>  '29AAGCR4375J1ZU',
