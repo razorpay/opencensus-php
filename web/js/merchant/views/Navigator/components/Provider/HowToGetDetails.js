@@ -1,7 +1,7 @@
 import ModalHeader from 'common/ui/ModalHeader';
 import { gatewayDetailsMapping } from '../util';
 
-const PROVIDERS_WITH_DETAILS_ON_EMAIL = ['atom', 'upi_mindgate', 'ingenico'];
+const PROVIDERS_WITH_DETAILS_ON_EMAIL = ['atom', 'upi_mindgate', 'ingenico', 'billdesk_optimizer'];
 
 export const HowToGetDetails = ({ providers, selectedProvider, closeModal }) => {
   const gatewayName = providers[selectedProvider]['Gateway Name'].data_value;

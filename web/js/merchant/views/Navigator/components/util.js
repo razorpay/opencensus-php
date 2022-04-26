@@ -961,7 +961,7 @@ export const gatewayLogos = {
   smart_router: `${window.cdnBaseUrl}/${LOGO_PATH}/razorpay.png`,
   payu: `${window.cdnBaseUrl}/${LOGO_PATH}/payu.png`,
   paytm: `${window.cdnBaseUrl}/${LOGO_PATH}/paytm.png`,
-  billdesk: `${window.cdnBaseUrl}/${LOGO_PATH}/bill-desk.png`,
+  billdesk_optimizer: `${window.cdnBaseUrl}/${LOGO_PATH}/bill-desk.png`,
   atom: `${window.cdnBaseUrl}/${LOGO_PATH}/atom.png`,
   fss: `${window.cdnBaseUrl}/${LOGO_PATH}/fss.png`,
   cybersource: `${window.cdnBaseUrl}/${LOGO_PATH}/cybersource.png`,
@@ -1110,6 +1110,11 @@ export const gatewayDetailsMapping = {
     dashboardImg: null,
     dashboardUrl: 'https://www.techprocess.co.in/product-offerings/payment-gateway',
     dashboardUrlLabel: 'techprocess.co.in',
+  },
+  billdesk_optimizer: {
+    dashboardImg: null,
+    dashboardUrl: 'https://services.billdesk.com/console/',
+    dashboardUrlLabel: 'services.billdesk.com',
   },
 };
 
