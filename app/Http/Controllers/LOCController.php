@@ -233,31 +233,6 @@ class LOCController extends Controller
         return $response;
     }
 
-    protected function handleLeegalityWebhook($path = null)
-    {
-        $request = Request::instance();
-        $url     = 'leegality/webhook/loc';
-        $body    = $request->all();
-
-        $headers = [
-            'X-Service-Name' => 'leegality',
-            'X-Auth-Type' => 'internal',
-        ];
-
-        $this->trace->info(TraceCode::LINE_OF_CREDIT_LEEGALITY_WEBHOOK_REQUEST, [
-            'request' => $url,
-        ]);
-
-        $response = $this->sendRequestAndParseResponse($url, $body, $headers);
-
-        $this->trace->info(TraceCode::LINE_OF_CREDIT_LEEGALITY_WEBHOOK_RESPONSE, [
-            'request' => $url,
-            'response' => $response,
-        ]);
-
-        return $response;
-    }
-
     // Method to handle CRON jobs to LOC service
     protected function handleCron($path = null) {
         $request = Request::instance();

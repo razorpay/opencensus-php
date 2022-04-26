@@ -1098,7 +1098,6 @@ class Route
         'bvs_validation_artifact_details'          => ['get',      'merchants/{merchantId}/bvs/{validationArtefact}/details', 'MerchantController@getBvsValidationArtefactDetails'       ],
         'loc_bulk_withdrawal_update'               => ['post',     'loc/withdrawals/bulk/update',                    'LOCController@postLocBulkWithdrawalUpdate'                         ],
         'leegality_webhook'                        => ['post',     'leegality/webhook',                              'LOSController@handleLeegalityWebhook'                              ],
-        'leegality_webhook_loc'                    => ['post',     'leegality/webhook/loc',                          'LOCController@handleLeegalityWebhook'                              ],
         'reminder_admin'                           => ['any',      'reminders/admin/{path?}',                        'RemindersController@remindersAdmin'                                ],
         'reminder_next_run'                        => ['get',      'reminders/next_run/{entity}/{id}/{namespace?}',  'RemindersController@remindersNextRun'                              ],
         'invoice_create'                           => ['post',     'invoices',                                       'InvoiceController@createInvoice'                                   ],
@@ -8412,9 +8411,6 @@ class Route
         'payout_links_shopify_app_customers_redact',
         'payout_links_shopify_app_shop_redact',
         'payout_links_shopify_customers_data_request',
-
-        // Leegality Webhook LOC
-        'leegality_webhook_loc',
 
         // Payout Links Widget App
         'payout_links_create_demo',
