@@ -217,6 +217,15 @@ class SavedCardsPaymentCreateTest extends TestCase
         $this->assertEquals($card[Card::GLOBAL_CARD_ID], '100000000gcard');
 
         $this->assertEquals($payment[Payment::GLOBAL_CUSTOMER_ID], '10000gcustomer');
+
+        //assert card expiry month , year and last 4
+        $this->assertEquals('2100', $card['expiry_year']);
+        $this->assertEquals('12',   $card['expiry_month']);
+        $this->assertEquals('1111', $card['last4']);
+        $this->assertNull($card['token_expiry_year']);
+        $this->assertNull(  $card['token_expiry_month']);
+        $this->assertNull($card['token_last4']);
+
     }
 
     public function testGlobalSavedCardWithCookieDisabled()
@@ -421,6 +430,14 @@ class SavedCardsPaymentCreateTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
 
         $token = $this->getLastEntity('token', true);
+        $card =  $this->getLastEntity('card', true);
+
+
+        $this->assertEquals('2024', $card['expiry_year']);
+        $this->assertEquals('12', $card['expiry_month']);
+        $this->assertEquals('0004', $card['last4']);
+        $this->assertNull($card['token_expiry_year']);
+        $this->assertNull($card['token_expiry_month']);
 
         // validations
         $this->assertEquals($payment[Payment::TOKEN_ID], $token['id']);
@@ -539,6 +556,12 @@ class SavedCardsPaymentCreateTest extends TestCase
 
         $this->assertNotEquals($token[Token::USED_AT], null);
 
+
+        $this->assertEquals('2024', $card['expiry_year']);
+        $this->assertEquals('12', $card['expiry_month']);
+        $this->assertEquals('0004', $card['last4']);
+
+
         // create another payment with new token and fetch entities
         $this->payment[Payment::CARD] = array('cvv'  => 111);
 
@@ -552,6 +575,12 @@ class SavedCardsPaymentCreateTest extends TestCase
 
         $token = $this->getLastEntity('token', true);
 
+
+        $this->assertEquals('2024', $card['expiry_year']);
+        $this->assertEquals('12', $card['expiry_month']);
+        $this->assertEquals('0004', $card['last4']);
+        $this->assertNull($card['token_expiry_year']);
+        $this->assertNull($card['token_expiry_month']);
         // validations
         $this->assertEquals('token_'.$payment[Payment::GLOBAL_TOKEN_ID], $token['id']);
 

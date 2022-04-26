@@ -24,6 +24,25 @@ class Core extends Base\Core
 
     public function create($input, $merchant, $recurring = false, $dummyProcessing = false)
     {
+        /*
+         *  when s2s merchant initiates the payment using token pan and cryptogram , they will send the token pan 's  expiry month  and expiry year in expiry_month and expiry_year but we have to store it in token_expiry_month and
+            token_expiry_year and setting dummy value in expiry_month and expiry_year
+         *   when merchant initiates the payment using razorpay token / from checkout ,   we are sending  expiry month and year in token_expiry_month and token_expiry_year
+        */
+        if (empty($input['tokenised'])=== false and  empty($input['cryptogram_value'])=== false and  is_bool($input['tokenised']) === true ) {
+
+            if (empty($input[Card\Entity::TOKEN_EXPIRY_MONTH])=== true) {
+                $input[Card\Entity::TOKEN_EXPIRY_MONTH]=$input[Card\Entity::EXPIRY_MONTH];
+                $input[Card\Entity::EXPIRY_MONTH] = '0';
+            }
+            if (empty($input[Card\Entity::TOKEN_EXPIRY_YEAR])=== true) {
+                $input[Card\Entity::TOKEN_EXPIRY_YEAR]=$input[Card\Entity::EXPIRY_YEAR];
+                $input[Card\Entity::EXPIRY_YEAR]  = '9999';
+            }
+
+            $input[Card\Entity::IS_TOKENIZED_CARD] = true;   // this will set  card's iin  field with actual card bin  not with the token pan's iin
+        }
+
         $card = (new Card\Entity)->build($input);
 
         $this->setVaultTokenAndFingerPrint($card, $input, $recurring);
@@ -179,7 +198,7 @@ class Core extends Base\Core
         $card = $this->getCardForIin($tokenizedCard, $input);
 
         // this is to update token iin incase of s2s merchants;
-        $input[Card\Entity::TOKENISED] = 1;
+        $input[Card\Entity::TOKENISED] = true;
 
         $iin = $this->fillNetworkDetails($card, $input);
 
@@ -695,16 +714,19 @@ class Core extends Base\Core
     public function getCardInputFromCryptogram($cryptgram, $card, $input)
     {
         $input = [
-            Card\Entity::NUMBER           => $cryptgram['token_number'],
-            Card\Entity::NAME             => $card->getName(),
-            Card\Entity::EXPIRY_MONTH     => $cryptgram['token_expiry_month'],
-            Card\Entity::EXPIRY_YEAR      => $cryptgram['token_expiry_year'],
-            Card\Entity::CRYPTOGRAM_VALUE => $cryptgram['cryptogram_value'],
-            Card\Entity::TOKENISED        => 1,
-            Card\Entity::VAULT            => "rzpvault",
-            CARD\Entity::IS_CVV_OPTIONAL  => false,
-            Card\Entity::CVV              => $input['card']['cvv'] ?? "123", // adding dummy cvv
-            Card\Entity::TOKEN_PROVIDER   => 'Razorpay',
+            Card\Entity::NUMBER                 => $cryptgram['token_number'],
+            Card\Entity::NAME                   => $card->getName(),
+            Card\Entity::TOKEN_EXPIRY_MONTH     => $cryptgram['token_expiry_month'],
+            Card\Entity::TOKEN_EXPIRY_YEAR      => $cryptgram['token_expiry_year'],
+            Card\Entity::EXPIRY_MONTH           => $card->getExpiryMonth(),
+            Card\Entity::EXPIRY_YEAR            => $card->getExpiryYear(),
+            Card\Entity::LAST4                  => $card->getLast4(),
+            Card\Entity::CRYPTOGRAM_VALUE       => $cryptgram['cryptogram_value'],
+            Card\Entity::TOKENISED              => true,
+            Card\Entity::VAULT                  => "rzpvault",
+            CARD\Entity::IS_CVV_OPTIONAL        => false,
+            Card\Entity::CVV                    => $input['card']['cvv'] ?? "123", // adding dummy cvv
+            Card\Entity::TOKEN_PROVIDER         => 'Razorpay',
         ];
 
         return $input;

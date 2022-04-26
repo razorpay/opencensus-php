@@ -548,6 +548,13 @@ class TokenTest extends TestCase
         $this->assertEquals('card_' . $token['card_id'], $card['id']);
 
         $this->assertEquals($card['vault'], 'visa');
+
+        $this->assertEquals('2024', $card['expiry_year']);
+        $this->assertEquals('12', $card['expiry_month']);
+        $this->assertEquals('3335', $card['last4']);
+        $this->assertEquals('2024', $card['token_expiry_year']);
+        $this->assertEquals('12', $card['token_expiry_month']);
+        $this->assertNull($card['token_last4']);
     }
 
     public function testMigrateTokenWithoutConsent()

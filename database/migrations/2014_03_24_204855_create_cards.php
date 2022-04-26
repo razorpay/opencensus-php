@@ -38,6 +38,10 @@ class CreateCards extends Migration
                   ->nullable()
                   ->default(null);
 
+            $table->char(Card::TOKEN_LAST_4, 4)
+                ->nullable()
+                ->default(null);
+
             $table->char(Card::LAST4, 4);
 
             $table->char(Card::LENGTH, 2);

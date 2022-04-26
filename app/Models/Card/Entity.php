@@ -54,6 +54,7 @@ class Entity extends Base\PublicEntity
     const TOKEN_IIN           = 'token_iin';
     const TOKEN_EXPIRY_MONTH  = 'token_expiry_month';
     const TOKEN_EXPIRY_YEAR   = 'token_expiry_year';
+    const TOKEN_LAST_4        = 'token_last4';
 
     /**
      * Number and cvv are never saved in the database
@@ -110,6 +111,7 @@ class Entity extends Base\PublicEntity
         self::TOKEN_IIN,
         self::TOKEN_EXPIRY_MONTH,
         self::TOKEN_EXPIRY_YEAR,
+        self::TOKEN_LAST_4,
     ];
 
     protected $guarded = [self::ID];
@@ -119,6 +121,8 @@ class Entity extends Base\PublicEntity
         self::EXPIRY_MONTH,
         self::NUMBER,
         self::NAME,
+        self::TOKEN_EXPIRY_YEAR,
+        self::TOKEN_EXPIRY_MONTH,
     ];
 
     protected static $generators = [
@@ -161,6 +165,7 @@ class Entity extends Base\PublicEntity
         self::UPDATED_AT,
         self::TOKEN_EXPIRY_MONTH,
         self::TOKEN_EXPIRY_YEAR,
+        self::TOKEN_LAST_4,
     ];
 
     protected $public = [
@@ -200,6 +205,7 @@ class Entity extends Base\PublicEntity
         self::IIN,
         self::EXPIRY_YEAR,
         self::EXPIRY_MONTH,
+        self::LAST4
     ];
 
     protected $defaults = [
@@ -217,6 +223,7 @@ class Entity extends Base\PublicEntity
         self::LENGTH             => 0,
         self::TOKEN_EXPIRY_MONTH => null,
         self::TOKEN_EXPIRY_YEAR  => null,
+        self::TOKEN_LAST_4        => null,
     ];
 
     protected $casts = [
@@ -272,7 +279,13 @@ class Entity extends Base\PublicEntity
 
     protected function generateLast4($input)
     {
-        if (empty($input['number']) === false)
+        if ( empty($input['number']) === false and empty($input['tokenised']) === false)
+        {
+            $tokenlast4 = substr($input['number'], -4);
+            $this->setAttribute(self::TOKEN_LAST_4, $tokenlast4);
+            $this->setAttribute(self::LAST4,'xxxx');
+        }
+        else if (empty($input['number']) === false)
         {
             $last4 = substr($input['number'], -4);
 
@@ -431,6 +444,23 @@ class Entity extends Base\PublicEntity
         }
     }
 
+    public function modifyTokenExpiryYear(& $input)
+    {
+        if ((isset($input['token_expiry_year'])) and
+            (strlen($input['token_expiry_year']) === 2))
+        {
+            $input['token_expiry_year'] = '20' . $input['token_expiry_year'];
+        }
+    }
+
+    public function modifyTokenExpiryMonth(& $input)
+    {
+        if (isset($input['token_expiry_month']))
+        {
+            $input['token_expiry_month'] = ltrim($input['token_expiry_month'], '0');
+        }
+    }
+
     public static function modifyNumber(& $input)
     {
         if (isset($input['number']))
@@ -521,7 +551,12 @@ class Entity extends Base\PublicEntity
 
     public function getLast4()
     {
-        return $this->getAttribute(self::LAST4);
+        $last4= $this->getAttribute(self::LAST4);
+
+        if ($last4 === 'xxxx')
+            return null;
+
+        return $last4;
     }
 
     public function getLength()
@@ -599,6 +634,11 @@ class Entity extends Base\PublicEntity
         return $cardType;
     }
 
+    public function getTokenLast4()
+    {
+        return $this->getAttribute(self::TOKEN_LAST_4);
+    }
+
     public function setCountry($country)
     {
         $this->setAttribute(self::COUNTRY, $country);
@@ -669,6 +709,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::LENGTH, $length);
     }
 
+    public function setTokenLast4($tokenLast4)
+    {
+        $this->setAttribute(self::TOKEN_LAST_4, $tokenLast4);
+    }
+
     public function setVault($vault)
     {
         $this->setAttribute(self::VAULT, $vault);
@@ -726,6 +771,11 @@ class Entity extends Base\PublicEntity
         {
             unset($array[self::ISSUER]);
         }
+    }
+
+    public function setPublicLast4Attribute(array & $array)
+    {
+            $array[self::LAST4] = $this->getLast4() ;
     }
 
     public function setPublicIinAttribute(array & $array)
@@ -1038,6 +1088,14 @@ class Entity extends Base\PublicEntity
         }
 
         $data['message_type'] = $this->iinRelation ? $this->iinRelation->getMessageType() : null;
+
+        if ($data[Card\Entity::TRIVIA] === '1')
+        {
+            $data['iin']          = substr($data['token_iin'],0,6);
+            $data['expiry_month'] = intval($data['token_expiry_month']);
+            $data['expiry_year']  = intval($data ['token_expiry_year']);
+            $data['last4']        = $data ['token_last4'];
+        }
 
         return $data;
     }

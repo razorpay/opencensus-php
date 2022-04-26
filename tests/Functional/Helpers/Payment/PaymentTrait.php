@@ -1881,7 +1881,7 @@ trait PaymentTrait
             'expiry_year'       => '2024',
             'cvv'               => '566',
             'cryptogram_value'  => 'test',
-            'tokenised'         => 1,
+            'tokenised'         => true,
             'token_provider'    => 'PayU'
         );
 

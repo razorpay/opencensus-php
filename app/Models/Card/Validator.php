@@ -10,7 +10,7 @@ class Validator extends Base\Validator
 {
     protected static $createRules = [
         Entity::NUMBER             => 'required|numeric|luhn|digits_between:12,19',
-        Entity::EXPIRY_MONTH       => 'required|integer|digits_between:1,2|max:12|min:1',
+        Entity::EXPIRY_MONTH       => 'sometimes|integer|digits_between:1,2|max:12|min:0',
         Entity::EXPIRY_YEAR        => 'required|integer|digits:4|non_past_year',
         Entity::CVV                => 'sometimes|numeric|digits_between:3,4|nullable',
         Entity::NAME               => 'sometimes|regex:(^[a-zA-Z.\- 0-9\']+$)|max:100',
@@ -21,6 +21,9 @@ class Validator extends Base\Validator
         Entity::TOKENISED          => 'sometimes|boolean',
         Entity::CRYPTOGRAM_VALUE   => 'sometimes|string',
         Entity::TOKEN_PROVIDER     => 'sometimes|string',
+        Entity::TOKEN_EXPIRY_MONTH => 'sometimes|integer|digits_between:1,2|max:12|min:0',
+        Entity::TOKEN_EXPIRY_YEAR  => 'sometimes|integer|digits:4|non_past_year',
+        Entity::LAST4              => 'sometimes|integer|digits:4'
     ];
 
     protected static $createCpsRequestRules = [
@@ -33,7 +36,6 @@ class Validator extends Base\Validator
         Entity::VAULT              => 'sometimes|string|in:tokenex,rzpvault,rzpencryption',
         Entity::INTERNATIONAL      => 'sometimes',
     ];
-
     protected static $editRules = [
         Entity::NUMBER             => 'required|numeric|luhn|digits_between:12,19',
         Entity::CVV                => 'sometimes|numeric|digits_between:3,4|nullable',
