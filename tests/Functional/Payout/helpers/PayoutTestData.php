@@ -1036,6 +1036,43 @@ return [
         ],
     ],
 
+    'testCreateUndoablePayoutWithOtpInMobile' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'mode'            => 'IMPS',
+                'fund_account_id' => 'fa_100000000000fa',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+            'server' => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+                'HTTP_X-Dashboard-User-id' => 'MerchantUser01'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'purpose'         => 'refund',
+                'mode'            => 'IMPS',
+                'tax'             => 162,
+                'fees'            => 1062,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+    ],
+
     'testCreatePayoutWithOtpAndUndoPayoutPreferenceFalse' => [
         'request'  => [
             'method'  => 'POST',

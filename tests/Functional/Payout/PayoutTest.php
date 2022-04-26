@@ -2703,6 +2703,31 @@ class PayoutTest extends OAuthTestCase
         return $payout;
     }
 
+    public function testCreateUndoablePayoutWithOtpInMobile()
+    {
+        $testData                                = $this->testData['testCreateUndoablePayoutWithOtpInMobile'];
+        $testData['request']['url']              = '/payouts_with_otp';
+        $testData['request']['content']['token'] = 'BUIj3m2Nx2VvVj';
+        $testData['request']['content']['otp']   = '0007';
+
+        $this->testData[__FUNCTION__] = $testData;
+        $this->setMockRazorxTreatment(['rx_undo_payout_feature' => 'on', 'imps_mode_payout_filter' => 'control']);
+        $this->fixtures->create('merchant_attribute',
+            [
+                'merchant_id' => '10000000000000',
+                'product'     => 'banking',
+                'group'       => 'x_merchant_preferences',
+                'type'        => 'undo_payouts',
+                'value'       => 'true'
+            ]);
+
+        $this->ba->basicAuth('rzp_test_10000000000000', 'RANDOM_GRAPHQL_SECRET');
+        $this->startTest();
+        $payout = $this->getLastEntity('payout_outbox', true);
+
+        return $payout;
+    }
+
     public function testCreatePayoutWithOtpAndUndoPayoutPreferenceFalse()
     {
         $testData                                = $this->testData['testCreatePayoutWithOtpAndUndoPayoutPreferenceFalse'];

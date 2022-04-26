@@ -730,6 +730,11 @@ class Service extends Base\Service
         */
 
         if ($this->shouldCreateUndoablePayout()) {
+            $this->trace->info(
+                TraceCode::TEST_VIVEK,
+                [
+                    'shouldCreateUndoablePayout' => true
+                ]);
             $payoutOutboxInput = $this->prepareInputForPayoutOutbox($payoutInput);
 
             $outboxPayout = (new PayoutOutbox\Core())->create($payoutOutboxInput);
@@ -738,6 +743,11 @@ class Service extends Base\Service
 
             return $outboxPayout->toArrayPublic();
         } else {
+            $this->trace->info(
+                TraceCode::TEST_VIVEK,
+                [
+                    'shouldCreateUndoablePayout' => false
+                ]);
             $payout = $this->core->createPayoutToFundAccount($payoutInput, $this->merchant);
 
             return $payout->toArrayPublic();
@@ -746,6 +756,15 @@ class Service extends Base\Service
 
     private function shouldCreateUndoablePayout()
     {
+        if ($this->auth->isXDashboardApp() === false) {
+            $this->trace->info(
+                TraceCode::TEST_VIVEK,
+                [
+                    '$this->auth->isXDashboardApp()' => false
+                ]);
+            return false;
+        }
+
         $undoPayoutExperimentVariant = $this->app->razorx->getTreatment(
             $this->merchant->getId(),
             RazorxTreatment::RX_UNDO_PAYOUTS_FEATURE,

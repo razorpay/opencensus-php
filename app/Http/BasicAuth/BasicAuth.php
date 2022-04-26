@@ -120,6 +120,8 @@ class BasicAuth
     // All dashboard applications
     const DASHBOARD_APPS                             = ['admin_dashboard', 'merchant_dashboard', 'dashboard', 'dashboard_guest', 'frontend_graphql',];
 
+    const X_DASHBOARD_APPS                           = ['merchant_dashboard', 'dashboard'];
+
     /**
      * The application instance.
      *
@@ -1734,6 +1736,16 @@ class BasicAuth
          * It's required to set requestOriginProduct.
         */
         return (in_array($this->getInternalApp(), self::DASHBOARD_APPS, true) === true);
+    }
+
+    public function isXDashboardApp()
+    {
+        $this->trace->info(
+            TraceCode::TEST_VIVEK,
+            [
+                '$this->getInternalApp()' => $this->getInternalApp()
+            ]);
+        return (in_array($this->getInternalApp(), self::X_DASHBOARD_APPS, true) === true);
     }
 
     public function isInternalApp(): bool
