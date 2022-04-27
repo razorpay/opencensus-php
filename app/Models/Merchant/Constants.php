@@ -1024,6 +1024,7 @@ final class Constants
     const APPSTORE_URL      = 'Appstore URL';
 
     const BUSINESS_DESCRIPTION = 'Business Description';
+    const BUSINESS_MODEL       = 'Business Model';
     const BUSINESS_OPERATION_ADDRESS  = 'Business Operation Address';
     const BUSINESS_REGISTERED_ADDRESS = 'Business Registered Address';
     const FIELDS            = 'fields';
@@ -1121,6 +1122,12 @@ final class Constants
                 self::SUBCATEGORY => self::BUSINESS_DESCRIPTION,
                 self::FIELDS      => [
                     'merchant_details|business_description',
+                ]
+            ],
+            [
+                self::SUBCATEGORY => self::BUSINESS_MODEL,
+                self::FIELDS      => [
+                    'merchant_details|business_model',
                 ]
             ],
             [

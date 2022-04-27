@@ -1282,7 +1282,7 @@ We look forward to transacting with you!
                     'editable' => false
                 ]
             ]
-        ], $response[MerchantConstants::MERCHANT_DETAILS][9]);
+        ], $response[MerchantConstants::MERCHANT_DETAILS][10]);
 
         $this->assertArraySelectiveEquals([
             'subcategory' => MerchantConstants::CONTACT_EMAIL,
@@ -1293,7 +1293,7 @@ We look forward to transacting with you!
                     'editable' => false
                 ]
             ]
-        ], $response[MerchantConstants::MERCHANT_DETAILS][10]);
+        ], $response[MerchantConstants::MERCHANT_DETAILS][11]);
 
         $this->assertArraySelectiveEquals([
             'subcategory' => MerchantConstants::AVG_ORDER_VALUE,
@@ -1304,7 +1304,7 @@ We look forward to transacting with you!
                     'editable' => false
                 ]
             ]
-        ], $response[MerchantConstants::MERCHANT_DETAILS][16]);
+        ], $response[MerchantConstants::MERCHANT_DETAILS][17]);
 
         $this->assertArraySelectiveEquals([
             'subcategory' => MerchantConstants::AVG_ORDER_VALUE,
@@ -1315,7 +1315,7 @@ We look forward to transacting with you!
                     'editable' => false
                 ]
             ]
-        ], $response[MerchantConstants::MERCHANT_DETAILS][17]);
+        ], $response[MerchantConstants::MERCHANT_DETAILS][18]);
 
         $this->assertArraySelectiveEquals([
             'subcategory' => MerchantConstants::PLAYSTORE_URL,
