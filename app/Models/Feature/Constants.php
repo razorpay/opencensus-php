@@ -1296,6 +1296,11 @@ class Constants
      */
     const BLOCKLIST_FOR_WORKFLOW_SERVICE = 'blocklist_for_wf_service';
 
+    /**
+     * Feature flag to allow merchants to use single tid.
+     */
+    const HDFC_SINGLE_TID = 'hdfc_single_tid';
+
     const MESSAGE                        = 'message';
     const INPUT                          = 'input';
     const MERCHANT_ONBOARDED             = 'merchant onboarded';
@@ -1634,7 +1639,7 @@ class Constants
         self::DISABLE_FREE_CREDIT_UNREG       => true,
         self::DISABLE_FREE_CREDIT_REG         => true,
         self::LOGOUT_ADMIN_INACTIVITY         => true,
-        self::ORG_SECOND_FACTOR_AUTH         => true,
+        self::ORG_SECOND_FACTOR_AUTH          => true,
         self::TRANSFER_SETTLED_WEBHOOK        => true,
         self::LA_BANK_ACCOUNT_UPDATE          => true,
         self::P2P_UPI                         => true,
@@ -1792,6 +1797,7 @@ class Constants
         self::OPTIMISE_SUMMARY_API            => true,
         self::SUB_MERCHANT_PRICING_AUTOMATION => true,
         self::BLOCKLIST_FOR_WORKFLOW_SERVICE  => true,
+        self::HDFC_SINGLE_TID                 => true,
     ];
 
     // Entity type constants
