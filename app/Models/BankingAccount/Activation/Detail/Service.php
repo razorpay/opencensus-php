@@ -85,6 +85,10 @@ class Service extends Base\Service
 
         $this->core->verifyOtpForContact($input, $this->auth->getMerchant(), $this->auth->getUser(), $activationDetail);
 
+        $userService = new \RZP\Models\User\Service();
+
+        $userService->verifyContactForRblIfOwner($input);
+
         return (new BankingAccount\Service())->fetch($id);
     }
 

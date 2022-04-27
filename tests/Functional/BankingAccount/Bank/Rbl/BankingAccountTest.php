@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Mail;
 use RZP\Models\BankingAccount\Entity;
 use RZP\Models\BankingAccount\Status;
 use Illuminate\Database\Eloquent\Factory;
+use RZP\Models\User\Entity as UserEntity;
 use RZP\Models\BankingAccount\Gateway\Rbl;
 use RZP\Models\BankingAccount\AccountType;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
@@ -41,6 +42,7 @@ use RZP\Mail\BankingAccount\StatusNotifications\Cancelled;
 use RZP\Mail\BankingAccount\StatusNotifications\Activated;
 use RZP\Mail\BankingAccount\Activation as ActivationMails;
 use RZP\Mail\BankingAccount\StatusNotifications\Processing;
+use RZP\Tests\Functional\Fixtures\Entity\User as UserFixture;
 use RZP\Models\BankingAccountStatement\Details as BasDetails;
 use RZP\Mail\BankingAccount\StatusNotifications\Unserviceable;
 use RZP\Models\BankingAccount\Activation\Detail as ActivationDetail;
@@ -6486,7 +6488,7 @@ class BankingAccountTest extends TestCase
         $this->startTest();
     }
 
-    public function testVerifyOtpForContact()
+    public function verifyContactSetup() :array
     {
         $attribute = ['activation_status' => 'activated'];
 
@@ -6501,7 +6503,7 @@ class BankingAccountTest extends TestCase
             Entity::CHANNEL => 'rbl',
             "activation_detail" => [
                 "business_category"=> "partnership", 'sales_team' => 'self_serve',
-                ]
+            ]
         ];
 
         $request = [
@@ -6515,14 +6517,83 @@ class BankingAccountTest extends TestCase
 
         $bankingAccount = $this->makeRequestAndGetContent($request);
 
-        $dataToReplace = [
+        return [
             'request'  => [
                 'url'     => '/banking_accounts/verify_otp/' . $bankingAccount['id'],
                 'method'  => 'POST',
             ],
         ];
+    }
+
+    public function testVerifyOtpForContactForOwnerWithSameRblContact()
+    {
+        $dataToReplace = $this->verifyContactSetup();
+
+        $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID,
+            [
+                UserEntity::CONTACT_MOBILE_VERIFIED => 0,
+                UserEntity::CONTACT_MOBILE          => '9999999999'
+            ]);
+
+        $this->testData[__FUNCTION__] = $this->testData['testVerifyOtpForContact'];
 
         $this->startTest($dataToReplace);
+
+        $user = DB::connection('test')->table('users')
+            ->where('id', '=', UserFixture::MERCHANT_USER_ID)
+            ->pluck(UserEntity::CONTACT_MOBILE_VERIFIED)
+            ->toArray();
+
+        $this->assertEquals($user[0], 1);
+    }
+
+    public function testVerifyOtpForContactForOwnerWithDifferentRblContact()
+    {
+        $dataToReplace = $this->verifyContactSetup();
+
+        $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID,
+            [
+                UserEntity::CONTACT_MOBILE_VERIFIED => 0,
+                UserEntity::CONTACT_MOBILE          => '9999999998'
+            ]);
+
+        $this->testData[__FUNCTION__] = $this->testData['testVerifyOtpForContact'];
+
+        $this->startTest($dataToReplace);
+
+        $user = DB::connection('test')->table('users')
+            ->where('id', '=', UserFixture::MERCHANT_USER_ID)
+            ->pluck(UserEntity::CONTACT_MOBILE_VERIFIED)
+            ->toArray();
+
+        $this->assertEquals($user[0], 0);
+    }
+
+    public function testVerifyOtpForContactForNonOwner()
+    {
+        $dataToReplace = $this->verifyContactSetup();
+
+        $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID,
+            [
+                UserEntity::CONTACT_MOBILE_VERIFIED => 0,
+                UserEntity::CONTACT_MOBILE          => '9999999999'
+            ]);
+
+        DB::table('merchant_users')->where('merchant_id', '=', '10000000000000')
+            ->where('user_id', '=', UserFixture::MERCHANT_USER_ID)
+            ->where('product', '=', 'banking')
+            ->update(['role' => 'admin']);
+
+        $this->testData[__FUNCTION__] = $this->testData['testVerifyOtpForContact'];
+
+        $this->startTest($dataToReplace);
+
+        $user = DB::connection('test')->table('users')
+            ->where('id', '=', UserFixture::MERCHANT_USER_ID)
+            ->pluck(UserEntity::CONTACT_MOBILE_VERIFIED)
+            ->toArray();
+
+        $this->assertEquals($user[0], 0);
     }
 
     public function testFetchBankingAccountForPayoutService()

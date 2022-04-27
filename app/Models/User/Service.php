@@ -1667,6 +1667,27 @@ class Service extends Base\Service
         return $this->user->toArrayPublic();
     }
 
+    public function verifyContactForRblIfOwner(array $input)
+    {
+        $isUserOwnerForBanking = (new User\Service())->doesUserHaveRoleForMerchantAndProduct(
+            $this->user->getId(),
+            $this->merchant->getId(),
+            Role::OWNER,
+            Product::BANKING);
+
+        if ($isUserOwnerForBanking === true &&
+            isset($input['contact_mobile']) &&
+            $this->user->getContactMobile() === $input['contact_mobile'])
+        {
+            $this->trace->info(TraceCode::USER_VERIFIED_VIA_RBL_CA, [
+                'user'     => $this->user->getId(),
+                'merchant' => $this->merchant->getId(),
+            ]);
+
+            $this->core()->verifyUserContactForOwnerInRbl($this->user);
+        }
+    }
+
     public function verifyOtpAndUpdateContactMobile(array $input): array
     {
         $this->user->getValidator()->validateInput('verify_otp_from_update', $input);

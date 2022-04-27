@@ -3630,6 +3630,13 @@ class Core extends Base\Core
         $this->repo->saveOrFail($user);
     }
 
+    public function verifyUserContactForOwnerInRbl(Entity $user)
+    {
+        $user->setContactMobileVerified(true);
+
+        $this->repo->saveOrFail($user);
+    }
+
     /**
      * @param array           $input
      * @param Merchant\Entity $merchant
