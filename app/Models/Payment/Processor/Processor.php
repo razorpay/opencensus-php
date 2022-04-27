@@ -1349,26 +1349,7 @@ class Processor
         }
         catch (Exception\GatewayErrorException $exception)
         {
-            $this->payment->setStatus(Payment\Status::FAILED);
-
-            $error = $exception->getError();
-
-            if ($error === null)
-            {
-                $this->payment->setError(null, null, null);
-            }
-            else
-            {
-                $errorCode = $error->getGatewayErrorCode();
-
-                $errorDescription = $error->getDescription();
-
-                $internalErrorCode = $error->getInternalErrorCode();
-
-                $this->payment->setError($errorCode, $errorDescription, $internalErrorCode);
-            }
-
-            $this->payment->saveOrFail();
+            $this->updatePaymentFailed($exception, TraceCode::PAYMENT_STATUS_FAILED);
 
             throw $exception;
         }

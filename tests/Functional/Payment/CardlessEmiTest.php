@@ -15,11 +15,11 @@ class CardlessEmiTest extends TestCase
     const PROVIDERS = [Payment\Processor\CardlessEmi::EARLYSALARY,];
 
     const CUSTOMER_RELATED_ERRORS = [
-        'USER_DNE',
-        'CUST_CREDIT_LIMIT_NOT_ACTIVATED',
-        'CUST_CREDIT_LIMIT_NOT_APPROVED',
-        'CUST_CREDIT_LIMIT_EXPIRED',
-        'CREDIT_LMT_EXHAUSTED',
+        'BAD_REQUEST_ERROR',
+        'BAD_REQUEST_ERROR',
+        'BAD_REQUEST_ERROR',
+        'BAD_REQUEST_ERROR',
+        'BAD_REQUEST_ERROR',
     ];
 
     protected function setUp(): void
