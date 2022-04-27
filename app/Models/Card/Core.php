@@ -29,7 +29,7 @@ class Core extends Base\Core
             token_expiry_year and setting dummy value in expiry_month and expiry_year
          *   when merchant initiates the payment using razorpay token / from checkout ,   we are sending  expiry month and year in token_expiry_month and token_expiry_year
         */
-        if (empty($input['tokenised'])=== false and  empty($input['cryptogram_value'])=== false and  is_bool($input['tokenised']) === true ) {
+        if (empty($input['tokenised'])=== false and  empty($input['cryptogram_value'])=== false) {
 
             if (empty($input[Card\Entity::TOKEN_EXPIRY_MONTH])=== true) {
                 $input[Card\Entity::TOKEN_EXPIRY_MONTH]=$input[Card\Entity::EXPIRY_MONTH];
