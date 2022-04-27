@@ -116,6 +116,7 @@ class Constants
             self::BOB,
             self::HSBC,
             self::ONECARD,
+            self::ICICI,
         ],
         Type::COMBINED => [
             self::KOTAK,
@@ -325,6 +326,7 @@ class Constants
             self::SBI      => ['emi.ops@sbicard.com', 'deepak.semwal@sbicard.com', 'settlements@razorpay.com', 'Divya.Verma@sbicard.com', 'albin.george@razorpay.com'],
             self::CITI     => ['emi-citibank@razorpay.com'],
             self::BOB      => ['bob.cc.emi@razorpay.com'],
+            self::ICICI    => ['icicicards.emi@razorpay.com']
         ],
 
         Type::REFUND_FAILED => [

@@ -208,7 +208,6 @@ class Service extends Base\Service
         // use gateway_file.
         //
         $emiFileBanks = [
-            IFSC::ICIC,
             IFSC::YESB,
         ];
 

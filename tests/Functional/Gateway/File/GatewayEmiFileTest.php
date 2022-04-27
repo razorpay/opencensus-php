@@ -295,6 +295,43 @@ class GatewayEmiFileTest extends TestCase
         Mail::assertQueued(EmiMail\File::class);
     }
 
+    public function testGenerateEmiFileForIcici()
+    {
+        Mail::fake();
+        Queue::fake();
+
+        $this->ba->publicAuth();
+
+        $this->makeEmiPaymentOnCard('4076510229001234', 9);
+
+        $this->ba->adminAuth();
+
+        $content = $this->startTest();
+
+        $content = $content['items'][0];
+
+        $this->assertNotNull($content[File\Entity::FILE_GENERATED_AT]);
+        $this->assertNull($content[File\Entity::FAILED_AT]);
+        $this->assertEquals(File\Status::FILE_SENT, $content[File\Entity::STATUS]);
+        $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
+
+        $file = $this->getLastEntity('file_store', true);
+
+        $expectedFileContent = [
+            'type'        => 'icici_emi_file_sftp',
+            'entity_type' => 'gateway_file',
+            'entity_id'   => $content['id'],
+            'extension'   => 'zip',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedFileContent, $file);
+
+        Mail::assertQueued(EmiMail\Password::class);
+
+        Queue::assertPushed(BeamJob::class, 1);
+    }
+
+
     public function testGenerateEmiFileForHsbc()
     {
         $this->prerequisitesForHsbcEmi();
