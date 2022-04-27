@@ -1,4 +1,5 @@
 import { isMobile } from 'common/utils/validators';
+import moment from 'moment';
 
 import {
   APPLICATION_STATE_SEQUENCE,
@@ -231,4 +232,17 @@ export const getDisabledReasons = async (user, productType) => {
   const prods = data.map((prod) => prod.product_type);
 
   return prods.length ? prods : getActiveCapitalProductsForMerchant(user);
+};
+
+/**
+ * disable future dates only
+ * @param {Object} date Date Object
+ * @returns {Boolean} disable the future date or not given the condition.
+ */
+
+export const disableFutureMonths = (date) => {
+  if (!date) return false;
+  const currentMonth = moment().month();
+  const currentYear = moment().year();
+  return date?.month() > currentMonth && date?.year() >= currentYear;
 };

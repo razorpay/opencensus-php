@@ -23,6 +23,7 @@ import { isValidPinCode, isPanNumber } from 'common/utils/validators';
 import { isValidGSTIN } from 'common/utils/rzp-utils';
 import { statesOptions } from '../Helpers/getStatesOptions';
 import moment from 'moment';
+import { disableFutureMonths } from 'merchant/views/Capital/utils';
 
 const INITIAL_VALUES = {
   legal_name: '',
@@ -211,6 +212,7 @@ const BusinessDetailsForm = ({
                 addonAfter={<i class="i i-date-range" />}
                 placement="bottomLeft"
                 value={formData.date_of_incorporation}
+                disabledDate={disableFutureMonths}
               />
             </div>
           </div>

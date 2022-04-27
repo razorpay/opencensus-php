@@ -15,6 +15,7 @@ import { getCityAndState } from '../LosOnboarding/PersonalDetailsForm';
 import { statesOptions } from '../Helpers/getStatesOptions';
 import { BUSINESS_NATURE_TYPES, PROPERTY_OWNERSHIP_TYPES } from '../../constants';
 import moment from 'moment';
+import { disableFutureMonths } from 'merchant/views/Capital/utils';
 
 const BusinessDetailsForm = ({
   canModify,
@@ -188,6 +189,7 @@ const BusinessDetailsForm = ({
           addonAfter={<i class="i i-date-range" />}
           placement="bottomLeft"
           value={formData.date_of_incorporation}
+          disabledDate={disableFutureMonths}
         />
       </Input.Group>
       <Input.Group className="InputGroup--inline InputGroup--vTop" label="Business PAN">
