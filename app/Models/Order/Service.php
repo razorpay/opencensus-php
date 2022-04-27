@@ -22,6 +22,7 @@ use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Payment\Processor\Netbanking;
+use function Emoji\detect_emoji;
 
 class Service extends Base\Service
 {
@@ -109,6 +110,24 @@ class Service extends Base\Service
             return false;
         }
 
+
+        if (isset($input[Entity::NOTES]) === true)
+        {
+            $notes = $input[Entity::NOTES];
+
+            foreach ($notes as $key => $value)
+            {
+                if (is_string($value) === true)
+                {
+                    $containsEmoji = detect_emoji($value);
+
+                    if (sizeof($containsEmoji) > 0)
+                    {
+                        return false;
+                    }
+                }
+            }
+        }
 
         $result = $this->app->razorx->getTreatment($merchant->getId(), RazorxTreatment::ROUTE_ORDER_TO_PG_ROUTER, $this->mode);
 
