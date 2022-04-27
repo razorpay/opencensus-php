@@ -45,7 +45,7 @@ use RZP\Constants\MailTags;
 use RZP\Models\CardMandate;
 use RZP\Models\Customer\Token;
 use RZP\Models\Payment\Gateway;
-use RZP\Models\Settlement\Bucket;
+use RZP\Models\Settlement;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Base\ConnectionType;
 use RZP\Models\Payment\Verify\Verify;
@@ -1873,11 +1873,13 @@ class Service extends Base\Service
                 unset($paymentArray['transaction']['settlement']);
 
                 if ($transaction['settlement'] != null) {
-                    $paymentArray['transaction']['settlement'] = $transaction['settlement'];
-                }
+                    $setl = new Settlement\Entity($transaction['settlement']);
 
-                if ($transaction['settlement_id'] != null) {
-                    $paymentArray['transaction']['settlement_id'] = $transaction['settlement_id'];
+                    $setl->setPublicAttributeForOptimiser($transaction['settlement']);
+
+                    $paymentArray['transaction']['settlement'] = $setl->toArrayPublic();
+
+                    $paymentArray['transaction']['settlement_id'] = $setl->getId();
                 }
             }
 
@@ -3214,7 +3216,7 @@ class Service extends Base\Service
 
                 $mid = $txn->getMerchantId();
 
-                $bucketCore = New Bucket\Core;
+                $bucketCore = New Settlement\Bucket\Core;
 
                 if(isset($mapForSettlementService[$mid]) === false)
                 {

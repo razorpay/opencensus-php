@@ -247,9 +247,11 @@ class Service extends Base\Service
 
                 $settlement = app('settlements_dashboard')->fetch($fetchInput);
 
-                $settlement = $this->setPublicAttributes($settlement['entity']);
+                $setl = new Settlement\Entity($settlement);
 
-                return $settlement->toArrayPublic();
+                $setl->setPublicAttributeForOptimiser($settlement['entity']);
+
+                return $setl->toArrayPublic();
 
             } catch (\Throwable $e) {
                 $this->trace->traceException(
@@ -1848,38 +1850,6 @@ class Service extends Base\Service
         return app('settlements_dashboard')->settlementsInitiate($input);
     }
 
-    public function setPublicAttributes($settlement)
-    {
-        $entity = new Settlement\Entity($settlement);
-
-        if (isset($settlement['id']))
-            $entity->setId($settlement['id']);
-
-
-        if (isset($settlement['utr']))
-            $entity->setUtr($settlement['utr']);
-
-        if (isset($settlement['fee']))
-            $entity->setFees($settlement['fee']);
-
-        if (isset($settlement['created_at']))
-            $entity->setCreatedAt($settlement['created_at']);
-
-        if (isset($settlement['settled_by'])) {
-            $entity->setSettledBy($settlement['settled_by']);
-
-            if ($settlement['settled_by'] === 'Razorpay') {
-                $entity->setOptimiserProvider('Razorpay');
-            } else if (isset($settlement['provider'])) {
-                $entity->setOptimiserProvider($settlement['provider']);
-            } else {
-                $entity->setOptimiserProvider('');
-            }
-        }
-
-        return $entity;
-    }
-
     public function createFetchInput($id)
     {
         $id = $this->repo->settlement->verifyIdAndStripSign($id);
@@ -1930,9 +1900,11 @@ class Service extends Base\Service
 
         foreach($settlements['entities']['settlements'] as $settlementsEntity)
         {
-            $entity = $this->setPublicAttributes($settlementsEntity);
+            $setl = new Settlement\Entity($settlementsEntity);
 
-            array_push($collectionEntity, $entity);
+            $setl->setPublicAttributeForOptimiser($settlementsEntity);
+
+            array_push($collectionEntity, $setl);
         }
 
         $collection = collect($collectionEntity);

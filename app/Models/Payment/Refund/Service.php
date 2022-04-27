@@ -18,6 +18,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Bank\IFSC;
+use RZP\Models\Settlement;
 use RZP\Http\RequestHeader;
 use RZP\Constants\Timezone;
 use RZP\Models\BankTransfer;
@@ -542,11 +543,14 @@ class Service extends Base\Service
                 unset($refundArray['transaction']['settlement']);
 
                 if ($transaction['settlement'] != null) {
-                    $refundArray['transaction']['settlement'] = $transaction['settlement'];
-                }
 
-                if ($transaction['settlement_id'] != null) {
-                    $refundArray['transaction']['settlement_id'] = $transaction['settlement_id'];
+                    $setl = new Settlement\Entity($transaction['settlement']);
+
+                    $setl->setPublicAttributeForOptimiser($transaction['settlement']);
+
+                    $refundArray['transaction']['settlement'] = $setl->toArrayPublic();
+
+                    $refundArray['transaction']['settlement_id'] = $setl->getId();
                 }
             }
 

@@ -421,4 +421,39 @@ class Entity extends Base\PublicEntity
     {
         $this->increment(self::ATTEMPTS);
     }
+
+    public function setPublicAttributeForOptimiser($settlement)
+    {
+        if (isset($settlement['id']))
+        {
+            $this->setId($settlement['id']);
+        }
+
+        if (isset($settlement['utr']))
+        {
+            $this->setUtr($settlement['utr']);
+        }
+
+        if (isset($settlement['fee']))
+        {
+            $this->setFees($settlement['fee']);
+        }
+
+        if (isset($settlement['created_at']))
+        {
+            $this->setCreatedAt($settlement['created_at']);
+        }
+
+        if (isset($settlement['settled_by'])) {
+            $this->setSettledBy($settlement['settled_by']);
+
+            if ($settlement['settled_by'] === 'Razorpay') {
+                $this->setOptimiserProvider('Razorpay');
+            } else if (isset($settlement['provider'])) {
+                $this->setOptimiserProvider($settlement['provider']);
+            } else {
+                $this->setOptimiserProvider('');
+            }
+        }
+    }
 }
