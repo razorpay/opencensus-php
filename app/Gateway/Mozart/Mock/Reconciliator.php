@@ -749,7 +749,10 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
                 continue;
             }
 
+            $this->content($row, 'airtel_recon');
+
             $data[] = $row;
+
         }
 
         return $data;

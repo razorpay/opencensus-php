@@ -571,14 +571,6 @@ class UpiPaymentServiceTest extends TestCase
 
         $payment = $this->getDbLastPayment();
 
-        $this->mockReconContentFunction(function (&$content) use ($payment)
-        {
-            if ($content['Till ID'] === $payment['id'])
-            {
-                $content = [];
-            }
-        });
-
         // Changes a rrn of entity fetch response
         $this->mockServerContentFunction(function (&$content)
         {
@@ -622,14 +614,6 @@ class UpiPaymentServiceTest extends TestCase
         $this->makeUpiAirtelPaymentsSince($createdAt, $rrn, 1);
 
         $payment = $this->getDbLastPayment();
-
-        $this->mockReconContentFunction(function (&$content) use ($payment)
-        {
-            if ($content['Till ID'] === $payment['id'])
-            {
-                $content = [];
-            }
-        });
 
         $fileContents = $this->generateReconFile(['gateway' => $this->gateway]);
 

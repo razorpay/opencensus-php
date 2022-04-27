@@ -47,14 +47,6 @@ class UpiAirtelReconTest extends TestCase
 
         $payment = $this->getDbLastPayment();
 
-        $this->mockReconContentFunction(function (& $content) use ($payment)
-        {
-            if ($content['Till ID'] === $payment['id'])
-            {
-                $content = [];
-            }
-        });
-
         $fileContents = $this->generateReconFile(['gateway' => $this->gateway]);
 
         $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
@@ -79,6 +71,48 @@ class UpiAirtelReconTest extends TestCase
         );
     }
 
+    public function testUnexpectedPaymentReconciliation()
+    {
+        $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
+
+        $rrn = '232712135190';
+
+        $this->makeUpiAirtelPaymentsSince($createdAt, $rrn, 1);
+
+        $paymentEntity = $this->getDbLastEntityToArray('payment');
+
+        $this->mockReconContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'airtel_recon')
+            {
+                $content['Till ID']         = 'BB31121900923519425756';
+                $content['PARTNER_TXN_ID']  = '232712135190';
+            }
+        });
+
+        $fileContents = $this->generateReconFile(['gateway' => $this->gateway]);
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $this->reconcile($uploadedFile, 'UpiAirtel');
+
+        $payment = $this->getDbLastEntityToArray('payment');
+
+        // payment which is already created during callback is asserted here
+        $this->assertEquals($payment['id'], $paymentEntity['id']);
+
+        $upiEntity = $this->getDbLastEntityToArray('upi');
+
+        $this->assertEquals($upiEntity['payment_id'], $paymentEntity['id']);
+
+        // reconciling the unexpected payment which is created already
+        $this->assertNotNull($upiEntity['reconciled_at']);
+
+        $transactionEntity = $this->getDbLastEntityToArray('transaction');
+
+        $this->assertNotNull($transactionEntity['reconciled_at']);
+    }
+
     /**
      * Test setting of rrn using MIS data.
      * rrn is set as empty while creating entity.
@@ -95,14 +129,6 @@ class UpiAirtelReconTest extends TestCase
         $this->makeUpiAirtelPaymentsSince($createdAt, $rrn, 1);
 
         $payment = $this->getDbLastPayment();
-
-        $this->mockReconContentFunction(function (&$content) use ($payment)
-        {
-            if ($content['Till ID'] === $payment['id'])
-            {
-                $content = [];
-            }
-        });
 
         $fileContents = $this->generateReconFile(['gateway' => $this->gateway]);
 

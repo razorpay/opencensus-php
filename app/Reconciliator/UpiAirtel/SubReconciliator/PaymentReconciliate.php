@@ -6,7 +6,9 @@ use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
 use RZP\Gateway\Base\Action;
+use RZP\Models\Payment\Gateway;
 use RZP\Models\Base\PublicEntity;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Reconciliator\Base\SubReconciliator\Upi;
 
 class PaymentReconciliate extends Upi\UpiPaymentServiceReconciliate
@@ -20,7 +22,23 @@ class PaymentReconciliate extends Upi\UpiPaymentServiceReconciliate
 
     protected function getPaymentId(array $row)
     {
-        return $row[self::COLUMN_PAYMENT_ID] ?? null;
+        $paymentId = $row[self::COLUMN_PAYMENT_ID] ?? null;
+
+        if (UniqueIdEntity::verifyUniqueId($paymentId, false) === false)
+        {
+            $referenceNumber = $this->getReferenceNumber($row);
+
+            $this->formatUpiRrn($referenceNumber);
+
+            $upiEntity = $this->repo->upi->fetchByNpciReferenceIdAndGateway($referenceNumber, $gateway = Gateway::UPI_AIRTEL);
+
+            if (empty($upiEntity) === false)
+            {
+                $paymentId = $upiEntity->getPaymentId();
+            }
+        }
+
+        return $paymentId;
     }
 
     protected function getReferenceNumber($row)
