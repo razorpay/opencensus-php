@@ -3154,4 +3154,11 @@ Regards,
         $this->startTest();
     }
 
+    public function testDualCheckoutFeature()
+    {
+        $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');
+
+        $this->startTest();
+    }
+
 }

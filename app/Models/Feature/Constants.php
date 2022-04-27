@@ -987,6 +987,11 @@ class Constants
      */
     const ONE_CLICK_CHECKOUT = 'one_click_checkout';
 
+    /**
+     * One click dual checkout
+     */
+    const ONE_CLICK_DUAL_CHECKOUT = 'one_cc_dual_checkout';
+
     const ONE_CC_MERCHANT_DASHBOARD = 'one_cc_merchant_dashboard';
 
     const ONE_CC_GA_ANALYTICS = 'one_cc_ga_analytics';
@@ -1341,7 +1346,8 @@ class Constants
         self::ONE_CC_FB_ANALYTICS,
         self::SHIELD_CYBERSOURCE_ROLLOUT,
         self::HDFC_CHECKOUT_2,
-        self::RECURRING_CARD_MANDATE_BILLDESK_SIHUB
+        self::RECURRING_CARD_MANDATE_BILLDESK_SIHUB,
+        self::ONE_CLICK_DUAL_CHECKOUT
     ];
 
     const ONE_CC_FEATURES = [
@@ -1351,6 +1357,7 @@ class Constants
         self::ONE_CC_MANDATORY_LOGIN,
         self::ONE_CC_GA_ANALYTICS,
         self::ONE_CC_FB_ANALYTICS,
+        self::ONE_CLICK_DUAL_CHECKOUT
     ];
 
     // TODO: Use this instead of allFeatures once in final code change pr
@@ -1797,6 +1804,7 @@ class Constants
         self::OPTIMISE_SUMMARY_API            => true,
         self::SUB_MERCHANT_PRICING_AUTOMATION => true,
         self::BLOCKLIST_FOR_WORKFLOW_SERVICE  => true,
+        self::ONE_CLICK_DUAL_CHECKOUT         => true,
         self::HDFC_SINGLE_TID                 => true,
     ];
 
