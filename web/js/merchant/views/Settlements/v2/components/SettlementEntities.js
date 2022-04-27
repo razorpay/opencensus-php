@@ -26,7 +26,9 @@ const SettlementEntities = (props) => {
   if (error) return null;
 
   if (!loading && noDataFound) {
-    return <div className="no-transactions-data">No Transactions Data Found</div>;
+    return (
+      <div className="no-transactions-data">No transactions were detected for this settlement</div>
+    );
   }
 
   return (
