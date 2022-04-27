@@ -617,7 +617,9 @@ const isVerificationFailed = (status) => {
 const getBankVerificationAtteemptError = (activation) => {
   if (
     activation.props.data.bank_details_verification_status &&
-    !['initiated', 'verified'].includes(activation.props.data.bank_details_verification_status) &&
+    !['initiated', 'verified', 'failed'].includes(
+      activation.props.data.bank_details_verification_status,
+    ) &&
     activation.props.user.isSyncBankVerificationEnabled
   ) {
     if (activation.props.bvsApiCount == 9) return BANK_LIMIT_MESSAGE;

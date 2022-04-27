@@ -107,7 +107,6 @@ test('on changing category or sub-category expected doc is visible or not', asyn
     shop_establishment_verifiable_zone: true,
   });
   waitFor(() => expect(screen.queryByText('Business Registration Proof')).toBeInTheDocument());
-  waitFor(() => expect(screen.queryByText('Shop Establishment Number')).toBeInTheDocument());
   waitFor(() =>
     fireEvent.change(screen.getByLabelText('Shop Establishment Number'), {
       target: { value: 'NDJF3243dsfs23' },
@@ -126,7 +125,7 @@ test('should show aadhaar error message', async () => {
   });
   render(<App />, {});
   await waitForLoadingToFinish();
-  expect(screen.queryByText('Input document does not match Aadhaar back')).toBeInTheDocument();
+  expect(screen.queryByText(/Input document does not match Aadhaar back/i)).toBeInTheDocument();
 });
 
 test('should show aadhaar ekyc for Trust Business Type', async () => {

@@ -36,7 +36,7 @@ test('should render Bank Details fields and not Company Details fields for unreg
 test('should show bank verification status error for unreg type', async () => {
   ActivationDB.update({
     business_type: '11',
-    bank_details_verification_status: 'failed',
+    bank_details_verification_status: 'not_matched',
   });
   render(<App />, {});
   await waitForLoadingToFinish();
@@ -46,7 +46,7 @@ test('should show bank verification status error for unreg type', async () => {
 test('should show bank verification status error for reg type', async () => {
   ActivationDB.update({
     business_type: '1',
-    bank_details_verification_status: 'failed',
+    bank_details_verification_status: 'not_matched',
   });
   render(<App />, {});
   await waitForLoadingToFinish();

@@ -98,7 +98,7 @@ const BankDetails: React.FC<BankDetailsProps> = ({ isFormLocked }) => {
   const { title, subtitle } = getBankTabHeader(Number(data.business_type));
   const hasBankVerificationFailed =
     data?.bank_details_verification_status &&
-    !['initiated', 'verified'].includes(data?.bank_details_verification_status) &&
+    !['initiated', 'verified', 'failed'].includes(data?.bank_details_verification_status) &&
     experiments.isSyncBankVerificationEnabled;
 
   useEffect(() => {

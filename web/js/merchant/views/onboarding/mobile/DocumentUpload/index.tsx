@@ -254,7 +254,7 @@ const DocumentUpload = ({ isFormLocked }: IDocumentUploadProps): React.ReactElem
 
   const hasBankVerificationFailed =
     data?.bank_details_verification_status &&
-    !['initiated', 'verified'].includes(data?.bank_details_verification_status);
+    !['initiated', 'verified', 'failed'].includes(data?.bank_details_verification_status);
 
   useEffect(() => {
     if (isSyncBankVerificationEnabled) {
@@ -1113,7 +1113,9 @@ const DocumentUpload = ({ isFormLocked }: IDocumentUploadProps): React.ReactElem
               <StyledSeparator />
             </Space>
             {data.bank_details_verification_status &&
-              !['initiated', 'verified'].includes(data?.bank_details_verification_status) &&
+              !['initiated', 'verified', 'failed'].includes(
+                data?.bank_details_verification_status,
+              ) &&
               isSyncBankVerificationEnabled && (
                 <Text color="negative.900" size="xsmall" align="center">
                   {configData?.bank_account_verification_attempt_count == 10
