@@ -11,7 +11,7 @@ class Repository extends Base\Repository
 
     public function findByProviderReferenceIdAndPayeeVpaAndAmount(string $providerReferenceId,string $payeeVpa,int $amount)
     {
-        return $this->newQuery()
+        return $this->newQueryWithConnection($this->getMasterReplicaConnection())
                     ->where(Entity::PROVIDER_REFERENCE_ID,'=',$providerReferenceId)
                     ->where(Entity::PAYEE_VPA,'=',$payeeVpa)
                     ->where(Entity::AMOUNT,'=',$amount)

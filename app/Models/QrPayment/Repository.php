@@ -22,12 +22,12 @@ class Repository extends Base\Repository
         return parent::isEsSyncNeeded($action, $dirty, $qrPayment);
     }
 
-    public function findByProviderReferenceIdAndGatewayAndAmount(string $providerReferenceId, string $gateway,int $amount)
+    public function findByProviderReferenceIdAndGatewayAndAmount(string $providerReferenceId, string $gateway, int $amount)
     {
-        return $this->newQuery()
+        return $this->newQueryWithConnection($this->getMasterReplicaConnection())
                     ->where(Entity::PROVIDER_REFERENCE_ID, '=', $providerReferenceId)
                     ->where(Entity::GATEWAY, '=', $gateway)
-                    ->where(Entity::AMOUNT, '=' , $amount)
+                    ->where(Entity::AMOUNT, '=', $amount)
                     ->first();
     }
 

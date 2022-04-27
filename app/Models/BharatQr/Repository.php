@@ -10,7 +10,7 @@ class Repository extends Base\Repository
 
     public function findByProviderReferenceIdAndAmount(string $providerReferenceId, int $amount)
     {
-        return $this->newQuery()
+        return $this->newQueryWithConnection($this->getMasterReplicaConnection())
                     ->where(Entity::PROVIDER_REFERENCE_ID, '=', $providerReferenceId)
                     ->where(Entity::AMOUNT, '=', $amount)
                     ->first();
