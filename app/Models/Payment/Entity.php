@@ -4570,14 +4570,9 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         {
             return self::PAYMENT_TIMEOUT_UPI_RECURRING;
         }
-        else if (($this->isCardAutoRecurring() === true) and ($this->cardMandateNotification !== null))
+        else if ($this->isCardMandateRecurringAutoPayment() === true)
         {
-            if ($this->cardMandateNotification->isAfaRequired())
-            {
-                return self::PAYMENT_TIMEOUT_CARD_RECURRING_MANDATE_WITH_AFA;
-            }
-
-            return self::PAYMENT_TIMEOUT_CARD_RECURRING_MANDATE;
+            return self::PAYMENT_TIMEOUT_CARD_RECURRING_MANDATE_WITH_AFA;
         }
 
         $autoRefundDelay = $this->merchant->getAutoRefundDelay();
