@@ -10,6 +10,7 @@ import {
 import { fetchHolidayList as fnFetchHolidayList } from 'merchant/reducers/settlements/details';
 import HolidayModal from 'merchant/views/Settlements/Settlements/components/Modals/HolidayModal';
 import { TIMELINE_EVENTS } from './utils';
+import { trackEvents as trackEventsAction } from 'merchant/reducers/trackEvents';
 
 const SettlementTimeline = ({
   events,
@@ -19,8 +20,19 @@ const SettlementTimeline = ({
   holidayList,
   openModal,
   fetchHolidayList,
+  page = '',
+  trackEventsAction,
 }) => {
   const { transaction } = data;
+  const { created_at, settlement } = transaction;
+  const {
+    method: settlementDetailsMethod,
+    holidays,
+    schedule: settlementDetailsSchedule,
+    is_settled,
+    settled_at,
+    eligible_at,
+  } = settlementDetails;
 
   useEffect(() => {
     fetchHolidayList();
@@ -30,6 +42,19 @@ const SettlementTimeline = ({
       size: 'small',
       component: <HolidayModal data={holidayList} />,
     });
+  };
+  const trackEvent = () => {
+    if (page && page !== '') {
+      trackEventsAction({
+        objectName: 'settlement id',
+        actionName: 'click',
+        properties: {
+          settlement_id: settlement?.id,
+        },
+        screen: page,
+        toLumberjack: true,
+      });
+    }
   };
   const getEventBody = (event) => {
     switch (event) {
@@ -44,15 +69,15 @@ const SettlementTimeline = ({
               <div className="capitalize">{event?.split('_').join(' ').toLowerCase()}</div>
             </div>
             <div className="initial-event-details timeline-sub-text">
-              <Time value={data?.transaction?.created_at} format="DD MMM YYYY, hh:mm a" />
+              <Time value={created_at} format="DD MMM YYYY, hh:mm a" />
             </div>
           </React.Fragment>
         );
       }
       case TIMELINE_EVENTS.SCHEDULE_INFO: {
-        const method = settlementDetails?.method;
-        const holidaysLen = settlementDetails?.holidays?.length || 0;
-        const schedule = parseInt(settlementDetails?.schedule || 0, 10) - holidaysLen;
+        const method = settlementDetailsMethod;
+        const holidaysLen = holidays?.length || 0;
+        const schedule = parseInt(settlementDetailsSchedule || 0, 10) - holidaysLen;
         return (
           <React.Fragment key={event}>
             <div className="timeline-row">
@@ -92,9 +117,9 @@ const SettlementTimeline = ({
               </div>
             </div>
             <div className="holiday-details timeline-sub-text">
-              {settlementDetails?.holidays?.length > 1 ? (
+              {holidays?.length > 1 ? (
                 <ul>
-                  {settlementDetails.holidays?.map((holiday) => (
+                  {holidays?.map((holiday) => (
                     <li key={holiday.date}>
                       <Time value={parseInt(holiday.date, 10)} format="DD MMM YYYY" />
                       <span> ({holiday.description})</span>
@@ -103,11 +128,8 @@ const SettlementTimeline = ({
                 </ul>
               ) : (
                 <>
-                  <Time
-                    value={parseInt(settlementDetails?.holidays?.[0].date, 10)}
-                    format="DD MMM YYYY"
-                  />
-                  <span> ({settlementDetails.holidays?.[0].description})</span>
+                  <Time value={parseInt(holidays?.[0].date, 10)} format="DD MMM YYYY" />
+                  <span> ({holidays?.[0].description})</span>
                 </>
               )}
             </div>
@@ -115,7 +137,7 @@ const SettlementTimeline = ({
         );
       }
       case TIMELINE_EVENTS.SETTLEMENT_INFO: {
-        return settlementDetails.is_settled ? (
+        return is_settled ? (
           <React.Fragment key={event}>
             <div className="timeline-row success-row">
               <div>
@@ -126,19 +148,16 @@ const SettlementTimeline = ({
               </div>
             </div>
             <div className="settled-at-details timeline-sub-text">
-              <Time
-                value={parseInt(settlementDetails?.settled_at, 10)}
-                format="DD MMM YYYY, hh:mm a"
-              />
-              {transaction?.settlement?.utr ? (
+              <Time value={parseInt(settled_at, 10)} format="DD MMM YYYY, hh:mm a" />
+              {settlement?.utr ? (
                 <div className="mt-6">
                   <span>UTR: </span>
-                  <span>{transaction?.settlement?.utr}</span>
+                  <span>{settlement?.utr}</span>
                 </div>
               ) : null}
               <div className="mt-2">
-                <Link to={`/settlements/${transaction?.settlement?.id}`}>
-                  <code>{transaction?.settlement?.id}</code>
+                <Link to={`/settlements/${settlement?.id}`} onClick={trackEvent}>
+                  <code>{settlement?.id}</code>
                 </Link>
               </div>
             </div>
@@ -150,10 +169,7 @@ const SettlementTimeline = ({
               <div>Settlement Date</div>
             </div>
             <div className="eligible-at-details timeline-sub-text">
-              <Time
-                value={parseInt(settlementDetails?.eligible_at, 10)}
-                format="DD MMM YYYY, hh:mm a"
-              />
+              <Time value={parseInt(eligible_at, 10)} format="DD MMM YYYY, hh:mm a" />
             </div>
           </React.Fragment>
         );
@@ -175,7 +191,12 @@ const mapStateToProps = (state) => state.settlement;
 
 const mapDispatchToProps = (dispatch) => {
   return bindActionCreators(
-    { closeModal: fnCloseModal, openModal: fnOpenModal, fetchHolidayList: fnFetchHolidayList },
+    {
+      closeModal: fnCloseModal,
+      openModal: fnOpenModal,
+      fetchHolidayList: fnFetchHolidayList,
+      trackEventsAction,
+    },
     dispatch,
   );
 };

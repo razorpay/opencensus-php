@@ -61,6 +61,7 @@ class SettlementInfo extends Component {
       settlementTimelineDetails,
       user,
       terminalProviders,
+      page,
     } = this.props;
 
     const { no_settlement } = settlement_amount.data;
@@ -115,6 +116,7 @@ class SettlementInfo extends Component {
                 events={timelineEvents}
                 entityType={entityType}
                 settlementDetails={settlementTimelineDetails}
+                page={page}
               />
             </ContentToggler>
           ) : (
@@ -134,6 +136,7 @@ class SettlementInfo extends Component {
                 payment={data}
                 terminalProviders={terminalProviders}
                 user={user}
+                page={page}
               />
             </ContentToggler>
           )}
@@ -177,6 +180,7 @@ class SettlementInfo extends Component {
                   events={timelineEvents}
                   entityType={entityType}
                   settlementDetails={settlementTimelineDetails}
+                  page={page}
                 />
               </ContentToggler>
             </>

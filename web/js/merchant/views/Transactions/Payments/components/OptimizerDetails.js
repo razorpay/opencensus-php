@@ -4,7 +4,7 @@ import SettlementInfo from 'merchant/views/Settlements/components/SettlementInfo
 
 const INTEGRATED_GATEWAYS = ['payu', 'paytm'];
 
-export const OptimizerDetails = ({ payment, terminalProviders, scrolledToBottom }) => {
+export const OptimizerDetails = ({ payment, terminalProviders, scrolledToBottom, page }) => {
   return (
     <div
       className={`optimizer-payment-details ${
@@ -24,7 +24,7 @@ export const OptimizerDetails = ({ payment, terminalProviders, scrolledToBottom 
       </EntityDetailRow>
       {payment.transaction && payment.optimizer_provider !== 'Razorpay' && (
         <EntityDetailRow label="Settlement Details">
-          <SettlementInfo data={payment} integratedGateways={INTEGRATED_GATEWAYS} />
+          <SettlementInfo data={payment} integratedGateways={INTEGRATED_GATEWAYS} page={page} />
         </EntityDetailRow>
       )}
     </div>

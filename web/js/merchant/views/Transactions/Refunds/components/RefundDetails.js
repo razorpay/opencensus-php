@@ -157,7 +157,12 @@ class PaymentDetailsContainer extends Component {
                       !user?.isOptimizerEnabled ||
                       refund?.optimizer_provider === 'Razorpay') && (
                       <EntityDetailRow label="Settlement Details">
-                        <SettlementInfo data={refund} entityType="refund" showTimeline />
+                        <SettlementInfo
+                          data={refund}
+                          entityType="refund"
+                          showTimeline
+                          page="Refund Detail"
+                        />
                       </EntityDetailRow>
                     )}
 
@@ -171,6 +176,7 @@ class PaymentDetailsContainer extends Component {
                       payment={refund}
                       terminalProviders={terminalProviders}
                       scrolledToBottom={true}
+                      page="Refund Detail"
                     />
                   )}
               </div>

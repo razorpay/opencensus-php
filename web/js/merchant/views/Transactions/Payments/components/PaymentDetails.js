@@ -284,7 +284,12 @@ function PaymentDetails(props) {
                   }
                 >
                   <EntityDetailRow label="Settlement Details">
-                    <SettlementInfo data={payment} entityType="payment" showTimeline />
+                    <SettlementInfo
+                      data={payment}
+                      entityType="payment"
+                      showTimeline
+                      page="Payment Detail"
+                    />
                   </EntityDetailRow>
                 </ShowWhen>
                 <EntityDetailRow label="Description">{payment.description}</EntityDetailRow>
@@ -419,6 +424,7 @@ function PaymentDetails(props) {
                     payment={payment}
                     terminalProviders={terminalProviders}
                     scrolledToBottom={scrolledToBottom}
+                    page="Payment Detail"
                   />
                 )}
             </div>

@@ -1,36 +1,45 @@
 import { Link } from 'react-router-dom';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
 import { findProviderDetails } from 'merchant/views/Transactions/Payments/components/PaymentOptimizerProvider';
 import { gatewayLogos } from 'merchant/views/Navigator/components/util';
+import { trackEvents as trackEventsAction } from 'merchant/reducers/trackEvents';
 
-function SettlementOverview({ payment, terminalProviders, user }) {
+function SettlementOverview({ payment, terminalProviders, user, page = '', trackEventsAction }) {
+  const { id, utr, settled_by, provider: settlement_provider } = payment?.transaction?.settlement;
   let provider = null;
-  if (payment.transaction.settlement?.settled_by !== 'razorpay') {
-    provider = findProviderDetails(
-      terminalProviders,
-      payment.transaction.settlement?.provider,
-      payment.transaction.settlement?.settled_by,
-    );
+  if (settled_by !== 'razorpay') {
+    provider = findProviderDetails(terminalProviders, settlement_provider, settled_by);
   }
+  const trackEvent = () => {
+    window.rzpAnalytics?.({
+      eventCategory: 'Settlement Revamp',
+      eventAction: 'Click - Settlement ID',
+      eventLabel: `Payments`,
+    });
+    if (page && page !== '') {
+      trackEventsAction({
+        objectName: 'settlement id',
+        actionName: 'click',
+        properties: {
+          settlement_id: id,
+        },
+        screen: page,
+        toLumberjack: true,
+      });
+    }
+  };
   return (
     <div style={{ marginTop: '5px' }}>
       <div>
-        <Link
-          to={`/settlements/${payment.transaction.settlement.id}`}
-          onClick={() => {
-            window.rzpAnalytics?.({
-              eventCategory: 'Settlement Revamp',
-              eventAction: 'Click - Settlement ID',
-              eventLabel: `Payments`,
-            });
-          }}
-        >
-          <code>{payment.transaction.settlement.id}</code>
+        <Link to={`/settlements/${id}`} onClick={trackEvent}>
+          <code>{id}</code>
         </Link>
       </div>
-      {payment.transaction.settlement.utr ? (
+      {utr ? (
         <div className="row settlement-detail-row">
           <span className="col-xs-4">UTR</span>
-          <span className="col-xs-8">{payment.transaction.settlement.utr}</span>
+          <span className="col-xs-8">{utr}</span>
         </div>
       ) : null}
       {user?.isSingleReconEnabled && user?.isOptimizerEnabled && provider ? (
@@ -46,4 +55,13 @@ function SettlementOverview({ payment, terminalProviders, user }) {
   );
 }
 
-export default SettlementOverview;
+const mapDispatchToProps = (dispatch) => {
+  return bindActionCreators(
+    {
+      trackEventsAction,
+    },
+    dispatch,
+  );
+};
+
+export default connect(null, mapDispatchToProps)(SettlementOverview);
