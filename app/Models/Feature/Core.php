@@ -35,6 +35,7 @@ use RZP\Models\Settlement\OndemandFundAccount;
 use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Merchant\Request as MerchantRequest;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetail;
+use RZP\Jobs\Transfers\LinkedAccountBankVerificationStatusBackfill;
 use RZP\Notifications\Dashboard\Handler as DashboardNotificationHandler;
 use RZP\Notifications\Dashboard\Constants as DashboardNotificationConstants;
 
@@ -57,13 +58,14 @@ class Core extends Base\Core
      *
      * @param array $input
      * @param bool  $shouldSync Should the entity be save on both test and live
+     * @param bool $shouldBackfillForLa Should push back fill job for route_la_penny_testing feature
      *
      * @return Entity
      * @throws Exception\BadRequestException
      * @throws Exception\ServerErrorException
      * @throws Exception\BadRequestValidationFailureException
      */
-    public function create(array $input, bool $shouldSync = false): Entity
+    public function create(array $input, bool $shouldSync = false, bool $shouldBackfillForLa = true): Entity
     {
         $tokenizationGateways = $input['tokenization_gateways'] ?? [];
         unset($input['tokenization_gateways']);
@@ -73,6 +75,28 @@ class Core extends Base\Core
         $entityType = $input[Entity::ENTITY_TYPE];
 
         $entityId = $input[Entity::ENTITY_ID];
+
+        //
+        //route_la_penny_testing feature is used for penny testing Linked accounts created in Route.
+        // This automates the backFilling script which updates bank verification status on Linked accounts
+        // LinkedAccountBankVerificationStatusBackFill Job updates all existing linked accounts as verified,
+        // this job can take upto 3hrs.
+        //
+        // Hence we do not want to assign this feature before all existing LAs are marked verified.
+        // This "create" method will be called from LinkedAccountBankVerificationStatusBackFill job in the
+        // end with $shouldBackFillForLa as false which ensures from pushing the same job again and then assign
+        // the feature.
+        //
+        if (($shouldBackfillForLa === true) and
+            ($input[Entity::NAME] === Constants::ROUTE_LA_PENNY_TESTING) and
+            ($entityType === Constants::MERCHANT))
+        {
+            $linkedAccountIds = $this->repo->merchant->fetchActivatedLinkedAccountIdsForParentMerchant($entityId);
+
+            LinkedAccountBankVerificationStatusBackfill::dispatch($this->mode, $linkedAccountIds, $input, $shouldSync);
+
+            return $feature;
+        }
 
         //
         // These entity types are owned by api, hence we validate their existence

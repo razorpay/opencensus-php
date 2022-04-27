@@ -282,4 +282,15 @@ class Validator extends Base\Validator
             }
         }
     }
+
+    public function validateForRouteLaPennyTestingFeature($featureNames)
+    {
+        if ((in_array(Constants::ROUTE_LA_PENNY_TESTING, $featureNames) === true) and
+            (count($featureNames) > 1))
+        {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Cannot assign route_la_penny_testing feature with other features.'
+                );
+        }
+    }
 }

@@ -3,6 +3,7 @@ namespace RZP\Jobs\Transfers;
 
 use RZP\Jobs\Job;
 use RZP\Trace\TraceCode;
+use RZP\Models\Feature\Core;
 use RZP\Models\Merchant\Detail\Service;
 
 
@@ -12,15 +13,23 @@ class LinkedAccountBankVerificationStatusBackfill extends Job
 
     protected $merchantIds;
 
+    protected $featureInput;
+
+    protected $shouldSync;
+
     protected $queueConfigKey = 'batch';
 
     public $timeout = 5 * 3600;
 
-    public function __construct(string $mode , $merchantIds)
+    public function __construct(string $mode, array $merchantIds, $featureInput = null, $shouldSync = null)
     {
         parent::__construct($mode);
 
         $this->merchantIds = $merchantIds;
+
+        $this->featureInput = $featureInput;
+
+        $this->shouldSync = $shouldSync;
     }
 
     public function handle()
@@ -34,14 +43,16 @@ class LinkedAccountBankVerificationStatusBackfill extends Job
 
         $startTime = microtime(true);
 
-        $update_count = (new Service)->updateLinkedAccountBankVerificationStatus($this->merchantIds);
+        $updateCount = (new Service)->updateLinkedAccountBankVerificationStatus($this->merchantIds);
+
+        (new Core)->create($this->featureInput, $this->shouldSync, false);
 
         $endTime = microtime(true);
 
         $this->trace->info(TraceCode::LA_BANK_VERIFICATION_STATUS_UPDATE_JOB_COMPLETED,
             [
                 'total_count'                  => count($this->merchantIds),
-                'merchant_detail_update_count' => $update_count,
+                'merchant_detail_update_count' => $updateCount,
                 'time_taken'                   => $endTime - $startTime
             ]);
 

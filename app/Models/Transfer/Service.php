@@ -779,7 +779,7 @@ class Service extends Base\Service
         {
             foreach ($input['merchant_ids'] as $id)
             {
-                $merchantIds = array_merge($merchantIds, $this->repo->merchant->fetchActiveLinkedAccountMids($id));
+                $merchantIds = array_merge($merchantIds, $this->repo->merchant->fetchActivatedLinkedAccountIdsForParentMerchant($id));
             }
         }
         elseif ($type === 'linked_account_mids')

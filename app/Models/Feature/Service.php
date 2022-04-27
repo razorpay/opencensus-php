@@ -29,6 +29,9 @@ class Service extends Base\Service
         {
             $entityType = Type::getEntityTypeFromRoute($routeEndpoint);
         }
+        $validator = new Validator();
+
+        $validator->validateForRouteLaPennyTestingFeature($input[Constants::NAMES]);
 
         $featureParams = $this->buildFeatureParams($input, $entityType, $entityId);
 
@@ -528,6 +531,10 @@ class Service extends Base\Service
         // Will separately update dashboard to start
         // sending a list of features in a single request
         $names = (is_array($input[Entity::NAME]) ? $names : [$input[Entity::NAME]]);
+
+        $validator = new Validator();
+
+        $validator->validateForRouteLaPennyTestingFeature($names);
 
         $opsResponse = $successResponse = $failedResponse = [];
 

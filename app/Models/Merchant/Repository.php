@@ -1282,17 +1282,14 @@ class Repository extends Base\Repository
         return $childMerchantIds;
     }
 
-    public function fetchActiveLinkedAccountMids($merchantId)
+    public function fetchActivatedLinkedAccountIdsForParentMerchant(string $parentMerchantId)
     {
-        $childMerchantIds = $this->newQuery()
-            ->select(Entity::ID)
-            ->where('parent_id', $merchantId)
-            ->where(Entity::ACTIVATED, 1)
-            ->get()
-            ->pluck(Entity::ID)
-            ->toArray();
-
-        return $childMerchantIds;
+        return $this->newQuery()
+                    ->select(Entity::ID)
+                    ->where(Entity::PARENT_ID, $parentMerchantId)
+                    ->where(Entity::ACTIVATED, 1)
+                    ->pluck(Entity::ID)
+                    ->toArray();
     }
 
     public function fetchLinkedAccountsCount($merchantId)
