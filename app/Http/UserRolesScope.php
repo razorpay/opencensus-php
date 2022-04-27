@@ -416,7 +416,7 @@ class UserRolesScope
             'reconciliate_via_batch_service'                => [Role::ADMIN, Role::OWNER,],
             'refund_fetch_fee'                              => [Role::ADMIN, Role::OWNER, Role::OPERATIONS, Role::MANAGER,],
             'reminder_next_run'                             => [Role::ADMIN, Role::OWNER, Role::SELLERAPP, Role::OPERATIONS, Role::MANAGER, Role::RBL_SUPERVISOR, Role::FINANCE, Role::AGENT, Role::SELLERAPP_PLUS,],
-            'reminder_service'                              => [Role::ADMIN, Role::OWNER, Role::SELLERAPP, Role::MANAGER, Role::OPERATIONS, Role::SELLERAPP_PLUS, Role::RBL_SUPERVISOR, Role::FINANCE, Role::AGENT,],
+            'reminder_service'                              => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::RBL_SUPERVISOR, Role::FINANCE, Role::AGENT,],
             'reports_monthly_invoice'                       => [Role::ADMIN, Role::OWNER, Role::FINANCE, Role::OPERATIONS, Role::MANAGER,],
             'reports_public_entity_file'                    => [Role::ADMIN, Role::OWNER, Role::MANAGER,],
             'reversal_fetch_multiple'                       => [Role::ADMIN, Role::OWNER, Role::OPERATIONS, Role::SUPPORT, Role::MANAGER, Role::FINANCE],
