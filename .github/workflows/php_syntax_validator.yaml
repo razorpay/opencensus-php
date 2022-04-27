@@ -2,7 +2,7 @@ name: PHP Syntax Validator
 on: push
 jobs:
   validate_php_syntax:
-    name: Validate PHP syntax
+    name: Validate PHP Syntax
     runs-on: [ self-hosted ]
     container:
       image: c.rzp.io/razorpay/onggi:php-7.2-api-web-v2
