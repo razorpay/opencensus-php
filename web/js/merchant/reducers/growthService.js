@@ -43,6 +43,29 @@ const updateExclusiveOffer = (status) => updateAssets(status, assetNames.EXCLUSI
 const updateCarouselBanners = (status) => updateAssets(status, assetNames.BANNER_CAROUSEL_ITEM);
 const updateGSModal = (status) => updateAssets(status, assetNames.MODAL);
 
+const initialState = {
+  announcements: {
+    loading: false,
+    announcements: [],
+  },
+  banners: {
+    loading: false,
+    banners: [],
+  },
+  exclusive_offers: {
+    loading: false,
+    exclusive_offers: {},
+  },
+  banner_carousel_items: {
+    loading: false,
+    banner_carousel_items: [],
+  },
+  gs_modals: {
+    loading: true,
+    gs_modals: {},
+  },
+};
+
 export const fetchAnnouncements = ({ fromWhere = 'home' }) => {
   const growthService = new GrowthService();
   return {
@@ -76,33 +99,12 @@ export const fetchExclusiveOffer = ({ fromWhere = 'home' }) => {
 
 export const fetchGSModal = ({ template_id }) => {
   const growthService = new GrowthService();
+  const payload = growthService.getGSModal(template_id);
+  initialState.gs_modals.loading = false;
   return {
     type: FETCH_GS_MODAL,
-    payload: growthService.getGSModal(template_id),
+    payload,
   };
-};
-
-const initialState = {
-  announcements: {
-    loading: false,
-    announcements: [],
-  },
-  banners: {
-    loading: false,
-    banners: [],
-  },
-  exclusive_offers: {
-    loading: false,
-    exclusive_offers: {},
-  },
-  banner_carousel_items: {
-    loading: false,
-    banner_carousel_items: [],
-  },
-  gs_modals: {
-    loading: false,
-    gs_modals: {},
-  },
 };
 
 export default makeEntityReducer(
