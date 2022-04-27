@@ -9,7 +9,7 @@ use RZP\Trace\TraceCode;
 
 class Bucket
 {
-    const DEFAULT_CONFIG_NAME = Type::SETTLEMENT_BUCKET_CONFIG;
+    const DEFAULT_CONFIG_NAME = Type::AP_SOUTH_DEFAULT_SETTLEMENT_BUCKET_CONFIG;
     const TEST_BUCKET_NAME    = Type::TEST_BUCKET_CONFIG;
 
     /**

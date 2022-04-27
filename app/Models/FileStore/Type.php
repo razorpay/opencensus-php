@@ -237,6 +237,8 @@ class Type
     const FIRST_DATA_PARES_FILE             = 'first_data_pares_file';
     const DATA_LAKE_SEGMENT_FILE            = 'data_lake_segment_file';
 
+    const AP_SOUTH_DEFAULT_SETTLEMENT_BUCKET_CONFIG = 'ap_south_default_settlement_bucket_config';
+
     const SETTLEMENT_BUCKET_CONFIG              = 'settlement_bucket_config';
     const TEST_BUCKET_CONFIG                    = 'test_bucket_config';
     const INVOICE_BUCKET_CONFIG                 = 'invoice_bucket_config';
@@ -586,7 +588,7 @@ class Type
      * Bucket Config Mapping for file types
      */
     const BUCKET_CONFIG_TYPE_MAPPING = [
-       
+
         self::SETTLEMENT_BUCKET_CONFIG => [
             self::REPORT,
             self::BATCH_INPUT,
