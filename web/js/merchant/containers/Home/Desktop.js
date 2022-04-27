@@ -85,6 +85,7 @@ import NitroICICINewSegmentsBanner from '../../components/Announcements/NitroICI
 import IntlPaymentsRecommendation from 'merchant/containers/Home/ProductRecommendationnCard/IntlPaymentsRecommendation';
 import IntlPaymentsAnnouncement from 'merchant/components/Announcements/IntlPaymentsAnnouncement';
 import * as EventActions from 'merchant/reducers/trackEvents';
+import { STATUSES } from 'merchant/views/TicketSupport/utils';
 
 class AnalyticsDesktop extends Component {
   state = {
@@ -412,8 +413,10 @@ class AnalyticsDesktop extends Component {
       balance = Math.abs(current_balance.data.balance);
       negativeBalanceClassName = 'negative-balance';
     }
-    const ticketsRaisedByAgents = this.props.ticketsRaisedByAgents.filter((ticket) =>
-      new Date(ticket.created_at).getSeconds(),
+    const ticketsRaisedByAgents = this.props.ticketsRaisedByAgents.filter(
+      (ticket) =>
+        Boolean(new Date(ticket.created_at).getSeconds()) &&
+        STATUSES[ticket?.status] === 'AWAITING_YOUR_REPLY',
     );
     const { showState, proceededBank } = getXCAStatus(user);
     const showNitroStatusTracker = showState === 'neostone-tracker';

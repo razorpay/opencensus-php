@@ -6,7 +6,7 @@ import { openModal, closeModal } from 'merchant_common/reducers/modals';
 
 import { logout, updateSession } from 'merchant/reducers/session';
 import RTracking from 'react-tracking';
-import { getFormattedDate } from 'merchant/views/TicketSupport/utils';
+import { getFormattedDate, STATUSES } from 'merchant/views/TicketSupport/utils';
 
 @RTracking(() => window.rzpQ.component('SupportRequestDropdown'))
 class SupportTicketDropdown extends Component {
@@ -36,7 +36,9 @@ class SupportTicketDropdown extends Component {
     const { user, trustedBadge } = this.props;
     const { badgeStatus } = trustedBadge || {};
     const isRTBEnabled = badgeStatus === STATUS.YES_ELIGIBLE_LIVE;
-    const TicketsByaAgent = this.props.ticketsRaisedByAgents;
+    const TicketsByaAgent = this.props.ticketsRaisedByAgents.filter(
+      (ticket) => STATUSES[ticket.status] === 'AWAITING_YOUR_REPLY',
+    );
 
     return (
       <div>

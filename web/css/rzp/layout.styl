@@ -1415,7 +1415,13 @@ tr:hover .row-action.btn-group {
         line-height: 20px;
         font-weight: 400;
         font-size: 14px;
-        line-height: 20px;
+        overflow: hidden;
+        white-space: normal;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
+        -webkit-box-orient: vertical;
       }
 
       .reply-button-wrapper {

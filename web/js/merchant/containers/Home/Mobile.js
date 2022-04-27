@@ -39,6 +39,7 @@ import RepaymentAnnouncment from 'merchant/components/Announcements/PaymentRecov
 import SupportRequest from 'merchant/components/Announcements/SupportRequest';
 import { fetchCarouselBanner as fetchCarouselBannerProp } from '../../../merchant/reducers/growthService';
 import Carousel from 'common/components/Carousel';
+import { STATUSES } from 'merchant/views/TicketSupport/utils';
 
 @connect(
   (state) => ({
@@ -163,8 +164,10 @@ class AnalyticsMobile extends Component {
       current_balance.data.balance < 100 ||
       isOnDemandDisabled;
     const esOndemandSettlementEnabled = user.isFeatureEnabled('es_on_demand');
-    const ticketsRaisedByAgents = this.props.ticketsRaisedByAgents.filter((ticket) =>
-      new Date(ticket.created_at).getSeconds(),
+    const ticketsRaisedByAgents = this.props.ticketsRaisedByAgents.filter(
+      (ticket) =>
+        Boolean(new Date(ticket.created_at).getSeconds()) &&
+        STATUSES[ticket?.status] === 'AWAITING_YOUR_REPLY',
     );
     let carouselItem = [];
     if (banner_carousel_items.length) carouselItem = [...banner_carousel_items];
