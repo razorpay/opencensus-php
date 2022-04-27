@@ -2600,6 +2600,16 @@ class ErrorCode
 
     const SERVER_ERROR_USER_X_MOBILE_APP_DOWNLOAD_LINK_SENDING_FAILED               = 'SERVER_ERROR_USER_X_MOBILE_APP_DOWNLOAD_LINK_SENDING_FAILED';
 
+    const BAD_REQUEST_CARD_MANDATE_BIN_NOT_SUPPORTED                                = 'BAD_REQUEST_CARD_MANDATE_BIN_NOT_SUPPORTED';
+    const BAD_REQUEST_TOKEN_INVALID_STATUS                                          = 'BAD_REQUEST_TOKEN_INVALID_STATUS';
+    const SERVER_ERROR_OTP_ELF_INVALID_ARGUMENT                                     = 'SERVER_ERROR_OTP_ELF_INVALID_ARGUMENT';
+    const GATEWAY_ERROR_OTP_RESEND_FAILED                                           = 'GATEWAY_ERROR_OTP_RESEND_FAILED';
+    const SERVER_ERROR_OTPELF_FAILURE                                               = 'SERVER_ERROR_OTPELF_FAILURE';
+    const SERVER_ERROR_OTP_ELF_SUBMIT_OTP_FAILURE                                   = 'SERVER_ERROR_OTP_ELF_SUBMIT_OTP_FAILURE';
+    const SERVER_ERROR_OTP_ELF_ALREADY_SUCCEEDED                                    = 'SERVER_ERROR_OTP_ELF_ALREADY_SUCCEEDED';
+    const SERVER_ERROR_OTP_ELF_ALREADY_INITIATED                                    = 'SERVER_ERROR_OTP_ELF_ALREADY_INITIATED';
+    const SERVER_ERROR_OTP_ELF_IP_BLOCKED                                           = 'SERVER_ERROR_OTP_ELF_IP_BLOCKED';
+
     // Merchant Config Error codes
     const BAD_REQUEST_INVALID_INPUT_LOGO_URL                                       =  'BAD_REQUEST_INVALID_INPUT_LOGO_URL';
     const BAD_REQUEST_GATEWAY_UNKNOWN_ERROR                                        = 'BAD_REQUEST_GATEWAY_UNKNOWN_ERROR';
