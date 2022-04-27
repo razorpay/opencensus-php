@@ -443,7 +443,6 @@ class Processor
             }
 
             if (($this->route->isRearchRoute($currentRouteName) == false) or
-                (empty($input[Payment\Entity::ORDER_ID]) === true) or
                 (empty($input[Payment\Entity::METHOD]) === true) or
                 ($input[Payment\Entity::METHOD] !== Payment\METHOD::CARD) or
                 (empty($input[Payment\Entity::RECURRING]) === false) or
@@ -669,24 +668,7 @@ class Processor
 
         $input[Payment\Entity::MERCHANT_ID] = $this->merchant->getId();
 
-        //TODO: In cards flow, can this happen? If so, what all attributes have to picked from payment and added to order?
-        if (empty($input[Payment\Entity::ORDER_ID]) === true)
-        {
-            $orderPayLoad = [
-                "amount"          =>  $input['amount'],
-                "currency"        => $input['currency']
-            ];
-
-            $this->order = (new Order\Service())->createOrder($orderPayLoad);
-
-            $input[Payment\Entity::ORDER_ID] = Order\Entity::getSignedId($this->order->getId());
-
-            $input[Payment\Entity::ORDER] = $this->order;
-
-            // Dispatch into KAFKA queue to send to PG Router for dual write happens automatically via Orders Repo.
-            // No need for any special logic here.
-        }
-        else
+        if (empty($input[Payment\Entity::ORDER_ID]) === false)
         {
             $this->order = $this->fetchOrderFromInput($input);
 
@@ -2973,13 +2955,13 @@ class Processor
         // This is for those gateways where callback flow is not implemented,
         // and we are not aware of the gateway status until hitting their Inquiry API.
         // In such cases, we dont want to stop polling until we get to know failure/success from gateway. Default timeout applies.
-        // 
+        //
         // PS:- should be before checkForRecentFailedPayment
-        // 
+        //
         // - https://razorpay.slack.com/archives/CNP473LRF/p1648449676603789
         // - https://razorpay.slack.com/archives/CNXC0JHQF/p1648817541865879
-        if (Payment\Gateway::isTransactionPendingGateway($payment->getMethod(), 
-                                                         $payment->getGateway(), 
+        if (Payment\Gateway::isTransactionPendingGateway($payment->getMethod(),
+                                                         $payment->getGateway(),
                                                          $payment->getInternalErrorCode()))
         {
             $response = [
