@@ -1803,7 +1803,7 @@ class Service extends Base\Service
 
         $payment = $this->repo
                         ->payment
-                        ->findOrFailByPublicIdWithParams($id, $input);
+                        ->findOrFailByPublicIdWithParams($id, $input,ConnectionType::DATA_WAREHOUSE_ADMIN);
 
         $paymentMerchantId = $payment->getMerchantId();
 
