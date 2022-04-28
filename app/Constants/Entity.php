@@ -166,7 +166,7 @@ class Entity
     const BANKING_ACCOUNT_COMMENT    = 'banking_account_comment';
     const ORDER_META                 = 'order_meta';
     const TOKENISED_IIN              = 'tokenised_iin';
-  
+
     const RAW_ADDRESS                = 'raw_address';
     const FUND_TRANSFER_ATTEMPT      = 'fund_transfer_attempt';
     const BANK_TRANSFER_HISTORY      = 'bank_transfer_history';
@@ -654,6 +654,7 @@ class Entity
     const LEDGER_STATEMENT  = 'ledger_statement';
 
     const MERCHANT_1CC_AUTH_CONFIGS    = 'merchant_1cc_auth_configs';
+    const DIRECT_ACCOUNT_STATEMENT = 'direct_account_statement';
 
     /**
      * Defines a map of entites which are currently
@@ -828,6 +829,7 @@ class Entity
         self::LEDGER_ACCOUNT            => \RZP\Models\Transaction\Statement\Ledger\Account::class,
         self::ACCOUNT_DETAIL            => \RZP\Models\Transaction\Statement\Ledger\AccountDetail::class,
         self::LEDGER_STATEMENT          => \RZP\Models\Transaction\Statement\Ledger\Statement::class,
+        self::DIRECT_ACCOUNT_STATEMENT  => \RZP\Models\Transaction\Statement\DirectAccount\Statement::class,
         self::INVITATION                => \RZP\Models\Invitation::class,
         self::FILE_STORE                => \RZP\Models\FileStore::class,
         self::FEE_BREAKUP               => \RZP\Models\Transaction\FeeBreakup::class,

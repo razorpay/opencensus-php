@@ -201,6 +201,7 @@ use RZP\Base\Database\Connectors\MySqlConnector;
  * @property Models\Transaction\Statement\Ledger\AccountDetail\Repository   $account_detail
  * @property Models\Transaction\Statement\Ledger\Statement\Repository       $ledger_statement
  * @property Models\Internal\Repository                               $internal
+ * @property Models\Transaction\Statement\DirectAccount\Statement\Repository $direct_account_statement
  */
 
 class RepositoryManager extends Illuminate\Support\Manager

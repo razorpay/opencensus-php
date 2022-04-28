@@ -773,6 +773,8 @@ return [
 
     E::LEDGER_STATEMENT => [],
 
+    E::DIRECT_ACCOUNT_STATEMENT => [],
+
     E::MERCHANT_NOTIFICATION_CONFIG => [],
 
     E::REFERRALS => [

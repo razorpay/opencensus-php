@@ -33,7 +33,7 @@ class Service extends Transaction\Service
 
         $balance = $merchantValidator->validateAndTranslateAccountNumberForBanking($input);
 
-        // Route request to ledger statement if ledger read feature is enabled
+        // Route request to ledger statement if ledger feature is enabled
         if (($this->merchant->isFeatureEnabled(Constants::LEDGER_REVERSE_SHADOW) === true) and
             ($this->isExperimentEnabled(Merchant\RazorxTreatment::RX_REARCH_TIDB_EXPERIMENT) === true) and
             ($balance->isAccountTypeShared() === true))
@@ -41,6 +41,25 @@ class Service extends Transaction\Service
             $ledger = $this->repo->ledger_statement->fetch($input, $this->merchant->getId(), ConnectionType::RX_DATA_WAREHOUSE_MERCHANT);
 
             return $ledger->toArrayPublic();
+        }
+
+        // Route request to BAS if DA ledger feature is enabled and acc is of type direct
+        if ((($this->merchant->isFeatureEnabled(Constants::DA_LEDGER_REVERSE_SHADOW)) === true) and
+            ($this->isExperimentEnabled(Merchant\RazorxTreatment::RX_DA_ACC_STMT_EXPERIMENT) === true) and
+            ($balance->isAccountTypeDirect() === true) and
+            ($this->app['basicauth']->isProxyAuth() === true))
+        {
+            $this->trace->info(
+                TraceCode::DRIVING_ACCOUNT_STATEMENT_FOR_DA_VIA_BAS,
+                [
+                    'merchant_id' => $this->merchant->getId(),
+                    'balance_id' => $balance->getId(),
+                    'balance_type' => $balance->getType(),
+                    'balance_account_type' => $balance->getAccountType(),
+                ]
+            );
+
+            return $this->repo->direct_account_statement->fetch($input, $this->merchant->getId())->toArrayPublic();
         }
 
         /** @var PublicCollection $transactions */
@@ -103,6 +122,25 @@ class Service extends Transaction\Service
             return $ledger->toArrayPublic();
         }
 
+        // Route request to BAS if DA ledger feature is enabled and acc is of type direct
+        if ((($this->merchant->isFeatureEnabled(Constants::DA_LEDGER_REVERSE_SHADOW)) === true) and
+            ($this->isExperimentEnabled(Merchant\RazorxTreatment::RX_DA_ACC_STMT_EXPERIMENT) === true) and
+            ($balance->isAccountTypeDirect() === true) and
+            ($this->app['basicauth']->isProxyAuth() === true))
+        {
+            $this->trace->info(
+                TraceCode::DRIVING_ACCOUNT_STATEMENT_FOR_DA_VIA_BAS,
+                [
+                    'merchant_id' => $this->merchant->getId(),
+                    'balance_id' => $balance->getId(),
+                    'balance_type' => $balance->getType(),
+                    'balance_account_type' => $balance->getAccountType(),
+                ]
+            );
+
+            return $this->repo->direct_account_statement->fetch($input, $this->merchant->getId())->toArrayPublic();
+        }
+
         /** @var PublicCollection $transactions */
         $transactions = $this->repo->statement->setBaseQueryAndFetchForBanking($input, $this->merchant->getId(), null, $balance);
 
@@ -113,7 +151,7 @@ class Service extends Transaction\Service
     {
         $app = $this->app;
 
-        $variant = $app['razorx']->getTreatment(UniqueIdEntity::generateUniqueId(),
+        $variant = $app['razorx']->getTreatment($this->merchant->getId(),
             $experiment, $app['basicauth']->getMode() ?? Mode::LIVE);
 
         return ($variant === 'on');

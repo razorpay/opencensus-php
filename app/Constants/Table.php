@@ -455,6 +455,7 @@ class Table
         Entity::EARLY_SETTLEMENT_FEATURE_PERIOD    => self::EARLY_SETTLEMENT_FEATURE_PERIOD,
         Entity::MERCHANT_SLABS                     => self::MERCHANT_SLABS,
         Entity::MERCHANT_1CC_CONFIGS               => self::MERCHANT_1CC_CONFIGS,
+        Entity::DIRECT_ACCOUNT_STATEMENT           => self::BANKING_ACCOUNT_STATEMENT,
     ];
 
     public static function getTableNameForEntity(string $entity)
