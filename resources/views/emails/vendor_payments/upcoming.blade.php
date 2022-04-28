@@ -296,6 +296,36 @@
         <tr>
           <td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;">
       <![endif]-->
+
+      <div class="mj-column-per-100 outlook-group-fix" style="font-size:13px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+        
+        <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
+          <tbody>
+            <tr>
+              <td style="vertical-align:top;padding:0px;">
+                
+        <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="" width="100%">
+          
+              <tr>
+                <td align="left" style="font-size:0px;padding:0px;word-break:break-word;">
+                  
+        <div style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
+          <div class="card secondary highlight informative top-align-label list-view" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; background-color: #242b4d; border-top: 2px solid #3281FF; padding-left: 24px; padding-right: 24px; border-color: #528ff0; padding-top: 20px; padding-bottom: 20px; margin-top: 8px;">
+          
+            <div style="display:flex; flex-direction:column"> <img src="https://cdn.razorpay.com/x/Accounting_GTM_Email.png"/> <div style=" margin-top: 15px; width: 418px; height: 34px; left: 0px; top: 0px; font-style: normal; font-weight: 800; font-size: 28px; line-height: 34px; /* identical to box height, or 121% */ color: #FFFFFF;">The wait is over</div><div style="position: static; width: 418px; height: 68px; left: 0px; top: 38px; font-style: normal; font-weight: 500; font-size: 20px; line-height: 34px; /* or 170% */ /* Shade / 980 */ color: rgba(255, 255, 255, 0.87);">RazorpayX now works seamlessly with the accounting tools you use!</div></div><div style="position: static; width: 418px; height: 68px; left: 0px; top: 122px; margin-top: 16px; font-style: normal; font-weight: 400; font-size: 16px; line-height: 34px; /* or 212% */ /* Shade / 960 */ color: rgba(255, 255, 255, 0.54);">Easy, end-to-end integration with Tally, ZohoBooks and Quickbooks for automated and error-free reconciliation. </div><div class="center-align" style="text-align: center;margin-top:18px;"> <a href=" https://x.razorpay.com/vendor-payments" class="link btn secondary font-bold no-margin" target="_blank" style="width:142px; text-decoration: none; font-weight: 700; font-size: 14px; line-height: 1.5; border: 1px solid; padding: 8px 12px; letter-spacing: 1px; border-radius: 2px; overflow: hidden; min-width: 145px; font-family: Trebuchet MS; text-align: center; color: #FFF; background: #3281FF; border-radius: 2px; border-color: transparent; display: block; margin: 0;">TRY NOW</a></div>
+          </div>
+      
+                </td>
+              </tr>
+            
+        </table>
+      
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      
+        </div>
     
       
       <div class="footer" style="width: 100%; Margin: 0px auto; max-width: 600px; margin-top: 8px; margin-bottom: 8px;">
