@@ -1060,10 +1060,10 @@ class Core extends Base\Core
         {
             case Constants::PAYMENTS_NOT_ENABLED :
                 return [
-                    Constants::PAYMENT_HANDLE  => [Constants::PRIORITY => 1, Constants::USER_ROLES => [User\Role::OWNER, User\Role::ADMIN, User\Role::MANAGER, User\Role::OPERATIONS, Constants::EPOS]],
-                    Constants::ONBOARDING_CARD => [Constants::PRIORITY => 2, Constants::USER_ROLES => [User\Role::OWNER, User\Role::ADMIN, User\Role::MANAGER, User\Role::FINANCE]],
-                    Constants::ACCEPT_PAYMENTS => [Constants::PRIORITY => 3, Constants::USER_ROLES => [User\Role::OWNER, User\Role::ADMIN, User\Role::MANAGER, User\Role::OPERATIONS, Constants::EPOS]],
-                    Constants::SETTLEMENTS     => [Constants::PRIORITY => 4, Constants::USER_ROLES => [User\Role::OWNER, User\Role::ADMIN, User\Role::MANAGER, User\Role::OPERATIONS, User\Role::FINANCE, User\Role::SUPPORT]],
+                    Constants::PAYMENT_HANDLE      => [Constants::PRIORITY => 1, Constants::USER_ROLES => [User\Role::OWNER, User\Role::ADMIN, User\Role::MANAGER, User\Role::OPERATIONS, Constants::EPOS]],
+                    Constants::ONBOARDING_CARD     => [Constants::PRIORITY => 2, Constants::USER_ROLES => [User\Role::OWNER, User\Role::ADMIN, User\Role::MANAGER, User\Role::FINANCE]],
+                    Constants::ACCEPT_PAYMENTS     => [Constants::PRIORITY => 3, Constants::USER_ROLES => [User\Role::OWNER, User\Role::ADMIN, User\Role::MANAGER, User\Role::OPERATIONS, Constants::EPOS]],
+                    Constants::RECENT_TRANSACTIONS => [Constants::PRIORITY => 4, Constants::USER_ROLES => [User\Role::OWNER, User\Role::ADMIN, User\Role::MANAGER, User\Role::OPERATIONS, Constants::EPOS, User\Role::FINANCE, User\Role::SUPPORT]],
                 ];
 
             case Constants::PAYMENTS_ENABLED_AND_NOT_TRANSACTED :
@@ -1135,7 +1135,11 @@ class Core extends Base\Core
     {
         $products = [];
 
-        $currentProducts = [Constants::PAYMENT_LINK, Constants::PAYMENT_GATEWAY, Constants::QR_CODE, Constants::TAP_AND_PAY];
+        /*
+          * Any new products will be added in the currentProducts array.
+          * These products are removed as products are not yet ready: Constants::QR_CODE, Constants::TAP_AND_PAY
+          * */
+        $currentProducts = [Constants::PAYMENT_LINK, Constants::PAYMENT_GATEWAY];
 
         foreach ($currentProducts as $product)
         {

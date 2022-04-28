@@ -502,10 +502,6 @@ return [
                                  'type'          => 'payment_gateway',
                                  'ftux_complete' => false,
                              ],
-                             [
-                                 'type'          => 'qr_code',
-                                 'ftux_complete' => false,
-                             ],
                          ]
                      ]
                     ],
@@ -528,7 +524,7 @@ return [
                     ['type' => 'payment_handle'],
                     ['type' => 'onboarding_card'],
                     ['type' => 'accept_payments'],
-                    ['type' => 'settlements'],
+                    ['type' => 'recent_transactions'],
                 ],
             ],
         ],
@@ -8533,7 +8529,7 @@ return [
             ],
         ],
     ],
-   
+
     'testGetAutoDisabledMethodsForMerchantWithPaylaterBlockedMccs' => [
         'request'  => [
             'url'    => '/internal/auto_disabled_methods/10000000000000',
