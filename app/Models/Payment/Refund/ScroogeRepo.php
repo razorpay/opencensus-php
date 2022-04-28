@@ -27,9 +27,9 @@ trait ScroogeRepo
                     'force_route_api' => $forceLoadFromApi
                 ]);
 
-            if (($this->validateExternalFetchEnabledForScrooge() == true) and
-                (EntityConstants::validateExternalRepoEntity($this->entityName) === true) and
-                ($forceLoadFromApi === false))
+            if (($forceLoadFromApi === false) and
+                ($this->validateExternalFetchEnabledForScrooge() == true) and
+                (EntityConstants::validateExternalRepoEntity($this->entityName) === true))
             {
                 $scroogeResponse = $this->fetchExternalRefundForPayment($paymentId);
                 $apiResponse     = $this->findForPaymentIdFromAPI($paymentId);

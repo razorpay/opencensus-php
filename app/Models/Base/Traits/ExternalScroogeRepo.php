@@ -37,9 +37,9 @@ trait ExternalScroogeRepo
                         'force_route_api' => $forceLoadFromApi,
                 ]);
 
-            if (($this->validateExternalFetchEnabledForScrooge() == true) and
-                (Entity::validateExternalRepoEntity($this->entityName) === true) and
-                ($forceLoadFromApi === false))
+            if (($forceLoadFromApi === false) and
+                ($this->validateExternalFetchEnabledForScrooge() == true) and
+                (Entity::validateExternalRepoEntity($this->entityName) === true))
             {
                 $scroogeResponse =  $this->fetchExternalRefundById($id);
                 $apiResponse     = parent::findByPublicId($id);
@@ -84,9 +84,9 @@ trait ExternalScroogeRepo
                     'force_route_api' => $forceLoadFromApi,
                 ]);
 
-            if (($this->validateExternalFetchEnabledForScrooge() == true) and
-                (Entity::validateExternalRepoEntity($this->entityName) === true) and
-                ($forceLoadFromApi === false))
+            if (($forceLoadFromApi === false) and
+                ($this->validateExternalFetchEnabledForScrooge() == true) and
+                (Entity::validateExternalRepoEntity($this->entityName) === true))
             {
                 $scroogeResponse = $this->fetchExternalRefundById($id, $merchant->getId());
                 $apiResponse     = parent::findByPublicIdAndMerchant($id, $merchant, $params);
@@ -132,9 +132,9 @@ trait ExternalScroogeRepo
                     'force_route_api' => $forceLoadFromApi,
                 ]);
 
-            if (($this->validateExternalFetchEnabledForScrooge() == true) and
-                (Entity::validateExternalRepoEntity($this->entityName) === true) and
-                ($forceLoadFromApi === false))
+            if (($forceLoadFromApi === false) and
+                ($this->validateExternalFetchEnabledForScrooge() == true) and
+                (Entity::validateExternalRepoEntity($this->entityName) === true))
             {
                 $scroogeResponse = $this->fetchExternalRefundById($id, $merchant->getId());
                 $apiResponse     = parent::findByIdAndMerchant($id, $merchant, $params);
@@ -180,9 +180,9 @@ trait ExternalScroogeRepo
                     'force_route_api' => $forceLoadFromApi,
                 ]);
 
-            if (($this->validateExternalFetchEnabledForScrooge() == true) and
-                (Entity::validateExternalRepoEntity($this->entityName) === true) and
-                ($forceLoadFromApi === false))
+            if (($forceLoadFromApi === false) and
+                ($this->validateExternalFetchEnabledForScrooge() == true) and
+                (Entity::validateExternalRepoEntity($this->entityName) === true))
             {
                 $scroogeResponse = $this->fetchExternalRefundById($id, $merchantId);;
                 $apiResponse     = parent::findByIdAndMerchantId($id, $merchantId);
@@ -228,9 +228,9 @@ trait ExternalScroogeRepo
                     'force_route_api' => $forceLoadFromApi,
                 ]);
 
-            if (($this->validateExternalFetchEnabledForScrooge() == true) and
-                (Entity::validateExternalRepoEntity($this->entityName) === true) and
-                ($forceLoadFromApi === false))
+            if (($forceLoadFromApi === false) and
+                ($this->validateExternalFetchEnabledForScrooge() == true) and
+                (Entity::validateExternalRepoEntity($this->entityName) === true))
             {
                 $scroogeResponse = $this->fetchExternalRefundById($id, '', $params);;
                 $apiResponse     = parent::findOrFailByPublicIdWithParams($id, $params, $connectionType);
@@ -275,9 +275,9 @@ trait ExternalScroogeRepo
                     'force_route_api' => $forceLoadFromApi,
                 ]);
 
-            if (($this->validateExternalFetchEnabledForScrooge() == true) and
-                (Entity::validateExternalRepoEntity($this->entityName) === true) and
-                ($forceLoadFromApi === false))
+            if (($forceLoadFromApi === false) and
+                ($this->validateExternalFetchEnabledForScrooge() == true) and
+                (Entity::validateExternalRepoEntity($this->entityName) === true))
             {
                 $scroogeResponse = $this->fetchExternalRefundById($id);
                 $apiResponse     = parent::findOrFailPublic($id);
@@ -322,9 +322,9 @@ trait ExternalScroogeRepo
                     'force_route_api' => $forceLoadFromApi,
                 ]);
 
-            if (($this->validateExternalFetchEnabledForScrooge() == true) and
-                (Entity::validateExternalRepoEntity($this->entityName) === true) and
-                ($forceLoadFromApi === false))
+            if (($forceLoadFromApi === false) and
+                ($this->validateExternalFetchEnabledForScrooge() == true) and
+                (Entity::validateExternalRepoEntity($this->entityName) === true))
             {
                 $scroogeResponse = $this->fetchExternalRefundById($id);
                 $apiResponse     = parent::findOrFail($id);
