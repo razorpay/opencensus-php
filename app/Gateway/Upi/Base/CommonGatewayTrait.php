@@ -281,11 +281,19 @@ trait CommonGatewayTrait
 
         $upi      = $response->getUpi();
 
+        $gateway = $this->gateway;
+
+        // create gateway entity for upi_airtel
+        if ($gateway === 'mozart')
+        {
+            $gateway = 'upi_airtel';
+        }
+
         // Create input structure for upi entity.
         $input = [
             'payment'    => [
                 'id'       => $paymentId,
-                'gateway'  => $this->gateway,
+                'gateway'  => $gateway,
                 'vpa'      => $upi['vpa'],
                 'amount'   => $payment['amount_authorized'],
             ],

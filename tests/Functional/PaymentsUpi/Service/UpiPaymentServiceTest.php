@@ -732,6 +732,8 @@ class UpiPaymentServiceTest extends TestCase
             $paymentTransactionEntity['type']      => 'payment',
             $paymentTransactionEntity['amount']    => $paymentEntity['amount'],
             Account::DEMO_ACCOUNT                  => $paymentEntity['merchant_id'],
+            $authorizeUpiEntity['gateway']         => 'upi_airtel',
+            $authorizeUpiEntity['gateway']         => $paymentEntity['gateway'],
         ];
 
         foreach ($assertEqualsMap as $matchLeft => $matchRight)
