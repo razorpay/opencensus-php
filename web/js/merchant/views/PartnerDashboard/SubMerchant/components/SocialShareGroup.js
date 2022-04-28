@@ -7,11 +7,12 @@ import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
-export default function SocialShareGroup({ referralUrl, tracking, product, partnerID }) {
+export default function SocialShareGroup({ referralUrl, tracking, product, partnerID, source }) {
   const trackUserEvent = (eventName, properties = {}) => {
     tracking.trackEvent(
       window.rzpQ.onbr().clicked(eventName, {
         partnerID,
+        source,
         ...properties,
       }),
     );

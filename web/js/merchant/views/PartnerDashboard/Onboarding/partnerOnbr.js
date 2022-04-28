@@ -141,7 +141,7 @@ export default class BaseScreen extends React.Component {
     })
       .then(() => {
         this.props.updateSession({ user: userval });
-        this.props.history.push(`partners/submerchants`);
+        this.props.history.push('partners');
         this.props.closeModal();
 
         // fire tracking events after successful partner signup

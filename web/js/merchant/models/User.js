@@ -1441,6 +1441,10 @@ export default class User {
   }
 
   get isPartnershipFUX() {
+    // FUX disabled for partnerTypes - bank and fully_managed
+    if (this.isPartner('bank', 'fully_managed')) {
+      return false;
+    }
     const variant = getSplitzExperimentVariant('partnership_fux');
     return variant?.name === 'exposed';
   }

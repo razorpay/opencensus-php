@@ -49,11 +49,13 @@ interface ActivateAccountStepT {
   activation_status: ActivationStatesT;
   fuxStatus: FUXStatusStateT;
   history: History;
+  trackUserEvent: (eventName: string, properties?: Record<string, unknown>) => void;
 }
 export const ActivateAccountStep = ({
   activation_status,
   fuxStatus,
   history,
+  trackUserEvent,
 }: ActivateAccountStepT): JSX.Element => {
   const isFirstReferralDone = fuxStatus.value?.first_submerchant_added || false;
   const isCurrentStep = isFirstReferralDone === true;
@@ -66,6 +68,9 @@ export const ActivateAccountStep = ({
     ctaText: 'Submit KYC',
     onClickCTA: () => {
       history.push('/activation');
+      trackUserEvent('fux.activation-guide.open.kyc', {
+        activation_status,
+      });
     },
     stepName: 'activate-account',
   };
@@ -83,6 +88,9 @@ export const ActivateAccountStep = ({
     stepContent.ctaText = 'Submit KYC';
     stepContent.onClickCTA = () => {
       history.push('/activation');
+      trackUserEvent('fux.activation-guide.open.kyc', {
+        activation_status,
+      });
     };
   }
   if (activation_status === 'rejected') {
@@ -93,6 +101,9 @@ export const ActivateAccountStep = ({
     stepContent.onClickCTA = () => {
       if (window?.rzpTicketSystem?.openModal) {
         window.rzpTicketSystem.openModal();
+        trackUserEvent('fux.activation-guide.open.contact-support', {
+          activation_status,
+        });
       }
     };
   }
@@ -186,12 +197,14 @@ interface CommissionStep {
   fuxStatus: FUXStatusStateT;
   partnerType: PartnerTypeT;
   history: History;
+  trackUserEvent: (eventName: string, properties?: Record<string, unknown>) => void;
 }
 export const CommissionStep = ({
   activation_status,
   fuxStatus,
   partnerType,
   history,
+  trackUserEvent,
 }: CommissionStep): JSX.Element | null => {
   if (partnerType === 'pure_platform') return null;
 
@@ -237,6 +250,9 @@ export const CommissionStep = ({
     stepContent.ctaText = 'View Earnings';
     stepContent.onClickCTA = () => {
       history.push('/partners/earnings/daily');
+      trackUserEvent('fux.activation-guide.open.daily-earning', {
+        activation_status,
+      });
     };
     stepContent.toolTip =
       'Invoices are generated only if the monthly commission is greater than 1 Rupee';
@@ -247,6 +263,9 @@ export const CommissionStep = ({
     stepContent.ctaText = 'View Invoice';
     stepContent.onClickCTA = () => {
       history.push('/partners/earnings/invoices');
+      trackUserEvent('fux.activation-guide.open.invoices', {
+        activation_status,
+      });
     };
   }
 

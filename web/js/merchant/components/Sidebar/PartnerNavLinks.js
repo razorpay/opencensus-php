@@ -8,7 +8,7 @@ export default function PartnerNavLinks() {
         icon="i i-chart text-info"
         to="/partners"
         exact
-        type="general"
+        type="partner"
         additionalCondition={(user) => user.isAllowedView('submerchants') && user.isPartnershipFUX}
         isNew={true}
       />

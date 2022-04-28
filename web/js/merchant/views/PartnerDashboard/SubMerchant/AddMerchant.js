@@ -305,6 +305,7 @@ class AddMerchant extends Component {
     } else if (mode === ADD_MODE.single) {
       this.setState({ addMode: ADD_MODE.single, file_id: '' });
     } else {
+      this.trackUserEvent('partnerships.submerchant.add.product_group.socialLink');
       this.setState({
         addMode: ADD_MODE.social,
         file_id: '',
@@ -482,7 +483,7 @@ class AddMerchant extends Component {
   };
 
   render() {
-    const { handleSubmit, user, validateBatch, tracking } = this.props;
+    const { handleSubmit, user, validateBatch, tracking, source } = this.props;
     const {
       merchantType,
       addMode,
@@ -748,6 +749,7 @@ class AddMerchant extends Component {
                 <SocialShareGroup
                   referralUrl={referralUrl}
                   tracking={tracking}
+                  source={source}
                   product={merchantType}
                   partnerID={partnerID}
                 />

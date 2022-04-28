@@ -4,6 +4,7 @@ import {
   ActivationStatesT,
   AddMerchantSource,
   FUXStatusStateT,
+  RTrackingT,
 } from 'merchant/views/PartnerDashboard/Home/TypesDeclare/home';
 import {
   StartReferringStep,
@@ -13,6 +14,8 @@ import {
 } from 'merchant/views/PartnerDashboard/Home/Components/ActivationGuide/ActivationStepVariants';
 import { withRouter } from 'react-router-dom';
 import { History } from 'history';
+import rTracking from 'react-tracking';
+import { compose } from 'redux';
 
 interface ActivationGuideT {
   fuxStatus: FUXStatusStateT;
@@ -20,6 +23,7 @@ interface ActivationGuideT {
   partnerName: string;
   history: History;
   handleReferClient: (source: AddMerchantSource, arg?: string) => void;
+  tracking: RTrackingT;
 }
 const ActivationGuide = ({
   history,
@@ -27,6 +31,7 @@ const ActivationGuide = ({
   fuxStatus,
   user,
   partnerName,
+  tracking,
 }: ActivationGuideT): JSX.Element | null => {
   const cdnBase = `${window.cdnBaseUrl}/static/assets/partner-dashboard/fux-cards/activation-guide`;
   const activationTitleIcon = `${cdnBase}/activation-title-icon.svg`;
@@ -36,6 +41,13 @@ const ActivationGuide = ({
 
   if (isFirstInvoiceGen) return null;
 
+  const trackUserEvent = (eventName: string, properties: Record<string, unknown> = {}): void => {
+    tracking?.trackEvent(
+      window?.rzpQ?.onbr()?.interaction(eventName, {
+        ...properties,
+      }),
+    );
+  };
   return (
     <div>
       {fuxStatus.isFetching ? (
@@ -76,6 +88,7 @@ const ActivationGuide = ({
               history={history}
               fuxStatus={fuxStatus}
               activation_status={activation_status}
+              trackUserEvent={trackUserEvent}
             />
 
             <IntegratingAPIStep
@@ -89,6 +102,7 @@ const ActivationGuide = ({
               fuxStatus={fuxStatus}
               partnerType={user.partner_type}
               history={history}
+              trackUserEvent={trackUserEvent}
             />
           </div>
         </div>
@@ -97,4 +111,7 @@ const ActivationGuide = ({
   );
 };
 
-export default withRouter<any, any>(ActivationGuide);
+export default compose<any>(
+  rTracking(() => window.rzpQ.component('ActivationGuide')),
+  withRouter,
+)(ActivationGuide);

@@ -65,3 +65,10 @@ export interface PartnerHomeT {
   openModal: OpenModalT;
   closeModal: () => void;
 }
+
+export interface RTrackingT<P = Record<string, unknown>> {
+  /**
+   * This function tracks an event, along with related data.
+   */
+  trackEvent(data: Partial<P>): void;
+}

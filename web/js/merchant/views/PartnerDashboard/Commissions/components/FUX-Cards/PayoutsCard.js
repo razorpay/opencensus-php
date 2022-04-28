@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import { setItem, getItem } from 'common/utils/localStorage';
+import rTracking from 'react-tracking';
 
-const PayoutsCard = () => {
+const PayoutsCard = ({ tracking }) => {
   const [closed, setClosed] = useState(true);
   const handleCardClose = () => {
     setClosed(true);
     setItem('fux-payout-card-closed', true);
+    tracking?.trackEvent(window?.rzpQ?.onbr()?.interaction('fux.payouts-card.close'));
   };
 
   useEffect(() => {
@@ -52,4 +54,4 @@ const PayoutsCard = () => {
   );
 };
 
-export default PayoutsCard;
+export default rTracking(() => window.rzpQ.component('PayoutsCard'))(PayoutsCard);

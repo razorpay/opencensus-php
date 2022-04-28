@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
+import rTracking from 'react-tracking';
 import CommissionCardBody from 'merchant/views/PartnerDashboard/Commissions/components/FUX-Cards/CommissionCardBody';
 import { setItem, getItem } from 'common/utils/localStorage';
 
-const CommissionCard = () => {
+const CommissionCard = ({ tracking }) => {
   const [closed, setClosed] = useState(true);
   const handleCardClose = () => {
     setClosed(true);
     setItem('fux-commission-card-closed', true);
+    tracking?.trackEvent(window?.rzpQ?.onbr()?.interaction('fux.commission-card.close'));
   };
 
   useEffect(() => {
@@ -24,4 +26,4 @@ const CommissionCard = () => {
   );
 };
 
-export default CommissionCard;
+export default rTracking(() => window.rzpQ.component('CommissionCard'))(CommissionCard);
