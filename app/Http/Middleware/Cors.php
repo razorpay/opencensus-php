@@ -28,6 +28,10 @@ class Cors
             'url_config'    => 'app.banking_service_url',
         ],
 
+        'campaignhq_domain'    => [
+            'url_config'    => 'app.campaignhq_url',
+        ],
+
         'docs_domain'       => [
             'url_config'    => 'app.docs_url'
         ],
