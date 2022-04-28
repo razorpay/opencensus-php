@@ -1551,6 +1551,9 @@ trait Refund
             $refund->setFee($fee);
 
             $refund->setTax($tax);
+
+            // instant refund will be settled by Razorpay
+            $refund->setAttribute(RefundEntity::SETTLED_BY, 'Razorpay');
         }
         else
         {
@@ -2783,6 +2786,9 @@ trait Refund
 
         $metaData = $this->getMetaDataOfRefund($payment, $input);
 
+        //Setting the direct settlement refund key in the meta
+        $metaData[Constants::DIRECT_SETTLEMENT_WITH_REFUND] = $refund->isDirectSettlementRefund();
+
         $scroogeData[Constants::META_DATA] = $metaData;
 
         //
@@ -2820,7 +2826,8 @@ trait Refund
             Constants::CREATOR_TYPE                 => $this->request->header(RequestHeader::X_Creator_Type) ?? null,
             Constants::IS_PAYMENT_CAPTURED          => (empty($payment->getCapturedAt()) === false),
             Constants::IS_ADMIN_AUTH                => $this->ba->isAdminAuth(),
-            Constants::IS_PAYMENT_AMOUNT_MISMATCH   => $payment->isUpiAndAmountMismatched()
+            Constants::IS_PAYMENT_AMOUNT_MISMATCH   => $payment->isUpiAndAmountMismatched(),
+            Constants::PAYMENT_SETTLED_BY           => $payment->getSettledBy()
         ];
 
         if ($payment->getGateway() === Payment\Gateway::NETBANKING_ICICI)

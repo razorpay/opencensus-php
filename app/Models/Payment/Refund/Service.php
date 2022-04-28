@@ -2511,6 +2511,8 @@ class Service extends Base\Service
                                 if ($refund->isDirectSettlementRefund() === true)
                                 {
                                     $this->getNewProcessor($refund->merchant)->reverseRefund($refund);
+
+                                    $refund->setSettledBy($refund->payment->getSettledBy());
                                 }
                                 else
                                 {

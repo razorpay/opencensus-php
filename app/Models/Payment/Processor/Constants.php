@@ -37,6 +37,8 @@ class Constants
     const IS_PAYMENT_CAPTURED           = 'is_payment_captured';
     const IS_ADMIN_AUTH                 = 'is_admin_auth';
     const IS_PAYMENT_AMOUNT_MISMATCH    = 'is_payment_amount_mismatch';
+    const DIRECT_SETTLEMENT_WITH_REFUND = 'direct_settlement_with_refund';
+    const PAYMENT_SETTLED_BY            = 'payment_settled_by';
     const PAYMENT_REFERENCE1            = 'payment_reference1';
     const FORCE_AUTH_PAYMENT            = 'force_auth_payment';
 
