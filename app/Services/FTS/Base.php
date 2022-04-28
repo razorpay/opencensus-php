@@ -10,6 +10,7 @@ use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Http\RequestHeader;
 use RZP\Http\Request\Requests;
+use RZP\Models\FundTransfer\Redaction;
 use RZP\Trace\TraceCode;
 use RZP\Base\RepositoryManager;
 
@@ -196,6 +197,12 @@ class Base
         }
         else
         {
+            $this->trace->info(TraceCode::FTS_REQUEST, [
+                'url'       => $this->baseUrl . $endpoint,
+                'method'    => $method,
+                'headers'   => $this->headers,
+                'content'   => (new Redaction())->redactData($data)
+            ]);
             $response = $this->sendFtsRequest($request);
         }
 
@@ -280,8 +287,6 @@ class Base
      */
     protected function sendFtsRequest(array $request): Requests_Response
     {
-        $this->traceRequest($request);
-
         try
         {
             $response = Requests::request(
@@ -300,22 +305,11 @@ class Base
                 TraceCode::FTS_FAILURE_EXCEPTION,
                 [
                     'message'      => $e->getMessage(),
-                    'request_body' => $request['content'],
                 ]);
             throw $e;
         }
 
         return $response;
-    }
-
-    /**
-     * @param array $request
-     */
-    protected function traceRequest(array $request)
-    {
-        unset($request['options']['auth']);
-
-        $this->trace->info(TraceCode::FTS_REQUEST, $request);
     }
 
 
