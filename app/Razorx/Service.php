@@ -253,7 +253,8 @@ class Service extends Base\Service
             'pb_direct_plugin_links',
             'aadharEkyc_for_trust_society_ngo',
             'capital_loc_x_migration',
-            'rx_tds_and_attachments'
+            'rx_tds_and_attachments',
+            'capital_enable_physical_card'
         ];
 
         $experimentsResults = $this->getBulkTreatment($features);
