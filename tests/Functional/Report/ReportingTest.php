@@ -183,6 +183,19 @@ class ReportingTest extends TestCase
         $this->startTest();
     }
 
+    public function testConfigCreateForInvalidFeatures()
+    {
+        $this->fixtures->create('feature', [
+            'name'        => 'feature1',
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
     protected function mockRazorxTreatment(string $returnValue = 'on')
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)

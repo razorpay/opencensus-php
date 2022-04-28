@@ -697,4 +697,37 @@ return [
             ]
         ]
     ],
+
+    'testConfigCreateForInvalidFeatures' => [
+        'request'  => [
+            'url'     => '/reporting/configs',
+            'method'  => 'post',
+            'content' => [
+                'type'              => 'payments',
+                'scheduled'         => false,
+                'name'              => 'Config Test 1',
+                'description'       => 'Config Test 1 - description',
+                'template'          => [],
+                'created_by'        => '20000000000000',
+                'feature_names'     => ["dummy123"]
+            ],
+            'server' => [
+                'HTTP_X-Report-Type' => 'merchant',
+            ],
+        ],
+        'response' => [
+            'content'   => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Invalid features',
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            ],
+    ]
+
 ];

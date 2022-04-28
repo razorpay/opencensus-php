@@ -283,6 +283,22 @@ class Validator extends Base\Validator
         }
     }
 
+    public function validateFeatureNames(array $featureNames)
+    {
+        $allFeatures = array_keys(Constants::$featureValueMap);
+
+        if(empty($featureNames) === false)
+        {
+            $featuresDiff = array_diff($featureNames, $allFeatures);
+
+            if (count($featuresDiff) > 0)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    "Invalid features");
+            }
+        }
+    }
+
     public function validateForRouteLaPennyTestingFeature($featureNames)
     {
         if ((in_array(Constants::ROUTE_LA_PENNY_TESTING, $featureNames) === true) and

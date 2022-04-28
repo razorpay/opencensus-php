@@ -179,6 +179,7 @@ class Constants
     const DISPLAY_NAME                    = 'display_name';
     const CONTACT_NAME                    = 'contact_name';
     const DOCUMENTATION                   = 'documentation';
+    const FEATURE_NAMES                   = 'feature_names';
 
     const ENACH_INTERMEDIATE              = 'enach_intermediate';
     const SAVE_VPA                        = 'save_vpa';

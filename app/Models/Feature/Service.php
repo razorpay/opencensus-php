@@ -969,6 +969,16 @@ class Service extends Base\Service
         return $this->repo->feature->findMerchantIdsHavingFeatures($featureNames);
     }
 
+    /**
+     *
+     * Validates if featureNames are valid
+     *
+     * @param array $featureNames
+     */
+    public function validateFeatureNames(array $featureNames)
+    {
+        (new Validator)->validateFeatureNames($featureNames);
+    }
 
     /**
      *

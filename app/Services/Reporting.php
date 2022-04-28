@@ -24,6 +24,7 @@ use RZP\Models\Base\PublicCollection;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Schedule\Task as ScheduleTask;
+use RZP\Models\Feature\Service as FeatureService;
 use RZP\Models\Admin\Permission\Name as Permission;
 use RZP\Services\Reporting\Constants;
 use RZP\Services\Reporting\Validators\Factory as ValidationFactory;
@@ -64,14 +65,15 @@ class Reporting implements ExternalService
     const QUERY_PARAMS       = 'query_params';
 
     // Headers
-    const CONSUMER_HEADER       = 'X-Consumer';
-    const REPORT_TYPE_HEADER    = 'X-Report-Type';
-    const ADMIN_TOKEN_HEADER    = 'X-Admin-Token';
-    const LINKED_ACCOUNT_HEADER = 'X-Linked-Account-Parent';
-    const USER_ID_HEADER        = 'X-Dashboard-User-Id';
-    const ORG_ID_HEADER         = 'X-Org-Id';
-    const GENERATED_BY_HEADER   = 'X-Generated-By';
-    const BATCH_ID              = 'X-Batch-Id';
+    const CONSUMER_HEADER               = 'X-Consumer';
+    const REPORT_TYPE_HEADER            = 'X-Report-Type';
+    const ADMIN_TOKEN_HEADER            = 'X-Admin-Token';
+    const LINKED_ACCOUNT_HEADER         = 'X-Linked-Account-Parent';
+    const USER_ID_HEADER                = 'X-Dashboard-User-Id';
+    const ORG_ID_HEADER                 = 'X-Org-Id';
+    const GENERATED_BY_HEADER           = 'X-Generated-By';
+    const BATCH_ID                      = 'X-Batch-Id';
+    const ASSOCIATED_FEATURES_HEADER    = 'X-Merchant-Features';
 
     const REPORTING_SERVICE_RESPONSE_FAILURE_TOTAL = 'reporting_service_response_failure_total';
     const REPORTING_SERVICE_RESPONSE_SUCCESS_TOTAL = 'reporting_service_response_success_total';
@@ -250,6 +252,8 @@ class Reporting implements ExternalService
 
     public function createConfig(array $input): array
     {
+        $this->validateFeatures($input);
+
         return $this->createAndSendRequest(Requests::POST, self::CONFIG_PATH, $input);
     }
 
@@ -257,11 +261,15 @@ class Reporting implements ExternalService
     {
         $path = self::CONFIG_PATH . '/full';
 
+        $this->validateFeatures($input);
+
         return $this->createAndSendRequest(Requests::POST, $path, $input);
     }
 
     public function fetchConfigMultiple(array $input): array
     {
+        $this->headers[self::ASSOCIATED_FEATURES_HEADER] = $this->getAssociatedFeaturesHeader();
+
         $configs = $this->createAndSendRequest(Requests::GET, self::CONFIG_PATH, $input);
 
         return $this->filterConfigsByFeatureAndTags($configs);
@@ -554,6 +562,8 @@ class Reporting implements ExternalService
     public function fetchConfigMultipleAdmin(array $input): array
     {
         $headers = $this->fetchHeadersFromInput($input);
+
+        $headers[self::ASSOCIATED_FEATURES_HEADER] = $this->getAssociatedFeaturesHeader();
 
         return $this->createAndSendRequest(Requests::GET, self::CONFIG_PATH, $input, $headers);
     }
@@ -1444,5 +1454,24 @@ class Reporting implements ExternalService
         if ($validator !== null) {
             $validator->validate();
         }
+    }
+
+    protected function validateFeatures(array $input)
+    {
+        if (array_key_exists(Feature::FEATURE_NAMES, $input) &&
+        empty($input[Feature::FEATURE_NAMES] === false))
+        {
+            $featureNames = $input[Feature::FEATURE_NAMES];
+            (new FeatureService())->validateFeatureNames($featureNames);
+        }
+    }
+
+    protected function getAssociatedFeaturesHeader()
+    {
+        $merchant = $this->ba->getMerchant();
+
+        $enabledFeatures = $merchant->getEnabledFeatures();
+
+        return json_encode($enabledFeatures);
     }
 }
