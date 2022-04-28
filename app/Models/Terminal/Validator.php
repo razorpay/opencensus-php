@@ -1887,6 +1887,7 @@ class Validator extends Base\Validator
         Entity::CARD                                    => 'sometimes|boolean|in:0,1',
         Entity::NETWORK_CATEGORY                        => 'sometimes|string|max:30',
         Entity::CATEGORY                                => 'sometimes|string|numeric|digits:4',
+        Entity::TPV                                     => 'sometimes|in:0,1,2',
         Entity::NOTES                                   => 'sometimes|string',
     ];
 
@@ -1904,6 +1905,7 @@ class Validator extends Base\Validator
         Entity::VPA                        => 'sometimes|string',
         Entity::NOTES                      => 'sometimes|string',
         Entity::NETWORK_CATEGORY           => 'sometimes|string|max:30',
+        Entity::TPV                        => 'sometimes|in:0,1,2',
     ];
 
     protected static $enachRblTerminalRules = [
