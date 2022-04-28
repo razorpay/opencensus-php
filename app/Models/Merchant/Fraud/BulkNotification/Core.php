@@ -188,6 +188,11 @@ class Core extends Base\Core
     {
         $batchId = $this->app['request']->header(RequestHeader::X_Batch_Id, null);
 
+        $this->trace->info(TraceCode::PAYMENT_FRAUD_BATCH_START, [
+            'batchId'      => $batchId,
+        ]);
+
+
         [$arnArr, $arnVsRrn] = $this->fetchArnAndRrnFromBatch($input);
 
         $fetchFromDataLakeSuccessful = true;

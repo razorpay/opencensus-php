@@ -3005,8 +3005,8 @@ class MerchantController extends Controller
 
     public function createFraudBatch()
     {
+        RuntimeManager::setMemoryLimit('1024M');
         $input = Request::all();
-
         $response = $this->service(E::MERCHANT_BULK_FRAUD_NOTIFY)->createFraudBatch($input);
 
         return ApiResponse::json($response);
