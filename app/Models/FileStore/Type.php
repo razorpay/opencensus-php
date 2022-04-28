@@ -590,10 +590,13 @@ class Type
     const BUCKET_CONFIG_TYPE_MAPPING = [
 
         self::SETTLEMENT_BUCKET_CONFIG => [
-            self::REPORT,
             self::BATCH_INPUT,
             self::BATCH_OUTPUT,
             self::BATCH_VALIDATED,
+        ],
+
+        self::AP_SOUTH_DEFAULT_SETTLEMENT_BUCKET_CONFIG => [
+            self::REPORT,
         ],
 
         self::INVOICE_BUCKET_CONFIG => [
