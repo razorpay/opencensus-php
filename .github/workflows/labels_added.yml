@@ -85,14 +85,9 @@ jobs:
           LABEL_TWO_FLAG: ${{steps.nonMigration.outputs.flag}}
         run: |
           sh ./.github/actions/alternateLabelCheck.sh
-      - if: contains(join(github.event.pull_request.labels.*.name, '::::'), '::::team_') #team name begins with "team_" eg "team_dashboard"
-        name: Set flag team label
-        id: teamLabel
-        run: echo "::set-output name=flag::true"
-      - name: Team label added
+      - name: BU and module label added
         env:
-          USER_CHECK: ${{steps.githubUsers.outputs.flaguser}}
-          LABEL: "Team name"
-          LABEL_FLAG: ${{steps.teamLabel.outputs.flag}}
+          CONCAT_PR_LABELS: ${{join(github.event.pull_request.labels.*.name, '<==>')}}
+          DELIMITER: "<==>"
         run: |
-          sh ./.github/actions/labelCheck.sh
+          bash ./.github/actions/validPRLabelCheckFromList.sh
