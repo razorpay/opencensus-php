@@ -578,29 +578,6 @@ class UpiAirtelGatewayTest extends TestCase
     }
 
     /**
-     * Test Unexpected payment success with pre_process action.
-     */
-    public function testUnexpectedPaymentSuccessWithPreProcess()
-    {
-        $this->app->razorx
-        ->method('getTreatment')
-        ->will($this->returnCallback(
-            function ($mid, $feature, $mode)
-            {
-                
-                if ($feature === 'upi_airtel_pre_process_v1')
-                {
-                    return 'upi_airtel';
-                }
-
-                return 'control';
-            })
-        );
-
-        $this->testUnexpectedPaymentSuccess();
-    }
-
-    /**
      * Resolves npci_reference_id of Upi entity from mozart entity if empty.
      */
     public function testResolveUpiRrnUsingMozartEntity()

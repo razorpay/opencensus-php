@@ -694,6 +694,52 @@ class UpiPaymentServiceTest extends TestCase
         $this->assertNotNull($payment['reference16']);
     }
 
+    /**
+     * test unexpected payment with pre_process through UPS
+     */
+    public function testUnexpectedPaymentSuccessWithUpsPreProcess()
+    {
+        $this->fixtures->merchant->createAccount(Account::DEMO_ACCOUNT);
+
+        $this->fixtures->merchant->enableMethod(Account::DEMO_ACCOUNT, Method::UPI);
+
+        $this->fixtures->merchant->activate();
+
+        $this->setRazorxMock(function ($mid, $feature, $mode)
+        {
+            return $this->getRazoxVariant($feature, 'ups_upi_airtel_pre_process_v1', 'upi_airtel');
+        });
+
+        $content = $this->mockServer('upi_airtel')->getUnexpectedAsyncCallbackContentForAirtel();
+
+        $this->makeS2SCallbackAndGetContent($content, 'upi_airtel');
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $authorizeUpiEntity = $this->getLastEntity('upi', true);
+
+        $this->assertNotNull($authorizeUpiEntity['merchant_reference']);
+
+        $paymentTransactionEntity = $this->getLastEntity('transaction', true);
+
+        $assertEqualsMap = [
+            'authorized'                           => $paymentEntity['status'],
+            'authorize'                            => $authorizeUpiEntity['action'],
+            'pay'                                  => $authorizeUpiEntity['type'],
+            $paymentEntity['id']                   => 'pay_' . $authorizeUpiEntity['payment_id'],
+            $paymentTransactionEntity['id']        => 'txn_' . $paymentEntity['transaction_id'],
+            $paymentTransactionEntity['entity_id'] => $paymentEntity['id'],
+            $paymentTransactionEntity['type']      => 'payment',
+            $paymentTransactionEntity['amount']    => $paymentEntity['amount'],
+            Account::DEMO_ACCOUNT                  => $paymentEntity['merchant_id'],
+        ];
+
+        foreach ($assertEqualsMap as $matchLeft => $matchRight)
+        {
+            $this->assertEquals($matchLeft, $matchRight);
+        }
+    }
+
     public function testUpiAirtelRefundRecon()
     {
         $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();

@@ -175,7 +175,8 @@ class Service extends UpiPaymentService
                 'amount_authorized' => (string) $payload['amount'] * 100
             ],
             'terminal' => [
-                'gateway_merchant_id' => 'MER0000000548542'
+                'gateway_merchant_id2' => $content['data']['terminal']['gateway_merchant_id2'],
+                'gateway'              => $content['data']['terminal']['gateway'],
             ],
         ];
 
