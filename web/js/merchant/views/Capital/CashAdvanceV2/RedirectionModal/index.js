@@ -1,10 +1,7 @@
 import React, { useEffect } from 'react';
 import './RedirectionModal.styl';
 
-const CASH_ADVANCE_LINK =
-  window.APP_ENV == 'production'
-    ? `https://x.razorpay.in/cash-advance`
-    : ` https://x-echo.np.razorpay.in/cash-advance`;
+const CASH_ADVANCE_LINK = `https://x.razorpay.com/cash-advance`;
 
 const CashAdvanceRedirectionModal = (props) => {
   const { onClose } = props;
