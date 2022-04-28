@@ -6,13 +6,16 @@ use RZP\Models\Base;
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\BankingAccount;
 use RZP\Constants\Entity as E;
 use RZP\Models\Base\PublicEntity;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Exception\ServerErrorException;
+use RZP\Models\BankingAccountStatement;
 use RZP\Services\Ledger as LedgerService;
 use RZP\Models\BankingAccount\Entity as BankingEntity;
 use RZP\Models\Transaction\Processor\Ledger as LedgerProcessor;
+use RZP\Models\BankingAccountStatement\Details\Entity as BankingAccountStmtDetailsEntity;
 
 class Service extends Base\Service
 {
@@ -20,10 +23,11 @@ class Service extends Base\Service
     protected $ledgerService;
 
     // constants
-    const TIME_TAKEN         = 'time_taken';
-    const JOURNAL_ID         = 'journal_id';
-    const MERCHANT_ID        = 'merchant_id';
-    const BANKING_ACCOUNT_ID = 'banking_account_id';
+    const TIME_TAKEN                        = 'time_taken';
+    const JOURNAL_ID                        = 'journal_id';
+    const MERCHANT_ID                       = 'merchant_id';
+    const BANKING_ACCOUNT_ID                = 'banking_account_id';
+    const BANKING_ACCOUNT_STMT_DETAILS_ID   = 'banking_account_stmt_detail_id';
 
     // transaction response constants
     const ID             = 'id';
@@ -46,6 +50,12 @@ class Service extends Base\Service
     const DEBIT        = 'debit';
     const CREATED_AT   = 'created_at';
 
+    // transaction's balance account type constants
+    const BALANCE_ACCOUNT_TYPE  = 'balance_account_type';
+    const DIRECT                = 'direct';
+    const SHARED                = 'shared';
+
+    const REVERSE_SHADOW_FEATURE = 'reverse_shadow_feature';
 
     public function __construct()
     {
@@ -59,13 +69,23 @@ class Service extends Base\Service
     // For each of these transactor_events, a new transaction is created at API monolith.
     private static $ledgerTxnEventToTxnSourceEntityMap = [
         LedgerProcessor\Payout::PAYOUT_INITIATED                  => E::PAYOUT,
+        LedgerProcessor\Payout::DA_PAYOUT_PROCESSED               => E::PAYOUT,
+        LedgerProcessor\Payout::DA_FEE_PAYOUT_PROCESSED           => E::PAYOUT,
+        LedgerProcessor\Payout::DA_EXT_PAYOUT_PROCESSED           => E::PAYOUT,
+        LedgerProcessor\Payout::DA_EXT_FEE_PAYOUT_PROCESSED       => E::PAYOUT,
         LedgerProcessor\Payout::PAYOUT_FAILED                     => E::REVERSAL,
         LedgerProcessor\Payout::PAYOUT_REVERSED                   => E::REVERSAL,
+        LedgerProcessor\Payout::DA_PAYOUT_REVERSED                => E::REVERSAL,
+        LedgerProcessor\Payout::DA_FEE_PAYOUT_REVERSED            => E::REVERSAL,
+        LedgerProcessor\Payout::DA_EXT_PAYOUT_REVERSED            => E::REVERSAL,
+        LedgerProcessor\Payout::DA_EXT_FEE_PAYOUT_REVERSED        => E::REVERSAL,
         LedgerProcessor\FundLoading::FUND_LOADING_PROCESSED       => E::BANK_TRANSFER,
         LedgerProcessor\FundAccountValidation::FAV_INITIATED      => E::FUND_ACCOUNT_VALIDATION,
         LedgerProcessor\FundAccountValidation::FAV_REVERSED       => E::REVERSAL,
         LedgerProcessor\Adjustment::POSITIVE_ADJUSTMENT_PROCESSED => E::ADJUSTMENT,
         LedgerProcessor\Adjustment::NEGATIVE_ADJUSTMENT_PROCESSED => E::ADJUSTMENT,
+        LedgerProcessor\Payout::DA_EXT_DEBIT                      => E::EXTERNAL,
+        LedgerProcessor\Payout::DA_EXT_CREDIT                     => E::EXTERNAL,
     ];
 
     public static function getTxnSourceEntityFromLedgerTxnEvent(string $transactorEvent) :string
@@ -78,24 +98,26 @@ class Service extends Base\Service
      * fetch journal since txn_id is journal_id at ledger.
      * After fetching journal, attaching the source entity fields of payouts, reversal,
      * bank transfer, adjustment etc to the txn array.
+     *
+     * This method uses ledger's journal fetchById endpoint
+     *
      * @param string $id
      * @return array
      */
-    public function fetchFromLedger(string $id): array {
+    public function fetchByIdFromLedger(string $id): array {
 
         $startTime = millitime();
         $transaction = [];
+        $balanceAccountType = null;
+        $reverseShadowFeature = null;
 
         try
         {
-            $bankingAccount = $this->merchant->sharedBankingBalance->bankingAccount;
             $request = [
-                self::JOURNAL_ID         => PublicEntity::stripDefaultSign($id),
-                self::MERCHANT_ID        => $this->merchant->getId(),
-                self::BANKING_ACCOUNT_ID => $bankingAccount->getPublicId(),
+                self::ID         => PublicEntity::stripDefaultSign($id),
             ];
 
-            $response = $this->ledgerService->fetchMerchantLedgerEntryByID($request);
+            $response = $this->ledgerService->fetchById($request);
 
             $statusCode = $response[LedgerService::RESPONSE_CODE];
             $body       = $response[LedgerService::RESPONSE_BODY];
@@ -111,8 +133,23 @@ class Service extends Base\Service
                 );
             }
 
-            $ledgerEntry = $body[self::LEDGER_ENTRY];
-            $transaction = $this->constructTransactionFromLedger($id, $bankingAccount, $ledgerEntry);
+            list($merchantBalanceLedgerEntry , $balanceAccountType) = $this->getBalanceAccountTypeAndLedgerEntryFromJournal($body);
+
+            // use ledger response only if corresponding reverse shadow feature is enabled
+            if (($balanceAccountType === self::SHARED) and ($this->merchant->isFeatureEnabled(Feature\Constants::LEDGER_REVERSE_SHADOW) === true))
+            {
+                $reverseShadowFeature = Feature\Constants::LEDGER_REVERSE_SHADOW;
+                $bankingAccountId = $merchantBalanceLedgerEntry[LedgerProcessor\Base::ACCOUNT_ENTITIES][self::BANKING_ACCOUNT_ID][0];
+                $bankingAccount = (new BankingAccount\Repository)->findByPublicId($bankingAccountId);
+                $transaction = $this->constructTransactionForSharedBalanceFromLedgerResponse($id, $bankingAccount, $merchantBalanceLedgerEntry, $body);
+            }
+            else if (($balanceAccountType === self::DIRECT) and ($this->merchant->isFeatureEnabled(Feature\Constants::DA_LEDGER_REVERSE_SHADOW) === true))
+            {
+                $reverseShadowFeature = Feature\Constants::DA_LEDGER_REVERSE_SHADOW;
+                $bankingAccountStmtDetailId = $merchantBalanceLedgerEntry[LedgerProcessor\Base::ACCOUNT_ENTITIES][self::BANKING_ACCOUNT_STMT_DETAILS_ID][0];
+                $bankingAccountStmtDetail = (new BankingAccountStatement\Details\Repository)->findByPublicId($bankingAccountStmtDetailId);
+                $transaction = $this->constructTransactionForDirectBalanceFromLedgerResponse($id, $bankingAccountStmtDetail, $body);
+            }
         }
         catch (\Throwable $e)
         {
@@ -126,13 +163,64 @@ class Service extends Base\Service
             $this->trace->info(
                 TraceCode::LEDGER_JOURNAL_FETCH_TRANSACTION_TIME_TAKEN,
                 [
-                    self::TIME_TAKEN => millitime() - $startTime,
+                    self::TIME_TAKEN                => millitime() - $startTime,
+                    self::BALANCE_ACCOUNT_TYPE      => $balanceAccountType,
+                    self::REVERSE_SHADOW_FEATURE    => $reverseShadowFeature,
                 ]);
         }
         return $transaction;
     }
 
-    private function constructTransactionFromLedger(string $id, BankingEntity $bankingAccount, array $ledgerEntry) :array {
+    private function getBalanceAccountTypeAndLedgerEntryFromJournal($journalResponse)
+    {
+        // check if the transaction is on shared or direct balance from ledger's response
+        foreach($journalResponse[self::LEDGER_ENTRY] as $ledgerEntry) {
+            if ((empty($ledgerEntry[LedgerProcessor\Base::ACCOUNT_ENTITIES]) === false) and
+                (empty($ledgerEntry[LedgerProcessor\Base::ACCOUNT_ENTITIES][LedgerProcessor\Base::ACCOUNT_TYPE]) === false) and
+                (empty($ledgerEntry[LedgerProcessor\Base::ACCOUNT_ENTITIES][LedgerProcessor\Base::FUND_ACCOUNT_TYPE]) === false)) {
+
+                if ($ledgerEntry[LedgerProcessor\Base::ACCOUNT_ENTITIES][LedgerProcessor\Base::ACCOUNT_TYPE][0] !== LedgerProcessor\Base::PAYABLE)
+                {
+                    continue;
+                }
+
+                if ($ledgerEntry[LedgerProcessor\Base::ACCOUNT_ENTITIES][LedgerProcessor\Base::FUND_ACCOUNT_TYPE][0] === LedgerProcessor\Base::MERCHANT_VA)
+                {
+                    return [$ledgerEntry, self::SHARED];
+                }
+                else if ($ledgerEntry[LedgerProcessor\Base::ACCOUNT_ENTITIES][LedgerProcessor\Base::FUND_ACCOUNT_TYPE][0] === LedgerProcessor\Base::MERCHANT_DA)
+                {
+                    // for transactor events where multiple ledger entries are created on merchant balance account in DA
+                    // pick the appropriate one - the one corresponding to payout/reversal, ignoring the other corresponding to external's reversal
+                    if (in_array($journalResponse[self::TRANSACTOR_EVENT], LedgerProcessor\Base::DA_LEDGER_EXT_TO_ENTITY_DEBIT_EVENTS, true) === true)
+                    {
+                        // In cases where merchant balance is debited for entity, pick the ledger entry which corresponds to debit record
+                        if ($ledgerEntry[self::TYPE] === self::DEBIT)
+                        {
+                            return [$ledgerEntry, self::DIRECT];
+                        }
+                    }
+                    else if (in_array($journalResponse[self::TRANSACTOR_EVENT], LedgerProcessor\Base::DA_LEDGER_EXT_TO_ENTITY_CREDIT_EVENTS, true) === true)
+                    {
+                        // In cases where merchant balance is credited for entity, pick the ledger entry which corresponds to credit record
+                        if ($ledgerEntry[self::TYPE] === self::CREDIT)
+                        {
+                            return [$ledgerEntry, self::DIRECT];
+                        }
+                    }
+                    else
+                    {
+                        // for the other transactor events where single entry is made on merchant balance, we can return the same
+                        return [$ledgerEntry, self::DIRECT];
+                    }
+                }
+            }
+        }
+
+        return [null, null];
+    }
+
+    private function constructTransactionForSharedBalanceFromLedgerResponse(string $id, BankingEntity $bankingAccount, array $ledgerEntry, array $journalResponse) :array {
         $transaction = [
             self::ID             => $id,
             self::ENTITY         => self::TRANSACTION,
@@ -155,8 +243,42 @@ class Service extends Base\Service
             $transaction[self::DEBIT] = 0;
         }
 
-        $sourceId = $ledgerEntry[self::TRANSACTOR_ID];
-        $sourceType = static::getTxnSourceEntityFromLedgerTxnEvent($ledgerEntry[self::TRANSACTOR_EVENT]);
+        $sourceId = $journalResponse[self::TRANSACTOR_ID];
+        $sourceType = static::getTxnSourceEntityFromLedgerTxnEvent($journalResponse[self::TRANSACTOR_EVENT]);
+
+        $this->repo->ledger_statement->setSourceForTransaction($sourceId, $sourceType, $transaction, $this->merchant);
+
+        return $transaction;
+    }
+
+    private function constructTransactionForDirectBalanceFromLedgerResponse(string $id, BankingAccountStmtDetailsEntity $bankingAccountStmtDetails, array $journalResponse) :array {
+
+        $sourceId = $journalResponse[self::TRANSACTOR_ID];
+        $sourceType = static::getTxnSourceEntityFromLedgerTxnEvent($journalResponse[self::TRANSACTOR_EVENT]);
+
+        $basEntity = (new BankingAccountStatement\Repository)->fetchBySourceEntityIDAndEntityType(PublicEntity::stripDefaultSign($sourceId), $sourceType);
+
+        $transaction = [
+            self::ID             => $id,
+            self::ENTITY         => self::TRANSACTION,
+            self::ACCOUNT_NUMBER => $bankingAccountStmtDetails->getAccountNumber(),
+            self::AMOUNT         => (int) $basEntity[self::AMOUNT],
+            self::CURRENCY       => $basEntity[self::CURRENCY],
+            self::CREDIT         => 0,
+            self::DEBIT          => (int) $basEntity[self::AMOUNT],  // "debit" field is non-zero in case of payouts, fav etc.
+            self::BALANCE        => (int) $basEntity[self::BALANCE],
+            self::CREATED_AT     => $basEntity[self::CREATED_AT],
+            self::SOURCE         => [],
+        ];
+
+        if ($basEntity[self::TYPE] === self::CREDIT)
+        {
+            // When credit amount is non zero, "credit" field is set from "amount" field in ledger response.
+            // "debit" field is 0 in transaction entity in this case.
+            // Happens in case of fund loading.
+            $transaction[self::CREDIT] = (int) $basEntity[self::AMOUNT];
+            $transaction[self::DEBIT] = 0;
+        }
 
         $this->repo->ledger_statement->setSourceForTransaction($sourceId, $sourceType, $transaction, $this->merchant);
 

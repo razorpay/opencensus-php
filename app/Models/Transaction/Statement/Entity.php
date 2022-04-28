@@ -174,7 +174,7 @@ class Entity extends Transaction\Entity
             ]);
     }
 
-    protected function setPublicSourceAttributeForExternal(array & $array)
+    public function setPublicSourceAttributeForExternal(array & $array)
     {
         $array[self::SOURCE] = array_only(
             $array[self::SOURCE],

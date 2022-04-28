@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Transaction\Statement;
 
+use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Transaction;
 use RZP\Base\ConnectionType;
@@ -58,13 +59,19 @@ class Service extends Transaction\Service
         // In case feature flag is added to the merchant, only in that case ledger service will be called.
         // Since here depending on the transaction, we cannot find whether this transaction is for VA or CA,
         // without depending on the transaction table, so only merchant feature flag is check is enough.
-        if (($this->merchant->isFeatureEnabled(Constants::LEDGER_REVERSE_SHADOW) === true))
+        if (($this->merchant->isFeatureEnabled(Constants::LEDGER_REVERSE_SHADOW) === true) or
+            ($this->merchant->isFeatureEnabled(Constants::DA_LEDGER_REVERSE_SHADOW) === true))
         {
-            $ledgerTransaction = $this->ledgerStatementService->fetchFromLedger($id);
+            $ledgerTransaction = $this->ledgerStatementService->fetchByIdFromLedger($id);
 
             // Only return ledger response if ledger didn't return any error, else return from API.
             if (empty($ledgerTransaction) === false)
             {
+                $this->trace->info(
+                    TraceCode::LEDGER_JOURNAL_FETCH_TRANSACTION_SUCCESS,
+                    [
+                        "id" => $id,
+                    ]);
                 return $ledgerTransaction;
             }
         }

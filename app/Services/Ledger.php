@@ -97,6 +97,7 @@ class Ledger
         'deleteMerchants'                   => 'DeleteMerchants',
         'fetchMerchantAccounts'             => 'FetchMerchantAccounts',
         'fetchByTransactor'                 => 'FetchByTransactor',
+        'fetchById'                         => 'FetchById',
         'updateAccountByEntitiesAndMerchantID' => 'UpdateByEntitiesAndMerchantID'
     ];
 
@@ -282,6 +283,20 @@ class Ledger
     public function createJournal($input, bool $throwExceptionOnFailure = false): array
     {
         return $this->sendRequest(self::JournalBaseURL . '/' . self::URLS['create'],
+            Requests::POST, $input, $throwExceptionOnFailure);
+    }
+
+    /**
+     * @param      $input
+     * @param bool $throwExceptionOnFailure
+     *
+     * @return array
+     * @throws Exception\RuntimeException
+     * @throws \Throwable
+     */
+    public function fetchById($input, bool $throwExceptionOnFailure = false): array
+    {
+        return $this->sendRequest(self::JournalBaseURL . '/' . self::URLS['fetchById'],
             Requests::POST, $input, $throwExceptionOnFailure);
     }
 

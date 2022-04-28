@@ -203,6 +203,10 @@ class Repository extends Base\Repository
                 $this->setFundAccountValidationAttributesForTxn($sourceId, $transaction, $merchant);
                 break;
 
+            case E::EXTERNAL:
+                $this->setExternalAttributesForTxn($sourceId, $transaction, $merchant);
+                break;
+
             default:
                 throw new LogicException(SERVICE::SOURCE . ' not implemented at ledger : ' . $sourceType);
         }
@@ -850,5 +854,22 @@ class Repository extends Base\Repository
 
         // Since currently no specific function is present in statement entity to return
         // any other fields for fund_account_validation entity, that's why returning directly.
+    }
+
+    /**
+     * Fetch external entity using txn id and then set it's attributes on transaction array.
+     * @param string $id
+     * @param array $transaction
+     * @param Merchant\Entity $merchant
+     */
+    private function setExternalAttributesForTxn(string $id, array &$transaction, Merchant\Entity $merchant)
+    {
+        $external = $this->repo->external->findByPublicIdAndMerchant($id, $merchant);
+
+        $transaction[Service::SOURCE] = $external->toArrayPublic();
+
+        // Calling statement entity function to set public attributes for adjustment entity.
+        $statement = new Statement\Entity();
+        $statement->setPublicSourceAttributeForExternal($transaction);
     }
 }

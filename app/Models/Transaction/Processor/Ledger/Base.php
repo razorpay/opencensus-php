@@ -95,6 +95,9 @@ class Base extends Core
 
     const LEDGER_DEBIT_EVENTS = [Payout::PAYOUT_INITIATED, FundAccountValidation::FAV_INITIATED, Adjustment::NEGATIVE_ADJUSTMENT_PROCESSED];
 
+    const DA_LEDGER_EXT_TO_ENTITY_DEBIT_EVENTS  = [Payout::DA_EXT_PAYOUT_PROCESSED, Payout::DA_EXT_FEE_PAYOUT_PROCESSED];
+    const DA_LEDGER_EXT_TO_ENTITY_CREDIT_EVENTS = [Payout::DA_EXT_PAYOUT_REVERSED, Payout::DA_EXT_FEE_PAYOUT_REVERSED];
+
     public static function getMerchantBalanceFromLedgerResponse(array $ledgerResponse, string $merchantIdentifier = self::MERCHANT_VA)
     {
         foreach($ledgerResponse[self::LEDGER_ENTRY] as $ledgerEntry)
