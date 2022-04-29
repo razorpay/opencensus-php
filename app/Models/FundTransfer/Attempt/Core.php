@@ -742,6 +742,8 @@ class Core extends Base\Core
             TraceCode::FTA_SOURCE_PROCESSING_DATA,
             (new Redaction())->redactData($ftaData));
 
+        $entityType = null;
+
         try
         {
             $entityType = $source->getEntity();
@@ -768,6 +770,11 @@ class Core extends Base\Core
                 TraceCode::FTA_SOURCE_PROCESSING_FAILED,
                 $ftaData
             );
+
+            if ($entityType === EntityConstant::PAYOUT)
+            {
+                throw $e;
+            }
         }
     }
 

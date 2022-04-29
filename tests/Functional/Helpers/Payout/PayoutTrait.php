@@ -792,4 +792,37 @@ trait PayoutTrait
             'on' // just sey this on, leave everything as default
         );
     }
+
+    public function expectStorkSendSmsRequest($storkMock, $templateName, $destination, $expectedParams = [])
+    {
+        $storkMock->shouldReceive('sendSms')
+                  ->withArgs(
+                      function($mode,
+                               $actualPayload,
+                               $mockInTestMode)
+                      use (
+                          $templateName,
+                          $destination,
+                          $expectedParams
+                      ) {
+                          if (isset($actualPayload['contentParams']) === true)
+                          {
+                              $this->assertArraySelectiveEquals($expectedParams, $actualPayload['contentParams']);
+                          }
+
+                          if (($templateName !== $actualPayload['templateName']) or
+                              ($destination !== $actualPayload['destination']))
+                          {
+                              return false;
+                          }
+
+                          return true;
+                      }
+                  )
+                  ->andReturn(
+                      ['success' => true]
+                  );
+
+        return $storkMock;
+    }
 }

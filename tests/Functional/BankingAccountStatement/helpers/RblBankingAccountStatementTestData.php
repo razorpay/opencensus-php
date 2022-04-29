@@ -966,5 +966,46 @@ return [
             'class'               => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
-    ]
+    ],
+
+    'testRblSlackAlertThrownForRecon' => [
+        'request'   => [
+            'method'  => 'POST',
+            'url'     => '/update_fts_fund_transfer',
+            'content' => [
+                'bank_processed_time' => '2019-12-04 15:51:21',
+                'bank_status_code'    => 'FAILED',
+                'extra_info'          => [
+                    'beneficiary_name' => 'SUSANTA BHUYAN',
+                    'cms_ref_no'       => 'd10ce8e4167f11eab1750a0047330000',
+                    'internal_error'   => false
+                ],
+                'failure_reason'      => '',
+                'fund_transfer_id'    => 1234567,
+                'mode'                => 'IMPS',
+                'narration'           => 'Kissht FastCash Disbursal',
+                'remarks'             => 'Check the status by calling getStatus API.',
+                'source_id'           => '10000000000000',
+                'source_type'         => 'payout',
+                'status'              => 'processed',
+                'source_account_id'   => 111111111,
+                'bank_account_type'   => 'current',
+                'channel'             => 'rbl',
+            ]
+        ],
+        'response'  => [
+            'status_code' => 500,
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::SERVER_ERROR,
+                    'description' => 'We are facing some trouble completing your request at the moment. Please try again shortly.',
+                ],
+            ]
+        ],
+        'exception' => [
+            'class'               => Rzp\Exception\LogicException::class,
+            'internal_error_code' => ErrorCode::SERVER_ERROR_LOGICAL_ERROR,
+            'message'             => 'Failed payout has a corresponding BAS entity. This should be reversed instead, not failed.'
+        ],
+    ],
 ];

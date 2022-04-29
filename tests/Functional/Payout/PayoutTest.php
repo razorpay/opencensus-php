@@ -17816,6 +17816,8 @@ class PayoutTest extends OAuthTestCase
 
         $this->fixtures->edit('contact', '1000001contact', ['email' => 'naruto@gmail.com', 'contact' => '919999188882']);
 
+        $contact = $this->getDbEntityById('contact', '1000001contact');
+
         $this->fixtures->merchant->addFeatures([Feature\Constants::BENE_EMAIL_NOTIFICATION,
                                                 Feature\Constants::BENE_SMS_NOTIFICATION]);
 
@@ -17836,6 +17838,14 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals('initiated', $fta->getStatus());
 
         $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated']);
+
+        $storkMock = Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $storkMock = $this->expectStorkSendSmsRequest($storkMock,
+                                         PayoutProcessedNotification::SMS_TEMPLATE,
+                                         $contact->getContact());
+
+        $this->app->instance('stork_service', $storkMock);
 
         $this->updateFtaAndSource($payout->getId(), Payout\Status::PROCESSED, '933815383814');
 
@@ -17898,6 +17908,8 @@ class PayoutTest extends OAuthTestCase
 
         $this->fixtures->edit('contact', '1000001contact', ['email' => null, 'contact' => '919999188882']);
 
+        $contact = $this->getDbEntityById('contact', '1000001contact');
+
         $this->testCreatePayout();
 
         $payout = $this->getDbLastEntity('payout');
@@ -17908,6 +17920,14 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals('initiated', $fta->getStatus());
 
         $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated']);
+
+        $storkMock = Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $storkMock = $this->expectStorkSendSmsRequest($storkMock,
+                                                      PayoutProcessedNotification::SMS_TEMPLATE,
+                                                      $contact->getContact());
+
+        $this->app->instance('stork_service', $storkMock);
 
         $this->updateFtaAndSource($payout->getId(), Payout\Status::PROCESSED, '933815383814');
 
@@ -21790,6 +21810,23 @@ class PayoutTest extends OAuthTestCase
         $this->fixtures->edit(Constants\Entity::PAYOUTS_DETAILS, $payoutDetailsCreated[PayoutsDetails\Entity::PAYOUT_ID], [PayoutsDetails\Entity::TAX_PAYMENT_ID => '1234']);
 
         $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testPayoutProcessFailureInFtsStatusUpdate()
+    {
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated']);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['source_id'] = $payout['id'];
+
+        $this->ba->ftsAuth();
 
         $this->startTest();
     }

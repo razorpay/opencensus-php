@@ -438,7 +438,7 @@ return [
     ],
 
     'testUpdateFTAAndPayoutDetailsFailure' => [
-        'request'  => [
+        'request'   => [
             'method'  => 'POST',
             'url'     => '/update_fts_fund_transfer',
             'content' => [
@@ -459,15 +459,24 @@ return [
                 'utr'                 => 928337183,
             ],
         ],
-        'response' => [
-            'content' => [
-                'message' => 'FTA and source updated successfully'
-            ],
+        'response'  => [
+            'status_code' => 400,
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Service Failure',
+                ],
+            ]
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ERROR,
         ],
     ],
 
+
     'testUpdateFTAAndPayoutStatusFailure' => [
-        'request'  => [
+        'request'   => [
             'method'  => 'POST',
             'url'     => '/update_fts_fund_transfer',
             'content' => [
@@ -488,10 +497,18 @@ return [
                 'utr'                 => 928337183,
             ],
         ],
-        'response' => [
-            'content' => [
-                'message' => 'FTA and source updated successfully'
-            ],
+        'response'  => [
+            'status_code' => 400,
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Service Failure',
+                ],
+            ]
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ERROR,
         ],
     ],
 

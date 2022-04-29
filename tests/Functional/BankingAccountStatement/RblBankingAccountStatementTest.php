@@ -4272,6 +4272,8 @@ class RblBankingAccountStatementTest extends TestCase
 
         $testData = $this->testData['testRblAccountStatementTxnMappingCase1'];
 
+        $originalTestData = $this->testData[__FUNCTION__];
+
         $this->testData[__FUNCTION__] = $testData;
         $this->ba->cronAuth();
         $this->startTest();
@@ -4287,11 +4289,15 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->assertEquals(Attempt\Status::INITIATED, $attempt['status']);
 
-        $this->updateFta(
-            $attempt['fts_transfer_id'],
-            $attempt['source'],
-            Attempt\Type::PAYOUT,
-            Attempt\Status::FAILED);
+        $originalTestData['request']['content']['status']           = Attempt\Status::FAILED;
+        $originalTestData['request']['content']['fund_transfer_id'] = $attempt['fts_transfer_id'];
+        $originalTestData['request']['content']['source_id']        = $attempt['source'];
+
+        $this->testData[__FUNCTION__] = $originalTestData;
+
+        $this->ba->ftsAuth();
+
+        $this->startTest();
 
         $this->assertEquals('created', $payout['status']);
     }
