@@ -2631,9 +2631,9 @@ class Base extends BaseCore
             {
                 $vpa = $fundAccount->account;
 
-                $doesVpaBelongsToVa = $this->repo->vpa->checkIfVpaBelongsToVirtualAccount($vpa);
+                $internalVpaIfExists = $this->repo->vpa->checkIfVpaBelongsToVirtualAccount($vpa);
 
-                if($doesVpaBelongsToVa === true)
+                if(is_null($internalVpaIfExists) === false)
                 {
                     throw new Exception\BadRequestException(
                         ErrorCode::BAD_REQUEST_VA_TO_VA_PAYOUTS_BLOCKED,

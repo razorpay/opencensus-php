@@ -108,6 +108,6 @@ class Repository extends Base\Repository
                     ->where($type, '=', 'virtual_account')
                     ->where($username, '=', $vpa->getUsername())
                     ->where($handle, '=', $vpa->getHandle())
-                    ->exists();
+                    ->first();
     }
 }
