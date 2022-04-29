@@ -17,6 +17,7 @@ use RZP\Trace\TraceCode;
 use RZP\Constants\Table;
 use RZP\Models\Merchant;
 use RZP\Models\Admin\Org;
+use RZP\Http\RequestHeader;
 use RZP\Models\Partner\Config;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Partner\Commission;
@@ -207,6 +208,11 @@ class Reporting implements ExternalService
             }
 
             $this->validateRequestFromOrg($consumer);
+        }
+
+        if (empty(Request::header(RequestHeader::DEV_SERVE_USER)) === false)
+        {
+            $headers[RequestHeader::DEV_SERVE_USER] = Request::header(RequestHeader::DEV_SERVE_USER);
         }
 
         $this->headers = $headers;
