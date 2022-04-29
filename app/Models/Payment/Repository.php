@@ -375,7 +375,7 @@ EOT;
                         $paymentIds[ES::HITS][ES::HITS]);
 
                     if (count($paymentIdsFiltered) > 0) {
-                        $connection = $this->getSlaveConnection();
+                        $connection = $this->getPaymentFetchReplicaConnection();
 
                         $result = $this->newQueryWithConnection($connection)
                             ->whereIn(Entity::ID, $paymentIdsFiltered)
@@ -407,8 +407,6 @@ EOT;
         }
         else
         {
-            $connection = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN);
-
             $query = $this->newQueryWithConnection($connection);
         }
 
