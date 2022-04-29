@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant\Cron\Collectors;
 
+use Carbon\Carbon;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Cron\Collectors\Core\TimeBoundDbDataCollector;
 use RZP\Models\Merchant\Cron\Dto\CollectorDto;
@@ -12,7 +13,7 @@ class AuthorizedPaymentsMerchantDataCollector extends TimeBoundDbDataCollector
                             JOIN hive.realtime_hudi_api.merchant_details ON merchant_details.merchant_id = payments.merchant_id
                             WHERE merchant_details.activation_status IN ('activated' , 'instantly_activated' , 'activated_mcc_pending')
                             AND payments.status IN ('authorized' , 'captured')
-                            AND payments.created_at >= %s";
+                            AND payments.created_date >= '%s' ";
 
     protected function collectDataWithinInterval($startTime, $endTime): CollectorDto
     {
@@ -22,20 +23,22 @@ class AuthorizedPaymentsMerchantDataCollector extends TimeBoundDbDataCollector
             'end_time'              => $endTime
         ]);
 
-        $merchantIds = $this->getAuthorizedPaymentsMerchants($startTime);
+        $startTimeOfMerchantTransactions = Carbon::now()->subDays(30)->toDateString();
+
+        $merchantIds = $this->getAuthorizedPaymentsMerchants($startTimeOfMerchantTransactions);
 
         $this->app['trace']->info(TraceCode::CRON_FETCH_AUTHORIZED_TRANSACTED_MERCHANTS, [
-            'start_time'    => $startTime,
+            'start_time'    => $startTimeOfMerchantTransactions,
         ]);
 
         return CollectorDto::create($merchantIds);
     }
 
-    protected function getAuthorizedPaymentsMerchants($startTimeStamp)
+    protected function getAuthorizedPaymentsMerchants($startTime)
     {
         $merchantIdLists    = [];
 
-        $dataLakeQuery      = sprintf(self::DATALAKE_QUERY, $startTimeStamp);
+        $dataLakeQuery      = sprintf(self::DATALAKE_QUERY, $startTime);
 
         $lakeData           = $this->app['datalake.presto']->getDataFromDataLake($dataLakeQuery);
 
@@ -52,13 +55,13 @@ class AuthorizedPaymentsMerchantDataCollector extends TimeBoundDbDataCollector
             }
 
             $this->app['trace']->info(TraceCode::CRON_FETCH_AUTHORIZED_TRANSACTED_MERCHANTS_SUCCESS, [
-                'start_time'    => $startTimeStamp
+                'start_time'    => $startTime
             ]);
         }
         else
         {
             $this->app['trace']->info(TraceCode::CRON_FETCH_AUTHORIZED_TRANSACTED_MERCHANTS_FAILURE, [
-                'start_time'    => $startTimeStamp
+                'start_time'    => $startTime
             ]);
         }
 

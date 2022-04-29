@@ -13,9 +13,9 @@ use RZP\Models\Merchant\Service as MerchantService;
 
 class SaveMerchantAuthorizedTransactionCount extends BaseAction
 {
-    const DATALAKE_QUERY =  "SELECT payments.merchant_id, count(*) as transaction_count FROM hive.realtime_hudi_api.payments WHERE status IN ('authorized', 'captured') AND merchant_id IN (%s) AND updated_at >= %s group by payments.merchant_id";
+    const DATALAKE_QUERY =  "SELECT payments.merchant_id, count(*) as transaction_count FROM hive.realtime_hudi_api.payments WHERE status IN ('authorized', 'captured') AND merchant_id IN (%s) AND created_date >= '%s' group by payments.merchant_id";
 
-    const MERCHANT_IDS_CHUNK_SIZE = 5000;
+    const MERCHANT_IDS_CHUNK_SIZE = 3000;
 
     public function execute($data = []): ActionDto
     {
@@ -50,25 +50,26 @@ class SaveMerchantAuthorizedTransactionCount extends BaseAction
 
         foreach ($merchantIdChunks as $index => $merchantIdChunk)
         {
+            $startOfExecution        = millitime();
+
+            $startTimeOfTransactions = Carbon::now()->subDays(90)->toDateString();
+
             try {
-                $start              = millitime();
 
-                $startTimeStamp     = $this->args['start_time'];
-
-                $this->saveMerchantsTransactionCount($merchantIdChunk, $startTimeStamp, $index, $successCount);
+                $this->saveMerchantsTransactionCount($merchantIdChunk, $startTimeOfTransactions, $index, $successCount);
 
                 $this->app['trace']->info(TraceCode::CRON_ACTION_AUTHORIZED_TRANSACTION_MERCHANT_IDS_CHUNK_SUCCESS, [
                     'completed_chunk_index'   => $index,
-                    'start_time_stamp'        => $startTimeStamp,
-                    'duration'                => millitime() - $start
+                    'start_time'              => $startTimeOfTransactions,
+                    'duration'                => millitime() - $startOfExecution
                 ]);
             }
             catch (\Throwable $ex)
             {
                 $this->app['trace']->traceException($ex, Trace::ERROR, TraceCode::CRON_ATTEMPT_ACTION_FAILURE, [
                     'failed_chunk_index'      => $index,
-                    'start_time_stamp'        => $startTimeStamp,
-                    'duration'                => millitime() - $start
+                    'start_time_stamp'        => $startTimeOfTransactions,
+                    'duration'                => millitime() - $startOfExecution
                 ]);
             }
         }
@@ -85,11 +86,11 @@ class SaveMerchantAuthorizedTransactionCount extends BaseAction
         return new ActionDto($status);
     }
 
-    protected function saveMerchantsTransactionCount($merchantIdChunk, $startTimeStamp, $chunkIndex, &$successCount)
+    protected function saveMerchantsTransactionCount($merchantIdChunk, $startTime, $chunkIndex, &$successCount)
     {
         $strMerchantIds     = implode(', ', array_map(function ($val) { return sprintf('\'%s\'', $val);}, $merchantIdChunk));
 
-        $dataLakeQuery      = sprintf(self::DATALAKE_QUERY, $strMerchantIds, $startTimeStamp);
+        $dataLakeQuery      = sprintf(self::DATALAKE_QUERY, $strMerchantIds, $startTime);
 
         $lakeData           = $this->app['datalake.presto']->getDataFromDataLake($dataLakeQuery);
 
@@ -108,7 +109,7 @@ class SaveMerchantAuthorizedTransactionCount extends BaseAction
         else
         {
             $this->app['trace']->info(TraceCode::CRON_ACTION_AUTHORIZED_TRANSACTION_MERCHANT_IDS_CHUNK_FAILURE, [
-                'start_time'    => $startTimeStamp,
+                'start_time'    => $startTime,
                 'chunk_index'   => $chunkIndex
             ]);
         }

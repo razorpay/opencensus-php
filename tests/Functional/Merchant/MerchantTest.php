@@ -15343,34 +15343,40 @@ The same has been enabled for the account.
 
     protected function runMerchantTransactionCountCronForSegmentType($merchantId, $transactionCount)
     {
-        $startTimeStamp =  Carbon::now()->subDay(30)->getTimestamp();
+        $startTimeStamp = Carbon::now()->subDays(30)->getTimestamp();
 
-        $endTimeStamp   = Carbon::now()->getTimestamp();
+        $endTimeStamp = Carbon::now()->getTimestamp();
+
+        $startTimeOfTransactions = Carbon::now()->subDays(90)->toDateString();
+
+        $startTimeOfMerchantChunks = Carbon::now()->subDays(30)->toDateString();
 
         $prestoService = $this->getMockBuilder(DataLakePrestoMock::class)
-            ->setConstructorArgs([$this->app])
-            ->onlyMethods(['getDataFromDataLake'])
-            ->getMock();
+                              ->setConstructorArgs([$this->app])
+                              ->onlyMethods(['getDataFromDataLake'])
+                              ->getMock();
 
-        $callback = static function ($query) use ($merchantId, $startTimeStamp, $transactionCount) {
+        $callback = static function($query) use ($merchantId, $transactionCount, $startTimeOfTransactions, $startTimeOfMerchantChunks) {
 
-            $transactionCount   = [ [ 'merchant_id'=> $merchantId, 'transaction_count' => $transactionCount ] ];
+            $transactionCount = [['merchant_id' => $merchantId, 'transaction_count' => $transactionCount]];
 
-            $merchantIdLists    = [ ['merchant_id' => $merchantId] ];
+            $merchantIdLists = [['merchant_id' => $merchantId]];
 
-            $merchantIdChunks   = array_chunk([$merchantId], 10);
+            $merchantIdChunks = array_chunk([$merchantId], 10);
 
             foreach ($merchantIdChunks as $merchantIdChunk)
             {
-                $strMerchantIds     = implode(', ', array_map(function ($val) { return sprintf('\'%s\'', $val);}, $merchantIdChunk));
+                $strMerchantIds = implode(', ', array_map(function($val) {
+                    return sprintf('\'%s\'', $val);
+                }, $merchantIdChunk));
 
-                if ($query === sprintf(CronActions\SaveMerchantAuthorizedTransactionCount::DATALAKE_QUERY, $strMerchantIds, $startTimeStamp))
+                if ($query === sprintf(CronActions\SaveMerchantAuthorizedTransactionCount::DATALAKE_QUERY, $strMerchantIds, $startTimeOfTransactions))
                 {
                     return $transactionCount;
                 }
             }
 
-            if ($query === sprintf(CronDataCollector\AuthorizedPaymentsMerchantDataCollector::DATALAKE_QUERY, $startTimeStamp))
+            if ($query === sprintf(CronDataCollector\AuthorizedPaymentsMerchantDataCollector::DATALAKE_QUERY, $startTimeOfMerchantChunks))
             {
                 return $merchantIdLists;
             }
