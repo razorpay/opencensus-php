@@ -498,13 +498,19 @@ class PGRouter
     public function otpSubmitPrivate($id, array $input, bool $throwExceptionOnFailure = false): array
     {
         $url = sprintf(self::PGRouterOTPSubmitPrivate, $id);
-        return $this->sendRequest($url, Requests::POST, $input, $throwExceptionOnFailure);
+
+        $output = $this->sendRequest($url, Requests::POST, $input, $throwExceptionOnFailure);
+
+        return $output['body'];
     }
 
     public function otpResendPrivate($id, array $input, bool $throwExceptionOnFailure = false): array
     {
         $url = sprintf(self::PGRouterOTPResendPrivate, $id);
-        return $this->sendRequest($url, Requests::POST, $input, $throwExceptionOnFailure);
+
+        $output = $this->sendRequest($url, Requests::POST, $input, $throwExceptionOnFailure);
+
+        return $output['body'];
     }
 
     /**

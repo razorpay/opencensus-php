@@ -2159,7 +2159,7 @@ class PaymentCreateTest extends TestCase
 
         $content = $this->getJsonContentFromResponse($response);
 
-        $this->assertEquals($content['body']['data']['pg_router'], true);
+        $this->assertEquals($content['data']['pg_router'], true);
 
         //otp submit
         $this->ba->privateAuth();
@@ -2176,7 +2176,7 @@ class PaymentCreateTest extends TestCase
 
         $content = $this->getJsonContentFromResponse($response);
 
-        $this->assertEquals($content['body']['data']['pg_router'], true);
+        $this->assertEquals($content['data']['pg_router'], true);
     }
 
     protected function mockGatewayException()
