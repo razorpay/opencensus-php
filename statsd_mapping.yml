@@ -204,3 +204,10 @@ mappings:
   timer_type: histogram
   buckets: [5, 30, 50, 80, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000, 20000, 30000, 60000, 120000, 180000, 240000, 300000, 360000, 420000, 480000, 540000, 600000]
   name: "api_PAYMENT_DOWNTIME_EVENT_JOB_DURATION"
+
+- match: api_virtual_account_payment_processing_time.*
+  match_type: regex
+  timer_type: histogram
+  buckets: [5, 30, 50, 80, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000, 20000, 30000, 60000, 120000, 180000, 240000, 300000, 360000, 420000, 480000, 540000, 600000]
+  name: "api_virtual_account_payment_processing_time"
+
