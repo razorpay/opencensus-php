@@ -774,10 +774,6 @@ export default class User {
     return this.isFeatureEnabled('pl_first_min_amount');
   }
 
-  get isPPSuccessPage() {
-    return this.getExpStatus('pp_success_page');
-  }
-
   get isPBDirectPluginLinks() {
     return this.getExpStatus('pb_direct_plugin_links');
   }
@@ -1058,10 +1054,6 @@ export default class User {
 
   get isCompanyNameHiddenRazorX() {
     return this.getExpStatus('hide_company_name');
-  }
-
-  get isNewPPSuccessModalEnabled() {
-    return this.getExpStatus('new_pp_success_modal');
   }
 
   get isVirtualVPAPrefixEnabled() {

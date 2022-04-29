@@ -533,7 +533,7 @@ const fullPageViewsMap = {
   },
   '/paymentpages/:id(pl_.+)/success': {
     component: PaymentPagesSuccess,
-    additionalCondition: (user) => user.isAllowedEdit('payment_pages') && user.isPPSuccessPage,
+    additionalCondition: (user) => user.isAllowedEdit('payment_pages'),
   },
   '/paymentbuttons/new': {
     component: PaymentButtonCreate,

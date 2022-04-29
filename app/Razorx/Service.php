@@ -179,7 +179,6 @@ class Service extends Base\Service
             'inv_create_flow_ux',
             'loans_collections_dashboard',
             'rx_ca_portal',
-            'pp_success_page',
             'bvs_get_gst_details',
             'status_page_enable',
             'rx_gst_payments',

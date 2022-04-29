@@ -15,12 +15,10 @@ import TemplatesMask from './Templates';
 import PPSettingsView from 'merchant/views/PaymentPages/PaymentPages/components/Modals/Settings';
 import PaymentReceipt from 'merchant/views/PaymentPages/PaymentPages/components/Modals/PaymentReceipt';
 import ShiprocketConfirmation from 'merchant/views/PaymentPages/PaymentPages/components/Modals/ShiprocketConfirmation';
-import Success from 'merchant/views/PaymentPages/PaymentPages/components/Modals/Success';
-import PPShareView from 'merchant/views/PaymentPages/PaymentPages/components/Modals/Share';
 import MerchantLogoTooltip from 'merchant/views/PaymentPages/PaymentPages/components/MerchantLogoTooltip';
 import MobileActionButtons from './components/MobileActionButtons';
 
-import { createPaymentPage, editPaymentPage, sendLink, setReceiptDetails } from '../model';
+import { createPaymentPage, editPaymentPage, setReceiptDetails } from '../model';
 import track from './track';
 import { isMobileDevice } from 'merchant/components/Home/data';
 import debounce from 'common/utils/debounce';
@@ -55,12 +53,7 @@ import {
   SHIPROCKET_FORM_ITEMS,
 } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/UDF/helpers';
 
-import {
-  trackWYSIWYGCloseIntent,
-  trackConfirmWYSIWYGCloseIntent,
-  trackPageSettingsClick,
-  trackClickOnCreateEmbedButton,
-} from '../ga';
+import { trackWYSIWYGCloseIntent, trackConfirmWYSIWYGCloseIntent } from '../ga';
 
 const ERROR = {
   SCRIPT: 1,
@@ -345,64 +338,6 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     });
   };
 
-  openSuccessView = (id, shortUrl, title, description, isEditExistingId) => {
-    const isNewPPSuccessModalEnabled = this.props.user.isNewPPSuccessModalEnabled;
-    let modalContent;
-
-    if (isNewPPSuccessModalEnabled) {
-      modalContent = (
-        <Success
-          id={id}
-          handleClose={this.props.closeModal}
-          openModal={this.props.openModal}
-          handleSendLink={sendLink.bind(null, id)}
-          showNotification={this.props.showNotification}
-          title={title}
-          url={shortUrl}
-          trackerFn={noop}
-          trackClickOnCreateEmbedButton={(_) => trackClickOnCreateEmbedButton('new')}
-          closeModal={this.props.closeModal}
-          isEditExistingId={isEditExistingId}
-          user={this.props.user}
-          openSettingsModal={(_) => {
-            trackPageSettingsClick();
-            this.props.closeModal();
-            this.props.setSettingsModal(true);
-          }}
-        />
-      );
-    } else {
-      modalContent = (
-        <PPShareView
-          id={id}
-          handleClose={this.props.closeModal}
-          openModal={this.props.openModal}
-          handleAction={sendLink.bind(null, id)}
-          isNew={true}
-          isPaymentPagesV2={true}
-          showNotification={this.props.showNotification}
-          title={title}
-          url={shortUrl}
-          description={description}
-          trackerFn={noop}
-          trackClickOnCreateEmbedButton={trackClickOnCreateEmbedButton}
-          closeModal={this.props.closeModal}
-          isEditExistingId={isEditExistingId}
-          openSettingsModal={(_) => {
-            trackPageSettingsClick();
-            this.props.closeModal();
-            this.props.setSettingsModal(true);
-          }}
-        />
-      );
-    }
-
-    this.props.openModal({
-      size: 'medium',
-      component: modalContent,
-    });
-  };
-
   // Update settings in store
   handleSaveSettings = (formData) => {
     const data = {};
@@ -667,10 +602,10 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
                 page_id: this.props.id,
               });
 
-              this.onSaveSuccessActions(resp, isEditExistingId);
+              this.onSaveSuccessActions(resp);
             })
             .catch(() => {
-              this.onSaveSuccessActions(resp, isEditExistingId);
+              this.onSaveSuccessActions(resp);
             });
         } else {
           throw new Error(resp.errors);
@@ -706,25 +641,13 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       });
   };
 
-  onSaveSuccessActions = (resp, isEditExistingId) => {
-    const { isPPSuccessPage } = this.props.user;
-
+  onSaveSuccessActions = (resp) => {
     this.props.markDataSaved();
     this.isIntentDuplicate = false;
 
     const entityId = resp.data.id;
 
-    if (isPPSuccessPage) {
-      this.props.history.push(`/paymentpages/${entityId}/success`);
-    } else {
-      this.openSuccessView(
-        entityId,
-        resp.data.short_url,
-        resp.data.title,
-        resp.data.description,
-        isEditExistingId,
-      );
-    }
+    this.props.history.push(`/paymentpages/${entityId}/success`);
   };
 
   saveReceiptSettings = (entityId, receipt) => {
@@ -1096,8 +1019,6 @@ const Header = ({ title, actionBtns, handleClose, isPageReady, children, isPageL
     </div>
   );
 };
-
-function noop() {}
 
 function pruneGoalTracker(goal_tracker) {
   const newGoalTracker = { ...goal_tracker };
