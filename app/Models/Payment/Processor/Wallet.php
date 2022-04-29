@@ -60,7 +60,6 @@ class Wallet
     public static $emailRequiredWallets = array(
         self::MOBIKWIK,
         self::OLAMONEY,
-        self::PAYTM,
         self::PAYUMONEY,
         self::PAYZAPP,
         self::AIRTELMONEY,
