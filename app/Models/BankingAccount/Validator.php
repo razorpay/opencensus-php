@@ -3,17 +3,19 @@
 namespace RZP\Models\BankingAccount;
 
 use RZP\Base;
-use RZP\Http\BasicAuth\BasicAuth;
-use RZP\Models\Admin\Permission;
 use RZP\Models\Pincode;
 use RZP\Error\ErrorCode;
+use RZP\Models\Admin\Permission;
+use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Exception\BadRequestException;
+use RZP\Models\BankingAccount\Gateway\Rbl\Fields;
 use RZP\Exception\BadRequestValidationFailureException;
 
 class Validator extends Base\Validator
 {
     const PRE_PROCESS           = 'pre_process';
     const PRE_PROCESS_DASHBOARD = 'pre_process_dashboard';
+    const CREATE_LEAD_FROM_RBL  = 'create_lead_from_rbl';
     const INTERNAL_EDIT         = 'internal_edit';
     const PROCESSED_STATUS      = 'processed_status';
     const SERVICEABLE_PINCODE   = 'serviceable_pincode';
@@ -84,6 +86,20 @@ class Validator extends Base\Validator
         Entity::BENEFICIARY_MOBILE              => 'sometimes|nullable|string',
         Entity::BENEFICIARY_EMAIL               => 'sometimes|nullable|string',
         Entity::BENEFICIARY_NAME                => 'sometimes|nullable|custom',
+    ];
+
+    protected static $createLeadFromRblRules = [
+        Fields::NEO_BANKING_LEAD_REQUEST                                                               => 'required',
+        Fields::NEO_BANKING_LEAD_REQUEST . '.' . Fields::BODY                                          => 'required|array',
+        Fields::NEO_BANKING_LEAD_REQUEST . '.' . Fields::HEADER . '.' . Fields::TRAN_ID                => 'required|string',
+        Fields::NEO_BANKING_LEAD_REQUEST . '.' . Fields::HEADER . '.' . Fields::CO_CREATED_CORP_ID     => 'required|string',
+        Fields::NEO_BANKING_LEAD_REQUEST . '.' . Fields::BODY . '.' . Fields::LEAD_ID                  => 'required|string',
+        Fields::NEO_BANKING_LEAD_REQUEST . '.' . Fields::BODY . '.' . Fields::EMAIL_ADDRESS            => 'required|string',
+        Fields::NEO_BANKING_LEAD_REQUEST . '.' . Fields::BODY . '.' . Fields::CUSTOMER_CITY            => 'required|string',
+        Fields::NEO_BANKING_LEAD_REQUEST . '.' . Fields::BODY . '.' . Fields::CUSTOMER_PINCODE         => 'required|string',
+        Fields::NEO_BANKING_LEAD_REQUEST . '.' . Fields::BODY . '.' . Fields::CUSTOMER_ADDRESS         => 'required|string',
+        Fields::NEO_BANKING_LEAD_REQUEST . '.' . Fields::BODY . '.' . Fields::CUSTOMER_MOBILE_NUMBER   => 'required|string',
+        Fields::NEO_BANKING_LEAD_REQUEST . '.' . Fields::BODY . '.' . Fields::CO_CREATED_CUSTOMER_NAME => 'required|string',
     ];
 
     protected static $rblCreateRules = [

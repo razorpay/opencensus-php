@@ -61,7 +61,32 @@ class Service extends Base\Service
         $this->elfin = $this->app['elfin'];
     }
 
-    public function register(array $input, string $operation = 'create'): array
+    /**
+     * This method creates user and merchant and sends segment event for resting password
+     * This is only getting used for rbl co-created
+     *
+     * @throws BadRequestException
+     * @throws \Throwable
+     */
+    public function registerInternal(array $input): array
+    {
+        $input[Entity::CAPTCHA_DISABLE] = User\Validator::DISABLE_CAPTCHA_SECRET;
+
+        $response =  $this->register($input, 'create', false);
+
+        $merchant = $this->repo->merchant->findByPublicId($response['id']);
+
+        $this->merchantService->storeMerchantCaOnboardingFlow($merchant, Merchant\service::RBL_CO_CREATED);
+
+        $this->user = $this->repo->user->find($response['user_id']);
+
+        $this->setResetPasswordTokenAndSendEventToHubspot($merchant);
+
+        return $response;
+    }
+
+
+    public function register(array $input, string $operation = 'create', bool $sendConfirmation = true): array
     {
         $this->traceRegisterInput($input);
 
@@ -153,7 +178,7 @@ class Service extends Base\Service
         }
         else
         {
-            $data = $this->createMerchant($user, $referrer, $businessName, $partnerIntent, $input, $heimdallTokenData, true);
+            $data = $this->createMerchant($user, $referrer, $businessName, $partnerIntent, $input, $heimdallTokenData, $sendConfirmation);
         }
 
         $signupMethod = Constants::PASSWORD;
@@ -2216,5 +2241,50 @@ class Service extends Base\Service
         }
 
         return $response;
+    }
+
+    public function sendResetPasswordSegmentEventAdmin(array $input): array
+    {
+        $this->trace->info(TraceCode::USER_PASSWORD_RESET_REQUEST, $input);
+
+        if (isset($input['email']) === true)
+        {
+            $email = mb_strtolower($input['email']);
+
+            $this->user = $this->repo->user->getUserFromEmail($email);
+
+            $merchant = $this->user->getMerchantEntity();
+
+            if ((empty($this->user) === false) and (empty($merchant) === false))
+            {
+                $this->setResetPasswordTokenAndSendEventToHubspot($merchant);
+
+                return ['success' => true];
+            }
+        }
+        return ['success' => false];
+    }
+
+
+    /**
+     * @param $merchant
+     *
+     * @return void
+     */
+    private function setResetPasswordTokenAndSendEventToHubspot($merchant): void
+    {
+        $token = $this->getTokenWithExpiry($this->user['id'], User\Constants::CO_CREATED_CREATE_PASSWORD_TOKEN_EXPIRY_TIME);
+
+        $properties = [
+            'token' => $token,
+            'email' => $this->user->getEmail()
+        ];
+
+        $hubspotClient = $this->app->hubspot;
+
+        $hubspotClient->trackHubspotEvent($merchant->getEmail(), [
+            'setup_password_token' => $properties['token'],
+            'ca_application_type'  => 'rbl_co_created'
+        ]);
     }
 }

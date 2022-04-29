@@ -1821,6 +1821,7 @@ class Route
         'user_merchant_upgrade'                    => ['post',     'users/upgrade-merchant',                         'UserController@postUpgradeUserToMerchant'                          ],
         'user_resend_verification'                 => ['post',     'users/resend-verification',                      'UserController@postResendVerificationMail'                         ],
         'user_resend_verification_otp'             => ['post',     'users/resend-verification-otp',                  'UserController@postResendVerificationOtp'                          ],
+        'co_created_reset_password_admin'          => ['post',     'users/co_created/reset-password',                'UserController@postResetPasswordByEmailForCoCreated'               ],
         'user_reset_password_create'               => ['post',     'users/reset-password',                           'UserController@postResetPassword'                                  ],
         'user_reset_password_token'                => ['post',     'users/reset-password-token',                     'UserController@postChangePasswordByToken'                          ],
         'user_oauth_login'                         => ['post',     'users/oauth-login',                              'UserController@oAuthLogin'                                         ],
@@ -2771,6 +2772,7 @@ class Route
         'banking_account_send_notification_to_spoc_cron' => ['any', 'banking_accounts/send_notification',                      'BankingAccountController@sendNotificationToSPOC'],
         'banking_account_bulk_assign_reviewer'    => ['post',     'banking_accounts/reviewers',                                'BankingAccountController@bulkAssignReviewer'               ],
         'banking_account_gateway_balance_fetch'   => ['put',      'banking_accounts/gateway/{channel}/balance',                'BankingAccountController@processGatewayBalanceUpdate'      ],
+        'banking_account_create_lead'             => ['post',     'banking_accounts/rbl/lead',                                 'BankingAccountController@createRblLead'                    ],
         'banking_account_webhook_account_info'    => ['post',     'banking_accounts/webhooks/account_info/{channel}',          'BankingAccountController@processAccountInfoWebhook'        ],
         'banking_account_webhook_account_info'
          . '_internal'                            => ['post',     '/banking_accounts/internal/webhooks/account_info/{channel}','BankingAccountController@processAccountInfoWebhook'        ],
@@ -4299,6 +4301,7 @@ class Route
         'vault_token_renewal',
         'batch_send_mail',
         'banking_account_webhook_account_info',
+        'banking_account_create_lead',
         'gateway_downtime_detection_purge_keys',
         'downtime_detection_cron',
         'phonepe_downtime_detection_cron',
@@ -6132,6 +6135,7 @@ class Route
         'banking_account_webhook_account_info_internal',
         'banking_account_activation_status_change_log',
         'banking_account_comments_create',
+        'co_created_reset_password_admin',
         'banking_account_activation_mis_download',
         'banking_account_comments_list',
         'banking_account_call_log_list',
@@ -7464,6 +7468,7 @@ class Route
         'banking_account_activation_detail_create' => Permission::VIEW_ACTIVATION_FORM,
         'banking_account_activation_detail_update' => Permission::VIEW_ACTIVATION_FORM,
         'banking_account_comments_create'          => Permission::VIEW_ACTIVATION_FORM,
+        'co_created_reset_password_admin'          => Permission::VIEW_ACTIVATION_FORM,
         'banking_account_activation_mis_download'  => Permission::VIEW_ACTIVATION_FORM,
         'banking_account_comments_list'            => Permission::VIEW_ACTIVATION_FORM,
         'banking_account_call_log_list'            => Permission::VIEW_ACTIVATION_FORM,
@@ -9860,6 +9865,7 @@ class Route
             'banking_account_bulk_assign_reviewer',
             'banking_account_comment_edit',
             'banking_account_comments_create',
+            'co_created_reset_password_admin',
             'banking_account_comments_list',
             'banking_account_call_log_list',
             'banking_account_create',
@@ -12113,6 +12119,7 @@ class Route
 
         'rbl' => [
             'banking_account_webhook_account_info',
+            'banking_account_create_lead',
         ],
 
         'ecom' => [
@@ -13352,6 +13359,7 @@ class Route
         'banking_account_activation_detail_update',
         'banking_account_activation_mis_download',
         'banking_account_webhook_account_info',
+        'banking_account_create_lead',
 
         'banking_account_gateway_balance_fetch',
 

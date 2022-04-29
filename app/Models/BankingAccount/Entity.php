@@ -153,6 +153,7 @@ class Entity extends Base\PublicEntity
     const BOOKING_DATE_AND_TIME = 'booking_date_and_time';
     const BUSINESS_PAN_VALIDATION = 'business_pan_validation';
     const DECLARATION_STEP = 'declaration_step';
+    const APPLICATION_TYPE = 'application_type';
     const BUSINESS_CATEGORY = 'business_category';
     const BANK_ACCOUNT_TYPE = 'bank_account_type';
     const ASSIGNEE_TEAM = 'assignee_team';

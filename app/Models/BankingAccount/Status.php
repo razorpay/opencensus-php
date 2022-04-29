@@ -131,6 +131,7 @@ class Status
     ];
 
     protected static $statuses = [
+        // When application is started at rzp side
         self::CREATED,
         // When Razorpay starts processing the application
         self::PICKED,

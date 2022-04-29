@@ -54,6 +54,7 @@ class Status
     //
     const SUCCESS           = 'Success';
     const FAILURE           = 'Failure';
+    const FAIL              = 'Fail';
 
     // Other constants
     const ALL = '*';

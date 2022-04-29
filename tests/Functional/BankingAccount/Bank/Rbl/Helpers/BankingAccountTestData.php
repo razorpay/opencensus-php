@@ -694,6 +694,209 @@ return [
         ],
     ],
 
+    'testSuccessRblCoCreatedLeadCreation' => [
+        'request'  => [
+            'url'     => '/banking_accounts/rbl/lead',
+            'method'  => 'POST',
+            'content' => [
+                'NeoBankingLeadReq' => [
+                    'Header' => [
+                        'TranID'  => '1634732025132',
+                        'Corp_ID' => 'WEIZMANNIM'
+                    ],
+                    'Body'   => [
+                        'LeadID'                 => '550000',
+                        'EmailAddress'           => 'Harshada.Mohite1@rblbank.com',
+                        'Customer_Name'          => 'HarshadaMohite',
+                        'Customer_Mobile_Number' => '9876767676',
+                        'Customer_Address'       => 'Mulund',
+                        'Customer_PinCode'       => '400080',
+                        'Customer_City'          => 'Mulund'
+                    ]
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                "NeoBankingLeadResp" => [
+                    'Header' => [
+                        'TranID'        => '1634732025132',
+                        'Corp_ID'       => 'WEIZMANNIM',
+                        'Status'        => 'Success',
+                        'StatusMessage' => 'Data Successfully Inserted'
+                    ]
+                ]
+
+            ],
+        ],
+    ],
+
+    'testGetRblCoCreatedLeadsAfterCreation' => [
+        'request' => [
+            'url'     => '/admin/banking_account?count=20&skip=0&application_type=co_created',
+            'method'  => 'GET',
+            'content' => [
+                'expand' => ['merchant','merchant.merchantDetail'],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                ],
+            ],
+        ]
+    ],
+
+    'testAdminResetPasswordOnSuccessRblCoCreatedLeadCreation' => [
+        'request'  => [
+            'url'     => '/banking_accounts/rbl/lead',
+            'method'  => 'POST',
+            'content' => [
+                'NeoBankingLeadReq' => [
+                    'Header' => [
+                        'TranID'  => '1634732025132',
+                        'Corp_ID' => 'WEIZMANNIM'
+                    ],
+                    'Body'   => [
+                        'LeadID'                 => '550000',
+                        'EmailAddress'           => 'Harshada.Mohite1@rblbank.com',
+                        'Customer_Name'          => 'HarshadaMohite',
+                        'Customer_Mobile_Number' => '9876767676',
+                        'Customer_Address'       => 'Mulund',
+                        'Customer_PinCode'       => '400080',
+                        'Customer_City'          => 'Mulund'
+                    ]
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                "NeoBankingLeadResp" => [
+                    'Header' => [
+                        'TranID'        => '1634732025132',
+                        'Corp_ID'       => 'WEIZMANNIM',
+                        'Status'        => 'Success',
+                        'StatusMessage' => 'Data Successfully Inserted'
+                    ]
+                ]
+
+            ],
+        ],
+    ],
+
+    'testFailureRblCoCreatedLeadCreation' => [
+        'request'  => [
+            'url'     => '/banking_accounts/rbl/lead',
+            'method'  => 'POST',
+            'content' => [
+                'NeoBankingLeadReq' => [
+                    'Header' => [
+                        'TranID'  => '1634732025132',
+                        'Corp_ID' => 'WEIZMANNIM'
+                    ],
+                    'Body'   => [
+                        'LeadID'                 => '550000',
+                        'EmailAddress'           => 'Harshada.Mohite1@rblbank.com',
+                        'Customer_Name'          => '',
+                        'Customer_Mobile_Number' => '9876767676',
+                        'Customer_Address'       => 'Mulund',
+                        'Customer_PinCode'       => '400080',
+                        'Customer_City'          => 'Mulund'
+                    ]
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                    'Header' => [
+                        'TranID'        => '1634732025132',
+                        'Corp_ID'       => 'WEIZMANNIM',
+                        'Status'        => 'Fail',
+                        'ErrorDesc' => 'A schema validation error has occurred while validating the message tree,6008,1,1,213,cvc-minLength-valid: The length of value \"\" is \"0\" which is not valid with respect to the minLength facet with value \"1\" for type \"#Anonymous\".,/Root/XMLNSC/NeoBankingLeadReq/Body/Customer_Name'
+                    ]
+            ],
+        ],
+    ],
+
+    'testDuplicateRblCoCreatedLeadCreation' => [
+        'request'  => [
+            'url'     => '/banking_accounts/rbl/lead',
+            'method'  => 'POST',
+            'content' => [
+                'NeoBankingLeadReq' => [
+                    'Header' => [
+                        'TranID'  => '1634732025132',
+                        'Corp_ID' => 'WEIZMANNIM'
+                    ],
+                    'Body'   => [
+                        'LeadID'                 => '550000',
+                        'EmailAddress'           => 'Harshada.Mohite1@rblbank.com',
+                        'Customer_Name'          => 'HarshadaMohite',
+                        'Customer_Mobile_Number' => '9876767676',
+                        'Customer_Address'       => 'Mulund',
+                        'Customer_PinCode'       => '400080',
+                        'Customer_City'          => 'Mulund'
+                    ]
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'Header' => [
+                    'TranID'    => '1634732025132',
+                    'Corp_ID'   => 'WEIZMANNIM',
+                    'Status'    => 'Fail',
+                    'ErrorDesc' => 'EMAIL_ALREADY_EXIST'
+                ],
+            ],
+        ],
+    ],
+
+    'testSuccessLeadCreationAndWebhookForAccountOpening' => [
+        'request'  => [
+            'url'     => '/banking_accounts/webhooks/account_info/rbl',
+            'method'  => 'POST',
+            'content' => [
+                'RZPAlertNotiReq' => [
+                    'Body' => [
+                        'Account No.'       => '309002180853',
+                        'Customer Name'     => 'INTERNET BANKING CA',
+                        'Customer ID'       => 'Customer ID',
+                        'Account Open Date' => '22-05-2019',
+                        'RZP_Ref No'        => '15597',
+                        'IFSC'              => 'RBLN0000090',
+                        'Address1'          => 'RAM NAGAR',
+                        'Address2'          => 'ADARSHA LANE',
+                        'Address3'          => '.',
+                        'CITY'              => 'MUMBAI',
+                        'STATE'             => 'MAHARASH',
+                        'COUNTRY'           => 'INDIA',
+                        'PINCODE'           => '123456',
+                        'Phone no.'         => '9899807189',
+                        'Email Id'          => 'test@gmail.com'
+                    ],
+                    'Header' => [
+                        'TranID' => '12345'
+                    ]
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'RZPAlertNotiRes' => [
+                    'Header' => [
+                        'TranID' => '12345'
+                    ],
+                    'Body' => [
+                        'Status' => 'Success'
+                    ]
+                ]
+            ],
+        ],
+    ],
+
     'testSuccessBankAccountInfoNotification' => [
         'request'  => [
             'url'     => '/banking_accounts/webhooks/account_info/rbl',
@@ -2805,6 +3008,21 @@ return [
                 'expected_monthly_gmv' => '10000',
                 'account_type' => 'zero_balance',
                 "is_documents_walkthrough_complete" => '1',
+            ],
+        ],
+    ],
+
+    'testAddVerificationDate' => [
+        'request'  => [
+            'url'     => '/banking_accounts/activation/{id}/details',
+            'method'  => 'POST',
+            'content' => [
+                'verification_date' => 1639960752,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'verification_date' => '1639960752',
             ],
         ],
     ],

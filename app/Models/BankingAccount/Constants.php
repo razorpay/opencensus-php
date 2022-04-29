@@ -11,4 +11,12 @@ class Constants
     const X_OPS_TEAM = 'ops';
 
     const BANKING_ACCOUNT_SOURCE_TEAM_OR_TYPE_AS_INTERNAL = 'internal';
+
+    const STATUS_MESSAGE = 'StatusMessage';
+
+    const SUCCESS_MESSAGE = 'Data Successfully Inserted';
+
+    const ERROR_DESC = 'ErrorDesc';
+
+    const ERROR_MESSAGE = 'A schema validation error has occurred while validating the message tree,6008,1,1,213,cvc-minLength-valid: The length of value \"\" is \"0\" which is not valid with respect to the minLength facet with value \"1\" for type \"#Anonymous\".,/Root/XMLNSC/NeoBankingLeadReq/Body/%s';
 }

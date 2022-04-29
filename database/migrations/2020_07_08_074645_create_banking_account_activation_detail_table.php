@@ -57,6 +57,9 @@ class CreateBankingAccountActivationDetailTable extends Migration
             $table->string(Entity::BUSINESS_TYPE)
                   ->nullable();
 
+            $table->string(Entity::APPLICATION_TYPE)
+                  ->nullable();
+
             $table->unsignedBigInteger(Entity::AVERAGE_MONTHLY_BALANCE)
                   ->nullable();
 
@@ -81,6 +84,9 @@ class CreateBankingAccountActivationDetailTable extends Migration
 
             $table->boolean(Entity::CONTACT_VERIFIED)
                   ->default(0);
+
+            $table->integer(Entity::VERIFICATION_DATE)
+                  ->nullable();
 
             $table->boolean(Entity::DECLARATION_STEP)
                   ->nullable();

@@ -204,6 +204,23 @@ class Repository extends Base\Repository
         $query->where($assigneeTeamColumn, '=', $assigneeTeam);
     }
 
+    public function addQueryParamApplicationType($query, $params)
+    {
+        $applicationTypeColumn = $this->repo->banking_account_activation_detail->dbColumn(ActivationDetail\Entity::APPLICATION_TYPE);
+
+        $this->joinQueryActivationDetail($query);
+
+        // selecting only banking_accounts columns so that
+        // clashes between field names do not result in corrupted data
+        // For example, both merchants and banking_accounts have field 'channel'
+        $query->select($this->dbColumn('*'));
+
+        // case-insensitive exact match for merchant email
+        $applicationType = $params[ActivationDetail\Entity::APPLICATION_TYPE];
+
+        $query->where($applicationTypeColumn, '=', $applicationType);
+    }
+
     public function addQueryParamFromSlotBooked($query, $params)
     {
         $slotBookingColumn = $this->repo->banking_account_activation_detail->dbColumn(ActivationDetail\Entity::BOOKING_DATE_AND_TIME);

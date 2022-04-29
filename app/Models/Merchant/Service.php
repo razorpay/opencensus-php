@@ -203,6 +203,8 @@ class Service extends Base\Service
 
     const LINKED_ACCOUNT_BANK_ACCOUNT_UPDATE = 'linked_account_bank_account_update_%s';
 
+    const RBL_CO_CREATED = 'RBL_CO_CREATED';
+
     protected $mutex;
 
     protected $featureService;
@@ -6859,6 +6861,38 @@ class Service extends Base\Service
         }
     }
 
+    public function storeMerchantCaOnboardingFlow(Entity $merchant, string $caOnboardingFlow)
+    {
+        $attributeCore = new Attribute\Core;
+
+        $product = Product::BANKING;
+        $group   = Attribute\Group::X_MERCHANT_CURRENT_ACCOUNTS;
+        $type    = Attribute\Type::CA_ONBOARDING_FLOW;
+
+        try
+        {
+            $campaignTypeAttr = $attributeCore->fetch($merchant, $product, $group, $type);
+        }
+        catch (\Throwable $e)
+        {
+            $campaignTypeAttr = null;
+        }
+
+        // don't want to rewrite in case product switch happens again.
+        if ($campaignTypeAttr === null)
+        {
+            $attributeCore->create(
+                [
+                    Attribute\Entity::PRODUCT => $product,
+                    Attribute\Entity::GROUP   => $group,
+                    Attribute\Entity::TYPE    => $type,
+                    Attribute\Entity::VALUE   => $caOnboardingFlow
+                ],
+                $merchant
+            );
+        }
+    }
+
     protected function getLastRunAtKeyForSettlementsEventsCron(): string
     {
         $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
@@ -8377,7 +8411,7 @@ class Service extends Base\Service
 
         try
         {
-            $this->app->salesforce->sendNeostoneFlag($input);
+            $this->app->salesforce->sendXOnboardingToSalesforce($input);
         }
         catch(\Throwable $e)
         {

@@ -2,10 +2,12 @@
 
 namespace RZP\Models\BankingAccount;
 
+use Throwable;
 use Carbon\Carbon;
 use Mail;
 
 use RZP\Exception;
+use RZP\Error\Error;
 use RZP\Models\Base;
 use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
@@ -22,10 +24,13 @@ use RZP\Exception\BadRequestException;
 use RZP\Exception\IntegrationException;
 use RZP\Mail\BankingAccount\UpdatesForAuditor;
 use RZP\Models\BankingAccount\Activation\Comment;
+use RZP\Models\BankingAccount\Gateway\Rbl\Fields;
+use RZP\Models\Merchant\Balance\Type as ProductType;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Merchant\Balance\Ledger\Core as LedgerCore;
 use RZP\Models\BankingAccount\Activation\Notification\Event;
 use RZP\Models\BankingAccount\Activation\Detail as ActivationDetail;
+use RZP\Models\BankingAccount\Gateway\Rbl\RequestResponseFormatting;
 use RZP\Mail\BankingAccount\StatusNotificationsToSPOC\DiscrepancyInDoc;
 use RZP\Mail\BankingAccount\StatusNotificationsToSPOC\MerchantNotAvailable;
 use RZP\Mail\BankingAccount\StatusNotificationsToSPOC\MerchantPreparingDoc;
@@ -148,6 +153,77 @@ class Service extends Base\Service
 
         // Adding rbl Pincode serviceability and businessType supported to response
         return array_merge($account->toArrayPublic() , $resp);
+    }
+
+    /**
+     * @param array $input
+     *
+     * @return Entity
+     * @throws BadRequestException
+     * @throws Exception\LogicException
+     */
+    public function createInternal(array $input): Entity
+    {
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_CREATE_FOR_RBL_LEADS,
+            [
+                'input' => $input,
+            ]);
+
+        $this->validateOrgForBankingAccount($input[Entity::CHANNEL]);
+
+        (new Validator)->setStrictFalse()->validateInput(Validator::PRE_PROCESS_DASHBOARD, $input);
+
+        $activationDetailInput = $this->core->extractAndValidateActivationDetailInput($input);
+
+        $activationDetailInput = $this->preProcessActivationDetailCreateInput($activationDetailInput);
+
+        return $this->core->createBankingAccount($input, $this->merchant, $activationDetailInput, 'create_co_created');
+    }
+
+    /**
+     * @throws \Exception
+     */
+    public function createMerchantAndBankingEntities(array $input): array
+    {
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_CREATE_FROM_RBL_LEAD_API,
+            [
+                'input' => $input,
+            ]);
+
+        $requestResponseFormatting = new RequestResponseFormatting();
+
+        try
+        {
+            (new Validator)->validateInput(Validator::CREATE_LEAD_FROM_RBL, $input);
+        }
+        catch (Throwable $e)
+        {
+            return $requestResponseFormatting->processErrorAndReturnResponse($input[Fields::NEO_BANKING_LEAD_REQUEST][Fields::HEADER], Gateway\Rbl\Status::FAIL, $e);
+        }
+
+        try
+        {
+            $this->repo->transaction(function() use ($input, $requestResponseFormatting){
+
+                $this->createMerchantAndSetContext($input);
+
+                $bankingAccountCreatePayload = $requestResponseFormatting->extractBankingAccountPayload($input[Fields::NEO_BANKING_LEAD_REQUEST][Fields::BODY]);
+
+                $bankingAccount = $this->createInternal($bankingAccountCreatePayload);
+
+                $attributes = $requestResponseFormatting->extractBankingEntityUpdatePayload($input);
+
+                $this->core->updateBankingAccount($bankingAccount, $attributes, $bankingAccount->merchant, true);
+            });
+        }
+        catch (Throwable $e)
+        {
+            return $requestResponseFormatting->processErrorAndReturnResponse($input[Fields::NEO_BANKING_LEAD_REQUEST][Fields::HEADER], "", $e);
+        }
+
+        return $requestResponseFormatting->processErrorAndReturnResponse($input[Fields::NEO_BANKING_LEAD_REQUEST][Fields::HEADER], Gateway\Rbl\Status::SUCCESS);
     }
 
     /**
@@ -423,7 +499,6 @@ class Service extends Base\Service
         return $statusChangeLog;
     }
 
-
     public function getActivationStatusChangeLog(string $bankingAccountId)
     {
         /** @var Entity $bankingAccount */
@@ -598,7 +673,7 @@ class Service extends Base\Service
             });
 
         }
-        catch (\Throwable $e)
+        catch (Throwable $e)
         {
             // TODO: throw different validation errors for both the find queries.
             throw new BadRequestException(
@@ -618,7 +693,7 @@ class Service extends Base\Service
 
             $this->update($bankingAccount->getPublicId(), $updateInput);
         }
-        catch (\Throwable $e)
+        catch (Throwable $e)
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR, null, [], $e->getMessage());
         }
@@ -673,7 +748,7 @@ class Service extends Base\Service
                 Mail::queue($mailable);
             }
         }
-        catch (\Throwable $e)
+        catch (Throwable $e)
         {
             $this->trace->traceException(
                 $e,
@@ -1109,7 +1184,6 @@ class Service extends Base\Service
         return ($bankingAccountActivation->getContactVerified() === 1);
     }
 
-
     private function checkIfPersonalDetailFilledAndFireEvent(Entity $bankingAccount, array $activationDetailInput, string $channel)
     {
         if (isset($activationDetailInput[ActivationDetail\Entity::MERCHANT_POC_NAME]) === true)
@@ -1222,5 +1296,51 @@ class Service extends Base\Service
                 Mail::queue($mailable);
             }
         }
+    }
+
+    /**
+     * @param $id
+     *
+     * @return void
+     */
+    private function setMerchantContext($id): void
+    {
+        $merchantEntity = $this->repo->merchant->find($id);
+
+        $this->auth->setMerchant($merchantEntity);
+
+        $this->merchant = $merchantEntity;
+    }
+
+    /**
+     * @param array $input
+     *
+     * @return void
+     * @throws BadRequestException
+     * @throws \Exception
+     * @throws Throwable
+     */
+    private function createMerchantAndSetContext(array $input): void
+    {
+        $this->auth->setRequestOriginProduct(ProductType::BANKING);
+
+        $requestResponseFormatting = new RequestResponseFormatting();
+
+        $merchantCreatePayload = $requestResponseFormatting->extractMerchantCreatePayload($input);
+
+        $merchant = (new \RZP\Models\User\Service)->registerInternal($merchantCreatePayload);
+
+        $this->setMerchantContext($merchant['id']);
+
+        $preSignupDetails = $requestResponseFormatting->getPreSignupPayload($input);
+
+        (new \RZP\Models\Merchant\Detail\Service)->editPreSignupDetails($preSignupDetails);
+
+        $payload = [
+            'merchant_id' => $merchant['id'],
+            'x_onboarding_category'   => 'co-created'
+        ];
+
+        $this->app->salesforce->sendXOnboardingToSalesforce($payload);
     }
 }

@@ -871,6 +871,252 @@ class BankingAccountTest extends TestCase
         return $response;
     }
 
+    public function testSuccessRblCoCreatedLeadCreation()
+    {
+        $this->ba->appAuth('rzp_test', 'RANDOM_RBL_SECRET');
+
+        $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
+                            ->setMethods(['pushTrackEvent'])
+                            ->getMock();
+
+        $this->app->instance('segment-analytics', $segmentMock);
+
+        $segmentMock->expects($this->Exactly(2))
+                    ->method('pushTrackEvent')
+                    ->willReturn(true);
+
+        $response = $this->startTest();
+
+        $merchantAttribute = $this->getDbEntity('merchant_attribute');
+
+        $this->assertArraySelectiveEquals(
+            [
+                'product' => 'banking',
+                'group'   => 'x_merchant_current_accounts',
+                'type'    => 'ca_onboarding_flow',
+                'value'   => 'RBL_CO_CREATED'
+            ],
+            $merchantAttribute->toArrayPublic()
+        );
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->testAddVerificationDate($bankingAccount);
+
+        $changeLogRequest  = [
+            'url'     => '/banking_accounts/activation/' . 'bacc_' . $bankingAccount['id'] . '/status_change_log',
+            'method'  => 'GET',
+            'content' => []
+        ];
+
+        $this->ba->adminAuth();
+
+        $logs = $this->makeRequestAndGetContent($changeLogRequest);
+
+        $this->assertEquals('created', $logs['items'][0]['status']);
+
+        $bankingAccountActivationDetail = $this->getDbLastEntity('banking_account_activation_detail');
+
+        $this->assertEquals('ops', $bankingAccountActivationDetail['assignee_team']);
+
+        $this->assertEquals('co_created', $bankingAccountActivationDetail['application_type']);
+
+        return $response;
+    }
+
+    public function testGetRblCoCreatedLeadsAfterCreation()
+    {
+        $response = $this->testSuccessRblCoCreatedLeadCreation();
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+    }
+
+    public function testAdminResetPasswordOnSuccessRblCoCreatedLeadCreation()
+    {
+        $this->ba->appAuth('rzp_test', 'RANDOM_RBL_SECRET');
+
+        $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
+                            ->setMethods(['pushTrackEvent'])
+                            ->getMock();
+
+        $this->app->instance('segment-analytics', $segmentMock);
+
+        $segmentMock->expects($this->exactly(2))
+                    ->method('pushTrackEvent')
+                    ->willReturn(true);
+
+        $response = $this->startTest();
+
+        $merchantAttribute = $this->getDbEntity('merchant_attribute');
+
+        $this->assertArraySelectiveEquals(
+            [
+                'product' => 'banking',
+                'group'   => 'x_merchant_current_accounts',
+                'type'    => 'ca_onboarding_flow',
+                'value'   => 'RBL_CO_CREATED'
+            ],
+            $merchantAttribute->toArrayPublic()
+        );
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $changeLogRequest  = [
+            'url'     => '/banking_accounts/activation/' . 'bacc_' . $bankingAccount['id'] . '/status_change_log',
+            'method'  => 'GET',
+            'content' => []
+        ];
+
+        $this->ba->adminAuth();
+
+        $logs = $this->makeRequestAndGetContent($changeLogRequest);
+
+        $this->assertEquals('created', $logs['items'][0]['status']);
+
+        $bankingAccountActivationDetail = $this->getDbLastEntity('banking_account_activation_detail');
+
+        $this->assertEquals('ops', $bankingAccountActivationDetail['assignee_team']);
+
+        $this->assertEquals('co_created', $bankingAccountActivationDetail['application_type']);
+
+        $changeLogRequest  = [
+            'url'     => '/users/co_created/reset-password',
+            'method'  => 'POST',
+            'content' => [
+                'email' => 'Harshada.Mohite1@rblbank.com'
+            ]
+        ];
+
+        $this->ba->adminAuth();
+
+        $response = $this->makeRequestAndGetContent($changeLogRequest);
+
+        return $response;
+    }
+
+    public function testFailureRblCoCreatedLeadCreation()
+    {
+        $this->ba->appAuth('rzp_test', 'RANDOM_RBL_SECRET');
+
+        $response = $this->startTest();
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->assertEmpty($bankingAccount);
+
+        return $response;
+    }
+
+    public function testDuplicateRblCoCreatedLeadCreation()
+    {
+        $this->ba->appAuth('rzp_test', 'RANDOM_RBL_SECRET');
+
+        $request  = [
+            'url'     => '/banking_accounts/rbl/lead',
+            'method'  => 'POST',
+            'content' => [
+                'NeoBankingLeadReq' => [
+                    'Header' => [
+                        'TranID'  => '1634732025132',
+                        'Corp_ID' => 'WEIZMANNIM'
+                    ],
+                    'Body'   => [
+                        'LeadID'                 => '550000',
+                        'EmailAddress'           => 'Harshada.Mohite1@rblbank.com',
+                        'Customer_Name'          => 'HarshadaMohite',
+                        'Customer_Mobile_Number' => '9876767676',
+                        'Customer_Address'       => 'Mulund',
+                        'Customer_PinCode'       => '400080',
+                        'Customer_City'          => 'Mulund'
+                    ]
+                ],
+            ],
+        ];
+
+         $this->makeRequestAndGetContent($request);
+
+        return $this->startTest();
+    }
+
+    public function testSuccessLeadCreationAndWebhookForAccountOpening()
+    {
+        $request  = [
+            'url'     => '/banking_accounts/rbl/lead',
+            'method'  => 'POST',
+            'content' => [
+                'NeoBankingLeadReq' => [
+                    'Header' => [
+                        'TranID'  => '1634732025132',
+                        'Corp_ID' => 'WEIZMANNIM'
+                    ],
+                    'Body'   => [
+                        'LeadID'                 => '550000',
+                        'EmailAddress'           => 'Harshada.Mohite1@rblbank.com',
+                        'Customer_Name'          => 'HarshadaMohite',
+                        'Customer_Mobile_Number' => '9876767676',
+                        'Customer_Address'       => 'Mulund',
+                        'Customer_PinCode'       => '400080',
+                        'Customer_City'          => 'Mulund'
+                    ]
+                ],
+            ],
+        ];
+
+        $this->ba->appAuth('rzp_test', 'RANDOM_RBL_SECRET');
+
+        $this->makeRequestAndGetContent($request);
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->assertEquals('created', $bankingAccount->getStatus());
+
+        $this->fixtures->edit('banking_account',
+                              $bankingAccount['id'],
+                              [
+                                  'status' => 'initiated',
+                              ]);
+
+        $this->ba->appAuth('rzp_test', 'RANDOM_RBL_SECRET');
+
+        $dataToReplace = [
+            'request' => [
+                'content' => [
+                    'RZPAlertNotiReq' => [
+                        'Body' => [
+                            'RZP_Ref No' => $bankingAccount->getBankReferenceNumber()
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $response = $this->startTest($dataToReplace);
+
+        $changeLogRequest  = [
+            'url'     => '/banking_accounts/activation/' . 'bacc_' . $bankingAccount['id'] . '/status_change_log',
+            'method'  => 'GET',
+            'content' => []
+        ];
+
+        $this->ba->adminAuth();
+
+        $logs = $this->makeRequestAndGetContent($changeLogRequest);
+
+        $this->assertEquals('created', $logs['items'][0]['status']);
+        $this->assertEquals('processed', $logs['items'][1]['status']);
+        $this->assertEquals('api_onboarding_pending', $logs['items'][1]['sub_status']);
+        $this->assertEquals('closed', $logs['items'][1]['bank_status']);
+
+        $bankingAccountActivationDetail = $this->getDbLastEntity('banking_account_activation_detail');
+
+        $this->assertEquals('ops', $bankingAccountActivationDetail['assignee_team']);
+
+        return $response;
+    }
+
     public function testValidateAccountOpeningDateInWebhook()
     {
         $attribute = ['activation_status' => 'activated'];
@@ -5232,6 +5478,32 @@ class BankingAccountTest extends TestCase
     public function testUpdateActivationDetail(RZP\Models\BankingAccount\Entity $bankingAccount = null)
     {
         $bankingAccount = $this->testCreateActivationDetail(null, $bankingAccount);
+
+        $bankingAccountId = $bankingAccount['id'];
+
+        if(str_contains($bankingAccount['id'], Entity::getIdPrefix()) === false)
+        {
+            $bankingAccountId = $bankingAccount->getPublicId();
+        }
+
+        $dataToReplace  = [
+            'request' => [
+                'url'     => '/banking_accounts/activation/' . $bankingAccountId . '/details',
+                'method'  => 'PATCH',
+            ],
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->startTest($dataToReplace);
+    }
+
+    public function testAddVerificationDate(RZP\Models\BankingAccount\Entity $bankingAccount = null)
+    {
+        if ($bankingAccount === null)
+        {
+            $bankingAccount = $this->testCreateActivationDetail(null, $bankingAccount);
+        }
 
         $bankingAccountId = $bankingAccount['id'];
 

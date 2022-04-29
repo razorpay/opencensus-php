@@ -74,6 +74,9 @@ class Entity extends Base\PublicEntity
      */
     const BUSINESS_PAN = 'business_pan';
 
+    // This is to store verification date done by ops team
+    const VERIFICATION_DATE = 'verification_date';
+
     const CONTACT_VERIFIED = 'contact_verified';
 
     const AVERAGE_MONTHLY_BALANCE = 'average_monthly_balance';
@@ -126,7 +129,12 @@ class Entity extends Base\PublicEntity
 
     const BUSINESS_PAN_VALIDATION = 'business_pan_validation';
 
+    const APPLICATION_TYPE = 'application_type';
+
     const ADMIN_EMAIL = 'admin_email';
+
+    // Application Types
+    const CO_CREATED = 'co_created';
 
     protected $entity = 'banking_account_activation_detail';
 
@@ -153,6 +161,7 @@ class Entity extends Base\PublicEntity
         self::IS_DOCUMENTS_WALKTHROUGH_COMPLETE,
         self::COMMENT,
         self::ASSIGNEE_TEAM,
+        self::VERIFICATION_DATE,
         self::BOOKING_DATE_AND_TIME,
         self::SALES_TEAM,
         self::SALES_POC_PHONE_NUMBER,
@@ -164,6 +173,7 @@ class Entity extends Base\PublicEntity
         self::BUSINESS_TYPE,
         self::BUSINESS_PAN,
         self::DECLARATION_STEP,
+        self::APPLICATION_TYPE,
         self::ADDITIONAL_DETAILS,
     ];
 
@@ -185,6 +195,7 @@ class Entity extends Base\PublicEntity
         self::BUSINESS_TYPE,
         self::BUSINESS_PAN,
         self::CONTACT_VERIFIED,
+        self::VERIFICATION_DATE,
         self::AVERAGE_MONTHLY_BALANCE,
         self::ACCOUNT_TYPE,
         self::IS_DOCUMENTS_WALKTHROUGH_COMPLETE,
@@ -195,6 +206,7 @@ class Entity extends Base\PublicEntity
         self::COMMENT,
         self::RM_NAME,
         self::DECLARATION_STEP,
+        self::APPLICATION_TYPE,
         self::BUSINESS_PAN_VALIDATION,
         self::RM_PHONE_NUMBER,
         self::ACCOUNT_OPEN_DATE,
@@ -221,6 +233,7 @@ class Entity extends Base\PublicEntity
         self::BUSINESS_TYPE,
         self::BUSINESS_PAN,
         self::CONTACT_VERIFIED,
+        self::VERIFICATION_DATE,
         self::AVERAGE_MONTHLY_BALANCE,
         self::ACCOUNT_TYPE,
         self::IS_DOCUMENTS_WALKTHROUGH_COMPLETE,
@@ -229,6 +242,7 @@ class Entity extends Base\PublicEntity
         self::ASSIGNEE_TEAM,
         self::BOOKING_DATE_AND_TIME,
         self::DECLARATION_STEP,
+        self::APPLICATION_TYPE,
         self::BUSINESS_PAN_VALIDATION,
         self::COMMENT,
         self::RM_NAME,

@@ -44,6 +44,18 @@ class Fields
     const RZP_ALERT_NOTIFICATION_REQUEST    = 'RZPAlertNotiReq';
     const RZP_ALERT_NOTIFICATION_RESPONSE   = 'RZPAlertNotiRes';
 
+    // For RBL Co-Created Leads
+    const LEAD_ID                           = 'LeadID';
+    const CO_CREATED_CORP_ID                = 'Corp_ID';
+    const CUSTOMER_CITY                     = 'Customer_City';
+    const CUSTOMER_MOBILE_NUMBER            = 'Customer_Mobile_Number';
+    const CUSTOMER_ADDRESS                  = 'Customer_Address';
+    const CO_CREATED_CUSTOMER_NAME          = 'Customer_Name';
+    const CUSTOMER_PINCODE                  = 'Customer_PinCode';
+    const EMAIL_ADDRESS                     = 'EmailAddress';
+    const NEO_BANKING_LEAD_REQUEST          = 'NeoBankingLeadReq';
+    const NEO_BANKING_LEAD_RESPONSE         = 'NeoBankingLeadResp';
+
     // Credentials fields
     const CORP_ID                           = 'corp_id';
     const CLIENT_ID                         = 'client_id';

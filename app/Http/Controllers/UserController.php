@@ -341,6 +341,15 @@ class UserController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function postResetPasswordByEmailForCoCreated()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->sendResetPasswordSegmentEventAdmin($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function postChangePasswordByToken()
     {
         $input = Request::all();

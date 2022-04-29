@@ -12823,7 +12823,7 @@ IFSC Code  ICIC0001206
 
         $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000', 'contact_mobile' => '9999999999']);
 
-        $methodName = 'sendNeostoneFlag';
+        $methodName = 'sendXOnboardingToSalesforce';
 
         $salesforceClientMock = $this->getMockBuilder(SalesForceClient::class)
                                      ->setConstructorArgs([$this->app])

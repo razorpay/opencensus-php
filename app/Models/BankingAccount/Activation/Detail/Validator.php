@@ -84,6 +84,8 @@ class Validator extends Base\Validator
 
     const SALES_POC_ID = 'sales_poc_id';
 
+
+
     // placeholder create rules to allow both the below flows
     protected static $createRules = [
         Entity::BANKING_ACCOUNT_ID                  => 'required|string|size:14',
@@ -94,6 +96,7 @@ class Validator extends Base\Validator
         Entity::MERCHANT_CITY                       => 'sometimes|string|max:255',
         Entity::MERCHANT_STATE                      => 'sometimes|string|max:255',
         Entity::MERCHANT_DOCUMENTS_ADDRESS          => 'sometimes|string|max:255',
+        Entity::APPLICATION_TYPE                    => 'sometimes|string|in:co_created',
         Entity::MERCHANT_REGION                     => 'sometimes|string|max:255',
         Entity::EXPECTED_MONTHLY_GMV                => 'sometimes|integer|min:0',
         Entity::INITIAL_CHEQUE_VALUE                => 'sometimes|integer|min:0',
@@ -167,6 +170,33 @@ class Validator extends Base\Validator
         Entity::DECLARATION_STEP                    => 'sometimes|boolean'
     ];
 
+    // For current account form rbl
+    protected static $createCoCreatedRules = [
+        Entity::BANKING_ACCOUNT_ID                  => 'required|string|size:14',
+        Entity::MERCHANT_POC_NAME                   => 'sometimes|string|max:255',
+        Entity::MERCHANT_POC_DESIGNATION            => 'sometimes|string|max:255',
+        Entity::MERCHANT_POC_EMAIL                  => 'sometimes|string|max:255',
+        Entity::MERCHANT_POC_PHONE_NUMBER           => 'sometimes|string|max:255',
+        Entity::MERCHANT_CITY                       => 'sometimes|string|max:255',
+        Entity::MERCHANT_STATE                      => 'sometimes|string|max:255',
+        Entity::MERCHANT_DOCUMENTS_ADDRESS          => 'sometimes|string|max:255',
+        Entity::MERCHANT_REGION                     => 'sometimes|string|max:255',
+        Entity::EXPECTED_MONTHLY_GMV                => 'sometimes|integer|min:0',
+        Entity::INITIAL_CHEQUE_VALUE                => 'sometimes|integer|min:0',
+        Entity::BUSINESS_CATEGORY                   => 'sometimes|string|max:255|custom',
+        Entity::AVERAGE_MONTHLY_BALANCE             => 'sometimes|integer|min:0',
+        Entity::ACCOUNT_TYPE                        => 'sometimes|string|max:255',
+        Entity::IS_DOCUMENTS_WALKTHROUGH_COMPLETE   => 'sometimes|boolean',
+        Entity::ADDITIONAL_DETAILS                  => 'sometimes|json',
+        Entity::SALES_TEAM                          => 'sometimes|string|custom',
+        Entity::APPLICATION_TYPE                    => 'required|string|in:co_created',
+        Entity::ASSIGNEE_TEAM                       => 'sometimes|string|in:ops,bank,sales',
+        Entity::BUSINESS_NAME                       => 'sometimes|string|max:255',
+        Entity::BUSINESS_TYPE                       => 'sometimes|string|max:255|custom',
+        Entity::BUSINESS_PAN                        => 'sometimes|string|size:10',
+        Entity::DECLARATION_STEP                    => 'sometimes|boolean'
+    ];
+
     protected static $preProcessRules = [
         Entity::BUSINESS_CATEGORY                   => 'required|string|max:255|custom',
         Entity::SALES_TEAM                          => 'required|string|max:255|custom'
@@ -196,6 +226,7 @@ class Validator extends Base\Validator
         Entity::BOOKING_DATE_AND_TIME               => 'sometimes|epoch',
         Entity::ACCOUNT_OPEN_DATE                   => 'sometimes|epoch|nullable',
         Entity::ACCOUNT_LOGIN_DATE                  => 'sometimes|epoch|nullable',
+        Entity::VERIFICATION_DATE                   => 'sometimes|epoch|nullable',
         Entity::BUSINESS_NAME                       => 'sometimes|string|max:255',
         Entity::BUSINESS_TYPE                       => 'sometimes|string|max:255|custom',
         Entity::BUSINESS_PAN                        => 'sometimes|string|size:10',
@@ -289,7 +320,7 @@ class Validator extends Base\Validator
         self::PG_KAM,
         self::PG_DIRECT_SALES,
         self::SELF_SERVE,
-        self::NIT_PARTNERSHIPS
+        self::NIT_PARTNERSHIPS,
     ];
 
     public function validateBusinessCategory($attribute, $value)

@@ -69,6 +69,15 @@ class BankingAccountController extends Controller
         return $response;
     }
 
+    public function createRblLead()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->createMerchantAndBankingEntities($input);
+
+        return $response;
+    }
+
     public function bulkCreateBankingAccountsForYesbank()
     {
         $input = Request::all();

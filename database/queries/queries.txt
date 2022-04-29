@@ -6647,6 +6647,9 @@ ALTER TABLE merchant_notification_configs
     DROP COLUMN `last_enabled_at`,
     DROP COLUMN `last_disabled_at`;
 
+ALTER table banking_account_activation_details
+	ADD COLUMN verification_date int(11) default NULL;
+
 ALTER TABLE adjustments ADD COLUMN status varchar(14) default NULL;
 
 ALTER TABLE bank_transfers ADD COLUMN status varchar(14) default NULL;
@@ -6680,6 +6683,9 @@ ALTER TABLE promotions ADD COLUMN creator_email VARCHAR(255) DEFAULT NULL;
 ALTER TABLE addresses ADD COLUMN source_id CHAR(14) collate utf8mb4_bin DEFAULT NULL;
 
 ALTER TABLE addresses ADD COLUMN source_type varchar(20) DEFAULT NULL;
+
+ALTER table banking_account_activation_details
+    ADD application_type varchar(32) DEFAULT NULL;
 
 ALTER TABLE external MODIFY transaction_id char(14) null;
 

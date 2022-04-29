@@ -299,13 +299,13 @@ class Core extends Base\Core
      * @param array           $input
      * @param Merchant\Entity $merchant
      * @param array|null      $activationDetailInput
-     * @param string          $validatorOP
+     * @param string          $validatorOp
      *
      * @return Entity
      * @throws BadRequestException
      * @throws LogicException
      */
-    public function createBankingAccount(array $input, Merchant\Entity $merchant, ?array $activationDetailInput, string $validatorOP): Entity
+    public function createBankingAccount(array $input, Merchant\Entity $merchant, ?array $activationDetailInput, string $validatorOp): Entity
     {
         $channel = $input[Entity::CHANNEL];
 
@@ -361,13 +361,13 @@ class Core extends Base\Core
                 $bankingAccount->toArray(),
             ]);
 
-        $this->repo->transaction(function() use ($bankingAccount, $merchant, $bankContent, $activationDetailInput, $validatorOP)
+        $this->repo->transaction(function() use ($bankingAccount, $merchant, $bankContent, $activationDetailInput, $validatorOp)
         {
             $this->repo->saveOrFail($bankingAccount);
 
             if ($activationDetailInput !== null)
             {
-                $this->activationDetailService->createForBankingAccount($bankingAccount->getPublicId(), $activationDetailInput, $validatorOP);
+                $this->activationDetailService->createForBankingAccount($bankingAccount->getPublicId(), $activationDetailInput, $validatorOp);
             }
 
             $stateCore = new State\Core;
@@ -376,15 +376,7 @@ class Core extends Base\Core
 
         });
 
-        if ($validatorOP !== 'create_dashboard')
-        {
-            $this->notifyOpsAboutProActivation($bankingAccount);
-
-            $this->notifyMerchantAboutUpdatedStatus($bankingAccount);
-
-            $this->notifier->notify($bankingAccount, Event::STATUS_CHANGE);
-            $this->notifier->notify($bankingAccount, Event::SUBSTATUS_CHANGE);
-        }
+        $this->shouldNotifyOpsAboutProActivation($validatorOp, $bankingAccount);
 
         $this->sendSegmentEvent($bankingAccount, $merchant);
 
@@ -2002,6 +1994,25 @@ class Core extends Base\Core
         $activatedBankingAccounts['count'] = count($activatedBankingAccounts['items']);
 
         return $activatedBankingAccounts;
+    }
+
+    /**
+     * @param string $validatorOP
+     * @param Entity $bankingAccount
+     *
+     * @return void
+     */
+    protected function shouldNotifyOpsAboutProActivation(string $validatorOP, Entity $bankingAccount): void
+    {
+        if ($validatorOP !== 'create_dashboard' && $validatorOP != 'create_co_created')
+        {
+            $this->notifyOpsAboutProActivation($bankingAccount);
+
+            $this->notifyMerchantAboutUpdatedStatus($bankingAccount);
+
+            $this->notifier->notify($bankingAccount, Event::STATUS_CHANGE);
+            $this->notifier->notify($bankingAccount, Event::SUBSTATUS_CHANGE);
+        }
     }
 
     /** Fetch merchant BA status (supports only RBL and ICICI channels for now)

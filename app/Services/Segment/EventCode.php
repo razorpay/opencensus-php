@@ -22,7 +22,7 @@ class EventCode
     const BANKING_ACCOUNT_STATUS_CHANGE = "Banking Account Status Change";
     const BANKING_ACCOUNT_DOCUMENT_VERIFICATION_STATUS = "Banking Account Document Verification Status";
 
-    const DEDUPE = 'Dedupe';
+    const DEDUPE                    = 'Dedupe';
 
     //M2M events
     const ADVOCATE_REFERRAL_CREDITS = 'Advocate Referral Credits';

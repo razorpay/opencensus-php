@@ -137,7 +137,7 @@ class SalesForceClient
         );
     }
 
-    public function sendNeostoneFlag($data)
+    public function sendXOnboardingToSalesforce($data)
     {
         $url = $this->generateUrlForMerchantUpsert();
 
