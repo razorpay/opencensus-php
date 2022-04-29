@@ -397,6 +397,8 @@ class Name
     const CAPITAL_LOS_BUREAU_COMPLIANCE_EDIT     = 'capital_los_bureau_compliance_edit';
     const CAPITAL_LOS_DEVELOPER                  = 'capital_los_developer';
     const CAPITAL_LOS_SCORECARD_FILES_DELETE     = 'capital_los_scorecard_files_delete';
+    const CAPITAL_LOS_D2C_INVITE_READ            = 'capital_los_d2c_invite_read';
+    const CAPITAL_LOS_D2C_INVITE_EDIT            = 'capital_los_d2c_invite_edit';
 
     //permission to edit/execute bulk international disable/enable workflowAction
     const EDIT_MERCHANT_DISABLE_INTERNATIONAL_BULK    = 'edit_merchant_disable_international_bulk';

@@ -1658,6 +1658,14 @@ return [
                 'description' => 'Allow access to delete scorecard files',
                 'assignable'  => true,
             ],
+            Permission::CAPITAL_LOS_D2C_INVITE_READ => [
+                'description' => 'Allows an admin user to list existing invites for D2C bureau report pull',
+                'assignable'  => true,
+            ],
+            Permission::CAPITAL_LOS_D2C_INVITE_EDIT => [
+                'description' => 'Allows an admin user to request for an invite for D2C bureau report pull',
+                'assignable'  => true,
+            ],
         ],
 
         PermissionCategory::PAYOUTS => [
