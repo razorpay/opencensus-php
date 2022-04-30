@@ -1511,7 +1511,9 @@ class Service extends Base\Service
 
                     $ledgerResponse = (new LedgerCore())->fetchBalanceFromLedger($merchantId, $bankingAccount->getPublicId());
 
-                    if (empty($ledgerResponse) === false)
+                    if ((empty($ledgerResponse) === false) &&
+                        (empty($ledgerResponse[LedgerCore::MERCHANT_BALANCE]) === false) &&
+                        (empty($ledgerResponse[LedgerCore::MERCHANT_BALANCE][LedgerCore::BALANCE]) === false))
                     {
                         $b[Balance\Entity::BALANCE] = (int) $ledgerResponse[LedgerCore::MERCHANT_BALANCE][LedgerCore::BALANCE];
                     }

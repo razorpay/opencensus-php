@@ -3,10 +3,8 @@
 namespace RZP\Models\Transaction\Statement\Ledger\AccountDetail;
 
 use Db;
-use Illuminate\Database\Query\JoinClause;
-
 use RZP\Models\Base;
-use RZP\Constants\Environment;
+use Illuminate\Database\Query\JoinClause;
 use RZP\Models\Transaction\Statement\Ledger\Account;
 /**
  * Class Repository
@@ -25,14 +23,14 @@ class Repository extends Base\Repository
      *          inner join `ledger`.`accounts`
      *              on `ledger`.`accounts`.`id` = `ledger`.`account_details`.`account_id`
      *          where `ledger`.`account_details`.`merchant_id` = '10000000000000' and
-     *                JSON_CONTAINS( ledger.account_details.entities, '["bacc_01234567890123"]', '$.banking_account_id');
+     *                JSON_CONTAINS( ledger.account_details.entities, '["merchant_va"]', '$.fund_account_type');
      *
      * @param string $merchantId
-     * @param string $bankingAccountId
+     * @param string $fundAccountType
      * @param string|null $connectionType
      * @return array
      */
-    public function fetchBalance(string $merchantId, string $bankingAccountId, string $connectionType = null) :array
+    public function fetchBalanceByFundAccountType(string $merchantId, string $fundAccountType, string $connectionType = null) :array
     {
         $connection = $this->getConnectionFromType($connectionType);
         $query = $this->newQueryWithConnection($connection);
@@ -54,7 +52,7 @@ class Repository extends Base\Repository
             });
 
         $query->where($accountDetailMerchantIdColumn, $merchantId);
-        $query->whereRaw('JSON_CONTAINS( ' . $accountDetailEntitiesColumn . ', \'["' . $bankingAccountId . '"]\', \'$.banking_account_id\')');
+        $query->whereRaw('JSON_CONTAINS( ' . $accountDetailEntitiesColumn . ', \'["' . $fundAccountType . '"]\', \'$.fund_account_type\')');
 
         return $query->get()
                      ->toArray();

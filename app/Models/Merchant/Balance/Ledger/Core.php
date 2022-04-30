@@ -431,7 +431,7 @@ class Core extends Base\Core
 
                 if($ledgerBalanceFetchTiDBEnabled)
                 {
-                    $ledgerResponse = $this->fetchBalanceFromLedgerTiDB($merchantId, $bankingAccountId);
+                    $ledgerResponse = $this->fetchBalanceFromLedgerTiDB($merchantId);
                 }
                 else
                 {
@@ -472,7 +472,7 @@ class Core extends Base\Core
                             self::BANKING_ACCOUNT_ID => $bankingAccountId
                         ]);
 
-                    $ledgerResponse = $this->fetchBalanceFromLedgerTiDB($merchantId, $bankingAccountId);
+                    $ledgerResponse = $this->fetchBalanceFromLedgerTiDB($merchantId);
                 }
 
             }
@@ -506,56 +506,29 @@ class Core extends Base\Core
      * @param string $bankingAccountId
      * @return array
      */
-    private function fetchBalanceFromLedgerTiDB(string $merchantId, string $bankingAccountId) :array
+    private function fetchBalanceFromLedgerTiDB(string $merchantId) :array
     {
         $balanceResponse = [];
         $startTime = millitime();
 
         try
         {
-            $accounts = $this->repo->account_detail->fetchBalance($merchantId, $bankingAccountId, ConnectionType::RX_DATA_WAREHOUSE_MERCHANT);
+
+            $merchantAccounts = $this->repo->account_detail->fetchBalanceByFundAccountType($merchantId, Ledger\Base::MERCHANT_VA, ConnectionType::RX_DATA_WAREHOUSE_MERCHANT);
+
+            $rewardAccounts = $this->repo->account_detail->fetchBalanceByFundAccountType($merchantId, Ledger\Base::REWARD, ConnectionType::RX_DATA_WAREHOUSE_MERCHANT);
 
             $this->trace->info(TraceCode::LEDGER_ACCOUNT_FETCH_BALANCE_FROM_TIDB_RESPONSE,
                 [
-                    'response' => $accounts,
+                    'merchant_accounts' => $merchantAccounts,
+                    'reward_accounts'   => $rewardAccounts,
                 ]
             );
 
-            $merchantBalance = [];
-            $rewardBalance = [];
-            foreach($accounts as $account)
-            {
-                $entities = json_decode($account[Ledger\Base::ENTITIES], true);
-
-                if((empty($entities[Ledger\Base::FUND_ACCOUNT_TYPE]) === true) ||
-                    (empty($entities[Ledger\Base::ACCOUNT_TYPE]) === true))
-                {
-                    continue;
-                }
-
-                if (($entities[Ledger\Base::FUND_ACCOUNT_TYPE][0] === Ledger\Base::MERCHANT_VA) and
-                    ($entities[Ledger\Base::ACCOUNT_TYPE][0] === Ledger\Base::PAYABLE))
-                {
-                    $merchantBalance = [
-                        Ledger\Base::BALANCE     => $account[Ledger\Base::BALANCE],
-                        Ledger\Base::MIN_BALANCE => $account[Ledger\Base::MIN_BALANCE],
-                    ];
-                }
-
-                if (($entities[Ledger\Base::FUND_ACCOUNT_TYPE][0] === Ledger\Base::REWARD) and
-                    ($entities[Ledger\Base::ACCOUNT_TYPE][0] === Ledger\Base::PAYABLE))
-                {
-                    $rewardBalance = [
-                        Ledger\Base::BALANCE     => $account[Ledger\Base::BALANCE],
-                        Ledger\Base::MIN_BALANCE => $account[Ledger\Base::MIN_BALANCE],
-                    ];
-                }
-            }
-
             $balanceResponse = [
                 Ledger\Base::MERCHANT_ID      => $merchantId,
-                Ledger\Base::MERCHANT_BALANCE => $merchantBalance,
-                Ledger\Base::REWARD_BALANCE   => $rewardBalance,
+                Ledger\Base::MERCHANT_BALANCE => $this->constructLedgerBalanceResponse(Ledger\Base::MERCHANT_VA, Ledger\Base::PAYABLE, $merchantAccounts),
+                Ledger\Base::REWARD_BALANCE   => $this->constructLedgerBalanceResponse(Ledger\Base::REWARD, Ledger\Base::PAYABLE, $rewardAccounts),
             ];
 
         }
@@ -566,8 +539,7 @@ class Core extends Base\Core
                 Trace::ERROR,
                 TraceCode::LEDGER_ACCOUNT_FETCH_BALANCE_FROM_TIDB_ERROR,
                 [
-                    self::MERCHANT_ID        => $merchantId,
-                    self::BANKING_ACCOUNT_ID => $bankingAccountId
+                    self::MERCHANT_ID  => $merchantId,
                 ]);
         }
         finally
@@ -579,6 +551,37 @@ class Core extends Base\Core
                 ]);
         }
         return $balanceResponse;
+    }
+
+    /**
+     * This function constructs ledger balance response from the Ledger TiDB query result.
+     * @param string $fundAccountType
+     * @param string $accountType
+     * @param array $ledgerAccounts
+     * @return array
+     */
+    private function constructLedgerBalanceResponse(string $fundAccountType, string $accountType, array $ledgerAccounts) :array {
+        $balance = [];
+
+        foreach($ledgerAccounts as $account) {
+
+            $entities = json_decode($account[Ledger\Base::ENTITIES], true);
+
+            if ((empty($entities[Ledger\Base::FUND_ACCOUNT_TYPE]) === true) ||
+                (empty($entities[Ledger\Base::ACCOUNT_TYPE]) === true)) {
+                continue;
+            }
+
+            if (($entities[Ledger\Base::FUND_ACCOUNT_TYPE][0] === $fundAccountType) and
+                ($entities[Ledger\Base::ACCOUNT_TYPE][0] === $accountType))
+            {
+                $balance = [
+                    Ledger\Base::BALANCE     => $account[Ledger\Base::BALANCE],
+                    Ledger\Base::MIN_BALANCE => $account[Ledger\Base::MIN_BALANCE],
+                ];
+            }
+        }
+        return $balance;
     }
 
     /**

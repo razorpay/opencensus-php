@@ -493,8 +493,9 @@ class Entity extends Base\PublicEntity
                     ->findByMerchantAndAccountNumberPublic($this->merchant, $accountNumber);
 
                 $ledgerResponse = (new LedgerCore())->fetchBalanceFromLedger($this->merchant->getId(), $bankingAccount->getPublicId());
-                if (empty($ledgerResponse) === false and
-                    empty($ledgerResponse[LedgerCore::MERCHANT_BALANCE][LedgerCore::BALANCE]) === false)
+                if ((empty($ledgerResponse) === false) &&
+                    (empty($ledgerResponse[LedgerCore::MERCHANT_BALANCE]) === false) &&
+                    (empty($ledgerResponse[LedgerCore::MERCHANT_BALANCE][LedgerCore::BALANCE]) === false))
                 {
                     $balance = (int) $ledgerResponse[LedgerCore::MERCHANT_BALANCE][LedgerCore::BALANCE];
                 }

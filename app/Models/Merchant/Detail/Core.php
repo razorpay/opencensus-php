@@ -3451,7 +3451,9 @@ class Core extends Base\Core
         {
             $ledgerResponse = (new LedgerCore())->fetchBalanceFromLedger($merchantId, $bankingAccountId);
 
-            if (empty($ledgerResponse) === false)
+            if ((empty($ledgerResponse) === false) &&
+                (empty($ledgerResponse[LedgerCore::REWARD_BALANCE]) === false) &&
+                (empty($ledgerResponse[LedgerCore::REWARD_BALANCE][LedgerCore::BALANCE]) === false))
             {
                 (new LedgerCore())->constructCreditBalanceFromLedger($creditBalances, $ledgerResponse);
             }

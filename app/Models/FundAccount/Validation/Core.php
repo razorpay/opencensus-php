@@ -546,6 +546,7 @@ class Core extends Base\Core
 
             $ledgerResponse = (new LedgerCore())->fetchBalanceFromLedger($merchant->getId(), $bankingAccount->getPublicId());
             if ((empty($ledgerResponse) === false) &&
+                (empty($ledgerResponse[LedgerCore::MERCHANT_BALANCE]) === false) &&
                 (empty($ledgerResponse[LedgerCore::MERCHANT_BALANCE][LedgerCore::BALANCE]) === false))
             {
                 $balanceAmount = (int) $ledgerResponse[LedgerCore::MERCHANT_BALANCE][LedgerCore::BALANCE];
