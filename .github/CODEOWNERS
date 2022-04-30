@@ -165,3 +165,4 @@ wercker.yml                                             @razorpay/security      
 phpunit.xml                                             vivek.kumar@razorpay.com                                praveen.patlola@razorpay.com
 
 .github/actions/                                        @razorpay/ZeroTouchWarriors
+devspace.yaml                                           @razorpay/devstack-devs

@@ -57,4 +57,5 @@ api.iml
 error_codes/
 
 .devspace/
+devspace.yaml
 .phpunit.result.cache
