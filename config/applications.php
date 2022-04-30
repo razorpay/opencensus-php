@@ -1275,4 +1275,8 @@ return [
         'user' => env('DOWNTIME_MANAGER_USER'),
         'password' => env('DOWNTIME_MANAGER_PASSWORD')
     ],
+
+    'tls_config' => [
+        'offline_challan_validate' => env('OFFLINE_CHALLAN_VALIDATE_DOMAINS')
+    ]
 ];

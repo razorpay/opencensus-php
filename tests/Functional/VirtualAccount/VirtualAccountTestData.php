@@ -1729,6 +1729,26 @@ return [
         ],
     ],
 
+    'testValidateOfflineChallanWithoutCert' => [
+        'request' => [
+            'convertContentToString'    => false,
+            'url'                       => '/validate/ecollect/offline',
+            'method'                    => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Authentication failed',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_UNAUTHORIZED,
+        ],
+    ],
 
     'testCreateVirtualAccountWithTerminalCaching' => [
         'name'            => 'Test virtual account',

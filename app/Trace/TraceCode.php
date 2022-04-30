@@ -1530,6 +1530,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const GET_SETTLEMENTS_FOR_OPTIMIZER_MERCHANT_DASHBOARD_FAILED   = 'GET_SETTLEMENTS_FOR_OPTIMIZER_MERCHANT_DASHBOARD_FAILED';
 
+    const SSL_HEADER_MISSING                                    = 'SSL_HEADER_MISSING';
+    const SSL_CERT_VALIDATION_FAILED                            = 'SSL_CERT_VALIDATION_FAILED';
+
     const VPA_CREATE_REQUEST                                    = 'VPA_CREATE_REQUEST';
     const VPA_CREATED                                           = 'VPA_CREATED';
     const VPA_DELETE_REQUEST                                    = 'VPA_DELETE_REQUEST';

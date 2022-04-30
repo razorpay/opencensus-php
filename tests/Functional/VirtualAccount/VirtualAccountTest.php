@@ -45,6 +45,9 @@ class VirtualAccountTest extends TestCase
     use DbEntityFetchTrait;
     use TestsBusinessBanking;
 
+
+    const CERT_HEADER = "MIIEijCCA3KgAwIBAgISAzgKAtod4gDjTIBJ8WjAsm2QMA0GCSqGSIb3DQEBCwUAMEoxCzAJBgNVBAYTAlVTMRYwFAYDVQQKEw1MZXQncyBFbmNyeXB0MSMwIQYDVQQDExpMZXQncyBFbmNyeXB0IEF1dGhvcml0eSBYMzAeFw0yMDAxMjAxMTM1MDhaFw0yMDA0MTkxMTM1MDhaMBkxFzAVBgNVBAMTDm1lLmNhcHRuZW1vLmluMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEKiHRLPycuRmk4Axg4iVsx%2FLCsy4HMsGY9eaKDQf1CdOBlCesfiV2nFV2uDDEoCSXew7pdT6euOqXxof5AK7KO6OCAmQwggJgMA4GA1UdDwEB%2FwQEAwIHgDAdBgNVHSUEFjAUBggrBgEFBQcDAQYIKwYBBQUHAwIwDAYDVR0TAQH%2FBAIwADAdBgNVHQ4EFgQU91WgMLm1jARQ9lvpUhbn4qWj4dwwHwYDVR0jBBgwFoAUqEpqYwR93brm0Tm3pkVl7%2FOo7KEwbwYIKwYBBQUHAQEEYzBhMC4GCCsGAQUFBzABhiJodHRwOi8vb2NzcC5pbnQteDMubGV0c2VuY3J5cHQub3JnMC8GCCsGAQUFBzAChiNodHRwOi8vY2VydC5pbnQteDMubGV0c2VuY3J5cHQub3JnLzAZBgNVHREEEjAQgg5tZS5jYXB0bmVtby5pbjBMBgNVHSAERTBDMAgGBmeBDAECATA3BgsrBgEEAYLfEwEBATAoMCYGCCsGAQUFBwIBFhpodHRwOi8vY3BzLmxldHNlbmNyeXB0Lm9yZzCCAQUGCisGAQQB1nkCBAIEgfYEgfMA8QB2ALIeBcyLos2KIE6HZvkruYolIGdr2vpw57JJUy3vi5BeAAABb8LzFagAAAQDAEcwRQIhAOahbBazK8ZbNoxS0G%2Fp3O1isv2uC2Hw1mdGecZX6ht%2BAiAa8pGGRBot6eOcxpKsERwsLfiV7yMh4mpjmqDRFFbh8AB3AG9Tdqwx8DEZ2JkApFEV%2F3cVHBHZAsEAKQaNsgiaN9kTAAABb8LzFgYAAAQDAEgwRgIhAP00xmaJSXTUACvcIiyLo0JBcdjFxA87vvJVkNCigV8EAiEAwyiAmV7u61b3KiKzUndQFbxHDVkNHOC%2B80i6CTaf11wwDQYJKoZIhvcNAQELBQADggEBAG8pLvzL7fX4Fjsy4SMlr1QNJh4XDf1Qk89ZOSs6BosDakC8AdhB1%2FP1jV7FFh%2FImJFC8FOqGpOtdNlaqX%2Bb5ehVnttWByl3VrMtXg2RluYGJTel0hoGutfwkP602jdp3NAJN%2BKApFSXEAK3viXevycBBtHjVxZ4aXrkXARJxOqRXFXvdSs3ouWg0JjjpBsO0NnKmL9GkxAAmmw2CYv1WJSRNKDQkwfwFaL6n6caZN6N4Eg%2FTBZDCPn2zFIz3vWNvJJQsjjg5VJtovK2MqGOnb1qGKqCXjDX4HHsNhyilQaqxFLs7KBl22Am%2Bo2%2BuVBsTZT5wjIWDfzHHxvqB%2BaEcUU%3D,MIIEkjCCA3qgAwIBAgIQCgFBQgAAAVOFc2oLheynCDANBgkqhkiG9w0BAQsFADA%2FMSQwIgYDVQQKExtEaWdpdGFsIFNpZ25hdHVyZSBUcnVzdCBDby4xFzAVBgNVBAMTDkRTVCBSb290IENBIFgzMB4XDTE2MDMxNzE2NDA0NloXDTIxMDMxNzE2NDA0NlowSjELMAkGA1UEBhMCVVMxFjAUBgNVBAoTDUxldCdzIEVuY3J5cHQxIzAhBgNVBAMTGkxldCdzIEVuY3J5cHQgQXV0aG9yaXR5IFgzMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAnNMM8FrlLke3cl03g7NoYzDq1zUmGSXhvb418XCSL7e4S0EFq6meNQhY7LEqxGiHC6PjdeTm86dicbp5gWAf15Gan%2FPQeGdxyGkOlZHP%2FuaZ6WA8SMx%2Byk13EiSdRxta67nsHjcAHJyse6cF6s5K671B5TaYucv9bTyWaN8jKkKQDIZ0Z8h%2FpZq4UmEUEz9l6YKHy9v6Dlb2honzhT%2BXhq%2Bw3Brvaw2VFn3EK6BlspkENnWAa6xK8xuQSXgvopZPKiAlKQTGdMDQMc2PMTiVFrqoM7hD8bEfwzB%2FonkxEz0tNvjj%2FPIzark5McWvxI0NHWQWM6r6hCm21AvA2H3DkwIDAQABo4IBfTCCAXkwEgYDVR0TAQH%2FBAgwBgEB%2FwIBADAOBgNVHQ8BAf8EBAMCAYYwfwYIKwYBBQUHAQEEczBxMDIGCCsGAQUFBzABhiZodHRwOi8vaXNyZy50cnVzdGlkLm9jc3AuaWRlbnRydXN0LmNvbTA7BggrBgEFBQcwAoYvaHR0cDovL2FwcHMuaWRlbnRydXN0LmNvbS9yb290cy9kc3Ryb290Y2F4My5wN2MwHwYDVR0jBBgwFoAUxKexpHsscfrb4UuQdf%2FEFWCFiRAwVAYDVR0gBE0wSzAIBgZngQwBAgEwPwYLKwYBBAGC3xMBAQEwMDAuBggrBgEFBQcCARYiaHR0cDovL2Nwcy5yb290LXgxLmxldHNlbmNyeXB0Lm9yZzA8BgNVHR8ENTAzMDGgL6AthitodHRwOi8vY3JsLmlkZW50cnVzdC5jb20vRFNUUk9PVENBWDNDUkwuY3JsMB0GA1UdDgQWBBSoSmpjBH3duubRObemRWXv86jsoTANBgkqhkiG9w0BAQsFAAOCAQEA3TPXEfNjWDjdGBX7CVW%2Bdla5cEilaUcne8IkCJLxWh9KEik3JHRRHGJouM2VcGfl96S8TihRzZvoroed6ti6WqEBmtzw3Wodatg%2BVyOeph4EYpr%2F1wXKtx8%2FwApIvJSwtmVi4MFU5aMqrSDE6ea73Mj2tcMyo5jMd6jmeWUHK8so%2FjoWUoHOUgwuX4Po1QYz%2B3dszkDqMp4fklxBwXRsW10KXzPMTZ%2BsOPAveyxindmjkW8lGy%2BQsRlGPfZ%2BG6Z6h7mjem0Y%2BiWlkYcV4PIWL1iwBi8saCbGS5jN2p8M%2BX%2BQ7UNKEkROb3N6KOqkqm57TH2H3eDJAkSnh6%2FDNFu0Qg%3D%3D";
+
     protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__.'/VirtualAccountTestData.php';
@@ -2993,8 +2996,58 @@ class VirtualAccountTest extends TestCase
 
         $this->ba->hdfcOtcAuth();
 
-        $this->startTest($testData);
+        $this->testData[__FUNCTION__]['request']['headers']['HTTP_X-Forwarded-Tls-Client-Cert'] = [self::CERT_HEADER];
 
+        $this->startTest($testData);
+    }
+
+    public function testValidateOfflineChallanWithoutCert()
+    {
+        $content = [
+            'amount' => 1000,
+            'currency' => 'INR',
+            'receipt' => 'rec1',
+            'customer_additional_info' => [
+                'property_id' => '12345',
+                'property_value' => 'abc'
+            ],
+        ];
+
+        $orderId = $this->generateOrderId($content);
+
+        $terminalCreteData = [
+            'gateway'                  => 'offline_hdfc',
+            'gateway_merchant_id'      => '12345678',
+            'gateway_secure_secret'    => '12345',
+            'offline'                   =>  1,
+            'merchant_id'              =>  '10000000000000',
+        ];
+
+        $this->fixtures->create(
+            'terminal', $terminalCreteData);
+
+        $this->fixtures->merchant->enableOffline();
+
+        $virtualAccount = $this->createVirtualAccountForOfflineOrder($orderId, ['customer_id' => $this->customer['id'],'receivers' => ['offline_challan']]);
+
+        $requestContent = [
+            'challan_no' => $virtualAccount['receivers'][0]['challan_number'],
+            'client_code' => $terminalCreteData['gateway_merchant_id'],
+            'identification_id' => '12345',
+
+        ];
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content'] = $functionalRequestContent ?? $requestContent;
+
+        $testData['request']['content']['challan_no'] = $virtualAccount['receivers'][0]['challan_number'];
+
+        $testData['request']['content']['challan_no'] = 'asdaf1q124314112';
+
+        $this->ba->hdfcOtcAuth();
+
+        $res = $this->startTest($testData);
     }
 
     public function testValidateOfflineChallanClientCodeNotFound()
@@ -3202,6 +3255,8 @@ class VirtualAccountTest extends TestCase
 
         $this->ba->hdfcOtcAuth();
 
+        $testData['request']['headers']['HTTP_X-Forwarded-Tls-Client-Cert'] = [self::CERT_HEADER];
+
         $this->startTest($testData);
 
     }
@@ -3278,6 +3333,8 @@ class VirtualAccountTest extends TestCase
             $testData['response']['content']['challan_no'] = '';
 
         $this->ba->hdfcOtcAuth();
+
+        $testData['request']['headers']['HTTP_X-Forwarded-Tls-Client-Cert'] = [self::CERT_HEADER];
 
         $this->startTest($testData);
 

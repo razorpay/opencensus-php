@@ -12,16 +12,22 @@ use RZP\Http\OAuth;
 use RZP\Http\Route;
 use RZP\Trace\Tracer;
 use RZP\Http\P2pRoute;
+use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
 use RZP\Http\FeatureAccess;
 use RZP\Http\Response\Header;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Http\Edge\PreAuthenticate;
 use RZP\Http\Edge\PostAuthenticate;
+use RZP\Exception\BadRequestException;
+
 
 class Authenticate
 {
     // Lists of metrics
     const METRIC_AUTH_HANDLE_MILLISECONDS = 'authenticate_handle_milliseconds.histogram';
+
+    const SSL_CERT_HEADER = 'X-Forwarded-Tls-Client-Cert';
 
     /**
      * Application instance
@@ -120,6 +126,11 @@ class Authenticate
         if ($ret === null)
         {
             $ret = (new FeatureAccess)->verifyOrgLevelFeatureAccess();
+        }
+
+        if ($ret === null)
+        {
+            $ret = $this->verifyTlsCertWhitelisted($request, $route);
         }
 
         $passport = $this->requestContext->passport;
@@ -334,5 +345,68 @@ class Authenticate
         }
 
         return $res;
+    }
+
+    private function verifyTlsCertWhitelisted($request, $route)
+    {
+        if (in_array($route, Route::$tlsRoutes) === false)
+        {
+            return null;
+        }
+
+        $tlsRouteConfig = $this->app['api.route']->getTLSConfig();
+
+        $whiteListedDomainsString = $tlsRouteConfig[$route];
+
+        $whiteListedDomains = explode (",", $whiteListedDomainsString);
+
+        if (in_array('*', $whiteListedDomains) === true)
+        {
+            return null;
+        }
+
+        if ($request->hasHeader(self::SSL_CERT_HEADER) === false)
+        {
+            app()->trace->info(
+                TraceCode::SSL_HEADER_MISSING,
+                []
+            );
+
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_UNAUTHORIZED);
+        }
+
+        $certsString = $request->header(self::SSL_CERT_HEADER);
+
+        $certsArray = explode(',', $certsString);
+
+        foreach($certsArray as $cert)
+        {
+            $cert = urldecode($cert);
+
+            $start = "-----BEGIN CERTIFICATE-----\n";
+
+            $end = "\n-----END CERTIFICATE-----";
+
+            $cert = $start . $cert . $end;
+
+            $certDetails = openssl_x509_parse($cert);
+
+            if ($certDetails !== false)
+            {
+                $certCN = $certDetails["subject"]["CN"];
+
+                if (in_array($certCN, $whiteListedDomains) === true)
+                {
+                    return null;
+                }
+            }
+        }
+
+        app()->trace->info(
+            TraceCode::SSL_CERT_VALIDATION_FAILED,
+            []
+        );
+
+        throw new BadRequestException(ErrorCode::BAD_REQUEST_UNAUTHORIZED);
     }
 }

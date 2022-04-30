@@ -12666,6 +12666,10 @@ class Route
         'cron',
     ];
 
+    public static $tlsRoutes = [
+        'offline_challan_validate',
+    ];
+
     protected static $jsonpRoutes = [
         'checkout',
         'payment_create_jsonp',
@@ -14586,6 +14590,11 @@ class Route
         $secret = $this->app->config->get('app.key');
 
         return hash_hmac('sha1', $string, $secret);
+    }
+
+    public function getTLSConfig(): array
+    {
+        return $this->app->config->get('applications.tls_config');
     }
 
     public function routeThroughMasterReplica(): bool
