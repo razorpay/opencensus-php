@@ -189,8 +189,8 @@ jobs:
                    "commit_id": "${{ github.sha }}",
                    "chart_values": {
                       "replicas": 2,
-                      "web_requests_cpu": "100m",
-                      "web_requests_memory": "100Mi"
+                      "web_requests_cpu": "150m",
+                      "web_requests_memory": "500Mi"
                    }
                },
                "dependencies": []
