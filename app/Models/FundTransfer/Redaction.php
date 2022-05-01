@@ -12,6 +12,12 @@ class Redaction
         'beneficiaryName',
         'beneficiaryContact',
         'credentials',
+        'handle',
+        'username',
+        'beneficiary_mobile',
+        'beneficiary_email',
+        'account_number',
+        'name',
     ];
 
     //RedactData will redact all keys from maskingkeys array on passed input.

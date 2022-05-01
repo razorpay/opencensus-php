@@ -207,16 +207,15 @@ class Base
         }
 
         $this->trace->info(TraceCode::FTS_RESPONSE, [
-            'response' => $response->body
+            'response' => (new Redaction())->redactData(json_decode($response->body, true))
         ]);
 
         if ($response->status_code === 409)
         {
             throw new Exception\RecordAlreadyExists(
                 'record already exists',
-                ErrorCode::BAD_REQUEST_FTS_DUPLICATE_TRANSFER_REQUEST_SENT, [
-                'response' => $response->body,
-            ]);
+                ErrorCode::BAD_REQUEST_FTS_DUPLICATE_TRANSFER_REQUEST_SENT
+            );
         }
 
         return $this->parseResponse($response);
@@ -335,7 +334,6 @@ class Base
                 'Unexpected response code received from FTS.',
                 [
                     'status_code'   => $code,
-                    'response_body' => json_decode($response->body),
                 ]);
         }
 
