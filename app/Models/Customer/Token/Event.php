@@ -9,6 +9,7 @@ use RZP\Error\Error;
 use RZP\Diag\EventCode;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Card;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Services\KafkaProducer;
 use RZP\Trace\TraceCode;
@@ -94,7 +95,7 @@ class Event extends Base\Core
 
             $eventData = $this->fetchRequestEventData($library, $input);
 
-            $eventData += $this->fetchResponseEventData($exe, $eventData, $response);
+            $eventData = $this->fetchResponseEventData($exe, $eventData, $response);
 
             $context = [
                 'task_id' => $this->app['request']->getTaskId(),
@@ -160,7 +161,7 @@ class Event extends Base\Core
 
         if (empty($response))
         {
-            return [];
+            return $eventData;
         }
 
         if ($response instanceof \Requests_Response)
@@ -168,11 +169,13 @@ class Event extends Base\Core
             $response = json_decode($response->body, true);
         }
 
+        $eventData = $this->getCardDetails($response, $eventData);
+
         if ((isset($response['service_provider_tokens']) === true) && (empty($response['service_provider_tokens']) === false))
         {
             $sptToken = $response['service_provider_tokens'][0];
 
-            return [
+            $eventData += [
                 'status'        => 'SUCCESS',
                 'spt_token'     => isset($sptToken['id']) ? $sptToken['id'] : null,
                 'payment_account_reference' => ((isset($sptToken['provider_data'])) && isset($sptToken['provider_data']['payment_account_reference']))
@@ -184,12 +187,14 @@ class Event extends Base\Core
             ];
         }
 
-        return [
+        $eventData += [
                 'status' => 'SUCCESS',
                 'spt_token'  => isset($response['id']) ? $response['id'] : null,
-                'token'      => isset($response['token']) ? $response['token'] : null,
+                'token_id'      => isset($response['token']) ? $response['token'] : null,
                 'payment_account_reference' => isset($response['fingerprint']) ? $response['fingerprint'] : null,
             ];
+
+        return $eventData;
     }
 
     /**
@@ -199,7 +204,10 @@ class Event extends Base\Core
      */
     protected function fetchRequestEventData(string $library, $input): array
     {
-        $eventData = [];
+        $eventData = [
+            'internal_service_request'  => isset($input['internal_service_request']) ? $input['internal_service_request'] : null,
+            'async'                     => isset($input['async']) ? $input['async'] : null,
+        ];
 
         if (isset($input['merchant']))
         {
@@ -229,14 +237,45 @@ class Event extends Base\Core
                 'token'                     =>  isset($input['id']) ? $input['id'] :
                                         (isset($input['token_id']) ? $input['token_id'] :
                                             (isset($input['token'])? $input['token'] : null)),
-                'card_number_sent'          =>  is_null($input['tokenised']) === true ? null : !$input['tokenised'],
-
-                'internal_service_request'  => isset($input['internal_service_request']) ? $input['internal_service_request'] : null,
+                'card_number_sent'          =>  isset($input['tokenised']) === false ? null : !$input['tokenised'],
             ];
         }
 
         return $eventData;
     }
+
+    /**
+     * @param $response
+     * @param array $eventData
+     * @return array
+     */
+    public function getCardDetails($response, $eventData)
+    {
+        if((isset($eventData['card_iin']) === false)
+            && ((isset($response['service_provider_tokens'][0]['provider_data']['token_number']) === true)
+            || isset($response['token_number']) === true))
+        {
+            $tokenNumber = isset($response['token_number']) === true ? $response['token_number'] : $response['service_provider_tokens'][0]['provider_data']['token_number'];
+
+            $tokenIIN = substr($tokenNumber, 0, 9);
+
+            $eventData['token_iin'] = $tokenIIN;
+
+            $cardIIN = Card\IIN\IIN::getTransactingIinforRange($tokenIIN);
+
+            $iin = $this->repo->card->retrieveIinDetails($cardIIN);
+
+            $eventData += [
+                'card_iin'     => $cardIIN,
+                 'card_issuer' => $iin->getIssuer(),
+                'card_network' => $iin->getNetwork(),
+                'card_category'=> $iin->getCategory(),
+                'card_type'    => $iin->getType(),
+            ];
+        }
+        return $eventData;
+    }
+
 
     public function trackTokenEvent(string $eventType,
                                     string $eventVersion,
@@ -247,7 +286,7 @@ class Event extends Base\Core
                                     string $writeKey = null,
                                     array  $context = null)
     {
-        $topicName = 'events' . '.' .  $eventType . '.' . $eventVersion . '.' .  'live';
+        $topicName = 'events' . '.' .  $eventType . '.' . $eventVersion . '.' .  $this->mode;
 
         $event = [
             'event_name'          => $event['name'],

@@ -201,6 +201,8 @@ class CardVault extends Base\Core
             ];
         }
 
+        $input['async'] = isset($cardInput['async']) ? $cardInput['async'] : null;
+
         $input['iin'] = $iinInfo;
 
         if (empty($cardInput['merchant_token']) === false)
@@ -215,11 +217,12 @@ class CardVault extends Base\Core
         return $this->app['card.cardVault']->migrateToTokenizedCard($input);
     }
 
-    public function fetchCryptogram($serviceProviderTokenId, $merchant)
+    public function fetchCryptogram($serviceProviderTokenId, $merchant, $internalServiceRequest = false)
     {
         $input = [
             'is_service_provider_token' => true,
             'service_provider_token'    => $serviceProviderTokenId,
+            'internal_service_request'  => $internalServiceRequest,
         ];
 
         $input = $this->setMerchantDetails($input, $merchant);
@@ -227,9 +230,12 @@ class CardVault extends Base\Core
         return $this->app['card.cardVault']->fetchCryptogram($input);
     }
 
-    public function fetchCryptogramFromVaultToken($vaultToken, $merchant)
+    public function fetchCryptogramFromVaultToken($vaultToken, $merchant, $internalServiceRequest = false)
     {
-        $input['token'] = $vaultToken;
+        $input = [
+            'token'                    => $vaultToken,
+            'internal_service_request' => $internalServiceRequest,
+        ];
 
         $input = $this->setMerchantDetails($input, $merchant);
 
@@ -238,7 +244,7 @@ class CardVault extends Base\Core
 
     public function fetchCryptogramForPayment($cardVaultToken, $merchant)
     {
-        $response = $this->fetchCryptogramFromVaultToken($cardVaultToken, $merchant);
+        $response = $this->fetchCryptogramFromVaultToken($cardVaultToken, $merchant, true);
 
         return $response['service_provider_tokens'][0]['provider_data'];
     }
@@ -247,9 +253,12 @@ class CardVault extends Base\Core
         return $this->app['card.cardVault']->fetchParValue($input);
     }
 
-    public function fetchToken($cardVaultToken)
+    public function fetchToken($cardVaultToken, $internalServiceRequest)
     {
-        $input['token'] = $cardVaultToken;
+        $input = [
+            'token'                    => $cardVaultToken,
+            'internal_service_request' => $internalServiceRequest,
+        ];
 
         return $this->app['card.cardVault']->fetchToken($input);
     }

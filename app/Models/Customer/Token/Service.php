@@ -630,9 +630,10 @@ class Service extends Base\Service
 
     public function pushFetchTokenEvents(& $input, $isPar)
     {
+        $input["tokenised"] = null;
+
         if($isPar){
             $input += [
-                "tokenised"                => null,
                 "internal_service_request" => false,
                 "merchant"                 => [
                     "id"                   => $this->merchant->getId(),
@@ -646,7 +647,7 @@ class Service extends Base\Service
         }
     }
 
-    public function fetchNetworkToken(& $input, $isPar = false)
+    public function fetchNetworkToken(& $input, $isPar = false, $internalServiceRequest = false)
     {
         $startTime = microtime(true);
 
@@ -658,7 +659,7 @@ class Service extends Base\Service
 
                 $token = $this->repo->token->findOrFailByPublicIdAndMerchant($input['id'], $this->merchant);
 
-                $this->addAdditionalInputParamsIfPresent($token, $input);
+                $this->addAdditionalInputParamsIfPresent($token, $input, false, $internalServiceRequest);
 
                 $this->pushFetchTokenEvents($input, $isPar);
 
@@ -666,7 +667,7 @@ class Service extends Base\Service
 
                 if ($this->merchant->isFeatureEnabled(Feature\Constants::ALLOW_NETWORK_TOKENS) === true || $isPar)
                 {
-                    $serviceProviderTokens = $this->core->fetchToken($token);
+                    $serviceProviderTokens = $this->core->fetchToken($token, $internalServiceRequest);
                 }
 
                 if(!$isPar && !empty($serviceProviderTokens[0]["provider_data"]["network_reference_id"]))
@@ -718,7 +719,7 @@ class Service extends Base\Service
     }
 
     // To do : We need to add the logic to get provider_name on the basis of provider_type
-    public function fetchParValue($input)
+    public function fetchParValue($input, $internalServiceRequest = false)
     {
         $startTime = microtime(true);
 
@@ -747,7 +748,7 @@ class Service extends Base\Service
 
                 unset($input["token"]);
 
-                $data = $this->fetchNetworkToken($input, true);
+                $data = $this->fetchNetworkToken($input, true, true);
 
                 $result["provider"] = $data["card"]["network"];
             }
@@ -755,7 +756,7 @@ class Service extends Base\Service
             {
                 $this->trace->info(TraceCode::FETCH_PAR_VALUE);
 
-                list($network, $data) = $this->core->fetchParValue($input);
+                list($network, $data) = $this->core->fetchParValue($input, $internalServiceRequest);
 
                 $result["network"] = $network;
             }
@@ -799,7 +800,7 @@ class Service extends Base\Service
 
                 $token = $isSptToken ? $input['id'] : $token = $this->repo->token->getByPublicIdAndMerchant($input['token_id'], $this->merchant);
 
-                $this->addAdditionalInputParamsIfPresent($token, $input, $isSptToken);
+                $this->addAdditionalInputParamsIfPresent($token, $input, $isSptToken, false);
 
                 (new Token\Event())->pushEvents($input, Event::NETWORK_CRYPTOGRAM, "_REQUEST_RECEIVED");
 
@@ -1034,7 +1035,7 @@ class Service extends Base\Service
 
     protected function triggerStatusWebhook($input, $dbToken)
     {
-        $serviceProviderTokens = $this->core->fetchToken($dbToken);
+        $serviceProviderTokens = $this->core->fetchToken($dbToken, true);
 
         $eventPayload = [
             ApiEventSubscriber::MAIN => $dbToken,
@@ -1222,14 +1223,17 @@ class Service extends Base\Service
      * @param $input
      * @param bool $isSptToken
      */
-    protected function addAdditionalInputParamsIfPresent($token, &$input, $isSptToken = false)
+    protected function addAdditionalInputParamsIfPresent($token, &$input, $isSptToken, $internalServiceRequest)
     {
         if (isset($token) === false)
         {
             return;
         }
 
-        $input['spt_token'] = $isSptToken;
+        $input += [
+            'internal_service_request' => $internalServiceRequest,
+            'spt_token'                => $isSptToken
+        ];
 
         if (empty($this->merchant) === false)
         {

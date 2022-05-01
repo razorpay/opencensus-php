@@ -95,7 +95,7 @@ class SavedCardTokenisationJob extends Job
              * on receiving the response, new card entity is created
              * existing token entity is associated to new card entity
              */
-            $this->tokenCore->migrateToTokenizedCard($token, $cardInput);
+            $this->tokenCore->migrateToTokenizedCard($token, $cardInput, true);
 
             $this->trace->info(TraceCode::SAVED_CARD_TOKENISATION_JOB_SUCCESS, [
                 'tokenId' => $this->tokenId,

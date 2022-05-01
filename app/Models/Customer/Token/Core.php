@@ -1652,9 +1652,13 @@ class Core extends Base\Core
         return [$token, $serviceProviderTokens];
     }
 
-    public function migrateToTokenizedCard($token, $cardInput)
+    public function migrateToTokenizedCard($token, $cardInput, $isAsync = false)
     {
-        $cardInput['merchant_token'] = $token->getId();
+        $cardInput += [
+            'merchant_token' => $token->getId(),
+            'async'          => $isAsync
+        ];
+
 
         list($card, $serviceProviderTokens) = (new Card\Core)->migrateToTokenizedCard($token->card, $token->merchant, $cardInput);
 
@@ -1692,7 +1696,7 @@ class Core extends Base\Core
         return [$result, $result != $iin];
     }
 
-    public function setInstrumentationInput(& $input, $iin, $isTokenized)
+    public function setInstrumentationInput(& $input, $iin, $isTokenized, $internalServiceRequest)
     {
         $IINEntity = $this->repo->card->retrieveIinDetails($iin);
 
@@ -1707,7 +1711,7 @@ class Core extends Base\Core
             "merchant"     => [
                 "id"       => $this->merchant->getId(),
             ],
-            "internal_service_request" => false,
+            "internal_service_request" => $internalServiceRequest,
         ];
 
         if($isTokenized)
@@ -1720,13 +1724,14 @@ class Core extends Base\Core
         }
     }
 
-    public function fetchParValue(& $input)
+    // Pass internal Service request as false only if Par is being called from any Merchant/External
+    public function fetchParValue(& $input, $internalServiceRequest)
     {
         (new Validator)->validateInput(Validator::FETCH_PAR_VALUE, $input);
 
         list($iin, $isTokenized) = $this->getIIN($input);
 
-        $this->setInstrumentationInput($input, $iin, $isTokenized);
+        $this->setInstrumentationInput($input, $iin, $isTokenized, $internalServiceRequest);
 
         (new Token\Event())->pushEvents($input, Event::PAR_API, "_REQUEST_RECEIVED");
 
@@ -1821,9 +1826,9 @@ class Core extends Base\Core
     }
 
 
-    public function fetchToken($token)
+    public function fetchToken($token, $internalServiceRequest)
     {
-        $response = (new Card\Core)->fetchToken($token->card);
+        $response = (new Card\Core)->fetchToken($token->card, $internalServiceRequest);
 
         return $response[Entity::SERVICE_PROVIDER_TOKENS];
     }

@@ -26,6 +26,8 @@ class Metric extends Base\Core
     const LABEL_STATUS                          = 'status';
     const LABEL_STATUS_CODE                     = 'status_code';
     const LABEL_ACTION                          = 'action';
+    const LABEL_INTERNAL_SERVICE_REQUEST        = 'internal_service_request';
+    const LABEL_ASYNC                           = 'async';
     const LABEL_TRACE_CODE                      = 'code';
     const LABEL_TRACE_FIELD                     = 'field';
     const LABEL_TRACE_SOURCE                    = 'source';
@@ -44,6 +46,9 @@ class Metric extends Base\Core
 
             $dimensions[self::LABEL_ACTION] = $action;
 
+            $dimensions[self::LABEL_INTERNAL_SERVICE_REQUEST] = isset($input[self::LABEL_INTERNAL_SERVICE_REQUEST]) ? $input[self::LABEL_INTERNAL_SERVICE_REQUEST] : null;
+
+            $dimensions[self::LABEL_ASYNC] = isset($input[self::LABEL_ASYNC]) ? $input[self::LABEL_ASYNC] : null;
 
             if ($exe !== null)
             {
