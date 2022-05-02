@@ -1281,11 +1281,6 @@ class Constants
     const ACCEPT_ONLY_3DS_PAYMENTS = 'accept_only_3ds_payments';
 
     /**
-     * Feature flag encompasses changes for optimisation of payouts summary api
-     */
-    const OPTIMISE_SUMMARY_API = 'optimise_summary_api';
-
-    /**
      * Feature flag to enable pricing automation at sub merchant bulk upload
      */
     const SUB_MERCHANT_PRICING_AUTOMATION = 'subm_pricing_automation';
@@ -1802,7 +1797,6 @@ class Constants
         self::RECURRING_CARD_MANDATE_BILLDESK_SIHUB => true,
         self::RAZORPAYX_FLOWS_VIA_OAUTH       => true,
         self::ACCEPT_ONLY_3DS_PAYMENTS        => true,
-        self::OPTIMISE_SUMMARY_API            => true,
         self::SUB_MERCHANT_PRICING_AUTOMATION => true,
         self::BLOCKLIST_FOR_WORKFLOW_SERVICE  => true,
         self::ONE_CLICK_DUAL_CHECKOUT         => true,

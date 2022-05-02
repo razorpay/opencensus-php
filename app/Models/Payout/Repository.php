@@ -413,32 +413,6 @@ class Repository extends Base\Repository
         return $query->get();
     }
 
-    public function fetchQueuedAndOnHoldPayouts(string $merchantId,
-                                                string $balanceType = Balance\Type::BANKING)
-    {
-        // select(payouts.*) because if we don't restrict to payouts table columns,
-        // collection_item->balance will return the balance field from joined table
-        // as opposed to the expected eager-loaded balance entity
-
-        $statusColumn      = $this->repo->payout->dbColumn(Entity::STATUS);
-        $merchantIdColumn  = $this->repo->payout->dbColumn(Entity::MERCHANT_ID);
-
-        $query = $this->newQueryWithConnection($this->getSlaveConnection())
-                      ->with(['balance', 'merchant'])
-                      ->select($this->getTableName() . ".*")
-                      ->where($merchantIdColumn, '=', $merchantId)
-                      ->wherein($statusColumn,[Status::QUEUED, Status::ON_HOLD]);
-
-        $this->joinQueryBalance($query);
-
-        $balanceTypeColumn = $this->repo->balance->dbColumn(Merchant\Balance\Entity::TYPE);
-
-        $query->where($balanceTypeColumn, '=', $balanceType);
-
-        return $query->limit(self::QUEUED_PAYOUTS_FETCH_LIMIT)
-                     ->get();
-    }
-
     public function fetchScheduledPayouts(string $merchantId)
     {
         $statusColumn       = $this->repo->payout->dbColumn(Entity::STATUS);

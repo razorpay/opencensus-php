@@ -997,7 +997,7 @@ class ScheduledPayoutTest extends TestCase
                      'balance' =>  10000000,
                      'count' => 1,
                      'total_amount' =>  1000000000,
-                     'total_fees' =>  1770,
+                     'total_fees' =>  0,
                       ],
                 ],
                 // Only 1 pending payout
@@ -1011,34 +1011,34 @@ class ScheduledPayoutTest extends TestCase
                         'balance' =>  10000000,
                         'count' =>  2,
                         'total_amount' =>  2000,
-                        'total_fees' =>  1180,
+                        'total_fees' =>  0,
                     ],
                     // Only 1 scheduled payout in next 2 days (amount 2000)
                     'next_two_days' =>  [
                         'balance' =>  10000000,
                         'count' =>  1,
                         'total_amount' =>  2000,
-                        'total_fees' =>  590,
+                        'total_fees' =>  0,
                     ],
                     // 2 scheduled payout in next 7 days (amount 2000 and 3000 each)
                     'next_week' =>  [
                         'balance' =>  10000000,
                         'count' =>  2,
                         'total_amount' =>  5000,
-                        'total_fees' =>  1180,
+                        'total_fees' =>  0,
                     ],
                     // 3 scheduled payout in next 7 days (amount 2000, 3000 and 4000 each)
                     'next_month' =>  [
                         'balance' =>  10000000,
                         'count' =>  3,
                         'total_amount' =>  9000,
-                        'total_fees' =>  1770,
+                        'total_fees' =>  0,
                     ],
                     'all_time' =>  [
                         'balance' =>  10000000,
                         'count' =>  5,
                         'total_amount' =>  11000,
-                        'total_fees' =>  2950,
+                        'total_fees' =>  0,
                     ],
                 ],
             ],

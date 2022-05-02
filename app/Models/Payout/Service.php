@@ -1648,14 +1648,7 @@ class Service extends Base\Service
                 'description' => 'going to fetch queued payouts',
             ]);
 
-        if ($this->merchant->isFeatureEnabled(Features::OPTIMISE_SUMMARY_API) === true)
-        {
-            $queuedPayouts = $this->repo->payout->fetchOptimisedQueuedAndOnHoldPayouts($merchantId);
-        }
-        else
-        {
-            $queuedPayouts = $this->repo->payout->fetchQueuedAndOnHoldPayouts($merchantId);
-        }
+        $queuedPayouts = $this->repo->payout->fetchOptimisedQueuedAndOnHoldPayouts($merchantId);
 
         $this->trace->info(
             TraceCode::PAYOUT_SUMMARY_API_ANALYSIS,
@@ -1663,37 +1656,13 @@ class Service extends Base\Service
                 'description' => 'completed fetching queued payouts',
             ]);
 
-        if ($this->merchant->isFeatureEnabled(Features::OPTIMISE_SUMMARY_API) === true)
+        foreach ($queuedPayouts as $payout)
         {
-            foreach ($queuedPayouts as $payout)
-            {
-                $bankingAccountId = (new BankingAccountService\Core())->fetchBankingAccountId($payout['balance_id']);
+            $bankingAccountId = (new BankingAccountService\Core())->fetchBankingAccountId($payout['balance_id']);
 
-                $summaryForQueuedReason = $this->processQueuedSummaryAggregate($payout);
+            $summaryForQueuedReason = $this->processQueuedSummaryAggregate($payout);
 
-                $queuedPayoutsSummary[$bankingAccountId][Status::QUEUED][$payout['queued_reason']] = $summaryForQueuedReason;
-            }
-        }
-        else
-        {
-            $allQueuedReasons = QueuedReasons::QUEUED_REASONS_WITH_DESCRIPTION;
-
-            $groupedQueuedPayouts = $queuedPayouts->groupBy(Entity::BALANCE_ID);
-
-            foreach ($groupedQueuedPayouts as $balanceId => $queuedPayouts)
-            {
-                $bankingAccountId = (new BankingAccountService\Core())->fetchBankingAccountId($balanceId);
-
-                foreach ($allQueuedReasons as $queuedReason => $queuedDesc)
-                {
-                    $summaryForQueuedReason = $this->processQueuedSummaryForReason($queuedReason, $queuedPayouts);
-
-                    if ($summaryForQueuedReason['count'] > 0)
-                    {
-                        $queuedPayoutsSummary[$bankingAccountId][Status::QUEUED][$queuedReason] = $summaryForQueuedReason;
-                    }
-                }
-            }
+            $queuedPayoutsSummary[$bankingAccountId][Status::QUEUED][$payout['queued_reason']] = $summaryForQueuedReason;
         }
 
         $this->trace->info(
@@ -1703,31 +1672,6 @@ class Service extends Base\Service
             ]);
 
         return $queuedPayoutsSummary;
-    }
-
-    protected function processQueuedSummaryForReason(string $reason, $queuedPayouts)
-    {
-        $currentBalance = $queuedPayouts->first()->balance->getBalance();
-
-        $queuedPayoutsForReason = $this->filterQueuedPayoutsBasedOnReason($queuedPayouts, $reason);
-
-        $totalAmount = $totalFees = 0;
-
-        foreach ($queuedPayoutsForReason as $payout)
-        {
-            $totalAmount += $payout->getAmount();
-
-            list($fees, $tax, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($payout);
-
-            $totalFees += $fees;
-        }
-
-        return [
-            'balance'       => $currentBalance,
-            'count'         => count($queuedPayoutsForReason),
-            'total_amount'  => $totalAmount,
-            'total_fees'    => $totalFees,
-        ];
     }
 
     protected function processQueuedSummaryAggregate($queuedPayouts)
@@ -1801,13 +1745,6 @@ class Service extends Base\Service
         foreach ($scheduledPayoutsForTimePeriod as $payout)
         {
             $totalAmount += $payout->getAmount();
-
-            if($this->merchant->isFeatureEnabled(Features::OPTIMISE_SUMMARY_API) === false)
-            {
-                list($fees, $tax, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($payout);
-
-                $totalFees += $fees;
-            }
         }
 
         return [
