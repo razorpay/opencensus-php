@@ -233,6 +233,8 @@ class CreateMerchants extends Migration
             $table->bigInteger(Merchant::BALANCE_THRESHOLD)
                 ->nullable();
 
+            $table->char(Merchant::AUDIT_ID,Merchant::ID_LENGTH)->nullable();
+
             $table->index(Merchant::ACTIVATED_AT);
             $table->index(Merchant::ACTIVATED);
             $table->index(Merchant::LIVE);

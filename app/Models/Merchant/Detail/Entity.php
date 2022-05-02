@@ -126,6 +126,7 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
     const SUBMITTED_AT                       = 'submitted_at';
     const CREATED_AT                         = 'created_at';
     const UPDATED_AT                         = 'updated_at';
+    const AUDIT_ID                           = 'audit_id';
     const COUPON_CODE                        = 'coupon_code';
     const REFERRAL_CODE                      = 'referral_code';
     const FUND_ACCOUNT_VALIDATION_ID         = 'fund_account_validation_id';
@@ -208,7 +209,6 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
 
     //Config to store virtual account ids for fund addition
     const FUND_ADDITION_VA_IDS = 'fund_addition_va_ids';
-
     protected $entity     = 'merchant_detail';
 
     protected $primaryKey = self::MERCHANT_ID;
@@ -318,6 +318,7 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
         self::BUSINESS_SUGGESTED_ADDRESS,
         self::FRAUD_TYPE,
         self::IEC_CODE,
+        self::AUDIT_ID
     ];
 
     protected $public     = [

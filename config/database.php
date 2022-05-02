@@ -546,6 +546,20 @@ return array(
             'transaction_wait_timeout'  => env('DB_TRANSACTION_WAIT_TIMEOUT'),
         ],
 
+        'audit_info_partition_live' => [
+            'host'      => env('DB_LIVE_HOST'),
+            'port'      => env('DB_LIVE_PORT'),
+            'username'  => env('PROD_API_LIVE_PARTITION_AUDIT_INFO_USERNAME'),
+            'password'  => env('PROD_API_LIVE_PARTITION_AUDIT_INFO_PASSWORD'),
+            'database'  => env('DB_LIVE_DATABASE'),
+            'driver'    => env('DB_LIVE_DRIVER'),
+            'charset'   => 'utf8',
+            'collation' => 'utf8_bin',
+            'prefix'    => '',
+            'strict'    => true,
+            'wait_timeout'              => env('DB_WAIT_TIMEOUT'),
+            'transaction_wait_timeout'  => env('DB_TRANSACTION_WAIT_TIMEOUT'),
+        ],
         'rx_account_statements_live' => [
             'read'  => [
                 'host'     => env('RX_ACCOUNT_STATEMENTS_LIVE_HOST'),

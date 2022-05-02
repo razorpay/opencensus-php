@@ -137,6 +137,7 @@ class Entity extends Base\PublicEntity
     const LEGAL_ENTITY_ID                = 'legal_entity_id';
     const CA_STATUS                      = 'ca_status';
     const VA_STATUS                      = 'va_status';
+    const AUDIT_ID                       = 'audit_id';
 
     // Source denotes if a merchant activation request came from PG or business banking.
     const ACTIVATION_SOURCE        = 'activation_source';
@@ -370,7 +371,8 @@ class Entity extends Base\PublicEntity
         self::SIGNUP_SOURCE,
         self::ACCOUNT_CODE,
         self::PURPOSE_CODE,
-        self::SIGNUP_VIA_EMAIL
+        self::SIGNUP_VIA_EMAIL,
+        self::AUDIT_ID
     ];
 
     const CONFIG_LIST = [

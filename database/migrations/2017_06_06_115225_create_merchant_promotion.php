@@ -39,6 +39,8 @@ class CreateMerchantPromotion extends Migration
 
             $table->integer(Promotion::UPDATED_AT);
 
+            $table->char(MerchantPromotion::AUDIT_ID,MerchantPromotion::ID_LENGTH)->nullable();
+
             $table->foreign(MerchantPromotion::MERCHANT_ID)
                   ->references(Merchant::ID)
                   ->on(Table::MERCHANT)

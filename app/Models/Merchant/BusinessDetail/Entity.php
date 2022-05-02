@@ -24,6 +24,7 @@ class Entity extends Base\PublicEntity
     const BUSINESS_PARENT_CATEGORY  = 'business_parent_category';
     const CREATED_AT                = 'created_at';
     const UPDATED_AT                = 'updated_at';
+    const AUDIT_ID                  = 'audit_id';
 
     protected $entity     = 'merchant_business_detail';
 
@@ -43,6 +44,7 @@ class Entity extends Base\PublicEntity
         self::WEBSITE_DETAILS,
         self::APP_URLS,
         self::BUSINESS_PARENT_CATEGORY,
+        self::AUDIT_ID
     ];
 
     protected $casts              = [

@@ -6674,6 +6674,77 @@ ALTER TABLE merchant_business_details
 ALTER TABLE merchant_details
    ADD COLUMN iec_code VARCHAR(20) DEFAULT NULL;
 
+
+CREATE TABLE audit_info(
+  id char(14) COLLATE utf8mb4_bin NOT NULL,
+  meta json not null,
+  created_at int not null,
+  updated_at int not null,
+  primary key (id, created_at)
+) PARTITION BY RANGE (created_at) (
+  PARTITION p_audit_info_07mar2022
+  VALUES
+    LESS THAN (1649335421),
+    PARTITION p_audit_info_08mar2022
+  VALUES
+    LESS THAN (1649421821),
+    PARTITION p_audit_info_09mar2022
+  VALUES
+    LESS THAN (1649508221),
+    PARTITION p_audit_info_10mar2022
+  VALUES
+    LESS THAN (1649594621),
+    PARTITION p_audit_info_11mar2022
+  VALUES
+    LESS THAN (1649681021),
+    PARTITION p_audit_info_Max
+  VALUES
+    LESS THAN MAXVALUE
+);
+
+alter table
+  merchants
+add
+  column audit_id char(14) COLLATE utf8mb4_bin DEFAULT NULL;
+
+alter table
+  merchant_details
+add
+  column audit_id char(14) COLLATE utf8mb4_bin DEFAULT NULL;
+
+alter table
+  merchant_business_details
+add
+  column audit_id char(14) COLLATE utf8mb4_bin DEFAULT NULL;
+
+alter table
+  merchant_verification_details
+add
+  column audit_id char(14) COLLATE utf8mb4_bin DEFAULT NULL;
+
+alter table
+  stakeholders
+add
+  column audit_id char(14) COLLATE utf8mb4_bin DEFAULT NULL;
+
+alter table
+  users
+add
+  column audit_id char(14) COLLATE utf8mb4_bin DEFAULT NULL;
+
+alter table
+  merchant_documents
+add
+  column audit_id char(14) COLLATE utf8mb4_bin DEFAULT NULL;
+
+alter table
+  merchant_promotion
+add
+  column audit_id char(14) COLLATE utf8mb4_bin DEFAULT NULL;
+
+
+ALTER TABLE merchant_attributes modify value varchar(255) null;
+
 ALTER TABLE coupons ADD COLUMN is_internal tinyint(1) DEFAULT 0;
 
 ALTER TABLE coupons ADD COLUMN alerts json DEFAULT NULL;

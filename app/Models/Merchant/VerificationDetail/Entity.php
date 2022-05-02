@@ -22,6 +22,7 @@ class Entity extends Base\PublicEntity
     const ARTEFACT_TYPE         = 'artefact_type';
     const ARTEFACT_IDENTIFIER   = 'artefact_identifier';
     const STATUS                = 'status';
+    const AUDIT_ID              = 'audit_id';
     const CREATED_AT            = 'created_at';
     const UPDATED_AT            = 'updated_at';
 
@@ -33,7 +34,8 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::ARTEFACT_TYPE,
         self::ARTEFACT_IDENTIFIER,
-        self::STATUS
+        self::STATUS,
+        self::AUDIT_ID
     ];
 
     protected $public = [

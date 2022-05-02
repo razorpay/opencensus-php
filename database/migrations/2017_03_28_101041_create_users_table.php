@@ -63,6 +63,8 @@ class CreateUsersTable extends Migration
 
             $table->tinyInteger(User::SIGNUP_VIA_EMAIL)->default(1);
 
+            $table->char(User::AUDIT_ID,User::ID_LENGTH)->nullable();
+
             $table->index(User::CONFIRM_TOKEN);
 
             $table->index(User::CREATED_AT);

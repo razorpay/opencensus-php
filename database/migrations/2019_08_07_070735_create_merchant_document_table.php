@@ -53,6 +53,8 @@ class CreateMerchantDocumentTable extends Migration
 
             $table->integer(Document::DELETED_AT)->nullable();
 
+            $table->string(Document::AUDIT_ID)->nullable();
+
             //index
             $table->index(Document::MERCHANT_ID);
 

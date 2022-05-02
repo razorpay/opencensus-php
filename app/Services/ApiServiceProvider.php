@@ -131,6 +131,13 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $entityObserverClass = E::getEntityObserverClass(E::CONTACT);
         $entityClass::observe($entityObserverClass);
 
+        // attach audit observer
+        foreach (E::AUDITED_ENTITIES as $entity)
+        {
+            $entityClass = E::getEntityClass($entity);
+            $entityClass::observe(RZP\Models\Base\AuditObserver::class);
+        }
+
         // attach instrumentation observer to instrumented entities
         foreach (E::INSTRUMENTED_ENTITIES as $entity)
         {

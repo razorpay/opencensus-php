@@ -3317,6 +3317,9 @@ class Route
         'payout_outbox_partition_cron'            => ['post',     'payout_outbox/partition',                                'PayoutOutboxController@createPayoutOutboxPartition'           ],
         'payment_analytics_partition_cron'        => ['post',     'payment_analytics/partition',                            'PaymentController@createPaymentAnalyticsPartition'            ],
 
+        //auditing
+        'audit_info_partition_cron'            => ['post',     'audit_info/partition',                                'AuditingController@createAuditInfoPartition'           ],
+
         // Sub Virtual Account Routes
         'sub_virtual_account_list'                => ['get',      'sub_virtual_accounts',                                   'SubVirtualAccountController@list'                             ],
         'sub_virtual_account_create'              => ['post',     'admin/sub_virtual_accounts',                             'SubVirtualAccountController@create'                           ],
@@ -4576,6 +4579,7 @@ class Route
 
         // payout outbox cron creates a new partition and drops oldest partition, runs daily
         'payout_outbox_partition_cron',
+        'audit_info_partition_cron',
 
          'orphan_payouts_count_cron',
 
@@ -12001,6 +12005,7 @@ class Route
             'fraud_checker_milestone_cron',
             'payment_analytics_partition_cron',
             'payout_outbox_partition_cron',
+            'audit_info_partition_cron',
             'orphan_payouts_count_cron',
             'banking_account_service_cron_routes',
             'merchant_methods_hdfc_debit_emi',

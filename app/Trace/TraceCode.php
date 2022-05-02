@@ -4734,6 +4734,13 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYOUT_OUTBOX_PARTITION_ERROR                             = 'PAYOUT_OUTBOX_PARTITION_ERROR';
     const PAYOUT_OUTBOX_DUPLICATE_PARTITION_ERROR                   = 'PAYOUT_OUTBOX_DUPLICATE_PARTITION_ERROR';
 
+    const AUDIT_INFO_PARTITION_CREATE_QUERY                      = 'AUDIT_INFO_PARTITION_CREATE_QUERY';
+    const AUDIT_INFO_PARTITION_DROP_QUERY                        = 'AUDIT_INFO_PARTITION_DROP_QUERY';
+    const AUDIT_INFO_PARTITION_TO_DROP                           = 'AUDIT_INFO_PARTITION_TO_DROP';
+    const AUDIT_INFO_PARTITION_SUCCESS                           = 'AUDIT_INFO_PARTITION_SUCCESS';
+    const AUDIT_INFO_PARTITION_ERROR                             = 'AUDIT_INFO_PARTITION_ERROR';
+    const AUDIT_INFO_DUPLICATE_PARTITION_ERROR                   = 'AUDIT_INFO_DUPLICATE_PARTITION_ERROR';
+
     const REMINDER_CREATE_REQUEST                               = 'REMINDER_CREATE_REQUEST';
 
     // Trace Code for Settlement Ondemand
@@ -5943,6 +5950,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const APPS_RISK_CHECK_SQS_PUSH_FAILED                       = 'APPS_RISK_CHECK_SQS_PUSH_FAILED';
     const EXTERNAL_REPO_FETCH_REQUEST_FAILURE                   = 'EXTERNAL_REPO_FETCH_REQUEST_FAILURE';
     const EXTERNAL_REPO_SAVE_REQUEST_FAILURE                    = 'EXTERNAL_REPO_SAVE_REQUEST_FAILURE';
+    const AUDIT_DETAILS_SAVE_REQUEST_FAILURE                    = 'AUDIT_DETAILS_SAVE_REQUEST_FAILURE';
 
     const EXTERNAL_REPO_REQUEST_FAILURE                         = 'EXTERNAL_REPO_REQUEST_FAILURE';
     const PERFORM_ACTION_OBSERVER_DATA                          = 'PERFORM_ACTION_OBSERVER_DATA';

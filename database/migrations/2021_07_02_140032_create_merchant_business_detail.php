@@ -36,6 +36,8 @@ class CreateMerchantBusinessDetail extends Migration
             $table->integer(BusinessDetailEntity::CREATED_AT);
 
             $table->integer(BusinessDetailEntity::UPDATED_AT);
+
+            $table->char(BusinessDetailEntity::AUDIT_ID,BusinessDetailEntity::ID_LENGTH)->nullable();
         });
     }
 

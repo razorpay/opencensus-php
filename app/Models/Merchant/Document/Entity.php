@@ -21,7 +21,7 @@ class Entity extends Base\PublicEntity
     const VALIDATION_ID      = 'validation_id';
     const ENTITY_ID          = 'entity_id';
     const UPLOAD_BY_ADMIN_ID = 'upload_by_admin_id';
-
+    const AUDIT_ID           = 'audit_id';
     //When the document is accounted for
     const DOCUMENT_DATE = 'document_date';
 
@@ -40,6 +40,7 @@ class Entity extends Base\PublicEntity
         self::SOURCE,
         self::UPLOAD_BY_ADMIN_ID,
         self::DOCUMENT_DATE,
+        self::AUDIT_ID
     ];
 
     protected $public = [

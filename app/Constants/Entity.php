@@ -581,6 +581,7 @@ class Entity
     const REWARD            = 'reward';
     const MERCHANT_REWARD   = 'merchant_reward';
     const REWARD_COUPON     = 'reward_coupon';
+    const AUDIT_INFO        = 'audit_info';
 
     const MERCHANT_INTERNATIONAL_ENABLEMENT = 'merchant_international_enablement';
     const INTERNATIONAL_ENABLEMENT_DETAIL   = 'international_enablement_detail';
@@ -700,6 +701,21 @@ class Entity
             QueryCacheConstants::TTL     => 60,
         ],
     ];
+
+    /**
+     * Entities that are auditable via entity audit trait
+     */
+    const AUDITED_ENTITIES = [
+        self::MERCHANT,
+        self::MERCHANT_BUSINESS_DETAIL,
+        self::STAKEHOLDER,
+        self::MERCHANT_DETAIL,
+        self::MERCHANT_VERIFICATION_DETAIL,
+        self::MERCHANT_PROMOTION,
+        self::MERCHANT_DOCUMENT,
+        self::USER
+    ];
+
 
     /**
      * Entities for which database access(retrieved, created, updated, deleted)
@@ -1136,6 +1152,7 @@ class Entity
         self::MERCHANT_AVG_ORDER_VALUE        => \RZP\Models\Merchant\AvgOrderValue::class,
         self::MERCHANT_TNC                    => \RZP\Models\Merchant\Tnc::class,
         self::MERCHANT_VERIFICATION_DETAIL    => \RZP\Models\Merchant\VerificationDetail::class,
+        self::AUDIT_INFO                      => \RZP\Models\Base\Audit::class,
         self::MERCHANT_BUSINESS_DETAIL        => \RZP\Models\Merchant\BusinessDetail::class,
         self::M2M_REFERRAL                    => \RZP\Models\Merchant\M2MReferral::class,
         self::MERCHANT_ONBOARDING_ESCALATIONS   => \RZP\Models\Merchant\Escalations::class,

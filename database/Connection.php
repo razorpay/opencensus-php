@@ -23,6 +23,8 @@ class Connection
     const PAYOUT_OUTBOX_PARTITION_LIVE = 'payout_outbox_partition_live';
     const PAYOUT_OUTBOX_PARTITION_TEST = 'payout_outbox_partition_test';
 
+    const AUDIT_INFO_PARTITION_LIVE = 'audit_info_partition_live';
+
     // different tidb cluster for merchant queries and for admin queries
     const DATA_WAREHOUSE_ADMIN_LIVE = 'data-warehouse-admin-live'; // same as data warehouse live
     const DATA_WAREHOUSE_ADMIN_TEST = 'data-warehouse-admin-test';

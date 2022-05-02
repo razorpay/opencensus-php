@@ -11,27 +11,29 @@ class Entity extends Base\PublicEntity
     const START_TIME           = 'start_time';
     const REMAINING_ITERATIONS = 'remaining_iterations';
     const EXPIRED              = 'expired';
+    const AUDIT_ID             = 'audit_id';
 
-    protected $entity = 'merchant_promotion';
+    protected $entity             = 'merchant_promotion';
 
     protected $generateIdOnCreate = true;
 
-    protected $defaults = [
+    protected $defaults           = [
         self::EXPIRED => false,
     ];
 
-    protected $casts = [
+    protected $casts              = [
         self::EXPIRED              => 'boolean',
         self::REMAINING_ITERATIONS => 'int',
     ];
 
-    protected $fillable = [
+    protected $fillable           = [
         self::START_TIME,
         self::REMAINING_ITERATIONS,
-        self::EXPIRED
+        self::EXPIRED,
+        self::AUDIT_ID
     ];
 
-    protected $dates = [
+    protected $dates              = [
         self::START_TIME,
     ];
 
@@ -57,7 +59,7 @@ class Entity extends Base\PublicEntity
 
     public function decrementRemainingIterations()
     {
-        $remainingIterations =  $this->getAttribute(self::REMAINING_ITERATIONS);
+        $remainingIterations = $this->getAttribute(self::REMAINING_ITERATIONS);
 
         $remainingIterations = $remainingIterations - 1;
 

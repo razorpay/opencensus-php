@@ -45,7 +45,7 @@ class Entity extends Base\PublicEntity
     const AADHAAR_PIN               = 'aadhaar_pin';
     const AADHAAR_LINKED            = 'aadhaar_linked';
     const BVS_PROBE_ID              = 'bvs_probe_id';
-
+    const AUDIT_ID                  = 'audit_id';
     const CREATED_AT                = 'created_at';
     const UPDATED_AT                = 'updated_at';
 
@@ -73,7 +73,8 @@ class Entity extends Base\PublicEntity
         self::AADHAAR_VERIFICATION_WITH_PAN_STATUS,
         self::AADHAAR_PIN,
         self::AADHAAR_LINKED,
-        self::BVS_PROBE_ID
+        self::BVS_PROBE_ID,
+        self::AUDIT_ID
     ];
 
     protected $public = [

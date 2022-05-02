@@ -22,6 +22,7 @@ class Entity extends Base\PublicEntity
     const EMAIL                         = 'email';
     const PASSWORD                      = 'password';
     const OLD_PASSWORD                  = 'old_password';
+    const AUDIT_ID                      = 'audit_id';
 
     // !! DEPRECATED; replaced with old_passwords attribute below.
     // The attribute OLD_PASSWORD_1 and OLD_PASSWORD_2 are stored in table which
@@ -120,7 +121,8 @@ class Entity extends Base\PublicEntity
         self::PASSWORD_RESET_TOKEN,
         self::PASSWORD_RESET_EXPIRY,
         self::ORG_ENFORCED_SECOND_FACTOR_AUTH,
-        self::SIGNUP_VIA_EMAIL
+        self::SIGNUP_VIA_EMAIL,
+        self::AUDIT_ID
     ];
 
     protected $public = [
