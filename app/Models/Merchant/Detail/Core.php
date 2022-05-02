@@ -649,17 +649,22 @@ class Core extends Base\Core
             return;
         }
 
+        $this->validateAadhaarWithPan($merchant, $stakeholder->getBvsProbeId());
+    }
+
+    public function validateAadhaarWithPan($merchant,$probeId){
+
         $payload = [
             Constant::ARTEFACT_TYPE   => Constant::AADHAAR,
             Constant::CONFIG_NAME     => Constant::AADHAAR_WITH_PAN,
             Constant::VALIDATION_UNIT => BvsValidationConstants::IDENTIFIER,
-            Constant::PROBE_ID        => $stakeholder->getBvsProbeId(),
+            Constant::PROBE_ID        => $probeId,
             Constant::DETAILS         => [
-                Constant::NAME => $merchantDetails->getPromoterPanName(),
+                Constant::NAME => $merchant->merchantDetail->getPromoterPanName(),
             ],
         ];
 
-        $bvsValidation = (new AutoKyc\Bvs\Core($merchant, $merchantDetails))->verify($merchantDetails->getId(), $payload);
+        $bvsValidation = (new AutoKyc\Bvs\Core($merchant, $merchant->merchantDetail))->verify($merchant->merchantDetail->getId(), $payload);
 
     }
 
@@ -5765,6 +5770,25 @@ class Core extends Base\Core
         $this->uploadAadharEsignDocument($merchant, Document\Type::AADHAR_XML, $xml);
 
         (new Stakeholder\Core)->saveStakeholder(null, $merchantId, $stakeholderInput);
+
+        if ($merchant->merchantDetail->getPoiVerificationStatus() !== BvsValidationConstants::VERIFIED)
+        {
+            return;
+        }
+        if ($merchant->getOrgId() !== Org\Entity::RAZORPAY_ORG_ID)
+        {
+            return;
+        }
+
+        $businessType = $merchant->merchantDetail->getBusinessType();
+
+        // If aadhaar esign is not required then, aadhar with pan is also not required
+        if (BusinessType::isAadhaarEsignVerificationRequired($businessType) === false)
+        {
+            return;
+        }
+
+        $this->validateAadhaarWithPan($merchant, $probeId);
     }
 
     private function uploadAadharEsignDocument($merchant, string $document_type, UploadedFile $file)
