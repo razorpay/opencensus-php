@@ -19,6 +19,7 @@ use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\Settlement;
 use RZP\Models\Adjustment;
+use RZP\Models\Transaction;
 use RZP\Constants\Timezone;
 use RZP\Base\RuntimeManager;
 use RZP\Constants\Entity as E;
@@ -668,9 +669,34 @@ class Service extends Base\Service
 
         $startTime = microtime(true);
 
-        $txns = $this->repo
-                     ->transaction
-                     ->fetchBySettlementIdAndSource($id, $sourceType, $skip, $limit, $sourceId);
+        $txns = [];
+
+        if ($this->auth->isOptimiserDashboardRequest() === false)
+        {
+            $txns = $this->repo
+                ->transaction
+                ->fetchBySettlementIdAndSource($id, $sourceType, $skip, $limit, $sourceId);
+        }
+        else
+        {
+            try {
+                $fetchInput = $this->createFetchMultipleTxnInput($id, $input);
+
+                $transactions = app('settlements_merchant_dashboard')->getSettlementSourceTransaction($fetchInput);
+
+                $txns = $this->convertToTxnCollection($transactions);
+
+            } catch (\Throwable $e) {
+                $this->trace->traceException(
+                    $e,
+                    Trace::WARNING,
+                    TraceCode::GET_SETTLEMENT_TRANSACTIONS_FOR_SOURCE_TYPE_FAILED,
+                    [
+                        'input' => $input,
+                        'id'=> $id,
+                    ]);
+            }
+        }
 
         $result = [];
 
@@ -697,6 +723,14 @@ class Service extends Base\Service
             if(method_exists($txn->source, 'getStatus') === true)
             {
                 $res['status'] = $txn->source->getStatus();
+            }
+
+            if ($this->auth->isOptimiserDashboardRequest() === true and
+                in_array( $sourceType, ['payment', 'refund']) === true)
+            {
+                $res['optimizer_provider'] = $txn->source->getOptimiserProvider();
+
+                $res['settled_by'] = $txn->source->getSettledBy();
             }
 
             $result[] = $res;
@@ -1911,4 +1945,86 @@ class Service extends Base\Service
 
         return new PublicCollection($collection);
     }
+
+    public function createFetchMultipleTxnInput($id, $input)
+    {
+        $fetchInput = [
+            'settlementId' => $id,
+            'merchantId' => $this->merchant->getId(),
+            'sourceType' => $input['source_type'],
+
+        ];
+
+        if(isset( $input['limit']) )
+        {
+            $fetchInput['pagination']['limit'] = $input['limit'];
+        }
+
+        if(isset( $input['skip']) )
+        {
+            $fetchInput['pagination']['skip'] = $input['skip'];
+        }
+
+        return $fetchInput;
+    }
+
+    public function convertToTxnCollection($txns)
+    {
+        $collectionEntity = [];
+
+        foreach($txns['entities']['transactions'] as $txn)
+        {
+            $entity = $this->setPublicTxnAttributes($txn);
+
+            array_push($collectionEntity, $entity);
+        }
+
+        $collection = collect($collectionEntity);
+
+        return new PublicCollection($collection);
+    }
+
+    public function setPublicTxnAttributes($txn)
+    {
+        $entity = new Transaction\Entity($txn);
+
+        if (isset($txn['Id']))
+            $entity->setId($txn['Id']);
+
+        if (isset($txn['Fee']))
+            $entity->setFee($txn['Fee']);
+
+        if (isset($txn['Tax']))
+            $entity->setTax($txn['Tax']);
+
+        if (isset($txn['Credit']) && $txn['Credit'] > 0 )
+        {
+            $entity->setCredit($txn['Credit']);
+            $entity->setAmount($txn['Credit']);
+        }
+
+        if (isset($txn['Debit']) && $txn['Debit'] > 0)
+        {
+            $entity->setDebit($txn['Debit']);
+            $entity->setAmount($txn['Debit']);
+        }
+
+        if (isset($txn['SourceId']))
+            $entity->setEntityId($txn['SourceId']);
+
+        if (isset($txn['sourceType']))
+            $entity->setType($txn['sourceType']);
+
+        if (isset($txn['createdAt']))
+        {
+            $entity->setCreatedAt($txn['createdAt']);
+        }
+        else
+        {
+            $entity->setCreatedAt(time());
+        }
+
+        return $entity;
+    }
+
 }

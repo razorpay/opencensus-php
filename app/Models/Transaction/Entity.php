@@ -705,6 +705,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::CREDIT_TYPE, $creditType);
     }
 
+    public function setEntityId($id)
+    {
+        $this->setAttribute(self::ENTITY_ID, $id);
+    }
+
     public function isReconciled()
     {
         return ($this->getAttribute(self::RECONCILED_AT) !== null);

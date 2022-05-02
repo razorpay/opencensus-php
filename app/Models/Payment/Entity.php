@@ -3302,6 +3302,38 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return $this->forceTerminalId;
     }
 
+    public function getOptimiserProvider()
+    {
+        $app = \App::getFacadeRoot();
+
+        try{
+            if($app['basicauth']->isOptimiserDashboardRequest() === true)
+            {
+                if($this->terminal != null && $this->terminal->getProcurer() === 'merchant')
+                {
+                    return $this->terminal->getId();
+                }
+                else if($this->terminal == null) {
+                    return '';
+                }
+                else
+                {
+                    return "Razorpay";
+                }
+            }
+        } catch(\Throwable $e)
+        {
+            $app['trace']->traceException(
+                $e,
+                Trace::WARNING,
+                TraceCode::OPTIMISER_PROVIDER_FETCH_FAILED,
+                [
+                    'payment_id' => $this->getId(),
+                ]);
+        }
+        return '';
+    }
+
     /**
      * Checks whether the recurring payment will
      * need to be authorized via sending a file
@@ -3848,8 +3880,6 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
                 ]);
             $array[self::OPTIMIZER_PROVIDER] = '';
         }
-
-
     }
 
     public function associateTerminal($terminal)

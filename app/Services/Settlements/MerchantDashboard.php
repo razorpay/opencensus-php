@@ -49,4 +49,16 @@ class MerchantDashboard extends Base
     {
         return $this->makeRequest(self::GET_SETTLEMENT_TIMELINE_MODAL, $input, self::SERVICE_MERCHANT_DASHBOARD, $mode);
     }
+
+    /**
+     * Fetch Settlement Source Transaction
+     * @param array  $input
+     * @return array
+     * @throws RuntimeException
+     * @throws \Throwable
+     */
+    public function getSettlementSourceTransaction(array $input)
+    {
+        return $this->makeRequest( self::GET_SETTLEMENT_SOURCE_TRANSACTIONS, $input, self::SERVICE_MERCHANT_DASHBOARD);
+    }
 }

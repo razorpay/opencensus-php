@@ -605,6 +605,35 @@ class Entity extends Base\PublicEntity
         return $settledBy;
     }
 
+    public function getOptimiserProvider()
+    {
+        $app = \App::getFacadeRoot();
+
+        try{
+            if($app['basicauth']->isOptimiserDashboardRequest() === true)
+            {
+                if($this->getSettledBy() == 'Razorpay' )
+                {
+                    return 'Razorpay';
+                }
+                else
+                {
+                    return $this->payment->getTerminalId();
+                }
+            }
+        } catch(\Throwable $e)
+        {
+            $app['trace']->traceException(
+                $e,
+                Trace::WARNING,
+                TraceCode::OPTIMISER_PROVIDER_FETCH_FAILED,
+                [
+                    'refund_id' => $this->getId(),
+                ]);
+        }
+        return '';
+    }
+
     public function getAcquirerData()
     {
         return $this->getAttribute(self::ACQUIRER_DATA);
