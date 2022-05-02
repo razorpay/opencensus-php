@@ -150,7 +150,12 @@ class MerchantController extends Controller
 
         return AppResponse::jsonResponse($error, $data);
     }
+    public function getBusinessTypes()
+    {
+        list($error, $data) = (new Merchant\Service)->getBusinessTypes();
 
+        return AppResponse::jsonResponse($error,$data);
+    }
     public function whatsappOptIn()
     {
         $input = Input::all();

@@ -105,6 +105,7 @@ Route::group(['middleware' => ['web']], function () {
     Route::group(['middleware' => 'auth:user', 'prefix' => 'user'], function()
     {
         Route::post('/pre_signup', 'MerchantController@postSignup')->name('user_pre_signup');
+        Route::get('/business_types', 'MerchantController@getBusinessTypes')->name('user_business_types');
         Route::post('/verify_email', 'UserController@verifyEmailOtp')->name('user_verify_email');
         Route::post('/resend_email_otp', 'UserController@resendEmailOtp')->name('user_resend_email_otp');
         Route::post('/resend', 'MerchantController@postResendConfirmation')->name('user_resend_confirmation');
