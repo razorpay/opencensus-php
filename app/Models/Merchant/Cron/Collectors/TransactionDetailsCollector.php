@@ -33,7 +33,9 @@ class TransactionDetailsCollector extends TimeBoundDbDataCollector
             'merchant_ids'  => count($transactedMerchants)
         ]);
 
-        $merchantIdChunks = array_chunk($transactedMerchants, 1000);
+        $flattenedTransactedMerchants = array_map( function ($element){ return $element[0];}, $transactedMerchants);
+
+        $merchantIdChunks = array_chunk($flattenedTransactedMerchants, 1000);
 
         $merchantDataFromDruid =  $this->getDataFromDruidForMerchants($merchantIdChunks);
 

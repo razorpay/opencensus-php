@@ -45,7 +45,7 @@ class TransactionDetailsAction extends BaseAction
             }
         }
 
-        $this->app['segment-analytics']->buildRequestAndSend();
+        $this->app['segment-analytics']->buildRequestAndSend(true);
 
         if ($successCount === 0)
         {

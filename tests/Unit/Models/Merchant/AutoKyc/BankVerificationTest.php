@@ -40,7 +40,6 @@ class BankVerificationTest extends TestCase
         ]);
 
         $mid = $merchantDetail->getId();
-
         $stakeholder = $this->fixtures->create('stakeholder', [
             'merchant_id'                          => $mid,
             'aadhaar_esign_status'                 => 'verified',
