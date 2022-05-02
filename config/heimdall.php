@@ -1484,6 +1484,16 @@ return [
                 'assignable'  => true,
             ],
 
+            Permission::ONE_PAGER => [
+                'description' => 'Allow access to capital-scorecard one pager data',
+                'assignable'  => true,
+            ],
+
+            Permission::SCORECARD_EDIT => [
+                'description' => 'Allow access to editing los application scorecard',
+                'assignable'  => true,
+            ],
+
             Permission::SCORECARD_CLI_CLD_VIEW => [
                 'description' => 'Allow access to download CLI/CLD files from dashboard',
                 'assignable'  => true,

@@ -488,6 +488,12 @@ class Name
     // Permission to access capital-scorecard service
     const CAPITAL_SCORECARD                   = 'capital_scorecard';
 
+    // Permission to access Capital LOS application One pager data
+    const ONE_PAGER                           = 'one_pager';
+
+    // Permission to edit Capital Scorecard
+    const SCORECARD_EDIT                      = 'scorecard_edit';
+
     // Permissions to access download of CLI/CLD files
     const SCORECARD_CLI_CLD_VIEW              = 'scorecard_cli_cld_view';
 
