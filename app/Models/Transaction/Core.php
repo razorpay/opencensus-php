@@ -1527,8 +1527,6 @@ class Core extends Base\Core
 
         $merchant = $payment->merchant;
 
-        $ignoreBankHolidays = $merchant->isMerchantWith24x7SettlementFeature();
-
         $returnTime = null;
 
         $scheduleTask = (new ScheduleTask\Core)->getMerchantSettlementSchedule(
@@ -1546,8 +1544,7 @@ class Core extends Base\Core
             $returnTime = ScheduleLibrary::getNextApplicableTime(
                                                         $capturedAt,
                                                         $schedule,
-                                                        $nextRunAt,
-                                                        $ignoreBankHolidays);
+                                                        $nextRunAt);
         }
         else
         {

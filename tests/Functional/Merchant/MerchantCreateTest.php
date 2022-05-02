@@ -351,37 +351,6 @@ class MerchantCreateTest extends TestCase
         $this->assertNull($liveMapping);
     }
 
-    public function testCreateSubMerchantFor24x7Settlement()
-    {
-        Mail::fake();
-
-        $this->fixtures->merchant->addFeatures([
-            FeatureConstants::AGGREGATOR,
-            FeatureConstants::SETTLEMENT_24X7]);
-        $this->fixtures->merchant->editPricingPlanId(TestPricing::DEFAULT_PRICING_PLAN_ID);
-
-        $user = $this->createUserMerchantMapping('10000000000000', 'owner');
-
-        $this->ba->proxyAuth('rzp_test_10000000000000', $user['id']);
-
-        $this->startTest();
-
-        Mail::assertQueued(CreateSubMerchantMail::class, function ($mail)
-        {
-            return $mail->hasTo('test@razorpay.com', 'Submerchant');
-        });
-
-        $subMerchant = $this->getLastEntity('merchant', true);
-
-        $this->assertEquals($subMerchant['channel'], Channel::YESBANK);
-
-        list($testMapping, $liveMapping) = $this->getLastMappingForBothModes();
-
-        $this->assertNull($testMapping);
-
-        $this->assertNull($liveMapping);
-    }
-
     protected function mockRazorxTreatment()
     {
         // Mock Razorx

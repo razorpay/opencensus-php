@@ -345,14 +345,6 @@ class Core extends Base\Core
 
         $subMerchant = $entity->build($input);
 
-        $has24x7SettlementFeature = $aggregatorMerchant->isFeatureEnabled(Feature\Constants::SETTLEMENT_24X7);
-
-        if (($has24x7SettlementFeature === true) and
-            ($linkedAccount === true))
-        {
-            $subMerchant->setChannel(Channel::YESBANK);
-        }
-
         $subMerchant->setAuditAction(Action::CREATE_SUBMERCHANT);
 
         Tracer::inspan(['name' => HyperTrace::ASSIGN_SUBMERCHANT_PRICING_PLAN], function () use ($aggregatorMerchant, $subMerchant, $linkedAccount) {

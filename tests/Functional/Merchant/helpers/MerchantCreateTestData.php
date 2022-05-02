@@ -216,28 +216,6 @@ return [
         ],
     ],
 
-    'testCreateSubMerchantFor24x7Settlement' => [
-        'request'  => [
-            'url'     => '/submerchants',
-            'method'  => 'POST',
-            'content' => [
-                'id'      => 'NewSubmerchant',
-                'name'    => 'Submerchant',
-                'account' => true,
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'id'    => 'NewSubmerchant',
-                'name'  => 'Submerchant',
-                // Email is same as the test merchant
-                'email' => 'test@razorpay.com',
-                'pricing_plan_id' => \RZP\Tests\Functional\Fixtures\Entity\Pricing::DEFAULT_PRICING_PLAN_ID,
-            ],
-        ],
-    ],
-
-
     'testCreateSubMerchantWithoutFeatureMarketplaceOrPartner' => [
         'request'   => [
             'url'     => '/submerchants',
