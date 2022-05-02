@@ -129,6 +129,8 @@ class Base
 
     const FTS_NEW_CHANNEL_HEALTH_STATS = '/routing/channel_health_stats';
 
+    const FTS_TRIGGER_HEALTH_STATUS    = '/routing/trigger_health_status';
+
     const FTS_FAIL_FAST_STATUS_MANUAL_UPDATE = '/channel_health_events/fail_fast_status/manual_update';
 
     // Headers

@@ -1277,6 +1277,16 @@ class FundTransfer extends Base
             $input);
     }
 
+    public function getTriggerStatus(array $input)
+    {
+        $this->setAdminHeader();
+
+        return $this->createAndSendRequest(
+            parent::FTS_TRIGGER_HEALTH_STATUS,
+            Requests::GET,
+            $input);
+    }
+
     public function createSourceAccountMappings(array $input)
     {
         $this->setAdminHeader();
