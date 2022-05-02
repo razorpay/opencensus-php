@@ -2559,8 +2559,10 @@ trait Refund
 
         if ($merchant->getRefundSource() === RefundSource::CREDITS)
         {
+            // Not allowing negative balance in refund credits
+            // Ref slack thread: https://razorpay.slack.com/archives/C6XG1F99N/p1651128045835069?thread_ts=1642673759.195000&cid=C6XG1F99N
             return (new Merchant\Balance\Core)->checkMerchantRefundCredits($merchant, -1 * $refund->getNetAmount(),
-                                                            Transaction\Type::REFUND, $negativeBalanceEnabled);
+                                                            Transaction\Type::REFUND, false);
         }
 
         if ($merchant->getRefundSource() === RefundSource::BALANCE)

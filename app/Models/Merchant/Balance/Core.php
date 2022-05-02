@@ -520,6 +520,13 @@ class Core extends Base\Core
 
         $accountType = $balance->getAccountType();
 
+        // Not allowing negative balance in refund credits
+        // Ref slack thread: https://razorpay.slack.com/archives/C6XG1F99N/p1651128045835069?thread_ts=1642673759.195000&cid=C6XG1F99N
+        if ($txn->isRefundCredits() === true)
+        {
+            return 0;
+        }
+
         if (($balanceType === Type::BANKING) and
             ($accountType === AccountType::DIRECT))
         {

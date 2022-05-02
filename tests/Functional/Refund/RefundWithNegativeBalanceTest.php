@@ -36,7 +36,7 @@ class RefundWithNegativeBalanceTest extends TestCase
     public function startTest($paymentId = null, $amount = null)
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
-        
+
         $name = $trace[1]['function'];
 
         $testData = $this->testData[$name];
@@ -238,7 +238,7 @@ class RefundWithNegativeBalanceTest extends TestCase
     public function testRefundWithZeroRefundCredits()
     {
         Mail::fake();
-        
+
         $this->negativeRefundFixtures('credits', 0, 0, 0);
 
         $payment = $this->defaultAuthPayment();
@@ -256,126 +256,6 @@ class RefundWithNegativeBalanceTest extends TestCase
         Mail::assertNotQueued(NegativeBalanceAlert::class);
         Mail::assertNotQueued(NegativeBalanceThresholdAlert::class);
         Mail::assertNotQueued(BalancePositiveAlert::class);
-    }
-
-    //refund flow allowed for negative
-    public function testRefundWithZeroRefundCreditsRefundFlow()
-    {
-        Mail::fake();
-
-        $this->negativeRefundFixtures('credits', 70000, 0, 0);
-
-        $payment = $this->defaultAuthPayment();
-        $payment = $this->capturePayment($payment['id'], $payment['amount']);
-
-        $this->fixtures->base->editEntity('balance', '10000000000000',
-            [
-                'balance'            => 50000,
-                'refund_credits'     => 0
-            ]
-        );
-        $this->startTest($payment['id'], (string) $payment['amount']);
-
-        Mail::assertQueued(NegativeBalanceThresholdAlert::class, function ($mail)
-        {
-            $viewData = $mail->viewData;
-
-            $this->assertEquals('test@razorpay.com', $viewData['email']);
-
-            $this->assertEquals(10000000000000, $viewData['merchant_id']);
-
-            $this->assertEquals(70, $viewData['percentage']);
-
-            $this->assertArrayHasKey('email_logo', $viewData);
-
-            $this->assertArrayHasKey('org_name', $viewData);
-
-            $this->assertArrayHasKey('custom_branding', $viewData);
-
-            $this->assertEquals('emails.merchant.negative_balance_threshold_alert', $mail->view);
-
-            return true;
-        });
-    }
-
-    //refund flow allowed for negative
-    public function testRefundWithNegativeRefundCredits()
-    {
-        Mail::fake();
-
-        $this->negativeRefundFixtures('credits', 70000, -4800, 0);
-
-        $payment = $this->defaultAuthPayment();
-        $payment = $this->capturePayment($payment['id'], $payment['amount']);
-
-        $this->fixtures->base->editEntity('balance', '10000000000000',
-            [
-                'balance'           => 50000,
-                'refund_credits'    => -4800
-            ]
-        );
-
-        $this->startTest($payment['id'], (string) $payment['amount']);
-
-        Mail::assertQueued(NegativeBalanceThresholdAlert::class, function ($mail)
-        {
-            $viewData = $mail->viewData;
-
-            $this->assertEquals('test@razorpay.com', $viewData['email']);
-
-            $this->assertEquals(10000000000000, $viewData['merchant_id']);
-
-            $this->assertEquals(70, $viewData['percentage']);
-
-            $this->assertArrayHasKey('email_logo', $viewData);
-
-            $this->assertArrayHasKey('org_name', $viewData);
-
-            $this->assertArrayHasKey('custom_branding', $viewData);
-
-            $this->assertEquals('emails.merchant.negative_balance_threshold_alert', $mail->view);
-
-            return true;
-        });
-    }
-
-    public function testRefundWithNegativeRefundCreditsAndReserveBalance()
-    {
-        Mail::fake();
-
-        $this->negativeRefundFixtures('credits', 70000, -4800, 5000);
-
-        $payment = $this->defaultAuthPayment();
-        $payment = $this->capturePayment($payment['id'], $payment['amount']);
-
-        $this->fixtures->base->editEntity('balance', '10000000000000',
-            [
-                'balance'           => 5000,
-                'refund_credits'    => -4800
-            ]);
-
-        $this->startTest($payment['id'], (string) $payment['amount']);
-
-        Mail::assertQueued(NegativeBalanceThresholdAlert::class, function ($mail)
-        {
-            $viewData = $mail->viewData;
-
-            $this->assertEquals('test@razorpay.com', $viewData['email']);
-
-            $this->assertEquals(10000000000000, $viewData['merchant_id']);
-
-            $this->assertEquals(70, $viewData['percentage']);
-
-            $this->assertArrayHasKey('email_logo', $viewData);
-
-            $this->assertArrayHasKey('org_name', $viewData);
-
-            $this->assertArrayHasKey('custom_branding', $viewData);
-
-            $this->assertEquals('emails.merchant.negative_balance_threshold_alert', $mail->view);
-
-            return true;
-        });
     }
 
     //International Currency Tests for negative balance
@@ -434,31 +314,6 @@ class RefundWithNegativeBalanceTest extends TestCase
         $payment = $this->capturePayment($payment['id'], $payment['amount']);
 
         $this->fixtures->base->editEntity('balance', '10000000000000', ['balance' => -4800]);
-
-        $this->startTest($payment['id'], (string) $payment['amount']);
-
-        Mail::assertNotQueued(NegativeBalanceAlert::class);
-    }
-
-    public function testRefundWithNegativeRefundCreditsAndInternationalCurrency()
-    {
-        Mail::fake();
-
-        $merchant = $this->fixtures->merchant;
-        $merchant->enableInternational();
-        $merchant->edit('10000000000000', ['convert_currency' => '1']);
-
-        $this->negativeRefundFixtures('credits', 210000, -4800, 0);
-
-        $payment = $this->defaultAuthPayment(['amount' => 200, 'currency' => 'USD']);
-        $payment = $this->capturePayment($payment['id'], $payment['amount']);
-
-        $this->fixtures->base->editEntity('balance', '10000000000000',
-            [
-                'balance'           => 50000,
-                'refund_credits'    => -4800
-            ]
-        );
 
         $this->startTest($payment['id'], (string) $payment['amount']);
 
