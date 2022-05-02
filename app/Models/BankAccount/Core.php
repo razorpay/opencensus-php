@@ -57,34 +57,48 @@ class Core extends Base\Core
                                               $isWorkflowRequired = true,
                                               $sendAccountChangeRequestMail = true)
     {
-        $oldBankAccount = $this->repo->bank_account->getBankAccount($merchant);
-
-        if ($oldBankAccount === null)
+        if(($this->app['basicauth']->isAdminAuth() === false) and
+            (isset($input[Entity::TYPE]) === true) and
+            ($input[Entity::TYPE] === Type::ORG_SETTLEMENT))
         {
-            $ba = $this->createBankAccount($input, $merchant, $this->mode);
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_REQUIRED_PERMISSION_NOT_FOUND);
+        }
 
-            $this->updateOndemandFundAccountIfRequired($ba);
+        if((isset($input[Entity::TYPE]) === true) and
+            ($input[Entity::TYPE] === Type::ORG_SETTLEMENT) and
+            ($merchant->org->isFeatureEnabled(Feature\Constants::ORG_POOL_ACCOUNT_SETTLEMENT) === false))
+        {
+          throw new BadRequestException(ErrorCode::BAD_REQUEST_REQUIRED_PERMISSION_NOT_FOUND);
+        }
 
-            if ($this->settlementServiceRamp($ba->getMerchantId()) === true)
-            {
-                if( $this->app['basicauth']->isAdminAuth() === true )
-                {
-                    app('settlements_dashboard')->createBankAccount($ba, $this->mode);
+        $type = $input[Entity::TYPE] ?? null;
+
+        $oldBankAccount = $this->repo->bank_account->getBankAccount($merchant,$type);
+
+        if ($oldBankAccount === null) {
+            if ($type !== Type::ORG_SETTLEMENT) {
+                $ba = $this->createBankAccount($input, $merchant, $this->mode);
+
+                $this->updateOndemandFundAccountIfRequired($ba);
+
+                if ($this->settlementServiceRamp($ba->getMerchantId()) === true) {
+                    if ($this->app['basicauth']->isAdminAuth() === true) {
+                        app('settlements_dashboard')->createBankAccount($ba, $this->mode);
+                    } else {
+                        app('settlements_api')->migrateBankAccount($ba, $this->mode);
+                    }
                 }
-                else
-                {
-                    app('settlements_api')->migrateBankAccount($ba, $this->mode);
-                }
+
+                return $ba;
             }
-
-            return $ba;
         }
 
         $newBankAccount = $this->buildBankAccount($input, $merchant, $this->mode);
 
-        $newBankAccount->associateMerchant($merchant);
+        $newBankAccount->associateMerchant($merchant,$type);
 
-        if ($newBankAccount->equals($oldBankAccount))
+        if (($oldBankAccount !== null) and
+            ($newBankAccount->equals($oldBankAccount)))
         {
             $this->trace->info(
                 TraceCode::MISC_TRACE_CODE,
@@ -94,6 +108,12 @@ class Core extends Base\Core
                 ]);
 
             return $oldBankAccount;
+        }
+
+        if((isset($input[Entity::TYPE])=== true) and
+            ($input[Entity::TYPE] === Type::ORG_SETTLEMENT))
+        {
+            return $this->addOrUpdateOrgSettlementAccount($oldBankAccount,$newBankAccount);
         }
 
         $ba = $this->changeBankAccount($input,
@@ -123,6 +143,19 @@ class Core extends Base\Core
 
         return $ba;
     }
+
+    public function addOrUpdateOrgSettlementAccount($orgSettlementBA,$newBankAccount) {
+
+        if ($orgSettlementBA !== null)
+        {
+            $this->repo->delete($orgSettlementBA);
+        }
+
+        $this->repo->saveOrFail($newBankAccount);
+
+        return $newBankAccount;
+    }
+
 
     public function addOrUpdateBankAccountForCustomer($input, $customer)
     {
@@ -231,6 +264,7 @@ class Core extends Base\Core
                                          $sendAccountChangeRequestMail = true)
     {
         $detail = $this->formatBankAccountForMerchantDetail($input);
+
 
         $newBankAccount = $this->buildBankAccount($input, $merchant, $this->mode);
 
@@ -633,6 +667,12 @@ class Core extends Base\Core
         if($this->app['basicauth']->isAdminAuth() === false)
         {
             $this->validateFeatureForAccountUpdate($merchant);
+        }
+
+        if ($merchant->org->isFeatureEnabled(Feature\Constants::ORG_POOL_ACCOUNT_SETTLEMENT) === true)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_ACCOUNT_ACTION_NOT_SUPPORTED);
+
         }
 
         $this->trace->info(TraceCode::BANK_ACCOUNT_UPDATE_FUNDS_ON_HOLD, [

@@ -2213,6 +2213,13 @@ class Service extends Base\Service
     {
         $merchant = app('basicauth')->getMerchant();
 
+        if(($this->app['basicauth']->isAdminAuth() === false) and
+            ($merchant->org->isFeatureEnabled(Feature\Constants::ORG_POOL_ACCOUNT_SETTLEMENT) === true))
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_ACCOUNT_ACTION_NOT_SUPPORTED);
+
+        }
+
         $ba = (new BankAccount\Core)->createOrChangeBankAccount($input, $merchant);
 
         // Using Request::input() since we do not want the file as input to log
@@ -2361,11 +2368,11 @@ class Service extends Base\Service
         return $this->openWorkflowExists($type);
     }
 
-    public function getBankAccount($id)
+    public function getBankAccount($id,  $type = null)
     {
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
-        $ba = $this->repo->bank_account->getBankAccount($merchant);
+        $ba = $this->repo->bank_account->getBankAccount($merchant,$type);
 
         if ($ba === null)
         {

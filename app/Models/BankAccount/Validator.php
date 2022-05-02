@@ -41,6 +41,7 @@ class Validator extends Base\Validator
         Entity::BENEFICIARY_EMAIL               => 'sometimes|email',
         Entity::BENEFICIARY_MOBILE              => 'sometimes|max:15|contact_syntax',
         Entity::NOTES                           => 'sometimes|notes',
+        Entity::TYPE                            => 'sometimes|string',
     ];
 
     protected static $editRules = [

@@ -93,6 +93,7 @@ class Entity extends Base\PublicEntity
         self::BENEFICIARY_NAME,
         self::ACCOUNT_NUMBER,
         self::ACCOUNT_TYPE,
+        self::TYPE,
         self::BENEFICIARY_ADDRESS1,
         self::BENEFICIARY_ADDRESS2,
         self::BENEFICIARY_ADDRESS3,
@@ -577,11 +578,11 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::TYPE] = Type::CUSTOMER;
     }
 
-    public function associateMerchant($merchant)
+    public function associateMerchant($merchant,$type=null)
     {
         $this->attributes[self::ENTITY_ID] = $merchant->getId();
 
-        $this->attributes[self::TYPE] = Type::MERCHANT;
+        $this->attributes[self::TYPE] = $type ?? Type::MERCHANT;
     }
 
     public function getRedactedAccountNumber()

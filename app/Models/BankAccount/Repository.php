@@ -28,11 +28,11 @@ class Repository extends Base\Repository
         Entity::ENTITY_ID       => 'sometimes|alpha_num'
     ];
 
-    public function getBankAccount($merchant)
+    public function getBankAccount($merchant, $type=null)
     {
         return $this->newQuery()
                     ->where(Entity::ENTITY_ID, '=', $merchant->getId())
-                    ->where(Entity::TYPE, '=', Type::MERCHANT)
+                    ->where(Entity::TYPE, '=', $type ?? Type::MERCHANT)
                     ->first();
     }
 

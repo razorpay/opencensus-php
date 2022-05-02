@@ -1313,6 +1313,8 @@ class Constants
     const BODY                           = 'body';
     const BAD_REQUEST_MERCHANT_ID_ABSENT = "BAD_REQUEST_MERCHANT_ID_ABSENT";
 
+    const ORG_POOL_ACCOUNT_SETTLEMENT = 'org_pool_settlement';
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -1805,6 +1807,8 @@ class Constants
         self::BLOCKLIST_FOR_WORKFLOW_SERVICE  => true,
         self::ONE_CLICK_DUAL_CHECKOUT         => true,
         self::HDFC_SINGLE_TID                 => true,
+        self::ORG_POOL_ACCOUNT_SETTLEMENT     => true,
+
     ];
 
     // Entity type constants

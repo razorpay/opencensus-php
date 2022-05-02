@@ -579,7 +579,11 @@ class MerchantController extends Controller
 
     public function getBankAccount($id)
     {
-        $data = $this->service()->getBankAccount($id);
+        $input = Request::all();
+
+        $type = $input['type'] ?? null;
+
+        $data = $this->service()->getBankAccount($id,$type);
 
         return ApiResponse::json($data);
     }

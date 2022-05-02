@@ -3065,6 +3065,58 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+
+    public function testAddBankAccountPoolSettlement()
+    {
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
+
+        $this->fixtures->create('feature', [
+            'name' => 'org_pool_settlement',
+            'entity_id' => '100000razorpay',
+            'entity_type' => 'org',
+        ]);
+
+        $admin = $this->ba->getAdmin();
+
+        $this->fixtures->admin->edit($admin['id'], ['allow_all_merchants' => true]);
+
+        $this->ba->adminProxyAuth('10000000000000', 'rzp_test_' . '10000000000000');
+
+        $this->startTest();
+    }
+
+    public function testEditBankAccountPoolSettlement()
+    {
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
+
+        $this->fixtures->create('feature', [
+            'name' => 'org_pool_settlement',
+            'entity_id' => '100000razorpay',
+            'entity_type' => 'org',
+        ]);
+
+        DB::table('bank_accounts')
+            ->insert([
+                'id' => '4bVIeHUY7ygubP',
+                'merchant_id' => '10000000000000',
+                'entity_id'     => '10000000000000',
+                'account_number' => '46404373118',
+                'beneficiary_name' => 'paridhi',
+                'type'     => 'org_settlement',
+                'created_at'  => time(),
+                'updated_at'  => time(),
+            ]);
+
+        $admin = $this->ba->getAdmin();
+
+        $this->fixtures->admin->edit($admin['id'], ['allow_all_merchants' => true]);
+
+        $this->ba->adminProxyAuth('10000000000000', 'rzp_test_' . '10000000000000');
+
+        $this->startTest();
+
+    }
+
     public function testAddBankAccountWithInvalidBeneficiaryName()
     {
         Mail::fake();
@@ -4185,6 +4237,25 @@ IFSC Code  ICIC0001206
     public function testGetBankAccount()
     {
         $this->testAddBankAccount();
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetBankAccountOrgSettlement()
+    {
+        DB::table('bank_accounts')
+            ->insert([
+                'id' => '4bVIeHUY7ygubP',
+                'merchant_id' => '10000000000000',
+                'entity_id'     => '10000000000000',
+                'account_number' => '46404373118',
+                'beneficiary_name' => 'paridhi',
+                'type'     => 'org_settlement',
+                'created_at'  => time(),
+                'updated_at'  => time(),
+            ]);
 
         $this->ba->adminAuth();
 
