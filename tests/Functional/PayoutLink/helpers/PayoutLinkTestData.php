@@ -3327,4 +3327,20 @@ return [
             'status_code' => 400,
         ],
     ],
+
+    'testGenerateAndSendCustomerOtpSuccessForCAActivatedMerchant' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payout-links/poutlk_12345678912345/generate-customer-otp',
+            'content' => [
+                'context' => 'some-context',
+            ]
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content'     => [
+                'success' => 'ok'
+            ],
+        ]
+    ],
 ];

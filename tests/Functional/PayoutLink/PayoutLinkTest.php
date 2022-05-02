@@ -4113,5 +4113,33 @@ class PayoutLinkTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testGenerateAndSendCustomerOtpSuccessForCAActivatedMerchant()
+    {
+        $plMock = $this->getMockedServiceMakeRequestSuccessResponse([
+            'merchant_id' => '12345678912345',
+            'success' => 'ok'
+        ]);
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->directAuth();
+
+        $this->fixtures->on('live')->create('merchant',
+            [
+                'id' => '12345678912345',
+                'activated' => 0,
+            ]);
+
+        $this->fixtures->on('live')->create('banking_account',
+            [
+                'channel'      => 'rbl',
+                'account_type' => 'current',
+                'status'       => 'activated',
+                'merchant_id'  => '12345678912345',
+            ]);
+
+        $this->startTest();
+    }
 }
 

@@ -268,6 +268,15 @@ abstract class AuthCreds
                 return true;
             }
 
+            $isPayoutLinksPublicRoute = $this->isPayoutLinksPublicRoutes($route);
+
+            if ($isPayoutLinksPublicRoute === true)
+            {
+                $this->trace->count(Metric::PUBLIC_X_PAYOUT_LINKS_ROUTE_HITS_BY_CA_ACTIVATED_MERCHANT_COUNT);
+
+                return true;
+            }
+
             //TODO : Need to remove this experiment after sometime
             $variant = $this->razorx->getTreatment($route,
                 RazorxTreatment::RAZORPAY_X_AUTHORISE_CA_ACTIVATED_MERCHANT_TO_ACCESS_X_PRIVATE_ROUTES,
@@ -337,5 +346,10 @@ abstract class AuthCreds
     public function checkIfOrgAxisCC(): bool
     {
         return $this->orgCustomCode === self::AXIS_CC_ORG_CUSTOM_CODE;
+    }
+
+    public function isPayoutLinksPublicRoutes(string $route): bool
+    {
+        return in_array($route, Route::PAYOUT_LINKS_SPECIFIC_PUBLIC_ROUTES, true);
     }
 }

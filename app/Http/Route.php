@@ -13442,6 +13442,19 @@ class Route
         'payout_get_attachment_signed_url',
     ];
 
+    const PAYOUT_LINKS_SPECIFIC_PUBLIC_ROUTES = [
+        'payout_links_customer_hosted_page',
+        'payout_links_generate_end_user_otp',
+        'payout_links_verify_customer_otp',
+        'payout_links_added_fund_accounts',
+        'payout_links_initiate',
+        'payout_links_generate_end_user_otp_cors',
+        'payout_links_verify_customer_otp_cors',
+        'payout_links_initiate_cors',
+        'payout_links_added_fund_accounts_cors',
+        'payout_links_status',
+        'payout_links_status_cors',
+    ];
 
     // For routes that need to exposed on OAuth but not Private Auth
     // NOTE: Route needs to exist in some other Auth (Proxy) otherwise it won't get registered
