@@ -251,11 +251,8 @@ trait Verify
      */
     protected function populateVerifyData(Payment\Entity $payment, &$gatewayData) : array
     {
-        $refunds = $this->repo->refund->findForPayment($payment);
-
         $data = [
             'payment' => $payment->toArrayGateway(),
-            'refunds' => $refunds->toArrayGateway(),
             'merchant' => $this->merchant,
         ];
 
