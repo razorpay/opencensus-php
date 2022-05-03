@@ -111,6 +111,10 @@ return [
         'test'       => env('AWS_PAYMENT_BATCH_QUEUE'),
         'live'       => env('AWS_PAYMENT_BATCH_QUEUE'),
     ],
+    'nach_batch_process' => [
+        'test'       => env('AWS_NACH_BATCH_PROCESS_QUEUE'),
+        'live'       => env('AWS_NACH_BATCH_PROCESS_QUEUE'),
+    ],
     'recon_method_batch' => [
         'test'       => env('AWS_RECON_QUEUE'),
         'live'       => env('AWS_RECON_QUEUE'),

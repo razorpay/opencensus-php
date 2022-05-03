@@ -2,11 +2,13 @@
 
 namespace RZP\Models\EMandate;
 
+use Monolog\Logger;
 use RZP\Models\Base;
 use RZP\Models\Batch;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Jobs\NachBatchProcess;
 use RZP\Exception\LogicException;
 
 class Service extends Base\Service
@@ -68,5 +70,17 @@ class Service extends Base\Service
         unset($input[Batch\Entity::GATEWAY]);
 
         return $processor->batchProcessEntries($input);
+    }
+
+    public function processBatchRequestAsync(array $input, string $batchId)
+    {
+        try
+        {
+            NachBatchProcess::dispatch($this->mode, $batchId, $input);
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException($ex, Logger::ERROR, TraceCode::NACH_BATCH_ERROR_SQS_PUSH_FAILED);
+        }
     }
 }

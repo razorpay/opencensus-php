@@ -224,7 +224,6 @@ class Base extends BaseProcessor
 
     public function batchProcessEntries(array $entries)
     {
-
         foreach ($entries as &$entry)
         {
             $entryTracePayload = $entry;
