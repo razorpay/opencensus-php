@@ -141,6 +141,7 @@ return [
             'content' => [
                 'type'    => 'nach_debit',
                 'targets' => ['paper_nach_citi'],
+                'sub_type'=> "9:9",
             ],
             'url' => '/gateway/files',
             'method' => 'POST'
@@ -174,6 +175,7 @@ return [
             'content' => [
                 'type'    => 'nach_debit',
                 'targets' => ['paper_nach_citi'],
+                'sub_type'=> "9:9",
             ],
             'url' => '/gateway/files',
             'method' => 'POST'
@@ -201,11 +203,44 @@ return [
         ],
     ],
 
+    'testGatewayFilePartGenerationWithEarlyPresentmentFeatureFor4AMPayment' => [
+        'request' => [
+            'content' => [
+                'type'    => 'nach_debit',
+                'targets' => ['paper_nach_citi'],
+                'sub_type'=> "27:9",
+            ],
+            'url' => '/gateway/files',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 1,
+                'admin' => true,
+                'items' => [
+                    [
+                        'recipients'          => [''],
+                        'status'              => 'file_generated',
+                        'scheduled'           => true,
+                        'partially_processed' => false,
+                        'attempts'            => 1,
+                        'type'                => 'nach_debit',
+                        'target'              => 'paper_nach_citi',
+                        'entity'              => 'gateway_file',
+                        'admin'               => true
+                    ],
+                ],
+            ]
+        ],
+    ],
+
     'testGatewayFileDebitOnNonWorkingDay' => [
         'request' => [
             'content' => [
                 'type'    => 'nach_debit',
                 'targets' => ['paper_nach_citi'],
+                'sub_type'=> "9:9",
             ],
             'url' => '/gateway/files',
             'method' => 'POST'

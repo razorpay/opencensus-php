@@ -574,7 +574,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         $this->assertNull($token['expired_at']);
     }
 
-    public function testDebitFileGeneration()
+    public function testDebitFileGenerationCiti()
     {
         $response = $this->makeDebitPayment();
 
@@ -604,6 +604,8 @@ class EnachNetbankingNpciGatewayTest extends TestCase
                 'success' => $pushData['files'],
             ];
         });
+
+        $this->testData[__FUNCTION__] = $this->testData['testDebitFileGenerationCiti'];
 
         $content = $this->startTest();
 
@@ -688,7 +690,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
 
         Queue::fake();
 
-        $this->testData[__FUNCTION__] = $this->testData['testDebitFileGeneration'];
+        $this->testData[__FUNCTION__] = $this->testData['testDebitFileGenerationCiti'];
 
         $content = $this->startTest();
 
@@ -779,7 +781,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
             ];
         });
 
-        $this->testData[__FUNCTION__] = $this->testData['testDebitFileGeneration'];
+        $this->testData[__FUNCTION__] = $this->testData['testDebitFileGenerationCiti'];
 
         $content = $this->startTest();
 
@@ -876,7 +878,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
             ];
         });
 
-        $content = $this->startTest($this->testData['testDebitFileGeneration']);
+        $content = $this->startTest($this->testData['testDebitFileGenerationCiti']);
 
         $content = $content['items'][0];
 

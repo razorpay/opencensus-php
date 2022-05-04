@@ -68,11 +68,12 @@ return [
         ],
     ],
 
-    'testDebitFileGeneration' => [
+    'testDebitFileGenerationCiti' => [
         'request' => [
             'content' => [
                 'type'    => 'nach_debit',
                 'targets' => ['paper_nach_citi'],
+                'sub_type'=> "9:9",
                 'begin'   => Carbon::yesterday(Timezone::IST)->getTimestamp(),
                 'end'     => Carbon::today(Timezone::IST)->getTimestamp() - 1,
             ],
@@ -135,6 +136,7 @@ return [
             'content' => [
                 'type'    => 'nach_debit',
                 'targets' => ['paper_nach_citi'],
+                'sub_type'=> "9:9",
                 'begin'   => Carbon::yesterday(Timezone::IST)->getTimestamp(),
                 'end'     => Carbon::today(Timezone::IST)->getTimestamp() - 1,
             ],
@@ -434,6 +436,7 @@ return [
             'content' => [
                 'type'    => 'nach_debit',
                 'targets' => ['paper_nach_citi'],
+                'sub_type'=> "9:9",
                 'begin'   => Carbon::yesterday(Timezone::IST)->getTimestamp(),
                 'end'     => Carbon::today(Timezone::IST)->getTimestamp() - 1,
             ],
@@ -460,6 +463,7 @@ return [
             'content' => [
                 'type'    => 'nach_debit',
                 'targets' => ['paper_nach_citi'],
+                'sub_type'=> "9:9",
                 'begin'   => Carbon::yesterday(Timezone::IST)->getTimestamp(),
                 'end'     => Carbon::today(Timezone::IST)->getTimestamp() - 1,
             ],

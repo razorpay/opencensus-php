@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Gateway\Enach\Netbanking;
 
+use Mail;
 use Excel;
 use Queue;
 Use Carbon\Carbon;
@@ -11,19 +12,39 @@ use RZP\Models\Payment;
 use RZP\Models\Terminal;
 use RZP\Constants\Entity;
 use RZP\Constants\Timezone;
+use RZP\Models\Customer\Token;
+use RZP\Services\Mock\BeamService;
+use RZP\Tests\Functional\TestCase;
 use RZP\Excel\Export as ExcelExport;
+use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Excel\ExportSheet as ExcelSheetExport;
 use Illuminate\Http\Testing\File as TestingFile;
+use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
+use RZP\Tests\Functional\FundTransfer\AttemptTrait;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Tests\Functional\FundTransfer\AttemptReconcileTrait;
+use RZP\Gateway\Enach\Citi\NachDebitFileHeadings as Headings;
 
-class EnachNetbankingNpciYesbTest extends EnachNetbankingNpciGatewayTest
+class EnachNetbankingNpciYesbTest extends TestCase
 {
+    use FileHandlerTrait;
+    use DbEntityFetchTrait;
+    use AttemptTrait;
+    use AttemptReconcileTrait;
+    use PartnerTrait;
+
+    const FIXED_WORKING_DAY_TIME     = 1583548200;  // 07-03-2020 8:00 AM
+    const FIXED_NON_WORKING_DAY_TIME = 1583634600;  // 08-03-2020 8:00 AM (sunday)
+
     protected function setUp(): void
     {
+        $this->testDataFilePath = __DIR__ . '/EnachNetbankingNpciGatewayTestData.php';
+
+        $fixedTime = (new Carbon())->timestamp(self::FIXED_WORKING_DAY_TIME);
+
+        Carbon::setTestNow($fixedTime);
+
         parent::setUp();
-
-        $this->sharedCitiTerminal = $this->sharedTerminal;
-
-        $this->fixtures->terminal->disableTerminal($this->sharedTerminal['id']);
 
         $this->sharedTerminal = $this->fixtures->create(
                                 'terminal:shared_enach_npci_netbanking_yesb_terminal',
@@ -32,9 +53,20 @@ class EnachNetbankingNpciYesbTest extends EnachNetbankingNpciGatewayTest
                                     Terminal\Entity::GATEWAY_ACQUIRER => Payment\Gateway::ACQUIRER_YESB
                                 ]
                                );
+
+        $this->fixtures->create(Entity::CUSTOMER);
+
+        $this->fixtures->merchant->enableEmandate();
+        $this->fixtures->merchant->addFeatures([Feature\Constants::CHARGE_AT_WILL]);
+
+        $this->gateway = 'enach_npci_netbanking';
+
+        $connector = $this->mockSqlConnectorWithReplicaLag(0);
+
+        $this->app->instance('db.connector.mysql', $connector);
     }
 
-    public function testDebitFileGeneration()
+    public function testDebitFileGenerationYesb()
     {
         $response = $this->makeDebitPayment();
 
@@ -176,7 +208,9 @@ class EnachNetbankingNpciYesbTest extends EnachNetbankingNpciGatewayTest
 
         $this->fixtures->terminal->disableTerminal($this->sharedTerminal['id']);
 
-        $this->fixtures->terminal->enableTerminal($this->sharedCitiTerminal['id']);
+        $sharedCitiTerminal = $this->fixtures->create('terminal:shared_enach_npci_netbanking_terminal');
+
+        $this->fixtures->terminal->enableTerminal($sharedCitiTerminal['id']);
 
         $this->makeDebitPayment();
 
@@ -209,7 +243,7 @@ class EnachNetbankingNpciYesbTest extends EnachNetbankingNpciGatewayTest
 
         $this->assertArraySelectiveEquals($expectedFileContent, $file);
 
-        $this->fixtures->terminal->disableTerminal($this->sharedCitiTerminal['id']);
+        $this->fixtures->terminal->disableTerminal($sharedCitiTerminal['id']);
 
         $this->fixtures->terminal->enableTerminal($this->sharedTerminal['id']);
     }
@@ -783,5 +817,120 @@ class EnachNetbankingNpciYesbTest extends EnachNetbankingNpciGatewayTest
         fseek($handle, 0);
 
         return (new TestingFile('MMS-CANCEL-YESB-NACH00000000056369-08122021-000008-INP-RES.xml', $handle));
+    }
+
+    // ----------- utilities ---------
+
+    protected function makeDebitPayment($amount = 300000)
+    {
+        $payment = $this->getEmandatePaymentArray('UTIB', 'netbanking', 0);
+
+        $payment['bank_account'] = [
+            'account_number' => '1111111111111',
+            'ifsc'           => 'UTIB0000123',
+            'name'           => 'Test account',
+            'account_type'   => 'savings',
+        ];
+
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+
+        $payment['order_id'] = $order->getPublicId();
+
+        $response = $this->doAuthPayment($payment);
+
+        $this->fixtures->stripSign($response['razorpay_payment_id']);
+
+        $paymentEntity = $this->getEntityById('payment', $response['razorpay_payment_id'],true);
+
+        $tokenId = $paymentEntity[\RZP\Models\Payment\Entity::TOKEN_ID];
+
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => $amount]);
+
+        $this->fixtures->edit(
+            'token',
+            $tokenId,
+            [
+                Token\Entity::GATEWAY_TOKEN    => 'UTIB6000000005844847',
+                Token\Entity::RECURRING        => 1,
+                Token\Entity::RECURRING_STATUS => Token\RecurringStatus::CONFIRMED,
+            ]);
+
+        $payment             = $this->getEmandatePaymentArray('UTIB', null, $amount);
+        $payment['token']    = $tokenId;
+        $payment['order_id'] = $order->getPublicId();
+
+        unset($payment['auth_type']);
+
+        return $this->doS2SRecurringPayment($payment);
+    }
+
+    protected function mockVerifyResponse()
+    {
+        $this->mockServerContentFunction(function(& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content['Accptd']     = '';
+                $content['AccptRefNo'] = '';
+                $content['ErrorCode'] = '605';
+                $content['ErrorDesc'] = 'Otp Verification Failure';
+                $content['RejectBy']   = 'Customer';
+            }
+        });
+    }
+
+    protected function mockFailedCallbackResponse()
+    {
+        $this->mockServerContentFunction(function(& $content, $action = null)
+        {
+            if ($action === 'authorize')
+            {
+                $content = 'ErrorXML';
+            }
+        });
+    }
+
+    protected function parseTextRow(string $row, int $ix, string $delimiter, array $headings = null)
+    {
+        $values=[
+            Headings::ACH_TRANSACTION_CODE             =>  substr($row, 0, 2),
+            Headings::CONTROL_9S                       =>  substr($row, 2, 9),
+            Headings::DESTINATION_ACCOUNT_TYPE         =>  substr($row, 11, 2),
+            Headings::LEDGER_FOLIO_NUMBER              =>  substr($row, 13, 3),
+            Headings::CONTROL_15S                      =>  substr($row, 16, 15),
+            Headings::BENEFICIARY_ACCOUNT_HOLDER_NAME  =>  substr($row, 31, 40),
+            Headings::CONTROL_9SS                      =>  substr($row, 71, 9),
+            Headings::CONTROL_7S                       =>  substr($row, 80, 7),
+            Headings::USER_NAME                        =>  substr($row, 87, 20),
+            Headings::CONTROL_13S                      =>  substr($row, 107, 13),
+            Headings::AMOUNT                           =>  substr($row, 120, 13),
+            Headings::ACH_ITEM_SEQ_NO                  =>  substr($row, 133, 10),
+            Headings::CHECKSUM                         =>  substr($row, 143, 10),
+            Headings::FLAG                             =>  substr($row, 153, 1),
+            Headings::REASON_CODE                      =>  substr($row, 154, 2),
+            Headings::DESTINATION_BANK_IFSC            =>  substr($row, 156, 11),
+            Headings::BENEFICIARY_BANK_ACCOUNT_NUMBER  =>  substr($row, 167, 35),
+            Headings::SPONSOR_BANK_IFSC                =>  substr($row, 202, 11),
+            Headings::USER_NUMBER                      =>  substr($row, 213, 18),
+            Headings::TRANSACTION_REFERENCE            =>  substr($row, 231, 30),
+            Headings::PRODUCT_TYPE                     =>  substr($row, 261, 3),
+            Headings::BENEFICIARY_AADHAR_NUMBER        =>  substr($row, 264, 15),
+            Headings::UMRN                             =>  substr($row, 279, 20),
+            Headings::FILLER                           =>  substr($row, 299, 7),
+        ];
+
+        return $values;
+    }
+
+    public function mockBeam(callable $callback)
+    {
+        $beamServiceMock = $this->getMockBuilder(BeamService::class)
+                                ->setConstructorArgs([$this->app])
+                                ->setMethods(['beamPush'])
+                                ->getMock();
+
+        $beamServiceMock->method('beamPush')->will($this->returnCallback($callback));
+
+        $this->app['beam']->setMockService($beamServiceMock);
     }
 }

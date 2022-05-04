@@ -6882,6 +6882,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CRON_FETCH_AUTHORIZED_TRANSACTED_MERCHANTS_SUCCESS            = 'CRON_FETCH_AUTHORIZED_TRANSACTED_MERCHANTS_SUCCESS';
     const CRON_FETCH_AUTHORIZED_TRANSACTED_MERCHANTS_FAILURE            = 'CRON_FETCH_AUTHORIZED_TRANSACTED_MERCHANTS_FAILURE';
 
+    const CACHE_KEY_SET                                                 = 'CACHE_KEY_SET';
+    const CACHE_KEY_GET                                                 = 'CACHE_KEY_GET';
 
     const NO_TDS_FOR_PAYOUT                                 = 'NO_TDS_FOR_PAYOUT';
     const PROCESSING_TDS_FOR_PAYOUT                         = 'PROCESSING_TDS_FOR_PAYOUT';

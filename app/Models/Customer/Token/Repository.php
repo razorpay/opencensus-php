@@ -593,10 +593,14 @@ class Repository extends Base\Repository
 
         $tokenTerminalIdColumn = $this->repo->token->dbColumn(Entity::TERMINAL_ID);
 
-        $selectCols = $this->dbColumn('*');
-
         return $this->newQueryOnSlave(600000)
-              ->select($selectCols,
+              ->select('tokens.' . Entity::ACCOUNT_TYPE,
+                       'tokens.' . Entity::BENEFICIARY_NAME,
+                       'tokens.' . Entity::IFSC,
+                       'tokens.' . Entity::ACCOUNT_NUMBER,
+                       'tokens.' . Entity::GATEWAY_TOKEN,
+                       'tokens.' . Entity::MERCHANT_ID,
+                       'tokens.' . Entity::TERMINAL_ID,
                        'payments.id as payment_id',
                        'payments.amount as payment_amount',
                        'payments.created_at as payment_created_at',

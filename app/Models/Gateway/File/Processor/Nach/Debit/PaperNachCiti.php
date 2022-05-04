@@ -3,6 +3,7 @@
 namespace RZP\Models\Gateway\File\Processor\Nach\Debit;
 
 use Mail;
+use Cache;
 use Carbon\Carbon;
 
 use RZP\Gateway\Enach;
@@ -43,6 +44,7 @@ class PaperNachCiti extends Debit\Base
         'uid'   => '10006',
         'mode'  => '33188'
     ];
+    const FILE_CACHE_KEY    = 'nach_citi_gateway_file_index';
 
     protected $pageCount   = 90000;
     protected $userName    = 'CTRAZORPAY';
@@ -79,6 +81,21 @@ class PaperNachCiti extends Debit\Base
 
                 $presentCount = $serialNumber = 0;
 
+                // get serial no if key present for current date
+                $cacheKey = $this->getCacheKeyForFileIndex($key);
+
+                $serialNumberFromCache = $this->cache->get($cacheKey);
+
+                if(isset($serialNumberFromCache) === true)
+                {
+                    $serialNumber = $serialNumberFromCache;
+                }
+
+                $this->trace->info(TraceCode::CACHE_KEY_GET, [
+                    'key'    => $cacheKey,
+                    'result' => $serialNumberFromCache,
+                ]);
+
                 while ($presentCount < $totalCount)
                 {
                     if ($presentCount % 50000 === 0)
@@ -87,6 +104,7 @@ class PaperNachCiti extends Debit\Base
                             'index'        => $presentCount,
                             'utility_code' => $key,
                             'total_count'  => $totalCount,
+                            'serialNumber' => $serialNumber,
                         ]);
                     }
 
@@ -160,7 +178,13 @@ class PaperNachCiti extends Debit\Base
 
                     $fileStoreIds[] = $file->getId();
 
-                    $serialNumber++;
+                    // cache index of utility code for 24hours (in seconds)
+                    $serialNumber = $this->cache->increment($cacheKey);
+
+                    $this->trace->info(TraceCode::CACHE_KEY_SET, [
+                        'key'    => $cacheKey,
+                        'result' => $serialNumber,
+                    ]);
 
                     $presentCount = $presentCount + $this->pageCount;
                 }
@@ -495,12 +519,14 @@ class PaperNachCiti extends Debit\Base
      */
     public function fetchEntities(): PublicCollection
     {
+        $time = explode(":", $this->gatewayFile->getSubType());
+
         $begin = Carbon::createFromTimestamp($this->gatewayFile->getBegin(), Timezone::IST)
-                         ->addHours(9)
+                         ->addHours(intval($time[0]))
                          ->getTimestamp();
 
         $end = Carbon::createFromTimestamp($this->gatewayFile->getEnd(), Timezone::IST)
-                       ->addHours(9)
+                       ->addHours(intval($time[1]))
                        ->getTimestamp();
 
         $this->trace->info(TraceCode::GATEWAY_FILE_QUERY_INIT);
@@ -526,22 +552,26 @@ class PaperNachCiti extends Debit\Base
 
         $this->trace->info(TraceCode::GATEWAY_FILE_QUERY_COMPLETE);
 
+        $beginTrace = $begin;
+        $endTrace = $end;
         foreach ($tokens as $key => $token)
         {
             if ($token->merchant->isEarlyMandatePresentmentEnabled() === true)
             {
-                $end = Carbon::createFromTimestamp($begin, Timezone::IST)
-                               ->addHours(6)
-                               ->getTimestamp();
-
-                $createdAt = $token['payment_created_at'];
-                /*
-                 * the payments done from previous day 9am to 4pm should not be considered here as
-                 * these payments will be part of mutual fund exclusive timing cycle (9am to 4pm)
-                 */
-                if (($createdAt >= $begin) and ($createdAt < $end))
+                while ($begin < $end)
                 {
-                    unset($tokens[$key]);
+                    $nineAM = Carbon::createFromTimestamp($begin, Timezone::IST)->startOfDay()->addHours(9);
+                    $threePM = Carbon::createFromTimestamp($begin, Timezone::IST)->startOfDay()->addHours(15);
+                    $createdAt = $token['payment_created_at'];
+                    /*
+                     * the payments done from previous day 9am to 3pm should not be considered here as
+                     * these payments will be part of mutual fund exclusive timing cycle (9am to 3pm)
+                     */
+                    if (($createdAt >= $nineAM->timestamp) and ($createdAt < $threePM->timestamp))
+                    {
+                        unset($tokens[$key]);
+                    }
+                    $begin = $begin + Carbon::HOURS_PER_DAY * Carbon::MINUTES_PER_HOUR * Carbon::SECONDS_PER_MINUTE;
                 }
             }
         }
@@ -552,8 +582,8 @@ class PaperNachCiti extends Debit\Base
             TraceCode::NACH_DEBIT_REQUEST,
             [
                 'gateway_file_id' => $this->gatewayFile->getId(),
-                'begin'           => $begin,
-                'end'             => $end,
+                'begin'           => $beginTrace,
+                'end'             => $endTrace,
                 'entity_count'    => count($paymentIds),
             ]);
 
@@ -562,7 +592,7 @@ class PaperNachCiti extends Debit\Base
 
     protected function increaseAllowedSystemLimits()
     {
-        RuntimeManager::setMemoryLimit('20480'); // 20GB
+        RuntimeManager::setMemoryLimit('28672'); // 28GB
 
         RuntimeManager::setTimeLimit(7200);
 
@@ -582,5 +612,18 @@ class PaperNachCiti extends Debit\Base
     protected function getDate(): string
     {
         return Carbon::now(Timezone::IST)->format('dmY');
+    }
+
+    protected function getCacheKeyForFileIndex($utilityCode): string
+    {
+        $begin = Carbon::createFromTimestamp($this->gatewayFile->getBegin(), Timezone::IST)
+                         ->addHours(9)
+                         ->getTimestamp();
+
+        $end = Carbon::createFromTimestamp($this->gatewayFile->getEnd(), Timezone::IST)
+                       ->addHours(9)
+                       ->getTimestamp();
+
+        return self::FILE_CACHE_KEY . "_" . $utilityCode . "_" . $this->mode . "_" . $begin . "-" . $end;
     }
 }

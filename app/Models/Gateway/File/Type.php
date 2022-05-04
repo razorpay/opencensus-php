@@ -28,6 +28,9 @@ class Type
             Constants::KOTAK => [self::TPV, self::NON_TPV],
             Constants::AXIS  => [self::CORPORATE, self::NON_CORPORATE],
         ],
+        self::NACH_DEBIT => [
+            Constants::PAPER_NACH_CITI => ['9:9', '6:9', '9:6', '27:9', '9:3'],
+        ]
     ];
 
     public static function isValidType(string $type): bool

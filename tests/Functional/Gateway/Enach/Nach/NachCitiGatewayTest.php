@@ -30,6 +30,23 @@ class NachCitiGatewayTest extends NachGatewayTest
         $this->startTest();
     }
 
+    public function testGatewayFilePartGenerationWithEarlyPresentmentFeatureFor4AMPayment()
+    {
+        $this->fixtures->merchant->addFeatures(['early_mandate_presentment']);
+
+        $response = $this->createRecurringNachPayment();
+
+        $this->fixtures->stripSign($response['razorpay_payment_id']);
+
+        $this->fixtures->edit('payment', $response['razorpay_payment_id'], [
+            'created_at' => Carbon::today(Timezone::IST)->addHours(4)->timestamp
+        ]);
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+    }
+
     public function testGatewayFileWithEarlyPresentmentFeatureFor5PMPayment()
     {
         $this->fixtures->merchant->addFeatures(['early_mandate_presentment']);

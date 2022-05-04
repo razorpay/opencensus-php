@@ -5,23 +5,46 @@ namespace RZP\Tests\Functional\Gateway\Enach\Netbanking;
 use Mail;
 use Excel;
 use Queue;
-
 use Carbon\Carbon;
-use RZP\Models\Payment;
-use RZP\Models\Terminal;
-use RZP\Constants\Timezone;
-use RZP\Mail\Gateway\Nach\Base as NachMail;
-use Illuminate\Http\Testing\File as TestingFile;
 
-class EnachNetbankingNpciIciciTest extends EnachNetbankingNpciGatewayTest
+use RZP\Models\Payment;
+use RZP\Models\Feature;
+use RZP\Models\Terminal;
+use RZP\Constants\Entity;
+use RZP\Constants\Timezone;
+use RZP\Models\Customer\Token;
+use RZP\Tests\Functional\TestCase;
+use RZP\Excel\Export as ExcelExport;
+use RZP\Mail\Gateway\Nach\Base as NachMail;
+use RZP\Tests\Functional\Partner\PartnerTrait;
+use RZP\Excel\ExportSheet as ExcelSheetExport;
+use Illuminate\Http\Testing\File as TestingFile;
+use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
+use RZP\Tests\Functional\FundTransfer\AttemptTrait;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Tests\Functional\FundTransfer\AttemptReconcileTrait;
+use RZP\Gateway\Enach\Citi\NachDebitFileHeadings as Headings;
+
+class EnachNetbankingNpciIciciTest extends TestCase
 {
+    use FileHandlerTrait;
+    use DbEntityFetchTrait;
+    use AttemptTrait;
+    use AttemptReconcileTrait;
+    use PartnerTrait;
+
+    const FIXED_WORKING_DAY_TIME     = 1583548200;  // 07-03-2020 8:00 AM
+    const FIXED_NON_WORKING_DAY_TIME = 1583634600;  // 08-03-2020 8:00 AM (sunday)
+
     protected function setUp(): void
     {
+        $this->testDataFilePath = __DIR__ . '/EnachNetbankingNpciGatewayTestData.php';
+
+        $fixedTime = (new Carbon())->timestamp(self::FIXED_WORKING_DAY_TIME);
+
+        Carbon::setTestNow($fixedTime);
+
         parent::setUp();
-
-        $this->sharedCitiTerminal = $this->sharedTerminal;
-
-        $this->fixtures->terminal->disableTerminal($this->sharedTerminal['id']);
 
         $this->sharedTerminal = $this->fixtures->create(
             'terminal:shared_enach_npci_netbanking_terminal',
@@ -31,9 +54,20 @@ class EnachNetbankingNpciIciciTest extends EnachNetbankingNpciGatewayTest
                 Terminal\Entity::GATEWAY_ACCESS_CODE => 'ICIC0TREA00'
             ]
         );
+
+        $this->fixtures->create(Entity::CUSTOMER);
+
+        $this->fixtures->merchant->enableEmandate();
+        $this->fixtures->merchant->addFeatures([Feature\Constants::CHARGE_AT_WILL]);
+
+        $this->gateway = 'enach_npci_netbanking';
+
+        $connector = $this->mockSqlConnectorWithReplicaLag(0);
+
+        $this->app->instance('db.connector.mysql', $connector);
     }
 
-    public function testDebitFileGeneration()
+    public function testDebitFileGenerationIcici()
     {
         $payment1 = $this->makeDebitPayment();
 
@@ -155,7 +189,9 @@ class EnachNetbankingNpciIciciTest extends EnachNetbankingNpciGatewayTest
 
         $this->fixtures->terminal->disableTerminal($this->sharedTerminal['id']);
 
-        $this->fixtures->terminal->enableTerminal($this->sharedCitiTerminal['id']);
+        $sharedCitiTerminal = $this->fixtures->create('terminal:shared_enach_npci_netbanking_terminal');
+
+        $this->fixtures->terminal->enableTerminal($sharedCitiTerminal['id']);
 
         $citiTerminalPaymentResponse = $this->makeDebitPayment();
 
@@ -191,7 +227,7 @@ class EnachNetbankingNpciIciciTest extends EnachNetbankingNpciGatewayTest
 
         $this->assertFalse(strpos($fileContent, $citiTerminalPaymentResponse['razorpay_payment_id']));
 
-        $this->fixtures->terminal->disableTerminal($this->sharedCitiTerminal['id']);
+        $this->fixtures->terminal->disableTerminal($sharedCitiTerminal['id']);
 
         $this->fixtures->terminal->enableTerminal($this->sharedTerminal['id']);
     }
@@ -356,4 +392,209 @@ class EnachNetbankingNpciIciciTest extends EnachNetbankingNpciGatewayTest
         $this->markTestSkipped('not applicable');
     }
 
+    // ----------- utilities ---------
+
+    protected function makeDebitPayment($amount = 300000)
+    {
+        $payment = $this->getEmandatePaymentArray('UTIB', 'netbanking', 0);
+
+        $payment['bank_account'] = [
+            'account_number' => '1111111111111',
+            'ifsc'           => 'UTIB0000123',
+            'name'           => 'Test account',
+            'account_type'   => 'savings',
+        ];
+
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+
+        $payment['order_id'] = $order->getPublicId();
+
+        $response = $this->doAuthPayment($payment);
+
+        $this->fixtures->stripSign($response['razorpay_payment_id']);
+
+        $paymentEntity = $this->getEntityById('payment', $response['razorpay_payment_id'],true);
+
+        $tokenId = $paymentEntity[\RZP\Models\Payment\Entity::TOKEN_ID];
+
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => $amount]);
+
+        $this->fixtures->edit(
+            'token',
+            $tokenId,
+            [
+                Token\Entity::GATEWAY_TOKEN    => 'UTIB6000000005844847',
+                Token\Entity::RECURRING        => 1,
+                Token\Entity::RECURRING_STATUS => Token\RecurringStatus::CONFIRMED,
+            ]);
+
+        $payment             = $this->getEmandatePaymentArray('UTIB', null, $amount);
+        $payment['token']    = $tokenId;
+        $payment['order_id'] = $order->getPublicId();
+
+        unset($payment['auth_type']);
+
+        return $this->doS2SRecurringPayment($payment);
+    }
+
+    protected function mockVerifyResponse()
+    {
+        $this->mockServerContentFunction(function(& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content['Accptd']     = '';
+                $content['AccptRefNo'] = '';
+                $content['ErrorCode'] = '605';
+                $content['ErrorDesc'] = 'Otp Verification Failure';
+                $content['RejectBy']   = 'Customer';
+            }
+        });
+    }
+
+    protected function mockFailedCallbackResponse()
+    {
+        $this->mockServerContentFunction(function(& $content, $action = null)
+        {
+            if ($action === 'authorize')
+            {
+                $content = 'ErrorXML';
+            }
+        });
+    }
+
+    protected function runPaymentCallbackFlowNetbanking($response, &$callback = null)
+    {
+        $mock = $this->isGatewayMocked();
+
+        list ($url, $method, $content) = $this->getDataForGatewayRequest($response, $callback);
+
+        if ($mock)
+        {
+            $request = $this->makeFirstGatewayPaymentMockRequest(
+                $url, $method, $content);
+        }
+
+        $this->ba->publicCallbackAuth();
+
+        $response = $this->sendRequest($request);
+
+        $this->assertEquals($response->getStatusCode(), '302');
+
+        $data = array(
+            'url' => $response->headers->get('location'),
+            'method' => 'post');
+
+        if (filter_var($data['url'], FILTER_VALIDATE_URL))
+        {
+            // Hack: only way to remove IsPartnerAuth from container
+            $this->app['basicauth']->checkAndSetKeyId('');
+
+            return $this->submitPaymentCallbackRedirect($data['url']);
+        }
+
+        return $this->submitPaymentCallbackRequest($request);
+    }
+
+    protected function getBatchFileToUpload($payment, $status = 'Active', $errorCode = '', $errorDesc = '')
+    {
+        $this->fixtures->stripSign($payment['id']);
+
+        $enach = $this->getDbLastEntity('enach');
+
+        $sheets = [
+            'sheet1' => [
+                'config' => [
+                    'start_cell' => 'A1',
+                ],
+                'items'  => [
+                    [
+                        'MANDATE_DATE'    => Carbon::today(Timezone::IST)->format('m/d/Y'),
+                        'MANDATE_ID'      => 'NEW',
+                        'UMRN'            => 'UTIB6000000005844847',
+                        'CUST_REF_NO'     => '',
+                        'SCH_REF_NO'      => '',
+                        'CUST_NAME'       => 'User name',
+                        'BANK'            => '',
+                        'BRANCH'          => '',
+                        'BANK_CODE'       => 'UTIB0000123',
+                        'AC_TYPE'         => 'SAVINGS',
+                        'AC_NO'            => '1111111111111',
+                        'AMOUNT'          => '99999',
+                        'FREQUENCY'       => 'ADHO',
+                        'DEBIT_TYPE'      => 'MAXIMUM AMOUNT',
+                        'START_DATE'      => Carbon::now(Timezone::IST)->format('m/d/Y'),
+                        'END_DATE'        => Carbon::now(Timezone::IST)->addYears(10)->format('m/d/Y'),
+                        'UNTIL_CANCEL'    => 'N',
+                        'TEL_NO'          => '',
+                        'MOBILE_NO'       => '9999999999',
+                        'MAIL_ID'         => '',
+                        'UPLOAD_DATE'     => Carbon::now(Timezone::IST)->format('m/d/Y'),
+                        'RESPONSE_DATE'   => Carbon::now(Timezone::IST)->addDays(2)->format('m/d/Y'),
+                        'UTILITY_CODE'    => 'NACH00000000012323',
+                        'UTILITY_NAME'    => 'RAZORPAY',
+                        'STATUS'          => $status,
+                        'STATUS_CODE'     => $errorCode,
+                        'REASON'          => $errorDesc,
+                        'MANDATE_REQID'   => $enach['gateway_reference_id'],
+                        'MESSAGE_ID'      => $payment['id'],
+                    ],
+                ],
+            ],
+        ];
+
+        $name = 'RAZORPAYPVTLTD_OutwardMandateMISReport' . Carbon::now(Timezone::IST)->format('dmY');
+
+        $excel = (new ExcelExport)->setSheets(function() use ($sheets) {
+            $sheetsInfo = [];
+            foreach ($sheets as $sheetName => $data)
+            {
+                $sheetsInfo[$sheetName] = (new ExcelSheetExport($data['items']))->setTitle($sheetName)->setStartCell($data['config']['start_cell'])->generateAutoHeading(true);
+            }
+
+            return $sheetsInfo;
+        });
+
+        $data = $excel->raw('Xlsx');
+
+        $handle = tmpfile();
+        fwrite($handle, $data);
+        fseek($handle, 0);
+
+        $file = (new TestingFile('Register MIS.xlsx', $handle));
+
+        return $file;
+    }
+
+    protected function parseTextRow(string $row, int $ix, string $delimiter, array $headings = null)
+    {
+        $values=[
+            Headings::ACH_TRANSACTION_CODE             =>  substr($row, 0, 2),
+            Headings::CONTROL_9S                       =>  substr($row, 2, 9),
+            Headings::DESTINATION_ACCOUNT_TYPE         =>  substr($row, 11, 2),
+            Headings::LEDGER_FOLIO_NUMBER              =>  substr($row, 13, 3),
+            Headings::CONTROL_15S                      =>  substr($row, 16, 15),
+            Headings::BENEFICIARY_ACCOUNT_HOLDER_NAME  =>  substr($row, 31, 40),
+            Headings::CONTROL_9SS                      =>  substr($row, 71, 9),
+            Headings::CONTROL_7S                       =>  substr($row, 80, 7),
+            Headings::USER_NAME                        =>  substr($row, 87, 20),
+            Headings::CONTROL_13S                      =>  substr($row, 107, 13),
+            Headings::AMOUNT                           =>  substr($row, 120, 13),
+            Headings::ACH_ITEM_SEQ_NO                  =>  substr($row, 133, 10),
+            Headings::CHECKSUM                         =>  substr($row, 143, 10),
+            Headings::FLAG                             =>  substr($row, 153, 1),
+            Headings::REASON_CODE                      =>  substr($row, 154, 2),
+            Headings::DESTINATION_BANK_IFSC            =>  substr($row, 156, 11),
+            Headings::BENEFICIARY_BANK_ACCOUNT_NUMBER  =>  substr($row, 167, 35),
+            Headings::SPONSOR_BANK_IFSC                =>  substr($row, 202, 11),
+            Headings::USER_NUMBER                      =>  substr($row, 213, 18),
+            Headings::TRANSACTION_REFERENCE            =>  substr($row, 231, 30),
+            Headings::PRODUCT_TYPE                     =>  substr($row, 261, 3),
+            Headings::BENEFICIARY_AADHAR_NUMBER        =>  substr($row, 264, 15),
+            Headings::UMRN                             =>  substr($row, 279, 20),
+            Headings::FILLER                           =>  substr($row, 299, 7),
+        ];
+
+        return $values;
+    }
 }
