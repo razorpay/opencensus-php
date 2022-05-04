@@ -1434,11 +1434,12 @@ export default class User {
 
   get isPartnershipFUX() {
     // FUX disabled for partnerTypes - bank and fully_managed
+    // only for RZP org
     if (this.isPartner('bank', 'fully_managed')) {
       return false;
     }
     const variant = getSplitzExperimentVariant('partnership_fux');
-    return variant?.name === 'exposed';
+    return variant?.name === 'exposed' && this.isOrgRZP;
   }
 
   get isPartnershipForXEnabled() {
@@ -1447,8 +1448,9 @@ export default class User {
   }
 
   get isSubMerchantKycResellerEnabled() {
+    // only for RZP org
     const variant = getSplitzExperimentVariant('submerchant_kyc_reseller');
-    return variant?.name === 'exposed';
+    return variant?.name === 'exposed' && this.isOrgRZP;
   }
 
   get canSkipPoiValidation() {
