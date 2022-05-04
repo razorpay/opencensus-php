@@ -296,7 +296,7 @@ class Core extends Base\Core
             $input['email'] = mb_strtolower($input['email']);
         }
 
-        $aggregatorMerchant->getValidator()->validateSubMerchantInput($input, $linkedAccount);
+        $aggregatorMerchant->getValidator()->validateSubMerchantInput($input, $linkedAccount, $aggregatorMerchant);
 
         // validate that external id passed is unique for that partner
         if (empty($input[Entity::EXTERNAL_ID]) === false)
@@ -7492,5 +7492,32 @@ class Core extends Base\Core
 
         $this->trace->info(TraceCode::REMOVE_SUBMERCHANT_DASHBOARD_ACCESS_PARTNER_SUCCESS,
                            [ 'partner_id' => $partnerId ]);
+    }
+
+    public function isSplitzExperimentEnable(array $properties, string $checkVariant, string $traceCode = null): bool
+    {
+        try
+        {
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? null;
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
+
+            if ($variant === $checkVariant)
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $id = $properties['id'] ?? null;
+
+            $traceCode = $traceCode ?? TraceCode::SPLITZ_ERROR;
+
+            $this->trace->traceException($e, Trace::ERROR, $traceCode, ['id' => $id]);
+        }
+        
+        return false;
     }
 }

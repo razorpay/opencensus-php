@@ -41,10 +41,12 @@ use RZP\Mail\Merchant\CreateSubMerchantPartner as CreateSubMerchantPartnerMail;
 use RZP\Mail\Merchant\CreateSubMerchantAffiliate as CreateSubMerchantAffiliateMail;
 use RZP\Mail\Merchant\RazorpayX\CreateSubMerchantPartner as CreateSubMerchantPartnerForX;
 use RZP\Mail\Merchant\RazorpayX\CreateSubMerchantAffiliate as CreateSubMerchantAffiliateMailForX;
+use RZP\Tests\Traits\MocksSplitz;
 
 class MerchantCreateTest extends TestCase
 {
     use PartnerTrait;
+    use MocksSplitz;
     use TerminalTrait;
     use BatchTestTrait;
 
@@ -422,6 +424,32 @@ class MerchantCreateTest extends TestCase
         $this->assertNull($liveMapping);
     }
 
+    public function testCreateSubMerchantWithInvalidAccountName()
+    {
+        $this->fixtures->merchant->addFeatures(['aggregator']);
+
+        $input = [
+            "experiment_id" => "JNwT6Atz4PLiVh",
+            "id"            => "10000000000000",
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'exposed',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
+        $user = $this->createUserMerchantMapping('10000000000000', 'owner');
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user['id']);
+
+        $this->startTest();
+    }
+
     public function testCreateSubMerchantWithEmailUserExists()
     {
         Mail::fake();
@@ -438,7 +466,7 @@ class MerchantCreateTest extends TestCase
 
         Mail::assertQueued(CreateSubMerchantMail::class, function ($mail)
         {
-            return $mail->hasTo('submerchant@razorpay.com', 'Submerchant 2');
+            return $mail->hasTo('submerchant@razorpay.com', 'SubmerchantTwo');
         });
 
         $mapping = $this->fixtures->user->getMerchantUserMapping($submerchant['id'], 'MerchantUser01');

@@ -1612,7 +1612,7 @@ return [
             'url'     => '/submerchants',
             'method'  => 'POST',
             'content' => [
-                'name'           => 'random_name_1',
+                'name'           => 'random name',
                 'email'          => 'user@example.com',
                 'contact_mobile' => '9999999',
                 'product'        => 'banking',
@@ -1638,7 +1638,7 @@ return [
             'url'     => '/submerchants',
             'method'  => 'POST',
             'content' => [
-                'name'    => 'random_name_1',
+                'name'    => 'random name',
                 'email'   => 'user@example.com',
                 'product' => 'banking'
             ],

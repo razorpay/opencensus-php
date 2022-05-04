@@ -5811,6 +5811,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GLOBAL_CARD_PAYMENT_PROCESS_SPLITZ_ERROR    = 'GLOBAL_CARD_PAYMENT_PROCESS_SPLITZ_ERROR';
     const ISSUER_NETWORK_TYPE_RAZORX_EXPERIMENT_ERROR = 'ISSUER_NETWORK_TYPE_RAZORX_EXPERIMENT_ERROR';
 
+    //Experiment for account name validation for adding submerchants
+    const SUBMERCHANT_ACCOUNT_NAME_VALIDATION_SPLITZ_ERROR   = 'SUBMERCHANT_ACCOUNT_NAME_VALIDATION_SPLITZ_ERROR';
+    const SPLITZ_ERROR                                       = 'SPLITZ_ERROR';
+
     //Bulk local tokenisation
     const BULK_LOCAL_TOKENISATION_REQUEST               = "BULK_LOCAL_TOKENISATION_REQUEST";
     const BULK_LOCAL_TOKENISATION_ERROR                 = "BULK_LOCAL_TOKENISATION_ERROR";

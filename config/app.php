@@ -373,6 +373,8 @@ return array(
 
     'settle_to_partner_alerting_experiment_id' => env('SETTLE_TO_PARTNER_ALERTING_EXPERIMENT_ID'),
 
+    'partner_add_submerchant_account_exp_id'    => env('PARTNER_ADD_SUBMERCHANT_ACCOUNT_EXP_ID'),
+
     '1cc_splitz_experiment_id' => env('MAGIC_CHECKOUT_SPLITZ_EXPERIMENT_ID'),
 
     '1cc_city_autopopulate_splitz_experiment_id' => env('MAGIC_CHECKOUT_DISABLE_AUTOPOPULATE_EXP_ID'),

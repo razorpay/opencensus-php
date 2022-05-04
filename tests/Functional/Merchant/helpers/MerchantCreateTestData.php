@@ -288,14 +288,14 @@ return [
             'method'  => 'POST',
             'content' => [
                 'id'    => 'NewSubmerchant',
-                'name'  => 'Submerchant 2',
+                'name'  => 'Submerchant',
                 'email' => 'submerchant@razorpay.com'
             ],
         ],
         'response' => [
             'content' => [
                 'id'              => 'NewSubmerchant',
-                'name'            => 'Submerchant 2',
+                'name'            => 'Submerchant',
                 'email'           => 'submerchant@razorpay.com',
                 'pricing_plan_id' => \RZP\Tests\Functional\Fixtures\Entity\Pricing::DEFAULT_PRICING_PLAN_ID,
             ],
@@ -308,14 +308,14 @@ return [
             'method'  => 'POST',
             'content' => [
                 'id'    => 'NewSubmerchant',
-                'name'  => 'Submerchant 2',
+                'name'  => 'SubmerchantTwo',
                 'email' => 'submerchant@razorpay.com'
             ],
         ],
         'response' => [
             'content' => [
                 'id'    => 'NewSubmerchant',
-                'name'  => 'Submerchant 2',
+                'name'  => 'SubmerchantTwo',
                 'email' => 'submerchant@razorpay.com',
             ],
         ],
@@ -1784,6 +1784,32 @@ return [
                 'Error Code'        => "BAD_REQUEST_ERROR",
                 'Error Description' => "The email has already been taken.",
             ],
+        ],
+    ],
+    'testCreateSubMerchantWithInvalidAccountName' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'POST',
+            'content' => [
+                'id'    => 'NewSubmerchant',
+                'name'  => 'Submerchant_2',
+                'email' => 'submerchant@razorpay.com'
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => 'The name may only contain alphabets and spaces.',
+                    'reason'        => 'input_validation_failed',
+                    'field'         => 'name',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 ];

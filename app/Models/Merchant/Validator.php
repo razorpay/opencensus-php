@@ -33,6 +33,7 @@ use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Balance;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Workflow\Action\Differ;
+use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Admin\Permission\Name as Permission;
 use \RZP\Models\Workflow\Action\Core as ActionCore;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -245,6 +246,10 @@ class Validator extends Base\Validator
     protected static $change2faSettingRules = [
         User\Entity::PASSWORD         => 'sometimes|between:6,50',
         Entity::SECOND_FACTOR_AUTH    => 'required|boolean',
+    ];
+
+    protected static $accountNameRules = [
+        Entity::NAME                    => 'required|alpha_space|between:4,255',
     ];
 
     protected static $bulkTagRules = [
@@ -1224,10 +1229,11 @@ class Validator extends Base\Validator
      *
      * @param  array $input
      * @param  bool  $linkedAccount
+     * @param  Entity  $partner
      *
      * @throws Exception\BadRequestException
      */
-    public function validateSubMerchantInput(array $input, bool $linkedAccount)
+    public function validateSubMerchantInput(array $input, bool $linkedAccount, Entity $partner)
     {
         if (empty($input['email']) === true)
         {
@@ -1240,6 +1246,20 @@ class Validator extends Base\Validator
         else
         {
             $this->validateInput('unique_email', array_only($input, Entity::EMAIL));
+
+            $app =  App::getFacadeRoot();
+
+            $properties = [
+                'id'            => $partner->getId(),
+                'experiment_id' => $app['config']->get('app.partner_add_submerchant_account_exp_id'),
+            ];
+
+            $isExpEnabled = (new MerchantCore())->isSplitzExperimentEnable($properties, 'exposed', TraceCode::SUBMERCHANT_ACCOUNT_NAME_VALIDATION_SPLITZ_ERROR);
+
+            if($isExpEnabled === true)
+            {
+                $this->validateInput('account_name', array_only($input,Entity::NAME));
+            }
         }
 
         $this->validateInput('edit_name', array_only($input, Entity::NAME));
