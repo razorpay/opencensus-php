@@ -382,6 +382,36 @@ class Service extends Base\Service
 
     }
 
+    public function getNiumFile($input)
+    {
+        $bankName = 'NIUM';
+        $parentMerchantID = $input['niumMerchantId'];
+
+        $from = $input['from'] ?? null;
+        $to = $input['to'] ?? null;
+        $sendFile = $input['sendFile'] ?? false;
+
+        $subMerchants = $this->repo->merchant_access_map->getMappingsFromEntityOwnerId($parentMerchantID);
+        $subMerchantIds = $this->getMerchantIdsFromAccessMaps($subMerchants);
+
+        $this->trace->info(
+            TraceCode::NIUM_FILE_GENERATION,
+            [
+                'SubmerchantIds' => $subMerchantIds,
+            ]
+        );
+
+        $class = $this->getGifuFileClass($bankName);
+
+        $fileProcessor = new $class;
+        $ufhResponse = $fileProcessor->generate($subMerchantIds, $from, $to);
+
+        if($sendFile === true){
+            $fileProcessor->sendGifuFile();
+        }
+        return $ufhResponse;
+    }
+
     /**
      * This method will only process push based settlement reconciliation
      *
@@ -2120,5 +2150,15 @@ class Service extends Base\Service
             'settlementAmount'          => $settlementAmount,
             'totalTransactionAmount'    => $totalTransactionAmount
         ];
+    }
+
+    private function getMerchantIdsFromAccessMaps($input)
+    {
+        $data = [];
+        foreach($input as $accessMap)
+        {
+            array_push($data, $accessMap->getMerchantId());
+        }
+        return $data;
     }
 }

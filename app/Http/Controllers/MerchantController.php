@@ -3071,4 +3071,34 @@ class MerchantController extends Controller
         }
     }
 
+    public function createInternationalIntegration()
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_INTERNATIONAL_INTEGRATIONS)
+            ->createMerchantInternationalIntegration($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function getInternationalIntegration($mid)
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_INTERNATIONAL_INTEGRATIONS)
+            ->getMerchantInternationalIntegrations($mid, $input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function deleteInternationalIntegration()
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_INTERNATIONAL_INTEGRATIONS)
+            ->deleteMerchantInternationalIntegrations($input);
+
+        return ApiResponse::json($response);
+    }
+
 }

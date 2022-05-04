@@ -6,6 +6,7 @@ use RZP\Constants\Table;
 use RZP\Models\Base;
 use RZP\Models\Merchant as M;
 use RZP\Exception;
+use RZP\Trace\TraceCode;
 
 class Repository extends Base\Repository
 {
@@ -153,5 +154,26 @@ class Repository extends Base\Repository
                     ->whereBetween(Entity::CREATED_AT, [$from, $to])
                     ->whereIn(Entity::MERCHANT_ID,$midList)
                     ->get();
+    }
+
+    public function getProcessedSettlementsForTimePeriodForMid($mid, $from, $to, $connection = null){
+        try
+        {
+            $query = $this->newQuery();
+            if (isset($connection)) {
+                $query = $this->newQueryWithConnection($connection);
+            }
+            return $query
+                ->whereBetween(Entity::CREATED_AT, [$from, $to])
+                ->where(Entity::MERCHANT_ID, $mid)
+                ->where(Entity::STATUS, Status::PROCESSED)
+                ->get();
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->error(TraceCode::ERROR_EXCEPTION, [
+                "error" => $e
+            ]);
+        }
     }
 }

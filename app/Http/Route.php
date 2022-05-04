@@ -738,6 +738,9 @@ class Route
         'admin_merchant_post_preferences'          => ['post',     'admin/merchant/preferences/{group}',             'MerchantController@postMerchantPreferences'                        ],
         'admin_merchant_get_preferences'           => ['get',      'admin/merchant/preferences/{id}/{group}/{type?}','MerchantController@getMerchantPreferencesAdmin'                    ],
         'merchant_toggle_fee_bearer'               => ['post',     'merchant/toggle_fee_bearer',                     'MerchantController@toggleFeeBearer'                                ],
+        'merchant_integration_create'              => ['post',      'merchant/international_integration',             'MerchantController@createInternationalIntegration'                ],
+        'merchant_integrations_get'                => ['get',      'merchant/{id}/international_integration',        'MerchantController@getInternationalIntegration'                    ],
+        'merchant_integrations_delete'             => ['delete',   'merchant/international_integration',             'MerchantController@deleteInternationalIntegration'                 ],
         'pricing_create_plan'                      => ['post',     'pricing',                                        'PricingController@postCreatePlan'                                  ],
         'buy_pricing_create_plan'                  => ['post',     'buy_pricing',                                    'PricingController@postCreateBuyPlan'                               ],
         'buy_pricing_terminal_cost'                => ['post',     'buy_pricing/terminal_cost',                      'PricingController@postCalculateBuyPricingCost'                     ],
@@ -774,6 +777,8 @@ class Route
         'setl_fetch_schedule'                      => ['get',      'settlements/schedules',                          'ScheduleController@getSettlementSchedules'                         ],
         'setl_get_transaction_details'             => ['post',     'settlements/get_transaction_details',            'SettlementController@getSettlementSourceDetails'                   ],
         'generate_gifu_file'                       => ['post',     '{orgid}/send_gifu_file',                         'SettlementController@sendGifuFile'],
+        'generate_nium_settlement_file'            => ['post',     'settlements/generate/nium',                      'SettlementController@getNiumFile'                                  ],
+        'generate_nium_settlement_file_admin'      => ['post',     'settlements/admin/nium',                         'SettlementController@getNiumFile'                                  ],
         'setl_fetch_by_id'                         => ['get',      'settlements/{id}',                               'SettlementController@getSettlement'                                ],
         'setl_fetch_multiple'                      => ['get',      'settlements',                                    'SettlementController@getSettlements'                               ],
         'setl_fetch_transactions'                  => ['get',      'settlements/{id}/transactions',                  'SettlementController@getSettlementTransactions'                    ],
@@ -4038,7 +4043,10 @@ class Route
         'fetch_token_iin',
         'update_token_iin',
         'fetch_token_iin_by_range',
-        'add_token_iin_bulk'
+        'add_token_iin_bulk',
+
+        // Generate and send NIUM settlements file via manual trigger
+        'generate_nium_settlement_file_admin'
     ];
 
     // Only routes defined in internalApps go here
@@ -4046,6 +4054,7 @@ class Route
     // Put it in the Admin Array instead
     public static $internal = [
         'generate_gifu_file',
+        'generate_nium_settlement_file',
         'merchant_settlements_events_cron',
         'mob_to_bas_routes',
         'coupon_expiry_alert',
@@ -5760,6 +5769,9 @@ class Route
         'merchant_details_suggested_update',
         'merchant_get_terminals',
         'merchant_invoice_add_bulk',
+        'merchant_integration_create',
+        'merchant_integrations_get',
+        'merchant_integrations_delete',
         'setl_retry',
         'payout_retry',
         'merchant_activation_files',
@@ -7887,6 +7899,12 @@ class Route
         'admin_patch_purpose_code'            => Permission::EDIT_MERCHANT,
 
         'update_merchant_sla_for_on_hold_payouts'           => Permission::SET_MERCHANT_SLA_FOR_ON_HOLD_PAYOUTS,
+
+        //Merchant International Integrations
+        'merchant_integration_create'           => Permission::VIEW_MERCHANT,
+        'merchant_integrations_get'             => Permission::VIEW_MERCHANT,
+        'merchant_integrations_delete'          => Permission::VIEW_MERCHANT,
+
     ];
 
     public static $bankingRoutePermissions = [
@@ -10581,6 +10599,9 @@ class Route
             'merchant_instrument_request_update_by_id',
             'merchant_instrument_status_get_by_merchant_id',
             'merchant_international_toggle',
+            'merchant_integration_create',
+            'merchant_integrations_get',
+            'merchant_integrations_delete',
             'merchant_invoice_add_bulk',
             'merchant_invoice_control',
             'merchant_invoice_entity_create_admin',
@@ -11915,6 +11936,7 @@ class Route
             'merchant_payout',
             'gateway_file_create',
             'generate_gifu_file',
+            'generate_nium_settlement_file',
             'reports_refund_irctc',
             'merchant_payout_mail',
             'geoip_update',

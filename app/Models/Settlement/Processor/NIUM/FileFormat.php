@@ -1,0 +1,102 @@
+<?php
+
+namespace RZP\Models\Settlement\Processor\NIUM;
+
+class FileFormat
+{
+    public $ID = "NA";
+    public $MerchantName = "NA";
+    public $MerchantCountry = "NA";
+    public $companyID = "NA";
+    public $EMID = "NA";
+    public $TransactionTypeID = "NA";
+    public $DebitCompanyID = "NA";
+    public $CustomerID = "NA";
+    public $FraudDetectionLog_id = "NA";
+    public $OriginalTransID = "NA";
+    public $PrimaryPayerID = "NA";
+    public $PayID = "NA";
+    public $InsertDate = "NA";
+    public $Amount = "NA";
+    public $BankPaidAmount = "NA";
+    public $NetAmount = "NA";
+    public $Currency = "NA";
+    public $Payments = "NA";
+    public $CreditType = "NA";
+    public $IPAddress = "NA";
+    public $replyCode = "NA";
+    public $invoiceNumber = "NA";
+    public $OrderNum = "NA";
+    public $Interest = "NA";
+    public $Comment = "NA";
+    public $TerminalNumber = "NA";
+    public $ApprovalNumber = "NA";
+    public $DeniedDate = "NA";
+    public $DeniedStatus = "NA";
+    public $DeniedPrintDate = "NA";
+    public $DeniedSendDate = "NA";
+    public $DeniedAdminComment = "NA";
+    public $PD = "NA";
+    public $MerchantPD = "NA";
+    public $PaymentMethod_id = "NA";
+    public $PaymentMethodID = "NA";
+    public $CustomerIDNumber = "NA";
+    public $CustomerName = "NA";
+    public $PaymentMethodDisplay = "NA";
+    public $isTestOnly = "NA";
+    public $referringURL = "NA";
+    public $payerIdUsed = "NA";
+    public $transactionCharge = "NA";
+    public $ratioCharge = 0;
+    public $DebitReferenceCode = "NA";
+    public $OCurrency = "NA";
+    public $OAmount = "NA";
+    public $chbCharge = "NA";
+    public $ClrfCharge = "NA";
+    public $PaymentMethod = "NA";
+    public $UnsettledAmount = "NA";
+    public $UnsettledInstallments = "NA";
+    public $IPCountry = "NA";
+    public $HandlingFee = "NA";
+    public $CTP_Status = "NA";
+    public $DebitFeeTax = "NA";
+    public $DebitFee = "NA";
+    public $BTFileName = "NA";
+    public $RecurringSeries = "NA";
+    public $RecurringChargeNumber = "NA";
+    public $DeniedValDate = "NA";
+    public $MerchantRealPD = "NA";
+    public $RefTrans = "NA";
+    public $IsChargeback = 0;
+    public $PaymentMethodTemp = "NA";
+    public $PhoneDetailsID = "NA";
+    public $DebitFeeChb = "NA";
+    public $IsRetrievalRequest = "NA";
+    public $IsPendingChargeback = "NA";
+    public $DebitReferenceNum = "NA";
+    public $AcquirerReferenceNum = "NA";
+    public $TransSource_id = "NA";
+    public $MobileDevice_id = "NA";
+    public $AuthorizationBatchID = "NA";
+    public $SystemText = "NA";
+    public $PayforText = "NA";
+    public $MerchantProduct_id = "NA";
+    public $CreditCardID = "NA";
+    public $CheckDetailsID = "NA";
+    public $PayerInfo_id = "NA";
+    public $TransPayerInfo_id = "NA";
+    public $TransPaymentMethod_id = "NA";
+    public $Is3DSecure = "NA";
+    public $IsFraudByAcquirer = "NA";
+    public $IsCashback = "NA";
+    public $IsCardPresent = "NA";
+    public $PlatformAccountIdentity = "NA";
+    public $TransPayerAirlineData_id = "NA";
+    public $MPICompanyID = "NA";
+    public $Brand = "NA";
+    public $AffiliateSettlementId = "NA";
+
+    public function getAssocArray(){
+        return (array)$this;
+    }
+}

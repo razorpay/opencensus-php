@@ -10,6 +10,7 @@ use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Models\FileStore;
 use RZP\Models\User\Role;
 use RZP\Models\Base\Entity;
 use RZP\Base\RepositoryManager;
@@ -275,7 +276,10 @@ class UfhService
     {
         $ext = strtolower($file->getClientOriginalExtension());
 
-        $storageFileName = strtolower($storageFileName);
+        if($type !== FileStore\Type::NIUM_SETTLEMENT_FILE)
+        {
+            $storageFileName = strtolower($storageFileName);
+        }
 
         $movedFile = $file->move(storage_path('files/filestore'), $storageFileName . '.' . $ext);
 

@@ -2691,4 +2691,26 @@ class Repository extends Base\Repository
             ->pluck(Entity::ID)
             ->toArray();
     }
+
+    public function getBySettlementIdAndTypes($settlementId, $types, $connection = null)
+    {
+        try
+        {
+            $query = $this->newQuery();
+            if(isset($connection))
+            {
+                $query = $this->newQueryWithConnection($connection);
+            }
+            return $query
+                ->where(Entity::SETTLEMENT_ID, $settlementId)
+                ->whereIn(Entity::TYPE, $types)
+                ->get();
+        }
+        catch(\Exception $e)
+        {
+            $this->trace->error(Tracecode::ERROR_EXCEPTION, [
+                "error" => $e
+            ]);
+        }
+    }
 }

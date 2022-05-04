@@ -4,6 +4,7 @@ namespace RZP\Models\Settlement\Processor\Base;
 
 use RZP\Constants\Environment;
 use RZP\Exception\ServerErrorException;
+use RZP\Mail\Base\Constants;
 use RZP\Services\UfhService;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use RZP\Models\FileStore\Storage\Base\Bucket;

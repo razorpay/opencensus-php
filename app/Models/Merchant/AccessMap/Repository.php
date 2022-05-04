@@ -279,4 +279,11 @@ class Repository extends Base\Repository
                     ->where(Entity::ENTITY_OWNER_ID, $partnerId)
                     ->get();
     }
+
+    public function getMappingsFromEntityOwnerId(string $entityOwnerId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::ENTITY_OWNER_ID, $entityOwnerId)
+                    ->get();
+    }
 }

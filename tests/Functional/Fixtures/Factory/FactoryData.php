@@ -2092,5 +2092,13 @@ final class FactoryData
             'product'       => 'page',
             'product_id'    => $faker->uniqueid,
         ]);
+
+        $factory(\RZP\Models\Merchant\InternationalIntegration\Entity::class, [
+            'id'                            => $faker->uniqueid,
+            'merchant_id'                   => '10000000000000',
+            'integration_entity'            => 'sample',
+            'integration_key'               => 'test123',
+            'notes'                         => [],
+        ]);
     }
 }
