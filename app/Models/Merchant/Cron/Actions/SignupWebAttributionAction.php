@@ -45,6 +45,8 @@ class SignupWebAttributionAction extends BaseAction
 
             $timestamp = $merchant->getCreatedAt();
 
+            $segmentProperties["attribution_source"] = "Web";
+
             if($eventType === 'identify') {
                 $this->app['segment-analytics']->pushIdentifyEvent($merchant, $segmentProperties, $timestamp);
             }

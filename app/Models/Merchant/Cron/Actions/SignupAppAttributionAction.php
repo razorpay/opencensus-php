@@ -55,6 +55,8 @@ class SignupAppAttributionAction extends BaseAction
 
             $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
+            $segmentProperties["attribution_source"] = "App";
+
             $timestamp = $merchant->getCreatedAt();
 
             if($eventType === 'identify')
