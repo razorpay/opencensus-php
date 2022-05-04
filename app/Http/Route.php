@@ -245,7 +245,8 @@ class Route
         'payment_meta_fetch_by_payment_id_action'  => ['get',      'payments/meta/{payment_id}/{action_type}',       'PaymentController@getPaymentMetaByPaymentIdAction'                 ],
         'refund_create'                            => ['post',     'refunds',                                        'RefundController@postRefundCreate'                                 ],
         'refund_edit_status'                       => ['put',      'refunds/{id}/status',                            'RefundController@putRefundStatus'                                  ],
-        'refund_edit'                              => ['patch',    'refunds/{id}',                                   'RefundController@update'                                           ],
+        'refund_edit'                              => ['patch',    'refunds/{id}',                                   'ScroogeController@updateRefund'                              ],
+        'refund_edit_internal'                     => ['patch',    'refunds/internal/{id}',                          'RefundController@updateRefundInternal'                                    ],
         'refund_mark_processed_bulk'               => ['put',      'refunds/status/processed',                       'RefundController@putRefundMarkProcessedBulk'                       ],
         'refund_fetch_by_id'                       => ['get',      'refunds/{id}',                                   'RefundController@getRefund'                                        ],
         'refund_fetch_multiple'                    => ['get',      'refunds',                                        'RefundController@getRefunds'                                       ],
@@ -4359,6 +4360,7 @@ class Route
         'refund_scrooge_fetch_fee',
         'refund_scrooge_payment_update',
         'refund_scrooge_transaction_create',
+        'refund_edit_internal',
         'gateway_file_bank_refunds_upload',
 
         // account service routes
@@ -4697,7 +4699,9 @@ class Route
         'payments_card_es_sync_cron',
 
         'payment_upi_authorize_failed',
+
         'payout_update_tax_payment_id',
+
         'recon_update_upi_data',
         'payment_transfer_retry_batch',
 
@@ -12230,6 +12234,7 @@ class Route
             'refund_scrooge_payment_update',
             'refund_scrooge_transaction_create',
             'payout_create_internal',
+            'refund_edit_internal',
         ],
 
         'thirdwatch_reports' => [
@@ -13713,6 +13718,7 @@ class Route
         'bank_transfer_payment_terminal_backfill'           => HeartbeatLagChecker::SLAVE,
         'refund_processed_at_backfill'                      => HeartbeatLagChecker::SLAVE,
         'refund_reference1_backfill'                        => HeartbeatLagChecker::SLAVE,
+        'refund_edit_internal'                              => HeartbeatLagChecker::MASTER,
         'refund_reference1_bulk_update'                     => HeartbeatLagChecker::SLAVE,
         'fund_transfer_attempt_reconcile'                   => HeartbeatLagChecker::SLAVE,
         'merchant_activation_migrate'                       => HeartbeatLagChecker::SLAVE,

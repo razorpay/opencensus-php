@@ -841,27 +841,6 @@ return [
         ]
     ],
 
-    'testRefundEditNotes' => [
-        'request'  => [
-            'content' => [
-                'notes' => [
-                    'key1' => 'value1',
-                    'key2' => 'value2',
-                ],
-            ],
-            'method'  => 'PATCH',
-        ],
-        'response' => [
-            'content' => [
-                'notes' => [
-                    'key1' => 'value1',
-                    'key2' => 'value2',
-                ],
-            ],
-            'status_code' => 200,
-        ],
-    ],
-
     'testFetchRefundPublicStatus' => [
         'request' => [
             'method'  => 'get',
@@ -1251,6 +1230,21 @@ return [
             'url'     => '/scrooge/refunds/retry/custom_fund_transfers/batch',
             'content' => [
                 'refund_ids' => []
+            ],
+        ],
+        'response' => [
+            'content' => []
+        ],
+    ],
+
+    'updateRefundNotes' => [
+        'request' => [
+            'method'  => 'patch',
+            'url'     => '/refunds/{id}',
+            'content' => [
+                'notes' => [
+                    'scrooge' => 'welcome'
+                ]
             ],
         ],
         'response' => [

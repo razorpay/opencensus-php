@@ -2669,29 +2669,6 @@ class RefundTest extends TestCase
         $this->assertNotNull($reversal['balance_id']);
     }
 
-    public function testRefundEditNotes()
-    {
-        $payment = $this->defaultAuthPayment();
-        $payment = $this->capturePayment($payment['id'], $payment['amount']);
-
-        $refund = $this->refund(
-            [
-                'payment_id' => $payment['id'],
-                'notes'      => [
-                    'key' => 'value',
-                ],
-                'receipt'    => '2544325',
-            ]);
-
-        $refund = $this->getLastEntity('refund', true);
-
-        $this->testData[__FUNCTION__]['request']['url'] = '/refunds/' . $refund['id'];
-
-        $this->ba->privateAuth();
-
-        $this->runRequestResponseFlow($this->testData[__FUNCTION__]);
-    }
-
     public function testRefundRetryWithUnsignedId()
     {
         //All card payments are gateway captured for Razorpay Org ID, so using a different org
@@ -6997,6 +6974,61 @@ class RefundTest extends TestCase
 
         $response = $this->runRequestResponseFlow($this->testData['scroogeRetryViaCustomFundTransfersBatch']);
         $this->assertEquals($expectedOutput, $response);
+    }
+
+    public function testUpdateRefundNotes()
+    {
+        $this->ba->privateAuth();
+
+        $this->testData['updateRefundNotes']['request']['url'] = '/refunds/rfnd_GfnS1Fj048VHo2';
+
+        $response = $this->runRequestResponseFlow($this->testData['updateRefundNotes']);
+
+        $this->assertEquals('rfnd_GfnS1Fj048VHo2', $response['id']);
+
+        $this->testData['updateRefundNotes']['request']['url'] = '/refunds/rfnd_UpdateError001';
+
+        $this->testData['updateRefundNotes']['response'] = [
+            'content'     => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The id provided does not exist',
+                ],
+            ],
+            'status_code' => 400,
+        ];
+
+        $this->testData['updateRefundNotes']['exception'] = [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID,
+        ];
+
+        $this->runRequestResponseFlow($this->testData['updateRefundNotes']);
+    }
+
+    public function testUpdateRefundNotesInternal()
+    {
+        $payment = $this->defaultAuthPayment();
+
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $this->refundPayment($payment['id'], $payment['amount']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEmpty($refund['notes']);
+
+        $this->ba->scroogeAuth();
+
+        $this->testData['updateRefundNotes']['request']['url'] = '/refunds/internal/' . substr($refund['id'], 5);
+
+        $this->runRequestResponseFlow($this->testData['updateRefundNotes']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals( [
+            'scrooge' => 'welcome'
+        ], $refund['notes']);
     }
 
     public function testRearchPaymentRefund()

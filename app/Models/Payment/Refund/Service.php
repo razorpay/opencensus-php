@@ -165,59 +165,7 @@ class Service extends Base\Service
         $input[RefundConstants::PAYMENT_ID] = $paymentId;
 
         // call to scrooge
-        $response = $this->app['scrooge']->createNewRefundV2($input);
-
-        // response handling
-        if (in_array($response['code'], [200, 201, "200", "201"]) == false)
-        {
-            $publicErrorCode = $response['body']['public_error']['code'] ?? ErrorCode::SERVER_ERROR;
-
-            $publicErrorMessage = $response['body']['public_error']['message'] ?? PublicErrorDescription::SERVER_ERROR;
-
-            $internalErrorCode = $response['body']['internal_error']['code'] ?? ErrorCode::SERVER_ERROR;
-
-            // If errorcode is undefined, will fallback to server_error
-            if (defined(ErrorCode::class . '::' . $publicErrorCode) === false)
-            {
-                $publicErrorCode = ErrorCode::SERVER_ERROR;
-
-                $publicErrorMessage = PublicErrorDescription::SERVER_ERROR;
-            }
-
-            if (defined(ErrorCode::class . '::' . $internalErrorCode) === false)
-            {
-                $internalErrorCode = ErrorCode::SERVER_ERROR;
-            }
-
-            $exceptionType = str_replace(' ', '', ucwords(strtolower(str_replace('_', ' ', $publicErrorCode))));
-
-            if ($publicErrorCode != ErrorCode::SERVER_ERROR)
-            {
-                $exceptionType = str_replace('Error', '', $exceptionType);
-            }
-
-            switch ($publicErrorCode)
-            {
-                case ErrorCode::BAD_REQUEST_ERROR:
-                    $args = [constant(ErrorCode::class . '::' . $internalErrorCode)];
-                    break;
-
-                case ErrorCode::SERVER_ERROR:
-                    $args = [$publicErrorMessage, constant(ErrorCode::class . '::' . $internalErrorCode)];
-                    break;
-
-                default:
-                    $args = [$publicErrorMessage];
-                    break;
-            }
-
-            $class = 'RZP\Exception' . '\\' . $exceptionType . 'Exception';
-
-            throw new $class(...$args);
-        }
-
-        // body has the actual scrooge response
-        return $response['body'];
+        return $this->app['scrooge']->createNewRefundV2($input);
     }
 
     public function getRefundsFile(array $input = [])
@@ -2419,6 +2367,24 @@ class Service extends Base\Service
             ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS);
 
         return $refund->toArrayPublic();
+    }
+
+    public function updateRefundInternal($refundId, array $input)
+    {
+        return $this->mutex->acquireAndRelease($refundId,
+            function() use ($refundId, $input)
+            {
+                $refund = $this->repo->refund->findOrFail($refundId);
+
+                // this supports updating notes only. Check $editRules in validator
+                $refund->edit($input);
+
+                $this->repo->saveOrFail($refund);
+
+                return $refund;
+            },
+            20,
+            ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS);
     }
 
     public function updateScroogeRefundStatus(string $refundId, array $input)

@@ -308,6 +308,24 @@ class RefundController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function updateRefund($id)
+    {
+        $input = Request::all();
+
+        $data = $this->service()->editStatus($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function updateRefundInternal($id)
+    {
+        $input = Request::all();
+
+        $data = $this->service()->updateRefundInternal($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
     public function putRefundMarkProcessedBulk()
     {
         $input = Request::all();

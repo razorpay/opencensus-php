@@ -4,11 +4,13 @@ namespace RZP\Services;
 
 use RZP\Exception;
 use Requests_Exception;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payout\Entity;
 use RZP\Http\Request\Requests;
 use Razorpay\Trace\Logger as Trace;
 use Razorpay\Edge\Passport\Passport;
+use RZP\Error\PublicErrorDescription;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
 use RZP\Models\Payment\Refund\Constants as RefundConstants;
@@ -579,10 +581,18 @@ class Scrooge
             unset($input['payment_page']);
         }
 
-        return $this->sendRequest(
+        $scroogeResponse = $this->sendRequest(
             self::RefundsBaseURL . '/' . self::URLS['create_new_refund_v2'],
             Requests::POST,
             $input);
+
+        if (in_array($scroogeResponse['code'], [200, 201, "200", "201"]) == false)
+        {
+            $this->toPublicErrorResponse($scroogeResponse);
+        }
+
+        // body has the actual scrooge response
+        return $scroogeResponse['body'];
     }
 
     public function fetchRefundInternal($input)
@@ -654,6 +664,8 @@ class Scrooge
      * @param $id
      * @param array $input
      * @return array
+     * @throws Exception\RuntimeException
+     * @throws Requests_Exception
      */
     public function refundsFetchById($id, array $input): array
     {
@@ -669,6 +681,8 @@ class Scrooge
     /**
      * @param array $input
      * @return array
+     * @throws Exception\RuntimeException
+     * @throws Requests_Exception
      */
     public function refundsFetchMultiple(array $input): array
     {
@@ -685,6 +699,8 @@ class Scrooge
      * @param $paymentId
      * @param array $input
      * @return array
+     * @throws Exception\RuntimeException
+     * @throws Requests_Exception
      */
     public function refundsFetchByPayment($paymentId, array $input): array
     {
@@ -701,6 +717,8 @@ class Scrooge
      * @param $paymentId
      * @param $refundId
      * @return array
+     * @throws Exception\RuntimeException
+     * @throws Requests_Exception
      */
     public function refundsFetchByIdAndPayment($paymentId, $refundId): array
     {
@@ -711,6 +729,33 @@ class Scrooge
             self::PaymentsBaseURL . '/' . $paymentId . '/' . self::URLS['get_refunds'] . '/' . $refundId,
             Requests::GET,
             []);
+    }
+
+    /**
+     * Public API. Used to update refund notes
+     * @param $refundId
+     * @param array $input
+     * @return array
+     * @throws Exception\RuntimeException
+     * @throws Requests_Exception
+     */
+    public function updateRefund($refundId, array $input)
+    {
+        // send passport token to Scrooge
+        $this->enablePassport();
+
+        $scroogeResponse = $this->sendRequest(
+            self::RefundsBaseURL . '/' . $refundId,
+            Requests::PATCH,
+            $input);
+
+        if (in_array($scroogeResponse['code'], [200, "200"]) == false)
+        {
+            $this->toPublicErrorResponse($scroogeResponse);
+        }
+
+        // body has the actual scrooge response
+        return $scroogeResponse['body'];
     }
 
     /**
@@ -858,6 +903,54 @@ class Scrooge
             'body' => json_decode($response->body, true),
             'code' => $code,
         ];
+    }
+
+    protected function toPublicErrorResponse(array $response)
+    {
+        $publicErrorCode = $response['body']['public_error']['code'] ?? ErrorCode::SERVER_ERROR;
+
+        $publicErrorMessage = $response['body']['public_error']['message'] ?? PublicErrorDescription::SERVER_ERROR;
+
+        $internalErrorCode = $response['body']['internal_error']['code'] ?? ErrorCode::SERVER_ERROR;
+
+        // If errorcode is undefined, will fallback to server_error
+        if (defined(ErrorCode::class . '::' . $publicErrorCode) === false)
+        {
+            $publicErrorCode = ErrorCode::SERVER_ERROR;
+
+            $publicErrorMessage = PublicErrorDescription::SERVER_ERROR;
+        }
+
+        if (defined(ErrorCode::class . '::' . $internalErrorCode) === false)
+        {
+            $internalErrorCode = ErrorCode::SERVER_ERROR;
+        }
+
+        $exceptionType = str_replace(' ', '', ucwords(strtolower(str_replace('_', ' ', $publicErrorCode))));
+
+        if ($publicErrorCode != ErrorCode::SERVER_ERROR)
+        {
+            $exceptionType = str_replace('Error', '', $exceptionType);
+        }
+
+        switch ($publicErrorCode)
+        {
+            case ErrorCode::BAD_REQUEST_ERROR:
+                $args = [constant(ErrorCode::class . '::' . $internalErrorCode)];
+                break;
+
+            case ErrorCode::SERVER_ERROR:
+                $args = [$publicErrorMessage, constant(ErrorCode::class . '::' . $internalErrorCode)];
+                break;
+
+            default:
+                $args = [$publicErrorMessage];
+                break;
+        }
+
+        $class = 'RZP\Exception' . '\\' . $exceptionType . 'Exception';
+
+        throw new $class(...$args);
     }
 
     /**

@@ -429,10 +429,17 @@ class Scrooge extends BaseScrooge
             "status"          => "processed"
         ];
 
-        return [
+        $scroogeResponse = [
             'code' => 200,
             'body' => $scroogeResponseBody
         ];
+
+        if (in_array($scroogeResponse['code'], [200, 201, "200", "201"]) == false)
+        {
+            $this->toPublicErrorResponse($scroogeResponse);
+        }
+
+        return $scroogeResponse['body'];
     }
 
     public function refundsFetchById($id, array $input): array
@@ -571,5 +578,52 @@ class Scrooge extends BaseScrooge
             'code' => 200,
             'body' => $scroogeResponseBody
         ];
+    }
+
+    public function updateRefund($refundId, array $input): array
+    {
+        $scroogeResponseBody = [
+            "acquirer_data"   => [],
+            "amount"          => 100,
+            "batch_id"        => "",
+            "created_at"      => 1626357774,
+            "currency"        => "INR",
+            "entity"          => "refund",
+            "id"              => $refundId,
+            "notes"           => ["scrooge" => "welcome"],
+            "payment_id"      => "pay_HZETs6HPiyDr8n",
+            "receipt"         => "",
+            "speed_processed" => "normal",
+            "speed_requested" => "optimum",
+            "status"          => "processed"
+        ];
+
+        $scroogeResponse = [
+            'code' => 200,
+            'body' => $scroogeResponseBody
+        ];
+
+        if ($refundId === 'rfnd_UpdateError001')
+        {
+            $scroogeResponse['code'] = 400;
+            $scroogeResponse['body'] = [
+                "internal_error" => [
+                    "code"=> "BAD_REQUEST_INVALID_ID",
+                    "message"=> "the id provided does not exist",
+                    "sub_code"=> ""
+                ],
+                "public_error"=> [
+                    "code"=> "BAD_REQUEST_ERROR",
+                    "message"=> "The id provided does not exist"
+                ]
+            ];
+        }
+
+        if (in_array($scroogeResponse['code'], [200, "200"]) == false)
+        {
+            $this->toPublicErrorResponse($scroogeResponse);
+        }
+
+        return $scroogeResponse['body'];
     }
 }

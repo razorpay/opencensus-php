@@ -195,4 +195,11 @@ class ScroogeController extends Controller
 
         return ApiResponse::json($response['body'], $response['code']);
     }
+
+    public function updateRefund($id)
+    {
+        $response = $this->app['scrooge']->updateRefund($id, $this->input);
+
+        return ApiResponse::json($response);
+    }
 }
