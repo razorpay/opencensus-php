@@ -407,6 +407,7 @@ class UserAccess
         $routesWithMerchantRules = [
             'transaction_statement_fetch',
             'transaction_statement_fetch_multiple',
+            'transaction_statement_fetch_multiple_for_banking',
         ];
         return in_array($route, $routesWithMerchantRules);
     }

@@ -166,6 +166,34 @@ class StatementTest extends TestCase
        $this->startTest();
     }
 
+    public function testFetchStatementBankingWithAttributesPermissionTrue()
+    {
+        $this->createBankTransferTransaction();
+
+        $transaction = $this->getDbLastEntity('transaction');
+
+        $this->testData[__FUNCTION__]['request']['server']['HTTP_X-Request-Origin'] =  'https://x.razorpay.com';
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/transactions_banking';
+
+        $user =  (new User())->createBankingUserForMerchant('10000000000000', [
+            'contact_mobile' => '8888888888',
+        ],'admin');
+
+        $this->fixtures->create('merchant_attribute',
+            [
+                'merchant_id' => '10000000000000',
+                'product'     => 'banking',
+                'group'       => 'x_transaction_view',
+                'type'        => 'admin',
+                'value'       => 'true'
+            ]);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user['id']);
+
+        $this->startTest();
+    }
+
     //merchant has rules and hitting a route with access control policies allowed with role not allowed
     public function testFetchStatementWithAttributesPermissionFalse()
     {
