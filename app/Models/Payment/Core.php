@@ -201,11 +201,11 @@ class Core extends Base\Core
         // null => nothing pushed to kafka
         $isPushedToKafka = Constants::NOTHING_VIA_SCHEDULER;
 
-        $producerKey = $payment->getId();
-
         $topic = env('REGISTER_PAYMENT_SCHEDULER_EVENT', 'register-payment-scheduler-event');
 
         $data = [];
+
+        $producerKey = $payment->getId() . '_' . Constants::REGISTER_PAYMENT_IN_SCHEDULER;
 
         if($isReminderVerifyPayment === true)
         {
@@ -352,7 +352,7 @@ class Core extends Base\Core
             return;
         }
 
-        $producerKey = $payment->getId();
+        $producerKey = $payment->getId() . '_' . Constants::DEREGISTER_PAYMENT_IN_SCHEDULER;
 
         $this->trace->info(
             TraceCode::PAYMENT_SCHEDULER_DEREGISTER_INIT,
