@@ -7,6 +7,8 @@ import Input from 'common/new-ui/Input';
 import { isNone, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 import { getTimeUnix, getStartAndEndUnixTimeStampsForDaysFrom } from '../utils';
+import errorService from '@razorpay/universe-utils/errorService';
+import { Teams, Ranks } from 'common/new-ui/ErrorBoundary';
 
 const DEFAULT_SELECTED_DATE = moment().subtract(1, 'day').startOf('day');
 const DEFAULT_SELECTED_END_AT = moment().subtract(1, 'day').endOf('day').startOf('minute');
@@ -73,7 +75,25 @@ export default class SelectPeriod extends React.Component {
       value = dateValue.add(timeInUnix, 'seconds');
     } else {
       const timeInUnix = getTimeUnix(this.state.values[name]);
-      value = value.clone().startOf('day').startOf('minute').add(timeInUnix, 'seconds');
+      try {
+        value = value.clone().startOf('day').startOf('minute').add(timeInUnix, 'seconds');
+      } catch (error) {
+        // this is temporary for tracking the issue causing value
+        errorService.captureError(error, {
+          tags: {
+            team: Teams.PG_DASHBOARD,
+          },
+          rank: Ranks.P2,
+          extra: {
+            info: {
+              value: JSON.stringify(value),
+              isMometObject: value instanceof moment,
+              isJSDateObject: value instanceof Date,
+            },
+            component: 'SelectPeriod',
+          },
+        });
+      }
     }
 
     const target = { value, name };
