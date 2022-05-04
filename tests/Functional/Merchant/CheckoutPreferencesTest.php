@@ -248,7 +248,7 @@ class CheckoutPreferencesTest extends TestCase
 
         $banks = $content['methods']['netbanking'];
 
-        $this->assertCount(48, $banks);
+        $this->assertCount(47, $banks);
 
         $this->fixtures->merchant->disableTPV();
     }
