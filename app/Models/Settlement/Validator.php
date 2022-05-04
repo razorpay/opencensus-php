@@ -7,6 +7,7 @@ use App;
 use RZP\Base;
 use RZP\Exception;
 use RZP\Models\Payment;
+use RZP\Models\Merchant;
 use RZP\Constants\Environment;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\FundTransfer\Rbl\RequestConstants;
@@ -195,6 +196,12 @@ class Validator extends Base\Validator
         'to'                => 'required_with:from|epoch',
     ];
 
+    protected static $adminGenerateGifuFileRules = [
+        'merchant_ids'      =>  'required|array',
+        'from_timestamp'    =>  'required|integer',
+        'to_timestamp'      =>  'required|integer'
+    ];
+
     protected function validateBalanceType($attribute, $value)
     {
         Balance\Type::validateSettlementBalanceType($value);
@@ -208,6 +215,19 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 'failed_response only be used in testing environment');
+        }
+    }
+
+    public function validateMerchantIdsBelongToOrg($orgId , $merchantIds)
+    {
+        foreach ($merchantIds as $merchantId)
+        {
+            $orgForMid = (new Merchant\Repository)->getMerchantOrg($merchantId);
+
+            if($orgId !== $orgForMid)
+                throw new Exception\BadRequestValidationFailureException(
+                    'Merchant '.$merchantId.' does not belong to the org specified');
+
         }
     }
 

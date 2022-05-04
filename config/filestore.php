@@ -99,6 +99,10 @@ return [
             'name'   => env('LOCAL_SETTLEMENT_BUCKET', 'settlement_bucket'),
             'region' => null,
         ],
+        'ap_south_default_settlement_bucket_config' => [
+            'name'   => env('LOCAL_AP_SOUTH_DEFAULT_SETTLEMENT_BUCKET', 'ap_south_default_settlement_bucket'),
+            'region' => null,
+        ],
         'logo_bucket_config' => [
             'name'   => env('LOCAL_LOGO_BUCKET', 'logo_bucket'),
             'region' => null,

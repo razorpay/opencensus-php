@@ -147,4 +147,11 @@ class Repository extends Base\Repository
         return $query->first();
     }
 
+    public function getSettlementsBetweenTimePeriodForMerchantIds($midList,$from,$to)
+    {
+        return $this->newQuery()
+                    ->whereBetween(Entity::CREATED_AT, [$from, $to])
+                    ->whereIn(Entity::MERCHANT_ID,$midList)
+                    ->get();
+    }
 }

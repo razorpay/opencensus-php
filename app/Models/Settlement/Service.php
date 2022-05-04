@@ -332,6 +332,57 @@ class Service extends Base\Service
     }
 
     /**
+     * @throws Exception\BadRequestValidationFailureException
+     * @throws Exception\BadRequestException
+     */
+    public function sendGifuFile($input, $orgId)
+    {
+        $from = null;
+
+        $to = null;
+
+        $org = $this->repo->org->findOrFail($orgId);
+
+        if($org->isFeatureEnabled(Feature\Constants::ORG_POOL_ACCOUNT_SETTLEMENT) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_REQUIRED_PERMISSION_NOT_FOUND);
+        }
+
+        $bankName = $org->getDisplayName();
+
+        if($this->auth->isAdminAuth() === true){
+
+            (new Validator)->validateInput('admin_generate_gifu_file', $input);
+            (new Validator)->validateMerchantIdsBelongToOrg($orgId , $input['merchant_ids']);
+            $merchantIds = $input['merchant_ids'];
+            $from = $input['from_timestamp'];
+            $to = $input['to_timestamp'];
+        }
+        else
+        {
+            $merchantIds = $this->repo->merchant->fetchMerchantIdsByOrgId($orgId);
+        }
+        return $this->generateGifuFileForBank($bankName , $merchantIds , $from , $to);
+
+    }
+
+    protected function generateGifuFileForBank($bankName , $input,$from,$to)
+    {
+        $class = $this->getGifuFileClass($bankName);
+
+        return (new $class)->generate($input,$from,$to);
+    }
+
+    protected function getGifuFileClass($bank): string
+    {
+        $bankName = explode(' ', $bank)[0];
+
+        return  __NAMESPACE__.'\\Processor\\'.($bankName).'\\GifuFile';
+
+    }
+
+    /**
      * This method will only process push based settlement reconciliation
      *
      * @param        $input

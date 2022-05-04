@@ -5257,6 +5257,12 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const AUTO_APPROVE_TPV_MERCHANT_FAILURE                   = 'AUTO_APPROVE_TPV_MERCHANT_FAILURE';
     const CREATE_TPV_X_DASHBOARD                              = 'CREATE_TPV_X_DASHBOARD';
     const TPV_FUND_ACCOUNT_VALIDATION_FAILURE                 = 'TPV_FUND_ACCOUNT_VALIDATION_FAILURE';
+    const SETTLEMENT_FILE_DATA                                = 'SETTLEMENT_FILE_DATA';
+    const SETTLEMENT_FILE_DELETE_ERROR                        = 'SETTLEMENT_FILE_DELETE_ERROR';
+    const SETTLEMENT_FILE_CREATE_ERROR                        = 'SETTLEMENT_FILE_CREATE_ERROR';
+    const SETTLEMENT_FILE_CREATE_MERCHANT_FAILURES            = 'SETTLEMENT_FILE_CREATE_MERCHANT_FAILURES';
+    const SETTLEMENT_FILE_TERMINAL_FETCH                      = 'SETTLEMENT_FILE_TERMINAL_FETCH';
+    const SETTLEMENT_POOL_ACCOUNT_NOT_FOUND                   = 'SETTLEMENT_POOL_ACCOUNT_NOT_FOUND';
 
     // Merchant Attribute
     const MERCHANT_ATTRIBUTE_EVENT                            = 'MERCHANT_ATTRIBUTE_EVENT';

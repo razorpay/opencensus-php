@@ -394,6 +394,14 @@ class Repository extends Base\Repository
                     ->toArray();
     }
 
+    public function fetchMerchantIdsByOrgId($orgId)
+    {
+        return $this->newQuery()
+            ->where(Entity::ORG_ID, '=', $orgId)
+            ->pluck(Entity::ID)
+            ->toArray();
+    }
+
     public function getLiveMerchantCount()
     {
         return $this->newQuery()

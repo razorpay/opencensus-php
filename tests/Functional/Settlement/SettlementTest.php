@@ -8,7 +8,6 @@ use Carbon\Carbon;
 use RZP\Models\Merchant;
 use RZP\Constants\Entity;
 use RZP\Constants\Timezone;
-
 use RZP\Services\RazorXClient;
 use Razorpay\OAuth\Application;
 use RZP\Models\Merchant\Account;
@@ -20,6 +19,7 @@ use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Models\Partner\Config as PartnerConfig;
 use RZP\Tests\Functional\Fixtures\Entity\Pricing;
+use RZP\Services\Mock\UfhService as MockUfhService;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Settlement\Holidays;
@@ -2639,4 +2639,181 @@ class SettlementTest extends TestCase
 
         $this->assertEquals(1, $response['enqueued_mid_count']);
     }
+
+    public function testGefuFileCreation()
+    {
+        $this->app['config']->set('applications.ufh.mock', true);
+
+        $merchants = $this->fixtures->times(5)->create('merchant');
+
+        $org = $this->fixtures->create('org',[
+        'id' => 'IUXvshap3Hbzos',
+        'display_name' => 'HDFCCollectNow Bank'
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name' => 'org_pool_settlement',
+            'entity_id' => 'IUXvshap3Hbzos',
+            'entity_type' => 'org',
+        ]);
+
+        $poolAcc = random_alphanum_string(14);
+
+        $channel = Channel::AXIS;
+
+        foreach ($merchants as $merchant) {
+
+            $merchantId = $merchant->getId();
+
+            $terminal = $this->fixtures->create(
+                'terminal',
+                [
+                    'id' => random_alphanum_string(14),
+                    'merchant_id' => $merchantId,
+                    'gateway' => 'hdfc',
+                    'gateway_merchant_id' => '250000002',
+                    'gateway_secure_secret' => "1231424",
+                    'card' => 1,
+                    'emi'  => 1,
+                    'mode' => 2,
+                    'type'    => [
+                        'direct_settlement_with_refund' => '1'
+                    ],
+                ]);
+
+
+            $this->fixtures->edit('merchant', $merchant->getId(), [
+                'org_id' => $org['id'],
+                'channel' => $channel,
+                'activated' => true ,
+                'suspended_at' => null
+            ]);
+
+            $this->fixtures->create('balance', ['id' => $merchantId, 'merchant_id' => $merchantId]);
+
+            $this->fixtures->create(
+                'bank_account',
+                [
+                    'entity_id' => $merchantId,
+                    'account_number'       => $poolAcc, // constant id for all merchant's pool account
+                    'beneficiary_name' => random_string_special_chars(10) ,
+                    'merchant_id' =>$merchantId,
+                    'type'  => 'merchant'
+                ]);
+
+            $this->fixtures->create(
+                'bank_account',
+                [
+                    'entity_id' => $merchantId,
+                    'beneficiary_name' => random_string_special_chars(10) ,
+                    'merchant_id' =>$merchantId,
+                    'type'  => 'org_settlement'
+                ]);
+
+            $createdAt = Carbon::today(Timezone::IST)->subDays(50)->timestamp + 5;
+            $capturedAt = Carbon::today(Timezone::IST)->subDays(50)->timestamp + 10;
+
+            $this->fixtures->times(2)->create(
+                'payment:captured',
+                [
+                    'captured_at' => $capturedAt,
+                    'method'      => 'card',
+                    'merchant_id' => $merchantId,
+                    'amount'      => 10000,
+                    'created_at'  => $createdAt,
+                    'updated_at'  => $createdAt + 10
+                ]
+
+            );
+        }
+
+        $this->initiateSettlements(Channel::AXIS);
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+    }
+
+    public function testGefuFileCreationWithoutPoolAccount()
+    {
+        $this->app['config']->set('applications.ufh.mock', true);
+
+        $merchants = $this->fixtures->times(5)->create('merchant');
+
+        $org = $this->fixtures->create('org',[
+            'id' => 'IUXvshap3Hbzos',
+            'display_name' => 'HDFCCollectNow Bank'
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name' => 'org_pool_settlement',
+            'entity_id' => 'IUXvshap3Hbzos',
+            'entity_type' => 'org',
+        ]);
+
+        $channel = Channel::AXIS;
+
+        foreach ($merchants as $merchant) {
+
+            $merchantId = $merchant->getId();
+
+            $terminal = $this->fixtures->create(
+                'terminal',
+                [
+                    'id' => random_alphanum_string(14),
+                    'merchant_id' => $merchantId,
+                    'gateway' => 'hdfc',
+                    'gateway_merchant_id' => '250000002',
+                    'gateway_secure_secret' => "1231424",
+                    'card' => 1,
+                    'emi'  => 1,
+                    'mode' => 2,
+                    'type'    => [
+                        'direct_settlement_with_refund' => '1'
+                    ],
+                ]);
+
+
+            $this->fixtures->edit('merchant', $merchant->getId(), [
+                'org_id' => $org['id'],
+                'channel' => $channel,
+                'activated' => true ,
+                'suspended_at' => null
+            ]);
+
+            $this->fixtures->create('balance', ['id' => $merchantId, 'merchant_id' => $merchantId]);
+
+            $this->fixtures->create(
+                'bank_account',
+                [
+                    'entity_id' => $merchantId,
+                    'beneficiary_name' => random_string_special_chars(10) ,
+                    'merchant_id' =>$merchantId,
+                    'type'      => 'org_settlement'
+                ]);
+
+            $createdAt = Carbon::today(Timezone::IST)->subDays(50)->timestamp + 5;
+            $capturedAt = Carbon::today(Timezone::IST)->subDays(50)->timestamp + 10;
+
+            $this->fixtures->times(2)->create(
+                'payment:captured',
+                [
+                    'captured_at' => $capturedAt,
+                    'method'      => 'card',
+                    'merchant_id' => $merchantId,
+                    'amount'      => 10000,
+                    'created_at'  => $createdAt,
+                    'updated_at'  => $createdAt + 10
+                ]
+
+            );
+        }
+
+        $this->initiateSettlements(Channel::AXIS);
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+    }
+
 }

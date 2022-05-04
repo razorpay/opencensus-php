@@ -503,6 +503,15 @@ class SettlementController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function sendGifuFile($orgId)
+    {
+        $input = Request::all();
+
+        $data = $this->service()->sendGifuFile($input , $orgId);
+
+        return ApiResponse::json($data);
+    }
+
     public function replaySettlementTransactions()
     {
         $input = Request::all();

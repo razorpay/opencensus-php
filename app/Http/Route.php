@@ -773,6 +773,7 @@ class Route
         'toggle_transaction_release'               => ['patch',    'transactions/release',                           'TransactionController@toggleTransactionRelease'                    ],
         'setl_fetch_schedule'                      => ['get',      'settlements/schedules',                          'ScheduleController@getSettlementSchedules'                         ],
         'setl_get_transaction_details'             => ['post',     'settlements/get_transaction_details',            'SettlementController@getSettlementSourceDetails'                   ],
+        'generate_gifu_file'                       => ['post',     '{orgid}/send_gifu_file',                         'SettlementController@sendGifuFile'],
         'setl_fetch_by_id'                         => ['get',      'settlements/{id}',                               'SettlementController@getSettlement'                                ],
         'setl_fetch_multiple'                      => ['get',      'settlements',                                    'SettlementController@getSettlements'                               ],
         'setl_fetch_transactions'                  => ['get',      'settlements/{id}/transactions',                  'SettlementController@getSettlementTransactions'                    ],
@@ -4042,6 +4043,7 @@ class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        'generate_gifu_file',
         'merchant_settlements_events_cron',
         'mob_to_bas_routes',
         'coupon_expiry_alert',
@@ -11903,6 +11905,7 @@ class Route
             'merchant_invoice_entities_verify',
             'merchant_payout',
             'gateway_file_create',
+            'generate_gifu_file',
             'reports_refund_irctc',
             'merchant_payout_mail',
             'geoip_update',

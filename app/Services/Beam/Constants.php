@@ -26,6 +26,8 @@ class Constants
 
     const ICIC_EMI_FILE_JOB_NAME       = 'icici_emi';
 
+    const HDFC_COLLECT_NOW_JOB_NAME    =  'hdfc_collect_now_stellements';
+
     const YESBANK_EMI_FILE_JOB_NAME    = 'yesbank_emi';
 
     const YESBANK_ENACH_NB_JOB_NAME    = 'yesbank_enach_nb';

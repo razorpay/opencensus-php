@@ -236,6 +236,7 @@ class Type
 
     const FIRST_DATA_PARES_FILE             = 'first_data_pares_file';
     const DATA_LAKE_SEGMENT_FILE            = 'data_lake_segment_file';
+    const HDFC_COLLECT_NOW_SETTLEMENT_FILE  = 'custom_org_settlement_file';
 
     const AP_SOUTH_DEFAULT_SETTLEMENT_BUCKET_CONFIG = 'ap_south_default_settlement_bucket_config';
 
@@ -404,6 +405,7 @@ class Type
             self::UCO_NETBANKING_REFUND,
             self::HDFC_CORP_NETBANKING_CLAIMS,
             self::HDFC_CORP_NETBANKING_REFUNDS,
+            self::HDFC_COLLECT_NOW_SETTLEMENT_FILE
         ],
 
         Constants\Entity::BATCH => [
@@ -582,6 +584,7 @@ class Type
         self::BULK_FRAUD_NOTIFICATION,
         self::HDFC_CORP_NETBANKING_REFUNDS,
         self::HDFC_CORP_NETBANKING_CLAIMS,
+        self::HDFC_COLLECT_NOW_SETTLEMENT_FILE,
     ];
 
     /**
