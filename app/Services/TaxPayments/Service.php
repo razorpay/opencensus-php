@@ -20,6 +20,7 @@ use RZP\Trace\TraceCode;
 
 /**
  * Class TaxPayments
+ *
  * @package RZP\Services
  * This class is responsible to talk to the TaxPayments APIs that are hosted
  * on the TaxPayments APP
@@ -27,35 +28,36 @@ use RZP\Trace\TraceCode;
 class Service
 {
     // MS endpoints
-    const BASE_PATH                       = 'twirp/razorpay.vendorpayments.taxpayments.Taxpayments';
-    const GET_ALL_SETTINGS                = 'GetAllSettings';
-    const ADD_OR_UPDATE_SETTINGS          = 'AddOrUpdateSettings';
-    const GET_TAX_PAYMENT_BY_ID           = 'GetTaxPayment';
-    const LIST_TAX_PAYMENTS               = 'ListTaxPayments';
-    const PAY_TAX_PAYMENTS                = 'PayTaxPayment';
-    const BULK_PAY_TAX_PAYMENTS           = 'BulkPayTaxPayments';
-    const INITIATE_MONTHLY_PAYOUTS        = 'InitiateMonthlyPayouts';
-    const CANCEL_QUEUED_PAYOUT_CRON       = 'CancelQueuedPayoutCron';
-    const TAX_PAYMENT_ENABLED_KEY         = 'tax_payment_enabled';
-    const MONTHLY_SUMMARY                 = 'MonthlySummary';
-    const ADD_PENALTY_CRON                = 'AddPenaltyCron';
-    const MARK_AS_PAID                    = 'MarkAsPaid';
-    const UPLOAD_CHALLAN                  = 'UploadChallan';
-    const UPDATE_CHALLAN_FILE_ID          = 'UpdateChallanFileId';
-    const ADMIN_ACTIONS                   = 'AdminActions';
-    const EMAIL_CRON                      = 'EmailCron';
-    const CREATE_MANUAL_TAX_PAYMENT       = 'CreateManualTaxPayment';
-    const CREATE_DIRECT_TAX_PAYMENT       = 'CreateDirectTaxPayment';
-    const PG_WEBHOOK_HANDLER              = 'WebHookHandler';
-    const EDIT_MANUAL_TAX_PAYMENT         = 'EditManualTaxPayment';
-    const CANCEL_MANUAL_TAX_PAYMENT       = 'CancelManualTaxPayment';
-    const GET_TDS_CATEGORIES              = 'GetTdsCategories';
-    const GET_INVALID_TAN_STATUS          = 'GetInvalidTanStatus';
-    const GET_DOWNTIME_SCHEDULE_BY_MODULE = 'GetDowntimeScheduleByModule';
-    const GET_DOWNTIME_SCHEDULE           = 'GetDowntimeSchedule';
-    const ICICI_RETRY_CALLBACK            = 'IciciRetryCallback';
-    const FETCH_PENDING_GST               = 'FetchPendingGst';
-    const UFH_BULK_DOWNLOAD               = 'InitiateBulkChallanDownload';
+    const BASE_PATH                           = 'twirp/razorpay.vendorpayments.taxpayments.Taxpayments';
+    const GET_ALL_SETTINGS                    = 'GetAllSettings';
+    const ADD_OR_UPDATE_SETTINGS              = 'AddOrUpdateSettings';
+    const ADD_OR_UPDATE_SETTINGS_FOR_AUTO_TDS = 'AddOrUpdateSettingsForAutoTds';
+    const GET_TAX_PAYMENT_BY_ID               = 'GetTaxPayment';
+    const LIST_TAX_PAYMENTS                   = 'ListTaxPayments';
+    const PAY_TAX_PAYMENTS                    = 'PayTaxPayment';
+    const BULK_PAY_TAX_PAYMENTS               = 'BulkPayTaxPayments';
+    const INITIATE_MONTHLY_PAYOUTS            = 'InitiateMonthlyPayouts';
+    const CANCEL_QUEUED_PAYOUT_CRON           = 'CancelQueuedPayoutCron';
+    const TAX_PAYMENT_ENABLED_KEY             = 'tax_payment_enabled';
+    const MONTHLY_SUMMARY                     = 'MonthlySummary';
+    const ADD_PENALTY_CRON                    = 'AddPenaltyCron';
+    const MARK_AS_PAID                        = 'MarkAsPaid';
+    const UPLOAD_CHALLAN                      = 'UploadChallan';
+    const UPDATE_CHALLAN_FILE_ID              = 'UpdateChallanFileId';
+    const ADMIN_ACTIONS                       = 'AdminActions';
+    const EMAIL_CRON                          = 'EmailCron';
+    const CREATE_MANUAL_TAX_PAYMENT           = 'CreateManualTaxPayment';
+    const CREATE_DIRECT_TAX_PAYMENT           = 'CreateDirectTaxPayment';
+    const PG_WEBHOOK_HANDLER                  = 'WebHookHandler';
+    const EDIT_MANUAL_TAX_PAYMENT             = 'EditManualTaxPayment';
+    const CANCEL_MANUAL_TAX_PAYMENT           = 'CancelManualTaxPayment';
+    const GET_TDS_CATEGORIES                  = 'GetTdsCategories';
+    const GET_INVALID_TAN_STATUS              = 'GetInvalidTanStatus';
+    const GET_DOWNTIME_SCHEDULE_BY_MODULE     = 'GetDowntimeScheduleByModule';
+    const GET_DOWNTIME_SCHEDULE               = 'GetDowntimeSchedule';
+    const ICICI_RETRY_CALLBACK                = 'IciciRetryCallback';
+    const FETCH_PENDING_GST                   = 'FetchPendingGst';
+    const UFH_BULK_DOWNLOAD                   = 'InitiateBulkChallanDownload';
 
     // general constants
     const DATA                     = 'data';
@@ -105,13 +107,14 @@ class Service
 
     public function cancel(MerchantEntity $merchant, string $taxPaymentId, array $input, UserEntity $user = null)
     {
-        if ($user === null) {
+        if ($user === null)
+        {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_USER_ID_HEADER_MISSING_FROM_REQUEST,
-                null,
-                [
-                    'data' => $input,
-                    'merchant_id' => $merchant->getPublicId()
-                ]);
+                                          null,
+                                          [
+                                              'data'        => $input,
+                                              'merchant_id' => $merchant->getPublicId()
+                                          ]);
         }
 
         $input['user_id'] = $user->getPublicId();
@@ -136,10 +139,10 @@ class Service
         $cc = array_get($input, self::CC_EMAILS, []);
 
         Mail::queue(new GenericTaxPaymentEmail($input[self::MERCHANT_EMAIL],
-            $input[self::SUBJECT],
-            $input[self::TEMPLATE_NAME],
-            $input[self::DATA],
-            $cc));
+                                               $input[self::SUBJECT],
+                                               $input[self::TEMPLATE_NAME],
+                                               $input[self::DATA],
+                                               $cc));
 
         return ['success' => true];
     }
@@ -153,13 +156,14 @@ class Service
 
     public function edit(MerchantEntity $merchant, string $taxPaymentId, array $input, UserEntity $user = null)
     {
-        if ($user === null) {
+        if ($user === null)
+        {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_USER_ID_HEADER_MISSING_FROM_REQUEST,
-                null,
-                [
-                    'data' => $input,
-                    'merchant_id' => $merchant->getPublicId()
-                ]);
+                                          null,
+                                          [
+                                              'data'        => $input,
+                                              'merchant_id' => $merchant->getPublicId()
+                                          ]);
         }
 
         $input['user_id'] = $user->getPublicId();
@@ -173,13 +177,14 @@ class Service
 
     public function create(MerchantEntity $merchant, array $input, UserEntity $user = null)
     {
-        if ($user === null) {
+        if ($user === null)
+        {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_USER_ID_HEADER_MISSING_FROM_REQUEST,
-                null,
-                [
-                    'data' => $input,
-                    'merchant_id' => $merchant->getPublicId()
-                ]);
+                                          null,
+                                          [
+                                              'data'        => $input,
+                                              'merchant_id' => $merchant->getPublicId()
+                                          ]);
         }
 
         $input['user_id'] = $user->getPublicId();
@@ -205,7 +210,9 @@ class Service
 
     /**
      * This will query the settings service and get all the merchants that have the tax-payment settings enabled
+     *
      * @param array $input
+     *
      * @return array
      */
     public function settingsOfTaxPaymentEnabledMerchants(array $input)
@@ -222,7 +229,8 @@ class Service
 
         $settingsOfEnabledMerchants = [];
 
-        foreach ($settings as $setting) {
+        foreach ($settings as $setting)
+        {
             $merchant = $this->repo->merchant->find($setting['entity_id']);
 
             $settingsAccessor = Accessor::for($merchant, Module::TAX_PAYMENTS);
@@ -233,34 +241,38 @@ class Service
 
             $bankingAccountInfo = null;
 
-            if (empty($accountNumber) === false) {
+            if (empty($accountNumber) === false)
+            {
                 $bankingAccount = $this->repo
                     ->banking_account
                     ->findByMerchantAndAccountNumberPublic($merchant, $accountNumber);
-                if ($bankingAccount !== null) {
+                if ($bankingAccount !== null)
+                {
                     $bankingAccountInfo = [
-                        self::NAME => $bankingAccount->getBankName(),
-                        self::TYPE => $bankingAccount->getAccountType(),
+                        self::NAME           => $bankingAccount->getBankName(),
+                        self::TYPE           => $bankingAccount->getAccountType(),
                         self::ACCOUNT_NUMBER => $bankingAccount->getAccountNumber(),
-                        self::BALANCE => $bankingAccount->balance->getBalance()
+                        self::BALANCE        => $bankingAccount->balance->getBalance()
                     ];
                 }
             }
 
             array_push($settingsOfEnabledMerchants,
-                [
-                    self::MERCHANT_ID => $merchant->getId(),
-                    self::SETTINGS => $settings,
-                    self::BANKING_ACCOUNT => $bankingAccountInfo,
-                    self::MERCHANT_EMAIL => $merchant->getEmail(),
-                ]);
+                       [
+                           self::MERCHANT_ID     => $merchant->getId(),
+                           self::SETTINGS        => $settings,
+                           self::BANKING_ACCOUNT => $bankingAccountInfo,
+                           self::MERCHANT_EMAIL  => $merchant->getEmail(),
+                       ]);
         }
+
         return $settingsOfEnabledMerchants;
     }
 
     public function getBooleanValue(string $value): bool
     {
-        if (empty($value) === true) {
+        if (empty($value) === true)
+        {
             return false;
         }
 
@@ -269,7 +281,8 @@ class Service
 
         $jsonDecoded = json_decode($jsonStr, true);
 
-        if ($jsonDecoded === null) {
+        if ($jsonDecoded === null)
+        {
             return false;
         }
 
@@ -282,17 +295,20 @@ class Service
         // we are expecting a json string in the body here
         $jsonInput = array_pull($input, 'json_data', null);
 
-        if ($jsonInput === null) {
+        if ($jsonInput === null)
+        {
             return ['message' => 'empty data'];
         }
 
         $parsedData = json_decode($jsonInput, true);
 
-        if ($parsedData == null) {
+        if ($parsedData == null)
+        {
             return ['message' => 'json could not be decoded'];
         }
 
-        if (empty($_FILES) === false) {
+        if (empty($_FILES) === false)
+        {
             $parsedData['file'] = base64_encode(file_get_contents($_FILES['file']['tmp_name']));
 
             $parsedData['file_name'] = $_FILES['file']['name'];
@@ -319,13 +335,14 @@ class Service
 
     public function payTaxPayment(MerchantEntity $merchant, string $taxPaymentId, array $input, UserEntity $user = null)
     {
-        if ($user === null) {
+        if ($user === null)
+        {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_USER_ID_HEADER_MISSING_FROM_REQUEST,
-                null,
-                [
-                    'tax_payment_id' => $taxPaymentId,
-                    'merchant_id' => $merchant->getPublicId()
-                ]);
+                                          null,
+                                          [
+                                              'tax_payment_id' => $taxPaymentId,
+                                              'merchant_id'    => $merchant->getPublicId()
+                                          ]);
         }
         $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::PAY_TAX_PAYMENTS);
 
@@ -338,7 +355,8 @@ class Service
 
     public function bulkPayTaxPayment(MerchantEntity $merchant, array $input, UserEntity $user = null)
     {
-        if ($user == null) {
+        if ($user == null)
+        {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_USER_ID_HEADER_MISSING_FROM_REQUEST);
         }
         $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::BULK_PAY_TAX_PAYMENTS);
@@ -357,10 +375,24 @@ class Service
 
     public function addOrUpdateSettings(MerchantEntity $merchant, array $input, UserEntity $user = null)
     {
-        if ($user === null) {
+        if ($user === null)
+        {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_USER_ID_HEADER_MISSING_FROM_REQUEST);
         }
         $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::ADD_OR_UPDATE_SETTINGS);
+
+        $input['user_id'] = $user->getPublicId();
+
+        return $this->makeRequest($merchant, $url, $input);
+    }
+
+    public function addOrUpdateSettingsForAutoTds(MerchantEntity $merchant, array $input, UserEntity $user = null)
+    {
+        if ($user === null)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_USER_ID_HEADER_MISSING_FROM_REQUEST);
+        }
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::ADD_OR_UPDATE_SETTINGS_FOR_AUTO_TDS);
 
         $input['user_id'] = $user->getPublicId();
 
@@ -396,7 +428,8 @@ class Service
     {
         $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::MARK_AS_PAID);
 
-        if ($user === null) {
+        if ($user === null)
+        {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_USER_ID_HEADER_MISSING_FROM_REQUEST);
         }
 
@@ -424,7 +457,8 @@ class Service
     {
         $secret = array_get(getallheaders(), 'X-Razorpay-Signature', '');
 
-        if ($secret == '') {
+        if ($secret == '')
+        {
             return self::DROPPING_REQUEST;
         }
 
@@ -439,7 +473,8 @@ class Service
 
     public function createDirectTaxPayment(array $input)
     {
-        if (Environment::isEnvironmentQA($this->env) === false) {
+        if (Environment::isEnvironmentQA($this->env) === false)
+        {
             // validate recaptcha
             (new Validator())
                 ->setStrictFalse()
@@ -492,7 +527,7 @@ class Service
 
         $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::ICICI_RETRY_CALLBACK);
 
-        return $this->makeRequest(null, $url, $input,[],'POST', $mode);
+        return $this->makeRequest(null, $url, $input, [], 'POST', $mode);
     }
 
     public function fetchPendingGstPayments(MerchantEntity $merchant, UserEntity $user = null)
@@ -536,14 +571,15 @@ class Service
         $headers[self::X_ORG_ID] = $this->app['basicauth']->getOrgId();
 
         $options = [
-            'auth' => ['api', $this->config['secret']],
+            'auth'    => ['api', $this->config['secret']],
             'timeout' => $this->config['timeout']
         ];
 
         if ($mode !== '')
         {
             $headers[self::X_APP_MODE] = $mode;
-        }else
+        }
+        else
         {
             $rzpMode = array_get($this->app, 'rzp.mode', null);
 
@@ -553,11 +589,9 @@ class Service
             }
         }
 
-
-
         $this->trace->info(TraceCode::TAX_PAYMENT_REQUEST,
                            [
-                               'url'     => $url
+                               'url' => $url
                            ]);
 
         $response = Requests::request(

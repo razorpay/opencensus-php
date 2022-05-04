@@ -165,6 +165,7 @@ class Tracing
             'tax_payments_bulk_pay',
             'tax_payments_get_all_settings',
             'tax_payments_add_or_update_settings',
+            'tax_payments_add_or_update_settings_auto',
             'tax_payments_list',
             'tax_payments_create',
             'tax_payments_get_by_id',

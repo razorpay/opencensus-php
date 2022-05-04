@@ -123,6 +123,7 @@ class UserRolePermissionsMap
                  Permission::CREATE_TAX_PAYMENTS,
                  Permission::GENERATE_TDS_CHALLAN_ZIP,
                  Permission::UPDATE_TAX_PAYMENT_SETTINGS,
+                 Permission::UPDATE_TAX_PAYMENT_SETTINGS_AUTO,
                  Permission::VIEW_TAX_PAYMENTS,
                  Permission::MERCHANT_VIEW_FREE_PAYOUTS_ATTRIBUTES,
                  Permission::UPDATE_BULK_PAYOUT_AMOUNT_TYPE,
@@ -245,6 +246,7 @@ class UserRolePermissionsMap
                  Permission::CREATE_TAX_PAYMENTS,
                  Permission::GENERATE_TDS_CHALLAN_ZIP,
                  Permission::UPDATE_TAX_PAYMENT_SETTINGS,
+                 Permission::UPDATE_TAX_PAYMENT_SETTINGS_AUTO,
                  Permission::VIEW_TAX_PAYMENTS,
                  Permission::MERCHANT_VIEW_FREE_PAYOUTS_ATTRIBUTES,
                  Permission::UPDATE_MERCHANT_PREFERENCE,
@@ -331,6 +333,7 @@ class UserRolePermissionsMap
                  Permission::EDIT_VENDOR_PAYMENTS,
                  Permission::CANCEL_VENDOR_PAYMENTS,
                  Permission::PROCESS_PAYOUT_SCHEDULED,
+                 Permission::UPDATE_TAX_PAYMENT_SETTINGS,
 
                  Permission::PAY_TAX_PAYMENTS,
                  Permission::CREATE_TAX_PAYMENTS,

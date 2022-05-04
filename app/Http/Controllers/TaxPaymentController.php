@@ -178,6 +178,11 @@ class TaxPaymentController extends Controller
         return $this->service->addOrUpdateSettings($this->ba->getMerchant(), $this->input, $this->ba->getUser());
     }
 
+    public function addOrUpdateSettingsForAutoTds()
+    {
+        return $this->service->addOrUpdateSettingsForAutoTds($this->ba->getMerchant(), $this->input, $this->ba->getUser());
+    }
+
     public function getTaxPayment(string $taxPaymentId)
     {
 

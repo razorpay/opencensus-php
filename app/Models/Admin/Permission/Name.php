@@ -635,6 +635,7 @@ class Name
     const CREATE_TAX_PAYMENTS                 = 'create_tax_payment';
     const GENERATE_TDS_CHALLAN_ZIP            = 'generate_tds_challan_zip';
     const UPDATE_TAX_PAYMENT_SETTINGS         = 'update_tax_payment_settings';
+    const UPDATE_TAX_PAYMENT_SETTINGS_AUTO    = 'update_tax_payment_settings_auto';
     const VIEW_TAX_PAYMENTS                   = 'view_tax_payments';
 
     // permission to raise needs clarification on workflow

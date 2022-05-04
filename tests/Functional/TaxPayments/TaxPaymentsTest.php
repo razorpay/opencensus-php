@@ -97,6 +97,178 @@ class TaxPaymentsTest extends TestCase
         $tpMock->shouldHaveReceived('addOrUpdateSettings');
     }
 
+    public function testTaxPaymentSettingAddOrUpdateForAutoTdsWithAdminRole()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantId = $merchantDetail['merchant_id'];
+
+        $user = $this->fixtures->create('user', [
+            'id' => '20000000000000',
+        ]);
+
+        $this->fixtures->create('user:user_merchant_mapping', [
+            'user_id'     => $user['id'],
+            'merchant_id' => $merchantId,
+            'role'        => 'admin',
+            'product'     => 'primary',
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId, $user['id']);
+
+        $tpMock = Mockery::mock('RZP\Services\TaxPayments\Service');
+
+        $tpMock->shouldReceive('addOrUpdateSettingsForAutoTds')->andReturn([]);
+
+        $this->app->instance('tax-payments', $tpMock);
+
+        $this->startTest();
+
+        $tpMock->shouldHaveReceived('addOrUpdateSettingsForAutoTds');
+    }
+
+    public function testTaxPaymentSettingAddOrUpdateForAutoTdsWithOwnerRole()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantId = $merchantDetail['merchant_id'];
+
+        $user = $this->fixtures->create('user', [
+            'id' => '20000000000000',
+        ]);
+
+        $this->fixtures->create('user:user_merchant_mapping', [
+            'user_id'     => $user['id'],
+            'merchant_id' => $merchantId,
+            'role'        => 'owner',
+            'product'     => 'primary',
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId, $user['id']);
+
+        $tpMock = Mockery::mock('RZP\Services\TaxPayments\Service');
+
+        $tpMock->shouldReceive('addOrUpdateSettingsForAutoTds')->andReturn([]);
+
+        $this->app->instance('tax-payments', $tpMock);
+
+        $this->startTest();
+
+        $tpMock->shouldHaveReceived('addOrUpdateSettingsForAutoTds');
+    }
+
+    public function testTaxPaymentSettingAddOrUpdateForAutoTdsWithFinanceRole()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantId = $merchantDetail['merchant_id'];
+
+        $user = $this->fixtures->create('user', [
+            'id' => '20000000000000',
+        ]);
+
+        $this->fixtures->create('user:user_merchant_mapping', [
+            'user_id'     => $user['id'],
+            'merchant_id' => $merchantId,
+            'role'        => 'finance',
+            'product'     => 'primary',
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId, $user['id']);
+
+        $this->startTest();
+    }
+
+    public function testTaxPaymentSettingAddOrUpdateForNonAutoTdsWithOwnerRole()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantId = $merchantDetail['merchant_id'];
+
+        $user = $this->fixtures->create('user', [
+            'id' => '20000000000000',
+        ]);
+
+        $this->fixtures->create('user:user_merchant_mapping', [
+            'user_id'     => $user['id'],
+            'merchant_id' => $merchantId,
+            'role'        => 'owner',
+            'product'     => 'primary',
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId, $user['id']);
+
+        $tpMock = Mockery::mock('RZP\Services\TaxPayments\Service');
+
+        $tpMock->shouldReceive('addOrUpdateSettings')->andReturn([]);
+
+        $this->app->instance('tax-payments', $tpMock);
+
+        $this->startTest();
+
+        $tpMock->shouldHaveReceived('addOrUpdateSettings');
+    }
+
+    public function testTaxPaymentSettingAddOrUpdateForNonAutoTdsWithAdminRole()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantId = $merchantDetail['merchant_id'];
+
+        $user = $this->fixtures->create('user', [
+            'id' => '20000000000000',
+        ]);
+
+        $this->fixtures->create('user:user_merchant_mapping', [
+            'user_id'     => $user['id'],
+            'merchant_id' => $merchantId,
+            'role'        => 'admin',
+            'product'     => 'primary',
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId, $user['id']);
+
+        $tpMock = Mockery::mock('RZP\Services\TaxPayments\Service');
+
+        $tpMock->shouldReceive('addOrUpdateSettings')->andReturn([]);
+
+        $this->app->instance('tax-payments', $tpMock);
+
+        $this->startTest();
+
+        $tpMock->shouldHaveReceived('addOrUpdateSettings');
+    }
+
+    public function testTaxPaymentSettingAddOrUpdateForNonAutoTdsWithFinanceRole()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantId = $merchantDetail['merchant_id'];
+
+        $user = $this->fixtures->create('user', [
+            'id' => '20000000000000',
+        ]);
+
+        $this->fixtures->create('user:user_merchant_mapping', [
+            'user_id'     => $user['id'],
+            'merchant_id' => $merchantId,
+            'role'        => 'finance',
+            'product'     => 'primary',
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId, $user['id']);
+
+        $tpMock = Mockery::mock('RZP\Services\TaxPayments\Service');
+
+        $tpMock->shouldReceive('addOrUpdateSettings')->andReturn([]);
+
+        $this->app->instance('tax-payments', $tpMock);
+
+        $this->startTest();
+
+        $tpMock->shouldHaveReceived('addOrUpdateSettings');
+    }
+
     public function testGetTaxPaymentCallsServiceMethod()
     {
         $this->ba->proxyAuth();
@@ -382,43 +554,43 @@ class TaxPaymentsTest extends TestCase
         $m1 = $this->fixtures->create('merchant', ['id' => '200DemoAccount']);
 
         $xBalance1 = $this->fixtures->create('balance',
-            [
-                'merchant_id'       => $m1->getId(),
-                'type'              => 'banking',
-                'account_type'      => 'shared',
-                'account_number'    => '2224440041626905',
-                'balance'           => 200,
-            ]);
+                                             [
+                                                 'merchant_id'    => $m1->getId(),
+                                                 'type'           => 'banking',
+                                                 'account_type'   => 'shared',
+                                                 'account_number' => '2224440041626905',
+                                                 'balance'        => 200,
+                                             ]);
 
         $ba1 = $this->fixtures->create('banking_account',
-            [
-                'account_number'        => '2224440041626905',
-                'account_type'          => 'current',
-                'merchant_id'           => $m1->getId(),
-                'channel'               => 'yesbank',
-                'status'                => 'created',
-                'balance_id'            => $xBalance1->getId(),
-                'pincode'               => '1',
-                'bank_reference_number' => '',
-                'account_ifsc'          => 'RATN0000156',
-            ]);
+                                       [
+                                           'account_number'        => '2224440041626905',
+                                           'account_type'          => 'current',
+                                           'merchant_id'           => $m1->getId(),
+                                           'channel'               => 'yesbank',
+                                           'status'                => 'created',
+                                           'balance_id'            => $xBalance1->getId(),
+                                           'pincode'               => '1',
+                                           'bank_reference_number' => '',
+                                           'account_ifsc'          => 'RATN0000156',
+                                       ]);
 
         $m2 = $this->fixtures->create('merchant', ['id' => '201DemoAccount']);
 
         $m3 = $this->fixtures->create('merchant', ['id' => '202DemoAccount']);
 
         $this->createTestSettingsForMerchant($m1->getId(), [
-            'tax_payment_enabled' => "true",
+            'tax_payment_enabled'                => "true",
             'merchant_auto_debit_account_number' => $ba1->getAccountNumber(),
         ]);
 
         $this->createTestSettingsForMerchant($m2->getId(), [
-            'tax_payment_enabled' => "true",
+            'tax_payment_enabled'                => "true",
             'merchant_auto_debit_account_number' => 'm2_account',
         ]);
 
         $this->createTestSettingsForMerchant($m3->getId(), [
-            'tax_payment_enabled' => "false", // as this is false, the settings for this should not be returned
+            'tax_payment_enabled'                => "false", // as this is false, the settings for this should not be returned
             'merchant_auto_debit_account_number' => 'm2_account',
         ]);
     }
@@ -526,9 +698,9 @@ class TaxPaymentsTest extends TestCase
         // create a payout with this purpose and call payout delete and there should not be any exception
         $payout = $this->fixtures->create('payout',
                                           [
-                                              'purpose'             => Purpose::RZP_TAX_PAYMENT,
-                                              'status'              => Status::QUEUED,
-                                              'pricing_rule_id'     => '1nvp2XPMmaRLxb'
+                                              'purpose'         => Purpose::RZP_TAX_PAYMENT,
+                                              'status'          => Status::QUEUED,
+                                              'pricing_rule_id' => '1nvp2XPMmaRLxb'
                                           ]);
 
         $this->testData[__FUNCTION__]['request']['url'] = sprintf('/payouts/%s/cancel', $payout->getPublicId());
@@ -587,7 +759,7 @@ class TaxPaymentsTest extends TestCase
 
         $tpMock = Mockery::mock('RZP\Services\TaxPayments');
 
-        $tpMock->shouldReceive('bulkChallanDownload')->andReturn(['zip_file_id'=> "file_HjPPzIGMCbahkO"]);
+        $tpMock->shouldReceive('bulkChallanDownload')->andReturn(['zip_file_id' => "file_HjPPzIGMCbahkO"]);
 
         $this->app->instance('tax-payments', $tpMock);
 
@@ -618,11 +790,11 @@ class TaxPaymentsTest extends TestCase
 
         $settingAccessor = Accessor::for($merchant, Module::PAYOUT_LINK);
 
-        $settingAccessor->upsert('support_email' , 'test@email.com')->save();
+        $settingAccessor->upsert('support_email', 'test@email.com')->save();
 
-        $settingAccessor->upsert('support_url' , 'test.com')->save();
+        $settingAccessor->upsert('support_url', 'test.com')->save();
 
-        $settingAccessor->upsert('support_contact' , '1234')->save();
+        $settingAccessor->upsert('support_contact', '1234')->save();
 
         $this->ba->appAuthTest($this->config['applications.vendor_payments.secret']);
 
@@ -820,7 +992,6 @@ class TaxPaymentsTest extends TestCase
             'product'     => 'banking',
         ];
 
-
         $this->fixtures->create('user:user_merchant_mapping', $mappingData);
 
         $this->ba->proxyAuth('rzp_test_10000000000000', $user['id']);
@@ -846,7 +1017,6 @@ class TaxPaymentsTest extends TestCase
             'role'        => BankingRole::CHARTERED_ACCOUNTANT,
             'product'     => 'banking',
         ];
-
 
         $this->fixtures->create('user:user_merchant_mapping', $mappingData);
 
@@ -896,7 +1066,6 @@ class TaxPaymentsTest extends TestCase
             'role'        => BankingRole::CHARTERED_ACCOUNTANT,
             'product'     => 'banking',
         ];
-
 
         $this->fixtures->create('user:user_merchant_mapping', $mappingData);
 
