@@ -14,6 +14,7 @@ use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Services\AbstractEventClient;
 use RZP\Trace\TraceCode;
 use RZP\Models\Admin\Org\Entity as OrgEntity;
+use RZP\Models\Merchant\Detail as MerchantDetail;
 use RZP\Models\Merchant\AccessMap\Core as AccessMapCore;
 
 class SegmentAnalyticsClient extends AbstractEventClient
@@ -90,11 +91,11 @@ class SegmentAnalyticsClient extends AbstractEventClient
 
             $properties += $this->getUserProperties($merchant);
 
-            $eventLabel = EventCode::EVENT_LABELS[$eventName] ?? "";
+            $eventLabel = $this->getEventLabel($merchant,$eventName);
 
             if(empty($eventLabel) === false)
             {
-                $properties['event_label'] = $eventLabel;
+                $properties['label'] = $eventLabel;
             }
 
             $eventData = [
@@ -122,6 +123,40 @@ class SegmentAnalyticsClient extends AbstractEventClient
                 'merchant_id'   => $merchant->getId()
             ]);
         }
+    }
+
+    public function getEventLabel(Merchant\Entity $merchant ,string $eventName)
+    {
+        $eventLabel = "";
+
+        if( $this->isGoogleAnalyticsEvent($eventName) === true)
+        {
+            if($merchant->merchantDetail->isUnregisteredBusiness() === true)
+            {
+                $eventLabel .= MerchantDetail\BusinessType::UNREGISTERED;
+
+                $merchantActivationFlow = $merchant->merchantDetail->getActivationFlow();
+
+                if($merchantActivationFlow != null)
+                {
+                    $eventLabel .= "_".$merchantActivationFlow;
+                }
+            }
+            else {
+
+                $eventLabel .= MerchantDetail\BusinessType::REGISTERED;
+
+                $merchantActivationFlow = $merchant->merchantDetail->getActivationFlow();
+
+                if($merchantActivationFlow != null)
+                {
+                    $eventLabel .= "_".$merchantActivationFlow;
+                }
+
+            }
+        }
+
+        return $eventLabel;
     }
 
     public function pushIdentifyAndTrackEvent(
@@ -435,5 +470,21 @@ class SegmentAnalyticsClient extends AbstractEventClient
         }
 
         return $result;
+    }
+
+    protected function isGoogleAnalyticsEvent(string $eventName){
+
+        $googleAnalyticsEvents = [
+            EventCode::MTU_TRANSACTED,
+            EventCode::PAYMENTS_ENABLED,
+            EventCode::L2_SUBMISSION
+        ];
+
+        if(in_array($eventName, $googleAnalyticsEvents) === true)
+        {
+            return true;
+        }
+
+        return false;
     }
 }
