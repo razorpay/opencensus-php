@@ -6556,11 +6556,14 @@ class Core extends Base\Core
                         TraceCode::RAZORX_EXPERIMENT_RESULT,
                         [$experimentName => $isRazorxExperimentEnabled]);
 
-                    if ($isRazorxExperimentEnabled === true)
+                    $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+                    if ($isRazorxExperimentEnabled === true && (new Merchant\Core())->isBlockedMerchantType($merchant,[Merchant\Core::SUB_MERCHANT,
+                                                                                                                       Merchant\Core::PARTNER_MERCHANT,
+                                                                                                                       Merchant\Core::LINKED_ACCOUNT])===false)
                     {
                         array_push($result[$bucketName],
                                    [
-
                                        "id"      =>  strval(BusinessType::getIndexFromKey($businessType)),
                                        "label" => BusinessType::getDisplayNameFromKey($businessType),
                                        "status"  => 'active'

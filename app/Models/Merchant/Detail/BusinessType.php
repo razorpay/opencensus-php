@@ -108,7 +108,9 @@ class BusinessType
     ];
 
     public static    $businessTypeExperiments                           = [
-        self::HUF => RazorxTreatment::HUF_BUSINESS_TYPE
+        self::HUF                       => RazorxTreatment::HUF_BUSINESS_TYPE,
+        self::EDUCATIONAL_INSTITUTES    => RazorxTreatment::EDUCATION_OTHERS_BUSINESS_TYPE,
+        self::OTHER                     => RazorxTreatment::EDUCATION_OTHERS_BUSINESS_TYPE
     ];
 
     protected static $GreylistedInternationalActivationFlowBusinessType = [

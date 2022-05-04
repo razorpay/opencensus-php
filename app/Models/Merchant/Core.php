@@ -131,6 +131,11 @@ class Core extends Base\Core
 
     const FUND_ADDITION_DESCRIPTION_MUTEX_TIMEOUT = 10;
 
+    const VAS_MERCHANT      = 'VAS_MERCHANT';
+    const SUB_MERCHANT      = 'SUB_MERCHANT';
+    const PARTNER_MERCHANT  = 'PARTNER_MERCHANT';
+    const LINKED_ACCOUNT    = 'LINKED_ACCOUNT';
+
     public function create($input, $merchantDetailInputData = [])
     {
         $merchant = (new Merchant\Entity)->build($input);
@@ -7146,6 +7151,45 @@ class Core extends Base\Core
                 ]
             );
         }
+    }
+
+    public function isBlockedMerchantType(Entity $merchant,array $blockedTypes)
+    {
+        foreach ($blockedTypes as $blockedType)
+        {
+            switch ($blockedType)
+            {
+                case self::VAS_MERCHANT:
+                    if ($merchant->isBusinessBankingEnabled() === true)
+                    {
+                        return true;
+                    }
+                    break;
+                case self::PARTNER_MERCHANT:
+                    if ($merchant->isPartner()===true)
+                    {
+                        return true;
+                    }
+                    break;
+                case self::LINKED_ACCOUNT:
+                    if ($merchant->isLinkedAccount() === true)
+                    {
+                        return true;
+                    }
+                    break;
+                case self::SUB_MERCHANT:
+                    if ((new AccessMapCore)->isSubMerchant($merchant->getMerchantId()) === true)
+                    {
+                        return true;
+                    }
+                    break;
+                default:
+                    throw new \Exception('Unexpected value');
+
+            }
+        }
+
+        return false;
     }
 
     public function isRegularMerchant(Entity $merchant): bool

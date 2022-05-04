@@ -86,6 +86,35 @@ class HUFTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testGetBusinessTypeSubMerchant()
+    {
+        $subMerchant = $this->fixtures->create('merchant');
+
+        $subMerchantId = $subMerchant->getId();
+
+        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'aggregator']);
+
+        // Assign submerchant to partner
+        $accessMapData = [
+            'entity_type'     => 'application',
+            'merchant_id'     => $subMerchantId,
+            'entity_owner_id' => '10000000000000',
+        ];
+
+        $this->fixtures->create('merchant_access_map', $accessMapData);
+
+        $this->createAndFetchMocks(true);
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id' => $subMerchant->getId()
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($subMerchant->id);
+
+        $this->ba->proxyAuth('rzp_test_' . $subMerchant->id, $merchantUser['id']);
+
+        $this->startTest();
+    }
     public function testGetBusinessTypeAdmin()
     {
         $this->ba->adminAuth();
