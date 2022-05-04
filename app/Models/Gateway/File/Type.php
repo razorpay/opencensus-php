@@ -29,7 +29,7 @@ class Type
             Constants::AXIS  => [self::CORPORATE, self::NON_CORPORATE],
         ],
         self::NACH_DEBIT => [
-            Constants::PAPER_NACH_CITI => ['9:9', '6:9', '9:6', '27:9', '9:3'],
+            Constants::PAPER_NACH_CITI => ['9:9', '6:9', '9:6', '9:0', '24:3', '27:9', '24:9', '9:3'],
         ]
     ];
 
