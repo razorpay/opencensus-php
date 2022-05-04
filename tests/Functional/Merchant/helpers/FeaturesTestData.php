@@ -2833,4 +2833,26 @@ return [
             ]
         ]
     ],
+
+    'test1CCReportingTestFeature' => [
+        'request'  => [
+            'url'     => '/features',
+            'method'  => 'post',
+            'content' => [
+                'names'       => ['one_cc_reporting_test'],
+                'entity_type' => 'merchant',
+                'entity_id'   => '10000000000000'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'name' => 'one_cc_reporting_test',
+                    'entity_id' => '10000000000000',
+                    'entity_type' => 'merchant',
+                ]
+            ]
+        ]
+    ],
+
 ];

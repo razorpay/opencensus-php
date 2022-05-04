@@ -3161,4 +3161,10 @@ Regards,
         $this->startTest();
     }
 
+    public function test1CCReportingTestFeature()
+    {
+        $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');
+
+        $this->startTest();
+    }
 }

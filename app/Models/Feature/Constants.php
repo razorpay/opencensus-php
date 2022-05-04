@@ -992,6 +992,8 @@ class Constants
      */
     const ONE_CLICK_DUAL_CHECKOUT = 'one_cc_dual_checkout';
 
+    const ONE_CC_REPORTING_TEST  = 'one_cc_reporting_test';
+
     const ONE_CC_MERCHANT_DASHBOARD = 'one_cc_merchant_dashboard';
 
     const ONE_CC_GA_ANALYTICS = 'one_cc_ga_analytics';
@@ -1344,7 +1346,8 @@ class Constants
         self::SHIELD_CYBERSOURCE_ROLLOUT,
         self::HDFC_CHECKOUT_2,
         self::RECURRING_CARD_MANDATE_BILLDESK_SIHUB,
-        self::ONE_CLICK_DUAL_CHECKOUT
+        self::ONE_CLICK_DUAL_CHECKOUT,
+        self::ONE_CC_REPORTING_TEST
     ];
 
     const ONE_CC_FEATURES = [
@@ -1354,7 +1357,8 @@ class Constants
         self::ONE_CC_MANDATORY_LOGIN,
         self::ONE_CC_GA_ANALYTICS,
         self::ONE_CC_FB_ANALYTICS,
-        self::ONE_CLICK_DUAL_CHECKOUT
+        self::ONE_CLICK_DUAL_CHECKOUT,
+        self::ONE_CC_REPORTING_TEST
     ];
 
     // TODO: Use this instead of allFeatures once in final code change pr
@@ -1802,7 +1806,7 @@ class Constants
         self::ONE_CLICK_DUAL_CHECKOUT         => true,
         self::HDFC_SINGLE_TID                 => true,
         self::ORG_POOL_ACCOUNT_SETTLEMENT     => true,
-
+        self::ONE_CC_REPORTING_TEST           => true,
     ];
 
     // Entity type constants
