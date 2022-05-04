@@ -3489,6 +3489,7 @@ class Route
 
         'relay_props_action'            => ['post',                  'relay/props/action',                                  'RelayController@propsAction'],
 
+        'relay_get_props_history'       => ['get',                  'relay/apps/{app_id}/props/{prop_id}/history',          'RelayController@getPropsHistory'],
     ];
 
     public static $public = [
@@ -6329,7 +6330,7 @@ class Route
         'fts_dashboard_new_channel_health_stats',
         'fts_dashboard_trigger_health_status',
 
-//        //relay routes
+        //relay routes
         'relay_get_apps',
         'relay_get_app_by_id',
         'relay_create_app',
@@ -6340,6 +6341,7 @@ class Route
         'relay_delete_props',
         'relay_update_props',
         'relay_get_pending_props',
+        'relay_get_props_history',
         'relay_props_action',
         'relay_create_bulk_props',
 
@@ -7564,6 +7566,7 @@ class Route
         'relay_delete_props'                                => Permission::RELAY_READ_WRITE_PERMISSION,
         'relay_update_props'                                => Permission::RELAY_READ_WRITE_PERMISSION,
         'relay_get_pending_props'                           => Permission::RELAY_READ_PERMISSION,
+        'relay_get_props_history'                           => Permission::RELAY_READ_PERMISSION,
         'relay_props_action'                                => Permission::RELAY_READ_WRITE_PERMISSION,
         'relay_create_bulk_props'                           => Permission::RELAY_READ_WRITE_PERMISSION,
 
@@ -11697,6 +11700,7 @@ class Route
             'relay_delete_props',
             'relay_update_props',
             'relay_get_pending_props',
+            'relay_get_props_history',
             'relay_props_action',
             'relay_create_bulk_props',
 

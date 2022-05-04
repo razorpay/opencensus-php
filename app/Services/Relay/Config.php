@@ -18,6 +18,7 @@ class Config extends Base
     const CREATE_RELAY_WORKFLOW_CONFIG  = '/apps/:appID/props';
     const FETCH_RELAY_PROPS             = '/apps/:appID/props';
     const CREATE_BULK_PROPERTIES_URI    = '/apps/:appID/props/bulk';
+    const FETCH_CONFIG_HISTORY_URI      = '/apps/:appID/props/:propId/history';
 
     //Property Action URLs
     const RELAY_CONFIG_ACTION_URI           = '/props/pending/check';
@@ -215,6 +216,17 @@ class Config extends Base
         $endpoint = self::FETCH_RELAY_PROPS;
 
         $endpoint = str_replace_first(':appID', $appID, $endpoint);
+
+        return $this->makeRequest($endpoint, self::METHOD_GET, $input);
+    }
+
+    public function getPropsHistory($appID, $propID, $input): array
+    {
+        $endpoint = self::FETCH_CONFIG_HISTORY_URI;
+
+        $endpoint = str_replace_first(':appID', $appID, $endpoint);
+
+        $endpoint = str_replace_first(':propId', $propID, $endpoint);
 
         return $this->makeRequest($endpoint, self::METHOD_GET, $input);
     }

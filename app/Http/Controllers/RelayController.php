@@ -89,4 +89,11 @@ class RelayController extends Controller
 
         return ApiResponse::json($response['body']);
     }
+
+    public function getPropsHistory($appID, $propID)
+    {
+        $response = $this->app['relay']->getPropsHistory($appID, $propID, $this->input);
+
+        return ApiResponse::json($response['body']);
+    }
 }
