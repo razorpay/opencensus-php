@@ -198,7 +198,7 @@ class PaymentPageProcessor extends Job
             'payment_status'    => $refund->payment->getStatus(),
         ];
 
-        if ($refund->payment->getStatus() !== Payment\Status::REFUNDED)
+        if ($refund->getStatus() !== Payment\Refund\Status::PROCESSED && $refund->payment->getStatus() !== Payment\Status::REFUNDED)
         {
             /**
              * The status might not have synced yet. Retry the job
