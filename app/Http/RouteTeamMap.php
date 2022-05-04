@@ -456,5 +456,6 @@ class RouteTeamMap
         'nodal_initiate_transfer_admin'                   => [self::TEAM_PAYMENTS_SETTLEMENTS],
         'toggle_transaction_hold'                         => [self::TEAM_PAYMENTS_SETTLEMENTS],
         'toggle_transaction_release'                      => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'setl_amount_check'                               => [self::TEAM_PAYMENTS_SETTLEMENTS],
     ];
 }

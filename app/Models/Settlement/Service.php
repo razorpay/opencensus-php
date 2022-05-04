@@ -680,7 +680,7 @@ class Service extends Base\Service
         else
         {
             try {
-                $fetchInput = $this->createFetchMultipleTxnInput($id, $input);
+                $fetchInput = $this->createFetchMultipleTxnInput($id, $input, $sourceId);
 
                 $transactions = app('settlements_merchant_dashboard')->getSettlementSourceTransaction($fetchInput);
 
@@ -1946,13 +1946,13 @@ class Service extends Base\Service
         return new PublicCollection($collection);
     }
 
-    public function createFetchMultipleTxnInput($id, $input)
+    public function createFetchMultipleTxnInput($id, $input, $sourceId)
     {
         $fetchInput = [
             'settlementId' => $id,
             'merchantId' => $this->merchant->getId(),
             'sourceType' => $input['source_type'],
-
+            'sourceId'   => $sourceId,
         ];
 
         if(isset( $input['limit']) )
@@ -2027,4 +2027,47 @@ class Service extends Base\Service
         return $entity;
     }
 
+    public function settlementsAmountCheck($input)
+    {
+        $this->trace->info(
+            TraceCode::SETTLEMENTS_AMOUNT_CHECK_REQUEST,
+            $input
+        );
+
+        if($this->auth->isOptimiserDashboardRequest() === false)
+        {
+            return [
+                'settlementAmount'          => 0,
+                'totalTransactionAmount'    => 0,
+            ];
+        }
+
+        $id = $this->repo->settlement->verifyIdAndStripSign($input['settlement_id']);
+
+        $fetchInput = [
+            'id' => $id,
+            'entity_name' => 'settlement',
+        ];
+
+        $settlement = app('settlements_dashboard')->fetch($fetchInput);
+
+        $details = json_decode($settlement['entity']['details'], true);
+
+        $settlementAmount = $settlement['entity']['amount']/100;
+
+        $totalTransactionAmount = $settlementAmount;
+
+        foreach ($details as  $component => $detail )
+        {
+            if ($component === 'external')
+            {
+                $totalTransactionAmount = $totalTransactionAmount - $detail['amount']/100;
+            }
+        }
+
+        return [
+            'settlementAmount'          => $settlementAmount,
+            'totalTransactionAmount'    => $totalTransactionAmount
+        ];
+    }
 }

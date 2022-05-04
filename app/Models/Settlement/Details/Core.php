@@ -2,8 +2,10 @@
 
 namespace RZP\Models\Settlement\Details;
 
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Base;
 use RZP\Models\Settlement;
+use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
@@ -52,6 +54,23 @@ class Core extends Base\Core
 
     public function getSettlementDetails($id, $merchant)
     {
+        try {
+            if ($this->app['basicauth']->isOptimiserDashboardRequest() === true)
+            {
+                return $this->getOptimiserSettlementDetails($id);
+            }
+        }
+        catch(\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::WARNING,
+                TraceCode::FETCH_OPTIMISER_SETTLEMENT_DETAILS_FAILED,
+                [
+                    'settlement_id' => $id,
+                ]);
+        }
+
         $setlDetails = $this->repo->settlement_details
             ->getSettlementDetails($id, $merchant)
             ->toArrayPublic();
@@ -89,6 +108,61 @@ class Core extends Base\Core
         return [
             'setl_details'            => $setlDetails,
             'has_aggregated_fee_tax'  => $hasAggregatedFeeAndTax
+        ];
+    }
+
+    public function getOptimiserSettlementDetails($id)
+    {
+        $fetchInput = [
+            'id' => $id,
+            'entity_name' => 'settlement',
+        ];
+
+        $settlement = app('settlements_dashboard')->fetch($fetchInput);
+
+        $details = json_decode($settlement['entity']['details'], true);
+
+        $setlDetails = [
+            'entity'    => 'collection',
+            'count'     => 0,
+            'items'     => [],
+        ];
+
+        foreach ($details as  $component => $detail )
+        {
+            $setlDetail = [];
+
+            if ($component === 'external')
+            {
+                $setlDetail['component'] = 'unreconciled';
+            }
+            else
+            {
+                $setlDetail['component'] = $component;
+            }
+
+            $setlDetail['count'] = $detail['count'];
+            $setlDetail['fee'] = $detail['fee'];
+            $setlDetail['tax'] = $detail['tax'];
+
+            if( $detail['amount'] < 0)
+            {
+                $setlDetail['type'] = 'debit';
+                $setlDetail['amount'] = -1* ($detail['amount'] + $detail['fee'] + $detail['tax']);
+            }
+            else
+            {
+                $setlDetail['type'] = 'credit';
+                $setlDetail['amount'] = $detail['amount'] + $detail['fee'] + $detail['tax'];
+            }
+
+            array_push($setlDetails['items'], $setlDetail);
+            $setlDetails['count']++;
+        }
+
+        return [
+            'setl_details'            => $setlDetails,
+            'has_aggregated_fee_tax'  => false
         ];
     }
 

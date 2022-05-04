@@ -136,6 +136,8 @@ class UserRolesScope
                 [Role::RBL_SUPERVISOR, Role::AGENT]),
             'setl_fetch_details' => array_merge(Role::READER_ROLES,Role::LINKED_ACCOUNT_ROLES,
                 [Role::RBL_SUPERVISOR, Role::AGENT]),
+            'setl_amount_check' => array_merge(Role::READER_ROLES,Role::LINKED_ACCOUNT_ROLES,
+                [Role::RBL_SUPERVISOR, Role::AGENT, Role::SUPPORT]),
 
             // Invoice routes
             'invoice_create'                    => array_merge(Role::WRITER_ROLES,Role::PL_ROLES, [Role::RBL_SUPERVISOR]),
