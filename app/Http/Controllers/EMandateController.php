@@ -34,13 +34,7 @@ class EMandateController extends Controller
     {
         $batchId = Request::header(RequestHeader::X_Batch_Id);
 
-        $this->service()->processBatchRequestAsync($this->input, $batchId);
-
-        $data = array_merge($this->input, [
-            'Status'            => 'Success',
-            'Error Code'        => null,
-            'Error Description' => null,
-        ]);
+        $data = $this->service()->processNachBatchRequest($this->input, $batchId);
 
         $this->trace->info(
             TraceCode::BATCH_PROCESSING_API_RESPONSE,

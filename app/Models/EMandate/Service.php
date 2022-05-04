@@ -2,14 +2,18 @@
 
 namespace RZP\Models\EMandate;
 
+use App;
+
 use Monolog\Logger;
 use RZP\Models\Base;
 use RZP\Models\Batch;
+use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Jobs\NachBatchProcess;
 use RZP\Exception\LogicException;
+use RZP\Models\Merchant\RazorxTreatment;
 
 class Service extends Base\Service
 {
@@ -32,7 +36,6 @@ class Service extends Base\Service
 
     public function processBatchRequest(array $input)
     {
-
         $namespaceKeys = [
             Batch\Entity::TYPE,
             Batch\Entity::SUB_TYPE,
@@ -50,7 +53,6 @@ class Service extends Base\Service
                 $processor .= '\\' . studly_case($methodValue);
             }
         }
-
 
         if (class_exists($processor) === false)
         {
@@ -72,8 +74,27 @@ class Service extends Base\Service
         return $processor->batchProcessEntries($input);
     }
 
-    public function processBatchRequestAsync(array $input, string $batchId)
+    public function processNachBatchRequest(array $input, string $batchId): array
     {
+        $razorxKey = $this->getRazorxKey($input);
+        $enabled = $this->isAsyncNachProcessingEnabled($razorxKey, $this->mode);
+
+        if ($enabled === true)
+        {
+            return $this->processNachBatchRequestAsync($input, $batchId);
+        }
+
+        return $this->processBatchRequest($input);;
+    }
+
+    public function processNachBatchRequestAsync(array $input, string $batchId): array
+    {
+        $data = array_merge($input, [
+            'Status'            => 'Success',
+            'Error Code'        => null,
+            'Error Description' => null,
+        ]);
+
         try
         {
             NachBatchProcess::dispatch($this->mode, $batchId, $input);
@@ -81,6 +102,43 @@ class Service extends Base\Service
         catch (\Throwable $ex)
         {
             $this->trace->traceException($ex, Logger::ERROR, TraceCode::NACH_BATCH_ERROR_SQS_PUSH_FAILED);
+            $data['Status'] = 'Failure';
+            $data['Error Code'] = ErrorCode::SERVER_ERROR;;
+            $data['Error Description'] = "queue push failed";
         }
+        return $data;
+    }
+
+    private static function getRazorxKey(array $input)
+    {
+        $razorxKey = "async";
+
+        $namespaceKeys = [
+            Batch\Entity::TYPE,
+            Batch\Entity::SUB_TYPE,
+            Batch\Entity::GATEWAY,
+        ];
+
+        foreach ($namespaceKeys as $key)
+        {
+            $methodValue = $input[$key];
+
+            if (empty($methodValue) === false)
+            {
+                $razorxKey.= '_' . studly_case($methodValue);
+            }
+        }
+        return $key;
+    }
+
+    private static function isAsyncNachProcessingEnabled(string $key, $mode): bool
+    {
+        $app = App::getFacadeRoot();
+
+        $mode = $mode ?? Mode::LIVE;
+
+        $status = $app['razorx']->getTreatment($key, RazorxTreatment::EMANDATE_ASYNC_PAYMENT_PROCESSING_ENABLED, $mode);
+
+        return (strtolower($status) === 'on');
     }
 }

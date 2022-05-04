@@ -6,10 +6,12 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Models\PaperMandate;
 use RZP\Constants\Entity as E;
+use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Excel\Export as ExcelExport;
 use RZP\Excel\Import as ExcelImport;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Excel\ExportSheet as ExcelSheetExport;
@@ -522,6 +524,64 @@ class NachGatewayTest extends TestCase
 
     public function testDebitResponseFileProcessingViaBatchServiceSuccess()
     {
+        $payment = $this->createRecurringNachPayment();
+
+        $batchFile = $this->getBatchFileToUploadForBankDebitResponse($payment);
+
+        $url = '/admin/batches';
+
+        $this->ba->adminAuth();
+
+        $batch = $this->makeRequestWithGivenUrlAndFile($url, $batchFile, 'debit');
+
+        $this->assertEquals('nach', $batch['batch_type_id']);
+        $this->assertEquals('CREATED', $batch['status']);
+        $this->assertEquals(0, $batch['amount']);
+
+        $batchEntity = $this->fixtures->create('batch',
+            [
+                'id'          => '00000000000001',
+                'type'        => 'nach',
+                'sub_type'    => 'debit',
+                'gateway'     => 'nach_citi',
+                'total_count' => '1',
+            ]);
+
+        $paymentId = $payment['razorpay_payment_id'];
+
+        $this->fixtures->stripSign($paymentId);
+
+        $entries = $this->createBatchRequestData($paymentId, "nach", "debit", "nach_citi", "1", "00");
+
+        $this->runWithData($entries, $batchEntity['id']);
+
+        $payment = $this->getEntityById('payment', $payment['razorpay_payment_id'], true);
+
+        $this->assertEquals('authorized', $payment['status']);
+    }
+
+    public function testDebitResponseFileProcessingViaBatchServiceSuccessAsync()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx
+                  ->method('getTreatment')
+                  ->will($this->returnCallback(
+                        function ($mid, $feature, $mode)
+                        {
+                            if ($feature === RazorxTreatment::EMANDATE_ASYNC_PAYMENT_PROCESSING_ENABLED)
+                            {
+                                return 'on';
+                            }
+                            return "default";
+                        })
+                    );
+
         $payment = $this->createRecurringNachPayment();
 
         $batchFile = $this->getBatchFileToUploadForBankDebitResponse($payment);
