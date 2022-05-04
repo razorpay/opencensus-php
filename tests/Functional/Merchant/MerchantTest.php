@@ -15109,7 +15109,7 @@ The same has been enabled for the account.
         $this->assertEquals('success', $responseData['status']);
     }
 
-    public function merchantUserMappingSetup (...$args)
+    public function fetchQueryException ()
     {
         try
         {
@@ -15120,43 +15120,70 @@ The same has been enabled for the account.
             //The INSERT query failed due to a key constraint violation.
             if ($ex->errorInfo[1] == 1062)
             {
-                $queryException = $ex;
+                return $this->throwException($ex);
             }
         }
 
+        return null;
+    }
+
+    public function switchProductMerchantSetup (...$args)
+    {
+        $merchant = (new Merchant\Repository)->findOrFail('10000000000000');
+
+        app('basicauth')->setMerchant($merchant);
+
         $validatorMock = $this->getMockBuilder(\RZP\Models\Merchant\Service::class)
-            ->setMethods(['addProductSwitchRole','getMerchantUserMappingForProduct'])
+            ->setMethods(['isAllowedForBusinessBanking', 'addProductSwitchRole',
+                'captureEventOfInterestOfPrimaryMerchantInBanking', 'addNewBankingErrorFeature',
+                'activateBusinessBankingAndApplyPromotion', 'postProductSwitchActions'])
             ->getMock();
 
-        $validatorMock->method('addProductSwitchRole')
-            ->will($this->throwException($queryException));
+        $validatorMock->method('isAllowedForBusinessBanking')
+            ->will($this->returnValue(true));
 
-        $validatorMock->method('getMerchantUserMappingForProduct')
+        $validatorMock->method('addProductSwitchRole')
             ->will($this->onConsecutiveCalls(...$args));
+
+        $validatorMock->method('captureEventOfInterestOfPrimaryMerchantInBanking')
+            ->will($this->returnValue(null));
+
+        $validatorMock->method('addNewBankingErrorFeature')
+            ->will($this->returnValue(null));
+
+        $validatorMock->method('activateBusinessBankingAndApplyPromotion')
+            ->will($this->returnValue(null));
+
+        $validatorMock->method('postProductSwitchActions')
+            ->will($this->returnValue(null));
 
         $validatorMockReflectionObj = new \ReflectionObject($validatorMock);
 
-        $method = $validatorMockReflectionObj->getMethod('addMerchantUserMappingOnProduct');
+        $method = $validatorMockReflectionObj->getMethod('switchProductMerchant');
 
         $method->setAccessible(true);
 
-        $return = $method->invoke($validatorMock, new \RZP\Models\Merchant\Entity, null);
+        $return = $method->invoke($validatorMock, 'banking', false);
 
         return $return;
     }
 
-    public function testAddMerchantUserMappingOnProductOnSuccessfulRetry()
+    public function testSwitchProductMerchantOnSuccessfulRetry()
     {
-        $return = $this->merchantUserMappingSetup(null, null, null, null, "mapping");
+        $exception = $this->fetchQueryException();
+
+        $return = $this->switchProductMerchantSetup($exception, null);
 
         $this->assertNull($return);
     }
 
-    public function testAddMerchantUserMappingOnProductOnFailure()
+    public function testSwitchProductMerchantOnFailure()
     {
         $this->expectException(\Illuminate\Database\QueryException::class);
 
-        $this->merchantUserMappingSetup(null, null, null, null, null);
+        $exception = $this->fetchQueryException();
+
+        $this->switchProductMerchantSetup($exception, $exception);
     }
 
 

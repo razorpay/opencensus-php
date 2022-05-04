@@ -152,7 +152,7 @@ class Service extends Base\Service
     const REQUEST_TIMEOUT_MERCHANT_ANALYTICS   = 90;  // in seconds
     const REQUEST_TIMEOUT_GET_DATA_FOR_SEGMENT = 5;  // in seconds
 
-    const MERCHANT_USER_FETCH_RETRY = 5;
+    const MAX_TRANSACTION_RETRY = 2;
 
     const BOOTSTRAP_ACCESS_MAPS_CACHE_REQUEST_RULES = [
         'source'        => 'array',
@@ -6713,63 +6713,94 @@ class Service extends Base\Service
         $wasBankingEnabledNow = false;
         $wasSwitchToPG = false;
 
-        $this->repo->transactionOnLiveAndTest(function() use
-            ($product, &$wasBankingEnabledNow, &$wasSwitchToPG, $merchant, &$afterEmailVerified)
+        $currentAttempt = 1;
+
+        while ($currentAttempt <= self::MAX_TRANSACTION_RETRY)
         {
-            $user = $this->addMerchantUserMappingOnProduct($merchant, $product);
+            $isolationLevelIssue = false;
 
-            // if $user is empty, that means that the user mapping creation logic failed
-            // since the mapping already exists
-            // that may happen be due to the master slave db replica
-            // in such a case, we'll skip further flow
-            if (empty($user) === true)
+            $this->repo->transactionOnLiveAndTest(function() use
+            ($product, &$wasBankingEnabledNow, &$wasSwitchToPG, $merchant, &$afterEmailVerified, &$isolationLevelIssue, &$currentAttempt)
             {
-                return;
-            }
+                try
+                {
+                    $this->addProductSwitchRole($product);
+                }
+                catch (\Illuminate\Database\QueryException $ex)
+                {
+                    //The INSERT query failed due to a unique constraint violation.
+                    if ($ex->errorInfo[1] == 1062 &&
+                        $currentAttempt < self::MAX_TRANSACTION_RETRY)
+                    {
+                        // Adding this catch block because in case of product-switch, even though read is happening from
+                        // master, due to default isolation level of REPEATABLE READ in mysql, we get the stale value.
+                        $this->trace->traceException(
+                            $ex,
+                            Trace::ERROR,
+                            TraceCode::ERROR_DUE_TO_ISOLATION_LEVEL);
 
-            $wasSwitchToPG = $this->auth->getRequestOriginProduct() === Product::PRIMARY;
+                        $isolationLevelIssue = true;
 
-            $merchant = $this->auth->getMerchant();
+                        // This will return from the transaction, but the loop while loop continues
+                        return;
+                    }
 
-            $currentlyEnabled = $merchant->isBusinessBankingEnabled();
+                    throw $ex;
+                }
 
-            $wasBankingEnabledNow = $this->enableBusinessBankingIfApplicable($merchant);
+                $wasSwitchToPG = $this->auth->getRequestOriginProduct() === Product::PRIMARY;
 
-            $this->repo->saveOrFail($merchant);
+                $merchant = $this->auth->getMerchant();
 
-            if (($wasBankingEnabledNow === true) or
-                ($afterEmailVerified === true))
-            {
-                Tracer::inSpan(['name' => 'product_switch.captureEventOfInterestOfPrimaryMerchantInBanking'], function() use($merchant) {
-                    $this->captureEventOfInterestOfPrimaryMerchantInBanking($merchant);
-                });
+                $currentlyEnabled = $merchant->isBusinessBankingEnabled();
 
-                Tracer::inSpan(['name' => 'product_switch.addNewBankingErrorFeature'], function() use($merchant) {
-                    $this->addNewBankingErrorFeature($merchant);
-                });
-            }
+                $wasBankingEnabledNow = $this->enableBusinessBankingIfApplicable($merchant);
 
-            // Commenting this call since YesBank Moratorium is done.
+                $this->repo->saveOrFail($merchant);
 
-            // $isXRegistrationBlocked = $this->isXRegistrationBlocked($currentlyEnabled, false);
+                if (($wasBankingEnabledNow === true) or
+                    ($afterEmailVerified === true))
+                {
+                    Tracer::inSpan(['name' => 'product_switch.captureEventOfInterestOfPrimaryMerchantInBanking'], function() use($merchant) {
+                        $this->captureEventOfInterestOfPrimaryMerchantInBanking($merchant);
+                    });
 
-            // if ($isXRegistrationBlocked === true)
-            // {
-            //     return;
-            // }
+                    Tracer::inSpan(['name' => 'product_switch.addNewBankingErrorFeature'], function() use($merchant) {
+                        $this->addNewBankingErrorFeature($merchant);
+                    });
+                }
 
-            Tracer::inSpan(['name' => 'product_switch.activateBusinessBankingIfApplicable'] , function() use($merchant, $wasBankingEnabledNow) {
-                (new Activate)->activateBusinessBankingIfApplicable($merchant);
+                // Commenting this call since YesBank Moratorium is done.
+
+                // $isXRegistrationBlocked = $this->isXRegistrationBlocked($currentlyEnabled, false);
+
+                // if ($isXRegistrationBlocked === true)
+                // {
+                //     return;
+                // }
+
+                $this->activateBusinessBankingAndApplyPromotion($merchant, $wasBankingEnabledNow, $product);
             });
 
+            if ($currentAttempt > 1)
+            {
+                $this->trace->info(
+                    TraceCode::SUCCESSFUL_READ_ON_TRANSACTION_RETRY,
+                    [
+                        'merchant_id'    => $merchant->getId(),
+                        'currentAttempt' => $currentAttempt
+                    ]);
+            }
 
-            // creating a user mapping for a merchant on X is equivalent to him signing up on X
-            // platform, so we will check if sign up has any promotion running and will assign rewards
-            Tracer::inSpan(['name' => 'product_switch.applyPromotion'], function() use($merchant, $product) {
-                (new Promotion\Core)->applyPromotion($merchant, $product, Promotion\Event\Constants::SIGN_UP);
-            });
-        });
+            // In case product-switch works without isolation level issue in the first go,
+            // no need to start the transaction again, hence we break.
+            if ($isolationLevelIssue === false)
+            {
+                break;
+            }
 
+            $currentAttempt++;
+        }
         // At this point the product switch has happened, and if there were exceptions it
         // wouldn't have come till here
 
@@ -6789,6 +6820,20 @@ class Service extends Base\Service
             });
         }
 
+    }
+
+    public function activateBusinessBankingAndApplyPromotion($merchant, $wasBankingEnabledNow, $product)
+    {
+        Tracer::inSpan(['name' => 'product_switch.activateBusinessBankingIfApplicable'] , function() use($merchant, $wasBankingEnabledNow) {
+            (new Activate)->activateBusinessBankingIfApplicable($merchant);
+        });
+
+
+        // creating a user mapping for a merchant on X is equivalent to him signing up on X
+        // platform, so we will check if sign up has any promotion running and will assign rewards
+        Tracer::inSpan(['name' => 'product_switch.applyPromotion'], function() use($merchant, $product) {
+            (new Promotion\Core)->applyPromotion($merchant, $product, Promotion\Event\Constants::SIGN_UP);
+        });
     }
 
     /**
@@ -9192,78 +9237,6 @@ class Service extends Base\Service
         $this->trace->info(TraceCode::FETCH_MERCHANTS_BY_PARAMS_REQUEST, $input);
 
         return $this->repo->merchant->fetchMerchantsByParams($input)->toArrayAdmin();
-    }
-
-    private function addMerchantUserMappingOnProduct(Entity $merchant, string $product = null)
-    {
-        try
-        {
-            return $this->addProductSwitchRole($product);
-        }
-        catch (\Illuminate\Database\QueryException $ex)
-        {
-            //The INSERT query failed due to a unique constraint violation.
-            if ($ex->errorInfo[1] == 1062)
-            {
-                $this->trace->traceException(
-                    $ex,
-                    Trace::ERROR,
-                    TraceCode::ERROR_DUE_TO_DATABASE_LAG_DURING_PRODUCT_SWITCH);
-
-                // In case two calls are made during product switch by FE in parallel,
-                // it might happen that both the threads try to insert the same record in merchant_users table
-                // This will lead to integrity constraint violation.
-                // So in case of such a violation, the other thread keeps on fetching record from merchant_users table (with certain threshold)
-                // until it finds it
-
-                $mapping = null;
-
-                $currentAttempt = 1;
-
-                while ($currentAttempt <= self::MERCHANT_USER_FETCH_RETRY)
-                {
-                    $this->trace->info(
-                        TraceCode::MERCHANT_USER_FETCH_RETRY_COUNT,
-                        [
-                            'merchant_id' => $merchant->getId(),
-                            'currentAttempt' => $currentAttempt
-                        ]);
-
-                    $mapping = $this->getMerchantUserMappingForProduct($product, $merchant->getId(), null, true);
-
-                    if (empty($mapping) === true)
-                    {
-                        $currentAttempt++;
-
-                        sleep(1);
-                    }
-                    else
-                    {
-                        $this->trace->info(
-                            TraceCode::SUCCESSFUL_MERCHANT_USER_FETCH_RETRY,
-                            [
-                                'merchant_id' => $merchant->getId(),
-                                'currentAttempt' => $currentAttempt
-                            ]);
-
-                        break;
-                    }
-                }
-
-                if (empty($mapping) === false)
-                {
-                    $this->trace->info(
-                        TraceCode::SUCCESSFUL_READ_FROM_MASTER_FOR_PRODUCT_SWITCH,
-                        [
-                            'merchant_id' => $merchant->getId(),
-                        ]);
-                    // return null to indicate that the mapping wasn't created
-                    return null;
-                }
-            }
-
-            throw $ex;
-        }
     }
 
     public function addProductSwitchRole(string $product = null)
