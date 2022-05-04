@@ -1740,11 +1740,6 @@ class BasicAuth
 
     public function isXDashboardApp()
     {
-        $this->trace->info(
-            TraceCode::TEST_VIVEK,
-            [
-                '$this->getInternalApp()' => $this->getInternalApp()
-            ]);
         return (in_array($this->getInternalApp(), self::X_DASHBOARD_APPS, true) === true);
     }
 

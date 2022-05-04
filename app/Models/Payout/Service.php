@@ -730,11 +730,7 @@ class Service extends Base\Service
         */
 
         if ($this->shouldCreateUndoablePayout()) {
-            $this->trace->info(
-                TraceCode::TEST_VIVEK,
-                [
-                    'shouldCreateUndoablePayout' => true
-                ]);
+
             $payoutOutboxInput = $this->prepareInputForPayoutOutbox($payoutInput);
 
             $outboxPayout = (new PayoutOutbox\Core())->create($payoutOutboxInput);
@@ -743,11 +739,7 @@ class Service extends Base\Service
 
             return $outboxPayout->toArrayPublic();
         } else {
-            $this->trace->info(
-                TraceCode::TEST_VIVEK,
-                [
-                    'shouldCreateUndoablePayout' => false
-                ]);
+
             $payout = $this->core->createPayoutToFundAccount($payoutInput, $this->merchant);
 
             return $payout->toArrayPublic();
@@ -757,11 +749,6 @@ class Service extends Base\Service
     private function shouldCreateUndoablePayout()
     {
         if ($this->auth->isXDashboardApp() === false) {
-            $this->trace->info(
-                TraceCode::TEST_VIVEK,
-                [
-                    '$this->auth->isXDashboardApp()' => false
-                ]);
             return false;
         }
 
@@ -2880,7 +2867,7 @@ class Service extends Base\Service
 
         // updating attachments on payouts is only allowed for vanilla payouts
         $payoutSource = (new PayoutSourceCore())->getPayoutSource($payoutId);
-        
+
         if ($payoutSource !== null)
         {
            throw new BadRequestException(
