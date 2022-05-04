@@ -594,7 +594,7 @@ class Service extends Base\Service
                 $value = $value->toArray();
             }
 
-            if ($scroogeRefundArray[$key] !== $value)
+            if((isset($scroogeRefundArray[$key]) === true) and ($scroogeRefundArray[$key] !== $value))
             {
                 $responseDiff[$key] = $value;
             }
