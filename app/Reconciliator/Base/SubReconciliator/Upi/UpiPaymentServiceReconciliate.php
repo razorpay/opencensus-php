@@ -52,6 +52,12 @@ class UpiPaymentServiceReconciliate extends SubReconciliator\PaymentReconciliate
         $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_RECON_UPDATE_DATA,
             $dataToUpdate);
 
+        if (empty($dataToUpdate) === true)
+        {
+            // do not push to metro if there is no data to update
+            return;
+        }
+
         $this->publishToMetro($dataToUpdate);
     }
 
