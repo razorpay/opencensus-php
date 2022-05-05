@@ -44,8 +44,7 @@ class Service extends Transaction\Service
         }
 
         // Route request to BAS if DA ledger feature is enabled and acc is of type direct
-        if ((($this->merchant->isFeatureEnabled(Constants::DA_LEDGER_REVERSE_SHADOW)) === true) and
-            ($this->isExperimentEnabled(Merchant\RazorxTreatment::RX_DA_ACC_STMT_EXPERIMENT) === true) and
+        if (($this->isExperimentEnabled(Merchant\RazorxTreatment::RX_DA_ACC_STMT_EXPERIMENT) === true) and
             ($balance->isAccountTypeDirect() === true) and
             ($this->app['basicauth']->isProxyAuth() === true))
         {
@@ -123,8 +122,7 @@ class Service extends Transaction\Service
         }
 
         // Route request to BAS if DA ledger feature is enabled and acc is of type direct
-        if ((($this->merchant->isFeatureEnabled(Constants::DA_LEDGER_REVERSE_SHADOW)) === true) and
-            ($this->isExperimentEnabled(Merchant\RazorxTreatment::RX_DA_ACC_STMT_EXPERIMENT) === true) and
+        if (($this->isExperimentEnabled(Merchant\RazorxTreatment::RX_DA_ACC_STMT_EXPERIMENT) === true) and
             ($balance->isAccountTypeDirect() === true) and
             ($this->app['basicauth']->isProxyAuth() === true))
         {

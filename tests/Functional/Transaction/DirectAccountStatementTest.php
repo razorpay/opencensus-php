@@ -34,8 +34,6 @@ class DirectAccountStatementTest extends TestCase
 
         $this->setUpMerchantForBusinessBanking(false, 10000000, 'direct', 'rbl');
 
-        $this->fixtures->merchant->addFeatures([Feature\Constants::DA_LEDGER_REVERSE_SHADOW]);
-
         $this->setMockRazorxTreatment([RazorxTreatment::RX_DA_ACC_STMT_EXPERIMENT => 'on',]);
 
         $this->app['rzp.mode'] = Mode::TEST;
