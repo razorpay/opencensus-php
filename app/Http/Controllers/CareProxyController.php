@@ -50,16 +50,44 @@ class CareProxyController extends Controller
     const CLICK_TO_CALL_GET_HOLIDAYS       = 'twirp/rzp.care.admin.v1.CallbackConfigService/GetClickToCallHolidays';
     const CLICK_TO_CALL_PUT_HOLIDAYS       = 'twirp/rzp.care.admin.v1.CallbackConfigService/PutClickToCallHolidays';
 
+    //TicketConfig
+    const TICKET_CONFIG_ADD_SUBCATEGORY           = 'twirp/rzp.care.ticket.v1.TicketConfigService/CreateSubCategory';
+    const TICKET_CONFIG_ADD_ITEM                  = 'twirp/rzp.care.ticket.v1.TicketConfigService/CreateItem';
+    const TICKET_CONFIG_UPDATE_SUBCATEGORY_STATUS = 'twirp/rzp.care.ticket.v1.TicketConfigService/UpdateSubCategoryStatus';
+    const TICKET_CONFIG_UPDATE_ITEM_STATUS        = 'twirp/rzp.care.ticket.v1.TicketConfigService/UpdateItemStatus';
+    const TICKET_CONFIG_DELETE_SUBCATEGORY        = 'twirp/rzp.care.ticket.v1.TicketConfigService/DeleteSubCategory';
+    const TICKET_CONFIG_DELETE_ITEM               = 'twirp/rzp.care.ticket.v1.TicketConfigService/DeleteItem';
+
+    //FaqConfig
+    const FAQ_CONFIG_ADD_FAQ               = 'twirp/rzp.care.faq.v1.FaqConfigService/CreateFaq';
+    const FAQ_CONFIG_FETCH_FAQS            = 'twirp/rzp.care.faq.v1.FaqConfigService/FetchFaqs';
+    const FAQ_CONFIG_UPDATE_FAQ_STATUS     = 'twirp/rzp.care.faq.v1.FaqConfigService/UpdateFaqStatus';
+    const FAQ_CONFIG_UPDATE_FAQ            = 'twirp/rzp.care.faq.v1.FaqConfigService/UpdateFaq';
+    const FAQ_CONFIG_DELETE_FAQ            = 'twirp/rzp.care.faq.v1.FaqConfigService/DeleteFaq';
+
+
     const ROUTE_VS_PERMISSION = [
-        self::CALLBACK_GET_DATE_CONFIG         => Name::CALLBACK_SLOT_CONFIG_VIEW,
-        self::CALLBACK_EDIT_DATE_CONFIG        => Name::CALLBACK_SLOT_CONFIG_EDIT,
-        self::CALLBACK_GET_WEEK_CONFIG         => Name::CALLBACK_SLOT_CONFIG_VIEW,
-        self::CALLBACK_EDIT_WEEK_CONFIG        => Name::CALLBACK_SLOT_CONFIG_EDIT,
-        self::UPSERT_OPERATOR                  => Name::MANAGE_CARE_SERVICE_CALLBACK,
-        self::CLICK_TO_CALL_GET_TIMINGS_CONFIG => Name::CLICK_TO_CALL_TIMING_CONFIG_VIEW,
-        self::CLICK_TO_CALL_PUT_TIMINGS_CONFIG => Name::CLICK_TO_CALL_TIMING_CONFIG_EDIT,
-        self::CLICK_TO_CALL_GET_HOLIDAYS       => Name::CLICK_TO_CALL_TIMING_CONFIG_VIEW,
-        self::CLICK_TO_CALL_PUT_HOLIDAYS       => Name::CLICK_TO_CALL_TIMING_CONFIG_EDIT,
+        self::CALLBACK_GET_DATE_CONFIG                => Name::CALLBACK_SLOT_CONFIG_VIEW,
+        self::CALLBACK_EDIT_DATE_CONFIG               => Name::CALLBACK_SLOT_CONFIG_EDIT,
+        self::CALLBACK_GET_WEEK_CONFIG                => Name::CALLBACK_SLOT_CONFIG_VIEW,
+        self::CALLBACK_EDIT_WEEK_CONFIG               => Name::CALLBACK_SLOT_CONFIG_EDIT,
+        self::UPSERT_OPERATOR                         => Name::MANAGE_CARE_SERVICE_CALLBACK,
+        self::CLICK_TO_CALL_GET_TIMINGS_CONFIG        => Name::CLICK_TO_CALL_TIMING_CONFIG_VIEW,
+        self::CLICK_TO_CALL_PUT_TIMINGS_CONFIG        => Name::CLICK_TO_CALL_TIMING_CONFIG_EDIT,
+        self::CLICK_TO_CALL_GET_HOLIDAYS              => Name::CLICK_TO_CALL_TIMING_CONFIG_VIEW,
+        self::CLICK_TO_CALL_PUT_HOLIDAYS              => Name::CLICK_TO_CALL_TIMING_CONFIG_EDIT,
+        self::TICKET_CONFIG_ADD_SUBCATEGORY           => Name::TICKET_CONFIG_EDIT,
+        self::TICKET_CONFIG_ADD_ITEM                  => Name::TICKET_CONFIG_EDIT,
+        self::FAQ_CONFIG_ADD_FAQ                      => Name::FAQ_CONFIG_EDIT,
+        self::FAQ_CONFIG_FETCH_FAQS                   => Name::FAQ_CONFIG_VIEW,
+        self::FAQ_CONFIG_UPDATE_FAQ_STATUS            => Name::FAQ_CONFIG_EDIT,
+        self::FAQ_CONFIG_UPDATE_FAQ                   => Name::FAQ_CONFIG_EDIT,
+        self::FAQ_CONFIG_DELETE_FAQ                   => Name::FAQ_CONFIG_EDIT,
+        self::TICKET_CONFIG_UPDATE_SUBCATEGORY_STATUS => Name::TICKET_CONFIG_EDIT,
+        self::TICKET_CONFIG_UPDATE_ITEM_STATUS        => Name::TICKET_CONFIG_EDIT,
+        self::TICKET_CONFIG_DELETE_SUBCATEGORY        => Name::TICKET_CONFIG_EDIT,
+        self::TICKET_CONFIG_DELETE_ITEM               => Name::TICKET_CONFIG_EDIT,
+
     ];
 
     const MERCHANT_ROUTES = [
@@ -93,7 +121,18 @@ class CareProxyController extends Controller
         self::CLICK_TO_CALL_PUT_HOLIDAYS,
         self::CLICK_TO_CALL_GET_HOLIDAYS,
         self::CLICK_TO_CALL_PUT_TIMINGS_CONFIG,
-        self::CLICK_TO_CALL_GET_TIMINGS_CONFIG
+        self::CLICK_TO_CALL_GET_TIMINGS_CONFIG,
+        self::TICKET_CONFIG_ADD_SUBCATEGORY,
+        self::TICKET_CONFIG_ADD_ITEM,
+        self::FAQ_CONFIG_ADD_FAQ,
+        self::FAQ_CONFIG_FETCH_FAQS,
+        self::FAQ_CONFIG_UPDATE_FAQ_STATUS,
+        self::FAQ_CONFIG_UPDATE_FAQ,
+        self::FAQ_CONFIG_DELETE_FAQ,
+        self::TICKET_CONFIG_UPDATE_SUBCATEGORY_STATUS,
+        self::TICKET_CONFIG_UPDATE_ITEM_STATUS,
+        self::TICKET_CONFIG_DELETE_SUBCATEGORY,
+        self::TICKET_CONFIG_DELETE_ITEM,
     ];
 
     const CHAT_ROUTES = [

@@ -460,6 +460,40 @@ class CareServiceTest extends TestCase
                 self::ACTUAL_CARE_SERVICE_RESPONSE_STATUS => 200,
             ],
             [
+                self::AUTH                                => 'admin',
+                self::API_ROUTE                           => '/care_service/admin/twirp/rzp.care.ticket.v1.TicketConfigService/CreateSubCategory',
+                self::EXPECTED_CARE_SERVICE_ROUTE         => 'https://care-int.razorpay.com/twirp/rzp.care.ticket.v1.TicketConfigService/CreateSubCategory',
+                self::EXPECTED_CARE_SERVICE_REQUEST       => [
+                    'key'   => 'value',
+                    'admin' => [
+                        'id' => 'RzrpySprAdmnId',
+                    ]
+                ],
+                self::API_REQUEST_BODY                    => ["key" => "value"],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_BODY   => [
+                    'key' => 'value',
+                ],
+                self::PERMISSIONS                         => ['ticket_config_edit'],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_STATUS => 200,
+            ],
+            [
+                self::AUTH                                => 'admin',
+                self::API_ROUTE                           => '/care_service/admin/twirp/rzp.care.ticket.v1.TicketConfigService/CreateItem',
+                self::EXPECTED_CARE_SERVICE_ROUTE         => 'https://care-int.razorpay.com/twirp/rzp.care.ticket.v1.TicketConfigService/CreateItem',
+                self::EXPECTED_CARE_SERVICE_REQUEST       => [
+                    'key'   => 'value',
+                    'admin' => [
+                        'id' => 'RzrpySprAdmnId',
+                    ]
+                ],
+                self::API_REQUEST_BODY                    => ["key" => "value"],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_BODY   => [
+                    'key' => 'value',
+                ],
+                self::PERMISSIONS                         => ['ticket_config_edit'],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_STATUS => 200,
+            ],
+            [
                 self::AUTH                                => 'myoperator',
                 self::API_ROUTE                           => '/care_service/myoperator_webhook/twirp/rzp.care.callback.v1.CallbackService/AfterCallWebhook',
                 self::EXPECTED_CARE_SERVICE_ROUTE         => 'https://care-int.razorpay.com/twirp/rzp.care.callback.v1.CallbackService/AfterCallWebhook',
@@ -471,6 +505,159 @@ class CareServiceTest extends TestCase
                 ],
                 self::ACTUAL_CARE_SERVICE_RESPONSE_BODY   => [
                 ],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_STATUS => 200,
+            ],
+            [
+                self::AUTH                                => 'admin',
+                self::API_ROUTE                           => '/care_service/admin/twirp/rzp.care.faq.v1.FaqConfigService/CreateFaq',
+                self::EXPECTED_CARE_SERVICE_ROUTE         => 'https://care-int.razorpay.com/twirp/rzp.care.faq.v1.FaqConfigService/CreateFaq',
+                self::EXPECTED_CARE_SERVICE_REQUEST       => [
+                    'key'   => 'value',
+                    'admin' => [
+                        'id' => 'RzrpySprAdmnId',
+                    ]
+                ],
+                self::API_REQUEST_BODY                    => ["key" => "value"],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_BODY   => [
+                    'key' => 'value',
+                ],
+                self::PERMISSIONS                         => ['faq_config_edit'],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_STATUS => 200,
+            ],
+            [
+                self::AUTH                                => 'admin',
+                self::API_ROUTE                           => '/care_service/admin/twirp/rzp.care.faq.v1.FaqConfigService/FetchFaqs',
+                self::EXPECTED_CARE_SERVICE_ROUTE         => 'https://care-int.razorpay.com/twirp/rzp.care.faq.v1.FaqConfigService/FetchFaqs',
+                self::EXPECTED_CARE_SERVICE_REQUEST       => [
+                    'key'   => 'value',
+                    'admin' => [
+                        'id' => 'RzrpySprAdmnId',
+                    ]
+                ],
+                self::API_REQUEST_BODY                    => ["key" => "value"],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_BODY   => [
+                    'key' => 'value',
+                ],
+                self::PERMISSIONS                         => ['faq_config_view'],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_STATUS => 200,
+            ],
+            [
+                self::AUTH                                => 'admin',
+                self::API_ROUTE                           => '/care_service/admin/twirp/rzp.care.faq.v1.FaqConfigService/UpdateFaqStatus',
+                self::EXPECTED_CARE_SERVICE_ROUTE         => 'https://care-int.razorpay.com/twirp/rzp.care.faq.v1.FaqConfigService/UpdateFaqStatus',
+                self::EXPECTED_CARE_SERVICE_REQUEST       => [
+                    'key'   => 'value',
+                    'admin' => [
+                        'id' => 'RzrpySprAdmnId',
+                    ]
+                ],
+                self::API_REQUEST_BODY                    => ["key" => "value"],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_BODY   => [
+                    'key' => 'value',
+                ],
+                self::PERMISSIONS                         => ['faq_config_edit'],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_STATUS => 200,
+            ],
+            [
+                self::AUTH                                => 'admin',
+                self::API_ROUTE                           => '/care_service/admin/twirp/rzp.care.faq.v1.FaqConfigService/UpdateFaq',
+                self::EXPECTED_CARE_SERVICE_ROUTE         => 'https://care-int.razorpay.com/twirp/rzp.care.faq.v1.FaqConfigService/UpdateFaq',
+                self::EXPECTED_CARE_SERVICE_REQUEST       => [
+                    'key'   => 'value',
+                    'admin' => [
+                        'id' => 'RzrpySprAdmnId',
+                    ]
+                ],
+                self::API_REQUEST_BODY                    => ["key" => "value"],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_BODY   => [
+                    'key' => 'value',
+                ],
+                self::PERMISSIONS                         => ['faq_config_edit'],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_STATUS => 200,
+            ],
+            [
+                self::AUTH                                => 'admin',
+                self::API_ROUTE                           => '/care_service/admin/twirp/rzp.care.faq.v1.FaqConfigService/DeleteFaq',
+                self::EXPECTED_CARE_SERVICE_ROUTE         => 'https://care-int.razorpay.com/twirp/rzp.care.faq.v1.FaqConfigService/DeleteFaq',
+                self::EXPECTED_CARE_SERVICE_REQUEST       => [
+                    'key'   => 'value',
+                    'admin' => [
+                        'id' => 'RzrpySprAdmnId',
+                    ]
+                ],
+                self::API_REQUEST_BODY                    => ["key" => "value"],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_BODY   => [
+                    'key' => 'value',
+                ],
+                self::PERMISSIONS                         => ['faq_config_edit'],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_STATUS => 200,
+            ],
+            [
+                self::AUTH                                => 'admin',
+                self::API_ROUTE                           => '/care_service/admin/twirp/rzp.care.ticket.v1.TicketConfigService/UpdateSubCategoryStatus',
+                self::EXPECTED_CARE_SERVICE_ROUTE         => 'https://care-int.razorpay.com/twirp/rzp.care.ticket.v1.TicketConfigService/UpdateSubCategoryStatus',
+                self::EXPECTED_CARE_SERVICE_REQUEST       => [
+                    'key'   => 'value',
+                    'admin' => [
+                        'id' => 'RzrpySprAdmnId',
+                    ]
+                ],
+                self::API_REQUEST_BODY                    => ["key" => "value"],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_BODY   => [
+                    'key' => 'value',
+                ],
+                self::PERMISSIONS                         => ['ticket_config_edit'],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_STATUS => 200,
+            ],
+            [
+                self::AUTH                                => 'admin',
+                self::API_ROUTE                           => '/care_service/admin/twirp/rzp.care.ticket.v1.TicketConfigService/UpdateItemStatus',
+                self::EXPECTED_CARE_SERVICE_ROUTE         => 'https://care-int.razorpay.com/twirp/rzp.care.ticket.v1.TicketConfigService/UpdateItemStatus',
+                self::EXPECTED_CARE_SERVICE_REQUEST       => [
+                    'key'   => 'value',
+                    'admin' => [
+                        'id' => 'RzrpySprAdmnId',
+                    ]
+                ],
+                self::API_REQUEST_BODY                    => ["key" => "value"],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_BODY   => [
+                    'key' => 'value',
+                ],
+                self::PERMISSIONS                         => ['ticket_config_edit'],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_STATUS => 200,
+            ],
+            [
+                self::AUTH                                => 'admin',
+                self::API_ROUTE                           => '/care_service/admin/twirp/rzp.care.ticket.v1.TicketConfigService/DeleteSubCategory',
+                self::EXPECTED_CARE_SERVICE_ROUTE         => 'https://care-int.razorpay.com/twirp/rzp.care.ticket.v1.TicketConfigService/DeleteSubCategory',
+                self::EXPECTED_CARE_SERVICE_REQUEST       => [
+                    'key'   => 'value',
+                    'admin' => [
+                        'id' => 'RzrpySprAdmnId',
+                    ]
+                ],
+                self::API_REQUEST_BODY                    => ["key" => "value"],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_BODY   => [
+                    'key' => 'value',
+                ],
+                self::PERMISSIONS                         => ['ticket_config_edit'],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_STATUS => 200,
+            ],
+            [
+                self::AUTH                                => 'admin',
+                self::API_ROUTE                           => '/care_service/admin/twirp/rzp.care.ticket.v1.TicketConfigService/DeleteItem',
+                self::EXPECTED_CARE_SERVICE_ROUTE         => 'https://care-int.razorpay.com/twirp/rzp.care.ticket.v1.TicketConfigService/DeleteItem',
+                self::EXPECTED_CARE_SERVICE_REQUEST       => [
+                    'key'   => 'value',
+                    'admin' => [
+                        'id' => 'RzrpySprAdmnId',
+                    ]
+                ],
+                self::API_REQUEST_BODY                    => ["key" => "value"],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_BODY   => [
+                    'key' => 'value',
+                ],
+                self::PERMISSIONS                         => ['ticket_config_edit'],
                 self::ACTUAL_CARE_SERVICE_RESPONSE_STATUS => 200,
             ],
         ];

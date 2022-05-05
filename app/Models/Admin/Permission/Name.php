@@ -869,6 +869,11 @@ class Name
     const CLICK_TO_CALL_TIMING_CONFIG_VIEW = 'click_to_call_timing_config_view';
     const CLICK_TO_CALL_TIMING_CONFIG_EDIT = 'click_to_call_timing_config_edit';
 
+    const TICKET_CONFIG_EDIT = 'ticket_config_edit';
+
+    const FAQ_CONFIG_EDIT  = 'faq_config_edit';
+    const FAQ_CONFIG_VIEW  = 'faq_config_view';
+
     // Payment Fraud
     const GET_FRAUD_ATTRIBUTES          = 'get_fraud_attributes';
     const SAVE_PAYMENT_FRAUD            = 'save_payment_fraud';
