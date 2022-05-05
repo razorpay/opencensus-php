@@ -28,6 +28,7 @@ use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Models\Feature\Service as FeatureService;
 use RZP\Models\Admin\Permission\Name as Permission;
 use RZP\Services\Reporting\Constants;
+use RZP\Models\Admin\Role\TenantRoles;
 use RZP\Services\Reporting\Validators\Factory as ValidationFactory;
 
 /**
@@ -75,6 +76,7 @@ class Reporting implements ExternalService
     const GENERATED_BY_HEADER           = 'X-Generated-By';
     const BATCH_ID                      = 'X-Batch-Id';
     const ASSOCIATED_FEATURES_HEADER    = 'X-Merchant-Features';
+    const TENANT_ROLE                   = 'X-Tenant-Role';
 
     const REPORTING_SERVICE_RESPONSE_FAILURE_TOTAL = 'reporting_service_response_failure_total';
     const REPORTING_SERVICE_RESPONSE_SUCCESS_TOTAL = 'reporting_service_response_success_total';
@@ -346,6 +348,33 @@ class Reporting implements ExternalService
         if ($this->ba->isProxyAuth())
         {
             $input['generated_by'] = $this->ba->authCreds->getKey();
+        }
+
+        if ($this->ba->isAdminAuth() and
+            ($this->ba->getAdmin()->getOrgId() === Org\Entity::RAZORPAY_ORG_ID))
+        {
+            $adminRoles = $this->ba->getPassport()['roles'] ?? [];
+
+            if (empty($adminRoles) === true)
+            {
+                $this->trace->info(TraceCode::TENANT_ENTITY_NO_ADMIN_ROLES_SET);
+//                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ACCESS_DENIED);
+            }
+            else
+            {
+                $tenantRole = '';
+
+                if (in_array(TenantRoles::ENTITY_PAYMENTS, $adminRoles) === true)
+                {
+                    $tenantRole = TenantRoles::ENTITY_PAYMENTS;
+                }
+                elseif (in_array(TenantRoles::ENTITY_BANKING, $adminRoles) === true)
+                {
+                    $tenantRole = TenantRoles::ENTITY_BANKING;
+                }
+
+                $this->headers[self::TENANT_ROLE] = $tenantRole;
+            }
         }
 
         if (Request::header(self::BATCH_ID) !== null)
