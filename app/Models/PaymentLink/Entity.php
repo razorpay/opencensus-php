@@ -85,6 +85,9 @@ class Entity extends Base\PublicEntity
     const EMAIL             = 'email';
     const USER              = 'user';
     const SLUG              = 'slug';
+    const VIDEO             = 'video';
+    const VALUE             = 'value';
+    const VIDEO_URL         = 'video_url';
 
     // Additional general usage input/output constants for the module
     const PAYMENT_ID         = 'payment_id';

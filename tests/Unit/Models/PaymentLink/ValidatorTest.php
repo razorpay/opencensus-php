@@ -272,6 +272,29 @@ class ValidatorTest extends BaseTest
         $this->paymentLinkvalidator->validateSelectedUdfField("name", "NO_NAME");
     }
 
+    /**
+     * @dataProvider getData
+     * @group nocode_pp_validator
+     *
+     * @param $url
+     * @param $isValid
+     * @return void
+     * @throws BadRequestValidationFailureException
+     */
+    public function testValidateDescription($url, $isValid)
+    {
+        $description = "{\"value\":[{\"insert\":{\"video\":\"" . $url . "\"}},{\"insert\":\"\\n\"}],\"metaText\":\". \"}";
+
+        if($isValid === false)
+        {
+            $this->expectException(BadRequestValidationFailureException::class);
+
+            $this->expectExceptionMessage('Only Youtube and Vimeo videos allowed');
+        }
+
+        $this->paymentLinkvalidator->validateDescription(E::DESCRIPTION, $description);
+    }
+
     protected function assignEntityValueThroughReflection(E $entity): void
     {
         $reflector = new \ReflectionClass($this->paymentLinkvalidator);

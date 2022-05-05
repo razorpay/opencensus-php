@@ -4370,6 +4370,134 @@ return [
         ],
     ],
 
+    'testCreatePaymentPageWithYoutubeVideoInDescription' => [
+        'request'  => [
+            'url'     => '/payment_pages',
+            'method'  => 'post',
+            'content' => [
+                'receipt'       => '00000000000001',
+                'title'         => 'Sample title',
+                "description"   => "{\"value\":[{\"insert\":{\"video\":\"https://youtu.be/qVdPh2cBTN0\"}},{\"insert\":\"\\n\"}]}",
+                'notes'         => [
+                    'sample_key' => 'Sample notes',
+                ],
+                'payment_page_items' => [
+                    [
+                        'item' => [
+                            'name'        =>  'amount',
+                            'description' => NULL,
+                            'amount'      => 100000,
+                            'currency'    => 'INR',
+                        ],
+                        'mandatory'         => TRUE,
+                        'image_url'         => 'dummy',
+                        'stock'             => 10000,
+                        'min_purchase'      => 2,
+                        'max_purchase'      => 10000,
+                        'min_amount'        => NULL,
+                        'max_amount'        => NULL,
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'title'         => 'Sample title',
+                'description'   => "{\"value\":[{\"insert\":{\"video\":\"https://youtu.be/qVdPh2cBTN0\"}},{\"insert\":\"\\n\"}]}",
+                'notes'         => [
+                    'sample_key' => 'Sample notes',
+                ],
+            ],
+        ],
+    ],
+
+    'testCreatePaymentPageWithVimeoVideoInDescription' => [
+        'request'  => [
+            'url'     => '/payment_pages',
+            'method'  => 'post',
+            'content' => [
+                'receipt'       => '00000000000001',
+                'title'         => 'Sample title',
+                "description"   => "{\"value\":[{\"insert\":{\"video\":\"https://vimeo.com/267392220\"}},{\"insert\":\"\\n\"}]}",
+                'notes'         => [
+                    'sample_key' => 'Sample notes',
+                ],
+                'payment_page_items' => [
+                    [
+                        'item' => [
+                            'name'        =>  'amount',
+                            'description' => NULL,
+                            'amount'      => 100000,
+                            'currency'    => 'INR',
+                        ],
+                        'mandatory'         => TRUE,
+                        'image_url'         => 'dummy',
+                        'stock'             => 10000,
+                        'min_purchase'      => 2,
+                        'max_purchase'      => 10000,
+                        'min_amount'        => NULL,
+                        'max_amount'        => NULL,
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'title'         => 'Sample title',
+                'description'   => "{\"value\":[{\"insert\":{\"video\":\"https://vimeo.com/267392220\"}},{\"insert\":\"\\n\"}]}",
+                'notes'         => [
+                    'sample_key' => 'Sample notes',
+                ],
+            ],
+        ],
+    ],
+
+    'testCreatePaymentPageWithOtherVideoInDescription' => [
+        'request'  => [
+            'url'     => '/payment_pages',
+            'method'  => 'post',
+            'content' => [
+                'receipt'       => '00000000000001',
+                'title'         => 'Sample title',
+                "description"   => "{\"value\":[{\"insert\":{\"video\":\"https://google.com\"}},{\"insert\":\"\\n\"}]}",
+                'notes'         => [
+                    'sample_key' => 'Sample notes',
+                ],
+                'payment_page_items' => [
+                    [
+                        'item' => [
+                            'name'        =>  'amount',
+                            'description' => NULL,
+                            'amount'      => 100000,
+                            'currency'    => 'INR',
+                        ],
+                        'mandatory'         => TRUE,
+                        'image_url'         => 'dummy',
+                        'stock'             => 10000,
+                        'min_purchase'      => 2,
+                        'max_purchase'      => 10000,
+                        'min_amount'        => NULL,
+                        'max_amount'        => NULL,
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Only Youtube and Vimeo videos allowed',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+
     "testOnUpdatePaymentPageViewCallShouldBeCached" => [
         'request'  => [
             'url'     => '/payment_pages/pl_100000000000pl',

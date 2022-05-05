@@ -1610,6 +1610,27 @@ class PaymentLinkTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreatePaymentPageWithYoutubeVideoInDescription()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testCreatePaymentPageWithVimeoVideoInDescription()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testCreatePaymentPageWithOtherVideoInDescription()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
     /**
      * @group pp_donation_goal_tracker
      */

@@ -692,4 +692,22 @@ return [
         "Min Amount of 100 paise no error thrown"   => [100, false],
         "Min Amount of 200 paise no error thrown"   => [200, false],
     ],
+
+    "testValidateDescription" => [
+        "Youtube url desktop"                       => ["https://www.youtube.com/watch?v=BgP9tzt9_Z8", true],
+        "Youtube url desktop with query params"     => ["https://www.youtube.com/watch?v=BgP9tzt9_Z8", true],
+        "Youtube short url"                         => ["https://youtu.be/BgP9tzt9_Z8", true],
+        "Youtube short url with query params"       => ["https://youtu.be/BgP9tzt9_Z8?t=2", true],
+        "Vimeo Video"                               => ["https://vimeo.com/704606471", true],
+        "Vimeo Video with query params"             => ["https://vimeo.com/704606471#t=120s", true],
+        "False url 1"                               => ["https://vimeo.com/2539?@poc-demos.000webhostapp.com/embed_fake_page.php/#.", true],
+        "False url 2"                               => ["https://www.youtube.com/watch?v=98jxd@poc-demos.000webhostapp.com/embed_fake_page.php/#.", true],
+        "False url 3"                               => ["https://vimeo.com?@poc-demos.000webhostapp.com/embed_fake_page.php/#.", true],
+        "False url 4"                               => ["https://vimeo.com/253989945?@poc-demos.000webhostapp.com/embed_fake_page.php/#.", true],
+        "False url 5"                               => ["https://youtu.be@poc-demos.000webhostapp.com/embed_fake_page.php", false],
+        "False url 6"                               => ["https://youtu.be:abcd@poc-demos.000webhostapp.com/embed_fake_page.php", false],
+        "False url 7"                               => ["https://www.youtube.com@poc-demos.000webhostapp.com/embed_fake_page.php", false],
+        "False url 8"                               => ["https://www.youtube.com:abcd@poc-demos.000webhostapp.com/embed_fake_page.php", false],
+
+    ]
 ];

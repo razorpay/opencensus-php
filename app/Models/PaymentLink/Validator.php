@@ -13,6 +13,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Settings;
 use RZP\Models\Merchant;
 use RZP\Models\LineItem;
+use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Models\Currency\Currency;
 use RZP\Exception\BadRequestException;
@@ -35,13 +36,24 @@ class Validator extends Base\Validator
 
     const UDF_SCHEMA_VALIDATION_EXPERIMENT = 'udf_schema_validation_experiment';
 
+    const ALLOWED_HOSTS_IN_PP_IFRAME = [
+        "www.youtu.be",
+        "youtu.be",
+        "www.youtube.com",
+        "youtube.com",
+        "www.player.vimeo.com",
+        "player.vimeo.com",
+        "www.vimeo.com",
+        "vimeo.com",
+        ];
+
     protected static $createRules = [
         Entity::CURRENCY        => 'filled|string|currency|custom',
         Entity::EXPIRE_BY       => 'sometimes|epoch|nullable|custom',
         Entity::TIMES_PAYABLE   => 'sometimes|mysql_unsigned_int|min:1|nullable',
         Entity::RECEIPT         => 'string|min:3|max:40|nullable',
         Entity::TITLE           => 'required|string|min:3|max:80|utf8',
-        Entity::DESCRIPTION     => 'string|max:65535|nullable|utf8', // 65535 bytes is size of mysql's text data type.
+        Entity::DESCRIPTION     => 'string|max:65535|nullable|utf8|custom', // 65535 bytes is size of mysql's text data type.
         Entity::NOTES           => 'sometimes|notes',
         Entity::SLUG            => 'filled|min:4|max:30', // need to call validate slug separately for regex validation
         Entity::SUPPORT_CONTACT => 'nullable|contact_syntax',
@@ -767,6 +779,28 @@ class Validator extends Base\Validator
         }
     }
 
+    public function validateDescription(string $attribute, string $description)
+    {
+        $description =  json_decode($description, true);
+
+        $value = array_get($description, Entity::VALUE);
+
+        if(empty($value) === false)
+        {
+            foreach($value as $val)
+            {
+                $videoUrl = array_get($val['insert'], Entity::VIDEO);
+
+                if(empty($videoUrl) === false &&  $this->checkYoutubeAndVimeoVideoUrls($videoUrl) === false )
+                {
+                    throw new BadRequestValidationFailureException("Only Youtube and Vimeo videos allowed", null, [
+                        Entity::VIDEO    => $videoUrl
+                    ]);
+                }
+            }
+        }
+    }
+
     public function validatePaymentCurrency(Payment\Entity $payment)
     {
         $currency = $payment->getCurrency();
@@ -1052,6 +1086,30 @@ class Validator extends Base\Validator
             $this->validateInput('udfSchemaElementSettings', $udf['settings']);
 
             $this->validateInput('udfSchemaElementOptions', array_get($udf, 'options', []));
+        }
+    }
+
+    protected function checkYoutubeAndVimeoVideoUrls(string $videoUrl): bool
+    {
+        try {
+            $url = parse_url($videoUrl);
+
+            $host = array_get($url, 'host');
+
+            if(in_array($host, self::ALLOWED_HOSTS_IN_PP_IFRAME, true) === false)
+            {
+                return false;
+            }
+
+            return true;
+        }
+        catch(\Throwable $e)
+        {
+            $this->trace-info(TraceCode::PAYMENT_PAGE_DESCRIPTION_VIDEO_VALIDATION_EXCEPTION, [
+                Entity::VIDEO_URL    => $videoUrl
+            ]);
+
+            return false;
         }
     }
 }
