@@ -1442,6 +1442,11 @@ export default class User {
     return variant?.name === 'exposed' && this.isOrgRZP;
   }
 
+  get isPartnershipNPS() {
+    const variant = getSplitzExperimentVariant('partnership_nps');
+    return variant?.name === 'exposed';
+  }
+
   get isPartnershipForXEnabled() {
     const variant = getSplitzExperimentVariant('partnership_for_razorpayx');
     return variant?.name === 'exposed';

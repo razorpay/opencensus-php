@@ -66,6 +66,9 @@ return [
         // partnership FUX
         'PARTNERSHIP_FUX' => env('PARTNERSHIP_FUX', ''),
 
+        // Partnership Survey
+        'PARTNERSHIP_NPS' => env('PARTNERSHIP_NPS', ''),
+
         // partnership for RazorpayX
         'PARTNERSHIP_FOR_RAZOARPAYX' => env('PARTNERSHIP_FOR_RAZOARPAYX', ''),
         'PARTNERSHIP_FOR_RAZOARPAYX_RAMP' => env('PARTNERSHIP_FOR_RAZOARPAYX_RAMP', ''),

@@ -1,10 +1,8 @@
 import { useEffect } from 'react';
 import store from 'merchant/store';
 import { Route, Switch } from 'react-router-dom';
-
 import { ShowWhenRoute } from 'merchant/components/ShowWhen';
 import { ShowWhenRoute as showWhenRoutex } from 'merchant_common/components/ShowWhen';
-
 import SubMerchantList from './SubMerchant/List';
 import Settings from './Settings';
 import Earnings from './Earnings';
@@ -12,13 +10,16 @@ import Subvention from './Subvention';
 import Applications from './Applications';
 import Reports from './Reports';
 import Home from './Home';
-import ErrorBoundary from 'common/new-ui/ErrorBoundary';
+import ErrorBoundary, { Teams } from 'common/new-ui/ErrorBoundary';
+import usePartnerPageNPS from 'merchant/views/PartnerDashboard/SubMerchant/utils/usePartnerPageNPS';
 
 const PartnerShowWhenRoute = showWhenRoutex(store, '/partners/submerchants');
 
 export default function PartnerDashboard() {
   const user = store.getState().session.user;
   const isPartnershipFUX = user?.isPartnershipFUX || false;
+
+  usePartnerPageNPS('zWemM3SK');
 
   useEffect(() => {
     if (isPartnershipFUX) {
@@ -31,7 +32,7 @@ export default function PartnerDashboard() {
     };
   }, [isPartnershipFUX]);
   return (
-    <ErrorBoundary resetOnProps>
+    <ErrorBoundary team={Teams?.PARTNERSHIP} resetOnProps>
       <Switch>
         <PartnerShowWhenRoute
           additionalCondition={(user) => user.isPartner() && user.isPartnershipFUX}

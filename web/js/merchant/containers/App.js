@@ -55,6 +55,7 @@ import PartnerActivationRequiredModal from 'merchant/views/PartnerDashboard/Acti
 import _refiner from 'refiner-js';
 import { getCookie, setCookie } from 'common/utils/cookies';
 import RequestEmailModal from 'merchant_common/containers/ReportsAsync/GenerateReportPanel/AddEmail/RequestEmailModal';
+import { isPartnerPage } from 'merchant/utils/isPartnerPage';
 import getMobileDetect from 'common/utils/mobileDetect';
 
 // const WebViewHeader = lazy(() =>
@@ -99,6 +100,7 @@ class App extends Component {
         this.props.location.pathname.startsWith('/partners/') &&
         this.props?.user?.isIndependentPartnerKYCEnabled,
       isPartnerKYCActivated: false,
+      isFeedbackFormCreated: false,
       isWebView: false,
     };
 
@@ -372,8 +374,8 @@ class App extends Component {
     }
   }
 
-  componentDidMount() {
-    window.addEventListener('resize', this.handleResize);
+  createFeedbackForms() {
+    this.setState({ isFeedbackFormCreated: true });
     this.fetchUser().then(({ data }) => {
       const user = data;
       const hidden = {
@@ -381,34 +383,42 @@ class App extends Component {
         source: 'dashboard',
         email: `${user.email}`,
       };
-      if (user.showNPSSurvey() === true) {
-        const GoLiveNPSEnableTypeForm = createSidetab(
-          'piCrdFI8', // go live survey
-          {
-            width: 500,
-            buttonText: 'Feedback',
-            hideHeaders: true,
-            hideFooters: true,
-            hidden,
-            onSubmit: this.closeGoLiveSurvey,
-          },
-        );
-        this.state.GoLiveNPSEnableTypeForm = GoLiveNPSEnableTypeForm; // saving reference typeform
-
-        const NonGoLiveNPSEnableTypeForm = createSidetab(
-          'LLaFW6pQ', // non go live survey
-          {
-            width: 500,
-            buttonText: 'Feedback',
-            hideHeaders: true,
-            hideFooters: true,
-            hidden,
-            onSubmit: this.closeNonGoLiveSurvey,
-          },
-        );
-        this.state.NonGoLiveNPSEnableTypeForm = NonGoLiveNPSEnableTypeForm; // saving reference typeform
+      if (!isPartnerPage()) {
+        if (user.showNPSSurvey() === true) {
+          const goLiveNPSEnableTypeForm = createSidetab(
+            'piCrdFI8', // go live survey
+            {
+              width: 500,
+              buttonText: 'Feedback',
+              hideHeaders: true,
+              hideFooters: true,
+              hidden,
+              onSubmit: this.closeGoLiveSurvey,
+            },
+          );
+          const nonGoLiveNPSEnableTypeForm = createSidetab(
+            'LLaFW6pQ', // non go live survey
+            {
+              width: 500,
+              buttonText: 'Feedback',
+              hideHeaders: true,
+              hideFooters: true,
+              hidden,
+              onSubmit: this.closeNonGoLiveSurvey,
+            },
+          );
+          // saving reference typeform
+          this.setState({
+            goLiveNPSEnableTypeForm,
+            nonGoLiveNPSEnableTypeForm,
+          });
+        }
       }
     });
+  }
+  componentDidMount() {
+    window.addEventListener('resize', this.handleResize);
+    this.createFeedbackForms();
     const user = window.rzp_user;
     if (user) {
       this.openRequestEmailPopup();
@@ -456,8 +466,34 @@ class App extends Component {
       }
     }
   }
-
+  componentDidUpdate(prevProps) {
+    const {
+      isFeedbackFormCreated,
+      goLiveNPSEnableTypeForm,
+      nonGoLiveNPSEnableTypeForm,
+    } = this.state;
+    const { location } = this.props;
+    if (prevProps.location.pathname !== location.pathname) {
+      if (
+        isPartnerPage() &&
+        isFeedbackFormCreated &&
+        goLiveNPSEnableTypeForm &&
+        nonGoLiveNPSEnableTypeForm
+      ) {
+        this.setState({ isFeedbackFormCreated: false });
+        this.closeGoLiveSurvey();
+        this.closeNonGoLiveSurvey();
+      } else if (!isFeedbackFormCreated) {
+        this.createFeedbackForms();
+      }
+    }
+  }
   UNSAFE_componentWillReceiveProps({ user, history, location, baseLocation, org }) {
+    const {
+      goLiveNPSEnableTypeForm,
+      nonGoLiveNPSEnableTypeForm,
+      isPartnerModeEnabled,
+    } = this.state;
     if (user.isAuthenticated) {
       const role = user.userRole;
       this.redirectToRoute(role);
@@ -465,47 +501,44 @@ class App extends Component {
       this.renderFullPageView = this.getFPView(baseLocation || location);
     }
     if (org && user) {
-      const goLiveSurveyShowed = !!LocalStorageService.getItem(
-        'razorpay_go_live_nps_survey_showed',
-      );
-      if (
-        org &&
-        org.custom_code &&
-        org.custom_code.toLowerCase() === 'rzp' && // only for razorpay org
-        user.showNPSSurvey() && // experiment check
-        !goLiveSurveyShowed &&
-        !isMobileDevice() &&
-        this.state.GoLiveNPSEnableTypeForm
-      ) {
-        const takeGoLiveNPSSurvey = this.dateIsInRange(user.created_at, [
-          ['2022-02-01', '2022-02-28'],
-        ]);
-        this.setState({ goLiveNPSSurveyPopup: takeGoLiveNPSSurvey });
-      }
+      if (!isPartnerPage()) {
+        const goLiveSurveyShowed = !!LocalStorageService.getItem(
+          'razorpay_go_live_nps_survey_showed',
+        );
+        if (
+          org?.custom_code?.toLowerCase() === 'rzp' && // only for razorpay org
+          user.showNPSSurvey() && // experiment check
+          !goLiveSurveyShowed &&
+          !isMobileDevice() &&
+          goLiveNPSEnableTypeForm
+        ) {
+          const takeGoLiveNPSSurvey = this.dateIsInRange(user.created_at, [
+            ['2022-02-01', '2022-02-28'],
+          ]);
+          this.setState({ goLiveNPSSurveyPopup: takeGoLiveNPSSurvey });
+        }
 
-      const nonGoLiveSurveyShowed = !!LocalStorageService.getItem(
-        'razorpay_non_go_live_nps_survey_showed',
-      );
-      if (
-        org &&
-        org.custom_code &&
-        org.custom_code.toLowerCase() === 'rzp' && // only for razorpay org
-        user.showNPSSurvey() && // experiment check
-        !nonGoLiveSurveyShowed &&
-        !isMobileDevice() &&
-        this.state.NonGoLiveNPSEnableTypeForm
-      ) {
-        const takeNonGoLiveNPSSurvey = this.dateIsInRange(user.created_at, [
-          ['2021-11-01', '2021-11-30'],
-          ['2021-08-01', '2021-08-31'],
-          ['2021-02-01', '2021-02-28'],
-        ]);
-        this.setState({ nonGoLiveNPSSurveyPopup: takeNonGoLiveNPSSurvey });
+        const nonGoLiveSurveyShowed = !!LocalStorageService.getItem(
+          'razorpay_non_go_live_nps_survey_showed',
+        );
+        if (
+          org?.custom_code?.toLowerCase() === 'rzp' && // only for razorpay org
+          user.showNPSSurvey() && // experiment check
+          !nonGoLiveSurveyShowed &&
+          !isMobileDevice() &&
+          nonGoLiveNPSEnableTypeForm
+        ) {
+          const takeNonGoLiveNPSSurvey = this.dateIsInRange(user.created_at, [
+            ['2021-11-01', '2021-11-30'],
+            ['2021-08-01', '2021-08-31'],
+            ['2021-02-01', '2021-02-28'],
+          ]);
+          this.setState({ nonGoLiveNPSSurveyPopup: takeNonGoLiveNPSSurvey });
+        }
       }
-
       const newIsPartnerModeEnabled =
         location.pathname.startsWith('/partners/') && user.isIndependentPartnerKYCEnabled;
-      if (this.state.isPartnerModeEnabled !== newIsPartnerModeEnabled) {
+      if (isPartnerModeEnabled !== newIsPartnerModeEnabled) {
         this.setState({
           isPartnerModeEnabled: newIsPartnerModeEnabled,
         });
@@ -553,12 +586,12 @@ class App extends Component {
 
   closeGoLiveSurvey = () => {
     this.setState({ goLiveNPSSurveyPopup: false });
-    this.state.GoLiveNPSEnableTypeForm.unmount();
+    this.state.goLiveNPSEnableTypeForm.unmount();
   };
 
   closeNonGoLiveSurvey = () => {
     this.setState({ nonGoLiveNPSSurveyPopup: false });
-    this.state.NonGoLiveNPSEnableTypeForm.unmount();
+    this.state.nonGoLiveNPSEnableTypeForm.unmount();
   };
 
   fetchSupportedCurrencies() {
@@ -875,25 +908,32 @@ class App extends Component {
   };
 
   getSurveyForm = () => {
-    const { goLiveNPSSurveyPopup, nonGoLiveNPSSurveyPopup } = this.state;
-    if (!goLiveNPSSurveyPopup && this.state.GoLiveNPSEnableTypeForm)
-      this.state.GoLiveNPSEnableTypeForm.unmount();
-    if (!nonGoLiveNPSSurveyPopup && this.state.NonGoLiveNPSEnableTypeForm)
-      this.state.NonGoLiveNPSEnableTypeForm.unmount();
+    const {
+      goLiveNPSSurveyPopup,
+      nonGoLiveNPSSurveyPopup,
+      goLiveNPSEnableTypeForm,
+      nonGoLiveNPSEnableTypeForm,
+    } = this.state;
+    if (!goLiveNPSSurveyPopup && goLiveNPSEnableTypeForm) {
+      goLiveNPSEnableTypeForm.unmount();
+    }
+    if (!nonGoLiveNPSSurveyPopup && nonGoLiveNPSEnableTypeForm) {
+      nonGoLiveNPSEnableTypeForm.unmount();
+    }
     return (
       <>
         {goLiveNPSSurveyPopup &&
           !LocalStorageService.getItem('razorpay_go_live_nps_survey_showed') && (
             <>
               {LocalStorageService.setItem('razorpay_go_live_nps_survey_showed', 1)}
-              {this.state.GoLiveNPSEnableTypeForm.open()}
+              {goLiveNPSEnableTypeForm.open()}
             </>
           )}
         {nonGoLiveNPSSurveyPopup &&
           !LocalStorageService.getItem('razorpay_non_go_live_nps_survey_showed') && (
             <>
               {LocalStorageService.setItem('razorpay_non_go_live_nps_survey_showed', 1)}
-              {this.state.NonGoLiveNPSEnableTypeForm.open()}
+              {nonGoLiveNPSEnableTypeForm.open()}
             </>
           )}
       </>

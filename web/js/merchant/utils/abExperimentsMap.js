@@ -62,6 +62,13 @@ export default {
     // prod experiment ids
     'J2uuWrBN9sddsY',
   ],
+  partnership_nps: [
+    // beta experiment ids
+    'JLVDXyLyzWlTyI',
+
+    // prod experiment ids
+    'JLVLvIALXDyaPK',
+  ],
   partnership_for_razorpayx: [
     // beta experiment ids
     'HNHi7nieMQCDeh',
