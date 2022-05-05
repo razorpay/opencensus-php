@@ -8,6 +8,8 @@ use RZP\Reconciliator\Base;
 use RZP\Gateway\Upi\Sbi\Action;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Base\PublicEntity;
+use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Reconciliator\Base\Reconciliate;
 
 class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
@@ -103,6 +105,11 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
                 ]);
 
             return null;
+        }
+
+        if (UniqueIdEntity::verifyUniqueId($paymentId, false) === false)
+        {
+            return $this->getPaymentIdForUnexpectedPayment($row);
         }
 
         $upiEntity = $this->getUpiExpectedEntity($paymentId, $row);
@@ -231,34 +238,133 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         }
     }
 
+    /**
+     * Sometimes we don't get payment id in the expected column.
+     * So, this function utilises the rrn received in the MIS,
+     * and fetches the payment id from the upi repo.
+     *
+     * @param $row
+     * @return null|string
+     */
+    protected function getPaymentIdForUnexpectedPayment($row)
+    {
+        $referenceNumber = $this->getReferenceNumber($row);
+
+        $this->formatUpiRrn($referenceNumber);
+
+        $upiEntity = $this->repo->upi->fetchByNpciReferenceIdAndGateway($referenceNumber, $gateway = Gateway::UPI_YESBANK);
+
+        if (empty($upiEntity) === true)
+        {
+            return $this->createUnexpectedPayment($referenceNumber, $row);
+        }
+
+        return  $upiEntity->getPaymentId();
+    }
+
+    /** We create new payment and return the paymentId for the reconciliation
+     * @param string $referenceNumber
+     * @param array $row
+     * @return mixed|null
+     */
+    protected function createUnexpectedPayment(string $referenceNumber, array $row)
+    {
+        $paymentId = null;
+        //
+        // Prepare callback input required for creating unexpected payment
+        //
+        $callbackInput = $this->generateCallbackData($row);
+
+        $this->trace->info(
+            TraceCode::RECON_INFO,
+            [
+                'infoCode'                  => Base\InfoCode::RECON_UNEXPECTED_PAYMENT_CREATE_INITIATED,
+                'rrn'                       => $row[self::CUSTOMER_REF_NO],
+                'unexpected_payment_ref_id' => $row[self::ORDER_NUMBER],
+                'gateway'                   => $this->gateway,
+                'batch_id'                  => $this->batchId,
+            ]);
+
+        try
+        {
+            $response = (new Payment\Service)->unexpectedCallback($callbackInput, $row[self::ORDER_NUMBER], Gateway::UPI_YESBANK);
+
+            $traceData = [
+                            'rrn'                   => $referenceNumber,
+                            'gateway_payment_id'    => $row[self::ORDER_NUMBER],
+                            'gateway'               => $this->gateway,
+                            'batch_id'              => $this->batchId,
+                        ];
+
+            $infoCode = Base\InfoCode::RECON_UNEXPECTED_PAYMENT_CREATION_FAILED;
+
+            if (empty($response['payment_id']) === false)
+            {
+                $paymentId = $response['payment_id'];
+
+                $traceData['payment_id'] = $paymentId;
+
+                $infoCode = Base\InfoCode::RECON_UNEXPECTED_PAYMENT_CREATED;
+            }
+
+            $this->trace->info(
+                TraceCode::RECON_INFO_ALERT,
+                [
+                    'infoCode'              => $infoCode,
+                    'data'                  => $traceData,
+                ]);
+
+            return $paymentId;
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::RECON_UNEXPECTED_PAYMENT_CREATION_FAILED,
+                [
+                    'rrn'                       => $referenceNumber,
+                    'gateway_payment_id'        => $row[self::ORDER_NUMBER],
+                    'gateway'                   => $this->gateway,
+                    'batch_id'                  => $this->batchId,
+                ]
+            );
+
+            return $paymentId;
+        }
+    }
+
+    /** Prepare callback input required for creating unexpected payment
+     * as per the pre_process response format
+     * @param array $row
+     * @return array
+     */
     protected function generateCallbackData(array $row)
     {
         $callbackData = [];
 
-        foreach (self::CALL_BACK_FIELD_MAPPING as $callbackField => $reconColumn)
-        {
-            if (empty($row[$reconColumn]) === true)
-            {
-                // Required data missing
-                $this->trace->info(
-                    TraceCode::RECON_INFO_ALERT,
-                    [
-                        'info_code'    => Base\InfoCode::RECON_INSUFFICIENT_DATA_FOR_ENTITY_CREATION,
-                        'message'      => 'Data missing to create Payment via Recon',
-                        'rrn'          => $this->getReferenceNumber($row),
-                        'empty_column' => $reconColumn,
-                        'gateway'      => $this->gateway,
-                        'batch_id'     => $this->batchId,
-                    ]
-                );
+        $callbackData['success'] = true;
 
-                return null;
-            }
+        $callbackData['data']['payment'] = [
+            'amount_authorized'    => $this->getReconPaymentAmount($row),
+            'currency'             => 'INR',
+        ];
 
-            $callbackData[$callbackField] = $row[$reconColumn];
-        }
+        $callbackData['data']['terminal'] = [
+            'gateway_merchant_id'    => $row[self::PG_MERCHANT_ID],
+            'gateway'                => $this->gatewayName,
+        ];
 
-        // Todo: for the fields we are not getting the data in MIS directly, add the data accordingly
+        $callbackData['data']['upi'] = [
+            'gateway_merchant_id'   => $row[self::PG_MERCHANT_ID],
+            'merchant_reference'    => $row[self::ORDER_NUMBER],
+            'npci_reference_id'     => $row[self::CUSTOMER_REF_NO],
+            'gateway_payment_id'    => $row[self::TRANS_REF_NUMBER],
+            'status_code'           => $row[self::TRANSACTION_STATUS],
+            'vpa'                   => $row[self::PAYER_VIRTUAL_ADDRESS],
+        ];
+
+        $callbackData['data']['version'] = 'v2';
 
         return $callbackData;
     }

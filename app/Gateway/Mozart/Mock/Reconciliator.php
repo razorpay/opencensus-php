@@ -635,6 +635,8 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
             $data[] = $row;
         }
 
+        $this->content($data, 'yesbank_recon');
+
         return $data;
     }
 
