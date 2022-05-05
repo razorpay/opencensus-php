@@ -13,7 +13,7 @@ class Factory
      *
      * @param $type
      * @param Entity $payout
-     * @return AutoRejected|Failed
+     * @return AutoRejected|Failed|PayoutProcessedContactCommunication
      * @throws BadRequestException
      */
     public static function getNotifier($type, Entity $payout)

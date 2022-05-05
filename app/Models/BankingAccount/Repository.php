@@ -159,6 +159,27 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function fetchActiveBankingAccountsByMerchantIdAndAccountType(string $merchantId, string $accountType)
+    {
+        $bankingAccountBalanceIdColumn = $this->dbColumn(Entity::BALANCE_ID);
+        $bankingAccountChannelColumn   = $this->dbColumn(Entity::CHANNEL);
+        $bankingAccountStatusColumn    = $this->dbColumn(Entity::STATUS);
+        $merchantIdColumn              = $this->dbColumn(Entity::MERCHANT_ID);
+
+        $balanceIdColumn          = $this->repo->balance->dbColumn(Entity::ID);
+        $balanceAccountTypeColumn = $this->repo->balance->dbColumn(Merchant\Balance\Entity::ACCOUNT_TYPE);
+        $balanceTypeColumn        = $this->repo->balance->dbColumn(Merchant\Balance\Entity::TYPE);
+
+        return $this->newQuery()
+                    ->select($bankingAccountChannelColumn)
+                    ->where($bankingAccountStatusColumn, '=', Status::ACTIVATED)
+                    ->where($merchantIdColumn, '=', $merchantId)
+                    ->join(Table::BALANCE, $bankingAccountBalanceIdColumn, '=', $balanceIdColumn)
+                    ->where($balanceTypeColumn, '=', Merchant\Balance\Type::BANKING)
+                    ->where($balanceAccountTypeColumn, '=', $accountType)
+                    ->get();
+    }
+
     public function addQueryParamReviewerId($query, $params)
     {
         AdminEntity::verifyIdAndStripSign($params[Entity::REVIEWER_ID]);

@@ -71,6 +71,8 @@ class Notifications
     const smsDateTimeFormat = 'dM h:i a';
     const emailDateTimeFormat = 'd M h:i a';
 
+    const DEFAULT_CONFIG_FETCH_LIMIT = 1000;
+
     const YES_BANK_PREFIXES = [
         '787878',
         '456456',
@@ -123,7 +125,9 @@ class Notifications
 
         $startTime = Carbon::now(Timezone::IST)->getTimestamp();
 
-        $merchantNotificationConfigs = $this->repo->merchant_notification_config->getEnabledConfigsForNotificationType(NotificationType::FUND_LOADING_DOWNTIME);
+        $merchantNotificationConfigs = $this->repo->merchant_notification_config
+            ->getEnabledConfigsForNotificationType(NotificationType::FUND_LOADING_DOWNTIME,
+                                                   self::DEFAULT_CONFIG_FETCH_LIMIT);
 
         $endTime = Carbon::now(Timezone::IST)->getTimestamp();
 

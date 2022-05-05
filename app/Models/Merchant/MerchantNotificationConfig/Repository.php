@@ -24,10 +24,11 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function getTotalEnabledConfigsCount()
+    public function getTotalEnabledConfigsCountForGivenNotificationType($notificationType)
     {
         return $this->newQuery()
                     ->where(Entity::CONFIG_STATUS, '=', Status::ENABLED)
+                    ->where(Entity::NOTIFICATION_TYPE, '=', $notificationType)
                     ->count();
     }
 
@@ -99,6 +100,32 @@ class Repository extends Base\Repository
                     ->where(Entity::NOTIFICATION_TYPE, '=', $notificationType)
                     ->latest()
                     ->limit($limit)
+                    ->get();
+    }
+
+    public function getEnabledConfigsForNotificationTypeUsingLastFetchedConfig($notificationType, $limit, $lastFetchedConfig = null)
+    {
+        $query = $this->newQuery()
+                      ->where(Entity::CONFIG_STATUS, '=', Status::ENABLED)
+                      ->where(Entity::NOTIFICATION_TYPE, '=', $notificationType)
+                      ->orderByRaw(Entity::MERCHANT_ID . ' desc,' . Entity::CREATED_AT . ' desc')
+                      ->limit($limit);
+
+        if ($lastFetchedConfig !== null)
+        {
+            $query->whereRaw('(' . Entity::MERCHANT_ID . ',' . Entity::CREATED_AT . ')' . '<' . '(?,?)',
+                             [$lastFetchedConfig->getMerchantId(), $lastFetchedConfig->getCreatedAt()]);
+        }
+
+        return $query->get();
+    }
+
+    public function getEnabledConfigsFromMerchantIdsAndNotificationType($merchantIds, $notificationType)
+    {
+        return $this->newQuery()
+                    ->where(Entity::CONFIG_STATUS, '=', Status::ENABLED)
+                    ->where(Entity::NOTIFICATION_TYPE, '=', $notificationType)
+                    ->whereIn(Entity::MERCHANT_ID, $merchantIds)
                     ->get();
     }
 }

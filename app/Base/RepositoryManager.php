@@ -204,6 +204,7 @@ use RZP\Base\Database\Connectors\MySqlConnector;
  * @property Models\Internal\Repository                               $internal
  * @property Models\Transaction\Statement\DirectAccount\Statement\Repository $direct_account_statement
  * @property Models\Merchant\InternationalIntegration\Repository      $merchant_international_integrations
+ * @property Models\PartnerBankHealth\Repository                      $partner_bank_health
  */
 
 class RepositoryManager extends Illuminate\Support\Manager

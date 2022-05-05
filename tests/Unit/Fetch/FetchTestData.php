@@ -791,5 +791,7 @@ return [
                 'merchant_id' =>  '10000000000000'
             ]
         ]
-    ]
+    ],
+
+    E::PARTNER_BANK_HEALTH => [],
 ];

@@ -4,13 +4,15 @@ namespace RZP\Services\FTS;
 
 use Mail;
 use Razorpay\IFSC\IFSC;
-use RZP\Constants\Mode;
+use Razorpay\Trace\Logger as Trace;
+
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Product;
-use RZP\Models\Event\Entity;
 use RZP\Constants\Entity as E;
 use RZP\Models\Base\UniqueIdEntity;
-use Razorpay\Trace\Logger as Trace;
+use RZP\Exception\BadRequestException;
+use RZP\Models\PartnerBankHealth\Events;
 use RZP\Mail\Payout\DowntimeNotification;
 use RZP\Models\Payout\Service as PayoutService;
 use RZP\Models\Merchant\MerchantNotificationConfig\NotificationType;
@@ -77,9 +79,28 @@ class ChannelNotification
      */
     public function channelNotify(array $input)
     {
+        $this->trace->info(TraceCode::EVENT_NOTIFICATION_FROM_FTS_RECEIVED,
+                           [
+                               'input' => $input
+                           ]);
+
         (new PayoutService())->processEventNotificationFromFts($input);
 
-        return $this->getConfigAndSendNotification($input);
+        switch($input['payload']['source'])
+        {
+            case "BENEFICIARY":
+                return $this->sendBeneBankHealthUpdateNotification($input);
+
+            case Events::FAIL_FAST_HEALTH:
+            case Events::DOWNTIME:
+                return ["message" => "FTS partner bank health webhook processed successfully"];
+
+            default:
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR,
+                                              null,
+                                              $input['payload']['source'],
+                                              "unknown source");
+        }
     }
 
     protected function sendEmail($result, $toEmailIds)
@@ -279,7 +300,7 @@ class ChannelNotification
         return $subject;
     }
 
-    protected function getConfigAndSendNotification($result)
+    protected function sendBeneBankHealthUpdateNotification($result)
     {
         $notificationConfigs = $this->repo
                                     ->merchant_notification_config

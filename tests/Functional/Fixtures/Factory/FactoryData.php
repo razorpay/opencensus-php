@@ -2100,5 +2100,20 @@ final class FactoryData
             'integration_key'               => 'test123',
             'notes'                         => [],
         ]);
+
+        $factory(Models\PartnerBankHealth\Entity::class, [
+            'id'         => $faker->uniqueid,
+            'event_type' => 'fail_fast_health.shared.imps',
+            'value'      => json_encode(
+                [
+                    'ICIC'               => [
+                        'last_down_at' => 1640430729
+                    ],
+                    'affected_merchants' => [
+                        "ALL"
+                    ],
+                ]
+            )
+        ]);
     }
 }

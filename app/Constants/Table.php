@@ -432,6 +432,8 @@ class Table
 
     // Payment Fraud Entity
     const PAYMENT_FRAUD = 'payment_fraud';
+    // Channel health Entity
+    const PARTNER_BANK_HEALTH = 'partner_bank_health';
 
     // Nocode slug management table
     const NOCODE_CUSTOM_URL = 'nocode_custom_urls';

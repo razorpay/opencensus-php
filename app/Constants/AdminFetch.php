@@ -3027,7 +3027,8 @@ class AdminFetch
                     Fetch::TYPE   => Fetch::TYPE_ARRAY,
                     Fetch::VALUES => [
                         'fund_loading_downtime',
-                        'bene_bank_downtime'
+                        'bene_bank_downtime',
+                        'partner_bank_health',
                     ],
                 ],
                 'config_status'     => [
@@ -4574,6 +4575,35 @@ class AdminFetch
                 'end_time'   => [
                     Fetch::LABEL => 'End Before',
                     Fetch::TYPE  => Fetch::TYPE_STRING
+                ],
+            ],
+
+            Entity::PARTNER_BANK_HEALTH => [
+                'source' => [
+                    Fetch::LABEL => 'Source',
+                    Fetch::TYPE => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'fail_fast_health',
+                        'downtime'
+                    ]
+                ],
+                'integration_type' => [
+                    Fetch::LABEL => 'Integration Type',
+                    Fetch::TYPE => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'direct',
+                        'shared'
+                    ],
+                ],
+                'payout_mode' => [
+                    Fetch::LABEL => 'Mode of payout',
+                    Fetch::TYPE => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'IMPS',
+                        'UPI',
+                        'NEFT',
+                        'RTGS'
+                    ],
                 ],
             ],
 

@@ -17,7 +17,7 @@ class Validator extends Base\Validator
     protected static $createRules                 = [
         Entity::NOTIFICATION_EMAILS         => 'sometimes|string|nullable|custom',
         Entity::NOTIFICATION_MOBILE_NUMBERS => 'sometimes|string|nullable|custom',
-        Entity::NOTIFICATION_TYPE           => 'required|string|in:bene_bank_downtime,fund_loading_downtime',
+        Entity::NOTIFICATION_TYPE           => 'required|string|custom',
     ];
 
     protected static $notificationEmailsRules     = [
@@ -77,6 +77,20 @@ class Validator extends Base\Validator
                 [
                     'invalid_mobile_numbers' => $invalidMobileNumbers,
                 ]);
+        }
+    }
+
+    public static function validateNotificationType($attribute, $value)
+    {
+        if (in_array($value, NotificationType::getNotificationTypes()) === false)
+        {
+            throw new BadRequestValidationFailureException(
+                'INVALID_NOTIFICATION_TYPE',
+                null,
+                [
+                    'notification_type' => $value
+                ]
+            );
         }
     }
 }

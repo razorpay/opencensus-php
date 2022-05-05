@@ -7,6 +7,7 @@ use Carbon\Carbon;
 
 use RZP\Models\Admin;
 use RZP\Constants\Mode;
+use RZP\Models\Merchant\MerchantNotificationConfig\NotificationType;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Tests\Functional\Fixtures\Entity\User;
@@ -41,9 +42,17 @@ class MerchantNotificationConfigTest extends TestCase
 
     protected function setLimitViaRedisKeyForFetchingConfigs($limit)
     {
+        $merchantNotificationConfigFetchLimit = (new Admin\Service)->getConfigKey(
+            ['key' => Admin\ConfigKey::MERCHANT_NOTIFICATION_CONFIG_FETCH_LIMIT]
+        );
+
+        $merchantNotificationConfigFetchLimit[NotificationType::BENE_BANK_DOWNTIME]    = $limit;
+        $merchantNotificationConfigFetchLimit[NotificationType::FUND_LOADING_DOWNTIME] = $limit;
+        $merchantNotificationConfigFetchLimit[NotificationType::PARTNER_BANK_HEALTH]   = $limit;
+
         (new Admin\Service)->setConfigKeys(
             [
-                Admin\ConfigKey::MERCHANT_NOTIFICATION_CONFIG_FETCH_LIMIT => $limit,
+                Admin\ConfigKey::MERCHANT_NOTIFICATION_CONFIG_FETCH_LIMIT => $merchantNotificationConfigFetchLimit,
             ]);
     }
 
@@ -442,6 +451,8 @@ class MerchantNotificationConfigTest extends TestCase
 
     public function testProcessDowntimeEventForWebhook()
     {
+        $this->markTestSkipped('Old payload no longer in use');
+
         Mail::fake();
 
         $this->testCreateMerchantNotificationConfig();

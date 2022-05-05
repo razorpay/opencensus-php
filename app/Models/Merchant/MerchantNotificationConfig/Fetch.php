@@ -2,8 +2,8 @@
 
 namespace RZP\Models\Merchant\MerchantNotificationConfig;
 
-use RZP\Http\BasicAuth\Type as AuthType;
 use RZP\Base;
+use RZP\Http\BasicAuth\Type as AuthType;
 
 class Fetch extends Base\Fetch
 {
@@ -11,7 +11,7 @@ class Fetch extends Base\Fetch
         self::DEFAULTS => [
             Entity::ID                => 'sometimes|string|min:14|max:18',
             Entity::MERCHANT_ID       => 'sometimes|string|size:14',
-            Entity::NOTIFICATION_TYPE => 'sometimes|string|max:100|in:bene_bank_downtime,fund_loading_downtime',
+            Entity::NOTIFICATION_TYPE => 'sometimes|string|max:100|custom',
             Entity::CONFIG_STATUS     => 'sometimes|string|in:enabled,disabled',
 
         ],
@@ -25,4 +25,9 @@ class Fetch extends Base\Fetch
             Entity::CONFIG_STATUS,
         ],
     ];
+
+    protected function validateNotificationType($attribute, $value)
+    {
+        Validator::validateNotificationType($attribute, $value);
+    }
 }

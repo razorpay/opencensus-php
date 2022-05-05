@@ -660,6 +660,8 @@ class Entity
     const MERCHANT_1CC_AUTH_CONFIGS    = 'merchant_1cc_auth_configs';
     const DIRECT_ACCOUNT_STATEMENT = 'direct_account_statement';
 
+    const PARTNER_BANK_HEALTH = 'partner_bank_health';
+
     /**
      * Defines a map of entites which are currently
      * being cached and associated cache version prefixes
@@ -1122,6 +1124,7 @@ class Entity
         self::PROMOTION_EVENT               => \RZP\Models\Promotion\Event::class,
         self::PAYOUT_DOWNTIMES              => \RZP\Models\PayoutDowntime::class,
         self::FUND_LOADING_DOWNTIMES        => \RZP\Models\FundLoadingDowntime::class,
+        self::PARTNER_BANK_HEALTH           => \RZP\Models\PartnerBankHealth::class,
 
         self::PAYOUTS_META                  => \RZP\Models\PayoutMeta::class,
         self::PAYOUT_OUTBOX                 => \RZP\Models\PayoutOutbox::class,

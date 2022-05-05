@@ -456,6 +456,11 @@ return [
         'test'       => env('AWS_ZIP_FIRS_DOCUMENTS_TEST_QUEUE'),
         'live'       => env('AWS_ZIP_FIRS_DOCUMENTS_LIVE_QUEUE'),
     ],
+
+    'partner_bank_health_notify' => [
+        'test'       => env('AWS_PARTNER_BANK_HEALTH_NOTIFY_TEST_QUEUE'),
+        'live'       => env('AWS_PARTNER_BANK_HEALTH_NOTIFY_LIVE_QUEUE'),
+    ],
     /*
     |--------------------------------------------------------------------------
     | Raw SQS Mappings

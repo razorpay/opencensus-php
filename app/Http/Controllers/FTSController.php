@@ -2,6 +2,7 @@
 
 namespace RZP\Http\Controllers;
 
+use Request;
 use ApiResponse;
 
 class FTSController extends Controller
@@ -198,6 +199,8 @@ class FTSController extends Controller
 
     public function channelNotify()
     {
+        $this->input = Request::all();
+
         $response = $this->app['fts_channel_notification']->channelNotify($this->input);
 
         return ApiResponse::json($response);

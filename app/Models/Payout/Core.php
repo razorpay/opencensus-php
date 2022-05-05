@@ -56,6 +56,7 @@ use RZP\Jobs\ScheduledPayoutsProcess;
 use RZP\Models\Transaction\CreditType;
 use RZP\Exception\BadRequestException;
 use RZP\Models\BankingAccountStatement;
+use RZP\Models\PartnerBankHealth\Events;
 use RZP\Models\Workflow\PayoutAmountRules;
 use RZP\Models\Workflow\Service\EntityMap;
 use RZP\Constants\Entity as EntityConstant;
@@ -4650,70 +4651,102 @@ class Core extends Base\Core
     {
         try
         {
-            if ($input['payload']['source'] === self::BENEFICIARY)
+            switch ($input['payload']['source'])
             {
-                $beneBankIfsc = $input['payload']['instrument']['bank'];
+                case self::BENEFICIARY:
 
-                $status = $input['payload']['status'];
+                    $beneBankIfsc = $input['payload']['instrument']['bank'];
 
-                (new Validator)->validateBeneStatusReceivedFromFts($status);
+                    $status = $input['payload']['status'];
 
-                $this->mutex->acquireAndRelease(
-                    Admin\ConfigKey::RX_EVENT_NOTIFICAITON_CONFIG_FTS_TO_PAYOUT,
-                    function () use ($beneBankIfsc, $status, $input)
-                    {
-                        $eventConfigFromFTS = (new Admin\Service)->getConfigKey([
-                            'key' => Admin\ConfigKey::RX_EVENT_NOTIFICAITON_CONFIG_FTS_TO_PAYOUT
-                        ]);
+                    (new Validator)->validateBeneStatusReceivedFromFts($status);
 
-                        $this->trace->info(
-                            TraceCode::BENE_BANK_EVENT_NOTIFICATION_RECEIVED,
-                            [
-                                'bank' => $beneBankIfsc,
-                                'status' => $status,
-                                'downtime_id' => $input['payload']['id'],
-                            ]);
-
-                        if ($status === 'resolved')
+                    $this->mutex->acquireAndRelease(
+                        Admin\ConfigKey::RX_EVENT_NOTIFICAITON_CONFIG_FTS_TO_PAYOUT,
+                        function () use ($beneBankIfsc, $status, $input)
                         {
-                            if (in_array($beneBankIfsc, array_keys($eventConfigFromFTS[self::BENEFICIARY]), true) === true)
+                            $eventConfigFromFTS = (new Admin\Service)->getConfigKey([
+                                                                                        'key' => Admin\ConfigKey::RX_EVENT_NOTIFICAITON_CONFIG_FTS_TO_PAYOUT
+                                                                                    ]);
+
+                            $this->trace->info(
+                                TraceCode::BENE_BANK_EVENT_NOTIFICATION_RECEIVED,
+                                [
+                                    'bank' => $beneBankIfsc,
+                                    'status' => $status,
+                                    'downtime_id' => $input['payload']['id'],
+                                ]);
+
+                            if ($status === 'resolved')
                             {
-                                unset($eventConfigFromFTS[self::BENEFICIARY][$beneBankIfsc]);
+                                if (in_array($beneBankIfsc, array_keys($eventConfigFromFTS[self::BENEFICIARY]), true) === true)
+                                {
+                                    unset($eventConfigFromFTS[self::BENEFICIARY][$beneBankIfsc]);
+                                }
                             }
-                        }
-                        else
-                        {
-                            $eventConfigFromFTS[self::BENEFICIARY][$beneBankIfsc] = array('status' => $status);
-                        }
+                            else
+                            {
+                                $eventConfigFromFTS[self::BENEFICIARY][$beneBankIfsc] = array('status' => $status);
+                            }
 
-                        (new Admin\Service)->setConfigKeys(
-                            [Admin\ConfigKey::RX_EVENT_NOTIFICAITON_CONFIG_FTS_TO_PAYOUT => $eventConfigFromFTS]);
+                            (new Admin\Service)->setConfigKeys(
+                                [Admin\ConfigKey::RX_EVENT_NOTIFICAITON_CONFIG_FTS_TO_PAYOUT => $eventConfigFromFTS]);
 
-                        $this->trace->info(
-                            TraceCode::BENE_BANK_EVENT_NOTIFICATION_CONFIG_UPDATE_SUCCESS,
-                            [
-                                'bene_bank_redis_config' => $eventConfigFromFTS,
-                            ]);
-                    },
-                    self::PAYOUT_MUTEX_LOCK_TIMEOUT,
-                    ErrorCode::BAD_REQUEST_PAYOUT_OPERATION_FOR_MERCHANT_IN_PROGRESS,
-                    2);
+                            $this->trace->info(
+                                TraceCode::BENE_BANK_EVENT_NOTIFICATION_CONFIG_UPDATE_SUCCESS,
+                                [
+                                    'bene_bank_redis_config' => $eventConfigFromFTS,
+                                ]);
+                        },
+                        self::PAYOUT_MUTEX_LOCK_TIMEOUT,
+                        ErrorCode::BAD_REQUEST_PAYOUT_OPERATION_FOR_MERCHANT_IN_PROGRESS,
+                        2);
 
-                $this->payoutServiceBeneEventUpdateClient->processBeneEventUpdateViaMicroservice($input);
+                    $this->payoutServiceBeneEventUpdateClient->processBeneEventUpdateViaMicroservice($input);
+                    break;
+
+                case Events::FAIL_FAST_HEALTH:
+                case Events::DOWNTIME:
+
+                    $serviceInstance = new \RZP\Models\PartnerBankHealth\Service();
+
+                    $serviceInstance->processStatusUpdateFromFTS($input['payload']);
+
+                    break;
+
+                default:
+                    throw new Exception\LogicException("Not a valid source : " . $input['payload']['source']);
             }
         }
         catch (\Throwable $exception)
         {
-            $this->trace->traceException(
-                $exception,
-                Trace::ERROR,
-                TraceCode::BENE_BANK_EVENT_NOTIFICATION_CONFIG_UPDATE_FAILED,
-                [
-                    'input' => $input,
-                ]);
-            $operation = 'Bene Bank uptime downtime config update failed';
+            if ($input['payload']['source'] === self::BENEFICIARY)
+            {
+                $this->trace->traceException(
+                    $exception,
+                    Trace::ERROR,
+                    TraceCode::BENE_BANK_EVENT_NOTIFICATION_CONFIG_UPDATE_FAILED,
+                    [
+                        'input' => $input,
+                    ]);
+                $operation = 'Bene Bank uptime downtime config update failed';
 
-            (new SlackNotification)->send($operation, $input, null, 1, 'x-payouts-core-alerts');
+                (new SlackNotification)->send($operation, $input, null, 1, 'x-payouts-core-alerts');
+
+            }
+
+            if ($input['payload']['source'] === Events::FAIL_FAST_HEALTH or
+                $input['payload']['source'] === Events::DOWNTIME)
+            {
+                $this->trace->traceException(
+                    $exception,
+                    Trace::ERROR,
+                    TraceCode::PARTNER_BANK_HEALTH_UPDATE_PROCESSING_FAILED,
+                    $input
+                );
+
+                throw $exception;
+            }
         }
     }
 
