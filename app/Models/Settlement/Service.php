@@ -2093,12 +2093,12 @@ class Service extends Base\Service
         if (isset($txn['SourceId']))
             $entity->setEntityId($txn['SourceId']);
 
-        if (isset($txn['sourceType']))
-            $entity->setType($txn['sourceType']);
+        if (isset($txn['SourceType']))
+            $entity->setType($txn['SourceType']);
 
-        if (isset($txn['createdAt']))
+        if (isset($txn['CreatedAt']))
         {
-            $entity->setCreatedAt($txn['createdAt']);
+            $entity->setCreatedAt($txn['CreatedAt']);
         }
         else
         {
