@@ -39,7 +39,7 @@ class Repository extends Base\Repository
         {
             $serialized[PaymentEntity::STATUS] = $entity->payment->getStatus();
 
-            $serialized[PaymentEntity::NOTES]  = $entity->payment->getNotes();
+            //$serialized[PaymentEntity::NOTES]  = $entity->payment->getNotes();
         }
 
         if ($entity->qrCode !== null)
