@@ -215,7 +215,7 @@ class Provider
 
         return $paymentProcessor->processAndReturnTerminal($paymentArray);
     }
-  
+
     /**
      * function will return terminal from cache is present,
      * if not will call the callabck method and get terminals.
@@ -250,6 +250,7 @@ class Provider
             }
             if (count($filteredTerminals) === 0)
             {
+                $this->trace->count(Metric::SMART_COLLECT_TERMINAL_CACHING_MISS);
                 $terminal    = $getTerminalsCallback();
                 $terminals   = $terminals === null ? [] : $terminals;
                 $terminals[] = $terminal->exportAttributes();
@@ -259,6 +260,7 @@ class Provider
             }
             else
             {
+                $this->trace->count(Metric::SMART_COLLECT_TERMINAL_CACHING_HIT);
                 $terminalAttributes = head($filteredTerminals);
 
                 return (new Terminal\Entity())->buildFromAttributes($terminalAttributes);
@@ -276,7 +278,7 @@ class Provider
         }
         return $getTerminalsCallback();
     }
-  
+
     public static function getUnsuportedProviderByRazorpay()
     {
         return [
