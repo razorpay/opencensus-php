@@ -124,6 +124,8 @@ class Gateway extends BaseProcessor
             $limit = self::RBL_ACCOUNT_STATEMENT_RECORDS_TO_FETCH_AT_ONCE_DEFAULT;
         }
 
+        $startTime = null;
+
         foreach ($bankTransactions as $index => $bankTransaction)
         {
             $recordsToCheck[] = $this->getColumnsToFindDuplicates($bankTransaction);
@@ -140,6 +142,17 @@ class Gateway extends BaseProcessor
             if ((($processedRecordCount % $limit) === 0) or
                 (($totalRecords === $totalRecordCount) and ($processedRecordCount % $limit) !== 0))
             {
+                $startTime = microtime(true);
+
+                $this->trace->info(
+                    TraceCode::BAS_DEDUPE_CHECK_ANALYSIS,
+                    [
+                        'channel'        => Channel::RBL,
+                        'account_number' => $accountNumber,
+                        'time_taken'     => (microtime(true) - $startTime) * 1000,
+                        'description'    => 'going to find duplicates records from db',
+                    ]);
+
                 if ($this->basDetails->getAccountType() === BasDetails\AccountType::DIRECT)
                 {
                     $existingRecords = $this->repo->banking_account_statement
@@ -150,6 +163,15 @@ class Gateway extends BaseProcessor
                     $existingRecords = $this->repo->banking_account_statement_pool_rbl
                         ->findExistingStatementRecordsForBank($recordsToCheck);
                 }
+
+                $this->trace->info(
+                    TraceCode::BAS_DEDUPE_CHECK_ANALYSIS,
+                    [
+                        'channel'        => Channel::RBL,
+                        'account_number' => $accountNumber,
+                        'time_taken'     => (microtime(true) - $startTime) * 1000,
+                        'description'    => 'dedupe db query executed',
+                    ]);
 
                 /** @var Entity $record */
                 foreach ($existingRecords as $record)
@@ -173,6 +195,15 @@ class Gateway extends BaseProcessor
                 $processedRecordCount = 0;
             }
         }
+
+        $this->trace->info(
+            TraceCode::BAS_DEDUPE_CHECK_ANALYSIS,
+            [
+                'channel'        => Channel::RBL,
+                'account_number' => $accountNumber,
+                'time_taken'     => (microtime(true) - $startTime) * 1000,
+                'description'    => 'skip duplicate records complete',
+            ]);
 
         if ($skippedRecordCount !== 0)
         {
