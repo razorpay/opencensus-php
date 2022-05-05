@@ -13846,7 +13846,7 @@ class Route
         'currency_fetch_all_proxy'                          => HeartbeatLagChecker::SLAVE,
         'fetch_product_status'                              => HeartbeatLagChecker::SLAVE,
         'get_instant_refunds_pricing_merchant'              => HeartbeatLagChecker::SLAVE,
-        'merchant_balance_fetch'                            => HeartbeatLagChecker::SLAVE,
+        'merchant_balance_fetch'                            => HeartbeatLagChecker::HEARTBEAT,
         'merchant_fetch_keys'                               => HeartbeatLagChecker::SLAVE,
         'merchant_gst_fetch'                                => HeartbeatLagChecker::SLAVE,
         'payment_page_list'                                 => HeartbeatLagChecker::SLAVE,
