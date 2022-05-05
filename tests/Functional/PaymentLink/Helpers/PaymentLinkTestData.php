@@ -4547,4 +4547,348 @@ return [
             ],
         ],
     ],
+
+    'testCreatePaymentPageWithUdfSchemaPatternInvalidShouldFail' => [
+        'request'  => [
+            'url'     => '/payment_pages',
+            'method'  => 'post',
+            'content' => [
+                'receipt'       => '00000000000001',
+                'title'         => 'Sample title',
+                'description'   => '[{"insert":"Sample description"},{"insert":"\\n"}]',
+                'notes'         => [
+                    'sample_key' => 'Sample notes',
+                ],
+                "settings" => [
+                    "udf_schema"    => "[{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"unknown\",\"settings\":{\"position\":1}},{\"name\":\"phone\",\"title\":\"Phone\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":\"8\",\"options\":{},\"settings\":{\"position\":2}}]",
+                ],
+                'payment_page_items' => [
+                    [
+                        'item' => [
+                            'name'        =>  'amount',
+                            'description' => NULL,
+                            'amount'      => 100000,
+                            'currency'    => 'INR',
+                        ],
+                        'mandatory'         => TRUE,
+                        'image_url'         => 'dummy',
+                        'stock'             => 10000,
+                        'min_purchase'      => 2,
+                        'max_purchase'      => 10000,
+                        'min_amount'        => NULL,
+                        'max_amount'        => NULL,
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testUpdatePaymentPageWithUdfSchemaPatternInvalidShouldFail' => [
+        'request'  => [
+            'url'     => '/payment_pages/pl_100000000000pl',
+            'method'  => 'patch',
+            'content' => [
+                'receipt'       => '00000000000001',
+                'title'         => 'Sample title',
+                'description'   => '[{"insert":"Sample description"},{"insert":"\\n"}]',
+                'notes'         => [
+                    'sample_key' => 'Sample notes',
+                ],
+                "settings" => [
+                    "udf_schema"    => "[{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"unknown\",\"settings\":{\"position\":1}},{\"name\":\"phone\",\"title\":\"Phone\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":\"8\",\"options\":{},\"settings\":{\"position\":2}}]",
+                ],
+                'payment_page_items' => [
+                    [
+                        'item' => [
+                            'name'        =>  'amount',
+                            'description' => NULL,
+                            'amount'      => 100000,
+                            'currency'    => 'INR',
+                        ],
+                        'mandatory'         => TRUE,
+                        'image_url'         => 'dummy',
+                        'stock'             => 10000,
+                        'min_purchase'      => 2,
+                        'max_purchase'      => 10000,
+                        'min_amount'        => NULL,
+                        'max_amount'        => NULL,
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreatePaymentPageWithUdfSchemaTypeInvalidShouldFail' => [
+        'request'  => [
+            'url'     => '/payment_pages',
+            'method'  => 'post',
+            'content' => [
+                'receipt'       => '00000000000001',
+                'title'         => 'Sample title',
+                'description'   => '[{"insert":"Sample description"},{"insert":"\\n"}]',
+                'notes'         => [
+                    'sample_key' => 'Sample notes',
+                ],
+                "settings" => [
+                    "udf_schema"    => "[{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"unknown\",\"pattern\":\"email\",\"settings\":{\"position\":1}},{\"name\":\"phone\",\"title\":\"Phone\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":\"8\",\"options\":{},\"settings\":{\"position\":2}}]",
+                ],
+                'payment_page_items' => [
+                    [
+                        'item' => [
+                            'name'        =>  'amount',
+                            'description' => NULL,
+                            'amount'      => 100000,
+                            'currency'    => 'INR',
+                        ],
+                        'mandatory'         => TRUE,
+                        'image_url'         => 'dummy',
+                        'stock'             => 10000,
+                        'min_purchase'      => 2,
+                        'max_purchase'      => 10000,
+                        'min_amount'        => NULL,
+                        'max_amount'        => NULL,
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testUpdatePaymentPageWithUdfSchemaTypeInvalidShouldFail' => [
+        'request'  => [
+            'url'     => '/payment_pages/pl_100000000000pl',
+            'method'  => 'patch',
+            'content' => [
+                'receipt'       => '00000000000001',
+                'title'         => 'Sample title',
+                'description'   => '[{"insert":"Sample description"},{"insert":"\\n"}]',
+                'notes'         => [
+                    'sample_key' => 'Sample notes',
+                ],
+                "settings" => [
+                    "udf_schema"    => "[{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"unknown\",\"pattern\":\"email\",\"settings\":{\"position\":1}},{\"name\":\"phone\",\"title\":\"Phone\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":\"8\",\"options\":{},\"settings\":{\"position\":2}}]",
+                ],
+                'payment_page_items' => [
+                    [
+                        'item' => [
+                            'name'        =>  'amount',
+                            'description' => NULL,
+                            'amount'      => 100000,
+                            'currency'    => 'INR',
+                        ],
+                        'mandatory'         => TRUE,
+                        'image_url'         => 'dummy',
+                        'stock'             => 10000,
+                        'min_purchase'      => 2,
+                        'max_purchase'      => 10000,
+                        'min_amount'        => NULL,
+                        'max_amount'        => NULL,
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreatePaymentPageWithUdfSchemaOptionCmpInvalidShouldFail' => [
+        'request'  => [
+            'url'     => '/payment_pages',
+            'method'  => 'post',
+            'content' => [
+                'receipt'       => '00000000000001',
+                'title'         => 'Sample title',
+                'description'   => '[{"insert":"Sample description"},{"insert":"\\n"}]',
+                'notes'         => [
+                    'sample_key' => 'Sample notes',
+                ],
+                "settings" => [
+                    "udf_schema"    => "[{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"email\",\"pattern\":\"email\",\"settings\":{\"position\":1}},{\"name\":\"phone\",\"title\":\"Phone\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":\"8\",\"options\":{},\"settings\":{\"position\":2}}, {\"name\":\"nmin\",\"title\":\"nmin\",\"required\":false,\"type\":\"string\",\"options\":{\"cmp\":\"unknown\"},\"settings\":{\"position\":3}}]",
+                ],
+                'payment_page_items' => [
+                    [
+                        'item' => [
+                            'name'        =>  'amount',
+                            'description' => NULL,
+                            'amount'      => 100000,
+                            'currency'    => 'INR',
+                        ],
+                        'mandatory'         => TRUE,
+                        'image_url'         => 'dummy',
+                        'stock'             => 10000,
+                        'min_purchase'      => 2,
+                        'max_purchase'      => 10000,
+                        'min_amount'        => NULL,
+                        'max_amount'        => NULL,
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testUpdatePaymentPageWithUdfSchemaOptionCmpInvalidShouldFail' => [
+        'request'  => [
+            'url'     => '/payment_pages/pl_100000000000pl',
+            'method'  => 'patch',
+            'content' => [
+                'receipt'       => '00000000000001',
+                'title'         => 'Sample title',
+                'description'   => '[{"insert":"Sample description"},{"insert":"\\n"}]',
+                'notes'         => [
+                    'sample_key' => 'Sample notes',
+                ],
+                "settings" => [
+                    "udf_schema"    => "[{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"email\",\"pattern\":\"email\",\"settings\":{\"position\":1}},{\"name\":\"phone\",\"title\":\"Phone\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":\"8\",\"options\":{},\"settings\":{\"position\":2}}, {\"name\":\"nmin\",\"title\":\"nmin\",\"required\":false,\"type\":\"string\",\"options\":{\"cmp\":\"unknown\"},\"settings\":{\"position\":3}}]",
+                ],
+                'payment_page_items' => [
+                    [
+                        'item' => [
+                            'name'        =>  'amount',
+                            'description' => NULL,
+                            'amount'      => 100000,
+                            'currency'    => 'INR',
+                        ],
+                        'mandatory'         => TRUE,
+                        'image_url'         => 'dummy',
+                        'stock'             => 10000,
+                        'min_purchase'      => 2,
+                        'max_purchase'      => 10000,
+                        'min_amount'        => NULL,
+                        'max_amount'        => NULL,
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreatePaymentPageWithUdfSchemaXssShouldFail' => [
+        'request'  => [
+            'url'     => '/payment_pages',
+            'method'  => 'post',
+            'content' => [
+                'receipt'       => '00000000000001',
+                'title'         => 'Sample title',
+                'description'   => '[{"insert":"Sample description"},{"insert":"\\n"}]',
+                'notes'         => [
+                    'sample_key' => 'Sample notes',
+                ],
+                "settings" => [
+                    "udf_schema"    => "[{\"name\":\"email\",\"autofocus\": \"1\",\"onfocus\": \"console.log(`XSS`)\", \"required\":true,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"unknown\",\"settings\":{\"position\":1}},{\"name\":\"phone\",\"title\":\"Phone\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":\"8\",\"options\":{},\"settings\":{\"position\":2}}]",
+                ],
+                'payment_page_items' => [
+                    [
+                        'item' => [
+                            'name'        =>  'amount',
+                            'description' => NULL,
+                            'amount'      => 100000,
+                            'currency'    => 'INR',
+                        ],
+                        'mandatory'         => TRUE,
+                        'image_url'         => 'dummy',
+                        'stock'             => 10000,
+                        'min_purchase'      => 2,
+                        'max_purchase'      => 10000,
+                        'min_amount'        => NULL,
+                        'max_amount'        => NULL,
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\ExtraFieldsException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED,
+        ],
+    ],
+
+    'testUpdatePaymentPageWithUdfSchemaXssShouldFail' => [
+        'request'  => [
+            'url'     => '/payment_pages/pl_100000000000pl',
+            'method'  => 'patch',
+            'content' => [
+                'receipt'       => '00000000000001',
+                'title'         => 'Sample title',
+                'description'   => '[{"insert":"Sample description"},{"insert":"\\n"}]',
+                'notes'         => [
+                    'sample_key' => 'Sample notes',
+                ],
+                "settings" => [
+                    "udf_schema"    => "[{\"name\":\"email\",\"autofocus\": \"1\",\"onfocus\": \"console.log(`XSS`)\", \"required\":true,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"unknown\",\"settings\":{\"position\":1}},{\"name\":\"phone\",\"title\":\"Phone\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":\"8\",\"options\":{},\"settings\":{\"position\":2}}]",
+                ],
+                'payment_page_items' => [
+                    [
+                        'item' => [
+                            'name'        =>  'amount',
+                            'description' => NULL,
+                            'amount'      => 100000,
+                            'currency'    => 'INR',
+                        ],
+                        'mandatory'         => TRUE,
+                        'image_url'         => 'dummy',
+                        'stock'             => 10000,
+                        'min_purchase'      => 2,
+                        'max_purchase'      => 10000,
+                        'min_amount'        => NULL,
+                        'max_amount'        => NULL,
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\ExtraFieldsException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED,
+        ],
+    ],
 ];

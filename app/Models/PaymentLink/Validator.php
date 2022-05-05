@@ -16,6 +16,9 @@ use RZP\Models\LineItem;
 use RZP\Constants\Timezone;
 use RZP\Models\Currency\Currency;
 use RZP\Exception\BadRequestException;
+use RZP\Models\PaymentLink\Template\UdfType;
+use RZP\Models\PaymentLink\Template\Pattern;
+use RZP\Models\PaymentLink\Template\OptionCmp;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\PaymentLink\Template\UdfSchema;
 
@@ -29,6 +32,8 @@ use RZP\Models\PaymentLink\Template\UdfSchema;
 class Validator extends Base\Validator
 {
     const MAX_ALLOWED_PAYMENT_PAGE_ITEMS = 25;
+
+    const UDF_SCHEMA_VALIDATION_EXPERIMENT = 'udf_schema_validation_experiment';
 
     protected static $createRules = [
         Entity::CURRENCY        => 'filled|string|currency|custom',
@@ -116,11 +121,42 @@ class Validator extends Base\Validator
      */
     protected static $udfSchemaRules = [
         'udf_schema'         => 'array|max:15',
+
+        // should be commented, as this will be handled in $udfSchemaElementRules
         'udf_schema.*.name'  => 'required|string|max:255',
         'udf_schema.*.type'  => 'required|string|in:string,number',
         'udf_schema.*.title' => 'required|string|max:255',
         // Additional optional parameters are left intentionally, for now at least.
         // This is because there are keys conditioned to type.
+    ];
+
+    protected static $udfSchemaElementRules = [
+        'name'          => 'required|string|max:255',
+        'type'          => 'required|string|custom',
+        'title'         => 'required|string|max:255',
+        'required'      => 'bool',
+        'pattern'       => 'string|custom',
+        'settings'      => 'required|array',
+        'options'       => 'array',
+        'minLength'     => 'numeric',
+        'maxLength'     => 'numeric',
+        'checked'       => 'string',
+        'readonly'      => 'string',
+        'placeholder'   => 'string',
+        'description'   => 'string',
+        'enum'          => 'array'
+    ];
+
+    protected static $udfSchemaElementSettingsRules = [
+        'position' => 'required|numeric'
+    ];
+
+    protected static $udfSchemaElementOptionsRules = [
+        'cmp'                   => 'string|custom',
+        'enum_labels'           => 'array',
+        'keydown_restrictive'   => 'bool',
+        'is_shiprocket'         => 'bool',
+        'is_zapier'             => 'bool',
     ];
 
     protected static $uploadImagesRules = [
@@ -457,8 +493,7 @@ class Validator extends Base\Validator
         }
 
         // Additionally, validates UDF schema
-        $udfSchema = json_decode($settings[Entity::UDF_SCHEMA] ?? '{}', true);
-        $this->validateInput('udfSchema', [Entity::UDF_SCHEMA => $udfSchema]);
+        $this->validateUdfSchema($input);
     }
 
     /**
@@ -804,6 +839,48 @@ class Validator extends Base\Validator
         ViewType::checkViewType($value);
     }
 
+    /**
+     * Custom Validation for Udf Type
+     *
+     * @param string $attribute
+     * @param string $value
+     *
+     * @return void
+     * @throws \RZP\Exception\BadRequestValidationFailureException
+     */
+    public function validateType(string $attribute,string $value)
+    {
+        UdfType::validate($value);
+    }
+
+    /**
+     * Custom Validation for Udf pattern
+     *
+     * @param string $attribute
+     * @param string $value
+     *
+     * @return void
+     * @throws \RZP\Exception\BadRequestValidationFailureException
+     */
+    public function validatePattern(string $attribute,string $value)
+    {
+        Pattern::validate($value);
+    }
+
+    /**
+     * Custom Validation for Udf options cmp
+     *
+     * @param string $attribute
+     * @param string $value
+     *
+     * @return void
+     * @throws \RZP\Exception\BadRequestValidationFailureException
+     */
+    public function validateCmp(string $attribute,string $value)
+    {
+        OptionCmp::validate($value);
+    }
+
     public function validatePageViewable(Entity $paymentLink)
     {
         if ($paymentLink->merchant->isSuspended() === true)
@@ -937,5 +1014,44 @@ class Validator extends Base\Validator
         }
 
         return static::$$partnerVar;
+    }
+
+    /**
+     * @param array $input
+     *
+     * @return void
+     */
+    private function validateUdfSchema(array $input)
+    {
+        $udfSchema = array_get($input, Entity::SETTINGS .'.'.Entity::UDF_SCHEMA, '{}');
+
+        $udfSchema = json_decode($udfSchema, true);
+
+        $this->validateInput('udfSchema', [Entity::UDF_SCHEMA => $udfSchema]);
+
+        $app = App::getFacadeRoot();
+
+        $merchant = $app['basicauth']->getMerchant();
+
+        $variant = $app->razorx->getTreatment(
+            $merchant->getId(),
+            self::UDF_SCHEMA_VALIDATION_EXPERIMENT,
+            $app['rzp.mode']
+        );
+
+        if ($variant !== 'on')
+        {
+            return;
+        }
+
+        // validate each element in the schema
+        foreach ($udfSchema as $udf)
+        {
+            $this->validateInput('udfSchemaElement', $udf);
+
+            $this->validateInput('udfSchemaElementSettings', $udf['settings']);
+
+            $this->validateInput('udfSchemaElementOptions', array_get($udf, 'options', []));
+        }
     }
 }

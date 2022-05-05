@@ -3054,6 +3054,106 @@ class PaymentLinkTest extends TestCase
         ]);
     }
 
+    /**
+     * @group nocode_pp_udf
+     * @return void
+     */
+    public function testCreatePaymentPageWithUdfSchemaPatternInvalidShouldFail()
+    {
+        $this->mockRazorxExperiments([PaymentLink\Validator::UDF_SCHEMA_VALIDATION_EXPERIMENT => 'on']);
+
+        $this->startTest();
+    }
+
+    /**
+     * @group nocode_pp_udf
+     * @return void
+     */
+    public function testUpdatePaymentPageWithUdfSchemaPatternInvalidShouldFail()
+    {
+        $this->mockRazorxExperiments([PaymentLink\Validator::UDF_SCHEMA_VALIDATION_EXPERIMENT => 'on']);
+
+        $this->createPaymentLink();
+        $this->createPaymentPageItem();
+
+        $this->startTest();
+    }
+
+    /**
+     * @group nocode_pp_udf
+     * @return void
+     */
+    public function testCreatePaymentPageWithUdfSchemaTypeInvalidShouldFail()
+    {
+        $this->mockRazorxExperiments([PaymentLink\Validator::UDF_SCHEMA_VALIDATION_EXPERIMENT => 'on']);
+
+        $this->startTest();
+    }
+
+    /**
+     * @group nocode_pp_udf
+     * @return void
+     */
+    public function testUpdatePaymentPageWithUdfSchemaTypeInvalidShouldFail()
+    {
+        $this->mockRazorxExperiments([PaymentLink\Validator::UDF_SCHEMA_VALIDATION_EXPERIMENT => 'on']);
+
+        $this->createPaymentLink();
+        $this->createPaymentPageItem();
+
+        $this->startTest();
+    }
+
+    /**
+     * @group nocode_pp_udf
+     * @return void
+     */
+    public function testCreatePaymentPageWithUdfSchemaOptionCmpInvalidShouldFail()
+    {
+        $this->mockRazorxExperiments([PaymentLink\Validator::UDF_SCHEMA_VALIDATION_EXPERIMENT => 'on']);
+
+        $this->startTest();
+    }
+
+    /**
+     * @group nocode_pp_udf
+     * @return void
+     */
+    public function testUpdatePaymentPageWithUdfSchemaOptionCmpInvalidShouldFail()
+    {
+        $this->mockRazorxExperiments([PaymentLink\Validator::UDF_SCHEMA_VALIDATION_EXPERIMENT => 'on']);
+
+        $this->createPaymentLink();
+        $this->createPaymentPageItem();
+
+        $this->startTest();
+    }
+
+    /**
+     * @group nocode_pp_udf
+     * @return void
+     */
+    public function testCreatePaymentPageWithUdfSchemaXssShouldFail()
+    {
+        $this->mockRazorxExperiments([PaymentLink\Validator::UDF_SCHEMA_VALIDATION_EXPERIMENT => 'on']);
+
+        $this->startTest();
+    }
+
+    /**
+     * @group nocode_pp_udf
+     * @return void
+     */
+    public function testUpdatePaymentPageWithUdfSchemaXssShouldFail()
+    {
+        $this->mockRazorxExperiments([PaymentLink\Validator::UDF_SCHEMA_VALIDATION_EXPERIMENT => 'on']);
+
+        $this->createPaymentLink();
+        $this->createPaymentPageItem();
+
+        $this->startTest();
+    }
+
     // -------------------- Protected methods --------------------
 
     protected function assertManipulateOrderItemAndMakePayment(
