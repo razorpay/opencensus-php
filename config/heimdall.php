@@ -1676,6 +1676,10 @@ return [
                 'description' => 'Allows an admin user to request for an invite for D2C bureau report pull',
                 'assignable'  => true,
             ],
+            Permission::CAPITAL_LOS_APPLICATION_OFFER_EDIT_PRIVILEGED => [
+                'description' => 'Allows an admin user to create an offer above a specified limit',
+                'assignable'  => true,
+            ],
         ],
 
         PermissionCategory::PAYOUTS => [
