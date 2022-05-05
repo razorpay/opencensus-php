@@ -487,11 +487,15 @@ final class RazorxTreatment
     // Experiment to cache terminals for bank Transfer
     const SMART_COLLECT_TERMINAL_CACHING = 'smart_collect_terminal_caching';
 
+    // Experiment to toggle propagating partner-added features to submerchants
+    const PROPAGATE_PARTNER_ADDED_FEATURE_TO_SUBMERCHANTS = "propagate_partner_added_feature_to_submerchant";
+
     // Experiment to accept new axis UMRN in mandate migration
     const ACCEPT_NEW_AXIS_UMRN_MANDATE_MIGRATION = 'accept_new_axis_umrn_mandate_migration';
 
     /** @var string Experiment to deprecate tos_acceptance field from /accounts api */
     const IGNORE_TOS_ACCEPTANCE = 'ignore_tos_acceptance';
+  
     /** @var string Experiment to control the provisioning of network tokens for global saved cards. */
     public const PROVISION_GLOBAL_NETWORK_TOKEN = 'provision_global_network_token';
 }

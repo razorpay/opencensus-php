@@ -18,6 +18,7 @@ class Type
     const MERCHANTS     = 'merchants';
     const APPLICATIONS  = 'applications';
     const ORG            = 'org';
+    const PARTNER_APPLICATION  = 'partner_application';
 
     // Application ids
     const TEST_APP_ID    = '10000TestAppId';
@@ -39,6 +40,7 @@ class Type
         self::ACCOUNTS     => Constants::MERCHANT,
         self::APPLICATIONS => Constants::APPLICATION,
         self::ORG          => Constants::ORG,
+        self::PARTNER_APPLICATION => Constants::PARTNER_APPLICATION
     ];
 
     /**

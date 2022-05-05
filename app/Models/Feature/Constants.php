@@ -1814,6 +1814,7 @@ class Constants
     const MERCHANT                      = 'merchant';
     const APPLICATION                   = 'application';
     const ORG                           = 'org';
+    const PARTNER_APPLICATION           = 'partner_application';
 
     // Keys used in the feature on-boarding workflow
     const STATUS                        = 'status';

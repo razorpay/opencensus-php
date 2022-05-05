@@ -4,7 +4,9 @@ namespace Tests\Unit\Models\Merchant;
 
 
 use Mockery;
+use RZP\Constants\Mode;
 use RZP\Models\Merchant\Detail\BusinessType;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Merchant\Service;
 use RZP\Tests\Functional\Fixtures\Entity\MerchantDetail;
 use Tests\Unit\TestCase;
@@ -75,6 +77,40 @@ class UserTest extends TestCase
 
         $submerchant->shouldNotHaveReceived('setMaxPaymentAmount');
 
+        $this->assertNull($result);
+    }
+
+    public function testAddPartnerAddedFeaturesToSubmerchantWhenPartnerIsNull()
+    {
+        $coreMock = $this->merchantCore->makePartial();
+        $submerchant = $this->merchantEntityMock;
+
+        $result = $coreMock->addPartnerAddedFeaturesToSubmerchant($submerchant, null);
+
+        $coreMock->shouldNotHaveReceived("isRazorxExperimentEnable");
+        $coreMock->shouldNotHaveReceived("addPartnerAddedFeaturesToSubmerchantOnMode");
+        $this->assertNull($result);
+    }
+
+    public function testAddPartnerAddedFeaturesToSubmerchantWhenPartnerIsNotNull()
+    {
+        $coreMock = $this->merchantCore->makePartial();
+        $submerchant = $this->merchantEntityMock;
+        $partner = $this->merchantEntityMock;
+        $partner->shouldReceive('getId')->andReturn('10000000000001');
+
+        $coreMock->shouldReceive('isRazorxExperimentEnable')
+            ->with('10000000000001', RazorxTreatment::PROPAGATE_PARTNER_ADDED_FEATURE_TO_SUBMERCHANTS)
+            ->andReturn(true);
+        $coreMock->shouldReceive('addPartnerAddedFeaturesToSubmerchantOnMode')
+            ->with($submerchant, $partner, Mode::TEST)->andReturn();
+        $coreMock->shouldReceive('addPartnerAddedFeaturesToSubmerchantOnMode')
+            ->with($submerchant, $partner, Mode::LIVE)->andReturn();
+
+        $result = $coreMock->addPartnerAddedFeaturesToSubmerchant($submerchant, $this->merchantEntityMock);
+
+        $coreMock->shouldHaveReceived("isRazorxExperimentEnable");
+        $coreMock->shouldHaveReceived("addPartnerAddedFeaturesToSubmerchantOnMode")->twice();
         $this->assertNull($result);
     }
 

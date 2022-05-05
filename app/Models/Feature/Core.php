@@ -59,18 +59,22 @@ class Core extends Base\Core
      * @param array $input
      * @param bool  $shouldSync Should the entity be save on both test and live
      * @param bool $shouldBackfillForLa Should push back fill job for route_la_penny_testing feature
+     * @param string|null $mode
      *
      * @return Entity
      * @throws Exception\BadRequestException
      * @throws Exception\ServerErrorException
      * @throws Exception\BadRequestValidationFailureException
      */
-    public function create(array $input, bool $shouldSync = false, bool $shouldBackfillForLa = true): Entity
+    public function create(array $input, bool $shouldSync = false, bool $shouldBackfillForLa = true, string $mode = null): Entity
     {
         $tokenizationGateways = $input['tokenization_gateways'] ?? [];
         unset($input['tokenization_gateways']);
 
         $feature = (new Entity)->build($input);
+        if ($mode !== null) {
+            $feature->setConnection($mode);
+        }
 
         $entityType = $input[Entity::ENTITY_TYPE];
 
@@ -114,7 +118,7 @@ class Core extends Base\Core
         //
         else
         {
-            if ($entityType === Constants::APPLICATION)
+            if (in_array($entityType, [Constants::APPLICATION, Constants::PARTNER_APPLICATION], true) === true)
             {
                 $merchantApplication = $this->repo->merchant_application
                     ->fetchMerchantApplication($entityId, MerchantApplications\Entity::APPLICATION_ID);
@@ -133,9 +137,9 @@ class Core extends Base\Core
 
         $feature->generateId();
 
-        $existingFeatures = Tracer::inspan(['name' => HyperTrace::FETCH_FEATURE], function () use ($entityType, $entityId) {
+        $existingFeatures = Tracer::inspan(['name' => HyperTrace::FETCH_FEATURE], function () use ($entityType, $entityId, $mode) {
 
-            return $this->repo->feature->fetchByEntityTypeAndEntityId($entityType, $entityId);
+            return $this->repo->feature->fetchByEntityTypeAndEntityId($entityType, $entityId, $mode);
         });
 
         $assignedFeatureNames = $existingFeatures->pluck(Entity::NAME)->toArray();

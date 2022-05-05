@@ -858,14 +858,15 @@ class Merchant extends Base
         return $this->edit($id, ['partner_type' => $type]);
     }
 
-    public function addFeatures($featureNames, $id = '10000000000000')
+    public function addFeatures($featureNames, $id = '10000000000000', $entity_type = Feature\Constants::MERCHANT)
     {
         $features = collect();
 
         foreach ((array) $featureNames as $featureName) {
             $attributes = [
                 'name'      => $featureName,
-                'entity_id' => $id
+                'entity_id' => $id,
+                'entity_type' => $entity_type
             ];
             $features->push($this->fixtures->create('feature', $attributes));
         }

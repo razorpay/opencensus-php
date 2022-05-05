@@ -1525,6 +1525,8 @@ class Core extends Base\Core
             $this->addDefaultFeatures($merchant);
 
         });
+
+        $this->addPartnerAddedFeaturesToSubmerchant($merchant, $aggregatorMerchant);
     }
 
     private function addDefaultFeatures(Entity $merchant)
@@ -1544,6 +1546,58 @@ class Core extends Base\Core
 
             $this->setPaymentLinkServiceDefaultForMerchant($merchant);
         }
+    }
+
+    public function addPartnerAddedFeaturesToSubmerchant(Entity $merchant, Entity $partner = null)
+    {
+        if(empty($partner)) {
+            return null;
+        }
+        $isPropagatePartnerAddedFeature = $this->isRazorxExperimentEnable(
+            $partner->getId(),
+            RazorxTreatment::PROPAGATE_PARTNER_ADDED_FEATURE_TO_SUBMERCHANTS
+        );
+
+        if($isPropagatePartnerAddedFeature === true) {
+            $this->addPartnerAddedFeaturesToSubmerchantOnMode($merchant, $partner, Mode::LIVE);
+            $this->addPartnerAddedFeaturesToSubmerchantOnMode($merchant, $partner, Mode::TEST);
+        }
+    }
+
+    public function addPartnerAddedFeaturesToSubmerchantOnMode(Entity $merchant, Entity $partner, string $mode)
+    {
+        $this->repo->transactionOnConnection(function () use ($merchant, $partner, $mode)
+        {
+            $merchantApplicationCore = new MerchantApplications\Core();
+            $appType = $merchantApplicationCore->getDefaultAppTypeForPartner($partner);
+            $appId = $merchantApplicationCore->getMerchantAppIds($partner->getId(), [$appType])[0];
+
+            $featureNames   =  $this->repo
+                                    ->feature
+                                    ->fetchByEntityTypeAndEntityId(
+                                        Feature\Constants::PARTNER_APPLICATION,
+                                        $appId,
+                                        $mode
+                                    )
+                                    ->pluck(Feature\Entity::NAME);
+
+            $featureParams = new Base\Collection;
+            foreach ($featureNames as $featureName)
+            {
+                $featureParams->push([
+                    Feature\Entity::ENTITY_TYPE => Feature\Constants::MERCHANT,
+                    Feature\Entity::ENTITY_ID   => $merchant->getId(),
+                    Feature\Entity::NAME        => $featureName
+                ]);
+            }
+
+            $featureCore = new Feature\Core();
+            $featureCore->mode = $mode;
+            $featureParams->map(function ($item) use ($featureCore, $mode)
+            {
+                return $featureCore->create($item, false, true, $mode);
+            });
+        }, $mode);
     }
 
     public function addMerchantSupportingEntities(Entity $merchant, Entity $aggregatorMerchant = null,

@@ -11,6 +11,8 @@ use RZP\Constants\Timezone;
 use RZP\Models\Batch;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
+use RZP\Models\Merchant\Constants as MerchantConstants;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\User\Role;
 use Razorpay\OAuth\Application;
 use Illuminate\Http\UploadedFile;
@@ -1601,6 +1603,37 @@ class PartnerTest extends OAuthTestCase
         $this->ba->proxyAuth();
 
         $this->startTest();
+    }
+
+    public function testAddPartnerAddedFeaturesToSubmerchantOnMode()
+    {
+        list($application, $accessMap) = $this->createPartnerMerchantAndSubMerchant(MerchantConstants::AGGREGATOR);
+        $partner = $this->getDbEntity('merchant', ['id' => $application->getMerchantId()]);
+        $merchant = $accessMap->merchant()->first();
+
+        $this->fixtures->on('test')->merchant->addFeatures(
+            ['feature_bbps'],
+            $application->getId(),
+            Feature\Constants::PARTNER_APPLICATION
+        );
+
+        $core = new \RZP\Models\Merchant\Core;
+
+        $core->addPartnerAddedFeaturesToSubmerchantOnMode($merchant, $partner, Mode::TEST);
+
+        $testFeature = $this->getDbEntities(
+            'feature',
+            ['entity_id' => $merchant->getId(), 'name' => 'feature_bbps'],
+            Mode::TEST
+        )->toArray();
+        $this->assertNotEmpty($testFeature);
+
+        $liveFeature = $this->getDbEntities(
+            'feature',
+            ['entity_id' => $merchant->getId(), 'name' => 'feature_bbps'],
+            Mode::LIVE
+        )->toArray();
+        $this->assertEmpty($liveFeature);
     }
 
     public function testCreatePartnerSubmerchantWithProduct()

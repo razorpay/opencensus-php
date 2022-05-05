@@ -23,13 +23,13 @@ class Repository extends Base\Repository
         Entity::NAME        => 'sometimes|string|max:25'
     );
 
-    public function fetchByEntityTypeAndEntityId(string $entityType, string $entityId)
+    public function fetchByEntityTypeAndEntityId(string $entityType, string $entityId, string $mode = null)
     {
         $cacheTtl = $this->getCacheTtl();
         $cacheTags = Entity::getCacheTagsForEntities($entityType, $entityId);
 
-        return $this->newQuery()
-                    ->where(Entity::ENTITY_TYPE, $entityType)
+        $query = ($mode === null) ? $this->newQuery() : $this->newQueryWithConnection($mode);
+        return $query->where(Entity::ENTITY_TYPE, $entityType)
                     ->where(Entity::ENTITY_ID, $entityId)
                     ->remember($cacheTtl)
                     ->cacheTags($cacheTags)
