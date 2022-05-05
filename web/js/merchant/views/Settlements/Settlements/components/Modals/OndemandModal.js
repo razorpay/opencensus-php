@@ -29,13 +29,12 @@ import Amount, { AmountTooltip } from 'common/ui/Amount';
 import debounce from 'common/utils/debounce';
 import PropTypes from 'prop-types';
 import ModalCloseReasons from 'merchant/views/Settlements/Settlements/components/Modals/ModalCloseReasons';
-import SettlementsUpsellBanner from 'merchant/views/Settlements/Settlements/components/SettlementsUpsellBanner';
 import { onDemandModalTrackEvents } from '../../../trackEvents';
 import { bindActionCreators } from 'redux';
 import Nudge from './ScheduledModal/components/Nudge';
-import SamedayUpselling from './ScheduledModal/components/Upselling';
 import { setEsNudgeSeen } from './ScheduledModal/utils';
 import { NUDGE_TYPES } from './ScheduledModal/constants';
+import UpsellBanners from '../UpsellBanners';
 
 class OndemandModal extends Component {
   constructor(props) {
@@ -634,12 +633,10 @@ class OndemandModal extends Component {
             )}
           </div>
 
-          <SettlementsUpsellBanner
+          <UpsellBanners
             closeModal={closeModal}
             hideCloseButton={() => this.setState({ hideCloseButton: true })}
           />
-
-          <SamedayUpselling showDiscount />
         </div>
       </div>
     );

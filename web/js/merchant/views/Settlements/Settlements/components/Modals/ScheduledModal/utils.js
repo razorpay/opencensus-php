@@ -17,6 +17,10 @@ export const getDiscountPercentage = (pricingRate) => {
   return (((15 - pricingRate) / pricingRate) * 100).toFixed();
 };
 
+export const isPricingRateValid = (pricingRate) => {
+  return Number(pricingRate) > 15;
+};
+
 export const enableAutomaticSettlements = () =>
   ajax(
     {

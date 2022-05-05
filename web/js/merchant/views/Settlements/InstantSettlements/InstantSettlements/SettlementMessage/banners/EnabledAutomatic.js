@@ -5,6 +5,7 @@ import ScheduledModal from 'merchant/views/Settlements/Settlements/components/Mo
 import {
   getDiscountPercentage,
   getInstantPricingPercentage,
+  isPricingRateValid,
 } from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal/utils';
 import { DEFAULT_PRICING_RATE } from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal/constants';
 
@@ -48,6 +49,7 @@ const Cta = styled.button`
 
 export default function EnableAutomatic({ openModal }) {
   const [pricingRate, setPricingRate] = useState(DEFAULT_PRICING_RATE);
+  const isPricingValid = isPricingRateValid(pricingRate);
 
   useEffect(() => {
     getInstantPricingPercentage().then(({ data }) => {
@@ -71,10 +73,12 @@ export default function EnableAutomatic({ openModal }) {
         sideBorder={<LeftSideBorder />}
         title={<Title>Settle your funds the same day, automatically!</Title>}
       >
-        <Wrapper>
-          <Percentage>{getDiscountPercentage(pricingRate)}%</Percentage>
-          <Label>Discount on your Instant Settlements fees</Label>
-        </Wrapper>
+        {isPricingValid && (
+          <Wrapper>
+            <Percentage>{getDiscountPercentage(pricingRate)}%</Percentage>
+            <Label>Discount on your Instant Settlements fees</Label>
+          </Wrapper>
+        )}
         <Wrapper>
           <AmountContainer>
             <Rupee>₹</Rupee>

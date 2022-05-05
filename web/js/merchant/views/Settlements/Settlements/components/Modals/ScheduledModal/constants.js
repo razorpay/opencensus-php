@@ -1,5 +1,5 @@
 import moment from 'moment';
-import { getDiscountPercentage } from './utils';
+import { getDiscountPercentage, isPricingRateValid } from './utils';
 
 export const FULL_SHIFT_DAYS = 30;
 export const DEFAULT_PRICING_RATE = 30;
@@ -55,17 +55,6 @@ export const getSamedayTimeline = () => {
   ];
 };
 
-export const getSamedayBenefits = (pricingRate) => [
-  {
-    percentage: '100%',
-    label: 'Instant and Same-day Settlements, forever!',
-  },
-  {
-    percentage: `${getDiscountPercentage(pricingRate)}%`,
-    label: 'Discount on your Instant Settlements',
-  },
-];
-
 export const ONDEMAND_FEE_BENEFITS = [
   {
     percentage: '100%',
@@ -76,6 +65,22 @@ export const ONDEMAND_FEE_BENEFITS = [
     label: 'Additional annual maintenance fees',
   },
 ];
+
+export const getSamedayBenefits = (pricingRate) => {
+  if (isPricingRateValid(pricingRate)) {
+    return [
+      {
+        percentage: '100%',
+        label: 'Instant and Same-day Settlements, forever!',
+      },
+      {
+        percentage: `${getDiscountPercentage(pricingRate)}%`,
+        label: 'Discount on your Instant Settlements',
+      },
+    ];
+  }
+  return ONDEMAND_FEE_BENEFITS;
+};
 
 export const UNLOCK_POINTS = [
   'Maintain daily payment gateway transactions',

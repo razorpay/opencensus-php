@@ -60,12 +60,15 @@ const Settlements = ({
   const openEsAutomaticModalIfRoute = () => {
     // checks if merchant is not live with any of es_automatic and partial es_automatic product
     // and opens scheduled modal if pathname is /settlements/enable_automatic
-    if (
+    const showModal =
       user &&
+      user.isOrgRZP &&
+      isOndemandSettlementEnabled &&
       !user.isAutomaticSettlementEnabled &&
       !user.isAutomaticSettlementRestricted &&
-      location.pathname === '/settlements/enable_automatic'
-    ) {
+      location.pathname === '/settlements/enable_automatic';
+
+    if (showModal) {
       openModal({
         component: <ScheduledModal />,
         size: 'small',

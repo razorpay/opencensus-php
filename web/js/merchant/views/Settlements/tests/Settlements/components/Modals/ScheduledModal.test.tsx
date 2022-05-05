@@ -24,6 +24,9 @@ jest.mock('merchant/views/Settlements/Settlements/components/Modals/ScheduledMod
   getDiscountPercentage: () => {
     return -50;
   },
+  isPricingRateValid: () => {
+    return true;
+  },
 }));
 
 interface AppProps {

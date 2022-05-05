@@ -43,8 +43,19 @@ class SettlementDetail extends Component {
   };
 
   get showUpsellingBanner() {
-    const { user } = this.props;
-    return !user.isAutomaticSettlementEnabled && !user.isAutomaticSettlementRestricted;
+    const {
+      user: {
+        isOndemandSettlementEnabled,
+        isAutomaticSettlementEnabled,
+        isAutomaticSettlementRestricted,
+      },
+    } = this.props;
+
+    return (
+      isOndemandSettlementEnabled &&
+      !isAutomaticSettlementEnabled &&
+      !isAutomaticSettlementRestricted
+    );
   }
 
   get onHoldTitle() {

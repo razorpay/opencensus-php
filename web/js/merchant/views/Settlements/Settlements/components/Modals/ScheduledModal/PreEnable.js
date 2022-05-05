@@ -15,6 +15,7 @@ import {
   enableAutomaticSettlements,
   setEnableEsPartialAutomaticDate,
   getDiscountPercentage,
+  isPricingRateValid,
 } from './utils';
 
 const IndicatorWrapper = styled.div`
@@ -290,15 +291,19 @@ function PreEnable({
   const isOndemandSettlementsRestricted = user.isOndemandSettlementsRestricted;
   const isFullOndemandSettlementEnabled =
     isOndemandSettlementEnabled && !isOndemandSettlementsRestricted;
+  const isPartialOndemandSettlementEnabled =
+    isOndemandSettlementEnabled && isOndemandSettlementsRestricted;
 
   const [isLoading, setLoading] = useState(false);
   const [view, setView] = useState(PRE_ENABLE_VIEWS.SAMEDAY_SETTLEMENTS);
   const [hovered, setHovered] = useState(false);
+  const isPricingValid = isPricingRateValid(pricingRate);
 
   useEffect(() => {
     if (isFullOndemandSettlementEnabled) {
-      setView(PRE_ENABLE_VIEWS.INSTANT_SETTLEMENTS);
-      return;
+      return setView(PRE_ENABLE_VIEWS.INSTANT_SETTLEMENTS);
+    } else if (isPartialOndemandSettlementEnabled && !isPricingValid) {
+      return setView(PRE_ENABLE_VIEWS.SAMEDAY_SETTLEMENTS);
     }
 
     const timeoutId = setInterval(() => {
@@ -311,7 +316,6 @@ function PreEnable({
       }
     }, 4000);
 
-    // eslint-disable-next-line consistent-return
     return () => clearInterval(timeoutId);
   }, [hovered, isFullOndemandSettlementEnabled, view]);
 
@@ -359,6 +363,8 @@ function PreEnable({
   const onMouseLeave = () => setHovered(false);
 
   const getBottomHeading = () => {
+    if (isFullOndemandSettlementEnabled && !isPricingValid) return null;
+
     switch (view) {
       case PRE_ENABLE_VIEWS.SAMEDAY_SETTLEMENTS: {
         return (
@@ -384,7 +390,7 @@ function PreEnable({
   };
 
   const getIndicators = () => {
-    if (isFullOndemandSettlementEnabled) return null;
+    if (isFullOndemandSettlementEnabled || !isPricingValid) return null;
 
     return (
       <IndicatorWrapper>
@@ -452,6 +458,7 @@ function PreEnable({
       }
 
       case PRE_ENABLE_VIEWS.INSTANT_SETTLEMENTS: {
+        if (!isPricingValid) return null;
         const discount = getDiscountPercentage(pricingRate);
         return (
           <>

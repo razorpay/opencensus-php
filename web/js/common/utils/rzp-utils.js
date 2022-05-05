@@ -1395,3 +1395,25 @@ export const camelize = (str) => {
     )
     .replace(/\s+/g, '');
 };
+
+/**
+ * get a nested property from an object
+ * @param {Object} obj
+ * @param {String} path
+ * @param {*} defaultValue
+ * @return {*}
+ */
+export const resolvePath = (obj, path, defaultValue) => {
+  const arr = path?.split('.');
+  let returnValue;
+  try {
+    returnValue = arr.reduce((acc, curr) => {
+      return acc[curr];
+    }, obj);
+  } catch (e) {
+    returnValue = defaultValue;
+  } finally {
+    returnValue = returnValue || defaultValue;
+  }
+  return returnValue;
+};

@@ -23,6 +23,9 @@ jest.mock('merchant/views/Settlements/Settlements/components/Modals/ScheduledMod
   getAutomaticSettlementTime: () => {
     return '9 AM';
   },
+  isPricingRateValid: () => {
+    return true;
+  },
 }));
 
 const mockUserReducer = {

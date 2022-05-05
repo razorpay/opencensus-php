@@ -5,6 +5,7 @@ import {
   getEsNudgeKey,
   getEsBannerKey,
   setEnableEsPartialAutomaticDate,
+  isPricingRateValid,
 } from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal/utils';
 import { setItem } from 'common/utils/localStorage';
 import { NUDGE_TYPES } from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal/constants';
@@ -34,6 +35,12 @@ test('test getDiscountPercentage', () => {
   expect(getDiscountPercentage(30)).toBe('-50');
   expect(getDiscountPercentage(15)).toBe(0);
   expect(getDiscountPercentage(10)).toBe(0);
+});
+
+test('test isPricingRateValid', () => {
+  expect(isPricingRateValid(10)).toBeFalsy();
+  expect(isPricingRateValid(15)).toBeFalsy();
+  expect(isPricingRateValid(30)).toBeTruthy();
 });
 
 test('test getEsPartialAutomaticDateKey', () => {

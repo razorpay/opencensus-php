@@ -17,6 +17,7 @@ import {
   enableAutomaticSettlements,
   getDiscountPercentage,
   getInstantPricingPercentage,
+  isPricingRateValid,
   setEnableEsPartialAutomaticDate,
 } from '../utils';
 import { DEFAULT_PRICING_RATE } from '../constants';
@@ -166,6 +167,7 @@ const Button = styled(AsyncBtn)`
 function Upselling({ user, showDiscount, openModal, closeModal, updateSession, showNotification }) {
   const [isLoading, setLoading] = useState(false);
   const [pricingRate, setPricingRate] = useState(DEFAULT_PRICING_RATE);
+  const isPricingValid = showDiscount && isPricingRateValid(pricingRate);
 
   useEffect(() => {
     getInstantPricingPercentage().then(({ data }) => {
@@ -227,6 +229,8 @@ function Upselling({ user, showDiscount, openModal, closeModal, updateSession, s
     });
   };
 
+  if (!user.isOrgRZP) return null;
+
   return (
     <Container showDiscount={showDiscount}>
       <DidYouKnowContainer>
@@ -238,13 +242,15 @@ function Upselling({ user, showDiscount, openModal, closeModal, updateSession, s
         <span>05:00 PM</span> on all working days with Same-day Settlements
       </Detail>
 
-      {showDiscount && (
+      {isPricingValid && (
         <DiscountContainer>
           <BigDiscount>{getDiscountPercentage(pricingRate)}%</BigDiscount>
           <BigDiscountLabel>discount on your Instant Settlements fee, forever!</BigDiscountLabel>
           <InstantSettlementsFeeContainer>
             <InstantSettlementsCurrentFeeContainer>
-              <InstantSettlementsCurrentFee>0.3%</InstantSettlementsCurrentFee>
+              <InstantSettlementsCurrentFee>
+                {(pricingRate / 100).toFixed(2)}%
+              </InstantSettlementsCurrentFee>
               <StrikeThrough />
             </InstantSettlementsCurrentFeeContainer>
             <i className="i i-arrow-forward" />

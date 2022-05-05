@@ -1,6 +1,11 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
-
+import {
+  getDiscountPercentage,
+  getInstantPricingPercentage,
+  isPricingRateValid,
+} from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal/utils';
+import { DEFAULT_PRICING_RATE } from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal/constants';
 import Base, {
   Container,
   LeftSideBorder,
@@ -14,6 +19,7 @@ import Base, {
   Title,
 } from './Base';
 import { NEW_BANNERS } from './constants';
+import { resolvePath } from 'common/utils/rzp-utils';
 
 const color = '#008659';
 const INSTANT_LOGO = '/dist/css/assets/settlements/instant.svg';
@@ -36,6 +42,20 @@ const RupeeWrapper = styled(Rupee)`
 `;
 
 export default function FullShiftSuccess({ onDismiss }) {
+  const [pricingRate, setPricingRate] = useState(DEFAULT_PRICING_RATE);
+  const isPricingValid = isPricingRateValid(pricingRate);
+
+  useEffect(() => {
+    getInstantPricingPercentage().then(({ data }) => {
+      const pricingPercentage = resolvePath(
+        data,
+        'items[0].pricing_rule.percent_rate',
+        DEFAULT_PRICING_RATE,
+      );
+      if (pricingPercentage) setPricingRate(pricingPercentage);
+    });
+  }, []);
+
   return (
     <StyledContainer>
       <Base
@@ -52,10 +72,12 @@ export default function FullShiftSuccess({ onDismiss }) {
           <Percentage color={color}>100%</Percentage>
           <Label color={color}>Balance can now be settled the same day</Label>
         </Discount>
-        <Discount>
-          <Percentage color={color}>-50%</Percentage>
-          <Label color={color}>Discount on your Instant Settlements fees</Label>
-        </Discount>
+        {isPricingValid && (
+          <Discount>
+            <Percentage color={color}>{getDiscountPercentage(pricingRate)}%</Percentage>
+            <Label color={color}>Discount on your Instant Settlements fees</Label>
+          </Discount>
+        )}
         <AmountBlockWrapper>
           <AmountContainer>
             <RupeeWrapper>₹</RupeeWrapper>
