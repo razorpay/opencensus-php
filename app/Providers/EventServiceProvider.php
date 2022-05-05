@@ -15,6 +15,7 @@ use RZP\Jobs\Job;
 use RZP\Listeners;
 use RZP\Events\P2p;
 use RZP\Models\Merchant\AccessMap;
+use RZP\Models\Merchant;
 use RZP\Modules\Acs;
 
 class EventServiceProvider extends ServiceProvider
@@ -122,7 +123,13 @@ class EventServiceProvider extends ServiceProvider
         ],
         Acs\TriggerSyncEvent::class => [
             Acs\TriggerSyncListener::class,
-        ]
+        ],
+        Merchant\EventSaved::class => [
+            Listeners\MerchantEventListener::class . '@onSaved',
+        ],
+        Merchant\Detail\EventSaved::class => [
+            Listeners\MerchantDetailEventListener::class . '@onSaved',
+        ],
     ];
 
     public function boot()

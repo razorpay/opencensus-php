@@ -134,4 +134,9 @@ class TerminalsService extends BaseTerminalsService
         }
         return [];
     }
+
+    public function consumeInstrumentRulesEvaluationEvent($input): array
+    {
+        return [];
+    }
 }

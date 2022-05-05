@@ -78,6 +78,7 @@ class TerminalsService
     const TERMINAL_ONBOARD_CALLBACK            = 'terminal_onboard_callback';
     const SYNC_DELETED_TERMINALS               = 'sync_deleted_terminals';
     const FETCH_TOKENISATION_TERMINALS         = 'fetch_tokenisation_terminals';
+    const INSTRUMENT_RULES_EVENT               = 'instrument_rules_event';
 
     // terminals service error descriptions
     const MERCHANT_HAS_ALREADY_COMPLETED_PAYPAL_ONBOARDING         = 'Merchant has already completed PayPal onboarding';
@@ -146,6 +147,10 @@ class TerminalsService
         ],
         self::FETCH_TOKENISATION_TERMINALS => [
             self::PATH      => 'v1/merchants/terminals',
+            self::METHOD    => Requests::POST,
+        ],
+        self::INSTRUMENT_RULES_EVENT => [
+            self::PATH      => 'v2/instrument_rules/event',
             self::METHOD    => Requests::POST,
         ]
     ];
@@ -615,14 +620,32 @@ class TerminalsService
         }
     }
 
-    protected function sendRequest(string $path, $content = '', string $method = Requests::POST, array $addditionalOptions = [],
-                                   array $additionalHeaders = []): \Requests_Response
+    /**
+     * @throws Exception\IntegrationException
+     * @throws Exception\BadRequestException
+     */
+    protected function sendRequest(string $path, $content = '', string $method = Requests::POST, array $additionalOptions = [],
+                                   array  $additionalHeaders = []): \Requests_Response
+    {
+        return $this->handleRequestAndResponse($path, $content, $method, $additionalOptions, $additionalHeaders);
+    }
+
+    /*
+     * Need this as a wrapper method around sendRequest as the sendRequest mocks added in multiple tests are not on basis of
+     * strict checks of a particular call, like params sent to sendRequest, this leads to incorrect assertions in case if there
+     * are multiple calls to sendRequest in a test. Ideally they should be mocked on basis of strict params checks, though it's
+     * not done in correct way, would need test cases refactoring to fix.
+     * Ref: https://docs.mockery.io/en/latest/reference/expectations.html#declaring-method-argument-expectations
+     * Ref: mockTerminalsServiceHandleRequestAndResponse method in RZP\Tests\Functional\Helpers\TerminalsTrait.php
+     * */
+    protected function handleRequestAndResponse(string $path, $content = '', string $method = Requests::POST, array $additionalOptions = [],
+                                                array $additionalHeaders = []): \Requests_Response
     {
         $url = $this->getBaseUrl() . $path;
 
         $headers = $this->getHeaders($additionalHeaders);
 
-        $options = $this->getOptions($addditionalOptions);
+        $options = $this->getOptions($additionalOptions);
 
         $data = [
             self::URL       => $url,
@@ -650,7 +673,7 @@ class TerminalsService
 
             $this->trace->info(TraceCode::TERMINALS_SERVICE_RESPONSE,
                 [
-                   self::STATUS_CODE => $response->status_code,
+                    self::STATUS_CODE => $response->status_code,
                 ]);
 
             $parsedResponse = $this->parseAndReturnResponse($response);
@@ -891,5 +914,20 @@ class TerminalsService
         }
 
         return $multipart;
+    }
+
+    /**
+     * @throws Exception\IntegrationException
+     * @throws Exception\BadRequestException
+     */
+    public function consumeInstrumentRulesEvaluationEvent($input): array
+    {
+        $content = json_encode($input);
+
+        $params = self::PARAMS[self::INSTRUMENT_RULES_EVENT];
+
+        $response = $this->handleRequestAndResponse($params[self::PATH], $content, $params[self::METHOD]);
+
+        return $this->parseAndReturnResponse($response)['data'] ?? [];
     }
 }

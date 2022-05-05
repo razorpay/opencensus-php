@@ -45,6 +45,14 @@ trait TerminalTrait
             ->andReturnUsing($closure);
     }
 
+    protected function mockTerminalsServiceHandleRequestAndResponse($args, $closure, $times = 1)
+    {
+        $this->terminalsServiceMock->shouldReceive('handleRequestAndResponse')
+            ->times($times)
+            ->withArgs($args)
+            ->andReturnUsing($closure);
+    }
+
     protected function mockTerminalsServiceSendFormRequest($closure, $times = 2)
     {
         $this->terminalsServiceMock->shouldReceive('sendFormRequest')

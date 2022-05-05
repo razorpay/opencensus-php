@@ -1436,6 +1436,67 @@ class Service extends Base\Service
         }
         return false;
     }
+
+    public function consumeInstrumentRulesEvent(string $merchantId): array
+    {
+        $start = millitime();
+
+        $eventData = [
+            Merchant\Detail\Entity::MERCHANT_ID         => '',
+            Merchant\Entity::ORG_ID                     => '',
+            Merchant\Entity::CATEGORY                   => '',
+            Merchant\Entity::CATEGORY2                  => '',
+            Merchant\Entity::WEBSITE                    => '',
+            Merchant\Detail\Entity::BUSINESS_TYPE       => '',
+            Merchant\Detail\Entity::ACTIVATION_STATUS   => '',
+        ];
+
+        $response = [];
+
+        try
+        {
+            $this->trace->info(TraceCode::INSTRUMENT_EVENT_RULES_TRIGGER, ['merchant_id' => $merchantId]);
+
+            /**
+             * @var Merchant\Entity $merchant
+             */
+            $merchant = $this->repo->merchant->findOrFailPublicWithRelations($merchantId, ['merchantDetail']);
+            if ($merchant != null)
+            {
+                $eventData[Merchant\Detail\Entity::MERCHANT_ID] = $merchant->getId();
+                $eventData[Merchant\Entity::ORG_ID] = $merchant->getOrgId();
+                $eventData[Merchant\Entity::CATEGORY] = $merchant->getCategory();
+                $eventData[Merchant\Entity::CATEGORY2] = $merchant->getCategory2();
+
+                $merchantDetail = $merchant->merchantDetail;
+                if ($merchantDetail != null)
+                {
+                    $eventData[Merchant\Detail\Entity::BUSINESS_TYPE] = $merchantDetail->getBusinessType();
+                    $eventData[Merchant\Detail\Entity::ACTIVATION_STATUS] = $merchant->getAccountStatus();
+                    $eventData[Merchant\Entity::WEBSITE] = $merchantDetail->getWebsite();
+                }
+            }
+
+            $durationDataGenerate = millitime() - $start;
+
+            $response = $this->app['terminals_service']->consumeInstrumentRulesEvaluationEvent($eventData);
+
+            $durationEventPush = millitime() - $durationDataGenerate;
+
+            $this->trace->info(TraceCode::INSTRUMENT_EVENT_RULES_METRICS,
+                [
+                    'event_data' => $eventData,
+                    'data_generate_time' => $durationDataGenerate,
+                    'event_push_time'   => $durationEventPush,
+                ]);
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException($ex, Trace::ERROR, TraceCode::INSTRUMENT_EVENT_RULES_TRIGGER_EXCEPTION, ['merchant_id' => $merchantId]);
+        }
+
+        return $response;
+    }
 }
 
 

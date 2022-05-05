@@ -593,6 +593,14 @@ class Entity extends Base\PublicEntity
     const DCC_MARKUP_PERCENTAGE_DEFAULT               = 7;
     const DEFAULT_DCC_MARKUP_PERCENTAGE_FOR_APPS      = 6;
 
+    /**
+     * {@inheritDoc}
+     */
+    protected $dispatchesEvents = [
+        // Event 'saved' fires on insert and update both.
+        'saved'   => EventSaved::class,
+    ];
+
     public function refresh()
     {
         $instance = parent::refresh();

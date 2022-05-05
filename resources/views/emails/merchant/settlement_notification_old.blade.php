@@ -69,8 +69,8 @@
               border-top-color: #0eb550;
             "
           >
-            @if($merchant['logo_url']) 
-              <img style="height: 60px;" src={{$merchant['logo_url']}} /> 
+            @if($merchant['logo_url'])
+              <img style="height: 60px;" src={{$merchant['logo_url']}} />
               <p
                 style="
                   font-family: Trebuchet MS;
