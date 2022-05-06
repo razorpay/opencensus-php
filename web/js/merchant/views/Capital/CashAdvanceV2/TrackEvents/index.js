@@ -45,3 +45,14 @@ export const trackContinueNow = () =>
     actionName: 'Clicked',
     screen: 'Cash Advance || Home Screen || Continue Application',
   });
+
+export const trackLandingOnCashAdvanceV1 = () =>
+  trackEvent({
+    objectName: 'Cash Advance Homepage current',
+    actionName: 'Rendered',
+    screen: 'Cash Advance || Home Screen',
+    properties: {
+      tab: 'Cash Advance Homescreen',
+      location: 'Begin',
+    },
+  });

@@ -39,13 +39,13 @@ import {
   APPLICATION_STATE_MESSAGE_MAP,
   APPLICATION_STATE_TITLE_MAP,
   GA_CATEGORY_BY_PRODUCT,
-  CAPITAL_PRODUCT_NAME_CODE_MAP,
 } from './constants';
 import DisbursalEntity from './Forms/DisbursalEntity';
 import PendingState from './Forms/PendingState';
 import CashAdvanceApproved from './Forms/CashAdvanceApproved';
 import OfflineDocumentCollection from './Forms/OfflineDocumentCollection';
 import getApplicationProgressPercentage from '../utils/ProgressPercentageCalculator';
+import { trackLandingOnCashAdvanceV1 } from '../CashAdvanceV2/TrackEvents';
 
 const stateFormMap = {
   BUSINESS_INFO_PENDING: BusinessInfoEntity,
@@ -121,7 +121,7 @@ const stateFormMap = {
   },
 )
 class FormSectionRenderer extends Component {
-  componentDidUpdate(prevProps, prevState, snapshot) {
+  componentDidUpdate(prevProps) {
     const { meta, context } = this.props.loanApplicationDetails;
 
     if (
@@ -165,19 +165,30 @@ class FormSectionRenderer extends Component {
     const { meta } = this.props.loanApplicationDetails;
     if (meta.data.application) {
       this.fetchStateDetails(this.getToBeRenderedState());
+      this.trackSegmentEvent();
     } else {
-      this.setState({
-        loading: false,
+      Promise.resolve().then(() => {
+        this.setState({
+          loading: false,
+        });
       });
     }
     this.props.fetchDocumentGroups(this.props.user.business_type == 1);
     this.props.fetchProducts();
   }
 
+  trackSegmentEvent = () => {
+    const { meta = {} } = this.props.loanApplicationDetails;
+    const isCashAdvance = isCashAdvanceProduct(meta?.product);
+    if (isCashAdvance) {
+      trackLandingOnCashAdvanceV1();
+    }
+  };
+
   getTitleInformation = (info) => {
     const { meta } = this.props.loanApplicationDetails;
     const isCashAdvance = isCashAdvanceProduct(meta.product);
-    let bannerProps = info;
+    const bannerProps = info;
 
     if (isCashAdvance) {
       const keys = Object.keys(info);
@@ -205,16 +216,14 @@ class FormSectionRenderer extends Component {
         await this.props.fetchBusinessDetails({
           business_id: meta.data.application.owner_id,
         });
-      } else {
-        if (!business_details.data.business) {
-          try {
-            await this.props.getBusinessByMerchantId({
-              reference_id: this.props.user.current,
-              reference_type: 'MID',
-            });
-          } catch (e) {
-            //Supress error if business does not exist
-          }
+      } else if (!business_details?.data?.business) {
+        try {
+          await this.props.getBusinessByMerchantId({
+            reference_id: this.props.user?.current,
+            reference_type: 'MID',
+          });
+        } catch (e) {
+          //Supress error if business does not exist
         }
       }
     }
@@ -490,11 +499,9 @@ class FormSectionRenderer extends Component {
     switch (activeState) {
       case 'BUSINESS_INFO_PENDING':
         if (isPreceedingState(meta.data.application.status, APPLICATION_STATES.CONTRACT_PENDING)) {
-          return this.getTitleInformation(APPLICATION_STATE_TITLE_MAP['BUSINESS_INFO_PENDING']);
+          return this.getTitleInformation(APPLICATION_STATE_TITLE_MAP.BUSINESS_INFO_PENDING);
         } else {
-          return this.getTitleInformation(
-            APPLICATION_STATE_TITLE_MAP['BUSINESS_INFO_PENDING_LOCKED'],
-          );
+          return this.getTitleInformation(APPLICATION_STATE_TITLE_MAP.BUSINESS_INFO_PENDING_LOCKED);
         }
       case 'PROMOTER_INFO_PENDING':
         if (
@@ -503,16 +510,14 @@ class FormSectionRenderer extends Component {
           const { bureau_report_details } = this.props.loanApplicationDetails;
           if (bureau_report_details.data.bureau_report) {
             return this.getTitleInformation(
-              APPLICATION_STATE_TITLE_MAP['PROMOTER_INFO_PENDING_LOCKED'],
+              APPLICATION_STATE_TITLE_MAP.PROMOTER_INFO_PENDING_LOCKED,
             );
           }
-          return this.getTitleInformation(APPLICATION_STATE_TITLE_MAP['PROMOTER_INFO_PENDING']);
+          return this.getTitleInformation(APPLICATION_STATE_TITLE_MAP.PROMOTER_INFO_PENDING);
         } else {
-          return this.getTitleInformation(
-            APPLICATION_STATE_TITLE_MAP['PROMOTER_INFO_PENDING_LOCKED'],
-          );
+          return this.getTitleInformation(APPLICATION_STATE_TITLE_MAP.PROMOTER_INFO_PENDING_LOCKED);
         }
-      case APPLICATION_STATES.CREDIT_PULL_PENDING:
+      case APPLICATION_STATES.CREDIT_PULL_PENDING: {
         const { bureau_report_details } = this.props.loanApplicationDetails;
         if (bureau_report_details.loading) {
           return null;
@@ -521,32 +526,34 @@ class FormSectionRenderer extends Component {
           const { score, ntc_score } = bureau_report_details.data.bureau_report;
           if (!!ntc_score && !score) {
             return this.getTitleInformation(
-              APPLICATION_STATE_TITLE_MAP['CREDIT_PULL_COMPLETED_WITH_NTC'],
+              APPLICATION_STATE_TITLE_MAP.CREDIT_PULL_COMPLETED_WITH_NTC,
             );
           }
-          return this.getTitleInformation(APPLICATION_STATE_TITLE_MAP['CREDIT_PULL_COMPLETED']);
+          return this.getTitleInformation(APPLICATION_STATE_TITLE_MAP.CREDIT_PULL_COMPLETED);
         }
-        return this.getTitleInformation(APPLICATION_STATE_TITLE_MAP['MOBILE_VERIFICATION_PENDING']);
+        return this.getTitleInformation(APPLICATION_STATE_TITLE_MAP.MOBILE_VERIFICATION_PENDING);
+      }
       case APPLICATION_STATES.PREVERIFICATION_IN_PROGRESS:
       case APPLICATION_STATES.SCORE_GENERATION_PENDING:
       case APPLICATION_STATES.CREDIT_OFFER_PENDING:
         return this.getTitleInformation(
           APPLICATION_STATE_TITLE_MAP[APPLICATION_STATES.SCORE_GENERATION_PENDING],
         );
-      case APPLICATION_STATES.CREDIT_OFFER_GENERATED:
+      case APPLICATION_STATES.CREDIT_OFFER_GENERATED: {
         const { accepted_offer_details } = this.props.loanApplicationDetails;
         if (!(accepted_offer_details.data && accepted_offer_details.data.credit_offer_id)) {
           return this.getTitleInformation(
             APPLICATION_STATE_TITLE_MAP[APPLICATION_STATES.CREDIT_OFFER_GENERATED],
           );
         } else {
-          return this.getTitleInformation(APPLICATION_STATE_TITLE_MAP['CREDIT_OFFER_ACCEPTED']);
+          return this.getTitleInformation(APPLICATION_STATE_TITLE_MAP.CREDIT_OFFER_ACCEPTED);
         }
-      case APPLICATION_STATES.CONTRACT_PENDING:
+      }
+      case APPLICATION_STATES.CONTRACT_PENDING: {
         const { agreement_details } = this.props.loanApplicationDetails;
         if (agreement_details.data && agreement_details.data.signers) {
           if (agreement_details.data.sign_status === 'SIGNED') {
-            return this.getTitleInformation(APPLICATION_STATE_TITLE_MAP['CONTRACT_SIGNED']);
+            return this.getTitleInformation(APPLICATION_STATE_TITLE_MAP.CONTRACT_SIGNED);
           } else {
             return this.getTitleInformation(
               APPLICATION_STATE_TITLE_MAP[APPLICATION_STATES.CONTRACT_PENDING],
@@ -554,10 +561,9 @@ class FormSectionRenderer extends Component {
           }
         } else {
           //invitation not yet generated
-          return this.getTitleInformation(
-            APPLICATION_STATE_TITLE_MAP['CONTRACT_GENERATION_PENDING'],
-          );
+          return this.getTitleInformation(APPLICATION_STATE_TITLE_MAP.CONTRACT_GENERATION_PENDING);
         }
+      }
       case APPLICATION_STATES.NACH_CREATION_PENDING:
       case APPLICATION_STATES.NACH_UPLOAD_PENDING:
         return this.getTitleInformation(
@@ -591,6 +597,8 @@ class FormSectionRenderer extends Component {
         return this.getTitleInformation(
           APPLICATION_STATE_TITLE_MAP[APPLICATION_STATES.CREDIT_DISBURSED],
         );
+      default:
+        return null;
     }
   };
 
@@ -602,7 +610,7 @@ class FormSectionRenderer extends Component {
       case APPLICATION_STATES.CREATED:
         TobeRenderedFormComponent = () => <FormSectionLoadingSkeleton />;
         break;
-      case APPLICATION_STATES.CREDIT_PULL_PENDING:
+      case APPLICATION_STATES.CREDIT_PULL_PENDING: {
         const {
           business_details,
           promoter_details,
@@ -610,14 +618,13 @@ class FormSectionRenderer extends Component {
         } = this.props.loanApplicationDetails;
         if (promoter_details.loading || business_details.loading || bureau_report_details.loading) {
           return <FormSectionLoadingSkeleton />;
+        } else if (bureau_report_details?.data.bureau_report) {
+          TobeRenderedFormComponent = stateFormMap.CREDIT_PULL_COMPLETED;
         } else {
-          if (bureau_report_details.data.bureau_report) {
-            TobeRenderedFormComponent = stateFormMap['CREDIT_PULL_COMPLETED'];
-          } else {
-            TobeRenderedFormComponent = stateFormMap['MOBILE_VERIFICATION_PENDING'];
-          }
+          TobeRenderedFormComponent = stateFormMap.MOBILE_VERIFICATION_PENDING;
         }
         break;
+      }
       case APPLICATION_STATES.PREVERIFICATION_UPLOAD_PENDING:
       case APPLICATION_STATES.PREVERIFICATION_FAILED:
         TobeRenderedFormComponent = stateFormMap[APPLICATION_STATES.PREVERIFICATION_UPLOAD_PENDING];
@@ -627,36 +634,39 @@ class FormSectionRenderer extends Component {
       case APPLICATION_STATES.CREDIT_OFFER_PENDING:
         TobeRenderedFormComponent = stateFormMap[APPLICATION_STATES.SCORE_GENERATION_PENDING];
         break;
-      case APPLICATION_STATES.CONTRACT_PENDING:
+      case APPLICATION_STATES.CONTRACT_PENDING: {
         const { agreement_details } = this.props.loanApplicationDetails;
         if (agreement_details.data && agreement_details.data.signers) {
           if (agreement_details.data.sign_status === 'SIGNED') {
-            TobeRenderedFormComponent = stateFormMap['CONTRACT_SIGNED'];
+            TobeRenderedFormComponent = stateFormMap.CONTRACT_SIGNED;
           } else {
-            TobeRenderedFormComponent = stateFormMap['CONTRACT_PENDING'];
+            TobeRenderedFormComponent = stateFormMap.CONTRACT_PENDING;
           }
         } else {
-          TobeRenderedFormComponent = stateFormMap['CONTRACT_GENERATION_PENDING'];
+          TobeRenderedFormComponent = stateFormMap.CONTRACT_GENERATION_PENDING;
         }
         break;
+      }
       case APPLICATION_STATES.NACH_CREATION_PENDING:
       case APPLICATION_STATES.NACH_UPLOAD_PENDING:
         TobeRenderedFormComponent = stateFormMap[APPLICATION_STATES.NACH_UPLOAD_PENDING];
         break;
-      case APPLICATION_STATES.RZP_APPROVED:
+      case APPLICATION_STATES.RZP_APPROVED: {
         TobeRenderedFormComponent = stateFormMap[`${meta.product}_RZP_APPROVED`];
         break;
-
+      }
+      // case APPLICATION_STATES.SLOT_SELECTION_PENDING:
+      // case APPLICATION_STATES.DOCUMENT_COLLECTION_FAILED:
+      // case APPLICATION_STATES.DOCUMENT_COLLECTION_INITIATED:
       case 'BUSINESS_INFO_PENDING':
       case 'PROMOTER_INFO_PENDING':
       case APPLICATION_STATES.CREDIT_OFFER_GENERATED:
-      // case APPLICATION_STATES.SLOT_SELECTION_PENDING:
-      // case APPLICATION_STATES.DOCUMENT_COLLECTION_INITIATED:
       case APPLICATION_STATES.OFFLINE_DOCUMENT_COLLECTION_PENDING:
-      // case APPLICATION_STATES.DOCUMENT_COLLECTION_FAILED:
       case APPLICATION_STATES.DOCUMENTS_UNDER_REVIEW:
       case APPLICATION_STATES.CREDIT_DISBURSED:
         TobeRenderedFormComponent = stateFormMap[activeState];
+        break;
+      default:
         break;
     }
 
@@ -749,7 +759,7 @@ class FormSectionRenderer extends Component {
   };
 
   gaEventDispatcher = (eventObject) => {
-    eventObject['eventCategory'] =
+    eventObject.eventCategory =
       GA_CATEGORY_BY_PRODUCT[this.props.loanApplicationDetails.meta.product];
     window.rzpAnalytics(eventObject);
   };
