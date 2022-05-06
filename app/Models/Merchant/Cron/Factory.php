@@ -48,6 +48,7 @@ class Factory
             case "web-attribution":
                 return (new WebAttributionCronJob($input));
             case "transaction-details":
+                RuntimeManager::setMaxExecTime(900);
                 return (new TransactionDetailsCronJob($input));
             case "l1-pending-hourly-notification":
                 return (new L1NotSubmittedIn1HourCronJob($input));
