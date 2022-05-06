@@ -253,7 +253,8 @@ class Service extends Base\Service
             'aadharEkyc_for_trust_society_ngo',
             'capital_loc_x_migration',
             'rx_tds_and_attachments',
-            'capital_enable_physical_card'
+            'capital_enable_physical_card',
+            'rx_cohesive_invoice'
         ];
 
         $experimentsResults = $this->getBulkTreatment($features);
