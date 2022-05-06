@@ -6221,7 +6221,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYOUT_CREATE_SUBMITTED_RESPONSE_LOW_PRIORITY             = 'PAYOUT_CREATE_SUBMITTED_RESPONSE_LOW_PRIORITY';
     const PAYOUT_CREATE_LOW_PRIORITY_FAILED                         = 'PAYOUT_CREATE_LOW_PRIORITY_FAILED';
 
-
+    const PAYOUT_UPDATE_MANUAL_FOR_WHATSAPP                         = 'PAYOUT_UPDATE_MANUAL_FOR_WHATSAPP';
 
     // FTA Deprecation for FAV
     const FAV_QUEUE_FOR_FTS_JOB_INIT                                 = 'FAV_QUEUE_FOR_FTS_JOB_INIT';

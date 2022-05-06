@@ -4,7 +4,12 @@ namespace RZP\Http\Controllers;
 
 use Request;
 use ApiResponse;
+
 use Razorpay\Trace\Logger as Trace;
+
+use RZP\Http\Request\Requests;
+use RZP\Models\Payout\Entity;
+use RZP\Models\Feature;
 
 use RZP\Exception;
 use RZP\Error\ErrorCode;
@@ -504,6 +509,46 @@ class PayoutController extends Controller
     {
         $input = Request::all();
 
+        if (isset($input['merchant_id']))
+        {
+            $this->trace->info(TraceCode::PAYOUT_UPDATE_MANUAL_FOR_WHATSAPP,
+                [
+                    'merchant_id' => $input['merchant_id'],
+                ]
+            );
+
+            $merchant = $this->repo->merchant->findOrFail($input['merchant_id']);
+
+            unset($input['merchant_id']);
+
+            if ($merchant->isFeatureEnabled(Feature\Constants::MERCHANT_ROUTE_WA_INFRA) === true)
+            {
+                $config = $this->app['config']->get('applications.api_whatsapp');
+
+                $key = $config['key'];
+
+                $secret = $config['secret'];
+
+                $authorization = base64_encode($key . ':' . $secret);
+
+                $headers = ['Content-Type' => 'application/json'];
+
+                $headers['Authorization'] = 'Basic ' . $authorization;
+
+                $method = Request::method();
+
+                $resp = Requests::request("https://api-whatsapp.razorpay.com/" . Request::path(), $headers, json_encode($input), $method);
+
+                $this->trace->info(TraceCode::PAYOUT_UPDATE_MANUAL_FOR_WHATSAPP,
+                    [
+                        'response' => $resp
+                    ]
+                );
+
+                return ApiResponse::json($resp);
+            }
+        }
+
         $response = $this->service()->updatePayoutStatusManuallyInBatch($input);
 
         return ApiResponse::json($response);
@@ -558,7 +603,7 @@ class PayoutController extends Controller
 
         return ApiResponse::json($data);
     }
-    
+
     public function getOnHoldMerchantSlas()
     {
         $input = Request::all();

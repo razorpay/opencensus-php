@@ -1083,6 +1083,11 @@ return [
         ]
     ],
 
+    'api_whatsapp' => [
+        'key'    => env('API_WHATSAPP_INTERNAL_APP_KEY'),
+        'secret' => env('API_WHATSAPP_INTERNAL_APP_SECRET'),
+    ],
+
     'pg_router' => [
         'mock'                => env('PG_ROUTER_MOCK', false),
         'url'                 => env('PG_ROUTER_URL'),
