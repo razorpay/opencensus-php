@@ -322,7 +322,8 @@ abstract class BaseProxyController extends Controller
             'Content-Type'     => 'application/json',
             'Accept'           => 'application/json',
             'Authorization'    => $this->getAuthorizationHeader(),
-            'X-Request-ID'     => Request::getTaskId()
+            'X-Request-ID'     => Request::getTaskId(),
+            'X-Client-ID'      => $this->serviceConfig['client_id'] ?? ''
         ];
     }
 

@@ -84,6 +84,7 @@ class BaseProxyControllerTest extends TestCase
                  'Accept'        => "application/json",
                  'Authorization' => null,
                  'X-Request-ID'  => $this->app['request']->getTaskId(),
+                 'X-Client-ID'   => ''
              ], '{}', "POST", ['timeout' => null])
              ->will($this->returnValue(new \Requests_Response));
 

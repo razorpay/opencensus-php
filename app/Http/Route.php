@@ -1104,6 +1104,8 @@ class Route
 
         'bvs_service_dashboard'                    => ['any',      'bvs/dashboard/{path?}',                          'BvsProxyController@handleDashboardProxyRequests'                       ],
         'bvs_service_admin'                        => ['any',      'bvs/admin/{path?}',                              'BvsProxyController@handleAdminProxyRequests'                       ],
+        'bvs_admin_proxy'                          => ['any',      'bvs/admin/{path?}',                              'BvsAdminProxyController@handleAdminProxyRequests'                  ],
+        'bvs_admin_proxy_pii'                      => ['any',      'bvs/admin_pii/{path?}',                          'BvsAdminProxyController@handleAdminProxyRequests'                  ],
         'bvs_validation_artifact_details'          => ['get',      'merchants/{merchantId}/bvs/{validationArtefact}/details', 'MerchantController@getBvsValidationArtefactDetails'       ],
         'loc_bulk_withdrawal_update'               => ['post',     'loc/withdrawals/bulk/update',                    'LOCController@postLocBulkWithdrawalUpdate'                         ],
         'leegality_webhook'                        => ['post',     'leegality/webhook',                              'LOSController@handleLeegalityWebhook'                              ],
@@ -6672,6 +6674,10 @@ class Route
 
         'update_merchant_sla_for_on_hold_payouts',
 
+        // BVS Admin proxy routes
+        'bvs_admin_proxy',
+        'bvs_admin_proxy_pii',
+
     ];
 
     public static $routePermission = [
@@ -6701,6 +6707,8 @@ class Route
         'bvs_service_dashboard'                    => Permission::EDIT_MERCHANT,
         'bvs_validation_artifact_details'          => Permission::VIEW_MERCHANT,
         'bvs_Service_admin'                        => Permission::EDIT_MERCHANT,
+        'bvs_admin_proxy'                        => Permission::VIEW_ALL_ENTITY,
+        'bvs_admin_proxy_pii'                    => Permission::VIEW_ACTIVATION_FORM,
         'transfer_debug'                           => Permission::DEBUG_TRANSFERS_ROUTES,
         'virtual_account_debug'                    => Permission::DEBUG_VIRTUAL_ACCOUNT,
         'payment_links_v2_admin'                   => Permission::PAYMENT_LINKS_V2_ADMIN,
@@ -11733,7 +11741,11 @@ class Route
 
             // Growth Assets
             'growth_get_asset_details',
-            'growth_get_template_by_id'
+            'growth_get_template_by_id',
+
+            // BVS admin dashboard proxy routes
+            'bvs_admin_proxy',
+            'bvs_admin_proxy_pii'
         ],
 
         //
