@@ -460,7 +460,7 @@ class UserRolesScope
             'user_otp_create'                               => Role::ALL_ROLES,
             'user_check_has_set_password'                   => Role::ALL_ROLES,
             'user_set_password'                             => Role::ALL_ROLES,
-            'user_verify_through_mode'                      => [Role::ADMIN, Role::OWNER, Role::FINANCE,],
+            'user_verify_through_mode'                      => [Role::ADMIN, Role::OWNER, Role::FINANCE,Role::SUPPORT],
             'virtual_account_configs'                       => [Role::ADMIN, Role::OWNER, Role::OPERATIONS, Role::MANAGER,],
             'webhook_fetch'                                 => [Role::ADMIN, Role::OWNER, Role::MANAGER,],
             'webhook_fetch_events'                          => [Role::ADMIN, Role::OWNER, Role::MANAGER,],
