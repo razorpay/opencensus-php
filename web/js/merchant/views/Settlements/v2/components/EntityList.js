@@ -18,6 +18,7 @@ import { titleCase } from 'common/utils/rzp-utils';
 import Spinner from 'common/ui/Spinner';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { handleAnalytics, propertiesPayload } from '../../Settlements/analytics';
+import PaymentOptimizerProvider from 'merchant/views/Transactions/Payments/components/PaymentOptimizerProvider';
 
 const DEFAULT_SKIP = 0;
 const DEFAULT_COUNT = 10;
@@ -54,7 +55,23 @@ const BooleanMap = {
   1: `true`,
 };
 
-const ListItem = ({ item, source }) => {
+/**
+ * Sort keys - adding optimizer_provider at 1st index for single recon, other keys remains same
+ * @param {object} item object to sort the keys
+ * @param {object} user object to check single recon enabled or not
+ * @returns {object} array of keys from object
+ */
+const sortKeys = (item, user) => {
+  const KEYS = Object.keys(item);
+  if (user?.isSingleReconEnabled && user?.isOptimizerEnabled) {
+    const INDEX = KEYS?.indexOf('optimizer_provider');
+    const PROVIDER_KEY = INDEX !== -1 ? KEYS?.splice(INDEX, 1) : [];
+    KEYS?.splice(1, 0, ...PROVIDER_KEY);
+  }
+  return KEYS;
+};
+
+const ListItem = ({ item, source, user, terminalProviders }) => {
   // Render links
   const analyticsHandler = () => {
     const objectName = 'settlement details payment id';
@@ -96,9 +113,23 @@ const ListItem = ({ item, source }) => {
     }
   };
 
+  const {
+    id,
+    amount,
+    fee,
+    tax,
+    created_at,
+    international,
+    status,
+    optimizer_provider,
+    settled_by,
+  } = item;
+
+  const KEYS = sortKeys(item, user);
+
   return (
-    <EntityItemRow id={item.id}>
-      {Object.keys(item).map((key, idx) => {
+    <EntityItemRow id={id}>
+      {KEYS.map((key, idx) => {
         let row = null;
 
         switch (key) {
@@ -108,36 +139,36 @@ const ListItem = ({ item, source }) => {
           case 'amount':
             row = (
               <td key={idx}>
-                <Amount value={item.amount} currency="INR" />
+                <Amount value={amount} currency="INR" />
               </td>
             );
             break;
           case 'fee':
             row = (
               <td key={idx}>
-                <Amount value={item.fee} currency="INR" />
+                <Amount value={fee} currency="INR" />
               </td>
             );
             break;
           case 'tax':
             row = (
               <td key={idx}>
-                <Amount value={item.tax} currency="INR" />
+                <Amount value={tax} currency="INR" />
               </td>
             );
             break;
           case 'created_at':
             row = (
               <td key={idx}>
-                <Time value={item.created_at} format="DD MMM YYYY, hh:mm:ss a" />
+                <Time value={created_at} format="DD MMM YYYY, hh:mm:ss a" />
               </td>
             );
             break;
           case 'international':
             row = (
               <td key={idx}>
-                <span class={`status-label label ${InternationalStatusMap[item.international]}`}>
-                  {BooleanMap[item.international]}
+                <span className={`status-label label ${InternationalStatusMap[international]}`}>
+                  {BooleanMap[international]}
                 </span>
               </td>
             );
@@ -150,7 +181,7 @@ const ListItem = ({ item, source }) => {
             ) {
               row = (
                 <td key={idx}>
-                  <PaymentStatusLabel status={item.status} />
+                  <PaymentStatusLabel status={status} />
                 </td>
               );
             } else if (
@@ -160,40 +191,54 @@ const ListItem = ({ item, source }) => {
             ) {
               row = (
                 <td key={idx}>
-                  <RefundStatusLabel status={item.status} />
+                  <RefundStatusLabel status={status} />
                 </td>
               );
             } else if (source === 'dispute') {
               row = (
                 <td key={idx}>
-                  <DisputeStatusLabel status={item.status} />
+                  <DisputeStatusLabel status={status} />
                 </td>
               );
             } else if (source === 'transfer') {
               row = (
                 <td key={idx}>
-                  <span class={`status-label label ${TransfersMap[item.status]}`}>
-                    {item.status}
-                  </span>
+                  <span className={`status-label label ${TransfersMap[status]}`}>{status}</span>
                 </td>
               );
             } else if (source === 'payout') {
               row = (
                 <td key={idx}>
-                  <span class={`status-label label ${PayoutsMap[item.status]}`}>{item.status}</span>
+                  <span className={`status-label label ${PayoutsMap[status]}`}>{status}</span>
                 </td>
               );
             } else if (source === 'ondemand settlement') {
               row = (
                 <td key={idx}>
-                  <span class={`status-label label ${OndemandMap[item.status]}`}>
-                    {item.status}
-                  </span>
+                  <span className={`status-label label ${OndemandMap[status]}`}>{status}</span>
                 </td>
               );
             } else {
-              row = <td key={idx}>{item.status}</td>;
+              row = <td key={idx}>{status}</td>;
             }
+            break;
+          case 'optimizer_provider':
+            row = user?.isSingleReconEnabled && user?.isOptimizerEnabled && (
+              <td key={idx}>
+                <PaymentOptimizerProvider
+                  terminal_id={optimizer_provider}
+                  settled_by={settled_by}
+                  terminalProviders={terminalProviders}
+                  hideExternalLink={true}
+                />
+              </td>
+            );
+            break;
+          case 'settled_by':
+            /**
+             * Added for single recon
+             * No need to expose it's value on table, it will reflect with 'optimizer_provider' value
+             */
             break;
           default:
             row = <td key={idx}>{item[key]}</td>;
@@ -212,16 +257,24 @@ const EntityList = (props) => {
   const [count, setcount] = useState(DEFAULT_COUNT);
   const formRef = React.createRef();
 
-  const totalNoOfPayments = props.breakupDetails?.items?.find(
-    (item) => item.component === 'payment',
-  )?.count;
+  const {
+    breakupDetails,
+    settlementId,
+    showNotification,
+    activeTab,
+    user,
+    terminalProviders,
+  } = props;
+
+  const totalNoOfPayments = breakupDetails?.items?.find((item) => item.component === 'payment')
+    ?.count;
 
   const fetchData = (skipVal, countVal, type) => {
     const tab = sanitizeTabName(type);
     const source = tab === 'ondemand settlement' ? 'settlement.ondemand' : tab;
 
     return merchantFetch({
-      url: `settlements/${props.settlementId}/transaction_source_details`,
+      url: `settlements/${settlementId}/transaction_source_details`,
       method: 'POST',
       data: {
         source_type: source,
@@ -230,7 +283,7 @@ const EntityList = (props) => {
       },
     }).catch(({ errors }) => {
       seterror(errors.join(''));
-      props.showNotification({
+      showNotification({
         type: 'error',
         message: errors.join(''),
       });
@@ -243,7 +296,7 @@ const EntityList = (props) => {
     setlistData(null);
     seterror(null);
 
-    fetchData(DEFAULT_SKIP, DEFAULT_COUNT, props.activeTab).then(({ data }) => {
+    fetchData(DEFAULT_SKIP, DEFAULT_COUNT, activeTab).then(({ data }) => {
       setlistData(data);
       setskip(DEFAULT_SKIP);
       setcount(DEFAULT_COUNT);
@@ -254,7 +307,7 @@ const EntityList = (props) => {
     e.preventDefault();
     const searchId = e.target.elements.id.value.trim();
     const countValue = e.target.elements.count.value;
-    const tab = sanitizeTabName(props.activeTab);
+    const tab = sanitizeTabName(activeTab);
     const source = tab === 'ondemand settlement' ? 'settlement.ondemand' : tab;
 
     setlistData(null);
@@ -263,7 +316,7 @@ const EntityList = (props) => {
     // If search is on Id, count makes no difference here.
     if (searchId) {
       merchantFetch({
-        url: `settlements/${props.settlementId}/transaction_source_details`,
+        url: `settlements/${settlementId}/transaction_source_details`,
         method: 'POST',
         data: {
           source_type: source,
@@ -277,7 +330,7 @@ const EntityList = (props) => {
         })
         .catch(({ errors }) => {
           seterror(errors.join(''));
-          props.showNotification({
+          showNotification({
             type: 'error',
             message: errors.join(''),
           });
@@ -293,7 +346,7 @@ const EntityList = (props) => {
         handleAnalytics(objectName, actionName, properties, screen);
       }
     } else {
-      fetchData(DEFAULT_SKIP, countValue, props.activeTab).then(({ data }) => {
+      fetchData(DEFAULT_SKIP, countValue, activeTab).then(({ data }) => {
         setlistData(data);
         setskip(DEFAULT_SKIP);
         setcount(parseInt(countValue, 10));
@@ -306,43 +359,56 @@ const EntityList = (props) => {
     // fetch new on tab change. Reset entire form.
     formRef.current.reset();
     // fetch with defaults
-    fetchData(DEFAULT_SKIP, DEFAULT_COUNT, props.activeTab).then(({ data }) => {
+    fetchData(DEFAULT_SKIP, DEFAULT_COUNT, activeTab).then(({ data }) => {
       setlistData(data);
       setskip(DEFAULT_SKIP);
       setcount(DEFAULT_COUNT);
     });
-  }, [props.activeTab]);
+  }, [activeTab]);
 
   // handles next page click
   const next = React.useCallback(() => {
     const skipValue = skip + count;
-    fetchData(skipValue, count, props.activeTab).then(({ data }) => {
+    fetchData(skipValue, count, activeTab).then(({ data }) => {
       setlistData(data);
       setskip(skipValue);
     });
-  }, [props.activeTab, count, skip]);
+  }, [activeTab, count, skip]);
 
   // handles previous page click
   const prev = React.useCallback(() => {
     const skipValue = skip - count;
-    fetchData(skipValue, count, props.activeTab).then(({ data }) => {
+    fetchData(skipValue, count, activeTab).then(({ data }) => {
       setlistData(data);
       setskip(skipValue);
     });
-  }, [props.activeTab, count, skip]);
+  }, [activeTab, count, skip]);
 
   const renderColumnsHeaders = (list) => {
     if (list.length === 0) return null;
 
-    return Object.keys(list[0]).map((key, idx) => {
+    const KEYS = sortKeys(list[0], user);
+
+    return KEYS.map((key, idx) => {
+      if (key === 'settled_by') {
+        /**
+         * Added for single recon
+         * No need to expose this on table, it will reflect with 'optimizer_provider' value
+         */
+        return null;
+      }
+      if (key === 'optimizer_provider') {
+        // For single recon
+        key = 'Payment Provider';
+      }
       return <th key={idx}>{titleCase(key)}</th>;
     });
   };
 
   return (
-    <div class="content-wrapper">
+    <div className="content-wrapper">
       <ComponentListFilter
-        activeTab={props.activeTab}
+        activeTab={activeTab}
         ref={formRef}
         clear={clear}
         submit={submit}
@@ -351,17 +417,20 @@ const EntityList = (props) => {
 
       {listData ? (
         <React.Fragment>
-          <div class="table-responsive">
-            <table class="table table-hover">
+          <div className="table-responsive">
+            <table className="table table-hover">
               <thead>
                 <tr>{renderColumnsHeaders(listData)}</tr>
               </thead>
-              <TableBody
-                rows={listData}
-                emptyTableMsg={`No ${sanitizeTabName(props.activeTab)} found`}
-              >
+              <TableBody rows={listData} emptyTableMsg={`No ${sanitizeTabName(activeTab)} found`}>
                 {listData.map((item) => (
-                  <ListItem key={item.id} item={item} source={props.activeTab.trim()} />
+                  <ListItem
+                    key={item.id}
+                    item={item}
+                    source={activeTab.trim()}
+                    user={user}
+                    terminalProviders={terminalProviders}
+                  />
                 ))}
               </TableBody>
             </table>
@@ -369,7 +438,7 @@ const EntityList = (props) => {
           <Pagination next={next} prev={prev} listData={listData} skip={skip} count={count} />
         </React.Fragment>
       ) : error ? null : (
-        <div class="div--loading">
+        <div className="div--loading">
           <Spinner />
         </div>
       )}
@@ -377,4 +446,12 @@ const EntityList = (props) => {
   );
 };
 
-export default connect(null, { showNotification })(EntityList);
+const mapStateToProps = (state) => {
+  const { session, navigator } = state;
+  return {
+    user: session.user,
+    terminalProviders: navigator.terminalProviders,
+  };
+};
+
+export default connect(mapStateToProps, { showNotification })(EntityList);

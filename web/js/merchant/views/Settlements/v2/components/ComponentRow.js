@@ -2,67 +2,55 @@ import React from 'react';
 import Amount from 'common/ui/Amount';
 import { titleCase } from 'common/utils/rzp-utils';
 
+const RenderColumn = ({ title, comp }) => (
+  <td>
+    <div>
+      <div className="title">{title}</div>
+      {comp}
+    </div>
+  </td>
+);
+
 const ComponentRow = ({ breakupItem, newResponse }) => {
+  const { type, component, count, amount, fee, tax, settled_amount } = breakupItem;
+  let customClass = 'highlight-debit';
+  if (type === 'credit') {
+    customClass = 'highlight-credit';
+  }
+  if (component === 'unreconciled') {
+    customClass = 'highlight-unreconciled';
+  }
   return (
     <tr
-      data-testid={`settlementBreakup${breakupItem.type}`}
+      data-testid={`settlementBreakup${type}`}
       /* Added this conditional classes to TR also for the m-web support */
-      className={breakupItem.type === 'credit' ? `highlight-credit-row` : `highlight-debit-row`}
+      className={`${customClass}-row`}
     >
-      <td className={breakupItem.type === 'credit' ? `highlight-credit` : `highlight-debit`}>
+      <td className={customClass}>
         <div>
-          <b>{titleCase(breakupItem.component)}</b>
+          <b>{titleCase(component)}</b>
         </div>
       </td>
-      <td>
-        <div>
-          <div className="title">Type</div>
-          <span>{titleCase(breakupItem.type)}</span>
-        </div>
-      </td>
-      <td>
-        <div>
-          <div className="title">Count</div>
-          {breakupItem.count ? <span>{breakupItem.count}</span> : '-'}
-        </div>
-      </td>
-      <td>
-        <div>
-          <div className="title">Amount</div>
-          <Amount value={breakupItem.amount} currency="INR" />
-        </div>
-      </td>
+      <RenderColumn title="Type" comp={<span>{titleCase(type)}</span>} />
+      <RenderColumn title="Count" comp={count ? <span>{count}</span> : '-'} />
+      <RenderColumn title="Amount" comp={<Amount value={amount} currency="INR" />} />
+      {newResponse && <RenderColumn title="Fee" comp={<Amount value={fee} currency="INR" />} />}
+      {newResponse && <RenderColumn title="Tax" comp={<Amount value={tax} currency="INR" />} />}
       {newResponse && (
-        <td>
-          <div>
-            <div className="title">Fee</div>
-            <Amount value={breakupItem.fee} currency="INR" />
-          </div>
-        </td>
-      )}
-      {newResponse && (
-        <td>
-          <div>
-            <div className="title">Tax</div>
-            <Amount value={breakupItem.tax} currency="INR" />
-          </div>
-        </td>
-      )}
-      {newResponse && (
-        <td>
-          <div>
-            <div className="title">Settled Amount</div>
-            {breakupItem.type === 'debit' ? (
+        <RenderColumn
+          title="Settled Amount"
+          comp={
+            type === 'debit' ? (
               <span>
-                - <Amount value={breakupItem.settled_amount * -1} currency="INR" />
+                - <Amount value={settled_amount * -1} currency="INR" />
               </span>
             ) : (
               <span>
-                <Amount value={breakupItem.settled_amount} currency="INR" />
+                <Amount value={settled_amount} currency="INR" />
               </span>
-            )}
-          </div>
-        </td>
+            )
+          }
+        />
       )}
     </tr>
   );
