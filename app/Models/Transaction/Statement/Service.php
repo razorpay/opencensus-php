@@ -2,13 +2,13 @@
 
 namespace RZP\Models\Transaction\Statement;
 
+use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Transaction;
 use RZP\Base\ConnectionType;
 use RZP\Models\Feature\Constants;
 use RZP\Models\Base\PublicCollection;
-use RZP\Models\Base\UniqueIdEntity;
 
 /**
  * Class Service

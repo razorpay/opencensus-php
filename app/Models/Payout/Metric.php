@@ -55,12 +55,13 @@ final class Metric
     const PAYOUT_PENDING_TO_ON_HOLD_DURATION_SECONDS                     = 'payout_pending_to_on_hold_duration_seconds.histogram';
     const PAYOUT_CREATE_REQUEST_SUBMITTED_TO_CREATED_DURATION_SECONDS    = 'payout_create_request_submitted_to_created_duration_seconds.histogram';
     const PAYOUT_CREATE_REQUEST_SUBMITTED_TO_FAILED_DURATION_SECONDS     = 'payout_create_request_submitted_to_failed_duration_seconds.histogram';
-    const PAYOUT_CREATE_REQUEST_SUBMITTED_TO_ON_HOLD_DURATION_SECONDS     = 'payout_create_request_submitted_to_on_hold_duration_seconds.histogram';
+    const PAYOUT_CREATE_REQUEST_SUBMITTED_TO_ON_HOLD_DURATION_SECONDS    = 'payout_create_request_submitted_to_on_hold_duration_seconds.histogram';
     const PAYOUT_CREATE_REQUEST_SUBMITTED_TO_QUEUED_DURATION_SECONDS     = 'payout_create_request_submitted_to_queued_duration_seconds.histogram';
     const PAYOUT_ON_HOLD_TO_CREATED_DURATION_SECONDS                     = 'payout_on_hold_to_created_duration_seconds.histogram';
     const PAYOUT_ON_HOLD_TO_FAILED_DURATION_SECONDS                      = 'payout_on_hold_to_failed_duration_seconds.histogram';
     const PAYOUT_ON_HOLD_TO_QUEUED_DURATION_SECONDS                      = 'payout_on_hold_to_queued_duration_seconds.histogram';
     const PAYOUT_ON_HOLD_TO_CANCELLED_DURATION_SECONDS                   = 'payout_on_hold_to_cancelled_duration_seconds.histogram';
+    const PAYOUT_CREATED_TO_QUEUED_DURATION_SECONDS                      = 'payout_created_to_queued_duration_seconds.histogram';
 
 
     // Dimension constants
@@ -144,7 +145,7 @@ final class Metric
             $timeDuration,
             $metricDimensions);
     }
-    
+
     protected static function pushCreatedToQueuedMetrics(Entity $payout)
     {
         $metricDimensions = self::getMetricDimensions($payout);
