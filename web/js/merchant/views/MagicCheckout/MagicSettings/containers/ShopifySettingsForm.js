@@ -37,6 +37,9 @@ const ShopifySettingsForm = ({ settings, updateSettings }) => {
 
   const switchMode = () => {
     setCodIntelligence((prevState) => !prevState);
+    if (isValidShopifyId(shopId).valid) {
+      setFormValid(true);
+    }
   };
 
   const onShopIdInput = useCallback(
