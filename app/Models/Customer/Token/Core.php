@@ -1584,10 +1584,6 @@ class Core extends Base\Core
 
         list($card, $serviceProviderTokens) = (new Card\Core)->createTokenizedCard($input, $this->merchant);
 
-        if(!empty($serviceProviderTokens[0]["provider_data"]["network_reference_id"])){
-            unset($serviceProviderTokens[0]["provider_data"]["network_reference_id"]);
-        }
-
          $this->trace->info(
             TraceCode::TOKEN_CREATE_FOR_TOKENIZED_CARD
         );

@@ -670,11 +670,6 @@ class Service extends Base\Service
                     $serviceProviderTokens = $this->core->fetchToken($token, $internalServiceRequest);
                 }
 
-                if(!$isPar && !empty($serviceProviderTokens[0]["provider_data"]["network_reference_id"]))
-                {
-                    unset($serviceProviderTokens[0]["provider_data"]["network_reference_id"]);
-                }
-
                 (new Metric())->pushTokenHQResponseTimeMetrics($startTime, BaseMetric::SUCCESS, Token\Action::FETCH);
 
                 $response = $token->toArrayPublicTokenizedCard($serviceProviderTokens);

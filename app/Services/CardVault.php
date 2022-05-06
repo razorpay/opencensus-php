@@ -623,19 +623,19 @@ class CardVault
     {
         $responsebody = json_decode($response->body, true);
 
+        $this->trace->info(
+            TraceCode::CARD_VAULT_RESPONSE,
+            [
+                'response'    => $this->getRedactedData($responsebody),
+                'namespace'   => $this->namespace,
+                'status_code' => $response->status_code,
+            ]);
+
         if ((empty($responsebody['success']) === false) and
             ($responsebody['success'] === true))
         {
             return;
         }
-
-        $this->trace->info(
-            TraceCode::CARD_VAULT_RESPONSE,
-            [
-                'response'  => $this->getRedactedData($responsebody),
-                'namespace' => $this->namespace,
-                'status_code' => $response->status_code,
-            ]);
 
         $error_code = '';
 
