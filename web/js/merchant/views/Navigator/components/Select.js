@@ -55,16 +55,14 @@ export default class Select extends React.Component {
               <ul className="unlisted">
                 {options?.map((option, index) => {
                   let gateway;
-                  if (
-                    (typeof option?.id === 'string' &&
-                      (option?.id?.split('_').length === 2 ||
-                        option?.id?.split('_').length === 3) &&
-                      IDS.indexOf(option?.id) === -1) ||
-                    option?.id === 'razorpay'
-                  ) {
-                    gateway = option?.id?.startsWith('upi_mindgate')
-                      ? 'upi_mindgate'
-                      : option?.id?.split('_')[0];
+                  if (typeof option?.id === 'string' && IDS.indexOf(option?.id) === -1) {
+                    const id = option?.id?.split('_');
+                    if (option?.id === 'razorpay') {
+                      gateway = id[0];
+                    } else {
+                      id.pop();
+                      gateway = id.join('_');
+                    }
                   }
                   return (
                     <span key={index}>
