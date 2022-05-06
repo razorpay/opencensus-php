@@ -68,13 +68,14 @@ class DruidService
                'response_time' => microtime(true) - $start_time
            ]);
 
+           $errorMessage = $e->getMessage();
+
             $this->trace->error(TraceCode::DRUID_REQUEST_FAILURE, [
-                'message' => $e->getMessage(),
+                'message' => $errorMessage,
                 'code'    => $e->getCode(),
-                'trace'   => $e->getTrace(),
             ]);
 
-            return [$e->getMessage(), null];
+            return [$errorMessage, null];
         }
 
         $this->trace->info(TraceCode::DRUID_RESPONSE_TIME, [
