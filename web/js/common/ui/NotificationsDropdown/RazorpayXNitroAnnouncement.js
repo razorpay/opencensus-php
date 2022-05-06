@@ -577,7 +577,7 @@ export const SubmissionSuccessfull = ({ handleClose }) => {
     <div className="rxca-submit-finish-modal">
       <div className="header">
         <div className="title">
-          Congratulations! We're processing your request for a Current Account with RazorpayX.
+          Congratulations! We’re processing your request for a RazorpayX powered Current Account.
         </div>
         <button type="button" class="close" onClick={handleClose}>
           <i class="i i-close" />
@@ -585,8 +585,8 @@ export const SubmissionSuccessfull = ({ handleClose }) => {
       </div>
       <div className="description">
         <p>
-          Our banking experts will be reaching out to you shortly. In the meantime, we highly
-          recommend you keep the required documents for creating a current account handy.
+          Our sales heroes will get in touch with you shortly. In the meantime, we highly recommend
+          you keep the required documents ready so we can speed up the process.
         </p>
         <a
           href="https://razorpay.com/docs/razorpayx/current-account/"
@@ -598,10 +598,7 @@ export const SubmissionSuccessfull = ({ handleClose }) => {
           </Button.Primary>
         </a>
       </div>
-      <p className="footer">
-        Once your new current account gets created you're pricing for Razorpay will automatically be
-        reduced to 1.65%* as promised!
-      </p>
+      <p className="footer">Once your Current Account is created, your offer will be activated.</p>
     </div>
   );
 };
