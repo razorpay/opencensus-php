@@ -12,6 +12,7 @@ import { statusPill } from 'razorx/helpers/data';
 import Timeline from 'razorx/components/ui/Timeline';
 import { TextAreaField } from 'razorx/components/ui/Field';
 import { isRzpApprover } from '../../../user';
+import Comment from 'razorx/components/ui/Comment';
 
 @withRouter
 export default class ExperimentDetails extends React.Component {
@@ -26,6 +27,9 @@ export default class ExperimentDetails extends React.Component {
     project: null,
     exclusionGroup: null,
     stateLogs: null,
+    submittedComment: null,
+    commentDate: null,
+    commentWriter: null,
   };
 
   componentDidMount() {
@@ -63,6 +67,10 @@ export default class ExperimentDetails extends React.Component {
       .then((res) => {
         this.setState({
           workflowStatus: res.workflows[0]?.workflow?.status || [],
+          submittedComment: res.workflows[0]?.workflow?.states?.L1_Approval?.actions[0]?.comment,
+          commentDate: res.workflows[0]?.workflow?.states?.L1_Approval?.actions[0]?.created_at,
+          commentWriter:
+            res.workflows[0]?.workflow?.states?.L1_Approval?.actions[0]?.actor_meta?.email,
           isFetchingExperiment: false,
           data: res.experiment,
           stateLogs: res.state_change_logs,
@@ -244,6 +252,9 @@ export default class ExperimentDetails extends React.Component {
       project,
       exclusionGroup,
       stateLogs,
+      submittedComment,
+      commentDate,
+      commentWriter,
     } = this.state;
     const { experimentId } = this.props;
 
@@ -337,6 +348,13 @@ export default class ExperimentDetails extends React.Component {
           {['created', 'terminated'].includes(data.status) &&
           (['rejected', 'processed'].includes(workflowStatus) || !workflowStatus.length) ? (
             <>
+              {submittedComment && (
+                <Comment
+                  submittedComment={submittedComment}
+                  commentDate={commentDate}
+                  commentWriter={commentWriter}
+                />
+              )}
               <br />
               <AsyncButton
                 type="button"
@@ -389,18 +407,28 @@ export default class ExperimentDetails extends React.Component {
             </>
           ) : null}
           {data.status === 'activated' ? (
-            <AsyncButton
-              type="button"
-              className="link danger text-danger text-bold"
-              pendingClass="link danger-faded text-danger text-bold btn-pending"
-              confirm={`Do you want to Terminate Experiment id "${data.id}"?`}
-              onClick={() => {
-                this.updateExperimentStatus('terminated');
-              }}
-            >
-              Terminate Experiment
-              <span className="dot-loader">.</span>
-            </AsyncButton>
+            <>
+              {submittedComment && (
+                <Comment
+                  submittedComment={submittedComment}
+                  commentDate={commentDate}
+                  commentWriter={commentWriter}
+                />
+              )}
+              <br />
+              <AsyncButton
+                type="button"
+                className="link danger text-danger text-bold"
+                pendingClass="link danger-faded text-danger text-bold btn-pending"
+                confirm={`Do you want to Terminate Experiment id "${data.id}"?`}
+                onClick={() => {
+                  this.updateExperimentStatus('terminated');
+                }}
+              >
+                Terminate Experiment
+                <span className="dot-loader">.</span>
+              </AsyncButton>
+            </>
           ) : null}
           <br />
           <br />

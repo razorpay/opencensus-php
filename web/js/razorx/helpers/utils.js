@@ -1,6 +1,8 @@
-import { titleCase } from 'common/utils/rzp-utils';
+/* eslint-disable babel/new-cap */
+import moment from 'moment';
 
-export const deepClone = o => {
+// eslint-disable-next-line consistent-return
+export const deepClone = (o) => {
   try {
     return JSON.parse(JSON.stringify(o));
   } catch (err) {
@@ -13,7 +15,7 @@ export const deepClone = o => {
  * @param  {String/Number} value in date string or seconds
  * @return {String}               date in 21st Dec, 2017 05:00 format
  */
-export const formatDate = value => {
+export const formatDate = (value) => {
   if (!value) {
     return null;
   }
@@ -31,4 +33,9 @@ export const formatDate = value => {
   }
 
   return date.format('Do MMM, YYYY hh:mm A');
+};
+
+export const formatEpochDate = (epoch) => {
+  const myDate = new Date(epoch * 1000);
+  return myDate.toLocaleString();
 };

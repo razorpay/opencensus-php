@@ -1,4 +1,5 @@
 $timeline-green = #009c5c;
+$description-grey = #878787;
 $splitz-brown = #67595d;
 
 .RazorX-container.RazorX-container
@@ -221,6 +222,18 @@ $splitz-brown = #67595d;
         .timeline-item-terminated
           color: #d13821
 
+        .comment-title
+          font-size: 16px
+          font-weight: 500
+
+        .comment-body
+          padding: 8px 0 8px 16px
+          background-color: #f3f1f1
+
+        .comment-footer
+          color: $description-grey
+          font-style: italic
+
         .sub-description
           margin-top: 0
           margin-bottom: 8px
@@ -244,7 +257,7 @@ $splitz-brown = #67595d;
           display: block
 
         .title + .description
-          color: #878787
+          color: $description-grey
 
         .label
           margin-bottom: 4px
