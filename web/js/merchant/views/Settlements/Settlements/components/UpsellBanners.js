@@ -1,13 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { connect } from 'react-redux';
 import LoaderDots from 'common/ui/LoaderDots';
+import { fetchFunctionalWithdrawalConfigByMerchantID as fnFetchWithdrawalConfig } from 'merchant/reducers/capital/withdrawals';
 import SettlementsUpsellBanner from 'merchant/views/Settlements/Settlements/components/SettlementsUpsellBanner';
 import SamedayUpselling from './Modals/ScheduledModal/components/Upselling';
 import { resolvePath } from 'common/utils/rzp-utils';
 import { DEFAULT_MIN_WITHDRAW_AMOUNT, VIEWS } from './constants';
+import { MERCHANT_OWNER_TYPE } from 'merchant/views/Capital/CashAdvance/constants';
 
 const UpsellBanners = (props) => {
-  const { user, withdrawalConfiguration, closeModal, hideCloseButton } = props;
+  const {
+    user,
+    withdrawalConfiguration,
+    closeModal,
+    hideCloseButton,
+    fetchWithdrawalConfig,
+  } = props;
 
   const isLoading = withdrawalConfiguration?.loading;
   const [view, setView] = useState();
@@ -41,6 +49,15 @@ const UpsellBanners = (props) => {
   );
   const isBalanceAvailable =
     hasWithdrawalConfig && internalCreditBalance >= Number(minWithdrawAmount);
+
+  useEffect(() => {
+    if (isMerchantEligibileForLoc && !hasWithdrawalConfig && !withdrawalConfiguration?.error) {
+      fetchWithdrawalConfig({
+        owner_id: user.current,
+        owner_type: MERCHANT_OWNER_TYPE,
+      });
+    }
+  }, [hasWithdrawalConfig]);
 
   useEffect(() => {
     if (!isLoading && isMerchantEligibileForLoc) {
@@ -82,4 +99,6 @@ const mapStateToProps = (state) => ({
   withdrawalConfiguration: state.withdrawals.withdrawalConfiguration,
 });
 
-export default connect(mapStateToProps)(UpsellBanners);
+export default connect(mapStateToProps, {
+  fetchWithdrawalConfig: fnFetchWithdrawalConfig,
+})(UpsellBanners);
