@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant\Methods;
 
+use App;
 use Carbon\Carbon;
 use Config;
 
@@ -43,6 +44,8 @@ class Core extends Base\Core
     const GATEWAY = 'gateway';
     const STATUS  = 'status';
     const ENABLED = 'enabled';
+
+    const SET_DEFAULT_METHODS_LOCK_TIMEOUT        = 0.07;  //seconds
 
     public function setPaymentMethods(Merchant\Entity $merchant, array $input)
     {
@@ -535,6 +538,22 @@ class Core extends Base\Core
                 }
                 break;
         }
+    }
+
+    public function setMethods($merchant, Merchant\Entity $aggregatorMerchant)
+    {
+        $mutex = App::getFacadeRoot()['api.mutex'];
+
+        $mutexKey = $merchant->getId();
+
+        $mutex->acquireAndRelease(
+            $mutexKey,
+            function() use ($merchant, $aggregatorMerchant)
+            {
+                (new Methods\Core)->setDefaultMethods($merchant, $aggregatorMerchant);
+            },
+            self::SET_DEFAULT_METHODS_LOCK_TIMEOUT,
+            ErrorCode::BAD_REQUEST_SET_DEFAULT_METHODS_ALREADY_IN_PROGRESS);
     }
 
     public function setDefaultMethods($merchant, Merchant\Entity $aggregatorMerchant = null)

@@ -1510,7 +1510,14 @@ class Core extends Base\Core
 
     public function addMerchantSupportingEntitiesAsync(Entity $merchant, Entity $aggregatorMerchant = null)
     {
-        $this->repo->transactionOnLiveAndTest(function() use($merchant, $aggregatorMerchant) {
+        $properties = [
+            'id'            => $merchant->getId(),
+            'experiment_id' => $this->app['config']->get('app.product_config_issue_exp_id'),
+        ];
+
+        $isExpEnabled = $this->isSplitzExperimentEnable($properties,'enable');
+
+        $this->repo->transactionOnLiveAndTest(function() use($merchant, $aggregatorMerchant, $isExpEnabled) {
 
             $merchantBalance = $this->createBalance($merchant, Mode::TEST);
 
@@ -1518,13 +1525,21 @@ class Core extends Base\Core
 
             (new BankAccount\Core)->createTestBankAccount($merchant);
 
-            (new Methods\Core)->setDefaultMethods($merchant, $aggregatorMerchant);
+            if($isExpEnabled === false)
+            {
+                (new Methods\Core)->setDefaultMethods($merchant, $aggregatorMerchant);
+            }
 
             (new ScheduleTask\Core)->createDefaultSettlementSchedule($merchant);
 
             $this->addDefaultFeatures($merchant);
 
         });
+
+        if($isExpEnabled === true)
+        {
+            (new Methods\Core)->setMethods($merchant, $aggregatorMerchant);
+        }
 
         $this->addPartnerAddedFeaturesToSubmerchant($merchant, $aggregatorMerchant);
     }
@@ -7571,7 +7586,7 @@ class Core extends Base\Core
 
             $this->trace->traceException($e, Trace::ERROR, $traceCode, ['id' => $id]);
         }
-        
+
         return false;
     }
 }

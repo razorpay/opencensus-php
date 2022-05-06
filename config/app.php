@@ -397,4 +397,6 @@ return array(
     ],
 
     'db_migration_metrics_sampling_percent' => env('DB_MIGRATION_METRIC_SAMPLING_PERCENT', 0.1),
+
+    'product_config_issue_exp_id' => env('PRODUCT_CONFIG_ISSUE_EXP_ID'),
 );
