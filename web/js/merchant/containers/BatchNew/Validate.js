@@ -67,10 +67,10 @@ class BatchValidate extends Component {
         return response;
       })
       .catch((error) => {
-        this.changeBatchState('error', error.errors[0]);
-        if (this.props.onValidationFail) this.props.onValidationFail(error.errors[0]);
+        this.changeBatchState('error', error.errors[0] ?? '');
+        if (this.props.onValidationFail) this.props.onValidationFail(error.errors[0] ?? '');
         clearInterval(t);
-        this.props.gaEvents.trackUploadBatchFile('error', error.errors[0], secondsSinceStart);
+        this.props.gaEvents.trackUploadBatchFile('error', error.errors[0] ?? '', secondsSinceStart);
         return error;
       });
   };
