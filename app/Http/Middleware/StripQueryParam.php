@@ -17,6 +17,13 @@ class StripQueryParam
 
             $request->query->replace($input);
         }
+        
+        if (array_key_exists('keyless_header', $input) === true) {
+
+            unset($input['keyless_header']);
+
+            $request->query->replace($input);
+        }
 
         return $next($request);
     }
