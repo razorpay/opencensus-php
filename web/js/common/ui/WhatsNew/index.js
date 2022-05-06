@@ -48,6 +48,8 @@ import debounce from 'common/utils/debounce';
 import { fetchAnnouncements } from 'merchant/reducers/growthService';
 import getSurveyForm from 'merchant/components/Announcements/CSATSurveyBanner/getSurveyForm';
 import moment from 'moment';
+import GrowthServiceModal from '../GrowthServiceModal';
+import GrowthServiceCenterCTAModal from '../GrowthServiceModal/CenterCTAModal';
 
 const WhatsNewDetailsPage = lazy(() =>
   import(/* webpackChunkName: "WhatsNewDetailsPage" */ 'merchant/views/WhatsNew/Details'),
@@ -156,6 +158,22 @@ class WhatsNew extends Component {
     });
   };
 
+  showGSModal = (id) => {
+    const { openModal } = this.props;
+    openModal({
+      component: <GrowthServiceModal template_id={id} />,
+      className: 'GS--Modal',
+    });
+  };
+
+  showGSCenterCTAModal = (id) => {
+    const { openModal } = this.props;
+    openModal({
+      component: <GrowthServiceCenterCTAModal template_id={id} />,
+      className: 'GS--Modal',
+    });
+  };
+
   onMobileAppCampaignCTAClick = () => {
     // handle the popup open here. refer showRazorpayXNitroAnnouncement function
     const { user } = this.props;
@@ -214,7 +232,26 @@ class WhatsNew extends Component {
     this.props.setActivePageName('Connected Banking');
   };
 
-  handleCTA = ({ id, url }) => {
+  handleCTA = ({ id, url, type, variant }) => {
+    const isMWeb = isMobileAndTablet();
+    if (!isMWeb && type.length && variant.length) {
+      switch (type) {
+        case 'MODAL':
+          switch (variant) {
+            case 'default':
+              this.showGSModal(id);
+              break;
+            case 'center-cta':
+              this.showGSCenterCTAModal(id);
+              break;
+            default:
+              break;
+          }
+          break;
+        default:
+      }
+      return;
+    }
     switch (id) {
       case 'announcement-projectNitro-cta1':
       case 'announcement-projectNitro-hyderabad-cta1':
@@ -570,7 +607,12 @@ const NotificationCard = ({
         });
     } else if (btn.id) {
       e.preventDefault();
-      onCTAClick({ id: btn.id, url: btn.url });
+      onCTAClick({
+        id: btn?.id,
+        url: btn?.url,
+        type: btn?.sub_asset?.type,
+        variant: btn?.sub_asset?.variant,
+      });
     }
   };
 
