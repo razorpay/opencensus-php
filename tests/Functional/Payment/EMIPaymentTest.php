@@ -309,6 +309,7 @@ class EMIPaymentTest extends TestCase
 
         $this->deleteAlltheGenerateFiles($content);
 
+        unlink($content['YESB']);
     }
 
     public function testEmiFileGenerate()

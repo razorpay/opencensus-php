@@ -4,12 +4,12 @@ namespace RZP\Models\Gateway\File\Processor\Emi;
 
 use Str;
 use Mail;
-
 use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Card;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
+use RZP\Encryption\Type;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Mail\Emi as EmiMail;
@@ -32,6 +32,10 @@ class Base extends BaseProcessor
     protected $file;
 
     protected $totalTransactions;
+
+    protected $encryptionType = Type::PGP_ENCRYPTION;
+
+    protected $shouldEncrypt = false;
 
     public function fetchEntities(): PublicCollection
     {
@@ -66,6 +70,11 @@ class Base extends BaseProcessor
         return $data;
     }
 
+    protected function getEncryptionParams()
+    {
+        return [];
+    }
+
     public function createFile($data)
     {
         if ($this->isFileGenerated() === true)
@@ -88,6 +97,11 @@ class Base extends BaseProcessor
                     ->type(static::FILE_TYPE)
                     ->entity($this->gatewayFile)
                     ->metadata(static::FILE_METADATA);
+
+            if ($this->shouldEncrypt === true)
+            {
+                $creator->encrypt($this->encryptionType, $this->getEncryptionParams());
+            }
 
             if (static::COMPRESSION_REQUIRED === true)
             {

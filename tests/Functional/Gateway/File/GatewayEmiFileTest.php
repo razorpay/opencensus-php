@@ -331,6 +331,51 @@ class GatewayEmiFileTest extends TestCase
         Queue::assertPushed(BeamJob::class, 1);
     }
 
+    public function testGenerateEmiFileForYesB()
+    {
+        Mail::fake();
+        Queue::fake();
+
+        $this->fixtures->create('emi_plan',
+            [
+                'id'                => '90101010101011',
+                'duration'          => '9',
+                'rate'              => '1400',
+                'methods'           => 'creditcard',
+                'bank'              => 'YESB',
+                'min_amount'        => '300000',
+                'merchant_id'       => '100000Razorpay',
+            ]);
+
+        $this->ba->publicAuth();
+
+        $this->makeEmiPaymentOnCard('5318490005001234', 9);
+
+        $this->ba->adminAuth();
+
+        $content = $this->startTest();
+
+        $content = $content['items'][0];
+
+        $this->assertNotNull($content[File\Entity::FILE_GENERATED_AT]);
+        $this->assertNull($content[File\Entity::FAILED_AT]);
+        $this->assertEquals(File\Status::FILE_SENT, $content[File\Entity::STATUS]);
+        $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
+
+        $file = $this->getLastEntity('file_store', true);
+
+        $expectedFileContent = [
+            'type'        => 'yes_emi_file_sftp',
+            'entity_type' => 'gateway_file',
+            'entity_id'   => $content['id'],
+            'extension'   => 'xlsx',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedFileContent, $file);
+
+        Queue::assertPushed(BeamJob::class, 1);
+    }
+
 
     public function testGenerateEmiFileForHsbc()
     {
