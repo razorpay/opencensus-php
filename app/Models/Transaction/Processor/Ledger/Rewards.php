@@ -49,9 +49,7 @@ class Rewards extends Base
                 self::FEE_ACCOUNTING => self::REWARD,
             ];
 
-            $identifiers = [
-                self::BANKING_ACCOUNT_ID    => $credits->merchant->sharedBankingBalance->bankingAccount->getPublicId(),
-            ];
+            $identifiers = [];
 
             $payload = [
                 self::TENANT                => self::X,
@@ -115,9 +113,7 @@ class Rewards extends Base
             self::FEE_ACCOUNTING => self::REWARD,
         ];
 
-        $identifiers = [
-            self::BANKING_ACCOUNT_ID    => $credits->merchant->sharedBankingBalance->bankingAccount->getPublicId(),
-        ];
+        $identifiers = [];
 
         $payload = [
             self::TENANT                => self::X,

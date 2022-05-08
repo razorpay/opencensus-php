@@ -358,6 +358,7 @@ class CreditLogsTest extends TestCase
             $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
 
             $ledgerRequestPayload['additional_params'] = json_decode($ledgerRequestPayload['additional_params'], true);
+            $ledgerRequestPayload['identifiers'] = json_decode($ledgerRequestPayload['identifiers'], true);
 
             $this->assertEquals('X', $ledgerRequestPayload['tenant']);
             $this->assertEquals('live', $ledgerRequestPayload['mode']);
@@ -368,6 +369,92 @@ class CreditLogsTest extends TestCase
             $this->assertEquals('0', $ledgerRequestPayload['tax']);
             $this->assertEquals('fund_loading_processed', $ledgerRequestPayload['transactor_event']);
             $this->assertEquals('reward', $ledgerRequestPayload['additional_params']['fee_accounting']);
+            $this->assertEmpty($ledgerRequestPayload['identifiers']);
+        }
+    }
+
+    public function testBulkCreditRouteWithDALedgerWrite()
+    {
+        $ledgerSnsPayloadArray = [];
+
+        // We'll make 3 ledger calls. There are 6 items in the credit create payload,
+        // but 2 fail and 1 has the same idempotency key. Hence only 3 successful ledger calls.
+        $this->mockLedgerSns(3, $ledgerSnsPayloadArray);
+
+        $balance = $this->fixtures->on('live')->create('balance', [
+            'id'          => '10000BankingB1',
+            'type'        => 'banking',
+            'merchant_id' => '10000000000000',
+        ]);
+
+        // Need to create a Banking Account since we send this data to ledger in ledger calls
+        $bankingAccountAttributes = [
+            'id'                    =>  'ABCde1234ABCde',
+            'account_number'        =>  '2224440041626905',
+            'balance_id'            =>  $balance['id'],
+            'account_type'          =>  'nodal',
+        ];
+
+        $this->createBankingAccount($bankingAccountAttributes, 'live');
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::DA_LEDGER_JOURNAL_WRITES]);
+
+        Mail::fake();
+
+        $balance = $this->fixtures->on('live')->create('balance', [
+            'id'          => '10000SampleBal',
+            'type'        => 'credit',
+            'merchant_id' => '10000000000000',
+        ]);
+
+        $this->ba->batchAppAuth('rzp_live');
+
+        $admin = $this->fixtures->on('live')->create('admin', [
+            'id'     => Org::SUPER_ADMIN,
+            'org_id' => Org::RZP_ORG,
+        ]);
+
+        $headers = [
+            'HTTP_X_Batch_Id'          => 'C0zv9I46W4wiOq',
+            'HTTP_X_Creator_Id'        => 'RzrpySprAdmnId',
+            'HTTP_X_Creator_Type'      => 'admin',
+        ];
+
+        $this->testData[__FUNCTION__] = $this->testData['testBulkCreditRoute'];
+
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        $this->startTest();
+
+        Mail::assertQueued(ConfirmationForKycUsers::class, function ($mail)
+        {
+            $data = $mail->subject;
+
+            $this->assertEquals('Your ₹1.00 worth Free Credits are waiting for you!', $data);
+
+            return true;
+        });
+
+        $creditsCreated = $this->getDbEntities('credits', [],'live');
+
+        for ($index = 0; $index<count($ledgerSnsPayloadArray); $index++)
+        {
+            $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
+
+            $ledgerRequestPayload['additional_params'] = json_decode($ledgerRequestPayload['additional_params'], true);
+            $ledgerRequestPayload['identifiers'] = json_decode($ledgerRequestPayload['identifiers'], true);
+
+            $this->assertEquals('X', $ledgerRequestPayload['tenant']);
+            $this->assertEquals('live', $ledgerRequestPayload['mode']);
+            $this->assertEquals($creditsCreated[$index]->getPublicId(), $ledgerRequestPayload['transactor_id']);
+            $this->assertEquals('10000000000000', $ledgerRequestPayload['merchant_id']);
+            $this->assertEquals('INR', $ledgerRequestPayload['currency']);
+            $this->assertEquals('0', $ledgerRequestPayload['commission']);
+            $this->assertEquals('0', $ledgerRequestPayload['tax']);
+            $this->assertEquals('fund_loading_processed', $ledgerRequestPayload['transactor_event']);
+            $this->assertEquals('reward', $ledgerRequestPayload['additional_params']['fee_accounting']);
+            $this->assertEmpty($ledgerRequestPayload['identifiers']);
         }
     }
 
@@ -396,8 +483,6 @@ class CreditLogsTest extends TestCase
         ];
 
         $this->createBankingAccount($bankingAccountAttributes, 'live');
-
-        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_JOURNAL_WRITES]);
 
         Mail::fake();
 
