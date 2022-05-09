@@ -6383,6 +6383,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const LEDGER_JOURNAL_CRON_INIT                              = 'LEDGER_JOURNAL_CRON_INIT';
     const LEDGER_DELETE_MERCHANTS_REQUEST                       = 'LEDGER_DELETE_MERCHANTS_REQUEST';
 
+    const MANUAL_LEDGER_FEATURE_ASSIGNMENT_ATTEMPTED            = 'MANUAL_LEDGER_FEATURE_ASSIGNMENT_ATTEMPTED';
+
     const MERCHANT_TNC_GET_REQUEST                              = 'MERCHANT_TNC_GET_REQUEST';
     const MERCHANT_TNC_GET_REQUEST_SUCCESS                      = 'MERCHANT_TNC_GET_REQUEST_SUCCESS';
 

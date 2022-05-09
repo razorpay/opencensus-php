@@ -3127,10 +3127,8 @@ Regards,
         $this->startTest();
     }
 
-    public function testLedgerReverseShadowFeatureAdditionWhenPayoutServiceFeatureIsEnabled()
+    public function testLedgerReverseShadowFeatureManualAddition()
     {
-        $this->fixtures->merchant->addFeatures(['payout_service_enabled']);
-
         $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');
 
         $this->startTest();
@@ -3145,13 +3143,67 @@ Regards,
         $this->startTest();
     }
 
-    public function testLedgerJournalReadsFeatureAdditionWhenPayoutServiceFeatureIsEnabled()
+    public function testLedgerJournalReadsFeatureManualAddition()
     {
-        $this->fixtures->merchant->addFeatures(['payout_service_enabled']);
-
         $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');
 
         $this->startTest();
+    }
+
+    public function testDALedgerReverseShadowFeatureManualAddition()
+    {
+        $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');
+
+        $this->startTest();
+    }
+
+    public function testLedgerReverseShadowFeatureManualAdditionFromBulk()
+    {
+        $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');
+
+        $this->startTest();
+    }
+
+    public function testDALedgerReverseShadowFeatureManualAdditionFromBulk()
+    {
+        $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');
+
+        $this->startTest();
+    }
+
+    public function testLedgerReverseShadowFeatureManualRemoveFromBulk()
+    {
+        $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');
+
+        $this->startTest();
+    }
+
+    public function testDALedgerReverseShadowFeatureManualRemoveFromBulk()
+    {
+        $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');
+
+        $this->startTest();
+    }
+
+    public function testOnboardOldAccountsToLedger()
+    {
+        $this->fixtures->merchant->addFeatures(['ledger_journal_writes']);
+
+        $this->ba->appAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->startTest($testData);
+
+        $featuresArray = $this->getDbEntity('feature',
+            [
+                'entity_id' => '10000000000000',
+                'entity_type' => 'merchant'
+            ])->pluck('name')->toArray();
+
+        $this->assertContains('ledger_reverse_shadow', $featuresArray);
+        $this->assertContains('ledger_journal_reads', $featuresArray);
+        $this->assertNotContains('ledger_journal_writes', $featuresArray);
     }
 
     public function testDualCheckoutFeature()

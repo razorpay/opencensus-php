@@ -2624,6 +2624,15 @@ class Constants
         self::VIRTUAL_ACCOUNTS
     ];
 
+    // Ledger related features
+    const LEDGER_FEATURES = [
+        self::LEDGER_JOURNAL_WRITES,
+        self::LEDGER_JOURNAL_READS,
+        self::LEDGER_REVERSE_SHADOW,
+        self::DA_LEDGER_JOURNAL_WRITES,
+        self::DA_LEDGER_REVERSE_SHADOW
+    ];
+
     /**
      * Note: If the RESPONSE_TYPE is file, then,
      * a corresponding entry should be made in the class 'Models/Filestore/Type'

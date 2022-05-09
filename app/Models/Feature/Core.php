@@ -23,6 +23,7 @@ use RZP\Exception\LogicException;
 use RZP\Models\Settings\Accessor;
 use RZP\Models\Base\PublicEntity;
 use RZP\Mail\Merchant\EsEligible;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Mail\Merchant\FeatureEnabled;
 use RZP\Models\Merchant\SlackActions;
 use RZP\Mail\Loc\CashAdvanceEligible;
@@ -1163,6 +1164,27 @@ class Core extends Base\Core
                      $feature
            );
        }
+    }
+
+    /**
+     * @param string $featureToAssign The new feature to be added
+     *
+     * @throws Exception\BadRequestValidationFailureException if ledger integration can break
+     */
+    public function checkAndDisableFeatureChangesForLedgerFeatures(string $featureToAssign)
+    {
+        if (in_array($featureToAssign, Constants::LEDGER_FEATURES, true) === true)
+        {
+            $this->trace->info(TraceCode::MANUAL_LEDGER_FEATURE_ASSIGNMENT_ATTEMPTED,
+                [
+                    'feature_to_assign'     => $featureToAssign,
+                    'mode'                  => $this->mode
+                ]
+            );
+            throw new Exception\BadRequestValidationFailureException(
+                'Manually enabling/disabling ledger feature ' . $featureToAssign . ' is not allowed.'
+            );
+        }
     }
 
     /**

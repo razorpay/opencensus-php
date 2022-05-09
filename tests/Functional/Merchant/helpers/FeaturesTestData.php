@@ -2668,7 +2668,7 @@ return [
         ]
     ],
 
-    'testLedgerReverseShadowFeatureAdditionWhenPayoutServiceFeatureIsEnabled' => [
+    'testLedgerReverseShadowFeatureManualAddition' => [
         'request'   => [
             'content' => [
                 'names'       => ['ledger_reverse_shadow'],
@@ -2686,7 +2686,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Enabling ledger_reverse_shadow is not allowed when payout_service_enabled is already enabled.'
+                    'description' => 'Manually enabling/disabling ledger feature ledger_reverse_shadow is not allowed.'
                 ]
             ],
             'status_code' => 400
@@ -2726,7 +2726,7 @@ return [
         ]
     ],
 
-    'testLedgerJournalReadsFeatureAdditionWhenPayoutServiceFeatureIsEnabled' => [
+    'testLedgerJournalReadsFeatureManualAddition' => [
         'request'   => [
             'content' => [
                 'names'       => ['ledger_journal_reads'],
@@ -2744,7 +2744,36 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Enabling ledger_journal_reads is not allowed when payout_service_enabled is already enabled.'
+                    'description' => 'Manually enabling/disabling ledger feature ledger_journal_reads is not allowed.'
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ],
+
+    'testDALedgerReverseShadowFeatureManualAddition' => [
+        'request'   => [
+            'content' => [
+                'names'       => ['da_ledger_reverse_shadow'],
+                'entity_type' => 'merchant',
+                'entity_id'   => '10000000000000'
+            ],
+            'url'     => '/features',
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Dashboard'                => 'true',
+                'HTTP_X-Dashboard-Admin-Username' => 'admin',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Manually enabling/disabling ledger feature da_ledger_reverse_shadow is not allowed.'
                 ]
             ],
             'status_code' => 400
@@ -2813,6 +2842,62 @@ return [
         ]
     ],
 
+    'testLedgerReverseShadowFeatureManualAdditionFromBulk' => [
+        'request'  => [
+            'content' => [
+                'name'        => 'ledger_reverse_shadow',
+                'entity_ids'  => ['10000000000000', '10000000000001'],
+                'entity_type' => 'merchant'
+            ],
+            'url'     => '/features/assign',
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Dashboard'                => 'true',
+                'HTTP_X-Dashboard-Admin-Username' => 'admin',
+                'HTTP_X-Dashboard-User-Email'     => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'successful' => [],
+                'failed'     => [
+                    'ledger_reverse_shadow' => [
+                        '10000000000000',
+                        '10000000000001'
+                    ],
+                ],
+            ]
+        ]
+    ],
+
+    'testDALedgerReverseShadowFeatureManualAdditionFromBulk' => [
+        'request'  => [
+            'content' => [
+                'name'        => 'da_ledger_reverse_shadow',
+                'entity_ids'  => ['10000000000000', '10000000000001'],
+                'entity_type' => 'merchant'
+            ],
+            'url'     => '/features/assign',
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Dashboard'                => 'true',
+                'HTTP_X-Dashboard-Admin-Username' => 'admin',
+                'HTTP_X-Dashboard-User-Email'     => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'successful' => [],
+                'failed'     => [
+                    'da_ledger_reverse_shadow' => [
+                        '10000000000000',
+                        '10000000000001'
+                    ],
+                ],
+            ]
+        ],
+    ],
+
     'testDualCheckoutFeature' => [
         'request'  => [
             'url'     => '/features',
@@ -2830,6 +2915,87 @@ return [
                     'entity_id' => '10000000000000',
                     'entity_type' => 'merchant',
                 ]
+            ]
+        ]
+    ],
+
+    'testLedgerReverseShadowFeatureManualRemoveFromBulk' => [
+        'request'  => [
+            'content' => [
+                'entity_type' => 'merchant',
+                'name'       => 'ledger_reverse_shadow',
+                'entity_ids' => ['10000000000000', '10000000000001']
+            ],
+            'url'     => '/features/remove',
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'successful' => [],
+                'failed'     => [
+                    'ledger_reverse_shadow' => [
+                        '10000000000000',
+                        '10000000000001'
+                    ],
+                ],
+            ]
+        ]
+    ],
+
+    'testDALedgerReverseShadowFeatureManualRemoveFromBulk' => [
+        'request'  => [
+            'content' => [
+                'entity_type' => 'merchant',
+                'name'       => 'da_ledger_reverse_shadow',
+                'entity_ids' => ['10000000000000', '10000000000001']
+            ],
+            'url'     => '/features/remove',
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'successful' => [],
+                'failed'     => [
+                    'da_ledger_reverse_shadow' => [
+                        '10000000000000',
+                        '10000000000001'
+                    ],
+                ],
+            ]
+        ]
+    ],
+
+    'testOnboardOldAccountsToLedger' => [
+        'request'  => [
+            'content' => [
+                [
+                    'idempotency_key' => 'idempotency_key',
+                    'merchant_id'     => '10000000000000',
+                    'action'          => 'reverse_shadow',
+                ]
+            ],
+            'url'     => '/onboarding/feature/ledger/onboard_old_accounts',
+            'method'  => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'entity'    => 'collection',
+                'count'     => 1,
+                'items'     =>  [
+                        [
+                            'idempotency_key'   => 'idempotency_key',
+                            'merchant_id'       => '10000000000000',
+                            'status'            => 'success',
+                        ],
+                    ],
             ]
         ]
     ],
@@ -2854,5 +3020,4 @@ return [
             ]
         ]
     ],
-
 ];

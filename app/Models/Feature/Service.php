@@ -41,6 +41,9 @@ class Service extends Base\Service
 
         $features = $featureParams->map(function ($item) use ($featureCore, $shouldSync)
         {
+            $featureToAssign = (new Entity)->build($item);
+            $featureCore->checkAndDisableFeatureChangesForLedgerFeatures($featureToAssign->getName());
+
             return $featureCore->create($item, $shouldSync);
         });
 
@@ -558,6 +561,8 @@ class Service extends Base\Service
 
                 try
                 {
+                    (new Core())->checkAndDisableFeatureChangesForLedgerFeatures($featureName);
+
                     $feature = (new Core())->create($featureParam, $shouldSync);
 
                     $successfulMerchant[] = $entityId;
@@ -634,6 +639,8 @@ class Service extends Base\Service
             {
                 try
                 {
+                    (new Core())->checkAndDisableFeatureChangesForLedgerFeatures($featureName);
+
                     $feature = $this->repo->feature->findByEntityTypeEntityIdAndNameOrFail(
                         $entityType,
                         $entityId,
