@@ -15,13 +15,20 @@ use RZP\Error\ErrorCode;
 use RZP\Models\LineItem;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use BaconQrCode\Writer;
+use BaconQrCode\Renderer;
 use RZP\Models\User\Role;
 use RZP\Http\RequestHeader;
 use RZP\Constants\Entity as E;
-use RZP\Mail\Invoice\PaymentLinkServiceBase;
+use RZP\Models\QrCode\Constants;
 use Razorpay\Trace\Logger as Trace;
-use RZP\Models\FileStore;
+use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Mail\Invoice\PaymentLinkServiceBase;
+use RZP\Models\QrCode\Generator as QrCodeGenerator;
+
 use RZP\Jobs\Invoice\BatchNotify as InvoiceBatchNotifyJob;
+
+use Illuminate\Support\Facades\Storage;
 
 class Service extends Base\Service
 {
@@ -607,6 +614,48 @@ class Service extends Base\Service
         return $results;
     }
 
+    public function generateQrCodeImageFromIntentUrl($input)
+    {
+        $renderer = new Renderer\Image\Png;
+
+        $renderer->setMargin(Constants::MARGIN);
+
+        $renderer->setHeight(Constants::QR_EMAIL_HEIGHT);
+
+        $renderer->setWidth(Constants::QR_EMAIL_WIDTH);
+
+        $writer = new Writer($renderer);
+
+        $localFilePath = (new QrCodeGenerator())->getLocalSaveDir() . '/' . $input['invoice']['id'] . '.' . Constants::QR_CODE_EXTENSION;
+
+        $qrCodeString = $writer->writeString($input['intent_url']);
+
+        $qrCodeImage = imagecreatefromstring($qrCodeString);
+
+        $logoImage = imagecreatefrompng(public_path() . '/img/template_qr_on_email.png');
+
+        imagecopymerge($logoImage, $qrCodeImage,
+                       Constants::QR_EMAIL_X, Constants::QR_EMAIL_Y,
+                       Constants::SORCE_X, Constants::SORCE_Y,
+                       Constants::QR_EMAIL_WIDTH, Constants::QR_EMAIL_HEIGHT,
+                       Constants::OPACITY);
+
+        imagejpeg($logoImage, $localFilePath);
+
+        imagedestroy($logoImage);
+
+        imagedestroy($qrCodeImage);
+
+        return $localFilePath;
+    }
+
+    public function checkIfQronEmailExperimentEnabled()
+    {
+        $isExperimentEnabled = (new Merchant\Core())->isRazorxExperimentEnable($this->merchant->getId(),
+                                                                               RazorxTreatment::QR_ON_EMAIL);
+        return $isExperimentEnabled;
+    }
+
     public function sendEmailForPaymentLinkService(array $input): array
     {
         (new Validator)->validateInput('payment_link_service_send_email', $input);
@@ -618,6 +667,13 @@ class Service extends Base\Service
         $input['view_preferences'] = $this->getViewPreferencesForPaymentLinkService($this->merchant);
 
         $input['is_test_mode'] = ($this->mode === Mode::TEST);
+
+        if((isset($input['intent_url']) === true)
+           and (empty($input['intent_url']) === false)
+           and $this->checkIfQronEmailExperimentEnabled())
+        {
+            $input['qr_code_image_address'] = $this->generateQrCodeImageFromIntentUrl($input);
+        }
 
         $mailable = new PaymentLinkServiceBase($input);
 

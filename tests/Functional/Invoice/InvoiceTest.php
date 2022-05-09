@@ -2978,6 +2978,32 @@ class InvoiceTest extends TestCase
         $this->startTest();
     }
 
+    protected function enableRazorXTreatmentForQrOnEmail()
+    {
+        $razorx = \Mockery::mock(RazorXClient::class)->makePartial();
+
+        $this->app->instance('razorx', $razorx);
+
+        $razorx->shouldReceive('getTreatment')
+               ->andReturnUsing(function(string $id, string $featureFlag, string $mode) {
+                   if ($featureFlag === (RazorxTreatment::QR_ON_EMAIL))
+                   {
+                       return 'on';
+                   }
+
+                   return 'control';
+               });
+    }
+
+    public function testCreateSendEmailForPaymentLinkServiceWithIntentUrl()
+    {
+        $this->enableRazorXTreatmentForQrOnEmail();
+
+        $this->ba->paymentLinksAuth();
+
+        $this->startTest();
+    }
+
     public function testAutoCaptureInvoiceOnLateAuthorizedPayment()
     {
         $payment = $this->createInvoiceAndFailedPayment();

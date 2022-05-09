@@ -226,6 +226,8 @@ final class RazorxTreatment
 
     const QR_CODE_CUTOFF_CONFIG = 'qr_code_cutoff_config';
 
+    const QR_ON_EMAIL = 'qr_on_email';
+
     // experiment for sending UPI links to customers while created missed order payment links
     const PL_MISSED_ORDER_UPI_LINK = 'pl_missed_order_upi_link';
 

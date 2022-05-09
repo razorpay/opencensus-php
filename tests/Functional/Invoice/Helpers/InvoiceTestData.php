@@ -5318,7 +5318,42 @@ return [
                 ],
                 'to' => 'r@g.c',
                 'subject' => 'erhewhjhjrewjer',
-                'view' => 'emails.invoice.customer.expiring'
+                'view' => 'emails.invoice.customer.expiring',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testCreateSendEmailForPaymentLinkServiceWithIntentUrl' => [
+        'request'  => [
+            'url'     => '/invoices/send_email',
+            'method'  => 'post',
+            'content' => [
+                'invoice' => [
+                    'id' => '30000000000000',
+                    'status' => 'created',
+                    'type' => 'payment_link',
+                    'short_url' => 'http://bitly.dev/2eZ11Vn',
+                    'amount_paid' => 0,
+                    'type_label' => 'payment_link',
+                    'amount_formatted' => 500,
+                    'currency' => 'INR',
+                    'receipt' => 'mamachandamama',
+                    'amount' => 500,
+                    'customer_details' => [
+                        'customer_email'   => 'test@razorpay.com',
+                        'customer_contact' => '9999999999',
+                        'customer_name'    => 'test',
+                    ],
+                    'description'  => 'For special service',
+                    'partial_payment' => 0,
+                ],
+                'to' => 'r@g.c',
+                'subject' => 'erhewhjhjrewjer',
+                'view' => 'emails.invoice.customer.notification_pl_v2',
+                'intent_url' => "something works here",
             ],
         ],
         'response' => [

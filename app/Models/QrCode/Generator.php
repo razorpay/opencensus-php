@@ -92,7 +92,7 @@ class Generator extends Base\Core
         return $localFilePath;
     }
 
-    protected function getLocalSaveDir(): string
+    public function getLocalSaveDir(): string
     {
         $dirPath = storage_path('files/qrcodes');
 

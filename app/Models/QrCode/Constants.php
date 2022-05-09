@@ -24,6 +24,10 @@ class Constants
     const SORCE_X               = 0;
     const SORCE_Y               = 0;
     const MARGIN                = 0;
+    const QR_EMAIL_X            = 302;
+    const QR_EMAIL_Y            = 36;
+    const QR_EMAIL_WIDTH        = 140;
+    const QR_EMAIL_HEIGHT       = 140;
 
     const OPACITY               = 100;
 

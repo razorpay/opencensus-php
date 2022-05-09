@@ -294,6 +294,7 @@ class Validator extends Base\Validator
         'to'                => 'required|email',
         'view'              => 'required|string|custom',
         'subject'           => 'required|string',
+        'intent_url'        => 'sometimes|string',
     ];
 
     protected static $paymentLinkSwitchVersionRules = [
