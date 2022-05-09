@@ -1844,6 +1844,14 @@ return [
             Permission::CREATE_DISCREPANCY    =>  [
                 'description'   => 'Create Static Discrepancy',
                 'assignable'    => true,
+            ],
+            Permission::VIEW_IIR_TEMPLATE    =>  [
+                'description'   => 'View IIR Template Mappings',
+                'assignable'    => true,
+            ],
+            Permission::EDIT_IIR_TEMPLATE    =>  [
+                'description'   => 'Update IIR Template Mappings',
+                'assignable'    => true,
             ]
         ],
 

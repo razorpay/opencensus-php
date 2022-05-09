@@ -644,6 +644,8 @@ class Name
 
     const VIEW_INTERNAL_INSTRUMENT_REQUEST   = 'view_internal_instrument_request';
     const UPDATE_KAM_INTERNAL_INSTRUMENT_REQUEST = 'update_kam_internal_instrument_request';
+    const VIEW_IIR_TEMPLATE                  = 'view_iir_template';
+    const EDIT_IIR_TEMPLATE                  = 'edit_iir_template';
     const UPDATE_INTERNAL_INSTRUMENT_REQUEST = 'update_internal_instrument_request';
     const CANCEL_INTERNAL_INSTRUMENT_REQUEST = 'cancel_internal_instrument_request';
     const DELETE_INTERNAL_INSTRUMENT_REQUEST = 'delete_internal_instrument_request';
