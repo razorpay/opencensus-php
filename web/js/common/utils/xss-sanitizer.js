@@ -71,4 +71,5 @@ const sanitizer = (html, extraOptions) => {
   return customXssFillter.process(html);
 };
 
+export { customWhiteList };
 export default sanitizer;

@@ -10,7 +10,8 @@ import debounce from 'common/utils/debounce';
 import { connect } from 'react-redux';
 import { sendDataToSalesForce } from 'common/utils/common-api';
 import { getNotificationTrackingProperties } from '../../../common/ui/WhatsNew/common';
-import sanitizer from 'common/utils/xss-sanitizer';
+import sanitizer, { customWhiteList } from 'common/utils/xss-sanitizer';
+import isObject from 'is-object';
 
 const getButtonClass = (type) => {
   switch (type) {
@@ -27,6 +28,18 @@ const getButtonClass = (type) => {
 
 const isWhatsNewSection = (id) => {
   return id.includes('whats-new');
+};
+
+const getCustomWhiteList = () => {
+  const whitelist = isObject(customWhiteList) ? { ...customWhiteList } : {};
+  const l2WhiteList = Object.fromEntries(
+    Object.entries(whitelist).map(([key, val]) => [
+      key,
+      Array.isArray(val) ? [...val, 'class'] : ['class'],
+    ]),
+  );
+
+  return l2WhiteList;
 };
 
 @withRouter
@@ -111,7 +124,7 @@ export default class AnnouncementDetails extends React.Component {
 
   onButtonClick = (button, index) => () => {
     const isExternal = /^http(s)?:\/\//.test(button.url);
-    const isHash = !isExternal && button.url.indexOf('#') === 0;
+    const isHash = !isExternal && button?.url?.indexOf('#') === 0;
     const URL = button.url;
     const internalUrl = isHash ? `${location.href}${URL}` : `/app${URL}`;
     const urlPath = isExternal ? URL : internalUrl;
@@ -220,7 +233,7 @@ export default class AnnouncementDetails extends React.Component {
               this.handleContentScroll(target, notificationId, title);
             }}
           >
-            <div dangerouslySetInnerHTML={{ __html: sanitizer(content) }} />
+            <div dangerouslySetInnerHTML={{ __html: sanitizer(content, getCustomWhiteList()) }} />
           </div>
           {buttons && (
             <div className="announcement-details__footer action-buttons">
