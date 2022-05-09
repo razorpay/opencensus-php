@@ -93,7 +93,17 @@ const FIRCSection = (props) => {
   const { firc, getFircDetails } = props;
   const { loading, data, error } = firc;
 
-  useEffect(() => getFircDetails(), [getFircDetails]);
+  const trackModalEvent = (action) => {
+    analyticsTrack({
+      objectName: 'FIRC Modal',
+      actionName: action,
+      screen: 'profile',
+      properties: {
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+      toLumberjack: true,
+    });
+  };
 
   const openFircForm = () => {
     props.openModal({
@@ -115,17 +125,14 @@ const FIRCSection = (props) => {
         </SuspenseWithLoader>
       ),
     });
-
-    analyticsTrack({
-      objectName: 'FIRC Modal',
-      actionName: 'opened',
-      screen: 'profile',
-      properties: {
-        ...getCommonAnalyticsProperties(window.rzp_user),
-      },
-      toLumberjack: true,
-    });
+    trackModalEvent('opened');
   };
+
+  useEffect(() => getFircDetails(), [getFircDetails]);
+
+  useEffect(() => {
+    !error && !loading && trackModalEvent('loading finished');
+  }, [error, loading]);
 
   return (
     <div className="panel panel-default">
