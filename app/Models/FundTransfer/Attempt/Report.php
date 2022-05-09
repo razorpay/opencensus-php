@@ -207,7 +207,7 @@ class Report extends Base\Core
 
         foreach ($records as $record)
         {
-            if ($record->source->getBatchFundTransferId() !== $record->getBatchFundTransferId())
+            if (($record->getSourceType() !== Type::REFUND) and ($record->source->getBatchFundTransferId() !== $record->getBatchFundTransferId()))
             {
                 continue;
             }

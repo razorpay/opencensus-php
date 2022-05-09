@@ -929,7 +929,7 @@ class AxisGatewayTest extends TestCase
         $refund = $this->getLastEntity('refund', true);
 
         // Refund will be in created state
-        $this->assertEquals('initiated', $refund['status']);
+        $this->assertEquals('created', $refund['status']);
         $this->assertEquals('optimum', $refund['speed_requested']);
     }
 

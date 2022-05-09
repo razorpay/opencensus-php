@@ -133,6 +133,7 @@ class Validator extends Base\Validator
         'payment_base_amount'                       => 'required|integer|min:0',
         'payment_created_at'                        => 'required|epoch',
         'attempts'                                  => 'sometimes|integer',
+        'status'                                    => 'sometimes|string',
         'fta_data'                                  => 'sometimes|associative_array',
         'fta_data.bank_account'                     => 'sometimes|array',
         'fta_data.bank_account.ifsc_code'           => 'required_with:bank_account|alpha_num|size:11',

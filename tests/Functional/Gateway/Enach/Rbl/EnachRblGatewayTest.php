@@ -1253,7 +1253,7 @@ class EnachRblGatewayTest extends TestCase
         $refund = $this->getLastEntity('refund', true);
 
         //$this->assertEquals(Refund\Status::PROCESSED, $refund['status']);
-        $this->assertEquals(Refund\Status::INITIATED, $refund['status']);
+        $this->assertEquals(Refund\Status::CREATED, $refund['status']);
         $this->assertEquals(1, $refund['attempts']);
         $this->assertNotNull($attempt['utr']);
     }

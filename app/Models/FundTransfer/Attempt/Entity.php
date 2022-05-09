@@ -5,13 +5,13 @@ namespace RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Card\Issuer;
+use RZP\Models\Payment\Refund;
 use RZP\Constants\Entity as E;
 use RZP\Exception\LogicException;
 use RZP\Models\FundTransfer\Mode;
 use RZP\Models\Settlement\Channel;
 use RZP\Services\FTS\Constants as FTSConstants;
 use RZP\Models\FundTransfer\Yesbank\NodalAccount;
-use RZP\Trace\TraceCode;
 
 /**
  * @property mixed batchFundTransfer
@@ -410,11 +410,42 @@ class Entity extends Base\PublicEntity
             $this->card()->associate($card);
 
             return $card;
-
         }
 
         return null;
     }
+
+    public function getSourceAttribute()
+    {
+        if ($this->relationLoaded('source') === true)
+        {
+            $source = $this->getRelation('source');
+        }
+
+        if (empty($source) === false)
+        {
+            return $source;
+        }
+
+        if ($this->getSourceType() === Type::REFUND)
+        {
+            $refund = (new Refund\Repository())->findOrFail($this->getSourceId());
+
+            $this->source()->associate($refund);
+
+            return $refund;
+        }
+
+        $source = $this->source()->first();
+
+        if (empty($source) === false)
+        {
+            return $source;
+        }
+
+        return null;
+    }
+
     // ------------------------------- setters ---------------------------------
 
     public function setChannel($channel)
@@ -581,6 +612,11 @@ class Entity extends Base\PublicEntity
      */
     public function isBatchSameAsSource(): bool
     {
+        if ($this->getSourceType() === Type::REFUND)
+        {
+            return true;
+        }
+
         $ftaBatchId = $this->getBatchFundTransferId();
 
         $sourceBatchId  = $this->source->getBatchFundTransferId();

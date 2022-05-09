@@ -10,6 +10,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Diag\EventCode;
+use RZP\Models\FundTransfer\Attempt\Type;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Entity;
@@ -91,7 +92,8 @@ abstract class EntityProcessor extends Base\Core
 
         $this->updateAttemptEntity();
 
-        if ($this->source->getBatchFundTransferId() !== $this->fta->getBatchFundTransferId())
+        if (($this->fta->getSourceType() !== Type::REFUND) and
+            ($this->source->getBatchFundTransferId() !== $this->fta->getBatchFundTransferId()))
         {
             return;
         }

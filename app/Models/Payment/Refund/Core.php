@@ -5,6 +5,7 @@ namespace RZP\Models\Payment\Refund;
 use App;
 use RZP\Models\Base;
 use RZP\Models\Batch;
+use RZP\Models\Payment\Refund\Constants as RefundConstants;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment;
 use RZP\Models\Payment\Refund;
@@ -69,27 +70,24 @@ class Core extends Base\Core
                 if ($refund->isScrooge() === true)
                 {
                     $data = [
-                        Entity::STATUS        => Status::PROCESSED,
-                        Entity::REFERENCE1    => $refund->getReference1(),
-                        Entity::MODE          => $ftaData[Entity::MODE] ?? Constants::FT_UNKNOWN,
-                        Constants::FTA_UPDATE => true,
+                        Entity::STATUS             => Status::PROCESSED,
+                        Entity::REFERENCE1         => $ftaData[Entity::UTR],
+                        Entity::MODE               => $ftaData[Entity::MODE] ?? Constants::FT_UNKNOWN,
+                        Attempt\Constants::REMARKS => $ftaData[Attempt\Constants::REMARKS],
+                        Constants::FTA_UPDATE      => true,
                     ];
 
                     (new Service)->makeScroogeEditRefundRequest($refund, $data);
                 }
-                else
-                {
-                    $refund->setStatusProcessed();
-                    $refund->setGatewayRefunded(true);
-                    $this->repo->saveOrFail($refund);
-                }
 
-                $processor = $this->getNewProcessor($refund->merchant);
+                $merchant = $this->repo->merchant->fetchMerchantFromEntity($refund);
+
+                $processor = $this->getNewProcessor($merchant);
 
                 //
                 // Refund FTA is successful and ARN has been updated sending arn updated notification(s)
                 //
-                if ($processor->isValidArn($refund->getReference1()) === true)
+                if ($processor->isValidArn($ftaData[Entity::UTR]) === true)
                 {
                     $processor->eventRefundArnUpdated($refund);
                 }
@@ -104,6 +102,7 @@ class Core extends Base\Core
                         Entity::STATUS                     => Status::FAILED,
                         Entity::REFERENCE2                 => $refund->getReference2(),
                         Constants::FTA_UPDATE              => true,
+                        Attempt\Constants::REMARKS         => $ftaData[Attempt\Constants::REMARKS],
                         Attempt\Entity::BANK_RESPONSE_CODE => $ftaData[Attempt\Entity::BANK_RESPONSE_CODE] ?? null,
                     ];
 
@@ -119,18 +118,9 @@ class Core extends Base\Core
                         $event = Refund\ScroogeEvents::PROCESSED_TO_FILE_INIT_EVENT;
                     }
 
-                    $refund->setBatchFundTransferId(null);
-                    $refund->setUtr(null);
-                    $refund->setRemarks(null);
-                    $this->repo->saveOrFail($refund);
-
                     (new Service)->makeScroogeEditRefundRequest($refund, $data, $event);
                 }
-                else
-                {
-                    $refund->setStatus(Status::FAILED);
-                    $this->repo->saveOrFail($refund);
-                }
+
                 break;
 
             case Attempt\Status::CREATED:
@@ -146,17 +136,29 @@ class Core extends Base\Core
         }
     }
 
-    public function updateStatusAfterFtaInitiated(Entity $entity, Attempt\Entity $fta)
-    {
-        $entity->batchFundTransfer()->associate($fta->batchFundTransfer);
-
-        $entity->setStatus(Status::INITIATED);
-
-        $this->repo->saveOrFail($entity);
-    }
-
     public function updateWithDetailsBeforeFtaRecon(Entity $entity, array $ftaData)
     {
+        $featureFlag =  RefundConstants::REFUNDS_0_LOC_FTA_STATUS_UPDATE_FLOW_RAMP_UP;
+
+        $mode = $this->app['rzp.mode'] ?? 'live';
+
+        $ftaVariant = $this->app->razorx->getTreatment(
+            $entity->getId(),
+            $featureFlag,
+            $mode
+        );
+
+        if (strtolower($ftaVariant) === RefundConstants::RAZORX_VARIANT_ON)
+        {
+            $this->trace->info(
+                TraceCode::REFUNDS_0_LOC_FTA_STATUS_UPDATE_FLOW_RAMP_UP_RESPONSE,
+                [
+                    'id'        => $entity->getId(),
+                    'result'    => $ftaVariant
+                ]);
+            return;
+        }
+
         $entity->setUtr($ftaData[Attempt\Constants::UTR]);
 
         $entity->setRemarks($ftaData[Attempt\Constants::REMARKS]);

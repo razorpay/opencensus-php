@@ -320,13 +320,6 @@ trait Refund
     {
         $payment = $refund->payment;
 
-        //
-        // Refunds are typically retried in groups using long-running
-        // loops. This ensures that if a refund has been updated by a
-        // different process, it is processed accordingly here.
-        //
-        $this->repo->reload($refund);
-
         $this->setPaymentAndRefundInfo($refund, $payment);
 
         $input[RefundConstants::IS_FTA] = (isset($input[RefundConstants::IS_FTA]) === true) ?
@@ -449,13 +442,6 @@ trait Refund
     {
         $payment = $refund->payment;
 
-        //
-        // Refunds are typically retried in groups using long-running
-        // loops. This ensures that if a refund has been updated by a
-        // different process, it is processed accordingly here.
-        //
-        $this->repo->reload($refund);
-
         $this->setPaymentAndRefundInfo($refund, $payment);
 
         if ($refund->isProcessed() === true)
@@ -520,13 +506,6 @@ trait Refund
     public function scroogeVerifyRefund(RefundEntity $refund, array $input)
     {
         $payment = $refund->payment;
-
-        //
-        // Refunds are typically retried in groups using long-running
-        // loops. This ensures that if a refund has been updated by a
-        // different process, it is processed accordingly here.
-        //
-        $this->repo->reload($refund);
 
         $this->setPaymentAndRefundInfo($refund, $payment);
 
@@ -2293,24 +2272,6 @@ trait Refund
         {
             $refundData = $this->reverseOnGateway($data, $retry);
         }
-        else
-        {
-            //
-            // Flow reaching here that means its an auto refund case, where transaction can not be refunded or reversed.
-            // Earlier, these refunds were kept in created state forever, now marking them as processed as they are being
-            // refunded by gateway automatically, we can't do anything here.
-            //
-            // If code reaching here, gateway refunded is set as true, hence
-            // for new refunds on Scrooge-enabled gateways, Scrooge makes an API call to mark it as processed, later.
-            //
-            // Marking refund as processed here for all other gateways and also if refund is of the date before that gateway
-            // moved to scrooge.
-            //
-            if ($this->refund->isScrooge() === false)
-            {
-                $this->refund->setStatusProcessed();
-            }
-        }
 
         return $refundData;
     }
@@ -3103,8 +3064,6 @@ trait Refund
 
         if ($this->refund->getAmount() === 0)
         {
-            $this->refund->setStatusProcessed();
-
             $scroogeResponse->setSuccess(true);
 
             return $scroogeResponse->toArray();
@@ -3168,16 +3127,27 @@ trait Refund
 
         return $this->repo->transaction(function () use ($input, $fundTransferAttemptInput)
         {
-            if (($this->refund->hasVpa() === false) or
-                ($this->refund->vpa->matches($input) === false))
+            $cacheVal = $this->app['cache']->get($this->refund->getId());
+
+            if ($cacheVal == RefundConstants::REFUNDS_0_LOC_POST_INIT_FLOW_RAMP_UP)
             {
                 $this->createAndAssociateVpa($input);
+            }
+            else
+            {
+
+                if (($this->refund->hasVpa() === false) or
+                    ($this->refund->vpa->matches($input) === false))
+                {
+                    $this->createAndAssociateVpa($input);
+                }
             }
 
             $fta = (new FundTransferAttempt\Core)->createWithVpa($this->refund,
                                                                  $this->refund->vpa,
                                                                  $fundTransferAttemptInput,
                                                                  true);
+
 
             return $fta;
         });
@@ -3202,10 +3172,20 @@ trait Refund
 
         return $this->repo->transaction(function () use ($bankAccountInput, $fundTransferAttemptInput)
         {
-            if (($this->refund->hasBankAccount() === false) or
-                ($this->refund->bankAccount->matches($bankAccountInput) === false))
+            $cacheVal = $this->app['cache']->get($this->refund->getId());
+
+            if ($cacheVal == RefundConstants::REFUNDS_0_LOC_POST_INIT_FLOW_RAMP_UP)
             {
                 $this->createAndAssociateBankAccount($bankAccountInput);
+            }
+            else
+            {
+                if (($this->refund->hasBankAccount() === false) or
+                    ($this->refund->bankAccount->matches($bankAccountInput) === false))
+                {
+                    $this->createAndAssociateBankAccount($bankAccountInput);
+                }
+
             }
 
             $fta = (new FundTransferAttempt\Core)->createWithBankAccount($this->refund,
@@ -3964,7 +3944,12 @@ trait Refund
 
         $this->refund->vpa()->associate($vpa);
 
-        $this->refund->saveOrFail();
+        $cacheVal = $this->app['cache']->get($this->refund->getId());
+
+        if (empty($cacheVal))
+        {
+            $this->refund->saveOrFail();
+        }
     }
 
     protected function createAndAssociateBankAccount(array $bankAccountInput)
@@ -3978,7 +3963,12 @@ trait Refund
 
         $this->refund->bankAccount()->associate($bankAccount);
 
-        $this->refund->saveOrFail();
+        $cacheVal = $this->app['cache']->get($this->refund->getId());
+
+        if (empty($cacheVal))
+        {
+            $this->refund->saveOrFail();
+        }
     }
 
     /**

@@ -1635,11 +1635,58 @@ class Service extends Base\Service
         }
     }
 
+    protected function buildVirtualRefundEntity(Payment\Entity $payment, array &$input, string $refundId = null)
+    {
+        $refund = (new RefundEntity())->forceFill($input);
+
+        if (empty($refund[Refund\Entity::STATUS]) === true) {
+            $refund[Refund\Entity::STATUS] = Status::CREATED;
+        }
+
+        $refund[Refund\Entity::IS_SCROOGE] = true;
+
+        $refund->payment()->associate($payment);
+
+        $merchant = $payment->merchant;
+
+        $refund->merchant()->associate($merchant);
+
+        return $refund;
+    }
+
     public function makeGatewayRefundCall(string $refundId, array $input)
     {
-        $refund = $this->repo->refund->findOrFail($refundId);
+        $featureFlag = $input['gateway'] . '_' . RefundConstants::REFUNDS_0_LOC_POST_INIT_FLOW_RAMP_UP;
 
-        $merchant = $refund->merchant;
+        $gatewayVariant = $this->app->razorx->getTreatment(
+            $input['merchant_id'],
+            $featureFlag,
+            $this->mode
+        );
+
+        if (strtolower($gatewayVariant) === RefundConstants::RAZORX_VARIANT_ON)
+        {
+            $this->trace->info(
+                TraceCode::REFUNDS_0_LOC_POST_INIT_FLOW_RAMP_UP_RESPONSE,
+                [
+                    'id'        => $refundId,
+                    'result'    => $gatewayVariant
+                ]);
+
+            $payment = $this->repo->payment->findOrFail($input[RefundConstants::PAYMENT_ID]);
+
+            $merchant = $payment->merchant;
+
+            $refund = $this->buildVirtualRefundEntity($payment, $input, $refundId);
+
+            $this->app['cache']->put($refundId, RefundConstants::REFUNDS_0_LOC_POST_INIT_FLOW_RAMP_UP, RefundConstants::RAMP_UP_KEY_TTL);
+        }
+        else
+        {
+            $refund = $this->repo->refund->findOrFail($refundId);
+
+            $merchant = $refund->merchant;
+        }
 
         $response = $this->getNewProcessor($merchant)->scroogeGatewayRefund($refund, $input);
 
@@ -1648,9 +1695,28 @@ class Service extends Base\Service
 
     public function makeGatewayVerifyRefundCall(string $refundId, array $input)
     {
-        $refund = $this->repo->refund->findOrFail($refundId);
+        $featureFlag = $input['gateway'] . '_' . RefundConstants::REFUNDS_0_LOC_POST_INIT_FLOW_RAMP_UP;
 
-        $merchant = $refund->merchant;
+        $gatewayVariant = $this->app->razorx->getTreatment(
+            $input['merchant_id'],
+            $featureFlag,
+            $this->mode
+        );
+
+        if (strtolower($gatewayVariant) === RefundConstants::RAZORX_VARIANT_ON)
+        {
+            $payment = $this->repo->payment->findOrFail($input[RefundConstants::PAYMENT_ID]);
+
+            $merchant = $payment->merchant;
+
+            $refund = $this->buildVirtualRefundEntity($payment, $input, $refundId);
+        }
+        else
+        {
+            $refund = $this->repo->refund->findOrFail($refundId);
+
+            $merchant = $refund->merchant;
+        }
 
         $response = $this->getNewProcessor($merchant)->scroogeGatewayVerifyRefund($refund, $input);
 
@@ -1659,9 +1725,28 @@ class Service extends Base\Service
 
     public function makeScroogeVerifyRefundCall(string $refundId, array $input)
     {
-        $refund = $this->repo->refund->findOrFail($refundId);
+        $featureFlag = $input['gateway'] . '_' . RefundConstants::REFUNDS_0_LOC_POST_INIT_FLOW_RAMP_UP;
 
-        $merchant = $refund->merchant;
+        $gatewayVariant = $this->app->razorx->getTreatment(
+            $input['merchant_id'],
+            $featureFlag,
+            $this->mode
+        );
+
+        if (strtolower($gatewayVariant) === RefundConstants::RAZORX_VARIANT_ON)
+        {
+            $payment = $this->repo->payment->findOrFail($input[RefundConstants::PAYMENT_ID]);
+
+            $merchant = $payment->merchant;
+
+            $refund = $this->buildVirtualRefundEntity($payment, $input, $refundId);
+        }
+        else
+        {
+            $refund = $this->repo->refund->findOrFail($refundId);
+
+            $merchant = $refund->merchant;
+        }
 
         $response = $this->getNewProcessor($merchant)->scroogeVerifyRefund($refund, $input);
 

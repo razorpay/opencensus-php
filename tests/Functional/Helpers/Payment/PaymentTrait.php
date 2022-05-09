@@ -1075,6 +1075,7 @@ trait PaymentTrait
         $input['amount'] = $refund['amount'] ?? $input['amount'];
         $input['base_amount'] = $refund['amount'] ?? $input['base_amount'];
         $input['is_fta'] = $data['is_fta'] ?? false;
+        $input['status'] = 'created';
 
         if (isset($data['bank_account']) === true)
         {

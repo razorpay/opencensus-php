@@ -13,6 +13,7 @@ use RZP\Models\Payment\Refund\Service;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Merchant\Entity as MerchantEntity;
+use RZP\Models\Payment\Refund\Constants as RefundConstants;
 
 trait ExternalScroogeRepo
 {
@@ -349,7 +350,7 @@ trait ExternalScroogeRepo
         return parent::findOrFail($id);
     }
 
-    public function validateExternalFetchEnabledForScrooge()
+    public function validateExternalFetchEnabledForScrooge($id = null)
     {
         $keyName = Entity::getExternalConfigKeyName($this->entityName);
 
@@ -373,7 +374,36 @@ trait ExternalScroogeRepo
                     'key_status'=> $keyStatus,
                 ]);
 
-            return $result == 'on';
+            if ($result === 'on')
+            {
+                return true;
+            }
+
+            $ftaVariant = 'off';
+
+            $ftaRoutes =  \RZP\Http\Route::$loadRefundsFromScroogeForFtaRoutes;
+
+            $routeName = $this->route->getCurrentRouteName();
+
+            if (empty($id) === false and in_array($routeName, $ftaRoutes, true) === true){
+                // ramp up fta source loading from scrooge for this route
+                $featureFlag =  RefundConstants::REFUNDS_0_LOC_FTA_STATUS_UPDATE_FLOW_RAMP_UP;
+
+                $ftaVariant = $this->app->razorx->getTreatment(
+                    $id,
+                    $featureFlag,
+                    $mode
+                );
+
+                $this->trace->info(
+                    TraceCode::REFUNDS_0_LOC_FTA_STATUS_UPDATE_FLOW_RAMP_UP_RESPONSE,
+                    [
+                        'id'        => $id,
+                        'result'    => $ftaVariant
+                    ]);
+            }
+
+            return ($ftaVariant === 'on');
         }
 
         return false;

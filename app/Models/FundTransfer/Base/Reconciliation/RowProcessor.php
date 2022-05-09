@@ -7,6 +7,7 @@ use Monolog\Logger;
 
 use RZP\Models\Base;
 use RZP\Diag\EventCode;
+use RZP\Models\FundTransfer\Attempt\Type;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Entity;
 use RZP\Constants\Timezone;
@@ -140,7 +141,7 @@ abstract class RowProcessor extends Base\Core
 
         $reconEntityBatchId = $this->reconEntity->getBatchFundTransferId();
 
-        if ($sourceBatchId !== $reconEntityBatchId)
+        if (($this->reconEntity->getSourceType() !== Type::REFUND) and ($sourceBatchId !== $reconEntityBatchId))
         {
             $this->trace->info(
                 TraceCode::FTA_RECON_SOURCE_UPDATE_SKIPPED,
@@ -356,7 +357,7 @@ abstract class RowProcessor extends Base\Core
 
         $sourceBatchId = $this->reconEntity->source->getBatchFundTransferId();
 
-        if ($sourceBatchId !== $this->reconEntity->getBatchFundTransferId())
+        if (($this->reconEntity->getSourceType() !== Type::REFUND) and ($sourceBatchId !== $this->reconEntity->getBatchFundTransferId()))
         {
             return;
         }

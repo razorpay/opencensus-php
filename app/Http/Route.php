@@ -14101,6 +14101,12 @@ class Route
         'payment_new_verify_all',
     ];
 
+    // Routes added in this list for ramping up fta source fetch from scrooge
+    public static $loadRefundsFromScroogeForFtaRoutes = [
+           'update_fts_fund_transfer',
+     ];
+
+
     public static $skipApiDocumentation = [
 
     ];
