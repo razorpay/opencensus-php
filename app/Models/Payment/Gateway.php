@@ -4213,7 +4213,8 @@ class Gateway
     {
         $gateways = [
             self::UPI_AIRTEL,
-            self::UPI_YESBANK
+            self::UPI_YESBANK,
+            self::UPI_JUSPAY
         ];
 
         return (in_array($gateway, $gateways, true));
