@@ -101,6 +101,7 @@ class Gateway
     const NETBANKING_BDBL        = 'netbanking_bdbl';
     const NETBANKING_UCO         = 'netbanking_uco';
     const NETBANKING_TMB         = 'netbanking_tmb';
+    const NETBANKING_DBS         = 'netbanking_dbs';
     const NACH_CITI              = 'nach_citi';
     const NACH_ICICI             = 'nach_icici';
     const PAYTM                  = 'paytm';
@@ -546,6 +547,7 @@ class Gateway
         self::NETBANKING_CSB,
         self::NETBANKING_BDBL,
         self::NETBANKING_UCO,
+        self::NETBANKING_DBS,
         self::NETBANKING_HDFC,
         self::OFFLINE_HDFC,
         self::NETBANKING_TMB,
@@ -1429,6 +1431,7 @@ class Gateway
             self::NETBANKING_BDBL,
             self::NETBANKING_UCO,
             self::NETBANKING_TMB,
+            self::NETBANKING_DBS,
             self::INGENICO,
         ],
 
@@ -2772,6 +2775,8 @@ class Gateway
         IFSC::BDBL         => Gateway::NETBANKING_BDBL,
         IFSC::UCBA         => Gateway::NETBANKING_UCO,
         IFSC::TMBL         => Gateway::NETBANKING_TMB,
+        IFSC::DBSS         => Gateway::NETBANKING_DBS,
+        Netbanking::LAVB_R => Gateway::NETBANKING_DBS,
     ];
 
     /**
@@ -3995,6 +4000,7 @@ class Gateway
             self::EMERCHANTPAY,
             self::NETBANKING_TMB,
             self::NETBANKING_CANARA,
+            self::NETBANKING_DBS,
             self::INGENICO,
         ];
 
@@ -4106,6 +4112,7 @@ class Gateway
             self::EMERCHANTPAY,
             self::NETBANKING_TMB,
             self::WALLET_FREECHARGE,
+            self::NETBANKING_DBS,
             self::NETBANKING_HDFC,
             self::INGENICO,
         ];
@@ -4257,7 +4264,7 @@ class Gateway
         return (in_array($gateway, self::ADDRESS_NAME_REQUIRED_GATEWAYS, true));
     }
 
-    /* 
+    /*
      * Gateways where payment success/failure is not known until we hit their Inquiry API.
      * These gateways do not support callback flow.
      *
@@ -4266,7 +4273,7 @@ class Gateway
      * @param $errorCode - error code used to define pending status
      *
      * @return bool
-     */ 
+     */
     public static function isTransactionPendingGateway($method, $gateway, $errorCode) : bool
     {
         $methodGatewayMap = [
