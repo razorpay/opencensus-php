@@ -77,7 +77,7 @@ class WebhooksContainer extends ListContainer {
         <div className="content-wrapper" style={{ minHeight: '350px' }}>
           {/* passing the new props to the HeaderAction component to support the m-web view */}
           <HeaderAction responsive>
-            <div class="btn-toolbar pull-right">
+            <div className="btn-toolbar pull-right">
               <DocsLink url="https://razorpay.com/docs/webhooks/" />
               {/* To make the CTAs on header to be sticky in teh bottom need to add a wrapper to them added same */}
               <span className="cta-container">
@@ -95,6 +95,9 @@ class WebhooksContainer extends ListContainer {
             isLoading={loadingAllWebhooks}
             onNewWebhookClick={this.showNewWebhookModal}
             modeFormatted={modeFormatted}
+            skip={this.state.skip}
+            count={this.state.count}
+            paginate={this.paginate}
           />
         </div>
       </>
