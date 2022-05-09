@@ -10814,8 +10814,9 @@ trait Authorize
             $this->trace->info(
                 TraceCode::TOKENISATION_CONSENT_STORAGE,
                 [
-                    'paymentId' => $payment->getId(),
-                    'tokenId'   => $tokenEntity->getId(),
+                    'paymentId'       => $payment->getId(),
+                    'tokenId'         => $tokenEntity->getId(),
+                    'tokenMerchantId' => $tokenEntity->getMerchantId(),
                 ]);
 
             $tokenEntity->setAcknowledgedAt(Carbon::now()->timestamp);
