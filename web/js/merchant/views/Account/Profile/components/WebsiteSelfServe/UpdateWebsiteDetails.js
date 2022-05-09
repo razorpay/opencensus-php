@@ -511,7 +511,7 @@ function UpdateWebsiteDetails(props) {
               <>
                 <Input.Textarea
                   placeholder="Min 50 Words"
-                  label="Reason"
+                  label="Reason for adding new website"
                   required
                   name="reason"
                   onBlur={onTextInputBlur}

@@ -86,9 +86,16 @@ function InitiateWebsiteChange(props) {
     analyticsTrack(analyticsObject);
   };
 
+  const title =
+    props.flowType === FLOWS.ADDITIONAL_WEBSITE
+      ? `Add new Website/App`
+      : props.user.has_key_access
+      ? 'Update Website/App'
+      : 'Add new Website/App';
+
   return (
     <div class="website-self-serve-initiate-modal">
-      <ModalHeader title="Add new Website/App" onCloseClick={props.closeModal} />
+      <ModalHeader title={title} onCloseClick={props.closeModal} />
       <div class="img-container">
         <img src="https://cdn.razorpay.com/static/assets/website-self-serve/Website-change.svg" />
       </div>
