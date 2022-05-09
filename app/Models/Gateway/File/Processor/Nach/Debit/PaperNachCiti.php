@@ -552,16 +552,16 @@ class PaperNachCiti extends Debit\Base
 
         $this->trace->info(TraceCode::GATEWAY_FILE_QUERY_COMPLETE);
 
-        $beginTrace = $begin;
-        $endTrace = $end;
         foreach ($tokens as $key => $token)
         {
+            $tokenBegin = $begin;
+
             if ($token->merchant->isEarlyMandatePresentmentEnabled() === true)
             {
-                while ($begin < $end)
+                while ($tokenBegin < $end)
                 {
-                    $nineAM = Carbon::createFromTimestamp($begin, Timezone::IST)->startOfDay()->addHours(9);
-                    $threePM = Carbon::createFromTimestamp($begin, Timezone::IST)->startOfDay()->addHours(15);
+                    $nineAM = Carbon::createFromTimestamp($tokenBegin, Timezone::IST)->startOfDay()->addHours(9);
+                    $threePM = Carbon::createFromTimestamp($tokenBegin, Timezone::IST)->startOfDay()->addHours(15);
                     $createdAt = $token['payment_created_at'];
                     /*
                      * the payments done from previous day 9am to 3pm should not be considered here as
@@ -571,7 +571,7 @@ class PaperNachCiti extends Debit\Base
                     {
                         unset($tokens[$key]);
                     }
-                    $begin = $begin + Carbon::HOURS_PER_DAY * Carbon::MINUTES_PER_HOUR * Carbon::SECONDS_PER_MINUTE;
+                    $tokenBegin = $tokenBegin + Carbon::HOURS_PER_DAY * Carbon::MINUTES_PER_HOUR * Carbon::SECONDS_PER_MINUTE;
                 }
             }
         }
@@ -582,8 +582,8 @@ class PaperNachCiti extends Debit\Base
             TraceCode::NACH_DEBIT_REQUEST,
             [
                 'gateway_file_id' => $this->gatewayFile->getId(),
-                'begin'           => $beginTrace,
-                'end'             => $endTrace,
+                'begin'           => $begin,
+                'end'             => $end,
                 'entity_count'    => count($paymentIds),
             ]);
 

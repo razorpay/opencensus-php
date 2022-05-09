@@ -118,6 +118,84 @@ class NachCitiGatewayTest extends NachGatewayTest
         $this->assertArraySelectiveEquals($expectedDebitRow, $debitRow);
     }
 
+    public function testGatewayFileWithEarlyPresentmentFeatureForMultipleDays()
+    {
+        $this->fixtures->merchant->addFeatures(['early_mandate_presentment']);
+
+        $initResponse = $this->createRecurringNachPayment();
+
+        $initialPayment = $this->getDbLastPayment();
+
+        for ($i=0; $i<=1; $i++)
+        {
+            $response = $this->createNachDebitPayment('token_' . $initialPayment[Payment::TOKEN_ID]);
+
+            $this->fixtures->stripSign($response['razorpay_payment_id']);
+
+            $this->fixtures->edit('payment', $response['razorpay_payment_id'], [
+                'created_at' => Carbon::yesterday(Timezone::IST)->addHours(9)->addMinutes(9)->timestamp
+            ]);
+        }
+
+        $this->ba->cronAuth();
+
+        $data = $this->testData['testGatewayFileDebit'];
+
+        $content = $this->startTest($data);
+
+        $content = $content['items'][0];
+
+        $files = $this->getEntities('file_store', ['count' => 2], true);
+
+        $summary = $files['items'][0];
+        $debit = $files['items'][1];
+
+        $expectedFileContentSummary = [
+            'type'        => 'citi_nach_debit_summary',
+            'entity_type' => 'gateway_file',
+            'entity_id'   => $content['id'],
+            'extension'   => 'xls',
+            'name'        => 'citi/nach/RAZORP_SUMMARY_NACH00000000013149_11022020_test'
+        ];
+
+        $expectedFileContentDebit = [
+            'type'        => 'citi_nach_debit',
+            'entity_type' => 'gateway_file',
+            'entity_id'   => $content['id'],
+            'extension'   => 'txt',
+            'name'        => 'citi/nach/RAZORP_COLLECT_NACH00000000013149_11022020_test',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedFileContentSummary, $summary);
+        $this->assertArraySelectiveEquals($expectedFileContentDebit, $debit);
+
+        $fileContent = explode("\n", file_get_contents('storage/files/filestore/' . $debit['location']));
+
+        // since date and amount is fixed for this test header is a constant
+        $expectedHeader = '56       RAZORPAY SOFTWARE PVT LTD                                                                 0001000000000000000030000011022020                       NACH00000000013149000000000000000000CITI000PIGW000018003                          000000001                                                           ';
+
+        $this->assertEquals($expectedHeader, $fileContent[0]);
+
+        $debitRow = array_map('trim', $this->parseTextRow($fileContent[1], 0, ''));
+
+        $expectedDebitRow = [
+            'ACH Transaction Code' => '67',
+            'Destination Account Type' => '10',
+            'Beneficiary Account Holder\'s Name' => 'dead pool',
+            'User Name' => 'CTRAZORPAY',
+            'Amount' => '0000000300000',
+            'Destination Bank IFSC / MICR / IIN' => 'HDFC0001233',
+            'Beneficiary\'s Bank Account number' => '1111111111111',
+            'Sponsor Bank IFSC / MICR / IIN' => 'CITI000PIGW',
+            'User Number' => 'NACH00000000013149',
+            'Transaction Reference' => 'TESTMERCHA' . substr($initResponse['razorpay_payment_id'], 4),
+            'Product Type' => '10',
+            'UMRN' => 'UTIB6000000005844847'
+        ];
+
+        $this->assertArraySelectiveEquals($expectedDebitRow, $debitRow);
+    }
+
     public function testGatewayFileWithEarlyPresentmentFeatureForSundayPayment()
     {
         $this->fixtures->merchant->addFeatures(['early_mandate_presentment']);

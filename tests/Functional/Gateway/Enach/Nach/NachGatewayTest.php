@@ -1041,6 +1041,38 @@ class NachGatewayTest extends TestCase
         return $content;
     }
 
+    protected function createNachDebitPayment(string $tokenID)
+    {
+        $order = $this->fixtures->create('order', [
+            'amount' => 300000,
+            'method' => 'nach',
+        ]);
+
+        $payment = [
+            'contact'     => '9876543210',
+            'email'       => 'r@g.c',
+            'customer_id' => 'cust_1000000000cust',
+            'currency'    => 'INR',
+            'method'      => 'nach',
+            'amount'      => 300000,
+            'recurring'   => true,
+            'token'       => $tokenID,
+            'order_id'    => $order->getPublicId(),
+        ];
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create',
+            'content' => $payment
+        ];
+
+        $this->ba->privateAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
+    }
+
     protected function createAcceptedToken($overideData = [])
     {
         $payment = $this->createDummyRegisterToken($overideData);
