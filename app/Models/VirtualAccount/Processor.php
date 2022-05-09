@@ -5,6 +5,7 @@ namespace RZP\Models\VirtualAccount;
 use App;
 use Exception;
 use RZP\Constants;
+use Razorpay\IFSC;
 use RZP\Models\Feature;
 use RZP\Models\Base;
 use RZP\Models\Admin;
@@ -51,6 +52,8 @@ abstract class Processor extends Base\Core
 
     const REQUEST_FROM   = 'request_from';
     const REQUEST_SOURCE = 'request_source';
+
+    const BAD_REQUEST_VIRTUAL_ACCOUNT_CLOSED  = '%s Virtual Account is closed';
 
     public function __construct()
     {
@@ -239,6 +242,19 @@ abstract class Processor extends Base\Core
                     $refundNotes = [
                         'notes' => [
                             'refund_reason' => PublicErrorDescription::BAD_REQUEST_VIRTUAL_ACCOUNT_CLOSED
+                        ]
+                    ];
+
+                    $paymentProcessor->refundAuthorizedPayment($paymentProcessor->getPayment(), $refundNotes);
+                }
+                else if (($entity->getEntityName() === Constants\Entity::BANK_TRANSFER) and
+                         ($entity->getUnexpectedReason() === UnexpectedPaymentReason::VIRTUAL_ACCOUNT_PAYMENT_FAILED_GATEWAY_DISABLED) and
+                         (in_array(Provider::IFSC[$entity->getGateway()], Provider::getUnsuportedProviderByRazorpay()) === true))
+                {
+                    $refundNotes = [
+                        'notes' => [
+                            'refund_reason'  =>
+                                sprintf(self::BAD_REQUEST_VIRTUAL_ACCOUNT_CLOSED, IFSC\IFSC::getBankName($entity->getPayeeIfsc()))
                         ]
                     ];
 
@@ -486,6 +502,31 @@ abstract class Processor extends Base\Core
             return false;
         }
 
+        $isBusinessBankingVa = $this->virtualAccount->isBalanceTypeBanking();
+
+        if (($entity->getEntityName() === Constants\Entity::BANK_TRANSFER) and
+            ($isBusinessBankingVa === false) and
+            (in_array(Provider::IFSC[$entity->getGateway()], Provider::getUnsuportedProviderByRazorpay()) === true))
+        {
+            $bankAccount = $this->repo
+                                ->bank_account
+                                ->findVirtualBankAccountByAccountNumberAndBankCode($entity->getPayeeAccount(),
+                                                                                   Provider::getBankCode($entity->getGateway()),
+                                                                                   true);
+
+
+            if ($bankAccount->deleted_at !== null)
+            {
+                $this->trace->info(
+                    TraceCode::BANK_TRANSFER_DISABLED_GATEWAY, $entity->toArrayTrace());
+
+                $this->setUnexpectedReason($entity, UnexpectedPaymentReason::VIRTUAL_ACCOUNT_PAYMENT_FAILED_GATEWAY_DISABLED);
+
+                $this->isPaymentExpected = false;
+                return false;
+            }
+        }
+
         if (($entity->getEntityName() === Constants\Entity::BANK_TRANSFER) and
             ($entity->getGateway() === Provider::HDFC_ECMS))
         {
@@ -551,8 +592,6 @@ abstract class Processor extends Base\Core
                 }
             }
         }
-
-        $isBusinessBankingVa = $this->virtualAccount->isBalanceTypeBanking();
 
         $merchantMethods = $merchant->getMethods();
 

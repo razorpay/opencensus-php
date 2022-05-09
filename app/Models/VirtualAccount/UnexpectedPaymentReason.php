@@ -16,6 +16,7 @@ class UnexpectedPaymentReason
     const VIRTUAL_ACCOUNT_PAYMENT_FAILED_PAYMENT_LINK_ALREADY_CANCELLED     = 'Payment Link is not payable in cancelled status.';
     const VIRTUAL_ACCOUNT_PAYMENT_FAILED_PAYMENT_LINK_ALREADY_EXPIRED       = 'Payment Link is not payable in expired status.';
     const VIRTUAL_ACCOUNT_PAYMENT_FAILED_PAYMENT_LINK_EXPIRY_TIME_PASSED    = 'Payment Link is not payable post its expiry time';
+    const VIRTUAL_ACCOUNT_PAYMENT_FAILED_GATEWAY_DISABLED                   = 'Gateway linked to the virtual bank account has been disabled';
 
     protected static $toCreateUnexpected = [
         self::VIRTUAL_ACCOUNT_PAYMENT_FAILED_FEE_OR_TAX_TAMPERED,
@@ -27,6 +28,7 @@ class UnexpectedPaymentReason
         self::VIRTUAL_ACCOUNT_PAYMENT_FAILED_PAYMENT_LINK_ALREADY_CANCELLED,
         self::VIRTUAL_ACCOUNT_PAYMENT_FAILED_PAYMENT_LINK_ALREADY_EXPIRED,
         self::VIRTUAL_ACCOUNT_PAYMENT_FAILED_PAYMENT_LINK_EXPIRY_TIME_PASSED,
+        self::VIRTUAL_ACCOUNT_PAYMENT_FAILED_GATEWAY_DISABLED,
         PublicErrorDescription::BAD_REQUEST_PAYMENT_FEES_GREATER_THAN_AMOUNT,
     ];
 

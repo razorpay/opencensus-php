@@ -6,22 +6,20 @@ use DB;
 use Mail;
 use Cache;
 use Mockery;
-use Queue as MockQueue;
 use Carbon\Carbon;
-use RZP\Models\Terminal;
-use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Queue;
-
-use RZP\Jobs\Transactions;
+use Razorpay\IFSC\IFSC;
+use RZP\Constants\Mode;
+use RZP\Models\Order;
 use RZP\Models\Admin;
-use RZP\Models\Currency\Currency;
 use RZP\Models\Feature;
-use RZP\Models\Merchant\RazorxTreatment;
+use Queue as MockQueue;
+use RZP\Models\Terminal;
+use RZP\Trace\TraceCode;
+use RZP\Jobs\Transactions;
 use RZP\Models\Pricing\Fee;
 use RZP\Constants\Timezone;
 use RZP\Models\Batch\Header;
 use RZP\Models\Admin\Service;
-use RZP\Models\Order;
 use RZP\Models\Bank\BankCodes;
 use RZP\Models\Payment\Refund;
 use RZP\Services\RazorXClient;
@@ -29,25 +27,31 @@ use RZP\Models\Payment\Status;
 use RZP\Models\VirtualAccount;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Payment\Gateway;
+use RZP\Models\Currency\Currency;
+use Illuminate\Http\UploadedFile;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\FundTransfer\Attempt;
+use RZP\Error\PublicErrorDescription;
+use Illuminate\Support\Facades\Queue;
 use RZP\Mail\Transaction\BankTransfer;
 use RZP\Models\VirtualAccount\Provider;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Models\BankTransfer\Entity as E;
 use RZP\Models\BankTransfer\Status as S;
+use RZP\Models\Payment\Entity as Payment;
 use RZP\Models\BankTransferRequest\Entity;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Mail\Merchant\RazorpayX\FundLoadingFailed;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Tests\Functional\FundTransfer\AttemptTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Models\VirtualAccount\UnexpectedPaymentReason;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Tests\Unit\Models\Invoice\Traits\CreatesInvoice;
 use RZP\Tests\Functional\FundTransfer\AttemptReconcileTrait;
 use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
-use RZP\Models\Payment\Entity as Payment;
 
 class BankTransferTest extends TestCase
 {
@@ -165,6 +169,60 @@ class BankTransferTest extends TestCase
                 'payment_id'                    => $bankTransfer['payment_id'],
             ]
         );
+    }
+
+    public function testBankTransferYesBankAfterGatewayDisabled()
+    {
+        $bankAccount1 = $this->createVirtualAccount('live', 'BankAccountMer');
+
+        $accountNumber = $bankAccount1['account_number'];
+        $ifsc1 = $bankAccount1['ifsc'];
+
+        $bankAccount2 = $this->fixtures->on('live')->create(
+            'bank_account',
+            [
+                'merchant_id'       => 'BankAccountMer',
+                'entity_id'         => substr($this->virtualAccountId, 3, strlen($this->virtualAccountId)),
+                'type'              => 'virtual_account',
+                'account_number'    => $accountNumber,
+                'ifsc_code'         => Provider::IFSC[Provider::RBL],
+            ]
+        );
+
+        $this->fixtures->on('live')->edit(
+            'virtual_account',
+            $this->virtualAccountId,
+            ['bank_account_id_2' => $bankAccount2->getId()]
+        );
+
+        $this->fixtures->on('live')->edit(
+            'bank_account',
+            $bankAccount1['id'],
+            ['deleted_at' => '1648527137']
+        );
+
+        // Process API always returns true
+        $response = $this->processBankTransfer($accountNumber, $ifsc1, null , null, 'live');
+
+        $this->assertEquals(true, $response['valid']);
+        $this->assertNull($response['message']);
+
+        $bankTransfer =  $this->getDbLastEntity('bank_transfer', 'live');
+
+        $this->assertEquals(5000000, $bankTransfer['amount']);
+        $this->assertEquals(UnexpectedPaymentReason::VIRTUAL_ACCOUNT_PAYMENT_FAILED_GATEWAY_DISABLED,
+                            $bankTransfer['unexpected_reason']);
+
+        $payment =  $this->getDbLastEntity('payment', 'live');
+        $this->assertEquals(5000000, $payment['amount']);
+        $this->assertEquals('bt_yesbank', $payment['gateway']);
+        $this->assertEquals('refunded', $payment['status']);
+
+        $refund =  $this->getDbLastEntity('refund', 'live');
+        $this->assertEquals($payment['id'], $refund['payment_id']);
+        $this->assertEquals('created', $refund['status']);
+        $this->assertEquals(5000000, $refund['amount']);
+        $this->assertEquals('Yes Bank Virtual Account is closed', $refund['notes']['refund_reason']);
     }
 
     public function testFetchPaymentsPostRblMigration()
@@ -5177,13 +5235,13 @@ class BankTransferTest extends TestCase
         return $bankAccount['account_number'];
     }
 
-    protected function getIciciVaBankAccount()
+    protected function getIciciVaBankAccount($mode = 'test')
     {
         $terminalAttributes = [ 'id' =>'GENERICBANKICI', 'gateway' => Gateway::BT_ICICI, 'gateway_merchant_id' => '2244' ];
         $this->fixtures->on('live')->create('terminal:shared_bank_account_terminal', $terminalAttributes);
         $this->fixtures->on('test')->create('terminal:shared_bank_account_terminal', $terminalAttributes);
 
-        $bankAccount = $this->createVirtualAccount();
+        $bankAccount = $this->createVirtualAccount($mode);
 
         return $bankAccount['account_number'];
     }
