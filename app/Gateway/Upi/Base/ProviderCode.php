@@ -165,10 +165,13 @@ class ProviderCode
     const NSDL               = 'nsdl';
     const TIMECOSMOS         = 'timecosmos';
     const TAPICICI           = 'tapicici';
+    const LIV                = 'liv';
 
     //Only for test Upi
     const RAZORPAY         = 'razorpay';
 
+    // IFSC
+    const PPIW    = 'PPIW';
     /**
      * PSP handle to bank code mapping
      * In some cases, we don't have the proper
@@ -318,6 +321,7 @@ class ProviderCode
         self::NSDL               => IFSC::NSPB,
         self::TIMECOSMOS         => IFSC::COSB,
         self::TAPICICI           => IFSC::ICIC,
+        self::LIV                => self::PPIW,
     ];
 
     /**

@@ -3455,6 +3455,7 @@ trait PaymentTrait
             "razorpay",
             "timecosmos",
             "tapicici",
+            "liv",
         ];
 
         return $vpaHandles;
