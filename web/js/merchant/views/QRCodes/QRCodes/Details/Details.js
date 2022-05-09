@@ -28,6 +28,7 @@ export default function Details(props) {
     showPreview,
     downloadQRCode,
     isPaymentsLoading,
+    viewAllPayments,
   } = props;
 
   const isClosed = qrCode.status === 'closed';
@@ -143,7 +144,11 @@ export default function Details(props) {
               <div>
                 <p class="text-muted" style={{ lineHeight: '35px' }}>
                   Recent Payments
-                  <Link class="pull-right" to={`/qr_codes/payments/?qr_code_id=${qrCode.id}`}>
+                  <Link
+                    class="pull-right"
+                    to={`/qr_codes/payments/?qr_code_id=${qrCode.id}`}
+                    onClick={viewAllPayments}
+                  >
                     View All Payments
                   </Link>
                 </p>

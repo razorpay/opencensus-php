@@ -150,7 +150,7 @@ export default class QRCodesListContainer extends ListContainer {
           length={this.props.items.length}
           onClick={(params, type) => {
             track.browse(type, {
-              page: params.skip % params.count,
+              page: params.skip / params.count,
             });
 
             this.paginate(params);

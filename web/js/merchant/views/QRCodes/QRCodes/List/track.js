@@ -1,34 +1,43 @@
 import { trackLJ, trackSegment } from 'merchant/views/QRCodes/track';
 
+const commonProp = {
+  origin: 'dashboard',
+};
+
 function _track() {
   let track;
 
   function send(event, options) {
-    track(trackLJ(`${event}`, options));
-
+    track(trackLJ(`qr.${event}`, { ...options, ...commonProp }));
     trackSegment({
-      event,
+      event: `qr ${event}`,
       screen: 'list',
-      options,
+      options: { ...options, ...commonProp },
     });
   }
 
   return {
     field: ({ target }) => {
       const { name, value } = target;
-
       send(`search.${name}`, { value });
     },
 
-    submit: () => send('submit'),
+    submit: () => send('search.submit'),
 
-    clear: () => send('clear'),
+    clear: () => {
+      send('search.clear');
+    },
 
     success: () => send('success'),
 
-    fail: (reason) => send('fail', { reason }),
+    fail: (reason) => send('search.error', { response: reason }),
 
-    browse: (type, options) => send(`list.${type}`, options),
+    browse: (type, options) => {
+      const prop = {
+        page: options.page,
+      };
+      send(`browse.${type}`, prop);
+    },
 
     load: () => send('loaded'),
 
@@ -37,13 +46,12 @@ function _track() {
     tour: () => send('tour'),
 
     tourStatus: (success) =>
-      send('qr.need_help.clicked', {
+      send('need_help.clicked', {
         success,
       }),
 
-    docs: () => send('qr.docs'),
+    docs: () => send('docs'),
 
-    // eslint-disable-next-line no-shadow
     init: ({ track: _track }) => {
       track = _track;
     },

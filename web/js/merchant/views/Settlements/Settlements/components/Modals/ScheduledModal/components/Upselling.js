@@ -164,7 +164,16 @@ const Button = styled(AsyncBtn)`
         `}
 `;
 
-function Upselling({ user, showDiscount, openModal, closeModal, updateSession, showNotification }) {
+function Upselling({
+  user,
+  showDiscount,
+  openModal,
+  closeModal,
+  updateSession,
+  showNotification,
+  trackKnowMore = () => {},
+  trackSameDaySettlement,
+}) {
   const [isLoading, setLoading] = useState(false);
   const [pricingRate, setPricingRate] = useState(DEFAULT_PRICING_RATE);
   const isPricingValid = showDiscount && isPricingRateValid(pricingRate);
@@ -185,6 +194,8 @@ function Upselling({ user, showDiscount, openModal, closeModal, updateSession, s
       size: 'small',
       disableClose: true,
     });
+
+    trackKnowMore();
   };
 
   const handleEnableNowClick = () => {
@@ -197,7 +208,9 @@ function Upselling({ user, showDiscount, openModal, closeModal, updateSession, s
             .then((res) => {
               updateSession({ user: res.data });
               openModal({
-                component: <ScheduledModal enabled />,
+                component: (
+                  <ScheduledModal enabled trackSameDaySettlement={trackSameDaySettlement} />
+                ),
                 size: 'small',
                 disableClose: true,
               });

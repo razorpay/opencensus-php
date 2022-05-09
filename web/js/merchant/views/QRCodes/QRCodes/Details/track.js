@@ -3,24 +3,31 @@ import { trackLJ, trackSegment } from 'merchant/views/QRCodes/track';
 function _track() {
   let track;
 
-  function send(event, options) {
-    track(trackLJ(`details.${event}`, options));
-
+  function send(event, options, actionName) {
     trackSegment({
-      event,
-      screen: 'details',
+      event: `qr details ${event}`,
       options,
+      actionName,
+      screen: 'qr code details view',
     });
+    track(trackLJ(`qr.details.${event}`, options));
   }
 
   return {
-    open: () => send('open'),
+    open: () => send('view'),
 
-    close: () => send('close'),
+    preview: () => send('preview_qr'),
+
+    downloadQR: () => send('download_qr'),
+
+    close: () => send('status.close'),
 
     closeSuccess: (success, error) => send('close_success', { success, error }),
 
-    // eslint-disable-next-line no-shadow
+    viewAllPayments: () => send('view_payments'),
+
+    unmountDetailsView: () => send('view.close'),
+
     init: ({ track: _track }) => {
       track = _track;
     },

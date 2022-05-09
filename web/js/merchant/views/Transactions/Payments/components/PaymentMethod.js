@@ -21,7 +21,7 @@ import { titleCase, getEMI } from 'common/utils/rzp-utils';
  * `bankTransfer` as fetch bank transfer api,
  * the content will be shown according to the Design^
  */
-export default ({ payment, card = {}, bankTransfer = {}, upiTransfer = {} }) => {
+export default ({ payment, card = {}, bankTransfer = {}, upiTransfer = {}, onUPIClick = {} }) => {
   const paymentMethod = payment.method;
 
   const methodKeyMap = {
@@ -155,7 +155,7 @@ export default ({ payment, card = {}, bankTransfer = {}, upiTransfer = {} }) => 
 
     el = (
       <ContentToggler>
-        <span>UPI</span>
+        <span onClick={onUPIClick}>UPI</span>
         {content}
       </ContentToggler>
     );

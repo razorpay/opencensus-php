@@ -83,11 +83,35 @@ const RefundDetails = ({ items = [] }) => {
   );
 };
 
-const PaymentRefund = ({ payment, refunds, openRefundModal, onToggleClick = () => {} }) => {
+const PaymentRefund = ({
+  payment,
+  refunds,
+  openRefundModal,
+  onToggleClick = () => {},
+  isQrCode = false,
+}) => {
   const paymentStatus = payment.status;
   const refundStatus = payment.refund_status;
   const refundAmount = payment.amount_refunded;
   const currency = payment.currency;
+
+  const onRefundStatusClick = () => {
+    if (isQrCode) {
+      analyticsTrack({
+        objectName: 'qr payment detail refund issued',
+        actionName: 'clicked',
+        screen: 'qrcode payment detail',
+        properties: payment.analyticsPayload(),
+      });
+    }
+    analyticsTrack({
+      objectName: 'action items on sidebar',
+      actionName: 'clicked',
+      screen: 'home page',
+      properties: payment.analyticsPayload(),
+    });
+    return openRefundModal();
+  };
 
   if (['created', 'authorized', 'failed'].indexOf(paymentStatus) >= 0) {
     return (
@@ -142,15 +166,7 @@ const PaymentRefund = ({ payment, refunds, openRefundModal, onToggleClick = () =
           <p>
             <button
               class="btn btn-default"
-              onClick={() => {
-                analyticsTrack({
-                  objectName: 'action items on sidebar',
-                  actionName: 'clicked',
-                  screen: 'home page',
-                  properties: payment.analyticsPayload(),
-                });
-                return openRefundModal();
-              }}
+              onClick={onRefundStatusClick}
               disabled={hasOpenNonFraudDisputes}
             >
               {refundStatus === 'partial' ? 'Issue another Refund' : 'Issue Refund'}

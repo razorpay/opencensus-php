@@ -1,10 +1,10 @@
+import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import RTracking from 'react-tracking';
 
 import QRCodeDetails from './Details';
-import * as VirtualAccountActions from 'merchant/reducers/virtualaccounts';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { triggerHotjarRecording } from 'common/utils/hotjar';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
@@ -49,7 +49,7 @@ export default class QRCodeDetailsContainer extends React.Component {
   };
 
   componentDidMount() {
-    let { id } = this.props;
+    const { id } = this.props;
     this.fetchQRCodeDetails(id);
     this.fetchPayments(id);
     this.props.fetchCustomersForAutocomplete();
@@ -172,14 +172,20 @@ export default class QRCodeDetailsContainer extends React.Component {
         />
       ),
     });
+    track.preview();
   };
 
   downloadQRCode = () => {
     window.open(this.state.entity.image_url);
+    track.downloadQR();
   };
 
+  componentWillUnmount() {
+    track.unmountDetailsView();
+  }
+
   render() {
-    let { isLoading, error, entity, payments, isPaymentsLoading } = this.state;
+    const { isLoading, error, entity, payments, isPaymentsLoading } = this.state;
     let statusMsg = {};
 
     if (error) {
@@ -203,6 +209,7 @@ export default class QRCodeDetailsContainer extends React.Component {
         onMakeTestPaymentClick={this.openTestPaymentModal}
         showPreview={this.showPreview}
         downloadQRCode={this.downloadQRCode}
+        viewAllPayments={track.viewAllPayments}
       />
     );
   }

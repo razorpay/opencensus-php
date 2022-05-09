@@ -286,6 +286,7 @@ function PreEnable({
   updateSession,
   showNotification,
   closeModal,
+  trackSameDaySettlement = () => {},
 }) {
   const isOndemandSettlementEnabled = user.isOndemandSettlementEnabled;
   const isOndemandSettlementsRestricted = user.isOndemandSettlementsRestricted;
@@ -346,6 +347,8 @@ function PreEnable({
           if (isOndemandSettlementEnabled && isOndemandSettlementsRestricted) {
             setEnableEsPartialAutomaticDate();
           }
+
+          trackSameDaySettlement();
         })
         .catch(({ errors }) => {
           const error = errors?.[0] || 'Something went wrong!';

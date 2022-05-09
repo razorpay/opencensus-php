@@ -11,8 +11,10 @@ import SamedayUpselling from 'merchant/views/Settlements/Settlements/components/
 
 class SettlementDetail extends Component {
   handleContactSupport = () => {
-    this.props.closeModal();
+    const { closeModal, trackContactSupport = () => {} } = this.props;
 
+    closeModal();
+    trackContactSupport();
     window.rzpAnalytics?.({
       eventCategory: 'Settlement Revamp',
       eventAction: 'Contact Support',
@@ -36,6 +38,12 @@ class SettlementDetail extends Component {
   isOnTemporaryHold = () => {
     const { settlement } = this.props;
     return settlement.config?.data?.config?.features?.hold?.status;
+  };
+
+  handleSettlementGuideClick = () => {
+    const { handleSettlementGuideClick } = this.props;
+
+    handleSettlementGuideClick && handleSettlementGuideClick();
   };
 
   isBankAccountChanged = () => {
@@ -199,7 +207,11 @@ class SettlementDetail extends Component {
             target="_blank"
             rel="noopener noreferrer"
           >
-            <button type="button" className="btn btn-primary full-width">
+            <button
+              type="button"
+              className="btn btn-primary full-width"
+              onClick={this.handleSettlementGuideClick}
+            >
               Settlement Guide
             </button>
           </a>
@@ -230,7 +242,11 @@ class SettlementDetail extends Component {
         target="_blank"
         rel="noopener noreferrer"
       >
-        <button type="button" className="btn btn-primary full-width">
+        <button
+          type="button"
+          className="btn btn-primary full-width"
+          onClick={this.handleSettlementGuideClick}
+        >
           Settlement Guide
         </button>
       </a>
@@ -249,11 +265,14 @@ class SettlementDetail extends Component {
           title="Settlement Details"
           onCloseClick={() => {
             this.props.closeModal();
+
             window.rzpAnalytics?.({
               eventCategory: 'Settlement Revamp',
               eventAction: 'Close - Next Settlement Modal',
               eventLabel: `Settlements`,
             });
+
+            this.props.trackSettlementClose && this.props.trackSettlementClose();
           }}
         />
         <div className="modal-body">
@@ -307,7 +326,12 @@ class SettlementDetail extends Component {
           </div>
           <div className="settlement-detail-actions">{this.actionButtons}</div>
 
-          {this.showUpsellingBanner && <SamedayUpselling />}
+          {this.showUpsellingBanner && (
+            <SamedayUpselling
+              trackKnowMore={this.props.trackKnowMore}
+              trackSameDaySettlement={this.props.trackSameDaySettlement}
+            />
+          )}
         </div>
       </div>
     );

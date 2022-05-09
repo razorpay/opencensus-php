@@ -32,9 +32,9 @@ function _track() {
         success: true,
       }),
 
-    downloadImage: () => send('_submit_success_download'),
+    downloadImage: () => send('submit_success_download'),
 
-    backToDashboard: () => send('_submit_success_close'),
+    backToDashboard: () => send('back_to_dashboard'),
 
     needHelp: () => send('need_help.clicked'),
 

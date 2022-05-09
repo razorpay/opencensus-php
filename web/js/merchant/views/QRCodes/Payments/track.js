@@ -4,10 +4,10 @@ function _track() {
   let track;
 
   function send(event, options) {
-    track(trackLJ(`payments.${event}`, options));
+    track(trackLJ(`qr.payments.${event}`, options));
 
     trackSegment({
-      event,
+      event: `qr payments ${event}`,
       screen: 'list',
       options,
     });
@@ -20,15 +20,15 @@ function _track() {
       send(`search.${name}`, { value });
     },
 
-    submit: () => send('submit'),
+    submit: () => send('search.submit', { origin: 'dashboard' }),
 
-    clear: () => send('clear'),
+    clear: () => send('search.clear', { origin: 'dashboard' }),
 
     success: () => send('success'),
 
-    fail: (reason) => send('fail', { reason }),
+    fail: (reason) => send('search.error', { origin: 'dashboard', response: reason }),
 
-    browse: (type, options) => send(`list.${type}`, options),
+    browse: (type, options) => send(`browse.${type}`, options),
 
     load: () => send('loaded'),
 
@@ -41,7 +41,6 @@ function _track() {
 
     docs: () => send('docs'),
 
-    // eslint-disable-next-line no-shadow
     init: ({ track: _track }) => {
       track = _track;
     },

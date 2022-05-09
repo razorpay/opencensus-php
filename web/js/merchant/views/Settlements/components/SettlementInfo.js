@@ -38,7 +38,17 @@ class SettlementInfo extends Component {
   }
 
   onViewDetailsClick = () => {
-    const { user, settlement_amount, data, openModal } = this.props;
+    const {
+      user,
+      settlement_amount,
+      data,
+      openModal,
+      handleSettlementGuideClick,
+      trackContactSupport,
+      trackKnowMore,
+      trackSameDaySettlement,
+      trackSettlementClose,
+    } = this.props;
     openModal({
       size: 'medium',
       component: (
@@ -46,6 +56,11 @@ class SettlementInfo extends Component {
           user={user}
           settlementAmount={settlement_amount?.data}
           transactionOnHold={data?.transaction?.on_hold}
+          handleSettlementGuideClick={handleSettlementGuideClick}
+          trackContactSupport={trackContactSupport}
+          trackKnowMore={trackKnowMore}
+          trackSameDaySettlement={trackSameDaySettlement}
+          trackSettlementClose={trackSettlementClose}
         />
       ),
     });

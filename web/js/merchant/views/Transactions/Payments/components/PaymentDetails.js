@@ -20,10 +20,10 @@ import ContentToggler from 'common/ui/Toggler/ContentToggler';
 import SettlementOverview from './SettlementOverview';
 import AnnouncementBar from 'merchant/components/AnnouncementBar';
 import SettlementInfo from 'merchant/views/Settlements/components/SettlementInfo';
-import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { OptimizerDetails } from 'merchant/views/Transactions/Payments/components/OptimizerDetails';
 import { isInteger } from 'common/utils/validators';
+import track from '../track';
 
 function PaymentDetails(props) {
   const {
@@ -44,11 +44,29 @@ function PaymentDetails(props) {
     org,
     location,
     terminalProviders,
+    goToLink,
   } = props;
 
   const isFromHomePage = location.state?.fromHomePage;
+  const paymentId = payment?.id;
+  const qrPaymentDescription = payment?.description === 'QRv2 Payment';
   const scroller = useRef();
   const [scrolledToBottom, setScrolledToBottom] = useState(false);
+  const [isUPIVisible, setUPIVisible] = useState(false);
+
+  const getProductType = useCallback(() => {
+    const isQrCode = () => {
+      if (paymentId && qrPaymentDescription) {
+        return true;
+      }
+      return false;
+    };
+
+    if (isQrCode()) {
+      return 'QR payments';
+    }
+    return 'payments';
+  }, [paymentId, qrPaymentDescription]);
 
   const handleScroll = useCallback(() => {
     const ele = scroller.current;
@@ -63,33 +81,57 @@ function PaymentDetails(props) {
     if (user.isSingleReconEnabled && user.isOptimizerEnabled) {
       scroller.current.addEventListener('scroll', handleScroll);
     }
+
     if (payment.id) {
-      analyticsTrack({
-        objectName: 'payment details',
-        actionName: 'fetched',
-        screen: isFromHomePage ? 'home page' : 'transactions',
-        properties: {
-          ...payment.analyticsPayload(),
-          ...getCommonAnalyticsProperties(window.rzp_user),
-          location: 'Payments',
-        },
+      track.init({
+        ...payment.analyticsPayload(),
+        ...getCommonAnalyticsProperties(window.rzp_user),
+        location: 'payments',
       });
-      analyticsTrack({
-        objectName: 'payment details sidebar',
-        actionName: 'rendered',
-        screen: isFromHomePage ? 'home page' : 'transactions',
-        properties: {
-          ...payment.analyticsPayload(),
-          ...getCommonAnalyticsProperties(window.rzp_user),
-          location: 'Payments',
-        },
-      });
+      const screen = isFromHomePage ? 'home page' : 'transactions';
+      track.paymentDetails(`${getProductType()} details`, 'fetched', screen);
+      track.paymentDetailsSidebar('payment details sidebar', 'rendered', screen);
     }
-  }, [isFromHomePage, payment, user, handleScroll]);
+
+    return () => {
+      const productType = getProductType();
+      track.paymentDetailsUnmount(`${productType} detail close`, productType);
+    };
+  }, [isFromHomePage, payment, user, handleScroll, getProductType]);
+
+  const trackSettlementOverView = () => {
+    const productType = getProductType();
+    track.settlementOverView(`${productType} settlement viewed`, productType);
+  };
 
   const isFeatureEnabled = useCallback(() => {
     return org?.features?.indexOf('show_late_auth_attributes') > -1;
   }, [org?.features]);
+
+  const handleSettlementGuideClick = () => {
+    track.handleSettlementGuide(`${getProductType()} detail guide`, getProductType());
+  };
+
+  const trackContactSupport = () => {
+    track.trackContactSupport(`${getProductType()} detail support`, getProductType());
+  };
+
+  const onCreateTransfer = () => {
+    track.onCreateTransfer(`${getProductType()} detail transfer`, getProductType());
+    goToLink('transfers/new');
+  };
+
+  const trackKnowMore = () => {
+    track.knowMore(`${getProductType()} detail know more`, getProductType());
+  };
+
+  const trackSameDaySettlement = () => {
+    track.sameDaySettlement(`${getProductType()} detail settlement enabled`, getProductType());
+  };
+
+  const trackSettlementClose = () => {
+    track.settlementClose(`${getProductType()} detail popup closed`, getProductType());
+  };
 
   return (
     <div className="content-wrapper content-sm txn-details" ref={scroller}>
@@ -122,26 +164,14 @@ function PaymentDetails(props) {
                 <div className="payments-manual-actions">
                   <button
                     onClick={() => {
-                      analyticsTrack({
-                        objectName: 'capture payment',
-                        actionName: 'clicked',
-                        screen: isFromHomePage ? 'home page' : 'transactions',
-                        properties: {
-                          ...payment.analyticsPayload(),
-                          ...getCommonAnalyticsProperties(window.rzp_user),
-                          location: 'Payments',
-                        },
-                      });
-                      analyticsTrack({
-                        objectName: 'action items on sidebar',
-                        actionName: 'clicked',
-                        screen: isFromHomePage ? 'home page' : 'transactions',
-                        properties: {
-                          ...payment.analyticsPayload(),
-                          location: 'payment sidebar',
-                          ...getCommonAnalyticsProperties(window.rzp_user),
-                        },
-                      });
+                      track.capturePayment(
+                        'capture payment',
+                        isFromHomePage ? 'home page' : 'transactions',
+                      );
+                      track.onActionSideBar(
+                        'action items on sidebar',
+                        isFromHomePage ? 'home page' : 'transactions',
+                      );
                       props.confirmCapture(payment);
                     }}
                     className="btn btn-primary"
@@ -213,7 +243,7 @@ function PaymentDetails(props) {
                     <PaymentTransfers
                       payment={payment}
                       transfers={transfers}
-                      onCreateTransfer={() => props.goToLink('transfers/new')}
+                      onCreateTransfer={onCreateTransfer}
                     />
                   </EntityDetailRow>
                 </ShowWhen>
@@ -235,6 +265,13 @@ function PaymentDetails(props) {
                     card={card}
                     bankTransfer={bankTransfer}
                     upiTransfer={upiTransfer}
+                    onUPIClick={() => {
+                      setUPIVisible(!isUPIVisible);
+                      if (!isUPIVisible) {
+                        const productType = getProductType();
+                        track.methodViewed(`${productType} detail method viewed`, productType);
+                      }
+                    }}
                   />
                 </EntityDetailRow>
 
@@ -284,12 +321,19 @@ function PaymentDetails(props) {
                   }
                 >
                   <EntityDetailRow label="Settlement Details">
-                    <SettlementInfo
-                      data={payment}
-                      entityType="payment"
-                      showTimeline
-                      page="Payment Detail"
-                    />
+                    <div onClick={trackSettlementOverView}>
+                      <SettlementInfo
+                        data={payment}
+                        entityType="payment"
+                        showTimeline
+                        handleSettlementGuideClick={handleSettlementGuideClick}
+                        trackContactSupport={trackContactSupport}
+                        trackKnowMore={trackKnowMore}
+                        trackSameDaySettlement={trackSameDaySettlement}
+                        trackSettlementClose={trackSettlementClose}
+                        page="Payment Detail"
+                      />
+                    </div>
                   </EntityDetailRow>
                 </ShowWhen>
                 <EntityDetailRow label="Description">{payment.description}</EntityDetailRow>
