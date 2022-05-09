@@ -128,6 +128,8 @@ class Base
     const FTS_FAIL_FAST_STATUS_LOGS_GET_URL = '/routing/fail_fast_status_logs';
 
     const FTS_NEW_CHANNEL_HEALTH_STATS = '/routing/channel_health_stats';
+    
+    const FTS_TRANSFER_RETRY_BULK_URL = '/transfers/retry';
 
     const FTS_TRIGGER_HEALTH_STATUS    = '/routing/trigger_health_status';
 

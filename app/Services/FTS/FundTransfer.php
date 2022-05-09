@@ -1477,7 +1477,6 @@ class FundTransfer extends Base
             $input);
     }
 
-
     public function getHolidayDetails(array $input)
     {
         $this->trace->info(
@@ -1503,4 +1502,15 @@ class FundTransfer extends Base
             Requests::POST,
             $input);
     }
+
+    public function forceRetryFTSTransfer(array $input)
+    {
+        $this->setAdminHeader();
+
+        return $this->createAndSendRequest(
+            parent::FTS_TRANSFER_RETRY_BULK_URL,
+            Requests::POST,
+            $input);
+    }
+
 }

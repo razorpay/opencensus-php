@@ -297,4 +297,11 @@ class FTSController extends Controller
 
         return ApiResponse::json($response);
     }
+    
+    public function forceRetryFTSTransfer()
+    {
+        $response = $this->app['fts_fund_transfer']->forceRetryFTSTransfer($this->input);
+
+        return ApiResponse::json($response);
+    }
 }
