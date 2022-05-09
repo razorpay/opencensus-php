@@ -3,7 +3,9 @@
 namespace RZP\Gateway\P2p\Upi\Sharp;
 
 use RZP\Error\P2p\ErrorCode;
+use RZP\Gateway\P2p\Base\Request;
 use RZP\Gateway\P2p\Base\Response;
+use RZP\Models\P2p\Mandate\Entity;
 use RZP\Gateway\P2p\Upi\Contracts;
 use RZP\Models\P2p\Mandate\Action;
 use RZP\Gateway\P2p\Upi\ErrorCodes;
@@ -87,6 +89,25 @@ class MandateGateway extends Gateway implements Contracts\MandateGateway
        ]);
     }
 
+
+    /**
+     * This is the method to initiate reject response
+     * @param Response $response
+     */
+    public function initiateReject(Response $response)
+    {
+        if ($this->handleFailureScenarios($response, [Scenario::MA401]))
+        {
+            return;
+        }
+
+        $request = new Request();
+        $request->setRedirect($this->getContextDevice()->get(Entity::CREATED_AT));
+        $request->setCallback(['f' => __FUNCTION__]);
+
+        $response->setRequest($request);
+    }
+
     // This method with fail the scenario with error code
     protected function handleForErrorCode($scenario, $f)
     {
@@ -97,6 +118,11 @@ class MandateGateway extends Gateway implements Contracts\MandateGateway
                     'approved',
                     'Mandate is authorized',
                     '00'
+                ],
+                Action::INITIATE_REJECT => [
+                    'rejected',
+                    ErrorCode::BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_REJECTED,
+                    'ZA',
                 ],
             ];
 

@@ -6,6 +6,7 @@ use RZP\Models\P2p\Vpa;
 use RZP\Models\P2p\Base;
 use RZP\Models\Customer;
 use RZP\Models\P2p\BankAccount;
+use RZP\Models\P2p\Mandate\Status;
 
 /**
  * Class Entity
@@ -214,12 +215,30 @@ class Entity extends Base\Entity
     }
 
     /**
+     * This is the method to check if the status is marked as completed
+     * @return bool
+     */
+    public function isApproved(): bool
+    {
+        return in_array($this->getInternalStatus(), [Status::APPROVED]);
+    }
+
+    /**
      * This is the method to mark the internal statuses of mandate to be authroized
      */
     public function markCompleted()
     {
         $this->setInternalStatus(Status::COMPLETED);
         $this->setAttribute(self::COMPLETED_AT, $this->freshTimestamp());
+    }
+
+
+    /**
+     * This is the method to mark the internal statuses of mandate to be rejected
+     */
+    public function markRejected()
+    {
+        $this->setInternalStatus(Status::REJECTED);
     }
 
     /**
@@ -232,15 +251,6 @@ class Entity extends Base\Entity
     }
 
     /**
-     * This is the method to check if the status is marked as completed
-     * @return bool
-     */
-    public function isRevoked(): bool
-    {
-        return in_array($this->getInternalStatus(), [Status::REVOKED]);
-    }
-
-    /**
      * This is the method to check if mandate statuses is failed
      * @return bool
      */
@@ -248,6 +258,40 @@ class Entity extends Base\Entity
     {
         return in_array($this->getInternalStatus(), [Status::FAILED, Status::REJECTED, Status::EXPIRED]);
     }
+
+    /**
+     * @return $this
+     */
+    public function setErrorCode(string $errorCode)
+    {
+        return $this->setAttribute(self::ERROR_CODE, $errorCode);
+    }
+
+    /**
+     * @return $this
+     */
+    public function setErrorDescription(string $errorDescription)
+    {
+        return $this->setAttribute(self::ERROR_DESCRIPTION, $errorDescription);
+    }
+
+    /**
+     * @return $this
+     */
+    public function setInternalErrorCode(string $internalErrorCode)
+    {
+        return $this->setAttribute(self::INTERNAL_ERROR_CODE, $internalErrorCode);
+    }
+
+    /**
+     *  This is the method to check if the status is marked as completed
+     * @return bool
+     */
+    public function isRevoked(): bool
+    {
+        return in_array($this->getInternalStatus(), [Status::REVOKED]);
+    }
+
     /***************** SETTERS *****************/
 
     /**

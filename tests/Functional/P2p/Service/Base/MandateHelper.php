@@ -67,6 +67,23 @@ class MandateHelper extends P2pHelper
         return $this->post($request);
     }
 
+    public function authorizeMandate(string $callback, array $content = [])
+    {
+        $this->shouldValidateJsonSchema = false;
+
+        $this->validationJsonSchemaPath = 'mandate/authorize';
+
+        $request = $this->request($callback);
+
+        $default = [
+            'sdk'   => []
+        ];
+
+        $this->content($request, $default, $content);
+
+        return $this->post($request);
+    }
+
     public function initiateReject(string $id, array $content = [])
     {
         $this->shouldValidateJsonSchema = false;
@@ -82,15 +99,17 @@ class MandateHelper extends P2pHelper
         return $this->post($request);
     }
 
-    public function rejectMandate(string $id, array $content = [])
+    public function rejectMandate(string $callback, array $content = [])
     {
         $this->shouldValidateJsonSchema = false;
 
-        $this->validationJsonSchemaPath = 'mandates/{mandate_id}/reject';
+        $this->validationJsonSchemaPath = 'mandate/reject';
 
-        $request = $this->request('mandates/%s/reject', [$id]);
+        $request = $this->request($callback);
 
-        $default = [];
+        $default = [
+            'sdk'   => []
+        ];
 
         $this->content($request, $default, $content);
 
@@ -134,21 +153,6 @@ class MandateHelper extends P2pHelper
         $this->validationJsonSchemaPath = 'mandates/{mandate_id}/revoke/initiate';
 
         $request = $this->request('mandates/%s/revoke/initiate', [$id]);
-
-        $default = [];
-
-        $this->content($request, $default, $content);
-
-        return $this->post($request);
-    }
-
-    public function authorizeMandate(string $id, array $content = [])
-    {
-        $this->shouldValidateJsonSchema = false;
-
-        $this->validationJsonSchemaPath = 'mandates/{mandate_id}/authorize';
-
-        $request = $this->request('mandates/%s/authorize', [$id]);
 
         $default = [];
 

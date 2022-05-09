@@ -3,6 +3,7 @@
 namespace RZP\Models\P2p\Mandate;
 
 use RZP\Models\P2p\Base;
+use RZP\Error\P2p\Error;
 use RZP\Error\P2p\ErrorCode;
 use RZP\Models\P2p\Mandate\Status;
 use RZP\Models\P2p\Mandate\Actions;
@@ -74,6 +75,7 @@ class Processor extends Base\Processor
     /**
      * @param array $input
      * This is the function to process gateway response that come back for various actions
+     *
      * @return array
      * @throws \RZP\Exception\LogicException
      * @throws \RZP\Exception\RuntimeException
@@ -86,39 +88,28 @@ class Processor extends Base\Processor
 
         $mandate = $this->core->fetch($this->input->get(Entity::MANDATE)[Entity::ID]);
 
-        $this -> updateMandateStatus($mandate, $mandateInput);
+        $this->updateMandateStatus($mandate, $mandateInput);
 
         return $mandate->toArrayPublic();
     }
 
+    /**
+     * @param array $input
+     * This is the method to initiate reject mandate , takes mandate id as input and initiate reject for it
+     *
+     * @return array
+     * @throws \RZP\Exception\RuntimeException
+     * @throws \Throwable
+     */
     public function initiateReject(array $input): array
     {
         $this->initialize(Action::INITIATE_REJECT, $input);
 
-        $mandate = $this->core->fetch($input['id']);
+        $mandate = $this->core->fetch($this->input->get(Entity::ID));
 
-        //TODO: implement validator logic
+        $this->initiateCallGateway($mandate);
 
-        //TODO: initiate gateway callback
-
-        //TODO: gateway specific response
-
-        return $mandate->toArrayPublic();
-    }
-
-    public function rejectMandate(array $input): array
-    {
-        $this->initialize(Action::REJECT, $input);
-
-        $mandate = $this->core->fetch($input['id']);
-
-        //TODO: implement validator logic
-
-        //TODO: initiate gateway callback
-
-        //TODO: gateway specific response
-
-        return $mandate->toArrayPublic();
+        return $this->callGateway();
     }
 
     public function initiatePause(array $input): array
@@ -211,13 +202,17 @@ class Processor extends Base\Processor
         return $mandate->toArrayPublic();
     }
 
+    /**
+     * This is the method to intitiate gateway callback for the given mandate
+     * @param Entity $mandate
+     */
     protected function initiateCallGateway(Entity $mandate)
     {
         $this->gatewayInput->putMany([
              Entity::MANDATE      => $mandate ,
              Entity::PAYER        => $mandate->payer ,
              Entity::PAYEE        => $mandate->payee ,
-             Entity::BANK_ACCOUNT => $mandate->bank_account ,
+             Entity::BANK_ACCOUNT => $mandate->bankAccount ,
              Entity::UPI          => $mandate->upi ,
          ]);
 
@@ -242,6 +237,10 @@ class Processor extends Base\Processor
 
             case Status::APPROVED:
                 $this->setMandateApproved($mandate, $input);
+                break;
+
+            case Status::REJECTED:
+                $this->setMandateRejected($mandate, $input);
                 break;
 
             default:
@@ -292,5 +291,26 @@ class Processor extends Base\Processor
         }
 
         $mandate->markCompleted();
+    }
+
+    /**
+     * @param Entity   $mandate
+     * @param ArrayBag $input
+     * This is the method to set mandate status to be completed
+     * @throws \RZP\Exception\LogicException
+     */
+    protected function setMandateRejected(Entity $mandate, ArrayBag $input)
+    {
+        if (($mandate->isFailed() === true ) or
+            ($mandate->isRevoked() === true) or
+            ($mandate->isApproved() === true))
+        {
+            throw $this->logicException('mandate can not be marked rejected', [
+                Entity::MANDATE         => $input,
+                Entity::ID              => $mandate->getId(),
+            ]);
+        }
+
+        $mandate->markRejected();
     }
 }

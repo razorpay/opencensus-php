@@ -115,11 +115,22 @@ class MandateTest extends TestCase
     {
         $helper = $this->getMandateHelper();
 
-        $this->expectException(BadRequestException::class);
+        $helper->createMandate($this->gateway);
 
-        $this->expectExceptionMessage('The id provided does not exist');
+        $response = $helper->fetchAll();
 
-        $response = $helper->initiateReject('IlS1WhGL84jAoR', []);
+        $mandateId = $response['items'][0]['id'];
+
+        $request = $helper->initiateReject($mandateId, []);
+
+        $this->assertRequestResponse(
+            'redirect',
+            ['time' => $this->fixtures->device->getCreatedAt()],
+            $this->expectedCallback(
+                Requests::P2P_CUSTOMER_MANDATE_AUTHORIZE,
+                [$mandateId],
+                ['f' => 'initiateReject']),
+            $request);
     }
 
     public function testInitiatePause()
@@ -161,18 +172,15 @@ class MandateTest extends TestCase
 
         $helper->createMandate($this->gateway);
 
-        $response = $helper->fetchAll();
+        $lastMandate = $this->getPspxLastMandate(Fixtures::DEVICE_1);
 
-        $mandateId = $response['items'][0][Entity::ID];
+        $mandateId = $lastMandate[Entity::ID];
 
-        $amount = $response['items'][0][Entity::AMOUNT];
+        $amount = $lastMandate[Entity::AMOUNT];
 
-        $request = $helper->initiateAuthorize(substr($mandateId, 5), []);
+        $request = $helper->initiateAuthorize($mandateId, []);
 
-        $content = ['sdk' => $this->handleNpciClRequest($request,
-                                                        'getCredential')()];
-
-        $response = $helper->authorizeMandate($mandateId, []);
+        $response = $helper->authorizeMandate($request['callback'], []);
 
         $this->assertArraySubset([
             Entity::STATUS => Status::APPROVED,
@@ -184,11 +192,31 @@ class MandateTest extends TestCase
     {
         $helper = $this->getMandateHelper();
 
-        $this->expectException(BadRequestException::class);
+        $helper->createMandate($this->gateway);
 
-        $this->expectExceptionMessage('The id provided does not exist');
+        $lastMandate = $this->getPspxLastMandate(Fixtures::DEVICE_1);
 
-        $response = $helper->rejectMandate('IlS1WhGL84jAoR', []);
+        $mandateId = $lastMandate[Entity::ID];
+
+        $amount = $lastMandate[Entity::AMOUNT];
+
+        $request = $helper->initiateReject($mandateId, []);
+
+        $this->assertRequestResponse(
+            'redirect',
+            ['time' => $this->fixtures->device->getCreatedAt()],
+            $this->expectedCallback(
+                Requests::P2P_CUSTOMER_MANDATE_AUTHORIZE,
+                [Entity::getSignedId($mandateId)],
+                ['f' => 'initiateReject']),
+            $request);
+
+        $response = $helper->rejectMandate($request['callback'], []);
+
+        $this->assertArraySubset([
+         Entity::STATUS => Status::REJECTED,
+         Entity::AMOUNT => $amount,
+         ], $response);
     }
 
 

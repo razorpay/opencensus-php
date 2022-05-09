@@ -48,5 +48,9 @@ class Action extends Base\Action
 
     protected $actionToRoute = [
         self::INITIATE_AUTHORIZE        => Requests::P2P_CUSTOMER_MANDATE_AUTHORIZE,
+        self::INITIATE_PAUSE            => Requests::P2P_CUSTOMER_MANDATE_PAUSE,
+        self::INITIATE_UNPAUSE          => Requests::P2P_CUSTOMER_MANDATE_UNPAUSE,
+        self::INITIATE_REVOKE           => Requests::P2P_CUSTOMER_MANDATE_REVOKE,
+        self::INITIATE_REJECT           => Requests::P2P_CUSTOMER_MANDATE_AUTHORIZE,
     ];
 }
