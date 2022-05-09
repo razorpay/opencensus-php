@@ -150,7 +150,7 @@ class SupportBody extends Component {
   }
 
   handleClick = (id) => {
-    const { onToggle, onChat, notifyCount } = this.props;
+    const { onToggle, onChat, notifyCount, user } = this.props;
     const rzpTicketSystem = window.rzpTicketSystem;
     if (rzpTicketSystem) {
       trackSupportOptions(id);
@@ -170,12 +170,16 @@ class SupportBody extends Component {
         return rzpTicketSystem.openModal(`#click-to-call`);
       }
       if (id === 'chat') {
+        const { isChatbotLive } = user;
         analyticsTrack({
           objectName: 'chat with us',
           actionName: 'clicked',
           screen: 'home page',
           properties: {
             location: 'Help and Support',
+            isChatbot: isChatbotLive,
+            pageUrl: window.location.href,
+            pathname: window.location.pathname,
             ...getCommonAnalyticsProperties(window.rzp_user),
           },
         });
@@ -193,42 +197,6 @@ class SupportBody extends Component {
     } else {
       console.log('RZP TICKET SYSTEM INIT FAILED');
     }
-  };
-
-  handleFeedback = () => {
-    const { onToggle } = this.props;
-    analyticsTrack({
-      objectName: 'share feedback',
-      actionName: 'clicked',
-      screen: 'home page',
-      properties: {
-        location: 'Help and Support',
-        ...getCommonAnalyticsProperties(window.rzp_user),
-      },
-    });
-    trackSupportOptions('feedback');
-
-    try {
-      document.querySelector('[class$="feedback_minimized_label"]').click();
-    } catch (err) {
-      console.log(err);
-    }
-
-    onToggle();
-  };
-
-  handleFaqs = () => {
-    analyticsTrack({
-      objectName: 'faqs',
-      actionName: 'clicked',
-      screen: 'home page',
-      properties: {
-        location: 'Help and Support',
-        ...getCommonAnalyticsProperties(window.rzp_user),
-      },
-    });
-    window.open('https://razorpay.com/knowledgebase/#merchant', '_blank');
-    trackSupportOptions('faqs');
   };
 
   handleTicketCreatingSuccess = (data) => {
@@ -435,15 +403,6 @@ class SupportBody extends Component {
                     : ''
                 }`}
                 onClick={() => {
-                  analyticsTrack({
-                    objectName: 'chat with us',
-                    actionName: 'clicked',
-                    screen: 'home page',
-                    properties: {
-                      location: 'Help and Support',
-                      ...getCommonAnalyticsProperties(window.rzp_user),
-                    },
-                  });
                   handleClick('chat');
                 }}
               >
@@ -483,15 +442,6 @@ class SupportBody extends Component {
             <small className="help-block">Read more about how to use the dashboard</small>
           </li>
         </ul>
-
-        <div className="support-feedback">
-          <button className="btn btn-default pull-left" onClick={this.handleFeedback}>
-            <i className="i i-voice-record m-r" /> Share Feedback
-          </button>
-          <button className="btn btn-default pull-right" onClick={this.handleFaqs}>
-            <i className="i i-help  m-r" /> FAQs
-          </button>
-        </div>
       </div>
     );
   }

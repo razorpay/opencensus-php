@@ -177,7 +177,7 @@ class SupportBody extends Component {
   }
 
   handleClick = (id) => {
-    const { onChat, notifyCount } = this.props;
+    const { onChat, notifyCount, user } = this.props;
     const rzpTicketSystem = window.rzpTicketSystem;
     this.handleCloseCareSupportSection();
     if (rzpTicketSystem) {
@@ -214,12 +214,16 @@ class SupportBody extends Component {
         return rzpTicketSystem.openModal(`#click-to-call`);
       }
       if (id === 'chat') {
+        const { isChatbotLive } = user;
         analyticsTrack({
           objectName: 'chat with us',
           actionName: 'clicked',
           screen: 'home page',
           properties: {
             location: 'Help and Support',
+            isChatbot: isChatbotLive,
+            pageUrl: window.location.href,
+            pathname: window.location.pathname,
             ...getCommonAnalyticsProperties(window.rzp_user),
           },
         });
