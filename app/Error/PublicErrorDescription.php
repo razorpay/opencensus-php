@@ -1089,7 +1089,7 @@ class PublicErrorDescription
 
     const BAD_REQUEST_AMAZONPAY_PAYOUT_NOT_ALLOWED_ON_DIRECT_ACCOUNT            = 'Payouts to amazonpay wallet are not allowed on current accounts';
 
-    const BAD_REQUEST_MERCHANT_EDIT_OPERATION_IN_PROGRESS                       = 'The information that you have filled could not be processed. Please try again later';
+    const BAD_REQUEST_MERCHANT_EDIT_OPERATION_IN_PROGRESS                       = 'Your details could not be saved as another request is in progress. Please try again in sometime.';
 
     //Partner Activation error descriptions
     const BAD_REQUEST_PARTNER_ACTIVATION_OPERATION_IN_PROGRESS                      = 'Partner activation is in progress';
