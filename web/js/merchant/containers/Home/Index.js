@@ -483,7 +483,7 @@ export default class HomeContainer extends Component {
   }
 
   fetchOldestTransactionDate() {
-    let { oldestTransactionDate, dateRangePresets } = this.state;
+    let { oldestTransactionDate } = this.state;
 
     const { onFirstTxnDate, analyticsFetch } = this.props;
 
@@ -545,24 +545,11 @@ export default class HomeContainer extends Component {
           return onFirstTxnDate && onFirstTxnDate();
         }
 
-        const presetsLastIndex = dateRangePresets.length - 1;
-        const presetsLastItem = dateRangePresets[presetsLastIndex];
-
-        // updates All Time present in daterange picker
-        dateRangePresets = [...DATE_RANGE_PRESETS];
-
-        dateRangePresets.splice(presetsLastIndex, 1, [
-          presetsLastItem[0],
-          -(moment().unix() - data.value),
-          'seconds',
-        ]);
-
         this.setState({
           oldestTransactionDate: {
             ...oldestTransactionDate,
             value: data.value,
           },
-          dateRangePresets,
         });
 
         return onFirstTxnDate && onFirstTxnDate(data.value);
