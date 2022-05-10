@@ -1238,6 +1238,8 @@ class Service extends Base\Service
 
     public function processInitiateForBatchSubmittedPayouts(array $input)
     {
+        $this->trace->info(TraceCode::BATCH_SUBMITTED_PAYOUTS_CRON_REQUEST);
+
         $merchantIds = $this->repo->payout->fetchMIDsWithBatchSubmittedPayouts();
 
         $this->core->processInitiateForBatchSubmittedPayouts($merchantIds);
