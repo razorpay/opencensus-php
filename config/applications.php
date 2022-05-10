@@ -711,6 +711,14 @@ return [
         'skip_jwt_passport'=> env('SKIP_PASSPORT_AUTH', false),
     ],
 
+    'commission_service' => [
+        'mock'            => env('COMMISSION_SERVICE_MOCK', false),
+        'url'             => env('COMMISSION_SERVICE_URL'),
+        'username'        => 'key',
+        'secret'          => env('COMMISSION_SERVICE_SECRET'),
+        'request_timeout' => env('COMMISSION_SERVICE_REQUEST_TIMEOUT', 0.1),
+        'skip_jwt_passport'=> env('COMMISSION_SERVICE_SKIP_PASSPORT_AUTH', true),
+    ],
     'user_2fa' => [
         'max_incorrect_tries' => env('USER_2FA_MAX_INCORRECT_TRIES', 9),
     ],

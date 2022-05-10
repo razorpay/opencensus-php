@@ -690,6 +690,8 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->registerRelayService();
 
         $this->registerAuthzXPlatformEnforcerClient();
+
+        $this->registerCommissionService();
     }
 
     protected function registerCacheManager()
@@ -1967,6 +1969,21 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->app->singleton(PayoutService\Workflow::PAYOUT_SERVICE_WORKFLOW, function($app)
         {
             return new PayoutService\Workflow($app);
+        });
+    }
+
+    protected function registerCommissionService()
+    {
+        $this->app->singleton('commissionService', function ($app) {
+
+            $mock = $app['config']->get('applications.commission_service.mock');
+
+            if ($mock === true)
+            {
+                return new RZP\Services\Mock\CommissionService();
+            }
+
+            return new RZP\Services\CommissionService\CommissionService();
         });
     }
 }
