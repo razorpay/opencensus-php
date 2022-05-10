@@ -6,6 +6,8 @@ const DigitField = ({ pos, digit, currentIndex, setCurPos, handleInput, isFocuse
   return (
     <input
       name=""
+      type="number"
+      pattern="[0-9]"
       class="form-control input-sm"
       value={digit[pos]}
       key={pos}
@@ -27,7 +29,7 @@ export class OtpInput extends Component {
     digit: this.props.otp
       ? this.props.otp
           .split('')
-          .reduce((o, val, i) => Object.assign(o, { [parseInt(i) + 1]: val }), {})
+          .reduce((o, val, i) => Object.assign(o, { [parseInt(i, 10) + 1]: val }), {})
       : {
           1: '',
           2: '',
@@ -41,13 +43,13 @@ export class OtpInput extends Component {
   setCurPos = (i) => {
     this.setState(() => {
       return {
-        currentIndex: parseInt(i),
+        currentIndex: parseInt(i, 10),
       };
     });
   };
 
   handleInput = (i, e) => {
-    i = parseInt(i);
+    i = parseInt(i, 10);
     let val = e.key;
     let back = 0;
     if (isNaN(val) && e.keyCode !== 8) {

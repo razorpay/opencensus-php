@@ -15,10 +15,10 @@ class TwoFactorVerificationOTP extends React.Component {
     onSuccess: () => {},
   };
 
-  state = {};
+  state = { otpValue: null };
 
   updateOtpValue = (otp) => {
-    this.otpValue = otp;
+    this.setState({ otpValue: otp });
   };
 
   onCloseClick = () => {
@@ -30,7 +30,7 @@ class TwoFactorVerificationOTP extends React.Component {
     return this.validOtp()
       ? this.props
           .onConfirm({
-            otp: this.otpValue,
+            otp: this.state.otpValue,
             receiver: this.props.contactMobile,
           })
           .then((data) => {
@@ -45,7 +45,7 @@ class TwoFactorVerificationOTP extends React.Component {
       : this.setState({ wrongOtp: true });
   };
 
-  validOtp = () => this.otpValue && this.otpValue.length === 6;
+  validOtp = () => this.state.otpValue && this.state.otpValue.length === 6;
 
   componentDidMount() {
     analyticsTrack({
