@@ -3,6 +3,7 @@
 namespace RZP\Models\PaymentLink;
 
 use Cache;
+use App;
 use Carbon\Carbon;
 use phpseclib\Crypt\AES;
 use RZP\Constants\Environment;
@@ -2749,19 +2750,19 @@ class Core extends Base\Core
 
     public function getPlIdFromSlug(string $slug)
     {
-            $gimli        = $this->app['elfin']->driver('gimli');
+        $gimli        = $this->app['elfin']->driver('gimli');
 
-            $slugMetadata = $gimli->expandAndGetMetadata($slug);
+        $slugMetadata = $gimli->expandAndGetMetadata($slug);
 
-            // Renders 404 if no metadata available(error/exception at Gimli side)
-            if ($slugMetadata === null)
-            {
-                throw new BadRequestException(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
-            }
+        // Renders 404 if no metadata available(error/exception at Gimli side)
+        if ($slugMetadata === null)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
+        }
 
-            $this->app['basicauth']->setModeAndDbConnection($slugMetadata['mode']);
+        $this->app['basicauth']->setModeAndDbConnection($slugMetadata['mode']);
 
-            return $slugMetadata['id'];
+        return $slugMetadata['id'];
     }
 
     private function dispatchDedupeCall(Entity $paymentLink, Merchant\Entity $merchant)
@@ -2797,7 +2798,7 @@ class Core extends Base\Core
         }
     }
 
-    public function precreatePaymentHandle(Merchant\Entity $merchant): array
+    public function precreatePaymentHandle(Merchant\Entity $merchant, array $input): array
     {
         $this->trace->info(
             TraceCode::PAYMENT_HANDLE_PRECREATE_STARTED,
@@ -2806,12 +2807,7 @@ class Core extends Base\Core
             ]);
 
         // get unique handle
-        $handle = Tracer::inSpan(['name' => Constants::HT_PH_GET_UNIQUE_HANDLE], function()
-        {
-           return $this->suggestionPaymentHandle(1);
-        });
-
-        $handle = $handle[0];
+        $handle = $input[Entity::SLUG];
 
         $url = $this->paymentHandleHostedBaseUrl . '/' . $handle;
 
@@ -3337,5 +3333,15 @@ class Core extends Base\Core
         }
 
         return $paymentHandle;
+    }
+
+    public function getPaymentHandleForInput()
+    {
+        if(App::getFacadeRoot()->environment() === Environment::AUTOMATION)
+        {
+            return '@' . (new Entity)->generateId()->getId();
+        }
+
+        return $this->suggestionPaymentHandle(1)[0];
     }
 }

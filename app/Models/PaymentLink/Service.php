@@ -485,14 +485,14 @@ class Service extends Base\Service
 
             $this->modifyInputForPaymentHandle($input);
 
-            Tracer::inSpan(['name' => Constants::HT_PH_CREATE_REQUEST_PRECREATE], function()
+            Tracer::inSpan(['name' => Constants::HT_PH_CREATE_REQUEST_PRECREATE], function() use($input)
             {
-                $this->core->precreatePaymentHandle($this->merchant);
+                $this->core->precreatePaymentHandle($this->merchant, $input);
             });
 
             $response = Tracer::inSpan(['name' => Constants::HT_PH_CREATE_REQUEST_CREATE], function() use($input)
             {
-                return $this->core->createPaymentHandle($input, $this->merchant, $this->user);
+                return $this->core->createPaymentHandle($input, $this->merchant);
             });
 
             $modifiedResponse = $this->modifyResponseForPaymentHandle($response);
@@ -637,7 +637,7 @@ class Service extends Base\Service
             // ie precreate was not called on payment handle
             if (empty($precreatedHandle) === true)
             {
-                $ph = $this->core->precreatePaymentHandle($this->merchant);
+                $ph = $this->core->precreatePaymentHandle($this->merchant, $input);
 
                 // edit here
                 $input[Entity::SLUG] = $ph[Entity::SLUG];
@@ -795,11 +795,9 @@ class Service extends Base\Service
     {
         $input = [];
 
-        $suggestedPaymentHandle = $this->core->suggestionPaymentHandle(1);
+        $input[Entity::SLUG] = $this->core->getPaymentHandleForInput($this->merchant);
 
-        $input[Entity::SLUG] = $suggestedPaymentHandle[0];
-
-        $input[Entity::TITLE] = $this->core->getTitleForPaymentHandle($this->merchant);;
+        $input[Entity::TITLE] = $this->core->getTitleForPaymentHandle($this->merchant);
 
         return $input;
     }
@@ -834,7 +832,9 @@ class Service extends Base\Service
 
         (new Validator)->validatePaymentHandleExistsForMerchant($this->merchant);
 
-        $paymentHandle = $this->core->precreatePaymentHandle($this->merchant);
+        $input = $this->getDefaultValuesPaymentHandle();
+
+        $paymentHandle = $this->core->precreatePaymentHandle($this->merchant, $input);
 
         return $paymentHandle;
     }
