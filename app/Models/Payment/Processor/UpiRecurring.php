@@ -913,7 +913,8 @@ trait UpiRecurring
 
         if (($env === 'func') or
             ($env === 'automation') or
-            ($env === 'bvt'))
+            ($env === 'bvt') or
+            ($env === 'availability'))
         {
             $reminderData = [
                 'remind_at' => Carbon::now()->getTimestamp()+5,

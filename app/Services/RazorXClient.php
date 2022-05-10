@@ -174,7 +174,8 @@ class RazorXClient
     {
         if (($this->env !== 'func') and
             ($this->env !== 'automation') and
-            ($this->env !== 'bvt'))
+            ($this->env !== 'bvt') and
+            ($this->env !== 'availability'))
         {
             return null;
         }
