@@ -19,7 +19,6 @@ import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
 import { trackAddNewMerchantEvents } from '../ga';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 
 @connect(
   (state) => ({
@@ -147,25 +146,6 @@ export default class SubMerchantsList extends Component {
     return (
       <Fragment>
         <Announcement user={this.props.user} mode={this.props.mode} />
-        {not_pure_platform && user.isPartnershipForXEnabled ? (
-          <AnnouncementBanner
-            title="Introducing Partnerships for Current Account"
-            theme="warning"
-            card_id="current-account-partnership-banner"
-          >
-            Invite your affiliates to open a Current Account with RazorpayX and earn up to 3000/- on
-            each referral{'  '}
-            <a
-              className="pointer"
-              target="_blank"
-              rel="noopener noreferrer"
-              href="https://razorpay.com/blog/launching-partnerships-for-razorpayx-current-accounts/"
-            >
-              <strong>&nbsp; Know More</strong>
-            </a>
-          </AnnouncementBanner>
-        ) : null}
-
         <tabbed-container>
           <header className="partner-dashboard-header">
             <NavLink

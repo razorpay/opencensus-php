@@ -17,13 +17,13 @@ import Daily from 'merchant/views/PartnerDashboard/Earnings/Daily/List';
 import CommissionInvoicesList from 'merchant/views/PartnerDashboard/Earnings/Invoices/List';
 import CommissionCard from 'merchant/views/PartnerDashboard/Commissions/components/FUX-Cards/CommissionCard';
 import PayoutsCard from 'merchant/views/PartnerDashboard/Commissions/components/FUX-Cards/PayoutsCard';
-import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 
 class EarningsContainer extends Component {
   state = {
     commissionBalance: null,
     isFirstEarningGen: false,
     isFirstPayoutDone: false,
+    isLoadingFUX: true,
   };
 
   componentDidMount() {
@@ -55,6 +55,7 @@ class EarningsContainer extends Component {
       this.setState({
         isFirstEarningGen,
         isFirstPayoutDone,
+        isLoadingFUX: false,
       });
     } catch (_) {
       this.props.showNotification({
@@ -66,28 +67,17 @@ class EarningsContainer extends Component {
   };
 
   render() {
-    const { commissionBalance, isFirstEarningGen, isFirstPayoutDone } = this.state;
+    const { commissionBalance, isFirstEarningGen, isFirstPayoutDone, isLoadingFUX } = this.state;
     const { sessionUser } = this.props;
-    const not_pure_platform = sessionUser.isPartner() && !sessionUser.isPartner('pure_platform');
     const merchant = sessionUser?.merchants[sessionUser?.current];
     const partnerName = merchant?.name || '';
 
     return (
       <div className="earnings-page">
-        {not_pure_platform && sessionUser.isPartnershipForXEnabled ? (
-          <AnnouncementBanner
-            title=""
-            theme="primary"
-            card_id="current-account-earning-partnership-banner"
-          >
-            <b>Note: </b> Earnings for RazorpayX referrals won&apos;t be visible here and will be
-            processed manually by our team in the first week of each month
-          </AnnouncementBanner>
-        ) : null}
         <ShowWhen additionalCondition={(user) => user.isPartnershipFUX}>
           <tabbed-container>
             <h2 className="page-heading">{` Welcome to Partner dashboard, ${partnerName}!`}</h2>
-            <ShowWhen additionalCondition={() => !isFirstPayoutDone}>
+            <ShowWhen additionalCondition={() => !isFirstPayoutDone && !isLoadingFUX}>
               {isFirstEarningGen ? <PayoutsCard /> : <CommissionCard />}
             </ShowWhen>
           </tabbed-container>
