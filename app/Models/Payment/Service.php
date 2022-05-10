@@ -4562,7 +4562,9 @@ class Service extends Base\Service
         {
             if (in_array($arn, $requiredArn) === true)
             {
-                array_push($requiredRrn, $rrn);
+                if (strlen($rrn) !== 0) {
+                    array_push($requiredRrn, $rrn);
+                }
             }
         }
 
