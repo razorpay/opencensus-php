@@ -130,52 +130,10 @@ export default {
     'HWP22TCyDAfcRG', // Test account prod
   ],
 
-  startup_congratulations_banner_experiment: [
-    'I7wZi5OdEXarC1', // Prod
-    'I5QTuOXKXJiUcP', // Beta
-  ],
-
-  abc_banner_experiment: [
-    'I5ed4FX4QRl6o1', // Prod
-    'I3f68nS3BRwvuF', // Beta
-  ],
-
-  nitro_CC_experiment: [
-    'IJoEJvsX1YAhjn', // Prod
-    'IJnw0Wd2zbIFCl', // Beta
-  ],
-
   cross_border_payments_campaign: [
     'IDVMGD3fth5Dkp', // Prod
     'I3f68nS3BRwvuF', // Beta
   ],
-
-  nitro_icici_branded_experiment: [
-    'IKaXmWhWtAfCrw', // Prod
-    'IKbzEcTvvsVk8D', // Beta
-  ],
-
-  nitro_icici_remarketing_experiment: [
-    'IKaYgajoyBVov7', // Prod
-    'IKbzEcTvvsVk8D', // Beta
-  ],
-  nitro_mm_remarketing_experiment: [
-    'IiqMArt58Yaj5E', // Prod
-    'IKbzEcTvvsVk8D', // Beta
-  ],
-  nitro_new_icici_branded_experiment: [
-    'IlBbXepQRy1pzt', // Prod
-    'IKbzEcTvvsVk8D', // Beta
-  ],
-  nitro_new_icici_plus_card_offer_experiment: [
-    'IlBces1KY3Lbs1', // Prod
-    'IKbzEcTvvsVk8D', // Beta
-  ],
-  nitro_new_icici_base_experiment: [
-    'IlBc9Vesyux0ON', // Prod
-    'IKbzEcTvvsVk8D', // Beta
-  ],
-
   catalyst_campaign_experiment: [
     'HYimXrRKRI0V7y', // Prod
     'HYiqGXEBQX3oo8', // Beta
@@ -334,13 +292,6 @@ export default {
 
     // prod experiment ids,
     'IStJqD0T3wzexZ',
-  ],
-  QR_code_experiment: [
-    // beta experiment ids
-    'IRPaSxQ2IA9qdb',
-
-    // prod experiment ids,
-    'IEEVIgNmiPJuUU',
   ],
   twoFA_mobile_signup_exp: [
     // beta experiment ids

@@ -513,10 +513,6 @@ export default class User {
     return getSplitzExperimentVariant('whats_new_lazy_experiment')?.variables?.result === 'on';
   }
 
-  get isAbcBannerEnabled() {
-    return getSplitzExperimentVariant('abc_banner_experiment')?.variables?.result === 'on';
-  }
-
   get isPartOfNeostone() {
     return getSplitzExperimentVariant('neostone_experiment')?.variables?.result === 'on';
   }
@@ -531,10 +527,6 @@ export default class User {
 
   get isUltraEOCardLOCTestEnabled() {
     return getSplitzExperimentVariant('ultra_exclusiveoffer_loc_test')?.variables?.result === 'on';
-  }
-
-  get isQrCodeEnable() {
-    return getSplitzExperimentVariant('QR_code_experiment')?.variables?.result === 'on';
   }
 
   get isCSSEducationEnabled() {
@@ -561,52 +553,6 @@ export default class User {
   isICICILinkedCAFlowEnabled = (showState = '') => {
     return this.isICICILinkedCAEnabled && getXCAStatus(this).showState === showState;
   };
-
-  get isStartupCongratulationBannerEnabled() {
-    return (
-      getSplitzExperimentVariant('startup_congratulations_banner_experiment')?.variables?.result ===
-      'on'
-    );
-  }
-
-  get isNitroIciciBrandedCampaignEnabled() {
-    return getSplitzExperimentVariant('nitro_icici_branded_experiment')?.variables?.result === 'on';
-  }
-
-  get isNitroIciciRemarketingCampaignEnabled() {
-    return (
-      getSplitzExperimentVariant('nitro_icici_remarketing_experiment')?.variables?.result === 'on'
-    );
-  }
-
-  get isNitroCCCampaignEnabled() {
-    return getSplitzExperimentVariant('nitro_CC_experiment')?.variables?.result === 'on';
-  }
-
-  get isNitroNitromidmarketRemarketingCampaignEnabled() {
-    return (
-      getSplitzExperimentVariant('nitro_mm_remarketing_experiment')?.variables?.result === 'on'
-    );
-  }
-
-  get isNewNitroICICIBrandedCampaignEnabled() {
-    return (
-      getSplitzExperimentVariant('nitro_new_icici_branded_experiment')?.variables?.result === 'on'
-    );
-  }
-
-  get isNewNitroICICIPlusCardOfferCampaignEnabled() {
-    return (
-      getSplitzExperimentVariant('nitro_new_icici_plus_card_offer_experiment')?.variables
-        ?.result === 'on'
-    );
-  }
-
-  get isNewNitroICICIBaseCampaignEnabled() {
-    return (
-      getSplitzExperimentVariant('nitro_new_icici_base_experiment')?.variables?.result === 'on'
-    );
-  }
 
   get isCatalystCampaignEnabled() {
     return getSplitzExperimentVariant('catalyst_campaign_experiment')?.variables?.result === 'on';

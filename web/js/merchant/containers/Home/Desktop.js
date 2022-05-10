@@ -21,7 +21,6 @@ import PaymentMethods from 'merchant/containers/Home/PaymentMethods';
 import Traffic from 'merchant/containers/Home/Traffic';
 import RecentActivity from 'merchant/containers/Home/RecentActivity';
 import Announcement from 'merchant/components/Announcements/Instant';
-import BaseDashboardBanner from '../../../common/ui/DashboardBanner/BaseDashboardBanner';
 import NPSAnnouncement from 'merchant/components/Announcements/NPSAnnouncement';
 import CapitalAnnouncement from 'merchant/components/Announcements/Capital';
 import CovidCampaignAnnouncement from 'merchant/components/Announcements/CovidCampaign';
@@ -70,18 +69,12 @@ import NeoStoneTracker from 'common/ui/NotificationsDropdown/Neostone/Tracker';
 import CongratulatoryBanner from 'merchant/components/Announcements/CongratulatoryBanner';
 import { getXCAStatus } from 'common/ui/NotificationsDropdown/Neostone/common/utils';
 import ShowWhen from '../../components/ShowWhen';
-import ABCBanner from '../../components/Announcements/ABCBanner';
-import StartupCongratulationBanner from '../../components/Announcements/StartupCongratulationBanner';
 import EasterEgg from 'merchant/components/EasterEgg';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
-import NitroICICIBanner from '../../components/Announcements/NitroICICIBanner';
-import NitroCCCampaign from '../../components/Announcements/NitroCCCampaign';
-import NitroMMRemarketingBanner from '../../components/Announcements/NitroMMRemarketingBanner';
 import M2MBanner from 'merchant/components/M2M/M2MBanner';
 import DashboardBanner from 'common/ui/DashboardBanner';
 import SupportRequest from 'merchant/components/Announcements/SupportRequest';
 import Carousel from 'common/components/Carousel';
-import NitroICICINewSegmentsBanner from '../../components/Announcements/NitroICICINewSegmentsBanner';
 import IntlPaymentsRecommendation from 'merchant/containers/Home/ProductRecommendationnCard/IntlPaymentsRecommendation';
 import IntlPaymentsAnnouncement from 'merchant/components/Announcements/IntlPaymentsAnnouncement';
 import * as EventActions from 'merchant/reducers/trackEvents';
@@ -627,51 +620,7 @@ class AnalyticsDesktop extends Component {
               </Link>
             </AnnouncementBanner>
           )}
-          <ShowWhen additionalCondition={(usr) => usr.isAbcBannerEnabled}>
-            <ABCBanner user={user} />
-          </ShowWhen>
-          <ShowWhen additionalCondition={(usr) => usr.isQrCodeEnable}>
-            <BaseDashboardBanner
-              title="QR Codes"
-              bannerText="QR Codes Get unlimited branded QR and collect payments via UPI and cards"
-              bannerId="OCT21-QR-GTM"
-              cta1Text="Try Now"
-              cta1ClickHandler={this.cta1ClickHandler}
-              cta2Text="Learn More"
-              cta2Link="https://razorpay.com/docs/qr-codes/"
-              productName="dashboard_home"
-            />
-          </ShowWhen>
-          <ShowWhen additionalCondition={(usr) => usr.isStartupCongratulationBannerEnabled}>
-            <StartupCongratulationBanner user={user} />
-          </ShowWhen>
           <DashboardBanner />
-          <ShowWhen
-            additionalCondition={(usr) =>
-              usr.isNitroIciciBrandedCampaignEnabled ||
-              usr.isNitroIciciRemarketingCampaignEnabled ||
-              usr.isProjectNitroEnabled
-            }
-          >
-            <NitroICICIBanner productName="home" />
-          </ShowWhen>
-          <ShowWhen additionalCondition={(usr) => usr.isNitroCCCampaignEnabled}>
-            <NitroCCCampaign productName="home" />
-          </ShowWhen>
-          <ShowWhen
-            additionalCondition={(usr) => usr.isNitroNitromidmarketRemarketingCampaignEnabled}
-          >
-            <NitroMMRemarketingBanner productName="home" />
-          </ShowWhen>
-          <ShowWhen
-            additionalCondition={(usr) =>
-              usr.isNewNitroICICIBrandedCampaignEnabled ||
-              usr.isNewNitroICICIPlusCardOfferCampaignEnabled ||
-              usr.isNewNitroICICIBaseCampaignEnabled
-            }
-          >
-            <NitroICICINewSegmentsBanner productName="home" />
-          </ShowWhen>
           <ShowWhen additionalCondition={(usr) => usr.isCatalystBannerFL}>
             <CatalystCampaignBannerPhase2
               productName="Transactions"
