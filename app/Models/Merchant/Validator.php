@@ -617,7 +617,7 @@ class Validator extends Base\Validator
         'cod_fee'                      => 'sometimes|integer|nullable',
         'shipping_fee'                 => 'sometimes|integer|nullable',
     ];
-
+    
     protected static $serviceabilityUrlUpdateRequestRules = [
         'url'                          => 'required|url'
     ];

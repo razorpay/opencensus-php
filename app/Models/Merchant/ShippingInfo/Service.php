@@ -192,12 +192,14 @@ class Service extends Base\Service
                     ));
                     switch ($shippingProviderType)
                     {
+                        case Type::DEMO:
                         case Type::RAZORPAY:
                             $decodedResponse = $this->getShippingMethods(
                                 $shippingMethodProviderConfigJson,
                                 $address,
                                 $orderId,
-                                $orderMeta->getValue()['line_items_total']);
+                                $orderMeta->getValue()['line_items_total'],
+                                $order->toArrayPublic()['notes']);
                             break;
                         default:
                             $decodedResponse = $this->getShippingInfoForShippingMethodProvider($shippingMethodProviderConfig,
@@ -409,7 +411,7 @@ class Service extends Base\Service
         return array_merge($input['address'], $shippingInfo);
     }
 
-    protected function getShippingMethods($shippingMethodProviderConfig, $address, $orderId, $lineItemsTotal): array
+    protected function getShippingMethods($shippingMethodProviderConfig, $address, $orderId, $lineItemsTotal, $notes): array
     {
         $address['country_code'] = $address['country'];
         unset($address['country']);
@@ -422,7 +424,8 @@ class Service extends Base\Service
             $address,
             $lineItemsTotal,
             $orderId,
-            $this->merchant->getId());
+            $this->merchant->getId(),
+            $notes);
         $address['country'] = $address['country_code'];
         unset($address['country_code']);
         $address['zipcode'] = $address['zip_code'];

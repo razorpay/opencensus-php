@@ -11,13 +11,14 @@ class Service extends Base\Service
 {
     const SHIPPING_SERVICE_METHODS_EVALUATE_PATH = 'twirp/rzp.shipping.shipping_info_api.v1.ShippingInfoAPI/Evaluate';
 
-    public function evaluate(string $shippingProviderId, array $location, int $lineItemsTotal, string $orderId, string $merchantId)
+    public function evaluate(string $shippingProviderId, array $location, int $lineItemsTotal, string $orderId, string $merchantId, $notes)
     {
         $request = [
             'delivery_location' => $location,
             'order'             => [
-                'id' => $orderId,
+                'id' => explode('_', $orderId)[1],
                 'line_items_total' => $lineItemsTotal,
+                'notes' => $notes
             ],
             'merchant_id'       => $merchantId,
             'shipping_provider_id' => $shippingProviderId,
