@@ -62,8 +62,6 @@ class Core extends Base\Core
 
     const PAYMENT_PAGE_ITEM_LAST_SYNC_TIMESTAMP = 'PAYMENT_PAGE_ITEM_LAST_SYNC_TIMESTAMP';
 
-    const RAZORX_PP_PAYMENT_REQUIRED_AMOUNT_QUANTITY_CHECK = 'pp_payment_required_amount_quantity_check';
-
     const AMOUT_QUANTITY_TAMPERED = "Amount or quantity has been tampered. Please try again.";
 
     const REQUIRED_AMOUNT           = 'required_amount';
@@ -1622,20 +1620,6 @@ class Core extends Base\Core
      */
     protected function hasRequiredAmountAndQuantity(Entity $paymentLink, Order\Entity $order): bool
     {
-        $variant = $this->app->razorx->getTreatment(
-            $paymentLink->merchant->getId(),
-            self::RAZORX_PP_PAYMENT_REQUIRED_AMOUNT_QUANTITY_CHECK,
-            $this->mode
-        );
-
-        /**
-         * Perform validation only for the merchants which have the experiment enabled.
-         */
-        if ($variant !== 'on')
-        {
-            return true;
-        }
-
         // represents the computed required minimum amount of the payment page.
         $minimumPageAmount = 0;
 

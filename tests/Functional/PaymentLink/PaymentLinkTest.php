@@ -2783,8 +2783,6 @@ class PaymentLinkTest extends TestCase
      */
     public function testOnPaymentFlowValidateLatestAmount()
     {
-        $this->mockRazorxExperiments([PaymentLink\Core::RAZORX_PP_PAYMENT_REQUIRED_AMOUNT_QUANTITY_CHECK => 'on']);
-
         $this->assertManipulateOrderItemAndMakePayment(PaymentLink\Core::AMOUT_QUANTITY_TAMPERED);
     }
 
@@ -2794,8 +2792,6 @@ class PaymentLinkTest extends TestCase
      */
     public function testOnPaymentFlowValidateLatestAmountWithFixedAmountNotMandatory()
     {
-        $this->mockRazorxExperiments([PaymentLink\Core::RAZORX_PP_PAYMENT_REQUIRED_AMOUNT_QUANTITY_CHECK => 'on']);
-
         $attributes = [
             PaymentLinkModel\Entity::PAYMENT_PAGE_ITEMS => [
                 [
@@ -2831,8 +2827,6 @@ class PaymentLinkTest extends TestCase
      */
     public function testOnPaymentFlowValidateLatestAmountWithFixedAmountMandatory()
     {
-        $this->mockRazorxExperiments([PaymentLink\Core::RAZORX_PP_PAYMENT_REQUIRED_AMOUNT_QUANTITY_CHECK => 'on']);
-
         $attributes = [
             PaymentLinkModel\Entity::PAYMENT_PAGE_ITEMS => [
                 [
@@ -2868,8 +2862,6 @@ class PaymentLinkTest extends TestCase
      */
     public function testOnPaymentFlowValidateLatestAmountWithOrderLineItemReduced()
     {
-        $this->mockRazorxExperiments([PaymentLink\Core::RAZORX_PP_PAYMENT_REQUIRED_AMOUNT_QUANTITY_CHECK => 'on']);
-
         $attributes = [
             PaymentLinkModel\Entity::PAYMENT_PAGE_ITEMS => [
                 [
@@ -2916,8 +2908,6 @@ class PaymentLinkTest extends TestCase
      */
     public function testOnPaymentFlowValidateLatestAmountWithNonMandatoryOrderLineItemReduced()
     {
-        $this->mockRazorxExperiments([PaymentLink\Core::RAZORX_PP_PAYMENT_REQUIRED_AMOUNT_QUANTITY_CHECK => 'on']);
-
         $attributes = [
             PaymentLinkModel\Entity::PAYMENT_PAGE_ITEMS => [
                 [
@@ -3012,8 +3002,6 @@ class PaymentLinkTest extends TestCase
      */
     public function testOnPaymentFlowValidateLatestAmountWithCustomDecidedAmountMandatoryShouldPass()
     {
-        $this->mockRazorxExperiments([PaymentLink\Core::RAZORX_PP_PAYMENT_REQUIRED_AMOUNT_QUANTITY_CHECK => 'on']);
-
         $defaultPaymentLinkAttribute = [
             PaymentLinkModel\Entity::ID     => self::TEST_PL_ID,
             PaymentLinkModel\Entity::AMOUNT => null,
