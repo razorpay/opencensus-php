@@ -61,4 +61,9 @@ class MerchantDashboard extends Base
     {
         return $this->makeRequest( self::GET_SETTLEMENT_SOURCE_TRANSACTIONS, $input, self::SERVICE_MERCHANT_DASHBOARD);
     }
+
+    public function getSettlementForTransaction(array $input)
+    {
+        return $this->makeRequest(self::GET_SETTLEMENT_FOR_TRANSACTIONS, $input, self::SERVICE_MERCHANT_DASHBOARD);
+    }
 }

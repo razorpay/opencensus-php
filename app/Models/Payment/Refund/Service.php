@@ -460,7 +460,8 @@ class Service extends Base\Service
             $this->addParamsForDashboard($refundArray);
         }
 
-        if ($this->app['basicauth']->isOptimiserDashboardRequest() === true)
+        if ($this->app['basicauth']->isOptimiserDashboardRequest() === true &&
+            $refundArray[Entity::SETTLED_BY] != 'Razorpay')
         {
             $refundArray = $this->setSettlementDetailsForOptimizer($refundArray);
         }
@@ -476,25 +477,24 @@ class Service extends Base\Service
     public function setSettlementDetailsForOptimizer($refundArray)
     {
         try {
-            if (isset($refundArray['transaction']) === true) {
+            if (isset($refundArray['transaction']) === true)
+            {
                 $fetchInput = [
-                    'id' => str_replace("txn_", "", $refundArray['transaction']['id']),
-                    'entity_name' => 'transaction',
-                    'expand' => true
+                    'transaction_id' => str_replace("txn_", "", $refundArray['transaction']['id']),
                 ];
 
-                $transactionEntity = app('settlements_dashboard')->fetch($fetchInput);
+                $settlementResponse = app('settlements_merchant_dashboard')->getSettlementForTransaction($fetchInput);
 
-                $transaction = $transactionEntity['entity'];
+                $settlement = $settlementResponse['settlement'];
 
                 unset($refundArray['transaction']['settlement_id']);
                 unset($refundArray['transaction']['settlement']);
 
-                if ($transaction['settlement'] != null) {
+                if ($settlement != null) {
 
-                    $setl = new Settlement\Entity($transaction['settlement']);
+                    $setl = new Settlement\Entity($settlement);
 
-                    $setl->setPublicAttributeForOptimiser($transaction['settlement']);
+                    $setl->setPublicAttributeForOptimiser($settlement);
 
                     $refundArray['transaction']['settlement'] = $setl->toArrayPublic();
 

@@ -1817,7 +1817,8 @@ class Service extends Base\Service
 
         $entity = $payment->toArrayPublicWithExpand();
 
-        if ($this->app['basicauth']->isOptimiserDashboardRequest() === true)
+        if ($this->app['basicauth']->isOptimiserDashboardRequest() === true &&
+            $payment->getSettledBy() !== 'Razorpay')
         {
             $entity = $this->setSettlementDetailsForOptimizer($entity, $payment);
         }
@@ -1858,24 +1859,24 @@ class Service extends Base\Service
     public function setSettlementDetailsForOptimizer($paymentArray, $payment)
     {
         try {
-            if ($payment->getTransactionId() !== null) {
+            if ($payment->getTransactionId() !== null)
+            {
                 $fetchInput = [
-                    'id' => $payment->getTransactionId(),
-                    'entity_name' => 'transaction',
-                    'expand' => true
+                    'transaction_id' => $payment->getTransactionId(),
+                    'merchant_id'    => $payment->getMerchantId(),
                 ];
 
-                $transactionEntity = app('settlements_dashboard')->fetch($fetchInput);
+                $settlementResponse = app('settlements_merchant_dashboard')->getSettlementForTransaction($fetchInput);
 
-                $transaction = $transactionEntity['entity'];
+                $settlement = $settlementResponse['settlement'];
 
                 unset($paymentArray['transaction']['settlement_id']);
                 unset($paymentArray['transaction']['settlement']);
 
-                if ($transaction['settlement'] != null) {
-                    $setl = new Settlement\Entity($transaction['settlement']);
+                if ($settlement != null) {
+                    $setl = new Settlement\Entity($settlement);
 
-                    $setl->setPublicAttributeForOptimiser($transaction['settlement']);
+                    $setl->setPublicAttributeForOptimiser($settlement);
 
                     $paymentArray['transaction']['settlement'] = $setl->toArrayPublic();
 

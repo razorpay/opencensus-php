@@ -35,6 +35,7 @@ class Base
 
     const OPTIMIZER_EXTERNAL_SETTLEMENTS_EXECUTION = '/twirp/rzp.settlements.optimizer_settlements.v1.ExecuteOptimizerSettlementsAPI/Execute';
     const GET_SETTLEMENT_SOURCE_TRANSACTIONS       = '/twirp/rzp.settlements.external_transaction.v1.RecordExternalTransactionAPI/FetchSourceTxn';
+    const GET_SETTLEMENT_FOR_TRANSACTIONS          = '/twirp/rzp.settlements.external_transaction.v1.RecordExternalTransactionAPI/FetchSettlementForTxn';
 
     const GET_NEXT_SETTLEMENT_AMOUNT = '/twirp/rzp.settlements.transaction.v1.TransactionService/GetNextSettlementAmount';
     const GET_SETTLEMENT_TIMELINE_MODAL     = '/twirp/rzp.settlements.transaction.v1.TransactionService/GetSettlementTimelineModal';
