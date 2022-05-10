@@ -80,7 +80,7 @@ class Service extends Base\Service
 
         $this->user = $this->repo->user->find($response['user_id']);
 
-        $this->setResetPasswordTokenAndSendEventToHubspot($merchant);
+        $this->setResetPasswordTokenAndSendEmail();
 
         return $response;
     }
@@ -2257,7 +2257,7 @@ class Service extends Base\Service
 
             if ((empty($this->user) === false) and (empty($merchant) === false))
             {
-                $this->setResetPasswordTokenAndSendEventToHubspot($merchant);
+                $this->setResetPasswordTokenAndSendEmail();
 
                 return ['success' => true];
             }
@@ -2267,24 +2267,12 @@ class Service extends Base\Service
 
 
     /**
-     * @param $merchant
-     *
      * @return void
      */
-    private function setResetPasswordTokenAndSendEventToHubspot($merchant): void
+    private function setResetPasswordTokenAndSendEmail(): void
     {
-        $token = $this->getTokenWithExpiry($this->user['id'], User\Constants::CO_CREATED_CREATE_PASSWORD_TOKEN_EXPIRY_TIME);
+        $passwordResetMail = new UserMail\RazorpayX\SetPasswordRBLCoCreated($this->user, Product::BANKING);
 
-        $properties = [
-            'token' => $token,
-            'email' => $this->user->getEmail()
-        ];
-
-        $hubspotClient = $this->app->hubspot;
-
-        $hubspotClient->trackHubspotEvent($merchant->getEmail(), [
-            'setup_password_token' => $properties['token'],
-            'ca_application_type'  => 'rbl_co_created'
-        ]);
+        Mail::send($passwordResetMail);
     }
 }

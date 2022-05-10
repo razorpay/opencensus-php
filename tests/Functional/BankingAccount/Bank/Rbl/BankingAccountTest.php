@@ -885,7 +885,23 @@ class BankingAccountTest extends TestCase
                     ->method('pushTrackEvent')
                     ->willReturn(true);
 
+        Mail::fake();
+
         $response = $this->startTest();
+
+        Mail::assertSent(RZP\Mail\User\RazorpayX\SetPasswordRBLCoCreated::Class, function ($mail)
+        {
+            $mail->build();
+
+            $viewData = $mail->viewData;
+
+            $this->assertArrayHasKey('token', $viewData);
+            $this->assertArrayHasKey('email', $viewData);
+            $this->assertEquals('emails.user.razorpayx.set_password_rbl_co_created', $mail->view);
+
+            return ($mail->subject === RZP\Mail\User\RazorpayX\SetPasswordRBLCoCreated::SUBJECT && $mail->to[0]['address'] === 'harshada.mohite1@rblbank.com' && $mail->from[0]['address'] === 'x.support@razorpay.com');
+        });
+
 
         $merchantAttribute = $this->getDbEntity('merchant_attribute');
 
