@@ -51,8 +51,14 @@ class CareProxyController extends Controller
     const CLICK_TO_CALL_PUT_HOLIDAYS       = 'twirp/rzp.care.admin.v1.CallbackConfigService/PutClickToCallHolidays';
 
     //TicketConfig
-    const TICKET_CONFIG_ADD_SUBCATEGORY           = 'twirp/rzp.care.ticket.v1.TicketConfigService/CreateSubCategory';
-    const TICKET_CONFIG_ADD_ITEM                  = 'twirp/rzp.care.ticket.v1.TicketConfigService/CreateItem';
+    const TICKET_CONFIG_ADD_SUBCATEGORY                 = 'twirp/rzp.care.ticket.v1.TicketConfigService/CreateSubCategory';
+    const TICKET_CONFIG_ADD_ITEM                        = 'twirp/rzp.care.ticket.v1.TicketConfigService/CreateItem';
+    const TICKET_CONFIG_FETCH_SUBCATEGORY_ITEM_MERCHANT = 'twirp/rzp.care.ticket.v1.TicketConfigService/SubcategoryItemListM';
+    const TICKET_CONFIG_FETCH                           = 'twirp/rzp.care.ticket.v1.TicketConfigService/SubcategoryItemList';
+    const TICKET_CONFIG_FETCH_SUBCATEGORY               = 'twirp/rzp.care.ticket.v1.TicketConfigService/FetchSubCategory';
+    const TICKET_CONFIG_FETCH_ITEM                      = 'twirp/rzp.care.ticket.v1.TicketConfigService/FetchItem';
+    const TICKET_CONFIG_EDIT_SUBCATEGORY                = 'twirp/rzp.care.ticket.v1.TicketConfigService/EditSubCategory';
+    const TICKET_CONFIG_EDIT_ITEM                       = 'twirp/rzp.care.ticket.v1.TicketConfigService/EditItem';
     const TICKET_CONFIG_UPDATE_SUBCATEGORY_STATUS = 'twirp/rzp.care.ticket.v1.TicketConfigService/UpdateSubCategoryStatus';
     const TICKET_CONFIG_UPDATE_ITEM_STATUS        = 'twirp/rzp.care.ticket.v1.TicketConfigService/UpdateItemStatus';
     const TICKET_CONFIG_DELETE_SUBCATEGORY        = 'twirp/rzp.care.ticket.v1.TicketConfigService/DeleteSubCategory';
@@ -64,6 +70,7 @@ class CareProxyController extends Controller
     const FAQ_CONFIG_UPDATE_FAQ_STATUS     = 'twirp/rzp.care.faq.v1.FaqConfigService/UpdateFaqStatus';
     const FAQ_CONFIG_UPDATE_FAQ            = 'twirp/rzp.care.faq.v1.FaqConfigService/UpdateFaq';
     const FAQ_CONFIG_DELETE_FAQ            = 'twirp/rzp.care.faq.v1.FaqConfigService/DeleteFaq';
+
 
 
     const ROUTE_VS_PERMISSION = [
@@ -87,7 +94,11 @@ class CareProxyController extends Controller
         self::TICKET_CONFIG_UPDATE_ITEM_STATUS        => Name::TICKET_CONFIG_EDIT,
         self::TICKET_CONFIG_DELETE_SUBCATEGORY        => Name::TICKET_CONFIG_EDIT,
         self::TICKET_CONFIG_DELETE_ITEM               => Name::TICKET_CONFIG_EDIT,
-
+        self::TICKET_CONFIG_FETCH                     => Name::FAQ_CONFIG_VIEW,
+        self::TICKET_CONFIG_FETCH_SUBCATEGORY         => Name::TICKET_CONFIG_VIEW,
+        self::TICKET_CONFIG_FETCH_ITEM                => Name::TICKET_CONFIG_VIEW,
+        self::TICKET_CONFIG_EDIT_SUBCATEGORY          => Name::TICKET_CONFIG_EDIT,
+        self::TICKET_CONFIG_EDIT_ITEM                 => Name::TICKET_CONFIG_EDIT,
     ];
 
     const MERCHANT_ROUTES = [
@@ -99,6 +110,7 @@ class CareProxyController extends Controller
         self::CREATE_INSTANT_CALLBACK,
         self::GET_CALLBACK,
         self::CHAT_INIT,
+        self::TICKET_CONFIG_FETCH_SUBCATEGORY_ITEM_MERCHANT,
     ];
 
     const CRON_ROUTES = [
@@ -129,6 +141,11 @@ class CareProxyController extends Controller
         self::FAQ_CONFIG_UPDATE_FAQ_STATUS,
         self::FAQ_CONFIG_UPDATE_FAQ,
         self::FAQ_CONFIG_DELETE_FAQ,
+        self::TICKET_CONFIG_FETCH,
+        self::TICKET_CONFIG_FETCH_SUBCATEGORY,
+        self::TICKET_CONFIG_FETCH_ITEM,
+        self::TICKET_CONFIG_EDIT_SUBCATEGORY,
+        self::TICKET_CONFIG_EDIT_ITEM,
         self::TICKET_CONFIG_UPDATE_SUBCATEGORY_STATUS,
         self::TICKET_CONFIG_UPDATE_ITEM_STATUS,
         self::TICKET_CONFIG_DELETE_SUBCATEGORY,

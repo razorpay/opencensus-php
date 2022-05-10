@@ -874,6 +874,7 @@ class Name
     const CLICK_TO_CALL_TIMING_CONFIG_EDIT = 'click_to_call_timing_config_edit';
 
     const TICKET_CONFIG_EDIT = 'ticket_config_edit';
+    const TICKET_CONFIG_VIEW = 'ticket_config_view';
 
     const FAQ_CONFIG_EDIT  = 'faq_config_edit';
     const FAQ_CONFIG_VIEW  = 'faq_config_view';
