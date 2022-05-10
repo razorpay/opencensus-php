@@ -2442,6 +2442,7 @@ class Route
         '1cc_country_pincode_get'                  => ['get',      'locations/country/{country}/pincode/{pincode}',  'PincodeSearchController@getByCountry'                              ],
         '1cc_location_autosuggest'                 => ['get',      'locations/autosuggest',                          'LocationController@getAddressSuggestions'                          ],
         'internal_pincode_get'                     => ['get',      'internal/pincodes/{id}',                         'PincodeSearchController@get'                                       ],
+        'guest_pincode_get'                        => ['get',      'pincode/{id}',                                   'PincodeSearchController@get'                                       ],
         'cities_get'                               => ['get',      'cities',                                         'CityController@getCities'                                          ],
         'states_by_country'                        => ['get',      'locations/countries/{countryCode}/states',       'LocationController@getStatesByCountry'],
         'db_meta_query'                            => ['post',     'db_meta_query',                                  'AdminController@dbMetaDataQuery'                                   ],
@@ -4724,6 +4725,8 @@ class Route
         'payment_transfer_retry_batch',
 
         'firs_collect_and_zip_cron',
+
+        'guest_pincode_get',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -11820,6 +11823,7 @@ class Route
             'admin_forgot_password',
             'admin_reset_password',
             'user_confirm_by_data',
+            'guest_pincode_get',
         ],
 
         'dashboard_internal' => [
