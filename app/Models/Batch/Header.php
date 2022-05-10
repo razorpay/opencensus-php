@@ -1117,7 +1117,8 @@ class Header
     const STP_SR_NUMBER                          = 'SR Number';
     const STP_SR_STATUS                          = 'SR Status';
     const STP_SR_CLOSED_DATE                     = 'SR Closed date';
-    const STP_REMARKS                            = 'Remarks';
+    const STP_REMARKS                            = 'ICICI Remarks';
+    const STP_RZP_INTERVENTION                   = 'Razorpay intervention required cases';
     const STP_CONNECTED_BANKING                  = 'Connected Banking';
     const STP_T3_DATE                            = 'T+3 Date';
     const STP_HELPDESK_SR_STATUS                 = 'Hepdesk SR Status';
@@ -4045,6 +4046,7 @@ class Header
                 self::STP_SR_STATUS,
                 self::STP_SR_CLOSED_DATE,
                 self::STP_REMARKS,
+                self::STP_RZP_INTERVENTION,
                 self::STP_CONNECTED_BANKING,
                 self::STP_T3_DATE,
                 self::STP_HELPDESK_SR_STATUS,

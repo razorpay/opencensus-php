@@ -169,6 +169,7 @@ class BankingAccountActivationCommentsTest extends TestCase
                     Batch\Header::STP_SR_CLOSED_DATE                      => '1/9/2021',
                     Batch\Header::STP_REMARKS                             => 'Assigned to COG_COP',
                     Batch\Header::STP_CONNECTED_BANKING                   => 'Reg done',
+                    Batch\Header::STP_RZP_INTERVENTION                    => 'Verificaiton pending from RZP',
                     Batch\Header::STP_T3_DATE                             => '8/3/2021',
                     Batch\Header::STP_HELPDESK_SR_STATUS                  => 'Closed',
                     Batch\Header::STP_HELPDESK_SR                         => 'SR205973505',
@@ -183,6 +184,7 @@ class BankingAccountActivationCommentsTest extends TestCase
                     Batch\Header::STP_REMARKS                             => 'Requirement not mentioned in BR and ' .
                                                                             'request form, kindly check',
                     Batch\Header::STP_CONNECTED_BANKING                   => 'Reg Not done',
+                    Batch\Header::STP_RZP_INTERVENTION                    => 'Please verify docs',
                     Batch\Header::STP_T3_DATE                             => '9/3/2021',
                     Batch\Header::STP_HELPDESK_SR_STATUS                  => 'Open',
                     Batch\Header::STP_HELPDESK_SR                         => 'SR205973522',
