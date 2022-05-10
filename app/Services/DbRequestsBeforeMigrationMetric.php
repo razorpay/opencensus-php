@@ -14,8 +14,6 @@ class DbRequestsBeforeMigrationMetric
 
     protected $trace;
 
-    protected $isRequestSampled;
-
     public function __construct($app)
     {
         $this->app = $app;
@@ -24,37 +22,23 @@ class DbRequestsBeforeMigrationMetric
 
         $this->metrics = [];
 
-        $this->isRequestSampled = $this->getSamplingCondition();
-
-        if ($this->isRequestSampled === false)
-        {
-            $this->trace->info(
-                TraceCode::TRACE_DB_MIGRATION_METRIC,
-                [
-                    'message' => 'Request is sampled out.',
-                ]);
-        }
     }
 
     public function setMetric($route, $table, $action)
     {
-        // Only do this for sampling percentage of requests
-        if ($this->isRequestSampled === true)
+        if (isset($this->metrics[$route][$table][$action]) === false)
         {
-            if (isset($this->metrics[$route][$table][$action]) === false)
-            {
-                $this->metrics = array_merge_recursive($this->metrics, [
-                    $route => [
-                        $table => [
-                            $action => 1
-                        ],
-                    ]
-                ]);
-            }
-            else
-            {
-                $this->metrics[$route][$table][$action]++;
-            }
+            $this->metrics = array_merge_recursive($this->metrics, [
+                $route => [
+                    $table => [
+                        $action => 1
+                    ],
+                ]
+            ]);
+        }
+        else
+        {
+            $this->metrics[$route][$table][$action]++;
         }
     }
 
@@ -85,11 +69,5 @@ class DbRequestsBeforeMigrationMetric
                 }
             }
         }
-    }
-
-    public function getSamplingCondition()
-    {
-        $samplePercent = floatval($this->app['config']->get('app.db_migration_metrics_sampling_percent'));
-        return rand() % 100000 < $samplePercent * 1000;
     }
 }

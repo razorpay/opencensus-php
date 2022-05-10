@@ -3,6 +3,9 @@
 namespace RZP\Tests\Functional\Offer;
 
 use Carbon\Carbon;
+use RZP\Constants\Entity;
+use RZP\Constants\Entity as E;
+use RZP\Models\Base\DbMigrationMetricsObserver;
 use RZP\Tests\Functional\TestCase;
 use RZP\Exception\BadRequestException;
 use RZP\Tests\Functional\Helpers\RazorxTrait;
@@ -31,7 +34,10 @@ class OffersTest extends TestCase
         // Because in test cases offers start date is set
         // to Feb 2018 and it should always be in future
         Carbon::setTestNow("1-1-2018 00:00:00");
-        Config::set('app.db_migration_metrics_sampling_percent', 100);
+
+        //Creating observer in set up for cases where request is sampled out.
+        $entityClass = E::getEntityClass( Entity::OFFER);
+        $entityClass::observe(DbMigrationMetricsObserver::class);
     }
 
     public function testCreateCardOffer()

@@ -6,6 +6,7 @@ use GuzzleHttp\Client;
 use Illuminate\Cache\CacheManager;
 use RZP;
 use Cache;
+use RZP\Trace\TraceCode;
 use Swagger\Client\Api\AdminAPIApi;
 use Swagger\Client\Api\EnforcerAPIApi;
 use Swagger\Client\Configuration;
@@ -146,10 +147,24 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         }
 
         // attach DB Migration metrics observer to DB migration entities
-        foreach (E::DB_MIGRATION_ENTITIES as $entity)
+        $this->isRequestSampled = $this->getSamplingCondition();
+
+        if ($this->isRequestSampled === false)
         {
-            $entityClass = E::getEntityClass($entity);
-            $entityClass::observe(DbMigrationMetricsObserver::class);
+            $this->app['trace']->info(
+                TraceCode::TRACE_DB_MIGRATION_METRIC,
+                [
+                    'message' => 'Request is sampled out.',
+                ]);
+        }
+
+        if ($this->isRequestSampled === true)
+        {
+            foreach (E::DB_MIGRATION_ENTITIES as $entity)
+            {
+                $entityClass = E::getEntityClass($entity);
+                $entityClass::observe(DbMigrationMetricsObserver::class);
+            }
         }
 
         // attach account service sync event observer to entities synced between API and account service
@@ -162,6 +177,12 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
             }
             $entityClass::observe(Acs\SyncEventObserver::class);
         }
+    }
+
+    public function getSamplingCondition()
+    {
+        $samplePercent = floatval($this->app['config']->get('app.db_migration_metrics_sampling_percent'));
+        return rand() % 100000 < $samplePercent * 1000;
     }
 
     /**
