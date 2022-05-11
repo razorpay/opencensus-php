@@ -541,12 +541,12 @@ class Notify
 
             $sendAfterSeconds = $this->app->razorx->getTreatment($this->merchant->getId(), RazorxTreatment::PL_MISSED_ORDER_SEND_AFTER_SECONDS, $this->mode);
 
-            if (
-                ($sendAfterSeconds == 'control') or
-                (isset($failedPaymentConfig['retry_payment_links']) == false) or
-                (isset($failedPaymentConfig['retry_payment_links']['send_after']) == false) or
-                ($failedPaymentConfig['retry_payment_links']['send_after'] == null) or
-                ($failedPaymentConfig['retry_payment_links']['send_after'] == "")
+            if ($sendAfterSeconds == 'control' and
+                $failedPaymentConfig != false and
+                (isset($failedPaymentConfig['retry_payment_links']) == false or
+                    isset($failedPaymentConfig['retry_payment_links']['send_after']) == false or
+                    $failedPaymentConfig['retry_payment_links']['send_after'] == ""
+                )
             )
             {
                 $response = (new Payment\Core())->createPaymentLinkToReviveOrder($this->payment);
