@@ -573,7 +573,7 @@ class MethodsTest extends TestCase
 
         $this->startTest();
     }
-   
+
     public function testEnablePaylaterForBlacklistedMccs()
     {
         $this->fixtures->merchant->disableAllMethods('10000000000000');
@@ -1136,6 +1136,12 @@ class MethodsTest extends TestCase
 
         $this->ba->adminAuth();
 
+        $this->startTest();
+    }
+
+    public function testInternalGetPaymentInstruments()
+    {
+        $this->ba->terminalsAuth();
         $this->startTest();
     }
 }

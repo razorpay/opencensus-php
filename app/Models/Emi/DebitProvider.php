@@ -27,6 +27,10 @@ class DebitProvider
         }
     }
 
+    public static function getAllDebitEmiProviders()
+    {
+        return self::$providers;
+    }
 
     public static function getEnabledDebitEmiProviders(int $debitEmi, $providers): array
     {

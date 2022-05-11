@@ -3248,6 +3248,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TOKEN_CACHE_READ_ERROR                                = 'TOKEN_CACHE_READ_ERROR';
     const TOKEN_CACHE_STORE_ERROR                               = 'TOKEN_CACHE_STORE_ERROR';
     const INSTRUMENT_ENTITY_EVENT_ERROR                         = 'INSTRUMENT_ENTITY_EVENT_ERROR';
+    const MERCHANT_PAYMENT_INSTRUMENTS_FETCH_RESPONSE           = 'MERCHANT_PAYMENT_INSTRUMENTS_FETCH_RESPONSE';
 
     //upi status cache
     const UPI_CACHE_STORE_ERROR                                 = 'UPI_CACHE_STORE_ERROR';

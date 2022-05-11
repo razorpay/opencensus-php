@@ -8,6 +8,7 @@ use ApiResponse;
 use RZP\Exception;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Key;
+use RZP\Models\Merchant\Methods;
 use RZP\Models\Report;
 use RZP\Models\Gateway;
 use RZP\Models\User\Role;
@@ -1642,6 +1643,13 @@ class MerchantController extends Controller
     public function internalGetMerchant(string $merchantId)
     {
         $response = $this->service()->internalGetMerchant($merchantId);
+
+        return ApiResponse::json($response);
+    }
+
+    public function internalGetPaymentInstruments()
+    {
+        $response = (new Methods\Service)->internalGetPaymentInstruments();
 
         return ApiResponse::json($response);
     }
