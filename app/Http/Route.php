@@ -2239,6 +2239,7 @@ class Route
         'oauth_application_fetch_multiple'         => ['get',      'oauth/applications',                             'OAuthApplicationController@getMultiple'                            ],
         'oauth_application_fetch_partner'          => ['get',      'oauth/applications/partner',                     'OAuthApplicationController@getPartner'                             ],
         'oauth_application_create_clients'         => ['post',     'oauth/applications/{id}/clients',                'OAuthApplicationController@createClients'                          ],
+        'oauth_application_refresh_clients'        => ['put',      'oauth/applications/{id}/clients',                'OAuthApplicationController@refreshClients'                         ],
         'oauth_application_delete_client'          => ['delete',   'oauth/applications/{id}/clients/{clientId}',     'OAuthApplicationController@deleteClient'                           ],
         'oauth_application_fetch'                  => ['get',      'oauth/applications/{id}',                        'OAuthApplicationController@get'                                    ],
         'oauth_application_delete'                 => ['delete',   'oauth/applications/{id}',                        'OAuthApplicationController@delete'                                 ],
@@ -6006,6 +6007,7 @@ class Route
 
         // oauth routes
         'oauth_application_update_admin',
+        'oauth_application_refresh_clients',
 
         // Shield Routes
         'shield_rules_get_multiple',
@@ -7343,6 +7345,7 @@ class Route
         'product_tnc_map_update'                   => Permission::ADMIN_MANAGE_PARTNERS,
         'merchant_sync_stakeholder'                => Permission::ADMIN_MANAGE_PARTNERS,
         'oauth_application_create_clients'         => Permission::ADMIN_MANAGE_PARTNERS,
+        'oauth_application_refresh_clients'        => Permission::ADMIN_MANAGE_PARTNERS,
         'oauth_application_delete_client'          => Permission::ADMIN_MANAGE_PARTNERS,
         'account_service_trigger_full_sync'        => Permission::ADMIN_MANAGE_PARTNERS,
         'account_service_trigger_sync'             => Permission::ADMIN_MANAGE_PARTNERS,
@@ -10742,6 +10745,7 @@ class Route
             'oauth_app_webhook_create',
             'oauth_application_create',
             'oauth_application_create_clients',
+            'oauth_application_refresh_clients',
             'oauth_application_create_partner',
             'oauth_application_delete',
             'oauth_application_delete_client',

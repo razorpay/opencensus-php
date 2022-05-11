@@ -182,4 +182,49 @@ return [
             'content' => [],
         ],
     ],
+
+    'testRefreshClients' => [
+        'request'  => [
+            'url'     => '/oauth/applications/8ckeirnw84ifke/clients',
+            'method'  => 'PUT',
+            'server'  => [
+                'HTTP_X-Razorpay-Account'   => '10000000000000',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id' => '8ckeirnw84ifke',
+                "client_details" =>[
+                    "dev"=>[
+                        "id"=>"rzp_test_partner_randomDev"
+                    ],
+                    "prod"=>[
+                        "id"=>"rzp_live_partner_randomProd"
+                    ],
+                ]],
+        ],
+    ],
+
+    'testRefreshClientsWithError' => [
+        'request'  => [
+            'url'     => '/oauth/applications/8ckeirnw84ifke/clients',
+            'method'  => 'PUT',
+            'server'  => [
+                'HTTP_X-Razorpay-Account'   => '10000000000000',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'description' => PublicErrorDescription::SERVER_ERROR,
+                ],
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class'   => \Exception::class,
+            'message' => 'Error completing the request',
+            'internal_error_code' => ErrorCode::SERVER_ERROR_AUTH_SERVICE_FAILURE,
+        ],
+    ],
 ];

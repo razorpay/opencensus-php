@@ -4,7 +4,9 @@ namespace RZP\Tests\Functional\OAuth;
 
 use Illuminate\Database\Eloquent\Factory;
 
+use RZP\Exception;
 use RZP\Constants\Mode;
+use RZP\Error\ErrorCode;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -229,5 +231,68 @@ class OAuthApplicationTest extends TestCase
         {
             $this->createOAuthApplication(['merchant_id' => $merchantId, 'type' => 'partner', 'partner_type' => $type]);
         }
+    }
+
+    public function testRefreshClients()
+    {
+        $requestParams = $this->getDefaultParamsForAuthServiceRequest();
+
+        $this->createOAuthApplication(['id' => '8ckeirnw84ifke', 'type' => 'partner', 'partner_type'=> 'aggregator']);
+
+        $createParams = [
+            'application_id' => '8ckeirnw84ifke'
+        ];
+
+        $mergedRequestParams = array_merge($requestParams, $createParams);
+
+        $this->setAuthServiceMockDetail('clients', 'PUT', $mergedRequestParams, 1,
+           ['id' => '8ckeirnw84ifke',
+               "client_details" =>[
+                   "dev"=>[
+                       "id"=>"randomDev"
+                   ],
+                   "prod"=>[
+                       "id"=>"randomProd"
+                   ],
+           ]]);
+        // can remove this when proxy auth is allowed for this route
+        $admin = $this->ba->getAdmin();
+
+        $this->fixtures->admin->edit($admin["id"], ['allow_all_merchants' => true]);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testRefreshClientsWithError()
+    {
+        $requestParams = $this->getDefaultParamsForAuthServiceRequest();
+
+        $this->createOAuthApplication(['id' => '8ckeirnw84ifke', 'type' => 'partner', 'partner_type'=> 'aggregator']);
+
+        $createParams = [
+            'application_id' => '8ckeirnw84ifke'
+        ];
+
+        $mergedRequestParams = array_merge($requestParams, $createParams);
+
+        $this->authServiceMock
+            ->expects($this->exactly(1))
+            ->method('sendRequest')
+            ->with('clients', 'PUT', $mergedRequestParams)
+            ->will($this->throwException(new Exception\ServerErrorException(
+                'Error completing the request',
+                ErrorCode::SERVER_ERROR_AUTH_SERVICE_FAILURE
+            )));
+
+        // can remove this when proxy auth is allowed for this route
+        $admin = $this->ba->getAdmin();
+
+        $this->fixtures->admin->edit($admin["id"], ['allow_all_merchants' => true]);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
     }
 }

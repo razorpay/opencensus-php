@@ -68,6 +68,23 @@ class AuthService
         return $this->sendRequest('applications', Requests::POST, $input);
     }
 
+    public function refreshClients(string $appId, string $merchantId) : array
+    {
+        $input[Application\Entity::MERCHANT_ID] = $merchantId;
+
+        $input[Client\Entity::APPLICATION_ID] = $appId;
+
+        $this->trace->info(
+            TraceCode::PARTNER_REFRESH_CLIENTS,
+            [
+                'application_id' => $appId,
+                'merchant_id'    => $merchantId,
+            ]
+        );
+
+        return $this->sendRequest('clients', Requests::PUT, $input);
+    }
+
     public function getApplication(string $id, string $merchantId) : array
     {
         $input = [Application\Entity::MERCHANT_ID => $merchantId];
@@ -227,7 +244,6 @@ class AuthService
                 ]
             );
         }
-
         return $this->parseAndReturnResponse($response);
     }
 

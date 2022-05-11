@@ -4,6 +4,7 @@ namespace RZP\Http\Controllers;
 
 use Request;
 use ApiResponse;
+use RZP\Trace\TraceCode;
 use Razorpay\OAuth\Client;
 use Razorpay\OAuth\Application;
 use Razorpay\OAuth\Application\Entity as App;
@@ -142,6 +143,32 @@ class OAuthApplicationController extends Controller
         $app = (new Application\Repository)->findActiveApplicationByIdAndMerchantId($appId, $this->auth->getMerchantId());
 
         return ApiResponse::json($app->toArray());
+    }
+
+    public function refreshClients(string $appId)
+    {
+        $merchantId = $this->auth->getMerchantId();
+
+        $app = (new Application\Repository)->findActiveApplicationByIdAndMerchantId($appId, $this->auth->getMerchantId());
+
+        $currentClients = $app->clients->getIds();
+        try
+        {
+            $data = $this->authservice->refreshClients($appId, $merchantId);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->count(Metric::PARTNER_REFRESH_CLIENT_KEYS_FAILURE);
+
+            throw $e;
+        }
+        $this->processPartnerClientCreds($data);
+
+        $data['old_clients'] = $currentClients;
+
+        $this->trace->count(Metric::PARTNER_REFRESH_CLIENT_KEYS_TOTAL);
+
+        return  $data;
     }
 
     public function get(string $id)

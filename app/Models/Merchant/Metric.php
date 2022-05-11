@@ -14,6 +14,8 @@ final class Metric
      */
     const PARTNER_MARKED_TOTAL                      = 'partner_marked_total';
     const PARTNER_MERCHANT_APPLICATION_CREATE_TOTAL = 'partner_merchant_application_create_total';
+    const PARTNER_REFRESH_CLIENT_KEYS_TOTAL         = 'partner_refresh_client_keys_total';
+    CONST PARTNER_REFRESH_CLIENT_KEYS_FAILURE       = 'partner_refresh_client_keys_failure';
     const PARTNER_CONFIG_CREATE_TOTAL               = 'partner_config_create_total';
     const PARTNER_MARK_REQUEST                      = 'partner_mark_request';
     const ADD_SUB_MERCHANT                          = 'add_sub_merchant';

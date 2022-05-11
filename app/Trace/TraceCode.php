@@ -3329,6 +3329,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PARTNER_REQUEST_SUBMITTED                             = 'PARTNER_REQUEST_SUBMITTED';
     const PARTNER_ACCESS_MAPS_DELETE                            = 'PARTNER_ACCESS_MAPS_DELETE';
     const PARTNER_DELETE_APPLICATION                            = 'PARTNER_DELETE_APPLICATION';
+    const PARTNER_REFRESH_CLIENTS                               = 'PARTNER_REFRESH_CLIENTS';
     const PARTNER_CREATE_ACCESS_MAP_REQUEST                     = 'PARTNER_CREATE_ACCESS_MAP_REQUEST';
     const PARTNER_DELETE_ACCESS_MAP_REQUEST                     = 'PARTNER_DELETE_ACCESS_MAP_REQUEST';
     const PARTNER_UPDATE_ACCESS_MAP_REQUEST                     = 'PARTNER_UPDATE_ACCESS_MAP_REQUEST';
