@@ -129,21 +129,6 @@ class GrowthService extends Base\Service
         return $this->sendRequest($parameters, self::FILTER_AND_SYNC_URL, Requests::POST);
     }
 
-    /**
-     * @throws Exception\InvalidPermissionException
-     * @throws Exception\ServerErrorException
-     */
-    public function sendAdminRequest($parameters, $path, $method): array
-    {
-        $admin = $this->auth->getAdmin();
-        if ($admin === null) {
-            throw new Exception\InvalidPermissionException('admin authorization required');
-        }
-        $adminEmail = $admin->getEmail() ?? '';
-        $parameters[self::ADMIN_EMAIL_PARAM_NAME] = $adminEmail;
-        return $this->sendRequest($parameters, $path, $method);
-    }
-
     public function sendRequest($parameters, $path, $method)
     {
         $requestParams = $this->getRequestParams($parameters, $path, $method);
@@ -173,7 +158,6 @@ class GrowthService extends Base\Service
         $headers['Content-Type'] = self::CONTENT_TYPE_JSON;
         $headers[RequestHeader::DEV_SERVE_USER] = Request::header(RequestHeader::DEV_SERVE_USER);
 
-        $headers[self::ADMIN_EMAIL_PARAM_HEADER] = $parameters[self::ADMIN_EMAIL_PARAM_NAME] ?? '';
         $options = [
             'timeout' => $this->requestTimeout,
         ];
@@ -187,7 +171,13 @@ class GrowthService extends Base\Service
         }
         $headers[self::X_PASSPORT_JWT_V1] = $jwt;
 
-        $this->trace->info(TraceCode::GROWTH_REQUEST, ['url' => $url, 'parameters' => $parameters]);
+        if ($this->auth->isAdminAuth()) {
+            $headers[self::ADMIN_EMAIL_PARAM_HEADER] = $this->auth->getAdmin()->getEmail() ?? '';
+            $this->trace->info(TraceCode::GROWTH_ADMIN_REQUEST, ['url' => $url, 'parameters' => $parameters]);
+        } else {
+            $this->trace->info(TraceCode::GROWTH_REQUEST, ['url' => $url, 'parameters' => $parameters]);
+        }
+
 
         return [
             'url' => $url,

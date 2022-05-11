@@ -20,15 +20,14 @@ class GrowthController extends Controller
     public function handleAdminRequests($path = null)
     {
         $parameters = Request::all();
-        $response = [];
 
         try {
 
-            $response = $this->app->growthService->sendAdminRequest($parameters, $path, Request::method());
+            $response = $this->app->growthService->sendRequest($parameters, $path, Request::method());
             $response = ApiResponse::json($response);
 
         } catch (\Throwable $e) {
-            throw new Exception\ServerErrorException('Error completing the request', ErrorCode::SERVER_ERROR_GROWTH_FAILURE, null, $e);
+            throw new Exception\ServerErrorException('Error completing admin request', ErrorCode::SERVER_ERROR_GROWTH_FAILURE, null, $e);
         }
 
         return $response;
