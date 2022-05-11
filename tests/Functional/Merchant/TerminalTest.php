@@ -3712,6 +3712,38 @@ class TerminalTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateEmerchantpayTerminal()
+    {
+        $url = '/merchants/100000Razorpay/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testAssignTerminalWhenTerminalExistForEmerchantPayGatewayButDifferentGatewayMerchantId()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $this->fixtures->create('terminal', [
+            'merchant_id'           => $merchant->getId(),
+            'gateway'               => 'emerchantpay',
+            'category'              => '2222',
+            'gateway_merchant_id'   => '12345',
+            'gateway_acquirer'      => 'razorpay',
+            'gateway_terminal_id'   => 'empoli',
+            'international'         => true,
+            'app'                   => 1,
+            'currency'              =>['EUR']
+        ]);
+
+        $url = '/merchants/'.$merchant->getKey().'/terminals';
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+        $this->testData[__FUNCTION__]['content']['merchant_id'] =  $merchant->getId();
+
+        $this->startTest();
+    }
+
     public function testEditRupaySiHubTerminal()
     {
         $terminal = $this->fixtures->create('terminal:shared_rupay_sihub_terminal');

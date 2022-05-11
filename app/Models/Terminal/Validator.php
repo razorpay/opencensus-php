@@ -2320,7 +2320,26 @@ class Validator extends Base\Validator
         Entity::VISA_MPAN,
         Entity::RUPAY_MPAN,
         Entity::ACCOUNT_TYPE,
+        Entity::CORPORATE
+    ];
+
+    protected static $matchAttributesWithGatewayTerminalId = [
+        Entity::GATEWAY,
+        Entity::GATEWAY_ACQUIRER,
+        Entity::EMI,
+        Entity::EMI_DURATION,
+        Entity::TYPE,
+        Entity::CURRENCY,
+        Entity::EMI_SUBVENTION,
+        Entity::INTERNATIONAL,
+        Entity::VPA,
+        Entity::PROCURER,
+        Entity::MC_MPAN,
+        Entity::VISA_MPAN,
+        Entity::RUPAY_MPAN,
+        Entity::ACCOUNT_TYPE,
         Entity::CORPORATE,
+        Entity::GATEWAY_TERMINAL_ID,
     ];
 
     protected static $automaticGatewayMatchAttributes = [
@@ -2421,6 +2440,10 @@ class Validator extends Base\Validator
         Entity::INTERNATIONAL               => 'sometimes|boolean',
         Entity::STATUS                      => 'sometimes|in:pending,activated,deactivated,failed',
         Entity::CURRENCY                    => 'sometimes|array',
+    ];
+
+    private static $gatewaysWithCommonIndentifiersExceptGatewayTerminalId = [
+        Gateway::EMERCHANTPAY
     ];
 
     public function validateType()
@@ -2925,10 +2948,24 @@ class Validator extends Base\Validator
         if ((in_array($gateway, self::$automaticGateways) === true) or
             ($entity->getMerchantId() === Merchant\Account::SHARED_ACCOUNT))
         {
-            return self::$automaticGatewayMatchAttributes;
+           return self::$automaticGatewayMatchAttributes;
+        }
+
+        if(self::isGatewayWithCommonIdentifiersExceptGatewayTerminalId($gateway)) {
+            return self::$matchAttributesWithGatewayTerminalId;
         }
 
         return self::$manualGatewayMatchAttributes;
+    }
+
+    /**
+    * In case of Gateways that have multiple terminals with all the properties same
+    * it becomes difficult to differentiate between the terminals.
+    * the identifier `gateway_terminal_id` is used to differentiate between them.
+    * This method checks the gateway name for which `gateway_terminal_id` will be different
+    */
+    private static function isGatewayWithCommonIdentifiersExceptGatewayTerminalId($gateway):bool{
+        return in_array($gateway, self::$gatewaysWithCommonIndentifiersExceptGatewayTerminalId);
     }
 
     protected static function validateBanks($attribute, array $value)
