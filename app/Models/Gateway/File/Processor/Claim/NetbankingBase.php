@@ -47,11 +47,16 @@ class NetbankingBase extends Base
             }, $data);
         }
 
-        if (isset($paymentsGroupedByCps[Payment::NB_PLUS_SERVICE]) === true)
+        if ((isset($paymentsGroupedByCps[Payment::NB_PLUS_SERVICE]) === true) or
+            (isset($paymentsGroupedByCps[Payment::NB_PLUS_SERVICE_PAYMENTS]) === true))
         {
-            $nbPlusPayments = ($paymentsGroupedByCps[Payment::NB_PLUS_SERVICE])->pluck('id')->toArray();
+            $nbPlusGatewayPayments = isset($paymentsGroupedByCps[Payment::NB_PLUS_SERVICE]) ?
+                $paymentsGroupedByCps[Payment::NB_PLUS_SERVICE]->pluck('id')->toArray() : [];
+            $nbPlusPayments = isset($paymentsGroupedByCps[Payment::NB_PLUS_SERVICE_PAYMENTS]) ?
+                $paymentsGroupedByCps[Payment::NB_PLUS_SERVICE_PAYMENTS]->pluck('id')->toArray() : [];
+            $ids = array_merge($nbPlusGatewayPayments, $nbPlusPayments);
 
-            list($nbPlusGatewayEntities, $fetchSuccess) = $this->fetchNbPlusGatewayEntities($nbPlusPayments, Method::NETBANKING);
+            list($nbPlusGatewayEntities, $fetchSuccess) = $this->fetchNbPlusGatewayEntities($ids, Method::NETBANKING);
 
             // Throwing an error in case of scrooge fetch failure
             if ($fetchSuccess === false)

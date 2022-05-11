@@ -1119,11 +1119,11 @@ class Repository extends \Razorpay\Spine\Repository
         {
             if ($cluster === ConnectionType::DATA_WAREHOUSE_ADMIN)
             {
-                $connection = ($mode === Mode::TEST) ? Connection::SLAVE_TEST : Connection::DATA_WAREHOUSE_ADMIN_LIVE;
+                $connection = ($mode === Mode::TEST) ? Connection::DATA_WAREHOUSE_ADMIN_TEST : Connection::DATA_WAREHOUSE_ADMIN_LIVE;
             }
             if ($cluster === ConnectionType::DATA_WAREHOUSE_MERCHANT)
             {
-                $connection = ($mode === Mode::TEST) ? Connection::SLAVE_TEST : Connection::DATA_WAREHOUSE_MERCHANT_LIVE;
+                $connection = ($mode === Mode::TEST) ? Connection::DATA_WAREHOUSE_MERCHANT_TEST : Connection::DATA_WAREHOUSE_MERCHANT_LIVE;
             }
             if ($cluster === ConnectionType::RX_DATA_WAREHOUSE_MERCHANT)
             {

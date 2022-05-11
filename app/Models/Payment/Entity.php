@@ -267,6 +267,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const CARD_PAYMENT_SERVICE              = 2;
     const NB_PLUS_SERVICE                   = 3;
     const UPI_PAYMENT_SERVICE               = 4;
+    const NB_PLUS_SERVICE_PAYMENTS          = 6;
 
     const FORMATTED_AMOUNT                  = 'formatted_amount';
     const FORMATTED_CREATED_AT              = 'formatted_created_at';
