@@ -363,8 +363,8 @@ class CardTest extends TestCase
         $this->app->instance('pg_router', $pgService);
 
         $pgService->shouldReceive('sendRequest')
-            ->with(Mockery::type('string'), Mockery::type('string'), Mockery::type('array'), Mockery::type('bool'))
-            ->andReturnUsing(function (string $endpoint, string $method, array $data, bool $throwExceptionOnFailure)
+            ->with(Mockery::type('string'), Mockery::type('string'), Mockery::type('array'), Mockery::type('bool'), Mockery::type('int'), Mockery::type('bool'))
+            ->andReturnUsing(function (string $endpoint, string $method, array $data, bool $throwExceptionOnFailure, int $timeout, bool $retry)
             {
                 return [
                     'body' => [

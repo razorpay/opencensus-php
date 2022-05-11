@@ -91,7 +91,7 @@ class PGRouter
     const X_REQUEST_ID      = 'X-Request-ID';
     const X_REQUEST_TASK_ID = 'X-Razorpay-TaskId';
 
-    const REQUEST_TIMEOUT   = 60;
+    const DEFAULT_REQUEST_TIMEOUT   = 60;
 
     const RESPONSE_CODE     = 'code';
 
@@ -311,7 +311,7 @@ class PGRouter
             $endpoint .= '?merchant_id='.$merchantId;
         }
 
-        $response = $this->sendRequest($endpoint, Requests::GET, [], false);
+        $response = $this->sendRequest($endpoint, Requests::GET, [], false, 2, true);
 
         if (empty($response) === false and isset($response['body']['data']['card']))
         {
@@ -332,7 +332,7 @@ class PGRouter
 
         $card = null;
 
-        $response = $this->sendRequest($endpoint, Requests::GET, [], false);
+        $response = $this->sendRequest($endpoint, Requests::GET, [], false, 2, true);
 
         if (empty($response) === false and isset($response['body']['data']['payment']))
         {
@@ -365,7 +365,7 @@ class PGRouter
             {
                 $payment->setErrorNull();
             }
-            
+
             return $payment;
         }
 
@@ -381,7 +381,7 @@ class PGRouter
             $endpoint .= '?merchant_id='.$merchantId;
         }
 
-        $response = $this->sendRequest($endpoint, Requests::GET, [], true);
+        $response = $this->sendRequest($endpoint, Requests::GET, [], true, 2, true);
 
         return $this->forceFillOrderFromResponse($response);
     }
@@ -405,7 +405,7 @@ class PGRouter
 
     public function createOrder(array $input, bool $throwExceptionOnFailure = false)
     {
-        $response = $this->sendRequest(self::PGRouterCreateOrder, Requests::POST, $input, $throwExceptionOnFailure);
+        $response = $this->sendRequest(self::PGRouterCreateOrder, Requests::POST, $input, $throwExceptionOnFailure, 15);
 
         return $this->forceFillOrderFromResponse($response);
     }
@@ -525,13 +525,22 @@ class PGRouter
         string $endpoint,
         string $method,
         array $data = [],
-        bool $throwExceptionOnFailure = false)
+        bool $throwExceptionOnFailure = false,
+        int $timeout = self::DEFAULT_REQUEST_TIMEOUT,
+        bool $retry = false)
     {
-        $request = $this->generateRequest($endpoint, $method, $data);
+        $request = $this->generateRequest($endpoint, $method, $data, $timeout);
 
         $startTime = microtime(true);
 
-        $response = $this->sendPGRouterRequest($request);
+        if ($retry === true)
+        {
+            $response = $this->sendPGRouterRequestWithRetry($request);
+        }
+        else
+        {
+            $response = $this->sendPGRouterRequest($request);
+        }
 
         $this->logResponseTimeOfPgRouter($startTime, $request['url']);
 
@@ -616,6 +625,60 @@ class PGRouter
         }
 
         return $response;
+    }
+
+    protected function sendPGRouterRequestWithRetry(array $request): \Requests_Response
+    {
+        $this->traceRequest($request);
+
+        $res = null;
+        $exception = null;
+        $maxAttempts = 2;
+
+        while ($maxAttempts--)
+        {
+            try
+            {
+                $res = Requests::request(
+                    $request['url'],
+                    $request['headers'],
+                    $request['content'],
+                    $request['method'],
+                    $request['options']);
+            }
+            catch (\Requests_Exception $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::PG_ROUTER_REQUEST_FAILURE,
+                    [
+                        'data' => $e->getMessage()
+                    ]);
+
+                $dimensions = [
+                    'url' => $request['url']
+                ];
+
+                $this->trace->count(self::PG_ROUTER_REQUEST_FAILURE, $dimensions);
+
+                $exception = $e;
+
+                continue;
+            }
+
+            // In case it succeeds in another attempt.
+            $exception = null;
+            break;
+        }
+
+        // An exception is thrown by lib in cases of network errors e.g. timeout etc.
+        if ($exception !== null)
+        {
+            throw new $exception;
+        }
+
+        return $res;
     }
 
     /**
@@ -797,7 +860,7 @@ class PGRouter
      *
      * @return array
      */
-    protected function generateRequest(string $endpoint, string $method, array $data): array
+    protected function generateRequest(string $endpoint, string $method, array $data, int $timeout): array
     {
         $url = $this->baseUrl . $endpoint;
 
@@ -808,7 +871,7 @@ class PGRouter
         }
 
         $options = [
-            'timeout' => self::REQUEST_TIMEOUT,
+            'timeout' => $timeout,
             'auth'    => [
                 $this->key,
                 $this->secret

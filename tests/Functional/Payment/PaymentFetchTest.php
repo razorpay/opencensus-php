@@ -909,8 +909,8 @@ class PaymentFetchTest extends TestCase
         $this->app->instance('pg_router', $pgService);
 
         $pgService->shouldReceive('sendRequest')
-            ->with(Mockery::type('string'), Mockery::type('string'), Mockery::type('array'), Mockery::type('bool'))
-            ->andReturnUsing(function (string $endpoint, string $method, array $data, bool $throwExceptionOnFailure)
+            ->with(Mockery::type('string'), Mockery::type('string'), Mockery::type('array'), Mockery::type('bool'), Mockery::type('int'), Mockery::type('bool'))
+            ->andReturnUsing(function (string $endpoint, string $method, array $data, bool $throwExceptionOnFailure, int $timeout, bool $retry)
             {
                 return [
                     'body' => [
@@ -950,7 +950,7 @@ class PaymentFetchTest extends TestCase
             });
 
         $paymentFetchResponse = $this->fetchPayment('pay_GfnBMH2PXyCDVE');
-        
+
         $this->assertEquals('pay_GfnBMH2PXyCDVE', $paymentFetchResponse['id']);
 
         $this->assertEquals('599962', $paymentFetchResponse['acquirer_data']['auth_code']);
@@ -1114,8 +1114,8 @@ class PaymentFetchTest extends TestCase
         $this->app->instance('pg_router', $pgService);
 
         $pgService->shouldReceive('sendRequest')
-            ->with(Mockery::type('string'), Mockery::type('string'), Mockery::type('array'), Mockery::type('bool'))
-            ->andReturnUsing(function (string $endpoint, string $method, array $data, bool $throwExceptionOnFailure)
+            ->with(Mockery::type('string'), Mockery::type('string'), Mockery::type('array'), Mockery::type('bool'), Mockery::type('int'), Mockery::type('bool'))
+            ->andReturnUsing(function (string $endpoint, string $method, array $data, bool $throwExceptionOnFailure, int $timeout, bool $retry)
             {
                 return [
                     'body' => [
@@ -1246,8 +1246,8 @@ class PaymentFetchTest extends TestCase
         $this->app->instance('pg_router', $pgService);
 
         $pgService->shouldReceive('sendRequest')
-            ->with(Mockery::type('string'), Mockery::type('string'), Mockery::type('array'), Mockery::type('bool'))
-            ->andReturnUsing(function (string $endpoint, string $method, array $data, bool $throwExceptionOnFailure)
+            ->with(Mockery::type('string'), Mockery::type('string'), Mockery::type('array'), Mockery::type('bool'), Mockery::type('int'), Mockery::type('bool'))
+            ->andReturnUsing(function (string $endpoint, string $method, array $data, bool $throwExceptionOnFailure, int $timeout, bool $retry)
             {
                 return [
                     'body' => []
@@ -1270,8 +1270,8 @@ class PaymentFetchTest extends TestCase
         $this->app->instance('pg_router', $pgService);
 
         $pgService->shouldReceive('sendRequest')
-            ->with(Mockery::type('string'), Mockery::type('string'), Mockery::type('array'), Mockery::type('bool'))
-            ->andReturnUsing(function (string $endpoint, string $method, array $data, bool $throwExceptionOnFailure)
+            ->with(Mockery::type('string'), Mockery::type('string'), Mockery::type('array'), Mockery::type('bool'), Mockery::type('int'), Mockery::type('bool'))
+            ->andReturnUsing(function (string $endpoint, string $method, array $data, bool $throwExceptionOnFailure, int $timeout, bool $retry)
             {
                 return [
                     'body' => [
@@ -1339,8 +1339,8 @@ class PaymentFetchTest extends TestCase
         $this->fixtures->create('card', ['id' => 'GrClJNBzyquD7E', 'name' => 'Test Name']);
 
         $pgService->shouldReceive('sendRequest')
-            ->with(Mockery::type('string'), Mockery::type('string'), Mockery::type('array'), Mockery::type('bool'))
-            ->andReturnUsing(function (string $endpoint, string $method, array $data, bool $throwExceptionOnFailure)
+            ->with(Mockery::type('string'), Mockery::type('string'), Mockery::type('array'), Mockery::type('bool'), Mockery::type('int'), Mockery::type('bool'))
+            ->andReturnUsing(function (string $endpoint, string $method, array $data, bool $throwExceptionOnFailure, int $timeout, bool $retry)
             {
                 return [
                     'body' => [
@@ -1471,8 +1471,8 @@ class PaymentFetchTest extends TestCase
         $this->app->instance('pg_router', $pgService);
 
         $pgService->shouldReceive('sendRequest')
-            ->with(Mockery::type('string'), Mockery::type('string'), Mockery::type('array'), Mockery::type('bool'))
-            ->andReturnUsing(function (string $endpoint, string $method, array $data, bool $throwExceptionOnFailure)
+            ->with(Mockery::type('string'), Mockery::type('string'), Mockery::type('array'), Mockery::type('bool'), Mockery::type('int'), Mockery::type('bool'))
+            ->andReturnUsing(function (string $endpoint, string $method, array $data, bool $throwExceptionOnFailure, int $timeout, bool $retry)
             {
                 return [
                     'body' => [
