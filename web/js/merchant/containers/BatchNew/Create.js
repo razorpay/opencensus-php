@@ -31,7 +31,7 @@ class BatchCreate extends Component {
         type: 'error',
         message: 'Please select a time with atleast one hour gap from now',
       });
-      return;
+      return false;
     }
 
     return schedule;
@@ -59,12 +59,12 @@ class BatchCreate extends Component {
     }
 
     this.props.trackUploadBatch('Create');
-    return this.props
+    this.props
       .createBatch(data)
       .then((response) => {
         this.props.onCreation(response);
       })
-      .catch((error) => {
+      .catch(() => {
         this.props.showNotification({
           type: 'error',
           message: 'Failed to create batch.',
@@ -107,6 +107,8 @@ class BatchCreate extends Component {
         pendingText={pendingText}
         trackSampleInterpretation={trackSampleInterpretation}
         processingOptions={this.props.processingOptions}
+        onFileNameTrack={this.props.onFileNameTrack}
+        onPreview={this.props.onPreview}
       >
         {renderBatchCreationForm && renderBatchCreationForm()}
       </BatchCreateModal>

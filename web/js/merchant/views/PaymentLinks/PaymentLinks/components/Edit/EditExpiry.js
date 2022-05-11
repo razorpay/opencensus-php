@@ -50,15 +50,17 @@ export default class EditExpiry extends React.Component {
   };
 
   handleCancel = () => {
-    const { trackerFn, entityId } = this.props;
+    const { trackerFn, entityId, cancelTrackerfn } = this.props;
     const { expire_by, value } = this.state;
     this.setState(this.resetState());
     trackerFn?.(entityId, 'Cancel Expiry', expire_by !== value);
+    cancelTrackerfn && cancelTrackerfn();
   };
 
   handleSave = () => {
-    const { editFn, trackerFn } = this.props;
+    const { editFn, trackerFn, saveTrackerFn } = this.props;
     const { expire_by } = this.state;
+    saveTrackerFn && saveTrackerFn();
     return editFn({
       expire_by,
     }).then((resp) => {

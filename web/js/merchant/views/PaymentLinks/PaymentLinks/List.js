@@ -101,6 +101,7 @@ export default class PaymentLinksContainer extends ListContainer {
 
   componentDidMount() {
     this.props.fetchReminders();
+    track.init(this.props.tracking.trackEvent);
     const params = getURLQueryParams(this.props.location.search);
     if (params?.link_type) {
       setTimeout(() => {
@@ -143,7 +144,8 @@ export default class PaymentLinksContainer extends ListContainer {
         eventLabel: label,
       });
     }
-
+    track.searchSubmit();
+    track.searchStatus(label);
     Object.keys(params).forEach((param) => {
       this.props.tracking.trackEvent(
         window.rzpQ.paymentLinks().interaction('pl.search.status', {
@@ -151,6 +153,14 @@ export default class PaymentLinksContainer extends ListContainer {
           modified: this.searchFilters[param] !== params[param],
         }),
       );
+      switch (param) {
+        case 'international':
+          return track.searchCurrency();
+        case 'count':
+          return track.searchCount();
+        default:
+          return false;
+      }
     });
   };
 
@@ -160,11 +170,7 @@ export default class PaymentLinksContainer extends ListContainer {
       eventAction: 'Clear Search Params - Payment Links',
     });
 
-    this.props.tracking.trackEvent(
-      window.rzpQ.paymentLinks().interaction('pl.search.clear', {
-        origin: 'dashboard',
-      }),
-    );
+    track.clearSearch();
   };
 
   onCopy = ({ invoiceId, _text }) => {
@@ -180,12 +186,7 @@ export default class PaymentLinksContainer extends ListContainer {
   };
 
   onAlertCloseClick = () => {
-    this.props.tracking.trackEvent(
-      window.rzpQ.paymentLinks().interaction('pl.search.error', {
-        origin: 'dashboard',
-        response: this.state.status.message[1],
-      }),
-    );
+    track.searchError(this.state.status.message[1]);
   };
 
   onDatesChange = (from, to) => {
@@ -313,6 +314,7 @@ export default class PaymentLinksContainer extends ListContainer {
           onDuplicate={this.onDuplicate}
           EmptyList={EmptyComponent}
           isPaymentlinksV2Enabled={users.isPaymentlinksV2Enabled}
+          onShareLinkSuccess={track.onShareLinkSuccess}
         />
 
         <Pager
@@ -320,12 +322,8 @@ export default class PaymentLinksContainer extends ListContainer {
           skip={this.state.skip}
           length={paymentlinks.length}
           onClick={(params, type) => {
-            this.props.tracking.trackEvent(
-              window.rzpQ.paymentLinks().interaction(`pl.browse.${type}`, {
-                origin: 'dashboard',
-                page: params.skip % params.count,
-              }),
-            );
+            const page = params.skip % params.count;
+            track.paginate(type, page);
             this.paginate(params);
           }}
         />

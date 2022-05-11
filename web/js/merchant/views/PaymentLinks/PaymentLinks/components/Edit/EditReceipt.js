@@ -1,3 +1,4 @@
+import React from 'react';
 import { maxLength } from 'common/utils/validators';
 import Input from 'common/new-ui/Input';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
@@ -21,7 +22,12 @@ export default class EditReceipt extends React.Component {
   };
 
   render() {
-    const { isRoleAllowedEdit, isPaymentlinksV2Enabled } = this.props;
+    const {
+      isRoleAllowedEdit,
+      isPaymentlinksV2Enabled,
+      cancelTrackerfn,
+      saveTrackerFn,
+    } = this.props;
 
     let content = (
       <React.Fragment>
@@ -43,14 +49,12 @@ export default class EditReceipt extends React.Component {
         <React.Fragment>
           <Input
             name="receipt_no"
-            placeholder={
-              isPaymentlinksV2Enabled ? 'Reference Id' : 'Receipt No.'
-            }
+            placeholder={isPaymentlinksV2Enabled ? 'Reference Id' : 'Receipt No.'}
             class="Input--small"
             value={this.state.receipt}
             validator={maxLength(40)}
             required={this.props.required}
-            onChange={e => {
+            onChange={(e) => {
               this.setState({
                 receipt: e.target.value,
               });
@@ -61,11 +65,11 @@ export default class EditReceipt extends React.Component {
               class="Button--Link"
               onClick={() => {
                 this.setState(this.resetState());
-
+                cancelTrackerfn && cancelTrackerfn();
                 this.props.trackerFn(
                   this.props.entityId,
                   'Cancel Receipt',
-                  this.props.value !== this.state.receipt
+                  this.props.value !== this.state.receipt,
                 );
               }}
             >
@@ -80,12 +84,11 @@ export default class EditReceipt extends React.Component {
                   .editFn({
                     receipt: this.state.receipt,
                   })
-                  .then(resp => {
+                  .then((resp) => {
                     if (resp && resp.data) {
                       this.setState(this.resetState());
-
-                      this.props.trackerFn('Edit Receipt (Saved)');
                     }
+                    saveTrackerFn && saveTrackerFn();
                   });
               }}
               showLoader={false}

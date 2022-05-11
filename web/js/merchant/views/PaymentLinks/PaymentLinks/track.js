@@ -31,6 +31,7 @@ function _track() {
       properties: {
         ...getCommonAnalyticsProperties(window.rzp_user),
         ...properties,
+        origin: 'dashboard',
       },
     });
   }
@@ -49,6 +50,58 @@ function _track() {
     onReminderSettingClick: (featureName) => {
       sendToLumberjack(`${featureName}.reminder_setting.clicked`);
       sendToSegment(`${titleCase(featureName)} reminder setting`, 'clicked', `payment link`);
+    },
+
+    onShareLinkSuccess: () => {
+      const properties = {
+        mweb: true,
+      };
+      sendToLumberjack(`pl.share_link.success.clicked`, properties);
+      sendToSegment(`pl share link success`, 'clicked', `payment link`, properties);
+    },
+
+    searchStatus: (params) => {
+      const prop = {
+        params,
+      };
+      sendToSegment(`pl search status`, 'clicked', `payment link`, prop);
+    },
+
+    searchSubmit: () => {
+      sendToLumberjack(`pl.search.submit`);
+      sendToSegment(`pl search submit`, 'clicked', `payment link`);
+    },
+
+    searchCurrency: () => {
+      sendToLumberjack(`pl.search.currency`);
+      sendToSegment(`pl search currency`, 'clicked', `payment link`);
+    },
+
+    searchCount: () => {
+      sendToLumberjack(`pl.search.count`);
+      sendToSegment(`pl search count`, 'clicked', `payment link`);
+    },
+
+    clearSearch: () => {
+      sendToLumberjack(`pl.search.clear`);
+      sendToSegment(`pl search clear`, 'clicked', `payment link`);
+    },
+
+    paginate: (type, page) => {
+      const prop = {
+        page,
+        type,
+      };
+      sendToLumberjack(`pl.browse.${type}`, prop);
+      sendToSegment(`pl browse ${type}`, 'clicked', `payment link`, prop);
+    },
+
+    searchError: (response) => {
+      const prop = {
+        response,
+      };
+      sendToLumberjack(`pl.search.error`, prop);
+      sendToSegment(`pl search error`, 'clicked', `payment link`, prop);
     },
 
     init(_lumberjackTrack) {

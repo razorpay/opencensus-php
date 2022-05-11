@@ -41,6 +41,9 @@ class BatchValidateModal extends Component {
       batchClass,
       acceptFileInfo,
       accept,
+      onDocumentClick = () => {},
+      onError = () => {},
+      onSuccess = () => {},
     } = this.props;
 
     let { batchTypeText = '' } = this.props;
@@ -69,6 +72,8 @@ class BatchValidateModal extends Component {
             batchType={batchType}
             showStagedFileStatus
             showFileSize={false}
+            onError={onError}
+            onSuccess={onSuccess}
           />
           {notifyMsg && (
             <h5 className={`notification ${status}`}>
@@ -123,7 +128,12 @@ class BatchValidateModal extends Component {
                   <ShowWhen
                     additionalCondition={(usr) => usr.isOrgAllowedFunctionality('external_links')}
                   >
-                    <DocLink className="btn btn-link m-l doc-url" href={docUrl} target="_blank">
+                    <DocLink
+                      className="btn btn-link m-l doc-url"
+                      href={docUrl}
+                      target="_blank"
+                      onClick={onDocumentClick}
+                    >
                       View Documentation <i className="i i-external-link" />
                     </DocLink>
                   </ShowWhen>

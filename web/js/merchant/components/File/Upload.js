@@ -54,6 +54,8 @@ export default class FileUpload extends React.Component {
     renderStagedChildren: () => null,
     hideLoader: false,
     stagedFileStatus: '',
+    onError: () => {},
+    onSuccess: () => {},
   };
 
   constructor(props) {
@@ -112,8 +114,10 @@ export default class FileUpload extends React.Component {
         if (data && data.errors) {
           // In some cases data was undefined while it was success. Mostly for slow connection.
           this.setState({ stagedFileStatus: 'error' });
+          this.props.onError();
         } else {
           this.setState({ stagedFileStatus: 'success' });
+          this.props.onSuccess();
         }
       });
     } else {

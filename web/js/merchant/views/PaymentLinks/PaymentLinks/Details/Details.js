@@ -70,6 +70,7 @@ export default (props) => {
     );
 
   const isUPILink = paymentlink.upi_link;
+  const paymentLinkType = isUPILink ? 'upi_pl' : 'standard';
   const isPartialPayment = paymentlink.partial_payment;
   const generateCreatedBy = () => {
     if (!!paymentlink.user_id) {
@@ -104,7 +105,10 @@ export default (props) => {
             <i class="i i-link text-primary icon--formal" /> <strong>{paymentlink.id}</strong>
             <div class="btn-toolbar pull-right">
               <NavLink
-                onClick={trackClickDuplicatePaymentLink}
+                onClick={() => {
+                  track.onClone(paymentLinkType);
+                  trackClickDuplicatePaymentLink();
+                }}
                 class="btn Button--primary--invert"
                 to={`/paymentlinks/new?duplicate_id=${paymentlink.id}`}
               >
@@ -114,7 +118,13 @@ export default (props) => {
               {(isRoleAllowedEdit || user.role === rolesList.RBL_AGENT) &&
                 isContactDetailsAvl &&
                 (isDraft || isIssued || isPartiallyPaid) && (
-                  <button class="btn Button--primary" onClick={props.notifyCustomer}>
+                  <button
+                    class="btn Button--primary"
+                    onClick={() => {
+                      track.onResend(paymentLinkType);
+                      props.notifyCustomer();
+                    }}
+                  >
                     <Tooltip theme="dark">{isSmsOrEmailSent ? 'Resend Link' : 'Send Link'}</Tooltip>
 
                     <i className="i i-send" />
@@ -302,9 +312,10 @@ export default (props) => {
                             editFn={editPaymentLink}
                             trackerFn={(...args) => {
                               props.trackEditReceipt(...args);
-
-                              trackDetailViewEdits(...args);
+                              track.updateReferenceId(paymentLinkType);
                             }}
+                            cancelTrackerfn={() => track.abortReferenceId(paymentLinkType)}
+                            saveTrackerFn={() => track.saveReferenceId(paymentLinkType)}
                             isRoleAllowedEdit={isRoleAllowedEdit}
                             required={user.isInvoiceReceiptMandatory}
                             isPaymentlinksV2Enabled={user.isPaymentlinksV2Enabled}
@@ -329,9 +340,11 @@ export default (props) => {
                             entityId={paymentlink.id}
                             trackerFn={(...args) => {
                               props.trackEditExpiry(...args);
-
                               trackDetailViewEdits(...args);
+                              track.updateExpiry(paymentLinkType);
                             }}
+                            saveTrackerFn={() => track.saveUpdateExpiry(paymentLinkType)}
+                            cancelTrackerfn={() => track.cancelUpdateExpiry(paymentLinkType)}
                             isRoleAllowedEdit={isRoleAllowedEdit}
                             isExpireByRequired={
                               user.isExpireByRequired ||
@@ -359,7 +372,6 @@ export default (props) => {
                       entityId={paymentlink.id}
                       trackerFn={(...args) => {
                         props.trackEditNotes(...args);
-
                         trackDetailViewEdits(...args);
                       }}
                     />

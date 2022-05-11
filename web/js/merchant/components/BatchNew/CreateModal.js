@@ -51,6 +51,8 @@ class BatchCreateModal extends Component {
       handleSubmit,
       pendingText,
       children,
+      onFileNameTrack = () => {},
+      onPreview = () => {},
     } = this.props;
     let ctaText = this.props.ctaText;
     if (batch_type_refund) {
@@ -167,14 +169,16 @@ class BatchCreateModal extends Component {
             </div>
           )}
           <p>This is how we are interpreting your data.</p>
-          <TableSlider
-            title="Batch Entries"
-            className="table-bordered batch-table"
-            columns={getTableColumns(parsedEntries[0])}
-            rows={parsedEntries}
-            limit={limit}
-            slideUnit={200}
-          />
+          <div onMouseEnter={onPreview}>
+            <TableSlider
+              title="Batch Entries"
+              className="table-bordered batch-table"
+              columns={getTableColumns(parsedEntries[0])}
+              rows={parsedEntries}
+              limit={limit}
+              slideUnit={200}
+            />
+          </div>
         </div>
         <div class="modal-info stretch create">
           <form
@@ -215,6 +219,7 @@ class BatchCreateModal extends Component {
                     validate={[required()]}
                     maxLength="255"
                     onFocus={this.moveCaretAtEnd}
+                    onChange={onFileNameTrack}
                   />
                 </div>
               </Fragment>

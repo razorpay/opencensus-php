@@ -12,6 +12,7 @@ const MobileListView = (props) => {
     loading,
     onClick,
     tableWrapperClass,
+    onShareLinkSuccess,
   } = props;
   return (
     <div className={classList(tableWrapperClass, 'table-responsive')}>
@@ -38,6 +39,7 @@ const MobileListView = (props) => {
                 item={item}
                 onClick={() => onClick && onClick(item)}
                 onDeleteClick={() => onDelete && onDelete(item)}
+                onShareLinkSuccess={onShareLinkSuccess}
               />
             ))}
         </TableBody>

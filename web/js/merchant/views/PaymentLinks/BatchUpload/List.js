@@ -1,4 +1,4 @@
-import { Component, Fragment } from 'react';
+import { Component } from 'react';
 import { connect } from 'react-redux';
 
 import BatchList from 'merchant/containers/BatchNew/List';
@@ -11,6 +11,7 @@ import {
 } from 'merchant/reducers/batches';
 import setGaTrack from 'merchant/containers/BatchNew/ga';
 
+import track from './track';
 import PaymentLinksForm from './components/PaymentLinksForm';
 import SendAllLinks from './components/SendAllLinks';
 
@@ -111,6 +112,16 @@ export default class BatchListContainer extends Component {
         validateBatch={this.props.validateBatch}
         docUrl="https://razorpay.com/docs/payment-links/batch-upload/"
         sampleUrl={this.sampleUrl}
+        onDocumentClick={track.onDocumentClickInModal}
+        onSampleFileDownload={track.donwloadSampleInModal}
+        clickToUploadAnalytics={track.uploadClicked}
+        onError={track.fileUploadError}
+        onSuccess={track.fileUploadSuccess}
+        onFileNameTrack={track.onFileNameTrack}
+        onPreview={track.onPreview}
+        trackCloseModal={track.abandonBatchModal}
+        trackCreateBatch={track.createBatch}
+        trackSuccessModalClose={track.successModalClose}
         renderBatchCreationForm={() => (
           <PaymentLinksForm
             batchType={this.props.batchType}
@@ -132,6 +143,11 @@ export default class BatchListContainer extends Component {
         batchType={this.props.user.isPaymentlinksV2Enabled ? 'payment_link_v2' : 'payment_link'}
         batchActions={[this.sendAllLinks]}
         renderUploadModal={this.renderUploadModal}
+        onBatchIdChange={track.batchIdChange}
+        onBatchSearchCountChange={track.batchSearchCount}
+        onSearchAnalytics={track.onSearchAnalytics}
+        onClearAnalytics={track.onClearAnalytics}
+        trackPagination={track.onPagination}
         gaEvents={gaEvents}
         {...this.props}
       />
@@ -143,7 +159,7 @@ function allowSendAllLinks(batch) {
   // config object will not be available for older batches
   // duplicate batches will have no success count
   if (batch.config && Object.keys(batch.config).length) {
-    if (parseInt(batch.config.sms_notify) > 0 || parseInt(batch.config.email_notify) > 0) {
+    if (Number(batch.config.sms_notify) > 0 || Number(batch.config.email_notify) > 0) {
       //if more than 0 payment link(s) has been sent, disable the btn
       return false;
     } else {

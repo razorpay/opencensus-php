@@ -81,7 +81,19 @@ class BatchList extends ListContainer {
   };
 
   render() {
-    const { docUrl, uploadUrl, sampleUrl, extraColumns, session } = this.props;
+    const {
+      docUrl,
+      uploadUrl,
+      sampleUrl,
+      extraColumns,
+      session,
+      onBatchIdChange,
+      onBatchSearchCountChange = () => {},
+      onClearAnalytics = () => {},
+      gaEvents,
+      onSearchAnalytics = () => {},
+      trackPagination,
+    } = this.props;
     const { user } = session;
 
     return (
@@ -185,8 +197,14 @@ class BatchList extends ListContainer {
 
         <BatchListFilter
           form="batchListFilter"
-          onSearchAnalytics={this.props.gaEvents.trackSearchFilters}
+          onSearchAnalytics={() => {
+            gaEvents?.trackSearchFilters();
+            onSearchAnalytics?.();
+          }}
           ExtraFilterFields={this.props.ExtraFilterFields}
+          onBatchIdChange={onBatchIdChange}
+          onBatchSearchCountChange={onBatchSearchCountChange}
+          onClearAnalytics={onClearAnalytics}
         />
         <DataTable
           title="Batch Uploads"
@@ -200,7 +218,10 @@ class BatchList extends ListContainer {
           ]}
           count={this.state.count}
           skip={this.state.skip}
-          paginate={this.paginate}
+          paginate={(params, type) => {
+            this.paginate(params);
+            trackPagination?.(params.skip, type);
+          }}
           onSubmit={this.search}
           EmptyComponent={emptyComponent(
             uploadUrl,

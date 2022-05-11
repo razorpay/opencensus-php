@@ -42,8 +42,7 @@ const commonListItem = {
 };
 
 const PaymentLinkMobileTableListView = (items) => {
-  const { item } = items;
-
+  const { item, onShareLinkSuccess = () => {} } = items;
   return (
     <EntityItemRow id={item?.id}>
       <td>
@@ -56,7 +55,10 @@ const PaymentLinkMobileTableListView = (items) => {
           <View
             className="link-container"
             data-tip="Copied"
-            onClick={() => shareURL(item.short_url, item?.id)}
+            onClick={() => {
+              onShareLinkSuccess();
+              shareURL(item.short_url, item?.id);
+            }}
           >
             <Flex alignItems="center">
               <Text size="small">

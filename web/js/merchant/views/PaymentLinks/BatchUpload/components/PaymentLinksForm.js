@@ -10,6 +10,8 @@ import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 
 import { fetchReminders } from 'merchant/reducers/reminders';
 
+import track from '../track';
+
 /**
  * Batch Payment Links Form
  * - Send Email/Send SMS
@@ -81,7 +83,10 @@ export default class extends React.Component {
               name="config.sms_notify"
               id="sms_notify"
               component={CheckBoxField}
-              onChange={this.handleChange('sms_notify')}
+              onChange={() => {
+                this.handleChange('sms_notify');
+                track.onSmSNotify && track.onSmSNotify();
+              }}
             />
             <label for="sms_notify" class="icon i-check">
               via SMS
@@ -93,7 +98,10 @@ export default class extends React.Component {
               name="config.email_notify"
               id="email_notify"
               component={CheckBoxField}
-              onChange={this.handleChange('email_notify')}
+              onChange={() => {
+                this.handleChange('email_notify');
+                track.onEmailNotify && track.onEmailNotify();
+              }}
             />
             <label for="email_notify" class="icon i-check">
               via Email

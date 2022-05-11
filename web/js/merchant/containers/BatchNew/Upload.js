@@ -51,6 +51,7 @@ class BatchUpload extends Component {
       };
     });
     this.props.luminateRow(batch.id);
+    this.props.trackCreateBatch && this.props.trackCreateBatch();
   };
 
   componentDidMount() {
@@ -60,10 +61,15 @@ class BatchUpload extends Component {
   onModalClose = () => {
     this.props.gaEvents.trackUploadBatch('Close');
     this.props.closeModal();
+    this.props.trackCloseModal && this.props.trackCloseModal();
   };
   render() {
     const {
       accept,
+      onDocumentClick,
+      clickToUploadAnalytics,
+      onError,
+      onSuccess,
       docUrl,
       batchType,
       batchTypeText,
@@ -97,10 +103,15 @@ class BatchUpload extends Component {
                 <BatchValidate
                   accept={accept}
                   onValidation={this.handleValidation}
+                  onSampleFileDownload={this.props.onSampleFileDownload}
+                  docUrl={docLink}
+                  onDocumentClick={onDocumentClick}
+                  clickToUploadAnalytics={clickToUploadAnalytics}
+                  onError={onError}
+                  onSuccess={onSuccess}
                   batchType={batchType}
                   batchTypeText={batchTypeText}
                   sampleUrl={sampleUrl}
-                  docUrl={docUrl}
                   gaEvents={gaEvents}
                   validateBatch={validateBatch}
                   maxRows={maxRows}
@@ -122,13 +133,20 @@ class BatchUpload extends Component {
                   trackUploadBatch={gaEvents?.trackUploadBatch}
                   trackSampleInterpretation={gaEvents?.trackSampleInterpretation}
                   docUrl={docLink}
-                  sampleUrl={sampleUrl}
                   processingOptions={processingOptions}
+                  onFileNameTrack={this.props.onFileNameTrack}
+                  onPreview={this.props.onPreview}
+                  sampleUrl={sampleUrl}
                 />
               );
             case 'success':
               return (
-                <SuccessModal onModalClose={this.onModalClose}>
+                <SuccessModal
+                  onModalClose={() => {
+                    this.onModalClose && this.onModalClose();
+                    this.props.trackSuccessModalClose && this.props.trackSuccessModalClose();
+                  }}
+                >
                   <p className="text-center">
                     {successMessageMap[batchType] ||
                       'You can download the output file from batch detail view to check payment links generated. For the links that could not be generated due to some issues, please upload a new batch file.'}

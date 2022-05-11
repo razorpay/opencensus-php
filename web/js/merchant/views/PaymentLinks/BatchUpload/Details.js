@@ -1,5 +1,6 @@
 import { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
+import PropTypes from 'prop-types';
 
 import BatchDetails from 'merchant/containers/BatchNew/Details';
 import {
@@ -18,14 +19,17 @@ import ListToggler from 'common/ui/Toggler/ListToggler';
 import Time from 'common/ui/Time';
 import { amount, status } from 'common/ui/item/pair';
 import { BatchUploadStatusLabel, InvoiceStatusLabel } from 'merchant/components/StatusLabel';
-
-import store from 'merchant/store';
+import track from './track';
 
 const gaEvents = setGaTrack('Dashboard - Payment Links - BU');
 
+const paymentLinkEmail = {
+  value: (paymentlink) =>
+    paymentlink.customer_details ? paymentlink.customer_details.email : paymentlink.customer.email,
+};
+
 const renderBatchDetails = (props) => {
   const { batch, stats, paymentlinks } = props;
-  const user = store.getState().session.user;
 
   const isBatchTypePaymentlinksV2 = batch.type === 'payment_link_v2';
 
@@ -87,6 +91,14 @@ export default class PaymentLinksBatchDetailsContainer extends Component {
     confirm: PropTypes.func,
   };
 
+  componentDidMount() {
+    track.onDetailsView();
+  }
+
+  componentWillUnmount() {
+    track.onDetailViewUnMount();
+  }
+
   onClickCancelBtn = () => {
     this.context.confirm({
       header: 'Cancel Batch?',
@@ -139,7 +151,10 @@ function PaymentLinksTable({ isPaymentlinksV2Enabled, paymentlinks, batchId, tot
       limit={4}
       limitUrl={`/paymentlinks?batch_id=${batchId}`}
       totalItems={totalItems}
-      onViewAllClick={gaEvents.trackSeeAllLinks(batchId)}
+      onViewAllClick={() => {
+        track.viewAllClick && track.viewAllClick();
+        gaEvents.trackSeeAllLinks(batchId);
+      }}
     >
       <DataTable
         columns={[paymentLinkEmail, amount, statusLabel]}
@@ -166,11 +181,6 @@ function LinksErrMessage({ issuedCount, onDownload, batchId }) {
     </small>
   );
 }
-
-var paymentLinkEmail = {
-  value: (paymentlink) =>
-    paymentlink.customer_details ? paymentlink.customer_details.email : paymentlink.customer.email,
-};
 
 function getStatsTable(stats) {
   return [
