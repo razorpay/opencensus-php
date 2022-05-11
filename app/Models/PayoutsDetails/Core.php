@@ -89,18 +89,20 @@ class Core extends Base\Core
             /** @var Base\PublicCollection $payoutDetails */
             $payoutDetails = $this->repo->payouts_details->getPayoutDetailsByPayoutId($payoutId);
 
+            $attachments = array_pull($input, Entity::ATTACHMENTS_KEY, []);
+
             if ($payoutDetails->isNotEmpty() === true)
             {
                 $updateKey = sprintf('%s->%s', Entity::ADDITIONAL_INFO, Entity::ATTACHMENTS_KEY);
 
-                $updates = array($updateKey => $input[Entity::ATTACHMENTS_KEY]);
+                $updates = array($updateKey => $attachments);
 
                 $this->repo->payouts_details->updatePayoutDetails([$payoutId], $updates);
             }
             else
             {
                 $additionalInfo = [
-                    Entity::ATTACHMENTS => array_pull($input, Entity::ATTACHMENTS_KEY, [])
+                    Entity::ATTACHMENTS => $attachments
                 ];
 
                 $input[Entity::ADDITIONAL_INFO] = json_encode($additionalInfo, true);
@@ -127,7 +129,7 @@ class Core extends Base\Core
 
         try
         {
-            $this->renameAttachments($payoutId, $input[Entity::ATTACHMENTS_KEY]);
+            $this->renameAttachments($payoutId, $attachments);
         }
         catch (\Exception $ex)
         {
