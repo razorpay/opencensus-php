@@ -277,6 +277,8 @@ class Country
     const NZL = "NZL";
     const USA = "USA";
     const CAN = "CAN";
+    const ITA = "ITA";
+    const CHE = "CHE";
 
     const COUNTRYNAME = "countryName";
     const COUNTRYALPHA2CODE = "countryAlpha2Code";
@@ -556,6 +558,8 @@ class Country
         self::NZ => self::NZL,
         self::US => self::USA,
         self::CA => self::CAN,
+        self::IT => self::ITA,
+        self::CH => self::CHE,
     ];
 
     protected static $countryCodeMapping = [
@@ -579,6 +583,8 @@ class Country
         self::NZ,
         self::US,
         self::CA,
+        self::IT,
+        self::CH,
     ];
 
     public static function exists($code)
@@ -618,7 +624,7 @@ class Country
         return true;
     }
 
-    /* Obtain the Alpha-3 code by providing the Alpha-2 code of a country 
+    /* Obtain the Alpha-3 code by providing the Alpha-2 code of a country
     */
     public static function getCountryAlpha3Code(string $code)
     {
@@ -629,7 +635,7 @@ class Country
     {
         $data = array();
 
-        foreach (self::$countryCodeMapping as $country) 
+        foreach (self::$countryCodeMapping as $country)
         {
             $countryDetails = array(
              self::COUNTRYNAME => Country::getCountryNameByCode($country),
@@ -639,7 +645,7 @@ class Country
 
             array_push($data, $countryDetails);
         }
-       
+
         return $data;
     }
 }

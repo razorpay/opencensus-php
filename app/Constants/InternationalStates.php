@@ -299,6 +299,52 @@ class InternationalStates
     const US55 = 'US-PR';
     const US56 = 'US-UM';
     const US57 = 'US-VI';
+    const IT1 = 'IT-21';
+    const IT2 = 'IT-23';
+    const IT3 = 'IT-25';
+    const IT4 = 'IT-32';
+    const IT5 = 'IT-34';
+    const IT6 = 'IT-36';
+    const IT7 = 'IT-42';
+    const IT8 = 'IT-45';
+    const IT9 = 'IT-52';
+    const IT10 = 'IT-55';
+    const IT11 = 'IT-57';
+    const IT12 = 'IT-62';
+    const IT13 = 'IT-65';
+    const IT14 = 'IT-67';
+    const IT15 = 'IT-72';
+    const IT16 = 'IT-75';
+    const IT17 = 'IT-77';
+    const IT18 = 'IT-78';
+    const IT19 = 'IT-82';
+    const IT20 = 'IT-88';
+    const CH1 = 'CH-AG';
+    const CH2 = 'CH-AI';
+    const CH3 = 'CH-AR';
+    const CH4 = 'CH-BE';
+    const CH5 = 'CH-BL';
+    const CH6 = 'CH-BS';
+    const CH7 = 'CH-FR';
+    const CH8 = 'CH-GE';
+    const CH9 = 'CH-GL';
+    const CH10 = 'CH-GR';
+    const CH11 = 'CH-JU';
+    const CH12 = 'CH-LU';
+    const CH13 = 'CH-NE';
+    const CH14 = 'CH-NW';
+    const CH15 = 'CH-OW';
+    const CH16 = 'CH-SG';
+    const CH17 = 'CH-SH';
+    const CH18 = 'CH-SO';
+    const CH19 = 'CH-SZ';
+    const CH20 = 'CH-TG';
+    const CH21 = 'CH-TI';
+    const CH22 = 'CH-UR';
+    const CH23 = 'CH-VD';
+    const CH24 = 'CH-VS';
+    const CH25 = 'CH-ZG';
+    const CH26 = 'CH-ZH';
 
     const COUNTRYNAME = "countryName";
     const COUNTRYALPHA2CODE = "countryAlpha2Code";
@@ -601,6 +647,52 @@ class InternationalStates
         self::US55 => 'Puerto Rico',
         self::US56 => 'United States Minor Outlying Islands',
         self::US57 => 'Virgin Islands, U.S',
+        self::IT1 => 'Piemonte',
+        self::IT2 => 'Val d\'Aoste',
+        self::IT3 => 'Lombardia',
+        self::IT4 => 'Trentino-Alto Adige',
+        self::IT5 => 'Veneto',
+        self::IT6 => 'Friuli Venezia Giulia',
+        self::IT7 => 'Liguria',
+        self::IT8 => 'Emilia-Romagna',
+        self::IT9 => 'Toscana',
+        self::IT10 => 'Umbria',
+        self::IT11 => 'Marche',
+        self::IT12 => 'Lazio',
+        self::IT13 => 'Abruzzo',
+        self::IT14 => 'Molise',
+        self::IT15 => 'Campania',
+        self::IT16 => 'Puglia',
+        self::IT17 => 'Basilicata',
+        self::IT18 => 'Calabria',
+        self::IT19 => 'Sicilia',
+        self::IT20 => 'Sardegna',
+        self::CH1 => 'Aargau',
+        self::CH2 => 'Appenzell Innerrhoden',
+        self::CH3 => 'Appenzell Ausserrhoden',
+        self::CH4 => 'Bern',
+        self::CH5 => 'Basel-Landschaft',
+        self::CH6 => 'Basel-Stadt',
+        self::CH7 => 'Freiburg',
+        self::CH8 => 'Genève',
+        self::CH9 => 'Glarus',
+        self::CH10 => 'Graubünden',
+        self::CH11 => 'Jura',
+        self::CH12 => 'Luzern',
+        self::CH13 => 'Neuchâtel',
+        self::CH14 => 'Nidwalden',
+        self::CH15 => 'Obwalden',
+        self::CH16 => 'Sankt Gallen',
+        self::CH17 => 'Schaffhausen',
+        self::CH18 => 'Solothurn',
+        self::CH19 => 'Schwyz',
+        self::CH20 => 'Thurgau',
+        self::CH21 => 'Ticino',
+        self::CH22 => 'Uri',
+        self::CH23 => 'Vaud',
+        self::CH24 => 'Valais',
+        self::CH25 => 'Zug',
+        self::CH26 => 'Zürich',
     ];
 
     const AUSTRIA = [
@@ -956,6 +1048,58 @@ class InternationalStates
         self::US57,
     ];
 
+    const ITALY = [
+        self::IT1,
+        self::IT2,
+        self::IT3,
+        self::IT4,
+        self::IT5,
+        self::IT6,
+        self::IT7,
+        self::IT8,
+        self::IT9,
+        self::IT10,
+        self::IT11,
+        self::IT12,
+        self::IT13,
+        self::IT14,
+        self::IT15,
+        self::IT16,
+        self::IT17,
+        self::IT18,
+        self::IT19,
+        self::IT20,
+    ];
+
+    const SWITZERLAND = [
+        self::CH1,
+        self::CH2,
+        self::CH3,
+        self::CH4,
+        self::CH5,
+        self::CH6,
+        self::CH7,
+        self::CH8,
+        self::CH9,
+        self::CH10,
+        self::CH11,
+        self::CH12,
+        self::CH13,
+        self::CH14,
+        self::CH15,
+        self::CH16,
+        self::CH17,
+        self::CH18,
+        self::CH19,
+        self::CH20,
+        self::CH21,
+        self::CH22,
+        self::CH23,
+        self::CH24,
+        self::CH25,
+        self::CH26,
+    ];
+
     protected static $countryStateMap = [
         Country::AT => self::AUSTRIA,
         Country::BE => self::BELGIUM,
@@ -977,6 +1121,8 @@ class InternationalStates
         Country::ES => self::SPAIN,
         Country::SE => self::SWEDEN,
         Country::US => self::USA,
+        Country::IT => self::ITALY,
+        Country::CH => self::SWITZERLAND,
     ];
 
 
