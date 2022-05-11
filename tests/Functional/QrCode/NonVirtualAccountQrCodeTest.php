@@ -731,6 +731,37 @@ class NonVirtualAccountQrCodeTest extends TestCase
         $this->assertEquals($rrn, $payment['reference16']);
     }
 
+    public function testQrPaymentWithOrderIdMandatoryEnabled()
+    {
+
+        $qrCode = $this->createQrCode(['usage'=>'single_use', 'type'=>'upi_qr'], 'live', 'LiveAccountMer');
+
+        $qrCodeId = $qrCode['id'];
+
+        $this->fixtures->stripSign($qrCodeId);
+
+        $request = $this->testData['testProcessIciciQrPayment'];
+
+        $rrn                                  = '000011100101';
+        $request['content']['BankRRN']        = $rrn;
+        $request['content']['merchantTranId'] = $qrCodeId . 'qrv2';
+
+        $this->fixtures->merchant->addFeatures( ['order_id_mandatory'],'LiveAccountMer');
+
+        $this->makeUpiIciciPayment($request);
+
+        $qrPayment = $this->getDbLastEntityToArray('qr_payment', 'live');
+        $payment   = $this->getDbLastEntityToArray('payment', 'live');
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals('refunded', $payment['status']);
+        $this->assertEquals(4000, $payment['amount']);
+        $this->assertEquals( $qrPayment['payment_id'], $payment['id']);
+        $this->assertEquals(0, $qrPayment['expected']);
+        $this->assertEquals(UnexpectedPaymentReason::QR_CODE_MISSING_ORDER_ID, $qrPayment['unexpected_reason']);
+        $this->assertEquals($rrn, $payment['acquirer_data']['rrn']);
+        $this->assertEquals($rrn, $payment['reference16']);
+    }
+
     public function testCreateQrCodeWithUpiDisabled()
     {
         $this->expectException(BadRequestException::class);

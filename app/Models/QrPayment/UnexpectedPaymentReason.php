@@ -18,9 +18,12 @@ class UnexpectedPaymentReason
 
     const QR_CODE_CUTOFF_TIME_EXCEEDED               = 'The payment transaction time exceeds the cutoff limit';
 
+    const QR_CODE_MISSING_ORDER_ID                   = 'Payment processing failed due to missing order id';
+
     protected static $toCreateUnexpected = [
         self::QR_CODE_PAYMENT_FAILED_FEE_OR_TAX_TAMPERED,
         self::QR_CODE_PAYMENT_FAILED_UPI_NOT_ENABLED,
+        self::QR_CODE_MISSING_ORDER_ID,
         PublicErrorDescription::BAD_REQUEST_PAYMENT_ORDER_ALREADY_PAID,
     ];
 
