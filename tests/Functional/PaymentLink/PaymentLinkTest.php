@@ -3069,8 +3069,6 @@ class PaymentLinkTest extends TestCase
      */
     public function testCreatePaymentPageWithUdfSchemaPatternInvalidShouldFail()
     {
-        $this->mockRazorxExperiments([PaymentLink\Validator::UDF_SCHEMA_VALIDATION_EXPERIMENT => 'on']);
-
         $this->startTest();
     }
 
@@ -3080,8 +3078,6 @@ class PaymentLinkTest extends TestCase
      */
     public function testUpdatePaymentPageWithUdfSchemaPatternInvalidShouldFail()
     {
-        $this->mockRazorxExperiments([PaymentLink\Validator::UDF_SCHEMA_VALIDATION_EXPERIMENT => 'on']);
-
         $this->createPaymentLink();
         $this->createPaymentPageItem();
 
@@ -3094,8 +3090,6 @@ class PaymentLinkTest extends TestCase
      */
     public function testCreatePaymentPageWithUdfSchemaTypeInvalidShouldFail()
     {
-        $this->mockRazorxExperiments([PaymentLink\Validator::UDF_SCHEMA_VALIDATION_EXPERIMENT => 'on']);
-
         $this->startTest();
     }
 
@@ -3105,8 +3099,6 @@ class PaymentLinkTest extends TestCase
      */
     public function testUpdatePaymentPageWithUdfSchemaTypeInvalidShouldFail()
     {
-        $this->mockRazorxExperiments([PaymentLink\Validator::UDF_SCHEMA_VALIDATION_EXPERIMENT => 'on']);
-
         $this->createPaymentLink();
         $this->createPaymentPageItem();
 
@@ -3119,8 +3111,6 @@ class PaymentLinkTest extends TestCase
      */
     public function testCreatePaymentPageWithUdfSchemaOptionCmpInvalidShouldFail()
     {
-        $this->mockRazorxExperiments([PaymentLink\Validator::UDF_SCHEMA_VALIDATION_EXPERIMENT => 'on']);
-
         $this->startTest();
     }
 
@@ -3130,8 +3120,6 @@ class PaymentLinkTest extends TestCase
      */
     public function testUpdatePaymentPageWithUdfSchemaOptionCmpInvalidShouldFail()
     {
-        $this->mockRazorxExperiments([PaymentLink\Validator::UDF_SCHEMA_VALIDATION_EXPERIMENT => 'on']);
-
         $this->createPaymentLink();
         $this->createPaymentPageItem();
 
@@ -3144,8 +3132,6 @@ class PaymentLinkTest extends TestCase
      */
     public function testCreatePaymentPageWithUdfSchemaXssShouldFail()
     {
-        $this->mockRazorxExperiments([PaymentLink\Validator::UDF_SCHEMA_VALIDATION_EXPERIMENT => 'on']);
-
         $this->startTest();
     }
 
@@ -3155,8 +3141,6 @@ class PaymentLinkTest extends TestCase
      */
     public function testUpdatePaymentPageWithUdfSchemaXssShouldFail()
     {
-        $this->mockRazorxExperiments([PaymentLink\Validator::UDF_SCHEMA_VALIDATION_EXPERIMENT => 'on']);
-
         $this->createPaymentLink();
         $this->createPaymentPageItem();
 

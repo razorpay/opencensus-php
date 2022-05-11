@@ -33,9 +33,7 @@ use RZP\Models\PaymentLink\Template\UdfSchema;
 class Validator extends Base\Validator
 {
     const MAX_ALLOWED_PAYMENT_PAGE_ITEMS = 25;
-
-    const UDF_SCHEMA_VALIDATION_EXPERIMENT = 'udf_schema_validation_experiment';
-
+    
     const ALLOWED_HOSTS_IN_PP_IFRAME = [
         "www.youtu.be",
         "youtu.be",
@@ -1062,21 +1060,6 @@ class Validator extends Base\Validator
         $udfSchema = json_decode($udfSchema, true);
 
         $this->validateInput('udfSchema', [Entity::UDF_SCHEMA => $udfSchema]);
-
-        $app = App::getFacadeRoot();
-
-        $merchant = $app['basicauth']->getMerchant();
-
-        $variant = $app->razorx->getTreatment(
-            $merchant->getId(),
-            self::UDF_SCHEMA_VALIDATION_EXPERIMENT,
-            $app['rzp.mode']
-        );
-
-        if ($variant !== 'on')
-        {
-            return;
-        }
 
         // validate each element in the schema
         foreach ($udfSchema as $udf)
