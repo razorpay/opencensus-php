@@ -1364,6 +1364,28 @@ We look forward to transacting with you!
                 ]
             ]
         ], $response[MerchantConstants::DOCUMENTS][31]);
+
+        $this->assertArraySelectiveEquals([
+            'subcategory' => 'Pricing',
+            'fields'      => [
+                    [
+                        'name'     => 'pricing',
+                        'value'    => 'pricing',
+                        'editable' => false
+                    ]
+                ]
+        ], $response[MerchantConstants::ADDITIONAL_DETAILS][0]);
+
+        $this->assertArraySelectiveEquals([
+            'subcategory' => 'Custom',
+            'fields'      => [
+                [
+                    'name'     => 'custom',
+                    'value'    => 'custom',
+                    'editable' => false
+                ]
+            ]
+        ], $response[MerchantConstants::ADDITIONAL_DETAILS][1]);
     }
 
     public function testGetPreSignupDetails()

@@ -7720,7 +7720,7 @@ class Route
         'fetch_iir_discrepancies_for_merchant'        => Permission::VIEW_IIR_DISCREPANCY,
         'patch_iir_discrepancy_by_id'                 => Permission::CREATE_IIR_DISCREPANCY,
         'create_static_discrepancy'                   => Permission::CREATE_DISCREPANCY,
-        'edit_static_discrepancy'                     => Permission::CREATE_DISCREPANCY,
+        'edit_static_discrepancy'                     => Permission::EDIT_DISCREPANCY,
 
         // gateway credential
         'terminals_proxy_create_gateway_credential'   => Permission::CREATE_GATEWAY_CREDENTIAL,

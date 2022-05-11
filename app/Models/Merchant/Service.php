@@ -4887,6 +4887,8 @@ class Service extends Base\Service
             $fieldInfo[MerchantConstants::SUBCATEGORY] = ucwords(str_replace('_', ' ', $fieldInfo[MerchantConstants::SUBCATEGORY]));
         });
 
+        $smartDashboardMerchantDetailMap[MerchantConstants::ADDITIONAL_DETAILS] = MerchantConstants::SMART_DASHBOARD_MERCHANT_DETAILS_MAP_ADDITIONAL_DETAILS;
+
         return $smartDashboardMerchantDetailMap;
     }
 

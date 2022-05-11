@@ -1001,6 +1001,7 @@ final class Constants
     const MERCHANT_DETAILS  = 'Merchant Details';
     const WEBSITE_DETAILS   = 'Website and App Details';
     const DOCUMENTS         = 'Documents';
+    const ADDITIONAL_DETAILS = 'Additional Details';
     const SUBCATEGORY       = 'subcategory';
     const MERCHANT_CATEGORY = 'Merchant Category';
     const MERCHANTNAME      = 'Merchant Name';
@@ -1568,6 +1569,26 @@ final class Constants
                 ]
             ],
         ]
+    ];
+
+    // We are adding additional fields so as to make UI rendering easier for FE for raising pricing and custom discrepancies (in additional details tab on view applications page). In future, FE will be showing merchant's pricing plan in additional details tab
+    const SMART_DASHBOARD_MERCHANT_DETAILS_MAP_ADDITIONAL_DETAILS = [
+            [
+                self::SUBCATEGORY => "Pricing",
+                self::FIELDS =>[[
+                    'name' => 'pricing',
+                    'value' => 'pricing',
+                    'editable' => false    
+                ]]
+            ],
+            [
+                self::SUBCATEGORY => 'Custom',
+                self::FIELDS => [[
+                    'name' => 'custom',
+                    'value' => 'custom',
+                    'editable' => false
+                ]]
+            ]
     ];
 
     const immutableSmartDashboardMerchantDetailsFields = [
