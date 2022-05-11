@@ -1238,6 +1238,9 @@ class Constants
      */
     const FAIL_VA_ON_VALIDATION = "fail_va_on_validation";
 
+    const ORG_SETTLE_TO_BANK = "org_settle_to_bank";
+
+    const CANCEL_SETTLE_TO_BANK = "cancel_settle_to_bank";
 
     // This feature will be used to control the rollout of authorization via authz enforcer
     const AUTHORIZE_VIA_AUTHZ = 'authorize_via_authz';
@@ -1785,6 +1788,8 @@ class Constants
         self::ACCEPT_LOWER_AMOUNT             => true,
         self::SET_VA_DEFAULT_EXPIRY           => true,
         self::FAIL_VA_ON_VALIDATION           => true,
+        self::ORG_SETTLE_TO_BANK              => true,
+        self::CANCEL_SETTLE_TO_BANK           => true,
         self::AUTHORIZE_VIA_AUTHZ             => true,
         self::SR_SENSITIVE_BUCKET_1           => true,
         self::SR_SENSITIVE_BUCKET_2           => true,
