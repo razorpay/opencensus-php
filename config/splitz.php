@@ -66,6 +66,9 @@ return [
         // partnership FUX
         'PARTNERSHIP_FUX' => env('PARTNERSHIP_FUX', ''),
 
+        // partnership merchant validation
+        'MERCHANT_VALIDATION' => env('MERCHANT_VALIDATION', ''),
+
         // Partnership Survey
         'PARTNERSHIP_NPS' => env('PARTNERSHIP_NPS', ''),
 

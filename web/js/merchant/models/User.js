@@ -1393,6 +1393,11 @@ export default class User {
     return variant?.name === 'exposed';
   }
 
+  get isMerchantValidation() {
+    const variant = getSplitzExperimentVariant('merchant_validation');
+    return variant?.name === 'exposed';
+  }
+
   get isPartnershipForXEnabled() {
     const variant = getSplitzExperimentVariant('partnership_for_razorpayx');
     return variant?.name === 'exposed';

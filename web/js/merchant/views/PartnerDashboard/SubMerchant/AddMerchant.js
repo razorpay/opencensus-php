@@ -498,7 +498,9 @@ class AddMerchant extends Component {
     const partnerID = user?.id;
     const emailMandatory = isEmailMandatory(user);
     const emailValidators = emailMandatory ? [required(), email()] : [];
-    const accountNameValidators = [required(), name(), minLength(4), maxLength(255)];
+    const accountNameValidators = user?.isMerchantValidation
+      ? [required(), name(), minLength(4), maxLength(255)]
+      : [required()];
     const referralUrl = referralData ? referralData[merchantType]?.url : '';
     return (
       <div className="partner-submerchant-modal fixed-height-modal">
