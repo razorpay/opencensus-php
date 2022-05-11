@@ -1,14 +1,6 @@
 @if ($reason === 'beneficiary_bank_confirmation_pending')
 
-    @if ($mode === 'NEFT' or $mode === 'RTGS')
-
-        Confirmation of credit to the beneficiary is pending from {{$beneficiary_bank}}. Please check the status after {{Carbon\Carbon::createFromTimestamp($processByTime, 'Asia/Kolkata')->format("dS F Y, h:i A") ?? null}}
-
-    @else
-
-        Confirmation of credit to the beneficiary is pending from {{$beneficiary_bank}}. Please check the status after {{Carbon\Carbon::createFromTimestamp($processByTime, 'Asia/Kolkata')->format("dS F Y") ?? null}}
-
-    @endif
+     Confirmation of credit to the beneficiary is pending from {{$beneficiary_bank}}. Please check the status after {{Carbon\Carbon::createFromTimestamp($processByTime, 'Asia/Kolkata')->format("dS F Y, h:i A") ?? null}}
 
 @elseif ($reason === 'bank_window_closed')
 

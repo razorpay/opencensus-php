@@ -16847,7 +16847,7 @@ return [
                     'status'         => 'processing',
                     'status_details'  => [
                         'reason' => 'beneficiary_bank_confirmation_pending',
-                        'description' => 'Confirmation of credit to the beneficiary is pending from ICICI Bank. Please check the status after 09th November 2021'
+                        'description' => 'Confirmation of credit to the beneficiary is pending from ICICI Bank. Please check the status after 09th November 2021, 09:13 PM'
                     ],
                 ],
             ],
@@ -16867,7 +16867,7 @@ return [
                     'status'         => 'processing',
                     'status_details'  => [
                         'reason' => 'beneficiary_bank_confirmation_pending',
-                        'description' => 'Confirmation of credit to the beneficiary is pending from beneficiary bank. Please check the status after 09th November 2021'
+                        'description' => 'Confirmation of credit to the beneficiary is pending from beneficiary bank. Please check the status after 09th November 2021, 09:13 PM'
                     ],
                 ],
             ],
