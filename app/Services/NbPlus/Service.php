@@ -266,9 +266,11 @@ class Service
     {
         unset($response[Response::RESPONSE][Response::DATA][Response::ACCOUNT_INFO]);
 
-        unset($response[Response::RESPONSE][Response::TOKEN]);
+        $traceData = $response;
 
-        $this->trace->info(TraceCode::NBPLUS_PAYMENT_SERVICE_RESPONSE, $response ?? []);
+        unset($traceData[Response::RESPONSE][RESPONSE::DATA][Response::TOKEN]);
+
+        $this->trace->info(TraceCode::NBPLUS_PAYMENT_SERVICE_RESPONSE, $traceData ?? []);
     }
 
     protected function jsonToArray($json)
