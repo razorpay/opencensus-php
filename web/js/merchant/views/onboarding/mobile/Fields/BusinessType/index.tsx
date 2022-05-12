@@ -1,9 +1,9 @@
 import { FormikErrors } from 'formik';
 import React from 'react';
 import { Select, Option } from 'common/components/Select';
-import { BusinessTypes } from '../../Constants/OnboardingConstants';
 import { isL1Submitted } from '../../services/utils';
 import { useApp } from 'common/context/App';
+import useBusinessTypes from '../../hooks/useBusinessTypes';
 
 export interface BusinessTypePropsT {
   errorText?: string | false | string[] | FormikErrors<any> | FormikErrors<any>[] | undefined;
@@ -21,7 +21,7 @@ const BusinessType: React.FC<BusinessTypePropsT> = ({
   disabled,
 }) => {
   const { experiments } = useApp();
-
+  const { data } = useBusinessTypes();
   return (
     <Select
       label="Business Type"
@@ -31,24 +31,26 @@ const BusinessType: React.FC<BusinessTypePropsT> = ({
       disabled={disabled}
       bottomSheetHeaderText="SELECT BUSINESS TYPE"
     >
-      {Object.keys(BusinessTypes)
-        .map((business_type) => {
-          if (isL1Submitted(onboardingMilestone) && experiments.isInstantActivationEnabled) {
-            if (value === '11') {
-              if (business_type !== '11') {
-                return null;
-              }
-            } else if (business_type === '11') {
+      {data?.map((item) => {
+        if (isL1Submitted(onboardingMilestone) && experiments.isInstantActivationEnabled) {
+          if (value === '11') {
+            if (item.id !== '11') {
               return null;
             }
+          } else if (item.id === '11') {
+            return null;
           }
-          return (
-            <Option key={business_type} value={business_type} label={BusinessTypes[business_type]}>
-              {BusinessTypes[business_type]}
-            </Option>
-          );
-        })
-        .filter((item) => !!item)}
+        }
+        return (
+          <React.Fragment key={item.id}>
+            {item.status === 'active' && item.label !== 'Individual' && (
+              <Option key={item.id} value={String(item.id)} label={item.label}>
+                {item.label}
+              </Option>
+            )}
+          </React.Fragment>
+        );
+      })}
     </Select>
   );
 };

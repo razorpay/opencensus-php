@@ -70,6 +70,7 @@ const NGO = 7; // 'NGO'
 const TRUST = 9; // 'Trust'
 const SOCIETY = 10; // 'Society'
 const NOT_REGISTERED = 11; // 'Unregistered Businesses
+const HUF = 13; // 'Hindu Undivided Family'
 const ADDRESS_PROOF_TYPES = {
   aadhar: {
     value: 'aadhar',
@@ -1528,6 +1529,7 @@ const uploadFields = [
       const partnershipDesc = 'Partnership Deed';
       const cioDesc = 'Certificate of Incorporation';
       const registrationProofDesc = 'Registration Proof or Certificate';
+      const hufDesc = 'HUF Deed';
 
       let description;
 
@@ -1539,6 +1541,8 @@ const uploadFields = [
         description = cioDesc;
       } else if (ORG_BusinessTypes.indexOf(Number(currentBusinessType)) > -1) {
         description = registrationProofDesc;
+      } else if ([HUF].indexOf(Number(currentBusinessType)) > -1) {
+        description = hufDesc;
       } else if (currentBusinessType == null) {
         description = (
           <ul>
@@ -2038,14 +2042,15 @@ const tabsData = [contactFields, businessModel, businessDetails, bankAccountFiel
 
 /* Handles not allowing changing Biz Type cross Reg -> Unreg / Unreg -> Reg after L1 Completion */
 export const getBusinessTypeOptions = (activation) => {
+  const { businessTypes } = activation.props;
   if (activation.props.user.isInstantActivationEnabled) {
-    if (!isL1Completed(activation)) return DefaultBusinessTypeOptions;
+    if (!isL1Completed(activation)) return businessTypes?.defaultBusinessTypes;
 
     return isUnregisteredBusiness(activation)
-      ? UnregisteredBusinessTypeOptions
-      : RegisteredBusinessTypeOptions;
+      ? businessTypes?.unregisteredBusinessTypes
+      : businessTypes?.registeredBusinessTypes;
   } else {
-    return DefaultBusinessTypeOptions;
+    return businessTypes?.defaultBusinessTypes;
   }
 };
 

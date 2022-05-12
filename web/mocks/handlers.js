@@ -75,6 +75,57 @@ export const handlers = [
     },
   ),
 
+  rest.get('*/merchant/onboarding/business_types', (req, res, ctx) => {
+    return res(
+      ctx.status(200),
+      ctx.json({
+        status_code: 200,
+        success: true,
+        data: {
+          registered: [
+            {
+              label: 'LLP',
+              id: '6',
+              status: 'active',
+            },
+            {
+              label: 'Partnership',
+              id: '3',
+              status: 'active',
+            },
+            {
+              label: 'Private Limited',
+              id: '4',
+              status: 'active',
+            },
+            {
+              label: 'Proprietorship',
+              id: '1',
+              status: 'inactive',
+            },
+            {
+              label: 'Trust',
+              id: '9',
+              status: 'active',
+            },
+          ],
+          unregistered: [
+            {
+              label: 'Individual',
+              id: '2',
+              status: 'active',
+            },
+            {
+              label: 'Unregistered',
+              id: '11',
+              status: 'active',
+            },
+          ],
+        },
+      }),
+    );
+  }),
+
   rest.get('http://localhost:6006/merchant/api/live/merchant/activation', (req, res, ctx) => {
     return res(
       ctx.status(200),

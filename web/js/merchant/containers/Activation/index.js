@@ -10,10 +10,12 @@ import { Modal, ModalContent } from 'common/new-ui/Modal';
 import { classList } from 'common/utils/rzp-utils';
 import { merchantFetch } from 'merchant/utils/ajax';
 import * as EventsActions from 'merchant/reducers/trackEvents';
+import { showNotification } from 'merchant_common/reducers/notifications';
 
 import KycForm from './new';
 import { setInstantActivationsTracking } from './ga_new';
 import KYCStatusModal from 'merchant/views/PartnerDashboard/Activation/Components/KYCStatus/KYCStatusModal';
+import { removeArrayDuplicatesByProp } from 'merchant/components/Activation/ActivationUtils';
 
 const SOURCE_RAZORPAY_X = 'x';
 
@@ -25,7 +27,7 @@ const SOURCE_RAZORPAY_X = 'x';
     session: state.session,
     current_tab_name: state.activationWizard.current_tab_name,
   }),
-  { ...EventsActions },
+  { showNotification, ...EventsActions },
 )
 export default class ActivationContainer extends Component {
   constructor(props) {
@@ -142,55 +144,102 @@ export default class ActivationContainer extends Component {
       }),
       !accountId && merchantFetch('merchant/activation/business_categories'),
       !isLiteOnboarding && !this.isSourceRX && merchantFetch('merchant/aov-config'),
-    ]).then(async ([data, categories, aov_list]) => {
-      data = data.data;
-      categories = categories && categories.data;
-      aov_list = aov_list && aov_list.data;
+      merchantFetch('merchant/onboarding/business_types'),
+    ])
+      .then(async ([data, categories, aov_list, businessTypeOptions]) => {
+        data = data.data;
+        categories = categories && categories.data;
+        aov_list = aov_list && aov_list.data;
 
-      let gst_details;
-      let gstinDetails = null;
+        let gst_details;
+        let gstinDetails = null;
 
-      try {
-        // call only if L1 form fill up is completed
-        if (this.props.user.isGstinAutoPopulate && data?.activation_form_milestone) {
-          gst_details = await merchantFetch('merchant/activation/gst_details');
-          gst_details = gst_details?.data;
+        try {
+          // call only if L1 form fill up is completed
+          if (this.props.user.isGstinAutoPopulate && data?.activation_form_milestone) {
+            gst_details = await merchantFetch('merchant/activation/gst_details');
+            gst_details = gst_details?.data;
+          }
+        } catch {}
+
+        if (gst_details?.results && gst_details.results.length) {
+          gstinDetails = {
+            gstinList: gst_details.results,
+            defaultGstin: gst_details.results[0],
+          };
         }
-      } catch {}
 
-      if (gst_details?.results && gst_details.results.length) {
-        gstinDetails = {
-          gstinList: gst_details.results,
-          defaultGstin: gst_details.results[0],
-        };
-      }
+        if (data.activation_status === 'needs_clarification' && data.kyc_clarification_reasons) {
+          merchantFetch('merchant/activation/clarification_reasons').then(
+            (clarification_reasons) => {
+              const clarificationReasons = clarification_reasons && clarification_reasons.data;
+              this.setState({
+                data,
+                categories,
+                aovRange: aov_list,
+                clarificationReasons,
+                gstinDetails,
+              });
 
-      if (data.activation_status === 'needs_clarification' && data.kyc_clarification_reasons) {
-        merchantFetch('merchant/activation/clarification_reasons').then((clarification_reasons) => {
-          const clarificationReasons = clarification_reasons && clarification_reasons.data;
+              return [data, categories];
+            },
+          );
+        } else {
           this.setState({
             data,
             categories,
             aovRange: aov_list,
-            clarificationReasons,
+            clarificationReasons: {},
             gstinDetails,
+            businessTypeOptions: this.formatBusinessTypeOptions(
+              businessTypeOptions,
+              data.business_type,
+            ),
           });
 
           return [data, categories];
+        }
+      })
+      .catch((err) => {
+        this.props.showNotification({
+          type: 'error',
+          message: err?.errors,
         });
-      } else {
-        this.setState({
-          data,
-          categories,
-          aovRange: aov_list,
-          clarificationReasons: {},
-          gstinDetails,
-        });
-
-        return [data, categories];
-      }
-    });
+      });
   }
+
+  formatBusinessTypeOptions = ({ data }, previousSelectedBusinessType) => {
+    const registeredBusinessTypes = data?.registered.reduce((acc, type) => {
+      // for x merchants hiding the new business type - HUF as per product requirement
+      if (this.isSourceRX && type?.label?.toLowerCase() === 'huf') return acc;
+      if (type.status === 'active' || previousSelectedBusinessType === type.id) {
+        acc.push({ label: type.label, name: type.id });
+      }
+      return acc;
+    }, []);
+    registeredBusinessTypes.unshift({ label: '--Select--', name: '' });
+
+    const unregisteredBusinessTypes = data?.unregistered.reduce((acc, type) => {
+      if (
+        (type.status === 'active' && type.label !== 'Individual') ||
+        previousSelectedBusinessType === type.id
+      ) {
+        acc.push({ label: type.label, name: type.id });
+      }
+      return acc;
+    }, []);
+
+    unregisteredBusinessTypes.unshift({ label: '--Select--', name: '' });
+    const defaultBusinessTypes = removeArrayDuplicatesByProp(
+      [...registeredBusinessTypes, ...unregisteredBusinessTypes],
+      'label',
+    );
+    return {
+      registeredBusinessTypes,
+      unregisteredBusinessTypes,
+      defaultBusinessTypes,
+    };
+  };
 
   fetchPartnerActivationDetails = () => {
     merchantFetch({
@@ -308,6 +357,7 @@ export default class ActivationContainer extends Component {
       showWelcomeBanner,
       partnerActivationData,
       shouldBlockMerchantKYC,
+      businessTypeOptions,
     } = this.state;
     const { user } = this.props;
     const commonProps = {
@@ -323,6 +373,7 @@ export default class ActivationContainer extends Component {
       gstinDetails,
       setActivationFormLoadingState: this.setActivationFormLoadingState,
       isActivationFormLoading,
+      businessTypeOptions,
     };
     const isLoading = !data;
     // `onClose` is passed only when Modal is to be opened. In case of Account Details, onClose is passed.

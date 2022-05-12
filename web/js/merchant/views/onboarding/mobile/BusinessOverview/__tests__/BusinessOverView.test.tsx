@@ -32,7 +32,11 @@ test('renders all the input fields of the form correctly', async () => {
 
   const businessModal = screen.getByTestId('ds-text-area');
   fireEvent.click(businessTypeInput);
-  expect(screen.getByText('Private Limited')).toBeInTheDocument();
+  await waitFor(() => {
+    expect(screen.getByText('Private Limited')).toBeInTheDocument();
+    expect(screen.getByText('Partnership')).toBeInTheDocument();
+  });
+
   fireEvent.click(businessCategorySelect);
   fireEvent.change(businessCategorySelect, { target: { value: 'ecomerce' } });
 

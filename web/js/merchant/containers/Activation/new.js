@@ -832,7 +832,9 @@ export default class ActivationContainer extends React.Component {
       isModalView,
       isActivationFormLoading,
       user,
+      businessTypeOptions,
     } = this.props;
+
     let content, modalClass;
 
     if (!accountId && this.state.showSuccessScreen) {
@@ -881,6 +883,7 @@ export default class ActivationContainer extends React.Component {
           fetchBankVerificationAttemptCount={this.getBankVerificationAttemptCount}
           partnerActivationData={this.props.partnerActivationData}
           user={this.getWizardUser()}
+          businessTypes={businessTypeOptions}
         />
       );
     }

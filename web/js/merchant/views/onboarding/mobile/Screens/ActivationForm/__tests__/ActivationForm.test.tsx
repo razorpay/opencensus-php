@@ -51,7 +51,10 @@ test('ActivationForm Flow', async () => {
   expect(screen.getByText('About Your Business')).toBeInTheDocument();
   const [businessTypeInput, businessCategorySelect]: any = screen.getAllByTestId('ds-text-input');
   fireEvent.click(businessTypeInput);
-  expect(screen.getByText('Private Limited')).toBeInTheDocument();
+  await waitFor(() => {
+    expect(screen.getByText('Private Limited')).toBeInTheDocument();
+    expect(screen.getByText('Partnership')).toBeInTheDocument();
+  });
   fireEvent.click(screen.getByText('Private Limited'));
   expect(businessTypeInput.value).toBe('Private Limited');
 

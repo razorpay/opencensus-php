@@ -1,6 +1,6 @@
 // test-utils.js
 import React, { ReactElement } from 'react';
-import { render, waitForElementToBeRemoved, screen } from '@testing-library/react';
+import { render, waitForElementToBeRemoved, screen, waitFor } from '@testing-library/react';
 import { Router, Route } from 'react-router-dom';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { createMemoryHistory } from 'history';
@@ -81,4 +81,4 @@ const delay = (time = 1000): Promise<void> => new Promise((r) => setTimeout(r, t
 export * from '@testing-library/react';
 
 // override render method
-export { customRender as render, waitForLoadingToFinish, server, errorHandlers, delay };
+export { customRender as render, waitForLoadingToFinish, server, errorHandlers, delay, waitFor };
