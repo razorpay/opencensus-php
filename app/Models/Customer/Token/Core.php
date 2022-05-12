@@ -1860,6 +1860,9 @@ class Core extends Base\Core
 
         $gateways = self::TokenizationGateways;
 
+        $tokenizationGatewayCounts = count($gateways);
+        $successOnboardedGateways = 0;
+
         if (!empty($tokenizationGateways)) {
             // Check if valid network/gateway values are present in $tokenizationGateways
             if (array_intersect($tokenizationGateways, self::TokenizationGateways) !== $tokenizationGateways) {
@@ -1873,18 +1876,43 @@ class Core extends Base\Core
 
         foreach ($gateways as $gateway)
         {
-            $this->trace->info(
-            TraceCode::TOKENIZATION_MERCHANT_ONBOARD,
-            ['gateway' => $gateway,
-                'merchant' => $merchant->getId()]);
+            $logData =  ['gateway' => $gateway, 'merchant' => $merchant->getId()];
 
-            $data = $this->app['terminals_service']->initiateOnboarding($merchant->getId(), $gateway, null, null, [], $input);
+            $this->trace->info(TraceCode::TOKENIZATION_MERCHANT_ONBOARD, $logData);
 
-            if ($data == null)
+            try
             {
-                throw new Exception\ServerErrorException('Tokenization Onboarding failed', ErrorCode::MERCHANT_ONBOARD_ERROR_TERMINAL_CREATION);
+                $data = $this->app['terminals_service']->initiateOnboarding($merchant->getId(), $gateway, null, null, [], $input);
+
+                if ($data == null)
+                {
+                    $this->trace->error(TraceCode::TOKENIZATION_MERCHANT_ONBOARD_FAILED, $logData);
+
+                    continue;
+                }
+
+                $successOnboardedGateways++;
+
+                $this->trace->info(TraceCode::TOKENIZATION_MERCHANT_ONBOARD_SUCCESS, $logData);
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::TOKENIZATION_MERCHANT_ONBOARD_FAILED,
+                    [
+                        'gateway' => $gateway,
+                        'merchant' => $merchant->getId()
+                    ]);
             }
         }
+
+        $this->trace->info(TraceCode::TOKENIZATION_MERCHANT_ONBOARD_COMPLETE,
+            [
+                'total'     =>  $tokenizationGatewayCounts,
+                'success'   => $successOnboardedGateways,
+            ]);
     }
 
     /**
