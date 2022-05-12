@@ -7054,7 +7054,11 @@ class PaymentCreateTest extends TestCase
         $this->fixtures->create('order_meta',
             [
                 'order_id' => $order->getId(),
-                'value' => ['line_items_total' => $order->getAmount()],
+                'value' => [
+                    'line_items_total' => $order->getAmount(),
+                    "cod_fee" => 0,
+                    "shipping_fee" => 0,
+                ],
                 'type' => 'one_click_checkout',
             ]);
         $this->ba->publicAuth();

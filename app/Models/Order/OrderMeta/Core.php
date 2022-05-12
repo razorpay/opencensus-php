@@ -238,6 +238,12 @@ class Core extends Base\Core
 
             foreach ($orderMetaInput as $key => $val)
             {
+                if ($key === Order\OrderMeta\Order1cc\Fields::CUSTOMER_DETAILS) {
+                    foreach($val as $k => $v) {
+                        $value[$key][$k] = $v;
+                    }
+                    continue;
+                }
                 $value[$key] = $val;
             }
 

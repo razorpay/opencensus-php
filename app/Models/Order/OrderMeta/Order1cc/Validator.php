@@ -59,7 +59,7 @@ class Validator extends Base\Validator
     protected static $customerDetailsRules = [
         Fields::CUSTOMER_DETAILS_ID               => 'sometimes|string|max:128',
         Fields::CUSTOMER_DETAILS_NAME             => 'sometimes|string|max:64',
-        Fields::CUSTOMER_DETAILS_CONTACT          => 'required|contact_syntax',
+        Fields::CUSTOMER_DETAILS_CONTACT          => 'sometimes|contact_syntax',
         Fields::CUSTOMER_DETAILS_EMAIL            => 'sometimes|email',
         Fields::CUSTOMER_DETAILS_SHIPPING_ADDRESS => 'sometimes|array|custom',
         Fields::CUSTOMER_DETAILS_BILLING_ADDRESS  => 'sometimes|array|custom',

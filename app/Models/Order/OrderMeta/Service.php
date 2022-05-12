@@ -20,25 +20,32 @@ class Service extends \RZP\Models\Base\Service
         (new Order1cc\Validator())->validateInput('editCustomerDetails', $input);
         (new Core)->validateActive1CCOrderId($orderId);
 
+        $orderMetaInput = [];
         $customerInfo = $input[Order1cc\Fields::CUSTOMER_DETAILS];
-        $shippingInfo = $this->app['cache']->get(
-            $this->getShippingInfoCacheKey(
-                $orderId,
-                $customerInfo[Order1cc\Fields::CUSTOMER_DETAILS_SHIPPING_ADDRESS]
-            )
-        );
-
-        if ($shippingInfo === null or
-            $shippingInfo['serviceable'] === false)
+        if (isset($customerInfo[Order1cc\Fields::CUSTOMER_DETAILS_SHIPPING_ADDRESS]) === true)
         {
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_SHIPPING_INFO_NOT_FOUND);
+            $shippingInfo = $this->app['cache']->get(
+                $this->getShippingInfoCacheKey(
+                    $orderId,
+                    $customerInfo[Order1cc\Fields::CUSTOMER_DETAILS_SHIPPING_ADDRESS]
+                )
+            );
+
+            if ($shippingInfo === null or
+                $shippingInfo['serviceable'] === false)
+            {
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_SHIPPING_INFO_NOT_FOUND);
+            }
+
+            $orderMetaInput = [
+                Order1cc\Fields::COD_FEE      => $shippingInfo[Order1cc\Fields::COD_FEE] ?? 0,
+                Order1cc\Fields::SHIPPING_FEE => $shippingInfo[Order1cc\Fields::SHIPPING_FEE] ?? 0,
+            ];
         }
 
-        $orderMetaInput = [
-            Order1cc\Fields::COD_FEE          => $shippingInfo[Order1cc\Fields::COD_FEE] ?? 0,
-            Order1cc\Fields::SHIPPING_FEE     => $shippingInfo[Order1cc\Fields::SHIPPING_FEE] ?? 0,
+        $orderMetaInput = array_merge($orderMetaInput, [
             Order1cc\Fields::CUSTOMER_DETAILS => $customerInfo,
-        ];
+        ]);
 
         return (new Core)->update1CCOrder($orderId, $orderMetaInput);
     }

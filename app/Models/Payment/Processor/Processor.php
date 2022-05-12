@@ -6161,21 +6161,42 @@ class Processor
         return $this->createCardForNetworkToken($card, $input);
     }
 
+    /**
+     * @throws Exception\BadRequestValidationFailureException
+     * @throws \Throwable
+     * @throws Exception\BadRequestException
+     */
     private function validate1CCFlow(array $input)
     {
-        if(isset($input['order_id']) === true){
+        if (isset($input['order_id']) === true)
+        {
             $order = $this->repo->order->findByPublicIdAndMerchant($input['order_id'], $this->merchant);
             $orderMeta = null;
-            foreach ($order->orderMetas as $oMeta) {
-                if ($oMeta->getType() === Order\OrderMeta\Type::ONE_CLICK_CHECKOUT) {
+            foreach ($order->orderMetas as $oMeta)
+            {
+                if ($oMeta->getType() === Order\OrderMeta\Type::ONE_CLICK_CHECKOUT)
+                {
                     $orderMeta = $oMeta;
                     break;
                 }
             }
-            if(empty($orderMeta) === true){
+            if (empty($orderMeta) === true)
+            {
                 return;
             }
-            if(isset($orderMeta->getValue()[Order\OrderMeta\Order1cc\Fields::CUSTOMER_DETAILS]) === false){
+
+            // 1cc: Ensuring customer details check only occurs when oMeta is accompanied by shipping_fee etc.
+            $keys = array_keys($orderMeta->getValue());
+
+            if (sizeof($keys) === 1 and $keys[0] === 'line_items_total')
+            {
+                return;
+            }
+
+            $customerDetails = $orderMeta->getValue()[Order\OrderMeta\Order1cc\Fields::CUSTOMER_DETAILS] ?? null;
+
+            if (empty($customerDetails) === true or empty($customerDetails[Order\OrderMeta\Order1cc\Fields::CUSTOMER_DETAILS_SHIPPING_ADDRESS]) === true)
+            {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_ERROR,
                     null,
