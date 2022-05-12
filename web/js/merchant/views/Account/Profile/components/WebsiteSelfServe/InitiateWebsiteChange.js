@@ -88,7 +88,7 @@ function InitiateWebsiteChange(props) {
 
   const title =
     props.flowType === FLOWS.ADDITIONAL_WEBSITE
-      ? `Add new Website/App`
+      ? `Add Website/App`
       : props.user.has_key_access
       ? 'Update Website/App'
       : 'Add new Website/App';

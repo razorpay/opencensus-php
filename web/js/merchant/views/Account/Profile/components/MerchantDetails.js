@@ -100,7 +100,6 @@ function renderAdditionalWebsites(user, handleEditWebsite, additionalWebsiteWork
         )}
       </div>
       {user.business_website &&
-        !user.isUnregisteredBusiness &&
         user.isAdditionalDomainWhitelistSelfServeOn &&
         isWorkflowChangeAllowed(additionalWebsiteWorkflow) &&
         (user.role === 'owner' || user.role === 'admin') &&
