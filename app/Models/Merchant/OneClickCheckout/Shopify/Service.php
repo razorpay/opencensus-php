@@ -30,6 +30,7 @@ class Service extends Base\Service
         'F5JbTV6pBVIyud',
         'EGCzwErjjYe9nL',   //Adjavis Digital LLP
         'Hj1IOXYBFOQLRL',   //PSI EXCEL EXPORTS 
+        'ETejwsC2azC6tI',   //Nanda Electric
     ];
 
     protected $mutex;
