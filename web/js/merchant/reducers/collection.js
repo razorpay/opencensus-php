@@ -17,6 +17,32 @@ import Invitation from 'merchant/models/Invitation';
 
 import RegistrationLink from 'merchant/models/RegistrationLink';
 
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonSegmentProperties } from 'common/utils/rzp-utils';
+
+const TRACK_NAMESPACES = ['PAYMENTS', 'REFUNDS', 'SETTLEMENTS'];
+
+const trackNamespaceEvents = (action, success) => {
+  const NAMESPACE = action?.type?.split('_')[0];
+
+  if (TRACK_NAMESPACES.includes(NAMESPACE)) {
+    const QUERY_PARAMS = window.location.href.split('?');
+    const PROPERTIES = success ? { success } : { success, failureReason: action?.payload?.errors };
+
+    analyticsTrack({
+      objectName: `${NAMESPACE?.toLowerCase()} collection search`,
+      actionName: 'result',
+      properties: {
+        ...getCommonSegmentProperties(window.rzp_user, { addUserProperties: true }),
+        ...PROPERTIES,
+        queryParams: QUERY_PARAMS?.length > 1 ? QUERY_PARAMS[1] : '',
+      },
+      screen: window.location.pathname.split('/').pop(),
+      toLumberjack: true,
+    });
+  }
+};
+
 export const getActionName = (namespace) => {
   return `${namespace}_FETCH`;
 };
@@ -47,6 +73,7 @@ export const listFetchPendingState = (state, action, initialState) => {
 };
 
 export const listFetchSuccessState = (state, action) => {
+  trackNamespaceEvents(action, true);
   return merge(state, {
     loading: false,
     items: action.payload.data.items,
@@ -55,6 +82,7 @@ export const listFetchSuccessState = (state, action) => {
 };
 
 export const listFetchErrorState = (state, action, initialState) => {
+  trackNamespaceEvents(action, false);
   return merge(state, {
     loading: false,
     items: initialState.items,

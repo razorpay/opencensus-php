@@ -7,6 +7,7 @@ import EntityItemRow from 'merchant/containers/EntityItemRow';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import PaymentOptimizerProvider from 'merchant/views/Transactions/Payments/components/PaymentOptimizerProvider';
+import PopoverComponent, { PopoverBody } from 'common/ui/Popover';
 
 const SettlementsListItem = ({ settlement, handleBreakupClick, user, terminalProviders }) => {
   const handleTracking = () => {
@@ -38,13 +39,13 @@ const SettlementsListItem = ({ settlement, handleBreakupClick, user, terminalPro
           />
         </td>
       )}
-      <td class="text-right">
+      <td className="text-right">
         <Amount value={settlement.amount} currency="INR" />
       </td>
-      <td class="text-right">
+      <td className="text-right">
         <Amount value={settlement.fees} currency="INR" />
       </td>
-      <td class="text-right">
+      <td className="text-right">
         <Amount value={settlement.tax} currency="INR" />
       </td>
       <td>
@@ -54,7 +55,7 @@ const SettlementsListItem = ({ settlement, handleBreakupClick, user, terminalPro
         <SettlementStatusLabel status={settlement.status} />
       </td>
       <td>
-        <button class="btn btn-xs btn-primary" onClick={handleBreakupClick}>
+        <button className="btn btn-xs btn-primary" onClick={handleBreakupClick}>
           Breakup
         </button>
       </td>
@@ -66,15 +67,34 @@ export default (props) => {
   const { settlements, isLoading, showBreakup, user, terminalProviders } = props;
 
   return (
-    <div class="table-responsive">
-      <table class="table table-hover">
+    <div className="table-responsive settlements-table">
+      <table className="table table-hover">
         <thead>
           <tr>
             <th>Settlement Id</th>
             {user?.isSingleReconEnabled && user?.isOptimizerEnabled && <th>Payment Provider</th>}
-            <th class="text-right">Amount</th>
-            <th class="text-right">Fees</th>
-            <th class="text-right">Tax</th>
+            <th className="text-right">
+              Amount
+              {user?.isSingleReconEnabled && user?.isOptimizerEnabled && (
+                <i className="i i-info-circle">
+                  <PopoverComponent align="bottom" theme="dark" data-testid="total-amount-popover">
+                    <PopoverBody>
+                      <p>
+                        The settlement amount represents the fund transfer amount that is initiated
+                        from razorpay or optimizer payment provider to your respective settlement
+                        bank account.
+                      </p>
+                      <p>
+                        The fees and tax for optimizer non razorpay payment providers is the sum of
+                        fees and tax for the transactions that make up that settlement.
+                      </p>
+                    </PopoverBody>
+                  </PopoverComponent>
+                </i>
+              )}
+            </th>
+            <th className="text-right">Fees</th>
+            <th className="text-right">Tax</th>
             <th>Created At</th>
             <th>Status</th>
             <th />
