@@ -121,6 +121,22 @@ return [
         ],
     ],
 
+    E::BANKING_ACCOUNT_STATEMENT_POOL_RBL => [
+        Type::PRIVILEGE_AUTH => [
+            [
+                'merchant_id' => '10000000000000'
+            ],
+        ],
+    ],
+
+    E::BANKING_ACCOUNT_STATEMENT_POOL_ICICI => [
+        Type::PRIVILEGE_AUTH => [
+            [
+                'merchant_id' => '10000000000000'
+            ],
+        ],
+    ],
+
     E::BANKING_ACCOUNT_STATEMENT_DETAILS => [
         Type::PRIVILEGE_AUTH => [
             [

@@ -44,6 +44,7 @@ class Entity extends Base\PublicEntity
     const POSTED_DATE           = 'posted_date';
     const TRANSACTION_DATE      = 'transaction_date';
     const UTR                   = 'utr';
+    const ENTITY_ID             = 'entity_id';
 
     const CREDIT_REGEX = '/^(RTGS\/|NEFT\/|UPI\/|R\/UPI\/|R-)(.*?)(\/|-)/';
 
