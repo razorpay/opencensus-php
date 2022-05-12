@@ -405,7 +405,7 @@ class PGRouter
 
     public function createOrder(array $input, bool $throwExceptionOnFailure = false)
     {
-        $response = $this->sendRequest(self::PGRouterCreateOrder, Requests::POST, $input, $throwExceptionOnFailure, 15);
+        $response = $this->sendRequest(self::PGRouterCreateOrder, Requests::POST, $input, $throwExceptionOnFailure);
 
         return $this->forceFillOrderFromResponse($response);
     }
@@ -633,7 +633,7 @@ class PGRouter
 
         $res = null;
         $exception = null;
-        $maxAttempts = 2;
+        $maxAttempts = 3;
 
         while ($maxAttempts--)
         {
