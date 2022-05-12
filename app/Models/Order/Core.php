@@ -415,6 +415,7 @@ class Core extends Base\Core
                     continue;
                 }
                 $data[OrderMeta\Order1cc\Fields::LINE_ITEMS_TOTAL] = $orderMeta->getValue()[OrderMeta\Order1cc\Fields::LINE_ITEMS_TOTAL];
+                $data[OrderMeta\Order1cc\Fields::LINE_ITEMS]       = $orderMeta->getValue()[OrderMeta\Order1cc\Fields::LINE_ITEMS] ?? [];
                 break;
             }
         }

@@ -173,4 +173,39 @@ class Order extends Base
 
         return parent::create($attributes);
     }
+
+    public function create1ccOrderWithLineItems(array $attributes = [])
+    {
+        $defaultValues = [
+            'merchant_id' => '10000000000000',
+            'receipt'     => 'test_tpv_receipt',
+            'currency'    => 'INR',
+            'amount'      => 100000,
+            'discount'    => 1,
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        $order = parent::create($attributes);
+
+        $orderMetaAttributes = [
+            'order_id' => $order->getId(),
+            'type'     => 'one_click_checkout',
+            'value'    => [
+                'line_items'       => [
+                    [
+                        'name'        => 'Test Line Item',
+                        'description' => 'Test Line Item Description',
+                        'price'       => 100000,
+                        'quantity'    => 1,
+                    ],
+                ],
+                'line_items_total' => 100000,
+            ],
+        ];
+
+        $this->fixtures->create('order_meta', $orderMetaAttributes);
+
+        return $order;
+    }
 }

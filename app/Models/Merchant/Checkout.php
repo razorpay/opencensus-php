@@ -170,6 +170,8 @@ class Checkout
 
         $this->fill1ccCityAutopopulateExperimentDetails($merchant, $data);
 
+        $this->fill1ccCartDetailsExperiment($merchant, $data);
+
         $this->fillCovidReliefDetails($merchant, $data, $mode);
 
         return $data;
@@ -243,6 +245,29 @@ class Checkout
         catch (\Exception $e)
         {
             $data['1cc_city_autopopulate_disable'] = null;
+        }
+    }
+
+    protected function fill1ccCartDetailsExperiment(Entity $merchant, array &$data): void
+    {
+        if ($merchant->isFeatureEnabled(Feature\Constants::ONE_CLICK_CHECKOUT) === false)
+        {
+            return;
+        }
+        try
+        {
+            $properties = [
+                'id'            => $merchant->getId(),
+                'experiment_id' => $this->app['config']->get('app.1cc_cart_items_splitz_experiment_id'),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $data['1cc_cart_items_exp'] = $response['response']['variant']['name'] ?? null;
+        }
+        catch (\Exception $e)
+        {
+            $data['1cc_cart_items_exp'] = null;
         }
     }
 

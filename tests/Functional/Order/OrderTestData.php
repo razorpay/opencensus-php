@@ -2447,4 +2447,35 @@ return [
             ],
         ],
     ],
+
+    'testCreateOrderFor1CCWithInvalidLineItems' => [
+        'request' => [
+            'content' => [
+                'amount'   => 1000,
+                'currency' => 'INR',
+                'line_items_total' => 1000,
+                'line_items' => [
+                    [
+                        'name' => 'name',
+                        'price' => 'price',
+                        'quantity' => 1,
+                    ],
+                ]
+            ],
+            'method'  => 'POST',
+            'url'     => '/orders',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
 ];

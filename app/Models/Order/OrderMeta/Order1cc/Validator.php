@@ -28,11 +28,11 @@ class Validator extends Base\Validator
 
     protected static $lineItemRules = [
         Fields::LINE_ITEM_TYPE                                                   => 'sometimes|string|max:32',
-        Fields::LINE_ITEM_SKU                                                    => 'required|string|max:128',
+        Fields::LINE_ITEM_SKU                                                    => 'sometimes|string|max:128',
         Fields::LINE_ITEM_VARIANT_ID                                             => 'sometimes|string|max:128',
         Fields::LINE_ITEM_OTHER_PRODUCT_CODES                                    => 'sometimes|array',
         Fields::LINE_ITEM_PRICE                                                  => 'required|integer',
-        Fields::LINE_ITEM_OFFER_PRICE                                            => 'required|integer',
+        Fields::LINE_ITEM_OFFER_PRICE                                            => 'sometimes|integer',
         Fields::LINE_ITEM_TAX_AMOUNT                                             => 'sometimes|integer',
         Fields::LINE_ITEM_QUANTITY                                               => 'required|integer',
         Fields::LINE_ITEM_NAME                                                   => 'required|string|max:128',

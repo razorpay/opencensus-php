@@ -379,6 +379,8 @@ return array(
 
     '1cc_city_autopopulate_splitz_experiment_id' => env('MAGIC_CHECKOUT_DISABLE_AUTOPOPULATE_EXP_ID'),
 
+    '1cc_cart_items_splitz_experiment_id' => env('MAGIC_CHECKOUT_CART_ITEMS_EXP_ID'),
+
     'shopify_1cc_sqs_splitz_experiment_id' => env('SHOPIFY_1CC_SQS_SPLITZ_EXPERIMENT_ID'),
 
     'global_card_payment_splitz_experiment_id' => env('GLOBAL_CARD_PAYMENT_SPLITZ_EXPERIMENT_ID'),

@@ -12361,4 +12361,29 @@ return [
         ],
     ],
 
+    'testGetCheckoutPreferencesFor1CCOrderWithLineItems' => [
+        'request'  => [
+            'url'     => '/preferences',
+            'method'  => 'get',
+            'content' => [
+                'currency' => 'INR',
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'order' => [
+                    'line_items' => [
+                        [
+                            'name'        => 'Test Line Item',
+                            'description' => 'Test Line Item Description',
+                            'price'       => 100000,
+                            'quantity'    => 1,
+                        ],
+                    ],
+                ],
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
 ];

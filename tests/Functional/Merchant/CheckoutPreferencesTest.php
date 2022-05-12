@@ -2474,6 +2474,17 @@ class CheckoutPreferencesTest extends TestCase
         $this->assertEquals(['10000000000000'], $response);
     }
 
+    public function testGetCheckoutPreferencesFor1CCOrderWithLineItems() {
+        $this->fixtures->merchant->addFeatures([Constants::ONE_CLICK_CHECKOUT]);
+        $order = $this->fixtures->order->create1ccOrderWithLineItems();
+
+        $this->ba->publicAuth();
+
+        $this->testData[__FUNCTION__]['request']['content']['order_id'] = $order->getPublicId();
+
+        $this->startTest();
+    }
+
     protected function mockSession($appToken = 'capp_1000000custapp')
     {
         $data = array(

@@ -2593,6 +2593,47 @@ class OrderTest extends TestCase
             $orderEntity[Order\OrderMeta\Order1cc\Fields::LINE_ITEMS_TOTAL]);
     }
 
+    public function testCreateOrderFor1CCWithLineItems()
+    {
+        $this->fixtures->merchant->addFeatures(FeatureConstants::ONE_CLICK_CHECKOUT);
+
+        $orderData = [
+            Order\Entity::AMOUNT                              => 10000,
+            Order\Entity::RECEIPT                             => 'R1',
+            Order\OrderMeta\Order1cc\Fields::LINE_ITEMS_TOTAL => 10000,
+            Order\OrderMeta\Order1cc\Fields::LINE_ITEMS       => [
+                [
+                    Order\OrderMeta\Order1cc\Fields::LINE_ITEM_NAME => 'Line Item 1',
+                    Order\OrderMeta\Order1cc\Fields::LINE_ITEM_PRICE => 1000,
+                    Order\OrderMeta\Order1cc\Fields::LINE_ITEM_QUANTITY => 1,
+                ],
+                [
+                    Order\OrderMeta\Order1cc\Fields::LINE_ITEM_NAME => 'Line Item 2',
+                    Order\OrderMeta\Order1cc\Fields::LINE_ITEM_PRICE => 2000,
+                    Order\OrderMeta\Order1cc\Fields::LINE_ITEM_QUANTITY => 2,
+                ],
+            ],
+        ];
+
+        $this->createOrder($orderData);
+        $order = $this->getDbLastOrder();
+        $orderEntity = $this->fetchOrderById($order->getPublicId());
+
+        $this->assertNotNull($orderEntity);
+        $this->assertEquals($orderData[Order\Entity::AMOUNT], $orderEntity['amount']);
+        $this->assertEquals($orderData[Order\Entity::RECEIPT], $orderEntity['receipt']);
+        $this->assertEquals($orderData[Order\OrderMeta\Order1cc\Fields::LINE_ITEMS_TOTAL],
+            $orderEntity[Order\OrderMeta\Order1cc\Fields::LINE_ITEMS_TOTAL]);
+        $this->assertTrue(empty($orderEntity[Order\OrderMeta\Order1cc\Fields::LINE_ITEMS]));
+    }
+
+    public function testCreateOrderFor1CCWithInvalidLineItems()
+    {
+        $this->fixtures->merchant->addFeatures(FeatureConstants::ONE_CLICK_CHECKOUT);
+
+        $this->startTest();
+    }
+
     protected function fetchOrderById(string $publicOrderId)
     {
         $request = [
