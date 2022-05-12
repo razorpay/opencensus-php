@@ -885,6 +885,12 @@ class Constants
      */
     const ALLOW_VA_TO_VA_PAYOUTS        = 'allow_va_to_va_payouts';
 
+    const AXIS_ACCESS                   = 'axis_access';
+
+    public static $merchantFeaturesForOrgAccess = [
+        'axis_org' => 'axis_access',
+    ];
+
     /**
      * Used to manage on_hold feature in case of bene/NPCI downtime for payout requests
      * If this flag is enabled the payout will be queued for a certian sla or until the uptime is detected
@@ -1699,6 +1705,7 @@ class Constants
         self::SKIP_CONTACT_DEDUP_FA_BA        => true,
         self::PL_BLOCK_CUSTOMER_PREFILL       => true,
         self::ALLOW_VA_TO_VA_PAYOUTS          => true,
+        self::AXIS_ACCESS                     => true,
         self::PAYMENT_SHOW_DCC_MARKUP         => true,
         self::EXPOSE_SETTLED_BY               => true,
         self::PAYPAL_CC                       => true,

@@ -571,6 +571,27 @@ class Entity extends Base\Entity
         $this->attributes[self::MERCHANT_STYLES] = $styles;
     }
 
+    /*
+     * Merchant features for org access.
+     * Check if org has a feature set as defined in
+     * Feature\Constants::$merchantFeaturesForOrgAccess
+     */
+    public function getFeatureAssignedToOrg($orgId)
+    {
+        $org = app('repo')->org->findOrFailPublic($orgId);
+
+        foreach (Feature\Constants::$merchantFeaturesForOrgAccess as $orgFeature => $merchantFeature)
+        {
+            $isFeatureAssignedToOrg = $org->isFeatureEnabled($orgFeature);
+
+            if($isFeatureAssignedToOrg === true)
+            {
+                return $orgFeature;
+            }
+        }
+        return null;
+    }
+
     /**
      * Return if an org belongs to dynamic wallet flow orgs.
      *

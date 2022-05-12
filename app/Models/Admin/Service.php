@@ -1592,4 +1592,5 @@ class Service extends Base\Service
 
         return ($variant === 'on');
     }
+
 }

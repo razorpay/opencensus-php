@@ -397,6 +397,10 @@ class Entity extends Base\PublicEntity
         self::OFFLINE                   => 'boolean',
     ];
 
+    const featureToGatewayMap = [
+        'axis_org' => 'paysecure',
+    ];
+
     protected $appends = [
         self::SHARED,
         self::BANKING_TYPES,

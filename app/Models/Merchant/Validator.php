@@ -654,6 +654,33 @@ class Validator extends Base\Validator
         }
     }
 
+    public function validateMerchantAccessibilityForOrg($merchantId, $orgFeature)
+    {
+        if($orgFeature === null)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ACCESS_DENIED);
+        }
+
+        $app = App::getFacadeRoot();
+
+        $merchant = $app->repo->merchant->findOrFailPublic($merchantId);
+
+        $merchantFeature = Feature\Constants::$merchantFeaturesForOrgAccess[$orgFeature];
+
+        $isAccessibleByExternalOrg = $merchant->isFeatureEnabled($merchantFeature);
+
+        if($isAccessibleByExternalOrg === false)
+        {
+            $app['trace']->info(TraceCode::MERCHANT_NOT_ALLOWED_FOR_ORG, [
+                'mid' => $merchantId,
+                'merchant feature' => $merchantFeature,
+                'org feature' => $orgFeature,
+            ]);
+
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ACCESS_DENIED);
+        }
+    }
+
     public function validateMerchantForProductInternational(Entity $merchant)
     {
         $merchant = $merchant?: $this->entity;

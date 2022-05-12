@@ -1411,6 +1411,36 @@ class Service extends Base\Service
         return false;
     }
 
+    public function getMerchantTerminalsForGateway($merchantId, $orgId, $gateway):array
+    {
+        $input= [
+            'org_id' => $orgId,
+            'gateway' => $gateway,
+            'merchant_ids' => [$merchantId],
+        ];
+
+        $path = "v1/merchants/terminals";
+
+        $response = $this->app['terminals_service']->proxyTerminalService(
+            $input,
+            \Requests::POST,
+            $path
+        );
+
+        $terminalsRedactedResponse = [];
+
+        foreach ($response as $terminal)
+        {
+            array_push($terminalsRedactedResponse, [
+                'terminal_id'          => $terminal['terminal_id'],
+                'gateway_terminal_id'  => $terminal['gateway_terminal_id'],
+                'gateway_merchant_id'  => $terminal['gateway_merchant_id'],
+            ]);
+        }
+
+        return $terminalsRedactedResponse;
+    }
+
     protected function getTerminalIds($terminals)
     {
         $terminalIds = [];

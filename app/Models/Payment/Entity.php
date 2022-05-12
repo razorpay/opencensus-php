@@ -3962,7 +3962,6 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
         return $data;
     }
-
     public function toArrayAdmin()
     {
         $settledBy = $this->getSettledBy();

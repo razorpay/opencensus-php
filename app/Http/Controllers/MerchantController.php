@@ -1637,6 +1637,13 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function externalGetMerchantCompositeDetails($id)
+    {
+        $response = $this->service()->externalGetMerchantCompositeDetails($id);
+
+        return ApiResponse::json($response);
+    }
+
     /**
      * returns merchant info along with merchant_details, to be used by internal apps
      */

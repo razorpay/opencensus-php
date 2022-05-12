@@ -1163,6 +1163,31 @@ return [
         ],
     ],
 
+    'testExternalGetMerchantCompositeDetails' => [
+        'request' => [
+            'url'       => '/external_org/merchants/composite_details/',
+            'method'    => 'GET',
+            'content'   => [],
+        ],
+        'response' => [
+            'content' => [
+                'terminals' => [
+                    [
+                        'terminal_id'               => 'term_10000000000002',
+                        'gateway_terminal_id'       => 'nodal account axis_migs',
+                        'gateway_merchant_id'       => 'razorpay axis_migs',
+                    ]
+                ],
+               'merchant' => [
+                   'id'        => '100000razorpay',
+                   'name'      => 'TestMerchant',
+                   'website'   => 'http://goyette.net/',
+                   'category'  => '1100',
+               ],
+            ],
+        ],
+    ],
+
     'testGetPreSignupDetails' => [
         'request' => [
             'content' => [],

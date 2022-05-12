@@ -10,6 +10,7 @@ use Mockery;
 use RZP\Constants;
 use Carbon\Carbon;
 use RZP\Constants\Mode;
+use RZP\Http\Request\Requests;
 use RZP\Error\ErrorCode;
 use RZP\Models\Base\EsDao;
 use RZP\Constants\Timezone;
@@ -1212,6 +1213,73 @@ We look forward to transacting with you!
         $merchant->admins()->attach($admin);
 
         $this->ba->adminAuth('test', null, 'org_' . Org::RZP_ORG);
+
+        $this->startTest();
+    }
+
+    public function testExternalGetMerchantCompositeDetails()
+    {
+        $merchant = $this->fixtures->create('merchant',[
+            'id'        => '100000razorpay',
+            'name'      => 'TestMerchant',
+            'email'     => 'abc.def@gmail.com',
+            'website'   => 'http://goyette.net/',
+            'category'  => 1100,
+        ]);
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'merchant_id' => $merchant->getId(),
+            'business_subcategory' => BusinessSubcategory::LENDING,
+            'business_category'    => BusinessCategory::FINANCIAL_SERVICES,
+        ]);
+
+        $org = $this->fixtures->org->createAxisOrg();
+
+        $this->ba->adminAuth('test', 'SuperSecretTokenForRazorpaySuprAxisbToken', $org->getPublicId(), 'axisbank.com');
+
+        $terminal = $this->fixtures->create(
+            'terminal:shared_axis_terminal', ['id' =>'10000000000002',
+            'used'        => true,
+            'enabled'     => '1',
+            'sync_status' => 'sync_success',
+            'org_id'      => $org->getId(),
+        ]);
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url . $merchant->getId();
+
+        $this->fixtures->create('feature', [
+            'entity_id' => $org->getId(),
+            'name'   => 'axis_org',
+            'entity_type' => 'org',
+        ]);
+
+        $this->fixtures->create('feature', [
+            'entity_id' => $merchant->getId(),
+            'name'   => 'axis_access',
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->terminalsServiceMock = $this->getTerminalsServiceMock();
+
+        $this->mockTerminalsServiceSendRequest(function () use ($terminal) {
+
+            $data = $this->terminalRepository->findOrFail($terminal['id'])->toArrayWithPassword();
+
+            $data['terminal_id'] = 'term_'.$data['id'];
+
+            $data['entity'] = 'terminal';
+
+            $body = json_encode(['data' => [$data]]);
+
+            $response = new \Requests_Response;
+
+            $response->body = $body;
+
+            return $response;
+
+        }, 1);
 
         $this->startTest();
     }

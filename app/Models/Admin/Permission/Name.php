@@ -9,6 +9,7 @@ class Name
     const VIEW_HOMEPAGE                       = 'view_homepage';
     const VIEW_ALL_MERCHANTS                  = 'view_all_merchants';
     const VIEW_MERCHANT                       = 'view_merchant';
+    const VIEW_MERCHANT_EXTERNAL              = 'view_merchant_external';
     const VIEW_MERCHANT_BALANCE               = 'view_merchant_balance';
     const VIEW_CITIES                         = 'view_cities';
     // @todo:

@@ -93,6 +93,10 @@ return [
                 'description' => 'View a particular merchant details',
                 'assignable'  => true,
             ],
+            Permission::VIEW_MERCHANT_EXTERNAL        => [
+                'description' => 'View a particular merchant details in external org',
+                'assignable'  => true,
+            ],
             Permission::MANAGE_ONBOARDING_SUBMISSIONS => [
                 'description' => 'View and update product onboarding submissions and the activation statuses',
                 'assignable'  => true,

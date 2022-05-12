@@ -413,6 +413,7 @@ class Route
         'smart_dashboard_merchant_details_fetch'   => ['get',      'smart_dashboard/merchants/details',              'MerchantController@getSmartDashboardMerchantDetails'               ],
         'merchant_details_patch'                   => ['patch',    'merchants/details',                              'MerchantController@patchMerchantDetails'                           ],
         'smart_dashboard_merchant_details_patch'   => ['post',     'smart_dashboard/merchants/details',              'MerchantController@patchSmartDashboardMerchantDetails'             ],
+        'external_merchant_composite_details_fetch'=> ['get',      'external_org/merchants/composite_details/{mid}', 'MerchantController@externalGetMerchantCompositeDetails'                             ],
         'merchant_details_suggested_update'        => ['post',     'merchants/details/suggested_update',             'MerchantController@updateSuggestedMerchantDetails'                 ],
         'internal_merchants_fetch'                 => ['get',      'internal/merchants',                             'MerchantController@getMerchantBulk'                                ],
         'internal_merchant_fetch'                  => ['get',      'internal/merchants/{id}',                        'MerchantController@internalGetMerchant'                            ],
@@ -3664,6 +3665,7 @@ class Route
      */
     public static $skipMerchantAccessCheckOnSpecificAdminAuthRoutes = [
         'banking_account_create_admin',
+        'external_merchant_composite_details_fetch',
         'banking_account_service_lms_routes_all',
     ];
 
@@ -5778,6 +5780,7 @@ class Route
         'merchant_details_fetch',
         'smart_dashboard_merchant_details_fetch',
         'merchant_details_suggested_update',
+        'external_merchant_composite_details_fetch',
         'merchant_get_terminals',
         'merchant_invoice_add_bulk',
         'merchant_integration_create',
@@ -6978,6 +6981,7 @@ class Route
         'merchant_details_fetch'                   => Permission::VIEW_MERCHANT,
         'smart_dashboard_merchant_details_fetch'   => Permission::VIEW_MERCHANT,
         'workflow_needs_merchant_clarification'    => Permission::MERCHANT_CLARIFICATION_ON_WORKFLOW,
+        'external_merchant_composite_details_fetch'=> Permission::VIEW_MERCHANT_EXTERNAL,
         'setl_retry'                               => Permission::RETRY_SETTLEMENT,
         'payout_retry'                             => Permission::RETRY_SETTLEMENT,
         'setl_update_channel_bulk'                 => Permission::SETTLEMENT_BULK_UPDATE,
@@ -10558,6 +10562,7 @@ class Route
             'smart_dashboard_merchant_details_fetch',
             'merchant_details_patch',
             'smart_dashboard_merchant_details_patch',
+            'external_merchant_composite_details_fetch',
             'merchant_details_suggested_update',
             'merchant_document_admin_fetch',
             'merchant_document_admin_upload',

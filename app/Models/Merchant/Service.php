@@ -4989,6 +4989,29 @@ class Service extends Base\Service
         return $data;
     }
 
+    public function externalGetMerchantCompositeDetails($merchantId)
+    {
+        $orgId = $this->app['basicauth']->getOrgId();
+
+        $orgId = Org\Entity::verifyIdAndStripSign($orgId);
+
+        $orgFeature = (new Org\Entity)->getFeatureAssignedToOrg($orgId);
+
+        (new Merchant\Validator)->validateMerchantAccessibilityForOrg($merchantId, $orgFeature);
+
+        $data = [];
+
+        $merchantDetails = $this->internalGetMerchant($merchantId);
+
+        $merchantDetails = array_merge($merchantDetails['merchant'], $merchantDetails['merchant_detail']);
+
+        $data['merchant'] = (new Entity)->toArrayAdminRestrictedWithFeature($merchantDetails, null, $orgFeature);
+
+        $data['terminals'] = (new Terminal\Service())->getMerchantTerminalsForGateway($merchantId, $orgId, Terminal\Entity::featureToGatewayMap[$orgFeature]);
+
+        return $data;
+    }
+
     public function fetchEligiblePricingPlansAndUpdateCorporatePricingRule(int $limit)
     {
         $successCount = 0;

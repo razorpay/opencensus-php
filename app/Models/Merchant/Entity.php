@@ -586,6 +586,20 @@ class Entity extends Base\PublicEntity
         self::KYC_ACCESS,
     ];
 
+    protected $adminRestrictedWithFeature     = [
+        Feature\Constants::AXIS_ORG_FEATURE => [
+            self::ID,
+            self::NAME,
+            self::WEBSITE,
+            self::CATEGORY,
+            self::CATEGORY2,
+            self::BILLING_LABEL,
+            'business_registered_city',
+            'business_registered_state',
+            'company_pan',
+        ],
+    ];
+
     const MAX_PAYMENT_AMOUNT_DEFAULT                  = 50000000;
     const MAX_INTERNATIONAL_PAYMENT_AMOUNT_DEFAULT    = 50000000;
     const MAX_PAYMENT_AMOUNT_DEFAULT_FOR_UNREGISTERED = 1000000;

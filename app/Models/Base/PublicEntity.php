@@ -121,6 +121,14 @@ class PublicEntity extends UniqueIdEntity
      */
     protected $adminRestricted     = [];
 
+    /**
+     * This is used for maintaining config where admin attributes
+     * are to be limited based on feature flag on orgs
+     *
+     * @var array
+     */
+    protected $adminRestrictedWithFeature = [];
+
     protected $publicSetters    = [
         self::ID,
         self::ENTITY,
@@ -237,6 +245,22 @@ class PublicEntity extends UniqueIdEntity
 
     public function toArrayAdminRestricted(array $array)
     {
+        return array_only($array, $this->adminRestricted);
+    }
+
+    public function toArrayAdminRestrictedWithFeature(array $array, $orgType, $orgFeature)
+    {
+        /* if orgType is restricted, will fetch restricted array in adminRestricted
+        if orgType is null (not restricted), will fetch adminRestricted according to feature flag */
+        if($orgType === null)
+        {
+            if( ($orgFeature !== null) and
+                (isset($this->adminRestrictedWithFeature[$orgFeature]) === true) )
+            {
+                return array_only($array, $this->adminRestrictedWithFeature[$orgFeature]);
+            }
+        }
+
         return array_only($array, $this->adminRestricted);
     }
 
