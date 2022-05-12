@@ -288,7 +288,8 @@ class DisputeTest extends TestCase
 
         $this->assertArraySelectiveEquals([
             'disputed'          => true,
-            'amount_refunded'   => 100,
+            'amount_refunded'   => 0,
+            'status'            => 'captured',
         ], $payment);
 
         $transaction = $this->getLastEntity('transaction', true);
@@ -306,6 +307,7 @@ class DisputeTest extends TestCase
         $dispute = $this->getLastEntity('dispute', true);
 
         $this->assertArraySelectiveEquals([
+            'status'                => 'open',
             'deduct_at_onset'       => true,
             'amount_deducted'       => 100,
             'deduction_source_type' => 'adjustment',
@@ -505,6 +507,12 @@ class DisputeTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
 
+        $this->assertArraySelectiveEquals([
+            'status' => 'captured',
+            'disputed' => false,
+            'amount_refunded' => 0,
+        ], $payment);
+
         $this->assertEquals(false, $payment['disputed']);
 
         $dispute = $this->getLastEntity('dispute', true);
@@ -556,7 +564,10 @@ class DisputeTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
 
-        $this->assertEquals(false, $payment['disputed']);
+        $this->assertArraySelectiveEquals([
+            'disputed' => false,
+            'status'   => 'refunded',
+        ], $payment);
 
         $txn = $this->getLastEntity('transaction', true);
 
@@ -717,6 +728,14 @@ class DisputeTest extends TestCase
         $dispute = $this->getLastEntity('dispute', true);
 
         $txn = $this->getLastEntity('transaction', true);
+
+        $payment = $this->getLastPayment('payment', true);
+
+        $this->assertArraySelectiveEquals([
+            'disputed'        => false,
+            'amount_refunded' => 10100,
+            'refund_status'   => 'partial',
+        ], $payment);
 
         $this->assertEquals($dispute['id'], $content['id']);
         $this->assertEquals($testdata['request']['content']['status'], $content['status']);

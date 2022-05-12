@@ -152,7 +152,7 @@ class Core extends Base\Core
                 {
                     if ($dispute->getDeductAtOnset() === true)
                     {
-                        $this->createNegativeAdjustmentAndUpdateDispute($dispute);
+                        $this->createNegativeAdjustmentAndUpdateDispute($dispute, 0, false);
                     }
 
                     $this->repo->saveOrFail($payment);
@@ -492,6 +492,11 @@ class Core extends Base\Core
         {
             // If amount_deducted is not zero, it is equal to the disputed amount only
 
+            if ($dispute->getDeductAtOnset() === true)
+            {
+                $this->updatePaymentRefundedAmount($dispute);
+            }
+
             if (($dispute->getAmountDeducted() - $acceptedDisputeAmount) > 0)
             {
                 $this->createPositiveAdjustmentAndUpdateDispute($dispute,
@@ -543,7 +548,7 @@ class Core extends Base\Core
         Refund\Entity::verifyIdAndStripSign($refundId));
     }
 
-    protected function createNegativeAdjustmentAndUpdateDispute(Entity $dispute, int $amount = 0)
+    protected function createNegativeAdjustmentAndUpdateDispute(Entity $dispute, int $amount = 0, bool $updatePaymentAttributes = true)
     {
         if ($amount === 0)
         {
@@ -560,7 +565,10 @@ class Core extends Base\Core
         {
             $adjustment = (new Adjustment\Core)->createAdjustmentForSource($input, $dispute);
 
-            $this->updatePaymentRefundedAmount($dispute);
+            if ($updatePaymentAttributes === true)
+            {
+                $this->updatePaymentRefundedAmount($dispute);
+            }
 
             $this->updateDeductionSourceTypeAndId($dispute, $adjustment->getEntityName(), $adjustment->getId());
         }
