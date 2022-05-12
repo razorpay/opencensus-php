@@ -159,7 +159,7 @@ class Repository extends Base\Repository
     public function getProcessedSettlementsForTimePeriodForMid($mid, $from, $to, $connection = null){
         try
         {
-            $query = $this->newQuery();
+            $query = $this->newQueryOnSlave();
             if (isset($connection)) {
                 $query = $this->newQueryWithConnection($connection);
             }

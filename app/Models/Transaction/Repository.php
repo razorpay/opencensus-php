@@ -2696,7 +2696,7 @@ class Repository extends Base\Repository
     {
         try
         {
-            $query = $this->newQuery();
+            $query = $this->newQueryOnSlave();
             if(isset($connection))
             {
                 $query = $this->newQueryWithConnection($connection);
