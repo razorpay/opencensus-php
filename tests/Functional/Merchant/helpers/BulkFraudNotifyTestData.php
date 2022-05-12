@@ -39,6 +39,29 @@ return [
         ],
     ],
 
+    'testNotifyPostBatchWithNotificationsDisabled' => [
+        'request'  => [
+            'url'     => '/notify/fraud/bulk',
+            'method'  => 'post',
+            'content' => [
+                'bucket_type'      => 'batch_service',
+                'batch'            => [
+                    'type'        => 'create_payment_fraud',
+                    'merchant_id' => '100000Razorpay',
+                    'id'          => '100000Razorpay',
+                ],
+                'settings'         => null,
+                'download_file'    => false,
+                'output_file_path' => 'testing/key/payment.csv',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'success'   => true,
+            ],
+        ],
+    ],
+
     'testGetFraudAttributes' =>  [
         'request'  => [
             'url'     => '/payments/fraud/attributes',
@@ -108,7 +131,7 @@ return [
         ],
     ],
 
-    'testCreateFraudBatchMastercard' => [
+    'testCreateFraudBatchSkipSendMail' => [
         'request'  => [
             'url'     => '/fraud/batch',
             'content' => [
@@ -125,6 +148,49 @@ return [
                     'base_amount'           =>  '29750',
                     'reported_by'           =>  'MasterCard',
                     'idempotency_key'       =>  '1234',
+                    'send_mail'             =>  'N',
+                ],
+            ],
+            'server'    =>  [
+                'HTTP_X_Batch_Id'    => '100000Razorpay',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'entity'    => 'collection',
+                'count'     => 1,
+                'items'     => [
+                    [
+                        'ARN'                   =>  '02705601344033737573894',
+                        'Payment ID'            =>  '10000000000002',
+                        'Status'                =>  'Created',
+                        'Error Reason'          =>  '',
+                        'idempotency_key'       =>  '1234',
+                        'success'               =>  'true',
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testCreateFraudBatchMastercard' => [
+        'request'  => [
+            'url'     => '/fraud/batch',
+            'content' => [
+                [
+                    'error_reason'          =>  '',
+                    'rrn'                   =>  '003373757389',
+                    'currency'              =>  'USD',
+                    'arn'                   =>  '02705601344033737573894',
+                    'type'                  =>  '06 - CNP Fraud',
+                    'sub_type'              =>  'N - PIN Not Used',
+                    'amount_in_cents'       =>  '2975',
+                    'reported_to_issuer_at' =>  1635552000,
+                    'chargeback_code'       =>  '001',
+                    'base_amount'           =>  '29750',
+                    'reported_by'           =>  'MasterCard',
+                    'idempotency_key'       =>  '1234',
+                    'reported_to_razorpay_at'=> '2022-02-12',
                 ],
             ],
             'server'    =>  [
@@ -160,11 +226,12 @@ return [
                     'type'                  =>  '6',
                     'sub_type'              =>  '',
                     'amount_in_cents'       =>  '2694',
-                    'reported_to_issuer_at' =>  '',
+                    'reported_to_issuer_at' =>  '1644624000',
                     'chargeback_code'       =>  '',
                     'base_amount'           =>  '26940',
                     'reported_by'           =>  'Visa',
                     'idempotency_key'       =>  '1234',
+                    'reported_to_razorpay_at'=> '2022-02-12',
                 ],
                 [
                     'error_reason'          =>  '',
@@ -174,11 +241,12 @@ return [
                     'type'                  =>  '7',
                     'sub_type'              =>  '',
                     'amount_in_cents'       =>  '2694',
-                    'reported_to_issuer_at' =>  '',
+                    'reported_to_issuer_at' =>  '1644624000',
                     'chargeback_code'       =>  '',
                     'base_amount'           =>  '26940',
                     'reported_by'           =>  'Visa',
                     'idempotency_key'       =>  '1234',
+                    'reported_to_razorpay_at'=> '2022-02-12',
                 ],
                 [
                     'error_reason'          =>  'ARN not found for the following row',
@@ -193,6 +261,7 @@ return [
                     'base_amount'           =>  '26940',
                     'reported_by'           =>  'Visa',
                     'idempotency_key'       =>  '1234',
+                    'reported_to_razorpay_at'=> '2022-02-12',
                 ],
             ],
             'server'    =>  [
@@ -334,6 +403,7 @@ return [
             'US Bill Amount' => 29.75,
             'Bill Amount' => 29.75,
             'flag' => 0,
+            'reported_to_razorpay_at' => '2022-02-12'
         ],
     ],
 
@@ -364,6 +434,8 @@ return [
             'Fraud Amount in Dollars' =>   '$26.94',
             'Fraud Count' => 1,
             'Fraud Amount' =>   26.94,
+            'send_mail'     => 'N',
+            'reported_to_razorpay_at' => '2022-02-12'
         ],
         [
             // should have error reason: arn not found for the following row
@@ -392,6 +464,7 @@ return [
             'Fraud Amount in Dollars' =>   '$26.94',
             'Fraud Count' => 1,
             'Fraud Amount' =>   26.94,
+            'send_mail' => 'Y',
         ],
     ],
 ];

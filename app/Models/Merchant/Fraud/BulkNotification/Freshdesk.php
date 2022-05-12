@@ -43,6 +43,15 @@ class Freshdesk extends Base\Core
         $isCardNetworkRequest = (isset($this->batchId) === true);
         foreach ($aggregatedData as $merchantId => $merchantData)
         {
+            if ($this->shouldSkipNotificationForBatch($merchantId) === true)
+            {
+                $this->trace->info(TraceCode::MERCHANT_BULK_FRAUD_NOTIFICATION_SKIPPED, [
+                    'batch_id'    => $this->batchId,
+                    'merchant_id' => $merchantId,
+                ]);
+
+                continue;
+            }
             try
             {
                 $fdTicketId = $this->notifySingle($merchantData, $merchantId, $isCardNetworkRequest);
@@ -294,5 +303,24 @@ class Freshdesk extends Base\Core
         $emailIds = $this->getEmailIds($merchant);
 
         return (new Dispute\Service)->addSalesPOCToCCEmails($merchant->getId(),$emailIds);
+    }
+
+    protected function shouldSkipNotificationForBatch(string $merchantId): bool
+    {
+        $redisKey = $this->getSkipNotificationForBatchRediskKey();
+
+        return $this->app['redis']->sismember($redisKey, $merchantId) === 1;
+    }
+
+    public function getSkipNotificationForBatchRediskKey(): string
+    {
+        $id = $this->app['request']->getTaskId();
+
+        if ($this->batchId !== null)
+        {
+            $id = $this->batchId;
+        }
+
+        return sprintf(Constants::BULK_FRAUD_NOTIFICATION_DISABLE_MID_SET, $id);
     }
 }

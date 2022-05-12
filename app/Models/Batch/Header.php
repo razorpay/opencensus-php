@@ -1292,18 +1292,20 @@ class Header
     const SUB_TYPE                = 'sub_type';
     const FRAUD_HEADER_CURRENCY   = 'currency';
     const FRAUD_HEADER_AMOUNT     = 'amount_in_cents';
+    const FRAUD_HEADER_SEND_MAIL  = 'send_mail';
     const BASE_AMOUNT             = 'base_amount';
     const REPORTED_TO_ISSUER_AT   = 'reported_to_issuer_at';
     const CHARGEBACK_CODE         = 'chargeback_code';
     const REPORTED_BY             = 'reported_by';
     const ERROR_REASON            = 'error_reason';
+    const REPORTED_TO_RAZORPAY_AT = 'reported_to_razorpay_at';
+
     // Output Headers
     const FRAUD_OUTPUT_HEADER_ARN           =   'ARN';
     const FRAUD_OUTPUT_HEADER_PAYMENT_ID    =   'Payment ID';
     const FRAUD_OUTPUT_HEADER_FRAUD_ID      =   'Fraud ID';
     const FRAUD_OUTPUT_HEADER_STATUS        =   'Status';
     const FRAUD_OUTPUT_HEADER_ERROR_REASON  =   'Error Reason';
-
     const FEATURE_FLAG = 'feature_flag';
 
     // Debit note
@@ -4397,6 +4399,8 @@ class Header
                 self::FRAUD_HEADER_CURRENCY,
                 self::REPORTED_BY,
                 self::ERROR_REASON,
+                self::FRAUD_HEADER_SEND_MAIL,
+                self::REPORTED_TO_RAZORPAY_AT,
             ],
             self::OUTPUT => [
                 self::FRAUD_OUTPUT_HEADER_ARN,

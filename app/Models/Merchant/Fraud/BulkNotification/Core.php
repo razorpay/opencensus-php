@@ -101,6 +101,12 @@ class Core extends Base\Core
 
     protected function getUnixTimestampFromExcelTimestamp($excelTimestamp)
     {
+        // corresponds to start of 2021
+        /// this is used as a proxy to check that the timestamp is is a valid unixtimestamp
+        if ($excelTimestamp <= time() and $excelTimestamp >= 1609459200)
+        {
+            return $excelTimestamp;
+        }
         return ($excelTimestamp - Constants::JAN_1_1970_TIMESTAMP) * Constants::DAYS_TO_SECONDS_MULTIPLIER;
     }
 
@@ -143,9 +149,26 @@ class Core extends Base\Core
         {
             $row[Fraud\Entity::SOURCE] = Constants::VISA_FRAUD_FILE_SOURCE;
             // this is not a mandatory field and only takes integer value
-            if (empty($row[Constants::BATCH_KEY_REPORTED_TO_ISSUER_AT]) == true or is_integer($row[Constants::BATCH_KEY_REPORTED_TO_ISSUER_AT]) == false) {
+            if (empty($row[Constants::BATCH_KEY_REPORTED_TO_ISSUER_AT]) == false &&
+                intval($row[Constants::BATCH_KEY_REPORTED_TO_ISSUER_AT] !== 0))
+            {
+                $row[Fraud\Entity::REPORTED_TO_ISSUER_AT] = intval($row[Fraud\Entity::REPORTED_TO_ISSUER_AT]);
+            }
+            else
+            {
                 $row[Fraud\Entity::REPORTED_TO_ISSUER_AT] = null;
             }
+
+        }
+
+        if (empty($row[Constants::BATCH_KEY_REPORTED_TO_RAZORPAY_AT]) == false &&
+            intval($row[Constants::BATCH_KEY_REPORTED_TO_RAZORPAY_AT] !== 0))
+        {
+            $row[Fraud\Entity::REPORTED_TO_RAZORPAY_AT] = intval($row[Fraud\Entity::REPORTED_TO_RAZORPAY_AT]);
+        }
+        else
+        {
+            $row[Fraud\Entity::REPORTED_TO_RAZORPAY_AT] = null;
         }
 
         return (new Fraud\Core())->createOrUpdateFraudEntity($row);
@@ -213,8 +236,21 @@ class Core extends Base\Core
 
         $output = new Base\PublicCollection;
 
+        $notificationDisabledMidSet = [];
+
         foreach ($input as $row)
         {
+            $sendMailKey = $row[Constants::BATCH_KEY_SEND_MAIL] ?? 'Y'; // 'Y' -> Yes 'N' -> No
+
+            $shouldDisableNotification = $sendMailKey === 'N';
+
+            unset($row[Constants::BATCH_KEY_SEND_MAIL]);
+
+            if (isset($row[Fraud\Entity::REPORTED_TO_RAZORPAY_AT]) === true)
+            {
+                $row[Fraud\Entity::REPORTED_TO_RAZORPAY_AT] = strtotime($row[Fraud\Entity::REPORTED_TO_RAZORPAY_AT]);
+            }
+
             $rowOutput = $this->getDefaultValuesForBatchOutputRow($row, $fetchFromDataLakeSuccessful, $row[Batch\Constants::IDEMPOTENCY_KEY]);
 
             unset($row[Batch\Constants::IDEMPOTENCY_KEY]);
@@ -246,6 +282,14 @@ class Core extends Base\Core
 
                 [$isEntityCreated, $fraudEntity] = $this->saveFraudEntityFromBatchInputRow($row, $batchId);
 
+                if (($shouldDisableNotification === true) and
+                    ($fraudEntity !== null))
+                {
+                    $paymentEntity = $this->repo->payment->findByPublicId(Payment\Entity::getSign() . '_' . $fraudEntity->getPaymentId());
+
+                    $notificationDisabledMidSet[] = $paymentEntity->getMerchantId();
+               }
+
                 $this->setFraudIdAndStatus($rowOutput, $fraudEntity->getId(), $isEntityCreated);
             }
             catch (\Throwable $e)
@@ -258,10 +302,32 @@ class Core extends Base\Core
             $output->push($rowOutput);
         }
 
+        $this->setNotificationDisabledMidSet($batchId, $notificationDisabledMidSet);
+
         $outputArray = $output->toArrayWithItems();
 
         $this->trace->info(TraceCode::PAYMENT_FRAUD_BATCH_OUTPUT,  $outputArray);
 
         return $outputArray;
     }
+
+    protected function setNotificationDisabledMidSet($batchId, array $notificationDisabledMidSet)
+    {
+        if (empty($notificationDisabledMidSet) === true)
+        {
+            return;
+        }
+
+        $redisKey = (new Freshdesk(null, $batchId))->getSkipNotificationForBatchRediskKey();
+
+        $this->app['redis']->sadd($redisKey, $notificationDisabledMidSet);
+
+        $this->app['redis']->expire($redisKey, 86400);
+
+        $this->app['trace']->info(TraceCode::MERCHANT_BULK_FRAUD_NOTIFICATION_DISABLED_MID_SET, [
+            'batch_id' => $batchId,
+            'mid_set'  => $notificationDisabledMidSet,
+        ]);
+    }
+
 }

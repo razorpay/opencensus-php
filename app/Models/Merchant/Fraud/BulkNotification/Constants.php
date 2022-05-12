@@ -55,6 +55,8 @@ class Constants
     const BATCH_KEY_CHARGEBACK_CODE         = 'chargeback_code';
     const BATCH_KEY_REPORTED_BY             = 'reported_by';
     const BATCH_KEY_ERROR_REASON            = 'error_reason';
+    const BATCH_KEY_SEND_MAIL               = 'send_mail';
+    const BATCH_KEY_REPORTED_TO_RAZORPAY_AT = 'reported_to_razorpay_at';
 
     const REPORTED_BY_VISA          = 'Visa';
     const REPORTED_BY_MASTERCARD    = 'MasterCard';
@@ -65,10 +67,14 @@ class Constants
 
     const BATCH_URL_TPL = 'https://admin-dashboard.razorpay.com/admin/entity/batch.service/live/%s';
 
+    const BULK_FRAUD_NOTIFICATION_DISABLE_MID_SET = 'bulk_fraud_notification_disable_mid_set_%s';
+
     const VISA_MAP = [
         self::BATCH_KEY_ARN                     => self::VISA_KEY_ARN,
         self::BATCH_KEY_TYPE                    => self::VISA_KEY_FRAUD_TYPE,
         self::BATCH_KEY_AMOUNT                  => self::VISA_KEY_AMOUNT,
+        self::BATCH_KEY_SEND_MAIL               => self::BATCH_KEY_SEND_MAIL,
+        self::BATCH_KEY_REPORTED_TO_RAZORPAY_AT => self::BATCH_KEY_REPORTED_TO_RAZORPAY_AT,
     ];
 
     const MASTERCARD_MAP = [
@@ -76,8 +82,9 @@ class Constants
         self::BATCH_KEY_TYPE                    =>  self::MASTERCARD_KEY_FRAUD_TYPE,
         self::BATCH_KEY_SUB_TYPE                =>  self::MASTERCARD_KEY_FRAUD_SUB_TYPE,
         self::BATCH_KEY_AMOUNT                  =>  self::MASTERCARD_KEY_AMOUNT,
-        self::BATCH_KEY_REPORTED_TO_ISSUER_AT   =>  self::MASTERCARD_POSTED_DATE,
         self::BATCH_KEY_CHARGEBACK_CODE         =>  self::MASTERCARD_CHARGEBACK_CODE,
+        self::BATCH_KEY_SEND_MAIL               =>  self::BATCH_KEY_SEND_MAIL,
+        self::BATCH_KEY_REPORTED_TO_RAZORPAY_AT =>  self::BATCH_KEY_REPORTED_TO_RAZORPAY_AT,
     ];
 
     // 24 hours = 24 * 60 * 60 = 86400

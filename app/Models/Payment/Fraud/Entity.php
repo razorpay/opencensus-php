@@ -4,6 +4,7 @@ namespace RZP\Models\Payment\Fraud;
 
 use RZP\Constants;
 use RZP\Models\Base;
+use RZP\Models\Settings;
 
 class Entity extends Base\PublicEntity
 {
@@ -22,6 +23,9 @@ class Entity extends Base\PublicEntity
     const REPORTED_BY               = 'reported_by';
     const SOURCE                    = 'source';
     const BATCH_ID                  = 'batch_id';
+
+    const SEND_MAIL                 = 'send_mail';
+
 
     protected $entity                   = Constants\Entity::PAYMENT_FRAUD;
 

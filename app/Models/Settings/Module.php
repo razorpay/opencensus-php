@@ -38,6 +38,7 @@ class Module
     const M2P_TRANSFER           = 'm2p_transfer';
     const QR_CODE                = 'qr_code';
     const PAYMENT_STORE          = 'payment_store';
+    const FRAUD_NOTIFY_BATCH     = 'fraud_notify_batch';
 
     const PAYMENT_LINK_COMPUTED = 'payment_link_computed';
 

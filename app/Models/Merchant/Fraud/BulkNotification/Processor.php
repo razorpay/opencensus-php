@@ -68,7 +68,7 @@ class Processor extends Base\Core
 
     protected function processForBuyerRisk($data, $headers)
     {
-        list($aggregatedData, $output) = $this->aggregateData($data, $headers);
+        [$aggregatedData, $output] = $this->aggregateData($data, $headers);
 
         // send outbound emails with fd
         (new Freshdesk($this->entity))->notify($aggregatedData, $output);
@@ -199,6 +199,12 @@ class Processor extends Base\Core
 
         try
         {
+            $sendMailKey = $rowMap[Constants::BATCH_KEY_SEND_MAIL] ?? 'Y'; // 'Y' -> Yes 'N' -> No
+
+            $shouldDisableNotification = $sendMailKey === 'N';
+
+            unset($rowMap[Constants::BATCH_KEY_SEND_MAIL]);
+
             (new Validator())->validateInput('row', $rowMap);
 
             $paymentId = $this->getPaymentId($rowMap);
@@ -215,6 +221,13 @@ class Processor extends Base\Core
             $fraudRowResult = self::getFraudNotificationRowData($payment, $fraudEntity);
 
             $aggregatedData[$merchantId] [] = $fraudRowResult;
+
+            if ($shouldDisableNotification === true)
+            {
+                $redisKey = (new Freshdesk($this->entity))->getSkipNotificationForBatchRediskKey();
+
+                $this->app['redis']->sadd($redisKey, $merchantId);
+            }
         }
         catch (\Throwable $e)
         {
@@ -288,12 +301,15 @@ class Processor extends Base\Core
             Constants::BATCH_KEY_REPORTED_BY            =>  $fileSource == Constants::FILE_SOURCE_VISA
                 ? Constants::REPORTED_BY_VISA
                 : Constants::REPORTED_BY_MASTERCARD,
+            Constants::BATCH_KEY_SEND_MAIL              => 'Y',
         ];
     }
 
     protected function getOutputRowForVisaOrMastercard($rowMap, $fileSource): array
     {
         $rowOutput = $this->getDefaultRowOutputValues($fileSource);
+
+        $rowOutput = $this->transformReportedToIssuerAtField($rowOutput, $rowMap, $fileSource);
 
         $sourceMap = ($fileSource === Constants::FILE_SOURCE_VISA) ? Constants::VISA_MAP : Constants::MASTERCARD_MAP;
 
@@ -431,5 +447,26 @@ class Processor extends Base\Core
         }
 
         return $outputTable;
+    }
+
+    protected function transformReportedToIssuerAtField($rowOutput, $rowMap, $fileSource)
+    {
+        $reportedToIssuerAt = false;
+
+        if ($fileSource === Constants::FILE_SOURCE_VISA)
+        {
+            $reportedToIssuerAt  = strtotime($rowMap['Fraud Post Date']);
+        }
+        else if ($fileSource === Constants::FILE_SOURCE_MASTERCARD)
+        {
+            $reportedToIssuerAt = strtotime($rowMap['Date (Entered Date)']);
+        }
+
+        if ($reportedToIssuerAt !==  false)
+        {
+            $rowOutput[Fraud\Entity::REPORTED_TO_ISSUER_AT] = $reportedToIssuerAt;
+        }
+
+        return $rowOutput;
     }
 }

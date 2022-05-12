@@ -291,6 +291,30 @@ class BulkFraudNotifyTest extends TestCase
         $this->prepareAndDoTest($fileData, $expectedOutputFileRows, 1, $addPermission);
     }
 
+    public function testNotifyWithPaymentIdSkipMerchantNotification()
+    {
+        $payment = $this->fixtures->create('payment');
+
+        $fileData = [
+            [
+                'reported_to_razorpay_at' => '11/08/2021',
+                'payment_method' => '',
+                'reported_by' => 'Visa',
+                'payment_id' => $payment->getPublicId(),
+                'type' => '',
+                'arn' => '',
+                'send_mail' => 'N',
+            ],
+        ];
+
+        $expectedOutputFileRows = [
+            ["arn", "payment_id", "merchant_id", "fd_ticket_id", "error"],
+            [null, $payment->getPublicId(), $payment->getMerchantId(), null, null]
+        ];
+
+        $this->prepareAndDoTest($fileData, $expectedOutputFileRows, 0,true);
+    }
+
     public function testNotifyWithHitachiPrrn()
     {
         /** @var Models\Payment\Entity $payment */
@@ -517,26 +541,7 @@ class BulkFraudNotifyTest extends TestCase
 
     public function testCreateFraudBatchMastercard()
     {
-        $paymentId = '10000000000002';
-
-        $payment = $this->fixtures->create('payment', ['id' => $paymentId]);
-
-        $this->mockDruidRequest(['query' => "select payments_reference1, payments_id, payments_merchant_id  from druid.payments_fact  where payments_reference1 in ('02705601344033737573894')"],
-                                [null, []]);
-
-        $this->mockDruidRequest(['query' => "select authorization_rrn, authorization_payment_id, payments_merchant_id  from druid.payments_fact where authorization_rrn in ('003373757389')"],
-                                [
-                                    null,
-                                    [
-                                        [
-                                            'authorization_rrn' => '003373757389',
-                                            'authorization_payment_id' => $paymentId,
-                                            'payments_merchant_id' => '10000000000000'
-                                        ]
-                                    ]
-                                ]);
-
-        $this->ba->batchAppAuth();
+        $payment = $this->setupForCreateFraudBatchMastercard();
 
         $snsPayloadArray = [];
 
@@ -551,6 +556,21 @@ class BulkFraudNotifyTest extends TestCase
         $expectedSNSPayload = $this->getExpectedSNSPayload($fraud, $payment);
 
         $this->assertArraySelectiveEquals($expectedSNSPayload, $snsPayloadArray[0]);
+
+        $this->assertEquals(1644624000, $fraud->reported_to_razorpay_at);
+    }
+
+    public function testCreateFraudBatchSkipSendMail()
+    {
+        $payment = $this->setupForCreateFraudBatchMastercard();
+
+        $this->startTest();
+
+        $notificationDisableMidSet = $this->app['redis']->smembers('bulk_fraud_notification_disable_mid_set_100000Razorpay');
+
+        $this->assertEquals([
+            '10000000000000',
+        ], $notificationDisableMidSet);
     }
 
     public function testCreateFraudBatchVisa()
@@ -590,6 +610,10 @@ class BulkFraudNotifyTest extends TestCase
         $expectedSNSPayload = $this->getExpectedSNSPayload($fraud, $payment);
 
         $this->assertArraySelectiveEquals($expectedSNSPayload, $snsPayloadArray[0]);
+
+        $this->assertEquals(1644624000, $fraud->reported_to_razorpay_at);
+
+        $this->assertEquals(1644624000, $fraud->reported_to_issuer_at);
 
     }
 
@@ -834,22 +858,26 @@ class BulkFraudNotifyTest extends TestCase
         $this->prepareAndDoTest($fileData, $expectedOutputFileRows, 2, true);
     }
 
+    public function testNotifyPostBatchWithNotificationsDisabled()
+    {
+        //usecase: if any of the rows in the input batch file are marked as "N" for send notification,
+        // then no notifcation should go for the whole file[any merchant whose payment is marked is fraud
+        // for that batch_id
+        $this->setupForNotifyPostBatch();
+
+        $this->app['redis']->sadd('bulk_fraud_notification_disable_mid_set_100000Razorpay', '10000000000000');
+
+        $this->expectFreshdeskRequestAndRespondWith('tickets/outbound_email', 'post',
+            [],
+            [],
+        0);
+
+        $this->startTest();
+    }
+
     public function testNotifyPostBatch()
     {
-        Mail::fake();
-
-        $this->ba->batchAppAuth();
-
-        $payment = $this->fixtures->create('payment');
-
-        $this->fixtures->edit('merchant', '10000000000000', [
-            'name' => 'test name',
-        ]);
-
-        $this->fixtures->create('payment_fraud', [
-            'payment_id'    => $payment->getId(),
-            'batch_id'      => '100000Razorpay',
-        ]);
+        $this->setupForNotifyPostBatch();
 
         $expectedContent = [
             'status'          => 6,
@@ -888,8 +916,55 @@ class BulkFraudNotifyTest extends TestCase
         Mail::assertSent(CreatePaymentFraud::class);
     }
 
+    protected function setupForNotifyPostBatch(): void
+    {
+        Mail::fake();
+
+        $this->ba->batchAppAuth();
+
+        $payment = $this->fixtures->create('payment');
+
+        $this->fixtures->edit('merchant', '10000000000000', [
+            'name' => 'test name',
+        ]);
+
+        $this->fixtures->create('payment_fraud', [
+            'payment_id' => $payment->getId(),
+            'batch_id'   => '100000Razorpay',
+        ]);
+    }
+
+    protected function setupForCreateFraudBatchMastercard()
+    {
+        $paymentId = '10000000000002';
+
+        $payment = $this->fixtures->create('payment', ['id' => $paymentId]);
+
+        $this->mockDruidRequest(['query' => "select payments_reference1, payments_id, payments_merchant_id  from druid.payments_fact  where payments_reference1 in ('02705601344033737573894')"],
+            [null, []]);
+
+        $this->mockDruidRequest(['query' => "select authorization_rrn, authorization_payment_id, payments_merchant_id  from druid.payments_fact where authorization_rrn in ('003373757389')"],
+            [
+                null,
+                [
+                    [
+                        'authorization_rrn'        => '003373757389',
+                        'authorization_payment_id' => $paymentId,
+                        'payments_merchant_id'     => '10000000000000'
+                    ]
+                ]
+            ]);
+
+        $this->ba->batchAppAuth();
+
+        return $payment;
+    }
+
+
     private function assertBatchInputForMastercard($csvRows)
     {
+        $this->assertContains('send_mail', $csvRows[0]);
+
         $this->assertContains('02705601344033737573894', $csvRows[1]);
 
         $this->assertContains('2975', $csvRows[1]);
@@ -899,10 +974,30 @@ class BulkFraudNotifyTest extends TestCase
         $this->assertContains('USD', $csvRows[1]);
 
         $this->assertContains('MasterCard', $csvRows[1]);
+
+        $this->assertEquals('', $csvRows[1][11]); //asserting for send_mail which is at 11 offset
+
+        $this->assertContains('reported_to_issuer_at', $csvRows[0]);
+
+        $this->assertEquals('1635897600', $csvRows[1][6]);  //asserting for reported_to_issuer at [11-03-2021 in format MM/dd/yy]
+
+
+        $this->assertContains('reported_to_razorpay_at', $csvRows[0]);
+
+        $this->assertEquals('2022-02-12', $csvRows[1][12]);  //asserting for reported_to_razorpay_at
+
     }
 
     private function assertBatchInputForVisa($csvRows)
     {
+        $this->assertContains('reported_to_razorpay_at', $csvRows[0]);
+
+        $this->assertContains('reported_to_issuer_at', $csvRows[0]);
+
+        $this->assertContains('send_mail', $csvRows[0]);
+
+        $this->assertContains(1635379200, $csvRows[1]); // corresponds to 28-Oct-21 [fraud post date] in input file
+
         $this->assertContains('74110751299033415520957', $csvRows[1]);
 
         $this->assertContains('2694', $csvRows[1]);
@@ -911,7 +1006,18 @@ class BulkFraudNotifyTest extends TestCase
 
         $this->assertContains('Visa', $csvRows[1]);
 
+        $this->assertContains('1635379200', $csvRows[2]); // corresponds to 28-Oct-21 [fraud post date] in input file
+
         $this->assertContains('ARN not found for the following row', $csvRows[2]);
+
+        $this->assertEquals('N', $csvRows[1][11]); //asserting for send_mail which is at 11 offset
+
+        $this->assertEquals('Y', $csvRows[2][11]); //asserting for send_mail which is at 11 offset
+
+        $this->assertEquals('2022-02-12', $csvRows[1][12]);  //asserting for reported_to_razorpay_at which is at 12 offset
+
+        $this->assertEquals('', $csvRows[2][12]); //asserting for reported_to_razorpay_at which is at 12 offset
+
     }
 
     private function prepareAndTestBatchCreatedVisaMastercard(string $fileSource = 'visa')
