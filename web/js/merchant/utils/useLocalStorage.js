@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import errorService from '@razorpay/universe-utils/errorService';
 import { Teams, Ranks } from 'common/new-ui/ErrorBoundary';
+import { getItem, setItem } from 'common/utils/localStorage';
 
 export default function useLocalStorage(key, initialValue) {
   const [storedValue, setStoredValue] = useState(() => {
     try {
-      const item = window.localStorage.getItem(key);
+      const item = getItem(key);
       return item ? JSON.parse(item) : initialValue;
     } catch (error) {
       errorService.captureError(error, {
@@ -21,7 +22,7 @@ export default function useLocalStorage(key, initialValue) {
     try {
       const valueToStore = value instanceof Function ? value(storedValue) : value;
       setStoredValue(valueToStore);
-      window.localStorage.setItem(key, JSON.stringify(valueToStore));
+      setItem(key, JSON.stringify(valueToStore));
     } catch (error) {
       errorService.captureError(error, {
         tags: {
