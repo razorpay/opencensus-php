@@ -246,18 +246,25 @@ class Core extends Base\Core
         {
             $merchant = $this->repo->merchant->findOrFailPublic($entityId);
 
-            $network = str_replace(Feature::ONBOARD_TOKENIZATION."_","",$feature->getName());
+            $network = str_replace(Feature::ONBOARD_TOKENIZATION . "_", "", $feature->getName());
 
+            // Move this logic to router service in future
             if($network === 'mc'){
                 $network = 'mastercard';
             }
 
-            if($network === "rpy"){
+            if ($network === "rpy"){
                 $network = 'rupay';
             }
 
             $tokenizationGateways = "tokenisation_".$network;
 
+            // Map onboard_tokenization_diners to tokenisation_hdfc
+            // Diners only have hdfc issued cards for tokenisation
+            if ($network === 'dnrs')
+            {
+                $tokenizationGateways = 'tokenisation_hdfc';
+            }
 
             (new Token\Core())->onboardMerchant($merchant, [$tokenizationGateways]);
         }

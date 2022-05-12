@@ -1133,7 +1133,7 @@ class Constants
     /**
      * Feature flag to onboard merchants on diners network tokenization in live mode
      */
-    const ONBOARD_TOKENIZATION_DINERS = 'onboard_tokenization_diners';
+    const ONBOARD_TOKENIZATION_DINERS = 'onboard_tokenization_dnrs';
 
     /**
      * Feature flag to onboard merchants on async tokenisation
