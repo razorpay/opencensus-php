@@ -812,6 +812,8 @@ class Service extends Base\Service
                 $res['optimizer_provider'] = $txn->source->getOptimiserProvider();
 
                 $res['settled_by'] = $txn->source->getSettledBy();
+
+                $res['amount'] = $txn->source->getAmount();
             }
 
             $result[] = $res;

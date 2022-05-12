@@ -439,6 +439,11 @@ class Entity extends Base\PublicEntity
             $this->setFees($settlement['fee']);
         }
 
+        if (isset($settlement['tax']))
+        {
+            $this->setTax($settlement['tax']);
+        }
+
         if (isset($settlement['created_at']))
         {
             $this->setCreatedAt($settlement['created_at']);
