@@ -1,4 +1,15 @@
 export const partnerProducts = {
+  thrive: {
+    slug: 'thrive',
+    title: 'Thrive Now',
+    url: 'https://thrivenow.in',
+    category: 'Modern Restaurant Ordering System',
+    description:
+      'Accept orders directly from customers instead of third-party aggregators, save on hefty commissions.',
+    logo: 'thrive.png', // relative to web/css/assets/app-store/partner-logo/
+    brandColor: '#6236FF',
+    isNew: true,
+  },
   integromat: {
     slug: 'integromat',
     title: 'Integromat',
@@ -19,7 +30,6 @@ export const partnerProducts = {
       'Now get notified of critical updates from Razorpay right within your favourite communication tool, Slack. ',
     logo: 'slack.png', // relative to web/css/assets/app-store/partner-logo/
     brandColor: '#441B49',
-    isNew: true,
   },
   zapier: {
     slug: 'zapier',
@@ -29,7 +39,6 @@ export const partnerProducts = {
     description: 'Integrate with Razorpay triggers in Zapier to automate your workflows',
     logo: 'zapier.png', // relative to web/css/assets/app-store/partner-logo/
     brandColor: '#FF743B',
-    isNew: true,
   },
   aisensy: {
     slug: 'aisensy',
@@ -40,7 +49,6 @@ export const partnerProducts = {
     description: 'Share payment links and invoice links through Whatsapp to your customers',
     logo: 'aisensy.png', // relative to web/css/assets/app-store/partner-logo/
     brandColor: '#51BC6E',
-    isNew: true,
   },
   raven: {
     slug: 'raven',
@@ -51,7 +59,6 @@ export const partnerProducts = {
       'Customise your SMS and Email notifications on payment links and other transactional updates',
     logo: 'raven.png', // relative to web/css/assets/app-store/partner-logo/
     brandColor: '#4C5AFD',
-    isNew: true,
   },
   callerdesk: {
     slug: 'callerdesk',
@@ -62,7 +69,6 @@ export const partnerProducts = {
       'Trigger VoIP calls to notify your customers on new invoice or payment links through automated VoIP calls ',
     logo: 'callerdesk.png', // relative to web/css/assets/app-store/partner-logo/
     brandColor: '#F84C61',
-    isNew: true,
   },
   'whatsapp-bot-payment-link': {
     title: 'Payment Links Bot',
