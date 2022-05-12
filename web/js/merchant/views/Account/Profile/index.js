@@ -209,7 +209,7 @@ class Profile extends Component {
     // eslint-disable-next-line guard-for-in
     for (const i in user.user.merchants) {
       const merchant = user.user.merchants[i];
-      if (merchant.email && merchant.email.toLowerCase() === user.user.email.toLowerCase()) {
+      if (merchant?.email?.toLowerCase() === user.user?.email?.toLowerCase()) {
         hasMerchant = true;
       }
     }
