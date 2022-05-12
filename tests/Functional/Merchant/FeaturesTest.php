@@ -3206,6 +3206,24 @@ Regards,
         $this->assertNotContains('ledger_journal_writes', $featuresArray);
     }
 
+    public function testHighTpsCompositePayoutFeatureAdditionWhenLedgerReverseShadowIsEnabled()
+    {
+        $this->fixtures->merchant->addFeatures(['ledger_reverse_shadow']);
+
+        $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');
+
+        $this->startTest();
+    }
+
+    public function testHighTpsCompositePayoutFeatureAdditionWhenLedgerJournalWritesIsEnabled()
+    {
+        $this->fixtures->merchant->addFeatures(['ledger_journal_writes']);
+
+        $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');
+
+        $this->startTest();
+    }
+
     public function testDualCheckoutFeature()
     {
         $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');

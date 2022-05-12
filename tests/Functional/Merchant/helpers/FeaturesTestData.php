@@ -2842,6 +2842,64 @@ return [
         ]
     ],
 
+    'testHighTpsCompositePayoutFeatureAdditionWhenLedgerReverseShadowIsEnabled' => [
+        'request'   => [
+            'content' => [
+                'names'       => ['high_tps_composite_payout'],
+                'entity_type' => 'merchant',
+                'entity_id'   => '10000000000000'
+            ],
+            'url'     => '/features',
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Dashboard'                => 'true',
+                'HTTP_X-Dashboard-Admin-Username' => 'admin',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Enabling high_tps_composite_payout is not allowed when ledger_reverse_shadow is already enabled.'
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ],
+
+    'testHighTpsCompositePayoutFeatureAdditionWhenLedgerJournalWritesIsEnabled' => [
+        'request'   => [
+            'content' => [
+                'names'       => ['high_tps_composite_payout'],
+                'entity_type' => 'merchant',
+                'entity_id'   => '10000000000000'
+            ],
+            'url'     => '/features',
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Dashboard'                => 'true',
+                'HTTP_X-Dashboard-Admin-Username' => 'admin',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Enabling high_tps_composite_payout is not allowed when ledger_journal_writes is already enabled.'
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ],
+
     'testLedgerReverseShadowFeatureManualAdditionFromBulk' => [
         'request'  => [
             'content' => [

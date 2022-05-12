@@ -158,7 +158,9 @@ class Core extends Base\Core
             in_array($feature->getName(),
                      [
                          Constants::PAYOUT_SERVICE_ENABLED,
+                         Constants::HIGH_TPS_COMPOSITE_PAYOUT,
                          Constants::LEDGER_JOURNAL_READS,
+                         Constants::LEDGER_JOURNAL_WRITES,
                          Constants::LEDGER_REVERSE_SHADOW,
                      ],
                      true) === true)
@@ -1202,7 +1204,7 @@ class Core extends Base\Core
      */
     protected function controlFeatureAssignmentForLedger(string $newFeatureName, array $assignedFeatureNames)
     {
-        if ($newFeatureName === Constants::PAYOUT_SERVICE_ENABLED and
+        if (in_array($newFeatureName,[Constants::PAYOUT_SERVICE_ENABLED, Constants::HIGH_TPS_COMPOSITE_PAYOUT], true) === true and
             in_array(Constants::LEDGER_REVERSE_SHADOW, $assignedFeatureNames, true) === true)
         {
             throw new Exception\BadRequestValidationFailureException(
@@ -1210,15 +1212,7 @@ class Core extends Base\Core
             );
         }
 
-        if ($newFeatureName === Constants::LEDGER_REVERSE_SHADOW and
-            in_array(Constants::PAYOUT_SERVICE_ENABLED, $assignedFeatureNames, true) === true)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Enabling ' . $newFeatureName . ' is not allowed when ' . Constants::PAYOUT_SERVICE_ENABLED . ' is already enabled.'
-            );
-        }
-
-        if ($newFeatureName === Constants::PAYOUT_SERVICE_ENABLED and
+        if (in_array($newFeatureName,[Constants::PAYOUT_SERVICE_ENABLED, Constants::HIGH_TPS_COMPOSITE_PAYOUT], true) === true and
             in_array(Constants::LEDGER_JOURNAL_READS, $assignedFeatureNames, true) === true)
         {
             throw new Exception\BadRequestValidationFailureException(
@@ -1226,11 +1220,11 @@ class Core extends Base\Core
             );
         }
 
-        if ($newFeatureName === Constants::LEDGER_JOURNAL_READS and
-            in_array(Constants::PAYOUT_SERVICE_ENABLED, $assignedFeatureNames, true) === true)
+        if ($newFeatureName === Constants::HIGH_TPS_COMPOSITE_PAYOUT and
+            in_array(Constants::LEDGER_JOURNAL_WRITES, $assignedFeatureNames, true) === true)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Enabling ' . $newFeatureName . ' is not allowed when ' . Constants::PAYOUT_SERVICE_ENABLED . ' is already enabled.'
+                'Enabling ' . $newFeatureName . ' is not allowed when ' . Constants::LEDGER_JOURNAL_WRITES . ' is already enabled.'
             );
         }
     }
