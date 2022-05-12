@@ -6031,12 +6031,6 @@
                 "reference": "e9d6a5446104b3583c6b6ed02a34bf64b59e9969",
                 "shasum": ""
             },
-            "archive": {
-                "exclude": [
-                    "ext/",
-                    "scripts/"
-                ]
-            },
             "require": {
                 "cache/adapter-common": "^1.0",
                 "php": ">=7.0",
@@ -6069,6 +6063,12 @@
                 "psr-4": {
                     "OpenCensus\\": "src/"
                 }
+            },
+            "archive": {
+                "exclude": [
+                    "ext/",
+                    "scripts/"
+                ]
             },
             "scripts": {
                 "tests": [
@@ -8123,16 +8123,16 @@
         },
         {
             "name": "razorpay/ifsc",
-            "version": "v2.0.6",
+            "version": "v2.0.7",
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/ifsc.git",
-                "reference": "426ad496f5ddb389a762fd11f3be300cc6925394"
+                "reference": "1c55e3def64143bb74d1928507c7a328db2c1380"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/ifsc/zipball/426ad496f5ddb389a762fd11f3be300cc6925394",
-                "reference": "426ad496f5ddb389a762fd11f3be300cc6925394",
+                "url": "https://api.github.com/repos/razorpay/ifsc/zipball/1c55e3def64143bb74d1928507c7a328db2c1380",
+                "reference": "1c55e3def64143bb74d1928507c7a328db2c1380",
                 "shasum": ""
             },
             "require": {
@@ -8166,7 +8166,7 @@
                 }
             ],
             "description": "Razorpay IFSC Codes Library",
-            "time": "2021-12-08T11:41:50+00:00"
+            "time": "2022-05-09T16:59:11+00:00"
         },
         {
             "name": "razorpay/lqext",
@@ -8698,11 +8698,6 @@
                 "reference": "bcefdc6b5c2e970d8a0095448f6b1d8674609bfb",
                 "shasum": ""
             },
-            "archive": {
-                "exclude": [
-                    "/xsd/"
-                ]
-            },
             "require": {
                 "goetas-webservices/xsd2php-runtime": "^0.2.2"
             },
@@ -8715,6 +8710,11 @@
                 "psr-4": {
                     "Razorpay\\UPI\\": "src"
                 }
+            },
+            "archive": {
+                "exclude": [
+                    "/xsd/"
+                ]
             },
             "authors": [
                 {
@@ -15017,5 +15017,5 @@
         "ext-libxml": "*"
     },
     "platform-dev": [],
-    "plugin-api-version": "1.1.0"
+    "plugin-api-version": "2.1.0"
 }

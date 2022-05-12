@@ -3425,13 +3425,6 @@ class MerchantTest extends TestCase
         $this->assertFalse($this->getBankAccountChangeStatusForMerchant('10000000000000'));
     }
 
-    public function testUpdateBankAccountLavbShouldFail()
-    {
-        $merchantId = $this->setupMerchantForBankAccountUpdateTestViaPennyTesting(__FUNCTION__, true);
-
-        $this->startTest();
-    }
-
     public function testUpdateBankAccountViaPennyTesting()
     {
         Config(['services.bvs.mock' => true]);

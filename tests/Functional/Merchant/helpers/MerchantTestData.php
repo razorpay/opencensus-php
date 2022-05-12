@@ -2693,34 +2693,6 @@ return [
         ]
     ],
 
-    'testUpdateBankAccountLavbShouldFail' => [
-        'request'  => [
-            'content' => [
-                'ifsc_code'        => 'LAVB0000499',
-                'account_number'   => '0000009999999999999',
-                'beneficiary_name' => 'Test R4zorpay:',
-            ],
-            'server'    => [
-                'HTTP_X-Dashboard-User-2FA-Verified'    => 'true',
-            ],
-            'url'     => '/merchants/bank_account/update',
-            'method'  => 'POST'
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code'          => 'BAD_REQUEST_ERROR',
-                    'description'   => "We are unable to complete this operation due to the restrictions on Laxmi Vilas Bank's operations by RBI (Gazette notification (S.O. 4127(E)) dated 17th November 2020",
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'internal_error_code' => 'BAD_REQUEST_MERCHANT_BANK_ACCOUNT_UPDATE_LAXMI_VILAS_BANK_PROHIBITED',
-            'class'               => BadRequestException::class,
-        ]
-    ],
-
     'testUpdateBankAccountViaPennyTesting' => [
         'request'  => [
             'content' => [
