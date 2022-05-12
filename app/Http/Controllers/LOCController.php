@@ -56,6 +56,8 @@ class LOCController extends Controller
     const SCHEDULE_LATE_REPAYMENT_NOTIFICATION           = 'SCHEDULE_LATE_REPAYMENT_NOTIFICATION';
     const WITHDRAWAL_CONFIG_UPDATE_DELAYED_REPAYMENTS    = 'WITHDRAWAL_CONFIG_DELAYED_REPAYMENT';
     const RECON_REPAID_WITHDRAWALS_WITH_GROMOR           = 'RECON_REPAID_WITHDRAWALS_WITH_GROMOR';
+    const APPLY_CREDIT_LIMIT_UPDATE                      = 'APPLY_CREDIT_LIMIT_UPDATE';
+    const GET_CREDIT_LIMIT_UPDATE                        = 'GET_CREDIT_LIMIT_UPDATE';
 
     const ROUTES_URL_MAP = [
         self::SEED_DATA_REGEX                        => 'twirp/rzp.capital.loc.withdrawal.v1.WithdrawalAPI/SeedData',
@@ -85,6 +87,8 @@ class LOCController extends Controller
         self::GET_MERCHANT_DETAILS                   => 'twirp/rzp.capital.loc.migration.v1.MerchantDetailsAPI/GetMerchantDetails',
         self::UPDATE_MERCHANT_DETAILS                => 'twirp/rzp.capital.loc.migration.v1.MerchantDetailsAPI/UpdateMerchantDetails',
         self::GET_ONHOLD_STATUS_REASONS              => 'twirp/rzp.capital.loc.withdrawal.v1.WithdrawalConfigAPI/GetOnholdStatusReasons',
+        self::APPLY_CREDIT_LIMIT_UPDATE              => 'twirp/rzp.capital.loc.withdrawal.v1.CreditLimitUpdateAPI/ApplyCreditLimitUpdate',
+        self::GET_CREDIT_LIMIT_UPDATE                => 'twirp/rzp.capital.loc.withdrawal.v1.CreditLimitUpdateAPI/GetCreditLimitUpdate'
     ];
 
     const CRON_URL_MAP = [
@@ -137,7 +141,9 @@ class LOCController extends Controller
         self::LIST_OR_SEARCH_WITHDRAWAL_REGEX              => Name::LOC_WITHDRAWAL_VIEW,
         self::REPAYMENTS_SCHEDULE                          => Name::LOC_WITHDRAWAL_VIEW,
         self::WITHDRAWAL_CONFIG_UPDATE_DELAYED_REPAYMENTS  => Name::LOC_CONFIG_EDIT,
-        self::RECON_REPAID_WITHDRAWALS_WITH_GROMOR         => Name::LOC_CONFIG_VIEW
+        self::RECON_REPAID_WITHDRAWALS_WITH_GROMOR         => Name::LOC_CONFIG_VIEW,
+        self::APPLY_CREDIT_LIMIT_UPDATE                    => Name::LOC_CONFIG_EDIT,
+        self::GET_CREDIT_LIMIT_UPDATE                      => Name::LOC_CONFIG_VIEW,
     ];
 
     const MAIL_ERROR_REGEX = '/View \[emails.loc.(?:\w+)?\] not found./';
