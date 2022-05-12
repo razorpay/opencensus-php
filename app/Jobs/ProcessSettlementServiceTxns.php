@@ -16,6 +16,8 @@ class ProcessSettlementServiceTxns extends Job
     const SETTLEMENT_ID         = 'settlement_id';
     const TRANSACTION_IDS       = 'transaction_ids';
     const TRANSACTIONS_COUNT    = 'transactions_count';
+    const MAX_RETRY_ATTEMPTS    = 5;
+    const JOB_RELEASE_WAIT      = 120;
 
     protected $queueConfigKey = 'settlement_service_txns';
 
@@ -35,7 +37,7 @@ class ProcessSettlementServiceTxns extends Job
 
         parent::__construct($this->mode);
 
-       $this->data = $this->getSettlementsData($payload);
+        $this->data = $this->getSettlementsData($payload);
     }
 
     /**
@@ -45,6 +47,7 @@ class ProcessSettlementServiceTxns extends Job
      */
     public function handle()
     {
+
         parent::handle();
 
         $values = [
@@ -60,6 +63,7 @@ class ProcessSettlementServiceTxns extends Job
 
         try
         {
+            $this->trace->info(TraceCode::SETTLEMENT_SERVICE_TRANSACTIONS_UPDATE_HANDLER_INIT);
             $settlement = $this->repoManager->settlement->findOrFail($this->data[self::SETTLEMENT_ID]);
 
             $this->repoManager->transaction->updateAsSettled(
@@ -97,6 +101,8 @@ class ProcessSettlementServiceTxns extends Job
                     ]
                 );
             }
+            $this->delete();
+            $this->trace->info(TraceCode::SETTLEMENT_SERVICE_TRANSACTIONS_UPDATED, $traceData);
         }
         catch (\Throwable $e)
         {
@@ -106,21 +112,8 @@ class ProcessSettlementServiceTxns extends Job
                 TraceCode::SETTLEMENT_SERVICE_TRANSACTIONS_UPDATE_FAILED,
                 $traceData);
 
-            $operation = 'Transactions update failed for settlement: ' . $traceData[self::SETTLEMENT_ID];
-
-            (new SlackNotification)->send(
-                $operation,
-                $traceData,
-                $e,
-                1,
-                'settlement_alerts');
+            $this->checkAndRetry();
         }
-        finally
-        {
-             $this->delete();
-        }
-
-        $this->trace->info(TraceCode::SETTLEMENT_SERVICE_TRANSACTIONS_UPDATED, $traceData);
     }
 
     /**
@@ -150,5 +143,60 @@ class ProcessSettlementServiceTxns extends Job
             self::SETTLEMENT_ID   => $payload[self::SETTLEMENT_ID],
             self::TRANSACTION_IDS => $payload[self::TRANSACTION_IDS],
         ];
+    }
+
+    /**
+     * handle retires in case of failures.
+     *
+     * @return void
+     */
+
+    protected function checkAndRetry()
+    {
+        try {
+            $this->trace->info(
+                TraceCode::SETTLEMENT_SERVICE_TRANSACTIONS_UPDATE_RETRY_INIT,
+                [
+                    'attempts' => $this->attempts(),
+                ]
+            );
+
+            if ($this->attempts() > self::MAX_RETRY_ATTEMPTS) {
+                $values = [
+                    Transaction\Entity::SETTLED_AT => $this->data[self::SETTLED_AT],
+                    Transaction\Entity::SETTLED => true,
+                    Transaction\Entity::SETTLEMENT_ID => $this->data[self::SETTLEMENT_ID],
+                ];
+
+                $traceData = $values + [
+                        self::TRANSACTIONS_COUNT => sizeof($this->data[self::TRANSACTION_IDS]),
+                        self::MODE => $this->mode,
+                    ];
+
+                $this->trace->error(
+                    TraceCode::SETTLEMENT_SERVICE_TRANSACTIONS_UPDATE_FAILED_AFTER_RETRIES,
+                    $traceData);
+
+                $operation = 'Transactions update failed for settlement: ' . $traceData[self::SETTLEMENT_ID];
+                (new SlackNotification)->send(
+                    $operation,
+                    $traceData,
+                    null,
+                    1,
+                    'settlement_alerts');
+
+                $this->delete();
+
+            } else {
+                $this->release(self::JOB_RELEASE_WAIT);
+            }
+        }
+        catch (\Throwable $e){
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::SETTLEMENT_SERVICE_TRANSACTIONS_UPDATE_RETRY_FAILED);
+            $this->delete();
+        }
     }
 }
