@@ -726,7 +726,7 @@ class Service extends Base\Service
             'wallet'    => $wallets,
             'emandate'  => $emandateBankNamesMap,
             'upi'       => array_flip(BuyPricing::$upiNetworksNames),
-            'emi'       => array_flip(BuyPricing::$emiNetworksNames),
+            'emi'       => array_flip(BuyPricing::$defaultEmiNetWorksNames),
             'nach'      => array_flip(BuyPricing::$nachNetworksNames),
             'paylater'  => array_flip(BuyPricing::$paylaterNetworksNames),
             'cardless_emi' => array_flip(BuyPricing::$cardlessEmiNetworksNames),

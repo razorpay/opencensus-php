@@ -328,6 +328,11 @@ class BuyPricing
         'GooglePay' => self::GOOGLEPAY,
     ];
 
+    public static $defaultEmiNetWorksNames = [
+        'Hdfc'         => self::HDFC,
+        'BajajFinserv' => Card\Network::BAJAJ,
+    ];
+
     public static $emiNetworksNames = [
         'Hdfc'         => self::HDFC,
         'BajajFinserv' => self::BAJAJ_FINSERV,
