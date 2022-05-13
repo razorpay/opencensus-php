@@ -6,7 +6,12 @@ import { closeModal, notifySuccess, notifyError } from 'razorx/components/Modal'
 import Form from 'razorx/components/ui/Form';
 import Field, { TextAreaField, FileField, SelectField } from 'razorx/components/ui/Field';
 import { splitzFetch } from 'razorx/helpers/fetch';
-import { CRON_EXPRESSION_GENERATOR, DYNAMIC_SEGMENTS_DOC } from './constants';
+import {
+  CRON_EXPRESSION_GENERATOR,
+  DYNAMIC_SEGMENTS_DOC,
+  SEGMENT_CREATE_URL,
+  SEGMENT_UPLOAD_URL,
+} from './constants';
 
 const CSV = 'CSV';
 const SQL = 'SQL';
@@ -87,12 +92,11 @@ export default function AddEditSegment(props) {
     }
     payload.segment.source_type = segmentType;
 
-    const segmentUrl = 'segment.v1.SegmentAPI/Create';
     const successMsg = `Segment is successfully created`;
 
     dispatch({ type: 'isSaving', payload: true });
 
-    splitzFetch({ url: segmentUrl, data: payload })
+    splitzFetch({ url: SEGMENT_CREATE_URL, data: payload })
       .then(() => {
         dispatch({ type: 'isSaving', payload: false });
         notifySuccess(successMsg);
@@ -114,14 +118,13 @@ export default function AddEditSegment(props) {
     bodyFormData.append('method', 'POST');
     bodyFormData.append('auth', 'admin');
     bodyFormData.append('content_type', 'multipart/form-data');
-    bodyFormData.append('file_name', 'file');
-    bodyFormData.append('body', `name=${file.name}&type=splitz_segment&entity=`);
     bodyFormData.append('file', file);
+    bodyFormData.append('file_name', 'file');
 
     dispatch({ type: 'isSaving', payload: true });
 
     adminFetch({
-      url: '/makeapicall/admin-ufh/file/upload',
+      url: SEGMENT_UPLOAD_URL,
       method: 'POST',
       data: bodyFormData,
       headers: { 'Content-Type': 'multipart/form-data' },

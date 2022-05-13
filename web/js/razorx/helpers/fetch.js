@@ -77,17 +77,19 @@ function _makeRequest(payload, type) {
   return adminFetch(reqPayload)
     .then((resp) => {
       if (!resp) {
-        return;
+        return true;
       }
 
       if (resp.status_code && Math.floor(resp.status_code / 100) !== 2) {
-        throw { errors: [resp.response.error] };
+        const errorMessage = { errors: [resp.response.error] };
+        throw errorMessage;
       }
 
       // In some cases like Workflow creation, resp.response / resp.status_code doesn't exist => resp is success
       if (resp) {
         return resp.response || resp;
       }
+      return true;
     })
     .catch((err) => {
       let error = typeof err.errors !== 'undefined' ? err.errors : err;
@@ -131,16 +133,15 @@ export function splitzFetch(requestOptions) {
 
         // In some cases like Workflow creation, resp.response / resp.status_code doesn't exist => resp is success
         if (resp) {
-          const entity =
-            resp.response.projects ||
-            resp.response.experiments ||
-            resp.response.groups ||
-            resp.response.segment ||
-            null;
+          const { files, projects, experiments, groups, segment } = resp.response;
+
+          const entity = projects || experiments || groups || segment || null;
+
           if (entity) {
             resolve({
               items: entity,
               count: entity.length,
+              fileUrl: files,
             });
           } else {
             resolve(resp.response);

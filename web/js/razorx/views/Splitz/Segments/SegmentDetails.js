@@ -9,6 +9,7 @@ import { notifyError, notifySuccess } from 'razorx/components/Modal';
 import AsyncButton from 'razorx/components/ui/AsyncButton';
 import { SEGMENT_DELETE, SEGMENT_EVALUATE_IN_BLOOM } from './constants';
 
+// eslint-disable-next-line react/no-unsafe
 @withRouter
 export default class SegmentDetails extends React.Component {
   evaluatorIds = null;
@@ -17,6 +18,7 @@ export default class SegmentDetails extends React.Component {
     data: null,
     isFetchingSegment: true,
     status: true,
+    fileUrl: null,
     evaluatorIdList: null,
   };
 
@@ -42,16 +44,19 @@ export default class SegmentDetails extends React.Component {
     });
 
     // Fetch Segment Properties
+    const expands = ['files'];
     splitzFetch({
       url: 'segment.v1.SegmentAPI/Get',
       data: {
         segmentID: segmentId,
+        expands,
       },
     })
       .then((res) => {
         this.setState({
           isFetchingSegment: false,
           data: res.items, // TODO: fix from API
+          fileUrl: Object.values(res?.fileUrl || [])[0],
         });
       })
       .catch(() => {
@@ -150,7 +155,7 @@ export default class SegmentDetails extends React.Component {
   // onEdit = () => this.fetch(this.props.segmentId);
 
   render() {
-    const { isFetchingSegment, status, data, evaluatorIdList } = this.state;
+    const { isFetchingSegment, status, data, fileUrl, evaluatorIdList } = this.state;
     const { segmentId } = this.props;
 
     const isFetching = isFetchingSegment;
@@ -229,8 +234,8 @@ export default class SegmentDetails extends React.Component {
                     <b>ID: </b> {data.inputFileID}
                   </div>
                 </div>
-                <div className="link" onClick={() => this.viewFile(data.inputFileID)}>
-                  View File
+                <div className="link">
+                  <a href={fileUrl}>View File</a>
                 </div>
               </div>
             </div>
