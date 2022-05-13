@@ -1,11 +1,12 @@
 name: SecurityChecks
 on:
+  workflow_dispatch:
+  deployment:
   pull_request: {}
   push:
     branches: [ "master" ]
   schedule:
-    # * is a special character in YAML so you have to quote this string
-    - cron:  '30 20 * * *'
+    - cron: '30 20 * * *'
 jobs:
   security-sast:
     uses: razorpay/security-action/.github/workflows/semgrep.yml@master
