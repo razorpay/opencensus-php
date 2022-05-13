@@ -31,6 +31,7 @@ use RZP\Constants\Entity as EntityConstant;
 use RZP\Models\Transaction\Processor\Ledger;
 use RZP\Models\Transaction\Processor\Payout as PayoutTxnProcessor;
 use RZP\Models\Payout\Processor\DownstreamProcessor\FundAccountPayout;
+use RZP\Models\PayoutsStatusDetails\Core as PayoutsStatusDetailsCore;
 
 class Base extends FundAccountPayout\Base
 {
@@ -218,6 +219,7 @@ class Base extends FundAccountPayout\Base
         catch (BadRequestException $ex)
         {
             $this->failPayoutPostLedgerFailure($payout, $ex->getError()->getInternalErrorCode());
+
             if ($payout->toBeQueued() === false)
             {
                 throw $ex;
@@ -319,6 +321,13 @@ class Base extends FundAccountPayout\Base
         }
 
         $this->repo->saveOrFail($payout);
+
+        if ($payout->getStatus() === Status::FAILED)
+        {
+            // fire failed webhook
+            (new PayoutsStatusDetailsCore())->create($payout);
+            $this->app->events->dispatch('api.payout.failed', [$payout]);
+        }
     }
 
     public function createTransactionForLedgerReverseShadow($payout, $ledgerResponse)

@@ -5165,10 +5165,6 @@ class Core extends Base\Core
 
         // mark payout as failed
         $subProcessor->failPayoutPostLedgerFailure($payout);
-
-        // fire failed webhook
-        (new PayoutsStatusDetailsCore())->create($payout);
-        $this->app->events->dispatch('api.payout.failed', [$payout]);
     }
 
     /**

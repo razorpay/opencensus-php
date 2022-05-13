@@ -22140,4 +22140,73 @@ class PayoutTest extends OAuthTestCase
 
         $this->assertEquals($fileName, $response[PayoutsDetails\Entity::ATTACHMENTS_FILE_NAME]);
     }
-}
+
+    public function testPayoutFailedEventDispatchForPayoutFailedInLedgerReverseShadowMode()
+    {
+        $this->testData[__FUNCTION__] = $this->testData['testCreateAndProcessQueuedPayout'];
+
+        $this->app['config']->set('applications.ledger.enabled', true);
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $mockLedger->shouldReceive('createJournal')
+            ->andThrow(new RuntimeException(
+                'Unexpected response code received from Ledger service.',
+                [
+                    'status_code'   => 400,
+                    'response_body' => [
+                        'code' => 'invalid_argument',
+                        'msg' => 'validation_failure: validation_failure: BAD_REQUEST_INSUFFICIENT_BALANCE',
+                    ],
+                ]
+            ));
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        // Setting the redis config as empty initially
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RX_QUEUED_PAYOUTS_PAGINATION => []]);
+
+        // create a queued payout
+        $this->startTest();
+
+        // fetch payout and check status to be queued
+        $payout = $this->getDbLastEntity('payout');
+        $this->assertEquals($payout->getStatus(), Payout\Status::QUEUED);
+
+        // Add enough balance to process queued payout
+        $this->app['config']->set('applications.ledger.enabled', true);
+        $balance = $this->getDbLastEntity('balance');
+        $this->fixtures->balance->edit($balance['id'], ['balance' => 11000000]);
+
+        $eventData = $this->testData[__FUNCTION__];
+        $this->mockServiceStorkRequest(
+            function ($path, $payload) use ($eventData, & $payloadFailed) {
+                $this->assertContains($payload['event']['name'], ['payout.failed']);
+                switch ($payload['event']['name']) {
+                    case Event::PAYOUT_FAILED:
+                        $payloadFailed = $payload;
+                        break;
+            }
+            return new \Requests_Response();
+        });
+
+        $this->dispatchQueuedPayouts();
+
+        // fetch payout and assert that it was failed
+        $payout = $this->getDbLastEntity('payout');
+        $this->assertEquals($payout->getStatus(), Payout\Status::FAILED);
+
+        // assert if payouts_status_details entry for created for the payout
+        $payoutStatusDetails = $this->getDbLastEntity('payouts_status_details');
+        $this->assertEquals($payoutStatusDetails->getPayoutId(), $payout->getId());
+        $this->assertEquals($payoutStatusDetails->getStatus(), Payout\Status::FAILED);
+
+        // assertions on the dispatched event
+        $payload = json_decode($payloadFailed["event"]["payload"]);
+        $this->assertEquals('rx-test', $payloadFailed['event']['service']);
+        $this->assertEquals('payout.failed', $payloadFailed['event']['name']);
+        $this->assertEquals('merchant', $payloadFailed['event']['owner_type']);
+        $this->assertEquals('10000000000000', $payloadFailed['event']['owner_id']);
+        $this->assertEquals('pout_' . $payout["id"], $payload->payload->payout->entity->id);
+    }
+ }
