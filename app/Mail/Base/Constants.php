@@ -61,6 +61,7 @@ class Constants
     const OWNER                         = 'owner';
     const SECURITY_ALERTS               = 'security_alerts';
     const CROSS_BORDER_TECH             = 'cross_border_tech';
+    const PARTNER_COMMISSIONS           = 'partner_commissions';
 
     const PARTNER_ON_BOARDING_REPLY = 'partner_on_boarding_reply';
 
@@ -119,6 +120,7 @@ class Constants
         self::NBPLUS_TECH               => 'tech.onlinepayments.nbplus@razorpay.com',
         self::SECURITY_ALERTS           => 'security-alerts@razorpay.com',
         self::CROSS_BORDER_TECH         => 'payments-cross-border-engineering@razorpay.com',
+        self::PARTNER_COMMISSIONS       => 'partners-commissions@razorpay.com',
     ];
 
     const MERCHANT_CUSTOM_MAIL_ADDRESSES = [
@@ -160,6 +162,7 @@ class Constants
         self::RAZORPAY_HELP_DESK      => 'Team Razorpay',
         self::BANKING_ACCOUNT         => 'Team RazorpayX',
         self::PARTNER_SUBMERCHANT_INVITE => 'Razorpay Partner Program',
-        self::SECURITY_ALERTS         => 'Team Razorpay'
+        self::SECURITY_ALERTS         => 'Team Razorpay',
+        self::PARTNER_COMMISSIONS     => 'Razorpay Partnerships',
     ];
 }

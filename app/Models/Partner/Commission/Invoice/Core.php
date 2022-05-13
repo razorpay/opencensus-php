@@ -186,6 +186,7 @@ class Core extends Base\Core
 
         $promotorPan   = $merchant->merchantDetail->getPromoterPan();
         $companyPan    = $merchant->merchantDetail->getPan();
+        $activationStatus     = $merchant->merchantDetail->getActivationStatus();
 
         $pan = null;
 
@@ -225,6 +226,7 @@ class Core extends Base\Core
             'invoice'                  => $invoice->toArrayPublic(),
             'created_at'               => Carbon::createFromTimestamp($invoice->getCreatedAt(), Timezone::IST)->format('d-M-y'),
             'tds_percentage'           => $tdsPercentage/100,
+            'activation_status'        => $activationStatus,
         ];
 
         if (empty($pdfPath) === false)
