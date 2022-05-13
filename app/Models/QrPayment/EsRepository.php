@@ -2,6 +2,7 @@
 
 namespace RZP\Models\QrPayment;
 
+use RZP\Constants\Es;
 use RZP\Models\Base;
 use RZP\Models\Customer;
 use RZP\Models\Payment\Entity as PaymentEntity;
@@ -12,6 +13,8 @@ class EsRepository extends Base\EsRepository
 
     const CUSTOMER_EMAIL   = self::CUSTOMER_FIELDS_PREFIX . Customer\Entity::EMAIL;
 
+    const NOTES_NEW = 'notes_new';
+
     protected $indexedFields = [
         Entity::ID,
         Entity::MERCHANT_ID,
@@ -21,7 +24,8 @@ class EsRepository extends Base\EsRepository
         Entity::PROVIDER_REFERENCE_ID,
         PaymentEntity::NOTES,
         PaymentEntity::STATUS,
-        self::CUSTOMER_EMAIL
+        self::CUSTOMER_EMAIL,
+        self::NOTES_NEW,
     ];
 
     public function buildQueryForEntityType(array &$query, $value)
@@ -47,5 +51,18 @@ class EsRepository extends Base\EsRepository
     public function buildQueryForCustEmail(array &$query, $value)
     {
         $this->addMatchPhrasePrefix($query, self::CUSTOMER_EMAIL, $value);
+    }
+
+    public function buildQueryForNotes(array &$query, string $value)
+    {
+        $clause = [
+            Es::MATCH => [
+                'notes_new.value' => [
+                    Es::QUERY => $value,
+                ],
+            ],
+        ];
+
+        $this->addMust($query, $clause);
     }
 }

@@ -2,6 +2,7 @@
 
 namespace RZP\Models\QrPayment;
 
+use RZP\Base\Common;
 use RZP\Models\Base;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Payment\Entity as PaymentEntity;
@@ -39,7 +40,18 @@ class Repository extends Base\Repository
         {
             $serialized[PaymentEntity::STATUS] = $entity->payment->getStatus();
 
-            //$serialized[PaymentEntity::NOTES]  = $entity->payment->getNotes();
+            $serialized[EsRepository::NOTES_NEW] = $entity->payment->getNotes()->toArray();
+
+            if (empty($serialized[EsRepository::NOTES_NEW]) === false)
+            {
+                $serialized[EsRepository::NOTES_NEW] = array_map(
+                    function($key, $value) {
+                        return compact('key', 'value');
+                    },
+                    array_keys($serialized[EsRepository::NOTES_NEW]),
+                    $serialized[EsRepository::NOTES_NEW]
+                );
+            }
         }
 
         if ($entity->qrCode !== null)
