@@ -7,6 +7,7 @@ import Form from 'razorx/components/ui/Form';
 import { SearchableSelectField } from 'razorx/components/ui/Field';
 import { statusPill } from 'razorx/helpers/data';
 import { splitzFetch } from 'razorx/helpers/fetch';
+import { notifyError } from 'razorx/components/Modal';
 
 // @observer
 @withRouter
@@ -15,6 +16,9 @@ export default class ExperimentList extends React.Component {
     isFetchingProjects: true,
     projects: [],
     selectedProject: null,
+    experiments: null,
+    selectedExperimentId: null,
+    selectedExperimentName: null,
   };
 
   resetFilters = (e) => {
@@ -33,24 +37,39 @@ export default class ExperimentList extends React.Component {
   };
 
   filterList = () => {
-    const { selectedProject } = this.state;
+    const { selectedProject, selectedExperimentId, selectedExperimentName } = this.state;
+
     this.props.collection.applyFilters({
       projectId: selectedProject ? selectedProject.id : '',
+      id: selectedExperimentId || '',
+      name: selectedExperimentName || '',
     });
   };
 
   componentDidMount() {
-    splitzFetch({
-      url: 'project.v1.ProjectAPI/List',
-      data: {
-        limit: 100,
-        offset: 0,
-      },
-    })
-      .then((projectRes) => {
+    Promise.all([
+      splitzFetch({
+        url: 'project.v1.ProjectAPI/List',
+        data: {
+          limit: 100,
+          offset: 0,
+        },
+      }),
+      splitzFetch({
+        url: 'experiment.v1.ExperimentAPI/List',
+        data: {
+          limit: 100,
+          offset: 0,
+        },
+      }),
+    ])
+      .then((allResponses) => {
+        const [projectRes, experimentRes] = allResponses;
+
         this.setState({
           isFetchingProjects: false,
           projects: projectRes.items,
+          experiments: experimentRes.items,
         });
 
         const urlParams = new URLSearchParams(this.props.location.search);
@@ -64,7 +83,8 @@ export default class ExperimentList extends React.Component {
           });
         }
       })
-      .catch(() => {
+      .catch((err) => {
+        notifyError(err);
         this.setState({
           isFetchingProjects: false,
         });
@@ -77,7 +97,7 @@ export default class ExperimentList extends React.Component {
         {
           selectedProject: null,
         },
-        () => this.filterList(),
+        this.filterList(),
       );
       return;
     }
@@ -86,12 +106,57 @@ export default class ExperimentList extends React.Component {
       {
         selectedProject: project,
       },
+      this.filterList(),
+    );
+  };
+
+  handleSelectExperimentId = ({ option }) => {
+    if (!option) {
+      this.setState(
+        {
+          selectedExperimentId: null,
+        },
+        this.filterList(),
+      );
+      return;
+    }
+
+    this.setState(
+      {
+        selectedExperimentId: option.id,
+      },
+      this.filterList(),
+    );
+  };
+
+  handleSelectExperimentName = ({ option }) => {
+    if (!option) {
+      this.setState(
+        {
+          selectedExperimentName: null,
+        },
+        this.filterList(),
+      );
+      return;
+    }
+
+    this.setState(
+      {
+        selectedExperimentName: option.name,
+      },
       () => this.filterList(),
     );
   };
 
   render() {
-    const { isFetchingProjects, projects, selectedProject } = this.state;
+    const {
+      isFetchingProjects,
+      projects,
+      selectedProject,
+      experiments,
+      selectedExperimentId,
+      selectedExperimentName,
+    } = this.state;
 
     return (
       <div className="list-container">
@@ -111,7 +176,29 @@ export default class ExperimentList extends React.Component {
             options={projects || []}
             selected={selectedProject}
             onChange={this.handleSelectProject}
-            style={{ width: '250px' }}
+            className="search-box"
+          />
+          <SearchableSelectField
+            name="experiment_id"
+            optionComponent={(experiment) => <div>{experiment?.option?.id}</div>}
+            placeholder="Select an experiment ID"
+            searchIndices={['id']}
+            label="Select Experiment ID"
+            options={experiments || []}
+            selected={selectedExperimentId}
+            onChange={this.handleSelectExperimentId}
+            className="search-box"
+          />
+          <SearchableSelectField
+            name="experiment_name"
+            optionComponent={(experiment) => <div>{experiment?.option?.name}</div>}
+            placeholder="Select an experiment name"
+            searchIndices={['name']}
+            label="Select Experiment Name"
+            options={experiments || []}
+            selected={selectedExperimentName}
+            onChange={this.handleSelectExperimentName}
+            className="search-box"
           />
           <button className="btn btn--primary field">Search</button>
           <button type="button" className="btn btn--link field" onClick={this.resetFilters}>
