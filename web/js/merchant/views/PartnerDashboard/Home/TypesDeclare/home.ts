@@ -16,7 +16,7 @@ export interface StepContentT {
   subTitle: string | JSX.Element;
   ctaText: string | null;
   onClickCTA?: () => void;
-  toolTip?: string | JSX.Element;
+  toolTip?: string | JSX.Element | null;
   stepName: 'start-referring' | 'activate-account' | 'integrate-api' | 'commission-step';
 }
 

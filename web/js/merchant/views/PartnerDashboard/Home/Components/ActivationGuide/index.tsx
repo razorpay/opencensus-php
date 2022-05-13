@@ -82,6 +82,7 @@ const ActivationGuide = ({
               handleReferClient={handleReferClient}
               fuxStatus={fuxStatus}
               partnerName={partnerName}
+              partnerType={user.partner_type}
             />
 
             <ActivateAccountStep
@@ -89,6 +90,7 @@ const ActivationGuide = ({
               fuxStatus={fuxStatus}
               activation_status={activation_status}
               trackUserEvent={trackUserEvent}
+              partnerType={user.partner_type}
             />
 
             <IntegratingAPIStep

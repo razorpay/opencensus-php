@@ -38,7 +38,10 @@ export default class SubMerchantsList extends Component {
   state = {};
 
   componentDidMount() {
-    this.trackUserEvent('partnerships.dashboard.open');
+    const { user } = this.props;
+    this.trackUserEvent('partnerships.dashboard.open', {
+      fux: user?.isPartnershipFUX,
+    });
 
     // triggered because Affiliate Razorpay Accounts is default view
     this.trackUserEvent('partnerships.dashboard.affiliate_account.payments');

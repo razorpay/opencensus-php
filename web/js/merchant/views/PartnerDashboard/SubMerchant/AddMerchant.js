@@ -715,6 +715,7 @@ class AddMerchant extends Component {
                     <SocialShareGroup
                       referralUrl={referralUrl}
                       tracking={tracking}
+                      source={source}
                       product={merchantType}
                       partnerID={partnerID}
                     />

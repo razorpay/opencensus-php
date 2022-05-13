@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import rTracking from 'react-tracking';
-import CommissionCardBody from 'merchant/views/PartnerDashboard/Commissions/components/FUX-Cards/CommissionCardBody';
+import CommissionCardBody from 'merchant/views/PartnerDashboard/Commissions/components/FUX-Cards/CommissionCard/CardBody';
 import { setItem, getItem } from 'common/utils/localStorage';
 
 const CommissionCard = ({ tracking }) => {

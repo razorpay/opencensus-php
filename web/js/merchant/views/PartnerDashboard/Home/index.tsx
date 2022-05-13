@@ -13,6 +13,7 @@ import ShowWhen from 'merchant/components/ShowWhen';
 import AddMerchant from 'merchant/views/PartnerDashboard/SubMerchant/AddMerchant';
 import ActivationGuide from 'merchant/views/PartnerDashboard/Home/Components/ActivationGuide';
 import ReferralGuide from 'merchant/views/PartnerDashboard/Home/Components/ReferralGuide/index';
+import CommissionCardBody from 'merchant/views/PartnerDashboard/Commissions/components/FUX-Cards/CommissionCard/CardBody';
 import { showActivationConfetti } from 'merchant/views/PartnerDashboard/Home/Components/utils';
 import './home.styl';
 
@@ -77,6 +78,7 @@ const Home = ({ user, showNotification, openModal, closeModal }: PartnerHomeT) =
   };
 
   const isFirstReferralDone = FUXStatus.value?.first_submerchant_added === true;
+  const isFirstInvoiceGen = FUXStatus.value?.first_commission_payout === true;
   return (
     <div className="partner-dashboard-home">
       <h2 className="page-heading">{`Welcome to Partner dashboard, ${partnerName}!`}</h2>
@@ -104,6 +106,16 @@ const Home = ({ user, showNotification, openModal, closeModal }: PartnerHomeT) =
           isFetching={FUXStatus.isFetching}
           handleReferClient={handleReferClient}
         />
+      </ShowWhen>
+
+      <ShowWhen
+        additionalCondition={(currentUser) =>
+          currentUser.isPartner() && currentUser.isPartner('pure_platform') && isFirstInvoiceGen
+        }
+      >
+        <div className="fux-commission-cards home-view">
+          <CommissionCardBody />
+        </div>
       </ShowWhen>
     </div>
   );

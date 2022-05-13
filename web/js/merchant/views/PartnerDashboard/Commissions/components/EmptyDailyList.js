@@ -1,5 +1,5 @@
 import ShowWhen from 'merchant/components/ShowWhen';
-import CommissionCardBody from 'merchant/views/PartnerDashboard/Commissions/components/FUX-Cards/CommissionCardBody';
+import CommissionCardBody from 'merchant/views/PartnerDashboard/Commissions/components/FUX-Cards/CommissionCard/CardBody';
 
 const EmptyDailyList = (props) => {
   const { isPartnershipFUX, items, isAddMerchantView } = props;

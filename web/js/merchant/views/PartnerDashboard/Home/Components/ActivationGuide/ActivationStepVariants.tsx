@@ -13,12 +13,16 @@ interface StartStepT {
   fuxStatus: FUXStatusStateT;
   partnerName: string;
   handleReferClient: (source: AddMerchantSource, arg?: string) => void;
+  partnerType: PartnerTypeT;
 }
 export const StartReferringStep = ({
   fuxStatus,
   partnerName,
   handleReferClient,
-}: StartStepT): JSX.Element => {
+  partnerType,
+}: StartStepT): JSX.Element | null => {
+  if (partnerType === 'pure_platform') return null;
+
   const isFirstReferralDone = fuxStatus.value?.first_submerchant_added || false;
   const isCurrentStep = isFirstReferralDone === false;
   const isNextStep = false;
@@ -50,16 +54,26 @@ interface ActivateAccountStepT {
   fuxStatus: FUXStatusStateT;
   history: History;
   trackUserEvent: (eventName: string, properties?: Record<string, unknown>) => void;
+  partnerType: PartnerTypeT;
 }
 export const ActivateAccountStep = ({
   activation_status,
   fuxStatus,
   history,
   trackUserEvent,
+  partnerType,
 }: ActivateAccountStepT): JSX.Element => {
   const isFirstReferralDone = fuxStatus.value?.first_submerchant_added || false;
-  const isCurrentStep = isFirstReferralDone === true;
-  const isNextStep = isFirstReferralDone === false;
+
+  let isCurrentStep = isFirstReferralDone === true;
+  let isNextStep = isFirstReferralDone === false;
+  if (partnerType === 'pure_platform') {
+    // For pure platform users above Add New merchant step is hidden
+    // so Activation A/C step becomes current step
+    isCurrentStep = true;
+    isNextStep = false;
+  }
+  let isFailedStep = false;
   const isCompletedStep = activation_status === 'activated';
 
   const stepContent: StepContentT = {
@@ -100,12 +114,13 @@ export const ActivateAccountStep = ({
     stepContent.ctaText = 'Contact Support';
     stepContent.onClickCTA = () => {
       if (window?.rzpTicketSystem?.openModal) {
-        window.rzpTicketSystem.openModal();
+        window.rzpTicketSystem.openModal('#tickets');
         trackUserEvent('fux.activation-guide.open.contact-support', {
           activation_status,
         });
       }
     };
+    isFailedStep = true;
   }
   if (activation_status === 'activated' || activation_status === 'activated_mcc_pending') {
     stepContent.title = 'Account Activated';
@@ -118,6 +133,7 @@ export const ActivateAccountStep = ({
     isNextStep,
     isCompletedStep,
     stepContent,
+    isFailedStep,
   };
   return <ActivationStep {...stepProps} />;
 };
@@ -176,6 +192,7 @@ export const IntegratingAPIStep = ({
       </>
     );
     stepContent.ctaText = null;
+    stepContent.toolTip = null;
 
     if (isCompletedStep) {
       stepContent.title = 'Integration Successful';
@@ -206,8 +223,6 @@ export const CommissionStep = ({
   history,
   trackUserEvent,
 }: CommissionStep): JSX.Element | null => {
-  if (partnerType === 'pure_platform') return null;
-
   const isFirstReferralDone = fuxStatus.value?.first_submerchant_added === true;
   const isAccountActivated = activation_status === 'activated';
   const isAPIIntegrationDone = fuxStatus.value?.api_integration === true;
@@ -221,7 +236,7 @@ export const CommissionStep = ({
     isCurrentStep = isAccountActivated;
     isNextStep = isFirstReferralDone;
   }
-  if (partnerType === 'aggregator') {
+  if (partnerType === 'aggregator' || partnerType === 'pure_platform') {
     isCurrentStep = isAPIIntegrationDone;
     isNextStep = isAccountActivated;
   }
@@ -245,7 +260,17 @@ export const CommissionStep = ({
     ),
     stepName: 'commission-step',
   };
+  if (partnerType === 'pure_platform') {
+    // different default step for pure platform
+    stepContent.title = 'Onboard Merchants';
+    stepContent.subTitle =
+      'Direct your merchants to use Razorpay on your platform. The merchants need to complete the Razorpay registration before they start using Razorpay on your platform.';
+    stepContent.ctaText = null;
+    stepContent.toolTip = null;
+  }
+
   if (isFirstSubMerchAcceptPayments) {
+    stepContent.title = 'Start Earning';
     stepContent.subTitle = 'Start earning by getting your clients to start using our products';
     stepContent.ctaText = 'View Earnings';
     stepContent.onClickCTA = () => {
@@ -259,14 +284,16 @@ export const CommissionStep = ({
   }
   if (isFirstEarningGen) {
     stepContent.title = 'Get paid';
-    stepContent.subTitle = 'Generate invoice to get earnings in your bank account';
-    stepContent.ctaText = 'View Invoice';
+    stepContent.subTitle = 'Process invoice to get earnings in your bank account';
+    stepContent.ctaText = 'Process Invoice';
     stepContent.onClickCTA = () => {
       history.push('/partners/earnings/invoices');
       trackUserEvent('fux.activation-guide.open.invoices', {
         activation_status,
       });
     };
+    stepContent.toolTip =
+      'Invoices are generated only if the monthly commission is greater than 1 Rupee';
   }
 
   const stepProps = {

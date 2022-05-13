@@ -1,3 +1,6 @@
+import React from 'react';
+import './Card.styl';
+
 const CommissionCardBody = () => {
   const assetBase = `${window.cdnBaseUrl}/static/assets/partner-dashboard/fux-cards/commission-guide`;
   const bonusIcon = `${assetBase}/accelerate-bonus.svg`;
@@ -10,16 +13,21 @@ const CommissionCardBody = () => {
           <div className="sub-text">Boost your earnings with active referrals</div>{' '}
           <ul>
             <li>
-              <div className="list-title">₹500 on Payments every time</div>
+              <div className="list-title">Get ₹500 every time</div>
               <div className="list-subtext">
-                when your referral dose a business of at least Rs 2000 using Razorpay products for 3
+                when your referral dose a business of at least ₹2000 using Razorpay products for 3
                 consecutive months
               </div>
             </li>
             <li>
-              <div className="list-title">₹1000 for Banking</div>
-              <div className="list-subtext">
-                Every time your referral uses Razorpay Current Account to make payouts for 3 months
+              <div className="list-title">
+                <a
+                  href="https://razorpay.com/docs/partners/commissions/settlement-process"
+                  target="_blank"
+                  rel="noreferrer noopener"
+                >
+                  Know More
+                </a>
               </div>
             </li>
           </ul>
@@ -30,21 +38,25 @@ const CommissionCardBody = () => {
       </div>
       <div className="card-body">
         <div className="text-content">
-          <div className="title-text">Rewards Unlimited</div>
-          <div className="sub-text">
-            Earn a fixed referral bonus on each successful referral of a sub-merchant.
-          </div>
+          <div className="title-text">Unlimited Rewards</div>
+          <div className="sub-text">Uncapped commissions at an unbeatable rate</div>
           <ul>
             <li>
-              <div className="list-title">Earn 0.1% </div>
+              <div className="list-title">Get 0.1% </div>
               <div className="list-subtext">
-                of each successful payment by your referrals on Payment Products.
+                of your referral&apos;s transaction value as commission. Receive automated payout to
+                your bank account each month
               </div>
             </li>
             <li>
-              <div className="list-title">Earn ₹x on every y</div>
-              <div className="list-subtext">
-                successful payouts by your referrals on Banking Products.
+              <div className="list-title">
+                <a
+                  href="https://razorpay.com/docs/partners/commissions"
+                  target="_blank"
+                  rel="noreferrer noopener"
+                >
+                  Know More
+                </a>
               </div>
             </li>
           </ul>
