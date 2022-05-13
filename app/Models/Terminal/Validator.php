@@ -329,6 +329,7 @@ class Validator extends Base\Validator
         Entity::INTERNATIONAL                           => 'sometimes|boolean',
         Entity::CURRENCY                                => 'sometimes|array',
         Entity::CATEGORY                                => 'sometimes|string|numeric|digits:4',
+        Entity::TYPE                                    => 'sometimes|array',
     ];
 
     protected static $checkoutDotComEditTerminalRules = [
@@ -338,6 +339,7 @@ class Validator extends Base\Validator
         Entity::INTERNATIONAL                           => 'sometimes|boolean',
         Entity::CURRENCY                                => 'sometimes|array',
         Entity::CATEGORY                                => 'sometimes|string|numeric|digits:4',
+        Entity::TYPE                                    => 'sometimes|array',
     ];
 
     protected static $ccavenueTerminalRules = [

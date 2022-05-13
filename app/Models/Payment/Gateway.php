@@ -2095,6 +2095,7 @@ class Gateway
         Gateway::AMEX,
         Gateway::UPI_ICICI,
         Gateway::FULCRUM,
+        Gateway::CHECKOUT_DOT_COM,
     ];
 
     public static $cardMandateGateways = [
@@ -3146,6 +3147,16 @@ class Gateway
     protected static $GatewaysWithoutPowerWalletSupport = [
         self::PAYU,
         self::CCAVENUE,
+    ];
+
+    // Address collection is required for recurring payments routed through this international gateway
+   const INTERNATIONAL_RECURRING_ADDRESS_REQUIRED = [
+        Gateway::CHECKOUT_DOT_COM
+    ];
+
+    // Gateway token2 field is expected in cps response for these gateways
+    const CPS_GATEWAY_TOKEN2_REQUIRED = [
+        Gateway::CHECKOUT_DOT_COM
     ];
 
     public static function isNonTerminalGateway(string $gateway)
@@ -4259,7 +4270,6 @@ class Gateway
     * @param $gateway
     * @return bool
     */
-
     public static function isAddressAndNameRequiredGateway($gateway) : bool
     {
         return (in_array($gateway, self::ADDRESS_NAME_REQUIRED_GATEWAYS, true));
@@ -4290,4 +4300,25 @@ class Gateway
 
         return false;
     }
+
+    /**
+     * Checks if address collection is required for international recurring payments for the $gateway
+     * @param $gateway
+     * @return bool
+     */
+    public static function isInternationalRecurringAddressRequired($gateway) : bool
+    {
+        return (in_array($gateway, self::INTERNATIONAL_RECURRING_ADDRESS_REQUIRED, true));
+    }
+
+    /**
+     * Checks if gateway_token2 field is required to be present in cps response
+     * @param $gateway
+     * @return bool
+     */
+    public static function isCPSGatewayToken2Required($gateway) : bool
+    {
+        return (in_array($gateway, self::CPS_GATEWAY_TOKEN2_REQUIRED, true));
+    }
+
 }

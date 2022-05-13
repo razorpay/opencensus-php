@@ -1312,6 +1312,11 @@ class Constants
      */
     const HDFC_SINGLE_TID = 'hdfc_single_tid';
 
+    /**
+     * Feature flag to check if international recurring payment via checkout_dot_com gateway is supported for a merchant
+     */
+    const RECURRING_CHECKOUT_DOT_COM = "recurring_chkout_dot_com";
+
     const MESSAGE                        = 'message';
     const INPUT                          = 'input';
     const MERCHANT_ONBOARDED             = 'merchant onboarded';
@@ -1820,6 +1825,7 @@ class Constants
         self::HDFC_SINGLE_TID                 => true,
         self::ORG_POOL_ACCOUNT_SETTLEMENT     => true,
         self::ONE_CC_REPORTING_TEST           => true,
+        self::RECURRING_CHECKOUT_DOT_COM      => true,
     ];
 
     // Entity type constants

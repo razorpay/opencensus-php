@@ -476,6 +476,66 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createCheckoutDotComRecurringTerminal(array $attributes = [])
+    {
+        $defaultValues = [
+            'merchant_id'           => '10000000000000',
+            'gateway'               => 'checkout_dot_com',
+            'card'                  => 1,
+            'upi'                   => 0,
+            'netbanking'            => 0,
+            'gateway_merchant_id'   => 'abcd1',
+            'category'              => '1240',
+            'international'         =>  1,
+            'type'                      => [
+                Type::RECURRING_NON_3DS => '1',
+                Type::RECURRING_3DS => '1'
+            ],
+        ];
+        $attributes = array_merge($defaultValues, $attributes);
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createCheckoutDotComNonRecurringTerminal(array $attributes = [])
+    {
+        $defaultValues = [
+            'merchant_id'           => '10000000000000',
+            'gateway'               => 'checkout_dot_com',
+            'card'                  => 1,
+            'upi'                   => 0,
+            'netbanking'            => 0,
+            'gateway_merchant_id'   => 'abcd1',
+            'category'              => '1240',
+            'international'         =>  1,
+            'type'                      => [
+                Type::NON_RECURRING => '1',
+            ],
+        ];
+        $attributes = array_merge($defaultValues, $attributes);
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createCheckoutDotComTerminalAllTypes(array $attributes = [])
+    {
+        $defaultValues = [
+            'merchant_id'           => '10000000000000',
+            'gateway'               => 'checkout_dot_com',
+            'card'                  => 1,
+            'upi'                   => 0,
+            'netbanking'            => 0,
+            'gateway_merchant_id'   => 'abcd1',
+            'category'              => '1240',
+            'international'         =>  1,
+            'type'                      => [
+                Type::NON_RECURRING => '1',
+                Type::RECURRING_NON_3DS => '1',
+                Type::RECURRING_3DS => '1'
+            ],
+        ];
+        $attributes = array_merge($defaultValues, $attributes);
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
     public function createZaakpayTerminal()
     {
         $attributes = [

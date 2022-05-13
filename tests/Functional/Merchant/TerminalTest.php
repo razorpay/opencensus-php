@@ -3791,4 +3791,55 @@ class TerminalTest extends TestCase
 
         $this->app['salesforce'] = $this->salesforceMock;
     }
+
+    public function testCreateCheckoutDotComTerminal()
+    {
+        $url = '/merchants/100000Razorpay/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testCreateCheckoutDotComRecurringTerminal()
+    {
+        $url = '/merchants/100000Razorpay/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testCreateCheckoutDotComNonRecurringTerminal()
+    {
+        $url = '/merchants/100000Razorpay/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testCreateCheckoutDotComTerminalAllTypes()
+    {
+        $url = '/merchants/100000Razorpay/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testEditToCheckoutDotComRecurringTerminal()
+    {
+        $originalTerminal = $this->fixtures->create("terminal:checkout_dot_com_non_recurring_terminal");
+
+        $url = '/terminals/'.$originalTerminal['id'];
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+        $editedTerminal = $this->getLastEntity('terminal', true);
+
+        $this->assertEquals($editedTerminal['type'], ['non_recurring', 'recurring_3ds', 'recurring_non_3ds']);
+    }
+
 }

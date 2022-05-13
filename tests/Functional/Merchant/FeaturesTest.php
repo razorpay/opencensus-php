@@ -3237,4 +3237,14 @@ Regards,
 
         $this->startTest();
     }
+
+    public function testAddRecurringCheckoutDotComFeature()
+    {
+        $this->ba->adminAuth(Mode::TEST, null, 'org_100000razorpay');
+
+        $this->startTest();
+        $this->verifyFeaturePresenceForAccounts(Mode::TEST,
+            self::DEFAULT_MERCHANT_ID,
+            ['recurring_chkout_dot_com']);
+    }
 }

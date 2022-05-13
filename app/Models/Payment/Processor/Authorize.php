@@ -360,6 +360,8 @@ trait Authorize
 
             $this->validateAndSaveBillingAddressIfApplicable($payment, $input);
 
+            $this->validateAndSaveTokenBillingAddressIfApplicable($payment, $input);
+
             if ($payment->isCardMandateCreateApplicable() === true)
             {
                 $this->processCardRecurringMandateInitialPaymentCreated($payment);
@@ -2816,6 +2818,9 @@ trait Authorize
         // international is not enabled.
         $this->verifyFeesLessThanAmount($payment);
 
+        // Must be done post terminal selection as the feature flag is gateway specific
+        $this->verifyCheckoutDotComRecurring($payment);
+
         // We are doing it in post processing because terminal id is required for
         // fetching the wallet token as they are terminal specific
         $this->associateWalletTokenIfApplicable($payment);
@@ -3763,12 +3768,12 @@ trait Authorize
         // Handle special case where first gateway success happened using verify flow.
         // This is for those gateways where callback flow is not implemented,
         // and we are not aware of the gateway status until hitting their Inquiry API.
-        // In such cases, we want to avoid setting lateAuth flag, 
+        // In such cases, we want to avoid setting lateAuth flag,
         // since these are not true lateAuth cases
         // - https://razorpay.slack.com/archives/CNP473LRF/p1648449676603789
         // - https://razorpay.slack.com/archives/CNXC0JHQF/p1648817541865879
-        if (Payment\Gateway::isTransactionPendingGateway($payment->getMethod(), 
-                                                         $payment->getGateway(), 
+        if (Payment\Gateway::isTransactionPendingGateway($payment->getMethod(),
+                                                         $payment->getGateway(),
                                                          $payment->getInternalErrorCode()))
         {
             $isLateAuth = false;
@@ -3941,6 +3946,22 @@ trait Authorize
                 'newGatewayAmount'  => $gatewayAmount,
             ]
         );
+    }
+
+    protected function verifyCheckoutDotComRecurring(Payment\Entity $payment)
+    {
+        if ($payment->isRecurring() and $payment->isInternational() and
+            $payment->isGateway(Payment\Gateway::CHECKOUT_DOT_COM) and
+            $payment->merchant->isFeatureEnabled(Features::RECURRING_CHECKOUT_DOT_COM) === false)
+        {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_INTERNATIONAL_RECURRING_NOT_ALLOWED_FOR_MERCHANT,
+                    null,
+                    [
+                        'merchant_id' => $payment->merchant->getId(),
+                        'gateway' => $payment->getGateway()
+                    ]);
+        }
     }
 
     protected function preProcessWalletCurrencyWrapper(array $input, Payment\Entity $payment)
@@ -6180,6 +6201,8 @@ trait Authorize
             $token->setRecurring(true);
             // TODO: Back fill the data for all the other recurring card tokens!
             $token->setRecurringStatus(Token\RecurringStatus::CONFIRMED);
+            $this->setGatewayToken2IfApplicable($payment, $token, $data);
+
         }
         else if ($payment->isEmandate() === true)
         {
@@ -6208,6 +6231,28 @@ trait Authorize
         $token->terminal()->associate($payment->terminal);
 
         $this->createAndSetTerminalInGatewayToken($payment, $token);
+    }
+
+
+    /**
+     * Sets gateway_token2 column of the token entity for international initial recurring payments routed through
+     * checkout_dot_com gateway. The gateway_token2 value is required during payment of 2nd billing cycle onwards
+     * @param Payment\Entity $payment
+     * @param Token\Entity $token
+     * @param array $data
+     * @return void
+     */
+    public function setGatewayToken2IfApplicable(Payment\Entity $payment, Token\Entity $token, array $data)
+    {
+        if($payment->merchant->isFeatureEnabled(Features::RECURRING_CHECKOUT_DOT_COM) and
+            $payment->isInternational() and $payment->isRecurringTypeInitial() === true and
+            Gateway::isCPSGatewayToken2Required($payment->getGateway()) === true)
+        {
+            if(empty($data) === false and isset($data["gateway_token2"]) === true)
+            {
+                $token->setGatewayToken2($data["gateway_token2"]);
+            }
+        }
     }
 
     /**
@@ -11037,5 +11082,76 @@ trait Authorize
         }
 
         return false;
+      }
+
+    /**
+     * For international initial recurring payments, if the gateway requires address collection
+     * the method validates and saves the billing address from input into the token
+     * @param Payment\Entity $payment
+     * @param array $input
+     * @return void
+     * @throws Exception\BadRequestException
+     * @throws Exception\BadRequestValidationFailureException
+     * @throws Exception\InvalidArgumentException
+     */
+    private function validateAndSaveTokenBillingAddressIfApplicable(Payment\Entity $payment, array $input)
+    {
+        if ($payment->merchant->isFeatureEnabled(Features::RECURRING_CHECKOUT_DOT_COM) and $payment->isInternational() and $payment->isRecurring() and $payment->isRecurringTypeInitial()
+            and Payment\Gateway::isInternationalRecurringAddressRequired($payment->getGateway()))
+        {
+            $token = $payment->getGlobalOrLocalTokenEntity();
+            if ($token === null)
+            {
+                return;
+            }
+
+            $tokenBillingAddress = $token->getBillingAddress();
+            if (empty($tokenBillingAddress) === false)
+            {
+                return;
+            }
+
+            $this->validateAddressIfPresent($payment, $input);
+
+            if (isset($input[Payment\Entity::BILLING_ADDRESS]))
+            {
+                $billingAddressFromInput = $this->getBillingAddressFromInput($input);
+
+                (new Address\Core)->create($token, Address\Type::TOKEN, $billingAddressFromInput);
+            }
+
+        }
+    }
+
+    private function getBillingAddressFromInput(array $input): array
+    {
+        $billingAddressFromInput = $input[Payment\Entity::BILLING_ADDRESS];
+
+        $billingAddressFromInput['type'] = Address\Type::BILLING_ADDRESS;
+
+        if (isset($billingAddressFromInput['postal_code']) === true)
+        {
+            // address entity stores zip code as "zipcode"
+            // in input, we get zip code as "postal_code"
+            $billingAddressFromInput['zipcode'] = $billingAddressFromInput['postal_code'];
+
+            unset($billingAddressFromInput['postal_code']);
+        }
+
+        if (isset($billingAddressFromInput['first_name']) === true)
+        {
+            $billingAddressFromInput['name'] = $billingAddressFromInput['first_name'];
+
+            unset($billingAddressFromInput['first_name']);
+        }
+
+        if (isset($billingAddressFromInput['last_name']) === true)
+        {
+            $billingAddressFromInput['name'] .= " " . $billingAddressFromInput['last_name'];
+
+            unset($billingAddressFromInput['last_name']);
+        }
+
+        return $billingAddressFromInput;
     }
 }

@@ -794,6 +794,12 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::ENTITY_TYPE] = E::SUBSCRIPTION;
     }
 
+    public function setGatewayToken2(string $gatewayToken2)
+    {
+        $this->attributes[self::GATEWAY_TOKEN2] = $gatewayToken2;
+    }
+
+
     protected function setUsedAtAttribute($time)
     {
         $usedAt = $this->getAttribute(self::USED_AT);

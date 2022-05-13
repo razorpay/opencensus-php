@@ -3078,4 +3078,25 @@ return [
             ]
         ]
     ],
+
+    'testAddRecurringCheckoutDotComFeature' => [
+        'request'  => [
+            'url'     => '/features',
+            'method'  => 'post',
+            'content' => [
+                'names'       => ['recurring_chkout_dot_com'],
+                'entity_type' => 'merchant',
+                'entity_id'   => '10000000000000'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'name' => 'recurring_chkout_dot_com',
+                    'entity_id' => '10000000000000',
+                    'entity_type' => 'merchant',
+                ]
+            ]
+        ]
+    ],
 ];

@@ -6,14 +6,20 @@ use Redis;
 use Mockery;
 
 use RZP\Constants\Entity as E;
+use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorCode;
 use RZP\Exception;
 use RZP\Models\Bank\IFSC;
+use RZP\Models\Payment\Gateway;
+use RZP\Models\Payment\RecurringType;
+use RZP\Models\Payment\TwoFactorAuth;
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Payment\Entity as Payment;
+use RZP\Models\Terminal\Entity as Terminal;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Customer\Token\Entity as Token;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -1575,6 +1581,157 @@ class RecurringPaymentTest extends TestCase
         $this->assertNotEmpty($cardMandate->getMandateSummaryUrl());
         $this->assertEquals('active', $cardMandate->getStatus());
         $this->assertEquals('ratn_PP3VC146gmBVGG', $cardMandate->getMandateId());
+    }
+
+    public function enableCPS($terminal){
+
+        $this->enableCpsConfig();
+        $cardService = \Mockery::mock('RZP\Services\CardPaymentService')->makePartial();
+
+        $this->app->instance('card.payments', $cardService);
+
+        $cardService->shouldReceive('sendRequest')
+            ->with('POST', Mockery::type('string'), Mockery::type('array'))
+            ->andReturnUsing(function (string $method, string $url, array $input) use ($terminal)
+            {
+                return [
+                    'data' => [
+                        'acquirer' => [
+                            'reference2' => 'test12',
+                        ],
+                    ],
+                    'payment' => [
+                        'auth_type' => null,
+                        'terminal_id'  => $terminal->getId(),
+                        'authentication_gateway' => 'checkout_dot_com'
+                    ],
+                ];
+            });
+    }
+
+    public function testInitialRecurringPaymentCheckoutDotCom()
+    {
+        $this->ba->publicAuth();
+
+        $terminal = $this->fixtures->create("terminal:checkout_dot_com_terminal_all_types");
+        $this->enableCPS($terminal);
+
+        $this->fixtures->merchant->addFeatures([Feature::CHARGE_AT_WILL]);
+        $this->fixtures->merchant->addFeatures([Feature::RECURRING_CHECKOUT_DOT_COM]);
+        $this->fixtures->merchant->enableInternational();
+
+        $payment = $this->getDefaultRecurringPaymentArray();
+
+        $payment['card']['number'] = '4212345678901237';
+
+        $this->fixtures->iin->create([
+            'iin'     => '421234',
+            'country' => 'US',
+            'network' => 'MasterCard',
+            'recurring' => 1,
+            'flows'   => [
+                '3ds'          => '1',
+                'headless_otp' => '1',
+            ]
+        ]);
+
+        $content = $this->doAuthPayment($payment);
+        $this->assertArrayHasKey('razorpay_payment_id', $content);
+
+        $paymentEntity = $this->getDbLastEntity(E::PAYMENT);
+        $tokenEntity   = $this->getDbLastEntity(E::TOKEN);
+
+        $this->assertEquals($paymentEntity[Payment::TERMINAL_ID], $terminal[Terminal::ID]);
+        $this->assertEquals(RecurringType::INITIAL, $paymentEntity['recurring_type']);
+        $this->assertEquals(true, $tokenEntity[Token::RECURRING]);
+    }
+
+    public function testAutoRecurringPaymentCheckoutDotCom()
+    {
+        $this->ba->publicAuth();
+        $terminal = $this->fixtures->create("terminal:checkout_dot_com_terminal_all_types");
+        $this->enableCPS($terminal);
+
+        $this->fixtures->iin->create([
+            'iin'     => '421234',
+            'country' => 'US',
+            'network' => 'MasterCard',
+            'recurring' => 1,
+            'flows'   => [
+                '3ds'          => '1',
+                'headless_otp' => '1',
+            ]
+        ]);
+
+        $terminal = $this->fixtures->create("terminal:checkout_dot_com_terminal_all_types");
+
+        $this->fixtures->merchant->addFeatures([Feature::CHARGE_AT_WILL]);
+        $this->fixtures->merchant->addFeatures([Feature::RECURRING_CHECKOUT_DOT_COM]);
+
+        $payment = $this->getDefaultRecurringPaymentArray();
+
+        $payment['card']['number'] = '4212345678901237';
+
+        $this->doAuthPayment($payment);
+
+        $paymentEntity = $this->getDbLastEntity(E::PAYMENT);
+        $tokenEntity   = $this->getDbLastEntity(E::TOKEN);
+
+        $tokenId = $paymentEntity[Payment::TOKEN_ID];
+
+        unset($payment[Payment::CARD]);
+        unset($payment[Payment::BANK]);
+
+        $payment[Payment::TOKEN] = 'token_'.$tokenId;
+
+        $this->ba->privateAuth();
+
+        $content = $this->doS2SRecurringPayment($payment);
+
+        $paymentEntity = $this->getDbLastEntity(E::PAYMENT);
+
+        $this->assertEquals($paymentEntity[Payment::GATEWAY], $terminal[Terminal::GATEWAY]);
+        $this->assertEquals(RecurringType::AUTO, $paymentEntity['recurring_type']);
+    }
+
+    public function testRecurringPaymentCheckoutDotComNotActivated()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->create("terminal:checkout_dot_com_terminal_all_types");
+
+        $this->fixtures->merchant->addFeatures([Feature::CHARGE_AT_WILL]);
+        $this->fixtures->merchant->enableInternational();
+
+        $payment = $this->getDefaultRecurringPaymentArray();
+
+        $payment['card']['number'] = '4212345678901237';
+
+        $this->fixtures->iin->create([
+            'iin'     => '421234',
+            'country' => 'US',
+            'network' => 'MasterCard',
+            'recurring' => 1,
+            'flows'   => [
+
+            ]
+        ]);
+
+        $this->makeRequestAndCatchException(
+            function() use ($payment)
+            {
+                $response = $this->doAuthPayment($payment);
+                $error = $response['error'];
+
+                self::assertEquals(Gateway::CHECKOUT_DOT_COM, $error['data']['gateway']);
+                self::assertEquals(PublicErrorCode::BAD_REQUEST_ERROR, $error['code']);
+
+                self::assertEquals(ErrorCode::BAD_REQUEST_PAYMENT_INTERNATIONAL_RECURRING_NOT_ALLOWED_FOR_MERCHANT,
+                    $error['internal_error_code']);
+            },
+            Exception\BadRequestException::class,
+            PublicErrorDescription::BAD_REQUEST_PAYMENT_INTERNATIONAL_RECURRING_NOT_ALLOWED_FOR_MERCHANT);
+
     }
 
     protected function assignSubMerchant(string $tid, string $mid)
