@@ -339,7 +339,10 @@ class LeafListItem extends React.Component {
     };
 
     const shouldReinitiateRequest =
-      instrument.status === ACTION_REQUIRED && !instrument.should_show_smart_dashboard_flow;
+      instrument.status === ACTION_REQUIRED &&
+      !instrument?.should_show_smart_dashboard_flow &&
+      instrument?.should_show_reinitiate_button;
+
     return (
       <li className={getListClass(instrument.status, instrument.path)}>
         <div>
