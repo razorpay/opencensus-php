@@ -1077,7 +1077,7 @@ class Constants
     // To enable workflow payouts creation via payouts service
     const WORKFLOW_VIA_PAYOUTS_MS = 'workflow_via_payouts_ms';
     const ORG_AXIS_WHATSAPP = 'axis_whatsapp';
-
+    const APPS_STATUS_UPDATE_VIA_PS = 'apps_status_update_via_ps';
     const AXIS_WHATSAPP_ENABLE = 'axis_whatsapp_enable';
     /**
      * Feature flag to redirect user to the Gateway
@@ -1815,6 +1815,7 @@ class Constants
         self::ACCEPT_ONLY_3DS_PAYMENTS        => true,
         self::SUB_MERCHANT_PRICING_AUTOMATION => true,
         self::BLOCKLIST_FOR_WORKFLOW_SERVICE  => true,
+        self::APPS_STATUS_UPDATE_VIA_PS       => true,
         self::ONE_CLICK_DUAL_CHECKOUT         => true,
         self::HDFC_SINGLE_TID                 => true,
         self::ORG_POOL_ACCOUNT_SETTLEMENT     => true,
@@ -2569,7 +2570,12 @@ class Constants
             'feature'      => self::BLOCKLIST_FOR_WORKFLOW_SERVICE,
             'display_name' => 'Process workflows via API (old workflow setup)',
             'description'  => 'This feature, if enabled, will process the workflows for the merchant via API Monolith',
-        ]
+        ],
+        self::APPS_STATUS_UPDATE_VIA_PS => [
+            'feature'       => self::APPS_STATUS_UPDATE_VIA_PS,
+            'display_name'  => 'Enable Apps Status Updates Via Payout Service',
+            'description'   => 'Enables status updates to internal apps via payouts service',
+        ],
     ];
 
     /**

@@ -1491,6 +1491,12 @@ class Entity extends Base\PublicEntity
 
         $this->setAttribute(self::STATUS, $status);
 
+        if ($this->getIsPayoutService() === true &&
+            $this->merchant->isFeatureEnabled(Features::APPS_STATUS_UPDATE_VIA_PS) === true)
+        {
+            return;
+        }
+
         // pushing a message in the queue to update the source for payout
         $mode = app('rzp.mode') ? app('rzp.mode') : Mode::LIVE;
 

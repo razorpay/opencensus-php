@@ -12301,6 +12301,38 @@ class PayoutTest extends OAuthTestCase
         Queue::assertPushed(PayoutSourceUpdaterJob::class);
     }
 
+    public function testPayoutSetStatusQueuePushSkippedWhenStatusUpdateViaPayoutServiceEnabled()
+    {
+        $this->app->instance('rzp.mode', "live");
+
+        Queue::fake();
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::APPS_STATUS_UPDATE_VIA_PS]);
+
+        $payout = $this->fixtures->create('payout', [
+            'status'            =>      'created',
+            'pricing_rule_id'   =>      '1nvp2XPMmaRLxb',
+            'is_payout_service' =>      1
+        ]);
+
+        // now adding payout source and QueuePush Should Happen
+        $this->fixtures->create('payout_source',
+            [
+                'payout_id'   => $payout->getId(),
+                'source_id'   => 'vdpm_1',
+                'source_type' => 'vendor_payments',
+                'priority'    => 1
+            ]);
+
+        $payout->setStatus(Status::PROCESSING);
+
+        Queue::assertNotPushed(PayoutSourceUpdaterJob::class);
+
+        $payout->setStatus(Status::PROCESSED);
+
+        Queue::assertNotPushed(PayoutSourceUpdaterJob::class);
+    }
+
     public function testPayoutSetStatusQueuePushForSettlementsPayout()
     {
         $this->app->instance('rzp.mode', "live");
