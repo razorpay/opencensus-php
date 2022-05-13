@@ -12227,6 +12227,11 @@ class Route
             'user_fetch_by_verified_contact_internal',
             'internal_pincode_get',
         ],
+
+        'capital_scorecard_client' => [
+            'internal_merchant_fetch',
+        ],
+
         'capital_cards_m2p' =>[
             'capital_cards_m2p_webhook',
         ],

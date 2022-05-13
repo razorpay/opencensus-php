@@ -507,6 +507,27 @@ return [
             ]
         ]
     ],
+    env('APP_V2_ID_CAPITAL_SCORECARD_CLIENT')       => [
+        "name"        => "capital_scorecard_client",
+        "credentials" => [
+            [
+                "username" => env('APP_V2_CREDENTIAL_USERNAME_LIVE_CAPITAL_SCORECARD_CLIENT'),
+                "password" => env('APP_V2_CREDENTIAL_PASSWORD_LIVE_CAPITAL_SCORECARD_CLIENT'),
+                "mode"     => "live",
+                "roles"    => [
+                    "app.capital_scorecard"
+                ]
+            ],
+            [
+                "username" => env('APP_V2_CREDENTIAL_USERNAME_TEST_CAPITAL_SCORECARD_CLIENT'),
+                "password" => env('APP_V2_CREDENTIAL_PASSWORD_TEST_CAPITAL_SCORECARD_CLIENT'),
+                "mode"     => "test",
+                "roles"    => [
+                    "app.capital_scorecard"
+                ]
+            ]
+        ]
+    ],
     env('APP_V2_ID_CAPITAL_COLLECTIONS_CLIENT') => [
         "name"        => "capital_collections_client",
         "credentials" => [

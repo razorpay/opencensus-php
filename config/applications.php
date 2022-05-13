@@ -310,6 +310,10 @@ return [
         'secret' => env('CAPITAL_CARDS_PASSWORD'),
     ],
 
+    'capital_scorecard_client' => [
+        'secret' => env('CAPITAL_SCORECARD_PASSWORD'),
+    ],
+
     'capital_collections_client' => [
         'secret' => env('CAPITAL_COLLECTIONS_PASSWORD'),
     ],
