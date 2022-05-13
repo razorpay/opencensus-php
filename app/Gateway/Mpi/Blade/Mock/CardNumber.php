@@ -20,7 +20,7 @@ class CardNumber
     const INTERNATIONAL_VISA_NE                     = '5149066434045615';
     const INTERNATIONAL_VISA_ENROLLED               = '5149063701342189';
 
-    public static function getAccId($cardNumber)
+    public static function getAccId($cardNumber) // nosemgrep : razorpay:card_pii_data_parameters
     {
         return base64_encode($cardNumber);
     }

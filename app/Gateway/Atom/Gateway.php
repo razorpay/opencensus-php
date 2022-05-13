@@ -468,7 +468,7 @@ class Gateway extends Base\Gateway
         return $gatewayPayment;
     }
 
-    protected function traceGatewayPaymentRequest(
+    protected function traceGatewayPaymentRequest( // nosemgrep : razorpay:sbb_101
         array $request,
         $input,
         $traceCode = TraceCode::GATEWAY_PAYMENT_REQUEST)

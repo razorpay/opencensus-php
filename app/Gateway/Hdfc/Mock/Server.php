@@ -710,12 +710,12 @@ class Server extends Base\Mock\Server
         return $res;
     }
 
-    protected function isSpecialCardNumber($cardNumber)
+    protected function isSpecialCardNumber($cardNumber)  // nosemgrep : razorpay:card_pii_data_parameters
     {
         return (in_array($cardNumber, $this->specialCardNumbers));
     }
 
-    protected function handleSpecialCardNumber($cardNumber)
+    protected function handleSpecialCardNumber($cardNumber) // nosemgrep : razorpay:card_pii_data_parameters
     {
         $error = array();
         $error['error_service_tag'] = null;
