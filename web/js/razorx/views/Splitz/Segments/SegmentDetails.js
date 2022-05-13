@@ -7,13 +7,17 @@ import { formatDate } from 'razorx/helpers/utils';
 import { splitzFetch } from 'razorx/helpers/fetch';
 import { notifyError, notifySuccess } from 'razorx/components/Modal';
 import AsyncButton from 'razorx/components/ui/AsyncButton';
+import { SEGMENT_DELETE, SEGMENT_EVALUATE_IN_BLOOM } from './constants';
 
 @withRouter
 export default class SegmentDetails extends React.Component {
+  evaluatorIds = null;
+
   state = {
     data: null,
     isFetchingSegment: true,
     status: true,
+    evaluatorIdList: null,
   };
 
   componentDidMount() {
@@ -100,10 +104,36 @@ export default class SegmentDetails extends React.Component {
       });
   };
 
+  storeEvaluatorIds = (e) => {
+    const { target = {} } = e;
+    const { value = '' } = target || {};
+    this.evaluatorIds = value;
+  };
+
+  evaluateSegmentId = () => {
+    const { segmentId } = this.props;
+
+    if (this.evaluatorIds.trim() !== '') {
+      splitzFetch({
+        url: SEGMENT_EVALUATE_IN_BLOOM,
+        data: {
+          segmentID: segmentId,
+          evaluatorID: this.evaluatorIds.replace(/ /g, '').split(','),
+        },
+      }).then((res) => {
+        this.setState({
+          evaluatorIdList: res.Evaluate,
+        }).catch((err) => {
+          notifyError(err);
+        });
+      });
+    }
+  };
+
   deleteSegment = () => {
     const { segmentId } = this.props;
     splitzFetch({
-      url: 'segment.v1.SegmentAPI/Delete',
+      url: SEGMENT_DELETE,
       data: {
         segmentID: segmentId,
       },
@@ -120,11 +150,23 @@ export default class SegmentDetails extends React.Component {
   // onEdit = () => this.fetch(this.props.segmentId);
 
   render() {
-    const { isFetchingSegment, status, data } = this.state;
+    const { isFetchingSegment, status, data, evaluatorIdList } = this.state;
     const { segmentId } = this.props;
 
     const isFetching = isFetchingSegment;
     let content;
+
+    const evaluatedIds = evaluatorIdList && (
+      <div className="id-results-box">
+        {evaluatorIdList?.map(({ evaluatorID, isPresent }) => {
+          return (
+            <div key={evaluatorID}>
+              {evaluatorID} : {isPresent}
+            </div>
+          );
+        })}
+      </div>
+    );
 
     if (!segmentId) {
       content = null;
@@ -212,6 +254,19 @@ export default class SegmentDetails extends React.Component {
             </div>
           )}
           <br />
+          <br />
+          <div>
+            <div className="label">Evaluate IDs</div>
+            <input type="text" onChange={this.storeEvaluatorIds} />
+            <AsyncButton type="button" className="btn" onClick={this.evaluateSegmentId}>
+              Evaluate
+            </AsyncButton>
+            <br />
+            <span className="sub-description">
+              *For evaluating multiple ids, use comma seperated strings
+            </span>
+            {evaluatedIds}
+          </div>
           <br />
           <div>
             <AsyncButton
