@@ -174,6 +174,8 @@ class GatewayController extends Controller
                         ErrorCode::SERVER_ERROR_NO_TERMINAL_FOUND);
                 }
 
+                $terminal = $terminal->toArrayWithPassword();
+
                 $gateway->setTerminal($terminal);
 
                 return $gateway->preProcessServerCallback($input);
