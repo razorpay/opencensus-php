@@ -8,7 +8,7 @@ import Loader from 'common/ui/Loader';
 import { SubmissionSuccessfull } from '../NotificationsDropdown/RazorpayXNitroAnnouncement';
 import { sendDataToSalesForce } from '../../utils/common-api';
 import './modalStyle.styl';
-import { fetchGSModal as fetchGSModalProp } from '../../../merchant/reducers/growthService';
+import { fetchGSModal as fetchGSModalProp } from 'merchant/reducers/growthService';
 
 const GrowthServiceModal = ({
   tracking,

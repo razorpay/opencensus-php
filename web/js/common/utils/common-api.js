@@ -5,16 +5,13 @@ const payload = {
   event_properties: {},
 };
 
-export const sendDataToSalesForce = (data, user = {}, event_type = '', mode = 'live') => {
+export const sendDataToSalesForce = (data, user = {}, mode = 'live') => {
   const userDetails = {
     merchant_id: user?.current,
     name: user?.name,
     email: user?.contact_email,
     contact_mobile: user?.contact_mobile,
   };
-
-  if (event_type && typeof event_type === 'string' && event_type.length > 0)
-    payload.event_type = event_type;
 
   const eventPropertiesMap = {
     'LOC-Cross-sell-V1': {

@@ -38,9 +38,9 @@ import getSurveyForm from 'merchant/components/Announcements/CSATSurveyBanner/ge
 import moment from 'moment';
 import { getButtonClass, iconMap, getQueryData, getNotificationTrackingProperties } from './common';
 import ExclusiveOffer from '../ExclusiveOffer';
-import ThankYouModal from 'merchant/components/Home/ThankYouModal';
 import GrowthServiceModal from '../GrowthServiceModal';
 import GrowthServiceCenterCTAModal from '../GrowthServiceModal/CenterCTAModal';
+import GrowthServiceThankYouModal from '../GrowthServiceModal/ThankYouModal';
 
 function _isUnreadNotification(startTS, endTS, lastReadTS) {
   return lastReadTS < startTS && moment().unix() < endTS;
@@ -216,6 +216,14 @@ class WhatsNewOld extends Component {
     });
   };
 
+  showGSThankYouModal = (id) => {
+    const { openModal } = this.props;
+    return openModal({
+      component: <GrowthServiceThankYouModal template_id={id} />,
+      size: 'medium',
+    });
+  };
+
   onMobileAppCampaignCTAClick = () => {
     // handle the popup open here. refer showRazorpayXNitroAnnouncement function
     const { user } = this.props;
@@ -274,29 +282,6 @@ class WhatsNewOld extends Component {
     this.props.setActivePageName('Connected Banking');
   };
 
-  showThankYouModal = (trackingPayload, event_type) => {
-    const { closeModal, openModal, user } = this.props;
-    return sendDataToSalesForce(trackingPayload, user, event_type).then((resp) => {
-      const { success } = resp;
-      if (success) {
-        openModal({
-          size: 'medium',
-          component: (
-            <ThankYouModal
-              handleClose={closeModal}
-              imgSrc={`${window.cdnBaseUrl}/static/assets/growth-assets/illustrations/contact_support.svg`}
-              config={{
-                headerText: 'Request received!',
-                bodyText: "We'll be in touch with you about the next steps soon.",
-                primaryCtaText: '', // add cta to show button
-              }}
-            />
-          ),
-        });
-      }
-    });
-  };
-
   handleCTA = ({ id, url, type, variant }) => {
     const isMWeb = isMobileAndTablet();
     if (!isMWeb && type.length && variant.length) {
@@ -308,6 +293,9 @@ class WhatsNewOld extends Component {
               break;
             case 'center-cta':
               this.showGSCenterCTAModal(id);
+              break;
+            case 'thank-you':
+              this.showGSThankYouModal(id);
               break;
             default:
               break;

@@ -50,6 +50,7 @@ import getSurveyForm from 'merchant/components/Announcements/CSATSurveyBanner/ge
 import moment from 'moment';
 import GrowthServiceModal from '../GrowthServiceModal';
 import GrowthServiceCenterCTAModal from '../GrowthServiceModal/CenterCTAModal';
+import GrowthServiceThankYouModal from '../GrowthServiceModal/ThankYouModal';
 
 const WhatsNewDetailsPage = lazy(() =>
   import(/* webpackChunkName: "WhatsNewDetailsPage" */ 'merchant/views/WhatsNew/Details'),
@@ -174,6 +175,14 @@ class WhatsNew extends Component {
     });
   };
 
+  showGSThankYouModal = (id) => {
+    const { openModal } = this.props;
+    return openModal({
+      component: <GrowthServiceThankYouModal template_id={id} />,
+      size: 'medium',
+    });
+  };
+
   onMobileAppCampaignCTAClick = () => {
     // handle the popup open here. refer showRazorpayXNitroAnnouncement function
     const { user } = this.props;
@@ -243,6 +252,9 @@ class WhatsNew extends Component {
               break;
             case 'center-cta':
               this.showGSCenterCTAModal(id);
+              break;
+            case 'thank-you':
+              this.showGSThankYouModal(id);
               break;
             default:
               break;

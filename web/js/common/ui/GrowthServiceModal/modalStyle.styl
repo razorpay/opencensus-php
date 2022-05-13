@@ -1,3 +1,5 @@
+  $screen-xs-max = 767px;
+  $desktop-wide = 1170px;
 #gsBtnClose
     position: absolute
     right: 25px
@@ -55,3 +57,17 @@
         height:40px;
         margin-right: 50px;
         margin-bottom: auto;
+
+.thank-you-gs-modal
+  .img-container
+    text-align: center
+    img
+      max-width: 340px
+
+  .tm-footer 
+    padding-bottom: 25px;
+    @media screen and (max-width: $desktop-wide)
+        padding-bottom: 25px;
+
+    @media screen and (max-width: $screen-xs-max)
+        padding-bottom: 30px;
