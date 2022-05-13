@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import { PowerSelect } from 'react-power-select';
 import { Label } from 'common/new-ui/Input';
 import { AmountTooltip } from 'common/ui/Amount';
+import ErrorBoundary, { Ranks } from 'common/new-ui/ErrorBoundary';
 import { classList, setNativeValue } from 'common/utils/rzp-utils';
 
 const frequentlyUsedCurrencies = ['INR', 'USD', 'SGD', 'EUR'];
@@ -60,10 +61,19 @@ class CurrencySelect extends Component {
      * Note: it can happen that international is manually disabled (by merchant / by support team).
      * And some payments in international currency might exist, hence regardless international enable, currency requested via this component must reflect correct currency, and not INR.
      * */
+
+    if (window.currencyList === null && !this.isInternationalEnabled) {
+      return {
+        currencyList,
+        currency: { label: 'Indian Rupee', name: 'INR', sym: '₹' },
+        disabled: this.props.disabled || false,
+      };
+    }
+
     Object.keys(window.currencyList).forEach((c) => {
-      const fullName = window.currencyList[c].name;
+      const fullName = window.currencyList[c]?.name;
       const ISO = c;
-      const symbol = window.currencyList[c].symbol;
+      const symbol = window.currencyList[c]?.symbol;
 
       const currencyObj = {
         label: fullName,
@@ -84,7 +94,6 @@ class CurrencySelect extends Component {
         }
       }
     });
-
     return {
       currencyList,
       currency,
@@ -136,59 +145,65 @@ class CurrencySelect extends Component {
     const props = this.props;
 
     return (
-      <div
-        class={classList(
-          'Input Input--Currency',
-          this.props.fullDisplay && 'Input--Currency--fullDisplay',
-          (!this.isInternationalEnabled || this.props.disabled) && 'Input--noMargin',
-          this.props.className,
-        )}
+      <ErrorBoundary
+        FallbackComponent={() => <div>Failed to load currency, please try later.</div>}
+        rank={Ranks.P0}
+        resetOnProps
       >
-        {this.props.label && <Label text={this.props.label} />}
+        <div
+          class={classList(
+            'Input Input--Currency',
+            this.props.fullDisplay && 'Input--Currency--fullDisplay',
+            (!this.isInternationalEnabled || this.props.disabled) && 'Input--noMargin',
+            this.props.className,
+          )}
+        >
+          {this.props.label && <Label text={this.props.label} />}
 
-        {this.isInternationalEnabled && !this.props.disabled ? (
-          <div class="Input-content">
-            <div class="Input-elWrapper">
-              <div class="Input-el">
-                <input
-                  name={props.name || 'currency'}
-                  value={this.state.currency.name}
-                  hidden
-                  readOnly
-                  ref={(inp) => (this.ele = inp)}
-                />
-                <PowerSelect
-                  name="currency"
-                  class="Input--Currency-dropdown ps-in-modal"
-                  options={this.state.currencyList}
-                  searchIndices={['name', 'label']}
-                  placeholder="Select currency"
-                  optionComponent={OptionComponent}
-                  selectedOptionLabelPath="name"
-                  selectedOptionComponent={this.getSelectedCurrencyOption}
-                  onChange={this.onSelectCurrency}
-                  selected={this.state.currency}
-                  showClear={false}
-                  searchEnabled
-                  onOpen={this.onOpen}
-                />
+          {this.isInternationalEnabled && !this.props.disabled ? (
+            <div class="Input-content">
+              <div class="Input-elWrapper">
+                <div class="Input-el">
+                  <input
+                    name={props.name || 'currency'}
+                    value={this.state.currency.name}
+                    hidden
+                    readOnly
+                    ref={(inp) => (this.ele = inp)}
+                  />
+                  <PowerSelect
+                    name="currency"
+                    class="Input--Currency-dropdown ps-in-modal"
+                    options={this.state.currencyList}
+                    searchIndices={['name', 'label']}
+                    placeholder="Select currency"
+                    optionComponent={OptionComponent}
+                    selectedOptionLabelPath="name"
+                    selectedOptionComponent={this.getSelectedCurrencyOption}
+                    onChange={this.onSelectCurrency}
+                    selected={this.state.currency}
+                    showClear={false}
+                    searchEnabled
+                    onOpen={this.onOpen}
+                  />
+                </div>
               </div>
             </div>
-          </div>
-        ) : (
-          <div class="value">
-            {props.name && (
-              <input name={props.name} value={this.state.currency.name} hidden readOnly />
-            )}
-            <AmountTooltip
-              currency={this.state.currency.name}
-              parentQuerySelector={this.props.parentQuerySelector}
-            >
-              {this.state.currency.sym}
-            </AmountTooltip>
-          </div>
-        )}
-      </div>
+          ) : (
+            <div class="value">
+              {props.name && (
+                <input name={props.name} value={this.state.currency.name} hidden readOnly />
+              )}
+              <AmountTooltip
+                currency={this.state.currency.name}
+                parentQuerySelector={this.props.parentQuerySelector}
+              >
+                {this.state.currency.sym}
+              </AmountTooltip>
+            </div>
+          )}
+        </div>
+      </ErrorBoundary>
     );
   }
 }

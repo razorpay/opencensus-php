@@ -1,6 +1,7 @@
 import React from 'react';
 import FileUpload from 'merchant/components/File/Upload';
 import { classList } from 'common/utils/rzp-utils';
+import ErrorBoundary, { Ranks } from 'common/new-ui/ErrorBoundary';
 
 import CalendarPicker from './Calendar';
 import TimePicker from './Time';
@@ -685,11 +686,28 @@ const ToCalendar = React.forwardRef((props, ref) => (
   />
 ));
 
+const ErrorBoundaryWrapper = ({
+  children,
+  fallbackMessage = 'Failed to load, please try later.',
+}) => (
+  <ErrorBoundary
+    FallbackComponent={() => <div>{fallbackMessage}</div>}
+    rank={Ranks.P0}
+    resetOnProps
+  >
+    {children}
+  </ErrorBoundary>
+);
+
 Field.CalendarPicker = CalendarPicker;
 Field.ToCalendar = ToCalendar;
 Field.TimePicker = TimePicker;
 Field.DateTime = DateTime;
-Field.CurrencySelect = CurrencySelect;
+Field.CurrencySelect = (props) => (
+  <ErrorBoundaryWrapper fallbackMessage="Failed to load currency, please try later.">
+    <CurrencySelect {...props} />
+  </ErrorBoundaryWrapper>
+);
 Field.CurrencyInput = CurrencyInput;
 
 Field.TextareaAutoResize = TextareaAutoResize;
