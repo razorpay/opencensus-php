@@ -455,6 +455,7 @@ class Entity
     const FTS_PREFERRED_ROUTING_WEIGHTS    = 'fts.preferred_routing_weights';
     const FTS_ACCOUNT_TYPE_MAPPINGS        = 'fts.account_type_mappings';
     const FTS_MERCHANT_CONFIGURATIONS      = 'fts.merchant_configurations';
+    const FTS_KEY_VALUE_STORE_LOGS         = 'fts.key_value_store_logs';
 
     // FTS Routing V2
     const FTS_SCHEDULES                       = 'fts.schedules';
@@ -1444,6 +1445,7 @@ class Entity
         self::FTS_MERCHANT_CONFIGURATIONS   => \RZP\Services\FTS\FtsAdminClient::class,
         self::FTS_CHANNEL_INFORMATION_STATUS_LOGS => \RZP\Services\FTS\FtsAdminClient::class,
         self::FTS_FAIL_FAST_STATUS_LOGS     => \RZP\Services\FTS\FtsAdminClient::class,
+        self::FTS_KEY_VALUE_STORE_LOGS      => \RZP\Services\FTS\FtsAdminClient::class,
         self::UFH_FILES                     => \RZP\Services\UfhClient::class,
         self::PAYMENTS_NBPLUS_PAYMENTS      => \RZP\Services\NbPlus\Service::class,
         self::PAYMENTS_NBPLUS_NETBANKING    => \RZP\Services\NbPlus\Netbanking::class,

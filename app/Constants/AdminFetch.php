@@ -1537,6 +1537,12 @@ class AdminFetch
                     Fetch::TYPE  => Fetch::TYPE_STRING,
                 ],
             ],
+            Entity::FTS_KEY_VALUE_STORE_LOGS => [
+                'key_name' => [
+                    Fetch::LABEL  => 'Key Name',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ]
+            ],
             Entity::PAYOUTS_PAYOUTS => [
             ],
             Entity::PAYOUTS_REVERSALS => [

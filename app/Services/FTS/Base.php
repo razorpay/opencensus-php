@@ -135,6 +135,8 @@ class Base
 
     const FTS_FAIL_FAST_STATUS_MANUAL_UPDATE = '/channel_health_events/fail_fast_status/manual_update';
 
+    CONST FTS_KEY_VALUE_STORE_LOGS_GET_URL = '/key_value_store/logs';
+
     // Headers
     const ACCEPT        = 'Accept';
     const ADMIN_EMAIL   = 'admin_email';

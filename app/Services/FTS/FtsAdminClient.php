@@ -40,6 +40,8 @@ class FtsAdminClient extends Base
 
     const FAIL_FAST_STATUS_LOGS = 'fail_fast_status_logs';
 
+    const KEY_VALUE_STORE_LOGS = 'key_value_store_logs';
+
     public function __construct()
     {
         $app = App::getFacadeRoot();
@@ -173,6 +175,15 @@ class FtsAdminClient extends Base
             Requests::GET,
             $input)['body'][self::FAIL_FAST_STATUS_LOGS];
     }
+
+    public function getKeyValueStoreLogs(array $input)
+    {
+        return $this->createAndSendRequest(
+            parent::FTS_KEY_VALUE_STORE_LOGS_GET_URL,
+            Requests::GET,
+            $input)['body'][self::KEY_VALUE_STORE_LOGS];
+    }
+
 
     public function fetch(string $entity, string $id, array $input)
     {
