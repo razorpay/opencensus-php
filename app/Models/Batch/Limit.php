@@ -33,7 +33,7 @@ class Limit
         'emandate_debit_hdfc'                       => 50000,
         'emandate_debit_axis'                       => 20000,
         'emandate_debit_enach_rbl'                  => 10000,
-        'emandate_debit_enach_npci_netbanking'      => 100000,
+        'emandate_debit_enach_npci_netbanking'      => 200000,
         'emandate_debit_enach_nb_icici'             => 100000,
         'emandate_debit_sbi'                        => 10000,
         Type::BANKING_ACCOUNT_ACTIVATION_COMMENTS   => 10000,
