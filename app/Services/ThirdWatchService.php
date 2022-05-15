@@ -150,6 +150,7 @@ class ThirdWatchService
             $this->getAddressId($orderId, $address);
 
             $rtoPredictionServiceResponse = false;
+            $rtoPredictionServiceExperimentation = false;
 
             try
             {
@@ -157,6 +158,10 @@ class ThirdWatchService
                 if (strcmp($response['result']['action'], "allow") == 0)
                 {
                     $rtoPredictionServiceResponse = true;
+                }
+                if (isset($response['meta_data']['experimentation']) === true)
+                {
+                    $rtoPredictionServiceExperimentation = $response['meta_data']['experimentation'];
                 }
             }
             catch (Exception\BadRequestException $e)
@@ -186,6 +191,7 @@ class ThirdWatchService
             $codIntelligenceData = [
                 Order1cc\Fields::COD_INTELLIGENCE_ENABLED => $codIntelligenceEnabled,
                 Order1cc\Fields::COD_ELIGIBLE => $codEligible,
+                Order1cc\Fields::COD_ELIGIBILITY_EXPERIMENTATION => $rtoPredictionServiceExperimentation,
                 ];
 
             $this->updateCODIntelligenceDataFor1ccOrder($orderId, $codIntelligenceData);
