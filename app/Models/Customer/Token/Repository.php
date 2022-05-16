@@ -330,7 +330,9 @@ class Repository extends Base\Repository
                 ->select($this->repo->payment->dbColumn('*'))
                 ->whereBetween($paymentAuthorizedAtColumn, [$from, $to]);
 
-        return $this->newQueryOnSlave(600000)
+        $connection = $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_ADMIN);
+
+        return $this->newQueryWithConnection($connection)
             ->select($selectCols, 'payments.id as payment_id')
             ->joinSub(
                 $subQuery,
