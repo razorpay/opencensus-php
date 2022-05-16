@@ -208,17 +208,6 @@ export const partnerProducts = {
     logo: 'msmex.jpg',
     brandColor: '#039F62',
   },
-  busy: {
-    slug: 'busy',
-    title: 'BUSY',
-    cta: 'Enable Patch',
-    url: 'https://razorpay.typeform.com/to/NZPYQzpY',
-    category: 'Business Accounting Software',
-    description: 'Integrated business accounting and management software for MSMEs',
-    logo: 'busy.jpg',
-    logoPadding: 0,
-    brandColor: '#1682D4',
-  },
   uengage: {
     slug: 'uengage',
     title: 'Uengage',
