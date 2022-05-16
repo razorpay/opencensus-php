@@ -155,7 +155,7 @@ class ApiDetails
 
         sort($hashData);
 
-        return substr(md5(json_encode($hashData, true)), 0, 8);
+        return substr(md5(json_encode($hashData, true)), 0, 8); // nosemgrep :  php.lang.security.weak-crypto.weak-crypto
     }
 
     private function arrayKeysRecursiveAndUnique(array $array): array

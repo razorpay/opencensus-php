@@ -599,7 +599,7 @@ class Gateway extends Base\Gateway
         if ($input['payment']['method'] === Payment\Method::UPI)
         {
             $bankNamePrefix = strtoupper(substr($input['terminal']['gateway_acquirer'], 0, 3));
-            $randomStr = strtoupper(substr(md5(time()), 0, 32));
+            $randomStr = strtoupper(substr(md5(time()), 0, 32)); // nosemgrep :  php.lang.security.weak-crypto.weak-crypto
 
             $acquirer = [
                 Payment\Entity::VPA => $input['payment']['vpa'] ?? $input['gateway']['vpa'],

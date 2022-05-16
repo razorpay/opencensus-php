@@ -837,7 +837,7 @@ class Gateway extends Base\Gateway
 
         if ($this->domainType !== null)
         {
-            $hash =  base64_encode(sha1($str, true));
+            $hash =  base64_encode(sha1($str, true)); // nosemgrep :  php.lang.security.weak-crypto.weak-crypto
         }
         else
         {

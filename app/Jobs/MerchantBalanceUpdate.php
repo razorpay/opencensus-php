@@ -44,7 +44,7 @@ class MerchantBalanceUpdate extends Job
 
             $this->mutex = App::getFacadeRoot()['api.mutex'];
 
-            $key = md5(json_encode($this->input));
+            $key = md5(json_encode($this->input)); // nosemgrep :  php.lang.security.weak-crypto.weak-crypto
 
             $this->mutex->acquireAndRelease(
                 $key,

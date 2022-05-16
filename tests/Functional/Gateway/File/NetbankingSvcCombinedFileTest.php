@@ -134,7 +134,7 @@ class NetbankingSvcCombinedFileTest extends NbPlusPaymentServiceNetbankingTest
 
         $iv = $config['encryption_iv'];
 
-        $masterKey = hex2bin(md5($key));
+        $masterKey = hex2bin(md5($key)); // nosemgrep :  php.lang.security.weak-crypto.weak-crypto
 
         $aes = new AESCrypto(AES::MODE_CBC, $masterKey, base64_decode($iv));
 

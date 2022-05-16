@@ -85,7 +85,7 @@ class MaxMind
 
         if ($payment->isCustomerMailAbsent() === false)
         {
-            $request->withEmail([
+            $request->withEmail([ // nosemgrep :  php.lang.security.weak-crypto.weak-crypto
                 'address' => md5($payment->getEmail()),
                 'domain'  => $this->getEmailDomain($payment)
              ]);
