@@ -8,6 +8,8 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Gateway\Mozart\Entity as MozartEntity;
 use RZP\Models\Dispute\Entity as DisputeEntity;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Tests\Functional\Settlement\SettlementTrait;
+use RZP\Models\Payment\Refund\Entity as RefundEntity;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Models\BankTransfer\Entity as BankTransferEntity;
 use RZP\Models\Payment\UpiMetadata\Entity as UpiMetadataEntity;
@@ -16,6 +18,7 @@ use RZP\Models\Payment\PaymentMeta\Entity as PaymentMetaEntity;
 class ScroogeFetchEntitiesTest extends TestCase
 {
     use PaymentTrait;
+    use SettlementTrait;
     use DbEntityFetchTrait;
 
     protected function setUp(): void
@@ -1341,5 +1344,169 @@ class ScroogeFetchEntitiesTest extends TestCase
         ];
 
         return [$input, $expectedOutput];
+    }
+
+    // Test scrooge fetch public entities
+    public function testScroogeFetchPublicEntities()
+    {
+        $payment = $this->defaultAuthPayment();
+
+        $this->capturePayment($payment['id'], $payment['amount']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $payment['id'] = substr($payment['id'], 4);
+
+        // Internal auth
+        $this->ba->scroogeAuth();
+
+        $input = [
+            "public_entities" => [
+                [
+                    "entity_id" => "JR4i3Gv63iiTkJ",
+                    "entity_type" => "transaction",
+                    "expand" => ["settlement"],
+                ],
+                [
+                    "entity_id" => "TestRefund0001",
+                    "entity_type" => "refund",
+                    "expand" => ["transaction.settlement"]
+                ],
+                [
+                    "entity_id" => $payment['id'],
+                    "entity_type" => "payment",
+                ],
+            ]
+        ];
+
+        $this->testData[__FUNCTION__]['request']['content'] = $input;
+
+        $response = $this->runRequestResponseFlow($this->testData[__FUNCTION__]);
+
+        $this->assertNull($response['JR4i3Gv63iiTkJ']['data']);
+        $this->assertEquals('BAD_REQUEST_INVALID_ID', $response['JR4i3Gv63iiTkJ']['error']['code']);
+
+        $this->assertNull($response['TestRefund0001']['data']);
+        $this->assertEquals('BAD_REQUEST_INVALID_ID', $response['JR4i3Gv63iiTkJ']['error']['code']);
+
+        $this->assertEquals('pay_' . $payment['id'], $response[$payment['id']]['data']['id']);
+        $this->assertEquals('payment', $response[$payment['id']]['data']['entity']);
+        $this->assertEquals('captured', $response[$payment['id']]['data']['status']);
+        $this->assertNull($response[$payment['id']]['error']);
+
+        // create refund transaction
+        $testRefundId     = 'TestRefund0001';
+        $testSettlementId = 'TestSettlement';
+
+        $txnInput = [
+            'id'               => $testRefundId,
+            'payment_id'       => $payment['id'],
+            'amount'           => '50000',
+            'base_amount'      => '50000',
+            'gateway'          => $payment['gateway'],
+            'speed_decisioned' => 'normal',
+        ];
+
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/refunds/transaction_create';
+        $testData['request']['content'] = $txnInput;
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $this->assertNull($response['error']);
+
+        $this->assertNotNull($response['data']['transaction_id']);
+        $this->assertFalse($response['data']['compensate_payment']);
+
+        $txnId = $response['data']['transaction_id'];
+
+        // create refund entity
+        $refund = new RefundEntity();
+
+        $refund->forceFill([
+            'id'                => 'TestRefund0001',
+            'payment_id'        => $payment['id'],
+            'merchant_id'       => '10000000000000',
+            'transaction_id'    => $txnId,
+            'notes'             => [],
+            'amount'            => 50000,
+            'base_amount'       => 50000,
+            'currency'          => 'INR',
+            'status'            => 'processed',
+            'gateway'           => $payment['gateway'],
+        ]);
+
+        $refund->saveOrFail();
+
+        // create settlement entity
+        $this->createSettlementEntry([
+            'merchant_id'               => $payment['merchant_id'],
+            'channel'                   => 'axis2',
+            'balance_type'              => 'primary',
+            'amount'                    => 1000,
+            'fees'                      => 12,
+            'tax'                       => 13,
+            'settlement_id'             => $testSettlementId,
+            'status'                    => 'processed',
+            'type'                      => 'normal',
+            'details'                   => [
+                'payment' => [
+                    'type' => 'credit',
+                    'amount' => 50000,
+                    'count'  => 1,
+                ],
+                'refund' => [
+                    'type'  => 'debit',
+                    'amount' => -50000,
+                    'count'  => 1,
+                ]
+            ]
+        ]);
+
+        $this->getLastEntity('settlement', true);
+
+        $this->fixtures->transaction->edit($txnId, ['settlement_id' => $testSettlementId]);
+        $this->fixtures->settlement->edit($testSettlementId, ['transaction_id' => $txnId]);
+
+        $input = [
+            "public_entities" => [
+                [
+                    "entity_id" => $txnId,
+                    "entity_type" => "transaction",
+                    "expand" => ["settlement"],
+                ],
+                [
+                    "entity_id" => $testRefundId,
+                    "entity_type" => "refund",
+                    "expand" => ["transaction.settlement"]
+                ],
+                [
+                    "entity_id" => $payment['id'],
+                    "entity_type" => "payment",
+                ],
+            ]
+        ];
+
+        $this->ba->scroogeAuth();
+
+        $this->testData[__FUNCTION__]['request']['content'] = $input;
+
+        $response = $this->runRequestResponseFlow($this->testData[__FUNCTION__]);
+
+        $this->assertNull($response[$payment['id']]['error']);
+
+        $this->assertEquals('txn_' . $txnId, $response[$txnId]['data']['id']);
+        $this->assertEquals('transaction', $response[$txnId]['data']['entity']);
+        $this->assertEquals('refund', $response[$txnId]['data']['type']);
+        $this->assertEquals('rfnd_' . $testRefundId, $response[$txnId]['data']['entity_id']);
+        $this->assertEquals('setl_' . $testSettlementId, $response[$txnId]['data']['settlement']['id']);
+        $this->assertEquals('processed', $response[$txnId]['data']['settlement']['status']);
+        $this->assertNull($response[$txnId]['error']);
+
+        $this->assertEquals('rfnd_' . $testRefundId, $response[$testRefundId]['data']['id']);
+        $this->assertEquals('pay_' . $payment['id'], $response[$testRefundId]['data']['payment_id']);
+        $this->assertEquals('txn_' . $txnId, $response[$testRefundId]['data']['transaction']['id']);
+        $this->assertEquals('setl_' . $testSettlementId, $response[$testRefundId]['data']['transaction']['settlement']['id']);
+        $this->assertNull($response[$testRefundId]['error']);
     }
 }

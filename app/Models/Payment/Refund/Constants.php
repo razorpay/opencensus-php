@@ -16,6 +16,7 @@ class Constants
     const PAYMENT_IDS                          = 'payment_ids';
     const DB_FETCH_LIMIT                       = 'limit';
     const GATEWAY_ENTITY                       = 'gateway_entity';
+    const PUBLIC_ENTITIES                      = 'public_entities';
     const SPEED_CHANGE_TIME                    = 'speed_change_time';
     const REFUND_REFERENCE1                    = 'refund_reference1';
     const INSTANT_REFUND_SUPPORT               = 'instant_refund_support';
@@ -190,10 +191,13 @@ class Constants
     // Set tentatively to 100 rupees since no modes are restricted for this amount
     const DEFAULT_REFUND_AMOUNT_FOR_MODE_DECISIONING = 10000;
 
+    const DATA     = 'data';
     const ERROR    = 'error';
     const FTA_DATA = 'fta_data';
 
-    const DATA = 'data';
+    const ENTITY_ID   = 'entity_id';
+    const ENTITY_TYPE = 'entity_type';
+
     // sets type of refund. Auto/manual/Merchant Initiated etc..
     const REFUND_TYPE = 'refund_type';
 
@@ -204,6 +208,7 @@ class Constants
     const NO_DATA_FOUND            = 'NO_DATA_FOUND';
     const PAYMENT_NOT_FOUND        = 'PAYMENT_NOT_FOUND';
     const SKIPPED_PAYMENT_IDS      = 'skipped_payment_ids';
+    const SKIPPED_FETCH_ENTITIES   = 'skipped_fetch_entities';
     const FETCH_ENTITIES_ERROR     = 'FETCH_ENTITIES_ERROR';
     const AMOUNT_UNREFUNDED        = 'amount_unrefunded';
     const BASE_AMOUNT_UNREFUNDED   = 'base_amount_unrefunded';

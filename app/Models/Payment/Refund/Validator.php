@@ -193,6 +193,13 @@ class Validator extends Base\Validator
         'extra_data'    => 'sometimes|array',
     ];
 
+    protected static $fetchPublicEntitiesRules = [
+        'public_entities'               => 'required|array',
+        'public_entities.*.entity_id'   => 'required|unsigned_id|size:14',
+        'public_entities.*.entity_type' => 'required|string',
+        'public_entities.*.expand'      => 'sometimes|array',
+    ];
+
     protected $payment;
 
     public function setPayment($payment)

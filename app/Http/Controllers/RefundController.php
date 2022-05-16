@@ -398,6 +398,15 @@ class RefundController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function scroogeFetchPublicEntities()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->scroogeFetchPublicEntities($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function postVerifyRefundsBulk()
     {
         $input = Request::all();

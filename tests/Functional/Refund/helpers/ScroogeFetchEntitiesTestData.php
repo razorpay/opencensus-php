@@ -32,4 +32,15 @@ return [
             'content' => []
         ],
     ],
+
+    'testScroogeFetchPublicEntities' => [
+        'request' => [
+            'method'  => 'post',
+            'url'     => '/scrooge/fetch/public_entities',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => []
+        ],
+    ],
 ];

@@ -16,6 +16,7 @@ class Fetch extends BaseFetch
             Entity::ENTITY_ID       => 'sometimes|alpha_dash|min:14',
             Entity::MERCHANT_ID     => 'sometimes|alpha_num',
             Entity::RECONCILED      => 'sometimes|in:0,1',
+            self::EXPAND_EACH       => 'sometimes|in:settlement',
         ],
     ];
 
@@ -28,6 +29,7 @@ class Fetch extends BaseFetch
             Entity::ENTITY_ID,
             Entity::MERCHANT_ID,
             Entity::RECONCILED,
+            self::EXPAND_EACH,
         ],
     ];
 

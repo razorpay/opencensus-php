@@ -17,6 +17,7 @@ use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
+use RZP\Base\Repository;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Settlement;
 use RZP\Http\RequestHeader;
@@ -3888,5 +3889,92 @@ class Service extends Base\Service
                 $this->trace->traceException($e);
             }
         }
+    }
+
+    /***
+     * Sample Request Body :
+     * {
+     * 	"public_entities": [
+     *         {
+     *             "entity_id": "JR4h9ibYDKjbel",
+     *             "entity_type": "payment",
+     *             "expand": []
+     *         },
+     *         {
+     *             "entity_id": "JR4i2pIaEqdnbA",
+     *             "entity_type": "refund",
+     *             "expand": ["transaction.settlement"]
+     *         }
+     *     ]
+     * }
+     *
+     * Sample Response Body :
+     * {
+     *     "JR4h9ibYDKjbel": {
+     *         "data": {
+     *             "id": "pay_JR4h9ibYDKjbel",
+     *             "entity": "payment",
+     *             .
+     *             .
+     *             .
+     *         },
+     *         "error": null
+     *     },
+     *     "JR4i2pIaEqdnbA": {
+     *         "data": {
+     *             "id": "rfnd_JR4i2pIaEqdnbA",
+     *             "entity": "refund",
+     *             .
+     *             .
+     *             .
+     *         },
+     *         "error": null
+     *     }
+     * }
+     *
+     * @param $input
+     * @return array
+     */
+    public function scroogeFetchPublicEntities($input): array
+    {
+        (new Validator)->validateInput('fetch_public_entities', $input);
+
+        $responseArray = [];
+
+        $this->trace->info(TraceCode::SCROOGE_FETCH_PUBLIC_ENTITIES_REQUEST, $input);
+
+        foreach ($input[RefundConstants::PUBLIC_ENTITIES] as $requestEntity)
+        {
+            $entityId   = $requestEntity[RefundConstants::ENTITY_ID];
+            $entityRepo = $requestEntity[RefundConstants::ENTITY_TYPE];
+            // set only necessary params in $fetchInput
+            $fetchInput = [];
+
+            if (empty($requestEntity[Repository::EXPAND]) === false)
+            {
+                $fetchInput[Repository::EXPAND] = $requestEntity[Repository::EXPAND];
+            }
+
+            $responseArray[$entityId] = [
+                RefundConstants::DATA  => NULL,
+                RefundConstants::ERROR => NULL,
+            ];
+
+            try
+            {
+                $entity = $this->repo->$entityRepo->findOrFailByPublicIdWithParams($entityId, $fetchInput)->toArrayPublicWithExpand();
+
+                $responseArray[$entityId][RefundConstants::DATA] = $entity;
+            }
+            catch (\Throwable $ex)
+            {
+                $responseArray[$entityId][RefundConstants::ERROR] = [
+                    RefundConstants::CODE => $ex->getCode(),
+                    RefundConstants::MESSAGE => $ex->getMessage()
+                ];
+            }
+        }
+
+        return $responseArray;
     }
 }
