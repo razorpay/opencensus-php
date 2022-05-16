@@ -66,7 +66,7 @@ export default class ModalSlider extends Component {
     }
     // Method to get the current mode of the merchant
     const mode = () => {
-      if (window) {
+      if (window && window.rzp_user?.current) {
         /* querying loaclStorage to get the item  */
         return getItem(`rzp_mode--${window.rzp_user.current}`);
       }
