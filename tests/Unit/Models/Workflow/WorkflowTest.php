@@ -92,6 +92,8 @@ class WorkflowTest extends TestCase
     {
         $amountRules = $this->testData[__FUNCTION__]['amount_rules'];
 
+        $obj = $this->testData[__FUNCTION__]['new_config'];
+
         $this->workflowRepoMock->shouldReceive('fetchBankingWorkflowSummaryForPermissionId')->andReturn($amountRules);
 
         $collection = collect(['1', '2', '3']);
@@ -102,11 +104,11 @@ class WorkflowTest extends TestCase
 
         $this->merchantRepoMock->shouldReceive('findOrFailPublic')->andReturn($this->merchantEntityMock);
 
-        $this->expectException(BadRequestException::class);
+        $this->workflowConfigService->shouldReceive('create')->with($obj)->andReturn(['id' => '123456']);
 
-        $this->expectExceptionMessage('Migration not supported for workflows having steps with more than one role at any level.');
+        $response = $this->payoutService->migrateOldConfigToNewOnes(['merchant_ids' => ['10000000000000']]);
 
-        $this->payoutService->migrateOldConfigToNewOnes(['merchant_ids' => ['10000000000000']]);
+        $this->assertSame(['failed' => [], 'success' => ['10000000000000 - 123456']], $response);
     }
 
     public function createTestDependencyMocks()

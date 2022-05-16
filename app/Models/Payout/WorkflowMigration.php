@@ -4,6 +4,7 @@ namespace RZP\Models\Payout;
 
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
 use RZP\Exception\BadRequestException;
 
 class WorkflowMigration
@@ -48,94 +49,51 @@ class WorkflowMigration
             // use max as 20cr if not defined
             $maxAmount = empty($oldConfigByAmountRule["max_amount"]) === true ? 20000000000 : $oldConfigByAmountRule["max_amount"];
 
-            $parentNextStates = ['END_STATE'];
-            if (count($oldConfigByAmountRule['steps']) > 0)
-            {
-                $nextStep = $oldConfigByAmountRule['steps'][0];
-                $nextChildStateName = "{$nextStep['roles'][0]['name']}_{$rangeKey}_0_Approval";
-                $parentNextStates = [$nextChildStateName];
-            }
-
             $parentStateName = "{$minAmount}-{$maxAmount}_workflow";
+
             $startStateTransitions['next_states'][] = $parentStateName;
 
-            $childStateData = [
-                "name" => $parentStateName,
-                "group_name" => "0",
-                "type" => "between",
-                "rules" => [
-                    "key" => "amount",
-                    "min" => $minAmount,
-                    "max" => $maxAmount,
-                ]
-            ];
+            $childStateData = $this->getAmountRuleStateData($parentStateName, $minAmount, $maxAmount);
 
             $template['states_data'][$parentStateName] = $childStateData;
-            $parentStateTransition = [
-                "current_state" => $parentStateName,
-                "next_states" => $parentNextStates,
-            ];
-            $template['state_transitions'][$parentStateName] = $parentStateTransition;
 
-            $this->getStateDataFromRules( $newConfig['config']['template'], $oldConfigByAmountRule['steps'], $rangeKey);
+            $parentStateNames[] = $parentStateName;
+
+            foreach ($oldConfigByAmountRule['steps'] as $step => $stepData )
+            {
+                $childStateNames = [];
+
+                foreach ($stepData['roles'] as $key => $role )
+                {
+                    $nextChildStateName = "{$role['name']}_{$rangeKey}_{$step}_Approval";
+                    $childStateNames[] = $nextChildStateName;
+
+                    $template['states_data'][$nextChildStateName] = $this->getCheckerStatedata($nextChildStateName, $step, $role);
+                }
+
+                $this->createStateTransitionForParent($template, $parentStateNames, $childStateNames);
+
+                $parentStateNames = $childStateNames;
+
+                if($stepData['op_type'] === 'and' && count($parentStateNames) > 1)
+                {
+                    $andStateName = "And_{$rangeKey}_{$step}_Result";
+
+                    $this->createStateTransitionForParent($template, $parentStateNames, [$andStateName]);
+
+                    $template['states_data'][$andStateName] = $this->getAndResultStateData($andStateName, $step, $parentStateNames);
+
+                    $parentStateNames = [];
+                    $parentStateNames[] = $andStateName;
+                }
+            }
+
+            $this->createStateTransitionForParent($template, $parentStateNames, ["END_STATE"]);
+
+            $parentStateNames = [];
         }
 
         return $newConfig;
-    }
-
-    protected function getStateDataFromRules(& $template, $oldConfigByAmountRuleSteps, $rangeKey)
-    {
-        foreach ($oldConfigByAmountRuleSteps as $key => $step)
-        {
-            $roles = $step['roles'];
-
-            //TODO::Handelling more than one approver roles at a level is tricky while migrating the old workflow migrations to new WFS. Currently doing it manually.
-
-            if (count($roles) > 1)
-            {
-                throw new BadRequestException(ErrorCode::BAD_REQUEST_MORE_THAN_ONE_ROLE_FOR_A_LEVEL);
-            }
-
-            $role = $roles[0];
-            $childStateName = "{$role['name']}_{$rangeKey}_{$key}_Approval";
-            $parentNextStates[] = $childStateName;
-
-            $nextStates = ['END_STATE'];
-            if ($key < count($oldConfigByAmountRuleSteps) - 1)
-            {
-                $nextKeyCount = $key+1;
-                $nextStep = $oldConfigByAmountRuleSteps[$nextKeyCount];
-                $nextChildStateName = "{$nextStep['roles'][0]['name']}_{$rangeKey}_{$nextKeyCount}_Approval";
-                $nextStates = [$nextChildStateName];
-            }
-
-            $childStateTransition = [
-                "current_state" => $childStateName,
-                "next_states" => $nextStates,
-            ];
-
-            $childStateData = [
-                "name" => $childStateName,
-                "group_name" => strval($key+1),
-                "type" => "checker",
-                "rules" => [
-                    "actor_property_key" => "role",
-                    "actor_property_value" => strtolower(str_replace(" ", "_", $role['name'])),
-                    "count" => $role['reviewer_count'],
-                ],
-                "callbacks" => [
-                    "status" => [
-                        "in" => [
-                            "created",
-                            "processed"
-                        ],
-                    ],
-                ],
-            ];
-
-            $template['state_transitions'][$childStateName] = $childStateTransition;
-            $template['states_data'][$childStateName] = $childStateData;
-        }
     }
 
     protected function getNewConfigPartial()
@@ -187,4 +145,64 @@ class WorkflowMigration
             ]
         ];
     }
+
+    protected function getAmountRuleStateData($parentStateName, $minAmount, $maxAmount)
+    {
+        return [
+            "name" => $parentStateName,
+            "group_name" => "0",
+            "type" => "between",
+            "rules" => [
+                "key" => "amount",
+                "min" => $minAmount,
+                "max" => $maxAmount,
+            ]
+        ];
+    }
+
+    protected function getCheckerStatedata($nextChildStateName, $step, $role)
+    {
+        return [
+            "name" => $nextChildStateName,
+            "group_name" => strval($step+1),
+            "type" => "checker",
+            "rules" => [
+                "actor_property_key" => "role",
+                "actor_property_value" => strtolower(str_replace(" ", "_", $role['name'])),
+                "count" => $role['reviewer_count'],
+            ],
+            "callbacks" => [
+                "status" => [
+                    "in" => [
+                        "created",
+                        "processed"
+                    ],
+                ],
+            ],
+        ];
+    }
+
+    protected function createStateTransitionForParent( & $template, $parentNames, $childs)
+    {
+        foreach ($parentNames as $parentName)
+        {
+            $template['state_transitions'][$parentName] = [
+                "current_state" => $parentName,
+                "next_states" => $childs
+            ];
+        }
+    }
+
+    protected function getAndResultStateData($andStateName, $step, $parentStateNames)
+    {
+        return [
+            "name" => $andStateName,
+            "group_name" => strval($step+1),
+            "type" => "merge_states",
+            "rules" => [
+                "states" => $parentStateNames
+            ]
+        ];
+    }
+
 }

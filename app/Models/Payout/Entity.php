@@ -2777,6 +2777,8 @@ class Entity extends Base\PublicEntity
             $data[$level - 1]['roles'][] = $roleData;
         }
 
+        ksort($data);
+
         return $data;
     }
 

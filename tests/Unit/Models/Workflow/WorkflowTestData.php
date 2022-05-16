@@ -290,7 +290,7 @@ return [
                             'role_id'           => 'role_RzpChekrRoleId',
                             'workflow_id'       => 'workflow_workflowId1000',
                             'reviewer_count'    =>  1,
-                            'op_type'           => 'or',
+                            'op_type'           => 'and',
                             'level'             =>  1,
                             'role'              => [
                                 'id'                => 'role_RzpChekrRoleId',
@@ -341,9 +341,317 @@ return [
                                 'org_id'            => 'org_100000razorpay',
                             ]
                         ],
+                        [
+                            'role_id'           =>  'role_FinanceL1',
+                            'workflow_id'       =>  'workflow_workflowId1001',
+                            'reviewer_count'    =>  1,
+                            'op_type'           =>  'or',
+                            'level'             =>  1,
+                            'role'              =>  [
+                                'id'                => 'role_FinanceL1',
+                                'name'              => 'Finance_L1',
+                                'description'       => 'fl1 of roles',
+                                'org_id'            => 'org_100000razorpay',
+                            ]
+                        ],
+                        [
+                            'role_id'           =>  'role_FinanceL2',
+                            'workflow_id'       =>  'workflow_workflowId1002',
+                            'reviewer_count'    =>  2,
+                            'op_type'           =>  'and',
+                            'level'             =>  2,
+                            'role'              =>  [
+                                'id'                => 'role_FinanceL2',
+                                'name'              => 'Finance_L2',
+                                'description'       => 'fl2 of roles',
+                                'org_id'            => 'org_100000razorpay',
+                            ]
+                        ]
                     ]
                 ]
             ])
-        ])
+        ]),
+        'new_config' => [
+            'config' =>
+                array (
+                    'template' =>
+                        array (
+                            'type' => 'approval',
+                            'state_transitions' =>
+                                array (
+                                    'START_STATE' =>
+                                        array (
+                                            'current_state' => 'START_STATE',
+                                            'next_states' =>
+                                                array (
+                                                    0 => '1-100000_workflow',
+                                                    1 => '100000-20000000000_workflow',
+                                                ),
+                                        ),
+                                    '1-100000_workflow' =>
+                                        array (
+                                            'current_state' => '1-100000_workflow',
+                                            'next_states' =>
+                                                array (
+                                                    0 => 'Checker_0_0_Approval',
+                                                    1 => 'Maker_0_0_Approval',
+                                                ),
+                                        ),
+                                    'Checker_0_0_Approval' =>
+                                        array (
+                                            'current_state' => 'Checker_0_0_Approval',
+                                            'next_states' =>
+                                                array (
+                                                    0 => 'And_0_0_Result',
+                                                ),
+                                        ),
+                                    'Maker_0_0_Approval' =>
+                                        array (
+                                            'current_state' => 'Maker_0_0_Approval',
+                                            'next_states' =>
+                                                array (
+                                                    0 => 'And_0_0_Result',
+                                                ),
+                                        ),
+                                    'And_0_0_Result' =>
+                                        array (
+                                            'current_state' => 'And_0_0_Result',
+                                            'next_states' =>
+                                                array (
+                                                    0 => 'END_STATE',
+                                                ),
+                                        ),
+                                    '100000-20000000000_workflow' =>
+                                        array (
+                                            'current_state' => '100000-20000000000_workflow',
+                                            'next_states' =>
+                                                array (
+                                                    0 => 'SuperAdmin_1_0_Approval',
+                                                    1 => 'Finance_L1_1_0_Approval',
+                                                ),
+                                        ),
+                                    'SuperAdmin_1_0_Approval' =>
+                                        array (
+                                            'current_state' => 'SuperAdmin_1_0_Approval',
+                                            'next_states' =>
+                                                array (
+                                                    0 => 'Finance_L2_1_1_Approval',
+                                                ),
+                                        ),
+                                    'Finance_L1_1_0_Approval' =>
+                                        array (
+                                            'current_state' => 'Finance_L1_1_0_Approval',
+                                            'next_states' =>
+                                                array (
+                                                    0 => 'Finance_L2_1_1_Approval',
+                                                ),
+                                        ),
+                                    'Finance_L2_1_1_Approval' =>
+                                        array (
+                                            'current_state' => 'Finance_L2_1_1_Approval',
+                                            'next_states' =>
+                                                array (
+                                                    0 => 'END_STATE',
+                                                ),
+                                        ),
+                                ),
+                            'states_data' =>
+                                array (
+                                    '1-100000_workflow' =>
+                                        array (
+                                            'name' => '1-100000_workflow',
+                                            'group_name' => '0',
+                                            'type' => 'between',
+                                            'rules' =>
+                                                array (
+                                                    'key' => 'amount',
+                                                    'min' => 1,
+                                                    'max' => 100000,
+                                                ),
+                                        ),
+                                    'Checker_0_0_Approval' =>
+                                        array (
+                                            'name' => 'Checker_0_0_Approval',
+                                            'group_name' => '1',
+                                            'type' => 'checker',
+                                            'rules' =>
+                                                array (
+                                                    'actor_property_key' => 'role',
+                                                    'actor_property_value' => 'checker',
+                                                    'count' => 1,
+                                                ),
+                                            'callbacks' =>
+                                                array (
+                                                    'status' =>
+                                                        array (
+                                                            'in' =>
+                                                                array (
+                                                                    0 => 'created',
+                                                                    1 => 'processed',
+                                                                ),
+                                                        ),
+                                                ),
+                                        ),
+                                    'Maker_0_0_Approval' =>
+                                        array (
+                                            'name' => 'Maker_0_0_Approval',
+                                            'group_name' => '1',
+                                            'type' => 'checker',
+                                            'rules' =>
+                                                array (
+                                                    'actor_property_key' => 'role',
+                                                    'actor_property_value' => 'maker',
+                                                    'count' => 1,
+                                                ),
+                                            'callbacks' =>
+                                                array (
+                                                    'status' =>
+                                                        array (
+                                                            'in' =>
+                                                                array (
+                                                                    0 => 'created',
+                                                                    1 => 'processed',
+                                                                ),
+                                                        ),
+                                                ),
+                                        ),
+                                    'And_0_0_Result' =>
+                                        array (
+                                            'name' => 'And_0_0_Result',
+                                            'group_name' => '1',
+                                            'type' => 'merge_states',
+                                            'rules' =>
+                                                array (
+                                                    'states' =>
+                                                        array (
+                                                            0 => 'Checker_0_0_Approval',
+                                                            1 => 'Maker_0_0_Approval',
+                                                        ),
+                                                ),
+                                        ),
+                                    '100000-20000000000_workflow' =>
+                                        array (
+                                            'name' => '100000-20000000000_workflow',
+                                            'group_name' => '0',
+                                            'type' => 'between',
+                                            'rules' =>
+                                                array (
+                                                    'key' => 'amount',
+                                                    'min' => 100000,
+                                                    'max' => 20000000000,
+                                                ),
+                                        ),
+                                    'SuperAdmin_1_0_Approval' =>
+                                        array (
+                                            'name' => 'SuperAdmin_1_0_Approval',
+                                            'group_name' => '1',
+                                            'type' => 'checker',
+                                            'rules' =>
+                                                array (
+                                                    'actor_property_key' => 'role',
+                                                    'actor_property_value' => 'superadmin',
+                                                    'count' => 1,
+                                                ),
+                                            'callbacks' =>
+                                                array (
+                                                    'status' =>
+                                                        array (
+                                                            'in' =>
+                                                                array (
+                                                                    0 => 'created',
+                                                                    1 => 'processed',
+                                                                ),
+                                                        ),
+                                                ),
+                                        ),
+                                    'Finance_L1_1_0_Approval' =>
+                                        array (
+                                            'name' => 'Finance_L1_1_0_Approval',
+                                            'group_name' => '1',
+                                            'type' => 'checker',
+                                            'rules' =>
+                                                array (
+                                                    'actor_property_key' => 'role',
+                                                    'actor_property_value' => 'finance_l1',
+                                                    'count' => 1,
+                                                ),
+                                            'callbacks' =>
+                                                array (
+                                                    'status' =>
+                                                        array (
+                                                            'in' =>
+                                                                array (
+                                                                    0 => 'created',
+                                                                    1 => 'processed',
+                                                                ),
+                                                        ),
+                                                ),
+                                        ),
+                                    'Finance_L2_1_1_Approval' =>
+                                        array (
+                                            'name' => 'Finance_L2_1_1_Approval',
+                                            'group_name' => '2',
+                                            'type' => 'checker',
+                                            'rules' =>
+                                                array (
+                                                    'actor_property_key' => 'role',
+                                                    'actor_property_value' => 'finance_l2',
+                                                    'count' => 2,
+                                                ),
+                                            'callbacks' =>
+                                                array (
+                                                    'status' =>
+                                                        array (
+                                                            'in' =>
+                                                                array (
+                                                                    0 => 'created',
+                                                                    1 => 'processed',
+                                                                ),
+                                                        ),
+                                                ),
+                                        ),
+                                ),
+                            'allowed_actions' =>
+                                array (
+                                    'admin' =>
+                                        array (
+                                            'actions' =>
+                                                array (
+                                                    0 => 'update_data',
+                                                    1 => 'rejected',
+                                                ),
+                                        ),
+                                    'user' =>
+                                        array (
+                                            'actions' =>
+                                                array (
+                                                    0 => 'approved',
+                                                    1 => 'rejected',
+                                                ),
+                                        ),
+                                    'rx_live' =>
+                                        array (
+                                            'actions' =>
+                                                array (
+                                                    0 => 'rejected',
+                                                ),
+                                        ),
+                                ),
+                            'meta' =>
+                                array (
+                                    'domain' => 'payouts',
+                                    'task_list_name' => 'payouts-approval',
+                                ),
+                        ),
+                    'version' => '1',
+                    'type' => 'payout-approval',
+                    'name' => '10000000000000 - Payout approval workflow',
+                    'service' => 'rx_live',
+                    'owner_id' => '10000000000000',
+                    'owner_type' => 'merchant',
+                    'org_id' => '100000razorpay',
+                    'enabled' => 'true',
+                )
+            ]
     ]
 ];

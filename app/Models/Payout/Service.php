@@ -1100,6 +1100,13 @@ class Service extends Base\Service
 
             $newConfig = (new WorkflowMigration())->convertOldSummaryIntoNew($this->merchant, $skipFetchFromWfs, $returnOld);
 
+            $this->app['trace']->info(
+                TraceCode::WORKFLOW_CONFIG_MIGRATE_PAYLOAD,
+                [
+                    'payload' => $newConfig
+                ]
+            );
+
             try
             {
                 $config = $this->workflowConfigService->create($newConfig);
