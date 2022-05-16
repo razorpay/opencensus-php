@@ -19,6 +19,7 @@ import {
   setActivePageName as fnSetActivePageName,
   setBaseLocation as fnSetBaseLocation,
 } from 'merchant/reducers/app';
+import { getAssetTrackingProperties } from 'merchant/models/GrowthService/commonUtils';
 
 // number of times to show MTU offer
 const COUNT_TO_SHOW_MTU_OFFER = 5;
@@ -44,10 +45,13 @@ const OffersForYou = ({
 
   useEffect(() => {
     if (!canShowOnboardingOffers) {
+      const eventName = 'merchant_dashboard.display_offer_for_you';
+      const id = user?.isGSExclusiveOfferEnabled ? exclusive_offers?.id : getCampaignID();
       tracking.trackEvent(
-        window.rzpQ.merchantActions().success('merchant_dashboard.display_offer_for_you', {
-          ID: user.isGSExclusiveOfferEnabled ? exclusive_offers?.id : getCampaignID(),
+        window.rzpQ.merchantActions().success(eventName, {
+          ID: id,
           flow_type: user.isPartOfNeostone ? 'self_serve' : 'sales_led',
+          ...getAssetTrackingProperties(id, exclusive_offers.tracking_data, {}, eventName),
         }),
       );
     }

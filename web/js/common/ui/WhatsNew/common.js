@@ -10,7 +10,7 @@ export const getExperimentVersion = (user) => {
   return 2.3;
 };
 
-export const getNotificationTrackingProperties = (notification) => {
+export const getNotificationTrackingProperties = (notification, event_name = '') => {
   const oldTrackingData = (({
     version,
     version_description,
@@ -18,7 +18,12 @@ export const getNotificationTrackingProperties = (notification) => {
     target_product_feature,
   }) => ({ version, version_description, target_metric, target_product_feature }))(notification);
 
-  return getAssetTrackingProperties(notification.id, notification.tracking_data, oldTrackingData);
+  return getAssetTrackingProperties(
+    notification.id,
+    notification.tracking_data,
+    oldTrackingData,
+    event_name,
+  );
 };
 
 export const getNotificationsReadData = (merchant_id) => {

@@ -371,7 +371,7 @@ class WhatsNew extends Component {
       window.rzpQ.merchantActions().initiated(eventName, {
         CTAValue: value,
         url,
-        ...getNotificationTrackingProperties(notification),
+        ...getNotificationTrackingProperties(notification, eventName),
         id,
         lazy: true,
         growth_service: user.isGSAnnouncementsEnabled,
@@ -410,10 +410,16 @@ class WhatsNew extends Component {
       const cardElement = this.notificationsRefsList[index]?.ref?.current;
       const position = this.notificationsRefsList[index]?.position;
       if (cardElement && isElementXPercentInViewport(cardElement, 75, 116)) {
+        const eventName = 'dashboard.click.notification.card.viewed';
         this.props.tracking.trackEvent(
-          window.rzpQ.merchantActions().success('dashboard.click.notification.card.viewed', {
+          window.rzpQ.merchantActions().success(eventName, {
             Card_ID: cardElement.getAttribute('id'),
             position,
+            ...getNotificationTrackingProperties(
+              this.props.announcements[index],
+              eventName,
+              this.props.user.current,
+            ),
           }),
         );
         this.notificationsRefsList.splice(index, 1);
@@ -443,6 +449,7 @@ class WhatsNew extends Component {
           addOwnRef={(ref, position) => {
             this.notificationsRefsList.push({ ref, position });
           }}
+          notificationRef={this.notificationsRefsList}
         />
       </div>
     ));
@@ -524,6 +531,7 @@ const NotificationCard = ({
   pushSlider,
   emptySliderStack,
   addOwnRef,
+  notificationRef,
   ...notification
 }) => {
   const isUnread = _isUnreadNotification(start_ts, end_ts, lastReadTS);
@@ -568,10 +576,12 @@ const NotificationCard = ({
       }
     }
     if (isElementXPercentInViewport(ref.current, 75, 116)) {
+      const eventName = 'dashboard.click.notification.card.viewed';
       tracking.trackEvent(
-        window.rzpQ.merchantActions().success('dashboard.click.notification.card.viewed', {
+        window.rzpQ.merchantActions().success(eventName, {
           Card_ID: id,
           position: index + 1,
+          ...getNotificationTrackingProperties(notificationRef[index], eventName),
         }),
       );
     } else addOwnRef(ref, index + 1);

@@ -529,10 +529,12 @@ class WhatsNewOld extends Component {
       const cardElement = this.notificationsRefsList[index]?.ref?.current;
       const position = this.notificationsRefsList[index]?.position;
       if (cardElement && isElementXPercentInViewport(cardElement, 75, 116)) {
+        const eventName = 'dashboard.click.notification.card.viewed';
         this.props.tracking.trackEvent(
-          window.rzpQ.merchantActions().success('dashboard.click.notification.card.viewed', {
+          window.rzpQ.merchantActions().success(eventName, {
             Card_ID: cardElement.getAttribute('id'),
             position,
+            ...getNotificationTrackingProperties(this.props.announcements[index], eventName),
           }),
         );
         this.notificationsRefsList.splice(index, 1);

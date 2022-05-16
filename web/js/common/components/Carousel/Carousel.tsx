@@ -25,7 +25,7 @@ const Carousel = ({ carouselItem, openModal, tracking, history }): React.ReactEl
       window.rzpQ?.merchantActions().success(eventName, {
         banner_id,
         ...(banner_order ? { banner_order } : null),
-        ...getAssetTrackingProperties(banner_id, { ...trackData, ...trackData?.tags }),
+        ...getAssetTrackingProperties(banner_id, { ...trackData, ...trackData?.tags, eventName }),
       }),
     );
   };

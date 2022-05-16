@@ -380,6 +380,17 @@ export const routeToRouteNameMap = {
   '/app/payment-methods': 'settings-payment-methods',
 };
 
+export const eventToGrowthEventTypeMap = {
+  'dashboard.click.notification.card.viewed': 'IMPRESSION',
+  'merchant_dashboard.impression_banner': 'IMPRESSION',
+  'merchant_dashboard.display_offer_for_you': 'IMPRESSION',
+  'login.non_login_card.shown': 'IMPRESSION',
+  carousel_banner_notification1: 'IMPRESSION',
+  'dashboard.appswitcher.app_shown': 'IMPRESSION',
+  'merchant_dashboard.banner_close': 'DISMISSAL',
+  carousel_banner_not_interested: 'DISMISSAL',
+};
+
 export const assetNames = {
   ANNOUNCEMENT: 'ANNOUNCEMENT',
   BANNER: 'BANNER',

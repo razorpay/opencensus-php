@@ -1,6 +1,7 @@
 import React, { Fragment, Component, createRef } from 'react';
 import PropTypes from 'prop-types';
 import RTracking from 'react-tracking';
+import { getAssetTrackingProperties } from '../../merchant/models/GrowthService/commonUtils';
 
 export const BANNER_THEMES = {
   primary: {
@@ -74,9 +75,12 @@ class Announcement extends Component {
           const { card_id, tracking, trackingData } = this.props;
           const title = this.getTitle();
           const payload = trackingData ? { ...trackingData } : { title, card_id };
-
+          const eventName = 'merchant_dashboard.impression_banner';
           tracking?.trackEvent(
-            window.rzpQ?.merchantActions().success('merchant_dashboard.impression_banner', payload),
+            window.rzpQ?.merchantActions().success(eventName, {
+              payload,
+              ...getAssetTrackingProperties(card_id, trackingData, {}, eventName),
+            }),
           );
           if (this.bannerRef?.current) this.observer?.unobserve(this.bannerRef.current);
         }, 5000);
@@ -113,9 +117,12 @@ class Announcement extends Component {
     const title = this.getTitle();
     const banner_text = bannerContainer?.querySelector('.content')?.textContent;
     const payload = trackingData ? { ...trackingData } : { title, card_id, banner_text };
-
+    const eventName = 'merchant_dashboard.banner_close';
     tracking?.trackEvent(
-      window.rzpQ?.merchantActions().success('merchant_dashboard.banner_close', payload),
+      window.rzpQ?.merchantActions().success(eventName, {
+        payload,
+        ...getAssetTrackingProperties(card_id, trackingData, {}, eventName),
+      }),
     );
   };
 
@@ -126,9 +133,12 @@ class Announcement extends Component {
       hovered: true,
     });
     const payload = trackingData ? { ...trackingData } : { title, card_id };
-
+    const eventName = 'merchant_dashboard.hover_banner';
     tracking.trackEvent(
-      window.rzpQ?.merchantActions().success('merchant_dashboard.hover_banner', payload),
+      window.rzpQ?.merchantActions().success(eventName, {
+        payload,
+        ...getAssetTrackingProperties(card_id, trackingData, {}, eventName),
+      }),
     );
   };
 

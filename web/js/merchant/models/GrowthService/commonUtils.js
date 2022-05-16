@@ -1,8 +1,17 @@
-import { routeToChannelIDMap, assetNames, growthAssetSchema } from './data';
+import {
+  routeToChannelIDMap,
+  assetNames,
+  growthAssetSchema,
+  eventToGrowthEventTypeMap,
+} from './data';
 
 const getRouteMap = (isOrgRZP = true) => {
   if (isOrgRZP) return routeToChannelIDMap.rzp;
   else return routeToChannelIDMap.banking;
+};
+
+const getGrowthEventTypeFromEvent = (eventName = '') => {
+  return eventToGrowthEventTypeMap?.[eventName];
 };
 
 export const getChannelID = (fromWhere = 'home', isOrgRZP = true) => {
@@ -56,7 +65,12 @@ export const isValidAssetData = (data = {}, type = '') => {
   }
 };
 
-export const getAssetTrackingProperties = (id = '', tracking_data = {}, oldTrackingData = {}) => {
+export const getAssetTrackingProperties = (
+  id = '',
+  tracking_data = {},
+  oldTrackingData = {},
+  event_name = '',
+) => {
   const {
     campaign,
     campaign_description,
@@ -68,6 +82,7 @@ export const getAssetTrackingProperties = (id = '', tracking_data = {}, oldTrack
   } = tracking_data;
   const { version, version_description, target_metric, target_product_feature } = oldTrackingData;
 
+  const growth_event_type = getGrowthEventTypeFromEvent(event_name);
   return {
     id,
     campaign,
@@ -78,6 +93,7 @@ export const getAssetTrackingProperties = (id = '', tracking_data = {}, oldTrack
     sub_campaign_id,
     target_metric,
     product_feature: target_product_feature,
+    growth_event_type,
     ...tags,
   };
 };
