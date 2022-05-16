@@ -327,8 +327,6 @@ class AdminTest extends TestCase
             'org_id' => $this->org->getId(),
             'password' => 'Heimdall!234',
         ]);
-        $this->enableRazorXTreatmentForFeature(
-            RazorxTreatment::ORG_SECOND_FACTOR_AUTH, 'on');
         $result = $this->startTest();
         $this->assertArrayHasKey('email', $result);
     }
@@ -342,8 +340,6 @@ class AdminTest extends TestCase
             'org_id' => $this->org->getId(),
             'password' => 'Heimdall!23',
         ]);
-        $this->enableRazorXTreatmentForFeature(
-            RazorxTreatment::ORG_SECOND_FACTOR_AUTH, 'on');
         $this->startTest();
     }
 

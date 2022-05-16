@@ -290,9 +290,6 @@ final class RazorxTreatment
     // experiment to enable whatsapp notifications for settlements
     const WHATSAPP_NOTIFICATIONS_SETTLEMENTS = 'whatsapp_notification_enablement';
 
-    // experiment to enable 2fa for admin dashboard
-    const ORG_SECOND_FACTOR_AUTH = 'org_second_factor_auth';
-
     // release duplicate receipt check in refunds only for Google merchant as of now
     const DUPLICATE_RECEIPT_CHECK = 'duplicate_receipt_check';
 

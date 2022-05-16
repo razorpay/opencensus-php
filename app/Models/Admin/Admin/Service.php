@@ -86,8 +86,7 @@ class Service extends Base\Service
 
         if (Hash::check($input['password'], $admin->getPassword()))
         {
-            if($this->featureEnabledForOrg($orgId) && $this->isRazorxExperimentEnable($admin->getId(),
-                    RazorxTreatment::ORG_SECOND_FACTOR_AUTH)) {
+            if($this->featureEnabledForOrg($orgId)) {
                 $this->core()->checkSecondFactorAuthAndSendOtp($admin);
             }
 
@@ -108,17 +107,6 @@ class Service extends Base\Service
         $org = $this->repo->org->findByPublicId($orgId);
 
         return $org->isFeatureEnabled(Constants::ORG_SECOND_FACTOR_AUTH);
-    }
-
-    public function isRazorxExperimentEnable(string $adminId, string $experimentName): bool
-    {
-        $mode = $this->mode ?? Mode::LIVE;
-
-        $variant = $this->app->razorx->getTreatment($adminId,
-            $experimentName,
-            $mode);
-
-        return ($variant === Constant::RAZORX_EXPERIMENT_ON);
     }
 
     public function verifyAdminSecondFactorAuth(array $input): array
