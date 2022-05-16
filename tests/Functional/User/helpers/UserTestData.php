@@ -4409,6 +4409,70 @@ return [
             ],
         ],
     ],
+
+    'testUserDeviceDetailsSignupSourceIosAppsflyerIdAbsent' => [
+        'request' => [
+            'url'     => '/user/device-details',
+            'method'  => 'POST',
+            'content' => [
+                'appsflyer_id'  => null,
+                'signup_source' => 'ios',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Something went wrong, please try again after sometime.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ERROR,
+        ],
+    ],
+
+    'testUserDeviceDetailsSignupSourceAndroidAppsflyerIdAbsent' => [
+        'request' => [
+            'url'     => '/user/device-details',
+            'method'  => 'POST',
+            'content' => [
+                'appsflyer_id'  => null,
+                'signup_source' => 'android',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Something went wrong, please try again after sometime.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ERROR,
+        ],
+    ],
+
+    'testUserDeviceDetailsSignupSourceNonMobile' => [
+        'request' => [
+            'url'     => '/user/device-details',
+            'method'  => 'POST',
+            'content' => [
+                'signup_source' => 'something_else',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'appsflyer_id'  => null
+            ],
+        ],
+    ],
+
     'testUserRegisterSendSignupOtpViaSms' => [
         'request' => [
             'url'     => '/users/register/otp',

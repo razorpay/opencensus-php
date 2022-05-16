@@ -6578,6 +6578,54 @@ class UserTest extends TestCase
         $this->startTest();
     }
 
+    public function testUserDeviceDetailsSignupSourceIosAppsflyerIdAbsent()
+    {
+        $user = $this->fixtures->create(
+            'user',
+            [
+                'contact_mobile' => '9012345678',
+                'contact_mobile_verified' => true,
+                'password' => 'hello123',
+            ]
+        );
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testUserDeviceDetailsSignupSourceAndroidAppsflyerIdAbsent()
+    {
+        $user = $this->fixtures->create(
+            'user',
+            [
+                'contact_mobile' => '9012345678',
+                'contact_mobile_verified' => true,
+                'password' => 'hello123',
+            ]
+        );
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testUserDeviceDetailsSignupSourceNonMobile()
+    {
+        $user = $this->fixtures->create(
+            'user',
+            [
+                'contact_mobile' => '9012345678',
+                'contact_mobile_verified' => true,
+                'password' => 'hello123',
+            ]
+        );
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
     public function testMobileSendVerificationOtpUnverifiedEmail()
     {
         $this->fixtures->create('user', ['contact_mobile' => '9012345678', 'password' => 'hello123', 'contact_mobile_verified' => false, 'confirm_token' => 'notnull']);

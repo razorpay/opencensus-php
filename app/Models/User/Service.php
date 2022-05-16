@@ -439,7 +439,7 @@ class Service extends Base\Service
 
         $verifySuccess = $this->core->verifySignupOtp($input);
 
-        if($verifySuccess === true)
+        if ($verifySuccess === true)
         {
             $heimdallTokenData = $this->handleHeimdallInvitation($input);
 
@@ -478,6 +478,7 @@ class Service extends Base\Service
             else
             {
                 $this->createMerchant($user, $referrer, $businessName, $partnerIntent, $input, $heimdallTokenData, false);
+
                 $data = $this->get($user['id']);
             }
 

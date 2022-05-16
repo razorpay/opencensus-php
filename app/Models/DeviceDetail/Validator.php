@@ -9,19 +9,19 @@ class Validator extends Base\Validator
     protected static $createRules = [
         Entity::MERCHANT_ID            => 'required|string|size:14',
         Entity::USER_ID                => 'required|string|size:14',
-        Entity::APPSFLYER_ID           => 'required|string',
+        Entity::APPSFLYER_ID           => 'string|required_if:signup_source,ios,android',
         Entity::SIGNUP_SOURCE          => 'sometimes|string|nullable',
     ];
 
     protected static $editRules = [
         Entity::MERCHANT_ID            => 'required|string|size:14',
         Entity::USER_ID                => 'required|string|size:14',
-        Entity::APPSFLYER_ID           => 'required|string',
+        Entity::APPSFLYER_ID           => 'string|required_if:signup_source,ios,android',
         Entity::SIGNUP_SOURCE          => 'sometimes|string|nullable',
     ];
 
     protected static $appsFlyerIdInputRules = [
-        Entity::APPSFLYER_ID           => 'required|string',
+        Entity::APPSFLYER_ID           => 'string|required_if:signup_source,ios,android',
         Entity::SIGNUP_SOURCE          => 'sometimes|string|nullable',
     ];
 }
