@@ -306,8 +306,6 @@ class PayoutTest extends OAuthTestCase
 
     public function testStatusSummaryObjectInGetPayout()
     {
-        $this->setmockRazorxTreatment(['status_details_timeline_view' => 'on'], 'control');
-
         $this->testCreatePayout();
 
         $payout = $this->getLastEntity('payout', true);
@@ -5386,8 +5384,6 @@ class PayoutTest extends OAuthTestCase
 
     public function testSearchPayoutByPayoutStatusReason()
     {
-        $this->setmockRazorxTreatment(['enable_status_details_feature' => 'on'], 'control');
-
         $this->testCreatePayout();
         $payout = $this->getDbLastEntity('payout');
 
@@ -7354,13 +7350,7 @@ class PayoutTest extends OAuthTestCase
     {
         // When WebhookViaStork experiment is turned on, webhook setting is skipped and
         // stork is called regardless event setting is enabled or not
-        //statusdetails experiment is also turned on
-        $this->mockRazorxTreatment('yesbank', 'on', 'on', 'off', 'off',
-                                   'on', 'on', 'off', 'on',
-                                   'on', 'off', 'on', 'on',
-                                   'off', 'control', 'on',
-                                   'on', 'off', 'control',
-                                   'on');
+        $this->mockRazorxTreatment('yesbank', 'on', 'on');
 
         $payoutQueuedEventData = $this->testData['testFiringOfWebhookOnQueuedPayoutEventData'];
 
@@ -13680,16 +13670,7 @@ class PayoutTest extends OAuthTestCase
 
         // When WebhookViaStork experiment is turned on, webhook setting is skipped and
         // stork is called regardless event setting is enabled or not
-        //$this->mockRazorxTreatment('yesbank', 'on', 'on');
-
-        $this->mockRazorxTreatment(
-            'yesbank', 'off', 'off', 'off', 'off',
-            'on', 'on', 'off', 'on',
-            'on', 'off', 'on', 'on',
-            'off', 'control', 'on',
-            'on', 'off', 'control',
-            'on'
-        );
+        $this->mockRazorxTreatment('yesbank', 'on', 'on');
 
         $payloadReversed = null;
 
@@ -13735,16 +13716,7 @@ class PayoutTest extends OAuthTestCase
 
         // When WebhookViaStork experiment is turned on, webhook setting is skipped and
         // stork is called regardless event setting is enabled or not
-        //$this->mockRazorxTreatment('yesbank', 'on', 'on');
-
-        $this->mockRazorxTreatment(
-            'yesbank', 'off', 'off', 'off', 'off',
-            'on', 'on', 'off', 'on',
-            'on', 'off', 'on', 'on',
-            'off', 'control', 'on',
-            'on', 'off', 'control',
-            'on'
-        );
+        $this->mockRazorxTreatment('yesbank', 'on', 'on');
 
         $payloadReversed = null;
 
@@ -13927,16 +13899,7 @@ class PayoutTest extends OAuthTestCase
 
         // When WebhookViaStork experiment is turned on, webhook setting is skipped and
         // stork is called regardless event setting is enabled or not
-        //$this->mockRazorxTreatment('yesbank', 'on', 'on');
-
-        $this->mockRazorxTreatment(
-            'yesbank', 'off', 'off', 'off', 'off',
-            'on', 'on', 'off', 'on',
-            'on', 'off', 'on', 'on',
-            'off', 'control', 'on',
-            'on', 'off', 'control',
-            'on'
-        );
+        $this->mockRazorxTreatment('yesbank', 'on', 'on');
 
         $payloadProcessed = null;
 
@@ -13979,16 +13942,7 @@ class PayoutTest extends OAuthTestCase
 
         // When WebhookViaStork experiment is turned on, webhook setting is skipped and
         // stork is called regardless event setting is enabled or not
-        //$this->mockRazorxTreatment('yesbank', 'on', 'on');
-
-        $this->mockRazorxTreatment(
-            'yesbank', 'off', 'off', 'off', 'off',
-            'on', 'on', 'off', 'on',
-            'on', 'off', 'on', 'on',
-            'off', 'control', 'on',
-            'on', 'off', 'control',
-            'on'
-        );
+        $this->mockRazorxTreatment('yesbank', 'on', 'on');
 
         $payloadProcessed = null;
 
@@ -17300,10 +17254,8 @@ class PayoutTest extends OAuthTestCase
         $this->startTest();
     }
 
-    public function testPayoutUpdatedWebhookWithRazorxExperimentForBeneficiaryBankConfirmationPendingRTGSMode()
+    public function testStatusDetailsInPayoutUpdatedWebhookForBeneficiaryBankConfirmationPendingRTGSMode()
     {
-        $this->setmockRazorxTreatment(['enable_status_details_feature' => 'on'], 'control');
-
         $payloadUpdatedOne = null;
 
         $this->mockServiceStorkRequest(
@@ -17360,10 +17312,8 @@ class PayoutTest extends OAuthTestCase
         $this->validateStorkWebhookFireEvent('payout.updated', $payoutUpdatedEventData, $payloadUpdated);
     }
 
-    public function testPayoutUpdatedWebhookWithRazorxExperimentForBeneficiaryBankConfirmationPendingNEFTMode()
+    public function testStatusDetailsInPayoutUpdatedWebhookForBeneficiaryBankConfirmationPendingNEFTMode()
     {
-        $this->setmockRazorxTreatment(['enable_status_details_feature' => 'on'], 'control');
-
         $payloadUpdatedOne = null;
 
         $this->mockServiceStorkRequest(
@@ -17420,10 +17370,8 @@ class PayoutTest extends OAuthTestCase
         $this->validateStorkWebhookFireEvent('payout.updated', $payoutUpdatedEventData, $payloadUpdated);
     }
 
-    public function testPayoutUpdatedWebhookWithRazorxExperimentForBeneficiaryBankConfirmationPendingIMPSMode()
+    public function testStatusDetailsInPayoutUpdatedWebhookForBeneficiaryBankConfirmationPendingIMPSMode()
     {
-        $this->setmockRazorxTreatment(['enable_status_details_feature' => 'on'], 'control');
-
         $payloadUpdatedOne = null;
 
         $this->mockServiceStorkRequest(
@@ -17477,10 +17425,8 @@ class PayoutTest extends OAuthTestCase
         $this->validateStorkWebhookFireEvent('payout.updated', $payoutUpdatedEventData, $payloadUpdated);
     }
 
-    public function testPayoutUpdatedWebhookWithRazorxExperimentForBeneficiaryBankConfirmationPendingUPIMode()
+    public function testStatusDetailsInPayoutUpdatedWebhookForBeneficiaryBankConfirmationPendingUPIMode()
     {
-        $this->setmockRazorxTreatment(['enable_status_details_feature' => 'on'], 'control');
-
         $payloadUpdatedOne = null;
 
         $this->mockServiceStorkRequest(
@@ -17533,10 +17479,8 @@ class PayoutTest extends OAuthTestCase
         $this->validateStorkWebhookFireEvent('payout.updated', $payoutUpdatedEventData, $payloadUpdated);
     }
 
-    public function testPayoutUpdatedWebhookWithRazorxExperimentForBankWindowClosedNEFTMode()
+    public function testStatusDetailsInPayoutUpdatedWebhookForBankWindowClosedNEFTMode()
     {
-        $this->setmockRazorxTreatment(['enable_status_details_feature' => 'on'], 'control');
-
         $payloadUpdatedOne = null;
 
         $this->mockServiceStorkRequest(
@@ -17588,10 +17532,8 @@ class PayoutTest extends OAuthTestCase
         $this->validateStorkWebhookFireEvent('payout.updated', $payoutUpdatedEventData, $payloadUpdated);
     }
 
-    public function testPayoutUpdatedWebhookWithRazorxExperimentForBankWindowClosedRTGSMode()
+    public function testStatusDetailsInPayoutUpdatedWebhookForBankWindowClosedRTGSMode()
     {
-        $this->setmockRazorxTreatment(['enable_status_details_feature' => 'on'], 'control');
-
         $payloadUpdatedOne = null;
 
         $this->mockServiceStorkRequest(
@@ -17644,10 +17586,8 @@ class PayoutTest extends OAuthTestCase
         $this->validateStorkWebhookFireEvent('payout.updated', $payoutUpdatedEventData, $payloadUpdated);
     }
 
-    public function testPayoutUpdatedWebhookWithRazorxExperimentForPayoutProcessing()
+    public function testStatusDetailsInPayoutUpdatedWebhookForPayoutProcessing()
     {
-        $this->setmockRazorxTreatment(['enable_status_details_feature' => 'on'], 'control');
-
         $payloadUpdatedOne = null;
 
         $this->mockServiceStorkRequest(
@@ -17696,10 +17636,8 @@ class PayoutTest extends OAuthTestCase
         $this->validateStorkWebhookFireEvent('payout.updated', $payoutUpdatedEventData, $payloadUpdated);
     }
 
-    public function testPayoutUpdatedWebhookWithRazorxExperimentForNullCase()
+    public function testStatusDetailsInPayoutUpdatedWebhookForNullCase()
     {
-        $this->setmockRazorxTreatment(['enable_status_details_feature' => 'on'], 'control');
-
         $payloadUpdatedOne = null;
 
         $this->mockServiceStorkRequest(
@@ -17734,42 +17672,6 @@ class PayoutTest extends OAuthTestCase
         $statusDetails = $this->getDbLastEntity('payouts_status_details');
 
         $this->assertNull($statusDetails);
-
-        $payoutUpdatedEventData = $this->testData[__FUNCTION__];
-
-        $this->validateStorkWebhookFireEvent('payout.updated', $payoutUpdatedEventData, $payloadUpdated);
-    }
-
-    public function testPayoutUpdatedWebhookWithoutRazorxExperimentNotContainingStatusDetails()
-
-    {
-        $payloadUpdatedOne = null;
-
-        $this->mockServiceStorkRequest(
-            function($path, $payload) use (& $payloadUpdated) {
-                $this->assertContains($payload['event']['name'], ['payout.updated']);
-                switch ($payload['event']['name'])
-                {
-                    case Event::PAYOUT_UPDATED:
-                        $payloadUpdated = $payload;
-                        break;
-                }
-
-                return new \Requests_Response();
-            })->times(5);
-
-        $this->testCreatePayout();
-
-        $payout = $this->getDbLastEntity('payout');
-
-        (new Payout\Core)->updateWithDetailsBeforeFtaRecon($payout, [
-            'status'           => 'initiated',
-            'channel'          => 'rbl',
-            'failure_reason'   => '',
-            'utr'              => 928337183,
-            'remarks'          => '',
-            'bank_status_code' => 'SUCCESS'
-        ]);
 
         $payoutUpdatedEventData = $this->testData[__FUNCTION__];
 

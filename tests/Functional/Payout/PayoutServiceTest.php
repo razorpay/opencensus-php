@@ -1046,7 +1046,6 @@ class PayoutServiceTest extends TestCase
             'on',
             'control',
             'off',
-            'off',
             'on'
         );
 
@@ -1222,7 +1221,6 @@ class PayoutServiceTest extends TestCase
             'on',
             'on',
             'control',
-            'off',
             'off',
             'on'
         );

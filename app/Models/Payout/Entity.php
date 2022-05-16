@@ -2444,59 +2444,33 @@ class Entity extends Base\PublicEntity
 
     public function setPublicStatusDetailsAttribute(array &$attributes)
     {
-               $app = App::getFacadeRoot();
-        $merchantId = $this->getMerchantId();
-              $mode = $app['rzp.mode'] ?? Mode::LIVE;
+        $statusDetails = (new PayoutsStatusDetails\Repository())->fetchPayoutStatusDetailsLatest($this->getId());
 
-           $variant = $app->razorx->getTreatment($merchantId,
-                             Merchant\RazorxTreatment::ENABLE_STATUS_DETAILS_FEATURE,
-                             $mode, Entity::RAZORX_RETRY_COUNT);
-
-        if ((strtolower($variant) === 'on'))
+        if ($statusDetails !== null)
         {
-            $statusDetails = (new PayoutsStatusDetails\Repository())->fetchPayoutStatusDetailsLatest($this->getId());
-
-            if($statusDetails !== null)
-            {
-                $source = $this->getSourceForStatusDetails($statusDetails);
-            }
-            else
-            {
-                $source = null;
-            }
-
-            $statusDetailsArray =
-                [
-                    'reason'        => $statusDetails['reason'],
-                    'description'   => $statusDetails['description'],
-                    'source'        => $source,
-                ];
-
-            $attributes[self::STATUS_DETAILS] = $statusDetailsArray;
+            $source = $this->getSourceForStatusDetails($statusDetails);
         }
         else
         {
-            unset($attributes[self::STATUS_DETAILS]);
+            $source = null;
         }
+
+        $statusDetailsArray =
+            [
+                'reason'        => $statusDetails['reason'],
+                'description'   => $statusDetails['description'],
+                'source'        => $source,
+            ];
+
+        $attributes[self::STATUS_DETAILS] = $statusDetailsArray;
     }
 
     public function setPublicStatusSummaryAttribute(array &$attributes)
     {
-               $app = App::getFacadeRoot();
-        $merchantId = $this->getMerchantId();
-              $mode = $app['rzp.mode'] ?? Mode::LIVE;
-
-        $variant = $app->razorx->getTreatment(
-                          $merchantId,
-                          Merchant\RazorxTreatment::STATUS_DETAILS_TIMELINE_VIEW,
-                          $mode, Entity::RAZORX_RETRY_COUNT);
-
-        $statusSummary = null;
+       $statusSummary = null;
 
         if (app('basicauth')->isProxyAuth() === true)
         {
-            if ((strtolower($variant) === 'on'))
-            {
                 $statusDetails = (new PayoutsStatusDetails\Repository())->fetchPayoutStatusDetailsLatest($this->getId());
 
                 if($statusDetails !== null)
@@ -2516,7 +2490,7 @@ class Entity extends Base\PublicEntity
                             'timestamp'                                 => $statusDetails['created_at'],
                             'source'                                    => $source,
                         ];
-            }
+
                 $attributes[self::STATUS_SUMMARY] = $statusSummary;
         }
 

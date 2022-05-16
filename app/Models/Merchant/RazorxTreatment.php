@@ -497,7 +497,7 @@ final class RazorxTreatment
 
     /** @var string Experiment to deprecate tos_acceptance field from /accounts api */
     const IGNORE_TOS_ACCEPTANCE = 'ignore_tos_acceptance';
-  
+
     /** @var string Experiment to control the provisioning of network tokens for global saved cards. */
     public const PROVISION_GLOBAL_NETWORK_TOKEN = 'provision_global_network_token';
 }

@@ -754,15 +754,6 @@ class Core extends Base\Core
                 $this->repo->saveOrFail($payout);
             });
 
-        $merchantId = $payout->getMerchantId();
-
-        $variant = $this->app->razorx->getTreatment(
-            $merchantId,
-            Merchant\RazorxTreatment::ENABLE_STATUS_DETAILS_FEATURE,
-            $this->mode,
-            Entity::RAZORX_RETRY_COUNT
-        );
-
         $firePayoutUpdatedWebhook = false;
         $ftaStatus = $ftaData[Attempt\Constants::FTA_STATUS] ?? null ;
 
@@ -783,22 +774,15 @@ class Core extends Base\Core
                     if (($statusDetails[Attempt\Entity::REASON]) !== $lastStatusDetails['reason'])
                     {
                         (new PayoutsStatusDetailsCore())->createStatusDetailsProcessingState($payout, $ftaData);
-                        // fire webhook if experiment is on
-                        if(strtolower($variant) === 'on' )
-                        {
-                            $firePayoutUpdatedWebhook = true;
-                        }
+                        $firePayoutUpdatedWebhook = true;
                     }
                 }
+                
                 //stores status details in case last status details id is null
                 else
                 {
                     (new PayoutsStatusDetailsCore())->createStatusDetailsProcessingState($payout, $ftaData);
-                    // fire webhook if experiment is on
-                    if(strtolower($variant) === 'on' )
-                    {
-                        $firePayoutUpdatedWebhook = true;
-                    }
+                    $firePayoutUpdatedWebhook = true;
                 }
             }
         }

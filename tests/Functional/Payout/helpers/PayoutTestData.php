@@ -16794,7 +16794,7 @@ return [
     ],
 
 
-    'testPayoutUpdatedWebhookWithRazorxExperimentForBeneficiaryBankConfirmationPendingRTGSMode' => [
+    'testStatusDetailsInPayoutUpdatedWebhookForBeneficiaryBankConfirmationPendingRTGSMode' => [
         'entity' => 'event',
         'event'  => 'payout.updated',
         'contains' => [
@@ -16814,7 +16814,7 @@ return [
         ],
     ],
 
-    'testPayoutUpdatedWebhookWithRazorxExperimentForBeneficiaryBankConfirmationPendingNEFTMode' => [
+    'testStatusDetailsInPayoutUpdatedWebhookForBeneficiaryBankConfirmationPendingNEFTMode' => [
         'entity' => 'event',
         'event'  => 'payout.updated',
         'contains' => [
@@ -16834,7 +16834,7 @@ return [
         ],
     ],
 
-    'testPayoutUpdatedWebhookWithRazorxExperimentForBeneficiaryBankConfirmationPendingIMPSMode' => [
+    'testStatusDetailsInPayoutUpdatedWebhookForBeneficiaryBankConfirmationPendingIMPSMode' => [
         'entity' => 'event',
         'event'  => 'payout.updated',
         'contains' => [
@@ -16854,7 +16854,7 @@ return [
         ],
     ],
 
-    'testPayoutUpdatedWebhookWithRazorxExperimentForBeneficiaryBankConfirmationPendingUPIMode' => [
+    'testStatusDetailsInPayoutUpdatedWebhookForBeneficiaryBankConfirmationPendingUPIMode' => [
         'entity' => 'event',
         'event'  => 'payout.updated',
         'contains' => [
@@ -16874,7 +16874,7 @@ return [
         ],
     ],
 
-    'testPayoutUpdatedWebhookWithRazorxExperimentForBankWindowClosedNEFTMode' => [
+    'testStatusDetailsInPayoutUpdatedWebhookForBankWindowClosedNEFTMode' => [
         'entity' => 'event',
         'event'  => 'payout.updated',
         'contains' => [
@@ -16895,7 +16895,7 @@ return [
         ],
     ],
 
-    'testPayoutUpdatedWebhookWithRazorxExperimentForBankWindowClosedRTGSMode' => [
+    'testStatusDetailsInPayoutUpdatedWebhookForBankWindowClosedRTGSMode' => [
         'entity' => 'event',
         'event'  => 'payout.updated',
         'contains' => [
@@ -16916,7 +16916,7 @@ return [
         ],
     ],
 
-    'testPayoutUpdatedWebhookWithRazorxExperimentForPayoutProcessing' => [
+    'testStatusDetailsInPayoutUpdatedWebhookForPayoutProcessing' => [
         'entity' => 'event',
         'event'  => 'payout.updated',
         'contains' => [
@@ -16937,7 +16937,7 @@ return [
         ],
     ],
 
-    'testPayoutUpdatedWebhookWithRazorxExperimentForNullCase' => [
+    'testStatusDetailsInPayoutUpdatedWebhookForNullCase' => [
         'entity' => 'event',
         'event'  => 'payout.updated',
         'contains' => [
@@ -16952,22 +16952,6 @@ return [
                         'reason' => null,
                         'description' => null,
                     ],
-                ],
-            ],
-        ],
-    ],
-
-    'testPayoutUpdatedWebhookWithoutRazorxExperimentNotContainingStatusDetails' => [
-        'entity'   => 'event',
-        'event'    => 'payout.updated',
-        'contains' => [
-            'payout',
-        ],
-        'payload'  => [
-            'payout' => [
-                'entity' => [
-                    'entity'         => 'payout',
-                    'status'         => 'processing',
                 ],
             ],
         ],

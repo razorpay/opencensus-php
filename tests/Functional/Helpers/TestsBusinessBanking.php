@@ -337,7 +337,6 @@ trait TestsBusinessBanking
                                            string $rblBASFetchV2 = 'off',
                                            string $enableQueuedPayoutsViaPayoutsService = 'control',
                                            string $payoutsToFtsSync = 'off',
-                                           string $enableStatusDetailsFeature = 'off',
                                            string $enableOnHoldPayoutsViaPayoutsService = 'control')
 
     {
@@ -370,7 +369,6 @@ trait TestsBusinessBanking
                     $rblBASFetchV2,
                     $enableQueuedPayoutsViaPayoutsService,
                     $payoutsToFtsSync,
-                    $enableStatusDetailsFeature,
                     $enableOnHoldPayoutsViaPayoutsService
                 )
                 {
@@ -447,11 +445,6 @@ trait TestsBusinessBanking
                     if ($feature === 'payout_to_fts_sync_mode')
                     {
                         return strtolower($payoutsToFtsSync);
-                    }
-
-                    if ($feature === 'enable_status_details_feature')
-                    {
-                        return strtolower($enableStatusDetailsFeature);
                     }
 
                     return strtolower($defaultBehaviour);
