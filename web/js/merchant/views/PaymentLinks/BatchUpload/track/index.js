@@ -101,6 +101,11 @@ function _track() {
       sendToSegment('payment link batch detail close', 'clicked');
     },
 
+    onDetailsView: () => {
+      sendToLumberjack('pl_batch.update.detailsview');
+      sendToSegment('payment link batch detail view load', 'clicked');
+    },
+
     viewAllClick: () => {
       sendToLumberjack('pl_batch.update.viewall');
       sendToSegment('payment link batch detail view all', 'clicked');
