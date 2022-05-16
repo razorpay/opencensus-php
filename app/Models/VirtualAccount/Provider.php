@@ -268,6 +268,7 @@ class Provider
         }
         catch (\Throwable $e)
         {
+            $this->trace->count(Metric::SMART_COLLECT_TERMINAL_CACHING_EXCEPTION);
             $this->trace->traceException($e,
                                          Trace::ERROR,
                                          TraceCode::SMART_COLLECT_TERMINAL_CACHING_UNAVAILABLE,
