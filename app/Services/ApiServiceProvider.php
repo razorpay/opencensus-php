@@ -149,15 +149,6 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         // attach DB Migration metrics observer to DB migration entities
         $this->isRequestSampled = $this->getSamplingCondition();
 
-        if ($this->isRequestSampled === false)
-        {
-            $this->app['trace']->info(
-                TraceCode::TRACE_DB_MIGRATION_METRIC,
-                [
-                    'message' => 'Request is sampled out.',
-                ]);
-        }
-
         if ($this->isRequestSampled === true)
         {
             foreach (E::DB_MIGRATION_ENTITIES as $entity)
