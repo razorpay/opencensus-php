@@ -70,7 +70,7 @@ class CurrencySelect extends Component {
       };
     }
 
-    Object.keys(window.currencyList).forEach((c) => {
+    Object.keys(window.currencyList || {}).forEach((c) => {
       const fullName = window.currencyList[c]?.name;
       const ISO = c;
       const symbol = window.currencyList[c]?.symbol;
