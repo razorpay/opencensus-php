@@ -641,7 +641,7 @@ Field.Time = (_) => <Field {..._} type="time" />;
  * Input type=select Component
  * Note: o.name is same as value for option
  * */
-Field.Select = ({ options, ...props }) => (
+Field.Select = ({ options = [], ...props }) => (
   <Field {...props} tag="select">
     {options.map((o, i) => {
       if (typeof o === 'object') {
