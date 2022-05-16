@@ -30,6 +30,7 @@ const DefaultView = () => {
       window.rzpQ.push(
         window.rzpQ.now().onbr().initiated('login.non_login_actions', {
           action: 'click contact us',
+          mode: 'live',
         }),
       );
     }
