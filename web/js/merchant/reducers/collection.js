@@ -37,7 +37,7 @@ const trackNamespaceEvents = (action, success) => {
         ...PROPERTIES,
         queryParams: QUERY_PARAMS?.length > 1 ? QUERY_PARAMS[1] : '',
       },
-      screen: window.location.pathname.split('/').pop(),
+      screen: window.location.pathname.split('/').pop() || NAMESPACE,
       toLumberjack: true,
     });
   }
