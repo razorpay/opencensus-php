@@ -2480,6 +2480,7 @@ class Repository extends Base\Repository
         $transactionEntityIdColumn = $this->dbColumn(Entity::ENTITY_ID);
         $transactionTypeColumn = $this->dbColumn(Entity::TYPE);
         $transactionBalanceColumn = $this->dbColumn(Entity::BALANCE);
+        $transactionCreditTypeColumn = $this->dbColumn(Entity::CREDIT_TYPE);
 
         $merchantIdColumn = $this->repo->merchant->dbColumn(Entity::ID);
         $merchantFeeModelColumn = $this->repo->merchant->dbColumn(Entity::FEE_MODEL);
@@ -2501,7 +2502,8 @@ class Repository extends Base\Repository
             $transactionTypeColumn,
             $transactionMerchantIdColumn,
             $transactionBalanceColumn,
-            $merchantFeeModelColumn
+            $merchantFeeModelColumn,
+            $transactionCreditTypeColumn
         ];
 
         $query = $this->newQueryWithConnection($this->getSlaveConnection())
