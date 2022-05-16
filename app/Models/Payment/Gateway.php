@@ -4069,7 +4069,7 @@ class Gateway
     public static function gatewayMigratedToNbPlusOnMerchantLevel($gateway)
     {
         $gatewayToNbPlusOnMerchantLevel = [
-
+            self::WALLET_PAYZAPP
         ];
 
         return (in_array($gateway, $gatewayToNbPlusOnMerchantLevel, true));
@@ -4126,6 +4126,7 @@ class Gateway
             self::NETBANKING_DBS,
             self::NETBANKING_HDFC,
             self::INGENICO,
+            self::WALLET_PAYZAPP,
         ];
 
         $acquirerGateways = [

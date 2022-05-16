@@ -2102,7 +2102,7 @@ class Processor
                 ($payment->isGooglePayCard() === true) or
                 (empty($payment->getGooglePayMethods()) === false) or
                 ($payment->isAppCred() === true)) and
-            ($payment->getGateway() !== Payment\Gateway::WALLET_FREECHARGE))
+            ($payment->getGateway() !== Payment\Gateway::WALLET_FREECHARGE and $payment->getGateway() !== Payment\Gateway::WALLET_PAYZAPP))
         {
             $payment->disableCpsRoute();
 
