@@ -1628,6 +1628,9 @@ class Route
         'x_apps_get_all_settings'                  => ['get',     'x-apps/settings/',                          'XAppsController@getAllSettings'                                          ],
         'x_apps_add_or_update_settings'            => ['post',    'x-apps/settings/',                          'XAppsController@addOrUpdateSettings'                                     ],
 
+        // Accounts-Receivable
+        'accounts_receivable_all_routes'           => ['any',     'accounts-receivable/service/{path?}',       'EdgeProxyController@proxy'                                               ],
+
         // Accounting Payouts (inside vendor payments)
         'accounting_payouts_integration_status'                 => ['get',     'accounting-payouts/integration/status',          'AccountingPayoutsController@integrationStatus'         ],
         'accounting_payouts_integration_app_get_url'            => ['get',     'accounting-payouts/integration/{app}',           'AccountingPayoutsController@integrationAppGetURL'      ],
@@ -5385,6 +5388,9 @@ class Route
         'x_apps_get_all_settings',
         'x_apps_add_or_update_settings',
 
+        // Accounts-Receivable
+        'accounts_receivable_all_routes',
+
         // Vendor Portal Invitation
         'invite_to_vendor_portal',
         'resend_invite_to_vendor_portal',
@@ -8108,6 +8114,7 @@ class Route
         'vendor_portal_update_vendor_preferences'      => Permission::VENDOR_PORTAL_PERMISSION,
         'x_apps_get_all_settings'                      => Permission::UPDATE_TAX_PAYMENT_SETTINGS,
         'x_apps_add_or_update_settings'                => Permission::UPDATE_TAX_PAYMENT_SETTINGS,
+        'accounts_receivable_all_routes'               => '*',
         'invite_to_vendor_portal'                      => Permission::INVITE_VENDOR,
         'resend_invite_to_vendor_portal'               => Permission::INVITE_VENDOR,
         'merchant_edit_config_logo'                    => Permission::MERCHANT_CONFIG_LOGO,
@@ -9690,6 +9697,7 @@ class Route
             'vendor_portal_invites_list',
             'x_apps_get_all_settings',
             'x_apps_add_or_update_settings',
+            'accounts_receivable_all_routes',
             'invite_to_vendor_portal',
             'resend_invite_to_vendor_portal',
             'virtual_account_add_receivers',
@@ -13368,6 +13376,8 @@ class Route
 
         'x_apps_get_all_settings',
         'x_apps_add_or_update_settings',
+
+        'accounts_receivable_all_routes',
 
         'invite_to_vendor_portal',
         'resend_invite_to_vendor_portal',
