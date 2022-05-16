@@ -2486,6 +2486,20 @@ EOT;
                     ->get();
     }
 
+    public function fetchPaymentsGivenIdsFromTidb(array $paymentIds, int $limit, string $conn): Base\PublicCollection
+    {
+        $query = $this->newQuery();
+
+        if ($this->isExperimentEnabled(self::ADMIN_TIDB_EXPERIMENT_REFUNDS) === true)
+        {
+            $query = $this->newQueryWithConnection($this->getConnectionFromType($conn));
+        }
+
+        return $query->whereIn(Payment\Entity::ID, $paymentIds)
+                     ->limit($limit)
+                     ->get();
+    }
+
     public function findPaymentsWithCardVault(string $vault, int $limit)
     {
         $window = 1200;

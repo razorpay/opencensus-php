@@ -61,6 +61,8 @@ class Repository extends \Razorpay\Spine\Repository
     const MERCHANT_TIDB_EXPERIMENT  = 'rearch_fetch_tidb_or_slave'; // used as experiment for merchant tidb cluster
     const ADMIN_TIDB_EXPERIMENT     = 'admin_tidb_experiment';
 
+    const ADMIN_TIDB_EXPERIMENT_REFUNDS = 'admin_tidb_experiment_refunds';
+
     protected $app;
 
     protected $db;

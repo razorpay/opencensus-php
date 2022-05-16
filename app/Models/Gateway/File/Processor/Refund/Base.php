@@ -12,6 +12,7 @@ use RZP\Models\FileStore;
 use RZP\Services\Scrooge;
 use RZP\Constants\Timezone;
 use RZP\Gateway\Base\Action;
+use RZP\Base\ConnectionType;
 use RZP\Models\Gateway\File\Status;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Base\PublicCollection;
@@ -118,7 +119,8 @@ class Base extends BaseProcessor
             {
                 $paymentIds = array_slice($this->scroogeRefundPaymentIds, $start, $this->queryLimit);
 
-                $fetchedPayments = $this->repo->payment->fetchPaymentsGivenIds($paymentIds, $this->queryLimit);
+                $fetchedPayments = $this->repo->payment->fetchPaymentsGivenIdsFromTidb(
+                    $paymentIds, $this->queryLimit, ConnectionType::DATA_WAREHOUSE_ADMIN);
 
                 $payments = $payments->merge($fetchedPayments);
 
@@ -130,6 +132,18 @@ class Base extends BaseProcessor
                 $start += $this->queryLimit;
             }
 
+            $paymentsDiff = array_diff($this->scroogeRefundPaymentIds, $payments->pluck(Payment\Entity::ID)->toArray());
+
+            if (count($paymentsDiff) > 0)
+            {
+                $this->trace->error(TraceCode::DATA_WAREHOUSE_PAYMENT_FETCH_ERROR,[
+                    'payments_diff' => $paymentsDiff,
+                    'type'          => $this->gatewayFile->getType(),
+                    'target'        => $this->gatewayFile->getTarget(),
+                ]);
+
+                throw new GatewayFileException(ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_DATA);
+            }
             //
             // Returning payments for the relevant,
             // refunds have been populated in $scroogeRefunds
@@ -184,7 +198,8 @@ class Base extends BaseProcessor
 
                 $data[] = $col;
 
-                if ($payment->getCpsRoute() === PaymentEntity::NB_PLUS_SERVICE)
+                if (($payment->getCpsRoute() === PaymentEntity::NB_PLUS_SERVICE) or
+                    ($payment->getCpsRoute() === PaymentEntity::NB_PLUS_SERVICE_PAYMENTS))
                 {
                     $nbplusPaymentIds[] = $payment->getId();
                 }
