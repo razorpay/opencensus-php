@@ -967,6 +967,14 @@ class Core extends Base\Core
 
                             $reversal->entity()->associate($payout);
 
+                            if ($this->shouldHandleRewardForReversalsForSource($reversal) === true)
+                            {
+                                (new Credits\Transaction\Core)->reverseCreditsForSource(
+                                    $reversal->getEntityId(),
+                                    $reversal->getEntityType(),
+                                    $reversal);
+                            }
+
                             $reversal = $this->createTransactionFromPayoutReversal($reversal);
 
                             (new Transaction\Core)->dispatchEventForTransactionCreated($reversal->transaction);

@@ -462,6 +462,29 @@ class PayoutServiceTest extends TestCase
         $this->assertEquals("txn_" . $response['transaction_id'], $txn['id']);
     }
 
+    public function testCreatePayoutServiceTransactionWithFeeRewards($mode = 'IMPS')
+    {
+        $this->testCreatePayoutEntry($mode);
+
+        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 1500 , 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
+
+        $testData = $this->testData['testCreatePayoutServiceTransaction'];
+
+        $this->ba->appAuthLive();
+
+        $response = $this->startTest($testData);
+
+        $txn = $this->getLastEntity('transaction', true, 'live');
+
+        $this->assertEquals("txn_" . $response['transaction_id'], $txn['id']);
+
+        $payout = $this->getLastEntity('payout', true, 'live');
+        $this->assertNull($payout['user_id']);
+        $this->assertEquals(0, $payout['tax']);
+        $this->assertEquals(500, $payout['fees']);
+        $this->assertEquals('reward_fee', $payout['fee_type']);
+    }
+
     public function testCreateLedgerForOnHoldPayoutCreatedViaPayoutService()
     {
         $this->testCreateOnHoldPayoutViaPayoutService();
@@ -512,6 +535,16 @@ class PayoutServiceTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreatePayoutServiceFtaCreationWithFeeRewards($mode = 'IMPS')
+    {
+        $this->testCreatePayoutServiceTransactionWithFeeRewards($mode);
+
+        $testData = $this->testData['testCreatePayoutServiceFtaCreation'];
+
+        $this->ba->appAuthLive();
+
+        $this->startTest($testData);
+    }
 
    //check create payment from payouts service for axis cc
     public function testCreatePayoutServicePaymentCreation()
@@ -578,6 +611,56 @@ class PayoutServiceTest extends TestCase
         ];
 
         $this->assertArraySelectiveEquals($expectedBreakup, $feesSplit['items'][1]);
+
+        return $payout;
+    }
+
+    public function testCreatePayoutWithFeeRewards(): array
+    {
+        $this->mockPayoutServiceCreate();
+
+        $this->testCreatePayoutServiceFtaCreationWithFeeRewards();
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $this->startTest();
+
+        $payout = $this->getLastEntity('payout', true, 'live');
+
+        $this->assertEquals(0, $payout['tax']);
+        $this->assertEquals(500, $payout['fees']);
+        $this->assertEquals('reward_fee', $payout['fee_type']);
+
+        $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true, 'live');
+
+        // On private auth, payout.user_id should be null
+        $this->assertNull($payout['user_id']);
+
+        // Verify attempt entity
+        $this->assertEquals($payout['id'], $payoutAttempt['source']);
+        $this->assertEquals($payout['merchant_id'], $payoutAttempt['merchant_id']);
+        $this->assertEquals('ba_1000000lcustba', 'ba_' . $payoutAttempt['bank_account_id']);
+        $this->assertEquals($payout['channel'], $payoutAttempt['channel']);
+
+        // Verify transaction entity
+        $txn = $this->getLastEntity('transaction', true, 'live');
+        $txnId = str_after($txn['id'], 'txn_');
+
+        $this->assertEquals($payout['transaction_id'], $txn['id']);
+        $this->assertEquals($payout['balance_id'], $txn['balance_id']);
+        $this->assertNotNull($txn['posted_at']);
+
+        $feesSplit = $this->getEntities('fee_breakup', ['transaction_id' => $txnId], true, 'live');
+
+        $expectedBreakup = [
+            'name' => "payout",
+            'transaction_id' => $txnId,
+            'pricing_rule_id' => "Bbg7cl6t6I3XA5",
+            'percentage' => null,
+            'amount' => 500,
+        ];
+
+        $this->assertArraySelectiveEquals($expectedBreakup, $feesSplit['items'][0]);
 
         return $payout;
     }
@@ -711,6 +794,40 @@ class PayoutServiceTest extends TestCase
         $response = $this->startTest();
 
         $this->assertNotEmpty($response['transaction_id']);
+    }
+
+    public function testCreateReversalEntryWithFeeRewards()
+    {
+        $this->testCreatePayoutWithFeeRewards();
+
+        $payout = $this->getDbLastEntity('payout', 'live');
+
+        $testData = $this->testData['testCreateReversalEntry'];
+
+        $this->testData[__FUNCTION__]['request']['content'] = [
+            'id'         => 'Gg7sgBZgvYjlSk',
+            'payout_id'  => $payout->getId(),
+            'utr'        => '123456678',
+            'amount'     => $payout['amount'],
+            'currency'   => $payout['currency'],
+            'channel'    => $payout['channel'],
+        ];
+
+        $this->ba->appAuthLive();
+
+        $response = $this->startTest($testData);
+
+        $this->assertNotEmpty($response['transaction_id']);
+
+        $creditEntity = $this->getLastEntity('credits', true, 'live');
+        $this->assertEquals(0, $creditEntity['used']);
+
+        $creditTxnEntity = $this->getLastEntity('credit_transaction', true, 'live');
+        $this->assertEquals('reversal', $creditTxnEntity['entity_type']);
+        $this->assertEquals(-$payout['fees'], $creditTxnEntity['credits_used']);
+
+        $reversal = $this->getLastEntity('reversal', true, 'live');
+        $this->assertEquals($payout['amount'], $reversal['amount']);
     }
 
     public function testCreateReversalEntryDuplicateCreationNotAllowed()

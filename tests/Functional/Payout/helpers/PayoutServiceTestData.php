@@ -135,6 +135,35 @@ return [
         ],
     ],
 
+    'testCreatePayoutWithFeeRewards' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 100,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'IMPS',
+                'fund_account_id' => 'fa_100000000000fa',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 100,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'purpose'         => 'refund',
+                'status'          => 'processing',
+                'mode'            => 'IMPS',
+                'tax'             => 0,
+                'fees'            => 500,
+            ],
+        ],
+    ],
+
     'testCreatePayoutInternalContact' => [
         'request'  => [
             'method'  => 'POST',
