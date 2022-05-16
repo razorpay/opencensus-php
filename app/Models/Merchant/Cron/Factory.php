@@ -14,6 +14,9 @@ use RZP\Models\Merchant\Cron\Jobs\FirstTouchProductCronJob;
 use RZP\Models\Merchant\Cron\Jobs\InstantlyActivatedButNotTransactedCronJob;
 use RZP\Models\Merchant\Cron\Jobs\L1NotSubmittedIn1DayCronJob;
 use RZP\Models\Merchant\Cron\Jobs\L1NotSubmittedIn1HourCronJob;
+use RZP\Models\Merchant\Cron\Jobs\MerchantAutoKycEscalationsCronJob;
+use RZP\Models\Merchant\Cron\Jobs\MerchantAutoKycSoftLimitCronJob;
+use RZP\Models\Merchant\Cron\Jobs\MerchantAutoKycHardLimitCronJob;
 use RZP\Models\Merchant\Cron\Jobs\MtuTransactedCronJob;
 use RZP\Models\Merchant\Cron\Jobs\MtuTransactedEventReconJob;
 use RZP\Models\Merchant\Cron\Jobs\SignupAttributedCronJob;
@@ -80,6 +83,12 @@ class Factory
                 return (new BVSPartlyExecutedValidationCronJob($input));
             case Constants::MERCHANT_SEGMENT_TYPE_CRON_JOB_NAME:
                 return (new SaveMerchantTransactionCountForSegmentType($input));
+            case "autokyc-soft-limit":
+                return (new MerchantAutoKycSoftLimitCronJob($input));
+            case "autokyc-hard-limit":
+                return (new MerchantAutoKycHardLimitCronJob($input));
+            case "autokyc-escalations":
+                return (new MerchantAutoKycEscalationsCronJob($input));
         }
 
         throw new BadRequestValidationFailureException("invalid cron");
