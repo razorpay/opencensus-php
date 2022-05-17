@@ -177,7 +177,16 @@ jobs:
     runs-on: [ self-hosted ]
     needs: [ build-e2e ]
     steps:
+      - uses: actions/checkout@v2
+      - name: Find current pr
+      # Find the PR associated with this push, if there is one.
+        uses: jwalton/gh-find-current-pr@v1.3.0
+        id: findPr
+        with:
+          # Can be "open", "closed", or "all".  Defaults to "open".
+          state: open
       - name: Triggers rundeck's webhook to execute e2e tests
+        if: ${{ steps.findPr.outputs.pr != '' }}
         uses: fjogeleit/http-request-action@master
         with:
           url: 'https://rundeck.dev.razorpay.in/api/40/webhook/hPvwyx4HOyR8M8C1EYKsYYAyGr5tCGPZ#E2E_Test_Execution_V2'
