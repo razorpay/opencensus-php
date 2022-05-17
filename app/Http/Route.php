@@ -12242,6 +12242,7 @@ class Route
             'los_mail',
             'internal_merchant_fetch',
             'user_fetch_entity',
+            'user_fetch_internal',
             'merchant_fetch_internal_users',
             'internal_feature_bulk_assign',
             'internal_feature_bulk_remove',
