@@ -16,11 +16,13 @@ export const getNotificationTrackingProperties = (notification, event_name = '')
     version_description,
     target_metric,
     target_product_feature,
-  }) => ({ version, version_description, target_metric, target_product_feature }))(notification);
+  }) => ({ version, version_description, target_metric, target_product_feature }))(
+    notification || {},
+  );
 
   return getAssetTrackingProperties(
-    notification.id,
-    notification.tracking_data,
+    notification?.id,
+    notification?.tracking_data,
     oldTrackingData,
     event_name,
   );
