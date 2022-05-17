@@ -715,7 +715,7 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
                 'Transaction Id'            => 'FT2022712537204137',
                 'Customer Mobile No'        => '',
                 'Customer Category'         => '',
-                'PARTNER_TXN_ID'            => '22712135190',
+                'PARTNER_TXN_ID'            => '227121351902',
                 'Original Input Amt'        => (string)ceil($row['payment']['amount'] / 100),
                 'Commision(DR)'             => '0',
                 'Commision(CR)'             => '0',

@@ -472,13 +472,29 @@ class Service
             case Payment\Action::AUTHORIZE_FAILED:
                 return $this->processVerifyResponse($response);
             case self::ENTITY_FETCH:
-                return $response[Response::ENTITY];
+                return $this->processEntityFetchResponse($response);
             default:
                 throw new Exception\LogicException(
                     'No supported actions found for UPS',
                     null,
                     ['action' => $this->action]);
         }
+    }
+
+    protected function processEntityFetchResponse(array $response): array
+    {
+        $entity = $response[Response::ENTITY] ?? null;
+
+        if (empty($entity) === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND,
+                null,
+                ['response' => $response],
+                'no record found for entity fetch response');
+        }
+
+        return $entity;
     }
 
     /**

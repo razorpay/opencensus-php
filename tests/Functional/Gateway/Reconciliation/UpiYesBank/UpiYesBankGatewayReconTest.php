@@ -86,7 +86,7 @@ class UpiYesBankGatewayReconTest extends TestCase
                 {
                     $content[0]['PG Merchant ID']           = $this->sharedTerminal->getGatewayMerchantId();
                     $content[0]['Order No']                 = 'YESB12WE34RDSQ187';
-                    $content[0]['Customer Ref No']          = '123456789012';
+                    $content[0]['Customer Ref No']          = '123456789013';
                 }
             });
 
@@ -110,7 +110,7 @@ class UpiYesBankGatewayReconTest extends TestCase
 
         $this->assertEquals('YESB12WE34RDSQ187', $unexpectedUpiEntity['merchant_reference']);
 
-        $this->assertEquals('123456789012', $unexpectedUpiEntity['npci_reference_id']);
+        $this->assertEquals('123456789013', $unexpectedUpiEntity['npci_reference_id']);
 
         $this->assertEquals('upi_yesbank', $unexpectedUpiEntity['gateway']);
 
@@ -139,7 +139,7 @@ class UpiYesBankGatewayReconTest extends TestCase
                 {
                     $content[0]['PG Merchant ID']           = $this->sharedTerminal->getGatewayMerchantId();
                     $content[0]['Order No']                 = 'YESB12WE34RDSQ187';
-                    $content[0]['Customer Ref No']          = '123456789012';
+                    $content[0]['Customer Ref No.']          = '123456789013';
                 }
             });
 
@@ -163,7 +163,7 @@ class UpiYesBankGatewayReconTest extends TestCase
 
         $this->assertEquals('YESB12WE34RDSQ187', $unexpectedUpiEntity['merchant_reference']);
 
-        $this->assertEquals('123456789012', $unexpectedUpiEntity['npci_reference_id']);
+        $this->assertEquals('123456789013', $unexpectedUpiEntity['npci_reference_id']);
 
         $this->assertNotNull($unexpectedUpiEntity['reconciled_at']);
 
@@ -174,7 +174,7 @@ class UpiYesBankGatewayReconTest extends TestCase
                 {
                     $content[0]['PG Merchant ID']           = $this->sharedTerminal->getGatewayMerchantId();
                     $content[0]['Order No']                 = 'YESB12WE34RDSQ187';
-                    $content[0]['Customer Ref No']          = '123456789012';
+                    $content[0]['Customer Ref No.']         = '123456789013';
                 }
             });
 

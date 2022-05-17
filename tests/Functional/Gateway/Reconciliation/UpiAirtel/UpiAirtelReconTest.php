@@ -41,7 +41,7 @@ class UpiAirtelReconTest extends TestCase
     {
         $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
 
-        $rrn = '22712135190';
+        $rrn = '227121351902';
 
         $this->makeUpiAirtelPaymentsSince($createdAt, $rrn, 1);
 
@@ -315,7 +315,7 @@ class UpiAirtelReconTest extends TestCase
 
         $gatewayEntity = $this->getDbEntity('upi', ['payment_id' => $updatedPayment['id']]);
 
-        $this->assertEquals('22712135190', $gatewayEntity['npci_reference_id']);
+        $this->assertEquals('227121351902', $gatewayEntity['npci_reference_id']);
 
         $this->assertEquals($gatewayEntity['npci_reference_id'], $updatedPayment['reference16']);
 

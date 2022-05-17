@@ -119,7 +119,7 @@ class Service extends UpiPaymentService
                     $response['error'] = [
                         'internal' => [
                             'code'          => 'BAD_REQUEST_VALIDATION_FAILURE',
-                            'description'   => 'BAD_REQUEST_VALIDATION_ERROR: received false 
+                            'description'   => 'BAD_REQUEST_VALIDATION_ERROR: received false
                                                 response with status 400 from mozart',
                             'metadata'      => [
                                 'description'               => 'INPUT_VALIDATION_FAILED',
@@ -274,14 +274,48 @@ class Service extends UpiPaymentService
 
     protected function entityFetch(array $content)
     {
-        $response['entity'] = [
-            'customer_reference'    => '22712135190',
-            'npci_txn_id'           => 'FT2022712537204137',
-            'gateway_reference'     => '',
-            'reconciled_at'        => 0,
-        ];
+        $response['entity'] = [];
 
-        $response = $this->content($response);
+        $this->content($content);
+
+        // mock ups entity to empty ,as this is to identity the request is from api payment
+        if ($content['column_name'] === 'customer_reference')
+        {
+            if ($content['value'] !== '123456789013')
+            {
+                $response['entity']['customer_reference'] = $content['value'];
+            }
+            else
+            {
+               if (empty($content['payment_id']) === false)
+               {
+                   $response['entity']['payment_id'] = $content['payment_id'];
+               }
+
+                return [$response, 200];
+            }
+        }
+
+        if ($content['column_name'] === 'payment_id')
+        {
+            if ($content['value'] === 'YESB12WE34RDSQ187')
+            {
+                return [$response, 200];
+            }
+
+            $response['entity']['payment_id'] = $content['value'];
+        }
+
+        $response['entity']['customer_reference']   = '227121351902';
+        $response['entity']['npci_txn_id']          = 'FT2022712537204137';
+        $response['entity']['gateway_reference']    = '';
+        $response['entity']['reconciled_at']        = 0;
+        $response['entity']['gateway']              = $content['gateway'];
+
+        if (empty($content['reconciled_at']) === false)
+        {
+            $response['entity']['reconciled_at'] = $content['reconciled_at'];
+        }
 
         return [$response, 200];
     }

@@ -2,17 +2,22 @@
 
 namespace RZP\Reconciliator\UpiYesBank\SubReconciliator;
 
+use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
 use RZP\Gateway\Upi\Sbi\Action;
 use RZP\Models\Payment\Gateway;
+use RZP\Gateway\Upi\Base\Entity;
 use RZP\Models\Base\PublicEntity;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Base\UniqueIdEntity;
+use RZP\Exception\BadRequestException;
 use RZP\Reconciliator\Base\Reconciliate;
+use RZP\Reconciliator\Base\SubReconciliator\Upi;
+use RZP\Reconciliator\Base\SubReconciliator\Upi\Constants;
 
-class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
+class PaymentReconciliate extends Upi\UpiPaymentServiceReconciliate
 {
     use Base\UpiReconTrait;
 
@@ -112,28 +117,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
             return $this->getPaymentIdForUnexpectedPayment($row);
         }
 
-        $upiEntity = $this->getUpiExpectedEntity($paymentId, $row);
-
-        if ($upiEntity === null)
-        {
-            $this->messenger->raiseReconAlert(
-                [
-                    'trace_code'           => TraceCode::RECON_MISMATCH,
-                    'info_code'            => Base\InfoCode::PAYMENT_ABSENT,
-                    'payment_reference_id' => $referenceNumber,
-                    'payment_id'           => $paymentId,
-                    'gateway'              => $this->gateway,
-                    'batch_id'             => $this->batchId
-                ]);
-
-            return $paymentId;
-        }
-
-        // Also now since we have found/created a new UPI Entity we will consider
-        // this to be the gateway payment id
-        $this->gatewayPayment = $upiEntity;
-
-        return $upiEntity->getPaymentId();
+        return $this->getUpiAuthorizePaymentId($paymentId, $row);
     }
 
     private function getReconVpa($row)
@@ -248,18 +232,27 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
      */
     protected function getPaymentIdForUnexpectedPayment($row)
     {
+        $paymentId = null;
+
         $referenceNumber = $this->getReferenceNumber($row);
 
         $this->formatUpiRrn($referenceNumber);
 
         $upiEntity = $this->repo->upi->fetchByNpciReferenceIdAndGateway($referenceNumber, $gateway = Gateway::UPI_YESBANK);
 
-        if (empty($upiEntity) === true)
+        if (empty($upiEntity) === false)
         {
-            return $this->createUnexpectedPayment($referenceNumber, $row);
+            return $upiEntity->getPaymentId();
+        }
+        // Fetch ups gateway entity if present
+        $upsEntity = $this->fetchUpsGatewayEntityByRrn($referenceNumber, $gateway = Gateway::UPI_YESBANK);
+
+        if (empty($upsEntity) === false)
+        {
+            return $upsEntity['payment_id'];
         }
 
-        return  $upiEntity->getPaymentId();
+        return $this->createUnexpectedPayment($referenceNumber, $row);
     }
 
     /** We create new payment and return the paymentId for the reconciliation
@@ -329,9 +322,44 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
                     'batch_id'                  => $this->batchId,
                 ]
             );
-
-            return $paymentId;
         }
+
+        return $paymentId;
+
+    }
+
+    protected function getUpiAuthorizePaymentId(string $paymentId, array $row)
+    {
+        $referenceNumber = $this->getReferenceNumber($row);
+
+        $upiAuthorizeEntity = $this->getUpiExpectedEntity($paymentId, $row);
+
+        if (empty($upiAuthorizeEntity) === false)
+        {
+            $this->gatewayPayment = $upiAuthorizeEntity;
+
+            return $upiAuthorizeEntity->getPaymentId();
+        }
+
+        $upsEntity = $this->fetchUpsGatewayEntityByPaymentId($paymentId, $this->gatewayName);
+
+        // Fetch ups entity and get expected paymentId
+        if (empty($upsEntity) === false)
+        {
+            return $this->getUpsExpectedPayment($paymentId, $upsEntity, $row);
+        }
+
+        $this->messenger->raiseReconAlert(
+            [
+                'trace_code'            => TraceCode::RECON_MISMATCH,
+                'info_code'             => Base\InfoCode::PAYMENT_ABSENT,
+                'payment_reference_id'  => $referenceNumber,
+                'payment_id'            => $paymentId,
+                'gateway'               => $this->gateway,
+                'batch_id'              => $this->batchId
+            ]);
+
+        return $paymentId;
     }
 
     /** Prepare callback input required for creating unexpected payment
@@ -367,5 +395,133 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         $callbackData['data']['version'] = 'v2';
 
         return $callbackData;
+    }
+
+    /**
+     * Method will return expected payment for given paymentId, rrn.
+     *
+     * @param string $paymentId
+     * @param array $upsEntity
+     * @param array $row
+     * @return mixed|null
+     */
+    protected function getUpsExpectedPayment(string $paymentId, array $upsEntity, array $row)
+    {
+        if ($upsEntity['gateway'] !== $this->gatewayName)
+        {
+            // TODO: Raise a critical alert
+            return null;
+        }
+
+        // If the existing payment is not already reconciled, we will return the same entity
+        if (empty($upsEntity['reconciled_at']) === true)
+        {
+            return $paymentId;
+        }
+
+        // Formatting the npci reference id just to make sure any accidental trimming
+        $existingRrn = $upsEntity['customer_reference'];
+
+        // Even though the payment is already reconciled and if we do not have saved
+        // a valid RRN, we will not go ahead with the reconciliation.
+        if ($this->isUpiValidRrn($existingRrn) === false)
+        {
+            // TODO: Raise a critical alert
+            return null;
+        }
+
+        $reconRrn = $this->getReferenceNumber($row);
+
+        // If both the RRNs are same, we can return the payment to be reconciled
+        if ($existingRrn === $reconRrn)
+        {
+            return $paymentId;
+        }
+
+        // Since we are receiving extra attempt but the status is failed, we do not need to create the payment
+        // The validatePaymentStatus will function will take care of this if we send the existing entity
+        if ($this->getReconPaymentStatus($row) !== Payment\Status::AUTHORIZED)
+        {
+            return $paymentId;
+        }
+
+        // Now we have multiple credit scenario, where one credit is already reconciled
+        // And the RRN for reconciled one is not same as recon row rrn.
+        $callbackData = $this->generateCallbackData($row);
+
+        $response = (new Payment\Service)->unexpectedCallback($callbackData, $reconRrn, $this->gatewayName);
+
+        if (empty($response[Entity::PAYMENT_ID]) === true)
+        {
+            // TODO: Trace critical
+            return null;
+        }
+
+        $this->trace->info(
+            TraceCode::RECON_INFO,
+            [
+                'infoCode'      => Base\InfoCode::RECON_UNEXPECTED_PAYMENT_FOR_MULTIPLE_CREDIT,
+                'payment_id'    => $response[Entity::PAYMENT_ID],
+                'rrn'           => $reconRrn,
+                'gateway'       => $this->gateway,
+            ]);
+
+        return $response[Entity::PAYMENT_ID];
+    }
+
+    protected function fetchUpsGatewayEntityByRrn(string $referenceNumber, string $gateway)
+    {
+        try
+        {
+            $requiredFields = [
+                    Constants::GATEWAY_REFERENCE,
+                    Constants::NPCI_TXN_ID,
+                    Constants::PAYMENT_ID,
+                    Constants::GATEWAY,
+                    Constants::RECONCILED_AT,
+            ];
+
+            return $this->getUpsGatewayEntityByColumn(Constants::CUSTOMER_REFERENCE ,$referenceNumber, $gateway, $requiredFields);
+        }
+        catch (Exception\BadRequestException $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Trace::INFO,
+                TraceCode::UPI_PAYMENT_SERVICE_RECORD_NOT_FOUND,
+                [
+                    'gateway' => $gateway,
+                ]
+            );
+            return [];
+        }
+    }
+
+    protected function fetchUpsGatewayEntityByPaymentId(string $paymentId, string $gateway)
+    {
+        try
+        {
+            $requiredFields = [
+                Constants::GATEWAY_REFERENCE,
+                Constants::NPCI_TXN_ID,
+                Constants::CUSTOMER_REFERENCE,
+                Constants::GATEWAY,
+                Constants::RECONCILED_AT,
+            ];
+
+            return $this->getUpsGatewayEntityByColumn(Constants::PAYMENT_ID ,$paymentId, $gateway, $requiredFields);
+        }
+        catch (Exception\BadRequestException $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Trace::INFO,
+                TraceCode::UPI_PAYMENT_SERVICE_RECORD_NOT_FOUND,
+                [
+                    'gateway' => $gateway,
+                ]
+            );
+            return [];
+        }
     }
 }

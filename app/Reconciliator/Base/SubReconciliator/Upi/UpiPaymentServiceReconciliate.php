@@ -310,4 +310,26 @@ class UpiPaymentServiceReconciliate extends SubReconciliator\PaymentReconciliate
                 'gateway'                   => $this->gateway
             ]);
     }
+
+    /** Fetch ups gateway entity by column name
+     * @param string $columnName
+     * @param string $columnValue
+     * @param string $gateway
+     * @param array $requiredFields
+     * @return mixed
+     */
+    protected function getUpsGatewayEntityByColumn(string $columnName, string $columnValue, string $gateway, array $requiredFields)
+    {
+        $action = Constants::ENTITY_FETCH;
+
+        $input = [
+            Constants::MODEL            => Constants::AUTHORIZE,
+            Constants::REQUIRED_FIELDS  => $requiredFields,
+            Constants::COLUMN_NAME      => $columnName,
+            Constants::VALUE            => $columnValue,
+            Constants::GATEWAY          => $gateway,
+        ];
+
+        return $this->app['upi.payments']->action($action, $input, $gateway);
+    }
 }
