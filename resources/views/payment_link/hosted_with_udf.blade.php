@@ -9,6 +9,7 @@
     $is_error_view              = isset($request_params['error']['description']);
     $is_preview                 = request()->get('preview') === 'true';
     $optimised_web_vitals       = $data['merchant']['optimised_web_vitals'] === 'on';
+    $crossorigin_enabled        = $data['view_preferences']['crossorigin_enabled'] === 'on';
 ?>
 
 
@@ -88,7 +89,12 @@
             @if($optimised_web_vitals === false)
                 <script src="https://cdn.razorpay.com/static/analytics/bundle.js" defer></script>
                 <script src="https://cdn.razorpay.com/static/assets/color.js" defer></script>
-                <script src="{{env('AWS_CF_CDN_URL')}}/static/hosted/wysiwyg.js" onload="renderPaymentPage()" defer></script>
+                <script 
+                    src="{{env('AWS_CF_CDN_URL')}}/static/hosted/wysiwyg.js" 
+                    onload="renderPaymentPage()" 
+                    defer
+                    {{ $crossorigin_enabled === true ? "crossorigin" : "" }}
+                ></script>
             @else
                 @if($is_preview === false)
                     <script src="https://cdn.razorpay.com/static/analytics/bundle.js" defer></script>
@@ -99,7 +105,12 @@
                 <link href="https://fonts.googleapis.com/css?family=Muli:400,700&display=swap" rel="stylesheet">
                 <script src="https://cdn.razorpay.com/static/assets/quilljs/1.3.6/quill.min.js" defer ></script>
 
-                <script src="{{env('AWS_CF_CDN_URL')}}/static/hosted/wysiwyg.js" onload="renderPaymentPage()" defer></script>
+                <script 
+                    src="{{env('AWS_CF_CDN_URL')}}/static/hosted/wysiwyg.js" 
+                    onload="renderPaymentPage()" 
+                    defer
+                    {{ $crossorigin_enabled === true ? "crossorigin" : "" }}
+                ></script>
                 <link rel="stylesheet" href="https://cdn.razorpay.com/static/assets/social-share/icons.css" />
             @endif
         @else
