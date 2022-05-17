@@ -577,28 +577,6 @@ class Entity extends Base\PublicEntity
             $array[self::LINKED_OFFER_IDS] = $linkedOfferIds;
         }
     }
-
-    /**
-     * Get the issuer this offer is valid on.
-     *
-     * @param string|null $issuer
-     *
-     * @return string|null
-     */
-    public function getIssuerAttribute(?string $issuer): ?string
-    {
-        if ($this->{self::PAYMENT_METHOD_TYPE} === Emi\Type::DEBIT) {
-            // return _DC equivalents of issuer banks
-            if ($issuer === IFSC::HDFC) {
-                return IFSC::HDFC_DC;
-            } elseif ($issuer === IFSC::UTIB) {
-                return IFSC::UTIB_DC;
-            }
-        }
-
-        return $issuer;
-    }
-
 // ----------------------- Mutators --------------------------------------------
 
     protected function setIinsAttribute(array $iins)

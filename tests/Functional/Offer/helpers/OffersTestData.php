@@ -392,7 +392,8 @@ return [
             'content' => [
                 'active'          => true,
                 'name'            => 'Test Offer',
-                'issuer'          => 'HDFC_DC',
+                'issuer'          => 'HDFC',
+                'payment_method_type' => 'debit',
                 'percent_rate'    => 1000,
                 'processing_time' => 86400,
                 'starts_at'       => 1514764800,
@@ -426,12 +427,46 @@ return [
                 'active'              => true,
                 'name'                => 'Test Offer',
                 'payment_method'      => 'emi',
-                'issuer'              => 'HDFC_DC',
+                'issuer'              => 'HDFC',
+                'payment_method_type' => 'debit',
                 'emi_durations'       => [6],
                 'max_payment_count'   => 2,
                 'min_amount'          => 500000,
                 'display_text'        => 'HDFC Debit Card Emi Subvention offers',
                 'terms'               => 'Some more details'
+            ],
+        ],
+    ],
+    'testCreateHDFCDebitCardEMIOffer' => [
+        'request' => [
+            'content' => [
+                'name'                => 'Test Offer',
+                'payment_method'      => 'emi',
+                'issuer'              => 'HDFC',
+                'payment_method_type' => 'debit',
+                'max_payment_count'   => 2,
+                'processing_time'     => '1',
+                'emi_subvention'      => true,
+                'emi_durations'       => [6],
+                'ends_at'             => Carbon::tomorrow()->getTimestamp(),
+                'display_text'        => 'HDFC Debit Card EMI offers',
+                'terms'               => 'HDFC Debit Card EMI offers',
+                'block'               =>  1,
+                'type'                => 'instant'
+            ],
+            'url'    => '/offers',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'active'              => true,
+                'name'                => 'Test Offer',
+                'payment_method'      => 'emi',
+                'issuer'              => 'HDFC',
+                'payment_method_type' => 'debit',
+                'display_text'        => 'HDFC Debit Card EMI offers',
+                'terms'               => 'HDFC Debit Card EMI offers',
+                'type'                => 'instant'
             ],
         ],
     ],

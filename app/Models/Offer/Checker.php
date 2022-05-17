@@ -8,6 +8,7 @@ use RZP\Error\PublicErrorDescription;
 use RZP\Models\Base;
 use RZP\Models\Order;
 use RZP\Models\Payment;
+use RZP\Models\Emi;
 use RZP\Trace\TraceCode;
 use RZP\Models\Offer\Core;
 use RZP\Exception\LogicException;
@@ -210,6 +211,11 @@ class Checker extends Base\Core
     protected function checkPaymentMethodType(): bool
     {
         $offerPaymentMethodType = $this->offer->getPaymentMethodType();
+
+        //If payment method type for offer is null then set method type as credit
+        if(($this->offer->getPaymentMethod() === Payment\Method::EMI) and $offerPaymentMethodType === null) {
+            $offerPaymentMethodType = Emi\Type::CREDIT;
+        }
 
         // Return true if no payment method type specified on offer
         // Means offer is valid on both credit/debit cards
