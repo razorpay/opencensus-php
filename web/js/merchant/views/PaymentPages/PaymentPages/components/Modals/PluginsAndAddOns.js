@@ -17,8 +17,12 @@ const GA_CTA_LINK =
   'https://support.google.com/analytics/answer/1008080?hl=en#zippy=%2Cweb-hosting-service-you-dont-control-the-page-code';
 
 const validateGaId = (value) => {
-  const regex = new RegExp(/(UA|YT|MO)-\d+-\d+/i);
-  if (value && !regex.test(value)) {
+  // regex for universal analytics IDs (Older version of GA)
+  const regexForUA = new RegExp(/(UA|YT|MO)-\d+-\d+/i);
+  // regex for GA 4 IDs
+  const regexForGA4 = new RegExp(/^G-[A-Z0-9]{8,12}$/i);
+
+  if (value && !regexForUA.test(value) && !regexForGA4.test(value)) {
     return 'This does not look like a valid ID';
   }
   return '';
@@ -57,7 +61,7 @@ export default class PluginsAndAddOns extends React.Component {
     const data = {};
     data.settings = {
       pp_fb_pixel_tracking_id: formData.pp_fb_pixel_tracking_id,
-      pp_ga_pixel_tracking_id: formData.pp_ga_pixel_tracking_id,
+      pp_ga_pixel_tracking_id: (formData.pp_ga_pixel_tracking_id || '').toUpperCase(),
       pp_fb_event_add_to_cart_enabled: formData.pp_fb_event_add_to_cart_enabled ? '1' : '0',
       pp_fb_event_initiate_payment_enabled: formData.pp_fb_event_initiate_payment_enabled
         ? '1'
@@ -109,7 +113,7 @@ export default class PluginsAndAddOns extends React.Component {
                 </Input.Group>
                 <span class="help-text">Tracking ID is a string like 1234567890.</span>
                 <Input.Group label="Metrics to track">
-                  <Input.Check fieldLabel="Page Views" defaultValue={'1'} disabled />
+                  <Input.Check fieldLabel="Page Views" defaultValue="1" disabled />
                   <Input.Check
                     fieldLabel="Add to Cart"
                     name="pp_fb_event_add_to_cart_enabled"
@@ -154,7 +158,9 @@ export default class PluginsAndAddOns extends React.Component {
                     onBlur={track.settings.enterGAPixel}
                   />
                 </Input.Group>
-                <span class="help-text">Tracking ID is a string like UA-000000-2.</span>
+                <span class="help-text">
+                  Tracking ID is a string like UA-000000-2 or G-0A1BC2DE.
+                </span>
                 <br />
                 <br />
                 <span class="help-text">
