@@ -86,8 +86,10 @@
                     window.RZP.renderApp('paymentpage-container', templateData);
                 }
             </script>
+            <!-- Temporary polyfill for analytics -->
+            <script src="https://polyfill.io/v3/polyfill.min.js?features=URL%2CURLSearchParams"/>
             @if($optimised_web_vitals === false)
-                <script src="https://cdn.razorpay.com/static/analytics/bundle.js" defer></script>
+                <script src="{{env('AWS_CF_CDN_URL')}}/static/analytics/bundle.js" defer></script>
                 <script src="https://cdn.razorpay.com/static/assets/color.js" defer></script>
                 <script 
                     src="{{env('AWS_CF_CDN_URL')}}/static/hosted/wysiwyg.js" 
@@ -97,7 +99,7 @@
                 ></script>
             @else
                 @if($is_preview === false)
-                    <script src="https://cdn.razorpay.com/static/analytics/bundle.js" defer></script>
+                    <script src="{{env('AWS_CF_CDN_URL')}}/static/analytics/bundle.js" defer></script>
                 @endif
                 <script src="https://cdn.razorpay.com/static/assets/color.js" defer></script>
 
@@ -132,7 +134,7 @@
         @if ($is_error_view === false and ($optimised_web_vitals === false or $is_preview === false))
             <script>
                 window.addEventListener('load', function() {
-                    setTimeout(() => {
+                    setTimeout(function () {
                         var script = document.createElement("script");
                         script.src = "https://checkout.razorpay.com/v1/checkout.js";
                         document.body.appendChild(script);
