@@ -535,13 +535,7 @@ class MerchantTest extends TestCase
 
     public function testGetMerchantConfigForActivatedMerchantOwnerRoleWithTransactionsAndFTUXDone()
     {
-        $this->fixtures->merchant->edit('10000000000000', ['live' => true, 'activated' => 1]);
-
-        $this->fixtures->create('merchant_detail', [
-            'merchant_id'       => '10000000000000',
-            'activation_status' => 'activated',
-            'business_category' => 'ecommerce'
-        ]);
+        $this->fixtures->merchant->addFeatures(['paymentlinks_v2', 'paymentlinks_v2_compat']);
 
         $this->testMerchantIncrementProductSession();
 
@@ -575,6 +569,15 @@ class MerchantTest extends TestCase
 
     public function testMerchantIncrementProductSession()
     {
+        $this->fixtures->merchant->edit('10000000000000', ['live' => true, 'activated' => 1, 'has_key_access' => true]);
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'       => '10000000000000',
+            'activation_status' => 'activated',
+            'business_category' => 'ecommerce',
+            'business_website'  => 'www.test.com'
+        ]);
+
         $this->ba->proxyAuthTest();
 
         $this->startTest();

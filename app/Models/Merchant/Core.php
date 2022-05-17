@@ -1132,11 +1132,7 @@ class Core extends Base\Core
     {
         $products = [];
 
-        /*
-          * Any new products will be added in the currentProducts array.
-          * These products are removed as products are not yet ready: Constants::QR_CODE, Constants::TAP_AND_PAY
-          * */
-        $currentProducts = [Constants::PAYMENT_LINK, Constants::PAYMENT_GATEWAY];
+        $currentProducts = $this->getCurrentProducts();
 
         foreach ($currentProducts as $product)
         {
@@ -1158,6 +1154,59 @@ class Core extends Base\Core
                            ]);
 
         return $products;
+    }
+
+    private function isPaymemtLinkEnabled()
+    {
+        $enabledFeatures = $this->merchant->getEnabledFeatures();
+
+        if ((in_array(FeatureConstants::PAYMENTLINKS_V2, $enabledFeatures, true) === true) or
+            (in_array(FeatureConstants::PAYMENTLINKS_COMPATIBILITY_V2, $enabledFeatures, true) === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    private function isPaymemtGatewayEnabled()
+    {
+        $activation_status = $this->merchant->merchantDetail->getActivationStatus();
+        $business_website  = $this->merchant->merchantDetail->getWebsite();
+        $has_key_access    = $this->merchant->getHasKeyAccess();
+
+        $currentUserRole = $this->app['basicauth']->getUserRole();
+
+        if (((in_array($activation_status, [Detail\Status::ACTIVATED_MCC_PENDING, Detail\Status::INSTANTLY_ACTIVATED]) === true)
+             or (($activation_status === Detail\Status::ACTIVATED) and (is_null($business_website) === false))
+            ) and (in_array($currentUserRole, [User\Role::OWNER, User\Role::ADMIN]) === true)
+                  and ($has_key_access === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    private function getCurrentProducts()
+    {
+        /*
+        * Any new products will be added in the currentProducts array.
+        * These products are removed as products are not yet ready: Constants::QR_CODE, Constants::TAP_AND_PAY
+        * */
+        $currentProducts = [];
+
+        if ($this->isPaymemtLinkEnabled() === true)
+        {
+            $currentProducts[] = Constants::PAYMENT_LINK;
+        }
+
+        if ($this->isPaymemtGatewayEnabled() === true)
+        {
+            $currentProducts[] = Constants::PAYMENT_GATEWAY;
+        }
+
+        return $currentProducts;
     }
 
     private function getCacheKeyForAppScalability($merchantId, $userId, $prefix)
@@ -1296,11 +1345,14 @@ class Core extends Base\Core
     {
         $products = $this->getAcceptPaymentsDynamicProps($merchantId, $userId);
 
-        foreach ($products[Constants::PRODUCTS] as $product)
+        if (empty($products[Constants::PRODUCTS]) === false)
         {
-            if ($product[Constants::INTRODUCING] === true)
+            foreach ($products[Constants::PRODUCTS] as $product)
             {
-                $this->incrementSessionBasedOnSessionCount($merchantId, $userId, $product[Constants::TYPE]);
+                if ($product[Constants::INTRODUCING] === true)
+                {
+                    $this->incrementSessionBasedOnSessionCount($merchantId, $userId, $product[Constants::TYPE]);
+                }
             }
         }
     }
