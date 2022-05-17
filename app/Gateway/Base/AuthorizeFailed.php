@@ -10,7 +10,9 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Customer\Token;
 use RZP\Models\Payment\Entity;
 use RZP\Models\Payment\Verify\Action;
+use RZP\Models\Payment\Processor;
 use RZP\Models\Payment\Action as PaymentAction;
+use RZP\Models\Payment\Processor\App as AppMethod;
 
 trait AuthorizeFailed
 {
@@ -111,6 +113,16 @@ trait AuthorizeFailed
             }
 
             $response = $this->extractPaymentsProperties($gatewayPayment);
+
+            if ((empty($verify->input['payment']) === false) and
+                ($verify->input['payment']['method'] === Payment\Method::APP) and
+                ($verify->input['payment']['wallet'] === AppMethod::CRED))
+            {
+                if(isset($verify->verifyResponseContent['data']) === true)
+                {
+                    $response['data'] = $verify->verifyResponseContent['data'];
+                }
+            }
 
             if ($verify->amountMismatch === true)
             {

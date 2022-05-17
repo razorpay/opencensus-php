@@ -3703,6 +3703,11 @@ trait Authorize
 
         $response = $this->callGatewayFunction(Action::AUTHORIZE_FAILED, $data);
 
+        if ($payment->isAppCred() === true)
+        {
+            $this->addDiscountToCred($payment, $response);
+        }
+
         if ($payment->isCardlessEmiWalnut369() === true)
         {
             $this->addDiscountToWalnut369($payment, $response);
