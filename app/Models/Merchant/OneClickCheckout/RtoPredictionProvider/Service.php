@@ -10,13 +10,32 @@ class Service
 {
     protected $app;
 
-    const COD_ELIGIBILITY_EVALUATE             = 'cod_eligibility_api';
-    const PATH                                 = 'path';
+    const COD_ELIGIBILITY_EVALUATE              = 'cod_eligibility_api';
+    const BULK_UPSERT_COD_ELIGIBILITY_ATTRIBUTE = 'bulk_upsert_cod_eligibility_attribute';
+    const LIST_COD_ELIGIBILITY_ATTRIBUTE        = "list_cod_eligibility_attribute";
+    const DELETE_COD_ELIGIBILITY_ATTRIBUTE      = "delete_cod_eligibility_attribute";
+    const PATH                                  = 'path';
+
+    const COD_ELIGIBILITY_ATTRIBUTES = "cod_eligibility_attributes";
+    const ATTRIBUTE_TYPE             = "attribute_type";
+    const ATTRIBUTE_VALUE            = "attribute_value";
+    const COD_ELIGIBILITY_TYPE       = "cod_eligibility_type";
+    const CREATED_BY                 = "created_by";
+    const MERCHANT_ID                = "merchant_id";
 
     const PARAMS = [
         self::COD_ELIGIBILITY_EVALUATE  =>   [
             self::PATH   => 'twirp/rzp.rto_prediction.cod_eligibility.v1.CODEligibilityAPI/Evaluate',
         ],
+        self::BULK_UPSERT_COD_ELIGIBILITY_ATTRIBUTE => [
+            self::PATH => '/twirp/rzp.rto_prediction.cod_eligibility_attribute.v1.CODEligibilityAttributeAPI/BulkUpsertCODEligibilityAttribute',
+        ],
+        self::LIST_COD_ELIGIBILITY_ATTRIBUTE => [
+            self::PATH => '/twirp/rzp.rto_prediction.cod_eligibility_attribute.v1.CODEligibilityAttributeAPI/ListCODEligibilityAttribute',
+        ],
+        self::DELETE_COD_ELIGIBILITY_ATTRIBUTE => [
+            self::PATH => '/twirp/rzp.rto_prediction.cod_eligibility_attribute.v1.CODEligibilityAttributeAPI/DeleteCODEligibilityAttribute',
+        ]
     ];
 
     public function __construct($app = null)
@@ -114,5 +133,87 @@ class Service
         $rtoServiceRequestContent['input']['order'] = $order;
 
         return $rtoServiceRequestContent;
+    }
+
+    public function bulkUpsert($input, $merchantId, $userEmail, $codEligibilityType)
+    {
+        $input = $this->addCreatedByAndMerchantID($input, $merchantId, $userEmail, $codEligibilityType);
+
+        $params = self::PARAMS[self::BULK_UPSERT_COD_ELIGIBILITY_ATTRIBUTE];
+
+        return $this->app['rto_prediction_service_client']->sendRequest($params[self::PATH], $input, Requests::POST);
+    }
+
+    private function addCreatedByAndMerchantID($input, $merchantId, $userEmail, $codEligibilityType) : array
+    {
+        $codEligibilityAttributes = array();
+
+        foreach ($input[self::COD_ELIGIBILITY_ATTRIBUTES] as $codEligibilityAttribute)
+        {
+            $codEligibilityAttribute[self::COD_ELIGIBILITY_TYPE] = $codEligibilityType;
+
+            $codEligibilityAttribute[self::CREATED_BY] = $userEmail;
+
+            $codEligibilityAttribute[self::MERCHANT_ID] = $merchantId;
+
+            $codEligibilityAttributes[] = $codEligibilityAttribute;
+        }
+
+        $bulkRequestContent[self::COD_ELIGIBILITY_ATTRIBUTES] = $codEligibilityAttributes;
+
+        return $bulkRequestContent;
+    }
+
+    public function batchUpsert($input, $merchantId, $userEmail, $codEligibilityType)
+    {
+        $input = $this->addCreatedByAndMerchantIDForBatch($input, $merchantId, $userEmail, $codEligibilityType);
+
+        $params = self::PARAMS[self::BULK_UPSERT_COD_ELIGIBILITY_ATTRIBUTE];
+
+        return $this->app['rto_prediction_service_client']->sendRequest($params[self::PATH], $input, Requests::POST);
+    }
+
+    private function addCreatedByAndMerchantIDForBatch($input, $merchantId, $userEmail, $codEligibilityType) : array
+    {
+        $codEligibilityAttributes = array();
+
+        foreach ($input as $codEligibilityAttribute)
+        {
+            $codEligibilityAttribute[self::COD_ELIGIBILITY_TYPE] = $codEligibilityType;
+
+            $codEligibilityAttribute[self::CREATED_BY] = $userEmail;
+
+            $codEligibilityAttribute[self::MERCHANT_ID] = $merchantId;
+
+            unset($codEligibilityAttribute['idempotent_id']);
+
+            $codEligibilityAttributes[] = $codEligibilityAttribute;
+        }
+
+        $bulkRequestContent[self::COD_ELIGIBILITY_ATTRIBUTES] = $codEligibilityAttributes;
+
+        return $bulkRequestContent;
+    }
+
+    public function list($input, $merchantId, $codEligibilityType)
+    {
+        $input[self::MERCHANT_ID] = $merchantId;
+
+        $input[self::COD_ELIGIBILITY_TYPE] = $codEligibilityType;
+
+        $params = self::PARAMS[self::LIST_COD_ELIGIBILITY_ATTRIBUTE];
+
+        return $this->app['rto_prediction_service_client']->sendRequest($params[self::PATH], $input, Requests::POST);
+    }
+
+    public function delete($id, $merchantId)
+    {
+        $input[self::MERCHANT_ID] = $merchantId;
+
+        $input['id'] = $id;
+
+        $params = self::PARAMS[self::DELETE_COD_ELIGIBILITY_ATTRIBUTE];
+
+        return $this->app['rto_prediction_service_client']->sendRequest($params[self::PATH], $input, Requests::POST);
     }
 }

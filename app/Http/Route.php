@@ -3462,6 +3462,11 @@ class Route
         '1cc_configs_get'                           => ['get',        '1cc/merchant/configs',                                  'MerchantController@get1ccConfig'],
         '1cc_merchant_preferences'                  => ['get',        'merchant/1cc_preferences',                                  'MerchantController@get1ccMerchantPreferences'],
 
+        '1cc_cod_eligibility_attribute_list'         => ['get',    '1cc/rto_prediction_service/cod_eligibility_attribute/{cod_eligibility_type}',             'CODEligibilityAttributeController@list'       ],
+        '1cc_cod_eligibility_attribute_upsert_bulk'  => ['post',   '1cc/rto_prediction_service/cod_eligibility_attribute/{cod_eligibility_type}/upsert/bulk', 'CODEligibilityAttributeController@bulkUpsert' ],
+        '1cc_cod_eligibility_attribute_upsert_batch' => ['post',   '1cc/rto_prediction_service/cod_eligibility_attribute/{cod_eligibility_type}/upsert/batch', 'CODEligibilityAttributeController@batchUpsert' ],
+        '1cc_cod_eligibility_attribute_delete'       => ['delete', '1cc/rto_prediction_service/cod_eligibility_attribute/{id}',        'CODEligibilityAttributeController@delete'     ],
+
         // 1 click checkout shopify integration
         '1cc_shopify_checkout'                      => ['post',       '1cc/shopify/checkout',                                  'OneClickCheckoutController@shopifyCreateCheckout'                ],
         '1cc_shopify_checkout_update'               => ['patch',      '1cc/shopify/checkout',                                  'OneClickCheckoutController@shopifyUpdateCheckout'                ],
@@ -3490,7 +3495,6 @@ class Route
         'shipping_method_provider_post'                   => ['post',     '1cc/shipping_method_providers',                              'ShippingMethodProviderController@create'                           ],
         'shipping_method_provider_patch'                  => ['put',      '1cc/shipping_method_providers/{id}',                         'ShippingMethodProviderController@update'                           ],
         'shipping_method_provider_delete'                 => ['delete',   '1cc/shipping_method_providers/{id}',                         'ShippingMethodProviderController@delete'                           ],
-
 
         //relay routes
         'relay_get_apps'                => ['get',                  'relay/apps',                                           'RelayController@getApps'],
@@ -4625,6 +4629,7 @@ class Route
         'raw_address_create_batch_service',
 
         'fulfillment_order_update',
+        '1cc_cod_eligibility_attribute_upsert_batch',
         //merchant action cron sends the notifications to the merchants which are suspended and tagged
         'merchant_action_notification_cron',
 
@@ -5577,6 +5582,10 @@ class Route
         '1cc_configs_update',
         '1cc_configs_get',
         'update_merchant_platform',
+        '1cc_cod_eligibility_attribute_list',
+        '1cc_cod_eligibility_attribute_upsert_bulk',
+        '1cc_cod_eligibility_attribute_delete',
+        '1cc_cod_eligibility_attribute_upsert_batch',
 
         // splitz
         'splitz_evaluate_bulk_proxy',
@@ -9766,6 +9775,9 @@ class Route
             '1cc_configs_update',
             '1cc_configs_get',
             'update_merchant_platform',
+            '1cc_cod_eligibility_attribute_list',
+            '1cc_cod_eligibility_attribute_upsert_bulk',
+            '1cc_cod_eligibility_attribute_delete',
             'country_fetch',
             'state_fetch',
 
@@ -12496,6 +12508,7 @@ class Route
             'onboard_old_accounts_to_ledger',
             'raw_address_create_batch_service',
             'fulfillment_order_update',
+            '1cc_cod_eligibility_attribute_upsert_batch',
             'chargeback_poc',
             'whitelisted_domain',
             'debit_note_batch',

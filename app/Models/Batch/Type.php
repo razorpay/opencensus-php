@@ -14,6 +14,10 @@ class Type
     const RAW_ADDRESS               = 'raw_address';
     const FULFILLMENT_ORDER_UPDATE  = 'fulfillment_order_update';
 
+    //Cod eligibility attribute batch
+    const ONE_CC_COD_ELIGIBILITY_ATTRIBUTE_WHITELIST = 'one_cc_cod_eligibility_attribute_whitelist_upsert';
+    const ONE_CC_COD_ELIGIBILITY_ATTRIBUTE_BLACKLIST = 'one_cc_cod_eligibility_attribute_blacklist_upsert';
+
     // Merchant Onboarding
     const MERCHANT_ONBOARDING       = 'merchant_onboarding';
 
@@ -478,6 +482,8 @@ class Type
         self::REFUND,
         self::RAW_ADDRESS,
         self::FULFILLMENT_ORDER_UPDATE,
+        self::ONE_CC_COD_ELIGIBILITY_ATTRIBUTE_WHITELIST,
+        self::ONE_CC_COD_ELIGIBILITY_ATTRIBUTE_BLACKLIST,
         self::LINKED_ACCOUNT_CREATE,
         self::RETRY_REFUNDS_TO_BA,
         self::UPI_TERMINAL_ONBOARDING,
@@ -541,6 +547,8 @@ class Type
         self::REFUND,
         self::RAW_ADDRESS,
         self::FULFILLMENT_ORDER_UPDATE,
+        self::ONE_CC_COD_ELIGIBILITY_ATTRIBUTE_WHITELIST,
+        self::ONE_CC_COD_ELIGIBILITY_ATTRIBUTE_BLACKLIST,
         self::LINKED_ACCOUNT_CREATE,
         self::RETRY_REFUNDS_TO_BA,
         self::UPI_TERMINAL_ONBOARDING,

@@ -8,6 +8,7 @@ use RZP\Trace\TraceCode;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\IntegrationException;
 use RZP\Http\Request\Requests;
+use ApiResponse;
 
 
 class Client
@@ -53,13 +54,18 @@ class Client
                     ]);
             }
 
+            $parsedResponse = $this->parseAndReturnResponse($response);
+
+            if ($response->status_code === 404 && $parsedResponse['msg'] === "RECORD_NOT_FOUND")
+            {
+                return ApiResponse::json([$parsedResponse['msg']], 404);
+            }
+
             if ($response->status_code > 400)
             {
                 throw new IntegrationException('rto_prediction_service request failed with status code: ' . $response->status_code,
                     ErrorCode::SERVER_ERROR);
             }
-
-            $parsedResponse = $this->parseAndReturnResponse($response);
 
             if ($response->status_code == 400)
             {

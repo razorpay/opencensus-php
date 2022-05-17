@@ -83,7 +83,9 @@ class Limit
         Type::BUY_PRICING_ASSIGN                    => 100000,
         Type::LEDGER_ONBOARD_OLD_ACCOUNT            => 5000,
         Type::VIRTUAL_ACCOUNT_EDIT                  => 10000,
-        Type::PARTNER_REFERRAL_FETCH                => 150
+        Type::PARTNER_REFERRAL_FETCH                => 150,
+        Type::ONE_CC_COD_ELIGIBILITY_ATTRIBUTE_WHITELIST => 1000000,
+        Type::ONE_CC_COD_ELIGIBILITY_ATTRIBUTE_BLACKLIST => 1000000
     ];
 
     /**

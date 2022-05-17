@@ -845,6 +845,20 @@ class Validator extends Base\Validator
         Entity::FILE_ID              => 'required_without:file|public_id',
     ];
 
+    protected static $oneCcCodEligibilityAttributeWhitelistUpsertCreateRules = [
+        Entity::TYPE                 => 'required|in:one_cc_cod_eligibility_attribute_whitelist_upsert',
+        Entity::NAME                 => 'filled|string|max:255',
+        Entity::FILE                 => 'required_without:file_id|file|max:51200' . self::CSV_MIME_RULE,
+        Entity::FILE_ID              => 'required_without:file|public_id',
+    ];
+
+    protected static $oneCcCodEligibilityAttributeBlacklistUpsertCreateRules = [
+        Entity::TYPE                 => 'required|in:one_cc_cod_eligibility_attribute_blacklist_upsert',
+        Entity::NAME                 => 'filled|string|max:255',
+        Entity::FILE                 => 'required_without:file_id|file|max:51200' . self::CSV_MIME_RULE,
+        Entity::FILE_ID              => 'required_without:file|public_id',
+    ];
+
     protected static $creditCreateRules = [
         Entity::TYPE    => 'required|in:credit',
         Entity::NAME    => 'filled|string|max:255',

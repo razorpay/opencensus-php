@@ -82,6 +82,13 @@ class Header
     const FULFILLMENT_ORDER_MERCHANT_ORDER_ID = 'merchant_order_id';
     const FULFILLMENT_ORDER_STATUS = 'status';
     const FULFILLMENT_ORDER_UPDATED_AT = 'updated_at';
+
+
+    // CODEligibilityAttribute Headers
+    const ONE_CC_COD_ELIGIBILITY_ATTRIBUTE_WHITELIST_TYPE = 'Allowlist Type';
+    const ONE_CC_COD_ELIGIBILITY_ATTRIBUTE_WHITELIST_VALUE = 'Allowlist Value';
+    const ONE_CC_COD_ELIGIBILITY_ATTRIBUTE_BLACKLIST_TYPE = 'Blocklist Type';
+    const ONE_CC_COD_ELIGIBILITY_ATTRIBUTE_BLACKLIST_VALUE = 'Blocklist Value';
     //
     // Payment Link Headers
     //
@@ -1375,6 +1382,17 @@ class Header
         Header::FULFILLMENT_ORDER_STATUS,
     ];
 
+    // Following is a list of columns that are mandatory headers in the cod eligibility attribute whitelist batch file
+    const MANDATORY_HEADERS_FOR_ONE_CC_COD_ELIGIBILITY_ATTRIBUTE_WHITELIST = [
+        Header::ONE_CC_COD_ELIGIBILITY_ATTRIBUTE_WHITELIST_TYPE,
+        Header::ONE_CC_COD_ELIGIBILITY_ATTRIBUTE_WHITELIST_VALUE,
+    ];
+
+    // Following is a list of columns that are mandatory headers in the cod eligibility attribute blacklist batch file
+    const MANDATORY_HEADERS_FOR_ONE_CC_COD_ELIGIBILITY_ATTRIBUTE_BLACKLIST = [
+        Header::ONE_CC_COD_ELIGIBILITY_ATTRIBUTE_BLACKLIST_TYPE,
+        Header::ONE_CC_COD_ELIGIBILITY_ATTRIBUTE_BLACKLIST_VALUE,
+    ];
 
     /**
      * Input and output file headers
@@ -1610,6 +1628,38 @@ class Header
                 self::FULFILLMENT_ORDER_STATUS,
                 self::FULFILLMENT_ORDER_UPDATED_AT,
             ]
+        ],
+
+        Type::ONE_CC_COD_ELIGIBILITY_ATTRIBUTE_WHITELIST => [
+            self::INPUT => [
+                self::ONE_CC_COD_ELIGIBILITY_ATTRIBUTE_WHITELIST_TYPE,
+                self::ONE_CC_COD_ELIGIBILITY_ATTRIBUTE_WHITELIST_VALUE,
+            ],
+            self::OUTPUT => [
+                self::ONE_CC_COD_ELIGIBILITY_ATTRIBUTE_WHITELIST_TYPE,
+                self::ONE_CC_COD_ELIGIBILITY_ATTRIBUTE_WHITELIST_VALUE,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ],
+            self::SENSITIVE_HEADERS => [
+                self::ONE_CC_COD_ELIGIBILITY_ATTRIBUTE_WHITELIST_VALUE,
+            ],
+        ],
+
+        Type::ONE_CC_COD_ELIGIBILITY_ATTRIBUTE_BLACKLIST => [
+            self::INPUT => [
+                self::ONE_CC_COD_ELIGIBILITY_ATTRIBUTE_BLACKLIST_TYPE,
+                self::ONE_CC_COD_ELIGIBILITY_ATTRIBUTE_BLACKLIST_VALUE,
+            ],
+            self::OUTPUT => [
+                self::ONE_CC_COD_ELIGIBILITY_ATTRIBUTE_BLACKLIST_TYPE,
+                self::ONE_CC_COD_ELIGIBILITY_ATTRIBUTE_BLACKLIST_VALUE,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ],
+            self::SENSITIVE_HEADERS => [
+                self::ONE_CC_COD_ELIGIBILITY_ATTRIBUTE_BLACKLIST_VALUE,
+            ],
         ],
 
         Type::PAYMENT_LINK => [
@@ -4569,6 +4619,16 @@ class Header
             return;
         }
 
+        if ($type === Type::ONE_CC_COD_ELIGIBILITY_ATTRIBUTE_WHITELIST)
+        {
+            self::validateCODEligibilityAttributeWhitelistBulkHeaders($expectedHeaders, $actualHeaders);
+        }
+
+        if ($type === Type::ONE_CC_COD_ELIGIBILITY_ATTRIBUTE_BLACKLIST)
+        {
+            self::validateCODEligibilityAttributeBlacklistBulkHeaders($expectedHeaders, $actualHeaders);
+        }
+
         // For payouts, we do not want to match exact headers, because we are allowing some headers to be skipped.
         // Since some headers can be skipped, we are also allowing for rearrangement of headers
         // and hence there are no strict checks inside payout batch file header validations.
@@ -4878,6 +4938,86 @@ class Header
     public static function validateFulfillmentOrderUpdateBulkHeaders(array $expectedHeaders, array $actualHeaders)
     {
         $mandatoryHeaders = self::MANDATORY_HEADERS_FOR_FULFILLMENT_ORDER;
+
+        foreach ($actualHeaders as $actualHeader)
+        {
+            if (in_array($actualHeader, $mandatoryHeaders, true) === true)
+            {
+                // This will remove the header we just validated from the list of mandatory headers.
+                $mandatoryHeaders = array_diff($mandatoryHeaders, [$actualHeader]);
+            }
+        }
+
+        if (count($mandatoryHeaders) > 0)
+        {
+            $msg = 'Uploaded file is missing mandatory header(s) [%s]';
+
+            $msg = sprintf($msg, implode(', ',$mandatoryHeaders));
+
+            throw new BadRequestValidationFailureException($msg);
+        }
+
+        // Now make sure that all headers provided are part of our headers list.
+        foreach ($actualHeaders as $actualHeader)
+        {
+            if (in_array($actualHeader, $expectedHeaders, true) === false)
+            {
+                $msg = 'Uploaded file has has invalid header [%s]';
+
+                $msg = sprintf($msg, $actualHeader);
+
+                throw new BadRequestValidationFailureException($msg);
+            }
+
+            // This is required so that we throw an exception if the same header is repeated twice.
+            $expectedHeaders = array_diff($expectedHeaders, [$actualHeader]);
+        }
+
+    }
+
+    public static function validateCODEligibilityAttributeWhitelistBulkHeaders(array $expectedHeaders, array $actualHeaders)
+    {
+        $mandatoryHeaders = self::MANDATORY_HEADERS_FOR_ONE_CC_COD_ELIGIBILITY_ATTRIBUTE_WHITELIST;
+
+        foreach ($actualHeaders as $actualHeader)
+        {
+            if (in_array($actualHeader, $mandatoryHeaders, true) === true)
+            {
+                // This will remove the header we just validated from the list of mandatory headers.
+                $mandatoryHeaders = array_diff($mandatoryHeaders, [$actualHeader]);
+            }
+        }
+
+        if (count($mandatoryHeaders) > 0)
+        {
+            $msg = 'Uploaded file is missing mandatory header(s) [%s]';
+
+            $msg = sprintf($msg, implode(', ',$mandatoryHeaders));
+
+            throw new BadRequestValidationFailureException($msg);
+        }
+
+        // Now make sure that all headers provided are part of our headers list.
+        foreach ($actualHeaders as $actualHeader)
+        {
+            if (in_array($actualHeader, $expectedHeaders, true) === false)
+            {
+                $msg = 'Uploaded file has has invalid header [%s]';
+
+                $msg = sprintf($msg, $actualHeader);
+
+                throw new BadRequestValidationFailureException($msg);
+            }
+
+            // This is required so that we throw an exception if the same header is repeated twice.
+            $expectedHeaders = array_diff($expectedHeaders, [$actualHeader]);
+        }
+
+    }
+
+    public static function validateCODEligibilityAttributeBlacklistBulkHeaders(array $expectedHeaders, array $actualHeaders)
+    {
+        $mandatoryHeaders = self::MANDATORY_HEADERS_FOR_ONE_CC_COD_ELIGIBILITY_ATTRIBUTE_BLACKLIST;
 
         foreach ($actualHeaders as $actualHeader)
         {
