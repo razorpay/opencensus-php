@@ -1,5 +1,6 @@
 import Submerchant from 'merchant/models/Submerchant';
 import { createLog, getLog, getFile } from 'merchant/reducers/reports';
+import moment from 'moment';
 
 import { merge } from 'common/utils/immutable';
 import poll from 'common/utils/poll/longPoll';
@@ -53,8 +54,10 @@ export const downloadSubmerchants = (isPurePlatform = false, generated_by) => {
    * download submerchants uses the same service to get all the submerchants of the partner
    * Mentioned config_ids are the id of configs of those respective configurations (which will get us the list of submerchants)
    * For more info see the code of download report
+   *
+   * Config Ids updated- https://razorpay.slack.com/archives/C3Y0UA0CB/p1652774629607189?thread_ts=1650438618.881999&cid=C3Y0UA0CB
    */
-  const config_id = isPurePlatform ? 'config_C26ykx5qWFJq0N' : 'config_C26zkCd7EcdfTQ';
+  const config_id = isPurePlatform ? 'config_JWDlBNXBHpftdA' : 'config_JVte5nwrztAora';
 
   // fake params, since reporting service makes it mandatory
   // and they should be one month apart
@@ -67,6 +70,7 @@ export const downloadSubmerchants = (isPurePlatform = false, generated_by) => {
     end_time,
     config_id,
     generated_by,
+    // eslint-disable-next-line consistent-return
   }).then((logResponse) => {
     if (logResponse.data.id) {
       return poll({
@@ -100,7 +104,7 @@ const initialState = {
   error: null,
 };
 
-export default function (state = initialState, action) {
+export default function reducer(state = initialState, action) {
   switch (action.type) {
     case `${SUB_MERCHANT_FETCH_DETAILS}::PENDING`:
       return merge(state, {
