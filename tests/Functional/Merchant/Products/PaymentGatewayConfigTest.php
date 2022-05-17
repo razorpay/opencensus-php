@@ -144,6 +144,8 @@ class PaymentGatewayConfigTest extends OAuthTestCase
 
         $this->mockAndCaptureCountMetric(Metric::PRODUCT_CONFIG_FETCH_SUCCESS_TOTAL, $metricsMock, $metricCaptured, $expectedMetricData);
 
+        $this->storkMock->shouldReceive('optInStatusForWhatsapp')->once();
+
         $this->runRequestResponseFlow($testData);
 
         $this->assertTrue($metricCaptured);
@@ -169,6 +171,8 @@ class PaymentGatewayConfigTest extends OAuthTestCase
 
         $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products';
 
+        $this->storkMock->shouldReceive('optOutForWhatsapp')->once();
+
         $response = $this->runRequestResponseFlow($testData);
 
         $merchantProductId = $response['id'];
@@ -182,6 +186,9 @@ class PaymentGatewayConfigTest extends OAuthTestCase
         $expectedMetricData = $this->getMerchantProductMetricData('payment_gateway');
 
         $this->mockAndCaptureCountMetric(Metric::PRODUCT_CONFIG_UPDATE_SUCCESS_TOTAL, $metricsMock, $metricCaptured, $expectedMetricData);
+
+        // twice, since runRequestResponseFlow is called twice, and mockery is not closed between those
+        $this->storkMock->shouldReceive('optInForWhatsapp')->twice();
 
         $this->runRequestResponseFlow($testData);
 

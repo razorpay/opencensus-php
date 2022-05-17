@@ -170,7 +170,9 @@ class PaymentsGeneralConfig extends Base\Service
 
         $input = ['source' => 'pg.settings.config'];
 
-        $response[Util\Constants::WHATSAPP] = empty($this->userService->optInStatusForWhatsapp($input, $merchantUser)) === false;
+        $optInStatusResponse = $this->userService->optInStatusForWhatsapp($input, $merchantUser);
+
+        $response[Util\Constants::WHATSAPP] = $optInStatusResponse['consent_status'] ?? false;
 
         $response[Util\Constants::SMS] = $this->settlementService->getSettlementSmsNotificationStatus($merchant)['enabled'];
 
@@ -229,7 +231,7 @@ class PaymentsGeneralConfig extends Base\Service
 
             if ($value === true)
             {
-                $this->userService->optInStatusForWhatsapp($payload, $merchantUser);
+                $this->userService->optInForWhatsapp($payload, $merchantUser);
             }
             else
             {

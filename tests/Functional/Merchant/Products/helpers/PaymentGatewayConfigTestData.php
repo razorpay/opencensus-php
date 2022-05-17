@@ -218,7 +218,8 @@ return [
             'method'  => 'PATCH',
             'content' => [
                 'notifications'   => [
-                    'sms' => true
+                    'sms' => true,
+                    'whatsapp' => true
                 ],
                 'settlements'     => [
                     'account_number' => '051610100039258',
