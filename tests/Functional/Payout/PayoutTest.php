@@ -5382,6 +5382,41 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals($payout['fees'], $responsePayout['fees']);
     }
 
+    public function testStatusDetailsAtSameTime()
+    {
+        $this->testCreatePayout();
+        $payout = $this->getDbLastEntity('payout');
+
+        (new Payout\Core)->updateWithDetailsBeforeFtaRecon($payout, [
+            'source_type'      => 'payout',
+            'source_id'        => $payout->getId(),
+            'fta_status'       => 'initiated',
+            'channel'          => 'rbl',
+            'failure_reason'   => '',
+            'utr'              => 928337183,
+            'remarks'          => '',
+            'bank_status_code' => 'SUCCESS',
+            'status_details'   => [
+                'reason'     => 'bank_window_closed',
+                'parameters' => [
+                    'processed_by_time' => '1636472623',
+                ],
+            ],
+        ]);
+
+        (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
+            'fta_status'       => 'processed',
+            'failure_reason'   => null,
+            'bank_status_code' => null
+        ]);
+
+        $payoutArray =  $payout->toArrayPublic();
+        $this->assertEquals('payout_processed', $payoutArray['status_details']['reason']);
+        $this->assertEquals('Payout is processed and the money has been credited into the beneficiaries account.',
+                            $payoutArray['status_details']['description']);
+
+    }
+
     public function testSearchPayoutByPayoutStatusReason()
     {
         $this->testCreatePayout();

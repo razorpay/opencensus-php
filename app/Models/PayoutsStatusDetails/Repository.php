@@ -29,6 +29,16 @@ class Repository extends Base\Repository
         }
     }
 
+    public function fetchStatusDetailsFromStatusDetailsId(string $statusDetailsId)
+    {
+        $idColumn = $this->repo->payouts_status_details->dbColumn(Entity::ID);
+
+        return $this->newQuery()
+                    ->select(Table::PAYOUTS_STATUS_DETAILS . '.*')
+                    ->where($idColumn, $statusDetailsId)
+                    ->first();
+    }
+
     public function fetchPayoutStatusDetailsLatest(string $payoutId)
     {
         $payoutIdColumn = $this->repo->payouts_status_details->dbColumn(Entity::PAYOUT_ID);

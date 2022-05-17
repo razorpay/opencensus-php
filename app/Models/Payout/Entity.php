@@ -2444,25 +2444,37 @@ class Entity extends Base\PublicEntity
 
     public function setPublicStatusDetailsAttribute(array &$attributes)
     {
-        $statusDetails = (new PayoutsStatusDetails\Repository())->fetchPayoutStatusDetailsLatest($this->getId());
+            if ($this->getStatusDetailsId() === null)
+            {
+                $statusDetailsArray =
+                    [
+                        'reason'        => null,
+                        'description'   => null,
+                        'source'        => null,
+                    ];
+            }
 
-        if ($statusDetails !== null)
-        {
-            $source = $this->getSourceForStatusDetails($statusDetails);
-        }
-        else
-        {
-            $source = null;
-        }
+            else
+            {
+                $statusDetails = (new PayoutsStatusDetails\Repository())->fetchStatusDetailsFromStatusDetailsId($this->getStatusDetailsId());
 
-        $statusDetailsArray =
-            [
-                'reason'        => $statusDetails['reason'],
-                'description'   => $statusDetails['description'],
-                'source'        => $source,
-            ];
+                if ($statusDetails !== null)
+                {
+                    $source = $this->getSourceForStatusDetails($statusDetails);
+                }
+                else
+                {
+                    $source = null;
+                }
 
-        $attributes[self::STATUS_DETAILS] = $statusDetailsArray;
+                $statusDetailsArray =
+                    [
+                        'reason'        => $statusDetails['reason'],
+                        'description'   => $statusDetails['description'],
+                        'source'        => $source,
+                    ];
+            }
+            $attributes[self::STATUS_DETAILS] = $statusDetailsArray;
     }
 
     public function setPublicStatusSummaryAttribute(array &$attributes)
