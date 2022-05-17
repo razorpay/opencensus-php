@@ -4,6 +4,7 @@ namespace RZP\Models\Payment;
 
 use App;
 use Illuminate\Support\Str;
+use RZP\Constants\Mode;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
@@ -159,6 +160,52 @@ class TokenisationExperiment
                 $e,
                 null,
                 TraceCode::GLOBAL_CARD_PAYMENT_PROCESS_SPLITZ_ERROR
+            );
+        }
+
+        return false;
+    }
+
+    /**
+     * Splitz experiment - Ramp-up for creating a local token on the global
+     * customer in the payment create flow
+     *
+     * @param string $merchantId
+     * 
+     * @return bool
+     */
+    public function shouldCreateLocalTokenOnGlobalCustomer(string $merchantId): bool
+    {
+        try
+        {
+            $mode = $this->app['rzp.mode'] ?? '';
+
+            if($mode === Mode::TEST)
+            {
+                return true;
+            }
+
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.local_token_on_global_customer_experiment_id'),
+                'request_data'  => json_encode(['merchant_id' => $merchantId]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            if($variant === 'variant_on')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::LOCAL_TOKEN_ON_GLOBAL_CUSTOMER_SPLITZ_ERROR
             );
         }
 

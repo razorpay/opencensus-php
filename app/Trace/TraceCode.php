@@ -5842,6 +5842,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GLOBAL_CARD_PAYMENT_PROCESS_SPLITZ_ERROR    = 'GLOBAL_CARD_PAYMENT_PROCESS_SPLITZ_ERROR';
     const ISSUER_NETWORK_TYPE_RAZORX_EXPERIMENT_ERROR = 'ISSUER_NETWORK_TYPE_RAZORX_EXPERIMENT_ERROR';
 
+    // Dual vault tokenisation logs
+    public const LOCAL_TOKEN_ON_GLOBAL_CUSTOMER_SPLITZ_ERROR = 'LOCAL_TOKEN_ON_GLOBAL_CUSTOMER_SPLITZ_ERROR';
+
     //Experiment for account name validation for adding submerchants
     const SUBMERCHANT_ACCOUNT_NAME_VALIDATION_SPLITZ_ERROR   = 'SUBMERCHANT_ACCOUNT_NAME_VALIDATION_SPLITZ_ERROR';
     const SPLITZ_ERROR                                       = 'SPLITZ_ERROR';
