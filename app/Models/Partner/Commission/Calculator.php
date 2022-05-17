@@ -952,13 +952,16 @@ class Calculator extends Base\Core
     protected function getTracePayloadData(int $commissionFee, int $commissionTax, string $type): array
     {
         $tracePayLoad = [
-            'commission_fees' => $commissionFee,
-            'commission_tax'  => $commissionTax,
-            'context'         => $this->getTraceData(),
+            'commission_fees'   => $commissionFee,
+            'commission_tax'    => $commissionTax,
+            'context'           => $this->getTraceData(),
+            'pricingPlanType'   => $type,
+            'defaultPricingPlan'=> optional($this->getPartnerConfig())->getDefaultPlanId(),
         ];
 
         if ($type === Type::IMPLICIT)
         {
+            $tracePayLoad['pricingPlan']   = optional($this->getImplicitPricingPlan())->toArrayPublic();
             $tracePayLoad['merchant_fees'] = $this->getMerchantFee();
             $tracePayLoad['merchant_tax']  = $this->getMerchantTax();
 
@@ -967,6 +970,10 @@ class Calculator extends Base\Core
                 $tracePayLoad['partner_fees'] = $this->getPartnerFee();
                 $tracePayLoad['partner_tax']  = $this->getPartnerTax();
             }
+        }
+        else
+        {
+            $tracePayLoad['pricingPlan']   = optional($this->getExplicitPricingPlan())->toArrayPublic();
         }
 
         return $tracePayLoad;
