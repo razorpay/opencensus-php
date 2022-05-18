@@ -9,6 +9,7 @@ import {
   COMDEL_POPOVER_TEXT as comdelText,
   SUPPORT_POPOVER_TEXT as supportText,
 } from '../constants';
+import { getCommonSupportProperties } from 'merchant/components/Support/getCommonSupportProperties';
 
 @connect((state) => {
   return {
@@ -81,6 +82,7 @@ export default class SupportHeader extends Component {
               location: 'Help and Support',
               type: !isOpened ? 'open' : 'close',
               ...getCommonAnalyticsProperties(window.rzp_user),
+              ...getCommonSupportProperties(),
             },
           });
           onToggle(...e);

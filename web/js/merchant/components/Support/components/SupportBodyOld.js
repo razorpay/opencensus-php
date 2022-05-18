@@ -14,6 +14,7 @@ import ErrorBoundary, { Ranks, Teams, InlineFallbackComponent } from 'common/new
 import { Modal, ModalBody } from 'common/components/Modal';
 import getMobileDetect from 'common/utils/mobileDetect';
 import errorService from '@razorpay/universe-utils/errorService';
+import { getCommonSupportProperties } from 'merchant/components/Support/getCommonSupportProperties';
 
 const SupportSection = lazy(
   () => import('@razorpay/frontend-care'),
@@ -49,8 +50,8 @@ class SupportBody extends Component {
       actionName: 'clicked',
       screen: 'home page',
       properties: {
-        location: 'Help and Support',
         ...getCommonAnalyticsProperties(window.rzp_user),
+        ...getCommonSupportProperties(),
       },
     });
     trackSupportOptions('dashboard_guide');
@@ -64,6 +65,7 @@ class SupportBody extends Component {
       screen: 'home page',
       properties: {
         ...getCommonAnalyticsProperties(window.rzp_user),
+        ...getCommonSupportProperties(),
       },
     });
     const user = this.props.user;
@@ -132,14 +134,30 @@ class SupportBody extends Component {
       },
     };
     Promise.all([
-      merchantFetch(timingConfigParam).then((resp1) => {
-        if (resp1.success) {
-          this.setState({ timings: resp1.data });
+      merchantFetch(timingConfigParam).then((response) => {
+        if (response?.success) {
+          this.setState({ timings: response?.data });
         }
       }),
-      merchantFetch(clickToCallParam).then((resp2) => {
-        if (resp2.success) {
-          this.setState({ openClickToCall: resp2.data.is_eligible });
+      merchantFetch(clickToCallParam).then((response) => {
+        if (response?.success) {
+          this.setState({ openClickToCall: response?.data?.is_eligible }, () => {
+            const { user: { isFrontendCareActive, isClickToCallActive } = {} } = this.props;
+
+            const { openClickToCall } = this.state;
+
+            if (isFrontendCareActive && isClickToCallActive && openClickToCall) {
+              analyticsTrack({
+                objectName: 'Click to Call',
+                actionName: 'Initialised',
+                screen: 'home page',
+                properties: {
+                  ...getCommonAnalyticsProperties(window.rzp_user),
+                  ...getCommonSupportProperties(),
+                },
+              });
+            }
+          });
         }
       }),
     ]).catch((err) => console.log(err));
@@ -176,11 +194,9 @@ class SupportBody extends Component {
           actionName: 'clicked',
           screen: 'home page',
           properties: {
-            location: 'Help and Support',
             isChatbot: isChatbotLive,
-            pageUrl: window.location.href,
-            pathname: window.location.pathname,
             ...getCommonAnalyticsProperties(window.rzp_user),
+            ...getCommonSupportProperties(),
           },
         });
         // if notifications pending, then enable chat
@@ -223,6 +239,25 @@ class SupportBody extends Component {
         }
       },
     );
+  };
+
+  handleCareAnalytics = (payload) => {
+    if (!payload) {
+      return;
+    }
+    const { properties = {}, ...rest } = payload;
+    try {
+      analyticsTrack({
+        ...rest,
+        properties: {
+          ...properties,
+          ...getCommonAnalyticsProperties(window.rzp_user),
+          ...getCommonSupportProperties(),
+        },
+      });
+    } catch {
+      //
+    }
   };
 
   render() {
@@ -297,7 +332,7 @@ class SupportBody extends Component {
                 id: user.id,
                 contact_mobile: user?.user?.contact_mobile,
               }}
-              analyticsInstance={analyticsTrack}
+              analyticsInstance={this.handleCareAnalytics}
               // removing hash to support frontend care package
               module={careSupportSection.module?.replace('#', '')}
               initialData={careSupportSection.initialData}
@@ -325,8 +360,8 @@ class SupportBody extends Component {
                 actionName: 'clicked',
                 screen: 'home page',
                 properties: {
-                  location: 'Help and Support',
                   ...getCommonAnalyticsProperties(window.rzp_user),
+                  ...getCommonSupportProperties(),
                 },
               });
               handleClick('tickets');
@@ -352,6 +387,7 @@ class SupportBody extends Component {
                   screen: 'home page',
                   properties: {
                     ...getCommonAnalyticsProperties(window.rzp_user),
+                    ...getCommonSupportProperties(),
                   },
                 });
                 handleClick('schedule-call');
@@ -380,6 +416,7 @@ class SupportBody extends Component {
                   screen: 'home page',
                   properties: {
                     ...getCommonAnalyticsProperties(window.rzp_user),
+                    ...getCommonSupportProperties(),
                   },
                 });
                 handleClick('click-to-call');

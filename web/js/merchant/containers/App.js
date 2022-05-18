@@ -222,18 +222,6 @@ class App extends Component {
         this.setLiveTransactionDone(user);
         if (user.isChatbotLive) {
           initChatbot(user);
-          analyticsTrack({
-            objectName: 'chatbot',
-            actionName: 'initialised',
-            screen: 'home page',
-            properties: {
-              location: 'Help and Support',
-              pageUrl: window.location.href,
-              pathname: window.location.pathname,
-              activationStatus: window.rzp_user?.activation_status || '',
-              ...getCommonAnalyticsProperties(window.rzp_user),
-            },
-          });
         } else {
           setTimeout(() => {
             initChat(user);

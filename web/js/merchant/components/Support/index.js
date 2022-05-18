@@ -15,6 +15,8 @@ import { merchantFetch } from 'merchant/utils/ajax';
 import { COMDEL_URL } from './constants';
 import getMobileDetect from 'common/utils/mobileDetect';
 import SupportLoader from 'merchant/components/Support/components/Loader';
+import { getCommonSupportProperties } from 'merchant/components/Support/getCommonSupportProperties';
+
 const SupportBody = lazy(() => import('merchant/components/Support/components/SupportBody'));
 const SupportBodyOld = lazy(() => import('merchant/components/Support/components/SupportBodyOld'));
 @withRouter
@@ -83,10 +85,20 @@ export default class Support extends Component {
         });
       });
 
-    if (getMobileDetect().isWebView()) {
-      // eslint-disable-next-line react/no-did-mount-set-state
-      this.setState({ isWebView: true });
+    this.handleIsWebView();
+
+    if (this.props.user.isChatbotLive) {
+      analyticsTrack({
+        objectName: 'chatbot',
+        actionName: 'initialised',
+        screen: 'home page',
+        properties: {
+          ...getCommonAnalyticsProperties(window.rzp_user),
+          ...getCommonSupportProperties(),
+        },
+      });
     }
+
     //@NOTE: below lines will be uncommented with 100% live of new ui on webview
     // const shouldOpenSupportOnMount = this.props?.history?.location?.pathname?.includes(
     //   '/app-support',
@@ -95,6 +107,12 @@ export default class Support extends Component {
     //   this.handleToggle();
     // }
   }
+
+  handleIsWebView = () => {
+    if (getMobileDetect().isWebView()) {
+      this.setState({ isWebView: true });
+    }
+  };
 
   bindEvents = () => {
     //bind events for freshchat if available
