@@ -3520,35 +3520,55 @@ class Core extends Base\Core
         // Optimization: Do just one call to raven when input.medium = sms.
         $otp = $otp ?: $this->generateOtpFromRaven($input, $merchant, $user);
 
-        if (in_array($input[Entity::ACTION],Constants::SEND_SMS_VIA_STORK,true) === true)
+        try
         {
-            $smsPayload = $this->generateStorkSmsPayload($input,$merchant,$user);
+            if (in_array($input[Entity::ACTION], Constants::SEND_SMS_VIA_STORK, true) === true)
+            {
+                $smsPayload = $this->generateStorkSmsPayload($input, $merchant, $user);
 
-            $smsPayload['contentParams'] += [
-                'otp'      => $otp['otp'],
-                'validity' => Carbon::createFromTimestamp($otp['expires_at'], Timezone::IST)->format('H:i:s'),
-            ];
-
-            /** @var $stork \RZP\Services\Stork */
-            $stork = $this->app['stork_service'];
-
-            $stork->sendSms($this->mode,$smsPayload);
-        }
-        else
-        {
-            $payload = [
-                'receiver' => $user->getContactMobile(),
-                'source'   => "api.user.{$input['action']}",
-                'template' => 'sms.user.' . $input[Entity::ACTION],
-                'params'   => [
-                    'otp'      => $otp['otp'],
+                $smsPayload['contentParams'] += [
+                    'otp' => $otp['otp'],
                     'validity' => Carbon::createFromTimestamp($otp['expires_at'], Timezone::IST)->format('H:i:s'),
-                ],
-            ];
+                ];
 
-            $payload['params'] += $this->getExtraRavenSmsPayload($input, $merchant);
+                /** @var $stork \RZP\Services\Stork */
+                $stork = $this->app['stork_service'];
 
-            $this->app->raven->sendSms($payload);
+                $stork->sendSms($this->mode, $smsPayload);
+            }
+            else
+            {
+                $payload = [
+                    'receiver' => $user->getContactMobile(),
+                    'source' => "api.user.{$input['action']}",
+                    'template' => 'sms.user.' . $input[Entity::ACTION],
+                    'params' => [
+                        'otp' => $otp['otp'],
+                        'validity' => Carbon::createFromTimestamp($otp['expires_at'], Timezone::IST)->format('H:i:s'),
+                    ],
+                ];
+
+                $payload['params'] += $this->getExtraRavenSmsPayload($input, $merchant);
+                $this->app->raven->sendSms($payload);
+            }
+        }
+        catch (\Throwable $e)
+        {
+            switch ($e->getCode())
+            {
+                case ErrorCode::BAD_REQUEST_RESOURCE_EXHAUSTED:
+                case ErrorCode::BAD_REQUEST_MAXIMUM_SMS_LIMIT_REACHED:
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_MAXIMUM_SMS_LIMIT_REACHED,
+                        null,
+                        [
+                            "internal_error_code" => ErrorCode::BAD_REQUEST_MAXIMUM_SMS_LIMIT_REACHED
+                        ],
+                        $e->getMessage()
+                    );
+                default:
+                    throw $e;
+            }
         }
 
         return array_only($otp, 'token');

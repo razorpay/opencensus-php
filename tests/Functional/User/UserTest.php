@@ -2940,6 +2940,53 @@ class UserTest extends TestCase
         $this->startTest();
     }
 
+    public function testFailedLogin2faOtpLimitExceeds()
+    {
+        $user = $this->fixtures->create('user', [
+            'password'                => 'hello123',
+            'second_factor_auth'      => false,
+            'contact_mobile'          => '9999999999',
+            'contact_mobile_verified' => true,
+        ]);
+
+        $merchant = $this->fixtures->create('merchant', [
+            'second_factor_auth' => true,
+        ]);
+
+        $mappingData = [
+            'user_id'     => $user['id'],
+            'merchant_id' => $merchant['id'],
+            'role'        => 'owner',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = [
+            'email'    => $user['email'],
+            'password' => 'hello123',
+            'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $ravenMock = $this->getMockBuilder(Raven::class)
+            ->setConstructorArgs([$this->app])
+            ->onlyMethods(['sendOtp', 'generateOtp'])
+            ->getMock();
+
+        $this->app->instance('raven', $ravenMock);
+
+        $this->app['raven']->method('sendOtp')->willThrowException(
+            new BadRequestException(ErrorCode::BAD_REQUEST_RESOURCE_EXHAUSTED)
+        );
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+    }
+
     public function testLoginWithAccountLockedAndWith2Fa()
     {
         $this->enableRazorXTreatmentForRazorX();
