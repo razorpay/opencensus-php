@@ -85,7 +85,6 @@ class Validator extends Base\Validator
         ConfigKey::HITACHI_NEW_URL_ENABLED              => 'filled|boolean',
         ConfigKey::CARD_PAYMENT_SERVICE_ENABLED         => 'filled|boolean',
         ConfigKey::NB_PLUS_SERVICE_ENABLED              => 'filled|boolean',
-        ConfigKey::REDIRECT_TO_ZESTMONEY                => 'filled|boolean',
         ConfigKey::PG_ROUTER_SERVICE_ENABLED            => 'filled|boolean',
         ConfigKey::PAYSECURE_BLACKLISTED_MCCS           => 'filled|array',
         ConfigKey::RX_SLA_FOR_IMPS_PAYOUT               => 'filled|integer',

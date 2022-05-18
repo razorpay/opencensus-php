@@ -4050,6 +4050,7 @@ class Gateway
             self::CARDLESS_EMI => [
                 CardlessEmi::WALNUT369,
                 CardlessEmi::SEZZLE,
+                CardlessEmi::ZESTMONEY,
             ],
             self::PAYLATER     => [
                 Paylater::LAZYPAY,

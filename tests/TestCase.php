@@ -230,11 +230,6 @@ class TestCase extends IlluminateTestCase
         (new Admin\Service)->setConfigKeys([Admin\ConfigKey::NB_PLUS_SERVICE_ENABLED => 0]);
     }
 
-    public function disableRedirectToZestmoneyConfig()
-    {
-        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::REDIRECT_TO_ZESTMONEY => 0]);
-    }
-
     public function enablePgRouterConfig()
     {
         (new Admin\Service())->setConfigKeys([Admin\ConfigKey::PG_ROUTER_SERVICE_ENABLED => 1]);

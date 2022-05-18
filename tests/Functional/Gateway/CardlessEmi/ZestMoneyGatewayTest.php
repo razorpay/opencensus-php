@@ -10,7 +10,8 @@ class ZestMoneyGatewayTest extends CardlessEmiGatewayTest
     {
         parent::setUp();
 
-        $this->disableRedirectToZestmoneyConfig();
+        //since zestmoney is moved to nbplus
+        $this->markTestSkipped();
 
         $this->sharedTerminal = $this->fixtures->create('terminal:cardlessEmiZestMoneyTerminal');
 
