@@ -12,6 +12,7 @@ import Reports from './Reports';
 import Home from './Home';
 import ErrorBoundary, { Teams } from 'common/new-ui/ErrorBoundary';
 import usePartnerPageNPS from 'merchant/views/PartnerDashboard/SubMerchant/utils/usePartnerPageNPS';
+import useTrackPartnerExperiments from 'merchant/views/PartnerDashboard/SubMerchant/utils/useTrackPartnerExperiments';
 
 const PartnerShowWhenRoute = showWhenRoutex(store, '/partners/submerchants');
 
@@ -20,7 +21,7 @@ export default function PartnerDashboard() {
   const isPartnershipFUX = user?.isPartnershipFUX || false;
 
   usePartnerPageNPS('zWemM3SK');
-
+  useTrackPartnerExperiments(user);
   useEffect(() => {
     if (isPartnershipFUX) {
       document.body.style.backgroundColor = '#eaedff';
