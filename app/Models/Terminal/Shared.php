@@ -26,6 +26,7 @@ class Shared
     const HDFC_RAZORPAY_TERMINAL             = '1000HdfcShared';
     const MOBIKWIK_RAZORPAY_TERMINAL         = '1000MobiKwikTl';
     const NETBANKING_HDFC_TERMINAL           = '100NbHdfcTrmnl';
+    const NETBANKING_HDFC_CRP_TERMINAL       = '100NbHdfcCrpTl';
     const NETBANKING_BOB_TERMINAL            = '100NbBbdaTrmnl';
     const NETBANKING_VIJAYA_TERMINAL         = '100NbVijbTrmnl';
     const NETBANKING_CORPORATION_TERMINAL    = '100NbCorpTrmnl';

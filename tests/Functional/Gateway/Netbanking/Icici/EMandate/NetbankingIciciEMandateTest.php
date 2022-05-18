@@ -61,6 +61,8 @@ class NetbankingIciciEMandateTest extends TestCase
             'account_type'      => 'savings',
         ];
 
+        $this->markTestSkipped('this flow is depricated and is moved to nbplus service');
+
         $this->mockCardVault();
     }
 

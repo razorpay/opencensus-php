@@ -29,6 +29,8 @@ class NetbankingIciciRefundFileTest extends TestCase
         parent::setUp();
 
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_netbanking_icici_terminal');
+
+        $this->markTestSkipped('this flow is depricated and is moved to nbplus service');
     }
 
     public function testNetbankingIciciRefundFile()

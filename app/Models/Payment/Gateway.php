@@ -4025,6 +4025,7 @@ class Gateway
             self::NETBANKING_CANARA,
             self::NETBANKING_DBS,
             self::INGENICO,
+            self::NETBANKING_ICICI,
         ];
 
         $isRouted = in_array($gateway, $gateways, true);

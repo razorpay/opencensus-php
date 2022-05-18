@@ -33,6 +33,8 @@ class NetbankingIciciGatewayTest extends TestCase
         $this->setMockGatewayTrue();
 
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_netbanking_icici_terminal');
+
+        $this->markTestSkipped('This test is depricated and moved to nbplus service');
     }
 
     public function testPayment()

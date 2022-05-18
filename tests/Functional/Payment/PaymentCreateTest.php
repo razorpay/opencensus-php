@@ -788,7 +788,7 @@ class PaymentCreateTest extends TestCase
 
     public function testCoprotoForMissingBankAccountDetailsForFirstRecurring()
     {
-        $payment = $this->setupEmandateAndGetPaymentRequest('ICIC');
+        $payment = $this->setupEmandateAndGetPaymentRequest('UTIB');
 
         unset($payment['notes']);
 
@@ -821,7 +821,7 @@ class PaymentCreateTest extends TestCase
 
     public function testCoprotoForMissingBankAccountDetailsForSecondRecurring()
     {
-        $payment = $this->setupEmandateAndGetPaymentRequest('ICIC');
+        $payment = $this->setupEmandateAndGetPaymentRequest('UTIB');
 
         $payment['bank_account'] = [
             'account_number' => '12812891982',
@@ -848,7 +848,7 @@ class PaymentCreateTest extends TestCase
         $this->assertArrayHasKey('razorpay_payment_id', $response);
         $paymentEntity = $this->getLastEntity('payment', true);
 
-        $this->assertEquals('netbanking_icici', $paymentEntity['gateway']);
+        $this->assertEquals('netbanking_axis', $paymentEntity['gateway']);
     }
 
     public function testRecurringTokenForEmandate()

@@ -1041,14 +1041,14 @@ class TerminalSelectionTest extends TestCase
               'merchant_id' => Merchant\Account::TEST_ACCOUNT,
               'network_category' => 'mutual_funds']);
 
-        $this->fixtures->create('terminal:shared_netbanking_icici_terminal');
+        $this->fixtures->create('terminal:shared_netbanking_hdfc_terminal');
 
         $this->fixtures->create('gateway_rule', [
             'method'           => 'netbanking',
             'merchant_id'      => '100000Razorpay',
             'gateway'          => 'billdesk',
             'category2'        => 'mutual_funds',
-            'issuer'           => 'ICIC',
+            'issuer'           => 'HDFC',
             'type'             => 'filter',
             'filter_type'      => 'reject',
             'shared_terminal'  => '0',
@@ -1063,10 +1063,10 @@ class TerminalSelectionTest extends TestCase
         $this->assertEquals('DrctNbBdkTmnl3', $payment1['terminal_id']);
 
         $payment = $this->getDefaultNetbankingPaymentArray();
-        $payment['bank'] = 'ICIC';
+        $payment['bank'] = 'HDFC';
         $this->doAuthAndCapturePayment($payment);
         $payment1 = $this->getLastEntity('payment', true);
-        $this->assertEquals('100NbIciciTmnl', $payment1['terminal_id']);
+        $this->assertEquals('100NbHdfcTrmnl', $payment1['terminal_id']);
     }
 
     public function testHousingMerchantTerminalSelection()
@@ -1087,14 +1087,14 @@ class TerminalSelectionTest extends TestCase
               'merchant_id' => Merchant\Account::TEST_ACCOUNT,
               'network_category' => 'mutual_funds']);
 
-        $this->fixtures->create('terminal:shared_netbanking_icici_terminal');
+        $this->fixtures->create('terminal:shared_netbanking_hdfc_terminal');
 
         $this->fixtures->create('gateway_rule', [
             'method'           => 'netbanking',
             'merchant_id'      => '100000Razorpay',
             'gateway'          => 'billdesk',
             'category2'        => 'housing',
-            'issuer'           => 'ICIC',
+            'issuer'           => 'HDFC',
             'type'             => 'filter',
             'filter_type'      => 'reject',
             'group'            => 'billdesk_category_filter',
@@ -1102,10 +1102,10 @@ class TerminalSelectionTest extends TestCase
         ]);
 
         $payment = $this->getDefaultNetbankingPaymentArray();
-        $payment['bank'] = 'ICIC';
+        $payment['bank'] = 'HDFC';
         $this->doAuthAndCapturePayment($payment);
         $payment1 = $this->getLastEntity('payment', true);
-        $this->assertEquals('100NbIciciTmnl', $payment1['terminal_id']);
+        $this->assertEquals('100NbHdfcTrmnl', $payment1['terminal_id']);
     }
 
     public function testInsuranceMerchantTerminalSelection()
@@ -1219,18 +1219,18 @@ class TerminalSelectionTest extends TestCase
     public function testCorporateBankTerminalSelection()
     {
         $this->fixtures->create('terminal:billdesk_terminal', ['corporate' => 1]);
-        $this->fixtures->create('terminal:shared_netbanking_icici_corp_terminal', ['merchant_id' => '10000000000000']);
+        $this->fixtures->create('terminal:shared_netbanking_hdfc_corp_terminal', ['merchant_id' => '10000000000000']);
         $this->fixtures->merchant->addFeatures('corporate_banks');
 
         $payment = $this->getDefaultNetbankingPaymentArray();
 
         // Amount filter should have rejected the housing terminal
-        $payment['bank'] = 'ICIC_C';
+        $payment['bank'] = 'HDFC_C';
 
         $this->doAuthAndCapturePayment($payment);
         $payment1 = $this->getLastEntity('payment', true);
 
-        $this->assertEquals('100NbIcicCrpTl', $payment1['terminal_id']);
+        $this->assertEquals('100NbHdfcCrpTl', $payment1['terminal_id']);
     }
 
     public function testMccFilterWithSharedCategoryTerminal()

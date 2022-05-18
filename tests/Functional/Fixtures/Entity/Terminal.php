@@ -2596,6 +2596,18 @@ class Terminal extends Base
         return $this->createSharedNetbankingIciciTerminal($attributes);
     }
 
+    public function createSharedNetbankingHdfcCorpTerminal(array $attributes = [])
+    {
+        $defaultValues = [
+            'id'                => Shared::NETBANKING_HDFC_CRP_TERMINAL,
+            'corporate'         => 1,
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createSharedNetbankingHdfcTerminal($attributes);
+    }
+
     public function createSharedEmandateIciciTerminal(array $attributes = [])
     {
         $defaultValues = [
