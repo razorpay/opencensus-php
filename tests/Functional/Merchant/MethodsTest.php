@@ -1121,7 +1121,59 @@ class MethodsTest extends TestCase
 
         $this->assertEquals(1, $merchantMethods['apps']['poli']);
     }
+    public function testEnableSofortForMerchant()
+    {
+        $request = [
+            'method'  => 'PUT',
+            'url'     => '/merchants/10000000000000/methods',
+            'content' => [
+                'apps' => [
+                    'sofort'  => 1,
+                ],
+            ] ,
+        ];
 
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
+
+        $admin = $this->ba->getAdmin();
+
+        $admin->merchants()->attach('10000000000000');
+
+        $this->ba->adminAuth();
+
+        $merchantMethods = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(1, $merchantMethods['apps']['sofort']);
+    }
+
+    public function testEnableGiropayForMerchant()
+    {
+        $request = [
+            'method'  => 'PUT',
+            'url'     => '/merchants/10000000000000/methods',
+            'content' => [
+                'apps' => [
+                    'giropay'  => 1,
+                ],
+            ] ,
+        ];
+
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
+
+        $admin = $this->ba->getAdmin();
+
+        $admin->merchants()->attach('10000000000000');
+
+        $this->ba->adminAuth();
+
+        $merchantMethods = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(1, $merchantMethods['apps']['giropay']);
+    }
     public function testEnableOfflineMethod()
     {
         $this->fixtures->merchant->disableAllMethods('10000000000000');

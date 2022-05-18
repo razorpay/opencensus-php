@@ -3097,7 +3097,7 @@ class DatabaseSeeder extends Seeder
                 'card'                   => '0',
                 'netbanking'             => '0',
                 'app'                    => '1',
-                'enabled_apps'           => '["trustly","poli"]',
+                'enabled_apps'           => '["trustly","poli","sofort","giropay"]',
                 'gateway_merchant_id'    => 'gateway_merchant_id',
                 'gateway_secure_secret'  => Crypt::encrypt('gateway_secure_secret'),
                 'gateway_secure_secret2' => Crypt::encrypt('gateway_secure_secret2'),

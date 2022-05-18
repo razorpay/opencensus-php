@@ -4633,7 +4633,7 @@ class Terminal extends Base
             'gateway_secure_secret2' => 'emerchantpay_secret2',
             'gateway_terminal_id'    => 'emtrustly',
             'mode'                   => 3,
-            'enabled_apps'           => ['trustly','poli'],
+            'enabled_apps'           => ['trustly','poli','sofort','giropay'],
         ];
 
         $attributes = array_merge($attributes, $override);

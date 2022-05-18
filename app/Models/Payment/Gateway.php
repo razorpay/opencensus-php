@@ -154,6 +154,8 @@ class Gateway
     const TRUSTLY            = 'trustly';
     const EMERCHANTPAY       = 'emerchantpay';
     const POLI               = 'poli';
+    const SOFORT             = 'sofort';
+    const GIROPAY            = 'giropay';
 
 
     const ACQUIRER_HDFC         = 'hdfc';
@@ -408,6 +410,8 @@ class Gateway
     const ADDRESS_REQUIRED_APPS= [
         self::TRUSTLY,
         self::POLI,
+        self::SOFORT,
+        self::GIROPAY,
     ];
 
     /**
@@ -417,6 +421,8 @@ class Gateway
     const INTERNATIONAL_ENABLED_APPS= [
         self::TRUSTLY,
         self::POLI,
+        self::SOFORT,
+        self::GIROPAY,
     ];
 
     /**
@@ -426,6 +432,8 @@ class Gateway
     const DCC_REQUIRED_APPS= [
         self::TRUSTLY,
         self::POLI,
+        self::SOFORT,
+        self::GIROPAY,
     ];
 
     /**
@@ -436,8 +444,10 @@ class Gateway
      */
 
     const CURRENCIES_SUPPORTED_BY_APPS = [
-        self::TRUSTLY => [Currency::EUR,Currency::GBP],
-        self::POLI => [Currency::AUD]
+        self::TRUSTLY   => [Currency::EUR,Currency::GBP],
+        self::POLI      => [Currency::AUD],
+        self::SOFORT    => [Currency::EUR],
+        self::GIROPAY   => [Currency::EUR],
     ];
 
     const REFUND_NOT_SUPPORTED_APPS = [
@@ -2668,7 +2678,9 @@ class Gateway
     public static $internationalGateways = [
         Gateway::EMERCHANTPAY,
         Gateway::TRUSTLY,
-        Gateway::POLI
+        Gateway::POLI,
+        Gateway::SOFORT,
+        Gateway::GIROPAY,
     ];
 
     /**

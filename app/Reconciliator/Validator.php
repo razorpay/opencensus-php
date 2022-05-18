@@ -110,7 +110,7 @@ class Validator extends Base\Core
         RequestProcessor\Base::CARDLESS_EMI_ZESTMONEY  => ["/Settlement_RazorpayPG_[0-9]{2}-[0-9]{2}-20[0-9]{2}/"],
         RequestProcessor\Base::NETBANKING_BDBL    => [""],
         RequestProcessor\Base::NETBANKING_UCO     => [""],
-        RequestProcessor\Base::EMERCHANTPAY       => ["/Settlement Razorpay Software Private Ltd (Trustly|Poli) (EUR|GBP|AUD) [0-9]{2}-(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-20[0-9]{2}/"],
+        RequestProcessor\Base::EMERCHANTPAY       => ["/Settlement Razorpay Software Private Ltd (Trustly|Poli|Sofort|Giropay) (EUR|GBP|AUD) [0-9]{2}-(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-20[0-9]{2}/"],
     ];
 
     const GATEWAY_BODY_REGEX = [
