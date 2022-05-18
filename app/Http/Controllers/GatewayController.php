@@ -189,6 +189,18 @@ class GatewayController extends Controller
     {
         $gateway = $this->app['gateway']->gateway($gatewayDriver);
 
+        if ($this->shouldSkipUpiAirtelRefundCallback($gatewayDriver, $input) === true)
+        {
+            $this->trace->info(TraceCode::MISC_TRACE_CODE, [
+                'gateway'   => $gatewayDriver,
+                'message'   => 'Refund Callback',
+            ]);
+
+            return [
+                'success' => true,
+            ];
+        }
+
         $input = $this->preProcessServerCallback($gateway, $input, $gatewayDriver);
 
         if ((isset($input['upi_mandate']) === true) and
@@ -217,16 +229,6 @@ class GatewayController extends Controller
             {
                 return $redirect;
             }
-        }
-
-        if ($this->isUpiRefundCallback($gatewayDriver, $input) === true)
-        {
-            $this->trace->info(TraceCode::MISC_TRACE_CODE, [
-                'gateway'   => $gatewayDriver,
-                'message'   => 'Refund Callback',
-            ]);
-
-            return $gateway->postProcessServerCallback($input);
         }
 
         $paymentId = $gateway->getPaymentIdFromServerCallback($input, $gatewayDriver);
@@ -1672,7 +1674,7 @@ class GatewayController extends Controller
     }
 
     /**
-     * Returns true if the callback is an UPI refund callback
+     * Returns true if the callback is a UPI Airtel Refund Callback
      * i.e. payer VPA handle is a merchant's VPA
      * and payee VPA handle is not a merchant's VPA
      * and the transaction ID is of length 14 (refund ID)
@@ -1682,20 +1684,20 @@ class GatewayController extends Controller
      *
      * @return bool
      */
-    protected function isUpiRefundCallback($gatewayDriver, $input)
+    protected function shouldSkipUpiAirtelRefundCallback($gatewayDriver, $input): bool
     {
-        switch ($gatewayDriver)
+        if ($gatewayDriver !== Gateway::UPI_AIRTEL)
         {
-            case Gateway::UPI_AIRTEL:
-                $payerVpa = $input['payerVPA'] ?? '';
-                $payeeVpa = $input['payeeVPA'] ?? '';
-
-                return ((str_ends_with($payerVpa, '@' . ProviderCode::MAIRTEL) === true) and
-                    (str_ends_with($payeeVpa, '@' . ProviderCode::MAIRTEL) === false) and
-                    (strlen($input['hdnOrderID']) === 14));
-
-            default:
-                return false;
+            return false;
         }
+
+        $inputArray = json_decode($input, true);
+
+        $payerVpa = $inputArray['payerVPA'] ?? '';
+        $payeeVpa = $inputArray['payeeVPA'] ?? '';
+
+        return ((str_ends_with($payerVpa, '@' . ProviderCode::MAIRTEL) === true) and
+            (str_ends_with($payeeVpa, '@' . ProviderCode::MAIRTEL) === false) and
+            (strlen($inputArray['hdnOrderID'] ?? '') === 14));
     }
 }
