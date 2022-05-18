@@ -27,6 +27,7 @@ const COUNT_TO_SHOW_MTU_OFFER = 5;
 const OffersForYou = ({
   closeModals,
   openModals,
+  loading,
   tracking,
   exclusive_offers,
   canShowOnboardingOffers,
@@ -44,9 +45,9 @@ const OffersForYou = ({
   const [isStopped, setIsStopped] = useState(!showAnimation);
 
   useEffect(() => {
-    if (!canShowOnboardingOffers) {
+    if (!canShowOnboardingOffers && !loading) {
       const eventName = 'merchant_dashboard.display_offer_for_you';
-      const id = user?.isGSExclusiveOfferEnabled ? exclusive_offers?.id : getCampaignID();
+      const id = exclusive_offers?.id ? exclusive_offers.id : getCampaignID();
       tracking.trackEvent(
         window.rzpQ.merchantActions().success(eventName, {
           ID: id,
@@ -57,7 +58,7 @@ const OffersForYou = ({
     }
     if (!(offersForYouState === 'animationShown' || offersForYouState === 'hasAppliedCA'))
       LocalStorageService.setItem('offers_for_you_state', 'animationShown');
-  }, []);
+  }, [loading]);
 
   const showMTUOffer = (isButtonClicked = false) => {
     openModals({
@@ -110,6 +111,12 @@ const OffersForYou = ({
             ...getCommonAnalyticsProperties(window.rzp_user),
           },
         });
+      } else if (!loading && exclusive_offers?.id) {
+        openModals({
+          component: <ExclusiveOffer />,
+          size: 'xlarge',
+          className: 'GSExclusiveOffer--Modal',
+        });
       } else if (user.isProjectMoonshineEnabled) {
         openModals({
           component: (
@@ -147,12 +154,6 @@ const OffersForYou = ({
               ? 'Keystone--Modal'
               : 'RazorpayXNitroAnnouncement--Modal',
         });
-      } else if (user.isGSExclusiveOfferEnabled) {
-        openModals({
-          component: <ExclusiveOffer />,
-          size: 'xlarge',
-          className: 'GSExclusiveOffer--Modal',
-        });
       } else {
         openModals({
           component: (
@@ -171,7 +172,7 @@ const OffersForYou = ({
 
     tracking.trackEvent(
       window.rzpQ.merchantActions().initiated('merchant_dashboard.click_offer_for_you', {
-        ID: user.isGSExclusiveOfferEnabled ? exclusive_offers?.id : getCampaignID(),
+        ID: exclusive_offers?.id ? exclusive_offers.id : getCampaignID(),
         flow_type: user.isPartOfNeostone ? 'self_serve' : 'sales_led',
       }),
     );

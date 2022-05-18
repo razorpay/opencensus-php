@@ -47,7 +47,7 @@ const GrowthServiceCenterCTAModal = ({
       window.rzpQ.merchantActions().initiated('merchant_dashboard.click_form_cta1', {
         cta_text: label,
         pageUrl: window.location.href,
-        Campaign_ID: id,
+        id,
       }),
     );
   };
@@ -55,7 +55,7 @@ const GrowthServiceCenterCTAModal = ({
   const trackCTAClickAndSave = (id, label) => {
     sendDataToSalesForce(
       {
-        Campaign_ID: id,
+        id,
         product_name: gs_modals?.product_name,
       },
       user,
@@ -69,7 +69,7 @@ const GrowthServiceCenterCTAModal = ({
       window.rzpQ.merchantActions().initiated('merchant_dashboard.click_form_cta1', {
         cta_text: label,
         pageUrl: window.location.href,
-        Campaign_ID: id,
+        id,
       }),
     );
   };

@@ -53,7 +53,7 @@ const initialState = {
     banners: [],
   },
   exclusive_offers: {
-    loading: false,
+    loading: true,
     exclusive_offers: {},
   },
   banner_carousel_items: {
@@ -91,9 +91,10 @@ export const fetchCarouselBanner = ({ fromWhere = 'home' }) => {
 
 export const fetchExclusiveOffer = ({ fromWhere = 'home' }) => {
   const growthService = new GrowthService();
+  const payload = growthService.getExclusiveOfferModal(fromWhere);
   return {
     type: FETCH_EXCLUSIVE_OFFER,
-    payload: growthService.getExclusiveOfferModal(fromWhere),
+    payload,
   };
 };
 

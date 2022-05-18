@@ -33,7 +33,7 @@ const ExclusiveOffer = ({ tracking, loading, exclusive_offers, user, closeModal,
       window.rzpQ.merchantActions().initiated('merchant_dashboard.click_form_cta1', {
         cta_text: label,
         pageUrl: window.location.href,
-        Campaign_ID: id,
+        id,
       }),
     );
   };
@@ -41,7 +41,7 @@ const ExclusiveOffer = ({ tracking, loading, exclusive_offers, user, closeModal,
   const trackCTAClickAndSave = (id, label) => {
     sendDataToSalesForce(
       {
-        Campaign_ID: id,
+        id,
         product_name: exclusive_offers?.product_name,
       },
       user,
@@ -55,7 +55,7 @@ const ExclusiveOffer = ({ tracking, loading, exclusive_offers, user, closeModal,
       window.rzpQ.merchantActions().initiated('merchant_dashboard.click_form_cta1', {
         cta_text: label,
         pageUrl: window.location.href,
-        Campaign_ID: id,
+        id,
       }),
     );
   };
