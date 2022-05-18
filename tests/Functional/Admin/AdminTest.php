@@ -2212,4 +2212,38 @@ class AdminTest extends TestCase
         $this->assertArrayNotHasKey('risk_threshold', $merchant);
 
     }
+
+    public function testBulkAssignRole()
+    {
+        $admin = $this->fixtures->create('admin', [
+            'email' => 'testadmin@rzp.com',
+            Admin\Entity::ORG_ID => '100000razorpay',
+        ]);
+
+        $this->fixtures->create('admin_token', [
+            'id'        => 'AdminToken1234',
+            'token'     => Hash::make('secondToken'),
+            'admin_id'  => $admin->getId(),
+        ]);
+
+        $dummyGrp = $this->fixtures->create('group', ['org_id' => '100000razorpay']);
+        $admin->groups()->sync([$dummyGrp->getId()]);
+
+        $bulkRolePerm = $this->fixtures->create('permission',[
+            'name'   => Permission::ADMIN_BULK_ASSIGN_ROLE
+        ]);
+        $admin->roles()->sync([Org::MANAGER_ROLE]);
+        $admin->roles()->first()->permissions()->attach($bulkRolePerm->getId());
+
+        $checkerRole = Role\Entity::getSignedId(Org::CHECKER_ROLE);
+        $this->testData[__FUNCTION__]['request']['content']['roles'] = (array) $checkerRole;
+        $this->testData[__FUNCTION__]['request']['content']['emails'] = (array) $admin->getEmail();
+
+        $this->ba->adminAuth('test', 'secondTokenAdminToken1234', Org::RZP_ORG_SIGNED);
+        $this->startTest();
+
+        $adminRoles = $admin->roles()->pluck('id');
+        $this->assertEquals(2, count($adminRoles));
+        $this->assertEquals([Org::CHECKER_ROLE, Org::MANAGER_ROLE], $adminRoles->toArray());
+    }
 }

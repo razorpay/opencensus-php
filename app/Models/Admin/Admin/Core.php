@@ -590,4 +590,18 @@ class Core extends Base\Core
     }
 
 
+    public function addRoles(Entity $admin, array $roleIDs) : Entity
+    {
+        $this->trace->info(TraceCode::ADMIN_ADD_ROLES_REQUEST,
+            [
+                'action'      => 'add_roles_to_admin',
+                'admin_email' => $admin->getEmail(),
+                'role_ids'    => $roleIDs,
+            ]
+        );
+
+        $this->repo->sync($admin, Entity::ROLES, $roleIDs, false);
+        return $admin;
+    }
+
 }

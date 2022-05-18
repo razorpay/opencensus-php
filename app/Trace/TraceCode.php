@@ -2797,11 +2797,14 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ADMIN_LOGIN_2FA_ACCOUNT_LOCKED                         = 'ADMIN_LOGIN_2FA_ACCOUNT_LOCKED';
     const VERIFY_2FA_OTP_EMAIL_FOR_ACTION_FAILED                 = 'VERIFY_2FA_OTP_EMAIL_FOR_ACTION_FAILED';
     const ADMINS_VERIFY_OTP_FOR_ACTION                           = 'ADMINS_VERIFY_OTP_FOR_ACTION';
-    const RESPONSE                                                 = 'RESPONSE';
-    const PAYLOAD                                                 = 'PAYLOAD';
-    const OTP                                                 = 'OTP';
+    const RESPONSE                                               = 'RESPONSE';
+    const PAYLOAD                                                = 'PAYLOAD';
+    const OTP                                                    = 'OTP';
     const ADMIN_ACCOUNT_LOCK_UNLOCK_ACTION                       = 'ADMIN_ACCOUNT_LOCK_UNLOCK_ACTION';
     const ADMIN_SEND_OTP_FOR_ACTION                              = 'ADMIN_SEND_OTP_FOR_ACTION';
+    const ADMIN_BULK_ASSIGN_ROLE                                 = 'ADMIN_BULK_ASSIGN_ROLE';
+    const ADMIN_BULK_ASSIGN_ROLE_EXCEPTION                       = 'ADMIN_BULK_ASSIGN_ROLE_EXCEPTION';
+    const ADMIN_ADD_ROLES_REQUEST                                = 'ADMIN_ADD_ROLES_REQUEST';
 
     // Trace code for Invitation
     const INVITATION_CREATE                                     = 'INVITATION_CREATE';

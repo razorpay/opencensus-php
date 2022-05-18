@@ -1890,4 +1890,22 @@ return [
             'status_code' => 200,
         ],
     ],
+
+    'testBulkAssignRole' => [
+        'request' => [
+            'url' => '/admin/bulk_assign_role',
+            'method' => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content' => [
+                'total_count'      => 1,
+                'valid_count'      => 1,
+                'failed_count'     => 0,
+                'failed_emails'    => [],
+                'not_found_emails' => [],
+            ],
+        ],
+    ],
 ];

@@ -974,6 +974,8 @@ class Name
     const CMMA_PROCESS_VIEW                    = 'process_view';
     const DEBUG_NOCODE_ROUTES                   = 'debug_nocode_routes';
 
+    const ADMIN_BULK_ASSIGN_ROLE                = 'admin_bulk_assign_role';
+
     public static $actionMap = [
         Merchant\Action::ARCHIVE                            => self::EDIT_MERCHANT_ARCHIVE,
         Merchant\Action::UNARCHIVE                          => self::EDIT_MERCHANT_UNARCHIVE,

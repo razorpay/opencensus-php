@@ -1409,6 +1409,7 @@ class Route
         'admin_forgot_password'                    => ['post',     'admin/forgot_password',                          'OrganizationController@postForgotPassword'                         ],
         'admin_reset_password'                     => ['post',     'admin/reset_password',                           'OrganizationController@postResetPassword'                          ],
         'admin_change_password'                    => ['post',     'admin/change_password',                          'OrganizationController@postChangePassword'                         ],
+        'admin_bulk_assign_role'                   => ['post',     'admin/bulk_assign_role',                         'OrganizationController@bulkAssignRole'                             ],
         'group_create'                             => ['post',     'groups',                                         'OrganizationController@createGroup'                                ],
         'group_get_multiple'                       => ['get',      'groups',                                         'OrganizationController@getGroupsMultiple'                          ],
         'group_get_allowed_groups'                 => ['get',      'groups/{id}/allowed_groups',                     'OrganizationController@getAllowedGroups'                           ],
@@ -6715,6 +6716,7 @@ class Route
         'bvs_admin_proxy',
         'bvs_admin_proxy_pii',
 
+        'admin_bulk_assign_role',
     ];
 
     public static $routePermission = [
@@ -7772,6 +7774,8 @@ class Route
         'admin_key_migrate_impersonation_grants'   => Permission::EDGE_WRITE_OPERATION,
 
         'admin_access_maps_bootstrap_cache'        => Permission::STORK_WRITE_OPERATION,
+
+        'admin_bulk_assign_role'                   => Permission::ADMIN_BULK_ASSIGN_ROLE,
 
         // update free payout attributes
         'update_free_payouts_attributes'              => Permission::UPDATE_FREE_PAYOUTS_ATTRIBUTES,
@@ -11797,7 +11801,8 @@ class Route
 
             // BVS admin dashboard proxy routes
             'bvs_admin_proxy',
-            'bvs_admin_proxy_pii'
+            'bvs_admin_proxy_pii',
+            'admin_bulk_assign_role'
         ],
 
         //

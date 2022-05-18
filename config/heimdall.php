@@ -1102,7 +1102,11 @@ return [
             Permission::MANAGE_CAMPAIGNHQ_OPERATIONS => [
                 'description' => 'Allows managing Campaigns on CampaignHQ Dashboard',
                 'assignable'  => true,
-            ]
+            ],
+            Permission::ADMIN_BULK_ASSIGN_ROLE => [
+                'description' => 'Allows performing bulk role assignment on the admin users',
+                'assignable'  => true,
+            ],
         ],
 
         // Permissions

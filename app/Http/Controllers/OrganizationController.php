@@ -107,6 +107,15 @@ class OrganizationController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function bulkAssignRole()
+    {
+        $input = Request::all();
+
+        $resp = $this->service(E::ADMIN)->bulkAssignRole($input);
+
+        return ApiResponse::json($resp);
+    }
+
     public function logoutAdmin()
     {
         $data = $this->service(E::ADMIN)->logout();

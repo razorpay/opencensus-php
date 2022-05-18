@@ -55,4 +55,14 @@ class Repository extends Base\Repository
                         Entity::LOCKED => true,
                     ]);
     }
+
+    public function fetchByOrgIDAndEmailIDs($orgId, $emails)
+    {
+        Org\Entity::verifyIdAndSilentlyStripSign($orgId);
+
+        return $this->newQuery()
+            ->orgId($orgId)
+            ->whereIn(Entity::EMAIL, $emails)
+            ->get();
+    }
 }

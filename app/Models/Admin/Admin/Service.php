@@ -799,4 +799,79 @@ class Service extends Base\Service
 
         return $this->core()->resendOtp($admin);
     }
+
+    /**
+     * @throws Exception\BadRequestException
+     */
+    public function bulkAssignRole(array $input): array
+    {
+        $this->trace->info(TraceCode::ADMIN_BULK_ASSIGN_ROLE, $input);
+
+        $emailIDs = $input['emails'];
+        $roleIDs  = $input[Entity::ROLES];
+
+        // get the org id from auth context
+        $orgId = $this->app['basicauth']->getOrgId();
+
+        if ($orgId !== Org\Entity::getSignedId(Org\Constants::RZP))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR, null, "Bulk assign role to admin is only allowed for rzp org");
+        }
+
+        if (empty($input[Entity::ROLES]) === false)
+        {
+            Role\Entity::verifyIdAndStripSignMultiple($roleIDs);
+        }
+        else
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR, null, "Roles list cant be empty");
+        }
+
+        // Fetch all the admins for the emails
+        $admins = $this->repo->admin->fetchByOrgIDAndEmailIDs($orgId, $emailIDs);
+        $failedEmails = [];
+        // Store all the processed email IDs
+        $processedEmails = [];
+
+        foreach ($admins as $admin)
+        {
+            try
+            {
+                $processedEmails[] = $admin->getEmail();
+
+                $this->core()->addRoles($admin, $roleIDs);
+
+                $this->trace->info(TraceCode::ADMIN_BULK_ASSIGN_ROLE, [
+                    'message'     => 'admin user role updated successfully',
+                    'admin_email' => $admin->getEmail(),
+                    'roles'       => $roleIDs,
+                ]);
+            }
+            catch (\Throwable $t)
+            {
+                $this->trace->traceException(
+                    $t,
+                    Trace::ERROR,
+                    TraceCode::ADMIN_BULK_ASSIGN_ROLE_EXCEPTION,
+                    [
+                        'admin_email' => $admin->getEmail(),
+                        'roles'       => $roleIDs,
+                    ]);
+
+                $failedEmails[] = $admin->getEmail();
+            }
+        }
+
+        $unprocessedEmails = array_diff($emailIDs, $processedEmails);
+
+        return [
+            'total_count'      => count($emailIDs),
+            'valid_count'      => count($admins),
+            'failed_count'     => count($failedEmails),
+            'failed_emails'    => $failedEmails,
+            'not_found_emails' => $unprocessedEmails,
+        ];
+    }
 }
