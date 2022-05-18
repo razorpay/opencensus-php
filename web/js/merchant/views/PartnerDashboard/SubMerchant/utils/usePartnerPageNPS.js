@@ -80,33 +80,32 @@ export default function usePartnerPageNPS(surveyID) {
       (getItem('razorpay_partner_nps_survey_showed') === null ||
         getItem('razorpay_partner_nps_survey_showed') === 'show')
     ) {
-      const PartnerNPSEnableTypeForm = createSidetab(
-        surveyID, // partner survey
-        {
-          width: isMobileDevice() ? 340 : 500,
-          buttonText: 'Feedback',
-          hideHeaders: true,
-          hideFooters: true,
-          hidden: {
-            mid: `${id}`,
-            source: 'partner_page',
-            email: `${email}`,
+      const show = await isShowPopup(created_at, activation_status);
+      if (show) {
+        const PartnerNPSEnableTypeForm = createSidetab(
+          surveyID, // partner survey
+          {
+            width: isMobileDevice() ? 340 : 500,
+            buttonText: 'Feedback',
+            hideHeaders: true,
+            hideFooters: true,
+            hidden: {
+              mid: `${id}`,
+              source: 'partner_page',
+              email: `${email}`,
+            },
+            onClose: closePartnerSurvey,
+            onSubmit: handleSubmit,
           },
-          onClose: closePartnerSurvey,
-          onSubmit: handleSubmit,
-        },
-      );
-      refPartnerNPSEnableTypeForm.current = PartnerNPSEnableTypeForm;
-
-      setPartnerNPSSurveyPopup(await isShowPopup(created_at, activation_status));
+        );
+        refPartnerNPSEnableTypeForm.current = PartnerNPSEnableTypeForm;
+      }
+      setPartnerNPSSurveyPopup(show);
     }
   }, [user, surveyID, handleSubmit, isShowPopup]);
 
   // Show or Hide survey form
   const getSurveyForm = useCallback(() => {
-    if (partnerNPSSurveyPopup === false && refPartnerNPSEnableTypeForm.current) {
-      refPartnerNPSEnableTypeForm.current?.unmount();
-    }
     if (partnerNPSSurveyPopup && getItem('razorpay_partner_nps_survey_showed') === null) {
       refPartnerNPSEnableTypeForm.current?.open();
       setItem('razorpay_partner_nps_survey_showed', 'show');
