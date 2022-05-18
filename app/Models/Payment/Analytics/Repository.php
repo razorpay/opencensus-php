@@ -58,10 +58,11 @@ class Repository extends Base\Repository
                           string $merchantId = null,
                           string $connectionType = null): PublicCollection
     {
-        // in prod, irrespective of connection in argument, for payment analytics we will always fetch from warehouse/tidb
+        // in prod, irrespective of connection in argument,
+        // for payment analytics we should always fetch from tidb (admin)
         if ($this->app['env'] === Environment::PRODUCTION)
         {
-            $connectionType = ConnectionType::DATA_WAREHOUSE_MERCHANT;
+            $connectionType = ConnectionType::DATA_WAREHOUSE_ADMIN;
         }
 
         $entities = parent::fetch($params, $merchantId, $connectionType);
