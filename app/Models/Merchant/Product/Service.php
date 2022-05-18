@@ -117,14 +117,7 @@ class Service extends Base\Service
 
             $merchantProduct = (new Entity)->generateId();
 
-            $app =  App::getFacadeRoot();
-
-            $properties = [
-                'id'            => $merchant->getId(),
-                'experiment_id' => $app['config']->get('app.product_config_issue_exp_id'),
-            ];
-
-            $isExpEnabled = (new Merchant\Core())->isSplitzExperimentEnable($properties,'enable');
+            $isExpEnabled = (new Merchant\Core())->isExpEnabledForProductConfigIssue($partner);
 
             Tracer::inspan(['name' => HyperTrace::SET_DEFAULT_METHODS], function () use ($merchant, $partner, $isExpEnabled) {
 

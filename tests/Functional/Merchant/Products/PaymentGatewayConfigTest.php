@@ -9,6 +9,7 @@ use RZP\Models\Merchant\Product\Config\DefaultConfigurationHelper;
 use RZP\Models\User\Role;
 use RZP\Models\Merchant\Methods;
 use Illuminate\Http\UploadedFile;
+use RZP\Tests\Traits\MocksSplitz;
 use RZP\Tests\Traits\TestsMetrics;
 use RZP\Models\Merchant\Stakeholder;
 use RZP\Models\Merchant\Product\Metric;
@@ -22,6 +23,7 @@ use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 
 class PaymentGatewayConfigTest extends OAuthTestCase
 {
+    use MocksSplitz;
     use PartnerTrait;
     use WebhookTrait;
     use TestsMetrics;
@@ -89,6 +91,29 @@ class PaymentGatewayConfigTest extends OAuthTestCase
 
         // The below function call is idempotent
         (new Methods\Core())->setDefaultMethods($merchant);
+    }
+
+    public function testCreateProductConfigWithExperimentOnSetMethods()
+    {
+        Mail::fake();
+
+        $this->mockTerminalServiceResponse();
+
+        $this->setUpPartnerWithKycHandled();
+
+        $this->mockSplitzEvaluation();
+
+        $testData = $this->testData['createUnregisteredBusinessTypeAccount'];
+
+        $accountResponse = $this->runRequestResponseFlow($testData);
+
+        $accountId = $accountResponse['id'];
+
+        $testData = $this->testData['testCreateDefaultPaymentGatewayConfig'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products';
+
+        $this->runRequestResponseFlow($testData);
     }
 
     public function testCreateProductConfigInvalidInput()
@@ -1038,6 +1063,58 @@ class PaymentGatewayConfigTest extends OAuthTestCase
 
         // The below function call is idempotent
         (new Methods\Core())->setDefaultMethods($merchant);
+    }
+
+    private function mockSplitzEvaluation()
+    {
+        $input = [
+            "experiment_id" => "JRWRysOmXFWZ9C",
+            "id"            => "10000000000000",
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
+        $input = [
+            "experiment_id" => "JNwT6Atz4PLiVh",
+            "id"            => "10000000000000",
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'exposed',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
+        $input = [
+            "experiment_id" => "JIRYzx7YtMuB18",
+            "id"            => "10000000000000",
+            'request_data'  => json_encode(
+                [
+                    'id' => "10000000000000",
+                ]),
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => "enabled"
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
     }
 }
 

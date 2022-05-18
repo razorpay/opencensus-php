@@ -1562,12 +1562,7 @@ class Core extends Base\Core
 
     public function addMerchantSupportingEntitiesAsync(Entity $merchant, Entity $aggregatorMerchant = null)
     {
-        $properties = [
-            'id'            => $merchant->getId(),
-            'experiment_id' => $this->app['config']->get('app.product_config_issue_exp_id'),
-        ];
-
-        $isExpEnabled = $this->isSplitzExperimentEnable($properties,'enable');
+        $isExpEnabled = $this->isExpEnabledForProductConfigIssue($aggregatorMerchant);
 
         $this->repo->transactionOnLiveAndTest(function() use($merchant, $aggregatorMerchant, $isExpEnabled) {
 
@@ -1710,6 +1705,21 @@ class Core extends Base\Core
                                        ], $shouldSync = true);
 
         }
+    }
+
+    public function isExpEnabledForProductConfigIssue(Entity $aggregatorMerchant = null)
+    {
+        if(is_null($aggregatorMerchant) === true)
+        {
+            return false;
+        }
+
+        $properties = [
+            'id'            => $aggregatorMerchant->getId(),
+            'experiment_id' => $this->app['config']->get('app.product_config_issue_exp_id'),
+        ];
+
+        return $this->isSplitzExperimentEnable($properties, 'enable');
     }
 
     protected function setPaymentLinkServiceDefaultForMerchant(Entity $merchant)

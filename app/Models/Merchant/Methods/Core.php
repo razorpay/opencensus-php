@@ -540,8 +540,15 @@ class Core extends Base\Core
         }
     }
 
-    public function setMethods($merchant, Merchant\Entity $aggregatorMerchant)
+    public function setMethods($merchant, Merchant\Entity $aggregatorMerchant = null)
     {
+
+        $this->trace->info(TraceCode::SET_PAYMENT_METHODS_UNDER_MUTEX_LOCK,
+            [
+                'merchant_id' => $merchant->getId(),
+            ]
+        );
+
         $mutex = App::getFacadeRoot()['api.mutex'];
 
         $mutexKey = $merchant->getId();
