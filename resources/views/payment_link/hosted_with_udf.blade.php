@@ -9,7 +9,7 @@
     $is_error_view              = isset($request_params['error']['description']);
     $is_preview                 = request()->get('preview') === 'true';
     $optimised_web_vitals       = $data['merchant']['optimised_web_vitals'] === 'on';
-    $crossorigin_enabled        = $data['view_preferences']['crossorigin_enabled'] === 'on';
+    $crossorigin_enabled        = array_get($data, 'view_preferences.crossorigin_enabled', 'off') === 'on';
 ?>
 
 
