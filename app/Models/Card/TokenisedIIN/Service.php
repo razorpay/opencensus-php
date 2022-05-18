@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Card\TokenisedIIN;
 
+use RZP\Trace\TraceCode;
 use RZP\Models\Base;
 
 class Service extends Base\Service
@@ -114,6 +115,66 @@ class Service extends Base\Service
         }
 
         return $returnData;
+    }
+
+
+    public function deleteIin($id)
+    {
+        $iin = $this->repo->tokenised_iin->findById($id);
+
+        $this->trace->info(TraceCode::TOKEN_IIN_DELETE_BULK,
+            [
+                'iin'    => $iin
+            ]
+        );
+
+        return $this->repo->deleteOrFail($iin);
+    }
+
+    public function deleteBulk($id)
+    {
+
+        $failedIds = [];
+
+        for($val = 0; $val < 100 ;$val++){
+
+            try
+            {
+                $id = $id + $val;
+
+                $this->deleteIin($id);
+
+                $this->trace->info(TraceCode::TOKEN_IIN_DELETE_BULK,
+                [
+                    'id'    => ($id + $val)
+                ]
+                );
+
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->traceException($e,
+                    TraceCode::TOKEN_IIN_DELETE_BULK_FAILED,
+                    [
+                        'id'    => ($id + $val),
+                        'error'  => $e->getMessage(),
+                    ]
+                );
+
+                $failedCount++;
+
+                $failedIds[] = ($id + $val);
+            }
+
+        }
+
+        $response = [
+            'failed'    => $failedCount,
+            'failedIds' => $failedIds,
+        ];
+
+        return $response;
+
     }
 
 }

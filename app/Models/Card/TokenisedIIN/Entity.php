@@ -5,10 +5,12 @@ namespace RZP\Models\Card\TokenisedIIN;
 use RZP\Models\Base;
 use RZP\Models\Base\QueryCache\Cacheable;
 use RZP\Models\Card\IIN\Entity as IINEntity;
+use RZP\Models\Base\Traits\HardDeletes;
 
 class Entity extends Base\PublicEntity
 {
     use Cacheable;
+    use Base\Traits\HardDeletes;
 
     const HIGH_RANGE       =  'high_range';
     const LOW_RANGE        =  'low_range';

@@ -57,4 +57,27 @@ class TokenisedIinController extends Controller
         return ApiResponse::json($data);
     }
 
+
+    public function deleteBulk($id)
+    {
+        $input = Request::all();
+
+        $this->trace->info(TraceCode::TOKEN_IIN_DELETE_BULK,
+            [
+                'input' => $input
+            ]);
+        $data = $this->service()->deleteBulk($id , $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function deleteIin($id)
+    {
+        $input = Request::all();
+
+        $data = $this->service()->deleteIin($id);
+
+        return ApiResponse::json($data);
+    }
+
 }

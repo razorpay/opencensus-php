@@ -3485,6 +3485,8 @@ class Route
         'update_token_iin'                          =>  ['post',       'tokens/iin/update/{iin}',                          'TokenisedIinController@updateIin'                                    ],
         'fetch_token_iin_by_range'                  =>  ['post',       'tokens/iin/{iin}',                                 'TokenisedIinController@fetchbyTokenIin'                              ],
         'add_token_iin_bulk'                        =>  ['post',       'tokens/bulk/iin',                                  'TokenisedIinController@addIinBulk'                                   ],
+        'delete_iin'                                =>  ['post',       'tokens/delete/{id}',                               'TokenisedIinController@deleteIin'                                    ],
+        'delete_iin_bulk'                           =>  ['post',       'tokens/bulk/delete/{id}',                          'TokenisedIinController@deleteBulk'                                   ],
 
         'shipping_provider_list'                   => ['get',      '1cc/shipping_providers',                              'ShippingProviderController@list'                           ],
         'shipping_provider_post'                   => ['post',     '1cc/shipping_providers',                              'ShippingProviderController@create'                           ],
@@ -4061,6 +4063,8 @@ class Route
         'fetch_token_iin',
         'update_token_iin',
         'fetch_token_iin_by_range',
+        'delete_iin',
+        'delete_iin_bulk',
         'add_token_iin_bulk',
 
         // Generate and send NIUM settlements file via manual trigger
