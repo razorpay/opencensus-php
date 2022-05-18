@@ -70,6 +70,8 @@ class CareProxyController extends Controller
     const FAQ_CONFIG_UPDATE_FAQ_STATUS     = 'twirp/rzp.care.faq.v1.FaqConfigService/UpdateFaqStatus';
     const FAQ_CONFIG_UPDATE_FAQ            = 'twirp/rzp.care.faq.v1.FaqConfigService/UpdateFaq';
     const FAQ_CONFIG_DELETE_FAQ            = 'twirp/rzp.care.faq.v1.FaqConfigService/DeleteFaq';
+    const FAQ_CONFIG_ADD_FAQ_RANKING       = 'twirp/rzp.care.faq.v1.FaqConfigService/AddFaqRanking';
+    const FAQ_CONFIG_DELETE_FAQ_RANKING    = 'twirp/rzp.care.faq.v1.FaqConfigService/DeleteFaqRanking';
 
 
 
@@ -99,6 +101,8 @@ class CareProxyController extends Controller
         self::TICKET_CONFIG_FETCH_ITEM                => Name::TICKET_CONFIG_VIEW,
         self::TICKET_CONFIG_EDIT_SUBCATEGORY          => Name::TICKET_CONFIG_EDIT,
         self::TICKET_CONFIG_EDIT_ITEM                 => Name::TICKET_CONFIG_EDIT,
+        self::FAQ_CONFIG_ADD_FAQ_RANKING              => Name::FAQ_CONFIG_EDIT,
+        self::FAQ_CONFIG_DELETE_FAQ_RANKING           => Name::FAQ_CONFIG_EDIT,
     ];
 
     const MERCHANT_ROUTES = [
@@ -150,6 +154,8 @@ class CareProxyController extends Controller
         self::TICKET_CONFIG_UPDATE_ITEM_STATUS,
         self::TICKET_CONFIG_DELETE_SUBCATEGORY,
         self::TICKET_CONFIG_DELETE_ITEM,
+        self::FAQ_CONFIG_DELETE_FAQ_RANKING,
+        self::FAQ_CONFIG_ADD_FAQ_RANKING,
     ];
 
     const CHAT_ROUTES = [
