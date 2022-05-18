@@ -411,7 +411,7 @@ return [
                         'payer_account'  => '22233303415693401',
                         'payer_ifsc'     => 'ICIC0000104',
                         'status'         => 'ACCEPT',
-                        'reject_reason'  => 'SERVER_ERROR',
+                        'reject_reason'  => '',
                         'date'           => '2019-03-19 20:00:11'
                     ]
                 ]

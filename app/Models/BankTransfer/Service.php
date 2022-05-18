@@ -171,16 +171,7 @@ class Service extends Base\Service
                 }
             }
 
-            $dispatchToQueue = $this->isRequestValidForQueueProcessing($provider ?? $this->provider);
-
-            if ($dispatchToQueue === true)
-            {
-                return $this->dispatchBankTransferToQueue($bankTransferRequest);
-            }
-            else
-            {
-                return $this->processBankTransfer($bankTransferRequest);
-            }
+            return $this->dispatchBankTransferToQueue($bankTransferRequest);
         }
 
         return $this->process($input, $provider, $checkForIfsc);
@@ -656,16 +647,6 @@ class Service extends Base\Service
         $requestProcessor = 'RZP\\Reconciliator\\RequestProcessor\\' . $source;
 
         return new $requestProcessor();
-    }
-
-    protected function isRequestValidForQueueProcessing($provider)
-    {
-        $variant = $this->app->razorx->getTreatment(
-            $provider,
-            Merchant\RazorxTreatment::BANK_TRANSFER_QUEUE,
-            $this->mode);
-
-        return ($variant === 'on');
     }
 
     private function dispatchBankTransferToQueue($bankTransferRequest)

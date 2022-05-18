@@ -242,15 +242,7 @@ class TerminalProcessor extends Base\Core
 
         $merchantId = $bankTransfer->getMerchantId();
 
-        $variantFlag = $this->app->razorx->getTreatment($merchantId,
-                                                        'BANK_TRANSFER_TERMINAL_FILTER',
-                                                        $this->mode);
-
-        $terminalMerchantIds = [];
-        if ($variantFlag === 'on')
-        {
-            $terminalMerchantIds = [$merchantId, Account::SHARED_ACCOUNT];
-        }
+        $terminalMerchantIds = [$merchantId, Account::SHARED_ACCOUNT];
 
         $terminals = $this->repo->terminal->getAllBankTransferTerminals($gateway, $terminalMerchantIds);
 

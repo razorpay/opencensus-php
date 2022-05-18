@@ -292,7 +292,7 @@ class BankTransferTest extends TestCase
     public function testBankTransferProcessPgWhenLedgerReverseShadowEnabled()
     {
         $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
-        Queue::fake();
+//        Queue::fake();
 
         $accountNumber = $this->bankAccount['account_number'];
         $ifsc = $this->bankAccount['ifsc'];
@@ -312,11 +312,11 @@ class BankTransferTest extends TestCase
         $this->assertEquals(S::PROCESSED, $bankTransfer['status']);
 
         // Payment is automatically captured
-        $payment =  $this->getLastEntity('payment', true);
+        $payment =  $this->getDbLastEntity('payment');
         $this->assertEquals('SHRDBANKACC3DS', $payment['terminal_id']);
         $this->assertEquals('bank_transfer', $payment['method']);
         $this->assertEquals('captured', $payment['status']);
-        $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
+        $this->assertEquals($bankTransfer['payment_id'], 'pay_'.$payment['id']);
         $this->assertEquals('bank_account', $payment['receiver_type']);
         $this->assertEquals('bt_dashboard', $payment['gateway']);
 
@@ -339,7 +339,7 @@ class BankTransferTest extends TestCase
             ]
         );
 
-        Queue::assertPushed(Transactions::class, 0);
+//        Queue::assertPushed(Transactions::class, 0);
     }
 
     public function testBankTransferProcessXDemoCron()
@@ -3886,7 +3886,7 @@ class BankTransferTest extends TestCase
 //        $ledgerSnsPayloadArray = [];
 //        $this->mockLedgerSns(1, $ledgerSnsPayloadArray);
 
-        MockQueue::fake();
+//        MockQueue::fake();
 
 //        Mail::fake();
 
@@ -3946,9 +3946,20 @@ class BankTransferTest extends TestCase
 //        });
 
 
-        $bankTransfersCreated = $this->getDbEntities('bank_transfer', [], 'live');
+        $bankTransfersCreated = $this->getDbLastEntity('bank_transfer', 'live');
+        $bankTransfersTxn = $this->getDbLastEntity('transaction', 'live');
 
-        MockQueue::assertPushed(Transactions::class);
+//        MockQueue::assertPushed(Transactions::class);
+
+
+        // assert bankTransfer
+        $this->assertEquals('processed', $bankTransfersCreated['status']);
+        $this->assertEquals(5000000, $bankTransfersCreated['amount']);
+
+        // assert api transaction
+        $this->assertEquals($bankTransfersTxn['id'], $bankTransfersCreated['transaction_id']);
+        $this->assertEquals($bankTransfersCreated['id'], $bankTransfersTxn['entity_id']);
+        $this->assertEquals(5000000, $bankTransfersTxn['amount']);
 
     }
 
@@ -5602,7 +5613,7 @@ class BankTransferTest extends TestCase
         $ifsc = $this->bankAccount['ifsc'];
 
         $response = $this->processBankTransfer($accountNumber, $ifsc, null, 5);
-        $this->assertEquals(false, $response['valid']);
+        $this->assertEquals(true, $response['valid']);
         $this->assertNull($response['message']);
 
         $this->runBankTransferRequestAssertions(
@@ -5928,28 +5939,6 @@ class BankTransferTest extends TestCase
         $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
         $this->assertEquals($payment['email'], 'test@test.com');
         $this->assertEquals('captured', $payment['status']);
-    }
-
-    public function testBankTransferRblAsyncProcessing()
-    {
-        $this->enableRazorXTreatmentForRblBankTransferProcess();
-
-        $testData = $this->testData['testBankTransferRbl'];
-
-        $testData['request']['content']['Data'][0]['beneficiaryAccountNumber'] = $this->getRblVaBankAccount();
-
-        $this->ba->directAuth();
-
-        $this->startTest($testData);
-
-        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
-        $this->assertEquals(S::PROCESSED, $bankTransfer['status']);
-        $this->assertEquals($bankTransfer['narration'], $testData['request']['content']['Data'][0]['UTRNumber']);
-        $this->assertEquals(343946, $bankTransfer['amount']);
-
-        $payment =  $this->getLastEntity('payment', true);
-        $this->assertEquals(343946, $payment['amount']);
-        $this->assertEquals('bt_rbl', $payment['gateway']);
     }
 
     public function testBankTransferIciciIMPSForRazorpayXWithTpvEnabledButNoTpvAccountFound()
@@ -7488,27 +7477,6 @@ class BankTransferTest extends TestCase
         $this->assertEquals($utr, $bankTransfer->getUtr());
 
         Mail::assertNotQueued(FundLoadingFailed::class);
-    }
-
-    protected function enableRazorXTreatmentForRblBankTransferProcess()
-    {
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-                           ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment'])
-                           ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-            ->will($this->returnCallback(
-                function($mid, $feature, $mode) {
-                    if ($feature === 'bank_transfer_queue')
-                    {
-                        return 'on';
-                    }
-
-                    return 'off';
-                }));
     }
 
     protected function setIciciVaBankAccountTerminalForRazorpayX()
