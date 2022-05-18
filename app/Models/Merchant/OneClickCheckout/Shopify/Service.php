@@ -31,6 +31,7 @@ class Service extends Base\Service
         'EGCzwErjjYe9nL',   //Adjavis Digital LLP
         'Hj1IOXYBFOQLRL',   //PSI EXCEL EXPORTS 
         'ETejwsC2azC6tI',   //Nanda Electric
+        'FopgLHiMahqW6K',   //BLISSCLUB FITNESS PRIVATE LIMITED
     ];
 
     protected $mutex;
