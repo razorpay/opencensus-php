@@ -12,6 +12,7 @@ use RZP\Mail\Base\Constants;
 use RZP\Services\Beam\Constants as BeamConstants;
 use RZP\Models\FileStore;
 use RZP\Models\Settlement\Processor\Base;
+use RZP\Models\Transaction\Entity as TEntity;
 use RZP\Models\Transaction\Type;
 use RZP\Trace\TraceCode;
 
@@ -68,6 +69,13 @@ class GifuFile extends Base\BaseGifuFile
             {
                 $transactions = $this->repo->transaction
                     ->getBySettlementIdAndTypes($settlementId, [Type::PAYMENT, Type::REFUND], $this->connectionType);
+                $adjustments = $this->repo->transaction
+                    ->getDisputesBySettlementId($settlementId, $this->connectionType);
+                if($adjustments !== null)
+                {
+                    $transactions = $transactions->merge(TEntity::hydrate($adjustments->toArray()));
+                }
+
                 try {
                     foreach ($transactions as $transaction) {
                         $row = new FileFormat();
@@ -76,21 +84,24 @@ class GifuFile extends Base\BaseGifuFile
                         $row->EMID = $merchantIntegrationInfo->getIntegrationKey();
                         $row->Amount = ((float)$transaction->getAmount()) / 100;
                         $row->BankPaidAmount = ((float)$transaction->getAmount()) / 100;
-                        $row->CreditType = $transaction->getType() === Type::REFUND ? 0 : 1;
+                        $row->CreditType = $transaction->getType() === Type::PAYMENT ? 1 : 0;
                         $row->Currency = $transaction->getCurrency(); // Should always be INR, but not hard-coding for now
                         $row->invoiceNumber = $transaction->getEntityId();
                         $row->PD = Carbon::now(Timezone::IST)->isoFormat('MM/DD/YYYY');
                         $row->DebitReferenceCode = $settlementId;
-                        $row->DebitFee = ((float)$transaction->getFee()) / 100;
-                        $row->DebitFeeTax = ((float)$transaction->getTax()) / 100;
+                        $tax = $transaction->getTax() ?? 0;
+                        $fee = $transaction->getFee() ?? 0;
+                        $row->DebitFeeTax = ((float)$tax) / 100;
+                        $row->DebitFee = ((float)($fee-$tax)) / 100;
                         $row->PayforText = $merchantIntegrationInfo->getNotes()['payForText'];
 
                         if ($row->CreditType === 1) // Payment Case
                         {
                             $row->NetAmount = ((float)$transaction->getCredit()) / 100;
-                        } else // Refund Case
+                        } else // Refund/Chargeback Case
                         {
                             $row->NetAmount = ((float)$transaction->getDebit()) / 100;
+                            $row->IsChargeback = $transaction->getType() === Type::ADJUSTMENT ? 1 : 0;
                         }
 
                         array_push($data, $row->getAssocArray());

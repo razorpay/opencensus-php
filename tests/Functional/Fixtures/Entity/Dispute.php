@@ -12,7 +12,15 @@ class Dispute extends Base
 
     public function create(array $attributes = [])
     {
-        $payment = $this->fixtures->create('payment:captured', ['disputed' => 1]);
+        $paymentAttributes = ['disputed' => 1];
+        if(isset($attributes['test']) && $attributes['test'] === 'nium')
+        {
+            $paymentAttributes['merchant_id'] = $attributes['merchant_id'];
+            $paymentAttributes['amount'] = $attributes['amount'];
+            unset($attributes['test']);
+        }
+
+        $payment = $this->fixtures->create('payment:captured', $paymentAttributes);
 
         $reason = $this->fixtures->create('dispute_reason');
 

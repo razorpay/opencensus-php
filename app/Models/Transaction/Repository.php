@@ -11,6 +11,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Base\Common;
 use RZP\Base\BuilderEx;
+use RZP\Models\Adjustment;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Constants\Table;
@@ -2710,6 +2711,33 @@ class Repository extends Base\Repository
         }
         catch(\Exception $e)
         {
+            $this->trace->error(Tracecode::ERROR_EXCEPTION, [
+                "error" => $e
+            ]);
+        }
+    }
+
+    public function getDisputesBySettlementId($settlementId, $connection = null)
+    {
+        try {
+            $query = $this->newQueryOnSlave();
+            if (isset($connection)) {
+                $query = $this->newQueryWithConnection($connection);
+            }
+
+            $transactionSettlementIdCol = $this->repo->transaction->dbColumn(Entity::SETTLEMENT_ID);
+            $transactionEntityIdCol = $this->repo->transaction->dbColumn(Entity::ENTITY_ID);
+
+            $adjustmentIdCol = $this->repo->adjustment->dbColumn(Adjustment\Entity::ID);
+            $adjustmentTypeCol = $this->repo->adjustment->dbColumn(Adjustment\Entity::ENTITY_TYPE);
+
+            return $query
+                ->select(Table::TRANSACTION . '.*')
+                ->join(Table::ADJUSTMENT, $transactionEntityIdCol, "=", $adjustmentIdCol)
+                ->where($transactionSettlementIdCol, $settlementId)
+                ->where($adjustmentTypeCol, Type::DISPUTE)
+                ->get();
+        } catch (\Exception $e) {
             $this->trace->error(Tracecode::ERROR_EXCEPTION, [
                 "error" => $e
             ]);

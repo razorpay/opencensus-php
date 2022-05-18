@@ -62,6 +62,9 @@ class NiumTest extends OAuthTestCase
 
         $payments = $this->createPaymentEntities(2, $subMerchant->getId());
         $refund = $this->fixtures->create('refund:from_payment', ['payment' => $payments[0]]);
+        $dispute = $this->fixtures->create('dispute', [
+            'merchant_id' => self::DEFAULT_SUBMERCHANT_ID, 'deduct_at_onset' => true,
+            'amount' => 100, 'test' => 'nium']);
 
         $this->initiateSettlements(Channel::AXIS);
         $settlement = $this->getLastEntity('settlement', true);
