@@ -213,4 +213,13 @@ export const CREDIT_DEBIT_CARDS_OPTIONS = [
   { label: 'Debit Card', name: 'debit' },
 ];
 
-export const CREDIT_CARDS_OPTIONS = [{ label: 'Credit Card', name: 'credit' }];
+export const EMI_CARDS_OPTIONS = [
+  { label: '--Select Issuers--', name: '' },
+  { label: 'Credit Card', name: 'credit' },
+  { label: 'Debit Card', name: 'debit' },
+];
+
+export const EMI_DEBIT_CARD_BANK_OPTIONS = [
+  { label: '--Select Issuers--', name: '' },
+  { label: 'HDFC Bank', name: 'HDFC' },
+];

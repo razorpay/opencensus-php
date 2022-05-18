@@ -1,4 +1,5 @@
-import { rupeesToPaise } from 'common/utils/rzp-utils';
+import { rupeesToPaise, deepClone } from 'common/utils/rzp-utils';
+import { MAX_DISCOUNT } from 'merchant/views/Offers/constants';
 
 export function prepareDataForSubmit(formData) {
   const transformedFormData = {
@@ -34,12 +35,12 @@ export function prepareDataForSubmit(formData) {
   const checkboxFields = ['default_offer', 'block'];
 
   checkboxFields.forEach((field) => {
-    transformedFormData[field] = parseInt(formData[field]);
+    transformedFormData[field] = parseInt(formData[field], 10);
   });
 
   dateFields.forEach((field) => {
     if (formData[field]) {
-      return (transformedFormData[field] = formData[field].unix());
+      transformedFormData[field] = formData[field].unix();
     }
   });
 
@@ -115,3 +116,38 @@ export function prepareDataForSubmit(formData) {
 
   return transformedFormData;
 }
+
+export const validatePaymentMethod = (val) => {
+  if (!val) {
+    return 'Payment method cannot be empty';
+  }
+  return false;
+};
+
+export const validateMaxPaymentCount = (val) => {
+  if (!val) return true;
+
+  if (!new RegExp('^[0-9]+$').test(val)) {
+    return 'Please enter a number';
+  }
+
+  val = parseFloat(val);
+  // Converting to value entered in RS to Paise for proper validation
+  val = rupeesToPaise(val);
+  if (val > MAX_DISCOUNT) {
+    return `Maximum value allowed is ${MAX_DISCOUNT}`;
+  }
+
+  return false;
+};
+
+export const emiDurationString = (emiDurations) => {
+  const durations = deepClone(emiDurations);
+
+  let lastDurationString = ' months';
+  if (durations.length > 1) {
+    lastDurationString = ` and ${durations.pop()}${lastDurationString}`;
+  }
+
+  return durations.join(', ') + lastDurationString;
+};

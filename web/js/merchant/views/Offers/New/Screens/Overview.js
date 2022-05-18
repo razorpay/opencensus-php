@@ -1,6 +1,6 @@
 import Input from 'common/new-ui/Input';
 import { WorkSection, WorkFlow } from 'merchant/components/WorkFlow';
-import { emiDurationString } from 'merchant/views/Offers/Entity';
+import { emiDurationString } from 'merchant/views/Offers/New/helpers';
 import {
   OFFER_TYPE_LABELS,
   PAYMENT_NETWORK_MAP,
@@ -13,6 +13,38 @@ import {
 } from 'merchant/views/Offers/constants';
 
 import { findBy } from 'common/utils/rzp-utils';
+
+const summarizePaymentMethodsData = (paymentMethod, cardType, paymentNetwork, issuer) => {
+  switch (paymentMethod) {
+    case PAYMENT_METHODS.Card:
+      return `All ${wordWithSpace(BANK_MAP[issuer])}${wordWithSpace(
+        PAYMENT_NETWORK_MAP[paymentNetwork],
+      )}${wordWithSpace(cardType)}Cards`;
+
+    case PAYMENT_METHODS.NetBanking:
+      return `Netbanking on all ${wordWithSpace(BANK_MAP[issuer])}accounts`;
+
+    case PAYMENT_METHODS.Wallet:
+      return `All ${wordWithSpace(WALLET_MAP[issuer])}wallets`;
+
+    case PAYMENT_METHODS.UPI:
+      return `UPI`;
+
+    case PAYMENT_METHODS.EMI:
+      return `EMI on all ${wordWithSpace(BANK_MAP[issuer])}${wordWithSpace(
+        PAYMENT_NETWORK_MAP[paymentNetwork],
+      )}${wordWithSpace(cardType)}cards`;
+
+    case PAYMENT_METHODS.CardLessEmi:
+      return `Cardless EMI`;
+
+    case PAYMENT_METHODS.PayLater:
+      return `Paylater`;
+
+    default:
+      return wordWithSpace(BANK_MAP[issuer]);
+  }
+};
 
 export default function OverView(props) {
   const {
@@ -109,38 +141,6 @@ export default function OverView(props) {
   );
 }
 
-// TODO: Can be written batter manner
-const summarizePaymentMethodsData = (paymentMethod, cardType, paymentNetwork, issuer) => {
-  switch (paymentMethod) {
-    case PAYMENT_METHODS.Card:
-      return `All ${wordWithSpace(BANK_MAP[issuer])}${wordWithSpace(
-        PAYMENT_NETWORK_MAP[paymentNetwork],
-      )}${wordWithSpace(cardType)}Cards`;
-
-    case PAYMENT_METHODS.NetBanking:
-      return `Netbanking on all ${wordWithSpace(BANK_MAP[issuer])}accounts`;
-
-    case PAYMENT_METHODS.Wallet:
-      return `All ${wordWithSpace(WALLET_MAP[issuer])}wallets`;
-
-    case PAYMENT_METHODS.UPI:
-      return `UPI`;
-
-    case PAYMENT_METHODS.EMI:
-      return `EMI on all ${wordWithSpace(BANK_MAP[issuer])}${wordWithSpace(
-        PAYMENT_NETWORK_MAP[paymentNetwork],
-      )}${wordWithSpace(cardType)}cards`;
-
-    case PAYMENT_METHODS.CardLessEmi:
-      return `Cardless EMI`;
-
-    case PAYMENT_METHODS.PayLater:
-      return `Paylater`;
-  }
-
-  return wordWithSpace(BANK_MAP[issuer]);
-};
-
 function DualColumnTable({ heading, children, columnRatio = 0.25 }) {
   return (
     <div
@@ -159,5 +159,5 @@ function DualColumnTable({ heading, children, columnRatio = 0.25 }) {
 }
 
 function wordWithSpace(word) {
-  return word ? word + ' ' : '';
+  return word ? `${word} ` : '';
 }

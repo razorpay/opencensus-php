@@ -1,3 +1,4 @@
+import React from 'react';
 import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
 import PropTypes from 'prop-types';
@@ -14,9 +15,9 @@ import Amount from 'common/ui/Amount';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
 import { OfferStatusLabel } from 'merchant/components/StatusLabel';
 
-import { deepClone } from 'razorx/helpers/utils';
 import { PAYMENT_NETWORK_MAP, OFFER_TYPE_LABELS, ISSUERS } from '../constants';
 import SubscriptionUsageDetails from './SubscriptionUsageDetails';
+import { emiDurationString } from 'merchant/views/Offers/New/helpers';
 
 @connect((state) => ({ ...state.offer, user: state.session.user }), {
   ...OffersActions,
@@ -29,26 +30,35 @@ export default class OffersDetails extends React.Component {
     confirm: PropTypes.func,
   };
 
+  state = {
+    prevID: this.props.id,
+    fetchOfferID: this.props.fetchOffer,
+  };
+
   get isSubscriptionOffer() {
-    return (
-      this.props.offer.product_type === 'subscription' &&
-      this.props.user.isSubscriptionOffersEnabled
-    );
+    const { offer, user } = this.props;
+    return offer?.product_type === 'subscription' && user?.isSubscriptionOffersEnabled;
   }
 
-  UNSAFE_componentWillMount() {
-    this.props.fetchOffer(this.props.id);
+  componentDidMount() {
+    const { fetchOffer, id } = this.props;
+    fetchOffer(id);
   }
 
-  UNSAFE_componentWillReceiveProps(nextProps) {
-    if (this.props.id !== nextProps.id) {
-      this.props.fetchOffer(nextProps.id);
+  static getDerivedStateFromProps(props, state) {
+    const { id } = props;
+    const { prevID, fetchOfferID } = state;
+    if (id !== prevID) {
+      fetchOfferID(id);
+      return { prevID: id };
     }
+    return null;
   }
 
   toggleActivation = () => {
-    const { offer, tracking } = this.props;
-    const actionName = offer.active ? 'Disable' : 'Enable';
+    const { offer, tracking, fetchOffer, updateOfferInReduxList, showNotification } = this.props;
+    const { id, active, current_offer_usage } = offer;
+    const actionName = active ? 'Disable' : 'Enable';
 
     // analytics
     tracking.trackEvent(
@@ -58,16 +68,16 @@ export default class OffersDetails extends React.Component {
     );
 
     let message = (
-      <div class="text-semi-muted">
+      <div className="text-semi-muted">
         <p>The offer will be {actionName}d</p>
       </div>
     );
 
     if (this.isSubscriptionOffer) {
       message = (
-        <div class="disable-offer-alert">
-          <div class="heading">
-            This Offer is active on {offer.current_offer_usage || 0} subscriptions!
+        <div className="disable-offer-alert">
+          <div className="heading">
+            This Offer is active on {current_offer_usage || 0} subscriptions!
           </div>
 
           <div>
@@ -89,19 +99,19 @@ export default class OffersDetails extends React.Component {
       affirmativePendingLabel: 'Requesting...',
       abortLabel: "No, don't!",
       action: () => {
-        let activationValue = offer.active ? 0 : 1;
+        const activationValue = active ? 0 : 1;
         offer.active = activationValue;
 
         return offer
           .save()
           .then((offer) => {
-            this.props.showNotification({
+            showNotification({
               type: 'success',
               message: `Offer ${actionName}d!`,
             });
 
-            this.props.fetchOffer(offer.id);
-            this.props.updateOfferInReduxList(offer);
+            fetchOffer(id);
+            updateOfferInReduxList(offer);
 
             //analytics code here
             tracking.trackEvent(
@@ -116,7 +126,7 @@ export default class OffersDetails extends React.Component {
               errors = 'Some network error has occurred';
             }
 
-            this.props.showNotification({
+            showNotification({
               type: 'error',
               message: errors,
             });
@@ -127,33 +137,61 @@ export default class OffersDetails extends React.Component {
 
   render() {
     const { loading, offer } = this.props;
+    const {
+      id,
+      name,
+      display_text,
+      percent_rate,
+      payment_method,
+      iins: offerIINs,
+      payment_method_type,
+      payment_network,
+      issuer,
+      starts_at,
+      ends_at,
+      active,
+      product_type,
+      current_offer_usage,
+      block,
+      default_offer,
+      min_amount,
+      flat_cashback,
+      max_cashback,
+      max_offer_usage,
+      type,
+      emi_subvention,
+      emi_durations,
+      redemption_type,
+      terms,
+      no_of_cycles,
+    } = offer;
 
-    const discountType = offer.percent_rate !== null ? 'Percentage' : 'Flat';
+    const discountType = percent_rate !== null ? 'Percentage' : 'Flat';
     const isPercentageDiscount = discountType === 'Percentage';
-    const isCardPayment = offer.payment_method == 'card';
-    const iins = (offer.iins && offer.iins.join(', ')) || '--';
+    const isCardPayment = payment_method == 'card';
+    const iins = (offerIINs && offerIINs.join(', ')) || '--';
 
-    let paymentMethod = offer.payment_method || '--';
-    if (paymentMethod == 'card') {
+    let paymentMethod = payment_method || '--';
+    if (paymentMethod === 'card') {
       paymentMethod = 'Debit Card';
-      if (offer.payment_method_type == 'credit') {
+      if (payment_method_type == 'credit') {
         paymentMethod = 'Credit Card';
       }
-      if (offer.payment_method_type === null) {
+      if (payment_method_type === null) {
         paymentMethod = 'Both Credit and Debit cards';
       }
     }
 
     return (
-      <div class="Offers--Details content-wrapper content-sm txn-details">
+      <div className="Offers--Details content-wrapper content-sm txn-details">
         {loading ? (
-          <div class="page-spinner-container">
+          <div className="page-spinner-container">
             <Spinner />
           </div>
         ) : (
-          <div class="panel panel-default SliderPanel">
-            <div class="panel-heading">
-              <i class="i i-link text-primary icon--formal" /> <strong>{offer.id}</strong>
+          <div className="panel panel-default SliderPanel">
+            <div className="panel-heading">
+              <i className="i i-link text-primary icon--formal" /> <strong>{id}</strong>
             </div>
 
             {this.isSubscriptionOffer && (
@@ -167,104 +205,109 @@ export default class OffersDetails extends React.Component {
               </>
             )}
 
-            <div class="SliderPanel__Body">
-              <div class="panel-body">
-                <div class="list-group details-row-container">
+            <div className="SliderPanel__Body">
+              <div className="panel-body">
+                <div className="list-group details-row-container">
                   <EntityDetailRow label="Created At">
-                    <Time format="DD MMM YYYY, hh:mm a" value={offer.starts_at} />
+                    <Time format="DD MMM YYYY, hh:mm a" value={starts_at} />
                   </EntityDetailRow>
 
                   <EntityDetailRow label="Status">
-                    <OfferStatusLabel status={offer.active ? 'enabled' : 'disabled'} />
+                    <OfferStatusLabel status={active ? 'enabled' : 'disabled'} />
                     <Button.Transparent
                       class="Button--Link"
                       style={{ marginLeft: 12 }}
                       onClick={this.toggleActivation}
                     >
-                      {offer.active ? 'Disable' : 'Enable'}
+                      {active ? 'Disable' : 'Enable'}
                     </Button.Transparent>
                   </EntityDetailRow>
 
-                  <EntityDetailRow label="Offer Name" value={offer.name} />
+                  <EntityDetailRow label="Offer Name" value={name} />
 
-                  <EntityDetailRow label="Display Text" value={offer.display_text} />
+                  <EntityDetailRow label="Display Text" value={display_text} />
 
-                  <EntityDetailRow label="Terms" value={offer.terms} />
+                  <EntityDetailRow label="Terms" value={terms} />
 
                   {/* TODO: Check this logic with BE */}
-                  {offer.product_type && (
-                    <EntityDetailRow label="Promotion Type" value={offer.product_type} />
-                  )}
+                  {product_type && <EntityDetailRow label="Promotion Type" value={product_type} />}
 
-                  <EntityDetailRow label="Offer Usage" value={offer.current_offer_usage} />
+                  <EntityDetailRow label="Offer Usage" value={current_offer_usage} />
 
                   <EntityDetailRow
                     label="On Offer Failure"
-                    value={offer.block ? 'Block Payment' : 'Allow Payment'}
+                    value={block ? 'Block Payment' : 'Allow Payment'}
                   />
 
                   <EntityDetailRow
                     label="Checkout Visibility"
-                    value={offer.default_offer ? 'Yes' : 'No'}
+                    value={default_offer ? 'Yes' : 'No'}
                   />
 
                   <EntityDetailRow label="Min Payment">
-                    <Amount value={offer.min_amount} currency={'INR'} />
+                    <Amount value={min_amount} currency="INR" />
                   </EntityDetailRow>
 
                   <EntityDetailRow label="Start of Offer">
-                    <Time format="DD MMM YYYY, hh:mm a" value={offer.starts_at} />
+                    <Time format="DD MMM YYYY, hh:mm a" value={starts_at} />
                   </EntityDetailRow>
 
                   <EntityDetailRow label="Expiry of Offer">
-                    <Time format="DD MMM YYYY, hh:mm a" value={offer.ends_at} />
+                    <Time format="DD MMM YYYY, hh:mm a" value={ends_at} />
                   </EntityDetailRow>
 
                   <EntityDetailRow label="Discount Type" value={discountType} />
 
                   <EntityDetailRow label="Discount Worth">
-                    {offer.percent_rate !== null ? (
-                      <span>{offer.percent_rate / 100}%</span>
+                    {percent_rate !== null ? (
+                      <span>{percent_rate / 100}%</span>
                     ) : (
-                      <Amount value={offer.flat_cashback} currency={'INR'} />
+                      <Amount value={flat_cashback} currency="INR" />
                     )}
                   </EntityDetailRow>
 
                   {isPercentageDiscount && (
                     <EntityDetailRow label="Max Cashback">
-                      <Amount value={offer.max_cashback} currency={'INR'} />
+                      <Amount value={max_cashback} currency="INR" />
                     </EntityDetailRow>
                   )}
 
-                  <EntityDetailRow label="Maximum Usage" value={offer.max_offer_usage} />
+                  <EntityDetailRow label="Maximum Usage" value={max_offer_usage} />
 
                   <EntityDetailRow label="Method" value={paymentMethod} />
 
+                  {paymentMethod === 'emi' && (
+                    <EntityDetailRow
+                      label="Method Type"
+                      value={payment_method_type === 'debit' ? 'Debit Card' : 'Credit Card'}
+                    />
+                  )}
+
                   {isCardPayment && (
-                    <React.Fragment>
+                    <>
                       <EntityDetailRow label="IINs" value={iins} />
                       <EntityDetailRow
                         label="Network"
-                        value={PAYMENT_NETWORK_MAP[offer.payment_network]}
+                        value={PAYMENT_NETWORK_MAP[payment_network]}
                       />
-                    </React.Fragment>
+                    </>
                   )}
 
-                  <EntityDetailRow label="Bank Name" value={ISSUERS[offer.issuer]} />
+                  <EntityDetailRow label="Bank Name" value={ISSUERS[issuer]} />
 
-                  <EntityDetailRow label="Offer Type" value={OFFER_TYPE_LABELS[offer.type]} />
+                  <EntityDetailRow label="Offer Type" value={OFFER_TYPE_LABELS[type]} />
 
-                  {offer.emi_subvention && (
+                  {emi_subvention && (
                     <EntityDetailRow
                       label="Emi Durations"
-                      value={emiDurationString(offer.emi_durations)}
+                      value={emiDurationString(emi_durations)}
                     />
                   )}
 
                   {this.isSubscriptionOffer && (
                     <>
-                      <EntityDetailRow label="Redemption Type" value={offer.redemption_type} />
-                      <EntityDetailRow label="Number of Cycles" value={offer.no_of_cycles} />
+                      <EntityDetailRow label="Redemption Type" value={redemption_type} />
+                      <EntityDetailRow label="Number of Cycles" value={no_of_cycles} />
                     </>
                   )}
                 </div>
@@ -275,16 +318,4 @@ export default class OffersDetails extends React.Component {
       </div>
     );
   }
-}
-
-// TODO: move this to helpers
-export function emiDurationString(emiDurations) {
-  let durations = deepClone(emiDurations);
-
-  let lastDurationString = ' months';
-  if (durations.length > 1) {
-    lastDurationString = ` and ${durations.pop()}${lastDurationString}`;
-  }
-
-  return durations.join(', ') + lastDurationString;
 }

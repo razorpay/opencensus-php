@@ -1,3 +1,4 @@
+import React from 'react';
 import Input from 'common/new-ui/Input';
 import {
   PAYMENT_METHODS,
@@ -5,33 +6,53 @@ import {
   PaymentIssuersOptions,
   PaymentNetworksOptions,
   WalletIssuersOptions,
-  MAX_DISCOUNT,
   CREDIT_DEBIT_CARDS_OPTIONS,
-  CREDIT_CARDS_OPTIONS,
+  EMI_CARDS_OPTIONS,
+  EMI_DEBIT_CARD_BANK_OPTIONS,
 } from 'merchant/views/Offers/constants';
-import { rupeesToPaise } from 'common/utils/rzp-utils';
+import { validatePaymentMethod, validateMaxPaymentCount } from 'merchant/views/Offers/New/helpers';
 
 export default class ApplicableOn extends React.Component {
+  state = { selectedPaymentMethodType: '' };
+
   get currentSelectedPaymentMethod() {
     const { payment_method } = this.props.formData;
+    const { Card, NetBanking, Wallet, UPI, EMI, PayLater, CardLessEmi } = PAYMENT_METHODS;
     return {
-      isCard: payment_method === PAYMENT_METHODS.Card,
-      isNetBanking: payment_method === PAYMENT_METHODS.NetBanking,
-      isWallet: payment_method === PAYMENT_METHODS.Wallet,
-      isUPI: payment_method === PAYMENT_METHODS.UPI,
-      isEMI: payment_method === PAYMENT_METHODS.EMI,
-      isPayLater: payment_method === PAYMENT_METHODS.PayLater,
-      isCardLessEmi: payment_method === PAYMENT_METHODS.CardLessEmi,
+      isCard: payment_method === Card,
+      isNetBanking: payment_method === NetBanking,
+      isWallet: payment_method === Wallet,
+      isUPI: payment_method === UPI,
+      isEMI: payment_method === EMI,
+      isPayLater: payment_method === PayLater,
+      isCardLessEmi: payment_method === CardLessEmi,
     };
   }
 
-  render() {
-    const { props } = this;
-    const { formData } = props;
+  onMethodTypeChange = (event) => {
+    const { value } = event.target;
+    this.setState({ selectedPaymentMethodType: value });
+  };
 
-    const PaymentMethodTypeOptions = this.currentSelectedPaymentMethod.isEMI
-      ? CREDIT_CARDS_OPTIONS
-      : CREDIT_DEBIT_CARDS_OPTIONS;
+  render() {
+    const { selectedPaymentMethodType } = this.state;
+    const { formData, isFormLocked } = this.props;
+    const {
+      payment_method,
+      issuer,
+      payment_method_type,
+      payment_network,
+      max_payment_count,
+      iins,
+    } = formData;
+    const { isEMI, isWallet, isCard, isNetBanking } = this.currentSelectedPaymentMethod;
+
+    const PaymentMethodTypeOptions = isEMI ? EMI_CARDS_OPTIONS : CREDIT_DEBIT_CARDS_OPTIONS;
+
+    let bankOptions = PaymentIssuersOptions;
+    if (isEMI && selectedPaymentMethodType === 'debit') {
+      bankOptions = EMI_DEBIT_CARD_BANK_OPTIONS;
+    }
 
     return (
       <React.Fragment>
@@ -41,47 +62,48 @@ export default class ApplicableOn extends React.Component {
           label="Payment Method"
           options={PaymentMethodsOptions}
           placeholder="Select Payment Method"
-          defaultValue={formData.payment_method}
+          defaultValue={payment_method}
           validator={validatePaymentMethod}
-          disabled={props.isFormLocked}
+          disabled={isFormLocked}
         />
 
-        {this.currentSelectedPaymentMethod.isWallet && (
+        {isWallet && (
           <Input.Select
             name="issuer"
             label="Issuer"
-            defaultValue={formData.issuer}
+            defaultValue={issuer}
             placeholder="Select Bank"
             options={WalletIssuersOptions}
-            disabled={props.isFormLocked}
+            disabled={isFormLocked}
           />
         )}
 
-        {(this.currentSelectedPaymentMethod.isCard || this.currentSelectedPaymentMethod.isEMI) && (
+        {(isCard || isEMI) && (
           <React.Fragment>
             <Input.Select
               name="payment_method_type"
               label="Card Type"
-              defaultValue={formData.payment_method_type}
+              defaultValue={payment_method_type}
               options={PaymentMethodTypeOptions}
-              disabled={props.isFormLocked}
+              disabled={isFormLocked}
+              onChange={this.onMethodTypeChange}
             />
 
             <Input.Select
               name="issuer"
               label="Bank"
               placeholder="Select Bank"
-              defaultValue={formData.issuer}
-              disabled={props.isFormLocked}
-              options={PaymentIssuersOptions}
+              defaultValue={issuer}
+              disabled={isFormLocked}
+              options={bankOptions}
             />
 
             <Input.Select
               label="Network"
               name="payment_network"
               placeholder="Select network"
-              defaultValue={formData.payment_network}
-              disabled={props.isFormLocked}
+              defaultValue={payment_network}
+              disabled={isFormLocked}
               options={PaymentNetworksOptions}
             />
 
@@ -89,55 +111,34 @@ export default class ApplicableOn extends React.Component {
               type="number"
               label="Max Usage Per Card"
               name="max_payment_count"
-              defaultValue={formData.max_payment_count}
+              defaultValue={max_payment_count}
               placeholder="Max times a card can be used to avail this offer"
               validator={validateMaxPaymentCount}
-              disabled={props.isFormLocked}
+              disabled={isFormLocked}
             />
 
             <Input
               name="iins"
               label="IINs"
-              defaultValue={formData.iins}
+              defaultValue={iins}
               placeholder="6 digit IINs for cards. Separated by comma if more than one"
-              description={formData.iins && formData.iins.join(', ')}
-              disabled={props.isFormLocked}
+              description={iins && iins.join(', ')}
+              disabled={isFormLocked}
             />
           </React.Fragment>
         )}
 
-        {this.currentSelectedPaymentMethod.isNetBanking && (
+        {isNetBanking && (
           <Input.Select
             label="Issuer"
             name="issuer"
-            defaultValue={formData.issuer}
+            defaultValue={issuer}
             placeholder="Payment Instrument Issuer/Bank Name"
             options={PaymentIssuersOptions}
-            disabled={props.isFormLocked}
+            disabled={isFormLocked}
           />
         )}
       </React.Fragment>
     );
-  }
-}
-
-function validatePaymentMethod(val) {
-  if (!val) {
-    return 'Payment method cannot be empty';
-  }
-}
-
-function validateMaxPaymentCount(val) {
-  if (!val) return;
-
-  if (!new RegExp('^[0-9]+$').test(val)) {
-    return 'Please enter a number';
-  }
-
-  val = parseFloat(val);
-  // Converting to value entered in RS to Paise for proper validation
-  val = rupeesToPaise(val);
-  if (val > MAX_DISCOUNT) {
-    return `Maximum value allowed is ${MAX_DISCOUNT}`;
   }
 }
