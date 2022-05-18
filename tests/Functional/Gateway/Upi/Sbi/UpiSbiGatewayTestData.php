@@ -223,7 +223,7 @@ return [
             'content'     => [
                 'vpa'           => "success@sbi",
                 'success'       => true,
-                'customer_name' => "Test User",
+                'customer_name' => "*********",
             ],
             'status_code' => 200,
         ],

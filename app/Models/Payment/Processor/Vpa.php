@@ -44,7 +44,7 @@ trait Vpa
                 $existing
             );
 
-            return $existing;
+            return $this->processValidateVpaResponse($existing);
         }
 
         $traceable = [];
@@ -121,6 +121,21 @@ trait Vpa
         $response['customer_name'] = $gatewayResponse;
 
         (new PaymentsUpi\Vpa\Service)->handleValidateVpaResponse($response);
+
+        return $this->processValidateVpaResponse($response);;
+    }
+
+    public function processValidateVpaResponse($response)
+    {
+        if ($this->app['basicauth']->isPublicAuth())
+        {
+            return [
+                'vpa'               => $response['vpa'],
+                'success'           => $response['success'],
+                // mask customer name
+                'customer_name'     => mask_by_percentage($response['customer_name'], 0.9),
+            ];
+        }
 
         return $response;
     }

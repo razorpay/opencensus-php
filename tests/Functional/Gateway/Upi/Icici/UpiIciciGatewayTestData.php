@@ -479,7 +479,7 @@ return [
             'content'     => [
                 'vpa'           => "success@icici",
                 'success'       => true,
-                'customer_name' => "Rohit",
+                'customer_name' => "*****",
             ],
             'status_code' => 200,
         ],

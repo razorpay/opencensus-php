@@ -443,6 +443,49 @@ class UpiSbiGatewayTest extends TestCase
         $this->startTest();
     }
 
+    // Test removal of Customer Name from Validate Account(Public Route) Response.
+    public function testValidateAccount()
+    {
+        $request = [
+            'url'    => '/payments/validate/account',
+            'method' => 'post',
+            'content' => [
+                'entity' => 'vpa',
+                'value'  => 'success@sbi',
+            ],
+        ];
+
+        $this->ba->publicAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertArrayKeysExist($response, ['vpa', 'success','customer_name']);
+        $this->assertEquals(true, $response['success']);
+        $this->assertEquals("*********", $response['customer_name']);
+    }
+
+    public function testValidateVpa()
+    {
+        $request   = [
+            'url'       => '/payment/validate/vpa',
+            'method'    => 'post',
+            'content'   => [
+                'vpa' => 'success@sbi',
+            ],
+        ];
+
+        config()->set('gateway.validate_vpa_terminal_ids.test', '100UPIMgateSbi');
+        $this->fixtures->merchant->addFeatures(['enable_vpa_validate']);
+
+        $this->ba->privateAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertArrayKeysExist($response, ['vpa', 'success', 'customer_name']);
+        $this->assertEquals("Test User", $response['customer_name']);
+        $this->assertEquals(true, $response['success']);
+    }
+
     /**
      * When we verify a payment whose vpa validation failed,
      * we should be getting a response that says no transaction found.
