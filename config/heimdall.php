@@ -1694,6 +1694,14 @@ return [
                 'description' => 'Allows an admin user to create an offer above a specified limit',
                 'assignable'  => true,
             ],
+            Permission::CAPITAL_LOS_APPLICATION_DOC_VERIFICATION_DETAILS_READ => [
+                'description' => 'Allows an admin user to view document verification details in Capital LOS',
+                'assignable'  => true,
+            ],
+            Permission::CAPITAL_LOS_APPLICATION_DOC_VERIFICATION_DETAILS_TRIGGER => [
+                'description' => 'Allows an admin user to trigger document verification flows in Capital LOS',
+                'assignable'  => true,
+            ],
         ],
 
         PermissionCategory::PAYOUTS => [
