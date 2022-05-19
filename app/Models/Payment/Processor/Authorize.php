@@ -8064,7 +8064,7 @@ trait Authorize
     {
         $card = $token->card;
 
-        if((new TokenisationExperiment())->shouldPaymentProcessThroughTokenisedCard($token) === true)
+        if ((new TokenisationExperiment())->shouldPaymentProcessThroughTokenisedCard($token, $this->merchant) === true)
         {
             $this->logTokenisedCardPaymentRoutingInfo($token, false);
 

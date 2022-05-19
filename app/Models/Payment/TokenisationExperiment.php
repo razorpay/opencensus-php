@@ -38,11 +38,18 @@ class TokenisationExperiment
      * 2. Ramp up list - x% traffic will go through tokenised card
      * 3. Whitelist - everything else will go through tokenised card
      *
-     * @param  Token\Entity $token
+     * @param Token\Entity    $token    The token being used to make the payment
+     * @param Merchant\Entity $merchant The merchant associated with the payment
+     *
      * @return bool
      */
-    public function shouldPaymentProcessThroughTokenisedCard(Token\Entity $token): bool
+    public function shouldPaymentProcessThroughTokenisedCard(Token\Entity $token, Merchant\Entity $merchant): bool
     {
+        if ($merchant->isTokenisedCardPaymentEnabledForMerchant() === false)
+        {
+            return false;
+        }
+
         if (($token->isGlobal() === true) and
             ($this->shouldGlobalCardPaymentGoThroughTokenisedCardExp() === false))
         {
@@ -171,7 +178,7 @@ class TokenisationExperiment
      * customer in the payment create flow
      *
      * @param string $merchantId
-     * 
+     *
      * @return bool
      */
     public function shouldCreateLocalTokenOnGlobalCustomer(string $merchantId): bool

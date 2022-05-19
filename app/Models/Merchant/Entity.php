@@ -1037,6 +1037,11 @@ class Entity extends Base\PublicEntity
         return ($this->isFeatureEnabled(Feature\Constants::DISABLE_COLLECT_CONSENT) === false);
     }
 
+    public function isTokenisedCardPaymentEnabledForMerchant(): bool
+    {
+        return ($this->isFeatureEnabled(Feature\Constants::DISABLE_TOKENISED_PAYMENT) === false);
+    }
+
     public function isShowMorTncEnabled(): bool
     {
         return ($this->isFeatureEnabled(Feature\Constants::SHOW_MOR_TNC) === true);

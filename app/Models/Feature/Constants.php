@@ -1155,6 +1155,15 @@ class Constants
     const DISABLE_COLLECT_CONSENT = 'disable_collect_consent';
 
     /**
+     * Feature flag to control tokenised card payments
+     * If activated, tokenised card payments will go through plain card number
+     *      instead of tokenised card number for the merchant
+     * Can be removed post June 30th tokenisation deadline
+     *      since plain card number won't be available post deadline
+     */
+    const DISABLE_TOKENISED_PAYMENT = 'disable_tokenised_payment';
+
+    /**
      * Flag to enable the new composite payout flow meant for high tps merchants.
      * Initially implemented specifically for whatsapp.
      */
