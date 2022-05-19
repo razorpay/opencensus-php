@@ -31,6 +31,12 @@ class RequestResponseFormatting
 
     public function processErrorAndReturnResponse(array $input, string $status, Throwable $e = null): array
     {
+        $this->trace->info(TraceCode::BANKING_ACCOUNT_CREATE_FROM_RBL_LEAD_API_TRACE, [
+            'input' => $input,
+            'error' => $e,
+            'status' => $status
+        ]);
+
         if ($status === "")
         {
             $message = $e->getMessage();
