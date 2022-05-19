@@ -4,25 +4,69 @@ import { withRouter } from 'react-router-dom';
 import { ModalContent } from 'common/new-ui/Modal';
 import { closeModal, notifySuccess, notifyError } from 'razorx/components/Modal';
 import Form from 'razorx/components/ui/Form';
-import { TextAreaField } from 'razorx/components/ui/Field';
+import { TextAreaField, SelectField, SearchableSelectField } from 'razorx/components/ui/Field';
 import { splitzFetch } from 'razorx/helpers/fetch';
 
+const EntityIds = 'Entity IDs';
+const SegmentIds = 'Segment';
+
+const dropDownProperties = [EntityIds, SegmentIds].map((item) => (
+  <option key={item} value={item}>
+    {item}
+  </option>
+));
 @withRouter
 export default class WhitelistExperiment extends React.Component {
   state = {
     isSaving: false,
     variants: this.props.variants,
+    selectedWhitelistTypes: {},
+    segments: null,
+    selectedSegments: {},
   };
 
+  segmentListFetch = () => {
+    splitzFetch({
+      url: 'segment.v1.SegmentAPI/List',
+      data: {
+        limit: 1000,
+        offset: 0,
+      },
+    })
+      .then((response) => {
+        this.setState({ segments: response?.items });
+      })
+      .catch((err) => {
+        notifyError(err);
+      });
+  };
+
+  componentDidMount() {
+    this.segmentListFetch();
+  }
+
   onSubmit = () => {
+    const { data } = this.props;
+    const { variants, selectedWhitelistTypes, selectedSegments } = this.state;
     const payload = {
-      id: this.props.data.id,
-      whitelisting: this.state.variants
-        .map((variant) => ({
-          entity_id: variant.id,
-          ids: variant.whitelistedIds,
-        }))
-        .filter((variant) => variant.ids.length),
+      id: data.id,
+      whitelisting: variants.map((variant) => {
+        const selectedSegment = selectedSegments[variant.id];
+        if (
+          selectedWhitelistTypes[variant.id] === EntityIds ||
+          !selectedWhitelistTypes[variant.id]
+        ) {
+          return {
+            entity_id: variant?.id,
+            ids: variant?.whitelistedIds,
+          };
+        } else {
+          return {
+            entity_id: variant?.id,
+            segment_id: selectedSegment?.id,
+          };
+        }
+      }),
     };
 
     const url = 'experiment.v1.ExperimentAPI/Action';
@@ -43,8 +87,55 @@ export default class WhitelistExperiment extends React.Component {
       });
   };
 
+  getWhitelistedSegmentIds = (variantId) => {
+    const { data } = this.props;
+
+    if (!data.whitelisting || !data.whitelisting.length) {
+      return [];
+    }
+
+    const whitelist = data.whitelisting.find((matchingId) => matchingId.entity_id === variantId);
+
+    if (whitelist) {
+      return whitelist.segment_id;
+    }
+
+    return [];
+  };
+
+  handleSelectedType = (e, variantId) => {
+    const { selectedWhitelistTypes } = this.state;
+    this.setState({
+      selectedWhitelistTypes: {
+        ...selectedWhitelistTypes,
+        [variantId]: e.target.value,
+      },
+    });
+  };
+
+  handleSelectedSegment = (e, variantId) => {
+    const { selectedSegments } = this.state;
+    this.setState({
+      selectedSegments: { ...selectedSegments, [variantId]: e.option },
+    });
+  };
+
+  setWhitelistIds = ({ target: { value: ids } }, variantId, variants) => {
+    this.setState({
+      variants: variants.map((v) => {
+        if (v.id === variantId) {
+          return {
+            ...v,
+            whitelistedIds: ids.split(','),
+          };
+        }
+        return v;
+      }),
+    });
+  };
+
   render() {
-    const { isSaving, variants } = this.state;
+    const { isSaving, variants, selectedWhitelistTypes, segments, selectedSegments } = this.state;
 
     return (
       <ModalContent class="modal-features modal-json-edit" header="Whitelist Entity IDs">
@@ -54,51 +145,57 @@ export default class WhitelistExperiment extends React.Component {
           style={{ opacity: isSaving ? 0.5 : 1 }}
         >
           {isSaving && <div className="spinner center" />}
-          <div className="sub-description" style={{ color: 'orange' }}>
-            <i
-              className="fa fa-exclamation-circle"
-              style={{ paddingRight: '5px', paddingTop: '3px' }}
-            />
-            Whitelisting is only for testing/debugging purpose and has limit of 50. Please use
-            audience and segments for bucketing
+          <div className="sub-description whitelist-description">
+            <i className="fa fa-exclamation-circle whitelist-description-text" />
+            Whitelisting with Entity IDs has limit of 50. To set higher limit, use
+            &lsquo;Segment&rsquo; Type
           </div>
           <br />
-          {variants.map((variant, index) => (
-            <div
-              className="segment pad-highlight"
-              key={variant.id}
-              style={{ padding: '20px 0px', borderBottom: '1px solid rgba(0,0,0,0.04)' }}
-            >
-              <span className="label" style={{ fontSize: '11px' }}>
-                Variant #{index + 1}
-              </span>
-              <div>
-                <span className="square-pills label-semi-muted" style={{ fontSize: '14px' }}>
-                  {variant.name}
-                </span>
+
+          {variants.map((variant, index) => {
+            const whitelistedSegmentIds = this.getWhitelistedSegmentIds(variant.id);
+            return (
+              <div className="segment pad-highlight whitelist-box" key={variant.id}>
+                <span className="label variant-heading">Variant #{index + 1}</span>
+                <div>
+                  <span className="square-pills label-semi-muted variant-name">{variant.name}</span>
+                </div>
+                <SelectField
+                  name="type"
+                  label="Type"
+                  defaultValue={whitelistedSegmentIds ? SegmentIds : EntityIds}
+                  onChange={(e) => {
+                    this.handleSelectedType(e, variant.id);
+                  }}
+                >
+                  {dropDownProperties}
+                </SelectField>
+                <br />
+                {selectedWhitelistTypes[variant.id] === EntityIds ||
+                (!selectedWhitelistTypes[variant.id] && !whitelistedSegmentIds) ? (
+                  <TextAreaField
+                    label="Entity IDs: (max 50) (comma seperated)"
+                    placeholder="Add comma separated list of IDs"
+                    value={variant?.whitelistedIds?.join()}
+                    onChange={({ target: { value: ids } }) => {
+                      this.setWhitelistIds({ target: { value: ids } }, variant.id, variants);
+                    }}
+                  />
+                ) : (
+                  <SearchableSelectField
+                    name="segment_id"
+                    placeholder="Select a Segment ID"
+                    label="Select Segment ID"
+                    options={segments || []}
+                    selected={selectedSegments[variant.id] || whitelistedSegmentIds}
+                    onChange={(e) => {
+                      this.handleSelectedSegment(e, variant.id);
+                    }}
+                  />
+                )}
               </div>
-              <br />
-              <TextAreaField
-                label="Entity IDs: (max 50)                       (comma seperated)"
-                placeholder="Add comma separated list of IDs"
-                value={variant.whitelistedIds.join()}
-                onChange={({ target: { value: ids } }) => {
-                  this.setState({
-                    variants: variants.map((v) => {
-                      if (v.id === variant.id) {
-                        return {
-                          ...v,
-                          whitelistedIds: ids.split(','),
-                        };
-                      }
-                      return v;
-                    }),
-                  });
-                }}
-              />
-            </div>
-          ))}
-          <div style={{ marginTop: 24 }} />
+            );
+          })}
           <div className="footer">
             <button className="btn btn--primary">
               Save Whitelisted IDs

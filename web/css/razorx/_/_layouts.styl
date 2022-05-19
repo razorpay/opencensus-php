@@ -64,7 +64,7 @@ $splitz-brown = #67595d;
     left: 0
     width: 100%
     background: $background-anti
-    box-shadow: -4px 0 72px rgba(0,0,0,0.4)
+    box-shadow: -4px 0 72px #00000066
     z-index: 1
 
     &.slide-enter
@@ -93,8 +93,8 @@ $splitz-brown = #67595d;
         width: 400px
         height: 100%
         background: $background-anti-overlay
-        border-left: 1px solid rgba(0,0,0,0.02)
-        border-top: 1px solid rgba(0,0,0,0.02)
+        border-left: 1px solid #00000005
+        border-top: 1px solid #00000005
         padding: 25px 0 0 0
 
         > .entity-details
@@ -104,16 +104,26 @@ $splitz-brown = #67595d;
 
         .pad-highlight
           padding: 8px
-          background: rgba(0,0,0,0.01)
-          border: 1px solid rgba(0,0,0,0.02)
+          background: #00000003
+          border: 1px solid #00000005
           border-radius: 2px
           margin-left: -8px
           margin-right: -8px
           width: unset
           position: relative
 
+        .whitelist-box
+          padding: 20px 0
+          border-bottom: 1px solid #0000000a
+
+        .variant-heading
+          font-size: 11px
+
+        .variant-name
+          font-size: 14px
+
         .separator
-          border-top: 1px solid rgba(0,0,0,0.02)
+          border-top: 1px solid #00000005
           margin: 22px auto
 
         .title
@@ -276,6 +286,12 @@ $splitz-brown = #67595d;
           margin: 0
           font-size: 12px
 
+  .whitelist-description
+          color: #FFA500
+  
+  .whitelist-description-text
+    padding-right: 5px
+    padding-top: 3px
   // experiment list search bar
   .search-box 
     width: 250px

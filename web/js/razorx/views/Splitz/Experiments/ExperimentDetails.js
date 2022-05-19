@@ -14,6 +14,7 @@ import { TextAreaField } from 'razorx/components/ui/Field';
 import { isRzpApprover } from '../../../user';
 import Comment from 'razorx/components/ui/Comment';
 
+// eslint-disable-next-line react/no-unsafe
 @withRouter
 export default class ExperimentDetails extends React.Component {
   optionalRemarks = null;
@@ -201,7 +202,7 @@ export default class ExperimentDetails extends React.Component {
     const experiment = this.state.data;
     const variantsWithWhitelisting = experiment.variants.map((variant) => ({
       ...variant,
-      whitelistedIds: this.getWhitelistedIds(variant.id),
+      whitelistedIds: this.getWhitelistedIds(variant?.id)?.ids,
     }));
 
     openModal(
@@ -236,7 +237,7 @@ export default class ExperimentDetails extends React.Component {
     const whitelist = data.whitelisting.find((w) => w.entity_id === variantId);
 
     if (whitelist) {
-      return whitelist.ids;
+      return whitelist;
     }
 
     return [];
@@ -487,7 +488,7 @@ export default class ExperimentDetails extends React.Component {
                     </span>
                   </div>
                   {variant.variables ? (
-                    <div className="sub-segment" style={{ paddingLeft: '13px' }}>
+                    <div className="sub-segment entity-label">
                       {variant.variables.map((variable, i) => (
                         <div key={i}>
                           <span className="label">{variable.key}: &nbsp;</span>
@@ -496,11 +497,27 @@ export default class ExperimentDetails extends React.Component {
                       ))}
                     </div>
                   ) : null}
-                  {whitelistedIds.length ? (
-                    <div className="sub-segment" style={{ paddingLeft: '13px' }}>
+                  <br />
+                  {whitelistedIds?.segment_id && (
+                    <div className="entity-label">
+                      <span className="label">Whitelisted Segment: </span>
+                      <a
+                        className="link"
+                        onClick={() =>
+                          this.props?.history?.push(
+                            `/splitz/segments/${whitelistedIds?.segment_id}`,
+                          )
+                        }
+                      >
+                        <span className="sub-segment-group">{whitelistedIds?.segment_id}</span>
+                      </a>
+                    </div>
+                  )}
+                  {whitelistedIds?.ids?.length ? (
+                    <div className="sub-segment entity-label">
                       <br />
                       <span className="label">Whitelisted IDs: &nbsp;</span>
-                      {whitelistedIds.map((id, i) => (
+                      {whitelistedIds.ids.map((id, i) => (
                         <div key={i}>
                           <span className="sub-segment-group">{id}</span>
                         </div>
