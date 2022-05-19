@@ -438,4 +438,9 @@ class Constants
     const STORK_RESOURCE_EXHAUSTED_MESSAGE = 'twirp error resource_exhausted: request to send sms has been denied. maximum limit reached';
 
     const API_STORK_RX_SEND_SMS_RAZORX_EXP = 'api_stork_rx_send_sms';
+
+    // Constants related to product-switch for user_fetch
+    const PRODUCT_SWITCH          = 'product_switch';
+
+    const PRODUCT_SWITCH_REQUIRED = 'product_switch_required';
 }

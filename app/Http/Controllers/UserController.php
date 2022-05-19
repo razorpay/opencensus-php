@@ -270,7 +270,9 @@ class UserController extends Controller
 
     public function getUser(string $id)
     {
-        $data = $this->service()->get($id);
+        $input = Request::all();
+
+        $data = $this->service()->get($id, $input);
 
         return ApiResponse::json($data);
     }

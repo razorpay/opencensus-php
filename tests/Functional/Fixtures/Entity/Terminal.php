@@ -2309,6 +2309,35 @@ class Terminal extends Base
         return $this->create($attributes);
     }
 
+    public function createRXTerminal()
+    {
+        $termId = Shared::SHARP_RAZORPAY_TERMINAL;
+
+        $attributes = [
+            'id'                         => $termId,
+            'merchant_id'                => '100000Razorpay',
+            'gateway'                    => Gateway::BT_YESBANK,
+            'gateway_merchant_id'        => '3434',
+            'gateway_terminal_id'        => 'abcde',
+            'gateway_terminal_password'  => 'abcdef',
+            'gateway_terminal_password2' => 'abcdef',
+            'gateway_secure_secret2'     => 'abcdef',
+            'card'                       => 1,
+            'emi'                        => 0,
+            'mc_mpan'                    => base64_encode('1234560000000000'),
+            'visa_mpan'                  => base64_encode('1234560000000001'),
+            'rupay_mpan'                 => base64_encode('1234560000000002'),
+            'vpa'                        => 'random@razorpay',
+            'type'                       => [
+                'non_recurring' => '1',
+            ]
+        ];
+
+        $terminal = $this->createEntityInTestAndLive('terminal', $attributes);
+
+        $this->fixtures->edit('terminal', $terminal['id'], ['gateway_merchant_id' => '232323']);
+    }
+
     public function createSharedSharpTerminal(array $attributes = [])
     {
         $termId = \RZP\Models\Terminal\Shared::SHARP_RAZORPAY_TERMINAL;

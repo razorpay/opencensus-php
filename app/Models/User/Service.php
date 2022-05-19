@@ -33,6 +33,7 @@ use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Models\Feature\Constants as FeatureConstant;
+use RZP\Models\Merchant\Balance\Type as ProductType;
 use RZP\Models\User\RateLimitLoginSignup\Facade as LoginSignupRateLimit;
 
 class Service extends Base\Service
@@ -960,7 +961,7 @@ class Service extends Base\Service
         return $this->setOtpAuthTokenForBankingRequest($response, $user->getId());
     }
 
-    public function get(string $id): array
+    public function get(string $id, array $input = []): array
     {
         if ($this->auth->isAdminAuth() === true or $this->auth->isPrivilegeAuth() === true)
         {
@@ -974,7 +975,96 @@ class Service extends Base\Service
 
         $response = $this->core->get($user);
 
+        $productSwitch = $input[Constants::PRODUCT_SWITCH] ?? 'false';
+
+        if ($productSwitch === 'true')
+        {
+            $productSwitchOccurence = $this->productSwitchIfApplicable($response, $user);
+
+            if ($productSwitchOccurence === true)
+            {
+                $response = $this->core->get($user);
+            }
+        }
+
         return $response;
+    }
+
+    /**
+     * @param array $response
+     * @param Entity $user
+     * @return bool
+     * In case of login via mobile, first login API of API is called and then users API of API is called
+     * Since there is no call to users API of dashboard, product-switch doesn't happen
+     * Hence we are doing product switch on login for mobile as they pass product_switch as "true" in body
+     */
+    public function productSwitchIfApplicable(array $response, Entity $user): bool
+    {
+        $isProductSwitchRequiredResponse = $this->isProductSwitchRequired($response);
+
+        if ($isProductSwitchRequiredResponse[Constants::PRODUCT_SWITCH_REQUIRED] === true)
+        {
+            $merchant = $this->repo->merchant->findOrFail($isProductSwitchRequiredResponse[Entity::MERCHANT_ID]);
+
+            $merchantService = new Merchant\Service();
+
+            $this->app['basicauth']->setMerchant($merchant);
+
+            $this->app['basicauth']->setUser($user);
+
+            $merchantService->switchProductMerchant();
+
+            return true;
+        }
+
+        return false;
+    }
+
+    public function isProductSwitchRequired(array $user): array
+    {
+        $productSwitchMap = [
+            Constants::PRODUCT_SWITCH_REQUIRED => false,
+            Entity::MERCHANT_ID                => '',
+        ];
+
+        $isBankingRequest = $this->app['basicauth']->getRequestOriginProduct() === ProductType::BANKING;
+
+        $merchants = $user[Entity::MERCHANTS];
+
+        $isUserOwnerForSwitchProduct = false;
+
+        $isUserRelatedToCurrentProduct = false;
+
+        foreach ($merchants as $merchant)
+        {
+            if (($isBankingRequest === true &&
+                    $merchant[Entity::PRODUCT] === ProductType::BANKING) ||
+                ($isBankingRequest === false &&
+                    $merchant[Entity::PRODUCT] === ProductType::PRIMARY))
+            {
+                $isUserRelatedToCurrentProduct = true;
+            }
+
+            if (($isBankingRequest === true &&
+                    $merchant[Entity::PRODUCT] === ProductType::PRIMARY &&
+                    $merchant[Entity::ROLE] === Entity::OWNER) ||
+                ($isBankingRequest === false &&
+                    $merchant[Entity::PRODUCT] === ProductType::BANKING &&
+                    $merchant[Entity::BANKING_ROLE] === Entity::OWNER))
+            {
+                $isUserOwnerForSwitchProduct = true;
+
+                $productSwitchMap[Entity::MERCHANT_ID] = $merchant[Entity::ID];
+            }
+        }
+
+        if ($isUserRelatedToCurrentProduct === false &&
+            $isUserOwnerForSwitchProduct === true)
+        {
+            $productSwitchMap[Constants::PRODUCT_SWITCH_REQUIRED] = true;
+        }
+
+        return $productSwitchMap;
     }
 
     public function getActorInfo(string $id): array

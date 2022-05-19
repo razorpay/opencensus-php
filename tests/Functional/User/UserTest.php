@@ -59,6 +59,7 @@ use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
+use RZP\Models\Merchant\Detail\Entity as MerchantDetails;
 use RZP\Models\Merchant\Store\Constants as StoreConstants;
 use RZP\Models\Merchant\Store\ConfigKey as StoreConfigKey;
 use RZP\Tests\Functional\Fixtures\Entity\User as UserFixture;
@@ -697,6 +698,229 @@ class UserTest extends TestCase
         $this->ba->dashboardGuestAppAuth();
 
         $this->startTest();
+    }
+
+    public function testGetInXWhenUserOnPg()
+    {
+        $user = $this->fixtures->create('user');
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            'merchant_id'   => $user->merchants()->get()[0]->getId(),
+        ]);
+
+        $this->fixtures->edit('merchant', $user->merchants()->get()[0]->getId(), [
+            'activated' => true,
+        ]);
+
+        $this->fixtures->terminal->createRXTerminal();
+
+        $this->testData[__FUNCTION__] = $this->testData['testGet'];
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/users/' . $user['id'];
+
+        $testData['request']['server']['HTTP_X-Dashboard-User-id'] = $user['id'];
+
+        $testData['request']['server']['HTTP_X-Request-Origin'] = config('applications.banking_service_url');
+
+        $testData['request']['content']['product_switch'] = 'true';
+
+        $testData['response']['content']['merchants'][0]['activated'] = true;
+
+        $bankingMerchant = DB::connection('test')->table('merchant_users')
+            ->where('user_id', '=', $user->getId())
+            ->where('merchant_id', '=', $user->merchants()->get()[0]->getId())
+            ->where('product', '=', 'banking')
+            ->pluck('user_id','merchant_id', 'product');
+
+        $this->assertEquals(count($bankingMerchant), 0);
+
+        $this->assertBankingEntitiesNullInTestMode($merchantDetail);
+
+        $this->assertBankingEntitiesNullInLiveMode($merchantDetail);
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+
+        $bankingMerchant = DB::connection('test')->table('merchant_users')
+            ->where('user_id', '=', $user->getId())
+            ->where('merchant_id', '=', $user->merchants()->get()[0]->getId())
+            ->where('product', '=', 'banking')
+            ->pluck('user_id','merchant_id', 'product');
+
+        $this->assertEquals(count($bankingMerchant), 1);
+
+        $this->assertBankingEntitiesNotNullInTestMode($merchantDetail);
+
+        $this->assertBankingEntitiesNotNullInLiveMode($merchantDetail);
+    }
+
+    public function testGetInPgWhenUserOnX()
+    {
+        $user = $this->fixtures->user->createBankingUserForMerchant('10000000000000', [], 'owner', 'live');
+
+        $mappingData = [
+            'merchant_id' => '10000000000000',
+            'user_id'     => $user['id'],
+            'role'        => 'owner',
+            'product'     => 'banking'
+        ];
+
+        $this->fixtures->user->createUserMerchantMapping($mappingData);
+
+        $this->testData[__FUNCTION__] = $this->testData['testGet'];
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/users/' . $user['id'];
+
+        $testData['request']['server']['HTTP_X-Dashboard-User-id'] = $user['id'];
+
+        $testData['request']['content']['product_switch'] = 'true';
+
+        $bankingMerchant = DB::connection('test')->table('merchant_users')
+            ->where('user_id', '=', $user->getId())
+            ->where('merchant_id', '=', $user->merchants()->get()[0]->getId())
+            ->where('product', '=', 'primary')
+            ->pluck('user_id','merchant_id', 'product');
+
+        $this->assertEquals(count($bankingMerchant), 0);
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+
+        $bankingMerchant = DB::connection('test')->table('merchant_users')
+            ->where('user_id', '=', $user->getId())
+            ->where('merchant_id', '=', $user->merchants()->get()[0]->getId())
+            ->where('product', '=', 'primary')
+            ->pluck('user_id','merchant_id', 'product');
+
+        $this->assertEquals(count($bankingMerchant), 1);
+    }
+
+    public function assertBankingEntitiesNotNullInTestMode($merchantDetail)
+    {
+        $bankAccount = $this->getDbEntity('bank_account',
+            [
+                'merchant_id' => $merchantDetail[MerchantDetails::MERCHANT_ID],
+                'type'        => 'virtual_account'
+            ], 'test');
+
+
+        $this->assertNotNull($bankAccount);
+
+        $entityId = $bankAccount['entity_id'];
+
+        $bankAccountId = $bankAccount['id'];
+
+        $virtualAccount = $this->getDbEntity('virtual_account',
+            [
+                'merchant_id'     => $merchantDetail[MerchantDetails::MERCHANT_ID],
+                'id'              => $entityId,
+                'bank_account_id' => $bankAccountId
+            ], 'test');
+
+        $this->assertNotNull($virtualAccount);
+
+        $balanceId = $virtualAccount['balance_id'];
+
+        $balance = $this->getDbEntity('balance',
+            [
+                'merchant_id'  => $merchantDetail[MerchantDetails::MERCHANT_ID],
+                'type'         => 'banking',
+                'account_type' => 'shared',
+                'id'           => $balanceId
+            ], 'test');
+
+        $this->assertNotNull($balance);
+
+        $accountNumber = $balance['account_number'];
+
+        $bankingAccount = $this->getDbEntity('banking_account',
+            [
+                'merchant_id'    => $merchantDetail[MerchantDetails::MERCHANT_ID],
+                'account_type'   => 'nodal',
+                'account_number' => $accountNumber,
+                'balance_id'     => $balanceId
+            ], 'test');
+
+        $this->assertNotNull($bankingAccount);
+    }
+
+    public function assertBankingEntitiesNotNullInLiveMode($merchantDetail)
+    {
+        $bankAccount = $this->getDbEntity('bank_account',
+            [
+                'merchant_id' => $merchantDetail[MerchantDetails::MERCHANT_ID],
+                'type'        => 'virtual_account'
+            ], 'live');
+
+
+        $this->assertNotNull($bankAccount);
+
+        $entityId = $bankAccount['entity_id'];
+
+        $bankAccountId = $bankAccount['id'];
+
+        $virtualAccount = $this->getDbEntity('virtual_account',
+            [
+                'merchant_id'     => $merchantDetail[MerchantDetails::MERCHANT_ID],
+                'id'              => $entityId,
+                'bank_account_id' => $bankAccountId
+            ], 'live');
+
+        $this->assertNotNull($virtualAccount);
+
+        $balanceId = $virtualAccount['balance_id'];
+
+        $balance = $this->getDbEntity('balance',
+            [
+                'merchant_id'  => $merchantDetail[MerchantDetails::MERCHANT_ID],
+                'type'         => 'banking',
+                'account_type' => 'shared',
+                'id'           => $balanceId
+            ], 'live');
+
+        $this->assertNotNull($balance);
+
+        $accountNumber = $balance['account_number'];
+
+        $bankingAccount = $this->getDbEntity('banking_account',
+            [
+                'merchant_id'    => $merchantDetail[MerchantDetails::MERCHANT_ID],
+                'account_type'   => 'nodal',
+                'account_number' => $accountNumber,
+                'balance_id'     => $balanceId
+            ], 'live');
+
+        $this->assertNotNull($bankingAccount);
+    }
+
+    public function assertBankingEntitiesNullInTestMode($merchantDetail)
+    {
+        $bankAccount = $this->getDbEntity('bank_account',
+            [
+                'merchant_id' => $merchantDetail[MerchantDetails::MERCHANT_ID],
+                'type'        => 'virtual_account'
+            ], 'test');
+
+
+        $this->assertNull($bankAccount);
+    }
+
+    public function assertBankingEntitiesNullInLiveMode($merchantDetail)
+    {
+        $bankAccount = $this->getDbEntity('bank_account',
+            [
+                'merchant_id' => $merchantDetail[MerchantDetails::MERCHANT_ID],
+                'type'        => 'virtual_account'
+            ], 'live');
+
+
+        $this->assertNull($bankAccount);
     }
 
     public function testGetActorInfo()
