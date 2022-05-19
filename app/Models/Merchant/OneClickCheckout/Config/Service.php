@@ -8,6 +8,7 @@ use RZP\Models\Merchant\Core;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Merchant1ccConfig\Type;
 use RZP\Models\Merchant\OneClickCheckout\Constants;
+use RZP\Models\Merchant\OneClickCheckout\Shopify\Utils as ShopifyUtils;
 
 class Service extends Base\Service
 {
@@ -111,13 +112,14 @@ class Service extends Base\Service
                         Constants::SHOP_ID
                     );
 
+                    $shopId = (new ShopifyUtils)->stripAndReturnShopId($input[Constants::SHOP_ID]);
 
                     $this->repo->merchant_1cc_auth_configs->create(
                         [
                             'merchant_id' => $this->merchant->getId(),
                             'platform'    => Constants::SHOPIFY,
                             'config'      => Constants::SHOP_ID,
-                            'value'       => $input[Constants::SHOP_ID],
+                            'value'       => $shopId,
                         ]
                     );
                 }
