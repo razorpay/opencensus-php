@@ -275,6 +275,8 @@ class Service extends Base\Service
 
         $merchant = $this->repo->merchant->findOrFailPublic($this->merchant->getMerchantId());
 
+        Entity::modifyConvertEmptyStringsToNull($input);
+
         if ($activationFormMilestone === DEConstants::L1_SUBMISSION)
         {
             $response = $this->saveInstantActivationDetails($input);

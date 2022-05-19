@@ -1500,4 +1500,20 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
         'saved'   => EventSaved::class,
     ];
 
+    static function modifyConvertEmptyStringsToNull(& $input)
+    {
+        $array = [
+            Entity::KYC_ADDITIONAL_DETAILS,
+            Entity::KYC_CLARIFICATION_REASONS,
+            Entity::FUND_ADDITION_VA_IDS
+        ];
+
+        foreach ($array as $key)
+        {
+            if (empty($input[$key]))
+            {
+                unset($input[$key]);
+            }
+        }
+    }
 }
