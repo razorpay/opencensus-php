@@ -36,6 +36,7 @@ class Lambda extends Base
         Base::NETBANKING_NSDL,
         Base::NETBANKING_AXIS,
         Base::CHECKOUT_DOT_COM,
+        Base::NETBANKING_DBS,
     ];
 
     public function process(array $input): array

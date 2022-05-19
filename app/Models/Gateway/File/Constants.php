@@ -64,6 +64,7 @@ class Constants
     const NSDL             = 'nsdl';
     const BDBL             = 'bdbl';
     const UCO              = 'uco';
+    const DBS              = 'dbs';
     const ICICI_EMI        = 'icici_emi';
     const HSBC             = 'hsbc';
     const HDFC_CORP        = 'hdfc_corp';
@@ -159,6 +160,7 @@ class Constants
             self::NSDL,
             self::BDBL,
             self::UCO,
+            self::DBS,
             self::HDFC_CORP,
         ],
         Type::EMANDATE_CANCEL => [
@@ -277,6 +279,7 @@ class Constants
             self::NSDL        => ['nsdl-netbanking-refunds@razorpay.com'],
             self::BDBL        => ['bdbl-netbanking-refunds@razorpay.com'],
             self::UCO         => ['uco-netbanking-refunds@razorpay.com'],
+            self::DBS         => ['dbs-netbanking-claims@razorpay.com'],
             self::HDFC_CORP   => [],
             self::RBL_CORP    => [],
         ],

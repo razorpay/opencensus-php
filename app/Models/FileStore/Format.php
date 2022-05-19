@@ -29,6 +29,7 @@ class Format
     const GPG       = 'gpg';
     const IOB       = 'iob';
     const VAL       = 'val';
+    const PGP       = 'pgp';
 
     const EXCEL_COLUMN_TEXT = '@';
 
@@ -54,6 +55,7 @@ class Format
         self::GPG,
         self::IOB,
         self::VAL,
+        self::PGP,
     ];
 
     const VALID_EXTENSION_MIME_MAP = [
@@ -90,6 +92,7 @@ class Format
         self::NONE    => ['text/plain'],
         self::SEVEN_Z => ['application/x-7z-compressed'],
         self::GPG     => ['application/pgp', 'application/octet-stream'],
+        self::PGP     => ['application/pgp', 'application/octet-stream'],
         self::IOB     => ['text/plain'],
         self::VAL     => ['text/plain'],
     ];

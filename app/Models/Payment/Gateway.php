@@ -1317,6 +1317,7 @@ class Gateway
         Payment\Gateway::NETBANKING_NSDL        => 1618511400,
         Payment\Gateway::NETBANKING_BDBL        => 1618511400,
         Payment\Gateway::NETBANKING_UCO         => 1618511400,
+        Payment\Gateway::NETBANKING_DBS         => 1618511400,
     ];
 
     public static $channels = [

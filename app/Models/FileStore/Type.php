@@ -184,6 +184,14 @@ class Type
 
     const UCO_NETBANKING_REFUND             = 'uco_netbanking_refund';
 
+    const DBS_NETBANKING_CLAIMS             = 'dbs_netbanking_claims';
+
+    const DBS_NETBANKING_REFUND             = 'dbs_netbanking_refund';
+
+    const DBS_NETBANKING_COMBINED           = 'dbs_netbanking_combined';
+
+    const DBS_NETBANKING_COMBINED_UNENCRYPTED = 'dbs_netbanking_combined_unencrypted';
+
     const HDFC_CORP_NETBANKING_CLAIMS       = 'hdfc_corp_netbanking_claims';
 
     const HDFC_CORP_NETBANKING_REFUNDS      = 'hdfc_corp_netbanking_refunds';
@@ -404,6 +412,10 @@ class Type
             self::RECON_INPUT,
             self::BDBL_NETBANKING_REFUND,
             self::UCO_NETBANKING_REFUND,
+            self::DBS_NETBANKING_CLAIMS,
+            self::DBS_NETBANKING_REFUND,
+            self::DBS_NETBANKING_COMBINED,
+            self::DBS_NETBANKING_COMBINED_UNENCRYPTED,
             self::HDFC_CORP_NETBANKING_CLAIMS,
             self::HDFC_CORP_NETBANKING_REFUNDS,
             self::HDFC_COLLECT_NOW_SETTLEMENT_FILE,
@@ -584,6 +596,10 @@ class Type
         self::DATA_LAKE_SEGMENT_FILE,
         self::RECON_INPUT,
         self::BULK_FRAUD_NOTIFICATION,
+        self::DBS_NETBANKING_CLAIMS,
+        self::DBS_NETBANKING_REFUND,
+        self::DBS_NETBANKING_COMBINED,
+        self::DBS_NETBANKING_COMBINED_UNENCRYPTED,
         self::HDFC_CORP_NETBANKING_REFUNDS,
         self::HDFC_CORP_NETBANKING_CLAIMS,
         self::HDFC_COLLECT_NOW_SETTLEMENT_FILE,
@@ -765,6 +781,8 @@ class Type
             self::BDBL_NETBANKING_REFUND,
             self::SBI_UPI_REFUND,
             self::UCO_NETBANKING_REFUND,
+            self::DBS_NETBANKING_COMBINED,
+            self::DBS_NETBANKING_COMBINED_UNENCRYPTED,
             self::HDFC_CORP_NETBANKING_REFUNDS,
             self::HDFC_CORP_NETBANKING_CLAIMS,
             self::IOB_NETBANKING_REFUND,

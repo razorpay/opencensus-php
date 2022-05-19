@@ -843,6 +843,11 @@ return [
         'recon_passphrase'       => env('NETBANKING_PNB_RECON_DECRYPTION_PASSPHRASE'),
     ],
 
+    'netbanking_dbs' => [
+        'recon_key'              => env('NETBANKING_DBS_RECON_DECRYPTION_KEY'),
+        'files_encryption_key'   => env('NETBANKING_DBS_RECON_ENCRYPTION_KEY'),
+    ],
+
     'netbanking_csb' => [
         'test_merchant_id_2'            => env('NETBANKING_CSB_GATEWAY_TEST_MERCHANT_ID2'),
         'test_merchant_id'              => env('NETBANKING_CSB_GATEWAY_TEST_MERCHANT_ID'),

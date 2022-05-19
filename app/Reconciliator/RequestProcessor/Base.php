@@ -147,6 +147,7 @@ class Base extends Core
     const CHECKOUT_DOT_COM         = 'checkout_dot_com';
     const CARDLESS_EMI_EARLYSALARY = 'CardlessEmiEarlySalary';
     const EMERCHANTPAY             = 'emerchantpay';
+    const NETBANKING_DBS           = 'NetbankingDbs';
 
 
     /**
@@ -251,6 +252,7 @@ class Base extends Core
         self::CARDLESS_EMI_EARLYSALARY => [],
         self::EMERCHANTPAY             => ['aithal@emerchantpay.com'],
         self::NETBANKING_HDFC_CORP     => [],
+        self::NETBANKING_DBS           => [],
 
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.
@@ -332,6 +334,7 @@ class Base extends Core
         Gateway::NETBANKING_NSDL        => self::NETBANKING_NSDL,
         Gateway::NETBANKING_BDBL        => self::NETBANKING_BDBL,
         Gateway::NETBANKING_UCO         => self::NETBANKING_UCO,
+        Gateway::NETBANKING_DBS         => self::NETBANKING_DBS,
 
         Gateway::AMEX                   => [
             Gateway::ACQUIRER_AMEX   => self::AMEX,

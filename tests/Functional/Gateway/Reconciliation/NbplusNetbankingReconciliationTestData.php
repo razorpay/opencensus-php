@@ -267,5 +267,14 @@ return [
         'bank_reference_no'     => '12345',
         'transaction_date'      => '06/08/2021' ,
         'error_message'         => '',
-    ]
+    ],
+
+    'testDbsSuccessRecon' => [
+        'MERCHANT_ORDER_ID'             => 'MERCHANT_ORDER_ID',
+        'TRANSACTION_AMOUNT'            => 'TRANSACTION_AMOUNT',
+        'TRANSACTION_REFERENCE_NUMBER'  => 'TRANSACTION_REFERENCE_NUMBER',
+        'ORDER_TYPE'                    => 'ORDER_TYPE',
+        'TRANSACTION_STATUS'            => 'TRANSACTION_STATUS',
+        'TRANSACTION_REQUESTED_DATE'    => 'TRANSACTION_REQUESTED_DATE'
+    ],
 ];
