@@ -57,6 +57,7 @@ import { getCookie, setCookie } from 'common/utils/cookies';
 import RequestEmailModal from 'merchant_common/containers/ReportsAsync/GenerateReportPanel/AddEmail/RequestEmailModal';
 import { isPartnerPage } from 'merchant/utils/isPartnerPage';
 import getMobileDetect from 'common/utils/mobileDetect';
+import currencies from '../constants/currency';
 
 // const WebViewHeader = lazy(() =>
 //   import(/* webpackChunkName: 'webview header' */ 'merchant/components/HeaderNav/WebViewHeader'),
@@ -244,9 +245,17 @@ class App extends Component {
           applyTheme(data);
         }
       }),
-      this.fetchSupportedCurrencies().then(({ data }) => {
-        window.currencyList = data;
-      }),
+      this.fetchSupportedCurrencies()
+        .then(({ data }) => {
+          if (data === null) {
+            window.currencyList = currencies;
+            return;
+          }
+          window.currencyList = data;
+        })
+        .catch(() => {
+          window.currencyList = currencies;
+        }),
     ])
       .then((response) => {
         if (response[0].showInstantActivation) {

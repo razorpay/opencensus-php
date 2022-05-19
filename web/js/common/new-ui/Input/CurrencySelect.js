@@ -62,14 +62,6 @@ class CurrencySelect extends Component {
      * And some payments in international currency might exist, hence regardless international enable, currency requested via this component must reflect correct currency, and not INR.
      * */
 
-    if (window.currencyList === null && !this.isInternationalEnabled) {
-      return {
-        currencyList,
-        currency: { label: 'Indian Rupee', name: 'INR', sym: '₹' },
-        disabled: this.props.disabled || false,
-      };
-    }
-
     Object.keys(window.currencyList || {}).forEach((c) => {
       const fullName = window.currencyList[c]?.name;
       const ISO = c;
