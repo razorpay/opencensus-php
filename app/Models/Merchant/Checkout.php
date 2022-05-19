@@ -1505,9 +1505,13 @@ class Checkout
             $logInContact = $appToken->customer->getContact();
         }
 
-        if (($logInContact === null) or ($logInContact === $input[Payment\Entity::CONTACT]))
+        // Remove non-numeric characters from the phone numbers
+        $logInContact = preg_replace('/[\D]/', '', $logInContact ?? '');
+        $inputContact = preg_replace('/[\D]/', '', $input[Payment\Entity::CONTACT]);
+
+        if (empty($logInContact) || ($logInContact === $inputContact))
         {
-            return ;
+            return;
         }
 
         $inputForLogout = ['logout' => 'app'];
