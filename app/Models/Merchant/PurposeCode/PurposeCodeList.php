@@ -174,6 +174,7 @@ class PurposeCodeList
     const P0006 = 'P0006';
     const P0007 = 'P0007';
     const P0008 = 'P0008';
+    const S1023 = 'S1023';
 
 
     //purpose code descriptions
@@ -315,6 +316,7 @@ class PurposeCodeList
     const P0006_DESC = "Foreign Direct Investment made by overseas Investors in India in equity shares";
     const P0007_DESC = "Foreign Direct Investment made by overseas Investors in India in debt instruments.";
     const P0008_DESC = "Foreign Direct Investment made by overseas Investors in India in real estate";
+    const S1023_DESC = "Other Technical Services including scientific/space services";
 
     //purpose code mapping
     protected static $purposeCodeDescMappings = [
@@ -456,6 +458,7 @@ class PurposeCodeList
         self::P0006 => self::P0006_DESC,
         self::P0007 => self::P0007_DESC,
         self::P0008 => self::P0008_DESC,
+        self::S1023 => self::S1023_DESC,
     ];
 
     //purpose category and their code mapping
@@ -552,6 +555,7 @@ class PurposeCodeList
         self::P1018,
         self::P1021,
         self::P1022,
+        self::S1023,
     ];
 
     const CAPITAL_ACCOUNT_CODES = [
