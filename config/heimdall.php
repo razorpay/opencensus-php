@@ -1208,6 +1208,12 @@ return [
             ],
         ],
 
+        PermissionCategory::OPTIMIZER_SINGLE_RECON => [
+            Permission::OPTIMIZER_SINGLE_RECON => [
+                'description'   => 'Gives Access to trigger single recon API'
+            ],
+        ],
+
         PermissionCategory::GATEWAY_DOWNTIME  => [
             Permission::CREATE_GATEWAY_DOWNTIME => [
                 'description' => 'Create Gateway Downtime',

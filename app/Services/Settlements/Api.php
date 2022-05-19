@@ -207,4 +207,16 @@ class Api extends Base
     {
         return $this->makeRequest(self::OPTIMIZER_EXTERNAL_SETTLEMENTS_EXECUTION, $input, self::SERVICE_API, $mode);
     }
+
+    /**
+     * @param array $input
+     * @param null $mode
+     * @return array
+     * @throws RuntimeException
+     * @throws \Throwable
+     */
+    public function optimizerExternalSettlementsManualExecute(array $input, $mode = null) : array
+    {
+        return $this->makeRequest(self::OPTIMIZER_EXTERNAL_SETTLEMENTS_MANUAL_EXECUTION, $input, self::SERVICE_API, $mode);
+    }
 }

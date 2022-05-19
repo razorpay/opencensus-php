@@ -70,6 +70,7 @@ class Category
     const OFFER                        = 'offer';
     const REFUND                       = 'refund';
     const RULE_VISIBILITY              = 'rule_visibility';
-    const NOCODE                        = 'nocode';
+    const OPTIMIZER_SINGLE_RECON       = 'optimizer_single_recon';
+    const NOCODE                       = 'nocode';
     const CMMA                         = 'cmma';
 }

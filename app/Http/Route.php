@@ -871,6 +871,7 @@ class Route
         'setl_transfer_status_update'              => ['post',     'settlements/transfer_status_update' ,            'SettlementController@transferStatusUpdate'                         ],
         'setl_entity_download_file'                => ['post',     'settlements/entities/get_file',                  'SettlementController@getSettlementServiceEntityFile'               ],
         'setl_optimizer_settlement_cron'           => ['post',     'settlements/optimizer/execute',                  'SettlementController@optimizerExternalSettlementsExecute'          ],
+        'setl_optimizer_settlement_manual_api'     => ['post',     'settlements/optimizer/manual_execute',           'SettlementController@optimizerExternalSettlementsManualExecute'    ],
         'setl_merchant_dashboard_config_get'       => ['post',     'settlements/dashboard/merchant_config/get',      'SettlementController@merchantDashboardConfigGet'                   ],
 
         'adj_fetch_by_id'                          => ['get',      'adjustments/{id}',                               'AdjustmentController@getAdjustment'                                ],
@@ -2696,7 +2697,6 @@ class Route
         // Governor Proxy APIs - Rule Chain
         'governor_create_rule_chain'              => ['post',     '{source}/rule_engine/rule_chain/{namespace}',                                                              'GovernorController@createRuleChain'    ],
         'governor_update_rule_chain'              => ['put',      '{source}/rule_engine/rule_chain/{namespace}',                                                              'GovernorController@updateRuleChain'    ],
-
         'governor_rule_chain_list'                => ['get',      '{source}/rule_engine/rule_chain/{namespace}',                                                              'GovernorController@getRuleChains'      ],
 
         // Governor Proxy APIs - Execute Rule Chain
@@ -2715,7 +2715,7 @@ class Route
         'governor_update_namespace_v1'            => ['put',      'namespaces/{namespace_id}',                                                                                'GovernorController@proxy'              ],
 //        'governor_delete_namespace_v1'            => ['delete',   'namespaces/{namespace_id}',                                                                                'GovernorController@proxy'              ],
 
-        //   Governor Proxy APIs New - Namespace
+        //   Governor Proxy APIs New - GatewayConfig
         'governor_create_config_v1'               => ['post',     'namespaces/{namespace_id}/config',                                                                         'GovernorController@proxy'              ],
         'governor_list_config_v1'                 => ['get',      'namespaces/{namespace_id}/config',                                                                         'GovernorController@proxy'              ],
         'governor_list_config_map_v1'             => ['get',      'namespaces/{namespace_id}/config_map',                                                                     'GovernorController@proxy'              ],
@@ -2778,6 +2778,7 @@ class Route
         'router_gateway_downtime_delete'          => ['post',     'resolve_downtime',                                          'SmartRoutingController@proxy'                              ],
         'router_gateway_downtime_fetch'           => ['post',     'fetch_downtime',                                            'SmartRoutingController@proxy'                              ],
         'router_refresh_cron'                     => ['post',     'refresh_cache',                                             'SmartRoutingController@refreshCron'                        ],
+
         'banking_account_create'                  => ['post',     'banking_accounts',                                          'BankingAccountController@create'                           ],
         'banking_account_create_dashboard'        => ['post',     'banking_accounts_dashboard',                                'BankingAccountController@createDashboard'                  ],
         'banking_account_create_dashboard_admin'  => ['post',     'banking_accounts_admin_dashboard',                          'BankingAccountController@createDashboard'                  ],
@@ -6260,6 +6261,8 @@ class Route
         'router_gateway_downtime_fetch',
         'router_refresh_cron',
 
+        'setl_optimizer_settlement_manual_api',
+
         'banking_account_create_admin',
         'banking_account_create_dashboard_admin',
 
@@ -7496,6 +7499,8 @@ class Route
         'terminals_proxy_add_optimizer_provider'            => Permission::CREATE_GATEWAY_RULE,
         'terminals_proxy_update_optimizer_provider'         => Permission::EDIT_GATEWAY_RULE,
         'terminals_proxy_get_optimizer_merchant_methods'    => Permission::VIEW_GATEWAY_RULE,
+
+        'setl_optimizer_settlement_manual_api'              => Permission::OPTIMIZER_SINGLE_RECON,
 
         //Enable maker/checker for payouts
         'payout_create'                            => Permission::CREATE_PAYOUT,
@@ -10448,6 +10453,7 @@ class Route
             'terminals_proxy_add_optimizer_provider',
             'terminals_proxy_update_optimizer_provider',
             'terminals_proxy_get_optimizer_merchant_methods',
+            'setl_optimizer_settlement_manual_api',
             'gratis_postpaid_transactions',
             'group_create',
             'group_delete',

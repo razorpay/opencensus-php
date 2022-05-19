@@ -1967,6 +1967,16 @@ class Service extends Base\Service
         return app('settlements_dashboard')->settlementsInitiate($input);
     }
 
+    /**
+     * manual api to execute optimiser settlement cron
+     * @param $input
+     * @return array
+     */
+    public function optimizerExternalSettlementsManualExecute($input) : array
+    {
+        return app('settlements_api')->optimizerExternalSettlementsManualExecute($input);
+    }
+
     public function createFetchInput($id)
     {
         $id = $this->repo->settlement->verifyIdAndStripSign($id);
