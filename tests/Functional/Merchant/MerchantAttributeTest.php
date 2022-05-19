@@ -196,6 +196,15 @@ class MerchantAttributeTest extends TestCase
         $this->startTest();
     }
 
+    public function testMerchantAddingNewPreferencesForMob()
+    {
+        $this->ba->mobAppAuthForProxyRoutes();
+
+        $this->startTest();
+
+        $this->assertFeaturePresence(Features::CAPITAL_CARDS_ELIGIBLE);
+    }
+
     public function testMerchantAddingNewPreferencesForIntentLos()
     {
         $this->ba->proxyAuth();

@@ -176,6 +176,22 @@ return [
         ],
     ],
 
+    'testMerchantAddingNewPreferencesForMob' => [
+        'request' => [
+            'content' => [
+                [
+                    'type'  => 'corporate_cards',
+                    'value' => 'true'
+                ],
+            ],
+            'url' => '/merchant/preferences/x_merchant_intent',
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content' => []
+        ],
+    ],
+
     'testMerchantAddingNewPreferencesForIntentLos' => [
         'request' => [
             'content' => [

@@ -116,6 +116,16 @@ class Service extends Base\Service
 
         $merchantAttributes =  $this->core->fetchKeyValues($merchant, $product, $group, $types);
 
+        $internalAppName = app('request.ctx')->getInternalAppName();
+
+        if ($internalAppName === 'master_onboarding' &&
+            in_array(TYPE::CORPORATE_CARDS, $types, true) === true)
+        {
+            $this->ensureFeatureFlag($merchant, Feature\Constants::CAPITAL_CARDS_ELIGIBLE);
+
+            return $merchantAttributes;
+        }
+
         //find existing keys
         $merchantAttributesByKeys = $merchantAttributes->getDictionaryByAttribute(Entity::TYPE);
         $existingKeys = array_keys($merchantAttributesByKeys);
