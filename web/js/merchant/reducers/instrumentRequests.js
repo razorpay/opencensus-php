@@ -1004,6 +1004,11 @@ export default function instrumentRequestsReducer(state = initialState, action) 
             `${path}.should_show_smart_dashboard_flow`,
             s.should_show_smart_dashboard_flow,
           );
+          lodashset(
+            stateClone,
+            `${path}.should_show_reinitiate_button`,
+            s.should_show_reinitiate_button,
+          );
         }
         if (s.status === 'greyed') {
           lodashset(stateClone, `${path}.fade_comment`, s.fade_comment);
