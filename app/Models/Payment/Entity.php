@@ -305,6 +305,10 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     // meta field in the input
     const META                              = 'meta';
 
+    // cancellation reasons for unintended payments.
+    const UNINTENDED_PAYMENT_OPT_OUT         = 'unintended_payment_opt_out';
+    const UNINTENDED_PAYMENT_EXPIRED         = 'unintended_payment_expired';
+
     protected static $sign      = 'pay';
 
     protected $entity           = 'payment';
@@ -703,6 +707,12 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::DISPUTED             => 'bool',
         self::VERIFY_BUCKET        => 'int',
         self::CPS_ROUTE            => 'int',
+    ];
+
+    // list of cancellation reasons for unintended payments
+    protected $unintendedPaymentCancellationReasons = [
+        self::UNINTENDED_PAYMENT_OPT_OUT,
+        self::UNINTENDED_PAYMENT_EXPIRED,
     ];
 
     // window in secs, used to fetch payments with same checkout id
@@ -5470,5 +5480,17 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function getBatchId()
     {
         return $this->getAttribute(self::BATCH_ID);
+    }
+
+    public function isUnintendedPayment()
+    {
+        $reason = $this->getCancellationReason();
+
+        return in_array($reason, $this->unintendedPaymentCancellationReasons);
+    }
+
+    public function getCancellationReason()
+    {
+        return $this->getAttribute(self::CANCELLATION_REASON);
     }
 }

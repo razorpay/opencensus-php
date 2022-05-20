@@ -78,6 +78,8 @@ class Metric extends Base\Core
     const PAYMENT_SCHEDULER_DEREGISTER_KAFKA_SUCCESS_COUNT = 'payment_scheduler_deregister_kafka_success_count';
     const PAYMENT_SCHEDULER_DEREGISTER_KAFKA_FAILED_COUNT  = 'payment_scheduler_deregister_kafka_failed_count';
 
+    const UNINTENDED_PAYMENT_ERROR_CODE_SUFFIX             = '_UNINTENDED_PAYMENT';
+
     public function pushCreateMetrics(Entity $payment)
     {
         $dimensions = $this->getDefaultDimentions($payment);
@@ -387,8 +389,15 @@ class Metric extends Base\Core
 
     protected function getPaymentFailedDimensions(Entity $payment)
     {
+        $errorCode = $payment->getInternalErrorCode();
+
+        if($payment->isUnintendedPayment() === true)
+        {
+            $errorCode = $errorCode . self::UNINTENDED_PAYMENT_ERROR_CODE_SUFFIX;
+        }
+
         $dimensions = [
-            self::LABEL_PAYMENT_ERROR_CODE => $payment->getInternalErrorCode(),
+            self::LABEL_PAYMENT_ERROR_CODE => $errorCode,
         ];
 
         return $dimensions;
