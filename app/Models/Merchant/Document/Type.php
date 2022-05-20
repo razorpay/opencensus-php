@@ -70,15 +70,20 @@ class Type
     const POA_IDENTIFICATION_NUMBER             = 'poa_identification_number';
     const IDENTIFICATION_NUMBER                 = 'identification_number';
 
-    const OTHER              = 'other';
-    const WEBSITE_SCREENSHOT = 'website_screenshot';
+    const OTHER                  = 'other';
+    const WEBSITE_SCREENSHOT     = 'website_screenshot';
+    const GAMING_ADDENDUM        = 'gaming_addendum';
+    const LEGAL_OPINION          = 'legal_opinion';
+    const BUSINESS_CORRESPONDENT = 'business_correspondent';
+
+
     //FIRS Documents
     const FIRS_FILE                             = 'firs_file';
     const FIRS_ZIP                              = 'firs_zip';
 
     const FIRS_ICICI_FILE                             = 'firs_icici_file';
     const FIRS_ICICI_ZIP                              = 'firs_icici_zip';
-    
+
     const PROOF_TYPES = [
         self::INDIVIDUAL_PROOF_OF_ADDRESS,
         self::INDIVIDUAL_PROOF_OF_IDENTIFICATION,
@@ -151,10 +156,14 @@ class Type
         self::FIRS_ZIP,
 
         self::WEBSITE_SCREENSHOT,
-        self::OTHER,
+        self::GAMING_ADDENDUM,
+        self::LEGAL_OPINION,
+        self::BUSINESS_CORRESPONDENT,
 
         self::FIRS_ICICI_FILE,
         self::FIRS_ICICI_ZIP,
+
+        self::OTHER,
     ];
 
     const DOCUMENT_TYPE_TO_PROOF_TYPE_MAPPING = [
@@ -210,7 +219,10 @@ class Type
 
         self::OTHER                           => self::ADDITIONAL_DOCUMENTS,
         self::WEBSITE_SCREENSHOT              => self::ADDITIONAL_DOCUMENTS,
-        
+        self::BUSINESS_CORRESPONDENT          => self::ADDITIONAL_DOCUMENTS,
+        self::LEGAL_OPINION                   => self::ADDITIONAL_DOCUMENTS,
+        self::GAMING_ADDENDUM                 => self::ADDITIONAL_DOCUMENTS,
+
         self::FIRS_ICICI_FILE                 => self::ADDITIONAL_DOCUMENTS,
         self::FIRS_ICICI_ZIP                  => self::ADDITIONAL_DOCUMENTS,
     ];
