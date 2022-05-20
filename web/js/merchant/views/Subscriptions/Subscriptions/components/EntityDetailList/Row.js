@@ -184,7 +184,7 @@ export default function EntityDetailRow(props) {
             confirm.
             <DocsLink
               title="Learn more"
-              url="https://razorpay.com/docs/Payment-Subscription-Payment-method-Emandate-new/razorpay/subscriptions/payment-retries/#retry-model-for-emandate"
+              url="https://razorpay.com/docs/payments/subscriptions/payment-retries/#retry-model-for-emandate"
             />
           </div>
         )}

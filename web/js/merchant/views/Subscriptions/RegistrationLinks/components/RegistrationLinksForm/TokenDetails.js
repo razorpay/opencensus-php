@@ -42,7 +42,7 @@ const maxAmountValidator = (methodAmount, maxAmount) => (value) => {
   if (amount > maxAmount) {
     return `Max amount should not be greater than ${getFormattedAmount(maxAmount)}`;
   } else if (amount < rupeesToPaise(Number(methodAmount))) {
-    return 'Max amount should be greater then amount set for this payment method';
+    return 'Max amount should be greater than amount set for this payment method';
   }
   return null;
 };
