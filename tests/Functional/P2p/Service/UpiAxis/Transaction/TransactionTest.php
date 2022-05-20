@@ -784,6 +784,7 @@ class TransactionTest extends TestCase
 
         $collection = $helper->fetchAll([
             'response'  => 'pending',
+            'expand'    => ['payer', 'payee']
         ]);
 
         $this->assertCollection($collection, 1, [
@@ -793,6 +794,10 @@ class TransactionTest extends TestCase
                 'flow'      => 'debit',
             ],
         ]);
+
+        $payee = $collection['items'][0]['payee'];
+
+        $this->assertTrue($payee['verified']);
     }
 
     public function testFetchDeletedBeneficiary()
@@ -855,6 +860,7 @@ class TransactionTest extends TestCase
                 'username'          => 'test',
                 'handle'            => 'mypsp',
                 'beneficiary_name'  => 'Some Merchant',
+                'verified'          => false,
             ]
         ]);
 
@@ -886,6 +892,7 @@ class TransactionTest extends TestCase
                 'username'          => 'test',
                 'handle'            => 'mypsp',
                 'beneficiary_name'  => 'Some Merchant',
+                'verified'          => false,
             ]
         ]);
 
@@ -1003,11 +1010,12 @@ class TransactionTest extends TestCase
             'mode'  => 'intent',
             'upi'   => $upi,
             'payee' => [
-                'id' => null,
-                'username' => 'some',
-                'handle'   => 'mybank',
-                'type'     => 'vpa',
-                'beneficiary_name' => 'benef_name'
+                'id'                => null,
+                'username'          => 'some',
+                'handle'            => 'mybank',
+                'type'              => 'vpa',
+                'beneficiary_name'  => 'benef_name',
+                'verified'          => false,
             ]
         ]);
 
@@ -1049,7 +1057,8 @@ class TransactionTest extends TestCase
                 'username' => 'some',
                 'handle'   => 'mybank',
                 'type'     => 'vpa',
-                'beneficiary_name' => 'benef_name'
+                'beneficiary_name' => 'benef_name',
+                'verified'          => false,
             ]
         ]);
 

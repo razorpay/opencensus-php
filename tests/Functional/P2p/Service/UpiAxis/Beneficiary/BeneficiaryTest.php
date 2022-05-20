@@ -20,6 +20,7 @@ class BeneficiaryTest extends TestCase
             'type'              => 'vpa',
             'address'           => 'customer@razorhdfc',
             'beneficiary_name'  => 'Razorpay Customer',
+            'verified'          => true,
         ], $response);
     }
 

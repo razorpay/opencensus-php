@@ -267,7 +267,8 @@ class UpiTransactionTransformer extends Transformer
                 $payer = $this->toUsernameHandle($this->input[Fields::PAYER_VPA]);
 
                 $payee = $this->toUsernameHandle($this->input[Fields::PAYEE_VPA]);
-                $payee[Vpa\Entity::BENEFICIARY_NAME] = $this->input[Fields::PAYEE_NAME];
+                $payee[Vpa\Entity::BENEFICIARY_NAME]    = $this->input[Fields::PAYEE_NAME];
+                $payee[Vpa\Entity::VERIFIED]            = $this->toBoolean($this->input[Fields::IS_VERIFIED_PAYEE]);
 
                 $expiryAt = $this->transformExpireAt();
 
@@ -278,7 +279,8 @@ class UpiTransactionTransformer extends Transformer
                 $payee = $this->toUsernameHandle($this->input[Fields::PAYEE_VPA]);
 
                 $payer = $this->toUsernameHandle($this->input[Fields::PAYER_VPA]);
-                $payer[Vpa\Entity::BENEFICIARY_NAME] = $this->input[Fields::PAYER_NAME];
+                $payer[Vpa\Entity::BENEFICIARY_NAME]    = $this->input[Fields::PAYER_NAME];
+                $payer[Vpa\Entity::VERIFIED]            = $this->toBoolean($this->input[Fields::IS_VERIFIED_PAYEE]);
 
                 break;
         }

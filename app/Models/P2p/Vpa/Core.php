@@ -166,6 +166,10 @@ class Core extends Base\Core
             // Beneficiary should never be trashed
             if ($vpa->isBeneficiary() === true)
             {
+                $vpa->setVerified($input[Entity::VERIFIED] ?? false);
+
+                $vpa->saveOrFail();
+
                 return $vpa;
             }
 

@@ -11,7 +11,8 @@ class BeneficiaryHelper extends P2pHelper
         $default = [
             'type'         => 'vpa',
             'username'     => 'customer',
-            'handle'       => 'razorhdfc'
+            'handle'       => 'razorhdfc',
+            'verified'     => false,
         ];
 
         $this->content($request, $default, $content);
