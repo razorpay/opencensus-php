@@ -219,6 +219,17 @@ class Validator extends Base\Validator
         Entity::NAME                        => 'required|min:4|string|max:200',
     ];
 
+    protected static $linkedAccountNameRules = [
+        Entity::NAME                     => [
+                                                'required',
+                                                'min:4',
+                                                'string',
+                                                'max:200',
+                                                'not_regex:"(https?:\/\/)*(w{3}\.)*[a-zA-Z0-9]+(\.)(com|in|net|co\.in|org|us|info|co)+(\ |\/|$|\n)"',
+                                                'not_regex:"(<!doctype>|<!--|<.*>|&[a-z0-9]+;)+"'
+                                            ]
+    ];
+
     protected static $editConfigRules = [
         Entity::BRAND_COLOR              => 'sometimes|regex:(^[0-9a-fA-F]{6}$)',
         Entity::TRANSACTION_REPORT_EMAIL => 'sometimes|array',
@@ -617,7 +628,7 @@ class Validator extends Base\Validator
         'cod_fee'                      => 'sometimes|integer|nullable',
         'shipping_fee'                 => 'sometimes|integer|nullable',
     ];
-    
+
     protected static $serviceabilityUrlUpdateRequestRules = [
         'url'                          => 'required|url'
     ];
@@ -1289,7 +1300,44 @@ class Validator extends Base\Validator
             }
         }
 
-        $this->validateInput('edit_name', array_only($input, Entity::NAME));
+        if ($linkedAccount === false)
+        {
+            $this->validateInput('edit_name', array_only($input, Entity::NAME));
+        }
+        else
+        {
+            $isUrlValidationEnabled = (new Core())->isRazorxExperimentEnable(
+                $partner->getId(),
+                RazorxTreatment::URL_VALIDATION_FOR_LINKED_ACCOUNT_NAME
+            );
+            if ($isUrlValidationEnabled === true)
+            {
+                $this->validateLinkedAccountNameInput('linked_account_name', array_only($input, Entity::NAME));
+            }
+        }
+    }
+
+    /**
+     * @param $operation
+     * @param $input
+     * @throws BadRequestValidationFailureException
+     */
+    public function validateLinkedAccountNameInput(string $operation,array $input)
+    {
+        try
+        {
+            $this->validateInput($operation, $input);
+        }
+        catch (BadRequestValidationFailureException $e)
+        {
+            if ($e->getMessage() === 'validation.not_regex')
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_URL_NOT_ALLOWED_IN_LINKED_ACCOUNT_NAME
+                );
+            }
+            throw $e;
+        }
     }
 
     /**

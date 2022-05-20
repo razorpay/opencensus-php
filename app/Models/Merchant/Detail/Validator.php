@@ -13,9 +13,11 @@ use RZP\Models\Merchant;
 use RZP\Constants\IndianStates;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Merchant\Document\Type;
+use RZP\Models\Merchant\RazorxTreatment;
 use libphonenumber\NumberParseException;
 use RZP\Models\Partner\Core as PartnerCore;
 use RZP\Models\Merchant\Detail\ActivationFlow\Factory;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Models\Merchant\BusinessDetail\Constants as BusinessDetailConstants;
 
@@ -264,6 +266,16 @@ class Validator extends Base\Validator
     protected static $uploadDocumentRules = [
         Merchant\Document\Entity::DOCUMENT_TYPE => 'required|string|max:255|custom',
         Entity::FILE                            => 'required|file|mimes:pdf,jpeg,jpg,png',
+    ];
+
+    protected static $editLinkedAccountBusinessNameRules = [
+        Entity::BUSINESS_NAME => [
+                                    'sometimes',
+                                    'string',
+                                    'max:255',
+                                    'not_regex:"(https?:\/\/)*(w{3}\.)*[a-zA-Z0-9]+(\.)(com|in|net|co\.in|org|us|info|co)+(\ |\/|$|\n)"',
+                                    'not_regex:"(<!doctype>|<!--|<.*>|&[a-z0-9]+;)+"'
+                                ]
     ];
 
     protected static $updateContactAndLoginMobileRules = [
@@ -879,6 +891,37 @@ class Validator extends Base\Validator
                 [
                     Entity::BUSINESS_CATEGORY => $businessCategory
                 ]);
+        }
+    }
+
+    /**
+     * @param array $input
+     * @param string $parentMerchantId
+     * @throws BadRequestValidationFailureException
+     * @throws Exception\BadRequestException
+     */
+    public function validateLinkedAccountBusinessNameInput(array $input, string $parentMerchantId)
+    {
+        try
+        {
+            $isUrlValidationEnabled = (new Merchant\Core())->isRazorxExperimentEnable(
+                $parentMerchantId,
+                RazorxTreatment::URL_VALIDATION_FOR_LINKED_ACCOUNT_NAME
+            );
+            if ($isUrlValidationEnabled === true)
+            {
+                $this->validateInput('edit_linked_account_business_name', $input);
+            }
+        }
+        catch (BadRequestValidationFailureException $e)
+        {
+            if ($e->getMessage() === 'validation.not_regex')
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_URL_NOT_ALLOWED_IN_LINKED_ACCOUNT_NAME
+                );
+            }
+            throw $e;
         }
     }
 

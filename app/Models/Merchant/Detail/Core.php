@@ -244,6 +244,11 @@ class Core extends Base\Core
 
         $merchantDetails->getValidator()->blockInstantActivationCriticalFields($input);
 
+        if ($merchant->isLinkedAccount() === true)
+        {
+            $merchantDetails->getValidator()->validateLinkedAccountBusinessNameInput(array_only($input,Entity::BUSINESS_NAME), $merchant->getParentId());
+        }
+
         $activationFormMilestone = $input[Entity::ACTIVATION_FORM_MILESTONE] ?? null;
 
         //isolating business details
