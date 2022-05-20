@@ -214,7 +214,6 @@ export const CREDIT_DEBIT_CARDS_OPTIONS = [
 ];
 
 export const EMI_CARDS_OPTIONS = [
-  { label: '--Select Issuers--', name: '' },
   { label: 'Credit Card', name: 'credit' },
   { label: 'Debit Card', name: 'debit' },
 ];

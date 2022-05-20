@@ -125,7 +125,7 @@ export const validatePaymentMethod = (val) => {
 };
 
 export const validateMaxPaymentCount = (val) => {
-  if (!val) return true;
+  if (!val) return false;
 
   if (!new RegExp('^[0-9]+$').test(val)) {
     return 'Please enter a number';
