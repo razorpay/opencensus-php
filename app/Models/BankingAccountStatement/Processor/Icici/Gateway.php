@@ -661,7 +661,7 @@ class Gateway extends BaseProcessor
 
     // ------------------ End Getters for extracting fields from bank response ---------------------------
 
-    public function checkForDuplicateTransactions(array $bankTransactions, string $channel, string $accountNumber)
+    public function checkForDuplicateTransactions(array $bankTransactions, string $channel, string $accountNumber, $merchant)
     {
         $this->alterStatementColumnsToMatch();
 
@@ -672,6 +672,8 @@ class Gateway extends BaseProcessor
         $processedRecordCount = 0;
         $difference = 0;
         $bankTransactionRecords = [];
+        $bankTransactionIds = [];
+        $queryDate = null;
 
         $limit = (int) (new AdminService)->getConfigKey(
             ['key' => ConfigKey::ICICI_ACCOUNT_STATEMENT_RECORDS_TO_FETCH_AT_ONCE]);
@@ -681,11 +683,34 @@ class Gateway extends BaseProcessor
             $limit = self::ICICI_ACCOUNT_STATEMENT_RECORDS_TO_FETCH_AT_ONCE_DEFAULT;
         }
 
+        /**
+         * This experiment was added to enable dedupe check for fetched statements
+         * by querying on the basis of bank_transaction_id and created_at on master db to avoid replica lag.
+         * This was also found faster than querying by using bulk check (whereInMultiple).
+         */
+        $variant = $this->app->razorx->getTreatment(
+            $merchant->getId(),
+            Merchant\RazorxTreatment::BANKING_ACCOUNT_STATEMENT_FETCH_DEDUP,
+            $this->mode
+        );
+
         $startTime = null;
 
         foreach ($bankTransactions as $index => $bankTransaction)
         {
-            $recordsToCheck[] = $this->getColumnsToFindDuplicates($bankTransaction);
+            if ($variant === 'on')
+            {
+                $recordsToCheck[] = $record = $this->arrangeColumnsToFindDuplicates($bankTransaction);
+
+                $bankTransactionIds[] = $record[Entity::BANK_TRANSACTION_ID];
+
+                $queryDate = (isset($queryDate) === false) ? $record[Entity::TRANSACTION_DATE]
+                    : min($queryDate, $record[Entity::TRANSACTION_DATE]);
+            }
+            else
+            {
+                $recordsToCheck[] = $this->getColumnsToFindDuplicates($bankTransaction);
+            }
 
             $bankTransactionRecords[$index] = $this->formBankTransactionRecordToMatch($bankTransaction);
 
@@ -706,19 +731,26 @@ class Gateway extends BaseProcessor
                     [
                         'channel'        => Channel::ICICI,
                         'account_number' => $accountNumber,
-                        'time_taken'        => (microtime(true) - $startTime) * 1000,
                         'description'    => 'going to find duplicates records from db',
                     ]);
 
-                $existingRecords = $this->repo->banking_account_statement
-                    ->findExistingStatementRecordsForBank($recordsToCheck);
+                if ($variant === 'on')
+                {
+                    $existingRecords = $this->repo->banking_account_statement
+                        ->findExistingStatementRecordsForBankWithDate($bankTransactionIds, $accountNumber, $queryDate);
+                }
+                else
+                {
+                    $existingRecords = $this->repo->banking_account_statement
+                        ->findExistingStatementRecordsForBank($recordsToCheck);
+                }
 
                 $this->trace->info(
                     TraceCode::BAS_DEDUPE_CHECK_ANALYSIS,
                     [
                         'channel'        => Channel::ICICI,
                         'account_number' => $accountNumber,
-                        'time_taken'        => (microtime(true) - $startTime) * 1000,
+                        'time_taken'     => (microtime(true) - $startTime) * 1000,
                         'description'    => 'dedupe db query executed',
                     ]);
 
@@ -741,12 +773,12 @@ class Gateway extends BaseProcessor
                         {
                             $difference += -1 * $record->getAmount();
                         }
-                        if(($bankTransactions[$isPresent][Entity::BALANCE]-$record->getBalance() === $difference) and
-                           ($difference !==0))
+                        if (($bankTransactions[$isPresent][Entity::BALANCE] - $record->getBalance() === $difference) and
+                            ($difference !== 0))
                         {
                             foreach ($bankTransactions as $index => $bankTransaction)
                             {
-                                $bankTransactions[$index][Entity::BALANCE]= $bankTransaction[Entity::BALANCE] - $difference;
+                                $bankTransactions[$index][Entity::BALANCE] = $bankTransaction[Entity::BALANCE] - $difference;
                             }
 
                             // once the difference matches and we have subtracted from subsequent records amount equal
@@ -762,10 +794,11 @@ class Gateway extends BaseProcessor
                     }
                 }
 
-                $recordsToCheck = [];
+                $recordsToCheck         = [];
                 $bankTransactionRecords = [];
-
-                $processedRecordCount = 0;
+                $bankTransactionIds     = [];
+                $queryDate              = null;
+                $processedRecordCount   = 0;
             }
         }
 
@@ -774,7 +807,7 @@ class Gateway extends BaseProcessor
             [
                 'channel'        => Channel::ICICI,
                 'account_number' => $accountNumber,
-                'time_taken'        => (microtime(true) - $startTime) * 1000,
+                'time_taken'     => (microtime(true) - $startTime) * 1000,
                 'description'    => 'skip duplicate records complete',
             ]);
 

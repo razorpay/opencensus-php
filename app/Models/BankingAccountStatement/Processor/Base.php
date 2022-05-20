@@ -34,7 +34,8 @@ abstract class Base extends BaseCore
 
     abstract public function checkForDuplicateTransactions(array $bankTransactions,
                                                            string $channel,
-                                                           string $accountNumber);
+                                                           string $accountNumber,
+                                                           Merchant\Entity $merchant);
 
     abstract protected function sendRequestAndGetResponse(array $input);
 
@@ -146,6 +147,25 @@ abstract class Base extends BaseCore
         {
             array_delete(Entity::CHANNEL, $this->statementRecordsToMatch);
         }
+    }
+
+    protected function arrangeColumnsToFindDuplicates($bankTransaction)
+    {
+        $record = [
+            Entity::BANK_TRANSACTION_ID => $bankTransaction[Entity::BANK_TRANSACTION_ID],
+            Entity::BANK_SERIAL_NUMBER  => $bankTransaction[Entity::BANK_SERIAL_NUMBER],
+            Entity::TRANSACTION_DATE    => $bankTransaction[Entity::TRANSACTION_DATE],
+            Entity::AMOUNT              => $bankTransaction[Entity::AMOUNT],
+        ];
+
+        if ($this->basDetails->getAccountType() === BasDetails\AccountType::DIRECT)
+        {
+            $record[Entity::CHANNEL] = $bankTransaction[Entity::CHANNEL];
+        }
+
+        $record[Entity::ACCOUNT_NUMBER] = $bankTransaction[Entity::ACCOUNT_NUMBER];
+
+        return $record;
     }
 
     protected function getColumnsToFindDuplicates($bankTransaction)

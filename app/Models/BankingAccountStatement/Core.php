@@ -439,9 +439,10 @@ class Core extends Base\Core
                                                 BASDetails\Entity  $basDetails)
     {
         $bankTransactions = $processor->checkForDuplicateTransactions(
-                                        $bankTransactions,
-                                        $channel,
-                                        $accountNumber);
+            $bankTransactions,
+            $channel,
+            $accountNumber,
+            $merchant);
 
         $lastBankTxn = $this->repo->banking_account_statement->findLatestByAccountNumber($accountNumber);
 

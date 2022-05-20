@@ -176,7 +176,8 @@ class Core extends Base\Core
         $bankTransactions = $processor->checkForDuplicateTransactions(
             $bankTransactions,
             $channel,
-            $accountNumber);
+            $accountNumber,
+            $merchant);
 
         $lastBankTxn = $this->channelRepo->findLatestByAccountNumber($accountNumber);
 

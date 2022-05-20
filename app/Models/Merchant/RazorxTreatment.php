@@ -310,6 +310,8 @@ final class RazorxTreatment
 
     const BANKING_ACCOUNT_STATEMENT_TEMP_RECORDS = 'banking_account_statement_temp_records';
 
+    const BANKING_ACCOUNT_STATEMENT_FETCH_DEDUP = 'banking_account_statement_fetch_dedup';
+
     const API_EMAILS_MAILGUN_DRIVER = 'api_emails_mailgun_driver';
 
     const RBL_V2_BAS_API_INTEGRATION = 'rbl_v2_bas_api_integration';

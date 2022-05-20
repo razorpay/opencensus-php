@@ -6962,8 +6962,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TENANT_ROUTE_ACCESS_DENIED                            = 'TENANT_ROUTE_ACCESS_DENIED';
     const TENANT_ROUTE_ROLES_NOT_MAPPED                         = 'TENANT_ROUTE_ROLES_NOT_MAPPED';
 
-    const PARTNER_KYC_ACCESS__REQUEST = 'PARTNER_KYC_ACCESS__REQUEST';
-    const BAS_DEDUPE_CHECK_ANALYSIS   = 'BAS_DEDUPE_CHECK_ANALYSIS';
+    const PARTNER_KYC_ACCESS__REQUEST                           = 'PARTNER_KYC_ACCESS__REQUEST';
+    const BAS_DEDUPE_CHECK_ANALYSIS                             = 'BAS_DEDUPE_CHECK_ANALYSIS';
 
     //partner bank health update and notification trace codes
     const PARTNER_BANK_HEALTH_NOTIFICATION_JOB_REQUEST      = 'PARTNER_BANK_HEALTH_NOTIFICATION_JOB_REQUEST';

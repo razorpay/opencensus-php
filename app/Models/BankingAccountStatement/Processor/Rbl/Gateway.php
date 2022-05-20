@@ -105,7 +105,7 @@ class Gateway extends BaseProcessor
         }
     }
 
-    public function checkForDuplicateTransactions(array $bankTransactions, string $channel, string $accountNumber)
+    public function checkForDuplicateTransactions(array $bankTransactions, string $channel, string $accountNumber, $merchant)
     {
         $this->alterStatementColumnsToMatch();
 
@@ -115,6 +115,8 @@ class Gateway extends BaseProcessor
         $skippedRecordCount = 0;
         $processedRecordCount = 0;
         $bankTransactionRecords = [];
+        $bankTransactionIds = [];
+        $queryDate = null;
 
         $limit = (int) (new AdminService)->getConfigKey(
             ['key' => ConfigKey::RBL_ACCOUNT_STATEMENT_RECORDS_TO_FETCH_AT_ONCE]);
@@ -124,11 +126,34 @@ class Gateway extends BaseProcessor
             $limit = self::RBL_ACCOUNT_STATEMENT_RECORDS_TO_FETCH_AT_ONCE_DEFAULT;
         }
 
+        /**
+         * This experiment was added to enable dedupe check for fetched statements
+         * by querying on the basis of bank_transaction_id and created_at on master db to avoid replica lag.
+         * This was also found faster than querying by using bulk check (whereInMultiple).
+         */
+        $variant = $this->app->razorx->getTreatment(
+            $merchant->getId(),
+            Merchant\RazorxTreatment::BANKING_ACCOUNT_STATEMENT_FETCH_DEDUP,
+            $this->mode
+        );
+
         $startTime = null;
 
         foreach ($bankTransactions as $index => $bankTransaction)
         {
-            $recordsToCheck[] = $this->getColumnsToFindDuplicates($bankTransaction);
+            if ($variant === 'on')
+            {
+                $recordsToCheck[] = $record = $this->arrangeColumnsToFindDuplicates($bankTransaction);
+
+                $bankTransactionIds[] = $record[Entity::BANK_TRANSACTION_ID];
+
+                $queryDate = (isset($queryDate) === false) ? $record[Entity::TRANSACTION_DATE]
+                    : min($queryDate, $record[Entity::TRANSACTION_DATE]);
+            }
+            else
+            {
+                $recordsToCheck[] = $this->getColumnsToFindDuplicates($bankTransaction);
+            }
 
             $bankTransactionRecords[$index] = $this->formBankTransactionRecordToMatch($bankTransaction);
 
@@ -155,13 +180,29 @@ class Gateway extends BaseProcessor
 
                 if ($this->basDetails->getAccountType() === BasDetails\AccountType::DIRECT)
                 {
-                    $existingRecords = $this->repo->banking_account_statement
-                        ->findExistingStatementRecordsForBank($recordsToCheck);
+                    if ($variant === 'on')
+                    {
+                        $existingRecords = $this->repo->banking_account_statement
+                            ->findExistingStatementRecordsForBankWithDate($bankTransactionIds, $accountNumber, $queryDate);
+                    }
+                    else
+                    {
+                        $existingRecords = $this->repo->banking_account_statement
+                            ->findExistingStatementRecordsForBank($recordsToCheck);
+                    }
                 }
                 else
                 {
-                    $existingRecords = $this->repo->banking_account_statement_pool_rbl
-                        ->findExistingStatementRecordsForBank($recordsToCheck);
+                    if ($variant === 'on')
+                    {
+                        $existingRecords = $this->repo->banking_account_statement_pool_rbl
+                            ->findExistingStatementRecordsForBankWithDate($bankTransactionIds, $accountNumber, $queryDate);
+                    }
+                    else
+                    {
+                        $existingRecords = $this->repo->banking_account_statement_pool_rbl
+                            ->findExistingStatementRecordsForBank($recordsToCheck);
+                    }
                 }
 
                 $this->trace->info(
@@ -189,10 +230,11 @@ class Gateway extends BaseProcessor
                     }
                 }
 
-                $recordsToCheck = [];
+                $recordsToCheck         = [];
                 $bankTransactionRecords = [];
-
-                $processedRecordCount = 0;
+                $bankTransactionIds     = [];
+                $queryDate              = null;
+                $processedRecordCount   = 0;
             }
         }
 

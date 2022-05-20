@@ -41,6 +41,48 @@ class Repository extends Base\Repository
                     ->first();
     }
 
+    public function findExistingStatementRecordsForBankWithDate(array $bankTransactionIds, $accountNumber, $queryDate)
+    {
+        $columns = [];
+
+        $columns[] = $accountNumberColumn = $this->dbColumn(Entity::ACCOUNT_NUMBER);
+
+        $columns[] = $bankTransactionIdColumn = $this->dbColumn(Entity::BANK_TRANSACTION_ID);
+
+        $columns[] = $this->dbColumn(Entity::AMOUNT);
+
+        $columns[] = $this->dbColumn(Entity::CURRENCY);
+
+        $columns[] = $this->dbColumn(Entity::TYPE);
+
+        $columns[] = $this->dbColumn(Entity::DESCRIPTION);
+
+        $columns[] = $this->dbColumn(Entity::CATEGORY);
+
+        $columns[] = $this->dbColumn(Entity::BANK_SERIAL_NUMBER);
+
+        $columns[] = $this->dbColumn(Entity::BANK_INSTRUMENT_ID);
+
+        $columns[] = $this->dbColumn(Entity::BALANCE);
+
+        $columns[] = $this->dbColumn(Entity::BALANCE_CURRENCY);
+
+        $columns[] = $this->dbColumn(Entity::POSTED_DATE);
+
+        $columns[] = $this->dbColumn(Entity::TRANSACTION_DATE);
+
+        $columns[] = $this->dbColumn(Entity::BALANCE);
+
+        $createdAtColumn = $this->dbColumn(Entity::CREATED_AT);
+
+        return $this->newQuery()
+                    ->whereIn($bankTransactionIdColumn, $bankTransactionIds)
+                    ->where($createdAtColumn, '>=', $queryDate)
+                    ->where($accountNumberColumn, $accountNumber)
+                    ->useWritePdo()
+                    ->get($columns);
+    }
+
     public function findExistingStatementRecordsForBank(array $records)
     {
         $columns = [];
