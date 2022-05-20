@@ -67,6 +67,9 @@ class Type
     // Terminals for CardMandate
     const MANDATE_HUB                        = 'mandate_hub';
 
+    // Terminals for Optimizer
+    const OPTIMIZER                        = 'optimizer';
+
     protected static $types = [
         self::NON_RECURRING,
         self::RECURRING_3DS,
@@ -89,6 +92,7 @@ class Type
         self::OTM_COLLECT,
         self::TOKENISATION,
         self::MANDATE_HUB,
+        self::OPTIMIZER,
     ];
 
     protected static $bitPosition = [
@@ -113,6 +117,7 @@ class Type
         self::OTM_COLLECT                      => 19,
         self::TOKENISATION                     => 20,
         self::MANDATE_HUB                      => 21,
+        self::OPTIMIZER                        => 22,
     ];
 
     /**

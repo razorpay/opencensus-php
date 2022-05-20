@@ -1778,6 +1778,11 @@ class Entity extends Base\PublicEntity
         return ($this->isTypeApplicable(Type::MANDATE_HUB) === true);
     }
 
+    public function isOptimizer()
+    {
+        return ($this->isTypeApplicable(Type::OPTIMIZER) === true);
+    }
+
     public function isPin()
     {
         return ($this->isTypeApplicable(Type::PIN) === true);
