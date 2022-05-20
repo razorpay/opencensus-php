@@ -41,6 +41,7 @@ class Reconciliate extends Base\Reconciliate
         'AUTHORIZED DATE',
         'BANK REF NO',
         'ACTUAL TXN AMOUNT',
+        'REFUND MERCHANT REF NO',
     ];
 
     /**

@@ -79,13 +79,13 @@ class NbplusNetbankingKotakReconciliationTest extends StaticCallbackNbplusGatewa
         $this->assertEquals($payment[Payment::STATUS], Payment::CAPTURED);
 
         $data = $this->testData[__FUNCTION__];
-        $data['MERCHANT REF NO'] = 'MERCHANT REF NO';
+        $data['REFUND MERCHANT REF NO'] = 'REFUND MERCHANT REF NO';
         $data['AMOUNT'] = 'AMOUNT';
         $data['AUTHORIZED DATE'] = 'AUTHORIZED DATE';
         $data['BANK REF NO'] = 'BANK REF NO';
 
         $data2 = $this->testData[__FUNCTION__];
-        $data2['MERCHANT REF NO'] = substr($refund['id'], 5);
+        $data2['REFUND MERCHANT REF NO'] = substr($refund['id'], 5);
 
         $reconFile = $this->generateRefundReconFile($data, $data2);
 

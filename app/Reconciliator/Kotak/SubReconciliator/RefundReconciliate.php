@@ -12,7 +12,7 @@ use RZP\Reconciliator\Base\SubReconciliator\Helper;
 
 class RefundReconciliate extends SubReconciliator\RefundReconciliate
 {
-    const COLUMN_REFUND_ID = 'MERCHANT REF NO';
+    const COLUMN_REFUND_ID = 'REFUND MERCHANT REF NO';
     const COLUMN_REFUND_AMOUNT = 'AMOUNT';
     const COLUMN_REVERSAL_DATE = 'AUTHORIZED DATE';
     const REFUND_REF_NO = 'BANK REF NO';
@@ -60,10 +60,5 @@ class RefundReconciliate extends SubReconciliator\RefundReconciliate
         }
 
         return $gatewaySettledAt;
-    }
-
-    protected function getArn(array $row)
-    {
-        return $row[self::REFUND_REF_NO] ?? null;
     }
 }

@@ -162,7 +162,7 @@ return [
         'FILE NAME'                     => 'INTERNET',
         'FILE RECEIVED DATE'            =>  Carbon::today()->format("'d-M-y'"),
         'MERCHANT ID'                   => 'OSRAZORPAY',
-        'MERCHANT REF NO'               => '',
+        'MERCHANT REF NO'               => 'MERCHANT REF NO',
         'FROM APAC'                     => '06410910000362',
         'TO APAC'                       => '06410910000362',
         'PROCESSED FLAG'                => 'Y',
@@ -172,7 +172,8 @@ return [
         'AUTHORIZED BY'                 => 'NET',
         'AUTHORIZED DATE'               => Carbon::today()->format("'d-M-y'"),
         'BANK REF NO'                   => '0006293741',
-        'ACTUAL TXN AMOUNT'             => '1000'
+        'ACTUAL TXN AMOUNT'             => '1000',
+        'REFUND MERCHANT REF NO'        => ''
     ],
 
     'testDlbSuccessRecon' => [
