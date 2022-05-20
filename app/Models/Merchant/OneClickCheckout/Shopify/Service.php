@@ -32,6 +32,7 @@ class Service extends Base\Service
         'Hj1IOXYBFOQLRL',   //PSI EXCEL EXPORTS 
         'ETejwsC2azC6tI',   //Nanda Electric
         'FopgLHiMahqW6K',   //BLISSCLUB FITNESS PRIVATE LIMITED
+        'EbxFyGur6ER4eE',   //Talk To Crystals
         'GfX5XhS9sHvs7X',   //Re Thought
     ];
 
