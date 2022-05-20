@@ -975,6 +975,8 @@ class Name
 
     //cmma admin permission
     const CMMA_PROCESS_VIEW                    = 'process_view';
+    const CMMA_USER_TASK_VIEW                  = 'user_task_view';
+
     const DEBUG_NOCODE_ROUTES                   = 'debug_nocode_routes';
 
     const ADMIN_BULK_ASSIGN_ROLE                = 'admin_bulk_assign_role';
