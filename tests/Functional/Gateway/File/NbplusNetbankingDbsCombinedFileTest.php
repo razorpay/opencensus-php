@@ -4,11 +4,11 @@ namespace RZP\Tests\Functional\Gateway\File;
 
 use Mail;
 use Carbon\Carbon;
+use RZP\Services\Scrooge;
 use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File;
 use RZP\Excel\Import as ExcelImport;
 use RZP\Mail\Gateway\DailyFile as DailyFileMail;
-use RZP\Services\Scrooge;
 use RZP\Tests\Functional\Payment\NbPlusPaymentServiceNetbankingTest;
 
 class NbplusNetbankingDbsCombinedFileTest extends NbPlusPaymentServiceNetbankingTest
@@ -140,8 +140,6 @@ class NbplusNetbankingDbsCombinedFileTest extends NbPlusPaymentServiceNetbanking
         $claimSheet = (new ExcelImport)->toArray($filePath, null, \Maatwebsite\Excel\Excel::XLSX)[0];
 
         $i=0;
-        s($refundTransaction);
-        s($transaction);
         foreach ($claimSheet as $refund)
         {
             $this->assertEquals($refundTransaction[$i]['amount'], (int)($refund['transactionamount']*100));
@@ -156,20 +154,6 @@ class NbplusNetbankingDbsCombinedFileTest extends NbPlusPaymentServiceNetbanking
     protected function assertClaimFileContents($filePath, $transaction)
     {
         $this->assertTrue(file_exists($filePath));
-
-        /*$fileData = file_get_contents($filePath);
-
-        $config = $this->config['gateway.netbanking_dbs'];
-
-        $pgpConfig = [
-            PGPEncryption::PRIVATE_KEY  => trim(str_replace('\n', "\n", $config['recon_key'])),
-        ];
-
-        $res = new PGPEncryption($pgpConfig);
-
-        $decryptedText = $res->decrypt($fileData);
-
-        file_put_contents($filePath, $decryptedText);*/
 
         $claimSheet = (new ExcelImport)->toArray($filePath, null, \Maatwebsite\Excel\Excel::XLSX)[0];
 

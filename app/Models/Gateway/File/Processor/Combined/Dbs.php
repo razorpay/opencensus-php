@@ -134,6 +134,18 @@ class Dbs extends Base
         return $fileData;
     }
 
+    protected function getFileLocation(string $type)
+    {
+        $file = $this->gatewayFile
+            ->files()
+            ->where(FileStore\Entity::TYPE, $type)
+            ->first();
+
+        $fileLocation = $file->getLocation();
+
+        return $fileLocation;
+    }
+
     protected function createCombinedFile($data)
     {
         try
@@ -274,7 +286,7 @@ class Dbs extends Base
 
             $this->createCombinedFile($data);
 
-            $fileInfo[] = $this->getFileData(FileStore\Type::DBS_NETBANKING_COMBINED);
+            $fileInfo[] = $this->getFileLocation(FileStore\Type::DBS_NETBANKING_COMBINED);
 
             $bucketConfig = $this->getBucketConfig();
 
