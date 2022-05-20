@@ -158,6 +158,7 @@ class Shared
     const MANDATE_HQ_RAZORPAY_TERMINAL       = '1000ManhqTrmnl';
     const NETBANKING_DBS_TERMINAL            = '1000NbDbsTrmnl';
     const RUPAY_SIHUB_RAZORPAY_TERMINAL      = '1000RupSiTrmnl';
+    const NETBANKING_SARASWAT_TERMINAL       = '1000NbSrcbTrmnl';
 
     protected static $shared = array(
         self::ATOM_RAZORPAY_TERMINAL,
@@ -319,6 +320,7 @@ class Shared
         self::MANDATE_HQ_RAZORPAY_TERMINAL       => Gateway::MANDATE_HQ,
         self::NETBANKING_DBS_TERMINAL            => Gateway::NETBANKING_DBS,
         self::RUPAY_SIHUB_RAZORPAY_TERMINAL      => Gateway::RUPAY_SIHUB,
+        self::NETBANKING_SARASWAT_TERMINAL       => Gateway::NETBANKING_SARASWAT,
     ];
 
     public static function getSharedTerminalMapping()

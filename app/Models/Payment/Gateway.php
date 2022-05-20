@@ -101,6 +101,7 @@ class Gateway
     const NETBANKING_BDBL        = 'netbanking_bdbl';
     const NETBANKING_UCO         = 'netbanking_uco';
     const NETBANKING_TMB         = 'netbanking_tmb';
+    const NETBANKING_SARASWAT    = 'netbanking_saraswat';
     const NETBANKING_DBS         = 'netbanking_dbs';
     const NACH_CITI              = 'nach_citi';
     const NACH_ICICI             = 'nach_icici';
@@ -558,6 +559,7 @@ class Gateway
         self::NETBANKING_BDBL,
         self::NETBANKING_UCO,
         self::NETBANKING_DBS,
+        self::NETBANKING_SARASWAT,
         self::NETBANKING_HDFC,
         self::OFFLINE_HDFC,
         self::NETBANKING_TMB,
@@ -1318,6 +1320,7 @@ class Gateway
         Payment\Gateway::NETBANKING_BDBL        => 1618511400,
         Payment\Gateway::NETBANKING_UCO         => 1618511400,
         Payment\Gateway::NETBANKING_DBS         => 1618511400,
+        Payment\Gateway::NETBANKING_SARASWAT    => 1618511400,
     ];
 
     public static $channels = [
@@ -1441,6 +1444,7 @@ class Gateway
             self::NETBANKING_NSDL,
             self::NETBANKING_BDBL,
             self::NETBANKING_UCO,
+            self::NETBANKING_SARASWAT,
             self::NETBANKING_TMB,
             self::NETBANKING_DBS,
             self::INGENICO,
@@ -2791,6 +2795,7 @@ class Gateway
         IFSC::TMBL         => Gateway::NETBANKING_TMB,
         IFSC::DBSS         => Gateway::NETBANKING_DBS,
         Netbanking::LAVB_R => Gateway::NETBANKING_DBS,
+        IFSC::SRCB         => Gateway::NETBANKING_SARASWAT,
     ];
 
     /**
@@ -2862,6 +2867,7 @@ class Gateway
         IFSC::BDBL => Gateway::NETBANKING_BDBL,
         IFSC::UCBA => Gateway::NETBANKING_UCO,
         IFSC::TMBL => Gateway::NETBANKING_TMB,
+        IFSC::SRCB => Gateway::NETBANKING_SARASWAT,
         Netbanking::HDFC_C =>Gateway::NETBANKING_HDFC,
     ];
 
@@ -4021,6 +4027,7 @@ class Gateway
             self::TWID,
             self::NETBANKING_BDBL,
             self::NETBANKING_UCO,
+            self::NETBANKING_SARASWAT,
             self::EMERCHANTPAY,
             self::NETBANKING_TMB,
             self::NETBANKING_CANARA,
@@ -4135,6 +4142,7 @@ class Gateway
             self::NETBANKING_PNB,
             self::NETBANKING_BDBL,
             self::NETBANKING_UCO,
+            self::NETBANKING_SARASWAT,
             self::EMERCHANTPAY,
             self::NETBANKING_TMB,
             self::WALLET_FREECHARGE,

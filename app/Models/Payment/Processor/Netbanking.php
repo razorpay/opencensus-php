@@ -140,6 +140,7 @@ class Netbanking
         IFSC::NSPB,
         IFSC::VIJB,
         IFSC::BDBL,
+        IFSC::SRCB,
         IFSC::UCBA,
         IFSC::TMBL,
         IFSC::DBSS,
@@ -196,6 +197,7 @@ class Netbanking
         IFSC::TMBL,
         IFSC::DBSS,
         self::LAVB_R,
+        IFSC::SRCB,
     ];
 
     protected static $defaultGatewayDisabledBanks = [
@@ -976,6 +978,14 @@ class Netbanking
             ],
             'corp' => [
                 self::RATN_C
+            ]
+        ],
+        Gateway::NETBANKING_SARASWAT => [
+            'retail' => [
+                IFSC::SRCB,
+            ],
+            'tpv' => [
+                IFSC::SRCB,
             ]
         ],
         Gateway::NETBANKING_CSB => [

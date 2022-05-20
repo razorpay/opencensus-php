@@ -135,6 +135,7 @@ class Terminal extends Base
         $this->createSharedNetbankingUcoTerminal();
         $this->createSharedNetbankingTmbTerminal();
         $this->createsharednetbankingDbsTerminal();
+        $this->createSharedNetbankingSaraswatTerminal();
     }
 
     public function createBharatQrIsgTerminal()
@@ -4461,6 +4462,24 @@ class Terminal extends Base
             'merchant_id'          => $sharedMerchantAccount,
             'gateway'              => Gateway::NETBANKING_FSB,
             'gateway_merchant_id'  => 'netbanking_fsb',
+            'netbanking'           => 1,
+            'shared'               => 1,
+        ];
+
+        $attributes = array_merge($defaultValues,$attributes);
+
+        return $this->create($attributes);
+    }
+
+    public function createSharedNetbankingSaraswatTerminal(array $attributes = [])
+    {
+        $sharedMerchantAccount = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;
+
+        $defaultValues = [
+            'id'                   => '1ShrdNBSrtFTml',
+            'merchant_id'          => $sharedMerchantAccount,
+            'gateway'              => Gateway::NETBANKING_SARASWAT,
+            'gateway_merchant_id'  => 'netbanking_saraswat',
             'netbanking'           => 1,
             'shared'               => 1,
         ];
