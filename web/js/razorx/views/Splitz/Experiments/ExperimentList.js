@@ -97,7 +97,7 @@ export default class ExperimentList extends React.Component {
         {
           selectedProject: null,
         },
-        this.filterList(),
+        () => this.filterList(),
       );
       return;
     }
@@ -106,7 +106,7 @@ export default class ExperimentList extends React.Component {
       {
         selectedProject: project,
       },
-      this.filterList(),
+      () => this.filterList(),
     );
   };
 
@@ -116,7 +116,7 @@ export default class ExperimentList extends React.Component {
         {
           selectedExperimentId: null,
         },
-        this.filterList(),
+        () => this.filterList(),
       );
       return;
     }
@@ -125,7 +125,7 @@ export default class ExperimentList extends React.Component {
       {
         selectedExperimentId: option.id,
       },
-      this.filterList(),
+      () => this.filterList(),
     );
   };
 
@@ -135,7 +135,7 @@ export default class ExperimentList extends React.Component {
         {
           selectedExperimentName: null,
         },
-        this.filterList(),
+        () => this.filterList(),
       );
       return;
     }
