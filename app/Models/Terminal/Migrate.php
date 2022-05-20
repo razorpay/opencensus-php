@@ -540,21 +540,44 @@ trait Migrate
 
         $terminalSorted = $terminals->sortBy('id')->values();
 
+        
+        $apiTerminalIds = $apiTerminals->pluck('id')->all();
+
+        $tsTerminalIds = $terminalSorted->pluck('id')->all();
+
+        $diff = array_diff($apiTerminalIds, $tsTerminalIds);
+
         $isEqual = true;
 
-        $count = $apiTerminals->count();
+        if(empty($diff) === false)
+        {
+            $app['trace']->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_IDS, ['api_terminal_ids' => $apiTerminalIds, 'ts_terminal_ids' => $tsTerminalIds]);
 
-        for ($x = 0; $x < $count; $x++) {
+            $isEqual = false;
+        }
+
+        $countApi = $apiTerminals->count();
+
+        $countTs = $terminals->count();
+
+        // Algorithm is O(n*n) but its fine as n will not be too large
+        for ($x = 0; $x < $countApi; $x++) {
 
             $item = $apiSorted[$x];
-
-            $itemToCompare = $terminalSorted[$x];
-
-            $isEntityEqual = self::compareTerminalEntity($item, $itemToCompare, $compareMethods);
-
-            if ($isEntityEqual === false)
+            for ($y = 0; $y < $countTs; $y++)
             {
-                $isEqual = false;
+                $itemToCompare = $terminalSorted[$y];
+
+                if($item->getId() === $itemToCompare->getId())
+                {
+                    $isEntityEqual = self::compareTerminalEntity($item, $itemToCompare, $compareMethods);
+
+                    if ($isEntityEqual === false)
+                    {
+                        $isEqual = false;
+                    }
+                }
+
             }
         }
 
