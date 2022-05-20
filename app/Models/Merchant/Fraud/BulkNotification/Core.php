@@ -3,8 +3,12 @@
 namespace RZP\Models\Merchant\Fraud\BulkNotification;
 
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Mail;
 use RZP\Models\Base;
 use RZP\Models\Batch;
+use RZP\Models\Batch\Entity as BatchEntity;
+use RZP\Models\Batch\Header as BatchContants;
+use RZP\Models\Card\IIN\Import\XLSFileHandler;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger;
@@ -61,19 +65,31 @@ class Core extends Base\Core
 
         $aggregatedData = [];
 
+        $output = [];
+
         foreach ($fraudEntities as $fraudEntity)
         {
-            $payment = $this->repo->payment->findOrFailPublic($fraudEntity->getPaymentId());
+            $paymentID = $fraudEntity->getPaymentId();
+
+            $payment = $this->repo->payment->findOrFailPublic($paymentID);
 
             $fraudRowResult = Processor::getFraudNotificationRowData($payment, $fraudEntity);
 
             $aggregatedData[$payment->getMerchantId()] []= $fraudRowResult;
+
+            $output[$payment->getMerchantId()] [] = [
+                Constants::OUTPUT_KEY_PAYMENT_ID   => $paymentID,
+                Constants::OUTPUT_KEY_FD_TICKET_ID => '',
+                Constants::OUTPUT_KEY_ERROR        => '',
+            ];
         }
 
-         (new Freshdesk(null, $batchId))->notify($aggregatedData);
+         (new Freshdesk(null, $batchId))->notify($aggregatedData, $output);
+
+        $paymentIDDataMap = $this->getPaymentIDDataMapFromOutput($output);
 
         // Notify Risk Team
-        return (new Batch\Core())->sendMail($input);
+        return $this->sendMailPostCSVUpdate($input, $paymentIDDataMap);
     }
 
     public function fetchArnAndRrnFromBatch($input): array
@@ -330,4 +346,114 @@ class Core extends Base\Core
         ]);
     }
 
+
+    public function getPaymentIDDataMapFromOutput(array $output): array
+    {
+        $paymentIDDataMap = [];
+
+        foreach ($output as $merchantId => $merchantData)
+        {
+            foreach ($merchantData as $data)
+            {
+                $paymentIDDataMap[$data[Constants::OUTPUT_KEY_PAYMENT_ID]] = [
+                    Constants::OUTPUT_KEY_MERCHANT_ID => $merchantId,
+                    Constants::OUTPUT_KEY_FD_TICKET_ID => $data[Constants::OUTPUT_KEY_FD_TICKET_ID]
+                ];
+            }
+        }
+
+        return $paymentIDDataMap;
+    }
+
+    public function addFieldsToCSVFile(string $filePath, array $paymentIDDataMap)
+    {
+        $csvRows = (new XLSFileHandler)->getCsvData($filePath)['data'];
+
+        $totalRows = count($csvRows);
+
+        if ($totalRows > 0)
+        {
+            array_push($csvRows[0], BatchContants::FRAUD_OUTPUT_HEADER_MERCHANT_ID,
+                BatchContants::FRAUD_OUTPUT_HEADER_FRESHDESK_ID);
+            $paymentIDCol = null;
+
+            for ($col = 0; $col < count($csvRows); $col++)
+            {
+                if ($csvRows[0][$col] === BatchContants::FRAUD_OUTPUT_HEADER_PAYMENT_ID) {
+                    $paymentIDCol = $col;
+                }
+            }
+
+            for ($row = 1; $row < $totalRows; $row++)
+            {
+                $paymentID = $csvRows[$row][$paymentIDCol];
+                if (array_key_exists($paymentID, $paymentIDDataMap))
+                {
+                    array_push($csvRows[$row], $paymentIDDataMap[$paymentID][Constants::OUTPUT_KEY_MERCHANT_ID],
+                        $paymentIDDataMap[$paymentID][Constants::OUTPUT_KEY_FD_TICKET_ID]);
+                }
+            }
+
+            $reWriteFile = fopen($filePath, 'w');
+
+            foreach ($csvRows as $rowToWrite)
+            {
+                fputcsv($reWriteFile, $rowToWrite);
+            }
+
+            fclose($reWriteFile);
+        }
+
+    }
+
+    /**
+     * @param array $input
+     * @param array $paymentIDDataMap
+     *
+     * @return array
+     * @throws \Exception
+     */
+    public function sendMailPostCSVUpdate(array $input, array $paymentIDDataMap): array
+    {
+        $batch = $input[BatchEntity::BATCH];
+
+        $bucketType = $input[BatchEntity::BUCKET_TYPE];
+
+        $outputFilePath = $input[BatchEntity::OUTPUT_FILE_PATH];
+
+        $downloadFile = $input[BatchEntity::DOWNLOAD_FILE];
+
+        $settings = $input[BatchEntity::SETTINGS];
+
+        $type = $batch[BatchEntity::TYPE];
+        $type = studly_case($type);
+
+        if ($settings == null)
+        {
+            $settings = [];
+        }
+
+        $merchantId = $batch[Constants::OUTPUT_KEY_MERCHANT_ID];
+        $merchant   = $this->repo->merchant->findOrFailPublic($merchantId)->toArray();
+
+        $filePath = (new Batch\Core())->downloadAndGetFilePath($outputFilePath, $bucketType, $downloadFile);
+
+        if (isset($filePath) === true)
+        {
+            $this->addFieldsToCSVFile($filePath, $paymentIDDataMap);
+        }
+
+        $mailerClass = "\\RZP\\Mail\\Batch\\$type";
+
+        $mail = new $mailerClass(
+            $batch,
+            $merchant,
+            $filePath,
+            $settings);
+
+
+        Mail::send($mail);
+
+        return ['success' => true];
+    }
 }

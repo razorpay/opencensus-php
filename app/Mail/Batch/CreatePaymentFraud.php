@@ -22,6 +22,7 @@ class CreatePaymentFraud extends Base
 
     const RECIPIENTS = [
         'payments-onlinepayments-txn-risk@razorpay.com',
+        'crossborder-risk@razorpay.com',
     ];
 
     protected function addRecipients()

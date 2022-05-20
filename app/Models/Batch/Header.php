@@ -1313,6 +1313,8 @@ class Header
     const FRAUD_OUTPUT_HEADER_FRAUD_ID      =   'Fraud ID';
     const FRAUD_OUTPUT_HEADER_STATUS        =   'Status';
     const FRAUD_OUTPUT_HEADER_ERROR_REASON  =   'Error Reason';
+    const FRAUD_OUTPUT_HEADER_MERCHANT_ID   =   'Merchant ID';
+    const FRAUD_OUTPUT_HEADER_FRESHDESK_ID  =   'Freshdesk ID';
     const FEATURE_FLAG = 'feature_flag';
 
     // Debit note
