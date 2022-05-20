@@ -55,7 +55,10 @@ class Entity extends Base\Entity
     const COMPLETED_AT        = 'completed_at';
     const EXPIRE_AT           = 'expire_at';
     const REVOKED_AT          = 'revoked_at';
+    const UNPAUSED_AT         = 'unpaused_at';
     const CYCLES_COMPLETED    = 'cycles_completed';
+    const PAUSE_START         = 'pause_start';
+    const PAUSE_END           = 'pause_end';
 
     /************** Input  Properties ************/
 
@@ -81,6 +84,8 @@ class Entity extends Base\Entity
         Entity::COMPLETED_AT,
         Entity::EXPIRE_AT,
         Entity::UPDATED_AT,
+        Entity::PAUSE_START,
+        Entity::PAUSE_END
     ];
 
     protected $fillable = [
@@ -110,6 +115,8 @@ class Entity extends Base\Entity
         Entity::COMPLETED_AT,
         Entity::REVOKED_AT,
         Entity::CYCLES_COMPLETED,
+        Entity::PAUSE_START,
+        Entity::PAUSE_END,
     ];
 
     protected $visible = [
@@ -150,6 +157,8 @@ class Entity extends Base\Entity
         Entity::EXPIRE_AT,
         Entity::REVOKED_AT,
         Entity::CYCLES_COMPLETED,
+        Entity::PAUSE_START,
+        Entity::PAUSE_END,
     ];
 
     protected $public = [
@@ -178,6 +187,8 @@ class Entity extends Base\Entity
         Entity::UMN,
         Entity::REVOKED_AT,
         Entity::CYCLES_COMPLETED,
+        Entity::PAUSE_START,
+        Entity::PAUSE_END,
     ];
 
     /**
@@ -259,6 +270,32 @@ class Entity extends Base\Entity
         return in_array($this->getInternalStatus(), [Status::FAILED, Status::REJECTED, Status::EXPIRED]);
     }
 
+    /**
+     * This is the method to mark the internal status of mandate to be unpaused
+     */
+    public function markRevoked()
+    {
+        $this->setInternalStatus(Status::REVOKED);
+        $this->setStatus(Status::REVOKED);
+        $this->setAttribute(self::REVOKED_AT, $this->freshTimestamp());
+    }
+
+    /**
+     * This is the method to check if mandate statuses is failed
+     * @return bool
+     */
+    public function isPaused(): bool
+    {
+        return in_array($this->getInternalStatus(), [Status::PAUSED]);
+    }
+
+    /**
+     * This is the method to mark the internal status of mandate to be paused
+     */
+    public function markPaused()
+    {
+        $this->setInternalStatus(Status::PAUSED);
+    }
     /**
      * @return $this
      */

@@ -7,6 +7,7 @@ use RZP\Error\P2p\Error;
 use RZP\Error\P2p\ErrorCode;
 use RZP\Models\P2p\Mandate\Status;
 use RZP\Models\P2p\Mandate\Actions;
+use RZP\Exception\BadRequestException;
 use RZP\Models\P2p\Base\Libraries\ArrayBag;
 
 /**
@@ -112,92 +113,193 @@ class Processor extends Base\Processor
         return $this->callGateway();
     }
 
+    /**
+     * @param array $input
+     * This is the method to initiate reject mandate , takes mandate id as input and initiate pause for it
+     *
+     * @return array
+     * @throws \RZP\Exception\RuntimeException
+     * @throws \Throwable
+     */
     public function initiatePause(array $input): array
     {
+        // both the pause start and pause end should be set
+        if (isset($input[Entity::PAUSE_START]) === false  or
+            isset($input[Entity::PAUSE_END]) === false)
+        {
+            throw new BadRequestException("Pause start and pause end are required");
+        }
+
         $this->initialize(Action::INITIATE_PAUSE, $input);
 
-        $mandate = $this->core->fetch($input['id']);
+        $mandate                      = $this->core->fetch($this->input->get(Entity::ID));
+        $mandate[Entity::PAUSE_START] = $input[Entity::PAUSE_START];
+        $mandate[Entity::PAUSE_END]   = $input[Entity::PAUSE_END];
 
-        //TODO: implement validator logic
+        $this->initiateCallGateway($mandate);
 
-        //TODO: initiate gateway callback
-
-        //TODO: gateway specific response
-
-        return $mandate->toArrayPublic();
+        return $this->callGateway();
     }
 
+    /**
+     * @param array $input
+     * This is the function to get mandate data for pausing the data and call gateway
+     *
+     * @return array
+     * @throws \RZP\Exception\RuntimeException
+     * @throws \Throwable
+     */
     public function pauseMandate(array $input): array
     {
         $this->initialize(Action::PAUSE, $input);
 
-        $mandate = $this->core->fetch($input['id']);
+        $mandate = $this->core->fetch($this->input->get(Entity::ID));
 
-        //TODO: implement validator logic
+        $this->initiateCallGateway($mandate);
 
-        //TODO: initiate gateway callback
+        return $this->callGateway();
+    }
 
-        //TODO: gateway specific response
+    /**
+     * @param array $input
+     * This is the function to process gateway response that come back for various actions
+     *
+     * @return array
+     * @throws \RZP\Exception\LogicException
+     * @throws \RZP\Exception\RuntimeException
+     */
+    public function pauseSuccess(array $input): array
+    {
+        $this->initialize(Action::PAUSE_SUCCESS, $input);
+
+        $mandateInput = $this->input->bag(Entity::MANDATE);
+
+        $mandate = $this->core->fetch($this->input->bag(Entity::MANDATE)->get(Entity::ID));
+
+        $this->updateMandateStatus($mandate, $mandateInput);
 
         return $mandate->toArrayPublic();
     }
 
+    /**
+     * @param array $input
+     * This is the method to initiate un pause action
+     *
+     * @return array
+     * @throws \Throwable
+     */
     public function initiateUnpause(array $input): array
     {
         $this->initialize(Action::INITIATE_UNPAUSE, $input);
 
-        $mandate = $this->core->fetch($input['id']);
+        $mandate = $this->core->fetch($this->input->get(Entity::ID));
 
-        //TODO: implement validator logic
+        if ($mandate[Entity::INTERNAL_STATUS] !== Status::PAUSED)
+        {
+            throw new BadRequestException('Mandate is not paused, cannot unpause. Current mandate status is ' .$mandate[Entity::INTERNAL_STATUS]);
+        }
 
-        //TODO: initiate gateway callback
+        $this->initiateCallGateway($mandate);
 
-        //TODO: gateway specific response
-
-        return $mandate->toArrayPublic();
+        return $this->callGateway();
     }
 
+
+    /**
+     * @param array $input
+     * This is the function to get mandate data for pausing the data and call gateway
+     *
+     * @return array
+     * @throws \RZP\Exception\RuntimeException
+     * @throws \Throwable
+     */
     public function unpauseMandate(array $input): array
     {
         $this->initialize(Action::UNPAUSE, $input);
 
-        $mandate = $this->core->fetch($input['id']);
+        $mandate = $this->core->fetch($this->input->get(Entity::ID));
 
-        //TODO: implement validator logic
+        $this->initiateCallGateway($mandate);
 
-        //TODO: initiate gateway callback
+        return $this->callGateway();
+    }
 
-        //TODO: gateway specific response
+    /**
+     * @param array $input
+     * This is the function to process gateway response that come back for unpause actions
+     *
+     * @return array
+     * @throws \RZP\Exception\LogicException
+     * @throws \RZP\Exception\RuntimeException
+     */
+    public function unpauseSuccess(array $input): array
+    {
+        $this->initialize(Action::UNPAUSE_SUCCESS, $input);
+
+        $mandateInput = $this->input->bag(Entity::MANDATE);
+
+        $mandate = $this->core->fetch($this->input->bag(Entity::MANDATE)->get(Entity::ID));
+
+        $this->updateMandateStatus($mandate, $mandateInput);
 
         return $mandate->toArrayPublic();
     }
 
+    /**
+     * @param array $input
+     * This is the method to initiate revoke mandate flow
+     *
+     * @return array
+     * @throws \RZP\Exception\RuntimeException
+     * @throws \Throwable
+     */
     public function initiateRevoke(array $input): array
     {
         $this->initialize(Action::INITIATE_REVOKE, $input);
 
-        $mandate = $this->core->fetch($input['id']);
+        $mandate = $this->core->fetch($this->input->get(Entity::ID));
 
-        //TODO: implement validator logic
+        $this->initiateCallGateway($mandate);
 
-        //TODO: initiate gateway callback
-
-        //TODO: gateway specific response
-
-        return $mandate->toArrayPublic();
+        return $this->callGateway();
     }
 
+    /**
+     * @param array $input
+     * This is the function to get mandate data for pausing the data and call gateway
+     *
+     * @return array
+     * @throws \RZP\Exception\RuntimeException
+     * @throws \Throwable
+     */
     public function revokeMandate(array $input): array
     {
         $this->initialize(Action::REVOKE, $input);
 
-        $mandate = $this->core->fetch($input['id']);
+        $mandate = $this->core->fetch($this->input->get(Entity::ID));
 
-        //TODO: implement validator logic
+        $this->initiateCallGateway($mandate);
 
-        //TODO: initiate gateway callback
+        return $this->callGateway();
+    }
 
-        //TODO: gateway specific response
+    /**
+     * @param array $input
+     * This is the function to process gateway response that come back for revoke actions
+     *
+     * @return array
+     * @throws \RZP\Exception\LogicException
+     * @throws \RZP\Exception\RuntimeException
+     */
+    public function revokeSuccess(array $input): array
+    {
+        $this->initialize(Action::REVOKE_SUCCESS, $input);
+
+        $mandateInput = $this->input->bag(Entity::MANDATE);
+
+        $mandate = $this->core->fetch($this->input->bag(Entity::MANDATE)->get(Entity::ID));
+
+        $this->updateMandateStatus($mandate, $mandateInput);
 
         return $mandate->toArrayPublic();
     }
@@ -241,6 +343,14 @@ class Processor extends Base\Processor
 
             case Status::REJECTED:
                 $this->setMandateRejected($mandate, $input);
+                break;
+
+            case Status::PAUSED:
+                $this->setMandatePaused($mandate, $input);
+                break;
+
+            case Status::REVOKED:
+                $this->setMandateRevoked($mandate, $input);
                 break;
 
             default:
@@ -312,5 +422,74 @@ class Processor extends Base\Processor
         }
 
         $mandate->markRejected();
+    }
+
+    /**
+     * @param Entity   $mandate
+     * @param ArrayBag $input
+     * This is the method to set mandate status to be authorized
+     *
+     * @throws \RZP\Exception\LogicException
+     */
+    protected function setMandatePaused(Entity $mandate, ArrayBag $input)
+    {
+        // if the mandate creation has already failed throw the error
+        if ($mandate->isFailed() === true)
+        {
+            throw $this->logicException('mandate cannot be marked paused as the mandate has already failed', [
+                Entity::MANDATE => $input,
+                Entity::ID      => $mandate->getId(),
+            ]);
+        }
+
+        // if the mandate is in revoked state throw the error
+        if ($mandate->isRevoked() === true)
+        {
+            throw $this->logicException('mandate cannot be marked paused as the mandate has already been revoked', [
+                Entity::MANDATE => $input,
+                Entity::ID      => $mandate->getId(),
+            ]);
+        }
+
+        // if the mandate is not in an completed state throw the error
+        if ($mandate->isCompleted() === true)
+        {
+            throw $this->logicException('mandate is not in progress and already completed', [
+                Entity::MANDATE => $input,
+                Entity::ID      => $mandate->getId(),
+            ]);
+        }
+
+        $mandate->markPaused();
+    }
+
+    /**
+     * @param Entity   $mandate
+     * @param ArrayBag $input
+     * This is the method to set mandate status to be revoked
+     *
+     * @throws \RZP\Exception\LogicException
+     */
+    protected function setMandateRevoked(Entity $mandate, ArrayBag $input)
+    {
+        // if the mandate creation has already failed throw the error
+        if ($mandate->isFailed() === true)
+        {
+            throw $this->logicException('mandate can not be marked completed', [
+                Entity::MANDATE => $input,
+                Entity::ID      => $mandate->getId(),
+            ]);
+        }
+
+        // if the mandate is not in an completed state throw the error
+        if ($mandate->isCompleted() === true)
+        {
+            throw $this->logicException('mandate cannot be marked as revoked as its already completed', [
+                Entity::MANDATE => $input,
+                Entity::ID      => $mandate->getId(),
+            ]);
+        }
+
+        $mandate->markRevoked();
     }
 }

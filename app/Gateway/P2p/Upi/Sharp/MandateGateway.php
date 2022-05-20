@@ -2,6 +2,7 @@
 
 namespace RZP\Gateway\P2p\Upi\Sharp;
 
+use Carbon\Carbon;
 use RZP\Error\P2p\ErrorCode;
 use RZP\Gateway\P2p\Base\Request;
 use RZP\Gateway\P2p\Base\Response;
@@ -11,6 +12,7 @@ use RZP\Models\P2p\Mandate\Action;
 use RZP\Gateway\P2p\Upi\ErrorCodes;
 use RZP\Gateway\P2p\Upi\Npci\ClAction;
 use RZP\Gateway\P2p\Upi\Mock\Scenario;
+use RZP\Models\P2p\Mandate\UpiMandate\Entity as UpiMandate;
 
 /**
  * Class MandateGateway
@@ -67,23 +69,23 @@ class MandateGateway extends Gateway implements Contracts\MandateGateway
         $codes = $this->handleForErrorCode(Scenario::MA201, $callback['f'] ?? null);
 
         $response->setData([
-           'mandate' => [
-               'id'                  => $this->input->get('mandate')->get('id'),
-               'internal_status'     => array_get($callback, 's', $codes[0]),
-               'internal_error_code' => $codes[1],
-               'amount'              => $this->input->get('mandate')->get('amount'),
-               'start_date'          => $this->input->get('mandate')->get('start_date'),
-               'end_date'            => $this->input->get('mandate')->get('end_date'),
-               'recurring_type'      => $this->input->get('mandate')->get('recurring_type'),
-               'recurring_value'     => $this->input->get('mandate')->get('recurring_value'),
-               'recurring_rule'      => $this->input->get('mandate')->get('recurring_rule'),
-               'upi'                 => [
-                   'network_transaction_id'    => '123456',
-                   'gateway_transaction_id'    => 'SRP' . $this->input->get('payer')['id'],
-                   'gateway_reference_id'      => 'SRP' . $this->input->get('payer')['id'],
-                   'rrn'                       => (string) random_integer(12),
-                   'gateway_error_code'        => $codes[2],
-                   'gateway_error_description' => $codes[1],
+            Entity::MANDATE => [
+               Entity::ID                   => $this->input->get(Entity::MANDATE)->get(Entity::ID),
+               Entity::INTERNAL_STATUS      => array_get($callback, 's', $codes[0]),
+               Entity::INTERNAL_ERROR_CODE  => $codes[1],
+               Entity::AMOUNT               => $this->input->get(Entity::MANDATE)->get(Entity::AMOUNT),
+               Entity::START_DATE           => $this->input->get(Entity::MANDATE)->get(Entity::START_DATE),
+               Entity::END_DATE             => $this->input->get(Entity::MANDATE)->get(Entity::END_DATE),
+               Entity::RECURRING_TYPE       => $this->input->get(Entity::MANDATE)->get(Entity::RECURRING_TYPE),
+               Entity::RECURRING_VALUE      => $this->input->get(Entity::MANDATE)->get(Entity::RECURRING_VALUE),
+               Entity::RECURRING_RULE       => $this->input->get(Entity::MANDATE)->get(Entity::RECURRING_RULE),
+               Entity::UPI                  => [
+                   UpiMandate::NETWORK_TRANSACTION_ID       => '123456',
+                   UpiMandate::GATEWAY_TRANSACTION_ID       => 'SRP' . $this->input->get(Entity::PAYER)[Entity::ID],
+                   UpiMandate::GATEWAY_REFERENCE_ID         => 'SRP' . $this->input->get(Entity::PAYER)[Entity::ID],
+                   UpiMandate::RRN                          => (string) random_integer(12),
+                   UpiMandate::GATEWAY_ERROR_CODE           => $codes[2],
+                   UpiMandate::GATEWAY_ERROR_DESCRIPTION    => $codes[1],
                ],
            ]
        ]);
@@ -108,6 +110,140 @@ class MandateGateway extends Gateway implements Contracts\MandateGateway
         $response->setRequest($request);
     }
 
+
+    /**
+     * This is the method to initiate pause response
+     * @param Response $response
+     */
+    public function initiatePause(Response $response)
+    {
+        if ($this->handleFailureScenarios($response, [Scenario::MA501]))
+        {
+            return;
+        }
+
+        $this->cl()->setData($this->input->toArray());
+
+        $request = $this->cl()->getCredentialRequest(ClAction::RECURRING_DEBIT);
+
+        $response->setRequest($request);
+    }
+
+    /**
+     * This is the method to initiate unpause response
+     * @param Response $response
+     */
+    public function initiateUnPause(Response $response)
+    {
+        if ($this->handleFailureScenarios($response, [Scenario::MA601]))
+        {
+            return;
+        }
+
+        $this->cl()->setData($this->input->toArray());
+
+        $request = $this->cl()->getCredentialRequest(ClAction::RECURRING_DEBIT);
+
+        $response->setRequest($request);
+    }
+
+    /**
+     * This is the method to initiate revoke response
+     * @param Response $response
+     */
+    public function initiateRevoke(Response $response)
+    {
+        if ($this->handleFailureScenarios($response, [Scenario::MA701]))
+        {
+            return;
+        }
+
+        $request = new Request();
+        $request->setRedirect($this->getContextDevice()->get(Entity::CREATED_AT));
+        $request->setCallback(['f' => __FUNCTION__]);
+
+        $response->setRequest($request);
+    }
+
+    /**
+     * This is the function to pause the mandate
+     */
+    public function pause(Response $response)
+    {
+        if ($this->handleFailureScenarios($response, [Scenario::MA501]))
+        {
+            return;
+        }
+
+        $callback = $this->input->get(Fields::CALLBACK);
+
+        $codes = $this->handleForErrorCode(Scenario::MA501, $callback['f'] ?? 'initiatePause');
+
+        $response->setData([
+            Entity::MANDATE => [
+               Entity::ID                               => $this->input->get(Entity::MANDATE)->get(Entity::ID),
+               Entity::INTERNAL_STATUS                  => array_get($callback, 's', $codes[0]),
+               UpiMandate::GATEWAY_ERROR_CODE           => $codes[2],
+               UpiMandate::GATEWAY_ERROR_DESCRIPTION    => $codes[1],
+               Entity::PAUSE_START                      => $this->input->get(Entity::MANDATE)->get(Entity::PAUSE_START),
+               Entity::PAUSE_END                        =>  $this->input->get(Entity::MANDATE)->get(Entity::PAUSE_END),
+           ],
+       ]);
+    }
+
+    /**
+     * This is the function to unpause the mandate
+     */
+    public function unpause(Response $response)
+    {
+        if ($this->handleFailureScenarios($response, [Scenario::MA501]))
+        {
+            return;
+        }
+
+        $callback = $this->input->get(Fields::CALLBACK);
+
+        $codes = $this->handleForErrorCode(Scenario::MA501, $callback['f'] ?? 'initiateUnPause');
+
+        $response->setData([
+               Entity::MANDATE  => [
+                   Entity::ID                               => $this->input->get(Entity::MANDATE)->get(Entity::ID),
+                   Entity::PAUSE_START                      => $this->input->get(Entity::MANDATE)->get(Entity::PAUSE_START),
+                   Entity::PAUSE_END                        => $this->input->get(Entity::MANDATE)->get(Entity::PAUSE_END),
+                   UpiMandate::GATEWAY_ERROR_CODE           => $codes[2],
+                   UpiMandate::GATEWAY_ERROR_DESCRIPTION    => $codes[1],
+                   Entity::INTERNAL_STATUS                  => array_get($callback, 's', $codes[0]),
+                   Entity::INTERNAL_ERROR_CODE              => $codes[1],
+                   Entity::UNPAUSED_AT                      => Carbon::now()->getTimestamp()
+               ],
+        ]);
+    }
+
+    /**
+     * This is the function to unpause the mandate
+     */
+    public function revoke(Response $response)
+    {
+        if ($this->handleFailureScenarios($response, [Scenario::MA701]))
+        {
+            return;
+        }
+
+        $callback = $this->input->get(Fields::CALLBACK);
+
+        $codes = $this->handleForErrorCode(Scenario::MA701, $callback['f'] ?? 'initiateRevoke');
+
+        $response->setData([
+               Entity::MANDATE  => [
+                   Entity::ID                               => $this->input->get(Entity::MANDATE)->get(Entity::ID),
+                   UpiMandate::GATEWAY_ERROR_CODE           => $codes[2],
+                   UpiMandate::GATEWAY_ERROR_DESCRIPTION    => $codes[1],
+                   Entity::INTERNAL_STATUS                  => array_get($callback, 's', $codes[0]),
+                   Entity::INTERNAL_ERROR_CODE              => $codes[1],
+                   Entity::REVOKED_AT                       =>  Carbon::now()->getTimestamp()
+               ],
+        ]);
+    }
     // This method with fail the scenario with error code
     protected function handleForErrorCode($scenario, $f)
     {
@@ -123,6 +259,21 @@ class MandateGateway extends Gateway implements Contracts\MandateGateway
                     'rejected',
                     ErrorCode::BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_REJECTED,
                     'ZA',
+                ],
+                Action::INITIATE_PAUSE => [
+                    'paused',
+                    'Mandate is paused',
+                    '00'
+                ],
+                Action::INITIATE_UNPAUSE => [
+                    'approved',
+                    'Mandate is unpaused',
+                    '00'
+                ],
+                Action::INITIATE_REVOKE => [
+                    'revoked',
+                    'Mandate is Revoked',
+                    'RZ'
                 ],
             ];
 

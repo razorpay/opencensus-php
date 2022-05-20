@@ -93,7 +93,10 @@ class Scenario
     const MA201     = 'MA201';
     const MA301     = 'MA301';
     const MA401     = 'MA401';
-   
+    const MA501     = 'MA501';
+    const MA601     = 'MA601';
+    const MA701     = 'MA701';
+
     /*
      *
      *  self::SCENARIO_ID => [
@@ -602,6 +605,27 @@ class Scenario
         self::MA401 => [
             'entity'    => 'mandate',
             'action'    => 'reject',
+            'success'   => false,
+            'desc'      => 'Beneficiary Bank Down',
+            'code'      => ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
+        ],
+        self::MA501 => [
+            'entity'    => 'mandate',
+            'action'    => 'pause',
+            'success'   => false,
+            'desc'      => 'Beneficiary Bank Down',
+            'code'      => ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
+        ],
+        self::MA601 => [
+            'entity'    => 'mandate',
+            'action'    => 'unpause',
+            'success'   => false,
+            'desc'      => 'Beneficiary Bank Down',
+            'code'      => ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
+        ],
+        self::MA701 => [
+            'entity'    => 'mandate',
+            'action'    => 'revoke',
             'success'   => false,
             'desc'      => 'Beneficiary Bank Down',
             'code'      => ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,

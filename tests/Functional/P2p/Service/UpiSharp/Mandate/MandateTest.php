@@ -137,33 +137,74 @@ class MandateTest extends TestCase
     {
         $helper = $this->getMandateHelper();
 
-        $this->expectException(BadRequestException::class);
+        $helper->createMandate($this->gateway);
 
-        $this->expectExceptionMessage('The id provided does not exist');
+        $response = $helper->fetchAll();
 
-        $response = $helper->initiatePause('IlS1WhGL84jAoR', []);
+        $mandateId = $response['items'][0]['id'];
+
+        $lastMandate[Entity::PAUSE_START] = 1646721840;
+        $lastMandate[Entity::PAUSE_END]   = 1646921840;
+
+        $request = $helper->initiatePause(substr($mandateId, 5), $lastMandate);
+
+        $this->handleNpciClRequest(
+            $request,
+            'getCredential',
+            $this->expectedCallback(Requests::P2P_CUSTOMER_MANDATE_PAUSE, [$mandateId]),
+            [],
+            null);
+
     }
 
     public function testInitiateUnPause()
     {
         $helper = $this->getMandateHelper();
 
-        $this->expectException(BadRequestException::class);
+        $helper->createMandate($this->gateway);
 
-        $this->expectExceptionMessage('The id provided does not exist');
+        $response = $helper->fetchAll();
 
-        $response = $helper->initiateUnPause('IlS1WhGL84jAoR', []);
+        $mandateId = $response['items'][0]['id'];
+
+        $lastMandate[Entity::PAUSE_START] = 1646721840;
+        $lastMandate[Entity::PAUSE_END]   = 1646921840;
+
+        $request = $helper->initiatePause($mandateId, $lastMandate);
+
+        $helper->pauseMandate($request['callback'], []);
+
+        $request = $helper->initiateUnPause($mandateId, []);
+
+        $this->handleNpciClRequest(
+            $request,
+            'getCredential',
+            $this->expectedCallback(Requests::P2P_CUSTOMER_MANDATE_UNPAUSE, [$mandateId]),
+            [],
+            null);
     }
 
     public function testInitiateRevoke()
     {
         $helper = $this->getMandateHelper();
 
-        $this->expectException(BadRequestException::class);
+        $helper->createMandate($this->gateway);
 
-        $this->expectExceptionMessage('The id provided does not exist');
+        $response = $helper->fetchAll();
 
-        $response = $helper->initiateRevoke('IlS1WhGL84jAoR', []);
+        $mandateId = $response['items'][0]['id'];
+
+        $request = $helper->initiateRevoke($mandateId, []);
+
+        $this->assertRequestResponse(
+            'redirect',
+            ['time' => $this->fixtures->device->getCreatedAt()],
+            $this->expectedCallback(
+                Requests::P2P_CUSTOMER_MANDATE_REVOKE,
+                [$mandateId],
+                ['f' => 'initiateRevoke']),
+            $request);
+
     }
 
     public function testAuthorizeMandate()
@@ -224,33 +265,67 @@ class MandateTest extends TestCase
     {
         $helper = $this->getMandateHelper();
 
-        $this->expectException(BadRequestException::class);
+        $helper->createMandate($this->gateway);
 
-        $this->expectExceptionMessage('The id provided does not exist');
+        $response = $helper->fetchAll();
 
-        $response = $helper->pauseMandate('IlS1WhGL84jAoR', []);
+        $mandateId = $response['items'][0]['id'];
+
+        $lastMandate[Entity::PAUSE_START] = 1646721840;
+        $lastMandate[Entity::PAUSE_END]   = 1646921840;
+
+        $request = $helper->initiatePause($mandateId, $lastMandate);
+
+        $response = $helper->pauseMandate($request['callback'], []);
+
+        $this->assertArraySubset([
+         'status'    => 'paused',
+         ], $response);
+
     }
 
     public function testUnPauseMandate()
     {
         $helper = $this->getMandateHelper();
 
-        $this->expectException(BadRequestException::class);
+        $helper->createMandate($this->gateway);
 
-        $this->expectExceptionMessage('The id provided does not exist');
+        $response = $helper->fetchAll();
 
-        $response = $helper->unpauseMandate('IlS1WhGL84jAoR', []);
+        $mandateId = $response['items'][0]['id'];
 
+        $lastMandate[Entity::PAUSE_START] = 1646721840;
+        $lastMandate[Entity::PAUSE_END]   = 1646921840;
+
+        $request = $helper->initiatePause($mandateId, $lastMandate);
+
+        $helper->pauseMandate($request['callback'], []);
+
+        $request = $helper->initiateUnPause($mandateId, []);
+
+        $response = $helper->unpauseMandate($request['callback'], []);
+
+        $this->assertArraySubset([
+             'status'    => 'approved',
+            ], $response);
     }
 
     public function testRevokeMandate()
     {
         $helper = $this->getMandateHelper();
 
-        $this->expectException(BadRequestException::class);
+        $helper->createMandate($this->gateway);
 
-        $this->expectExceptionMessage('The id provided does not exist');
+        $response = $helper->fetchAll();
 
-        $response = $helper->revokeMandate('IlS1WhGL84jAoR', []);
+        $mandateId = $response['items'][0]['id'];
+
+        $request = $helper->initiateRevoke($mandateId, []);
+
+        $response = $helper->revokeMandate($request['callback'], []);
+
+        $this->assertArraySubset([
+            'status'    => 'revoked',
+         ], $response);
     }
 }

@@ -161,45 +161,51 @@ class MandateHelper extends P2pHelper
         return $this->post($request);
     }
 
-    public function pauseMandate(string $id, array $content = [])
+    public function pauseMandate(string $callback, array $content = [])
     {
         $this->shouldValidateJsonSchema = false;
 
-        $this->validationJsonSchemaPath = 'mandates/{mandate_id}/pause';
+        $this->validationJsonSchemaPath = 'mandate/pause';
 
-        $request = $this->request('mandates/%s/pause', [$id]);
+        $request = $this->request($callback);
 
-        $default = [];
+        $default = [
+            'sdk'   => []
+        ];
 
         $this->content($request, $default, $content);
 
         return $this->post($request);
     }
 
-    public function unpauseMandate(string $id, array $content = [])
+    public function unpauseMandate(string $callback, array $content = [])
     {
         $this->shouldValidateJsonSchema = false;
 
-        $this->validationJsonSchemaPath = 'mandates/{mandate_id}/unpause';
+        $this->validationJsonSchemaPath = 'mandate/unpause';
 
-        $request = $this->request('mandates/%s/unpause', [$id]);
+        $request = $this->request($callback);
 
-        $default = [];
+        $default = [
+            'sdk'   => []
+        ];
 
         $this->content($request, $default, $content);
 
         return $this->post($request);
     }
 
-    public function revokeMandate(string $id, array $content = [])
+    public function revokeMandate(string $callback, array $content = [])
     {
         $this->shouldValidateJsonSchema = false;
 
-        $this->validationJsonSchemaPath = 'mandates/{mandate_id}/revoke';
+        $this->validationJsonSchemaPath = 'mandate/revoke';
 
-        $request = $this->request('mandates/%s/revoke', [$id]);
+        $request = $this->request($callback);
 
-        $default = [];
+        $default = [
+            'sdk'   => []
+        ];
 
         $this->content($request, $default, $content);
 
