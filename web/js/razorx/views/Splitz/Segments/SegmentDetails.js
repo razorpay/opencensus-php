@@ -5,8 +5,9 @@ import { withRouter } from 'react-router-dom';
 import adminFetch from 'razorx/helpers/admin-fetch';
 import { formatDate } from 'razorx/helpers/utils';
 import { splitzFetch } from 'razorx/helpers/fetch';
-import { notifyError, notifySuccess } from 'razorx/components/Modal';
+import { openModal, notifyError, notifySuccess } from 'razorx/components/Modal';
 import AsyncButton from 'razorx/components/ui/AsyncButton';
+import AddEditSegment from './AddEditSegment';
 import { SEGMENT_DELETE, SEGMENT_EVALUATE_IN_BLOOM } from './constants';
 
 // eslint-disable-next-line react/no-unsafe
@@ -152,6 +153,10 @@ export default class SegmentDetails extends React.Component {
       });
   };
 
+  showEditSegment = () => {
+    openModal(<AddEditSegment isEdit data={this.state.data} />);
+  };
+
   // onEdit = () => this.fetch(this.props.segmentId);
 
   render() {
@@ -193,6 +198,11 @@ export default class SegmentDetails extends React.Component {
           <div className="sub-description">
             <span>
               <b>ID:</b> {data.id}
+            </span>
+            <span className="to-right">
+              <a className="link text-bold" onClick={this.showEditSegment}>
+                Edit Segment
+              </a>
             </span>
           </div>
           <div className="pad-highlight">

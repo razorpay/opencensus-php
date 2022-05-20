@@ -7,6 +7,8 @@ export const CRON_EXPRESSION_GENERATOR =
 // API URLS
 export const SEGMENT_CREATE_URL = 'segment.v1.SegmentAPI/Create';
 
+export const SEGMENT_EDIT_URL = 'segment.v1.SegmentAPI/Edit';
+
 export const SEGMENT_UPLOAD_URL = '/makeapicall/splitz/segment/upload';
 export const SEGMENT_EVALUATE_IN_BLOOM = 'segment.v1.SegmentAPI/EvaluateInBloom';
 

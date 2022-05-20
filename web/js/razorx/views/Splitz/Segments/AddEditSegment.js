@@ -10,6 +10,7 @@ import {
   CRON_EXPRESSION_GENERATOR,
   DYNAMIC_SEGMENTS_DOC,
   SEGMENT_CREATE_URL,
+  SEGMENT_EDIT_URL,
   SEGMENT_UPLOAD_URL,
 } from './constants';
 
@@ -27,21 +28,22 @@ function reducer(state, action) {
   const { type, payload } = action;
   return { ...state, [type]: payload };
 }
-
-const initialState = {
-  isSaving: false,
-  fileId: null,
-  segmentType: CSV,
-  matchingSegmentName: null,
-};
-
 export default function AddEditSegment(props) {
+  const { isEdit, data } = props;
+
+  const initialState = {
+    isSaving: false,
+    fileId: null,
+    segmentType: data?.source_type || null,
+    matchingSegmentName: null,
+  };
+
   const [state, dispatch] = useReducer(reducer, initialState);
 
   const { isSaving, fileId, segmentType, matchingSegmentName } = state;
 
   function validateForm(form) {
-    if (segmentType === CSV && !fileId) {
+    if (segmentType === CSV && !fileId && !data.inputFileID) {
       return 'Input file should be uploaded';
     }
 
@@ -87,21 +89,36 @@ export default function AddEditSegment(props) {
     if (segmentType === SQL) {
       payload.segment.cron_expression = form.cronExpression;
       payload.segment.sql_query = form.sqlQuery;
+    } else if (segmentType === CSV && isEdit && !fileId) {
+      payload.segment.inputFileID = data.inputFileID;
     } else {
       payload.segment.inputFileID = fileId;
     }
     payload.segment.source_type = segmentType;
 
-    const successMsg = `Segment is successfully created`;
+    let segmentUrl = ``;
+    let successMsg = ``;
+
+    if (isEdit) {
+      payload.segment.id = data.id;
+      segmentUrl = SEGMENT_EDIT_URL;
+      successMsg = 'Segment is successfully updated';
+    } else {
+      segmentUrl = SEGMENT_CREATE_URL;
+      successMsg = 'Segment is successfully created';
+    }
 
     dispatch({ type: 'isSaving', payload: true });
 
-    splitzFetch({ url: SEGMENT_CREATE_URL, data: payload })
+    splitzFetch({ url: segmentUrl, data: payload })
       .then(() => {
         dispatch({ type: 'isSaving', payload: false });
         notifySuccess(successMsg);
         closeModal();
-        props.collection.fetch();
+        props?.collection?.fetch();
+        if (isEdit) {
+          location.reload();
+        }
       })
       .catch((err) => {
         dispatch({ type: 'isSaving', payload: false });
@@ -173,7 +190,7 @@ export default function AddEditSegment(props) {
             label="Name"
             name="name"
             placeholder="Segment Name"
-            defaultValue=""
+            defaultValue={isEdit ? data.name : ''}
             required
             onChange={checkForExistingSegmentName}
           />
@@ -184,13 +201,13 @@ export default function AddEditSegment(props) {
             label="Description"
             name="description"
             placeholder="Segment Description"
-            defaultValue=""
+            defaultValue={isEdit ? data.description : ''}
             required
           />
           <SelectField
             name="type"
             label="Type"
-            defaultValue="CSV"
+            defaultValue={isEdit ? data.source_type : 'CSV'}
             required
             onChange={changeSegmentType}
           >
@@ -198,8 +215,20 @@ export default function AddEditSegment(props) {
           </SelectField>
           {segmentType === SQL && (
             <div>
-              <TextAreaField label="SQL Query" name="sqlQuery" placeholder="SQL Query" required />
-              <Field type="text" label="Cron Expression" name="cronExpression" required />
+              <TextAreaField
+                label="SQL Query"
+                name="sqlQuery"
+                placeholder="SQL Query"
+                defaultValue={isEdit ? data?.sql_query : ''}
+                required
+              />
+              <Field
+                type="text"
+                label="Cron Expression"
+                name="cronExpression"
+                defaultValue={isEdit ? data?.cron_expression : ''}
+                required
+              />
               <p>
                 Use{' '}
                 <a
@@ -223,20 +252,28 @@ export default function AddEditSegment(props) {
               </p>
             </div>
           )}
-          {segmentType === CSV && (
+          {(segmentType === CSV || segmentType === null) && (
             <FileField
               label="Input File"
               id="inputFile"
               name="inputFile"
-              required={segmentType === CSV}
+              required={isEdit ? false : segmentType === CSV}
               onChange={handleFileChange}
               className="form-margin"
             />
           )}
+          {data.inputFileID && segmentType !== SQL && (
+            <div>
+              Currently uploaded file ID:{' '}
+              <span className="segment-modal-description">{data.inputFileID}</span>
+              <br />
+              (If no file is chosen, the previous file will be used.)
+            </div>
+          )}
         </React.Fragment>
         <div className="footer">
           <button className="btn btn--primary">
-            Create Segment
+            {isEdit ? 'Update' : 'Create'} Segment
             <span className="spin-btn" />
           </button>
         </div>
@@ -245,8 +282,13 @@ export default function AddEditSegment(props) {
   );
 }
 
-AddEditSegment.defaultProps = {};
+AddEditSegment.defaultProps = {
+  isEdit: false,
+  data: {},
+};
 
 AddEditSegment.propTypes = {
   collection: PropTypes.object.isRequired,
+  isEdit: PropTypes.bool,
+  data: PropTypes.object,
 };
