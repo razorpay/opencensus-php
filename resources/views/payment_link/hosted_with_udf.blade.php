@@ -87,7 +87,7 @@
                 }
             </script>
             <!-- Temporary polyfill for analytics -->
-            <script src="https://polyfill.io/v3/polyfill.min.js?features=URL%2CURLSearchParams"/>
+            <script src="https://polyfill.io/v3/polyfill.min.js?features=URL%2CURLSearchParams"></script>
             @if($optimised_web_vitals === false)
                 <script src="{{env('AWS_CF_CDN_URL')}}/static/analytics/bundle.js" defer></script>
                 <script src="https://cdn.razorpay.com/static/assets/color.js" defer></script>
