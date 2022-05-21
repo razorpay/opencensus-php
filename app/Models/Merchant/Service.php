@@ -2569,7 +2569,7 @@ class Service extends Base\Service
                                'user_role'   => $currentUserRole,
                            ]);
 
-        if (in_array($currentUserRole, [User\Role::OWNER, User\Role::ADMIN, User\Role::MANAGER, User\Role::OPERATIONS, Constants::EPOS]) === true)
+        if (in_array($currentUserRole, [User\Role::OWNER, User\Role::ADMIN, User\Role::MANAGER, User\Role::OPERATIONS, User\Role::SELLERAPP]) === true)
         {
             $this->core()->merchantUserIncrementProductSession($merchant->getId(), $currentUser->getId());
         }

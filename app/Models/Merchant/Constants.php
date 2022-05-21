@@ -55,7 +55,6 @@ final class Constants
     const WORKFLOW_URL                            = 'workflowUrl';
     const BUSINESS_TYPE                           = 'businessType';
     const TYPE                                    = 'type';
-    const EPOS                                    = 'ePOS';
     const LEVEL                                   = 'level';
     const WORKFLOW                                = 'workflow';
     const ID                                      = 'id';
@@ -1032,7 +1031,6 @@ final class Constants
     const NAME              = 'name';
     const VALUE             = 'value';
 
-
     // static properties for different widgets and products for app scalability
     const APP_SCALABILITY_CONFIG_STATIC_PROPS = [
 
@@ -1578,7 +1576,7 @@ final class Constants
                 self::FIELDS =>[[
                     'name' => 'pricing',
                     'value' => 'pricing',
-                    'editable' => false    
+                    'editable' => false
                 ]]
             ],
             [

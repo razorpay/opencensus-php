@@ -1057,39 +1057,39 @@ class Core extends Base\Core
         {
             case Constants::PAYMENTS_NOT_ENABLED :
                 return [
-                    Constants::PAYMENT_HANDLE      => [Constants::PRIORITY => 1, Constants::USER_ROLES => [User\Role::OWNER, User\Role::ADMIN, User\Role::MANAGER, User\Role::OPERATIONS, Constants::EPOS]],
+                    Constants::PAYMENT_HANDLE      => [Constants::PRIORITY => 1, Constants::USER_ROLES => [User\Role::OWNER, User\Role::ADMIN, User\Role::MANAGER, User\Role::OPERATIONS, User\Role::SELLERAPP]],
                     Constants::ONBOARDING_CARD     => [Constants::PRIORITY => 2, Constants::USER_ROLES => [User\Role::OWNER, User\Role::ADMIN, User\Role::MANAGER, User\Role::FINANCE]],
-                    Constants::ACCEPT_PAYMENTS     => [Constants::PRIORITY => 3, Constants::USER_ROLES => [User\Role::OWNER, User\Role::ADMIN, User\Role::MANAGER, User\Role::OPERATIONS, Constants::EPOS]],
-                    Constants::RECENT_TRANSACTIONS => [Constants::PRIORITY => 4, Constants::USER_ROLES => [User\Role::OWNER, User\Role::ADMIN, User\Role::MANAGER, User\Role::OPERATIONS, Constants::EPOS, User\Role::FINANCE, User\Role::SUPPORT]],
+                    Constants::ACCEPT_PAYMENTS     => [Constants::PRIORITY => 3, Constants::USER_ROLES => [User\Role::OWNER, User\Role::ADMIN, User\Role::MANAGER, User\Role::OPERATIONS, User\Role::SELLERAPP]],
+                    Constants::RECENT_TRANSACTIONS => [Constants::PRIORITY => 4, Constants::USER_ROLES => [User\Role::OWNER, User\Role::ADMIN, User\Role::MANAGER, User\Role::OPERATIONS, User\Role::SELLERAPP, User\Role::FINANCE, User\Role::SUPPORT]],
                 ];
 
             case Constants::PAYMENTS_ENABLED_AND_NOT_TRANSACTED :
                 return [
-                    Constants::PAYMENT_HANDLE      => [Constants::PRIORITY => 1, Constants::USER_ROLES => [User\Role::OWNER, User\Role::ADMIN, User\Role::MANAGER, User\Role::OPERATIONS, Constants::EPOS]],
+                    Constants::PAYMENT_HANDLE      => [Constants::PRIORITY => 1, Constants::USER_ROLES => [User\Role::OWNER, User\Role::ADMIN, User\Role::MANAGER, User\Role::OPERATIONS, User\Role::SELLERAPP]],
                     Constants::ONBOARDING_CARD     => [Constants::PRIORITY => 2, Constants::USER_ROLES => [User\Role::OWNER, User\Role::ADMIN, User\Role::MANAGER, User\Role::FINANCE]],
-                    Constants::ACCEPT_PAYMENTS     => [Constants::PRIORITY => 3, Constants::USER_ROLES => [User\Role::OWNER, User\Role::ADMIN, User\Role::MANAGER, User\Role::OPERATIONS, Constants::EPOS]],
-                    Constants::RECENT_TRANSACTIONS => [Constants::PRIORITY => 4, Constants::USER_ROLES => [User\Role::OWNER, User\Role::ADMIN, User\Role::MANAGER, User\Role::OPERATIONS, Constants::EPOS, User\Role::FINANCE, User\Role::SUPPORT]],
+                    Constants::ACCEPT_PAYMENTS     => [Constants::PRIORITY => 3, Constants::USER_ROLES => [User\Role::OWNER, User\Role::ADMIN, User\Role::MANAGER, User\Role::OPERATIONS, User\Role::SELLERAPP]],
+                    Constants::RECENT_TRANSACTIONS => [Constants::PRIORITY => 4, Constants::USER_ROLES => [User\Role::OWNER, User\Role::ADMIN, User\Role::MANAGER, User\Role::OPERATIONS, User\Role::SELLERAPP, User\Role::FINANCE, User\Role::SUPPORT]],
                     Constants::SETTLEMENTS         => [Constants::PRIORITY => 5, Constants::USER_ROLES => [User\Role::OWNER, User\Role::ADMIN, User\Role::MANAGER, User\Role::OPERATIONS, User\Role::FINANCE, User\Role::SUPPORT]],
                 ];
 
             case Constants::PAYMENTS_ENABLED_AND_TRANSACTED :
                 return [
-                    Constants::PAYMENT_HANDLE      => [Constants::PRIORITY => 1, Constants::USER_ROLES => [User\Role::OWNER, User\Role::ADMIN, User\Role::MANAGER, User\Role::OPERATIONS, Constants::EPOS]],
+                    Constants::PAYMENT_HANDLE      => [Constants::PRIORITY => 1, Constants::USER_ROLES => [User\Role::OWNER, User\Role::ADMIN, User\Role::MANAGER, User\Role::OPERATIONS, User\Role::SELLERAPP]],
                     Constants::ONBOARDING_CARD     => [Constants::PRIORITY => 2, Constants::USER_ROLES => [User\Role::OWNER, User\Role::ADMIN, User\Role::MANAGER, User\Role::FINANCE]],
-                    Constants::ACCEPT_PAYMENTS     => [Constants::PRIORITY => 3, Constants::USER_ROLES => [User\Role::OWNER, User\Role::ADMIN, User\Role::MANAGER, User\Role::OPERATIONS, Constants::EPOS]],
-                    Constants::RECENT_TRANSACTIONS => [Constants::PRIORITY => 6, Constants::USER_ROLES => [User\Role::OWNER, User\Role::ADMIN, User\Role::MANAGER, User\Role::OPERATIONS, Constants::EPOS, User\Role::FINANCE, User\Role::SUPPORT]],
+                    Constants::ACCEPT_PAYMENTS     => [Constants::PRIORITY => 3, Constants::USER_ROLES => [User\Role::OWNER, User\Role::ADMIN, User\Role::MANAGER, User\Role::OPERATIONS, User\Role::SELLERAPP]],
+                    Constants::RECENT_TRANSACTIONS => [Constants::PRIORITY => 6, Constants::USER_ROLES => [User\Role::OWNER, User\Role::ADMIN, User\Role::MANAGER, User\Role::OPERATIONS, User\Role::SELLERAPP, User\Role::FINANCE, User\Role::SUPPORT]],
                     Constants::SETTLEMENTS         => [Constants::PRIORITY => 4, Constants::USER_ROLES => [User\Role::OWNER, User\Role::ADMIN, User\Role::MANAGER, User\Role::OPERATIONS, User\Role::FINANCE, User\Role::SUPPORT]],
-                    Constants::PAYMENT_ANALYTICS   => [Constants::PRIORITY => 5, Constants::USER_ROLES => [User\Role::OWNER, User\Role::ADMIN, User\Role::MANAGER, User\Role::OPERATIONS, Constants::EPOS, User\Role::FINANCE, User\Role::SUPPORT]],
+                    Constants::PAYMENT_ANALYTICS   => [Constants::PRIORITY => 5, Constants::USER_ROLES => [User\Role::OWNER, User\Role::ADMIN, User\Role::MANAGER, User\Role::OPERATIONS, User\Role::SELLERAPP, User\Role::FINANCE, User\Role::SUPPORT]],
                 ];
 
             case Constants::PAYMENTS_ENABLED_AND_FREQUENTLY_TRANSACTED :
                 return [
-                    Constants::PAYMENT_HANDLE      => [Constants::PRIORITY => 1, Constants::USER_ROLES => [User\Role::OWNER, User\Role::ADMIN, User\Role::MANAGER, User\Role::OPERATIONS, Constants::EPOS]],
+                    Constants::PAYMENT_HANDLE      => [Constants::PRIORITY => 1, Constants::USER_ROLES => [User\Role::OWNER, User\Role::ADMIN, User\Role::MANAGER, User\Role::OPERATIONS, User\Role::SELLERAPP]],
                     Constants::ONBOARDING_CARD     => [Constants::PRIORITY => 2, Constants::USER_ROLES => [User\Role::OWNER, User\Role::ADMIN, User\Role::MANAGER, User\Role::FINANCE]],
-                    Constants::ACCEPT_PAYMENTS     => [Constants::PRIORITY => 3, Constants::USER_ROLES => [User\Role::OWNER, User\Role::ADMIN, User\Role::MANAGER, User\Role::OPERATIONS, Constants::EPOS]],
+                    Constants::ACCEPT_PAYMENTS     => [Constants::PRIORITY => 3, Constants::USER_ROLES => [User\Role::OWNER, User\Role::ADMIN, User\Role::MANAGER, User\Role::OPERATIONS, User\Role::SELLERAPP]],
                     Constants::SETTLEMENTS         => [Constants::PRIORITY => 4, Constants::USER_ROLES => [User\Role::OWNER, User\Role::ADMIN, User\Role::MANAGER, User\Role::OPERATIONS, User\Role::FINANCE, User\Role::SUPPORT]],
-                    Constants::PAYMENT_ANALYTICS   => [Constants::PRIORITY => 5, Constants::USER_ROLES => [User\Role::OWNER, User\Role::ADMIN, User\Role::MANAGER, User\Role::OPERATIONS, Constants::EPOS, User\Role::FINANCE, User\Role::SUPPORT]],
-                    Constants::RECENT_TRANSACTIONS => [Constants::PRIORITY => 6, Constants::USER_ROLES => [User\Role::OWNER, User\Role::ADMIN, User\Role::MANAGER, User\Role::OPERATIONS, Constants::EPOS, User\Role::FINANCE, User\Role::SUPPORT]],
+                    Constants::PAYMENT_ANALYTICS   => [Constants::PRIORITY => 5, Constants::USER_ROLES => [User\Role::OWNER, User\Role::ADMIN, User\Role::MANAGER, User\Role::OPERATIONS, User\Role::SELLERAPP, User\Role::FINANCE, User\Role::SUPPORT]],
+                    Constants::RECENT_TRANSACTIONS => [Constants::PRIORITY => 6, Constants::USER_ROLES => [User\Role::OWNER, User\Role::ADMIN, User\Role::MANAGER, User\Role::OPERATIONS, User\Role::SELLERAPP, User\Role::FINANCE, User\Role::SUPPORT]],
                 ];
         }
     }
