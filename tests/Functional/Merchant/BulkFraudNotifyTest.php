@@ -553,6 +553,8 @@ class BulkFraudNotifyTest extends TestCase
 
         $this->assertEquals($response['items'][0]['Fraud ID'], $fraud->id);
 
+        $this->assertEquals(1635552000, $fraud->reported_to_issuer_at);
+
         $expectedSNSPayload = $this->getExpectedSNSPayload($fraud, $payment);
 
         $this->assertArraySelectiveEquals($expectedSNSPayload, $snsPayloadArray[0]);
@@ -562,9 +564,15 @@ class BulkFraudNotifyTest extends TestCase
 
     public function testCreateFraudBatchSkipSendMail()
     {
-        $payment = $this->setupForCreateFraudBatchMastercard();
+        $this->setupForCreateFraudBatchMastercard();
 
-        $this->startTest();
+        $response = $this->startTest();
+
+        $fraud = $this->assertFraudEntityExists($response['items'][0]['Payment ID'], 'MasterCard');
+
+        $this->assertEquals(1652400000, $fraud->reported_to_issuer_at);
+
+        $this->assertEquals(1652400000, $fraud->reported_to_razorpay_at);
 
         $notificationDisableMidSet = $this->app['redis']->smembers('bulk_fraud_notification_disable_mid_set_100000Razorpay');
 
@@ -670,11 +678,6 @@ class BulkFraudNotifyTest extends TestCase
 
         $this->assertEquals($paymentId, $fraud->first()->payment_id);
         $this->assertEquals($reportedBy, $fraud->first()->reported_by);
-
-        if ($reportedBy === 'MasterCard')
-        {
-            $this->assertEquals(1635552000, $fraud->first()->reported_to_issuer_at);
-        }
 
         return $fraud->first();
     }
@@ -981,11 +984,14 @@ class BulkFraudNotifyTest extends TestCase
 
         $this->assertEquals('1635897600', $csvRows[1][6]);  //asserting for reported_to_issuer at [11-03-2021 in format MM/dd/yy]
 
+        $this->assertEquals('44694', $csvRows[2][6]);
+
 
         $this->assertContains('reported_to_razorpay_at', $csvRows[0]);
 
-        $this->assertEquals('2022-02-12', $csvRows[1][12]);  //asserting for reported_to_razorpay_at
+        $this->assertEquals('1644624000', $csvRows[1][12]);  //asserting for reported_to_razorpay_at
 
+        $this->assertEquals('44694', $csvRows[2][12]);
     }
 
     private function assertBatchInputForVisa($csvRows)
@@ -1014,10 +1020,11 @@ class BulkFraudNotifyTest extends TestCase
 
         $this->assertEquals('Y', $csvRows[2][11]); //asserting for send_mail which is at 11 offset
 
-        $this->assertEquals('2022-02-12', $csvRows[1][12]);  //asserting for reported_to_razorpay_at which is at 12 offset
+        $this->assertEquals('44694', $csvRows[1][12]);  //asserting for reported_to_razorpay_at which is at 12 offset
 
         $this->assertEquals('', $csvRows[2][12]); //asserting for reported_to_razorpay_at which is at 12 offset
 
+        $this->assertEquals('', $csvRows[3][12]);
     }
 
     private function prepareAndTestBatchCreatedVisaMastercard(string $fileSource = 'visa')

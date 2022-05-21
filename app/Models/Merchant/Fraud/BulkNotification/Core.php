@@ -157,30 +157,27 @@ class Core extends Base\Core
             $row[Constants::BATCH_KEY_SUB_TYPE] = explode(' ', $row[Constants::BATCH_KEY_SUB_TYPE])[0];
 
             $row[Fraud\Entity::SOURCE] = Constants::MASTERCARD_FRAUD_FILE_SOURCE;
-
-            $row[Constants::BATCH_KEY_REPORTED_TO_ISSUER_AT] =
-                $this->getUnixTimestampFromExcelTimestamp((int)$row[Constants::BATCH_KEY_REPORTED_TO_ISSUER_AT]);
         }
         else
         {
             $row[Fraud\Entity::SOURCE] = Constants::VISA_FRAUD_FILE_SOURCE;
             // this is not a mandatory field and only takes integer value
-            if (empty($row[Constants::BATCH_KEY_REPORTED_TO_ISSUER_AT]) == false &&
-                intval($row[Constants::BATCH_KEY_REPORTED_TO_ISSUER_AT] !== 0))
-            {
-                $row[Fraud\Entity::REPORTED_TO_ISSUER_AT] = intval($row[Fraud\Entity::REPORTED_TO_ISSUER_AT]);
-            }
-            else
-            {
-                $row[Fraud\Entity::REPORTED_TO_ISSUER_AT] = null;
-            }
+        }
 
+        if (empty($row[Constants::BATCH_KEY_REPORTED_TO_ISSUER_AT]) == false &&
+            intval($row[Constants::BATCH_KEY_REPORTED_TO_ISSUER_AT] !== 0))
+        {
+            $row[Fraud\Entity::REPORTED_TO_ISSUER_AT] = $this->getUnixTimestampFromExcelTimestamp(intval($row[Fraud\Entity::REPORTED_TO_ISSUER_AT]));
+        }
+        else
+        {
+            $row[Fraud\Entity::REPORTED_TO_ISSUER_AT] = null;
         }
 
         if (empty($row[Constants::BATCH_KEY_REPORTED_TO_RAZORPAY_AT]) == false &&
             intval($row[Constants::BATCH_KEY_REPORTED_TO_RAZORPAY_AT] !== 0))
         {
-            $row[Fraud\Entity::REPORTED_TO_RAZORPAY_AT] = intval($row[Fraud\Entity::REPORTED_TO_RAZORPAY_AT]);
+            $row[Fraud\Entity::REPORTED_TO_RAZORPAY_AT] = $this->getUnixTimestampFromExcelTimestamp(intval($row[Fraud\Entity::REPORTED_TO_RAZORPAY_AT]));
         }
         else
         {
@@ -261,11 +258,6 @@ class Core extends Base\Core
             $shouldDisableNotification = $sendMailKey === 'N';
 
             unset($row[Constants::BATCH_KEY_SEND_MAIL]);
-
-            if (isset($row[Fraud\Entity::REPORTED_TO_RAZORPAY_AT]) === true)
-            {
-                $row[Fraud\Entity::REPORTED_TO_RAZORPAY_AT] = strtotime($row[Fraud\Entity::REPORTED_TO_RAZORPAY_AT]);
-            }
 
             $rowOutput = $this->getDefaultValuesForBatchOutputRow($row, $fetchFromDataLakeSuccessful, $row[Batch\Constants::IDEMPOTENCY_KEY]);
 

@@ -309,7 +309,7 @@ class Processor extends Base\Core
     {
         $rowOutput = $this->getDefaultRowOutputValues($fileSource);
 
-        $rowOutput = $this->transformReportedToIssuerAtField($rowOutput, $rowMap, $fileSource);
+        $rowOutput = $this->transformReportedToFields($rowOutput, $rowMap, $fileSource);
 
         $sourceMap = ($fileSource === Constants::FILE_SOURCE_VISA) ? Constants::VISA_MAP : Constants::MASTERCARD_MAP;
 
@@ -449,23 +449,54 @@ class Processor extends Base\Core
         return $outputTable;
     }
 
-    protected function transformReportedToIssuerAtField($rowOutput, $rowMap, $fileSource)
+    protected function transformReportedToFields($rowOutput, $rowMap, $fileSource)
     {
         $reportedToIssuerAt = false;
 
         if ($fileSource === Constants::FILE_SOURCE_VISA)
         {
-            $reportedToIssuerAt  = strtotime($rowMap['Fraud Post Date']);
+            $fraudPostDate= $rowMap['Fraud Post Date'];
+
+            $reportedToIssuerAt = $fraudPostDate;
+
+            if (is_string($fraudPostDate) === true)
+            {
+                $reportedToIssuerAt  = strtotime($fraudPostDate);
+            }
         }
         else if ($fileSource === Constants::FILE_SOURCE_MASTERCARD)
         {
-            $reportedToIssuerAt = strtotime($rowMap['Date (Entered Date)']);
+            $enteredDate = $rowMap['Date (Entered Date)'];
+
+            $reportedToIssuerAt = $enteredDate;
+
+            if (is_string($enteredDate) === true)
+            {
+                $reportedToIssuerAt  = strtotime($enteredDate);
+            }
         }
 
         if ($reportedToIssuerAt !==  false)
         {
             $rowOutput[Fraud\Entity::REPORTED_TO_ISSUER_AT] = $reportedToIssuerAt;
         }
+
+        if (isset($rowMap[Fraud\Entity::REPORTED_TO_RAZORPAY_AT]) === true)
+        {
+            if (is_string($rowMap[Fraud\Entity::REPORTED_TO_RAZORPAY_AT]) === true)
+            {
+                $rowOutput[Fraud\Entity::REPORTED_TO_RAZORPAY_AT] = strtotime($rowMap[Fraud\Entity::REPORTED_TO_RAZORPAY_AT]);
+            }
+            else
+            {
+                $rowOutput[Fraud\Entity::REPORTED_TO_RAZORPAY_AT] = $rowMap[Fraud\Entity::REPORTED_TO_RAZORPAY_AT];
+            }
+        }
+        else
+        {
+            $rowOutput[Fraud\Entity::REPORTED_TO_RAZORPAY_AT] = '';
+        }
+
 
         return $rowOutput;
     }

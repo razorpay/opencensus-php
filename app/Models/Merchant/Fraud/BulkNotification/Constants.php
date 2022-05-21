@@ -74,7 +74,6 @@ class Constants
         self::BATCH_KEY_TYPE                    => self::VISA_KEY_FRAUD_TYPE,
         self::BATCH_KEY_AMOUNT                  => self::VISA_KEY_AMOUNT,
         self::BATCH_KEY_SEND_MAIL               => self::BATCH_KEY_SEND_MAIL,
-        self::BATCH_KEY_REPORTED_TO_RAZORPAY_AT => self::BATCH_KEY_REPORTED_TO_RAZORPAY_AT,
     ];
 
     const MASTERCARD_MAP = [
@@ -84,7 +83,6 @@ class Constants
         self::BATCH_KEY_AMOUNT                  =>  self::MASTERCARD_KEY_AMOUNT,
         self::BATCH_KEY_CHARGEBACK_CODE         =>  self::MASTERCARD_CHARGEBACK_CODE,
         self::BATCH_KEY_SEND_MAIL               =>  self::BATCH_KEY_SEND_MAIL,
-        self::BATCH_KEY_REPORTED_TO_RAZORPAY_AT =>  self::BATCH_KEY_REPORTED_TO_RAZORPAY_AT,
     ];
 
     // 24 hours = 24 * 60 * 60 = 86400
