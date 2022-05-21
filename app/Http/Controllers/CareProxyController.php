@@ -63,6 +63,8 @@ class CareProxyController extends Controller
     const TICKET_CONFIG_UPDATE_ITEM_STATUS        = 'twirp/rzp.care.ticket.v1.TicketConfigService/UpdateItemStatus';
     const TICKET_CONFIG_DELETE_SUBCATEGORY        = 'twirp/rzp.care.ticket.v1.TicketConfigService/DeleteSubCategory';
     const TICKET_CONFIG_DELETE_ITEM               = 'twirp/rzp.care.ticket.v1.TicketConfigService/DeleteItem';
+    const TICKET_CONFIG_UPDATE_SUBCATEGORY_RANK   = 'twirp/rzp.care.ticket.v1.TicketConfigService/UpdateRankSubCategory';
+    const TICKET_CONFIG_UPDATE_ITEM_RANK          = 'twirp/rzp.care.ticket.v1.TicketConfigService/UpdateRankItem';
 
     //FaqConfig
     const FAQ_CONFIG_ADD_FAQ               = 'twirp/rzp.care.faq.v1.FaqConfigService/CreateFaq';
@@ -101,6 +103,8 @@ class CareProxyController extends Controller
         self::TICKET_CONFIG_FETCH_ITEM                => Name::TICKET_CONFIG_VIEW,
         self::TICKET_CONFIG_EDIT_SUBCATEGORY          => Name::TICKET_CONFIG_EDIT,
         self::TICKET_CONFIG_EDIT_ITEM                 => Name::TICKET_CONFIG_EDIT,
+        self::TICKET_CONFIG_UPDATE_SUBCATEGORY_RANK   => Name::TICKET_CONFIG_EDIT,
+        self::TICKET_CONFIG_UPDATE_ITEM_RANK          => Name::TICKET_CONFIG_EDIT,
         self::FAQ_CONFIG_ADD_FAQ_RANKING              => Name::FAQ_CONFIG_EDIT,
         self::FAQ_CONFIG_DELETE_FAQ_RANKING           => Name::FAQ_CONFIG_EDIT,
     ];
@@ -154,6 +158,8 @@ class CareProxyController extends Controller
         self::TICKET_CONFIG_UPDATE_ITEM_STATUS,
         self::TICKET_CONFIG_DELETE_SUBCATEGORY,
         self::TICKET_CONFIG_DELETE_ITEM,
+        self::TICKET_CONFIG_UPDATE_SUBCATEGORY_RANK,
+        self::TICKET_CONFIG_UPDATE_ITEM_RANK,
         self::FAQ_CONFIG_DELETE_FAQ_RANKING,
         self::FAQ_CONFIG_ADD_FAQ_RANKING,
     ];

@@ -562,6 +562,40 @@ class CareServiceTest extends TestCase
                 self::ACTUAL_CARE_SERVICE_RESPONSE_STATUS => 200,
             ],
             [
+                self::AUTH                                => 'admin',
+                self::API_ROUTE                           => '/care_service/admin/twirp/rzp.care.ticket.v1.TicketConfigService/UpdateRankSubCategory',
+                self::EXPECTED_CARE_SERVICE_ROUTE         => 'https://care-int.razorpay.com/twirp/rzp.care.ticket.v1.TicketConfigService/UpdateRankSubCategory',
+                self::EXPECTED_CARE_SERVICE_REQUEST       => [
+                    'key'   => 'value',
+                    'admin' => [
+                        'id' => 'RzrpySprAdmnId',
+                    ]
+                ],
+                self::API_REQUEST_BODY                    => ["key" => "value"],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_BODY   => [
+                    'key' => 'value',
+                ],
+                self::PERMISSIONS                         => ['ticket_config_edit'],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_STATUS => 200,
+            ],
+            [
+                self::AUTH                                => 'admin',
+                self::API_ROUTE                           => '/care_service/admin/twirp/rzp.care.ticket.v1.TicketConfigService/UpdateRankItem',
+                self::EXPECTED_CARE_SERVICE_ROUTE         => 'https://care-int.razorpay.com/twirp/rzp.care.ticket.v1.TicketConfigService/UpdateRankItem',
+                self::EXPECTED_CARE_SERVICE_REQUEST       => [
+                    'key'   => 'value',
+                    'admin' => [
+                        'id' => 'RzrpySprAdmnId',
+                    ]
+                ],
+                self::API_REQUEST_BODY                    => ["key" => "value"],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_BODY   => [
+                    'key' => 'value',
+                ],
+                self::PERMISSIONS                         => ['ticket_config_edit'],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_STATUS => 200,
+            ],
+            [
                 self::AUTH                                => 'myoperator',
                 self::API_ROUTE                           => '/care_service/myoperator_webhook/twirp/rzp.care.callback.v1.CallbackService/AfterCallWebhook',
                 self::EXPECTED_CARE_SERVICE_ROUTE         => 'https://care-int.razorpay.com/twirp/rzp.care.callback.v1.CallbackService/AfterCallWebhook',
