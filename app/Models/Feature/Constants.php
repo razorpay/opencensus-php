@@ -1790,6 +1790,7 @@ class Constants
         self::ONBOARD_TOKENIZATION_RUPAY      => true,
         self::ONBOARD_TOKENIZATION_DINERS     => true,
         self::ASYNC_TOKENISATION              => true,
+        self::DISABLE_TOKENISED_PAYMENT       => true,
         self::EXCLUDE_DEDUCT_DISPUTE          => true,
         self::ORG_ANNOUNCEMENT_TAB_DISABLE    => true,
         self::ASYNC_TXN_FILL_DETAILS          => true,
