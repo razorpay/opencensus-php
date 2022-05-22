@@ -454,9 +454,60 @@ class ApiEventSubscriber extends Base\Core
             (new PaymentLink\Core)->postPaymentCaptureUpdatePaymentPage($payment);
         }
 
+        try
+        {
+            $this->pushForPaymentLinks($payment);
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Logger::ERROR,
+                TraceCode::ORDER_NOTIFY_FAILED_FOR_PAYMENT_LINK_V2,
+                [
+                    'payment_id' => $payment->getId(),
+                ]);
+        }
+
         $payload = $this->getPaymentPayload($payment);
 
         $this->dispatchEventToStork($payload);
+    }
+
+    protected function pushForPaymentLinks(Payment\Entity $payment)
+    {
+
+        if ($payment->hasOrder() === true and
+            ($payment->order->getProductType() === ProductType::PAYMENT_LINK_V2))
+        {
+            $order = $payment->order;
+
+            $this->trace->info(
+                TraceCode::ORDER_PAID_FOR_PAYMENT_LINK_V2,
+                [
+                    'order'    => $order,
+                ]);
+
+            $plService = $this->app['paymentlinkservice'];
+
+            try
+            {
+                $plService->notifyOrderPaid($order, $payment);
+            }
+            catch (\Throwable $ex)
+            {
+                $this->trace->traceException(
+                    $ex,
+                    Logger::ERROR,
+                    TraceCode::ORDER_NOTIFY_FAILED_FOR_PAYMENT_LINK_V2,
+                    [
+                        'payment_id' => $payment->getId(),
+                        'order_id'   => $order->getId(),
+                    ]);
+            }
+
+        }
+
     }
 
     protected function onPaymentCreated($payment)
