@@ -5,7 +5,7 @@ import { connect } from 'react-redux';
 import { withRouter, Link } from 'react-router-dom';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
-
+import { trackOptimizerEvents } from 'merchant/views/Navigator/track';
 import PropTypes from 'prop-types';
 import { titleCase } from 'common/utils/rzp-utils';
 import { gatewayLogos } from './util';
@@ -25,6 +25,13 @@ import { gatewayLogos } from './util';
 export default class ProviderDetails extends Component {
   static contextTypes = {
     confirm: PropTypes.func,
+  };
+
+  trackEventOnEdit = () => {
+    trackOptimizerEvents({
+      objectName: 'edit provider',
+      actionName: 'click',
+    });
   };
 
   render() {
@@ -47,8 +54,11 @@ export default class ProviderDetails extends Component {
                   </div>
                   <div className="col-xs-5">
                     <Link to={`/optimizer/update-provider/${provider.Terminal_id}`}>
-                      <button className="btn btn-primary edit-rule-btn">
-                        {' '}
+                      <button
+                        className="btn btn-primary edit-rule-btn"
+                        type="button"
+                        onClick={this.trackEventOnEdit}
+                      >
                         <i className="i i-pencil-edit" />
                         Edit Details
                       </button>

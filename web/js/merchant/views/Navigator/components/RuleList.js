@@ -9,6 +9,7 @@ import ProviderNewView from './ProviderNewView';
 import { idItem } from 'common/ui/item/id';
 import { fetchTerminalProviders } from 'merchant/reducers/navigator/details';
 import Spinner from 'common/ui/Spinner';
+import { trackOptimizerEvents } from 'merchant/views/Navigator/track';
 
 @connect(
   (state) => {
@@ -62,11 +63,18 @@ export default class RuleList extends React.Component {
     this.setState({ isCollapsed: !isCollapsed });
   };
 
+  trackEventOnAddProvider = () => {
+    trackOptimizerEvents({
+      objectName: 'add provider',
+      actionName: 'click',
+    });
+  };
+
   render() {
-    const { isCollapsed } = this.state;
+    const { isCollapsed, redirect } = this.state;
     const { terminalProviders } = this.props;
-    if (this.state.redirect) {
-      return <Redirect to={this.state.redirect} />; // nosemgrep : https://semgrep.dev/s/razorpay:rzp-react-router-redirect
+    if (redirect) {
+      return <Redirect to={redirect} />;
     }
     return (
       <div>
@@ -87,7 +95,11 @@ export default class RuleList extends React.Component {
                 </span>
               )}
               <Link to="/optimizer/add-provider" className="pull-right">
-                <button className="pull-right no-border create-rule-act">
+                <button
+                  className="pull-right no-border create-rule-act"
+                  type="button"
+                  onClick={this.trackEventOnAddProvider}
+                >
                   <i className="i i-plus" /> Add provider
                 </button>
               </Link>
