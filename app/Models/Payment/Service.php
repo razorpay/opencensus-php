@@ -1797,6 +1797,44 @@ class Service extends Base\Service
         return $response;
     }
 
+    public function fetchStatusCountInternal(array $input)
+    {
+        $merchantId = $input['merchant_id'];
+
+        // Removing merchant_id from input so that the validations on $params will pass
+        array_delete($merchantId, $input);
+
+        $this->trace->info(TraceCode::PAYMENTS_MERCHANT_PAYMENTS_STATUS_COUNT_INTERNAL, [
+            'filters'     => $input,
+            'merchant_id' => $merchantId,
+        ]);
+
+        $paymentsStatusCounts = $this->repo->payment->fetchPaymentsStatusCountBetweenTimestamps($input, $merchantId, true);
+
+        $statusItem = [];
+
+        // Fill the status count to 0
+        $statusList = Payment\Status::getStatusList();
+
+        foreach ($statusList as $status)
+        {
+            $statusItem[$status] = 0;
+        }
+
+        foreach ($paymentsStatusCounts->toArrayWithItems()['items'] as $paymentsStatusCount)
+        {
+            $statusItem[$paymentsStatusCount->getStatus()] = $paymentsStatusCount->getAttribute('count');
+        }
+
+        $statusItem['count'] = array_sum($statusItem);
+
+        $response['status'] = 'true';
+
+        $response['response'] = $statusItem;
+
+        return $response;
+    }
+
     public function fetch(string $id, array $input = []): array
     {
         $id = Entity::stripSignWithoutValidation($id);

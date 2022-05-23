@@ -5358,6 +5358,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const PAYMENTS_BULK_FETCH = 'PAYMENTS_BULK_FETCH';
 
+    const PAYMENTS_MERCHANT_PAYMENTS_STATUS_COUNT_INTERNAL = 'PAYMENTS_MERCHANT_PAYMENTS_STATUS_COUNT_INTERNAL';
+
     // Whats app message trace code
     const STORK_WHATSAPP_MESSAGE_FAILED                       = 'STORK_WHATSAPP_MESSAGE_FAILED';
     const STORK_WHATSAPP_REQUEST                              = 'STORK_WHATSAPP_REQUEST';

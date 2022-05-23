@@ -1076,6 +1076,8 @@ class Route
         'los_service_admin'                        => ['any',      'los/admin/{path?}',                              'LOSController@handleAdminRequests'                                 ],
         'los_service_dev_admin'                    => ['any',      'los/dev_admin/{path?}',                          'LOSController@handleDevAdminRequests'                              ],
         'los_mail'                                 => ['post',     'los/mail',                                       'LOSController@sendMail'                                            ],
+        // Adding internal_merchant_has_payments route to los to fetch the merchant had  payments
+        'internal_merchant_payments_count'         => ['post',     'internal/merchant_payment_status_wise_count',    'PaymentController@getPaymentsStatusCountInternal'                  ],
         'los_cron'                                 => ['post',     'los/cron/{path?}',                               'LOSController@handleCronRequests'                                  ],
         'loc_service'                              => ['post',     'loc/service/{path?}',                            'LOCController@handleProxyRequests'                                 ],
         'loc_service_admin'                        => ['post',     'loc/admin/{path?}',                              'LOCController@handleAdminRequests'                                 ],
@@ -4138,6 +4140,7 @@ class Route
         'cps_backfill_entities',
         'vendor_payment_composite_expands_helper',
         'los_mail',
+        'internal_merchant_payments_count',
         'api_entity_fetch',
         'cps_iin_flow_disable',
         'merchant_bulk_update_pricing_cron',
@@ -12255,6 +12258,7 @@ class Route
 
         'los'  => [
             'los_mail',
+            'internal_merchant_payments_count',
             'internal_merchant_fetch',
             'user_fetch_entity',
             'user_fetch_internal',
