@@ -8,6 +8,7 @@ use RZP\Base\ConnectionType;
 use RZP\Constants\Environment;
 use RZP\Constants\Timezone;
 use RZP\Exception\RecoverableException;
+use RZP\Models\FileStore\Storage\Base\Bucket;
 use RZP\Mail\Base\Constants;
 use RZP\Services\Beam\Constants as BeamConstants;
 use RZP\Models\FileStore;
@@ -118,7 +119,6 @@ class GifuFile extends Base\BaseGifuFile
                 }
             }
         }
-
         return $data;
     }
 
