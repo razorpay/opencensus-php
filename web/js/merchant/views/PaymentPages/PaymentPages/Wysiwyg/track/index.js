@@ -243,9 +243,10 @@ function _track() {
         sendToLumberjack('support.phone', { text, is_prefill });
         sendToSegment('support phone', 'input', { text, is_prefill });
       },
-      addImageSuccess: () => {
-        sendToLumberjack('description.image_upload.success');
-        sendToSegment(' description image upload', 'success');
+      addImageSuccess: (sizeInMB, type) => {
+        // sizeInMB is the initial file size without compression
+        sendToLumberjack('description.image_upload.success', { sizeInMB, type });
+        sendToSegment(' description image upload', 'success', { sizeInMB, type });
       },
       addImageFail: (error) => {
         sendToLumberjack('description.image_upload.fail', { error });

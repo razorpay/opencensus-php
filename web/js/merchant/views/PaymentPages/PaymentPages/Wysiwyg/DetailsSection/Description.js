@@ -199,6 +199,7 @@ export default class WysiwygDescription extends React.PureComponent {
     input.onchange = () => {
       const file = input.files[0];
       const fileSizeMB = file.size / 1024 / 1024;
+      const fileType = file.type;
 
       if (fileSizeMB > FILE_SIZE_LIMIT) {
         self.props.showNotification({
@@ -225,7 +226,7 @@ export default class WysiwygDescription extends React.PureComponent {
 
               self.QUILL.insertEmbed(range.index, 'image', url, 'user');
 
-              track.wysiwyg.addImageSuccess();
+              track.wysiwyg.addImageSuccess(fileSizeMB, fileType);
             } else {
               const errorMessage = 'Some network error occurred';
 
