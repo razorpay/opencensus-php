@@ -8,24 +8,28 @@ class CmmaProxyController extends BaseProxyController
 {
     //TODO : change the url @shubham
     const GET_PROCESS           = 'GetUserList';
+    const HANDLE_CALLBACK       = 'HandleCallback';
     const GET_USER_TASK_QUERY   = 'GetUserTaskQuery';
     const GET_USER_TASK_BY_ID   = 'GetUserTaskById';
 
     const ROUTES_URL_MAP    = [
         //TODO : change the url @shubham
         self::GET_PROCESS => "/twirp\/rzp.example.user.v1.UserAPI\/List/",
+        self::HANDLE_CALLBACK => "/twirp\/rzp.cmma.process.v1.ProcessManagementService\/HandleCallback/",
         self::GET_USER_TASK_QUERY => '/twirp\/rzp.cmma.userTask.v1.UserTaskService\/GetUserTaskQuery/',
         self::GET_USER_TASK_BY_ID => '/twirp\/rzp.cmma.userTask.v1.UserTaskService\/GetUserTaskById/',
     ];
 
     const ADMIN_ROUTES   = [
         self::GET_PROCESS,
+        self::HANDLE_CALLBACK,
         self::GET_USER_TASK_QUERY,
         self::GET_USER_TASK_BY_ID
     ];
 
     const ADMIN_ROUTES_VS_PERMISSION   = [
         self::GET_PROCESS   => Name::CMMA_PROCESS_VIEW,
+        self::HANDLE_CALLBACK => Name::CMMA_PROCESS_EDIT,
         self::GET_USER_TASK_QUERY => Name::CMMA_USER_TASK_VIEW,
         self::GET_USER_TASK_BY_ID => Name::CMMA_USER_TASK_VIEW
     ];
