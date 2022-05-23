@@ -2,10 +2,11 @@
 
 namespace RZP\Mail\Merchant;
 
+use RZP\Mail\Base\Constants;
 use RZP\Mail\Base\Mailable;
 use RZP\Constants\MailTags;
 
-class CommissionInvoice extends Mailable
+class CommissionInvoiceIssued extends Mailable
 {
     protected $data;
 
@@ -14,6 +15,13 @@ class CommissionInvoice extends Mailable
         parent::__construct();
 
         $this->data = $data;
+    }
+
+    protected function addSender()
+    {
+        $this->from(Constants::MAIL_ADDRESSES[Constants::PARTNER_COMMISSIONS],Constants::HEADERS[Constants::PARTNER_COMMISSIONS]);
+
+        return $this;
     }
 
     protected function addRecipients()
@@ -36,7 +44,7 @@ class CommissionInvoice extends Mailable
 
     protected function addSubject()
     {
-        $subject = 'Invoice for your commission for the date range: '. $this->data['start_date'].' to '. $this->data['end_date'];
+        $subject = '<Important> Commission generated for the date range: '. $this->data['start_date'].' to '. $this->data['end_date'];
 
         $this->subject($subject);
 
@@ -69,7 +77,7 @@ class CommissionInvoice extends Mailable
 
     protected function addHtmlView()
     {
-        $this->view('emails.mjml.merchant.partner.commission_invoice.merchant');
+        $this->view('emails.mjml.merchant.partner.commission_invoice.issued');
 
         return $this;
     }

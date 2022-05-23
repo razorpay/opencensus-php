@@ -27,6 +27,7 @@ use RZP\Jobs\CommissionInvoiceGenerate;
 use RZP\Mail\Merchant\CommissionInvoice;
 use RZP\Mail\Merchant\CommissionProcessed;
 use RZP\Mail\Merchant\CommissionOpsInvoice;
+use RZP\Mail\Merchant\CommissionInvoiceIssued;
 use RZP\Models\Admin\Permission\Name as Permission;
 
 class Core extends Base\Core
@@ -154,6 +155,15 @@ class Core extends Base\Core
         $opsInvoice = new CommissionOpsInvoice($data);
 
         Mail::send($opsInvoice);
+    }
+
+    public function sendCommissionIssuedMail(Entity $invoice, string $pdfPath = null)
+    {
+        $data = $this->getTemplateData($invoice, $pdfPath);
+
+        $commissionInvoice = new CommissionInvoiceIssued($data);
+
+        Mail::send($commissionInvoice);
     }
 
     public function sendCommissionProcessedMail(Entity $invoice, string $pdfPath)
