@@ -26,6 +26,11 @@ jobs:
         run: |
           echo $USER_CHECK
 
+      - if: contains(github.event.pull_request.labels.*.name, 'bu_payments')
+        name: Set flag paymentsBU
+        id: paymentsBU
+        run: echo "::set-output name=flag::true"
+
       - if: contains(github.event.pull_request.labels.*.name, 'Non-Migration')
         name: Set flag Non-Migration
         id: nonMigration
@@ -48,6 +53,7 @@ jobs:
           result-encoding: string
           script: |
             jiraIssueIdStr = context.payload.pull_request.body.toLowerCase()
+            console.log(jiraIssueIdStr)
             var jiraIssueIdValueRow = (jiraIssueIdStr.substring(jiraIssueIdStr.indexOf("jiraid"))).split("\n")
             var jiraId = jiraIssueIdValueRow[0].split("|")
             var jiraIssueId = jiraId[1].trim()
@@ -56,8 +62,8 @@ jobs:
 
       - name: Check Issue status
         env:
-          USER_CHECK: ${{steps.githubUsers.outputs.flaguser}}
           JIRA_ISSUE_ID: ${{steps.jiraIssueId.outputs.result}}
+          PAYMENTS_BU_FLAG: ${{steps.paymentsBU.outputs.flag}}
           NON_MIGRATION_FLAG: ${{steps.nonMigration.outputs.flag}}
           HOTFIX_LABEL: ${{steps.hotfix.outputs.flag}}
           BUGFIX_LABEL: ${{steps.bugfix.outputs.flag}}

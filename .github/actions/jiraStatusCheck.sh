@@ -13,7 +13,7 @@ then
   exit 0
 fi
 
-if [ "${USER_CHECK}" = "success" ]
+if [ "${PAYMENTS_BU_FLAG}" = "true" ]
 then
   if [ "${NON_MIGRATION_FLAG}" = "true" ]
   then
@@ -24,7 +24,8 @@ then
     else
       jira_issue_status=$(curl -s "${BASE_URL}/rest/api/2/issue/${JIRA_ISSUE_ID}?fields=status" --user "${USER_EMAIL}":"${API_TOKEN}" | jq .fields.status.name)
       echo "Server response is <$jira_issue_status>"
-      if [ $jira_issue_status == "\"Approved\"" ]
+      jira_issue_status_in_lower_case="$(echo "$jira_issue_status" | awk '{print tolower($0)}')"
+      if [ $jira_issue_status_in_lower_case == "\"approved\"" ]
       then
         echo "Jira issue is approved."
         exit 0
@@ -37,13 +38,9 @@ then
     echo "This is a migration PR. Jira check is not needed here."
     exit 0
   fi
-elif [ "${USER_CHECK}" = "fail" ]
-then
-  echo "Github user is not a member of Payments BU"
-  exit 0
 else
-  echo "Unable to fetch Github user. Please re-run the job again"
-  exit 1
+  echo "PR is not for Payments BU. Jira check is not needed here."
+  exit 0
 fi
 }
 run_jira_status_check
