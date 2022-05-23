@@ -2,13 +2,16 @@
 
 namespace RZP\Tests\Functional\Contacts;
 
+use RZP\Constants\Mode;
 use RZP\Models\Contact\Repository;
 use RZP\Models\Contact\Core;
 use RZP\Models\Contact\Service;
 use RZP\Models\Contact\Type;
+use RZP\Models\Settings;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Exception\BadRequestValidationFailureException;
 
 class ContactsUnitTest extends TestCase
 {
@@ -80,6 +83,59 @@ class ContactsUnitTest extends TestCase
         $this->assertEquals('Test Contact', $result['name'],'');
     }
 
+    public function testCreateForCompositeRequestWithContactTypeDefault()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $core = new Core();
+
+        $result = $core->createForCompositeRequest(['name' => 'Test Contact', 'type' => 'customer'], $merchant, [],true);
+
+        $this->assertEquals('Test Contact', $result['name'],'');
+        $this->assertEquals('customer', $result['type'],'');
+    }
+
+    public function testCreateForCompositeRequestWithContactTypeNonDefault()
+    {
+        $merchant = $this->fixtures->on('live')->create('merchant');
+
+        $accessor = Settings\Accessor::for($merchant, Settings\Module::CONTACT_TYPE, Mode::LIVE);
+
+        $accessor->upsert(['custom123' => ''])->save();
+
+        $core = new Core();
+
+        $result = $core->createForCompositeRequest(['name' => 'Test Contact', 'type' => 'custom123'], $merchant, [],true);
+
+        $this->assertEquals('Test Contact', $result['name'],'');
+        $this->assertEquals('custom123', $result['type'],'');
+    }
+
+    public function testCreateForCompositeRequestWithInvalidInputMissingNameField()
+    {
+        $merchant = $this->fixtures->on('live')->create('merchant');
+
+        $core = new Core();
+
+        $this->expectException(BadRequestValidationFailureException::class);
+
+        $this->expectExceptionMessage('The name field is required.');
+
+        $core->createForCompositeRequest(['name' => '', 'type' => 'employee'], $merchant, [],true);
+    }
+
+    public function testCreateForCompositeRequestWithContactTypeHavingSpaces()
+    {
+        $merchant = $this->fixtures->on('live')->create('merchant');
+
+        $core = new Core();
+
+        $result = $core->createForCompositeRequest(['name' => 'Test Contact', 'type' => ' employee  '], $merchant, [],true);
+
+        $this->assertEquals('Test Contact', $result['name'],'');
+        $this->assertEquals('employee', $result['type'],'');
+    }
+
     public function testFetchContactsHavingSpaceInNameNoContacts()
     {
         $merchant = $this->fixtures->create('merchant');
@@ -97,17 +153,16 @@ class ContactsUnitTest extends TestCase
 
         $core = new Core();
         $contact1 = $core->createForCompositeRequest(['name'=>' test test '], $merchant, []);
-        $startTime = $contact1['created_at'];
 
         $contact2 = $core->createForCompositeRequest(['name'=>'test1 test1'], $merchant, []);
-        $endTime = $contact2['created_at'];
 
-        $repo = new Repository();
-        $result = $repo->fetchContactsHavingSpaceInName([$merchant['id']], $startTime, $endTime);
+        $contacts = $this->getDbEntities('contact');
 
-        $this->assertEquals(1,sizeof($result),'');
-        $this->assertArrayHasKey('name', $result[0],'');
-        $this->assertEquals(' test test ', $result[0]['name'],'');
+        $this->assertEquals(2, sizeof($contacts),'');
+        $this->assertArrayHasKey('name', $contacts[0],'');
+        $this->assertEquals('test test', $contacts[0]['name'],'');
+        $this->assertArrayHasKey('name', $contacts[1],'');
+        $this->assertEquals('test1 test1', $contacts[1]['name'],'');
     }
 
     public function testFetchContactsHavingSpaceInTypeNoTypes()

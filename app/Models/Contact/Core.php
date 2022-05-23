@@ -148,11 +148,15 @@ class Core extends Base\Core
                                               bool $compositePayoutSaveOrFail = true,
                                               array $metadata = []): Entity
     {
+        $input = $this->trimSpaces($input);
+
         $this->trace->info(TraceCode::CONTACT_CREATE_REQUEST_FOR_COMPOSITE_PAYOUT, [
             'input'             => $traceData,
             'save_or_fail_flag' => $compositePayoutSaveOrFail,
             'metadata'          => $metadata
         ]);
+
+        (new Validator)->validateInput('create', $input);
 
         // Code to check for a duplicate contact
         // TODO: Replace with Hash, just in this place (if possible)
@@ -188,6 +192,8 @@ class Core extends Base\Core
                 $contact->setCreatedAt($metadata[Entity::CREATED_AT]);
             }
         }
+
+        $this->setTypeIfApplicable($contact, $input);
 
         if ($compositePayoutSaveOrFail === true)
         {
