@@ -994,7 +994,14 @@ class Service extends Base\Service
                 unset($provider[Token\Entity::PROVIDER_DATA][$attribute]);
             }
 
-            $provider[Token\Entity::PROVIDER_DATA][Token\Entity::CRYPTOGRAM_VALUE] = (string)$provider[Token\Entity::PROVIDER_DATA][Token\Entity::CRYPTOGRAM_VALUE];
+            // We don't have a cryptogram value for issuer tokenisation
+            if (isset($provider[Token\Entity::PROVIDER_DATA][Token\Entity::CRYPTOGRAM_VALUE]) === true)
+            {
+                // If cryptogram is present, don't send card data
+                unset($provider[Token\Entity::PROVIDER_DATA][Token\Entity::CARD]);
+
+                $provider[Token\Entity::PROVIDER_DATA][Token\Entity::CRYPTOGRAM_VALUE] = (string)$provider[Token\Entity::PROVIDER_DATA][Token\Entity::CRYPTOGRAM_VALUE];
+            }
 
             array_push($serviceProviderTokensArray, $provider);
         }
