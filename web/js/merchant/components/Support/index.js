@@ -181,9 +181,8 @@ export default class Support extends Component {
       }
     } else if (window.fcWidget) {
       window.fcWidget.open();
+      this.handleVisibility(true);
     }
-
-    this.handleVisibility(true);
   };
 
   render() {
