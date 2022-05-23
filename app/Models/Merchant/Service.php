@@ -301,6 +301,23 @@ class Service extends Base\Service
 
     public function bulkOnboardSubMerchantViaBatch(array $input)
     {
+        $properties = [
+            'id'            => $input["partner_id"],
+            'experiment_id' => $this->app['config']->get('app.admin_submerchant_bulk_increase_resources_exp_id'),
+        ];
+
+        $isExpEnabled = $this->core()->isSplitzExperimentEnable($properties, 'enable');
+
+        if ($isExpEnabled === true)
+        {
+            $this->trace->info(TraceCode::ADMIN_SUBMERCHANT_BULK_API_RESOURCES_LIMIT, [
+                'message' => "Increasing resources limit",
+            ]);
+            RuntimeManager::setTimeLimit(600);
+            RuntimeManager::setMaxExecTime(600);
+            RuntimeManager::setMemoryLimit('1024M');
+        }
+
         $requeststartAt = millitime();
 
         $tracePayload = [
