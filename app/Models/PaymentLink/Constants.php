@@ -49,4 +49,12 @@ class Constants
 
     // cache keys
     const SLUG_CACHE_KEY = 'SLUG_ENTITY_MAP';
+
+    const DEFAULT_IMAGE_RESIZE_WIDTH = 760;
+
+    const DEFAULT_IMAGE_COMPRESSION_QUALITY = 75;
+
+    const RAZORX_PP_IMAGE_OPTIMIZAION = 'raxorx_pp_image_optimization';
+
+    const SKIP_IMAGE_COMPRESSION_FORMAT = ['gif', 'GIF', 'webp', 'WEBP'];
 }

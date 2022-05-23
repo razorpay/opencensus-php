@@ -68,4 +68,7 @@ final class Metric
     const NOCODE_CUSTOM_URL_CONSIDERED_COUNT        = 'nocode_custom_url_considered_count';
     const NOCODE_CUSTOM_URL_NOT_CONSIDERED_COUNT    = 'nocode_custom_url_not_considered_count';
     const NOCODE_CUSTOM_URL_CALLS_FAILED_COUNT      = 'nocode_custom_url_calls_failed_count';
+
+    const PAYMENT_PAGE_IMAGE_UPLOAD_COUNT           = 'payment_page_image_upload_count';
+    const PAYMENT_PAGE_IMAGE_COMPRESSION_HISTOGRAM  = 'payment_page_image_compression_histogram';
 }

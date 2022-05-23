@@ -33,7 +33,7 @@ use RZP\Models\PaymentLink\Template\UdfSchema;
 class Validator extends Base\Validator
 {
     const MAX_ALLOWED_PAYMENT_PAGE_ITEMS = 25;
-    
+
     const ALLOWED_HOSTS_IN_PP_IFRAME = [
         "www.youtu.be",
         "youtu.be",
@@ -170,8 +170,8 @@ class Validator extends Base\Validator
     ];
 
     protected static $uploadImagesRules = [
-        'images'     => 'required|array|min:1|max:5',
-        'images.*'   => 'required|mimes:jpg,jpeg,png,gif,bmp,svg|max:2048',
+        'images'              => 'required|array|min:1|max:5',
+        'images.*'            => 'required|mimes:jpg,jpeg,png,gif,svg|max:2048',
     ];
 
     protected static $minAmountCheckRules = [

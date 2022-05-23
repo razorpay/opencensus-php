@@ -2,8 +2,10 @@
 
 namespace RZP\Models\PaymentLink;
 
-use Cache;
 use App;
+use Cache;
+use Imagick;
+use ImagickPixel;
 use Carbon\Carbon;
 use phpseclib\Crypt\AES;
 use RZP\Constants\Environment;
@@ -2020,11 +2022,30 @@ class Core extends Base\Core
      * @return array Image cdn urls
      * @throws \RZP\Exception\ServerErrorException
      */
-    public function upload(array $input, Merchant\Entity $merchant): array
+    public function   upload(array $input, Merchant\Entity $merchant): array
     {
         $urls = [];
-        // Todo: Uncomment below line and remove line below that once devops issue(refer pr desc) fixed.
-        // $cdn  = $this->config->get('url.cdn.' . $this->env);
+
+        $variant = $this->app->razorx->getTreatment($merchant->getId(),
+            Constants::RAZORX_PP_IMAGE_OPTIMIZAION,
+            $this->mode);
+
+        if ($variant === 'on')
+        {
+            foreach ($input['images'] as $image)
+            {
+                $processedData = $this->processImage($image);
+
+                $url = $this->uploadToS3($merchant, $processedData[0], $processedData[1]);
+
+                $urls[] = $url;
+            }
+
+            $this->trace->info(TraceCode::PAYMENT_PAGE_IMAGE_UPLOAD_OPTIMIZATION, $urls);
+
+            return $urls;
+        }
+
         $cdn  = sprintf(
             'https://s3.ap-south-1.amazonaws.com/rzp-%s-merchant-assets',
             $this->env === 'production' ? 'prod' : 'nonprod');
@@ -2048,6 +2069,146 @@ class Core extends Base\Core
         }
 
         return $urls;
+    }
+
+    protected function uploadToS3(Merchant\Entity $merchant, UploadedFile  $imageFile,  string $fileName)
+    {
+        $cdn  = sprintf(
+            'https://s3.ap-south-1.amazonaws.com/rzp-%s-merchant-assets',
+            $this->env === 'production' ? 'prod' : 'nonprod');
+
+        $uploadFilename = 'payment-link/description/' . $fileName;
+
+        $ufhService = $this->app['ufh.service'];
+
+        $file = $ufhService->uploadFileAndGetUrl(
+            $imageFile,
+            $uploadFilename,
+            Constants::PAYMENT_LINK_DESCRIPTION,
+            $merchant,
+            ['Content-Disposition' => 'inline']);
+
+        return $cdn . '/' . $file[Constants::RELATIVE_LOCATION];
+    }
+
+    protected function processImage(UploadedFile $originalImage): array
+    {
+        $imagick        = new Imagick();
+
+        $rawImage = file_get_contents($originalImage->getRealPath());
+
+        $imagick->readImageBlob($rawImage);
+
+        $this->trace->count(Metric::PAYMENT_PAGE_IMAGE_UPLOAD_COUNT, ['image_type' => $imagick->getImageFormat()]);
+
+        // Not compressing gif & webp images
+        if (in_array($imagick->getImageFormat(), Constants::SKIP_IMAGE_COMPRESSION_FORMAT) === true)
+        {
+            $uploadName = $this->getUploadFileName($originalImage, $imagick);
+
+            $imagick->destroy();
+
+            return array($originalImage, $uploadName);
+        }
+
+        $this->resizeImageForCompression($imagick, Constants::DEFAULT_IMAGE_RESIZE_WIDTH);
+
+        $this->setImageFormatAttributes($imagick, Constants::DEFAULT_IMAGE_COMPRESSION_QUALITY);
+
+        $this->setImageJpgAttributes($imagick);
+
+        return $this->processFileHandlingForImage($originalImage, $imagick);
+    }
+
+    protected function getUploadFileName(UploadedFile $file, Imagick $imagick): string
+    {
+        $filenameWithoutExt = str_before($file->getClientOriginalName(), '.' . $file->getClientOriginalExtension());
+
+        $uploadName = $filenameWithoutExt ."_". UniqueIdEntity::generateUniqueId(). '.' . $imagick->getImageFormat();
+
+        return $uploadName;
+    }
+
+    protected function processFileHandlingForImage(UploadedFile $originalImage, Imagick $imagick)
+    {
+        $uploadName = $this->getUploadFileName($originalImage, $imagick);
+
+        $actualImageSizeInKb = $originalImage->getSize() / 1024;
+
+        $tempFilePath = '/tmp/' . $uploadName;
+
+        $imagick->writeImage($tempFilePath);
+
+        $compressedImage = new UploadedFile($tempFilePath, $uploadName,  $imagick->getImageMimeType(), null, true);
+
+        $compressedImageSizeInKb = $compressedImage->getSize() / 1024;
+
+        if (($compressedImageSizeInKb > $actualImageSizeInKb) === true)
+        {
+            $this->trace->info(TraceCode::PAYMENT_PAGE_IMAGE_UPLOAD_OPTIMIZATION,
+                    [
+                        'actual size'     => $actualImageSizeInKb,
+                        'compressed size' => $compressedImageSizeInKb,
+                        'format'          => $imagick->getImageFormat(),
+                    ]
+            );
+
+            $imagick->destroy();
+
+            return array($originalImage, $uploadName);
+        }
+
+        $this->trace->histogram(Metric::PAYMENT_PAGE_IMAGE_COMPRESSION_HISTOGRAM, $actualImageSizeInKb - $compressedImageSizeInKb, ['image_type' => $imagick->getImageFormat()]);
+
+        $imagick->destroy();
+
+        return array($compressedImage, $uploadName);
+    }
+
+    protected function resizeImageForCompression(Imagick & $imagick, int $resizeWidth)
+    {
+        $width      = $imagick->getImageWidth();
+
+        $height     = $imagick->getImageHeight();
+
+        if (($width > $resizeWidth) === true)
+        {
+            $ratio = $width/$resizeWidth;
+
+            $height = $height / $ratio;
+
+            $width = $resizeWidth;
+        }
+
+        $imagick->thumbnailImage($width, $height);
+    }
+
+    protected function setImageFormatAttributes(Imagick & $imagick, int $compressionQuality)
+    {
+        $imagick->setImageCompressionQuality($compressionQuality);
+
+        $imagick->setImageFormat('jpeg');
+
+        $imagick->setBackgroundColor(new ImagickPixel('white'));
+
+        $imagick = $imagick->mergeImageLayers(Imagick::LAYERMETHOD_FLATTEN);
+    }
+
+    protected function setImageJpgAttributes(Imagick & $imagick)
+    {
+        $imagick->setSamplingFactors(array('2x2', '1x1', '1x1'));
+
+        $profiles = $imagick->getImageProfiles("icc", true);
+
+        $imagick->stripImage();
+
+        if(!empty($profiles)) {
+            $imagick->profileImage('icc', $profiles['icc']);
+        }
+
+        $imagick->setInterlaceScheme(Imagick::INTERLACE_JPEG);
+
+        $imagick->setColorspace(Imagick::COLORSPACE_SRGB);
     }
 
     public function updatePaymentPageItem(PaymentPageItem\Entity $paymentPageItem, array $input)
