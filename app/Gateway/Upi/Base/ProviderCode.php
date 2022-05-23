@@ -166,6 +166,7 @@ class ProviderCode
     const TIMECOSMOS         = 'timecosmos';
     const TAPICICI           = 'tapicici';
     const LIV                = 'liv';
+    const SLICEAXIS          = 'sliceaxis';
 
     //Only for test Upi
     const RAZORPAY         = 'razorpay';
@@ -322,6 +323,7 @@ class ProviderCode
         self::TIMECOSMOS         => IFSC::COSB,
         self::TAPICICI           => IFSC::ICIC,
         self::LIV                => self::PPIW,
+        self::SLICEAXIS          => IFSC::UTIB,
     ];
 
     /**

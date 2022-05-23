@@ -3457,6 +3457,7 @@ trait PaymentTrait
             "timecosmos",
             "tapicici",
             "liv",
+            "sliceaxis",
         ];
 
         return $vpaHandles;
