@@ -1,5 +1,5 @@
 import React from 'react';
-import { formatDate, formatEpochDate } from 'razorx/helpers/utils';
+import { formatEpochDate } from 'razorx/helpers/utils';
 
 export default function Comment(props) {
   const { submittedComment, commentDate, commentWriter } = props;
@@ -11,7 +11,7 @@ export default function Comment(props) {
         "{submittedComment}"
         <br />
         <span className="comment-footer">
-          by {commentWriter} at {formatDate(formatEpochDate(commentDate))}
+          by {commentWriter} at {formatEpochDate(commentDate)}
         </span>
       </div>
     </details>

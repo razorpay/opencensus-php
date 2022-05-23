@@ -36,6 +36,5 @@ export const formatDate = (value) => {
 };
 
 export const formatEpochDate = (epoch) => {
-  const myDate = new Date(epoch * 1000);
-  return myDate.toLocaleString();
+  return moment.unix(epoch).format('Do MMM, YYYY hh:mm A');
 };
