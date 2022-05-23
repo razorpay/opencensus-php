@@ -2536,6 +2536,17 @@ class Service extends Base\Service
     {
         [$contactInput, $contactTraceData] = $this->getInputForContactCreationFromCompositePayoutPayload($input, $traceData);
 
+        $contactType = $contactInput[Contact\Entity::TYPE] ?? null;
+
+        if ((empty($contactType) === false) and (Contact\Type::isInInternal($contactType) === true))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INTERNAL_CONTACT_CREATE_UPDATE_NOT_PERMITTED,
+                null,
+                $input
+            );
+        }
+
         return (new Contact\Service)->createForCompositePayout($contactInput,
                                                                $contactTraceData,
                                                                $this->merchant,

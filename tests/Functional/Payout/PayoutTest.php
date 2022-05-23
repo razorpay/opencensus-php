@@ -11174,6 +11174,19 @@ class PayoutTest extends OAuthTestCase
                             $contact->getPublicId());
     }
 
+    public function testCompositePayoutCreationViaNewCompositeFlowFailsForInternalContact()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::HIGH_TPS_COMPOSITE_PAYOUT]);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_PROCESS_ASYNC]);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_ASYNC_INGRESS]);
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
     public function testCreatePayoutForRequestSubmitted($isLpQueue = false)
     {
         $this->ba->privateAuth();
