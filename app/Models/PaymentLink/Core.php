@@ -3221,7 +3221,7 @@ class Core extends Base\Core
         {
             $cached = $this->cache->get($cacheKey);
 
-            $cached = $serializer->updateKeyLessHeader($cached);
+            $cached = $serializer->updateNoneCachedHostedKeys($cached);
         }
         else
         {

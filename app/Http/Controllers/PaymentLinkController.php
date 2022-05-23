@@ -268,7 +268,16 @@ class PaymentLinkController extends Controller
 
         $urls = $this->app['config']->get('app.payment_page_allowed_cors_url');
 
-        if (in_array($origin, $urls) === true)
+        $originHost = $this->identifyHost($origin);
+
+        $urlHosts = [];
+
+        foreach ($urls as $url)
+        {
+            $urlHosts[] = $this->identifyHost($url);
+        }
+
+        if (in_array($originHost, $urlHosts) === true)
         {
             $response->headers->set('Access-Control-Allow-Origin', $origin);
 
@@ -443,5 +452,19 @@ class PaymentLinkController extends Controller
             'msg'   => 'Nocode debug route. Use this route for debugging/data corrections via dark',
             'input' => $input
         ]);
+    }
+
+    /**
+     * @param string $url
+     *
+     * @return string
+     */
+    private function identifyHost(string $url): string
+    {
+        $explods = explode("/", $url);
+
+        $hostArray = array_slice($explods, 0, 3);
+
+        return implode("/", $hostArray);
     }
 }

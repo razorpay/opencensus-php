@@ -73,15 +73,13 @@ class ViewSerializer extends Base\Core
         $data = [
             'key_id'           => $this->getMerchantKeyId(),
             'is_test_mode'     => ($this->mode === Mode::TEST),
-            'environment'      => $this->app->environment(),
             E::MERCHANT        => $this->serializeMerchantForHosted(),
             E::PAYMENT_LINK    => $this->serializePaymentLinkForHosted(),
-            'base_url'         => $this->config['app']['url'],
             E::ORG             => $this->serializeOrgPropertiesForHosted(),
             'view_preferences' => $this->getViewPreferences(),
         ];
 
-        return $this->updateKeyLessHeader($data);
+        return $this->updateNoneCachedHostedKeys($data);
     }
 
     public function serializeForInternal(): array
@@ -437,5 +435,21 @@ class ViewSerializer extends Base\Core
         }
 
         return stringify(Carbon::createFromTimestamp($expiryValue, Timezone::IST)->diffInDays());
+    }
+
+    /**
+     * @param array $data
+     *
+     * @return array
+     */
+    public function updateNoneCachedHostedKeys(array $data): array
+    {
+        $data = $this->updateKeyLessHeader($data);
+
+        $data['base_url'] = $this->config['app']['url'];
+
+        $data['environment'] = $this->app->environment();
+
+        return $data;
     }
 }
