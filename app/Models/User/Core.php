@@ -652,6 +652,8 @@ class Core extends Base\Core
                         'user_id'                   => $user->getId(),
                         'contact_mobile'            => $user->getContactMobile(),
                         'account_locked'            => $user->isAccountLocked(),
+                        'is_password_set'           => empty($user->getPassword()) === false,
+                        'is_mobile_verified'        => $user->isContactMobileVerified()
                     ],
                 ]);
 
@@ -1499,6 +1501,9 @@ class Core extends Base\Core
 
     }
 
+    /**
+     * @throws BadRequestException
+     */
     protected function checkSecondFactorAuthForOtpLogin(Entity $user)
     {
         if (($user->isSecondFactorAuth() === true) or
@@ -1507,6 +1512,23 @@ class Core extends Base\Core
             $this->trace->info(TraceCode::USER_LOGIN_2FA_ENABLED, ['user_id' => $user->getId()]);
 
             $this->trace->count(Metric::LOGIN_USER_2FA_ENABLED);
+
+            if(empty($user->getPassword()) === true and $this->app['basicauth']->getRequestOriginProduct() === ProductType::BANKING) {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_USER_LOGIN_2FA_SETUP_REQUIRED,
+                    null,
+                    [
+                        'internal_error_code' => ErrorCode::BAD_REQUEST_USER_LOGIN_2FA_SETUP_REQUIRED,
+                        'user_details'        => [
+                            'user_id'                   => $user->getId(),
+                            'account_locked'            => $user->isAccountLocked(),
+                            'user_mobile'               => $user->getMaskedContactMobile(),
+                            'email'                     => $user->getMaskedEmail(),
+                            'confirmed'                 => $user->getConfirmedAttribute(),
+                            'is_password_set'           => false,
+                            'is_mobile_verified'        => $user->isContactMobileVerified()
+                        ]
+                    ]);
+            }
 
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_USER_2FA_LOGIN_PASSWORD_REQUIRED,
                 null,
@@ -4030,6 +4052,24 @@ class Core extends Base\Core
 
         return $user->toArrayPublic();
     }
+
+    /**
+     * @param Entity $user
+     * @param array $input
+     */
+    public function patchUserPassword(Entity $user, array $input)
+    {
+        $this->trace->info(TraceCode::USER_SET_PASSWORD_ACTION, [
+            Entity::USER_ID => $user->getId()
+        ]);
+
+        $user->fill($input);
+
+        $this->repo->saveOrFail($user);
+
+        return $this->get($user);
+    }
+
 
     /**
      *  User sending otp to update his contact mobile

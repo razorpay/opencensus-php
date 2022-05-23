@@ -876,7 +876,7 @@ final class FactoryData
                                                    'id'         => $faker->uniqueid,
                                                    'name'       => $faker->word,
                                                    'email'      => $faker->email,
-                                                   'password'   => $faker->word,
+                                                   'password'  => $faker->word,
                                                    'created_at' => $faker->timestamp,
                                                    'updated_at' => $faker->timestamp,
                                                ]

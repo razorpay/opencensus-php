@@ -3883,6 +3883,41 @@ class UserTest extends TestCase
         $this->assertNotNull($user->getPassword());
     }
 
+    public function testPatchUserPassword()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $user = $this->fixtures->user->createUserForMerchant($merchant['id'],
+            [
+                'signup_via_email'        => 0,
+                'contact_mobile'          => '9012345678',
+                'contact_mobile_verified' => true,
+            ]);
+
+        $user->setPasswordNull();
+
+        (new UserRepo())->saveOrFail($user);
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $content = [
+            'password'              => 'hello123',
+            'password_confirmation' => 'hello123',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $testData['request']['server']['HTTP_X-Dashboard-User-Id'] = $user['id'];
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+
+        $user = $this->getDbEntityById('user', $user->getId());
+
+        $this->assertNotNull($user->getPassword());
+    }
+
     public function testChangeInvalidPassword()
     {
         $user = $this->fixtures->create('user', ['password' => '12345']);
@@ -6712,6 +6747,35 @@ class UserTest extends TestCase
                 UserEntity::SECOND_FACTOR_AUTH => 1
             ]
         );
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+    }
+
+    public function testOtpLoginVerifyWith2FAWithoutPassword()
+    {
+        $ravenMock = $this->getMockBuilder(Raven::class)
+                          ->setConstructorArgs([$this->app])
+                          ->setMethods(['verifyOtp'])
+                          ->getMock();
+
+        $this->app->instance('raven', $ravenMock);
+
+        $ravenMock->expects($this->once())->method('verifyOtp');
+
+        $user = $this->fixtures->create(
+            'user',
+            [
+                'contact_mobile' => '73491987654454',
+                'contact_mobile_verified' => true,
+                UserEntity::SECOND_FACTOR_AUTH => 1,
+            ]
+        );
+
+        $user->setPasswordNull();
+
+        $user->save();
 
         $this->ba->dashboardGuestAppAuth();
 

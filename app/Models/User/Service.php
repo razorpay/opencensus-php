@@ -812,6 +812,29 @@ class Service extends Base\Service
        return $this->core->checkUserHasSetPassword($user);
     }
 
+    /**
+     * @throws BadRequestException
+     */
+    public function patchUserPassword(array $input) : array
+    {
+        $user = $this->auth->getUser();
+
+        $setPassword = $this->core->checkUserHasSetPassword($user);
+
+        if($setPassword[Constants::SET_PASSWORD] === true)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PASSWORD_ALREADY_SET,
+            null,
+                [
+                    'internal_error_code'    => ErrorCode::BAD_REQUEST_PASSWORD_ALREADY_SET,
+                ]);
+        }
+
+        $user->getValidator()->validateInput(Constants::SET_PASSWORD, $input);
+
+        return $this->core->patchUserPassword($user, $input);
+    }
+
     public function setUserPassword(array $input): array
     {
         $user = $this->user;

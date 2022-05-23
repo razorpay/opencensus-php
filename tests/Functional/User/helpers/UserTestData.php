@@ -2503,6 +2503,20 @@ return [
         ],
     ],
 
+    'testPatchUserPassword' => [
+        'request' => [
+            'url'     => '/users/password',
+            'method'  => 'PATCH',
+            'content' => [],
+            'server'  => [
+                'HTTP_X-Dashboard-User-id' => '',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
     'testChangePasswordRateLimit' => [
         'request' => [
             'url'     => '/users/password',
@@ -4315,6 +4329,35 @@ return [
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_USER_2FA_LOGIN_PASSWORD_REQUIRED,
+        ],
+    ],
+
+    'testOtpLoginVerifyWith2FAWithoutPassword' => [
+        'request' => [
+            'url'     => '/users/login/otp/verify',
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
+            ],
+            'content' => [
+                'otp'            => '0007',
+                'token'          => 'Gvt61zZ3Iwzcqy',
+                'contact_mobile' => '73491987654454',
+                'captcha'        => 'faked',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_USER_LOGIN_2FA_SETUP_REQUIRED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_USER_LOGIN_2FA_SETUP_REQUIRED,
         ],
     ],
 

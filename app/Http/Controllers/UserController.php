@@ -127,6 +127,15 @@ class UserController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function postPatchUserPassword()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->patchUserPassword($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function postSetUserPassword()
     {
         $input = Request::all();

@@ -65,6 +65,7 @@ class Error extends Support\Fluent
         ErrorCode::BAD_REQUEST_CONTACT_MOBILE_ALREADY_EXISTS,
         ErrorCode::BAD_REQUEST_EMAIL_SIGNUP_OTP_SEND_THRESHOLD_EXHAUSTED,
         ErrorCode::BAD_REQUEST_SIGNUP_OTP_VERIFICATION_THRESHOLD_EXHAUSTED,
+        ErrorCode::BAD_REQUEST_PASSWORD_ALREADY_SET,
     ];
 
     const INTERNAL_ERROR_CODE   = 'internal_error_code';
