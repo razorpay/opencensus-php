@@ -3474,7 +3474,7 @@ class Route
 
         // 1 click checkout shopify integration
         '1cc_shopify_checkout'                      => ['post',       '1cc/shopify/checkout',                                  'OneClickCheckoutController@shopifyCreateCheckout'                ],
-        '1cc_shopify_checkout_update'               => ['patch',      '1cc/shopify/checkout',                                  'OneClickCheckoutController@shopifyUpdateCheckout'                ],
+        '1cc_shopify_checkout_update'               => ['post',       '1cc/shopify/abandon_checkout',                                  'OneClickCheckoutController@shopifyUpdateCheckout'                ],
         '1cc_shopify_complete'                      => ['post',       '1cc/shopify/complete',                                  'OneClickCheckoutController@shopifyCompleteCheckout'                ],
         '1cc_shopify_checkout_options'              => ['get',        '1cc/shopify/checkout_options',                          'OneClickCheckoutController@shopifyGetCheckoutOptions'                ],
         '1cc_shopify_oauth_redirect'                => ['get',        '1cc/shopify/oauth/redirect',                              'OneClickCheckoutController@shopifyOAuthRedirect'                ],

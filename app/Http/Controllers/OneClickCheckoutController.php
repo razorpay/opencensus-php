@@ -49,8 +49,8 @@ class OneClickCheckoutController
     {
         $input = Request::all();
 
-        (new Shopify\Service)->updateCheckout($input);
+        $response = (new Shopify\Service)->updateCheckout($input);
 
-        return ApiResponse::json([], 200);
+        return ApiResponse::json($response, 200);
     }
 }

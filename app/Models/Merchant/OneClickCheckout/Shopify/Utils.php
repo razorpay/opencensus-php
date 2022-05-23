@@ -47,15 +47,15 @@ class Utils
         switch ($type)
         {
             case 'product':
-                $id = 'gid://shopify/Product/' . $id;
+                $id = Constants::GID_PRODUCT . $id;
                 break;
 
             case 'variant':
-                $id = 'gid://shopify/ProductVariant/' . $id;
+                $id = Constants::GID_PRODUCT_VARIANT . $id;
                 break;
 
             case 'checkout':
-                $id = 'gid://shopify/Checkout/' . $id;
+                $id = Constants::GID_CHECKOUT . $id;
                 break;
         }
         return base64_encode($id);
@@ -75,9 +75,9 @@ class Utils
 
     public function stripAndReturnShopId(string $shop): string
     {
-        if (strpos($shop, '.myshopify.com') !== false)
+        if (strpos($shop, Constants::MY_SHOPIFY) !== false)
         {
-            $shop = explode('.myshopify.com', $shop)[0];
+            $shop = explode(Constants::MY_SHOPIFY, $shop)[0];
         }
 
         return $shop;

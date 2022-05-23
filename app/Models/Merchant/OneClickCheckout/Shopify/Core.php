@@ -586,6 +586,10 @@ class Core extends Base\Core
 
         $body['phone'] = $customerDetails['contact'];
 
+        $body['customer'] = [
+            'phone' => $customerDetails['contact'],
+        ];
+
         if (empty($rzpOrder['promotions']) === false)
         {
             $promotions = $rzpOrder['promotions'];
@@ -616,7 +620,7 @@ class Core extends Base\Core
         return $body;
     }
 
-    protected function splitName(string $name): array
+    public function splitName(string $name): array
     {
         $name = preg_replace('/\s+/', ' ', trim($name));
 
@@ -805,16 +809,18 @@ class Core extends Base\Core
 
         $checkoutId = $this->getCheckoutIdFromOrder($order);
 
-        $checkout = $this->getShopifyCheckout($checkoutId);
-
-        $this->updateCheckoutEmail($checkoutId, $customerDetails['email']);
-
         // overwrite contact as we want to link the abandoned Shopify checkout contact
         // with the contact used to initiate Rzp checkout
         // This is imp for WhatsApp and SMS retargeting
         $customerDetails['shipping_address']['contact'] = $customerDetails['contact'];
 
-        $this->updateShippingAddress($checkoutId, $this->formatShippingAddressForCheckout($customerDetails['shipping_address']));
+        (new Checkout)->updateCheckoutFromAdmin([
+            'order_id'         => $orderId,
+            'checkout_id'      => $checkoutId,
+            'phone'            => $customerDetails['contact'],
+            'email'            => $customerDetails['email'],
+            'shipping_address' => $customerDetails['shipping_address'],
+        ]);
 
         $this->trace->info(
             TraceCode::SHOPIFY_1CC_UPDATE_CHECKOUT,

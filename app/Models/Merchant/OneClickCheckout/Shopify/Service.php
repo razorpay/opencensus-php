@@ -29,7 +29,7 @@ class Service extends Base\Service
         'GA7JN5LdX495NH',
         'F5JbTV6pBVIyud',
         'EGCzwErjjYe9nL',   //Adjavis Digital LLP
-        'Hj1IOXYBFOQLRL',   //PSI EXCEL EXPORTS 
+        'Hj1IOXYBFOQLRL',   //PSI EXCEL EXPORTS
         'ETejwsC2azC6tI',   //Nanda Electric
         'FopgLHiMahqW6K',   //BLISSCLUB FITNESS PRIVATE LIMITED
         'EbxFyGur6ER4eE',   //Talk To Crystals
@@ -127,11 +127,9 @@ class Service extends Base\Service
     {
         try
         {
-            (new Validator)->setStrictFalse()->validateInput(Validator::UPDATE_CHECKOUT, $input);
-
             (new Core)->verifyHmacSignature($input, false);
 
-            (new Core)->updateCheckout($input);
+            return (new Checkout)->updateCheckoutFromAdmin($input);
         }
         catch (\Throwable $e)
         {
