@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Customer;
 
+use Carbon\Carbon;
 use RZP\Models\Payout;
 use RZP\Models\Reversal;
 use RZP\Models\Settlement\Channel;
@@ -690,5 +691,150 @@ class customerTest extends TestCase
         $content = $this->verifyOtp(AccountConstants::DEMO_1CC_CONTACT, 'abc@razorpay.com', AccountConstants::DEMO_1CC_OTP, '123', true);
         $this->assertEquals(1, $content['success']);
         $this->assertNotNull($content['session_id']);
+    }
+
+    public function testDudupeLocalOverGlobalTokensWhenGlobalTokenExpectsToReturnGlobalToken()
+    {
+        $this->ba->publicAuth();
+
+        $this->mockRaven();
+
+        $this->fixtureToCreateIin();
+        $this->fixturesToCreateToken('100022xtokeng1', '100000003card2', '411140');
+
+        // send OTP
+        $response = $this->sendOtp('9988776655');
+
+        // verify OTP
+        $content = $this->verifyOtp('9988776655', 'abc@razorpay.com', '233443', '123', true);
+
+        $this->assertEquals($content['success'], 1);
+        $this->assertNotEquals($content['tokens'], null);
+
+        $tokenIds = $this->getTokenIds($content['tokens']['items']);
+
+        $this->assertContains('token_100022xtokeng1', $tokenIds);
+    }
+
+    public function testDudupeLocalOverGlobalTokensWhenGlobalAndLocalTokenOfSameCardExpectsToReturnLocalToken()
+    {
+        $this->ba->publicAuth();
+
+        $this->mockRaven();
+
+        $this->fixtureToCreateIin();
+        $this->fixturesToCreateToken('100022xtokenl1', '100000003card1', '411140', '10000000000000');
+        $this->fixturesToCreateToken('100022xtokeng1', '100000003card2', '411140');
+
+        // send OTP
+        $response = $this->sendOtp('9988776655');
+
+        // verify OTP
+        $content = $this->verifyOtp('9988776655', 'abc@razorpay.com', '233443', '123', true);
+
+        $this->assertEquals($content['success'], 1);
+        $this->assertNotEquals($content['tokens'], null);
+
+        $tokenIds = $this->getTokenIds($content['tokens']['items']);
+
+        $this->assertContains('token_100022xtokenl1', $tokenIds);
+        $this->assertNotContains('token_100022xtokeng1', $tokenIds);
+    }
+
+    public function testDudupeLocalOverGlobalTokensWhenGlobalAndLocalTokenOfSameCardOfDiffMerchantExpectsToReturnLocalTokenOfLoggedInMercahant()
+    {
+        $this->ba->publicAuth();
+
+        $this->mockRaven();
+
+        $this->fixtureToCreateIin();
+        $this->fixtures->merchant->createAccount('10000000000001');
+        $this->fixturesToCreateToken('100022xtokenl2', '100000003card3', '411140', '10000000000001');
+        $this->fixturesToCreateToken('100022xtokenl1', '100000003card1', '411140', '10000000000000');
+        $this->fixturesToCreateToken('100022xtokeng1', '100000003card2', '411140');
+
+        // send OTP
+        $response = $this->sendOtp('9988776655');
+
+        // verify OTP
+        $content = $this->verifyOtp('9988776655', 'abc@razorpay.com', '233443', '123', true);
+
+        $this->assertEquals($content['success'], 1);
+        $this->assertNotEquals($content['tokens'], null);
+
+        $tokenIds = $this->getTokenIds($content['tokens']['items']);
+
+        $this->assertContains('token_100022xtokenl1', $tokenIds);
+        $this->assertNotContains('token_100022xtokeng1', $tokenIds);
+        $this->assertNotContains('token_100022xtokenl2', $tokenIds);
+    }
+
+    protected function getTokenIds($tokens): array
+    {
+        $tokenIds = [];
+
+        foreach ($tokens as $token)
+        {
+            $tokenIds[] = $token['id'];
+        }
+
+        return $tokenIds;
+    }
+
+    protected function fixtureToCreateIin(): void
+    {
+        $this->fixtures->iin->create(
+            [
+                'iin'     => '411140',
+                'country' => 'IN',
+                'issuer'  => 'HDFC',
+                'network' => 'Visa',
+                'flows'   => [
+                    '3ds'          => '1',
+                    'headless_otp' => '1',
+                ],
+            ]
+        );
+    }
+
+    protected function fixturesToCreateToken(
+        $tokenId,
+        $cardId,
+        $iin,
+        $merchantId = '100000Razorpay',
+        $customerId = '10000gcustomer',
+        $inputFields = []
+    )
+    {
+        $this->fixtures->card->create(
+            [
+                'id'            => $cardId,
+                'merchant_id'   => $merchantId,
+                'name'          => 'test',
+                'iin'           => $iin,
+                'expiry_month'  => '12',
+                'expiry_year'   => '2100',
+                'issuer'        => 'HDFC',
+                'network'       => $inputFields['network'] ?? 'Visa',
+                'last4'         => '1111',
+                'type'          => 'debit',
+                'vault'         => 'rzpvault',
+                'vault_token'   => 'test_token',
+                'international' => $inputFields['international'] ?? null,
+            ]
+        );
+
+        $this->fixtures->token->create(
+            [
+                'id'              => $tokenId,
+                'customer_id'     => $customerId,
+                'method'          => 'card',
+                'card_id'         => $cardId,
+                'used_at'         => 10,
+                'merchant_id'     => $merchantId,
+                'acknowledged_at' => Carbon::now()->getTimestamp(),
+                'expired_at'      => $inputFields['expired_at'] ?? '9999999999',
+            ]
+        );
     }
 }

@@ -669,7 +669,7 @@ class Checkout
 
             $tokenCore = (new Customer\Token\Core);
 
-            $savedTokens = $tokenCore->fetchTokensByCustomer($customer, $merchant);
+            $savedTokens = $tokenCore->fetchLocalOverGlobalTokensByCustomer($customer, $merchant);
 
             if($merchant->isFeatureEnabled(Feature\Constants::ONE_CLICK_CHECKOUT) === true){
 

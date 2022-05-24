@@ -543,7 +543,9 @@ class Core extends Base\Core
     /**
      * This method gives us all of the customer's saved tokens
      *
-     * @param $customer
+     * @param Customer\Entity      $customer
+     * @param Merchant\Entity|null $merchant
+     *
      * @return mixed
      */
     public function fetchTokensByCustomer($customer, $merchant = null)
@@ -564,6 +566,23 @@ class Core extends Base\Core
         $tokens = $this->repo->token->getByCustomer($customer, $withVpas);
 
         return $tokens;
+    }
+
+    /**
+     * Returns all the saved tokens of a customer & filters card tokens to
+     * suppress global tokens if local token for same card exists.
+     *
+     * @param Customer\Entity $customer
+     * @param Merchant\Entity $merchant
+     *
+     * @return Base\PublicCollection
+     */
+    public function fetchLocalOverGlobalTokensByCustomer(Customer\Entity $customer, Merchant\Entity $merchant): Base\PublicCollection
+    {
+        return $this->prioritiseLocalOverGlobalCardTokens(
+            $this->fetchTokensByCustomer($customer, $merchant),
+            $merchant
+        );
     }
 
     /**
@@ -1001,6 +1020,105 @@ class Core extends Base\Core
                 ]);
 
         return $existingToken;
+    }
+
+
+    /**
+     * This method filters out global tokens from the given input tokens if
+     * local tokens for the same card exist.
+     *
+     * NOTE: This method would only work if all input tokens belong to the
+     *       same customer.
+     *
+     * @param Base\PublicCollection|Entity[] $tokens List of tokens that belong to a specific customer
+     * @param Merchant\Entity $merchant              Merchant whose local card tokens need to be
+     *                                               prioritised over global card tokens
+     *
+     * @return Base\PublicCollection
+     */
+    protected function prioritiseLocalOverGlobalCardTokens(Base\PublicCollection $tokens, Merchant\Entity $merchant): Base\PublicCollection
+    {
+        $merchantId = $merchant->getId();
+
+        $merchantTokens = $tokens->filter(static function (Entity $token) use ($merchantId) {
+            // Remove local tokens of other merchants
+            return $token->isGlobal() || ($token->getMerchantId() === $merchantId);
+        });
+
+        $cardTokens = $this->suppressGlobalCardTokens($merchantTokens);
+
+        $nonCardTokens = $merchantTokens->filter(static function (Entity $token) {
+            return !$token->isCard();
+        });
+
+        return $cardTokens->concat($nonCardTokens);
+    }
+
+    /**
+     * NOTE: This method is only useful if all input tokens belong to same
+     * customer.
+     *
+     * @param Base\PublicCollection|Entity[] $tokens
+     *
+     * @return array
+     */
+    protected function separateGlobalAndLocalCardTokens(Base\PublicCollection $tokens): array
+    {
+        $cardTokens = [];
+
+        // Filter global & local tokens which belong to the same card
+        foreach ($tokens as $token) {
+            if ($token->isCard()) {
+                $cardKey = $token->card->getCardDetailsAsKey();
+
+                if ($token->isGlobal()) {
+                    $cardTokens[$cardKey]['global'][] = $token;
+
+                    continue;
+                }
+
+                $cardTokens[$cardKey]['local'][] = $token;
+            }
+        }
+
+        return $cardTokens;
+    }
+
+    /**
+     * Suppress/Replace global card tokens with local tokens if local tokens
+     * for same card exist. If no local token for the same card exist then the
+     * global tokens are returned as-is.
+     *
+     * NOTE: This method is only useful if all input tokens belong to same
+     * customer.
+     *
+     * @param Base\PublicCollection $tokens
+     *
+     * @return Base\PublicCollection
+     */
+    protected function suppressGlobalCardTokens(Base\PublicCollection $tokens): Base\PublicCollection
+    {
+        $cardTokens = $this->separateGlobalAndLocalCardTokens($tokens);
+
+        $finalCardTokens = new Base\PublicCollection();
+
+        foreach ($cardTokens as $value) {
+            if (!empty($value['local'])) {
+                // Append local tokens to the response & ignore global tokens
+                // belonging to the same card.
+                foreach ($value['local'] as $token) {
+                    $finalCardTokens->add($token);
+                }
+
+                continue;
+            }
+
+            foreach ($value['global'] as $token) {
+                $finalCardTokens->add($token);
+            }
+        }
+
+        return $finalCardTokens;
     }
 
     protected function validateExistingToken($token)

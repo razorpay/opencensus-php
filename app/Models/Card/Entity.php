@@ -571,6 +571,25 @@ class Entity extends Base\PublicEntity
         return $this->getIin() . 'XXXXXX' . $this->getLast4();
     }
 
+    /**
+     * This method is used to identify if two cards belonging to the same
+     * customer are the same or not.
+     * We cannot use vaultToken or globalFingerprint over here as the two
+     * values are different for tokenised & non-tokenised versions of same
+     * card.
+     *
+     * @return string
+     */
+    public function getCardDetailsAsKey(): string
+    {
+        return implode('_', [
+            $this->getIin(),
+            $this->getLast4(),
+            $this->getExpiryMonth(),
+            $this->getExpiryYear(),
+        ]);
+    }
+
     public function getVaultToken()
     {
         return $this->getAttribute(self::VAULT_TOKEN);

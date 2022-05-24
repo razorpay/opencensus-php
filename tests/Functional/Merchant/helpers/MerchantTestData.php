@@ -12358,4 +12358,17 @@ return [
         ],
     ],
 
+    'testGetCheckoutPreferencesForDedupeLocalTokensOverGlobalTokens' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+            'content' => [
+                'currency' => 'INR',
+            ]
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
 ];

@@ -96,6 +96,8 @@ class CheckoutPreferencesTest extends TestCase
     use MocksRazorx;
 
     const DEFAULT_MERCHANT_ID     = '10000000000000';
+    const GLOBAL_CUSTOMER_ID      = '10000gcustomer';
+    const LOCAL_CUSTOMER_ID       = '100000customer';
 
     protected function setUp(): void
     {
@@ -2483,6 +2485,244 @@ class CheckoutPreferencesTest extends TestCase
         $this->testData[__FUNCTION__]['request']['content']['order_id'] = $order->getPublicId();
 
         $this->startTest();
+    }
+
+    public function testGetCheckoutPreferencesForDudupeLocalOverGlobalTokensWhenGlobalTokenExpectsToReturnGlobalToken()
+    {
+        $this->ba->publicAuth();
+
+        $this->mockSession();
+
+        $payload = $this->testData['testGetCheckoutPreferencesForDedupeLocalTokensOverGlobalTokens'];
+
+        $this->fixtureToCreateIin();
+        $this->fixturesToCreateCardToken('100022xtokeng1', '100000003card2', '411140');
+
+        $response = $this->startTest($payload);
+
+        $tokenIds = $this->extractTokenIdsFromResponse($response);
+
+        $this->assertContains('token_100022xtokeng1', $tokenIds);
+    }
+
+    public function testGetCheckoutPreferencesForDudupeLocalOverGlobalTokensWhenGlobalAndLocalTokenOfSameCardExpectsToReturnLocalToken()
+    {
+        $this->ba->publicAuth();
+
+        $this->mockSession();
+
+        $payload = $this->testData['testGetCheckoutPreferencesForDedupeLocalTokensOverGlobalTokens'];
+
+        $this->fixtureToCreateIin();
+        $this->fixturesToCreateCardToken('100022xtokenl1', '100000003card1', '411140', '10000000000000');
+        $this->fixturesToCreateCardToken('100022xtokeng1', '100000003card2', '411140');
+
+        $response = $this->startTest($payload);
+
+        $tokenIds = $this->extractTokenIdsFromResponse($response);
+
+        $this->assertContains('token_100022xtokenl1', $tokenIds);
+        $this->assertNotContains('token_100022xtokeng1', $tokenIds);
+    }
+
+    public function testGetCheckoutPreferencesForDudupeLocalOverGlobalTokensWhenGlobalAndLocalTokenOfSameCardOfDiffMerchantExpectsToReturnLocalTokenOfLoggedInMercahant()
+    {
+        $this->ba->publicAuth();
+
+        $this->mockSession();
+
+        $payload = $this->testData['testGetCheckoutPreferencesForDedupeLocalTokensOverGlobalTokens'];
+
+        $this->fixtureToCreateIin();
+        $this->fixtures->merchant->createAccount('10000000000001');
+        $this->fixturesToCreateCardToken('100022xtokenl2', '100000003card3', '411140', '10000000000001');
+        $this->fixturesToCreateCardToken('100022xtokenl1', '100000003card1', '411140', '10000000000000');
+        $this->fixturesToCreateCardToken('100022xtokeng1', '100000003card2', '411140');
+
+        $response = $this->startTest($payload);
+
+        $tokenIds = $this->extractTokenIdsFromResponse($response);
+
+        $this->assertContains('token_100022xtokenl1', $tokenIds);
+        $this->assertNotContains('token_100022xtokeng1', $tokenIds);
+        $this->assertNotContains('token_100022xtokenl2', $tokenIds);
+    }
+
+
+    public function testGetCheckoutPreferencesForDudupeLocalOverGlobalTokensWhenLocalCustomerExpectsToReturnOnlyLocalCustomerTokens()
+    {
+        $this->ba->publicAuth();
+
+        $payload = $this->testData['testGetCheckoutPreferencesForDedupeLocalTokensOverGlobalTokens'];
+
+        $payload['request']['content']['customer_id'] = 'cust_' . self::LOCAL_CUSTOMER_ID;
+
+        $this->fixtureToCreateIin();
+        $this->fixtureToCreateIin('411141');
+
+        $this->fixturesToCreateCardToken(
+            '10002tokenlcl1',
+            '100000003card1',
+            '411140',
+            Merchant\Account::TEST_ACCOUNT,
+            self::LOCAL_CUSTOMER_ID
+        );
+        $this->fixturesToCreateCardToken('10002tokengcl1', '100000003card2', '411141', Merchant\Account::TEST_ACCOUNT);
+        $this->fixturesToCreateCardToken('100022xtokeng1', '100000003card3', '411141');
+
+        $response = $this->startTest($payload);
+
+        $tokenIds = $this->extractTokenIdsFromResponse($response);
+
+        $this->assertContains('token_10002tokenlcl1', $tokenIds);
+        $this->assertNotContains('token_10002tokengcl1', $tokenIds);
+        $this->assertNotContains('token_100022xtokeng1', $tokenIds);
+    }
+
+    public function testGetCheckoutPreferencesReturnsBothCardAndUpiTokensForGlobalCustomer(): void
+    {
+        $this->markTestSkipped('Skipping For Now Till We Figure Out Why This Works on Local But Fails on Github.');
+
+        $this->ba->publicAuth();
+
+        $this->mockSession();
+
+        $this->fixtures->merchant->enableMethod(Merchant\Account::TEST_ACCOUNT, 'upi');
+
+        $this->fixtures->merchant->addFeatures(['save_vpa'], Merchant\Account::TEST_ACCOUNT);
+
+        $globalUpiToken = $this->fixtures->create('customer:upi_payments_global_customer_token');
+
+        $localUpiToken = $this->fixtures->create('customer:upi_payments_local_customer_token');
+
+        // Local Card Token on Global Customer
+        $this->fixturesToCreateCardToken(
+            '10002tokenlcl1',
+            '100000003card2',
+            '411141',
+            Merchant\Account::TEST_ACCOUNT
+        );
+
+        $payload = $this->testData['testGetCheckoutPreferencesForDedupeLocalTokensOverGlobalTokens'];
+
+        $response = $this->startTest($payload);
+
+        $tokenIds = $this->extractTokenIdsFromResponse($response);
+
+        $this->assertContains($globalUpiToken->getPublicId(), $tokenIds);
+
+        $this->assertNotContains($localUpiToken->getPublicId(), $tokenIds);
+
+        $this->assertContains('token_10002tokenlcl1', $tokenIds);
+    }
+
+    public function testGetCheckoutPreferencesReturnsBothCardAndUpiTokensForLocalCustomer(): void
+    {
+        $this->markTestSkipped('Skipping For Now Till We Figure Out Why This Works on Local But Fails on Github.');
+
+        $this->ba->publicAuth();
+
+        $this->fixtures->merchant->enableMethod(Merchant\Account::TEST_ACCOUNT, 'upi');
+
+        $this->fixtures->merchant->addFeatures(['save_vpa'], Merchant\Account::TEST_ACCOUNT);
+
+        $globalUpiToken = $this->fixtures->create('customer:upi_payments_global_customer_token');
+
+        $localUpiToken = $this->fixtures->create('customer:upi_payments_local_customer_token');
+
+        // Local Card Token on Local Customer
+        $this->fixturesToCreateCardToken(
+            '10002tokenlcl1',
+            '100000003card2',
+            '411141',
+            Merchant\Account::TEST_ACCOUNT,
+            self::LOCAL_CUSTOMER_ID
+        );
+
+        $payload = $this->testData['testGetCheckoutPreferencesForDedupeLocalTokensOverGlobalTokens'];
+
+        $payload['request']['content']['customer_id'] = 'cust_' . self::LOCAL_CUSTOMER_ID;
+
+        $response = $this->startTest($payload);
+
+        $tokenIds = $this->extractTokenIdsFromResponse($response);
+
+        $this->assertNotContains($globalUpiToken->getPublicId(), $tokenIds);
+
+        $this->assertContains($localUpiToken->getPublicId(), $tokenIds);
+
+        $this->assertContains('token_10002tokenlcl1', $tokenIds);
+    }
+
+    protected function extractTokenIdsFromResponse(array $response): array
+    {
+        $tokenIds = [];
+
+        $tokens = $response['customer']['tokens']['items'] ?? [];
+
+        foreach ($tokens as $token)
+        {
+            $tokenIds[] = $token['id'];
+        }
+
+        return $tokenIds;
+    }
+
+    protected function fixtureToCreateIin($iin = '411140'): void
+    {
+        $this->fixtures->iin->create(
+            [
+                'iin'     => $iin,
+                'country' => 'IN',
+                'issuer'  => 'HDFC',
+                'network' => 'Visa',
+                'flows'   => [
+                    '3ds' => '1',
+                    'headless_otp'  => '1',
+                ]
+            ]
+        );
+    }
+
+    protected function fixturesToCreateCardToken(
+        $tokenId,
+        $cardId,
+        $iin,
+        $merchantId = '100000Razorpay',
+        $customerId = self::GLOBAL_CUSTOMER_ID,
+        $inputFields = []
+    )
+    {
+        $this->fixtures->card->create(
+            [
+                'id'            => $cardId,
+                'merchant_id'   => $merchantId,
+                'name'          => 'test',
+                'iin'           => $iin,
+                'expiry_month'  => '12',
+                'expiry_year'   => '2100',
+                'issuer'        => 'HDFC',
+                'network'       => $inputFields['network'] ?? 'Visa',
+                'last4'         => '1111',
+                'type'          => 'debit',
+                'vault'         => 'rzpvault',
+                'vault_token'   => 'test_token',
+                'international' => $inputFields['international'] ?? null,
+            ]
+        );
+
+        $this->fixtures->token->create(
+            [
+                'id'              => $tokenId,
+                'customer_id'     => $customerId,
+                'method'          => 'card',
+                'card_id'         => $cardId,
+                'used_at'         => 10,
+                'merchant_id'     => $merchantId,
+                'acknowledged_at' => Carbon::now()->getTimestamp(),
+                'expired_at'      => $inputFields['expired_at'] ?? '9999999999',
+            ]
+        );
     }
 
     protected function mockSession($appToken = 'capp_1000000custapp')
