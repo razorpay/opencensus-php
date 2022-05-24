@@ -5,8 +5,6 @@ namespace RZP\Base\Database\LagChecker;
 use App;
 use Closure;
 use Carbon\Carbon;
-use Illuminate\Redis\RedisManager;
-use Illuminate\Support\Facades\Redis;
 
 use Razorpay\Trace\Logger as Trace;
 
@@ -57,13 +55,6 @@ class HeartbeatLagChecker implements LagChecker
      * @var Closure
      */
     protected $reconnecter;
-
-    /**
-     * @var RedisManager
-     */
-    protected $redis;
-
-    protected $cache;
 
     /**
      * @var Trace
@@ -148,10 +139,6 @@ class HeartbeatLagChecker implements LagChecker
         $this->trace  = $app['trace'];
 
         $this->reqCtx = $app['request.ctx'];
-
-        $this->redis = Redis::Connection('mutex_redis');
-
-        $this->cache = $app['cache'];
 
         $this->workerContext = $app['worker.ctx'];
 
