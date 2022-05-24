@@ -840,7 +840,7 @@ class Processor
             $paymentMethod = $input[Payment\Entity::METHOD] ?? '';
             $paymentMethodsUsingCards = [Payment\Entity::CARD, Payment\Entity::EMI];
             $library = $input['_']['library'] ?? '';
-            $allowedLibraries = [Payment\Analytics\Metadata::CHECKOUTJS, Payment\Analytics\Metadata::HOSTED, Payment\Analytics\Metadata::RAZORPAYJS, Payment\Analytics\Metadata::CUSTOM];
+            $allowedLibraries = [Payment\Analytics\Metadata::CHECKOUTJS, Payment\Analytics\Metadata::HOSTED, Payment\Analytics\Metadata::RAZORPAYJS, Payment\Analytics\Metadata::CUSTOM, Payment\Analytics\Metadata::S2S];
 
             $this->trace->info(
                 TraceCode::TOKENISATION_CONSENT_LOG,
