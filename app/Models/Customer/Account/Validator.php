@@ -50,8 +50,12 @@ class Validator extends Base\Validator
         'provider'              => 'required_if:method,cardless_emi,paylater',
         'payment_id'            => 'sometimes_if:method,cardless_emi',
         'language_code'         => 'sometimes',
+        'address_consent'       => 'sometimes',
     ];
 
+    protected static $addressConsentRules = [
+        'unique_id'       => 'required|string|max:36'
+    ];
     protected static $createGlobalAddressRules = [
         Entity::CONTACT           => 'required|contact_syntax',
         Entity::EMAIL             => 'sometimes|email',
@@ -64,6 +68,23 @@ class Validator extends Base\Validator
         Entity::EMAIL             => 'sometimes|email',
         Entity::SHIPPING_ADDRESS  => 'sometimes',
         Entity::BILLING_ADDRESS   => 'sometimes'
+    ];
+
+    protected static $recordAddressConsent1ccRules = [
+        'device_id'               => 'required|string|max:65',
+    ];
+
+    protected static $recordAddressConsent1ccAuditsRules = [
+        'contact'           => 'required|contact_syntax',
+        'unique_id'               => 'required|string|max:36',
+    ];
+
+    protected static $fetchAddressConsent1ccAuditsRules = [
+        Entity::CONTACT           => 'required|contact_syntax',
+    ];
+
+    protected static $fetchAddressConsent1ccRules = [
+        'customer_id'           => 'required',
     ];
 
     protected static $contactRules = [
@@ -258,5 +279,25 @@ class Validator extends Base\Validator
     public static function validateEditGlobalAddress($input)
     {
         (new static)->validateInput('editGlobalAddress', $input);
+    }
+    public static function validateRecordAddressConsent1cc($input)
+    {
+        (new static)->validateInput('recordAddressConsent1cc', $input);
+    }
+    public static function validateRecordAddressConsent1ccAudits($input)
+    {
+        (new static)->validateInput('recordAddressConsent1ccAudits', $input);
+    }
+    public static function validateFetchAddressConsent1ccAudits($input)
+    {
+        (new static)->validateInput('fetchAddressConsent1ccAudits', $input);
+    }
+    public static function validateFetchAddressConsent1cc($input)
+    {
+        (new static)->validateInput('fetchAddressConsent1cc', $input);
+    }
+    public static function validateAddressConsent($input)
+    {
+        (new static)->validateInput('addressConsent', $input);
     }
 }

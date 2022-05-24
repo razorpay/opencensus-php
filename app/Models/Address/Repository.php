@@ -91,6 +91,49 @@ class Repository extends Base\Repository
         return $addresses->get();
     }
 
+    public function fetchRzpAddressesFor1cc(Base\Entity $entity)
+    {
+        $addresses = $this->newQuery()
+            ->where(Entity::ENTITY_ID, '=', $entity->getId())
+            ->where(function ($query)
+            {
+                $query->where(Entity::SOURCE_TYPE, '=', 'bulk_upload')
+                    ->orWhereNull(Entity::SOURCE_TYPE);
+            });
+        return $addresses->get();
+    }
+
+    public function fetchThirdPartyAddressesFor1cc(Base\Entity $entity)
+    {
+        $addresses = $this->newQuery()
+            ->where(Entity::ENTITY_ID, '=', $entity->getId())
+            ->whereIn(Entity::SOURCE_TYPE, ['thirdwatch', 'payment_pages']);
+
+        return $addresses->get();
+    }
+
+    public function fetchRzpAddressCountFor1cc(Base\Entity $entity)
+    {
+        $query = $this->newQuery();
+        return $query->where(Entity::ENTITY_ID, '=', $entity->getId())
+            ->where(function ($query)
+            {
+                $query->where(Entity::SOURCE_TYPE, '=', 'bulk_upload')
+                    ->orWhereNull(Entity::SOURCE_TYPE);
+            })
+            ->count();
+    }
+
+    public function fetchThirdPartyAddressCountFor1cc(Base\Entity $entity)
+    {
+        $sourceTypes = ['thirdwatch', 'payment_pages'];
+
+        return $this->newQuery()
+            ->where(Entity::ENTITY_ID, '=', $entity->getId())
+            ->whereIn(Entity::SOURCE_TYPE, $sourceTypes)
+            ->count();
+    }
+
     /**
      * @param string      $id
      * @param Base\Entity $entity

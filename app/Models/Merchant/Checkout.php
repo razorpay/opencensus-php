@@ -41,7 +41,7 @@ use RZP\Models\SubscriptionRegistration\Validator as SubscriptionRegistrationVal
 use RZP\Models\Key;
 use RZP\Models\TrustedBadge;
 use RZP\Models\Customer\AppToken;
-
+use RZP\Models\Address;
 class Checkout
 {
     const CHECKOUT_LOGO_SIZE            = 'medium';
@@ -671,8 +671,17 @@ class Checkout
 
             $savedTokens = $tokenCore->fetchTokensByCustomer($customer, $merchant);
 
-            $savedAddresses = (new Customer\Core)->fetchAddressesFor1CC($customer, $input);
+            if($merchant->isFeatureEnabled(Feature\Constants::ONE_CLICK_CHECKOUT) === true){
 
+                $rzpAddresses = (new Customer\Core)->fetchRzpAddressesFor1CC($customer);
+                $addressConsentView = (new Customer\Core)->fetchAddressConsentViewsFor1CC($customer);
+                $thirdPartyAddresses = (new Customer\Core)->fetchThirdPartyAddressesFor1cc($customer);
+                $addresses = array_merge($rzpAddresses, $thirdPartyAddresses);
+
+                $custData['addresses'] = $addresses;
+                $custData['1cc_consent_banner_views'] = $addressConsentView;
+
+            }
             //
             // TODO: Remove this later when we start handling the below case.
             // Currently, we do not expose any recurring NB tokens to the customer.
@@ -686,13 +695,10 @@ class Checkout
             $savedTokens = $tokenCore->removeCardTokensWithoutName($savedTokens);
 
             $savedTokens = $tokenCore->addConsentFieldInTokens($savedTokens);
+            $custData['tokens'] = $savedTokens->toArrayPublic();
 
-            $custData =  [
-                'email'     => $customer->getEmail(),
-                'contact'   => $customer->getContact(),
-                'tokens'    => $savedTokens->toArrayPublic(),
-                'addresses' => $savedAddresses,
-            ];
+            $custData['email'] =  $customer->getEmail();
+            $custData['contact'] =  $customer->getContact();
 
             //
             // This case comes when customer_id is sent in the input (always local customer).

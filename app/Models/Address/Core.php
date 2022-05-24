@@ -3,6 +3,7 @@
 namespace RZP\Models\Address;
 
 use RZP\Constants;
+use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Payment;
@@ -264,4 +265,44 @@ class Core extends Base\Core
             }
         });
     }
+
+    public function recordAddressConsent1ccAudits($input)
+    {
+        Customer\Validator::validateRecordAddressConsent1ccAudits($input);
+
+        return (new AddressConsent1ccAudits\Core())->createAndSaveAudits($input);
+    }
+
+    /**
+     * @throws Exception\BadRequestException
+     */
+    public function recordAddressConsent1cc($input, $customer)
+    {
+
+        Customer\Validator::validateRecordAddressConsent1cc($input);
+
+         $this->transaction(
+            function () use ($customer, $input)
+            {
+                $addressConsent = $this->repo->address_consent_1cc->findByCustomerId(
+                    $customer->getId()
+                );
+                if ($addressConsent === null)
+                {
+                    (new AddressConsent1cc\Core())->createAndSaveConsent($customer, $input);
+                }
+            }
+        );
+    }
+
+    public function fetchAddressConsent1ccAudits($contact)
+    {
+        return (new AddressConsent1ccAudits\Repository())->fetchAddressConsent1ccAuditsByContact($contact);
+    }
+
+    public function fetchAddressConsent1cc(Customer\Entity $customer)
+    {
+        return (new AddressConsent1cc\Repository())->getCountByCustomerId($customer->getId());
+    }
+
 }

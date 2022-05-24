@@ -202,6 +202,8 @@ use RZP\Base\Database\Connectors\MySqlConnector;
  * @property Models\Transaction\Statement\Ledger\AccountDetail\Repository   $account_detail
  * @property Models\Transaction\Statement\Ledger\Statement\Repository       $ledger_statement
  * @property Models\Internal\Repository                               $internal
+ * @property Models\Address\AddressConsent1ccAudits\Repository              $address_consent_1cc_audits
+ * @property Models\Address\AddressConsent1cc\Repository                    $address_consent_1cc
  * @property Models\Transaction\Statement\DirectAccount\Statement\Repository $direct_account_statement
  * @property Models\Merchant\InternationalIntegration\Repository      $merchant_international_integrations
  * @property Models\PartnerBankHealth\Repository                      $partner_bank_health

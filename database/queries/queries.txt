@@ -6785,3 +6785,26 @@ ALTER TABLE payouts_details
 
 ALTER TABLE `merchant_banks`
     ADD COLUMN `razorpaywallet` TINYINT DEFAULT 0;
+
+CREATE TABLE IF NOT EXISTS address_consent_1cc_audits (
+	id CHAR(14) COLLATE utf8mb4_bin NOT NULL,
+	contact VARCHAR(20) COLLATE utf8mb4_bin NOT NULL,
+	unique_id CHAR(36) NOT NULL,
+	created_at INT(11) NOT NULL,
+        deleted_at INT(11) NULL,
+	PRIMARY KEY (id),
+	KEY address_consent_1cc_audits_contact_index (contact),
+        KEY address_consent_1cc_audits_created_at_index (created_at)
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+
+
+CREATE TABLE IF NOT EXISTS address_consent_1cc (
+	id CHAR(14) COLLATE utf8mb4_bin NOT NULL,
+	customer_id CHAR(14) COLLATE utf8mb4_bin NOT NULL,
+	device_id VARCHAR(65) NOT NULL,
+	created_at INT(11) NOT NULL,
+        deleted_at INT(11) NULL,
+	PRIMARY KEY (id),
+	KEY address_consent_1cc_customer_index (customer_id),
+        KEY address_consent_1cc_created_at_index (created_at)
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;

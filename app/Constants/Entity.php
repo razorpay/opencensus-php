@@ -604,6 +604,8 @@ class Entity
     const MERCHANT_CHECKOUT_DETAIL      = 'merchant_checkout_detail';
     const MERCHANT_SLABS                = 'merchant_slabs';
     const MERCHANT_1CC_CONFIGS          = 'merchant_1cc_configs';
+    const ADDRESS_CONSENT_1CC_AUDITS    = 'address_consent_1cc_audits';
+    const ADDRESS_CONSENT_1CC           = 'address_consent_1cc';
 
     // merchant international integrations
     const MERCHANT_INTERNATIONAL_INTEGRATIONS = 'merchant_international_integrations';
@@ -1302,6 +1304,10 @@ class Entity
         self::MERCHANT_1CC_AUTH_CONFIGS  => \RZP\Models\Merchant\OneClickCheckout\AuthConfig::class,
 
         self::PAYMENT_FRAUD              => \RZP\Models\Payment\Fraud::class,
+
+        self::ADDRESS_CONSENT_1CC               => \RZP\Models\Address\AddressConsent1cc::class,
+
+        self::ADDRESS_CONSENT_1CC_AUDITS        => \RZP\Models\Address\AddressConsent1ccAudits::class,
     ];
 
     protected static $repository = [

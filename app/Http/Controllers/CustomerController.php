@@ -250,6 +250,15 @@ class CustomerController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function verifyOtp1cc()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->verifyOtp1cc($input);
+
+        return ApiResponse::json($data);
+    }
+    
     /**
      * Used by the Open Wallet demo app
      *
@@ -305,6 +314,22 @@ class CustomerController extends Controller
         $input = Request::all();
 
         $address = $this->service()->editGlobalAddress($input);
+
+        return ApiResponse::json($address);
+    }
+
+    public function recordAddressConsent1ccAudits()
+    {
+        $input = Request::all();
+
+        return $this->service()->recordAddressConsent1ccAudits($input);
+    }
+
+    public function recordAddressConsent1cc()
+    {
+        $input = Request::all();
+
+        $address = $this->service()->recordAddressConsent1cc($input);
 
         return ApiResponse::json($address);
     }

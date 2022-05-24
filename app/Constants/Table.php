@@ -50,6 +50,8 @@ class Table
     const DEBIT_NOTE_DETAIL            = 'debit_note_detail';
     const ADDRESS                      = 'addresses';
     const RAW_ADDRESS                  = 'raw_addresses';
+    const ADDRESS_CONSENT_1CC_AUDITS   = 'address_consent_1cc_audits';
+    const ADDRESS_CONSENT_1CC          = 'address_consent_1cc';
     const DISCOUNT                     = 'discounts';
     const MERCHANT                     = 'merchants';
     const PARTNER_ACTIVATION           = 'partner_activation';

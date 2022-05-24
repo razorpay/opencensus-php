@@ -301,22 +301,103 @@ class Core extends Base\Core
             $response['session_id'] = $this->getTemporarySessionToken();
         }
 
-        $response['addresses'] = $this->fetchAddressesFor1CC($customer, $input);
+        $response['addresses'] = (new Customer\Core)->fetchRzpAddressesFor1CC($customer);
+
         return $response;
     }
 
-    public function fetchAddressesFor1CC($customer, $input)
+    /**
+     * @throws Exception\BadRequestException
+     */
+    public function verifyOtp1cc($input, $merchant): array
     {
+        $response = $this->verifyOtp($input, $merchant);
 
-        $addresses = $this->repo->address->fetchAddressesForEntity($customer, $input);
-        // Temp fix to ensure thirdwatch addresses do not show up
-        $addresses = $addresses->filter(function ($address, $key)
-        {
-            $addressArray = $address->toArray();
-            return $addressArray[Address\Entity::SOURCE_TYPE] === null or
-                $addressArray[Address\Entity::SOURCE_TYPE] === "bulk_upload";
-        });
+        if (empty($response) === false && $response['success'] === 1){
+
+            $customer = $this->getOrCreateGlobalCustomer($input);
+
+            // record address consented details
+            if ((empty($input['address_consent']) === false) and
+                (empty($input['address_consent']['device_id']) === false))
+            {
+                $addressConsentInput = [
+                    'device_id'   => $input['address_consent']['device_id'],
+                ];
+
+                (new Address\Core)->recordAddressConsent1cc($addressConsentInput, $customer);
+
+            }
+            if(empty($response['addresses']) === false){
+                $rzpAddresses = $response['addresses'];
+            }else {
+                $rzpAddresses = (new Customer\Core)->fetchRzpAddressesFor1CC($customer);
+            }
+            $addressConsentView = (new Customer\Core)->fetchAddressConsentViewsFor1CC($customer);
+            $thirdPartyAddresses = (new Customer\Core)->fetchThirdPartyAddressesFor1cc($customer);
+            $addresses = array_merge($rzpAddresses, $thirdPartyAddresses);
+
+            $response['addresses'] = $addresses;
+            $response['1cc_consent_banner_views'] = $addressConsentView;
+        }
+        return $response;
+    }
+
+    public function fetchRzpAddressesFor1CC($customer)
+    {
+        $addresses = $this->repo->address->fetchRzpAddressesFor1cc($customer);
         return $addresses->sortByDesc(Entity::UPDATED_AT, 1)->values()->all();
+    }
+
+    public function fetchThirdPartyAddressesFor1cc($customer): array
+    {
+        $addressConsentValue = (new Address\Core)->fetchAddressConsent1cc($customer);
+        if ($addressConsentValue !== 0){
+            $addresses = $this->repo->address->fetchThirdPartyAddressesFor1cc($customer);
+            return $addresses->sortByDesc(Entity::UPDATED_AT, 1)->values()->all();
+        }
+        return [];
+    }
+
+    public function fetchAddressConsentViewsFor1CC($customer)
+    {
+        $remainingViews = 0;
+        $addressConsentValue = (new Address\Core)->fetchAddressConsent1cc($customer);
+        if ($addressConsentValue !== 0) {
+            return $remainingViews;
+        }
+        $thirdPartyAddressCount = $this->repo->address->fetchThirdPartyAddressCountFor1cc($customer);
+        if ($thirdPartyAddressCount === 0) {
+            return $remainingViews;
+        }
+        $addressConsentAudits = (new Address\Core)->fetchAddressConsent1ccAudits($customer->getContact());
+        return max(0, 2-$addressConsentAudits);
+    }
+
+    /**
+     * @throws Exception\BadRequestException
+     */
+    public function recordAddressConsent1cc($input)
+    {
+        if(Session()->has($this->mode . '_app_token') === false)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ACCESS_DENIED);
+        }
+
+        $appToken = Session()->get($this->mode . '_app_token');
+
+        list($customer, $appToken) = (new Customer\Core)->getCustomerAndApp(
+            ['app_token' => $appToken],
+            $this->merchant,
+            true);
+
+        (new Address\Core)->recordAddressConsent1cc($input, $customer);
+
+        $addresses = $this->fetchThirdPartyAddressesFor1cc($customer);
+
+        return [
+            'addresses' => $addresses,
+        ];
     }
 
     /**

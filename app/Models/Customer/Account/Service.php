@@ -172,7 +172,17 @@ class Service extends Base\Service
 
         return $data;
     }
+    /**
+     * @param  otp verification data
+     * @return success with tokens or failure
+     * for 1cc
+     */
+    public function verifyOtp1cc($input)
+    {
+        $data = $this->core->verifyOtp1cc($input, $this->merchant);
 
+        return $data;
+    }
     /**
      * Used by the Open Wallet demo app
      */
@@ -222,7 +232,7 @@ class Service extends Base\Service
     {
         Customer\Validator::validateSmsHash($input);
 
-        $data = ['saved' => false, 'saved_address' => false];
+        $data = ['saved' => false, 'saved_address' => false, '1cc_consent_banner_views' => 0];
 
         if ($sendOtp === true)
         {
@@ -367,12 +377,13 @@ class Service extends Base\Service
                 $this->sendOtp($otpInput);
             }
             // check for saved addresses
-            $savedAddress = $this->repo->address->fetchAddressesForEntity($customer, [Address\Entity::TYPE => Address\Type::SHIPPING_ADDRESS]);
-
-            if (count($savedAddress) !== 0)
+            $rzpAddressCount = $this->repo->address->fetchRzpAddressCountFor1cc($customer);
+            if ($rzpAddressCount !== 0)
             {
                 $data['saved_address'] = true;
             }
+            $addressConsentView = $this->core->fetchAddressConsentViewsFor1CC($customer);
+            $data['1cc_consent_banner_views'] = $addressConsentView;
         }
 
         return $data;
@@ -521,6 +532,31 @@ class Service extends Base\Service
     public function editGlobalAddress(array $input)
     {
         return $this->core->editGlobalAddress($input);
+    }
+
+    /**
+     * @throws BadRequestException
+     */
+    public function recordAddressConsent1cc($input): array
+    {
+        return $this->core->recordAddressConsent1cc($input);
+    }
+
+    public function recordAddressConsent1ccAudits(array $input): array
+    {
+        (new Address\Core)->recordAddressConsent1ccAudits($input);
+
+        $merchant = $this->repo->merchant->getSharedAccount();
+
+        $contact = Customer\Validator::validateAndParseContact($input['contact']);
+
+        $customer = $this->repo->customer->findByContactAndMerchant($contact, $merchant);
+
+        $addressConsentView = $this->core->fetchAddressConsentViewsFor1CC($customer);
+
+        return [
+            '1cc_consent_banner_views' => $addressConsentView
+        ];
     }
 
     public function createAddress($customerId, array $input)
