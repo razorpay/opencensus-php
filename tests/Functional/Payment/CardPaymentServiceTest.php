@@ -1350,16 +1350,6 @@ class CardPaymentServiceTest extends TestCase
                     return 'on';
                 }));
 
-        $output = [
-            "response" => [
-                "variant" => [
-                    "name" => 'variant_on',
-                ]
-            ]
-        ];
-
-        $this->mockSplitzTreatment($output);
-
         $this->enableCpsConfig();
 
         $this->fixtures->merchant->addFeatures(['avs']);

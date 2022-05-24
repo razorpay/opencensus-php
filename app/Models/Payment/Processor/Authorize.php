@@ -6485,7 +6485,7 @@ trait Authorize
         }
         catch (Exception\BadRequestException $e) {
 
-            if(in_array($this->payment->getGateway(), Gateway::$internationalAVSVoidSupported,true) && $this->ShouldCallRefundForAVSFailedPayments())
+            if(in_array($this->payment->getGateway(), Gateway::$internationalAVSVoidSupported,true))
             {
                 // Updates payment entity to authorized and adds a transaction.
                 $updated = $this->updatePaymentAuthorized($data, $wasFailed);
@@ -11058,36 +11058,6 @@ trait Authorize
 
         return $variant === 'enable';
     }
-
-    protected function ShouldCallRefundForAVSFailedPayments(): bool
-    {
-        try
-        {
-            $properties = [
-                'id'            => UniqueIdEntity::generateUniqueId(),
-                'experiment_id' => $this->app['config']->get('app.void_refund_avs_failed_experiment_id'),
-            ];
-
-            $response = $this->app['splitzService']->evaluateRequest($properties);
-
-            $variant = $response['response']['variant']['name'] ?? '';
-
-            if ($variant === 'variant_on')
-            {
-                return true;
-            }
-        }
-        catch (\Exception $e)
-        {
-            $this->trace->traceException(
-                $e,
-                null,
-                TraceCode::GLOBAL_CARD_PAYMENT_PROCESS_SPLITZ_ERROR
-            );
-        }
-
-        return false;
-      }
 
     /**
      * For international initial recurring payments, if the gateway requires address collection
