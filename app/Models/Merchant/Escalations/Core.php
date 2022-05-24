@@ -10,6 +10,7 @@ use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Store;
+use RZP\Services\ApachePinotClient;
 use RZP\Models\Admin\Org\Entity as Org;
 use RZP\Notifications\Onboarding\Events;
 use RZP\Services\Segment as SegmentAnalytics;

@@ -23,10 +23,10 @@ class CoreTest extends TestCase
 
     public function testNoEscalationTriggeredIfMerchantNotInOpenState()
     {
-        $merchantDetail = $this->fixtures->on('live')->create('merchant_detail:valid_fields',[
+        $merchantDetail = $this->fixtures->on('live')->create('merchant_detail:valid_fields', [
             'activation_status' => 'activated'
         ]);
-        $merchantId = $merchantDetail->getMerchantId();
+        $merchantId     = $merchantDetail->getMerchantId();
 
         (new Escalations\Core)->triggerPaymentEscalations(false);
 
@@ -38,10 +38,10 @@ class CoreTest extends TestCase
 
     public function testNoEscalationTriggeredIfMerchantPaymentIsBelowThreshold()
     {
-        $merchantDetail = $this->fixtures->on('live')->create('merchant_detail:valid_fields',[
+        $merchantDetail = $this->fixtures->on('live')->create('merchant_detail:valid_fields', [
             'activation_status' => 'under_review'
         ]);
-        $merchantId = $merchantDetail->getMerchantId();
+        $merchantId     = $merchantDetail->getMerchantId();
 
         $this->createTransaction($merchantId, 'payment', 900);
 
@@ -52,6 +52,7 @@ class CoreTest extends TestCase
         // Verify no escalation is triggered for the merchant
         $this->assertEmpty($escalation);
     }
+
     /**
      * Scenario:
      * -1 merchant is moved to activated mcc pending state
@@ -159,7 +160,7 @@ class CoreTest extends TestCase
     {
         $this->createAndFetchMocks(true);
 
-        $merchantDetail = $this->fixtures->on('live')->create('merchant_detail:valid_fields',[
+        $merchantDetail = $this->fixtures->on('live')->create('merchant_detail:valid_fields', [
             'activation_status'         => 'under_review',
             'activation_form_milestone' => 'L1'
         ]);
@@ -186,7 +187,7 @@ class CoreTest extends TestCase
     {
         $this->createAndFetchMocks(true);
 
-        $merchantDetail = $this->fixtures->on('live')->create('merchant_detail:valid_fields',[
+        $merchantDetail = $this->fixtures->on('live')->create('merchant_detail:valid_fields', [
             'activation_status'         => 'under_review',
             'activation_form_milestone' => 'L1'
         ]);
@@ -213,7 +214,7 @@ class CoreTest extends TestCase
     {
         $this->createAndFetchMocks(true);
 
-        $merchantDetail = $this->fixtures->on('live')->create('merchant_detail:valid_fields',[
+        $merchantDetail = $this->fixtures->on('live')->create('merchant_detail:valid_fields', [
             'activation_status'         => 'under_review',
             'activation_form_milestone' => 'L1'
         ]);
@@ -240,11 +241,10 @@ class CoreTest extends TestCase
     {
         $this->createAndFetchMocks(true);
 
-        $merchantDetail = $this->fixtures->on('live')->create('merchant_detail:valid_fields',[
+        $merchantDetail = $this->fixtures->on('live')->create('merchant_detail:valid_fields', [
             'activation_status'         => 'under_review',
             'activation_form_milestone' => 'L1'
         ]);
-
 
         $merchantId = $merchantDetail->getMerchantId();
 
@@ -357,21 +357,21 @@ class CoreTest extends TestCase
     private function createAndFetchMocks($razorXEnabled)
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
-            ->getMock();
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
 
         $this->app['razorx']->method('getTreatment')
-            ->willReturn($razorXEnabled ? 'on' : 'off');
+                            ->willReturn($razorXEnabled ? 'on' : 'off');
     }
 
     private function addEscalation($milestone, $threshold)
     {
-        $escalation = $this->fixtures->on('live')->create('merchant_onboarding_escalations',[
-            'milestone'    => $milestone,
-            'threshold'    => $threshold
+        $escalation = $this->fixtures->on('live')->create('merchant_onboarding_escalations', [
+            'milestone' => $milestone,
+            'threshold' => $threshold
         ]);
 
         return $escalation;
@@ -379,13 +379,13 @@ class CoreTest extends TestCase
 
     private function createAndFetchFixturesForMilestone($milestone)
     {
-        $merchantAttributes = [];
+        $merchantAttributes       = [];
         $merchantDetailAttributes = [];
 
         switch ($milestone)
         {
             case 'L1':
-                $merchantAttributes = [
+                $merchantAttributes       = [
                     'activated' => 1,
                     'live'      => true
                 ];
@@ -395,7 +395,7 @@ class CoreTest extends TestCase
                 ];
                 break;
             case 'L2':
-                $merchantAttributes = [
+                $merchantAttributes       = [
                     'activated' => 1,
                     'live'      => true
                 ];
@@ -406,7 +406,7 @@ class CoreTest extends TestCase
                 break;
             case 'soft_limit':
             case 'hard_limit':
-                $merchantAttributes = [
+                $merchantAttributes       = [
                     'activated' => 1,
                     'live'      => true
                 ];
@@ -417,7 +417,7 @@ class CoreTest extends TestCase
                 ];
                 break;
         }
-        $merchant = $this->fixtures->create('merchant', $merchantAttributes);
+        $merchant   = $this->fixtures->create('merchant', $merchantAttributes);
         $merchantId = $merchant->getId();
 
         $merchantDetailAttributes = array_merge($merchantDetailAttributes, ['merchant_id' => $merchant->getId()]);
@@ -430,9 +430,9 @@ class CoreTest extends TestCase
     private function createTransaction(string $merchantId, string $type, int $amount)
     {
         $transaction = $this->fixtures->on('live')->create('transaction', [
-            'type'          => $type,
-            'amount'        => $amount * 100,   // in paisa
-            'merchant_id'   => $merchantId
+            'type'        => $type,
+            'amount'      => $amount * 100,   // in paisa
+            'merchant_id' => $merchantId
         ]);
     }
 
@@ -441,7 +441,7 @@ class CoreTest extends TestCase
         $expectedEscalationConfig = null;
         foreach (Escalations\Constants::PAYMENTS_ESCALATION_MATRIX[$threshold] as $config)
         {
-            if($config[Escalations\Constants::MILESTONE] === $milestone)
+            if ($config[Escalations\Constants::MILESTONE] === $milestone)
             {
                 $expectedEscalationConfig = $config;
                 break;
@@ -456,12 +456,13 @@ class CoreTest extends TestCase
         $this->assertEquals($threshold, $escalation->getAttribute('threshold'));
 
         $actions = DB::table('onboarding_escalation_actions')
-            ->where('escalation_id', $escalation->getId())
-            ->get()->toArray();
+                     ->where('escalation_id', $escalation->getId())
+                     ->get()->toArray();
 
-        if($emptyAction === true)
+        if ($emptyAction === true)
         {
             self::assertEmpty($actions);
+
             return;
         }
 
@@ -471,8 +472,8 @@ class CoreTest extends TestCase
         {
             $this->assertEquals($escalation->getAttribute('id'), $action->escalation_id);
 
-            $expected = Actions\Constants::SUCCESS.'|'.$action->action_handler;
-            $actual = $action->status.'|'.$action->action_handler;
+            $expected = Actions\Constants::SUCCESS . '|' . $action->action_handler;
+            $actual   = $action->status . '|' . $action->action_handler;
             $this->assertEquals($expected, $actual);
 
             $actionConfig = $this->getActionconfig($action->action_handler, $expectedEscalationConfig);
@@ -488,7 +489,7 @@ class CoreTest extends TestCase
         foreach ($expectedEscalationConfig['actions'] as $actionConfig)
         {
             $handlerClazz = Escalations\Utils::getClassShortName($actionConfig['handler']);
-            if($handler === $handlerClazz)
+            if ($handler === $handlerClazz)
             {
                 return $actionConfig;
             }
@@ -509,7 +510,7 @@ class CoreTest extends TestCase
                 $emailTemplate = Events::EMAIL_TEMPLATES[$event];
 
                 //verify email has been sent
-                Mail::assertQueued(MerchantOnboardingEmail::class, function ($mail) use($emailTemplate){
+                Mail::assertQueued(MerchantOnboardingEmail::class, function($mail) use ($emailTemplate) {
                     $viewData = $mail->viewData;
 
                     $this->assertEquals($emailTemplate, $mail->view);

@@ -179,4 +179,9 @@ return [
         'user'   => env('DATALAKE_PRESTO_USER'),
         'mock'   => env('DATALAKE_PRESTO_MOCK', true),
     ],
+
+    'apache_pinot' => [
+        'url'   => env('APACHE_PINOT_URL'),
+        'mock'   => env('APACHE_PINOT_MOCK', true),
+    ],
 ];

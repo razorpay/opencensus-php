@@ -441,6 +441,18 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
             return new DataLakePresto();
         });
 
+        $this->app->singleton('apache.pinot', function ($app)
+        {
+            $apachePinotServiceMock = $app['config']->get('services.pinot.mock');
+
+            if ($apachePinotServiceMock === true)
+            {
+                return new RZP\Services\Mock\ApachePinotClient();
+            }
+
+            return new ApachePinotClient();
+        });
+
         $this->app->singleton('merchantRiskClient', function ($app)
         {
             return new MerchantRiskClient();

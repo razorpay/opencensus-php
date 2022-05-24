@@ -5543,6 +5543,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const DATALAKE_PRESTO_QUERY                                   = 'DATALAKE_PRESTO_QUERY';
     const DATALAKE_PRESTO_REQUEST_FAILURE                         = 'DATALAKE_PRESTO_REQUEST_FAILURE';
 
+    const APACHE_PINOT_QUERY                                   = 'APACHE_PINOT_QUERY';
+    const APACHE_PINOT_RESPONSE                                   = 'APACHE_PINOT_RESPONSE';
+    const APACHE_PINOT_REQUEST_FAILURE                         = 'APACHE_PINOT_REQUEST_FAILURE';
+
     // Request Log
     const REQUEST_LOG_HANDLER_INITIATED                           = 'REQUEST_LOG_HANDLER_INITIATED';
     const REQUEST_LOG_HANDLER_RESPONSE_RECEIVED                   = 'REQUEST_LOG_HANDLER_RESPONSE_RECEIVED';
