@@ -78,6 +78,8 @@ class PGRouter
 
     const PGRouterOTPResendPrivate = "v1/payments/%s/otp/resend";
 
+    const PGRouterFetchOrderPayments = "v1/orders/%s/payments";
+
     const PGRouterOTPSubmitPrivate = "v1/payments/%s/otp/submit";
 
     const PG_ROUTER_FAILURE_STATUS_CODE = "pg_router_failure_status_code";
@@ -319,6 +321,65 @@ class PGRouter
         }
 
         return null;
+    }
+
+    public function fetchOrderPayments(string $orderId, string $merchantId)
+    {
+        $endpoint = sprintf(self::PGRouterFetchOrderPayments, $orderId);
+
+        $endpoint = $endpoint."?merchant_id=".$merchantId;
+
+        $card = null;
+
+        $response = $this->sendRequest($endpoint, Requests::GET, [], false, self::DEFAULT_REQUEST_TIMEOUT, true);
+
+        $collection = new PublicCollection();
+
+        if (empty($response) === false and empty($response['body']) === false)
+        {
+            $paymentsData = $response["body"];
+
+            forEach($paymentsData as $payment)
+            {
+                if (isset($payment['data']['payment']['acquirer_data']) === true and
+                    isset($payment['data']['payment']['acquirer_data']['auth_code']) === true)
+                {
+                    $payment['data']['payment']['reference2'] =
+                        $payment['data']['payment']['acquirer_data']['auth_code'];
+                }
+
+                if (isset($payment['data']['payment']['card']) === true)
+                {
+                    $payment['data']['payment']['card']['id'] = $payment['data']['payment']['id'];
+
+                    $card = (new Card\Entity)->forceFill($payment['data']['payment']['card']);
+
+                    $card->setExternal(true);
+
+                    unset($payment['data']['payment']['card']);
+                }
+
+                if (isset($payment['data']['payment']['notes']) === true and is_array($payment['data']['payment']['notes']) === false)
+                {
+                    $payment['data']['payment']['notes'] = json_decode($payment['data']['payment']['notes']);
+                }
+
+                $paymentEntity = (new Payment\Entity)->forceFill($payment['data']['payment']);
+
+                if ($card !== null)
+                {
+                    $paymentEntity->card()->associate($card);
+                }
+
+                if ($paymentEntity->isFailed() === false)
+                {
+                    $paymentEntity->setErrorNull();
+                }
+
+                $collection->push($paymentEntity);
+            }
+        }
+        return $collection;
     }
 
     public function fetchPayment(string $id, string $merchantId, array $input)

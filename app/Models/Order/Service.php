@@ -533,37 +533,28 @@ class Service extends Base\Service
         return $orderArray;
     }
 
+    // Fetches payments from api and pg-router for a given order_id
     public function fetchPaymentsFor(string $id, array $input): array
     {
         $input[Payment\Entity::ORDER_ID] = $id;
-
-        $payments = $this->repo->payment->fetch($input, $this->merchant->getId(), ConnectionType::DATA_WAREHOUSE_MERCHANT);
 
         $isPrivateAuth = $this->app['basicauth']->isPrivateAuth();
 
         if ($isPrivateAuth === true)
         {
-            $tidbPaymentIds = $payments->pluck(Payment\Entity::ID);
+            $orderId = Entity::verifyIdAndSilentlyStripSign($id);
 
-            $apiPayments = $this->repo->payment->fetchPaymentsGivenIds($tidbPaymentIds->toArray(), $tidbPaymentIds->count());
+            $apiPayments = $this->repo->payment->fetchPaymentsForOrderId($orderId);
 
-            $apiPaymentIds = $apiPayments->pluck(Payment\Entity::ID);
+            $rearchPayments = $this->app['pg_router']->fetchOrderPayments($orderId, $this->merchant->getId());
 
-            $diffPaymentIds = array_diff($tidbPaymentIds->toArray(), $apiPaymentIds->toArray());
+            $res = $apiPayments->merge($rearchPayments);
 
-            foreach ($diffPaymentIds as $paymentId)
-            {
-                $payment = $this->app['pg_router']->fetch(Constants\Entity::PAYMENT, $paymentId, '', array());
-
-                if ($payment !== null)
-                {
-                    $apiPayments->push($payment);
-                }
-            }
-
-            return $apiPayments->toArrayPublic();
-
+            return $res->toArrayPublic();
         }
+
+        $payments = $this->repo->payment->fetch($input, $this->merchant->getId(), ConnectionType::DATA_WAREHOUSE_MERCHANT);
+
         return $payments->toArrayPublic();
     }
 

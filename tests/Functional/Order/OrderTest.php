@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Order;
 
+use Mockery;
 use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Order;
@@ -799,6 +800,18 @@ class OrderTest extends TestCase
         $order = $this->testCreateOrder();
         $order = $this->getLastEntity('order');
 
+        $this->enablePgRouterConfig();
+        $pgService = Mockery::mock('RZP\Services\PGRouter')->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $this->app->instance('pg_router', $pgService);
+
+        $pgService->shouldReceive('fetchOrderPayments')
+            ->with(Mockery::type('string'), Mockery::type('string'))
+            ->andReturnUsing(function (string $orderId, string $merchantId)
+            {
+                return [];
+            });
+
         $payment = $this->getDefaultPaymentArray();
         $payment['order_id'] = $order['id'];
         $rzpPayment = $this->doAuthPayment($payment);
@@ -814,7 +827,7 @@ class OrderTest extends TestCase
 
         $payments = $this->startTest();
 
-        $this-> assertEquals(0, $payments['count']);
+        $this-> assertEquals(1, $payments['count']);
     }
 
     public function testFetchOrder()
