@@ -269,6 +269,13 @@ class Raven
 
         $this->traceResponse($decodedResponse);
 
+        if (json_last_error() === JSON_ERROR_UTF8)
+        {
+            $encodedResponse = iconv('UTF-8', 'UTF-8//IGNORE', utf8_encode($decodedResponse));
+
+            $decodedResponse = json_decode($encodedResponse, true);
+        }
+        
         //check if $response is a valid json
         if (json_last_error() !== JSON_ERROR_NONE)
         {
