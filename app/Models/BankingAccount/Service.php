@@ -267,6 +267,7 @@ class Service extends Base\Service
             if ($previousStatus !== $currentStatus)
             {
                 $this->core->notifyMerchantAboutUpdatedStatus($bankingAccount);
+                $this->core->notifyMerchantAboutUpdatedStatusOnMobileViaPushNotification($bankingAccount);
             }
         }
 
@@ -327,6 +328,7 @@ class Service extends Base\Service
         if ($previousStatus !== $currentStatus)
         {
             $this->core->notifyMerchantAboutUpdatedStatus($bankingAccount);
+            $this->core->notifyMerchantAboutUpdatedStatusOnMobileViaPushNotification($bankingAccount);
         }
 
         return array_merge($account->toArrayPublic(), $resp);
@@ -365,6 +367,7 @@ class Service extends Base\Service
         if ($this->isNeoStoneExperiment($bankingAccount) === false)
         {
             $this->core->notifyMerchantAboutUpdatedStatus($bankingAccount);
+            $this->core->notifyMerchantAboutUpdatedStatusOnMobileViaPushNotification($bankingAccount);
         }
 
         return $bankingAccount->toArrayPublic();

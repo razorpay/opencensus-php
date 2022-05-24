@@ -48,6 +48,7 @@ use RZP\Models\BankingAccount\Detail as BankingAccountDetail;
 use RZP\Models\BankingAccountStatement\Channel as BasChannel;
 use RZP\Models\BankingAccountStatement\Details as BASDetails;
 use RZP\Models\BankingAccount\Activation\Notification\Notifier;
+use RZP\PushNotifications\CurrentAccount\StatusUpdate as StatusUpdatePN;
 use RZP\Models\BankingAccount\Activation\Detail as ActivationDetail;
 use RZP\Mail\BankingAccount\StatusNotificationsToSPOC\MerchantNotAvailable;
 use RZP\Mail\BankingAccount\StatusNotifications\Factory as StatusUpdateMailerFactory;
@@ -87,6 +88,52 @@ class Core extends Base\Core
      * @var Notifier
      */
     protected $notifier;
+
+    protected static $notificationStatuses = [
+        Status::PICKED,
+        Status::INITIATED,
+        Status::PROCESSING,
+        Status::CANCELLED,
+        Status::ACTIVATED,
+        Status::UNSERVICEABLE,
+        Status::REJECTED,
+    ];
+
+    const PICKED_PN_TITLE           = "Your a/c is getting ready 🚀";
+    const INITIATED_PN_TITLE        = "KYC: One step closer!";
+    const PROCESSING_PN_TITLE       = "KYC in progress! 🕐";
+    const CANCELLED_PN_TITLE        = "We're sad to see you go 😔";
+    const ACTIVATED_PN_TITLE        = "Your current a/c is ready 🎉";
+    const UNSERVICEABLE_PN_TITLE    = "We can’t open your account 😔";
+    const REJECTED_PN_TITLE         = "KYC not approved 🙁";
+
+    const PICKED_PN_BODY            = "Our team will call you for KYC docs. See you on board soon! 🤩";
+    const INITIATED_PN_BODY         = "Your application has been sent to the bank for KYC verification 🙂";
+    const PROCESSING_PN_BODY        = "Our partner bank may call you for clarifications if needed.";
+    const CANCELLED_PN_BODY         = "We've cancelled your account application as you asked.";
+    const ACTIVATED_PN_BODY         = "Your account is now active. Welcome to the future of banking! 🚀";
+    const UNSERVICEABLE_PN_BODY     = "Your current location can't be serviced by our partner bank.️";
+    const REJECTED_PN_BODY          = "Oh no! Our partner bank has not approved your KYC documents.️";
+
+    public static $statusUpdatePnTitleMap = [
+        Status::PICKED	        =>	self::PICKED_PN_TITLE,
+        Status::INITIATED	    =>	self::INITIATED_PN_TITLE,
+        Status::PROCESSING	    =>	self::PROCESSING_PN_TITLE,
+        Status::CANCELLED	    =>	self::CANCELLED_PN_TITLE,
+        Status::ACTIVATED	    =>	self::ACTIVATED_PN_TITLE,
+        Status::UNSERVICEABLE	=>	self::UNSERVICEABLE_PN_TITLE,
+        Status::REJECTED    	=>	self::REJECTED_PN_TITLE
+    ];
+
+    public static $statusUpdatePnBodyMap = [
+        Status::PICKED	        =>	self::PICKED_PN_BODY,
+        Status::INITIATED	    =>	self::INITIATED_PN_BODY,
+        Status::PROCESSING	    =>	self::PROCESSING_PN_BODY,
+        Status::CANCELLED	    =>	self::CANCELLED_PN_BODY,
+        Status::ACTIVATED	    =>	self::ACTIVATED_PN_BODY,
+        Status::UNSERVICEABLE	=>	self::UNSERVICEABLE_PN_BODY,
+        Status::REJECTED    	=>	self::REJECTED_PN_BODY
+    ];
 
     public function __construct()
     {
@@ -270,6 +317,51 @@ class Core extends Base\Core
                     'status'             => $bankingAccount->getStatus(),
                     'error'              => $e->getMessage(),
                 ]);
+        }
+    }
+
+    public function notifyMerchantAboutUpdatedStatusOnMobileViaPushNotification(Entity $bankingAccount)
+    {
+        $status = $bankingAccount->getStatus();
+
+        $statusList = self::$notificationStatuses;
+
+        if (in_array($status, $statusList, true) === false)
+        {
+            return;
+        }
+
+        $pushNotificationTitle = self::$statusUpdatePnTitleMap[$status];
+
+        $pushNotificationBody =  self::$statusUpdatePnBodyMap[$status];
+
+        $pushNotificationTag = "ca_onboarding_" .  $status;
+
+        $users = $bankingAccount->merchant->ownersAndAdmins(Product::BANKING);
+
+        foreach ($users as $user)
+        {
+            $userId = $user->getId();
+
+            $notificationData = array(
+                'ownerId'       => $bankingAccount->merchant->getId(),
+                'ownerType'     => 'merchant',
+                'title'         => $pushNotificationTitle,
+                'body'          => $pushNotificationBody,
+                'status'        => $status,
+                'identityList'  => [$userId],
+                'tags'          => array(
+                    'merchantId'            => $bankingAccount->merchant->getId(),
+                    'userId'                => $userId,
+                    'notificationPurpose'   => $pushNotificationTag,
+                ),
+                'tagGroup'      => $pushNotificationTag,
+            );
+
+            $pushNotification = new StatusUpdatePN($notificationData);
+            $pushNotification->send();
+
+            $this->trace->info(TraceCode::PUSH_NOTIFICATION_DISPATCHED_FOR_CA_STATUS_UPDATE, [$notificationData]);
         }
     }
 
@@ -2009,6 +2101,8 @@ class Core extends Base\Core
             $this->notifyOpsAboutProActivation($bankingAccount);
 
             $this->notifyMerchantAboutUpdatedStatus($bankingAccount);
+
+            $this->notifyMerchantAboutUpdatedStatusOnMobileViaPushNotification($bankingAccount);
 
             $this->notifier->notify($bankingAccount, Event::STATUS_CHANGE);
             $this->notifier->notify($bankingAccount, Event::SUBSTATUS_CHANGE);

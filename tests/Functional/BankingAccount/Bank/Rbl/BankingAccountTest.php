@@ -59,6 +59,8 @@ class BankingAccountTest extends TestCase
     use DbEntityFetchTrait;
     use EventsTrait;
 
+    protected $storkMock;
+
     protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/Helpers/BankingAccountTestData.php';
@@ -89,6 +91,13 @@ class BankingAccountTest extends TestCase
         $permissionId = (new Permission\Repository)->retrieveIdsByNames([$permissionName])[0];
 
         $role->permissions()->detach($permissionId);
+    }
+
+    protected function mockStork()
+    {
+        $this->storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('stork_service', $this->storkMock);
     }
 
     protected function mockHubSpotClient($methodName)
@@ -2862,12 +2871,60 @@ class BankingAccountTest extends TestCase
             $mailableClass = RZP\Mail\BankingAccount\StatusNotifications\Factory::getMailer($updatedBankingAccount);
 
             Mail::assertQueued(get_class($mailableClass));
+
+            $notificationStatuses = [
+                Status::PICKED,
+                Status::INITIATED,
+                Status::PROCESSING,
+                Status::CANCELLED,
+                Status::ACTIVATED,
+                Status::UNSERVICEABLE,
+                Status::REJECTED,
+            ];
+
+            $this->mockStork();
+
+            if (in_array($finalStatus, $notificationStatuses, true) === true) {
+
+                $this->expectStorkSendPushNotificationRequest([
+                    'ownerId' => $bankingAccount->merchant->getId(),
+                    'ownerType' => 'merchant',
+                ]);
+            }
         }
         else
         {
             Mail::assertNothingSent();
         }
     }
+
+    protected function expectStorkSendPushNotificationRequest($expectInput): void
+    {
+        $this->storkMock
+            ->shouldReceive('sendPushNotification')
+            ->times(1)
+            ->with(
+                Mockery::on(function ($mode)
+                {
+                    return true;
+                }),
+                Mockery::on(function ($input) use ($expectInput)
+                {
+                    $this->assertArraySelectiveEquals($expectInput, $input);
+
+                    return true;
+                }),
+                Mockery::on(function ($mockInMode)
+                {
+                    return true;
+                })
+            )
+            ->andReturnUsing(function ()
+            {
+                return ['success' => true];
+            });
+    }
+
 
     public function testUpdateBankingAccountStatusProcessingToProcessed()
     {
