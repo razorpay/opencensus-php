@@ -141,4 +141,5 @@ class Client
         }
         $this->endpoint = $url;
     }
+
 }

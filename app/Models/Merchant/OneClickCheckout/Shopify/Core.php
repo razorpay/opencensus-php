@@ -870,4 +870,5 @@ class Core extends Base\Core
 
         return $checkout['data']['node'] ?? [];
     }
+
 }

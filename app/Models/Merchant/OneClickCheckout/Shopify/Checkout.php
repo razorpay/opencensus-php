@@ -35,9 +35,12 @@ class Checkout extends Base\Core
     }
 
     // returns notes for Rzp order using Shopify storefront id and line items
-    public function getNotesForCheckout(array $checkout): array
+    public function getNotesForCheckout(array $checkout, string $cartId): array
     {
-        $notes = ['storefront_id'  => $checkout['id']];
+        $notes = [
+            "storefront_id" => $checkout['id'],
+            "cart_id" => $cartId
+        ];
 
         $lineItems = $checkout['lineItems']['edges'];
 

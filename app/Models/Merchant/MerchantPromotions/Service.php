@@ -236,9 +236,11 @@ class Service extends Base\Service
                 // TODO: critical error if not found !
                 $input['order_id'] = $rzpOrder->toArrayPublic()['notes']['storefront_id'];
 
+                $input['cart_id'] = $rzpOrder->toArrayPublic()['notes']['cart_id'];
+
                 $this->trace->count(Metric::MERCHANT_COUPON_VALIDITY_SHOPIFY_REQUEST_COUNT, $dimensions);
 
-                $res = (new Shopify\Service)->applyShopifyCoupon($input);
+                $res = (new Shopify\Service)->applyShopifyCoupon($input, $this->merchant->getId());
 
                 $decodedResponse = $res['response'];
 
