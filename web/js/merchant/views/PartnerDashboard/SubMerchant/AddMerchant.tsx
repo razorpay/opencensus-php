@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import React, { Component, ComponentType } from 'react';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
 import { Field, reduxForm } from 'redux-form';
@@ -29,11 +29,20 @@ import SocialShareGroup from 'merchant/views/PartnerDashboard/SubMerchant/compon
 import { merchantFetch } from 'merchant/utils/ajax';
 import { PRODUCT_TYPE, ADD_MODE } from 'merchant/views/PartnerDashboard/constants';
 import { minLength } from 'merchant/views/PartnerDashboard/SubMerchant/utils';
+import type {
+  AddMerchantPropsT,
+  AddMerchantStateT,
+  ReduxFormEvent,
+  NewMerchant,
+} from 'merchant/views/PartnerDashboard/SubMerchant/AddMerchant.types';
 
 const gaEvents = setGaTrack('Dashboard - Partner Submerchant - BU');
 
-class AddMerchant extends Component {
-  constructor(props) {
+class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
+  onAddSuccess: () => void;
+  isPartnershipForXEnabled: boolean;
+  isPartnershipFUX: boolean;
+  constructor(props: AddMerchantPropsT) {
     super(props);
     const state = {
       file_id: '',
@@ -96,7 +105,7 @@ class AddMerchant extends Component {
     }
   };
 
-  getTabHeaderText = (mode) => {
+  getTabHeaderText = (mode: string) => {
     const { isMobileResolution } = this.props;
     switch (mode) {
       case ADD_MODE.single: {
@@ -144,30 +153,33 @@ class AddMerchant extends Component {
   getIsInsertTable = () => {
     const { merchantType } = this.state;
     const { location } = this.props;
-    const addXIntent = merchantType === PRODUCT_TYPE.X;
-    const addPGIntent = merchantType === PRODUCT_TYPE.PG;
-    const currentPageX = location.pathname === '/partners/submerchants/x';
-    const currentPagePG = location.pathname === '/partners/submerchants';
-    if ((addXIntent && currentPageX) || (addPGIntent && currentPagePG)) {
+    const isAddXIntent = merchantType === PRODUCT_TYPE.X;
+    const isAddPGIntent = merchantType === PRODUCT_TYPE.PG;
+    let isCurrentPageX: boolean | undefined;
+    let isCurrentPagePG: boolean | undefined;
+    if (location) {
+      isCurrentPageX = location.pathname === '/partners/submerchants/x';
+      isCurrentPagePG = location.pathname === '/partners/submerchants';
+    }
+    if ((isAddXIntent && isCurrentPageX) || (isAddPGIntent && isCurrentPagePG)) {
       return true;
     }
     return false;
   };
 
-  addNewMerchant = (params) => {
+  addNewMerchant = (params: NewMerchant): void => {
     this.trackUserEvent('partnerships.submerchant.add.product_group.single.action', {
       action: 'Send Invite',
     });
-    const { user, showNotification, closeModal, tracking } = this.props;
+    const { user, showNotification, closeModal, create, tracking } = this.props;
     const { merchantType } = this.state;
     this.fetchReferralURL();
     const isInsertTable = this.getIsInsertTable();
-    return this.props
-      .create({
-        ...params,
-        product: merchantType,
-        isInsertTable,
-      })
+    return create?.({
+      ...params,
+      product: merchantType,
+      isInsertTable,
+    })
       .then((response) => {
         const { id } = response;
         // go to referral link screen only partner is reseller
@@ -177,7 +189,7 @@ class AddMerchant extends Component {
             merchantEmail: params.email,
           }));
         } else {
-          showNotification({
+          showNotification?.({
             type: 'success',
             message: 'Submerchant created successfully',
           });
@@ -203,15 +215,15 @@ class AddMerchant extends Component {
             error: errors && errors[0],
           }),
         );
-        showNotification({
+        showNotification?.({
           type: 'error',
           message: errors,
         });
       });
   };
 
-  handleBatchCreate = () => {
-    const { user, tracking, showNotification, closeModal } = this.props;
+  handleBatchCreate = (): void => {
+    const { user, tracking, showNotification, closeModal, createBatch } = this.props;
     const { bulkContactsCount, file_id, merchantType } = this.state;
     gaEvents.trackUploadBatch('Partner submerchant');
     tracking?.trackEvent(
@@ -221,42 +233,44 @@ class AddMerchant extends Component {
       }),
     );
     trackAddNewMerchantEvents('Add Multiple - Invite Contacts');
-    return this.props
-      .createBatch({
+    return (
+      createBatch &&
+      createBatch({
         file_id,
         config: {
           product: merchantType,
         },
       })
-      .then((_response) => {
-        this.trackUserEvent('partnerships.submerchant.add.product_group.multiple.upload', {
-          Action: 'Invite',
-          success: bulkContactsCount,
-        });
-        this.trackUserEvent('partnerships.submerchant.add.product_group.multiple.invite', {
-          success: bulkContactsCount,
-        });
-        showNotification({
-          type: 'success',
-          message:
-            'Your file has been successfully processed. Status of account creation will be sent to you within 2 hours.',
-        });
-        this.onAddSuccess();
-        closeModal();
-      })
-      .catch((error) => {
-        this.trackUserEvent('partnerships.submerchant.add.product_group.multiple.upload', {
-          Action: 'Invite',
-          error: error && error[0],
-        });
-        this.trackUserEvent('partnerships.submerchant.add.product_group.multiple.invite', {
-          error: error && error[0],
-        });
-        showNotification({
-          type: 'error',
-          message: 'Failed to invite.',
-        });
-      });
+        .then((_response) => {
+          this.trackUserEvent('partnerships.submerchant.add.product_group.multiple.upload', {
+            Action: 'Invite',
+            success: bulkContactsCount,
+          });
+          this.trackUserEvent('partnerships.submerchant.add.product_group.multiple.invite', {
+            success: bulkContactsCount,
+          });
+          showNotification?.({
+            type: 'success',
+            message:
+              'Your file has been successfully processed. Status of account creation will be sent to you within 2 hours.',
+          });
+          this.onAddSuccess();
+          closeModal();
+        })
+        .catch((error) => {
+          this.trackUserEvent('partnerships.submerchant.add.product_group.multiple.upload', {
+            Action: 'Invite',
+            error: error && error[0],
+          });
+          this.trackUserEvent('partnerships.submerchant.add.product_group.multiple.invite', {
+            error: error && error[0],
+          });
+          showNotification?.({
+            type: 'error',
+            message: 'Failed to invite.',
+          });
+        })
+    );
   };
 
   onValidation = (response, _name) => {
@@ -281,7 +295,7 @@ class AddMerchant extends Component {
     }
   };
 
-  onValidationFail = (error) => {
+  onValidationFail = (error: Error) => {
     const { user, tracking } = this.props;
     tracking?.trackEvent(
       window.rzpQ.onbr().interaction('partnerships.submerchant.add.multiple.upload.error', {
@@ -291,7 +305,7 @@ class AddMerchant extends Component {
     );
   };
 
-  handleModeChange = (mode) => {
+  handleModeChange = (mode: string) => {
     const { user, tracking } = this.props;
     if (mode === ADD_MODE.bulk) {
       this.trackUserEvent('partnerships.submerchant.add.product_group.multiple');
@@ -324,7 +338,7 @@ class AddMerchant extends Component {
     return '';
   };
 
-  trackUserEvent = (eventName, properties = {}) => {
+  trackUserEvent = (eventName: string, properties = {}) => {
     const { user, tracking, source } = this.props;
     const productGroup = this.getCurrentProduct();
     tracking?.trackEvent(
@@ -356,19 +370,19 @@ class AddMerchant extends Component {
     this.setState((prevState) => ({ step: prevState.step - 1 }));
   };
 
-  isNumber = (str) => {
+  isNumber = (str: string) => {
     const pattern = /^\d+$/;
     return pattern.test(str);
   };
 
-  optionalMobileValidator = (value) => {
+  optionalMobileValidator = (value: string | number) => {
     if (value) {
       if (isMobile(value)) return undefined;
       else return 'Invalid Contact';
     } else return undefined;
   };
 
-  handleFormChange = (e) => {
+  handleFormChange = (e: ReduxFormEvent) => {
     let { merchantName, merchantEmail, merchantContact } = this.state;
     const { user } = this.props;
     const { name: FieldName, value } = e.target;
@@ -412,17 +426,7 @@ class AddMerchant extends Component {
     });
   };
 
-  handleFormFocus = (e) => {
-    const { name } = e.target;
-    const { step } = this.state;
-    if (step === 2) {
-      this.trackUserEvent('partnerships.submerchant.add.product_group.single.action', {
-        action: name,
-      });
-    }
-  };
-
-  handleFormFocus = (e) => {
+  handleFormFocus = (e: ReduxFormEvent) => {
     const { name } = e.target;
     this.trackUserEvent('partnerships.submerchant.add.product_group.single.action', {
       action: name,
@@ -496,8 +500,7 @@ class AddMerchant extends Component {
       merchantContact,
     } = this.state;
     const partnerID = user?.id;
-    const emailMandatory = isEmailMandatory(user);
-    const emailValidators = emailMandatory ? [required(), email()] : [];
+    const emailValidators = isEmailMandatory(user) ? [required(), email()] : [];
     const accountNameValidators = user?.isMerchantValidation
       ? [required(), name(), minLength(4), maxLength(255)]
       : [required()];
@@ -633,20 +636,20 @@ class AddMerchant extends Component {
 
                     {/* Merchant Email */}
                     <div className="form-group">
-                      <label className={emailMandatory ? 'label-required' : ''}>
+                      <label className={isEmailMandatory(user) ? 'label-required' : ''}>
                         Email Address
                       </label>
                       <Field
                         name="email"
                         component={InputField}
                         validate={emailValidators}
-                        placeholder={emailMandatory ? "Affiliate's email id" : 'Optional'}
+                        placeholder={isEmailMandatory(user) ? "Affiliate's email id" : 'Optional'}
                         className="form-control"
                         onChange={this.handleFormChange}
                         onFocus={this.handleFormFocus}
                       />
 
-                      {!emailMandatory && (
+                      {!isEmailMandatory(user) && (
                         <span className="help-block">
                           If no email is provided, your email will be mapped as the registered email
                           ID of this merchant.
@@ -776,7 +779,7 @@ function isEmailMandatory(user) {
   return !user.isPartner('fully_managed');
 }
 
-export default compose(
+export default compose<ComponentType<AddMerchantPropsT>>(
   rTracking(() => window.rzpQ.component('AddMerchant')),
   withRouter,
   connect((state) => ({ ...state.session, isMobileResolution: state.app.isMobileResolution }), {
