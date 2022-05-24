@@ -500,4 +500,7 @@ final class RazorxTreatment
 
     //Experiment to validate Urls, emails, html tags inclusions in Linked Account name, business_name
     public const URL_VALIDATION_FOR_LINKED_ACCOUNT_NAME = 'url_validation_for_linked_account_name';
+
+    // Experiment to control sync/async call on scrooge
+    public const SCROOGE_SYNC_CALL = 'scrooge_sync_call';
 }
