@@ -725,6 +725,15 @@ class UserController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
+    public function postSetPassword()
+    {
+        $input = Input::all();
+
+        list($error, $data) = (new User\Service)->postSetPassword($input);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
     public function post2faOtp()
     {
         $input = Input::all();

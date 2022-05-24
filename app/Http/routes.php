@@ -97,6 +97,7 @@ Route::group(['middleware' => ['web']], function () {
         Route::post('/2fa/otp-verify', 'UserController@postSetup2faVerifyOtp')->name('user_2fa_otp_verify');
         Route::post('/2fa', 'userController@post2faOtp')->name('user_2fa');
         Route::patch('/2fa/contact', 'UserController@postUpdate2faContact')->name('user_2fa_contact');
+        Route::patch('/password', 'UserController@postSetPassword')->name('user_set_password');
         Route::post('/2fa/otp-resend', 'UserController@postResendOtp')->name('user_2fa_otp_resned');
         Route::get('/session', 'UserController@getSessionData')->middleware(['auth:user'])->name('user_session');
         Route::get('/identifier/{client_id}', 'UserController@getIdentityToken')->middleware(['auth:user'])->name('user_identity');

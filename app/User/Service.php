@@ -427,6 +427,19 @@ class Service extends Base\Service
         return $this->requestApiWithBasicSession($input, 'users/2fa_setup/contact_mobile', 'PATCH');
     }
 
+    public function postSetPassword(array $input)
+    {
+        $userIdFromSession = Session::get('user_id', "");
+
+        $logged_in_via = Session::get('logged_in_via', null);
+
+        $options['headers']['X-Dashboard-User-Id'] = $userIdFromSession;
+
+        list($error, $genericUser) =  $this->loginOnApiOnRoute($input,'users/password', 'PATCH', $options);
+
+        return $this->handleLoginResponse($error, $genericUser, $logged_in_via);
+    }
+
     public function post2faOtp(array $input)
     {
         $request = new \App\Admin\ApiRequestAny();
