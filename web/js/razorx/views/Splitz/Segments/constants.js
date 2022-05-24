@@ -13,3 +13,4 @@ export const SEGMENT_UPLOAD_URL = '/makeapicall/splitz/segment/upload';
 export const SEGMENT_EVALUATE_IN_BLOOM = 'segment.v1.SegmentAPI/EvaluateInBloom';
 
 export const SEGMENT_DELETE = 'segment.v1.SegmentAPI/Delete';
+export const SEGMENT_LIST = 'segment.v1.SegmentAPI/List';
