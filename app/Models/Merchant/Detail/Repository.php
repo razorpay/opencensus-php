@@ -412,12 +412,12 @@ class Repository extends Base\Repository
             ->toArray();
     }
 
-    public function filterNullFieldStatusMerchants(string $entityName, int $from, int $to): array
+    public function filterNullAndInitiatedFieldStatusMerchants(string $entityName, int $from, int $to): array
     {
         return $this->newQueryWithConnection($this->getSlaveConnection())
             ->select(Entity::MERCHANT_ID)
             ->whereBetween(Entity::UPDATED_AT, [$from, $to])
-            ->WhereNull($entityName)
+            ->whereRaw("$entityName is null or $entityName='initiated'")
             ->get()
             ->pluck(Entity::MERCHANT_ID)
             ->toArray();

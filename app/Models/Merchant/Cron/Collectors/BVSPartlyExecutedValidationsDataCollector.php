@@ -16,64 +16,102 @@ class BVSPartlyExecutedValidationsDataCollector extends TimeBoundDbDataCollector
     protected function collectDataWithinInterval($startTime, $endTime): CollectorDto
     {
         $this->app['trace']->info(TraceCode::CRON_ATTEMPT_STARTED, [
-            'args'                  => $this->args,
-            'start_time'            => $startTime,
-            'end_time'              => $endTime
+            'args'       => $this->args,
+            'start_time' => $startTime,
+            'end_time'   => $endTime
         ]);
+
+        $partlyProcessedValidations = [];
 
         // iterate over each table entity pair and create a list of validation id's whose status
         // has not been yet updated
-        $partlyProcessedValidations = [];
         foreach (Constant::ARTEFACT_STATUS_ATTRIBUTE_MAPPING as $artefactIdentifier => $tableNameFieldName)
         {
             $tableName = $tableNameFieldName[0];
+
             // TODO: Support Merchant Verification Table.
+
             if ($tableName === TABLE::MERCHANT_DETAIL)
             {
                 $fieldName = $tableNameFieldName[1];
+
                 $this->app['trace']->info(TraceCode::CRON_DATA_COLLECTOR_TRACE, [
-                    'fieldName'  => $fieldName,
+                    'fieldName'         => $fieldName,
+                    'args'              => $this->args,
                     'time_before_query' => Carbon::now(),
                 ]);
+
                 // list of merchant ids in the past 24 hours with entity status as null
-                $merchantIds = $this->repo->merchant_detail->filterNullFieldStatusMerchants($fieldName, $startTime, $endTime);
+                $merchantIds = $this->repo->merchant_detail->filterNullAndInitiatedFieldStatusMerchants($fieldName, $startTime, $endTime);
+
                 $this->app['trace']->info(TraceCode::CRON_DATA_COLLECTOR_TRACE, [
-                    '$merchantIds'  => count($merchantIds),
+                    '$merchantIds'     => count($merchantIds),
+                    'args'             => $this->args,
                     'time_after_query' => Carbon::now(),
                 ]);
+
                 $artefactIdentifierArr = (explode("-", $artefactIdentifier));
-                $artefact_type   = $artefactIdentifierArr[0];
-                $validation_unit = $artefactIdentifierArr[1];
+                $artefact_type         = $artefactIdentifierArr[0];
+                $validation_unit       = $artefactIdentifierArr[1];
+
                 // for each of the merchant id, find the corresponding validation record
                 foreach ($merchantIds as $merchantId)
                 {
-                    $validation = $this->repo->bvs_validation->getLatestValidationForArtefactAndValidationUnit($merchantId,
-                        $artefact_type, $validation_unit);
-                    // if record not found ignore
-                    if (empty($validation))
+                    if ($fieldName === \RZP\Models\Merchant\Detail\Entity::POA_VERIFICATION_STATUS)
                     {
-                        continue;
+                        $validations = $this->repo->bvs_validation->getValidationsForArtefactAndValidationUnit($merchantId,
+                                                                                                               $artefact_type, $validation_unit);
+                        foreach ($validations as $validation)
+                        {
+                            // if record not found ignore
+                            if (empty($validation))
+                            {
+                                continue;
+                            }
+
+                            $validation_status = $validation[BvsValidationConstants::STATUS];
+
+                            // we only push partly processed validations
+                            if ($validation_status != BvsValidationConstants::CAPTURED)
+                            {
+                                array_push($partlyProcessedValidations, $validation);
+                            }
+                        }
                     }
-                    $validation_status = $validation[BvsValidationConstants::STATUS];
-                    // we only push partly processed validations
-                    if ($validation_status != BvsValidationConstants::CAPTURED)
+                    else
                     {
-                        array_push($partlyProcessedValidations, $validation);
+                        $validation = $this->repo->bvs_validation->getLatestValidationForArtefactAndValidationUnit($merchantId, $artefact_type, $validation_unit);
+                        // if record not found ignore
+                        if (empty($validation))
+                        {
+                            continue;
+                        }
+
+                        $validation_status = $validation[BvsValidationConstants::STATUS];
+
+                        // we only push partly processed validations
+                        if ($validation_status != BvsValidationConstants::CAPTURED)
+                        {
+                            array_push($partlyProcessedValidations, $validation);
+                        }
                     }
+
+
                 }
             }
         }
+
         return CollectorDto::create($partlyProcessedValidations);
     }
 
-    protected function getStartInterval() : int
+    protected function getStartInterval(): int
     {
-        return $this->lastCronTime;
+        return $this->lastCronTime - 300;
     }
 
-    protected function getEndInterval() : int
+    protected function getEndInterval(): int
     {
-        return $this->cronStartTime;
+        return $this->cronStartTime-300;
     }
 
 }

@@ -75,6 +75,17 @@ class BvsAction extends BaseAction
 
                     continue;
                 }
+
+                catch (\Exception $e)
+                {
+                    $this->app['trace']->traceException(
+                        $e,
+                        null,
+                        TraceCode::CAPTURED_VALIDATIONS_PROCESS_FAILED,
+                        [
+                            "validation" => $validation,
+                        ]);
+                }
                 //if validation status fetched from bvs is success or failed then process the validation
                 if (empty($response->getStatus()) === false and
                     ($response->getStatus() === 'failed' or

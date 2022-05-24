@@ -203,6 +203,34 @@ class CoreTest extends TestCase
         $this->assertEquals(BvsValidationConstants::VERIFIED, $merchant->getAttribute(Entity::POI_VERIFICATION_STATUS));
     }
 
+    public function testBvsPartlyExecutedValidationProcessForPOIValidationInitiated()
+    {
+        $this->createAndFetchMocks();
+        // set poi_verification_status as null and validation status as success
+        $fixtures = $this->createAndFetchFixtures([
+                                                      Entity::POI_VERIFICATION_STATUS => 'initiated',
+                                                  ],[],[
+                                                      BVSConstants::ARTEFACT_TYPE     => BVSConstants::PERSONAL_PAN,
+                                                      BVSConstants::VALIDATION_UNIT   => BvsValidationConstants::IDENTIFIER,
+                                                      BVSEntity::VALIDATION_STATUS => BvsValidationConstants::SUCCESS
+                                                  ]);
+
+        $merchantDetail = $fixtures['merchant_detail'];
+        $bvs_validation = $fixtures['bvsValidation'];
+
+        $merchantId = $merchantDetail->getMerchantId();
+
+        (new CronJobHandler\Core())->handleCron(CronConstants::BVS_PARTLY_EXECUTED_VALIDATION_CRON_JOB, [
+            "start_time" => Carbon::now()->subDecade()->getTimestamp(),
+            "end_time"   => Carbon::now()->getTimestamp(),
+        ]);
+
+        $bvs_validation = $this->repo->bvs_validation->findOrFail($bvs_validation->getValidationId());
+        $this->assertEquals(BvsValidationConstants::SUCCESS, $bvs_validation->getValidationStatus());
+        $merchant = $this->repo->merchant_detail->findOrFail($merchantId);
+        $this->assertEquals(BvsValidationConstants::VERIFIED, $merchant->getAttribute(Entity::POI_VERIFICATION_STATUS));
+    }
+
     public function testBvsPartlyExecutedValidationProcessForPOIValidationFailure()
     {
         $this->createAndFetchMocks();

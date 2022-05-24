@@ -31,11 +31,11 @@ class BvsDataCollector extends TimeBoundDbDataCollector
 
     protected function getStartInterval() : int
     {
-        return $this->lastCronTime;
+        return $this->lastCronTime-300;
     }
 
     protected function getEndInterval() : int
     {
-        return $this->cronStartTime;
+        return $this->cronStartTime-300;
     }
 }
