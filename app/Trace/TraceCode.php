@@ -18,7 +18,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TERMINAL_SERVICE_PREVIOUS_STATUS_RESPONSE             = 'TERMINAL_SERVICE_PREVIOUS_STATUS_RESPONSE';
     const HTTP_REQUEST_RESPONSE_SIZE                            = 'HTTP_REQUEST_RESPONSE_SIZE';
 
-    const TOKEN_REQUESTOR_CARD_NUMBER_DECRYPTION                = 'TOKEN_REQUESTOR_CARD_NUMBER_DECRYPTION';
+    const CARD_NUMBER_DECRYPTION                                = 'CARD_NUMBER_DECRYPTION';
 
     const COI_EXPERIMENT                                        = 'COI_EXPERIMENT';
 

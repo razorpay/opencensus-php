@@ -32,6 +32,8 @@ use RZP\Models\CardMandate\CardMandateNotification;
 
 class Service extends Base\Service
 {
+    use Card\InputDecryptionTrait;
+
     const CREATE_GLOBAL_TOKEN_CRON_KEY = 'CREATE_GLOBAL_TOKEN_CRON_KEY';
 
     protected $core;
@@ -552,44 +554,6 @@ class Service extends Base\Service
         return $token->toArrayPublic();
     }
 
-    public function decryptCardNumberIfApplicable(& $input)
-    {
-        if (empty($input['encrypted_number']) === true)
-        {
-            return;
-        }
-
-        $this->trace->info(TraceCode::TOKEN_REQUESTOR_CARD_NUMBER_DECRYPTION, [$input["encrypted_number"]]);
-
-        try
-        {
-            $params = [
-                AESEncryption::MODE => AES::MODE_CBC,
-                AESEncryption::IV => $this->app['config']->get('applications.tokenisation.flipkart_secure_IV'),
-                AESEncryption::SECRET => $this->app['config']->get('applications.tokenisation.flipkart_secure_key'),
-            ];
-
-            $cipher = base64_decode($input["encrypted_number"]);
-
-            $Decryptor = new Encryption\AESEncryption($params);
-
-            $plainText = $Decryptor->decrypt($cipher);
-        }
-        catch (\Exception $e)
-        {
-            throw new \Exception(ErrorCode::BAD_REQUEST_DECRYPTION_FAILED);
-        }
-
-        if (empty($plainText) === true)
-        {
-            throw new \Exception(ErrorCode::BAD_REQUEST_INPUT_VALIDATION_FAILURE);
-        }
-
-        unset($input["encrypted_number"]);
-
-        $input["number"] = $plainText;
-    }
-
     // todo Rename this to createTokenAndTokenizeCard
     public function createNetworkToken($input)
     {
@@ -597,7 +561,7 @@ class Service extends Base\Service
 
         try
         {
-            $this->decryptCardNumberIfApplicable($input["card"]);
+            $this->decryptCardNumberIfApplicable($input['card']);
 
             if ($this->merchant->isFeatureEnabled(Feature\Constants::NETWORK_TOKENIZATION_LIVE) === true)
             {

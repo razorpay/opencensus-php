@@ -8078,5 +8078,24 @@ class PaymentCreateTest extends TestCase
 
        $this->makeRequestParent($request);
     }
+
+    public function testCreateEncryptedS2SPayment()
+    {
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->addFeatures(['s2s']);
+
+        $paymentArray = $this->getDefaultPaymentArray();
+
+        $paymentArray['card']['name']   = '';
+        $paymentArray['card']['encrypted_number'] = 'QIfoeA8AR7vkw0Rq9gs0btihYQ6wL9ONUNQ9cjaqAeI=';
+        unset($paymentArray['card']['number']);
+
+
+        $response = $this->doS2SPrivateAuthPayment($paymentArray);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $response);
+    }
+
 }
 

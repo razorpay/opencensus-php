@@ -100,6 +100,7 @@ class Processor
     use CardPaymentService;
     use NbPlusService;
     use UpiTrait;
+    use Card\InputDecryptionTrait;
 
 
     /**
@@ -745,6 +746,8 @@ class Processor
 
             $this->validateLavbBankPayments($input);
 
+            $this->validateAndDecryptEncryptedCardInput($input);
+
             if (($this->canRouteThroughRearchFlow($input) === true) or
                 ($this->canRouteThroughNbPlusRearchFlow($input) === true))
             {
@@ -826,6 +829,17 @@ class Processor
 
             throw $e;
         }
+    }
+
+    protected function validateAndDecryptEncryptedCardInput(& $input)
+    {
+        if  (($this->app['basicauth']->isPrivateAuth() === false) or
+            (empty($input['card']['encrypted_number']) === true))
+        {
+            return;
+        }
+
+        $this->decryptCardNumberIfApplicable($input['card']);
     }
 
     /**
