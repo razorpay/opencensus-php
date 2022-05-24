@@ -627,6 +627,39 @@ const getBankVerificationAtteemptError = (activation) => {
   return '';
 };
 
+const formatBusinessTypeOptions = ({ data }, previousSelectedBusinessType, isSourceRX = false) => {
+  const registeredBusinessTypes = data?.registered.reduce((acc, type) => {
+    // for x merchants hiding the new business type - HUF as per product requirement
+    if (isSourceRX && type?.label?.toLowerCase() === 'huf') return acc;
+    if (type.status === 'active' || previousSelectedBusinessType === type.id) {
+      acc.push({ label: type.label, name: type.id });
+    }
+    return acc;
+  }, []);
+  registeredBusinessTypes.unshift({ label: '--Select--', name: '' });
+
+  const unregisteredBusinessTypes = data?.unregistered.reduce((acc, type) => {
+    if (
+      (type.status === 'active' && type.label !== 'Individual') ||
+      previousSelectedBusinessType === type.id
+    ) {
+      acc.push({ label: type.label, name: type.id });
+    }
+    return acc;
+  }, []);
+
+  unregisteredBusinessTypes.unshift({ label: '--Select--', name: '' });
+  const defaultBusinessTypes = removeArrayDuplicatesByProp(
+    [...registeredBusinessTypes, ...unregisteredBusinessTypes],
+    'label',
+  );
+  return {
+    registeredBusinessTypes,
+    unregisteredBusinessTypes,
+    defaultBusinessTypes,
+  };
+};
+
 export {
   differentAddress,
   isUnregisteredBusiness,
@@ -672,4 +705,5 @@ export {
   canShowCustomGstinField,
   getBankVerificationAtteemptError,
   getAadhaarErrorMessage,
+  formatBusinessTypeOptions,
 };

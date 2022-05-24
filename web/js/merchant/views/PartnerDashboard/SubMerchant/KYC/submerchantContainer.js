@@ -14,6 +14,7 @@ import { setInstantActivationsTracking } from 'merchant/containers/Activation/ga
 import User from 'merchant/models/User';
 import errorService from '@razorpay/universe-utils/errorService';
 import { Teams, Ranks } from 'common/new-ui/ErrorBoundary';
+import { formatBusinessTypeOptions } from 'merchant/components/Activation/ActivationUtils';
 
 const SubmerchantActivationContainer = ({
   user,
@@ -26,6 +27,7 @@ const SubmerchantActivationContainer = ({
   const [data, setData] = useState();
   const [categories, setCategories] = useState();
   const [aovRange, setAovRange] = useState();
+  const [businessTypeOptions, setBusinessTypeOptions] = useState();
   const [clarificationReasons, setClarificationReasons] = useState();
   const [gstinDetails, setGstinDetails] = useState();
   const [submerchantUser, setSubmerchantUser] = useState(user);
@@ -110,8 +112,8 @@ const SubmerchantActivationContainer = ({
       }),
       merchantFetch('merchant/activation/business_categories'),
       !isLiteOnboarding && merchantFetch('merchant/aov-config'),
-      // eslint-disable-next-line consistent-return
-    ]).then(async ([formData, newCategories, aov_list]) => {
+      merchantFetch('merchant/onboarding/business_types'),
+    ]).then(async ([formData, newCategories, aov_list, businessTypeOptions]) => {
       const newData = formData.data;
       newCategories = newCategories && newCategories.data;
       aov_list = aov_list && aov_list.data;
@@ -131,7 +133,7 @@ const SubmerchantActivationContainer = ({
       } catch (error) {
         errorService.captureError(error, {
           tags: {
-            team: Teams.COMMON,
+            team: Teams.PARTNERSHIP,
           },
           rank: Ranks.P2,
         });
@@ -157,7 +159,7 @@ const SubmerchantActivationContainer = ({
         } catch (error) {
           errorService.captureError(error, {
             tags: {
-              team: Teams.COMMON,
+              team: Teams.PARTNERSHIP,
             },
             rank: Ranks.P2,
           });
@@ -168,6 +170,9 @@ const SubmerchantActivationContainer = ({
       updateSubmerchantUser(newData);
       setCategories(newCategories);
       setAovRange(aov_list);
+      setBusinessTypeOptions(
+        formatBusinessTypeOptions(businessTypeOptions, newData.business_type, false),
+      );
       setGstinDetails(newGstinDetails);
       setData(newData);
       return [newData, newCategories];
@@ -237,6 +242,7 @@ const SubmerchantActivationContainer = ({
     gstinDetails,
     setActivationFormLoadingState,
     isActivationFormLoading,
+    businessTypeOptions,
   };
   const isLoading = !data;
   // `onClose` is passed only when Modal is to be opened. In case of Account Details, onClose is passed.
