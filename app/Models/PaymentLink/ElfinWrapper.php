@@ -272,11 +272,23 @@ final class ElfinWrapper
             return;
         }
 
+        $mode = array_get($gimliResponse, 'url_aliases.0.metadata.mode');
+
+        if(empty($mode) === true)
+        {
+            $this->trace->info(TraceCode::NOCODE_CUSTOM_URL_UPSERT_FAILED, [
+                'Mode not found',
+                $gimliResponse
+            ]);
+
+            return;
+        }
+
+        $this->app->instance('rzp.mode', $mode);
+
         $this->trace->info(TraceCode::NOCODE_CUSTOM_URL_UPSERT_QUEUED, $gimliResponse);
 
-        $this->app->instance('rzp.mode', Mode::LIVE);
-
-        PaymentPageProcessor::dispatch(Mode::LIVE, [
+        PaymentPageProcessor::dispatch($mode, [
             'event'             => PaymentPageProcessor::NOCODE_CUSTOM_URL_UPSERT_FROM_HOSTED_FLOW,
             'gimli_response'    => $gimliResponse,
         ]);

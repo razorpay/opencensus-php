@@ -6,6 +6,7 @@ use View;
 use Request;
 use ApiResponse;
 use RZP\Trace\Tracer;
+use RZP\Constants\Mode;
 use RZP\Constants\Entity as E;
 use Illuminate\Http\Request  as CurrentRequest;
 use RZP\Error\ErrorCode;
@@ -200,17 +201,6 @@ class PaymentLinkController extends Controller
         if ($slugMetadata === null)
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
-        }
-
-        $slugViewType = array_get($slugMetadata, Entity::VIEW_TYPE);
-
-        if (($slugMetadata['entity'] === E::PAYMENT_LINK) and
-            ($slugViewType === ViewType::PAYMENT_HANDLE) and
-            (key_exists('id', $slugMetadata) === false))
-        {
-            $payload = $this->service()->getPaymentHandlePreviewPage($slug, $slugMetadata[Entity::MERCHANT_ID]);
-
-            return View::make('payment_handle.hosted_with_udf',['data' => $payload]);
         }
 
         // Sets api's mode & invokes view()

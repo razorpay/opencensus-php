@@ -463,6 +463,8 @@ class Service extends Base\Service
     {
         $this->trace->count(Metric::PAYMENT_HANDLE_CREATION_REQUEST);
 
+        $this->trace->info(TraceCode::PAYMENT_HANDLE_CREATE_L1_ACTIVATION_START);
+
         $startTime = millitime();
 
         $prevMode = null;
@@ -471,31 +473,15 @@ class Service extends Base\Service
 
         try
         {
-            $prevBasicAuth = $this->getPrevAuthAndSetVariables($merchantId);
-
             $prevMode = $this->mode;
 
-            $input = $this->getDefaultValuesPaymentHandle();
+            $prevBasicAuth = $this->getPrevAuthAndSetVariables($merchantId);
 
-            $validator = (new Validator);
+            $ph = $this->createPaymentHandleV2();
 
-            $validator->validateInput('createPaymentHandle',$input);
-
-            $validator->validatePaymentHandleCreation($input, $this->merchant);
-
-            $this->modifyInputForPaymentHandle($input);
-
-            Tracer::inSpan(['name' => Constants::HT_PH_CREATE_REQUEST_PRECREATE], function() use($input)
-            {
-                $this->core->precreatePaymentHandle($this->merchant, $input);
-            });
-
-            $response = Tracer::inSpan(['name' => Constants::HT_PH_CREATE_REQUEST_CREATE], function() use($input)
-            {
-                return $this->core->createPaymentHandle($input, $this->merchant);
-            });
-
-            $modifiedResponse = $this->modifyResponseForPaymentHandle($response);
+            $this->trace->info(TraceCode::PAYMENT_HANDLE_CREATE_L1_ACTIVATION_COMPLETED, [
+                Entity::HANDLE       => $ph[Entity::SLUG],
+            ]);
 
             $this->trace->count(Metric::PAYMENT_HANDLE_CREATION_SUCCESSFUL_COUNT);
         }
@@ -605,9 +591,7 @@ class Service extends Base\Service
     {
         (new Validator)->isValidPaymentHandle($slug);
 
-        $gimli  = $this->app['elfin']->driver('gimli');
-
-        return $gimli->expand($slug) !== null;
+        return $this->core->slugExists($slug);
     }
 
     public function createPaymentHandleV2(): array
@@ -620,57 +604,32 @@ class Service extends Base\Service
             );
         }
 
-        try
+        $this->trace->info(TraceCode::PAYMENT_HANDLE_CREATE_START);
+
+        $validator = new Validator();
+
+        $validator->validatePaymentHandleCreatedForMerchant($this->merchant);
+
+        $input = $this->core->getDefaultValuesPaymentHandle();
+
+        //fetching payment handle if pre-create api was called before this api
+        $precreatedHandle = $this->core->getHandleFromTestMode();
+
+        // ie precreate was not called
+        if (empty($precreatedHandle) === false)
         {
-            $this->trace->count(Metric::PAYMENT_HANDLE_CREATION_REQUEST);
-
-            $startTime = millitime();
-
-            $validator = new Validator();
-
-            $validator->validatePaymentHandleCreatedForMerchant($this->merchant);
-
-            $precreatedHandle = $this->core->getHandleFromTestMode();
-
-            $input = $this->getDefaultValuesPaymentHandle();
-
-            // ie precreate was not called on payment handle
-            if (empty($precreatedHandle) === true)
-            {
-                $ph = $this->core->precreatePaymentHandle($this->merchant, $input);
-
-                // edit here
-                $input[Entity::SLUG] = $ph[Entity::SLUG];
-            }
-            else
-            {
-                $input[Entity::SLUG] = $precreatedHandle;
-            }
-
-            $this->modifyInputForPaymentHandle($input);
-
-            // TODO: change this with validatepaymenthandle later
-
-            $validator->isValidPaymentHandle($input[Entity::SLUG]);
-
-            $paymentHandle = $this->core->createPaymentHandle($input, $this->merchant);
-
-            $paymentHandle = $this->modifyResponseForPaymentHandle($paymentHandle);
-
-            $this->trace->count(Metric::PAYMENT_HANDLE_CREATION_SUCCESSFUL_COUNT);
-
-            $this->trace->histogram(Metric::PAYMENT_HANDLE_CREATION_TIME_TAKEN, millitime() - $startTime);
-
-            return $paymentHandle;
+            $input[Entity::SLUG] = $precreatedHandle;
         }
-        catch(\Exception $e)
-        {
-            $this->trace->count(Metric::PAYMENT_HANDLE_CREATION_FAILED_COUNT);
 
-            $this->trace->traceException($e, Trace::ERROR, TraceCode::PAYMENT_HANDLE_CREATION_FAILED);
+        $validator->isValidPaymentHandle($input[Entity::SLUG]);
 
-            throw $e;
-        }
+        $paymentHandle = $this->core->createPaymentHandle($input, $this->merchant);
+
+        $paymentHandle = $this->core->modifyResponseForPaymentHandle($paymentHandle);
+
+        $this->trace->info(TraceCode::PAYMENT_HANDLE_CREATE_COMPLETED);
+
+        return $paymentHandle;
     }
 
     public function getPaymentHandlePreviewPage(string $slug, string $merchantId)
@@ -686,7 +645,7 @@ class Service extends Base\Service
 
         $input[Entity::TITLE] = $merchant->getBillingLabel();
 
-        $this->modifyInputForPaymentHandle($input);
+        $this->core->modifyInputForPaymentHandle($input);
 
         $viewPayload = $this->core->getAttributesForPaymentHandlePreview($input, $merchant, $slug);
 
@@ -749,59 +708,6 @@ class Service extends Base\Service
         }
     }
 
-    protected function modifyInputForPaymentHandle(array & $input)
-    {
-        // adding currency parameter
-        $input[Entity::CURRENCY] =  empty($input[Entity::CURRENCY]) ? 'INR' : $input[Entity::CURRENCY];
-
-        // adding empty payment_page_items
-        $input[Entity::PAYMENT_PAGE_ITEMS] =  [
-                [
-                    PPI\Entity::ITEM     => [
-                        LineItem\Entity::NAME     => ENTITY::AMOUNT,
-                        'currency' => $input[Entity::CURRENCY],
-                ],
-                    PPI\Entity::SETTINGS   => [
-                        PPI\Entity::POSITION     => 0
-                ],
-                    PPI\Entity::MANDATORY  => true,
-                    PPI\Entity::MIN_AMOUNT => 100
-            ]
-        ];
-
-        $input[ENTITY::SETTINGS]  = [
-            ENTITY::UDF_SCHEMA  => "[{\"name\":\"comment\",\"title\":\"Comment\",\"required\":true,\"type\":\"string\",\"options\":{},\"settings\":{\"position\":1}}]"
-        ];
-
-        $input[ENTITY::VIEW_TYPE]  = ViewType::PAYMENT_HANDLE;
-    }
-
-    protected function modifyResponseForPaymentHandle(Entity $response) : array
-    {
-        $modifiedResponse = [];
-
-        $modifiedResponse[ENTITY::TITLE] = $response[ENTITY::TITLE];
-
-        $modifiedResponse[ENTITY::ID]    = $response->getPublicId();
-
-        $modifiedResponse[ENTITY::SLUG]  = $response->getSlugFromShortUrl();
-
-        $modifiedResponse[ENTITY::URL]   = $response->getHandleUrl();
-
-        return $modifiedResponse;
-    }
-
-    private function getDefaultValuesPaymentHandle(): array
-    {
-        $input = [];
-
-        $input[Entity::SLUG] = $this->core->getPaymentHandleForInput($this->merchant);
-
-        $input[Entity::TITLE] = $this->core->getTitleForPaymentHandle($this->merchant);
-
-        return $input;
-    }
-
     protected function getPrevAuthAndSetVariables(string $merchantId)
     {
         $prevBasicAuth = $this->app['basicauth'];
@@ -814,6 +720,8 @@ class Service extends Base\Service
 
         $this->app['basicauth']->setMerchant($merchant);
 
+        $this->mode = Mode::LIVE;
+
         $this->merchant = $merchant;
 
         $this->core = new Core;
@@ -821,20 +729,21 @@ class Service extends Base\Service
         return $prevBasicAuth;
     }
 
+    /**
+     * @return array
+     * @throws BadRequestValidationFailureException
+     */
     public function precreatePaymentHandle(): array
     {
-        if($this->mode === Mode::LIVE)
-        {
-            throw new BadRequestValidationFailureException(
-                'Payment Handle can be pre-created in test mode only.'
-            );
-        }
+        $this->trace->info(
+            TraceCode::PAYMENT_HANDLE_PRECREATE_STARTED,
+            [
+                Entity::MERCHANT_ID => $this->merchant->getId()
+            ]);
 
-        (new Validator)->validatePaymentHandleExistsForMerchant($this->merchant);
+        (new Validator)->validatePaymentHandlePrecreateAndMode($this->merchant);
 
-        $input = $this->getDefaultValuesPaymentHandle();
-
-        $paymentHandle = $this->core->precreatePaymentHandle($this->merchant, $input);
+        $paymentHandle = $this->core->precreatePaymentHandle($this->merchant);
 
         return $paymentHandle;
     }
@@ -852,8 +761,7 @@ class Service extends Base\Service
         return Tracer::inSpan(['name' => Constants::HT_PP_HOSTED_SLUG_DATA], function() use ($slug, $host) {
             $domain = null;
 
-            if (empty($host) !== true)
-            {
+            if (empty($host) !== true) {
                 $domain = NocodeCustomUrl\Entity::determineDomainFromUrl($host);
             }
 

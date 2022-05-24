@@ -69,7 +69,7 @@ $is_error_view              = isset($request_params['error']['description']);
           paymentData: data.payment_link,
           environment: data.environment,
           payment_handle_amount: data.payment_handle_amount,
-          is_preview: data.is_preview,
+          is_preview: data.is_test_mode,
           keyless_header: data.keyless_header,
         };
     </script>

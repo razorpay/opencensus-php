@@ -6,6 +6,7 @@ use Carbon\Carbon;
 
 use App;
 use RZP\Base;
+use RZP\Constants\Mode;
 use RZP\Models\Currency\Core as CurrencyCore;
 use RZP\Models\Invoice;
 use RZP\Models\Payment;
@@ -13,6 +14,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Settings;
 use RZP\Models\Merchant;
 use RZP\Models\LineItem;
+use RZP\Services\Elfin\Service as ElfinService;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Models\Currency\Currency;
@@ -567,13 +569,9 @@ class Validator extends Base\Validator
 
     public function validateSlugUnique($slug)
     {
-        $app          = App::getFacadeRoot();
+        $exists = (new Core)->slugExists($slug);
 
-        $gimli        = $app['elfin']->driver('gimli');
-
-        $slugMetadata = $gimli->expandAndGetMetadata($slug);
-
-        if ($slugMetadata !== null)
+        if($exists === true)
         {
             throw new BadRequestValidationFailureException(
                 'Slug already taken.'
@@ -676,16 +674,34 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validatePaymentHandleExistsForMerchant(Merchant\Entity $merchant)
+    public function validatePaymentHandlePrecreateAndMode(Merchant\Entity $merchant)
     {
+        $app = App::getFacadeRoot();
+
+        $mode = $app['rzp.mode'];
+
+        if($mode === Mode::LIVE ||
+            $merchant->isActivated() === true)
+        {
+            throw new BadRequestValidationFailureException(
+                'Payment Handle can be pre-created in test mode only and merchant is not activated.',
+                null,
+                [
+                    Entity::MERCHANT_ID  => $merchant->getId()
+                ]
+            );
+        }
+
         $merchantSetting = Settings\Accessor::for($merchant, Settings\Module::PAYMENT_LINK)->all();
 
         if (!empty($merchantSetting) === true && !empty($merchantSetting[ENTITY::DEFAULT_PAYMENT_HANDLE]) === true)
         {
             throw new BadRequestValidationFailureException(
-                'Payment Handle already exists for this merchant',
+                'Payment Handle already pre-created for this merchant',
                 null,
-                null);
+                [
+                    Entity::MERCHANT_ID  => $merchant->getId()
+                ]);
         }
     }
 

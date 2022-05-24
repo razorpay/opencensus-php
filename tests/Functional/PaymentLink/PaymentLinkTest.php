@@ -1946,7 +1946,7 @@ class PaymentLinkTest extends TestCase
         $this->startTest();
     }
 
-    public function testPaymentHandleCreation()
+    public function testPaymentHandleCreationL1Activation()
     {
         $this->activateMerchantToTriggerPaymentHandleCreation();
 
@@ -2060,7 +2060,7 @@ class PaymentLinkTest extends TestCase
 
     public function testPaymentHandleUpdate()
     {
-        $this->testPaymentHandleCreation();
+        $this->testPaymentHandleCreationApi();
 
         $pl = $this->getDbLastEntity('payment_link', 'live');
 
@@ -2172,9 +2172,7 @@ class PaymentLinkTest extends TestCase
     {
         $this->activateMerchantToTriggerPaymentHandleCreation('ANC Corp');
 
-        $this->ba->proxyAuth('rzp_live_10000000000000');
-
-        $this->app->instance('mode', 'live');
+        $this->ba->proxyAuthLive();
 
         // activating merchant to make live request
         $this->fixtures->merchant->activate('10000000000000');

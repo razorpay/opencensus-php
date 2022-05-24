@@ -85,6 +85,7 @@ class Entity extends Base\PublicEntity
     const EMAIL             = 'email';
     const USER              = 'user';
     const SLUG              = 'slug';
+    const DOMAIN            = 'domain';
     const VIDEO             = 'video';
     const VALUE             = 'value';
     const VIDEO_URL         = 'video_url';

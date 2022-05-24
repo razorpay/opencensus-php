@@ -14,6 +14,7 @@ use RZP\Models\Base;
 use RZP\Models\Item;
 use RZP\Models\User;
 use RZP\Models\Order;
+use RZP\Services\Elfin\Service as ElfinService;
 use RZP\Trace\Tracer;
 use RZP\Models\Invoice;
 use RZP\Diag\EventCode;
@@ -40,7 +41,9 @@ use RZP\Models\Base\UniqueIdEntity;
 use RZP\Services\MerchantRiskClient;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Exception\BadRequestException;
+use RZP\Models\PaymentLink\ElfinWrapper;
 use RZP\Models\PaymentLink\Template\UdfSchema;
+use RZP\Models\PaymentLink\PaymentPageItem as PPI;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\PaymentLink\Template\Hosted as HostedTemplate;
@@ -187,19 +190,28 @@ class Core extends Base\Core
             TraceCode::PAYMENT_HANDLE_PAYMENT_PAGE_CREATED,
             [
                 Entity::SLUG      => $input[Entity::SLUG],
-                Entity::MERCHANT_ID => $this->merchant->getPublicId(),
                 "payment_page" =>  $paymentPage
             ]);
 
         return $paymentPage;
     }
 
+    /**
+     * @param array $input
+     * @return array
+     * @throws BadRequestValidationFailureException
+     */
     public function updatePaymentHandle(array $input): array
     {
-        $merchantSettings = Settings\Accessor::for($this->merchant, Settings\Module::PAYMENT_LINK)
-            ->all();
+        [$handleOld, $handlePageId] = $this->getPaymentHandleAndPaymentPageIDLinkedWithIt();
 
-        $handleOld = array_get($merchantSettings, Entity::DEFAULT_PAYMENT_HANDLE . '.' . Entity::DEFAULT_PAYMENT_HANDLE);
+        if($handleOld === $input[Entity::SLUG] || $this->slugExists($input[Entity::SLUG]) === true)
+        {
+            throw new BadRequestValidationFailureException(
+                'Payment Handle already taken.');
+        }
+
+        $handleNew = $input[Entity::SLUG];
 
         if(empty($handleOld) === true)
         {
@@ -207,9 +219,18 @@ class Core extends Base\Core
                 'Payment Handle does not exists for this merchant.');
         }
 
-        $handlePageId = array_get($merchantSettings, Entity::DEFAULT_PAYMENT_HANDLE . '.' . Entity::DEFAULT_PAYMENT_HANDLE_PAGE_ID);
+        $paymentLink = $this->repo->payment_link->findByPublicIdAndMerchant(
+            $handlePageId,
+            $this->merchant);
 
-        $this->createGimliEntryForHandle($input[Entity::SLUG], $this->merchant->getPublicId(), $handlePageId);
+        /**
+         * previous payment handle will be deactivated in updating the payment
+         * handle
+         */
+        $this->repo->transaction(function() use ($paymentLink, $handleNew)
+        {
+            $this->createCustomUrlForPaymentHandle($paymentLink, $handleNew);
+        });
 
         $this->upsertDefaultPaymentHandleForMerchant($input[Entity::SLUG], $handlePageId);
 
@@ -227,10 +248,6 @@ class Core extends Base\Core
         {
             return $response;
         }
-
-        $paymentLink = $this->repo->payment_link->findByPublicIdAndMerchant(
-            $handlePageId,
-            $this->merchant);
 
         $paymentLink->setShortUrl($url);
 
@@ -2825,10 +2842,7 @@ class Core extends Base\Core
     {
         $input[Entity::DEFAULT_PAYMENT_HANDLE] = $slug;
 
-        if($handlePageId !== null)
-        {
-            $input[Entity::DEFAULT_PAYMENT_HANDLE_PAGE_ID] = $handlePageId;
-        }
+        $input[Entity::DEFAULT_PAYMENT_HANDLE_PAGE_ID] = $handlePageId;
 
         $this->trace->info(TraceCode::PAYMENT_HANDLE_UPSERT_MERCHANT_SETTING, [
             Entity::SLUG   => $slug
@@ -2888,26 +2902,13 @@ class Core extends Base\Core
 
     public function slugExists(string $slug)
     {
-        $gimli  = $this->app['elfin']->driver('gimli');
+        $prevMode = $this->app['basicauth']->getMode();
 
-        return ($gimli->expand($slug) !== null);
-    }
+        $slugMetaData = $this->getSlugMetaDataForPaymentHandle($slug, $this->paymentHandleHostedBaseUrl);
 
-    public function getPlIdFromSlug(string $slug)
-    {
-        $gimli        = $this->app['elfin']->driver('gimli');
+        $this->app['basicauth']->setModeAndDbConnection($prevMode);
 
-        $slugMetadata = $gimli->expandAndGetMetadata($slug);
-
-        // Renders 404 if no metadata available(error/exception at Gimli side)
-        if ($slugMetadata === null)
-        {
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
-        }
-
-        $this->app['basicauth']->setModeAndDbConnection($slugMetadata['mode']);
-
-        return $slugMetadata['id'];
+        return (empty($slugMetaData) === false);
     }
 
     private function dispatchDedupeCall(Entity $paymentLink, Merchant\Entity $merchant)
@@ -2943,134 +2944,43 @@ class Core extends Base\Core
         }
     }
 
-    public function precreatePaymentHandle(Merchant\Entity $merchant, array $input): array
+    public function precreatePaymentHandle(Merchant\Entity $merchant): array
     {
-        $this->trace->info(
-            TraceCode::PAYMENT_HANDLE_PRECREATE_STARTED,
-            [
-                Entity::MERCHANT_ID => $merchant->getId()
-            ]);
+        $input = $this->getDefaultValuesPaymentHandle();
+
+        $url = $this->paymentHandleHostedBaseUrl . '/' . $input[Entity::SLUG];
 
         // get unique handle
         $handle = $input[Entity::SLUG];
 
-        $url = $this->paymentHandleHostedBaseUrl . '/' . $handle;
-
-        $this->createGimliEntryForHandle($handle, $merchant->getPublicId());
+        $pp = $this->createPaymentPageForPaymentHandle($input, $this->merchant);
 
         // upsert handle in merchant setting
-        $this->upsertDefaultPaymentHandleForMerchant($handle);
+        $this->upsertDefaultPaymentHandleForMerchant($input[Entity::SLUG], $pp->getPublicId());
 
         $this->trace->info(
             TraceCode::PAYMENT_HANDLE_PRECREATE_COMPLETED,
             [
-                Entity::MERCHANT_ID => $merchant->getId(),
+                Entity::MERCHANT_ID    => $merchant->getId(),
                 Entity::TITLE          => $merchant->getBillingLabel(),
                 Entity::URL            => $url,
-                Entity::SLUG           => $handle
+                Entity::SLUG           => $input[Entity::SLUG]
             ]);
 
         return [
             Entity::TITLE          => $merchant->getBillingLabel(),
             Entity::URL            => $url,
-            Entity::SLUG           => $handle
+            Entity::SLUG           => $input[Entity::SLUG]
         ];
     }
 
-    protected function createGimliEntryForHandle(string $handle, string $merchantId,string $handlePageId = null, int $retryTotal = 3)
-    {
-        // Fail: If failed to shorten the URL, do not continue with creation and fail
-        $fail = true;
-
-        // No fall back: Only use Gimli(our shortener service) and do not fall back to Bitly etc if that fails
-        $this->elfin->setNoFallback();
-
-        $params = [
-            'ptype'          => 'link',
-            'alias'          => $handle,
-            'fail_if_exists' => true,
-            'metadata'       => [
-                'mode'          => $this->mode,
-                'entity'        => E::PAYMENT_LINK,
-                'view_type'     => ViewType::PAYMENT_HANDLE,
-                'merchant_id'   => $merchantId,
-            ],
-        ];
-
-        // Gimli Metadata will not have payment page id if the handle is in precreated state
-        if($handlePageId !== null)
-        {
-            $params['metadata'][Entity::ID] = $handlePageId;
-        }
-
-        $url = $this->paymentHandleHostedBaseUrl . '/' . $handle;
-
-        $sleepTime = 0;
-
-        $retry = $retryTotal;
-
-        $shortUrl = "";
-
-        while($retry > 0)
-        {
-            try
-            {
-                $this->trace->info(TraceCode::PAYMENT_HANDLE_GIMLI_MAPPING_INITIATED, [
-                    Entity::INPUT    => $params
-                ]);
-
-                $shortUrl = Tracer::inSpan(['name' => Constants::HT_PH_SHORTEN], function() use($url, $params, $fail)
-                {
-                    return $this->elfin->shorten($url, $params, $fail);
-                });
-
-                if(empty($shortUrl) === false)
-                {
-                    $this->trace->count(Metric::PAYMENT_HANDLE_SHORTENING_SUCCESSFUL_COUNT);
-
-                    $this->trace->info(TraceCode::PAYMENT_HANDLE_GIMLI_MAPPING_CREATION_SUCCESSFUL, [
-                        Entity::SLUG        => $handle,
-                        Entity::RETRIES     => $retryTotal - $retry,
-                        Entity::SHORT_URL   => $shortUrl,
-                    ]);
-
-                    return;
-                }
-            }
-            catch (\Throwable $e)
-            {
-                $this->trace->info(TraceCode::PAYMENT_HANDLE_CREATE_GIMLI_MAPPING_RETRY,[
-                    Entity::SLUG         => $handle,
-                    Entity::RETRIES      => $retryTotal - $retry,
-                    Entity::ERROR        => $e->getMessage(),
-                    Entity::SHORT_URL    => $shortUrl
-                ]);
-            }
-
-            $retry = $retry - 1;
-
-            sleep($sleepTime);
-
-            $sleepTime = $sleepTime + 1;
-        }
-
-        $this->trace->count(Metric::PAYMENT_HANDLE_SHORTENING_UNSUCCESSFUL_COUNT);
-
-        $this->trace->info(TraceCode::PAYMENT_HANDLE_CREATE_GIMLI_MAPPING_FAILED,[
-            Entity::SLUG      => $handle,
-            Entity::SHORT_URL => $shortUrl
-        ]);
-
-        throw new BadRequestException(
-            ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
-            ViewType::PAYMENT_HANDLE,
-            [
-                Entity::SLUG      => $handle,
-                Entity::SHORT_URL => $shortUrl
-            ]
-        );
-    }
-
+    /**
+     * @param array $input
+     * @param Merchant\Entity $merchant
+     * @param bool $isPrecreate
+     *
+     * @return Entity
+     */
     protected function createPaymentPageForPaymentHandle(array $input, Merchant\Entity $merchant)
     {
         $paymentPage = (new Entity)->generateId();
@@ -3086,63 +2996,24 @@ class Core extends Base\Core
 
         $paymentPage->setShortUrl($this->paymentHandleHostedBaseUrl . '/' . $input[Entity::SLUG]);
 
-        // instead of creating a new short url, we will update the existing gimli mapping
-        // which was created in pre-create step in case of payment handle
-        $this->updateGimliMappingForHandle($input[Entity::SLUG], $paymentPage->getPublicId());
-
         Tracer::inSpan(['name' => Constants::HT_PH_CREATE_REQUEST_CREATE_PP_TRANSACTION], function() use($input, $paymentPage, $settings)
         {
             $this->repo->transaction(function () use ($paymentPage, $settings, $input) {
+
                 $this->upsertSettings($paymentPage, $settings);
 
                 $this->repo->saveOrFail($paymentPage);
 
                 $this->createPaymentPageItems($input, $paymentPage);
+
+                $this->createCustomUrlForPaymentHandle($paymentPage, $input[Entity::SLUG]);
+
             });
         });
 
         $this->trackPaymentPageCreatedEvent($paymentPage, $input);
 
         return $paymentPage;
-    }
-
-    protected function updateGimliMappingForHandle(string $handle, string $paymentPageId)
-    {
-        $gimli        = $this->app['elfin']->driver('gimli');
-
-        $newMetadata = [
-            'mode'          => $this->mode,
-            'entity'        => E::PAYMENT_LINK,
-            'view_type'     => ViewType::PAYMENT_HANDLE,
-            'merchant_id'   => $this->merchant->getId(),
-            Entity::ID      => $paymentPageId,
-        ];
-
-        $input = json_encode(['metadata' => $newMetadata]);
-
-        try
-        {
-            $this->trace->info(TraceCode::PAYMENT_HANDLE_GIMLI_MAPPING_UPDATE, [
-                Entity::HANDLE        => $handle,
-                Entity::MERCHANT_ID   =>$this->merchant->getId(),
-            ]);
-
-            Tracer::inSpan(['name' => Constants::HT_PH_GIMLI_UPDATE], function() use($input, $handle, $gimli)
-            {
-                $gimli->update($handle, $input);
-            });
-        }
-        catch (\Throwable $e)
-        {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_ERROR,
-                Entity::SLUG,
-                [
-                    Entity::SLUG         => $handle,
-                    Entity::ERROR        => $e->getMessage(),
-                    Entity::MERCHANT_ID  => $this->merchant->getId()
-                ]);
-        }
     }
 
     /**
@@ -3338,9 +3209,10 @@ class Core extends Base\Core
         Tracer::inSpan(['name' => Constants::HT_PP_NOCODE_CUSTOM_URL_UPSERT], function() use($paymentLink, $slug) {
             $customUrlCore = new NocodeCustomUrl\Core();
 
-            [$url, $params, $fail] = $this->getShortenUrlRequestParams($paymentLink, $slug);
+            [$url, $params] = $this->getShortenUrlRequestParams($paymentLink, $slug);
 
-            try {
+            try
+            {
                 $customUrlCore->upsert([
                     NocodeCustomUrl\Entity::SLUG        => $slug,
                     NocodeCustomUrl\Entity::DOMAIN      => NocodeCustomUrl\Entity::determineDomainFromUrl($url),
@@ -3365,7 +3237,7 @@ class Core extends Base\Core
      */
     private function shouldUseCustomUrlModule(Entity $paymentLink): bool
     {
-        return $paymentLink->getViewType() === ViewType::PAGE;
+        return $paymentLink->getViewType() === ViewType::PAGE || $paymentLink->getViewType() === ViewType::PAYMENT_HANDLE;
     }
 
     /**
@@ -3457,15 +3329,25 @@ class Core extends Base\Core
         ];
     }
 
+    public function getPaymentHandleForInput()
+    {
+        if(App::getFacadeRoot()->environment() === Environment::AUTOMATION ||
+            (App::getFacadeRoot()->environment() === Environment::BVT))
+        {
+            return '@' . (new Entity)->generateId()->getId();
+        }
+
+        return $this->suggestionPaymentHandle(1)[0];
+    }
+
     protected function getDefaultPHFromBillingLabel(Merchant\Entity $merchant): string
     {
         $billingLabel = $merchant->getBillingLabel();
 
-        // Remove all characters other than a-z, A-Z, 0-9 and space
+        // Remove all characters other than a-z, A-Z, 0-9
         $paymentHandle = preg_replace('/[^a-zA-Z0-9-]+/', '', $billingLabel);
 
-        // removes spaces
-        $paymentHandle = '@' . strtolower(str_replace(' ', '', $paymentHandle));
+        $paymentHandle = '@' . strtolower($paymentHandle);
 
         if(strlen($paymentHandle) > Entity::MAX_SLUG_LENGTH)
         {
@@ -3480,13 +3362,163 @@ class Core extends Base\Core
         return $paymentHandle;
     }
 
-    public function getPaymentHandleForInput()
+    protected function createCustomUrlForPaymentHandle(Entity $paymentLink, string $handle)
     {
-        if(App::getFacadeRoot()->environment() === Environment::AUTOMATION)
+        $this->trace->info(TraceCode::PAYMENT_HANDLE_UPSERTING_CUSTOM_URL,[
+            Entity::MERCHANT_ID       => $this->merchant->getId(),
+            Entity::HANDLE            => $handle
+        ]);
+
+        $customUrlCore = new NocodeCustomUrl\Core();
+
+        [$url, $params] = $this->getShortenUrlRequestParams($paymentLink, $handle);
+
+        $this->repo->transaction(function() use ($paymentLink, $handle, $customUrlCore, $params, $url)
         {
-            return '@' . (new Entity)->generateId()->getId();
+            $customUrlCore->upsert([
+                NocodeCustomUrl\Entity::SLUG        => $handle,
+                NocodeCustomUrl\Entity::DOMAIN      => NocodeCustomUrl\Entity::determineDomainFromUrl($url),
+                NocodeCustomUrl\Entity::META_DATA   => array_get($params, 'metadata', []),
+            ], $this->merchant, $paymentLink);
+        });
+    }
+
+    public function getDefaultValuesPaymentHandle(): array
+    {
+        $input = [];
+
+        $input[Entity::SLUG] = $this->getPaymentHandleForInput();
+
+        $input[Entity::TITLE] = $this->getTitleForPaymentHandle($this->merchant);
+
+        $this->modifyInputForPaymentHandle($input);
+
+        return $input;
+    }
+
+    public function modifyInputForPaymentHandle(array & $input)
+    {
+        // adding currency parameter
+        $input[Entity::CURRENCY] =  empty($input[Entity::CURRENCY]) ? 'INR' : $input[Entity::CURRENCY];
+
+        // adding empty payment_page_items
+        $input[Entity::PAYMENT_PAGE_ITEMS] =  [
+            [
+                PPI\Entity::ITEM     => [
+                    LineItem\Entity::NAME     => ENTITY::AMOUNT,
+                    'currency' => $input[Entity::CURRENCY],
+                ],
+                PPI\Entity::SETTINGS   => [
+                    PPI\Entity::POSITION     => 0
+                ],
+                PPI\Entity::MANDATORY  => true,
+                PPI\Entity::MIN_AMOUNT => 100
+            ]
+        ];
+
+        $input[ENTITY::SETTINGS]  = [
+            ENTITY::UDF_SCHEMA  => "[{\"name\":\"comment\",\"title\":\"Comment\",\"required\":true,\"type\":\"string\",\"options\":{},\"settings\":{\"position\":1}}]"
+        ];
+
+        $input[ENTITY::VIEW_TYPE]  = ViewType::PAYMENT_HANDLE;
+    }
+
+    public function modifyResponseForPaymentHandle(Entity $response) : array
+    {
+        $modifiedResponse = [];
+
+        $modifiedResponse[ENTITY::TITLE] = $response[ENTITY::TITLE];
+
+        $modifiedResponse[ENTITY::ID]    = $response->getPublicId();
+
+        $modifiedResponse[ENTITY::SLUG]  = $response->getSlugFromShortUrl();
+
+        $modifiedResponse[ENTITY::URL]   = $response->getHandleUrl();
+
+        return $modifiedResponse;
+    }
+
+    /**
+     * Returns null when Payment Handle for the merchant is in Precreate State
+     * Returns the Payment Page Id which is linked to PaymentHandle in created state
+     * @return mixed|null
+     */
+    protected function getPaymentHandleAndPaymentPageIDLinkedWithIt()
+    {
+        $merchantSettings = Settings\Accessor::for($this->merchant, Settings\Module::PAYMENT_LINK)
+            ->all();
+
+        $paymentHandle = array_get($merchantSettings, Entity::DEFAULT_PAYMENT_HANDLE . '.' . Entity::DEFAULT_PAYMENT_HANDLE);
+
+        $handlePageId= array_get($merchantSettings, Entity::DEFAULT_PAYMENT_HANDLE . '.' . Entity::DEFAULT_PAYMENT_HANDLE_PAGE_ID);
+
+        return [$paymentHandle, $handlePageId];
+    }
+
+    protected function createMockPaymentPageForPaymentHandle(): Entity
+    {
+        $paymentLinkParams = $this->getDefaultValuesPaymentHandle();
+
+        $paymentLink = (new Entity)->generateId();
+
+        $paymentLink->merchant()->associate($this->merchant);
+
+        $paymentLink->build($paymentLinkParams);
+
+        return $paymentLink;
+    }
+
+    /**
+     * Fetches the metadata despite entity being soft deleted
+     *
+     * @param string $slug
+     * @param string $host
+     * @return NocodeCustomUrl\Entity|null
+     * @throws BadRequestValidationFailureException
+     */
+    public function getSlugMetaDataForPaymentHandle(string $slug, string $host)
+    {
+        $domain = null;
+
+        $paymentHandleHost = $this->app['config']->get('app.payment_handle_hosted_base_url');
+
+        $paymentHandleDomain = NocodeCustomUrl\Entity::determineDomainFromUrl($paymentHandleHost);
+
+        if (empty($host) !== true)
+        {
+            $domain = NocodeCustomUrl\Entity::determineDomainFromUrl($host);
         }
 
-        return $this->suggestionPaymentHandle(1)[0];
+        $this->app['basicauth']->setModeAndDbConnection(Mode::LIVE);
+
+        $slugMetaData = $this
+            ->repo
+            ->nocode_custom_url
+            ->findByAttributes([
+                Entity::SLUG    => $slug,
+                Entity::DOMAIN  => $domain,
+            ], true);
+
+        if(empty($slugMetaData) === true)
+        {
+            $this->app['basicauth']->setModeAndDbConnection(Mode::TEST);
+
+            $slugMetaData = $this
+                ->repo
+                ->nocode_custom_url
+                ->findByAttributes([
+                    Entity::SLUG    => $slug,
+                    Entity::DOMAIN  => $domain,
+                ], true);
+        }
+
+        if(empty($slugMetaData) === true)
+        {
+            $gimli        = $this->app['elfin']->driver('gimli');
+
+            $slugMetaData = $gimli->expandAndGetMetadata($slug);
+        }
+
+       return $slugMetaData;
     }
 }

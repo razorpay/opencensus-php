@@ -3210,7 +3210,7 @@ return [
             'content'  => [
                 'slug' => '@updatedPaymentHandle',
                 'url'  => 'https://razorpay.me/@updatedPaymentHandle',
-                'title'=> 'Test Label 123'
+                'title'=> 'Test Merchant'
             ]
         ]
     ],
