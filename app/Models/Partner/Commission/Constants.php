@@ -4,6 +4,7 @@ namespace RZP\Models\Partner\Commission;
 
 use RZP\Models\Base;
 use RZP\Models\Merchant;
+use RZP\Models\Merchant\Detail\Status as DetailStatus;
 
 class Constants
 {
@@ -46,6 +47,18 @@ class Constants
     const PRIMARY_COMMISSION = 'primary_commission';
     const BANKING_COMMISSION = 'banking_commission';
 
+    //sms templates for Partner activation status
+    const PARTNER_ACTIVATED_TEMPLATE               = 'Partner_commission_invoice.Activated';
+    const PARTNER_UNDER_REVIEW_TEMPLATE            = 'Partner_commission_invoice.Under_review';
+    const PARTNER_NEEDS_CLARIFICATION_TEMPLATE     = 'Partner_commission_invoice.Needs_clarification';
+    const PARTNER_DEFAULT_TEMPLATE                 = 'Partner_commission_invoice.Null';
+
+    const COMMISSION_INVOICE_ISSUED_SMS_TEMPLATE = [
+        DetailStatus::ACTIVATED                => self::PARTNER_ACTIVATED_TEMPLATE,
+        DetailStatus::UNDER_REVIEW             => self::PARTNER_UNDER_REVIEW_TEMPLATE,
+        DetailStatus::NEEDS_CLARIFICATION      => self::PARTNER_NEEDS_CLARIFICATION_TEMPLATE,
+        Merchant\Constants::DEFAULT            => self::PARTNER_DEFAULT_TEMPLATE,
+    ];
     /**
      * Used for bulk capture
      */

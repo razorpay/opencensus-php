@@ -21,12 +21,14 @@ use RZP\Models\Currency\Currency;
 use RZP\Models\Partner\Commission;
 use RZP\Models\Pricing\Calculator;
 use RZP\Models\Tax\Gst\GstTaxIdMap;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Jobs\CommissionTdsSettlement;
 use RZP\Jobs\CommissionInvoiceAction;
 use RZP\Jobs\CommissionInvoiceGenerate;
 use RZP\Mail\Merchant\CommissionInvoice;
 use RZP\Mail\Merchant\CommissionProcessed;
 use RZP\Mail\Merchant\CommissionOpsInvoice;
+use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Mail\Merchant\CommissionInvoiceIssued;
 use RZP\Models\Admin\Permission\Name as Permission;
 
@@ -155,6 +157,69 @@ class Core extends Base\Core
         $opsInvoice = new CommissionOpsInvoice($data);
 
         Mail::send($opsInvoice);
+    }
+
+    public function sendCommissionSms(Entity $invoice, string $pdfPath)
+    {
+        $merchant = $invoice->merchant;
+
+        $properties = [
+            'id'            => $merchant->getId(),
+            'experiment_id' => $this->app['config']->get('app.send_sms_on_commission_invoice_issued_exp_id'),
+        ];
+
+        $isExpEnabled = (new MerchantCore())->isSplitzExperimentEnable($properties, 'enable', TraceCode::SEND_SMS_ON_COMMISSION_INVOICE_ISSUED_SPLITZ_ERROR);
+
+        if($isExpEnabled === false)
+        {
+            return ;
+        }
+
+        $data = $this->getTemplateData($invoice, $pdfPath);
+
+        $activationStatus = $data['activation_status'];
+
+        $templateName = Commission\Constants::COMMISSION_INVOICE_ISSUED_SMS_TEMPLATE[Merchant\Constants::DEFAULT];
+
+        if(isset(Commission\Constants::COMMISSION_INVOICE_ISSUED_SMS_TEMPLATE[$activationStatus])=== true)
+        {
+            $templateName = Commission\Constants::COMMISSION_INVOICE_ISSUED_SMS_TEMPLATE[$activationStatus];
+        }
+
+        $tracePayload = [
+            'partner_id'          => $merchant->getId(),
+            'activation_status'   => $activationStatus,
+            'sms_template'        => $templateName
+        ];
+
+        try
+        {
+            if(empty($merchant->merchantDetail->getContactMobile()) === false)
+            {
+                $smsPayload = [
+                    'ownerId'           => $merchant->getId(),
+                    'ownerType'         => 'merchant',
+                    'orgId'             => $merchant->getOrgId(),
+                    'sender'            => 'RZRPAY',
+                    'destination'       => $merchant->merchantDetail->getContactMobile(),
+                    'templateName'      => $templateName,
+                    'templateNamespace' => 'partnerships',
+                    'language'          => 'english',
+                    'contentParams'     => [
+                        'start_date'   => $data['start_date'],
+                        'end_date'     => $data['end_date']
+                    ]
+                ];
+
+                $this->trace->info(TraceCode::SEND_PARTNER_COMMISSION_INVOICE_SMS, $tracePayload);
+
+                $this->app->stork_service->sendSms($this->mode, $smsPayload);
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::CRITICAL, TraceCode::PARTNER_COMMISSION_INVOICE_COMMUNICATION_SMS_FAILED, $tracePayload);
+        }
     }
 
     public function sendCommissionIssuedMail(Entity $invoice, string $pdfPath = null)

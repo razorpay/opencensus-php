@@ -77,6 +77,8 @@ class CommissionInvoiceAction extends Job
         $pdfPath = (new Invoice\Core)->createInvoicePdfAndGetFilePath($this->invoice);
 
         (new Invoice\Core)->sendCommissionIssuedMail($this->invoice, $pdfPath);
+
+        (new Invoice\Core)->sendCommissionSms($this->invoice, $pdfPath);
     }
 
     protected function handleUnderReview()
