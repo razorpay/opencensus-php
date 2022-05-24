@@ -117,6 +117,29 @@ return [
             ],
         ],
     ],
+    'testWorkflowActionApprovedWithComments' => [
+        'request' => [
+            'method'    => 'POST',
+            'url'       => '/w-actions/%s/checkers',
+            'content'   => [
+                'approved'               => 1,
+                'approved_with_feedback' => 1,
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The requested action is not found',
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_WORKFLOW_ACTION_NOT_FOUND,
+        ]
+    ],
     'testWorkflowClosedActionApproveOrRejectShouldFail' => [
         'request' => [
             'method'    => 'POST',

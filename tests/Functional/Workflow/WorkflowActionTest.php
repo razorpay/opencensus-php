@@ -217,6 +217,26 @@ class WorkflowActionTest extends TestCase
         $this->startTest();
     }
 
+    public function testWorkflowActionApprovedWithComments()
+    {
+        $this->setDefaultActionIdInUrl(Org::CHECKER_ADMIN_TOKEN);
+
+        $permissionId = (new AdminPermission\Repository)
+                    ->retrieveIdsByNames([AdminPermission\Name::EDIT_ACTIVATE_MERCHANT])[0]->getId();
+
+        $action = $this->fixtures->edit('workflow_action', WorkflowAction::DEFAULT_WORKFLOW_ACTION_ID, ['permission_id' => $permissionId]);
+
+        $this->addPermissionToBaAdmin(AdminPermission\Name::EDIT_ACTION);
+
+        $this->startTest();
+
+        $action->refresh();
+
+        $tags = $action->tagNames();
+
+        $this->assertEquals('Approved_with_feedback', $tags['0']);
+    }
+
     public function testWorkflowClosedActionApproveOrRejectShouldFail()
     {
         $defaultWorkflowClosedActionId = 'w_action_' . WorkflowAction::DEFAULT_WORKFLOW_CLOSED_ACTION_ID;

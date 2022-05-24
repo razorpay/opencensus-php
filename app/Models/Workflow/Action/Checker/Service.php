@@ -23,6 +23,16 @@ class Service extends Base\Service
 
         $permissionName = $workflowAction->permission->getName();
 
+        if (($permissionName === Constants::EDIT_ACTIVATE_MERCHANT) and (isset($input[Constants::APPROVED_WITH_FEEDBACK]) === true) and ($input[Constants::APPROVED_WITH_FEEDBACK] == 1))
+        {
+            $workflowAction->tag(Constants::APPROVED_WITH_FEEDBACK);
+        }
+
+        if (isset($input[Constants::APPROVED_WITH_FEEDBACK]) === true)
+        {
+            unset($input[Constants::APPROVED_WITH_FEEDBACK]);
+        }
+
         if (($permissionName === Constants::EDIT_ACTIVATE_MERCHANT) && (isset($input['approved']) === true) && ($input['approved'] == 1))
         {
             //checking for comment validations only if Activation Form Status is Rejected and action is approve
