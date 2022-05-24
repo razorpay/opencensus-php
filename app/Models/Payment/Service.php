@@ -24,6 +24,7 @@ use RZP\Models\Currency;
 use RZP\Models\Merchant;
 use RZP\Models\Order;
 use RZP\Jobs\EsSync;
+use RZP\Models\Pricing\Fee;
 use RZP\Trace\Tracer;
 use RZP\Models\Offer;
 use RZP\Models\Invoice;
@@ -4225,6 +4226,26 @@ class Service extends Base\Service
         {
             (new Notify($payment))->trigger($event);
         }
+    }
+
+    public function internalPricingFetchForPayment($id, $input)
+    {
+        if (isset($id) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException("Payment Id is a required field");
+        }
+
+        $payment = $this->repo->payment->findByPublicId($id);
+
+        [$fee, $tax, $feeSplit] = (new Fee())->calculateMerchantFees($payment);
+
+        $response = [
+            "fee" => $fee,
+            "tax" => $tax,
+            "fee_split" => $feeSplit,
+        ];
+
+        return $response;
     }
 
     public function addVerifyDisabledGateway(array $input)

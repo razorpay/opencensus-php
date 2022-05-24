@@ -3408,6 +3408,7 @@ class Route
         'internal_validate_order_tpv'                => ['post',       'internal/order/validate/tpv',                         'OrderController@internalOrderValidateTPV'],
         'internal_create_order_relations'            => ['post',       'internal/create/order/relations',                     'OrderController@internalCreateOrderRelations'],
         'payment_update_reference6'                  => ['patch',      'payments/{id}/updateReference6',                       'PaymentController@updateReference6'                           ],
+        'internal_payment_pricing'                   => ['get',        'internal/payments/{id}/pricing',                       'PaymentController@internalPricingFetchForPayment'                           ],
 
         // Onboarding APIs
         'complete_submerchant_onboarding'         => ['post',       'submerchants/{id}/onboard',                             'MerchantController@completeSubmerchantOnboarding'],
@@ -4657,6 +4658,7 @@ class Route
         'internal_validate_order_tpv',
         'internal_create_order_relations',
         'payment_update_reference6',
+        'internal_payment_pricing',
 
         // cron to send emails about pending payouts
         'payout_send_pending_approval_email',
@@ -12612,7 +12614,8 @@ class Route
         'card_payment_service' => [
             'api_entity_fetch',
             'cps_card_entity_create',
-            'cps_iin_flow_disable'
+            'cps_iin_flow_disable',
+            'internal_payment_pricing'
         ],
 
         'workflows' => [
@@ -12647,6 +12650,7 @@ class Route
             'internal_validate_order_tpv',
             'internal_create_order_relations',
             'recon_update_upi_data',
+            'internal_payment_pricing',
         ],
 
         'freshdesk_webhook' => [
