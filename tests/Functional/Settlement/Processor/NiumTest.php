@@ -104,4 +104,37 @@ class NiumTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testNiumFileGenerationNoSettlements()
+    {
+        // Create Partner Merchant, Partner Config, Sub Merchant and Access Map
+
+        list($partner, $app) = $this->createPartnerAndApplication([
+            'partner_type' => 'reseller'
+        ]);
+        $this->createConfigForPartnerApp($app->getId());
+        [$subMerchant, $accessMap] = $this->createSubMerchant($partner, $app,
+            ['id'=>self::DEFAULT_SUBMERCHANT_ID]);
+        $this->fixtures->edit('merchant', $subMerchant->getId(), [
+            'channel' => Channel::AXIS,
+            'activated' => true ,
+            'suspended_at' => null
+        ]);
+
+        $this->fixtures->user->createUserForMerchant($partner->getId());
+
+        $this->fixtures->create('merchant_international_integrations:nium_integration', [
+            'merchant_id'    => self::DEFAULT_SUBMERCHANT_ID,
+            'integration_key' => 'NIUM0000063',
+            'notes'          => [
+                'country'       => 'SGP',
+                'payForText'    => 'Develop Ecom Application'
+            ]
+        ]);
+
+        // Send Request and Test
+
+        Carbon::setTestNow(Carbon::tomorrow(Timezone::IST));
+        $this->ba->cronAuth();
+        $this->startTest();
+    }
 }

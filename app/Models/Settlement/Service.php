@@ -406,7 +406,7 @@ class Service extends Base\Service
         $fileProcessor = new $class;
         $ufhResponse = $fileProcessor->generate($subMerchantIds, $from, $to);
 
-        if($sendFile === true){
+        if($sendFile === true && count($ufhResponse) !== 0){
             $fileProcessor->sendGifuFile();
         }
         return $ufhResponse;

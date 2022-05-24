@@ -53,6 +53,19 @@ abstract class BaseGifuFile extends Base\Core
     {
         $gifuData = $this->getGifuData($input,$from,$to);
 
+        if(count($gifuData) === 0)
+        {
+            $this->trace->error(
+                TraceCode::SETTLEMENT_FILE_EMPTY_DATA,
+                [
+                    "description" => "No settlement data found, file generation skipped",
+                    "bankName" => $this->bankName
+                ]
+            );
+
+            return [];
+        }
+
         $fileData = $this->generateGifuFile($gifuData);
 
         $path  = storage_path('files/filestore').'/'.$fileData['file_name'];

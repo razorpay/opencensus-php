@@ -17,4 +17,16 @@ return [
             ]
         ]
     ],
+    'testNiumFileGenerationNoSettlements' => [
+        'request' => [
+            'url' => '/settlements/generate/nium',
+            'method' => 'POST',
+            'content' => [
+                'niumMerchantId' => 'DefaultPartner'
+            ]
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
 ];
