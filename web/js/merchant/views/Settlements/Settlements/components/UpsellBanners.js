@@ -7,6 +7,7 @@ import SamedayUpselling from './Modals/ScheduledModal/components/Upselling';
 import { resolvePath } from 'common/utils/rzp-utils';
 import { DEFAULT_MIN_WITHDRAW_AMOUNT, VIEWS } from './constants';
 import { MERCHANT_OWNER_TYPE } from 'merchant/views/Capital/CashAdvance/constants';
+import { SAMEDAY_MODAL_LOCATIONS } from './Modals/ScheduledModal/constants';
 
 const UpsellBanners = (props) => {
   const {
@@ -84,7 +85,7 @@ const UpsellBanners = (props) => {
         );
 
       case VIEWS.SAMEDAY_ELIGIBLE:
-        return <SamedayUpselling showDiscount />;
+        return <SamedayUpselling showDiscount from={SAMEDAY_MODAL_LOCATIONS.ONDEMAND} />;
 
       default:
         return null;

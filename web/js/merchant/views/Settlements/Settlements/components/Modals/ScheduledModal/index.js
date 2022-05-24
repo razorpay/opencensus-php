@@ -18,7 +18,7 @@ const Container = styled.div`
   width: 100%;
 `;
 
-export default function ScheduledModal({ enabled, postModalType, trackSameDaySettlement }) {
+export default function ScheduledModal({ enabled, postModalType, trackSameDaySettlement, from }) {
   const [autoEnabled, setAutoEnabled] = useState(enabled || false);
   const [pricingRate, setPricingRate] = useState(DEFAULT_PRICING_RATE);
 
@@ -40,6 +40,7 @@ export default function ScheduledModal({ enabled, postModalType, trackSameDaySet
             pricingRate={pricingRate}
             setAutoEnabled={setAutoEnabled}
             trackSameDaySettlement={trackSameDaySettlement}
+            from={from}
           />
         )}
       </Container>

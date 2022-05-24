@@ -8,6 +8,7 @@ import { closeModal } from 'merchant_common/reducers/modals';
 import { CreateTicketEmitter } from '../../../TicketSupport/utils';
 import { bindActionCreators } from 'redux';
 import SamedayUpselling from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal/components/Upselling';
+import { SAMEDAY_MODAL_LOCATIONS } from './Modals/ScheduledModal/constants';
 
 class SettlementDetail extends Component {
   handleContactSupport = () => {
@@ -330,6 +331,7 @@ class SettlementDetail extends Component {
             <SamedayUpselling
               trackKnowMore={this.props.trackKnowMore}
               trackSameDaySettlement={this.props.trackSameDaySettlement}
+              from={SAMEDAY_MODAL_LOCATIONS.SETTLEMENTS_DETAILS}
             />
           )}
         </div>

@@ -10,13 +10,23 @@ import { closeModal as fnCloseModal } from 'merchant_common/reducers/modals';
 import TopSection from './components/TopSection';
 import BottomSection from './components/BottomSection';
 import Button from './components/Button';
-import { SAMEDAY_TIMELINE_ICONS, PRE_ENABLE_VIEWS, getSamedayTimeline } from './constants';
+import {
+  SAMEDAY_TIMELINE_ICONS,
+  PRE_ENABLE_VIEWS,
+  getSamedayTimeline,
+  SAMEDAY_MODAL_LOCATIONS,
+} from './constants';
 import {
   enableAutomaticSettlements,
   setEnableEsPartialAutomaticDate,
   getDiscountPercentage,
   isPricingRateValid,
 } from './utils';
+import {
+  trackEnableModalCloseClick,
+  trackEnableModalRendered,
+  trackEnableNowClicked,
+} from './analytics';
 
 const IndicatorWrapper = styled.div`
   width: 100%;
@@ -279,6 +289,35 @@ const OptOutAnytime = styled.p`
   margin-top: 4px;
 `;
 
+const getScreenForTrackEvent = (from) => {
+  const isScreenSettlements = window.location.pathname.includes('/settlements');
+
+  switch (from) {
+    case SAMEDAY_MODAL_LOCATIONS.ONDEMAND: {
+      return isScreenSettlements
+        ? 'Settlements Page || Settle Now Modal || Settlement Successful || Same-day Settlements Modal'
+        : 'PG Dashboard Home || Settle Now Modal || Settlement Successful || Same-day Settlements Modal';
+    }
+
+    case SAMEDAY_MODAL_LOCATIONS.SETTLEMENTS_DETAILS: {
+      return isScreenSettlements
+        ? 'Settlements Page || Settlement Details Modal || Same-day Settlements Modal'
+        : 'PG Dashboard Home || Settlement Details Modal || Same-day Settlements Modal';
+    }
+
+    case SAMEDAY_MODAL_LOCATIONS.SETTLEMENTS_HOME: {
+      return 'Settlements Page';
+    }
+
+    case SAMEDAY_MODAL_LOCATIONS.ENABLE_AUTOMATIC_ROUTE: {
+      return 'Settlements Page - /enable_automatic route';
+    }
+
+    default:
+      return null;
+  }
+};
+
 function PreEnable({
   user,
   setAutoEnabled,
@@ -287,6 +326,7 @@ function PreEnable({
   showNotification,
   closeModal,
   trackSameDaySettlement = () => {},
+  from,
 }) {
   const isOndemandSettlementEnabled = user.isOndemandSettlementEnabled;
   const isOndemandSettlementsRestricted = user.isOndemandSettlementsRestricted;
@@ -299,6 +339,11 @@ function PreEnable({
   const [view, setView] = useState(PRE_ENABLE_VIEWS.SAMEDAY_SETTLEMENTS);
   const [hovered, setHovered] = useState(false);
   const isPricingValid = isPricingRateValid(pricingRate);
+  const screen = getScreenForTrackEvent(from);
+
+  useEffect(() => {
+    trackEnableModalRendered({ screen });
+  }, []);
 
   useEffect(() => {
     if (isFullOndemandSettlementEnabled) {
@@ -322,6 +367,7 @@ function PreEnable({
 
   const handleOnEnableClick = () => {
     setLoading(true);
+    trackEnableNowClicked({ screen });
 
     return new Promise((resolve) => {
       enableAutomaticSettlements()
@@ -360,6 +406,11 @@ function PreEnable({
           resolve();
         });
     });
+  };
+
+  const handleCloseClick = () => {
+    trackEnableModalCloseClick({ screen });
+    closeModal();
   };
 
   const onMouseEnter = () => setHovered(true);
@@ -508,6 +559,7 @@ function PreEnable({
       <TopSection
         heading="Automate your settlements"
         subHeading="Get your daily revenue settled automatically on all working days"
+        onCloseClick={handleCloseClick}
         showTimings
       />
 

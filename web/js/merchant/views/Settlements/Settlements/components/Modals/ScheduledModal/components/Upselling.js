@@ -20,7 +20,12 @@ import {
   isPricingRateValid,
   setEnableEsPartialAutomaticDate,
 } from '../utils';
-import { DEFAULT_PRICING_RATE } from '../constants';
+import { DEFAULT_PRICING_RATE, SAMEDAY_MODAL_LOCATIONS } from '../constants';
+import {
+  trackCrossSellBannerRendered,
+  trackKnowMoreClicked,
+  trackEnableNowClicked,
+} from '../analytics';
 
 const BIG_UPSELLING_BG = '/dist/css/assets/settlements/bigupselling-bg.svg';
 const SMALL_UPSELLING_BG = '/dist/css/assets/settlements/upselling-bg.svg';
@@ -164,6 +169,27 @@ const Button = styled(AsyncBtn)`
         `}
 `;
 
+const getScreenForTrackEvent = (from) => {
+  const isScreenSettlements = window.location.pathname.includes('/settlements');
+
+  switch (from) {
+    case SAMEDAY_MODAL_LOCATIONS.ONDEMAND: {
+      return isScreenSettlements
+        ? 'Settlements Page || Settle Now Modal || Settlement Successful'
+        : 'PG Dashboard Home || Settle Now Modal || Settlement Successful';
+    }
+
+    case SAMEDAY_MODAL_LOCATIONS.SETTLEMENTS_DETAILS: {
+      return isScreenSettlements
+        ? 'Settlements Page || Settlement Details Modal'
+        : 'PG Dashboard Home || Settlement Details Modal';
+    }
+
+    default:
+      return null;
+  }
+};
+
 function Upselling({
   user,
   showDiscount,
@@ -173,12 +199,16 @@ function Upselling({
   showNotification,
   trackKnowMore = () => {},
   trackSameDaySettlement,
+  from,
 }) {
   const [isLoading, setLoading] = useState(false);
   const [pricingRate, setPricingRate] = useState(DEFAULT_PRICING_RATE);
   const isPricingValid = showDiscount && isPricingRateValid(pricingRate);
+  const screen = getScreenForTrackEvent(from);
 
   useEffect(() => {
+    trackCrossSellBannerRendered({ screen });
+
     getInstantPricingPercentage().then(({ data }) => {
       const pricingPercentage = data?.items?.[0]?.pricing_rule?.percent_rate;
       if (pricingPercentage) setPricingRate(pricingPercentage);
@@ -190,15 +220,22 @@ function Upselling({
 
   const handleKnowMoreClick = () => {
     openModal({
-      component: <ScheduledModal />,
+      component: <ScheduledModal from={from} />,
       size: 'small',
       disableClose: true,
     });
 
-    trackKnowMore();
+    trackKnowMore({ screen });
+
+    trackKnowMoreClicked({
+      screen,
+    });
   };
 
   const handleEnableNowClick = () => {
+    trackEnableNowClicked({
+      screen,
+    });
     return new Promise((resolve) => {
       enableAutomaticSettlements()
         .then(() => {

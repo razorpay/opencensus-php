@@ -25,8 +25,12 @@ import { fetchCurrentBalance as fnFetchCurrentBalance } from 'merchant/reducers/
 import { fetchSettlementConfig as fnFetchSettlementConfig } from 'merchant/reducers/settlements/details';
 import { fetchBankAccountChangeStatus as fnFetchBankAccountChangeStatus } from 'merchant/reducers/profile';
 import ScheduledModal from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal';
-import { POST_ENABLE_TYPES } from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal/constants';
+import {
+  POST_ENABLE_TYPES,
+  SAMEDAY_MODAL_LOCATIONS,
+} from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal/constants';
 import { getNoOfDaysAfterEsPartialEnable } from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal/utils';
+import { trackSettlementsPageRendered } from './Settlements/components/Modals/ScheduledModal/analytics';
 
 const Settlements = ({
   user,
@@ -70,7 +74,7 @@ const Settlements = ({
 
     if (showModal) {
       openModal({
-        component: <ScheduledModal />,
+        component: <ScheduledModal from={SAMEDAY_MODAL_LOCATIONS.ENABLE_AUTOMATIC_ROUTE} />,
         size: 'small',
         disableClose: true,
       });
@@ -85,6 +89,7 @@ const Settlements = ({
 
     // opens scheduled modal if pathname is /settlements/enable_automatic
     openEsAutomaticModalIfRoute();
+    trackSettlementsPageRendered();
   }, []);
 
   const handleSettlementUnlockStatusClick = () => {

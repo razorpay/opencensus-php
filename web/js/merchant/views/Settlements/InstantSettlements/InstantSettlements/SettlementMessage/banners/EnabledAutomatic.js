@@ -7,7 +7,10 @@ import {
   getInstantPricingPercentage,
   isPricingRateValid,
 } from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal/utils';
-import { DEFAULT_PRICING_RATE } from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal/constants';
+import {
+  DEFAULT_PRICING_RATE,
+  SAMEDAY_MODAL_LOCATIONS,
+} from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal/constants';
 
 import Base, {
   Container,
@@ -19,6 +22,10 @@ import Base, {
   Rupee,
   Title,
 } from './Base';
+import {
+  trackEnableSamedayBannerRendered,
+  trackExploreNowClicked,
+} from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal/analytics';
 
 const INSTANT_LOGO = '/dist/css/assets/settlements/instant.svg';
 
@@ -56,14 +63,16 @@ export default function EnableAutomatic({ openModal }) {
       const pricingPercentage = data?.items?.[0]?.pricing_rule?.percent_rate;
       if (pricingPercentage) setPricingRate(pricingPercentage);
     });
+    trackEnableSamedayBannerRendered();
   }, []);
 
   const handleClick = () => {
     openModal({
-      component: <ScheduledModal />,
+      component: <ScheduledModal from={SAMEDAY_MODAL_LOCATIONS.SETTLEMENTS_HOME} />,
       size: 'small',
       disableClose: true,
     });
+    trackExploreNowClicked();
   };
 
   return (
