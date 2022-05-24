@@ -48,7 +48,7 @@ class Dbs extends NetbankingBase
 
     protected function getFileToWriteNameWithoutExt()
     {
-        $date = Carbon::now(Timezone::IST)->format('d-m-Y_H:i:s');
+        $date = Carbon::now(Timezone::IST)->format('dmY_His');
 
         return static::BASE_STORAGE_DIRECTORY . static::FILE_NAME . $date;
     }

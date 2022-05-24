@@ -164,7 +164,7 @@ class Dbs extends Base
 
             $creator->extension(self::EXTENSION)
                 ->content($fileData)
-                ->name(self::FILE_NAME . Carbon::now(Timezone::IST)->format('d-m-Y_H:i:s'))
+                ->name(self::FILE_NAME . Carbon::now(Timezone::IST)->format('dmY_His'))
                 ->store(FileStore\Store::S3)
                 ->type(self::FILE_TYPE)
                 ->entity($this->gatewayFile)
@@ -173,7 +173,7 @@ class Dbs extends Base
 
             $file = $creator->getFileInstance();
 
-            $creator->name(self::FILE_NAME . Carbon::now(Timezone::IST)->format('d-m-Y_H:i:s') .'.xlsx')
+            $creator->name(self::FILE_NAME . Carbon::now(Timezone::IST)->format('dmY_His') .'.xlsx')
                 ->extension(FileStore\Format::PGP)
                 ->save();
 
@@ -183,7 +183,7 @@ class Dbs extends Base
 
             $creator1->extension(self::EXTENSION)
                 ->content($fileData)
-                ->name(self::FILE_NAME . Carbon::now(Timezone::IST)->format('d-m-Y_H:i:s'))
+                ->name(self::FILE_NAME . Carbon::now(Timezone::IST)->format('dmY_His'))
                 ->store(FileStore\Store::S3)
                 ->type(self::FILE_TYPE_UNENCRYPTED)
                 ->entity($this->gatewayFile)

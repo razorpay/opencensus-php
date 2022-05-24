@@ -55,7 +55,7 @@ class Dbs extends Base
 
     protected function getFileToWriteNameWithoutExt()
     {
-        $date = Carbon::now(Timezone::IST)->format('Ymd');
+        $date = Carbon::now(Timezone::IST)->format('dmY_His');
 
         return self::BASE_STORAGE_DIRECTORY . self::FILE_NAME . $date;
     }
