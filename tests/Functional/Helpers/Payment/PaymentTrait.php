@@ -1075,7 +1075,10 @@ trait PaymentTrait
         $input['amount'] = $refund['amount'] ?? $input['amount'];
         $input['base_amount'] = $refund['amount'] ?? $input['base_amount'];
         $input['is_fta'] = $data['is_fta'] ?? false;
-        $input['status'] = 'created';
+        $input['status'] = $data['status'] ?? 'created';
+        $input['created_at'] = $data['created_at'] ?? Carbon::now()->getTimestamp();
+        $input['last_attempted_at'] = $input['created_at'];
+        $input['transaction_id'] = $refund['transaction_id'] ?? null;
 
         if (isset($data['bank_account']) === true)
         {
@@ -1304,6 +1307,11 @@ trait PaymentTrait
         if (isset($data['amount']) === true)
         {
             $response['amount'] = $data['amount'];
+        }
+
+        if (isset($data['status']) === true)
+        {
+            $content['status'] = $data['status'];
         }
 
         $this->scroogeRefund($response, $content);

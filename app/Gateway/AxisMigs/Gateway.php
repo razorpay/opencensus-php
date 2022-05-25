@@ -291,7 +291,6 @@ class Gateway extends Base\Gateway
 
         $content['received'] = 1;
         $refund->fill($content);
-        $this->repo->saveOrFail($refund);
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_REFUND,
@@ -410,7 +409,6 @@ class Gateway extends Base\Gateway
 
         $content['received'] = 1;
         $refund->fill($content);
-        $this->repo->saveOrFail($refund);
 
         $this->trace->info(
             TraceCode::GATEWAY_REVERSE_RESPONSE,
@@ -507,6 +505,7 @@ class Gateway extends Base\Gateway
 
         // Adding a check for 8th May 2017 as track id was
         // changed in migs refund from payment id to refund id
+
         if ($input['refund']['created_at'] < 1494268200)
         {
             throw new Exception\LogicException(
