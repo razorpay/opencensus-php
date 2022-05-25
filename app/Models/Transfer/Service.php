@@ -15,6 +15,7 @@ use RZP\Listeners\ApiEventSubscriber;
 use RZP\Exception\BadRequestException;
 use RZP\Constants\Entity as EntityConstant;
 use RZP\Models\Settlement\Entity as Settlement;
+use RZP\Jobs\Transfers\TransferSettlementStatus;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 use RZP\Jobs\Transfers\LinkedAccountBankVerificationStatusBackfill;
 
@@ -374,6 +375,30 @@ class Service extends Base\Service
         );
 
         return $this->processOrderTransfers($orderIds);
+    }
+
+    /**
+     * @param array $input
+     * @return int
+     */
+    public function updateSettlementStatusInTransfer(array $input):int
+    {
+        $limit = $input['limit'] ?? 1000;
+
+        $settlementIds = $this->repo->settlement->fetchSettlementIdsWithIncorrectStatusOnTransfers($limit);
+
+        $this->trace->info(TraceCode::SETTLEMENT_IDS_FOR_STATUS_UPDATE_ON_TRANSFERS,
+        [
+            'limit'          => $limit,
+            'count'          => count($settlementIds),
+            'settlement_ids' => $settlementIds,
+        ]);
+
+        foreach ($settlementIds as $settlementId)
+        {
+            TransferSettlementStatus::dispatch($this->mode, $settlementId);
+        }
+        return count($settlementIds);
     }
 
     public function processPendingPaymentTransfers(array $input)

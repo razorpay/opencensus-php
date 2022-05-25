@@ -1840,6 +1840,7 @@ class Route
         'la_fetch'                                 => ['get',      'linked_accounts',                                'AccountController@listLinkedAccounts'                              ],
         'linked_account_create_batch'              => ['post',     'linked_accounts/batch',                          'MerchantController@createLinkedAccount'                            ],
         'linked_account_update_bank_account'       => ['post',     'linked_accounts/{id}/bank_account',              'MerchantController@updateLinkedAccountBankAccount'                 ],
+        'transfer_settlement_status_update'        => ['patch',     'transfers/settlement_status',                   'TransferController@updateSettlementStatusInTransfer'               ],
 
         'user_register'                            => ['post',     'users/register',                                 'UserController@registerUser'                                       ],
         'user_otp_register'                        => ['post',     'users/register/otp',                             'UserController@registerUserWithOtp'                                ],
@@ -4298,6 +4299,7 @@ class Route
         'subscriptions_expire',
         'subscriptions_retry',
         'tokens_upi_vpa_bulk_cron',
+        'transfer_settlement_status_update',
         'user_change_password',
         'user_confirm_by_data',
         'user_access',
@@ -12074,6 +12076,7 @@ class Route
             'mailing_list_remove_suspended_merchant',
             'transfer_pending_process',
             'transfer_payment_pending_process',
+            'transfer_settlement_status_update',
             'transfer_failed_process',
             'banking_account_statement_process_cron',
             'banking_account_statement_process_pool',

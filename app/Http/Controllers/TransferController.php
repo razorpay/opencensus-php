@@ -113,6 +113,15 @@ class TransferController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function updateSettlementStatusInTransfer()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->updateSettlementStatusInTransfer($input);
+
+        return ApiResponse::json($response);
+    }
+
     public function processPendingOrderTransfers()
     {
         $input = Request::all();

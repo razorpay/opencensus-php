@@ -7,6 +7,8 @@ use RZP\Models\Base;
 use RZP\Models\Merchant as M;
 use RZP\Exception;
 use RZP\Trace\TraceCode;
+use RZP\Models\Transfer\SettlementStatus;
+use RZP\Models\Transfer\Entity as TransferEntity;
 
 class Repository extends Base\Repository
 {
@@ -175,5 +177,24 @@ class Repository extends Base\Repository
                 "error" => $e
             ]);
         }
+    }
+
+    public function fetchSettlementIdsWithIncorrectStatusOnTransfers(int $limit=1000)
+    {
+        $settlementIdColumn = $this->dbColumn(Entity::ID);
+        $settlementStatusColumn = $this->dbColumn(Entity::STATUS);
+        $recipientSettlementIdColumn = $this->repo->transfer->dbColumn(TransferEntity::RECIPIENT_SETTLEMENT_ID);
+        $transferSettlementStatusColumn = $this->repo->transfer->dbColumn(TransferEntity::SETTLEMENT_STATUS);
+
+
+        return $this->newQueryOnSlave()
+            ->select($settlementIdColumn)
+            ->join(Table::TRANSFER,$settlementIdColumn,'=',$recipientSettlementIdColumn)
+            ->where($settlementStatusColumn,'=', Status::PROCESSED)
+            ->where($transferSettlementStatusColumn,'<>', SettlementStatus::SETTLED)
+            ->limit($limit)
+            ->distinct()
+            ->pluck($settlementIdColumn)
+            ->toArray();
     }
 }
