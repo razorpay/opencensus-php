@@ -9,26 +9,19 @@ import { fetchCommissionBalances } from 'merchant/reducers/commission';
 import Amount from 'common/ui/Amount';
 import HeaderAction from 'common/ui/HeaderAction';
 import { isPresent } from 'common/utils/rzp-utils';
-import { merchantFetch } from 'merchant/utils/ajax';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
 import Transactional from 'merchant/views/PartnerDashboard/Earnings/Transactional/List';
 import Daily from 'merchant/views/PartnerDashboard/Earnings/Daily/List';
 import CommissionInvoicesList from 'merchant/views/PartnerDashboard/Earnings/Invoices/List';
-import CommissionCard from 'merchant/views/PartnerDashboard/Commissions/components/FUX-Cards/CommissionCard';
-import PayoutsCard from 'merchant/views/PartnerDashboard/Commissions/components/FUX-Cards/PayoutsCard';
 
 class EarningsContainer extends Component {
   state = {
     commissionBalance: null,
-    isFirstEarningGen: false,
-    isFirstPayoutDone: false,
-    isLoadingFUX: true,
   };
 
   componentDidMount() {
     this.getCommissionBalance();
-    this.getFirstEarningStatus();
   }
 
   getCommissionBalance = () => {
@@ -44,44 +37,11 @@ class EarningsContainer extends Component {
     });
   };
 
-  getFirstEarningStatus = async () => {
-    try {
-      const { data } = await merchantFetch({
-        url: 'partner/first_user_experience',
-        method: 'get',
-      });
-      const isFirstEarningGen = data?.first_earning_generated || false;
-      const isFirstPayoutDone = data?.first_commission_payout || false;
-      this.setState({
-        isFirstEarningGen,
-        isFirstPayoutDone,
-        isLoadingFUX: false,
-      });
-    } catch (_) {
-      this.props.showNotification({
-        type: 'error',
-        message: 'An error occurred in connecting to the server',
-        hidePrevious: true,
-      });
-    }
-  };
-
   render() {
-    const { commissionBalance, isFirstEarningGen, isFirstPayoutDone, isLoadingFUX } = this.state;
-    const { sessionUser } = this.props;
-    const merchant = sessionUser?.merchants[sessionUser?.current];
-    const partnerName = merchant?.name || '';
+    const { commissionBalance } = this.state;
 
     return (
       <div className="earnings-page">
-        <ShowWhen additionalCondition={(user) => user.isPartnershipFUX}>
-          <tabbed-container>
-            <h2 className="page-heading">{` Welcome to Partner dashboard, ${partnerName}!`}</h2>
-            <ShowWhen additionalCondition={() => !isFirstPayoutDone && !isLoadingFUX}>
-              {isFirstEarningGen ? <PayoutsCard /> : <CommissionCard />}
-            </ShowWhen>
-          </tabbed-container>
-        </ShowWhen>
         <tabbed-container>
           <header>
             <NavLink exact to="/partners/earnings/daily">
