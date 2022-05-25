@@ -78,6 +78,11 @@ export default ({ showBatchIdFilter, ...props }) => {
         <Field name="notes" component="input" class="form-control input-sm" />
       </div>
 
+      <div class="form-group list-filter-item">
+        <label>Bank Reference Number</label>
+        <Field name="va_transaction_id" component="input" class="form-control input-sm" />
+      </div>
+
       <div class="form-group list-filter-item count">
         <label>Count</label>
         <Field

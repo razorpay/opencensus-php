@@ -24,6 +24,7 @@ import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { OptimizerDetails } from 'merchant/views/Transactions/Payments/components/OptimizerDetails';
 import { isInteger } from 'common/utils/validators';
 import track from '../track';
+import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 
 function PaymentDetails(props) {
   const {
@@ -49,6 +50,8 @@ function PaymentDetails(props) {
 
   const isFromHomePage = location.state?.fromHomePage;
   const paymentId = payment?.id;
+  const bankReference = bankTransfer?.details?.bank_reference;
+  const bankReferenceLoading = bankTransfer?.loading;
   const qrPaymentDescription = payment?.description === 'QRv2 Payment';
   const scroller = useRef();
   const [scrolledToBottom, setScrolledToBottom] = useState(false);
@@ -274,6 +277,12 @@ function PaymentDetails(props) {
                     }}
                   />
                 </EntityDetailRow>
+
+                {(bankReference || bankReferenceLoading) && (
+                  <EntityDetailRow label="Bank Reference">
+                    <Definition>{bankReference ? bankReference : <PlaceholderLoader />}</Definition>
+                  </EntityDetailRow>
+                )}
 
                 {payment.provider && (
                   <EntityDetailRow label="Provider">
