@@ -1644,6 +1644,10 @@ class Service extends Base\Service
             $refund[Refund\Entity::STATUS] = Status::CREATED;
         }
 
+        if (empty($refund[Refund\Entity::LAST_ATTEMPTED_AT]) === true) {
+            $refund[Refund\Entity::LAST_ATTEMPTED_AT] = $input[Refund\Entity::CREATED_AT] ?? null;
+        }
+
         $refund[Refund\Entity::IS_SCROOGE] = true;
 
         $refund->payment()->associate($payment);
