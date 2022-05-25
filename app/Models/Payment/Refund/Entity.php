@@ -666,6 +666,11 @@ class Entity extends Base\PublicEntity
 
     public function getPaymentAttribute()
     {
+        if ($this->relationLoaded('payment') === true)
+        {
+            return $this->getRelation('payment');
+        }
+
         if (empty($this->payment()->first()) === false)
         {
             return $this->payment()->first();
