@@ -3245,6 +3245,8 @@ class Core extends Base\Core
         {
             // Assign Owner role to the team user.
             (new User\Core)->detachAndAttachMerchantUser($teamUser, $merchant->getId(), ROLE::OWNER, $product);
+
+            $this->detachAndAttachSubmerchantOwners($merchant, $oldOwner->getId(), $teamUser->getId(), $product);
         }
         elseif (empty($existingUser) === false)
         {
@@ -3257,6 +3259,8 @@ class Core extends Base\Core
             ];
 
             (new User\Core)->updateUserMerchantMapping($existingUser, $userMerchantMappingInputData);
+
+            $this->detachAndAttachSubmerchantOwners($merchant, $oldOwner->getId(), $existingUser->getId(), $product);
         }
         elseif (empty($selfUser) === false)
         {
@@ -7650,5 +7654,32 @@ class Core extends Base\Core
         }
 
         return false;
+    }
+
+    private function detachAndAttachSubmerchantOwners(Entity $merchant, string $oldOwnerId, string $newOwnerId, string $product)
+    {
+        if (!$merchant->isPartner())
+        {
+            return;
+        }
+
+        $submerchantIds = $this->repo->merchant_user->fetchMerchantIdForUserIdRoleAndProduct($oldOwnerId, ROLE::OWNER, $product);
+        $submerchants = $this->repo->merchant->findMany($submerchantIds);
+
+        foreach ($submerchants as $submerchant)
+        {
+            $userMerchantMappingInputData = [
+                'action'      => 'detach',
+                'role'        => Role::OWNER,
+                'merchant_id' => $submerchant->getId(),
+                'product'     => $product
+            ];
+
+            (new User\Service)->updateUserMerchantMapping($oldOwnerId, $userMerchantMappingInputData);
+
+            $userMerchantMappingInputData['action'] = 'attach';
+
+            (new User\Service)->updateUserMerchantMapping($newOwnerId, $userMerchantMappingInputData);
+        }
     }
 }

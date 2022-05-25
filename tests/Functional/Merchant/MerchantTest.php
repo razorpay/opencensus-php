@@ -1930,6 +1930,64 @@ class MerchantTest extends TestCase
         $this->assertNull($merchant->primaryOwner('banking'));
     }
 
+    public function testEditMerchantEmailWhenOwnerExistsForPartner()
+    {
+        config(['app.query_cache.mock' => false]);
+
+        list($partner, $app) = $this->createPartnerAndApplication(['partner_type' => 'aggregator', 'email' => 'test1@razorpay.com']);
+
+        $user = $this->fixtures->user->createUserForMerchant($partner->getId(), ['email' => 'test1@razorpay.com']);
+
+        $existingUser = $this->fixtures->user->create(['email' => 'newemail@razorpay.com']);
+
+        $this->fixtures->user->createUserMerchantMapping(
+            [
+                'user_id'     => $user['id'],
+                'merchant_id' => $partner->getId(),
+                'role'        => 'owner',
+                'product'     => 'banking'
+            ]);
+
+        $submerchantDetails1 = $this->createSubMerchant($partner, $app, ['id' => '10000000000111']);
+
+        $this->fixtures->user->createUserMerchantMapping(
+            [
+                'merchant_id' => $submerchantDetails1[0]->getId(),
+                'user_id'     => $user->getId(),
+                'role'        => 'owner',
+                'product'     => 'primary'
+            ]);
+
+        $submerchantDetails2 = $this->createSubMerchant($partner, $app, ['id' => '10000000000112']);
+
+        $this->fixtures->user->createUserMerchantMapping(
+            [
+                'merchant_id' => $submerchantDetails2[0]->getId(),
+                'user_id'     => $user->getId(),
+                'role'        => 'owner',
+                'product'     => 'primary'
+            ]);
+
+        $this->ba->adminAuth();
+
+        Event::fake(false);
+
+        $this->startTest();
+
+        $merchant = (new Merchant\Repository)->findOrFail($partner->getId());
+
+        $this->assertEquals('newemail@razorpay.com', $merchant->primaryOwner('primary')->getEmail());
+
+        $merchantUsers = DB::connection('test')->table('merchant_users')
+                           ->where('user_id', $existingUser['id'])
+                           ->where('role', 'owner')
+                           ->where('product', 'primary')
+                           ->get()
+                           ->toArray();
+
+        $this->assertEquals(4, count($merchantUsers));
+    }
+
     public function testEditMerchantEmailWhenOwnerExistsOnBothPgAndX()
     {
         config(['app.query_cache.mock' => false]);

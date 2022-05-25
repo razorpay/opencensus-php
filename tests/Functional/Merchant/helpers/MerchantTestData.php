@@ -1457,6 +1457,26 @@ return [
         ]
     ],
 
+    'testEditMerchantEmailWhenOwnerExistsForPartner' => [
+        'request' => [
+            'content' => [
+                'email' => 'newemail@razorpay.com',
+            ],
+            'url' => '/merchants/DefaultPartner/email',
+            'method' => 'put',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id' => 'DefaultPartner',
+                'email' => 'newemail@razorpay.com'
+            ]
+        ]
+    ],
+
     'testEditMerchantEmailWhenOwnerExistsOnBothPgAndX' => [
         'request' => [
             'content' => [
