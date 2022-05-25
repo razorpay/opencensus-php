@@ -567,6 +567,8 @@ class Validator extends Base\Validator
         Entity::CURRENCY                   => 'sometimes|array',
         Entity::EMI                        => 'sometimes|boolean',
         Entity::EMI_SUBVENTION             => 'sometimes|in:customer,merchant',
+        Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
+        Entity::NOTES                      => 'sometimes|string',
     ];
 
     protected static $cybersourceTerminalRules = [
@@ -601,6 +603,9 @@ class Validator extends Base\Validator
     protected static $axisMigsEditTerminalRules = [
         Entity::GATEWAY                    => 'sometimes|in:axis_migs',
         Entity::GATEWAY_ACQUIRER           => 'sometimes|string',
+        Entity::GATEWAY_MERCHANT_ID        => 'sometimes|alpha_num|min:6',
+        Entity::GATEWAY_ACCESS_CODE        => 'sometimes|alpha_num|max:8',
+        Entity::GATEWAY_SECURE_SECRET      => 'sometimes|alpha_num|size:32',
         Entity::GATEWAY_TERMINAL_ID        => 'sometimes',
         Entity::GATEWAY_TERMINAL_PASSWORD  => 'sometimes',
         Entity::CARD                       => 'sometimes|boolean|in:1',
@@ -610,6 +615,9 @@ class Validator extends Base\Validator
         Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
         Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
         Entity::CURRENCY                   => 'sometimes|array',
+        Entity::NETWORK_CATEGORY           => 'sometimes|string|max:30',
+        Entity::CATEGORY                   => 'sometimes|string|numeric|digits:4',
+        Entity::NOTES                      => 'sometimes|string',
     ];
 
     protected static $isgEditTerminalRules = [
