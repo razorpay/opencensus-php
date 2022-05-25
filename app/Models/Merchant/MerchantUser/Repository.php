@@ -163,4 +163,17 @@ class Repository extends Base\Repository
                     ->pluck(Entity::MERCHANT_ID)
                     ->toArray();
     }
+
+    public function fetchPrimaryUserIdForMerchantIdAndRole(string $merchantId, string $role='owner')
+    {
+        $query = $this->newQuery()
+            ->select(Entity::USER_ID)
+            ->where(Entity::MERCHANT_ID, $merchantId)
+            ->where(Entity::PRODUCT, 'primary')
+            ->where(Entity::ROLE, $role)
+            ->get();
+
+        return $query->pluck(Entity::USER_ID)
+            ->toArray();
+    }
 }

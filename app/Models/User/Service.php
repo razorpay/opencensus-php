@@ -2389,4 +2389,21 @@ class Service extends Base\Service
 
         Mail::send($passwordResetMail);
     }
+
+    public function updateContactNumberForSubMerchantUser(array $inputData)
+    {
+        $response = [];
+
+        foreach ($inputData as $input)
+        {
+            $submerchantId = $input['sub_id'];
+            $contactNo = $input['contact_no'];
+
+            $user = $this->core->updateContactNumberForSubMerchantUser($submerchantId, $contactNo);
+
+            array_push($response, $user);
+        }
+
+        return $response;
+    }
 }

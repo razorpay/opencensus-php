@@ -1927,6 +1927,7 @@ class Route
         'user_add_email_verify'                   => ['post',       'users/email/update/verify',                     'UserController@verifyOtpForAddEmail'                               ],
 
         'user_fetch_for_merchant'                  => ['get',      'users/fetch_for_merchant/{id}',                  'UserController@getUserForMerchant'                                 ],
+        'update_submerchant_user_contact'          => ['put',      'submerchant/user/contact_no',                     'UserController@updateContactNumberForSubMerchantUser'],
 
         // Tax groups and taxes
         'tax_get_meta_gst_taxes'                   => ['get',      'taxes/meta/gst_taxes',                           'TaxController@getMetaGstTaxes'                                     ],
@@ -3978,6 +3979,7 @@ class Route
         'subscription_registration_auto_charge',
         'mpans_issue',
         'mpans_fetch',
+        'update_submerchant_user_contact',
 
         // webhooks for onboarding APIs
         'onboarding_webhook_create',
@@ -4846,6 +4848,7 @@ class Route
         'link_stakeholder_documents_v2',
         'get_account_documents_v2',
         'get_stakeholder_documents_v2',
+        'update_submerchant_user_contact',
 
         'product_config_fetch_v2' ,
         'product_config_update_v2',
@@ -8719,6 +8722,7 @@ class Route
             'accounting_payouts_sync',
             'accounting_payouts_sync_status',
             'accounting_payouts_waitlist',
+            'update_submerchant_user_contact',
 
             'accounting_integration_get_organization',
             'accounting_integration_set_organization',
@@ -9878,6 +9882,7 @@ class Route
             'accounting_payouts_sync',
             'accounting_payouts_sync_status',
             'accounting_payouts_waitlist',
+            'update_submerchant_user_contact',
 
             'accounting_integration_get_organization',
             'accounting_integration_set_organization',

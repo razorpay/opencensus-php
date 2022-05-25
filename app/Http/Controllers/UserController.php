@@ -3,6 +3,8 @@ namespace RZP\Http\Controllers;
 
 use Request;
 use ApiResponse;
+use RZP\Error\ErrorCode;
+use RZP\Exception\BadRequestException;
 use RZP\Models\User\Entity;
 use RZP\Models\User\Service;
 
@@ -597,5 +599,21 @@ class UserController extends Controller
         $response = $userService->verifyOtpForAddEmail($input);
 
         return ApiResponse::json($response);
+    }
+
+    public function updateContactNumberForSubMerchantUser()
+    {
+        $header = Request::header('khatabook-use-case');
+
+        if($header != 'true')
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
+        }
+
+        $input = Request::all();
+
+        $data = $this->service()->updateContactNumberForSubMerchantUser($input['input']);
+
+        return ApiResponse::json($data);
     }
 }

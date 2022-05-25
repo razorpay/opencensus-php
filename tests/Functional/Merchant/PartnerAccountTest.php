@@ -11,6 +11,7 @@ use Psr\Http\Message\ResponseInterface;
 use RZP\Constants\Mode;
 use RZP\Models\Merchant;
 use RZP\Models\Terminal;
+use RZP\Models\User\Core;
 use RZP\Models\User\Role;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\Constants;
@@ -27,7 +28,7 @@ use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 
 class PartnerAccountTest extends TestCase
 {
-    
+
     use RequestResponseFlowTrait;
     use DbEntityFetchTrait;
     use PartnerTrait;
@@ -599,6 +600,25 @@ class PartnerAccountTest extends TestCase
         $this->runRequestResponseFlow($testData);
 
         return $merchant;
+    }
+
+    public function testUpdateContactNumberForSubmerchatnUser()
+    {
+        $this->setUpPartnerWithKycHandled();
+
+        $testData = $this->testData['testCreateAccountForCompletelyFilledRequest'];
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $accountId = $response['id'];
+
+        Account\Entity::verifyIdAndSilentlyStripSign($accountId);
+
+        (new Core())->updateContactNumberForSubMerchantUser($accountId, '7302202220');
+
+        $user = (new Core())->fetchSubmerchantUser($accountId);
+
+        $this->assertEquals('7302202220', $user->getContactMobile());
     }
 
     private function getDimensionsForAccountMetrics(): array

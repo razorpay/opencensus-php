@@ -4952,4 +4952,41 @@ class Core extends Base\Core
             'merchants'               => $merchantDetails,
         ];
     }
+
+    public function fetchSubmerchantUser(string $submerchantId)
+    {
+        $merchantUsers = $this->repo->merchant_user->fetchPrimaryUserIdForMerchantIdAndRole($submerchantId,'owner');
+
+        $partner = $this->repo->merchant->getPartnerMerchantFromSubMerchantId($submerchantId);
+
+        $partnerUser = $this->repo->merchant_user->fetchPrimaryUserIdForMerchantIdAndRole($partner->getId(), 'owner');
+
+        $merchantUser = array_diff($merchantUsers, $partnerUser);
+
+        $userId = array_first($merchantUser);
+
+        $user = $this->repo->user->findOrFailPublic($userId);
+
+        $this->trace->info(TraceCode::USER_MAPPED_TO_THE_SUBMERCHANT,[
+            'user' => $user
+        ]);
+
+        return $user;
+    }
+
+    public function updateContactNumberForSubMerchantUser(string $submerchantId,string $contact)
+    {
+        $user = $this->fetchSubmerchantUser($submerchantId);
+
+        $this->repo->transactionOnLiveAndTest(function() use ($user, $contact)
+        {
+            $user->setContactMobile($contact);
+
+            $user->setContactMobileVerified(true);
+
+            $this->repo->saveOrFail($user);
+        });
+
+        return $user;
+    }
 }

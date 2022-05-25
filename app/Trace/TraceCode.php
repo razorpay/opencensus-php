@@ -7000,6 +7000,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PARTNER_BANK_HEALTH_EMAIL_TO_MERCHANT_INIT        = 'PARTNER_BANK_HEALTH_EMAIL_TO_MERCHANT_INIT';
     const PARTNER_BANK_HEALTH_SMS_TO_MERCHANT_INIT          = 'PARTNER_BANK_HEALTH_SMS_TO_MERCHANT_INIT';
 
+    const USER_MAPPED_TO_THE_SUBMERCHANT                    = 'USER_MAPPED_TO_THE_SUBMERCHANT';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',
