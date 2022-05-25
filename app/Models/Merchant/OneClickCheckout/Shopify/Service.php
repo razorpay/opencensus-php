@@ -35,6 +35,7 @@ class Service extends Base\Service
         'EbxFyGur6ER4eE',   //Talk To Crystals
         'GfX5XhS9sHvs7X',   //Re Thought
         'ChdCdGm7TvuVk6',   //boAt
+        'IDTUUOoV4Ph06T',   //Khiangte Skincare
     ];
 
     const farziEnabledMids = [
