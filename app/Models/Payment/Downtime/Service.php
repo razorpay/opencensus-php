@@ -424,7 +424,7 @@ class Service extends Base\Service
 
     protected function getAdditionalMerchantsSubscribingToWebhook(): array
     {
-        return array("HscZ2md6SOPF3U", "8RerE9oY0d7rbC");
+        return array("HscZ2md6SOPF3U", "8RerE9oY0d7rbC", "IDqz9K5dictPEu");
     }
 
     protected function increaseAllowedSystemLimits()

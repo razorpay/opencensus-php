@@ -184,7 +184,12 @@ class DowntimeManagerService
             'method' => $downtime->getMethod(),
             'severity' => $downtime->getSeverity(),
             'status' => $status,
+            'scheduled' => $downtime->isScheduled(),
             'event_time' => $downtime->getUpdatedAt(),
+            'begin' => $downtime->getBegin(),
+            'end' => $downtime->getEnd(),
+            'created_at' => $downtime->getCreatedAt(),
+            'updated_at' => $downtime->getUpdatedAt(),
             'instrument' => [
                 'issuer' => $downtime->getIssuer(),
                 'network' => $downtime->getNetwork(),
