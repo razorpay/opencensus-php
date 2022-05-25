@@ -41,9 +41,11 @@ use RZP\Models\Card\Issuer;
 use RZP\Models\Card\Network;
 use RZP\Models\Payout\Status;
 use RZP\Services\RazorXClient;
+use RZP\Models\CreditTransfer;
 use RZP\Models\PayoutsDetails;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Services\FTS\FundTransfer;
+use RZP\Models\Settlement\Channel;
 use RZP\Constants\Mode as EnvMode;
 use RZP\Tests\Functional\TestCase;
 use RZP\Jobs\OnHoldPayoutsProcess;
@@ -14370,7 +14372,7 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals('batch_abc124', $contact['idempotency_key']);
     }
 
-    protected function createFundAccountOfIciciVA()
+    protected function createFundAccountOfIciciCurrentVA()
     {
         $request = [
             'content' => [
@@ -14389,7 +14391,7 @@ class PayoutTest extends OAuthTestCase
         return $this->makeRequestAndGetContent($request);
     }
 
-    protected function createFundAccountOfYesbankVA()
+    protected function createFundAccountOfYesbankNodalVA()
     {
         $request = [
             'content' => [
@@ -14399,6 +14401,44 @@ class PayoutTest extends OAuthTestCase
                     'ifsc'           => 'YESB0CMSNOC',
                     'name'           => 'Mehul Kaushik',
                     'account_number' => '7878780111000',
+                ],
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ];
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
+    protected function createFundAccountOfNonBankingVA()
+    {
+        $request = [
+            'content' => [
+                'account_type' => 'bank_account',
+                'contact_id'   => 'cont_1000001contact',
+                'bank_account' => [
+                    'ifsc'           => 'YESB0CMSNOC',
+                    'name'           => 'Mehul Kaushik',
+                    'account_number' => '2223330111555',
+                ],
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ];
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
+    protected function createFundAccountOfIciciNodalVA()
+    {
+        $request = [
+            'content' => [
+                'account_type' => 'bank_account',
+                'contact_id'   => 'cont_1000001contact',
+                'bank_account' => [
+                    'ifsc'           => 'ICIC0000104',
+                    'name'           => 'Mehul Kaushik',
+                    'account_number' => '5656000111000',
                 ],
             ],
             'url'     => '/fund_accounts',
@@ -14465,10 +14505,565 @@ class PayoutTest extends OAuthTestCase
         return $this->makeRequestAndGetContent($request);
     }
 
+    // tests for va to va transfers using creditTransfer
+    public function testBlockBankingVAToNonBankingVAPayouts()
+    {
+        // setting up source VA as Yes Bank Nodal Account VA
+        $this->bankAccount->setAccountNumber("7878780111222");
+        $this->bankAccount->save();
+        $this->bankingBalance->setAccountNumber("7878780111222");
+        $this->bankingBalance->save();
+        $this->fixtures->merchant->addFeatures([Feature\Constants::HANDLE_VA_TO_VA_PAYOUT]);
+        $this->fixtures->merchant->activate();
+
+        $fundAccount = $this->createFundAccountOfNonBankingVA();
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['content']['fund_account_id'] = $fundAccount['id'];
+
+        $this->ba->privateAuth();
+
+        $this->startTest($testData);
+    }
+
+    // tests for va to va transfers using creditTransfer
+    public function testBlockVAtoVAPayoutsBetweenCurrentAndNodalVirtualAccounts()
+    {
+        // setting up source VA as Yes Bank Nodal Account VA
+        $this->bankAccount->setAccountNumber("7878780111222");
+        $this->bankAccount->save();
+        $this->bankingBalance->setAccountNumber("7878780111222");
+        $this->bankingBalance->save();
+        $this->fixtures->merchant->addFeatures([Feature\Constants::HANDLE_VA_TO_VA_PAYOUT]);
+        $this->fixtures->merchant->activate();
+
+        // setting up destination merchant with ICICI current VA
+        // Activate merchant with business_banking flag set to true
+        $this->fixtures->merchant->edit('100000Razorpay', ['business_banking' => 1]);
+
+        // Creates banking balance
+        $bankingBalance = $this->fixtures->merchant->createBalanceOfBankingType(
+            1000, '100000Razorpay','shared', null);
+
+        $bankingBalance->setAccountNumber('34340111011');
+        $bankingBalance->save();
+
+        $fundAccount = $this->createFundAccountOfIciciCurrentVA();
+
+        $fundAccountId = $fundAccount['id'];
+
+        // We shall setup a virtual account and a bank account that will act as a destination account
+        // Using MID 100000Razorpay
+        $destinationVirtualAccount = $this->fixtures->create('virtual_account',
+            [
+                'merchant_id' => '100000Razorpay',
+                'balance_id'  => $bankingBalance->getId()
+            ]);
+
+        $destinationBankAccount = $this->fixtures->create('bank_account',
+            [
+                'type'              => 'virtual_account',
+                'entity_id'         => $destinationVirtualAccount['id'],
+                'account_number'    => $fundAccount['bank_account']['account_number'],
+                'ifsc_code'         => $fundAccount['bank_account']['ifsc'],
+                'merchant_id'       => $destinationVirtualAccount['merchant_id'],
+            ]);
+
+        $this->fixtures->edit('virtual_account', $destinationVirtualAccount['id'],
+            [
+                'bank_account_id'   => $destinationBankAccount['id']
+            ]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['fund_account_id'] = $fundAccountId;
+
+        $this->mockRazorxToAllowVAToVAPayouts();
+
+        $this->ba->privateAuth();
+
+        $this->startTest($testData);
+    }
+
+    // tests for va to va transfers using creditTransfer
+    public function testAllowVAtoVAPayoutsWhenDestinationMerchantIsWhitelisted()
+    {
+        // setting up source VA as Yes Bank Nodal Account VA
+        $this->bankAccount->setAccountNumber("7878780111222");
+        $this->bankAccount->save();
+        $this->bankingBalance->setAccountNumber("7878780111222");
+        $this->bankingBalance->save();
+        $this->fixtures->merchant->addFeatures([Feature\Constants::HANDLE_VA_TO_VA_PAYOUT]);
+        $this->fixtures->merchant->activate();
+
+        // setting up destination merchant with Yes Bank Nodal Account VA
+        // Activate merchant with business_banking flag set to true.
+        $this->fixtures->merchant->edit('100000Razorpay', ['business_banking' => 1]);
+
+        // Creates banking balance for destination merchant
+        $bankingBalance = $this->fixtures->merchant->createBalanceOfBankingType(
+            1000, '100000Razorpay','shared', null);
+
+        $bankingBalance->setAccountNumber('7878780111011');
+        $bankingBalance->save();
+
+        $fundAccount = $this->createFundAccountOfYesbankNodalVA();
+        $fundAccountId = $fundAccount['id'];
+
+        // We shall setup a virtual account and a bank account that will act as a destination account
+        $destinationVirtualAccount = $this->fixtures->create('virtual_account',
+            [
+                'merchant_id' => '100000Razorpay',
+                'balance_id'  => $bankingBalance->getId()
+            ]);
+
+        $destinationBankAccount = $this->fixtures->create('bank_account',
+            [
+                'type'              => 'virtual_account',
+                'entity_id'         => $destinationVirtualAccount['id'],
+                'account_number'    => $fundAccount['bank_account']['account_number'],
+                'ifsc_code'         => $fundAccount['bank_account']['ifsc'],
+                'merchant_id'       => $destinationVirtualAccount['merchant_id'],
+            ]);
+
+        $this->fixtures->edit('virtual_account', $destinationVirtualAccount['id'],
+            [
+                'bank_account_id'   => $destinationBankAccount['id']
+            ]);
+
+        $destinationVirtualAccount = $this->getDbLastEntity('virtual_account');
+        $this->ba->adminAuth();
+
+        // Whitelisting the MID corresponding to the destination bank account number
+        $this->makeRequestAndGetContent([
+            'method'  => 'PUT',
+            'url'     => '/config/keys',
+            'content' => [
+                Admin\ConfigKey::RX_VA_TO_VA_PAYOUTS_WHITELISTED_DESTINATION_MERCHANTS =>
+                    [
+                        $destinationVirtualAccount['merchant_id']
+                    ],
+            ],
+        ]);
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['content']['fund_account_id'] = $fundAccountId;
+
+        $this->mockRazorxTreatment();
+
+        $this->ba->privateAuth();
+
+        $initialDestinationBalance = $bankingBalance->getBalance();
+
+        $initialSourceBalance = $this->bankingBalance->getBalance();
+
+        $this->startTest($testData);
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $creditTransfer = $this->getLastEntity('credit_transfer',true);
+
+        $transaction = $this->getLastEntity('transaction',true);
+
+        $this->assertEquals($transaction['type'], 'credit_transfer');
+
+        $this->assertEquals($creditTransfer['utr'], $payout['utr']);
+
+        $this->assertEquals($payout['channel'], Channel::RZPX);
+
+        $destinationBalance = $this->getEntityById('balance', $bankingBalance->getId(), true);
+
+        $finalExpectedDestinationBalance = $initialDestinationBalance + $payout['amount'];
+
+        $this->assertEquals($finalExpectedDestinationBalance, $destinationBalance['balance']);
+
+        $sourceBalance = $this->getEntityById('balance', $this->bankingBalance->getId(), true);
+
+        $finalExpectedSourceBalance = $initialSourceBalance - $payout['amount'] - $payout['fees'];
+
+        $this->assertEquals($finalExpectedSourceBalance, $sourceBalance['balance']);
+    }
+
+    // tests for va to va transfers using creditTransfer
+    public function testAllowVAtoVAPayoutsWhenSourceMerchantIsEnabled()
+    {
+        // setting up source VA as Yes Bank Nodal Account VA
+        $this->bankAccount->setAccountNumber("7878780111222");
+        $this->bankAccount->save();
+        $this->bankingBalance->setAccountNumber("7878780111222");
+        $this->bankingBalance->save();
+        $this->fixtures->merchant->addFeatures([Feature\Constants::HANDLE_VA_TO_VA_PAYOUT]);
+        $this->fixtures->merchant->activate();
+
+        // setting up destination merchant with Yes Bank Nodal Account VA
+        // Activate merchant with business_banking flag set to true.
+        $this->fixtures->merchant->edit('100000Razorpay', ['business_banking' => 1]);
+
+        // Creates banking balance for destination merchant
+        $bankingBalance = $this->fixtures->merchant->createBalanceOfBankingType(
+            1000, '100000Razorpay','shared', null);
+
+        $bankingBalance->setAccountNumber('7878780111011');
+        $bankingBalance->save();
+
+        $fundAccount = $this->createFundAccountOfYesbankNodalVA();
+        $fundAccountId = $fundAccount['id'];
+
+        // We shall setup a virtual account and a bank account that will act as a destination account
+        $destinationVirtualAccount = $this->fixtures->create('virtual_account',
+            [
+                'merchant_id' => '100000Razorpay',
+                'balance_id'  => $bankingBalance->getId()
+            ]);
+
+        $destinationBankAccount = $this->fixtures->create('bank_account',
+            [
+                'type'              => 'virtual_account',
+                'entity_id'         => $destinationVirtualAccount['id'],
+                'account_number'    => $fundAccount['bank_account']['account_number'],
+                'ifsc_code'         => $fundAccount['bank_account']['ifsc'],
+                'merchant_id'       => $destinationVirtualAccount['merchant_id'],
+            ]);
+
+        $this->fixtures->edit('virtual_account', $destinationVirtualAccount['id'],
+            [
+                'bank_account_id'   => $destinationBankAccount['id']
+            ]);
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['content']['fund_account_id'] = $fundAccountId;
+
+        $this->mockRazorxToAllowVAToVAPayouts();
+
+        $initialDestinationBalance = $bankingBalance->getBalance();
+
+        $initialSourceBalance = $this->bankingBalance->getBalance();
+
+        $this->startTest($testData);
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $transaction = $this->getLastEntity('transaction',true);
+
+        $creditTransfer = $this->getLastEntity('credit_transfer',true);
+
+        $this->assertEquals($transaction['type'], 'credit_transfer');
+
+        $this->assertEquals($creditTransfer['utr'], $payout['utr']);
+
+        $this->assertEquals($payout['channel'], Channel::RZPX);
+
+        $destinationBalance = $this->getEntityById('balance', $bankingBalance->getId(), true);
+
+        $finalExpectedDestinationBalance = $initialDestinationBalance + $payout['amount'];
+
+        $this->assertEquals($finalExpectedDestinationBalance, $destinationBalance['balance']);
+
+        $sourceBalance = $this->getEntityById('balance', $this->bankingBalance->getId(), true);
+
+        $finalExpectedSourceBalance = $initialSourceBalance - $payout['amount'] - $payout['fees'];
+
+        $this->assertEquals($finalExpectedSourceBalance, $sourceBalance['balance']);
+    }
+
+    // tests for va to va transfers using creditTransfer
+    public function testBlockVAtoVAPayoutsWhenBothSourceAndDestinationMerchantNotEnabled()
+    {
+        // setting up source VA as Yes Bank Nodal Account VA
+        $this->bankAccount->setAccountNumber("7878780111222");
+        $this->bankAccount->save();
+        $this->bankingBalance->setAccountNumber("7878780111222");
+        $this->bankingBalance->save();
+        $this->fixtures->merchant->addFeatures([Feature\Constants::HANDLE_VA_TO_VA_PAYOUT]);
+        $this->fixtures->merchant->activate();
+
+        // setting up destination merchant with Yes Bank Nodal Account VA
+        // Activate merchant with business_banking flag set to true.
+        $this->fixtures->merchant->edit('100000Razorpay', ['business_banking' => 1]);
+
+        // Creates banking balance for destination merchant
+        $bankingBalance = $this->fixtures->merchant->createBalanceOfBankingType(
+            1000, '100000Razorpay','shared', null);
+
+        $bankingBalance->setAccountNumber('7878780111011');
+        $bankingBalance->save();
+
+        $fundAccount = $this->createFundAccountOfYesbankNodalVA();
+        $fundAccountId = $fundAccount['id'];
+
+        // We shall setup a virtual account and a bank account that will act as a destination account
+        $destinationVirtualAccount = $this->fixtures->create('virtual_account',
+            [
+                'merchant_id' => '100000Razorpay',
+                'balance_id'  => $bankingBalance->getId()
+            ]);
+
+        $destinationBankAccount = $this->fixtures->create('bank_account',
+            [
+                'type'              => 'virtual_account',
+                'entity_id'         => $destinationVirtualAccount['id'],
+                'account_number'    => $fundAccount['bank_account']['account_number'],
+                'ifsc_code'         => $fundAccount['bank_account']['ifsc'],
+                'merchant_id'       => $destinationVirtualAccount['merchant_id'],
+            ]);
+
+        $this->fixtures->edit('virtual_account', $destinationVirtualAccount['id'],
+            [
+                'bank_account_id'   => $destinationBankAccount['id']
+            ]);
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['content']['fund_account_id'] = $fundAccountId;
+
+        $this->mockRazorxTreatment();
+
+        $this->ba->privateAuth();
+
+        $this->startTest($testData);
+    }
+
+    // tests for va to va transfers using creditTransfer
+    public function testBlockVAtoVAPayoutsWhenDestinationVaIsInActive()
+    {
+        // setting up source VA as Yes Bank Nodal Account VA
+        $this->bankAccount->setAccountNumber("7878780111222");
+        $this->bankAccount->save();
+        $this->bankingBalance->setAccountNumber("7878780111222");
+        $this->bankingBalance->save();
+        $this->fixtures->merchant->addFeatures([Feature\Constants::HANDLE_VA_TO_VA_PAYOUT]);
+        $this->fixtures->merchant->activate();
+
+        // setting up destination merchant with Yes Bank Nodal Account VA
+        // Activate merchant with business_banking flag set to true.
+        $this->fixtures->merchant->edit('100000Razorpay', ['business_banking' => 1]);
+
+        // Creates banking balance for destination merchant
+        $bankingBalance = $this->fixtures->merchant->createBalanceOfBankingType(
+            1000, '100000Razorpay','shared', null);
+
+        $bankingBalance->setAccountNumber('7878780111011');
+        $bankingBalance->save();
+
+        $fundAccount = $this->createFundAccountOfYesbankNodalVA();
+        $fundAccountId = $fundAccount['id'];
+
+        // We shall setup a virtual account and a bank account that will act as a destination account
+        $destinationVirtualAccount = $this->fixtures->create('virtual_account',
+            [
+                'merchant_id' => '100000Razorpay',
+                'balance_id'  => $bankingBalance->getId()
+            ]);
+
+        $destinationBankAccount = $this->fixtures->create('bank_account',
+            [
+                'type'              => 'virtual_account',
+                'entity_id'         => $destinationVirtualAccount['id'],
+                'account_number'    => $fundAccount['bank_account']['account_number'],
+                'ifsc_code'         => $fundAccount['bank_account']['ifsc'],
+                'merchant_id'       => $destinationVirtualAccount['merchant_id'],
+            ]);
+
+        $this->fixtures->edit('virtual_account', $destinationVirtualAccount['id'],
+            [
+                'bank_account_id'   => $destinationBankAccount['id']
+            ]);
+
+        // deactivate destination virtual account
+        $this->fixtures->edit('virtual_account', $destinationVirtualAccount['id'],
+            [
+                'status' => 'closed'
+            ]);
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['content']['fund_account_id'] = $fundAccountId;
+
+        $this->mockRazorxToAllowVAToVAPayouts();
+
+        $this->ba->privateAuth();
+
+        $this->startTest($testData);
+    }
+
+    // tests for va to va transfers using creditTransfer
+    public function testBlockVAtoVAPayoutsWhenBothSourceAndDestinationAreSameBankingAccount()
+    {
+        // setting up source VA as Yes Bank Nodal Account VA
+        $this->bankAccount->setAccountNumber("7878780111222");
+        $this->bankAccount->save();
+        $this->bankingBalance->setAccountNumber("7878780111222");
+        $this->bankingBalance->save();
+        $this->fixtures->merchant->addFeatures([Feature\Constants::HANDLE_VA_TO_VA_PAYOUT]);
+        $this->fixtures->merchant->activate();
+
+        $fundAccount = $this->createFundAccountOfYesbankNodalVA();
+        $fundAccountId = $fundAccount['id'];
+
+        // We shall setup a virtual account and a bank account that will act as a destination account
+        $destinationVirtualAccount = $this->fixtures->create('virtual_account',
+            [
+                'merchant_id' => $this->bankingBalance->getMerchantId(),
+                'balance_id'  => $this->bankingBalance->getId()
+            ]);
+
+        $destinationBankAccount = $this->fixtures->create('bank_account',
+            [
+                'type'              => 'virtual_account',
+                'entity_id'         => $destinationVirtualAccount['id'],
+                'account_number'    => $fundAccount['bank_account']['account_number'],
+                'ifsc_code'         => $fundAccount['bank_account']['ifsc'],
+                'merchant_id'       => $destinationVirtualAccount['merchant_id'],
+            ]);
+
+        $this->fixtures->edit('virtual_account', $destinationVirtualAccount['id'],
+            [
+                'bank_account_id'   => $destinationBankAccount['id']
+            ]);
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['content']['fund_account_id'] = $fundAccountId;
+
+        $this->mockRazorxToAllowVAToVAPayouts();
+
+        $this->ba->privateAuth();
+
+        $this->startTest($testData);
+    }
+
+    // tests for va to va transfers using creditTransfer
+    public function testAllowLowBalanceQueuedVAtoVAPayoutsWhenSourceMerchantIsEnabled()
+    {
+        // setting up source VA as Yes Bank Nodal Account VA
+        $this->bankAccount->setAccountNumber("7878780111222");
+        $this->bankAccount->save();
+        $this->bankingBalance->setAccountNumber("7878780111222");
+        $this->bankingBalance->save();
+        $this->fixtures->merchant->addFeatures([Feature\Constants::HANDLE_VA_TO_VA_PAYOUT]);
+        $this->fixtures->merchant->activate();
+
+        // setting up destination merchant with Yes Bank Nodal Account VA
+        // Activate merchant with business_banking flag set to true.
+        $this->fixtures->merchant->edit('100000Razorpay', ['business_banking' => 1]);
+
+        // Creates banking balance for destination merchant
+        $bankingBalance = $this->fixtures->merchant->createBalanceOfBankingType(
+            1000, '100000Razorpay','shared', null);
+
+        $bankingBalance->setAccountNumber('7878780111011');
+        $bankingBalance->save();
+
+        $fundAccount = $this->createFundAccountOfYesbankNodalVA();
+        $fundAccountId = $fundAccount['id'];
+
+        // We shall setup a virtual account and a bank account that will act as a destination account
+        $destinationVirtualAccount = $this->fixtures->create('virtual_account',
+            [
+                'merchant_id' => '100000Razorpay',
+                'balance_id'  => $bankingBalance->getId()
+            ]);
+
+        $destinationBankAccount = $this->fixtures->create('bank_account',
+            [
+                'type'              => 'virtual_account',
+                'entity_id'         => $destinationVirtualAccount['id'],
+                'account_number'    => $fundAccount['bank_account']['account_number'],
+                'ifsc_code'         => $fundAccount['bank_account']['ifsc'],
+                'merchant_id'       => $destinationVirtualAccount['merchant_id'],
+            ]);
+
+        $this->fixtures->edit('virtual_account', $destinationVirtualAccount['id'],
+            [
+                'bank_account_id'   => $destinationBankAccount['id']
+            ]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['fund_account_id'] = $fundAccountId;
+
+        $balanceId = $this->bankingBalance->getId();
+
+        $this->fixtures->edit('balance',$balanceId,['balance' => 0]);
+
+        $this->mockRazorxToAllowVAToVAPayouts();
+
+        $this->startTest($testData);
+
+        $this->fixtures->edit('balance',$balanceId,['balance' => 10000000]);
+
+        $initialDestinationBalance = $bankingBalance->getBalance();
+
+        $initialSourceBalance = $this->bankingBalance->getBalance();
+
+        $dispatchResponse = $this->dispatchQueuedPayouts();
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $transaction = $this->getLastEntity('transaction',true);
+
+        $creditTransfer = $this->getLastEntity('credit_transfer',true);
+
+        $this->assertEquals($transaction['type'], 'credit_transfer');
+
+        $this->assertEquals($creditTransfer['utr'], $payout['utr']);
+
+        $this->assertEquals($payout['status'], Status::PROCESSED);
+
+        $this->assertEquals($payout['channel'], Channel::RZPX);
+
+        $destinationBalance = $this->getEntityById('balance', $bankingBalance->getId(), true);
+
+        $finalExpectedDestinationBalance = $initialDestinationBalance + $payout['amount'];
+
+        $this->assertEquals($finalExpectedDestinationBalance, $destinationBalance['balance']);
+
+        $sourceBalance = $this->getEntityById('balance', $this->bankingBalance->getId(), true);
+
+        $finalExpectedSourceBalance = $initialSourceBalance - $payout['amount'] - $payout['fees'];
+
+        $this->assertEquals($finalExpectedSourceBalance, $sourceBalance['balance']);
+    }
+
+    public function testFailedVAtoVAPayoutReversal()
+    {
+        $this->testAllowVAtoVAPayoutsWhenDestinationMerchantIsWhitelisted();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit('payout', $payout->getId(), [
+            'channel' => 'icici',
+            'utr'     => null,
+            'status'  => 'created'
+        ]);
+
+        $creditTransfer = $this->getDbLastEntity('credit_transfer');
+
+        $this->fixtures->edit('credit_transfer', $creditTransfer->getId(), [
+            'utr'     => null,
+            'status'  => 'created'
+        ]);
+
+        $reversedPayout = (new Payout\Core)->handleReversalForFailedVaToVaPayout($payout->getId());
+
+        $updatedPayout = $this->getLastEntity('payout', true);
+
+        $reversal = $this->getLastEntity('reversal', true);
+
+        $updatedCreditTransfer = $this->getDbLastEntity('credit_transfer');
+
+        $this->assertEquals($updatedPayout[Payout\Entity::ID], 'pout_'.$reversal[ReversalEntity::ENTITY_ID]);
+
+        $this->assertEquals($updatedCreditTransfer[Payout\Entity::STATUS], CreditTransfer\Status::FAILED);
+
+        $this->assertEquals($updatedPayout[Payout\Entity::STATUS],Payout\Status::REVERSED);
+
+        $this->assertNotNull($updatedPayout[Payout\Entity::REVERSED_AT]);
+
+        $this->assertEquals($updatedPayout[Payout\Entity::AMOUNT] + $updatedPayout[Payout\Entity::FEES], $reversal['amount']);
+    }
+
     // Since this is a VA to VA payout and razorx returns control, we shall fail this payout
     public function testBlockVAtoVAPayoutsWithICICIDestination()
     {
-        $fundAccount = $this->createFundAccountOfIciciVA();
+        $fundAccount = $this->createFundAccountOfIciciCurrentVA();
 
         $fundAccountId = $fundAccount['id'];
 
@@ -14484,7 +15079,7 @@ class PayoutTest extends OAuthTestCase
     // Since this is a VA to VA payout and razorx returns control, we shall fail this payout
     public function testBlockVAtoVAPayoutsWithYesbankDestination()
     {
-        $fundAccount = $this->createFundAccountOfYesbankVA();
+        $fundAccount = $this->createFundAccountOfYesbankNodalVA();
 
         $fundAccountId = $fundAccount['id'];
 
@@ -14518,7 +15113,7 @@ class PayoutTest extends OAuthTestCase
     // But in this case, we have whitelisted the destination MID, hence the payout should go through.
     public function testAllowVAtoVAPayoutsWhenSourceDestinationIsWhitelisted()
     {
-        $fundAccountResponse = $this->createFundAccountOfYesbankVA();
+        $fundAccountResponse = $this->createFundAccountOfYesbankNodalVA();
 
         //
         // We shall setup a virtual account and a bank account that will act as a destination account
@@ -14576,7 +15171,7 @@ class PayoutTest extends OAuthTestCase
     // to make VA to VA payouts, we shall allow this payout to go through
     public function testAllowVAtoVAPayoutsWithRazorXExperimentWithICICIDestination()
     {
-        $fundAccount = $this->createFundAccountOfIciciVA();
+        $fundAccount = $this->createFundAccountOfIciciCurrentVA();
 
         $fundAccountId = $fundAccount['id'];
 
@@ -14593,7 +15188,7 @@ class PayoutTest extends OAuthTestCase
     // to make VA to VA payouts, we shall allow this payout to go through
     public function testAllowVAtoVAPayoutsWithRazorXExperimentWithYesbankDestination()
     {
-        $fundAccount = $this->createFundAccountOfYesbankVA();
+        $fundAccount = $this->createFundAccountOfYesbankNodalVA();
 
         $fundAccountId = $fundAccount['id'];
 
@@ -14613,7 +15208,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->setupDirectAccount();
 
-        $fundAccount = $this->createFundAccountOfIciciVA();
+        $fundAccount = $this->createFundAccountOfIciciCurrentVA();
 
         $fundAccountId = $fundAccount['id'];
 
@@ -15777,7 +16372,7 @@ class PayoutTest extends OAuthTestCase
     // we shall pass this payout
     public function testBlockVAtoVAPayoutsWithYesbankDestinationAndFeatureEnabled()
     {
-        $fundAccount = $this->createFundAccountOfYesbankVA();
+        $fundAccount = $this->createFundAccountOfYesbankNodalVA();
 
         $fundAccountId = $fundAccount['id'];
 

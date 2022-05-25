@@ -60,6 +60,10 @@ return [
         'test'       => env('AWS_PAYOUTS_TEST_QUEUE'),
         'live'       => env('AWS_PAYOUTS_LIVE_QUEUE'),
     ],
+    'queued_payouts_for_va_to_va_credit_transfers' => [
+        'test'       => env('AWS_PAYOUTS_TEST_QUEUE'),
+        'live'       => env('AWS_PAYOUTS_LIVE_QUEUE'),
+    ],
     'scheduled_payouts_process' => [
         'test'       =>  env('AWS_SCHEDULED_PAYOUTS_PROCESS_TEST_QUEUE'),
         'live'       =>  env('AWS_SCHEDULED_PAYOUTS_PROCESS_LIVE_QUEUE'),

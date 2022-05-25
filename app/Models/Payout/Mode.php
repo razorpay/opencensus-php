@@ -179,8 +179,13 @@ class Mode
                     ]
                 ],
                 Settlement\Channel::M2P     => [
-                    Constants\Entity::CARD => [
+                    Constants\Entity::CARD           => [
                         self::CARD,
+                    ],
+                ],
+                Settlement\Channel::RZPX    => [
+                    Constants\Entity::BANK_ACCOUNT   => [
+                        self::IFT,
                     ],
                 ],
             ],

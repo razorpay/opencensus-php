@@ -83,6 +83,7 @@ class Entity
     const AUTH_TOKEN                 = 'auth_token';
     const INVITATION                 = 'invitation';
     const ADJUSTMENT                 = 'adjustment';
+    const CREDIT_TRANSFER            = 'credit_transfer';
     const CREDITNOTE                 = 'creditnote';
     const FILE_STORE                 = 'file_store';
     const SETTLEMENT                 = 'settlement';
@@ -780,6 +781,7 @@ class Entity
         Entity::REFUND,
         Entity::FUND_ACCOUNT_VALIDATION,
         Entity::ADJUSTMENT,
+        Entity::CREDIT_TRANSFER,
         Entity::SETTLEMENT,
     ];
 

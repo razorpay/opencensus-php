@@ -51,6 +51,12 @@ class Base extends BaseCore
 
     protected function createFundTransferAttempt(Entity $payout, $ftaAccount)
     {
+        // For VA to VA transfers using creditTransfer entity we don't create FTA
+        if ($payout->isVaToVaPayout() === true)
+        {
+            return;
+        }
+
         $ftaInput = [
             FundTransferAttempt\Entity::PURPOSE   => $payout->getPurposeType(),
             FundTransferAttempt\Entity::CHANNEL   => $payout->getChannel(),

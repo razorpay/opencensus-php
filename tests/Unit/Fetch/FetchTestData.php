@@ -781,6 +781,8 @@ return [
 
     E::PAYOUTS_BATCH => [],
 
+    E::CREDIT_TRANSFER => [],
+
     E::TRUSTED_BADGE => [],
 
     E::TRUSTED_BADGE_HISTORY => [],

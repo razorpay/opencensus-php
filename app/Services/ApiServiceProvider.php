@@ -67,6 +67,7 @@ use RZP\Constants\Entity as E;
 use RZP\Models\Admin as Admin;
 use RZP\Models\VirtualAccount;
 use RZP\Models\BankingAccount;
+use RZP\Models\CreditTransfer;
 use RZP\Gateway\GatewayManager;
 use RZP\Models\Workflow\Action;
 use RZP\Models\CreditRepayment;
@@ -1109,6 +1110,7 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
             'fund_transfer_attempt'     => FundTransfer\Attempt\Entity::class,
             'customer_transaction'      => Customer\Transaction\Entity::class,
             'external'                  => External\Entity::class,
+            'credit_transfer'           => CreditTransfer\Entity::class,
 
             'bank_account'              => BankAccount\Entity::class,
             'wallet_account'            => WalletAccount\Entity::class,

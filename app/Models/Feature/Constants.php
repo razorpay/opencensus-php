@@ -959,6 +959,11 @@ class Constants
     const PAYOUT_ASYNC_FTS_TRANSFER = 'payout_async_fts_transfer';
 
     /**
+     * Feature flag to temporarily hold implementation of VA to VA payouts using creditTransfers
+     */
+    const HANDLE_VA_TO_VA_PAYOUT = 'handle_va_to_va_payout';
+
+    /**
      * Feature flag to allow narration to be null in payouts instead of
      * default billing label
      */
@@ -1827,6 +1832,7 @@ class Constants
         self::HDFC_SINGLE_TID                 => true,
         self::ORG_POOL_ACCOUNT_SETTLEMENT     => true,
         self::ONE_CC_REPORTING_TEST           => true,
+        self::HANDLE_VA_TO_VA_PAYOUT          => true,
         self::RECURRING_CHECKOUT_DOT_COM      => true,
     ];
 

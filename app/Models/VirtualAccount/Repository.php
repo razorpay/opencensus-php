@@ -57,6 +57,28 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    // In bank account table there can be multiple rows with same account number, type column differentiates those rows,
+    // if type is virtual account, that bank account is mapped to virtual account
+    public function getActiveVirtualAccountFromAccountNumberAndIfsc($accountNumber, $ifsc)
+    {
+        $virtualAccountIdColumn          = $this->repo->virtual_account->dbColumn(Entity::ID);
+        $virtualAccountTableStatusColumn = $this->repo->virtual_account->dbColumn('status');
+
+        $bankAccountTable                = $this->repo->bank_account->getTableName();
+        $bankAccountTypeColumn           = $this->repo->bank_account->dbColumn(BankAccount\Entity::TYPE);
+        $bankAccountEntityIdColumn       = $this->repo->bank_account->dbColumn(BankAccount\Entity::ENTITY_ID);
+        $ifscCodeColumn                  = $this->repo->bank_account->dbColumn(BankAccount\Entity::IFSC_CODE);
+        $accountNumberColumn             = $this->repo->bank_account->dbColumn(BankAccount\Entity::ACCOUNT_NUMBER);
+
+        return $this->newQuery()
+                    ->join($bankAccountTable, $virtualAccountIdColumn, '=', $bankAccountEntityIdColumn)
+                    ->where($accountNumberColumn, '=', $accountNumber)
+                    ->where($ifscCodeColumn, '=', $ifsc)
+                    ->where($bankAccountTypeColumn, '=', BankAccount\Type::VIRTUAL_ACCOUNT)
+                    ->where($virtualAccountTableStatusColumn, '=', Status::ACTIVE)
+                    ->first();
+    }
+
     public function findActiveVirtualAccountByOrder(Order\Entity $order)
     {
         return $this->newQuery()

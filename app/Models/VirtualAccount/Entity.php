@@ -272,6 +272,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::MERCHANT_ID);
     }
 
+    public function getBalanceId()
+    {
+        return $this->getAttribute(self::BALANCE_ID);
+    }
+
     public function getAmountPaid()
     {
         return $this->getAttribute(self::AMOUNT_PAID);
@@ -329,6 +334,11 @@ class Entity extends Base\PublicEntity
     public function getClosedAt()
     {
         return $this->getAttribute(self::CLOSED_AT);
+    }
+
+    public function getBankAccountId()
+    {
+        return $this->getAttribute(self::BANK_ACCOUNT_ID);
     }
 
     public function getEntityId()

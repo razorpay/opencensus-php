@@ -4,6 +4,7 @@ namespace RZP\Models\Payout\Processor;
 
 use App;
 use Closure;
+use Razorpay\Api\VirtualAccount;
 use RZP\Exception;
 use Carbon\Carbon;
 use RZP\Error\Error;
@@ -1914,7 +1915,14 @@ class Base extends BaseCore
             );
         }
 
-        $this->blockVaToVaPayouts($payout, $fundAccount, $input);
+        if ($this->merchant->isFeatureEnabled(Features::HANDLE_VA_TO_VA_PAYOUT))
+        {
+            $this->handleVaToVaPayouts($payout, $fundAccount);
+        }
+        else
+        {
+            $this->blockVaToVaPayouts($payout, $fundAccount, $input);
+        }
 
         $this->validateFundAccountContact($fundAccount);
 
@@ -1960,6 +1968,12 @@ class Base extends BaseCore
         $this->fetchAndAssociatePayoutAccount($payout, $input);
 
         $this->setMethod($payout);
+
+        // overriding mode to "IFT" in case of VA to VA payouts using creditTransfers
+        if ($payout->getIsCreditTransferBasedPayout() === true)
+        {
+            $input[Entity::MODE] = Payout\Mode::IFT;
+        }
 
         $payout->balance()->associate($this->balance);
 
@@ -2564,6 +2578,205 @@ class Base extends BaseCore
         }
     }
 
+    protected function handleVaToVaPayouts(Payout\Entity $payout, FundAccount\Entity $fundAccount)
+    {
+        // We are making sure that the source account is Banking VA
+        if ($this->balance->getAccountType() === Balance\AccountType::SHARED)
+        {
+            $fundAccountType = $fundAccount->getAccountType();
+
+            switch ($fundAccountType)
+            {
+                case FundAccount\Type::BANK_ACCOUNT:
+                    $this->handleVaToVaPayoutForFundAccountWithBankAccountType($payout, $fundAccount);
+                    break ;
+
+                case FundAccount\Type::VPA:
+                    $this->handleVaToVaPayoutForFundAccountWithVpaType($payout, $fundAccount);
+            }
+        }
+    }
+
+    protected function handleVaToVaPayoutForFundAccountWithBankAccountType(Payout\Entity $payout, FundAccount\Entity $fundAccount)
+    {
+        // if the destination account is a virtual account of type bank account
+        if ($fundAccount->isAccountVirtualBankAccount() === true)
+        {
+            $sourceAccountNumber = $this->balance->getAccountNumber();
+
+            $sourceUnderlyingAccountType = $this->getUnderlyingAccountTypeForBankingVA($sourceAccountNumber);
+
+            $destinationAccountNumber = $fundAccount->account->getAccountNumber();
+
+            $destinationUnderlyingAccountType = $this->getUnderlyingAccountTypeForBankingVA($destinationAccountNumber);
+
+            // We should not allow internal transfers between current account VA and nodal account VA
+            // We block payouts from banking VA to Non banking VA
+            if ($sourceUnderlyingAccountType !== $destinationUnderlyingAccountType)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_VA_TO_VA_PAYOUTS_NOT_ALLOWED,
+                    null,
+                    [
+                        'merchant_id'                         => $payout->getMerchantId(),
+                        'fund_account_id'                     => $fundAccount->getId(),
+                        'source_underlying_account_type'      => $sourceUnderlyingAccountType,
+                        'destination_underlying_account_type' => $destinationUnderlyingAccountType
+                    ]);
+            }
+
+            // check if destination merchant is enabled for VA to VA transfers
+            if ($this->checkIfDestinationVaIsActiveAndMerchantWhitelisted($payout, $fundAccount) === true)
+            {
+                $payout->setIsCreditTransferBasedPayout(true);
+
+                return;
+            }
+
+            // check if source merchant is enabled for VA to VA transfers
+            if ($this->checkIfSourceMerchantEnabledForVaToVaPayouts($payout, $fundAccount) === true)
+            {
+                $payout->setIsCreditTransferBasedPayout(true);
+
+                return;
+            }
+
+            //if both source and destination merchants are not enabled
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_VA_TO_VA_PAYOUTS_BLOCKED,
+                null,
+                [
+                    'merchant_id'       => $payout->getMerchantId(),
+                    'fund_account_id'   => $fundAccount->getId()
+                ]);
+        }
+    }
+
+    protected function handleVaToVaPayoutForFundAccountWithVpaType(Payout\Entity $payout, FundAccount\Entity $fundAccount)
+    {
+        $vpa = $fundAccount->account;
+
+        $doesVpaBelongsToVa = $this->repo->vpa->checkIfVpaBelongsToVirtualAccount($vpa);
+
+        if($doesVpaBelongsToVa === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_VA_TO_VA_PAYOUTS_BLOCKED,
+                null,
+                [
+                    'merchant_id'       => $payout->getMerchantId(),
+                    'fund_account_id'   => $fundAccount->getId()
+                ]);
+        }
+    }
+
+    protected function getUnderlyingAccountTypeForBankingVA(string $accountNumber)
+    {
+        $firstFourDigitsOfAccountNumber = substr($accountNumber, 0, 4);
+
+        $firstSixDigitsOfAccountNumber = substr($accountNumber, 0, 6);
+
+        if (array_key_exists($firstFourDigitsOfAccountNumber,
+            FundAccount\Entity::PREFIX_TO_UNDERLYING_ACCOUNT_TYPE_MAP))
+        {
+            return FundAccount\Entity::PREFIX_TO_UNDERLYING_ACCOUNT_TYPE_MAP[$firstFourDigitsOfAccountNumber] ;
+        }
+
+        if (array_key_exists($firstSixDigitsOfAccountNumber,
+            FundAccount\Entity::PREFIX_TO_UNDERLYING_ACCOUNT_TYPE_MAP))
+        {
+            return FundAccount\Entity::PREFIX_TO_UNDERLYING_ACCOUNT_TYPE_MAP[$firstSixDigitsOfAccountNumber] ;
+        }
+
+        return Balance\Type::PRIMARY;
+    }
+
+    protected function checkIfDestinationVaIsActiveAndMerchantWhitelisted(Payout\Entity $payout, FundAccount\Entity $fundAccount): bool
+    {
+        $bankAccount = $fundAccount->account;
+
+        // We are maintaining a list of destination bank accounts on redis that we shall allow
+        // the merchant to create payouts to.
+        $destinationMIDsToWhitelist = (new AdminService)->getConfigKey(
+            [
+                'key' => ConfigKey::RX_VA_TO_VA_PAYOUTS_WHITELISTED_DESTINATION_MERCHANTS
+            ]);
+
+        $destinationVirtualAccount = $this->repo->virtual_account
+                                                ->getActiveVirtualAccountFromAccountNumberAndIfsc(
+                                                    $bankAccount->getAccountNumber(),
+                                                    $bankAccount->getIfscCode()
+                                                );
+
+        // if there is no active VA, we throw an error
+        if ($destinationVirtualAccount === null)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_VA_TO_VA_PAYOUTS_NO_ACTIVE_BENEFICIARY_VA_FOUND,
+                null,
+                [
+                    'merchant_id'       => $payout->getMerchantId(),
+                    'fund_account_id'   => $fundAccount->getId()
+                ]);
+        }
+
+        $destinationBalanceId = $destinationVirtualAccount->getBalanceId();
+
+        if ($destinationBalanceId === $this->balance->getId())
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_VA_TO_VA_PAYOUT_ON_SAME_ACCOUNT,
+                null,
+                [
+                    'merchant_id'       => $payout->getMerchantId(),
+                    'fund_account_id'   => $fundAccount->getId()
+                ]);
+        }
+
+        $destinationMerchantId = $destinationVirtualAccount->getMerchantId();
+
+        if (in_array($destinationMerchantId, $destinationMIDsToWhitelist, true) === true)
+        {
+            $this->trace->info(TraceCode::PAYOUT_VA_TO_VA_ALLOWED_BASED_ON_DESTINATION,
+                [
+                    'merchant_id'       => $payout->getMerchantId(),
+                    'fund_account_id'   => $fundAccount->getId()
+                ]);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function checkIfSourceMerchantEnabledForVaToVaPayouts(Payout\Entity $payout, FundAccount\Entity $fundAccount)
+    {
+        $variant = $this->app['razorx']->getTreatment(
+            $payout->getMerchantId(),
+            Merchant\RazorxTreatment::RX_ALLOW_VA_TO_VA_PAYOUTS,
+            $this->mode,
+            3);
+
+        $isVaToVaPayoutsAllowed = $this->merchant->isFeatureEnabled(Features::ALLOW_VA_TO_VA_PAYOUTS);
+
+        // variant will be control when:
+        // 1. Merchant is not part of the `on` variant, meaning merchant is not allowed VA to VA payouts
+        // 2. If RazorX request fails
+        if (($variant === 'on') or
+            ($isVaToVaPayoutsAllowed == true))
+        {
+            $this->trace->info(TraceCode::PAYOUT_VA_TO_VA_ALLOWED_BASED_ON_SOURCE,
+                [
+                    'merchant_id'       => $payout->getMerchantId(),
+                    'fund_account_id'   => $fundAccount->getId()
+                ]);
+
+            return true;
+        }
+
+        return false;
+    }
+
     protected function blockVaToVaPayouts(Payout\Entity $payout, FundAccount\Entity $fundAccount, array $input)
     {
         $blockVAToVAPayouts = false;
@@ -2585,7 +2798,7 @@ class Base extends BaseCore
                 // as values. If the mapping exists, and the IFSC of the fund account matches with a VA's IFSC,
                 // we block the payout
 
-                if ((FundAccount\Entity::VA_TO_VA_BLOCKING_MAPPING[$firstFourDigitsOfAccountNumber] ?? '')
+                if ((FundAccount\Entity::PREFIX_TO_IFSC_MAPPING_FOR_VIRTUAL_ACCOUNTS[$firstFourDigitsOfAccountNumber] ?? '')
                                                                                             === $ifscCode)
                 {
                     $blockVAToVAPayouts = true;
@@ -2593,7 +2806,7 @@ class Base extends BaseCore
 
                 $firstSixDigitsOfAccountNumber = substr($bankAccount->getAccountNumber(), 0, 6);
 
-                if ((FundAccount\Entity::VA_TO_VA_BLOCKING_MAPPING[$firstSixDigitsOfAccountNumber] ?? '')
+                if ((FundAccount\Entity::PREFIX_TO_IFSC_MAPPING_FOR_VIRTUAL_ACCOUNTS[$firstSixDigitsOfAccountNumber] ?? '')
                                                                                             === $ifscCode)
                 {
                     $blockVAToVAPayouts = true;

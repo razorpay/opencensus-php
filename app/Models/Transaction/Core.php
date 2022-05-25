@@ -26,6 +26,7 @@ use RZP\Models\Currency;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\Payout;
+use RZP\Models\CreditTransfer;
 use RZP\Models\Payment\Refund;
 use RZP\Models\Pricing;
 use RZP\Models\Settlement\SlackNotification;
@@ -765,6 +766,13 @@ class Core extends Base\Core
     public function createFromAdjustment(Adjustment\Entity $adj)
     {
         list($txn, $feeSplit) = $this->createTransactionForSource($adj);
+
+        return $txn;
+    }
+
+    public function createFromCreditTransfer(CreditTransfer\Entity $ct)
+    {
+        list($txn, $feeSplit) = $this->createTransactionForSource($ct);
 
         return $txn;
     }

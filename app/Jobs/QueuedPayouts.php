@@ -13,6 +13,11 @@ class QueuedPayouts extends Job
 
     protected $payoutId;
 
+    /**
+     * @var string
+     */
+    protected $queueConfigKey = 'queued_payouts';
+
     public function __construct(string $mode, string $payoutId)
     {
         parent::__construct($mode);

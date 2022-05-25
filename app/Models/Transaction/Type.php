@@ -26,6 +26,7 @@ class Type
     const INSTALLMENT             = 'installment';
     const CHARGE                  = 'charge';
     const REPAYMENT_BREAKUP       = 'repayment_breakup';
+    const CREDIT_TRANSFER         = 'credit_transfer';
 
     //
     // These entities from transaction will not be considered for merchant invoice as we wont charge on these entities
@@ -45,6 +46,7 @@ class Type
         self::COMMISSION,
         self::BANK_TRANSFER,
         self::FUND_ACCOUNT_VALIDATION,
+        self::CREDIT_TRANSFER
     ];
 
     const BANKING_TYPE = [
@@ -54,6 +56,7 @@ class Type
         self::ADJUSTMENT,
         self::EXTERNAL,
         self::FUND_ACCOUNT_VALIDATION,
+        self::CREDIT_TRANSFER
     ];
 
     const CAPITAL_TYPE = [

@@ -332,6 +332,9 @@ class Entity extends Base\PublicEntity
         'description'   => null,
     ];
 
+    // this variable is used to locally identify if its a VA to VA payout.
+    protected $isCreditTransferBasedPayout = null;
+
     // This flag will be used to decide if FTS fund transfer has to be async call.
     protected $syncFtsFundTransfer = false;
 
@@ -1357,6 +1360,11 @@ class Entity extends Base\PublicEntity
         return $this->queuePayoutCreateRequest;
     }
 
+    public function getIsCreditTransferBasedPayout()
+    {
+        return $this->isCreditTransferBasedPayout;
+    }
+
     public function getCancellationUserId()
     {
         return $this->getAttribute(self::CANCELLATION_USER_ID);
@@ -1380,6 +1388,11 @@ class Entity extends Base\PublicEntity
     public function setQueueFlag($flag)
     {
         $this->queueFlag = $flag;
+    }
+
+    public function setIsCreditTransferBasedPayout($isCt)
+    {
+        $this->isCreditTransferBasedPayout = $isCt;
     }
 
     public function setSyncFtsFundTransferFlag($flag)
@@ -2950,5 +2963,11 @@ class Entity extends Base\PublicEntity
         }
 
         return $source;
+    }
+
+    // returns true for va to va payouts which are to be handled internally
+    public function isVaToVaPayout()
+    {
+        return $this->getChannel() === Channel::RZPX;
     }
 }

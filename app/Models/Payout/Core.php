@@ -36,6 +36,7 @@ use RZP\Jobs\QueuedPayouts;
 use RZP\Models\Transaction;
 use RZP\Models\FeeRecovery;
 use RZP\Constants\Timezone;
+use RZP\Models\CreditTransfer;
 use RZP\Models\BankingAccount;
 use RZP\Models\Workflow\Action;
 use RZP\Models\Admin\ConfigKey;
@@ -63,6 +64,7 @@ use RZP\Constants\Entity as EntityConstant;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Admin\Service as AdminService;
+use RZP\Jobs\QueuedPayoutsForVaToVaCreditTransfers;
 use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Services\Pagination\Entity as PaginationEntity;
@@ -302,7 +304,7 @@ class Core extends Base\Core
                        ->setInternal($isInternal)
                        ->createPayout($input);
 
-        $this->dispatchFtaInitiate($payout);
+        $this->postCreationForPayouts($payout);
 
         return $payout;
     }
@@ -1014,7 +1016,7 @@ class Core extends Base\Core
                 // There might be some type of payouts where we don't want to dispatch FTA.
                 // Should handle that before adding any other type of payouts as queued.
                 //
-                $this->dispatchFtaInitiate($payout);
+                $this->postCreationForPayouts($payout);
 
                 return $payout;
             },
@@ -1089,7 +1091,7 @@ class Core extends Base\Core
                 // There might be some type of payouts where we don't want to dispatch FTA.
                 // Should handle that before adding any other type of payouts as batch_submitted.
                 //
-                $this->dispatchFtaInitiate($payout);
+                $this->postCreationForPayouts($payout);
 
                 return $payout;
             },
@@ -1343,7 +1345,7 @@ class Core extends Base\Core
                     $this->processLedgerPayout($payout);
                 }
 
-                $this->dispatchFtaInitiate($payout);
+                $this->postCreationForPayouts($payout);
 
                 return $payout;
             },
@@ -3548,6 +3550,157 @@ class Core extends Base\Core
         return new $processor();
     }
 
+    protected function postCreationForPayouts(Entity $payout)
+    {
+        // for va to va transfers, we handle credit internally we won't create FTA
+        if ($payout->isVaToVaPayout() === true)
+        {
+            $this->handleTransferForVaToVaPayouts($payout);
+        }
+        else
+        {
+            $this->dispatchFtaInitiate($payout);
+        }
+    }
+
+    public function handleTransferForVaToVaPayouts(Entity $payout)
+    {
+        //
+        // For payouts with status=(queued, pending, scheduled, rejected, failed, batch_submitted), we don't create any
+        // transaction or credit_transfer. We do it later when we actually process that payout.
+        //
+        if ($payout->isStatusBeforeCreate() === true)
+        {
+            return;
+        }
+
+        // first we try processing the creditTransfer synchronously
+        $this->mutex->acquireAndRelease(
+            $payout->getId(),
+            function() use ($payout)
+            {
+                try
+                {
+                    $this->processCreditTransferForVaToVaPayout($payout);
+                }
+                catch (\Throwable $throwable)
+                {
+                    $traceInfo = [
+                        'payout_id' => $payout->getId(),
+                    ];
+
+                    $this->trace->traceException(
+                        $throwable,
+                        null,
+                        TraceCode::CREDIT_TRANSFER_FOR_VA_TO_VA_PAYOUT_FAILURE,
+                        $traceInfo
+                    );
+
+                    $this->trace->info(TraceCode::PAYOUT_VA_TO_VA_QUEUE_DISPATCH_INITIATE, $traceInfo);
+
+                    QueuedPayoutsForVaToVaCreditTransfers::dispatch($this->mode, $payout->getId());
+
+                    $this->trace->info(TraceCode::PAYOUT_VA_TO_VA_QUEUE_DISPATCH_COMPLETE, $traceInfo);
+                }
+            },
+            self::PAYOUT_MUTEX_LOCK_TIMEOUT,
+            ErrorCode::BAD_REQUEST_PAYOUT_ALREADY_BEING_PROCESSED);
+    }
+
+    protected function processCreditTransferForVaToVaPayout(Entity $payout)
+    {
+        $this->trace->info(TraceCode::CREDIT_TRANSFER_FOR_VA_TO_VA_PAYOUT_INITIATE,
+            [
+                'payout_id' => $payout->getId(),
+                'payout'    => $payout->toArrayPublic()
+            ]);
+
+        $creditTransfer = (new CreditTransfer\Core())->create($payout);
+
+        $payout = $this->repo->transaction(function () use ($payout, $creditTransfer)
+        {
+            $creditTransfer = (new CreditTransfer\Core())->process($creditTransfer);
+
+            $payout->setUtr($creditTransfer->getUtr());
+
+            $payout->setStatus(Status::PROCESSED);
+
+            $this->repo->saveOrFail($payout);
+
+            $this->trace->info(TraceCode::CREDIT_TRANSFER_FOR_VA_TO_VA_PAYOUT_SUCCESS,
+                [
+                    'payout_id'          => $payout->getId(),
+                    'payout'             => $payout->toArrayPublic(),
+                    'credit_transfer_id' => $creditTransfer->getId(),
+                    'credit_transfer'    => $creditTransfer->toArray(),
+                ]);
+
+            return $payout;
+        });
+
+        try
+        {
+            $this->handlePayoutProcessed($payout);
+        }
+        catch(\Throwable $throwable)
+        {
+            $this->trace->traceException($throwable, null, TraceCode::PAYOUT_VA_TO_VA_HANDLE_PROCESSED_EXCEPTION,
+                [
+                    'payout_id'          => $payout->getId(),
+                    'credit_transfer_id' => $creditTransfer->getId()
+                ]
+            );
+        }
+    }
+
+    public function handleTransferForQueuedVaToVaPayout(string $payoutId)
+    {
+        return $this->mutex->acquireAndRelease(
+            $payoutId,
+            function() use ($payoutId)
+            {
+                /** @var Entity $payout */
+                $payout = $this->repo->payout->findOrFail($payoutId);
+
+                $payout->getValidator()->validateVaToVaPayoutQueuedForCreditTransfer();
+
+                $this->processCreditTransferForVaToVaPayout($payout);
+
+                return $payout;
+            },
+            self::PAYOUT_MUTEX_LOCK_TIMEOUT,
+            ErrorCode::BAD_REQUEST_PAYOUT_ALREADY_BEING_PROCESSED);
+    }
+
+    public function handleReversalForFailedVaToVaPayout(string $payoutId)
+    {
+        return $this->mutex->acquireAndRelease(
+            $payoutId,
+            function() use ($payoutId)
+            {
+                /** @var Entity $payout */
+                $payout = $this->repo->payout->findOrFail($payoutId);
+
+                $creditTransfer = $this->repo->credit_transfer->findCreditTransferBySourceId($payout->getId());
+
+                $payout->getValidator()->validateVaToVaPayoutForReversal();
+
+                $creditTransfer->getValidator()->validateCreditTransferForReversal();
+
+                $creditTransfer->setStatus(CreditTransfer\Status::FAILED);
+
+                $this->repo->saveOrFail($creditTransfer);
+
+                $this->handlePayoutReversed($payout);
+
+                $payout->reload();
+
+                return $payout;
+            },
+            self::PAYOUT_MUTEX_LOCK_TIMEOUT,
+            ErrorCode::BAD_REQUEST_PAYOUT_ALREADY_BEING_PROCESSED);
+    }
+
     protected function dispatchFtaInitiate(Entity $payout)
     {
         //
@@ -3714,7 +3867,7 @@ class Core extends Base\Core
                     $this->processLedgerPayout($payout);
                 }
 
-                $this->dispatchFtaInitiate($payout);
+                $this->postCreationForPayouts($payout);
 
                 return $payout;
             },

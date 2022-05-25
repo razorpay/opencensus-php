@@ -6786,6 +6786,37 @@ ALTER TABLE payouts_details
 ALTER TABLE `merchant_banks`
     ADD COLUMN `razorpaywallet` TINYINT DEFAULT 0;
 
+CREATE TABLE `credit_transfers` (
+  `id` char(14) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+  `merchant_id` char(14) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+  `balance_id` char(14) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+  `amount` bigint unsigned NOT NULL,
+  `currency` char(3) NOT NULL,
+  `transaction_id` char(14) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
+  `utr` varchar(64) DEFAULT NULL,
+  `entity_id` char(14) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+  `entity_type` varchar(32) NOT NULL,
+  `mode` varchar(32) DEFAULT NULL,
+  `channel` varchar(32) DEFAULT NULL,
+  `description` varchar(255) DEFAULT NULL,
+  `status` varchar(32) DEFAULT NULL,
+  `payer_name` varchar(255) DEFAULT NULL,
+  `payer_account` varchar(40) DEFAULT NULL,
+  `payer_ifsc` varchar(20) DEFAULT NULL,
+  `payee_account_id` char(14) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
+  `payee_account_type` varchar(32) DEFAULT NULL,
+  `created_at` int NOT NULL,
+  `updated_at` int NOT NULL,
+  `failed_at` int DEFAULT NULL,
+  `processed_at` int DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `credit_transfers_entity_id_unique` (`entity_id`),
+  UNIQUE KEY `credit_transfers_transaction_id_unique` (`transaction_id`),
+  KEY `credit_transfers_created_at_index` (`created_at`),
+  KEY `credit_transfers_merchant_id_index` (`merchant_id`),
+  KEY `credit_transfers_balance_id_index` (`balance_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1
+
 CREATE TABLE IF NOT EXISTS address_consent_1cc_audits (
 	id CHAR(14) COLLATE utf8mb4_bin NOT NULL,
 	contact VARCHAR(20) COLLATE utf8mb4_bin NOT NULL,

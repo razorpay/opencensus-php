@@ -4,10 +4,11 @@ namespace RZP\Models\Pricing\Calculator;
 
 use RZP\Models\Pricing;
 use RZP\Http\BasicAuth;
+use RZP\Models\Settlement\Channel;
 use RZP\Models\Merchant\Balance\Type;
 use RZP\Models\Payout as PayoutModel;
-use RZP\Models\PayoutSource as PayoutSource;
 use RZP\Models\Merchant\Balance\Entity;
+use RZP\Models\PayoutSource as PayoutSource;
 
 /**
  * Class Payout
@@ -117,6 +118,11 @@ class Payout extends Base
     protected function applyPayoutModeFilters($rules)
     {
         $mode = $this->entity->getMode();
+
+        if ($this->entity->isVaToVaPayout() === true)
+        {
+            $mode = PayoutModel\Mode::NEFT;
+        }
 
         $filters = [
             [Pricing\Entity::PAYMENT_METHOD_TYPE, $mode, true, null],

@@ -219,6 +219,14 @@ class FundAccountPayout extends Base
             return Channel::M2P;
         }
 
+        // this function gets called only if the source account type is shared, For it to be VA to VA transfer
+        // here we just check destination account
+        if (($payout->fundAccount->isAccountVirtualBankAccount() === true) and
+            ($payout->getIsCreditTransferBasedPayout() === true))
+        {
+            return Channel::RZPX;
+        }
+
         $razorxFeature = strtoupper(sprintf("%s_MODE_PAYOUT_FILTER", $mode));
 
         $variant = $this->app->razorx->getTreatment(

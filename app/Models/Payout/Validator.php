@@ -716,6 +716,84 @@ class Validator extends Base\Validator
         }
     }
 
+    public function validateVaToVaPayoutQueuedForCreditTransfer()
+    {
+        /** @var Entity $payout */
+        $payout = $this->entity;
+
+        if ($payout->isVaToVaPayout() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_VA_TO_VA_FLOW_NOT_SUPPORTED,
+                null,
+                [
+                    'payout_id' => $payout->getId(),
+                    'channel'   => $payout->getChannel()
+                ]);
+        }
+
+        if ($payout->isStatusProcessed() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_VA_TO_VA_CREDIT_TRANSFER_ALREADY_CREATED,
+                null,
+                [
+                    'payout_id'      => $payout->getId(),
+                    'credit_transfer_id'  => $payout->getUtr()
+                ]);
+        }
+
+        if ($payout->isStatusReversed() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_VA_TO_VA_PAYOUT_ALREADY_REVERSED,
+                null,
+                [
+                    'payout_id'      => $payout->getId(),
+                    'payout_status'  => $payout->getStatus()
+                ]);
+        }
+
+        if ($payout->isStatusBeforeCreate() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYOUT_NOT_CREATED_STATUS,
+                null,
+                [
+                    'payout_id' => $payout->getId(),
+                    'status'    => $payout->getStatus(),
+                ]);
+        }
+    }
+
+    public function validateVaToVaPayoutForReversal()
+    {
+        /** @var Entity $payout */
+        $payout = $this->entity;
+
+        if ($payout->isStatusProcessed() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_VA_TO_VA_PAYOUT_ALREADY_PROCESSED,
+                null,
+                [
+                    'payout_id'           => $payout->getId(),
+                    'credit_transfer_id'  => $payout->getUtr()
+                ]);
+        }
+
+        if ($payout->isStatusReversed() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_VA_TO_VA_PAYOUT_ALREADY_REVERSED,
+                null,
+                [
+                    'payout_id'      => $payout->getId(),
+                    'payout_status'  => $payout->getStatus()
+                ]);
+        }
+    }
+
     public function validateProcessingQueuedPayout()
     {
         /** @var Entity $payout */

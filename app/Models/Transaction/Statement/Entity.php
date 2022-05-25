@@ -7,6 +7,7 @@ use RZP\Models\External;
 use RZP\Models\Adjustment;
 use RZP\Models\Transaction;
 use RZP\Models\BankTransfer;
+use RZP\Models\CreditTransfer;
 use RZP\Constants\Entity as E;
 use RZP\Models\Base\PublicEntity;
 use RZP\Exception\LogicException;
@@ -121,6 +122,10 @@ class Entity extends Transaction\Entity
                 $this->setPublicSourceAttributeForAdjustment($array);
                 break;
 
+            case E::CREDIT_TRANSFER:
+                $this->setPublicSourceAttributeForCreditTransfer($array);
+                break;
+
             case E::EXTERNAL:
                 $this->setPublicSourceAttributeForExternal($array);
                 break;
@@ -150,6 +155,23 @@ class Entity extends Transaction\Entity
 
         // Returning only absolute amount regardless of credit/debit
         $array['source']['amount'] = abs($array['source']['amount']);
+    }
+
+    public function setPublicSourceAttributeForCreditTransfer(array & $array)
+    {
+        $array[self::SOURCE] = array_only(
+            $array[self::SOURCE],
+            [
+                CreditTransfer\Entity::ID,
+                CreditTransfer\Entity::ENTITY,
+                CreditTransfer\Entity::AMOUNT,
+                CreditTransfer\Entity::STATUS,
+                CreditTransfer\Entity::DESCRIPTION,
+                CreditTransfer\Entity::UTR,
+                CreditTransfer\Entity::PROCESSED_AT,
+                CreditTransfer\Entity::PAYER_NAME,
+                CreditTransfer\Entity::PAYER_ACCOUNT
+            ]);
     }
 
     public function setPublicSourceAttributeForPayout(array & $array)

@@ -28,6 +28,10 @@ class Channel
     const ICICIEXP = "iciciexp"; // settlement has "icici_opgsp_export" as value where api db has "iciciexp" due to DB limitations
     const ICICI_OPGSP_EXPORT = "icici_opgsp_export";
 
+    // Exclusively for Internal VA to VA transfers in razorpayX using creditTransfer entity
+    const RZPX = 'rzpx';
+
+
     public static $gateways = [
         self::KOTAK => [
             Payment\Gateway::AMEX,
@@ -80,6 +84,7 @@ class Channel
             self::AMAZONPAY,
             self::ICICI_OPGSP_EXPORT,
             self::AXIS3,
+            self::RZPX,
         ];
     }
 
@@ -376,6 +381,11 @@ class Channel
                 Constants\Entity::CARD          =>  [
                     Mode::CT,
                 ]
+            ],
+            self::RZPX       => [
+                Constants\Entity::BANK_ACCOUNT  =>  [
+                    Mode::IFT,
+                ],
             ],
         ];
     }

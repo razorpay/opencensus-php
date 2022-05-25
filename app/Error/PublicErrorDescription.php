@@ -1071,6 +1071,7 @@ class PublicErrorDescription
     const BAD_REQUEST_INVALID_CARD_DETAILS                                      = 'Invalid card details';
     const BAD_REQUEST_WEBHOOK_DETAILS_LOCKED_FOR_MFN                            = 'Webhooks are controlled by partner merchant and hence webhook creation is blocked';
     const BAD_REQUEST_PAYOUT_NOT_QUEUED_STATUS                                  = 'The payout is not in queued status';
+    const BAD_REQUEST_PAYOUT_NOT_CREATED_STATUS                                 = 'The payout is not in created status';
     const BAD_REQUEST_PAYOUT_NOT_QUEUED_OR_SCHEDULED_STATUS                     = 'The payout is not in queued or scheduled status';
     const BAD_REQUEST_PAYOUT_NOT_PENDING_STATUS                                 = 'The payout is not in pending status';
     const BAD_REQUEST_PAYOUT_NOT_BATCH_SUBMITTED_STATUS                         = 'The payout is not in batch_submitted status';
@@ -1187,6 +1188,15 @@ class PublicErrorDescription
 
     const BAD_REQUEST_BULK_PAYOUTS_PAYOUT_HEADER_MISMATCH                      = 'Payout amount header needs to be of either rupees or paise type';
     const BAD_REQUEST_VA_TO_VA_PAYOUTS_BLOCKED                                 = 'Payouts to RazorpayX Virtual Account is not enabled for your account. Please contact support for any further assistance';
+    const BAD_REQUEST_VA_TO_VA_PAYOUTS_NOT_ALLOWED                             = 'Payouts between different Razorpay Virtual Account types is not allowed. Please contact support for any further assistance';
+    const BAD_REQUEST_VA_TO_VA_PAYOUTS_NO_ACTIVE_BENEFICIARY_VA_FOUND          = 'The account associated with provided fund account is either not active or does not exist. please check';
+    const BAD_REQUEST_VA_TO_VA_PAYOUT_ON_SAME_ACCOUNT                          = 'Payout to same banking account is blocked';
+    const BAD_REQUEST_VA_TO_VA_CREDIT_TRANSFER_ALREADY_CREATED                 = 'Credit transaction corresponding to the VA to VA payout is already created';
+    const BAD_REQUEST_VA_TO_VA_CREDIT_TRANSFER_ALREADY_PROCESSED               = 'Credit transaction corresponding to the VA to VA payout is already processed';
+    const BAD_REQUEST_VA_TO_VA_CREDIT_TRANSFER_ALREADY_FAILED                  = 'Credit transaction corresponding to the VA to VA payout is already failed';
+    const BAD_REQUEST_VA_TO_VA_FLOW_NOT_SUPPORTED                              = 'VA to VA flow is not supported for the current payout';
+    const BAD_REQUEST_VA_TO_VA_PAYOUT_ALREADY_PROCESSED                        = 'Payout got processed already';
+    const BAD_REQUEST_VA_TO_VA_PAYOUT_ALREADY_REVERSED                         = 'Payout got reversed already';
 
     // Merchant Config Inheritance
     const BAD_REQUEST_INHERITANCE_PARENT_SHOULD_BE_PARTNER_PARENT_OF_SUBMERCHANT    =  'Inheritance parent should be aggregator or fully-managed partner of the submerchant';

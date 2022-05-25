@@ -11,6 +11,7 @@ use RZP\Models\Payout\Status;
 use RZP\Models\Payout\Entity;
 use RZP\Models\Payout\Purpose;
 use RZP\Models\Merchant\Credits;
+use RZP\Models\Settlement\Channel;
 use RZP\Models\Payout\QueuedReasons;
 use RZP\Models\Merchant\Balance\Type;
 use RZP\Models\Transaction\CreditType;
@@ -24,6 +25,12 @@ class Base extends DSBase
 {
     protected function setChannel(Entity $payout)
     {
+        // for VA to VA transfers the channel will be "rzpx"
+        if ($payout->isVaToVaPayout() === true)
+        {
+            return;
+        }
+
         //
         // NOTE (for queued only): When the payout is being queued,
         // the payout might have channel A set. Once we start processing,
@@ -110,6 +117,12 @@ class Base extends DSBase
     protected function holdPayoutIfApplicableAndBeneBankDown(Entity $payout)
     {
         if ($payout->fundAccount->getAccountType() !== FundAccountEntity::BANK_ACCOUNT)
+        {
+            return false;
+        }
+
+        // for va to va transfers using creditTransfers
+        if ($payout->isVaToVaPayout() === true)
         {
             return false;
         }

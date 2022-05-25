@@ -13,6 +13,7 @@ use RZP\Models\Merchant;
 use RZP\Models\BankAccount;
 use RZP\Models\WalletAccount;
 use RZP\Models\VirtualAccount\Provider;
+use RZP\Models\BankingAccount\AccountType;
 
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -80,7 +81,7 @@ class Entity extends Base\PublicEntity
 
     const FUND_ACCOUNT_BULK_RX_RETRY_COUNT = '2';
 
-    const VA_TO_VA_BLOCKING_MAPPING = [
+    const PREFIX_TO_IFSC_MAPPING_FOR_VIRTUAL_ACCOUNTS = [
         '222333'    => Provider::IFSC[Provider::YESBANK],
         '787878'    => Provider::IFSC[Provider::YESBANK],
         '456456'    => Provider::IFSC[Provider::YESBANK],
@@ -91,6 +92,13 @@ class Entity extends Base\PublicEntity
         '2224'      => Provider::IFSC[Provider::RBL],
         '2223'      => Provider::IFSC[Provider::RBL],
         '567890'    => Provider::IFSC[Provider::RBL],
+    ];
+
+    const PREFIX_TO_UNDERLYING_ACCOUNT_TYPE_MAP = [
+        '3434'    => AccountType::CURRENT,
+        '5656'    => AccountType::NODAL,
+        '456456'  => AccountType::CURRENT,
+        '787878'  => AccountType::NODAL,
     ];
 
     protected $generateIdOnCreate = true;
@@ -519,5 +527,29 @@ class Entity extends Base\PublicEntity
             array_forget($accountAttributes, [Base\PublicEntity::ID, Base\PublicEntity::ENTITY]);
         }
         return $accountAttributes;
+    }
+
+    public function isAccountVirtualBankAccount(): bool
+    {
+        if ($this->getAccountType() === Constants\Entity::BANK_ACCOUNT)
+        {
+            $bankAccount = $this->account;
+
+            $ifscCode = $bankAccount->getIfscCode();
+
+            $firstFourDigitsOfAccountNumber = substr($bankAccount->getAccountNumber(), 0, 4);
+
+            $firstSixDigitsOfAccountNumber = substr($bankAccount->getAccountNumber(), 0, 6);
+
+            if (((self::PREFIX_TO_IFSC_MAPPING_FOR_VIRTUAL_ACCOUNTS[$firstFourDigitsOfAccountNumber] ?? '')
+                    === $ifscCode) or
+                ((self::PREFIX_TO_IFSC_MAPPING_FOR_VIRTUAL_ACCOUNTS[$firstSixDigitsOfAccountNumber] ?? '')
+                    === $ifscCode))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

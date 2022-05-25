@@ -153,6 +153,11 @@
     "source": "internal",
     "reason": "server_error"
   },
+  "BAD_REQUEST_PAYOUT_NOT_CREATED_STATUS": {
+    "description": "The payout is not in created status",
+    "source": "internal",
+    "reason": "server_error"
+  },
   "BAD_REQUEST_FREE_PAYOUTS_ATTRIBUTES_INVALID_BALANCE_ID": {
     "description": "Invalid balance id, no db records found.",
     "source": "business",
