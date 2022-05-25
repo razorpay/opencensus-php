@@ -2206,28 +2206,9 @@ trait Refund
 
         $data['mode'] = $this->mode;
 
-        $this->trace->info(
-            TraceCode::REFUND_QUEUE_SCROOGE_DISPATCH,
-            $data
-        );
-
         try
         {
-            $result = $this->app
-                           ->razorx
-                           ->getTreatment(
-                               $refund->getId(),
-                               Merchant\RazorxTreatment::SCROOGE_SYNC_CALL,
-                               $this->mode);
-
-            if($result === 'on')
-            {
-                $this->app['scrooge']->initiateRefund($data, true);
-            }
-            else
-            {
-                ScroogeRefund::dispatch($data);
-            }
+            $this->app['scrooge']->initiateRefund($data, true);
         }
         catch (\Throwable $e)
         {
@@ -2235,6 +2216,11 @@ trait Refund
                 $e,
                 Trace::CRITICAL,
                 TraceCode::REFUND_SYNC_SCROOGE_CALL_FAILED,
+                $data
+            );
+
+            $this->trace->info(
+                TraceCode::REFUND_QUEUE_SCROOGE_DISPATCH,
                 $data
             );
 
