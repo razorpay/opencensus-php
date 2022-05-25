@@ -47,24 +47,10 @@ class Core extends Base\Core
         });
 
         // check experiment and onboard DA to ledger in reverse shadow or shadow mode
-        $onboardToLedger = false;
         $merchant = $balance->merchant;
 
-        if ($createdNow === true) {
-            if ($this->onBoardDAMerchantOnLedgerInReverseShadow($balance->merchant, $this->app['rzp.mode']) === true) {
-                (new BankingAccount\Core())->assginLedgerFeatureForMerchant($merchant, Feature\Constants::DA_LEDGER_REVERSE_SHADOW, Feature\Constants::DA_LEDGER_JOURNAL_WRITES);
-                $onboardToLedger = true;
-            }
-            else if ($this->onBoardDAMerchantOnLedgerInShadow($balance->merchant, $this->app['rzp.mode']) === true)
-            {
-                (new BankingAccount\Core())->assginLedgerFeatureForMerchant($merchant, Feature\Constants::DA_LEDGER_JOURNAL_WRITES, Feature\Constants::DA_LEDGER_REVERSE_SHADOW);
-                $onboardToLedger = true;
-            }
-        }
-
-        // onboard DA to ledger in reverse shadow or shadow mode
-        if ($onboardToLedger === true)
-        {
+        if (($createdNow === true) and ($this->onBoardDAMerchantOnLedgerInShadow($balance->merchant, $this->app['rzp.mode']) === true)) {
+            (new BankingAccount\Core())->assginLedgerFeatureForMerchant($merchant, Feature\Constants::DA_LEDGER_JOURNAL_WRITES);
             (new Merchant\Balance\Ledger\Core)->createXLedgerAccountForDirect($merchant, $basDetailEntity, $this->app['rzp.mode'], $balance->getBalance(),0,false);
         }
 
@@ -78,17 +64,6 @@ class Core extends Base\Core
     {
         $variant = $this->app->razorx->getTreatment($merchant->getId(),
             Merchant\RazorxTreatment::DA_LEDGER_ONBOARDING,
-            $mode
-        );
-
-        return (strtolower($variant) === 'on');
-    }
-
-    // Returns true if experiment and env variable to onboard direct accounting merchant on ledger in reverse shadow is running.
-    protected function onBoardDAMerchantOnLedgerInReverseShadow($merchant, string $mode): bool
-    {
-        $variant = $this->app->razorx->getTreatment($merchant->getId(),
-            Merchant\RazorxTreatment::DA_LEDGER_ONBOARDING_REVERSE_SHADOW,
             $mode
         );
 

@@ -316,26 +316,23 @@ class Core extends Base\Core
         $basDetails = $this->getBasDetails($accountNumber, $channel);
 
         $merchant = $basDetails->merchant;
-        $ledgerReverseShadow = $merchant->isFeatureEnabled(FeatureConstants::DA_LEDGER_REVERSE_SHADOW);
 
         try
         {
             $this->mutex->acquireAndRelease(
                 'banking_account_statement_process_' . $accountNumber . '_' . $channel,
-                function () use ($channel, $accountNumber, $input, $limit, $saveLimit, $merchant, $ledgerReverseShadow)
+                function () use ($channel, $accountNumber, $input, $limit, $saveLimit, $merchant)
                 {
                     $this->setCreditBeforeDebitUtrsFromRedis($accountNumber);
 
                     while ($saveLimit > 0)
                     {
                         // If merchant is on Ledger reverse shadow, fetch unlikned BAS for processing by null source instead of null transaction
-                        $basEntities = $ledgerReverseShadow === false ? $this->repo->banking_account_statement->fetchUnlinkedBasRecords($accountNumber, $channel, $limit) :
-                            $this->repo->banking_account_statement->fetchUnlinkedBasRecordsBySourceEntity($accountNumber, $channel, $limit);
+                        $basEntities = $this->repo->banking_account_statement->fetchUnlinkedBasRecords($accountNumber, $channel, $limit);
 
                         $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_ROWS_FETCHED, [
                             'count'                     => count($basEntities),
                             'account_number'            => $accountNumber,
-                            'reverse_shadow_enabled'    => $ledgerReverseShadow,
                         ]);
 
                         if (count($basEntities) == 0)
@@ -972,13 +969,9 @@ class Core extends Base\Core
 
             $basEntity->source()->associate($sourceEntity);
 
-            // If merchant is on Ledger reverse shadow, transaction linking to BAS will happen post webhook from Ledger
-            if ($basEntity->merchant->isFeatureEnabled(FeatureConstants::DA_LEDGER_REVERSE_SHADOW) === false)
-            {
-                $basEntity->transaction()->associate($sourceEntity->transaction);
+            $basEntity->transaction()->associate($sourceEntity->transaction);
 
-                (new Transaction\Core)->updatePostedDate($sourceEntity, $basEntity->getPostedDate());
-            }
+            (new Transaction\Core)->updatePostedDate($sourceEntity, $basEntity->getPostedDate());
 
             $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_SAVE, $basEntity->toArray());
 
@@ -1067,16 +1060,9 @@ class Core extends Base\Core
 
             $basEntity->source()->associate($sourceEntity);
 
-            $ledgerReverseShadow = true;
-            // If merchant is on Ledger reverse shadow, transaction linking to BAS will happen post webhook from Ledger
-            if ($basEntity->merchant->isFeatureEnabled(FeatureConstants::DA_LEDGER_REVERSE_SHADOW) === false)
-            {
-                $basEntity->transaction()->associate($sourceEntity->transaction);
+            $basEntity->transaction()->associate($sourceEntity->transaction);
 
-                (new Transaction\Core)->updatePostedDate($sourceEntity, $basEntity->getPostedDate());
-
-                $ledgerReverseShadow = false;
-            }
+            (new Transaction\Core)->updatePostedDate($sourceEntity, $basEntity->getPostedDate());
 
             $this->repo->saveOrFail($basEntity);
 
@@ -1090,7 +1076,6 @@ class Core extends Base\Core
                                    'entity_linking_time'    => (microtime(true) - $startTime) * 1000,
                                    'entity_id'              => $sourceEntity->getId(),
                                    'entity_type'            => $basEntity->getEntityType(),
-                                   'reverse_shadow_enabled' => $ledgerReverseShadow,
                                ]);
 
             return [$sourceEntity, $isSourceAlreadyCreated];
@@ -1171,24 +1156,8 @@ class Core extends Base\Core
         }
     }
 
-    public function fireWebhooksAfterSuccessfulMappingOfSourceEntity($sourceEntity, $isSourceAlreadyCreated, $fromLedgerWebhook = false)
+    protected function fireWebhooksAfterSuccessfulMappingOfSourceEntity($sourceEntity, $isSourceAlreadyCreated)
     {
-        // If merchant is on Ledger reverse shadow, transaction creation and linking to source entity will happen
-        // post webhook from Ledger. So we cannot send any Transaction webhooks to merchant at this point
-        // We will fire this webhook to merchant from ledger webhook flow in that case, because thats the place where transaction is created
-        if (($sourceEntity->merchant->isFeatureEnabled(FeatureConstants::DA_LEDGER_REVERSE_SHADOW) === true) and ($fromLedgerWebhook === false))
-        {
-            // Exception: In the Ledger webhook flow we wont have the knowledge of $isSourceAlreadyCreated bool
-            // and moreover this does not require transaction to be present so handling it here itself, ans so this should never get
-            // fired from Ledger webhook flow
-            if (($sourceEntity->getEntityName() === Constants\Entity::REVERSAL) and
-                ($isSourceAlreadyCreated === false))
-            {
-                $this->app->events->dispatch('api.payout.reversed', $sourceEntity->entity);
-            }
-            return;
-        }
-
         $sourceTransaction = $sourceEntity->transaction;
 
         $sourceTransaction->load('source');
@@ -1397,35 +1366,28 @@ class Core extends Base\Core
                     'account_no'    => $basEntity->getAccountNumber(),
                 ]);
 
-            if ((new Payout\Core)->shouldPayoutGoThroughLedgerReverseShadowFlowForDirect($existingPayout) === false) {
-                $reversal = (new Reversal\Core)->createTransactionFromPayoutReversal($reversal);
-                $this->trace->info(TraceCode::REVERSAL_TRANSACTION_CREATED,
-                    [
-                        'reversal_id'       => $reversal->getId(),
-                        'transaction_id'    => $reversal->transaction->getId(),
-                        'bas_id'            => $basEntity->getId(),
-                        'account_no'        => $basEntity->getAccountNumber(),
-                    ]);
-            }
+            $reversal = (new Reversal\Core)->createTransactionFromPayoutReversal($reversal);
+            $this->trace->info(TraceCode::REVERSAL_TRANSACTION_CREATED,
+                [
+                    'reversal_id'       => $reversal->getId(),
+                    'transaction_id'    => $reversal->transaction->getId(),
+                    'bas_id'            => $basEntity->getId(),
+                    'account_no'        => $basEntity->getAccountNumber(),
+                ]);
         }
 
-        /** @var Payout\Entity $payout */
-        $payout = $reversal->entity;
-        if ((new Payout\Core)->shouldPayoutGoThroughLedgerReverseShadowFlowForDirect($payout) === false)
+        if (($isReversalAlreadyCreated === true) and
+            ($reversal !== null) and
+            ($reversal->transaction === null))
         {
-            if (($isReversalAlreadyCreated === true) and
-                ($reversal !== null) and
-                ($reversal->transaction === null))
-            {
-                $reversal = (new Reversal\Core)->createTransactionFromPayoutReversal($reversal);
-                $this->trace->info(TraceCode::REVERSAL_TRANSACTION_CREATED,
-                    [
-                        'reversal_id' => $reversal->getId(),
-                        'transaction_id' => $reversal->transaction->getId(),
-                        'bas_id' => $basEntity->getId(),
-                        'account_no' => $basEntity->getAccountNumber(),
-                    ]);
-            }
+            $reversal = (new Reversal\Core)->createTransactionFromPayoutReversal($reversal);
+            $this->trace->info(TraceCode::REVERSAL_TRANSACTION_CREATED,
+                [
+                    'reversal_id' => $reversal->getId(),
+                    'transaction_id' => $reversal->transaction->getId(),
+                    'bas_id' => $basEntity->getId(),
+                    'account_no' => $basEntity->getAccountNumber(),
+                ]);
         }
 
         return [$reversal, $isReversalAlreadyCreated];
@@ -1463,20 +1425,15 @@ class Core extends Base\Core
             return null;
         }
 
-        // SKIP transaction creation here if direct account merchant is on reverse shadow
-        if ((new Payout\Core)->shouldPayoutGoThroughLedgerReverseShadowFlowForDirect($payout) === false)
-        {
-            (new DownstreamProcessor('fund_account_payout', $payout, $this->mode))->processTransaction();
-            $transactionId = $payout->transaction ? $payout->transaction->getID() : null;
-            $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_PROCESS_PAYOUT_TRANSACTION,
-                [
-                    'bas_id'            => $basEntity->getId(),
-                    'account_no'        => $basEntity->getAccountNumber(),
-                    'payout'            => $payout,
-                    'transaction_id'    => $transactionId
-                ]);
-        }
-
+        (new DownstreamProcessor('fund_account_payout', $payout, $this->mode))->processTransaction();
+        $transactionId = $payout->transaction ? $payout->transaction->getID() : null;
+        $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_PROCESS_PAYOUT_TRANSACTION,
+            [
+                'bas_id'            => $basEntity->getId(),
+                'account_no'        => $basEntity->getAccountNumber(),
+                'payout'            => $payout,
+                'transaction_id'    => $transactionId
+            ]);
 
         $this->repo->saveOrFail($payout);
 
@@ -1485,14 +1442,7 @@ class Core extends Base\Core
 
     protected function processExternal(Entity $basEntity, $remarks)
     {
-        $withTxnBool = true;
-        // Skip transaction creation for external entity if merchant is on Ledger reverse shadow
-        if ($basEntity->merchant->isFeatureEnabled(FeatureConstants::DA_LEDGER_REVERSE_SHADOW) === true)
-        {
-            $withTxnBool = false;
-        }
-
-        $external = (new External\Core)->create($basEntity, $withTxnBool);
+        $external = (new External\Core)->create($basEntity);
 
         if ($remarks != null)
         {
@@ -1527,7 +1477,7 @@ class Core extends Base\Core
      *
      * @return mixed|null
      */
-    public function fetchExistingReversalIfPresent(Entity $basEntity,
+    protected function fetchExistingReversalIfPresent(Entity $basEntity,
                                                       & $createExternalSource = false,
                                                       & $remarks = null)
     {
@@ -1638,7 +1588,7 @@ class Core extends Base\Core
      * @throws Exception\LogicException
      */
 
-    protected function fetchExistingPayoutForAccountStatementForMappingCredits(Entity $basEntity,
+    public function fetchExistingPayoutForAccountStatementForMappingCredits(Entity $basEntity,
                                                                                & $createExternalSource = false,
                                                                                & $remarks = null)
     {
@@ -2172,17 +2122,8 @@ class Core extends Base\Core
         return false;
     }
 
-    // Todo: remove this for reverse shadow (when API txn is not primary)
-    // This occurs only when manual fixes are done in between
-    // manual fixes on payout-core
     protected function validateBalance(Entity $basEntity, Base\PublicEntity $sourceEntity)
     {
-        // Return if merchant is on Ledger reverse shadow as transaction is not available at this moment
-        if ($basEntity->merchant->isFeatureEnabled(FeatureConstants::DA_LEDGER_REVERSE_SHADOW) === true)
-        {
-            return;
-        }
-
         $balanceCalculated = $sourceEntity->transaction->getBalance();
 
         $balanceAtBankSide = $basEntity->getBalance();
@@ -2530,7 +2471,7 @@ class Core extends Base\Core
         $response = [
             'payout'               => $payout->toArrayPublic(),
             'reversal'             => optional($reversal)->toArrayPublic(),
-            'payout_transaction'   => optional($payout->transaction)->toArrayPublic(),
+            'payout_transaction'   => $payout->transaction->toArrayPublic(),
             'reversal_transaction' => optional(optional($reversal)->transaction)->toArrayPublic()
         ];
 
@@ -2679,8 +2620,7 @@ class Core extends Base\Core
         }
 
         // If the mode is not live OR the merchant does not have the DA's ledger journal write feature, we return.
-        if (($merchant->isFeatureEnabled(Feature\Constants::DA_LEDGER_JOURNAL_WRITES) === false) and
-            ($merchant->isFeatureEnabled(Feature\Constants::DA_LEDGER_REVERSE_SHADOW) === false))
+        if ($merchant->isFeatureEnabled(Feature\Constants::DA_LEDGER_JOURNAL_WRITES) === false)
         {
             return;
         }

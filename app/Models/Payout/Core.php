@@ -777,7 +777,7 @@ class Core extends Base\Core
                         $firePayoutUpdatedWebhook = true;
                     }
                 }
-                
+
                 //stores status details in case last status details id is null
                 else
                 {
@@ -2410,8 +2410,7 @@ class Core extends Base\Core
         }
 
         // If the merchant does not have any of the DA's ledger shadow or reverse shadow feature, we return.
-        if (($payout->merchant->isFeatureEnabled(Feature\Constants::DA_LEDGER_JOURNAL_WRITES) === false) and
-            ($payout->merchant->isFeatureEnabled(Feature\Constants::DA_LEDGER_REVERSE_SHADOW) === false))
+        if ($payout->merchant->isFeatureEnabled(Feature\Constants::DA_LEDGER_JOURNAL_WRITES) === false)
         {
             return;
         }
@@ -2432,18 +2431,6 @@ class Core extends Base\Core
             ($payout->getBalanceType() === Merchant\Balance\Type::BANKING) and
             ($payout->getBalanceAccountType() === Merchant\Balance\AccountType::SHARED) and
             ($payout->getIsPayoutService() === false))
-        {
-            return true;
-        }
-
-        return false;
-    }
-
-    public function shouldPayoutGoThroughLedgerReverseShadowFlowForDirect($payout)
-    {
-        if (($payout->merchant->isFeatureEnabled(FeatureConstants::DA_LEDGER_REVERSE_SHADOW) === true) and
-            ($payout->getBalanceType() === Merchant\Balance\Type::BANKING) and
-            ($payout->getBalanceAccountType() === Merchant\Balance\AccountType::DIRECT))
         {
             return true;
         }
@@ -2517,13 +2504,6 @@ class Core extends Base\Core
 
         if ($transaction === null)
         {
-            // If merchant is on reverse shadow, its possible that bas is unlinked due to delay in webhook from ledger
-            // we simply return in this case and let the leger webhook flow do the re linking from external to payout
-            if ($payout->merchant->isFeatureEnabled(FeatureConstants::DA_LEDGER_REVERSE_SHADOW) === true)
-            {
-                return null;
-            }
-
             throw new Exception\LogicException(
                 'bas row selected is not linked to any transaction!',
                 ErrorCode::SERVER_ERROR_TRANSACTION_WRONG_SOURCE,
@@ -2547,12 +2527,7 @@ class Core extends Base\Core
                 ]);
         }
 
-        // do relinking of same txn from external to payout if merchant is not on ledger reverse shadow
-        // else the relinking will happen in the ledger webhook flow
-        if ($payout->merchant->isFeatureEnabled(Feature\Constants::DA_LEDGER_REVERSE_SHADOW) === false)
-        {
-            $this->updateTransactionAndSourceToPayout($payout, $transaction);
-        }
+        $this->updateTransactionAndSourceToPayout($payout, $transaction);
 
         return $transaction->bankingAccountStatement;
     }
@@ -2616,13 +2591,6 @@ class Core extends Base\Core
 
         if ($transaction === null)
         {
-            // If merchant is on reverse shadow, its possible that bas is unlinked due to delay in webhook from ledger
-            // we simply return in this case and let the leger webhook flow do the re linking from external to reversal
-            if ($reversal->merchant->isFeatureEnabled(FeatureConstants::DA_LEDGER_REVERSE_SHADOW) === true)
-            {
-                return [null, $bankAccStmtForPayout];
-            }
-
             throw new Exception\LogicException(
                 'bas row selected is not linked to any transaction!',
                 ErrorCode::SERVER_ERROR_TRANSACTION_WRONG_SOURCE,
@@ -2647,12 +2615,7 @@ class Core extends Base\Core
                 ]);
         }
 
-        // do relinking of same txn from external to reversal if merchant is not on ledger reverse shadow
-        // else the relinking will happen in the ledger webhook flow
-        if ($reversal->merchant->isFeatureEnabled(Feature\Constants::DA_LEDGER_REVERSE_SHADOW) === false)
-        {
-            $this->updateTransactionAndSourceToReversal($reversal, $transaction);
-        }
+        $this->updateTransactionAndSourceToReversal($reversal, $transaction);
 
         return [$transaction->bankingAccountStatement, $bankAccStmtForPayout];
     }
@@ -2679,13 +2642,13 @@ class Core extends Base\Core
         return [$payout->transaction, $bankAccStmt];
     }
 
-    public function updateTransactionAndSourceToPayout(Entity $payout, Transaction\Entity $transaction, $traceCode = TraceCode::TRANSACTION_FOUND_DURING_PAYOUT_PROCESSED)
+    public function updateTransactionAndSourceToPayout(Entity $payout, Transaction\Entity $transaction)
     {
         /** @var External\Entity $source */
         $source = $transaction->source;
 
         $this->trace->warning(
-            $traceCode,
+            TraceCode::TRANSACTION_FOUND_DURING_PAYOUT_PROCESSED,
             [
                 'payout_id'         => $payout->getId(),
                 'transaction_id'    => $transaction->getId(),
@@ -2710,20 +2673,16 @@ class Core extends Base\Core
                 $this->updateBankingAccountStatementLinkedEntity($transaction->bankingAccountStatement, $payout);
             });
 
-        // send this webhook if merchant is not on ledger reverse shadow
-        // else this webhook will be sent in the ledger webhook flow
-        if ($payout->merchant->isFeatureEnabled(Feature\Constants::DA_LEDGER_REVERSE_SHADOW) === false) {
-            (new Transaction\Core)->dispatchEventForTransactionCreatedWithoutEmailOrSmsNotification($payout->transaction);
-        }
+        (new Transaction\Core)->dispatchEventForTransactionCreatedWithoutEmailOrSmsNotification($payout->transaction);
     }
 
-    public function updateTransactionAndSourceToReversal(Reversal\Entity $reversal, Transaction\Entity $transaction, $traceCode = TraceCode::TRANSACTION_FOUND_DURING_PAYOUT_REVERSED)
+    public function updateTransactionAndSourceToReversal(Reversal\Entity $reversal, Transaction\Entity $transaction)
     {
         /** @var External\Entity $source */
         $source = $transaction->source;
 
         $this->trace->warning(
-            $traceCode,
+            TraceCode::TRANSACTION_FOUND_DURING_PAYOUT_REVERSED,
             [
                 'reversal_id'       => $reversal->getId(),
                 'payout_id'         => $reversal->entity->getId(),
@@ -2752,11 +2711,7 @@ class Core extends Base\Core
                 $this->updateBankingAccountStatementLinkedEntity($transaction->bankingAccountStatement, $reversal);
             });
 
-        // send this webhook if merchant is not on ledger reverse shadow
-        // else this webhook will be sent in the ledger webhook flow
-        if ($reversal->merchant->isFeatureEnabled(Feature\Constants::DA_LEDGER_REVERSE_SHADOW) === false) {
-            (new Transaction\Core)->dispatchEventForTransactionCreatedWithoutEmailOrSmsNotification($reversal->transaction);
-        }
+        (new Transaction\Core)->dispatchEventForTransactionCreatedWithoutEmailOrSmsNotification($reversal->transaction);
     }
 
     protected function getDummyTransactionAndFeesBreakupForPayout(Entity $payout)

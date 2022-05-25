@@ -2663,7 +2663,6 @@ class Route
         'capital_multiple_transaction_create'      => ['post',     'capital_balances/multi_transactions',            'TransactionController@createMultipleCapitalTransactions'           ],
 
         'ledger_fetch_multiple_transactions'        => ['post',     'ledger/transactions',                            'TransactionController@list'                                        ],
-        'ledger_transaction_webhook'                => ['post',     'ledger/transactions_webhook',                    'TransactionController@transactionsWebhook'                                        ],
 
         // TODO:remove after migration,
         // Temporary route to fix settled_at in case of fund account validation
@@ -4641,7 +4640,6 @@ class Route
         'vendor_payment_email_integration_webhook',
         // ledger route
         'ledger_fetch_multiple_transactions',
-        'ledger_transaction_webhook',
         'onboard_old_accounts_to_ledger',
 
         'raw_address_create_batch_service',
@@ -12776,7 +12774,6 @@ class Route
             'fetch_journal_form_field_options_ledger',
             'fetch_ledger_config_form_field_options_ledger',
             'ledger_fetch_multiple_transactions',
-            'ledger_transaction_webhook',
             'fetch_account_types_ledger',
             'fetch_fund_account_types_ledger',
             'delete_merchants_ledger',

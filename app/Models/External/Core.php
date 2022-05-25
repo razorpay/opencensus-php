@@ -18,19 +18,14 @@ class Core extends Base\Core
      */
     protected $merchant;
 
-    public function create(BAS\Entity $basEntity, $withTxnBool = true): External\Entity
+    public function create(BAS\Entity $basEntity): External\Entity
     {
-        $external = $this->repo->transaction(function () use ($basEntity, $withTxnBool)
+        $external = $this->repo->transaction(function () use ($basEntity)
         {
             $external = $this->createExternalEntity($basEntity);
 
-            // Create external entity with transaction only if $withTxnBool is set
-            // default behaviour is to create transaction
-            if ($withTxnBool === true)
-            {
-                list ($txn, $feeSplit) = (new Transaction\Processor\External($external))->createTransaction();
-                $this->repo->saveOrFail($txn);
-            }
+            list ($txn, $feeSplit) = (new Transaction\Processor\External($external))->createTransaction();
+            $this->repo->saveOrFail($txn);
 
             $this->trace->info(TraceCode::EXTERNAL_SAVE, $external->toArray());
 

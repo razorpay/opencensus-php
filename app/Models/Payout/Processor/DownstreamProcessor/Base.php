@@ -30,11 +30,6 @@ class Base extends BaseCore
         return $this->createTransaction($payout);
     }
 
-    public function processTransactionWithIdAndLedgerBalance(Entity $payout, string $txnId, int $balance)
-    {
-        return $this->createTransactionWithIdAndLedgerBalance($payout, $txnId, $balance);
-    }
-
     public function processCreateFundTransferAttempt(Entity $payout, PublicEntity $ftaAccount)
     {
         $this->createFundTransferAttempt($payout, $ftaAccount);

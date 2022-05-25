@@ -962,29 +962,16 @@ class Core extends Base\Core
         (new Merchant\Core())->addHasKeyAccessToMerchantIfApplicable($bankingAccount->merchant);
 
         // check experiment and onboard DA to ledger in reverse shadow or shadow mode
-        $onboardToLedger = false;
         $merchant = $bankingAccount->merchant;
 
-        if ($this->onBoardDAMerchantOnLedgerInReverseShadow($bankingAccount->merchant, $this->app['rzp.mode']) === true)
-        {
-            // assign DA_LEDGER_REVERSE_SHADOW feature for the merchant to be onboarded in
-            // reverse shadow mode for direct accounting
-            $this->assginLedgerFeatureForMerchant($merchant, Feature\Constants::DA_LEDGER_REVERSE_SHADOW, Feature\Constants::DA_LEDGER_JOURNAL_WRITES);
-            $onboardToLedger = true;
-        }
-        else if ($this->onBoardDAMerchantOnLedgerInShadow($bankingAccount->merchant, $this->app['rzp.mode']) === true)
+        if ($this->onBoardDAMerchantOnLedgerInShadow($bankingAccount->merchant, $this->app['rzp.mode']) === true)
         {
             // assign DA_LEDGER_JOURNAL_WRITES feature for the merchant to be onboarded in
             // reverse shadow mode for direct accounting
-            $this->assginLedgerFeatureForMerchant($merchant, Feature\Constants::DA_LEDGER_JOURNAL_WRITES, Feature\Constants::DA_LEDGER_REVERSE_SHADOW);
-            $onboardToLedger = true;
-        }
-
-        // onboard DA to ledger in reverse shadow or shadow mode
-        if ($onboardToLedger === true)
-        {
+            $this->assginLedgerFeatureForMerchant($merchant, Feature\Constants::DA_LEDGER_JOURNAL_WRITES);
             (new Merchant\Balance\Ledger\Core)->createXLedgerAccountForDirect($merchant, $basDetailEntity, $this->app['rzp.mode'], $balance->getBalance(), 0, false);
         }
+
 
         $this->sendBankingCaActivationSmsIfApplicable($bankingAccount);
 
@@ -994,7 +981,7 @@ class Core extends Base\Core
     }
 
     // Assign feature as concluded by the experiment and clean up existing manually assigned feature by ops
-    public function assginLedgerFeatureForMerchant($merchant, string $featureToAssign, string $featureToRemove)
+    public function assginLedgerFeatureForMerchant($merchant, string $featureToAssign)
     {
         if ($merchant->isFeatureEnabled($featureToAssign) === false)
         {
@@ -1013,30 +1000,6 @@ class Core extends Base\Core
                     'feature_name'      => $featureToAssign
                 ]);
         }
-
-        // delete reverse shadow feature if already present before merchant came on RX Direct
-        // this is possible if feature is wrongly assigned due to manual flow from ops
-        try {
-            $feature = $this->repo->feature->findByEntityTypeEntityIdAndNameOrFail(
-                EntityConstants::MERCHANT,
-                $merchant->getId(),
-                $featureToRemove);
-
-            if (empty($feature) === false) {
-                (new Feature\Core)->delete($feature);
-            }
-        }
-        catch (\Throwable $ex)
-        {
-            $this->trace->traceException(
-                $ex,
-                Trace::ERROR,
-                TraceCode::LEDGER_DELETE_MANUALLY_ASSIGNED_FEATURE_FAILED,
-                [
-                    'merchant_id'          => $merchant->getId(),
-                    'feature'              => $featureToRemove
-                ]);
-        }
     }
 
     // Returns true if experiment and env variable to onboard direct accounting merchant on ledger in shadow is running.
@@ -1044,17 +1007,6 @@ class Core extends Base\Core
     {
         $variant = $this->app->razorx->getTreatment($merchant->getId(),
             Merchant\RazorxTreatment::DA_LEDGER_ONBOARDING,
-            $mode
-        );
-
-        return (strtolower($variant) === 'on');
-    }
-
-    // Returns true if experiment and env variable to onboard direct accounting merchant on ledger in reverse shadow is running.
-    protected function onBoardDAMerchantOnLedgerInReverseShadow($merchant, string $mode): bool
-    {
-        $variant = $this->app->razorx->getTreatment($merchant->getId(),
-            Merchant\RazorxTreatment::DA_LEDGER_ONBOARDING_REVERSE_SHADOW,
             $mode
         );
 

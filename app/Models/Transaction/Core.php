@@ -976,15 +976,6 @@ class Core extends Base\Core
         return $txn;
     }
 
-    public function createFromPayoutReversalWithIdAndLedgerBalance(Reversal\Entity $reversal, string $txnId, int $balance): Entity
-    {
-        $txnProcessor = (new TransactionProcessor\Reversal($reversal));
-
-        list($txn, $feesSplit) = $txnProcessor->createTransactionWithIdAndLedgerBalance($txnId, $balance);
-
-        return $txn;
-    }
-
     public function createFromDispute(Dispute\Entity $dispute): Entity
     {
         $txn = new Entity;
