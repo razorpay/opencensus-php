@@ -7,6 +7,8 @@ import { AtomPoints } from './AtomPoints';
 import { PineLabsPoints } from './PineLabsPoints';
 import { IngenicoPoints } from './IngenicoPoints';
 import { BillDeskPoints } from './BillDeskPoints';
+import { UpiAxisPoints } from './UpiAxisPoints';
+import { AxisMigsPoints } from './AxisMigsPoints';
 
 export const SeamlessHowto = ({ gatewayName, selectedProvider }) => {
   switch (selectedProvider) {
@@ -26,6 +28,10 @@ export const SeamlessHowto = ({ gatewayName, selectedProvider }) => {
       return <IngenicoPoints />;
     case 'billdesk_optimizer':
       return <BillDeskPoints />;
+    case 'axis_migs':
+      return <AxisMigsPoints />;
+    case 'upi_axis':
+      return <UpiAxisPoints />;
     default:
       return (
         <ol>

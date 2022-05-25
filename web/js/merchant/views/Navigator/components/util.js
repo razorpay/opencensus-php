@@ -970,6 +970,8 @@ export const gatewayLogos = {
   upi_mindgate: `${window.cdnBaseUrl}/${LOGO_PATH}/hdfc.png`,
   pinelabs: `${window.cdnBaseUrl}/${LOGO_PATH}/pinelabs.png`,
   ingenico: `${window.cdnBaseUrl}/${LOGO_PATH}/ingenico.png`,
+  axis_migs: `${window.cdnBaseUrl}/${LOGO_PATH}/axis.png`,
+  upi_axis: `${window.cdnBaseUrl}/${LOGO_PATH}/axis.png`,
 };
 
 export const popularGateways = ['payu'];
@@ -1115,6 +1117,18 @@ export const gatewayDetailsMapping = {
     dashboardImg: null,
     dashboardUrl: 'https://services.billdesk.com/console/',
     dashboardUrlLabel: 'services.billdesk.com',
+  },
+  axis_migs: {
+    dashboardImg: null,
+    dashboardUrl:
+      'https://www.axisbank.com/business-banking/collection-solutions/internet-payment-gateway-solutions/overview',
+    dashboardUrlLabel: 'axisbank.com',
+  },
+  upi_axis: {
+    dashboardImg: null,
+    dashboardUrl:
+      'https://www.axisbank.com/business-banking/collection-solutions/internet-payment-gateway-solutions/overview',
+    dashboardUrlLabel: 'axisbank.com',
   },
 };
 

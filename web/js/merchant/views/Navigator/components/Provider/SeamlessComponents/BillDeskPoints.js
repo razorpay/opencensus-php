@@ -17,7 +17,7 @@ export const BillDeskPoints = () => {
           </ol>
         </li>
         <li>
-          Billdesk S2S card intergration supports two features
+          Billdesk S2S card integration supports two features
           <ol type="1">
             <li>Regular card processing</li>
             <li>NoRedirect based Payment</li>

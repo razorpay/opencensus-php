@@ -336,28 +336,28 @@ export default class AddProvider extends React.Component {
 
   validateGatewayDetails = (key) => {
     const { provider, providers, selectedProvider, validationErrors, allDetailsValid } = this.state;
-    const minLength = providers?.[selectedProvider]?.[key]?.min_length;
-    const maxLength = providers?.[selectedProvider]?.[key]?.max_length;
+    const { min_length: minLength, max_length: maxLength, meta_data } = providers?.[
+      selectedProvider
+    ]?.[key];
+    const validationRegex = meta_data?.validation_regex;
     const checkVal = provider?.Gateway_details?.[key];
-
     const validErr = { ...validationErrors };
 
-    if (
-      minLength &&
+    if (validationRegex && checkVal && !new RegExp(validationRegex).test(checkVal)) {
+      validErr[key] = `Please enter valid value`;
+    } else if (
       checkVal &&
-      !(checkVal.length >= minLength) &&
-      (!maxLength || !(checkVal.length > maxLength))
+      ((minLength && checkVal.length < minLength) || (maxLength && checkVal.length > maxLength))
     ) {
-      if (maxLength != 0) {
+      if (maxLength && maxLength !== 0) {
         validErr[key] = `Please enter ${minLength} to ${maxLength} characters value`;
+      } else {
+        validErr[key] = `Please enter minimum ${minLength} characters value`;
       }
-      validErr[key] = `Please enter minimum ${minLength} characters value`;
-      this.setState({ validationErrors: validErr });
     } else if (validErr[key]) {
       delete validErr[key];
-      this.setState({ validationErrors: validErr });
     }
-
+    this.setState({ validationErrors: validErr });
     if (Object.keys(validErr).length === 0) {
       this.setState({ allDetailsValid: true });
     } else if (allDetailsValid) {
