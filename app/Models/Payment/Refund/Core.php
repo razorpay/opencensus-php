@@ -136,6 +136,45 @@ class Core extends Base\Core
         }
     }
 
+    public function updateWithDetailsBeforeFtaRecon(Entity $entity, array $ftaData)
+    {
+        $featureFlag =  RefundConstants::REFUNDS_0_LOC_FTA_STATUS_UPDATE_FLOW_RAMP_UP;
+
+        $mode = $this->app['rzp.mode'] ?? 'live';
+
+        $ftaVariant = $this->app->razorx->getTreatment(
+            $entity->getId(),
+            $featureFlag,
+            $mode
+        );
+
+        if (strtolower($ftaVariant) === RefundConstants::RAZORX_VARIANT_ON)
+        {
+            $this->trace->info(
+                TraceCode::REFUNDS_0_LOC_FTA_STATUS_UPDATE_FLOW_RAMP_UP_RESPONSE,
+                [
+                    'id'        => $entity->getId(),
+                    'result'    => $ftaVariant
+                ]);
+            return;
+        }
+
+        $entity->setUtr($ftaData[Attempt\Constants::UTR]);
+
+        $entity->setRemarks($ftaData[Attempt\Constants::REMARKS]);
+
+        $this->trace->info(
+            TraceCode::FTA_RECON_SOURCE_UPDATED,
+            [
+                'source_id'         => $entity->getId(),
+                'fta_id'            => $ftaData[Attempt\Constants::FTA_ID],
+                'source_original'   => $entity->getOriginalAttributesAgainstDirty(),
+                'source_dirty'      => $entity->getDirty(),
+            ]);
+
+        $this->repo->saveOrFail($entity);
+    }
+
     public function updateEntityWithFtsTransferId(Entity $entity, $ftsTransferId)
     {
         if (empty($ftsTransferId) === false)

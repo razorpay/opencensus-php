@@ -1109,6 +1109,8 @@ class EnachRblGatewayTest extends TestCase
 
         $this->assertEquals('914010009305862', $bankAccount['account_number']);
 
+        $this->assertEquals($bankAccount['id'], 'ba_' . $refund['bank_account_id']);
+
         $this->assertEquals('refund', $bankAccount['type']);
     }
 
@@ -1164,6 +1166,8 @@ class EnachRblGatewayTest extends TestCase
 
         $this->assertEquals('914010009305862', $bankAccount['account_number']);
 
+        $this->assertEquals($bankAccount['id'], 'ba_' . $refund['bank_account_id']);
+
         $this->assertEquals('refund', $bankAccount['type']);
     }
 
@@ -1217,6 +1221,8 @@ class EnachRblGatewayTest extends TestCase
         $this->assertEquals('test', $bankAccount['beneficiary_name']);
 
         $this->assertEquals('914010009305862', $bankAccount['account_number']);
+
+        $this->assertEquals($bankAccount['id'], 'ba_' . $refund['bank_account_id']);
 
         $this->assertEquals('refund', $bankAccount['type']);
     }

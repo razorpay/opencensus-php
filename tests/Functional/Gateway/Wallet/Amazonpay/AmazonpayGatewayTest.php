@@ -535,7 +535,7 @@ class AmazonpayGatewayTest extends TestCase
 
         // Since the refund is processed, we are checking the gateway is not hit.
         // TODO: We may need to change this to verify refund
-        $this->retryFailedRefund($refund->getPublicId(), 'pay_' . $refund->getPaymentId(), [], ['status'=> $refund->getStatus()]);
+        $this->retryFailedRefund($refund->getPublicId());
         $this->assertFalse($gatewayHit);
 
         $this->assertEquals(Refund\Status::PROCESSED, $refund->reload()->getStatus());
@@ -564,7 +564,7 @@ class AmazonpayGatewayTest extends TestCase
                 }
             });
 
-        $this->retryFailedRefund($refund->getPublicId(), 'pay_' . $refund->getPaymentId());
+        $this->retryFailedRefund($refund->getPublicId());
 
         $this->assertTrue($gatewayHit);
 

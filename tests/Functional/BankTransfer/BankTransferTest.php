@@ -789,6 +789,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals('created', $attempt['status']);
         $this->assertEquals($refund['id'], $attempt['source']);
         $this->assertEquals('10000000000000', $attempt['merchant_id']);
+        $this->assertEquals($refund['bank_account_id'], $attempt['bank_account_id']);
         $this->assertStringEndsWith($utr, $attempt['narration']);
 
         // Payment is refunded
@@ -917,6 +918,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals('created', $attempt['status']);
         $this->assertEquals($refund['id'], $attempt['source']);
         $this->assertEquals('10000000000000', $attempt['merchant_id']);
+        $this->assertEquals($refund['bank_account_id'], $attempt['bank_account_id']);
         $this->assertStringEndsWith($utr, $attempt['narration']);
 
         // Payment is refunded
@@ -1162,6 +1164,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals('created', $attempt['status']);
         $this->assertEquals($refund['id'], $attempt['source']);
         $this->assertEquals('10000000000000', $attempt['merchant_id']);
+        $this->assertEquals($refund['bank_account_id'], $attempt['bank_account_id']);
         $this->assertStringEndsWith($utr, $attempt['narration']);
 
         $this->initiateTransferViaFileAndAssertSuccess(
@@ -1236,6 +1239,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals('created', $attempt['status']);
         $this->assertEquals($refund['id'], $attempt['source']);
         $this->assertEquals('10000000000000', $attempt['merchant_id']);
+        $this->assertEquals($refund['bank_account_id'], $attempt['bank_account_id']);
         $this->assertStringEndsWith($utr, $attempt['narration']);
 
         $content = $this->initiateTransferViaFileAndAssertSuccess(
@@ -1279,6 +1283,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals('created', $attempt['status']);
         $this->assertEquals($refund['id'], $attempt['source']);
         $this->assertEquals('10000000000000', $attempt['merchant_id']);
+        $this->assertEquals($refund['bank_account_id'], $attempt['bank_account_id']);
         $this->assertStringEndsWith($utr, $attempt['narration']);
 
         $content = $this->initiateTransferViaFileAndAssertSuccess(
@@ -1354,6 +1359,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals('created', $attempt['status']);
         $this->assertEquals($refund['id'], $attempt['source']);
         $this->assertEquals('10000000000000', $attempt['merchant_id']);
+        $this->assertEquals($refund['bank_account_id'], $attempt['bank_account_id']);
         $this->assertStringEndsWith($utr, $attempt['narration']);
 
         $content = $this->initiateTransferViaFileAndAssertSuccess(
@@ -1396,6 +1402,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals('created', $attempt['status']);
         $this->assertEquals($refund['id'], $attempt['source']);
         $this->assertEquals('10000000000000', $attempt['merchant_id']);
+        $this->assertEquals($refund['bank_account_id'], $attempt['bank_account_id']);
         $this->assertStringEndsWith($utr, $attempt['narration']);
 
         $this->initiateTransferViaFileAndAssertSuccess(
@@ -1927,6 +1934,7 @@ class BankTransferTest extends TestCase
             $this->assertEquals('created', $attempt['status']);
             $this->assertEquals($refund['id'], $attempt['source']);
             $this->assertEquals('10000000000000', $attempt['merchant_id']);
+            $this->assertEquals($refund['bank_account_id'], $attempt['bank_account_id']);
             $this->assertEquals('ACC DOESNT EXIST-'.$bankTransfer['utr'], $attempt['narration']);
 
         }
@@ -2022,6 +2030,7 @@ class BankTransferTest extends TestCase
             $this->assertEquals('created', $attempt['status']);
             $this->assertEquals($refund['id'], $attempt['source']);
             $this->assertEquals('10000000000000', $attempt['merchant_id']);
+            $this->assertEquals($refund['bank_account_id'], $attempt['bank_account_id']);
             $this->assertEquals('ACC DOESNT EXIST-'.$bankTransfer['utr'], $attempt['narration']);
         }
 
@@ -2300,6 +2309,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals('created', $attempt['status']);
         $this->assertEquals($refund['id'], $attempt['source']);
         $this->assertEquals('10000000000000', $attempt['merchant_id']);
+        $this->assertEquals($refund['bank_account_id'], $attempt['bank_account_id']);
         $this->assertStringEndsWith($utr, $attempt['narration']);
 
         $this->initiateTransferViaFileAndAssertSuccess(
@@ -4796,6 +4806,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals('created', $attempt['status']);
         $this->assertEquals($refund['id'], $attempt['source']);
         $this->assertEquals('10000000000000', $attempt['merchant_id']);
+        $this->assertEquals($refund['bank_account_id'], $attempt['bank_account_id']);
         $this->assertStringEndsWith($utr, $attempt['narration']);
     }
 
@@ -4844,6 +4855,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals('created', $attempt['status']);
         $this->assertEquals('rfnd_' . $refund['id'], $attempt['source']);
         $this->assertEquals('10000000000000', $attempt['merchant_id']);
+        $this->assertEquals($refund['bank_account_id'], $attempt['bank_account_id']);
         $this->assertEquals('Test Merchant-CMS480098890', $attempt['narration']);
     }
 
@@ -4918,6 +4930,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals('created', $attempt['status']);
         $this->assertEquals($refund['id'], $attempt['source']);
         $this->assertEquals('10000000000000', $attempt['merchant_id']);
+        $this->assertEquals($refund['bank_account_id'], $attempt['bank_account_id']);
         $this->assertStringEndsWith($utr, $attempt['narration']);
     }
 
@@ -4991,6 +5004,8 @@ class BankTransferTest extends TestCase
         $this->assertEquals('SBIN0010411', $bankAccount['ifsc_code']);
 
         $this->assertEquals($order['account_number'], $bankAccount['account_number']);
+
+        $this->assertEquals($bankAccount['id'], $refund['bank_account_id']);
 
         $this->assertEquals('refund', $bankAccount['type']);
     }

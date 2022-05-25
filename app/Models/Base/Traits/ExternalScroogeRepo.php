@@ -379,14 +379,31 @@ trait ExternalScroogeRepo
                 return true;
             }
 
+            $ftaVariant = 'off';
+
             $ftaRoutes =  \RZP\Http\Route::$loadRefundsFromScroogeForFtaRoutes;
 
             $routeName = $this->route->getCurrentRouteName();
 
             if (empty($id) === false and in_array($routeName, $ftaRoutes, true) === true){
-                // fta source loading from scrooge for this route
-                return true;
+                // ramp up fta source loading from scrooge for this route
+                $featureFlag =  RefundConstants::REFUNDS_0_LOC_FTA_STATUS_UPDATE_FLOW_RAMP_UP;
+
+                $ftaVariant = $this->app->razorx->getTreatment(
+                    $id,
+                    $featureFlag,
+                    $mode
+                );
+
+                $this->trace->info(
+                    TraceCode::REFUNDS_0_LOC_FTA_STATUS_UPDATE_FLOW_RAMP_UP_RESPONSE,
+                    [
+                        'id'        => $id,
+                        'result'    => $ftaVariant
+                    ]);
             }
+
+            return ($ftaVariant === 'on');
         }
 
         return false;

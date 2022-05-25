@@ -3141,7 +3141,21 @@ trait Refund
 
         return $this->repo->transaction(function () use ($input, $fundTransferAttemptInput)
         {
-            $this->createAndAssociateVpa($input);
+            $cacheVal = $this->app['cache']->get($this->refund->getId());
+
+            if ($cacheVal == RefundConstants::REFUNDS_0_LOC_POST_INIT_FLOW_RAMP_UP)
+            {
+                $this->createAndAssociateVpa($input);
+            }
+            else
+            {
+
+                if (($this->refund->hasVpa() === false) or
+                    ($this->refund->vpa->matches($input) === false))
+                {
+                    $this->createAndAssociateVpa($input);
+                }
+            }
 
             $fta = (new FundTransferAttempt\Core)->createWithVpa($this->refund,
                                                                  $this->refund->vpa,
@@ -3172,8 +3186,21 @@ trait Refund
 
         return $this->repo->transaction(function () use ($bankAccountInput, $fundTransferAttemptInput)
         {
+            $cacheVal = $this->app['cache']->get($this->refund->getId());
 
-            $this->createAndAssociateBankAccount($bankAccountInput);
+            if ($cacheVal == RefundConstants::REFUNDS_0_LOC_POST_INIT_FLOW_RAMP_UP)
+            {
+                $this->createAndAssociateBankAccount($bankAccountInput);
+            }
+            else
+            {
+                if (($this->refund->hasBankAccount() === false) or
+                    ($this->refund->bankAccount->matches($bankAccountInput) === false))
+                {
+                    $this->createAndAssociateBankAccount($bankAccountInput);
+                }
+
+            }
 
             $fta = (new FundTransferAttempt\Core)->createWithBankAccount($this->refund,
                                                                          $this->refund->bankAccount,
@@ -3930,6 +3957,13 @@ trait Refund
         $vpa = (new Vpa\Core)->createForSource($vpaInput, $this->refund);
 
         $this->refund->vpa()->associate($vpa);
+
+        $cacheVal = $this->app['cache']->get($this->refund->getId());
+
+        if (empty($cacheVal))
+        {
+            $this->refund->saveOrFail();
+        }
     }
 
     protected function createAndAssociateBankAccount(array $bankAccountInput)
@@ -3942,6 +3976,13 @@ trait Refund
                 );
 
         $this->refund->bankAccount()->associate($bankAccount);
+
+        $cacheVal = $this->app['cache']->get($this->refund->getId());
+
+        if (empty($cacheVal))
+        {
+            $this->refund->saveOrFail();
+        }
     }
 
     /**

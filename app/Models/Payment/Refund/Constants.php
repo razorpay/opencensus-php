@@ -96,6 +96,8 @@ class Constants
     const RAZORX_KEY_TERMINAL_REFUNDS_ROUTE_VIA_FTA_SUFFIX       = 'terminal_refunds_route_via_fta';
     const RAZORX_KEY_SKIP_PAYMENT_ENTITY_UPDATE_FOR_REVERSAL     = 'skip_payment_entity_update_for_reversal';
 
+    // Experiment to roll out 0 LoC project where refunds table is moved out of API
+    const REFUNDS_0_LOC_POST_INIT_FLOW_RAMP_UP = 'refunds_0_loc_post_init_flow_ramp_up';
     // Experiment to set up FTA status update flow
     const REFUNDS_0_LOC_FTA_STATUS_UPDATE_FLOW_RAMP_UP = 'refunds_0_loc_fta_status_update_flow_ramp_up';
     // Setting cache key ttl for 2 minutes since it's sync flow

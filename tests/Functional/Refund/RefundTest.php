@@ -2147,6 +2147,8 @@ class RefundTest extends TestCase
         $this->assertEquals('SBIN0010411', $bankAccount['ifsc_code']);
 
         $this->assertEquals($order['account_number'], $bankAccount['account_number']);
+
+        $this->assertEquals($bankAccount['id'], 'ba_' . $refund['bank_account_id']);
         $this->assertEquals('test', $bankAccount['beneficiary_name']);
         $this->assertEquals('refund', $bankAccount['type']);
 
@@ -2188,6 +2190,7 @@ class RefundTest extends TestCase
 
         $this->assertEquals($order['account_number'], $bankAccount['account_number']);
 
+        $this->assertEquals($bankAccount['id'], 'ba_' . $refund['bank_account_id']);
         $this->assertEquals('test', $bankAccount['beneficiary_name']);
         $this->assertEquals('refund', $bankAccount['type']);
 
@@ -2297,6 +2300,8 @@ class RefundTest extends TestCase
 
         $this->assertEquals($order['account_number'], $bankAccount['account_number']);
 
+        $this->assertEquals($bankAccount['id'], 'ba_' . $refund['bank_account_id']);
+
         $this->assertEquals('refund', $bankAccount['type']);
 
         $this->assertNull($refund['error_code']);
@@ -2337,6 +2342,8 @@ class RefundTest extends TestCase
         $this->assertEquals('SBIN0010411', $bankAccount['ifsc_code']);
 
         $this->assertEquals($order['account_number'], $bankAccount['account_number']);
+
+        $this->assertEquals($bankAccount['id'], 'ba_' . $refund['bank_account_id']);
 
         $this->assertEquals('refund', $bankAccount['type']);
     }
@@ -3116,6 +3123,7 @@ class RefundTest extends TestCase
         $fta = $this->getLastEntity('fund_transfer_attempt', true);
 
         $this->assertEquals($fta['source'], $refund['id']);
+        $this->assertEquals($refund['vpa_id'], $fta['vpa_id']);
         $this->assertEquals('refund', $fta['purpose']);
         $this->assertEquals('failed', $fta['status']);
 
@@ -3398,6 +3406,7 @@ class RefundTest extends TestCase
         $fta = $this->getLastEntity('fund_transfer_attempt', true);
 
         $this->assertEquals($fta['source'], $refund['id']);
+        $this->assertEquals($refund['vpa_id'], $fta['vpa_id']);
         $this->assertEquals('refund', $fta['purpose']);
         $this->assertEquals('processed', $fta['status']);
 
@@ -3765,6 +3774,7 @@ class RefundTest extends TestCase
         $fta = $this->getLastEntity('fund_transfer_attempt', true);
 
         $this->assertEquals($fta['source'], $refund['id']);
+        $this->assertEquals($refund['vpa_id'], $fta['vpa_id']);
         $this->assertEquals('refund', $fta['purpose']);
         $this->assertEquals('processed', $fta['status']);
 
@@ -3870,6 +3880,7 @@ class RefundTest extends TestCase
         $fta = $this->getLastEntity('fund_transfer_attempt', true);
 
         $this->assertEquals($fta['source'], $refund['id']);
+        $this->assertEquals($refund['vpa_id'], $fta['vpa_id']);
         $this->assertEquals('refund', $fta['purpose']);
         $this->assertEquals('processed', $fta['status']);
 
@@ -3996,6 +4007,7 @@ class RefundTest extends TestCase
         $fta = $this->getLastEntity('fund_transfer_attempt', true);
 
         $this->assertEquals($fta['source'], $refund['id']);
+        $this->assertEquals($refund['vpa_id'], $fta['vpa_id']);
         $this->assertEquals('refund', $fta['purpose']);
         $this->assertEquals('processed', $fta['status']);
 
@@ -4138,6 +4150,7 @@ class RefundTest extends TestCase
         $fta = $this->getLastEntity('fund_transfer_attempt', true);
 
         $this->assertEquals($fta['source'], $refund['id']);
+        $this->assertEquals($refund['vpa_id'], $fta['vpa_id']);
         $this->assertEquals('refund', $fta['purpose']);
 
         $this->assertEquals('Test Merchant Refund ' . substr($payment['id'], 4), $fta['narration']);
@@ -4360,6 +4373,7 @@ class RefundTest extends TestCase
         $fta = $this->getLastEntity('fund_transfer_attempt', true);
 
         $this->assertEquals($fta['source'], $refund['id']);
+        $this->assertEquals($refund['vpa_id'], $fta['vpa_id']);
         $this->assertEquals('refund', $fta['purpose']);
         $this->assertEquals('processed', $fta['status']);
 
@@ -4468,6 +4482,7 @@ class RefundTest extends TestCase
         $fta = $this->getLastEntity('fund_transfer_attempt', true);
 
         $this->assertEquals($fta['source'], $refund['id']);
+        $this->assertEquals($refund['vpa_id'], $fta['vpa_id']);
         $this->assertEquals('refund', $fta['purpose']);
         $this->assertEquals('failed', $fta['status']);
 
@@ -4712,6 +4727,7 @@ class RefundTest extends TestCase
         $fta = $this->getLastEntity('fund_transfer_attempt', true);
 
         $this->assertEquals($fta['source'], $refund['id']);
+        $this->assertEquals($refund['vpa_id'], $fta['vpa_id']);
         $this->assertEquals('refund', $fta['purpose']);
         $this->assertEquals('processed', $fta['status']);
 
@@ -4827,6 +4843,7 @@ class RefundTest extends TestCase
         $fta = $this->getLastEntity('fund_transfer_attempt', true);
 
         $this->assertEquals($fta['source'], $refund['id']);
+        $this->assertEquals($refund['vpa_id'], $fta['vpa_id']);
         $this->assertEquals('refund', $fta['purpose']);
 
         $this->assertEquals('Test Merchant Refund ' . substr($payment['id'], 4), $fta['narration']);
@@ -4903,6 +4920,7 @@ class RefundTest extends TestCase
         $fta = $this->getLastEntity('fund_transfer_attempt', true);
 
         $this->assertEquals($fta['source'], $refund['id']);
+        $this->assertEquals($refund['vpa_id'], $fta['vpa_id']);
         $this->assertEquals('refund', $fta['purpose']);
         $this->assertEquals('processed', $fta['status']);
 
@@ -4912,6 +4930,7 @@ class RefundTest extends TestCase
 
         $fta = $this->getLastEntity('fund_transfer_attempt', true);
         $this->assertEquals($fta['source'], $refund['id']);
+        $this->assertEquals($refund['vpa_id'], $fta['vpa_id']);
         $this->assertEquals('failed', $fta['status']);
 
         $this->assertEquals('Test Merchant Refund ' . substr($payment['id'], 4), $fta['narration']);
@@ -5029,6 +5048,7 @@ class RefundTest extends TestCase
         $fta = $this->getLastEntity('fund_transfer_attempt', true);
 
         $this->assertEquals($fta['source'], $refund['id']);
+        $this->assertEquals($refund['vpa_id'], $fta['vpa_id']);
         $this->assertEquals('refund', $fta['purpose']);
 
         $this->assertEquals('Test Merchant Refund ' . substr($payment['id'], 4), $fta['narration']);
@@ -5536,6 +5556,7 @@ class RefundTest extends TestCase
         $fta = $this->getLastEntity('fund_transfer_attempt', true);
 
         $this->assertEquals($fta['source'], $refund['id']);
+        $this->assertEquals($refund['vpa_id'], $fta['vpa_id']);
         $this->assertEquals('refund', $fta['purpose']);
         $this->assertEquals('processed', $fta['status']);
 
@@ -5581,6 +5602,7 @@ class RefundTest extends TestCase
         $fta = $this->getLastEntity('fund_transfer_attempt', true);
 
         $this->assertEquals($fta['source'], $refund['id']);
+        $this->assertEquals($refund['vpa_id'], $fta['vpa_id']);
         $this->assertEquals('refund', $fta['purpose']);
         $this->assertEquals('processed', $fta['status']);
 
@@ -5658,6 +5680,7 @@ class RefundTest extends TestCase
         $fta = $this->getLastEntity('fund_transfer_attempt', true);
 
         $this->assertEquals($fta['source'], $refund['id']);
+        $this->assertEquals($refund['vpa_id'], $fta['vpa_id']);
         $this->assertEquals('refund', $fta['purpose']);
         $this->assertEquals('processed', $fta['status']);
 

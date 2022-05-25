@@ -115,6 +115,8 @@ class NachGatewayTest extends TestCase
 
         // $this->assertEquals('initiated', $refund['status']);
         $this->assertEquals('created', $refund['status']);
+
+        $this->assertTrue(empty($refund['bank_account_id']) === false);
     }
 
     public function testGatewayFileRegister()
