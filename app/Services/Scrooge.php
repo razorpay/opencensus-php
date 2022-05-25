@@ -672,10 +672,18 @@ class Scrooge
         // send passport token to Scrooge
         $this->enablePassport();
 
-        return $this->sendRequest(
+        $scroogeResponse = $this->sendRequest(
             self::RefundsBaseURL . '/' . $id,
             Requests::GET,
             $input);
+
+        if (in_array($scroogeResponse['code'], [200, "200"]) == false)
+        {
+            $this->toPublicErrorResponse($scroogeResponse);
+        }
+
+        // body has the actual scrooge response
+        return $scroogeResponse['body'];
     }
 
     /**
@@ -689,10 +697,18 @@ class Scrooge
         // send passport token to Scrooge
         $this->enablePassport();
 
-        return $this->sendRequest(
+        $scroogeResponse = $this->sendRequest(
             self::RefundsBaseURL,
             Requests::GET,
             $input);
+
+        if (in_array($scroogeResponse['code'], [200, 201, "200", "201"]) == false)
+        {
+            $this->toPublicErrorResponse($scroogeResponse);
+        }
+
+        // body has the actual scrooge response
+        return $scroogeResponse['body'];
     }
 
     /**
@@ -707,10 +723,18 @@ class Scrooge
         // send passport token to Scrooge
         $this->enablePassport();
 
-        return $this->sendRequest(
+        $scroogeResponse = $this->sendRequest(
             self::PaymentsBaseURL . '/' . $paymentId . '/' . self::URLS['get_refunds'],
             Requests::GET,
             $input);
+
+        if (in_array($scroogeResponse['code'], [200, 201, "200", "201"]) == false)
+        {
+            $this->toPublicErrorResponse($scroogeResponse);
+        }
+
+        // body has the actual scrooge response
+        return $scroogeResponse['body'];
     }
 
     /**
@@ -725,10 +749,18 @@ class Scrooge
         // send passport token to Scrooge
         $this->enablePassport();
 
-        return $this->sendRequest(
+        $scroogeResponse = $this->sendRequest(
             self::PaymentsBaseURL . '/' . $paymentId . '/' . self::URLS['get_refunds'] . '/' . $refundId,
             Requests::GET,
             []);
+
+        if (in_array($scroogeResponse['code'], [200, 201, "200", "201"]) == false)
+        {
+            $this->toPublicErrorResponse($scroogeResponse);
+        }
+
+        // body has the actual scrooge response
+        return $scroogeResponse['body'];
     }
 
     /**

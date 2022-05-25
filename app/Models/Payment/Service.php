@@ -1130,9 +1130,6 @@ class Service extends Base\Service
 
     public function retrieveRefundByIdAndPaymentId($paymentId, $rfndId)
     {
-        $scroogeRefundArray = [];
-        $experiment = false;
-
         $variant = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(),
             RefundConstants::RAZORX_KEY_REFUND_FETCH_BY_ID_AND_PAYMENT_FROM_SCROOGE,
             $this->mode
@@ -1140,11 +1137,7 @@ class Service extends Base\Service
 
         if ($variant === RefundConstants::RAZORX_VARIANT_ON)
         {
-            $experiment = true;
-
-            $scroogeResponse = $this->app['scrooge']->refundsFetchByIdAndPayment($paymentId, $rfndId);
-
-            $scroogeRefundArray = $scroogeResponse['body'];
+            return $this->app['scrooge']->refundsFetchByIdAndPayment($paymentId, $rfndId);
         }
 
         Payment\Entity::verifyIdAndStripSign($paymentId);
@@ -1155,14 +1148,7 @@ class Service extends Base\Service
                                     $paymentId,
                                     $this->merchant->getKey());
 
-        $refundArray = $refund->toArrayPublic();
-
-        if ($experiment === true)
-        {
-            (new Refund\Service())->compareRefundsAndLogDifference([$refundArray], [$scroogeRefundArray]);
-        }
-
-        return $refundArray;
+        return $refund->toArrayPublic();
     }
 
     public function getCardForPayment($id)
@@ -1181,9 +1167,6 @@ class Service extends Base\Service
 
     public function retrieveRefundsForPayment($id, array $input = [])
     {
-        $scroogeRefundsArray = [];
-        $experiment = false;
-
         // Route only private auth and not proxy auth requests to scrooge
         if ($this->app['basicauth']->isStrictPrivateAuth() === true)
         {
@@ -1198,11 +1181,7 @@ class Service extends Base\Service
 
                 if ($variant === RefundConstants::RAZORX_VARIANT_ON)
                 {
-                    $experiment = true;
-
-                    $scroogeResponse = $this->app['scrooge']->refundsFetchByPayment($id, $input);
-
-                    $scroogeRefundsArray = $scroogeResponse['body'];
+                    return $this->app['scrooge']->refundsFetchByPayment($id, $input);
                 }
             }
         }
@@ -1216,11 +1195,6 @@ class Service extends Base\Service
         if ($this->app['basicauth']->isProxyAuth() === true)
         {
             (new Payment\Refund\Service())->addModeAndPublicStatus($refundsArray);
-        }
-
-        if ($experiment === true)
-        {
-            (new Refund\Service())->compareRefundsAndLogDifference($refundsArray['items'], $scroogeRefundsArray['items'] ?? []);
         }
 
         return $refundsArray;

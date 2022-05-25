@@ -422,34 +422,36 @@ class Service extends Base\Service
 
     public function fetch($id, array $input = [])
     {
-        if (empty($input) === false)
-        {
-            $this->trace->info(TraceCode::REFUNDS_FETCH_BY_ID_ADDITIONAL_PARAMS, $input);
-        }
-
         $scroogeRefundArray = [];
         $experiment = false;
 
-        // Route only private auth and not proxy auth requests to scrooge
-        if ($this->app['basicauth']->isStrictPrivateAuth() === true)
+        $variant = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(),
+            RefundConstants::RAZORX_KEY_REFUND_FETCH_BY_ID_FROM_SCROOGE,
+            $this->mode
+        );
+
+        if ($variant === RefundConstants::RAZORX_VARIANT_ON)
         {
-            // Expands is not supported in strict private auth, but requests could still come at the moment
-            // Not moving them to scrooge right away. Need to handle validation part on scrooge for such additional params
-            if (empty($input) === true)
+            $experiment = true;
+
+            if ($this->app['basicauth']->isStrictPrivateAuth() === true)
             {
-                $variant = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(),
-                    RefundConstants::RAZORX_KEY_REFUND_FETCH_BY_ID_FROM_SCROOGE,
-                    $this->mode
-                );
+                return $this->app['scrooge']->refundsFetchById($id, $input);
+            }
 
-                if ($variant === RefundConstants::RAZORX_VARIANT_ON)
-                {
-                    $experiment = true;
-
-                    $scroogeResponse = $this->app['scrooge']->refundsFetchById($id, $input);
-
-                    $scroogeRefundArray = $scroogeResponse['body'];
-                }
+            // keeping in shadow mode for non-private auth requests
+            try
+            {
+                $scroogeRefundArray = $this->app['scrooge']->refundsFetchById($id, $input);
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->info(
+                    TraceCode::REFUNDS_FETCH_BY_ID_SCROOGE_EXCEPTION,
+                    [
+                        'error_code'    => $e->getCode(),
+                        'error_message' => $e->getMessage(),
+                    ]);
             }
         }
 
@@ -595,7 +597,17 @@ class Service extends Base\Service
                 $value = $value->toArray();
             }
 
-            if((isset($scroogeRefundArray[$key]) === true) and ($scroogeRefundArray[$key] !== $value))
+            if (is_array($value) === true)
+            {
+                if ($scroogeRefundArray[$key] != $value)
+                {
+                    $responseDiff[$key] = $value;
+                }
+
+                continue;
+            }
+
+            if ((isset($scroogeRefundArray[$key]) === true) and ($scroogeRefundArray[$key] !== $value))
             {
                 $responseDiff[$key] = $value;
             }
@@ -1083,7 +1095,7 @@ class Service extends Base\Service
                                         $data = $upiMetadataEntity->toArray();
                                     }
                                 }
-                                catch (\Exception $ex)
+                                catch (\Throwable $ex)
                                 {
                                     $error = RefundConstants::FETCH_ENTITIES_ERROR;
                                 }
@@ -1168,7 +1180,7 @@ class Service extends Base\Service
                                  $error = RefundConstants::FETCH_ENTITIES_ERROR;
                                 }
                             }
-                            catch(\Exception $ex)
+                            catch(\Throwable $ex)
                             {
                                 $error = RefundConstants::FETCH_ENTITIES_ERROR;
                             }
@@ -1191,15 +1203,15 @@ class Service extends Base\Service
                 $responseArray= $this->convertNumericFieldsToString($responseArray);
 
             }
-            catch (\Exception $ex)
+            catch (\Throwable $ex)
             {
-                array_push($skippedPayments, [
+                $skippedPayments[] = [
                     $id =>
                         [
-                            RefundConstants::CODE    => $ex->getCode(),
+                            RefundConstants::CODE => $ex->getCode(),
                             RefundConstants::MESSAGE => $ex->getMessage()
                         ]
-                ]);
+                ];
             }
         }
 
@@ -1379,9 +1391,6 @@ class Service extends Base\Service
             unset($input[Entity::STATUS]);
         }
 
-        $scroogeRefundsArray = [];
-        $experiment = false;
-
         // Route only private auth and not proxy auth requests to scrooge
         if ($this->app['basicauth']->isStrictPrivateAuth() === true)
         {
@@ -1392,11 +1401,7 @@ class Service extends Base\Service
 
             if ($variant === RefundConstants::RAZORX_VARIANT_ON)
             {
-                $experiment = true;
-
-                $scroogeResponse = $this->app['scrooge']->refundsFetchMultiple($input);
-
-                $scroogeRefundsArray = $scroogeResponse['body'];
+                return $this->app['scrooge']->refundsFetchMultiple($input);
             }
         }
 
@@ -1408,11 +1413,6 @@ class Service extends Base\Service
         if ($this->app['basicauth']->isProxyAuth() === true)
         {
             $this->addPublicStatus($refundsArray, $input);
-        }
-
-        if ($experiment === true)
-        {
-            $this->compareRefundsAndLogDifference($refundsArray['items'], $scroogeRefundsArray['items'] ?? []);
         }
 
         return $refundsArray;
