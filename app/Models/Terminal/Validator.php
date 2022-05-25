@@ -1451,12 +1451,16 @@ class Validator extends Base\Validator
         Entity::TPV                        => 'sometimes|in:0,2',
         Entity::TYPE                       => 'sometimes|array',
         Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
+        Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
+        Entity::NOTES                      => 'sometimes|string',
     ];
 
     protected static $upiAxisEditTerminalRules = [
         Entity::GATEWAY                    => 'sometimes|in:upi_axis',
+        Entity::GATEWAY_MERCHANT_ID        => 'sometimes|string',
+        Entity::GATEWAY_MERCHANT_ID2       => 'sometimes|string',
+        Entity::VPA                        => 'sometimes|string',
         Entity::UPI                        => 'sometimes|boolean|in:1',
-        Entity::GATEWAY_TERMINAL_ID        => 'sometimes',
         Entity::TPV                        => 'sometimes|in:0,2',
         Entity::NETWORK_CATEGORY           => 'sometimes|string|max:30',
         Entity::ACCOUNT_NUMBER             => 'sometimes|string|max:50',
@@ -1465,6 +1469,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_ACCESS_CODE        => 'sometimes|string',
         Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
         Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
+        Entity::NOTES                      => 'sometimes|string',
     ];
 
     protected static $upiHulkTerminalRules = [
