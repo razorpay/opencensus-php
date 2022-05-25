@@ -21,8 +21,6 @@ class Validator extends Base\Validator
     const BEFORE_CREATE = 'before_create';
     const PUBLIC_CREATE = 'public_create';
 
-    const NAME_REGEX = '/[a-zA-Z-.\' ]+$/';
-
     /**
      * 1lac in paise
      */
@@ -50,7 +48,7 @@ class Validator extends Base\Validator
         // dummy cvv and that requires network and that requires card number.
         // The other card details are validated as part of card creation.
         Entity::CARD . '.' . Card\Entity::NUMBER    => 'sometimes:card|required_without:card.token|numeric|luhn|digits_between:12,19',
-        Entity::CARD . '.' . Card\Entity::NAME      => 'sometimes:card|max:100|custom:card_name',
+        Entity::CARD . '.' . Card\Entity::NAME      => 'sometimes:card|regex:([a-zA-Z-.\' ]+$)|max:100',
         Entity::IDEMPOTENCY_KEY                     => 'sometimes|string',
         //Validation if vault token is received for payout creation
         //If card number is not present then vault token must be there
@@ -193,32 +191,5 @@ class Validator extends Base\Validator
     public function validateWalletAccount($attribute, $value)
     {
         (new WalletAccount\Validator())->setStrictFalse()->validateInput('create', $value);
-    }
-
-    public function validateCardName($attribute, $value)
-    {
-        if (empty($this->entity) === true)
-        {
-            return;
-        }
-
-        /** @var Entity $fundAccount */
-        $fundAccount = $this->entity;
-
-        $merchant = $fundAccount->merchant;
-
-        if($merchant->isFeatureEnabled(Feature\Constants::ALLOW_CARD_NAME_CHANGES) === true)
-        {
-            return;
-        }
-
-        $match = preg_match(self::NAME_REGEX, trim($value));
-
-        if ($match !== 1)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'The card.name format is invalid.',
-                Entity::NAME);
-        }
     }
 }

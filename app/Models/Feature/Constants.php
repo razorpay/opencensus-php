@@ -1230,13 +1230,6 @@ class Constants
     const ALLOW_NON_SAVED_CARDS   = 'allow_non_saved_cards';
 
     /**
-     * Feature flag when enabled removes name field from composite payout response
-     * and replaces card.name with contact name, since card name is not allowed to be
-     * stored
-     */
-    const ALLOW_CARD_NAME_CHANGES   = 'allow_card_name_changes';
-
-    /**
      * Feature flag to show entire error description for each row in error csv file generated in case
      * of bulk validation during batch payouts
      */
@@ -1819,7 +1812,6 @@ class Constants
         self::SR_SENSITIVE_BUCKET_4           => true,
         self::INCREASE_PAYOUT_LIMIT           => true,
         self::DCC_ON_OTHER_LIBRARY            => true,
-        self::ALLOW_CARD_NAME_CHANGES         => true,
         self::SKIP_OAUTH_NOTIFICATION         => true,
         self::SKIP_PAYOUT_EMAIL               => true,
         self::OFFLINE_PAYMENT_ON_CHECKOUT     => true,

@@ -441,8 +441,6 @@ class Core extends Base\Core
             case Type::CARD:
                 $this->blockTokenisedFlow($merchant, $accountInput);
 
-                $this->maskCardNameWithContactName($merchant, $accountInput, $source);
-
                 if (isset($accountInput[Card\Entity::TOKEN]) === true)
                 {
                     // we will fetch the card details from vault token and modify the input so that rest of the
@@ -468,7 +466,6 @@ class Core extends Base\Core
                 // Name is mandatory for card creation.
                 $accountInput[Card\Entity::NAME] = $accountInput[Card\Entity::NAME] ?? Card\Entity::DUMMY_NAME;
 
-                // Todo: migrate payout to cards for high TPS merchants as done for whatsapp
                 $account = (new Card\Core)->createForFundAccount($accountInput, $merchant, $compositePayoutSaveOrFail);
                 break;
 
@@ -481,30 +478,6 @@ class Core extends Base\Core
         }
 
         return $account;
-    }
-
-    protected function maskCardNameWithContactName($merchant, &$accountInput, $source)
-    {
-        if ($merchant->isFeatureEnabled(Feature\Constants::ALLOW_CARD_NAME_CHANGES) === true)
-        {
-            if (($source !== null) and
-                ($source->getEntity() === Entity::CONTACT) and
-                (isset($accountInput[Card\Entity::NAME]) === true))
-            {
-                $accountInput[Card\Entity::NAME] = $source[Contact\Entity::NAME];
-            }
-            else
-            {
-                $this->trace->info(
-                    TraceCode::UNSETTING_CARD_NAME_WHILE_FUND_ACCOUNT_CREATION,
-                    [
-                        'source'            => ($source === null) ? null : $source->getEntity(),
-                        'card_name_present' => isset($accountInput[Card\Entity::NAME]),
-                    ]);
-
-                unset($accountInput[Card\Entity::NAME]);
-            }
-        }
     }
 
     public function blockTokenisedFlow($merchant, $accountInput)
