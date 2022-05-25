@@ -784,7 +784,6 @@ class TransactionTest extends TestCase
 
         $collection = $helper->fetchAll([
             'response'  => 'pending',
-            'expand'    => ['payer', 'payee']
         ]);
 
         $this->assertCollection($collection, 1, [
@@ -795,9 +794,6 @@ class TransactionTest extends TestCase
             ],
         ]);
 
-        $payee = $collection['items'][0]['payee'];
-
-        $this->assertTrue($payee['verified']);
     }
 
     public function testFetchDeletedBeneficiary()
@@ -860,7 +856,6 @@ class TransactionTest extends TestCase
                 'username'          => 'test',
                 'handle'            => 'mypsp',
                 'beneficiary_name'  => 'Some Merchant',
-                'verified'          => false,
             ]
         ]);
 
@@ -892,7 +887,6 @@ class TransactionTest extends TestCase
                 'username'          => 'test',
                 'handle'            => 'mypsp',
                 'beneficiary_name'  => 'Some Merchant',
-                'verified'          => false,
             ]
         ]);
 
@@ -1015,7 +1009,6 @@ class TransactionTest extends TestCase
                 'handle'            => 'mybank',
                 'type'              => 'vpa',
                 'beneficiary_name'  => 'benef_name',
-                'verified'          => false,
             ]
         ]);
 
@@ -1058,7 +1051,6 @@ class TransactionTest extends TestCase
                 'handle'   => 'mybank',
                 'type'     => 'vpa',
                 'beneficiary_name' => 'benef_name',
-                'verified'          => false,
             ]
         ]);
 

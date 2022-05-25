@@ -426,24 +426,6 @@ class TransactionTest extends TestCase
         ]);
     }
 
-    public function testVerifiedFlagIncomingCollect()
-    {
-        $payee = $this->fixtures->vpa(self::DEVICE_2);
-
-        $payee->setVerified(true);
-
-        $this->createCollectIncomingTransaction([
-            Entity::AMOUNT      => 111,
-            Entity::PAYEE_ID    => $payee->getId(),
-        ]);
-
-        $response = $this->getService()->fetchAll(['expand'=>['payee']]);
-
-        $payee = $response['items'][0]['payee'];
-
-        $this->assertTrue($payee['verified']);
-    }
-
     protected function getService()
     {
         return new Service();

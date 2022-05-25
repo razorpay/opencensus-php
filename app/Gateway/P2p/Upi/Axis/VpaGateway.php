@@ -220,7 +220,6 @@ class VpaGateway extends Gateway implements Contracts\VpaGateway
             $response->setData([
                 Beneficiary::TYPE       => Entity::VPA,
                 Beneficiary::VALIDATED  => false,
-                Entity::VERIFIED        => true,
                 Entity::HANDLE          => $handle,
                 Entity::USERNAME        => $username,
             ]);
@@ -233,7 +232,6 @@ class VpaGateway extends Gateway implements Contracts\VpaGateway
         $response->setData([
             Beneficiary::TYPE           => Entity::VPA,
             Beneficiary::VALIDATED      => true,
-            Entity::VERIFIED            => true,
             Entity::HANDLE              => $vpa->transformHandle(),
             Entity::USERNAME            => $vpa->transformUsername(),
             Entity::BENEFICIARY_NAME    => $vpa->transformBeneficiaryName(),

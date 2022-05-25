@@ -33,28 +33,13 @@ trait BeneficiaryTrait
     {
         $array = $this->toArrayPublic();
 
-        if($array['entity'] === 'bank_account')
-        {
-            $result = [
-                Beneficiary::VALIDATED  => true,
-                Beneficiary::TYPE       => $array[self::ENTITY],
-                self::ID                => $array[self::ID],
-                self::ADDRESS           => $this->getAddress(),
-                self::BENEFICIARY_NAME  => $this->getBeneficiaryName(),
-            ];
-        }
-        else
-        {
-            $result = [
-                Beneficiary::VALIDATED  => true,
-                Beneficiary::TYPE       => $array[self::ENTITY],
-                self::ID                => $array[self::ID],
-                self::ADDRESS           => $this->getAddress(),
-                self::BENEFICIARY_NAME  => $this->getBeneficiaryName(),
-                self::VERIFIED          => $array[self::VERIFIED],
-            ];
-        }
-        return $result;
+        return [
+            Beneficiary::VALIDATED  => true,
+            Beneficiary::TYPE       => $array[self::ENTITY],
+            self::ID                => $array[self::ID],
+            self::ADDRESS           => $this->getAddress(),
+            self::BENEFICIARY_NAME  => $this->getBeneficiaryName(),
+        ];
     }
 
     public function isBeneficiary(): bool

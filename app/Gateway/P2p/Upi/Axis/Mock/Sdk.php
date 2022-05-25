@@ -551,7 +551,6 @@ class Sdk
                     Fields::GATEWAY_RESPONSE_CODE       => $input[Fields::GATEWAY_RESPONSE_CODE] ?? $successCode,
                     Fields::GATEWAY_RESPONSE_MESSAGE    => $input[Fields::GATEWAY_RESPONSE_MESSAGE] ?? $successMessage,
                     Fields::GATEWAY_TRANSACTION_ID      => $input[Fields::GATEWAY_TRANSACTION_ID] ?? str_random(35),
-                    Fields::IS_VERIFIED_PAYEE           => false,
                     Fields::MASKED_ACCOUNT_NUMBER       => 'xxxxx0123456',
                     Fields::MERCHANT_CUSTOMER_ID        => $input[Fields::MERCHANT_CUSTOMER_ID],
                     Fields::MERCHANT_ID                 => 'MERCHANT',

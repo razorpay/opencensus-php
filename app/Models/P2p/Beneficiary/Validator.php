@@ -64,7 +64,6 @@ class Validator extends Base\Validator
         $rules->merge((new Vpa\Validator)->makeRules([
             Vpa\Entity::HANDLE      => 'required_if:type,vpa',
             Vpa\Entity::USERNAME    => 'required_if:type,vpa',
-            Vpa\Entity::VERIFIED    => 'sometimes_if:type,vpa',
         ]));
 
         $rules->merge((new BankAccount\Validator)->makeRules([
@@ -88,7 +87,6 @@ class Validator extends Base\Validator
             Vpa\Entity::HANDLE                  => 'required_if:type,vpa',
             Vpa\Entity::USERNAME                => 'required_if:type,vpa',
             Vpa\Entity::BENEFICIARY_NAME        => 'required_if:type,vpa',
-            Vpa\Entity::VERIFIED                => 'sometimes_if:type,vpa'
         ]));
 
         $rules->merge((new BankAccount\Validator)->makeRules([
