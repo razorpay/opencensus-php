@@ -5731,6 +5731,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const ORDER_UPDATE_DATA_SYNC_TO_PG_ROUTER_FAILURE         = 'ORDER_UPDATE_DATA_SYNC_TO_PG_ROUTER_FAILURE';
 
+    const PG_ROUTER_ORDER_UPDATE_FAILED                       = 'PG_ROUTER_ORDER_UPDATE_FAILED';
+
+    const PG_ROUTER_ORDER_QUEUE_DELETE                        = 'PG_ROUTER_ORDER_QUEUE_DELETE';
+
     const PAYOUT_SOURCE_ENTITY_CREATE_REQUEST                 = 'PAYOUT_SOURCE_ENTITY_CREATE_REQUEST';
     const PAYOUT_SOURCE_ENTITY_CREATED                        = 'PAYOUT_SOURCE_ENTITY_CREATED';
     const VAULT_ENCRYPTION_FAILED                              = 'VAULT_ENCRYPTION_FAILED';

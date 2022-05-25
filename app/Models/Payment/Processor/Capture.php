@@ -22,6 +22,7 @@ use RZP\Trace\Tracer;
 use RZP\Models\Transaction;
 use Illuminate\Support\Str;
 use RZP\Models\VirtualAccount;
+use RZP\Jobs\Order\OrderUpdate;
 use RZP\Models\Partner\Commission;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Jobs\Capture as CaptureJob;
@@ -1293,7 +1294,10 @@ trait Capture
                 $input[Order\Entity::STATUS] = Order\Status::PAID;
             }
 
-            $this->app['pg_router']->updateInternalOrder($input,$order->getId(),$order->getMerchantId(), true);
+            \Event::dispatch(new TransactionalClosureEvent(function () use ($input, $order)
+            {
+                OrderUpdate::dispatchNow($this->mode, $input, $order);
+            }));
         }
         else
         {

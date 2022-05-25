@@ -19,6 +19,7 @@ use RZP\Models\BankAccount;
 use RZP\Base\ConnectionType;
 use RZP\Models\Bank\BankCodes;
 use RZP\Models\Admin\ConfigKey;
+use RZP\Models\Offer;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Payment\Processor\Netbanking;
@@ -146,6 +147,8 @@ class Service extends Base\Service
 
             $this->modifyBankAccountRequestFromOldFormat($input);
 
+            $this->checkForDefaultOffers($input);
+
             $input['public_key'] = App::getFacadeRoot()['basicauth']->getPublicKey();
 
             $input['merchant_id'] = $this->merchant->getId();
@@ -162,6 +165,34 @@ class Service extends Base\Service
         $order = $this->afterCreate($input, $order);
 
         return $order;
+    }
+
+    public function checkForDefaultOffers(array & $input)
+    {
+        $defaultOffers = (new Offer\Core())->fetchDefaultOffersForMerchant($this->merchant->getId());
+
+        $offerCore = (new Offer\Core);
+
+        $offers = array();
+
+        $order = (new Entity())->forceFill($input);
+
+        $order->merchant()->associate($this->merchant);
+
+        foreach($defaultOffers as $offer)
+        {
+            $offer = $offerCore->validateDefaultOfferForOrder($order, $offer);
+
+            if($offer !== null)
+            {
+                array_push($offers, $offer);
+            }
+        }
+
+        if (count($offers) > 0)
+        {
+            $input['default_offers'] = true;
+        }
     }
 
     public function checkRouteIsAccessible( $input){
@@ -228,10 +259,6 @@ class Service extends Base\Service
     public function create(array $input)
     {
         $order = $this->createOrder($input);
-
-        $this->trace->info(TraceCode::ORDER_CREATION_INITIATED, [
-            "merchant_id" => $this->merchant->getId(),
-        ]);
 
         $result = $order->toArrayPublic();
 

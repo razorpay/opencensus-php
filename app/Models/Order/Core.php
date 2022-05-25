@@ -5,6 +5,7 @@ namespace RZP\Models\Order;
 use App;
 use Illuminate\Support\Arr;
 use RZP\Base\ConnectionType;
+use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Feature\Constants;
@@ -39,13 +40,17 @@ class Core extends Base\Core
      */
     public function create(array $input, Merchant\Entity $merchant, bool $partialPayment = false, $dummyProcessing=false)
     {
-        $routeToPGRouter = (new Service())->canRouteOrderCreationToPGRouter($input, $merchant);
+        $orderService = new Service();
+
+        $routeToPGRouter = $orderService->canRouteOrderCreationToPGRouter($input, $merchant);
 
         if ($routeToPGRouter === true)
         {
             $this->trace->info(TraceCode::ORDER_ROUTING_TO_PG_ROUTER);
 
             $input['public_key'] = App::getFacadeRoot()['basicauth']->getPublicKey();
+
+            $orderService->checkForDefaultOffers($input);
 
             $input['merchant_id'] = $merchant->getId();
 
@@ -819,6 +824,13 @@ class Core extends Base\Core
 
         $token = $order->getTokenRegistration();
 
+        $transfers = $order->transfers;
+
+        if (isset($transfers) === true)
+        {
+            $data['transfers'] = $transfers;
+        }
+
         if ($token !== null)
         {
             $invoice = $order->getMethod() === Payment\Method::NACH ? $order->invoice : null;
@@ -855,6 +867,8 @@ class Core extends Base\Core
 
         $offerCore->merchant = $merchant;
 
+        $offers = array();
+
         if(($order->isOfferForced()) === null or ($order->isOfferForced() === false))
         {
             $defaultOffers = (new Offer\Core)->fetchDefaultOffersForMerchant($order->getMerchantId());
@@ -865,38 +879,49 @@ class Core extends Base\Core
 
                 if($offer !== null)
                 {
-                    $this->saveEntityOffer($order, $offer);
+                    array_push($offers, $offer);
                 }
             }
         }
 
-        if (isset($input[Entity::OFFERS]) === false)
+        if (isset($input[Entity::OFFERS]) === true)
         {
-            return;
+            foreach (array_unique($input[Entity::OFFERS]) as $offerId)
+            {
+                $offer = $offerCore->fetchAndValidateOfferForOrder($offerId, $order);
+
+                if(($offer->isDefaultOffer() === false) or ($order->isOfferForced() === true))
+                {
+                    array_push($offers, $offer);
+                }
+            }
         }
 
-        foreach (array_unique($input[Entity::OFFERS]) as $offerId)
+        if (count($offers) > 0)
         {
-            $offer = $offerCore->fetchAndValidateOfferForOrder($offerId, $order);
-
-            if(($offer->isDefaultOffer() === false) or ($order->isOfferForced() === true))
-            {
-                $this->saveEntityOffer($order, $offer);
-            }
+            $this->saveEntityOffer($order, $offers);
         }
     }
 
-    private function saveEntityOffer($order, $offer)
+    private function saveEntityOffer($order, $offers)
     {
-        $entityOffer = new Offer\EntityOffer\Entity();
+        $data = array();
 
-        $entityOffer->setAttribute(Offer\EntityOffer\Entity::ENTITY_ID, $order->getId());
+        foreach ($offers as $offer)
+        {
+            $entityOfferData = [
+                Offer\EntityOffer\Entity::ENTITY_ID         => $order->getId(),
+                Offer\EntityOffer\Entity::ENTITY_TYPE       => 'order',
+                Offer\EntityOffer\Entity::OFFER_ID          => $offer->getId(),
+                Offer\EntityOffer\Entity::ENTITY_OFFER_TYPE => 'offer',
+                Offer\EntityOffer\Entity::CREATED_AT        => Carbon::now()->getTimestamp(),
+                Offer\EntityOffer\Entity::UPDATED_AT        => Carbon::now()->getTimestamp()
+            ];
 
-        $entityOffer->setAttribute(Offer\EntityOffer\Entity::ENTITY_TYPE, 'orders');
+                array_push($data, $entityOfferData);
+        }
 
-        $entityOffer->setAttribute(Offer\EntityOffer\Entity::OFFER_ID, $offer->getId());
-
-        $entityOffer->save();
+        Offer\EntityOffer\Entity::insert($data);
     }
 
     public function internalOrderValidateTransferParams($input)

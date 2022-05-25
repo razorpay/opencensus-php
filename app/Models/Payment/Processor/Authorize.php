@@ -59,6 +59,7 @@ use RZP\Models\Payment\Action;
 use RZP\Models\Payment\Status;
 use RZP\Models\Payment\Method;
 use RZP\Models\Customer\Token;
+use RZP\Jobs\Order\OrderUpdate;
 use RZP\Models\UpiMandate\Core;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Admin\ConfigKey;
@@ -6545,7 +6546,10 @@ trait Authorize
             {
                 $input = [Order\Entity::AUTHORIZED => true];
 
-                $this->app['pg_router']->updateInternalOrder($input,$order->getId(),$order->getMerchantId(), true);
+                \Event::dispatch(new TransactionalClosureEvent(function () use ($input, $order)
+                {
+                    OrderUpdate::dispatchNow($this->mode, $input, $order);
+                }));
             }
             else
             {

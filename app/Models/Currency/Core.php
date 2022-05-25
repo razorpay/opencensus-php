@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Currency;
 
+use RZP\Constants\Environment;
 use RZP\Models\Base;
 
 class Core extends Base\Core
@@ -25,6 +26,15 @@ class Core extends Base\Core
         $currency = strtoupper($currency);
 
         $rates = $this->exchange->latest($currency);
+
+        if (in_array($this->app['env'], [Environment::TESTING, Environment::TESTING_DOCKER], true) === false)
+        {
+            $input = [
+                $currency => $rates,
+            ];
+
+            $this->app['pg_router']->updateCurrencyCache($input, false);
+        }
 
         $key = $this->getRedisKey($currency);
 

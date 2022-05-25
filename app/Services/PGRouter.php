@@ -494,9 +494,16 @@ class PGRouter
             $endpoint .= '?merchant_id='.$merchantId;
         }
 
-        $response = $this->sendRequest($endpoint, Requests::PATCH, $input, $throwExceptionOnFailure);
+        $response = $this->sendRequest($endpoint, Requests::PATCH, $input, $throwExceptionOnFailure, self::DEFAULT_REQUEST_TIMEOUT, true);
 
         return $this->forceFillOrderFromResponse($response);
+    }
+
+    public function updateCurrencyCache(array $input, bool $throwExceptionOnFailure = false)
+    {
+        $endpoint = 'v1/update/currency/rate';
+
+        return $this->sendRequest($endpoint, Requests::PATCH, $input, $throwExceptionOnFailure, self::DEFAULT_REQUEST_TIMEOUT, true);
     }
 
     private function forceFillOrderFromResponse($response)
@@ -592,8 +599,6 @@ class PGRouter
     {
         $request = $this->generateRequest($endpoint, $method, $data, $timeout);
 
-        $startTime = microtime(true);
-
         if ($retry === true)
         {
             $response = $this->sendPGRouterRequestWithRetry($request);
@@ -603,8 +608,6 @@ class PGRouter
             $response = $this->sendPGRouterRequest($request);
         }
 
-        $this->logResponseTimeOfPgRouter($startTime, $request['url']);
-
         if (strpos($response->headers['content-type'], 'text/html') !== false)
         {
             $decodedResponse = [
@@ -613,7 +616,6 @@ class PGRouter
         }
         else
         {
-
             $decodedResponse = json_decode($response->body, true);
         }
 

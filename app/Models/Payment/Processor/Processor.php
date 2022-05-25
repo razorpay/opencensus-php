@@ -3,6 +3,7 @@
 namespace RZP\Models\Payment\Processor;
 
 use App;
+use Neves\Events\TransactionalClosureEvent;
 use Route;
 use Config;
 use Carbon\Carbon;
@@ -13,6 +14,7 @@ use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Card;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Models\Merchant\Entity;
+use RZP\Jobs\Order\OrderUpdate;
 use RZP\Models\Risk;
 use RZP\Models\Admin;
 use RZP\Models\Order;
@@ -3897,7 +3899,12 @@ class Processor
                 Order\Entity::STATUS   => $this->order->getStatus()
             ];
 
-            $this->app['pg_router']->updateInternalOrder($input,$this->order->getId(),$this->order->getMerchantId(), true);
+            $order = $this->order;
+
+            \Event::dispatch(new TransactionalClosureEvent(function () use ($input, $order)
+            {
+                OrderUpdate::dispatchNow($this->mode, $input, $order);
+            }));
         }
     }
 
@@ -5549,7 +5556,10 @@ class Processor
         {
             $input['status'] = Order\Status::PAID;
 
-            $this->app['pg_router']->updateInternalOrder($input,$order->getId(),$order->getMerchantId(), true);
+            \Event::dispatch(new TransactionalClosureEvent(function () use ($input, $order)
+            {
+                OrderUpdate::dispatchNow($this->mode, $input, $order);
+            }));
         }
         else
         {
