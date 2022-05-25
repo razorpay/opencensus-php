@@ -1374,6 +1374,27 @@ EOT;
                     ->get();
     }
 
+    public function fetchCapturedRearchPaymentsTxnNull()
+    {
+        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
+            ->where(Payment\Entity::CPS_ROUTE, '=', 5)
+            ->where(Payment\Entity::STATUS, '=', 'captured')
+            ->whereNull(Payment\Entity::TRANSACTION_ID)
+            ->limit(100)
+            ->get();
+    }
+
+    public function fetchCapturedRearchPaymentsTxnNullForMerchant($merchantId)
+    {
+        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
+            ->where(Payment\Entity::CPS_ROUTE, '=', 5)
+            ->where(Payment\Entity::STATUS, '=', 'captured')
+            ->where(Payment\Entity::MERCHANT_ID, '=', $merchantId)
+            ->whereNull(Payment\Entity::TRANSACTION_ID)
+            ->limit(100)
+            ->get();
+    }
+
     public function fetchFirstAuthorizedPaymentsForOrderReceiptOfMerchants(string $receipt, array $merchantIds)
     {
         /**

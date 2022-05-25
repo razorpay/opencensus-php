@@ -459,6 +459,76 @@ class Service extends Base\Service
         return $txn->toArrayPublic();
     }
 
+    public function postInternalTransactionCron(array $input)
+    {
+        $failureIds = [];
+        $successIds = [];
+
+        if (isset($input['payments_arr']) === true)
+        {
+            $paymentsArrString = $input['payments_arr'];
+
+            $paymentsArr = explode(',', $paymentsArrString);
+
+            for ($i = 0; $i < count($paymentsArr); $i++)
+            {
+                try
+                {
+                    $currentPaymentId = $paymentsArr[$i];
+
+                    $payment = $this->repo->payment->findByPublicId($currentPaymentId);
+
+                    $payment->setExternal(true);
+
+                    $txn = (new Transaction\Core)->createUpdateLedgerTransaction($payment);
+
+                    array_push($successIds, $currentPaymentId);
+                }
+                catch(\Exception $e)
+                {
+                    array_push($failureIds, [$currentPaymentId => $e->getMessage()]);
+                }
+
+            }
+            return ["failures" => $failureIds,
+                "success" => $successIds];
+        }
+
+        $payments = null;
+
+        if (isset($input['merchant_id']) === true)
+        {
+            $payments = $this->repo->payment->fetchCapturedRearchPaymentsTxnNullForMerchant($input['merchant_id']);
+        }
+        else
+        {
+            $payments = $this->repo->payment->fetchCapturedRearchPaymentsTxnNull();
+        }
+
+        foreach ($payments as $payment)
+        {
+            try
+            {
+                $rearchPayment = $this->repo->payment->findByPublicId($payment->getId());
+
+                $rearchPayment->setExternal(true);
+
+                $txn = (new Transaction\Core)->createUpdateLedgerTransaction($rearchPayment);
+
+                array_push($successIds, $rearchPayment->getId());
+            }
+            catch(\Exception $e)
+            {
+                array_push($failureIds, [$rearchPayment->getId() => $e->getMessage()]);
+            }
+        }
+
+        return ["failures" => $failureIds,
+            "success" => $successIds];
+
+
+    }
+
     public function fetchMultiple(array $input)
     {
 
