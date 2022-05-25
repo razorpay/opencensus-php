@@ -493,6 +493,8 @@ class LOCController extends Controller
             $data['merchant_id'] = $merchant->getId();
             $data['merchant_name'] = $merchant->getName();
             $data['brand_color'] = $merchant->getBrandColorElseDefault();
+
+            $data['data']['merchant_name'] = $data['merchant_name'];
         }
 
         try
