@@ -254,7 +254,8 @@ class Service extends Base\Service
             'capital_loc_x_migration',
             'rx_tds_and_attachments',
             'capital_enable_physical_card',
-            'rx_cohesive_invoice'
+            'rx_cohesive_invoice',
+            'rx_custom_access_control_enabled'
         ];
 
         $experimentsResults = $this->getBulkTreatment($features);
