@@ -110,7 +110,8 @@ class Validator extends Base\Validator
     ];
 
     const MERCHANT_RISK_ATTRIBUTES = [
-        Entity::MAX_PAYMENT_AMOUNT
+        Entity::MAX_PAYMENT_AMOUNT,
+        Entity::MAX_INTERNATIONAL_PAYMENT_AMOUNT
     ];
 
     protected static $createRules = [

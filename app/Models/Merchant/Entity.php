@@ -1710,6 +1710,20 @@ class Entity extends Base\PublicEntity
         return (int) $amount;
     }
 
+    protected function getMaxInternationalPaymentAmountAttribute()
+    {
+        $amount = $this->attributes[self::MAX_INTERNATIONAL_PAYMENT_AMOUNT];
+
+        if (($amount === null) or
+            ($amount === '0'))
+        {
+            $domesticMaxPaymentAmount = $this->getAttribute(self::MAX_PAYMENT_AMOUNT);
+            $amount = max(Entity::MAX_INTERNATIONAL_PAYMENT_AMOUNT_DEFAULT, $domesticMaxPaymentAmount);
+        }
+
+        return (int) $amount;
+    }
+
     protected function getFeeBearerAttribute()
     {
         return FeeBearer::getBearerStringForValue($this->attributes[self::FEE_BEARER]);
