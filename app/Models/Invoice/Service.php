@@ -653,6 +653,13 @@ class Service extends Base\Service
     {
         $isExperimentEnabled = (new Merchant\Core())->isRazorxExperimentEnable($this->merchant->getId(),
                                                                                RazorxTreatment::QR_ON_EMAIL);
+
+        $this->trace->info(TraceCode::QR_ON_EMAIL_RAZORX_EXPERIMENT,
+                           [
+                               'merchant'            => $this->merchant->getId(),
+                               'isExperimentEnabled' => $isExperimentEnabled,
+                           ]);
+
         return $isExperimentEnabled;
     }
 
@@ -668,11 +675,14 @@ class Service extends Base\Service
 
         $input['is_test_mode'] = ($this->mode === Mode::TEST);
 
-        if((isset($input['intent_url']) === true)
-           and (empty($input['intent_url']) === false)
-           and $this->checkIfQronEmailExperimentEnabled())
+        if(empty($input['intent_url']) === false)
         {
             $input['qr_code_image_address'] = $this->generateQrCodeImageFromIntentUrl($input);
+
+            $this->trace->info(TraceCode::QR_ON_EMAIL_IMAGE_ADDRESS,
+                               [
+                                   'qr_code_image_address' => $input['qr_code_image_address'],
+                               ]);
         }
 
         $mailable = new PaymentLinkServiceBase($input);
