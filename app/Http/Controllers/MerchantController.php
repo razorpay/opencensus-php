@@ -1146,7 +1146,7 @@ class MerchantController extends Controller
         return $response;
     }
 
-    public function getmerchantInfo($id)
+    public function getMerchantInfo($id)
     {
         $response = $this->service(E::MERCHANT_DETAIL)->getMerchantInfo($id);
 

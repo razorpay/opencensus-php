@@ -44,4 +44,18 @@ class Service extends Base\Service
 
         return ['success' => true];
     }
+
+    public function getMerchantAuditInfo($merchant_id)
+    {
+        $core = new Core();
+
+        return $core->getMerchantAuditInfo($merchant_id);
+    }
+
+    public function getAuditInfo($entity,$merchant_id)
+    {
+        $core = new Core();
+
+        return $core->getAuditInfo($entity,$merchant_id);
+    }
 }

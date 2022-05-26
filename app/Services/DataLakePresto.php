@@ -39,7 +39,7 @@ class DataLakePresto
 
     public function getDataFromDataLake($query, $associate = true)
     {
-        $this->trace->info(TraceCode::DATALAKE_PRESTO_QUERY, []);
+        $this->trace->info(TraceCode::DATALAKE_PRESTO_QUERY, ["query"=>$query]);
 
         try
         {

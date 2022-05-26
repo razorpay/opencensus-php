@@ -6681,14 +6681,15 @@ class Core extends Base\Core
             {
                 $contact = $user['contact_mobile'];
 
-                $user['whatsapp_optin_status']=false;
+                $user['whatsapp_optin_status'] = false;
 
                 if (empty($contact) === false)
                 {
                     $user['whatsapp_optin_status'] = app('stork_service')->optInStatusForWhatsapp($this->mode, $contact, "pg.onboarding.presignup")['consent_status'];
                 }
             }
-            catch (\Exception $e){
+            catch (\Exception $e)
+            {
 
             }
             array_push($finalUsers, $user);
@@ -6697,8 +6698,8 @@ class Core extends Base\Core
         $response['users'] = $finalUsers;
 
         //escalations
-        $onboardingescalations   = (new Merchant\Escalations\Core)->fetchAllEscalationsForMerchant($merchant);
-        $autoKycescalations      = $this->repo->merchant_auto_kyc_escalations->fetchEscalationsForMerchant($merchantId)->callOnEveryItem('toArrayPublic');
+        $onboardingescalations = (new Merchant\Escalations\Core)->fetchAllEscalationsForMerchant($merchant);
+        $autoKycescalations    = $this->repo->merchant_auto_kyc_escalations->fetchEscalationsForMerchant($merchantId)->callOnEveryItem('toArrayPublic');
 
         $response['escalations'] = array_merge($onboardingescalations, $autoKycescalations);
 
@@ -6706,37 +6707,39 @@ class Core extends Base\Core
 
         $response['invitations'] = $this->repo->invitation->fetchInvitations(Product::PRIMARY, $merchant->getMerchantId());
 
-        $input                    = [
+        $input = [
             "count" => 10,
             "skip"  => 0
         ];
 
         $response['transactions'] = $this->repo->payment->fetch($input, $merchantId)->toArrayPublic()['items'];
 
-        $response['refunds']      = $this->repo->refund->fetch($input, $merchantId)->toArrayPublic()['items'];
+        $response['refunds'] = $this->repo->refund->fetch($input, $merchantId)->toArrayPublic()['items'];
 
-        $response['disputes']     = $this->repo->dispute->fetch($input, $merchantId)->toArrayPublic()['items'];
+        $response['disputes'] = $this->repo->dispute->fetch($input, $merchantId)->toArrayPublic()['items'];
 
-        $response['credits']      = $creditsLogs = $this->repo->credits->fetch($input, $merchantId)->toArrayPublic()['items'];
+        $response['credits'] = $creditsLogs = $this->repo->credits->fetch($input, $merchantId)->toArrayPublic()['items'];
 
-        $response['settlements']  = $this->repo->settlement->fetch($input, $merchantId)->toArrayPublic()['items'];
+        $response['settlements'] = $this->repo->settlement->fetch($input, $merchantId)->toArrayPublic()['items'];
 
-        $input['phase']           = 'chargeback';
-        $response['chargebacks']  = $this->repo->dispute->fetch($input, $merchantId)->toArrayPublic()['items'];
+        $input['phase']          = 'chargeback';
+        $response['chargebacks'] = $this->repo->dispute->fetch($input, $merchantId)->toArrayPublic()['items'];
 
-        $data         = [
+        $data = [
             StoreConstants::NAMESPACE => Merchant\Store\ConfigKey::ONBOARDING_NAMESPACE
         ];
 
         $response['config'] = (new StoreCore())->fetchMerchantStore($merchantId, $data, StoreConstants::INTERNAL);
 
-        $response['referees']=$this->repo->m2m_referral->getReferralsFromReferrerId($merchantId);
+        $response['referees'] = $this->repo->m2m_referral->getReferralsFromReferrerId($merchantId);
 
-        $referral=$this->repo->m2m_referral->getReferralDetailsFromMerchantId($merchantId);
+        $referral = $this->repo->m2m_referral->getReferralDetailsFromMerchantId($merchantId);
 
-        $response['referral']=$referral!=null?$referral->toArrayPublic():[];
+        $response['referral'] = $referral != null ? $referral->toArrayPublic() : [];
 
         return $response;
 
     }
+
+
 }
