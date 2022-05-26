@@ -21603,5 +21603,6 @@ class OldNewIfscMapping
         "LAVB0000994" => "DBSS0IN0994",
         "LAVB0000995" => "DBSS0IN0995",
         "LAVB0000996" => "DBSS0IN0996",
+        "IOBA0001548" => "IOBA0002897",
     ];
 }

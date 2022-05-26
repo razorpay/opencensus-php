@@ -19009,7 +19009,7 @@ class PayoutTest extends OAuthTestCase
             $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload['additional_params']);
         }
     }
-    
+
     public function testDirectAccountPayoutReversedInLedgerShadowMode()
     {
         $this->fixtures->merchant->addFeatures([Feature\Constants::DA_LEDGER_JOURNAL_WRITES]);
