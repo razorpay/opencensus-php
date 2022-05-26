@@ -41,7 +41,7 @@ export const resendInvite = (submerchantId) => ({
   payload: new Submerchant().resendInvite(submerchantId),
 });
 
-const TIMEOUT = 5 * 60 * 1000; // 5 minutes;
+const TIMEOUT = 20 * 60 * 1000; // 20 minutes;
 export const downloadSubmerchants = (isPurePlatform = false, generated_by) => {
   const errorObject = {
     error: true,
