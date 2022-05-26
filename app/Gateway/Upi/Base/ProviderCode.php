@@ -405,6 +405,7 @@ class ProviderCode
         ProviderPsp::DAKPAY_UPI_IPBB,
         ProviderPsp::MOBIKWIK,
         ProviderPsp::DIGI_BANK,
+        ProviderPsp::BHIM_DLB_UPI,
     ];
 
     /**
@@ -429,6 +430,7 @@ class ProviderCode
         self::POSTBANK      => ProviderPsp::DAKPAY_UPI_IPBB,
         self::IKWIK         => ProviderPsp::MOBIKWIK,
         self::DBS           => ProviderPsp::DIGI_BANK,
+        self::DLB           => ProviderPsp::BHIM_DLB_UPI,
 
         // used only for testing
         self::RAZORPAY      => ProviderPsp::RAZORPAY,
