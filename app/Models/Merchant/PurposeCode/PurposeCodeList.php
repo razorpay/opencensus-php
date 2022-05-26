@@ -34,6 +34,8 @@ class PurposeCodeList
     const FINANCIAL_DERIVATIVES = "Financial Derivatives and Others ";
     const INTELLECTUAL = "Charges for the use of intellectual property n.i.e ";
     const TELECOMMUNICATION = "Telecommunication, Computer & Information Services";
+    const ADVANCE_PAYMENT = "Advance Payment";
+    const ROYALTIES = "Royalties & License Fees";
 
     //purpose code
     const P0103 = 'P0103';
@@ -174,8 +176,37 @@ class PurposeCodeList
     const P0006 = 'P0006';
     const P0007 = 'P0007';
     const P0008 = 'P0008';
+    const S0101 = 'S0101';
+    const S0301 = 'S0301';
+    const S0303 = 'S0303';
+    const S0304 = 'S0304';
+    const S0305 = 'S0305';
+    const S0306 = 'S0306';
+    const S0801 = 'S0801';
+    const S0802 = 'S0802';
+    const S0803 = 'S0803';
+    const S0804 = 'S0804';
+    const S0805 = 'S0805';
+    const S0806 = 'S0806';
+    const S0901 = 'S0901';
+    const S0902 = 'S0902';
+    const S1004 = 'S1004';
+    const S1005 = 'S1005';
+    const S1006 = 'S1006';
+    const S1007 = 'S1007';
+    const S1008 = 'S1008';
+    const S1009 = 'S1009';
+    const S1010 = 'S1010';
+    const S1011 = 'S1011';
+    const S1012 = 'S1012';
+    const S1013 = 'S1013';
+    const S1014 = 'S1014';
+    const S1015 = 'S1015';
+    const S1016 = 'S1016';
+    const S1017 = 'S1017';
     const S1023 = 'S1023';
-
+    const S1101 = 'S1101';
+    const S1102 = 'S1102';
 
     //purpose code descriptions
     const P0103_DESC = 'Advance receipts against export contracts, which will be covered later by GR/PP/SOFTEX/SDF';
@@ -316,7 +347,37 @@ class PurposeCodeList
     const P0006_DESC = "Foreign Direct Investment made by overseas Investors in India in equity shares";
     const P0007_DESC = "Foreign Direct Investment made by overseas Investors in India in debt instruments.";
     const P0008_DESC = "Foreign Direct Investment made by overseas Investors in India in real estate";
+    const S0101_DESC = "Advance Payment against Imports";
+    const S0301_DESC = "Business travel";
+    const S0303_DESC = "Travel for pilgrimage";
+    const S0304_DESC = "Travel for medical treatment";
+    const S0305_DESC = "Travel for education (including fees, hostel expenses etc.)";
+    const S0306_DESC = "Other travel (including holiday trips and payments for settling international credit cards transactions)";
+    const S0801_DESC = "Hardware consultancy/implementation";
+    const S0802_DESC = "Software implementation/consultancy";
+    const S0803_DESC = "Data base, data processing charges";
+    const S0804_DESC = "Repair and maintenance of computer And software";
+    const S0805_DESC = "Slews agency services";
+    const S0806_DESC = "Other information services-Subscription to newspapers, periodicals";
+    const S0901_DESC = "Franchises services - patents, copyrights, trade marks, industrial processes, franchises etc.";
+    const S0902_DESC = "Payment for use, through licensing arrangements, of produced originals or prototypes (such as manuscripts and films)";
+    const S1004_DESC = "Legal services";
+    const S1005_DESC = "Accounting, auditing, book keeping and tax consulting services";
+    const S1006_DESC = "Business and management consultancy and public relations services";
+    const S1007_DESC = "Advertising, trade fair, market research and public opinion polling service";
+    const S1008_DESC = "Research & Development services";
+    const S1009_DESC = "Architectural, engineering and other technical services";
+    const S1010_DESC = "Agricultural, mining and on–site processing services – protection against insects & disease, increasing of harvest yields, forestry services, mining services like analysis of ores etc.";
+    const S1011_DESC = "Payments for maintenance of offices abroad";
+    const S1012_DESC = "Distribution Services";
+    const S1013_DESC = "Environmental Services";
+    const S1014_DESC = "Engineering Services";
+    const S1015_DESC = "Tax consulting services";
+    const S1016_DESC = "Market research and public opinion polling service";
+    const S1017_DESC = "Publishing and printing services";
     const S1023_DESC = "Other Technical Services including scientific/space services";
+    const S1101_DESC = "Audio-visual and related services -services and associated fees related to production of motion pictures, rentals, fees received by actors, directors, producers and fees for distribution rights.";
+    const S1102_DESC = "Personal, cultural services such as those related to museums, libraries, archives and sporting activities fees for correspondence courses abroad.";
 
     //purpose code mapping
     protected static $purposeCodeDescMappings = [
@@ -458,7 +519,37 @@ class PurposeCodeList
         self::P0006 => self::P0006_DESC,
         self::P0007 => self::P0007_DESC,
         self::P0008 => self::P0008_DESC,
+        self::S0101 => self::S0101_DESC,
+        self::S0301 => self::S0301_DESC,
+        self::S0303 => self::S0303_DESC,
+        self::S0304 => self::S0304_DESC,
+        self::S0305 => self::S0305_DESC,
+        self::S0306 => self::S0306_DESC,
+        self::S0801 => self::S0801_DESC,
+        self::S0802 => self::S0802_DESC,
+        self::S0803 => self::S0803_DESC,
+        self::S0804 => self::S0804_DESC,
+        self::S0805 => self::S0805_DESC,
+        self::S0806 => self::S0806_DESC,
+        self::S0901 => self::S0901_DESC,
+        self::S0902 => self::S0902_DESC,
+        self::S1004 => self::S1004_DESC,
+        self::S1005 => self::S1005_DESC,
+        self::S1006 => self::S1006_DESC,
+        self::S1007 => self::S1007_DESC,
+        self::S1008 => self::S1008_DESC,
+        self::S1009 => self::S1009_DESC,
+        self::S1010 => self::S1010_DESC,
+        self::S1011 => self::S1011_DESC,
+        self::S1012 => self::S1012_DESC,
+        self::S1013 => self::S1013_DESC,
+        self::S1014 => self::S1014_DESC,
+        self::S1015 => self::S1015_DESC,
+        self::S1016 => self::S1016_DESC,
+        self::S1017 => self::S1017_DESC,
         self::S1023 => self::S1023_DESC,
+        self::S1101 => self::S1101_DESC,
+        self::S1102 => self::S1102_DESC,
     ];
 
     //purpose category and their code mapping
@@ -511,6 +602,12 @@ class PurposeCodeList
         self::P0807,
         self::P0808,
         self::P0809,
+        self::S0801,
+        self::S0802,
+        self::S0803,
+        self::S0804,
+        self::S0805,
+        self::S0806,
     ];
 
     const TRAVEL_CODES = [
@@ -520,6 +617,11 @@ class PurposeCodeList
         self::P0305,
         self::P0306,
         self::P0308,
+        self::S0301,
+        self::S0303,
+        self::S0304,
+        self::S0305,
+        self::S0306,
     ];
 
     const PERSONAL_CODES = [
@@ -531,6 +633,8 @@ class PurposeCodeList
         self::P1105,
         self::P1106,
         self::P1108,
+        self::S1101,
+        self::S1102,
     ];
 
     const OTHER_SERVICES_CODES = [
@@ -555,6 +659,20 @@ class PurposeCodeList
         self::P1018,
         self::P1021,
         self::P1022,
+        self::S1004,
+        self::S1005,
+        self::S1006,
+        self::S1007,
+        self::S1008,
+        self::S1009,
+        self::S1010,
+        self::S1011,
+        self::S1012,
+        self::S1013,
+        self::S1014,
+        self::S1015,
+        self::S1016,
+        self::S1017,
         self::S1023,
     ];
 
@@ -672,6 +790,15 @@ class PurposeCodeList
         self::P0025,
     ];
 
+    const ADVANCE_PAYMENT_CODES = [
+        self::S0101,
+    ];
+
+    const ROYALTIES_CODES = [
+        self::S0901,
+        self::S0902,
+    ];
+
     const IEC_REQUIRED = [
         self::P0103,
         self::P0807,
@@ -758,6 +885,12 @@ class PurposeCodeList
             ),
             array(self::PURPOSEGROUP => self::MANUFACTURING_SERVICES,
                 self::CODES => self::MANUFACTURING_SERVICES_CODES
+            ),
+            array(self::PURPOSEGROUP => self::ADVANCE_PAYMENT,
+                self::CODES => self::ADVANCE_PAYMENT_CODES
+            ),
+            array(self::PURPOSEGROUP => self::ROYALTIES,
+                self::CODES => self::ROYALTIES_CODES
             ));
 
         foreach ($purposeGroupMapping as $purposeCodeDtl) {
