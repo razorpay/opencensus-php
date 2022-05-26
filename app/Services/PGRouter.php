@@ -175,11 +175,10 @@ class PGRouter
         $ip = null;
         $userAgent = null;
 
-        if (empty($this->request) == false)
+        if (empty($this->request) === false)
         {
-            $input['_']['ip']         =  $this->request->ip();
-            $input['_']['user_agent'] = $this->request->userAgent();
-
+            $ip         = $this->request->ip();
+            $userAgent  = $this->request->userAgent();
         }
 
         if ($s2s === true)
