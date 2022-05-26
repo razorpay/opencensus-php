@@ -193,7 +193,11 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($customer);
 
-        $this->trace->info(TraceCode::CUSTOMER_EDIT, $input);
+        $inputTrace = $input;
+
+        unset($inputTrace[Entity::NAME], $inputTrace[Entity::EMAIL], $inputTrace[Entity::CONTACT]);
+
+        $this->trace->info(TraceCode::CUSTOMER_EDIT, $inputTrace);
 
         return $customer;
     }
