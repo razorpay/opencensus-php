@@ -1577,7 +1577,7 @@ class Validator extends Base\Validator
 
     public function validateAdditionalWebsiteLimit(array $additionalWebsites)
     {
-        if (sizeof($additionalWebsites) >= 5)
+        if (sizeof($additionalWebsites) >= Constants::ADDITIONAL_DOMAIN_WHITELISTING_LIMIT)
         {
             throw new Exception\BadRequestValidationFailureException('Additional websites may not have more than 5 items');
         }

@@ -292,6 +292,8 @@ class Constants
     const ADDITIONAL_WEBSITE_REASON          = 'additional_website_reason';
     const ADDITIONAL_WEBSITE_PROOF_URL       = 'additional_website_proof_url';
 
+    const ADDITIONAL_DOMAIN_WHITELISTING_LIMIT  = 5;
+
     const DEDUPE_STATUS       = 'dedupe_status';
     const DEDUPE_FLAGGED_MIDS = 'dedupe_flagged_MIDs';
     const DEDUPE_STATUS_FALSE = 'Dedupe Status: false';

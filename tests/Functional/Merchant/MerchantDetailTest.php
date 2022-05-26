@@ -52,6 +52,7 @@ use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Tests\Functional\Merchant\Bvs\BvsValidationTest;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetails;
+use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Models\Merchant\Document\Entity as MerchantDocuments;
 use RZP\Models\Workflow\Action\Repository as ActionRepository;
 use RZP\Mail\Merchant\RazorpayX\AccountActivationConfirmation;
@@ -6240,7 +6241,7 @@ We look forward to transacting with you!
             'has_key_access'        => true,
         ];
 
-        $websites = $this->getCollectionOfWebsites(5);
+        $websites = $this->getCollectionOfWebsites(DetailConstants::ADDITIONAL_DOMAIN_WHITELISTING_LIMIT);
 
         $predefinedMerchantDetails = [
             'business_website'      => 'https://www.businesssample.com',
