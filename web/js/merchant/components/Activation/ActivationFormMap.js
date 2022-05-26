@@ -248,28 +248,6 @@ const contactFields = [
   },
 ];
 
-const RegisteredBusinessTypeOptions = [
-  { label: '--Select--', name: '' },
-  { label: 'Private Limited', name: PRIVATE },
-  { label: 'Proprietorship', name: PROPRIETORSHIP },
-  { label: 'Partnership', name: PARTNERSHIP },
-  { label: 'Public Limited', name: PUBLIC },
-  { label: 'LLP', name: LLP },
-  { label: 'Trust', name: TRUST },
-  { label: 'Society', name: SOCIETY },
-  { label: 'NGO', name: NGO },
-];
-
-const UnregisteredBusinessTypeOptions = [
-  { label: '--Select--', name: '' },
-  { label: 'Not Registered', name: NOT_REGISTERED },
-];
-
-const DefaultBusinessTypeOptions = removeArrayDuplicatesByProp(
-  [...RegisteredBusinessTypeOptions, ...UnregisteredBusinessTypeOptions],
-  'label',
-);
-
 const BlacklistedErr = () => (
   <div class="warning-svg red">
     {WarningSvg()}

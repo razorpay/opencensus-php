@@ -1,6 +1,6 @@
 import { useQuery } from 'react-query';
 import { fetch } from 'common/services/rest/rest-fetch';
-import { useSnackbar } from 'common/components/SnackBar/SnackbarContext';
+import { useSnackbar, SnackContextTypes } from 'common/components/SnackBar/SnackbarContext';
 
 interface Type {
   label: string;
@@ -10,7 +10,7 @@ interface Type {
 }
 
 export default function useBusinessTypes(): any {
-  const snackbar = useSnackbar();
+  const snackbar: SnackContextTypes = useSnackbar();
   const { status, data } = useQuery(
     `businessTypes`,
     async () => {

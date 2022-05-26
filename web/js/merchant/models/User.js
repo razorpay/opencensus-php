@@ -1141,7 +1141,7 @@ export default class User {
   }
 
   get isAdharEkycRequiredForTrustSocietyNgo() {
-    if (this.isSourceRX || this.isPartner() || this.isSubMerchant) {
+    if (this.isSourceRX) {
       return false;
     }
     return this.getExpStatus('aadharEkyc_for_trust_society_ngo') && this.isOrgRZP;
