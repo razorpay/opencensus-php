@@ -5636,6 +5636,11 @@ IFSC Code  ICIC0001206
 
         $merchant = $this->fixtures->create('merchant', ['email' => 'oldcontact@gmail.com']);
 
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            'contact_email' => 'oldcontact@gmail.com',
+            'merchant_id' => $merchant['id']
+        ]);
+
         $token = str_random(50);
 
         $oldOwnerUser = $this->fixtures->create('user',[
@@ -5734,6 +5739,11 @@ IFSC Code  ICIC0001206
 
         $merchant = $this->fixtures->create('merchant', [
             'email' => 'oldcontact@gmail.com'
+        ]);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            'contact_email' => 'oldcontact@gmail.com',
+            'merchant_id' => $merchant['id']
         ]);
 
         $oldOwnerUser = $this->fixtures->create('user',[
@@ -5852,13 +5862,19 @@ IFSC Code  ICIC0001206
     {
         $merchant =  $this->getDbEntityById('merchant', $merchantId);
 
+        $merchantDetail = $this->getDbEntityById('merchant_detail', $merchantId);
+
         if ( $setContactEmail === true)
         {
             $this->assertEquals('newowner@gmail.com', $merchant->getEmail());
+
+            $this->assertEquals('newowner@gmail.com', $merchantDetail->getContactEmail());
         }
         else
         {
             $this->assertEquals('oldcontact@gmail.com', $merchant->getEmail());
+
+            $this->assertEquals('oldcontact@gmail.com', $merchantDetail->getContactEmail());
         }
     }
 

@@ -2941,6 +2941,12 @@ class Core extends Base\Core
                 $this->editEmail($merchant, [
                     'email' => $input['email']
                 ], 'editEmailNonUnique');
+
+                $merchantDetail = $merchant->merchantDetail;
+
+                $merchantDetail->setContactEmail($input['email']);
+
+                $this->repo->saveOrFail($merchantDetail);
             }
 
             $this->trace->info(TraceCode::OWNERSHIP_TRANSFER_FOR_EMAIL_UPDATE, [
