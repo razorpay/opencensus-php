@@ -78,6 +78,7 @@ export const getAssetTrackingProperties = (
     sub_campaign_description,
     campaign_id,
     sub_campaign_id,
+    template_id,
     tags = {},
   } = tracking_data;
   const { version, version_description, target_metric, target_product_feature } = oldTrackingData;
@@ -94,6 +95,7 @@ export const getAssetTrackingProperties = (
     target_metric,
     product_feature: target_product_feature,
     growth_event_type,
+    template_id,
     ...tags,
   };
 };
