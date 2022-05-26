@@ -5,10 +5,9 @@ namespace RZP\Models\CardMandate\MandateHubs;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
 use RZP\Models\CardMandate;
-use RZP\Models\Terminal\Entity;
-use RZP\Exception\DbQueryException;
-use RZP\Exception\ServerErrorException;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Payment\Processor\TerminalProcessor;
 
 class MandateHubTerminalSelector extends Base\Core
@@ -18,18 +17,61 @@ class MandateHubTerminalSelector extends Base\Core
     {
         $terminals = (new TerminalProcessor)->getTerminalsForPayment($payment, null, $cardMandate);
 
-        if (empty($terminals))
+        $selectedTerminalIds = array_pluck($terminals, 'id');
+
+        $isSIHubEnabled = $payment->merchant->isBilldeskSIHubEnabled();
+
+        $this->trace->info(
+            TraceCode::CARD_MANDATE_TERMINAL_LOG,
+            [
+                'terminals'         => $selectedTerminalIds,
+                'is_si_hub_enabled' => $isSIHubEnabled,
+            ]
+        );
+
+        $finalTerminals = [];
+
+        foreach ($terminals as $terminal)
         {
-            throw new ServerErrorException(null,
-                ErrorCode::SERVER_ERROR_NO_TERMINAL_FOUND,
-                null);
+            if ($isSIHubEnabled === true or
+                $terminal->getGateway() !== MandateHubs::BILLDESK_SIHUB)
+            {
+                array_push($finalTerminals, $terminal);
+            }
 
         }
 
-        $selectedTerminalIds = array_pluck($terminals, 'id');
+        $finalTerminalIds = array_pluck($finalTerminals, 'id');
 
-        $terminal_id = $selectedTerminalIds[0];
+        $this->trace->info(
+            TraceCode::CARD_MANDATE_TERMINAL_LOG_AFTER_FILTER,
+            [
+                'final_terminals'     => $finalTerminalIds,
+            ]
+        );
 
-        return $this->repo->terminal->findOrFail($terminal_id);
+        if (empty($finalTerminals))
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_CARD_MANDATE_CARD_NOT_SUPPORTED);
+        }
+
+        usort(
+            $finalTerminals,
+            function ($terminal1, $terminal2)
+            {
+                return $terminal1->getGateway() === MandateHubs::MANDATE_HQ ? -1 : 1;
+            }
+        );
+
+        $finalTerminalIds = array_pluck($finalTerminals, 'id');
+
+        $this->trace->info(
+            TraceCode::CARD_MANDATE_TERMINAL_LOG_AFTER_SORT,
+            [
+                'sorted_terminals'     => $finalTerminalIds,
+            ]
+        );
+
+        return $finalTerminals[0];
     }
 }
