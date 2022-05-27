@@ -35,6 +35,7 @@ class Service extends Base\Service
         'EbxFyGur6ER4eE',   //Talk To Crystals
         'GfX5XhS9sHvs7X',   //Re Thought
         'ChdCdGm7TvuVk6',   //boAt
+        'FN2kulvZ47wf4g',   //Limese
         'IDTUUOoV4Ph06T',   //Khiangte Skincare
     ];
 
