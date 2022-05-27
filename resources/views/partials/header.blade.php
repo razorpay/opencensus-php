@@ -219,4 +219,3 @@
             }
         }
     </script>
-@include('partials/xhr_overwrite')

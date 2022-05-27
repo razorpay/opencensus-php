@@ -36,8 +36,6 @@
   <script src="https://cdn.razorpay.com/static/analytics/bundle.js" defer onload="initAnalytics()"></script>
   <script src="{{$cdnUrl}}/static/extension/app.js" async defer onload="renderApp()"></script>
 
-  @include('partials/xhr_overwrite')
-
   <!-- Hotjar Tracking Code for dashboard.razorpay.com -->
   @include('partials/hotjar')
 </body>
