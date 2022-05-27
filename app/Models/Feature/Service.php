@@ -122,14 +122,29 @@ class Service extends Base\Service
                         }
                         break;
 
-                    case 'offboard':
+                    case 'shadow_offboard':
+                        //Delete `ledger_journal_writes` feature flag
+                        $featureFlags = [
+                            Constants::LEDGER_JOURNAL_WRITES,
+                        ];
+                        foreach ($featureFlags as $featureFlag) {
+                            $feature = $this->repo->feature->findByEntityTypeEntityIdAndNameOrFail(
+                                EntityConstants::MERCHANT,
+                                $merchant->getId(),
+                                $featureFlag);
+
+                            if (!empty($feature)) {
+                                (new Core)->delete($feature);
+                            }
+                        }
+                        break;
+
+                    case 'reverse_shadow_offboard':
                         //Delete `ledger_journal_reads` feature flag
                         //Delete `ledger_reverse_shadow` feature flag
-                        //Delete `ledger_journal_writes` feature flag
                         $featureFlags = [
                             Constants::LEDGER_JOURNAL_READS,
                             Constants::LEDGER_REVERSE_SHADOW,
-                            Constants::LEDGER_JOURNAL_WRITES,
                         ];
                         foreach ($featureFlags as $featureFlag) {
                             $feature = $this->repo->feature->findByEntityTypeEntityIdAndNameOrFail(
