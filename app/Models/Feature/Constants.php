@@ -855,6 +855,8 @@ class Constants
      */
     const PAYOUT_PROCESS_ASYNC = 'payout_process_async';
 
+    const DEDUPE_CONTACT_ON_REPLICA = 'dedupe_contact_on_replica';
+
     /**
      * Used to control if a merchant can create UPI payouts on RBL CA.
      */
@@ -1834,6 +1836,7 @@ class Constants
         self::ONE_CC_REPORTING_TEST           => true,
         self::HANDLE_VA_TO_VA_PAYOUT          => true,
         self::RECURRING_CHECKOUT_DOT_COM      => true,
+        self::DEDUPE_CONTACT_ON_REPLICA       => true,
     ];
 
     // Entity type constants

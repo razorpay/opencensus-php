@@ -1300,7 +1300,6 @@ class ContactsTest extends TestCase
     public function testCreateContactWithUnnecessarySpacesTrimmedInNameAndTypeAndProxyAuth()
     {
         $this->ba->proxyAuth();
-
         $this->startTest();
     }
 

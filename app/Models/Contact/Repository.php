@@ -8,6 +8,7 @@ use DB;
 
 use RZP\Models\Base;
 use RZP\Base\BuilderEx;
+use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Models\FundAccount;
 use RZP\Models\BankAccount;
@@ -29,21 +30,31 @@ class Repository extends Base\Repository
      */
     public function getContactWithSimilarDetails(array $input, Merchant\Entity $merchant)
     {
+        // Moving dedupe query for some merchants to replica as an immediate action item.
+        // slack thread: https://razorpay.slack.com/archives/CQ932EVNH/p1653578986629329?thread_ts=1652778693.188489&cid=CQ932EVNH
+        if ($merchant->isFeatureEnabled(Feature\Constants::DEDUPE_CONTACT_ON_REPLICA) === true)
+        {
+            $query = $this->newQueryWithConnection($this->getSlaveConnection());
+        }
+        else
+        {
+            $query = $this->newQuery();
+        }
+
         // In case all of the input parameters exactly match
         // with any existing contact, we return the same contact
         // to the merchant. Name and type are inclusive here.
         // We are forcing Mysql to use contact_merchant_name_index to ensure
         // that minimum number of rows have to be searched as name will
         // always be passed in this query
-        return $this->newQuery()
-                    ->where(Entity::CONTACT, $input[Entity::CONTACT] ?? null)
-                    ->where(Entity::EMAIL, $input[Entity::EMAIL] ?? null)
-                    ->where(Entity::REFERENCE_ID, $input[Entity::REFERENCE_ID] ?? null)
-                    ->merchantId($merchant->getId())
-                    ->where(Entity::TYPE, $input[Entity::TYPE] ?? null)
-                    ->where(Entity::NAME, $input[Entity::NAME] ?? null)
-                    ->where(Entity::ACTIVE, 1)
-                    ->first();
+        return $query->where(Entity::CONTACT, $input[Entity::CONTACT] ?? null)
+                     ->where(Entity::EMAIL, $input[Entity::EMAIL] ?? null)
+                     ->where(Entity::REFERENCE_ID, $input[Entity::REFERENCE_ID] ?? null)
+                     ->merchantId($merchant->getId())
+                     ->where(Entity::TYPE, $input[Entity::TYPE] ?? null)
+                     ->where(Entity::NAME, $input[Entity::NAME] ?? null)
+                     ->where(Entity::ACTIVE, 1)
+                     ->first();
     }
 
     protected function addQueryParamId($query, $params)
