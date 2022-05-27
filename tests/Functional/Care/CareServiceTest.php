@@ -830,7 +830,6 @@ class CareServiceTest extends TestCase
                 self::PERMISSIONS                         => ['ticket_config_edit'],
                 self::ACTUAL_CARE_SERVICE_RESPONSE_STATUS => 200,
             ],
-            //
             [
                 self::AUTH                                => 'admin',
                 self::API_ROUTE                           => '/care_service/admin/twirp/rzp.care.faq.v1.FaqConfigService/AddFaqRanking',
@@ -852,6 +851,23 @@ class CareServiceTest extends TestCase
                 self::AUTH                                => 'admin',
                 self::API_ROUTE                           => '/care_service/admin/twirp/rzp.care.faq.v1.FaqConfigService/DeleteFaqRanking',
                 self::EXPECTED_CARE_SERVICE_ROUTE         => 'https://care-int.razorpay.com/twirp/rzp.care.faq.v1.FaqConfigService/DeleteFaqRanking',
+                self::EXPECTED_CARE_SERVICE_REQUEST       => [
+                    'key'   => 'value',
+                    'admin' => [
+                        'id' => 'RzrpySprAdmnId',
+                    ]
+                ],
+                self::API_REQUEST_BODY                    => ["key" => "value"],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_BODY   => [
+                    'key' => 'value',
+                ],
+                self::PERMISSIONS                         => ['faq_config_edit'],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_STATUS => 200,
+            ],
+            [
+                self::AUTH                                => 'admin',
+                self::API_ROUTE                           => '/care_service/admin/twirp/rzp.care.faq.v1.FaqConfigService/UpdateFaqRanking',
+                self::EXPECTED_CARE_SERVICE_ROUTE         => 'https://care-int.razorpay.com/twirp/rzp.care.faq.v1.FaqConfigService/UpdateFaqRanking',
                 self::EXPECTED_CARE_SERVICE_REQUEST       => [
                     'key'   => 'value',
                     'admin' => [

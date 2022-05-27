@@ -74,6 +74,7 @@ class CareProxyController extends Controller
     const FAQ_CONFIG_DELETE_FAQ            = 'twirp/rzp.care.faq.v1.FaqConfigService/DeleteFaq';
     const FAQ_CONFIG_ADD_FAQ_RANKING       = 'twirp/rzp.care.faq.v1.FaqConfigService/AddFaqRanking';
     const FAQ_CONFIG_DELETE_FAQ_RANKING    = 'twirp/rzp.care.faq.v1.FaqConfigService/DeleteFaqRanking';
+    const FAQ_CONFIG_UPDATE_FAQ_RANKING    = 'twirp/rzp.care.faq.v1.FaqConfigService/UpdateFaqRanking';
     const FAQ_CONFIG_CREATE_DASHBOARD      = 'twirp/rzp.care.faq.v1.FaqConfigService/CreateDashboardGuide';
     const FAQ_CONFIG_EDIT_DASHBOARD        = 'twirp/rzp.care.faq.v1.FaqConfigService/UpdateDashboardGuide';
     const FAQ_CONFIG_DELETE_DASHBOARD_ID   = 'twirp/rzp.care.faq.v1.FaqConfigService/DeleteDashboardGuide';
@@ -111,6 +112,7 @@ class CareProxyController extends Controller
         self::TICKET_CONFIG_UPDATE_ITEM_RANK          => Name::TICKET_CONFIG_EDIT,
         self::FAQ_CONFIG_ADD_FAQ_RANKING              => Name::FAQ_CONFIG_EDIT,
         self::FAQ_CONFIG_DELETE_FAQ_RANKING           => Name::FAQ_CONFIG_EDIT,
+        self::FAQ_CONFIG_UPDATE_FAQ_RANKING           => Name::FAQ_CONFIG_EDIT,
         self:: FAQ_CONFIG_CREATE_DASHBOARD            => Name::FAQ_CONFIG_EDIT,
         self:: FAQ_CONFIG_EDIT_DASHBOARD              => Name::FAQ_CONFIG_EDIT,
         self:: FAQ_CONFIG_DELETE_DASHBOARD_ID         => Name::FAQ_CONFIG_EDIT,
@@ -170,6 +172,7 @@ class CareProxyController extends Controller
         self::TICKET_CONFIG_UPDATE_ITEM_RANK,
         self::FAQ_CONFIG_DELETE_FAQ_RANKING,
         self::FAQ_CONFIG_ADD_FAQ_RANKING,
+        self::FAQ_CONFIG_UPDATE_FAQ_RANKING,
         self:: FAQ_CONFIG_CREATE_DASHBOARD,
         self:: FAQ_CONFIG_EDIT_DASHBOARD,
         self:: FAQ_CONFIG_DELETE_DASHBOARD_ID,
