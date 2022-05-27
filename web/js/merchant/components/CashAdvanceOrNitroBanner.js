@@ -41,10 +41,11 @@ const CashAdvanceOrNitroBanner = ({
 
   const fetchApplications = async () => {
     if (
-      !loanApplicationDetails.products.data ||
-      !Array.isArray(loanApplicationDetails.products.data)
+      !loanApplicationDetails?.applications?.data?.applications ||
+      !Array.isArray(loanApplicationDetails?.applications?.data?.applications)
     )
       return;
+
     const productDetails = getProductDetails();
     try {
       const { errors = null, data: { applications = [] } = {} } = await getApplications({

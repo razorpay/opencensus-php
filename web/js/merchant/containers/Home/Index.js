@@ -58,6 +58,7 @@ import { analyticsTrack } from 'common/utils/analytics';
 import M2MSuccessModal from 'merchant/components/M2M/M2MSuccessModal';
 import { fetchModalConfigDetails } from 'merchant/reducers/ModalConfigApi';
 import * as EventActions from 'merchant/reducers/trackEvents';
+import LocRepaymentTooltip from 'merchant/views/Capital/CashAdvanceNudges/components/LocRepaymentTooltip';
 
 const DATE_RANGE_PRESETS = [
   ['Past 7 Days', -7, 'days'],
@@ -323,6 +324,12 @@ export default class HomeContainer extends Component {
       const restrictedItem = this.restrictedFeatures
         .filter((feat) => this.props.user.isFeatureEnabled(feat))
         .map((feat) => this.featureName[feat]);
+      const showRepaymentTootip =
+        restrictedItem?.length === 1 &&
+        restrictedItem?.[0] === this.featureName.disable_ondemand_for_loc;
+      if (showRepaymentTootip) {
+        return <LocRepaymentTooltip />;
+      }
 
       const renderFeatureComponent = () => {
         return restrictedItem.map((item, i) => {

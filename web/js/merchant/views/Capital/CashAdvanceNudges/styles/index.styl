@@ -1,0 +1,64 @@
+.loc-nudge
+  display: inline
+  &-plus-sign
+    margin-left: 4px
+    font-size: 14px
+  &-container
+    max-width: 168px
+    height: 24px
+    display: inline-block
+    margin-left: 8px
+    padding: 2px 6.5px
+    border-radius: 100px
+    cursor: pointer
+    overflow: hidden
+    display: inline-flex
+    justify-content: space-between
+    align-items: center
+    &.PRE_APPLICATION
+      background: #008cb117
+      border: 1px solid #008cb152
+      color: #008cb1
+    &.PROGRESS_APPLICATION
+      background: #df870017
+      border: 1px solid #df870052
+      color: #bd7a03
+    .i
+      margin-right: 5px
+      position: relative
+      top: 2px
+    .lock-icon
+      margin-right: 5px
+    span
+      font-weight: bold
+  &-list-container
+    height: 24px
+    overflow: hidden
+    .list
+      margin: 0
+      padding: 0
+      animation: moveDown 6s infinite
+      list-style: none
+      .list-item
+        font-size: 14px
+        line-height: 20px
+        height: 24px
+        display: flex
+        justify-content: flex-start
+        align-items: center
+        text-align: unset
+
+@keyframes moveDown {
+  15%, 25% {
+		transform: translateY(-20%)
+	}
+	40%, 50% {
+		transform: translateY(-40%)
+	}
+	65%, 75% {
+		transform: translateY(-60%)
+	}
+	90%, 100% {
+		transform: translateY(-80%)
+	}
+}

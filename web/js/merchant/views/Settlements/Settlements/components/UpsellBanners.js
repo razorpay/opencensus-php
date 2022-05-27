@@ -3,15 +3,24 @@ import { connect } from 'react-redux';
 import LoaderDots from 'common/ui/LoaderDots';
 import { fetchFunctionalWithdrawalConfigByMerchantID as fnFetchWithdrawalConfig } from 'merchant/reducers/capital/withdrawals';
 import SettlementsUpsellBanner from 'merchant/views/Settlements/Settlements/components/SettlementsUpsellBanner';
+import ApplicationBanner from 'merchant/views/Capital/CashAdvanceNudges/components/ApplicationBanner';
 import SamedayUpselling from './Modals/ScheduledModal/components/Upselling';
 import { resolvePath } from 'common/utils/rzp-utils';
 import { DEFAULT_MIN_WITHDRAW_AMOUNT, VIEWS } from './constants';
-import { MERCHANT_OWNER_TYPE } from 'merchant/views/Capital/CashAdvance/constants';
+import { RZP_MERCHANT_OWNER_TYPE } from 'merchant/views/Capital/CashAdvance/constants';
 import { SAMEDAY_MODAL_LOCATIONS } from './Modals/ScheduledModal/constants';
 
 const UpsellBanners = (props) => {
   const {
-    user,
+    user: {
+      isLOCEnabled,
+      isLOSEnabled,
+      isOndemandSettlementEnabled,
+      isWithdrawFeatureEnabled,
+      isAutomaticSettlementEnabled,
+      isAutomaticSettlementRestricted,
+      current,
+    },
     withdrawalConfiguration,
     closeModal,
     hideCloseButton,
@@ -38,33 +47,33 @@ const UpsellBanners = (props) => {
     return internalBalance > 0 ? internalBalance : 0;
   };
   const internalCreditBalance = getInternalCreditBalance();
-  const isMerchantEligibileForLoc = !!(
-    user.isLOCEnabled &&
-    user.isLOSEnabled &&
-    user.isOndemandSettlementEnabled
-  );
+  const isMerchantEligibileForLoc = !!(isLOCEnabled && isLOSEnabled && isOndemandSettlementEnabled);
   const minWithdrawAmount = resolvePath(
     withdrawalConfiguration,
     'data.configuration.min_withdraw_amount',
     DEFAULT_MIN_WITHDRAW_AMOUNT,
   );
   const isBalanceAvailable =
-    hasWithdrawalConfig && internalCreditBalance >= Number(minWithdrawAmount);
+    isMerchantEligibileForLoc &&
+    hasWithdrawalConfig &&
+    internalCreditBalance >= Number(minWithdrawAmount);
 
   useEffect(() => {
     if (isMerchantEligibileForLoc && !hasWithdrawalConfig && !withdrawalConfiguration?.error) {
       fetchWithdrawalConfig({
-        owner_id: user.current,
-        owner_type: MERCHANT_OWNER_TYPE,
+        owner_id: current,
+        owner_type: RZP_MERCHANT_OWNER_TYPE,
       });
     }
   }, [hasWithdrawalConfig]);
 
   useEffect(() => {
-    if (!isLoading && isMerchantEligibileForLoc) {
-      if (isBalanceAvailable && user.isWithdrawFeatureEnabled) {
+    if (!isLoading) {
+      if (isBalanceAvailable && isWithdrawFeatureEnabled) {
         setView(VIEWS.LOC_BALANCE_AVAILABLE);
-      } else if (!user.isAutomaticSettlementEnabled && !user.isAutomaticSettlementRestricted) {
+      } else if (isMerchantEligibileForLoc) {
+        setView(VIEWS.LOC_ELIGIBLE);
+      } else if (!isAutomaticSettlementEnabled && !isAutomaticSettlementRestricted) {
         setView(VIEWS.SAMEDAY_ELIGIBLE);
       }
     }
@@ -86,6 +95,9 @@ const UpsellBanners = (props) => {
 
       case VIEWS.SAMEDAY_ELIGIBLE:
         return <SamedayUpselling showDiscount from={SAMEDAY_MODAL_LOCATIONS.ONDEMAND} />;
+
+      case VIEWS.LOC_ELIGIBLE:
+        return <ApplicationBanner />;
 
       default:
         return null;

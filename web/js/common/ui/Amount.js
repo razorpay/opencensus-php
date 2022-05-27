@@ -65,8 +65,8 @@ export default ({
           className="rzp-currency"
           dangerouslySetInnerHTML={{ __html: sanitizer(currencySymbol) }}
         />{' '}
-        <span className="rzp-whole">{amount.split('.')[0]}</span>
-        <span className="rzp-paise">.{amount.split('.')[1]}</span>
+        <span className="rzp-whole">{amount?.split('.')[0]}</span>
+        {!hidePaisa && <span className="rzp-paise">.{amount?.split('.')[1]}</span>}
       </span>
     </AmountTooltip>
   );

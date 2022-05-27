@@ -13,9 +13,11 @@ import {
   saveBusinessDetails,
   getBusinessByMerchantId,
   fetchApplicantDetails,
+  getApplications,
 } from 'merchant/reducers/capital';
 import moment from 'moment';
 import { trackCheckEligibilityCta, trackTabChange } from './ga';
+import { MERCHANT_OWNER_TYPE } from '../../CashAdvance/constants';
 
 const ApplicationOnboardingForm = (props) => {
   const [view, setView] = React.useState('get_started');
@@ -81,6 +83,12 @@ const ApplicationOnboardingForm = (props) => {
     const response = await props.saveApplicationDetails(applicationPayload);
     const { majority_stakeholder } = formsData.personal;
     if (response.data) {
+      const { user, productId, fetchApplications } = props;
+      fetchApplications({
+        owner_type: MERCHANT_OWNER_TYPE,
+        owner_id: user.current,
+        product_id: productId,
+      });
       trackCheckEligibilityCta(
         merchantId,
         majority_stakeholder,
@@ -406,4 +414,5 @@ export default connect(mapStateToProps, {
   saveBusinessDetails,
   getBusinessByMerchantId,
   fetchApplicantDetails,
+  fetchApplications: getApplications,
 })(ApplicationOnboardingForm);

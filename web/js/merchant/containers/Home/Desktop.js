@@ -79,6 +79,7 @@ import IntlPaymentsRecommendation from 'merchant/containers/Home/ProductRecommen
 import IntlPaymentsAnnouncement from 'merchant/components/Announcements/IntlPaymentsAnnouncement';
 import * as EventActions from 'merchant/reducers/trackEvents';
 import { STATUSES } from 'merchant/views/TicketSupport/utils';
+import CashAdvanceNudge from 'merchant/views/Capital/CashAdvanceNudges';
 
 class AnalyticsDesktop extends Component {
   state = {
@@ -768,6 +769,7 @@ class AnalyticsDesktop extends Component {
                         />
                       )}
                     </span>
+                    <CashAdvanceNudge />
                     <br />
                     {isSettlementOnHold && (
                       <div className="text-right full-width no-margin">

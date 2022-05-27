@@ -1,4 +1,5 @@
 import { getFormattedAmountNew } from 'common/utils/rzp-utils';
+import LocRepaymentTooltip from 'merchant/views/Capital/CashAdvanceNudges/components/LocRepaymentTooltip';
 
 export const restrictedFeatures = [
   'disable_ondemand_for_loc',
@@ -30,6 +31,12 @@ export const settleNowRestrictionMsgFn = (
     const restrictedItem = restrictedFeatures
       .filter((feat) => user.isFeatureEnabled(feat))
       .map((feat) => featureName[feat]);
+
+    const showRepaymentTooltip =
+      restrictedItem?.length === 1 && restrictedItem?.[0] === featureName.disable_ondemand_for_loc;
+    if (showRepaymentTooltip) {
+      return <LocRepaymentTooltip />;
+    }
 
     const renderFeatureComponent = () => {
       return restrictedItem.map((item, i) => {

@@ -6,6 +6,7 @@ import Amount from 'common/ui/Amount';
 import Time from 'common/ui/Time';
 import { openModal as fnOpenModal, closeModal } from 'merchant_common/reducers/modals';
 import SettlementDetail from 'merchant/views/Settlements/Settlements/components/SettlementDetail';
+import CashAdvanceNudge from 'merchant/views/Capital/CashAdvanceNudges';
 
 const BalanceDetails = (props) => {
   const {
@@ -54,6 +55,7 @@ const BalanceDetails = (props) => {
           <span className="pr-5">Current Balance:</span>
           <Amount value={balance} currency="INR" className={currentBalanceClassName} />
         </strong>
+        <CashAdvanceNudge />
       </div>
       <div>
         {nextSettlement && !no_settlement && !isSettlementOnHold && (
