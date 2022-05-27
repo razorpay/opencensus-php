@@ -226,7 +226,11 @@ export default class WysiwygDescription extends React.PureComponent {
 
               self.QUILL.insertEmbed(range.index, 'image', url, 'user');
 
-              track.wysiwyg.addImageSuccess(fileSizeMB, fileType);
+              track.wysiwyg.addImageSuccess(
+                fileSizeMB,
+                fileType,
+                this.props.isImageOptimisationEnabled,
+              );
             } else {
               const errorMessage = 'Some network error occurred';
 

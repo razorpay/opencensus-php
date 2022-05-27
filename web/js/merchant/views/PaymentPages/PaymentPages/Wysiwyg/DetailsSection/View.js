@@ -75,6 +75,7 @@ export default class View extends React.PureComponent {
             isPageDirty={isPageDirty}
             key={paymentPageEntity.id ? `${paymentPageEntity.id}-description` : 'description'}
             updateData={this.updateData}
+            isImageOptimisationEnabled={user.isPaymentPageImageOptimisationEnabled}
           />
         </div>
 

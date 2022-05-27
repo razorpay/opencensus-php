@@ -255,6 +255,7 @@ class Service extends Base\Service
             'rx_tds_and_attachments',
             'capital_enable_physical_card',
             'rx_cohesive_invoice',
+            'raxorx_pp_image_optimization',
             'rx_custom_access_control_enabled'
         ];
 

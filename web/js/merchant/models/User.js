@@ -407,6 +407,10 @@ export default class User {
     return this.isFeatureEnabled('contact_optional');
   }
 
+  get isPaymentPageImageOptimisationEnabled() {
+    return this.getExpStatus('raxorx_pp_image_optimization');
+  }
+
   get isInvoiceCreateFlowUXOptimizationEnabled() {
     return this.getExpStatus('inv_create_flow_ux');
   }
