@@ -57,7 +57,9 @@ class BvsValidationClient extends BaseClient
                 TraceCode::BVS_GET_VALIDATION_RESPONSE,
                 [
                     'validationId' => $response->getValidationId(),
-                    'status'=>$response->getStatus()
+                    'status'=>$response->getStatus(),
+                    'code'=>$response->getErrorCode(),
+                    'description'=>$response->getErrorDescription()
                 ]
             );
 

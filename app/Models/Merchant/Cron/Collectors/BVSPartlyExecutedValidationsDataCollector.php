@@ -36,27 +36,29 @@ class BVSPartlyExecutedValidationsDataCollector extends TimeBoundDbDataCollector
                 $fieldName = $tableNameFieldName[1];
 
                 $this->app['trace']->info(TraceCode::CRON_DATA_COLLECTOR_TRACE, [
-                    'fieldName'         => $fieldName,
-                    'args'              => $this->args,
-                    'time_before_query' => Carbon::now(),
+                    'fieldName' => $fieldName,
                 ]);
-
-                // list of merchant ids in the past 24 hours with entity status as null
-                $merchantIds = $this->repo->merchant_detail->filterNullAndInitiatedFieldStatusMerchants($fieldName, $startTime, $endTime);
-
-                $this->app['trace']->info(TraceCode::CRON_DATA_COLLECTOR_TRACE, [
-                    '$merchantIds'     => count($merchantIds),
-                    'args'             => $this->args,
-                    'time_after_query' => Carbon::now(),
-                ]);
-
                 $artefactIdentifierArr = (explode("-", $artefactIdentifier));
                 $artefact_type         = $artefactIdentifierArr[0];
                 $validation_unit       = $artefactIdentifierArr[1];
 
+                // get merchants who has done validation during the given time period
+                $merchantIds = $this->repo->bvs_validation->getOwnerIds($artefact_type,$validation_unit,$startTime, $endTime,[BvsValidationConstants::SUCCESS,BvsValidationConstants::FAILED]);
+
+                $this->app['trace']->info(TraceCode::CRON_DATA_COLLECTOR_TRACE, [
+                    'input merchantIds' => count($merchantIds)]);
+
+                // filter merchants with verification status as null or initiated
+                $merchantIds = $this->repo->merchant_detail->filterNullAndInitiatedFieldStatusMerchants($fieldName, $merchantIds);
+
+                $this->app['trace']->info(TraceCode::CRON_DATA_COLLECTOR_TRACE, [
+                    'filtered merchantIds' => count($merchantIds)
+                ]);
+
                 // for each of the merchant id, find the corresponding validation record
                 foreach ($merchantIds as $merchantId)
                 {
+                    // for poa aadhaar back and aadhaar front both has to be processed not just latest as they both have
                     if ($fieldName === \RZP\Models\Merchant\Detail\Entity::POA_VERIFICATION_STATUS)
                     {
                         $validations = $this->repo->bvs_validation->getValidationsForArtefactAndValidationUnit($merchantId,
@@ -68,12 +70,15 @@ class BVSPartlyExecutedValidationsDataCollector extends TimeBoundDbDataCollector
                             {
                                 continue;
                             }
-
-                            $validation_status = $validation[BvsValidationConstants::STATUS];
+                            $validation_status = $validation->getValidationStatus();
 
                             // we only push partly processed validations
                             if ($validation_status != BvsValidationConstants::CAPTURED)
                             {
+                                $this->app['trace']->info(TraceCode::CRON_DATA_COLLECTOR_TRACE, [
+                                    'validation_added'  => $validation,
+                                    'validation_status' => $validation_status,
+                                ]);
                                 array_push($partlyProcessedValidations, $validation);
                             }
                         }
@@ -87,11 +92,15 @@ class BVSPartlyExecutedValidationsDataCollector extends TimeBoundDbDataCollector
                             continue;
                         }
 
-                        $validation_status = $validation[BvsValidationConstants::STATUS];
+                        $validation_status = $validation->getValidationStatus();
 
                         // we only push partly processed validations
                         if ($validation_status != BvsValidationConstants::CAPTURED)
                         {
+                            $this->app['trace']->info(TraceCode::CRON_DATA_COLLECTOR_TRACE, [
+                                'validation_added'  => $validation,
+                                'validation_status' => $validation_status,
+                            ]);
                             array_push($partlyProcessedValidations, $validation);
                         }
                     }
@@ -111,7 +120,7 @@ class BVSPartlyExecutedValidationsDataCollector extends TimeBoundDbDataCollector
 
     protected function getEndInterval(): int
     {
-        return $this->cronStartTime-300;
+        return $this->cronStartTime - 300;
     }
 
 }

@@ -107,7 +107,7 @@ class BvsAction extends BaseAction
                 }
                 $successCount++;
             }
-            catch (\Exception $e)
+            catch (\Throwable $e)
             {
                 $this->app['trace']->traceException(
                     $e,

@@ -136,4 +136,24 @@ class Repository extends Base\Repository
                     ->orderBy($createdAtColumn, 'desc')
                     ->get();
     }
+
+    public function getOwnerIds(string $artefactType, string $validationUnit,int $startTimeStamp, int $endTimeStamp,array $status)
+    {
+        $ownerIdColumn        = $this->repo->bvs_validation->dbColumn(Entity::OWNER_ID);
+        $createdAtColumn      = $this->repo->bvs_validation->dbColumn(Entity::CREATED_AT);
+        $artefactTypeColumn   = $this->repo->bvs_validation->dbColumn(Entity::ARTEFACT_TYPE);
+        $validationUnitColumn = $this->repo->bvs_validation->dbColumn(Entity::VALIDATION_UNIT);
+
+        return $this->newQuery()
+                    ->select($ownerIdColumn)
+                    ->where($artefactTypeColumn, $artefactType)
+                    ->where($validationUnitColumn, $validationUnit)
+                    ->whereBetween($createdAtColumn, [$startTimeStamp, $endTimeStamp])
+                    ->WhereIn(Entity::VALIDATION_STATUS, $status)
+                    ->Where(Entity::PLATFORM, "=", "pg")
+                    ->Where(Entity::OWNER_TYPE, "=", "merchant")
+                    ->distinct()
+                    ->pluck(Entity::OWNER_ID)
+                    ->toArray();
+    }
 }

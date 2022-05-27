@@ -39,7 +39,9 @@ class ValidationDetailsResponse implements Response
     {
         return [
             Constant::VALIDATION_ID   => $this->response->getValidationId(),
-            Entity::VALIDATION_STATUS => $this->response->getStatus()
+            Entity::VALIDATION_STATUS => $this->response->getStatus(),
+            Entity::ERROR_CODE        => $this->response->getErrorCode(),
+            Entity::ERROR_DESCRIPTION => $this->response->getErrorDescription()
         ];
     }
 

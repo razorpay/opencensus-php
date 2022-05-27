@@ -45,9 +45,10 @@ class BVSPartlyExecutedValidationActions extends BaseAction
                 $validationId    = $validation[Constant::VALIDATION_ID];
                 // create response
                 (new Core())->processValidation($validationId, []);
+
                 $successCount++;
             }
-            catch (\Exception $e)
+            catch (\Throwable $e)
             {
                 $this->app['trace']->traceException(
                     $e,

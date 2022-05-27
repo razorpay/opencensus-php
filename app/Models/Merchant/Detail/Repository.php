@@ -412,15 +412,17 @@ class Repository extends Base\Repository
             ->toArray();
     }
 
-    public function filterNullAndInitiatedFieldStatusMerchants(string $entityName, int $from, int $to): array
+    public function filterNullAndInitiatedFieldStatusMerchants(string $entityName,array $merchantIds): array
     {
         return $this->newQueryWithConnection($this->getSlaveConnection())
-            ->select(Entity::MERCHANT_ID)
-            ->whereBetween(Entity::UPDATED_AT, [$from, $to])
-            ->whereRaw("$entityName is null or $entityName='initiated'")
-            ->get()
-            ->pluck(Entity::MERCHANT_ID)
-            ->toArray();
+                    ->select(Entity::MERCHANT_ID)
+                    ->whereIn(Entity::MERCHANT_ID, $merchantIds)
+                    ->where(function($query) use ($entityName) {
+                        $query->whereNull($entityName)
+                              ->orWhere($entityName, "=", 'initiated');
+                    })->get()
+                    ->pluck(Entity::MERCHANT_ID)
+                    ->toArray();
     }
 
     public function findMerchantWithContactNumbersExcludingMerchant(string $merchantIdToBeExcluded, array $numbers)
