@@ -3305,7 +3305,7 @@ class Route
         'care_service_dark_proxy'                 => ['post',    'care_service/dark/admin',                                 'CareProxyController@postDarkProxyRequest',                   ],
 
         'cmma_service_admin_proxy'                => ['post',    'cmma_service/admin/{path?}',                              'CmmaProxyController@handleAdminProxyRequests',               ],
-
+        'cmma_service_cron_proxy'                 => ['post',    'cmma_service/cron/{path?}',                               'CmmaProxyController@handleCronProxyRequests'                     ],
         'myoperator_v1_proxy_get'                 => ['get',     'myoperator/{path?}',                                      'MyOperatorController@getProxyCallToMyOperatorV1'              ],
         'myoperator_v2_proxy_post'                => ['post',    'myoperator/campaign/{path?}',                             'MyOperatorController@postProxyCallToMyOperatorV2'              ],
 
@@ -4591,6 +4591,7 @@ class Route
         'internal_fd_create_ticket',
         'dispute_automation',
         'care_service_cron_proxy',
+        'cmma_service_cron_proxy',
         'internal_order_update',
 
         // care
@@ -12156,6 +12157,7 @@ class Route
             'loc_cron',
             'los_cron',
             'care_service_cron_proxy',
+            'cmma_service_cron_proxy',
             'p2p_retrieve_banks_cron',
             'health_checker_periodic_cron',
             'health_checker_milestone_cron',

@@ -27,6 +27,7 @@ abstract class BaseProxyController extends Controller
 
     protected $merchantRoutes = [];
     protected $adminRoutes = [];
+    protected $cronRoutes = [];
     protected $adminRouteVsPermission;
 
     protected $preProcessor;
@@ -74,6 +75,8 @@ abstract class BaseProxyController extends Controller
 
     protected abstract function getAuthorizationHeader();
 
+    protected abstract function getCronAuthorizationHeader();
+
     protected function registerRoutesMap(array $map)
     {
         $this->routesMap = $map;
@@ -88,6 +91,11 @@ abstract class BaseProxyController extends Controller
     {
         $this->adminRoutes = $routes;
         $this->adminRouteVsPermission = $adminRouteVsPermission;
+    }
+
+    protected function registerCronRoutes(array $routes)
+    {
+        $this->cronRoutes = $routes;
     }
 
     protected function registerProcessors(PreProcessor $preProcessor, PostProcessor $postProcessor, $serviceName)
@@ -133,6 +141,8 @@ abstract class BaseProxyController extends Controller
     protected function getRoute($path = null): string
     {
         $routes = array_merge($this->merchantRoutes,$this->adminRoutes);
+
+        $routes = array_merge($routes,$this->cronRoutes);
 
         foreach ($routes as $route)
         {
@@ -187,6 +197,22 @@ abstract class BaseProxyController extends Controller
         }
 
         $headers = $this->getHeadersForAdminRequest($body);
+
+        return $this->sendRequestAndParseResponse($route, $request->method(), $path, $body, $headers);
+    }
+
+    public function handleCronProxyRequests($path = null){
+        $request = $this->getRequestInstance();
+        $body    = $request->all();
+
+        $route = $this->getRoute($path);
+
+        if ($request->method() === 'GET')
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_HTTP_METHOD_NOT_ALLOWED);
+        }
+
+        $headers = $this->getHeadersForCronRequest($body);
 
         return $this->sendRequestAndParseResponse($route, $request->method(), $path, $body, $headers);
     }
@@ -322,6 +348,17 @@ abstract class BaseProxyController extends Controller
             'Content-Type'     => 'application/json',
             'Accept'           => 'application/json',
             'Authorization'    => $this->getAuthorizationHeader(),
+            'X-Request-ID'     => Request::getTaskId(),
+            'X-Client-ID'      => $this->serviceConfig['client_id'] ?? ''
+        ];
+    }
+
+    protected function getHeadersForCronRequest($body)
+    {
+        return [
+            'Content-Type'     => 'application/json',
+            'Accept'           => 'application/json',
+            'Authorization'    => $this->getCronAuthorizationHeader(),
             'X-Request-ID'     => Request::getTaskId(),
             'X-Client-ID'      => $this->serviceConfig['client_id'] ?? ''
         ];

@@ -102,9 +102,11 @@ return [
     ],
 
     'cmma' => [
-        'url'      => env('CMMA_HOST'),
-        'user'     => env('CMMA_USER'),
-        'password' => env('CMMA_PASSWORD'),
+        'url'           => env('CMMA_HOST'),
+        'user'          => env('CMMA_USER'),
+        'password'      => env('CMMA_PASSWORD'),
+        'cron_user'     => env('CMMA_CRON_USER'),
+        'cron_password' => env('CMMA_CRON_PASSWORD'),
     ],
 
     'merchants_risk' => [
