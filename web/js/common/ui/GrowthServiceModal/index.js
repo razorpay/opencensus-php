@@ -5,10 +5,11 @@ import { withRouter } from 'react-router-dom';
 import React, { useEffect, useState } from 'react';
 import rTracking from 'react-tracking';
 import Loader from 'common/ui/Loader';
-import { SubmissionSuccessfull } from '../NotificationsDropdown/RazorpayXNitroAnnouncement';
+import SubmissionSuccessfull from 'common/ui/NotificationsDropdown/SubmissionSuccessfull';
 import { sendDataToSalesForce } from '../../utils/common-api';
-import './modalStyle.styl';
+import './GSModalStyle.styl';
 import { fetchGSModal as fetchGSModalProp } from 'merchant/reducers/growthService';
+import { isMobileAndTablet } from 'common/utils/rzp-utils';
 
 const GrowthServiceModal = ({
   tracking,
@@ -24,6 +25,8 @@ const GrowthServiceModal = ({
     fetchGSModal({ template_id });
   }, []);
   const [activeView, setActiveView] = useState('detail-view');
+  const isEmptyOrNotMobile =
+    Object.keys(gs_modals).length === 0 || (!gs_modals?.image?.mobile_url && isMobileAndTablet());
   const Description = ({ description, type }) => {
     switch (type) {
       case 'bold':
@@ -87,24 +90,26 @@ const GrowthServiceModal = ({
   };
 
   if (!loading) {
-    if (Object.keys(gs_modals).length === 0) {
+    if (isEmptyOrNotMobile) {
       closeModal();
     } else {
       if (activeView === 'detail-view') {
         return (
-          <>
-            <button type="button" id="gsBtnClose" onClick={closeModal}>
+          <div className={isMobileAndTablet() ? 'gs-container' : ''}>
+            <button type="button" id="gs-btn-close" onClick={closeModal}>
               <i className="i i-close" />
             </button>
-            <div id="gsModalBody">
+            <div id="gs-modal-body">
               <img
                 className="background-img"
-                src={gs_modals?.image?.url}
+                src={isMobileAndTablet() ? gs_modals?.image?.mobile_url : gs_modals?.image?.url}
                 alt={gs_modals?.image?.alt_text}
               />
             </div>
-            <div id="gsModalDivider" />
-            <div id="gsModalFooter" style={{ background: gs_modals?.offer?.background_color }}>
+            <div
+              className={isMobileAndTablet() ? 'gs-modal-footer-mobile' : 'gs-modal-footer'}
+              style={{ background: gs_modals?.offer?.background_color }}
+            >
               <div className="para-container">
                 <p
                   className="para"
@@ -135,7 +140,7 @@ const GrowthServiceModal = ({
                 </button>
               </div>
             </div>
-          </>
+          </div>
         );
       }
       return <SubmissionSuccessfull handleClose={closeModal} />;
@@ -144,10 +149,10 @@ const GrowthServiceModal = ({
 
   return (
     <>
-      <button type="button" id="gsBtnClose" onClick={closeModal}>
+      <button type="button" id="gs-btn-close" onClick={closeModal}>
         <i className="i i-close" />
       </button>
-      <div id="gsModalLoader">
+      <div id="gs-modal-loader">
         <Loader />;
       </div>
     </>

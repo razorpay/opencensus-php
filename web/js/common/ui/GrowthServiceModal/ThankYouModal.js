@@ -9,6 +9,7 @@ import rTracking from 'react-tracking';
 import Loader from 'common/ui/Loader';
 import { withRouter } from 'react-router-dom';
 import { fetchGSModal as fetchGSModalProp } from 'merchant/reducers/growthService';
+import './GSModalStyle.styl';
 
 const ThankYouModal = ({ loading, gs_modals, user, closeModal, fetchGSModal, template_id }) => {
   useEffect(() => {
@@ -29,7 +30,7 @@ const ThankYouModal = ({ loading, gs_modals, user, closeModal, fetchGSModal, tem
       );
       return (
         <div className="thank-you-gs-modal">
-          <CloseIconContainer data-testid="modalCloseButton" onClick={closeModal}>
+          <CloseIconContainer data-testid="modal-close-button" onClick={closeModal}>
             <Button
               variant="tertiary"
               size="small"
@@ -38,7 +39,6 @@ const ThankYouModal = ({ loading, gs_modals, user, closeModal, fetchGSModal, tem
               type="button"
             />
           </CloseIconContainer>
-          <ModalHeader>&nbsp;</ModalHeader>
           <div className="img-container">
             <img src={gs_modals?.image?.url} alt={gs_modals?.image?.alt_text} />
           </div>
@@ -51,10 +51,10 @@ const ThankYouModal = ({ loading, gs_modals, user, closeModal, fetchGSModal, tem
 
   return (
     <>
-      <button type="button" id="gsBtnClose" onClick={closeModal}>
+      <button type="button" id="gs-btn-close" onClick={closeModal}>
         <i className="i i-close" />
       </button>
-      <div id="gsModalLoader">
+      <div id="gs-modal-loader">
         <Loader />
       </div>
     </>

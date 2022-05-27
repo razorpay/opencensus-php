@@ -7,7 +7,7 @@ import rTracking from 'react-tracking';
 import Loader from 'common/ui/Loader';
 import { SubmissionSuccessfull } from '../NotificationsDropdown/RazorpayXNitroAnnouncement';
 import { sendDataToSalesForce } from '../../utils/common-api';
-import './modalStyle.styl';
+import './GSModalStyle.styl';
 import { fetchGSModal as fetchGSModalProp } from '../../../merchant/reducers/growthService';
 
 const GrowthServiceCenterCTAModal = ({
@@ -78,10 +78,10 @@ const GrowthServiceCenterCTAModal = ({
     if (Object.keys(gs_modals).length > 0 && activeView === 'detail-view') {
       return (
         <>
-          <button type="button" id="gsBtnClose" onClick={closeModal}>
+          <button type="button" id="gs-btn-close" onClick={closeModal}>
             <i className="i i-close" />
           </button>
-          <div id="gsModalBody">
+          <div id="gs-modal-body">
             <img
               className="background-img"
               src={gs_modals?.image?.url}
@@ -119,10 +119,10 @@ const GrowthServiceCenterCTAModal = ({
   }
   return (
     <>
-      <button type="button" id="gsBtnClose" onClick={closeModal}>
+      <button type="button" id="gs-btn-close" onClick={closeModal}>
         <i className="i i-close" />
       </button>
-      <div id="gsModalLoader">
+      <div id="gs-modal-loader">
         <Loader />;
       </div>
     </>

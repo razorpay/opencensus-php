@@ -208,6 +208,13 @@ class WhatsNewOld extends Component {
     });
   };
 
+  showGSModalMobile = (id) => {
+    const { openModal } = this.props;
+    openModal({
+      component: <GrowthServiceModal template_id={id} />,
+    });
+  };
+
   showGSCenterCTAModal = (id) => {
     const { openModal } = this.props;
     openModal({
@@ -284,24 +291,42 @@ class WhatsNewOld extends Component {
 
   handleCTA = ({ id, url, type, variant }) => {
     const isMWeb = isMobileAndTablet();
-    if (!isMWeb && type.length && variant.length) {
-      switch (type) {
-        case 'MODAL':
-          switch (variant) {
-            case 'default':
-              this.showGSModal(id);
-              break;
-            case 'center-cta':
-              this.showGSCenterCTAModal(id);
-              break;
-            case 'thank-you':
-              this.showGSThankYouModal(id);
-              break;
-            default:
-              break;
-          }
-          break;
-        default:
+    if (type?.length && variant?.length) {
+      if (isMWeb) {
+        switch (type) {
+          case 'MODAL':
+            switch (variant) {
+              case 'default':
+                this.showGSModalMobile(id);
+                break;
+              case 'thank-you':
+                this.showGSThankYouModal(id);
+                break;
+              default:
+                break;
+            }
+            break;
+          default:
+        }
+      } else {
+        switch (type) {
+          case 'MODAL':
+            switch (variant) {
+              case 'default':
+                this.showGSModal(id);
+                break;
+              case 'thank-you':
+                this.showGSThankYouModal(id);
+                break;
+              case 'center-cta':
+                this.showGSCenterCTAModal(id);
+                break;
+              default:
+                break;
+            }
+            break;
+          default:
+        }
       }
       return;
     }

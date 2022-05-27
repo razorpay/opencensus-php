@@ -8,6 +8,9 @@ Object.assign(Modal.defaultStyles.overlay, {
   backgroundColor: 'rgba(58, 63, 81, 0.8)',
   zIndex: 9999,
   overflowY: 'auto',
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
 });
 
 Modal.defaultStyles.content = {
