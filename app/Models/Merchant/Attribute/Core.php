@@ -105,4 +105,31 @@ class Core extends Base\Core
                     'merchant_ids'  => $merchantAttributeIds
                 ]);
     }
+
+    public function deactivateMerchantAttributeByGroupAndTypes(string $merchantId, string $group, array $type): array
+    {
+        $merchant_attributes = $this->repo->merchant_attribute->getKeyValuesForAllProduct($merchantId, $group, $type);
+        $response            = array();
+        foreach ($merchant_attributes as $merchant_attribute)
+        {
+            $response[] = $this->update($merchant_attribute, ["value"   => null,
+                                                              "type"    => $merchant_attribute->type,
+                                                              "product" => $merchant_attribute->product,
+                                                              "group"   => $merchant_attribute->group]);
+        }
+
+        return $response;
+    }
+
+    public function updateMerchantAttributeByGroupTypesAndValue(string $merchantId, string $group, array $type, string $value): array
+    {
+        $merchant_attributes = $this->repo->merchant_attribute->getKeyValuesForAllProduct($merchantId, $group, $type);
+        $response = array();
+        foreach ($merchant_attributes as $merchant_attribute) {
+            $response[] = $this->update($merchant_attribute, ["value" => $value,
+                                                              "type"  => $merchant_attribute->type, "product" => $merchant_attribute->product,
+                                                              "group" => $merchant_attribute->group]);
+        }
+        return $response;
+    }
 }

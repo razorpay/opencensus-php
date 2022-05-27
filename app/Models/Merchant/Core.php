@@ -6849,7 +6849,14 @@ class Core extends Base\Core
         return $this->checkIfCurrentAccountIsActivated($merchant);
     }
 
-    public function checkIfCurrentAccountIsActivated(Entity $merchant)
+
+    /**
+     * @param Entity $merchant
+     *
+     * @return bool
+     * For ICICI as balance entity doesn't support archiving we are checking businessId in merchant detail
+     */
+    public function checkIfCurrentAccountIsActivated(Entity $merchant): bool
     {
         $bankingAccounts = $this->repo->banking_account->fetchBankingAccountByMerchantIdAccountTypeChannelAndStatus(
             $merchant->getMerchantId(), BankingAccount\Channel::RBL, BankingAccount\AccountType::CURRENT, BankingAccount\Status::ACTIVATED);

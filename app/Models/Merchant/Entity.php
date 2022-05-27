@@ -30,6 +30,7 @@ use RZP\Models\Invitation;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Merchant\Detail;
+use Illuminate\Database\Eloquent\Collection;
 use RZP\Models\Merchant\ProductInternational\ProductInternationalField;
 use RZP\Models\Merchant\ProductInternational\ProductInternationalMapper;
 use RZP\Models\Merchant\PurposeCode\PurposeCodeList;
@@ -1678,9 +1679,9 @@ class Entity extends Base\PublicEntity
     /**
      * use activeBankingAccounts() function instead of magic property activeBankingAccounts
      * Eg: $this->merchant->activeBankingAccounts();
-     * @return \Illuminate\Database\Eloquent\Collection
+     * @return Collection
      */
-    public function activeBankingAccounts()
+    public function activeBankingAccounts(): Collection
     {
         $activeAccounts = $this->bankingAccounts()
                                ->where(BankingAccount\Entity::STATUS, BankingAccount\Status::ACTIVATED)
@@ -1695,6 +1696,13 @@ class Entity extends Base\PublicEntity
         }
 
         return $activeAccounts;
+    }
+
+    public function vaBankingAccounts(): Collection
+    {
+        return $this->bankingAccounts()
+                    ->where(BankingAccount\Entity::ACCOUNT_TYPE, BankingAccount\AccountType::NODAL)
+                    ->get();
     }
 
     protected function getMaxPaymentAmountAttribute()

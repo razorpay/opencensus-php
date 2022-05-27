@@ -2385,6 +2385,8 @@ class Route
         'bas_ca_lead_to_freshdesk'                 => ['post',     'bas/ca_lead_to_freshdesk',                       'BasController@sendCaLeadToFreshDesk'                              ],
         'rbl_in_progress_lead_to_sales_force'      => ['post',     'cron/rbl/lead_to_salesforce',                    'BasController@sendRblApplicationInProgressLeadsToSalesForce'       ],
         'get_banking_account_slot_booking_details' => ['get',      'booking/slot',                                   'BasController@getSlotBookingDetailsForBankingAccountAndChannel'    ],
+        'archive_icici_banking_account'            => ['post',     'bas/archive',                                    'BasController@archiveICICIAccount'                                 ],
+        'unarchive_icici_banking_account'          => ['post',     'bas/unarchive',                                  'BasController@unArchiveICICIAccount'                               ],
 
         //splitz service
         'splitz_route'                             => ['any',      'service/splitz',                                 'SplitzController@sendRequest'                                      ],
@@ -4114,6 +4116,8 @@ class Route
         'merchant_risk_alerts_foh_workflow_trigger_nc',
         'buy_pricing_assign_bulk',
         'external_bvs_validation_request',
+        'archive_icici_banking_account',
+        'unarchive_icici_banking_account',
         'banking_account_activation_detail_slot_booking',
         'bas_ca_lead_to_sales_force',
         'bas_ca_lead_to_freshdesk',
@@ -12739,6 +12743,8 @@ class Route
 
         'banking_account_service' => [
             'external_bvs_validation_request',
+            'archive_icici_banking_account',
+            'unarchive_icici_banking_account',
             'banking_account_activation_detail_slot_booking',
             'bas_ca_lead_to_sales_force',
             'bas_ca_lead_to_freshdesk',

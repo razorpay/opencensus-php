@@ -53,6 +53,9 @@ use RZP\Models\BankingAccount\Activation\Detail as ActivationDetail;
 use RZP\Mail\BankingAccount\StatusNotificationsToSPOC\MerchantNotAvailable;
 use RZP\Mail\BankingAccount\StatusNotifications\Factory as StatusUpdateMailerFactory;
 use RZP\Constants\Mode;
+use RZP\Models\Merchant\Attribute\Core as MerchantAttributeCore;
+use \RZP\Models\Merchant\Attribute\Type as MerchantAttributeType;
+use RZP\Models\BankingAccountStatement\Details\Core as BankingAccountStatementDetailsCore;
 
 class Core extends Base\Core
 {
@@ -2140,6 +2143,30 @@ class Core extends Base\Core
                     'event_name' => SegmentEvent::CA_ACTIVATED,
                 ]);
         }
+    }
+
+
+    /**
+     * Actions taken after archiving any banking account (Used for both RBL and ICICI accounts)
+     * Currently updating state of Banking Account Statement Details table
+     *
+     * @param Balance\Entity|null $balance
+     *
+     * @return array[Optional[banking_account_statement_details]]
+     */
+
+    public function archiveBankingAccount(?Balance\Entity $balance): array
+    {
+        if (empty($balance) === false)
+        {
+            $bankingAccountStatementDetails = $this->repo->banking_account_statement_details->fetchAccountStatementByBalance($balance->getId());
+            if (empty($bankingAccountStatementDetails) === false)
+            {
+                return (new BankingAccountStatementDetailsCore())->archiveStatementDetail($bankingAccountStatementDetails)->toArray();
+            }
+        }
+
+        return [];
     }
 
     /**

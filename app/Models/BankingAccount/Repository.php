@@ -23,11 +23,19 @@ class Repository extends Base\Repository
         Entity::BANKING_ACCOUNT_ACTIVATION_DETAILS
     ];
 
-    public function getFromBalanceId(string $balanceId)
+    public function getActivatedBankingAccountFromBalanceId(string $balanceId)
     {
         return $this->newQuery()
                     ->where(Entity::BALANCE_ID, '=', $balanceId)
+                    ->where(Entity::STATUS, '!=', Status::ARCHIVED)
                     ->first();
+    }
+
+    public function getFromBalanceId(string $balanceId)
+    {
+        return $this->newQuery()
+            ->where(Entity::BALANCE_ID, '=', $balanceId)
+            ->first();
     }
 
     public function findByAccountNumberAndChannel(string $accountNumber, string $channel)

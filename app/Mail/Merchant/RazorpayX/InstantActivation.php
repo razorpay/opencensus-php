@@ -58,7 +58,7 @@ class InstantActivation extends Mailable
         {
             $merchant = $this->getMerchant();
 
-            $this->bankingAccount = $merchant->bankingAccounts->first();
+            $this->bankingAccount = $merchant->vaBankingAccounts()->first();
         }
 
         return $this->bankingAccount;

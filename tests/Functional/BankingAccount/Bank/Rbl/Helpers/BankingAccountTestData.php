@@ -2606,6 +2606,42 @@ return [
         ],
     ],
 
+    'testBankingAccountFetchOnProxyAuthForArchivedCA' => [
+        'request'  => [
+            'url'     => '/banking_accounts',
+            'method'  => 'GET',
+            'server' => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 2,
+                'items'  => [
+
+                ],
+            ],
+        ],
+    ],
+
+    'testBankingAccountFetchOnProxyAuthForOnlyOneArchivedCA' => [
+        'request'  => [
+            'url'     => '/banking_accounts',
+            'method'  => 'GET',
+            'server' => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [],
+            ],
+        ],
+    ],
+
     'testBankingAccountFetchOnProxyAuth' => [
         'request'  => [
             'url'     => '/banking_accounts',
@@ -3794,4 +3830,40 @@ return [
             'status_code' => 200,
         ],
     ],
+    'testArchiveAccount' => [
+        'request' => [
+            'url'      => '/banking_account/{id}/archive',
+            'method'   => 'POST',
+        ],
+        'response'  => [
+            'content'  => [],
+            'status_code' => 200,
+        ]
+    ],
+
+     'testArchiveAccountForActivatedAccount' => [
+         'request'  => [
+             'url'    => '/banking_account/{id}',
+             'method' => 'POST',
+         ],
+         'response' => [
+             'content'     => [],
+             'status_code' => 200,
+         ]
+     ],
+
+    'testArchiveICICIAndActivateRBL' => [
+        'request'  => [
+            'url'     => '/bas/merchant/10000000000000/banking_accounts',
+            'method'  => 'POST',
+            'content' => [
+                RZP\Models\BankingAccountService\Constants::ACCOUNT_NUMBER => '12345678903833',
+                RZP\Models\BankingAccountService\Constants::CHANNEL        => 'icici',
+            ]
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ]
 ];

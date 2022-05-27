@@ -122,6 +122,161 @@ class BankingAccountServiceTest extends TestCase
         $this->assertEquals($balance->getId(), $scheduleTask['entity_id']);
         $this->assertEquals('balance', $scheduleTask['entity_type']);
         $this->assertEquals($schedule['id'], $scheduleTask['schedule_id']);
+
+        return $response;
+    }
+
+    public function createMerchantAttribute(string $merchant_id, string $product, string $group, string $type, string $value)
+    {
+        $this->fixtures->create('merchant_attribute',
+                                [
+                                    'merchant_id'   => $merchant_id,
+                                    'product'       => $product,
+                                    'group'         => $group,
+                                    'type'          => $type,
+                                    'value'         => $value,
+                                    'updated_at'    => time(),
+                                    'created_at'    => time()
+                                ]);
+    }
+
+    public function testArchiveAndCreateNewAccount()
+    {
+        $this->createMerchantAttribute('10000000000000', 'banking', 'x_merchant_current_accounts', 'ca_allocated_bank', 'ICICI');
+
+        $this->createMerchantAttribute('10000000000000', 'banking', 'x_merchant_current_accounts', 'ca_proceeded_bank', 'ICICI');
+
+        $response = $this->testCreateBankingEntities();
+
+        $balance_id1 = $response['balance_id'];
+
+        $dataToReplace = [
+            'request' => [
+                'url'     => '/bas/archive',
+                'content' => [
+                    "balance_id" => $balance_id1,
+                    "merchant_id" => 10000000000000
+                ]
+            ]
+        ];
+
+        $this->ba->bankingAccountServiceAppAuth();
+
+        $response = $this->startTest($dataToReplace);
+
+        $merchant_detail = $this->getDbEntity('merchant_detail',
+                                                    [
+                                                        'merchant_id'    => '10000000000000',
+                                                    ]);
+
+        $this->assertNull($merchant_detail->getBasBusinessId());
+
+        $request = [
+            'url'     => '/bas/merchant/10000000000000/banking_accounts',
+            'method'  => 'POST',
+            'content' => [
+                Constants::ACCOUNT_NUMBER => '12345678903834',
+                Constants::CHANNEL        => 'icici',
+            ]
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertNotEquals($balance_id1, $response['balance_id']);
+    }
+
+    public function testArchive()
+    {
+        $this->createMerchantAttribute('10000000000000', 'banking', 'x_merchant_current_accounts', 'ca_allocated_bank', 'ICICI');
+
+        $this->createMerchantAttribute('10000000000000', 'banking', 'x_merchant_current_accounts', 'ca_proceeded_bank', 'ICICI');
+
+        $response = $this->testCreateBankingEntities();
+
+        $balance_id1 = $response['balance_id'];
+
+        $dataToReplace = [
+            'request' => [
+                'url'     => '/bas/archive',
+                'content' => [
+                    "balance_id" => $balance_id1,
+                    "merchant_id" => 10000000000000
+                ]
+            ]
+        ];
+
+        $this->ba->bankingAccountServiceAppAuth();
+
+        $response = $this->startTest($dataToReplace);
+
+        $merchant_detail = $this->getDbEntity('merchant_detail',
+                                              [
+                                                  'merchant_id'    => '10000000000000',
+                                              ]);
+
+        $this->assertNull($merchant_detail->getBasBusinessId());
+    }
+
+    public function testArchiveAndUnArchive()
+    {
+        $this->createMerchantAttribute('10000000000000', 'banking', 'x_merchant_current_accounts', 'ca_allocated_bank', 'ICICI');
+
+        $this->createMerchantAttribute('10000000000000', 'banking', 'x_merchant_current_accounts', 'ca_proceeded_bank', 'ICICI');
+
+        $response = $this->testCreateBankingEntities();
+
+        $balance_id1 = $response['balance_id'];
+
+        $dataToReplace = [
+            'request' => [
+                'url'     => '/bas/archive',
+                'content' => [
+                    "balance_id" => $balance_id1,
+                    "merchant_id" => 10000000000000
+                ]
+            ]
+        ];
+
+        $this->ba->bankingAccountServiceAppAuth();
+
+        $response = $this->startTest($dataToReplace);
+
+        $merchant_detail = $this->getDbEntity('merchant_detail',
+                                              [
+                                                  'merchant_id'    => '10000000000000',
+                                              ]);
+
+        $this->assertNull($merchant_detail->getBasBusinessId());
+
+        $dataToReplace = [
+            'request' => [
+                'url'     => '/bas/unarchive',
+                'content' => [
+                    "business_id" => '23sdasfr34454',
+                    "merchant_id" => 10000000000000
+                ]
+            ]
+        ];
+
+        $this->ba->bankingAccountServiceAppAuth();
+
+        $response = $this->startTest($dataToReplace);
+
+        $merchant_attributes = $this->getDbEntities('merchant_attribute',
+                                                    [
+                                                        'merchant_id'    => '10000000000000',
+                                                    ]);
+
+        $this->assertEquals('ICICI', $merchant_attributes[0]->getValue());
+
+        $this->assertEquals('ICICI', $merchant_attributes[1]->getValue());
+
+        $merchant_detail = $this->getDbEntity('merchant_detail',
+                                              [
+                                                  'merchant_id'    => '10000000000000',
+                                              ]);
+
+        $this->assertNotNull($merchant_detail->getBasBusinessId());
     }
 
     public function testCreateBankingEntitiesWithLedgerShadow()

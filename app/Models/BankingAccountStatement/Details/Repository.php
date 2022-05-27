@@ -11,6 +11,12 @@ class Repository extends Base\Repository
 {
     protected $entity = Constants\Entity::BANKING_ACCOUNT_STATEMENT_DETAILS;
 
+    public function fetchAccountStatementByBalance(string $balanceId) : Entity{
+        return $this->newQuery()
+            ->where(Entity::BALANCE_ID, '=', $balanceId)
+            ->first();
+    }
+
     public function fetchByAccountNumberAndChannel(string $accountNumber, string $channel)
     {
         $accountNumberColumn = $this->dbColumn(Entity::ACCOUNT_NUMBER);
@@ -88,6 +94,7 @@ class Repository extends Base\Repository
         $basDetailsBalanceIdColumn     = $this->dbColumn(Entity::BALANCE_ID);
         $channelColumn                 = $this->dbColumn(Entity::CHANNEL);
         $merchantIdColumn              = $this->dbColumn(Entity::MERCHANT_ID);
+        $statusColumn                  = $this->dbColumn(Entity::STATUS);
 
         $balanceIdColumn                = $this->repo->balance->dbColumn(Entity::ID);
         $accountTypeColumn              = $this->repo->balance->dbColumn(Merchant\Balance\Entity::ACCOUNT_TYPE);
@@ -102,6 +109,7 @@ class Repository extends Base\Repository
                     ->where($accountTypeColumn, '=', Merchant\Balance\AccountType::DIRECT)
                     ->where($balanceTypeColumn, '=', Merchant\Balance\Type::BANKING)
                     ->where($channelColumn, '=', $channel)
+                    ->where($statusColumn, '=', Status::ACTIVE)
                     ->first();
     }
 

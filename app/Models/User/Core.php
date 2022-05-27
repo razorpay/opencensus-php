@@ -3185,7 +3185,7 @@ class Core extends Base\Core
 
                 if (empty($balance_CA) === false)
                 {
-                    $bankingAccountCA = $this->repo->banking_account->getFromBalanceId($balance_CA->getId());
+                    $bankingAccountCA = $this->repo->banking_account->getActivatedBankingAccountFromBalanceId($balance_CA->getId());
 
                     $caActivationStatus = optional($bankingAccountCA)->getStatus();
 
@@ -3208,7 +3208,7 @@ class Core extends Base\Core
                 }
 
                 // If either VA is there or both VA and CA are there
-                $bankingAccount = $this->repo->banking_account->getFromBalanceId($balance->getId());
+                $bankingAccount = $this->repo->banking_account->getActivatedBankingAccountFromBalanceId($balance->getId());
 
                 $bulkUserType = $this->getBulkPayoutsUserType($balance);
 

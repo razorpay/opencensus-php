@@ -3424,9 +3424,7 @@ class Core extends Base\Core
 
         if (empty($balance) === false)
         {
-            $bankingAccount = $this->repo
-                ->banking_account
-                ->getFromBalanceId($balance->getId());
+            $bankingAccount = $this->repo->banking_account->getActivatedBankingAccountFromBalanceId($balance->getId());
 
             $response[Merchant\Entity::BANKING_ACCOUNT] = $bankingAccount->toArrayPublic();
 

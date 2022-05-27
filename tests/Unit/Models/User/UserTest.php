@@ -2360,7 +2360,7 @@ class UserTest extends TestCase
 
         $creditBalanceRepoMock->shouldReceive('getMerchantCreditBalanceByProduct')->andReturn([$creditBalanceEntityMock]);
 
-        $bankingAccountRepoMock->shouldReceive('getFromBalanceId')->andReturn($bankingAccountEntityMock);
+        $bankingAccountRepoMock->shouldReceive('getActivatedBankingAccountFromBalanceId')->andReturn($bankingAccountEntityMock);
 
         $balanceEntityMock->shouldReceive('getId')->andReturn('1cXSLlUU8V9sXl');
 

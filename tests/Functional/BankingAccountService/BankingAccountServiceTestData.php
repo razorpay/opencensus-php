@@ -24,6 +24,51 @@ return [
         ],
     ],
 
+    'testArchiveAndCreateNewAccount' => [
+        'request'  => [
+            'url'     => '/bas/archive',
+            'method'  => 'POST',
+            'content' => [
+                Constants::ACCOUNT_NUMBER => '12345678903833',
+                Constants::CHANNEL        => 'icici',
+            ]
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testArchive' => [
+        'request'  => [
+            'url'     => '/bas/archive',
+            'method'  => 'POST',
+            'content' => [
+                Constants::ACCOUNT_NUMBER => '12345678903833',
+                Constants::CHANNEL        => 'icici',
+            ]
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testArchiveAndUnArchive' => [
+        'request'  => [
+            'url'     => '/bas/archive',
+            'method'  => 'POST',
+            'content' => [
+                Constants::ACCOUNT_NUMBER => '12345678903833',
+                Constants::CHANNEL        => 'icici',
+            ]
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
     'testCreateBankingEntitiesWithLedgerShadow' => [
         'request'  => [
             'url'     => '/bas/merchant/10000000000000/banking_accounts',

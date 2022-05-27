@@ -24,6 +24,7 @@ use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Merchant\Balance\Entity as BalanceEntity;
 use RZP\Models\BankingAccount\Entity as BankingAccountEntity;
+use RZP\Models\BankingAccountStatement\Details\Status as BankingAccountStatementDetailsStatus;
 
 class Core extends Base\Core
 {
@@ -68,6 +69,23 @@ class Core extends Base\Core
         );
 
         return (strtolower($variant) === 'on');
+    }
+
+    public function removeBusinessId(string $merchantId): array
+    {
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+        /* @var Detail\Entity $merchantDetail */
+        $merchantDetail = $merchant->merchantDetail;
+
+        $this->trace->info(TraceCode::BANKING_ACCOUNT_SERVICE_BUSINESS_ID_UNLINK_REQUEST, [
+            'merchant_id' => $merchantId, 'business_id' => $merchantDetail->getBasBusinessId()]);
+
+        $merchantDetail->setBasBusinessId(null);
+
+        $this->repo->merchant_detail->saveOrFail($merchantDetail);
+
+        return $merchantDetail->toArrayPublic();
     }
 
     public function assignBusinessId(string $merchantId, array $input): array
@@ -224,10 +242,12 @@ class Core extends Base\Core
 
         $ba->setBasCaStatus($status);
 
-        $balance = $this->repo->balance->getBalanceByMerchantIdChannelAndAccountType(
-            $merchantId,
-            Channel::ICICI,
-            'direct');
+
+        // Fetching balance by account number in-case icici have multiple CA's
+        $balance = $this->repo->balance->getBalanceByMerchantIdAccountNumberChannelAndAccountType($merchantId,
+                                                                                       $basBankingAccount['account_number'],
+                                                                                       Channel::ICICI,
+                                                                                       'direct');
 
         $ba->merchant()->associate($merchant);
 

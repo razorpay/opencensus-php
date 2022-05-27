@@ -4285,6 +4285,79 @@ class BankingAccountTest extends TestCase
         $this->assertEquals('api_key_two', $bankingAccountDetails['gateway_value']);
     }
 
+    public function testBankingAccountFetchOnProxyAuthForArchivedCA()
+    {
+        $xBalance1 = $this->fixtures->create('balance',
+                                             [
+                                                 'merchant_id'       => '10000000000000',
+                                                 'type'              => 'banking',
+                                                 'account_type'      => 'shared',
+                                                 'account_number'    => '2224440041626905',
+                                                 'balance'           => 200,
+                                             ]);
+
+        $xBalance2 = $this->fixtures->create('balance',
+                                             [
+                                                 'merchant_id'       => '10000000000000',
+                                                 'type'              => 'banking',
+                                                 'account_type'      => 'direct',
+                                                 'account_number'    => '1234567808',
+                                                 'balance'           => 100000,
+                                             ]);
+
+        $ba1 = $this->fixtures->create('banking_account', [
+            'account_number'        => '2224440041626905',
+            'account_type'          => 'shared',
+            'merchant_id'           => '10000000000000',
+            'channel'               => 'yesbank',
+            'status'                => 'created',
+            'pincode'               => '1',
+            'bank_reference_number' => '',
+            'account_ifsc'          => 'RATN0000156',
+        ]);
+
+        $ba2 = $this->createBankingAccount();
+
+        $this->fixtures->edit('banking_account', $ba1->getId(), [
+            'account_number' => '2224440041626905',
+            'balance_id'     => $xBalance1->getId(),
+        ]);
+
+        $this->fixtures->edit('banking_account', $ba2['id'], [
+            'status'         => 'archived',
+            'account_number' => '1234567808',
+            'balance_id'     => $xBalance2->getId(),
+        ]);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testBankingAccountFetchOnProxyAuthForOnlyOneArchivedCA()
+    {
+        $xBalance2 = $this->fixtures->create('balance',
+                                             [
+                                                 'merchant_id'       => '10000000000000',
+                                                 'type'              => 'banking',
+                                                 'account_type'      => 'direct',
+                                                 'account_number'    => '1234567808',
+                                                 'balance'           => 100000,
+                                             ]);
+
+        $ba2 = $this->createBankingAccount();
+
+        $this->fixtures->edit('banking_account', $ba2['id'], [
+            'status'         => 'archived',
+            'account_number' => '1234567808',
+            'balance_id'     => $xBalance2->getId(),
+        ]);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
     public function testBankingAccountFetchOnProxyAuth()
     {
         $xBalance1 = $this->fixtures->create('balance',
@@ -6994,6 +7067,86 @@ class BankingAccountTest extends TestCase
             $mail->build();
             return $mail->hasTo('superadmin@razorpay.com');
         });
+    }
+
+    public function createMerchantAttribute(string $merchant_id, string $product, string $group, string $type, string $value)
+    {
+        $this->fixtures->create('merchant_attribute',
+                                [
+                                    'merchant_id'   => $merchant_id,
+                                    'product'       => $product,
+                                    'group'         => $group,
+                                    'type'          => $type,
+                                    'value'         => $value,
+                                    'updated_at'    => time(),
+                                    'created_at'    => time()
+                                ]);
+    }
+
+    public function testArchiveAccount()
+    {
+        $this->createMerchantAttribute('10000000000000', 'banking', 'x_merchant_current_accounts', 'ca_allocated_bank', 'RBL');
+
+        $this->createMerchantAttribute('10000000000000', 'banking', 'x_merchant_current_accounts', 'ca_proceeded_bank', 'RBL');
+
+        $bankingAccount = $this->createBankingAccount();
+
+        $dataToReplace  = [
+            'request' => [
+                'url'     => '/banking_accounts/' . $bankingAccount['id'],
+                'method'  => 'PATCH',
+                'content' => [
+                    Entity::STATUS => Status::ARCHIVED,
+                ],
+            ],
+        ];
+
+        $this->ba->adminAuth();
+
+        $response = $this->startTest($dataToReplace);
+
+        $this->assertEquals(Status::ARCHIVED, $response[Entity::STATUS]);
+    }
+
+    public function testArchiveAccountForActivatedAccount()
+    {
+        $this->createMerchantAttribute('10000000000000', 'banking', 'x_merchant_current_accounts', 'ca_allocated_bank', 'RBL');
+
+        $this->createMerchantAttribute('10000000000000', 'banking', 'x_merchant_current_accounts', 'ca_proceeded_bank', 'RBL');
+
+        $this->testActivate();
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $dataToReplace  = [
+            'request' => [
+                'url'     => '/banking_accounts/' . $bankingAccount->getPublicId(),
+                'method'  => 'PATCH',
+                'content' => [
+                    Entity::STATUS => Status::ARCHIVED,
+                ],
+            ],
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->startTest($dataToReplace);
+
+        $balance = $this->getDbEntity('balance',
+                                      [
+                                          'merchant_id'    => '10000000000000',
+                                          'channel'        => 'rbl',
+                                          'account_type'   => 'direct',
+                                      ]);
+
+        $basd = $this->getDbEntity('banking_account_statement_details',
+                                   [
+                                       'merchant_id'    => '10000000000000',
+                                       'channel'        => 'rbl',
+                                       'balance_id'     => $balance->getId(),
+                                   ]);
+
+        $this->assertEquals('archived', $basd->getStatus());
     }
 
     protected function enableRazorXTreatmentForXOnboarding($ledgerOnboardingValue = 'control',

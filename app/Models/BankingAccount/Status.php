@@ -218,7 +218,9 @@ class Status
             self::PICKED,
         ],
 
-        self::ACTIVATED => [],
+        self::ACTIVATED => [
+            self::ARCHIVED
+        ],
         self::CANCELLED => [
             // Sometimes Sales team is able to revive leads who
             // had earlier cancelled their request. This is to

@@ -6742,7 +6742,6 @@ alter table
 add
   column audit_id char(14) COLLATE utf8mb4_bin DEFAULT NULL;
 
-
 ALTER TABLE merchant_attributes modify value varchar(255) null;
 
 ALTER TABLE coupons ADD COLUMN is_internal tinyint(1) DEFAULT 0;

@@ -135,4 +135,25 @@ class Core extends Base\Core
 
         return $basDetail;
     }
+
+    private function updateStatementDetailsStatus(Entity $basDetailObj, string $status): Entity
+    {
+        (new Validator)->setStrictFalse()->validateInput(Validator::STATUS_UPDATE_RULES, array("status" => $status));
+        $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_DETAILS_UPDATE_STATE,
+                           array(Entity::STATUS => $status));
+        $basDetailObj->setStatus($status);
+        $this->repo->saveOrFail($basDetailObj);
+
+        return $basDetailObj;
+    }
+
+    public function archiveStatementDetail(Entity $basDetailObj)
+    {
+        return $this->updateStatementDetailsStatus($basDetailObj, Status::ARCHIVED);
+    }
+
+    public function activateStatementDetail(Entity $basDetailObj)
+    {
+        return $this->updateStatementDetailsStatus($basDetailObj, Status::ACTIVE);
+    }
 }

@@ -52,11 +52,7 @@ class L2SubmissionWhitelist extends Mailable
         {
             $merchant = $this->getMerchant();
 
-            // todo, need a better way to determine which banking account.
-            // right now, this is part of on-boarding flow, and only a VA banking account will be present.
-            // and we will be picking up the first one. This may be a problem when we start sending activation emails
-            // for new banking accounts
-            $this->bankingAccount = $merchant->bankingAccounts->first();
+            $this->bankingAccount = $merchant->vaBankingAccounts()->first();
         }
 
         return $this->bankingAccount;

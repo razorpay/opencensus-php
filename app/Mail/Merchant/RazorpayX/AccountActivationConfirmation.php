@@ -50,7 +50,7 @@ class AccountActivationConfirmation extends Mailable
         if ($this->merchant === null)
         {
             $repo = App::getFacadeRoot()['repo'];
-            
+
             $this->merchant = $repo->merchant->find($this->merchantId);
         }
 
@@ -61,11 +61,7 @@ class AccountActivationConfirmation extends Mailable
     {
         $merchant = $this->getMerchant();
 
-        // todo, need a better way to determine which banking account.
-        // right now, this is part of on-boarding flow, and only a VA banking account will be present.
-        // and we will be picking up the first one. This may be a problem when we start sending activation emails
-        // for new banking accounts
-        return $merchant->bankingAccounts->first();
+        return $merchant->vaBankingAccounts()->first();
     }
 
     protected function addSender()

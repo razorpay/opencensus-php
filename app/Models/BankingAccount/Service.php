@@ -32,7 +32,6 @@ use RZP\Models\BankingAccount\Activation\Notification\Event;
 use RZP\Models\BankingAccount\Activation\Detail as ActivationDetail;
 use RZP\Models\BankingAccount\Gateway\Rbl\RequestResponseFormatting;
 use RZP\Mail\BankingAccount\StatusNotificationsToSPOC\DiscrepancyInDoc;
-use RZP\Mail\BankingAccount\StatusNotificationsToSPOC\MerchantNotAvailable;
 use RZP\Mail\BankingAccount\StatusNotificationsToSPOC\MerchantPreparingDoc;
 
 class Service extends Base\Service
@@ -271,6 +270,10 @@ class Service extends Base\Service
             }
         }
 
+        if ($this->checkIfAccountIsArchived($previousStatus, $input)) {
+            $this->archiveBankingAccount($bankingAccount->getId(), array(Entity::CHANNEL => Channel::RBL, Base\PublicEntity::MERCHANT_ID => $account->getMerchantId()));
+        }
+
         return $account->toArrayPublic();
     }
 
@@ -386,7 +389,7 @@ class Service extends Base\Service
         return ['success' => true];
     }
 
-    public function fetchMultiple()
+    public function fetchMultiple(): array
     {
         $bankingAccounts = $this->merchant->bankingAccounts;
 
@@ -1301,6 +1304,36 @@ class Service extends Base\Service
                 Mail::queue($mailable);
             }
         }
+    }
+
+    /**
+     *
+     * @param string $bankingAccountId
+     * @param array $input
+     * @return array
+     */
+
+    public function archiveBankingAccount(string $bankingAccountId, array $input): array
+    {
+        (new Validator)->setStrictFalse()->validateInput(Validator::ARCHIVE_ACCOUNT, $input);
+
+        $bankingAccount = $this->repo->banking_account->findOrFail($bankingAccountId);
+
+        $balance = null;
+
+        if ($bankingAccount->getBalanceId() !== null)
+        {
+            $balance = $this->repo->balance->find($bankingAccount->getBalanceId());
+        }
+
+        return $this->core->archiveBankingAccount($balance);
+    }
+
+    private function checkIfAccountIsArchived(string $previousStatus, array $input): bool
+    {
+        return (isset($input[Entity::STATUS])) and
+               ($input[Entity::STATUS] == Status::ARCHIVED) and
+               ($previousStatus != $input[Entity::STATUS]);
     }
 
     /**

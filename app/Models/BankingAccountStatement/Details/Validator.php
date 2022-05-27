@@ -7,6 +7,7 @@ use RZP\Base;
 class Validator extends Base\Validator
 {
     const PRE_FETCH_RULES = 'pre_fetch';
+    const STATUS_UPDATE_RULES = 'status_update';
 
     protected static $createRules = [
         Entity::BALANCE_ID                          => 'required|size:14',
@@ -22,6 +23,10 @@ class Validator extends Base\Validator
     protected static $preFetchRules = [
         Entity::CHANNEL             => 'required|custom',
         Entity::ACCOUNT_NUMBER      => 'required|string|max:40',
+    ];
+
+    protected static $statusUpdateRules = [
+        Entity::STATUS => 'required|custom'
     ];
 
     protected function validateChannel($attribute, $channel)

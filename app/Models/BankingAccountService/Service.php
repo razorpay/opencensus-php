@@ -718,6 +718,44 @@ class Service extends Base\Service
         return $this->core()->sendRblApplicationInProgressLeadsToSalesForce();
     }
 
+    public function archiveBankingAccount(array $input): array
+    {
+        $balanceId = $input[Constants::BALANCE_ID];
+
+        $balance = null;
+
+        if ($balanceId !== '')
+        {
+            $balance = $this->repo->balance->find($balanceId);
+        }
+
+        $this->core()->removeBusinessId($input[Constants::MERCHANT_ID]);
+
+        (new \RZP\Models\BankingAccount\Core())->archiveBankingAccount($balance);
+
+        return ['success' => true];
+    }
+
+    public function unArchiveBankingAccount(array $input): array
+    {
+        $merchant = $this->repo->merchant->find($input[Constants::MERCHANT_ID]);
+
+        $this->core()->assignBusinessId($input[Constants::MERCHANT_ID], $input);
+
+        (new Merchant\Attribute\Core())->updateMerchantAttributeByGroupTypesAndValue(
+            $merchant->getMerchantId(),
+            Merchant\Attribute\Group::X_MERCHANT_CURRENT_ACCOUNTS,
+            [
+                Merchant\Attribute\Type::CA_ALLOCATED_BANK,
+                Merchant\Attribute\Type::CA_PROCEEDED_BANK
+            ],
+            'ICICI'
+        );
+
+
+        return ['success' => true];
+    }
+
     public function getFreeSlotForBankingAccount($input): array
     {
         $path = 'booking/slot/availableSlots';
