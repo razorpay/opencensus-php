@@ -462,6 +462,11 @@ return [
             '2aTeFCKTYWwfrF',   // RZP Demo Merchant
             'FBYspBmKlWefX9'    // Akshata's Merchant (aka Furlenco Test Merchant)
         ],
+        'recurring_okicici_test_merchants'    => [
+            'EOQRaXICwJIuoy',   // Srikant's Test Merchant
+            '2aTeFCKTYWwfrF',   // RZP Demo Merchant
+            'FBYspBmKlWefX9'    // Akshata's Merchant (aka Furlenco Test Merchant)
+        ],
     ],
 
     'upi_axis' => [

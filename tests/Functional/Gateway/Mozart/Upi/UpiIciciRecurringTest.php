@@ -256,7 +256,8 @@ class UpiIciciRecurringTest extends UpiInitialRecurringTestCase
     {
         $cases = [];
 
-        $cases['oksbi_allow'] = ['razorpay@oksbi'];
+        $cases['oksbi_allow']   = ['razorpay@oksbi'];
+        $cases['okicici_allow'] = ['razorpay@okicici'];
 
         return $cases;
     }

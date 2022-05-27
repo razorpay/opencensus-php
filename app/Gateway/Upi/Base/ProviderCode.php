@@ -527,18 +527,25 @@ class ProviderCode
     {
         $vpaHandle  = substr($vpa, (strpos($vpa, '@') + 1));
         $isValid    = false;
+        $key = null;
 
         switch ($vpaHandle)
         {
+            // For GooglePay's Testing
             case self::OKSBI:
-                // For GooglePay's Testing
                 $key            = 'gateway.upi_icici.recurring_' . self::OKSBI . '_test_merchants';
-                $merchantIds    = app('config')->get($key);
-                $isValid        = (in_array($mid, $merchantIds, true) === true);
-
+                break;
+            case self::OKICICI:
+                $key            = 'gateway.upi_icici.recurring_' . self::OKICICI . '_test_merchants';
                 break;
             default:
                 $isValid = false;
+        }
+
+        if (is_null($key) === false)
+        {
+            $merchantIds        = app('config')->get($key);
+            $isValid            = (in_array($mid, $merchantIds, true) === true);
         }
 
         app('trace')->info(TraceCode::MISC_TRACE_CODE, [
