@@ -60,7 +60,7 @@ class BankCodes
     const IFSC_IDFB = 'IDFB0010201';
     const IFSC_IDIB = 'IDIB0NEFTMU';
     const IFSC_INDB = 'INDB0000006';
-    const IFSC_IOBA = 'IOBA0001548';
+    const IFSC_IOBA = 'IOBA0002897';
     const IFSC_IPOS = 'IPOS0000001';
     const IFSC_JAKA = 'JAKA0FRABAD';
     const IFSC_JANA = 'JANA0000001';

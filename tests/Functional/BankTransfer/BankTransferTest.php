@@ -964,7 +964,7 @@ class BankTransferTest extends TestCase
                                             [
                                                 'balance_id' => $balance1->getId(),
                                                 'status'     => 'approved',
-                                                'payer_ifsc' => 'HDFC0000001',
+                                                'payer_ifsc' => 'IOBA0002897',
                                                 'payer_account_number' => '9876543210123456789'
                                             ]);
 
@@ -981,10 +981,12 @@ class BankTransferTest extends TestCase
         $this->assertTrue($response['valid']);
         $this->assertEquals($request['content']['transaction_id'], $response['transaction_id']);
 
-        $bankTransfer =  $this->getLastEntity('bank_transfer', true, 'live');
+        $bankTransfer =  $this->getDbLastEntity('bank_transfer',  'live');
 
         $this->assertEquals(5000000, $bankTransfer['amount']);
-        $this->assertEquals("HDFC0000001", $bankTransfer['payer_ifsc']);
+        $this->assertEquals("9020", $bankTransfer['payer_ifsc']);
+
+        $this->assertEquals("IOBA0002897", $bankTransfer->payerBankAccount['ifsc_code']);
     }
 
     public function testBankTransferImpsUnmappedBankCode()
