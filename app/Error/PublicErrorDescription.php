@@ -119,7 +119,7 @@ class PublicErrorDescription
     const BAD_REQUEST_TOKEN_NOT_ENABLED_FOR_RECURRING                           = 'Invalid token has been passed for recurring payment';
     const BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS                     = 'Request failed because another payment operation is in progress';
     const BAD_REQUEST_TOKEN_UPDATION_OPERATION_IN_PROGRESS                      = 'Request failed because token updation is in progress';
-    const BAD_REQUEST_ANOTHER_OPERATION_PROGRESS_SAME_IDEM_KEY                  = 'Request failed because another request is in progress with the same Idempotency Key';
+    const SERVER_ERROR_ANOTHER_OPERATION_PROGRESS_SAME_IDEM_KEY                 = 'Request failed because another request is in progress with the same Idempotency Key';
     const BAD_REQUEST_UPDATE_EXPIRED_TOKEN                                      = 'Token updation failed because token is expired';
     const BAD_REQUEST_UPDATE_NOT_CONFIRMED_TOKEN                                = 'Token updation failed because token is not confirmed';
     const BAD_REQUEST_ANOTHER_FTA_RECONCILIATION_OPERATION_IN_PROGRESS          = 'Request failed because another operation is in progress';

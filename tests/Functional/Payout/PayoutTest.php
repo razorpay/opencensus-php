@@ -74,6 +74,7 @@ use RZP\Mail\Transaction\Payout as PayoutMail;
 use RZP\Tests\Functional\OAuth\OAuthTestCase;
 use RZP\Tests\Functional\Helpers\WebhookTrait;
 use RZP\Models\BankingAccountStatement\Details;
+use RZP\Services\Mock\Mutex as MockMutexService;
 use RZP\Jobs\PayoutPostCreateProcessLowPriority;
 use RZP\Models\Reversal\Entity as ReversalEntity;
 use RZP\Jobs\FTS\FundTransfer as FtsFundTransferJob;
@@ -700,6 +701,30 @@ class PayoutTest extends OAuthTestCase
         $ikeys = $this->getDbEntities(Constants\Entity::IDEMPOTENCY_KEY);
 
         $this->assertCount(1, $ikeys);
+    }
+
+
+    public function testCreatePayoutWithIKeyInProgress()
+    {
+        $mockMutex = new MockMutexService($this->app);
+
+        $this->app->instance('api.mutex', $mockMutex);
+
+        $mutex = $this->app['api.mutex'];
+
+        $headers = $this->testData[__FUNCTION__]['request']['server'];
+
+        $idempotencyKey = $headers['HTTP_' . RequestHeader::X_PAYOUT_IDEMPOTENCY];
+
+        $this->ba->privateAuth();
+
+        $mutex->acquireAndRelease(
+            $idempotencyKey.'10000000000000',
+            function () use ($idempotencyKey)
+            {
+              $this->startTest($this->testData['testCreatePayoutWithIKeyInProgress']);
+            },
+            120);
     }
 
     public function testCreateTwoPayoutsWithDiffIKey()

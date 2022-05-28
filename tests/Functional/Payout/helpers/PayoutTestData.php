@@ -568,6 +568,42 @@ return [
         ],
     ],
 
+    'testCreatePayoutWithIKeyInProgress' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'server'  => [
+                'HTTP_X-Payout-Idempotency'  => 'samekey'
+            ],
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 100,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'IMPS',
+                'fund_account_id' => 'fa_100000000000fa',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::SERVER_ERROR,
+                    'description' => 'Request failed because another request is in progress with the same Idempotency Key',
+                    'reason'      => 'idempotency_key_in_use'
+                ],
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::SERVER_ERROR_ANOTHER_OPERATION_PROGRESS_SAME_IDEM_KEY,
+        ],
+    ],
+
     'testCreateTwoPayoutsWithSameIKeyDiffRequest' => [
         'request'  => [
             'method'  => 'POST',

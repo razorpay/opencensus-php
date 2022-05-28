@@ -164,7 +164,7 @@ class MerchantIdempotencyHandler
                 return $next($request);
             },
             static::MUTEX_LOCK_TTL,
-            ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_PROGRESS_SAME_IDEM_KEY
+            ErrorCode::SERVER_ERROR_ANOTHER_OPERATION_PROGRESS_SAME_IDEM_KEY
         );
 
         return $lockResponse;

@@ -725,7 +725,7 @@ class Error extends Support\Fluent
         else if ($this->product === Product::BANKING)
         {
             $error[self::STEP]   = null;
-            $error[self::REASON] = null;
+            $error[self::REASON] = $this->getAttribute(self::REASON)?? null;
             $error[self::SOURCE] = null;
         }
 

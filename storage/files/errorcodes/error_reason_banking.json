@@ -237,5 +237,11 @@
     "description": "",
     "source": "internal",
     "reason": "server_error"
+  },
+
+  "SERVER_ERROR_ANOTHER_OPERATION_PROGRESS_SAME_IDEM_KEY": {
+    "description": "Request failed because another request is in progress with the same Idempotency Key",
+    "source": null,
+    "reason": "idempotency_key_in_use"
   }
 }
