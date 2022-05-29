@@ -4129,7 +4129,12 @@ class BusinessSubCategoryMetaData
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
         ],
-        Sub::OTHERS => [],
+        Sub::OTHERS => [
+            self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::OTHERS],
+            self::DISPLAY_ORDER                     => 1,
+            Entity::ACTIVATION_FLOW                 => null,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => null,
+        ],
     ];
 
     /**

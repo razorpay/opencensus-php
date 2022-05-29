@@ -34,24 +34,24 @@ class BusinessParentCategory
 
     // Business L0-Category Descriptions
     const DESCRIPTIONS = [
-        self::RETAIL_STORE                          =>  'Retail Store',
-        self::ONLINE_STORE_MARKETPLACE              =>  'Online Store / Marketplace',
+        self::RETAIL_STORE                          =>  'Physical retail store',
+        self::ONLINE_STORE_MARKETPLACE              =>  'Online store',
         self::EDUCATION                             =>  'Education',
-        self::SERVICE_PROVIDER                      =>  'Service Provider',
-        self::FINANCIAL_SERVICES                    =>  'Financial Services',
-        self::FOOD                                  =>  'Food & Beverages',
-        self::INFLUENCER_ARTIST_CONTENT_CREATOR     =>  'Influencer / Artist / Content Creator',
-        self::MEDIA_AND_ENTERTAINMENT               =>  'Media/ Entertainment / Events',
-        self::TECH_SERVICE_AND_FREELANCER           =>  'Tech Services / Tech Freelancer',
-        self::TECH_PRODUCT                          =>  'Tech Products',
-        self::HEALTHCARE_WELLNESS_FITNESS           =>  'Healthcare / Fitness / Wellness',
-        self::NOT_FOR_PROFIT                        =>  'Charity / NGO',
-        self::GOVERNMENT                            =>  'Government',
-        self::UTILITIES_BILLS_PAYMENTS              =>  'Utilities / Bill Payments',
-        self::HOUSING                               =>  'Real Estate / Office Space / Rentals',
-        self::TRAVEL_AND_TRANSPORT                  =>  'Travel & Transport',
-        self::SOCIAL                                =>  'Social',
-        self::OTHERS                                =>  'Others',
+        self::SERVICE_PROVIDER                      =>  'Services',
+        self::FINANCIAL_SERVICES                    =>  'Financial product or service',
+        self::FOOD                                  =>  'Food and beverages',
+        self::INFLUENCER_ARTIST_CONTENT_CREATOR     =>  'Artist, content creator, or influencer',
+        self::MEDIA_AND_ENTERTAINMENT               =>  'Media and entertainment',
+        self::TECH_SERVICE_AND_FREELANCER           =>  'Tech services',
+        self::TECH_PRODUCT                          =>  'Tech products',
+        self::HEALTHCARE_WELLNESS_FITNESS           =>  'Healthcare, fitness, or wellness',
+        self::NOT_FOR_PROFIT                        =>  'Nonprofit',
+        self::GOVERNMENT                            =>  'Public sector',
+        self::UTILITIES_BILLS_PAYMENTS              =>  'Utilities provider',
+        self::HOUSING                               =>  'Real estate, housing, rentals',
+        self::TRAVEL_AND_TRANSPORT                  =>  'Transport or travel',
+        self::SOCIAL                                =>  'Social group or platform',
+        self::OTHERS                                =>  'Other',
     ];
 
     const DISPLAY_ORDER_LIST = [
@@ -77,7 +77,6 @@ class BusinessParentCategory
 
     const CATEGORY_MAP = [
         self::RETAIL_STORE => [
-            Category::ECOMMERCE,
             Category::FASHION_AND_LIFESTYLE,
             Category::GROCERY,
             Category::DROP_SHIPPING,
@@ -87,7 +86,6 @@ class BusinessParentCategory
         self::ONLINE_STORE_MARKETPLACE => [
             Category::ECOMMERCE,
             Category::FASHION_AND_LIFESTYLE,
-            Category::GROCERY,
             Category::COUPONS,
             Category::GAMING,
             Category::DROP_SHIPPING,
@@ -99,8 +97,6 @@ class BusinessParentCategory
         self::SERVICE_PROVIDER => [
             Category::SERVICES,
             Category::CONSULTING_AND_OUTSOURCING,
-            Category::SERVICE_CENTRE,
-            Category::TELECOMMUNICATION_SERVICE,
         ],
         self::FINANCIAL_SERVICES => [
             Category::FINANCIAL_SERVICES,
@@ -122,7 +118,6 @@ class BusinessParentCategory
             Category::GAMING,
             Category::PAAS,
             Category::SAAS,
-            Category::TELECOMMUNICATION_SERVICE
         ],
         self::TECH_PRODUCT => [
             Category::IT_AND_SOFTWARE,
@@ -133,7 +128,6 @@ class BusinessParentCategory
         ],
         self::HEALTHCARE_WELLNESS_FITNESS => [
             Category::HEALTHCARE,
-            Category::HEALTH_COACHING,
         ],
         self::NOT_FOR_PROFIT => [
             Category::NOT_FOR_PROFIT,
@@ -143,14 +137,12 @@ class BusinessParentCategory
         ],
         self::UTILITIES_BILLS_PAYMENTS => [
             Category::UTILITIES,
-            Category::UTILITIES_ELECTRIC_GAS_OIL_WATER,
         ],
         self::HOUSING => [
             Category::HOUSING,
         ],
         self::TRAVEL_AND_TRANSPORT => [
             Category::REPAIR_AND_CLEANING,
-            Category::CAB_HAILING,
             Category::LOGISTICS,
             Category::TOURS_AND_TRAVEL,
             Category::TRANSPORT,

@@ -1175,16 +1175,13 @@ class Service extends Base\Service
                 {
                     $subcategoryMetaDataFields = BusinessCategoriesV2\BusinessSubCategoryMetaData::SUB_CATEGORY_METADATA[$subCategory];
 
-                    if ($this->isSubcategoryToBeShownOnDashboard($subcategoryMetaDataFields) === true)
-                    {
-                        $subCategoriesMetaData[] = [
-                            BusinessCategoriesV2\BusinessSubCategoryMetaData::SUBCATEGORY_NAME               => $subcategoryMetaDataFields[BusinessCategoriesV2\BusinessSubCategoryMetaData::DESCRIPTION],
-                            BusinessCategoriesV2\BusinessSubCategoryMetaData::SUBCATEGORY_VALUE              => $subCategory,
-                            Entity::ACTIVATION_FLOW                                                          => $subcategoryMetaDataFields[Entity::ACTIVATION_FLOW],
-                            BusinessCategoriesV2\BusinessSubCategoryMetaData::NON_REGISTERED_ACTIVATION_FLOW => $subcategoryMetaDataFields[BusinessCategoriesV2\BusinessSubCategoryMetaData::NON_REGISTERED_ACTIVATION_FLOW],
-                            BusinessCategoriesV2\BusinessSubCategoryMetaData::DISPLAY_ORDER                  => $subcategoryMetaDataFields[BusinessCategoriesV2\BusinessSubCategoryMetaData::DISPLAY_ORDER],
-                        ];
-                    }
+                    $subCategoriesMetaData[] = [
+                        BusinessCategoriesV2\BusinessSubCategoryMetaData::SUBCATEGORY_NAME => $subcategoryMetaDataFields[BusinessCategoriesV2\BusinessSubCategoryMetaData::DESCRIPTION],
+                        BusinessCategoriesV2\BusinessSubCategoryMetaData::SUBCATEGORY_VALUE => $subCategory,
+                        Entity::ACTIVATION_FLOW => $subcategoryMetaDataFields[Entity::ACTIVATION_FLOW],
+                        BusinessCategoriesV2\BusinessSubCategoryMetaData::NON_REGISTERED_ACTIVATION_FLOW => $subcategoryMetaDataFields[BusinessCategoriesV2\BusinessSubCategoryMetaData::NON_REGISTERED_ACTIVATION_FLOW],
+                        BusinessCategoriesV2\BusinessSubCategoryMetaData::DISPLAY_ORDER => $subcategoryMetaDataFields[BusinessCategoriesV2\BusinessSubCategoryMetaData::DISPLAY_ORDER],
+                    ];
                 }
 
                 array_multisort(array_column($subCategoriesMetaData, BusinessCategoriesV2\BusinessSubCategoryMetaData::DISPLAY_ORDER), $subCategoriesMetaData);
