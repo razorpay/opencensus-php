@@ -28,6 +28,7 @@ class Constants
     const RECURRING                       = 'recurring';
     const S2S                             = 's2s';
     const S2S_JSON                        = 's2s_json';
+    const S2S_DISABLE_CARDS               = 's2s_disable_cards';
     const INVOICE                         = 'invoice';
     const NOZEROPRICING                   = 'nozeropricing';
     const REVERSE                         = 'reverse';
@@ -1405,6 +1406,7 @@ class Constants
         self::NOFLASHCHECKOUT                 => true,
         self::RECURRING                       => true,
         self::S2S                             => true,
+        self::S2S_DISABLE_CARDS               => true,
         self::INVOICE                         => true,
         self::NOZEROPRICING                   => false,
         self::REVERSE                         => true,
