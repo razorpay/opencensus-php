@@ -399,12 +399,16 @@ class Core extends Base\Core
             }
         }
 
-        return [
+        $shippingResponse = [
             'serviceable'  => true,
             'shipping_fee' => intval($bestRate)*100,
             'cod'          => $hasCod,
             'cod_fee'      => $codFee === null ? $codFee : intval($codFee)*100,
         ];
+
+        (new ShippingRates)->forceEnableCODIfApplicable($shippingResponse);
+
+        return $shippingResponse;
     }
 
     protected function isMaybeCod(array $rate): bool

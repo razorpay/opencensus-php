@@ -164,6 +164,7 @@ class Service extends Base\Service
 
             $platformConfig = $this->merchant->getMerchantPlatformConfig();
 
+            // shopify configs take priority over all Rzp serviceability features
             if ($platformConfig !== null and $platformConfig->getValue() === Merchant1ccConfig\Type::SHOPIFY)
             {
                 $this->trace->count(Metric::MERCHANT_SHIPPING_INFO_SHOPIFY_CALL_COUNT, array_merge(
