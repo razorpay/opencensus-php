@@ -38,6 +38,7 @@ class Issuer
     const IDIB = 'IDIB';    // Indian Bank
     const JAKA = 'JAKA';    // Jammu And Kashmir Bank Ltd
     const LAVB = 'LAVB';    // Laxmi Vilas Bank Ltd
+    const AUBL = 'AUBL';    // AU small finance bank
 
     protected static $issuers = [
         self::ALLA,
@@ -75,6 +76,7 @@ class Issuer
         self::IDIB,
         self::JAKA,
         self::LAVB,
+        self::AUBL,
     ];
 
     public static function getAllIssuers():array

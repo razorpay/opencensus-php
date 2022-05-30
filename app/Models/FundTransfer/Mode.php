@@ -214,6 +214,12 @@ class Mode extends Core
             ]
         ],
 
+        Issuer::AUBL => [
+            Attempt\Constants::DEFAULT_NETWORK => [
+                self::NEFT
+            ]
+        ],
+
         /*
         This is declared as a default issuer for those Amex network cards that don't have any issuer in order to check
         which payout modes are supported for such cards. Their issuer remains null only, we just validate mode based on
