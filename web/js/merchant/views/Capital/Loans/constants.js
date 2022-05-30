@@ -64,6 +64,7 @@ export const APPLICATION_STATES = {
   CREDIT_DISBURSED: 'CREDIT_DISBURSED',
   RZP_REJECTED: 'RZP_REJECTED',
   CLOSED: 'CLOSED',
+  STATE_REJECTED: 'STATE_REJECTED',
 };
 
 export const APPLICATION_STATE_SEQUENCE = [
@@ -125,7 +126,7 @@ export const APPLICATION_DISABLED_STATES = {
       'Avoid bad debts & make EMI payments on time',
       'Application must be submited with major stakeholder details',
     ],
-    subTitle: 'What’s SHOULD YOU DO Next',
+    subTitle: 'What SHOULD YOU DO Next',
     action_point:
       "Please submit a fresh application when you are ready. We'll be more than happy to serve you again.",
     ctaText: 'Apply for',
@@ -134,7 +135,7 @@ export const APPLICATION_DISABLED_STATES = {
     title: 'Your application is closed due to inactivity',
     description:
       "We haven't heard back from your since this application was created. Hence we have closed it.",
-    subTitle: 'What’s SHOULD YOU DO Next',
+    subTitle: 'What SHOULD YOU DO Next',
     action_point:
       'Please submit a fresh application when you are ready and. We’d be would be happy to serve you again.',
     ctaText: 'Apply for',
@@ -696,3 +697,5 @@ export const REPAYMENT_FILTER_STATUS_OPTIONS = {
   [REPAYMENT_STATUES.STATUS_COLLECTED]: STATUS_LABELS[[REPAYMENT_STATUES.STATUS_COLLECTED]],
   [REPAYMENT_STATUES.STATUS_FAILED]: STATUS_LABELS[[REPAYMENT_STATUES.STATUS_FAILED]],
 };
+
+export const APPLICATION_NOT_SUBMITTED = 'record not found';

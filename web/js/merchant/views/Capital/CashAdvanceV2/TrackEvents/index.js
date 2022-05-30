@@ -39,11 +39,11 @@ export const trackApplyNow = () =>
     screen: 'Cash Advance || Home Screen',
   });
 
-export const trackContinueNow = () =>
+export const trackApplicationStatus = (objectName) =>
   trackEvent({
-    objectName: 'Continue Application',
+    objectName,
     actionName: 'Clicked',
-    screen: 'Cash Advance || Home Screen || Continue Application',
+    screen: 'Cash Advance || Home Screen',
   });
 
 export const trackLandingOnCashAdvanceV1 = () =>

@@ -1,0 +1,105 @@
+.multi-wrapper 
+  position: relative
+  padding: 0 40px 32px
+
+  .title 
+    color: #fff
+    font-weight: 700
+    font-size: 16px
+
+  .subtext 
+    font-size: 12px
+    color: #D1D2DA
+    font-weight: 400
+
+  button 
+    padding: 10px 20px
+    height: 40px
+    font-size: 14px
+    margin-top: 10px
+    line-height: unset
+    border: none
+
+  .sub-step-wrapper 
+    margin-left: 24px
+    padding-left: 5px
+
+    &.review 
+      padding: 32px 0 0 5px
+
+      .sub-step-key 
+        span 
+          left: -24px
+
+    .sub-step-key 
+      margin: 12px 0
+      color: #8F93A4
+      position: relative
+
+      > span 
+        position: absolute
+        left: -24px
+
+        &.sub-parent-line 
+          height: 100%
+          border: 1px solid #008659
+          top: 18px
+          left: -17px
+
+          &.review 
+            width: 35px
+            left: -53px
+            height: 0
+            top: 12px
+
+          &.last-step 
+            display: none
+          
+        &.currentStep, &.lockedStep 
+          .sub-parent-line 
+            border: 1px dashed #8F93A4
+
+    .sub-step-key 
+      &.currentStep 
+        color: #D1D2DA
+        font-weight: 700
+
+        .sub-parent-line 
+          border: 1px dashed #8F93A4
+
+  span 
+    position: absolute
+    left: 8px
+
+    &.pendingStep 
+      left: 3px
+    
+
+    &.parent-line 
+      position: absolute
+      top: 21px
+      height: 95%
+      left: 15px
+      border: 1px solid #4F546E
+
+      &.review 
+        height: 77px
+        border-color: green
+
+  &.lockedStep 
+    .title, .subtext 
+      color: #8F93A4 !important
+
+  .last-parent 
+    display: none
+
+.slide-up-appear 
+  opacity: 0
+  z-index: 1
+  height: 0
+
+.slide-up-appear.slide-up-appear-active 
+  opacity: 1
+  height: auto
+  transition: all 500ms
+

@@ -29,4 +29,25 @@ WrappedComponent.propTypes = {
 };
 
 const CardComponent = memo(WrappedComponent);
-export default CardComponent;
+
+const CardsCollection = (props) => {
+  const { cardRecords = [] } = props;
+  return (
+    <div className="card-section-wrapper">
+      {cardRecords?.map((item, index) => {
+        return (
+          <CardComponent
+            key={index}
+            title={item.title}
+            subTitle={item.subTitle}
+            imagePath={item.imagePath}
+          />
+        );
+      })}
+    </div>
+  );
+};
+
+const MemoizedCardsCollection = memo(CardsCollection);
+
+export default MemoizedCardsCollection;

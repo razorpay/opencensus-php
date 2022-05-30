@@ -1,7 +1,6 @@
 import LoanOrigination from 'merchant/models/Capital/LoanOrigination';
 import { merge } from 'common/utils/immutable';
 import ConfigFactory from '../../views/Capital/ConfigFactory';
-import { GA_CATEGORY_BY_PRODUCT } from '../../views/Capital/Loans/constants';
 
 const FETCH_SEED_DATA = 'FETCH_SEED_DATA';
 const FETCH_PRODUCTS = 'FETCH_PRODUCTS';
@@ -279,6 +278,11 @@ export const createNach = (payload) => {
   return loanApplication.createNach(payload);
 };
 
+export const getApplicationByParamData = (data) => {
+  const loanApplication = new LoanOrigination();
+  return loanApplication.fetchLoanApplicationByParam(data);
+};
+
 export const changeActiveState = (state, data = null) => {
   return {
     type: 'CHANGE_ACTIVE_STATE',
@@ -352,7 +356,7 @@ export const registerProduct = (product) => {
 
 const initialState = getInitialState();
 
-export default function (state = initialState, action) {
+const reducer = (state = initialState, action) => {
   switch (action.type) {
     case RESET_CAPITAL_LENDING_DATA:
       return initialState;
@@ -476,7 +480,7 @@ export default function (state = initialState, action) {
 
     case `${SAVE_APPLICATION_DETAILS}::SUCCESS`:
     case `${UPLOAD_PRE_VERIFICATION_DOCUMENTS}::SUCCESS`:
-    case `${FETCH_LOAN_APPLICATION_META}::SUCCESS`:
+    case `${FETCH_LOAN_APPLICATION_META}::SUCCESS`: {
       const { application } = action.payload.data;
       const product = state.products.data.find((p) => p.id === application.product_id).name;
 
@@ -489,6 +493,7 @@ export default function (state = initialState, action) {
           product,
         },
       });
+    }
 
     case `${SAVE_APPLICATION_DETAILS}::ERROR`:
     case `${FETCH_LOAN_APPLICATION_META}::ERROR`:
@@ -863,4 +868,6 @@ export default function (state = initialState, action) {
     default:
       return state;
   }
-}
+};
+
+export default reducer;

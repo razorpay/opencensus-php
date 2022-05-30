@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unsafe */
 import React from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
@@ -321,7 +322,7 @@ export default class LoanApplicationOverview extends React.Component {
     this.gaEventDispatcher({
       eventAction: `Landing Steps | ${_cta}`,
       eventLabel: `${
-        meta.configuration.getApplicationStateDescriptions()[currentStatus].short_description
+        meta?.configuration?.getApplicationStateDescriptions()[currentStatus]?.short_description
       } | ${_targetStepTitle} | ${this.getProgressPercentage()}% | ${
         this.state.applications.length
       }`,
@@ -542,16 +543,11 @@ export default class LoanApplicationOverview extends React.Component {
     const hasApplication = loanApplicationDetails?.meta?.data?.application;
     const isProductCashAdvance = window.location.pathname.includes('cash-advance');
 
-    const parsedMetaData = hasApplication && parseApplicationMetaData(loanApplicationDetails);
-    const status = parsedMetaData && parsedMetaData.status;
-    const applicationRejected = status === APPLICATION_STATES.RZP_REJECTED;
-    const applicationClosed = status === APPLICATION_STATES.CLOSED;
-
     if (isCAXExperimentEnabled && isProductCashAdvance) {
-      const showApplyNow = applicationRejected || applicationClosed || !hasApplication;
+      const showApplyNow = !hasApplication;
       return (
         <SuspenseWithLoader>
-          <CashAdvanceV2 showApplyNow={showApplyNow} />;
+          <CashAdvanceV2 showApplyNow={showApplyNow} applicationId={hasApplication?.id} />
         </SuspenseWithLoader>
       );
     } else

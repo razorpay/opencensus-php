@@ -1,11 +1,11 @@
 import GenericEntity from '../GenericEntity';
 import { merchantFetch } from 'merchant/utils/ajax';
-import { isCashAdvanceProduct, isLoanProduct } from '../../views/Capital/utils';
+import { isLoanProduct } from '../../views/Capital/utils';
 
 export default class BaseOriginationEntity extends GenericEntity {
   request = (url, data, progressTracker) => {
     return merchantFetch({
-      url: url,
+      url,
       mode: 'live',
       method: 'post',
       data,
@@ -36,6 +36,15 @@ export default class BaseOriginationEntity extends GenericEntity {
       `${this.resourceUrlPrefix('origination', 'ApplicationAPI', 'GetApplication')}`,
       {
         application_id: applicationId,
+      },
+    );
+  }
+
+  fetchLoanApplicationByParam({ application_id }) {
+    return this.request(
+      `${this.resourceUrlPrefix('origination', 'ApplicationAPI', 'GetApplicationNew')}`,
+      {
+        application_id,
       },
     );
   }
@@ -211,7 +220,10 @@ export default class BaseOriginationEntity extends GenericEntity {
   }
 
   submitOtp(data) {
-    return this.request(`${this.resourceUrlPrefix('origination.d2c', 'D2CBureauAPI', 'SubmitOtp')}`, data);
+    return this.request(
+      `${this.resourceUrlPrefix('origination.d2c', 'D2CBureauAPI', 'SubmitOtp')}`,
+      data,
+    );
   }
 
   fetchD2cReport(data) {
