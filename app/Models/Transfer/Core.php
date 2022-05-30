@@ -19,6 +19,7 @@ use RZP\Jobs\TransferProcess;
 use RZP\Models\Settlement\Bucket;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Jobs\TransferProcessSlice;
+use RZP\Jobs\TransferProcessBatch;
 use RZP\Jobs\TransferProcessCapitalFloat;
 use RZP\Jobs\TransferProcessKeyMerchants;
 
@@ -956,8 +957,21 @@ class Core extends Base\Core
             $isCapitalFloatOrSliceRouteMerchant = (($merchant->isCapitalFloatRouteMerchant() === true) or
                                                    ($merchant->isSliceRouteMerchant() === true));
 
-            if (($isCapitalFloatOrSliceRouteMerchant === true) and
-                ($this->isLiveMode() === true))
+            $routeName = $this->app['api.route']->getCurrentRouteName();
+
+            $variant = $this->app->razorx->getTreatment(
+                $merchant->getId(),
+                Merchant\RazorxTreatment::PAYMENT_TRANSFER_PROCESS_BATCH_QUEUE,
+                $this->mode
+            );
+
+            if (($routeName === 'payment_transfer_batch') and
+                (strtolower($variant) === 'on'))
+            {
+                (new Metric())->pushTransferProcessingBatchTimeMetrics($sourceType, $processingTime);
+            }
+            else if (($isCapitalFloatOrSliceRouteMerchant === true) and
+                     ($this->isLiveMode() === true))
             {
                 (new Metric())->pushTransferProcessingTimeMetricsForCfAndSl($sourceType, $processingTime);
             }
@@ -1020,15 +1034,30 @@ class Core extends Base\Core
     {
         $merchant = $payment->merchant;
 
-        if (($merchant->isCapitalFloatRouteMerchant() === true) and
-            ($this->isLiveMode() === true))
+        $routeName = $this->app['api.route']->getCurrentRouteName();
+
+        $variant = $this->app->razorx->getTreatment(
+            $merchant->getId(),
+            Merchant\RazorxTreatment::PAYMENT_TRANSFER_PROCESS_BATCH_QUEUE,
+            $this->mode
+        );
+
+        if (($routeName === 'payment_transfer_batch') and
+            (strtolower($variant) === 'on'))
+        {
+            TransferProcessBatch::dispatch($this->mode, $payment->getId(), $sourceType);
+
+            return;
+        }
+        else if (($merchant->isCapitalFloatRouteMerchant() === true) and
+                 ($this->isLiveMode() === true))
         {
             TransferProcessCapitalFloat::dispatch($this->mode, $payment->getId(), $sourceType);
 
             return;
         }
         else if (($merchant->isSliceRouteMerchant() === true) and
-            ($this->isLiveMode() === true))
+                 ($this->isLiveMode() === true))
         {
             TransferProcessSlice::dispatch($this->mode, $payment->getId(), $sourceType);
 

@@ -210,6 +210,11 @@ return [
     'transfer_process_slice' => [
         'live'       => env('AWS_TRANSFER_PROCESS_SL_LIVE_QUEUE'),
     ],
+    // Dedicated transfer processing queue for payment_transfer_batch.
+    'transfer_process_batch' => [
+        'test'       => env('AWS_TRANSFER_PROCESS_BATCH_TEST_QUEUE'),
+        'live'       => env('AWS_TRANSFER_PROCESS_BATCH_LIVE_QUEUE'),
+    ],
     // settlement related QUEUES
     'settlement_create' => [
         'test'       => env('AWS_SETTLEMENT_CREATE_TEST_QUEUE'),
