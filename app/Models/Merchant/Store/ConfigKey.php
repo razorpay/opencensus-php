@@ -30,6 +30,9 @@ class ConfigKey
     const REFERRAL_AMOUNT_CURRENCY     = 'referral_amount_currency';
     const IS_SIGNED_UP_REFEREE         = 'is_signed_up_referee';
 
+    //Payment Handle
+    const IS_PAYMENT_HANDLE_ONBOARDING_INITIATED  = 'is_payment_handle_onboarding_initiated';
+
     const GST_DETAILS_FROM_PAN                    = 'gst_details_from_pan';
     const GET_GST_DETAILS_FROM_BVS_ATTEMPT_COUNT  = 'get_gst_details_from_bvs_attempt_count';
     const BANK_ACCOUNT_VERIFICATION_ATTEMPT_COUNT = 'bank_account_verification_attempt_count';
@@ -123,6 +126,11 @@ class ConfigKey
                 Constants::READ  => [Constants::INTERNAL],
                 Constants::WRITE => [Constants::INTERNAL],
                 Constants::TTL   => Constants::STORE_MERCHANT_DETAILS_TTL_IN_SECONDS
+            ],
+            self::IS_PAYMENT_HANDLE_ONBOARDING_INITIATED => [
+                Constants::STORE => Constants::REDIS,
+                Constants::WRITE => [Constants::INTERNAL],
+                Constants::READ => [Constants::INTERNAL]
             ]
         ]
     ];
