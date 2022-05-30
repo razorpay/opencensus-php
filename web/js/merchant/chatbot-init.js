@@ -1,9 +1,12 @@
+import { getLinkedId } from 'merchant/components/Support/getCommonSupportProperties';
+
 export const initChatbot = ({ user, merchant }) => {
   const body = {
     email: user.email,
     name: user.name,
     contactNo: user.contact_mobile,
     merchantId: merchant.id,
+    linked_id: getLinkedId(),
   };
   window.ymConfig = {
     bot: 'x1618894568345',

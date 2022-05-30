@@ -9,7 +9,11 @@ import {
   COMDEL_POPOVER_TEXT as comdelText,
   SUPPORT_POPOVER_TEXT as supportText,
 } from '../constants';
-import { getCommonSupportProperties } from 'merchant/components/Support/getCommonSupportProperties';
+import {
+  getCommonSupportProperties,
+  getSessionId,
+  generateNewLinkedId,
+} from 'merchant/components/Support/getCommonSupportProperties';
 
 @connect((state) => {
   return {
@@ -17,7 +21,9 @@ import { getCommonSupportProperties } from 'merchant/components/Support/getCommo
   };
 })
 export default class SupportHeader extends Component {
-  state = {};
+  state = {
+    lastSessionId: '',
+  };
 
   componentDidUpdate(prevProps) {
     // After onboarding is complete, always show this tooltip
@@ -43,21 +49,62 @@ export default class SupportHeader extends Component {
     }
   }
 
+  handleSupportSession = () => {
+    const { lastSessionId } = this.state;
+    const currentSessionId = getSessionId();
+
+    if (currentSessionId !== lastSessionId) {
+      // if lastSessionId is empty then set currentSessionId as lastSessionId.
+      // i.e. this will happen when user clicks on help cta for the first time after landing on dashboard
+      if (lastSessionId) {
+        // else if lastSessionId is not empty but both session id are not same then, generate new
+        // linked id ( product requirement ) and update lastSessionId
+        generateNewLinkedId();
+      }
+
+      this.setState({
+        lastSessionId: currentSessionId,
+      });
+    }
+  };
+
+  toggleAnalytics = () => {
+    const { isOpened } = this.props;
+    analyticsTrack({
+      objectName: 'Help and Support',
+      actionName: 'clicked',
+      screen: 'home page',
+      properties: {
+        location: 'Help and Support',
+        type: !isOpened ? 'open' : 'close',
+        ...getCommonAnalyticsProperties(window.rzp_user),
+        ...getCommonSupportProperties(),
+      },
+    });
+  };
+
+  // this function will be called when user clicks on help icon
+  handleToggle = () => {
+    const { onToggle } = this.props;
+    this.handleSupportSession();
+    this.toggleAnalytics();
+    onToggle();
+  };
+
   render() {
     const {
       notifyCount = 0,
       isOpened,
-      onToggle,
       isOnBoardingRevampScreen,
       showComdelPopover,
       isWebView,
     } = this.props;
     const content = (
       <>
-        {notifyCount ? <span class="notify-icon">{notifyCount}</span> : null}
-        <div class="open-icon">
-          <span class="support-icon" />
-          <span class="support-help">Help</span>
+        {notifyCount ? <span className="notify-icon">{notifyCount}</span> : null}
+        <div className="open-icon">
+          <span className="support-icon" />
+          <span className="support-help">Help</span>
         </div>
       </>
     );
@@ -68,25 +115,12 @@ export default class SupportHeader extends Component {
 
     return (
       <div
-        class={classList(
+        className={classList(
           'support-launcher',
           isOpened && 'active',
           isOnBoardingRevampScreen && 'onboarding-screen',
         )}
-        onClick={(...e) => {
-          analyticsTrack({
-            objectName: 'Help and Support',
-            actionName: 'clicked',
-            screen: 'home page',
-            properties: {
-              location: 'Help and Support',
-              type: !isOpened ? 'open' : 'close',
-              ...getCommonAnalyticsProperties(window.rzp_user),
-              ...getCommonSupportProperties(),
-            },
-          });
-          onToggle(...e);
-        }}
+        onClick={this.handleToggle}
       >
         <span className="help-content">
           {content}
