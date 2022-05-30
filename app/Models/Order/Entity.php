@@ -1033,4 +1033,37 @@ class Entity extends Base\PublicEntity
         return $fee;
     }
 
+    /**
+     * checks if an order contains the 1cc meta key
+     * @param void
+     * @return bool
+     */
+    public function is1ccOrder(): bool
+    {
+        $is1ccOrder = false;
+
+        foreach ($this->orderMetas as $meta)
+        {
+            if ($meta->getType() === OrderMeta\Type::ONE_CLICK_CHECKOUT)
+            {
+                $is1ccOrder = true;
+                break;
+            }
+        }
+
+        return $is1ccOrder;
+    }
+
+    /**
+     * checks if the 1cc order was made by a shopify
+     * merchant by checking mandatory notes attribute
+     * @param void
+     * @return bool
+     */
+    public function is1ccShopifyOrder(): bool
+    {
+        $is1ccOrder = $this->is1ccOrder();
+
+        return $is1ccOrder === true and isset($this->getNotes()['storefront_id']) === true;
+    }
 }

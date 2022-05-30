@@ -10969,6 +10969,8 @@ trait Authorize
      * Dispatch an SQS job that attempts to create an order in Shopify for those that
      * failed due to network issues at the customer end
      * @param Payment\Entity $payment
+     * @return void
+     * @throws none
      */
     protected function dispatchOrderFor1ccShopify(Payment\Entity $payment)
     {
@@ -10983,10 +10985,8 @@ trait Authorize
 
             $order = $payment->order;
 
-            if ($this->is1ccOrder($order) === true and
-                $this->isShopifyOrder($order) === true and
-                $this->isPaymentValidFor1cc($payment) === true and
-                $this->useSqsFrom1ccShopifyExperiment() === true)
+            if ($order->is1ccShopifyOrder() === true and
+                $payment->isPaymentCompletedOrCOD() === true)
             {
                 OneCCShopifyCreateOrder::dispatch([
                     'mode'                => $this->mode,
@@ -11008,59 +11008,6 @@ trait Authorize
                     'payment_id' => $payment->getPublicId()
                 ]);
         }
-    }
-
-    protected function is1ccOrder(Order\Entity $order): bool
-    {
-        $is1ccOrder = false;
-
-        foreach ($order->orderMetas as $meta)
-        {
-            if ($meta->getType() === Order\OrderMeta\Type::ONE_CLICK_CHECKOUT)
-            {
-                $is1ccOrder = true;
-                break;
-            }
-        }
-
-        return $is1ccOrder;
-    }
-
-    // guaranteed that all 1cc Shopify orders have a storefront_id
-    protected function isShopifyOrder(Order\Entity $order): bool
-    {
-       return empty($order->toArrayPublic()['notes']['storefront_id']) === false;
-    }
-
-    protected function isPaymentValidFor1cc(Payment\Entity $payment): bool
-    {
-        $method = $payment->getMethod();
-
-        $status = $payment->getStatus();
-
-        return (
-            ($method === Payment\Method::COD and $status === Payment\Status::PENDING) or
-            ($method !== Payment\Method::COD and in_array($status, [Payment\Status::CAPTURED, Payment\Status::AUTHORIZED]) === true)
-        );
-    }
-
-    protected function useSqsFrom1ccShopifyExperiment(): bool
-    {
-        if ($this->app->environment(Environment::PRODUCTION) === false)
-        {
-            return true;
-        }
-
-        $properties = [
-          'id'            => UniqueIdEntity::generateUniqueId(),
-          'experiment_id' => $this->app['config']->get('app.shopify_1cc_sqs_splitz_experiment_id'),
-        ];
-
-        $response = $this->app['splitzService']->evaluateRequest($properties);
-
-        $variant = $response['response']['variant']['name'] ?? '';
-
-        return $variant === 'enable';
     }
 
     /**

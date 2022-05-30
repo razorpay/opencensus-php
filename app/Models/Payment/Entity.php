@@ -5495,4 +5495,16 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     {
         return $this->getAttribute(self::CANCELLATION_REASON);
     }
+
+    public function isPaymentCompletedOrCOD(): bool
+    {
+        $method = $this->getMethod();
+
+        $status = $this->getStatus();
+
+        return ((($method === Payment\Method::COD) and
+            ($status === Payment\Status::PENDING)) or
+            (($method !== Payment\Method::COD) and
+            (in_array($status, [Payment\Status::CAPTURED, Payment\Status::AUTHORIZED]) === true)));
+    }
 }
