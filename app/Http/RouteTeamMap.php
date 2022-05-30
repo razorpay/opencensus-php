@@ -426,6 +426,7 @@ class RouteTeamMap
         'setl_fetch_schedule'                             => [self::TEAM_PAYMENTS_SETTLEMENTS],
         'setl_get_scheduleableEntities'                   => [self::TEAM_PAYMENTS_SETTLEMENTS],
         'setl_service_migration'                          => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'setl_entity_alerts'                              => [self::TEAM_PAYMENTS_SETTLEMENTS],
         'setl_execution_reminder'                         => [self::TEAM_PAYMENTS_SETTLEMENTS],
         'setl_optimizer_settlement_cron'                  => [self::TEAM_PAYMENTS_SETTLEMENTS],
         'setl_merchant_dashboard_config_get'              => [self::TEAM_PAYMENTS_SETTLEMENTS],

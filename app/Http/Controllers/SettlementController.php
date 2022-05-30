@@ -778,4 +778,13 @@ class SettlementController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function checkForEntityAlerts()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->checkForEntityAlerts($input);
+
+        return ApiResponse::json($data);
+    }
 }

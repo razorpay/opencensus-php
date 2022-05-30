@@ -1459,6 +1459,11 @@ class Service extends Base\Service
         return app('settlements_dashboard')->getSettlementServiceEntityFile($input);
     }
 
+    public function checkForEntityAlerts($input) : array
+    {
+        return app('settlements_dashboard')->checkForEntityAlerts($input);
+    }
+
     public function migrateConfigurations(array $input)
     {
         if(isset($input['migrate_bank_account']) === true)

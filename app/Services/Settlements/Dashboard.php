@@ -43,6 +43,8 @@ class Dashboard extends Base
 
     const MIGRATE_TO_PAYOUT                = '/twirp/rzp.settlements.bank_account.v1.BankAccountService/MigrateToPayout';
 
+    const CHECK_FOR_ENTITY_ALERTS          = '/twirp/rzp.settlements.entity_alerts.v1.EntityAlerts/PushForAlert';
+
     const ENTITIES = 'entities';
     const TYPES = 'types';
     const AGGREGATE = 'aggregate';
@@ -452,6 +454,18 @@ class Dashboard extends Base
         $input['include_deleted'] = (isset($input['include_deleted']) === true) ? ($input['include_deleted'] == '1') : false;
 
         return $this->makeRequest(self::FETCH_ENTITY_FILE, $input, self::SERVICE_DASHBOARD);
+    }
+
+    /**
+     * Send Entity Alerts if per entity state time limit is breached.
+     * @param array  $input
+     * @return array
+     * @throws RuntimeException
+     * @throws \Throwable
+     */
+    public function checkForEntityAlerts(array $input) : array
+    {
+        return $this->makeRequest(self::CHECK_FOR_ENTITY_ALERTS, $input, self::SERVICE_DASHBOARD);
     }
 
     /**
