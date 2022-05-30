@@ -15,6 +15,7 @@ import { Modal, ModalBody } from 'common/components/Modal';
 import getMobileDetect from 'common/utils/mobileDetect';
 import errorService from '@razorpay/universe-utils/errorService';
 import { getCommonSupportProperties } from 'merchant/components/Support/getCommonSupportProperties';
+import { getCookie, setCookie } from 'common/utils/cookies';
 
 const SupportSection = lazy(
   () => import('@razorpay/frontend-care'),
@@ -43,6 +44,7 @@ class SupportBody extends Component {
     timings: [],
     careSupportSection: null,
     openClickToCall: false,
+    isClickToCallSubmitted: false,
   };
   openDashboardGuide = (_) => {
     analyticsTrack({
@@ -165,8 +167,14 @@ class SupportBody extends Component {
     if (getMobileDetect().isWebView() && this.props.shouldOpenRaiseAQueryOnMount) {
       window.rzpTicketSystem.openModal(`#tickets`);
     }
+    this.checkIfClickToCallSubmitted();
   }
 
+  checkIfClickToCallSubmitted = () => {
+    if (getCookie('click-to-call-submitted')) {
+      this.setState({ isClickToCallSubmitted: true });
+    }
+  };
   handleClick = (id) => {
     const { onToggle, onChat, notifyCount, user } = this.props;
     const rzpTicketSystem = window.rzpTicketSystem;
@@ -259,11 +267,21 @@ class SupportBody extends Component {
       //
     }
   };
+  onClickToCallSuccess = () => {
+    const { isClickToCallSubmitted: hasClickToCallSubmitted } = this.state;
+    if (!hasClickToCallSubmitted) {
+      const now = new Date();
+      const minutes = 30;
+      now.setTime(now.getTime() + minutes * 60 * 1000);
+      setCookie('click-to-call-submitted', new Date(), now);
+      this.setState({ isClickToCallSubmitted: true });
+    }
+  };
 
   render() {
     const { notifyCount, isOpened, onToggle, isCallEnabled, scheduleCallConfig, user } = this.props;
     const { handleClick, openDashboardGuide } = this;
-    const { careSupportSection } = this.state;
+    const { careSupportSection, isClickToCallSubmitted } = this.state;
     const shouldDisable = !isWorkingDay();
     let scheduleCallbackReason =
       scheduleCallConfig && scheduleCallConfig.is_eligible === false && scheduleCallConfig.reason
@@ -272,12 +290,12 @@ class SupportBody extends Component {
 
     if (scheduleCallConfig.reason === 'NOT_AVAILABLE') {
       scheduleCallbackReason = (
-        <span class="text-danger">Slots are unavailable right now, try later.</span>
+        <span className="text-danger">Slots are unavailable right now, try later.</span>
       );
     }
 
     if (scheduleCallConfig.reason === 'ALREADY_BOOKED') {
-      scheduleCallbackReason = <span class="text-danger">Call already requested.</span>;
+      scheduleCallbackReason = <span className="text-danger">Call already requested.</span>;
     }
 
     const today = new Date().getDay();
@@ -301,7 +319,7 @@ class SupportBody extends Component {
       }
     }
     return (
-      <div class={classList('support-body support-body-old', isOpened && 'active')}>
+      <div className={classList('support-body support-body-old', isOpened && 'active')}>
         <ErrorBoundary
           resetOnProps
           rank={Ranks.P1}
@@ -340,6 +358,7 @@ class SupportBody extends Component {
               onClose={this.handleCloseCareSupportSection}
               hideModalHeader={this.props.isWebView}
               shouldPersistSearchString={this.props.isWebView}
+              onClickToCallSuccess={this.onClickToCallSuccess}
               shouldOpenExistingTicketsOnNewTab={!this.props.isWebView}
             />
           ) : null}
@@ -408,7 +427,7 @@ class SupportBody extends Component {
             }
           >
             <li
-              className="support-item p-all callback "
+              className={`support-item p-all callback ${isClickToCallSubmitted ? 'disabled' : ''}`}
               onClick={() => {
                 analyticsTrack({
                   objectName: 'click to call',
@@ -423,9 +442,15 @@ class SupportBody extends Component {
               }}
             >
               <span>
-                Click to call <span className="badge">Recommended</span>
+                Click to call
+                {!isClickToCallSubmitted && <span className="badge">Recommended</span>}
               </span>
-              <small className="help-block">Click to call instantly</small>
+              {!isClickToCallSubmitted && (
+                <small className="help-block">Click to call instantly</small>
+              )}
+              {isClickToCallSubmitted && (
+                <small className="help-block">You will receive a call shortly</small>
+              )}
             </li>
           </ShowWhen>
           {window.rzp_user ? (
