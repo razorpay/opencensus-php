@@ -1560,7 +1560,7 @@ export default class ActivationWizard extends React.Component {
           true,
         );
         if (this.props.submerchantId) {
-          this.props.history.replace('/partners');
+          this.props.history.replace('/partners/submerchants');
         } else {
           this.props.history.replace('/');
         }

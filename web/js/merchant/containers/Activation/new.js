@@ -732,7 +732,7 @@ export default class ActivationContainer extends React.Component {
 
   goToDashboard = () => {
     if (this.props.submerchantId) {
-      this.props.history.replace(`/partners`);
+      this.props.history.replace(`/partners/submerchants`);
     } else {
       this.props.history.replace(`/`);
     }
