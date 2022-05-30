@@ -58,7 +58,7 @@ class Validator extends Base\Validator
         Entity::SLUG            => 'filled|min:4|max:30', // need to call validate slug separately for regex validation
         Entity::SUPPORT_CONTACT => 'nullable|contact_syntax',
         Entity::SUPPORT_EMAIL   => 'nullable|email',
-        Entity::TERMS           => 'nullable|string|min:5|max:2048',
+        Entity::TERMS           => 'nullable|string|min:5|max:2048|utf8',
         Entity::SETTINGS        => 'nullable|array',
         Entity::TEMPLATE_TYPE   => 'sometimes|string|max:24',
         Entity::VIEW_TYPE       => 'sometimes|string|custom',
@@ -95,7 +95,7 @@ class Validator extends Base\Validator
         Entity::SLUG            => 'filled|min:4|max:30|custom',
         Entity::SUPPORT_CONTACT => 'nullable|string|min:8|max:255',
         Entity::SUPPORT_EMAIL   => 'nullable|email',
-        Entity::TERMS           => 'nullable|string|min:5|max:2048',
+        Entity::TERMS           => 'nullable|string|min:5|max:2048|utf8',
         Entity::SETTINGS        => 'nullable|array',
 
         Entity::SETTINGS . '.' . Entity::THEME                        => 'nullable|string|in:light,dark',

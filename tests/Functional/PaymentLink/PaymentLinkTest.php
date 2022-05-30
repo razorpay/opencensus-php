@@ -433,6 +433,11 @@ class PaymentLinkTest extends TestCase
         $this->startTest();
     }
 
+    public function testPaymentPageCreateWithNonUtf8InTerms()
+    {
+        $this->startTest();
+    }
+
     public function testFetchPaymentLink()
     {
         $this->createPaymentLinkWithMultipleItem();
