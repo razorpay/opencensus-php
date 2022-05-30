@@ -443,6 +443,7 @@ class SubscriptionPaymentTest extends TestCase
         $this->assertEquals($this->subscription->getId(), $token->getEntityId());
         $this->assertEquals(Entity::SUBSCRIPTION, $token->getEntityType());
         $this->assertEquals(Token\RecurringStatus::CONFIRMED, $token->getRecurringStatus());
+        $this->assertEquals($this->subscription->getEndAt() + 604800, $token->getExpiredAt());
 
         $this->assertEquals($this->upiPayment['vpa'], $token->vpa->getAddress());
         $this->assertEquals($this->upiPayment['vpa'], $payment->getVpa());
@@ -450,6 +451,7 @@ class SubscriptionPaymentTest extends TestCase
         $upiMandate = $this->getDbLastEntity(Entity::UPI_MANDATE);
 
         $this->assertEquals(UPIMandateFrequency::AS_PRESENTED, $upiMandate->getFrequency());
+        $this->assertEquals($this->subscription->getEndAt() + 604800, $upiMandate->getEndTime());
     }
 
     public function testAutoPaymentUpi()

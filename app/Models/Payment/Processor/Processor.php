@@ -159,6 +159,11 @@ class Processor
     const UPI_COLLECT_EXPIRY = 10;
 
     /**
+     * UPI Subscription's mandate expiry extension period.
+     */
+    const UPI_SUBSCRIPTION_MANDATE_EXPIRY_EXTENSION = 604800;
+
+    /**
      * Minimum payment amount for which mdr should be calculated
      */
     const MIN_MDR_PAYMENT_AMOUNT = 200000;
@@ -3929,11 +3934,12 @@ class Processor
              ((boolval($input[Subscription\Entity::SUBSCRIPTION_CARD_CHANGE] ?? false)) === true))  and
             ($payment->getMethod() === Payment\Method::UPI))
         {
+            //upi token expires 1 week past the subscription's end_at
             $upitoken = [
                 'max_amount'        => $this->subscription->getCurrentInvoiceAmount(),
                 'frequency'         => UPIMandateFrequency::AS_PRESENTED,
                 'start_at'          => Carbon::now()->addMinute(1)->getTimestamp(),
-                'expire_at'         => $this->subscription->getEndAt(),
+                'expire_at'         => $this->subscription->getEndAt() + self::UPI_SUBSCRIPTION_MANDATE_EXPIRY_EXTENSION,
             ];
 
             $this->trace->info(
