@@ -3059,7 +3059,7 @@ class VirtualAccountTest extends TestCase
         ];
 
         $responseContent = [
-            'expected_amount' => '',
+            'expected_amount' => 0,
             'currency' => 'INR',
             'partial_payment' => '',
             'status' => '1',
@@ -3114,7 +3114,7 @@ class VirtualAccountTest extends TestCase
         ];
 
         $responseContent = [
-            'expected_amount' => '',
+            'expected_amount' => 0,
             'currency' => 'INR',
             'partial_payment' => '',
             'status' => '1',
@@ -3142,7 +3142,7 @@ class VirtualAccountTest extends TestCase
         ];
 
         $responseContent = [
-            'expected_amount' => '',
+            'expected_amount' => 0,
             'currency' => 'INR',
             'partial_payment' => '',
             'status' => '1',
@@ -3170,7 +3170,7 @@ class VirtualAccountTest extends TestCase
         ];
 
         $responseContent = [
-            'expected_amount' => '',
+            'expected_amount' => 0,
             'currency' => 'INR',
             'partial_payment' => '',
             'status' => '1',

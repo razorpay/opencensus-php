@@ -1382,7 +1382,7 @@ class Service extends Base\Service
 
         $response = [
             'challan_number' => '',
-            'amount' => '',
+            'amount' => 0,
             'currency' => 'INR',
             'partial_payment' =>  '',
             'status' => '',

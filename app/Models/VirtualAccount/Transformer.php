@@ -167,7 +167,7 @@ class Transformer extends Base\Service
     {
         $responseBody = [
             'challan_no' => '',
-            'expected_amount' => '',
+            'expected_amount' => 0,
             'currency' => 'INR',
             'partial_payment' => '',
             'identification_id' => '',
