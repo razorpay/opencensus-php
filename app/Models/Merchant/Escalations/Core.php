@@ -518,17 +518,72 @@ class Core extends Base\Core
     {
         if ($timeBound === true)
         {
-            $lastCronTime = $this->getLastCronTime();
+            $lastCronTime = $this->getLastCronTime() - 300;
 
             $this->trace->info(TraceCode::ESCALATION_CRON_TRACE, [
                 'last_cron_time' => $lastCronTime,
                 'type'           => 'payments_escalation',
             ]);
             $this->updateLastCronTime(Constants::ESCALATION_CACHE_KEY);
-            $merchantIdList = $this->repo->transaction->fetchTransactedMerchants('payment', $lastCronTime);
+
+            $currentCronTime = $this->getLastCronTime();
+
+            // we have to first get count as pinot has limitation that limit has to be passed in the get query
+            $query = "select count(distinct merchant_id) as transacted_merchants_count from payments_v1 where created_at between %s and %s";
+
+            $query = sprintf($query, $lastCronTime, $currentCronTime, Constants::LOWEST_PAYMENTS_THRESHOLD);
+
+            // fetch all merchants count who've atleast breached lowest payments threshold
+            $queryResponse = (new ApachePinotClient())->getDataFromPinot($query);
+
+            if (empty($queryResponse) === true)
+            {
+                $this->trace->info(TraceCode::ESCALATION_ATTEMPT_SKIPPED, [
+                    'type'            => 'payments_escalation_timebound',
+                    'reason'          => 'no merchants found',
+                    'step'            => 'transacted_merchants_count'
+                ]);
+
+                return;
+            }
+
+            $this->trace->info(TraceCode::ESCALATION_ATTEMPT, [
+                'merchants_count' => count($queryResponse),
+                'type'            => 'payments_escalation_timebound',
+                'step'            => 'transacted_merchants_count'
+            ]);
+
+            $resultCount = $queryResponse[0]["transacted_merchants_count"];
+
+            $query = "select distinct merchant_id from payments_v1 where created_at between %s and %s limit %s";
+
+            $query = sprintf($query, $lastCronTime, $currentCronTime, $resultCount + 1);
+
+            // fetch all merchants who've atleast breached lowest payments threshold
+            $queryResponse = (new ApachePinotClient())->getDataFromPinot($query);
+
+            if (empty($queryResponse) === true)
+            {
+                $this->trace->info(TraceCode::ESCALATION_ATTEMPT_SKIPPED, [
+                    'type'            => 'payments_escalation_timebound',
+                    'reason'          => 'no merchants found',
+                    'step'            => 'transacted_merchants'
+                ]);
+
+                return;
+            }
+
+            $this->trace->info(TraceCode::ESCALATION_ATTEMPT, [
+                'merchants_count' => count($queryResponse),
+                'type'            => 'payments_escalation_timebound',
+                'step'            => 'transacted_merchants'
+            ]);
+
+            $merchantIdList = array_column($queryResponse, Entity::MERCHANT_ID);
 
             $merchantIdList = $this->repo->merchant_detail->filterMerchantIdsByActivationStatus(
                 $merchantIdList, DetailStatus::OPEN_STATUSES);
+
         }
         else
         {
@@ -537,44 +592,62 @@ class Core extends Base\Core
                 DetailStatus::OPEN_STATUSES);
         }
 
-        // fetch all merchants who've atleast breached lowest payments threshold
-        $merchantsGMVList = $this->repo->transaction->fetchTotalAmountByTransactionTypeAboveThreshold(
-            $merchantIdList, 'payment', Constants::LOWEST_PAYMENTS_THRESHOLD
-        );
-
-        $this->trace->info(TraceCode::ESCALATION_ATTEMPT, [
-            'merchants_count' => count($merchantsGMVList),
-            'type'            => 'payments_escalation'
-        ]);
-
-        if (empty($merchantsGMVList) === true)
+        if (empty($merchantIdList) === true)
         {
             $this->trace->info(TraceCode::ESCALATION_ATTEMPT_SKIPPED, [
-                'merchants_count' => count($merchantsGMVList),
                 'type'            => 'payments_escalation',
-                'reason'          => 'no merchants found'
+                'reason'          => 'no merchants found',
+                'step'            => 'open_merchants'
             ]);
 
             return;
         }
 
-        $merchantIdList = array_map(function($element) {
-            return $element[Entity::MERCHANT_ID];
-        }, $merchantsGMVList);
+        $this->trace->info(TraceCode::ESCALATION_ATTEMPT, [
+            'merchants_count' => count($merchantIdList),
+            'type'            => 'payments_escalation',
+            'step'            => 'open_merchants'
+        ]);
+
+        $query = "select sum(base_amount) amount,merchant_id from payments_v1 where merchant_id in (%s) group by merchant_id having amount>%s limit %s";
+
+        $query = sprintf($query, "'" . implode("','", $merchantIdList) . "'", Constants::LOWEST_PAYMENTS_THRESHOLD, count($merchantIdList) + 1);
+
+        // fetch all merchants who've atleast breached lowest payments threshold
+        $queryResponse = $this->app['apache.pinot']->getDataFromPinot($query);
+
+        if (empty($queryResponse) === true)
+        {
+            $this->trace->info(TraceCode::ESCALATION_ATTEMPT_SKIPPED, [
+                'type'   => 'payments_escalation',
+                'reason' => 'no merchants found',
+                'step'   => 'transacted_merchants'
+            ]);
+
+            return;
+        }
+
+        $this->trace->info(TraceCode::ESCALATION_ATTEMPT, [
+            'merchants_count' => count($queryResponse),
+            'type'            => 'payments_escalation',
+            'step'            => 'transacted_merchants'
+        ]);
+
+        $merchantIdList = array_column($queryResponse, Entity::MERCHANT_ID);
+
+        $merchantsGMVList = array_column($queryResponse, "amount", Entity::MERCHANT_ID);
 
         // fetch the existing escalations triggered for merchants
         $escalations = $this->fetchEscalationMapForMerchants($merchantIdList);
 
         $skippedMerchants = [];
 
-        foreach ($merchantsGMVList as $merchantData)
+        foreach ($merchantsGMVList as $merchantId => $amount)
         {
-            $merchantId = $merchantData[Entity::MERCHANT_ID];
-
             try
             {
                 [$triggered, $reason] = (new Handler)->triggerPaymentEscalation(
-                    $merchantId, $merchantData['total'], $escalations[$merchantId] ?? []
+                    $merchantId, $amount, $escalations[$merchantId] ?? []
                 );
 
                 if ($triggered === false)

@@ -7,6 +7,7 @@ use DB;
 use Mail;
 use Queue;
 use RZP\Constants\Mode;
+use RZP\Services\Mock\ApachePinotClient;
 use RZP\Mail\Merchant\MerchantOnboardingEmail;
 use RZP\Notifications\Onboarding\Events;
 use RZP\Services\RazorXClient;
@@ -16,6 +17,7 @@ use RZP\Models\Merchant\Escalations;
 use RZP\Models\Merchant\Escalations\Actions;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Models\Merchant\Entity as MerchantEntity;
+use RZP\Services\Mock\DruidService as MockDruidService;
 
 class CoreTest extends TestCase
 {
@@ -129,6 +131,8 @@ class CoreTest extends TestCase
         $this->addEscalation('L1', 500000);
         $this->addEscalation('L1', 1000000);
 
+        $this->mockApachePinot($merchantDetail->getMerchantId(), 15000);
+
         (new Escalations\Core)->triggerPaymentEscalations(false);
 
         $this->verifyEscalationAndAction('L1', 1500000);
@@ -146,6 +150,8 @@ class CoreTest extends TestCase
 
         $this->createTransaction($merchantDetail->getMerchantId(), 'payment', 100000);
         $this->createTransaction($merchantDetail->getMerchantId(), 'payment', 200);
+
+        $this->mockApachePinot($merchantDetail->getMerchantId(), 100200);
 
         (new Escalations\Core)->triggerPaymentEscalations(false);
 
@@ -434,6 +440,23 @@ class CoreTest extends TestCase
             'amount'      => $amount * 100,   // in paisa
             'merchant_id' => $merchantId
         ]);
+
+        $this->mockApachePinot($merchantId, $amount);
+    }
+
+    private function mockApachePinot(string $merchantId, int $amount)
+    {
+        $pinotService = $this->getMockBuilder(ApachePinotClient::class)
+                             ->setConstructorArgs([$this->app])
+                             ->onlyMethods(['getDataFromPinot'])
+                             ->getMock();
+
+        $this->app->instance('apache.pinot', $pinotService);
+
+        $dataFromPinot = ['merchant_id' => $merchantId, "amount" => $amount * 100];
+
+        $pinotService->method('getDataFromPinot')
+                     ->willReturn([$dataFromPinot]);
     }
 
     private function verifyEscalationAndAction($milestone, $threshold, $emptyAction = false)
