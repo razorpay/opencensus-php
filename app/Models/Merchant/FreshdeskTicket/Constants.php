@@ -95,7 +95,6 @@ class Constants
         Type::SUPPORT_DASHBOARD_X => [self::RZPX   => self::URLX,
                                       self::RZPCAP => self::URLCAP],
         Type::SUPPORT_DASHBOARD   => [self::RZPIND => self::URLIND,
-                                      self::RZPSOL => self::URL2,
                                       self::RZPCAP => self::URLCAP]
     ];
 

@@ -72,7 +72,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'total'   => 6,
+                'total'   => 4,
                 'results' => [
                     [
                         'id' => 'razorpayid0012',
@@ -86,12 +86,6 @@ return [
                     [
                         'id' => 'razorpayid0034',
                     ],
-                    [
-                        'id' => 'razorpayid0012',
-                    ],
-                    [
-                        'id' => 'razorpayid0034',
-                    ]
                 ],
             ],
         ],
@@ -109,11 +103,8 @@ return [
         ],
        'response' => [
             'content' => [
-                'total'   => 3,
+                'total'   => 2,
                 'results' => [
-                    [
-                        'id' => 'razorpayid0012',
-                    ],
                     [
                         'id' => 'razorpayid0012',
                     ],
@@ -138,11 +129,8 @@ return [
         ],
         'response' => [
             'content' => [
-                'total'   => 3,
+                'total'   => 2,
                 'results' => [
-                    [
-                        'id' => 'razorpayid0012',
-                    ],
                     [
                         'id' => 'razorpayid0012',
                     ],
@@ -181,14 +169,8 @@ return [
         ],
         'response' => [
             'content' => [
-                'total'   => 6,
+                'total'   => 4,
                 'results' => [
-                    [
-                        'id'    => 'razorpayid0012',
-                    ],
-                    [
-                        'id'    => 'razorpayid0034',
-                    ],
                     [
                         'id'    => 'razorpayid0012',
                     ],
@@ -229,14 +211,8 @@ return [
         ],
         'response' => [
             'content' => [
-                'total'   => 6,
+                'total'   => 4,
                 'results' => [
-                    [
-                        'id'    => 'razorpayid0012',
-                    ],
-                    [
-                        'id'    => 'razorpayid0034',
-                    ],
                     [
                         'id'    => 'razorpayid0012',
                     ],
