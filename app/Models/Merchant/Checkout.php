@@ -77,8 +77,13 @@ class Checkout
      * @var array[]
      */
     private $alternatePaymentInstrumentCountryMapping = array(
-        Payment\Gateway::TRUSTLY=>[Country::BE,Country::AT,Country::DE,Country::IT,Country::NL,Country::PL,Country::ES,Country::CH],
-        Payment\Gateway::POLI =>[Country::AU],
+        Payment\Gateway::TRUSTLY => [
+            Country::AT,Country::BE,Country::CZ,Country::DK,
+            Country::EE,Country::FI,Country::DE,Country::LV,
+            Country::LT,Country::NL,Country::NO,Country::PL,
+            Country::SK,Country::ES,Country::SE,Country::GB
+        ],
+        Payment\Gateway::POLI => [Country::AU],
     );
 
     /**
