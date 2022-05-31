@@ -67,7 +67,7 @@ class Service extends Base\Service
         $targets = $input['targets'];
         unset($input['targets']);
 
-        $this->updateTimePeriodIfApplicable($input);
+        $this->updateTimePeriodIfApplicable($input, $targets);
 
         foreach ($targets as $target)
         {
@@ -79,8 +79,20 @@ class Service extends Base\Service
         return $data;
     }
 
-    protected function updateTimePeriodIfApplicable(array & $input)
+    protected function updateTimePeriodIfApplicable(array & $input, array $targets)
     {
+        // Adding special case for citi mandate file generation to accommodate high load on file generation.
+        // if begin and end is sent from cron request consider that else continue
+
+        if (($this->app['basicauth']->isCron() === true) and
+            ($input[Entity::TYPE] === Type::NACH_DEBIT) and
+            (in_array(Constants::PAPER_NACH_CITI, $targets) === true) and
+            (empty($input[Entity::BEGIN]) === false) and
+            (empty($input[Entity::END]) === false))
+        {
+            return;
+        }
+
         // When called via cron, we update the timestamps for the
         // gateway file for the to indicate the previous days time period.
 

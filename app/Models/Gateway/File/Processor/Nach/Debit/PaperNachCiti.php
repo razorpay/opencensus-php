@@ -14,6 +14,7 @@ use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Customer\Token;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Gateway\File\Status;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\GatewayFileException;
@@ -45,6 +46,8 @@ class PaperNachCiti extends Debit\Base
         'mode'  => '33188'
     ];
     const FILE_CACHE_KEY    = 'nach_citi_gateway_file_index';
+
+    const CITI_NACH_DATE_SELECT = 'citi_nach_date_select';
 
     protected $pageCount   = 90000;
     protected $userName    = 'CTRAZORPAY';
@@ -376,7 +379,7 @@ class PaperNachCiti extends Debit\Base
         $length         = FieldsLength::USER_NUMBER;
         $utilityCode  = $this->getPaddedValue($key, $length, ' ', STR_PAD_RIGHT);
 
-        $date = $this->getDate();
+        $date = $this->getHeaderDate();
 
         $row = [
             Headings::ACH_TRANSACTION_CODE              => Fields::ACH_TRANSACTION_CODE_HEADING,
@@ -519,14 +522,12 @@ class PaperNachCiti extends Debit\Base
      */
     public function fetchEntities(): PublicCollection
     {
-        $time = explode(":", $this->gatewayFile->getSubType());
-
         $begin = Carbon::createFromTimestamp($this->gatewayFile->getBegin(), Timezone::IST)
-                         ->addHours(intval($time[0]))
+                         ->addHours(9)
                          ->getTimestamp();
 
         $end = Carbon::createFromTimestamp($this->gatewayFile->getEnd(), Timezone::IST)
-                       ->addHours(intval($time[1]))
+                       ->addHours(9)
                        ->getTimestamp();
 
         $this->trace->info(TraceCode::GATEWAY_FILE_QUERY_INIT);
@@ -611,6 +612,19 @@ class PaperNachCiti extends Debit\Base
 
     protected function getDate(): string
     {
+        return Carbon::now(Timezone::IST)->format('dmY');
+    }
+
+    protected function getHeaderDate(): string
+    {
+        $variant = $this->app['razorx']->getTreatment(
+            UniqueIdEntity::generateUniqueId(), self::CITI_NACH_DATE_SELECT, $this->app['basicauth']->getMode());
+
+        if ($variant === 'on')
+        {
+            return Carbon::now(Timezone::IST)->addDay()->format('dmY');
+        }
+
         return Carbon::now(Timezone::IST)->format('dmY');
     }
 

@@ -141,7 +141,6 @@ return [
             'content' => [
                 'type'    => 'nach_debit',
                 'targets' => ['paper_nach_citi'],
-                'sub_type'=> "9:9",
             ],
             'url' => '/gateway/files',
             'method' => 'POST'
@@ -175,7 +174,6 @@ return [
             'content' => [
                 'type'    => 'nach_debit',
                 'targets' => ['paper_nach_citi'],
-                'sub_type'=> "9:9",
             ],
             'url' => '/gateway/files',
             'method' => 'POST'
@@ -208,7 +206,6 @@ return [
             'content' => [
                 'type'    => 'nach_debit',
                 'targets' => ['paper_nach_citi'],
-                'sub_type'=> "27:9",
             ],
             'url' => '/gateway/files',
             'method' => 'POST'
@@ -240,7 +237,6 @@ return [
             'content' => [
                 'type'    => 'nach_debit',
                 'targets' => ['paper_nach_citi'],
-                'sub_type'=> "9:9",
             ],
             'url' => '/gateway/files',
             'method' => 'POST'

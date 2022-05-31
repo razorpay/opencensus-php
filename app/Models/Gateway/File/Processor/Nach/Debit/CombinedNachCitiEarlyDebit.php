@@ -115,4 +115,9 @@ class CombinedNachCitiEarlyDebit extends PaperNachCiti
     {
         return Carbon::now(Timezone::IST)->addDay()->format('dmY');
     }
+
+    protected function getHeaderDate(): string
+    {
+        return Carbon::now(Timezone::IST)->addDay()->format('dmY');
+    }
 }
