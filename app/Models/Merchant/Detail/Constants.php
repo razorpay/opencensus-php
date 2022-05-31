@@ -505,7 +505,8 @@ class Constants
     ];
 
     const SUPPORTED_VERIFICATION_RESPONSE_TYPES = [
-        BVSConstants::AADHAAR
+        BVSConstants::AADHAAR,
+        BVSConstants::BANK_ACCOUNT
     ];
 
     const VERIFICATION_RESPONSE_KEYS = [
@@ -534,7 +535,14 @@ class Constants
         BVSConstants::AADHAAR . BvsValidationConstants::PROOF . 'input image type and artefact type doesn\'t match'                               => 'AADHAAR_NOT_VALID',
         BVSConstants::AADHAAR . BvsValidationConstants::PROOF . 'hystrix: timeout'                                                                => 'AADHAAR_HYSTRIX_TIMEOUT',
         BVSConstants::AADHAAR . BvsValidationConstants::PROOF . 'name: cannot be blank.'                                                          => 'AADHAAR_NAME_MISMATCH',
-        BVSConstants::AADHAAR . BvsValidationConstants::PROOF . 'invalid image submitted'                                                         => 'AADHAAR_NUMBER_MISMATCH'
+        BVSConstants::AADHAAR . BvsValidationConstants::PROOF . 'invalid image submitted'                                                         => 'AADHAAR_NUMBER_MISMATCH',
+        BVSConstants::BANK_ACCOUNT . BvsValidationConstants::IDENTIFIER . BvsValidationConstants::INPUT_DATA_ISSUE . 'KC03'                       => 'INVALID_BENEFICIARY_NUMBER_OR_IFSC',
+        BVSConstants::BANK_ACCOUNT . BvsValidationConstants::IDENTIFIER . BvsValidationConstants::INPUT_DATA_ISSUE . 'KC05'                       => 'ACCOUNT_BLOCKED_OR_FROZEN',
+        BVSConstants::BANK_ACCOUNT . BvsValidationConstants::IDENTIFIER . BvsValidationConstants::INPUT_DATA_ISSUE . 'KC06'                       => 'NRE_ACCOUNT',
+        BVSConstants::BANK_ACCOUNT . BvsValidationConstants::IDENTIFIER . BvsValidationConstants::INPUT_DATA_ISSUE . 'KC07'                       => 'ACCOUNT_CLOSED',
+        BVSConstants::BANK_ACCOUNT . BvsValidationConstants::IDENTIFIER . BvsValidationConstants::INPUT_DATA_ISSUE . 'KC27'                       => 'INVALID_ACCOUNT',
+        BVSConstants::BANK_ACCOUNT . BvsValidationConstants::IDENTIFIER . BvsValidationConstants::INPUT_DATA_ISSUE . 'KC40'                       => 'INVALID_BENEFICIARY_IFSC_CODE_OR_NBIN',
+        BVSConstants::BANK_ACCOUNT . BvsValidationConstants::IDENTIFIER . BvsValidationConstants::RULE_EXECUTION_FAILED                           => 'NOT_MATCHED',
     ];
 
 }

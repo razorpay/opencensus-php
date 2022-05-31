@@ -2420,7 +2420,7 @@ class CoreTest extends TestCase
         ]);
         $merchantDetail = $fixtures['merchant_detail'];
         $merchantId = $merchantDetail->getMerchantId();
-        $error_codes = $core->fetchVerificationErrorCodes($merchantId);
+        $error_codes = $core->fetchVerificationErrorCodes($merchantDetail->merchant);
         $this->assertEmpty($error_codes);
     }
 
@@ -2437,7 +2437,7 @@ class CoreTest extends TestCase
         ]);
         $merchantDetail = $fixtures['merchant_detail'];
         $merchantId = $merchantDetail->getMerchantId();
-        $error_codes = $core->fetchVerificationErrorCodes($merchantId);
+        $error_codes = $core->fetchVerificationErrorCodes($merchantDetail->merchant);
         $this->assertEmpty($error_codes);
     }
 
@@ -2456,7 +2456,7 @@ class CoreTest extends TestCase
         ]);
         $merchantDetail = $fixtures['merchant_detail'];
         $merchantId = $merchantDetail->getMerchantId();
-        $error_codes = $core->fetchVerificationErrorCodes($merchantId);
+        $error_codes = $core->fetchVerificationErrorCodes($merchantDetail->merchant);
         $expectedOutput = [Entity::POA_VERIFICATION_STATUS => 'AADHAAR_BACK_NOT_MATCHED'];
         $this->assertEquals($error_codes, $expectedOutput);
     }
@@ -2476,10 +2476,9 @@ class CoreTest extends TestCase
         ]);
         $merchantDetail = $fixtures['merchant_detail'];
         $merchantId = $merchantDetail->getMerchantId();
-        $error_codes = $core->fetchVerificationErrorCodes($merchantId);
+        $error_codes = $core->fetchVerificationErrorCodes($merchantDetail->merchant);
         // output falls back to the error code
-        $expectedOutput = [Entity::POA_VERIFICATION_STATUS => 'AADHAAR_DOCUMENT_UNIDENTIFIABLE'];
-        $this->assertEquals($error_codes, $expectedOutput);
+        $this->assertEmpty($error_codes);
     }
 
     public function testFetchVerificationErrorCodesNotMatchDescription()
@@ -2497,9 +2496,68 @@ class CoreTest extends TestCase
         ]);
         $merchantDetail = $fixtures['merchant_detail'];
         $merchantId = $merchantDetail->getMerchantId();
-        $error_codes = $core->fetchVerificationErrorCodes($merchantId);
+        $error_codes = $core->fetchVerificationErrorCodes($merchantDetail->merchant);
         // output falls back to the error code
-        $expectedOutput = [Entity::POA_VERIFICATION_STATUS => 'AADHAAR_INPUT_DATA_ISSUE'];
+        $this->assertEmpty($error_codes);
+    }
+
+    public function testFetchVerificationErrorCodesEmptyDescriptionBankAccount()
+    {
+        // when no error is to be shown to the user
+        $core = new DetailCore();
+        $this->createAndFetchMocks();
+        $fixtures = $this->createAndFetchFixtures([
+        ],[],[
+            BVSConstants::ARTEFACT_TYPE     => BVSConstants::BANK_ACCOUNT,
+            BVSConstants::VALIDATION_UNIT   => BvsValidationConstants::IDENTIFIER,
+            BVSEntity::VALIDATION_STATUS    => BvsValidationConstants::FAILED,
+            BVSEntity::ERROR_CODE           => 'NO_PROVIDER_ERROR',
+            BVSEntity::ERROR_DESCRIPTION    => 'KC04: Amount Limit Exceeded'
+        ]);
+        $merchantDetail = $fixtures['merchant_detail'];
+        $merchantId = $merchantDetail->getMerchantId();
+        $error_codes = $core->fetchVerificationErrorCodes($merchantDetail->merchant);
+        $expectedOutput = [];
+        $this->assertEquals($error_codes, $expectedOutput);
+    }
+
+    public function testFetchVerificationErrorCodesMatchDescriptionStatusFailedBankAccount()
+    {
+        // when records are found and error description is matched and validation status is failed
+        $core = new DetailCore();
+        $this->createAndFetchMocks();
+        $fixtures = $this->createAndFetchFixtures([
+        ],[],[
+            BVSConstants::ARTEFACT_TYPE     => BVSConstants::BANK_ACCOUNT,
+            BVSConstants::VALIDATION_UNIT   => BvsValidationConstants::IDENTIFIER,
+            BVSEntity::VALIDATION_STATUS    => BvsValidationConstants::FAILED,
+            BVSEntity::ERROR_CODE           => 'INPUT_DATA_ISSUE',
+            BVSEntity::ERROR_DESCRIPTION    => 'KC03: Invalid Beneficiary Account Number or IFSC'
+        ]);
+        $merchantDetail = $fixtures['merchant_detail'];
+        $merchantId = $merchantDetail->getMerchantId();
+        $error_codes = $core->fetchVerificationErrorCodes($merchantDetail->merchant);
+        $expectedOutput = [Entity::BANK_DETAILS_VERIFICATION_STATUS => 'INVALID_BENEFICIARY_NUMBER_OR_IFSC'];
+        $this->assertEquals($error_codes, $expectedOutput);
+    }
+
+    public function testFetchVerificationErrorCodesStatusNotMatchedBankAccount()
+    {
+        // when records are found and error description is matched and validation status is failed
+        $core = new DetailCore();
+        $this->createAndFetchMocks();
+        $fixtures = $this->createAndFetchFixtures([
+        ],[],[
+            BVSConstants::ARTEFACT_TYPE     => BVSConstants::BANK_ACCOUNT,
+            BVSConstants::VALIDATION_UNIT   => BvsValidationConstants::IDENTIFIER,
+            BVSEntity::VALIDATION_STATUS    => BvsValidationConstants::FAILED,
+            BVSEntity::ERROR_CODE           => 'RULE_EXECUTION_FAILED',
+            BVSEntity::ERROR_DESCRIPTION    => ''
+        ]);
+        $merchantDetail = $fixtures['merchant_detail'];
+        $merchantId = $merchantDetail->getMerchantId();
+        $error_codes = $core->fetchVerificationErrorCodes($merchantDetail->merchant);
+        $expectedOutput = [Entity::BANK_DETAILS_VERIFICATION_STATUS => 'NOT_MATCHED'];
         $this->assertEquals($error_codes, $expectedOutput);
     }
 

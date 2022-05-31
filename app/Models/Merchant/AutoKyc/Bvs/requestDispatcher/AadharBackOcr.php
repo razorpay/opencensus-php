@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant\AutoKyc\Bvs\requestDispatcher;
 
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
+use RZP\Models\Merchant\AutoKyc\Bvs\Constant as BVSConstants;
 use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstants;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Models\Merchant\Document\Entity as DocumentEntity;
@@ -58,5 +59,14 @@ class AadharBackOcr extends Base
     protected function getConfigName()
     {
         return Constant::AADHAR_BACK;
+    }
+
+    public function getVerificationResponseKey($validation)
+    {
+        $errorDescription       = $validation->getErrorDescription();
+
+        $verificationResponseKey =   BVSConstants::AADHAAR . BvsValidationConstants::PROOF . $errorDescription;
+
+        return $verificationResponseKey;
     }
 }

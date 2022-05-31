@@ -13,6 +13,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Constants\Table;
 use Rzp\Bvs\Validation\V1\TwirpError;
+use RZP\Models\Merchant\AutoKyc\Bvs\Constant as BVSConstants;
 use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Models\Merchant\Store\ConfigKey;
 use RZP\Models\Merchant\AutoKyc\Bvs\Factory;
@@ -110,6 +111,8 @@ use RZP\Models\Merchant\Fraud\HealthChecker\Constants as HealthCheckerConstants;
 use RZP\Models\Merchant\Detail\NeedsClarification\Constants as NCConstants;
 use RZP\Models\Merchant\Store\Constants as StoreConstants;
 use RZP\Models\Merchant\AutoKyc\Bvs\ManualVerificationRequestDispatcher;
+use RZP\Models\Merchant\Document\Type as DocumentType;
+use RZP\Models\Merchant\AutoKyc\Bvs\requestDispatcher\BankAccount as BankAccountRequestDispatcher;
 
 
 class Core extends Base\Core
@@ -3286,7 +3289,7 @@ class Core extends Base\Core
         // add this in try-catch so that it doesn't affect the usual response flow.
         try
         {
-            $error_status = $this->fetchVerificationErrorCodes($merchant->getMerchantId());
+            $error_status = $this->fetchVerificationErrorCodes($merchant);
             $this->trace->info(TraceCode::MERCHANT_DETAIL_VERIFICATION_ERROR_RESPONSE, [
                 '$error_status' => $error_status,
             ]);
@@ -6606,9 +6609,11 @@ class Core extends Base\Core
      * in case it has error, it ensures the document associated with the validation is not deleted and
      * post which it maps the error code to the relevant custom error code.
      */
-    public function fetchVerificationErrorCodes(string $merchantId): array
+    public function fetchVerificationErrorCodes($merchant): array
     {
         $errorCodes = [];
+
+        $merchantId = $merchant->getMerchantId();
         // for each artefact type make a separate query to database, given we need to fetch only the
         // latest record and see if it has error
         foreach (DetailConstants::SUPPORTED_VERIFICATION_RESPONSE_TYPES as $artefactType)
@@ -6626,7 +6631,13 @@ class Core extends Base\Core
                 // since there is no error associated with the latest validation skip the processing
                 continue;
             }
+
             $validationUnit = $validation->getValidationUnit();
+
+            $merchantDetails = $this->repo->merchant_detail->findByPublicId($merchantId);
+
+            $document = null;
+
             if ($validationUnit === BvsValidationConstants::PROOF)
             {
                 // verify that the latest validation does not belong to a deleted document
@@ -6641,24 +6652,52 @@ class Core extends Base\Core
                     '$document' => $document,
                 ]);
             }
-            $errorDescription       = $validation->getErrorDescription();
+
+            try {
+                $requestDispatcher = $this->getRequestDispatcher($artefactType, $merchant, $merchantDetails, $validationUnit, $document);
+            }
+            catch (\Exception $e){
+                continue;
+            }
+
             $validationErrorCodeKey = Constant::ARTEFACT_STATUS_ATTRIBUTE_MAPPING[$artefactType . '-' . $validationUnit][1];
-            // get value from the error_description
-            $verificationResponseKey = $artefactType . $validationUnit . $errorDescription;
+
+            $verificationResponseKey = $requestDispatcher->getVerificationResponseKey($validation);
+
             if (isset(DetailConstants::VERIFICATION_RESPONSE_ERROR_CODES[$verificationResponseKey]))
             {
                 $validationErrorCodeValue = DetailConstants::VERIFICATION_RESPONSE_ERROR_CODES[$verificationResponseKey];
+
+                $errorCodes[$validationErrorCodeKey] = $validationErrorCodeValue;
             }
-            else
-            {
-                $errorPrefix              = strtoupper($artefactType);
-                $validationErrorCodeValue = $errorPrefix . '_' . $validation->getErrorCode();
-            }
-            // append the output
-            $errorCodes[$validationErrorCodeKey] = $validationErrorCodeValue;
+
         }
 
         return $errorCodes;
+    }
+
+    public function getRequestDispatcher($artefactType, $merchant, $merchantDetails, $validationUnit, $document = null )
+    {
+
+        if(empty($document) === false )
+        {
+            switch ($document->getDocumentType()){
+                case DocumentType::AADHAR_BACK:
+                    return new requestDispatcher\AadharBackOcr($merchant,$merchantDetails,$document);
+
+                case DocumentType::AADHAR_FRONT:
+                    return new requestDispatcher\AadhaarFrontAndBackValidationOcr($merchant,$merchantDetails,$document);
+            }
+        }
+        else{
+            switch ($artefactType . $validationUnit) {
+                case Constant::BANK_ACCOUNT. BvsValidationConstants::IDENTIFIER:
+                    return new BankAccountRequestDispatcher($merchant, $merchantDetails);
+
+            }
+        }
+
+        throw new \InvalidArgumentException('Artefact not supported');
     }
 
     public function getMerchantInfo(string $merchantId): array

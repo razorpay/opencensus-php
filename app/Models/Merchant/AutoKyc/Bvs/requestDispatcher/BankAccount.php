@@ -49,6 +49,17 @@ class BankAccount extends Base
         ];
     }
 
+    public function getVerificationResponseKey($validation)
+    {
+        $errorCode              = $validation->getErrorCode();
+
+        $errorDescription       = $validation->getErrorDescription();
+
+        $errorDescriptionCode   = substr($errorDescription,0,4);
+
+        return Constant::BANK_ACCOUNT . BvsValidationConstants::IDENTIFIER . $errorCode . $errorDescriptionCode;
+    }
+
     public function getConfigName()
     {
         if ($this->merchant->isNoDocOnboardingEnabled() === true)

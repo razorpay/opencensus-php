@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant\AutoKyc\Bvs\requestDispatcher;
 
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
+use RZP\Models\Merchant\AutoKyc\Bvs\Constant as BVSConstants;
 use RZP\Models\Merchant\BvsValidation;
 use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstants;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
@@ -109,5 +110,14 @@ class AadhaarFrontAndBackValidationOcr extends Base
     protected function getConfigName(): string
     {
         return Constant::AADHAAR_FRONT_AND_BACK_OCR;
+    }
+
+    public function getVerificationResponseKey($validation)
+    {
+        $errorDescription       = $validation->getErrorDescription();
+
+        $verificationResponseKey =   BVSConstants::AADHAAR . BvsValidationConstants::PROOF . $errorDescription;
+
+        return $verificationResponseKey;
     }
 }
