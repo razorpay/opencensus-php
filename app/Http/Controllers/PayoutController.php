@@ -671,4 +671,39 @@ class PayoutController extends Controller
         return ApiResponse::json($this->service()->updateTaxPayment($payoutId, $input));
     }
 
+    public function createTestPayoutsForDowntimeDetectionICICI()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->createTestPayoutsForDetectingDowntimeICICI($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function createTestPayoutsForDowntimeDetectionYESB()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->createTestPayoutsForDetectingDowntimeYESB($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function checkTestPayoutsStatus()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->checkTestPayoutsStatus($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function addBalanceToSourceAccountForTestMerchant()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->addBalanceToSourceForTestMerchant($input);
+
+        return ApiResponse::json($data);
+    }
 }

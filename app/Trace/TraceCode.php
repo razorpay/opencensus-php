@@ -6999,6 +6999,14 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TENANT_ROUTE_ACCESS_DENIED                            = 'TENANT_ROUTE_ACCESS_DENIED';
     const TENANT_ROUTE_ROLES_NOT_MAPPED                         = 'TENANT_ROUTE_ROLES_NOT_MAPPED';
 
+    const TEST_PAYOUT_FOR_DETECTING_FUND_LOADING_DOWNTIME_CREATE_REQUEST = 'TEST_PAYOUT_FOR_DETECTING_FUND_LOADING_DOWNTIME_CREATE_REQUEST';
+    const TEST_PAYOUT_FOR_DETECTING_FUND_LOADING_DOWNTIME_CREATED        = 'TEST_PAYOUT_FOR_DETECTING_FUND_LOADING_DOWNTIME_CREATED';
+    const STATUS_OF_TEST_PAYOUTS                                         = 'STATUS_OF_TEST_PAYOUTS';
+    const TEST_PAYOUTS_YESB_CRON_REQUEST                                 = 'TEST_PAYOUTS_YESB_CRON_REQUEST';
+    const TEST_PAYOUTS_ICICI_CRON_REQUEST                                = 'TEST_PAYOUTS_ICICI_CRON_REQUEST';
+    const STATUS_OF_TEST_PAYOUTS_CRON_REQUEST                            = 'STATUS_OF_TEST_PAYOUTS_CRON_REQUEST';
+    const LOW_BALANCE_ALERT_FOR_TEST_PAYOUTS                              = 'LOW_BALANCE_ALERT_FOR_TEST_PAYOUTS';
+
     const PARTNER_KYC_ACCESS__REQUEST                           = 'PARTNER_KYC_ACCESS__REQUEST';
     const BAS_DEDUPE_CHECK_ANALYSIS                             = 'BAS_DEDUPE_CHECK_ANALYSIS';
 
@@ -7225,7 +7233,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
         self::PAYOUT_INVALID_UPDATE                                 => 'Invalid Update operation on Payout',
         self::BAD_REQUEST_PAYOUT_INVALID_SOURCE_TYPE                => 'Invalid source type on payout',
         self::UPDATE_PAYOUT_ATTACHMENTS_INPUT                       => 'Update Payout Attachments request',
-        ];
+        self::TEST_PAYOUT_FOR_DETECTING_FUND_LOADING_DOWNTIME_CREATE_REQUEST => 'request for creating test payouts for detecting fund loading downtime created',
+        self::TEST_PAYOUT_FOR_DETECTING_FUND_LOADING_DOWNTIME_CREATED        => 'test payouts for detecting fund loading downtime created',
+        self::STATUS_OF_TEST_PAYOUTS                                         => 'status of test payouts in last five minutes',
+    ];
 
     public static $fileBasedReconTraceCodes = [
         self::RECON_FILE_LINK_NOT_FOUND,

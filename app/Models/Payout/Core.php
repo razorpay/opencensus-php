@@ -114,6 +114,21 @@ class Core extends Base\Core
 
     const EMAIL_COUNT_FOR_PENDING_PAYOUT_APPROVAL = 5;
 
+    //constants for fund loading downtime detection test payouts
+    const BANK                               = 'bank';
+    const STATUS                             = 'status';
+    const MODE                               = 'mode';
+    const MESSAGE                            = 'message';
+    const IS_DOWNTIME_DETECTED               = 'is_downtime_detected';
+    const SUCCESSFUL_YESB_TEST_PAYOUTS       = 'successful_YESB_test_payouts';
+    const DELAYED_YESB_TEST_PAYOUTS          = 'delayed_YESB_test_payouts';
+    const UNSUCCESSFUL_YESB_TEST_PAYOUTS     = 'unsuccessful_YESB_test_payouts';
+    const SUCCESSFUL_ICICI_TEST_PAYOUTS      = 'successful_ICICI_test_payouts';
+    const DELAYED_ICICI_TEST_PAYOUTS         = 'delayed_ICICI_test_payouts';
+    const UNSUCCESSFUL_ICICI_TEST_PAYOUTS    = 'unsuccessful_ICICI_test_payouts';
+    const NARRATION_ICICI                    = 'ICICI Test Payout';
+    const NARRATION_YESB                     = 'YESB Test Payout';
+
     /**
      * @var Mutex
      */
@@ -5389,7 +5404,6 @@ class Core extends Base\Core
         }
     }
 
-
     public function processTdsForPayout(Entity $payout, string $oldStatus)
     {
         $this->trace->info(
@@ -5476,5 +5490,168 @@ class Core extends Base\Core
                 $this->processLedgerPayoutForDirect($payout, Transaction\Processor\Ledger\Payout::DA_PAYOUT_REVERSED_RECON, $reversal, null, $bankAccStmtForReversal);
             }
         }
+    }
+
+    public function checkStatusOfTestPayouts($input)
+    {
+        $merchantId      = \RZP\Models\Merchant\Account::FUND_LOADING_DOWNTIME_DETECTION_TEST_ACCOUNT1;
+
+        $this->merchant  = $this->addMerchantForTestPayouts($merchantId);
+
+        $merchantId      = $this->merchant->getId();
+
+        $modes           = $input[\RZP\Models\Payout\Service::MODES];
+
+        foreach ($modes as $mode)
+        {
+            $testPayoutsICICI = $this->repo->payout->fetchTestPayouts($merchantId, $mode, self::NARRATION_ICICI);
+
+            list($successfulIciciTestPayouts,
+                $delayedIciciTestPayouts,
+                $unsuccessfulIciciTestPayouts
+                ) = $this->calculateSuccessfulUnsuccessfulDelayedTestPayouts($testPayoutsICICI);
+
+            if (($successfulIciciTestPayouts + $delayedIciciTestPayouts + $unsuccessfulIciciTestPayouts) > 0)
+            {
+                if (($delayedIciciTestPayouts + $unsuccessfulIciciTestPayouts) / ($successfulIciciTestPayouts + $delayedIciciTestPayouts + $unsuccessfulIciciTestPayouts) > 0.75)
+                {
+                    $isICICIDowntimeDetected = true;
+                }
+                else
+                {
+                    $isICICIDowntimeDetected = false;
+                }
+
+                $responseIcici = [
+                    self::BANK => 'ICICI',
+                    self::STATUS => [
+                        self::MODE => 'IFT',
+                        self::IS_DOWNTIME_DETECTED => $isICICIDowntimeDetected,
+                        self::SUCCESSFUL_ICICI_TEST_PAYOUTS => $successfulIciciTestPayouts,
+                        self::DELAYED_ICICI_TEST_PAYOUTS => $delayedIciciTestPayouts,
+                        self::UNSUCCESSFUL_ICICI_TEST_PAYOUTS => $unsuccessfulIciciTestPayouts,
+                    ]
+                ];
+            }
+
+            else
+            {
+                $responseIcici = [
+                    self::BANK => 'ICICI',
+                    self::MODE => 'IFT',
+                    self::STATUS => [
+                        self::MESSAGE => 'No test payout found',
+                    ]
+                ];
+            }
+
+            $finalResponseIcici[] = $responseIcici;
+
+        // commenting status check for YESB as we are starting with only ICICI IFT mode for now.
+        $testPayoutsForYESBNotEnabled = true;
+
+            if ($testPayoutsForYESBNotEnabled === false)
+            {
+                $testPayoutsYESB = $this->repo->payout->fetchTestPayouts($merchantId, $mode, self::NARRATION_YESB);
+
+                list($successfulYesbTestPayouts,
+                    $delayedYesbTestPayouts,
+                    $unsuccessfulYesbTestPayouts
+                    ) = $this->calculateSuccessfulUnsuccessfulDelayedTestPayouts($testPayoutsYESB);
+
+                if (($successfulYesbTestPayouts + $delayedYesbTestPayouts + $unsuccessfulYesbTestPayouts) > 0)
+                {
+                    if (($delayedYesbTestPayouts + $unsuccessfulYesbTestPayouts) / ($successfulYesbTestPayouts + $delayedYesbTestPayouts + $unsuccessfulYesbTestPayouts) > 0.75)
+                    {
+                        $isYESBDowntimeDetected = true;
+                    }
+                    else
+                    {
+                        $isYESBDowntimeDetected = false;
+                    }
+
+                    $responseYESB = [
+                        self::BANK => 'YESB',
+                        self::STATUS => [
+                            self::MODE => $mode,
+                            self::IS_DOWNTIME_DETECTED => $isYESBDowntimeDetected,
+                            self::SUCCESSFUL_YESB_TEST_PAYOUTS => $successfulYesbTestPayouts,
+                            self::DELAYED_YESB_TEST_PAYOUTS => $delayedYesbTestPayouts,
+                            self::UNSUCCESSFUL_YESB_TEST_PAYOUTS => $unsuccessfulYesbTestPayouts,
+                        ]
+                    ];
+                }
+                else
+                {
+                    $responseYESB = [
+                        self::BANK => 'YESB',
+                        self::MODE => $mode,
+                        self::STATUS => [
+                            self::MESSAGE => 'No test payout found',
+                        ]
+                    ];
+                }
+
+                $finalResponseYESB[] = $responseYESB;
+            }
+
+        }
+
+        $response = [$finalResponseIcici];
+
+        $this->trace->info(TraceCode::STATUS_OF_TEST_PAYOUTS,
+            ['response' => $response]);
+
+        return $response;
+    }
+
+    protected function calculateSuccessfulUnsuccessfulDelayedTestPayouts($testPayouts)
+    {
+        $countOfUnsuccessfulFundLoading = 0;
+
+        $countOfSuccessfulFundLoading   = 0;
+
+        $countOfDelayedFundLoading      = 0;
+
+        // threshold time is in minutes
+        $thresholdForReceivingCallback  = 10;
+
+        foreach ($testPayouts as $testPayout)
+        {
+            $utr          = $testPayout->getUtr();
+            $processedAt  = $testPayout->getProcessedAt();
+
+            $bankTransfer = $this->repo->bank_transfer->findByUtr($utr);
+
+            if ($bankTransfer !== null)
+            {
+                $createdAt = $bankTransfer->getCreatedAt();
+
+                 if (abs(($createdAt -$processedAt)) / 60 > $thresholdForReceivingCallback)
+                {
+                    $countOfDelayedFundLoading++;
+                }
+                else
+                {
+                    $countOfSuccessfulFundLoading++;
+                }
+            }
+
+            else
+            {
+                $countOfUnsuccessfulFundLoading++;
+            }
+        }
+
+        return [$countOfSuccessfulFundLoading, $countOfDelayedFundLoading, $countOfUnsuccessfulFundLoading];
+    }
+
+    public function addMerchantForTestPayouts(string $merchantId)
+    {
+        $this->merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $this->app['basicauth']->setMerchant($this->merchant);
+
+        return $this->merchant;
     }
 }

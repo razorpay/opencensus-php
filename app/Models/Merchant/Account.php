@@ -31,6 +31,9 @@ class Account
     const X_DEMO_PROD_ACCOUNT        = 'Hy5Vxj9TTVm4Oi';
     const X_DEMO_BETA_ACCOUNT        = 'Hrw2ujXW6LGEk7';
 
+    const FUND_LOADING_DOWNTIME_DETECTION_TEST_ACCOUNT1 = 'JX04vtuLFZyc8P';
+    const FUND_LOADING_DOWNTIME_DETECTION_TEST_ACCOUNT2 = 'JXR5VxmNDmWy1z';
+
     protected static $nodalAccounts = [
         self::NODAL_ACCOUNT,
         self::ATOM_ACCOUNT

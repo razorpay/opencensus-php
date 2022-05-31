@@ -3120,6 +3120,11 @@ class Route
 
         'create_promotions_events'                => ['post',      'promotions/events',                                        'PromotionEventController@create'],
 
+        // routes related to fund loading downtime detection via test transactions
+        'create_test_payouts_for_downtime_detection_ICICI' => ['post', 'payouts/test/downtime_detection_ICICI',              'PayoutController@createTestPayoutsForDowntimeDetectionICICI'              ],
+        'create_test_payouts_for_downtime_detection_YESB'  => ['post', 'payouts/test/downtime_detection_YESB',               'PayoutController@createTestPayoutsForDowntimeDetectionYESB'               ],
+        'check_status_of_test_payouts'                     => ['post', 'payouts/test/check_status',                          'PayoutController@checkTestPayoutsStatus'                                  ],
+        'add_balance_to_source_for_test_payouts'           => ['post', 'payouts/test/add_balance_to_source',                 'PayoutController@addBalanceToSourceAccountForTestMerchant'                ],
 
         //payout downtime methods
         'create_payout_downtime'                  => ['post',      'payouts/downtime',                                        'PayoutDowntimeController@createPayoutDowntime'              ],
@@ -4098,6 +4103,10 @@ class Route
         'generate_gifu_file',
         'generate_nium_settlement_file',
         'merchant_settlements_events_cron',
+        'create_test_payouts_for_downtime_detection_ICICI',
+        'create_test_payouts_for_downtime_detection_YESB',
+        'check_status_of_test_payouts',
+        'add_balance_to_source_for_test_payouts',
         'mob_to_bas_routes',
         'coupon_expiry_alert',
         'upi_transfer_process_internal',
@@ -11965,6 +11974,10 @@ class Route
         ],
 
         'cron' => [
+            'create_test_payouts_for_downtime_detection_ICICI',
+            'create_test_payouts_for_downtime_detection_YESB',
+            'check_status_of_test_payouts',
+            'add_balance_to_source_for_test_payouts',
             'internal_transactions_cron',
             'merchant_settlements_events_cron',
             'coupon_expiry_alert',

@@ -94,6 +94,7 @@ class Service extends Base\Service
     const FILE      = 'file';
     const FILE_SIZE = 'file_size';
     const ENTITY    = 'entity';
+    const MODES     = 'modes';
 
     /**
      * @var PayoutService\OnHoldCron
@@ -3013,5 +3014,120 @@ class Service extends Base\Service
 
         return $this->payoutDetailsCore
             ->updateTaxPayment($payoutId, $taxPaymentId);
+    }
+
+    public function createTestPayoutsForDetectingDowntimeYESB(array $input)
+    {
+        $this->trace->info(TraceCode::TEST_PAYOUTS_YESB_CRON_REQUEST);
+
+        $testPayoutInput = $input;
+        $merchantId      = \RZP\Models\Merchant\Account::FUND_LOADING_DOWNTIME_DETECTION_TEST_ACCOUNT1;
+        $this->merchant  = $this->core->addMerchantForTestPayouts($merchantId);
+
+        $this->trace->info(TraceCode::TEST_PAYOUT_FOR_DETECTING_FUND_LOADING_DOWNTIME_CREATE_REQUEST,
+            ['input' => $testPayoutInput,]);
+
+        $balance = $this->processAccountNumber($testPayoutInput);
+
+        $modes = array_pull($testPayoutInput,self::MODES);
+
+        foreach ($modes as $mode)
+        {
+            $testPayoutInput[Payout\Entity::MODE] = $mode;
+
+            (new Validator)->setStrictFalse()
+                ->validateInput(Validator::BEFORE_CREATE_FUND_ACCOUNT_PAYOUT, $testPayoutInput);
+
+            $payout = $this->core->createPayoutToFundAccount($testPayoutInput, $this->merchant);
+
+            $response = [
+                Payout\Entity::ID               => 'pout_' . $payout->getId(),
+                Payout\Entity::MODE             => $payout->getMode(),
+                Payout\Entity::STATUS           => $payout->getStatus(),
+                Payout\Entity::FUND_ACCOUNT_ID  => $payout->getFundAccountId(),
+                Payout\Entity::NARRATION        => $payout->getNarration(),
+                Payout\Entity::CREATED_AT       => $payout->getCreatedAt(),
+            ];
+
+            $finalResponse[] = $response;
+        }
+
+        $this->trace->info(TraceCode::TEST_PAYOUT_FOR_DETECTING_FUND_LOADING_DOWNTIME_CREATED,
+            ['response' => $finalResponse]);
+
+        return $finalResponse;
+    }
+
+    public function createTestPayoutsForDetectingDowntimeICICI(array $input)
+    {
+        $this->trace->info(TraceCode::TEST_PAYOUTS_ICICI_CRON_REQUEST);
+
+        $testPayoutInput  = $input;
+        $merchantId       = \RZP\Models\Merchant\Account::FUND_LOADING_DOWNTIME_DETECTION_TEST_ACCOUNT1;
+        $this->merchant   = $this->core->addMerchantForTestPayouts($merchantId);
+
+        $this->trace->info(TraceCode::TEST_PAYOUT_FOR_DETECTING_FUND_LOADING_DOWNTIME_CREATE_REQUEST,
+            ['input' => $testPayoutInput,]);
+
+        $balance = $this->processAccountNumber($testPayoutInput);
+
+        if($balance->getBalance() < 864000)
+        {
+          $this->trace->info(TraceCode::LOW_BALANCE_ALERT_FOR_TEST_PAYOUTS);
+        }
+
+        $modes = array_pull($testPayoutInput,self::MODES);
+
+        foreach ($modes as $mode)
+        {
+            $testPayoutInput[Payout\Entity::MODE] = $mode;
+
+            (new Validator)->setStrictFalse()
+                ->validateInput(Validator::BEFORE_CREATE_FUND_ACCOUNT_PAYOUT, $testPayoutInput);
+
+
+            $payout = $this->core->createPayoutToFundAccount($testPayoutInput, $this->merchant);
+
+            $response = [
+                Payout\Entity::ID => 'pout_' . $payout->getId(),
+                Payout\Entity::MODE => $payout->getMode(),
+                Payout\Entity::STATUS => $payout->getStatus(),
+                Payout\Entity::FUND_ACCOUNT_ID => $payout->getFundAccountId(),
+                Payout\Entity::NARRATION => $payout->getNarration(),
+                Payout\Entity::CREATED_AT => $payout->getCreatedAt(),
+            ];
+
+            $finalResponse[] = $response;
+        }
+        $this->trace->info(TraceCode::TEST_PAYOUT_FOR_DETECTING_FUND_LOADING_DOWNTIME_CREATED,
+            ['response' => $finalResponse]);
+
+        return $finalResponse;
+    }
+
+    public function checkTestPayoutsStatus(array $input)
+    {
+        $this->trace->info(TraceCode::STATUS_OF_TEST_PAYOUTS_CRON_REQUEST);
+
+        return $this->core->checkStatusOfTestPayouts($input);
+    }
+
+    public function addBalanceToSourceForTestMerchant($input)
+    {
+        $merchantId      = \RZP\Models\Merchant\Account::FUND_LOADING_DOWNTIME_DETECTION_TEST_ACCOUNT2;
+        $this->merchant = $this->core->addMerchantForTestPayouts($merchantId);
+
+        $balance = $this->processAccountNumber($input);
+
+        (new Validator)->setStrictFalse()
+            ->validateInput(Validator::BEFORE_CREATE_FUND_ACCOUNT_PAYOUT, $input);
+
+        $payout = $this->core->createPayoutToFundAccount($input, $this->merchant);
+
+        $response = [
+            'message' => 'Balance added to source account successfully',
+        ];
+
+        return $response;
     }
 }

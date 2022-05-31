@@ -19160,6 +19160,135 @@ return [
         ],
     ],
 
+    'testCreationOfTestPayoutsForDetectingFundLoadingDowntimeICICI' => [
+        'request' => [
+            'method' => 'post',
+            'url' => '/payouts/test/downtime_detection_ICICI',
+            'content' => [
+                'account_number' => '2244240041626905',
+                'amount' => 100,
+                'currency' => 'INR',
+                'purpose' => 'payout',
+                'narration' => 'ICICI Test Payout',
+                'modes' => ['IMPS'],
+                'fund_account_id' => 'fa_D6Z9Jfir2egAUT',
+                'notes' => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                [
+                  'mode' => 'IMPS',
+                  'status' => 'created',
+                    'fund_account_id' => 'D6Z9Jfir2egAUT',
+                    'narration' => 'ICICI Test Payout',
+                ],
+            ],
+        ],
+    ],
+
+    'testCreationOfTestPayoutsForDetectingFundLoadingDowntimeYESB' => [
+        'request' => [
+            'method' => 'post',
+            'url' => '/payouts/test/downtime_detection_YESB',
+            'content' => [
+                'account_number' => '2223330041626905',
+                'amount' => 100,
+                'currency' => 'INR',
+                'purpose' => 'payout',
+                'narration' => 'YESB Test Payout',
+                'modes' => ['IMPS'],
+                'fund_account_id' => 'fa_D6Z9Jfir2egAUT',
+                'notes' => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'mode' => 'IMPS',
+                    'status' => 'created',
+                    'fund_account_id' => 'D6Z9Jfir2egAUT',
+                    'narration' => 'YESB Test Payout',
+                ],
+            ],
+        ],
+    ],
+
+    'testFundLoadingDowntimeDetectionICICI' => [
+        'request' => [
+            'method' => 'post',
+            'url' => '/payouts/test/check_status',
+            'content' => [
+                'modes' => ['IMPS'],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                [
+                    [
+                        'bank' => 'ICICI',
+                        'status' => [
+                            'mode' => 'IFT',
+                            'is_downtime_detected' => true,
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testFundLoadingDowntimeDetectionYESB' => [
+        'request' => [
+            'method' => 'post',
+            'url' => '/payouts/test/check_status',
+            'content' => [
+                'modes' => ['IMPS'],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                [
+                    [
+                        'bank' => 'ICICI',
+                        'mode' => 'IFT',
+                        'status' => [
+                          'message' => 'No test payout found',
+                        ],
+
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testAddingBalanceToSourceForTestMerchant' => [
+        'request' => [
+          'method' => 'post',
+          'url' => '/payouts/test/add_balance_to_source',
+          'content' => [
+              'account_number' => '7878780111000',
+              'amount' => 1728000,
+              'currency' => 'INR',
+              'purpose' => 'payout',
+              'narration' => ' Adding balance',
+              'mode' => 'IMPS',
+              'fund_account_id' => 'fa_D6Z9Jfir2egAUQ',
+              'notes' => [
+                  'abc' => 'xyz',
+              ],
+          ],
+        ],
+        'response' => [
+            'content' => [
+                'message' => 'Balance added to source account successfully',
+                ]
+            ],
+    ],
+
     'testPayoutProcessFailureInFtsStatusUpdate' => [
         'request'   => [
             'method'  => 'POST',

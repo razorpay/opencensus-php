@@ -2389,4 +2389,37 @@ class Repository extends Base\Repository
 
         return $payouts;
     }
+
+    // returns all processed payouts for given mode with given narration which were created in
+    // between those two timestamp
+    public function fetchTestPayouts(string $merchantId, string $mode, string $narration)
+    {
+        $statusColumn = $this->dbColumn(Entity::STATUS);
+        $merchantIdColumn = $this->dbColumn(Entity::MERCHANT_ID);
+        $createdAtColumn = $this->dbColumn(Entity::CREATED_AT);
+        $narrationColumn = $this->dbColumn(Entity::NARRATION);
+        $modeColumn = $this->dbColumn(Entity::MODE);
+
+        $currentTime = Carbon::now()->getTimestamp();
+        $startTime = Carbon::createFromTimestamp(
+            $currentTime,
+            Timezone::IST)
+            ->subMinutes(15)
+            ->getTimestamp();
+        $endTime = Carbon::createFromTimestamp(
+            $currentTime,
+            Timezone::IST)
+            ->subMinutes(10)
+            ->getTimestamp();
+
+
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+            ->where($statusColumn, Status::PROCESSED)
+            ->where($merchantIdColumn, $merchantId)
+            ->where($modeColumn, $mode)
+            ->where($narrationColumn, $narration)
+            ->whereBetween($createdAtColumn, [$startTime, $endTime])
+            ->get();
+    }
+
 }

@@ -67,7 +67,7 @@ class BankTransferController extends Controller
         $input = Request::all();
 
         $response = $this->service()->processFile($input, Batch\Type::ECOLLECT_YESBANK);
-  
+
         return ApiResponse::json($response);
     }
 

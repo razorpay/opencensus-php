@@ -22167,6 +22167,257 @@ class PayoutTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testCreationOfTestPayoutsForDetectingFundLoadingDowntimeICICI()
+    {
+        list($merchantId,$accountNumber1,$accountNumber2,$ifsc,$channel) =
+            ['JX04vtuLFZyc8P','2244240041626905','7878780111000','ICIC0000104','icici'];
+
+        $this->setUpMerchantForTestPayouts($merchantId,$accountNumber1,$accountNumber2,$ifsc,$channel);
+        $this->mockRazorxToAllowVAToVAPayouts();
+        $this->ba->cronAuth('live');
+
+        $response = $this->startTest();
+        $payout = $this->getDbLastEntity('payout', 'live');
+
+        $this->assertEquals('pout_' . $payout->getId(), $response[0]['id']);
+        $this->assertEquals($payout->getCreatedAt(), $response[0]['created_at']);
+    }
+
+    public function testCreationOfTestPayoutsForDetectingFundLoadingDowntimeYESB()
+    {
+        list($merchantId,$accountNumber1,$accountNumber2,$ifsc,$channel) =
+            ['JX04vtuLFZyc8P','2223330041626905','3434680111000','YESB0CMSNOC','yesb'];
+
+        $this->setUpMerchantForTestPayouts($merchantId,$accountNumber1,$accountNumber1,$ifsc,$channel);
+        $this->mockRazorxToAllowVAToVAPayouts();
+        $this->ba->cronAuth('live');
+
+        $response = $this->startTest();
+        $payout = $this->getDbLastEntity('payout', 'live');
+
+       $this->assertEquals('pout_' . $payout->getId(),$response[0]['id']);
+       $this->assertEquals($payout->getCreatedAt(), $response[0]['created_at']);
+    }
+
+    public function testFundLoadingDowntimeDetectionICICI()
+    {
+        list($merchantId,$accountNumber1,$accountNumber2,$ifsc,$channel) =
+            ['JX04vtuLFZyc8P','2244240041626905','7878780111000','ICIC0000104','icici'];
+
+        $this->setUpMerchantForTestPayouts($merchantId,$accountNumber1,$accountNumber2,$ifsc,$channel);
+        $this->mockRazorxToAllowVAToVAPayouts();
+        $interval = 0;
+
+        for ($i = 0; $i < 30; $i++)
+        {
+            $this->ba->cronAuth('live');
+            $request = [
+                'method' => 'post',
+                'url' => '/payouts/test/downtime_detection_ICICI',
+                'content' => [
+                    'account_number' => '2244240041626905',
+                    'amount' => 100,
+                    'currency' => 'INR',
+                    'purpose' => 'payout',
+                    'narration' => 'ICICI Test Payout',
+                    'modes' => ['IMPS'],
+                    'fund_account_id' => 'fa_D6Z9Jfir2egAUT',
+                    'notes' => [
+                        'abc' => 'xyz',
+                    ],
+                ],
+            ];
+
+            $this->makeRequestAndGetContent($request);
+
+            $payoutICICI = $this->getDbEntity('payout', ['narration' => 'ICICI Test Payout'], 'live');
+
+            $currentTime = Carbon::now()->getTimestamp();
+            $createdAt = Carbon::createFromTimestamp(
+                    $currentTime,
+                    Timezone::IST)
+                    ->subSeconds(900 - $interval)
+                    ->getTimestamp();
+
+            $interval = $interval + 10 ;
+            $payoutICICI->setCreatedAt($createdAt);
+            $payoutICICI->setStatus('processed');
+            $utr[$i] = random_alphanum_string(22);
+
+            $payoutICICI->setUtr($utr[$i]);
+            $payoutICICI->save();
+        }
+
+        for ($i = 0; $i < 7; $i++)
+        {
+            $id = random_alphanum_string(14);
+            $this->fixtures->on('live')->create('bank_transfer', ['id' => $id, 'utr' => $utr[$i]]);
+        }
+
+        $this->ba->cronAuth('live');
+        $response = $this->startTest();
+    }
+
+    public function testFundLoadingDowntimeDetectionYESB()
+    {
+        list($merchantId,$accountNumber1,$accountNumber2,$ifsc,$channel) =
+            ['JX04vtuLFZyc8P','2223330041626905','3434680111000','YESB0CMSNOC','yesb'];
+
+        $this->setUpMerchantForTestPayouts($merchantId,$accountNumber1,$accountNumber1,$ifsc,$channel);
+        $this->mockRazorxToAllowVAToVAPayouts();
+        $interval = 0;
+
+        for ($i = 0; $i < 30; $i++)
+        {
+            $this->ba->cronAuth('live');
+            $request = [
+                'method' => 'post',
+                'url' => '/payouts/test/downtime_detection_YESB',
+                'content' => [
+                    'account_number' => '2223330041626905',
+                    'amount' => 100,
+                    'currency' => 'INR',
+                    'purpose' => 'payout',
+                    'narration' => 'YESB Test Payout',
+                    'modes' => ['IMPS'],
+                    'fund_account_id' => 'fa_D6Z9Jfir2egAUT',
+                    'notes' => [
+                        'abc' => 'xyz',
+                    ],
+                ],
+            ];
+
+            $this->makeRequestAndGetContent($request);
+            $payoutYESB = $this->getDbEntity('payout', ['narration' => 'YESB Test Payout'], 'live');
+
+            $payoutYESB->setStatus('processed');
+
+            $currentTime = Carbon::now()->getTimestamp();
+            $createdAt = Carbon::createFromTimestamp(
+                $currentTime,
+                Timezone::IST)
+                ->subSeconds(900 - $interval)
+                ->getTimestamp();
+
+            $interval = $interval + 10 ;
+            $payoutYESB->setCreatedAt($createdAt);
+            $utr[$i] = random_alphanum_string(22);
+
+            $payoutYESB->setUtr($utr[$i]);
+            $payoutYESB->save();
+        }
+
+        for ($i = 0; $i < 8; $i++)
+        {
+            $id = random_alphanum_string(14);
+            $this->fixtures->on('live')->create('bank_transfer', ['id' => $id, 'utr' => $utr[$i]]);
+        }
+
+        $this->ba->cronAuth('live');
+        $response = $this->startTest();
+
+        //commenting these assertions as we are not doing YESB test payouts currently
+        //$this->assertEquals("No test payout found",$response[0][0]['status']['message']);
+        //$this->assertEquals(true,$response[0]['status']['is_downtime_detected']);
+    }
+
+    public function testAddingBalanceToSourceForTestMerchant()
+    {
+        list($merchantId,$accountNumber1,$accountNumber2,$ifsc,$channel) =
+            ['JXR5VxmNDmWy1z','7878780111000','2244240041626905','ICIC0000104','icici'];
+
+        $this->setUpMerchantForTestPayouts($merchantId,$accountNumber1,$accountNumber2,$ifsc,$channel);
+        $this->mockRazorxToAllowVAToVAPayouts();
+
+
+        $xBalance2 = $this->fixtures->on('live')->create('balance',
+            [
+                'merchant_id'    => $merchantId,
+                'type'           => 'banking',
+                'account_type'   => 'shared',
+                'account_number' => $accountNumber1,
+                'balance'        => 3000000,
+                'channel'        => $channel
+            ]);
+
+        $this->fixtures->on('live')->create('contact',
+            ['id' => '1000003contact', 'name' => 'Contact X', 'merchant_id' => $merchantId]);
+
+        $this->fixtures->on('live')->fund_account->createBankAccount(
+            [
+                'id'          => 'D6Z9Jfir2egAUQ',
+                'source_type' => 'contact',
+                'source_id'   => '1000003contact',
+                'merchant_id' => $merchantId,
+            ],
+            [
+                'name'           => 'Shivam',
+                'ifsc'           => $ifsc,
+                'account_number' => $accountNumber2,
+            ]);
+
+        $this->ba->cronAuth('live');
+        $this->startTest();
+    }
+
+    public function setUpMerchantForTestPayouts($merchantId,$accountNumber1,$accountNumber2,$ifsc,$channel)
+    {
+        $merchant = $this->fixtures->on('live')->create('merchant',
+            [
+                'id'               => $merchantId,
+                'pricing_plan_id'  => '1hDYlICobzOCYt',
+                'business_banking' => 1,
+                'activated'        => 1,
+            ]);
+
+        $this->fixtures->on('live')->create('feature', [
+            'name'        => Feature\Constants::PAYOUT,
+            'entity_id'   => $merchant['id'],
+            'entity_type' => 'merchant',
+        ]);
+
+        $xBalance = $this->fixtures->on('live')->create('balance',
+            [
+                'merchant_id'    => $merchant['id'],
+                'type'           => 'banking',
+                'account_type'   => 'shared',
+                'account_number' => $accountNumber1,
+                'balance'        => 3000000,
+                'channel'        => $channel,
+            ]);
+
+        $this->fixtures->on('live')->create('contact',
+            ['id' => '1000002contact', 'name' => 'Contact X', 'merchant_id' => $merchant['id']]);
+
+        $this->fixtures->on('live')->fund_account->createBankAccount(
+            [
+                'id'          => 'D6Z9Jfir2egAUT',
+                'source_type' => 'contact',
+                'source_id'   => '1000002contact',
+                'merchant_id' => $merchant['id'],
+            ],
+            [
+                'name'           => 'Shivam',
+                'ifsc'           => $ifsc,
+                'account_number' => $accountNumber2,
+            ]);
+
+        $virtualAccount = $this->fixtures->on('live')->create('virtual_account');
+        $bankAccount    = $this->fixtures->on('live')->create(
+            'bank_account',
+            [
+                'id'             => '1000000lcustba',
+                'type'           => 'virtual_account',
+                'entity_id'      => $virtualAccount->getId(),
+                'account_number' => $accountNumber1,
+                'ifsc_code'      => $ifsc,
+            ]);
+
+        $virtualAccount->bankAccount()->associate($bankAccount);
+        $virtualAccount->balance()->associate($xBalance);
+        $virtualAccount->save();
+    }
+
     public function testPayoutProcessFailureInFtsStatusUpdate()
     {
         $this->testCreatePayout();
@@ -22570,3 +22821,4 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals('pout_' . $payout["id"], $payload->payload->payout->entity->id);
     }
  }
+
