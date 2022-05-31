@@ -1,3 +1,35 @@
+import { getCommonSegmentProperties } from 'common/utils/rzp-utils';
+import analyticsService from '@razorpay/commander-services/analytics';
+
+export const EVENT_TYPES = {
+  RENDERED: 'Rendered',
+  CLICKED: 'clicked',
+};
+
+/**
+ * @param {{objectName, actionName, screen, properties}} obj - Object to be sent to analytics service
+ */
+const trackSegmentEvent = ({
+  objectName,
+  actionName,
+  screen = 'Cash Advance Onboarding',
+  properties = {},
+}) => {
+  try {
+    analyticsService.track({
+      objectName,
+      actionName,
+      screen,
+      properties: {
+        ...getCommonSegmentProperties(),
+        ...properties,
+      },
+    });
+  } catch (e) {
+    // empty catch block
+  }
+};
+
 const trackGAEvents = (data) => {
   window.rzpAnalytics?.({
     eventCategory: 'LOS | Promoter Info',
@@ -6,6 +38,10 @@ const trackGAEvents = (data) => {
 };
 
 export const trackGettingLosStarted = (MID) => {
+  trackSegmentEvent({
+    objectName: 'Getting Started Tab',
+    actionName: EVENT_TYPES.RENDERED,
+  });
   trackGAEvents({
     eventAction: `Landed on Getting Started Tab`,
     eventLabel: `Getting Started | Begin | ${MID}`,
@@ -27,6 +63,10 @@ export const trackLoanReason = (MID, reasons) => {
 };
 
 export const trackIntentFormContinueCta = (MID) => {
+  trackSegmentEvent({
+    objectName: 'Getting Started Tab Continue CTA',
+    actionName: EVENT_TYPES.CLICKED,
+  });
   trackGAEvents({
     eventAction: `Getting Started | Cicked on 'Continue' CTA`,
     eventLabel: `Getting started | Complete | ${MID}`,
@@ -34,6 +74,10 @@ export const trackIntentFormContinueCta = (MID) => {
 };
 
 export const trackBusinessFormTab = (MID) => {
+  trackSegmentEvent({
+    objectName: 'Business Details tab',
+    actionName: EVENT_TYPES.RENDERED,
+  });
   trackGAEvents({
     eventAction: `Landed on Business Details tab`,
     eventLabel: `Business Details | Begin | ${MID}`,
@@ -41,6 +85,10 @@ export const trackBusinessFormTab = (MID) => {
 };
 
 export const trackBusinessFormContinueCta = (MID) => {
+  trackSegmentEvent({
+    objectName: "Business details 'Confirm business details' CTA",
+    actionName: EVENT_TYPES.CLICKED,
+  });
   trackGAEvents({
     eventAction: `Business Details | Clicked on 'Confirm Business Details' CTA`,
     eventLabel: `Business Details | Complete | ${MID}`,
@@ -48,6 +96,10 @@ export const trackBusinessFormContinueCta = (MID) => {
 };
 
 export const trackPersonalFormTab = (MID) => {
+  trackSegmentEvent({
+    objectName: 'Personal Details tab',
+    actionName: EVENT_TYPES.RENDERED,
+  });
   trackGAEvents({
     eventAction: `Landed on Personal Details tab`,
     eventLabel: `Personal Details | Begin | ${MID}`,
@@ -62,6 +114,15 @@ export const trackMajorStackholderFill = (MID, majorityStakeholder, source) => {
 };
 
 export const trackCheckEligibilityCta = (MID, majorityStakeholder, source, loanId) => {
+  trackSegmentEvent({
+    objectName: "Personal detail 'check your eligibility' CTA",
+    actionName: EVENT_TYPES.CLICKED,
+    properties: {
+      majorityStakeholder,
+      source,
+      loanId,
+    },
+  });
   trackGAEvents({
     eventAction: `Personal Details | Clicked on 'Check Eligibility'`,
     eventLabel: `Personal Details | ${source} | Ownership - ${majorityStakeholder} | Complete |  ${MID} | Loan ID - ${loanId}`,
