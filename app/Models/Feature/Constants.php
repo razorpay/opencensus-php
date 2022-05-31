@@ -2590,11 +2590,6 @@ class Constants
             'display_name' => 'Process workflows via API (old workflow setup)',
             'description'  => 'This feature, if enabled, will process the workflows for the merchant via API Monolith',
         ],
-        self::APPS_STATUS_UPDATE_VIA_PS => [
-            'feature'       => self::APPS_STATUS_UPDATE_VIA_PS,
-            'display_name'  => 'Enable Apps Status Updates Via Payout Service',
-            'description'   => 'Enables status updates to internal apps via payouts service',
-        ],
     ];
 
     /**
