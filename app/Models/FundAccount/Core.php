@@ -154,88 +154,16 @@ class Core extends Base\Core
         if (($source instanceof Contact\Entity) and
             ($createDuplicate === false))
         {
-            $fundAccount = null;
+            $fundAccount = $this->checkAndGetFundAccountUsingHashOrFallback($merchant,
+                                                                            $input,
+                                                                            $uniqueHash,
+                                                                            $uniqueConsistentHash,
+                                                                            $source,
+                                                                            $batchId);
 
-            if(empty($uniqueConsistentHash) === false)
+            if (empty($fundAccount) === false)
             {
-                $fundAccount = $this->repo->fund_account->getFundAccountWithSimilarDetailsFromHash($uniqueConsistentHash);
-
-                if (empty($fundAccount) === false)
-                {
-                    $this->trace->info(
-                        TraceCode::DUPLICATE_FUND_ACCOUNT_FOUND_USING_HASH,
-                        [
-                            Entity::ID          => $fundAccount->getId(),
-                            Entity::BATCH_ID    => $batchId,
-                            Entity::UNIQUE_HASH => $uniqueConsistentHash,
-                        ]);
-
-                    return $fundAccount;
-                }
-
-                $fundAccount = $this->repo->fund_account->getFundAccountWithSimilarDetailsFromHash($uniqueHash);
-
-                if (empty($fundAccount) === false)
-                {
-                    $this->trace->info(
-                        TraceCode::DUPLICATE_FUND_ACCOUNT_FOUND_USING_HASH,
-                        [
-                            Entity::ID                            => $fundAccount->getId(),
-                            Entity::BATCH_ID                      => $batchId,
-                            Entity::UNIQUE_HASH . '_expected'     => $uniqueConsistentHash,
-                            Entity::UNIQUE_HASH . '_of_duplicate' => $fundAccount->getUniqueHash(),
-                        ]);
-
-                    $fundAccount = $this->updateDuplicateFundAccountWithHash($fundAccount,
-                                                                             $uniqueConsistentHash,
-                                                                             $merchant,
-                                                                             $source);
-                    return $fundAccount;
-                }
-
-            }
-            else{
-                $fundAccount = $this->repo->fund_account->getFundAccountWithSimilarDetailsFromHash($uniqueHash);
-
-                if (empty($fundAccount) === false)
-                {
-                    $this->trace->info(
-                        TraceCode::DUPLICATE_FUND_ACCOUNT_FOUND_USING_HASH,
-                        [
-                            Entity::ID          => $fundAccount->getId(),
-                            Entity::BATCH_ID    => $batchId,
-                            Entity::UNIQUE_HASH => $uniqueHash,
-                        ]);
-
-                    return $fundAccount;
-                }
-            }
-
-            if (empty($fundAccount) === true)
-            {
-                $fundAccount = $this->repo->fund_account->getFundAccountWithSimilarDetails($input, $merchant, $source);
-
-                if (empty($fundAccount) === false)
-                {
-                    $this->trace->info(
-                        TraceCode::DUPLICATE_FUND_ACCOUNT_FOUND_USING_FALLBACK,
-                        [
-                            Entity::ID                            => $fundAccount->getId(),
-                            Entity::BATCH_ID                      => $batchId,
-                            Entity::UNIQUE_HASH . '_of_input'     => $hash,
-                            Entity::UNIQUE_HASH . '_of_duplicate' => $fundAccount->getUniqueHash(),
-                        ]);
-
-                    if (empty($hash) === false)
-                    {
-                        $fundAccount = $this->updateDuplicateFundAccountWithHash($fundAccount,
-                                                                                 $hash,
-                                                                                 $merchant,
-                                                                                 $source);
-                    }
-
-                    return $fundAccount;
-                }
+                return $fundAccount;
             }
         }
 
@@ -300,25 +228,34 @@ class Core extends Base\Core
             $input = $this->constructWalletAccountFundAccountRequest($input);
         }
 
+        $uniqueHash = null;
+
+        $uniqueConsistentHash = null;
+
         $accountDetails = $this->getAccountDetailsForInput($input);
 
+        if ($merchant->isFeatureEnabled(Feature\Constants::SKIP_CONTACT_DEDUP_FA_BA) === true)
+        {
+            $uniqueConsistentHash = $this->generateUniqueHashForConsistentFundAccount($input[Entity::ACCOUNT_TYPE],
+                                                                                      $merchant,
+                                                                                      $accountDetails,
+                                                                                      $contact);
+        }
         $uniqueHash = $this->generateUniqueHashForFundAccount($input[Entity::ACCOUNT_TYPE],
                                                               $merchant,
                                                               $accountDetails,
                                                               $contact);
 
-        $fundAccount = $this->repo->fund_account->getFundAccountWithSimilarDetailsFromHash($uniqueHash);
+        $hash = (empty($uniqueConsistentHash) === true)? $uniqueHash : $uniqueConsistentHash;
+
+        $fundAccount = $this->checkAndGetFundAccountUsingHashOrFallback($merchant,
+                                                                        $input,
+                                                                        $uniqueHash,
+                                                                        $uniqueConsistentHash,
+                                                                        $contact);
 
         if (empty($fundAccount) === false)
         {
-            $this->trace->info(
-                TraceCode::DUPLICATE_FUND_ACCOUNT_FOUND_USING_HASH,
-                [
-                    Entity::ID          => $fundAccount->getId(),
-                    Entity::UNIQUE_HASH => $uniqueHash,
-                    'save_or_fail_flag' => $compositePayoutSaveOrFail
-                ]);
-
             return $fundAccount;
         }
 
@@ -336,9 +273,9 @@ class Core extends Base\Core
 
         $fundAccount->account()->associate($account);
 
-        if (empty($uniqueHash) === false)
+        if (empty($hash) === false)
         {
-            $fundAccount->setUniqueHash($uniqueHash);
+            $fundAccount->setUniqueHash($hash);
         }
 
         if (empty($metadata) === false)
@@ -374,6 +311,112 @@ class Core extends Base\Core
                            ]);
 
         return $fundAccount;
+    }
+
+    /**
+     * @param Merchant\Entity $merchant
+     * @param array $input
+     * @param string $uniqueHash
+     * @param Base\PublicEntity|null $source
+     * @param string|null $batchId
+     * @param string|null $uniqueConsistentHash
+     *
+     * @return Entity|null
+     */
+    protected function checkAndGetFundAccountUsingHashOrFallback(Merchant\Entity $merchant,
+                                                                 array $input,
+                                                                 string $uniqueHash = null,
+                                                                 string $uniqueConsistentHash = null,
+                                                                 Base\PublicEntity $source = null,
+                                                                 string $batchId = null): ?Entity
+    {
+        $fundAccount = null;
+
+        $hash = (empty($uniqueConsistentHash) === true)? $uniqueHash : $uniqueConsistentHash;
+
+        if (empty($uniqueConsistentHash) === false)
+        {
+            $fundAccount = $this->repo->fund_account->getFundAccountWithSimilarDetailsFromHash($uniqueConsistentHash);
+
+            if (empty($fundAccount) === false)
+            {
+                $this->trace->info(
+                    TraceCode::DUPLICATE_FUND_ACCOUNT_FOUND_USING_HASH,
+                    [
+                        Entity::ID          => $fundAccount->getId(),
+                        Entity::BATCH_ID    => $batchId,
+                        Entity::UNIQUE_HASH => $uniqueConsistentHash,
+                    ]);
+
+                return $fundAccount;
+            }
+
+            $fundAccount = $this->repo->fund_account->getFundAccountWithSimilarDetailsFromHash($uniqueHash);
+
+            if (empty($fundAccount) === false)
+            {
+                $this->trace->info(
+                    TraceCode::DUPLICATE_FUND_ACCOUNT_FOUND_USING_HASH,
+                    [
+                        Entity::ID                            => $fundAccount->getId(),
+                        Entity::BATCH_ID                      => $batchId,
+                        Entity::UNIQUE_HASH . '_expected'     => $uniqueConsistentHash,
+                        Entity::UNIQUE_HASH . '_of_duplicate' => $fundAccount->getUniqueHash(),
+                    ]);
+
+                $fundAccount = $this->updateDuplicateFundAccountWithHash(
+                    $fundAccount,
+                    $uniqueConsistentHash,
+                    $merchant,
+                    $source
+                );
+
+                return $fundAccount;
+            }
+        }
+        else
+        {
+            $fundAccount = $this->repo->fund_account->getFundAccountWithSimilarDetailsFromHash($uniqueHash);
+
+            if (empty($fundAccount) === false)
+            {
+                $this->trace->info(
+                    TraceCode::DUPLICATE_FUND_ACCOUNT_FOUND_USING_HASH,
+                    [
+                        Entity::ID          => $fundAccount->getId(),
+                        Entity::BATCH_ID    => $batchId,
+                        Entity::UNIQUE_HASH => $uniqueHash,
+                    ]);
+
+                return $fundAccount;
+            }
+        }
+
+        if (empty($fundAccount) === true)
+        {
+            $fundAccount = $this->repo->fund_account->getFundAccountWithSimilarDetails($input, $merchant, $source);
+
+            if (empty($fundAccount) === false)
+            {
+                $this->trace->info(
+                    TraceCode::DUPLICATE_FUND_ACCOUNT_FOUND_USING_FALLBACK,
+                    [
+                        Entity::ID                            => $fundAccount->getId(),
+                        Entity::BATCH_ID                      => $batchId,
+                        Entity::UNIQUE_HASH . '_of_input'     => $hash,
+                        Entity::UNIQUE_HASH . '_of_duplicate' => $fundAccount->getUniqueHash(),
+                    ]);
+
+                if (empty($hash) === false)
+                {
+                    $fundAccount = $this->updateDuplicateFundAccountWithHash($fundAccount, $hash, $merchant, $source);
+                }
+
+                return $fundAccount;
+            }
+        }
+
+        return null;
     }
 
     /**

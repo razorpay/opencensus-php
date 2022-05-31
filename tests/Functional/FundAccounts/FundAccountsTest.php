@@ -17,6 +17,7 @@ use RZP\Services\Segment\XSegmentClient;
 use RZP\Jobs\FTS\CreateAccount;
 use RZP\Tests\Functional\TestCase;
 use RZP\Jobs\FundAccountDetailsPropagatorJob;
+use RZP\Models\FundAccount\Core as FundAccountCore;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
@@ -479,6 +480,145 @@ class FundAccountsTest extends TestCase
         ];
 
         $this->assertArraySelectiveEquals($expectedBankAccount, $bankAccount);
+    }
+
+    public function testDuplicateFundAccountCreationForCompositePayoutWithUniqueConsistentHash()
+    {
+        $contact = $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::SKIP_CONTACT_DEDUP_FA_BA]);
+
+        $merchant = $this->getDbEntityById('merchant', '10000000000000');
+
+        $uniqueConsistentHashInput = '10000000000000|contact|bank_account|111000371|SBIN';
+
+        $uniqueConsistentHash = hash('sha3-256', $uniqueConsistentHashInput);
+
+        $this->fixtures->create('fund_account:bank_account',
+            [
+                'id'          => '100000000000fa',
+                'source_type' => 'contact',
+                'source_id'   => '1000000contact',
+                'unique_hash' => $uniqueConsistentHash
+            ]);
+
+        $fundAccount = $this->getDbLastEntity('fund_account');
+
+        $this->fixtures->edit('bank_account', $fundAccount->getAccountId()
+    ,       [
+                'ifsc_code'        => 'SBIN0000011',
+                'beneficiary_name' => 'Abcd Xyz',
+                'account_number'   => '111000371',
+                'account_type'     => 'bank_account',
+                'type'             => 'contact']);
+
+        $core = new FundAccountCore();
+
+        $input = [
+            'account_type' => 'bank_account',
+            'bank_account' => [
+                'ifsc'           => 'SBIN0000011',
+                'name'           => 'Abcd Xyz',
+                'account_number' => '111000371'
+            ],
+            'contact_id' => $contact->getPublicId()
+        ];
+
+        $response = $core->createForCompositePayout($input, $merchant, $contact, $input);
+
+        $this->assertEquals($fundAccount->getId(), $response->getId());
+        $this->assertEquals($fundAccount['unique_hash'], $response['unique_hash']);
+    }
+
+    public function testDuplicateFundAccountCreationForCompositePayoutWithUniqueHash()
+    {
+        $contact = $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $merchant = $this->getDbEntityById('merchant', '10000000000000');
+
+        $uniqueHashInput = '10000000000000|contact|1000000contact|bank_account|111000371|SBIN0000011|AbcdXyz';
+
+        $uniqueHash = hash('sha3-256', $uniqueHashInput);
+
+        $this->fixtures->create('fund_account:bank_account',
+            [
+                'id'          => '100000000000fa',
+                'source_type' => 'contact',
+                'source_id'   => '1000000contact',
+                'unique_hash' => $uniqueHash
+            ]);
+
+        $fundAccount = $this->getDbLastEntity('fund_account');
+
+        $this->fixtures->edit('bank_account', $fundAccount->getAccountId()
+            ,       [
+                'ifsc_code'        => 'SBIN0000011',
+                'beneficiary_name' => 'Abcd Xyz',
+                'account_number'   => '111000371',
+                'account_type'     => 'bank_account',
+                'type'             => 'contact']);
+
+        $core = new FundAccountCore();
+
+        $input = [
+            'account_type' => 'bank_account',
+            'bank_account' => [
+                'ifsc'           => 'SBIN0000011',
+                'name'           => 'Abcd Xyz',
+                'account_number' => '111000371'
+            ],
+            'contact_id' => $contact->getPublicId()
+        ];
+
+        $response = $core->createForCompositePayout($input, $merchant, $contact, $input);
+
+        $this->assertEquals($fundAccount->getId(), $response->getId());
+        $this->assertEquals($fundAccount['unique_hash'], $response['unique_hash']);
+    }
+
+    public function testDuplicateFundAccountCreationForCompositePayoutWithNoHash()
+    {
+        $contact = $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $merchant = $this->getDbEntityById('merchant', '10000000000000');
+
+        $this->fixtures->create('fund_account:bank_account',
+            [
+                'id'          => '100000000000fa',
+                'source_type' => 'contact',
+                'source_id'   => '1000000contact',
+            ]);
+
+        $fundAccount = $this->getDbLastEntity('fund_account');
+
+        $this->fixtures->edit('bank_account', $fundAccount->getAccountId()
+            ,       [
+                'ifsc_code'        => 'SBIN0000011',
+                'beneficiary_name' => 'Abcd Xyz',
+                'account_number'   => '111000371',
+                'account_type'     => 'bank_account',
+                'type'             => 'contact']);
+
+        $core = new FundAccountCore();
+
+        $input = [
+            'account_type' => 'bank_account',
+            'bank_account' => [
+                'ifsc'           => 'SBIN0000011',
+                'name'           => 'Abcd Xyz',
+                'account_number' => '111000371'
+            ],
+            'contact_id' => $contact->getPublicId()
+        ];
+
+        $response = $core->createForCompositePayout($input, $merchant, $contact, $input);
+
+        $uniqueHashInput = '10000000000000|contact|1000000contact|bank_account|111000371|SBIN0000011|AbcdXyz';
+
+        $expectedUniqueHash = hash('sha3-256', $uniqueHashInput);
+
+        $this->assertEquals($fundAccount->getId(), $response->getId());
+        $this->assertEquals($expectedUniqueHash, $response['unique_hash']);
     }
 
     public function testCreateVpa()
