@@ -202,7 +202,6 @@ class Service extends Base\Service
             'rx_non_self_serve_ca_flow',
             'add_on_card_onboarding',
             'zoho_cashflow',
-            'dashboard_super_checkout',
             'lite_onboarding',
             'stores',
             'mandatory_email_on_l1',
