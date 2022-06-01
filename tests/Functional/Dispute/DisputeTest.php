@@ -351,6 +351,8 @@ class DisputeTest extends TestCase
 
     public function testDisputeCreateWithDeductAdjustmentRecoveryMethodWithoutEnoughBalance()
     {
+        $this->fixtures->merchant->addFeatures(['allow_negative_dispute']);
+
         $payment = $this->fixtures->create('payment:captured');
 
         $this->fixtures->refund->createFromPayment(['payment' => $payment]);
@@ -363,11 +365,12 @@ class DisputeTest extends TestCase
 
         $transaction = $this->getLastEntity('transaction', true);
 
-        $this->assertEquals('refund', $transaction['type']);
+        $this->assertEquals('adjustment', $transaction['type']);
 
-        $dispute = $this->getLastEntity('dispute', true);
+        $adjustment = $this->getLastEntity('adjustment', true);
 
-        $this->assertNull($dispute);
+        $this->assertNotNull($adjustment);
+        $this->assertEquals('processed', $adjustment['status']);
     }
 
     public function testDisputeCreateWithoutReason()
@@ -559,6 +562,55 @@ class DisputeTest extends TestCase
         $eventTestDataKey = 'testDisputeLostEventData';
 
         $this->expectWebhookEventWithContents('payment.dispute.lost', $eventTestDataKey);
+
+        $this->runRequestResponseFlow($data);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertArraySelectiveEquals([
+            'disputed' => false,
+            'status'   => 'refunded',
+        ], $payment);
+
+        $txn = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals('adjustment', $txn['type']);
+
+        $this->assertEquals(1000000, $txn['amount']);
+
+        $this->assertEquals(1000000, $txn['debit']);
+
+        $this->assertEquals(0, $txn['credit']);
+
+        $dispute = $this->getLastEntity('dispute', true);
+
+        $this->assertNotNull($dispute['deduction_source_type']);
+
+        $this->assertNotNull($dispute['deduction_source_id']);
+
+        $this->assertEquals('lost_merchant_debited', $dispute['internal_status']);
+    }
+
+    public function testDisputeEditDeductForNoBalance()
+    {
+        $data = $this->updateEditTestData();
+
+        $txn = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals('payment', $txn['type']);
+
+        $this->ba->adminProxyAuth();
+
+        $eventTestDataKey = 'testDisputeLostEventData';
+
+        $this->expectWebhookEventWithContents('payment.dispute.lost', $eventTestDataKey);
+
+        $this->fixtures->edit('balance', '10000000000000',
+            [
+                'balance'      => 0,
+            ]);
+
+        $this->fixtures->merchant->addFeatures(['allow_negative_dispute']);
 
         $this->runRequestResponseFlow($data);
 

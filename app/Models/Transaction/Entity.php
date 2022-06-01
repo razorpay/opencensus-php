@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\Payment;
+use RZP\Models\Feature;
 use RZP\Models\Dispute;
 use RZP\Models\Merchant;
 use RZP\Models\Transfer;
@@ -1089,6 +1090,18 @@ class Entity extends Base\PublicEntity
             return ($this->accountBalance->isAccountTypeDirect() === true);
         }
 
+        return false;
+    }
+
+    public function shouldNegativeBalanceCheckSkipped(): bool
+    {
+        if(($this->isTypeAdjustment()) and
+            (method_exists($this->source, 'isDispute') === true) and
+            ($this->source->isDispute() === true) and
+            ($this->merchant->isFeatureEnabled(Feature\Constants::ALLOW_NEGATIVE_DISPUTE) === true))
+        {
+            return true;
+        }
         return false;
     }
 }

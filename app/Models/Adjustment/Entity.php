@@ -3,6 +3,7 @@
 namespace RZP\Models\Adjustment;
 
 use RZP\Models\Base;
+use RZP\Models\Dispute;
 use RZP\Models\Settlement;
 use RZP\Models\Base\Traits\HasBalance;
 
@@ -207,5 +208,10 @@ class Entity extends Base\PublicEntity
     public function shouldNotifyTxnViaEmail(): bool
     {
         return $this->isBalanceTypeBanking() === true;
+    }
+
+    public function isDispute(): bool
+    {
+        return $this->getDescription() === Dispute\Core::DEBIT_ADJUSTMENT_DESCRIPTION;
     }
 }

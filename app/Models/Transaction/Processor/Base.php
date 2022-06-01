@@ -885,6 +885,11 @@ abstract class Base extends BaseCore
 
         $checkNegativeLimit = $oldBalance > $newBalance;
 
+        if ($this->txn->shouldNegativeBalanceCheckSkipped() === true)
+        {
+            $checkNegativeLimit = false;
+        }
+
         $this->txn->setBalance($this->merchantBalance->getBalance(), $negativeLimit, $checkNegativeLimit);
 
         $balanceThreshold = $this->merchantBalance->merchant->getBalanceThreshold();

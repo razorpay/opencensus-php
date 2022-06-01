@@ -870,7 +870,7 @@ class DisputePresentmentTest extends TestCase
 
     public function testAcceptDisputeRecoveryViaAdjustmentFail()
     {
-        Mail::fake();
+        $this->fixtures->merchant->addFeatures(['allow_negative_dispute']);
 
         $this->setUpForInitiateDraftEvidenceTest();
 
@@ -886,28 +886,9 @@ class DisputePresentmentTest extends TestCase
 
         $adjustment = $this->getLastEntity('adjustment', true);
 
-        $this->assertArraySelectiveEquals([
-            'amount_deducted' => 0,
-            'status'          => 'lost',
-            'internal_status' => 'lost_merchant_not_debited',
-        ], $disputeAfter);
-
-        $this->assertNull($adjustment);
-
-        Mail::assertQueued(DisputePresentmentRiskOpsReview::class, function (DisputePresentmentRiskOpsReview $mail)
-        {
-            $this->assertEquals('DisputePresentment | RiskOps Review needed for disp_0123456789abcd', $mail->subject);
-
-            $this->assertCount(2, $mail->to);
-
-            $this->assertArrayKeysExist($mail->viewData, ['dispute', 'payment', 'dashboard_hostname', 'reason_for_review', 'review_message']);
-
-            $this->assertEquals('adjustment or refund creation failed', $mail->viewData['reason_for_review']);
-
-            $this->assertEquals('Merchant does not have enough balance for negative adjustment', $mail->viewData['review_message']);
-
-            return true;
-        });
+        $this->assertNotNull($adjustment);
+        $this->assertEquals('processed', $adjustment['status']);
+        $this->assertEquals($adjustment['id'], "adj_" . $disputeAfter['deduction_source_id']);
     }
 
     public function testAcceptDisputeRecoveryViaRefundWithNoPreExistingRefunds()

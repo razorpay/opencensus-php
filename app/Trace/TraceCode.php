@@ -4947,6 +4947,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const RESERVE_BALANCE_CREATE_REQUEST                        = 'RESERVE_BALANCE_CREATE_REQUEST';
     const RESERVE_BALANCE_CREATE_SUCCESSFUL                     = 'RESERVE_BALANCE_CREATE_SUCCESSFUL';
 
+    const NEGATIVE_BALANCE_ALLOWED_TXN                          = 'NEGATIVE_BALANCE_ALLOWED_TXN';
+
     const CHECK_MERCHANT_BALANCE                                 = 'CHECK_MERCHANT_BALANCE';
     const CHECK_MERCHANT_REFUND_CREDITS                          = 'CHECK_MERCHANT_REFUND_CREDITS';
 

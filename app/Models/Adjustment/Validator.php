@@ -10,6 +10,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Transaction;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Base\PublicEntity;
+use RZP\Constants\Entity as ConstantEntity;
 use RZP\Models\Dispute\Entity as DisputeEntity;
 use RZP\Models\Merchant\Invoice as MerchantInvoice;
 use RZP\Models\Settlement\Channel as SettlementChannel;
@@ -141,6 +142,11 @@ class Validator extends Base\Validator
                                             PublicEntity $entity,
                                             array $input)
     {
+        if($entity->getEntityName() === ConstantEntity::DISPUTE)
+        {
+            return;
+        }
+
         if ((isset($input[Entity::AMOUNT]) === false) or
             $input[Entity::AMOUNT] > 0)
         {

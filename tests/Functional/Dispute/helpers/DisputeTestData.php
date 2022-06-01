@@ -454,18 +454,9 @@ return [
             ],
         ],
         'response' => [
-            'content' => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Merchant does not have enough balance for negative adjustment',
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class' => RZP\Exception\BadRequestException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_INSUFFICIENT_BALANCE_FOR_ADJUSTMENT,
-        ],
+            'content' => [],
+            'status_code' => 200,
+        ]
     ],
 
     'testDisputeCreateWithoutReason' => [
@@ -878,6 +869,24 @@ return [
     ],
 
     'testDisputeEditDeductOnLost' => [
+        'request' => [
+            'method'  => 'post',
+            'content' => [
+                'status' => 'lost',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'amount'          => 1000000,
+                'amount_deducted' => 1000000,
+                'currency'        => 'INR',
+                'phase'           => 'chargeback',
+                'status'          => 'lost'
+            ],
+        ],
+    ],
+
+    'testDisputeEditDeductForNoBalance' => [
         'request' => [
             'method'  => 'post',
             'content' => [

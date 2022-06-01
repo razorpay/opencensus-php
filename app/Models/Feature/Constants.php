@@ -1336,6 +1336,8 @@ class Constants
 
     const ORG_POOL_ACCOUNT_SETTLEMENT = 'org_pool_settlement';
 
+    const ALLOW_NEGATIVE_DISPUTE = "allow_negative_dispute";
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -1838,6 +1840,7 @@ class Constants
         self::ONE_CC_REPORTING_TEST           => true,
         self::HANDLE_VA_TO_VA_PAYOUT          => true,
         self::RECURRING_CHECKOUT_DOT_COM      => true,
+        self::ALLOW_NEGATIVE_DISPUTE          => true,
         self::DEDUPE_CONTACT_ON_REPLICA       => true,
     ];
 

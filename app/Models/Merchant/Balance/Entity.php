@@ -11,6 +11,7 @@ use RZP\Base\BuilderEx;
 use RZP\Models\Settings;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\Transaction;
 use RZP\Constants\Timezone;
 use RZP\Models\BankingAccount;
 use RZP\Http\BasicAuth\BasicAuth;
@@ -410,6 +411,25 @@ class Entity extends Base\PublicEntity
         // direct settlement with fees as 0 where net amount is 0.
         if ($newBalance >= $oldBalance)
         {
+            return;
+        }
+
+        if ($txn && $txn->shouldNegativeBalanceCheckSkipped() === true)
+        {
+            $dimensions = (new Metric)->getBalanceAllowedNegativeDimensions($txn->getMerchantId(), $this->getType(), $this->getBalance(), $txn->getType(), $txn->getId());
+
+            $app = App::getFacadeRoot();
+
+            $app['trace']->count(Metric::BALANCE_ALLOWED_NEGATIVE, $dimensions);
+
+            $app['trace']->info(TraceCode::NEGATIVE_BALANCE_ALLOWED_TXN, [
+                'merchant_id'       => $txn->getMerchantId(),
+                'transaction'       => $txn->getId(),
+                'transaction_type'  => $txn->getType(),
+                'old_balance'       => $oldBalance,
+                'new_balance'       => $newBalance,
+            ]);
+
             return;
         }
 
