@@ -1,5 +1,7 @@
 <?php
 
+use Carbon\Carbon;
+
 return [
     'testAutoPaymentWithoutCustomer' => [
         'request' => [
@@ -49,7 +51,7 @@ return [
         'current_start' => NULL,
         'current_end' => NULL,
         'start_at' => NULL,
-        'end_at' => 1653383847,
+        'end_at' => Carbon::now()->addYear()->timestamp,
         'charge_at' => NULL,
         'activated_at' => NULL,
         'cancelled_at' => NULL,

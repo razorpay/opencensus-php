@@ -93,6 +93,8 @@ class EventCode
 
     const X_SIGNUP_SUCCESS = 'X Signup Success';
 
+    const APPSFLYER_UNINSTALL = 'Uninstall';
+
     const EVENT_LABELS = [
         self::L1_SUBMISSION => "L1 Form Submit",
         self::L2_SUBMISSION => "L2 Form Submit",

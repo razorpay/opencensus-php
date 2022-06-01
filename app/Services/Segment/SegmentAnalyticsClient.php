@@ -382,7 +382,8 @@ class SegmentAnalyticsClient extends AbstractEventClient
 
     public function buildRequestAndSend($batch = false)
     {
-        try {
+        try
+        {
             $eventData = $this->getEventTrackerData();
 
             if (empty($eventData) === true)

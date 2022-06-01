@@ -4,6 +4,7 @@
 namespace RZP\Models\Merchant\Cron;
 
 use RZP\Base\RuntimeManager;
+use RZP\Models\Merchant\Cron\Jobs\AppsflyerUninstallCronJob;
 use RZP\Models\Merchant\Cron\Jobs\MonthFirstMtuCronJob;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Merchant\Cron\Jobs\AadharDetailsNotSubmittedCronJob;
@@ -89,6 +90,8 @@ class Factory
                 return (new MerchantAutoKycHardLimitCronJob($input));
             case "autokyc-escalations":
                 return (new MerchantAutoKycEscalationsCronJob($input));
+            case "appsflyer-uninstall-segment-event-push":
+                return (new AppsflyerUninstallCronJob($input));
         }
 
         throw new BadRequestValidationFailureException("invalid cron");

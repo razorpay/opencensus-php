@@ -120,6 +120,7 @@ return [
             'secret'    => env('MERCHANT_RISKS_CLIENT_SECRET')
         ],
     ],
+
     'segment_analytics' => [
         'url'                => env('SEGMENT_ANALYTICS_URL'),
         'mock'               => env('SEGMENT_ANALYTICS_MOCK', false),
@@ -127,6 +128,16 @@ return [
         'connection_timeout' => env('SEGMENT_ANALYTICS_CONNECTION_TIMEOUT', 500),
         'auth' => [
             'write_key'       => env('SEGMENT_ANALYTICS_WRITE_KEY'),
+        ],
+    ],
+
+    'appsflyer' => [
+        'url'                => env('APPSFLYER_URL'),
+        'mock'               => env('APPSFLYER_MOCK', false),
+        'request_timeout'    => env('APPSFLYER_TIMEOUT', 500),
+        'connection_timeout' => env('APPSFLYER_CONNECTION_TIMEOUT', 500),
+        'auth' => [
+            'read_key'       => env('APPSFLYER_READ_KEY'),
         ],
     ],
 

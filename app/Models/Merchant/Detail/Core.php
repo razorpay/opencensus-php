@@ -439,7 +439,6 @@ class Core extends Base\Core
                     $this->trace->info(TraceCode::MERCHANT_SAVE_ACTIVATION_DETAILS_LATENCY, [
                         'merchant_id'                 => $merchant->getId(),
                         'start_time'                  => $startTime * 1000,
-                        'start_time'                  => $startTime * 1000,
                         'duration_after_lock_acquire' => (microtime(true) - $startTimePostAcquiringMutexLock) * 1000,
                         'overall_duration'            => (microtime(true) - $startTime) * 1000,
                     ]);
