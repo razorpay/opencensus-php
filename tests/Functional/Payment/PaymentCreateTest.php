@@ -2857,6 +2857,75 @@ class PaymentCreateTest extends TestCase
         $this->assertTrue($this->redirectToAuthorize);
     }
 
+    public function testPaymentS2SRedirectJsonPrivateAuthCardPaymentWithoutCvv()
+    {
+        $this->mockCardVault();
+
+        $this->mockRazorxWith(
+            "skip_cvv", 'skip');
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->fixtures->merchant->addFeatures(['s2s', 's2s_json', 'skip_cvv']);
+
+        unset($payment["card"]["cvv"]);
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/json',
+            'content' => $payment
+        ];
+
+        $this->ba->privateAuth();
+
+        $response = $this->makeRequestParent($request);
+
+        $content =$this->getJsonContentFromResponse($response);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $content);
+
+        $this->assertArrayHasKey('next', $content);
+
+        $this->assertArrayHasKey('action', $content['next'][0]);
+
+        $this->assertArrayHasKey('url', $content['next'][0]);
+
+        $redirectContent = $content['next'][0];
+
+        $this->assertTrue($this->isRedirectToAuthorizeUrl($redirectContent['url']));
+
+        $response = $this->makeRedirectToAuthorize($redirectContent['url']);
+
+        $content = $this->getJsonContentFromResponse($response, null);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $content);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['id'], $content['razorpay_payment_id']);
+
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->assertTrue($this->redirectToAuthorize);
+    }
+
+    private function mockRazorxWith(string $featureUnderTest, string $value = 'on')
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')->will(
+            $this->returnCallback(
+                function (string $mid, string $feature, string $mode) use ($featureUnderTest, $value)
+                {
+                    return $feature === $featureUnderTest ? $value : 'control';
+                }
+            ));
+    }
+
     public function testPaymentS2SRedirectCardAuthenticatedPayment()
     {
         $this->mockCardVault();

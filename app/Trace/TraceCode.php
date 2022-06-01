@@ -5229,6 +5229,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     // For HDFC VAS we modify gateway amount
     const HDFC_VAS_SURCHARGE_GATEWAY_AMOUNT_MODIFIED            = 'HDFC_VAS_SURCHARGE_GATEWAY_AMOUNT_MODIFIED';
     const HDFC_VAS_RAZORX_RESULT    =   'HDFC_VAS_RAZORX_RESULT';
+    const SKIP_CVV_CHECK_RESULT     =   'SKIP_CVV_CHECK_RESULT';
 
     const HDFC_CHECKOUT_2 = 'HDFC_CHECKOUT_2';
 

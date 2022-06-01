@@ -10431,6 +10431,11 @@ trait Authorize
         {
             $cardInput[Card\Entity::IS_CVV_OPTIONAL] = true;
         }
+        // For few axis org merchants who need to support commercial card, cvv is optional, commercial cards don't have cvv
+        else if ($this->payment->skipCvvCheck() === true)
+        {
+            $cardInput[Card\Entity::IS_CVV_OPTIONAL] = true;
+        }
         else if ((isset($input['recurring']) === true) and
             ($input['recurring'] === RecurringType::AUTO))
         {

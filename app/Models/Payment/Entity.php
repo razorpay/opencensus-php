@@ -321,6 +321,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     protected $forceTerminalId    = null;
 
+    protected $skipCvvCheckFlag = null;
+
     protected $issuer;
 
     protected $googlePayMethods   = [];
@@ -2544,6 +2546,49 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             ($this->merchant->isFeatureEnabled(Feature\Constants::VISA_SAFE_CLICK) === true));
     }
 
+    public function skipCvvCheck()
+    {
+        if ($this->skipCvvCheckFlag !== null)
+        {
+            return $this->skipCvvCheckFlag;
+        }
+
+        // return false for non card payments
+        if ((isset($this->input[self::METHOD]) === false) or
+            ($this->input[self::METHOD] !== self::CARD))
+        {
+            $this->skipCvvCheckFlag = false;
+
+            return $this->skipCvvCheckFlag;
+        }
+
+        // return false if cvv is already present
+        if (isset($this->input[self::CARD][Card\Entity::CVV]) === true)
+        {
+            $this->skipCvvCheckFlag = false;
+
+            return $this->skipCvvCheckFlag;
+        }
+
+        $app = \App::getFacadeRoot();
+
+        $experimentResult = $app['razorx']->getTreatment($this->merchant->getOrgId(),
+            'skip_cvv', $app['rzp.mode']);
+
+        $app['trace']->debug(TraceCode::SKIP_CVV_CHECK_RESULT, [
+            'paymentId' => $this->getId(),
+            'razorXResult' => $experimentResult,
+        ]);
+
+        $this->skipCvvCheckFlag =  (($this->isCard()) and
+            ($experimentResult == "skip") and
+            (isset($this->input[self::CARD]) === true) and
+            (isset($this->input[self::CARD][Card\Entity::CVV]) === false) and
+            ($this->merchant->isFeatureEnabled(Feature\Constants::SKIP_CVV) === true));
+
+        return $this->skipCvvCheckFlag;
+    }
+
     public function isGateway($gateway)
     {
         return ($this->getAttribute(self::GATEWAY) === $gateway);
@@ -3475,11 +3520,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
         $method = $this->getMethod();
 
-        list($errorCodeJson,) = $app['error_mapper']->getErrorMapping($internalErrorCode,$method);
+        list($errorCodeJson,) = $app['error_mapper']->getErrorMapping($internalErrorCode, $method);
 
         $array[self::ERROR_SOURCE] = $errorCodeJson['source'] ?: null;
 
-        $array[self::ERROR_STEP]   = $errorCodeJson['step'] ?: null;
+        $array[self::ERROR_STEP] = $errorCodeJson['step'] ?: null;
 
         $array[self::ERROR_REASON] = $errorCodeJson['reason'] ?: null;
     }
@@ -4094,6 +4139,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
                 $data['billing_address'] = ($billingAddressFromDb !== null) ?
                     $billingAddressFromDb->getBillingAddress() : $this->getBillingAddress();
+            }
+
+            if ($this->skipCvvCheck() === true)
+            {
+                $data['skip_cvv_check'] = true;
             }
         }
 

@@ -488,6 +488,12 @@ class Processor
                 }
             }
 
+            if (($input[Payment\Entity::METHOD] == Payment\METHOD::CARD) and
+                ($merchant->isFeatureEnabled('skip_cvv') === true))
+            {
+                return false;
+            }
+
             if ((empty($input['currency']) === false) and
                 ($input['currency'] !== Currency\Currency::INR))
             {

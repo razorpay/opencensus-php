@@ -1075,6 +1075,12 @@ class Validator extends Base\Validator
             return;
         }
 
+        // For few axis org merchants who need to support commercial card, cvv is optional
+        if ($this->entity->skipCvvCheck() === true)
+        {
+            return;
+        }
+
         if (isset($input['card']['cvv']) === false)
         {
             throw new Exception\BadRequestException(
