@@ -9,6 +9,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
+use RZP\Gateway\Base\Metric;
 
 class CaptureVerify extends Verify
 {
@@ -32,9 +33,13 @@ class CaptureVerify extends Verify
 
             // Verification was successful so move this verification to last state
             $this->updateVerifyBucket($payment, $filter, self::LAST);
+
+            (new Payment\Metric)->pushCapturedVerifyMetrics($payment, Metric::SUCCESS, []);
         }
         catch (Exception\PaymentVerificationException $e)
         {
+            (new Payment\Metric)->pushCapturedVerifyMetrics($payment, Metric::FAILED, [],$e);
+
             $action = $e->getAction();
 
             $result = Result::ERROR;
@@ -71,6 +76,8 @@ class CaptureVerify extends Verify
         }
         catch (Exception\GatewayRequestException $e)
         {
+            (new Payment\Metric)->pushCapturedVerifyMetrics($payment, Metric::FAILED, [],$e);
+
             if ($e instanceof Exception\GatewayTimeoutException)
             {
                 $result = Result::TIMEOUT;
@@ -114,6 +121,7 @@ class CaptureVerify extends Verify
 
             $this->updateVerifyBucket($payment, $filter, self::NEXT);
 
+            (new Payment\Metric)->pushCapturedVerifyMetrics($payment, Metric::FAILED, [],$e);
             // @note: If payment verification fails due to any reason
             // other than expected ones, we should log it as an error
             // exception.

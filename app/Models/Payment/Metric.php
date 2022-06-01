@@ -50,6 +50,7 @@ class Metric extends Base\Core
     const PAYMENT_AUTHORIZED                    = 'payment_authorized_v1';
     const PAYMENT_CAPTURED                      = 'payment_captured_v1';
     const PAYMENT_CAPTURE_QUEUE                 = 'payment_capture_queue';
+    const PAYMENT_CAPTURED_VERIFY               = 'payment_captured_verify';
     const PAYMENT_CREATE_REQUEST_TIME           = 'payment_create_request_time';
     const PAYMENT_CREATE_REQUEST_TIME_PG_ROUTER = 'payment_create_request_time_pg_router';
     const PAYMENT_FAILED                        = 'payment_failed';
@@ -181,6 +182,23 @@ class Metric extends Base\Core
         }
 
         $this->trace->count(self::PAYMENT_CAPTURE_QUEUE, $dimensions);
+    }
+
+    public function pushCapturedVerifyMetrics(Entity $payment, $status, array $extraDimensions = [], $exe = null)
+    {
+        $dimensions = $this->getDefaultDimentions($payment);
+
+        $dimensions = array_merge($dimensions, $extraDimensions);
+
+        $dimensions[self::LABEL_PAYMENT_STATUS] = $status;
+
+        if ($exe !== null)
+        {
+            $this->pushExceptionMetrics($exe, self::PAYMENT_CAPTURED_VERIFY, $dimensions);
+            return;
+        }
+
+        $this->trace->count(self::PAYMENT_CAPTURED_VERIFY, $dimensions);
     }
 
     public function pushCheckoutPreferenceRequestMetrics($input, $requestTime)
