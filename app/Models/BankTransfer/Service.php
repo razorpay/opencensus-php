@@ -705,7 +705,8 @@ class Service extends Base\Service
         $routeName = $this->app['api.route']->getCurrentRouteName();
 
         if (($routeName === 'bank_transfer_process_rbl_internal') or
-            ($routeName === 'bank_transfer_process_icici_internal'))
+            ($routeName === 'bank_transfer_process_icici_internal') or
+            ($routeName === 'bank_transfer_process_yesbank_internal'))
         {
             $duplicateBankTransfer = $this->repo
                                           ->bank_transfer

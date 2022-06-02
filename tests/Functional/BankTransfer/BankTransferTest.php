@@ -3250,6 +3250,35 @@ class BankTransferTest extends TestCase
         $this->startTest();
     }
 
+    public function testEcollectYesbankBatchCreateDuplicate()
+    {
+        $ifsc = Provider::IFSC[Provider::YESBANK];
+
+        $request = $this->testData[__FUNCTION__];
+
+        $request['content']['payee_account'] = 4564562235678281;
+
+        $request['content']['payee_ifsc'] = $ifsc;
+
+        $this->fixtures->on('live')->create('bank_transfer', [
+            'amount' => 50000,
+            'payee_account' => "4564562235678281",
+            'utr' => $request['content']['transaction_id']
+        ]);
+
+        $this->ba->batchAppAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertTrue($response['valid']);
+        $this->assertEquals($request['content']['transaction_id'], $response['transaction_id']);
+        $this->assertNull($response['message']);
+
+        $btrCount = count($this->getDbEntities('bank_transfer_request', [], 'live'));
+
+        $this->assertEquals($btrCount, 0);
+    }
+
     public function testBankTransferRblImps()
     {
         $testData = $this->testData[__FUNCTION__];
