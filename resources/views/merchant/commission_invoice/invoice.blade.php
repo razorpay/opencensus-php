@@ -100,8 +100,12 @@
 </head>
 <body>
 <div class="invoice__title">
-    <div>Tax</div>
-    <div>Invoice</div>
+    @if($invoice['tax_amount'] > 0)
+        <div>Tax</div>
+        <div>Invoice</div>
+    @else
+        <div>Bill of Supply</div>
+    @endif
 </div>
 
 <div class="clear"></div>
@@ -118,8 +122,13 @@
     </div>
 
     <div class="invoice__details">
-        <div><strong>Invoice No: {{ $invoice['id']  }}</strong></div>
-        <div>Invoice Date: {{ $created_at  }}</div>
+        @if($invoice['tax_amount'] > 0)
+            <div><strong>Invoice No: {{ $invoice['id']  }}</strong></div>
+            <div>Invoice Date: {{ $created_at  }}</div>
+        @else
+            <div><strong>Bill of Supply No: {{ $invoice['id']  }}</strong></div>
+            <div>Bill Date: {{ $created_at  }}</div>
+        @endif
     </div>
 </div>
 
