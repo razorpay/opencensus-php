@@ -7,19 +7,20 @@ use Mail;
 use RZP\Constants;
 use Carbon\Carbon;
 use RZP\Constants\Mode;
-use RZP\Constants\Timezone;
 use RZP\Models\User\Role;
+use RZP\Constants\Timezone;
 use RZP\Models\Card\Network;
 use RZP\Models\Batch\Header;
 use RZP\Models\Merchant\Core;
+use RZP\Services\RazorXClient;
 use Razorpay\OAuth\Application;
 use RZP\Mail\User\MappedToAccount;
 use RZP\Models\Settlement\Channel;
-use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Pricing\DefaultPlan;
 use Illuminate\Support\Facades\Redis;
 use RZP\Models\Partner\RateLimitBatch;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Methods\Entity;
 use Illuminate\Database\Eloquent\Factory;
 use RZP\Mail\User\LinkedAccountUserAccess;
@@ -1644,8 +1645,6 @@ class MerchantCreateTest extends TestCase
 
     public function testUpdateBankAccountForNotActivatedLinkedAccount()
     {
-        $this->markTestSkipped('Test was not passing on CI because the error code data wasn\'t getting fetched from error-mapping-module repo correctly.');
-
         $this->fixtures->merchant->addFeatures(['marketplace', 'la_bank_account_update']);
 
         $testData = $this->testData['testCreateLinkedAccountOnProxyAuth'];
@@ -1660,7 +1659,17 @@ class MerchantCreateTest extends TestCase
 
         $testData['request']['url'] = '/linked_accounts/acc_' . $id . '/bank_account';
 
-        $this->runRequestResponseFlow($testData);
+        $request = $testData['request'];
+
+        $this->makeRequestAndCatchException(
+            function() use ($request) {
+                $response = $this->makeRequestAndGetContent($request);
+                $this->assertEquals($response['error']['internal_error_code'],
+                    'BAD_REQUEST_CANNOT_UPDATE_BANK_ACCOUNT_FOR_LINKED_ACCOUNT_NOT_ACTIVATED');
+            },
+            BadRequestException::class,
+            'Something went wrong, please try again after sometime.'
+        );
     }
 
     public function testUpdateBankAccountForActivatedLinkedAccount()
@@ -1699,8 +1708,6 @@ class MerchantCreateTest extends TestCase
 
     public function testUpdateBankAccountForLinkedAccountWithoutFeature()
     {
-        $this->markTestSkipped('Test was not passing on CI because the error code data wasn\'t getting fetched from error-mapping-module repo correctly.');
-
         $this->fixtures->merchant->addFeatures(['marketplace']);
 
         $testData = $this->testData['testCreateLinkedAccountOnProxyAuth'];
@@ -1718,7 +1725,18 @@ class MerchantCreateTest extends TestCase
 
         $testData['request']['url'] = '/linked_accounts/acc_' . $id . '/bank_account';
 
-        $this->runRequestResponseFlow($testData);
+        $request = $testData['request'];
+
+        $this->makeRequestAndCatchException(
+            function() use ($request) {
+                $response = $this->makeRequestAndGetContent($request);
+                $this->assertEquals($response['error']['internal_error_code'],
+                    'BAD_REQUEST_LINKED_ACCOUNT_BANK_ACCOUNT_UPDATE_FEATURE_NOT_ENABLED');
+            },
+            BadRequestException::class,
+            'Something went wrong, please try again after sometime.'
+        );
+
     }
 
     public function testUpdateBankAccountForLinkedAccountWithPennyTesting()
