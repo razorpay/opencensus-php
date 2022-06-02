@@ -1329,10 +1329,6 @@ class CybersourceGatewayTest extends TestCase
         $this->assertSame($paymentId, $refund['payment_id']);
 
         $this->assertTestResponse($refund);
-
-        $cybersource = $this->getLastEntity('cybersource', true);
-
-        $this->assertEquals('reverse', $cybersource['action']);
     }
 
     public function testGatewayRefundVerifyMultipleFailedAttemptsWithV2Disabled()

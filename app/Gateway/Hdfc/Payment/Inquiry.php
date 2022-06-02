@@ -74,8 +74,6 @@ trait Inquiry
             $attributes = $this->getSuccessfulVerifyRefundAttributes($input, $response['data']);
             $refund->fill($attributes);
 
-            $this->repo->saveOrFail($refund);
-
             return $scroogeResponse->setSuccess(true)
                                    ->toArray();
         }

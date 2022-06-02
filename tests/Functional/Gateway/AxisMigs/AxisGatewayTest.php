@@ -189,17 +189,6 @@ class AxisGatewayTest extends TestCase
         $this->assertEquals($payment['status'], 'failed');
     }
 
-    public function testPaymentRefund()
-    {
-        $payment = $this->doAuthAndCapturePayment();
-
-        $this->refundPayment($payment['id']);
-
-        $refund = $this->getLastEntity('axis_migs', true);
-
-        $this->assertTestResponse($refund);
-    }
-
     public function testPaymentPartialRefund()
     {
         $payment = $this->doAuthAndCapturePayment();
@@ -231,9 +220,9 @@ class AxisGatewayTest extends TestCase
         $refund = $this->getLastEntity('refund', true);
 
         $this->assertSame($paymentId, $refund['payment_id']);
-        // $this->assertTestResponse($refund);
 
         $this->assertEquals(true, $refund['gateway_refunded']);
+
         $this->assertNull($refund['transaction_id']);
 
         $migs = $this->getLastEntity('axis_migs', true);
@@ -451,24 +440,14 @@ class AxisGatewayTest extends TestCase
     {
         $payment = $this->doAuthAndCapturePayment();
 
-        $refund = $this->refundPayment($payment['id']);
-
         $ts = Carbon::createFromDate(2017, 1, 1)->getTimestamp();
 
-        $this->fixtures->refund->edit($refund['id'], [
+        $data = [
             'status' => 'created',
             'created_at' => $ts,
-            'gateway_refunded' => '0'
-        ]);
+        ];
 
-        $refund = $this->getLastEntity('refund', true);
-
-        $this->assertEquals($ts, $refund['created_at']);
-        $this->assertFalse($refund['gateway_refunded']);
-        $this->assertEquals('created', $refund['status']);
-        $this->assertEquals(1, $refund['attempts']);
-
-        $response = $this->retryFailedRefund($refund['id'], $refund['payment_id']);
+        $this->refundPayment($payment['id'], $payment['amount'], $data);
 
         $refund = $this->getLastEntity('refund', true);
 

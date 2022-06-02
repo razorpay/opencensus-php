@@ -1110,7 +1110,7 @@ class HdfcGatewayTest extends TestCase
             return $content;
         });
 
-        $response = $this->retryFailedRefund($refund['id'], $refund['payment_id']);
+        $this->retryFailedRefund($refund['id'], $refund['payment_id'], [], ['amount'=>$refund['amount']]);
 
         $refund = $this->getEntityById('refund', $refund['id'], true);
 
@@ -1195,7 +1195,7 @@ class HdfcGatewayTest extends TestCase
             return $content;
         });
 
-        $response = $this->retryFailedRefund($refund['id'], $refund['payment_id']);
+        $this->retryFailedRefund($refund['id'], $refund['payment_id'], [], ['amount'=>$refund['amount']]);
 
         $refund = $this->getEntityById('refund', $refund['id'], true);
 

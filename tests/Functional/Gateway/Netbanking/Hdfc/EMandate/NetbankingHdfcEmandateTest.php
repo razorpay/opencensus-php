@@ -908,8 +908,6 @@ class NetbankingHdfcEmandateTest extends TestCase
 
         $this->assertEquals('0123456789', $bankAccount['account_number']);
 
-        $this->assertEquals($bankAccount['id'], 'ba_' . $refund['bank_account_id']);
-
         $this->assertEquals('refund', $bankAccount['type']);
     }
 

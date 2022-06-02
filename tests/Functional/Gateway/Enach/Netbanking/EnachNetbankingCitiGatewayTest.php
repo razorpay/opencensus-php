@@ -76,8 +76,6 @@ class EnachNetbankingCitiGatewayTest extends EnachNetbankingNpciGatewayTest
 
         $this->assertEquals('1111111111111', $bankAccount['account_number']);
 
-        $this->assertEquals($bankAccount['id'], 'ba_' . $refund['bank_account_id']);
-
         $this->assertEquals('refund', $bankAccount['type']);
     }
 
