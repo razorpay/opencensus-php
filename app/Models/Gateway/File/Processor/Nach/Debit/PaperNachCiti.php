@@ -630,14 +630,8 @@ class PaperNachCiti extends Debit\Base
 
     protected function getCacheKeyForFileIndex($utilityCode): string
     {
-        $begin = Carbon::createFromTimestamp($this->gatewayFile->getBegin(), Timezone::IST)
-                         ->addHours(9)
-                         ->getTimestamp();
+        $date = Carbon::now(Timezone::IST)->startOfDay()->timestamp;
 
-        $end = Carbon::createFromTimestamp($this->gatewayFile->getEnd(), Timezone::IST)
-                       ->addHours(9)
-                       ->getTimestamp();
-
-        return self::FILE_CACHE_KEY . "_" . $utilityCode . "_" . $this->mode . "_" . $begin . "-" . $end;
+        return self::FILE_CACHE_KEY . "_" . $utilityCode . "_" . $this->mode . "_" . $date;
     }
 }
