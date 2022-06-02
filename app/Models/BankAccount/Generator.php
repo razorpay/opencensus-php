@@ -12,6 +12,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Settings;
 use RZP\Models\Payment\Method;
 use RZP\Models\VirtualAccount;
+use RZP\Models\Feature\Constants;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\QrCode\NonVirtualAccountQrCode\Entity as QrV2Entity;
 
@@ -89,6 +90,11 @@ class Generator extends Base\Core
 
     protected function getTerminalForBankAccount(Entity $bankAccount): Terminal\Entity
     {
+        if ($this->merchant->org->isFeatureEnabled(Constants::ORG_NUMERIC_OPTION_FALSE) === true)
+        {
+            $this->options[self::NUMERIC] = false;
+        }
+
         $terminal = (new VirtualAccount\Provider())->getTerminalForMethod(Method::BANK_TRANSFER, $bankAccount, null, $this->options);
 
         if ($terminal === null)

@@ -888,6 +888,8 @@ class Constants
      */
     const ALLOW_VA_TO_VA_PAYOUTS        = 'allow_va_to_va_payouts';
 
+    const ORG_NUMERIC_OPTION_FALSE     = 'numeric_option_false';
+
     const AXIS_ACCESS                   = 'axis_access';
 
     public static $merchantFeaturesForOrgAccess = [
@@ -1833,6 +1835,7 @@ class Constants
         self::ACCEPT_ONLY_3DS_PAYMENTS        => true,
         self::SUB_MERCHANT_PRICING_AUTOMATION => true,
         self::BLOCKLIST_FOR_WORKFLOW_SERVICE  => true,
+        self::ORG_NUMERIC_OPTION_FALSE        => true,
         self::APPS_STATUS_UPDATE_VIA_PS       => true,
         self::ONE_CLICK_DUAL_CHECKOUT         => true,
         self::HDFC_SINGLE_TID                 => true,
