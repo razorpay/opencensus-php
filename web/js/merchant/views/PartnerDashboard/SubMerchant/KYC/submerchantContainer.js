@@ -170,9 +170,7 @@ const SubmerchantActivationContainer = ({
       updateSubmerchantUser(newData);
       setCategories(newCategories);
       setAovRange(aov_list);
-      setBusinessTypeOptions(
-        formatBusinessTypeOptions(businessTypeOptions, newData.business_type, false),
-      );
+      setBusinessTypeOptions(formatBusinessTypeOptions(businessTypeOptions, newData.business_type));
       setGstinDetails(newGstinDetails);
       setData(newData);
       return [newData, newCategories];

@@ -2,9 +2,8 @@ import { useQuery } from 'react-query';
 import { fetch } from 'common/services/rest/rest-fetch';
 import { useSnackbar, SnackContextTypes } from 'common/components/SnackBar/SnackbarContext';
 
-interface Type {
+interface BusinessType {
   label: string;
-  value: string;
   id: number;
   status: string;
 }
@@ -15,20 +14,20 @@ export default function useBusinessTypes(): any {
     `businessTypes`,
     async () => {
       const businessTypes: {
-        registered: Type[];
-        unregistered: Type[];
+        registered: BusinessType[];
+        unregistered: BusinessType[];
       } = await fetch({
         url: `merchant/onboarding/business_types`,
       });
 
-      const combineBusinessTypes: Type[] = businessTypes?.registered;
+      const combineBusinessTypes: BusinessType[] = businessTypes?.registered;
 
       combineBusinessTypes.push(...businessTypes?.unregistered);
       return combineBusinessTypes;
     },
     {
       refetchOnWindowFocus: false,
-      staleTime: 0,
+      staleTime: Infinity,
       onError: (err: any) => {
         if (err?.response?.errors) snackbar.error(err.response.errors[0]);
       },

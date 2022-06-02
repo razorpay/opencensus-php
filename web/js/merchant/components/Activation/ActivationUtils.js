@@ -627,10 +627,8 @@ const getBankVerificationAtteemptError = (activation) => {
   return '';
 };
 
-const formatBusinessTypeOptions = ({ data }, previousSelectedBusinessType, isSourceRX = false) => {
+const formatBusinessTypeOptions = ({ data }, previousSelectedBusinessType) => {
   const registeredBusinessTypes = data?.registered.reduce((acc, type) => {
-    // for x merchants hiding the new business type - HUF as per product requirement
-    if (isSourceRX && type?.label?.toLowerCase() === 'huf') return acc;
     if (type.status === 'active' || previousSelectedBusinessType === type.id) {
       acc.push({ label: type.label, name: type.id });
     }

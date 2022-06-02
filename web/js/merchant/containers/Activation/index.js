@@ -191,11 +191,7 @@ export default class ActivationContainer extends Component {
             aovRange: aov_list,
             clarificationReasons: {},
             gstinDetails,
-            businessTypeOptions: formatBusinessTypeOptions(
-              businessTypeOptions,
-              data.business_type,
-              this.isSourceRX,
-            ),
+            businessTypeOptions: formatBusinessTypeOptions(businessTypeOptions, data.business_type),
           });
 
           return [data, categories];
