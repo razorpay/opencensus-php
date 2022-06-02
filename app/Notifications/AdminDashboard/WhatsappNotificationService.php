@@ -12,17 +12,12 @@ class WhatsappNotificationService extends BaseNotificationService
 
     public function send()
     {
-        $isExperimentEnabled = (new Merchant\Core())->isRazorxExperimentEnable($this->getMerchant()->getId(),
-                                                                               RazorxTreatment::NEEDS_CLARIFICATION_REQUEST_DOCUMENT_NOTIFICATION);
-        if ($isExperimentEnabled === true)
-        {
-            $this->app['stork_service']->sendWhatsappMessage(
-                $this->mode,
-                $this->getTemplateMessage(),
-                $this->getPhone(),
-                $this->getPayload()
-            );
-        }
+        $this->app['stork_service']->sendWhatsappMessage(
+            $this->mode,
+            $this->getTemplateMessage(),
+            $this->getPhone(),
+            $this->getPayload()
+        );
     }
 
     protected function getPayload(): array

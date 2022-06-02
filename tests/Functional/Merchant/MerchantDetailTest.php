@@ -2220,8 +2220,6 @@ We look forward to transacting with you!
 
         $this->mockStorkForRequestDocumentWhatsappNotification();
 
-        $this->mockRazorX(__FUNCTION__, RazorxTreatment::NEEDS_CLARIFICATION_REQUEST_DOCUMENT_NOTIFICATION, 'on', '10000000000000');
-
         $ticketDetails["fd_instance"] = 'rzpind';
 
         $this->fixtures->create('merchant_detail', [

@@ -1753,20 +1753,6 @@ class Service extends Base\Service
             return $fdInstance;
         }
 
-        $variant = $this->app['razorx']->getTreatment($this->app['basicauth']->getMerchantId(),
-            Constants::RAZORX_FLAG_SHOULD_MIGRATE_FRESHDESK_IND_MERCHANT,
-            $app['rzp.mode'] ?? Mode::LIVE);
-
-        $this->trace->info(TraceCode::FRESHDESK_DC_MIGRATION_EXPERIMENT, [
-            'variant'                           => $variant,
-            Constants::CF_REQUESTOR_SUBCATEGORY => $input[Constants::CUSTOM_FIELDS][Constants::CF_REQUESTOR_SUBCATEGORY],
-        ]);
-
-        if ($variant !== 'on')
-        {
-            return $fdInstance;
-        }
-
         return Constants::RZPIND;
     }
 

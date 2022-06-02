@@ -1278,8 +1278,6 @@ class FreshdeskTicketV2Test extends TestCase
 
         $this->addAttachmentToRequest(__FUNCTION__, 'abc.jpg');
 
-        $this->mockRazorxTreatment('on');
-
         $this->freshdeskClientMock
             ->shouldReceive('makeCurlRequest')
             ->times(1)
@@ -1329,10 +1327,7 @@ class FreshdeskTicketV2Test extends TestCase
 
     public function testCreateTicketInvalidAttachmentExtension()
     {
-
         $this->addAttachmentToRequest(__FUNCTION__, 'a.exe');
-
-        $this->mockRazorxTreatment('on');
 
         $this->startTest();
     }
