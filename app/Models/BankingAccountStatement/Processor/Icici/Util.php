@@ -27,7 +27,15 @@ class Util
         $balance = stringify($balance);
 
         $len = strlen($balance);
-        $balance = self::stringInsert($balance, ".", $len-2);
+
+        if ($len === 1)
+        {
+            $balance = self::stringInsert($balance, ".0", $len - 2);
+        }
+        else
+        {
+            $balance = self::stringInsert($balance, ".", $len - 2);
+        }
 
         return $balance;
     }

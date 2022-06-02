@@ -2294,7 +2294,110 @@ class IciciBankingAccountStatementTest extends TestCase
         ];
 
         $this->assertArraySubset($txnExpected, $txnActual, true);
+    }
 
+    public function testLasttridValueWhenBalanceForLastTransactionIsInSingleDigit()
+    {
+        (new AdminService)->setConfigKeys(
+            [
+                ConfigKey::ICICI_STATEMENT_FETCH_RATE_LIMIT    => 1,
+                ConfigKey::ICICI_STATEMENT_FETCH_ATTEMPT_LIMIT => 1,
+                ConfigKey::ICICI_ENABLE_RATE_LIMIT_FLOW        => 0
+            ]);
 
+        $mockedResponse = [
+            "data" => [
+                "ACCOUNTNO" => "2224440041626905",
+                "AGGR_ID"   => "RZP1234",
+                "CORP_ID"   => "RAZORPAY",
+                "RESPONSE"  => "SUCCESS",
+                "Record"    => [
+                    [
+                        "AMOUNT"        => "0.08",
+                        "BALANCE"       => "0.08",
+                        "CHEQUENO"      => [],
+                        "REMARKS"       => "MMT/IMPS/104910349740/Shippuden/Naruto",
+                        "TRANSACTIONID" => "S71034864",
+                        "TXNDATE"       => "18-02-2021 10:59:00",
+                        "TYPE"          => "CR",
+                        "VALUEDATE"     => "18-02-2021"
+                    ]
+                ],
+                "URN"       => "SR189932540",
+                "USER_ID"   => "Sasuke"
+            ],
+            "error"             => null,
+            "external_trace_id" => "0fd2229a19bf561b600847afb283c551",
+            "mozart_id"         => "c0qd3ta055u5f78fipug",
+            "next"              => [],
+            "success"           => true
+        ];
+
+        $this->setMozartMockResponse($mockedResponse);
+
+        $this->ba->cronAuth();
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/banking_account_statement/process/icici',
+            'content' => [],
+        ];
+
+        // first run
+        $this->makeRequestAndGetContent($request);
+
+        $mockedResponse = [
+            "data" => [
+                "ACCOUNTNO" => "2224440041626905",
+                "AGGR_ID"   => "RZP1234",
+                "CORP_ID"   => "RAZORPAY",
+                "RESPONSE"  => "SUCCESS",
+                "Record"    => [
+                    [
+                        "AMOUNT"        => "1.00",
+                        "BALANCE"       => "1.08",
+                        "CHEQUENO"      => [],
+                        "REMARKS"       => "MMT/IMPS/104913832918/TESTICICI/SAMPLE/Hokage",
+                        "TRANSACTIONID" => "S74203578",
+                        "TXNDATE"       => "18-02-2021 13:20:51",
+                        "TYPE"          => "DR",
+                        "VALUEDATE"     => "18-02-2021"
+                    ],
+                ],
+                "URN"       => "SR189932540",
+                "USER_ID"   => "Sasuke"
+            ],
+            "error"             => null,
+            "external_trace_id" => "0fd2229a19bf561b600847afb283c551",
+            "mozart_id"         => "c0qd3ta055u5f78fipug",
+            "next"              => [],
+            "success"           => true
+        ];
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/banking_account_statement/process/icici',
+            'content' => [],
+        ];
+
+        $mockMozart = \Mockery::mock(Mozart::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
+        $this->app->instance('mozart', $mockMozart);
+
+        $req = "";
+        $mockMozart->shouldReceive('sendRawRequest')
+                   ->withArgs(
+                       function($request) use(& $req) {
+                           $req = $request;
+                       })
+                   ->andReturn($mockedResponse);
+
+        // second run
+        $this->makeRequestAndGetContent($request);
+
+        // extract lasttrid from request sent to mozart
+        $lasttrid = json_decode($req['content'])->entities->last_transaction->lasttrid;
+
+        //assert the balance that is sent in lasttrid to mozart
+        $this->assertEquals('1|S71034864|18-02-2021 00:00:00|INR|.08|18-02-2021 10:59:00', $lasttrid);
     }
 }
