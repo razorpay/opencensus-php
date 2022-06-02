@@ -75,7 +75,9 @@ abstract class BaseProxyController extends Controller
 
     protected abstract function getAuthorizationHeader();
 
-    protected abstract function getCronAuthorizationHeader();
+    protected function getCronAuthorizationHeader(){
+        return null;
+    }
 
     protected function registerRoutesMap(array $map)
     {
