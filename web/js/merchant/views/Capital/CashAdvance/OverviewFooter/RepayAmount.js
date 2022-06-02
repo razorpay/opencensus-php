@@ -9,10 +9,10 @@ const RepayAmount = ({
   setView,
   customAmount,
   balance,
-  nextRepayableAmount,
+  currentOutstandingTotalAmount,
   totalOwedAmount,
-  nextRepayInterestAmount,
-  nextRepayPrincipalAmount,
+  currentOutstandingInterestAmount,
+  currentOutstandingPrincipalAmount,
   setRepayType,
   repayType,
   setCustomAmount,
@@ -20,7 +20,7 @@ const RepayAmount = ({
   totalPrincipalAmount,
   totalInterestAmount,
 }) => {
-  const isNextRepayableRepayType = repayType === REPAY_AMOUNT_TYPES.NEXT_REPAYABLE;
+  const isCurrentOutstandingRepayType = repayType === REPAY_AMOUNT_TYPES.CURRENT_OUTSTANDING;
   const isTotalOwedRepayType = repayType === REPAY_AMOUNT_TYPES.TOTAL_OWED;
   const isCustomRepayType = repayType === REPAY_AMOUNT_TYPES.CUSTOM;
 
@@ -92,14 +92,14 @@ const RepayAmount = ({
   };
 
   const principalAmount = getPrincipalAmount({
-    isNextRepayableRepayType,
-    nextRepayPrincipalAmount,
+    isCurrentOutstandingRepayType,
+    currentOutstandingPrincipalAmount,
     isTotalOwedRepayType,
     totalPrincipalAmount,
   });
   const interestAmount = getInterestAmount({
-    isNextRepayableRepayType,
-    nextRepayInterestAmount,
+    isCurrentOutstandingRepayType,
+    currentOutstandingInterestAmount,
     isTotalOwedRepayType,
     totalInterestAmount,
   });
@@ -110,22 +110,28 @@ const RepayAmount = ({
       <div className="flex repay-actions">
         <div
           className={`action repay-actions-box ${
-            repayType === REPAY_AMOUNT_TYPES.NEXT_REPAYABLE ? 'active' : ''
+            repayType === REPAY_AMOUNT_TYPES.CURRENT_OUTSTANDING ? 'active' : ''
           } cursor-pointer`}
-          onClick={() => handleRadioSelect(REPAY_AMOUNT_TYPES.NEXT_REPAYABLE, nextRepayableAmount)}
+          onClick={() =>
+            handleRadioSelect(REPAY_AMOUNT_TYPES.CURRENT_OUTSTANDING, currentOutstandingTotalAmount)
+          }
         >
           <div className="mr-7">
             <input
               type="radio"
-              key={REPAY_AMOUNT_TYPES.NEXT_REPAYABLE}
-              value={REPAY_AMOUNT_TYPES.NEXT_REPAYABLE}
-              checked={repayType === REPAY_AMOUNT_TYPES.NEXT_REPAYABLE}
+              key={REPAY_AMOUNT_TYPES.CURRENT_OUTSTANDING}
+              value={REPAY_AMOUNT_TYPES.CURRENT_OUTSTANDING}
+              checked={repayType === REPAY_AMOUNT_TYPES.CURRENT_OUTSTANDING}
             />
           </div>
           <div>
             <div className="repay--type-title mb-4">Current Outstanding Amount</div>
             <div className="mt-4">
-              <Amount className="repay--amount" currency="INR" value={nextRepayableAmount} />
+              <Amount
+                className="repay--amount"
+                currency="INR"
+                value={currentOutstandingTotalAmount}
+              />
             </div>
           </div>
         </div>

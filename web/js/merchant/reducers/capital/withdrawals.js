@@ -8,6 +8,7 @@ const FETCH_WITHDRAWAL_DETAILS = 'FETCH_WITHDRAWAL_DETAILS';
 const FETCH_DESTINATION_DETAILS = 'FETCH_DESTINATION_DETAILS';
 const FETCH_INSTALLMENTS = 'FETCH_INSTALLMENTS';
 const UPDATE_AUTOMATED_LOC_CONFIG = 'UPDATE_AUTOMATED_LOC_CONFIG';
+const FETCH_CURRENT_OUTSTANDING = 'FETCH_CURRENT_OUTSTANDING';
 
 export const fetchSeedData = () => {
   const withdrawal = new Withdrawal();
@@ -66,6 +67,14 @@ export const fetchInstallments = (data) => {
   };
 };
 
+export const fetchCurrentOutstanding = (data) => {
+  const withdrawal = new Withdrawal();
+  return {
+    type: FETCH_CURRENT_OUTSTANDING,
+    payload: withdrawal.fetchCurrentOutstanding(data),
+  };
+};
+
 export const createWithdrawal = (payload) => {
   const withdrawal = new Withdrawal();
   return withdrawal.createWithdrawal(payload);
@@ -111,12 +120,17 @@ const getInitialState = () => {
       data: [],
       error: null,
     },
+    current_outstanding: {
+      loading: false,
+      data: [],
+      error: null,
+    },
   };
 };
 
 const initialState = getInitialState();
 
-export default function (state = initialState, action) {
+export default function withdrawalFunction(state = initialState, action) {
   switch (action.type) {
     case `${FETCH_SEED_DATA}::PENDING`:
       return merge(state, {
@@ -173,7 +187,7 @@ export default function (state = initialState, action) {
         },
       });
 
-    case `${FETCH_WITHDRAWALS}::SUCCESS`:
+    case `${FETCH_WITHDRAWALS}::SUCCESS`: {
       const { data: { withdrawal = [] } = {} } = action.payload;
 
       return merge(state, {
@@ -182,6 +196,7 @@ export default function (state = initialState, action) {
           data: withdrawal,
         },
       });
+    }
 
     case `${FETCH_WITHDRAWALS}::ERROR`:
       return merge(state, {
@@ -261,6 +276,30 @@ export default function (state = initialState, action) {
           error: action.payload.errors,
         },
       });
+
+    case `${FETCH_CURRENT_OUTSTANDING}::PENDING`:
+      return merge(state, {
+        current_outstanding: {
+          loading: true,
+        },
+      });
+
+    case `${FETCH_CURRENT_OUTSTANDING}::SUCCESS`:
+      return merge(state, {
+        current_outstanding: {
+          loading: false,
+          data: action.payload.data.current_outstanding,
+        },
+      });
+
+    case `${FETCH_CURRENT_OUTSTANDING}::ERROR`:
+      return merge(state, {
+        current_outstanding: {
+          loading: false,
+          error: action.payload.errors,
+        },
+      });
+
     case `${UPDATE_AUTOMATED_LOC_CONFIG}::SUCCESS`:
       return set(
         state,

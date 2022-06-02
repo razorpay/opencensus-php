@@ -1,23 +1,23 @@
 import { COLLECTIONS_BALANCE_TYPE } from '../../constants';
 
 export const getPrincipalAmount = ({
-  isNextRepayableRepayType,
-  nextRepayPrincipalAmount,
+  isCurrentOutstandingRepayType,
+  currentOutstandingPrincipalAmount,
   isTotalOwedRepayType,
   totalPrincipalAmount,
 }) => {
-  if (isNextRepayableRepayType) return nextRepayPrincipalAmount;
+  if (isCurrentOutstandingRepayType) return currentOutstandingPrincipalAmount;
   else if (isTotalOwedRepayType) return totalPrincipalAmount;
   else return 0;
 };
 
 export const getInterestAmount = ({
-  isNextRepayableRepayType,
-  nextRepayInterestAmount,
+  isCurrentOutstandingRepayType,
+  currentOutstandingInterestAmount,
   isTotalOwedRepayType,
   totalInterestAmount,
 }) => {
-  if (isNextRepayableRepayType) return nextRepayInterestAmount;
+  if (isCurrentOutstandingRepayType) return currentOutstandingInterestAmount;
   else if (isTotalOwedRepayType) return totalInterestAmount;
   else return 0;
 };
@@ -74,4 +74,26 @@ export const getNextRepayBreakup = (installments) => {
     }
   }
   return nextRepayBreakup;
+};
+
+export const getCurrentOutstandingBreakup = (currentOutstanding) => {
+  const currentOutstandingBreakup = {
+    total: 0,
+    principal: 0,
+    interest: 0,
+  };
+
+  const {
+    payment = 0,
+    principal_collected = 0,
+    interest_collected = 0,
+    principal = 0,
+    interest = 0,
+  } = currentOutstanding?.data || {};
+
+  currentOutstandingBreakup.total =
+    Number(payment) - Number(principal_collected) - Number(interest_collected);
+  currentOutstandingBreakup.principal = Number(principal) - Number(principal_collected);
+  currentOutstandingBreakup.interest = Number(interest) - Number(interest_collected);
+  return currentOutstandingBreakup;
 };

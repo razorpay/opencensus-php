@@ -40,14 +40,14 @@ const RepayMethod = ({
   repayInputType,
   isSettlementBalanceLessThanRepayAmount,
   setResultAmounts,
-  nextRepayInterestAmount,
-  nextRepayPrincipalAmount,
+  currentOutstandingInterestAmount,
+  currentOutstandingPrincipalAmount,
   totalPrincipalAmount,
   totalInterestAmount,
   repayType,
   location: { pathname = '' },
 }) => {
-  const isNextRepayableRepayType = repayType === REPAY_AMOUNT_TYPES.NEXT_REPAYABLE;
+  const isCurrentOutstandingRepayType = repayType === REPAY_AMOUNT_TYPES.CURRENT_OUTSTANDING;
   const isTotalOwedRepayType = repayType === REPAY_AMOUNT_TYPES.TOTAL_OWED;
 
   const handleRazorpayCheckoutPayment = (RepaymentInstance, paymentParams) => {
@@ -109,8 +109,8 @@ const RepayMethod = ({
 
     trackRepayConfirm(pathname, {
       repayAmount,
-      nextRepayInterestAmount,
-      nextRepayPrincipalAmount,
+      currentOutstandingInterestAmount,
+      currentOutstandingPrincipalAmount,
       totalPrincipalAmount,
       totalInterestAmount,
       repayType,
@@ -148,14 +148,14 @@ const RepayMethod = ({
       })
       .finally(() => {
         const principalAmount = getPrincipalAmount({
-          isNextRepayableRepayType,
-          nextRepayPrincipalAmount,
+          isCurrentOutstandingRepayType,
+          currentOutstandingPrincipalAmount,
           isTotalOwedRepayType,
           totalPrincipalAmount,
         });
         const interestAmount = getInterestAmount({
-          isNextRepayableRepayType,
-          nextRepayInterestAmount,
+          isCurrentOutstandingRepayType,
+          currentOutstandingInterestAmount,
           isTotalOwedRepayType,
           totalInterestAmount,
         });
@@ -186,8 +186,8 @@ const RepayMethod = ({
     );
     trackRepayCancel(pathname, {
       repayAmount,
-      nextRepayInterestAmount,
-      nextRepayPrincipalAmount,
+      currentOutstandingInterestAmount,
+      currentOutstandingPrincipalAmount,
       totalPrincipalAmount,
       totalInterestAmount,
       repayType,

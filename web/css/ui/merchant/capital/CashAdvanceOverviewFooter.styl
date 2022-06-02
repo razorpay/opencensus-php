@@ -1,447 +1,382 @@
 .overview-footer, .repayments-schedule-repay-card
-  flex: 1;
-  margin-top: 24px;
-  .repay-summary-tab {
-    font-weight: bold;
-    font-size: 15px;
-    color: rgba(22, 47, 86, 0.76);
-    background: rgba(22, 47, 86, 0.03);
-    border-radius: 4px;
-    padding: 11px 31px 17px 21px;
-    display: inline-block;
-    margin-bottom: -5px;
-  }
-  .repay-container {
-    min-width: 65%;
-    flex: 1;
-    background-color: white;
-    border-radius: 4px;
-    margin-right: 12px;
-    padding: 36px 32px 32px;
-    position: relative;
-    display: flex;
-    flex-direction: column;
+  flex: 1
+  margin-top: 24px
+  .repay-summary-tab
+    font-weight: bold
+    font-size: 15px
+    color: rgba(22, 47, 86, 0.76)
+    background: rgba(22, 47, 86, 0.03)
+    border-radius: 4px
+    padding: 11px 31px 17px 21px
+    display: inline-block
+    margin-bottom: -5px
+  
+  .repay-container
+    min-width: 65%
+    flex: 1
+    background-color: white
+    border-radius: 4px
+    margin-right: 12px
+    padding: 36px 32px 32px
+    position: relative
+    display: flex
+    flex-direction: column
 
-    .page-spinner-container {
-      height: auto;
-    }
+    .page-spinner-container
+      height: auto
 
-    .repay-container__ctas {
-      margin-top: auto;
-    }
-  }
+    .repay-container__ctas
+      margin-top: auto
 
-  .summary {
-    .title {
-      font-weight: bold;
-      font-size: 14px;
-      color: rgba(22, 47, 86, 0.76);
-    }
+  .summary
+    .title
+      font-weight: bold
+      font-size: 14px
+      color: rgba(22, 47, 86, 0.76)
 
-      .scheduled-text {
-        margin: 12px 0 30px;
-        color: rgba(22, 47, 86, 0.76);
-      }
+    .scheduled-text
+      margin: 12px 0px
+      color: rgba(22, 47, 86, 0.76)
 
-    .large-amount {
-      margin-top: 3px;
-      font-size: 18px;
-      .rzp-amount {
-        color: rgba(22,47,86,0.87);
-        .rzp-currency, .rzp-whole, .rzp-paise {
-          font-weight: 900;
-        }
-        .rzp-currency, .rzp-paise {
-          font-size: 16px;
-        }
-        .rzp-whole {
-          font-size: 24px;
-        }
-      }
-    }
+    .large-amount
+      margin-top: 12px
+      font-size: 18px
+      
+      .rzp-amount
+        color: rgba(22,47,86,0.87)
+        .rzp-currency, .rzp-whole, .rzp-paise
+          font-weight: 900
+        
+        .rzp-currency, .rzp-paise
+          font-size: 16px
+        
+        .rzp-whole
+          font-size: 24px
+        
+    .mr-16
+      margin-right: 16px
 
-    .mr-16 {
-      margin-right: 16px;
-    }
-  }
-
-  .repay {
+  .repay
     border: 1px solid #4592EE
-    .repay-text {
-      font-weight: bold;
-      font-size: 14px;
-      color: rgba(22, 47, 86, 0.76);
-    }
-    .amount--title {
-      color: rgba(22, 47, 86, 0.54);
-      font-size: 12px;
-    }
-    .repay-actions {
-      margin: 12px 0px 24px;
-      .repay--amount {
-        .rzp-currency, .rzp-whole, .rzp-paise {
-          color: #162F56;
-          font-weight: 700;
-        }
-        .rzp-currency, .rzp-whole {
-          font-size: 14px;
-          opacity: 0.76;
-        }
-        .rzp-paise {
-          font-size: 12px;
-          opacity: 0.56;
-        }
-      }
-    }
-    .repay--type-title {
-      font-size: 14px;
-      color: rgba(22, 47, 86, 0.87);
-    }
-    .repay--amount {
-      .rzp-currency, .rzp-whole, .rzp-paise {
-        color: #162F56;
-        font-weight: 700;
-      }
-      .rzp-currency, .rzp-whole {
-        font-size: 12px;
-        opacity: 0.76;
-      }
+    .repay-text
+      font-weight: bold
+      font-size: 14px
+      color: rgba(22, 47, 86, 0.76)
 
-      .rzp-paise {
-        font-size: 9px;
-        opacity: 0.56;
-      }
-    }
-    .edit-btn {
-      margin-left: 4px;
-    }
-    .custom-input {
-      .Input {
-        margin: 0px;
-        .Input-addons {
-          pointer-events: all;
-          background: initial;
-          margin-right: 8px;
-        }
-      }
-    }
-    .action {
-      display: inline-flex;
-      justify-content: center;
-      border: 1px solid rgba(22, 47, 86, 0.1);
-      border-radius: 2px;
-      padding: 12px 28px 13px 12px;
-      height: fit-content;
-      &.active {
-        border-color: #ACCEF7
-        border-bottom: 2px solid #0B70E7;
-      }
-      &.error {
-        border-color: #FAC7C7;
-        border-bottom: 2px solid #F05150;
-      }
-      &.disabled {
-        pointer-events: none;
-        border-color: rgba(22, 47, 86, 0.1);
-        opacity: 0.5;
-      }
-    }
-    .repay-actions-box {
-      height: 112px;
-    }
-    .wrapper-alignment {
-      justify-content: space-between;
-    }
-    &.repay-amount {
-      padding: 34px 32px 25px;
-      .principal {
-        padding-right: 12px;
-        margin-right: 14px;
-        border-right: 1px solid rgba(22, 47, 86, 0.16);
-      }
-      .amount {
-        .rzp-currency, .rzp-whole, .rzp-paise {
-          color: #162F56;
-          font-size: 12px;
-          opacity: 0.76;
-          font-weight: 700;
-        }
-      }
-      .hint {
-        background: #F8F8FA;
-        border-radius: 2px;
-        padding: 8px 10px;
-        align-items: center;
-        p {
-          font-size: 12px;
-        }
-      }
-    }
+    .amount--title
+      color: rgba(22, 47, 86, 0.54)
+      font-size: 12px
 
-    &.repay-method {
-      padding: 34px 32px 20px;
-      .repay--type-description {
-        font-size: 12px;
-        color: rgba(22, 47, 86, 0.54);
-      }
-      .action {
-        .repay--amount {
-          .rzp-currency, .rzp-whole, .rzp-paise {
-            color: #818EA4;
-            opacity: 1
-          }
-          .rzp-paise {
-            font-size: 12px;
-          }
-          .rzp-currency {
-            font-weight: normal;
-          }
-        }
-      }
-      .repay--amount {
-        .rzp-currency {
-          font-weight: normal;
-          opacity: 0.8;
-        }
-        .rzp-whole {
-          font-size: 13px;
-        }
-      }
-      .bank__disable {
-        opacity: 0.7;
-        cursor: not-allowed;
-        pointer-events: none;
-      }
-    }
-
-    .settlement-balance--input {
-      .Input-addons--after {
-        width: fit-content
-      }
-      .Input-addons--before {
-        background-color: #f0f3f4 !important;
-      }
-      &.is-focused .Input-addons--before {
-        background-color: rgba(82,143,240,0.17) !important;
-      }
-    }
-
-    .settlement-balance--input-actions {
-      height: fit-content;
-      display: flex;
-      align-items: flex-start;
-    }
-
-    .settlement-balance--close {
-      cursor: pointer;
-    }
-  }
-
-
-  .repay-result {
-    position: relative;
-    padding: 32px 20px 18px 32px;
-    .i-info-circle {
-      font-size: 20px;
-    }
-    .btn-cross {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      cursor: pointer;
-    }
-    h1.title {
-      font-size: 20px;
-      font-weight: 900
-      color: #162F56;
-      margin: 0px;
-    }
-    .description {
-      padding: 12px 0px 16px;
-      max-width: 703px;
-    }
-
-    .repay--amount {
-      .rzp-currency, .rzp-whole, .rzp-paise {
-        font-weight: bold;
-        font-size: 14px;
-        color: rgba(22, 47, 86, 0.76);
-        opacity: 1;
-      }
-    }
-
-    .details--heading {
-      font-weight: bold;
-      font-size: 13px;
-      color: rgba(22, 47, 86, 0.54);
-    }
-
-    .details--amount {
-      margin-top: 2px;
-      .rzp-amount {
-        .rzp-currency {
+    .repay-actions
+      margin: 12px 0px 24px
+      .repay--amount
+        .rzp-currency, .rzp-whole, .rzp-paise
           color: #162F56
-          font-weight: normal;
-          font-size: 15px;
-          opacity: 0.8;
-        }
+          font-weight: 700
+        
+        .rzp-currency, .rzp-whole
+          font-size: 14px
+          opacity: 0.76
 
-        .rzp-paise, .rzp-whole {
-          color: #162F56;
-          opacity: 0.87;
-          font-weight: bold;
-        }
-        .rzp-paise {
-          font-size: 16px;
-        }
+        .rzp-paise
+          font-size: 12px
+          opacity: 0.56
+        
+    .repay--type-title
+      font-size: 14px
+      color: rgba(22, 47, 86, 0.87)
 
-        .rzp-whole {
-          font-size: 18px;
-        }
-      }
-    }
+    .repay--amount
+      .rzp-currency, .rzp-whole, .rzp-paise
+        color: #162F56
+        font-weight: 700
+      
+      .rzp-currency, .rzp-whole
+        font-size: 12px
+        opacity: 0.76
 
-    .success {
-      .total-repaid {
-        padding-right: 35px;
-      }
-      .interest-paid {
-        padding-right: 35px;
-      }
-      .principal-repaid {
-        padding-right: 24px;
-      }
-      .repayment-via {
-        border-left: 1px solid rgba(22, 47, 86, 0.1);
-        padding-left: 24px;
-        .settlement-balance {
-          padding-right: 8px;
-          margin-right: 8px;
-        }
-        .settlement-title {
-          font-weight: 700;
-          font-size: 15px;
-          color: #162F56;
-          opacity: 0.87;
-        }
-        .rzp-amount {
-          .rzp-paise, .rzp-currency, .rzp-whole {
-            font-weight: 700;
-            color: #162F56;
-          }
-          .rzp-paise, .rzp-currency {
-            font-size: 10px;
-            opacity: 0.56;
-          }
-          .rzp-whole {
-            font-size: 12px;
-          }
-        }
-      }
-      .done-btn {
-        margin-left: 29px;
-        margin-top: 23px;
-      }
-      .details {
-        padding-top: 12px;
-        border-top: 1px solid rgba(22, 47, 86, 0.1);
-      }
-    }
+      .rzp-paise
+        font-size: 9px
+        opacity: 0.56
+    
+    .edit-btn
+      margin-left: 4px
+    
+    .custom-input
+      .Input
+        margin: 0px
+        .Input-addons
+          pointer-events: all
+          background: initial
+          margin-right: 8px
 
-    .failure {
-      .details {
-        padding-top: 17px;
-        border-top: 1px solid rgba(22, 47, 86, 0.1);
-        display: inline-flex;
-      }
-      .repayment-amount {
-        padding-right: 33px;
-        border-right: 1px solid rgba(22, 47, 86, 0.1);
-        margin-right: 24px;
-      }
-      .repayment-via--details {
-        font-weight: bold;
-        font-size: 16px;
-        color: #162F56;
-        opacity: 0.87;
-      }
-      .repayment-via {
-        margin-right: 33px;
-      }
-    }
+    .action
+      display: inline-flex
+      justify-content: center
+      border: 1px solid rgba(22, 47, 86, 0.1)
+      border-radius: 2px
+      padding: 12px 28px 13px 12px
+      height: fit-content
+      &.active
+        border-color: #ACCEF7
+        border-bottom: 2px solid #0B70E7
+      &.error
+        border-color: #FAC7C7
+        border-bottom: 2px solid #F05150
+      &.disabled
+        pointer-events: none
+        border-color: rgba(22, 47, 86, 0.1)
+        opacity: 0.5
+    .repay-actions-box
+      height: 112px
+    .wrapper-alignment
+      justify-content: space-between
+    &.repay-amount
+      padding: 34px 32px 25px
+      .principal
+        padding-right: 12px
+        margin-right: 14px
+        border-right: 1px solid rgba(22, 47, 86, 0.16)
+      
+      .amount
+        .rzp-currency, .rzp-whole, .rzp-paise
+          color: #162F56
+          font-size: 12px
+          opacity: 0.76
+          font-weight: 700
+      
+      .hint
+        background: #F8F8FA
+        border-radius: 2px
+        padding: 8px 10px
+        align-items: center
+        p
+          font-size: 12px
 
-    .settlement-balance {
-      padding-right: 4px;
-      margin-right: 5px;
-    }
+    &.repay-method
+      padding: 34px 32px 20px
+      .repay--type-description
+        font-size: 12px
+        color: rgba(22, 47, 86, 0.54)
+      
+      .action
+        .repay--amount
+          .rzp-currency, .rzp-whole, .rzp-paise
+            color: #818EA4
+            opacity: 1
+          
+          .rzp-paise
+            font-size: 12px
+          
+          .rzp-currency
+            font-weight: normal
+      
+      .repay--amount
+        .rzp-currency
+          font-weight: normal
+          opacity: 0.8
+        
+        .rzp-whole
+          font-size: 13px
+      
+      .bank__disable
+        opacity: 0.7
+        cursor: not-allowed
+        pointer-events: none
+      
+    .settlement-balance--input
+      .Input-addons--after
+        width: fit-content
+      
+      .Input-addons--before
+        background-color: #f0f3f4 !important
+      
+      &.is-focused .Input-addons--before
+        background-color: rgba(82,143,240,0.17) !important
+      
+    .settlement-balance--input-actions
+      height: fit-content
+      display: flex
+      align-items: flex-start
 
-    .settlement-balance.border-right {
-      border-right: 1px solid #D6DAE1;
-    }
-  }
+    .settlement-balance--close
+      cursor: pointer
 
-.mr-16 {
-  margin-right: 16px;
-}
-.mt-11 {
-  margin-top: 11px;
-}
-.mr-24 {
-  margin-right: 24px;
-}
+  .repay-result
+    position: relative
+    padding: 32px 20px 18px 32px
+    .i-info-circle
+      font-size: 20px
+    
+    .btn-cross
+      position: absolute
+      top: 20px
+      right: 20px
+      cursor: pointer
+    
+    h1.title
+      font-size: 20px
+      font-weight: 900
+      color: #162F56
+      margin: 0px
+    
+    .description
+      padding: 12px 0px 16px
+      max-width: 703px
 
-.mr-7 {
-  margin-right: 7px;
-}
+    .repay--amount
+      .rzp-currency, .rzp-whole, .rzp-paise
+        font-weight: bold
+        font-size: 14px
+        color: rgba(22, 47, 86, 0.76)
+        opacity: 1
 
-.mt-4 {
-  margin-top: 4px;
-}
-.mt-6{
-  margin-top: 6px;
-}
-.mt-8 {
-  margin-top: 8px;
-}
-.mt-12{
-  margin-top: 12px;
-}
-.mt-24{
-  margin-top: 24px;
-}
+    .details--heading
+      font-weight: bold
+      font-size: 13px
+      color: rgba(22, 47, 86, 0.54)
 
-.ml--1 {
-  margin-left: -1px;
-}
+    .details--amount
+      margin-top: 2px
+      .rzp-amount
+        .rzp-currency
+          color: #162F56
+          font-weight: normal
+          font-size: 15px
+          opacity: 0.8
 
-.ml-4 {
-  margin-left: 4px;
-}
+        .rzp-paise, .rzp-whole
+          color: #162F56
+          opacity: 0.87
+          font-weight: bold
+        
+        .rzp-paise
+          font-size: 16px
 
-.Button--transparent {
-  font-weight: 700;
-}
+        .rzp-whole
+          font-size: 18px
 
-.mt-5 {
-  margin-top: 5px;
-}
+    .success
+      .total-repaid
+        padding-right: 35px
+      
+      .interest-paid
+        padding-right: 35px
+      
+      .principal-repaid
+        padding-right: 24px
+      
+      .repayment-via
+        border-left: 1px solid rgba(22, 47, 86, 0.1)
+        padding-left: 24px
 
-.mr-4 {
-  margin-right: 4px;
-}
+        .settlement-balance
+          padding-right: 8px
+          margin-right: 8px
+        
+        .settlement-title
+          font-weight: 700
+          font-size: 15px
+          color: #162F56
+          opacity: 0.87
+        
+        .rzp-amount
+          .rzp-paise, .rzp-currency, .rzp-whole
+            font-weight: 700
+            color: #162F56
+          
+          .rzp-paise, .rzp-currency
+            font-size: 10px
+            opacity: 0.56
+          
+          .rzp-whole
+            font-size: 12px
+      
+      .done-btn
+        margin-left: 29px
+        margin-top: 23px
+      
+      .details
+        padding-top: 12px
+        border-top: 1px solid rgba(22, 47, 86, 0.1)
 
-.mt-2 {
-  margin-top: 2px;
-}
+    .failure
+      .details
+        padding-top: 17px
+        border-top: 1px solid rgba(22, 47, 86, 0.1)
+        display: inline-flex
+      
+      .repayment-amount
+        padding-right: 33px
+        border-right: 1px solid rgba(22, 47, 86, 0.1)
+        margin-right: 24px
+      
+      .repayment-via--details
+        font-weight: bold
+        font-size: 16px
+        color: #162F56
+        opacity: 0.87
+      
+      .repayment-via
+        margin-right: 33px
 
-.mr-12 {
-  margin-right: 12px;
-}
+    .settlement-balance
+      padding-right: 4px
+      margin-right: 5px
+    
+    .settlement-balance.border-right
+      border-right: 1px solid #D6DAE1
+    
+.mr-16
+  margin-right: 16px
 
-.mr-8 {
-  margin-right: 8px;
-}
+.mt-11
+  margin-top: 11px
 
-.mr-10 {
-  margin-right: 10px;
-}
+.mr-24
+  margin-right: 24px
+
+.mr-7
+  margin-right: 7px
+
+.mt-4
+  margin-top: 4px
+
+.mt-6
+  margin-top: 6px
+
+.mt-8
+  margin-top: 8px
+
+.mt-12
+  margin-top: 12px
+
+.mt-24
+  margin-top: 24px
+
+.ml--1
+  margin-left: -1px
+
+.ml-4
+  margin-left: 4px
+
+.Button--transparent
+  font-weight: 700
+
+.mt-5
+  margin-top: 5px
+
+.mr-4
+  margin-right: 4px
+
+.mt-2
+  margin-top: 2px
+
+.mr-12
+  margin-right: 12px
+
+.mr-8
+  margin-right: 8px
+
+.mr-10
+  margin-right: 10px

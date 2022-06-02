@@ -6,18 +6,18 @@ import { REPAYMENT_VIEWS, REPAY_AMOUNT_TYPES } from '../constants';
 const Repay = ({
   view,
   setView,
-  nextRepayableAmount,
+  currentOutstandingTotalAmount,
   balance,
-  nextRepayInterestAmount,
-  nextRepayPrincipalAmount,
+  currentOutstandingInterestAmount,
+  currentOutstandingPrincipalAmount,
   totalOwedAmount,
   totalInterestAmount,
   totalPrincipalAmount,
   setResultAmounts,
 }) => {
-  const [repayType, setRepayType] = useState(REPAY_AMOUNT_TYPES.NEXT_REPAYABLE);
+  const [repayType, setRepayType] = useState(REPAY_AMOUNT_TYPES.CURRENT_OUTSTANDING);
   const [customAmount, setCustomAmount] = useState(null);
-  const [repayAmount, setRepayAmount] = useState(nextRepayableAmount);
+  const [repayAmount, setRepayAmount] = useState(currentOutstandingTotalAmount);
 
   const isBalanceZero = balance === 0;
 
@@ -99,8 +99,8 @@ const Repay = ({
         setResultAmounts={setResultAmounts}
         totalInterestAmount={totalInterestAmount}
         totalPrincipalAmount={totalPrincipalAmount}
-        nextRepayInterestAmount={nextRepayInterestAmount}
-        nextRepayPrincipalAmount={nextRepayPrincipalAmount}
+        currentOutstandingInterestAmount={currentOutstandingInterestAmount}
+        currentOutstandingPrincipalAmount={currentOutstandingPrincipalAmount}
         repayType={repayType}
       />
     );
@@ -108,12 +108,12 @@ const Repay = ({
     return (
       <RepayAmount
         setView={setView}
-        nextRepayableAmount={nextRepayableAmount}
+        currentOutstandingTotalAmount={currentOutstandingTotalAmount}
         totalOwedAmount={totalOwedAmount}
         customAmount={customAmount}
         balance={balance}
-        nextRepayInterestAmount={nextRepayInterestAmount}
-        nextRepayPrincipalAmount={nextRepayPrincipalAmount}
+        currentOutstandingInterestAmount={currentOutstandingInterestAmount}
+        currentOutstandingPrincipalAmount={currentOutstandingPrincipalAmount}
         setRepayType={setRepayType}
         repayType={repayType}
         setCustomAmount={setCustomAmount}

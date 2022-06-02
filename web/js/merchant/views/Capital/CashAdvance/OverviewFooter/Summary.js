@@ -5,7 +5,6 @@ import Spinner from 'common/ui/Spinner';
 import Button from 'common/new-ui/Button';
 import Amount from 'common/ui/Amount';
 import { CASH_ADVANCE_SECTIONS, REPAYMENT_VIEWS } from '../constants';
-import moment from 'moment';
 import { trackRepayNow, trackViewRepayments } from '../TrackEvents/trackEvents';
 
 const Loader = () => {
@@ -18,22 +17,15 @@ const Loader = () => {
 
 const Summary = ({
   setView,
-  nextRepayableAmount,
+  currentOutstandingTotalAmount,
   totalOwedAmount,
   loading,
-  nextRepaymentDate,
   location: { pathname = '' },
 }) => {
   const handleRepayNowClick = () => {
     trackRepayNow(pathname);
     setView(REPAYMENT_VIEWS.REPAY_AMOUNT);
   };
-
-  const repaymentDate = nextRepaymentDate ? (
-    <p>Scheduled for {moment.unix(nextRepaymentDate).format('MMMM D, YYYY [at] h a')}.</p>
-  ) : (
-    ''
-  );
 
   return (
     <div className="repay-container summary">
@@ -43,10 +35,10 @@ const Summary = ({
         <Fragment>
           <p className="title">Current Outstanding Amount</p>
           <div className="large-amount">
-            <Amount value={nextRepayableAmount} />
+            <Amount value={currentOutstandingTotalAmount} />
           </div>
           <div className="scheduled-text">
-            <p>{totalOwedAmount === 0 ? 'No pending amount needs to be repaid.' : repaymentDate}</p>
+            <p>{totalOwedAmount === 0 ? 'No pending amount needs to be repaid.' : 'As of today'}</p>
           </div>
           <div className="repay-container__ctas">
             {totalOwedAmount !== 0 ? (

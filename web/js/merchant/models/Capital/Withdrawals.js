@@ -2,13 +2,9 @@ import { merchantFetch } from '../../utils/ajax';
 import GenericEntity from '../GenericEntity';
 
 export default class LoanOriginationEntity extends GenericEntity {
-  constructor() {
-    super();
-  }
-
   request = (url, data, progressTracker) => {
     return merchantFetch({
-      url: url,
+      url,
       mode: 'live',
       method: 'post',
       data,
@@ -104,6 +100,12 @@ export default class LoanOriginationEntity extends GenericEntity {
     );
   }
   fetchInstallments(data) {
+    return this.request(
+      `${this.resourceUrlPrefix('withdrawal', 'RepaymentAPI', 'GetRepaymentsSchedule')}`,
+      data,
+    );
+  }
+  fetchCurrentOutstanding(data) {
     return this.request(
       `${this.resourceUrlPrefix('withdrawal', 'RepaymentAPI', 'GetRepaymentsSchedule')}`,
       data,
