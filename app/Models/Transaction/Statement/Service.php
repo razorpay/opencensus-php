@@ -45,8 +45,7 @@ class Service extends Transaction\Service
 
         // Route request to BAS if DA ledger feature is enabled and acc is of type direct
         if (($this->isExperimentEnabled(Merchant\RazorxTreatment::RX_DA_ACC_STMT_EXPERIMENT) === true) and
-            ($balance->isAccountTypeDirect() === true) and
-            ($this->app['basicauth']->isProxyAuth() === true))
+            ($balance->isAccountTypeDirect() === true))
         {
             $this->trace->info(
                 TraceCode::DRIVING_ACCOUNT_STATEMENT_FOR_DA_VIA_BAS,
@@ -123,8 +122,7 @@ class Service extends Transaction\Service
 
         // Route request to BAS if DA ledger feature is enabled and acc is of type direct
         if (($this->isExperimentEnabled(Merchant\RazorxTreatment::RX_DA_ACC_STMT_EXPERIMENT) === true) and
-            ($balance->isAccountTypeDirect() === true) and
-            ($this->app['basicauth']->isProxyAuth() === true))
+            ($balance->isAccountTypeDirect() === true))
         {
             $this->trace->info(
                 TraceCode::DRIVING_ACCOUNT_STATEMENT_FOR_DA_VIA_BAS,

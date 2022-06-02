@@ -2,27 +2,21 @@
 
 namespace RZP\Tests\Functional\Transaction;
 
-use RZP\Models\Feature;
 use RZP\Constants\Mode;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\RazorxTreatment;
-use RZP\Exception\InvalidArgumentException;
 use RZP\Tests\Functional\Fixtures\Entity\User;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\FundAccount\FundAccountTrait;
-use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
-use RZP\Tests\Functional\Helpers\FundAccount\FundAccountValidationTrait;
 
 class DirectAccountStatementTest extends TestCase
 {
     use PaymentTrait;
     use FundAccountTrait;
     use DbEntityFetchTrait;
-    use VirtualAccountTrait;
     use TestsBusinessBanking;
-    use FundAccountValidationTrait;
 
     protected function setUp(): void
     {
@@ -205,6 +199,23 @@ class DirectAccountStatementTest extends TestCase
         $this->startTest();
     }
 
+    public function testFetchMultipleStatementsForDirectAccountWithPrivateAuth()
+    {
+        $this->createDummyPayout();
+
+        $this->createDummyReversal();
+
+        $this->createDummyExternal();
+
+        // Creates one normal payment transaction on primary balance.
+        $this->doAuthAndCapturePayment(null, 50000);
+
+        // One the first two transactions should appear in response.
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
     public function testFetchMultipleStatementsForBankingForDirectAccount()
     {
         $this->app['config']->set('applications.banking_account_service.mock', true);
@@ -296,6 +307,26 @@ class DirectAccountStatementTest extends TestCase
         $this->assertEquals($this->transaction->getSignedEntityId(), $txn['source']['id']);
     }
 
+    public function testFetchByContactIdWithPrivateAuth()
+    {
+        $this->createDummyPayout();
+
+        $this->createDummyReversal();
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/transactions?contact_id=cont_' . $this->contact['id'];
+
+        $this->ba->privateAuth();
+        $response = $this->startTest();
+
+        $this->assertEquals(1, $response['count']);
+
+        $txn = $response['items'][0];
+
+        $this->assertEquals($this->transaction->getPublicId(), $txn['id']);
+        $this->assertEquals($this->transaction['amount'], $txn['amount']);
+        $this->assertEquals($this->transaction->getSignedEntityId(), $txn['source']['id']);
+    }
+
     public function testFetchByPayoutId()
     {
         $this->createDummyReversal();
@@ -374,6 +405,29 @@ class DirectAccountStatementTest extends TestCase
         $this->createEsMockAndSetExpectations(__FUNCTION__);
 
         $this->ba->proxyAuth();
+        $response = $this->startTest();
+
+        $this->assertEquals(1, $response['count']);
+
+        $txn = $response['items'][0];
+
+        $this->assertEquals($this->transaction->getPublicId(), $txn['id']);
+        $this->assertEquals($this->transaction['amount'], $txn['amount']);
+        $this->assertEquals($this->transaction->getSignedEntityId(), $txn['source']['id']);
+    }
+
+    public function testFetchByContactNameWithPrivateAuth()
+    {
+        $this->createDummyPayout();
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/transactions?contact_name=' . $this->contact['name'];
+
+        // Sets ES fetch expected return values.
+        $this->testData[__FUNCTION__ . 'ExpectedSearchParams']['body']['query']['bool']['filter']['bool']['must'][0]['term']['balance_id']['value'] = $this->bankingBalance->getId();
+        $this->testData[__FUNCTION__ . 'ExpectedSearchResponse']['hits']['hits'][0]['_id'] = str_after($this->transaction['id'], 'txn_');
+        $this->createEsMockAndSetExpectations(__FUNCTION__);
+
+        $this->ba->privateAuth();
         $response = $this->startTest();
 
         $this->assertEquals(1, $response['count']);
@@ -498,6 +552,16 @@ class DirectAccountStatementTest extends TestCase
         $this->assertEquals($this->transaction['amount'], $txn['credit']);
     }
 
+    public function testActionFilterFailedPrivateAuth()
+    {
+        $this->createDummyPayout();
+
+        $this->ba->privateAuth();
+        $this->testData[__FUNCTION__]['request']['url'] = '/transactions?action=debit';
+
+        $this->startTest();
+    }
+
     public function testFetchByPayoutMode()
     {
         $contactInput = [
@@ -576,5 +640,122 @@ class DirectAccountStatementTest extends TestCase
         $this->ba->proxyAuth();
 
         $this->startTest();
+    }
+
+    public function testFetchMultipleByTransactionId()
+    {
+        $this->createDummyPayout();
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/transactions?id=' . $this->transaction->getPublicId();
+
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals(1, $response['count']);
+
+        $txn = $response['items'][0];
+
+        $this->assertEquals($this->transaction->getPublicId(), $txn['id']);
+        $this->assertEquals($this->transaction['amount'], $txn['amount']);
+        $this->assertEquals($this->transaction->getSignedEntityId(), $txn['source']['id']);
+    }
+
+    public function testFetchMultipleByBasId()
+    {
+        $this->createDummyPayout();
+
+        $bas = $this->getDbLastEntity('banking_account_statement');
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/transactions?id=' . $bas->getPublicId();
+
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals(1, $response['count']);
+
+        $txn = $response['items'][0];
+
+        $this->assertEquals($this->transaction->getPublicId(), $txn['id']);
+        $this->assertEquals($this->transaction['amount'], $txn['amount']);
+        $this->assertEquals($this->transaction->getSignedEntityId(), $txn['source']['id']);
+    }
+
+    public function testFetchMultipleByBasIdWithPrivateAuth()
+    {
+        $this->createDummyPayout();
+
+        $bas = $this->getDbLastEntity('banking_account_statement');
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/transactions?id=' . $bas->getPublicId();
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals(1, $response['count']);
+
+        $txn = $response['items'][0];
+
+        $this->assertEquals($this->transaction->getPublicId(), $txn['id']);
+        $this->assertEquals($this->transaction['amount'], $txn['amount']);
+        $this->assertEquals($this->transaction->getSignedEntityId(), $txn['source']['id']);
+    }
+
+    public function testFetchMultipleWhenBasHasNoTxnId()
+    {
+        $this->createDummyPayout();
+
+        $bas = $this->getDbLastEntity('banking_account_statement');
+
+        $this->fixtures->edit('banking_account_statement', $bas->getId(), ['transaction_id' => null]);
+
+        $bas = $this->getDbLastEntity('banking_account_statement');
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/transactions?id=' . $bas->getPublicId();
+
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals(1, $response['count']);
+
+        $this->assertEquals($bas->getPublicId(), $response['items'][0]['id']);
+
+        $stmt = $response['items'][0];
+
+        $this->assertNotEquals($this->transaction->getPublicId(), $stmt['id']);
+        $this->assertEquals($bas['amount'], $stmt['amount']);
+        $this->assertEquals($bas->getEntityId(), str_after($stmt['source']['id'], 'pout_'));
+        $this->assertEquals($bas->getEntityType(), 'payout');
+    }
+
+    public function testFetchMultipleWhenBasHasNoTxnIdWithPrivateAuth()
+    {
+        $this->createDummyPayout();
+
+        $bas = $this->getDbLastEntity('banking_account_statement');
+
+        $this->fixtures->edit('banking_account_statement', $bas->getId(), ['transaction_id' => null]);
+
+        $bas = $this->getDbLastEntity('banking_account_statement');
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/transactions?id=' . $bas->getPublicId();
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals(1, $response['count']);
+
+        $this->assertEquals($bas->getPublicId(), $response['items'][0]['id']);
+
+        $stmt = $response['items'][0];
+
+        $this->assertNotEquals($this->transaction->getPublicId(), $stmt['id']);
+        $this->assertEquals($bas['amount'], $stmt['amount']);
+        $this->assertEquals($bas->getEntityId(), str_after($stmt['source']['id'], 'pout_'));
+        $this->assertEquals($bas->getEntityType(), 'payout');
     }
 }

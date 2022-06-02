@@ -11,6 +11,7 @@ use RZP\Base\BuilderEx;
 use RZP\Models\Reversal;
 use RZP\Models\External;
 use RZP\Trace\TraceCode;
+use RZP\Models\Transaction;
 use RZP\Models\FundAccount;
 use RZP\Constants\Entity as E;
 use RZP\Constants\Environment;
@@ -156,9 +157,9 @@ class Repository extends Base\Repository
             ->get()
             // MySQL gives results in ascending order of id. Sorting again to keep correct ES's order.
             ->sort(
-                function (PublicEntity $x, PublicEntity $y) use ($order)
+                function (Entity $x, Entity $y) use ($order)
                 {
-                    return $order[$x->getId()] - $order[$y->getId()];
+                    return $order[$x->getTransactionId()] - $order[$y->getTransactionId()];
                 })
             ->values();
 
@@ -169,6 +170,32 @@ class Repository extends Base\Repository
         }
 
         return $entities;
+    }
+
+    protected function addQueryParamId(BuilderEx $query, array &$params)
+    {
+        $id = $params[Entity::ID];
+
+        if (strpos($id, Transaction\Entity::getSign()) !== false)
+        {
+            $txnIdColumn = $this->repo->direct_account_statement->dbColumn(Entity::TRANSACTION_ID);
+
+            Transaction\Entity::verifyIdAndSilentlyStripSign($id);
+
+            unset($params[Entity::ID]);
+
+            $params[Entity::TRANSACTION_ID] = $id;
+
+            $query->where($txnIdColumn, $id);
+
+            return;
+        }
+
+        $idColumn = $this->repo->direct_account_statement->dbColumn(Entity::ID);
+
+        Entity::verifyIdAndSilentlyStripSign($id);
+
+        $query->where($idColumn, $id);
     }
 
     protected function addQueryParamBalanceId(BuilderEx $query, array $params)

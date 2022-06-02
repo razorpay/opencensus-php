@@ -83,15 +83,9 @@ class Entity extends BankingAccountStatement\Entity
     ];
 
     protected $appends = [
-        self::ACCOUNT_NUMBER,
         self::CREDIT,
         self::DEBIT,
     ];
-
-    public function bankingAccount()
-    {
-        return $this->belongsTo(BankingAccount\Entity::class, Entity::MERCHANT_ID, BankingAccount\Entity::MERCHANT_ID);
-    }
 
     public function accountBalance()
     {
@@ -122,10 +116,11 @@ class Entity extends BankingAccountStatement\Entity
             null :
             Txn\Entity::getSign() . Txn\Entity::getDelimiter() . $array[self::TRANSACTION_ID];
 
-        $basId = $array[self::ID];
-
-        $array[self::ID] = $txnId;
-        $array[self::TRANSACTION_ID] = $basId;
+        if (empty($txnId) === false)
+        {
+            $array[self::ID] = $txnId;
+            unset($array[self::TRANSACTION_ID]);
+        }
     }
 
     public function setPublicTypeAttribute(array &$array)
@@ -143,12 +138,6 @@ class Entity extends BankingAccountStatement\Entity
         }
 
         unset($array[self::TYPE]);
-    }
-
-    // Appends
-    public function getAccountNumberAttribute()
-    {
-        return $this->bankingAccount->getAccountNumber();
     }
 
     public function getCreditAttribute()
