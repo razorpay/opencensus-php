@@ -12370,7 +12370,8 @@ class Route
         'loc'  => [
             'loc_mail',
             'user_fetch',
-            'feature_delete_entity_internal'
+            'feature_delete_entity_internal',
+            'feature_add_internal'
         ],
 
         'leegality' => [
