@@ -1779,6 +1779,8 @@ class CardMandateTest extends TestCase
 
         $this->mockCps(null, 'entity_fetch');
 
+        $this->mockCheckBin();
+
         $request = [
             'method'  => 'POST',
             'url'     => '/payments/create/ajax',

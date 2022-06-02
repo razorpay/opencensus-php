@@ -2,6 +2,8 @@
 
 namespace RZP\Models\CardMandate\MandateHubs;
 
+use App;
+
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
@@ -21,11 +23,18 @@ class MandateHubTerminalSelector extends Base\Core
 
         $isSIHubEnabled = $payment->merchant->isBilldeskSIHubEnabled();
 
+        $iin = $payment->card->iinRelation->getIin();
+
+        $app = App::getFacadeRoot();
+
+        $isMandateHQIINEnabled = $app->mandateHQ->isBinSupported($iin);
+
         $this->trace->info(
             TraceCode::CARD_MANDATE_TERMINAL_LOG,
             [
-                'terminals'         => $selectedTerminalIds,
-                'is_si_hub_enabled' => $isSIHubEnabled,
+                'terminals'                => $selectedTerminalIds,
+                'is_si_hub_enabled'        => $isSIHubEnabled,
+                'is_mandatehq_iin_enabled' => $isMandateHQIINEnabled,
             ]
         );
 
@@ -33,12 +42,25 @@ class MandateHubTerminalSelector extends Base\Core
 
         foreach ($terminals as $terminal)
         {
-            if ($isSIHubEnabled === true or
-                $terminal->getGateway() !== MandateHubs::BILLDESK_SIHUB)
+            switch ($terminal->getGateway())
             {
-                array_push($finalTerminals, $terminal);
-            }
+                case MandateHubs::BILLDESK_SIHUB:
+                    if ($isSIHubEnabled === true)
+                    {
+                        array_push($finalTerminals, $terminal);
+                    }
+                    break;
 
+                case MandateHubs::MANDATE_HQ:
+                    if ($isMandateHQIINEnabled === true)
+                    {
+                        array_push($finalTerminals, $terminal);
+                    }
+                    break;
+
+                default:
+                    array_push($finalTerminals, $terminal);
+            }
         }
 
         $finalTerminalIds = array_pluck($finalTerminals, 'id');
