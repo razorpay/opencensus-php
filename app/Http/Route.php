@@ -5459,6 +5459,7 @@ class Route
 
         //Tally App
         'accounting_integration_get_all_settings',
+        'accounting_integration_add_or_update_settings',
         'accounting_integration_tally_delete_integration',
 
         'accounting_integration_get_organization',
@@ -8042,6 +8043,7 @@ class Route
         'accounting_integration_put_chart_of_accounts'    => Permission::UPDATE_ACCOUNTING_INTEGRATION,
         'accounting_integration_sync_chart_of_accounts'   => Permission::SYNC_ACCOUNTING_INTEGRATION,
         'accounting_integration_get_all_settings'         => Permission::VIEW_ACCOUNTING_INTEGRATION,
+        'accounting_integration_add_or_update_settings'   => Permission::CREATE_ACCOUNTING_INTEGRATION,
         'accounting_integration_tally_delete_integration' => Permission::DELETE_ACCOUNTING_INTEGRATION,
 
         'merchant_primary_balance_fetch'               => '*',
