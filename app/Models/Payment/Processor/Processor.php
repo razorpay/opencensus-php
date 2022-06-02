@@ -3852,6 +3852,8 @@ class Processor
             $payment = $this->buildPaymentEntity($input);
         }
 
+        $this->validateDisableS2SIfApplicable($payment, $input);
+
         if ($this->merchant->isFeeBearerCustomerOrDynamic() === true)
         {
             $this->verifyProvidedFee($payment, $input);
@@ -4442,6 +4444,17 @@ class Processor
                 $input[Payment\Entity::RECURRING_TOKEN][Payment\Entity::NOTIFICATION_ID]);
         }
 
+    }
+
+    protected function validateDisableS2SIfApplicable(Payment\Entity $payment, array $input)
+    {
+        if((isset($payment) === true) && ($input['method'] === Payment\Method::CARD))
+        {
+            if (($this->app['api.route']->isS2SPaymentRoute() === true) && ($this->merchant->isFeatureEnabled(Feature::S2S_DISABLE_CARDS) === true)) {
+                throw new Exception\BadRequestValidationFailureException(
+                    'The requested URL was not found on the server');
+            }
+        }
     }
 
     protected function validateUpiRecurringIfApplicable(Payment\Entity $payment, array $input)
