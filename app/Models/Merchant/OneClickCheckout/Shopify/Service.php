@@ -207,8 +207,15 @@ class Service extends Base\Service
 
         $this->updateRzpOrder($order, $shopifyOrder['order']['id']);
 
+        $orderArray = $order->toArrayPublic();
+
         return [
-            'order_status_url' => $shopifyOrder['order']['order_status_url'],
+            'total_amount'     => $orderArray['amount'],
+            'promotions'       => $orderArray['promotions'],
+            'shipping_fee'     => $orderArray['shipping_fee'],
+            'order_id'         => $shopifyOrder['order']['name'],
+            'total_tax'        => $shopifyOrder['order']['total_tax'],
+            'order_status_url' => $shopifyOrder['order']['order_status_url']
         ];
     }
 
