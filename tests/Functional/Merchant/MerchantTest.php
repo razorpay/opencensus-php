@@ -9897,36 +9897,37 @@ IFSC Code  ICIC0001206
         $this->assertEquals(0, $merchant['restricted']);
     }
 
-    public function testUpdateContactMobileOfUser()
-    {
-        $merchant = $this->fixtures->create('merchant');
-
-        $this->fixtures->merchant->setRestricted(true, $merchant['id']);
-
-        $user1 = $this->fixtures->create('user');
-
-        $user2 = $this->fixtures->create('user');
-
-        $this->createUserMerchantMapping($user1['id'], $merchant['id'], 'admin');
-
-        $this->createUserMerchantMapping($user2['id'], $merchant['id'], 'owner');
-
-        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $user1['id']);
-
-        $testData = &$this->testData[__FUNCTION__];
-
-        $testData['request']['content']['user_id'] = $user2['id'];
-
-        $response = $this->startTest();
-
-        $userDB = $this->getDbEntityById('user', $user2['id']);
-
-        $this->assertEquals($userDB['contact_mobile_verified'], $response['contact_mobile_verified']);
-
-        $this->assertEquals($userDB['contact_mobile_verified'], true);
-
-        $this->assertEquals($userDB['contact_mobile'], $response['contact_mobile']);
-    }
+    // This functionality is now deprecated
+    //public function testUpdateContactMobileOfUser()
+    //{
+    //    $merchant = $this->fixtures->create('merchant');
+    //
+    //    $this->fixtures->merchant->setRestricted(true, $merchant['id']);
+    //
+    //    $user1 = $this->fixtures->create('user');
+    //
+    //    $user2 = $this->fixtures->create('user');
+    //
+    //    $this->createUserMerchantMapping($user1['id'], $merchant['id'], 'admin');
+    //
+    //    $this->createUserMerchantMapping($user2['id'], $merchant['id'], 'owner');
+    //
+    //    $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $user1['id']);
+    //
+    //    $testData = &$this->testData[__FUNCTION__];
+    //
+    //    $testData['request']['content']['user_id'] = $user2['id'];
+    //
+    //    $response = $this->startTest();
+    //
+    //    $userDB = $this->getDbEntityById('user', $user2['id']);
+    //
+    //    $this->assertEquals($userDB['contact_mobile_verified'], $response['contact_mobile_verified']);
+    //
+    //    $this->assertEquals($userDB['contact_mobile_verified'], true);
+    //
+    //    $this->assertEquals($userDB['contact_mobile'], $response['contact_mobile']);
+    //}
 
     public function testUpdateContactMobileOfUserByAdmin()
     {
@@ -9970,24 +9971,25 @@ IFSC Code  ICIC0001206
         $this->assertEquals($userDb['contact_mobile_verified'], true);
     }
 
-    public function testUpdateContactMobileOfSelfUser()
-    {
-        $merchant = $this->createMerchant();
-
-        $this->fixtures->merchant->setRestricted(true, $merchant['id']);
-
-        $user = $this->fixtures->create('user');
-
-        $this->createUserMerchantMapping($user['id'], $merchant['id'], 'owner', 'test');
-
-        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $user['id']);
-
-        $testData = &$this->testData[__FUNCTION__];
-
-        $testData['request']['content']['user_id'] = $user['id'];
-
-        $this->startTest();
-    }
+    // This functionality is now Deprecated
+    //public function testUpdateContactMobileOfSelfUser()
+    //{
+    //    $merchant = $this->createMerchant();
+    //
+    //    $this->fixtures->merchant->setRestricted(true, $merchant['id']);
+    //
+    //    $user = $this->fixtures->create('user');
+    //
+    //    $this->createUserMerchantMapping($user['id'], $merchant['id'], 'owner', 'test');
+    //
+    //    $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $user['id']);
+    //
+    //    $testData = &$this->testData[__FUNCTION__];
+    //
+    //    $testData['request']['content']['user_id'] = $user['id'];
+    //
+    //    $this->startTest();
+    //}
 
     public function testUserAccountUnlock()
     {

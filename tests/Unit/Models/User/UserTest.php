@@ -591,51 +591,51 @@ class UserTest extends TestCase
         $this->assertEquals($expected['email'], $response['email']);
     }
 
-    public function testUpdateContactMobile()
-    {
-        $content = [
-            'input' => [
-                'user_id'               => '100002Razorpay',
-                'contact_mobile'        => '9999999999',
-            ],
-            'userData' => [
-                'id'                    => '100002Razorpay',
-                'name'                  => 'dummy',
-                'email'                 => 'dummy@example.com',
-                'password'              => 'blahblah123',
-                'password_confirmation' => 'blahblah123',
-                'contact_mobile'        => '9999999999',
-                'confirm_token'         => 'hello123',
-                'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
-            ],
-        ];
-
-        $this->userValidator->shouldReceive('validateInput')->andReturn([]);
-
-        $this->basicAuthMock->shouldReceive('isAdminAuth')->andReturn(false);
-
-        $this->basicAuthMock->shouldReceive('isPublicAuth')->andReturn(false);
-
-        $this->repoMock->shouldReceive('driver')->with('user')->andReturn($this->userRepoMock);
-
-        $this->userRepoMock->shouldReceive('findOrFailPublic')->andReturn($this->userEntityMock);
-
-        $this->merchantEntityMock->shouldReceive('getId')->andReturn('1cXSLlUU8V9sXl');
-
-        $this->userEntityMock->shouldReceive('getId')->andReturn('100002Razorpay');
-
-        $this->userEntityMock->shouldReceive('getValidator')->andReturn($this->userValidator);
-
-        $this->coreMock->shouldReceive('canMerchantUpdateUserDetails')->andReturn([]);
-
-        $this->userEntityMock->shouldReceive('setContactMobile')->andReturn([]);
-
-        $this->userEntityMock->shouldReceive('setContactMobileVerified')->andReturn([]);
-
-        $response = $this->userService->updateContactMobile($content['input']);
-
-        $this->assertEquals($this->userEntityMock, $response);
-    }
+    //public function testUpdateContactMobile()
+    //{
+    //    $content = [
+    //        'input' => [
+    //            'user_id'               => '100002Razorpay',
+    //            'contact_mobile'        => '9999999999',
+    //        ],
+    //        'userData' => [
+    //            'id'                    => '100002Razorpay',
+    //            'name'                  => 'dummy',
+    //            'email'                 => 'dummy@example.com',
+    //            'password'              => 'blahblah123',
+    //            'password_confirmation' => 'blahblah123',
+    //            'contact_mobile'        => '9999999999',
+    //            'confirm_token'         => 'hello123',
+    //            'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
+    //        ],
+    //    ];
+    //
+    //    $this->userValidator->shouldReceive('validateInput')->andReturn([]);
+    //
+    //    $this->basicAuthMock->shouldReceive('isAdminAuth')->andReturn(false);
+    //
+    //    $this->basicAuthMock->shouldReceive('isPublicAuth')->andReturn(false);
+    //
+    //    $this->repoMock->shouldReceive('driver')->with('user')->andReturn($this->userRepoMock);
+    //
+    //    $this->userRepoMock->shouldReceive('findOrFailPublic')->andReturn($this->userEntityMock);
+    //
+    //    $this->merchantEntityMock->shouldReceive('getId')->andReturn('1cXSLlUU8V9sXl');
+    //
+    //    $this->userEntityMock->shouldReceive('getId')->andReturn('100002Razorpay');
+    //
+    //    $this->userEntityMock->shouldReceive('getValidator')->andReturn($this->userValidator);
+    //
+    //    $this->coreMock->shouldReceive('canMerchantUpdateUserDetails')->andReturn([]);
+    //
+    //    $this->userEntityMock->shouldReceive('setContactMobile')->andReturn([]);
+    //
+    //    $this->userEntityMock->shouldReceive('setContactMobileVerified')->andReturn([]);
+    //
+    //    $response = $this->userService->updateContactMobile($content['input']);
+    //
+    //    $this->assertEquals($this->userEntityMock, $response);
+    //}
 
     public function testOAuthSignup()
     {

@@ -4195,30 +4195,13 @@ class Core extends Base\Core
         }
         else
         {
-            $merchant = app('basicauth')->getMerchant();
-
-            $this->trace->info(
-                TraceCode::USER_CONTACT_MOBILE_UPDATE,
-                [
-                    Entity::USER_ID        => $user->getId(),
-                    Entity::CONTACT_MOBILE => $input[Entity::CONTACT_MOBILE],
-                    Entity::MERCHANT_ID    => $merchant->getId(),
-                ]);
-
-            $teamData = [
-                'merchant_id' => $merchant->getId(),
-                'user_id'     => $user->getId(),
-            ];
-
-            // check if merchant is updating its own user's
-            // contact mobile, then do no allow.
-            $user->getValidator()->validateInput('teamManagement', $teamData);
-
-            // Check if merchant can update user contact details
-            $this->canMerchantUpdateUserDetails($merchant, $user);
-
-            // for merchant/proxy auth contact_mobile_verified is set to true
-            $contactMobileVerified = true;
+            // Refer: https://razorpay.atlassian.net/browse/SBB-1035
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR,
+                null,
+                null,
+                "Action only permitted for admin users."
+            );
         }
 
         $user->setContactMobile($input[Entity::CONTACT_MOBILE]);
