@@ -625,7 +625,7 @@ class Core extends Base\Core
      *      'activation_detail' : {
      *              'assignee_team' : 'ops',
      *              'comment' : {
-     *                  'comment' : 'sampel comment',
+     *                  'comment' : 'sample comment',
      *                  'type' : 'external',
      *              }
      *      }

@@ -141,6 +141,7 @@ class Entity extends Base\PublicEntity
     const AUDITOR_TYPE            = 'auditor_type';
     const ENTITY                  = 'entity';
     const ENTITY_ID               = 'entity_id';
+    const PENDING_ON              = 'pending_on';
 
     const IDS           = 'ids';
 

@@ -40,6 +40,7 @@ class Service extends Base\Service
 
     protected $config;
 
+    /** @var \RZP\Models\BankingAccount\Core $core*/ 
     protected $core;
 
     protected $notifier;
@@ -243,6 +244,8 @@ class Service extends Base\Service
 
         $previousStatus = $bankingAccount->getStatus();
 
+        $this->updateInputAssigneeTeamBasedOnSubStatusChange($bankingAccount, $input);
+
         $channel = $bankingAccount->getChannel();
 
         $this->trace->info(
@@ -275,6 +278,82 @@ class Service extends Base\Service
         }
 
         return $account->toArrayPublic();
+    }
+
+    /**
+     * Sanitize status by replacing underscore with space and capitalizing first letter of each word
+     * 
+     * @param string $status
+     */
+    private function sanitizeStatus(string $status): string
+    {
+        return ucwords(str_replace('_', ' ', $status));
+    }
+
+    /**
+     * Changes input array based on sub-status change  
+     * > Sub-status is changing either from or to `Pending on Sales | <REASON>`  
+     * > Add assignee_team and comment  
+     *   
+     * Check if the sub_status is changing either from or to `Pending on Sales | <REASON>`  
+     * * If it is changing to something like "Pending on Sales | *", then make sure the assignee team will be `sales`  
+     * * Otherwise if it is already sales, then the assignee team is changed to `ops`.  
+     * 
+     * @param \RZP\Models\BankingAccount\Entity $bankingAccount
+     * @param array $input
+     */
+    private function updateInputAssigneeTeamBasedOnSubStatusChange(Entity $bankingAccount, &$input)
+    {
+        if (array_key_exists(Entity::SUB_STATUS, $input) == true)
+        {
+            $currentSubStatus = $bankingAccount->getSubStatus();
+            $newSubStatus = $input[Entity::SUB_STATUS];
+            
+            if ($newSubStatus != $currentSubStatus && 
+                (str_starts_with($newSubStatus, Status::PENDING_ON_SALES_SUB_STRING) || 
+                str_starts_with($currentSubStatus, Status::PENDING_ON_SALES_SUB_STRING)))
+            {
+                $currentSubStatusSanitized = $currentSubStatus;
+                if ($currentSubStatus !== null)
+                {
+                    $currentSubStatusSanitized = $this->sanitizeStatus($currentSubStatus);
+                }
+
+                $newSubStatusSanitized = $newSubStatus;
+                if ($newSubStatus !== null)
+                {
+                    $newSubStatusSanitized = $this->sanitizeStatus($newSubStatus);
+                }
+
+                $comment = [
+                    Comment\Entity::ADDED_AT => Carbon::now()->timestamp,
+                    Comment\Entity::TYPE => 'internal',
+                    Comment\Entity::SOURCE_TEAM_TYPE => 'internal',
+                    Comment\Entity::SOURCE_TEAM => 'sales', // updated below
+                    Comment\Entity::COMMENT => "Sub-status updated: <br /><b>".$currentSubStatusSanitized."</b> → <b>".$newSubStatusSanitized."</b>.<br />",
+                ];
+
+                if (str_starts_with($newSubStatus, Status::PENDING_ON_SALES_SUB_STRING))
+                {
+                    $input[Entity::ACTIVATION_DETAIL][Entity::ASSIGNEE_TEAM] = 'sales';
+                    
+                    $comment[Comment\Entity::COMMENT] = $comment[Comment\Entity::COMMENT]."Assignee changed to Sales.";
+                    $comment[Comment\Entity::SOURCE_TEAM] = 'ops';
+                    
+                    $input[Entity::ACTIVATION_DETAIL][Comment\Entity::COMMENT] = $comment;
+
+                } 
+                else if ($bankingAccount->bankingAccountActivationDetails->assignee_team == 'sales')
+                {
+                    $input[Entity::ACTIVATION_DETAIL][Entity::ASSIGNEE_TEAM] = 'ops';
+                    
+                    $comment[Comment\Entity::COMMENT] = $comment[Comment\Entity::COMMENT]."Assignee changed to Ops.";
+                    $comment[Comment\Entity::SOURCE_TEAM] = 'sales';
+
+                    $input[Entity::ACTIVATION_DETAIL][Comment\Entity::COMMENT] = $comment;
+                }
+            }
+        }
     }
 
     public function updateByMerchant(string $id, array $input): array

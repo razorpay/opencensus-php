@@ -42,7 +42,8 @@ class Fetch extends BaseFetch
             Entity::FROM_FOLLOW_UP_DATE                 => 'sometimes|epoch',
             Entity::TO_FOLLOW_UP_DATE                   => 'sometimes|epoch',
             Entity::SORT_FOLLOW_UP_DATE                 => 'sometimes|in:asc,desc',
-            Entity::APPLICATION_TYPE                    => 'sometimes|string'
+            Entity::APPLICATION_TYPE                    => 'sometimes|string',
+            Entity::PENDING_ON                          => 'sometimes|string',
         ],
     ];
 
@@ -70,6 +71,7 @@ class Fetch extends BaseFetch
             Entity::BUSINESS_CATEGORY,
             Entity::BANK_ACCOUNT_TYPE,
             Entity::SALES_POC_ID,
+            Entity::PENDING_ON,
             Entity::ASSIGNEE_TEAM,
             Entity::SOURCE,
             Entity::FILTER_SLOT_BOOKED,

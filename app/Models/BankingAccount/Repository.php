@@ -202,6 +202,29 @@ class Repository extends Base\Repository
         });
     }
 
+    /**
+     * Get all banking accounts where either (`admin_id` is reviewer and `assignee_team` is ops)
+     * or (`admin_id` is spoc and `assignee_team` is sales)
+     */
+    public function addQueryParamPendingOn($query, $params)
+    {
+        AdminEntity::verifyIdAndStripSign($params[Entity::PENDING_ON]);
+
+        return $query->whereExists(function ($q) use ($params) {
+            $activationDetailTable = $this->repo->banking_account_activation_detail->getTableName();
+            $bankingAccountIdForeignColumn = $this->repo->banking_account_activation_detail->dbColumn(ActivationDetail\Entity::BANKING_ACCOUNT_ID);
+            $bankingAccountIdColumn = $this->repo->banking_account->dbColumn(Entity::ID);
+
+            $q->select('*')
+                ->from(Table::ADMIN_AUDIT_MAP)
+                ->join($activationDetailTable, $bankingAccountIdColumn, '=', $bankingAccountIdForeignColumn)
+                ->where('admin_id', '=', $params[Entity::PENDING_ON])
+                ->where('entity_type','=','banking_account')
+                ->whereRaw("((".Table::ADMIN_AUDIT_MAP.'.'.Entity::AUDITOR_TYPE." = 'spoc' AND ".Table::BANKING_ACCOUNT_ACTIVATION_DETAIL.'.'.Entity::ASSIGNEE_TEAM." = 'sales' ) OR ( ".Table::ADMIN_AUDIT_MAP.'.'.Entity::AUDITOR_TYPE." = 'reviewer' AND ".Table::BANKING_ACCOUNT_ACTIVATION_DETAIL.'.'.Entity::ASSIGNEE_TEAM." = 'ops' ))")
+                ->whereRaw(Table::BANKING_ACCOUNT.'.'.Entity::ID.' = '.Table::ADMIN_AUDIT_MAP.'.'.Entity::ENTITY_ID);
+        });
+    }
+
     public function addQueryParamSalesPocId($query, $params)
     {
         AdminEntity::verifyIdAndStripSign($params[Entity::SALES_POC_ID]);

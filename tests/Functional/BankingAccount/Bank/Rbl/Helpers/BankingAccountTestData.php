@@ -1437,6 +1437,49 @@ return [
         ],
     ],
 
+    'testGetBankingAccounts' => [
+        'request'  => [
+            'url'     => '/banking_accounts',
+            'method'  => 'GET',
+            'server' => [
+                'X-Dashboard-User-Id' => '20000000000000',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                "entity" => "collection",
+                "count" => 1,
+                "items" => [
+                    [
+                        BankingAccount\Entity::CHANNEL => "rbl",
+                        BankingAccount\Entity::STATUS => "created",
+                        BankingAccount\Entity::SUB_STATUS => null,
+                        BankingAccount\Entity::MERCHANT_ID => "10000000000000",
+                        BankingAccount\Entity::ACCOUNT_NUMBER => null,
+                        BankingAccount\Entity::ACCOUNT_IFSC => null,
+                        BankingAccount\Entity::BANK_INTERNAL_STATUS => null,
+                        BankingAccount\Entity::REFERENCE1 => null,
+                        BankingAccount\Entity::ACCOUNT_TYPE => "current",
+                        BankingAccount\Entity::ACCOUNT_CURRENCY => "INR",
+                        BankingAccount\Entity::BENEFICIARY_EMAIL => null,
+                        BankingAccount\Entity::BENEFICIARY_MOBILE => null,
+                        BankingAccount\Entity::BENEFICIARY_NAME => null,
+                        BankingAccount\Entity::PINCODE => "560030",
+                        BankingAccount\Entity::BALANCE => null,
+                        "bank_reference_number" => "10000",
+                        "banking_account_ca_spoc_details" => [
+                            "rm_name" => null,
+                            "rm_phone_number" => null,
+                            "sales_poc_phone_number" => null,
+                            "sales_poc_name" => "test admin",
+                            "sales_poc_email" => "superadmin@razorpay.com"
+                        ]
+                    ]
+                ]
+            ]
+        ],
+    ],
+
     'testGetBankingAccount' => [
         'request'  => [
             'url'     => '/banking_accounts',

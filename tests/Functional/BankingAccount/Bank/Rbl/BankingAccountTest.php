@@ -2826,6 +2826,56 @@ class BankingAccountTest extends TestCase
             Status::MERCHANT_NOT_AVAILABLE);
     }
 
+    public function testUpdateBankingAccountSubStatusForPendingOnSales()
+    {
+        $this->assertUpdateBankingAccountStatusFromTo(
+            Status::PICKED,
+            Status::PICKED,
+            null,
+            Status::PENDING_ON_SALES_DOC_WALKTHROUGH_CALL_NOT_SCHEDULED);
+    }
+
+    public function testUpdateBankingAccountSubStatusForNotPendingOnSales()
+    {
+
+        $activationDetails = [
+            'activation_detail' => [
+                'merchant_poc_name' => 'Umakant',
+                'merchant_poc_designation' => 'Financial Consultant',
+                'merchant_poc_email' => 'sample@sample.com',
+                'merchant_poc_phone_number' => '9876556789',
+                'business_category' => 'limited_liability_partnership',
+                'merchant_documents_address' => 'x, y, z',
+                'sales_team' => 'sme',
+                'sales_poc_id' => 'admin_'. Org::SUPER_ADMIN,
+                'initial_cheque_value' => 100,
+                'account_type' => 'insignia',
+                'merchant_city' => 'Bangalore',
+                'is_documents_walkthrough_complete' => true,
+                'merchant_region' => 'South',
+                'expected_monthly_gmv' => 10000,
+                'average_monthly_balance' => 0,
+            ]
+        ];
+
+        $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000');
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
+
+        $this->ba->addXOriginHeader();
+
+        $bankingAccount = $this->createBankingAccountFromDashboard($activationDetails);
+
+        $this->assertUpdateBankingAccountStatusFromTo(
+            Status::PICKED,
+            Status::PICKED,
+            Status::PENDING_ON_SALES_DOC_WALKTHROUGH_CALL_NOT_SCHEDULED,
+            Status::MERCHANT_NOT_AVAILABLE,
+            null,
+            null,
+            $bankingAccount);
+    }
+
     public function testUpdateBankingAccountSubStatusForDocsWalkThrough()
     {
         $this->assertUpdateBankingAccountStatusFromTo(
@@ -3369,6 +3419,50 @@ class BankingAccountTest extends TestCase
         {
             $this->assertEquals($value, $bvsValidation->getAttribute($key));
         }
+    }
+
+    /**
+     * Test for getting multiple banking accounts using admin access
+     */
+    public function testGetBankingAccounts()
+    {
+        $bankingAccount = [
+            'activation_detail' => [
+                'merchant_poc_name' => 'Umakant',
+                'merchant_poc_designation' => 'Financial Consultant',
+                'merchant_poc_email' => 'sample@sample.com',
+                'merchant_poc_phone_number' => '9876556789',
+                'business_category' => 'limited_liability_partnership',
+                'merchant_documents_address' => 'x, y, z',
+                'sales_team' => 'sme',
+                'sales_poc_id' => 'admin_'. Org::SUPER_ADMIN,
+                'initial_cheque_value' => 100,
+                'account_type' => 'insignia',
+                'merchant_city' => 'Bangalore',
+                'is_documents_walkthrough_complete' => true,
+                'merchant_region' => 'South',
+                'expected_monthly_gmv' => 10000,
+                'average_monthly_balance' => 0,
+            ]
+        ];
+
+        $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000');
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
+
+        $this->ba->addXOriginHeader();
+
+        $this->createBankingAccountFromDashboard($bankingAccount);
+
+        $dataToReplace = [
+            'request'  => [
+                'url'     => '/banking_accounts?pending_on=admin_RzrpySprAdmnId&expand[]=spocs',
+                'method'  => 'GET',
+
+            ],
+        ];
+
+        $this->startTest($dataToReplace);
     }
 
     public function testGetBankingAccount()

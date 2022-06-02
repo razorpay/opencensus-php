@@ -115,6 +115,22 @@ class Status
     const TELEPHONIC_VERIFICATION           = 'Telephonic verification';
     const APPLICATION_COMPLETION_PENDING    = 'Application completion pending';
 
+    // Pending on Sales Sub-statuses as confirmed by Operations for NCFS Issue tracking
+    const PENDING_ON_SALES_SUB_STRING                               = 'pending_on_sales_|_';
+    const PENDING_ON_SALES_CONFIRMATION_TO_SEND_LEAD_PENDING        = self::PENDING_ON_SALES_SUB_STRING.'confirmation_to_send_lead_pending';
+    const PENDING_ON_SALES_BUSINESS_DETAILS_PENDING                 = self::PENDING_ON_SALES_SUB_STRING.'business_details_pending';
+    const PENDING_ON_SALES_DOC_WALKTHROUGH_CALL_NOT_SCHEDULED       = self::PENDING_ON_SALES_SUB_STRING.'doc_walkthrough_call_not_scheduled';
+    const PENDING_ON_SALES_CONFIRMATION_ON_MULTIPLE_ACCOUNT_OPENING = self::PENDING_ON_SALES_SUB_STRING.'confirmation_on_multiple_account_opening';
+    const PENDING_ON_SALES_MERCHANT_NOT_INTERESTED_SPOC_TO_CONFIRM  = self::PENDING_ON_SALES_SUB_STRING.'merchant_not_interested_(spoc_to_confirm)';
+    const PENDING_ON_SALES_DOC_DELIVERY_ADDRESS_PENDING             = self::PENDING_ON_SALES_SUB_STRING.'doc-delivery_address_pending';
+    const PENDING_ON_SALES_PINCODE_UNSERVICEABLE                    = self::PENDING_ON_SALES_SUB_STRING.'pincode_unserviceable';
+    const PENDING_ON_SALES_AMB_AMOUNT_CONFIRMATION                  = self::PENDING_ON_SALES_SUB_STRING.'amb_amount_confirmation';
+    const PENDING_ON_SALES_MERCHANT_PREPARING_KYC_DOCS              = self::PENDING_ON_SALES_SUB_STRING.'merchant_preparing_kyc_docs';
+    const PENDING_ON_SALES_ISSUE_WITH_COMMERCIALS                   = self::PENDING_ON_SALES_SUB_STRING.'issue_with_commercials';
+    const PENDING_ON_SALES_MERCHANT_WANTS_BANK_CHANGE               = self::PENDING_ON_SALES_SUB_STRING.'merchant_wants_bank_change';
+    const PENDING_ON_SALES_DWT_NOT_COMPLETED_MX_NOT_RESPONDING_SPOC_TO_RESCHEDULE         = self::PENDING_ON_SALES_SUB_STRING.'dwt_not_completed_-_mx_not_responding_-_spoc_to_reschedule';
+    const PENDING_ON_SALES_UNSUPPORTED_MISMATCH_OF_BIZ_TYPE_ON_ADMIN_DASHBOARD_AND_LMS    = self::PENDING_ON_SALES_SUB_STRING.'unsupported/_mismatch_of_biz_type_on_admin_dashboard_and_lms';
+
     //
     // Account details can be saved only if the status
     // of banking account is in below array
@@ -128,6 +144,22 @@ class Status
 
     public static $activatedStatuses = [
         self::ACTIVATED,
+    ];
+
+    public static $pendingOnSalesBucket = [
+        self::PENDING_ON_SALES_CONFIRMATION_TO_SEND_LEAD_PENDING,
+        self::PENDING_ON_SALES_BUSINESS_DETAILS_PENDING,
+        self::PENDING_ON_SALES_DOC_WALKTHROUGH_CALL_NOT_SCHEDULED,
+        self::PENDING_ON_SALES_CONFIRMATION_ON_MULTIPLE_ACCOUNT_OPENING,
+        self::PENDING_ON_SALES_MERCHANT_NOT_INTERESTED_SPOC_TO_CONFIRM,
+        self::PENDING_ON_SALES_DOC_DELIVERY_ADDRESS_PENDING,
+        self::PENDING_ON_SALES_PINCODE_UNSERVICEABLE,
+        self::PENDING_ON_SALES_AMB_AMOUNT_CONFIRMATION,
+        self::PENDING_ON_SALES_DWT_NOT_COMPLETED_MX_NOT_RESPONDING_SPOC_TO_RESCHEDULE,
+        self::PENDING_ON_SALES_UNSUPPORTED_MISMATCH_OF_BIZ_TYPE_ON_ADMIN_DASHBOARD_AND_LMS,
+        self::PENDING_ON_SALES_MERCHANT_PREPARING_KYC_DOCS,
+        self::PENDING_ON_SALES_ISSUE_WITH_COMMERCIALS,
+        self::PENDING_ON_SALES_MERCHANT_WANTS_BANK_CHANGE,
     ];
 
     protected static $statuses = [
@@ -162,7 +194,7 @@ class Status
     /**
      * @var array
      * This contains a substatus map that needs to be blocked
-        on special requests
+     * on special requests
      */
     protected static $blockedSubStatusMap = [
         self::READY_TO_SEND_TO_BANK => [
@@ -298,6 +330,19 @@ class Status
         self::FOLLOW_UP__REQUESTED_CALL_BACK_IN_REGIONAL_LANGUAGE,
         self::FOLLOW_UP__REQUESTED_CALL_BACK_IN_HINDI,
         self::FOLLOW_UP__OTHER,
+        self::PENDING_ON_SALES_CONFIRMATION_TO_SEND_LEAD_PENDING,
+        self::PENDING_ON_SALES_BUSINESS_DETAILS_PENDING,
+        self::PENDING_ON_SALES_DOC_WALKTHROUGH_CALL_NOT_SCHEDULED,
+        self::PENDING_ON_SALES_CONFIRMATION_ON_MULTIPLE_ACCOUNT_OPENING,
+        self::PENDING_ON_SALES_MERCHANT_NOT_INTERESTED_SPOC_TO_CONFIRM,
+        self::PENDING_ON_SALES_DOC_DELIVERY_ADDRESS_PENDING,
+        self::PENDING_ON_SALES_PINCODE_UNSERVICEABLE,
+        self::PENDING_ON_SALES_AMB_AMOUNT_CONFIRMATION,
+        self::PENDING_ON_SALES_DWT_NOT_COMPLETED_MX_NOT_RESPONDING_SPOC_TO_RESCHEDULE,
+        self::PENDING_ON_SALES_UNSUPPORTED_MISMATCH_OF_BIZ_TYPE_ON_ADMIN_DASHBOARD_AND_LMS,
+        self::PENDING_ON_SALES_MERCHANT_PREPARING_KYC_DOCS,
+        self::PENDING_ON_SALES_ISSUE_WITH_COMMERCIALS,
+        self::PENDING_ON_SALES_MERCHANT_WANTS_BANK_CHANGE,
         self::OTHER,
         self::NONE,
     ];
@@ -364,6 +409,19 @@ class Status
             self::FOLLOW_UP__REQUESTED_CALL_BACK_IN_HINDI,
             self::FOLLOW_UP__OTHER,
             self::OTHER,
+            self::PENDING_ON_SALES_CONFIRMATION_TO_SEND_LEAD_PENDING,
+            self::PENDING_ON_SALES_BUSINESS_DETAILS_PENDING,
+            self::PENDING_ON_SALES_DOC_WALKTHROUGH_CALL_NOT_SCHEDULED,
+            self::PENDING_ON_SALES_CONFIRMATION_ON_MULTIPLE_ACCOUNT_OPENING,
+            self::PENDING_ON_SALES_MERCHANT_NOT_INTERESTED_SPOC_TO_CONFIRM,
+            self::PENDING_ON_SALES_DOC_DELIVERY_ADDRESS_PENDING,
+            self::PENDING_ON_SALES_PINCODE_UNSERVICEABLE,
+            self::PENDING_ON_SALES_AMB_AMOUNT_CONFIRMATION,
+            self::PENDING_ON_SALES_DWT_NOT_COMPLETED_MX_NOT_RESPONDING_SPOC_TO_RESCHEDULE,
+            self::PENDING_ON_SALES_UNSUPPORTED_MISMATCH_OF_BIZ_TYPE_ON_ADMIN_DASHBOARD_AND_LMS,
+            self::PENDING_ON_SALES_MERCHANT_PREPARING_KYC_DOCS,
+            self::PENDING_ON_SALES_ISSUE_WITH_COMMERCIALS,
+            self::PENDING_ON_SALES_MERCHANT_WANTS_BANK_CHANGE,
         ],
         self::INITIATED => [
             self::NONE,
