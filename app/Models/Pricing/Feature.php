@@ -17,8 +17,10 @@ class Feature
     const REFUND                  = 'refund';
     const SETTLEMENT_ONDEMAND     = 'settlement_ondemand';
     const OPTIMIZER               = 'optimizer';
+    const MAGIC_CHECKOUT          = 'magic_checkout';
 
     const FEATURE_LIST = [
+        self::MAGIC_CHECKOUT,
         self::PAYMENT,
         self::PAYOUT,
         self::RECURRING,

@@ -4614,6 +4614,15 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             $features[] = Pricing\Feature::OPTIMIZER;
         }
 
+        $order = $this->getOrderAttribute();
+
+        if(empty($order) === false) {
+            if($order->isMagicCheckoutOrder() === true)
+            {
+                $features[] = Pricing\Feature::MAGIC_CHECKOUT;
+            }
+        }
+
         return $features;
     }
 

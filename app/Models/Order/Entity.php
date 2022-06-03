@@ -928,6 +928,35 @@ class Entity extends Base\PublicEntity
         $this->setPublicTransfersAttribute($array);
     }
 
+    public function isMagicCheckoutOrder() : bool
+    {
+        if(!$this->hasOrderMeta())
+        {
+            return false;
+        }
+
+        $orderMetaArray = $this->orderMetas;
+
+        if (($orderMetaArray !== null) and (count($orderMetaArray) > 0))
+        {
+            foreach ($orderMetaArray as $orderMeta) {
+                if ($orderMeta->getType() === Type::ONE_CLICK_CHECKOUT)
+                {
+                    $value = $orderMeta->getValue();
+
+                    if (empty($value) === false)
+                    {
+                        $lineItemstotal = $value['line_items_total'];
+
+                        return empty($lineItemstotal) === false;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
     public function setPublicOrderMeta1ccAttribute(array & $array)
     {
         $orderMetaArray = $this->orderMetas;
