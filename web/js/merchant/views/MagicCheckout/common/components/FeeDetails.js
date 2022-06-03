@@ -19,21 +19,33 @@ const FeeDetails = ({ rule_type, flat, slabs, type, label }) => {
     }
   }, [slabs]);
 
-  const renderFlatRule = (fee) => (
-    <div
-      className={`display-flex justify-space-between c-fee-details fee-bg fee-slabs-table
+  const renderFlatRule = (fee) => {
+    if (fee === 0) {
+      fee = RULE_TYPES.FREE;
+    }
+    return (
+      <div
+        className={`display-flex justify-space-between c-fee-details fee-bg fee-slabs-table
       ${type === 'shipping' ? ' c-fee-details-shipping' : ''}`}
-    >
-      {fee !== RULE_TYPES.FREE && <span className="font-12 font-bold color-black">{text}</span>}
-      <div className="display-flex flex-center">
-        <i className="i i-rupee font-10 rupee-icon-fees-details" />
-        {fee}
+      >
+        {fee === RULE_TYPES.FREE && (
+          <span className="font-bold color-black">Free Cash on Delivery</span>
+        )}
+        {fee !== RULE_TYPES.FREE ? (
+          <>
+            <span className="font-bold color-black">{text}</span>
+            <div className="display-flex flex-center">
+              <i className="i i-rupee font-10 rupee-icon-fees-details" />
+              {fee}
+            </div>
+          </>
+        ) : null}
       </div>
-    </div>
-  );
+    );
+  };
 
   const renderSlabsRule = () => (
-    <div className="c-fee-details no-padding fee-slabs-table">
+    <div className="c-fee-details no-padding fee-slabs-table fee-slabs">
       <div className="padding-8 fee-bg">
         <div className="padding-8 slabs-border color-black font-bold">{`${label} Slabs`}</div>
         <div className="padding-8 display-flex justify-space-between">

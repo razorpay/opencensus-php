@@ -29,7 +29,13 @@ const openDisconnectModal = (openModal, closeModal, deleteShippingMethods) => {
   });
 };
 
-const Listing = ({ openModal, deleteProviders, closeModal, id }) => {
+const Listing = ({
+  openModal,
+  deleteProviders,
+  closeModal,
+  id,
+  isServiceabilitySettingsEnabled,
+}) => {
   const handleDisconnect = useCallback(() => {
     deleteProviders(id);
     closeModal();
@@ -68,7 +74,7 @@ const Listing = ({ openModal, deleteProviders, closeModal, id }) => {
           </div>
         )}
       </div>
-      {id && <ServiceabilitySettings />}
+      {id && isServiceabilitySettingsEnabled && <ServiceabilitySettings />}
     </div>
   );
 };

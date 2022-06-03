@@ -1,19 +1,13 @@
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import SwitchField from 'common/ui/Forms/SwitchField';
-import { classList } from 'common/utils/rzp-utils';
 
-const CodIntelligenceToggle = ({ platform, checked, switchMode }) => {
+const CodIntelligenceToggle = ({ checked, switchMode }) => {
   return (
     <div className="filter-item link-account-instruction display-flex c-fee-configuration">
-      <div
-        className={
-          platform === 'shopify' ? 'Input-label' : classList('intelligence-label', 'font-bold')
-        }
-        for="cod-intelligence"
-      >
+      <div className="intelligence-label font-normal" for="cod-intelligence">
         <label>
           COD Intelligence
-          <i className="i i-info-outline">
+          <i className="i i-info-outline intelligence-tooltip font-normal">
             <Popover persistent={false} theme="dark">
               <PopoverBody>
                 <p>

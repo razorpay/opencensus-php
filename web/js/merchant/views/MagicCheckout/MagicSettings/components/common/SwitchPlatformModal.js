@@ -2,7 +2,7 @@ import Button from 'common/new-ui/Button';
 import { PLATFORMS } from 'merchant/views/MagicCheckout/MagicSettings/constants';
 
 const SwitchPlatformModal = ({ onCancel, onConfirm, platform }) => (
-  <div className="gap--14 p--30 display-flex flex--column">
+  <div className="gap--14 p--24 display-flex flex--column">
     <div className="switch-platform-modal--heading">
       Switch to {PLATFORMS.LABELS[platform.toUpperCase()]}
     </div>

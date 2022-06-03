@@ -2,13 +2,84 @@
   width: 320px
   margin: 0 0 8px
 
+.Input.provider-dropdown
+  margin: 0
+  width: 320px
+
 .selection-container
-  padding: 48px 28px 8px
-  width: fit-content
-  border-right: 1px solid #0000001a
+  padding: 40px 16px 24px
 
   label 
-    margin-bottom: 12px
+    width: 16%
+    margin-bottom: 8px
+  
+.platform-input-container
+
+  .Input-elWrapper.Select-elWrapper::before
+    margin-top: 20px
+    border-top: 6px dashed
+    border-right: 6px solid transparent
+    border-left: 6px solid transparent
+    color: #8B9498
+    right: 12px
+
+  .Input-el
+    height: 44px
+
+
+.woocommerce-shipping-container
+
+  .c-fee-configuration .serviceability-setting-label
+    min-width: 25%
+    font-weight: normal
+
+    .slabs-input-container
+      .Input-addons--before
+        padding-top: 4px
+    
+    .slabs-charge
+      .slabs-close
+        margin-top: 8px
+
+.woocommerce-coupons-container, .woocommerce-shipping-container
+  padding: 22px 0
+  .wooc-url-label
+    width: 25%
+    font-weight: normal
+    color: #162f56bd
+  
+  .woo-url-wrapper
+    margin-bottom: 24px
+
+    .Input
+      margin: 0
+      width: 375px
+      opacity: 1
+
+.shopify-container, .woocommerce-container
+  padding: 0 16px 24px
+  
+  .Input
+    display: flex
+    margin: 0
+
+    .Input-addons
+      top: 4px
+    
+    .Input-label
+      width: 16%
+    
+    .Input-content
+      width: 320px
+      
+      .Input-addons--after
+        width: auto
+        background-color: transparent
+        right: 8px
+
+.shopify-container
+  label
+    width: 16%
 
 .edit-settings-cta-container
   padding: 14px 28px
@@ -58,7 +129,7 @@
         background-color: transparent
 
 .magic-settings-container
-  min-height: 600px
+  padding-bottom: 44px
 
 .switch-platform-modal--heading
   color: #262D3A;
@@ -69,10 +140,25 @@
 .border-bottom-light 
   border-bottom: 1px solid rgba(0, 0, 0, 0.1)
 
-.platform-settings-card
-  max-width: 420px
-  margin: 48px 28px
-  border: 2px solid #E0E8F4
+.platform-settings-card-wrapper
+  padding: 30px 16px 60px
+  .platform-settings-card
+    max-width: 500px
+    border: 1px solid #e0e8f4
+    border-radius: 4px
+    
+    .settings-fee-details
+      padding-top: 2px
+
+    .platform-settings-card-info
+      justify-content: space-between
+
+    .platform-settings-edit
+      color: #2B83EA
+      
+      .platform-settings-edit-icon
+        margin-left: 8px
+        margin-right: 8px
 
 .platform-settings-card--header
   background: #F8FBFF
@@ -105,3 +191,8 @@
 
 .border-bottom-light 
   border-bottom: 1px solid #0000001a
+
+.native-shipping-tab-selector
+  label
+    width: 30%
+    margin: 0

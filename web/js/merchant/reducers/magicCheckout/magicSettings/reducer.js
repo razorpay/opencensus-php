@@ -8,7 +8,12 @@ const FETCH_STATUS = {
   ERROR: 'error',
 };
 
-const DEFAULT_SELECTED_PLATFORM = 'woocommerce';
+export const NESTED_VIEW_TYPE = {
+  PLATFORM_SELECTION: 'platform_selection',
+  SETTINGS: 'settings',
+};
+
+const DEFAULT_SELECTED_PLATFORM = 'select';
 
 const initialState = {
   status: FETCH_STATUS.IDLE,
@@ -21,6 +26,9 @@ const initialState = {
   error: null,
   has_saved_config: false,
   cod_intelligence: false,
+  nested_view_type: NESTED_VIEW_TYPE.PLATFORM_SELECTION,
+  codSlabsSet: false,
+  nestedTabsStatus: FETCH_STATUS.IDLE,
 };
 
 export default function magicSettingsReducer(state = initialState, action) {
@@ -37,17 +45,31 @@ export default function magicSettingsReducer(state = initialState, action) {
       });
     case ACTIONS.FETCH_MAGIC_SETTINGS_ERROR:
       return merge(state, { status: FETCH_STATUS.ERROR, error: action.payload });
-    case ACTIONS.UPDATE_MAGIC_SETTINGS_PENDING:
-      return merge(state, { status: FETCH_STATUS.LOADING });
+    case ACTIONS.UPDATE_MAGIC_SETTINGS_PENDING: {
+      let status = state.status;
+      let nestedTabsStatus;
+      if (action.data.showLoader) {
+        status = FETCH_STATUS.LOADING;
+      } else {
+        nestedTabsStatus = FETCH_STATUS.LOADING;
+      }
+      return merge(state, { status, nestedTabsStatus });
+    }
     case ACTIONS.UPDATE_MAGIC_SETTINGS_SUCCESS:
       return merge(state, {
         status: FETCH_STATUS.IDLE,
         ...action.data,
         has_saved_config: true,
         cod_slabs: action.data?.cod_slabs ? transformToComponentFormat(action.data.cod_slabs) : [],
+        nested_view_type: NESTED_VIEW_TYPE.SETTINGS,
+        nestedTabsStatus: FETCH_STATUS.IDLE,
       });
     case ACTIONS.UPDATE_MAGIC_SETTINGS_ERROR:
       return merge(state, { status: FETCH_STATUS.ERROR, error: action.payload });
+    case ACTIONS.UPDATE_PAGE_VIEW:
+      return merge(state, { nested_view_type: action.payload.view });
+    case ACTIONS.UPDATE_DOMAIN_DETAIL:
+      return merge(state, { domain: action.payload.domain });
     default:
       return state;
   }

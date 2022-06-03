@@ -12,6 +12,7 @@ const openShippingSettingsModal = (openModal, method, providerId) => {
   openModal({
     size: 'large',
     component: <ServiceabilitySettingsModal method={method} id={providerId} />,
+    className: 'full-width',
   });
 };
 

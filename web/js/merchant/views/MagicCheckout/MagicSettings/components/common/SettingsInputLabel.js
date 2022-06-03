@@ -3,7 +3,7 @@ import Popover, { PopoverBody } from 'common/ui/Popover';
 const SettingsInputLabel = ({ label, children }) => (
   <label>
     {label}
-    <i className="i i-info-outline">
+    <i className="i i-info-outline font-normal margin-l--4">
       <Popover persistent={false} theme="dark">
         <PopoverBody>
           <p>{children}</p>

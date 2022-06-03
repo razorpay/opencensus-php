@@ -52,19 +52,27 @@ export const STEPS_TEXT = [
 
 export const BENEFITS_SHIPROCKET_HIGHLIGHTS = [
   {
-    text1: 'To get started with Magic Checkout, you will no longer have to worry about',
-    boldText: ' pincode serviceability APIs. ',
-    text2: 'Magic checkout will directly fetch serviceability from your Shiprocket account.',
+    startingText: 'To get started with Magic Checkout, you will no longer have to worry about',
+    functionality: ' pincode serviceability APIs. ',
+    subText: 'Magic checkout will directly fetch serviceability from your Shiprocket account.',
     image: true,
   },
   {
-    text1: 'You will be able to configure flat or slab based ',
-    boldText: ' Shipping and COD fee ',
-    text2: 'from the Magic Checkout dashboard.',
+    startingText: 'You will be able to configure flat or slab based ',
+    functionality: ' Shipping and COD fee ',
+    subText: 'from the Magic Checkout dashboard.',
   },
   {
-    text1: 'Magic Checkout will fetch ',
-    boldText: 'order status updates ',
-    text2: 'from your Shiprocket account to provide better RTO protection on your COD orders.',
+    startingText: 'Magic Checkout will fetch ',
+    functionality: 'order status updates ',
+    subText: 'from your Shiprocket account to provide better RTO protection on your COD orders.',
+  },
+];
+
+export const BENEFITS_SHIPROCKET_HIGHLIGHTS_INTELLIGENCE = [
+  {
+    startingText: 'Magic Checkout will fetch ',
+    functionality: 'order status updates ',
+    subText: 'from your Shiprocket account to provide better RTO protection on your COD orders.',
   },
 ];

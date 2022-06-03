@@ -3,33 +3,24 @@ import Input from 'common/new-ui/Input';
 import { bindActionCreators } from 'redux';
 import { useCallback, useEffect, useState } from 'react';
 import * as ModalActions from 'merchant_common/reducers/modals';
-import { showNotification } from 'merchant_common/reducers/notifications';
-import { Settings } from 'merchant/views/MagicCheckout/MagicSettings/components/Settings';
 import { fetchMagicSettings } from 'merchant/reducers/magicCheckout/magicSettings/actions';
-import SwitchPlatformModal from 'merchant/views/MagicCheckout/MagicSettings/components/SwitchPlatformModal';
-import { PLATFORMS, FETCH_STATUS } from 'merchant/views/MagicCheckout/MagicSettings/constants';
+import SwitchPlatformModal from 'merchant/views/MagicCheckout/MagicSettings/components/common/SwitchPlatformModal';
+import {
+  PLATFORMS_DROPDOWN,
+  COMPONENTS,
+} from 'merchant/views/MagicCheckout/MagicSettings/constants';
 
-const MagicSettings = ({ fetchSettings, settings, displayNotification, openModal, closeModal }) => {
-  const [platform, setPlatform] = useState(PLATFORMS.WOOCOMMERCE);
+const MagicSettings = ({ settings, openModal, closeModal }) => {
+  const [platform, setPlatform] = useState(PLATFORMS_DROPDOWN[0].name);
+  const [Component, setComponent] = useState(null);
 
   useEffect(() => setPlatform(settings.platform), [settings.platform]);
 
   useEffect(() => {
-    if (settings.status === FETCH_STATUS.ERROR) {
-      displayNotification({
-        type: 'error',
-        message: settings.error.errors.length
-          ? settings.error.errors[0]
-          : 'Something went wrong. Please try again',
-      });
+    if (platform !== PLATFORMS_DROPDOWN[0].name) {
+      setComponent(COMPONENTS[platform].platformComponent(settings.status));
     }
-  }, [settings.status]);
-
-  useEffect(() => {
-    if (fetchSettings) {
-      fetchSettings();
-    }
-  }, [fetchSettings]);
+  }, [platform, setComponent, settings.status]);
 
   const onConfirm = useCallback(
     (value) => () => {
@@ -41,6 +32,10 @@ const MagicSettings = ({ fetchSettings, settings, displayNotification, openModal
 
   const onPlatformChange = useCallback(
     (e) => {
+      if (e?.target?.value === PLATFORMS_DROPDOWN[0]?.name) {
+        setPlatform(e?.target?.value);
+        return;
+      }
       if (e?.target?.value !== settings.platform && settings.has_saved_config) {
         openModal({
           size: 'medium',
@@ -60,24 +55,18 @@ const MagicSettings = ({ fetchSettings, settings, displayNotification, openModal
   );
 
   return (
-    <div className="content-wrapper no-padding display-flex magic-settings-container">
-      <div className="selection-container">
-        <label>Please Select Platform</label>
+    <div>
+      <div className="selection-container platform-input-container display-flex align-center bg-settings font-normal">
+        <label className="font-normal">Platform</label>
         <Input.Select
           name="platform"
           className="select-platform-dropdown"
           value={platform}
-          options={[
-            { label: PLATFORMS.LABELS.WOOCOMMERCE, name: PLATFORMS.VALUES.WOOCOMMERCE },
-            { label: PLATFORMS.LABELS.SHOPIFY, name: PLATFORMS.VALUES.SHOPIFY },
-            { label: PLATFORMS.LABELS.NATIVE, name: PLATFORMS.VALUES.NATIVE },
-          ]}
+          options={PLATFORMS_DROPDOWN}
           onChange={onPlatformChange}
         />
       </div>
-      <div className="flex--1 platform-settings-container">
-        <Settings settings={settings} platform={platform} />
-      </div>
+      {Component}
     </div>
   );
 };
@@ -91,7 +80,6 @@ const mapDispatchToProps = (dispatch) =>
     {
       ...ModalActions,
       fetchSettings: fetchMagicSettings,
-      displayNotification: showNotification,
     },
     dispatch,
   );

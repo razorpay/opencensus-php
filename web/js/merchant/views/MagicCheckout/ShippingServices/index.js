@@ -17,6 +17,7 @@ const ShippingAccount = ({
   shippingService,
   modifyFlag,
   fetchMethod,
+  isServiceabilitySettingsEnabled,
 }) => {
   const {
     shouldCloseModal,
@@ -54,13 +55,15 @@ const ShippingAccount = ({
             Link Shiprocket Account
           </div>
           <div className="no-padding">
-            Check pincode serviceability directly via Shiprocket. Get better RTO protection with
-            realtime order status updates.
+            {isServiceabilitySettingsEnabled
+              ? 'Check pincode serviceability directly via Shiprocket.'
+              : null}
+            Get better RTO protection with realtime order status updates.
           </div>
-          <Listing id={id} />
+          <Listing id={id} isServiceabilitySettingsEnabled={isServiceabilitySettingsEnabled} />
         </div>
         <div className="benefit-shiprocket-container display-inline">
-          <BenefitsShiprocket />
+          <BenefitsShiprocket showIntelligenceHighlights={!isServiceabilitySettingsEnabled} />
         </div>
       </div>
     </div>

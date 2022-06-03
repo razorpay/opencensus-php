@@ -9,7 +9,7 @@ const ShippingMethodsListing = ({
 }) => (
   <div className="serviceability-settings-cta border-shipping-setting">
     <div className="row">
-      <div className="col-md-10">
+      <div className="col-md-10 serviceability-details-wrapper">
         <div className="display-flex width-100">
           <div className="serviceability-settings-item-label display-inline">Warehouse Pincode</div>
           <span className="font-bold color-black">{warehouse_pincode}</span>
@@ -20,7 +20,7 @@ const ShippingMethodsListing = ({
         </div>
       </div>
       <div
-        className="serviceability-setting-edit padding-8 pointer display-inline float-right"
+        className="serviceability-setting-edit display-flex align-center padding-8 pointer float-right"
         onClick={() => onShippingSettingClick(true, 'put')}
       >
         <i className="font-12 i i-edit" />

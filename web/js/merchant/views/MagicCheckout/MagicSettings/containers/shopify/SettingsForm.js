@@ -3,13 +3,12 @@ import { connect } from 'react-redux';
 import Input from 'common/new-ui/Input';
 import { bindActionCreators } from 'redux';
 import { updateMagicSettings } from 'merchant/reducers/magicCheckout/magicSettings/actions';
-import EditSettings from 'merchant/views/MagicCheckout/MagicSettings/components/EditSettings';
-import { PLATFORMS } from 'merchant/views/MagicCheckout/MagicSettings/constants';
-import CodIntelligenceToggle from 'merchant/views/MagicCheckout/MagicSettings/components/CodIntelligenceToggle';
+import { PLATFORMS, FETCH_STATUS } from 'merchant/views/MagicCheckout/MagicSettings/constants';
+import { AsyncBtn } from 'common/new-ui/Button';
 
 const SHOPIFY_ID_REGEX = new RegExp(/([A-Za-z0-9]+)(.myshopify.com)/);
 
-const shopIdLabel = <label>Store ID</label>;
+const shopIdLabel = <label className="font-normal">Store ID</label>;
 
 const isValidShopifyId = (input = '') => {
   if (!SHOPIFY_ID_REGEX.test(input)) {
@@ -33,14 +32,6 @@ const validateShopId = (input) => {
 const ShopifySettingsForm = ({ settings, updateSettings }) => {
   const [formValid, setFormValid] = useState(false);
   const [shopId, setShopId] = useState('');
-  const [codIntelligence, setCodIntelligence] = useState(false);
-
-  const switchMode = () => {
-    setCodIntelligence((prevState) => !prevState);
-    if (isValidShopifyId(shopId).valid) {
-      setFormValid(true);
-    }
-  };
 
   const onShopIdInput = useCallback(
     (e) => {
@@ -55,42 +46,45 @@ const ShopifySettingsForm = ({ settings, updateSettings }) => {
     updateSettings({
       platform: PLATFORMS.VALUES.SHOPIFY,
       shop_id: `${shopId}.myshopify.com`,
-      cod_intelligence: codIntelligence,
+      list_promotions: ``,
+      apply_promotion: ``,
+      shipping_info: ``,
     });
-  }, [updateSettings, shopId, codIntelligence]);
+  }, [updateSettings, shopId]);
 
   useEffect(() => {
     if (settings.platform === PLATFORMS.VALUES.SHOPIFY && settings.shop_id) {
       setShopId(settings.shop_id.split('.')[0]);
-      setCodIntelligence(settings.cod_intelligence);
+      setFormValid(true);
     }
   }, [settings, setShopId]);
 
   return (
-    <EditSettings
-      settings={settings}
-      platform={PLATFORMS.VALUES.SHOPIFY}
-      onSave={onSave}
-      valid={formValid}
-    >
-      <Input
-        required={true}
-        validator={validateShopId}
-        value={shopId}
-        onChange={onShopIdInput}
-        label={shopIdLabel}
-        name="shop_id"
-        placeholder="Enter Store ID"
-        id="shop_id"
-        className="Input--Shopify"
-        addonAfter=".myshopify.com"
-      />
-      <CodIntelligenceToggle
-        platform={PLATFORMS.VALUES.SHOPIFY}
-        checked={codIntelligence}
-        switchMode={switchMode}
-      />
-    </EditSettings>
+    <div>
+      <div className="shopify-container platform-input-container bg-settings display-flex align-center">
+        {shopIdLabel}
+        <Input
+          required={true}
+          validator={validateShopId}
+          value={shopId}
+          onChange={onShopIdInput}
+          name="shop_id"
+          placeholder="Enter Store ID"
+          id="shop_id"
+          className="Input--Shopify"
+          addonAfter=".myshopify.com"
+        />
+      </div>
+      <AsyncBtn.Primary
+        type="button"
+        isPending={settings.status === FETCH_STATUS.LOADING}
+        onClick={onSave}
+        disabled={!formValid}
+        className="settings-cta"
+      >
+        Next
+      </AsyncBtn.Primary>
+    </div>
   );
 };
 

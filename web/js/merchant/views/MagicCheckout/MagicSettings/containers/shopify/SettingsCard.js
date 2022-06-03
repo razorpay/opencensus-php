@@ -1,5 +1,5 @@
 import { connect } from 'react-redux';
-import SettingsCard from 'merchant/views/MagicCheckout/MagicSettings/components/SettingsCard';
+import SettingsCard from 'merchant/views/MagicCheckout/MagicSettings/components/common/SettingsCard';
 import { PLATFORMS } from 'merchant/views/MagicCheckout/MagicSettings/constants';
 
 const ShopifySettingsCard = ({ settings, ...rest }) => (
