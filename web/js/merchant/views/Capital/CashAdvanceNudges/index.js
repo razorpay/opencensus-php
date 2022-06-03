@@ -126,6 +126,12 @@ const CashAdvanceNudge = (props) => {
   }, [showPill, variant]);
 
   const handlePillClick = () => {
+    trackEvent({
+      action: EVENT_TYPES.CLICKED,
+      variant,
+      latestApplication,
+    });
+
     const isApplicationUnderReview =
       latestApplication?.status === APPLICATION_STATES.DOCUMENTS_UNDER_REVIEW ||
       latestApplication?.status === APPLICATION_STATES.PREVERIFICATION_IN_PROGRESS;
