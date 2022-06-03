@@ -1461,7 +1461,7 @@ class Service extends Base\Service
 
     public function checkForEntityAlerts($input) : array
     {
-        return app('settlements_dashboard')->checkForEntityAlerts($input);
+        return app('settlements_api')->checkForEntityAlerts($input);
     }
 
     public function migrateConfigurations(array $input)

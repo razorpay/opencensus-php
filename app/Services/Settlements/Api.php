@@ -219,4 +219,16 @@ class Api extends Base
     {
         return $this->makeRequest(self::OPTIMIZER_EXTERNAL_SETTLEMENTS_MANUAL_EXECUTION, $input, self::SERVICE_API, $mode);
     }
+
+    /**
+     * Send Entity Alerts if per entity state time limit is breached.
+     * @param array  $input
+     * @return array
+     * @throws RuntimeException
+     * @throws \Throwable
+     */
+    public function checkForEntityAlerts(array $input) : array
+    {
+        return $this->makeRequest(self::CHECK_FOR_ENTITY_ALERTS, $input, self::SERVICE_API);
+    }
 }
