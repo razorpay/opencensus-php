@@ -106,6 +106,8 @@ class TraceCode
 
     const GENERIC_ROUTE_PATH                        = 'GENERIC_ROUTE_PATH';
 
+    const CAPITAL_CARDS_GENERATE_TOKEN              =  'CAPITAL_CARDS_GENERATE_TOKEN';
+
     const ADMIN_LOGGED_IN_AS_MERCHANT               = 'ADMIN_LOGGED_IN_AS_MERCHANT';
 
     const BULK_RAZORX_CALL_FAILED                   = 'BULK_RAZORX_CALL_FAILED';

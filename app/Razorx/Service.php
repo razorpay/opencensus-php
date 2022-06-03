@@ -254,7 +254,8 @@ class Service extends Base\Service
             'capital_enable_physical_card',
             'rx_cohesive_invoice',
             'raxorx_pp_image_optimization',
-            'rx_custom_access_control_enabled'
+            'rx_custom_access_control_enabled',
+            'capital_virtual_card'
         ];
 
         $experimentsResults = $this->getBulkTreatment($features);

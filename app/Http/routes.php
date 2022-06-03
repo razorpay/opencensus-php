@@ -34,8 +34,7 @@ Route::group(['middleware' => ['web']], function () {
     // keeping it in app layer.
     Route::options('/{path?}', 'GenericController@handleAny')
         ->where(['path' => '.*']);
-
-
+    
     Route::group(['middleware'  =>  ['set_csp_header']], function () {
         Route::get('/', 'UserController@getIndex')->name('dashboard');
         Route::get('/signup', 'UserController@getIndex')->name('signup');
@@ -135,6 +134,9 @@ Route::group(['middleware' => ['web']], function () {
         Route::any('/merchant/api/{mode}/{path}', 'GenericController@handleAny')
             ->where(['path' => '.*'])
             ->name('merchant');
+
+        Route::get('/cards/token', 'GenerateTokenController@generateToken')
+            ->name('card_token');
 
         Route::post('/extension/generate_token', 'UserController@generateJWT')->name('extension_generate_token');
 
