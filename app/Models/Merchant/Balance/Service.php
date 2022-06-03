@@ -67,7 +67,7 @@ class Service extends Base\Service
         return $this->repo->balance->findMany($input['ids'])->toArrayPublic();
     }
 
-    public function fetchBalancesForBalanceIds(array $input): array
+    public function fetchBalancesForBalanceIds(array $input): object
     {
 
         (new JitValidator)->rules([
@@ -79,7 +79,7 @@ class Service extends Base\Service
 
         $balances = $this->repo->balance->getBalancesForBalanceIds($balanceIds);
 
-        $response = [
+        $response = (object) [
             Payout\Entity::BALANCES => $balances
         ];
         $traceData = [

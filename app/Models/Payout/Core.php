@@ -1986,14 +1986,6 @@ class Core extends Base\Core
         {
             try
             {
-                // Filter out the balance ids for which the merchants have payout_service_enabled feature
-                $balancesList = $this->repo->balance
-                    ->getBalanceIdsWithAMerchantsHavingPayoutServiceEnabled($balanceIdList);
-
-                if (empty($balancesList) === true)
-                {
-                    return;
-                }
 
                 $payoutServiceInput = [
                                         Entity::BALANCE_IDS => []
