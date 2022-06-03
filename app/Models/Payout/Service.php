@@ -91,6 +91,8 @@ class Service extends Base\Service
 
     protected $compositePayoutSaveOrFail = true;
 
+    const LOW_BALANCE_LIMIT_FOR_TEST_ACCOUNT = 3000000;
+
     const FILE      = 'file';
     const FILE_SIZE = 'file_size';
     const ENTITY    = 'entity';
@@ -3071,9 +3073,12 @@ class Service extends Base\Service
 
         $balance = $this->processAccountNumber($testPayoutInput);
 
-        if($balance->getBalance() < 864000)
+        if($balance->getBalance() < self::LOW_BALANCE_LIMIT_FOR_TEST_ACCOUNT)
         {
-          $this->trace->info(TraceCode::LOW_BALANCE_ALERT_FOR_TEST_PAYOUTS);
+          $this->trace->info(TraceCode::LOW_BALANCE_ALERT_FOR_TEST_PAYOUTS,
+                ['merchant_id' => $balance->getMerchantId(),
+                  'balance'    => $balance->getBalance()
+                ]);
         }
 
         $modes = array_pull($testPayoutInput,self::MODES);
@@ -3114,6 +3119,9 @@ class Service extends Base\Service
 
     public function addBalanceToSourceForTestMerchant($input)
     {
+        $this->trace->info(TraceCode::ADD_BALANCE_TO_SOURCE_FOR_TEST_PAYOUTS_CRON_REQUEST,
+            ['input' => $input]);
+
         $merchantId      = \RZP\Models\Merchant\Account::FUND_LOADING_DOWNTIME_DETECTION_TEST_ACCOUNT2;
         $this->merchant = $this->core->addMerchantForTestPayouts($merchantId);
 

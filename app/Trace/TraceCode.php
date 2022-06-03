@@ -7016,7 +7016,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TEST_PAYOUTS_YESB_CRON_REQUEST                                 = 'TEST_PAYOUTS_YESB_CRON_REQUEST';
     const TEST_PAYOUTS_ICICI_CRON_REQUEST                                = 'TEST_PAYOUTS_ICICI_CRON_REQUEST';
     const STATUS_OF_TEST_PAYOUTS_CRON_REQUEST                            = 'STATUS_OF_TEST_PAYOUTS_CRON_REQUEST';
-    const LOW_BALANCE_ALERT_FOR_TEST_PAYOUTS                              = 'LOW_BALANCE_ALERT_FOR_TEST_PAYOUTS';
+    const LOW_BALANCE_ALERT_FOR_TEST_PAYOUTS                             = 'LOW_BALANCE_ALERT_FOR_TEST_PAYOUTS';
+    const ADD_BALANCE_TO_SOURCE_FOR_TEST_PAYOUTS_CRON_REQUEST            = 'ADD_BALANCE_TO_SOURCE_FOR_TEST_PAYOUTS_CRON_REQUEST';
 
     const PARTNER_KYC_ACCESS__REQUEST                           = 'PARTNER_KYC_ACCESS__REQUEST';
     const BAS_DEDUPE_CHECK_ANALYSIS                             = 'BAS_DEDUPE_CHECK_ANALYSIS';
