@@ -79,6 +79,12 @@ class Validator extends Base\Validator
         \RZP\Models\BankTransferRequest\Entity::BANK_TRANSFER_REQUEST_ID   => 'required|string',
     ];
 
+    protected static $validateDuplicateReqRules = [
+        Entity::AMOUNT         => 'required|numeric|min:0',
+        Entity::REQ_UTR        => 'required|string|max:255',
+        Entity::PAYEE_ACCOUNT  => 'required|string|max:40',
+    ];
+
     protected function validateMode($attribute, $mode)
     {
         if (Mode::isValid($mode) === false)

@@ -12,7 +12,7 @@ class Validator extends Base\Validator
     protected static $createRules = [
         Entity::GATEWAY                 => 'required|string',
         Entity::TRANSACTION_ID          => 'required|string|max:255',
-        Entity::MODE                    => 'required',
+        Entity::MODE                    => 'required|string|max:4',
         Entity::PAYEE_NAME              => 'nullable|string|max:100',
         Entity::PAYEE_ACCOUNT           => 'required|string|max:40',
         Entity::PAYEE_IFSC              => 'required|string|size:' . self::IFSC_LENGTH,

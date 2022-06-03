@@ -708,6 +708,15 @@ class Service extends Base\Service
             ($routeName === 'bank_transfer_process_icici_internal') or
             ($routeName === 'bank_transfer_process_yesbank_internal'))
         {
+            if(!isset($input[Entity::AMOUNT], $input[Entity::REQ_UTR], $input[Entity::PAYEE_ACCOUNT]) === true)
+            {
+                throw new Exception\BadRequestValidationFailureException(ErrorCode::BAD_REQUEST_INPUT_VALIDATION_FAILURE, $input);
+            }
+
+            (new Validator)->validateInput('validateDuplicateReq', array(Entity::AMOUNT => $input[Entity::AMOUNT],
+                                                                         Entity::REQ_UTR => $input[Entity::REQ_UTR],
+                                                                         Entity::PAYEE_ACCOUNT => $input[Entity::PAYEE_ACCOUNT]));
+
             $duplicateBankTransfer = $this->repo
                                           ->bank_transfer
                                           ->findByUtrAndPayeeAccountAndAmount($input[Entity::REQ_UTR],
