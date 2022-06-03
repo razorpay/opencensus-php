@@ -3492,6 +3492,8 @@ class Route
         '1cc_shopify_checkout'                      => ['post',       '1cc/shopify/checkout',                                  'OneClickCheckoutController@shopifyCreateCheckout'                ],
         '1cc_shopify_checkout_update'               => ['post',       '1cc/shopify/abandon_checkout',                                  'OneClickCheckoutController@shopifyUpdateCheckout'                ],
         '1cc_shopify_complete'                      => ['post',       '1cc/shopify/complete',                                  'OneClickCheckoutController@shopifyCompleteCheckout'                ],
+        '1cc_shopify_add_checkout_url'              => ['post',       '1cc/shopify/checkout/url',                                  'OneClickCheckoutController@shopifyUpdateCheckoutUrl'                ],
+
         '1cc_shopify_checkout_options'              => ['get',        '1cc/shopify/checkout_options',                          'OneClickCheckoutController@shopifyGetCheckoutOptions'                ],
         '1cc_shopify_oauth_redirect'                => ['get',        '1cc/shopify/oauth/redirect',                              'OneClickCheckoutController@shopifyOAuthRedirect'                ],
         '1cc_shopify_oauth_callback'                => ['get',        '1cc/shopify/oauth/callback',                              'OneClickCheckoutController@shopifyOAuthRedirect'                ],
@@ -3666,6 +3668,7 @@ class Route
         'country_fetch',
         'state_fetch',
         '1cc_shopify_checkout_update',
+        '1cc_shopify_add_checkout_url',
     ];
 
     public static $device = [

@@ -166,6 +166,37 @@ class Checkout extends Base\Core
         return [];
     }
 
+    public function updateCheckoutUrl(array $input)
+    {
+        $start = millitime();
+
+        $orderId = $input['order_id'];
+
+        $order = $this->repo->order->findByPublicIdAndMerchant($orderId, $this->merchant);
+
+        if (empty($order->getNotes()['storefront_id']) === true)
+        {
+            $this->trace->error(
+                 TraceCode::SHOPIFY_1CC_API_ERROR,
+                 [
+                     'type'     => 'update_checkout_url',
+                     'order_id' => $orderId,
+                     'reason'   => 'missing_storefront_id'
+                 ]);
+            return;
+        }
+
+        $checkoutId = $order->getNotes()['storefront_id'];
+
+        $client = $this->getShopifyClientByMerchant();
+
+        $this->addMagicCheckoutUrlToShopifyCheckout(array_merge($input, ['checkout_id' => $checkoutId]));
+
+        $this->trace->info(
+            TraceCode::SHOPIFY_1CC_UPDATE_RETARGETING_URL,
+            ['input' => $input, 'time' => millitime() - $start]);
+    }
+
     protected function getPayloadForUpdateCheckoutAdmin(string $checkoutId, array $customerDetails): array
     {
         $payload = ['token' => $this->getCartTokenFromCheckoutId($checkoutId)];
@@ -272,4 +303,61 @@ class Checkout extends Base\Core
 
         return new Client($creds);
     }
+
+    /**
+     * Fire and forget API so we silently catch the throwable
+     * @param array
+     * @return void
+     */
+    protected function addMagicCheckoutUrlToShopifyCheckout(array $input): void
+    {
+        try
+        {
+            $input['shop_id'] = (new Utils)->stripAndReturnShopId($input['shop']);
+
+            $checkoutUrl = $this->getMagicCheckoutUrl($input);
+
+            $this->updateCheckoutWithUrl($checkoutUrl, $input['checkout_id']);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->error(
+                TraceCode::SHOPIFY_1CC_API_ERROR,
+                [
+                    'type'  => 'update_attributes_failed',
+                    'input' => $input,
+                    'error' => $e->getMessage(),
+                ]);
+        }
+    }
+
+    protected function getMagicCheckoutUrl(array $input): string
+    {
+        return 'https://' . $input['shop_id'] . '.myshopify.com/cart?magic_order_id=' . $input['order_id'];
+    }
+
+    protected function updateCheckoutWithUrl(string $checkoutUrl, string $checkoutId)
+    {
+        $client = $this->getShopifyClientByMerchant();
+
+        $mutation = (new Mutations)->checkoutAttributesUpdateMutation();
+
+        $graphqlQuery = [
+            'query'     => $mutation,
+            'variables' => [
+                'checkoutId' => $checkoutId,
+                'input'      => [
+                    'customAttributes' => [
+                        [
+                          'key'   => 'magic_checkout_url',
+                          'value' => $checkoutUrl
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        return $client->sendStorefrontRequest(json_encode($graphqlQuery));
+    }
+
 }

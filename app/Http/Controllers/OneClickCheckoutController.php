@@ -53,4 +53,13 @@ class OneClickCheckoutController
 
         return ApiResponse::json($response, 200);
     }
+
+    public function shopifyUpdateCheckoutUrl()
+    {
+        $input = Request::all();
+
+        $response = (new Shopify\Service)->updateCheckoutUrl($input);
+
+        return ApiResponse::json($response, 200);
+    }
 }

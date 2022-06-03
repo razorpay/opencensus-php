@@ -80,11 +80,6 @@ class Service extends Base\Service
             'notes'            => (new Checkout)->getNotesForCheckout($checkout, $cartId),
         ])->toArrayPublic();
 
-        $this->trace->info(
-            TraceCode::SHOPIFY_1CC_CREATE_RZP_ORDER_RES,
-            ['order_id' => $rzporder['id'], 'time' => millitime() - $start]
-        );
-
         $checkoutParams = [
             'order_id'           => $rzporder['id'],
             'currency'           => 'INR',
@@ -95,11 +90,16 @@ class Service extends Base\Service
             'customer_cart'      => (new Pixels)->getDataForFbPixels($checkout),
         ];
 
-        (new Core)->addMagicCheckoutUrlToShopifyCheckout($checkoutParams);
+        // NOTE: leaving this commented in case we need to quickly revert
+        // (new Checkout)->addMagicCheckoutUrlToShopifyCheckout($checkoutParams);
 
         unset($checkoutParams['checkout_id']);
 
         unset($checkoutParams['shop_id']);
+
+        $this->trace->info(
+            TraceCode::SHOPIFY_1CC_CREATE_RZP_ORDER_RES,
+            ['order_id' => $rzporder['id'], 'time' => millitime() - $start]);
 
         return $checkoutParams;
     }
@@ -348,6 +348,18 @@ class Service extends Base\Service
         }
 
         return (new Coupons)->applyCoupon($input, $checkoutId);
+    }
+
+    /**
+     * updates the notes of shopify checkout with magic checkout url
+     */
+    public function updateCheckoutUrl(array $input): array
+    {
+        (new Core)->verifyHmacSignature($input, false);
+
+        (new Checkout)->updateCheckoutUrl($input);
+
+        return [];
     }
 
     /**

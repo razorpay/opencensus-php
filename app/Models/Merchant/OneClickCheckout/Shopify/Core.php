@@ -95,57 +95,6 @@ class Core extends Base\Core
         return $checkoutCreate['checkout'];
     }
 
-    // Fire and forget API so we silently catch the Throwable
-    public function addMagicCheckoutUrlToShopifyCheckout(array $input): void
-    {
-        try
-        {
-          $input['shop_id'] = (new Utils)->stripAndReturnShopId($input['shop_id']);
-
-          $checkoutUrl = $this->getMagicCheckoutUrl($input);
-
-          $this->updateCheckoutWithUrl($checkoutUrl, $input['checkout_id']);
-        }
-        catch (\Throwable $e)
-        {
-            $this->trace->error(
-                TraceCode::SHOPIFY_1CC_API_ERROR,
-                [
-                    'type'  => 'update_attributes_failed',
-                    'input' => $input,
-                ]);
-        }
-    }
-
-    protected function getMagicCheckoutUrl(array $input): string
-    {
-        return 'https://' . $input['shop_id'] . '.myshopify.com/cart?magic_order_id=' . $input['order_id'];
-    }
-
-    protected function updateCheckoutWithUrl(string $checkoutUrl, string $checkoutId)
-    {
-        $client = $this->getShopifyClientByMerchant();
-
-        $mutation = (new Mutations)->checkoutAttributesUpdateMutation();
-
-        $graphqlQuery = [
-            'query'     => $mutation,
-            'variables' => [
-                'checkoutId' => $checkoutId,
-                'input'      => [
-                    'customAttributes' => [
-                        [
-                          'key'   => 'magic_checkout_url',
-                          'value' => $checkoutUrl
-                        ]
-                    ]
-                ]
-            ]
-        ];
-
-        return $client->sendStorefrontRequest(json_encode($graphqlQuery));
-    }
-
     public function getAvailableShippingRates($checkoutId)
     {
         $client = $this->getShopifyClientByMerchant();
@@ -874,5 +823,4 @@ class Core extends Base\Core
 
         return $checkout['data']['node'] ?? [];
     }
-
 }
