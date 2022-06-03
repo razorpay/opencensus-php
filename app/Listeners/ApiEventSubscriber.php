@@ -461,6 +461,37 @@ class ApiEventSubscriber extends Base\Core
             (new PaymentLink\Core)->postPaymentCaptureUpdatePaymentPage($payment);
         }
 
+        if($payment->order !== null)
+        {
+            try
+            {
+                $invoice = $payment->order->invoice;
+
+                if($invoice !== null)
+                {
+                    (new Invoice\Core)->updateInvoiceAfterCapture($invoice, $payment);
+                }
+                else if ($payment->order->getProductType() === ProductType::INVOICE)
+                {
+                    $invoiceId = $payment->order->getProductId();
+
+                    $invoice = $this->repo->invoice->findOrFailPublic($invoiceId);
+
+                    (new Invoice\Core)->updateInvoiceAfterCapture($invoice, $payment);
+                }
+            }
+            catch (\Throwable $ex)
+            {
+                $this->trace->traceException(
+                    $ex,
+                    Logger::ERROR,
+                    TraceCode::INVOICE_ACTION_JOB_ERROR,
+                    [
+                        'payment_id' => $payment->getId(),
+                    ]);
+            }
+        }
+
         try
         {
             $this->pushForPaymentLinks($payment);

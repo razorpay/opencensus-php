@@ -7,6 +7,7 @@ use Mail;
 use Mockery;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factory;
+use RZP\Tests\Functional\Invoice\InvoiceTestTrait;
 
 use RZP\Exception;
 use RZP\Exception\BadRequestException;
@@ -42,6 +43,7 @@ class PaymentCreateTest extends TestCase
     use OAuthTrait;
     use PaymentTrait;
     use DbEntityFetchTrait;
+    use InvoiceTestTrait;
 
     protected function setUp(): void
     {
@@ -1914,7 +1916,7 @@ class PaymentCreateTest extends TestCase
 
         $payment['order_id'] = $order->getPublicId();
 
-        // mocking the gateway call and return exception
+        // mocking the gatewayFcall and return exception
         $this->mockGatewayException();
 
         // testing failure event here
@@ -1996,6 +1998,48 @@ class PaymentCreateTest extends TestCase
         $content = $this->getJsonContentFromResponse($response);
 
         $this->assertEquals($content['data']['pg_router'], 'true');
+    }
+
+    public function testRearchPaymentCreateAjaxInvoiceFail()
+    {
+        $this->fixtures->iin->edit('401200',[
+            'country' => 'IN',
+            'issuer'  => 'SBIN',
+            'network' => 'Visa',
+        ]);
+
+        $order = $this->fixtures->order->create(['amount' => 50000]);
+
+        $this->fixtures->create('invoice',
+                                           [
+                                               'id'         => '1000005invoice',
+                                               'order_id'   => $order->getId(),
+                                               'expire_by'  => null,
+                                               'status'     => 'issued',
+                                               'amount'     => 50000,
+                                           ]);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['order_id'] = 'order_'.$order->getId();
+
+        $request = [
+            'content' => $payment,
+            'url'     => '/payments/create/ajax',
+            'method'  => 'post'
+        ];
+
+//         $response = $this->makeRequestParent($request);
+
+//         $this->doAuthAndCapturePayment($payment);
+
+//         $payment = $this->getDbLastEntityToArray('payment');
+
+//         $this->assertEquals($payment['cps_route'], 0);
+
+//         $invoice = $this->getDbLastEntityToArray('invoice');
+
+//         $this->assertEquals($invoice['status'], 'paid');
     }
 
     public function testRearchPaymentCreateJson()

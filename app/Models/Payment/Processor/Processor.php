@@ -481,7 +481,8 @@ class Processor
                     (($order->hasOffers() === true) or
                      ($order->isDiscountApplicable() === true) or
                      ($order->getProductId() !== null) or
-                     ($order->getFeeConfigId() !== null))
+                     ($order->getFeeConfigId() !== null) or
+                     ($order->invoice !== null))
                     )
                 {
                     return false;

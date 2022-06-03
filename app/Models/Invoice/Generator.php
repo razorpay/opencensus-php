@@ -508,6 +508,11 @@ class Generator extends Base\Core
                 Order\Entity::FIRST_PAYMENT_MIN_AMOUNT => $firstMinAmount,
             ];
 
+            if ($this->invoice->isTypeInvoice() === true) {
+                $orderInput[Order\Entity::PRODUCT_ID] = $this->invoice->getId();
+                $orderInput[Order\Entity::PRODUCT_TYPE] = Order\ProductType::INVOICE;
+            }
+
             if ($this->invoice->isTypeLink() === true) {
                 $orderInput[Order\Entity::PRODUCT_ID] = $this->invoice->getId();
                 $orderInput[Order\Entity::PRODUCT_TYPE] = Order\ProductType::PAYMENT_LINK;

@@ -1310,23 +1310,6 @@ trait Capture
                 'payment_id' => $payment->getId(),
                 'order_id'   => $order->getId(),
             ]);
-
-        //
-        // We have to use order's invoice instead of payment's invoice here
-        // as in the transaction order entity gets updated and invoice depends
-        // on order.amount_paid attribute to update it's status. We could have
-        // used $payment->invoice with refresh() but decided to stick with order
-        // as payment as invoice just for queries, actual association is between
-        // order and invoice and order->invoice can get used again this this flow.
-        //
-
-        $invoice = $order->invoice;
-
-        if ($invoice !== null)
-        {
-            $this->updateInvoiceAfterCapture($invoice, $payment);
-        }
-
     }
 
     protected function updateVirtualAccountStatusForVaPayment(Payment\Entity $payment)
@@ -1578,42 +1561,6 @@ trait Capture
         }
 
         return false;
-    }
-
-
-    /**
-     * Updates attributes of Invoice post corresponding payment is captured.
-     *
-     * @param Invoice\Entity $invoice
-     * @param Payment\Entity $payment
-     *
-     * @throws Exception\LogicException
-     */
-    protected function updateInvoiceAfterCapture(
-        Invoice\Entity $invoice,
-        Payment\Entity $payment)
-    {
-        $this->trace->info(
-            TraceCode::PAYMENT_CAPTURE_INVOICE_UPDATE,
-            [
-                'payment_id'    => $payment->getId(),
-                'invoice_id'    => $invoice->getId(),
-                'order_id'      => $invoice->getOrderId(),
-            ]);
-
-        if ($invoice->hasBeenPaid() === true)
-        {
-            throw new Exception\LogicException('The invoice is already paid.');
-        }
-
-        $invoice->updateStatusPostCapture($payment);
-
-
-        $isPartialPayment = ($invoice->getAmount() !== $payment->getAmount());
-        $dimensions = $invoice->getMetricDimensions(['is_partial_payment' => (int) $isPartialPayment]);
-        $this->trace->count(Invoice\Metric::INVOICE_PAID_TOTAL, $dimensions);
-
-        $this->repo->saveOrFail($invoice);
     }
 
     protected function postPaymentCaptureSubscriptionRegistrationProcessing(Payment\Entity $payment)

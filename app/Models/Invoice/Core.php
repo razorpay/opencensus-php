@@ -1657,4 +1657,31 @@ class Core extends Base\Core
 
         return sprintf($subjectTemplate, ...$args);
     }
+
+    public function updateInvoiceAfterCapture(
+        Entity $invoice,
+        Payment\Entity $payment)
+    {
+        $this->trace->info(
+            TraceCode::PAYMENT_CAPTURE_INVOICE_UPDATE,
+            [
+                'payment_id'    => $payment->getId(),
+                'invoice_id'    => $invoice->getId(),
+                'order_id'      => $invoice->getOrderId(),
+            ]);
+
+        if ($invoice->hasBeenPaid() === true)
+        {
+            return;
+        }
+
+        $invoice->updateStatusPostCapture($payment);
+
+
+        $isPartialPayment = ($invoice->getAmount() !== $payment->getAmount());
+        $dimensions = $invoice->getMetricDimensions(['is_partial_payment' => (int) $isPartialPayment]);
+        $this->trace->count(Metric::INVOICE_PAID_TOTAL, $dimensions);
+
+        $this->repo->saveOrFail($invoice);
+    }
 }
