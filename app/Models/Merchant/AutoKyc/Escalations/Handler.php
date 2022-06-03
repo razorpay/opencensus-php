@@ -55,13 +55,13 @@ class Handler
      * @param string $type
      * @param int    $level
      */
-    public function handleEscalations($merchants,$merchantsGmvList, string $type, int $level)
+    public function handleEscalations($merchants, $merchantsGmvList, string $type, int $level)
     {
         try
         {
             $instance = Factory::getInstance($type, $level);
 
-            $instance->triggerEscalation($merchants,$merchantsGmvList, $type, $level);
+            $instance->triggerEscalation($merchants, $merchantsGmvList, $type, $level);
         }
         catch (\Exception $e)
         {

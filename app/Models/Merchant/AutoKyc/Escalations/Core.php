@@ -4,22 +4,24 @@ namespace RZP\Models\Merchant\AutoKyc\Escalations;
 
 use Mail;
 use Carbon\Carbon;
-
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Models\Merchant\Detail\Entity;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Partner\Core as PartnerCore;
-use RZP\Models\Admin\Org\Entity as OrgEntity ;
+use RZP\Models\Transaction\Entity as TEntity;
+use RZP\Http\Controllers\CmmaProxyController;
+use RZP\Models\Admin\Org\Entity as OrgEntity;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Mail\Merchant\HardLimitLevelThreeEmail;
 use RZP\Models\Merchant\Constants as MConstants;
 use RZP\Models\Merchant\Entity as MerchantEntity;
+use RZP\Models\Merchant\Escalations as NewEscalation;
 use RZP\Models\Merchant\Detail\Status as DetailStatus;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
-use RZP\Models\Merchant\Escalations as NewEscalation;
-use RZP\Models\Transaction\Entity as TEntity;
+use RZP\Models\Merchant\AutoKyc\Escalations\Types\CmmaEscalation;
+use RZP\Models\Merchant\Escalations\Constants as EscalationConstant;
 
 class Core extends Base\Core
 {
@@ -115,6 +117,8 @@ class Core extends Base\Core
 
             // finally raise escalations
             (new Handler)->handleEscalations($merchants, $merchantsGmvList, Constants::SOFT_LIMIT, 1);
+            // trigger CMMA escalations; this will be uncommented based on product requirements.
+            // (new CmmaEscalation)->triggerCMMAEscalation($merchants, Constants::SOFT_LIMIT, 1);
         }
     }
 
@@ -162,6 +166,8 @@ class Core extends Base\Core
         $merchants = $this->repo->merchant->findManyByPublicIds($merchantIdList);
         // finally raise escalations
         (new Handler)->handleEscalations($merchants, $merchantsGmvList, Constants::HARD_LIMIT, 1);
+        // trigger CMMA escalations
+        (new CmmaEscalation)->triggerCMMAEscalation($merchants, Constants::HARD_LIMIT, 1);
 
     }
 

@@ -142,9 +142,9 @@ abstract class BaseProxyController extends Controller
 
     protected function getRoute($path = null): string
     {
-        $routes = array_merge($this->merchantRoutes,$this->adminRoutes);
+        $routes = array_merge($this->merchantRoutes, $this->adminRoutes);
 
-        $routes = array_merge($routes,$this->cronRoutes);
+        $routes = array_merge($routes, $this->cronRoutes);
 
         foreach ($routes as $route)
         {
@@ -219,6 +219,15 @@ abstract class BaseProxyController extends Controller
         return $this->sendRequestAndParseResponse($route, $request->method(), $path, $body, $headers);
     }
 
+    public function handleInternalCronProxyRequests($path, $body) {
+
+        $route = $this->getRoute($path);
+
+        $headers = $this->getHeadersForCronRequest($body);
+
+        return $this->sendRequestAndParseResponse($route, 'POST', $path, $body, $headers);
+    }
+
     protected function sendRequestAndParseResponse(
         string $route,
         string $method,
@@ -266,12 +275,6 @@ abstract class BaseProxyController extends Controller
 
     protected function sendRequest($headers, $path, $method, $body, $options = [])
     {
-        $this->trace->info(TraceCode::PROXY_REQUEST, [
-            'path'    => $path,
-            'method'  => $method,
-            'service' => $this->service,
-            'options' => $options
-        ]);
 
         $arrHeaders = new ArrayHeaders($headers);
         $headers    = $arrHeaders->toArray();
@@ -279,6 +282,13 @@ abstract class BaseProxyController extends Controller
         $baseUrl = $this->getBaseUrl();
         $url     = $baseUrl . '/' . $path;
         $body    = empty($body) ? '{}' : json_encode($body);
+
+        $this->trace->info(TraceCode::PROXY_REQUEST, [
+            'path'    => $path,
+            'method'  => $method,
+            'service' => $this->service,
+            'options' => $options
+        ]);
 
         $resp = $this->request($url, $headers, $body, $method, $options);
 

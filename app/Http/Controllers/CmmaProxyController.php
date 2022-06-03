@@ -7,15 +7,18 @@ use RZP\Models\Admin\Permission\Name;
 class CmmaProxyController extends BaseProxyController
 {
     //TODO : change the url @shubham
+    const GET_PROCESS                     = 'GetUserList';
     const CRON_UPDATE_PROCESS_ASSIGNED_TO = 'CronUpdateProcessAssignedTo';
-    const GET_PROCESS           = 'GetUserList';
+    const CREATE_PROCESS_INSTANCE = 'CreateProcessInstance';
     const HANDLE_CALLBACK       = 'HandleCallback';
     const GET_USER_TASK_QUERY   = 'GetUserTaskQuery';
     const GET_USER_TASK_BY_ID   = 'GetUserTaskById';
 
     const ROUTES_URL_MAP    = [
         //TODO : change the url @shubham
-        self::GET_PROCESS => "/twirp\/rzp.example.user.v1.UserAPI\/List/",
+        self::GET_PROCESS                     => "/twirp\/rzp.example.user.v1.UserAPI\/List/",
+        self::CRON_UPDATE_PROCESS_ASSIGNED_TO => "/twirp\/rzp.cmma.process.v1.UpdateProcessAssignedTo/",
+        self::CREATE_PROCESS_INSTANCE => "/twirp\/rzp.cmma.process.v1.ProcessManagementService\/CreateProcessInstance/",
         self::HANDLE_CALLBACK => "/twirp\/rzp.cmma.process.v1.ProcessManagementService\/HandleCallback/",
         self::GET_USER_TASK_QUERY => '/twirp\/rzp.cmma.userTask.v1.UserTaskService\/GetUserTaskQuery/',
         self::GET_USER_TASK_BY_ID => '/twirp\/rzp.cmma.userTask.v1.UserTaskService\/GetUserTaskById/',
@@ -30,7 +33,8 @@ class CmmaProxyController extends BaseProxyController
     ];
 
     const CRON_ROUTES   = [
-        self::CRON_UPDATE_PROCESS_ASSIGNED_TO
+        self::CRON_UPDATE_PROCESS_ASSIGNED_TO,
+        self::CREATE_PROCESS_INSTANCE // In api it is called via a cron script
     ];
 
     const ADMIN_ROUTES_VS_PERMISSION   = [

@@ -45,6 +45,13 @@ class Constants
     const PARAMS        = 'params';
     const MILESTONE     = 'milestone';
     const ENABLE        = 'enable';
+    const SOFT_LIMIT_LEVEL_1 = 'soft_limit_level_1';
+    const HARD_LIMIT_LEVEL_1 = 'hard_limit_level_1';
+    const CMMA_SOFT_LIMIT_BREACH = 'SOFT-LIMIT-BREACH-LV1';
+    const CMMA_HARD_LIMIT_BREACH = 'HARD-LIMIT-BREACH-LV1';
+    const ACTIVATION = 'activation';
+    const CMMA_ROUTE = 'twirp/rzp.cmma.process.v1.ProcessManagementService/CreateProcessInstance';
+    const UNDEFINED = 'undefined';
 
     //Escalation Types
     const PAYMENT_BREACH    = 'payment_breach';
@@ -62,6 +69,10 @@ class Constants
     // hard limit for sub-merchant no-doc onboarding
     const HARD_LIMIT_KYC_PENDING_THRESHOLD          = 5000000;
     const HARD_LIMIT_NO_DOC                         = 'hard_limit_no_doc';
+
+    // keys
+    const CMMA_PROCESS_ID_KEY = 'app.cmma_escalation_process_id';
+    const CMMA_EXPERIMENT_ID_KEY = 'app.cmma_limit_breach_trigger_experiment_id';
 
     const PAYMENTS_ESCALATION_MATRIX = [
         0          => [

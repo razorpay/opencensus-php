@@ -391,6 +391,12 @@ return array(
 
     'local_token_on_global_customer_experiment_id' => env('LOCAL_TOKEN_ON_GLOBAL_CUSTOMER_EXPERIMENT_ID'),
 
+    'void_refund_avs_failed_experiment_id' => env('VOID_REFUND_AVS_FAILED_EXPERIMENT_ID'),
+
+    'cmma_limit_breach_trigger_experiment_id' => env('CMMA_LIMIT_BREACH_TRIGGER_EXPERIMENT_ID'),
+
+    'cmma_escalation_process_id' => env('CMMA_ESCALATION_PROCESS_ID'),
+
     'payment_handle_domain' => env('PAYMENT_HANDLE_DOMAIN'),
 
     'nocode' => [

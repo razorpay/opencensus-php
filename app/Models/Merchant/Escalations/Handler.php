@@ -4,6 +4,8 @@
 namespace RZP\Models\Merchant\Escalations;
 
 use App;
+use RZP\Constants\Environment;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Base\RepositoryManager;
@@ -12,6 +14,7 @@ use RZP\lib\ConditionParser\Parser;
 use Illuminate\Foundation\Application;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Feature\Constants as FeatureConstants;
+use RZP\Http\Controllers\CmmaProxyController;
 
 class Handler
 {
