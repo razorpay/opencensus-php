@@ -23,9 +23,11 @@ export const computeCashAdvanceApplicationStatus = ({ application, applicant }) 
   if (!hasApplicationData) return APPLICATION_STATES.BUSINESS_DETAILS_PENDING;
 
   if (
-    [APPLICATION_STATES.STATE_REJECTED, APPLICATION_STATES.RZP_REJECTED]?.includes(
-      application.state,
-    )
+    [
+      APPLICATION_STATES.STATE_REJECTED,
+      APPLICATION_STATES.RZP_REJECTED,
+      APPLICATION_STATES.STATE_CLOSED,
+    ]?.includes(application.state)
   ) {
     return application.state;
   }

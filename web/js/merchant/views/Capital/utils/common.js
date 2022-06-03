@@ -6,12 +6,7 @@ import {
 // import { APPLICATION_NOT_SUBMITTED } from 'merchant/views/Capital/Loans/constants';
 
 export const isObjectValid = (object) =>
-  !!(
-    object &&
-    typeof object === 'object' &&
-    !(object instanceof Array) &&
-    Object.keys(object).length
-  );
+  !!(object && typeof object === 'object' && Object.keys(object).length);
 
 export const checkBusinessDetailsStatus = (application, applicant = {}) => {
   const { addresses, emails, kyc, phones } = applicant || {};
