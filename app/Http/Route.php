@@ -14007,7 +14007,6 @@ class Route
         'user_fetch_for_merchant'                           => HeartbeatLagChecker::SLAVE,
         'reward_expire_cron'                                => HeartbeatLagChecker::MASTER,
         'trusted_badge_eligibility_cron'                    => HeartbeatLagChecker::SLAVE,
-        'get_merchant_data_for_segment'                     => HeartbeatLagChecker::SLAVE,
         'user_access'                                       => HeartbeatLagChecker::MASTER,
         'user_fetch_entity'                                 => HeartbeatLagChecker::SLAVE,
         'payout_links_shopify_app_install'                  => HeartbeatLagChecker::MASTER,
@@ -14202,7 +14201,6 @@ class Route
         'payment_page_list',
         'reminder_next_run',
         'user_fetch_for_merchant',
-        'get_merchant_data_for_segment',
         'user_fetch_entity',
     ];
 
