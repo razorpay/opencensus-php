@@ -361,10 +361,21 @@ class Core extends Base\Core
                 'tagGroup'      => $pushNotificationTag,
             );
 
-            $pushNotification = new StatusUpdatePN($notificationData);
-            $pushNotification->send();
-
-            $this->trace->info(TraceCode::PUSH_NOTIFICATION_DISPATCHED_FOR_CA_STATUS_UPDATE, [$notificationData]);
+            try
+            {
+                $pushNotification = new StatusUpdatePN($notificationData);
+                $pushNotification->send();
+                $this->trace->info(TraceCode::PUSH_NOTIFICATION_DISPATCHED_FOR_CA_STATUS_UPDATE, [$notificationData]);
+            }
+            catch (\Exception $exception)
+            {
+                $this->trace->traceException(
+                    $exception,
+                    Trace::INFO,
+                    TraceCode::PUSH_NOTIFICATION_FAILURE_FOR_CA_STATUS_UPDATE,
+                    [$notificationData]
+                );
+            }
         }
     }
 

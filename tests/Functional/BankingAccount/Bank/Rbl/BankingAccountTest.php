@@ -40,6 +40,7 @@ use RZP\Mail\BankingAccount\StatusNotifications\Rejected;
 use RZP\Mail\BankingAccount\StatusNotifications\Processed;
 use RZP\Mail\BankingAccount\StatusNotifications\Cancelled;
 use RZP\Mail\BankingAccount\StatusNotifications\Activated;
+use RZP\Models\BankingAccount\Core as BankingAccountCore;
 use RZP\Mail\BankingAccount\Activation as ActivationMails;
 use RZP\Mail\BankingAccount\StatusNotifications\Processing;
 use RZP\Tests\Functional\Fixtures\Entity\User as UserFixture;
@@ -2707,9 +2708,15 @@ class BankingAccountTest extends TestCase
 
             if (in_array($finalStatus, $notificationStatuses, true) === true) {
 
+                $pushNotificationTitle = BankingAccountCore::$statusUpdatePnTitleMap[$finalStatus];
+
+                $pushNotificationBody =  BankingAccountCore::$statusUpdatePnBodyMap[$finalStatus];
+
                 $this->expectStorkSendPushNotificationRequest([
                     'ownerId' => $bankingAccount->merchant->getId(),
                     'ownerType' => 'merchant',
+                    'title' => $pushNotificationTitle,
+                    'body' => $pushNotificationBody
                 ]);
             }
         }
