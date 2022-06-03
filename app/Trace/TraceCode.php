@@ -25,6 +25,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TRUST_SOCIETY_NGO_EXPERIMENT                          = 'TRUST_SOCIETY_NGO_EXPERIMENT';
 
     const CREDITS_EXPIRE_REQUEST                                = 'CREDITS_EXPIRE_REQUEST';
+    const QR_PAYMENT_ES_DEBUG                                   = 'QR_PAYMENT_ES_DEBUG';
     /*
      * Payment component error messages
      */

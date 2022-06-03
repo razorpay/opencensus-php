@@ -33,6 +33,8 @@ class WebsiteCheckerTest extends TestCase
 
     public function testLive()
     {
+        $this->markTestSkipped();
+
         $this->ba->batchAppAuth();
 
         $this->startTest();
@@ -40,6 +42,8 @@ class WebsiteCheckerTest extends TestCase
 
     public function testNotLive()
     {
+        $this->markTestSkipped();
+
         $this->ba->batchAppAuth();
 
         $this->startTest();
@@ -47,6 +51,8 @@ class WebsiteCheckerTest extends TestCase
 
     public function testManualReview()
     {
+        $this->markTestSkipped();
+
         $this->ba->batchAppAuth();
 
         $this->startTest();
@@ -54,6 +60,8 @@ class WebsiteCheckerTest extends TestCase
 
     public function testMilestoneCron()
     {
+        $this->markTestSkipped();
+
         $merchant = $this->fixtures->create('merchant');
 
         $this->fixtures->create('merchant_detail', [
@@ -86,6 +94,8 @@ class WebsiteCheckerTest extends TestCase
 
     public function testMilestoneCronNotLive()
     {
+        $this->markTestSkipped();
+
         $merchant = $this->fixtures->create('merchant');
 
         $this->fixtures->create('merchant_detail', [
@@ -118,6 +128,8 @@ class WebsiteCheckerTest extends TestCase
 
     public function testPeriodicCron()
     {
+        $this->markTestSkipped();
+
         $this->ba->cronAuth();
 
         $merchant = $this->fixtures->create('merchant', [
@@ -146,6 +158,8 @@ class WebsiteCheckerTest extends TestCase
 
     public function testPeriodicCronNotLive()
     {
+        $this->markTestSkipped();
+
         $this->ba->cronAuth();
 
         $merchant = $this->fixtures->create('merchant', [
@@ -174,6 +188,8 @@ class WebsiteCheckerTest extends TestCase
 
     public function testRetryCron()
     {
+        $this->markTestSkipped();
+
         $this->ba->cronAuth();
 
         $merchant = $this->fixtures->create('merchant');
@@ -196,6 +212,8 @@ class WebsiteCheckerTest extends TestCase
 
     public function testRetryCronNotLive()
     {
+        $this->markTestSkipped();
+
         $this->ba->cronAuth();
 
         $merchant = $this->fixtures->create('merchant');
@@ -220,6 +238,8 @@ class WebsiteCheckerTest extends TestCase
 
     public function testFreshdeskWebhook()
     {
+        $this->markTestSkipped();
+
         $this->ba->freshdeskWebhookAuth();
 
         $merchant = $this->fixtures->create('merchant');

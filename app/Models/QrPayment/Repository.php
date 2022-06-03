@@ -7,6 +7,7 @@ use RZP\Models\Base;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Models\QrCode\NonVirtualAccountQrCode as QrV2;
+use RZP\Trace\TraceCode;
 
 class Repository extends Base\Repository
 {
@@ -52,6 +53,8 @@ class Repository extends Base\Repository
                     $serialized[EsRepository::NOTES_NEW]
                 );
             }
+
+            unset($serialized[PaymentEntity::NOTES]);
         }
 
         if ($entity->qrCode !== null)
@@ -63,6 +66,8 @@ class Repository extends Base\Repository
                 $serialized[EsRepository::CUSTOMER_EMAIL] = $entity->qrCode->customer->getEmail();
             }
         }
+
+        $this->trace->info(TraceCode::QR_PAYMENT_ES_DEBUG, $serialized);
 
         return $serialized;
     }
