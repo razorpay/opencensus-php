@@ -41,7 +41,7 @@ const ExclusiveOffer = ({ tracking, loading, exclusive_offers, user, closeModal,
   const trackCTAClickAndSave = (id, label) => {
     sendDataToSalesForce(
       {
-        id,
+        Campaign_ID: id,
         product_name: exclusive_offers?.product_name,
       },
       user,

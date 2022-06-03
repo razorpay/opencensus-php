@@ -22,7 +22,7 @@ const ThankYouModal = ({ loading, gs_modals, user, closeModal, fetchGSModal, tem
     } else {
       sendDataToSalesForce(
         {
-          id: gs_modals?.id,
+          Campaign_ID: gs_modals?.id,
           product_name: gs_modals?.product_name,
           event_type: gs_modals?.event_type,
         },

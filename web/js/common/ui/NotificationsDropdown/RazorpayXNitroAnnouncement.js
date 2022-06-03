@@ -727,7 +727,7 @@ class DetailView extends React.Component {
         interested_in_current_account: 1,
         product_name: getProductName(),
         source: 'Project Nitro',
-        id: getCampaignID(),
+        Campaign_ID: getCampaignID(),
         form_version: user.isNitroFormFillEnabled ? 'with_fields' : 'without_fields',
         ...formValues,
       },

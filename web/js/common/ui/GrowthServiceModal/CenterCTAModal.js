@@ -55,7 +55,7 @@ const GrowthServiceCenterCTAModal = ({
   const trackCTAClickAndSave = (id, label) => {
     sendDataToSalesForce(
       {
-        id,
+        Campaign_ID: id,
         product_name: gs_modals?.product_name,
       },
       user,
