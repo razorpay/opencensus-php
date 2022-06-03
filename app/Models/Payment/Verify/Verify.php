@@ -583,6 +583,20 @@ class Verify extends Base\Core
                 continue;
             }
 
+            if((in_array($payment->getGateway(),Payment\Gateway::$fileBasedEMandateDebitGateways)=== true) and
+                ($payment->getRecurringType() === Payment\RecurringType::AUTO))
+            {
+                $this->trace->info(
+                    TraceCode::PAYMENT_VERIFY_STOPPED_FOR_FILE_BASED_DEBITS,
+                    [
+                        'payment_id' => $payment->getId(),
+                    ]);
+
+                $notApplicable++;
+
+                continue;
+            }
+
             $lock = $this->lockPaymentForVerify($payment);
 
             if ($lock === false)

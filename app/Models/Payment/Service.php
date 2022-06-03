@@ -4267,7 +4267,9 @@ class Service extends Base\Service
         {
             $this->traceRetryVerifyFalse($id, TraceCode::PAYMENT_VERIFY_STOPPED_FOR_FILE_BASED_DEBITS, $data);
 
-            return;
+            $data['retry_verify'] = false;
+            
+            return $data;
         }
 
         $extraProperties = [

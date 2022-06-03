@@ -6008,6 +6008,19 @@ class Processor
         $isReminderVerifyPayment = false;
         $isReminderTimeoutPayment = false;
 
+        if((in_array($payment->getGateway(),Payment\Gateway::$fileBasedEMandateDebitGateways)=== true) and
+            ($payment->getRecurringType() === Payment\RecurringType::AUTO))
+        {
+            $this->trace->info(
+                TraceCode::PAYMENT_VERIFY_STOPPED_FOR_FILE_BASED_DEBITS,
+                [
+                    'payment_id' => $payment->getId(),
+                ]);
+
+            $isReminderVerifyPayment = false;
+            $isReminderTimeoutPayment = false;
+        }
+
         if ((($gateway !== null) and
             (array_search($gateway, Payment\Gateway::$verifyDisabled) === false)))
         {
