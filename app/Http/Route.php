@@ -7900,7 +7900,7 @@ class Route
         'care_service_admin_proxy'                            => Permission::MANAGE_CARE_SERVICE_CALLBACK, // todo: have more fine grained permissions at route level
         'care_service_dark_proxy'                             => Permission::CARE_SERVICE_DARK_PROXY,
 
-        'cmma_service_admin_proxy'                            => Permission::MANAGE_CMMA_SERVICE_CALLBACK,
+        'cmma_service_admin_proxy'                            => Permission::CMMA_SERVICE_PROXY_ACCESS,
 
         'freshchat_put_chat_timings_config'                   => Permission::MANAGE_FRESHCHAT,
         'freshchat_get_chat_timings_config'                   => Permission::MANAGE_FRESHCHAT,
