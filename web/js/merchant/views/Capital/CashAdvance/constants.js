@@ -316,3 +316,9 @@ export const REPAYMENT_TYPES = {
 
 export const RZP_MERCHANT_OWNER_TYPE = 'RZP_MERCHANT';
 export const MERCHANT_OWNER_TYPE = 'MERCHANT';
+
+export const HOTJAR_TRIGGER = {
+  CASH_ADVANCE_LIVE: 'Cash_Advance_Live',
+  CASH_ADVANCE_FIRST_WITHDRAWAL: 'Cash_Advance_Withdrawal',
+  CASH_ADVANCE_FIRST_REPAYMENT: 'Cash_Advance_Repayment',
+};

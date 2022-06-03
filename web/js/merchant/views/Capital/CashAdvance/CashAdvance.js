@@ -1,7 +1,13 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { NavLink, withRouter, Redirect } from 'react-router-dom';
-import { CASH_ADVANCE_BASE_URL, CASH_ADVANCE_SECTIONS } from './constants';
+import {
+  CASH_ADVANCE_BASE_URL,
+  CASH_ADVANCE_SECTIONS,
+  COLLECTIONS_PRODUCT_TYPES,
+  HOTJAR_TRIGGER,
+  NOOP,
+} from './constants';
 import Withdrawals from './withdrawals';
 import Overview from './Overview';
 import Repayments from './Repayments/Repayments';
@@ -10,6 +16,7 @@ import {
   fetchFunctionalWithdrawalConfigByMerchantID,
   fetchWithdrawals,
 } from 'merchant/reducers/capital/withdrawals';
+import { fetchRepayments } from 'merchant/reducers/capital/repayments';
 import { fetchMerchantDetails } from 'merchant/reducers/capital/migrations';
 import LoaderDots from 'common/ui/LoaderDots';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
@@ -19,6 +26,7 @@ import LegalSignIcon from '../../../../../icons/merchant/legal.svg';
 import RoundTick from '../../../../../icons/merchant/tick-round.svg';
 import { getItem, removeItem } from 'common/utils/localStorage';
 import { checkifDateExpired } from 'merchant/views/Capital/utils';
+import { triggerHotjarRecording } from 'common/utils/hotjar';
 
 const Loader = () => {
   return (
@@ -35,6 +43,7 @@ const Loader = () => {
       session: { user },
       withdrawals: { withdrawalConfiguration, list, seedData },
       migrations: { merchantGromorEsignDetails },
+      repayments: { list: repaymentsList },
     } = state;
 
     return {
@@ -43,12 +52,14 @@ const Loader = () => {
       list,
       seedData,
       merchantGromorEsignDetails,
+      repaymentsList,
     };
   },
   {
     fetchFunctionalWithdrawalConfigByMerchantID,
     fetchSeedData,
     fetchWithdrawals,
+    fetchRepayments,
     fetchMerchantDetails,
     openModal,
     closeModal,
@@ -115,6 +126,17 @@ class CashAdvance extends React.Component {
         order_by: 'CREATED_AT',
         order_direction: 'desc',
       })
+      .finally(() => this.setState({ isLoading: false }));
+
+    this.props
+      .fetchRepayments({
+        product_type: COLLECTIONS_PRODUCT_TYPES.CASH_ADVANCE,
+        credit_id: current,
+        order_by_type: 'ORDER_BY_TYPE_DESC',
+        order_by_field: 'ORDER_BY_FIELD_CREATED_AT',
+        count: 1,
+      })
+      .catch(NOOP)
       .finally(() => this.setState({ isLoading: false }));
   }
 
@@ -210,7 +232,26 @@ class CashAdvance extends React.Component {
     );
   };
 
+  getIsNWithdrawalsCompleted = (n) => {
+    return this.props?.list?.data?.length === n;
+  };
+
+  getIsFirstRepaymentCompleted = () => {
+    return this.props?.repaymentsList?.data?.length === 1;
+  };
+
   renderSection() {
+    //Hotjar Events
+    if (this.getIsNWithdrawalsCompleted(0)) {
+      triggerHotjarRecording(HOTJAR_TRIGGER.CASH_ADVANCE_LIVE);
+    }
+    if (this.getIsNWithdrawalsCompleted(1)) {
+      triggerHotjarRecording(HOTJAR_TRIGGER.CASH_ADVANCE_FIRST_WITHDRAWAL);
+    }
+    if (this.getIsFirstRepaymentCompleted()) {
+      triggerHotjarRecording(HOTJAR_TRIGGER.CASH_ADVANCE_FIRST_REPAYMENT);
+    }
+
     const {
       match: {
         params: { section = CASH_ADVANCE_SECTIONS.OVERVIEW },
