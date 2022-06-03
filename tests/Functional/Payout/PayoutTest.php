@@ -18464,6 +18464,8 @@ class PayoutTest extends OAuthTestCase
             $this->assertArrayHasKey('learn_more_url', $mail->viewData);
 
             $mail->hasTo('naruto@gmail.com');
+            $mail->hasFrom('no-reply@razorpay.com');
+            $mail->hasReplyTo('no-reply@razorpay.com');
 
             return true;
         });
