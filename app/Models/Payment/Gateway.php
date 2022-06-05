@@ -1281,6 +1281,11 @@ class Gateway
         Gateway::ENACH_RBL,
     ];
 
+    const GATEWAY_TO_SETTLEMENT_CURRENCY_MAPPING = [
+        self::CHECKOUT_DOT_COM => [Currency::USD],
+        self::EMERCHANTPAY => [Currency::EUR,Currency::GBP,Currency::AUD],
+    ];
+
     public static $scroogeFileBasedRefundGatewaysWithTimestamps = [
         Payment\Gateway::NETBANKING_VIJAYA      => 1575484200,
         Payment\Gateway::NETBANKING_OBC         => 1575484200,
@@ -4345,6 +4350,24 @@ class Gateway
     public static function isCPSGatewayToken2Required($gateway) : bool
     {
         return (in_array($gateway, self::CPS_GATEWAY_TOKEN2_REQUIRED, true));
+    }
+
+    public static function getSettlementCurrencyOfPaymentByGateway(Payment\Entity $payment)
+    {
+        $gateway = $payment->getGateway();
+        $gatewayCurrency = $payment->getGatewayCurrency();
+        
+        if(array_key_exists($gateway,self::GATEWAY_TO_SETTLEMENT_CURRENCY_MAPPING) === false)
+        {
+            return null;
+        }
+
+        if(in_array($gatewayCurrency,self::GATEWAY_TO_SETTLEMENT_CURRENCY_MAPPING[$gateway]) === true)
+        {
+            return $payment->getGatewayCurrency();
+        }
+        
+        return self::GATEWAY_TO_SETTLEMENT_CURRENCY_MAPPING[$gateway][0];
     }
 
 }

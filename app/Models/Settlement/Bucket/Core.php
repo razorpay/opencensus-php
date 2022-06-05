@@ -285,7 +285,8 @@ class Core extends Base\Core
                     ],
                     'amount_meta'   => [
                         "conversion_amount"   => $this->getConversionAmount($payment, Currency::USD),
-                        "conversion_currency" => Currency::USD
+                        "conversion_currency" => Currency::USD,
+                        "settlement_currency" => $this->getSettlementCurrencyOfPayment($payment)
                     ],
                 ];
             }
@@ -384,7 +385,7 @@ class Core extends Base\Core
     }
 
     /**
-     * Returns Alpha-3 Country Code from address saved in 
+     * Returns Country Name from address saved in 
      * addresses table linked with payment entity.
      * 
      * @param Payment\Entity
@@ -399,9 +400,7 @@ class Core extends Base\Core
             return null;
         }
 
-        $country = $address->getCountry();
-
-        return Country::getCountryAlpha3Code($country);
+        return $address->getCountryNameFormatted();
     }
 
     private function getConversionAmount(Payment\Entity $payment, string $currency) {
@@ -411,6 +410,20 @@ class Core extends Base\Core
         }
 
         return (new \RZP\Models\Currency\Core())->convertAmount($payment->getGatewayAmount(), $payment->getGatewayCurrency(), $currency);
+    }
+
+     /**
+     * Returns Settlement Currency of Payment in Case of OPGSP 
+     * Settlements. Returns NULL in case of gateways not on 
+     * OGPSP Based Settlements.
+     * 
+     * @param Payment\Entity
+     * @return String | null
+     */
+
+    private function getSettlementCurrencyOfPayment(Payment\Entity $payment) 
+    {
+        return Payment\Gateway::getSettlementCurrencyOfPaymentByGateway($payment);    
     }
 
     protected function getMetaForSource(Transaction\Entity $txn)
