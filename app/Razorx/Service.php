@@ -255,7 +255,8 @@ class Service extends Base\Service
             'rx_cohesive_invoice',
             'raxorx_pp_image_optimization',
             'rx_custom_access_control_enabled',
-            'capital_virtual_card'
+            'capital_virtual_card',
+            'set_pref_corporate_cards'
         ];
 
         $experimentsResults = $this->getBulkTreatment($features);
