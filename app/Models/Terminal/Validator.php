@@ -584,6 +584,8 @@ class Validator extends Base\Validator
         Entity::GATEWAY_RECON_PASSWORD     => 'sometimes|alpha_num',
         Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
         Entity::CURRENCY                   => 'sometimes_if:gateway_acquirer,axis|array',
+        Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
+        Entity::NOTES                      => 'sometimes|string',
     ];
 
     protected static $emiSbiTerminalRules = [
@@ -950,6 +952,9 @@ class Validator extends Base\Validator
         Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
         Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
         Entity::CURRENCY                   => 'sometimes_if:gateway_acquirer,axis|array',
+        Entity::GATEWAY_MERCHANT_ID        => 'sometimes|string',
+        Entity::NOTES                      => 'sometimes|string',
+        Entity::GATEWAY_TERMINAL_ID        => 'sometimes|string',
     ];
 
     protected static $upiIciciEditTerminalRules = [
