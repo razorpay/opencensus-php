@@ -256,7 +256,8 @@ class Service extends Base\Service
             'raxorx_pp_image_optimization',
             'rx_custom_access_control_enabled',
             'capital_virtual_card',
-            'set_pref_corporate_cards'
+            'capital_addon_cards_status_tracker',
+            'set_pref_corporate_cards',
         ];
 
         $experimentsResults = $this->getBulkTreatment($features);
