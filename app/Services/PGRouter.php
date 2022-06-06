@@ -708,7 +708,7 @@ class PGRouter
                     $request['method'],
                     $request['options']);
             }
-            catch (\Requests_Exception $e)
+            catch (\Throwable $e)
             {
                 $this->trace->traceException(
                     $e,
@@ -726,6 +726,10 @@ class PGRouter
 
                 $exception = $e;
 
+                continue;
+            }
+            if ($res !== null and $res->status_code === 502)
+            {
                 continue;
             }
 
