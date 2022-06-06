@@ -6554,6 +6554,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYOUT_SEND_SMS_INIT                                          = 'PAYOUT_SEND_SMS_INIT';
     const PAYOUT_SEND_SMS_FINISHED                                      = 'PAYOUT_SEND_SMS_FINISHED';
 
+    const MERCHANT_BUSINESS_TYPE_DISPLAY_NAME_NOT_FOUND                 = 'MERCHANT_BUSINESS_TYPE_DISPLAY_NAME_NOT_FOUND';
+
     // GooglePay payment
     const GOOGLEPAY_PAYMENT_METHOD_UPDATE                       = 'GOOGLEPAY_PAYMENT_METHOD_UPDATE';
 

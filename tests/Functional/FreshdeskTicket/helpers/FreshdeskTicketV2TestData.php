@@ -1,5 +1,7 @@
 <?php
 
+use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorCode;
 
 return [
     'testGetById' => [
@@ -1023,6 +1025,38 @@ return [
             'content' => [
                 'description' => 'ticket description',
             ],
+        ],
+    ],
+
+    'testGetAgentDetailForTicketInternalAuth' => [
+        'request'  => [
+            'url'     => '/fd/ticket/1234/agent',
+            'method'  => \Requests::GET,
+        ],
+        'response' => [
+            'content' => [
+                'agent_name' => 'test_agent',
+                'agent_id'   => 'admin_6dLbNSpv5Ybbbd',
+            ],
+        ],
+    ],
+
+    'testGetAgentDetailForUnassignedTicketInternalAuthFail' => [
+        'request'  => [
+            'url'     => '/fd/ticket/1234/agent',
+            'method'  => \Requests::GET,
+        ],
+        'response'  => [
+            'content'       => [
+                'error' => [
+                    'code'        => 'SERVER_ERROR',
+                ],
+            ],
+            'status_code'   => 500,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\ServerErrorException::class,
+            'internal_error_code' => ErrorCode::SERVER_ERROR_FRESHDESK_AGENT_NOT_FOUND,
         ],
     ],
 

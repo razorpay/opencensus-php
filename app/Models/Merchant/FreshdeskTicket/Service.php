@@ -497,6 +497,31 @@ class Service extends Base\Service
         return $freshdeskTicketResponse;
     }
 
+    public function getAgentDetailForFreshdeskTicket($ticketId)
+    {
+        $freshdeskTicketResponse = $this->app[Constants::FRESHDESK_CLIENT]->fetchTicketById($ticketId);
+
+        $this->validateTicketResponse($freshdeskTicketResponse, ErrorCode::BAD_REQUEST_FRESHDESK_TICKET_NOT_FOUND);
+
+        $responderID = $freshdeskTicketResponse[Constants::RESPONDER_ID];
+
+        if (empty($responderID) === true)
+        {
+            throw new Exception\ServerErrorException("freshdesk ticket unassigned", ErrorCode::SERVER_ERROR_FRESHDESK_AGENT_NOT_FOUND);
+        }
+
+        $agentDetail = $this->app[Constants::FRESHDESK_CLIENT]->fetchAgentById($responderID);
+
+        $this->validateFetchAgentDetailResponse($agentDetail);
+
+        $admin =  (new \RZP\Models\Admin\Admin\Repository)->findByEmail($agentDetail[Constants::CONTACT][Constants::EMAIL]);
+
+        return [
+            Constants::AGENT_ID   => $admin->getPublicId(),
+            Constants::AGENT_NAME => $admin->getName(),
+        ];
+    }
+
     public function checkEligibilityForPostTicket($type)
     {
         $variant = $this->app['razorx']->getTreatment($this->app['basicauth']->getMerchantId(),
@@ -834,6 +859,21 @@ class Service extends Base\Service
     }
 
     protected function validateTicketResponse($response, string $errorCode= ErrorCode::BAD_REQUEST_FRESHDESK_TICKET_CREATION_FAILED)
+    {
+        if (isset($response['id']) === true)
+        {
+            return;
+        }
+
+        if (isset($response['errors']))
+        {
+            throw new BadRequestException($errorCode, null, $response['errors']);
+        }
+
+        throw new Exception\ServerErrorException(null, ErrorCode::SERVER_ERROR_FRESHDESK_INTEGRATION_ERROR, $response);
+    }
+
+    protected function validateFetchAgentDetailResponse($response, string $errorCode= ErrorCode::SERVER_ERROR_FRESHDESK_AGENT_NOT_FOUND)
     {
         if (isset($response['id']) === true)
         {

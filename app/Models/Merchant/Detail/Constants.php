@@ -80,6 +80,8 @@ class Constants
     const VOTER_ID_FRONT         = 'voter_id_front';
     const AADHAAR_FRONT_COMPLETE = 'aadhaar_front_complete';
 
+    const BUSINESS_TYPE_DISPLAY_NAME = 'business_type_display_name';
+
     // Email constants
     const MERCHANT             = 'merchant';
     const PARTNER              = 'partner';

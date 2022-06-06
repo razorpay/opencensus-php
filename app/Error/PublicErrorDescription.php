@@ -1441,6 +1441,7 @@ class PublicErrorDescription
     const BAD_REQUEST_FRESHDESK_TICKET_NOT_FOUND                                     = 'Freshdesk ticket not found';
     const BAD_REQUEST_CUSTOMER_TICKET_FETCH_FAILED                                   = 'Failed to fetch customer tickets';
     const BAD_REQUEST_NO_TICKETS_FOUND_FOR_CUSTOMER                                  = 'No ticket found for the given customer';
+    const SERVER_ERROR_FRESHDESK_AGENT_NOT_FOUND                                     = 'No agent found for given agent id';
     const BAD_REQUEST_FRESHDESK_TICKET_UPDATE_FAILED                                 = 'Failed to update freshdesk ticket';
     const BAD_REQUEST_FRESHDESK_TICKET_ALREADY_CLOSED                                = 'Bad request, the ticket is already closed';
     const BAD_REQUEST_OPEN_TICKETS_LIMIT_EXCEEDED                                    = 'Bad request open tickets limit exceeded';

@@ -84,6 +84,7 @@ use RZP\Models\Settlement\SettlementTrait;
 use RZP\Models\Batch\Header as BatchHeader;
 use RZP\Models\Batch\Status as BatchStatus;
 use RZP\Constants\Entity as EntityConstants;
+use RZP\Models\Merchant\Detail\BusinessType;
 use RZP\Mail\InstrumentRequest\StatusNotify;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Mail\Base\Constants as MailConstants;
@@ -4972,7 +4973,7 @@ class Service extends Base\Service
                 'merchant_detail'    => $merchantDetail,
             ]);
 
-        $data[EntityConstants::MERCHANT_DETAIL] = isset($merchantDetail) === true ? $merchantDetail->toArrayPublic() : [];
+        $data[EntityConstants::MERCHANT_DETAIL] = $this->getMerchantDetailForInternalGetMerchant($merchantDetail);
 
         $supportInformation = (new PayoutLinkService())->getMerchantSupportSettings($merchant);
 
@@ -5004,6 +5005,30 @@ class Service extends Base\Service
         $data[BusinessDetail\Entity::WEBSITE_DETAILS] = $businessDetails->getWebsiteDetails();
 
         return $data;
+    }
+
+    protected function getMerchantDetailForInternalGetMerchant($merchantDetail)
+    {
+        $detail = isset($merchantDetail) === true ? $merchantDetail->toArrayPublic() : [];
+
+        if (empty($detail[Detail\Entity::BUSINESS_TYPE]) === false)
+        {
+            try
+            {
+                $detail[Detail\Constants::BUSINESS_TYPE_DISPLAY_NAME] = BusinessType::getDisplayNameFromKey(BusinessType::getKeyFromIndex($detail[Detail\Entity::BUSINESS_TYPE]));
+            }
+            catch (Exception\BadRequestValidationFailureException $e)
+            {
+                $this->trace->error(
+                    TraceCode::MERCHANT_BUSINESS_TYPE_DISPLAY_NAME_NOT_FOUND,
+                    [
+                        Detail\Entity::BUSINESS_TYPE => $detail[Detail\Entity::BUSINESS_TYPE],
+                        'error'                     => $e->getMessage()
+                    ]);
+            }
+        }
+
+        return $detail;
     }
 
     public function externalGetMerchantCompositeDetails($merchantId)

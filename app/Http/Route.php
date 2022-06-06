@@ -3006,6 +3006,7 @@ class Route
 
         'fd_create_ticket'                        => ['post',      'fd/{type}/ticket',                                          'FreshdeskTicketController@postTicketV2',                      ],
         'internal_fd_create_ticket'               => ['post',      'internal/fd/ticket',                                        'FreshdeskTicketController@internalPostTicketV2',              ],
+        'internal_fd_fetch_agent_detail_for_ticket' => ['get',     'fd/ticket/{id}/agent',                                      'FreshdeskTicketController@getAgentDetailForFreshdeskTicket'   ],
         'fd_fetch_tickets'                        => ['get',       'fd/{type}/ticket',                                          'FreshdeskTicketController@getTickets'                         ],
         'fd_fetch_converations'                   => ['get',       'fd/{type}/ticket/{id}/conversations',                       'FreshdeskTicketController@getConversations'                   ],
         'fd_fetch_ticket'                         => ['get',       'fd/{type}/ticket/{id}',                                     'FreshdeskTicketController@getTicket'                          ],
@@ -4615,6 +4616,7 @@ class Route
         'internal_payment_authorize_refund',
         'freshdesk_update_ticket_internal',
         'internal_fd_create_ticket',
+        'internal_fd_fetch_agent_detail_for_ticket',
         'dispute_automation',
         'care_service_cron_proxy',
         'cmma_service_cron_proxy',
@@ -12794,6 +12796,12 @@ class Route
             'user_fetch_internal',
             'internal_fd_create_ticket',
             'internal_fd_post_ticket_reply',
+        ],
+
+        'cmma' => [
+            'internal_merchant_fetch',
+            'internal_fd_create_ticket',
+            'internal_fd_fetch_agent_detail_for_ticket',
         ],
 
         'banking_account_service' => [

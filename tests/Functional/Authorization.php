@@ -325,6 +325,13 @@ class Authorization
         $this->proxy = false;
     }
 
+    public function cmmaAppAuth()
+    {
+        $this->appAuth('rzp_test', \Config::get('applications.cmma')['secret']);
+
+        $this->proxy = false;
+    }
+
     public function careAuth()
     {
         $this->appAuth('rzp_test_10000000000000', \Config::get('applications.care')['secret']);

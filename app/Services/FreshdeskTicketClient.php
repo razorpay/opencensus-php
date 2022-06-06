@@ -31,6 +31,7 @@ class FreshdeskTicketClient
     const UPDATE_TICKET       = 'tickets/%s';
     const UPDATE_NOTE         = 'tickets/%s/notes';
     const SEND_OUTBOUND_EMAIL = 'tickets/outbound_email';
+    const FETCH_AGENT         = 'agents/%s';
 
     const REQUEST_REDACT_FIELDS = [
         'content',
@@ -205,6 +206,19 @@ class FreshdeskTicketClient
         $authKey = $this->getAuthKey($urlKey);
 
         $url = $this->getUrl(sprintf(self::FETCH_TICKET, $ticketId) . '?include=requester', $urlKey);
+
+        $auth = $this->getAuth($authKey);
+
+        $response = $this->makeRequestAndGetFreshdeskResponse(self::HTTP_GET, $url, $auth, []);
+
+        return $response ?? [];
+    }
+
+    public function fetchAgentById(string $agentId, $urlKey = 'urlind')
+    {
+        $authKey = $this->getAuthKey($urlKey);
+
+        $url = $this->getUrl(sprintf(self::FETCH_AGENT, $agentId), $urlKey);
 
         $auth = $this->getAuth($authKey);
 

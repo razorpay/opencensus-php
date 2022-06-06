@@ -8,6 +8,7 @@ use RZP\Services\RazorXClient;
 use Illuminate\Http\UploadedFile;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\User\Entity as UserEntity;
+use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Services\Mock\DruidService as MockDruidService;
@@ -50,6 +51,9 @@ class FreshdeskTicketV2Test extends TestCase
     const RZP_FETCH_TICKET_FILTER_AGENT_CREATED_TICKET_WRONG_MERCHANT           = 'rzp_fetch_ticket_filter_agent_created_ticket_wrong_merchant';
     const RZP_FETCH_TICKET_FILTER_PAGINATED_AGENT_CREATED_TICKET                = 'rzp_fetch_ticket_filter_paginated_agent_created_ticket';
     const RZP_FETCH_TICKET_FILTER_AGENT_CREATED_TICKET_MAPPED                   = 'rzp_fetch_ticket_filter_agent_created_ticket_mapped';
+
+    const RZP_FETCH_UNASSIGNED_TICKET_BY_ID                                     = 'rzp_fetch_unassigned_ticket_by_id';
+    const RZP_FETCH_AGENT_BY_FRESHDESK_AGENT_ID                                 = 'rzp_fetch_agent_by_freshdesk_agent_id';
 
     protected function setUp(): void
     {
@@ -814,6 +818,42 @@ class FreshdeskTicketV2Test extends TestCase
         $afterCount = $this->getDbEntities('merchant_freshdesk_tickets');
         // makes sure no entry is created in db
         $this->assertEquals($beforeCount, $afterCount);
+    }
+
+    public function testGetAgentDetailForTicketInternalAuth()
+    {
+        $this->ba->cmmaAppAuth();
+
+        $this->fixtures->create('admin', [
+            'id'    => '6dLbNSpv5Ybbbd',
+            'email' => 'agentemail@razorpay.com',
+            'name'  => 'test_agent',
+            'org_id'             => Org::RZP_ORG,
+        ]);
+
+        $expectedRequestResponse = $this->getExpectedRequestResponse(self::RZP_GET_TICKET_BY_ID);
+
+        $this->checkFreshdeskCorrectInstanceCallAndRespondWith('tickets/1234?include=requester', 'GET', 'rzpind',
+            $expectedRequestResponse['request'], $expectedRequestResponse['response']);
+
+        $expectedRequestResponse = $this->getExpectedRequestResponse(self::RZP_FETCH_AGENT_BY_FRESHDESK_AGENT_ID);
+
+        $this->checkFreshdeskCorrectInstanceCallAndRespondWith('agents/123456789', 'GET', 'rzpind',
+            $expectedRequestResponse['request'], $expectedRequestResponse['response']);
+
+        $this->startTest();
+    }
+
+    public function testGetAgentDetailForUnassignedTicketInternalAuthFail()
+    {
+        $this->ba->cmmaAppAuth();
+
+        $expectedRequestResponse = $this->getExpectedRequestResponse(self::RZP_FETCH_UNASSIGNED_TICKET_BY_ID);
+
+        $this->checkFreshdeskCorrectInstanceCallAndRespondWith('tickets/1234?include=requester', 'GET', 'rzpind',
+            $expectedRequestResponse['request'], $expectedRequestResponse['response']);
+
+        $this->startTest();
     }
 
     public function testCreateTicketRzpSol()
@@ -2095,6 +2135,7 @@ class FreshdeskTicketV2Test extends TestCase
                         'cf_merchant_id'           => '10000000000000',
                     ],
                     'priority'      => 1,
+                    'responder_id'  => 123456789,
                 ],
 
             ];
@@ -2589,6 +2630,37 @@ class FreshdeskTicketV2Test extends TestCase
                     ],
 
                 ]];
+        }
+        else if ($key === self::RZP_FETCH_UNASSIGNED_TICKET_BY_ID)
+        {
+            return [
+                'request'  => [],
+                'response' => [
+                    'id'            => '99',
+                    'description'   => 'ticket description',
+                    'fr_due_by'     => $frDueByFreshdeskFormat,
+                    'custom_fields' => [
+                        'cf_requester_category'    => 'Merchant',
+                        'cf_requestor_subcategory' => 'Activation',
+                        'cf_merchant_id_dashboard' => 'merchant_dashboard_10000000000000',
+                        'cf_merchant_id'           => '10000000000000',
+                    ],
+                    'priority'      => 1,
+                    'responder_id'  => null,
+                ],
+            ];
+        }
+        else if ($key === self::RZP_FETCH_AGENT_BY_FRESHDESK_AGENT_ID)
+        {
+            return [
+                'request'  => [],
+                'response' => [
+                    'id'            => '123456789',
+                    'contact' => [
+                        'email'         => 'agentemail@razorpay.com',
+                    ],
+                ],
+            ];
         }
     }
 

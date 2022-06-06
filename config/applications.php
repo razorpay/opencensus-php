@@ -1153,6 +1153,10 @@ return [
         'password'     => env('CARE_SERVICE_PASSWORD'),
     ],
 
+    'cmma' => [
+        'secret'       => env('CMMA_SERVICE_API_SECRET'),
+    ],
+
     'templating'    => [
         'user'          => env('TEMPLATING_SERVICE_AUTH_KEY'),
         'password'      => env('TEMPLATING_SERVICE_AUTH_SECRET'),
