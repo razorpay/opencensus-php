@@ -5,6 +5,7 @@ namespace Functional\Merchant\Products;
 use Mail;
 use Event;
 use RZP\Constants\Mode;
+use RZP\Services\RazorXClient;
 use RZP\Models\Merchant\Product\Config\DefaultConfigurationHelper;
 use RZP\Models\User\Role;
 use RZP\Models\Merchant\Methods;
@@ -226,6 +227,132 @@ class PaymentGatewayConfigTest extends OAuthTestCase
         $this->assertTrue((bool) preg_match('~\/logos\/[a-zA-Z0-9]{14}.(jpg|png|jpeg)~', $logo_url));
 
         $this->assertTrue($metricCaptured);
+    }
+
+    public function testUpdatePaymentGatewayConfigWithCardsInstrument()
+    {
+        Mail::fake();
+
+        $this->setupPrivateAuthForPartner();
+
+        $this->mockTerminalServiceResponse();
+
+        $testData = $this->testData['createUnregisteredBusinessTypeAccount'];
+
+        $accountResponse = $this->runRequestResponseFlow($testData);
+
+        $accountId = $accountResponse['id'];
+
+        $testData = $this->testData['testCreateDefaultPaymentGatewayConfig'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products';
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $merchantProductId = $response['id'];
+
+        $testData = $this->testData['testUpdatePaymentGatewayConfigWithCardsInstrument'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products/' . $merchantProductId;
+
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testUpdatePaymentGatewayConfigOfCardsWithExperimentEnabled()
+    {
+        Mail::fake();
+
+        $this->setupPrivateAuthForPartner();
+
+        $this->mockTerminalServiceResponseForConsequentRequests(
+            [],
+            $this->paymentMethodsConfigTerminalResponse("pg.cards.domestic.visa"));
+
+        $this->mockRazorxTreatment();
+
+        $testData = $this->testData['testUpdatePaymentGatewayConfigOfCardsWithExperimentEnabled'];
+
+        $testData['request']['url'] = $this->setPaymentMethodConfigWithExperiment();
+
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testUpdatePaymentGatewayConfigOfNetbankingWithExperimentEnabled()
+    {
+        Mail::fake();
+
+        $this->setupPrivateAuthForPartner();
+
+        $this->mockTerminalServiceResponseForConsequentRequests(
+            [],
+            $this->paymentMethodsConfigTerminalResponse("pg.netbanking.retail.scbl"));
+
+        $this->mockRazorxTreatment();
+
+        $testData = $this->testData['testUpdatePaymentGatewayConfigOfNetbankingWithExperimentEnabled'];
+
+        $testData['request']['url'] = $this->setPaymentMethodConfigWithExperiment();
+
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testUpdatePaymentGatewayConfigOfWalletWithExperimentEnabled()
+    {
+        Mail::fake();
+
+        $this->setupPrivateAuthForPartner();
+
+        $this->mockTerminalServiceResponseForConsequentRequests(
+            [],
+            $this->paymentMethodsConfigTerminalResponse("pg.wallet.airtelmoney"));
+
+        $this->mockRazorxTreatment();
+
+        $testData = $this->testData['testUpdatePaymentGatewayConfigOfWalletWithExperimentEnabled'];
+
+        $testData['request']['url'] = $this->setPaymentMethodConfigWithExperiment();
+
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testUpdatePaymentGatewayConfigOfPaylaterWithExperimentEnabled()
+    {
+        Mail::fake();
+
+        $this->setupPrivateAuthForPartner();
+
+        $this->mockTerminalServiceResponseForConsequentRequests(
+            [],
+            $this->paymentMethodsConfigTerminalResponse("pg.paylater.epaylater"));
+
+        $this->mockRazorxTreatment();
+
+        $testData = $this->testData['testUpdatePaymentGatewayConfigOfPaylaterWithExperimentEnabled'];
+
+        $testData['request']['url'] = $this->setPaymentMethodConfigWithExperiment();
+
+        $this->runRequestResponseFlow($testData);
+    }
+
+    private function setPaymentMethodConfigWithExperiment()
+    {
+        $this->mockRazorxTreatment();
+
+        $testData = $this->testData['createUnregisteredBusinessTypeAccount'];
+
+        $accountResponse = $this->runRequestResponseFlow($testData);
+
+        $accountId = $accountResponse['id'];
+
+        $testData = $this->testData['testCreateDefaultPaymentGatewayConfig'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products';
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $merchantProductId = $response['id'];
+
+        return '/v2/accounts/' . $accountId . '/products/' . $merchantProductId;
     }
 
     public function testUpdatePaymentGatewayConfigWithInvalidLogoResolution()
@@ -1063,6 +1190,59 @@ class PaymentGatewayConfigTest extends OAuthTestCase
 
         // The below function call is idempotent
         (new Methods\Core())->setDefaultMethods($merchant);
+    }
+
+    protected function mockRazorxTreatment(string $returnValue = 'on')
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->willReturn($returnValue);
+    }
+
+    private function mockTerminalServiceResponseForConsequentRequests(array $response1, array $response2)
+    {
+        $response1 = json_decode(json_encode($response1), true);
+
+        $response2 = json_decode(json_encode($response2), true);
+
+        $this->terminalsServiceMock->shouldReceive('proxyTerminalService')
+                                   ->andReturn($response1, $response2);
+    }
+
+    private function paymentMethodsConfigTerminalResponse(string $instrument)
+    {
+        return [
+            "merchant_instrument_request_id" => "",
+            "merchant_id" => "H9sTmdNiFOOFCC",
+            "instrument" => $instrument,
+            "status" => "requested",
+            "comment" => "",
+            "created_at" => 0,
+            "updated_at" => 0,
+            "special_pricing" => "",
+            "tags" => null
+        ];
+
+        //$data =  '{
+        //        "merchant_instrument_request_id": "",
+        //        "merchant_id": "H9sTmdNiFOOFCC",
+        //        "instrument": \'{instrument}\',
+        //        "status": "requested",
+        //        "comment": "",
+        //        "created_at": 0,
+        //        "updated_at": 0,
+        //        "special_pricing": "",
+        //        "tags": null
+        //    }';
+        //$data = strstr($data, ['{instrument}' => $instrument]);
+        //
+        //return $data;
     }
 
     private function mockSplitzEvaluation()

@@ -271,6 +271,236 @@ return [
         ]
     ],
 
+    'testUpdatePaymentGatewayConfigWithCardsInstrument' => [
+        'request'  => [
+            'url'     => '/v2/accounts/{accountId}/products/{merchantProductId}',
+            'method'  => 'PATCH',
+            'content' => [
+                'notifications'   => [
+                    'sms' => true
+                ],
+                'settlements'     => [
+                    'account_number' => '051610100039258',
+                    'ifsc_code'      => 'UBIN0805165'
+                ],
+                'checkout'        => [
+                    'flash_checkout' => false,
+                    'logo'           => __DIR__ . '/sample_valid_logo.jpg'
+                ],
+                'payment_methods' => [
+                    'cards' => [
+                        'instrument' => [
+                            [
+                                "issuer" => 'visa',
+                                "type"   => ['domestic']
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'requested_configuration' => [
+                    'payment_methods' => [
+                        'cards' => [
+                            'instrument' => [
+                                [
+                                    "issuer" => 'visa',
+                                    "type"   => ['domestic']
+                                ]
+                            ]
+                        ]
+                    ]
+                ],
+                'active_configuration'    => [
+                    'payment_capture' => [
+                        'mode'                    => 'automatic',
+                        'refund_speed'            => 'normal',
+                        'automatic_expiry_period' => 7200
+                    ],
+                    'notifications'   => [
+                        'sms'      => true,
+                        'whatsapp' => false
+                    ],
+                    'checkout'        => [
+                        'theme_color'    => '#000000',
+                        'flash_checkout' => false,
+                    ],
+                    'refund'          => [
+                        'default_refund_speed' => 'normal'
+                    ],
+                    'settlements'     => [
+                        'account_number' => '051610100039258',
+                        'ifsc_code'      => 'UBIN0805165'
+                    ],
+                ]
+            ],
+        ]
+    ],
+
+    'testUpdatePaymentGatewayConfigOfCardsWithExperimentEnabled' => [
+        'request'  => [
+            'url'     => '/v2/accounts/{accountId}/products/{merchantProductId}',
+            'method'  => 'PATCH',
+            'content' => [
+                'notifications'   => [
+                    'sms' => true
+                ],
+                'settlements'     => [
+                    'account_number' => '051610100039258',
+                    'ifsc_code'      => 'UBIN0805165'
+                ],
+                'checkout'        => [
+                    'flash_checkout' => false,
+                    'logo'           => __DIR__ . '/sample_valid_logo.jpg'
+                ],
+                'payment_methods' => [
+                    'cards' => [
+                        'instrument' => [
+                            "issuer" => 'visa',
+                            "type"   => 'domestic'
+                        ]
+                    ]
+                ]
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'requested_configuration' => [
+                    'payment_methods' => [
+                        'cards' => [
+                            'instrument' => [
+                                [
+                                    "issuer" => 'visa',
+                                    "type"   => ['domestic']
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ],
+        ]
+    ],
+
+    'testUpdatePaymentGatewayConfigOfNetbankingWithExperimentEnabled' => [
+        'request'  => [
+            'url'     => '/v2/accounts/{accountId}/products/{merchantProductId}',
+            'method'  => 'PATCH',
+            'content' => [
+                'notifications'   => [
+                    'sms' => true
+                ],
+                'settlements'     => [
+                    'account_number' => '051610100039258',
+                    'ifsc_code'      => 'UBIN0805165'
+                ],
+                'checkout'        => [
+                    'flash_checkout' => false,
+                    'logo'           => __DIR__ . '/sample_valid_logo.jpg'
+                ],
+                'payment_methods' => [
+                    'netbanking' => [
+                        'instrument' => [
+                            "type" => 'retail',
+                            "bank"   => 'scbl'
+                        ]
+                    ]
+                ]
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'requested_configuration' => [
+                    'payment_methods' => [
+                        'netbanking' => [
+                            'instrument' => [
+                                [
+                                    "type" => 'retail',
+                                    "bank"   => ["scbl"]
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ],
+        ]
+    ],
+
+    'testUpdatePaymentGatewayConfigOfWalletWithExperimentEnabled' => [
+        'request'  => [
+            'url'     => '/v2/accounts/{accountId}/products/{merchantProductId}',
+            'method'  => 'PATCH',
+            'content' => [
+                'notifications'   => [
+                    'sms' => true
+                ],
+                'settlements'     => [
+                    'account_number' => '051610100039258',
+                    'ifsc_code'      => 'UBIN0805165'
+                ],
+                'checkout'        => [
+                    'flash_checkout' => false,
+                    'logo'           => __DIR__ . '/sample_valid_logo.jpg'
+                ],
+                'payment_methods' => [
+                    'wallet' => [
+                        "enabled" => true,
+                        'instrument' => "airtelmoney"
+                    ]
+                ]
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'requested_configuration' => [
+                    'payment_methods' => [
+                        'wallet' => [
+                            'instrument' => ["airtelmoney"]
+                        ]
+                    ]
+                ]
+            ],
+        ]
+    ],
+
+    'testUpdatePaymentGatewayConfigOfPaylaterWithExperimentEnabled' => [
+        'request'  => [
+            'url'     => '/v2/accounts/{accountId}/products/{merchantProductId}',
+            'method'  => 'PATCH',
+            'content' => [
+                'notifications'   => [
+                    'sms' => true
+                ],
+                'settlements'     => [
+                    'account_number' => '051610100039258',
+                    'ifsc_code'      => 'UBIN0805165'
+                ],
+                'checkout'        => [
+                    'flash_checkout' => false,
+                    'logo'           => __DIR__ . '/sample_valid_logo.jpg'
+                ],
+                'payment_methods' => [
+                    'paylater' => [
+                        "enabled" => true,
+                        'instrument' => "epaylater"
+                    ]
+                ]
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'requested_configuration' => [
+                    'payment_methods' => [
+                        'paylater' => [
+                            'instrument' => ["epaylater"]
+                        ]
+                    ]
+                ]
+            ],
+        ]
+    ],
+
     'testUpdatePaymentGatewayConfigWithInvalidLogoResolution' => [
         'request'  => [
             'url'     => '/v2/accounts/{accountId}/products/{merchantProductId}',

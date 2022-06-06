@@ -71,6 +71,7 @@ class Constants
     const TYPE       = 'type';
     const BANK       = 'bank';
     const EMI        = 'emi';
+    const ISSUER     = 'issuer';
 
     // Product request constants
     const STATUS    = 'status';
@@ -155,4 +156,30 @@ class Constants
         self::CREDIT
     ];
 
+    // card networks
+    const DICL        = 'dicl';
+    const VISA        = 'visa';
+    const RUPAY       = 'rupay';
+    const AMEX        = 'amex';
+    const MASTERCARD  = 'mastercard';
+    const MAESTRO     = 'maestro';
+
+    public static $cardNetworks = [
+        self::DICL,
+        self::VISA,
+        self::RUPAY,
+        self::AMEX,
+        self::MASTERCARD,
+        self::MAESTRO
+    ];
+
+    public static $paymentMethodInstrumentPrefix = [
+        self::NETBANKING  => "pg.netbanking.",
+        self::WALLET      => "pg.wallet.",
+        self::UPI         => "pg.upi.",
+        self::PAYLATER    => "pg.paylater.",
+        self::CARDS       => "pg.cards."
+    ];
+
+    const CONFIG_UPDATE_FLOW_ENABLED = 'CONFIG_UPDATE_FLOW_ENABLED';
 }

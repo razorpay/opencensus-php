@@ -56,6 +56,13 @@ class Service extends Base\Service
 
         $productName = $merchantProduct->getProduct();
 
+        $isPaymentMethodConfigUpdateExperimentEnabled = (new Merchant\Core())->isRazorxExperimentEnable(
+            $partner->getId(),
+            Merchant\RazorxTreatment::PAYMENT_METHOD_CONFIG_UPDATE
+        );
+
+        \Request::instance()->request->add([Util\Constants::CONFIG_UPDATE_FLOW_ENABLED => $isPaymentMethodConfigUpdateExperimentEnabled]);
+
         $transformedRequest = Tracer::inspan(['name' => HyperTrace::TRANSFORM_PRODUCT_CONFIG_REQUEST], function () use ($productName, $request) {
 
             return ProductRequestHandler::handleRequest($productName, $request);

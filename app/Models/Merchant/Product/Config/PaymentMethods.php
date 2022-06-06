@@ -146,4 +146,25 @@ class PaymentMethods
     {
         //$this->merchantService->addOrRemoveMerchantFeatures($input);
     }
+
+    public function createMethod(string $instrument)
+    {
+        $merchant = $this->app['basicauth']->getMerchant();
+
+        $request = [
+            'merchant_id' => $merchant->getId(),
+            'instrument'  => $instrument
+        ];
+
+        $response = $this->app['terminals_service']->proxyTerminalService(
+            $request,
+            \Requests::POST,
+            'v2/merchant_instrument_request',
+            ['timeout' => 1],
+            $this->getMerchantHeadersForInstrumentRequest());
+
+        $this->trace->info(TraceCode::TERMINALS_SERVICE_RESPONSE, $response);
+
+        return $response;
+    }
 }

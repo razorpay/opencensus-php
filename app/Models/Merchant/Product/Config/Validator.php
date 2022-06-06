@@ -146,7 +146,15 @@ class Validator extends Base\Validator
             return;
         }
 
-        (new PaymentMethodsValidator())->validateInput('paymentMethods', $input[Util\Constants::PAYMENT_METHODS]);
+        $isRazorXExperimentEnabled = \Request::all()[Util\Constants::CONFIG_UPDATE_FLOW_ENABLED] ?? false;
+
+        if ($isRazorXExperimentEnabled === false)
+        {
+            (new PaymentMethodsValidator())->validateInput('paymentMethods', $input[Util\Constants::PAYMENT_METHODS]);
+        } else
+        {
+            (new PaymentMethodsValidator())->validateInput('paymentMethodUpdate', $input[Util\Constants::PAYMENT_METHODS]);
+        }
     }
 
 }

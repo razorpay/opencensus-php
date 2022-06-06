@@ -2433,6 +2433,7 @@ class ErrorCode
     const BAD_REQUEST_BANK_INSTRUMENT_INVALID                                       = 'BAD_REQUEST_BANK_INSTRUMENT_INVALID';
     const BAD_REQUEST_PAYLATER_INSTRUMENT_INVALID                                   = 'BAD_REQUEST_PAYLATER_INSTRUMENT_INVALID';
     const BAD_REQUEST_EMI_INSTRUMENT_INVALID                                        = 'BAD_REQUEST_EMI_INSTRUMENT_INVALID';
+    const BAD_REQUEST_CARD_INSTRUMENT_INVALID                                       = 'BAD_REQUEST_CARD_INSTRUMENT_INVALID';
     const BAD_REQUEST_CONTACT_MOBILE_ALREADY_TAKEN                                  = 'BAD_REQUEST_CONTACT_MOBILE_ALREADY_TAKEN';
     const BAD_REQUEST_FETCH_LOGO_FROM_URL_FAILED                                    = 'BAD_REQUEST_FETCH_LOGO_FROM_URL_FAILED';
 

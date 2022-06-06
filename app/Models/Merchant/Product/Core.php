@@ -16,6 +16,7 @@ use RZP\Constants\Entity as EntityName;
 use RZP\Models\Merchant\Product\Config;
 use RZP\Models\Merchant\Product\Requirements;
 use RZP\Models\Merchant\Detail\NeedsClarification;
+use RZP\Models\Merchant\Product\Config\PaymentMethods;
 use RZP\Models\Merchant\Product\Request\Service as AuditService;
 use RZP\Models\Merchant\Product\BusinessUnit\Constants as BusinessUnit;
 use RZP\Trace\Tracer;
@@ -166,18 +167,32 @@ class Core extends Base\Core
         return $response;
     }
 
-    private function createPaymentMethodsConfig(Merchant\Entity $merchant, Entity $merchantProduct, array $input)
+    private function createPaymentMethodsConfig(Merchant\Entity $merchant, Entity $merchantProduct, array $input) : array
     {
         if(array_key_exists(Util\Constants::PAYMENT_METHODS, $input) === false)
         {
-            return;
+            return [];
         }
 
-        $request = (new Util\PaymentMethodsRequestHandler())->handleRequest($input[Util\Constants::PAYMENT_METHODS]);
+        $isRazorXExperimentEnabled = \Request::all()[Util\Constants::CONFIG_UPDATE_FLOW_ENABLED] ?? false;
+
+        $request = (new Util\PaymentMethodsRequestHandler())->handleRequest($input[Util\Constants::PAYMENT_METHODS], $isRazorXExperimentEnabled);
 
         $log = $this->audit($input, $merchantProduct->getId(),Util\Constants::REQUESTED, Util\Constants::PAYMENT_METHODS);
 
-         MerchantProductsConfig::dispatch($this->mode, $log->getId(), $request);
+        if ($isRazorXExperimentEnabled)
+        {
+            if (!empty($request))
+            {
+                return (new PaymentMethods())->createMethod($request[0]);
+            }
+        }
+        else
+        {
+            MerchantProductsConfig::dispatch($this->mode, $log->getId(), $request);
+        }
+
+        return [];
     }
 
     public function updateConfig(Merchant\Entity $merchant, Entity $merchantProduct, array $input): array
@@ -207,9 +222,16 @@ class Core extends Base\Core
 
             unset($input[Util\Constants::PAYMENT_METHODS]);
 
-            $this->createPaymentMethodsConfig($merchant, $merchantProduct, [Util\Constants::PAYMENT_METHODS => $paymentMethodsConfig]);
+            $paymentMethodsConfigResponse = $this->createPaymentMethodsConfig($merchant, $merchantProduct, [Util\Constants::PAYMENT_METHODS => $paymentMethodsConfig]);
 
-            $response[Util\Constants::PAYMENT_METHODS_UPDATE] = $paymentMethodsConfig;
+            if (empty($paymentMethodsConfigResponse))
+            {
+                $response[Util\Constants::PAYMENT_METHODS_UPDATE] = $paymentMethodsConfig;
+            }
+            else
+            {
+                $response[Util\Constants::PAYMENT_METHODS] = [$paymentMethodsConfigResponse];
+            }
         }
 
         list($input, $response) = Tracer::inspan(['name' => HyperTrace::ACCEPT_OR_FETCH_PRODUCT_TNC], function () use ($input, $response, $merchantProduct, $merchant) {

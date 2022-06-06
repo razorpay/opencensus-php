@@ -11,7 +11,14 @@ class PaymentMethodsResponseHandler
         $finalResponse = [];
         foreach (array(Constants::ACTIVATED, Constants::REQUESTED) as $status)
         {
-            $transformedResponse = [Constants::PAYMENT_METHODS => self::buildResponse($response, $status)];
+            $result = self::buildResponse($response, $status);
+
+            $transformedResponse = [];
+
+            if (!empty($result))
+            {
+                $transformedResponse = [Constants::PAYMENT_METHODS => self::buildResponse($response, $status)];
+            }
             array_push($finalResponse, $transformedResponse);
         }
 
@@ -32,6 +39,13 @@ class PaymentMethodsResponseHandler
         if($netbankingResponse[Constants::ENABLED] === true)
         {
             $transformedResponse[Constants::NETBANKING] = $netbankingResponse;
+        }
+
+        $cardsResponse = self::getCardsResponse($response, $status);
+
+        if ($cardsResponse[Constants::ENABLED] === true)
+        {
+            $transformedResponse[Constants::CARDS] = $cardsResponse;
         }
 
         foreach (array(Constants::WALLET, Constants::PAYLATER, Constants::UPI) as $type)
@@ -201,4 +215,48 @@ class PaymentMethodsResponseHandler
         return $instruments;
     }
 
+    private static function getCardsResponse(array $response, string $status)
+    {
+        $cardsResponse = [
+            Constants::ENABLED => false,
+            Constants::INSTRUMENT => [],
+        ];
+
+        $enabled = false;
+        foreach (Constants::$cardNetworks as $issuer)
+        {
+            $types = self::extractCardsResponse($response, $status, $issuer);
+
+            if (count($types) > 0)
+            {
+                $enabled = true;
+                array_push($cardsResponse[Constants::INSTRUMENT], [
+                    Constants::ISSUER => $issuer,
+                    Constants::TYPE   => $types
+                ]);
+            }
+        }
+
+        $cardsResponse[Constants::ENABLED] = $enabled;
+
+        return $cardsResponse;
+    }
+
+    private static function extractCardsResponse(array $response, string $status, $issuer)
+    {
+        $instruments = array_filter($response, function ($row) use ($issuer, $status) {
+            $instrument = explode(".", $row["instrument"]);
+            return $instrument[1] === Constants::CARDS && $instrument[3] === $issuer && $row[Constants::STATUS] === $status;
+        });
+
+        $types = [];
+
+        foreach ($instruments as $row)
+        {
+            $instrument = explode(".", $row["instrument"]);
+            array_push($types, $instrument[2]);
+        }
+
+        return $types;
+    }
 }
