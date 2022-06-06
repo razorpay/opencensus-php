@@ -58,6 +58,22 @@ class UfhService extends BaseUfhClient
         ];
     }
 
+    /**
+     * @param array $fileIds
+     * @param string $merchantId
+     * @param string $prefix
+     * @param string $type
+     * @return string
+     */
+    public function downloadFiles(array $fileIds, string $merchantId, string $prefix = "Firs", string $type = null)
+    {
+        $this->trace->info(
+            TraceCode::DOWNLOAD_FILES_UFH,
+            $fileIds);
+
+        return self::MOCK_FILE_ID;
+    }
+
     public function uploadFileAndGetResponse(UploadedFile $file,
                                              string $storageFileName,
                                              string $type,

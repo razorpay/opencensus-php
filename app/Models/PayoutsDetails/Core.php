@@ -223,7 +223,35 @@ class Core extends Base\Core
         catch (\Exception $ex)
         {
             throw new ServerErrorException(
-                'Could not get attachment for Payout',
+                'Could not get signed URL for the given attachment id',
+                ErrorCode::SERVER_ERROR_ATTACHMENT_GET_FAILURE,
+                [
+                    'attachment_id' => $attachmentId,
+                ],
+                $ex
+            );
+        }
+    }
+
+    public function getAttachmentDetails(string $attachmentId, string $merchantId)
+    {
+        try
+        {
+            $ufhService = $this->getUfhService();
+
+            $response = $ufhService->getFileDetails($attachmentId, $merchantId);
+
+            $this->trace->info(
+                TraceCode::PAYOUT_ATTACHMENT_GET_DETAILS_RESPONSE,
+                $response
+            );
+
+            return $response;
+        }
+        catch (\Exception $ex)
+        {
+            throw new ServerErrorException(
+                'Could not get details for the given attachment id',
                 ErrorCode::SERVER_ERROR_ATTACHMENT_GET_FAILURE,
                 [
                     'attachment_id' => $attachmentId,
@@ -334,5 +362,94 @@ class Core extends Base\Core
         );
 
         return $payoutDetails;
+    }
+
+    public function getAttachmentIdsByPayoutIds(array $payoutIds): array {
+        try
+        {
+            $payoutDetails = $this->repo->payouts_details->getPayoutDetailsByPayoutIds($payoutIds);
+
+            if ($payoutDetails->isEmpty() == true)
+            {
+                // no entry in payout_details, so no attachments available for the payoutIds
+                $this->trace->info(
+                    TraceCode::ATTACHMENTS_NOT_FOUND_FOR_GIVEN_PAYOUT_IDS,
+                    [
+                        'payout_ids' => $payoutIds,
+                    ]
+                );
+                return [];
+            }
+
+            /*
+             * Stores file_id to payout_ids mapping
+             * Example: Consider the below cases
+             * 1. payout_1, payout_2, payout_3 are created from payout_link_1 which has a file with id as file_id_123
+             * 2. payout_4, payout_5 are created from payout_link_2 which has a file with id as file_id_456
+             * Then $attachmentIds will be
+             * [
+             *      file_id_123 => [payout_1, payout_2, payout_3],
+             *      file_id_456 => [payout_4, payout_5],
+             * ]
+             *
+             */
+            $attachmentIds = array();
+
+            foreach ($payoutDetails as $payoutDetail)
+            {
+                $payoutId = Entity::PAYOUT_PUBLIC_SIGN . '_' . $payoutDetail[Entity::PAYOUT_ID];
+
+                $additionalInfo = json_decode($payoutDetail[Entity::ADDITIONAL_INFO], true);
+
+                if (isset($additionalInfo[Entity::ATTACHMENTS]))
+                {
+                    $attachments = $additionalInfo[Entity::ATTACHMENTS];
+
+                    foreach ($attachments as $attachment)
+                    {
+                        if (isset($attachment[Entity::ATTACHMENTS_FILE_ID]))
+                        {
+                            $fileId = $attachment[Entity::ATTACHMENTS_FILE_ID];
+
+                            $existingPayoutIds = array();
+
+                            if (isset($attachmentIds[$fileId]))
+                            {
+                                $existingPayoutIds = $attachmentIds[$fileId];
+                            }
+
+                            array_push($existingPayoutIds, $payoutId);
+
+                            $attachmentIds[$fileId] = $existingPayoutIds;
+                        }
+                    }
+                }
+            }
+
+            if (sizeof($attachmentIds) == 0)
+            {
+                // no attachments found for the payouts
+                $this->trace->info(
+                    TraceCode::ATTACHMENTS_NOT_FOUND_FOR_GIVEN_PAYOUT_IDS,
+                    [
+                        'payout_ids' => $payoutIds,
+                    ]
+                );
+                return [];
+            }
+
+            return $attachmentIds;
+        }
+        catch (\Exception $ex)
+        {
+            throw new ServerErrorException(
+                'Cannot get attachments for the given payouts',
+                ErrorCode::SERVER_ERROR_GET_ATTACHMENTS_FAILURE,
+                [
+                    'payout_ids' => $payoutIds,
+                ],
+                $ex
+            );
+        }
     }
 }

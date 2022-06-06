@@ -1237,6 +1237,10 @@ return [
 
     ],
 
+    'metro' => [
+        'secret'            => env('APP_METRO_SECRET'),
+    ],
+
     'affordability' => [
         'mock'   => env('AFFORDABILITY_SERVICE_MOCK', true),
         'secret' => env('AFFORDABILITY_SECRET'),

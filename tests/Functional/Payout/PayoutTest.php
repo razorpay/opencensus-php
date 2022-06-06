@@ -68,6 +68,7 @@ use RZP\Models\Merchant\Balance\FreePayout;
 use RZP\Models\Merchant\Balance as Balance;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\Payout\Entity as PayoutEntity;
+use RZP\Services\Mock\UfhService as UfhMockService;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Models\Admin\Service as AdminService;
 use RZP\Mail\Transaction\Payout as PayoutMail;
@@ -22752,6 +22753,95 @@ class PayoutTest extends OAuthTestCase
         $this->assertArrayHasKey(PayoutsDetails\Entity::ATTACHMENTS_FILE_NAME, $response);
 
         $this->assertEquals($fileName, $response[PayoutsDetails\Entity::ATTACHMENTS_FILE_NAME]);
+    }
+
+    // TODO: Add testcases for other filters
+    public function testDownloadAttachmentsInPayoutReportWithInvalidTimeRangeType()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testDownloadAttachmentsInPayoutReportWithInvalidTimeRange()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testEmailAttachmentsInPayoutReportWithoutEmailIds()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testEmailAttachmentsInPayoutReportWithEmailIds()
+    {
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
+
+        $this->assertNotNull($response['zip_file_id']);
+
+        $this->assertArrayHasKey(Payout\Constants::ZIP_FILE_ID, $response);
+
+        $this->assertEquals('', $response[Payout\Constants::ZIP_FILE_ID]);
+    }
+
+    public function testDownloadAttachmentsInPayoutReportWithNoAttachments()
+    {
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
+
+        $this->assertArrayHasKey(Payout\Constants::ZIP_FILE_ID, $response);
+
+        $this->assertEquals('', $response[Payout\Constants::ZIP_FILE_ID]);
+    }
+
+    public function testDownloadAttachmentsInPayoutReportWithAttachments()
+    {
+        $this->createPayoutWithAttachments();
+
+        $payout = $this->getDbLastEntity(Constants\Entity::PAYOUT);
+
+        $start_time = Carbon::createFromTimestamp($payout->getCreatedAt(), Timezone::IST)->timestamp;
+
+        $end_time = Carbon::createFromTimestamp($payout->getCreatedAt(), Timezone::IST)->addMinutes(2)->timestamp;
+
+        $request = $this->createDownloadFileRequest($start_time, $end_time);
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertArrayHasKey(Payout\Constants::ZIP_FILE_ID, $response);
+
+        $this->assertEquals(UfhMockService::MOCK_FILE_ID, $response[Payout\Constants::ZIP_FILE_ID]);
+    }
+
+    /**
+     * Create download payout attachment request
+     *
+     * @param string $start_time
+     * @param string $end_time
+     * @return array
+     */
+    private function createDownloadFileRequest(string $start_time, string $end_time)
+    {
+        return [
+            'url'    => '/payouts/attachments/download',
+            'method' => 'POST',
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'from' => $start_time,
+                'to'   => $end_time,
+                'send_email' => false
+            ]
+        ];
     }
 
     public function testPayoutFailedEventDispatchForPayoutFailedInLedgerReverseShadowMode()

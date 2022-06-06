@@ -261,6 +261,13 @@ class Authorization
         $this->proxy = false;
     }
 
+    public function MetroAuth($mode = 'test')
+    {
+        $this->appAuth('rzp_' . $mode, \Config::get('applications.metro')['secret']);
+
+        $this->proxy = false;
+    }
+
     public function workflowsAppAuth($mode = 'test')
     {
         $this->appAuth('rzp_' . $mode, \Config::get('applications.workflows')['secret']);

@@ -1527,6 +1527,10 @@ class Route
         'payout_approve'                           => ['post',     'payouts/{id}/approve',                           'PayoutController@postApproveFundAccountPayout'                     ],
         'payout_reject'                            => ['post',     'payouts/{id}/reject',                            'PayoutController@postRejectFundAccountPayout'                      ],
         'payout_update_attachments'                => ['patch',    'payouts/{id}/attachments',                       'PayoutController@updateAttachments'                                ],
+        'payout_download_attachments'              => ['post',     'payouts/attachments/download',                   'PayoutController@downloadAttachments'                                ],
+        'payout_email_attachments'                 => ['post',     'payouts/attachments/email',                      'PayoutController@emailAttachments'                            ],
+        'payout_report_get_attachment_details'     => ['get',      'payouts/attachments/{attachment_id}',            'PayoutController@getReportAttachmentDetails'                     ],
+        'payout_report_get_attachment_signed_url'  => ['get',      'payouts/attachments/{attachment_id}/get_signed_url','PayoutController@getReportAttachmentSignedUrl'                     ],
         'payout_bulk_update_attachments'           => ['patch',    'payouts_internal/attachments',                   'PayoutController@bulkUpdateAttachments'                            ],
         'payout_update_tax_payment_id'             => ['patch',    'payouts_internal/{id}/tax-payment-id',           'PayoutController@updateTaxPayment'                                 ],
         'payout_upload_attachment'                 => ['post',     'payouts/attachment',                             'PayoutController@uploadAttachment'                                 ],
@@ -4160,6 +4164,9 @@ class Route
         'merchant_autokyc_hard_limit',
         'merchant_autokyc_escalation',
 
+        // metro routes
+        'payout_email_attachments',
+
         // cron for generating merchant report
         'merchant_report',
         'merchant_onboarding_escalations',
@@ -5293,6 +5300,9 @@ class Route
         'user_verify_email',
         'payout_create_with_otp',
         'payout_update_attachments',
+        'payout_download_attachments',
+        'payout_report_get_attachment_signed_url',
+        'payout_report_get_attachment_details',
         'payout_upload_attachment',
         'undo_payout_creation',
         'resume_payout_creation',
@@ -8141,6 +8151,9 @@ class Route
         'payout_reject'                                => Permission::REJECT_PAYOUT,
         'payout_fetch_by_id'                           => Permission::VIEW_PAYOUT,
         'payout_update_attachments'                    => Permission::UPDATE_PAYOUT,
+        'payout_download_attachments'                  => Permission::DOWNLOAD_PAYOUT_ATTACHMENTS,
+        'payout_report_get_attachment_signed_url'      => Permission::DOWNLOAD_PAYOUT_ATTACHMENTS,
+        'payout_report_get_attachment_details'         => Permission::DOWNLOAD_PAYOUT_ATTACHMENTS,
         'payout_upload_attachment'                     => Permission::CREATE_PAYOUT,
         'payout_get_attachment_signed_url'             => Permission::VIEW_PAYOUT,
         'payout_fetch_multiple'                        => Permission::VIEW_PAYOUT,
@@ -8669,6 +8682,10 @@ class Route
     public static $internalApps = [
         'master_onboarding' => [
             '*',
+        ],
+
+        'metro' => [
+            'payout_email_attachments',
         ],
 
         'vendor_payments' => [
@@ -9442,6 +9459,9 @@ class Route
             'payout_validate',
             'payout_create_with_otp',
             'payout_update_attachments',
+            'payout_download_attachments',
+            'payout_report_get_attachment_signed_url',
+            'payout_report_get_attachment_details',
             'payout_upload_attachment',
             'undo_payout_creation',
             'resume_payout_creation',
@@ -13691,6 +13711,9 @@ class Route
 
         'payout_upload_attachment',
         'payout_update_attachments',
+        'payout_download_attachments',
+        'payout_report_get_attachment_signed_url',
+        'payout_report_get_attachment_details',
         'payout_get_attachment_signed_url',
     ];
 

@@ -42,6 +42,8 @@ class Entity extends PublicEntity
     // Relations
     const PAYOUT = 'payout';
 
+    const PAYOUT_PUBLIC_SIGN = 'pout';
+
     protected $entity = Table::PAYOUTS_DETAILS;
 
     protected $primaryKey = self::PAYOUT_ID;

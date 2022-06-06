@@ -1,5 +1,7 @@
 <?php
 
+use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
@@ -19442,4 +19444,142 @@ return [
             ]
         ],
     ],
+
+    'testDownloadAttachmentsInPayoutReportWithInvalidTimeRangeType' => [
+        'request'  => [
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Razorpay-Account' => '10000000000000',
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
+            'url'     => '/payouts/attachments/download',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'from' => 'randomstring',
+                'to'   => 'randomstring',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'from must be an integer.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testDownloadAttachmentsInPayoutReportWithInvalidTimeRange' => [
+        'request'  => [
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Razorpay-Account' => '10000000000000',
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
+            'url'     => '/payouts/attachments/download',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'from' => 1,
+                'to'   => 1,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'from must be between 946684800 and 4765046400',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testDownloadAttachmentsInPayoutReportWithNoAttachments' => [
+        'request'  => [
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Razorpay-Account' => '10000000000000',
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
+            'url'     => '/payouts/attachments/download',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'from' => 1621201921,
+                'to'   => 1621202497,
+            ],
+        ],
+        'response' => [
+            'content' => [
+
+            ],
+        ],
+    ],
+
+    'testDownloadAttachmentsInPayoutReportWithAttachments' => [
+        'request'  => [
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
+            'url'     => '/payouts/attachments/download',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'from' => Carbon::now(Timezone::IST)->subDays(1)->getTimestamp(),
+                'to'   => Carbon::now(Timezone::IST)->getTimestamp(),
+            ],
+        ],
+        'response' => [
+            'content' => [
+
+            ],
+        ],
+    ],
+
+    'testEmailAttachmentsInPayoutReportWithoutEmailIds' => [
+        'request'  => [
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
+            'url'     => '/payouts/attachments/download',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'send_email' => true
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'zip_file_id' => '',
+                'message' => 'No receiver email found for Payout report'
+            ],
+        ],
+    ],
+
+    'testEmailAttachmentsInPayoutReportWithEmailIds' => [
+        'request'  => [
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
+            'url'     => '/payouts/attachments/download',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'send_email' => true,
+                'receiver_email_ids' => ['abc@gmail.com'],
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ]
 ];

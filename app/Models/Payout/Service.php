@@ -3,15 +3,16 @@
 namespace RZP\Models\Payout;
 
 use App;
-use Mail;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Mail;
+
+use RZP\Constants\Mode;
 use RZP\Constants\Product;
 use RZP\Diag\EventCode;
 use RZP\Exception;
 use RZP\Constants;
 use RZP\Error\Error;
 use RZP\Models\Base;
-use RZP\Models\PayoutOutbox\RequestType;
 use RZP\Models\User;
 use RZP\Models\Card;
 use RZP\Models\Admin;
@@ -22,6 +23,7 @@ use RZP\Models\Pricing;
 use RZP\Models\Reversal;
 use RZP\Models\PayoutOutbox;
 use RZP\Error\ErrorCode;
+use RZP\Services\UfhService;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Settings;
@@ -30,20 +32,26 @@ use RZP\Traits\TrimSpace;
 use RZP\Models\FundAccount;
 use RZP\Http\RequestHeader;
 use RZP\Constants\Timezone;
+use RZP\Mail\Payout\Attachments;
 use RZP\Services\PayoutService;
 use RZP\Exception\DbQueryException;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\BankingAccountService;
 use RZP\Models\Base\PublicCollection;
+use RZP\Exception\ServerErrorException;
 use RZP\Exception\BadRequestException;
+use RZP\Models\PayoutOutbox\RequestType;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Payout\Batch as PayoutsBatch;
+use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Models\PayoutsDetails as PayoutDetails;
 use RZP\Jobs\PayoutPostCreateProcessLowPriority;
 use RZP\Models\Application\ApplicationMerchantMaps;
+use RZP\Services\Mock\UfhService as MockUfhService;
 use RZP\Models\PayoutsStatusDetails\StatusReasonMap;
 use RZP\Models\PayoutSource\Core as PayoutSourceCore;
+use RZP\Models\Payout\Constants as PayoutConstants;
 use RZP\Models\Payout\BatchHelper as PayoutBatchHelper;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\PayoutSource\Entity as PayoutSourceEntity;
@@ -52,6 +60,7 @@ use RZP\Services\RazorpayLabs\SlackApp as SlackAppService;
 use RZP\Models\FundAccount\BatchHelper as FundAccountHelper;
 use RZP\Models\FundAccount\Validation as FundAccountValidation;
 use RZP\Models\Workflow\Service\Config\Service as WorkflowConfigService;
+use Throwable;
 
 class Service extends Base\Service
 {
@@ -2900,26 +2909,6 @@ class Service extends Base\Service
                'Invalid Payout Source for attachments update');
         }
 
-        $payout = $this->repo->payout->findByIdAndMerchant($payoutId, $this->app['basicauth']->getMerchant());
-
-        $status = $payout[Entity::STATUS];
-
-        $userRole = $this->auth->getUserRole();
-
-        // only Owner and Admin can update attachment of payout in final or processing state
-        if (($userRole !== User\Role::OWNER and $userRole !== User\Role::ADMIN) and !$payout->isStatusBeforeCreate())
-        {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYOUT_ATTACHMENT_NOT_ALLOWED_FOR_THIS_ROLE,
-                Entity::STATUS,
-                [
-                    'status'    => $status,
-                    'user_role' => $userRole
-                ],
-                'Update not allowed for the user role in this state'
-            );
-        }
-
         (new Validator)->validateAttachments($input);
 
         return $this->payoutDetailsCore
@@ -3016,6 +3005,329 @@ class Service extends Base\Service
 
         return $this->payoutDetailsCore
             ->updateTaxPayment($payoutId, $taxPaymentId);
+    }
+
+    /**
+     * Download attachments for the given time range
+     *
+     * @param array $input
+     *
+     * @return array
+     * @throws Exception\ServerErrorException
+     * @throws Throwable
+     */
+    public function downloadAttachments(array $input): array
+    {
+        // 1. Fetch Payouts for the given filter
+        $merchantId = $this->merchant->getMerchantId();
+
+        $shouldSendEmail = array_pull($input, PayoutConstants::SEND_EMAIL, false);
+
+        if ($shouldSendEmail)
+        {
+            // validate receiver email ids
+            $receiverEmailIds = array_pull($input, PayoutConstants::RECEIVER_EMAIL_IDS, []);
+
+            if (sizeof($receiverEmailIds) === 0)
+            {
+                $this->trace->error(TraceCode::NO_RECEIVER_EMAIL_FOUND_FOR_PAYOUT_REPORT,
+                    [
+                        'input'    => $input,
+                    ]);
+
+                return [
+                    PayoutConstants::ZIP_FILE_ID => '',
+                    'message' => 'No receiver email found for Payout report'
+                ];
+            }
+        }
+
+        $payouts = $this->fetchMultiple($input);
+
+        $payoutIds = $this->getPayoutIds($payouts);
+
+        // 2. If no payouts, no attachment to download
+        if (sizeof($payoutIds) == 0)
+        {
+            $this->trace->info(
+                TraceCode::PAYOUTS_NOT_FOUND_FOR_GIVEN_INPUT,
+                [
+                    'input' => $input,
+                ]
+            );
+
+            return [PayoutConstants::ZIP_FILE_ID => ''];
+        }
+
+        // 3. Get attachments for the fetched payouts
+        try
+        {
+            $attachmentIds = (new PayoutDetails\Core())->getAttachmentIdsByPayoutIds($payoutIds);
+        }
+        catch (Exception\ServerErrorException $e)
+        {
+            throw $e;
+        }
+
+        // 4. If no attachments, nothing to download
+        if (sizeof($attachmentIds) == 0)
+        {
+            return [PayoutConstants::ZIP_FILE_ID => ''];
+        }
+
+        // 5. Send the attachment ids to UFH service and get the ZIP file id
+        try
+        {
+            $ufhService = $this->getUfhService($merchantId);
+
+            $zipFileId = $ufhService->downloadFiles($attachmentIds, $merchantId, PayoutConstants::PAYOUT_ATTACHMENT_PREFIX, PayoutConstants::PAYOUT_ATTACHMENTS);
+        }
+        catch (Exception\ServerErrorException $e)
+        {
+            throw $e;
+        }
+
+        if ($shouldSendEmail)
+        {
+            //push to metro
+            $this->pushMessageToMetro($receiverEmailIds, $zipFileId, $merchantId);
+
+            return [PayoutConstants::ZIP_FILE_ID => ''];
+        }
+        else
+        {
+            return [PayoutConstants::ZIP_FILE_ID => $zipFileId];
+        }
+    }
+
+    public function emailAttachments(array $input): array
+    {
+        try
+        {
+            // preprocess the $input
+            $message = $input['message'];
+
+            $data = json_decode(base64_decode($message['data'], true), true);
+
+            $this->trace->info(
+                TraceCode::PAYOUT_ATTACHMENT_SEND_MAIL,
+                [
+                    'data' => $data,
+                ]
+            );
+
+            $zipFileId = $data[PayoutConstants::ZIP_FILE_ID];
+
+            $recipientEmails = $data[PayoutConstants::EMAILS];
+
+            $merchantId = $data[PayoutConstants::MERCHANT_ID];
+
+            $ufhService = $this->getUfhService($merchantId);
+
+            // get file details before getting signed URL
+            // if the file entity has not been picked by the worker, then get signed URL API
+            // will throw exception
+            $fileDetails = $ufhService->getFileDetails($zipFileId, $merchantId);
+
+            $this->trace->info(
+                TraceCode::PAYOUT_ATTACHMENT_GET_DETAILS,
+                [
+                    'file_details' => $fileDetails,
+                ]
+            );
+
+            // ZIP uploaded to S3
+            if (array_key_exists(PayoutConstants::STATUS, $fileDetails) && $fileDetails[PayoutConstants::STATUS] === PayoutConstants::FILE_UPLOADED)
+            {
+                $response = $ufhService->getSignedUrl($zipFileId, [], $merchantId);
+
+                $this->trace->info(
+                    TraceCode::PAYOUT_ATTACHMENT_GET_SIGNED_URL,
+                    [
+                        'response' => $response,
+                    ]
+                );
+
+                $this->triggerAttachmentsEmail($response, $recipientEmails);
+
+                // return 200 so that Metro considers a success push
+                return [PayoutConstants::STATUS_CODE => 200];
+            }
+
+            // If for some reason, zip file upload to S3 failed
+            if (array_key_exists(PayoutConstants::STATUS, $fileDetails) && $fileDetails[PayoutConstants::STATUS] === PayoutConstants::FILE_UPLOAD_FAILED)
+            {
+                $this->trace->info(
+                    TraceCode::PAYOUT_ATTACHMENT_UPLOAD_FAILED,
+                    [
+                        'zipFileId' => $zipFileId,
+                    ]
+                );
+
+                // return 200 so that Metro considers a success push
+                return [PayoutConstants::STATUS_CODE => 200];
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->error(
+                TraceCode::PAYOUT_ATTACHMENT_SEND_MAIL_FAILURE,
+                [
+                    'exception' => $e->getMessage(),
+                ]
+            );
+        }
+        // ZIP file has not been not uploaded nor has failed
+        // return 500 so that Metro retries again till the maxDeliveryAttempts are exhausted
+        return [PayoutConstants::STATUS_CODE => 500];
+    }
+
+    /**
+     * Gets the details for the attachment added against the payout report
+     * @param string $attachmentId
+     *
+     * @return array|string[]
+     * @throws ServerErrorException
+     */
+    public function getReportAttachmentDetails(string $attachmentId)
+    {
+        // TODO: Add validation on the attachmentId
+
+        $merchantId = $this->merchant->getMerchantId();
+
+        return $this->payoutDetailsCore->getAttachmentDetails($attachmentId, $merchantId);
+    }
+
+    /**
+     * Gets the signed url for the attachment added against the payout report
+     * This is used instead of `/ufh/file/${fileId}/get-signed-url` endpoint because
+     * when all MIDs are onboarded to cloudfront dashboard will not have access
+     * to payout S3 buckets.
+     *
+     * @param string $attachmentId
+     *
+     * @return array|string[]
+     * @throws ServerErrorException
+     */
+    public function getReportAttachmentSignedUrl(string $attachmentId)
+    {
+        // TODO: Add validation on the attachmentId
+
+        return $this->payoutDetailsCore->getAttachmentSignedUrl($attachmentId);
+    }
+
+    protected function triggerAttachmentsEmail($response, $recipientEmails)
+    {
+        // create mail object
+        $mailData = array();
+
+        $mailData[PayoutConstants::ATTACHMENT_FILE_URL] = $response[PayoutConstants::SIGNED_URL];
+
+        $mailData[PayoutConstants::FILE_NAME] = $response[PayoutConstants::FILE_NAME];
+
+        $mailData[PayoutConstants::MIME] = $response[PayoutConstants::MIME];
+
+        $mailObject = new Attachments($recipientEmails, $mailData);
+
+        $this->trace->info(
+            TraceCode::PAYOUT_ATTACHMENT_PUSH_TO_QUEUE,
+            [
+                'mailData' => $mailData,
+            ]
+        );
+
+        // push to mail queue
+        Mail::queue($mailObject);
+    }
+
+    protected function pushMessageToMetro(array $receiverEmailIds, string $zipFileId, string $merchantId)
+    {
+        $data = [
+            'emails'         => $receiverEmailIds,
+            'zip_file_id'    => $zipFileId,
+            'merchant_id'    => $merchantId,
+        ];
+
+        $metroMessage = [
+            'data' => json_encode($data, true),
+            'attributes' => [
+                'mode' => $this->app['rzp.mode'] ?? Mode::LIVE,
+            ]
+        ];
+
+        $this->trace->info(TraceCode::PROCESSING_ATTACHMENT_FOR_PAYOUT_REPORTS, $data);
+
+        try
+        {
+            $response = $this->app['metro']->publish(PayoutConstants::PAYOUT_ATTACHMENT_METRO_TOPIC, $metroMessage);
+
+            $this->trace->info(TraceCode::ATTACHMENT_FOR_PAYOUT_REPORTS_METRO_MESSAGE_PUBLISHED,
+                [
+                    'topic'    => PayoutConstants::PAYOUT_ATTACHMENT_METRO_TOPIC,
+                    'response' => $response,
+                ]);
+
+        }
+        catch (Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::ATTACHMENT_FOR_PAYOUT_METRO_MESSAGE_PUBLISH_ERROR,
+                $data);
+
+            throw $e;
+        }
+    }
+
+    protected function getUfhService($merchantId)
+    {
+        $ufhServiceMock = $this->app['config']->get('applications.ufh.mock');
+
+        if ($ufhServiceMock === true)
+        {
+            $ufhService = new MockUfhService($this->app, null);
+        }
+        else
+        {
+            $ufhService = new UfhService($this->app, $merchantId, EntityConstants::PAYOUT);
+        }
+
+        if (is_null($ufhService) == true)
+        {
+            $this->trace->info(
+                TraceCode::PAYOUT_UFH_SERVICE_NULL,
+                [
+                    'ufh_service' => $ufhService,
+                ]
+            );
+
+            throw new ServerErrorException(
+                'Could not get UFH Client',
+                ErrorCode::SERVER_ERROR_INVALID_UFH_CLIENT,
+                null
+            );
+        }
+
+        return $ufhService;
+    }
+
+
+    /**
+     * Return the payout ids of the given payouts
+     * @param array $payouts
+     * @return array
+     */
+    protected function getPayoutIds(array $payouts): array
+    {
+        $payoutIds = array();
+
+        foreach ($payouts['items'] as $payout)
+        {
+            array_push($payoutIds, substr($payout[Entity::ID], 5));
+        }
+
+        return $payoutIds;
     }
 
     public function createTestPayoutsForDetectingDowntimeYESB(array $input)

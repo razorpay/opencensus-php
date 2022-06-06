@@ -1699,6 +1699,11 @@ class BasicAuth
         return $this->internalApp === 'vendor_payments';
     }
 
+    public function isMetroApp()
+    {
+        return $this->internalApp === 'metro';
+    }
+
     public function isXPayrollApp()
     {
         return $this->internalApp === 'xpayroll';
@@ -1748,6 +1753,7 @@ class BasicAuth
         return (($this->isDashboardApp() === true) or
                 ($this->isFrontendGraphqlApp() === true) or
                 ($this->isVendorPaymentApp() === true) or
+                ($this->isMetroApp() === true) or
                 ($this->isPayoutLinkApp() === true) or
                 ($this->isCapitalCardsApp() === true) or
                 ($this->isMobApp() === true) or

@@ -144,7 +144,9 @@ class UserRolePermissionsMap
 
                  Permission::ADD_MERCHANT_EMAIL,
                  Permission::MERCHANT_GET_OAUTH_TOKEN,
-                 Permission::UPDATE_USER_ROLE
+                 Permission::UPDATE_USER_ROLE,
+                 // Download payout attachments
+                 Permission::DOWNLOAD_PAYOUT_ATTACHMENTS,
              ],
 
              BankingRole::ADMIN => [
@@ -254,6 +256,8 @@ class UserRolePermissionsMap
 
                  Permission::MERCHANT_FETCH_SUB_VIRTUAL_ACCOUNT,
                  Permission::MERCHANT_SUB_VIRTUAL_ACCOUNT_TRANSFER,
+                 // Download payout attachments
+                 Permission::DOWNLOAD_PAYOUT_ATTACHMENTS,
              ],
 
              BankingRole::FINANCE_L1 => [
@@ -348,6 +352,8 @@ class UserRolePermissionsMap
 
                  Permission::CREATE_INVITATION,
                  Permission::VIEW_MERCHANT_PREFERENCE,
+                 // Download payout attachments
+                 Permission::DOWNLOAD_PAYOUT_ATTACHMENTS,
              ],
 
              BankingRole::OPERATIONS => [
@@ -398,6 +404,9 @@ class UserRolePermissionsMap
                  Permission::UPDATE_ACCOUNTING_INTEGRATION,
                  Permission::VIEW_PAYOUT_WORKFLOW_SUMMARY,
                  Permission::VIEW_MERCHANT_PREFERENCE,
+
+                 // Download payout attachments
+                 Permission::DOWNLOAD_PAYOUT_ATTACHMENTS,
              ],
 
              BankingRole::CHARTERED_ACCOUNTANT => [
@@ -420,6 +429,9 @@ class UserRolePermissionsMap
                  //View tax payments
                  Permission::VIEW_TAX_PAYMENTS,
                  Permission::VIEW_TRANSACTION_STATEMENT,
+
+                 // Download payout attachments
+                 Permission::DOWNLOAD_PAYOUT_ATTACHMENTS,
              ],
 
              BankingRole::VIEW_ONLY => [
@@ -459,6 +471,8 @@ class UserRolePermissionsMap
                  Permission::WAITLIST_ACCOUNTING_INTEGRATION,
                  Permission::CREATE_USER_OTP,
                  Permission::VIEW_MERCHANT_PREFERENCE,
+                 // Download payout attachments
+                 Permission::DOWNLOAD_PAYOUT_ATTACHMENTS,
              ],
 
              BankingRole::VENDOR => [

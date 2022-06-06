@@ -8,6 +8,7 @@ use ApiResponse;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Http\Request\Requests;
+use RZP\Models\Payout\Constants as PayoutConstants;
 use RZP\Models\Payout\Entity;
 use RZP\Models\Feature;
 
@@ -669,6 +670,49 @@ class PayoutController extends Controller
         $input = Request::all();
 
         return ApiResponse::json($this->service()->updateTaxPayment($payoutId, $input));
+    }
+
+    // prepare and download attachments for the payout report
+    public function downloadAttachments()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->downloadAttachments($input);
+
+        return ApiResponse::json($response);
+    }
+
+    // prepare and email attachments for the payout report
+    public function emailAttachments()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->emailAttachments($input);
+
+        if ($response[PayoutConstants::STATUS_CODE] == 201)
+        {
+            return ApiResponse::json(['Status' => 'Success'], 200);
+        }
+        else
+        {
+            return ApiResponse::json(['Status' => 'Failure'], 500);
+        }
+    }
+
+    // get the details for the payout report's attachment
+    public function getReportAttachmentDetails($attachmentId)
+    {
+        $data = $this->service()->getReportAttachmentDetails($attachmentId);
+
+        return ApiResponse::json($data);
+    }
+
+    // get the signed url for the payout report's attachment
+    public function getReportAttachmentSignedUrl($attachmentId)
+    {
+        $data = $this->service()->getReportAttachmentSignedUrl($attachmentId);
+
+        return ApiResponse::json($data);
     }
 
     public function createTestPayoutsForDowntimeDetectionICICI()

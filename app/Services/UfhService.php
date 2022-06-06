@@ -67,6 +67,10 @@ class UfhService
 
     const PREFIX            = 'prefix';
 
+    const BULK              = 'Bulk';
+
+    const BULK_JOB          = 'bulk_job';
+
     // razorx flag
     const RAZORX_FLAG_UFH_VALIDATE_USER_ROLE_FOR_ACCESS = 'razorx_flag_ufh_validate_user_role_for_access';
 
@@ -398,6 +402,18 @@ class UfhService
         return $this->ufhClient->getSignedUrl($fileId, $params);
     }
 
+    public function getFileDetails(string $fileId, string $merchantId)
+    {
+        if (empty($merchantId) === false)
+        {
+            $this->merchantId = $merchantId;
+
+            $this->ufhClient = $this->createUfhClient();
+        }
+
+        return $this->ufhClient->get($fileId);
+    }
+
     /**
      * validates if user is allowed to fetch file based on user role and file type
      * @param $fileType
@@ -499,23 +515,39 @@ class UfhService
         return $requestData;
     }
 
-    public function downloadFiles(array $fileIds, string $merchantId, string $prefix = "Firs", string $type=null)
+    public function downloadFiles(array $fileIds, string $merchantId, string $prefix = "Firs", string $type = null)
     {
-        $input = [
+        $requestData = [
             self::FILE_IDS          => $fileIds,
-            self::CHANNEL           => "Bulk",
-            self::JOB_NAME          => "bulk_job",
+            self::CHANNEL           => self::BULK,
+            self::JOB_NAME          => self::BULK_JOB,
             self::MERCHANT_ID       => $merchantId,
             self::PREFIX            => $prefix,
+            self::TYPE              => $type,
         ];
 
-        if($type === 'firs_icici_zip')
+        $this->trace->info(
+            TraceCode::DOWNLOAD_FILES_UFH,
+            $requestData[self::FILE_IDS]);
+
+        try
         {
             $this->merchantId = $merchantId;
-            $this->ufhClient = $this->createUfhClient();
-        }
 
-        $response = $this->ufhClient->download($input);
+            $this->ufhClient = $this->createUfhClient();
+
+            $response = $this->ufhClient->download($requestData);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e);
+
+            throw new Exception\ServerErrorException(
+                'Error completing the request',
+                ErrorCode::SERVER_ERROR_UFH_SERVICE_FAILURE,
+                $requestData
+            );
+        }
 
         return $response;
     }

@@ -63,6 +63,8 @@ class Validator extends Base\Validator
 
     const UPDATE_TAX_PAYMENT = 'update_tax_payment';
 
+    const DOWNLOAD_ATTACHMENTS = 'download_attachments';
+
     // The max payout amount allowed for merchant payouts is 80 L
     const MAX_LIMIT_MERCHANT_PAYOUT_AMOUNT = 800000000;
 
