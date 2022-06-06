@@ -14,7 +14,6 @@ class CmmaEscalation
 {
     /**
      * The application instance.
-     *
      * @var Application
      */
     protected $app;
