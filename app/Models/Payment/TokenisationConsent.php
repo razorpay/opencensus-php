@@ -3,6 +3,7 @@
 namespace RZP\Models\Payment;
 
 use App;
+use RZP\Models\Merchant\Entity as MerchantEntity;
 use View;
 use RZP\Exception;
 use RZP\Models\Base\UniqueIdEntity;
@@ -43,8 +44,8 @@ class TokenisationConsent
     }
 
     /**
-     * @param $input
-     * @param $merchant
+     * @param array          $input
+     * @param MerchantEntity $merchant
      *
      * @return bool
      */
@@ -139,8 +140,8 @@ class TokenisationConsent
     }
 
     /**
-     * @param $input
-     * @param $merchant
+     * @param array          $input
+     * @param MerchantEntity $merchant
      *
      * @return bool
      */

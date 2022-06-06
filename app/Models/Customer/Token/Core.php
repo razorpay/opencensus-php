@@ -2077,19 +2077,28 @@ class Core extends Base\Core
 
     /**
      * @param Base\PublicCollection|Entity[] $tokens
+     * @param Merchant\Entity                $merchant
      *
      * @return Base\PublicCollection|Entity[]
      */
-    public function addConsentFieldInTokens($tokens)
+    public function addConsentFieldInTokens($tokens, Merchant\Entity $merchant)
     {
+        $shouldNotTakeConsentToConvertGlobalToLocalToken = !((new TokenisationExperiment())
+            ->shouldCreateLocalTokenOnGlobalCustomer($merchant->getId())
+        );
+
         foreach ($tokens as $token)
         {
             if($token->getMethod() === Entity::CARD)
             {
                 $acknowledgedAt = $token->getAcknowledgedAt();
 
-                if(empty($acknowledgedAt) === false && $token->isLocal() === true)
-                {
+                if (!empty($acknowledgedAt) &&
+                    (
+                        $shouldNotTakeConsentToConvertGlobalToLocalToken ||
+                        $token->isLocal() === true
+                    )
+                ) {
                     $token[Entity::CONSENT_TAKEN] = true;
                 }
                 else

@@ -699,7 +699,7 @@ class Checkout
 
             $savedTokens = $tokenCore->removeCardTokensWithoutName($savedTokens);
 
-            $savedTokens = $tokenCore->addConsentFieldInTokens($savedTokens);
+            $savedTokens = $tokenCore->addConsentFieldInTokens($savedTokens, $merchant);
             $custData['tokens'] = $savedTokens->toArrayPublic();
 
             $custData['email'] =  $customer->getEmail();
