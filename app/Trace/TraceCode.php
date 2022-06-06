@@ -4622,6 +4622,12 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const EDGE_CONTROLLER_WORKFLOW_REQUEST                      = 'EDGE_CONTROLLER_WORKFLOW_REQUEST';
     const EDGE_CONTROLLER_WORKFLOW_CREATE_REQUEST               = 'EDGE_CONTROLLER_WORKFLOW_CREATE_REQUEST';
 
+    // DeveloperConsole
+    const DEVELOPER_CONSOLE_REQUEST                             = 'DEVELOPER_CONSOLE_REQUEST';
+    const DEVELOPER_CONSOLE_RESPONSE                            = 'DEVELOPER_CONSOLE_RESPONSE';
+    const DEVELOPER_CONSOLE_DECODED_RESPONSE                    = 'DEVELOPER_CONSOLE_DECODED_RESPONSE';
+    const DEVELOPER_CONSOLE_ERROR                               = 'DEVELOPER_CONSOLE_ERROR';
+
     // Api<>credcase integration.
     const CREDCASE_REQUEST_FAILED                               = 'CREDCASE_REQUEST_FAILED';
     const CREDCASE_OUTBOX_REQUEST_MIGRATE                       = 'CREDCASE_OUTBOX_REQUEST_MIGRATE';

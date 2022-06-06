@@ -2875,6 +2875,8 @@ class Route
         'edge_delete_rate_limit_limit'            => ['delete',   'edge/rate_limiter/limit/{id}',                              'EdgeThrottleController@deleteLimit'                        ],
         'edge_update_rate_limit_spinnaker'        => ['patch',    'spinnaker/edge/rate_limiter/limit/{id}',                    'EdgeThrottleController@updateLimit'                        ],
 
+        'developer_console_action'                => ['post',     'developer_console/{type}/fetch/{action}',                   'DeveloperConsoleController@dashboardSearch'               ],
+        'developer_console_maintenance'           => ['post',     'developer_console/{type}/re-arrange',                       'DeveloperConsoleController@runMaintenance'                ],
 
         //merchant document related routes
         'merchant_document_delete'                => ['delete',   'merchant/documents/{id}',                                   'DocumentController@delete'                                 ],
@@ -4780,6 +4782,8 @@ class Route
 
         'payment_upi_authorize_failed',
 
+        'developer_console_maintenance',
+
         'payout_update_tax_payment_id',
 
         'recon_update_upi_data',
@@ -4948,6 +4952,7 @@ class Route
         'store_fetch_products',
         'store_get_product',
         'store_patch_product',
+        'developer_console_action',
         'fetch_payments_ongoing_downtimes',
         'fetch_payments_resolved_downtimes',
         'fetch_payments_scheduled_downtimes',
@@ -8918,6 +8923,7 @@ class Route
             'delete_merchant_notification_config',
             'delete_merchant_options',
             'delete_merchant_options_admin',
+            'developer_console_action',
             'device_create',
             'device_verify',
             'device_verify_token',
@@ -12210,13 +12216,13 @@ class Route
             'rbl_in_progress_lead_to_sales_force',
             // Optimizer settlements cron
             'setl_optimizer_settlement_cron',
-
             'dispute_deduction_reversal_cron',
 
             'bank_transfer_process_test_x_demo_cron',
             'payouts_batch_create_x_demo_cron',
             'growth_filter_and_sync_cron',
             'payments_card_es_sync_cron',
+            'developer_console_maintenance',
 
             'firs_collect_and_zip_cron'
         ],
@@ -12528,6 +12534,7 @@ class Route
             'payout_links_expire_callback',
             'test_payout_links_expire_callback',
             'merchant_international_enablement_reminder',
+            'developer_console_maintenance',
         ],
 
         'batch' => [
