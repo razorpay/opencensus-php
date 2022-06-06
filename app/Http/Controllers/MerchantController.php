@@ -2463,6 +2463,15 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function handleOnboardingCronJobs()
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_ONBOARDING_ESCALATIONS)->handleOnboardingCrons($input);
+
+        return ApiResponse::json($response);
+    }
+
     public function handleOnboardingCrons(string $cronType)
     {
         $input = Request::all();

@@ -280,6 +280,7 @@ class RouteTeamMap
         'merchant_autokyc_hard_limit'                     => [self::TEAM_PAYMENTS_GROWTH],
         'merchant_autokyc_escalation'                     => [self::TEAM_PAYMENTS_GROWTH],
         'merchant_onboarding_escalations'                 => [self::TEAM_PAYMENTS_GROWTH],
+        'merchant_onboarding_cron_jobs'                   => [self::TEAM_PAYMENTS_GROWTH],
         'merchant_onboarding_crons'                       => [self::TEAM_PAYMENTS_GROWTH],
         'fetch_merchant_escalation'                       => [self::TEAM_PAYMENTS_GROWTH],
         'onboarding_features_bulk_update_status'          => [self::TEAM_PAYMENTS_GROWTH],

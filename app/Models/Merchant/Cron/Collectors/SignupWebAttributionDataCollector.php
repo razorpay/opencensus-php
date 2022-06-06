@@ -14,7 +14,7 @@ use RZP\Trace\TraceCode;
 
 class SignupWebAttributionDataCollector extends TimeBoundDbDataCollector
 {
-    const DATA_LAKE_WEB_ATTRIBUTION_QUERY   = " SELECT distinct (m.id), pam.acquisition_medium, pam.acquisition_source, pam.acquisition_campaign, pam.acquisition_keyword, pam.acquisition_adgroup, pam.last_acquisition_source, pam.last_acquisition_medium, pam.last_acquisition_campaign, pam.last_acquisition_keyword, pam.last_acquisition_adgroup, pam.landing_page, pam.last_landing_page " .
+    const DATA_LAKE_WEB_ATTRIBUTION_QUERY   = " SELECT distinct (m.id), pam.device, pam.acquisition_medium, pam.acquisition_source, pam.acquisition_campaign, pam.acquisition_keyword, pam.acquisition_adgroup, pam.last_acquisition_source, pam.last_acquisition_medium, pam.last_acquisition_campaign, pam.last_acquisition_keyword, pam.last_acquisition_adgroup, pam.landing_page, pam.last_landing_page " .
     " FROM hive.realtime_hudi_api.merchants m " .
     " Join hive.aggregate_pa.mid_attribution pam on m.id = pam.mid where " .
     " pam.acquisition_medium is not null and " .

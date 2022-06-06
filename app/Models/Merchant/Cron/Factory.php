@@ -71,6 +71,7 @@ class Factory
             case "bvs_cron":
                 return (new BvsCronJob($input));
             case "signup_attributed_cron":
+                RuntimeManager::setMaxExecTime(900);
                 return (new SignupAttributedCronJob($input));
             case Constants::FRIEND_BUY_SEND_PURCHASE_EVENTS_CRON_JOB_NAME:
                 return (new FriendBuySendPurchaseEventsCronJob($input));

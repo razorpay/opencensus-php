@@ -15,18 +15,6 @@ class Service extends Base\Service
 
         try
         {
-            $core->handleMtuCouponApply();
-        }
-        catch (\Exception $e)
-        {
-            $this->trace->info(TraceCode::ESCALATION_ATTEMPT_FAILED, [
-                'type'  => 'mtu_coupon_apply',
-                'error' => $e->getMessage()
-            ]);
-        }
-
-        try
-        {
             $core->triggerPaymentEscalations($timeBound);
         }
         catch (\Exception $e)
@@ -36,27 +24,21 @@ class Service extends Base\Service
                 'error' => $e->getMessage()
             ]);
         }
+    }
+
+    public function handleOnboardingCrons($input)
+    {
+        $timeBound = $input[Constants::TIME_BOUND] ?? false;
+        $core      = (new Core);
 
         try
         {
-            $core->pushTransactionDetailsToSegmentCron();
+            $core->handleMtuCouponApply();
         }
         catch (\Exception $e)
         {
             $this->trace->info(TraceCode::ESCALATION_ATTEMPT_FAILED, [
-                'type'  => 'pushTransactionDetailsToSegmentCron',
-                'error' => $e->getMessage()
-            ]);
-        }
-
-        try
-        {
-            $core->pushWebAttributionDetailsToSegmentCron();
-        }
-        catch (\Exception $e)
-        {
-            $this->trace->info(TraceCode::ESCALATION_ATTEMPT_FAILED, [
-                'type'  => 'pushWebAttributionDetailsToSegmentCron',
+                'type'  => 'mtu_coupon_apply',
                 'error' => $e->getMessage()
             ]);
         }
