@@ -63,6 +63,77 @@ class TokenTest extends TestCase
         }
     }
 
+    public function testCreateTokenWithCardNumberSpaceData()
+    {
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals('card', $response['method']);
+
+        $this->assertNotNull($response['service_provider_tokens']);
+
+        $this->assertEquals('12', $response['service_provider_tokens'][0]['provider_data']['token_expiry_month']);
+
+        $this->assertEquals('2023', $response['service_provider_tokens'][0]['provider_data']['token_expiry_year']);
+
+        $this->assertEquals('1704047399', $response['expired_at']);
+
+        $this->assertArrayNotHasKey('customer_id', $response);
+
+        $response2 = $this->startTest();
+
+        $this->assertEquals($response['id'], $response2['id']);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['save'] = 1;
+
+        $this->fixtures->merchant->addFeatures(['s2s']);
+
+        $this->ba->privateAuth();
+
+        $this->doS2SPrivateAuthAndCapturePayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertNotNull($payment['token_id']);
+
+        $fetchPayload = $this->testData['testFetchToken'];
+
+        $fetchPayload['request']['content'] = ['id' => $payment['token_id']];
+
+        $this->ba->privateAuth();
+
+        $fetchResponse = $this->startTest($fetchPayload);
+
+        $this->assertEquals('card', $fetchResponse['method']);
+
+        $this->assertEquals('12', $fetchResponse['service_provider_tokens'][0]['provider_data']['token_expiry_month']);
+
+        $this->assertEquals('2024', $fetchResponse['service_provider_tokens'][0]['provider_data']['token_expiry_year']);
+
+        $MCPayload = $this->testData['testCreateToken'];
+
+        $MCPayload['request']['content']['card']['number'] = '5122600005005789';
+
+        $MCResponse = $this->startTest($MCPayload);
+
+        $this->assertEquals('card', $MCResponse['method']);
+
+        $this->assertEquals('MasterCard', $MCResponse['service_provider_tokens'][0]['provider_name']);
+
+        $this->assertEquals(null, $MCResponse['service_provider_tokens'][0]['provider_data']['token_expiry_month']);
+
+        $this->assertEquals(null, $MCResponse['service_provider_tokens'][0]['provider_data']['token_expiry_year']);
+
+        $this->assertEquals(null, $MCResponse['service_provider_tokens'][0]['provider_data']['token_iin']);
+
+        $this->assertEquals('created', $MCResponse['status']);
+
+        $this->assertEquals(null, $MCResponse['expired_at']);
+    }
+
     public function testCreateTokenEncrypted()
     {
         $this->ba->privateAuth();

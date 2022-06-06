@@ -561,6 +561,10 @@ class Service extends Base\Service
 
         try
         {
+            if (empty($input['card']['number']) === false) {
+                $input['card']['number'] = trim(str_replace(" ", "", $input['card']['number']));
+            }
+
             $this->decryptCardNumberIfApplicable($input['card']);
 
             if ($this->merchant->isFeatureEnabled(Feature\Constants::NETWORK_TOKENIZATION_LIVE) === true)
