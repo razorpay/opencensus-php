@@ -7,7 +7,7 @@ on:
 jobs:
   check_ready_for_review_label:
     name: PR Labels
-    runs-on: [ self-hosted ]
+    runs-on: [ self-hosted]
     steps:
       - name: Checkout Code
         uses: actions/checkout@v2

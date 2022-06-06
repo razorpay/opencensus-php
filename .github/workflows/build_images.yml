@@ -1,7 +1,7 @@
 on: [push]
 jobs:
   cancel:
-    runs-on: [self-hosted]
+    runs-on: [self-hosted, api]
     name: Cancel Previous Runs
     if: always()
     timeout-minutes: 1
@@ -20,7 +20,7 @@ jobs:
       run: |
         echo "Don't cancel old workflow"
   validate_php_syntax:
-    runs-on: [self-hosted]
+    runs-on: [self-hosted, api]
     needs: [cancel]
     container:
       image: c.rzp.io/razorpay/onggi:php-7.2-api-web-v3
@@ -41,7 +41,7 @@ jobs:
     - name: validate_php_syntax
       run: ci-assets/validate_php_syntax.sh
   build-web:
-    runs-on: [self-hosted]
+    runs-on: [self-hosted, api]
     needs: [cancel]
     continue-on-error: false
     name: Build Web Harbor
@@ -70,7 +70,7 @@ jobs:
             OPENCENSUS_IMAGE=c.rzp.io/razorpay/onggi:opencensus-php-v2020.10.28
 
   build-worker:
-     runs-on: [self-hosted]
+     runs-on: [self-hosted, api]
      needs: [ cancel ]
      continue-on-error: false
      name: Build Worker Harbor
@@ -99,7 +99,7 @@ jobs:
              OPENRESTY_IMAGE=c.rzp.io/razorpay/onggi:openresty-1.17.8.2-0-alpine-fat-nosse42
 
   build-checkout:
-     runs-on: [self-hosted]
+     runs-on: [self-hosted, api]
      needs: [cancel]
      continue-on-error: false
      name: Build Checkout Harbor
@@ -126,7 +126,7 @@ jobs:
              NGINX_IMAGE=c.rzp.io/razorpay/onggi:nginx-alpine-3.12
 
   build-openresty:
-     runs-on: [self-hosted]
+     runs-on: [self-hosted, api]
      needs: [cancel]
      continue-on-error: false
      name: Build Openresty Harbor
@@ -155,7 +155,7 @@ jobs:
 
   build-e2e:
     name: E2E test build
-    runs-on: [ self-hosted ]
+    runs-on: [ self-hosted, api]
     needs: [build-web, build-worker, build-checkout, build-openresty]
     steps:
       - uses: actions/checkout@v2
@@ -174,7 +174,7 @@ jobs:
 
   e2e-test-webhook:
     name: E2E test webhook
-    runs-on: [ self-hosted ]
+    runs-on: [ self-hosted, api]
     needs: [ build-e2e ]
     steps:
       - uses: actions/checkout@v2
@@ -206,7 +206,7 @@ jobs:
             }
 
   trigger_regression_suite:
-   runs-on: [self-hosted]
+   runs-on: [self-hosted, api]
    name: Regression Suite
    needs: [ validate_php_syntax, build-web, build-worker, build-checkout, build-openresty]
    if: github.ref == 'refs/heads/master'
