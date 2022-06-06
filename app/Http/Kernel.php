@@ -43,6 +43,7 @@ class Kernel extends HttpKernel {
         ],
 
         'graph'     => [
+            \App\Http\Middleware\Cors::class,
             \App\Http\Middleware\EncryptCookies::class,
             \App\Http\Middleware\StartSession::class,
             \App\Http\Middleware\VerifyCsrfToken::class,

@@ -46,14 +46,18 @@ class Cors
 
         'static_web_domain' => [
             'url_config'    => 'app.static_web_url'
-        ]
+        ],
+
+        'easy_dashboard_domain' => [
+            'url_config'    => 'app.easy_dashboard_url'
+        ],
     ];
 
     protected function shouldAllowCors($request, $originHost) : bool
     {
         $env = \App::environment();
 
-        if(($env === 'stage') and ($this->isDevstackHost($originHost) === true))
+        if ($env === 'stage')
         {
             return true;
         }
@@ -108,6 +112,11 @@ class Cors
                 // Added to allow access to users api for non confirmed user
                 'x-signup-flow-v2',
                 'x-xsrf-token',
+                'apollographql-client-name',
+                'x-app-mode',
+                'x-org-id',
+                'x-dashboard-merchant-id',
+                'x-dashboard-user-id',
                 'request-start-time'
             ];
 
@@ -140,17 +149,5 @@ class Cors
         }
 
         return $next($request);
-    }
-
-    /**
-     * Enable CORS policy for Devstack hosts *.dev.razorpay.in
-     *
-     * @return boolean
-     */
-    private function isDevstackHost($originHost) : bool
-    {
-        preg_match('/\.dev\.razorpay\.in$/', $originHost, $matches);
-
-        return (isset($matches[0]));
     }
 }

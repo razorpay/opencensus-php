@@ -6,6 +6,7 @@ use Closure;
 use Response;
 use App\Trace\Trace;
 use App\Trace\TraceCode;
+use GraphQL\Language\Parser;
 use Illuminate\Session\TokenMismatchException;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken as BaseVerifier;
 
@@ -69,10 +70,20 @@ class VerifyCsrfToken extends BaseVerifier
 
             $input = $request->input();
 
+            if (isset($input['operations']) === true)
+            {
+                $operations = json_decode($input['operations'], true);
+
+                $queryData = Parser::parse($operations['query']);
+            }
+            else if (isset($input['query']) === true)
+            {
+                $queryData = Parser::parse($input['query']);
+            }
+
             // If the graph query is to seek org information
             // skip CSRF token check
-            if(isset($input[self::OPERATION_NAME]) and
-                $input[self::OPERATION_NAME] === self::ORGANISATION_INFORMATION)
+            if ($this->isOperationName(self::ORGANISATION_INFORMATION, $queryData) === true)
             {
                 return $next($request);
             }
@@ -114,6 +125,34 @@ class VerifyCsrfToken extends BaseVerifier
 
             throw new TokenMismatchException;
         }
+    }
+
+    private function isOperationName($operationName, $queryData)
+    {
+        $definitions = json_decode($queryData)->definitions;
+
+        foreach($definitions as $definition)
+        {
+            $definitionKind = $definition->kind;
+
+            if ($definitionKind === "OperationDefinition")
+            {
+                $selectionSet = $definition->selectionSet;
+                $selections = $selectionSet->selections;
+
+                foreach($selections as $selection)
+                {
+                    $selectorName = $selection->name->value;
+
+                    if ($selectorName === $operationName)
+                    {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
     }
 
     private function getErrorResponseForGraphQlClients($request)
