@@ -371,14 +371,27 @@ class Service extends Base\Service
         return $merchantDetails->toArrayPublic();
     }
 
-    public function patchSmartDashboardMerchantDetails(array $input): array
+    public function patchSmartDashboardMerchantDetails(array $input, $merchantId = null): array
     {
         $this->trace->info(TraceCode::SMART_DASHBOARD_MERCHANT_EDIT, [
             'input' => array_keys($input),
         ]);
 
+        if(!empty($merchantId)){
+            $this->merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+            if(!empty($this->merchant)){
+                unset($input[Entity::MERCHANT_ID]);
+            }
+            $this->trace->info(TraceCode::SMART_DASHBOARD_MERCHANT_EDIT, [
+                'merchant' => $this->merchant,
+            ]);
+        }
+
         if (empty($this->merchant) === true)
         {
+            $this->trace->err(ErrorCode::BAD_REQUEST_MERCHANT_CONTEXT_NOT_SET,
+                ["error" => ErrorCode::BAD_REQUEST_MERCHANT_CONTEXT_NOT_SET]);
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_CONTEXT_NOT_SET);
         }
@@ -436,7 +449,7 @@ class Service extends Base\Service
             $merchantDetailCore->editMerchantDetailFields($merchant, $merchantDetailEditInput);
         }
 
-        return (new Merchant\Service)->getSmartDashboardMerchantDetails();
+        return (new Merchant\Service)->getSmartDashboardMerchantDetails($this->merchant);
     }
 
     public function postApplyCoupon(array $input)

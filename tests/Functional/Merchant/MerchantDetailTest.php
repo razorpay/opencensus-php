@@ -1457,6 +1457,61 @@ We look forward to transacting with you!
         ], $response[MerchantConstants::ADDITIONAL_DETAILS][1]);
     }
 
+    public function testGetInternalMerchantMerchantDetailsFetch()
+    {
+        $merchantId = '10000000000155';
+
+        $merchant = $this->fixtures->create('merchant', [
+            'id' => $merchantId,
+            'email' => 'razorpay@razorpay.com',
+            'website' => 'razorpay.com',
+        ]);
+
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'        => $merchantId,
+            'business_type'      => '1',
+            'transaction_volume' => '5',
+            'department'         => '6',
+            'contact_mobile'     => '8722627189',
+            'contact_email'      => 'razorpay@razorpay.com',
+            'gstin'              => 'AAAA123456789A',
+            'authorized_signatory_residential_address' => 'test',
+            'authorized_signatory_dob' => '2022-03-12',
+            'estd_year' => '2022',
+        ]);
+
+        $this->fixtures->create('merchant_avg_order_value', [
+            'merchant_id'        => $merchantId,
+            'min_aov'            => '94',
+            'max_aov'            => '98',
+        ]);
+
+        $this->fixtures->create('merchant_business_detail', [
+            'merchant_id' => $merchantId,
+            'app_urls' => [
+                'playstore_url' => 'https://play.google.com/store/apps/details?id=com.razorpay.payments.app.dummy',
+                'appstore_url' => 'https://play.google.com/store/apps/details?id=com.dummy123123',
+            ]
+        ]);
+
+        $this->fixtures->create('merchant_document', [
+            'document_type' => 'promoter_address_url',
+            'file_store_id' => '123123',
+            'merchant_id'   => $merchantId,
+        ]);
+
+        $testData = $this->testData['testGetInternalMerchantMerchantDetailsFetch'];
+
+        $testData['request']['url'] = '/internal/merchants/' . $merchantId;
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->terminalsAuth();
+
+        $this->startTest();
+    }
+
     public function testGetPreSignupDetails()
     {
         $this->fixtures->create('merchant', ['id'    => '10000000000155',
@@ -5759,7 +5814,7 @@ You can now start accepting payments from https://www.example.com.
 
         $testData = $this->testData['testGetMerchantWorkflowDetailsByInternalAuth'];
 
-        $testData['request']['url'] = '/internal/merchant/additional_website/' . $merchantId . '/details';
+        $testData['request']['url'] = '/internal/merchant/' . $merchantId . '/workflow_details';
 
         $this->testData[__FUNCTION__] = $testData;
 

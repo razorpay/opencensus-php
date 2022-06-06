@@ -437,6 +437,9 @@ class Route
         'merchant_bulk_update_pricing_cron'        => ['post',     'merchants/pricing/bulk/update',                  'MerchantController@bulkUpdatePricingPlanOnEligibilityCron' ],
         'merchant_pricing_bulk'                    => ['post',     'merchants/pricing/bulk',                         'MerchantController@bulkAssignPricing'                              ],
         'create_submerchant_user'                  => ['post',     'submerchant/user/{id}',                          'MerchantController@postSubMerchantUser'                            ],
+        'collect_info_merchant_details_internal'   => ['post',     'internal/collect_info/merchant/{id}/details',    'MerchantController@CollectInfoMerchantDetailsPatch'                ],
+        'collect_info_merchant_details_patch'      => ['post',     'terminals/proxy/collect_info/merchant/details',          'TerminalController@proxyV2TerminalService'                 ],
+        'admin_collect_info_merchant_details_patch'=> ['post',     'terminals/proxy/collect_info/merchant/{id}/details/admin',    'TerminalController@proxyV2TerminalService'            ],
 
         // sub balance adjustment route
         'sub_balance_adjustment'                   => ['post', 'sub_balance/adjustment',                             'AdjustmentController@subBalanceAdjustment'],
@@ -2971,7 +2974,7 @@ class Route
 
         'increase_transaction_limit_self_serve'    => ['post',     'merchant/transaction_limit',                                'MerchantController@postIncreaseTransactionLimitSelfServe' ],
         'merchant_workflow_details'                => ['get',      'merchant/{workflowType}/details',                           'MerchantController@getMerchantWorkflowDetails'            ],
-        'internal_merchant_workflow_details_fetch' => ['get',      'internal/merchant/{workflowType}/{merchantId}/details',     'MerchantController@getMerchantWorkflowDetails'            ],
+        'internal_merchant_workflow_details_fetch' => ['get',      'internal/merchant/{merchantId}/workflow_details',           'MerchantController@getMerchantWorkflowDetailsBulk'        ],
         'merchant_workflow_clarification'          => ['post',     'merchant/submit_clarification/{workflowType}',              'MerchantController@postMerchantWorkflowClarification'     ],
 
 
@@ -3727,6 +3730,7 @@ class Route
     ];
 
     public static $private = [
+        'collect_info_merchant_details_patch',
         'mock_bvs_validation_event',
         'bulk_migrate_aggregator_to_reseller',
         'bulk_migrate_reseller_to_aggregator',
@@ -4113,6 +4117,7 @@ class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        'collect_info_merchant_details_internal',
         'generate_gifu_file',
         'generate_nium_settlement_file',
         'merchant_settlements_events_cron',
@@ -5669,6 +5674,7 @@ class Route
     // of X-Admin-Token being passed.
     //
     public static $admin = [
+        'admin_collect_info_merchant_details_patch',
         'nocode_debugging_route',
         'merchant_enhanced_activation_details',
         'mob_admin_routes',
@@ -8034,6 +8040,8 @@ class Route
         'merchant_integrations_get'             => Permission::VIEW_MERCHANT,
         'merchant_integrations_delete'          => Permission::VIEW_MERCHANT,
 
+        'admin_collect_info_merchant_details_patch'        =>Permission::EDIT_MERCHANT,
+
     ];
 
     public static $bankingRoutePermissions = [
@@ -8701,6 +8709,7 @@ class Route
         ],
 
         'merchant_dashboard' => [
+            'collect_info_merchant_details_patch',
             'mob_fetch_multiple_intents',
             'mob_fetch_intent',
             'mob_fetch_multiple_applications',
@@ -9878,6 +9887,7 @@ class Route
         ],
 
         'admin_dashboard' => [
+            'admin_collect_info_merchant_details_patch',
             'merchant_enhanced_activation_details',
             'mob_admin_routes',
             'merchant_business_types_admin',
@@ -12688,7 +12698,8 @@ class Route
             'feature_get_merchants_internal',
             'feature_get_all_internal',
             'internal_merchants_fetch_by_params',
-            'salesforce_details_internal'
+            'salesforce_details_internal',
+            'collect_info_merchant_details_internal'
         ],
         'spinnaker' => [
             'throttle_create_config_spinnaker',

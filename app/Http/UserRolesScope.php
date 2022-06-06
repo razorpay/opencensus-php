@@ -1084,7 +1084,7 @@ class UserRolesScope
             'shipping_method_provider_post'                       => [Role::OWNER, Role::ADMIN],
             'shipping_method_provider_patch'                      => [Role::OWNER, Role::ADMIN],
             'shipping_method_provider_delete'                     => [Role::OWNER, Role::ADMIN],
-
+            'collect_info_merchant_details_patch'                 => [Role::OWNER, Role::ADMIN],
         ];
 
         /*

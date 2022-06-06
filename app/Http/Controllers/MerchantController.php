@@ -2832,6 +2832,15 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function getMerchantWorkflowDetailsBulk( string $merchantId = null)
+    {
+        $input = Request::all();
+
+        $response = $this->service()->getMerchantWorfklowDetailsBulk($merchantId, $input);
+
+        return ApiResponse::json($response);
+    }
+
     public function postMerchantWorkflowClarification(string $workflowType)
     {
         $input = Request::all();
@@ -3122,6 +3131,12 @@ class MerchantController extends Controller
         $response = $this->service(E::MERCHANT_INTERNATIONAL_INTEGRATIONS)
             ->deleteMerchantInternationalIntegrations($input);
 
+        return ApiResponse::json($response);
+    }
+
+    public function CollectInfoMerchantDetailsPatch($merchantId){
+        $input = Request::all();
+        $response = $this->service(E::MERCHANT_DETAIL)->patchSmartDashboardMerchantDetails($input, $merchantId);
         return ApiResponse::json($response);
     }
 

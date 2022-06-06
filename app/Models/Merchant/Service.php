@@ -15,6 +15,8 @@ use RZP\Models\Merchant\Balance\Type as ProductType;
 use RZP\Models\Payment\Processor\CardlessEmi;
 use RZP\Models\Payment\Processor\PayLater;
 use RZP\Models\Payment\Processor\Wallet;
+use RZP\Models\Merchant\BusinessDetail\Constants as BusinessDetailConstants;
+use RZP\Models\Merchant\Document\Entity as DocumentEntity;
 use Throwable;
 use Carbon\Carbon;
 use RZP\Exception;
@@ -134,7 +136,6 @@ use RZP\Mail\Merchant\RazorpayX\CreateSubMerchantPartner as CreateSubMerchantPar
 use RZP\Mail\Merchant\RazorpayX\CreateSubMerchantAffiliate as CreateSubMerchantAffiliateForX;
 use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Models\TrustedBadge;
-use RZP\Models\Payment\Processor;
 use RZP\Models\Partner\Commission\Core as PartnerCommissionCore;
 use RZP\Models\EntityOrigin\Core as EntityOriginCore;
 
@@ -4874,9 +4875,14 @@ class Service extends Base\Service
         return $data;
     }
 
-    public function getSmartDashboardMerchantDetails()
+    public function getSmartDashboardMerchantDetails($merchant = null)
     {
         $this->trace->info(TraceCode::SMART_DASHBOARD_MERCHANT_FETCH);
+
+        if($merchant !== null){
+            $this->merchant = $merchant;
+            $this->auth->setMerchant($merchant);
+        }
 
         $merchantDetails = $this->getMerchantDetails();
 
@@ -4967,7 +4973,31 @@ class Service extends Base\Service
 
         $merchantDetail = $merchant->merchantDetail;
 
-        $this->trace->info(TraceCode::MERCHANT_GET_INTERNAL,
+        $documentsResponse = [];
+
+        $documents = $merchant->merchantDocuments;
+
+        foreach ($documents as $document)
+        {
+            $documentMetaData = [
+                DocumentEntity::ID            => $document->getId(),
+                DocumentEntity::FILE_STORE_ID => $document->getFileStoreId(),
+                DocumentEntity::CREATED_AT    => $document->getCreatedAt()
+            ];
+
+            if (isset($documentsResponse[$document->getDocumentType()]) === false)
+            {
+                $documentsResponse[$document->getDocumentType()] = [];
+            }
+
+            array_push($documentsResponse[$document->getDocumentType()], $documentMetaData);
+        }
+
+        if( empty($documentsResponse) === false ) {
+            $data[EntityConstants::MERCHANT_DOCUMENT] = $documentsResponse;
+        }
+
+      $this->trace->info(TraceCode::MERCHANT_GET_INTERNAL,
             [
                 'merchant_id' => $merchantId,
                 'merchant_detail'    => $merchantDetail,
@@ -5003,6 +5033,21 @@ class Service extends Base\Service
             ]);
 
         $data[BusinessDetail\Entity::WEBSITE_DETAILS] = $businessDetails->getWebsiteDetails();
+
+        $data[EntityConstants::MERCHANT_DETAIL][BusinessDetailConstants::PLAYSTORE_URL] = $businessDetails->getPlaystoreUrl();
+
+        $data[EntityConstants::MERCHANT_DETAIL][BusinessDetailConstants::APPSTORE_URL] = $businessDetails->getAppstoreUrl();
+
+        if($merchantDetail != null) {
+
+            $merchantAov = $merchantDetail->avgOrderValue;
+
+            if ($merchantAov != null) {
+                $data[EntityConstants::MERCHANT_DETAIL]['min_aov'] = $merchantAov->getMinAov();
+
+                $data[EntityConstants::MERCHANT_DETAIL]['max_aov'] = $merchantAov->getMaxAov();
+            }
+        }
 
         return $data;
     }
@@ -8961,9 +9006,25 @@ class Service extends Base\Service
         return array_merge($response, [
             'needs_clarification'      => $needsClarification,
             'permission'               => $permission,
-            'request_under_validation' => $this->isRequestUnderValidationForMerchantWorkflow($workflowType),
+            'request_under_validation' => $this->isRequestUnderValidationForMerchantWorkflow($workflowType, $merchantId),
             'tags'                     => $this->getWorkflowTags($action),
         ]);
+    }
+
+    public function getMerchantWorfklowDetailsBulk(string $merchantId, array $input) {
+
+        $response = array();
+
+        foreach( $input["workflow_type"] as $workflowType ) {
+
+            array_push($response, [
+                'workflow_name'      => $workflowType,
+                'workflow_details'   => $this->getMerchantWorkflowDetails($workflowType,$merchantId),
+            ]);
+
+        }
+
+        return $response;
     }
 
     protected function getWorkflowTags($action)
@@ -8983,12 +9044,12 @@ class Service extends Base\Service
         return $tags;
     }
 
-    protected function isRequestUnderValidationForMerchantWorkflow(string $workflowType)
+    protected function isRequestUnderValidationForMerchantWorkflow(string $workflowType, $merchantId = null)
     {
         switch ($workflowType)
         {
             case Constants::GSTIN_UPDATE_SELF_SERVE :
-                return $this->isGstinUpdateUnderBvsValidation();
+                return $this->isGstinUpdateUnderBvsValidation($merchantId);
                 break;
             case Constants::BANK_DETAIL_UPDATE :
                 return $this->isBankAccountUpdateUnderBvsValidation();
@@ -8997,9 +9058,9 @@ class Service extends Base\Service
         }
     }
 
-    protected function isGstinUpdateUnderBvsValidation()
+    protected function isGstinUpdateUnderBvsValidation($merchantId = null)
     {
-        $data = (new Detail\Service())->getGstinSelfServeInputFromCache();
+        $data = (new Detail\Service())->getGstinSelfServeInputFromCache($merchantId);
 
         return is_null($data) === false;
     }
@@ -9010,7 +9071,6 @@ class Service extends Base\Service
 
         return $bankAccountCore->isBankAccountUpdatePennyTestingInProgress($this->merchant);
     }
-
 
     protected function getActionForMerchantWorkflow($workflowType, $merchantId = null)
     {
@@ -9026,7 +9086,6 @@ class Service extends Base\Service
             $merchant = $this->merchant;
         }
 
-
         $merchantCore = new Merchant\Core;
 
         [$entityId, $entity] = $merchantCore->fetchWorkflowData($workflowType, $merchant);
@@ -9041,7 +9100,7 @@ class Service extends Base\Service
         switch ($workflowType)
         {
             case Constants::GSTIN_UPDATE_SELF_SERVE :
-                return $this->getWorkflowActionForGstinUpdateSelfServe($entityId, $entity);
+                return $this->getWorkflowActionForGstinUpdateSelfServe($entityId, $entity, $orgId);
 
             case Constants::ADDITIONAL_WEBSITE :
                 return $this->getWebsiteSelfServeWorkflowAction($entityId, $entity, $orgId);
@@ -9050,17 +9109,17 @@ class Service extends Base\Service
                 return  (new Action\Core())->fetchLastUpdatedWorkflowActionInPermissionList(
                     $entityId,
                     $entity,
-                    [Constants::MERCHANT_WORKFLOWS[$workflowType][Constants::PERMISSION]]
+                    [Constants::MERCHANT_WORKFLOWS[$workflowType][Constants::PERMISSION]],$orgId
                 );
         }
     }
 
-    protected function getWorkflowActionForGstinUpdateSelfServe($entityId, $entity)
+    protected function getWorkflowActionForGstinUpdateSelfServe($entityId, $entity, $orgId = null)
     {
         $action = (new Action\Core())->fetchLastUpdatedWorkflowActionInPermissionList(
             $entityId,
             $entity,
-            [Permission::UPDATE_MERCHANT_GSTIN_DETAIL, Permission::EDIT_MERCHANT_GSTIN_DETAIL]
+            [Permission::UPDATE_MERCHANT_GSTIN_DETAIL, Permission::EDIT_MERCHANT_GSTIN_DETAIL], $orgId
         );
 
         return $action;

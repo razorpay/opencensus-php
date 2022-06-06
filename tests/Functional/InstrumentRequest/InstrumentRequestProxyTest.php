@@ -1185,4 +1185,94 @@ class InstrumentRequestProxyTest extends TestCase
         }
     }
 
+    public function testCollectInfoAdminProxy()
+    {
+        $this->ba->adminAuth();
+
+        $testCase = [
+            self::REQUEST       => [
+                'url'      => '/terminals/proxy/collect_info/merchant/10000000000000/details/admin',
+                'method'   => \Requests::POST,
+                'content'  => [
+                    'testKey' => 'testValue',
+                ],
+            ],
+            self::EXPECTED_REQUEST_PATH_TERMINALS_SERVICE      => 'v2/collect_info/merchant/10000000000000/details',
+            self::EXPECTED_REQUEST_METHOD_TERMINALS_SERVICE    => \Requests::POST,
+            self::EXPECTED_REQUEST_CONTENT_TERMINALS_SERVICE   => '{"testKey":"testValue"}'
+        ];
+
+        $this->testData[__FUNCTION__]['response'] = ['content' => ['testKey' => 'testValue']];
+
+        $this->testData[__FUNCTION__]['request'] = $testCase[self::REQUEST];
+
+        $this->mockTerminalsServiceSendRequest(function ($path, $content, $method, $additionalOptions = [], $additionalHeaders) use ($testCase) {
+
+            $this->assertEquals($testCase[self::EXPECTED_REQUEST_PATH_TERMINALS_SERVICE], $path);
+
+            $this->assertEquals($testCase[self::EXPECTED_REQUEST_METHOD_TERMINALS_SERVICE], $method);
+
+            $this->assertEquals($testCase[self::EXPECTED_REQUEST_CONTENT_TERMINALS_SERVICE], $content);
+
+            $response = new \Requests_Response;
+
+            $response->body = '
+                       {
+                        "data": {
+                           "testKey": "testValue"
+                        }
+                    }';
+
+            return $response;
+
+        }, 1);
+
+        $this->startTest();
+    }
+
+    public function testCollectInfoProxy()
+    {
+        $this->ba->privateAuth();
+
+        $testCase = [
+            self::REQUEST       => [
+                'url'      => '/terminals/proxy/collect_info/merchant/details',
+                'method'   => \Requests::POST,
+                'content'  => [
+                    'testKey' => 'testValue',
+                ],
+            ],
+            self::EXPECTED_REQUEST_PATH_TERMINALS_SERVICE      => 'v2/collect_info/merchant/10000000000000/details',
+            self::EXPECTED_REQUEST_METHOD_TERMINALS_SERVICE    => \Requests::POST,
+            self::EXPECTED_REQUEST_CONTENT_TERMINALS_SERVICE   => '{"testKey":"testValue"}'
+        ];
+
+        $this->testData[__FUNCTION__]['response'] = ['content' => ['testKey' => 'testValue']];
+
+        $this->testData[__FUNCTION__]['request'] = $testCase[self::REQUEST];
+
+        $this->mockTerminalsServiceSendRequest(function ($path, $content, $method, $additionalOptions = [], $additionalHeaders) use ($testCase) {
+
+            $this->assertEquals($testCase[self::EXPECTED_REQUEST_PATH_TERMINALS_SERVICE], $path);
+
+            $this->assertEquals($testCase[self::EXPECTED_REQUEST_METHOD_TERMINALS_SERVICE], $method);
+
+            $this->assertEquals($testCase[self::EXPECTED_REQUEST_CONTENT_TERMINALS_SERVICE], $content);
+
+            $response = new \Requests_Response;
+
+            $response->body = '
+                       {
+                        "data": {
+                           "testKey": "testValue"
+                        }
+                    }';
+
+            return $response;
+
+        }, 1);
+
+        $this->startTest();
+    }
+
 }

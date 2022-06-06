@@ -6,6 +6,7 @@ namespace RZP\Http\Controllers;
 use App;
 use Request;
 use ApiResponse;
+use RZP\Services\TerminalsService;
 use RZP\Trace\TraceCode;
 use RZP\Models\Admin\Permission;
 use Illuminate\Routing\Controller as BaseController;
@@ -212,6 +213,12 @@ class InstrumentRequestController extends BaseController
             'v2/merchant_instrument_request',
             ['timeout' => 0.5],
             $this->getMerchantHeadersForInstrumentRequest());
+
+        //For sending 400 Error to FE, we need to throw BadRequestException(not possible to send capture_info json), so send status_code explicitly with capture info json in response
+        if(isset($response[TerminalsService::CODE])
+            && $response[TerminalsService::CODE] === TerminalsService::CAPTURE_INFO_UPFRONT_ERROR) {
+            return ApiResponse::json($response, $response[TerminalsService::STATUS_CODE]);
+        }
 
         return ApiResponse::json($response);
     }

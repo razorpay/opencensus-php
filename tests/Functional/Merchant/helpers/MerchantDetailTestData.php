@@ -1163,6 +1163,47 @@ return [
         ],
     ],
 
+
+    'testGetInternalMerchantMerchantDetailsFetch' => [
+        'request' => [
+            'url'       => '/internal/merchants/10000000000155',
+            'method'    => 'GET',
+            'content'   => [],
+        ],
+        'response' => [
+            'content' => [
+                'merchant' => [
+                    'id' => '10000000000155',
+                    'entity' => 'merchant',
+                    'email' => 'razorpay@razorpay.com',
+                    'website' => 'razorpay.com',
+                ],
+                'merchant_detail' => [
+                    'business_type' => '1',
+                    'transaction_volume' => 5,
+                    'department'         => '6',
+                    'contact_mobile'     => '8722627189',
+                    'contact_email'      => 'razorpay@razorpay.com',
+                    'min_aov'            => 94,
+                    'max_aov'            => 98,
+                    'playstore_url' => 'https://play.google.com/store/apps/details?id=com.razorpay.payments.app.dummy',
+                    'appstore_url' => 'https://play.google.com/store/apps/details?id=com.dummy123123',
+                    'gstin'              => 'AAAA123456789A',
+                    'authorized_signatory_residential_address' => 'test',
+                    'authorized_signatory_dob' => '2022-03-12',
+                    'estd_year' => 2022
+                ],
+                'merchant_document' => [
+                    'promoter_address_url' => [
+                        [
+                            'file_store_id' => '123123',
+                        ]
+                    ]
+                ]
+            ],
+        ],
+    ],
+
     'testExternalGetMerchantCompositeDetails' => [
         'request' => [
             'url'       => '/external_org/merchants/composite_details/',
@@ -2894,13 +2935,24 @@ return [
     'testGetMerchantWorkflowDetailsByInternalAuth' => [
         'request'  => [
             'content' => [
+                "workflow_type" => [
+                    "additional_website",
+                ]
             ],
             'method'  => 'GET',
         ],
         'response' => [
             'content'     => [
-                'workflow_exists' => true,
-                'workflow_status' => 'open'
+                [
+                    "workflow_name" => "additional_website",
+                    "workflow_details" => [
+                        "workflow_exists" => true,
+                        "workflow_status" => "open",
+                        "needs_clarification" => null,
+                        "permission" => "update_merchant_website",
+                        "request_under_validation" => false,
+                    ]
+                ],
             ],
             'status_code' => 200,
         ],

@@ -64,6 +64,9 @@ class TerminalsService
     const OPTIONS           = 'options';
     const ORG_ID            = 'org_id';
 
+    const CODE              = 'code';
+    const CAPTURE_INFO_UPFRONT_ERROR = 'CAPTURE_INFO_UPFRONT_ERROR';
+
     const DEFAULT_TIMEOUT   = 0.1;
 
     const INITIATE_ONBOARDING                  = 'initiate_onboarding';
@@ -702,6 +705,13 @@ class TerminalsService
                 {
                     throw new Exception\BadRequestException(
                         self::TERMINALS_API_ERROR_CODE_MAPPING[$errorDescription], null, $data, $errorDescription);
+                }
+
+                //For sending 400 Error to FE, we need to throw BadRequestException(not possible to send capture_info json), so send status_code explicitly with capture info json in response
+                if(empty($parsedResponse) == false && isset($parsedResponse[SELF::DATA]) &&
+                    isset($parsedResponse[SELF::DATA][SELF::CODE]) &&
+                    $parsedResponse[SELF::DATA][SELF::CODE] === SELF::CAPTURE_INFO_UPFRONT_ERROR) {
+                    return $response;
                 }
 
                 if (is_array($errorDescription) === true)
