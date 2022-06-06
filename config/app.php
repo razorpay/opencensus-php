@@ -375,6 +375,8 @@ return array(
 
     'admin_submerchant_bulk_increase_resources_exp_id' => env('ADMIN_SUBMERCHANT_BULK_INCREASE_RESOURCES_EXP_ID'),
 
+    'submerchant_bulk_validation_status_update_exp_id' => env('SUBMERCHANT_BULK_VALIDATION_STATUS_UPDATE_EXP_ID'),
+
     'partner_add_submerchant_account_exp_id'    => env('PARTNER_ADD_SUBMERCHANT_ACCOUNT_EXP_ID'),
 
     'send_sms_on_commission_invoice_issued_exp_id' => env('SEND_SMS_ON_COMMISSION_INVOICE_ISSUED_EXP_ID'),

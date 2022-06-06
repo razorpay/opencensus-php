@@ -156,4 +156,24 @@ class Repository extends Base\Repository
                     ->pluck(Entity::OWNER_ID)
                     ->toArray();
     }
+
+    public function getEntitiesByMerchantIdAndState(string $merchantId, array $status)
+    {
+        $ownerIdColumn        = $this->repo->bvs_validation->dbColumn(Entity::OWNER_ID);
+        $validationUnitColumn = $this->repo->bvs_validation->dbColumn(Entity::VALIDATION_UNIT);
+        $artefactTypeColumn   = $this->repo->bvs_validation->dbColumn(Entity::ARTEFACT_TYPE);
+        $validationIdColumn   = $this->dbColumn(Entity::VALIDATION_ID);
+
+        return $this->newQuery()
+            ->select(
+                $validationIdColumn,
+                $ownerIdColumn,
+                $validationUnitColumn,
+                $artefactTypeColumn)
+            ->Where($ownerIdColumn, $merchantId)
+            ->WhereIn(Entity::VALIDATION_STATUS, $status)
+            ->Where(Entity::PLATFORM, "=", "pg")
+            ->Where(Entity::OWNER_TYPE, "=", "merchant")
+            ->get();
+    }
 }

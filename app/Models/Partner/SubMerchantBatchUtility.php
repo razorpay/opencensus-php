@@ -31,6 +31,7 @@ use RZP\Models\Partner\Constants as PartnerConstants;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetail;
 use RZP\Models\Merchant\Detail\Core as MerchantDetailCore;
+use RZP\Jobs\SubMerchantBatchUploadValidationStatusUpdater;
 use RZP\Models\Merchant\MerchantApplications\Entity as MerchantApp;
 
 class SubMerchantBatchUtility extends Base\Core
@@ -144,6 +145,18 @@ class SubMerchantBatchUtility extends Base\Core
             $this->unsetExtraOutputKeys($entry);
             return $subMerchant;
         });
+
+        $properties = [
+            'id' => $this->partner->getId(),
+            'experiment_id' => $this->app['config']->get('app.submerchant_bulk_validation_status_update_exp_id')
+        ];
+
+        $isExpEnable = (new Merchant\Core())->isSplitzExperimentEnable($properties,'enable');
+
+        if($isExpEnable === true)
+        {
+            SubMerchantBatchUploadValidationStatusUpdater::dispatch($this->mode, $subMerchant->getId());
+        }
 
         $this->trace->info(
             TraceCode::BATCH_SERVICE_SUBMERCHANT_CREATED,
