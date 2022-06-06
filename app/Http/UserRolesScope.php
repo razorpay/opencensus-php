@@ -1063,6 +1063,7 @@ class UserRolesScope
             'accounting_integration_sync_chart_of_accounts' => [Role::OWNER, Role::ADMIN],
             'accounting_integration_put_chart_of_accounts'  => [Role::OWNER, Role::ADMIN],
             'accounting_integration_get_chart_of_accounts'  => [Role::OWNER, Role::ADMIN],
+            'accounting_integration_bank_statement_fetch_trigger_merchant' => [Role::OWNER, Role::ADMIN],
 
             'raw_address_failed_file'                             => [Role::OWNER, Role::ADMIN],
             'update_serviceability_url'                           => [Role::OWNER, Role::ADMIN],

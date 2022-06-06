@@ -54,12 +54,20 @@ class Service
     const SYNC_CHART_OF_ACCOUNTS      = 'SyncChartOfAccounts';
     const ADD_OR_UPDATE_SETTINGS      = 'AddOrUpdateSettings';
     const GET_ALL_SETTINGS            = 'GetAllSettings';
+    const ZOHO_STATEMENT_SYNC         = 'TriggerZohoBankStatementSync';
+
+    const TRIGGER_BANK_STATEMENT_FETCH_CRON     = 'TriggerBankStatementFetchCron';
+    const TRIGGER_BANK_STATEMENT_FETCH_MERCHANT = 'TriggerBankStatementFetchMerchant';
 
     const X_RAZORPAY_TASKID_HEADER    = 'X-Razorpay-TaskId';
     const X_REQUEST_ID                = 'X-Request-ID';
     const X_MERCHANT_ID               = 'X-Merchant-Id';
     const X_USER_ID                   = 'X-User-Id';
     const X_ORG_ID                    = 'X-Org-Id';
+
+    const TRIGGER_TYPE = 'trigger_type';
+    const CRON         = 'cron';
+    const MERCHANT_ID  = 'merchant_id';
 
     protected $app;
 
@@ -431,6 +439,29 @@ class Service
         $input['user_id'] = $user->getPublicId();
 
         return $this->makeRequest($merchant, $url, $input, $app);
+    }
+
+    public function bankStatementFetchTriggerMerchant(MerchantEntity $merchant, array $input)
+    {
+        $input[self::MERCHANT_ID] = $merchant->getId();
+
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::TRIGGER_BANK_STATEMENT_FETCH_MERCHANT);
+
+        return $this->makeRequest(null, $url, $input);
+    }
+
+    public function bankStatementFetchTriggerCron()
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::TRIGGER_BANK_STATEMENT_FETCH_CRON);
+
+        return $this->makeRequest(null, $url);
+    }
+
+    public function zohoStatementSyncCron()
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::ZOHO_STATEMENT_SYNC);
+
+        return $this->makeRequest(null, $url);
     }
 
     protected function makeRequest(MerchantEntity $merchant = null,

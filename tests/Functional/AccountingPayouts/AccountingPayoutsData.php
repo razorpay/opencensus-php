@@ -427,4 +427,34 @@ return [
             'content' => [],
         ]
     ],
+
+    'testBankStatementFetchTriggerMerchant' => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/accounting-integration/bank-statement/fetch-trigger-merchant',
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+
+    'testBankStatementFetchTriggerCron' => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/accounting-integration/bank-statement/fetch-trigger-cron',
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+
+    'testZohoStatementSyncCron' => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/accounting-integration/zoho/bank-statement/sync-cron',
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
 ];

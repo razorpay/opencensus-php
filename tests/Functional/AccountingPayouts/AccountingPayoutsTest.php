@@ -628,4 +628,49 @@ class AccountingPayoutsTest extends TestCase
 
         $apMock->shouldHaveReceived('updateMappingCashFlowEntries');
     }
+
+    public function testBankStatementFetchTriggerMerchant()
+    {
+        $this->ba->proxyAuth();
+
+        $apMock = Mockery::mock('RZP\Services\AccountingPayouts');
+
+        $apMock->shouldReceive('bankStatementFetchTriggerMerchant')->andReturn([]);
+
+        $this->app->instance('accounting-payouts', $apMock);
+
+        $this->startTest();
+
+        $apMock->shouldHaveReceived('bankStatementFetchTriggerMerchant');
+    }
+
+    public function testBankStatementFetchTriggerCron()
+    {
+        $this->ba->cronAuth();
+
+        $apMock = Mockery::mock('RZP\Services\AccountingPayouts');
+
+        $apMock->shouldReceive('bankStatementFetchTriggerCron')->andReturn([]);
+
+        $this->app->instance('accounting-payouts', $apMock);
+
+        $this->startTest();
+
+        $apMock->shouldHaveReceived('bankStatementFetchTriggerCron');
+    }
+
+    public function testZohoStatementSyncCron()
+    {
+        $this->ba->cronAuth();
+
+        $apMock = Mockery::mock('RZP\Services\AccountingPayouts');
+
+        $apMock->shouldReceive('zohoStatementSyncCron')->andReturn([]);
+
+        $this->app->instance('accounting-payouts', $apMock);
+
+        $this->startTest();
+
+        $apMock->shouldHaveReceived('zohoStatementSyncCron');
+    }
 }

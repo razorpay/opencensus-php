@@ -177,4 +177,16 @@ class AccountingPayoutsController extends Controller
     {
         return $this->service->syncChartOfAccounts($this->ba->getMerchant(), $this->input, $app, $this->ba->getUser());
     }
+
+    public function bankStatementFetchTriggerMerchant() {
+        return $this->service->bankStatementFetchTriggerMerchant($this->ba->getMerchant(), $this->input);
+    }
+
+    public function bankStatementFetchTriggerCron() {
+        return $this->service->bankStatementFetchTriggerCron();
+    }
+
+    public function zohoStatementSyncCron() {
+        return $this->service->zohoStatementSyncCron();
+    }
 }
