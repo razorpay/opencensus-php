@@ -19,6 +19,8 @@ class Templating
     const TEMPLATE_CONFIGS_PATH  = '/template_configs';
     const TEMPLATE_SEARCH_PATH   = '/templates/search';
     const TEMPLATE_VIEW_PATH     = '/template_configs/view';
+    const ROLE_ASSIGN_PATH       = '/user_roles/assign';
+    const ROLE_REVOKE_PATH       = '/user_roles/revoke';
 
 
     public function __construct($app)
@@ -99,6 +101,26 @@ class Templating
         ]);
     }
 
+    public function assignRole($input)
+    {
+        return $this->sendRequest(
+        [
+            'path'      => self::ROLE_ASSIGN_PATH,
+            'data'      => $input,
+            'method'    => 'POST',
+        ]);
+    }
+
+    public function revokeRole($input)
+    {
+        return $this->sendRequest(
+            [
+                'path'      => self::ROLE_REVOKE_PATH,
+                'data'      => $input,
+                'method'    => 'POST',
+            ]);
+    }
+
     // @TODO: Split the sendRequest method into two
     // so that the funcitionality around forming the request params
     // can be tested
@@ -156,6 +178,15 @@ class Templating
                 'Received Server Error in templating service response',
                 ErrorCode::SERVER_ERROR_IN_TEMPLATING_RESPONSE,
                 [ 'templating_error'    => $responseBody->error ]);
+        }
+        else if($response->status_code == 403)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_UNAUTHORIZED_NAMESPACE_ACCESS_IN_TEMPLATING_RESPONSE,
+                null,
+                [
+                    'templating_error'    => $responseBody->error,
+                ]);
         }
         else if($response->status_code >= 400)
         {

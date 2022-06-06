@@ -3327,6 +3327,8 @@ class Route
         'templating_get_template_config'          => ['get',     'templating/template_configs/{id}',                        'TemplatingServiceController@getTemplateConfig'                ],
         'templating_list_template_config'         => ['get',     'templating/template_configs',                             'TemplatingServiceController@listTemplateConfig'               ],
         'templating_view_template_config'         => ['get',     'templating/template_configs/view/{id}',                   'TemplatingServiceController@viewTemplateConfig'               ],
+        'templating_assign_user_role'             => ['post',    'templating/user_roles/assign',                            'TemplatingServiceController@assignRole'                       ],
+        'templating_revoke_user_role'             => ['post',    'templating/user_roles/revoke',                            'TemplatingServiceController@revokeRole'                       ],
         'care_service_myoperator_webhook_proxy'   => ['post',    'care_service/myoperator_webhook/{path?}',                 'CareProxyController@postMyOperatorWebhookProxyRequest'        ],
         'merchant_rtb_details_fetch'              => ['get',     'badge_details',                                           'MerchantController@getRZPTrustedBadgeDetails'                 ],
         'payment_verify_new'                      => ['post',    'payments/{id}/verify_new',                                'PaymentController@postVerifyNew'                              ],
@@ -6668,6 +6670,8 @@ class Route
         'templating_create_template_config',
         'templating_update_template_config',
         'templating_view_template_config',
+        'templating_assign_user_role',
+        'templating_revoke_user_role',
 
         // Care service
         'care_service_admin_proxy',
@@ -7906,6 +7910,8 @@ class Route
         'templating_list_template_config'                     => Permission::TEMPLATING_SERVICE_READ_TEMPLATE_CONFIGS,
         'templating_get_template_config'                      => Permission::TEMPLATING_SERVICE_READ_TEMPLATE_CONFIGS,
         'templating_view_template_config'                     => Permission::TEMPLATING_SERVICE_READ_TEMPLATE_CONFIGS,
+        'templating_assign_user_role'                         => Permission::TEMPLATING_SERVICE_WRITE_ROLE,
+        'templating_revoke_user_role'                         => Permission::TEMPLATING_SERVICE_WRITE_ROLE,
         'currency_fetch_all_proxy'                            => Permission::CURRENCY_FETCH_RATES,
 
         'care_service_admin_proxy'                            => Permission::MANAGE_CARE_SERVICE_CALLBACK, // todo: have more fine grained permissions at route level
@@ -11539,6 +11545,8 @@ class Route
             'templating_list_template_config',
             'templating_update_template_config',
             'templating_view_template_config',
+            'templating_assign_user_role',
+            'templating_revoke_user_role',
             'terminal_add_merchant',
             'terminal_bank_bulk',
             'terminal_check_encrypted_value',

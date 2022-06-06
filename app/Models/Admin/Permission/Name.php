@@ -799,6 +799,7 @@ class Name
     const TEMPLATING_SERVICE_READ_NAMESPACES           = 'templating_service_read_namespaces';
     const TEMPLATING_SERVICE_WRITE_TEMPLATE_CONFIGS    = 'templating_service_write_template_configs';
     const TEMPLATING_SERVICE_READ_TEMPLATE_CONFIGS     = 'templating_service_read_template_configs';
+    const TEMPLATING_SERVICE_WRITE_ROLE                = 'templating_service_write_role';
     const DUMMY_ROUTE                                  = 'dummy_route';
 
     const MANAGE_INHERITANCE                  = 'manage_inheritance';

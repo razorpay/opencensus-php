@@ -72,6 +72,24 @@ class TemplatingServiceController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function assignRole()
+    {
+        $data = $this
+            ->templatingService()
+            ->assignRole($this->input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function revokeRole()
+    {
+        $data = $this
+            ->templatingService()
+            ->revokeRole($this->input);
+
+        return ApiResponse::json($data);
+    }
+
     protected function templatingService()
     {
         $app = App::getFacadeRoot();

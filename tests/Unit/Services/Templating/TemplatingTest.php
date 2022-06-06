@@ -145,6 +145,40 @@ class TemplatingTest extends TestCase
         $templating->shouldHaveReceived('sendRequest', $expectedArgs);
     }
 
+    public function testAssignRole()
+    {
+        $templating = $this->getTemplatingWithSendRequestMock();
+
+        $samplePayload = [ 'samplePayloadKey'  => 'samplePayloadValue' ];
+
+        $templating->assignRole($samplePayload);
+
+        $expectedArgs = [[
+            'path'      => '/user_roles/assign',
+            'data'      => $samplePayload,
+            'method'    => 'POST',
+        ]];
+
+        $templating->shouldHaveReceived('sendRequest', $expectedArgs);
+    }
+
+    public function testRevokeRole()
+    {
+        $templating = $this->getTemplatingWithSendRequestMock();
+
+        $samplePayload = [ 'samplePayloadKey'  => 'samplePayloadValue' ];
+
+        $templating->revokeRole($samplePayload);
+
+        $expectedArgs = [[
+            'path'      => '/user_roles/revoke',
+            'data'      => $samplePayload,
+            'method'    => 'POST',
+        ]];
+
+        $templating->shouldHaveReceived('sendRequest', $expectedArgs);
+    }
+
     protected function getTemplatingWithSendRequestMock()
     {
         $templating = Mockery::mock('RZP\Services\Templating', [$this->app])->makePartial();
