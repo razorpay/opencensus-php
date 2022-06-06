@@ -5856,6 +5856,43 @@ class Core extends Base\Core
         $this->validateAadhaarWithPan($merchant, $probeId);
     }
 
+    public function processDigilockerAadhaarVerification(string $merchantId, string $aadhaarXml, string $artefactCuratorId)
+    {
+        $stakeholderInput = [
+            Stakeholder\Entity::AADHAAR_ESIGN_STATUS => 'verified',
+            Stakeholder\Entity::BVS_PROBE_ID         => $artefactCuratorId
+        ];
+
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+
+        $xml = $this->getXmlFile($merchantId,$aadhaarXml);
+        $this->encryptFile($xml);
+
+        $this->uploadAadharEsignDocument($merchant, Document\Type::AADHAR_XML, $xml);
+
+        (new Stakeholder\Core)->saveStakeholder(null, $merchantId, $stakeholderInput);
+
+        if ($merchant->merchantDetail->getPoiVerificationStatus() !== BvsValidationConstants::VERIFIED)
+        {
+            return;
+        }
+        if ($merchant->getOrgId() !== Org\Entity::RAZORPAY_ORG_ID)
+        {
+            return;
+        }
+
+        $businessType = $merchant->merchantDetail->getBusinessType();
+
+        // If aadhaar esign is not required then, aadhar with pan is also not required
+        if (BusinessType::isAadhaarEsignVerificationRequired($businessType) === false)
+        {
+            return;
+        }
+
+        $this->validateAadhaarWithPan($merchant, $artefactCuratorId);
+    }
+
     private function uploadAadharEsignDocument($merchant, string $document_type, UploadedFile $file)
     {
         $input = [
@@ -5875,6 +5912,17 @@ class Core extends Base\Core
         }
 
         throw new Exception\BadRequestValidationFailureException("unable to fetch aadhar zip file");
+    }
+
+    private function getXmlFile(string $merchantId, string $xmldata)
+    {
+        $tmpZipFilePath = '/tmp/' . $merchantId . 'xml';
+        if (file_put_contents($tmpZipFilePath, $xmldata))
+        {
+            return new UploadedFile($tmpZipFilePath, 'file.xml', null, null, null, true);
+        }
+
+        throw new Exception\BadRequestValidationFailureException("unable to creare aadhar xml file");
     }
 
     private function extractXmlFromZip(string $merchantId, string $pin, $zip)

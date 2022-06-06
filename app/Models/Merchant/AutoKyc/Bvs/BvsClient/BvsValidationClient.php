@@ -30,6 +30,7 @@ class BvsValidationClient extends BaseClient
 {
     private $ValidationApiClient;
 
+
     /**
      * BvsValidationClient constructor.
      *
@@ -41,6 +42,7 @@ class BvsValidationClient extends BaseClient
         parent::__construct($merchant, $sync);
 
         $this->ValidationApiClient = new validationV1\ValidationAPIClient($this->host, $this->httpClient);
+
     }
 
     public function getValidation(array $payload)

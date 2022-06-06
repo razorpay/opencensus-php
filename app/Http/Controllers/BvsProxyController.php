@@ -12,16 +12,29 @@ class BvsProxyController extends BaseProxyController {
     const VERIFY_CAPTCHA_GET_OTP    = 'VerifyCaptchaGetOtp';
     const SUBMIT_OTP                = 'SubmitOtp';
 
+    //
+    const SEND_OTP_API              = 'SendOtpApi';
+    const VERIFY_OTP_API            = 'VerifyOtpApi';
+    const FETCH_DIGILOCKER_AADHAAR_DETAILS = 'FetchDigilockerAadhaarDetails';
+
     const ROUTES_URL_MAP    = [
-        self::GET_CAPTCHA_API           => "/twirp\/platform.bvs.probe.v1.ProbeAPI\/AadhaarGetCaptcha/",
-        self::VERIFY_CAPTCHA_GET_OTP    => "/twirp\/platform.bvs.probe.v1.ProbeAPI\/AadhaarVerifyCaptchaAndSendOtp/",
-        self::SUBMIT_OTP                => "/twirp\/platform.bvs.probe.v1.ProbeAPI\/AadhaarSubmitOtp/"
+        self::GET_CAPTCHA_API                   => "/twirp\/platform.bvs.probe.v1.ProbeAPI\/AadhaarGetCaptcha/",
+        self::VERIFY_CAPTCHA_GET_OTP            => "/twirp\/platform.bvs.probe.v1.ProbeAPI\/AadhaarVerifyCaptchaAndSendOtp/",
+        self::SUBMIT_OTP                        => "/twirp\/platform.bvs.probe.v1.ProbeAPI\/AadhaarSubmitOtp/",
+        self::SEND_OTP_API                      => "/twirp\/platform.bvs.artefactcurator.verify.v1.DigilockerAPI\/SendOtp/",
+        self::VERIFY_OTP_API                    => "/twirp\/platform.bvs.artefactcurator.verify.v1.DigilockerAPI\/VerifyOtp/",
+        self::FETCH_DIGILOCKER_AADHAAR_DETAILS  => "/twirp\/platform.bvs.artefactcurator.verify.v1.DigilockerAPI\/FetchAadhaarXmlDetails/"
+
+
     ];
 
     const MERCHANT_ROUTES   = [
         self::GET_CAPTCHA_API,
         self::VERIFY_CAPTCHA_GET_OTP,
-        self::SUBMIT_OTP
+        self::SUBMIT_OTP,
+        self::SEND_OTP_API,
+        self::VERIFY_OTP_API,
+        self::FETCH_DIGILOCKER_AADHAAR_DETAILS
     ];
 
     const ADMIN_ROUTES      = [];
@@ -30,8 +43,11 @@ class BvsProxyController extends BaseProxyController {
      * timeout in seconds
      */
     const PATH_TIMEOUT_MAP  = [
-        self::GET_CAPTCHA_API           => 30,
-        self::VERIFY_CAPTCHA_GET_OTP    => 30
+        self::GET_CAPTCHA_API                   => 30,
+        self::VERIFY_CAPTCHA_GET_OTP            => 30,
+        self::SEND_OTP_API                      => 30,
+        self::VERIFY_OTP_API                    => 15,
+        self::FETCH_DIGILOCKER_AADHAAR_DETAILS  => 15
     ];
 
 

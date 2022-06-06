@@ -4,7 +4,10 @@
 namespace RZP\Http\Controllers\Processors;
 
 use RZP\Exception;
+use RZP\Models\Merchant\AutoKyc\Bvs\BaseResponse\ValidationDetailsResponse;
+use RZP\Models\Merchant\AutoKyc\Bvs\BvsClient;
 use RZP\Models\Merchant\Detail\Core as DetailCore;
+use RZP\Trace\TraceCode;
 
 class BvsProxyPostProcessors extends PostProcessor
 {
@@ -54,4 +57,42 @@ class BvsProxyPostProcessors extends PostProcessor
         unset($response['file_url']);
         return $response;
     }
+
+
+    /**
+     * On successfully validating otp, fetch aadhaar xml and store  in stakeholders entity
+     * Also create xml file from aadhaar xml and store as merchant document
+     * @param array $payload
+     * @param array $response
+     */
+    public function handleVerifyOtpApi($payload = [], $response = [])
+    {
+        if(isset($response['is_success']) and $response['is_success'] ===true)
+        {
+            $merchantId = $this->ba->getMerchant()->getId();
+
+            $timeout = 15;
+
+            try{
+
+                $validationResponse = (new BvsClient\ArtefactCuratorApiClient($timeout))->getAadhaarValidation($response);
+
+                (new DetailCore)->processDigilockerAadhaarVerification(
+                    $merchantId, $validationResponse->getAadhaarXmlFile(), $validationResponse->getArtefactCuratorId());
+
+                return $response;
+
+            }
+            catch (Exception\BaseException $e)
+            {
+                unset($response['is_success']);
+                $response["is_success"] = false;
+                $response["fetchAadhaarXml"] = "failed";
+                return $response;
+            }
+        }
+
+        return $response;
+    }
+
 }
