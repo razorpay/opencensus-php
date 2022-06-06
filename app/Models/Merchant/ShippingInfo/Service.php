@@ -52,7 +52,11 @@ class Service extends Base\Service
 
         $ex = '';
 
-        $dimensions = array_merge($input, ['merchant_id' => $this->merchant->getId()]);
+        $dimensions = array_merge($input,
+            [
+                'merchant_id' => $this->merchant->getId(),
+                'mode' => $this->mode,
+            ]);
 
         try {
 
@@ -336,7 +340,7 @@ class Service extends Base\Service
                         ])
                 );
             }else {
-                $this->trace->error(TraceCode::MERCHANT_ADDRESS_SHIPPING_INFO_REQUEST,
+                $this->trace->error(TraceCode::MERCHANT_ADDRESS_SHIPPING_INFO_ERROR,
                     array_merge($dimensions,
                         [
                             'response' => $decodedResponse,

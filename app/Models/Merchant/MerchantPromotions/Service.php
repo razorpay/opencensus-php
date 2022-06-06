@@ -29,7 +29,8 @@ class Service extends Base\Service
 
         $dimensions =[
             "order_id" => $input['order_id'],
-            "merchant_id" => $this->merchant->getId()
+            "merchant_id" => $this->merchant->getId(),
+            "mode" => $this->mode
         ];
         $decodedResponse = [];
         $ex = '';
@@ -159,7 +160,7 @@ class Service extends Base\Service
                     )
                 );
             }else {
-                $this->trace->error(TraceCode::FETCH_COUPONS_REQUEST,
+                $this->trace->error(TraceCode::FETCH_COUPONS_ERROR,
                     array_merge(
                         $dimensions,
                         [
@@ -187,7 +188,8 @@ class Service extends Base\Service
 
         $dimensions =[
             "order_id" => $input['order_id'],
-            "merchant_id" => $this->merchant->getId()
+            "merchant_id" => $this->merchant->getId(),
+            "mode" => $this->mode
         ];
 
         $decodedResponse = [];
@@ -323,7 +325,7 @@ class Service extends Base\Service
                     )
                 );
             }else {
-                $this->trace->error(TraceCode::MERCHANT_CHECK_COUPON_VALIDITY_REQUEST,
+                $this->trace->error(TraceCode::MERCHANT_CHECK_COUPON_VALIDITY_ERROR,
                     array_merge(
                         $dimensions,
                         [
