@@ -154,6 +154,7 @@ class MailTags
     const ACCOUNT_ACTIVATED                = 'account_activated';
     const INSTANT_ACTIVATION               = 'instant_activation';
     const NEEDS_CLARIFICATION              = 'needs_clarification';
+    const SUBMERCHANT_NC_STATUS_CHANGED    = 'submerchant_nc_status_changed';
     const SUB_MERCHANT_ADDED               = 'sub_merchant_added';
     const AFFILIATE_ADDED                  = 'affiliate_added';
     const ACCOUNT_REJECTED                 = 'account_rejected';

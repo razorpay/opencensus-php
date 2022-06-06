@@ -85,6 +85,7 @@ class Constants
     const PARTNER              = 'partner';
     const ORG                  = 'org';
     const HOSTNAME             = 'hostname';
+    const PARTNER_EMAIL             = 'partner_email';
     const CLARIFICATION_REASON = 'clarification_reason';
 
     // penny testing constants

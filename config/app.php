@@ -411,4 +411,6 @@ return array(
     'db_migration_metrics_sampling_percent' => env('DB_MIGRATION_METRIC_SAMPLING_PERCENT', 1.0),
 
     'product_config_issue_exp_id' => env('PRODUCT_CONFIG_ISSUE_EXP_ID'),
+    
+    'merchant_kyc_update_to_partner_exp_id'    => env('MERCHANT_KYC_UPDATE_TO_PARTNER_EXP_ID'),
 );

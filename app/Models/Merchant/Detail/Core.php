@@ -98,6 +98,7 @@ use RZP\Models\Merchant\Credits\Balance\Entity as CreditEntity;
 use RZP\Models\Merchant\AutoKyc\Bvs\requestDispatcher\CinAuth;
 use RZP\Models\Merchant\AutoKyc\Bvs\requestDispatcher\LlpinAuth;
 use RZP\Mail\Merchant\NeedsClarificationEmail as ClarificationEmail;
+use RZP\Mail\Merchant\SubMerchantNCStatusChanged as SubMerchantNCStatusChangedEmail;
 use RZP\Notifications\Dashboard\Events as DashboardNotificationEvent;
 use RZP\Models\Merchant\BusinessDetail\Entity as BusinessDetailEntity;
 use RZP\Notifications\Dashboard\Handler as DashboardNotificationHandler;
@@ -2643,7 +2644,25 @@ class Core extends Base\Core
                 {
                     $merchantDetails->setLocked(false);
 
+                    $accessMaps = $this->repo->merchant_access_map->fetchAffiliatedPartnersForSubmerchant($merchant->getId());
+                    
+                    $partnerMerchant = $accessMaps->filter(function ($value, $key) {
+                        return ($value->entityOwner->isAggregatorPartner() === true);
+                    })->first();
+         
                     $this->sendNeedsClarificationEmail($merchant);
+                    
+                    // $partnerMerchant can be null in case of linked accounts
+                    if(!is_null($partnerMerchant)){
+                        $properties = [
+                            'id' => $partnerMerchant->entityOwner->getId(),
+                            'experiment_id' => $this->app['config']->get('app.merchant_kyc_update_to_partner_exp_id')
+                        ];
+
+                        $isExpEnabled = (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable');
+                        if($isExpEnabled === true)
+                            $this->sendSubMerchantNCStatusChangedEmail($merchant, $partnerMerchant->entityOwner);
+                    }
                 }
             }
 
@@ -2839,6 +2858,47 @@ class Core extends Base\Core
         $email = new ClarificationEmail($data, $org->toArray());
 
         Mail::queue($email);
+    }
+
+    /**
+     * @param $merchant
+     * @param $partnerMerchant
+     */
+    public function sendSubMerchantNCStatusChangedEmail(Merchant\Entity $merchant, Merchant\Entity $partnerMerchant)
+    {
+        if ($partnerMerchant->getEmail() == null)
+        {
+            return;
+        }
+
+        $org = $merchant->org ?: $this->repo->org->getRazorpayOrg();
+
+        $merchantDetail = $merchant->merchantDetail;
+
+        $clarificationCore = new Detail\NeedsClarification\Core();
+
+        $clarificationReasons = $clarificationCore->getFormattedKycClarificationReasons(
+            $merchantDetail->getKycClarificationReasons());
+
+        $data = $this->getPayloadForSubMerchantNCStatusChangedEmail($merchant, $partnerMerchant, $clarificationReasons);
+
+        $email = new SubMerchantNCStatusChangedEmail($data, $org->toArray());
+
+        Mail::queue($email);
+    }
+
+    public function getPayloadForSubMerchantNCStatusChangedEmail(Merchant\Entity $merchant, Merchant\Entity $partnerMerchant, $clarificationReasons)
+    {
+        $data = [
+            DEConstants::PARTNER_EMAIL        => $partnerMerchant->getEmail(),
+            DEConstants::MERCHANT             => [
+                Merchant\Entity::ID          => $merchant->getId(),
+                Merchant\Entity::NAME          => $merchant->getName(),
+            ],
+            DEConstants::CLARIFICATION_REASON => $clarificationReasons,
+        ];
+
+        return $data;
     }
 
     public function getPayloadForClarificationEmail(Merchant\Entity $merchant, Org\Entity $org, $clarificationReasons)

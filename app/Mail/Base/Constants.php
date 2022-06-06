@@ -48,6 +48,7 @@ class Constants
     const RAZORPAY_HELP_DESK            = 'help_desk';
     const TECH_SETTLEMENTS              = 'tech_settlements';
     const FINANCE                       = 'finance';
+    const PARTNER_NOTIFICATIONS         = 'partner_notifications';
     const PARTNER_PAYMENTS              = 'partner_payments';
     const PARTNER_OPS                   = 'partner_ops';
     const DOWNTIME_NOTIFICATION_CARD          = 'downtime_notification_card';
@@ -109,6 +110,7 @@ class Constants
         self::TECH_SETTLEMENTS          => 'tech.settlements@razorpay.com',
         self::FINANCE                   => 'finance@razorpay.com',
         self::PARTNER_PAYMENTS          => 'partner-payments@razorpay.com',
+        self::PARTNER_NOTIFICATIONS     => 'partner.notifications@razorpay.com',
         self::PARTNER_OPS               => 'partner.ops@razorpay.com',
         self::DOWNTIME_NOTIFICATION_CARD       => 'downtime-notifications-card@razorpay.com',
         self::DOWNTIME_NOTIFICATION_UPI        => 'downtime-notifications-upi@razorpay.com',
@@ -157,6 +159,7 @@ class Constants
         self::CAPITAL_OPS             => 'Capital Ops Team',
         self::CAPITAL_CREDIT          => 'Capital Credit',
         self::NACH                    => 'Razorpay Nach',
+        self::PARTNER_NOTIFICATIONS   => 'Partner Notifications',
         self::PARTNER_PAYMENTS        => 'Partner Payments',
         self::PARTNER_OPS             => 'Partner Ops',
         self::RAZORPAY_HELP_DESK      => 'Team Razorpay',
