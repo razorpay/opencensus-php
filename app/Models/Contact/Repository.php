@@ -34,7 +34,7 @@ class Repository extends Base\Repository
         // slack thread: https://razorpay.slack.com/archives/CQ932EVNH/p1653578986629329?thread_ts=1652778693.188489&cid=CQ932EVNH
         if ($merchant->isFeatureEnabled(Feature\Constants::DEDUPE_CONTACT_ON_REPLICA) === true)
         {
-            $query = $this->newQueryWithConnection($this->getSlaveConnection());
+            $query = $this->newQueryWithConnection($this->getReportingReplicaConnection());
         }
         else
         {
