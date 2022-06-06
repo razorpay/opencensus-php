@@ -1110,10 +1110,10 @@ class Entity extends Base\PublicEntity
 
         if ($data[Card\Entity::TRIVIA] === '1')
         {
-            $data['iin']          = substr($data['token_iin'],0,6);
-            $data['expiry_month'] = intval($data['token_expiry_month']);
-            $data['expiry_year']  = intval($data ['token_expiry_year']);
-            $data['last4']        = $data ['token_last4'];
+            $data['iin']          = empty($data['token_iin']) ? $data['iin'] : substr($data['token_iin'],0,6);
+            $data['expiry_month'] = empty($data['token_expiry_month']) ? $data['expiry_month'] : intval($data['token_expiry_month']);
+            $data['expiry_year']  = empty($data['token_expiry_year']) ? $data['expiry_year'] : intval($data ['token_expiry_year']);
+            $data['last4']        = empty($data['token_last4']) ? $data['last4'] : $data ['token_last4'];
         }
 
         return $data;
