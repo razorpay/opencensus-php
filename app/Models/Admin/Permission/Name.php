@@ -589,6 +589,7 @@ class Name
     const UPDATE_WEBHOOK                      = 'update_webhook';
     const VIEW_WEBHOOK                        = 'view_webhook';
     const VIEW_WEBHOOK_EVENT                  = 'view_webhook_event';
+    const STORK_WEBHOOK_REPLAY                = 'stork_webhook_replay';
     const VIEW_REPORTING                      = 'view_reporting';
     const CREATE_REPORTING                    = 'create_reporting';
     const UPDATE_REPORTING                    = 'update_reporting';

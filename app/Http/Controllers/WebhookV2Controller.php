@@ -88,9 +88,9 @@ class WebhookV2Controller extends Controller
      */
     public function processWebhookEventsByIds()
     {
-        (new Service)->processWebhookEventsByIds($this->input);
+        $data = (new Service)->processWebhookEventsByIds($this->input);
 
-        return ApiResponse::json([]);
+        return ApiResponse::json($data);
     }
 
     /**
@@ -143,5 +143,14 @@ class WebhookV2Controller extends Controller
         $response = (new Service)->getWebhookEvents();
 
         return ApiResponse::json($response);
+    }
+
+    public function listWebhookEvents()
+    {
+        $input = Request::all();
+
+        $data = (new Service)->listWebhookEvents($input);
+
+        return ApiResponse::json($data);
     }
 }

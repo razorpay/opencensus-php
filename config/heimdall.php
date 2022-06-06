@@ -1075,6 +1075,10 @@ return [
                 'description' => 'Perform various support operation e.g. processing bulk webhook events via csv etc',
                 'assignable'  => true,
             ],
+            Permission::STORK_WEBHOOK_REPLAY      => [
+                'description' => 'List and replay webhooks events',
+                'assignable'  => true,
+            ],
             Permission::EDGE_WRITE_OPERATION         => [
                 'description' => 'Allows performing various write operations around dual writes and migrations for credcase, and edge',
                 'assignable'  => true,

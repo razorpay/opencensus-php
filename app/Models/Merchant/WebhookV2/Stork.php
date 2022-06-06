@@ -25,6 +25,7 @@ class Stork
 {
     // Calls to stork defaults to 2s timeout, but for process event it is overridden to 350ms.
     const PROCESS_EVENT_REQUEST_TIMEOUT_MS = 350;
+    const REPLAY_EVENT_REQUEST_TIMEOUT_MS  = 2000;
 
     /**
      * @var string
@@ -55,6 +56,7 @@ class Stork
     const WK_GET_WITH_SECRET_ROUTE    = '/twirp/rzp.stork.webhook.v1.WebhookAPI/GetWithSecret';
     const WK_LIST_WITH_SECRET_ROUTE   = '/twirp/rzp.stork.webhook.v1.WebhookAPI/ListWithSecret';
     const WK_GET_ANALYTICS_ROUTE      = '/twirp/rzp.stork.webhook.v1.WebhookAPI/GetAnalytics';
+    const WK_LIST_EVENTS_ROUTE        = '/twirp/rzp.stork.webhook.v1.WebhookAPI/ListWebhookEvents';
 
     public function __construct(string $mode = Mode::LIVE, string $product = Product::PRIMARY)
     {
@@ -211,6 +213,12 @@ class Stork
         return json_decode($response->body, true) ?: [];
     }
 
+    public function listWebhookEvents(array $payload)
+    {
+        $response = $this->service->request(self::WK_LIST_EVENTS_ROUTE, $payload);
+        return json_decode($response->body, true) ?: [];
+    }
+
     protected function formatWebhook(array $webhook)
     {
         if (isset($webhook['created_at']) === true)
@@ -270,39 +278,6 @@ class Stork
 
             // Exception for this call i.e. dispatch() is suppressed and logged within by the dispatcher.
             WebhookEvent::dispatch($this->mode, $event->merchant, $event->getAttributes(), $this->product);
-        }
-    }
-
-    /**
-     * # What?
-     * Calls replayEventById() and if failure queues it for which worker exists in
-     * this service itself. The worker again just calls processEvent() for each
-     * queued messages.
-     *
-     * # Why?
-     * We are doing this to avoid event drops with network issues and/or
-     * timeouts between api<>stork communication. Note that there exists retry
-     * for http call and this is eventual fallback.
-     *
-     * Worker exists for now in api service itself to save development time and
-     * devops ask. Ideally there should be a shared queue and stork itself
-     * should drain that queue.
-     *
-     * @param  Event\Entity $event
-     * @return void
-     */
-    public function replayEventByIdSafe(string $eventId)
-    {
-        try
-        {
-            $this->replayEventById($eventId);
-        }
-        catch (\Throwable $e)
-        {
-            $this->trace->traceException($e, Logger::ERROR, TraceCode::STORK_DISPATCH_EVENT_FAILED);
-
-            // Exception for this call i.e. dispatch() is suppressed and logged within by the dispatcher.
-            //WebhookEvent::dispatch($this->mode, $eventId, $this->product);
         }
     }
 
@@ -368,16 +343,14 @@ class Stork
      * @throws \RZP\Exception\ServerErrorException
      * @throws \Throwable
      */
-    public function replayEventById(string $eventId)
+    public function replayEventByIds(array $input): array
     {
-        $replayEventReq = [
-            'event_id' => $eventId
-        ];
-        $this->service->request(
-            '/twirp/rzp.stork.webhook.v1.WebhookAPI/ReplayWebhookByEventId',
-            $replayEventReq,
-            self::PROCESS_EVENT_REQUEST_TIMEOUT_MS
+        $response = $this->service->request(
+            '/twirp/rzp.stork.webhook.v1.WebhookAPI/ProcessEventByEventIds',
+            $input,
+            self::REPLAY_EVENT_REQUEST_TIMEOUT_MS
         );
+        return json_decode($response->body, true) ?:[];
     }
 
     /**

@@ -829,25 +829,18 @@ class Service extends Base\Service
     }
 
     /**
-     * Expects an array containing event ids as input.
-     * It loops through the event ids and makes sync call to replay the events by id on stork.
+     * Expects an array containing event ids as input. It makes sync call to replay the events by id on stork.
      *
      * @param  array  $input
      * @return void
      * @throws \RZP\Exception\BadRequestValidationFailureException
      */
-    public function processWebhookEventsByIds(array $input)
+    public function processWebhookEventsByIds(array $input): array
     {
         $this->trace->info(TraceCode::PROCESS_WEBHOOK_EVENTS_BY_IDS_REQUEST);
 
-        $eventIds = $input[Constant::EVENT_IDS];
-
         // Dispatches all events to stork.
-        $stork = new Stork($this->mode, $this->product);
-        foreach ($eventIds as $eventId)
-        {
-            $stork->replayEventByIdSafe($eventId);
-        }
+        return (new Stork($this->mode, $this->product))->replayEventByIds($input);
     }
 
     /**
@@ -1043,5 +1036,10 @@ class Service extends Base\Service
                     'merchant_id'       => $this->merchant->getId()
                 ]);
         }
+    }
+
+    public function listWebhookEvents(array $input): array
+    {
+        return (new Stork($this->mode, $this->product))->listWebhookEvents($input);
     }
 }
