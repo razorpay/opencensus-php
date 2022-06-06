@@ -19,10 +19,10 @@ class Validator extends Base\Validator
         Entity::IS_CVV_OPTIONAL    => 'sometimes|boolean',
         Entity::IS_TOKENIZED_CARD  => 'sometimes|boolean',
         Entity::TOKENISED          => 'sometimes|boolean',
-        Entity::CRYPTOGRAM_VALUE   => 'sometimes|string',
+        Entity::CRYPTOGRAM_VALUE   => 'sometimes|string|nullable',
         Entity::TOKEN_PROVIDER     => 'sometimes|string',
-        Entity::TOKEN_EXPIRY_MONTH => 'sometimes|integer|digits_between:1,2|max:12|min:0',
-        Entity::TOKEN_EXPIRY_YEAR  => 'sometimes|integer|digits:4|non_past_year',
+        Entity::TOKEN_EXPIRY_MONTH => 'sometimes|integer|digits_between:1,2|max:12|min:0|nullable',
+        Entity::TOKEN_EXPIRY_YEAR  => 'sometimes|integer|digits:4|non_past_year|nullable',
         Entity::LAST4              => 'sometimes|numeric|digits:4'
     ];
 

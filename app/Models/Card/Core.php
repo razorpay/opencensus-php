@@ -705,14 +705,14 @@ class Core extends Base\Core
     public function getCardInputFromCryptogram($cryptgram, $card, $input)
     {
         $input = [
-            Card\Entity::NUMBER                 => $cryptgram['token_number'],
+            Card\Entity::NUMBER                 => $cryptgram['token_number'] ?? $cryptgram['card']['number'],
             Card\Entity::NAME                   => $card->getName(),
-            Card\Entity::TOKEN_EXPIRY_MONTH     => $cryptgram['token_expiry_month'],
-            Card\Entity::TOKEN_EXPIRY_YEAR      => $cryptgram['token_expiry_year'],
+            Card\Entity::TOKEN_EXPIRY_MONTH     => $cryptgram['token_expiry_month'] ?? null,
+            Card\Entity::TOKEN_EXPIRY_YEAR      => $cryptgram['token_expiry_year'] ?? null,
             Card\Entity::EXPIRY_MONTH           => $card->getExpiryMonth(),
             Card\Entity::EXPIRY_YEAR            => $card->getExpiryYear(),
             Card\Entity::LAST4                  => $card->getLast4(),
-            Card\Entity::CRYPTOGRAM_VALUE       => $cryptgram['cryptogram_value'],
+            Card\Entity::CRYPTOGRAM_VALUE       => $cryptgram['cryptogram_value'] ?? null,
             Card\Entity::TOKENISED              => true,
             Card\Entity::VAULT                  => "rzpvault",
             CARD\Entity::IS_CVV_OPTIONAL        => false,

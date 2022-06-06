@@ -32,8 +32,7 @@ class Core extends Base\Core
         self::GATEWAY_VISA,
         self::GATEWAY_MC,
         self::GATEWAY_RUPAY,
-        // TODO: enable this once hdfc tokenisation is live
-        // self::GATEWAY_HDFC,
+        self::GATEWAY_HDFC,
     ];
 
     public const TokenisationGatewayToNetworkMapping = [
