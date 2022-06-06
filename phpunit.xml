@@ -95,6 +95,14 @@
             <exclude>./tests/Functional/Merchant/FeaturesTest.php</exclude>
             <!--Partner test using file utils to run in base suite-->
             <exclude>./tests/Functional/Merchant/PartnerTest.php</exclude>
+
+            <exclude>./tests/Functional/Merchant/Activation</exclude>
+            <exclude>./tests/Functional/Merchant/AutoKyc</exclude>
+            <exclude>./tests/Functional/Merchant/Bvs</exclude>
+            <exclude>./tests/Functional/Merchant/BvsVerification</exclude>
+            <exclude>./tests/Functional/Merchant/Products</exclude>
+            <exclude>./tests/Functional/Merchant/Slabs</exclude>
+            <exclude>./tests/Functional/Merchant/Store</exclude>
         </testsuite>
         <testsuite name="Features-3 Test Suite">
             <directory>./tests/Functional/BankingAccountStatement/</directory>
@@ -148,6 +156,16 @@
             <file>./tests/Functional/Merchant/MerchantTest.php</file>
             <file>./tests/Functional/Payment/TerminalSelectionTest.php</file>
             <file>./tests/Functional/Gateway/Mozart/UpiMindgateRecurringTest.php</file>
+        </testsuite>
+<!--        This is temporary fix to split Feature-2 Test Suite because of OOM issue. Root cause is unknown-->
+        <testsuite name="Feature-7 Test Suite">
+            <directory>./tests/Functional/Merchant/Activation</directory>
+            <directory>./tests/Functional/Merchant/AutoKyc</directory>
+            <directory>./tests/Functional/Merchant/Bvs</directory>
+            <directory>./tests/Functional/Merchant/BvsVerification</directory>
+            <directory>./tests/Functional/Merchant/Products</directory>
+            <directory>./tests/Functional/Merchant/Slabs</directory>
+            <directory>./tests/Functional/Merchant/Store</directory>
         </testsuite>
         <testsuite name="Payment Test Suite">
             <directory>./tests/Functional/Payment/</directory>
