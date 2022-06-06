@@ -103,7 +103,8 @@ class Core extends Base\Core
 
         if (($allowRZPFeesContactCreation === true) or
             ((Contact\Type::isInInternalNonRZPFees($contact->getType()) === true) and
-             Contact\Type::validateInternalAppAllowedContactType($contact->getType(),$this->app['basicauth']->getInternalApp()) === true))
+             Contact\Type::validateInternalAppAllowedContactType($contact->getType(),
+                 $this->app['basicauth']->getInternalApp()) === true))
         {
             (new Type)->setTypeForInternalContact($contact, $input[Entity::TYPE]);
         }
@@ -349,7 +350,8 @@ class Core extends Base\Core
 
         $totalFetchTime = $endTimeMs - $startTimeMs;
 
-        if($totalFetchTime > 500) {
+        if($totalFetchTime > 500)
+        {
 
             $this->trace->info(TraceCode::CONTACT_TO_REPO_FETCHTIME, [
                 'duration_ms' => $totalFetchTime,
@@ -359,6 +361,7 @@ class Core extends Base\Core
         return $this->getBulkAppSpecificInformation($contact);
     }
 
+    // phpcs:ignore Generic.NamingConventions.CamelCapsFunctionName.ScopeNotCamelCaps
     public function createRZPFeesContact($merchant)
     {
         $this->trace->info(TraceCode::RZP_FEES_CONTACT_CREATE_REQUEST, [
@@ -657,6 +660,11 @@ class Core extends Base\Core
             {
                 $contact->setExpenseId($vendor[Entity::EXPENSE_ID]);
             }
+
+            if (isset($vendor[Entity::GST_IN]))
+            {
+                $contact->setGstIn($vendor[Entity::GST_IN]);
+            }
         }
 
         return $contact;
@@ -738,7 +746,8 @@ class Core extends Base\Core
                 $updateParams[Entity::PAN] = $input[Entity::PAN];
             }
 
-            if (empty($updateParams)) {
+            if (empty($updateParams))
+            {
                 return $this->getAppSpecificInformation($contact);
             }
 
@@ -780,7 +789,8 @@ class Core extends Base\Core
 
         $totalFetchTime = $endTimeMs - $startTimeMs;
 
-        if($totalFetchTime > 500) {
+        if($totalFetchTime > 500)
+        {
 
             $this->trace->info(TraceCode::VENDOR_DETAILS_FETCH_DURATION, [
                 'duration_ms' => $totalFetchTime,
