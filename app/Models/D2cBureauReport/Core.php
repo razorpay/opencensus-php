@@ -47,7 +47,7 @@ class Core extends Base\Core
                 $response = $mozartService->sendMozartRequest(self::MOZART_NAMESPACE,
                                                               Provider::EXPERIAN,
                                                               self::MOZART_GET_REPORT_ACTION,
-                                                              $request,
+                                                                $request,
                                                               Mozart::DEFAULT_MOZART_VERSION,
                                                               true);
 

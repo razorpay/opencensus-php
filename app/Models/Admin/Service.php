@@ -1149,7 +1149,6 @@ class Service extends Base\Service
                     'gateway'   => $input['gateway'],
                     'action'    => $input['action']
                 ]);
-
             $response = (new MozartBase($this->app))->sendMozartRequest($input['namespace'],
                 $input['gateway'],
                 $input['action'],

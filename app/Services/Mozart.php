@@ -79,7 +79,8 @@ class Mozart
         string $version = self::DEFAULT_MOZART_VERSION,
         bool $useMozartMappedInternalErrorCode = false,
         int $timeout = self::TIMEOUT,
-        int $connectTimeout = self::CONNECT_TIMEOUT)
+        int $connectTimeout = self::CONNECT_TIMEOUT,
+        bool $logResponse = true, bool $addEntities = true)
     {
         $this->namespace = $namespace;
         $this->gateway   = $gateway;
@@ -90,7 +91,7 @@ class Mozart
 
         $authentication = $this->getAuthenticationDetails();
 
-        $request = $this->getRequest($url, $authentication, $input, $timeout, $connectTimeout);
+        $request = $this->getRequest($url, $authentication, $input, $timeout, $connectTimeout,$addEntities);
 
         $this->traceMozartServiceRequest($request);
 
@@ -98,7 +99,7 @@ class Mozart
 
         $responseArray = $this->jsonToArray($responseBody);
 
-        $this->traceMozartServiceResponse($responseArray ?? $responseBody ?? null);
+        $this->traceMozartServiceResponse($responseArray ?? $responseBody ?? null,$logResponse);
 
         // Un-setting the raw field here, this field is the json encoded response from the gateway
         // since we have already logged the response here, there's no need to application logic
@@ -186,10 +187,13 @@ class Mozart
     }
 
     protected function getRequest(string $url, array $authentication, array $input,
-                                  int $timeout = self::TIMEOUT, int $connectTimeout = self::CONNECT_TIMEOUT): array
+                                  int $timeout = self::TIMEOUT, int $connectTimeout = self::CONNECT_TIMEOUT,$addEntities): array
     {
-        $requestBody['entities'] = $input;
-
+        if($addEntities) {
+            $requestBody['entities'] = $input;
+        }else {
+            $requestBody = $input;
+        }
         $request = [
             'url' => $url,
             'method' => Requests::POST,
@@ -382,9 +386,11 @@ class Mozart
         $this->trace->info(TraceCode::MOZART_SERVICE_REQUEST, $traceRequest);
     }
 
-    protected function traceMozartServiceResponse($response)
+    protected function traceMozartServiceResponse($response,$logResponse)
     {
-        $this->trace->info(TraceCode::MOZART_SERVICE_RESPONSE, $response);
+        if($logResponse){
+            $this->trace->info(TraceCode::MOZART_SERVICE_RESPONSE, $response);
+        }
     }
 
     protected function jsonToArray($json)

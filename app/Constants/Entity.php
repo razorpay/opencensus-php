@@ -67,6 +67,7 @@ class Entity
     const DISCOUNT                   = 'discount';
     const EMI_PLAN                   = 'emi_plan';
     const CUSTOMER                   = 'customer';
+    const CAPITAL_VIRTUAL_CARDS      = 'capital_virtual_cards';
     const MERCHANT                   = 'merchant';
     const REVERSAL                   = 'reversal';
     const SCHEDULE                   = 'schedule';
@@ -942,6 +943,7 @@ class Entity
         self::DEBIT_NOTE                => \RZP\Models\Dispute\DebitNote::class,
         self::DEBIT_NOTE_DETAIL         => \RZP\Models\Dispute\DebitNote\Detail::class,
         self::CUSTOMER                  => \RZP\Models\Customer::class,
+        self::CAPITAL_VIRTUAL_CARDS     => \RZP\Models\CapitalVirtualCards::class,
         self::EMI_PLAN                  => \RZP\Models\Emi::class,
         self::MERCHANT                  => \RZP\Models\Merchant::class,
         self::LEGAL_ENTITY              => \RZP\Models\Merchant\LegalEntity::class,

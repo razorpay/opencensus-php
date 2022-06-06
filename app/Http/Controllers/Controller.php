@@ -132,6 +132,7 @@ abstract class Controller extends BaseController
 
             $class = E::getEntityService($entity);
         }
+
         return new $class;
     }
 }

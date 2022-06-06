@@ -7,6 +7,7 @@ use Request;
 use RZP\Constants\Entity as E;
 use RZP\Trace\TraceCode;
 
+
 class CustomerController extends Controller
 {
     public function createLocalCustomer()
@@ -169,7 +170,7 @@ class CustomerController extends Controller
 
         $sendOTP = true;
 
-        if(isset($input['skip_otp']) === true) 
+        if(isset($input['skip_otp']) === true)
         {
             $sendOTP = false;
         }

@@ -1101,6 +1101,13 @@ class Route
         'capital_cards_mail'                       => ['post',     'capital_cards/mail',                             'CapitalCardsController@sendMail'                                   ],
         'capital_cards_admin'                      => ['any',      'capital_cards/admin/{path?}',                    'CapitalCardsController@handleAdminRequests'                        ],
         'capital_cards_dev_admin'                  => ['any',      'capital_cards/dev_admin/{path?}',                'CapitalCardsController@handleAdminRequests'                        ],
+        'capital_virtual_cards_generate_token'     => ['get',      'capital_cards/token',                            'CapitalVirtualCardsController@generateToken'                       ],
+        'capital_virtual_cards_validate_token'     => ['get',      'cards/validate_token/{token}',                   'CapitalVirtualCardsController@validateToken'                       ],
+        'capital_virtual_cards_get_card_number'    => ['get',      'cards/number',                                   'CapitalVirtualCardsController@getCardNumber'                       ],
+        'capital_virtual_cards_send_otp'           => ['get',      'cards/otp',                                      'CapitalVirtualCardsController@sendOtp'                             ],
+        'capital_virtual_cards_get_card_cvv'       => ['get',      'cards/cvv',                                      'CapitalVirtualCardsController@getCardCvv'                          ],
+        'capital_virtual_cards_validate_session'   => ['get',      'cards/session',                                  'CapitalVirtualCardsController@validateSessionAtCards'              ],
+        'capital_virtual_cards'                    => ['get',      'virtual-card',                                   'CapitalVirtualCardsController@virtualCard'                         ],
         'capital_collections_service'              => ['any',      'capital_collections/service/{path?}',            'CapitalCollectionsController@handleProxyRequests'                  ],
         'capital_collections_admin'                => ['any',      'capital_collections/admin/{path?}',              'CapitalCollectionsController@handleAdminRequests'                  ],
         'capital_collections_dev_admin'            => ['any',      'capital_collections/dev_admin/{path?}',          'CapitalCollectionsController@handleAdminRequests'                  ],
@@ -5679,6 +5686,7 @@ class Route
         'payout_status_to_reason_mapping',
 
         'oauth_token_create_for_apple_watch',
+        'capital_virtual_cards_generate_token',
     ];
     // These will run on internal auth with the assurance
     // of X-Admin-Token being passed.
@@ -6837,6 +6845,8 @@ class Route
         'payment_links_v2_admin'                   => Permission::PAYMENT_LINKS_V2_ADMIN,
         'payment_links_ops_batch_cancel'           => Permission::PAYMENT_LINKS_OPS_BATCH_CANCEL,
         'capital_cards_service'                    => Permission::CAPITAL_DEVELOPER,
+        'capital_virtual_cards_generate_token'     => Permission::CAPITAL_DEVELOPER,
+
         'capital_cards_dev_admin'                  => Permission::CAPITAL_DEVELOPER,
         'capital_collections_admin'                => Permission::CAPITAL_COLLECTIONS_ADMIN,
         'capital_collections_dev_admin'            => Permission::CAPITAL_DEVELOPER,
@@ -8094,6 +8104,7 @@ class Route
         'merchant_primary_balance_fetch'               => '*',
         'ufh_upload_file'                              => '*',
         'capital_cards_service'                        => '*',
+        'capital_virtual_cards_generate_token'         => '*',
         'otp_create'                                   => '*',
         'banking_account_update_dashboard'             => '*',
         'banking_accounts_get'                         => '*',
@@ -8554,6 +8565,14 @@ class Route
         'payment_links_demo',
         'payment_links_demo_cors',
 
+        //virtual cards - capital
+        'capital_virtual_cards_validate_token',
+        'capital_virtual_cards_get_card_number',
+        'capital_virtual_cards_get_card_cvv',
+        'capital_virtual_cards_send_otp',
+        'capital_virtual_cards_validate_session',
+        'capital_virtual_cards',
+
         // Offline QR
         'activate_test_offline_device',
         'activate_live_offline_device',
@@ -8656,8 +8675,14 @@ class Route
         'checkout_personalisation',
         'customer_create_global_address',
         'customer_edit_global_address',
+        'capital_virtual_cards_validate_token',
+        'capital_virtual_cards_get_card_number',
+        'capital_virtual_cards_validate_session',
+        'capital_virtual_cards',
+        'capital_virtual_cards_get_card_cvv',
+        'capital_virtual_cards_send_otp',
         'customer_record_1cc_address_consent_view',
-        'customer_record_1cc_address_consent',
+        'customer_record_1cc_address_consent'
     ];
 
     /**
@@ -8880,6 +8905,7 @@ class Route
             'bvs_service_dashboard',
             'can_merchant_submit_support_call_request',
             'capital_cards_service',
+            'capital_virtual_cards_generate_token',
             'capital_collections_service',
             'capital_collections_webhook',
             'capital_marketplace_oauth',

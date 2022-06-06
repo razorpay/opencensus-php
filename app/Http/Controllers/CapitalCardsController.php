@@ -2,22 +2,24 @@
 
 namespace RZP\Http\Controllers;
 
-use Request;
 use ApiResponse;
-use RZP\Trace\Tracer;
-use Illuminate\Support\Str;
-
-use RZP\Exception;
-use RZP\Error\ErrorCode;
-use RZP\Trace\TraceCode;
-use RZP\Http\Request\Requests;
-use RZP\Models\Admin\Permission\Name;
-use Psr\Http\Message\RequestInterface;
-use Http\Discovery\Psr18ClientDiscovery;
 use Http\Discovery\Psr17FactoryDiscovery;
-use OpenCensus\Trace\Propagator\ArrayHeaders;
-use RZP\Mail\CapitalCards\Base;
+use Http\Discovery\Psr18ClientDiscovery;
 use Illuminate\Support\Facades\Mail;
+use OpenCensus\Trace\Propagator\ArrayHeaders;
+use Psr\Http\Message\RequestInterface;
+use Request;
+use RZP\Error\ErrorCode;
+use RZP\Exception;
+use RZP\Http\Request\Requests;
+use RZP\Http\RequestHeader;
+use RZP\Mail\CapitalCards\Base;
+use RZP\Models\D2cBureauReport\Provider;
+use RZP\Services\Mozart;
+use RZP\Services\Mozart as MozartBase;
+use RZP\Trace\TraceCode;
+use RZP\Trace\Tracer;
+
 
 class CapitalCardsController extends Controller
 {
@@ -28,19 +30,18 @@ class CapitalCardsController extends Controller
     const DELETE   = 'DELETE';
     const MERCHANT = 'MERCHANT';
 
-
     const MAIL_ERROR_REGEX = '/View \[emails.capital_cards.(?:\w+)?\] not found./';
 
     protected function handleProxyRequests($path = null)
     {
-        $request = Request::instance();
-        $url     = $path;
-        $body    = $request->all();
 
+        $sessionId = $headers['x-dashboard-user-session-id'][0] ?? '';
+        $url     = $path;
+        $request = Request::instance();
+        $body    = $request->all();
         $this->trace->debug(TraceCode::CAPITAL_CARDS_PROXY_REQUEST, [
             'request' => $url,
         ]);
-
         $headers = [
             'x-merchant-id'    => optional($this->ba->getMerchant())->getId() ?? '',
             'X-Merchant-Email' => optional($this->ba->getMerchant())->getEmail() ?? '',
@@ -48,7 +49,9 @@ class CapitalCardsController extends Controller
             'X-User-Role'      => $this->ba->getUserRole() ?? '',
             'X-Auth-Type'      => 'proxy',
             'x-otp'            => $body['otp'] ?? '',
+            'x-dashboard-user-session-id'        => $sessionId,
         ];
+        $headers[RequestHeader::DEV_SERVE_USER] = Request::header(RequestHeader::DEV_SERVE_USER);
 
         if (($request->method() === 'GET') and
             (empty($body) === false))
