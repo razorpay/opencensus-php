@@ -209,14 +209,26 @@ class Service extends Base\Service
 
         $orderArray = $order->toArrayPublic();
 
-        return [
+        // NOTE: promotions is not set if the 1ccResetAPI call fails, until CX team fixes it
+        // keep the null check here
+        $response = [
             'total_amount'     => $orderArray['amount'],
-            'promotions'       => $orderArray['promotions'],
+            'promotions'       => $orderArray['promotions'] ?? [],
             'shipping_fee'     => $orderArray['shipping_fee'],
             'order_id'         => $shopifyOrder['order']['name'],
             'total_tax'        => $shopifyOrder['order']['total_tax'],
             'order_status_url' => $shopifyOrder['order']['order_status_url']
         ];
+
+        // NOTE: Logging the response to debug an issue where the FE is not receiving data
+        // for analytics
+        $this->trace->info(
+            TraceCode::SHOPIFY_1CC_COMPLETE_ORDER_REQUEST,
+            [
+                'response'   => $response,
+            ]);
+
+        return $response;
     }
 
     // places final order and gateway transaction to Shopify
