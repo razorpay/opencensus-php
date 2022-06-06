@@ -5,7 +5,7 @@ namespace RZP\Models\Settlement\Bucket;
 use Cache;
 use Config;
 use Carbon\Carbon;
-
+use RZP\Exception;
 use RZP\Jobs\Settlement\Bucket;
 use RZP\Models\Base;
 use RZP\Models\Feature;
@@ -22,6 +22,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\Preferences;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Jobs\Settlement\TransactionMigrationPublish;
+use RZP\Models\Transfer\Constant as TransferConstant;
 use RZP\Constants\Country;
 
 class Core extends Base\Core
@@ -274,6 +275,19 @@ class Core extends Base\Core
                 'international' => $payment->isInternational(),
             ];
 
+            if (($payment->merchant->isLinkedAccount() === true) and
+                ($payment->getMethod() === Payment\Method::TRANSFER))
+            {
+                try
+                {
+                    $this->addOriginMethodForLinkedAccount($payment, $meta);
+                }
+                catch(\Throwable $e)
+                {
+                    throw new Exception\LogicException('Either transfer not found or transfer source not found');
+                }
+            }
+
             if($payment->isInternational() === true)
             {
                 $meta += [
@@ -362,7 +376,7 @@ class Core extends Base\Core
         {
             $remitterName = $payment->card->getName();
         }
-        // If Payment is not a card Payment and If gateway is under ADDRESS_NAME_REQUIRED_GATEWAYS array 
+        // If Payment is not a card Payment and If gateway is under ADDRESS_NAME_REQUIRED_GATEWAYS array
         // we will fetch remitter name from addresses table.
         else if (Payment\Gateway::isAddressAndNameRequiredGateway($payment->getGateway()) === true)
         {
@@ -385,9 +399,10 @@ class Core extends Base\Core
     }
 
     /**
-     * Returns Country Name from address saved in 
+
+     * Returns Country Name from address saved in
      * addresses table linked with payment entity.
-     * 
+     *
      * @param Payment\Entity
      * @return String | null
      */
@@ -412,19 +427,50 @@ class Core extends Base\Core
         return (new \RZP\Models\Currency\Core())->convertAmount($payment->getGatewayAmount(), $payment->getGatewayCurrency(), $currency);
     }
 
+    protected function addOriginMethodForLinkedAccount(Payment\Entity $payment, array &$meta)
+    {
+        $transfer = $payment->transfer;
+
+        $sourceType = $transfer->getSourceType();
+
+        $sourcePayment = null;
+
+        if ($sourceType === TransferConstant::PAYMENT)
+        {
+            $sourcePayment = $transfer->source;
+        }
+        else if ($sourceType === TransferConstant::ORDER)
+        {
+            $sourcePayment = $transfer->source->payments()->where(Payment\Entity::STATUS, Payment\Status::CAPTURED)->first();
+        }
+        else
+        {
+            //
+            // $sourceType is `merchant` here, meaning this is a direct
+            // transfer which does not have an associated source payment.
+            //
+            return ;
+        }
+
+        $meta += [
+            'origin_method' => $sourcePayment->getMethod(),
+        ];
+    }
+
      /**
-     * Returns Settlement Currency of Payment in Case of OPGSP 
-     * Settlements. Returns NULL in case of gateways not on 
+     * Returns Settlement Currency of Payment in Case of OPGSP
+     * Settlements. Returns NULL in case of gateways not on
      * OGPSP Based Settlements.
-     * 
+     *
      * @param Payment\Entity
      * @return String | null
      */
 
-    private function getSettlementCurrencyOfPayment(Payment\Entity $payment) 
+    private function getSettlementCurrencyOfPayment(Payment\Entity $payment)
     {
-        return Payment\Gateway::getSettlementCurrencyOfPaymentByGateway($payment);    
+        return Payment\Gateway::getSettlementCurrencyOfPaymentByGateway($payment);
     }
+
 
     protected function getMetaForSource(Transaction\Entity $txn)
     {
