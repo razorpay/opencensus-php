@@ -11,6 +11,7 @@ use RZP\Models\Customer;
 use RZP\Models\Merchant;
 use RZP\Models\Payment\Method;
 use RZP\Jobs\TokenActionsHandler;
+use RZP\Models\Payment\TokenisationExperiment;
 use RZP\Models\Terminal;
 use RZP\Models\Customer\AppToken;
 use RZP\Models\Customer\Token;
@@ -585,6 +586,27 @@ class Core extends Base\Core
     }
 
     /**
+     * @param Customer\Entity $customer
+     * @param Merchant\Entity $merchant
+     *
+     * @return Base\PublicCollection
+     */
+    public function fetchTokensByCustomerForCheckout(Customer\Entity $customer, Merchant\Entity $merchant): Base\PublicCollection
+    {
+        if ($customer->isLocal()) {
+            return $this->fetchTokensByCustomer($customer, $merchant);
+        }
+
+        // Global Customers
+        if ((new TokenisationExperiment())->shouldCreateLocalTokenOnGlobalCustomer($merchant->getId())) {
+            return $this->fetchLocalOverGlobalTokensByCustomer($customer, $merchant);
+        }
+
+        // Fetch only global tokens if dual vault tokens are disabled for the merchant.
+        return $this->fetchGlobalTokensByCustomer($customer, $merchant);
+    }
+
+    /**
      * This method takes in the current tokens collection, removes the
      * emandate tokens and returns the remaining tokens as an array
      *
@@ -1021,6 +1043,26 @@ class Core extends Base\Core
         return $existingToken;
     }
 
+    /**
+     * Fetches global tokens associated with a global customer.
+     *
+     * @param Customer\Entity $customer
+     * @param Merchant\Entity $merchant
+     *
+     * @return Base\PublicCollection
+     */
+    protected function fetchGlobalTokensByCustomer(Customer\Entity $customer, Merchant\Entity $merchant): Base\PublicCollection
+    {
+        if ($customer->isLocal()) {
+            throw new Exception\LogicException('Please use fetchTokensByCustomer() to fetch local tokens.');
+        }
+
+        $tokens = $this->fetchTokensByCustomer($customer, $merchant);
+
+        return $tokens->filter(static function (Entity $token) {
+            return $token->isGlobal();
+        });
+    }
 
     /**
      * This method filters out global tokens from the given input tokens if
@@ -2034,8 +2076,9 @@ class Core extends Base\Core
     }
 
     /**
-     * @param $tokens
-     * @return mixed
+     * @param Base\PublicCollection|Entity[] $tokens
+     *
+     * @return Base\PublicCollection|Entity[]
      */
     public function addConsentFieldInTokens($tokens)
     {
@@ -2045,7 +2088,7 @@ class Core extends Base\Core
             {
                 $acknowledgedAt = $token->getAcknowledgedAt();
 
-                if(empty($acknowledgedAt) === false)
+                if(empty($acknowledgedAt) === false && $token->isLocal() === true)
                 {
                     $token[Entity::CONSENT_TAKEN] = true;
                 }

@@ -237,7 +237,7 @@ class Service extends Base\Service
         {
             $app = (new AppToken\Core)->getAppByAppTokenId($appTokenId, $this->merchant);
 
-            $tokens = $this->core->fetchLocalOverGlobalTokensByCustomer($app->customer, $this->merchant);
+            $tokens = $this->core->fetchTokensByCustomerForCheckout($app->customer, $this->merchant);
         }
 
         return $tokens->toArrayPublic();

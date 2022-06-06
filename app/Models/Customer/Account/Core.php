@@ -266,7 +266,7 @@ class Core extends Base\Core
         $appToken = $this->createCustomerAppToken($customer, $input, $merchant);
 
         // Fetch existing tokens for global customer
-        $tokens = (new Customer\Token\Core)->fetchLocalOverGlobalTokensByCustomer($customer, $merchant);
+        $tokens = (new Customer\Token\Core)->fetchTokensByCustomerForCheckout($customer, $merchant);
 
         // Put app token details in session so that we may not
         // need to verify the customer in future.

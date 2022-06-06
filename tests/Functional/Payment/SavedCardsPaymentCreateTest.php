@@ -1580,7 +1580,9 @@ class SavedCardsPaymentCreateTest extends TestCase
 
         $this->assertArrayHasKey('consent_taken', $content['tokens']['items'][0]);
 
-        $this->assertEquals(true, $content['tokens']['items'][0]['consent_taken']);
+        // consent_taken would be false for global cards even if it is tokenised
+        // as we would want to collect consent again & create a tokenised local card
+        $this->assertFalse($content['tokens']['items'][0]['consent_taken']);
     }
 
     public function testS2SPaymentCreateAndSaveCardWithoutCustomer()
