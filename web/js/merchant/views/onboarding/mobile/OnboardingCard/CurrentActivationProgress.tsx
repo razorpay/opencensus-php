@@ -18,6 +18,7 @@ import * as Messages from './Constants';
 import { useApp } from 'common/context/App';
 import useTrackEvents from 'merchant/hooks/useTrackEvents';
 import { IReferee } from '../Screens/Home';
+import { EASY_ONBOARDING } from '../Constants/OnboardingConstants';
 
 const InlineText = styled.span`
   color: #162f5661;
@@ -35,6 +36,7 @@ const CurrentActivationProgress: React.FC<
   const trackEvents = useTrackEvents();
   const isReferredMerchant = referee?.status === 'signup';
   const activationFormUrl = experiments.isActivationFormFullView ? 'kyc' : 'activation';
+  const isSignupWithEasyOnboarding = user?.user?.signup_campaign === EASY_ONBOARDING;
 
   const onCTAClick = () => {
     if (submerchantId) {
@@ -84,7 +86,8 @@ const CurrentActivationProgress: React.FC<
   const statusLog = data?.activationStatusChangeLogs || [];
 
   if (
-    dedupeStatus === 'blocked' &&
+    (dedupeStatus === 'blocked' ||
+      (data.activation_flow === 'blacklist' && isSignupWithEasyOnboarding && data.submitted)) &&
     (isL1Submitted(data.activation_form_milestone) || data.submitted) &&
     !data.activated &&
     (data.activation_status !== 'activated' || data.activation_status !== 'rejected')

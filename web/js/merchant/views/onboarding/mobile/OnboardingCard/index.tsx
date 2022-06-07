@@ -19,6 +19,7 @@ import { ActivationModal, ModalTypeT } from '../ActivationModals';
 import { useApp } from 'common/context/App';
 import { IReferee } from '../Screens/Home';
 import useTrackEvents from 'merchant/hooks/useTrackEvents';
+import { EASY_ONBOARDING } from '../Constants/OnboardingConstants';
 
 const Separator = styled(View)`
   height: 1px;
@@ -62,14 +63,23 @@ interface IOnboardingCardProps {
 }
 const OnboardingCard: React.FC<IOnboardingCardProps> = ({ referee }) => {
   const { user, experiments } = useApp();
+  const isSignupWithEasyOnboarding = user?.user?.signup_campaign === EASY_ONBOARDING;
   const { status: activationQueryStatus, data: activationData } = useActivation();
   const { status: escalationsStatus, data: escalationsData } = useEscalation();
   const trackEvents = useTrackEvents();
+
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [modalType, setModalType] = useState<ModalTypeT>('');
   const isInstantActivationEnabled = experiments.isInstantActivationEnabled;
   const dedupeStatus = checkIfDedupe({ ...activationData, isInstantActivationEnabled });
-  const isDedupe = dedupeStatus === 'blocked';
+
+  const isL2Submitted =
+    activationData?.activation_form_milestone === 'L2' || activationData?.submitted;
+  const isDedupe =
+    dedupeStatus === 'blocked' ||
+    (activationData?.activation_flow === 'blacklist' &&
+      isSignupWithEasyOnboarding &&
+      isL2Submitted);
   const [isModalClosed, setIsModalClosed] = useState(false);
 
   useEffect(() => {
@@ -84,7 +94,7 @@ const OnboardingCard: React.FC<IOnboardingCardProps> = ({ referee }) => {
       if (
         !canShowModals?.dedupe &&
         isDedupe &&
-        (activationData.activation_form_milestone === 'L2' || activationData.submitted) &&
+        isL2Submitted &&
         !activationData.activated &&
         (activationData.activation_status !== 'rejected' ||
           activationData.activation_status !== 'activated')

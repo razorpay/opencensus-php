@@ -14,6 +14,7 @@ import AcceptPaymentsIcon from './Icons/AcceptPaymentsIcon.svg';
 import { useApp } from 'common/context/App';
 import * as Messages from './Constants';
 import usePaymentVolume from '../hooks/usePaymentVolume';
+import { EASY_ONBOARDING } from '../Constants/OnboardingConstants';
 
 const ViewWithBackground = styled(View)`
   background: url('${AcceptPaymentsIcon}') right no-repeat;
@@ -246,8 +247,9 @@ const fetchWebsiteWorkflowStatus = () =>
 
 const AcceptPaymentsCard: React.FC = () => {
   const snackbar = useSnackbar();
-  const { experiments } = useApp();
+  const { user, experiments } = useApp();
   const isInstantActivationEnabled = experiments.isInstantActivationEnabled;
+  const isSignupWithEasyOnboarding = user?.user?.signup_campaign === EASY_ONBOARDING;
 
   const { status: activationQueryStatus, data: activationData } = useActivation();
   const { data: internationalWorkflowData } = useQuery(
@@ -294,7 +296,11 @@ const AcceptPaymentsCard: React.FC = () => {
   }
 
   if (activationData) {
-    const isDedupe = checkIfDedupe({ ...activationData, isInstantActivationEnabled }) === 'blocked';
+    const isDedupe =
+      checkIfDedupe({ ...activationData, isInstantActivationEnabled }) === 'blocked' ||
+      (activationData.activation_flow === 'blacklist' &&
+        isSignupWithEasyOnboarding &&
+        activationData.submitted);
 
     const content = getCardContent({
       activationData,

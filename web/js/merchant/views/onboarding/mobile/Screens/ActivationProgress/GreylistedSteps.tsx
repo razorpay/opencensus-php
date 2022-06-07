@@ -11,6 +11,7 @@ import { analyticsTrack } from 'common/services/tracking/segment';
 import { ActivationModal, ModalTypeT } from '../../ActivationModals';
 import { useApp } from 'common/context/App';
 import { getMode, switchMode } from 'common/services/mode';
+import { EASY_ONBOARDING } from '../../Constants/OnboardingConstants';
 
 const GreylistedSteps: React.FC<
   RouteComponentProps & {
@@ -52,6 +53,7 @@ const GreylistedSteps: React.FC<
     shallow,
   );
   const activationFormUrl = experiments.isActivationFormFullView ? '/kyc' : '/activation';
+  const isSignupWithEasyOnboarding = user?.user?.signup_campaign === EASY_ONBOARDING;
 
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [modalType, setModalType] = useState<ModalTypeT>('');
@@ -120,7 +122,9 @@ const GreylistedSteps: React.FC<
     isDocumentsUploadCompleted;
 
   const dedupeStatus = checkIfDedupe({ ...data, isInstantActivationEnabled });
-  const isDedupe = dedupeStatus === 'blocked';
+  const isDedupe =
+    dedupeStatus === 'blocked' ||
+    (data.activation_flow === 'blacklist' && isSignupWithEasyOnboarding && data.submitted);
 
   const canShowCTA =
     [

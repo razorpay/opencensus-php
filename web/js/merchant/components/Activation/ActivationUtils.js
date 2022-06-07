@@ -486,10 +486,11 @@ function getActivationState(activationData = {}, isUnregisteredBusiness) {
     isHardLimitReached,
     merchant_tnc,
     isL2AllowedForPoiInitiated,
+    activation_flow,
   } = activationData;
 
+  const isSignupWithEasyOnboarding = activationData?.user?.signup_campaign === 'easy_onboarding';
   const tncRequired = !business_website && !merchant_tnc && !isSourceRX() && canGenerateTnCPage;
-
   const dedupeStatus = isDedupe(activationData);
 
   if (activation_status === 'activated' && !merchant.hold_funds) {
@@ -511,7 +512,11 @@ function getActivationState(activationData = {}, isUnregisteredBusiness) {
       } else activationState = 'payment_disabled';
     }
   } else if (activation_form_milestone === 'L2') {
-    if (dedupeStatus === 'blocked' && !activated) {
+    if (
+      (dedupeStatus === 'blocked' ||
+        (activation_flow === 'blacklist' && isSignupWithEasyOnboarding)) &&
+      !activated
+    ) {
       activationState = 'L2_dedupe_blocked';
     } else if (activation_status === 'under_review') {
       if (dedupeStatus === 'partial') {
