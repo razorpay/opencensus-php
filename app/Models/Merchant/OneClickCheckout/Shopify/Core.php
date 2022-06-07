@@ -479,7 +479,7 @@ class Core extends Base\Core
 
         $order = json_decode($order, true);
 
-        $this->updateShopifyTransaction($order['order']['id'], $rzpPayment['method']);
+        $this->updateShopifyTransaction($order['order']['id'], $rzpPayment);
 
         $this->trace->info(
             TraceCode::SHOPIFY_1CC_PLACE_ORDER_RES,
@@ -596,11 +596,11 @@ class Core extends Base\Core
         return [$firstName, $lastName];
     }
 
-    protected function updateShopifyTransaction(string $merchantOrderId, string $paymentMethod): array
+    protected function updateShopifyTransaction(string $merchantOrderId, array $payment): array
     {
         $start = millitime();
 
-        $body = $this->getTransactionBody($merchantOrderId, $paymentMethod);
+        $body = $this->getTransactionBody($merchantOrderId, $payment);
 
         try
         {
@@ -628,14 +628,17 @@ class Core extends Base\Core
         }
     }
 
-    protected function getTransactionBody(string $merchantOrderId, string $paymentMethod): array
+    protected function getTransactionBody(string $merchantOrderId, array $payment): array
     {
         $txn = [
             'kind'              => 'sale',
             'order_id'          => $merchantOrderId,
             'source'            => 'external',
             'processing_method' => 'manual',
+            'currency'          => 'INR',
         ];
+
+        $paymentMethod = $payment['method'];
 
         // TODO: evaluate default cod gateway used
         if (strtolower($paymentMethod) === 'cod')
@@ -644,6 +647,7 @@ class Core extends Base\Core
                 'message' => 'Pending Cash on Delivery (COD) payment from the buyer',
                 'gateway' => 'Cash on Delivery (COD)',
                 'status'  => 'pending',
+                'authorization' => $payment['order_id'].'|'.$payment['id'],
             ]);
         }
         else
@@ -652,6 +656,7 @@ class Core extends Base\Core
                 'message' => 'Paid via Razorpay Magic Checkout',
                 'gateway' => 'Razorpay',
                 'status'  => 'success',
+                'authorization' => $payment['order_id'].'|'.$payment['id'],
             ]);
         }
 
