@@ -86,7 +86,7 @@ export default class SelectPeriod extends React.Component {
           rank: Ranks.P2,
           extra: {
             info: {
-              value: JSON.stringify(value),
+              value,
               isMometObject: value instanceof moment,
               isJSDateObject: value instanceof Date,
             },
