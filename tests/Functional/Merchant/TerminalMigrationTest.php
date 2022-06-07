@@ -2856,6 +2856,7 @@ class TerminalMigrationTest extends TestCase
             $data['terminal']['secrets']['gateway_terminal_password2'] = null;
             $data['terminal']['secrets']['gateway_secure_secret'] = "aasdfghjkl";
             $data['terminal']['secrets']['gateway_secure_secret2'] = null;
+            $data['terminal']['secrets']['gateway_recon_password'] = null;
 
             $body = json_encode(['data' => $data]);
 

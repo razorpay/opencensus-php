@@ -421,6 +421,8 @@ class Validator extends Base\Validator
         Entity::CORPORATE                  => 'sometimes|int|in:0,1,2',
         Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
         Entity::ORG_ID => 'sometimes',
+        Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
+        Entity::NOTES                      => 'sometimes|string',
     ];
 
     protected static $hitachiTerminalRules = [
@@ -709,6 +711,10 @@ class Validator extends Base\Validator
         Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
         Entity::CORPORATE                  => 'sometimes|int|in:0,1,2',
         Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
+        Entity::GATEWAY_MERCHANT_ID        => 'sometimes|integer|digits_between:4,8',
+        Entity::GATEWAY_TERMINAL_ID        => 'sometimes|alpha_num|size:8',
+        Entity::GATEWAY_TERMINAL_PASSWORD  => 'sometimes|string|max:15',
+        Entity::NOTES                      => 'sometimes|string',
     ];
 
     protected static $hitachiEditTerminalRules = [

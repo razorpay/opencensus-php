@@ -451,6 +451,9 @@ class Entity extends Base\PublicEntity
 
     public function getGatewayReconPassword()
     {
+        if(!array_key_exists(self::GATEWAY_RECON_PASSWORD, $this->attributes))
+            return null;
+        
         $reconPassword = $this->attributes[self::GATEWAY_RECON_PASSWORD];
 
         if ($reconPassword === null)
@@ -1548,11 +1551,13 @@ class Entity extends Base\PublicEntity
         $apiTerminalPassword2 = $this->getGatewayTerminalPassword2Attribute();
         $apiTerminalSecret = $this->getGatewaySecureSecretAttribute();
         $apiTerminalSecret2= $this->getGatewaySecureSecret2Attribute();
+        $apiReconPassword = $this->getGatewayReconPassword();
 
         $terminal[self::GATEWAY_TERMINAL_PASSWORD]  = $this->getGatewayTerminalPasswordAttribute();
         $terminal[self::GATEWAY_TERMINAL_PASSWORD2] = $this->getGatewayTerminalPassword2Attribute();
         $terminal[self::GATEWAY_SECURE_SECRET]      = $this->getGatewaySecureSecretAttribute();
         $terminal[self::GATEWAY_SECURE_SECRET2]      = $this->getGatewaySecureSecret2Attribute();
+        $terminal[self::GATEWAY_RECON_PASSWORD]     = $this->getGatewayReconPassword();
 
         // get credential from terminal service
         if ($proxy === true)
@@ -1580,6 +1585,7 @@ class Entity extends Base\PublicEntity
                     $tsTerminalPassword2 = $response["terminal"]["secrets"][Entity::GATEWAY_TERMINAL_PASSWORD2];
                     $tsTerminalSecret = $response["terminal"]["secrets"][Entity::GATEWAY_SECURE_SECRET];
                     $tsTerminalSecret2 = $response["terminal"]["secrets"][Entity::GATEWAY_SECURE_SECRET2];
+                    $tsReconPassword = $response["terminal"]["secrets"][Entity::GATEWAY_RECON_PASSWORD];
 
                     if ((empty($apiTerminalPassword) === false) and ($apiTerminalPassword !== $tsTerminalPassword))
                     {
@@ -1601,10 +1607,16 @@ class Entity extends Base\PublicEntity
                         $app['trace']->info(TraceCode::TERMINALS_SERVICE_PROXY_CREDENTIAL_MISMAATCH, ["key" => "gateway_secure_secret2", "id" => $terminalId]);
                     }
 
+                    if ((empty($apiReconPassword) === false) and ($apiReconPassword !== $tsReconPassword))
+                    {
+                        $app['trace']->info(TraceCode::TERMINALS_SERVICE_PROXY_CREDENTIAL_MISMAATCH, ["key" => "gateway_recon_password", "id" => $terminalId]);
+                    }
+
                     $terminal[self::GATEWAY_TERMINAL_PASSWORD] = $tsTerminalPassword;
                     $terminal[self::GATEWAY_TERMINAL_PASSWORD2] = $tsTerminalPassword2;
                     $terminal[self::GATEWAY_SECURE_SECRET] = $tsTerminalSecret;
                     $terminal[self::GATEWAY_SECURE_SECRET2] = $tsTerminalSecret2;
+                    $terminal[self::GATEWAY_RECON_PASSWORD] = $tsReconPassword;
 
                 }
                 catch (\Throwable $ex)
