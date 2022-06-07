@@ -975,6 +975,7 @@ export const gatewayLogos = {
   ingenico: `${window.cdnBaseUrl}/${LOGO_PATH}/ingenico.png`,
   axis_migs: `${window.cdnBaseUrl}/${LOGO_PATH}/axis.png`,
   upi_axis: `${window.cdnBaseUrl}/${LOGO_PATH}/axis.png`,
+  hdfc: `${window.cdnBaseUrl}/${LOGO_PATH}/hdfc.png`,
 };
 
 export const popularGateways = ['payu'];
@@ -1132,6 +1133,12 @@ export const gatewayDetailsMapping = {
     dashboardUrl:
       'https://www.axisbank.com/business-banking/collection-solutions/internet-payment-gateway-solutions/overview',
     dashboardUrlLabel: 'axisbank.com',
+  },
+  hdfc: {
+    dashboardImg: null,
+    dashboardUrl:
+      'https://www.hdfcbank.com/wholesale/financial-institutions-and-trusts/payment-gateway',
+    dashboardUrlLabel: 'hdfcbank.com',
   },
   cybersource_hdfc: {
     dashboardImg: null,

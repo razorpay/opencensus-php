@@ -8,6 +8,7 @@ const PROVIDERS_WITH_DETAILS_ON_EMAIL = [
   'billdesk_optimizer',
   'axis_migs',
   'upi_axis',
+  'hdfc',
   'cybersource_hdfc',
   'cybersource_axis',
 ];
