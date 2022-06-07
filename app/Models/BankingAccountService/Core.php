@@ -22,8 +22,11 @@ use RZP\Models\Merchant\Attribute\Group;
 use RZP\Mail\BankingAccount\CurrentAccount;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Constants\Entity as EntityConstants;
+use RZP\Models\Merchant\Balance\Type as ProductType;
+use RZP\Models\Merchant\Constants as MerchantConstants;
 use RZP\Models\Merchant\Balance\Entity as BalanceEntity;
 use RZP\Models\BankingAccount\Entity as BankingAccountEntity;
+use RZP\Models\Merchant\Attribute\Entity as MerchantAttributeEntity;
 use RZP\Models\BankingAccountStatement\Details\Status as BankingAccountStatementDetailsStatus;
 
 class Core extends Base\Core
@@ -412,15 +415,19 @@ class Core extends Base\Core
         /* @var Detail\Entity $merchantDetails*/
         $merchantDetails = $this->repo->merchant_detail->findByPublicId($input[Constants::MERCHANT_ID]);
 
-        if(empty($input[Constants::CA_PREFERRED_EMAIL]) === true)
+        if (empty($input[Constants::CA_PREFERRED_EMAIL]) === true)
         {
             $input[Constants::CA_PREFERRED_EMAIL] = $merchantDetails->getContactEmail();
         }
 
-        if(empty($input[Constants::CA_PREFERRED_PHONE]) === true)
+        if (empty($input[Constants::CA_PREFERRED_PHONE]) === true)
         {
             $input[Constants::CA_PREFERRED_PHONE] = $merchantDetails->getContactMobile();
         }
+
+        $merchantAttribute = $this->repo->merchant_attribute->getKeyValues($input[MerchantConstants::MERCHANT_ID], ProductType::BANKING, Group::X_MERCHANT_PREFERENCES, [Merchant\Attribute\Type::X_SIGNUP_PLATFORM])->first();
+
+        $input[Constants::SOURCE_DETAIL] = $merchantAttribute[MerchantAttributeEntity::VALUE] ?? Constants::X_DASHBOARD;
 
         $this->app->salesforce->sendCaLeadDetails($input);
 

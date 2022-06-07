@@ -83,6 +83,10 @@ class Constants
 
     const SOURCE                        = 'source';
 
+    const SOURCE_DETAIL                 = 'source_detail';
+
+    const X_DASHBOARD                   = 'x_dashboard';
+
     const RBL                           = 'RBL';
 
     const X_CA_UNIFIED                  = 'X-CA-Unified';

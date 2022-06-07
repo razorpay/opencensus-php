@@ -1056,6 +1056,8 @@ class BankingAccountServiceTest extends TestCase
     {
         $this->ba->bankingAccountServiceAppAuth();
 
+        $this->createMerchantAttribute('10000000000000', 'banking', 'x_merchant_preferences', 'x_signup_platform', 'x_mobile');
+
         $merchantDetailArray = [
             'contact_name'               => 'rzp',
             'contact_email'              => 'test1@rzp.com',

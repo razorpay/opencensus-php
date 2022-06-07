@@ -22,7 +22,8 @@ class GroupType
             Type::CA_LINKING_OPT_OUT,
             Type::VA_KYC_STARTED,
             Type::VA_KYC_POST_ACTIVATION_COMPLETED,
-            Type::UNDO_PAYOUTS
+            Type::UNDO_PAYOUTS,
+            Type::X_SIGNUP_PLATFORM
         ],
 
         Group::X_MERCHANT_CURRENT_ACCOUNTS => [
