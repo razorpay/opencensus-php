@@ -1,0 +1,10 @@
+id,name,label,description,parent,visibility,extra_data
+1,Account Statement & Balance,accountStatement,"All transactions from RazorpayX (Payouts, Payroll etc.) and outside (via bank portal)",,1,
+2,Payouts,payouts,"Single, bulk, tally payouts, payout links, payouts on invoices, contacts & fund accounts",,1,
+3,Invoices,invoices,,,1,
+4,Tax Payments,taxPayments,"TDS, GST and Advance Tax Payments and tax challans",,1,
+5,Reports,reports,"Business specific reports, generic reports like account statement, payouts, invoices and tax payments.",,1,
+6,Account & Settings,accountSettings,"Of RazorpayX Account: Manage team & Workflow, Developer controls and Buiness Profile",,1,
+7,Manage Team & Workflow,manageTeam,"Manage team members, roles and permissions and approval workflows",6,1,
+8,Developer Controls,developerControls,API Keys and Webhooks,6,1,
+9,Business Profile/ Tax Settings,businessProfile,"Business details and tax details like TAN, PAN, GSTIN and others",6,1,

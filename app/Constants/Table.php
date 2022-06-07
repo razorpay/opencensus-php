@@ -441,6 +441,12 @@ class Table
     // Nocode slug management table
     const NOCODE_CUSTOM_URL = 'nocode_custom_urls';
 
+    // CAC tables
+    const ACCESS_CONTROL_PRIVILEGES     = 'access_control_privileges';
+    const ACCESS_CONTROL_ROLES          = 'access_control_roles';
+    const ACCESS_POLICY_AUTHZ_ROLES_MAP = 'access_policy_authz_roles_map';
+    const ACCESS_CONTROL_HISTORY_LOGS   = 'access_control_history_logs';
+
     protected static $entityToTableMap = [
         Entity::AXIS_MIGS                          => self::MIGS,
         Entity::AXIS_GENIUS                        => self::MIGS,
@@ -463,6 +469,7 @@ class Table
         Entity::MERCHANT_SLABS                     => self::MERCHANT_SLABS,
         Entity::MERCHANT_1CC_CONFIGS               => self::MERCHANT_1CC_CONFIGS,
         Entity::DIRECT_ACCOUNT_STATEMENT           => self::BANKING_ACCOUNT_STATEMENT,
+        Entity::ROLES                              => self::ACCESS_CONTROL_ROLES,
     ];
 
     public static function getTableNameForEntity(string $entity)

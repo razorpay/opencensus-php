@@ -206,6 +206,7 @@ use RZP\Base\Database\Connectors\MySqlConnector;
  * @property Models\Address\AddressConsent1ccAudits\Repository              $address_consent_1cc_audits
  * @property Models\Address\AddressConsent1cc\Repository                    $address_consent_1cc
  * @property Models\Transaction\Statement\DirectAccount\Statement\Repository $direct_account_statement
+ * @property Models\Roles\Repository    $roles
  * @property Models\Merchant\InternationalIntegration\Repository      $merchant_international_integrations
  * @property Models\PartnerBankHealth\Repository                      $partner_bank_health
  */

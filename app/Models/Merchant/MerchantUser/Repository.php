@@ -176,4 +176,18 @@ class Repository extends Base\Repository
         return $query->pluck(Entity::USER_ID)
             ->toArray();
     }
+
+    public function getUserCountByMerchantIdAndRoleId(string $merchantID, array $roleIds)
+    {
+        $query = $this->newQuery()
+            ->select($this->getTableName() . '.*')
+            ->select(Entity::ROLE)
+            ->selectRaw('COUNT( merchant_users.' . Entity::USER_ID . ') AS count')
+            ->where(Entity::MERCHANT_ID, $merchantID)
+            ->whereIn(Entity::ROLE, $roleIds)
+            ->where(Entity::PRODUCT, 'banking')
+            ->groupBy(Entity::ROLE);
+
+        return $query->get();
+    }
 }

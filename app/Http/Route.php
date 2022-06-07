@@ -3563,6 +3563,10 @@ class Route
 
         'relay_props_action'            => ['post',                  'relay/props/action',                                  'RelayController@propsAction'],
 
+        //CAC routes
+        'role_fetch_all'                   => ['get',                    'access/roles',                                               'RolesController@listRolesForMerchant'],
+        'access_control_privileges_fetch'              => ['get',                    'access/privileges',                                          'AccessControlPrivilegesController@listPrivileges'],
+
         'relay_get_props_history'       => ['get',                  'relay/apps/{app_id}/props/{prop_id}/history',          'RelayController@getPropsHistory'],
     ];
 
@@ -4945,6 +4949,7 @@ class Route
     //
 
     public static $proxy = [
+        'access_control_privileges_fetch',
         'mob_fetch_multiple_intents',
         'mob_fetch_intent',
         'mob_fetch_multiple_applications',
@@ -5689,6 +5694,9 @@ class Route
 
         'oauth_token_create_for_apple_watch',
         'capital_virtual_cards_generate_token',
+
+        //CAC
+        'role_fetch_all',
     ];
     // These will run on internal auth with the assurance
     // of X-Admin-Token being passed.
@@ -8071,6 +8079,7 @@ class Route
     ];
 
     public static $bankingRoutePermissions = [
+        'access_control_privileges_fetch'              => '*',
         'mob_fetch_multiple_intents'                   => '*',
         'mob_fetch_intent'                             => '*',
         'mob_fetch_multiple_applications'              => '*',
@@ -8453,6 +8462,9 @@ class Route
         'user_fetch_purpose_code'             => '*',
         'oauth_token_create_for_apple_watch' => '*',
         'oauth_token_fetch_multiple'          => Permission::MERCHANT_GET_OAUTH_TOKEN,
+
+        //CAC
+        'role_fetch_all'                         => '*',
     ];
 
     public static $direct = [
@@ -8757,6 +8769,7 @@ class Route
         ],
 
         'merchant_dashboard' => [
+            'access_control_privileges_fetch',
             'collect_info_merchant_details_patch',
             'mob_fetch_multiple_intents',
             'mob_fetch_intent',
@@ -9936,6 +9949,9 @@ class Route
             'growth_get_public_asset_details',
 
             'oauth_token_create_for_apple_watch',
+
+            //CAC
+            'role_fetch_all',
         ],
 
         'admin_dashboard' => [

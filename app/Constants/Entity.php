@@ -668,6 +668,15 @@ class Entity
 
     const PARTNER_BANK_HEALTH = 'partner_bank_health';
 
+    // CAC entities
+    const ACCESS_CONTROL_PRIVILEGES = 'access_control_privileges';
+
+    const ROLES                     = 'roles';
+
+    const ACCESS_POLICY_AUTHZ_ROLES_MAP = 'access_policy_authz_roles_map';
+
+    const ACCESS_CONTROL_HISTORY_LOGS   = 'access_control_history_logs';
+
     /**
      * Defines a map of entites which are currently
      * being cached and associated cache version prefixes
@@ -1312,6 +1321,15 @@ class Entity
         self::ADDRESS_CONSENT_1CC               => \RZP\Models\Address\AddressConsent1cc::class,
 
         self::ADDRESS_CONSENT_1CC_AUDITS        => \RZP\Models\Address\AddressConsent1ccAudits::class,
+
+        self::ROLES                         => \RZP\Models\Roles::class,
+
+        self::ACCESS_CONTROL_PRIVILEGES     => \RZP\Models\AccessControlPrivileges::class,
+
+        self::ACCESS_POLICY_AUTHZ_ROLES_MAP => \RZP\Models\AccessPolicyAuthzRolesMap::class,
+
+        self::ACCESS_CONTROL_HISTORY_LOGS   => \RZP\Models\AccessControlHistoryLogs::class,
+
     ];
 
     protected static $repository = [
@@ -1549,6 +1567,9 @@ class Entity
         self::STAKEHOLDER,
         self::APP_STORE,
         self::PARTNER_KYC_ACCESS_STATE,
+        self::ACCESS_CONTROL_HISTORY_LOGS,
+        self::ACCESS_CONTROL_PRIVILEGES,
+        self::ACCESS_POLICY_AUTHZ_ROLES_MAP,
     ];
 
     protected static $externalEntities = [

@@ -664,6 +664,14 @@ return [
 
     E::MERCHANT_USER => [],
 
+    E::ACCESS_CONTROL_PRIVILEGES => [],
+
+    E::ROLES => [],
+
+    E::ACCESS_POLICY_AUTHZ_ROLES_MAP => [],
+
+    E::ACCESS_CONTROL_HISTORY_LOGS => [],
+
     E::LOW_BALANCE_CONFIG => [],
 
     E::PAYOUTS_INTERMEDIATE_TRANSACTIONS => [],

@@ -1,22 +1,21 @@
 version: v1beta10
 dev:
-# uncomment only to use remote debugging
-  # replacePods:
-  #   - labelSelector:
-  #       name: ${APP_NAME}-${DEVSTACK_LABEL}
-  #     replaceImage: c.rzp.io/razorpay/api:devstackxdebug3
-  #     namespace: ${NAMESPACE}
-  #     patches:
-  #       - op: replace
-  #         path: spec.containers[0].imagePullPolicy
-  #         value: Always
-  # ports:
-  #   - labelSelector:
-  #       name: ${APP_NAME}-${DEVSTACK_LABEL}
-  #     namespace: ${NAMESPACE}
-  #     reverseForward:
-  #       - port: 9000
-  #         remotePort: 9000
+  replacePods:
+    - labelSelector:
+        name: ${APP_NAME}-${DEVSTACK_LABEL}
+      replaceImage: c.rzp.io/razorpay/api:devstackxdebug3
+      namespace: ${NAMESPACE}
+      patches:
+        - op: replace
+          path: spec.containers[0].imagePullPolicy
+          value: Always
+  ports:
+    - labelSelector:
+        name: ${APP_NAME}-${DEVSTACK_LABEL}
+      namespace: ${NAMESPACE}
+      reverseForward:
+        - port: 9000
+          remotePort: 9000
   sync:
     - labelSelector:
         name: ${APP_NAME}-${DEVSTACK_LABEL}
@@ -25,13 +24,13 @@ dev:
       namespace: ${NAMESPACE}
       disableDownload: true
       initialSync: preferLocal
-    # - labelSelector:
-    #     name: ${APP_NAME}-${DEVSTACK_LABEL}
-    #   localSubPath: ./resources
-    #   containerPath: /app/resources
-    #   namespace: ${NAMESPACE}
-    #   disableDownload: true
-    #   initialSync: preferLocal
+    - labelSelector:
+        name: ${APP_NAME}-${DEVSTACK_LABEL}
+      localSubPath: ./resources
+      containerPath: /app/resources
+      namespace: ${NAMESPACE}
+      disableDownload: true
+      initialSync: preferLocal
   logs:
     showLast: 200
     sync: true
@@ -40,7 +39,7 @@ dev:
           name: ${APP_NAME}-${DEVSTACK_LABEL}
 vars:
   - name: DEVSTACK_LABEL
-    value: ""
+    value: "cac-wf"
   - name: NAMESPACE
     value: "api"
   - name: APP_NAME

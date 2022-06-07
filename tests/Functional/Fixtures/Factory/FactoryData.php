@@ -892,7 +892,7 @@ final class FactoryData
         $factory(\RZP\Models\Merchant\MerchantUser\Entity::class, [
                 'merchant_id'   => '10000000000000',
                 'user_id'       => 'MerchantUser01',
-                'role'          => 'owner'
+                'role'          => 'owner',
             ]
         );
 
@@ -2091,6 +2091,66 @@ final class FactoryData
             'domain'        => $faker->unique()->url,
             'product'       => 'page',
             'product_id'    => $faker->uniqueid,
+        ]);
+
+        $factory(\RZP\Models\Roles\Entity::class, [
+            'id'          => $faker->uniqueid,
+            'name'        => $faker->word,
+            'description' => 'Test custom role',
+            'merchant_id' => '100000merchant',
+            'type'        => 'custom',
+            'created_by'  => $faker->email,
+            'updated_by'  => $faker->email,
+            'created_at'  => $faker->timestamp,
+            'updated_at'  => $faker->timestamp,
+        ]);
+
+        $factory(\RZP\Models\AccessControlPrivileges\Entity::class, [
+            'id'          => $faker->uniqueid,
+            'name'        => 'Account Setting',
+            'description' => 'A/c setting test description',
+            'parent_id'   => null,
+            'label'       => 'account_setting',
+            'visibility'  => 1,
+            'created_at'  => $faker->timestamp,
+            'updated_at'  => $faker->timestamp,
+        ]);
+
+        $factory(\RZP\Models\AccessPolicyAuthzRolesMap\Entity::class, [
+            'id'            => $faker->uniqueid,
+            'privilege_id'  => '10000privilege',
+            'action'        => 'read',
+            'authz_roles'   => ['authz_roles_1', 'authz_roles_2', 'authz_roles_3'],
+            'meta_data'     => [
+                'tooltip'       => 'Tooltip',
+                'description'   => 'Access policy test description',
+                                            ],
+            'created_at'  => $faker->timestamp,
+            'updated_at'  => $faker->timestamp,
+        ]);
+
+        $factory(\RZP\Models\AccessControlHistoryLogs\Entity::class, [
+            'id'            => $faker->uniqueid,
+            'entity_id'     => '10AccessPolicy',
+            'entity_type'   => 'access_policy_authz_roles_map',
+            'message'       => 'Test history log',
+            'previous_value'=> null,
+            'new_value'     => [
+                'id'            => $faker->uniqueid,
+                'privilege_id'  => '10000privilege',
+                'action'        => 'read',
+                'authz_roles'   => ['authz_roles_1', 'authz_roles_2', 'authz_roles_3'],
+                'meta_data'     => json_encode([
+                    'tooltip'       => 'Tooltip',
+                    'description'   => 'Access policy test description',
+                ]),
+                'created_at'  => $faker->timestamp,
+                'updated_at'  => $faker->timestamp,
+            ],
+            'owner_id'          => '100000merchant',
+            'owner_type'        => 'merchant',
+            'created_at'  => $faker->timestamp,
+            'created_by'  => $faker->uniqueid,
         ]);
 
         $factory(\RZP\Models\Merchant\InternationalIntegration\Entity::class, [
