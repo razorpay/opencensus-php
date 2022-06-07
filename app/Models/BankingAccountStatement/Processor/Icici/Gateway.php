@@ -574,7 +574,7 @@ class Gateway extends BaseProcessor
         $description = $this->getDescriptionFromResponse($transactionData);
 
         if ((preg_match("/\/(20)([0-9]{12})$/", $description, $matches) === 1) and
-            (preg_match("/[0-9]{1}[\D]+[0-9]{1}$/", $description, $matches) !== 1))
+            (preg_match("/[0-9]{1}[\D]+[0-9]{1}/", $description, $matches) !== 1))
         {
             $timeInDescription = intval(substr($description, -14));
 
