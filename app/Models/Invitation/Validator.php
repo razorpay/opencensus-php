@@ -23,7 +23,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $editRules = [
-        Entity::ROLE        => 'required|string|custom',
+        Entity::ROLE        => 'required|string|bail|custom',
         Entity::IS_DRAFT    => 'sometimes|boolean|',
     ];
 

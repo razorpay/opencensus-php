@@ -603,6 +603,17 @@ class InvitationTest extends TestCase
         $this->startTest();
     }
 
+    public function testUpdateInvitationWithRoleArray()
+    {
+        $invitation = $this->fixtures->create('invitation', ['email' => 'update@razorpay.com']);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/invitations/' . $invitation['id'];
+
+        $this->startTest();
+    }
+
     public function testUpdateInvitationWithInvalidRole()
     {
         $invitation = $this->fixtures->create('invitation');

@@ -557,6 +557,29 @@ return [
         ]
     ],
 
+    'testUpdateInvitationWithRoleArray' => [
+        'request' => [
+            'url'     => '/invitations/8hd48md930kel3',
+            'method'  => 'PATCH',
+            'content' => [
+                'role'  => ['finance'],
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The role must be a string.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testUpdateInvitationWithInvalidRole' => [
         'request' => [
             'url'     => '/invitations/8hd48md930kel3',
