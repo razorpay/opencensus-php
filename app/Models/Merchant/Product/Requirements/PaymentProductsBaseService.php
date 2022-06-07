@@ -189,11 +189,16 @@ class PaymentProductsBaseService extends Base\Service
 
         $verificationResponse = [];
 
-        $tncRequirement = $this->getTncRequirements($merchant);
+        [$tncRequirement, $tncIpRequirement] = $this->getTncRequirements($merchant);
 
         if (empty($tncRequirement) === false)
         {
             array_push($requirements, $tncRequirement);
+
+            if(empty($tncIpRequirement) === false)
+            {
+                array_push($requirements, $tncIpRequirement);
+            }
         }
 
         if ($merchantDetails->isSubmitted() === false)
@@ -263,6 +268,8 @@ class PaymentProductsBaseService extends Base\Service
 
         $requirement = [];
 
+        $ipRequirement = [];
+
         if ($hasPendingTnc === true)
         {
             $requirement[Constants::FIELD_REFERENCE] = Constants::TNC_ACCEPTED;
@@ -272,9 +279,20 @@ class PaymentProductsBaseService extends Base\Service
             $requirement[Constants::STATUS] = Constants::REQUIRED;
 
             $requirement[Constants::REASON_CODE] = Constants::FIELD_MISSING;
+
+            if($merchant->isNoDocOnboardingEnabled())
+            {
+                $ipRequirement[Constants::FIELD_REFERENCE] = Constants::IP;
+
+                $ipRequirement[Constants::RESOLUTION_URL] = Constants::PAYMENT_CONFIG_RESOLUTION_URL;
+
+                $ipRequirement[Constants::STATUS] = Constants::REQUIRED;
+
+                $ipRequirement[Constants::REASON_CODE] = Constants::FIELD_MISSING;
+            }
         }
 
-        return $requirement;
+        return [$requirement,$ipRequirement];
     }
 
     private function getFormattedNonAcknowledgedNCFields(array $nonRespondedFields, Detail\Entity $merchantDetails): array

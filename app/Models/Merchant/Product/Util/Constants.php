@@ -20,6 +20,7 @@ class Constants
     const ACCOUNT_ID      = 'account_id';
     const REQUESTED_AT    = 'requested_at';
     const TNC_ACCEPTED    = 'tnc_accepted';
+    const IP              = 'ip';
 
     const REQUESTED_CONFIGURATION = 'requested_configuration';
     const ACTIVE_CONFIGURATION    = 'active_configuration';

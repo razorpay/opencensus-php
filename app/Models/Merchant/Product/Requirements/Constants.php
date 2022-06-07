@@ -72,6 +72,7 @@ class Constants
     const DESCRIPTION     = 'description';
     const ACCEPTED        = 'accepted';
     const TNC_ACCEPTED    = 'tnc_accepted';
+    const IP              = 'ip';
 
     //Reason codes
     const FIELD_MISSING             = 'field_missing';

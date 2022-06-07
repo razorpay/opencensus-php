@@ -242,11 +242,25 @@ class Core extends Base\Core
             {
                 unset($input[Util\Constants::TNC_ACCEPTED]);
 
-                $response[Util\Constants::TNC] = $this->tnc->acceptProductConfigTnc($merchantProduct->getProduct(), $merchant);
+                $ip = null;
+
+                if(isset($input[Util\Constants::IP]) === true)
+                {
+                    $ip = $input[Util\Constants::IP];
+
+                    unset($input[Util\Constants::IP]);
+                }
+
+                $response[Util\Constants::TNC] = $this->tnc->acceptProductConfigTnc($merchantProduct->getProduct(), $merchant, $ip);
             }
             else if ($hasAcceptedTnc === true)
             {
                 $response[Util\Constants::TNC] = $this->tnc->fetchProductConfigTnc($merchantProduct->getProduct(), $merchant);
+
+                if(isset($input[Util\Constants::IP]) === true)
+                {
+                    unset($input[Util\Constants::IP]);
+                }
             }
             return [$input, $response];
         });

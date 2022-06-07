@@ -8,12 +8,15 @@ use RZP\Constants\Mode;
 use RZP\Services\RazorXClient;
 use RZP\Models\Merchant\Product\Config\DefaultConfigurationHelper;
 use RZP\Models\User\Role;
+use RZP\Models\Feature\Core;
+use RZP\Models\Feature\Entity;
 use RZP\Models\Merchant\Methods;
 use Illuminate\Http\UploadedFile;
 use RZP\Tests\Traits\MocksSplitz;
 use RZP\Tests\Traits\TestsMetrics;
 use RZP\Models\Merchant\Stakeholder;
 use RZP\Models\Merchant\Product\Metric;
+use RZP\Constants\Entity as EntityConstants;
 use RZP\Tests\Functional\OAuth\OAuthTestCase;
 use RZP\Tests\Functional\Helpers\WebhookTrait;
 use RZP\Tests\Functional\Partner\PartnerTrait;
@@ -899,9 +902,11 @@ class PaymentGatewayConfigTest extends OAuthTestCase
         $this->runRequestResponseFlow($testData);
     }
 
-    protected function acceptTncUsingPostProductConfig()
+    public function testAcceptTncUsingPostProductConfig()
     {
         Mail::fake();
+
+        $this->mockTerminalServiceResponse();
 
         $this->setupPrivateAuthForPartner();
 
@@ -932,9 +937,11 @@ class PaymentGatewayConfigTest extends OAuthTestCase
         $this->runRequestResponseFlow($testData);
     }
 
-    protected function acceptTncUsingPatchProductConfig()
+    public function testAcceptTncUsingPatchProductConfig()
     {
         Mail::fake();
+
+        $this->mockTerminalServiceResponse();
 
         $this->setupPrivateAuthForPartner();
 
@@ -961,6 +968,115 @@ class PaymentGatewayConfigTest extends OAuthTestCase
         $testData = $this->testData['testAcceptedAccountTnc'];
 
         $testData['request']['url'] = '/v2/accounts/' . $accountId . '/tnc';
+
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testAcceptTncUsingCreateProductConfigForNoDoc()
+    {
+        Mail::fake();
+
+        $this->mockTerminalServiceResponse();
+
+        $this->setUpPartnerWithKycHandled();
+
+        $featureParams = [
+            Entity::ENTITY_ID   => '10000000000000',
+            Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
+            Entity::NAME        => 'subm_no_doc_onboarding',
+        ];
+
+        (new Core())->create($featureParams, true);
+
+        $testData = $this->testData['createUnregisteredBusinessTypeAccount'];
+
+        $testData['request']['content']['no_doc_onboarding'] = true;
+
+        $accountResponse = $this->runRequestResponseFlow($testData);
+
+        $accountId = $accountResponse['id'];
+
+        $testData = $this->testData['acceptTncUsingCreateProductConfigForNoDoc'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products';
+
+        $this->runRequestResponseFlow($testData);
+
+        $clientIp = $this->getDbEntity('merchant_tnc_acceptance')->pluck('client_ip')->toArray();
+
+        $this->assertEquals($testData['request']['content']['ip'], $clientIp[0]);
+    }
+
+    public function testAcceptTncUsingUpdateProductConfigForNoDoc()
+    {
+        Mail::fake();
+
+        $this->mockTerminalServiceResponse();
+
+        $this->setUpPartnerWithKycHandled();
+
+        $featureParams = [
+            Entity::ENTITY_ID   => '10000000000000',
+            Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
+            Entity::NAME        => 'subm_no_doc_onboarding',
+        ];
+
+        (new Core())->create($featureParams, true);
+
+        $testData = $this->testData['createUnregisteredBusinessTypeAccount'];
+
+        $testData['request']['content']['no_doc_onboarding'] = true;
+
+        $accountResponse = $this->runRequestResponseFlow($testData);
+
+        $accountId = $accountResponse['id'];
+
+        $testData = $this->testData['createProductConfigForNoDoc'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products';
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $merchantProductId = $response['id'];
+
+        $testData = $this->testData['acceptTncUsingUpdateProductConfigForNoDoc'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products/' . $merchantProductId;
+
+        $this->runRequestResponseFlow($testData);
+
+        $clientIp = $this->getDbEntity('merchant_tnc_acceptance')->pluck('client_ip')->toArray();
+
+        $this->assertEquals($testData['request']['content']['ip'], $clientIp[0]);
+    }
+
+    public function testAcceptTncWithoutIpForNoDoc()
+    {
+        Mail::fake();
+
+        $this->mockTerminalServiceResponse();
+
+        $this->setUpPartnerWithKycHandled();
+
+        $featureParams = [
+            Entity::ENTITY_ID   => '10000000000000',
+            Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
+            Entity::NAME        => 'subm_no_doc_onboarding',
+        ];
+
+        (new Core())->create($featureParams, true);
+
+        $testData = $this->testData['createUnregisteredBusinessTypeAccount'];
+
+        $testData['request']['content']['no_doc_onboarding'] = true;
+
+        $accountResponse = $this->runRequestResponseFlow($testData);
+
+        $accountId = $accountResponse['id'];
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products';
 
         $this->runRequestResponseFlow($testData);
     }

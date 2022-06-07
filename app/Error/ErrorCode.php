@@ -2231,6 +2231,8 @@ class ErrorCode
 
     const BAD_REQUEST_INVALID_PRODUCT_NAME                                          = 'BAD_REQUEST_INVALID_PRODUCT_NAME';
 
+    const BAD_REQUEST_TNC_ACCEPTANCE_FOR_NO_DOC                                     = 'BAD_REQUEST_TNC_ACCEPTANCE_FOR_NO_DOC';
+
     const BAD_REQUEST_INVALID_BUSINESS_UNIT                                         = 'BAD_REQUEST_INVALID_BUSINESS_UNIT';
 
     const BAD_REQUEST_PRODUCT_INTERNATIONAL_REQUIRED                                = 'BAD_REQUEST_PRODUCT_INTERNATIONAL_REQUIRED';

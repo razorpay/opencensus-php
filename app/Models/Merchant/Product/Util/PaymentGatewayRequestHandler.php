@@ -15,7 +15,8 @@ class PaymentGatewayRequestHandler
         Constants::SETTLEMENTS     => Constants::BANK_DETAILS,
         Constants::PAYMENT_METHODS => Constants::PAYMENT_METHODS,
         Constants::CONFIGURATION   => Constants::CONFIGURATION,
-        Constants::TNC_ACCEPTED    => Constants::TNC_ACCEPTED
+        Constants::TNC_ACCEPTED    => Constants::TNC_ACCEPTED,
+        Constants::IP              => Constants::IP
     ];
 
     const CHECKOUT_FIELD_MAPPING = [
@@ -197,6 +198,11 @@ class PaymentGatewayRequestHandler
     }
 
     private static function transformTncAccepted(bool $input): bool
+    {
+        return $input;
+    }
+
+    private static function transformIp(string $input): string
     {
         return $input;
     }

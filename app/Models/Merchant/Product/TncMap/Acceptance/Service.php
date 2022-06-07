@@ -48,14 +48,14 @@ class Service extends Product\Service
         return $this->formatFetchResponse($tncMap, $merchantTncAcceptance);
     }
 
-    public function fetchProductConfigTnc(String $productName, Merchant\Entity $merchant): array
+    public function fetchProductConfigTnc(string $productName, Merchant\Entity $merchant): array
     {
         $merchantTncAcceptance = $this->core()->fetchMerchantAcceptanceViaBU($merchant, BusinessUnit::PRODUCT_BU_MAPPING[$productName]);
 
         return $this->formatFetchTnCResponse($merchantTncAcceptance);
     }
 
-    public function acceptProductConfigTnc(String $productName, Merchant\Entity $merchant): array
+    public function acceptProductConfigTnc(string $productName, Merchant\Entity $merchant, string $ip = null): array
     {
         $tncMap = (new TncMap\Core())->fetchTncForBU(BusinessUnit::PRODUCT_BU_MAPPING[$productName]);
 
@@ -63,7 +63,7 @@ class Service extends Product\Service
 
         if(empty($merchantTncAcceptance) === true)
         {
-            $merchantTncAcceptance = $this->core()->acceptTnc($merchant, $tncMap);
+            $merchantTncAcceptance = $this->core()->acceptTnc($merchant, $tncMap, $ip);
         }
 
         return $this->formatFetchTnCResponse($merchantTncAcceptance);

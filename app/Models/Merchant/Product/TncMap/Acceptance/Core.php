@@ -54,9 +54,9 @@ class Core extends Base\Core
         return $this->repo->merchant_tnc_acceptance->fetchMerchantAcceptanceByTncMapId($tncMap->getId(), $merchant->getId());
     }
 
-    public function acceptTnc(Merchant\Entity $merchant, TncMap $tncMap, string $channel = 'API')
+    public function acceptTnc(Merchant\Entity $merchant, TncMap $tncMap, string $ip = null, string $channel = 'API')
     {
-        return $this->repo->transactionOnLiveAndTest(function() use($merchant, $tncMap, $channel) {
+        return $this->repo->transactionOnLiveAndTest(function() use($ip, $merchant, $tncMap, $channel) {
 
             $request = (new Entity)->generateId();
 
@@ -67,6 +67,9 @@ class Core extends Base\Core
             $request[Entity::ACCEPTED_CHANNEL] = $channel;
 
             [$clientIp , $device] = $this->fetchIpAndDevice();
+
+            // Overriding value of IP address to what is provided in input payload
+            $clientIp = $ip ?: $clientIp;
 
             $request[Entity::CLIENT_DEVICE] = $device;
 

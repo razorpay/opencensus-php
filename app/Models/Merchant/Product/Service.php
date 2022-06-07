@@ -97,7 +97,16 @@ class Service extends Base\Service
             {
                 unset($payload[Util\Constants::TNC_ACCEPTED]);
 
-                (new Tnc)->acceptProductConfigTnc($productName, $merchant);
+                $ip = null;
+
+                if(isset($payload[Util\Constants::IP]) === true)
+                {
+                    $ip = $payload[Util\Constants::IP];
+
+                    unset($payload[Util\Constants::IP]);
+                }
+
+                (new Tnc)->acceptProductConfigTnc($productName, $merchant, $ip);
             }
 
             return $payload;

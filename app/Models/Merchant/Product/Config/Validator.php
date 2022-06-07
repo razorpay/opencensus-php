@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant\Product\Config;
 
+use App;
 use RZP\Base;
 use RZP\Exception;
 use Razorpay\IFSC\IFSC;
@@ -22,6 +23,7 @@ class Validator extends Base\Validator
         Util\Constants::REFUND          => 'sometimes|array',
         Util\Constants::PAYMENT_METHODS => 'sometimes|array',
         Util\Constants::TNC_ACCEPTED    => 'sometimes|boolean|in:1',
+        Util\Constants::IP              => 'sometimes|ip',
     ];
 
     protected static $notificationsRules  = [
@@ -60,7 +62,17 @@ class Validator extends Base\Validator
         'checkout',
         'refund',
         'payment_methods',
+        'tnc_input_check',
     ];
+
+    public function __construct($entity = null)
+    {
+        parent::__construct($entity);
+
+        $app = App::getFacadeRoot();
+
+        $this->merchant = $app['basicauth']->getMerchant();
+    }
 
     public function validateAccountNumber($attribute, $bankAccountNumber)
     {
@@ -154,6 +166,26 @@ class Validator extends Base\Validator
         } else
         {
             (new PaymentMethodsValidator())->validateInput('paymentMethodUpdate', $input[Util\Constants::PAYMENT_METHODS]);
+        }
+    }
+
+    public function validateTncInputCheck($input)
+    {
+        if($this->merchant->isNoDocOnboardingEnabled() === true)
+        {
+            //both ip and tnc_accepted fields are required in payload during other one's presence in case of no-doc merchant
+            if((isset($input[Util\Constants::IP]) === true and isset($input[Util\Constants::TNC_ACCEPTED]) === false) or (isset($input[Util\Constants::IP]) === false and isset($input[Util\Constants::TNC_ACCEPTED]) === true))
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_TNC_ACCEPTANCE_FOR_NO_DOC);
+            }
+        }
+        else
+        {
+            if(isset($input[Util\Constants::IP]) === true)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'ip is/are not required and should not be sent');
+            }
         }
     }
 
