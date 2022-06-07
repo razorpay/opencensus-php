@@ -9,6 +9,7 @@ import { IngenicoPoints } from './IngenicoPoints';
 import { BillDeskPoints } from './BillDeskPoints';
 import { UpiAxisPoints } from './UpiAxisPoints';
 import { AxisMigsPoints } from './AxisMigsPoints';
+import { CybersourcePoints } from './CybersourcePoints';
 
 export const SeamlessHowto = ({ gatewayName, selectedProvider }) => {
   switch (selectedProvider) {
@@ -32,6 +33,10 @@ export const SeamlessHowto = ({ gatewayName, selectedProvider }) => {
       return <AxisMigsPoints />;
     case 'upi_axis':
       return <UpiAxisPoints />;
+    case 'cybersource_hdfc':
+      return <CybersourcePoints />;
+    case 'cybersource_axis':
+      return <CybersourcePoints />;
     default:
       return (
         <ol>

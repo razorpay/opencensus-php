@@ -1,3 +1,4 @@
+import isEmpty from '@universe/utils/isEmpty';
 import { Operand } from '../models/Operand';
 
 export const operators = [
@@ -965,6 +966,8 @@ export const gatewayLogos = {
   atom: `${window.cdnBaseUrl}/${LOGO_PATH}/atom.png`,
   fss: `${window.cdnBaseUrl}/${LOGO_PATH}/fss.png`,
   cybersource: `${window.cdnBaseUrl}/${LOGO_PATH}/cybersource.png`,
+  cybersource_hdfc: `${window.cdnBaseUrl}/${LOGO_PATH}/cybersource.png`,
+  cybersource_axis: `${window.cdnBaseUrl}/${LOGO_PATH}/cybersource.png`,
   cashfree: `${window.cdnBaseUrl}/${LOGO_PATH}/cashfree.svg`,
   ccavenue: `${window.cdnBaseUrl}/${LOGO_PATH}/ccavenue.svg`,
   upi_mindgate: `${window.cdnBaseUrl}/${LOGO_PATH}/hdfc.png`,
@@ -1130,6 +1133,16 @@ export const gatewayDetailsMapping = {
       'https://www.axisbank.com/business-banking/collection-solutions/internet-payment-gateway-solutions/overview',
     dashboardUrlLabel: 'axisbank.com',
   },
+  cybersource_hdfc: {
+    dashboardImg: null,
+    dashboardUrl: 'https://businesscenter.in.cybersource.com/ebc2/',
+    dashboardUrlLabel: 'businesscenter.in.cybersource.com',
+  },
+  cybersource_axis: {
+    dashboardImg: null,
+    dashboardUrl: 'https://businesscenter.in.cybersource.com/ebc2/',
+    dashboardUrlLabel: 'businesscenter.in.cybersource.com',
+  },
 };
 
 export const createMappedProviders = (terminalProviders) => {
@@ -1149,4 +1162,13 @@ export const createMappedProviders = (terminalProviders) => {
     };
   });
   return MAPPED_PROVIDERS;
+};
+
+export const getSelectedProviderWithAcquirer = ({ providers, selectedProvider, provider }) => {
+  if (selectedProvider) {
+    return isEmpty(providers) || providers?.[selectedProvider]
+      ? selectedProvider
+      : `${provider?.Gateway}_${provider?.Gateway_acquirer}`;
+  }
+  return selectedProvider;
 };

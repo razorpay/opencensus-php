@@ -6,7 +6,11 @@ import { CSSTransition } from 'react-transition-group';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import FullPageCover from './FullPageCover';
 import FullPageCoverHeader from './FullPageCoverHeader';
-import { popularGateways, gatewayLogos } from './util';
+import {
+  popularGateways,
+  gatewayLogos,
+  getSelectedProviderWithAcquirer as getSelectedProvider,
+} from './util';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { HowToGetDetails } from './Provider/HowToGetDetails';
@@ -276,14 +280,24 @@ export default class AddProvider extends React.Component {
     });
   };
 
+  getSelectedProviderWithAcquirer = () => {
+    const { providers, selectedProvider, provider } = this.state;
+    return getSelectedProvider({
+      providers,
+      selectedProvider,
+      provider,
+    });
+  };
+
   howtoGetDetails = () => {
-    const { providers, selectedProvider } = this.state;
+    const { providers } = this.state;
+    const selectedProviderWithAcquirer = this.getSelectedProviderWithAcquirer();
     this.props.openModal({
       size: 'large',
       component: (
         <HowToGetDetails
           providers={providers}
-          selectedProvider={selectedProvider}
+          selectedProvider={selectedProviderWithAcquirer}
           closeModal={this.props.closeModal}
         />
       ),
@@ -293,7 +307,8 @@ export default class AddProvider extends React.Component {
   checkAllValuesExist = () => {
     const { provider, providers } = this.state;
     let isValid = true;
-    Object.keys(providers[provider.Gateway]).forEach((key) => {
+    const selectedProviderWithAcquirer = this.getSelectedProviderWithAcquirer();
+    Object.keys(providers[selectedProviderWithAcquirer]).forEach((key) => {
       if (
         !provider?.Gateway_details?.[key] &&
         key !== 'Payment Methods' &&
@@ -335,9 +350,10 @@ export default class AddProvider extends React.Component {
   };
 
   validateGatewayDetails = (key) => {
-    const { provider, providers, selectedProvider, validationErrors, allDetailsValid } = this.state;
+    const { provider, providers, validationErrors, allDetailsValid } = this.state;
+    const selectedProviderWithAcquirer = this.getSelectedProviderWithAcquirer();
     const { min_length: minLength, max_length: maxLength, meta_data } = providers?.[
-      selectedProvider
+      selectedProviderWithAcquirer
     ]?.[key];
     const validationRegex = meta_data?.validation_regex;
     const checkVal = provider?.Gateway_details?.[key];
@@ -371,6 +387,7 @@ export default class AddProvider extends React.Component {
 
     const payload = {
       ...provider,
+      Gateway: this.getSelectedProviderWithAcquirer(),
     };
 
     trackOptimizerEvents({
@@ -479,7 +496,6 @@ export default class AddProvider extends React.Component {
       redirect,
       providers,
       filteredProviders,
-      selectedProvider,
       validationErrors,
       isEdit,
       isSaving,
@@ -493,7 +509,7 @@ export default class AddProvider extends React.Component {
     if (redirect) {
       return <Redirect to={redirect} />;
     }
-
+    const selectedProviderWithAcquirer = this.getSelectedProviderWithAcquirer();
     return (
       <FullPageCover>
         <FullPageCoverHeader>
@@ -554,7 +570,7 @@ export default class AddProvider extends React.Component {
                         <Step1
                           steps={steps}
                           providers={providers}
-                          selectedProvider={selectedProvider}
+                          selectedProvider={selectedProviderWithAcquirer}
                           filterProvidersOnSearch={this.filterProvidersOnSearch}
                           filteredProviders={filteredProviders}
                           listProviders={this.listProviders}
@@ -563,7 +579,9 @@ export default class AddProvider extends React.Component {
                         />
                       </div>
                       {steps[1].edit ? (
-                        <div className="panel-footer">{this.nextButton(1, !selectedProvider)}</div>
+                        <div className="panel-footer">
+                          {this.nextButton(1, !selectedProviderWithAcquirer)}
+                        </div>
                       ) : null}
                     </div>
                   </CSSTransition>
@@ -622,8 +640,7 @@ export default class AddProvider extends React.Component {
                     <div className={`panel gateway-list${steps[3].edit ? ' active' : ''}`}>
                       <div className="panel-header">
                         <h2 className="payment-gateway-title">
-                          {providers?.[selectedProvider]?.['Gateway Name']?.data_value} Production
-                          API Details
+                          {`${providers?.[selectedProviderWithAcquirer]?.['Gateway Name']?.data_value} Production API Details`}
                           {!steps?.[3]?.edit ? (
                             <button
                               onClick={this.updateStep(3, {
@@ -647,7 +664,7 @@ export default class AddProvider extends React.Component {
                               onClick={this.howtoGetDetails}
                             >
                               <i className="i i-help" />
-                              Where do I find {selectedProvider} details?
+                              Where do I find {selectedProviderWithAcquirer} details?
                             </p>
                           </p>
                         ) : null}
@@ -656,7 +673,7 @@ export default class AddProvider extends React.Component {
                       <div className="panel-body">
                         <Step3
                           steps={steps}
-                          selectedProvider={selectedProvider}
+                          selectedProvider={selectedProviderWithAcquirer}
                           providers={providers}
                           provider={provider}
                           validationErrors={validationErrors}

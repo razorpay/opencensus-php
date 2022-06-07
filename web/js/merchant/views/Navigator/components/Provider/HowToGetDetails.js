@@ -8,6 +8,8 @@ const PROVIDERS_WITH_DETAILS_ON_EMAIL = [
   'billdesk_optimizer',
   'axis_migs',
   'upi_axis',
+  'cybersource_hdfc',
+  'cybersource_axis',
 ];
 
 export const HowToGetDetails = ({ providers, selectedProvider, closeModal }) => {

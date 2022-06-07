@@ -8,7 +8,7 @@ import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import { trackOptimizerEvents } from 'merchant/views/Navigator/track';
 import PropTypes from 'prop-types';
 import { titleCase } from 'common/utils/rzp-utils';
-import { gatewayLogos } from './util';
+import { gatewayLogos, getSelectedProviderWithAcquirer } from './util';
 
 @withRouter
 @connect(
@@ -80,7 +80,11 @@ export default class ProviderDetails extends Component {
                           <div className="provider-logo-holder">
                             <img src={gatewayLogos[provider.Gateway.toLowerCase()]} />
                           </div>
-                          {provider.Gateway}
+                          {getSelectedProviderWithAcquirer({
+                            providers,
+                            provider,
+                            selectedProvider: provider?.Gateway,
+                          })}
                         </>
                       )}
                     />
