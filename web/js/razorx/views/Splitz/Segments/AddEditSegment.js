@@ -192,7 +192,7 @@ export default function AddEditSegment(props) {
             placeholder="Segment Name"
             defaultValue={isEdit ? data.name : ''}
             required
-            onChange={checkForExistingSegmentName}
+            onBlur={checkForExistingSegmentName}
           />
           {matchingSegmentName && (
             <span className="error-message">This segment name already exists.</span>
