@@ -1319,6 +1319,19 @@ class Constants
      */
     const BLOCKLIST_FOR_WORKFLOW_SERVICE = 'blocklist_for_wf_service';
 
+
+    //Role base FE feature
+    const VIEW_OPFIN_SSO_ANNOUNCEMENT       = 'view_opfin_sso_announcement';
+
+    //Role base FE feature
+    const VIEW_SSL_BANNER                   = 'view_ssl_banner';
+
+    //Role base FE feature
+    const VIEW_ONBOARDING_CARDS             = 'view_onboarding_cards';
+
+    const CAN_ROLE_VIEW_TRXN_CARDS          = 'can_role_view_trxn_cards';
+
+    const RX_BLOCK_REPORT_DOWNLOAD_ROLE_CHECK    = 'RX_BLOCK_REPORT_DOWNLOAD_ROLE_CHECK';
     /**
      * Feature flag to allow merchants to use single tid.
      */
@@ -1835,6 +1848,11 @@ class Constants
         self::ACCEPT_ONLY_3DS_PAYMENTS        => true,
         self::SUB_MERCHANT_PRICING_AUTOMATION => true,
         self::BLOCKLIST_FOR_WORKFLOW_SERVICE  => true,
+        self::VIEW_OPFIN_SSO_ANNOUNCEMENT     => true,
+        self::VIEW_SSL_BANNER                 => true,
+        self::VIEW_ONBOARDING_CARDS           => true,
+        self::CAN_ROLE_VIEW_TRXN_CARDS    => true,
+        self::RX_BLOCK_REPORT_DOWNLOAD_ROLE_CHECK  => true,
         self::ORG_NUMERIC_OPTION_FALSE        => true,
         self::APPS_STATUS_UPDATE_VIA_PS       => true,
         self::ONE_CLICK_DUAL_CHECKOUT         => true,
@@ -2565,7 +2583,7 @@ class Constants
           'feature'       => self::PARTNER_SUB_KYC_ACCESS,
           'display_name'  => 'Skip approval workflow to access submerchant Kyc',
           'documentation' => '',
-      ],
+        ],
         self::AUTHORIZE_VIA_AUTHZ => [
             'feature'       => self::AUTHORIZE_VIA_AUTHZ,
             'display_name'  => 'Enable authorization via authz enforcer',
@@ -2595,6 +2613,33 @@ class Constants
             'feature'      => self::BLOCKLIST_FOR_WORKFLOW_SERVICE,
             'display_name' => 'Process workflows via API (old workflow setup)',
             'description'  => 'This feature, if enabled, will process the workflows for the merchant via API Monolith',
+        ],
+        self::VIEW_OPFIN_SSO_ANNOUNCEMENT => [
+            'feature'      => self::VIEW_OPFIN_SSO_ANNOUNCEMENT,
+            'display_name' => 'View opfin sso announcemnet',
+            'description'  => 'This feature, allows visibility of opfin sso announcement to owner and admin',
+        ],
+        self::VIEW_SSL_BANNER => [
+            'feature'      => self::VIEW_SSL_BANNER,
+            'display_name' => 'View SSL banner',
+            'description'  => 'This feature, allows visibility of ssl banner to owner and admin',
+        ],
+        self::VIEW_ONBOARDING_CARDS => [
+            'feature'      => self::VIEW_ONBOARDING_CARDS,
+            'display_name' => 'View onboarding cards',
+            'description'  => 'This feature, allows visibility of onboarding cards to all roles except view_only',
+        ],
+        self::CAN_ROLE_VIEW_TRXN_CARDS => [
+            'feature'      => self::CAN_ROLE_VIEW_TRXN_CARDS,
+            'display_name' => 'View Transaction/Cards banner in test mode',
+            'description'  => 'This feature, allows view_only, fl1, fl2, fl3 roles to see transaction cards and banners on homepage',
+        ],
+
+        //TODO:: Handle vai custom roles
+        self::RX_BLOCK_REPORT_DOWNLOAD_ROLE_CHECK => [
+            'feature'      => self::RX_BLOCK_REPORT_DOWNLOAD_ROLE_CHECK,
+            'display_name' => 'This feature is used to block the download report option',
+            'description'  => 'This feature is used to block the download report option, to block reports RX_BLOCK_REPORT_DOWNLOAD should also be present at merchant level.',
         ],
     ];
 

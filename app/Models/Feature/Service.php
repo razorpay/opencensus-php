@@ -709,11 +709,13 @@ class Service extends Base\Service
         RuntimeManager::setTimeLimit(300);
     }
 
-    public function getFeaturesForMerchantPublic(Merchant\Entity $merchant)
+    public function getFeaturesForMerchantPublic(Merchant\Entity $merchant, $roleEnabledFeatures = [])
     {
         $data['features'] = [];
 
         $enabledFeatures = $merchant->getEnabledFeatures();
+
+        $enabledFeatures = array_unique(array_merge($enabledFeatures, $roleEnabledFeatures));
 
         foreach (Constants::$visibleFeaturesMap as $visibleFeature => $featureDetails)
         {

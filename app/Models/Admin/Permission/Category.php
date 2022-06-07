@@ -73,4 +73,5 @@ class Category
     const OPTIMIZER_SINGLE_RECON       = 'optimizer_single_recon';
     const NOCODE                       = 'nocode';
     const CMMA                         = 'cmma';
+    const X_DASHBOARD_FE               = 'x_dashboard_fe';
 }

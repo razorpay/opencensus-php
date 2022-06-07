@@ -982,6 +982,25 @@ class Name
 
     const DEBUG_NOCODE_ROUTES                   = 'debug_nocode_routes';
 
+    //FE premissions
+    const VIEW_PUBLIC_PROFILE                   = 'view_public_profile';
+    const VIEW_MANAGE_TEAM                      = 'view_manage_team';
+    const VIEW_DEVELOPER_CONTROLS               = 'view_developer_controls';
+    const VIEW_BANKING                          = 'view_banking';
+    const VIEW_BILLING                          = 'view_billing';
+//    const VIEW_WORKFLOW                         = 'view_workflow';
+//    const VIEW_REPORTING                        = 'view_reporting';
+    const UPDATE_SECURITY_SETTINGS              = 'update_security_settings';
+    const UPDATE_BUSINESS_SETTINGS              = 'update_business_settings';
+
+//    const EDIT_WORKFLOW    = 'edit_workflow';
+    const INTEGRATE_SHOPIFY_TOOL                = 'integrate_shopify_tool';
+    const VIEW_KYC                              = 'view_kyc';
+    const FILL_KYC                              = 'fill_kyc';
+    const DOWNLOAD_REPORTING                    = 'download_reporting';
+    const CREATE_LOW_BALANCE_ALERTS             = 'create_low_balance_alerts';
+    const VIEW_PAYOUTS_REPORT                   = 'view_payouts_report';
+    const HAS_APP_ACCESS                        = 'has_app_access';
     const ADMIN_BULK_ASSIGN_ROLE                = 'admin_bulk_assign_role';
 
     public static $actionMap = [

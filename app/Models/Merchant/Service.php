@@ -3292,7 +3292,22 @@ class Service extends Base\Service
 
     public function getMerchantFeatures()
     {
-        return (new Feature\Service)->getFeaturesForMerchantPublic($this->merchant);
+        $roleBasedFeatures = Feature\UserRoleFeatureMap::getFeaturesForRole($this->auth->getUserRole());
+
+        $features = (new Feature\Service)->getFeaturesForMerchantPublic($this->merchant, $roleBasedFeatures);
+
+        if (in_array(Feature\Constants::RX_BLOCK_REPORT_DOWNLOAD_ROLE_CHECK, $roleBasedFeatures) === false)
+        {
+            array_walk($features['features'], function(& $feature)
+            {
+                if ($feature['feature'] === Feature\Constants::RX_BLOCK_REPORT_DOWNLOAD)
+                {
+                    $feature['value'] = false;
+                }
+            });
+        }
+
+        return $features;
     }
 
     public function getEarlySettlementPricingForMerchant(): array

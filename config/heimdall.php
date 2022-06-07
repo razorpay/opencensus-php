@@ -2121,6 +2121,57 @@ return [
                 'assignable'  => true,
             ],
         ],
+
+        PermissionCategory::X_DASHBOARD_FE => [
+            Permission::UPDATE_USER_ROLE => [
+                'assignable'    => true,
+            ],
+            Permission::VIEW_PUBLIC_PROFILE => [
+                'assignable'    => true,
+            ],
+            Permission::VIEW_MANAGE_TEAM => [
+                'assignable'    => true,
+            ],
+            Permission::VIEW_DEVELOPER_CONTROLS => [
+                'assignable'    => true,
+            ],
+            Permission::VIEW_BANKING => [
+                'assignable'    => true,
+            ],
+            Permission::VIEW_BILLING => [
+                'assignable'    => true,
+            ],
+            Permission::UPDATE_SECURITY_SETTINGS => [
+                'assignable'    => true,
+            ],
+            Permission::UPDATE_BUSINESS_SETTINGS => [
+                'assignable'    => true,
+            ],
+            Permission::EDIT_WORKFLOW => [
+                'assignable'    => true,
+            ],
+            Permission::INTEGRATE_SHOPIFY_TOOL => [
+                'assignable'    => true,
+            ],
+            Permission::VIEW_KYC => [
+                'assignable'    => true,
+            ],
+            Permission::FILL_KYC => [
+                'assignable'    => true,
+            ],
+            Permission::DOWNLOAD_REPORTING => [
+                'assignable'    => true,
+            ],
+            Permission::CREATE_LOW_BALANCE_ALERTS => [
+                'assignable'    => true,
+            ],
+            Permission::VIEW_PAYOUTS_REPORT => [
+                'assignable'    => true,
+            ],
+            Permission::HAS_APP_ACCESS => [
+                'assignable'    => true,
+            ],
+        ],
     ],
 
     'workflows' => [

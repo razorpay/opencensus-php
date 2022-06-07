@@ -147,6 +147,23 @@ class UserRolePermissionsMap
                  Permission::UPDATE_USER_ROLE,
                  // Download payout attachments
                  Permission::DOWNLOAD_PAYOUT_ATTACHMENTS,
+
+                 Permission::UPDATE_USER_ROLE,
+                 Permission::VIEW_PUBLIC_PROFILE,
+                 Permission::VIEW_MANAGE_TEAM,
+                 Permission::VIEW_DEVELOPER_CONTROLS,
+                 Permission::VIEW_BANKING,
+                 Permission::VIEW_BILLING,
+                 Permission::UPDATE_SECURITY_SETTINGS,
+                 Permission::UPDATE_BUSINESS_SETTINGS,
+                 Permission::EDIT_WORKFLOW,
+                 Permission::INTEGRATE_SHOPIFY_TOOL,
+                 Permission::VIEW_KYC,
+                 Permission::FILL_KYC,
+                 Permission::DOWNLOAD_REPORTING,
+                 Permission::CREATE_LOW_BALANCE_ALERTS,
+                 Permission::VIEW_PAYOUTS_REPORT,
+                 Permission::HAS_APP_ACCESS,
              ],
 
              BankingRole::ADMIN => [
@@ -258,6 +275,19 @@ class UserRolePermissionsMap
                  Permission::MERCHANT_SUB_VIRTUAL_ACCOUNT_TRANSFER,
                  // Download payout attachments
                  Permission::DOWNLOAD_PAYOUT_ATTACHMENTS,
+
+                 Permission::VIEW_PUBLIC_PROFILE,
+                 Permission::VIEW_MANAGE_TEAM,
+                 Permission::VIEW_DEVELOPER_CONTROLS,
+                 Permission::VIEW_BANKING,
+                 Permission::VIEW_BILLING,
+                 Permission::UPDATE_SECURITY_SETTINGS,
+                 Permission::EDIT_WORKFLOW,
+                 Permission::INTEGRATE_SHOPIFY_TOOL,
+                 Permission::VIEW_KYC,
+                 Permission::FILL_KYC,
+                 Permission::DOWNLOAD_REPORTING,
+                 Permission::HAS_APP_ACCESS,
              ],
 
              BankingRole::FINANCE_L1 => [
@@ -354,6 +384,13 @@ class UserRolePermissionsMap
                  Permission::VIEW_MERCHANT_PREFERENCE,
                  // Download payout attachments
                  Permission::DOWNLOAD_PAYOUT_ATTACHMENTS,
+
+                 Permission::VIEW_MANAGE_TEAM,
+                 Permission::VIEW_BANKING,
+                 Permission::VIEW_KYC,
+                 Permission::FILL_KYC,
+                 Permission::DOWNLOAD_REPORTING,
+                 Permission::HAS_APP_ACCESS,
              ],
 
              BankingRole::OPERATIONS => [
@@ -407,6 +444,12 @@ class UserRolePermissionsMap
 
                  // Download payout attachments
                  Permission::DOWNLOAD_PAYOUT_ATTACHMENTS,
+
+                 Permission::VIEW_BANKING,
+                 Permission::VIEW_WORKFLOW,
+                 Permission::VIEW_KYC,
+                 Permission::FILL_KYC,
+                 Permission::HAS_APP_ACCESS,
              ],
 
              BankingRole::CHARTERED_ACCOUNTANT => [
@@ -420,6 +463,7 @@ class UserRolePermissionsMap
                  Permission::GET_SELF_SERVE_REPORT,
                  Permission::VIEW_REPORTING,
                  Permission::CREATE_REPORTING,
+                 Permission::DOWNLOAD_REPORTING,
 
                  //BankingRoute permissions for VP Zip download API's
                  Permission::GENERATE_VP_INVOICE_ZIP,
@@ -432,6 +476,9 @@ class UserRolePermissionsMap
 
                  // Download payout attachments
                  Permission::DOWNLOAD_PAYOUT_ATTACHMENTS,
+
+                 Permission::VIEW_PAYOUTS_REPORT,
+                 Permission::HAS_APP_ACCESS,
              ],
 
              BankingRole::VIEW_ONLY => [
@@ -473,6 +520,9 @@ class UserRolePermissionsMap
                  Permission::VIEW_MERCHANT_PREFERENCE,
                  // Download payout attachments
                  Permission::DOWNLOAD_PAYOUT_ATTACHMENTS,
+
+                 Permission::HAS_APP_ACCESS,
+                 Permission::DOWNLOAD_REPORTING,
              ],
 
              BankingRole::VENDOR => [
@@ -481,6 +531,8 @@ class UserRolePermissionsMap
                  //API's needed to fetch and edit self user details
                  Permission::VIEW_USER,
                  Permission::UPDATE_USER_PROFILE,
+                 Permission::HAS_APP_ACCESS,
+                 Permission::DOWNLOAD_REPORTING,
              ],
         ];
 
