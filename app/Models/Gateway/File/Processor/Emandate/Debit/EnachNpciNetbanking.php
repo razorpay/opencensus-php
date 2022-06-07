@@ -279,6 +279,6 @@ class EnachNpciNetbanking extends Base
 
     protected function increaseAllowedSystemLimits()
     {
-        RuntimeManager::setMemoryLimit('2048M');
+        RuntimeManager::setMemoryLimit('8192'); // 8gb
     }
 }

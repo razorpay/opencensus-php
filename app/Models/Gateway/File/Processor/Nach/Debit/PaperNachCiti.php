@@ -148,7 +148,7 @@ class PaperNachCiti extends Debit\Base
                         $amount = $amount + $data[Headings::AMOUNT];
                     }
 
-                    $date = $this->getDate();
+                    $date = $this->getHeaderDate();
 
                     $summaryRow = [
                         0 => [
