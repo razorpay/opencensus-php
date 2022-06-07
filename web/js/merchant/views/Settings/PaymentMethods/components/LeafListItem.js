@@ -14,6 +14,8 @@ import {
   fetchMerchantInstruments,
   fetchRequestedInstruments,
   getIirDiscrepancies,
+  saveMerchantDetails,
+  setInstrument,
 } from 'merchant/reducers/instrumentRequests';
 
 import { getIcon } from './InstrumentIcons';
@@ -31,9 +33,15 @@ import {
   REQUESTABLE,
   CANCELLED,
   GREYED,
+  statusClass,
+  statusPopoverText,
+  additionalDetailsStatus,
 } from '../constants';
 import { RequestedStatus } from './InstrumentStatuses/RequestedStatus';
 import RejectedAndActionRequired from './InstrumentStatuses/RejectedAndActionRequired';
+import AdditionalDetails from './InstrumentStatuses/AdditionalDetails';
+import MissingInfoModal from './MissingInfoModal';
+import { withRouter } from 'react-router-dom';
 
 class LeafListItem extends React.Component {
   static contextTypes = {
@@ -93,6 +101,42 @@ class LeafListItem extends React.Component {
     });
   };
 
+  createRequestAction = (instrument, leafInstrument, requestSlug) => {
+    this.tracker('instrument request confirmation popup', 'clicked', 'settings', {
+      actionName: 'confirm',
+      instrumentName: instrument.name,
+      method: leafInstrument.name,
+    });
+    return this.props
+      .createMerchantInstrumentRequest(requestSlug)
+      .then(() =>
+        this.tracker('instrument request', 'result', 'settings', {
+          instrumentName: instrument.name,
+          method: leafInstrument.name,
+          status: 'Success',
+        }),
+      )
+      .then(() => this.props.fetchMerchantInstruments())
+      .then(() => this.props.setInstrument({ ...this.state.intermediateInstrument }))
+      .then(() =>
+        this.props.setInstrument({ ...this.state.instrument, ...this.state.leafInstrument }),
+      )
+      .catch(({ errors }) => {
+        this.props.showNotification({
+          type: 'error',
+          message: errors[0],
+        });
+        this.tracker('instrument request', 'result', 'settings', {
+          instrumentName: instrument.name,
+          method: leafInstrument.name,
+          status: 'Failure',
+          failureReason: errors[0],
+        });
+        this.props.closeModal();
+      })
+      .finally(() => this.setState({ loading: false }));
+  };
+
   handleCreateRequest = () => {
     this.setState({ loading: true });
     const { instrument, intermediateInstrument, leafInstrument, instrumentsTat } = this.props;
@@ -104,6 +148,10 @@ class LeafListItem extends React.Component {
       instrumentName: instrument.name,
       method: leafInstrument.name,
     });
+
+    if (instrument.collect_info) {
+      return this.createRequestAction(instrument, leafInstrument, requestSlug);
+    }
 
     this.context
       .confirm({
@@ -125,33 +173,7 @@ class LeafListItem extends React.Component {
         affirmativePendingLabel: 'Requesting...',
         abortLabel: 'Cancel',
         action: () => {
-          this.tracker('instrument request confirmation popup', 'clicked', 'settings', {
-            actionName: 'confirm',
-            instrumentName: instrument.name,
-            method: leafInstrument.name,
-          });
-          return this.props
-            .createMerchantInstrumentRequest(requestSlug)
-            .then(() =>
-              this.tracker('instrument request', 'result', 'settings', {
-                instrumentName: instrument.name,
-                method: leafInstrument.name,
-                status: 'Success',
-              }),
-            )
-            .catch(({ errors }) => {
-              this.props.showNotification({
-                type: 'error',
-                message: errors[0],
-              });
-              this.tracker('instrument request', 'result', 'settings', {
-                instrumentName: instrument.name,
-                method: leafInstrument.name,
-                status: 'Failure',
-                failureReason: errors[0],
-              });
-            })
-            .finally(() => this.setState({ loading: false }));
+          this.createRequestAction(instrument, leafInstrument, requestSlug);
         },
         abort: () => {
           this.setState({ loading: false });
@@ -163,6 +185,51 @@ class LeafListItem extends React.Component {
         },
       })
       .catch(() => {});
+    return true;
+  };
+
+  saveDetails = (data, id) => {
+    return this.props
+      .saveMerchantDetails(data, id)
+      .then(
+        ({ success }) =>
+          success &&
+          this.props.showNotification({
+            type: 'success',
+            message: 'Details are saved',
+          }),
+      )
+      .catch((err) =>
+        this.props.showNotification({
+          type: 'error',
+          message: err?.errors[0],
+        }),
+      )
+      .finally(() => this.setState({ loading: false }));
+  };
+
+  handleMissingInfoModal = () => {
+    const { instrument, leafInstrument, instrumentsTat } = this.props;
+
+    this.tracker('instrument', 'requested', 'settings', {
+      instrumentName: instrument.name,
+      method: leafInstrument.name,
+    });
+    this.props.openModal({
+      component: (
+        <MissingInfoModal
+          instrument={instrument}
+          tat={instrumentsTat[instrument.path]}
+          onCloseClick={this.props.closeModal}
+          saveMerchantDetails={this.saveDetails}
+          createRequestAction={() =>
+            this.createRequestAction(instrument, leafInstrument, instrument.path)
+          }
+          merchantId={this.props?.user?.id}
+        />
+      ),
+      className: 'missinginfo-modal',
+    });
   };
 
   handleCancelRequest = (instrument) => {
@@ -198,16 +265,22 @@ class LeafListItem extends React.Component {
                 });
               }
             })
-            .catch(({ errors }) => {
+            .then(() => {
+              this.props.history.replace('/');
+              return setTimeout(() => {
+                this.props.history.replace('/payment-methods');
+              }, 10);
+            })
+            .catch((err) => {
               this.props.showNotification({
                 type: 'error',
-                message: errors[0],
+                message: err?.errors[0],
               });
               this.tracker('instrument cancel', 'result', 'settings', {
                 instrumentName: instrument.name,
                 method: leafInstrument.name,
                 status: 'Failure',
-                failureReason: errors[0],
+                failureReason: err?.errors[0],
               });
             });
         },
@@ -281,20 +354,6 @@ class LeafListItem extends React.Component {
 
   render() {
     const { instrument, intermediateInstrument, instrumentsTat } = this.props;
-    const ctaClass = {
-      Request: 'btn btn-primary',
-      account_linkable: 'btn btn-primary',
-      requestable: 'btn btn-primary',
-      cancelled: 'btn btn-primary',
-      activated: 'activated status',
-      requested: 'requested status',
-      pending: 'pending status',
-      rejected: 'rejected status',
-      action_required: 'action-required status',
-      activated_action_required: 'activated-action-required status',
-      greyed: 'btn btn-primary disabled',
-      reinitiated: 'requested status',
-    };
     const getListClass = (status, path) => {
       if ([REJECTED, ACTION_REQUIRED].includes(status)) {
         return 'action-required-list-item';
@@ -309,16 +368,6 @@ class LeafListItem extends React.Component {
       } else {
         return 'list-item';
       }
-    };
-
-    const statusPopoverText = {
-      activated: 'Payment method active on your checkout',
-      requested: 'Payment method has been requested',
-      reinitiated: 'Payment method has been reinitiated',
-      pending: 'Your request has been forwarded for approval',
-      rejected: 'Your request has been rejected',
-      action_required: 'Action required on your end to complete the process',
-      activated_action_required: 'Payment method active on your checkout',
     };
     const displayName = (name) => {
       const displayTextStyle = {
@@ -342,7 +391,8 @@ class LeafListItem extends React.Component {
       instrument.status === ACTION_REQUIRED &&
       !instrument?.should_show_smart_dashboard_flow &&
       instrument?.should_show_reinitiate_button;
-
+    const isMissingInfo = instrument?.capture_info_before_mir;
+    const isGrayed = instrument.status === GREYED && instrument.fade_comment;
     return (
       <li className={getListClass(instrument.status, instrument.path)}>
         <div>
@@ -438,13 +488,17 @@ class LeafListItem extends React.Component {
             {[REQUESTABLE, CANCELLED, GREYED].includes(instrument.status) && (
               <div className="flex-end">
                 <button
-                  className={`${ctaClass[instrument.status]} ml-5`}
+                  className={`${statusClass[instrument.status]} ml-5`}
                   disabled={this.state.loading || instrument.status === GREYED}
-                  onClick={this.handleCreateRequest}
+                  onClick={() =>
+                    instrument.collect_info
+                      ? this.handleMissingInfoModal()
+                      : this.handleCreateRequest()
+                  }
                 >
-                  {this.state.loading ? 'Requesting..' : 'Request'}
+                  Request
                 </button>
-                {instrument.status === GREYED && (
+                {isGrayed && (
                   <Popover align="bottom" theme="dark">
                     <PopoverBody>
                       <div style={{ textAlign: 'left', textTransform: 'none' }}>
@@ -458,7 +512,7 @@ class LeafListItem extends React.Component {
             {![REQUESTABLE, CANCELLED, GREYED, ACCOUNT_LINKABLE].includes(instrument.status) &&
               instrument.path !== 'pg.wallet.paytm' && (
                 <div className="flex-end">
-                  <div className={ctaClass[instrument.status]}>
+                  <div className={statusClass[instrument.status]}>
                     {instrument.status === ACTIVATED_ACTION_REQUIRED
                       ? ACTIVATED
                       : instrument.status.replace('_', ' ')}
@@ -478,6 +532,34 @@ class LeafListItem extends React.Component {
 
         {[REJECTED, ACTION_REQUIRED].includes(instrument.status) && (
           <RejectedAndActionRequired instrument={instrument} />
+        )}
+        {isMissingInfo && (
+          <details>
+            <p>
+              The following fields need to be updated to request {instrument?.name} for card
+              payments
+            </p>
+            {isMissingInfo?.map(
+              ({ display_name, url, status_identifier, current_value, status }, key) => {
+                const displayStatus = additionalDetailsStatus[status] || '';
+                return (
+                  <AdditionalDetails
+                    key={key}
+                    displayName={display_name}
+                    currentValue={current_value}
+                    statusIdentifier={status_identifier}
+                    url={url}
+                    status={displayStatus}
+                  />
+                );
+              },
+            )}
+            <summary>
+              <p>
+                Additional Details Required <i className="i i-chevron-up" />
+              </p>
+            </summary>
+          </details>
         )}
         {/* {instrument.status === ACTIVATED_ACTION_REQUIRED && (
           <div className="comment">
@@ -530,9 +612,11 @@ const mapDispatchToProps = (dispatch) => {
       fetchMerchantInstruments,
       fetchRequestedInstruments,
       getIirDiscrepancies,
+      saveMerchantDetails,
+      setInstrument,
     },
     dispatch,
   );
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(LeafListItem);
+export default withRouter(connect(mapStateToProps, mapDispatchToProps)(LeafListItem));

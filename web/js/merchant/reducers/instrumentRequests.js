@@ -17,6 +17,7 @@ const REINITIATE_INSTRUMENT_REQUEST = 'REINITIATE_INSTRUMENT_REQUEST';
 const SET_LOADING = 'SET_LOADING';
 const GET_DISCREPANCY_CATEGORIES = 'GET_DISCREPANCY_CATEGORIES';
 const GET_IIR_DISCREPANCIES = 'GET_IIR_DISCREPANCIES';
+const SAVE_MERCHANT_DETAILS = 'SAVE_MERCHANT_DETAILS';
 
 export const clearIntermediateInstrument = () => {
   return {
@@ -55,6 +56,17 @@ export const fetchRequestedInstruments = () => {
   return {
     type: FETCH_REQUESTED_MERCHANT_INSTRUMENTS,
     payload: merchantFetch('merchant_instruments'),
+  };
+};
+
+export const saveMerchantDetails = (data) => {
+  return {
+    type: SAVE_MERCHANT_DETAILS,
+    payload: merchantFetch({
+      url: `terminals/proxy/collect_info/merchant/details`,
+      method: 'post',
+      data,
+    }),
   };
 };
 
@@ -128,37 +140,37 @@ const initialState = {
           list: [
             {
               name: 'Visa Cards',
-              status: 'Request',
+              status: 'greyed',
               slug: 'domestic.visa',
               icon: 'visa',
             },
             {
               name: 'MasterCard',
-              status: 'Request',
+              status: 'greyed',
               slug: 'domestic.mastercard',
               icon: 'masterCard',
             },
             {
               name: 'Rupay Cards',
-              status: 'Request',
+              status: 'greyed',
               slug: 'domestic.rupay',
               icon: 'rupay',
             },
             {
               name: 'Maestro',
-              status: 'Request',
+              status: 'greyed',
               slug: 'domestic.maestro',
               icon: 'maestro',
             },
             {
               name: 'Amex Cards',
-              status: 'Request',
+              status: 'greyed',
               slug: 'domestic.amex',
               icon: 'amex',
             },
             {
               name: 'Diners Club',
-              status: 'Request',
+              status: 'greyed',
               slug: 'domestic.dicl',
               icon: 'diners',
             },
@@ -179,7 +191,7 @@ const initialState = {
           list: [
             {
               name: 'UPI',
-              status: 'Request',
+              status: 'greyed',
               slug: 'upi',
               description: (
                 <p>
@@ -196,7 +208,7 @@ const initialState = {
             },
             // {
             //   name: 'Google Pay Omnichannel',
-            //   status: 'Request',
+            //   status: 'greyed',
             //   slug: 'google_pay',
             //   description: (
             //     <p>
@@ -231,338 +243,338 @@ const initialState = {
             {
               header: 'Available Banks',
               list: [
-                { name: 'HDFC Bank', status: 'Request', slug: 'hdfc' },
+                { name: 'HDFC Bank', status: 'greyed', slug: 'hdfc' },
                 {
                   name: 'State Bank of India',
-                  status: 'Request',
+                  status: 'greyed',
                   slug: 'sbin',
                 },
-                { name: 'Axis Bank', status: 'Request', slug: 'utib' },
-                { name: 'ICICI Bank', status: 'Request', slug: 'icic' },
-                { name: 'City Union Bank', status: 'Request', slug: 'ciub' },
+                { name: 'Axis Bank', status: 'greyed', slug: 'utib' },
+                { name: 'ICICI Bank', status: 'greyed', slug: 'icic' },
+                { name: 'City Union Bank', status: 'greyed', slug: 'ciub' },
                 {
                   name: 'Standard Chartered Bank',
-                  status: 'Request',
+                  status: 'greyed',
                   slug: 'scbl',
                 },
                 {
                   name: 'AU Small Finance Bank',
-                  status: 'Request',
+                  status: 'greyed',
                   slug: 'aubl',
                 },
                 {
                   name: 'Airtel Payments Bank',
-                  status: 'Request',
+                  status: 'greyed',
                   slug: 'airp',
                 },
                 {
                   name: 'Allahabad Bank',
-                  status: 'Request',
+                  status: 'greyed',
                   slug: 'alla',
                 },
                 {
                   name: 'Andhra Bank',
-                  status: 'Request',
+                  status: 'greyed',
                   slug: 'andb',
                 },
                 {
                   name: 'Bandhan Bank',
-                  status: 'Request',
+                  status: 'greyed',
                   slug: 'bdbl',
                 },
                 {
                   name: 'Bank of Bahrain and Kuwait',
-                  status: 'Request',
+                  status: 'greyed',
                   slug: 'bbkm',
                 },
                 {
                   name: 'Bank of Baroda',
-                  status: 'Request',
+                  status: 'greyed',
                   slug: 'barb_r',
                 },
                 {
                   name: 'Bank of India',
-                  status: 'Request',
+                  status: 'greyed',
                   slug: 'bkid',
                 },
                 {
                   name: 'Bank of Maharashtra',
-                  status: 'Request',
+                  status: 'greyed',
                   slug: 'mahb',
                 },
                 {
                   name: 'Bassein Catholic Co-operative Bank',
-                  status: 'Request',
+                  status: 'greyed',
                   slug: 'bacb',
                 },
                 {
                   name: 'Canara Bank',
-                  status: 'Request',
+                  status: 'greyed',
                   slug: 'cnrb',
                 },
                 {
                   name: 'Catholic Syrian Bank',
-                  status: 'Request',
+                  status: 'greyed',
                   slug: 'csbk',
                 },
                 {
                   name: 'Central Bank of India',
-                  status: 'Request',
+                  status: 'greyed',
                   slug: 'cbin',
                 },
                 {
                   name: 'Cosmos Co-operative Bank',
-                  status: 'Request',
+                  status: 'greyed',
                   slug: 'cosb',
                 },
                 {
                   name: 'DCB Bank',
-                  status: 'Request',
+                  status: 'greyed',
                   slug: 'dcbl',
                 },
                 {
                   name: 'Dena Bank',
-                  status: 'Request',
+                  status: 'greyed',
                   slug: 'bkdn',
                 },
                 {
                   name: 'Deutsche Bank',
-                  status: 'Request',
+                  status: 'greyed',
                   slug: 'deut',
                 },
                 {
                   name: 'Development Bank of Singapore',
-                  status: 'Request',
+                  status: 'greyed',
                   slug: 'dbss',
                 },
                 {
                   name: 'Dhanlaxmi Bank',
-                  status: 'Request',
+                  status: 'greyed',
                   slug: 'dlxb',
                 },
                 {
                   name: 'ESAF Small Finance Bank',
-                  status: 'Request',
+                  status: 'greyed',
                   slug: 'esaf',
                 },
                 {
                   name: 'Equitas Small Finance Bank',
-                  status: 'Request',
+                  status: 'greyed',
                   slug: 'esfb',
                 },
                 {
                   name: 'Federal Bank',
-                  status: 'Request',
+                  status: 'greyed',
                   slug: 'fdrl',
                 },
                 {
                   name: 'IDBI',
-                  status: 'Request',
+                  status: 'greyed',
                   slug: 'ibkl',
                 },
                 {
                   name: 'IDFC FIRST Bank',
-                  status: 'Request',
+                  status: 'greyed',
                   slug: 'idfb',
                 },
                 {
                   name: 'Indian Bank',
-                  status: 'Request',
+                  status: 'greyed',
                   slug: 'idib',
                 },
                 {
                   name: 'Indian Overseas Bank',
-                  status: 'Request',
+                  status: 'greyed',
                   slug: 'ioba',
                 },
                 {
                   name: 'Indusind Bank',
-                  status: 'Request',
+                  status: 'greyed',
                   slug: 'indb',
                 },
                 {
                   name: 'Jammu and Kashmir Bank',
-                  status: 'Request',
+                  status: 'greyed',
                   slug: 'jaka',
                 },
                 {
                   name: 'Jana Small Finance Bank',
-                  status: 'Request',
+                  status: 'greyed',
                   slug: 'jsfb',
                 },
                 {
                   name: 'Janata Sahakari Bank (Pune)',
-                  status: 'Request',
+                  status: 'greyed',
                   slug: 'jsbp',
                 },
                 {
                   name: 'Kalupur Commercial Co-operative Bank',
-                  status: 'Request',
+                  status: 'greyed',
                   slug: 'kccb',
                 },
                 {
                   name: 'Kalyan Janata Sahakari Bank',
-                  status: 'Request',
+                  status: 'greyed',
                   slug: 'kjsb',
                 },
                 {
                   name: 'Karnataka Bank',
-                  status: 'Request',
+                  status: 'greyed',
                   slug: 'karb',
                 },
                 {
                   name: 'Karur Vysya Bank',
-                  status: 'Request',
+                  status: 'greyed',
                   slug: 'kvbl',
                 },
                 {
                   name: 'Kotak Mahindra Bank',
-                  status: 'Request',
+                  status: 'greyed',
                   slug: 'kkbk',
                 },
                 {
                   name: 'Mehsana Urban Co-operative Bank',
-                  status: 'Request',
+                  status: 'greyed',
                   slug: 'msnu',
                 },
                 {
                   name: 'NKGSB Co-operative Bank',
-                  status: 'Request',
+                  status: 'greyed',
                   slug: 'nkgs',
                 },
                 {
                   name: 'North East Small Finance Bank',
-                  status: 'Request',
+                  status: 'greyed',
                   slug: 'nesf',
                 },
                 {
                   name: 'Oriental Bank of Commerce',
-                  status: 'Request',
+                  status: 'greyed',
                   slug: 'orbc',
                 },
                 {
                   name: 'United Bank Of India',
-                  status: 'Request',
+                  status: 'greyed',
                   slug: 'utbi',
                 },
                 {
                   name: 'Punjab & Sind Bank',
-                  status: 'Request',
+                  status: 'greyed',
                   slug: 'psib',
                 },
                 {
                   name: 'Punjab National Bank',
-                  status: 'Request',
+                  status: 'greyed',
                   slug: 'punb_r',
                 },
                 {
                   name: 'Ratnakar Bank',
-                  status: 'Request',
+                  status: 'greyed',
                   slug: 'ratn',
                 },
                 {
                   name: 'Saraswat Cooperative Bank',
-                  status: 'Request',
+                  status: 'greyed',
                   slug: 'srcb',
                 },
                 // {
                 //   name: 'SVCB Co-operative Bank',
-                //   status: 'Request',
+                //   status: 'greyed',
                 //   slug: 'svcb',
                 // },
                 {
                   name: 'South Indian Bank',
-                  status: 'Request',
+                  status: 'greyed',
                   slug: 'sibl',
                 },
                 {
                   name: 'State Bank of Bikaner and Jaipur',
-                  status: 'Request',
+                  status: 'greyed',
                   slug: 'sbbj',
                 },
                 {
                   name: 'State Bank of Hyderabad',
-                  status: 'Request',
+                  status: 'greyed',
                   slug: 'sbhy',
                 },
                 {
                   name: 'State Bank of Mysore',
-                  status: 'Request',
+                  status: 'greyed',
                   slug: 'sbmy',
                 },
                 {
                   name: 'State Bank of Patiala',
-                  status: 'Request',
+                  status: 'greyed',
                   slug: 'stbp',
                 },
                 {
                   name: 'State Bank of Travancore',
-                  status: 'Request',
+                  status: 'greyed',
                   slug: 'sbtr',
                 },
                 {
                   name: 'Suryoday Small Finance Bank',
-                  status: 'Request',
+                  status: 'greyed',
                   slug: 'sury',
                 },
                 {
                   name: 'Syndicate Bank',
-                  status: 'Request',
+                  status: 'greyed',
                   slug: 'synb',
                 },
                 {
                   name: 'Tamilnadu Mercantile Bank',
-                  status: 'Request',
+                  status: 'greyed',
                   slug: 'tmbl',
                 },
                 {
                   name: 'Tamilnadu State Apex Co-operative Bank ',
-                  status: 'Request',
+                  status: 'greyed',
                   slug: 'tnsc',
                 },
                 {
                   name: 'Thane Bharat Sahakari Bank',
-                  status: 'Request',
+                  status: 'greyed',
                   slug: 'tbsb',
                 },
                 {
                   name: 'Thane Janata Sahakari Bank',
-                  status: 'Request',
+                  status: 'greyed',
                   slug: 'tjsb',
                 },
                 // {
                 //   name: 'UCO Bank',
-                //   status: 'Request',
+                //   status: 'greyed',
                 //   slug: 'ucba',
                 // },
                 {
                   name: 'Union Bank of India',
-                  status: 'Request',
+                  status: 'greyed',
                   slug: 'ubin',
                 },
                 {
                   name: 'Corporation Bank',
-                  status: 'Request',
+                  status: 'greyed',
                   slug: 'corp',
                 },
                 {
                   name: 'Varachha Co-operative Bank',
-                  status: 'Request',
+                  status: 'greyed',
                   slug: 'vara',
                 },
                 {
                   name: 'Vijaya Bank',
-                  status: 'Request',
+                  status: 'greyed',
                   slug: 'vijb',
                 },
                 {
                   name: 'Yes Bank',
-                  status: 'Request',
+                  status: 'greyed',
                   slug: 'yesb',
                 },
                 {
                   name: 'Zoroastrian Co-operative Bank',
-                  status: 'Request',
+                  status: 'greyed',
                   slug: 'zcbl',
                 },
               ],
@@ -577,52 +589,52 @@ const initialState = {
             {
               header: 'Available Banks',
               list: [
-                { name: 'Andhra Bank', status: 'Request', slug: 'andb_c' },
+                { name: 'Andhra Bank', status: 'greyed', slug: 'andb_c' },
                 {
                   name: 'Shamrao Vithal Co-operative Bank',
-                  status: 'Request',
+                  status: 'greyed',
                   slug: 'svcb_c',
                 },
                 {
                   name: 'Bank of Baroda',
-                  status: 'Request',
+                  status: 'greyed',
                   slug: 'barb_c',
                 },
                 {
                   name: 'Punjab National Bank',
-                  status: 'Request',
+                  status: 'greyed',
                   slug: 'punb_c',
                 },
                 {
                   name: 'YES Bank',
-                  status: 'Request',
+                  status: 'greyed',
                   slug: 'yesb_c',
                 },
-                { name: 'ICICI Bank', status: 'Request', slug: 'icic_c' },
-                { name: 'Axis Bank', status: 'Request', slug: 'utib_c' },
+                { name: 'ICICI Bank', status: 'greyed', slug: 'icic_c' },
+                { name: 'Axis Bank', status: 'greyed', slug: 'utib_c' },
                 {
                   name: 'IDBI',
-                  status: 'Request',
+                  status: 'greyed',
                   slug: 'ibkl_c',
                 },
                 {
                   name: 'Bank of India',
-                  status: 'Request',
+                  status: 'greyed',
                   slug: 'bkid_c',
                 },
                 {
                   name: 'Ratnakar Bank',
-                  status: 'Request',
+                  status: 'greyed',
                   slug: 'ratn_c',
                 },
                 {
                   name: 'Dhanlaxmi Bank',
-                  status: 'Request',
+                  status: 'greyed',
                   slug: 'dlxb_c',
                 },
                 {
                   name: 'Kotak Mahindra Bank',
-                  status: 'Request',
+                  status: 'greyed',
                   slug: 'kkbk_c',
                 },
               ],
@@ -646,7 +658,7 @@ const initialState = {
             {
               name: 'HDFC Bank',
               description: '',
-              status: 'Request',
+              status: 'greyed',
               slug: 'debit.hdfc',
               icon: 'https://cdn.razorpay.com/paylater-sq/hdfc.svg',
             },
@@ -659,7 +671,7 @@ const initialState = {
             {
               name: 'Credit Cards',
               description: '',
-              status: 'Request',
+              status: 'greyed',
               slug: 'credit',
             },
           ],
@@ -671,35 +683,35 @@ const initialState = {
             {
               name: 'ZestMoney',
               description: '',
-              status: 'Request',
+              status: 'greyed',
               slug: 'cardless_emi.zestmoney',
               icon: 'zestmoney',
             },
             {
               name: 'Early Salary',
               description: '',
-              status: 'Request',
+              status: 'greyed',
               slug: 'cardless_emi.earlysalary',
               icon: 'earlysalary',
             },
             {
               name: 'Instacred',
               description: '',
-              status: 'Request',
+              status: 'greyed',
               slug: 'cardless_emi.instacred',
               icon: 'instacred',
             },
             {
               name: 'Sezzle',
               description: '',
-              status: 'Request',
+              status: 'greyed',
               slug: 'cardless_emi.sezzle',
               icon: 'sezzle',
             },
             {
               name: 'Walnut369',
               description: '',
-              status: 'Request',
+              status: 'greyed',
               slug: 'cardless_emi.walnut369',
               icon: 'walnut369',
             },
@@ -727,70 +739,70 @@ const initialState = {
             {
               name: 'Phonepe',
               description: '',
-              status: 'Request',
+              status: 'greyed',
               slug: 'phonepe',
               icon: 'phonepe',
             },
             {
               name: 'Airtel Money',
               description: '',
-              status: 'Request',
+              status: 'greyed',
               slug: 'airtelmoney',
               icon: 'airtelmoney',
             },
             {
               name: 'Freecharge',
               description: '',
-              status: 'Request',
+              status: 'greyed',
               slug: 'freecharge',
               icon: 'freecharge',
             },
             {
               name: 'Jio Money',
               description: '',
-              status: 'Request',
+              status: 'greyed',
               slug: 'jiomoney',
               icon: 'jiomoney',
             },
             {
               name: 'Ola Money',
               description: '',
-              status: 'Request',
+              status: 'greyed',
               slug: 'olamoney',
               icon: 'olamoney',
             },
             {
               name: 'Payzapp',
               description: '',
-              status: 'Request',
+              status: 'greyed',
               slug: 'payzapp',
               icon: 'payzapp',
             },
             {
               name: 'Mobikwik',
               description: '',
-              status: 'Request',
+              status: 'greyed',
               slug: 'mobikwik',
               icon: 'mobikwik',
             },
             {
               name: 'Itz Cash',
               description: '',
-              status: 'Request',
+              status: 'greyed',
               slug: 'itzcash',
               icon: 'itzcash',
             },
             {
               name: 'PayCash',
               description: '',
-              status: 'Request',
+              status: 'greyed',
               slug: 'paycash',
               icon: 'paycash',
             },
             {
               name: 'Citibank Reward Points',
               description: '',
-              status: 'Request',
+              status: 'greyed',
               slug: 'citibankrewards',
               icon: 'citibankrewards',
             },
@@ -812,28 +824,28 @@ const initialState = {
             {
               name: 'Flexipay',
               description: '',
-              status: 'Request',
+              status: 'greyed',
               slug: 'flexipay',
               icon: 'https://cdn.razorpay.com/paylater-sq/hdfc.svg',
             },
             {
               name: 'ICICI',
               description: '',
-              status: 'Request',
+              status: 'greyed',
               slug: 'icic',
               icon: 'icici',
             },
             {
               name: 'Simpl',
               description: '',
-              status: 'Request',
+              status: 'greyed',
               slug: 'getsimpl',
               icon: 'getsimpl',
             },
             // {
             //   name: 'ePayLater',
             //   description: '',
-            //   status: 'Request',
+            //   status: 'greyed',
             //   slug: 'epaylater',
             //   icon: 'epaylater',
             // },
@@ -855,14 +867,14 @@ const initialState = {
             {
               name: 'International Cards',
               description: 'On Payment Gateway, Pages, Links and Invoices',
-              status: 'Request',
+              status: 'greyed',
               slug: 'internationalcards',
               icon: '',
             },
             {
               name: 'Paypal',
               description: 'Accept International Payments using PayPal on Razorpay Checkout',
-              status: 'Request',
+              status: 'greyed',
               slug: 'paypal',
               icon: 'paypal',
             },
@@ -973,8 +985,9 @@ export default function instrumentRequestsReducer(state = initialState, action) 
       lodashset(stateClone, 'merchantDiscrepancies', action.payload.data);
       return stateClone;
     }
-    case `${FETCH_ALL_MERCHANT_INSTRUMENTS}::ERROR`:
+    case `${FETCH_ALL_MERCHANT_INSTRUMENTS}::ERROR`: {
       return set(state, 'loading', false);
+    }
     case `${FETCH_ALL_MERCHANT_INSTRUMENTS}::SUCCESS`: {
       const stateClone = cloneDeep(state);
       action.payload.data.forEach((s) => {
@@ -996,7 +1009,16 @@ export default function instrumentRequestsReducer(state = initialState, action) 
           `${path}.created_at`,
           s.status === REQUESTED ? s.updated_at : s.created_at,
         );
-
+        lodashset(
+          stateClone,
+          `${path}.capture_info_before_mir`,
+          s?.capture_info_before_mir?.redirect_to_form?.fields,
+        );
+        lodashset(
+          stateClone,
+          `${path}.collect_info`,
+          s?.capture_info_before_mir?.collect_info?.fields,
+        );
         if (['action_required', 'rejected', 'activated_action_required'].includes(s.status)) {
           lodashset(stateClone, `${path}.comment`, s.comment);
           lodashset(
@@ -1049,6 +1071,16 @@ export default function instrumentRequestsReducer(state = initialState, action) 
         );
         lodashset(stateClone, `${pathToUpdate}.status`, action.payload.data.status);
         lodashset(stateClone, `${pathToUpdate}.created_at`, action.payload.data.created_at);
+        lodashset(
+          stateClone,
+          `${pathToUpdate}.capture_info_before_mir`,
+          action.payload.data?.capture_info_before_mir?.redirect_to_form?.fields,
+        );
+        lodashset(
+          stateClone,
+          `${pathToUpdate}.collect_info`,
+          action.payload.data?.capture_info_before_mir?.collect_info?.fields,
+        );
         return stateClone;
       }
       return state;
