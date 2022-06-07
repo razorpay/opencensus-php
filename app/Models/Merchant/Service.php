@@ -7129,6 +7129,8 @@ class Service extends Base\Service
 
             // 2. store signup source information
             $this->storeRelevantPreSignUpSourceInfoForBanking($utmParams, $merchant);
+
+            $this->app->salesforce->sendProductSwitchDetails($utmParams, $merchant);
         }
 
         // for users signed up with mobile number and have not added an email,

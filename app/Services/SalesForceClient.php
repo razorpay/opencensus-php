@@ -137,6 +137,26 @@ class SalesForceClient
         );
     }
 
+    public function sendProductSwitchDetails(array $input, Merchant\Entity $merchant)
+    {
+        $url = $this->generateUrlForMerchantUpsert();
+
+        $input['contact_mobile'] = $merchant->merchantDetail->getContactMobile() ?? '';
+
+        // Using the same function to generate payload as that of pre-signup
+        // since call to the same salesforce API is being made
+        $data = $this->payloadGenerationForPreSignupDetails($input, $merchant);
+
+        $this->trace->info(TraceCode::SALESFORCE_PRODUCT_SWITCH_REQUEST, $data);
+
+        $this->dispatchRequestJob($url,
+            $data,
+            TraceCode::SALESFORCE_PRODUCT_SWITCH_REQUEST,
+            TraceCode::SALESFORCE_PRODUCT_SWITCH_RESPONSE,
+            TraceCode::SALESFORCE_PRODUCT_SWITCH_EXCEPTION
+        );
+    }
+
     public function sendXOnboardingToSalesforce($data)
     {
         $url = $this->generateUrlForMerchantUpsert();

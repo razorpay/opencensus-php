@@ -361,7 +361,7 @@ class UserTest extends TestCase
 
         $this->ba->proxyAuth('rzp_test_10000000000000', $user['id'], 'owner');
 
-        $this->mockSalesforceEventTracked('captureInterestOfPrimaryMerchantInBanking');
+        $this->mockSalesforceEventTracked(true, false, true);
 
         $this->mockHubSpotClient('trackHubspotEvent',0);
 
@@ -417,7 +417,7 @@ class UserTest extends TestCase
 
         $this->ba->proxyAuth('rzp_test_10000000000000', $user['id'], 'owner');
 
-        $this->mockSalesforceEventTracked('captureInterestOfPrimaryMerchantInBanking',true);
+        $this->mockSalesforceEventTracked(true,true, false);
 
         $this->mockHubSpotClient('trackHubspotEvent');
 
@@ -435,24 +435,36 @@ class UserTest extends TestCase
     }
 
 
-    public function mockSalesforceEventTracked(string $methodName, $afterEmailVerified = false)
+    public function mockSalesforceEventTracked($captureInterestOfPrimaryMerchantInBanking = false, $afterEmailVerified = false, $sendProductSwitchDetails = false)
     {
         $salesforceClientMock = $this->getMockBuilder(SalesForceClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods([$methodName])
+            ->setMethods(['captureInterestOfPrimaryMerchantInBanking', 'sendProductSwitchDetails'])
             ->getMock();
 
         $this->app->instance('salesforce', $salesforceClientMock);
 
         if ($afterEmailVerified)
         {
-            $salesforceClientMock->expects($this->exactly(2))
-                ->method($methodName);
+            if ($captureInterestOfPrimaryMerchantInBanking == true)
+            {
+                $salesforceClientMock->expects($this->exactly(2))
+                    ->method('captureInterestOfPrimaryMerchantInBanking');
+            }
         }
         else
         {
-            $salesforceClientMock->expects($this->exactly(1))
-                ->method($methodName);
+            if ($captureInterestOfPrimaryMerchantInBanking == true)
+            {
+                $salesforceClientMock->expects($this->exactly(1))
+                    ->method('captureInterestOfPrimaryMerchantInBanking');
+            }
+
+            if ($sendProductSwitchDetails == true)
+            {
+                $salesforceClientMock->expects($this->exactly(1))
+                    ->method('sendProductSwitchDetails');
+            }
         }
     }
 
