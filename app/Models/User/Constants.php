@@ -443,4 +443,8 @@ class Constants
     const PRODUCT_SWITCH          = 'product_switch';
 
     const PRODUCT_SWITCH_REQUIRED = 'product_switch_required';
+
+    const USER_FETCH_GUEST_BLACKLISTED_ROUTES = [
+        'user_fetch'
+    ];
 }

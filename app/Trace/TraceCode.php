@@ -601,6 +601,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FETCH_ACTOR_INFO_REQUEST                              = 'FETCH_ACTOR_INFO_REQUEST';
     const USER_DETAILS                                          = 'USER_DETAILS';
 
+    const USER_FETCH_VIA_GUEST_AUTH                             = 'USER_FETCH_VIA_GUEST_AUTH';
+
     const USER_PASSWORD_RESET_REQUEST                           = 'USER_PASSWORD_RESET_REQUEST';
     const USER_PASSWORD_RESET_TOKEN_GENERATE                    = 'USER_PASSWORD_RESET_TOKEN_GENERATE';
 

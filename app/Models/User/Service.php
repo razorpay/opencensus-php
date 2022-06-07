@@ -1028,7 +1028,29 @@ class Service extends Base\Service
 
     public function get(string $id, array $input = []): array
     {
-        if ($this->auth->isAdminAuth() === true or $this->auth->isPrivilegeAuth() === true)
+        // dashboard_guest is blocked as temp solution for SIBB-161
+        $allowGuestAppIDOR = true;
+
+        if ($this->auth->getInternalApp() === 'dashboard_guest')
+        {
+            $route = $this->app['api.route']->getCurrentRouteName();
+
+            if (in_array($route,Constants::USER_FETCH_GUEST_BLACKLISTED_ROUTES,true))
+            {
+                $allowGuestAppIDOR = false;
+            }
+
+            $this->trace->warn(TraceCode::USER_FETCH_VIA_GUEST_AUTH,
+                [
+                    'route'     => $route,
+                    'allowIDOR' => $allowGuestAppIDOR
+                ]);
+        }
+
+        // dashboard_guest is blocked as temp solution for SIBB-161
+        if ($this->auth->isAdminAuth() === true or
+            ($this->auth->isPrivilegeAuth() === true and
+             $allowGuestAppIDOR === true))
         {
             $user = $this->repo->user->findOrFailPublic($id);
         }

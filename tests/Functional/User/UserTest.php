@@ -5530,6 +5530,15 @@ class UserTest extends TestCase
         Carbon::setTestNow();
     }
 
+    public function testIDORBlockForGetUsersViaDashboardGuestAppAuth()
+    {
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->fixtures->user->createUserForMerchant('10000000000000', ['id'=>'20000000000000']);
+
+        $this->startTest();
+    }
+
     public function testGetForUsersWithBusinessBankingEnabledForRblCA()
     {
         $oldDateTime = Carbon::create(2019, 7, 21, 12, 23, 41, Timezone::IST);

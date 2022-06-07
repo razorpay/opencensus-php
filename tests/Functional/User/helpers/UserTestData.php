@@ -3797,6 +3797,22 @@ return [
         ],
     ],
 
+    'testIDORBlockForGetUsersViaDashboardGuestAppAuth' => [
+        'request'  => [
+            'url'     => '/users/30000000000000',
+            'method'  => 'GET',
+            'content' => [],
+            'server'  => [
+                'HTTP_X-Dashboard-User-Id' => '20000000000000',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'id'    =>  '20000000000000'
+            ],
+        ],
+    ],
+
     'testGetForUsersWithBusinessBankingEnabledForRblCA' => [
         'request'  => [
             'url'     => '/users/30000000000000',
