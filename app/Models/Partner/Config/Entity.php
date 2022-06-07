@@ -30,6 +30,7 @@ class Entity extends PublicEntity
     const EXPLICIT_REFUND_FEES    = 'explicit_refund_fees';
     const EXPLICIT_SHOULD_CHARGE  = 'explicit_should_charge';
     const DEFAULT_PAYMENT_METHODS = 'default_payment_methods';
+    const SUB_MERCHANT_CONFIG     = 'sub_merchant_config';
 
     const DEFAULT_TDS_PERCENTAGE             = 500;
     const TDS_PERCENTAGE_FOR_MISSING_DETAILS = 2000;
@@ -52,6 +53,7 @@ class Entity extends PublicEntity
         self::TDS_PERCENTAGE,
         self::HAS_GST_CERTIFICATE,
         self::REVISIT_AT,
+        self::SUB_MERCHANT_CONFIG
     ];
 
     protected $public = [
@@ -74,6 +76,7 @@ class Entity extends PublicEntity
         self::HAS_GST_CERTIFICATE,
         self::REVISIT_AT,
         self::CREATED_AT,
+        self::SUB_MERCHANT_CONFIG
     ];
 
     protected $dates = [
@@ -91,6 +94,7 @@ class Entity extends PublicEntity
         self::TDS_PERCENTAGE          => self::DEFAULT_TDS_PERCENTAGE,
         self::HAS_GST_CERTIFICATE     => 0,
         self::DEFAULT_PAYMENT_METHODS => null,
+        self::SUB_MERCHANT_CONFIG     => null,
     ];
 
     protected $casts = [
@@ -101,6 +105,7 @@ class Entity extends PublicEntity
         self::SETTLE_TO_PARTNER       => 'bool',
         self::TDS_PERCENTAGE          => 'int',
         self::HAS_GST_CERTIFICATE     => 'bool',
+        self::SUB_MERCHANT_CONFIG     => 'array'
     ];
 
     protected static $unsetCreateInput = [Constants::APPLICATION_ID, Constants::PARTNER_ID];
@@ -169,6 +174,11 @@ class Entity extends PublicEntity
         return $this->getAttribute(self::DEFAULT_PAYMENT_METHODS);
     }
 
+    public function getSubMerchantConfig()
+    {
+        return $this->getAttribute(self::SUB_MERCHANT_CONFIG);
+    }
+
     public function shouldSettleToPartner(): bool
     {
         return ($this->getAttribute(self::SETTLE_TO_PARTNER) === true);
@@ -210,6 +220,10 @@ class Entity extends PublicEntity
         $this->setAttribute(self::ENTITY_ID, $entityId);
     }
 
+    public function setSubMerchantConfig($subMerchantConfig)
+    {
+        return $this->setAttribute(self::SUB_MERCHANT_CONFIG, $subMerchantConfig);
+    }
     // --------------------- GENERATORS ---------------------
     public function generateRevisitAt(array $input)
     {

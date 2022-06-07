@@ -2540,6 +2540,8 @@ class Route
         'partner_config_bulk_upsert'               => ['post',     'partner_configs/bulk',                           'PartnerConfigController@bulkUpsert'                                ],
         'partner_config_fetch'                     => ['get',      'partner_configs',                                'PartnerConfigController@getConfig'                                 ],
         'partner_config_edit'                      => ['put',      'partner_configs/{id}',                           'PartnerConfigController@update'                                    ],
+        'create_partner_sub_merchant_config'       => ['post',     'partner_configs/submerchant/config',             'PartnerConfigController@createPartnersSubMerchantConfig'                     ],
+        'update_partner_sub_merchant_config'       => ['put',      'partner_configs/submerchant/config',             'PartnerConfigController@updatePartnersSubMerchantConfig'                     ],
         'fetch_partner_first_user_experience'      => ['get',      'partner/first_user_experience',                  'MerchantController@getFUXDetailsForPartner'              ],
         'fetch_partner_referral_batch'             => ['post',     'partner_referral/bulk',                          'MerchantController@fetchPartnerReferralViaBatch'                   ],
         //Partner activation routes
@@ -6254,6 +6256,8 @@ class Route
 
         'partner_config_create',
         'partner_config_fetch',
+        'create_partner_sub_merchant_config',
+        'update_partner_sub_merchant_config',
         'partner_config_edit',
 
         'vault_token_create',
@@ -7511,6 +7515,8 @@ class Route
         'partner_config_create'                    => Permission::EDIT_PARTNERS,
         'partner_config_fetch'                     => Permission::VIEW_PARTNERS,
         'partner_config_edit'                      => Permission::EDIT_PARTNERS,
+        'create_partner_sub_merchant_config'       => Permission::EDIT_PARTNERS,
+        'update_partner_sub_merchant_config'       => Permission::EDIT_PARTNERS,
         'vault_token_create'                       => Permission::VAULT_TOKEN_CREATE,
         'merchant_user_reset_password'             => Permission::USER_PASSWORD_RESET,
         'subscription_update_data'                 => Permission::MODIFY_SUBSCRIPTION_DATA,
@@ -10999,6 +11005,8 @@ class Route
             'partner_config_create',
             'partner_config_edit',
             'partner_config_fetch',
+            'create_partner_sub_merchant_config',
+            'update_partner_sub_merchant_config',
             'partner_referral_create',
             'partner_referral_fetch',
             'partner_activation_migrate',

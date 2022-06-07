@@ -28,6 +28,7 @@ class Validator extends Base\Validator
         Entity::TDS_PERCENTAGE          => 'sometimes|integer',
         Entity::HAS_GST_CERTIFICATE     => 'sometimes|boolean',
         Entity::DEFAULT_PAYMENT_METHODS => 'sometimes|array|custom',
+        Entity::SUB_MERCHANT_CONFIG     => 'nullable|array'
     ];
 
     protected static $editRules = [
@@ -44,6 +45,7 @@ class Validator extends Base\Validator
         Entity::TDS_PERCENTAGE          => 'sometimes|integer',
         Entity::HAS_GST_CERTIFICATE     => 'sometimes|boolean',
         Entity::DEFAULT_PAYMENT_METHODS => 'sometimes|array|custom',
+        Entity::SUB_MERCHANT_CONFIG     => 'sometimes|string',
     ];
 
     protected static $createValidators = [
@@ -151,4 +153,5 @@ class Validator extends Base\Validator
 
         (new Methods\Validator())->validateInput('set_methods', $value);
     }
+
 }

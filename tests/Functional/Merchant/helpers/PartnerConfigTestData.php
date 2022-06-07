@@ -804,4 +804,210 @@ return [
             'status_code' => 200,
         ],
     ],
+
+    'testCreatePartnersSubMerchantConfigWithNullConfigInDB' => [
+        'request'  => [
+            'url'     => '/partner_configs/submerchant/config',
+            'method'  => 'POST',
+            'content' => [
+                'partner_id'     => '100nonplatform',
+                'attribute_name' => 'max_payment_amount',
+                'parameters'     => ['business_type' => 'individual'],
+                'value'=> 2000011,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity_id'   => Constants::DEFAULT_NON_PLATFORM_APP_ID,
+            ],
+        ],
+    ],
+
+    'testCreatePartnersSubMerchantConfigWithConfigInDB' => [
+        'request'  => [
+            'url'     => '/partner_configs/submerchant/config',
+            'method'  => 'POST',
+            'content' => [
+                'partner_id'     => '100nonplatform',
+                'attribute_name' => 'max_payment_amount',
+                'parameters'     => ['business_type' => 'not_yet_registered'],
+                'value'=> 2000011,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity_id'   => Constants::DEFAULT_NON_PLATFORM_APP_ID,
+            ],
+        ],
+    ],
+
+    'testCreatePartnersSubMerchantConfigInvalidParameters' => [
+        'request'  => [
+            'url'     => '/partner_configs/submerchant/config',
+            'method'  => 'POST',
+            'content' => [
+                'partner_id'     => '100nonplatform',
+                'attribute_name' => 'max_payment_amount',
+                'parameters'     => ['business_type' => 'invalidType'],
+                'value'=> 2000011,
+            ],
+        ],
+        'response'  => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PARTNER_SUBMERCHANT_CONFIGURATION_INVALID,
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PARTNER_SUBMERCHANT_CONFIGURATION_INVALID,
+        ],
+    ],
+
+    'testCreatePartnersSubMerchantConfigInvalidConfigName' => [
+        'request'  => [
+            'url'     => '/partner_configs/submerchant/config',
+            'method'  => 'POST',
+            'content' => [
+                'partner_id'     => '100nonplatform',
+                'attribute_name' => 'invalid_config',
+                'parameters'     => ['business_type' => 'not_yet_registered'],
+                'value'=> 2000011,
+            ],
+        ],
+        'response'  => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PARTNER_SUBMERCHANT_CONFIGURATION_INVALID,
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PARTNER_SUBMERCHANT_CONFIGURATION_INVALID,
+        ],
+    ],
+
+    'testCreatePartnersSubMerchantConfigInvalidPartner' => [
+        'request'  => [
+            'url'     => '/partner_configs/submerchant/config',
+            'method'  => 'POST',
+            'content' => [
+                'partner_id'     => '100nonplatform',
+                'attribute_name' => 'max_payment_amount',
+                'parameters'     => ['business_type' => 'not_yet_registered'],
+                'value'=> 2000011,
+            ],
+        ],
+        'response'  => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_PARTNER_ACTION,
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_PARTNER_ACTION,
+        ],
+    ],
+
+    'testUpdatePartnersSubMerchantConfig' => [
+        'request'  => [
+            'url'     => '/partner_configs/submerchant/config',
+            'method'  => 'PUT',
+            'content' => [
+                'partner_id'     => '100nonplatform',
+                'attribute_name' => 'max_payment_amount',
+                'parameters'     => ['business_type' => 'individual'],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity_id'   => Constants::DEFAULT_NON_PLATFORM_APP_ID,
+            ],
+        ],
+    ],
+
+    'testUpdatePartnersSubMerchantConfigWithInvalidParameters' => [
+        'request'  => [
+            'url'     => '/partner_configs/submerchant/config',
+            'method'  => 'PUT',
+            'content' => [
+                'partner_id'     => '100nonplatform',
+                'attribute_name' => 'max_payment_amount',
+                'parameters'     => ['business_type' => 'invalidType'],
+            ],
+        ],
+        'response'  => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PARTNER_SUBMERCHANT_CONFIGURATION_INVALID,
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PARTNER_SUBMERCHANT_CONFIGURATION_INVALID,
+        ],
+    ],
+
+    'testUpdatePartnersSubMerchantConfigWithInvalidConfigName' => [
+        'request'  => [
+            'url'     => '/partner_configs/submerchant/config',
+            'method'  => 'PUT',
+            'content' => [
+                'partner_id'     => '100nonplatform',
+                'attribute_name' => 'invalid_config_name',
+                'parameters'     => ['business_type' => 'individual'],
+            ],
+        ],
+        'response'  => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PARTNER_SUBMERCHANT_CONFIGURATION_INVALID,
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PARTNER_SUBMERCHANT_CONFIGURATION_INVALID,
+        ],
+    ],
+
+    'testUpdatePartnersSubMerchantConfigWithInvalidPartnerType' => [
+        'request'  => [
+            'url'     => '/partner_configs/submerchant/config',
+            'method'  => 'PUT',
+            'content' => [
+                'partner_id'     => '100nonplatform',
+                'attribute_name' => 'max_payment_amount',
+                'parameters'     => ['business_type' => 'individual'],
+            ],
+        ],
+        'response'  => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_PARTNER_ACTION,
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_PARTNER_ACTION,
+        ],
+    ],
 ];

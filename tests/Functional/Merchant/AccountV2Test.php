@@ -520,7 +520,13 @@ class AccountV2Test extends TestCase
 
     public function testSetMaxPaymentAmountForUnregisteredSubMerchant()
     {
-        $this->setUpPartnerWithKycHandled();
+        [$client] = $this->setUpPartnerWithKycHandled();
+
+        $this->fixtures->create("partner_config", [
+            'entity_id' => $client['application_id'],
+            'entity_type' => 'application',
+            'sub_merchant_config' => json_decode('{"max_payment_amount":[{"value":"200000","business_type":"not_yet_registered"}]}', 1)
+        ]);
 
         $response = $this->startTest();
 

@@ -4,12 +4,13 @@ namespace RZP\Models\Partner\Config;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Pricing\Plan;
 use Razorpay\OAuth\Application;
 use RZP\Models\Merchant\AccessMap;
-
+use RZP\Models\Merchant\MerchantApplications;
 
 class Core extends Base\Core
 {
@@ -481,5 +482,19 @@ class Core extends Base\Core
         }
 
         $this->repo->saveOrFailCollection($configs);
+    }
+
+    public function fetchPartnersManagedApplicationConfig(Merchant\Entity $partner)
+    {
+        $appIds = (new Merchant\Core)->getPartnerApplicationIds($partner, [MerchantApplications\Entity::MANAGED]);
+
+        if(empty($appIds) === true)
+        {
+            return null;
+        }
+
+        $partnerConfig = $this->repo->partner_config->getApplicationConfig($appIds[0]);
+
+        return $partnerConfig;
     }
 }

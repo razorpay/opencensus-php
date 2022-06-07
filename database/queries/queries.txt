@@ -6785,6 +6785,10 @@ ALTER TABLE payouts_details
 ALTER TABLE `merchant_banks`
     ADD COLUMN `razorpaywallet` TINYINT DEFAULT 0;
 
+
+ALTER TABLE partner_configs
+    ADD COLUMN sub_merchant_config JSON DEFAULT NULL;
+
 CREATE TABLE `credit_transfers` (
   `id` char(14) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
   `merchant_id` char(14) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
@@ -6838,3 +6842,4 @@ CREATE TABLE IF NOT EXISTS address_consent_1cc (
 	KEY address_consent_1cc_customer_index (customer_id),
         KEY address_consent_1cc_created_at_index (created_at)
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+

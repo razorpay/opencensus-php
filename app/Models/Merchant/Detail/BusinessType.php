@@ -167,6 +167,12 @@ class BusinessType
         self::NGO
     ];
 
+
+    public static function isValidBusinessType(string $businessType)
+    {
+        return array_key_exists($businessType, self::$typeIndexMap);
+    }
+
     public static function isAadhaarEsignVerificationRequired($businessType)
     {
         return in_array($businessType, self::$validAadhaarEsignBusinessTypes, true);

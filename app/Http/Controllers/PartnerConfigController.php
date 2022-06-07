@@ -41,4 +41,22 @@ class PartnerConfigController extends Controller
 
         return $this->service()->bulkUpsertSubmerchantPartnerConfig($input);
     }
+
+    public function createPartnersSubMerchantConfig()
+    {
+        $input = Request::all();
+
+        $response =  $this->service()->createPartnersSubMerchantConfig($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function updatePartnersSubMerchantConfig()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->updatePartnersSubMerchantConfig($input);
+
+        return  ApiResponse::json($response);
+    }
 }

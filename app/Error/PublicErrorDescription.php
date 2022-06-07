@@ -1318,6 +1318,7 @@ class PublicErrorDescription
     const BAD_REQUEST_APPLICATION_SUBMERCHANT_CONFIG_EXISTS                         = 'Application/submerchant config already exists';
     const BAD_REQUEST_EXPIRY_DATE_SET_FOR_SUBVENTION                                = 'Expiry date should not be set for subvention model';
     const BAD_REQUEST_PARTNER_CONFIGURATION_INVALID                                 = 'The partner configuration is invalid';
+    const BAD_REQUEST_PARTNER_SUBMERCHANT_CONFIGURATION_INVALID                     = 'The partner sub merchant configuration is invalid';
     const BAD_REQUEST_MERCHANT_ID_DOES_NOT_EXIST                                    = 'The merchant id does not exist or invalid';
     const BAD_REQUEST_PARTNER_ID_DOES_NOT_EXIST                                     = 'The partner id does not exist or invalid';
 

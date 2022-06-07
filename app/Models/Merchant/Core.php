@@ -3360,11 +3360,11 @@ class Core extends Base\Core
      * @return array
      * @throws BadRequestException
      */
-    public function getPartnerApplicationIds(Entity $merchant): array
+    public function getPartnerApplicationIds(Entity $merchant, array $types = []): array
     {
         (new Validator)->validateIsPartner($merchant);
 
-        return (new MerchantApplications\Core)->getMerchantAppIds($merchant->getId());
+        return (new MerchantApplications\Core)->getMerchantAppIds($merchant->getId(), $types);
     }
 
     /**
@@ -5346,9 +5346,26 @@ class Core extends Base\Core
 
     protected function setSubMerchantMaxPaymentAmount(Entity $partner,Entity $subMerchant,string $subMerchantBusinessType)
     {
-        if($partner->getId() === env('MAX_PAYMENT_AMOUNT_PARTNER_ID') && Detail\BusinessType::isUnregisteredBusiness($subMerchantBusinessType))
+        // In case of linked account we create submerchants without partner
+        if($partner->isPartner() === false)
         {
-            $subMerchant->setMaxPaymentAmount(env('SUB_MERCHANT_MAX_PAYMENT_AMOUNT'));
+            return ;
+        }
+
+        $subMerchantMaxPaymentConfig = (new PartnerConfig\SubMerchantConfig\Core())->fetchPartnerSubMerchantConfig($partner, PartnerConfig\Constants::MAX_PAYMENT_AMOUNT);
+
+        if(empty($subMerchantMaxPaymentConfig) === true)
+        {
+            return ;
+        }
+
+        foreach($subMerchantMaxPaymentConfig as $maxPaymentConfig)
+        {
+            if($maxPaymentConfig[PartnerConfig\Constants::BUSINESS_TYPE] === $subMerchantBusinessType)
+            {
+                // converting value to paisa
+                $subMerchant->setMaxPaymentAmount($maxPaymentConfig[PartnerConfig\Constants::VALUE]*100);
+            }
         }
     }
 

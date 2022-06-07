@@ -168,6 +168,83 @@ class Service extends Base\Service
         return $configs->toArrayPublic();
     }
 
+    public function createPartnersSubMerchantConfig(array $input)
+    {
+        $this->trace->info(
+            TraceCode::CREATE_PARTNERS_SUBMERCHANT_CONFIG,
+            [
+                'merchant_id' => $input[Constants::PARTNER_ID],
+                'input'       => $input,
+            ]);
+
+        try
+        {
+            (new SubMerchantConfig\Validator)->validatePartnersSubmerchantConfigInput($input);
+
+            $partner = $this->validatePartnerTypeForSubMerchantConfig($input);
+
+            $partnerConfig = (new SubMerchantConfig\Core)->createPartnersSubMerchantConfig($partner, $input);
+        }
+        catch (Exception\BadRequestException $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::CREATE_PARTNERS_SUBMERCHANT_CONFIG_FAILURE,
+                $input);
+
+            $this->trace->count(Metric::PARTNER_SUBMERCHANT_CONFIG_CREATE_FAILURE, []);
+
+            throw $e;
+        }
+
+        return $partnerConfig->toArrayPublic();
+    }
+
+    public function updatePartnersSubMerchantConfig(array $input)
+    {
+        $this->trace->info(
+            TraceCode::UPDATE_PARTNERS_SUBMERCHANT_CONFIG,
+            [
+                'merchant_id' => $input[Constants::PARTNER_ID],
+                'input'       => $input,
+            ]);
+        try
+        {
+            (new SubMerchantConfig\Validator)->validatePartnersSubmerchantConfigInput($input);
+
+            $partner = $this->validatePartnerTypeForSubMerchantConfig($input);
+
+            $partnerConfig = (new SubMerchantConfig\Core)->updatePartnersSubMerchantConfig($partner, $input);
+        }
+        catch (Exception\BadRequestException $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::UPDATE_PARTNERS_SUBMERCHANT_CONFIG_FAILURE,
+                $input);
+
+            $this->trace->count(Metric::PARTNER_SUBMERCHANT_CONFIG_UPDATE_FAILURE, []);
+
+            throw $e;
+        }
+
+        return $partnerConfig->toArrayPublic();
+    }
+
+    public function validatePartnerTypeForSubMerchantConfig(array $input)
+    {
+        $partnerMerchantId = $input[Constants::PARTNER_ID];
+
+        unset($input[Constants::PARTNER_ID]);
+
+        $partner = $this->repo->merchant->findOrFailPublic($partnerMerchantId);
+
+        (new Merchant\Validator)->validatePartnerCanManageSubMerchantConfig($partner);
+
+        return $partner;
+    }
     /**
      * @param array $input
      *

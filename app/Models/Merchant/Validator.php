@@ -1998,6 +1998,32 @@ class Validator extends Base\Validator
     }
 
     /**
+     * Validates that the merchant is a partner and can manage sub merchant config
+     *
+     * @param Entity $merchant
+     *
+     * @throws Exception\BadRequestException
+     */
+    public function validatePartnerCanManageSubMerchantConfig(Entity $merchant)
+    {
+        $this->validateIsPartner($merchant);
+
+        $allowedPartnerTypes = [
+            Constants::AGGREGATOR
+        ];
+
+        if (in_array($merchant->getPartnerType(),$allowedPartnerTypes,true) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_PARTNER_ACTION,
+                Entity::PARTNER_TYPE,
+                [
+                    Entity::PARTNER_TYPE => $merchant->getPartnerType(),
+                ]
+            );
+        }
+    }
+    /**
      * @param Entity $merchant
      *
      * @throws Exception\BadRequestException

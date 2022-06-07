@@ -23,6 +23,10 @@ class UserTest extends TestCase
 
     protected $merchantCore;
 
+    protected $partnerSubMerchantConfigCoreMock;
+
+    protected $partnerConfigEntityMock;
+
 
     protected function setUp(): void
     {
@@ -54,9 +58,14 @@ class UserTest extends TestCase
     {
         $submerchant = $this->merchantEntityMock;
 
+        $this->partnerSubMerchantConfigCoreMock->shouldReceive('fetchPartnerSubMerchantConfig')
+                                    ->andReturn([["value"=>"20000000","business_type"=>"individual"]]);
+
         $this->merchantEntityMock->shouldReceive('getId')->andReturn('10000000000000');
 
         $submerchant->shouldReceive('setMaxPaymentAmount')->andReturn();
+
+        $submerchant->shouldReceive('isPartner')->andReturn(true);
 
         $result = $this->merchantCore->setSubMerchantMaxPaymentAmount($this->merchantEntityMock,$submerchant,BusinessType::INDIVIDUAL);
 
@@ -69,9 +78,14 @@ class UserTest extends TestCase
     {
         $submerchant = $this->merchantEntityMock;
 
+        $this->partnerSubMerchantConfigCoreMock->shouldReceive('fetchPartnerSubMerchantConfig')
+                                    ->andReturn([]);
+
         $this->merchantEntityMock->shouldReceive('getId')->andReturn('10000000000001');
 
         $submerchant->shouldReceive('setMaxPaymentAmount')->andReturn();
+
+        $submerchant->shouldReceive('isPartner')->andReturn(true);
 
         $result = $this->merchantCore->setSubMerchantMaxPaymentAmount($this->merchantEntityMock,$submerchant,BusinessType::INDIVIDUAL);
 
@@ -123,6 +137,10 @@ class UserTest extends TestCase
         $this->merchantCore = Mockery::mock('RZP\Models\Merchant\Core');
 
         $this->userEntityMock = Mockery::mock('RZP\Models\User\Entity');
+
+        $this->partnerSubMerchantConfigCoreMock = Mockery::mock('overload:\RZP\Models\Partner\Config\SubMerchantConfig\Core');
+
+        $this->partnerConfigEntityMock = Mockery::mock('\RZP\Models\Partner\Config\Entity');
 
         $this->basicAuthMock->shouldReceive('getUser')->andReturn($this->userEntityMock);
 

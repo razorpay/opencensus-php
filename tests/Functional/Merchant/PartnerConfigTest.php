@@ -13,6 +13,7 @@ use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 
 use Razorpay\OAuth\Application;
+use RZP\Models\Merchant\Constants as MerchantConstants;
 
 class PartnerConfigTest extends OAuthTestCase
 {
@@ -653,6 +654,7 @@ class PartnerConfigTest extends OAuthTestCase
                 'merchant_id' => Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID,
                 'type'        => Application\Type::PARTNER,
                 'id'          => Constants::DEFAULT_NON_PLATFORM_APP_ID,
+                'partner_type'=> MerchantConstants::AGGREGATOR
             ]
         );
 
@@ -665,5 +667,197 @@ class PartnerConfigTest extends OAuthTestCase
                 'entity_owner_id' => Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID,
             ]
         );
+    }
+
+    public function testCreatePartnersSubMerchantConfigWithNullConfigInDB()
+    {
+        $this->allowAdminToAccessMerchant(Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID);
+
+        $this->fixtures->merchant->edit(
+            Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID,
+            [
+                'partner_type' => Merchant\Constants::AGGREGATOR,
+            ]
+        );
+
+        $this->ba->adminAuth();
+
+        $this->fixtures->create("partner_config", [
+            'entity_id' => Constants::DEFAULT_NON_PLATFORM_APP_ID,
+            'entity_type' => 'application',
+            'default_plan_id' => Constants::DEFAULT_SUBMERCHANT_PRICING_PLAN,
+        ]);
+
+        $this->startTest();
+
+        $partnerConfig = $this->getDbEntity('partner_config');
+
+        $this->assertNotNull($partnerConfig['sub_merchant_config']);
+
+        $this->assertEquals('{"max_payment_amount":[{"value":"2000011","business_type":"individual"}]}' , $partnerConfig['sub_merchant_config'] );
+    }
+
+    public function testCreatePartnersSubMerchantConfigWithConfigInDB()
+    {
+        $this->allowAdminToAccessMerchant(Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID);
+
+        $this->fixtures->merchant->edit(
+            Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID,
+            [
+                'partner_type' => Merchant\Constants::AGGREGATOR,
+            ]
+        );
+
+        $this->ba->adminAuth();
+
+        $this->fixtures->create("partner_config", [
+            'entity_id' => Constants::DEFAULT_NON_PLATFORM_APP_ID,
+            'entity_type' => 'application',
+            'default_plan_id' => Constants::DEFAULT_SUBMERCHANT_PRICING_PLAN,
+            'sub_merchant_config' => json_decode('{"max_payment_amount":[{"value":"2000000","business_type":"individual"}]}')
+        ]);
+
+        $this->startTest();
+
+        $partnerConfig = $this->getDbEntity('partner_config');
+
+        $this->assertNotNull($partnerConfig['sub_merchant_config']);
+
+        $this->assertEquals('{"max_payment_amount":[{"value":"2000000","business_type":"individual"},{"value":"2000011","business_type":"not_yet_registered"}]}' , $partnerConfig['sub_merchant_config'] );
+    }
+
+    public function testCreatePartnersSubMerchantConfigInvalidParameters()
+    {
+        $this->allowAdminToAccessMerchant(Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID);
+
+        $this->fixtures->merchant->edit(
+            Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID,
+            [
+                'partner_type' => Merchant\Constants::AGGREGATOR,
+            ]
+        );
+
+        $this->ba->adminAuth();
+
+        $this->fixtures->create("partner_config", [
+            'entity_id' => Constants::DEFAULT_NON_PLATFORM_APP_ID,
+            'entity_type' => 'application',
+            'default_plan_id' => Constants::DEFAULT_SUBMERCHANT_PRICING_PLAN,
+        ]);
+
+        $this->startTest();
+    }
+
+    public function testCreatePartnersSubMerchantConfigInvalidConfigName()
+    {
+        $this->allowAdminToAccessMerchant(Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID);
+
+        $this->fixtures->merchant->edit(
+            Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID,
+            [
+                'partner_type' => Merchant\Constants::AGGREGATOR,
+            ]
+        );
+
+        $this->ba->adminAuth();
+
+        $this->fixtures->create("partner_config", [
+            'entity_id' => Constants::DEFAULT_NON_PLATFORM_APP_ID,
+            'entity_type' => 'application',
+            'default_plan_id' => Constants::DEFAULT_SUBMERCHANT_PRICING_PLAN,
+        ]);
+
+        $this->startTest();
+    }
+
+    public function testCreatePartnersSubMerchantConfigInvalidPartner()
+    {
+        $this->allowAdminToAccessMerchant(Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID);
+
+        $this->fixtures->merchant->edit(
+            Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID,
+            [
+                'partner_type' => Merchant\Constants::FULLY_MANAGED,
+            ]
+        );
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testUpdatePartnersSubMerchantConfig()
+    {
+        $this->allowAdminToAccessMerchant(Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID);
+
+        $this->fixtures->merchant->edit(
+            Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID,
+            [
+                'partner_type' => Merchant\Constants::AGGREGATOR,
+            ]
+        );
+
+        $this->ba->adminAuth();
+
+        $this->fixtures->create("partner_config", [
+            'entity_id' => Constants::DEFAULT_NON_PLATFORM_APP_ID,
+            'entity_type' => 'application',
+            'default_plan_id' => Constants::DEFAULT_SUBMERCHANT_PRICING_PLAN,
+            'sub_merchant_config' => json_decode('{"max_payment_amount":[{"value":"2000011","business_type":"individual"}]}', 1),
+        ]);
+
+        $this->startTest();
+
+        $partnerConfig = $this->getDbEntity('partner_config');
+
+        $this->assertEquals('{"max_payment_amount":[]}',$partnerConfig['sub_merchant_config']);
+    }
+
+    public function testUpdatePartnersSubMerchantConfigWithInvalidParameters()
+    {
+        $this->allowAdminToAccessMerchant(Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID);
+
+        $this->fixtures->merchant->edit(
+            Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID,
+            [
+                'partner_type' => Merchant\Constants::AGGREGATOR,
+            ]
+        );
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testUpdatePartnersSubMerchantConfigWithInvalidConfigName()
+    {
+        $this->allowAdminToAccessMerchant(Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID);
+
+        $this->fixtures->merchant->edit(
+            Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID,
+            [
+                'partner_type' => Merchant\Constants::AGGREGATOR,
+            ]
+        );
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testUpdatePartnersSubMerchantConfigWithInvalidPartnerType()
+    {
+        $this->allowAdminToAccessMerchant(Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID);
+
+        $this->fixtures->merchant->edit(
+            Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID,
+            [
+                'partner_type' => Merchant\Constants::FULLY_MANAGED,
+            ]
+        );
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
     }
 }

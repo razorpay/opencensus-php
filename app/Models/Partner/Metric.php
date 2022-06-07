@@ -31,4 +31,9 @@ final class Metric
 
     const PARTNER_CONFIG_ACTION_SUCCESS_TOTAL = 'partner_config_action_success_total';
     const PARTNER_CONFIG_BATCH_ACTION_SUCCESS_TOTAL = 'partner_config_batch_action_success_total';
+
+    const PARTNER_SUB_MERCHANT_CONFIG_CREATE_TOTAL  = 'partner_sub_merchant_config_create_total';
+    const PARTNER_SUB_MERCHANT_CONFIG_UPDATE_TOTAL  = 'partner_sub_merchant_config_update_total';
+    const PARTNER_SUBMERCHANT_CONFIG_CREATE_FAILURE = 'partner_sub_merchant_config_create_failure';
+    const PARTNER_SUBMERCHANT_CONFIG_UPDATE_FAILURE = 'partner_sub_merchant_config_update_failure';
 }

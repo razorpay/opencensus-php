@@ -67,6 +67,9 @@ class CreatePartnerConfigsTable extends Migration
             $table->tinyInteger(Entity::HAS_GST_CERTIFICATE)
                   ->default(0);
 
+            $table->json(Entity::SUB_MERCHANT_CONFIG)
+                  ->nullable();
+
             $table->integer(Entity::REVISIT_AT);
 
             $table->integer(Entity::CREATED_AT);
