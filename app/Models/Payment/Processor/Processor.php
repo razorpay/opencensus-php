@@ -2223,10 +2223,28 @@ class Processor
             return;
         }
 
+        $variant = $this->getRazorxVariantForUPS($payment);
+
+        if ($variant !== 'upips')
+        {
+            return;
+        }
+
+        // set upi cps_route route for a payment.
+        $this->setPaymentService($payment, 'upips');
+    }
+
+    /**
+     * Get razorx variant for UPS payment initiation
+     * 
+     * @param Payment\Entity $payment
+     */
+    protected function getRazorxVariantForUPS(Payment\Entity $payment)
+    {
         $feature = 'api'. '_' . $payment->getGateway() . '_v1';
 
         // hit razorx service to get the variant
-        $variant = $this->app->razorx->getTreatment($payment->getMerchantId(),
+        $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(),
             $feature, $this->mode);
 
         $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_RAZORX_VARIANT,
@@ -2239,13 +2257,7 @@ class Processor
             'merchant_id'   => $payment->getMerchantId(),
         ]);
 
-        if ($variant !== 'upips')
-        {
-            return;
-        }
-
-        // set upi cps_route route for a payment.
-        $this->setPaymentService($payment, 'upips');
+        return $variant;
     }
 
     /**
