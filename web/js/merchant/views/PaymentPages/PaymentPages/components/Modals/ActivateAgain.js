@@ -1,3 +1,5 @@
+import React from 'react';
+
 import ModalHeader from 'common/ui/ModalHeader';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
 import Input from 'common/new-ui/Input';
@@ -5,7 +7,6 @@ import Input from 'common/new-ui/Input';
 import moment from 'moment';
 import { dateCalculator } from 'common/new-ui/Input/Calendar';
 import { timeCalculator } from 'common/new-ui/Input/Time';
-import { isInteger } from 'common/utils/validators';
 
 const expireByError = 'Expiry has passed';
 
@@ -13,7 +14,6 @@ export default class ActivateAgainModal extends React.Component {
   state = {
     expireBy: this.props.expireBy ? moment(this.props.expireBy * 1000) : null,
     hasNoExpiry: '0',
-    hasNoLimit: '0',
   };
 
   componentDidMount() {
@@ -32,7 +32,7 @@ export default class ActivateAgainModal extends React.Component {
      * Hence, relying on is-invalid.
      * */
     const invalidFields = document.querySelectorAll(
-      '.ModalForm--ActivationAgain .Input.is-invalid'
+      '.ModalForm--ActivationAgain .Input.is-invalid',
     );
     const disableSubmit = invalidFields.length;
 
@@ -41,36 +41,36 @@ export default class ActivateAgainModal extends React.Component {
     }
   }
 
-  onDateChange = date => {
+  onDateChange = (date) => {
     const curExpiryByTime = this.state.expireBy;
 
     dateCalculator(date, curExpiryByTime, this.updateDate);
   };
 
-  onTimeChange = date => {
+  onTimeChange = (date) => {
     const curDate = this.state.expireBy;
 
     timeCalculator(date, curDate, this.updateDate);
   };
 
-  updateDate = ts => {
+  updateDate = (ts) => {
     const newDate = moment(ts);
 
     this.setState(
       {
         expireBy: newDate,
       },
-      this.flushExpireByError
+      this.flushExpireByError,
     );
   };
 
   flushExpireByError() {
     /*
-    * New time must be greater than current time.
-    * Ideally it must be at least 15 min past current time. But in that case error won't be shown on FE,
-    * but only calendar+time will be shown to be filled again.
-    *
-    * */
+     * New time must be greater than current time.
+     * Ideally it must be at least 15 min past current time. But in that case error won't be shown on FE,
+     * but only calendar+time will be shown to be filled again.
+     *
+     * */
 
     const resetError =
       (this.state.hasNoExpiry == '0' && this.state.expireBy > moment()) ||
@@ -87,9 +87,7 @@ export default class ActivateAgainModal extends React.Component {
     let msg = [];
     this.props.expireBy && msg.push('Kindly change the expiry to a later date');
     this.props.isCompleted &&
-      msg.push(
-        'One or more items are not purchasable by the customer. Update stock information'
-      );
+      msg.push('One or more items are not purchasable by the customer. Update stock information');
 
     msg = msg.join(' and ');
 
@@ -98,8 +96,7 @@ export default class ActivateAgainModal extends React.Component {
     }
 
     if (!description) {
-      description =
-        'Once you activate the page, you will be able to accept payments.';
+      description = 'Once you activate the page, you will be able to accept payments.';
     }
 
     return (
@@ -122,12 +119,12 @@ export default class ActivateAgainModal extends React.Component {
                   fieldLabel="No Expiry"
                   defaultValue="0"
                   value={this.state.hasNoExpiry}
-                  onChange={e => {
+                  onChange={(e) => {
                     this.setState(
                       {
                         hasNoExpiry: e.target.value,
                       },
-                      this.flushExpireByError
+                      this.flushExpireByError,
                     );
                   }}
                 />
@@ -179,11 +176,14 @@ export default class ActivateAgainModal extends React.Component {
                         : Math.floor(this.state.expire_by / 1000);
                   }
 
-                  return this.props.handleClick(reqPayload).then(resp => {
-                    if (resp.data) {
-                      this.props.handleClose();
-                    }
-                  });
+                  return this.props
+                    .handleClick(reqPayload)
+                    .then((resp) => {
+                      if (resp.data) {
+                        this.props.handleClose();
+                      }
+                    })
+                    .catch(() => {}); // to avoid uncaught promise error
                 }}
                 pendingState="Activating.."
               >
