@@ -842,7 +842,8 @@ class Service extends Base\Service
         if (($this->app['basicauth']->isAdminAuth() === true) or
             ($this->app['basicauth']->isBankingAccountServiceApp() === true) or
             ($this->app['basicauth']->isCapitalCollectionsApp() === true) or
-            ($this->app['basicauth']->isCapitalCardsApp() === true))
+            ($this->app['basicauth']->isCapitalCardsApp() === true) or
+            ($this->app['basicauth']->isCapitalLOCApp() === true))
         {
             $entityType = $entityType ?? $input[Entity::ENTITY_TYPE];
 
