@@ -16,6 +16,7 @@ use App\Trace\TraceCode;
 use App\Http\AppResponse;
 use App\User\RecoverableException;
 use Illuminate\Support\Facades\Crypt;
+use Razorpay\Api\Errors\BadRequestError;
 use App\Metrics\Constants as MetricConstants;
 use App\Merchant\Constants as MerchantConstants;
 use App\User\Constants as UserConstants;
@@ -46,7 +47,7 @@ class UserController extends Controller
     /**
      * Returns the base template for angular.
      *
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Foundation\Application|\Illuminate\Http\RedirectResponse|\Illuminate\Http\Response|\Illuminate\Routing\Redirector
      */
     public function getIndex()
     {
@@ -79,6 +80,16 @@ class UserController extends Controller
                 'api_host'              => ApiUrl::getCheckoutApi(),
                 'session_id'            => Session::getId(),
             ];
+
+            if ($this->isRedirectionApplicable($details) === true)
+            {
+                $ttl = 12 * 60;
+
+                return redirect(env('EASY_DASHBOARD_URL'))->withCookies([
+                    Cookie::make('rzp_merchant_id', $details['id'], $ttl, null, env('SECOND_LEVEL_DOMAIN'), true, false),
+                    Cookie::make('rzp_user_id', $details['user']['id'], $ttl, null, env('SECOND_LEVEL_DOMAIN'), true, false),
+                ]);
+            }
         }
 
         $data['cdnDashboardUrl'] = \Config::get('app.cdn_dashboard_url');
@@ -90,7 +101,7 @@ class UserController extends Controller
         $requestPath = \Request::path();
 
         $data['redirectUrl']    = $baseUrl . '?next=' . $requestPath;
-        $data['requestPath']     = $requestPath;
+        $data['requestPath']    = $requestPath;
         $data['rootPath']       = self::ROOT_PATH;
 
         $data['newAuthFlow'] = false;
@@ -151,6 +162,40 @@ class UserController extends Controller
 
             return view('merchant.index', $data);
         }
+    }
+
+    private function isRedirectionApplicable($details): bool
+    {
+        try
+        {
+            $experiment = (new Merchant\Service)->getTreatment('easy_onboarding') === ['result' => 'on'];
+        }
+        catch (BadRequestError $e)
+        {
+            $this->trace->info(TraceCode::RAZORX_CALL_FAILED, [
+                'error' => $e
+            ]);
+
+            return false;
+        }
+
+        if ($experiment === false)
+        {
+            return false;
+        }
+
+        if (empty($details['user']['signup_campaign']) === true)
+        {
+            return false;
+        }
+
+        if (($details['user']['signup_campaign'] === 'easy_onboarding') and
+            (empty($details['activation_form_milestone']) === true))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     public function getTnc()

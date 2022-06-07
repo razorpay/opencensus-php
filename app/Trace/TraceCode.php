@@ -194,6 +194,8 @@ class TraceCode
     const FORCE_SESSION_CLEAR_BEFORE_X_DEMO_LOGIN     = 'FORCE_SESSION_CLEAR_BEFORE_X_DEMO_LOGIN';
     const FORCE_SESSION_CLEAR_AFTER_X_DEMO_LOGOUT     = 'FORCE_SESSION_CLEAR_AFTER_X_DEMO_LOGOUT';
 
+    const RAZORX_CALL_FAILED                                = 'RAZORX_CALL_FAILED';
+
     protected static $messages = array(
         self::ERROR_EXCEPTION                       => 'Unhandled critical exception occured',
         self::MISC_TRACE_CODE                       => 'Miscellaneous trace code',
