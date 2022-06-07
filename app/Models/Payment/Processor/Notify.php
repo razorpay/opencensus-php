@@ -539,7 +539,7 @@ class Notify
         {
             $failedPaymentConfig = (new Payment\Config\Core())->getPaymentFailedConfig($this->merchant->getId());
 
-            $sendAfterSeconds = $this->app->razorx->getTreatment($this->merchant->getId(), RazorxTreatment::PL_MISSED_ORDER_SEND_AFTER_SECONDS, $this->mode);
+            $sendAfterSeconds = $this->app->razorx->getTreatment($this->merchant->getId(), RazorxTreatment::PL_MO_SEND_AFTER_SECONDS, $this->mode);
 
             if ($sendAfterSeconds == 'control' and
                 $failedPaymentConfig != false and
