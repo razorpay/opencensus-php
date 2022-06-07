@@ -46,5 +46,8 @@ final class Metric
 
     const BVS_GET_GST_DETAILS_REQUEST_TOTAL  = 'bvs_get_gst_details_request_total';
     const BVS_GET_GST_DETAILS_RESPONSE_TOTAL = 'bvs_get_gst_details_response_total';
-    const GET_GST_DETAILS_EXHAUSTED          = "get_gst_details_exhausted";
+    const GET_GST_DETAILS_EXHAUSTED          = 'get_gst_details_exhausted';
+
+    const AUTOFILL_BVS_DETAILS_ATTEMPT_EXHAUSTED = 'autofill_bvs_details_attempt_exhausted';
+
 }

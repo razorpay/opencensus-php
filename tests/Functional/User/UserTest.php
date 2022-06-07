@@ -7369,6 +7369,31 @@ class UserTest extends TestCase
         $this->assertEquals($merchant["signup_via_email"], 0);
     }
 
+    public function testUserRegisterVerifySignupOtpSmsEasyOnboarding()
+    {
+        $this->ba->dashboardGuestAppAuth();
+
+        Queue::fake();
+
+        $this->startTest();
+
+        Queue::assertPushed(NotifyRas::class);
+
+        $merchant = $this->getLastEntity('merchant', true);
+
+        $businessDetail = $this->getLastEntity('merchant_business_detail', true);
+
+        $websiteDetails = $businessDetail['website_details'];
+
+        $this->assertEquals($websiteDetails['social_media'], 1);
+
+        $this->assertEquals($websiteDetails['physical_store'], 1);
+
+        $this->assertEquals($websiteDetails['live_website_or_app'], '');
+
+        $this->assertEquals($merchant["signup_via_email"], 0);
+    }
+
     public function testUserRegisterVerifySignupOtpSmsSevenSeriesNumber()
     {
         $testData = & $this->testData[__FUNCTION__];

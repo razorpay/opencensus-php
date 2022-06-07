@@ -30,6 +30,18 @@ class Core extends Base\Core
         return $input;
     }
 
+    public function incrementKey(string $merchantId, string $key, int $increment)
+    {
+        $fetchData = $this->fetchValuesFromStore($merchantId, ConfigKey::ONBOARDING_NAMESPACE, [$key], Constants::INTERNAL);
+
+        $data = [
+            Constants::NAMESPACE    => ConfigKey::ONBOARDING_NAMESPACE,
+            $key                    => $fetchData[$key] + $increment
+        ];
+
+        $this->updateMerchantStore($merchantId, $data, Constants::INTERNAL);
+    }
+
     public function fetchMerchantStore(string $merchantId, array $input, string $role = Constants::PUBLIC)
     {
 

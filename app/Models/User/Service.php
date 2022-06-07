@@ -31,9 +31,11 @@ use RZP\Exception\BadRequestException;
 use RZP\Exception\BaseException;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Models\Merchant\BusinessDetail as MBD;
 use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Models\Feature\Constants as FeatureConstant;
 use RZP\Models\Merchant\Balance\Type as ProductType;
+use RZP\Models\DeviceDetail\Constants as DDConstants;
 use RZP\Models\User\RateLimitLoginSignup\Facade as LoginSignupRateLimit;
 
 class Service extends Base\Service
@@ -253,13 +255,15 @@ class Service extends Base\Service
 
         $visitorId = $this->fetchVisitorIdFromCookie();
 
+        $merchant = $this->repo->user->findOrFailPublic($user[Entity::ID])->getMerchantEntity();
+
         $customProperties = [
             Entity::EMAIL                      => $user[Entity::EMAIL] ?? null,
             Entity::VISITOR_ID                 => $visitorId,
             Merchant\Constants::PARTNER_INTENT => $partnerIntent,
             'is_m2m_referral'                  => $isM2MReferral,
-            'phone'                            => $user[Entity::CONTACT_MOBILE] ?? ""
-
+            'phone'                            => $user[Entity::CONTACT_MOBILE] ?? "",
+            'easyOnboarding'                   => optional($merchant)->isSignupCampaign(DDConstants::EASY_ONBOARDING) === true
         ];
 
         if ($user[Entity::SIGNUP_VIA_EMAIL] == 0)
@@ -438,6 +442,10 @@ class Service extends Base\Service
         $invitation             = $partnerInvitation['invitation'];
         $invitationToken        = $partnerInvitation['invitationToken'];
 
+        $signupCampaign = $input[DeviceDetail\Entity::SIGNUP_CAMPAIGN] ?? null;
+
+        unset($input[DeviceDetail\Entity::SIGNUP_CAMPAIGN]);
+
         $verifySuccess = $this->core->verifySignupOtp($input);
 
         if ($verifySuccess === true)
@@ -455,6 +463,24 @@ class Service extends Base\Service
                 else
                 {
                     $input[Entity::SIGNUP_VIA_EMAIL] = 1;
+                }
+
+                $businessDetailsInput = [];
+
+                $paymentsAvenueInput = [
+                    MBD\Constants::SOCIAL_MEDIA,
+                    MBD\Constants::PHYSICAL_STORE,
+                    MBD\Constants::WEBSITE_OR_APP,
+                    MBD\Constants::OTHERS
+                ];
+
+                foreach ($paymentsAvenueInput as $payInput)
+                {
+                    if (isset($input[$payInput]) === true)
+                    {
+                        $businessDetailsInput[MBD\Entity::WEBSITE_DETAILS][$payInput] = $input[$payInput];
+                        unset($input[$payInput]);
+                    }
                 }
 
                 unset($input['ref']);
@@ -478,9 +504,25 @@ class Service extends Base\Service
             }
             else
             {
-                $this->createMerchant($user, $referrer, $businessName, $partnerIntent, $input, $heimdallTokenData, false);
+                $merchantData = $this->createMerchant($user, $referrer, $businessName, $partnerIntent, $input, $heimdallTokenData, false);
+
+                if (empty($signupCampaign) === false)
+                {
+                    $ddInput = [
+                        DeviceDetail\Entity::MERCHANT_ID        => $merchantData['id'],
+                        DeviceDetail\Entity::USER_ID            => $user['id'],
+                        DeviceDetail\Entity::SIGNUP_CAMPAIGN    => $signupCampaign,
+                    ];
+
+                    (new DeviceDetail\Core)->createDeviceDetail($ddInput);
+                }
 
                 $data = $this->get($user['id']);
+
+                if (empty($businessDetailsInput[MBD\Entity::WEBSITE_DETAILS]) === false)
+                {
+                    (new Merchant\BusinessDetail\Service)->saveBusinessDetailsForMerchant($merchantData['id'], $businessDetailsInput);
+                }
             }
 
             $signupMethod = Constants::OTP;
@@ -1008,6 +1050,13 @@ class Service extends Base\Service
             {
                 $response = $this->core->get($user);
             }
+        }
+
+        $deviceDetail = $this->repo->user_device_detail->fetchByUserId($id);
+
+        if (empty($deviceDetail) === false)
+        {
+            $response[DeviceDetail\Entity::SIGNUP_CAMPAIGN] = $deviceDetail->getSignupCampaign();
         }
 
         return $response;

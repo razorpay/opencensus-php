@@ -18,6 +18,7 @@ use RZP\Models\Merchant\Store\ConfigKey;
 use RZP\Mail\Merchant\MerchantOnboardingEmail;
 use RZP\Models\Merchant\Store\Core as StoreCore;
 use RZP\Models\Merchant\Detail\Core as DetailCore;
+
 use RZP\Services\RazorXClient;
 use RZP\Services\HubspotClient;
 use RZP\Models\Currency\Currency;
@@ -158,6 +159,13 @@ class ActivationTest extends OAuthTestCase
     }
 
     public function testAddPaymentsAvenue()
+    {
+        $this->ba->proxyAuth('rzp_test_' .self::DEFAULT_MERCHANT_ID);
+
+        $this->startTest();
+    }
+
+    public function testAddComplianceConsentAndWebsiteNotReady()
     {
         $this->ba->proxyAuth('rzp_test_' .self::DEFAULT_MERCHANT_ID);
 
@@ -2261,13 +2269,54 @@ class ActivationTest extends OAuthTestCase
 
         $this->startTest();
 
-        $testData = $this->testData['submitKyc'];
+        $merchantDetail = $this->getDbLastEntity('merchant_detail');
 
-        $this->startTest($testData);
+        $this->assertNotNull($merchantDetail->getBankAccountName());
+
+        $businessDetail = $this->getLastEntity('merchant_business_detail', true);
+
+        $this->assertEquals($businessDetail['blacklisted_products_category'], 'none of the above');
+    }
+
+    public function testKycSubmissionBusinessParentCategoryChange()
+    {
+        $this->enableRazorXTreatmentForActivation();
+
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id' => $merchantId,
+            'user_id' => $merchantUser->getId(),
+            'signup_campaign' => 'easy_onboarding'
+        ]);
+
+        $this->setupKycSubmissionForInstantlyActivatedMerchant($merchantId);
+
+        $this->startTest();
+
+        $activationRequest = [
+            'url'     => '/merchant/activation/',
+            'method'  => 'post',
+            'content' => [
+                'business_parent_category' => 'healthcare_wellness_fitness',
+            ],
+        ];
+
+        $content = $this->makeRequestAndGetContent($activationRequest);
+
+        $this->assertNull($content['business_category']);
+
+        $this->assertNull($content['business_subcategory']);
 
         $merchantDetail = $this->getDbLastEntity('merchant_detail');
 
         $this->assertNotNull($merchantDetail->getBankAccountName());
+
+        $businessDetail = $this->getLastEntity('merchant_business_detail', true);
+
+        $this->assertEquals($businessDetail['blacklisted_products_category'], null);
     }
 
     public function testKycSubmissionForInstantlyActivatedMerchantForRazorpayOrg()
@@ -3492,6 +3541,12 @@ class ActivationTest extends OAuthTestCase
 
         $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
 
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id' => $merchantId,
+            'user_id' => $merchantUser->getId(),
+            'signup_campaign' => 'easy_onboarding'
+        ]);
+
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
 
         Config::set('applications.kyc.mock', true);
@@ -3510,10 +3565,12 @@ class ActivationTest extends OAuthTestCase
     public function testSuccessBankDetailsVerificationForUnregistered()
     {
         $merchantDetailAttribute = [
-            'business_type'     => 2,
-            'promoter_pan_name' => 'p kumar',
-            'bank_account_name' => 'pankaj k',
-            'activation_status' => 'under_review',
+            'business_type'         => 2,
+            'promoter_pan_name'     => 'p kumar',
+            'bank_account_name'     => 'pankaj k',
+            'activation_status'     => 'under_review',
+            'business_category'     => 'financial_services',
+            'business_subcategory'  => 'accounting',
         ];
 
         $favAttribute = [
@@ -3600,9 +3657,11 @@ class ActivationTest extends OAuthTestCase
     public function testSuccessJumbledBankDetailsVerification()
     {
         $merchantDetailAttribute = [
-            'business_type'     => 2,
-            'promoter_pan_name' => 'mr subramaniam laxmi vijay',
-            'bank_account_name' => 'mr subramaniam laxmi vijay',
+            'business_type'         => 2,
+            'promoter_pan_name'     => 'mr subramaniam laxmi vijay',
+            'bank_account_name'     => 'mr subramaniam laxmi vijay',
+            'business_category'     => 'financial_services',
+            'business_subcategory'  => 'accounting',
         ];
 
         $favAttribute = [
@@ -3775,14 +3834,17 @@ class ActivationTest extends OAuthTestCase
 
     public function testBankDetailsVerificationSuccessfulInRetry()
     {
-        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields',
-                                                  ['business_type'           => 2,
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', [
+                                                   'business_type'           => 2,
                                                    'promoter_pan_name'       => 'rishabh acharya',
                                                    'bank_account_name'       => 'rishabh acharya',
                                                    'poa_verification_status' => 'verified',
                                                    'poi_verification_status' => 'verified',
                                                    'submitted'               => 1,
-                                                   'submitted_at'            => now()->getTimestamp()]);
+                                                   'submitted_at'            => now()->getTimestamp(),
+                                                   'business_category'       => 'financial_services',
+                                                   'business_subcategory'    => 'accounting'
+        ]);
 
         $attribute = $this->getFavAttributes($merchantDetail, "UNREGISTERED", "active");
 
@@ -3799,7 +3861,8 @@ class ActivationTest extends OAuthTestCase
 
     public function testPennyTestingCronSuccessful()
     {
-        $attributes = ['business_type'                    => 2,
+        $attributes = [
+            'business_type'                    => 2,
             'promoter_pan_name'                => 'rishabh acharya',
             'bank_account_name'                => 'rishabh acharya',
             'poa_verification_status'          => 'verified',
@@ -3807,7 +3870,10 @@ class ActivationTest extends OAuthTestCase
             'bank_details_verification_status' => 'initiated',
             'penny_testing_updated_at'         => time() - 7300,
             'submitted'                        => 1,
-            'submitted_at'                     => now()->getTimestamp()];
+            'submitted_at'                     => now()->getTimestamp(),
+            'business_category'                => 'financial_services',
+            'business_subcategory'             => 'accounting',
+        ];
 
         $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', $attributes);
 

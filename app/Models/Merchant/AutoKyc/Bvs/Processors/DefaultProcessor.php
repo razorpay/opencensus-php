@@ -14,9 +14,10 @@ use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Merchant\AutoKyc\Response;
 use RZP\Models\Merchant\AutoKyc\Bvs\BvsClient;
 use RZP\Models\Merchant\M2MReferral\Constants;
-use RZP\Services\Segment\EventCode as SegmentEvent;
-use RZP\Models\Merchant\AutoKyc\Bvs\Config\BvsConfig;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
+use RZP\Services\Segment\EventCode as SegmentEvent;
+use RZP\Models\DeviceDetail\Constants as DDConstants;
+use RZP\Models\Merchant\AutoKyc\Bvs\Config\BvsConfig;
 use RZP\Models\Merchant\AutoKyc\Bvs\BaseResponse\ValidationBaseResponse;
 use RZP\Models\Merchant\AutoKyc\Bvs\BaseResponse\ValidationBaseResponseV2;
 use RZP\Models\Merchant\AutoKyc\Bvs\BaseResponse\ValidationDetailsResponse;
@@ -51,8 +52,8 @@ class DefaultProcessor implements Processor
         Constant::GSTIN                                      => 2,
         Constant::CIN                                        => 2,
         Constant::LLP_DEED                                   => 2,
-        Constant::PERSONAL_PAN                               => 2,
-        Constant::BUSINESS_PAN                               => 2,
+        Constant::PERSONAL_PAN                               => 3,
+        Constant::BUSINESS_PAN                               => 3,
         Constant::BANK_ACCOUNT_WITH_PERSONAL_PAN             => 2,
         Constant::BANK_ACCOUNT_WITH_BUSINESS_PAN             => 2,
         Constant::BANK_ACCOUNT_WITH_BUSINESS_OR_PROMOTER_PAN => 2,
@@ -120,15 +121,15 @@ class DefaultProcessor implements Processor
      * @throws \ErrorException
      * @throws IntegrationException|AssertionException
      */
-    public function Process(): Response
+    public function Process($sendEnrichmentDetails = false): Response
     {
-        $validation = $this->getCreateValidationArray();
+        $validation = $this->getCreateValidationArray($sendEnrichmentDetails);
 
         if ($this->requestMode() == Constant::SYNC)
         {
             try
             {
-                $response = (new BvsClient\BvsValidationClientV2($this->merchant, true,$this->getTimeout()))->createValidation($validation);
+                $response = (new BvsClient\BvsValidationClientV2($this->merchant, true, $this->getTimeout()))->createValidation($validation);
 
                 return new ValidationBaseResponseV2($response);
             }
@@ -187,6 +188,11 @@ class DefaultProcessor implements Processor
         return $this->bvsRuleConfig->getRule();
     }
 
+    public function getFetchDetailsRule(): array
+    {
+        return $this->bvsRuleConfig->getFetchDetailsRule();
+    }
+
     /**
      * @return array
      * @throws AssertionException
@@ -221,7 +227,10 @@ class DefaultProcessor implements Processor
             ]);
     }
 
-    protected function getCreateValidationArray(): array
+    /**
+     * @throws AssertionException
+     */
+    protected function getCreateValidationArray($sendEnrichmentDetails = false): array
     {
         $validation = [];
 
@@ -230,6 +239,11 @@ class DefaultProcessor implements Processor
         $validation[Constant::ENRICHMENTS] = $this->getEnrichments();
 
         $validation[Constant::RULES] = $this->getRules();
+
+        if ($sendEnrichmentDetails === true)
+        {
+            $validation[Constant::RULES] = $this->getFetchDetailsRule();
+        }
 
         return $validation;
     }
@@ -257,7 +271,8 @@ class DefaultProcessor implements Processor
             empty($this->configName) === true or
             array_key_exists($this->configName, $this->experimentMap) === false or
             empty($this->experimentMap[$this->configName]) === true or
-            (new Core)->isRegularMerchant($this->merchant) === false
+            (new Core)->isRegularMerchant($this->merchant) === false or
+            $this->merchant->isSignupCampaign(DDConstants::EASY_ONBOARDING) === false
         )
         {
             return Constant::ASYNC;

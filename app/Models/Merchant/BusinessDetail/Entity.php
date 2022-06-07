@@ -17,14 +17,15 @@ use RZP\Models\Merchant\Detail;
  */
 class Entity extends Base\PublicEntity
 {
-    const ID                        = 'id';
-    const MERCHANT_ID               = 'merchant_id';
-    const WEBSITE_DETAILS           = 'website_details';
-    const APP_URLS                  = 'app_urls';
-    const BUSINESS_PARENT_CATEGORY  = 'business_parent_category';
-    const CREATED_AT                = 'created_at';
-    const UPDATED_AT                = 'updated_at';
-    const AUDIT_ID                  = 'audit_id';
+    const ID                            = 'id';
+    const MERCHANT_ID                   = 'merchant_id';
+    const WEBSITE_DETAILS               = 'website_details';
+    const APP_URLS                      = 'app_urls';
+    const BLACKLISTED_PRODUCTS_CATEGORY = 'blacklisted_products_category';
+    const BUSINESS_PARENT_CATEGORY      = 'business_parent_category';
+    const CREATED_AT                    = 'created_at';
+    const UPDATED_AT                    = 'updated_at';
+    const AUDIT_ID                      = 'audit_id';
 
     protected $entity     = 'merchant_business_detail';
 
@@ -34,6 +35,7 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::WEBSITE_DETAILS,
         self::APP_URLS,
+        self::BLACKLISTED_PRODUCTS_CATEGORY,
         self::BUSINESS_PARENT_CATEGORY,
         self::CREATED_AT,
         self::UPDATED_AT
@@ -43,6 +45,9 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::WEBSITE_DETAILS,
         self::APP_URLS,
+        self::BLACKLISTED_PRODUCTS_CATEGORY,
+        self::CREATED_AT,
+        self::UPDATED_AT,
         self::BUSINESS_PARENT_CATEGORY,
         self::AUDIT_ID
     ];
@@ -53,8 +58,9 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $defaults           = [
-        self::WEBSITE_DETAILS => [],
-        self::APP_URLS        => null,
+        self::WEBSITE_DETAILS                => [],
+        self::APP_URLS                       => null,
+        self::BLACKLISTED_PRODUCTS_CATEGORY  => null,
     ];
 
     public function getId()
@@ -75,11 +81,13 @@ class Entity extends Base\PublicEntity
         ];
     }
 
-    public function getPlaystoreUrl(){
+    public function getPlaystoreUrl()
+    {
         return $this->getAppUrls()[Constants::PLAYSTORE_URL] ?? null;
     }
 
-    public function getAppstoreUrl(){
+    public function getAppstoreUrl()
+    {
         return $this->getAppUrls()[Constants::APPSTORE_URL] ?? null;
     }
 
@@ -88,20 +96,31 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::WEBSITE_DETAILS);
     }
 
+    public function getBusinessParentCategory()
+    {
+        return $this->getAttribute(self::BUSINESS_PARENT_CATEGORY);
+    }
+
     public static function getDefaultWebsiteDetails()
     {
         return [
-            Constants::ABOUT          => null,
-            Constants::CONTACT        => null,
-            Constants::CANCELLATION   => null,
-            Constants::PRICING        => null,
-            Constants::PRIVACY        => null,
-            Constants::REFUND         => null,
-            Constants::TERMS          => null,
-            Constants::LOGIN          => null,
-            Constants::PHYSICAL_STORE => false,
-            Constants::SOCIAL_MEDIA   => false,
-            Constants::WEBSITE_OR_APP => false
+            Constants::ABOUT                      => null,
+            Constants::CONTACT                    => null,
+            Constants::CANCELLATION               => null,
+            Constants::PRICING                    => null,
+            Constants::PRIVACY                    => null,
+            Constants::REFUND                     => null,
+            Constants::TERMS                      => null,
+            Constants::LOGIN                      => null,
+            Constants::PHYSICAL_STORE             => false,
+            Constants::SOCIAL_MEDIA               => false,
+            Constants::WEBSITE_OR_APP             => false,
+            Constants::OTHERS                     => '',
+            Constants::WEBSITE_NOT_READY          => false,
+            Constants::WEBSITE_COMPLIANCE_CONSENT => null,
+            Constants::WEBSITE_PRESENT            => false,
+            Constants::ANDROID_APP_PRESENT        => false,
+            Constants::IOS_APP_PRESENT            => false,
         ];
     }
 
@@ -138,5 +157,15 @@ class Entity extends Base\PublicEntity
     public function getWebsiteCancellation()
     {
         return isset($this->getAttribute(self::WEBSITE_DETAILS)[Constants::CANCELLATION]) ? $this->getAttribute(self::WEBSITE_DETAILS)[Constants::CANCELLATION] : null;
+    }
+
+    public function setBlacklistedProductsCategory($value)
+    {
+        $this->setAttribute(self::BLACKLISTED_PRODUCTS_CATEGORY, $value);
+    }
+
+    public function getBlacklistedProductsCategory()
+    {
+        return $this->getAttribute(self::BLACKLISTED_PRODUCTS_CATEGORY);
     }
 }

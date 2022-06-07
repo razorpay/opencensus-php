@@ -139,6 +139,14 @@ class DetailServiceTest extends TestCase
 
         $this->merchantEntityMock->shouldReceive('isNoDocOnboardingEnabled')->andReturn(false);
 
+        $this->merchantBusinessDetailEntityMock->shouldReceive('setBlacklistedProductsCategory');
+
+        $this->merchantBusinessDetailEntityMock->shouldReceive('getBlacklistedProductsCategory');
+
+        $this->merchantEntityMock->shouldReceive('isSignupCampaign')->andReturn(false);
+
+        $this->merchantDetailValidator->shouldReceive('validateBusinessSubcategoryForCategoryForEasyOnboarding');
+
         $this->merchantDetailEntityMock->shouldReceive('getBankDetailsVerificationStatus')->andReturn();
         $this->merchantDetailEntityMock->shouldReceive('getBankAccountNumber')->andReturn();
         $this->merchantDetailEntityMock->shouldReceive('getBankBranchIfsc')->andReturn();
@@ -178,6 +186,14 @@ class DetailServiceTest extends TestCase
         $this->repoMock->shouldReceive('transactionOnLiveAndTest')->andReturn([]);
 
         $this->merchantEntityMock->shouldReceive('isNoDocOnboardingEnabled')->andReturn(false);
+
+        $this->merchantBusinessDetailEntityMock->shouldReceive('setBlacklistedProductsCategory');
+
+        $this->merchantBusinessDetailEntityMock->shouldReceive('getBlacklistedProductsCategory');
+
+        $this->merchantEntityMock->shouldReceive('isSignupCampaign')->andReturn(false);
+
+        $this->merchantDetailValidator->shouldReceive('validateBusinessSubcategoryForCategoryForEasyOnboarding');
 
         $this->merchantDetailEntityMock->shouldReceive('getBankDetailsVerificationStatus')->andReturn();
         $this->merchantDetailEntityMock->shouldReceive('getBankAccountNumber')->andReturn();
@@ -246,6 +262,8 @@ class DetailServiceTest extends TestCase
 
         $this->merchantEntityMock->shouldReceive('toArrayEvent')->andReturn([]);
 
+        $this->merchantEntityMock->shouldReceive('isSignupCampaign')->andReturn(false);
+
         $this->merchantDetailValidator->shouldReceive('validatePartnerActivationStatus')->andReturn();
 
         $this->merchantDetailEntityMock->shouldReceive('getPoiVerificationStatus')->andReturn();
@@ -289,6 +307,8 @@ class DetailServiceTest extends TestCase
         $this->merchantEntityMock->shouldReceive('getCategory')->andReturn(2);
 
         $this->merchantEntityMock->shouldReceive('getCategory2')->andReturn(2);
+
+        $this->merchantEntityMock->shouldReceive('isSignupCampaign')->andReturn(false);
 
         $this->merchantDetailEntityMock->shouldReceive('isDirty')->andReturn(false);
 
@@ -464,6 +484,8 @@ class DetailServiceTest extends TestCase
         $this->merchantEntityMock->shouldReceive('getCategory2')->andReturn(2);
 
         $this->merchantEntityMock->shouldReceive('getId')->andReturn('1232');
+
+        $this->merchantEntityMock->shouldReceive('isSignupCampaign')->andReturn(false);
 
         $this->merchantDetailEntityMock->shouldReceive('isDirty')->andReturn(false);
 

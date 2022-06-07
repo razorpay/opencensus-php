@@ -6,6 +6,7 @@ namespace RZP\Models\Merchant\Detail\NeedsClarification;
 use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\Store;
 use RZP\Models\Base\PublicEntity;
+use RZP\Models\Merchant\Detail\ActivationFlow;
 use RZP\Models\Merchant\Detail\Entity;
 use RZP\Models\Merchant\Store\ConfigKey;
 use RZP\Models\Merchant\Detail\BusinessType;
@@ -155,7 +156,7 @@ class UpdateContextRequirements
     {
         $requirementList = $this->getUpdateContextRequirement($merchantDetails);
 
-        if ($merchantDetails->isSubmitted() === false)
+        if ($merchantDetails->isSubmitted() === false or $merchantDetails->getActivationFlow() === ActivationFlow::BLACKLIST)
         {
             return false;
         }

@@ -33,6 +33,12 @@ class Factory
             case Merchant\AutoKyc\Bvs\Constant::LLPIN:
                 return new LlpinAuth($merchant, $merchantDetails);
 
+            case Merchant\AutoKyc\Bvs\Constant::PERSONAL_PAN:
+                return new PersonalPan($merchant, $merchantDetails);
+
+            case Merchant\AutoKyc\Bvs\Constant::BUSINESS_PAN:
+                return new CompanyPan($merchant, $merchantDetails);
+
             default:
                 throw new Exception\LogicException('artefact type not supported in this flow: ' . $artefact);
         }

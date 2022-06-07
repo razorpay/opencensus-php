@@ -14,6 +14,7 @@ class Entity extends Base\PublicEntity
      * added for identifying mobile app mtu transactions
      */
     const SIGNUP_SOURCE          = 'signup_source';
+    const SIGNUP_CAMPAIGN        = 'signup_campaign';
 
     const CREATED_AT             = 'created_at';
     const UPDATED_AT             = 'updated_at';
@@ -27,6 +28,7 @@ class Entity extends Base\PublicEntity
         self::USER_ID,
         self::APPSFLYER_ID,
         self::SIGNUP_SOURCE,
+        self::SIGNUP_CAMPAIGN
     ];
 
     protected $public = [
@@ -35,6 +37,7 @@ class Entity extends Base\PublicEntity
         self::USER_ID,
         self::APPSFLYER_ID,
         self::SIGNUP_SOURCE,
+        self::SIGNUP_CAMPAIGN
     ];
 
     public function getAppsFlyerId()
@@ -55,5 +58,10 @@ class Entity extends Base\PublicEntity
     public function getSignupSource()
     {
         return $this->getAttribute(self::SIGNUP_SOURCE);
+    }
+
+    public function getSignupCampaign()
+    {
+        return $this->getAttribute(self::SIGNUP_CAMPAIGN);
     }
 }

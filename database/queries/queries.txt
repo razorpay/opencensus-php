@@ -6662,6 +6662,12 @@ ALTER TABLE cards ADD COLUMN token_expiry_month CHAR(2) default NULL;
 
 ALTER TABLE cards ADD COLUMN token_expiry_year CHAR(4) default NULL;
 
+ALTER TABLE merchant_business_details
+    ADD COLUMN `blacklisted_products_category` varchar(255) DEFAULT NULL;
+
+ALTER TABLE user_device_details
+    ADD COLUMN signup_campaign varchar(50) DEFAULT NULL;
+    
 ALTER TABLE cards
     ADD COLUMN token_last4 char(4) DEFAULT NULL;
 

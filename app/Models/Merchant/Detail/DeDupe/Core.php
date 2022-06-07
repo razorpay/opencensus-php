@@ -163,7 +163,8 @@ class Core extends Base\Core
 
         foreach (Constants::MERCHANT_RISK_CONFIG as $key => $value)
         {
-            if($isSubMerchant === true && $key == 'business_website' ) {
+            if ($isSubMerchant === true && $key == 'business_website')
+            {
                 continue;
             }
 

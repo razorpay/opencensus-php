@@ -13,12 +13,12 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Constants\Table;
 use Rzp\Bvs\Validation\V1\TwirpError;
-use RZP\Models\Merchant\AutoKyc\Bvs\Constant as BVSConstants;
-use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Models\Merchant\Store\ConfigKey;
-use RZP\Models\Merchant\AutoKyc\Bvs\Factory;
-use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use RZP\Models\Merchant\Store\Core as StoreCore;
+use RZP\Models\DeviceDetail\Constants as DDConstants;
+use RZP\Models\Merchant\AutoKyc\Bvs\Factory;
+use RZP\Models\Merchant\Detail\Constants as DetailConstants;
+
 use RZP\Trace\Tracer;
 use RZP\Models\State;
 use RZP\Models\Coupon;
@@ -90,13 +90,12 @@ use RZP\Models\Merchant\AutoKyc\Bvs\DocumentStatusUpdater;
 use RZP\Models\Merchant\Balance\Ledger\Core as LedgerCore;
 use RZP\Models\Merchant\Fraud\HealthChecker as HealthChecker;
 use RZP\Models\Workflow\Action\Core as WorkFlowActionCore;
+use RZP\Models\Merchant\AutoKyc\Bvs\Autofill as BvsAutofill;
 use RZP\Models\Workflow\Action\Entity as WorkFlowActionEntity;
 use RZP\Mail\Admin\NotifyActivationSubmission as NotifyAdmin;
 use RZP\Models\Merchant\Account\Constants as AccountConstants;
 use RZP\Models\Merchant\Request\Constants as RequestConstants;
 use RZP\Models\Merchant\Credits\Balance\Entity as CreditEntity;
-use RZP\Models\Merchant\AutoKyc\Bvs\requestDispatcher\CinAuth;
-use RZP\Models\Merchant\AutoKyc\Bvs\requestDispatcher\LlpinAuth;
 use RZP\Mail\Merchant\NeedsClarificationEmail as ClarificationEmail;
 use RZP\Mail\Merchant\SubMerchantNCStatusChanged as SubMerchantNCStatusChangedEmail;
 use RZP\Notifications\Dashboard\Events as DashboardNotificationEvent;
@@ -114,7 +113,6 @@ use RZP\Models\Merchant\Store\Constants as StoreConstants;
 use RZP\Models\Merchant\AutoKyc\Bvs\ManualVerificationRequestDispatcher;
 use RZP\Models\Merchant\Document\Type as DocumentType;
 use RZP\Models\Merchant\AutoKyc\Bvs\requestDispatcher\BankAccount as BankAccountRequestDispatcher;
-
 
 class Core extends Base\Core
 {
@@ -210,7 +208,7 @@ class Core extends Base\Core
         {
             $maskedInput[$key] = $value;
 
-            if (empty($value) === false and in_array($key, DEConstants::SENSITIVE_FIELDS_FOR_LOGGING, true) === true)
+            if (empty($value) === false and in_array($key, DetailConstants::SENSITIVE_FIELDS_FOR_LOGGING, true) === true)
             {
                 $maskedInput[$key] = mask_except_last4($value);
             }
@@ -255,77 +253,12 @@ class Core extends Base\Core
 
         $activationFormMilestone = $input[Entity::ACTIVATION_FORM_MILESTONE] ?? null;
 
-        //isolating business details
-        $businessDetailsInput = [];
-
-        $urlsInput           = [BusinessDetailConstants::PLAYSTORE_URL, BusinessDetailConstants::APPSTORE_URL];
-        $paymentsAvenueInput = [BusinessDetailConstants::SOCIAL_MEDIA, BusinessDetailConstants::PHYSICAL_STORE,
-                                BusinessDetailConstants::WEBSITE_OR_APP];
-
-        foreach ($urlsInput as $url)
-        {
-            if (isset($input[$url]) === true)
-            {
-                $businessDetailsInput[BusinessDetailEntity::APP_URLS][$url] = $input[$url];
-                unset($input[$url]);
-            }
-        }
-
-        foreach ($paymentsAvenueInput as $payInput)
-        {
-            if (isset($input[$payInput]) === true)
-            {
-                $businessDetailsInput[BusinessDetailEntity::WEBSITE_DETAILS][$payInput] = $input[$payInput];
-                unset($input[$payInput]);
-            }
-        }
-
-        $businessDetailsInput[BusinessDetailEntity::BUSINESS_PARENT_CATEGORY] = $input[BusinessDetailEntity::BUSINESS_PARENT_CATEGORY] ?? null;
-        unset($input[BusinessDetailEntity::BUSINESS_PARENT_CATEGORY]);
-
-        if (empty($businessDetailsInput[BusinessDetailEntity::APP_URLS]) === false or
-            empty($businessDetailsInput[BusinessDetailEntity::WEBSITE_DETAILS]) === false or
-            empty($businessDetailsInput[BusinessDetailEntity::BUSINESS_PARENT_CATEGORY]) === false)
-        {
-            if (array_key_exists(BusinessDetailEntity::APP_URLS, $businessDetailsInput))
-            {
-                $this->checkForCorrectAppUrls($businessDetailsInput[BusinessDetailEntity::APP_URLS]);
-            }
-
-            $businessDetails = Tracer::inspan(['name' => HyperTrace::SAVE_BUSINESS_DETAILS_FOR_MERCHANT], function() use ($merchant, $businessDetailsInput) {
-
-                //save App Urls Details
-                $businessDetailService = new Service();
-
-                return $businessDetailService->saveBusinessDetailsForMerchant($merchant->getId(), $businessDetailsInput);
-            });
-
-            $this->trace->info(TraceCode::ACTIVATION_DETAILS_SAVE_BUSINESS_DETAILS_LATENCY, [
-                'merchant_id'                 => $merchant->getId(),
-                'start_time'                  => $startTime * 1000,
-                'overall_duration'            => (microtime(true) - $startTime) * 1000,
-            ]);
-
-            //Calling App Checker Service during onboarding
-            (new HealthChecker\Core())->notifyRiskChecker(
-                $merchant->getId(), HealthCheckerConstants::PERFORM_HEALTH_CHECK_JOB, [
-                                      HealthCheckerConstants::RETRY_COUNT_KEY => HealthCheckerConstants::MAX_RISK_CHECK_RETRIES,
-                                      HealthCheckerConstants::EVENT_TYPE      => HealthCheckerConstants::ONBOARDING_CHECKER_EVENT,
-                                      HealthCheckerConstants::CHECKER_TYPE    => HealthCheckerConstants::APP_CHECKER,
-                                  ]
-            );
-
-            $this->trace->info(TraceCode::ACTIVATION_DETAILS_RISK_CHECKER_LATENCY, [
-                'merchant_id'                 => $merchant->getId(),
-                'start_time'                  => $startTime * 1000,
-                'overall_duration'            => (microtime(true) - $startTime) * 1000,
-            ]);
-        }
+        $this->handleBusinessDetail($input, $merchant, $startTime);
 
         if (empty($input['business_website']) === false)
         {
             //Calling Profanity Checker during onboarding
-            (new MRS())->enqueueProfanityCheckerRequest($merchant->getId(), 'site', 'merchant', $merchant->getId(), $input['business_website'], DEConstants:: MRS_PROFANITY_CHECKER_DEPTH, Constants::MERCHANT_ONBOARDING);
+            (new MRS())->enqueueProfanityCheckerRequest($merchant->getId(), 'site', 'merchant', $merchant->getId(), $input['business_website'], DetailConstants:: MRS_PROFANITY_CHECKER_DEPTH, Constants::MERCHANT_ONBOARDING);
         }
 
         unset($input[Entity::ACTIVATION_FORM_MILESTONE]);
@@ -450,6 +383,153 @@ class Core extends Base\Core
             Constants::MERCHANT_MUTEX_LOCK_TIMEOUT,
             ErrorCode::BAD_REQUEST_MERCHANT_EDIT_OPERATION_IN_PROGRESS,
             Constants::MERCHANT_MUTEX_RETRY_COUNT);
+    }
+
+    /**
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    private function handleBusinessDetail(&$input, Merchant\Entity $merchant, $startTime)
+    {
+        $merchantDetail = $merchant->merchantDetail;
+
+        $businessDetail = $merchantDetail->businessDetail;
+
+        try
+        {
+            $isEasyOnboarding = (empty($merchant) === false) and
+                                ($merchant->isSignupCampaign(DDConstants::EASY_ONBOARDING) === true);
+
+            $emptyParentCategory = empty($input[BusinessDetailEntity::BUSINESS_PARENT_CATEGORY]);
+
+            $emptyCategory = empty($input[Entity::BUSINESS_CATEGORY]);
+
+            if (($isEasyOnboarding === true) and
+                ($emptyParentCategory === false or $emptyCategory === false))
+            {
+                $merchantDetail->getValidator()->validateBusinessSubcategoryForCategoryForEasyOnboarding($input);
+            }
+        }
+        catch (Exception\BadRequestValidationFailureException $ex)
+        {
+            switch ($ex->getMessage())
+            {
+                case Validator::INVALID_BUSINESS_CATEGORY_FOR_PARENT_CATEGORY:
+                    $merchantDetail->setBusinessCategory(null);
+
+                case Validator::INVALID_BUSINESS_SUBCATEGORY_FOR_CATEGORY:
+                    $merchantDetail->setBusinessSubcategory(null);
+
+                    if (empty(optional($businessDetail)->getBlacklistedProductsCategory()) === false)
+                    {
+                        $businessDetail->setBlacklistedProductsCategory(null);
+
+                        $this->repo->saveOrFail($businessDetail);
+                    }
+                    break;
+
+                default:
+                    throw $ex;
+            }
+        }
+
+        $businessDetailsInput = [];
+
+        $businessDetailsInput = array_merge($businessDetailsInput, $this->handleAppUrls($input));
+
+        $businessDetailsInput = array_merge($businessDetailsInput, $this->handleWebsiteDetails($input));
+
+        $businessDetailsInput = array_merge($businessDetailsInput, $this->handleBusinessDetailFields($input));
+
+        if (empty($businessDetailsInput) === true)
+        {
+            return;
+        }
+
+        Tracer::inspan(['name' => HyperTrace::SAVE_BUSINESS_DETAILS_FOR_MERCHANT], function() use ($merchant, $businessDetailsInput) {
+
+            $businessDetailService = new Service();
+
+            return $businessDetailService->saveBusinessDetailsForMerchant($merchant->getId(), $businessDetailsInput);
+        });
+
+        $this->trace->info(TraceCode::ACTIVATION_DETAILS_SAVE_BUSINESS_DETAILS_LATENCY, [
+            'merchant_id'                 => $merchant->getId(),
+            'start_time'                  => $startTime * 1000,
+            'overall_duration'            => (microtime(true) - $startTime) * 1000,
+        ]);
+
+        //Calling App Checker Service during onboarding
+        (new HealthChecker\Core())->notifyRiskChecker(
+            $merchant->getId(), HealthCheckerConstants::PERFORM_HEALTH_CHECK_JOB, [
+                HealthCheckerConstants::RETRY_COUNT_KEY => HealthCheckerConstants::MAX_RISK_CHECK_RETRIES,
+                HealthCheckerConstants::EVENT_TYPE      => HealthCheckerConstants::ONBOARDING_CHECKER_EVENT,
+                HealthCheckerConstants::CHECKER_TYPE    => HealthCheckerConstants::APP_CHECKER,
+            ]
+        );
+
+        $this->trace->info(TraceCode::ACTIVATION_DETAILS_RISK_CHECKER_LATENCY, [
+            'merchant_id'                 => $merchant->getId(),
+            'start_time'                  => $startTime * 1000,
+            'overall_duration'            => (microtime(true) - $startTime) * 1000,
+        ]);
+    }
+
+    private function handleAppUrls(&$input): array
+    {
+        $businessDetailsInput = [];
+
+        foreach (BusinessDetailConstants::APP_URLS_FIELDS as $url)
+        {
+            if (isset($input[$url]) === true)
+            {
+                $businessDetailsInput[BusinessDetailEntity::APP_URLS][$url] = $input[$url];
+
+                unset($input[$url]);
+            }
+        }
+
+        if (empty($businessDetailsInput[BusinessDetailEntity::APP_URLS]) === false)
+        {
+            $this->checkForCorrectAppUrls($businessDetailsInput[BusinessDetailEntity::APP_URLS]);
+        }
+
+        return $businessDetailsInput;
+    }
+
+    private function handleWebsiteDetails(&$input): array
+    {
+        $businessDetailsInput = [];
+
+        foreach (BusinessDetailConstants::WEBSITE_DETAILS_FIELDS as $websiteDetail)
+        {
+            if (isset($input[$websiteDetail]) === true)
+            {
+                $businessDetailsInput[BusinessDetailEntity::WEBSITE_DETAILS][$websiteDetail] = $input[$websiteDetail];
+
+                unset($input[$websiteDetail]);
+            }
+        }
+
+        return $businessDetailsInput;
+    }
+
+    private function handleBusinessDetailFields(&$input): array
+    {
+        $businessDetailsInput = [];
+
+        $fields = [BusinessDetailEntity::BLACKLISTED_PRODUCTS_CATEGORY, BusinessDetailEntity::BUSINESS_PARENT_CATEGORY];
+
+        foreach ($fields as $field)
+        {
+            if (isset($input[$field]) === true)
+            {
+                $businessDetailsInput[$field] = $input[$field];
+
+                unset($input[$field]);
+            }
+        }
+
+        return $businessDetailsInput;
     }
 
     /**
@@ -784,7 +864,11 @@ class Core extends Base\Core
 
         $this->app['eventManager']->trackEvents($merchant, Merchant\Action::SUBMITTED, $eventAttributes);
 
-        $this->app['segment-analytics']->pushTrackEvent($merchant, [], SegmentEvent::L2_SUBMISSION);
+        $properties = [
+            'easyOnboarding'    =>  $merchant->isSignupCampaign(DDConstants::EASY_ONBOARDING)
+        ];
+
+        $this->app['segment-analytics']->pushTrackEvent($merchant, $properties, SegmentEvent::L2_SUBMISSION);
 
         $this->triggerValidationRequests($merchant, $merchantDetails);
 
@@ -911,13 +995,16 @@ class Core extends Base\Core
 
         $merchantDetails = $merchantDetails ?: $this->getMerchantDetails($merchant);
 
-        if ((new Merchant\Core)->isUnRegisteredOnBoardingEnabled($merchant,
-                                                                 $merchantDetails->isUnregisteredBusiness()) === true)
+        if ($merchant->isSignupCampaign(DDConstants::EASY_ONBOARDING) === false)
         {
-            $merchantDetails->setActivationFlow();
-            $merchantDetails->setInternationalActivationFlow();
+            if ((new Merchant\Core)->isUnRegisteredOnBoardingEnabled($merchant,
+                    $merchantDetails->isUnregisteredBusiness()) === true)
+            {
+                $merchantDetails->setActivationFlow();
+                $merchantDetails->setInternationalActivationFlow();
 
-            return;
+                return;
+            }
         }
 
         $this->updateActivationFlows($merchant, $merchantDetails, $partner, $activationFlowTypes, $batchFlow);
@@ -983,6 +1070,12 @@ class Core extends Base\Core
     {
         $businessCategory    = $merchantDetails->getBusinessCategory();
         $businessSubcategory = $merchantDetails->getBusinessSubcategory();
+
+        if ($merchant->isSignupCampaign(DDConstants::EASY_ONBOARDING) === true and
+            empty($businessSubcategory) === true)
+        {
+            return;
+        }
 
         $category  = $merchant->getCategory();
         $category2 = $merchant->getCategory2();
@@ -1219,7 +1312,11 @@ class Core extends Base\Core
 
         $this->app->hubspot->trackL1ContactProperties($input, $merchant, $merchantDetails->getActivationFlow());
 
-        $this->app['segment-analytics']->pushIdentifyAndTrackEvent($merchant, [], SegmentEvent::L1_SUBMISSION);
+        $properties = [
+            'easyOnboarding' =>  $merchant->isSignupCampaign(DDConstants::EASY_ONBOARDING)
+        ];
+
+        $this->app['segment-analytics']->pushIdentifyAndTrackEvent($merchant, $properties, SegmentEvent::L1_SUBMISSION);
 
         // Only Linked accounts will have auto Activated set to true.
         $response['auto_activated'] = false;
@@ -1278,7 +1375,7 @@ class Core extends Base\Core
 
         $this->autoUpdateMerchantActivationFlows($merchant, $merchantDetails);
 
-        if ($isRiskyMerchant === true)
+        if ($isRiskyMerchant === true or $merchantDetails->getActivationFlow() === ActivationFlow::BLACKLIST)
         {
             return;
         }
@@ -1383,8 +1480,8 @@ class Core extends Base\Core
 
         $this->app['workflow']
             ->setPermission(Permission\Name::IMPERSONATING_MERCHANT_DEDUPE)
-            ->setRouteName(DEConstants::ACTIVATION_ROUTE_NAME)
-            ->setController(DEConstants::ACTIVATION_CONTROLLER)
+            ->setRouteName(DetailConstants::ACTIVATION_ROUTE_NAME)
+            ->setController(DetailConstants::ACTIVATION_CONTROLLER)
             ->setWorkflowMaker($merchant)
             ->setWorkflowMakerType(MakerType::MERCHANT)
             ->setRouteParams([DetailEntity::ID => $merchant->getId()])
@@ -1470,6 +1567,16 @@ class Core extends Base\Core
             return;
         }
 
+        if (empty($input[Entity::PROMOTER_PAN]) === false and
+            empty($input[Entity::PROMOTER_PAN_NAME]) === true and
+            $merchant->isSignupCampaign(DDConstants::EASY_ONBOARDING) === true)
+        {
+            if ((new BvsAutofill\PersonalPan($merchant, $merchantDetails))->autofillIfApplicable() === true)
+            {
+                return;
+            }
+        }
+
         $dependentFields = [Detail\Entity::PROMOTER_PAN, Detail\Entity::PROMOTER_PAN_NAME, Detail\Entity::BUSINESS_TYPE];
 
         $requiredFields = [Detail\Entity::PROMOTER_PAN, Detail\Entity::PROMOTER_PAN_NAME];
@@ -1519,6 +1626,16 @@ class Core extends Base\Core
             $merchantDetails->setCompanyPanVerificationStatus(null);
 
             return;
+        }
+
+        if (empty($input[Entity::COMPANY_PAN]) === false and
+            empty($input[Entity::BUSINESS_NAME]) === true and
+            $merchant->isSignupCampaign(DDConstants::EASY_ONBOARDING) === true)
+        {
+            if ((new BvsAutofill\CompanyPan($merchant, $merchantDetails))->autofillIfApplicable() === true)
+            {
+                return;
+            }
         }
 
         $dependentFields = [Detail\Entity::COMPANY_PAN, Detail\Entity::BUSINESS_NAME];
@@ -2038,7 +2155,7 @@ class Core extends Base\Core
     {
         $properties = [];
 
-        foreach (DEConstants::KYC_FORM_SUBMIT_SEGMENT_PROPERTIES as $key)
+        foreach (DetailConstants::KYC_FORM_SUBMIT_SEGMENT_PROPERTIES as $key)
         {
             if (isset($input[$key]) === true)
             {
@@ -2092,10 +2209,10 @@ class Core extends Base\Core
 
         foreach ($requiredDocuments as $requiredDocument)
         {
-            $merchantDetailsParams[$requiredDocument] = DEConstants::DUMMY_ACTIVATION_FILE;
+            $merchantDetailsParams[$requiredDocument] = DetailConstants::DUMMY_ACTIVATION_FILE;
 
             $merchantDocumentParams[$requiredDocument] = [
-                Document\Constants::FILE_ID => DEConstants::DUMMY_ACTIVATION_FILE,
+                Document\Constants::FILE_ID => DetailConstants::DUMMY_ACTIVATION_FILE,
                 Document\Constants::SOURCE  => Document\Source::UFH,
             ];
         }
@@ -2261,7 +2378,7 @@ class Core extends Base\Core
         $submit = $input[Entity::SUBMIT] ?? false;
 
         return (($submit === '1') or
-                ($activationFormMilestone === DEConstants::L2_SUBMISSION));
+                ($activationFormMilestone === DetailConstants::L2_SUBMISSION));
     }
 
     /**
@@ -2645,13 +2762,13 @@ class Core extends Base\Core
                     $merchantDetails->setLocked(false);
 
                     $accessMaps = $this->repo->merchant_access_map->fetchAffiliatedPartnersForSubmerchant($merchant->getId());
-                    
+
                     $partnerMerchant = $accessMaps->filter(function ($value, $key) {
                         return ($value->entityOwner->isAggregatorPartner() === true);
                     })->first();
-         
+
                     $this->sendNeedsClarificationEmail($merchant);
-                    
+
                     // $partnerMerchant can be null in case of linked accounts
                     if(!is_null($partnerMerchant)){
                         $properties = [
@@ -2777,6 +2894,7 @@ class Core extends Base\Core
             'previousActivationStatus' => $oldMerchantDetails->getActivationStatus(),
             'currentActivationStatus'  => $newMerchantDetails->getActivationStatus(),
             'activated_at'             => $merchant->getActivatedAt(),
+            'easyOnboarding'           => $merchant->isSignupCampaign(DDConstants::EASY_ONBOARDING)
         ];
 
         $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
@@ -2809,8 +2927,10 @@ class Core extends Base\Core
         $properties       = [
             'activation_status'          => $merchantDetails->getActivationStatus(),
             'previous_activation_status' => $previousActivationStatus,
-            'mcc'                        => $merchant->getCategory()
+            'mcc'                        => $merchant->getCategory(),
+            'easyOnboarding'             => $merchant->isSignupCampaign(DDConstants::EASY_ONBOARDING)
         ];
+
         if ($activationStatus === Status::INSTANTLY_ACTIVATED)
         {
             $properties['instant_activation'] = true;
@@ -2890,12 +3010,12 @@ class Core extends Base\Core
     public function getPayloadForSubMerchantNCStatusChangedEmail(Merchant\Entity $merchant, Merchant\Entity $partnerMerchant, $clarificationReasons)
     {
         $data = [
-            DEConstants::PARTNER_EMAIL        => $partnerMerchant->getEmail(),
-            DEConstants::MERCHANT             => [
+            DetailConstants::PARTNER_EMAIL        => $partnerMerchant->getEmail(),
+            DetailConstants::MERCHANT             => [
                 Merchant\Entity::ID          => $merchant->getId(),
                 Merchant\Entity::NAME          => $merchant->getName(),
             ],
-            DEConstants::CLARIFICATION_REASON => $clarificationReasons,
+            DetailConstants::CLARIFICATION_REASON => $clarificationReasons,
         ];
 
         return $data;
@@ -2904,15 +3024,15 @@ class Core extends Base\Core
     public function getPayloadForClarificationEmail(Merchant\Entity $merchant, Org\Entity $org, $clarificationReasons)
     {
         $data = [
-            DEConstants::MERCHANT             => [
+            DetailConstants::MERCHANT          => [
                 Merchant\Entity::NAME          => $merchant->getName(),
                 Merchant\Entity::BILLING_LABEL => $merchant->getBillingLabel(),
                 Merchant\Entity::EMAIL         => $merchant->getEmail(),
-                DEConstants::ORG               => [
-                    DEConstants::HOSTNAME => $org->getPrimaryHostName(),
+                DetailConstants::ORG           => [
+                    DetailConstants::HOSTNAME  => $org->getPrimaryHostName(),
                 ]
             ],
-            DEConstants::CLARIFICATION_REASON => $clarificationReasons,
+            DetailConstants::CLARIFICATION_REASON => $clarificationReasons,
         ];
 
         return $data;
@@ -3277,7 +3397,7 @@ class Core extends Base\Core
 
             $isDedupeBlocked = $this->dedupeCore->isDedupeBlocked($merchant);
 
-            if ($merchantDetails->getActivationFormMilestone() === DEConstants::L1_SUBMISSION)
+            if ($merchantDetails->getActivationFormMilestone() === DetailConstants::L1_SUBMISSION)
             {
                 /*
                  * After L1 submission we do not want to block users even if they are dedupe-blocked case
@@ -3306,6 +3426,8 @@ class Core extends Base\Core
             $response['activationStatusChangeLogs']                   = $this->getStatusChangeLogs($merchant);
             $response[Entity::MERCHANT_BUSINESS_DETAIL]               = $merchantBusinessDetails;
             $response[BusinessDetailEntity::BUSINESS_PARENT_CATEGORY] = $merchantBusinessDetails[BusinessDetailEntity::BUSINESS_PARENT_CATEGORY];
+            $response[Entity::PROMOTER_PAN_NAME_SUGGESTED]            = $merchantDetails->getPromoterPanNameSuggested();
+            $response[Entity::BUSINESS_NAME_SUGGESTED]                = $merchantDetails->getBusinessNameSuggested();
 
             if (empty($merchantDetails->getKycClarificationReasons()) === false)
             {
@@ -3779,7 +3901,7 @@ class Core extends Base\Core
                                                                     [BvsValidationConstants::FAILED],
                                                                     $merchant->getId());
 
-        if (($merchantDetails->getBankDetailsVerificationStatus() === DEConstants::VERIFIED or
+        if (($merchantDetails->getBankDetailsVerificationStatus() === DetailConstants::VERIFIED or
              $merchantDetails->getBankDetailsVerificationStatus() === BvsValidationConstants::INITIATED) and
             $isAutoKycAttemptRequired === false)
         {
@@ -3814,7 +3936,7 @@ class Core extends Base\Core
 
         $pennyTestingAttemptsCount = $data[ConfigKey::BANK_ACCOUNT_VERIFICATION_ATTEMPT_COUNT] ?? 0;
 
-        $maxPennyTestCountAllowed = env(DEConstants::BANK_ACCOUNT_VERIFICATION_MAX_ATTEMPT_COUNT);
+        $maxPennyTestCountAllowed = env(DetailConstants::BANK_ACCOUNT_VERIFICATION_MAX_ATTEMPT_COUNT);
 
         //do not perform penny testing
         if ($pennyTestingAttemptsCount >= $maxPennyTestCountAllowed)
@@ -3960,9 +4082,21 @@ class Core extends Base\Core
 
         $currentActivationStatus = $merchantDetails->getActivationStatus();
 
+        $currentActivationFlow = $merchantDetails->getActivationFlow();
+
+        if (empty($currentActivationFlow) === true and
+            $merchantDetails->canDetermineActivationFlow())
+        {
+            $currentActivationFlow = $this->getActivationFlow(
+                $merchantDetails->merchant, $merchantDetails, null, false);
+        }
+
+        $isWhitelisted = ($currentActivationFlow === ActivationFlow::WHITELIST);
+
         $isImpersonated = $this->dedupeCore->isMerchantImpersonated($merchantDetails->merchant);
 
-        if (($isImpersonated === false) and
+        if (($isWhitelisted === true) and
+            ($isImpersonated === false) and
             (in_array($currentActivationStatus, $excludeActivationStatusList) === false))
         {
             return Status::ACTIVATED_MCC_PENDING;
@@ -4354,7 +4488,7 @@ class Core extends Base\Core
     {
         $response = $this->createResponse($merchantDetails);
 
-        $requiredFields = $response[DEConstants::VERIFICATION][DEConstants::REQUIRED_FIELDS] ?? [];
+        $requiredFields = $response[DetailConstants::VERIFICATION][DetailConstants::REQUIRED_FIELDS] ?? [];
 
         $requiredDocuments = [];
 
@@ -4740,9 +4874,12 @@ class Core extends Base\Core
             }
         }
 
-        if ($activationFlow === ActivationFlow::BLACKLIST)
+        if ($merchant->isSignupCampaign(DDConstants::EASY_ONBOARDING) === false)
         {
-            return false;
+            if ($activationFlow === ActivationFlow::BLACKLIST)
+            {
+                return false;
+            }
         }
 
         if ($merchant->isLinkedAccount() === false)
@@ -5364,12 +5501,12 @@ class Core extends Base\Core
     {
         (new Validator())->validateInput('search_business_details', $input);
 
-        if (isset($input[DEConstants::SEARCH_STRING]) === false)
+        if (isset($input[DetailConstants::SEARCH_STRING]) === false)
         {
-            $input[DEConstants::SEARCH_STRING] = "";
+            $input[DetailConstants::SEARCH_STRING] = "";
         }
 
-        $inMemorySearch = new InMemoryBusinessSearch($input[DEConstants::SEARCH_STRING]);
+        $inMemorySearch = new InMemoryBusinessSearch($input[DetailConstants::SEARCH_STRING]);
 
         $response = $inMemorySearch->searchString();
 
@@ -5411,7 +5548,7 @@ class Core extends Base\Core
         try
         {
             $companySearchList =
-                $bvsCore->probeCompanySearch($input[DEConstants::SEARCH_STRING]);
+                $bvsCore->probeCompanySearch($input[DetailConstants::SEARCH_STRING]);
         }
         catch (\Exception $e)
         {
@@ -5423,7 +5560,7 @@ class Core extends Base\Core
                                          Trace::ERROR,
                                          TraceCode::MERCHANT_COMPANY_SEARCH_FAILED,
                                          [
-                                             DEConstants::SEARCH_STRING => $input[DEConstants::SEARCH_STRING]
+                                             DetailConstants::SEARCH_STRING => $input[DetailConstants::SEARCH_STRING]
                                          ]);
         }
 
@@ -5513,7 +5650,7 @@ class Core extends Base\Core
                                          Trace::ERROR,
                                          TraceCode::GET_GST_DETAILS_FAILED,
                                          [
-                                             DEConstants::MERCHANT_ID => $this->merchant->getId()]);
+                                             DetailConstants::MERCHANT_ID => $this->merchant->getId()]);
         }
 
         return [Constant::RESULTS => $gstDetails];
@@ -5551,6 +5688,11 @@ class Core extends Base\Core
         $subcategoryMetaData = BusinessSubCategoryMetaData::getSubCategoryMetaData($category, $subcategory);
 
         $activationFlow = $subcategoryMetaData[Entity::ACTIVATION_FLOW];
+
+        if ($merchantDetails->isUnregisteredBusiness() === true)
+        {
+            $activationFlow = $subcategoryMetaData[BusinessSubCategoryMetaData::NON_REGISTERED_ACTIVATION_FLOW];
+        }
 
         //
         // If activation flow is blacklisted we need not to update that
@@ -5998,7 +6140,7 @@ class Core extends Base\Core
     {
         $org = $merchant->getOrgId() ?: $this->app['basicauth']->getOrgId();
 
-        if (array_key_exists($org, DEConstants::TNC_ORG_ID_EXP_MAP) === false)
+        if (array_key_exists($org, DetailConstants::TNC_ORG_ID_EXP_MAP) === false)
         {
             return false;
         }
@@ -6014,7 +6156,7 @@ class Core extends Base\Core
             return false;
         }
 
-        $experimentName = DEConstants::TNC_ORG_ID_EXP_MAP[$org];
+        $experimentName = DetailConstants::TNC_ORG_ID_EXP_MAP[$org];
 
         if ((new Merchant\Core())->isRazorxExperimentEnable(
                 $merchant->getId(),
@@ -6043,11 +6185,11 @@ class Core extends Base\Core
 
         if ($entity->isLocked() === true)
         {
-            $commonFields = DEConstants::COMMON_FIELDS_WITH_PARTNER_ACTIVATION[Constants::DEFAULT];
+            $commonFields = DetailConstants::COMMON_FIELDS_WITH_PARTNER_ACTIVATION[Constants::DEFAULT];
 
-            if (isset(DEConstants::COMMON_FIELDS_WITH_PARTNER_ACTIVATION[$businessType]) === true)
+            if (isset(DetailConstants::COMMON_FIELDS_WITH_PARTNER_ACTIVATION[$businessType]) === true)
             {
-                $commonFields = DEConstants::COMMON_FIELDS_WITH_PARTNER_ACTIVATION[$businessType];
+                $commonFields = DetailConstants::COMMON_FIELDS_WITH_PARTNER_ACTIVATION[$businessType];
             }
         }
         else

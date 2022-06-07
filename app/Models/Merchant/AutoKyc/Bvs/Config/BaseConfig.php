@@ -14,6 +14,8 @@ class BaseConfig implements BvsConfig
 
     protected $rule_v2 = [];
 
+    protected $fetchDetailsRule = [];
+
     protected $input;
 
     public function __construct(array $input = [])
@@ -53,5 +55,15 @@ class BaseConfig implements BvsConfig
         assertTrue(empty($this->enrichmentDetails) === false);
 
         return $this->enrichmentDetails;
+    }
+
+    /**
+     * @throws \RZP\Exception\AssertionException
+     */
+    public function getFetchDetailsRule(): array
+    {
+        assertTrue(empty($this->fetchDetailsRule) === false);
+
+        return $this->fetchDetailsRule;
     }
 }

@@ -9,6 +9,24 @@ class Personal_pan extends BaseConfig
             'required_fields' => [
                 'name'
             ],
+            'enrichment_details_fields' => [
+                'online_provider.details.name.value'
+            ]
+        ],
+    ];
+
+    protected $fetchDetailsRule = [
+        'version'    => 'v2',
+        'rules_list' => [
+            '0' => [
+                'rule_type' => 'string_comparison_rule',
+                'rule_def' => [
+                    '===' => [
+                        '1',
+                        '1'
+                    ]
+                ]
+            ],
         ],
     ];
 

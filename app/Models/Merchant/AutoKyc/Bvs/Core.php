@@ -3,7 +3,7 @@
 namespace RZP\Models\Merchant\AutoKyc\Bvs;
 
 use App;
-use RZP\Models\Merchant\Document\Entity as DocumentEntity;
+
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
@@ -16,13 +16,15 @@ use RZP\Exception\IntegrationException;
 use RZP\Models\Merchant\Store\ConfigKey;
 use RZP\Models\Merchant\Store\Constants;
 use RZP\Models\Merchant\AutoKyc\Response;
+use Rzp\Bvs\Validation\V1\ValidationResponse;
 use RZP\Models\Merchant\Store\Core as StoreCore;
-use RZP\Models\Merchant\MerchantActionNotification;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
+use RZP\Models\Merchant\Document\Entity as DocumentEntity;
 use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Models\Merchant\AutoKyc\Bvs\BvsClient\BvsProbeClient;
 use RZP\Models\Merchant\AutoKyc\Bvs\ProbeMocks\CompanySearchMock;
 use RZP\Models\Merchant\AutoKyc\Bvs\ProbeMocks\GetGstDetailsMock;
+use RZP\Models\Merchant\AutoKyc\Bvs\BaseResponse\ValidationBaseResponse;
 use RZP\Models\Merchant\AutoKyc\Bvs\BaseResponse\CompanySearchBaseResponse;
 use RZP\Models\Merchant\AutoKyc\Bvs\BaseResponse\GetGstDetailsBaseResponse;
 use RZP\Models\Merchant\AutoKyc\Bvs\BaseResponse\GetGstDetailsArtefactCuratorBaseResponse;
@@ -122,6 +124,46 @@ class Core extends Base\Core
         }
 
         return $validation;
+    }
+
+    public function fetchEnrichmentDetails(string $ownerId, array $input): Response
+    {
+        $input[Constant::OWNER_ID] = $ownerId;
+
+        $validationTriggeringSuccess = true;
+
+        $response = null;
+
+        $this->trace->info(TraceCode::BVS_VERIFICATION_FETCH_REQUEST, [
+            'owner_id' => $ownerId,
+            'input'    => Arr::except($input, Constant::MASKED_KEYS_FOR_LOGGING)]);
+
+        try
+        {
+            $processor = (new Factory())->getProcessor($input, $this->merchant);
+
+            $sendEnrichmentDetails = true;
+
+            $response = $processor->Process($sendEnrichmentDetails);
+
+        }
+        catch (\Exception $ex)
+        {
+            $validationTriggeringSuccess = false;
+
+            $this->trace->traceException($ex);
+        }
+        finally
+        {
+            $dimension = [
+                Constant::ARTEFACT_TYPE => $input[Constant::ARTEFACT_TYPE] ?? '',
+                Constant::SUCCESS       => $validationTriggeringSuccess,
+            ];
+
+            $this->trace->count(Metric::BVS_ARTEFACT_VERIFICATION_TRIGGER, $dimension);
+        }
+
+        return $response ?? new ValidationBaseResponse(new ValidationResponse());
     }
 
     /**

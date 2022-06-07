@@ -35,12 +35,22 @@ class ValidationBaseResponseV2 implements Response
         }
     }
 
-    public function getResponseData()
+    public function getResponseData($enrichmentDetails = false)
     {
         $responseData = [
             Entity::VALIDATION_ID     => $this->response->getValidationId(),
             Entity::VALIDATION_STATUS => $this->response->getStatus(),
         ];
+
+        if ($enrichmentDetails === true)
+        {
+            if (empty($this->response->getEnrichmentDetails()) === false)
+            {
+                $enrichmentDetails = json_decode($this->response->getEnrichmentDetails()->serializeToJsonString(), true);
+
+                $responseData[Constant::ENRICHMENTS] = $enrichmentDetails;
+            }
+        }
 
         if ($this->response->getErrorCode() !== null)
         {

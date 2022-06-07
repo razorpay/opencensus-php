@@ -581,7 +581,7 @@ class BusinessCategory
 
     public static function getWhitelistedSubCategory(string $category)
     {
-        if(isset(self::SUBCATEGORY_MAP[$category]) === true)
+        if (isset(self::SUBCATEGORY_MAP[$category]) === true)
         {
             $subCategories = self::SUBCATEGORY_MAP[$category];
 

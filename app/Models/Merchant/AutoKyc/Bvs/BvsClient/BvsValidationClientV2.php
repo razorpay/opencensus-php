@@ -34,9 +34,9 @@ class BvsValidationClientV2 extends BaseClient
      *
      * @param null $merchant
      * @param bool $sync
-     * @param int  $timeout
+     * @param int $timeout
      */
-    function __construct($merchant = null, $sync = false,$timeout=2)
+    function __construct($merchant = null, $sync = false, int $timeout = 2)
     {
         parent::__construct($merchant, $sync);
 
@@ -183,7 +183,7 @@ class BvsValidationClientV2 extends BaseClient
     {
         $createValidation = new validationV2\CreateValidationRequest();
 
-        $artefact = $this->NewArtefact($validation[Constant::ARTEFACT]);;
+        $artefact = $this->NewArtefact($validation[Constant::ARTEFACT]);
 
         $createValidation->setArtefact($artefact);
 

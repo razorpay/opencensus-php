@@ -45,9 +45,8 @@ class DefaultProcessorMock extends DefaultProcessor
         $this->setMockValidationDetail($this->app['config']['services.bvs.validationDetail'] ?? []);
     }
 
-    public function Process(): Response
+    public function Process($sendEnrichmentDetails = false): Response
     {
-
         $app = \App::getFacadeRoot();
 
         if ($app->runningUnitTests() === true)

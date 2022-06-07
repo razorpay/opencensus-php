@@ -43,4 +43,11 @@ class Repository extends Base\Repository
             ->where($merchantUserRoleColumn, '=', $role)
             ->first();
     }
+
+    public function fetchByUserId(string $userId)
+    {
+        return $this->newQuery()
+            ->where(Entity::USER_ID, '=', $userId)
+            ->first();
+    }
 }

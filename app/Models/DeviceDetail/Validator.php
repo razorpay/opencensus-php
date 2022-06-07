@@ -11,6 +11,7 @@ class Validator extends Base\Validator
         Entity::USER_ID                => 'required|string|size:14',
         Entity::APPSFLYER_ID           => 'string|required_if:signup_source,ios,android',
         Entity::SIGNUP_SOURCE          => 'sometimes|string|nullable',
+        Entity::SIGNUP_CAMPAIGN        => 'sometimes|string|nullable',
     ];
 
     protected static $editRules = [
@@ -18,6 +19,7 @@ class Validator extends Base\Validator
         Entity::USER_ID                => 'required|string|size:14',
         Entity::APPSFLYER_ID           => 'string|required_if:signup_source,ios,android',
         Entity::SIGNUP_SOURCE          => 'sometimes|string|nullable',
+        Entity::SIGNUP_CAMPAIGN        => 'sometimes|string|nullable',
     ];
 
     protected static $appsFlyerIdInputRules = [

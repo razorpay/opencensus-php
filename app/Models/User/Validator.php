@@ -18,6 +18,7 @@ use Illuminate\Hashing\BcryptHasher;
 use RZP\Exception\BadRequestException;
 use libphonenumber\NumberParseException;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\Merchant\BusinessDetail\Constants as BDConstants;
 
 /**
  * Class Validator
@@ -91,6 +92,10 @@ class Validator extends Base\Validator
         Entity::CAPTCHA_DISABLE                 => 'sometimes|string',
         Entity::OTP                             => 'required|string|between:4,6',
         Merchant\Constants::PARTNER_INTENT      => 'sometimes|boolean',
+        BDConstants::PHYSICAL_STORE             => 'sometimes|boolean',
+        BDConstants::SOCIAL_MEDIA               => 'sometimes|boolean',
+        BDConstants::WEBSITE_OR_APP             => 'sometimes|boolean',
+        BDConstants::OTHERS                     => 'sometimes|string',
     ];
 
     protected static $createOauthRules = [

@@ -102,7 +102,7 @@ class Metadata extends \Google\Protobuf\Internal\Message
      */
     public function getActor()
     {
-        return isset($this->actor) ? $this->actor : null;
+        return $this->actor;
     }
 
     public function hasActor()

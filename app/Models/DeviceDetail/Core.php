@@ -41,7 +41,7 @@ class Core extends Base\Core
                 );
                 $deviceDetails = $this->createDeviceDetail($input);
             }
-            else if($deviceDetails->getAppsFlyerId() == null)
+            else if ($deviceDetails->getAppsFlyerId() == null)
             {
                 $deviceDetails->edit($input, 'edit');
 

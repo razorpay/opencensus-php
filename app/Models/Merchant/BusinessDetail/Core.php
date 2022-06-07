@@ -37,7 +37,7 @@ class Core extends Base\Core
 
                     if (empty($input[BusinessDetailEntity::WEBSITE_DETAILS]) === false)
                     {
-                        $input[BusinessDetailEntity::WEBSITE_DETAILS] = $this->mergeJson($businessDetail->getWebsiteDetails(), $input[BusinessDetailEntity::WEBSITE_DETAILS]);
+                        $input[BusinessDetailEntity::WEBSITE_DETAILS] = $this->mergeJson(BusinessDetailEntity::getDefaultWebsiteDetails(), $input[BusinessDetailEntity::WEBSITE_DETAILS]);
                     }
 
                     if (empty($input[BusinessDetailEntity::APP_URLS]) === false)

@@ -37,7 +37,14 @@ class ConfigKey
     const GET_GST_DETAILS_FROM_BVS_ATTEMPT_COUNT  = 'get_gst_details_from_bvs_attempt_count';
     const BANK_ACCOUNT_VERIFICATION_ATTEMPT_COUNT = 'bank_account_verification_attempt_count';
 
+    const GET_PROMOTER_PAN_DETAILS_FROM_BVS_ATTEMPT_COUNT  = 'get_promoter_pan_details_from_bvs_attempt_count';
+    const GET_COMPANY_PAN_DETAILS_FROM_BVS_ATTEMPT_COUNT   = 'get_company_pan_details_from_bvs_attempt_count';
+
+    const BUSINESS_NAME_SUGGESTED                          = 'business_name_suggested';
+    const PROMOTER_PAN_NAME_SUGGESTED                      = 'promoter_pan_name_suggested';
+
     const NO_DOC_ONBOARDING_INFO = 'no_doc_onboarding_info';
+
     /*
      * config that defines which key belongs to which namespace
      * Read : tells who can view the data. if it is empty it is public
@@ -115,6 +122,20 @@ class ConfigKey
                 Constants::TTL   => Constants::GET_GST_DETAILS_FROM_BVS_ATTEMPT_COUNT_TTL_IN_SECONDS
             ],
 
+            self::GET_PROMOTER_PAN_DETAILS_FROM_BVS_ATTEMPT_COUNT => [
+                Constants::STORE => Constants::REDIS,
+                Constants::READ  => [Constants::INTERNAL],
+                Constants::WRITE => [Constants::INTERNAL],
+                Constants::TTL   => Constants::GET_PAN_DETAILS_FROM_BVS_ATTEMPT_COUNT_TTL_IN_SECONDS
+            ],
+
+            self::GET_COMPANY_PAN_DETAILS_FROM_BVS_ATTEMPT_COUNT => [
+                Constants::STORE => Constants::REDIS,
+                Constants::READ  => [Constants::INTERNAL],
+                Constants::WRITE => [Constants::INTERNAL],
+                Constants::TTL   => Constants::GET_PAN_DETAILS_FROM_BVS_ATTEMPT_COUNT_TTL_IN_SECONDS
+            ],
+
             self::BANK_ACCOUNT_VERIFICATION_ATTEMPT_COUNT => [
                 Constants::STORE => Constants::REDIS,
                 Constants::WRITE => [Constants::INTERNAL],
@@ -126,6 +147,20 @@ class ConfigKey
                 Constants::READ  => [Constants::INTERNAL],
                 Constants::WRITE => [Constants::INTERNAL],
                 Constants::TTL   => Constants::STORE_MERCHANT_DETAILS_TTL_IN_SECONDS
+            ],
+
+            self::BUSINESS_NAME_SUGGESTED => [
+                Constants::STORE => Constants::REDIS,
+                Constants::READ  => [Constants::INTERNAL],
+                Constants::WRITE => [Constants::INTERNAL],
+                Constants::TTL   => Constants::BVS_SUGGESTED_NAMES_TTL_IN_SECONDS
+            ],
+
+            self::PROMOTER_PAN_NAME_SUGGESTED => [
+                Constants::STORE => Constants::REDIS,
+                Constants::READ  => [Constants::INTERNAL],
+                Constants::WRITE => [Constants::INTERNAL],
+                Constants::TTL   => Constants::BVS_SUGGESTED_NAMES_TTL_IN_SECONDS
             ],
             self::IS_PAYMENT_HANDLE_ONBOARDING_INITIATED => [
                 Constants::STORE => Constants::REDIS,

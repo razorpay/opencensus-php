@@ -103,6 +103,17 @@ abstract class Base implements RequestDispatcher
         }
     }
 
+    public function fetchEnrichmentDetails(): AutoKyc\Response
+    {
+        $payload = $this->getRequestPayload();
+
+        $ownerId = $this->merchantDetails->getEntityId();
+
+        $payload[Constant::OWNER_TYPE] = Constant::MERCHANT;
+
+        return (new AutoKyc\Bvs\Core($this->merchant, $this->merchantDetails))->fetchEnrichmentDetails($ownerId, $payload);
+    }
+
     public function fetchValidationDetails($validationId = null)
     {
         $input = $this->getRequestPayload();

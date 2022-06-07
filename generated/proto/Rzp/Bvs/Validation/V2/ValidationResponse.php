@@ -151,7 +151,7 @@ class ValidationResponse extends \Google\Protobuf\Internal\Message
      */
     public function getEnrichmentDetails()
     {
-        return isset($this->enrichment_details) ? $this->enrichment_details : null;
+        return $this->enrichment_details;
     }
 
     public function hasEnrichmentDetails()
@@ -183,7 +183,7 @@ class ValidationResponse extends \Google\Protobuf\Internal\Message
      */
     public function getRuleExecutionList()
     {
-        return isset($this->rule_execution_list) ? $this->rule_execution_list : null;
+        return $this->rule_execution_list;
     }
 
     public function hasRuleExecutionList()

@@ -1041,11 +1041,17 @@ class UserTest extends TestCase
 
         $userRepoMock = Mockery::mock('RZP\Models\User\Repository');
 
-        $merchantUserRepoMock = Mockery::mock('RZP\Models\Merchant\MerchantUser') ;
+        $merchantUserRepoMock = Mockery::mock('RZP\Models\Merchant\MerchantUser');
+
+        $deviceDetailMock = Mockery::mock('RZP\Models\DeviceDetail\Repository');
+
+        $deviceDetailMock->shouldReceive('fetchByUserId')->andReturn('');
 
         $this->repoMock->shouldReceive('driver')->with('user')->andReturn($userRepoMock);
 
         $this->repoMock->shouldReceive('driver')->with('merchant_user')->andReturn($merchantUserRepoMock);
+
+        $this->repoMock->shouldReceive('driver')->with('user_device_detail')->andReturn($deviceDetailMock);
 
         $merchantUserRepoMock->shouldReceive('fetchBankingSignUpTimeStamp')->andReturn(21323);
 

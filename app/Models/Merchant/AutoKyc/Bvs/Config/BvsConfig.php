@@ -20,4 +20,10 @@ interface BvsConfig
      * @return array
      */
     public function getEnrichmentDetails();
+
+    /**
+     * @return array
+     */
+
+    public function getFetchDetailsRule(): array;
 }

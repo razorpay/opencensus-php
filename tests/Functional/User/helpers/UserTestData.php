@@ -4754,6 +4754,35 @@ return [
         ]
     ],
 
+    'testUserRegisterVerifySignupOtpSmsEasyOnboarding' => [
+        'request' => [
+            'url'     => '/users/register/otp/verify',
+            'method'  => 'POST',
+            'content' => [
+                'contact_mobile'        => '8877665544',
+                'captcha'               => 'faked',
+                'token'                 => 'token',
+                'otp'                   => '0007',
+                'physical_store'        => true,
+                'social_media'          => true,
+                'live_website_or_app'   => false,
+                'others'                => "others",
+                'signup_campaign'       => 'easy_onboarding'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'contact_mobile'            => '8877665544',
+                'signup_via_email'          => 0,
+                'confirmed'                 => false,
+                'email_verified'            => false,
+                'contact_mobile_verified'   => true,
+                'email'                     => null,
+                'signup_campaign'           => 'easy_onboarding'
+            ]
+        ]
+    ],
+
     'testUserRegisterVerifySignupOtpEmail' => [
         'request' => [
             'url'     => '/users/register/otp/verify',

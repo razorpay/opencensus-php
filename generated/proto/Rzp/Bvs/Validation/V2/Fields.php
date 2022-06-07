@@ -21,6 +21,10 @@ class Fields extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>string probe_id = 2;</code>
      */
     protected $probe_id = '';
+    /**
+     * Generated from protobuf field <code>repeated string enrichment_details_fields = 3;</code>
+     */
+    private $enrichment_details_fields;
 
     /**
      * Constructor.
@@ -30,6 +34,7 @@ class Fields extends \Google\Protobuf\Internal\Message
      *
      *     @type string[]|\Google\Protobuf\Internal\RepeatedField $required_fields
      *     @type string $probe_id
+     *     @type string[]|\Google\Protobuf\Internal\RepeatedField $enrichment_details_fields
      * }
      */
     public function __construct($data = NULL) {
@@ -77,6 +82,28 @@ class Fields extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkString($var, True);
         $this->probe_id = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>repeated string enrichment_details_fields = 3;</code>
+     * @return \Google\Protobuf\Internal\RepeatedField
+     */
+    public function getEnrichmentDetailsFields()
+    {
+        return $this->enrichment_details_fields;
+    }
+
+    /**
+     * Generated from protobuf field <code>repeated string enrichment_details_fields = 3;</code>
+     * @param string[]|\Google\Protobuf\Internal\RepeatedField $var
+     * @return $this
+     */
+    public function setEnrichmentDetailsFields($var)
+    {
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::STRING);
+        $this->enrichment_details_fields = $arr;
 
         return $this;
     }

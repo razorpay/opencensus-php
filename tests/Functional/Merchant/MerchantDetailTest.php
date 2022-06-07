@@ -2366,6 +2366,34 @@ Team Razorpay', '1234567890');
 
         $this->startTest();
     }
+    /**
+     * The merchant tries to update the fields critical to instant activations after he has been activated after onboarding with easy dashboard
+     */
+    public function testUpdateCriticalFieldsPostActivationEasyOnboarding()
+    {
+        $attributes = [
+            MerchantDetails::BUSINESS_SUBCATEGORY => BusinessSubcategory::MUTUAL_FUND,
+            MerchantDetails::BUSINESS_CATEGORY    => BusinessCategory::FINANCIAL_SERVICES,
+        ];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', $attributes);
+
+        $merchantId = $merchantDetail['merchant_id'];
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id' => $merchantId,
+            'user_id' => $merchantUser->getId(),
+            'signup_campaign' => 'easy_onboarding'
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+
+        $this->fixtures->merchant->activate($merchantId);
+
+        $this->startTest();
+    }
 
     /**
      * The merchant tries to update the fields not critical to instant activations after he has been activated.
@@ -2453,6 +2481,52 @@ Team Razorpay', '1234567890');
                                                          'business_proof_url',
                                                          'promoter_address_url'
                                                      ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+
+        $this->startTest();
+    }
+
+    public function testBlacklistActivationFlowEasyOnboarding()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', [
+            MerchantDetails::ACTIVATION_FLOW => ActivationFlow::BLACKLIST
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id' => $merchantDetail->getMerchantId(),
+            'user_id' => $merchantUser->getId(),
+            'signup_campaign' => 'easy_onboarding'
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+
+        $this->startTest();
+
+        $merchant = $this->getDbLastEntity('merchant');
+
+        $merchantDetail = $this->getDbLastEntity('merchant_detail');
+
+        $this->assertTrue($merchantDetail['locked']);
+
+        $this->assertFalse($merchant['live']);
+
+        $this->assertFalse($merchant['activated']);
+
+        $this->assertTrue($merchant['hold_funds']);
+    }
+
+    public function testBlacklistActivationFlowCanSubmit()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', [
+            MerchantDetails::ACTIVATION_FLOW => ActivationFlow::BLACKLIST,
+            MerchantDetails::BUSINESS_CATEGORY => BusinessCategory::ECOMMERCE,
+            MerchantDetails::BUSINESS_SUBCATEGORY => BusinessSubcategory::WEAPONS_AND_AMMUNITIONS,
+        ]);
 
         $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
 

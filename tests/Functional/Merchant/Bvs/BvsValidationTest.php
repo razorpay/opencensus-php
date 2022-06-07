@@ -219,7 +219,10 @@ class BvsValidationTest extends TestCase
     {
         $this->enableRazorXTreatmentForBvsValidation();
 
-        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields');
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', [
+            'business_category'         => 'financial_services',
+            'business_subcategory'      => 'accounting',
+        ]);
 
         $mid = $merchantDetail->getId();
 
@@ -327,7 +330,10 @@ class BvsValidationTest extends TestCase
     {
         $this->enableRazorXTreatmentForBvsValidation();
 
-        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields');
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', [
+            'business_category'         => 'financial_services',
+            'business_subcategory'      => 'accounting',
+        ]);
 
         $mid = $merchantDetail->getId();
 
@@ -772,6 +778,14 @@ class BvsValidationTest extends TestCase
         $test                = 'testCreateBvsValidationPoa';
 
         $this->createAndFetchMocks(true);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($mid);
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id' => $mid,
+            'user_id' => $merchantUser->getId(),
+            'signup_campaign' => 'easy_onboarding'
+        ]);
 
         $this->updateUploadDocumentData($test);
 

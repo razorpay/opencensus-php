@@ -79,6 +79,16 @@ class BvsVerificationTest extends TestCase
             Detail\Entity::BUSINESS_TYPE => BusinessType::getIndexFromKey($businessType),
         ]);
 
+        $merchantId = $merchantDetail->getMerchantId();
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id' => $merchantId,
+            'user_id' => $merchantUser->getId(),
+            'signup_campaign' => 'easy_onboarding'
+        ]);
+
         return [$merchantDetail];
     }
 
@@ -98,6 +108,16 @@ class BvsVerificationTest extends TestCase
             Detail\Entity::COMPANY_PAN                     => "BRRPK8070K",
             Detail\Entity::COMPANY_PAN_VERIFICATION_STATUS => "pending",
             Detail\Entity::BUSINESS_TYPE                   => BusinessType::getIndexFromKey($businessType),
+        ]);
+
+        $merchantId = $merchantDetail->getMerchantId();
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id' => $merchantId,
+            'user_id' => $merchantUser->getId(),
+            'signup_campaign' => 'easy_onboarding'
         ]);
 
         return [$merchantDetail];
@@ -120,6 +140,15 @@ class BvsVerificationTest extends TestCase
             'bank_branch_ifsc'                 => 'HDFC0000930',
             'bank_account_number'              => '1234567890', ]);
 
+        $merchantId = $merchantDetail->getMerchantId();
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id' => $merchantId,
+            'user_id' => $merchantUser->getId(),
+            'signup_campaign' => 'easy_onboarding'
+        ]);
 
         return [$merchantDetail];
     }
@@ -137,6 +166,15 @@ class BvsVerificationTest extends TestCase
             Detail\Entity::CIN_VERIFICATION_STATUS   => 'not_matched',
         ]);
 
+        $merchantId = $merchantDetail->getMerchantId();
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id' => $merchantId,
+            'user_id' => $merchantUser->getId(),
+            'signup_campaign' => 'easy_onboarding'
+        ]);
 
         return [$merchantDetail];
     }
@@ -151,7 +189,7 @@ class BvsVerificationTest extends TestCase
         [$detailCore] = $this->createAndFetchMocks(true);
         [$merchantDetail] = $this->createAndFetchFixturesL2(BusinessType::PROPRIETORSHIP);
 
-        $this->app->instance("rzp.mode", Mode::LIVE);
+        $this->app->instance("rzp.mode", Mode::TEST);
         // Submit L2 form
         $detailCore->saveMerchantDetails(["submit" => "1"], $merchantDetail->merchant);
 
@@ -173,7 +211,7 @@ class BvsVerificationTest extends TestCase
         [$detailCore] = $this->createAndFetchMocks(false);
         [$merchantDetail] = $this->createAndFetchFixturesL2(BusinessType::HUF);
 
-        $this->app->instance("rzp.mode", Mode::LIVE);
+        $this->app->instance("rzp.mode", Mode::TEST);
         // Submit L2 form
         $detailCore->saveMerchantDetails(["submit" => "1"], $merchantDetail->merchant);
 
@@ -196,7 +234,7 @@ class BvsVerificationTest extends TestCase
         [$detailCore] = $this->createAndFetchMocks(false);
         [$merchantDetail] = $this->createAndFetchFixturesL2(BusinessType::HUF);
 
-        $this->app->instance("rzp.mode", Mode::LIVE);
+        $this->app->instance("rzp.mode", Mode::TEST);
         // Submit L2 form
         $detailCore->saveMerchantDetails(["submit" => "1"], $merchantDetail->merchant);
 
@@ -220,7 +258,7 @@ class BvsVerificationTest extends TestCase
         [$detailCore] = $this->createAndFetchMocks(true);
         [$merchantDetail] = $this->createAndFetchFixturesL2(BusinessType::HUF);
 
-        $this->app->instance("rzp.mode", Mode::LIVE);
+        $this->app->instance("rzp.mode", Mode::TEST);
         // Submit L2 form
         $detailCore->saveMerchantDetails(["submit" => "1"], $merchantDetail->merchant);
 
@@ -244,7 +282,7 @@ class BvsVerificationTest extends TestCase
         [$detailCore] = $this->createAndFetchMocks(false);
         [$merchantDetail] = $this->createAndFetchFixturesL2(BusinessType::HUF);
 
-        $this->app->instance("rzp.mode", Mode::LIVE);
+        $this->app->instance("rzp.mode", Mode::TEST);
         // Submit L2 form
         $detailCore->saveMerchantDetails(["submit" => "1"], $merchantDetail->merchant);
 
@@ -268,7 +306,7 @@ class BvsVerificationTest extends TestCase
         [$detailCore] = $this->createAndFetchMocks(false);
         [$merchantDetail] = $this->createAndFetchFixturesL2(BusinessType::PROPRIETORSHIP);
 
-        $this->app->instance("rzp.mode", Mode::LIVE);
+        $this->app->instance("rzp.mode", Mode::TEST);
         // Submit L2 form
         $detailCore->saveMerchantDetails(["submit" => "1"], $merchantDetail->merchant);
 
@@ -291,7 +329,7 @@ class BvsVerificationTest extends TestCase
         [$detailCore] = $this->createAndFetchMocks(true);
         [$merchantDetail] = $this->createAndFetchFixtures(BusinessType::PROPRIETORSHIP);
 
-        $this->app->instance("rzp.mode", Mode::LIVE);
+        $this->app->instance("rzp.mode", Mode::TEST);
         // Submit L2 form
         $detailCore->saveMerchantDetails([Detail\Entity::GSTIN => "01AADCB1234M1ZX"], $merchantDetail->merchant);
 
@@ -314,7 +352,7 @@ class BvsVerificationTest extends TestCase
         [$detailCore] = $this->createAndFetchMocks(false);
         [$merchantDetail] = $this->createAndFetchFixtures(BusinessType::PROPRIETORSHIP);
 
-        $this->app->instance("rzp.mode", Mode::LIVE);
+        $this->app->instance("rzp.mode", Mode::TEST);
         // Submit L2 form
         $detailCore->saveMerchantDetails([Detail\Entity::GSTIN => "01AADCB1234M1ZX"], $merchantDetail->merchant);
 
@@ -338,7 +376,7 @@ class BvsVerificationTest extends TestCase
 
 
 
-        $this->app->instance("rzp.mode", Mode::LIVE);
+        $this->app->instance("rzp.mode", Mode::TEST);
         // Submit L2 form
         $detailCore->saveMerchantDetails([Detail\Entity::GSTIN => "01AADCB1234M1ZX"], $merchantDetail->merchant);
 
@@ -361,7 +399,7 @@ class BvsVerificationTest extends TestCase
         [$detailCore] = $this->createAndFetchMocks(false);
         [$merchantDetail] = $this->createAndFetchFixturesRetry(BusinessType::PROPRIETORSHIP);
 
-        $this->app->instance("rzp.mode", Mode::LIVE);
+        $this->app->instance("rzp.mode", Mode::TEST);
         // Submit L2 form
         $detailCore->saveMerchantDetails([Detail\Entity::GSTIN => "01AADCB1234M1ZX"], $merchantDetail->merchant);
 
@@ -384,7 +422,7 @@ class BvsVerificationTest extends TestCase
         [$detailCore] = $this->createAndFetchMocks(true);
         [$merchantDetail] = $this->createAndFetchFixturesNC(BusinessType::PROPRIETORSHIP);
 
-        $this->app->instance("rzp.mode", Mode::LIVE);
+        $this->app->instance("rzp.mode", Mode::TEST);
         // Submit L2 form
         $detailCore->saveMerchantDetails(["submit" => "1", Detail\Entity::GSTIN => "01AADCB1234M1ZX",
                                          ], $merchantDetail->merchant);
@@ -408,7 +446,7 @@ class BvsVerificationTest extends TestCase
         [$detailCore] = $this->createAndFetchMocks(false);
         [$merchantDetail] = $this->createAndFetchFixturesNC(BusinessType::PROPRIETORSHIP);
 
-        $this->app->instance("rzp.mode", Mode::LIVE);
+        $this->app->instance("rzp.mode", Mode::TEST);
         // Submit L2 form
         $detailCore->saveMerchantDetails(["submit" => "1", Detail\Entity::GSTIN => "01AADCB1234M1ZX",
                                          ], $merchantDetail->merchant);
@@ -433,7 +471,7 @@ class BvsVerificationTest extends TestCase
         [$detailCore] = $this->createAndFetchMocks(true);
         [$merchantDetail] = $this->createAndFetchFixturesL2(BusinessType::PRIVATE_LIMITED);
 
-        $this->app->instance("rzp.mode", Mode::LIVE);
+        $this->app->instance("rzp.mode", Mode::TEST);
         // Submit L2 form
         $detailCore->saveMerchantDetails(["submit" => "1"], $merchantDetail->merchant);
 
@@ -456,7 +494,7 @@ class BvsVerificationTest extends TestCase
         [$detailCore] = $this->createAndFetchMocks(false);
         [$merchantDetail] = $this->createAndFetchFixturesL2(BusinessType::PRIVATE_LIMITED);
 
-        $this->app->instance("rzp.mode", Mode::LIVE);
+        $this->app->instance("rzp.mode", Mode::TEST);
         // Submit L2 form
         $detailCore->saveMerchantDetails(["submit" => "1"], $merchantDetail->merchant);
 
@@ -479,7 +517,7 @@ class BvsVerificationTest extends TestCase
         [$detailCore] = $this->createAndFetchMocks(true);
         [$merchantDetail] = $this->createAndFetchFixtures(BusinessType::PRIVATE_LIMITED);
 
-        $this->app->instance("rzp.mode", Mode::LIVE);
+        $this->app->instance("rzp.mode", Mode::TEST);
         // Submit L2 form
         $detailCore->saveMerchantDetails([Detail\Entity::COMPANY_CIN => "U67190TN2014PTC096971"], $merchantDetail->merchant);
 
@@ -502,7 +540,7 @@ class BvsVerificationTest extends TestCase
         [$detailCore] = $this->createAndFetchMocks(false);
         [$merchantDetail] = $this->createAndFetchFixtures(BusinessType::PRIVATE_LIMITED);
 
-        $this->app->instance("rzp.mode", Mode::LIVE);
+        $this->app->instance("rzp.mode", Mode::TEST);
         // Submit L2 form
         $detailCore->saveMerchantDetails([Detail\Entity::COMPANY_CIN => "U67190TN2014PTC096971"], $merchantDetail->merchant);
 
@@ -524,7 +562,7 @@ class BvsVerificationTest extends TestCase
         [$detailCore] = $this->createAndFetchMocks(true);
         [$merchantDetail] = $this->createAndFetchFixturesRetry(BusinessType::PRIVATE_LIMITED);
 
-        $this->app->instance("rzp.mode", Mode::LIVE);
+        $this->app->instance("rzp.mode", Mode::TEST);
         // Submit L2 form
         $detailCore->saveMerchantDetails([Detail\Entity::COMPANY_CIN => "U67190TN2014PTC096971"], $merchantDetail->merchant);
 
@@ -547,7 +585,7 @@ class BvsVerificationTest extends TestCase
         [$detailCore] = $this->createAndFetchMocks(false);
         [$merchantDetail] = $this->createAndFetchFixturesRetry(BusinessType::PRIVATE_LIMITED);
 
-        $this->app->instance("rzp.mode", Mode::LIVE);
+        $this->app->instance("rzp.mode", Mode::TEST);
         // Submit L2 form
         $detailCore->saveMerchantDetails([Detail\Entity::COMPANY_CIN => "U67190TN2014PTC096971"], $merchantDetail->merchant);
 
@@ -569,7 +607,7 @@ class BvsVerificationTest extends TestCase
         [$detailCore] = $this->createAndFetchMocks(true);
         [$merchantDetail] = $this->createAndFetchFixturesNC(BusinessType::PRIVATE_LIMITED);
 
-        $this->app->instance("rzp.mode", Mode::LIVE);
+        $this->app->instance("rzp.mode", Mode::TEST);
         // Submit L2 form
         $detailCore->saveMerchantDetails(["submit" => "1", Detail\Entity::COMPANY_CIN => "U67190TN2014PTC096971",
                                          ], $merchantDetail->merchant);
@@ -592,7 +630,7 @@ class BvsVerificationTest extends TestCase
         [$detailCore] = $this->createAndFetchMocks(false);
         [$merchantDetail] = $this->createAndFetchFixturesNC(BusinessType::PRIVATE_LIMITED);
 
-        $this->app->instance("rzp.mode", Mode::LIVE);
+        $this->app->instance("rzp.mode", Mode::TEST);
         // Submit L2 form
         $detailCore->saveMerchantDetails(["submit" => "1", Detail\Entity::COMPANY_CIN => "U67190TN2014PTC096971",
                                          ], $merchantDetail->merchant);
@@ -617,7 +655,7 @@ class BvsVerificationTest extends TestCase
         [$detailCore] = $this->createAndFetchMocks(true);
         [$merchantDetail] = $this->createAndFetchFixturesL2(BusinessType::LLP);
 
-        $this->app->instance("rzp.mode", Mode::LIVE);
+        $this->app->instance("rzp.mode", Mode::TEST);
         // Submit L2 form
         $detailCore->saveMerchantDetails(["submit" => "1"], $merchantDetail->merchant);
 
@@ -640,7 +678,7 @@ class BvsVerificationTest extends TestCase
         [$detailCore] = $this->createAndFetchMocks(false);
         [$merchantDetail] = $this->createAndFetchFixturesL2(BusinessType::LLP);
 
-        $this->app->instance("rzp.mode", Mode::LIVE);
+        $this->app->instance("rzp.mode", Mode::TEST);
         // Submit L2 form
         $detailCore->saveMerchantDetails(["submit" => "1"], $merchantDetail->merchant);
 
@@ -663,7 +701,7 @@ class BvsVerificationTest extends TestCase
         [$detailCore] = $this->createAndFetchMocks(true);
         [$merchantDetail] = $this->createAndFetchFixtures(BusinessType::LLP);
 
-        $this->app->instance("rzp.mode", Mode::LIVE);
+        $this->app->instance("rzp.mode", Mode::TEST);
         // Submit L2 form
         $detailCore->saveMerchantDetails([Detail\Entity::COMPANY_CIN => "U67190TN2014PTC096971"], $merchantDetail->merchant);
 
@@ -686,7 +724,7 @@ class BvsVerificationTest extends TestCase
         [$detailCore] = $this->createAndFetchMocks(false);
         [$merchantDetail] = $this->createAndFetchFixtures(BusinessType::LLP);
 
-        $this->app->instance("rzp.mode", Mode::LIVE);
+        $this->app->instance("rzp.mode", Mode::TEST);
         // Submit L2 form
         $detailCore->saveMerchantDetails([Detail\Entity::COMPANY_CIN => "U67190TN2014PTC096971"], $merchantDetail->merchant);
 
@@ -707,7 +745,7 @@ class BvsVerificationTest extends TestCase
 
         [$detailCore] = $this->createAndFetchMocks(true);
         [$merchantDetail] = $this->createAndFetchFixturesRetry(BusinessType::LLP);
-        $this->app->instance("rzp.mode", Mode::LIVE);
+        $this->app->instance("rzp.mode", Mode::TEST);
         // Submit L2 form
         $detailCore->saveMerchantDetails([Detail\Entity::COMPANY_CIN => "U67190TN2014PTC096971"], $merchantDetail->merchant);
 
@@ -729,7 +767,7 @@ class BvsVerificationTest extends TestCase
         [$detailCore] = $this->createAndFetchMocks(false);
         [$merchantDetail] = $this->createAndFetchFixturesRetry(BusinessType::LLP);
 
-        $this->app->instance("rzp.mode", Mode::LIVE);
+        $this->app->instance("rzp.mode", Mode::TEST);
         // Submit L2 form
         $detailCore->saveMerchantDetails([Detail\Entity::COMPANY_CIN => "U67190TN2014PTC096971"], $merchantDetail->merchant);
 
@@ -751,7 +789,7 @@ class BvsVerificationTest extends TestCase
         [$detailCore] = $this->createAndFetchMocks(true);
         [$merchantDetail] = $this->createAndFetchFixturesNC(BusinessType::LLP);
 
-        $this->app->instance("rzp.mode", Mode::LIVE);
+        $this->app->instance("rzp.mode", Mode::TEST);
         // Submit L2 form
         $detailCore->saveMerchantDetails(["submit" => "1", Detail\Entity::COMPANY_CIN => "U67190TN2014PTC096971",
                                          ], $merchantDetail->merchant);
@@ -775,7 +813,7 @@ class BvsVerificationTest extends TestCase
         [$detailCore] = $this->createAndFetchMocks(false);
         [$merchantDetail] = $this->createAndFetchFixturesNC(BusinessType::LLP);
 
-        $this->app->instance("rzp.mode", Mode::LIVE);
+        $this->app->instance("rzp.mode", Mode::TEST);
         // Submit L2 form
         $detailCore->saveMerchantDetails(["submit" => "1", Detail\Entity::COMPANY_CIN => "U67190TN2014PTC096971",
                                          ], $merchantDetail->merchant);
@@ -801,7 +839,7 @@ class BvsVerificationTest extends TestCase
         [$detailCore] = $this->createAndFetchMocks(true);
         [$merchantDetail] = $this->createAndFetchFixturesL2(BusinessType::PROPRIETORSHIP);
 
-        $this->app->instance("rzp.mode", Mode::LIVE);
+        $this->app->instance("rzp.mode", Mode::TEST);
         // Submit L2 form
         $detailCore->saveMerchantDetails(["submit" => "1"], $merchantDetail->merchant);
 
@@ -826,7 +864,7 @@ class BvsVerificationTest extends TestCase
         [$detailCore] = $this->createAndFetchMocks(false);
         [$merchantDetail] = $this->createAndFetchFixturesL2(BusinessType::PROPRIETORSHIP);
 
-        $this->app->instance("rzp.mode", Mode::LIVE);
+        $this->app->instance("rzp.mode", Mode::TEST);
         // Submit L2 form
         $detailCore->saveMerchantDetails(["submit" => "1"], $merchantDetail->merchant);
 
@@ -850,7 +888,7 @@ class BvsVerificationTest extends TestCase
         [$detailCore] = $this->createAndFetchMocks(true);
         [$merchantDetail] = $this->createAndFetchFixtures(BusinessType::PROPRIETORSHIP);
 
-        $this->app->instance("rzp.mode", Mode::LIVE);
+        $this->app->instance("rzp.mode", Mode::TEST);
         // Submit L2 form
         $detailCore->saveMerchantDetails([Detail\Entity::PROMOTER_PAN      => "BRRPK8070K",
                                           Detail\Entity::PROMOTER_PAN_NAME => "vasanthi kakarla"], $merchantDetail->merchant);
@@ -875,7 +913,7 @@ class BvsVerificationTest extends TestCase
         [$detailCore] = $this->createAndFetchMocks(false);
         [$merchantDetail] = $this->createAndFetchFixtures(BusinessType::PROPRIETORSHIP);
 
-        $this->app->instance("rzp.mode", Mode::LIVE);
+        $this->app->instance("rzp.mode", Mode::TEST);
         // Submit L2 form
         $detailCore->saveMerchantDetails([Detail\Entity::PROMOTER_PAN      => "BRRPK8070K",
                                           Detail\Entity::PROMOTER_PAN_NAME => "vasanthi kakarla"], $merchantDetail->merchant);
@@ -900,7 +938,7 @@ class BvsVerificationTest extends TestCase
         [$detailCore] = $this->createAndFetchMocks(true);
         [$merchantDetail] = $this->createAndFetchFixturesRetry(BusinessType::PROPRIETORSHIP);
 
-        $this->app->instance("rzp.mode", Mode::LIVE);
+        $this->app->instance("rzp.mode", Mode::TEST);
         // Submit L2 form
         $detailCore->saveMerchantDetails([Detail\Entity::PROMOTER_PAN      => "BRRPK8070K",
                                           Detail\Entity::PROMOTER_PAN_NAME => "vasanthi kakarla"], $merchantDetail->merchant);
@@ -926,7 +964,7 @@ class BvsVerificationTest extends TestCase
         [$detailCore] = $this->createAndFetchMocks(false);
         [$merchantDetail] = $this->createAndFetchFixturesRetry(BusinessType::PROPRIETORSHIP);
 
-        $this->app->instance("rzp.mode", Mode::LIVE);
+        $this->app->instance("rzp.mode", Mode::TEST);
         // Submit L2 form
         $detailCore->saveMerchantDetails([
                                              Detail\Entity::PROMOTER_PAN      => "BRRPK8070K",
@@ -952,7 +990,7 @@ class BvsVerificationTest extends TestCase
         [$detailCore] = $this->createAndFetchMocks(true);
         [$merchantDetail] = $this->createAndFetchFixturesNC(BusinessType::PROPRIETORSHIP);
 
-        $this->app->instance("rzp.mode", Mode::LIVE);
+        $this->app->instance("rzp.mode", Mode::TEST);
         // Submit L2 form
         $detailCore->saveMerchantDetails(["submit"                         => "1",
                                           Detail\Entity::PROMOTER_PAN      => "BRRPK8070K",
@@ -979,7 +1017,7 @@ class BvsVerificationTest extends TestCase
         [$detailCore] = $this->createAndFetchMocks(false);
         [$merchantDetail] = $this->createAndFetchFixturesNC(BusinessType::PROPRIETORSHIP);
 
-        $this->app->instance("rzp.mode", Mode::LIVE);
+        $this->app->instance("rzp.mode", Mode::TEST);
         // Submit L2 form
         $detailCore->saveMerchantDetails(["submit"                         => "1",
                                           Detail\Entity::PROMOTER_PAN      => "BRRPK8070K",
@@ -1007,7 +1045,7 @@ class BvsVerificationTest extends TestCase
         [$detailCore] = $this->createAndFetchMocks(true);
         [$merchantDetail] = $this->createAndFetchFixturesL2(BusinessType::PRIVATE_LIMITED);
 
-        $this->app->instance("rzp.mode", Mode::LIVE);
+        $this->app->instance("rzp.mode", Mode::TEST);
         // Submit L2 form
         $detailCore->saveMerchantDetails(["submit" => "1"], $merchantDetail->merchant);
 
@@ -1031,7 +1069,7 @@ class BvsVerificationTest extends TestCase
         [$detailCore] = $this->createAndFetchMocks(false);
         [$merchantDetail] = $this->createAndFetchFixturesL2(BusinessType::PRIVATE_LIMITED);
 
-        $this->app->instance("rzp.mode", Mode::LIVE);
+        $this->app->instance("rzp.mode", Mode::TEST);
         // Submit L2 form
         $detailCore->saveMerchantDetails(["submit" => "1"], $merchantDetail->merchant);
 
@@ -1055,7 +1093,7 @@ class BvsVerificationTest extends TestCase
         [$detailCore] = $this->createAndFetchMocks(true);
         [$merchantDetail] = $this->createAndFetchFixtures(BusinessType::PRIVATE_LIMITED);
 
-        $this->app->instance("rzp.mode", Mode::LIVE);
+        $this->app->instance("rzp.mode", Mode::TEST);
         // Submit L2 form
         $detailCore->saveMerchantDetails([Detail\Entity::COMPANY_PAN      => "ABCCD1234A",
                                           Detail\Entity::COMPANY_PAN_NAME => "CHIZRINZ INFOWAY PRIVATE LIMITED"
@@ -1081,7 +1119,7 @@ class BvsVerificationTest extends TestCase
         [$detailCore] = $this->createAndFetchMocks(false);
         [$merchantDetail] = $this->createAndFetchFixtures(BusinessType::PRIVATE_LIMITED);
 
-        $this->app->instance("rzp.mode", Mode::LIVE);
+        $this->app->instance("rzp.mode", Mode::TEST);
         // Submit L2 form
         $detailCore->saveMerchantDetails([Detail\Entity::COMPANY_PAN      => "ABCCD1234A",
                                           Detail\Entity::COMPANY_PAN_NAME => "CHIZRINZ INFOWAY PRIVATE LIMITED"
@@ -1106,7 +1144,7 @@ class BvsVerificationTest extends TestCase
         [$detailCore] = $this->createAndFetchMocks(true);
         [$merchantDetail] = $this->createAndFetchFixturesRetry(BusinessType::PRIVATE_LIMITED);
 
-        $this->app->instance("rzp.mode", Mode::LIVE);
+        $this->app->instance("rzp.mode", Mode::TEST);
         // Submit L2 form
         $detailCore->saveMerchantDetails([Detail\Entity::COMPANY_PAN      => "ABCCD1234A",
                                           Detail\Entity::COMPANY_PAN_NAME => "CHIZRINZ INFOWAY PRIVATE LIMITED"
@@ -1132,7 +1170,7 @@ class BvsVerificationTest extends TestCase
         [$detailCore] = $this->createAndFetchMocks(false);
         [$merchantDetail] = $this->createAndFetchFixturesRetry(BusinessType::PRIVATE_LIMITED);
 
-        $this->app->instance("rzp.mode", Mode::LIVE);
+        $this->app->instance("rzp.mode", Mode::TEST);
         // Submit L2 form
         $detailCore->saveMerchantDetails([
                                              Detail\Entity::COMPANY_PAN      => "ABCCD1234A",
@@ -1158,7 +1196,7 @@ class BvsVerificationTest extends TestCase
         [$detailCore] = $this->createAndFetchMocks(true);
         [$merchantDetail] = $this->createAndFetchFixturesNC(BusinessType::PRIVATE_LIMITED);
 
-        $this->app->instance("rzp.mode", Mode::LIVE);
+        $this->app->instance("rzp.mode", Mode::TEST);
         // Submit L2 form
         $detailCore->saveMerchantDetails(["submit"                        => "1",
                                           Detail\Entity::COMPANY_PAN      => "ABCCD1234A",
@@ -1183,7 +1221,7 @@ class BvsVerificationTest extends TestCase
         [$detailCore] = $this->createAndFetchMocks(false);
         [$merchantDetail] = $this->createAndFetchFixturesNC(BusinessType::PRIVATE_LIMITED);
 
-        $this->app->instance("rzp.mode", Mode::LIVE);
+        $this->app->instance("rzp.mode", Mode::TEST);
         // Submit L2 form
         $detailCore->saveMerchantDetails(["submit"                        => "1",
                                           Detail\Entity::COMPANY_PAN      => "ABCCD1234A",
@@ -1213,7 +1251,7 @@ class BvsVerificationTest extends TestCase
         [$detailCore] = $this->createAndFetchMocks(true);
         [$merchantDetail] = $this->createAndFetchFixturesL2(BusinessType::PRIVATE_LIMITED);
 
-        $this->app->instance("rzp.mode", Mode::LIVE);
+        $this->app->instance("rzp.mode", Mode::TEST);
         // Submit L2 form
         $detailCore->saveMerchantDetails(["submit" => "1"], $merchantDetail->merchant);
 
@@ -1237,7 +1275,7 @@ class BvsVerificationTest extends TestCase
         [$detailCore] = $this->createAndFetchMocks(false);
         [$merchantDetail] = $this->createAndFetchFixturesL2(BusinessType::PRIVATE_LIMITED);
 
-        $this->app->instance("rzp.mode", Mode::LIVE);
+        $this->app->instance("rzp.mode", Mode::TEST);
         // Submit L2 form
         $detailCore->saveMerchantDetails(["submit" => "1"], $merchantDetail->merchant);
 
@@ -1261,7 +1299,7 @@ class BvsVerificationTest extends TestCase
         [$detailCore] = $this->createAndFetchMocks(true);
         [$merchantDetail] = $this->createAndFetchFixtures(BusinessType::PRIVATE_LIMITED);
 
-        $this->app->instance("rzp.mode", Mode::LIVE);
+        $this->app->instance("rzp.mode", Mode::TEST);
         // Submit L2 form
         $detailCore->saveMerchantDetails(['bank_branch_ifsc'                 => 'CBIN0281697',
                                           'bank_account_number'              => '0002020000304030434',
@@ -1287,7 +1325,7 @@ class BvsVerificationTest extends TestCase
         [$detailCore] = $this->createAndFetchMocks(false);
         [$merchantDetail] = $this->createAndFetchFixtures(BusinessType::PRIVATE_LIMITED);
 
-        $this->app->instance("rzp.mode", Mode::LIVE);
+        $this->app->instance("rzp.mode", Mode::TEST);
         // Submit L2 form
         $detailCore->saveMerchantDetails(['bank_branch_ifsc'                 => 'CBIN0281697',
                                           'bank_account_number'              => '0002020000304030434',
@@ -1312,7 +1350,7 @@ class BvsVerificationTest extends TestCase
         [$detailCore] = $this->createAndFetchMocks(true);
         [$merchantDetail] = $this->createAndFetchFixturesRetry(BusinessType::PRIVATE_LIMITED);
 
-        $this->app->instance("rzp.mode", Mode::LIVE);
+        $this->app->instance("rzp.mode", Mode::TEST);
         // Submit L2 form
         $detailCore->saveMerchantDetails(['bank_branch_ifsc'                 => 'CBIN0281697',
                                           'bank_account_number'              => '0002020000304030434',
@@ -1338,7 +1376,7 @@ class BvsVerificationTest extends TestCase
         [$detailCore] = $this->createAndFetchMocks(false);
         [$merchantDetail] = $this->createAndFetchFixturesRetry(BusinessType::PRIVATE_LIMITED);
 
-        $this->app->instance("rzp.mode", Mode::LIVE);
+        $this->app->instance("rzp.mode", Mode::TEST);
         // Submit L2 form
         $detailCore->saveMerchantDetails([
                                              'bank_branch_ifsc'                 => 'CBIN0281697',
@@ -1364,7 +1402,7 @@ class BvsVerificationTest extends TestCase
         [$detailCore] = $this->createAndFetchMocks(true);
         [$merchantDetail] = $this->createAndFetchFixturesNC(BusinessType::PRIVATE_LIMITED);
 
-        $this->app->instance("rzp.mode", Mode::LIVE);
+        $this->app->instance("rzp.mode", Mode::TEST);
         // Submit L2 form
         $detailCore->saveMerchantDetails(["submit"                        => "1",
                                           'bank_branch_ifsc'                 => 'CBIN0281697',
@@ -1391,7 +1429,7 @@ class BvsVerificationTest extends TestCase
         [$detailCore] = $this->createAndFetchMocks(false);
         [$merchantDetail] = $this->createAndFetchFixturesNC(BusinessType::PRIVATE_LIMITED);
 
-        $this->app->instance("rzp.mode", Mode::LIVE);
+        $this->app->instance("rzp.mode", Mode::TEST);
         // Submit L2 form
         $detailCore->saveMerchantDetails(["submit"                        => "1",
                                           'bank_branch_ifsc'                 => 'CBIN0281697',

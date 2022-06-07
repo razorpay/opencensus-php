@@ -56,6 +56,16 @@ class CompanyPanVerificationTest extends TestCase
             Detail\Entity::CIN_VERIFICATION_STATUS          => 'verified'
         ]);
 
+        $merchantId = $merchantDetail->getMerchantId();
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id' => $merchantId,
+            'user_id' => $merchantUser->getId(),
+            'signup_campaign' => 'easy_onboarding'
+        ]);
+
         return [$merchantDetail];
     }
 

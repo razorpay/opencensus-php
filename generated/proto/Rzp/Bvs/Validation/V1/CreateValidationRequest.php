@@ -53,7 +53,7 @@ class CreateValidationRequest extends \Google\Protobuf\Internal\Message
      */
     public function getArtefact()
     {
-        return isset($this->artefact) ? $this->artefact : null;
+        return $this->artefact;
     }
 
     public function hasArtefact()
@@ -107,7 +107,7 @@ class CreateValidationRequest extends \Google\Protobuf\Internal\Message
      */
     public function getRules()
     {
-        return isset($this->rules) ? $this->rules : null;
+        return $this->rules;
     }
 
     public function hasRules()
@@ -139,7 +139,7 @@ class CreateValidationRequest extends \Google\Protobuf\Internal\Message
      */
     public function getMetadata()
     {
-        return isset($this->metadata) ? $this->metadata : null;
+        return $this->metadata;
     }
 
     public function hasMetadata()

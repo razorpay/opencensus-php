@@ -8,8 +8,10 @@ use RZP\Models\Feature;
 use RZP\Models\Address;
 use RZP\Models\Merchant;
 use RZP\Models\Admin\Admin;
+use RZP\Models\Merchant\Store;
 use RZP\Constants\IndianStates;
 use RZP\Models\Merchant\AutoKyc;
+use RZP\Exception\InvalidPermissionException;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use RZP\Models\Merchant\Document\OcrVerificationStatus;
 
@@ -179,12 +181,16 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
 
     const ACTIVATION_FORM_MILESTONE = 'activation_form_milestone';
 
+    const BUSINESS_NAME_SUGGESTED       = 'business_name_suggested';
+    const PROMOTER_PAN_NAME_SUGGESTED   = 'promoter_pan_name_suggested';
+
     // relation name
     const STAKEHOLDER                   = 'stakeholder';
     const MERCHANT_AVG_ORDER_VALUE      = 'merchant_avg_order_value';
     const MERCHANT_TNC                  = 'merchant_tnc';
     const MERCHANT_VERIFICATION_DETAIL  = 'merchant_verification_detail';
-    const MERCHANT_BUSINESS_DETAIL       = 'merchant_business_detail';
+    const MERCHANT_BUSINESS_DETAIL      = 'merchant_business_detail';
+
     // fields_pending field is used in new Account APIs.
     const FIELDS_PENDING = 'fields_pending';
 
@@ -434,6 +440,8 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
         self::FRAUD_TYPE,
         self::BAS_BUSINESS_ID,
         self::IEC_CODE,
+        self::PROMOTER_PAN_NAME_SUGGESTED,
+        self::BUSINESS_NAME_SUGGESTED,
     ];
 
     protected $defaults   = [
@@ -709,6 +717,11 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
         return $this->getAttribute(self::COMPANY_PAN_NAME);
     }
 
+    public function setPanName($panName)
+    {
+        $this->setAttribute(self::COMPANY_PAN_NAME, $panName);
+    }
+
     public function getPromoterPan()
     {
         return $this->getAttribute(self::PROMOTER_PAN);
@@ -717,6 +730,11 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
     public function getPromoterPanName()
     {
         return $this->getAttribute(self::PROMOTER_PAN_NAME);
+    }
+
+    public function setPromoterPanName($promoterPanName)
+    {
+        $this->setAttribute(self::PROMOTER_PAN_NAME, $promoterPanName);
     }
 
     public function getBusinessProofFile()
@@ -1123,6 +1141,26 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
         $this->setAttribute(self::BUSINESS_NAME, $name);
     }
 
+    public function getBusinessNameSuggested()
+    {
+        return $this->getAttribute(self::BUSINESS_NAME_SUGGESTED);
+    }
+
+    public function setBusinessNameSuggested($name)
+    {
+       $this->setAttribute(self::BUSINESS_NAME_SUGGESTED, $name);
+    }
+
+    public function getPromoterPanNameSuggested()
+    {
+        return $this->getAttribute(self::PROMOTER_PAN_NAME_SUGGESTED);
+    }
+
+    public function setPromoterPanNameSuggested($name)
+    {
+        $this->setAttribute(self::PROMOTER_PAN_NAME_SUGGESTED, $name);
+    }
+
     public function getKycClarificationReasons()
     {
         return $this->getAttribute(self::KYC_CLARIFICATION_REASONS);
@@ -1173,6 +1211,11 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
         return $this->getAttribute(self::BUSINESS_SUBCATEGORY);
     }
 
+    public function setBusinessSubcategory($subcategory)
+    {
+        return $this->setAttribute(self::BUSINESS_SUBCATEGORY, $subcategory);
+    }
+
     public function getTransactionReportEmail()
     {
         return $this->getAttribute(self::TRANSACTION_REPORT_EMAIL);
@@ -1211,6 +1254,54 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
     public function getBusinessModel()
     {
         return $this->getAttribute(self::BUSINESS_MODEL);
+    }
+
+    /**
+     * @throws InvalidPermissionException
+     */
+    protected function getBusinessNameSuggestedAttribute()
+    {
+        $fetchData = (new Store\Core())->fetchValuesFromStore(
+            $this->merchant->getId(),
+            Store\ConfigKey::ONBOARDING_NAMESPACE,
+            [self::BUSINESS_NAME_SUGGESTED],
+            Store\Constants::INTERNAL);
+
+        return $fetchData[self::BUSINESS_NAME_SUGGESTED] ?? null;
+    }
+
+    protected function setBusinessNameSuggestedAttribute($name)
+    {
+        $data = [
+            Store\Constants::NAMESPACE                    => Store\ConfigKey::ONBOARDING_NAMESPACE,
+            Store\ConfigKey::BUSINESS_NAME_SUGGESTED      => $name
+        ];
+
+        (new Store\Core())->updateMerchantStore($this->merchant->getId(), $data, Store\Constants::INTERNAL);
+    }
+
+    /**
+     * @throws InvalidPermissionException
+     */
+    protected function getPromoterPanNameSuggestedAttribute()
+    {
+        $fetchData = (new Store\Core())->fetchValuesFromStore(
+            $this->merchant->getId(),
+            Store\ConfigKey::ONBOARDING_NAMESPACE,
+            [self::PROMOTER_PAN_NAME_SUGGESTED],
+            Store\Constants::INTERNAL);
+
+        return $fetchData[self::PROMOTER_PAN_NAME_SUGGESTED] ?? null;
+    }
+
+    protected function setPromoterPanNameSuggestedAttribute($name)
+    {
+        $data = [
+            Store\Constants::NAMESPACE                    => Store\ConfigKey::ONBOARDING_NAMESPACE,
+            Store\ConfigKey::PROMOTER_PAN_NAME_SUGGESTED  => $name
+        ];
+
+        (new Store\Core())->updateMerchantStore($this->merchant->getId(), $data, Store\Constants::INTERNAL);
     }
 
     // @codingStandardsIgnoreLine

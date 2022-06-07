@@ -29,6 +29,7 @@ use RZP\Models\Admin\Org\Entity as OrgEntity;
 use RZP\Models\User\Service as UserService;
 use RZP\Models\Merchant\Detail\ActivationFlow;
 use RZP\Models\Merchant\Notify as NotifyTrait;
+use RZP\Models\DeviceDetail\Constants as DDConstants;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use RZP\Models\Admin\Org\Hostname\Entity as HostNameEntity;
 use RZP\Mail\Merchant\RazorpayX\AccountActivationConfirmation;
@@ -258,7 +259,8 @@ class Activate extends Base\Core
 
         $properties = [
             'previousActivationStatus'    => null,
-            'currentActivationStatus'     => $merchantDetails->getActivationStatus()
+            'currentActivationStatus'     => $merchantDetails->getActivationStatus(),
+            'easyOnboarding'              => $merchant->isSignupCampaign(DDConstants::EASY_ONBOARDING)
         ];
 
         $this->app['segment-analytics']->pushIdentifyAndTrackEvent(

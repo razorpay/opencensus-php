@@ -54,6 +54,16 @@ class PoiVerificationTest extends TestCase
             Detail\Entity::BANK_DETAILS_VERIFICATION_STATUS => 'verified'
         ]);
 
+        $merchantId = $merchantDetail->getMerchantId();
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id' => $merchantId,
+            'user_id' => $merchantUser->getId(),
+            'signup_campaign' => 'easy_onboarding'
+        ]);
+
         return [$merchantDetail];
     }
 

@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant\Detail;
 
+use RZP\Models\DeviceDetail\Constants as DDConstants;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Models\Merchant\Balance\Type as ProductType;
 use Throwable;
@@ -1434,7 +1435,10 @@ class Service extends Base\Service
                                                 $originProduct,
                                                 Event\Constants::SIGN_UP);
 
-            $this->handlePreSignUpOptionalFields( $input);
+            if ($merchant->isSignupCampaign(DDConstants::EASY_ONBOARDING) === false)
+            {
+                $this->handlePreSignUpOptionalFields($input);
+            }
 
             $this->applyReferralPartner($input);
 

@@ -7,6 +7,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Entity;
 use RZP\Models\Merchant\Detail;
 use RZP\Exception\BadRequestException;
+use RZP\Models\DeviceDetail\Constants as DDConstants;
 
 /**
  * Class BlacklistActivationFlow
@@ -45,11 +46,20 @@ class Blacklist extends Base implements ActivationFlowInterface
     {
         $merchantDetails = $merchant->merchantDetail;
 
-        throw new BadRequestException(
-            ErrorCode::BAD_REQUEST_UNSUPPORTED_BUSINESS_SUBCATEGORY,
-            Detail\Entity::BUSINESS_SUBCATEGORY,
-            [
-                Detail\Entity::BUSINESS_SUBCATEGORY => $merchantDetails->getBusinessSubcategory(),
-            ]);
+        if ($merchant->isSignupCampaign(DDConstants::EASY_ONBOARDING) === true)
+        {
+            $merchantDetails->setLocked(true);
+
+            $merchant->deactivate();
+        }
+        else
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_UNSUPPORTED_BUSINESS_SUBCATEGORY,
+                Detail\Entity::BUSINESS_SUBCATEGORY,
+                [
+                    Detail\Entity::BUSINESS_SUBCATEGORY => $merchantDetails->getBusinessSubcategory(),
+                ]);
+        }
     }
 }

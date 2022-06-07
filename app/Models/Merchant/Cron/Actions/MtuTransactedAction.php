@@ -2,13 +2,14 @@
 
 namespace RZP\Models\Merchant\Cron\Actions;
 
+use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\Cron\Constants;
 use RZP\Models\Merchant\Cron\Dto\ActionDto;
-use RZP\Models\Merchant\Escalations\Core as EscalationCore;
-use RZP\Models\Merchant\M2MReferral\Service as M2MService;
 use RZP\Services\Segment\EventCode as SegmentEvent;
-use RZP\Trace\TraceCode;
+use RZP\Models\DeviceDetail\Constants as DDConstants;
+use RZP\Models\Merchant\M2MReferral\Service as M2MService;
+use RZP\Models\Merchant\Escalations\Core as EscalationCore;
 
 class MtuTransactedAction extends BaseAction
 {
@@ -79,7 +80,8 @@ class MtuTransactedAction extends BaseAction
             'previous_activation_status'  => $previousActivationStatus['name'],
             'is_m2m_referral'             => ($referralCode == null ? false : true),
             '$referralCode'               => $referralCode,
-            'amount'                      => $merchantsTransaction['amount']
+            'amount'                      => $merchantsTransaction['amount'],
+            'easyOnboarding'              => $merchant->isSignupCampaign(DDConstants::EASY_ONBOARDING)
         ];
 
         $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantIdAndUserRole($merchantId);

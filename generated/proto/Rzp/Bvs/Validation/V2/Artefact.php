@@ -144,7 +144,7 @@ class Artefact extends \Google\Protobuf\Internal\Message
      */
     public function getNotes()
     {
-        return isset($this->notes) ? $this->notes : null;
+        return $this->notes;
     }
 
     public function hasNotes()
@@ -198,7 +198,7 @@ class Artefact extends \Google\Protobuf\Internal\Message
      */
     public function getDetails()
     {
-        return isset($this->details) ? $this->details : null;
+        return $this->details;
     }
 
     public function hasDetails()

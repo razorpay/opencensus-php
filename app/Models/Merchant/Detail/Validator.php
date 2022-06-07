@@ -16,10 +16,12 @@ use RZP\Models\Merchant\Document\Type;
 use RZP\Models\Merchant\RazorxTreatment;
 use libphonenumber\NumberParseException;
 use RZP\Models\Partner\Core as PartnerCore;
+use RZP\Models\DeviceDetail\Constants as DDConstants;
 use RZP\Models\Merchant\Detail\ActivationFlow\Factory;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Merchant\Detail\Constants as DetailConstants;
-use RZP\Models\Merchant\BusinessDetail\Constants as BusinessDetailConstants;
+use RZP\Models\Merchant\BusinessDetail\Constants as BDConstants;
+use RZP\Models\Merchant\BusinessDetail\Entity as BusinessDetailEntity;
 
 class Validator extends Base\Validator
 {
@@ -48,6 +50,7 @@ class Validator extends Base\Validator
     const INVALID_PREDEFINED_REASON                     = 'Invalid Predefined Reason';
     const INVALID_ADDITIONAL_DETAIL_FIELD               = 'Invalid additional detail field';
     const INVALID_BUSINESS_SUBCATEGORY_FOR_CATEGORY     = 'Invalid business subcategory for business category';
+    const INVALID_BUSINESS_CATEGORY_FOR_PARENT_CATEGORY = 'Invalid business category for business parent category';
     const BUSINESS_CATEGORY_MISSING_FOR_SUBCATEGORY     = 'Business category missing for business subcategory';
     const INVALID_REASON_TYPE                           = 'Invalid reason type';
     const BLACKLISTED_BANK_ACCOUNT_NUMBER               = 'Accounts from this Bank are temporarily not supported. Please add another bank a/c or contact support.';
@@ -136,11 +139,17 @@ class Validator extends Base\Validator
         Entity::ADDITIONAL_WEBSITES. '.*'       => 'required_with:'. Entity::ADDITIONAL_WEBSITES . '|string|custom:active_url',
         Entity::ACTIVATION_FORM_MILESTONE       => 'sometimes|string|max:30|custom',
         Entity::SHOP_ESTABLISHMENT_NUMBER       => 'sometimes|string|max:100|nullable',
-        BusinessDetailConstants::PLAYSTORE_URL  => 'sometimes|custom:active_url|max:255|nullable',
-        BusinessDetailConstants::APPSTORE_URL   => 'sometimes|custom:active_url|max:255|nullable',
-        BusinessDetailConstants::PHYSICAL_STORE => 'sometimes|boolean',
-        BusinessDetailConstants::SOCIAL_MEDIA   => 'sometimes|boolean',
-        BusinessDetailConstants::WEBSITE_OR_APP => 'sometimes|boolean',
+        BDConstants::PLAYSTORE_URL              => 'sometimes|custom:active_url|max:255|nullable',
+        BDConstants::APPSTORE_URL               => 'sometimes|custom:active_url|max:255|nullable',
+        BDConstants::PHYSICAL_STORE             => 'sometimes|boolean',
+        BDConstants::SOCIAL_MEDIA               => 'sometimes|boolean',
+        BDConstants::WEBSITE_OR_APP             => 'sometimes|boolean',
+        BDConstants::WEBSITE_NOT_READY          => 'sometimes|boolean',
+        BDConstants::WEBSITE_COMPLIANCE_CONSENT => 'sometimes|boolean',
+        BDConstants::OTHERS                     => 'sometimes|string',
+        BDConstants::WEBSITE_PRESENT            => 'sometimes|boolean',
+        BDConstants::IOS_APP_PRESENT            => 'sometimes|boolean',
+        BDConstants::ANDROID_APP_PRESENT        => 'sometimes|boolean',
     ];
 
     protected static $editRules = [
@@ -241,11 +250,17 @@ class Validator extends Base\Validator
         Entity::SHOP_ESTABLISHMENT_NUMBER                => 'sometimes|string|max:100|nullable',
         Entity::BUSINESS_SUGGESTED_PIN                   => 'sometimes|size:6',
         Entity::BUSINESS_SUGGESTED_ADDRESS               => 'sometimes|max:255',
-        BusinessDetailConstants::PLAYSTORE_URL           => 'sometimes|custom:active_url|max:255|nullable',
-        BusinessDetailConstants::APPSTORE_URL            => 'sometimes|custom:active_url|max:255|nullable',
-        BusinessDetailConstants::PHYSICAL_STORE          => 'sometimes|boolean',
-        BusinessDetailConstants::SOCIAL_MEDIA            => 'sometimes|boolean',
-        BusinessDetailConstants::WEBSITE_OR_APP          => 'sometimes|boolean',
+        BDConstants::PLAYSTORE_URL                       => 'sometimes|custom:active_url|max:255|nullable',
+        BDConstants::APPSTORE_URL                        => 'sometimes|custom:active_url|max:255|nullable',
+        BDConstants::PHYSICAL_STORE                      => 'sometimes|boolean',
+        BDConstants::SOCIAL_MEDIA                        => 'sometimes|boolean',
+        BDConstants::WEBSITE_OR_APP                      => 'sometimes|boolean',
+        BDConstants::WEBSITE_NOT_READY                   => 'sometimes|boolean',
+        BDConstants::WEBSITE_COMPLIANCE_CONSENT          => 'sometimes|boolean',
+        BDConstants::OTHERS                              => 'sometimes|string',
+        BDConstants::WEBSITE_PRESENT                     => 'sometimes|boolean',
+        BDConstants::IOS_APP_PRESENT                     => 'sometimes|boolean',
+        BDConstants::ANDROID_APP_PRESENT                 => 'sometimes|boolean',
         Entity::IEC_CODE                                 => 'sometimes|string|max:20',
     ];
 
@@ -715,7 +730,8 @@ class Validator extends Base\Validator
 
         $subcategoryMetaData = BusinessSubCategoryMetaData::getSubCategoryMetaData($category, $subcategory);
 
-        if ($subcategoryMetaData[BusinessSubCategoryMetaData::NON_REGISTERED_ACTIVATION_FLOW] === ActivationFlow::BLACKLIST)
+        if ($subcategoryMetaData[BusinessSubCategoryMetaData::NON_REGISTERED_ACTIVATION_FLOW] === ActivationFlow::BLACKLIST and
+            $this->entity->merchant->isSignupCampaign(DDConstants::EASY_ONBOARDING) === false)
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_UNSUPPORTED_BUSINESS_CATEGORY);
         }
@@ -978,6 +994,11 @@ class Validator extends Base\Validator
 
     public function validateBusinessSubcategoryForCategory(array $input)
     {
+        if (empty($this->entity) === false and optional($this->entity->merchant)->isSignupCampaign(DDConstants::EASY_ONBOARDING) === true)
+        {
+            return;
+        }
+
         // If category and subcategory are not set
         if ((isset($input[Entity::BUSINESS_CATEGORY]) === false) and
             (isset($input[Entity::BUSINESS_SUBCATEGORY]) === false))
@@ -1031,6 +1052,40 @@ class Validator extends Base\Validator
                     Entity::BUSINESS_CATEGORY    => $category,
                     Entity::BUSINESS_SUBCATEGORY => $subcategory,
                 ]);
+        }
+    }
+
+    public function validateBusinessSubcategoryForCategoryForEasyOnboarding($input)
+    {
+        $category = $this->extractBusinessCategory($input, null);
+
+        $businessDetail = $this->entity->businessDetail;
+
+        if (empty($businessDetail) === false)
+        {
+            $parentCategory = array_key_exists(BusinessDetailEntity::BUSINESS_PARENT_CATEGORY, $input) ?
+                $input[BusinessDetailEntity::BUSINESS_PARENT_CATEGORY] : $businessDetail->getBusinessParentCategory();
+
+            $categoryMap = BusinessCategoriesV2\BusinessParentCategory::CATEGORY_MAP;
+            $validCategories = $categoryMap[$parentCategory] ?? [];
+
+            if (empty($category) === false and in_array($category, $validCategories, true) === false)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    self::INVALID_BUSINESS_CATEGORY_FOR_PARENT_CATEGORY);
+            }
+        }
+
+        $subcategory = $this->entity->getBusinessSubcategory();
+
+        $subcategoryMap = BusinessCategory::SUBCATEGORY_MAP;
+
+        $validSubcategories = $subcategoryMap[$category] ?? [];
+
+        if (empty($subcategory) === false and in_array($subcategory, $validSubcategories, true) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                self::INVALID_BUSINESS_SUBCATEGORY_FOR_CATEGORY);
         }
     }
 
@@ -1246,6 +1301,11 @@ class Validator extends Base\Validator
     public function blockInstantActivationCriticalFields(array $input)
     {
         $merchant = $this->entity->merchant;
+
+        if ($merchant->isSignupCampaign(DDConstants::EASY_ONBOARDING) === true)
+        {
+            return;
+        }
 
         $criticalInput = array_only($input, Entity::INSTANT_ACTIVATION_CRITICAL_ATTRIBUTES);
 

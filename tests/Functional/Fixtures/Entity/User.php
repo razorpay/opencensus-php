@@ -85,10 +85,10 @@ class User extends Base
         $user = $this->createEntityInTestAndLive('user', $attributes);
 
         $this->createUserMerchantMapping([
-                    'merchant_id' => $merchantId,
-                    'user_id'     => $user['id'],
-                    'role'        => $role,
-            ], $mode);
+                                             'merchant_id' => $merchantId,
+                                             'user_id'     => $user['id'],
+                                             'role'        => $role,
+                                         ], $mode);
 
         return $user;
     }

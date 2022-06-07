@@ -17,11 +17,12 @@ class Validation
         \GPBMetadata\Google\Protobuf\Struct::initOnce();
         $pool->internalAddGeneratedFile(
             '
-·
-+platform/bvs/validation/v2/validation.protoplatform.bvs.validation.v2"3
+Ú
++platform/bvs/validation/v2/validation.protoplatform.bvs.validation.v2"V
 Fields
 required_fields (	
-probe_id (	"²
+probe_id (	!
+enrichment_details_fields (	"²
 Rules
 version (	D
 

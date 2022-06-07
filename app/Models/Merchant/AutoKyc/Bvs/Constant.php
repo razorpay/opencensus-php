@@ -127,6 +127,7 @@ class Constant
 
     // Artefact types in BVS
     const PERSONAL_PAN                           = 'personal_pan';
+    const PERSONAL_PAN_FETCH                     = 'personal_pan_fetch';
     const AADHAAR                                = 'aadhaar';
     const CIN                                    = 'cin';
     const GSTIN                                  = 'gstin';
@@ -134,6 +135,7 @@ class Constant
     const PASSPORT                               = 'passport';
     const LLP_DEED                               = 'llp_deed';
     const BUSINESS_PAN                           = 'business_pan';
+    const BUSINESS_PAN_FETCH                     = 'business_pan_fetch';
     const SHOP_ESTABLISHMENT                     = 'shop_establishment';
     const GST_CERTIFICATE                        = 'gst_certificate';
     const MSME                                   = 'msme';
@@ -171,6 +173,9 @@ class Constant
     const RAZORX_EXPERIMENT               = 'razorx_experiment';
     const AADHAR_ESIGN_SESSION_KEY_PREFIX = "aadhar_esign_session";
     const CUSTOM_CALLBACK_HANDLER         = 'custom_callback_handler';
+
+    const ONLINE_PROVIDER                 = 'online_provider';
+    const VALUE                           = 'value';
 
     const FIELD_ARTEFACT_DETAILS_MAP = [
         self::PARTNERSHIP_DEED            => [

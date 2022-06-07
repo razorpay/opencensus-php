@@ -1703,6 +1703,26 @@ return [
         ],
     ],
 
+    'testUpdateCriticalFieldsPostActivationEasyOnboarding' => [
+        'request'  => [
+            'content' => [
+                'business_category'    => 'financial_services',
+                'business_subcategory' => 'lending',
+            ],
+            'url'     => '/merchant/activation',
+            'method'  => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'verification' => [
+                    'status'          => 'disabled',
+                    'disabled_reason' => 'required_fields',
+                ],
+                'can_submit'   => false,
+            ],
+        ],
+    ],
+
     'testUpdateNonCriticalFieldsPostActivation' => [
         'request'  => [
             'content' => [
@@ -1802,6 +1822,48 @@ return [
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_UNSUPPORTED_BUSINESS_SUBCATEGORY,
+        ],
+    ],
+
+    'testBlacklistActivationFlowEasyOnboarding' => [
+        'request'   => [
+            'content' => [
+                'bank_branch_ifsc'          => 'ICIC0000002',
+                'submit'                    => 1,
+            ],
+            'url'     => '/merchant/activation',
+            'method'  => 'POST',
+        ],
+        'response' => [
+            'content'     => [
+                'verification' => [
+                    'status'              => 'pending',
+                    'activation_progress' => 100,
+                ],
+                'can_submit'   => true,
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testBlacklistActivationFlowCanSubmit' => [
+        'request'   => [
+            'content' => [
+                'bank_branch_ifsc'          => 'ICIC0000002',
+                'submit'                    => 1,
+            ],
+            'url'     => '/merchant/activation',
+            'method'  => 'POST',
+        ],
+        'response'  => [
+            'content'     => [
+                'verification' => [
+                    'status'          => 'disabled',
+                    'disabled_reason' => 'required_fields',
+                ],
+                'can_submit'   => false,
+            ],
+            'status_code' => 200,
         ],
     ],
 
