@@ -915,6 +915,14 @@ class Validator extends Base\Validator
             return;
         }
 
+        // moto payment with token doesn't require any card details
+        if ((isset($input['auth_type']) === true) and
+            ($input['auth_type'] === AuthType::SKIP) and
+            (empty($input['token']) === false))
+        {
+            return;
+        }
+
         if ((array_key_exists('card', $input) === false) or
             ($input['card'] === null))
         {

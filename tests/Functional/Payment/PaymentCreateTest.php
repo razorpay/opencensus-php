@@ -2971,6 +2971,77 @@ class PaymentCreateTest extends TestCase
         $this->assertTrue($this->redirectToAuthorize);
     }
 
+
+    public function testPaymentCardMotoWithToken()
+    {
+        $this->mockRazorxWith(
+            "skip_cvv", 'skip');
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->fixtures->merchant->addFeatures(['s2s', 's2s_json', 'skip_cvv', 'network_tokenization_live', 'direct_debit']);
+
+        unset($payment["card"]["cvv"]);
+
+        $payment['save'] = '1';
+        $payment['customer_id'] = 'cust_100000customer';
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/json',
+            'content' => $payment
+        ];
+
+        $this->ba->privateAuth();
+
+        // first normal paymernt to create the token
+        $response = $this->makeRequestParent($request);
+
+        $content =$this->getJsonContentFromResponse($response);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $content);
+
+        $this->assertArrayHasKey('next', $content);
+
+        $this->assertArrayHasKey('action', $content['next'][0]);
+
+        $this->assertArrayHasKey('url', $content['next'][0]);
+
+        $redirectContent = $content['next'][0];
+
+        $this->assertTrue($this->isRedirectToAuthorizeUrl($redirectContent['url']));
+
+        $response = $this->makeRedirectToAuthorize($redirectContent['url']);
+
+        $content = $this->getJsonContentFromResponse($response, null);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $content);
+
+        $fetchedPayment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($fetchedPayment['id'], $content['razorpay_payment_id']);
+
+        $this->assertEquals('authorized', $fetchedPayment['status']);
+
+        $this->assertTrue($this->redirectToAuthorize);
+
+        // getting the token created for card
+        $tokenId = $fetchedPayment['token_id'];
+
+        // moto payment, unsetting card and setting the token generated in last step
+        unset($payment["card"]["number"]);
+        unset($payment["save"]);
+
+        $payment['auth_type'] = 'skip';
+
+        $payment['token'] = $tokenId;
+
+        $this->fixtures->create('terminal:shared_hitachi_moto_terminal');
+
+        $rr = $this->doAuthPayment($payment);
+
+        $this->assertNotNull($rr["razorpay_payment_id"]);
+    }
     private function mockRazorxWith(string $featureUnderTest, string $value = 'on')
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
