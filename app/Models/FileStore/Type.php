@@ -206,6 +206,10 @@ class Type
     const BATCH_VALIDATED                       = 'batch_validated';
     const RECONCILIATION_BATCH_INPUT            = 'reconciliation_batch_input';
     const BATCH_SERVICE                         = 'batch_service';
+    const BATCH_SERVICE_PAYMENTS                = 'batch_service_payments';
+    const BATCH_SERVICE_PLATFORM                = 'batch_service_platform';
+    const BATCH_SERVICE_CAPITAL                 = 'batch_service_capital';
+    const BATCH_SERVICE_RAZORPAYX               = 'batch_service_razorpayx';
     const NON_MIGRATED_BATCH                    = 'non_migrated_batch';
     const RECONCILIATION_BATCH_ANALYTICS_OUTPUT = 'reconciliation_batch_analytics_output';
     const RECONCILIATION_BATCH_TXN_FILE         = 'reconciliation_batch_txn_file';
@@ -262,6 +266,10 @@ class Type
     const H2H_DEFAULT_BUCKET_CONFIG             = 'h2h_default_bucket_config';
     const BEAM_BUCKET_CONFIG                    = 'beam_bucket_config';
     const BATCH_SERVICE_BUCKET_CONFIG           = 'batch_service_bucket_config';
+    const BATCH_SERVICE_BUCKET_CONFIG_PAYMENTS  = 'batch_service_bucket_config_payments';
+    const BATCH_SERVICE_BUCKET_CONFIG_PLATFORM  = 'batch_service_bucket_config_platform';
+    const BATCH_SERVICE_BUCKET_CONFIG_CAPITAL   = 'batch_service_bucket_config_capital';
+    const BATCH_SERVICE_BUCKET_CONFIG_RAZORPAYX = 'batch_service_bucket_config_razorpayx';
     const FUND_TRANSFER_SFTP_BUCKET_CONFIG      = 'fund_transfer_sftp_bucket_config';
     const RECON_SFTP_INPUT_BUCKET_CONFIG        = 'recon_sftp_input_bucket';
     const DATA_LAKE_SEGMENTS_BUCKET_CONFIG      = 'data_lake_segments_bucket_config';
@@ -675,6 +683,22 @@ class Type
 
         self::BATCH_SERVICE_BUCKET_CONFIG => [
             self::BATCH_SERVICE,
+        ],
+
+        self::BATCH_SERVICE_BUCKET_CONFIG_PAYMENTS => [
+            self::BATCH_SERVICE_PAYMENTS
+        ],
+
+        self::BATCH_SERVICE_BUCKET_CONFIG_PLATFORM => [
+            self::BATCH_SERVICE_PLATFORM
+        ],
+
+        self::BATCH_SERVICE_BUCKET_CONFIG_CAPITAL => [
+            self::BATCH_SERVICE_CAPITAL
+        ],
+
+        self::BATCH_SERVICE_BUCKET_CONFIG_RAZORPAYX => [
+            self::BATCH_SERVICE_RAZORPAYX
         ],
 
         self::NON_MIGRATED_BATCH_BUCKET_CONFIG => [

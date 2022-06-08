@@ -59,6 +59,22 @@ return [
             'name'   => env('AWS_S3_BATCH_BUCKET'),
             'region' => env('AWS_BUCKET_BATCH_REGION', 'ap-south-1')
         ],
+        'batch_service_bucket_config_payments' => [
+            'name'   => env('AWS_S3_BATCH_BUCKET_PAYMENTS'),
+            'region' => env('AWS_BUCKET_BATCH_REGION_PAYMENTS', 'ap-south-1')
+        ],
+        'batch_service_bucket_config_platform' => [
+            'name'   => env('AWS_S3_BATCH_BUCKET_PLATFORM'),
+            'region' => env('AWS_BUCKET_BATCH_REGION_PLATFORM', 'ap-south-1')
+        ],
+        'batch_service_bucket_config_capital' => [
+            'name'   => env('AWS_S3_BATCH_BUCKET_CAPITAL'),
+            'region' => env('AWS_BUCKET_BATCH_REGION_CAPITAL', 'ap-south-1')
+        ],
+        'batch_service_bucket_config_razorpayx' => [
+            'name'   => env('AWS_S3_BATCH_BUCKET_RAZORPAYX'),
+            'region' => env('AWS_BUCKET_BATCH_REGION_RAZORPAYX', 'ap-south-1')
+        ],
         'h2h_default_bucket_config' => [
             'name'   => env('AWS_H2H_DEFAULT_BUCKET'),
             'region' => env('AWS_H2H_DEFAULT_BUCKET_REGION', 'ap-south-1')
