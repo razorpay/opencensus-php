@@ -49,7 +49,7 @@ angular
             .success(function (data) {
               if (data.success) {
                 try {
-                  dataLayer.push({
+                  dataLayer?.push({
                     merchant_id: data.data.merchants[0].id,
                   });
                 } catch (e) {

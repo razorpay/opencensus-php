@@ -277,7 +277,7 @@ export default class ActivationWizard extends React.Component {
       FORM_TABS = this.mainTabs;
       FORM_TABS_CONTENT = mainTabsContent;
       FORM_TABS_NAMES = mainFieldNamesMeta;
-
+      
       BANK_ACCOUNT_TAB = 3;
       DOCUMENT_UPLOAD_STEP = 4;
 

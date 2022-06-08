@@ -40,14 +40,16 @@ _dcs.account = '9421167';
 })();
 
 </script>
-<script async src="https://www.googletagmanager.com/gtag/js?id=AW-928471290"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+@if ($newAuthRoute !== 'signup')
+  <script async src="https://www.googletagmanager.com/gtag/js?id=AW-928471290"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
 
-  gtag('config', 'AW-928471290');
-</script>
+    gtag('config', 'AW-928471290');
+  </script>
+@endif
 <script async defer src="https://apis.google.com/js/api:client.js"></script>
 
 <script>
