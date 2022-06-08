@@ -22,16 +22,15 @@ class Service extends Base\Service
 
     protected $validator;
 
-
     const HTTP_GET     = 'GET';
     const HTTP_POST    = 'POST';
     const HTTP_PUT     = 'PUT';
     const MOZART_GET_CARDS = 'get_cards';
     const MOZART_GET_CARD_CVV = 'get_cvv';
     const CARD_TOKEN_EXPIRY = '15';
-    const CHECK_CARDS_SESSION_URL = "/v1/card/otp_session?route=GetCardByMerchantUser";
-    const SEND_OTP = "/v1/otp";
-    const GET_CARDS_ENTITY_INFO = "/v1/card/entity";
+    const CHECK_CARDS_SESSION_URL = "v1/card/otp_session?route=GetCardByMerchantUser";
+    const SEND_OTP = "v1/otp";
+    const GET_CARDS_ENTITY_INFO = "v1/card/entity";
 
     public function __construct()
     {

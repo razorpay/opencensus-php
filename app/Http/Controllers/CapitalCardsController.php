@@ -51,7 +51,6 @@ class CapitalCardsController extends Controller
             'x-otp'            => $body['otp'] ?? '',
             'x-dashboard-user-session-id'        => $sessionId,
         ];
-        $headers[RequestHeader::DEV_SERVE_USER] = Request::header(RequestHeader::DEV_SERVE_USER);
 
         if (($request->method() === 'GET') and
             (empty($body) === false))
@@ -140,7 +139,7 @@ class CapitalCardsController extends Controller
         $headers['Content-Type'] = 'application/json';
         $headers['X-Task-Id']    = $this->app['request']->getTaskId();
         $headers['Authorization'] = 'Basic '. base64_encode($username . ':' . $password);
-
+        $headers[RequestHeader::DEV_SERVE_USER] = Request::header(RequestHeader::DEV_SERVE_USER);
         return $this->sendRequest($headers, $baseUrl . $url, $method, empty($body) ? '' : json_encode($body));
     }
 
