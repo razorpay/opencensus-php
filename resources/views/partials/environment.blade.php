@@ -13,6 +13,7 @@
     window.CHECKBOX_CAPTCHA_SITE_KEY = "{{ env('CHECKBOX_CAPTCHA_SITE_KEY') }}";
     window.RECAPTCHA_V3_SITE_KEY = "{{ env('RECAPTCHA_V3_SITE_KEY') }}";
     window.REFINER_PROJECT_ID = "{{ env('REFINER_PROJECT_ID') }}";
+    window.EASY_ONBOARDING_URL = "{{ env('EASY_ONBOARDING_URL') }}";
     
     // Sentry related configs
     window.APP_ENV = "{!! env('APP_ENV') !!}";

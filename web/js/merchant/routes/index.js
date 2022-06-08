@@ -454,9 +454,20 @@ const entityDetailsMap = {
  * Example:
  * - '/paymentlinks/new': {component: PaymentLinkCreate, featureEnabled: "randomFeature", featureEnabled: "randomFeature"}
  * */
+
+const routeEasyOnboarding = () => {
+  window.open(`${window.EASY_ONBOARDING_URL}/onboarding/l2`, '_self', 'noopener');
+};
+
+const isFromEasyL1 =
+  window.rzp_user?.experiments?.easy_onboarding?.result === 'on' &&
+  window.rzp_user.user?.signup_campaign === 'easy_onboarding' &&
+  (window.rzp_user?.activation_form_milestone === 'L1' ||
+    !window.rzp_user?.activation_form_milestone);
+
 const entityModalsMap = {
   '/activation': {
-    component: ActivationContainer,
+    component: isFromEasyL1 ? routeEasyOnboarding() : ActivationContainer,
     additionalCondition: (user) => user.isAllowedEdit('activation'),
   },
   '/offers/new': {
@@ -556,15 +567,15 @@ const fullPageViewsMap = {
       user.isAllowedEdit('subscription_buttons') && user.isSubscriptionButtonEnabled,
   },
   '/onboarding/steps': {
-    component: ActivationSteps,
+    component: isFromEasyL1 ? routeEasyOnboarding() : ActivationSteps,
     additionalCondition: (user) => user.isOnboardingV2Enabled,
   },
   '/onboarding/form': {
-    component: ActivationForm,
+    component: isFromEasyL1 ? routeEasyOnboarding() : ActivationForm,
     additionalCondition: (user) => user.isOnboardingV2Enabled,
   },
   '/kyc': {
-    component: ActivationFullViewContainer,
+    component: isFromEasyL1 ? routeEasyOnboarding() : ActivationFullViewContainer,
     additionalCondition: (user) => user.isActivationFormFullView,
   },
   '/app-store/:partner': {
