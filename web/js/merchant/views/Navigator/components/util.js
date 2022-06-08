@@ -976,6 +976,7 @@ export const gatewayLogos = {
   axis_migs: `${window.cdnBaseUrl}/${LOGO_PATH}/axis.png`,
   upi_axis: `${window.cdnBaseUrl}/${LOGO_PATH}/axis.png`,
   hdfc: `${window.cdnBaseUrl}/${LOGO_PATH}/hdfc.png`,
+  upi_icici: `${window.cdnBaseUrl}/${LOGO_PATH}/icici.png`,
 };
 
 export const popularGateways = ['payu'];
@@ -1149,6 +1150,11 @@ export const gatewayDetailsMapping = {
     dashboardImg: null,
     dashboardUrl: 'https://businesscenter.in.cybersource.com/ebc2/',
     dashboardUrlLabel: 'businesscenter.in.cybersource.com',
+  },
+  upi_icici: {
+    dashboardImg: null,
+    dashboardUrl: 'https://merchants.fiserv.com/india/',
+    dashboardUrlLabel: 'merchants.fiserv.com',
   },
 };
 

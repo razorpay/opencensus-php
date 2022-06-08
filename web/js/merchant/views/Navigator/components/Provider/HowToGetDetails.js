@@ -11,6 +11,7 @@ const PROVIDERS_WITH_DETAILS_ON_EMAIL = [
   'hdfc',
   'cybersource_hdfc',
   'cybersource_axis',
+  'upi_icici',
 ];
 
 export const HowToGetDetails = ({ providers, selectedProvider, closeModal }) => {
