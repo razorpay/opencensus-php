@@ -124,7 +124,7 @@ class BusinessCategory
         self::LOGISTICS                             => 1,
         self::MEDIA_AND_ENTERTAINMENT               => 1,
         self::NOT_FOR_PROFIT                        => 1,
-        self::OTHERS                                => 1,
+        self::OTHERS                                => 1000,
         self::PAAS                                  => 1,
         self::COWORKING                             => 1,
         self::SAAS                                  => 1,

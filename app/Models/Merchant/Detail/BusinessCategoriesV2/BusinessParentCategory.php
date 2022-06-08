@@ -72,7 +72,7 @@ class BusinessParentCategory
         self::HOUSING                           => 1,
         self::TRAVEL_AND_TRANSPORT              => 1,
         self::SOCIAL                            => 1,
-        self::OTHERS                            => 1,
+        self::OTHERS                            => 1000,
     ];
 
     const CATEGORY_MAP = [

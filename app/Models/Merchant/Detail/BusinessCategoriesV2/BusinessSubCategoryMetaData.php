@@ -4131,9 +4131,9 @@ class BusinessSubCategoryMetaData
         ],
         Sub::OTHERS => [
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::OTHERS],
-            self::DISPLAY_ORDER                     => 1,
-            Entity::ACTIVATION_FLOW                 => null,
-            self::NON_REGISTERED_ACTIVATION_FLOW    => null,
+            self::DISPLAY_ORDER                     => 1000,
+            Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
+            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
         ],
     ];
 
@@ -4167,7 +4167,7 @@ class BusinessSubCategoryMetaData
      */
     public static function getSubCategoryMetaData(string $category, string $subcategory = null): array
     {
-        if ($category === BusinessCategory::OTHERS)
+        if ($category === BusinessCategory::OTHERS or $subcategory === BusinessSubcategory::OTHERS)
         {
             return self::getMetaDataForOthersCategory();
         }

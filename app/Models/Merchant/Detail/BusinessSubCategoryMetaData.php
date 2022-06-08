@@ -3812,7 +3812,7 @@ class BusinessSubCategoryMetaData
      */
     public static function getSubCategoryMetaData(string $category, string $subcategory = null): array
     {
-        if ($category === BusinessCategory::OTHERS)
+        if ($category === BusinessCategory::OTHERS or $subcategory === BusinessSubcategory::OTHERS)
         {
             return self::getMetaDataForOthersCategory();
         }
