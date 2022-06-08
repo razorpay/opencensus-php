@@ -2,15 +2,23 @@
 
 namespace RZP\Models\Gateway\File\Processor\Emi;
 
+use Str;
+use Mail;
+use Carbon\Carbon;
+use RZP\Error\ErrorCode;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\FileStore;
+use RZP\Mail\Emi as EmiMail;
+use RZP\Models\Gateway\File\Status;
+use RZP\Exception\GatewayFileException;
+
 
 class Kotak extends Base
 {
     const BANK_CODE   = IFSC::KKBK;
     const FILE_TYPE   = FileStore\Type::KOTAK_EMI_FILE;
     const FILE_NAME   = 'Kotak_Emi_File';
-    const DATE_FORMAT = 'M d,Y h:i:s A';
+    const DATE_FORMAT = 'Y-m-d';
 
     protected function formatDataForFile($data)
     {
@@ -26,13 +34,13 @@ class Kotak extends Base
 
             $formattedData[] = [
                 'EMI ID'                     => $emiPayment->getId(),
-                'Card Pan'                   => $this->getCardNumber($emiPayment->card),
+                'Card Pan'                   => str_repeat('X', 12) . $emiPayment->card->getLast4(),
                 'Issuer'                     => 'Kotak',
                 'Auth Code'                  => $authCode,
                 'Tx Amount'                  => $emiPayment->getAmount() / 100,
                 'Tenure'                     => $emiPlan['duration'],
                 'Manufacturer'               => '', // Non Mandatory
-                'Merchant Name'              => 'Razorpay Payments',
+                'Merchant Name'              => $emiPayment->merchant->getDbaName() ?: 'Razorpay Payments',
                 'Address1'                   => '', // Non Mandatory
                 'Acquirer'                   => '', // Non Mandatory
                 'MID'                        => '', // Non Mandatory
