@@ -90,10 +90,6 @@ class Generator extends Base\Core
 
     protected function getTerminalForBankAccount(Entity $bankAccount): Terminal\Entity
     {
-        if ($this->merchant->org->isFeatureEnabled(Constants::ORG_NUMERIC_OPTION_FALSE) === true)
-        {
-            $this->options[self::NUMERIC] = false;
-        }
 
         $terminal = (new VirtualAccount\Provider())->getTerminalForMethod(Method::BANK_TRANSFER, $bankAccount, null, $this->options);
 
@@ -421,6 +417,11 @@ class Generator extends Base\Core
     protected function fetchTerminal(Entity $bankAccount, $isBalanceTypeBanking)
     {
         $merchantId = $bankAccount->getMerchantId();
+
+        if ($this->merchant->org->isFeatureEnabled(Constants::ORG_NUMERIC_OPTION_FALSE) === true)
+        {
+            $this->options[self::NUMERIC] = false;
+        }
 
         $terminalCaching = $this->app->razorx->getTreatment(
             $merchantId,
