@@ -69,9 +69,7 @@ class AppsflyerUninstallAction extends BaseAction
 
         if (empty($userDeviceDetails) === true)
         {
-            $app = App::getFacadeRoot();
-
-            $app['trace']->info(TraceCode::APPSFLYER_ATTRIBUTION_DETAILS_ERROR, [
+            $this->app['trace']->info(TraceCode::APPSFLYER_ATTRIBUTION_DETAILS_ERROR, [
                 'data'  => $appsflyerId,
                 'error' => 'missing user device details'
             ]);
