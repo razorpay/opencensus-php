@@ -56,8 +56,12 @@ class UserRoleFeatureMap
         return self::$roleFeature;
     }
 
-    public static function getFeaturesForRole(string $role)
+    public static function getFeaturesForRole($role)
     {
+        if(isset($role) === false or empty($role) === true)
+        {
+            return [];
+        }
         return self::getFeatureRoleMap()[$role] ?? [];
     }
 }
