@@ -60,7 +60,7 @@ class AdminController extends Controller
     public function getTerminalById($id)
     {
         //In production all the terminals are fetched from the terminals service, a prod check included for unit testing cases
-        if( in_array($this->app['env'], [Environment::PRODUCTION, Environment::AUTOMATION, Environment::BVT, Environment::BETA], true) === true ) {
+        if( in_array($this->app['env'], [Environment::PRODUCTION, Environment::AUTOMATION, Environment::BVT, Environment::BETA, Environment::FUNC], true) === true ) {
 
             $path = "v1/admin/terminals/" . $id;
 

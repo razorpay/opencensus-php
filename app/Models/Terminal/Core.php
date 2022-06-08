@@ -334,7 +334,7 @@ class Core extends Base\Core
 
             // if the $variantFlag is on, it will first edit on terminal service and then on api with shouldSync on creation as false,
             // otherwise shouldSync will be true and syncing will happen at the time of creation itself.
-            if ($variantFlag === "on")
+            if ($variantFlag === "on" || in_array($terminal->getGateway(), Gateway::TOKENISATION_GATEWAYS))
             {
                 $shouldSync = false;
 
@@ -346,16 +346,19 @@ class Core extends Base\Core
 
                 $tsTerminal = Terminal\Service::getEntityFromTerminalServiceResponse($response);
 
-                $terminal->setSyncStatus(SyncStatus::SYNC_SUCCESS);
+                //Tokenisation type terminals are created on the Termial service not on the API service, so skipping this check
+                if(!in_array($tsTerminal->getGateway(), Gateway::TOKENISATION_GATEWAYS)){
+                    $terminal->setSyncStatus(SyncStatus::SYNC_SUCCESS);
 
-                $this->repo->saveOrFail($terminal, ['shouldSync' => $shouldSync]);
+                    $this->repo->saveOrFail($terminal, ['shouldSync' => $shouldSync]);
 
-                // compare terminal data on both service
-                if (Terminal\Service::compareTerminalEntity($terminal, $tsTerminal) === false)
-                {
-                    $data = ['terminal_id' => $terminalId];
+                    // compare terminal data on both service
+                    if (Terminal\Service::compareTerminalEntity($terminal, $tsTerminal) === false)
+                    {
+                        $data = ['terminal_id' => $terminalId];
 
-                    $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_EDIT_MISMATCH, $data);
+                        $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_EDIT_MISMATCH, $data);
+                    }
                 }
 
                 return $tsTerminal;

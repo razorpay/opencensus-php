@@ -772,6 +772,43 @@ class TerminalTest extends TestCase
         $this->assertEquals( "1211", $content['gateway_terminal_id']);
     }
 
+    public function testEditTokenisationTerminal()
+    {
+        $terminal = $this->fixtures->create(
+            'terminal',
+            [
+                'id' => 'AqdfGh5460opVt',
+                'merchant_id' => '10000000000000',
+                'gateway'                  => 'tokenisation_visa',
+                'gateway_terminal_id'      => '12344',
+                'gateway_access_code'      => '12344',
+                'gateway_merchant_id'      => '12344',
+                'gateway_secure_secret'    => '12345',
+                'procurer'                 => 'merchant'
+            ]);
+
+
+        $tid = $terminal['id'];
+
+        $data = [
+            'procurer' => "razorpay",
+        ];
+
+        $this->terminalsServiceMock = $this->getTerminalsServiceMock();
+
+        $this->mockTerminalsServiceProxyRequest(
+            ["id" => "AqdfGh5460opVt",
+                "gateway" => "tokenisation_visa",
+                "procurer" => "razorpay",
+                "merchant_id" => "10000000000000"]);
+
+        $content = $this->editTerminal($tid, $data);
+
+        s($content);
+
+        $this->assertEquals( "razorpay", $content['procurer']);
+    }
+
     public function testEditNonPaysecureTerminalWithNonAxisTerminalOrgId()
     {
         $org = $this->fixtures->org->createHdfcOrg();

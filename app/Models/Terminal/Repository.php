@@ -11,6 +11,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Payment;
+use RZP\Models\Payment\Gateway;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Table;
 use RZP\Models\Merchant;
@@ -321,8 +322,6 @@ class Repository extends Base\Repository
 
     public function find($id, $columns = ['*'])
     {
-        $terminal = parent::find($id, $columns);
-
         $mode = $this->app['rzp.mode'] ??  Mode::LIVE ;
 
         $variantFlag = $this->app->razorx->getTreatment($id, "ROUTE_PROXY_TS_FIND",  $mode);
@@ -339,14 +338,19 @@ class Repository extends Base\Repository
 
                 $response = $this->app['terminals_service']->proxyTerminalService('', "GET", $path);
 
-                $terminal2 = Terminal\Service::getEntityFromTerminalServiceResponse($response);
+                $terminalEntityByTS = Terminal\Service::getEntityFromTerminalServiceResponse($response);
 
-                if (Terminal\Service::compareTerminalEntity($terminal, $terminal2) === false)
-                {
-                    $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_FUNCTION, $data);
+                if(!in_array($terminalEntityByTS->getGateway(), Gateway::TOKENISATION_GATEWAYS)){
+
+                    $terminal = parent::find($id, $columns);
+
+                    if (Terminal\Service::compareTerminalEntity($terminal, $terminalEntityByTS) === false)
+                    {
+                        $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_FUNCTION, $data);
+                    }
                 }
 
-                return $terminal2;
+                return $terminalEntityByTS;
             }
             catch (\Throwable $ex)
             {
@@ -356,7 +360,7 @@ class Repository extends Base\Repository
             }
         }
 
-        return $terminal;
+        return parent::find($id, $columns);
     }
 
     public function findMany($ids, $columns = array('*'))

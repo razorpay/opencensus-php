@@ -236,6 +236,7 @@ class Gateway
     const TOKENISATION_MASTERCARD  = 'tokenisation_mastercard';
     const TOKENISATION_RUPAY       = 'tokenisation_rupay';
     const TOKENISATION_HDFC        = 'tokenisation_hdfc';
+    const TOKENISATION_AMEX        = 'tokenisation_amex';
 
     const GATEWAY_ACQUIRERS = [
         self::AXIS_MIGS    => [self::ACQUIRER_AXIS, self::ACQUIRER_HDFC],
@@ -269,6 +270,7 @@ class Gateway
         self::TOKENISATION_MASTERCARD,
         self::TOKENISATION_RUPAY,
         self::TOKENISATION_HDFC,
+        self::TOKENISATION_AMEX,
     ];
 
     //
@@ -4356,7 +4358,7 @@ class Gateway
     {
         $gateway = $payment->getGateway();
         $gatewayCurrency = $payment->getGatewayCurrency();
-        
+
         if(array_key_exists($gateway,self::GATEWAY_TO_SETTLEMENT_CURRENCY_MAPPING) === false)
         {
             return null;
@@ -4366,7 +4368,7 @@ class Gateway
         {
             return $payment->getGatewayCurrency();
         }
-        
+
         return self::GATEWAY_TO_SETTLEMENT_CURRENCY_MAPPING[$gateway][0];
     }
 

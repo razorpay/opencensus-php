@@ -2270,6 +2270,58 @@ class Validator extends Base\Validator
         Entity::STATUS                                  => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
+    protected static $tokenisationVisaEditTerminalRules = [
+        Entity::GATEWAY_MERCHANT_ID                     => 'sometimes|string',
+        Entity::GATEWAY_MERCHANT_ID2                    => 'sometimes|string',
+        Entity::GATEWAY_SECURE_SECRET                   => 'sometimes|string',
+        Entity::STATUS                                  => 'sometimes|in:pending,activated,deactivated,failed',
+        Entity::PROCURER                                => 'sometimes|string|in:razorpay,merchant',
+        Entity::GATEWAY_TERMINAL_PASSWORD               => 'sometimes|string',
+        Entity::GATEWAY_TERMINAL_PASSWORD2              => 'sometimes|string',
+        Entity::GATEWAY_SECURE_SECRET2                  => 'sometimes|string',
+    ];
+
+    protected static $tokenisationAmexEditTerminalRules = [
+        Entity::GATEWAY_MERCHANT_ID                     => 'sometimes|string',
+        Entity::GATEWAY_MERCHANT_ID2                    => 'sometimes|string',
+        Entity::GATEWAY_SECURE_SECRET                   => 'sometimes|string',
+        Entity::STATUS                                  => 'sometimes|in:pending,activated,deactivated,failed',
+        Entity::PROCURER                                => 'sometimes|string|in:razorpay,merchant',
+        Entity::GATEWAY_TERMINAL_PASSWORD               => 'sometimes|string',
+        Entity::GATEWAY_TERMINAL_PASSWORD2              => 'sometimes|string',
+        Entity::GATEWAY_SECURE_SECRET2                  => 'sometimes|string',
+    ];
+
+    protected static $tokenisationMastercardEditTerminalRules = [
+        Entity::GATEWAY_MERCHANT_ID                     => 'sometimes|string',
+        Entity::GATEWAY_MERCHANT_ID2                    => 'sometimes|string',
+        Entity::GATEWAY_SECURE_SECRET                   => 'sometimes|string',
+        Entity::STATUS                                  => 'sometimes|in:pending,activated,deactivated,failed',
+        Entity::PROCURER                                => 'sometimes|string|in:razorpay,merchant',
+        Entity::GATEWAY_TERMINAL_PASSWORD               => 'sometimes|string',
+        Entity::GATEWAY_TERMINAL_PASSWORD2              => 'sometimes|string',
+        Entity::GATEWAY_SECURE_SECRET2                  => 'sometimes|string',
+    ];
+
+    protected static $tokenisationRupayEditTerminalRules = [
+        Entity::GATEWAY_MERCHANT_ID                     => 'sometimes|string',
+        Entity::GATEWAY_MERCHANT_ID2                    => 'sometimes|string',
+        Entity::GATEWAY_SECURE_SECRET                   => 'sometimes|string',
+        Entity::STATUS                                  => 'sometimes|in:pending,activated,deactivated,failed',
+        Entity::PROCURER                                => 'sometimes|string|in:razorpay,merchant',
+        Entity::GATEWAY_TERMINAL_PASSWORD               => 'sometimes|string',
+        Entity::GATEWAY_TERMINAL_PASSWORD2              => 'sometimes|string',
+        Entity::GATEWAY_SECURE_SECRET2                  => 'sometimes|string',
+    ];
+
+    protected static $tokenisationHdfcEditTerminalRules = [
+        Entity::GATEWAY                  => 'required|string|in:tokenisation_hdfc',
+        Entity::TYPE                     => 'required|string',
+        Entity::GATEWAY_MERCHANT_ID      => 'required|string',
+        Entity::GATEWAY_SECURE_SECRET    => 'required|string',
+        Entity::GATEWAY_SECURE_SECRET2   => 'required|string',
+    ];
+
     protected static $worldlineEditTerminalRules = [
         Entity::STATUS                     => 'sometimes|string|in:failed,activated',
         Entity::MC_MPAN                    => 'sometimes|string',
@@ -2891,7 +2943,7 @@ class Validator extends Base\Validator
 
     public function editTerminalValidator($terminal, $input)
     {
-        if (in_array($terminal->getGateway(), self::$editTerminalGateways))
+        if (in_array($terminal->getGateway(), self::$editTerminalGateways) || in_array($terminal->getGateway(), Gateway::TOKENISATION_GATEWAYS))
         {
             unset($input[Entity::PLAN_ID]);
             $gateway = $terminal->getGateway();
