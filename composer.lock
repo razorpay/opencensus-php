@@ -8649,12 +8649,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/ufh-sdk-php.git",
-                "reference": "3449ae9d800d563a1d17300bba3a2033a45d2b49"
+                "reference": "759ae6d9ae6df8b5c8f74210c03732f3ce64626e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/ufh-sdk-php/zipball/3449ae9d800d563a1d17300bba3a2033a45d2b49",
-                "reference": "3449ae9d800d563a1d17300bba3a2033a45d2b49",
+                "url": "https://api.github.com/repos/razorpay/ufh-sdk-php/zipball/759ae6d9ae6df8b5c8f74210c03732f3ce64626e",
+                "reference": "759ae6d9ae6df8b5c8f74210c03732f3ce64626e",
                 "shasum": ""
             },
             "require": {
@@ -8682,7 +8682,7 @@
                 "sdk",
                 "ufh"
             ],
-            "time": "2022-04-06T05:46:28+00:00"
+            "time": "2022-05-27T12:08:14+00:00"
         },
         {
             "name": "razorpay/upi-clients",
