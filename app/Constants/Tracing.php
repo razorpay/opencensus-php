@@ -81,6 +81,7 @@ class Tracing
             'payment_create_private_json',
             'payment_create_checkout_json',
             'payment_create_private_old',
+            'payment_create_upi',
 
             // routes used by Vendor Payments
             'contact_update_internal',
