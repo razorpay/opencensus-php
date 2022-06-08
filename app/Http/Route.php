@@ -1391,6 +1391,7 @@ class Route
         'reports_fetch_multiple'                   => ['get',      'reports',                                        'ReportController@getReports'                                       ],
         'reports_generate'                         => ['post',     'reports/{entity}/generate',                      'ReportController@generateReport'                                   ],
         'file_get_signed_url'                      => ['get',      '{entity}/{entityId}/signed-url',                 'FileStoreController@getSignedUrlForEntity'                         ],
+        'update_bucket_name_region'                => ['put',      'file_store/bucket_region',                      'FileStoreController@updateFileBucketAndRegion'                     ],
 
         // Routes for the admin roles project
         'org_create'                               => ['post',     'orgs',                                           'OrganizationController@postOrganization'                           ],
@@ -4034,6 +4035,7 @@ class Route
         'mpans_issue',
         'mpans_fetch',
         'update_submerchant_user_contact',
+        'update_bucket_name_region',
 
         // webhooks for onboarding APIs
         'onboarding_webhook_create',
@@ -4928,6 +4930,7 @@ class Route
         'get_account_documents_v2',
         'get_stakeholder_documents_v2',
         'update_submerchant_user_contact',
+        'update_bucket_name_region',
 
         'product_config_fetch_v2' ,
         'product_config_update_v2',

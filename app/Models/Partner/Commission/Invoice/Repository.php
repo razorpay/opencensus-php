@@ -31,4 +31,35 @@ class Repository extends Base\Repository
                     ->where(Entity::MONTH, '=', $month)
                     ->get();
     }
+
+    public function fetchInvoiceIds($limit, $afterId = null)
+    {
+        $invoiceIdColumn = $this->dbColumn(Entity::ID);
+
+        $query = $this->newQuery()->select($invoiceIdColumn);
+
+        if (empty($limit) === false)
+        {
+            $query->limit($limit);
+        }
+
+        if (empty($afterId) === false)
+        {
+            $query->where($invoiceIdColumn, '>', $afterId);
+        }
+
+        return $query->orderBy($invoiceIdColumn, 'asc')->get()->pluck(Entity::ID)->toArray();
+    }
+
+    public function fetchInvoiceIdsFromMerchantsIds(array $merchantIds)
+    {
+        $invoiceIdColumn = $this->dbColumn(Entity::ID);
+
+        return $this->newQuery()
+            ->select($invoiceIdColumn)
+            ->whereIn(Entity::MERCHANT_ID, $merchantIds)
+            ->get()
+            ->pluck(Entity::ID)
+            ->toArray();
+    }
 }

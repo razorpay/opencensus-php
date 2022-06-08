@@ -13,6 +13,7 @@ use RZP\Constants\Mode;
 use RZP\Models\Partner;
 use RZP\Constants\Timezone;
 use RZP\Models\Partner\Config;
+use RZP\Models\FileStore\Service;
 use RZP\Models\Merchant\FeeBearer;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Settlement\Channel;
@@ -423,6 +424,130 @@ class CommissionCreateTest extends TestCase
         $testData['request']['url'] = '/commissions/invoice/' . $invoice->getId();
 
         $this->runRequestResponseFlow($testData);
+    }
+
+    public function testMigrateInvoiceBucketByInvoiceId()
+    {
+        $invoice = $this->createCommissionInvoice();
+
+        // creating a invoice file with bucket name- rzp-test-bucket and region- us-east-1
+
+        $this->fixtures->create('file_store', [
+            'id'            => '100000Razorpay',
+            'type'          => 'commission_invoice',
+            'entity_id'     => $invoice->getId(),
+            'entity_type'   => 'commission_invoice',
+            'extension'     => 'pdf',
+            'name'          => 'xyz.pdf',
+            'bucket'        => 'rzp-test-bucket',
+            'region'        => 'us-east-1'
+        ]);
+
+        (new Service())->updateFileBucketAndRegion([
+            'invoice_ids' => [
+                $invoice->getId()
+            ],
+            'merchant_ids'  => [],
+            'bucket_config' => [
+                'name'      => 'rzp-1012-nonprod-test-bucket',
+                'region'    => 'ap-south-1'
+            ]
+        ]);
+
+        $file = $this->getDbLastEntity('file_store');
+
+        $this->assertEquals('rzp-1012-nonprod-test-bucket', $file->getBucket());
+    }
+
+    public function testMigrateAllInvoiceBucket()
+    {
+        $invoice = $this->createCommissionInvoice();
+
+        $this->fixtures->create('file_store', [
+            'id'            => '100000Razorpay',
+            'type'          => 'commission_invoice',
+            'entity_id'     => $invoice->getId(),
+            'entity_type'   => 'commission_invoice',
+            'extension'     => 'pdf',
+            'name'          => 'xyz.pdf',
+            'bucket'        => 'rzp-test-bucket',
+            'region'        => 'us-east-1'
+        ]);
+
+        (new Service())->updateFileBucketAndRegion([
+            'invoice_ids' => [],
+            'merchant_ids'  => [],
+            'bucket_config' => [
+                'name'      => 'rzp-1012-nonprod-test-bucket',
+                'region'    => 'ap-south-1'
+            ]
+        ]);
+
+        $file = $this->getDbEntityById('file_store','100000Razorpay' );
+
+        $this->assertEquals('rzp-1012-nonprod-test-bucket',$file->getBucket());
+    }
+
+    public function testMigrateInvoiceBucketByLimit()
+    {
+        $invoice = $this->createCommissionInvoice();
+
+        $this->fixtures->create('file_store', [
+            'id'            => '100000Razorpay',
+            'type'          => 'commission_invoice',
+            'entity_id'     => $invoice->getId(),
+            'entity_type'   => 'commission_invoice',
+            'extension'     => 'pdf',
+            'name'          => 'xyz.pdf',
+            'bucket'        => 'invoices',
+            'region'        => 'us-east-1'
+        ]);
+
+        (new Service())->updateFileBucketAndRegion([
+            'invoice_ids' => [],
+            'merchant_ids'  => [],
+            'total_count'   => 0,
+            'bucket_config' => [
+                'name'      => 'rzp-1012-nonprod-test-bucket',
+                'region'    => 'ap-south-1'
+            ]
+        ]);
+
+        $file = $this->getDbEntityById('file_store','100000Razorpay' );
+
+        $this->assertEquals('invoices',$file->getBucket());
+    }
+
+    public function createCommissionInvoice()
+    {
+        list($partner, $subMerchant, $payment, $config, $commission) = $this->createSampleCommission([],[],[],[
+            'credit' => 1770,
+            'debit'  => 0,
+            'fee'    => 1770,
+            'tax'    => 270,
+        ]);
+
+        $this->ba->adminAuth();
+
+        $testData = $this->testData['testCaptureCommission'];
+
+        $testData['request']['url'] = '/commissions/'.$commission->getPublicId().'/capture';
+
+        $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData['testInvoiceGenerate'];
+
+        $now = Carbon::now(Timezone::IST);
+
+        $testData['request']['content']['month']        = $now->month;
+        $testData['request']['content']['year']         = $now->year;
+        $testData['request']['content']['merchant_ids'] = [$partner->getId()];
+
+        $this->createTaxes();
+
+        $this->startTest($testData);
+
+        return  $this->getDbLastEntity('commission_invoice');
     }
 
     public function testInvoiceGenerateForLineItemsLessThanRupee()

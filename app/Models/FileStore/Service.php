@@ -50,4 +50,9 @@ class Service extends Base\Service
     {
         return (new Core)->signedUrlForEntityFile($entity, $entityId);
     }
+
+    public function updateFileBucketAndRegion(array $input)
+    {
+        return (new Core)->migrateInvoiceBuckets($input);
+    }
 }

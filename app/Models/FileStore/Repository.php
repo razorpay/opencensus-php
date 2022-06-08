@@ -39,4 +39,14 @@ class Repository extends Base\Repository
                     ->where(Entity::MERCHANT_ID, '=', $merchantId)
                     ->delete();
     }
+
+    public function getFileStoreIdWithEntiyId(array $invoiceIds)
+    {
+        return $this->newQuery()
+            ->select(Entity::ID)
+            ->whereIn(Entity::ENTITY_ID, $invoiceIds)
+            ->get()
+            ->pluck(Entity::ID)
+            ->toArray();
+    }
 }

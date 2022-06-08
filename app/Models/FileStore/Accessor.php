@@ -7,6 +7,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\FileStore\Store;
 use RZP\Models\Merchant\Account;
+use RZP\Trace\TraceCode;
 
 class Accessor extends Base\Core
 {
@@ -279,5 +280,31 @@ class Accessor extends Base\Core
         {
             $this->merchantId(Account::SHARED_ACCOUNT);
         }
+    }
+
+    /**
+     * Updates bucket name and region for file Id as
+     * invoice bucket is migrated to ap-south-1
+     *
+     * @param Entity
+     * @param array
+     */
+
+    public function updateBucketNameAndRegion(Entity $file,array $bucketConfig)
+    {
+        //update bucket name and region
+        if($file->getBucket() !== $bucketConfig['name'] || $file->getRegion() !== $bucketConfig['region']){
+
+            $file->bucket = $bucketConfig['name'];
+            $file->region = $bucketConfig['region'];
+
+            $this->repo->saveOrFail($file);
+        }
+
+        $this->trace->info(TraceCode::UPDATED_BUCKET_CONFIG,[
+            'file_id'  => $file->getId(),
+            'response' => $file->bucket,
+            'region'   => $file->region,
+        ]);
     }
 }
