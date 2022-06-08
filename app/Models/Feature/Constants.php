@@ -1157,10 +1157,22 @@ class Constants
     const ASYNC_TOKENISATION = 'async_tokenisation';
 
     /**
+     * Feature flag to enable consent collection screen on custom checkout
+     * merchants in the scenario where Razorpay would collect consent
+     * on-behalf of the merchant.
+     *
+     * @see https://razorpay.com/docs/payments/payment-gateway/web-integration/custom/features/saved-cards/scenario-2/
+     */
+    const CUSTOM_CHECKOUT_CONSENT_SCREEN = 'cust_checkout_cnsnt_scrn';
+
+    /**
      * Feature flag to let Razorpay collect consent for tokenising cards in the payment flow through intermediate consent page
      * This will be used for custom checkout merchants
      * By default Razorpay collects consent
      * Can use this feature flag to disable consent collection by Razorpay
+     *
+     * @deprecated
+     * @see self::CUSTOM_CHECKOUT_CONSENT_SCREEN
      */
     const DISABLE_COLLECT_CONSENT = 'disable_collect_consent';
 
@@ -1814,6 +1826,7 @@ class Constants
         self::ORG_ANNOUNCEMENT_TAB_DISABLE    => true,
         self::ASYNC_TXN_FILL_DETAILS          => true,
         self::EXPOSE_GATEWAY_ERRORS           => true,
+        self::CUSTOM_CHECKOUT_CONSENT_SCREEN  => true,
         self::DISABLE_COLLECT_CONSENT         => true,
         self::ENABLE_IFSC_VALIDATION          => true,
         self::PUBLIC_SETTERS_VIA_OAUTH        => true,

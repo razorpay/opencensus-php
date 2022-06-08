@@ -1033,6 +1033,11 @@ class Entity extends Base\PublicEntity
         return ($this->isFeatureEnabled(Feature\Constants::EARLY_MANDATE_PRESENTMENT) === true);
     }
 
+    public function isCustomCheckoutConsentScreenEnabledForMerchant(): bool
+    {
+        return $this->isFeatureEnabled(Feature\Constants::CUSTOM_CHECKOUT_CONSENT_SCREEN);
+    }
+
     public function isCollectConsentEnabledForMerchant(): bool
     {
         return ($this->isFeatureEnabled(Feature\Constants::DISABLE_COLLECT_CONSENT) === false);
