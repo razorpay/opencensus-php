@@ -630,11 +630,16 @@ class ScroogeFetchEntitiesTest extends TestCase
 
         $payment = $this->capturePayment($payment['id'], $payment['amount']);
 
+        $payment2 = $this->defaultAuthPayment();
+
+        $payment2 = $this->capturePayment($payment2['id'], $payment2['amount']);
+
         // Internal auth
         $this->ba->scroogeAuth();
 
         $subTestArgs = [
-            'payment' => $payment,
+            'payment'  => $payment,
+            'payment2' => $payment2
         ];
 
         // To test more cases add a new function with prefix scroogeFetchEntitiesSubTest appended by test number
@@ -674,16 +679,54 @@ class ScroogeFetchEntitiesTest extends TestCase
     public function scroogeFetchEntitiesV2SubTest1($subTestArgs): array
     {
         $paymentId = substr($subTestArgs['payment']['id'], 4);
+        $paymentId2 = substr($subTestArgs['payment2']['id'], 4);
 
         $input = [
             'payment_ids' => [
                 substr($subTestArgs['payment']['id'], 4),
+                substr($subTestArgs['payment2']['id'], 4),
             ],
             'entities' => ['payment', 'card', 'terminal', 'upi_metadata'],
         ];
 
         $expectedOutput = [
             $paymentId => [
+                'entities' => [
+                    'payment' => [
+                        'data' =>  [
+                            'merchant_id' => '10000000000000',
+                            'amount' => '50000',
+                            'amount_unrefunded' => '50000',
+                            'currency' => 'INR',
+                            'currency_conversion_rate' => '1',
+                            'is_upi_otm' => false,
+                            'status' => 'captured',
+                        ],
+                        'error' => NULL,
+                    ],
+                    'card' => [
+                        'data' =>  [
+                            'merchant_id' => '10000000000000',
+                            'iin' => '401200',
+                            'last4' => '3335',
+                            'vault_token'=>'NDAxMjAwMTAzODQ0MzMzNQ==',
+                        ],
+                        'error' => NULL,
+                    ],
+                    'terminal' => [
+                        'data' =>  [
+                            'gateway' => 'hdfc',
+                            'gateway_acquirer' => 'hdfc',
+                        ],
+                        'error' => NULL,
+                    ],
+                    'upi_metadata' => [
+                        'data' => NULL,
+                        'error' => NULL,
+                    ]
+                ],
+            ],
+            $paymentId2 => [
                 'entities' => [
                     'payment' => [
                         'data' =>  [

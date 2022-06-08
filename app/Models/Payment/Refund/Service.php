@@ -1068,16 +1068,17 @@ class Service extends Base\Service
                     $response[RefundConstants::ENTITIES][Constants\Entity::PAYMENT][RefundConstants::DATA] = $data;
 
                     $response[RefundConstants::ENTITIES][Constants\Entity::PAYMENT][RefundConstants::ERROR] = $paymentError;
-
-                    $key = array_search(Constants\Entity::PAYMENT, $input[RefundConstants::ENTITIES]);
-
-                    unset($input[RefundConstants::ENTITIES][$key]);
                 }
 
                 if (isset($input[RefundConstants::ENTITIES]) === true)
                 {
                     foreach ($input[RefundConstants::ENTITIES] as $key)
                     {
+                        if ($key === Constants\Entity::PAYMENT)
+                        {
+                            continue;
+                        }
+
                         $data = null;
 
                         $error = $paymentError;
