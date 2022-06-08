@@ -46,7 +46,7 @@ class BvsProxyController extends BaseProxyController {
         self::GET_CAPTCHA_API                   => 30,
         self::VERIFY_CAPTCHA_GET_OTP            => 30,
         self::SEND_OTP_API                      => 30,
-        self::VERIFY_OTP_API                    => 15,
+        self::VERIFY_OTP_API                    => 30,
         self::FETCH_DIGILOCKER_AADHAAR_DETAILS  => 15
     ];
 
