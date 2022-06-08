@@ -91,14 +91,16 @@ class RequestHeader
      * Request header for Typeform auth
      */
 
-    const TYPEFORM_SIGNATURE            =  'typeform-signature';
+    const TYPEFORM_SIGNATURE             =  'typeform-signature';
 
     // For testing purpose
-    const X_RZP_TESTCASE_ID             = 'X-RZP-TESTCASE-ID';
+    const X_RZP_TESTCASE_ID              = 'X-RZP-TESTCASE-ID';
 
-    const X_REQUEST_TRACE_ID            = 'X-Request-TraceId';
+    const X_RZP_REARCH_ORDER_TESTCASE_ID = 'X-RZP-REARCH-ORDER-TESTCASE-ID';
 
-    const X_AMAZON_TRACE_ID             = 'X-Amzn-Trace-Id';
+    const X_REQUEST_TRACE_ID             = 'X-Request-TraceId';
 
-    const X_AMAZON_TLS_VERSION          = 'x-amzn-tls-version';
+    const X_AMAZON_TRACE_ID              = 'X-Amzn-Trace-Id';
+
+    const X_AMAZON_TLS_VERSION           = 'x-amzn-tls-version';
 }

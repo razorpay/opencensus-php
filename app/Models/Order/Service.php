@@ -7,6 +7,7 @@ use RZP\Constants\Mode;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception;
 use ApiResponse;
+use RZP\Http\RequestHeader;
 use RZP\Models\Base;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Payment;
@@ -130,9 +131,25 @@ class Service extends Base\Service
             }
         }
 
+        if ($this->isRearchBVTRequest() === true)
+        {
+            return true;
+        }
+
         $result = $this->app->razorx->getTreatment($merchant->getId(), RazorxTreatment::ROUTE_ORDER_TO_PG_ROUTER, $this->mode);
 
         return ($result === 'on');
+    }
+
+    protected function isRearchBVTRequest(): bool
+    {
+        $rzpTestCaseID = $this->app['request']->header(RequestHeader::X_RZP_REARCH_ORDER_TESTCASE_ID);
+        if(empty($rzpTestCaseID) === true)
+        {
+            return false;
+        }
+
+        return (app()->isEnvironmentQA() === true && str_ends_with(strtolower($rzpTestCaseID),'rearch_order'));
     }
 
     public function createOrder(array $input)

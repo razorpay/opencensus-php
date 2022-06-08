@@ -10,6 +10,7 @@ use Carbon\Carbon;
 use RZP\Base\Repository;
 use RZP\Error\Error;
 use RZP\Exception;
+use RZP\Http\RequestHeader;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Card;
 use RZP\Models\Feature\Constants as Features;
@@ -19,6 +20,7 @@ use RZP\Models\Risk;
 use RZP\Models\Admin;
 use RZP\Models\Order;
 use RZP\Models\Offer;
+use RZP\Services\NbPlus\Request;
 use RZP\Trace\Tracer;
 use RZP\Models\Gateway;
 use RZP\Constants\Mode;
@@ -442,6 +444,11 @@ class Processor
                 ($this->mode === Mode::LIVE))
             {
                 return false;
+            }
+
+            if ($this->isRearchBVTRequest() === true)
+            {
+                return true;
             }
 
             if (($this->ba->getOAuthClientId() !== null) or
@@ -2356,6 +2363,17 @@ class Processor
     protected function isUpiPaymentServiceEnabled(): bool
     {
         return $this->app['config']->get('applications.upi_payment_service.enabled');
+    }
+
+    protected function isRearchBVTRequest(): bool
+    {
+        $rzpTestCaseID = $this->app['request']->header(RequestHeader::X_RZP_TESTCASE_ID);
+        if(empty($rzpTestCaseID) === true)
+        {
+            return false;
+        }
+
+        return (app()->isEnvironmentQA() === true && str_ends_with(strtolower($rzpTestCaseID),'rearch'));
     }
 
     protected function getRazorxVariant(Payment\Entity $payment, $prefix)
