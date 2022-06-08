@@ -2694,7 +2694,10 @@ class Route
         // Banking statement routes
         'transaction_statement_fetch'              => ['get',      'transactions/{id}',                              'StatementController@get'                                           ],
         'transaction_statement_fetch_multiple'     => ['get',      'transactions',                                   'StatementController@list'                                          ],
-        'transaction_statement_fetch_multiple_for_banking' => ['get',   'transactions_banking',                      'StatementController@listForBanking'                                      ],
+
+        'transaction_statement_fetch_multiple_for_banking'          => ['get',   'transactions_banking',                      'StatementController@listForBanking'                       ],
+        'transaction_statement_fetch_multiple_for_banking_internal' => ['get',   'transactions_banking_internal',             'StatementController@listForBanking'                       ],
+
         'credit_repayment_transaction_create'      => ['post',     'credit_repayments/transaction',                  'TransactionController@createCreditRepaymentTransaction'            ],
         'capital_transaction_create'               => ['post',     'capital_balances/transaction',                   'TransactionController@createCapitalTransaction'                    ],
         'capital_multiple_transaction_create'      => ['post',     'capital_balances/multi_transactions',            'TransactionController@createMultipleCapitalTransactions'           ],
@@ -4847,6 +4850,8 @@ class Route
         'guest_pincode_get',
 
         'internal_transactions_cron',
+
+        'transaction_statement_fetch_multiple_for_banking_internal',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -8769,6 +8774,7 @@ class Route
             'fund_account_list_internal',
             'payout_fetch_by_id_internal',
             'payout_create_internal',
+            'transaction_statement_fetch_multiple_for_banking_internal',
             'user_fetch_internal',
             'vendor_payment_verify_otp',
             'vendor_payment_send_failure_email',
@@ -13972,7 +13978,8 @@ class Route
         'beta_account_fetch_multiple'                       => HeartbeatLagChecker::SLAVE,
         'submerchants_fetch_multiple'                       => HeartbeatLagChecker::SLAVE,
         'transaction_statement_fetch_multiple'              => HeartbeatLagChecker::SLAVE,
-        'transaction_statement_fetch_multiple_for_banking'        => HeartbeatLagChecker::SLAVE,
+        'transaction_statement_fetch_multiple_for_banking'  => HeartbeatLagChecker::SLAVE,
+        'transaction_statement_fetch_multiple_for_banking_internal'        => HeartbeatLagChecker::SLAVE,
         'batch_fetch_by_id'                                 => HeartbeatLagChecker::MASTER,
         'batch_process_by_id'                               => HeartbeatLagChecker::MASTER,
         'payment_fetch_by_id'                               => HeartbeatLagChecker::MASTER,
@@ -14265,6 +14272,7 @@ class Route
         'submerchants_fetch_multiple',
         'transaction_statement_fetch_multiple',
         'transaction_statement_fetch_multiple_for_banking',
+        'transaction_statement_fetch_multiple_for_banking_internal',
         'mock_hdfc_enroll',
         'mock_hdfc_payment',
         'mock_hdfc_auth_enrolled',

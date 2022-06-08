@@ -102,6 +102,10 @@ class Service extends Transaction\Service
         return $transaction->toArrayPublic();
     }
 
+    /*
+     * TODO: VendorPayment Internal Auth Also Uses this method -->
+     *        switching merchants between these feature flags could lead to a potential data miss, and should be handled carefully later.
+     */
     // Temporary route for forcing the index for X Dashboard Requests for Account statement
     public function fetchMultipleForBanking($input)
     {

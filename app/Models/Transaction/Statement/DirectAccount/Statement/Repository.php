@@ -52,6 +52,18 @@ class Repository extends Base\Repository
         'source.reversal',
     ];
 
+    protected function addQueryOrder($query)
+    {
+        if ($this->app['basicauth']->isVendorPaymentApp() === true)
+        {
+            $query->orderBy($this->dbColumn(Entity::CREATED_AT), 'asc');
+
+            return;
+        }
+
+        parent::addQueryOrder($query);
+    }
+
     /**
      * {@inheritDoc}
      *

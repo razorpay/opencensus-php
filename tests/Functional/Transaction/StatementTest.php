@@ -194,6 +194,25 @@ class StatementTest extends TestCase
         $this->startTest();
     }
 
+    public function testFetchStatementBankingOnVendorPaymentsAuth()
+    {
+        $this->createBankTransferTransaction();
+
+        $this->getDbLastEntity('transaction', 'test');
+
+        $this->ba->appAuthTest($this->config['applications.vendor_payments.secret']);
+
+        $response = $this->startTest();
+
+        $response = $response['items'][0];
+
+        $this->assertNotEmpty($response['id']);
+        $this->assertNotEmpty($response['created_at']);
+        $this->assertNotEmpty($response['source']['id']);
+        $this->assertNotEmpty($response['source']['entity']);
+        $this->assertNotEmpty($response['source']['amount']);
+    }
+
     //merchant has rules and hitting a route with access control policies allowed with role not allowed
     public function testFetchStatementWithAttributesPermissionFalse()
     {

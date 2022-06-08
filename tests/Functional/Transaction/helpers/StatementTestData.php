@@ -351,6 +351,43 @@ return [
         ],
     ],
 
+    'testFetchStatementBankingOnVendorPaymentsAuth'          => [
+        'request' => [
+            'server' => [
+                'HTTP_X-Razorpay-Account'  =>  '10000000000000',
+            ],
+            'url'    => '/transactions_banking_internal',
+            'method' => 'get',
+            'content' => [
+                'account_number' => '2224440041626905',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'items'  => [
+                    [
+                        'entity'         => 'transaction',
+                        'account_number' => '2224440041626905',
+                        'amount'         => 2500,
+                        'currency'       => 'INR',
+                        'credit'         => 2500,
+                        'debit'          => 0,
+                        'balance'        => 102500,
+                        'source'         => [
+                            'entity'         => 'bank_transfer',
+                            'mode'           => 'NEFT',
+                            'amount'         => 2500,
+                            'payer_name'     => null,
+                            'payer_account'  => '7654321234567',
+                            'payer_ifsc'     => 'HDFC0000001',
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testFetchStatementWithNoAttributes'          => [
         'request' => [
             'server' => [
