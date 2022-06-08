@@ -55,9 +55,14 @@ class Service
     const ADD_OR_UPDATE_SETTINGS      = 'AddOrUpdateSettings';
     const GET_ALL_SETTINGS            = 'GetAllSettings';
     const ZOHO_STATEMENT_SYNC         = 'TriggerZohoBankStatementSync';
+    const GET_TALLY_BANK_TRANSACTIONS = 'FetchBankTransactionsTally';
+    const ACK_TALLY_BANK_TRANSACTIONS = 'AckBankTransactionsTally';
 
     const TRIGGER_BANK_STATEMENT_FETCH_CRON     = 'TriggerBankStatementFetchCron';
     const TRIGGER_BANK_STATEMENT_FETCH_MERCHANT = 'TriggerBankStatementFetchMerchant';
+
+    const GET_MERCHANT_BANKING_ACCOUNTS_FOR_TALLY  = 'GetMerchantBankingAccountsForTally';
+    const UPDATE_RX_TALLY_LEDGER_MAPPING           = 'UpdateRxTallyLedgerMapping';
 
     const X_RAZORPAY_TASKID_HEADER    = 'X-Razorpay-TaskId';
     const X_REQUEST_ID                = 'X-Request-ID';
@@ -107,6 +112,20 @@ class Service
     public function getCashFlowEntries(MerchantEntity $merchant, array $input)
     {
         $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::GET_TALLY_CASHFLOW_ENTRIES);
+
+        return $this->makeRequest($merchant, $url, $input, null, [], 'POST', MODE::LIVE);
+    }
+
+    public function getTallyBankTransactions(MerchantEntity $merchant, array $input)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::GET_TALLY_BANK_TRANSACTIONS);
+
+        return $this->makeRequest($merchant, $url, $input, null, [], 'POST', MODE::LIVE);
+    }
+
+    public function ackTallyBankTransactions(MerchantEntity $merchant, array $input)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::ACK_TALLY_BANK_TRANSACTIONS);
 
         return $this->makeRequest($merchant, $url, $input, null, [], 'POST', MODE::LIVE);
     }
@@ -462,6 +481,24 @@ class Service
         $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::ZOHO_STATEMENT_SYNC);
 
         return $this->makeRequest(null, $url);
+    }
+
+    public function getMerchantBankingAccountsForTally(MerchantEntity $merchant)
+    {
+        $data[self::MERCHANT_ID] = $merchant->getId();
+
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::GET_MERCHANT_BANKING_ACCOUNTS_FOR_TALLY);
+
+        return $this->makeRequest(null, $url, $data);
+    }
+
+    public function updateRxTallyLedgerMapping(MerchantEntity $merchant, array $input)
+    {
+        $input[self::MERCHANT_ID] = $merchant->getId();
+
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::UPDATE_RX_TALLY_LEDGER_MAPPING);
+
+        return $this->makeRequest(null, $url, $input);
     }
 
     protected function makeRequest(MerchantEntity $merchant = null,

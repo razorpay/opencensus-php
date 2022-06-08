@@ -249,6 +249,26 @@ return [
         ]
     ],
 
+    'testGetTallyBankTransactionsServiceMethod' => [
+        'request' => [
+            'method' => 'GET',
+            'url' => '/accounting-integration/tally/bank-transactions',
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+
+    'testAckTallyBankTransactionsServiceMethod' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/accounting-integration/tally/bank-transactions/ack',
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+
     'testFetchTallyInvoiceServiceMethod' => [
         'request'  => [
             'server' => [
@@ -455,6 +475,48 @@ return [
         ],
         'response' => [
             'content' => []
+        ]
+    ],
+
+    'testGetMerchantBankingAccountsForTally' => [
+        'request'  => [
+            'method' => 'GET',
+            'url'    => '/accounting-integration/tally/banking-accounts',
+        ],
+        'response' => [
+            'content' => [
+                'account_details' => [
+                    [
+                        'account_number' => '12345566',
+                        'account_type' => 'Virtual Account'
+                    ],
+                    [
+                        'account_number' => '12345577',
+                        'account_type' => 'Current Account'
+                    ]
+                ]
+            ]
+        ]
+    ],
+
+    'testUpdateRxTallyLedgerMapping' => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/accounting-integration/tally/banking-accounts/mapping',
+            'content' => [
+                'rx_tally_ledger_mapping' => [
+                    [
+                        'account_number' => '123456',
+                        'ledger_id' => '344567',
+                        'ledger_name' => 'testXyz'
+                    ]
+                ]
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'success' => 'true',
+            ]
         ]
     ],
 ];

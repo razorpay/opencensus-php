@@ -163,6 +163,7 @@ class AccountingPayoutsController extends Controller
     {
         return $this->service->setOrganisationInfo($this->ba->getMerchant(), $app, $this->input);
     }
+
     public function getChartOfAccounts(string $app)
     {
         return $this->service->getChartOfAccounts($this->ba->getMerchant(), $this->input, $app, $this->ba->getUser());
@@ -178,15 +179,38 @@ class AccountingPayoutsController extends Controller
         return $this->service->syncChartOfAccounts($this->ba->getMerchant(), $this->input, $app, $this->ba->getUser());
     }
 
-    public function bankStatementFetchTriggerMerchant() {
+    public function bankStatementFetchTriggerMerchant()
+    {
         return $this->service->bankStatementFetchTriggerMerchant($this->ba->getMerchant(), $this->input);
     }
 
-    public function bankStatementFetchTriggerCron() {
+    public function bankStatementFetchTriggerCron()
+    {
         return $this->service->bankStatementFetchTriggerCron();
     }
 
-    public function zohoStatementSyncCron() {
+    public function zohoStatementSyncCron()
+    {
         return $this->service->zohoStatementSyncCron();
+    }
+
+    public function getMerchantBankingAccountsForTally()
+    {
+        return $this->service->getMerchantBankingAccountsForTally($this->ba->getMerchant());
+    }
+
+    public function updateRxTallyLedgerMapping()
+    {
+        return $this->service->updateRxTallyLedgerMapping($this->ba->getMerchant(), $this->input);
+    }
+
+    public function getTallyBankTransactions()
+    {
+        return $this->service->getTallyBankTransactions($this->ba->getMerchant(), $this->input);
+    }
+
+    public function ackTallyBankTransactions()
+    {
+        return $this->service->ackTallyBankTransactions($this->ba->getMerchant(), $this->input);
     }
 }

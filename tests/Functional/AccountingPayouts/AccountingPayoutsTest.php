@@ -376,6 +376,36 @@ class AccountingPayoutsTest extends TestCase
         $apMock->shouldHaveReceived('getCashFlowEntries');
     }
 
+    public function testGetTallyBankTransactionsServiceMethod()
+    {
+        $this->ba->privateAuth();
+
+        $apMock = Mockery::mock('RZP\Services\AccountingPayouts');
+
+        $apMock->shouldReceive('getTallyBankTransactions')->andReturn([]);
+
+        $this->app->instance('accounting-payouts', $apMock);
+
+        $this->startTest();
+
+        $apMock->shouldHaveReceived('getTallyBankTransactions');
+    }
+
+    public function testAckTallyBankTransactionsServiceMethod()
+    {
+        $this->ba->privateAuth();
+
+        $apMock = Mockery::mock('RZP\Services\AccountingPayouts');
+
+        $apMock->shouldReceive('ackTallyBankTransactions')->andReturn([]);
+
+        $this->app->instance('accounting-payouts', $apMock);
+
+        $this->startTest();
+
+        $apMock->shouldHaveReceived('ackTallyBankTransactions');
+    }
+
     public function testFetchTallyInvoiceServiceMethod()
     {
         $this->ba->privateAuth();
@@ -672,5 +702,48 @@ class AccountingPayoutsTest extends TestCase
         $this->startTest();
 
         $apMock->shouldHaveReceived('zohoStatementSyncCron');
+    }
+
+    public function testGetMerchantBankingAccountsForTally()
+    {
+        $this->ba->privateAuth();
+
+        $apMock = Mockery::mock('RZP\Services\AccountingPayouts');
+
+        $apMock->shouldReceive('getMerchantBankingAccountsForTally')->andReturn([
+            'account_details' => [
+                [
+                    'account_number' => '12345566',
+                    'account_type' => 'Virtual Account'
+                ],
+                [
+                    'account_number' => '12345577',
+                    'account_type' => 'Current Account'
+                ]
+            ]
+        ]);
+
+        $this->app->instance('accounting-payouts', $apMock);
+
+        $this->startTest();
+
+        $apMock->shouldHaveReceived('getMerchantBankingAccountsForTally');
+    }
+
+    public function testUpdateRxTallyLedgerMapping()
+    {
+        $this->ba->privateAuth();
+
+        $apMock = Mockery::mock('RZP\Services\AccountingPayouts');
+
+        $apMock->shouldReceive('updateRxTallyLedgerMapping')->andReturn([
+            'success' => 'true',
+        ]);
+
+        $this->app->instance('accounting-payouts', $apMock);
+
+        $this->startTest();
+
+        $apMock->shouldHaveReceived('updateRxTallyLedgerMapping');
     }
 }
