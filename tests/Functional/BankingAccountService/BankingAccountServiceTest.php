@@ -516,6 +516,21 @@ class BankingAccountServiceTest extends TestCase
         $this->assertEquals('10000000000000', $response['data']['business_id']);
     }
 
+    public function testBusinessIdAssigmentInLMSWhileApplyToBankingAccountForMob()
+    {
+        $this->ba->mobAppAuthForInternalRoutes();
+
+        $this->createMerchantDetailWithBusinessId();
+
+        $this->testData[__FUNCTION__] = $this->testData['testBusinessIdAssigmentInLMSWhileApplyToBankingAccount'];
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/bas_internal/lms/admin/apply';
+
+        $response = $this->startTest();
+
+        $this->assertEquals('10000000000000', $response['data']['business_id']);
+    }
+
     public function testLmsErrorFromBas()
     {
         $this->ba->adminAuth();

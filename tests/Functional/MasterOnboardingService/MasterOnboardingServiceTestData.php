@@ -682,4 +682,19 @@ return [
             ]
         ]
     ],
+
+    'testIntentCreateViaLms' => [
+        'request'  => [
+            'url'     => '/mob/lms/intents/intent00000001/application/apply',
+            'method'  => 'POST',
+            'content' => [
+                'merchant_id' => '10000000000000',
+                'service'   => 'x',
+                'source' => 'x_dash'
+            ]
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
 ];

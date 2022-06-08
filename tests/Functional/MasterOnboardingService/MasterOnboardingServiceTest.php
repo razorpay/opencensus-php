@@ -139,6 +139,13 @@ class MasterOnboardingServiceTest extends TestCase
         $this->startTest();
     }
 
+    public function testIntentCreateViaLms()
+    {
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
     public function createMerchantDetailWithBusinessId(array $attributes = [])
     {
         $default = [

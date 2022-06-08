@@ -2377,6 +2377,8 @@ class Route
         'mob_save_workflow'                        => ['post',     'mob/save_workflow',                                     'MasterOnboardingController@proxyRequest'                           ],
         'mob_get_workflow'                         => ['get',      'mob/get_workflow/{id}',                                 'MasterOnboardingController@proxyRequest'                           ],
         'mob_to_bas_routes'                        => ['any',      'mob/bas/merchant/banking_application/business/{path?}', 'BasController@forwardRequest'                                      ],
+        'mob_ca_lms_routes'                        => ['post',     'mob/lms/{path?}',                                       'MasterOnboardingController@adminRequest'                           ],
+        'bas_internal_admin_routes'                => ['any',      'bas_internal/lms/{path?}',                              'BasController@forwardLMSRequest'                                   ],
 
         //all requests get forwarded to banking account service
         'banking_account_service_lms_routes_all'   => ['any',      'bas/lms/{path?}',                                    'BasController@forwardLMSRequest'                               ],
@@ -3734,6 +3736,7 @@ class Route
         'banking_account_create_admin',
         'external_merchant_composite_details_fetch',
         'banking_account_service_lms_routes_all',
+        'mob_ca_lms_routes',
     ];
 
     /**
@@ -4143,6 +4146,7 @@ class Route
         'check_status_of_test_payouts',
         'add_balance_to_source_for_test_payouts',
         'mob_to_bas_routes',
+        'bas_internal_admin_routes',
         'coupon_expiry_alert',
         'upi_transfer_process_internal',
         'payment_callback_bharatqr_internal',
@@ -5706,6 +5710,7 @@ class Route
         'nocode_debugging_route',
         'merchant_enhanced_activation_details',
         'mob_admin_routes',
+        'mob_ca_lms_routes',
         'merchant_business_types_admin',
         'merchant_info',
         'merchant_audit_info',
@@ -6827,6 +6832,7 @@ class Route
         'nocode_debugging_route'                    => Permission::DEBUG_NOCODE_ROUTES,
         'merchant_enhanced_activation_details'     => Permission::VIEW_MERCHANT,
         'mob_admin_routes'                          => Permission::MOB_ADMIN,
+        'mob_ca_lms_routes'                         => Permission::VIEW_ACTIVATION_FORM,
         'admin_trigger_2fa_otp'                    => Permission::AUTH_LOCAL_ADMIN,
         'admin_account_lock_unlock'                => Permission::AUTH_LOCAL_ADMIN,
         'm2m_referral_link_get'                     => Permission::VIEW_MERCHANT,
@@ -8724,7 +8730,14 @@ class Route
      */
     public static $internalApps = [
         'master_onboarding' => [
-            '*',
+            'banking_account_service_common_serviceability_check',
+            'banking_account_service_routes',
+            'bas_internal_admin_routes',
+            'merchant_post_preferences',
+            'mob_to_bas_routes',
+            'merchant_get_preferences',
+            'merchant_activation_details',
+            'banking_account_service_pincode_serviceability_check',
         ],
 
         'metro' => [
@@ -9958,6 +9971,7 @@ class Route
             'admin_collect_info_merchant_details_patch',
             'merchant_enhanced_activation_details',
             'mob_admin_routes',
+            'mob_ca_lms_routes',
             'merchant_business_types_admin',
             'merchant_info',
             'merchant_audit_info',
@@ -13505,6 +13519,7 @@ class Route
     // Banking specific routes for which sensitive data will be scrubbed from logs.
     //
     const BANKING_SPECIFIC_ROUTES = [
+        'mob_ca_lms_routes',
         'merchant_activation_needs_clarification',
         'payout_create',
         'payout_validate',

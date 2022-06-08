@@ -6,6 +6,8 @@ use App;
 use Config;
 use RZP\Trace\TraceCode;
 use RZP\Http\Request\Requests;
+use RZP\Models\Merchant\Repository as MerchantRepo;
+use RZP\Models\Merchant\Balance\Type as ProductType;
 
 /**
  * Class MasterOnboardingService
@@ -62,13 +64,44 @@ class MasterOnboardingService
         ];
     }
 
-    private function getAdminRequestHeaders() : array
+    private function getAdminRequestHeaders(array $data = []) : array
     {
-        return [
+        $headers = [
             'X-Admin-Id'                      => $this->ba->getAdmin()->getId() ?? '',
             'X-Admin-Email'                   => $this->ba->getAdmin()->getEmail() ?? '',
             'Grpc-metadata-X-Razorpay-TaskId' => $this->app['request']->getTaskId(),
             'X-Auth-Type'                     => 'admin'
+        ];
+
+        $headers = empty($data['merchant_id'] === false) ? array_merge($headers, $this->getProxyHeadersForAdminRequest($data)) : $headers;
+
+        return $headers;
+    }
+
+    private function getProxyHeadersForAdminRequest(array $data = []) : array
+    {
+        $merchantId = $data['merchant_id'];
+
+        $repo = new MerchantRepo();
+
+        $merchant = $repo->findOrFail($merchantId);
+
+        $user = $merchant->owners(ProductType::BANKING)->first();
+
+        $userId = optional($user)->getId();
+
+        if (empty($userId) === true)
+        {
+            // Adding this since ops team can start onboarding for PG merchants as well
+            $user = $merchant->owners(ProductType::PRIMARY)->first();
+
+            $userId = $user->getId();
+        }
+
+        return [
+            'Grpc-metadata-X-Merchant-Id'       => $merchantId,
+            'Grpc-metadata-X-Dashboard-User-Id' => $userId,
+            'Grpc-metadata-X-Service'           => ProductType::BANKING,
         ];
     }
 
@@ -122,9 +155,9 @@ class MasterOnboardingService
     {
         $path = $this->getPathWithQueryString($method, $path, $data);
 
-        $url = $isAdmin === true ? $this->baseUrl . '/'. $path : $this->baseUrl . '/v1/' . $path;
+        $url = $this->baseUrl . '/v1/' . $path;
 
-        $headers = ($isAdmin === true) ? $this->getAdminRequestHeaders() : $this->getProxyRequestHeaders();
+        $headers = ($isAdmin === true) ? $this->getAdminRequestHeaders($data) : $this->getProxyRequestHeaders();
 
         $headers = array_merge($headers, $this->getMOBHeaders());
 
