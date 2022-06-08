@@ -27,7 +27,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $lineItemRules = [
-        Fields::LINE_ITEM_TYPE                                                   => 'sometimes|string|max:32',
+        Fields::LINE_ITEM_TYPE                                                   => 'sometimes|string|max:128',
         Fields::LINE_ITEM_SKU                                                    => 'sometimes|string|max:128',
         Fields::LINE_ITEM_VARIANT_ID                                             => 'sometimes|string|max:128',
         Fields::LINE_ITEM_OTHER_PRODUCT_CODES                                    => 'sometimes|array',
@@ -50,9 +50,9 @@ class Validator extends Base\Validator
     protected static $promotionRules = [
         Fields::PROMOTIONS_REFERENCE_ID => 'required|string|max:128',
         Fields::PROMOTIONS_TYPE         => 'sometimes|string|max:128',
-        Fields::PROMOTIONS_CODE         => 'required|string|max:16',
+        Fields::PROMOTIONS_CODE         => 'required|string|max:512',
         Fields::PROMOTIONS_VALUE        => 'required|integer',
-        Fields::PROMOTIONS_VALUE_TYPE   => 'sometimes|string|max:16',
+        Fields::PROMOTIONS_VALUE_TYPE   => 'sometimes|string|max:128',
         Fields::PROMOTIONS_DESCRIPTION  => 'sometimes|string|max:512',
     ];
 
