@@ -7036,6 +7036,11 @@ class Core extends Base\Core
         $this->associateSlab($slabs, Slab\Type::SHIPPING_SLAB);
     }
 
+    public function associateCodServiceabilitySlab(array $slabs)
+    {
+        $this->associateSlab($slabs, Slab\Type::COD_SERVICEABILITY_SLAB);
+    }
+
     protected function associateSlab(array $slabs, string $type)
     {
         $input = [

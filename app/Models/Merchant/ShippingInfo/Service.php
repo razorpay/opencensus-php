@@ -326,6 +326,19 @@ class Service extends Base\Service
             // TODO: Remove this once the api contract change is finalized
             $address = $this->convertShippingMethodsToOldFormat($address);
 
+            // Calculating COD Serviceability based on slabs if required.
+
+            $merchantCodSlabServiceabilityConfig = $this->repo->merchant_1cc_configs->findByMerchantAndConfigType(
+                $this->merchant->getId(),
+                'cod_slab_serviceability'
+            );
+
+            if ($merchantCodSlabServiceabilityConfig !== null
+                and $merchantCodSlabServiceabilityConfig->getValue() === "1")
+            {
+                $address['cod'] = $this->getCodServiceabilityFromSlabs($orderMeta->getValue()['line_items_total']);
+            }
+
             $this->cacheMerchantShippingInfo($orderId, $address);
 
             return [self::SHIPPING_INFO_ADDRESSES => [$address]];
@@ -349,6 +362,33 @@ class Service extends Base\Service
                 );
             }
         }
+    }
+
+    protected function getCodServiceabilityFromSlabs(int $amount): bool
+    {
+        $slabsEntity = $this->merchant->slab(Slab\Type::COD_SERVICEABILITY_SLAB);
+
+        if ($slabsEntity === null)
+        {
+            return false;
+        }
+        $slabs = $slabsEntity->getSlab();
+        return $this->getServiceabilityFromSlabs($amount, $slabs);
+    }
+
+    protected function getServiceabilityFromSlabs(int $amount, array $slabs)
+    {
+        $serviceability = false;
+        foreach ($slabs as $slab)
+        {
+            if ($slab['amount'] > $amount)
+            {
+                break;
+            }
+
+            $serviceability = $slab['serviceability'];
+        }
+        return $serviceability;
     }
 
     protected function convertOldFormatToShippingMethods(array $address): array

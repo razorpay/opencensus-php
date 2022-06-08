@@ -3506,10 +3506,12 @@ class Route
         'update_serviceability_url_dark'           => ['post',       'merchant/shipping_info/url_dark',                            'MerchantController@updateShippingInfoUrl'                   ],
         'update_merchant_platform'                 => ['post',        'merchant/1cc_platform',                                     'MerchantController@updateMerchantPlatform'                  ],
         'update_merchant_platform_dark'             => ['post',       'merchant/1cc_platform_dark',                             'MerchantController@updateMerchantPlatform'                  ],
+        'update_merchant_1cc_config_dark'           => ['post',       'merchant/1cc_config_dark',                             'MerchantController@updateMerchant1ccConfigDark'                  ],
         'update_cod_slabs'                          => ['post',       'merchant/slabs/cod',                                    'MerchantController@updateCodSlabs'                           ],
         'update_cod_slabs_dark'                     => ['post',       'merchant/slabs/cod_dark',                                    'MerchantController@updateCodSlabs'                           ],
         'update_shipping_slabs'                     => ['post',       'merchant/slabs/shipping',                               'MerchantController@updateShippingSlabs'                      ],
         'update_shipping_slabs_dark'                => ['post',       'merchant/slabs/shipping_dark',                               'MerchantController@updateShippingSlabs'                      ],
+        'update_cod_serviceability_slabs_dark'      => ['post',       'merchant/slabs/dark',                               'MerchantController@updateCodServiceabilitySlabDark'                      ],
         'order_update_customer_details_1cc'         => ['patch',      'orders/1cc/{id}/customer/',                             'OrderController@updateCustomerDetailsFor1CCOrder'             ],
         'order_reset_1cc'                           => ['post',       'orders/1cc/{id}/reset',                                 'OrderController@reset1CCOrder'                                ],
         '1cc_configs_update'                        => ['post',       '1cc/merchant/configs',                                  'MerchantController@update1ccConfig'],
@@ -4783,8 +4785,10 @@ class Route
         'update_coupon_validity_url_dark',
         'update_serviceability_url_dark',
         'update_merchant_platform_dark',
+        'update_merchant_1cc_config_dark',
         'update_shipping_slabs_dark',
         'update_cod_slabs_dark',
+        'update_cod_serviceability_slabs_dark',
 
         'banking_axis_invitations_send',
 
@@ -12576,7 +12580,9 @@ class Route
             'update_cod_slabs_dark',
             'update_serviceability_url_dark',
             'update_merchant_platform_dark',
+            'update_merchant_1cc_config_dark',
             'update_shipping_slabs_dark',
+            'update_cod_serviceability_slabs_dark',
         ],
 
         'xpayroll' => [

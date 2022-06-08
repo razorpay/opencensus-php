@@ -9304,6 +9304,28 @@ class Service extends Base\Service
    }
 
     /**
+     * Add/Update Merchant 1cc Config from dark
+     * @param array $input
+     * @return void
+     * @throws \Throwable
+     */
+    public function updateMerchant1ccConfigDark(array $input)
+    {
+        if ($this->merchant === null and $this->app['basicauth']->isPrivilegeAuth() === true)
+        {
+            $this->merchant = $this->repo->merchant->findOrFail($input['merchant_id']);
+
+            $this->app['basicauth']->setMerchant($this->merchant);
+        }
+
+        (new Merchant\Core)->associateMerchant1ccConfig(
+            $input['config'],
+            $input['value'],
+            $input['value_json'] ?? []
+        );
+    }
+
+    /**
      * Adds/Updates COD Slabs for the merchant (1CC)
      * @param array $input
      * @return void
@@ -9351,6 +9373,28 @@ class Service extends Base\Service
         $slabs = $this->validateAndSortSlabs($input['slabs']);
 
         (new Core())->associateShippingSlab($slabs);
+    }
+
+    /**
+     * @throws Throwable
+     * @throws BadRequestException
+     */
+    public function updateCodServiceabilitySlabDark(array $input)
+    {
+        $this->trace->info(TraceCode::MERCHANT_SHIPPING_SLABS_UPDATE_REQUEST, $input);
+
+        if ($this->merchant === null and $this->app['basicauth']->isPrivilegeAuth() === true)
+        {
+            $this->merchant = $this->repo->merchant->findOrFail($input['merchant_id']);
+
+            $this->app['basicauth']->setMerchant($this->merchant);
+        }
+
+        if(!isset($input['slabs'])) {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
+        }
+
+        (new Core())->associateCodServiceabilitySlab($input['slabs']);
     }
 
     /**

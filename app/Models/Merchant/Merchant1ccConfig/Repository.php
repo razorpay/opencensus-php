@@ -13,6 +13,7 @@ class Repository extends Base\Repository
         return $this->newQuery()
             ->where(Entity::MERCHANT_ID, '=', $merchantId)
             ->where(Entity::CONFIG, '=', $config)
+            ->where(Entity::DELETED_AT, '=', null)
             ->first();
     }
 

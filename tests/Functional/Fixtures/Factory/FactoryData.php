@@ -2175,5 +2175,9 @@ final class FactoryData
                 ]
             )
         ]);
+
+        $factory(\RZP\Models\Merchant\Slab\Entity::class, [
+            'id'        => $faker->uniqueid,
+        ]);
     }
 }

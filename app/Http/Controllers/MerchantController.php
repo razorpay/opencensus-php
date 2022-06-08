@@ -2938,6 +2938,13 @@ class MerchantController extends Controller
         return ApiResponse::json([], 201);
     }
 
+    public function updateMerchant1ccConfigDark()
+    {
+        $input = Request::all();
+        $this->service()->updateMerchant1ccConfigDark($input);
+        return ApiResponse::json([], 201);
+    }
+
     public function updateCodSlabs()
     {
         $input = Request::all();
@@ -2961,6 +2968,15 @@ class MerchantController extends Controller
         $input = Request::all();
 
         $this->service()->updateShippingSlabs($input);
+
+        return ApiResponse::json([], 201);
+    }
+
+    public function updateCodServiceabilitySlabDark()
+    {
+        $input = Request::all();
+
+        $this->service()->updateCodServiceabilitySlabDark($input);
 
         return ApiResponse::json([], 201);
     }
