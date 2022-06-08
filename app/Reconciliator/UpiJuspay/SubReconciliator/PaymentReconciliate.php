@@ -9,9 +9,9 @@ use RZP\Gateway\Base\Action;
 use RZP\Models\Base\PublicEntity;
 use RZP\Reconciliator\Base\Reconciliate;
 use Razorpay\Spine\Exception\DbQueryException;
-use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
+use RZP\Reconciliator\Base\SubReconciliator\Upi;
 
-class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
+class PaymentReconciliate extends Upi\UpiPaymentServiceReconciliate
 {
     const RRN                     = 'RRN';
     const VPA                     = 'VPA';

@@ -44,14 +44,6 @@ class UpiJusPayReconTest extends TestCase
     {
         $payment = $this->createDependentEntitiesForPayment(500000);
 
-        $this->mockReconContentFunction(function (& $content) use ($payment)
-        {
-            if ($content['ORDERID'] === $payment['id'])
-            {
-                $content = [];
-            }
-        });
-
         $fileContents = $this->generateReconFile(['gateway' => $this->gateway]);
 
         $uploadedFile = $this->createUploadedFile($fileContents['local_file_path'], 'upi_sett_bajaj.csv', 'text/plain');

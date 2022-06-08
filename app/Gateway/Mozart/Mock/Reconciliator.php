@@ -519,6 +519,8 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
             $data[] = $row;
         }
 
+        $this->content($data, 'juspay_recon');
+
         $formattedData = $this->generateText($data, '|');
 
         $formattedData = implode("|", array_keys($data[0])) . PHP_EOL . $formattedData;
