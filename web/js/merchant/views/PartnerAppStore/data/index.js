@@ -1,4 +1,15 @@
 export const partnerProducts = {
+  haptik: {
+    slug: 'haptik',
+    title: 'Haptik Interakt',
+    url:
+      'https://www.interakt.shop/signup?utm_source=Razorpay+&utm_medium=Razorpay+App+Store+&utm_campaign=Razorpay',
+    category: 'Conversational Commerce',
+    description: 'Multiply sales using payment links in automated WhatsApp Commerce chat flows.',
+    logo: 'haptik.png', // relative to web/css/assets/app-store/partner-logo/
+    brandColor: '#00A68B',
+    isNew: true,
+  },
   thrive: {
     slug: 'thrive',
     title: 'Thrive Now',
