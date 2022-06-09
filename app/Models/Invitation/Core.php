@@ -422,7 +422,7 @@ class Core extends Base\Core
 
     protected function getSenderName(array $input)
     {
-        if (empty($input[Entity::SENDER_NAME] === true))
+        if (empty($input[Entity::SENDER_NAME]) === true)
         {
             return $this->merchant->getName();
         }
