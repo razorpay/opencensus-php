@@ -50,6 +50,17 @@ class BaseConfig implements BvsConfig
      * @return array
      * @throws \RZP\Exception\AssertionException
      */
+    public function getEnrichmentV2()
+    {
+        assertTrue(empty($this->enrichment_v2) === false);
+
+        return $this->enrichment_v2;
+    }
+
+    /**
+     * @return array
+     * @throws \RZP\Exception\AssertionException
+     */
     public function getEnrichmentDetails()
     {
         assertTrue(empty($this->enrichmentDetails) === false);

@@ -125,6 +125,13 @@ class DefaultProcessor implements Processor
     {
         $validation = $this->getCreateValidationArray($sendEnrichmentDetails);
 
+        if ($sendEnrichmentDetails === true)
+        {
+            $response = (new BvsClient\BvsValidationClientV2($this->merchant, true, $this->getTimeout()))->createValidation($validation);
+
+            return new ValidationBaseResponseV2($response);
+        }
+
         if ($this->requestMode() == Constant::SYNC)
         {
             try
@@ -203,6 +210,15 @@ class DefaultProcessor implements Processor
     }
 
     /**
+     * @return array
+     * @throws AssertionException
+     */
+    public function getEnrichmentsV2(): array
+    {
+        return $this->bvsRuleConfig->getEnrichmentV2();
+    }
+
+    /**
      * The config class name should be passed in input payload
      *
      * @param string $configName
@@ -242,6 +258,8 @@ class DefaultProcessor implements Processor
 
         if ($sendEnrichmentDetails === true)
         {
+            $validation[Constant::ENRICHMENTS] = $this->getEnrichmentsV2();
+
             $validation[Constant::RULES] = $this->getFetchDetailsRule();
         }
 

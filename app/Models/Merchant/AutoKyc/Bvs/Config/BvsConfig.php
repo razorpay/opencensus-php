@@ -18,6 +18,13 @@ interface BvsConfig
 
     /**
      * @return array
+     * @throws \RZP\Exception\AssertionException
+     */
+
+    public function getEnrichmentV2();
+
+    /**
+     * @return array
      */
     public function getEnrichmentDetails();
 

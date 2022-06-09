@@ -9,6 +9,14 @@ class Business_pan extends BaseConfig
             'required_fields' => [
                 'name'
             ],
+        ],
+    ];
+
+    protected $enrichment_v2 = [
+        'online_provider' => [
+            'required_fields' => [
+                'name'
+            ],
             'enrichment_details_fields' => [
                 'online_provider.details.name.value'
             ]
