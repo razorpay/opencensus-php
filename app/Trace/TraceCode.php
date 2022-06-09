@@ -5107,6 +5107,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const NEW_BANKING_ERROR_RESPONSE_DATA                       = 'NEW_BANKING_ERROR_RESPONSE_DATA';
     const BANKING_ERROR_CODE_MAPPING_NOT_FOUND                  = 'BANKING_ERROR_CODE_MAPPING_NOT_FOUND';
 
+
+    const ORDERS_CREATED_COUNT  = 'orders_created_count';
+    const ORDERS_FAILURE_COUNT  = 'orders_failure_count';
+
     // Razorpayx onboarding
     const MERCHANT_RAZORPAYX_ACTIVATION_PRE_VALIDATION_FAILURE  = 'MERCHANT_RAZORPAYX_ACTIVATION_PRE_VALIDATION_FAILURE';
     const MERCHANT_RAZORPAYX_ACTIVATION_REQUEST                 = 'MERCHANT_RAZORPAYX_ACTIVATION_REQUEST';

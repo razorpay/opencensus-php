@@ -83,6 +83,12 @@ class Service extends Base\Service
 
             $this->app['diag']->trackOrderEvent(EventCode::ORDER_CREATION_PROCESSED, null, $ex, $properties);
 
+            $dimensions = [
+                'source'    => 'api',
+                'code'      => $ex->getMessage()
+            ];
+            $this->trace->count(TraceCode::ORDERS_FAILURE_COUNT, $dimensions);
+
             throw $ex;
         }
 
@@ -170,7 +176,14 @@ class Service extends Base\Service
 
             $input['merchant_id'] = $this->merchant->getId();
 
-            return $this->app['pg_router']->createOrder($input, true);
+            $order = $this->app['pg_router']->createOrder($input, true);
+
+            $dimensions = [
+                'source' => 'rearch'
+            ];
+            $this->trace->count(TraceCode::ORDERS_CREATED_COUNT, $dimensions);
+
+            return $order;
         }
 
         $this->beforeCreate($input);
@@ -180,6 +193,11 @@ class Service extends Base\Service
         $order = $this->processCreate($orderInput);
 
         $order = $this->afterCreate($input, $order);
+
+        $dimensions = [
+            'source' => 'api'
+        ];
+        $this->trace->count(TraceCode::ORDERS_CREATED_COUNT, $dimensions);
 
         return $order;
     }

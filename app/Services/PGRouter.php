@@ -139,14 +139,14 @@ class PGRouter
     {
         $this->updateIpandUserAgent($input);
 
-        $output = $this->sendRequest(self::PGRouterValidateAndCreatePayment, Requests::POST, $input, $throwExceptionOnFailure);
+        $output = $this->sendRequest(self::PGRouterValidateAndCreatePayment, Requests::POST, $input, $throwExceptionOnFailure, 90);
 
         return $output['body'];
     }
 
     public function validateAndCreatePaymentCheckout(array $input, bool $throwExceptionOnFailure = false): array
     {
-        $output = $this->sendRequest(self::PGRouterValidateAndCreatePaymentCheckout, Requests::POST, $input, $throwExceptionOnFailure);
+        $output = $this->sendRequest(self::PGRouterValidateAndCreatePaymentCheckout, Requests::POST, $input, $throwExceptionOnFailure, 90);
 
         return $output['body'];
     }
@@ -156,7 +156,7 @@ class PGRouter
     {
         $this->updateIpandUserAgent($input, true);
 
-        $output = $this->sendRequest(self::PGRouterPaymentCreateJson, Requests::POST, $input, $throwExceptionOnFailure);
+        $output = $this->sendRequest(self::PGRouterPaymentCreateJson, Requests::POST, $input, $throwExceptionOnFailure, 90);
 
         return $output['body'];
     }
@@ -165,7 +165,7 @@ class PGRouter
     {
         $this->updateIpandUserAgent($input, true);
 
-        $output = $this->sendRequest(self::PGRouterPaymentCreateRedirect, Requests::POST, $input, $throwExceptionOnFailure);
+        $output = $this->sendRequest(self::PGRouterPaymentCreateRedirect, Requests::POST, $input, $throwExceptionOnFailure, 90);
 
         return $output['body'];
     }
@@ -201,7 +201,7 @@ class PGRouter
     {
         $url = sprintf(self::PGRouterPaymentCapture, $id);
 
-        $output = $this->sendRequest($url, Requests::POST, $captureParams, $throwExceptionOnFailure);
+        $output = $this->sendRequest($url, Requests::POST, $captureParams, $throwExceptionOnFailure, 90);
 
         return $output['body']['data']['payment'];
     }
@@ -236,7 +236,7 @@ class PGRouter
     {
         $url = sprintf(self::PGRouterPaymentVerify, $id);
 
-        $output = $this->sendRequest($url, Requests::GET, [], $throwExceptionOnFailure);
+        $output = $this->sendRequest($url, Requests::GET, [], $throwExceptionOnFailure, 90);
 
         return $output['body']['data']['payment'];
     }
@@ -545,8 +545,10 @@ class PGRouter
             {
                 return $this->forceFillNonAdminEntites($order);
             }
+
             return $order;
         }
+
         return null;
     }
 
@@ -628,7 +630,7 @@ class PGRouter
                 "statusCode" =>  $response->status_code
             ]);
 
-        return $this->parseResponse($decodedResponse, $response->status_code, $throwExceptionOnFailure);
+        return $this->parseResponse($decodedResponse, $response->status_code, $throwExceptionOnFailure, $endpoint);
     }
 
     /**
@@ -801,7 +803,7 @@ class PGRouter
      * @throws Exception\InvalidArgumentException
      * @throws Exception\ServerErrorException
      */
-    protected function parseResponse($response, $statusCode, bool $throwExceptionOnFailure = false): array
+    protected function parseResponse($response, $statusCode, bool $throwExceptionOnFailure = false, $endpoint = ""): array
     {
         if (in_array($statusCode, [503], true) === true)
         {
@@ -816,7 +818,7 @@ class PGRouter
 
         if ($throwExceptionOnFailure === true)
         {
-            $this->checkForErrors($response,$statusCode);
+            $this->checkForErrors($response,$statusCode, $endpoint);
         }
 
         return [
@@ -825,7 +827,7 @@ class PGRouter
         ];
     }
 
-    public function checkForErrors($response, $statusCode)
+    public function checkForErrors($response, $statusCode, $endpoint = "")
     {
         if (isset($response['error']) === false)
         {
@@ -875,9 +877,10 @@ class PGRouter
             $errorData['method'] = $internalMetadata['service'];
         }
 
-        $dimensions =[
-            "status_code" => $statusCode,
-            "internal_error_code"=>$internalErrorCode
+        $dimensions = [
+            "status_code"           => $statusCode,
+            "internal_error_code"   => $internalErrorCode,
+            "route"                 => $endpoint
         ];
         $this->trace->count(self::PG_ROUTER_FAILURE_STATUS_CODE, $dimensions);
 
