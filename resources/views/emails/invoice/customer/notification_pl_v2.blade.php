@@ -1,18 +1,6 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
 <html style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><body style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><div style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
-@php
-    $extendAddress = '';
-    if(isset($qr_code_image_address) === true)
-    {
-        $extendAddress = 'emails.invoice.customer.notification_qr_pl_v2';
-    }
-    else
-    {
-        $extendAddress = 'emails.invoice.notification';
-    }
-
-@endphp
-@extends($extendAddress)
+@extends($view_extend_address)
   @php
       $status    = $invoice['status'];
       $isInvoice = ($invoice['type'] === 'invoice');

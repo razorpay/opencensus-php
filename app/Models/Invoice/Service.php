@@ -4,6 +4,7 @@ namespace RZP\Models\Invoice;
 
 use Mail;
 
+use Response;
 use RZP\Exception;
 use Carbon\Carbon;
 use RZP\Error\Error;
@@ -646,7 +647,9 @@ class Service extends Base\Service
 
         imagedestroy($qrCodeImage);
 
-        return $localFilePath;
+        $image = 'data:image/bmp;base64,' . base64_encode(file_get_contents($localFilePath));
+
+        return $image;
     }
 
     public function checkIfQronEmailExperimentEnabled()
@@ -675,7 +678,9 @@ class Service extends Base\Service
 
         $input['is_test_mode'] = ($this->mode === Mode::TEST);
 
-        if(empty($input['intent_url']) === false)
+        $input['view_extend_address'] = 'emails.invoice.notification';
+
+        if (empty($input['intent_url']) === false)
         {
             $input['qr_code_image_address'] = $this->generateQrCodeImageFromIntentUrl($input);
 
@@ -683,6 +688,8 @@ class Service extends Base\Service
                                [
                                    'qr_code_image_address' => $input['qr_code_image_address'],
                                ]);
+
+            $input['view_extend_address'] = 'emails.invoice.customer.notification_qr_pl_v2';
         }
 
         $mailable = new PaymentLinkServiceBase($input);

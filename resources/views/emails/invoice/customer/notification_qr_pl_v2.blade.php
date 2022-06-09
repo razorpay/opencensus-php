@@ -111,14 +111,12 @@
             </tr>
 
         @endif
-        @if (isset($qr_code_image_address))
-            <tr class="qr_code_image_address" style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #58666E; text-align: center;">
-                <td class="first" style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #58666E; padding-bottom: 0; border-left: 1px solid #f2f2f2; width: 3%;"></td>
-                <td colspan="2" class="content" style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #58666E; padding-bottom: 24px; background-color: #fff; border-left: 1px solid #f2f2f2; border-right: 1px solid #f2f2f2; width: 92%; padding-top: 5px">
-                    <img src={{$qr_code_image_address}} alt="" style="width:236px; height:105px; border-radius: 4px" />
-                </td>
-            </tr>
-        @endif
+        <tr class="qr_code_image_address" style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #58666E; text-align: center;">
+            <td class="first" style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #58666E; padding-bottom: 0; border-left: 1px solid #f2f2f2; width: 3%;"></td>
+            <td colspan="2" class="content" style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #58666E; padding-bottom: 24px; background-color: #fff; border-left: 1px solid #f2f2f2; border-right: 1px solid #f2f2f2; width: 92%; padding-top: 5px">
+                <img src={{$qr_code_image_address}} alt="QRCodeImage" style="width:236px; height:105px; border-radius: 4px" />
+            </td>
+        </tr>
         <tr style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #58666E; text-align: center">
             <td class="first" style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #58666E; padding: 24px 4%; padding-bottom: 0; border-left: 1px solid #f2f2f2; width: 3%;"></td>
             <td colspan="2" class="text-center" style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #58666E; text-align: center; padding: 24px 4%; width: 92%; padding-bottom: 24px;">
