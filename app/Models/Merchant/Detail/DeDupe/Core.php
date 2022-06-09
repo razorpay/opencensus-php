@@ -281,6 +281,7 @@ class Core extends Base\Core
         }
 
         $response = [];
+
         foreach ($riskScores['fields'] as $riskScore)
         {
             $response[$riskScore['field']][$riskScore['list']] = $riskScore['score'];
