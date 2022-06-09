@@ -459,7 +459,7 @@ class UpiInitialRecurringTestCase extends TestCase
         $this->assertEquals('failed', $upiMetadata['internal_status']);
 
         // Assert if the Description is correct for rejected mandates.
-        $this->assertEquals("Mandate rejected by PSP", $token['recurring_failure_reason']);
+        $this->assertEquals("Payment was unsuccessful as an error occurred at the UPI app. Any amount deducted will be refunded within 5-7 working days.", $token['recurring_failure_reason']);
 
         // Assert if it is equal to payment error description.
         $this->assertEquals($payment->getErrorDescription(), $token['recurring_failure_reason']);
@@ -587,7 +587,7 @@ class UpiInitialRecurringTestCase extends TestCase
         ], $upiMetadata->toArray());
 
         // Assert if the Description is correct for rejected mandates.
-        $this->assertEquals("Mandate rejected by PSP", $token['recurring_failure_reason']);
+        $this->assertEquals("Payment was unsuccessful as an error occurred at the UPI app. Any amount deducted will be refunded within 5-7 working days.", $token['recurring_failure_reason']);
 
         // Assert if it is equal to payment error description.
         $this->assertEquals($payment->getErrorDescription(), $token['recurring_failure_reason']);
