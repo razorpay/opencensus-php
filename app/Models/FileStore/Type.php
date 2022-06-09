@@ -246,6 +246,9 @@ class Type
     const CITI_EMI_FILE                     = 'citi_emi_file';
     const BOB_EMI_FILE                      = 'bob_emi_file';
 
+    const AXIS_CARD_SETTLEMENT_FILE         = 'axis_cardsettlement_file';
+    const AXIS_CARD_SETTLEMENT_OUTPUT_FILE  = 'axis_cardsettlement_output_file';
+
     const FIRST_DATA_PARES_FILE             = 'first_data_pares_file';
     const DATA_LAKE_SEGMENT_FILE            = 'data_lake_segment_file';
     const NIUM_SETTLEMENT_FILE              = 'nium_settlement_file';
@@ -419,6 +422,8 @@ class Type
             self::KOTAK_CORP_NETBANKING_REFUND,
             self::RECON_INPUT,
             self::BDBL_NETBANKING_REFUND,
+            self::AXIS_CARD_SETTLEMENT_FILE,
+            self::AXIS_CARD_SETTLEMENT_OUTPUT_FILE,
             self::UCO_NETBANKING_REFUND,
             self::DBS_NETBANKING_CLAIMS,
             self::DBS_NETBANKING_REFUND,
@@ -604,6 +609,8 @@ class Type
         self::DATA_LAKE_SEGMENT_FILE,
         self::RECON_INPUT,
         self::BULK_FRAUD_NOTIFICATION,
+        self::AXIS_CARD_SETTLEMENT_OUTPUT_FILE,
+        self::AXIS_CARD_SETTLEMENT_FILE,
         self::DBS_NETBANKING_CLAIMS,
         self::DBS_NETBANKING_REFUND,
         self::DBS_NETBANKING_COMBINED,
@@ -678,6 +685,7 @@ class Type
             self::ICICI_EMI_FILE_MAIL,
             self::SBI_EMI_OUTPUT_FILE,
             self::EMI_FILE,
+            self::AXIS_CARD_SETTLEMENT_FILE,
             self::HSBC_EMI_FILE,
         ],
 

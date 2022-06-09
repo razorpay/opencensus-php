@@ -54,6 +54,8 @@ class Constants
 
     const AXIS_NB_COMBINED_FILE_JOB_NAME    = 'axis_netbanking_refund_prod';
 
+    const AXIS_CARD_SETTLEMENT_FILE_JOB_NAME  = 'axis_card_settlement';
+
     const RBL_MERCHANT_MASTER_FIRS_JOB_NAME = 'rbl_merchant_master_firs';
 
     const DBS_NB_COMBINED_FILE_JOB_NAME     = 'dbs_netbanking_combined_file_push';
@@ -61,4 +63,5 @@ class Constants
     const NIUM_STAGE_JOB_NAME = 'nium_stage';
 
     const NIUM_PROD_JOB_NAME = 'nium_prod';
+
 }

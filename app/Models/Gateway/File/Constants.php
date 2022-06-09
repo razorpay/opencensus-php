@@ -163,6 +163,9 @@ class Constants
             self::DBS,
             self::HDFC_CORP,
         ],
+        Type::CARDSETTLEMENT => [
+            self::AXIS
+        ],
         Type::EMANDATE_CANCEL => [
             self::ENACH_NPCI_NETBANKING,
             self::ENACH_RBL,
@@ -222,6 +225,7 @@ class Constants
         Type::NACH_CANCEL       => MailConstants::MAIL_ADDRESSES[MailConstants::EMANDATE],
         Type::REFUND_FAILED     => MailConstants::MAIL_ADDRESSES[MailConstants::REFUNDS],
         Type::PARESDATA         => MailConstants::MAIL_ADDRESSES[MailConstants::GATEWAY_POD],
+        Type::CARDSETTLEMENT    => MailConstants::MAIL_ADDRESSES[MailConstants::REFUNDS],
     ];
 
     const RECIPIENTS_MAP = [

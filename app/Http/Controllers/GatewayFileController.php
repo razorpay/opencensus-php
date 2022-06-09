@@ -41,4 +41,14 @@ class GatewayFileController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function generateCardSettlementFileForBank()
+    {
+        $input = Request::all();
+
+        $data = $this->service(E::GATEWAY_FILE)->create($input);
+
+        return ApiResponse::json($data);
+    }
+
 }

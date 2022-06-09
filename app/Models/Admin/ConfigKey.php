@@ -284,9 +284,14 @@ class ConfigKey
     // This will be used to get the utrs facing credit before debit issue.
     const BAS_CREDIT_BEFORE_DEBIT_UTRS = self::PREFIX . 'bas_credit_before_debit_utrs';
 
+    // This will be the cutoff based on which we shall include card payments starting from this time in settlement file for a window
+    const CARD_PAYMENTS_SETTLEMENT_FILE_CUTOFF_TIMESTAMP = self::PREFIX . 'card_payments_settlement_file_cutoff_timestamp';
+
+    // This will be the cutoff based on which we shall include card refunds starting from this time in settlement file for a window
+    const CARD_REFUNDS_SETTLEMENT_FILE_CUTOFF_TIMESTAMP = self::PREFIX . 'card_refunds_settlement_file_cutoff_timestamp';
+
     // This key will be a flag for creating a DB connection with master instead of slave
     const USE_MASTER_DB_CONNECTION = self::PREFIX . 'use_master_db_connection';
-
 
     const PUBLIC_KEYS = [
         self::TENANT_ROLES_ENTITY,

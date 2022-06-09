@@ -1177,6 +1177,11 @@ class Constants
     const DISABLE_COLLECT_CONSENT = 'disable_collect_consent';
 
     /**
+     * Flag to be enabled for merchants for whom we want to generate the axis card payments and refunds file
+     */
+    const AXIS_SETTLEMENT_FILE = 'axis_settlement_file';
+
+    /**
      * Feature flag to control tokenised card payments
      * If activated, tokenised card payments will go through plain card number
      *      instead of tokenised card number for the merchant
@@ -1747,6 +1752,7 @@ class Constants
         self::PAYOUTS_ON_HOLD                 => true,
         self::SKIP_HOLD_PAYOUTS               => true,
         self::SKIP_TEST_TXN_FOR_DMT           => true,
+        self::AXIS_SETTLEMENT_FILE            => true,
         self::SKIP_CONTACT_DEDUP_FA_BA        => true,
         self::PL_BLOCK_CUSTOMER_PREFILL       => true,
         self::ALLOW_VA_TO_VA_PAYOUTS          => true,

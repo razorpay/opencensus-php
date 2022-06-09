@@ -16,6 +16,7 @@ class Type
     const NACH_CANCEL       = 'nach_cancel';
     const REFUND_FAILED     = 'refund_failed';
     const PARESDATA         = 'paresdata';
+    const CARDSETTLEMENT    = 'cardsettlement';
 
     // Sub types for gateway_file entity
     const TPV           = 'tpv';

@@ -122,6 +122,36 @@ class Repository extends Base\Repository
             ->get();
     }
 
+    public function fetchCardRefundsForMerchantAndGatewayBetween($from, $to, $merchantIds)
+    {
+        $paymentRepo = $this->repo->payment;
+
+        $pTableName = $paymentRepo->getTableName();
+
+        $paymentId = $paymentRepo->dbColumn(Payment\Entity::ID);
+
+        $refundData = $this->dbColumn('*');
+
+        $paymentStatus = $paymentRepo->dbColumn(Payment\Entity::STATUS);
+
+        $paymentGateway = $paymentRepo->dbColumn(Payment\Entity::GATEWAY);
+        $paymentMethod = $paymentRepo->dbColumn(Payment\Entity::METHOD);
+        $refundProcessedAt = $this->dbColumn(Entity::PROCESSED_AT);
+
+        $paymentMerchantId = $this->dbColumn(Entity::MERCHANT_ID);
+
+        return $this->newQueryWithConnection($this->getDataWarehouseConnection())
+            ->join($pTableName, $paymentId, '=', Refund\Entity::PAYMENT_ID)
+            ->whereBetween($refundProcessedAt, [$from, $to])
+            ->where($paymentStatus, '=', Payment\Status::REFUNDED)
+            ->whereIn( $paymentMerchantId , $merchantIds)
+            ->where($paymentMethod, '=', Payment\Method::CARD)
+            ->where($paymentGateway, '=', 'cybersource')
+            ->with('payment', 'payment.card.globalCard')
+            ->select($refundData)
+            ->get();
+    }
+
     protected function addQueryParamInitiatorId($query, $params)
     {
         $dbAttr = $this->repo->reversal->dbColumn(ReversalEntity::INITIATOR_ID);

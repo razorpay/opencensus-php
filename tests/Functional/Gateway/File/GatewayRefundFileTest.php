@@ -9,17 +9,17 @@ use Mockery;
 use Carbon\Carbon;
 
 use RZP\Jobs\BeamJob;
+use RZP\Models\Feature;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File;
-use RZP\Mail\Emi as EmiMail;
-use RZP\Models\Payment\Gateway;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Tests\Functional\TestCase;
 use RZP\Jobs\GatewayFile as GatewayFileJob;
+use RZP\Models\Admin\Service as AdminService;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
-use RZP\Mail\Gateway\RefundFile\Constants as RefundFileMailConstants;
 
 class GatewayRefundFileTest extends TestCase
 {
@@ -46,6 +46,87 @@ class GatewayRefundFileTest extends TestCase
         $payment['currency'] = 'INR';
 
         return $this->doAuthAndCapturePayment($payment);
+    }
+
+
+    public function testGenerateAxisSettlementAndRefundFile()
+    {
+        Mail::fake();
+
+        Queue::fake();
+
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_sharp_terminal');
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->mockCardVault();
+
+        $this->fixtures->edit('iin', '411146', [
+            'issuer' => 'ICIC'
+        ]);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::AXIS_SETTLEMENT_FILE]);
+
+        (new AdminService)->setConfigKeys([ConfigKey::CARD_PAYMENTS_SETTLEMENT_FILE_CUTOFF_TIMESTAMP => 1640061300]);
+
+        (new AdminService)->setConfigKeys([ConfigKey::CARD_REFUNDS_SETTLEMENT_FILE_CUTOFF_TIMESTAMP => 1640061300]);
+
+        $this->ba->publicAuth();
+
+        $capturedAt = (int)(Carbon::now()->timestamp / 1800) * 1800;
+
+        if (($capturedAt % 3600) === 0)
+        {
+            $capturedAt = $capturedAt - 1800;
+        }
+
+        $paymentId1 = $this->fixtures->create('payment:captured', ['gateway' => 'cybersource'],['caputed_at'=>$capturedAt])->getId();
+
+        $paymentId2 = $this->fixtures->create('payment:captured', ['gateway' => 'cybersource'],['caputed_at'=>$capturedAt])->getId();
+
+        $paymentId3 = $this->fixtures->create('payment:captured', ['gateway' => 'cybersource'],['caputed_at'=>$capturedAt])->getId();
+
+        $this->fixtures->edit('payment',$paymentId1,['captured_at'=>$capturedAt]);
+
+        $this->fixtures->edit('payment',$paymentId2,['captured_at'=>$capturedAt]);
+
+        $this->fixtures->edit('payment',$paymentId3,['captured_at'=>$capturedAt]);
+
+        $this->fixtures->edit('payment',$paymentId1,['reference_2'=>'abcdefgh']);
+
+        $this->fixtures->edit('payment',$paymentId2,['reference_2'=>'abcdefgh']);
+
+        $this->fixtures->edit('payment',$paymentId3,['reference_2'=>'abcdefgh']);
+
+        $pay = $this->getLastEntity('payment', true);
+
+        $this->refundPayment($pay['id']);
+
+        $this->ba->adminAuth();
+
+        $content = $this->startTest();
+
+        $content = $content['items'][0];
+
+        $this->assertNotNull($content[File\Entity::FILE_GENERATED_AT]);
+        $this->assertNotNull(File\Entity::SENT_AT);
+        $this->assertNull($content[File\Entity::FAILED_AT]);
+        $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
+
+        $file = $this->getLastEntity('file_store', true);
+
+        $expectedFileContent = [
+            'type'        => 'axis_cardsettlement_file',
+            'entity_type' => 'gateway_file',
+            'entity_id'   => $content['id'],
+            'extension'   => 'gpg',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedFileContent, $file);
+
+        Queue::assertPushed(BeamJob::class, 1);
+
+        Queue::assertPushedOn('beam_test', BeamJob::class);
     }
 
     public function testProcessRefundFileIciciEmi()

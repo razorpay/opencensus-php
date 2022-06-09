@@ -331,6 +331,28 @@ EOT;
                     ->get();
     }
 
+    public function fetchCardPaymentsForGatewayAndMerchantBetween($from, $to, $merchantIds)
+    {
+        $paymentData = $this->dbColumn('*');
+
+        $paymentStatus = $this->dbColumn(Entity::STATUS);
+
+        $gateway = $this->dbColumn(Entity::GATEWAY);
+
+        $paymentMerchantId = $this->dbColumn(Entity::MERCHANT_ID);
+
+        return $this->newQueryWithConnection($this->getDataWarehouseConnection())
+            ->whereBetween(Entity::CAPTURED_AT, [$from, $to])
+            ->where($paymentStatus, '=', Status::CAPTURED)
+            ->where($gateway, '=', 'cybersource')
+            ->whereIn($paymentMerchantId, $merchantIds)
+            ->where(Entity::METHOD, '=', Method::CARD)
+            ->with('card.globalCard')
+            ->orderBy($this->dbColumn(Entity::CAPTURED_AT), 'desc')
+            ->select($paymentData)
+            ->get();
+    }
+
     /**
      *  refer: https://razorpay.slack.com/archives/CQ932EVNH/p1624709316068200
      */

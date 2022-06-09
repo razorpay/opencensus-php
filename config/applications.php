@@ -91,6 +91,10 @@ return [
         'yesb_encryption_key' => env('YESB_ENCRYPTION_KEY'),
     ],
 
+    'cardsettlement' => [
+        'axis_encryption_key' => env('AXIS_ENCRYPTION_KEY'),
+    ],
+
     'downtime_service_slack' => [
         'token' => env('DOWNTIME_SERVICE_SLACK_TOKEN'),
         'mock'  => env('DOWNTIME_SERVICE_SLACK_MOCK'),
