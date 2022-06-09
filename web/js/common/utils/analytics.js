@@ -3,6 +3,9 @@ import { getCookie } from 'common/utils/cookies';
 import errorService from '@razorpay/universe-utils/errorService';
 import { Teams, Ranks } from 'common/new-ui/ErrorBoundary';
 import { isMobileDevice } from 'merchant/components/Home/data';
+import getMobileDetect from 'common/utils/mobileDetect';
+
+let source = null;
 
 export const sendToLumberjack = ({ eventName, properties = {} }) => {
   const body = {
@@ -111,6 +114,20 @@ export const initAnalytics = () => {
   });
 };
 
+const getDeviceSource = () => {
+  if (source === null) {
+    const isWebView = getMobileDetect().isWebView();
+    if (isWebView) {
+      const isAndroid = getMobileDetect().isAndroid();
+      source = isAndroid ? 'Webview - Android' : 'Webview - iOS';
+    } else {
+      source = isMobileDevice(1020) ? 'Mobile Dashboard' : 'Dashboard';
+    }
+  }
+
+  return source;
+};
+
 export const analyticsTrack = ({
   objectName,
   actionName,
@@ -157,7 +174,7 @@ export const analyticsTrack = ({
         // TODO: Deprecated, remove once all iterations are migrated
         // We use 1020px, as we mark tablets and mobile as mweb (in analytics)
         device_type: isMobileDevice(1020) ? 'mweb' : 'dweb',
-        source: isMobileDevice(1020) ? 'Mobile Dashboard' : 'Dashboard',
+        source: getDeviceSource(),
         userId: properties.userId || 'UNKNWON_USER',
       },
       {
