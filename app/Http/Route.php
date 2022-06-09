@@ -3130,6 +3130,7 @@ class Route
         'fetch_instrument_previous_status'        => ['get',       'terminals/proxy/instrument_request_previous_status/{id}',    'TerminalController@proxyV2TerminalService'         ],
         'update_template_mappings'                => ['patch',     'terminals/proxy/template_mappings/{id}',                    'TerminalController@proxyV2TerminalService'                      ],
         'fetch_template_mappings'                 => ['get',       'terminals/proxy/template_mappings/{id}',                    'TerminalController@proxyV2TerminalService'                      ],
+        'terminals_proxy_fetch_multiple'          => ['post',      'terminals/proxy/admin_fetch_multiple/{entity_type}',        'TerminalController@proxyV2TerminalService'                      ],
 
         // merchant_instrument_requests
         'merchant_instrument_request_create'                =>  ['post',    'merchant_instrument_request',                      'InstrumentRequestController@createMerchantInstrumentRequest'    ],
@@ -6623,6 +6624,7 @@ class Route
         'edit_static_discrepancy',
         'fetch_iir_discrepancies_for_merchant',
         'patch_iir_discrepancy_by_id',
+        'terminals_proxy_fetch_multiple',
 
         // gateway credentials
         'terminals_proxy_create_gateway_credential',
@@ -7884,6 +7886,7 @@ class Route
         'fetch_instrument_previous_status'            => Permission::VIEW_INTERNAL_INSTRUMENT_REQUEST,
         'update_template_mappings'                    => Permission::EDIT_IIR_TEMPLATE,
         'fetch_template_mappings'                     => Permission::VIEW_IIR_TEMPLATE,
+        'terminals_proxy_fetch_multiple'              => Permission::VIEW_INTERNAL_INSTRUMENT_REQUEST,
         'merchant_instrument_request_create'          => Permission::UPDATE_MERCHANT_INSTRUMENT_REQUEST,
         'merchant_instrument_request_create_bulk'     => Permission::UPDATE_MERCHANT_INSTRUMENT_REQUEST,
         'merchant_instrument_request_create_bulk_v2'  => Permission::UPDATE_MERCHANT_INSTRUMENT_REQUEST,
@@ -10458,6 +10461,7 @@ class Route
             'fetch_instrument_previous_status',
             'update_template_mappings',
             'fetch_template_mappings',
+            'terminals_proxy_fetch_multiple',
             'fetch_internal_instrument_requests',
             'fetch_fund_loading_downtime_by_id',
             'fetch_merchant_balance_configs',

@@ -419,6 +419,74 @@ class InstrumentRequestProxyTest extends TestCase
         $this->startTest();
     }
 
+    public function testAdminFetchMultipleTerminalsProxy()
+    {
+        $this->ba->adminAuth();
+
+        $testCase = [
+            self::REQUEST       => [
+                'url'      => '/terminals/proxy/admin_fetch_multiple/instrument_enablement_state',
+                'method'   => \Requests::POST,
+                'content'  => [
+                    'common_params' => [
+                        'count' => 2,
+                        'skip' => 0,
+                        'from' => 0,
+                        'to' => 99999999999999,
+                    ],
+                    'query_params' => [
+                        'merchant_id' => [
+                            'testMID1234567',
+                            'testMID1234568',
+                        ],
+                    ],
+                ],
+            ],
+            self::EXPECTED_REQUEST_PATH_TERMINALS_SERVICE      => 'v2/admin_fetch_multiple/instrument_enablement_state',
+            self::EXPECTED_REQUEST_METHOD_TERMINALS_SERVICE    => \Requests::POST,
+            self::EXPECTED_REQUEST_CONTENT_TERMINALS_SERVICE   => [
+                'common_params' => [
+                    'count' => 2,
+                    'skip' => 0,
+                    'from' => 0,
+                    'to' => 99999999999999,
+                ],
+                'query_params' => [
+                    'merchant_id' => [
+                        'testMID1234567',
+                        'testMID1234568',
+                    ],
+                ],
+            ],
+        ];
+
+        $this->testData[__FUNCTION__]['response'] = ['content' => ['testKey' => 'testValue']];
+
+        $this->testData[__FUNCTION__]['request'] = $testCase[self::REQUEST];
+
+        $this->mockTerminalsServiceSendRequest(function ($path, $content, $method, $additionalOptions = [], $additionalHeaders) use ($testCase) {
+
+            $this->assertEquals($testCase[self::EXPECTED_REQUEST_PATH_TERMINALS_SERVICE], $path);
+
+            $this->assertEquals($testCase[self::EXPECTED_REQUEST_METHOD_TERMINALS_SERVICE], $method);
+
+            $this->assertEquals($testCase[self::EXPECTED_REQUEST_CONTENT_TERMINALS_SERVICE], json_decode($content, true));
+
+            $response = new \Requests_Response;
+
+            $response->body = '
+                       {
+                        "data": {
+                           "testKey": "testValue"
+                        }
+                    }';
+
+            return $response;
+        }, 1);
+
+        $this->startTest();
+    }
+
     public function testFetchTemplateMappings()
     {
         $this->ba->adminAuth();
