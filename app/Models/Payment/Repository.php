@@ -2334,6 +2334,34 @@ EOT;
         return $dbColumns;
     }
 
+    public function fetchAxisPaysecurePayments($input)
+    {
+        $params = $input;
+
+        $terminalTableName = $this->repo->terminal->getTableName();
+        $terminalTableGtidColName = $this->repo->terminal->dbColumn(Terminal\Entity::ID);
+        $paymentTableGtidColName = $this->repo->payment->dbColumn(Payment\Entity::TERMINAL_ID);
+
+        $terminalTableAquirerCol =  $this->repo->terminal->dbColumn(Terminal\Entity::GATEWAY_ACQUIRER);
+
+        $paymentTableGatewayCol = $this->repo->payment->dbColumn(Payment\Entity::GATEWAY);
+
+        $this->processFetchParams($params);
+
+        $expands = $this->getExpandsForQueryFromInput($params);
+
+        $query = $this->newQueryWithConnection($this->getDataWarehouseConnection());
+        $query = $query->with($expands);
+        $query = $this->buildFetchQuery($query, $params);
+
+        $query = $query->join($terminalTableName, $terminalTableGtidColName, '=', $paymentTableGtidColName)
+            ->where($terminalTableAquirerCol, '=', 'axis')
+            ->where($paymentTableGatewayCol, '=', 'paysecure')
+            ->with('terminal');
+
+        return $this->getPaginated($query, $params);
+    }
+
     /**
      * calculates the sum of `fee` and `tax` for the payments
      *  - captured for a merchant in a given time frame
@@ -2796,7 +2824,6 @@ EOT;
         // This happens with routes like invoice_view_live/invoice_view_test.
         // We also need to revisit the checks later if restricted orgs ever onboard
         // merchants as we do not know if same restrictions will apply to them.
-        //
         if (empty($orgId) === true)
         {
             return parent::newQuery();

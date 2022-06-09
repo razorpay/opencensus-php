@@ -561,6 +561,23 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::FEE_BEARER,
     ];
 
+    protected $adminRestrictedWithFeature = [
+        'axis_org' => [
+            Entity::ID,
+            Entity::MERCHANT_ID,
+            Entity::AMOUNT,
+            Entity::METHOD,
+            Entity::STATUS,
+            Entity::SAVE,
+            Entity::TERMINAL_ID,
+            Terminal\Entity::GATEWAY_TERMINAL_ID,
+            Entity::CREATED_AT,
+            Entity::NOTES,
+            Entity::EMAIL,
+            'mode',
+        ]
+    ];
+
     protected $publicCustomer = [
         self::ID,
         self::STATUS,
@@ -4044,6 +4061,25 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function toArrayAdminRestricted(array $attributes)
     {
         $attributes = parent::toArrayAdminRestricted($attributes);
+
+        /** @var Terminal\Entity $terminal */
+        $terminal = $this->terminal()->first();
+
+        if ($terminal === null)
+        {
+            return $attributes;
+        }
+
+        $gatewayTerminalId = $terminal->getGatewayTerminalId();
+
+        $attributes[Terminal\Entity::GATEWAY_TERMINAL_ID] = $gatewayTerminalId;
+
+        return $attributes;
+    }
+
+    public function toArrayAdminRestrictedWithFeature(array $attributes, $orgType, $orgFeature)
+    {
+        $attributes = parent::toArrayAdminRestrictedWithFeature($attributes, $orgType, $orgFeature);
 
         /** @var Terminal\Entity $terminal */
         $terminal = $this->terminal()->first();

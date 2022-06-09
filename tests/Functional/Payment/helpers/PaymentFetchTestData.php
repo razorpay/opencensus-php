@@ -20,6 +20,36 @@ return [
         ],
     ],
 
+    'testfetchAxisPaysecurePayments' => [
+        'request' => [
+            'url'     => '/axis_admin/axis_paysecure/payment',
+            'method'  => 'get'
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'method' => 'card',
+                    'gateway_terminal_id' => 'meowmeow',
+                    ],
+            ],
+        ],
+    ],
+
+    'testfetchAxisEntitiesAll' => [
+        'request' => [
+            'url'     => '/axis_admin/entities/all',
+            'method'  => 'get'
+        ],
+        'response' => [
+            'content' => [
+                'fields' => [],
+                'entities'  => [
+                    'payment' => [],
+                ],
+            ],
+        ],
+    ],
+
     'testFetchRuleCascadingForAdminAuthRestricted' => [
         'request' => [
             'url'     => '/admin/payment',
@@ -184,6 +214,28 @@ return [
                 'gateway_currency'    => 'INR',
                 'dcc_offered'         => null,
                 'dcc_markup_amount'   => null,
+            ],
+        ],
+    ],
+
+    'testAxisAdminAuthPaymentFetch' => [
+        'request' => [
+            'url'     => '/admin/payment/',
+            'method'  => 'get'
+        ],
+        'response' => [
+            'content' => [
+                'entity'              => 'payment',
+                'merchant_id'         => '10000000000000',
+                'amount'              =>  1000000,
+                'currency'            =>  'INR',
+                'method'              =>  'card',
+                'base_amount'         =>  1000000,
+                'status'              =>  'created',
+                'gateway'             =>  "hdfc",
+                'terminal_id'         =>  "1000HdfcShared",
+                'recurring'           =>  FALSE,
+                'captured'            =>  FALSE,
             ],
         ],
     ],

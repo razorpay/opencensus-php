@@ -17,6 +17,7 @@ use RZP\Exception;
 use RZP\Base\Fetch;
 use RZP\Jobs\EsSync;
 use RZP\Models\Card;
+use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
@@ -94,6 +95,26 @@ class Service extends Base\Service
         {
             $mergedEntities = AdminFetch::filterEntitiesByRole($mergedEntities, $adminRoles);
         }
+
+        return [
+            'version'   => 1,
+            'fields'    => $fields,
+            'entities'  => $mergedEntities
+        ];
+    }
+
+    public function getAllEntitiesAxisAdmin($input)
+    {
+        $fields = AdminFetch::fields();
+
+        $entities = AdminFetch::entities();
+
+        // Fetching all entities and fill them with null
+        $allEntities = array_fill_keys(Entity::getAllEntities(), null);
+
+        $mergedEntities = array_merge($allEntities, $entities);
+
+        $mergedEntities = AdminFetch::filterEntitiesForAxisAdmin($mergedEntities);
 
         return [
             'version'   => 1,
@@ -242,13 +263,60 @@ class Service extends Base\Service
             $entity = $this->fetchEntityByNameAndId($entity, $id, $input, ConnectionType::REPLICA);
         }
 
-
         $response = $entity->toArrayAdmin();
+
+        // If entity is restricted and org has the feature flag (axis_org),
+        // then use the fields allowed for that feature
+        $orgId = $this->app['basicauth']->getOrgId();
+
+        if(empty($orgId) === false)
+        {
+            $orgId = Org\Entity::verifyIdAndSilentlyStripSign($orgId);
+
+            if ( (in_array($entity, AdminFetch::$restrictedEntities, true) === true) and
+                ((new Org\Service)->validateOrgIdWithFeatureFlag($orgId, 'axis_org')) )
+            {
+                $response = (new Payment\Entity)->toArrayAdminRestrictedWithFeature($response, null, 'axis_org');
+            }
+        }
 
         if ($isExternalAdmin === true)
         {
             $response = AdminFetch::filterAttributesForExternalAdminFetchEntityById($entityType, $response);
         }
+
+        return $response;
+    }
+
+    public function fetchEntityByIdForAxisRupayAdmin(string $entityType, string $id, array $input = [], $isExternalAdmin = false): array
+    {
+        $data = ["function" => "fetchEntityById", "entity" => $entityType];
+
+        $this->app['trace']->info(TraceCode::FETCH_ENTITY_BY_ID, $data);
+
+        $this->validateEntityTypeForRestrictedOrg($entityType);
+
+        if ($isExternalAdmin === true)
+        {
+            (new Validator)->validateEntityTypeForExternalAdmin($entityType);
+        }
+
+        $retEntity = $this->handleExternalEntity($entityType, $input, $id);
+
+        if (empty($retEntity) === false)
+        {
+            return $retEntity;
+        }
+
+        $entity = $this->fetchEntityByNameAndId($entityType, $id, $input, ConnectionType::REPLICA);
+
+        $orgId = $this->app['basicauth']->getOrgId();
+
+        $orgId = Org\Entity::verifyIdAndSilentlyStripSign($orgId);
+
+        $response = $entity->toArrayAdmin();
+
+        $response = $entity->toArrayAdminRestrictedWithFeature($response, null, 'axis_org');
 
         return $response;
     }
@@ -472,9 +540,55 @@ class Service extends Base\Service
 
         $response = $entities->toArrayAdmin();
 
+        $orgId = $this->app['basicauth']->getOrgId();
+
+        if(empty($orgId) === false)
+        {
+            $orgId = Org\Entity::verifyIdAndSilentlyStripSign($orgId);
+
+            if (in_array($entity, AdminFetch::$restrictedEntities, true) === true and
+                (new Org\Service)->validateOrgIdWithFeatureFlag($orgId, 'axis_org') )
+            {
+                foreach ($response['items'] as $index => $adminEntity)
+                {
+                    $response['items'][$index] = (new Payment\Entity)->toArrayAdminRestrictedWithFeature($adminEntity, null, 'axis_org');
+                }
+            }
+        }
+
         if ($isExternalAdmin === true)
         {
             $response = AdminFetch::filterAttributesForExternalAdminFetchMultiple($entityType, $response);
+        }
+
+        return $response;
+    }
+
+    public function fetchAxisPaysecurePayments($entity, $input)
+    {
+        $this->app['trace']->info(TraceCode::FETCH_AXIS_PAYSECURE_PAYMENTS, [
+                "function" => "fetchAxisPaysecurePayments",
+                "entity" => $entity,
+                "input" => $input
+            ]);
+
+        $this->validateEntityTypeForRestrictedOrg($entity);
+
+        Entity::validateEntityOrFailPublic($entity);
+
+        $entities = $this->repo->payment->fetchAxisPaysecurePayments($input);
+
+        $response = new Base\PublicCollection();
+
+        foreach ($entities as $e)
+        {
+            $paymentArray = $e->toArrayAdmin();
+
+            $paymentArray['mode'] = $this->app['rzp.mode'];
+
+            $paymentArray['entity'] = 'payment';
+
+            $response->push($e->toArrayAdminRestrictedWithFeature($paymentArray, null, 'axis_org'));
         }
 
         return $response;

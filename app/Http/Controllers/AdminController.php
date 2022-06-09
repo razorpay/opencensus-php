@@ -9,6 +9,7 @@ use ApiResponse;
 use Illuminate\Support\Facades\File;
 
 use RZP\Constants\Environment;
+use RZP\Constants\Entity;
 use RZP\Models\Admin;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Report;
@@ -30,11 +31,31 @@ class AdminController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getEntitiesAxis()
+    {
+        $input = Request::all();
+
+        $data = (new Admin\Service)->getAllEntitiesAxisAdmin($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function getEntitiesForExternalAdmin()
     {
         $input = Request::all();
 
         $data = (new Admin\Service)->getAllEntities($input, true);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getAxisPaysecurePayments()
+    {
+        $input = Request::all();
+
+        $entity = Entity::PAYMENT;
+
+        $data = (new Admin\Service)->fetchAxisPaysecurePayments($entity, $input);
 
         return ApiResponse::json($data);
     }
@@ -117,6 +138,17 @@ class AdminController extends Controller
         $input = Request::all();
 
         $data = $this->service()->fetchEntityById($type, $id, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getEntityByIdAxis($id)
+    {
+        $input = Request::all();
+
+        $type = 'payment';
+
+        $data = $this->service()->fetchEntityByIdForAxisRupayAdmin($type, $id, $input);
 
         return ApiResponse::json($data);
     }

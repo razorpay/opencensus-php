@@ -66,6 +66,74 @@ class PaymentFetchTest extends TestCase
         $this->startTest();
     }
 
+    public function testfetchAxisPaysecurePayments()
+    {
+        $card = $this->fixtures->create('card', ['name' => 'Test Name']);
+
+        $org = $this->fixtures->org->createAxisOrg();
+
+        $this->ba->adminAuth();
+
+        $admin = $this->ba->getAdmin();
+
+        $roleOfAdmin = $admin->roles()->get()[0];
+
+        $perm = $this->fixtures->create('permission', ['name' => 'AXIS_ADMIN_VIEW_PAYMENTS']);
+
+        $roleOfAdmin->permissions()->attach($perm->getId());
+
+        $terminalAttr = [
+            'gateway_terminal_id'   =>  'meowmeow',
+            'merchant_id'           =>  '10000000000000',
+            'gateway'               =>  'paysecure',
+            'gateway_acquirer'      =>  'axis',
+            'org_id'      => $org->getId(),
+            'used'        => true,
+            'enabled'     => '1',
+            'sync_status' => 'sync_success',
+        ];
+
+        $terminal = $this->fixtures->terminal->create($terminalAttr);
+
+        $this->fixtures->create('feature', [
+            'entity_id' => $org->getId(),
+            'name'   => 'axis_org',
+            'entity_type' => 'org',
+        ]);
+
+        $payment = $this->fixtures->create('payment', [
+            'terminal_id' => $terminal->getId(),
+            'gateway'     => 'paysecure'
+        ]);
+
+        $this->startTest();
+    }
+
+    public function testfetchAxisEntitiesAll()
+    {
+        $card = $this->fixtures->create('card', ['name' => 'Test Name']);
+
+        $org = $this->fixtures->org->createAxisOrg();
+
+        $this->ba->adminAuth();
+
+        $admin = $this->ba->getAdmin();
+
+        $roleOfAdmin = $admin->roles()->get()[0];
+
+        $perm = $this->fixtures->create('permission', ['name' => 'AXIS_ADMIN_VIEW_PAYMENTS']);
+
+        $roleOfAdmin->permissions()->attach($perm->getId());
+
+        $this->fixtures->create('feature', [
+            'entity_id' => $org->getId(),
+            'name'   => 'axis_org',
+            'entity_type' => 'org',
+        ]);
+
+        $this->startTest();
+    }
+
     public function testFetchRuleCascadingForAdminAuthRestricted()
     {
         $this->fixtures->edit('org', '100000razorpay', ['type' => 'restricted']);
@@ -316,6 +384,36 @@ class PaymentFetchTest extends TestCase
         $payment = $this->fixtures->create('payment', ['card_id' => $card->getId()]);
 
         $this->testData[__FUNCTION__]['request']['url'] .= $payment->getPublicId();
+
+        $this->startTest();
+    }
+
+    public function testAxisAdminAuthPaymentFetch()
+    {
+        $card = $this->fixtures->create('card', ['name' => 'Test Name']);
+
+        $org = $this->fixtures->org->createAxisOrg();
+
+        $this->ba->adminAuth('test', 'SuperSecretTokenForRazorpaySuprAxisbToken', $org->getPublicId(), 'axisbank.com');
+
+        $terminal = $this->fixtures->create(
+            'terminal:shared_hdfc_terminal', [
+            'used'        => true,
+            'enabled'     => '1',
+            'sync_status' => 'sync_success',
+            'org_id'      => $org->getId(),
+            'gateway_acquirer' => 'axis',
+        ]);
+
+        $this->fixtures->create('feature', [
+            'entity_id' => $org->getId(),
+            'name'   => 'axis_org',
+            'entity_type' => 'org',
+        ]);
+
+        $payment = $this->fixtures->create('payment', ['card_id' => $card->getId(), 'terminal_id' => $terminal->getId()]);
+
+        $this->testData[__FUNCTION__]['request']['url'] = $this->testData[__FUNCTION__]['request']['url'] . $payment->getPublicId();
 
         $this->startTest();
     }

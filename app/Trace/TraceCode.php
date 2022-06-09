@@ -857,6 +857,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FETCH_MULTIPLE_ENTITIES                               = 'FETCH_MULTIPLE_ENTITIES';
     const FETCH_MULTIPLE_TERMINALS                              = 'FETCH_MULTIPLE_TERMINALS';
     const FETCH_ENTITY_BY_ID                                    = 'FETCH_ENTITY_BY_ID';
+    const FETCH_AXIS_PAYSECURE_PAYMENTS                         = 'FETCH_AXIS_PAYSECURE_PAYMENTS';
 
     const PAYMENT_LINK_CREATE_REQUEST                           = 'PAYMENT_LINK_CREATE_REQUEST';
     const PAYMENT_LINK_CREATED                                  = 'PAYMENT_LINK_CREATED';

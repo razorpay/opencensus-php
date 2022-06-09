@@ -172,6 +172,7 @@ class Name
     const VIEW_ALL_ENTITY                     = 'view_all_entity';
     const SYNC_ENTITY_BY_ID                  = 'sync_entity_by_id';
     const EXTERNAL_ADMIN_VIEW_ALL_ENTITY      = 'external_admin_view_all_entity';
+    const AXIS_ADMIN_VIEW_PAYMENTS            = 'AXIS_ADMIN_VIEW_PAYMENTS';
     const VIEW_ALL_ORG                        = 'view_all_org';
     const VIEW_ORG                            = 'view_org';
     const CREATE_ORG                          = 'create_org';

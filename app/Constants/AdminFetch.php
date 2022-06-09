@@ -9,6 +9,7 @@ use RZP\Models\Dispute;
 use RZP\Models\External;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
+use RZP\Models\Terminal;
 use RZP\Models\Emi\Type;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Billdesk;
@@ -194,6 +195,22 @@ class AdminFetch
         ],
     ];
 
+    public static $axisRupayAdminEntityAllowedAttributesMap = [
+        Entity::PAYMENT => [
+            Payment\Entity::ID,
+            Payment\Entity::MERCHANT_ID,
+            Payment\Entity::AMOUNT,
+            Payment\Entity::METHOD,
+            Payment\Entity::STATUS,
+            Payment\Entity::REFUND_STATUS,
+            Terminal\Entity::GATEWAY_TERMINAL_ID,
+            Payment\Entity::CREATED_AT,
+            Payment\Entity::NOTES,
+            Payment\Entity::EMAIL,
+            'mode',
+        ],
+    ];
+
     public static function fields()
     {
         return Fetch::getCommonFields();
@@ -216,9 +233,42 @@ class AdminFetch
         return $result;
     }
 
+    public static function filterEntitiesForAxisAdmin($entities)
+    {
+        $result = [];
+
+        foreach ($entities as $entityType => $searchFilters)
+        {
+            if (in_array($entityType, array_keys(self::$axisRupayAdminEntityAllowedAttributesMap), true) === false)
+            {
+                continue;
+            }
+
+            $result[$entityType] = self::filterSearchFiltersForExternalAdmin($entityType, $searchFilters);
+        }
+
+        return $result;
+    }
+
     public static function filterAttributesForExternalAdminFetchEntityById(string $entityType, array $entity)
     {
         $allowedAttributes = self::$externalAdminEntityAllowedAttributesMap[$entityType];
+
+        return array_filter($entity, function ($attribute) use ($entity, $allowedAttributes)
+        {
+            if (in_array($attribute, $allowedAttributes, true) === true)
+            {
+                return true;
+            }
+
+            return false;
+
+        }, ARRAY_FILTER_USE_KEY);
+    }
+
+    public static function filterAttributesForAxisRupayAdminFetchEntityById(string $entityType, array $entity)
+    {
+        $allowedAttributes = self::$axisRupayAdminEntityAllowedAttributesMap[$entityType];
 
         return array_filter($entity, function ($attribute) use ($entity, $allowedAttributes)
         {
@@ -4655,6 +4705,48 @@ class AdminFetch
         }
 
         return $entities;
+    }
+
+    public static function axisRupayAdminEntities()
+    {
+        return [
+            Entity::PAYMENT => [
+                'amount' => [
+                    Fetch::LABEL  => 'Amount',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                'email' => [
+                    Fetch::LABEL  => 'Contact Email',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                'gateway' => Fetch::FIELD_GATEWAY,
+                'gateway_terminal_id' => [
+                    Fetch::LABEL  => 'Gateway Terminal Id',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                'merchant_id' => Fetch::FIELD_MERCHANT_ID,
+                'method' => Fetch::FIELD_METHOD,
+                'notes' => Fetch::FIELD_NOTES,
+                'refund_status' => [
+                    Fetch::LABEL  => 'Refund Status',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'null',
+                        'partial',
+                        'full',
+                    ],
+                ],
+                'save' => [
+                    Fetch::LABEL  => 'Save',
+                    Fetch::TYPE   => Fetch::TYPE_BOOLEAN
+                ],
+                'status' => Fetch::FIELD_PAYMENT_STATUS,
+                'terminal_id' => [
+                    Fetch::LABEL  => 'Terminal ID',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+            ],
+        ];
     }
 
     protected static function filterSearchFiltersForExternalAdmin($entityType, $searchFilters)
