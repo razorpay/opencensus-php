@@ -633,6 +633,8 @@ class Sdk
                     Fields::EXPIRY                      => $input[Fields::EXPIRY] ?? $this->formattedTime(30),
                     Fields::GATEWAY_MANDATE_ID          => $input[Fields::GATEWAY_MANDATE_ID] ?? str_random(35),
                     Fields::GATEWAY_REFERENCE_ID        => '911416196085',
+                    Fields::IS_MARKED_SPAM              => 'false',
+                    Fields::IS_VERIFIED_PAYEE           => 'true',
                     Fields::INITIATED_BY                => $input[Fields::INITIATED_BY] ?? 'PAYER',
                     Fields::MANDATE_NAME                => 'Sample mandate test',
                     Fields::MANDATE_TIMESTAMP           => $input[Fields::MANDATE_TIMESTAMP] ??

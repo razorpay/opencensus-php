@@ -21,6 +21,7 @@ class MandateHelper extends P2pHelper
             Fields::VALIDITY_START          => Carbon::now()->getTimestamp(),
             Fields::VALIDITY_END            => Carbon::now()->addDays(365)->getTimestamp(),
             Fields::TRANSACTION_NOTE        => 'UPI',
+            Fields::RECUR                   => 'DAILY',
         ];
 
         $content = [

@@ -33,6 +33,7 @@ class Validator extends Base\Validator
             Entity::HANDLE                          => 'string',
             Entity::AMOUNT                          => 'integer|min:1|max:10000000',
             Entity::AMOUNT_RULE                     => 'string|' . $amountRules,
+            Entity::CURRENCY                        => 'string|in:INR',
             Entity::PAYER_ID                        => 'string',
             Entity::PAYEE_ID                        => 'string',
             Entity::BANK_ACCOUNT_ID                 => 'string',
@@ -116,6 +117,7 @@ class Validator extends Base\Validator
     public function makeCreateRules()
     {
         return $this->makeRules([
+            Entity::NAME                         => 'sometimes',
             Entity::TYPE                         => 'required',
             Entity::FLOW                         => 'required',
             Entity::MODE                         => 'required',
@@ -125,8 +127,8 @@ class Validator extends Base\Validator
             Entity::AMOUNT                       => 'required',
             Entity::AMOUNT_RULE                  => 'required',
             Entity::CURRENCY                     => 'required',
+            Entity::RECURRING_TYPE               => 'required',
             Entity::RECURRING_RULE               => 'sometimes',
-            Entity::RECURRING_TYPE               => 'sometimes',
             Entity::RECURRING_VALUE              => 'sometimes',
             Entity::DESCRIPTION                  => 'sometimes',
             Entity::GATEWAY                      => 'sometimes',

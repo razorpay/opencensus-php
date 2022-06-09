@@ -32,6 +32,7 @@ class PspxMandateTest extends TestCase
     );
 
     protected $entitySkeleton = array(
+        Entity::NAME                          => 'A Mandate Name',
         Entity::DEVICE_ID                     => 'Device00123456',
         Entity::MERCHANT_ID                   => 'Client00123456',
         Entity::CUSTOMER_ID                   => 'Customer001234',

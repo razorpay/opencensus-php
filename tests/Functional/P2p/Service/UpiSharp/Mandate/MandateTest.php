@@ -55,14 +55,15 @@ class MandateTest extends TestCase
         $helper = $this->getMandateHelper();
 
         $request = [
-            Fields::TYPE             => UpiAction::INCOMING_MANDATE_CREATE,
-            Fields::AMOUNT           => 100,
-            Fields::AMOUNT_RULE      => 'MAX',
-            Fields::PAYER_VPA        => $this->fixtures->vpa(Fixtures::DEVICE_1)->getAddress(),
-            Fields::PAYEE_VPA        => 'username@randompsp',
-            Fields::VALIDITY_START   => Carbon::now()->getTimestamp(),
-            Fields::VALIDITY_END     => Carbon::now()->addDays(365)->getTimestamp(),
-            Fields::TRANSACTION_NOTE => 'UPI',
+            Fields::TYPE                    => UpiAction::INCOMING_MANDATE_CREATE,
+            Fields::AMOUNT                  => 100,
+            Fields::AMOUNT_RULE             => 'MAX',
+            Fields::PAYER_VPA               => $this->fixtures->vpa(Fixtures::DEVICE_1)->getAddress(),
+            Fields::PAYEE_VPA               => 'username@randompsp',
+            Fields::VALIDITY_START          => Carbon::now()->getTimestamp(),
+            Fields::VALIDITY_END            => Carbon::now()->addDays(365)->getTimestamp(),
+            Fields::TRANSACTION_NOTE        => 'UPI',
+            Fields::RECUR                   => 'DAILY',
         ];
 
         $content = [

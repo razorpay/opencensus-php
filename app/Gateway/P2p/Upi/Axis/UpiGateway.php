@@ -2,12 +2,15 @@
 
 namespace RZP\Gateway\P2p\Upi\Axis;
 
+use RZP\Models\P2p\Mandate;
 use RZP\Models\P2p\Transaction;
 use RZP\Gateway\P2p\Upi\Contracts;
 use RZP\Gateway\P2p\Base\Response;
 use RZP\Models\Base\PublicCollection;
 use RZP\Gateway\P2p\Upi\Axis\Actions\UpiAction;
 use RZP\Gateway\P2p\Upi\Axis\Actions\TransactionAction;
+use RZP\Gateway\P2p\Upi\Axis\Transformers\MandateTransformer;
+use RZP\Gateway\P2p\Upi\Axis\Transformers\UpiMandateTransformer;
 use RZP\Gateway\P2p\Upi\Axis\Transformers\TransactionTransformer;
 use RZP\Gateway\P2p\Upi\Axis\Transformers\UpiTransactionTransformer;
 use RZP\Gateway\P2p\Upi\Axis\Transformers\TransactionConcernTransformer;
@@ -68,6 +71,28 @@ class UpiGateway extends Gateway implements Contracts\UpiGateway
 
                 break;
 
+            case UpiAction::CUSTOMER_INCOMING_MANDATE_CREATE_REQUEST_RECEIVED:
+                $upiMandateTransformer = new UpiMandateTransformer($content, $type);
+                $upi                   = $upiMandateTransformer->transformIncoming();
+
+                $mandateTransformer = new MandateTransformer($upi, $type);
+                $mandate            = $mandateTransformer->transformIncoming();
+
+                unset($upi[Mandate\Entity::MANDATE]);
+
+                $context = [
+                    Mandate\Entity::ENTITY  => Mandate\Entity::MANDATE,
+                    Mandate\Entity::ACTION  => Mandate\Action::INCOMING_COLLECT,
+                ];
+
+                $response->setData([
+                    Mandate\Entity::MANDATE => $mandate,
+                    Mandate\Entity::UPI     => $upi,
+                    Mandate\Entity::CONTEXT => $context,
+                ]);
+
+                return;
+
             default:
                 // In if axis does not send the type, which is for queries
                 if (is_array(array_get($content, Fields::QUERIES)) === true)
@@ -116,6 +141,7 @@ class UpiGateway extends Gateway implements Contracts\UpiGateway
             case UpiAction::CUSTOMER_DEBITED_VIA_PAY:
             case UpiAction::CUSTOMER_DEBITED_FOR_MERCHANT_VIA_PAY:
             case UpiAction::CUSTOMER_DEBITED_FOR_MERCHANT_VIA_COLLECT:
+            case UpiAction::CUSTOMER_INCOMING_MANDATE_CREATE_REQUEST_RECEIVED:
             case null:
 
                 $signature = $this->getpayloadSignature();

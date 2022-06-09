@@ -33,6 +33,7 @@ class Mandate extends BaseMandate
     );
 
     protected $entitySkeleton = array(
+        MandateEntity::NAME                          => 'A Mandate Name',
         MandateEntity::DEVICE_ID                     => 'Device00123456',
         MandateEntity::CUSTOMER_ID                   => 'Customer001234',
         MandateEntity::AMOUNT_RULE                   => 'EXACT',
