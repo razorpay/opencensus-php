@@ -30,9 +30,9 @@ class FreshdeskTicketV2Test extends TestCase
 
     protected $ravenMock;
 
-    const RZP_CREATE_TICKET = 'rzp_create_ticket';
-
-    const RZP_CREATE_TICKET_MOBILE_SIGNUP = 'rzp_create_ticket_mobile_signup';
+    const RZP_CREATE_TICKET                      = 'rzp_create_ticket';
+    const RZP_CREATE_TICKET_WITH_CREATION_SOURCE = 'rzp_create_ticket_with_creation_source';
+    const RZP_CREATE_TICKET_MOBILE_SIGNUP        = 'rzp_create_ticket_mobile_signup';
 
     const RZP_FETCH_OPEN_TICKETS                        = 'rzp_fetch_open_tickets';
     const RZP_CREATE_TICKET_CHECKING_CC_EMAILS          = 'rzp_create_ticket_checking_cc_emails';
@@ -643,6 +643,27 @@ class FreshdeskTicketV2Test extends TestCase
         $this->fixtures->merchant->edit('10000000000000', ['name' => null]);
 
         $this->startTest();
+    }
+
+    public function testCreateTicketRzpWithInvalidCreationSource()
+    {
+        $this->startTest();
+    }
+
+    public function testCreateTicketRzpCreationSource()
+    {
+        $expectedRequestResponse = $this->getExpectedRequestResponse(self::RZP_CREATE_TICKET_WITH_CREATION_SOURCE);
+
+        $this->checkFreshdeskCorrectInstanceCallAndRespondWith('tickets', 'POST', 'rzpind',
+                                                               $expectedRequestResponse['request'], $expectedRequestResponse['response']);
+
+        $this->startTest();
+
+        $ticket = $this->getLastEntity('merchant_freshdesk_tickets', true);
+
+        $fdInstance = $ticket['ticket_details']['fd_instance'];
+
+        $this->assertEquals('rzpind', $fdInstance);
     }
 
     public function testCreateTicketRzpWithDCMigrationExperimentOn()
@@ -1965,6 +1986,41 @@ class FreshdeskTicketV2Test extends TestCase
                     ],
                     'priority' =>  1,
                 ]
+            ];
+        }
+
+        if ($key === self::RZP_CREATE_TICKET_WITH_CREATION_SOURCE)
+        {
+            return [
+                'request'   =>  [
+                    'description' => 'ticket description',
+                    'subject' => 'ticket subject',
+                    'cc_emails' => ['a@b.com','merchantuser01@razorpay.com'],
+                    'custom_fields' => [
+                        'cf_requester_category'    => 'Merchant',
+                        'cf_requestor_subcategory' => 'Activation',
+                        'cf_creation_source'       => 'Dashboard',
+                        'cf_merchant_id_dashboard' => 'merchant_dashboard_10000000000000',
+                        'cf_merchant_id'           => '10000000000000',
+                    ],
+                    'email' =>  'test@razorpay.com',
+                    'phone' => '9876543210',
+                    'priority' =>  1,
+                ],
+                'response'  =>
+                    [
+                        'id'            => '99',
+                        'description'   => 'ticket description',
+                        'fr_due_by'     => $frDueByFreshdeskFormat,
+                        'custom_fields' => [
+                            'cf_requester_category'    => 'Merchant',
+                            'cf_requestor_subcategory' => 'Activation',
+                            'cf_merchant_id_dashboard' => 'merchant_dashboard_10000000000000',
+                            'cf_merchant_id'           => '10000000000000',
+                            'cf_creation_source'       => 'Dashboard',
+                        ],
+                        'priority' =>  1,
+                    ]
             ];
         }
 

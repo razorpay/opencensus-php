@@ -484,6 +484,58 @@ return [
         ],
     ],
 
+    'testCreateTicketRzpWithInvalidCreationSource' => [
+        'request' => [
+            'url'     => '/fd/support_dashboard/ticket/',
+            'method'  => 'POST',
+            'content' => [
+                'description'   => 'ticket description',
+                'subject'       => 'ticket subject',
+                'cc_emails'     => ['a@b.com'],
+                'custom_fields' => [
+                    'cf_requester_category'       => 'Merchant',
+                    'cf_requestor_subcategory'    => 'Activation',
+                    'cf_creation_source'          => 'Dashboard X',
+                ],
+            ],
+        ],
+        'response' => [
+            'content'       => [
+                'error' => [
+                    'description' => 'Invalid Ticket Creation Source: Dashboard X',
+                    'code'        => 'BAD_REQUEST_ERROR',
+                ],
+            ],
+            'status_code'   => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => 'BAD_REQUEST_VALIDATION_FAILURE',
+        ],
+    ],
+
+    'testCreateTicketRzpCreationSource' => [
+        'request' => [
+            'url'     => '/fd/support_dashboard/ticket/',
+            'method'  => 'POST',
+            'content' => [
+                'description'   => 'ticket description',
+                'subject'       => 'ticket subject',
+                'cc_emails'     => ['a@b.com'],
+                'custom_fields' => [
+                    'cf_requester_category'       => 'Merchant',
+                    'cf_requestor_subcategory'    => 'Activation',
+                    'cf_creation_source'          => 'Dashboard',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'description'  => 'ticket description',
+            ],
+        ],
+    ],
+
     'testCreateTicketRzpWithDCMigrationExperimentOn' => [
         'request' => [
             'url'     => '/fd/support_dashboard/ticket/',
@@ -494,7 +546,7 @@ return [
                 'cc_emails'     => ['a@b.com'],
                 'custom_fields' => [
                     'cf_requester_category'       => 'Merchant',
-                    'cf_requestor_subcategory'    => 'Activation'
+                    'cf_requestor_subcategory'    => 'Activation',
                 ],
             ],
         ],

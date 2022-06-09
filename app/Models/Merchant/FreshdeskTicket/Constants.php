@@ -199,4 +199,17 @@ class Constants
     const MERCHANT_PLUGIN_TAG       = 'plugin_merchant';
 
     const TICKET_QUEUE_INTERNAL     = 'Internal';
+
+    // Ticket Creation Sources
+    const FD_TICKET_CREATION_SOURCE_DASHBOARD = 'Dashboard';
+    const FD_TICKET_CREATION_SOURCE_MOBILE_DASHBOARD = 'Mobile Dashboard';
+    const FD_TICKET_CREATION_SOURCE_WEBVIEW_IOS = 'Webview - iOS';
+    const FD_TICKET_CREATION_SOURCE_WEBVIEW_ANDROID = 'Webview - Android';
+
+    const VALID_FD_TICKET_CREATION_SOURCE_LIST = [
+        self::FD_TICKET_CREATION_SOURCE_DASHBOARD,
+        self::FD_TICKET_CREATION_SOURCE_MOBILE_DASHBOARD,
+        self::FD_TICKET_CREATION_SOURCE_WEBVIEW_ANDROID,
+        self::FD_TICKET_CREATION_SOURCE_WEBVIEW_IOS
+    ];
 }

@@ -104,6 +104,7 @@ class Validator extends Base\Validator
         'custom_fields.cf_product'                               => 'sometimes|string|custom:custom_field_product',
         'custom_fields.cf_ticket_queue'                          => 'sometimes|string|custom:custom_field_ticket_queue',
         'custom_fields.cf_created_by'                            => 'sometimes|string',
+        'custom_fields.cf_creation_source'                       => 'sometimes|string|custom:custom_field_creation_source',
         'tags'                                                   => 'sometimes|array',
         'status'                                                 => 'sometimes',
     ];
@@ -130,6 +131,7 @@ class Validator extends Base\Validator
         'custom_fields.cf_product'                               => 'sometimes|string|custom:custom_field_product',
         'custom_fields.cf_ticket_queue'                          => 'sometimes|string|custom:custom_field_ticket_queue',
         'custom_fields.cf_created_by'                            => 'sometimes|string',
+        'custom_fields.cf_creation_source'                       => 'sometimes|string|custom:custom_field_creation_source',
         'tags'                                                   => 'sometimes|array',
         'status'                                                 => 'sometimes',
     ];
@@ -404,6 +406,16 @@ class Validator extends Base\Validator
             Constants::QUESTION_TICKET_TYPE,
             Constants::INCIDENT_TICKET_TYPE,
         ];
+    }
+
+    protected function validateCustomFieldCreationSource($attribute, $value)
+    {
+        $validSources = Constants::VALID_FD_TICKET_CREATION_SOURCE_LIST;
+
+        if (in_array($value, $validSources, true) === false)
+        {
+            throw new BadRequestValidationFailureException('Invalid Ticket Creation Source: ' . $value);
+        }
     }
 
     protected function validateCustomFieldTicketQueue($attribute, $value)
