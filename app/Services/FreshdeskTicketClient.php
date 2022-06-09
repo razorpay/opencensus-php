@@ -2,6 +2,7 @@
 
 namespace RZP\Services;
 
+use RZP\Error\ErrorCode;
 use RZP\Http\Request\Requests;
 use RZP\Trace\TraceCode;
 use RZP\Http\RequestHeader;
@@ -314,8 +315,33 @@ class FreshdeskTicketClient
         return $request;
     }
 
+    protected function getFdInstanceFromUrl(string $url) : string
+    {
+        if($this->isSandbox === true)
+        {
+            return 'rzpsandbox';
+        }
+
+        foreach (Constants::FRESHDESK_URL_LIST as $instance)
+        {
+            if(preg_match('#' .$this->config[$instance].'#i', $url) === 1)
+            {
+                return Constants::URL_VS_INSTANCES[$instance];
+            }
+        }
+
+        return 'other';
+    }
+
     protected function getResponse($request) : \Requests_Response
     {
+        $fdInstance = $this->getFdInstanceFromUrl($request['url']);
+
+        $this->trace->info(TraceCode::FRESHDESK_SUPPORT_TICKETS_INSTANCE,
+            [ '$fdInstance', $fdInstance]
+        );
+        $startTimeMs = round(microtime(true) * 1000);
+
         $response = Requests::request(
             $request['url'],
             $request['headers'],
@@ -324,7 +350,18 @@ class FreshdeskTicketClient
             $request['options']
         );
 
+        $endTimeMs = round(microtime(true) * 1000);
+
+        $execution_time = ($endTimeMs - $startTimeMs);
+
+        $dimensions = [
+            Constants::ROUTE       => $this->route->getCurrentRouteName(),
+            Constants::FD_INSTANCE => $fdInstance
+        ];
+
         $this->trace->count(Metric::FRESHDESK, $this->getDimension($this->route->getCurrentRouteName(), $response->status_code ?? 520) );
+
+        $this->trace->histogram(Metric::FRESHDESK_RESPONSE_TIME, $execution_time, $dimensions);
 
         return $response;
     }
