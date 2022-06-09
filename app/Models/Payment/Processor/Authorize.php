@@ -6680,7 +6680,7 @@ trait Authorize
                 return;
             }
 
-            if ($token->merchant->isFeatureEnabled(Feature\Constants::NETWORK_TOKENIZATION_LIVE) === false)
+            if (($token->merchant->isFeatureEnabled(Feature\Constants::NETWORK_TOKENIZATION_LIVE) === false) && ($token->merchant->isFeatureEnabled(Feature\Constants::NETWORK_TOKENIZATION) === false))
             {
                 return;
             }

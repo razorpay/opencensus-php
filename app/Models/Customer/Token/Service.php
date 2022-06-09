@@ -9,6 +9,7 @@ use RZP\Encryption\AESEncryption;
 use RZP\Jobs\MerchantAsyncTokenisationJob;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Base;
+use RZP\Constants\Mode;
 use RZP\Models\Card;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
@@ -619,9 +620,11 @@ class Service extends Base\Service
     {
         $startTime = microtime(true);
 
+        $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
+
         try
         {
-            if ($this->merchant->isFeatureEnabled(Feature\Constants::NETWORK_TOKENIZATION_LIVE) === true)
+            if (($this->merchant->isFeatureEnabled(Feature\Constants::NETWORK_TOKENIZATION_LIVE) === true ) && ($mode === Mode::LIVE))
             {
                 (new Validator)->validateInput(Validator::FETCH_TOKEN, $input);
 
@@ -652,8 +655,6 @@ class Service extends Base\Service
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_ERROR, null, null, "network_tokenization_live feature is not enabled for this merchant");
             }
-
-            $this->validateMode();
 
             $token = $this->repo->token->getByPublicIdAndMerchant($input['id'], $this->merchant);
 

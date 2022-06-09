@@ -1855,7 +1855,6 @@ class Core extends Base\Core
             'async'          => $isAsync
         ];
 
-
         list($card, $serviceProviderTokens) = (new Card\Core)->migrateToTokenizedCard($token->card, $token->merchant, $cardInput);
 
          $this->trace->info(
