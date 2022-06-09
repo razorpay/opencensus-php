@@ -539,9 +539,11 @@ class Core extends Base\Core
 
         $body['phone'] = $customerDetails['contact'];
 
-        $body['customer'] = [
-            'phone' => $customerDetails['contact'],
-        ];
+        // NOTE: updating the contact causes conflicts in creating customer accounts
+        // as shopify allows only single email per phone number
+        // $body['customer'] = [
+        //     'phone' => $customerDetails['contact'],
+        // ];
 
         if (empty($rzpOrder['promotions']) === false)
         {
