@@ -1568,6 +1568,16 @@ class Netbanking
     {
         $rearchBanks = [
             Bank::YESB,
+            Bank::DBSS,
+        ];
+
+        return in_array($bank, $rearchBanks, true);
+    }
+
+    public static function banksRoutedAlwaysThroughNbRearch(string $bank): bool
+    {
+        $rearchBanks = [
+            Bank::DBSS,
         ];
 
         return in_array($bank, $rearchBanks, true);

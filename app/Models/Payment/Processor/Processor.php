@@ -678,6 +678,11 @@ class Processor
             return false;
         }
 
+        if (Netbanking::banksRoutedAlwaysThroughNbRearch($input[Payment\Entity::BANK]) === true)
+        {
+            return true;
+        }
+
         $result = $this->app->razorx->getTreatment($this->app['request']->getTaskId(), self::NETBANKING_PAYMENTS_VIA_PGROUTER, $this->mode);
 
         return ($result === 'on');
