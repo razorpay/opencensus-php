@@ -192,7 +192,15 @@ class Core extends Base\Core
 
         if ($validateExisting === true)
         {
+            $startTime = millitime();
+
             $existingToken = $this->validateExistingToken($token);
+
+            $this->trace->info(TraceCode::TOKEN_DEDUPE_CHECK_RESPONSE_TIME, [
+                'timeTaken'         => millitime() - $startTime,
+                'isGlobalCustomer'  => $customer->isGlobal(),
+                'tokenPresent'      => isset($existingToken),
+            ]);
 
             //
             // For cards, we check if there's already an existing
@@ -973,7 +981,7 @@ class Core extends Base\Core
 
     protected function getExistingTokens($token, $card, $payment, $customer)
     {
-        $existingCards = (new Card\Core)->findAllExistingCards($card, $customer->merchant);
+        $existingCards = (new Card\Core)->findAllExistingCards($card, $token->merchant);
 
         if ($existingCards === null)
         {
@@ -983,7 +991,7 @@ class Core extends Base\Core
         $cardIds = $existingCards->pluck(Entity::ID);
 
         return $this->repo->token->getByMethodAndCustomerIdAndCardIds(
-                                $token->getMethod(), $token->customer, $cardIds);
+            $token->getMethod(), $token->customer, $cardIds, $token->merchant);
     }
 
     protected function findAndReturnExistingToken($token, $card, $payment, $customer)
@@ -1217,23 +1225,52 @@ class Core extends Base\Core
         return $this->$func($existingTokens, $token);
     }
 
-    protected function validateExistingTokenCard($existingTokens, $newToken)
+    /**
+     * @param Entity[] $existingTokens
+     * @param Entity   $newToken
+     *
+     * @return Entity|null
+     */
+    protected function validateExistingTokenCard($existingTokens, $newToken): ?Entity
     {
-        $vaultToken = $newToken->card->getVaultToken();
+        if (!$newToken->hasCard())
+        {
+            return null;
+        }
 
-        $expiryMonth = $newToken->card->getExpiryMonth();
-
-        $expiryYear = $newToken->card->getExpiryYear();
+        $newTokenCardDetails = $newToken->card->getCardDetailsAsKey();
+        $isNewTokenNetworkTokenised = !$newToken->card->isRzpTokenisedCard();
 
         foreach ($existingTokens as $token)
         {
-            if (($token->hasCard() === true) and
-                ($token->card->getVaultToken()  === $vaultToken) and
-                ($token->card->getExpiryMonth() === $expiryMonth) and
-                ($token->card->getExpiryYear()  === $expiryYear))
+            if (!$token->hasCard())
             {
-                return $token;
+                continue;
             }
+
+            $existingTokenCardDetails = $token->card->getCardDetailsAsKey();
+
+            if ($newTokenCardDetails !== $existingTokenCardDetails)
+            {
+                continue;
+            }
+
+            $isExistingTokenNetworkTokenised = !$token->card->isRzpTokenisedCard();
+
+            // If both cards are tokenised or both are non tokenised,
+            // then we can use vault token to do dedupe check
+            if (($isNewTokenNetworkTokenised === $isExistingTokenNetworkTokenised) &&
+                ($newToken->getMerchantId() === $token->getMerchantId())
+            ) {
+                if ($newToken->card->getVaultToken() === $token->card->getVaultToken())
+                {
+                    return $token;
+                }
+
+                continue;
+            }
+
+            return $token;
         }
 
         return null;
@@ -2480,5 +2517,156 @@ class Core extends Base\Core
             'iin'          => $card->getIin() ?? "",
             'name'         => $card->getName(),
         ];
+    }
+
+    /**
+     * @param  Entity           $globalToken
+     * @param  Merchant\Entity  $merchant    Merchant to be associated
+     *
+     * @return Entity
+     * @throws \Exception
+     */
+    public function createLocalTokenFromGlobalToken(Entity $globalToken, Merchant\Entity $merchant): Entity
+    {
+        $localToken = $this->createGlobalOrLocalTokenFromExistingToken($globalToken, $merchant);
+
+        return $localToken;
+    }
+
+    /**
+     * @param  Entity  $localToken
+     *
+     * @return Entity
+     * @throws \Exception
+     */
+    public function createGlobalTokenFromLocalToken(Entity $localToken): Entity
+    {
+        $globalMerchant = $this->repo->merchant->getSharedAccount();
+
+        $globalToken = $this->createGlobalOrLocalTokenFromExistingToken($localToken, $globalMerchant);
+
+        return $globalToken;
+    }
+
+    /**
+     * Can be used to create dual vault token from existing global token
+     * Or create global token from existing dual vault token.
+     * Creation of global or local token is decided by the merchant entity
+     * being passed in the function argument.
+     *
+     * Dual Vault Token - Token whose customer id is global customer id, but
+     * merchant id is the actual merchant id instead of global merchant id.
+     *
+     * @param  Entity          $existingToken
+     * @param  Merchant\Entity $merchantToBeAssociated - to decide creation of global or local token
+     *
+     * @return Entity
+     * @throws \Exception
+     */
+    protected function createGlobalOrLocalTokenFromExistingToken(Entity $existingToken, Merchant\Entity $merchantToBeAssociated): Entity
+    {
+        try
+        {
+            $this->trace->info(TraceCode::GLOBAL_LOCAL_TOKEN_CREATION_REQUEST, [
+                'tokenId'   => $existingToken->getId(),
+                'isGlobal'  => $existingToken->isGlobal(),
+            ]);
+
+            $token = $this->checkIfSimilarTokenCardAlreadyExistsOnCustomerAndMerchant(
+                $existingToken,
+                $existingToken->customer,
+                $merchantToBeAssociated
+            );
+
+            if (isset($token))
+            {
+                $this->trace->info(TraceCode::GLOBAL_LOCAL_TOKEN_ALREADY_EXISTS, [
+                    'tokenId'           => $existingToken->getId(),
+                    'isGlobal'          => $existingToken->isGlobal(),
+                    'existingTokenId'   => $token->getId(),
+                ]);
+
+                return $token;
+            }
+
+            $token = $existingToken->replicate();
+
+            $token->merchant()->associate($merchantToBeAssociated);
+            $token->generateToken([]);
+            $token->setStatus(null);
+            $token->setUsedCount(0);
+            $token->setUsedAt(Carbon::now()->getTimestamp());
+
+            $existingCard = $existingToken->card;
+
+            $actualCardNumber = (new Card\CardVault)->getCardNumber($existingCard->getVaultToken());
+
+            $cardInput = [
+                Card\Entity::NUMBER           => $actualCardNumber,
+                Card\Entity::NAME             => $existingCard->getName(),
+                Card\Entity::EXPIRY_MONTH     => $existingCard->getExpiryMonth(),
+                Card\Entity::EXPIRY_YEAR      => $existingCard->getExpiryYear(),
+                Card\Entity::CVV              => $input['card']['cvv'] ?? Card\Entity::getDummyCvv($existingCard->getNetworkCode()),
+                Card\Entity::VAULT            => Card\Vault::RZP_VAULT,
+            ];
+
+            $cardCore = new Card\Core;
+
+            $cardCore->createAndReturnWithSensitiveData($cardInput, $merchantToBeAssociated, false, false);
+
+            $card = $cardCore->getCard();
+
+            $token->card()->associate($card);
+
+            $token->saveOrFail();
+
+            $this->trace->info(TraceCode::GLOBAL_LOCAL_TOKEN_CREATION_SUCCESS, [
+                'tokenId'       => $existingToken->getId(),
+                'isGlobal'      => $existingToken->isGlobal(),
+                'newTokenId'    => $token->getId(),
+            ]);
+
+            return $token;
+        }
+        catch(\Exception $ex)
+        {
+            $this->trace->traceException($ex, Trace::ERROR, TraceCode::GLOBAL_LOCAL_TOKEN_CREATION_ERROR, [
+                'tokenId'   => $existingToken->getId(),
+                'isGlobal'  => $existingToken->isGlobal(),
+            ]);
+
+            throw $ex;
+        }
+    }
+
+    /**
+     * Check and return if a similar token already exists on the
+     * provided merchant and customer
+     *
+     * @param $token    - Existing global/local token whose similar token we need to check
+     * @param $customer - Customer whose tokens need to be checked
+     * @param $merchant - Merchant along with above customer whose tokens need to be checked
+     *
+     * @return Entity|null
+     */
+    public function checkIfSimilarTokenCardAlreadyExistsOnCustomerAndMerchant($token, $customer, $merchant): ?Entity
+    {
+        $startTime = millitime();
+
+        $existingTokens = $this->repo->token->getByMethodAndCustomerIdAndMerchantId(
+            Method::CARD,
+            $customer->getId(),
+            $merchant->getId()
+        );
+
+        $existingToken = $this->validateExistingTokenCard($existingTokens, $token);
+
+        $this->trace->info(TraceCode::TOKEN_DEDUPE_CHECK_RESPONSE_TIME, [
+            'timeTaken'         => millitime() - $startTime,
+            'isGlobalCustomer'  => $customer->isGlobal(),
+            'tokenPresent'      => isset($existingToken),
+        ]);
+
+        return $existingToken;
     }
 }

@@ -1512,14 +1512,7 @@ class TokenisationTest extends TestCase
 
         $paymentCard = $payment->card;
 
-        if ($isLocal === true)
-        {
-            $this->assertNotNull($payment['token_id']);
-        }
-        else
-        {
-            $this->assertNotNull($payment['global_token_id']);
-        }
+        $this->assertNotNull($payment['token_id']);
 
         $this->assertEquals('401200', $tokenCard['iin']);
         $this->assertEquals($token['card_id'], $tokenCard['id']);
@@ -1527,7 +1520,7 @@ class TokenisationTest extends TestCase
         $this->assertEquals('credit', $tokenCard['type']);
         $this->assertNull($paymentCard['trivia']);
 
-        return $token['id'];
+        return $isLocal ? $token['id'] : $token['token'];
     }
 
     /**
@@ -1629,6 +1622,7 @@ class TokenisationTest extends TestCase
         $this->mockRazorXTreatment('on');
 
         $this->fixtures->merchant->addFeatures(['network_tokenization_live'], '100000Razorpay');
+        $this->fixtures->merchant->addFeatures(['network_tokenization_live'], '10000000000000');
 
         $this->fixtures->iin->create([
             'iin'     => '400782',
@@ -1643,9 +1637,11 @@ class TokenisationTest extends TestCase
             ]
         ]);
 
-        $tokenId = $this->doFirstPaymentThroughTokenisingTheCard(false);
+        $tokenToken = $this->doFirstPaymentThroughTokenisingTheCard(false);
 
-        $payment = $this->getDefaultTokenIdPaymentArray($tokenId);
+        $payment = $this->getDefaultTokenIdPaymentArray($tokenToken);
+
+        $payment[Payment::TOKEN] = $tokenToken;
 
         $paymentResponse = $this->doAuthPayment($payment);
 
@@ -1657,11 +1653,11 @@ class TokenisationTest extends TestCase
 
         $tokenCard = $token->card;
 
-        $this->assertEquals($tokenId, $token['id']);
+        $this->assertEquals($tokenToken, $token['token']);
         $this->assertEquals('visa', $tokenCard['vault']);
         $this->assertEquals('authorized', $payment2['status']);
         $this->assertEquals("passed", $payment2['two_factor_auth']);
-        $this->assertNotNull($payment2['global_token_id']);
+        $this->assertNotNull($payment2['token_id']);
         $this->assertEquals(1, $paymentCard['trivia']);
 
         //replace below lines to token_expiry_year and token_expiry_month ,once they are populated
@@ -1750,6 +1746,7 @@ class TokenisationTest extends TestCase
         $this->mockCardVaultWithMigrateToken();
 
         $this->fixtures->merchant->addFeatures(['network_tokenization_live'], '100000Razorpay');
+        $this->fixtures->merchant->addFeatures(['network_tokenization_live'], '10000000000000');
 
         $this->fixtures->iin->create([
             'iin'     => '400782',
@@ -1764,9 +1761,11 @@ class TokenisationTest extends TestCase
             ]
         ]);
 
-        $tokenId = $this->doFirstPaymentThroughTokenisingTheCard(false);
+        $tokenToken = $this->doFirstPaymentThroughTokenisingTheCard(false);
 
-        $payment = $this->getDefaultTokenIdPaymentArray($tokenId);
+        $payment = $this->getDefaultTokenIdPaymentArray($tokenToken);
+
+        $payment[Payment::TOKEN] = $tokenToken;
 
         $paymentResponse = $this->doAuthPayment($payment);
 
@@ -1778,16 +1777,25 @@ class TokenisationTest extends TestCase
 
         $tokenCard = $token->card;
 
-        $this->assertEquals($tokenId, $token['id']);
+        $this->assertEquals($tokenToken, $token['token']);
         $this->assertEquals('visa', $tokenCard['vault']);
         $this->assertEquals('authorized', $payment2['status']);
         $this->assertEquals("passed", $payment2['two_factor_auth']);
-        $this->assertNotNull($payment2['global_token_id']);
-        $this->assertNull($paymentCard['trivia']);
+        $this->assertNotNull($payment2['token_id']);
+
         $this->assertEquals('2024', $paymentCard['expiry_year']);
         $this->assertEquals('12', $paymentCard['expiry_month']);
         $this->assertEquals('credit', $paymentCard['type']);
-        $this->assertEquals('401200', $paymentCard['iin']);
+
+        //$this->assertNull($paymentCard['trivia']);
+        //$this->assertEquals('401200', $paymentCard['iin']);
+        /**
+         * Payment goes through tokenised card since it is dual vault token
+         * and exp1 is only for global tokens
+         */
+        $this->assertEquals(1, $paymentCard['trivia']);
+        $this->assertEquals('400782', $paymentCard['iin']);
+
         $this->assertEquals($paymentCard['vault'], 'rzpvault');
     }
 
@@ -1810,6 +1818,7 @@ class TokenisationTest extends TestCase
         $this->mockCardVaultWithMigrateToken();
 
         $this->fixtures->merchant->addFeatures(['network_tokenization_live'], '100000Razorpay');
+        $this->fixtures->merchant->addFeatures(['network_tokenization_live'], '10000000000000');
 
         $this->fixtures->iin->create([
             'iin'     => '400782',
@@ -1824,9 +1833,11 @@ class TokenisationTest extends TestCase
             ]
         ]);
 
-        $tokenId = $this->doFirstPaymentThroughTokenisingTheCard(false);
+        $tokenToken = $this->doFirstPaymentThroughTokenisingTheCard(false);
 
-        $payment = $this->getDefaultTokenIdPaymentArray($tokenId);
+        $payment = $this->getDefaultTokenIdPaymentArray($tokenToken);
+
+        $payment[Payment::TOKEN] = $tokenToken;
 
         $paymentResponse = $this->doAuthPayment($payment);
 
@@ -1838,11 +1849,11 @@ class TokenisationTest extends TestCase
 
         $tokenCard = $token->card;
 
-        $this->assertEquals($tokenId, $token['id']);
+        $this->assertEquals($tokenToken, $token['token']);
         $this->assertEquals('visa', $tokenCard['vault']);
         $this->assertEquals('authorized', $payment2['status']);
         $this->assertEquals("passed", $payment2['two_factor_auth']);
-        $this->assertNotNull($payment2['global_token_id']);
+        $this->assertNotNull($payment2['token_id']);
         $this->assertNull($paymentCard['trivia']);
         $this->assertEquals('2024', $paymentCard['expiry_year']);
         $this->assertEquals('12', $paymentCard['expiry_month']);
@@ -1877,6 +1888,7 @@ class TokenisationTest extends TestCase
         $this->mockCardVaultWithMigrateToken();
 
         $this->fixtures->merchant->addFeatures(['network_tokenization_live'], '100000Razorpay');
+        $this->fixtures->merchant->addFeatures(['network_tokenization_live'], '10000000000000');
 
         $this->fixtures->iin->create([
             'iin'     => '400782',
@@ -1891,9 +1903,11 @@ class TokenisationTest extends TestCase
             ]
         ]);
 
-        $tokenId = $this->doFirstPaymentThroughTokenisingTheCard(false);
+        $tokenToken = $this->doFirstPaymentThroughTokenisingTheCard(false);
 
-        $payment = $this->getDefaultTokenIdPaymentArray($tokenId);
+        $payment = $this->getDefaultTokenIdPaymentArray($tokenToken);
+
+        $payment[Payment::TOKEN] = $tokenToken;
 
         $paymentResponse = $this->doAuthPayment($payment);
 
@@ -1905,11 +1919,11 @@ class TokenisationTest extends TestCase
 
         $tokenCard = $token->card;
 
-        $this->assertEquals($tokenId, $token['id']);
+        $this->assertEquals($tokenToken, $token['token']);
         $this->assertEquals('visa', $tokenCard['vault']);
         $this->assertEquals('authorized', $payment2['status']);
         $this->assertEquals("passed", $payment2['two_factor_auth']);
-        $this->assertNotNull($payment2['global_token_id']);
+        $this->assertNotNull($payment2['token_id']);
         $this->assertNull($paymentCard['trivia']);
         $this->assertEquals('2024', $paymentCard['expiry_year']);
         $this->assertEquals('12', $paymentCard['expiry_month']);
@@ -1938,6 +1952,7 @@ class TokenisationTest extends TestCase
         $this->mockRazorXTreatment('on');
 
         $this->fixtures->merchant->addFeatures(['network_tokenization_live'], '100000Razorpay');
+        $this->fixtures->merchant->addFeatures(['network_tokenization_live'], '10000000000000');
 
         $this->fixtures->merchant->addFeatures([Feature\Constants::DISABLE_TOKENISED_PAYMENT]);
 
@@ -1954,9 +1969,11 @@ class TokenisationTest extends TestCase
                                          ]
                                      ]);
 
-        $tokenId = $this->doFirstPaymentThroughTokenisingTheCard(false);
+        $tokenToken = $this->doFirstPaymentThroughTokenisingTheCard(false);
 
-        $payment = $this->getDefaultTokenIdPaymentArray($tokenId);
+        $payment = $this->getDefaultTokenIdPaymentArray($tokenToken);
+
+        $payment[Payment::TOKEN] = $tokenToken;
 
         $paymentResponse = $this->doAuthPayment($payment);
 
@@ -1968,11 +1985,11 @@ class TokenisationTest extends TestCase
 
         $tokenCard = $token->card;
 
-        $this->assertEquals($tokenId, $token['id']);
+        $this->assertEquals($tokenToken, $token['token']);
         $this->assertEquals('visa', $tokenCard['vault']);
         $this->assertEquals('authorized', $payment2['status']);
         $this->assertEquals("passed", $payment2['two_factor_auth']);
-        $this->assertNotNull($payment2['global_token_id']);
+        $this->assertNotNull($payment2['token_id']);
         $this->assertNull($paymentCard['trivia']);
         $this->assertEquals('2024', $paymentCard['expiry_year']);
         $this->assertEquals('12', $paymentCard['expiry_month']);

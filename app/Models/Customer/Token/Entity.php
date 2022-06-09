@@ -28,11 +28,12 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use RZP\Models\PaperMandate\FileUploader;
 use RZP\Models\PaperMandate\PaperMandateUpload\Entity as PaperMandateUploadEntity;
 use RZP\Models\SubscriptionRegistration\Entity as SubscriptionRegistrationEntity;
-
+use RZP\Models\Customer;
 
 /**
  * @property Vpa\Entity  $vpa
  * @property Card\Entity $card
+ * @property Customer\Entity $customer
  * @property Terminal\Entity $terminal
  * @property Merchant\Entity $merchant
  * @property CardMandate\Entity $cardMandate
@@ -670,9 +671,16 @@ class Entity extends Base\PublicEntity
         return ($this->getMerchantId() !== Account::SHARED_ACCOUNT);
     }
 
-    public function isGlobal()
+    public function isGlobal(): bool
     {
         return ($this->getMerchantId() === Account::SHARED_ACCOUNT);
+    }
+
+    public function isLocalTokenOnGlobalCustomer(): bool
+    {
+        return (($this->isLocal()) &&
+                (isset($this->customer)) &&
+                ($this->customer->isGlobal()));
     }
 
     public function isCard()
@@ -776,6 +784,11 @@ class Entity extends Base\PublicEntity
     public function setUsedAt($timestamp)
     {
         $this->setAttribute(self::USED_AT, $timestamp);
+    }
+
+    public function setUsedCount($usedCount): void
+    {
+        $this->setAttribute(self::USED_COUNT, $usedCount);
     }
 
     public function setExpiredAt($timestamp)
@@ -988,7 +1001,7 @@ class Entity extends Base\PublicEntity
     }
 
 
-    protected function generateToken($input)
+    public function generateToken($input)
     {
         $rand = '';
 

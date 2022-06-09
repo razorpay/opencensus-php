@@ -93,6 +93,7 @@ use RZP\Models\Merchant\ProductInternational\ProductInternationalMapper;
 use RZP\Models\Order as Order;
 use RZP\Models\Payment\PaymentMeta;
 use RZP\Jobs\OneCCShopifyCreateOrder;
+use RZP\Jobs\SavedCardTokenisationJob;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Payment\TokenisationExperiment;
 
@@ -5178,11 +5179,17 @@ trait Authorize
         // If token is set, then pay using global saved card
         if (empty($input[Payment\Entity::TOKEN]) === true)
         {
+            // Add new global saved card flow
             // Does processing like creating card entity, saving card if passed in the input, etc..
             $this->preProcessPaymentFromUserDataGlobal($customer, $payment, $input, $gatewayInput);
         }
         else
         {
+            /**
+             * Existing global saved card flow
+             * 1. This flow is reached for global token
+             * 2. and Dual vault token(Global customer local token)  as well
+             */
             $this->preProcessPaymentFromSavedMethodGlobal($customer, $payment, $input, $gatewayInput);
         }
     }
@@ -5269,6 +5276,23 @@ trait Authorize
 
         if (($payment->isMethodCardOrEmi() === true) and ($payment->isGooglePayCard() === false))
         {
+            if ((! empty($input[Processor::USER_CONSENT_FOR_TOKENISATION])) &&
+                ($token->isGlobal()) &&
+                (new Payment\TokenisationExperiment())->shouldCreateLocalTokenOnGlobalCustomer($this->merchant->getId())
+            ) {
+                $token = (new Token\Core())->createLocalTokenFromGlobalToken($token, $this->merchant);
+            }
+
+            // For global customer local token payments
+            if ($token->isLocal())
+            {
+                $payment->localToken()->associate($token);
+
+                $gatewayInput['card'] = $this->associateAndGetCardArrayForSavedToken($token, $input);
+
+                return;
+            }
+
             $gatewayInput['card'] = $this->createCardEntityFromSavedToken($token, $input);
 
             $payment->globalToken()->associate($token);
@@ -5276,6 +5300,8 @@ trait Authorize
             $payment->card->globalCard()->associate($token->card);
 
             $this->repo->saveOrFail($payment->card);
+
+            return;
         }
         else if ($payment->isWallet() === true)
         {
@@ -5411,6 +5437,31 @@ trait Authorize
 
         if ($payment->isMethodCardOrEmi() === true)
         {
+            if (($customer->isGlobal()) &&
+                (new Payment\TokenisationExperiment())->shouldCreateLocalTokenOnGlobalCustomer($this->merchant->getId())
+            ) {
+                /**
+                 * create token with global customer, local merchant and associate token to payment
+                 */
+                $gatewayInput['card'] = $this->createCardEntity($input['card'], true, $this->merchant, $input);
+
+                $savedLocalCard = $payment->card;
+
+                /**
+                 * changing the global customer's merchant to payment->merchant in memory temporarily,
+                 * since we want to create token on global customer, payment->merchant
+                 */
+                $customer->merchant()->associate($payment->merchant);
+
+                $token = $this->savePaymentMethod($payment, $customer, $savedLocalCard->getId(), $input);
+
+                $customer->merchant()->associate($this->repo->merchant->getSharedAccount());
+
+                $this->payment->localToken()->associate($token);
+
+                return;
+            }
+
             // create global saved card and link to payment
             $gatewayInput['card'] = $this->createCardEntity($input['card'], true, $customer->merchant, $input);
 
@@ -6579,6 +6630,8 @@ trait Authorize
          */
         $this->storeSavedCardConsentIfPresent($payment);
 
+        $this->createGlobalTokenIfApplicable($payment);
+
         //
         // Needs to be before capture, since disount amount
         // is used to decide whether to capture or not
@@ -7412,11 +7465,17 @@ trait Authorize
 
     protected function notifyIfCardSaved()
     {
+        /** @var Payment\Entity $payment */
         $payment = $this->payment;
+
+        $token = $payment->getGlobalOrLocalTokenEntity();
+
+        $isGlobalCustomerToken = ((isset($token)) &&
+            ($token->isGlobal() || $token->isLocalTokenOnGlobalCustomer()));
 
         if (($payment->isMethod(Payment\Method::CARD)) and
             ($payment->getSave() === true) and
-            ($payment->getGlobalTokenId() !== null) and
+            ($isGlobalCustomerToken === true) and
             ($payment->card->getVault() !== Card\Vault::RZP_ENCRYPTION))
         {
             $notifier = new Notify($this->payment);
@@ -10883,10 +10942,70 @@ trait Authorize
             $tokenEntity->saveOrFail();
 
             $this->app['cache']->delete($redisKey);
+
+            /**
+             * For global saved card payments, upon consent
+             * we are creating local token and storing consent on the local token
+             * The below code fetches the global token and adds consent to it as well
+             */
+            $consentedTokenId = $this->app['cache']->get($redisKey . '_token');
+
+            $this->app['cache']->delete($redisKey . '_token');
+
+            if (empty($consentedTokenId) || !isset($tokenEntity->customer))
+            {
+                return;
+            }
+
+            $consentedToken = (new Token\Core())->getByTokenIdAndCustomer($consentedTokenId, $tokenEntity->customer);
+
+            if ((!isset($consentedToken)) ||
+                ($consentedToken->hasBeenAcknowledged()) ||
+                ($consentedToken->getId() === $tokenEntity->getId()))
+            {
+                return;
+            }
+
+            $consentedToken->setAcknowledgedAt(Carbon::now()->timestamp);
+
+            $consentedToken->saveOrFail();
         }
         catch(\Exception $ex)
         {
             $this->trace->traceException($ex, Trace::ERROR, TraceCode::TOKENISATION_CONSENT_STORAGE_ERROR, [
+                'paymentId' => $payment->getId(),
+            ]);
+        }
+    }
+
+    /**
+     * @param  Payment\Entity  $payment
+     * @return void
+     */
+    protected function createGlobalTokenIfApplicable(Payment\Entity $payment): void
+    {
+        try
+        {
+            if (! $payment->getSave())
+            {
+                return;
+            }
+
+            $token = $payment->localToken;
+
+            if ((isset($token)) &&
+                ($token->isCard()) &&
+                ($token->isLocalTokenOnGlobalCustomer()) &&
+                ($token->card->isGlobalTokenCreationSupportedOnCard())
+            ) {
+                $globalToken = (new Token\Core())->createGlobalTokenFromLocalToken($token);
+
+                SavedCardTokenisationJob::dispatch($this->mode, $globalToken->getId(), $payment->getId());
+            }
+        }
+        catch(\Exception $ex)
+        {
+            $this->trace->traceException($ex, Trace::ERROR, TraceCode::GLOBAL_TOKEN_CREATION_ERROR, [
                 'paymentId' => $payment->getId(),
             ]);
         }

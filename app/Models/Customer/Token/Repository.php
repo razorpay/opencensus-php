@@ -206,6 +206,22 @@ class Repository extends Base\Repository
     }
 
     /**
+     *  Function to return tokens by method, customerId and merchantId
+     *  Not using customer's merchantId since customer's merchantId and token's merchantId
+     *      can be different for dual vault tokens i.e. local tokens on global customer
+     */
+    public function getByMethodAndCustomerIdAndMerchantId($method, $customerId, $merchantId)
+    {
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+            ->where(Entity::METHOD, '=', $method)
+            ->where(Entity::CUSTOMER_ID, '=', $customerId)
+            ->where(Entity::MERCHANT_ID, '=', $merchantId)
+            ->orderBy(Token\Entity::ID, 'desc')
+            ->with('card')
+            ->get();
+    }
+
+    /**
      * @param $method
      * @param $customer
      * @param $vpaId
@@ -247,12 +263,12 @@ class Repository extends Base\Repository
                      ->get();
     }
 
-    public function getByMethodAndCustomerIdAndCardIds($method, $customer, $cardIds)
+    public function getByMethodAndCustomerIdAndCardIds($method, $customer, $cardIds, $merchant)
     {
         return $this->newQuery()
                     ->where(Entity::METHOD, '=', $method)
                     ->where(Entity::CUSTOMER_ID, '=', $customer->getId())
-                    ->where(Entity::MERCHANT_ID, '=', $customer->merchant->getId())
+                    ->where(Entity::MERCHANT_ID, '=', $merchant->getId())
                     ->where(Entity::RECURRING,'=', '0')
                     ->whereIn(Entity::CARD_ID, $cardIds)
                     ->where(function($query)

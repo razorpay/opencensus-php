@@ -908,6 +908,11 @@ class Processor
             $ttl = 60 * 60; // 1 hr in seconds
 
             $this->app['cache']->put($redisKey, true, $ttl);
+
+            if (isset($input['token']))
+            {
+                $this->app['cache']->put($redisKey . '_token', $input['token'], $ttl);
+            }
         }
         catch (\Throwable $e)
         {
@@ -2243,7 +2248,7 @@ class Processor
 
     /**
      * Get razorx variant for UPS payment initiation
-     * 
+     *
      * @param Payment\Entity $payment
      */
     protected function getRazorxVariantForUPS(Payment\Entity $payment)

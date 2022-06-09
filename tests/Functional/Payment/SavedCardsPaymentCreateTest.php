@@ -535,22 +535,22 @@ class SavedCardsPaymentCreateTest extends TestCase
         // create payment and fetch entities
         $content = $this->doAuthAndCapturePayment($this->payment);
 
-        $payment = $this->getLastEntity('payment', true);
+        $payment = $this->getDbEntityById('payment', $content['id']);
 
-        $card = $this->getLastEntity('card', true);
+        $token = $this->getDbEntityById('token', $payment['token_id']);
 
-        $token = $this->getLastEntity('token', true);
+        $card = $this->getDbEntityById('card', $payment['card_id']);
 
         // validations
         $this->assertEquals($payment[Payment::CARD_ID], $card['id']);
 
-        $this->assertNotEquals('card_'.$token[Token::CARD_ID], $card['id']);
+        $this->assertEquals($token[Token::CARD_ID], $card['id']);
 
-        $this->assertEquals($card[Card::GLOBAL_CARD_ID], $token[Token::CARD_ID]);
+        $this->assertEquals($card[Card::ID], $token[Token::CARD_ID]);
 
         $this->assertEquals($payment[Payment::APP_TOKEN], '1000000custapp');
 
-        $this->assertEquals('token_'.$payment[Payment::GLOBAL_TOKEN_ID], $token['id']);
+        $this->assertEquals($payment[Payment::TOKEN_ID], $token['id']);
 
         $this->assertEquals($token[Token::USED_COUNT], 1);
 
@@ -569,11 +569,11 @@ class SavedCardsPaymentCreateTest extends TestCase
 
         $content = $this->doAuthAndCapturePayment($this->payment);
 
-        $payment = $this->getLastEntity('payment', true);
+        $payment = $this->getDbEntityById('payment', $content['id']);
 
-        $card = $this->getLastEntity('card', true);
+        $token = $this->getDbEntityById('token', $payment['token_id']);
 
-        $token = $this->getLastEntity('token', true);
+        $card = $this->getDbEntityById('card', $token['card_id']);
 
 
         $this->assertEquals('2024', $card['expiry_year']);
@@ -582,11 +582,11 @@ class SavedCardsPaymentCreateTest extends TestCase
         $this->assertNull($card['token_expiry_year']);
         $this->assertNull($card['token_expiry_month']);
         // validations
-        $this->assertEquals('token_'.$payment[Payment::GLOBAL_TOKEN_ID], $token['id']);
+        $this->assertEquals($payment[Payment::TOKEN_ID], $token['id']);
 
         $this->assertEquals($payment[Payment::APP_TOKEN], '1000000custapp');
 
-        $this->assertEquals($card[Card::GLOBAL_CARD_ID], $token[Token::CARD_ID]);
+        $this->assertEquals($card[Card::ID], $token[Token::CARD_ID]);
 
         $this->assertEquals($payment[Payment::GLOBAL_CUSTOMER_ID], '10000gcustomer');
 
@@ -614,22 +614,22 @@ class SavedCardsPaymentCreateTest extends TestCase
         // create emi payment and fetch entities
         $content = $this->doAuthAndCapturePayment($this->payment);
 
-        $payment = $this->getLastEntity('payment', true);
+        $payment = $this->getDbEntityById('payment', $content['id']);
 
-        $card = $this->getLastEntity('card', true);
+        $card = $this->getDbEntityById('card', $payment['card_id']);
 
-        $token = $this->getLastEntity('token', true);
+        $token = $this->getDbEntityById('token', $payment['token_id']);
 
         // validations
         $this->assertEquals($payment[Payment::CARD_ID], $card['id']);
 
         $this->assertNotEquals('card_'.$token[Token::CARD_ID], $card['id']);
 
-        $this->assertEquals($card[Card::GLOBAL_CARD_ID], $token[Token::CARD_ID]);
+        $this->assertEquals($card[Card::ID], $token[Token::CARD_ID]);
 
         $this->assertEquals($payment[Payment::APP_TOKEN], '1000000custapp');
 
-        $this->assertEquals('token_'.$payment[Payment::GLOBAL_TOKEN_ID], $token['id']);
+        $this->assertEquals($payment[Payment::TOKEN_ID], $token['id']);
 
         $this->assertEquals($token[Token::USED_COUNT], 1);
 
@@ -640,18 +640,18 @@ class SavedCardsPaymentCreateTest extends TestCase
 
         $content = $this->doAuthAndCapturePayment($this->payment);
 
-        $payment = $this->getLastEntity('payment', true);
+        $payment = $this->getDbEntityById('payment', $content['id']);
 
-        $card = $this->getLastEntity('card', true);
+        $card = $this->getDbEntityById('card', $payment['card_id']);
 
-        $token = $this->getLastEntity('token', true);
+        $token = $this->getDbEntityById('token', $payment['token_id']);
 
         // validations
-        $this->assertEquals('token_'.$payment[Payment::GLOBAL_TOKEN_ID], $token['id']);
+        $this->assertEquals($payment[Payment::TOKEN_ID], $token['id']);
 
         $this->assertEquals($payment[Payment::APP_TOKEN], '1000000custapp');
 
-        $this->assertEquals($card[Card::GLOBAL_CARD_ID], $token[Token::CARD_ID]);
+        $this->assertEquals($card[Card::ID], $token[Token::CARD_ID]);
 
         $this->assertEquals($payment[Payment::GLOBAL_CUSTOMER_ID], '10000gcustomer');
 
@@ -1010,7 +1010,7 @@ class SavedCardsPaymentCreateTest extends TestCase
 
         $this->makeSaveCardGlobalPayment();
 
-        $payment = $this->getLastEntity('payment', true);
+        $payment = $this->getDbLastEntity('payment');
         $card    = $this->getDbLastEntity('card');
 
         $firstToken  = $this->getDbLastEntity('token');
@@ -1019,7 +1019,7 @@ class SavedCardsPaymentCreateTest extends TestCase
 
         $this->makeSaveCardGlobalPayment();
 
-        $payment = $this->getLastEntity('payment', true);
+        $payment = $this->getDbLastEntity('payment');
         $card    = $this->getDbLastEntity('card');
         $lastToken  = $this->getDbLastEntity('token');
 
@@ -1028,7 +1028,7 @@ class SavedCardsPaymentCreateTest extends TestCase
 
         $this->assertEquals('rzpvault', $card['vault']);
 
-        $this->assertEquals($firstToken['id'], $payment['global_token_id']);
+        $this->assertEquals($firstToken['id'], $payment['token_id']);
 
         $this->assertLessThan(Carbon::now()->getTimestamp(), $lastToken['expired_at'] - 10);
     }
@@ -1843,18 +1843,16 @@ class SavedCardsPaymentCreateTest extends TestCase
         // create payment and fetch entities
         $content = $this->doAuthAndCapturePayment($payment);
 
-        $payment = $this->getLastEntity('payment', true);
+        $payment = $this->getDbEntityById('payment', $content['id']);
 
-        $card = $this->getLastEntity('card', true);
+        $card = $this->getDbEntityById('card', $payment['card_id']);
 
-        $token = $this->getLastEntity('token', true);
+        $token = $this->getDbEntityById('token', $payment['token_id']);
 
         // validations
         $this->assertEquals($payment[Payment::CARD_ID], $card['id']);
 
         $this->assertNotEquals('card_'.$token[Token::CARD_ID], $card['id']);
-
-        $this->assertEquals($card[Card::GLOBAL_CARD_ID], $token[Token::CARD_ID]);
 
         $this->assertEquals($payment[Payment::APP_TOKEN], '1000000custapp');
     }

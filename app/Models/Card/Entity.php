@@ -979,6 +979,18 @@ class Entity extends Base\PublicEntity
         return (($vault === 'rupay') or ($vault === 'visa') or ($vault === 'mastercard'));
     }
 
+    public function isGlobalTokenCreationSupportedOnCard(): bool
+    {
+        /**
+         * Can create Rzp global tokens on all networks till June 30th, 2022.
+         * TODO: Remove the always true check around June 25th when we near the tokenisation deadline
+         * so that we create global tokens only on supported networks
+         */
+        return true;
+
+        return in_array($this->getNetworkCode(), Network::NETWORKS_SUPPORTING_GLOBAL_TOKENS, true);
+    }
+
     public function isCredit()
     {
         return ($this->getType() === Type::CREDIT);
