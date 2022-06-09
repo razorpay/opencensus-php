@@ -2492,6 +2492,24 @@ return [
             ],
         ],
 
+    'testCheckUserHasSetPasswordInX' => [
+        'request' => [
+            'url'     => '/users/set/password',
+            'method'  => 'GET',
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
+            'content' => []
+        ],
+        'response' =>
+            [
+                'content' =>
+                    [
+                        'set_password' => true
+                    ],
+            ],
+    ],
+
     'testSetUserPassword' => [
         'request' => [
             'url'     => '/users/set/password',

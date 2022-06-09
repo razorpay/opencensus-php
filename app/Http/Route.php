@@ -8107,6 +8107,7 @@ class Route
 
     public static $bankingRoutePermissions = [
         'access_control_privileges_fetch'              => '*',
+        'user_check_has_set_password'                  => '*',
         'mob_fetch_multiple_intents'                   => '*',
         'mob_fetch_intent'                             => '*',
         'mob_fetch_multiple_applications'              => '*',

@@ -3844,6 +3844,36 @@ class UserTest extends TestCase
         $this->startTest();
     }
 
+    public function testCheckUserHasSetPasswordInX()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $user = $this->fixtures->user->createUserForMerchant($merchant['id'],
+            [
+                'signup_via_email'        => 1,
+                'contact_mobile'          => '9012345678',
+                'contact_mobile_verified' => true,
+            ]);
+
+        DB::table('merchant_users')
+            ->insert([
+                'merchant_id' => $merchant['id'],
+                'user_id'     => $user->getId(),
+                'product'     => 'banking',
+                'role'        => 'owner',
+                'created_at'  => time(),
+                'updated_at'  => time(),
+            ]);
+
+        $user->setPasswordNull();
+
+        $user->save();
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $user['id']);
+
+        $this->startTest();
+    }
+
     /*checks for user has only set password before*/
     public function testcheckUserHasSetPasswordAlready()
     {
