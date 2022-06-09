@@ -215,6 +215,7 @@ class NbplusNetbankingDbsCombinedFileTest extends NbPlusPaymentServiceNetbanking
                 'created_at'        => $refundEntity['created_at'],
                 'reference1'        => $refundEntity['reference1'],
                 'status'            => 'processed',
+                'processed_source'  => 'GATEWAY_API',
             ];
         }
 

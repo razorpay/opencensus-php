@@ -355,7 +355,7 @@ class Dbs extends Base
 
     protected function getRefundStatus($row)
     {
-        if ($row['refund']['status'] === 'processed')
+        if (($row['refund']['status'] === 'processed' && $row['refund']['processed_source'] === 'GATEWAY_API') || $row['refund']['reconciled_at'] !== 0)
             return 'Success';
         else
             return 'To be processed';
