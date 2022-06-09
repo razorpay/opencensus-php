@@ -3487,6 +3487,10 @@ class Route
         'tokenisation_local_cards'                => ['post',        'tokenisation/local_cards',                                 'TokenController@localSavedCardAsyncTokenisation'          ],
         'tokenisation_local_cards_bulk'           => ['post',        'tokenisation/local_cards/bulk',                            'TokenController@localSavedCardBulkTokenisation'           ],
         'tokenisation_global_cards'               => ['post',        'tokenisation/global_cards',                                'TokenController@globalSavedCardAsyncTokenisation'         ],
+        'tokenisation_global_customer_local_cards' => ['post',       'tokenisation/global/local_cards',                          'TokenController@globalCustomerLocalSavedCardAsyncTokenisation'],
+
+        // migrate global tokens to local tokens on which consents are received
+        'create_local_tokens_from_consents_bulk' => ['post',         'create_local_tokens_from_consents/bulk',                   'TokenController@bulkCreateLocalTokensFromConsents'],
 
        // 1 click checkout
        'third_watch_address_check'               => ['post',       'tw/address/check_cod_eligibility',                      'ThirdWatchController@checkAddressServiceability'   ],
@@ -4624,6 +4628,7 @@ class Route
         'trusted_badge_eligibility_cron',
         'tokenisation_local_cards',
         'tokenisation_global_cards',
+        'tokenisation_global_customer_local_cards',
         'gateway_downtime_for_payment',
         'partner_config_bulk_upsert',
         //Accounting Payouts
@@ -4850,6 +4855,8 @@ class Route
         'payment_transfer_retry_batch',
 
         'firs_collect_and_zip_cron',
+
+        'create_local_tokens_from_consents_bulk',
 
         'guest_pincode_get',
 
@@ -12341,6 +12348,7 @@ class Route
             'trusted_badge_eligibility_cron',
             'tokenisation_local_cards',
             'tokenisation_global_cards',
+            'tokenisation_global_customer_local_cards',
             'nps_survey_process_scheduled',
             'freshchat_extract_report_cron',
             'freshchat_retrieve_report_cron',
@@ -12770,6 +12778,7 @@ class Route
             'create_fraud_batch',
             'post_batch_bulk_fraud_notify',
             'payment_transfer_retry_batch',
+            'create_local_tokens_from_consents_bulk',
         ],
 
         'stork' => [

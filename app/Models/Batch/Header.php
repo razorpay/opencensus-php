@@ -1321,6 +1321,15 @@ class Header
     const DEBIT_NOTE_PAYMENT_IDS           = 'payment_ids';
     const DEBIT_NOTE_SKIP_VALIDATION       = 'skip_validation';
 
+    // consent collection for creation of local tokens
+    //input
+    const CONSENT_COLLECTION_MERCHANT_ID = 'merchantId';
+    const CONSENT_COLLECTION_TOKEN_ID    = 'tokenId';
+    //output
+    const CONSENT_COLLECTION_SUCCESS           = "success";
+    const CONSENT_COLLECTION_ERROR_CODE        = "Error Code";
+    const CONSENT_COLLECTION_ERROR_DESCRIPTION = "Error description";
+
     // Following is a list of columns that are mandatory headers in the fund account (contact) batch file
     const MANDATORY_AND_CONDITIONALLY_MANDATORY_HEADERS_FOR_FUND_ACCOUNTS = [
         Header::FUND_ACCOUNT_TYPE,
@@ -4460,6 +4469,18 @@ class Header
                 self::FRAUD_OUTPUT_HEADER_FRAUD_ID,
                 self::FRAUD_OUTPUT_HEADER_STATUS,
                 self::FRAUD_OUTPUT_HEADER_ERROR_REASON,
+            ],
+        ],
+
+        Type::COLLECT_LOCAL_CONSENTS_TO_CREATE_TOKENS => [
+            self::INPUT => [
+                self::CONSENT_COLLECTION_MERCHANT_ID,
+                self::CONSENT_COLLECTION_TOKEN_ID,
+            ],
+            self::OUTPUT => [
+                self::CONSENT_COLLECTION_SUCCESS,
+                self::CONSENT_COLLECTION_ERROR_CODE,
+                self::CONSENT_COLLECTION_ERROR_DESCRIPTION,
             ],
         ],
     ];

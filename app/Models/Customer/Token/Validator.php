@@ -155,6 +155,76 @@ class Validator extends Base\Validator
         'batch_size'    => 'sometimes|integer|max:10000'
     ];
 
+    protected static $validateGlobalCustomerLocalSavedCardAsyncTokenisationRules = [
+        'batch_size' => 'sometimes|integer|max:10000'
+    ];
+
+    /**
+     * @param Entity $token
+     * @param Merchant\Entity $merchant
+     * @return array
+     */
+    public function validateGlobalTokenToLocalTokenMigrationInput(
+        Entity $token,
+        Merchant\Entity $merchant
+    ): array
+    {
+        $output = ['reason' => '', 'valid' => false];
+
+        if ($token->isLocal())
+        {
+            $output['reason'] = 'Token merchant is not global';
+
+            return $output;
+        }
+
+        if ($token->hasBeenAcknowledged() === false)
+        {
+            $output['reason'] = 'Consent is not received for the token';
+
+            return $output;
+        }
+
+        if (!isset($token->customer) || $token->customer->isGlobal() === false)
+        {
+            $output['reason'] = 'Token customer merchant is not global';
+
+            return $output;
+        }
+
+        if ($token->isExpired() === true)
+        {
+            $output['reason'] = 'Token expired';
+
+            return $output;
+        }
+
+        if ($merchant->isShared() === true)
+        {
+            $output['reason'] = 'Input merchant is global merchant';
+
+            return $output;
+        }
+
+        $existingToken = (new Core())->checkIfSimilarTokenCardAlreadyExistsOnCustomerAndMerchant(
+            $token,
+            $token->customer,
+            $merchant
+        );
+
+        if (isset($existingToken))
+        {
+            $output['reason'] = 'Duplicate token';
+            $output['existing_token_id'] = $existingToken->getId();
+
+            return $output;
+        }
+
+        $output['valid'] = true;
+
+        return $output;
+    }
+
     protected static function validateBank($attribute, $value)
     {
         if (Bank\IFSC::exists($value) === false)

@@ -1182,6 +1182,36 @@ class EventCode
         'name'    => 'async_tokenisation.admin_dashboard.tokens.consent_collection_and_tokenisation',
     ];
 
+    public const ASYNC_TOKENISATION_CREATE_GLOBAL_CUSTOMER_LOCAL_TOKENS_INITIATED = [
+        'group'   => 'async_tokenisation',
+        'name'    => 'async_tokenisation.create_global_customer_local_tokens.initiated',
+    ];
+
+    public const ASYNC_TOKENISATION_CREATE_GLOBAL_CUSTOMER_LOCAL_TOKENS_INVALID = [
+        'group'   => 'async_tokenisation',
+        'name'    => 'async_tokenisation.create_global_customer_local_tokens.invalid',
+    ];
+
+    public const ASYNC_TOKENISATION_CREATE_GLOBAL_CUSTOMER_LOCAL_TOKENS_FAILED = [
+        'group'   => 'async_tokenisation',
+        'name'    => 'async_tokenisation.create_global_customer_local_tokens.failed',
+    ];
+
+    public const ASYNC_TOKENISATION_CREATE_GLOBAL_CUSTOMER_LOCAL_TOKENS_SUCCESS = [
+        'group'   => 'async_tokenisation',
+        'name'    => 'async_tokenisation.create_global_customer_local_tokens.success',
+    ];
+
+    public const ASYNC_TOKENISATION_TOKENISATION_GLOBAL_CUSTOMER_LOCAL_TOKENS_PUSHED_TO_QUEUE = [
+        'group'   => 'async_tokenisation',
+        'name'    => 'async_tokenisation.tokenisation_global_customer_local_tokens.pushed_to_queue',
+    ];
+
+    public const ASYNC_TOKENISATION_TOKENISATION_GLOBAL_CUSTOMER_LOCAL_TOKENS_FAILED_WHILE_PUSHING_TO_QUEUE = [
+        'group'   => 'async_tokenisation',
+        'name'    => 'async_tokenisation.tokenisation_global_customer_local_tokens.failed_while_pushing_to_queue',
+    ];
+
     public const NETWORK_TOKENISATION_REQUEST_SENT = [
         'group'   => 'token_hq',
         'name'    => 'NETWORK_TOKENISATION.REQUEST.SENT',

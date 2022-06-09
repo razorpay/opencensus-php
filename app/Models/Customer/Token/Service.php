@@ -6,6 +6,7 @@ use RZP\Diag\EventCode;
 use Aws\Ec2\Exception\Ec2Exception;
 use phpseclib\Crypt\AES;
 use RZP\Encryption\AESEncryption;
+use RZP\Http\RequestHeader;
 use RZP\Jobs\MerchantAsyncTokenisationJob;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Base;
@@ -30,6 +31,7 @@ use RZP\Models\PaymentsUpi;
 use RZP\Models\CardMandate;
 use RZP\Gateway\Base\Metric as BaseMetric;
 use RZP\Models\CardMandate\CardMandateNotification;
+use Illuminate\Support\Facades\Cache;
 
 class Service extends Base\Service
 {
@@ -1187,6 +1189,141 @@ class Service extends Base\Service
 
             return ['success' => false];
         }
+    }
+
+    public function globalCustomerLocalSavedCardAsyncTokenisation(array $input): array
+    {
+        (new Validator())->validateInput('validate_global_customer_local_saved_card_async_tokenisation', $input);
+
+        $asyncTokenisationJobId = UniqueIdEntity::generateUniqueId();
+
+        try
+        {
+            $this->trace->info(TraceCode::ASYNC_GLOBAL_CUSTOMER_LOCAL_TOKENISATION_REQUEST, [
+                'asyncTokenizationJobId' => $asyncTokenisationJobId,
+                'input'                  => $input,
+            ]);
+
+            $batchSize = $input['batch_size'] ?? Constants::GLOBAL_CUSTOMER_LOCAL_ASYNC_TOKENISATION_QUERY_LIMIT;
+
+            $lastDispatchedTokenId = Cache::get(Constants::LAST_DISPATCHED_GLOBAL_CUSTOMER_LOCAL_TOKEN_CACHE_KEY, '');
+
+            $supportedNetworks = Card\Network::getFullNames(Card\Network::NETWORKS_SUPPORTING_TOKEN_PROVISIONING);
+
+            $startTime = millitime();
+
+            $tokenIds = $this->repo->token->fetchConsentReceivedGlobalCustomerLocalTokenIds($supportedNetworks, $lastDispatchedTokenId, $batchSize);
+
+            $tokensCount = count($tokenIds);
+
+            $this->trace->info(TraceCode::ASYNC_GLOBAL_CUSTOMER_LOCAL_TOKENISATION_FETCH_SUCCESS, [
+                'tokensCount' => $tokensCount,
+                'offset'      => $lastDispatchedTokenId,
+            ]);
+
+            if ($tokensCount === 0)
+            {
+                $lastDispatchedTokenId = '';
+
+                Cache::put(
+                    Constants::LAST_DISPATCHED_GLOBAL_CUSTOMER_LOCAL_TOKEN_CACHE_KEY,
+                    $lastDispatchedTokenId,
+                    Constants::LAST_DISPATCHED_GLOBAL_CUSTOMER_LOCAL_TOKEN_CACHE_TTL
+                );
+
+                $this->trace->warning(
+                    TraceCode::ASYNC_GLOBAL_CUSTOMER_LOCAL_TOKENISATION_ERROR,
+                    ['reason' => 'No global customer local tokens found for tokenisation.']
+                );
+
+                return ['success' => true];
+            }
+
+            $endTime = millitime();
+
+            $this->core->pushTokenIdsToQueueForTokenisation($tokenIds, $asyncTokenisationJobId);
+
+            $endQueuingTime = millitime();
+
+            $offset = $lastDispatchedTokenId;
+
+            $lastDispatchedTokenId = $tokenIds[$tokensCount - 1];
+
+            Cache::put(
+                Constants::LAST_DISPATCHED_GLOBAL_CUSTOMER_LOCAL_TOKEN_CACHE_KEY,
+                $lastDispatchedTokenId,
+                Constants::LAST_DISPATCHED_GLOBAL_CUSTOMER_LOCAL_TOKEN_CACHE_TTL
+            );
+
+
+            $this->trace->info(TraceCode::ASYNC_GLOBAL_CUSTOMER_LOCAL_TOKENISATION_DISPATCH_SUCCESS, [
+                'tokenIdCount'           => $tokensCount,
+                'asyncTokenizationJobId' => $asyncTokenisationJobId,
+                'queryTime'              => $endTime - $startTime,
+                'queuingTime'            => $endQueuingTime - $endTime,
+                'offset'                 => $offset,
+                'lastDispatchedTokenId'  => $lastDispatchedTokenId,
+            ]);
+
+            app('diag')->trackAsyncTokenisationEvent(
+                EVENTCODE::ASYNC_TOKENISATION_TOKENISATION_GLOBAL_CUSTOMER_LOCAL_TOKENS_PUSHED_TO_QUEUE,
+                [
+                    'token_id_count'            => count($tokenIds),
+                    'async_tokenization_job_id' => $asyncTokenisationJobId,
+                ]
+            );
+
+            return ['success' => true];
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::ASYNC_GLOBAL_CUSTOMER_LOCAL_TOKENISATION_ERROR
+            );
+
+            app('diag')->trackAsyncTokenisationEvent(
+                EVENTCODE::ASYNC_TOKENISATION_TOKENISATION_GLOBAL_CUSTOMER_LOCAL_TOKENS_FAILED_WHILE_PUSHING_TO_QUEUE,
+                [
+                    'async_tokenization_job_id' => $asyncTokenisationJobId,
+                    'error_details'          => json_encode(
+                        [
+                            'message' => $e->getMessage(),
+                            'code'    => $e->getCode(),
+                        ]
+                    ),
+                ]
+            );
+
+            return ['success' => false];
+        }
+    }
+
+    public function bulkCreateLocalTokensFromConsents(array $input): array
+    {
+        $batchId = $this->app['request']->header(RequestHeader::X_Batch_Id, null);
+
+        $bulkRequestUniqueId = UniqueIdEntity::generateUniqueId();
+
+        $this->trace->info(TraceCode::BULK_CREATE_LOCAL_TOKENS_FROM_CONSENT_REQUEST, [
+            'fileId'              => $batchId,
+            'bulkRequestUniqueId' => $bulkRequestUniqueId,
+            'input'               => $input,
+        ]);
+
+        app('diag')->trackAsyncTokenisationEvent(
+            EVENTCODE::ASYNC_TOKENISATION_CREATE_GLOBAL_CUSTOMER_LOCAL_TOKENS_INITIATED,
+            [
+                'token_id_count'         => count($input),
+                'bulk_request_unique_id' => $bulkRequestUniqueId,
+                'file_id'                => $batchId,
+            ]
+        );
+
+        $result = $this->core->bulkCreateLocalTokensFromConsents($input, $bulkRequestUniqueId, $batchId);
+
+        return $result->toArrayWithItems();
     }
 
     /**

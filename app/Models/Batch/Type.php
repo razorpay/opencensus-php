@@ -220,6 +220,8 @@ class Type
 
     const CREATE_PAYMENT_FRAUD  =  'create_payment_fraud';
 
+    const COLLECT_LOCAL_CONSENTS_TO_CREATE_TOKENS = 'collect_local_consents_to_create_tokens';
+
     public static $disabledTypes = [
         //
         // Removing till auth for this is figured out. Other parts of the code aren't
@@ -289,6 +291,7 @@ class Type
         self::CREATE_PAYMENT_FRAUD,
         self::PAYMENT_TRANSFER_RETRY,
         self::PARTNER_REFERRAL_FETCH,
+        self::COLLECT_LOCAL_CONSENTS_TO_CREATE_TOKENS,
     ];
 
     /**
@@ -568,7 +571,8 @@ class Type
         self::WHITELISTED_DOMAIN,
         self::DEBIT_NOTE,
         self::CREATE_PAYMENT_FRAUD,
-        self::PARTNER_REFERRAL_FETCH
+        self::PARTNER_REFERRAL_FETCH,
+        self::COLLECT_LOCAL_CONSENTS_TO_CREATE_TOKENS,
     ];
 
     // For following batches, sensitive data is encrypted in storeInputFileAndSaveBatchWithSettings() so that file with sensitive/PCI data
@@ -652,6 +656,7 @@ class Type
         self::IRCTC_SETTLEMENT                    => Name::MERCHANT_BATCH_UPLOAD,
         self::ICICI_STP_MIS                       => Name::ADMIN_BATCH_CREATE,
         self::PAYMENT_TRANSFER_RETRY              => Name::ADMIN_BATCH_CREATE,
+        self::COLLECT_LOCAL_CONSENTS_TO_CREATE_TOKENS => Name::ADMIN_BATCH_CREATE,
     ];
 
     public static $workflowApplicableBatchTypes = [

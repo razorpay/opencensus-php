@@ -4,6 +4,7 @@ namespace RZP\Models\Customer\Token;
 
 use RZP\Constants;
 use Carbon\Carbon;
+use RZP\Diag\EventCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Base;
 use RZP\Models\Card;
@@ -15,12 +16,14 @@ use RZP\Models\Payment\TokenisationExperiment;
 use RZP\Models\Terminal;
 use RZP\Models\Customer\AppToken;
 use RZP\Models\Customer\Token;
+use RZP\Models\Customer\Token\Constants as TokenConstants;
 use RZP\Exception;
 use RZP\Trace\TraceCode;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Jobs\SavedCardTokenisationJob;
 use Razorpay\Trace\Logger as Trace;
+use Throwable;
 
 class Core extends Base\Core
 {
@@ -2515,6 +2518,224 @@ class Core extends Base\Core
             'emi'          => $card->getEmi() ?? false,
             'iin'          => $card->getIin() ?? "",
             'name'         => $card->getName(),
+        ];
+    }
+
+    /**
+     * @param $input
+     * @param $bulkRequestUniqueId
+     * @param $batchId
+     * @return Base\PublicCollection
+     */
+    public function bulkCreateLocalTokensFromConsents($input, $bulkRequestUniqueId, $batchId): Base\PublicCollection
+    {
+        $result = new Base\PublicCollection;
+
+        $failedTokensCount = 0;
+
+        $notApplicableTokensCount = 0;
+
+        foreach ($input as $consentData)
+        {
+            $idempotencyKey = $consentData[TokenConstants::BATCH_IDEMPOTENCY_KEY] ?? '';
+
+            $properties = [
+                TokenConstants::BATCH_IDEMPOTENCY_KEY => $idempotencyKey,
+                'batch_id'                            => $batchId,
+                'bulk_request_unique_id'              => $bulkRequestUniqueId,
+            ];
+
+            try
+            {
+                $tokenId = $consentData['tokenId'];
+                $merchantId = $consentData['merchantId'];
+
+                $token = $this->repo->token->findOrFailPublic($tokenId);
+
+                $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+                $validationData = (new Validator())->validateGlobalTokenToLocalTokenMigrationInput($token, $merchant);
+
+                if ($validationData['valid'] === false)
+                {
+                    $output = $this->handleInvalidToken($merchantId, $tokenId, $validationData, $properties);
+
+                    $result->push($output);
+
+                    ++$notApplicableTokensCount;
+
+                    continue;
+                }
+
+                $localToken = $this->createLocalTokenFromGlobalToken($token, $merchant);
+
+                $output = $this->handleTokenCreateSuccess($tokenId, $localToken['id'], $merchantId, $properties);
+
+                $result->push($output);
+            }
+            catch (\Throwable $e)
+            {
+                $output = $this->handleTokenCreateError($tokenId, $merchantId, $properties, $e);
+
+                $result->push($output);
+
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::CREATE_LOCAL_TOKEN_FROM_CONSENT_ERROR
+                );
+
+                ++$failedTokensCount;
+            }
+        }
+
+        $this->trace->info(TraceCode::BULK_CREATE_LOCAL_TOKENS_FROM_CONSENT_SUCCESS, [
+            'inputTokensCount'         => count($input),
+            'notApplicableTokensCount' => $notApplicableTokensCount,
+            'failedTokensCount'        => $failedTokensCount,
+            'bulkRequestUniqueId'      => $bulkRequestUniqueId,
+            'fileId'                   => $batchId,
+        ]);
+
+        return $result;
+    }
+
+    /**
+     * @param string $merchantId
+     * @param string $tokenId
+     * @param array  $validationData
+     * @param array  $properties
+     *
+     * @return array
+     */
+    protected function handleInvalidToken(
+        string $merchantId,
+        string $tokenId,
+        array $validationData,
+        array $properties
+    ): array
+    {
+        $this->trace->info(TraceCode::CREATE_LOCAL_TOKEN_FROM_CONSENT_INVALID_TOKEN, [
+            'tokenId'                => $tokenId,
+            'merchantId'             => $merchantId,
+            'Reason'                 => $validationData['reason'],
+            'bulkRequestUniqueId'    => $properties['bulk_request_unique_id'],
+            'fileId'                 => $properties['batch_id'],
+            'duplicateTokenIfExists' => $validationData['existing_token_id'] ?? '',
+        ]);
+
+        app('diag')->trackAsyncTokenisationEvent(
+            EVENTCODE::ASYNC_TOKENISATION_CREATE_GLOBAL_CUSTOMER_LOCAL_TOKENS_INVALID,
+            [
+                'token_id'                  => $tokenId,
+                'merchant_id'               => $merchantId,
+                'bulk_request_unique_id'    => $properties['bulk_request_unique_id'],
+                'file_id'                   => $properties['batch_id'],
+                'reason'                    => $validationData['reason'],
+                'duplicate_token_if_exists' => $validationData['existing_token_id'] ?? '',
+            ]
+        );
+
+        return [
+            'merchantId'                          => $merchantId,
+            'tokenId'                             => $tokenId,
+            TokenConstants::BATCH_SUCCESS         => false,
+            TokenConstants::BATCH_IDEMPOTENCY_KEY => $properties[TokenConstants::BATCH_IDEMPOTENCY_KEY],
+            TokenConstants::BATCH_ERROR           => [
+                TokenConstants::BATCH_ERROR_DESCRIPTION => $validationData['reason'],
+            ],
+        ];
+    }
+
+    /**
+     * @param string $tokenId
+     * @param string $localTokenId
+     * @param string $merchantId
+     * @param array  $properties
+     *
+     * @return array
+     */
+    protected function handleTokenCreateSuccess(
+        string $tokenId,
+        string $localTokenId,
+        string $merchantId,
+        array $properties
+    ): array
+    {
+        $this->trace->info(TraceCode::CREATE_LOCAL_TOKEN_FROM_CONSENT_SUCCESS, [
+            'tokenId'             => $tokenId,
+            'createdLocalTokenId' => $localTokenId,
+            'merchantId'          => $merchantId,
+            'bulkRequestUniqueId' => $properties['bulk_request_unique_id'],
+            'fileId'              => $properties['batch_id'],
+        ]);
+
+        app('diag')->trackAsyncTokenisationEvent(
+            EVENTCODE::ASYNC_TOKENISATION_CREATE_GLOBAL_CUSTOMER_LOCAL_TOKENS_SUCCESS,
+            [
+                'token_id'               => $tokenId,
+                'created_local_token_id' => $localTokenId,
+                'merchant_id'            => $merchantId,
+                'bulk_request_unique_id' => $properties['bulk_request_unique_id'],
+                'file_id'                => $properties['batch_id'],
+            ]
+        );
+
+        return [
+            'merchantId'                          => $merchantId,
+            'tokenId'                             => $tokenId,
+            TokenConstants::BATCH_SUCCESS         => true,
+            TokenConstants::BATCH_IDEMPOTENCY_KEY => $properties[TokenConstants::BATCH_IDEMPOTENCY_KEY],
+        ];
+    }
+
+    /**
+     * @param string    $tokenId
+     * @param string    $merchantId
+     * @param array     $properties
+     * @param Throwable $error
+     *
+     * @return array
+     */
+    protected function handleTokenCreateError(
+        string $tokenId,
+        string $merchantId,
+        array $properties,
+        Throwable $error
+    ): array
+    {
+        $this->trace->info(TraceCode::CREATE_LOCAL_TOKEN_FROM_CONSENT_FAILED, [
+            'tokenId'             => $tokenId,
+            'merchantId'          => $merchantId,
+            'bulkRequestUniqueId' => $properties['bulk_request_unique_id'],
+            'fileId'              => $properties['batch_id'],
+        ]);
+
+        app('diag')->trackAsyncTokenisationEvent(
+            EVENTCODE::ASYNC_TOKENISATION_CREATE_GLOBAL_CUSTOMER_LOCAL_TOKENS_FAILED,
+            [
+                'token_id'               => $tokenId,
+                'merchant_id'            => $merchantId,
+                'bulk_request_unique_id' => $properties['bulk_request_unique_id'],
+                'file_id'                => $properties['batch_id'],
+                'error_details'          => json_encode(
+                    [
+                        'message' => $error->getMessage(),
+                        'code'    => $error->getCode(),
+                    ]
+                ),
+            ]
+        );
+
+        return [
+            TokenConstants::BATCH_IDEMPOTENCY_KEY => $properties[TokenConstants::BATCH_IDEMPOTENCY_KEY],
+            TokenConstants::BATCH_SUCCESS         => false,
+            'merchantId'                          => $merchantId,
+            'tokenId'                             => $tokenId,
+            TokenConstants::BATCH_ERROR           => [
+                TokenConstants::BATCH_ERROR_DESCRIPTION => $error->getMessage(),
+                TokenConstants::BATCH_ERROR_CODE        => $error->getCode(),
+            ],
         ];
     }
 

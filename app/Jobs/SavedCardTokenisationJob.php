@@ -26,6 +26,8 @@ class SavedCardTokenisationJob extends Job
 
     protected $asyncTokenisationJobId;
 
+    protected $isGlobalCustomerLocalToken;
+
     protected const TOKENISATION_NO_RETRY_ERROR_CODES = [
         'BAD_REQUEST_CARD_INVALID',
         'BAD_REQUEST_CARD_NOT_ELIGIBLE',
@@ -67,6 +69,8 @@ class SavedCardTokenisationJob extends Job
 
             $this->merchantId = $token->getMerchantId();
 
+            $this->isGlobalCustomerLocalToken = $token->isLocalTokenOnGlobalCustomer();
+
             $card = $token->card;
 
             $this->triggerEvent(EventCode::ASYNC_TOKENISATION_TOKEN_CREATION_INITIATED, $card);
@@ -75,6 +79,7 @@ class SavedCardTokenisationJob extends Job
                 'tokenId'                   => $this->tokenId,
                 'merchantId'                => $this->merchantId,
                 'async_tokenization_job_id' => $this->asyncTokenisationJobId,
+                'is_global_customer_local_token' => $this->isGlobalCustomerLocalToken,
             ]);
 
 
@@ -98,10 +103,12 @@ class SavedCardTokenisationJob extends Job
             $this->tokenCore->migrateToTokenizedCard($token, $cardInput, true);
 
             $this->trace->info(TraceCode::SAVED_CARD_TOKENISATION_JOB_SUCCESS, [
-                'tokenId' => $this->tokenId,
+                'tokenId'       => $this->tokenId,
                 'merchantId'    => $this->merchantId,
                 'timeTaken'     => millitime() - $startTime,
                 'network'       => $card->getNetwork(),
+                'attempt'       => $this->attempts(),
+                'is_global_customer_local_token' => $this->isGlobalCustomerLocalToken,
             ]);
 
             $this->triggerEvent(EventCode::ASYNC_TOKENISATION_TOKEN_CREATION_SUCCESS, $card);
@@ -122,6 +129,7 @@ class SavedCardTokenisationJob extends Job
                     'tokenId'       => $this->tokenId,
                     'merchantId'    => $this->merchantId,
                     'attempt'       => $this->attempts(),
+                    'is_global_customer_local_token' => $this->isGlobalCustomerLocalToken,
                 ]
             );
 
@@ -138,6 +146,7 @@ class SavedCardTokenisationJob extends Job
                 'tokenId'       => $this->tokenId,
                 'merchantId'    => $this->merchantId,
                 'jobAttempts'   => $this->attempts(),
+                'is_global_customer_local_token' => $this->isGlobalCustomerLocalToken,
             ]);
 
             $this->delete();
@@ -153,6 +162,7 @@ class SavedCardTokenisationJob extends Job
         $this->trace->info(TraceCode::SAVED_CARD_TOKENISATION_JOB_TOKEN_NOT_APPLICABLE, [
             'tokenId'       => $this->tokenId,
             'merchantId'    => $this->merchantId,
+            'is_global_customer_local_token' => $this->isGlobalCustomerLocalToken,
         ]);
     }
 
@@ -179,6 +189,7 @@ class SavedCardTokenisationJob extends Job
             'card_issuer'               => $card->getIssuer(),
             'async_tokenization_job_id' => $this->asyncTokenisationJobId,
             'attempt'                   => $this->attempts(),
+            'is_global_customer_local_token' => $this->isGlobalCustomerLocalToken,
         ];
 
         $properties = array_merge($properties, $customProperties);
