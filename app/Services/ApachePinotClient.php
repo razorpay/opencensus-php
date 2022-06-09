@@ -17,9 +17,9 @@ use RZP\Models\Merchant\M2MReferral\FriendBuy\Constants;
 
 class ApachePinotClient
 {
-    const REQUEST_TIMEOUT = 4000;
+    const REQUEST_TIMEOUT = 1000;
 
-    const REQUEST_CONNECT_TIMEOUT = 2000;
+    const REQUEST_CONNECT_TIMEOUT = 500;
 
     /**
      * @var Requests_Session

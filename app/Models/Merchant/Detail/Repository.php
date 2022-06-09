@@ -353,6 +353,7 @@ class Repository extends Base\Repository
     public function filterL1NotSubmittedMerchantIds(int $from, int $to): array
     {
         $detailMerchantIdColumn             = $this->dbColumn(Entity::MERCHANT_ID);
+        $merchantCreatedAtColumn            = $this->repo->merchant->dbColumn(Merchant\Entity::CREATED_AT);
         $merchantIdColumn                   = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
         $merchantOrgIdColumn                = $this->repo->merchant->dbColumn(Merchant\Entity::ORG_ID);
         $merchantBusinessBankingIdColumn    = $this->repo->merchant->dbColumn(Merchant\Entity::BUSINESS_BANKING);
@@ -360,7 +361,7 @@ class Repository extends Base\Repository
         return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
             ->join(Table::MERCHANT, $merchantIdColumn, '=', $detailMerchantIdColumn)
             ->select(Entity::MERCHANT_ID)
-            ->whereBetween(Entity::CREATED_AT, [$from, $to])
+            ->whereBetween($merchantCreatedAtColumn, [$from, $to])
             ->WhereNull(Entity::ACTIVATION_FORM_MILESTONE)
             ->where($merchantOrgIdColumn,  '=' ,Org\Entity::RAZORPAY_ORG_ID)
             ->where($merchantBusinessBankingIdColumn, '=', false)
@@ -373,13 +374,14 @@ class Repository extends Base\Repository
     {
         $detailMerchantIdColumn             = $this->dbColumn(Entity::MERCHANT_ID);
         $merchantIdColumn                   = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
+        $merchantCreatedAtColumn            = $this->repo->merchant->dbColumn(Merchant\Entity::CREATED_AT);
         $merchantOrgIdColumn                = $this->repo->merchant->dbColumn(Merchant\Entity::ORG_ID);
         $merchantBusinessBankingIdColumn    = $this->repo->merchant->dbColumn(Merchant\Entity::BUSINESS_BANKING);
 
         return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
             ->join(Table::MERCHANT, $merchantIdColumn, '=', $detailMerchantIdColumn)
             ->select(Entity::MERCHANT_ID)
-            ->whereBetween(Entity::CREATED_AT, [$from, $to])
+            ->whereBetween($merchantCreatedAtColumn, [$from, $to])
             ->Where(Entity::ACTIVATION_FORM_MILESTONE, '=', 'L1')
             ->where($merchantOrgIdColumn, '=' , $org)
             ->where($merchantBusinessBankingIdColumn, '=', false)
@@ -399,11 +401,12 @@ class Repository extends Base\Repository
         $merchantIdColumn                   = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
         $merchantOrgIdColumn                = $this->repo->merchant->dbColumn(Merchant\Entity::ORG_ID);
         $merchantBusinessBankingIdColumn    = $this->repo->merchant->dbColumn(Merchant\Entity::BUSINESS_BANKING);
+        $merchantCreatedAtColumn            = $this->repo->merchant->dbColumn(Merchant\Entity::CREATED_AT);
 
         return $this->newQuery()
             ->join(Table::MERCHANT, $merchantIdColumn, '=', $detailMerchantIdColumn)
             ->select(Entity::MERCHANT_ID)
-            ->whereBetween(Entity::CREATED_AT, [$from, $to])
+            ->whereBetween($merchantCreatedAtColumn, [$from, $to])
             ->Where(Entity::ACTIVATION_FORM_MILESTONE, '=', 'L1')
             ->where($merchantOrgIdColumn, '=' ,$org)
             ->where($merchantBusinessBankingIdColumn, '=', false)
