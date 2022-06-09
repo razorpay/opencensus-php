@@ -34,7 +34,7 @@ class GenerateTokenController extends Controller
                 'httpCode' => $httpCode
             ]);
         if ($httpCode == 200) {
-            return redirect(ApiUrl::getApiBaseUrl() . "virtual-card?token=" . $data['token']);
+            return redirect(ApiUrl::getCheckoutApi() . "virtual-card?token=" . $data['token']);
         }
         return AppResponse::jsonResponse($error, $data, $httpCode);
 
