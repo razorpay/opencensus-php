@@ -8,6 +8,7 @@ use OpenCensus\Trace\Propagator\ArrayHeaders;
 use Psr\Http\Message\RequestInterface;
 use Request;
 use ApiResponse;
+use RZP\Constants\Mode;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
@@ -148,6 +149,7 @@ class Service extends Base\Service
             $request->session()->put('userName',$decodedRedisData['userName']);
             $request->session()->put('contactMobile',$decodedRedisData['contactMobile']);
             $request->session()->put('companyName',$decodedRedisData['companyName']);
+            $request->session()->put('mode',$decodedRedisData['mode']);
             $validateTokenResponse['valid_token'] = true;
             $validateTokenResponse['user_role'] = $decodedRedisData['userRole'];
             $validateTokenResponse['user_id'] = $decodedRedisData['userId'];
@@ -170,6 +172,13 @@ class Service extends Base\Service
         $redisData['userName'] = $this->auth->getUser()->getName() ;
         $redisData['contactMobile'] = $this->auth->getUser()->getContactMobile() ;
         $redisData['companyName'] = $this->auth->getMerchant()->getName() ;
+        $redisData['mode'] = $this->auth->getMode() ?? Mode::LIVE;
+        $this->trace->debug(TraceCode::CAPITAL_VIRTUAL_CARDS_REQUEST, [
+            'sessionId' => $redisData['sessionId'],
+            'merchantId' => $redisData['merchantId'],
+            'userId' => $redisData['userId'],
+            'mode' => $redisData['mode']
+        ]);
         $redis->set($token, json_encode($redisData) , 'NX','EX',self::CARD_TOKEN_EXPIRY);
         return $token;
     }

@@ -23,8 +23,9 @@ class Core extends Base\Core
     const MOZART_NAMESPACE = "capital";
     const MOZART_M2P_GATEWAY = "capital_m2p";
 
-    
+
     public function getMozartResponse($url,$request){
+        $this->app['rzp.mode'] = $this->app['request']->session()->get('mode');
         $mozartResponse = (new MozartBase($this->app))->sendMozartRequest(self::MOZART_NAMESPACE,
             self::MOZART_M2P_GATEWAY,
             $url,

@@ -45,7 +45,6 @@ class CapitalVirtualCardsController extends Controller
 
     public function getCardNumber(){
         $request = Request::instance();
-        $this->app['rzp.mode'] = $headers["X-Mode"] ?? Mode::TEST;
         $response = $this->service()->getCardNumber($request);
         return ApiResponse::json($response);
     }
@@ -87,7 +86,6 @@ class CapitalVirtualCardsController extends Controller
    public function getCardCvv(){
         $headers = Request::header();
         $request = Request::instance();
-        $this->app['rzp.mode'] = $headers["X-Mode"] ?? Mode::TEST; // check if we need to persist in session ???
         $response = $this->service()->getCardCvv($request);
         return ApiResponse::json($response);
    }
