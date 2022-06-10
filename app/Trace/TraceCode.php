@@ -4073,6 +4073,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SYNC_FTS_FUND_TRANSFER_COMPLETE                       = 'SYNC_FTS_FUND_TRANSFER_COMPLETE';
     const SYNC_FTA_DISPATCH_FOR_MERCHANT_FAILED                 = 'SYNC_FTA_DISPATCH_FOR_MERCHANT_FAILED';
     const ASYNC_FTS_FUND_TRANSFER_ENABLED                       = 'ASYNC_FTS_FUND_TRANSFER_ENABLED';
+    const MODIFY_STATUS_FOR_CURRENT_ACCOUNT                     = 'MODIFY_STATUS_FOR_CURRENT_ACCOUNT';
 
     // Origin trace codes
     const ORIGIN_CREATED                                        = 'ORIGIN_CREATED';

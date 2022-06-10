@@ -1008,4 +1008,31 @@ return [
             'message'             => 'Failed payout has a corresponding BAS entity. This should be reversed instead, not failed.'
         ],
     ],
+
+    'testPayoutReversedWhenDebitExistsAndCreditIsProcessedAfterFTSUpdateForCurrentAccount' => [
+        'request'   => [
+            'method'  => 'POST',
+            'url'     => '/update_fts_fund_transfer',
+            'content' => [
+                'fund_transfer_id'    => 1234567,
+                'source_id'           => '10000000000000',
+                'source_type'         => 'payout',
+                'status'              => 'failed',
+            ]
+        ],
+        'response'  => [
+            'status_code' => 500,
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::SERVER_ERROR,
+                    'description' => 'We are facing some trouble completing your request at the moment. Please try again shortly.',
+                ],
+            ]
+        ],
+        'exception' => [
+            'class'               => Rzp\Exception\LogicException::class,
+            'internal_error_code' => ErrorCode::SERVER_ERROR_LOGICAL_ERROR,
+            'message'             => 'Failed payout has a corresponding BAS entity. This should be reversed instead, not failed.'
+        ],
+    ],
 ];

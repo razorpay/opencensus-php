@@ -561,6 +561,8 @@ class Core extends Base\Core
 
         $status = Status::getPayoutStatusFromFtaStatus($payout, $ftaStatus);
 
+        $this->updateStatusFromFailedToReversedIfDebitAndCreditFoundForCA($status, $payout);
+
         if ($this->repeatedFtsStatusUpdateForTerminalStatePayout($payout, $status) === true)
         {
             return;
@@ -5645,5 +5647,38 @@ class Core extends Base\Core
         $this->app['basicauth']->setMerchant($this->merchant);
 
         return $this->merchant;
+    }
+
+    private function updateStatusFromFailedToReversedIfDebitAndCreditFoundForCA(&$status, Entity $payout)
+    {
+        if ($status !== Status::FAILED || $payout->balance->isAccountTypeShared() === true)
+        {
+            return;
+        }
+
+        $debitBAS = $this->repo->banking_account_statement->fetchByUtrForPayout($payout) ??
+                    $this->repo->banking_account_statement->fetchByCmsRefNumForPayout($payout);
+
+        if (empty($debitBAS) === false)
+        {
+            $creditBAS = $this->repo->banking_account_statement->fetchByUtrForPayout($payout, BankingAccountStatement\Type::CREDIT) ??
+                         $this->repo->banking_account_statement->fetchByCmsRefNumForPayout($payout, BankingAccountStatement\Type::CREDIT);
+
+            if ($creditBAS === null)
+            {
+                return;
+            }
+
+            $status = Status::REVERSED;
+
+            $this->trace->info(
+                TraceCode::MODIFY_STATUS_FOR_CURRENT_ACCOUNT,
+                [
+                    Entity::PAYOUT . '_' . Entity::ID   => $payout->getId(),
+                    Entity::STATUS                      => Status::REVERSED,
+                    Entity::UTR                         => $payout->getUtr(),
+                ]
+            );
+        }
     }
 }

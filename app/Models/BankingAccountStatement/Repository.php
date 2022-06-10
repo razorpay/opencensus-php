@@ -167,12 +167,12 @@ class Repository extends Base\Repository
             ->get();
     }
 
-    public function fetchByUtrForPayout(Payout\Entity $payout)
+    public function fetchByUtrForPayout(Payout\Entity $payout, $type = Type::DEBIT)
     {
         $query = $this->newQuery()
                       ->where(Entity::UTR, $payout->getUtr());
 
-        $basEntities = $this->fetchForPayout($query, $payout);
+        $basEntities = $this->fetchForPayout($query, $payout, $type);
 
         $externalLinkedBas = [];
 
@@ -221,7 +221,7 @@ class Repository extends Base\Repository
         return null;
     }
 
-    public function fetchByCmsRefNumForPayout(Payout\Entity $payout)
+    public function fetchByCmsRefNumForPayout(Payout\Entity $payout, $type = Type::DEBIT)
     {
         // TODO: check uniqueness logic for cms_ref_no
         // JIRA ticket: https://razorpay.atlassian.net/browse/RX-695
@@ -237,7 +237,7 @@ class Repository extends Base\Repository
         $query = $this->newQuery()
                       ->where(Entity::BANK_TRANSACTION_ID, $cmsRefNumber);
 
-        $basEntities = $this->fetchForPayout($query, $payout);
+        $basEntities = $this->fetchForPayout($query, $payout, $type);
 
         // for IFT mode
         if ($payout->getMode() === Payout\Mode::IFT)
@@ -376,9 +376,9 @@ class Repository extends Base\Repository
         return $basEntities;
     }
 
-    protected function fetchForPayout($query, Payout\Entity $payout)
+    protected function fetchForPayout($query, Payout\Entity $payout, $type = Type::DEBIT)
     {
-        $basEntities = $query->where(Entity::TYPE, Type::DEBIT)
+        $basEntities = $query->where(Entity::TYPE, $type)
                              ->where(Entity::AMOUNT, $payout->getAmount())
                              ->where(Entity::ACCOUNT_NUMBER, $payout->balance->getAccountNumber())
                              ->where(Entity::CHANNEL, $payout->getChannel())
