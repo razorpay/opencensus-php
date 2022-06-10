@@ -16,6 +16,7 @@ interface ESignPropsT {
 
 const ESignVerification = ({ disabled = false, showAddressProofDoc }: ESignPropsT): JSX.Element => {
   const [aadharNumber, setHasAadharNumber] = useState('');
+  const [requestId, setHasRequestId] = useState('');
   const [nextStep, setNextStep] = useState('GetOTP');
   const [otp, setHasOTP] = useState('');
   const [inputCaptcha, setInputCaptcha] = useState('');
@@ -43,6 +44,10 @@ const ESignVerification = ({ disabled = false, showAddressProofDoc }: ESignProps
 
   const setAadharNumber = (aadharNum) => {
     setHasAadharNumber(aadharNum);
+  };
+
+  const setRequestId = (request_id) => {
+    setHasRequestId(request_id);
   };
 
   const setOTP = (otpInput) => {
@@ -77,6 +82,7 @@ const ESignVerification = ({ disabled = false, showAddressProofDoc }: ESignProps
             aadharError={aadharError}
             disabled={disabled}
             handleDownTimeError={handleDownTimeError}
+            setRequestId={setRequestId}
           />
         );
       case 'VerifyOTP':
@@ -85,6 +91,7 @@ const ESignVerification = ({ disabled = false, showAddressProofDoc }: ESignProps
             goToNextScreen={goToNextScreen}
             aadharNumber={aadharNumber}
             inputCaptcha={inputCaptcha}
+            requestId={requestId}
             setAadharInputError={setAadharInputError}
             handleDownTimeError={handleDownTimeError}
           />
@@ -104,6 +111,7 @@ const ESignVerification = ({ disabled = false, showAddressProofDoc }: ESignProps
             aadharError={aadharError}
             disabled={disabled}
             handleDownTimeError={handleDownTimeError}
+            setRequestId={setRequestId}
           />
         );
     }

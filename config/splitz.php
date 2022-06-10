@@ -161,6 +161,9 @@ return [
         //2FA Mobile Signup
         'ENABLE_2FA_MOBILE_SIGNUP_EXP_SPLITZ' => env('ENABLE_2FA_MOBILE_SIGNUP_EXP_SPLITZ', ''),
 
+        //Digilocker EKYC
+        'ENABLE_DIGILOCKER_EKYC_EXP_SPLITZ' => env('ENABLE_DIGILOCKER_EKYC_EXP_SPLITZ', ''),
+        
         // New Nitro ICICI Experiment
         'NITRO_NEW_ICICI_BRANDED_EXP_SPLITZ' => env('NITRO_NEW_ICICI_BRANDED_EXP_SPLITZ', ''),
         'NITRO_NEW_ICICI_BASE_EXP_SPLITZ' => env('NITRO_NEW_ICICI_BASE_EXP_SPLITZ', ''),

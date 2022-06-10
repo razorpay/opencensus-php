@@ -277,7 +277,7 @@ export default class ActivationWizard extends React.Component {
       FORM_TABS = this.mainTabs;
       FORM_TABS_CONTENT = mainTabsContent;
       FORM_TABS_NAMES = mainFieldNamesMeta;
-      
+
       BANK_ACCOUNT_TAB = 3;
       DOCUMENT_UPLOAD_STEP = 4;
 
@@ -2894,7 +2894,7 @@ export function ActivationField(field) {
   }
 
   if (field.name === 'e_aadhar' && rest.customField) {
-    const { isAadharEkycMandatory } = this.props.user;
+    const { isAadharEkycMandatory, isDigilockerEkyc } = this.props.user;
     rest.isAadharEkycMandatory = isAadharEkycMandatory && this.isUnregBiz;
     rest.aadharStatus =
       this.props.data.stakeholder && this.props.data.stakeholder.aadhaar_esign_status;
@@ -2903,6 +2903,7 @@ export function ActivationField(field) {
       : true;
     rest.mobileLinkedOnChange = this.onEAadharCheckboxChange;
     rest.activeTab = this.state.activeTab;
+    rest.isDigilockerEkyc = isDigilockerEkyc;
   }
 
   if (field.name === 'payment_channels' && rest.customField) {
@@ -3194,6 +3195,7 @@ function CustomField(props) {
     validator,
     aadharStatus,
     isAadharLinked,
+    isDigilockerEkyc,
     companyPanError,
     gstinInputError,
     description,
@@ -3275,7 +3277,12 @@ function CustomField(props) {
     case 'e_aadhar':
       return (
         <div className={classList(disabled && 'Input--disabled')}>
-          <EAadhard {...props} aadharStatus={aadharStatus} isAadharLinked={isAadharLinked} />
+          <EAadhard
+            {...props}
+            aadharStatus={aadharStatus}
+            isAadharLinked={isAadharLinked}
+            isDigilockerEkyc={isDigilockerEkyc}
+          />
         </div>
       );
     case 'contact_email':

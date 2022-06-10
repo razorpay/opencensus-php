@@ -58,7 +58,6 @@ $side-width = 240px
         
         .Input-content
           margin-left: 0px
-
         .title
           margin-bottom: 12px
         .benefits
@@ -571,7 +570,6 @@ $side-width = 240px
   .ActivationContainer .Activation--wizard
     .Input-content:not(.Input--checkbox)
       margin: 0 0 16px
-
     .Input--checkbox
       margin: 24px 0 16px
 
@@ -592,12 +590,10 @@ $side-width = 240px
     }
 
     div.Input:first-child, .submit-btn {
-
       margin-top: 0 !important;
     }
 
     main-title, .form-footer, .Input-content  {
-
       margin-bottom: 0;
     }
 
@@ -849,6 +845,9 @@ TODO: Display aside on top of form as expandable slider OR else show PREV button
 
   .otp-screen
     margin-top: 24px;
+    @media (max-width : 800px) { 
+      margin-top: 48px;
+    }
     &__otp
       max-width: 260px;
       .wrong-msg
@@ -1232,4 +1231,3 @@ TODO: Display aside on top of form as expandable slider OR else show PREV button
     display: flex;
   }
 }
-

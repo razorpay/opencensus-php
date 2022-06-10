@@ -20,17 +20,9 @@ interface VerifyOtpPropsT {
   setAadharInputError: (data: string) => void;
   aadharNumber: string;
   inputCaptcha: string;
+  requestId: string;
   handleDownTimeError: (data) => void;
 }
-
-const verifyAadhar = async (data) => {
-  const fetchData = await fetch<any>({
-    url: 'bvs/dashboard/twirp/platform.bvs.probe.v1.ProbeAPI/AadhaarSubmitOtp',
-    method: 'POST',
-    data,
-  });
-  return fetchData;
-};
 
 const AutoSubmit: React.FC = () => {
   const { submitForm, values }: any = useFormikContext();
@@ -48,15 +40,75 @@ const VerifyOTP: React.FC<VerifyOtpPropsT> = ({
   goToNextScreen,
   setAadharInputError,
   aadharNumber,
+  requestId,
   inputCaptcha,
   handleDownTimeError,
 }) => {
   const [apiError, setApiError] = useState('');
-  const { user } = useApp();
+  const { user, experiments } = useApp();
   const { postData } = useActivation();
+
+  const verifyAadhar = async (data) => {
+    const artefactcuratorAPI =
+      'bvs/dashboard/twirp/platform.bvs.artefactcurator.verify.v1.DigilockerAPI/VerifyOtp';
+    const probeApi = 'bvs/dashboard/twirp/platform.bvs.probe.v1.ProbeAPI/AadhaarSubmitOtp';
+
+    const url = experiments.isDigilockerEkyc ? artefactcuratorAPI : probeApi;
+
+    const fetchData = await fetch<any>({
+      url,
+      method: 'POST',
+      data,
+    });
+    return fetchData;
+  };
 
   const [fetchOTP] = useMutation(verifyAadhar, {
     onSuccess: (response) => {
+      if (response?.meta?.internal_error_code === 'invalid_input_to_karza') {
+        setApiError('INCORRECT_OTP');
+      }
+
+      if (response?.fetchAadhaarXml === 'failed') {
+        handleDownTimeError(response);
+      }
+
+      if (
+        experiments.isDigilockerEkyc &&
+        response?.is_success &&
+        response?.fetchAadhaarXml !== 'failed'
+      ) {
+        const nextScreen = 'AadharSuccess';
+        goToNextScreen({ nextScreen });
+        analyticsTrack({
+          objectName: 'SignUp',
+          actionName: 'otp',
+          screen: 'home page',
+          eventAction: 'success',
+          user,
+          properties: {
+            aadhaar_ekyc_mode: experiments.isDigilockerEkyc ? 'Digilocker native' : 'UIDAI native',
+          },
+        });
+      } else if (
+        experiments.isDigilockerEkyc &&
+        !response?.success &&
+        response.data.fetchAadhaarXml === 'failed' &&
+        response?.data?.code !== 'resource_exhausted'
+      ) {
+        analyticsTrack({
+          objectName: 'SignUp',
+          actionName: 'otp',
+          screen: 'home page',
+          eventAction: 'failure',
+          user,
+          properties: {
+            aadhaar_ekyc_mode: experiments.isDigilockerEkyc ? 'Digilocker native' : 'UIDAI native',
+          },
+        });
+        handleDownTimeError(response);
+      }
+
       if (response.is_valid) {
         postData({ stakeholder: { aadhaar_linked: 1 } });
         const nextScreen = 'AadharSuccess';
@@ -67,6 +119,9 @@ const VerifyOTP: React.FC<VerifyOtpPropsT> = ({
           screen: 'home page',
           eventAction: 'success',
           user,
+          properties: {
+            aadhaar_ekyc_mode: experiments.isDigilockerEkyc ? 'Digilocker native' : 'UIDAI native',
+          },
         });
       } else if (response.error_code) {
         analyticsTrack({
@@ -75,6 +130,9 @@ const VerifyOTP: React.FC<VerifyOtpPropsT> = ({
           screen: 'home page',
           eventAction: 'failure',
           user,
+          properties: {
+            aadhaar_ekyc_mode: experiments.isDigilockerEkyc ? 'Digilocker native' : 'UIDAI native',
+          },
         });
         setApiError(response.error_code);
         if (
@@ -104,11 +162,17 @@ const VerifyOTP: React.FC<VerifyOtpPropsT> = ({
 
   const handleSubmit = async (payload) => {
     const randomPin = Math.floor(1000 + Math.random() * 9000).toString();
-    const data = {
-      otp: payload.enteredOTP,
-      captcha: inputCaptcha,
-      file_password: randomPin,
-    };
+    const data = experiments.isDigilockerEkyc
+      ? {
+          aadhaar_number: payload.aadharNumber,
+          otp: payload.enteredOTP,
+          request_id: requestId,
+        }
+      : {
+          otp: payload.enteredOTP,
+          captcha: inputCaptcha,
+          file_password: randomPin,
+        };
     await fetchOTP(data);
   };
 
@@ -178,6 +242,11 @@ const VerifyOTP: React.FC<VerifyOtpPropsT> = ({
                     screen: 'home page',
                     eventAction: 'initiated',
                     user,
+                    properties: {
+                      aadhaar_ekyc_mode: experiments.isDigilockerEkyc
+                        ? 'Digilocker native'
+                        : 'UIDAI native',
+                    },
                   });
                 }}
                 disabled={formikProps.isSubmitting}

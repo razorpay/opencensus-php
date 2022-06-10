@@ -26,18 +26,10 @@ const generateCaptcha = async () => {
   return fetchData;
 };
 
-const getOTPAPi = async (data) => {
-  const fetchData = await fetch<any>({
-    url: 'bvs/dashboard/twirp/platform.bvs.probe.v1.ProbeAPI/AadhaarVerifyCaptchaAndSendOtp',
-    method: 'POST',
-    data,
-  });
-  return fetchData;
-};
-
 interface GetOTPPropsT {
   goToNextScreen: ({ nextScreen: string }) => void;
   setAadharNumber: (data: string) => void;
+  setRequestId: (data: string) => void;
   setOTP: (data: string) => void;
   setUserEnteredCaptcha: (data: string) => void;
   // eslint-disable-next-line react/no-unused-prop-types
@@ -52,6 +44,7 @@ const GetOTP: React.FC<GetOTPPropsT> = ({
   setOTP,
   setUserEnteredCaptcha,
   setAadharNumber,
+  setRequestId,
   aadharError,
   disabled,
   handleDownTimeError,
@@ -82,10 +75,37 @@ const GetOTP: React.FC<GetOTPPropsT> = ({
     },
   });
   const { user, experiments } = useApp();
+  const isDigilockerEkyc = experiments.isDigilockerEkyc;
   const shouldHideAadharUploadCheckbox =
     experiments.isAadharEkycMandatory && isUnregisteredBusiness(data?.business_type);
+
+  const getOTPAPi = async (data) => {
+    const artefactcuratorAPI =
+      'bvs/dashboard/twirp/platform.bvs.artefactcurator.verify.v1.DigilockerAPI/SendOtp';
+    const probeApi =
+      'bvs/dashboard/twirp/platform.bvs.probe.v1.ProbeAPI/AadhaarVerifyCaptchaAndSendOtp';
+
+    const url = isDigilockerEkyc ? artefactcuratorAPI : probeApi;
+
+    const fetchData = await fetch<any>({
+      url,
+      method: 'POST',
+      data,
+    });
+    if (isDigilockerEkyc) {
+      setRequestId(fetchData?.request_id);
+    }
+    return fetchData;
+  };
+
   const [fetchOTP] = useMutation(getOTPAPi, {
     onSuccess: (response) => {
+      if (response?.msg === 'invalid input details') {
+        setApiError('INVALID_AADHAAR_NUMBER');
+      }
+      if (response?.code === 'internal') {
+        setApiError('internal');
+      }
       if (response.is_success) {
         setIsCaptchaVerified(response.is_success);
         analyticsTrack({
@@ -94,6 +114,9 @@ const GetOTP: React.FC<GetOTPPropsT> = ({
           screen: 'home page',
           eventAction: 'success',
           user,
+          properties: {
+            aadhaar_ekyc_mode: experiments.isDigilockerEkyc ? 'Digilocker native' : 'UIDAI native',
+          },
         });
       } else if (response.error_code) {
         analyticsTrack({
@@ -102,6 +125,9 @@ const GetOTP: React.FC<GetOTPPropsT> = ({
           screen: 'home page',
           eventAction: 'failure',
           user,
+          properties: {
+            aadhaar_ekyc_mode: experiments.isDigilockerEkyc ? 'Digilocker native' : 'UIDAI native',
+          },
         });
         setApiError(response.error_code);
         if (
@@ -132,22 +158,30 @@ const GetOTP: React.FC<GetOTPPropsT> = ({
       screen: 'home page',
       eventAction: 'initiated',
       user,
+      properties: {
+        aadhaar_ekyc_mode: experiments.isDigilockerEkyc ? 'Digilocker native' : 'UIDAI native',
+      },
     });
   };
 
   const handleSubmit = async (payload) => {
     const otpData = {
       aadhaar_number: payload.aadharNumber,
-      captcha: payload.captchaCode,
+      ...(isDigilockerEkyc ? {} : { captcha: payload.captchaCode }),
     };
+
     setotpContext(payload);
     setAadharNumber(payload.aadharNumber);
-    setUserEnteredCaptcha(payload.captchaCode);
+    if (!isDigilockerEkyc) {
+      setUserEnteredCaptcha(payload.captchaCode);
+    }
     await fetchOTP(otpData);
   };
 
   useEffect(() => {
-    fetchCaptcha();
+    if (!isDigilockerEkyc) {
+      fetchCaptcha();
+    }
   }, []);
 
   useEffect(() => {
@@ -160,16 +194,19 @@ const GetOTP: React.FC<GetOTPPropsT> = ({
 
   return (
     <Formik
-      initialValues={{
-        captchaCode: '',
-        aadharNumber: '',
-      }}
+      initialValues={{ aadharNumber: '', ...(isDigilockerEkyc ? {} : { captchaCode: '' }) }}
       validationSchema={() => {
         return Yup.object().shape({
           aadharNumber: Yup.string()
             .length(12, 'Aadhaar should be of 12 digits')
             .required('Aadhaar Number is a required field'),
-          captchaCode: Yup.string().required('captcha is a required field'),
+          captchaCode: Yup.lazy(() => {
+            if (isDigilockerEkyc) {
+              return Yup.string().nullable();
+            } else {
+              return Yup.string().required('captcha is a required field');
+            }
+          }),
         });
       }}
       onSubmit={handleSubmit}
@@ -211,6 +248,8 @@ const GetOTP: React.FC<GetOTPPropsT> = ({
                           ? 'Aadhaar number is invalid'
                           : apiError === 'MOBILE_NOT_LINKED'
                           ? 'This Aadhaar is not linked to any number'
+                          : apiError === 'internal'
+                          ? 'Something went wrong. Please try again'
                           : formikProps.touched.aadharNumber && formikProps.errors.aadharNumber
                       }
                       onChange={(value) => {
@@ -227,59 +266,76 @@ const GetOTP: React.FC<GetOTPPropsT> = ({
                           screen: 'home page',
                           eventAction: 'initiated',
                           user,
+                          properties: {
+                            aadhaar_ekyc_mode: experiments.isDigilockerEkyc
+                              ? 'Digilocker native'
+                              : 'UIDAI native',
+                          },
                         });
                       }}
                     />
-                    <Space margin={[4, 0, 4, 0]}>
-                      <View>
-                        {captcha ? (
-                          <>
-                            <img src={`data:image/jpeg;base64,${captcha}`} alt="E-Aadhar captcha" />
-                            <img
-                              src={ResendIcon}
-                              className="captcha-screen__resend"
-                              onClick={() => fetchCaptcha()}
-                            />
-                          </>
-                        ) : (
-                          <Text>Loading...</Text>
-                        )}
-                      </View>
-                    </Space>
+                    {!isDigilockerEkyc && (
+                      <Space margin={[4, 0, 4, 0]}>
+                        <View>
+                          {captcha ? (
+                            <>
+                              <img
+                                src={`data:image/jpeg;base64,${captcha}`}
+                                alt="E-Aadhar captcha"
+                              />
+                              <img
+                                src={ResendIcon}
+                                className="captcha-screen__resend"
+                                onClick={() => fetchCaptcha()}
+                              />
+                            </>
+                          ) : (
+                            <Text>Loading...</Text>
+                          )}
+                        </View>
+                      </Space>
+                    )}
                   </View>
                 </Space>
-                <Space margin={[4, 0, 0, 0]}>
-                  <View>
-                    <TextInput
-                      width="auto"
-                      name="captchaCode"
-                      type="text"
-                      label="Enter the captcha shown above"
-                      value={formikProps.values.captchaCode}
-                      errorText={
-                        apiError === 'INVALID_CAPTCHA'
-                          ? 'Code didn’t match, please enter the new code'
-                          : formikProps.touched.captchaCode && formikProps.errors.captchaCode
-                      }
-                      onChange={(value) => {
-                        formikProps.setFieldValue('captchaCode', value.trim());
-                        if (apiError) {
-                          setApiError('');
+                {!isDigilockerEkyc && (
+                  <Space margin={[4, 0, 0, 0]}>
+                    <View>
+                      <TextInput
+                        width="auto"
+                        name="captchaCode"
+                        type="text"
+                        label="Enter the captcha shown above"
+                        value={formikProps.values.captchaCode}
+                        errorText={
+                          apiError === 'INVALID_CAPTCHA'
+                            ? 'Code didn’t match, please enter the new code'
+                            : formikProps.touched.captchaCode && formikProps.errors.captchaCode
                         }
-                      }}
-                      onBlur={(value) => {
-                        formikProps.setFieldTouched('captchaCode', value.trim());
-                        analyticsTrack({
-                          objectName: 'SignUp',
-                          actionName: 'captcha code',
-                          screen: 'home page',
-                          eventAction: 'initiated',
-                          user,
-                        });
-                      }}
-                    />
-                  </View>
-                </Space>
+                        onChange={(value) => {
+                          formikProps.setFieldValue('captchaCode', value.trim());
+                          if (apiError) {
+                            setApiError('');
+                          }
+                        }}
+                        onBlur={(value) => {
+                          formikProps.setFieldTouched('captchaCode', value.trim());
+                          analyticsTrack({
+                            objectName: 'SignUp',
+                            actionName: 'captcha code',
+                            screen: 'home page',
+                            eventAction: 'initiated',
+                            user,
+                            properties: {
+                              aadhaar_ekyc_mode: experiments.isDigilockerEkyc
+                                ? 'Digilocker native'
+                                : 'UIDAI native',
+                            },
+                          });
+                        }}
+                      />
+                    </View>
+                  </Space>
+                )}
                 <Flex alignItems="center">
                   <StyledView>
                     <Space padding={[1.5, 0]}>

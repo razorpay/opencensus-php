@@ -26,6 +26,13 @@ const M2MSuccessModal = ({ referredMerchants, referredAmount, trackEvents, isRef
         referralName: referredMerchants,
       },
     });
+
+    window.trackhubs({
+      name: 'update_property',
+      data: {
+        referral_success_modal: true,
+      },
+    });
   }, []);
 
   let title = '';

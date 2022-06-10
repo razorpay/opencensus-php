@@ -26,6 +26,7 @@ const GetOtpApp: React.FC = () => {
   const { status } = useActivation();
   const setOPT = jest.fn();
   const setAadharNumber = jest.fn();
+  const setRequestId = jest.fn();
   const goToNextScreen = jest.fn();
   const setUserEnteredCaptcha = jest.fn();
   const handleDownTimeError = jest.fn();
@@ -35,6 +36,7 @@ const GetOtpApp: React.FC = () => {
       setOTP={setOPT}
       otp=""
       setAadharNumber={setAadharNumber}
+      setRequestId={setRequestId}
       goToNextScreen={goToNextScreen}
       setUserEnteredCaptcha={setUserEnteredCaptcha}
       aadharError=""
@@ -107,6 +109,7 @@ describe('VerifyOTP', () => {
         goToNextScreen={() => {}}
         aadharNumber=""
         inputCaptcha=""
+        requestId=""
         setAadharInputError={() => {}}
         handleDownTimeError={handleDownTimeError}
       />,
@@ -136,6 +139,7 @@ describe('VerifyOTP', () => {
         goToNextScreen={() => {}}
         aadharNumber=""
         inputCaptcha=""
+        requestId=""
         setAadharInputError={() => {}}
         handleDownTimeError={handleDownTimeError}
       />,

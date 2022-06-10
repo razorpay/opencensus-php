@@ -19,18 +19,19 @@ const GetOtpScreen = ({
   error,
   onChange,
   setScreen,
+  setRequestId,
   setAadharNumber,
   setCaptchaValue,
   trackEvent,
   isStartAgain,
   setIsStartAgain,
   isAadharEkycMandatory,
+  isDigilockerEkyc,
   trackEvents,
   handleDownTimeError,
 }) => {
   const [captchaImg, setCaptchaImg] = useState('');
   const [hasMobileLinked, setHasMobileLinked] = useState(isAadharLinked);
-
   const handleMoblieLinkedOnChange = () => {
     setHasMobileLinked(!hasMobileLinked);
     setError('');
@@ -46,6 +47,9 @@ const GetOtpScreen = ({
       objectName: 'kyc.mobile not linked',
       actionName: 'click on checkbox',
       screen: 'KYC on Activation page',
+      properties: {
+        aadhaar_ekyc_mode: isDigilockerEkyc ? 'Digilocker native' : 'UIDAI native',
+      },
       ...analyticsProperties,
     });
     trackEvents({
@@ -57,6 +61,7 @@ const GetOtpScreen = ({
         'Option Selected': 'My Aadhar is not linked to my number',
         'Element Type': 'Form',
         Mandatory: 'No',
+        aadhaar_ekyc_mode: isDigilockerEkyc ? 'Digilocker native' : 'UIDAI native',
       },
     });
   };
@@ -92,8 +97,15 @@ const GetOtpScreen = ({
       case 'OTP_LIMIT_EXCEEDED':
         return 'You have exceeded the maximum attempts to submit OTP. Please try again';
       case 'invalid_argument':
+        return 'Invalid Adhaar Number';
       case 'INVALID_SESSION_ID':
       case 'INPUT_DATA_ISSUE':
+      case 'internal':
+        return 'Something went wrong . Please try again';
+      case 'failed':
+        return 'Something went wrong . Please try again';
+      case 'invalid_input_to_karza':
+        return 'Invalid OTP';
       case error.includes('Internal Server Error'):
         return 'Something went wrong . Please try again';
       default:
@@ -145,6 +157,9 @@ const GetOtpScreen = ({
           objectName: 'kyc.e-aadhar get captcha',
           actionName: 'generate captcha',
           screen: 'Verify with OTP on Activation page',
+          properties: {
+            aadhaar_ekyc_mode: isDigilockerEkyc ? 'Digilocker native' : 'UIDAI native',
+          },
           ...analyticsProperties,
         });
       })
@@ -166,6 +181,9 @@ const GetOtpScreen = ({
           objectName: 'kyc.e-aadhar get captcha',
           actionName: 'generate captcha Error',
           screen: 'Verify with OTP on Activation page',
+          properties: {
+            aadhaar_ekyc_mode: isDigilockerEkyc ? 'Digilocker native' : 'UIDAI native',
+          },
           ...analyticsProperties,
         });
       });
@@ -174,10 +192,18 @@ const GetOtpScreen = ({
   const generateOTP = (btnStyle) => {
     const body = {
       aadhaar_number: aadharNumber,
-      captcha,
+      ...(isDigilockerEkyc ? {} : { captcha }),
     };
+
+    const artefactcuratorAPI =
+      'bvs/dashboard/twirp/platform.bvs.artefactcurator.verify.v1.DigilockerAPI/SendOtp';
+    const probeApi =
+      'bvs/dashboard/twirp/platform.bvs.probe.v1.ProbeAPI/AadhaarVerifyCaptchaAndSendOtp';
+
+    const url = isDigilockerEkyc ? artefactcuratorAPI : probeApi;
+
     return merchantFetch({
-      url: 'bvs/dashboard/twirp/platform.bvs.probe.v1.ProbeAPI/AadhaarVerifyCaptchaAndSendOtp',
+      url,
       method: 'POST',
       data: body,
     })
@@ -185,12 +211,14 @@ const GetOtpScreen = ({
         btnStyle.style.pointerEvents = 'initial';
         if (res.success && res.data.is_success) {
           setScreen('VerifyOTP');
+          setRequestId(res?.data.request_id);
           trackEvent(
             window.rzpQ.onbr().initiated('kyc.e-aadhar_send_otp', {
               trigger: true,
             }),
           );
         }
+
         if (res.data.error_code) {
           const errorCode = res.data.error_code;
           setError(errorCode);
@@ -225,6 +253,9 @@ const GetOtpScreen = ({
           objectName: 'kyc.e-aadhar send otp',
           actionName: 'send OTP',
           screen: 'Send OTP button on Activation page',
+          properties: {
+            aadhaar_ekyc_mode: isDigilockerEkyc ? 'Digilocker native' : 'UIDAI native',
+          },
           ...analyticsProperties,
         });
       })
@@ -249,7 +280,7 @@ const GetOtpScreen = ({
   };
 
   useEffect(() => {
-    if (activeTab === 4 || isStartAgain) {
+    if ((activeTab === 4 || isStartAgain) && !isDigilockerEkyc) {
       generateCaptcha();
     }
   }, [activeTab, isStartAgain]);
@@ -266,6 +297,7 @@ const GetOtpScreen = ({
           error: errorMsg,
           fieldLabel: 'Aadhar Verification',
           tab: 'Documents Verification',
+          aadhaar_ekyc_mode: isDigilockerEkyc ? 'Digilocker native' : 'UIDAI native',
         },
       });
     }
@@ -297,6 +329,9 @@ const GetOtpScreen = ({
             objectName: 'kyc.e-aadhar',
             actionName: 'focus',
             screen: 'Activation page',
+            properties: {
+              aadhaar_ekyc_mode: isDigilockerEkyc ? 'Digilocker native' : 'UIDAI native',
+            },
             ...analyticsProperties,
           });
           trackEvents({
@@ -309,67 +344,82 @@ const GetOtpScreen = ({
               'Field Type': 'Text',
               'Field Name': 'Aadhar Verification',
               'Card Title': 'none',
+              aadhaar_ekyc_mode: isDigilockerEkyc ? 'Digilocker native' : 'UIDAI native',
             },
           });
         }}
       />
 
       <div className="captcha-screen">
-        <div className={classList('Input-content', !hasMobileLinked ? 'Input--disabled' : '')}>
-          {!!captchaImg ? (
-            <>
-              <img
-                src={`data:image/jpeg;base64,${captchaImg}`}
-                alt="E-Aadhar captcha"
-                className="captcha-screen__captcha-img"
-              />
-              <img
-                src="/dist/css/assets/onboarding/resend.svg"
-                className={classList(
-                  'captcha-screen__resend',
-                  !hasMobileLinked ? 'captcha-screen__resend-disabled' : '',
-                )}
-                onClick={generateCaptcha}
-              />
-            </>
-          ) : (
-            <>
-              <span className="spin-btn white medium visible" style={{ margin: '0 53px 13px' }} />
-              <img src="/dist/css/assets/onboarding/disable-resend.svg" className="reload-icon" />
-            </>
-          )}
-        </div>
-        <Input
-          name="captcha"
-          type="text"
-          value={captcha}
-          class="Input--small Input--vTop is-mature"
-          placeholder="Enter the captcha shown above"
-          onChange={onChange}
-          propagatedError={getCaptchaFieldMsg()}
-          disabled={!hasMobileLinked}
-          onFocus={() => {
-            trackEvent(window.rzpQ.onbr().initiated('kyc.e-aadhar_code'));
-            analyticsTrack({
-              objectName: 'kyc.e-aadhar code',
-              actionName: 'focus on enter captcha',
-              screen: 'Entering captch on Activation page',
-              ...analyticsProperties,
-            });
-            trackEvents({
-              objectName: 'Form Details',
-              actionName: 'Filled',
-              screen: 'home page',
-              properties: {
-                'Tab Title': 'Document Verification',
-                'Element Type': 'Form',
-                'Field Type': 'Text',
-                'Field Name': 'Enter the captcha shown above',
-                'Card Title': 'none',
-              },
-            });
-          }}
-        />
+        {!isDigilockerEkyc && (
+          <>
+            <div className={classList('Input-content', !hasMobileLinked ? 'Input--disabled' : '')}>
+              {!!captchaImg ? (
+                <>
+                  <img
+                    src={`data:image/jpeg;base64,${captchaImg}`}
+                    alt="E-Aadhar captcha"
+                    className="captcha-screen__captcha-img"
+                  />
+                  <img
+                    src="/dist/css/assets/onboarding/resend.svg"
+                    className={classList(
+                      'captcha-screen__resend',
+                      !hasMobileLinked ? 'captcha-screen__resend-disabled' : '',
+                    )}
+                    onClick={generateCaptcha}
+                  />
+                </>
+              ) : (
+                <>
+                  <span
+                    className="spin-btn white medium visible"
+                    style={{ margin: '0 53px 13px' }}
+                  />
+                  <img
+                    src="/dist/css/assets/onboarding/disable-resend.svg"
+                    className="reload-icon"
+                  />
+                </>
+              )}
+            </div>
+            <Input
+              name="captcha"
+              type="text"
+              value={captcha}
+              className="Input--small Input--vTop is-mature"
+              placeholder="Enter the captcha shown above"
+              onChange={onChange}
+              propagatedError={getCaptchaFieldMsg()}
+              disabled={!hasMobileLinked}
+              onFocus={() => {
+                trackEvent(window.rzpQ.onbr().initiated('kyc.e-aadhar_code'));
+                analyticsTrack({
+                  objectName: 'kyc.e-aadhar code',
+                  actionName: 'focus on enter captcha',
+                  screen: 'Entering captch on Activation page',
+                  properties: {
+                    aadhaar_ekyc_mode: isDigilockerEkyc ? 'Digilocker native' : 'UIDAI native',
+                  },
+                  ...analyticsProperties,
+                });
+                trackEvents({
+                  objectName: 'Form Details',
+                  actionName: 'Filled',
+                  screen: 'home page',
+                  properties: {
+                    'Tab Title': 'Document Verification',
+                    'Element Type': 'Form',
+                    'Field Type': 'Text',
+                    'Field Name': 'Enter the captcha shown above',
+                    'Card Title': 'none',
+                    aadhaar_ekyc_mode: isDigilockerEkyc ? 'Digilocker native' : 'UIDAI native',
+                  },
+                });
+              }}
+            />{' '}
+          </>
+        )}
 
         <div className="Input-content" style={{ marginTop: '10px' }}>
           <div className="captcha-screen__btn-container">
@@ -380,7 +430,7 @@ const GetOtpScreen = ({
               onClick={(e) => {
                 if (!aadharNumber) {
                   return setError('empty_aadhar_value');
-                } else if (!captcha) {
+                } else if (!captcha && !isDigilockerEkyc) {
                   return setError('empty_captcha_value');
                 } else if (aadharNumber && aadharNumber.length !== 12) {
                   return setError('invalid_aadhar_length');

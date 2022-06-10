@@ -414,7 +414,6 @@
   position: relative
   font-size: 0
   vertical-align: top
-
   &.Select-elWrapper
     &::before
       content: ''
@@ -483,7 +482,6 @@
     margin-top: 8px
     left: 0
     top: 100%
-
     &:before
       border-right-color: transparent
       border-bottom-color: #dfebff
@@ -744,3 +742,11 @@ textarea.Input-el
 .Input--PowerSelect
   PowerSelect.PowerSelect--open
     border-color: $primary-color !important
+
+@media (max-width : 800px) { 
+  .disabled-aadhaar { 
+    position : relative
+    top : 44px
+    margin: 30px 0px
+}
+}

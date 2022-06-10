@@ -13,13 +13,14 @@ const EAadhar = ({
   mobileLinkedOnChange,
   tracking,
   activeTab,
+  isDigilockerEkyc,
 }) => {
   const [aadharNumber, setAadharNumber] = useState('');
   const [captcha, setCaptchaValue] = useState('');
   const [error, setError] = useState('');
   const [isStartAgain, setIsStartAgain] = useState(false);
   const [screen, setScreen] = useState(aadharStatus ? 'Success' : '');
-
+  const [requestId, setRequestId] = useState(null);
   const trackEvent = tracking.trackEvent;
 
   const analyticsProperties = {
@@ -63,10 +64,17 @@ const EAadhar = ({
     return (
       <div className="Input Input--small Input--vTop is-mature">
         <div className="Input-label">Aadhaar Verification</div>
-        <div className="Input-content e-aadhar-provider-error">
-          We can not support OTP based Aadhaar verification because of downtime on UIDAI servers.
-          Please upload copies of one the address proofs listed below.
-        </div>
+        {isDigilockerEkyc ? (
+          <div className="Input-content e-aadhar-provider-error">
+            We can not support OTP based Aadhaar verification because of downtime on Digilocker
+            servers. Please upload copies of one the address proofs listed below.
+          </div>
+        ) : (
+          <div className="Input-content e-aadhar-provider-error">
+            We can not support OTP based Aadhaar verification because of downtime on UIDAI servers.
+            Please upload copies of one the address proofs listed below.
+          </div>
+        )}
       </div>
     );
   };
@@ -91,12 +99,15 @@ const EAadhar = ({
     mobileLinkedOnChange,
     trackEvent,
     setScreen,
+    setRequestId,
     setCaptchaValue,
     setIsStartAgain,
     setError,
     captcha,
     aadharNumber,
     handleDownTimeError,
+    isDigilockerEkyc,
+    requestId,
   };
 
   const renderScreens = () => {
@@ -117,6 +128,7 @@ const EAadhar = ({
             setAadharNumber={setAadharNumber}
             isStartAgain={isStartAgain}
             isAadharEkycMandatory={isAadharEkycMandatory}
+            isDigilockerEkyc={isDigilockerEkyc}
             {...commonProps}
           />
         );

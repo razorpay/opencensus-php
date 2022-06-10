@@ -20,6 +20,8 @@ const VerifyOtp = ({
   setIsStartAgain,
   trackEvents,
   handleDownTimeError,
+  isDigilockerEkyc,
+  requestId,
 }) => {
   const [otp, setOtp] = useState('');
   const [wrongOtp, setWrongOtp] = useState(false);
@@ -46,6 +48,7 @@ const VerifyOtp = ({
         'Field Type': 'Text',
         'Field Name': 'Aadhar OTP Verification',
         'Card Title': 'none',
+        ' aadhaar_ekyc_mode': isDigilockerEkyc ? 'Digilocker native' : 'UIDAInative',
       },
     });
   };
@@ -71,25 +74,77 @@ const VerifyOtp = ({
       properties: {
         'CTA Label': 'Submit & Verify',
         'Modal Label': 'KYC Form',
+        ' aadhaar_ekyc_mode': isDigilockerEkyc ? 'Digilocker native' : 'UIDAInative',
       },
     });
 
     const randomPin = Math.floor(1000 + Math.random() * 9000).toString();
-    const body = {
-      otp,
-      captcha,
-      file_password: randomPin,
-    };
+
+    const body = isDigilockerEkyc
+      ? {
+          aadhaar_number: aadharNumber,
+          otp,
+          request_id: requestId,
+        }
+      : {
+          otp,
+          captcha,
+          file_password: randomPin,
+        };
+
+    const artefactcuratorAPI =
+      'bvs/dashboard/twirp/platform.bvs.artefactcurator.verify.v1.DigilockerAPI/VerifyOtp';
+    const probeApi = 'bvs/dashboard/twirp/platform.bvs.probe.v1.ProbeAPI/AadhaarSubmitOtp';
+
+    const url = isDigilockerEkyc ? artefactcuratorAPI : probeApi;
+
     return merchantFetch({
-      url: 'bvs/dashboard/twirp/platform.bvs.probe.v1.ProbeAPI/AadhaarSubmitOtp',
+      url,
       method: 'POST',
       data: body,
     })
       .then((res) => {
+        if (res?.data?.meta?.internal_error_code === 'invalid_input_to_karza') {
+          setWrongOtp(true);
+          setError('invalid_input_to_karza');
+          setIsApiCall(false);
+          return;
+        }
+
+        if (res?.data?.code === 'resource_exhausted') {
+          setError('failed');
+          setOtp('');
+          setScreen('');
+          setIsApiCall(false);
+          return;
+        }
+
+        if (
+          isDigilockerEkyc &&
+          res?.success &&
+          res.data.fetchAadhaarXml !== 'failed' &&
+          res?.data?.code === 'resource_exhausted'
+        ) {
+          mobileLinkedOnChange(true);
+          setScreen('Success');
+        }
+
+        if (res.success && res?.data.is_success) {
+          mobileLinkedOnChange(true);
+          setScreen('Success');
+          return;
+        }
+
         if (res.success && res.data.is_valid) {
           mobileLinkedOnChange(true);
           setScreen('Success');
         }
+
+        if (res.data.fetchAadhaarXml === 'failed') {
+          handleDownTimeError(res.data);
+          return;
+        }
+
         if (res.data.error_code) {
           const errorCode = res.data.error_code;
           setError(errorCode);
@@ -132,6 +187,9 @@ const VerifyOtp = ({
           objectName: 'kyc.e-aadhar OTP submit',
           actionName: 'OTP verified successfully',
           screen: 'Submit OTP on Activation page',
+          properties: {
+            aadhaar_ekyc_mode: isDigilockerEkyc ? 'Digilocker native' : 'UIDAInative',
+          },
           ...analyticsProperties,
         });
       })
@@ -156,6 +214,9 @@ const VerifyOtp = ({
           objectName: 'kyc.e-aadhar OTP submit',
           actionName: 'OTP verify failed',
           screen: 'Submit OTP on Activation page',
+          properties: {
+            aadhaar_ekyc_mode: isDigilockerEkyc ? 'Digilocker native' : 'UIDAInative',
+          },
           ...analyticsProperties,
         });
       });
@@ -178,21 +239,24 @@ const VerifyOtp = ({
         error: 'Invalid OTP. Try again',
         fieldLabel: 'Aadhar Verification',
         tab: 'Documents Verification',
+        aadhaar_ekyc_mode: isDigilockerEkyc ? 'Digilocker native' : 'UIDAInative',
       },
     });
-  }, [wrongOtp]);
+  }, [wrongOtp, isDigilockerEkyc]);
 
   return (
     <>
-      <div class="Input-label otp-label" style={{ textAlign: 'right' }}>
+      <div class="Input-label otp-label" style={{ textAlign: 'left' }}>
         Aadhaar Verification <br /> ( via OTP )
       </div>
-      <Input
-        type="text"
-        class="Input--small Input--vTop is-mature"
-        disabled={true}
-        defaultValue={aadharNumber}
-      />
+      <div className="disabled-aadhaar">
+        <Input
+          type="text"
+          className="Input--small Input--vTop is-mature"
+          disabled={true}
+          defaultValue={aadharNumber}
+        />
+      </div>
 
       <div className="otp-screen">
         <div className="Input-content otp-screen__otp">
@@ -242,6 +306,9 @@ const VerifyOtp = ({
                       objectName: 'kyc.e-aadhar consent link',
                       actionName: 'click on privacy policy (e-aadhar)',
                       screen: 'KYC on Activation page',
+                      properties: {
+                        aadhaar_ekyc_mode: isDigilockerEkyc ? 'Digilocker native' : 'UIDAInative',
+                      },
                       ...analyticsProperties,
                     });
                   }}

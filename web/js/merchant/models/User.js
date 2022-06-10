@@ -1558,6 +1558,13 @@ export default class User {
   get isMsmeDisabled() {
     return this.getExpStatus('disable_msme_upload') && !!this.isOrgRZP;
   }
+
+  get isDigilockerEkyc() {
+    return (
+      getSplitzExperimentVariant('digilocker_aadhaar_ekyc')?.variables?.result === 'on' &&
+      !!this.isOrgRZP
+    );
+  }
 }
 
 function _isAllowed(userRole, moduleName, permissionsMap) {

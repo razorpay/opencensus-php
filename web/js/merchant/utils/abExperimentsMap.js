@@ -359,4 +359,11 @@ export default {
     // prod
     'JJCnl2fwyUMPvm',
   ],
+
+  digilocker_aadhaar_ekyc: [
+    //beta
+    'JXRN0Fw8NN7qIG',
+    //prod
+    'JfNOewpSluhNIB',
+  ],
 };

@@ -976,6 +976,7 @@ class App extends Component {
       isMsmeDisabled: user.isMsmeDisabled,
       isAdharEkycRequired: user.isAdharEkycRequired,
       isAdharEkycRequiredForTrustSocietyNgo: user.isAdharEkycRequiredForTrustSocietyNgo,
+      isDigilockerEkyc: user.isDigilockerEkyc,
     };
   };
 
