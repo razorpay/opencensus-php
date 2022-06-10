@@ -348,6 +348,11 @@ class Validator extends Base\Validator
         Entity::SCHEDULE                     => 'sometimes|numeric',
     ];
 
+    protected static $edMerchantSearchCreateRules = [
+        Entity::FILE        => 'required|file' . self::DEFAULT_MIME_RULE,
+        Entity::TYPE        => 'required|in:ed_merchant_search',
+    ];
+
     protected static $authLinkCreateRules = [
         Entity::TYPE                    => 'required|in:auth_link',
         Entity::NAME                    => 'filled|string|max:255',

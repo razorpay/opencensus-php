@@ -237,6 +237,11 @@ class Header
     const NARRATION      = 'narration';
 
     //
+    // Ed Merchant Search
+    //
+    const MERCHANT_IDS  = 'merchant_ids';
+
+    //
     // Batch recurring payments
     //
     const RECURRING_CHARGE_TOKEN       = 'token';
@@ -4472,6 +4477,18 @@ class Header
             ],
         ],
 
+        Type::ED_MERCHANT_SEARCH => [
+            self::INPUT => [
+                self::MERCHANT_NAME,
+            ],
+            self::OUTPUT => [
+                self::MERCHANT_NAME,
+                self::MERCHANT_IDS,
+                self::STATUS,
+                self::ERROR_MESSAGE,
+            ],
+        ],
+                
         Type::COLLECT_LOCAL_CONSENTS_TO_CREATE_TOKENS => [
             self::INPUT => [
                 self::CONSENT_COLLECTION_MERCHANT_ID,

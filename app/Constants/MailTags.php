@@ -199,6 +199,9 @@ class MailTags
     const FRAUD_NOTIFICATION_DOMAIN_MISMATCH = 'fraud_notification_domain_mismatch';
     const PAYMENT_FRAUD_BATCH_FILE_CREATED   = 'payment_fraud_batch_file_created';
 
+    // ED Merchant Search
+    const ED_MERCHANT_SEARCH_RESULT          =  'ed_merchant_search_result';
+
     // Daily Recon summary tags
     const DAILY_RECON_SUMMARY              = 'daily_recon_summary';
 

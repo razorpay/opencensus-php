@@ -824,7 +824,9 @@ class Name
     const CARE_SERVICE_DARK_PROXY                      = 'care_service_dark_proxy';
     const MANAGE_FRESHCHAT                             = 'manage_freshchat';
     const BULK_UPDATE_CHARGEBACK_POC                   = 'bulk_update_chargeback_poc';
-    const BULK_UPDATE_WHITELISTED_DOMAIN                = 'bulk_update_whitelisted_domain';
+    const BULK_UPDATE_WHITELISTED_DOMAIN               = 'bulk_update_whitelisted_domain';
+    const ED_MERCHANT_SEARCH                           = 'ed_merchant_search';
+
     const CREATE_DEBIT_NOTE                            = 'create_debit_note';
 
     const TOKEN_REGISTRATION_ACTIONS = 'token_registration_actions';

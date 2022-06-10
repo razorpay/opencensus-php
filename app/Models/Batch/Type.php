@@ -212,6 +212,8 @@ class Type
 
     const WHITELISTED_DOMAIN  =  'whitelisted_domain';
 
+    const ED_MERCHANT_SEARCH  =  'ed_merchant_search';
+
     const REWARDS = 'rewards';
 
     const VIRTUAL_ACCOUNT_EDIT = "virtual_account_edit";
@@ -287,6 +289,7 @@ class Type
         self::LEDGER_ONBOARD_OLD_ACCOUNT,
         self::CHARGEBACK_POC,
         self::WHITELISTED_DOMAIN,
+        self::ED_MERCHANT_SEARCH,
         self::DEBIT_NOTE,
         self::CREATE_PAYMENT_FRAUD,
         self::PAYMENT_TRANSFER_RETRY,
@@ -569,6 +572,7 @@ class Type
         self::LEDGER_ONBOARD_OLD_ACCOUNT,
         self::CHARGEBACK_POC,
         self::WHITELISTED_DOMAIN,
+        self::ED_MERCHANT_SEARCH,
         self::DEBIT_NOTE,
         self::CREATE_PAYMENT_FRAUD,
         self::PARTNER_REFERRAL_FETCH,
@@ -628,6 +632,7 @@ class Type
         self::MERCHANT_CAPITAL_TAGS              => Name::MERCHANT_CAPITAL_TAGS_UPLOAD,
         self::LEDGER_ONBOARD_OLD_ACCOUNT         => Name::LEDGER_SERVICE_ACTIONS,
         self::CHARGEBACK_POC                     => Name::BULK_UPDATE_CHARGEBACK_POC,
+        self::ED_MERCHANT_SEARCH                 => Name::ED_MERCHANT_SEARCH,
         self::ENTITY_UPDATE_ACTION               => Name::ADMIN_BATCH_CREATE,
         self::CREATE_EXEC_RISK_ACTION            => Name::ADMIN_BATCH_CREATE,
         self::WHITELISTED_DOMAIN                 => Name::BULK_UPDATE_WHITELISTED_DOMAIN,
