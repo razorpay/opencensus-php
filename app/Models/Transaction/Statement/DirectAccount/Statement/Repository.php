@@ -17,10 +17,10 @@ use RZP\Constants\Entity as E;
 use RZP\Constants\Environment;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Base\EsRepository;
-use RZP\Models\Base\PublicEntity;
 use RZP\Models\Base\PublicCollection;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Contracts\Support\Arrayable;
+use RZP\Models\Merchant\Entity as MerchantEntity;
 
 /**
  * Class Repository
@@ -64,6 +64,25 @@ class Repository extends Base\Repository
         parent::addQueryOrder($query);
     }
 
+    public function fetchByPublicIdAndMerchantForTransactionsBasedOnBasId(
+        string $id,
+        MerchantEntity $merchant,
+        array $params = []): Entity
+    {
+        Entity::verifyIdAndStripSign($id);
+
+        $statement = $this->getQueryForFindWithParams($params)
+                          ->merchantId($merchant->getId())
+                          ->findOrFailPublic($id);
+
+        if ($statement->getEntityType() === 'payout')
+        {
+            $statement->load($this->expandsForTypePayout);
+        }
+
+        return $statement;
+    }
+
     /**
      * {@inheritDoc}
      *
@@ -74,6 +93,9 @@ class Repository extends Base\Repository
                           string $merchantId = null,
                           string $connectionType = null): PublicCollection
     {
+        $this->baseQuery = $this->newQuery()
+                                ->whereNotNull($this->repo->direct_account_statement->dbColumn(Entity::ENTITY_ID));
+
         $startTimeMs = round(microtime(true) * 1000);
 
         $statements = parent::fetch($input, $merchantId, $connectionType);

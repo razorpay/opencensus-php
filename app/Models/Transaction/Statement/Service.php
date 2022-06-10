@@ -73,11 +73,26 @@ class Service extends Transaction\Service
 
         $merchantValidator->validateBusinessBankingActivated();
 
+        // If the transaction ID passed in the query does contain 'bas_' prefix
+        // Then there is no need to call the ledger microservice to fetch the txn entity.
+        // Also, we use a new method to construct a txn response using BAS entity.
+        // We are assuming here that the ID passed here must have come from some payout or acc stmt response.
+        // This means that an entity must have gotten linked to the BAS entity.
+        // There is a very small edge case where a requester randomly passes a BAS ID which exists in our systems
+        // but has not been linked to an entity. We are not sending invalid ID error in these edge cases.
+
+        if (($this->isExperimentEnabled(Merchant\RazorxTreatment::RX_DA_ACC_STMT_EXPERIMENT) === true) and
+            (strpos($id, DirectAccount\Statement\Entity::getSign()) !== false))
+        {
+            return $this->repo->direct_account_statement
+                ->fetchByPublicIdAndMerchantForTransactionsBasedOnBasId($id, $this->merchant, $input)
+                ->toArrayPublic();
+        }
+
         // In case feature flag is added to the merchant, only in that case ledger service will be called.
         // Since here depending on the transaction, we cannot find whether this transaction is for VA or CA,
         // without depending on the transaction table, so only merchant feature flag is check is enough.
-        if (($this->merchant->isFeatureEnabled(Constants::LEDGER_REVERSE_SHADOW) === true) or
-            ($this->merchant->isFeatureEnabled(Constants::DA_LEDGER_REVERSE_SHADOW) === true))
+        if ($this->merchant->isFeatureEnabled(Constants::LEDGER_REVERSE_SHADOW) === true)
         {
             $ledgerTransaction = $this->ledgerStatementService->fetchByIdFromLedger($id);
 

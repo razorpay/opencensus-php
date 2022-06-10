@@ -182,6 +182,28 @@ class DirectAccountStatementTest extends TestCase
                                 ]);
     }
 
+    public function createDummyBasRecordsWithoutLinkingEntity()
+    {
+        $utr = str_shuffle('211708954836');
+
+        $bas = $this->fixtures->create('banking_account_statement',
+                                       [
+                                           'utr' => $utr,
+                                           'amount' => 1000,
+                                           'balance' => $this->bankingBalance->getBalance() + 1000,
+                                           'channel' => 'rbl',
+                                           'account_number' => $this->bankingBalance->getAccountNumber(),
+                                           'bank_transaction_id' => 'M2134218',
+                                           'type' => 'credit',
+                                           'posted_date' => 1650628967,
+                                           'description' => $utr . '-LOAN' . str_shuffle('492836'),
+                                           'category' => 'customer_initiated',
+                                           'bank_serial_number' => 7,
+                                           'bank_instrument_id' => "",
+                                           'transaction_date' => 1650565810,
+                                       ]);
+    }
+
     public function testFetchMultipleStatementsForDirectAccount()
     {
         $this->createDummyPayout();
@@ -190,10 +212,12 @@ class DirectAccountStatementTest extends TestCase
 
         $this->createDummyExternal();
 
+        // This BAS won't show up in the results.
+        $this->createDummyBasRecordsWithoutLinkingEntity();
+
         // Creates one normal payment transaction on primary balance.
         $this->doAuthAndCapturePayment(null, 50000);
 
-        // One the first two transactions should appear in response.
         $this->ba->proxyAuth();
 
         $this->startTest();
@@ -207,10 +231,12 @@ class DirectAccountStatementTest extends TestCase
 
         $this->createDummyExternal();
 
+        // This BAS won't show up in the results.
+        $this->createDummyBasRecordsWithoutLinkingEntity();
+
         // Creates one normal payment transaction on primary balance.
         $this->doAuthAndCapturePayment(null, 50000);
 
-        // One the first two transactions should appear in response.
         $this->ba->privateAuth();
 
         $this->startTest();
@@ -225,6 +251,9 @@ class DirectAccountStatementTest extends TestCase
         $this->createDummyPayout();
 
         $this->createDummyReversal();
+
+        // This BAS won't show up in the results.
+        $this->createDummyBasRecordsWithoutLinkingEntity();
 
         // Creates one normal payment transaction on primary balance.
         $this->doAuthAndCapturePayment(null, 50000);
@@ -248,7 +277,6 @@ class DirectAccountStatementTest extends TestCase
             'business_website' =>  'https://shopify.secondleveldomain.edu.in'
         ]);
 
-        // One the first two transactions should appear in response.
         $this->ba->proxyAuth();
 
         $this->startTest();
@@ -757,5 +785,102 @@ class DirectAccountStatementTest extends TestCase
         $this->assertEquals($bas['amount'], $stmt['amount']);
         $this->assertEquals($bas->getEntityId(), str_after($stmt['source']['id'], 'pout_'));
         $this->assertEquals($bas->getEntityType(), 'payout');
+    }
+
+    // --------------------- Tests for fetch by single transaction ID API follow below ----------------------------
+
+    // This scenario shouldn't happen in prod. This test assumes that the BAS entity has a transaction entity
+    // linked, but the merchant is still trying to query the txn fetch by ID API using BAS public ID.
+    // Ideally, the merchant should have received a transaction public ID in the first place.
+    // This shows that in this contradictory situation, the response will return a txn based public ID.
+    // We HAVE made sure that a BAS linked to a transaction ID should show txn based public ID everywhere.
+    public function testFetchTransactionByPublicBasIdForPayout()
+    {
+        $this->createDummyPayout();
+
+        $bas = $this->getDbLastEntity('banking_account_statement');
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/transactions/' . $bas->getPublicId();
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals('txn_' . $bas->getTransactionId(), $response['id']);
+        $this->assertEquals($bas->getAmount(), $response['amount']);
+        $this->assertEquals($bas->getEntityId(), str_after($response['source']['id'], 'pout_'));
+        $this->assertEquals($bas->getEntityType(), $response['source']['entity']);
+    }
+
+    public function testFetchTransactionByPublicBasIdForPayoutWhenBasHasNoTxnLinked()
+    {
+        $this->createDummyPayout();
+
+        $bas = $this->getDbLastEntity('banking_account_statement');
+
+        $this->fixtures->edit('banking_account_statement', $bas->getId(), ['transaction_id' => null]);
+
+        $bas = $this->getDbLastEntity('banking_account_statement');
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/transactions/' . $bas->getPublicId();
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals($bas->getPublicId(), $response['id']);
+
+        $this->assertEquals($bas->getPublicId(), $response['id']);
+        $this->assertEquals($bas->getAmount(), $response['amount']);
+        $this->assertEquals($bas->getEntityId(), str_after($response['source']['id'], 'pout_'));
+        $this->assertEquals($bas->getEntityType(), $response['source']['entity']);
+    }
+
+    public function testFetchTransactionByPublicBasIdForReversalWhenBasHasNoTxnLinked()
+    {
+        $this->createDummyReversal();
+
+        $bas = $this->getDbLastEntity('banking_account_statement');
+
+        $this->fixtures->edit('banking_account_statement', $bas->getId(), ['transaction_id' => null]);
+
+        $bas = $this->getDbLastEntity('banking_account_statement');
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/transactions/' . $bas->getPublicId();
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals($bas->getPublicId(), $response['id']);
+
+        $this->assertEquals($bas->getPublicId(), $response['id']);
+        $this->assertEquals($bas->getAmount(), $response['amount']);
+        $this->assertEquals($bas->getEntityId(), str_after($response['source']['id'], 'rvrsl_'));
+        $this->assertEquals($bas->getEntityType(), $response['source']['entity']);
+    }
+
+    public function testFetchTransactionByPublicBasIdForExternalEntityWhenBasHasNoTxnLinked()
+    {
+        $this->createDummyExternal();
+
+        $bas = $this->getDbLastEntity('banking_account_statement');
+
+        $this->fixtures->edit('banking_account_statement', $bas->getId(), ['transaction_id' => null]);
+
+        $bas = $this->getDbLastEntity('banking_account_statement');
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/transactions/' . $bas->getPublicId();
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals($bas->getPublicId(), $response['id']);
+
+        $this->assertEquals($bas->getPublicId(), $response['id']);
+        $this->assertEquals($bas->getAmount(), $response['amount']);
+        $this->assertEquals($bas->getEntityId(), str_after($response['source']['id'], 'ext_'));
+        $this->assertEquals($bas->getEntityType(), $response['source']['entity']);
     }
 }

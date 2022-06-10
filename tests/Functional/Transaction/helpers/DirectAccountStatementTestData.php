@@ -1872,4 +1872,106 @@ return [
             ],
         ],
     ],
+
+    'testFetchTransactionByPublicBasIdForPayout' => [
+        'request' => [
+            'method'  => 'GET',
+            'url'     => '/transactions',
+        ],
+        'response' => [
+            'content' => [
+                'entity'         => 'transaction',
+                'account_number' => '2224440041626905',
+                'amount'         => 1000,
+                'currency'       => 'INR',
+                'credit'         => 0,
+                'debit'          => 1000,
+                'balance'        => 9999000,
+                'source'         => [
+                    'entity'   => 'payout',
+                    'amount'   => 1000,
+                    'fees'     => 590,
+                    'tax'      => 90,
+                    'status'   => 'processing',
+                    'fee_type' => null,
+                    'mode'     => null,
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchTransactionByPublicBasIdForPayoutWhenBasHasNoTxnLinked' => [
+        'request' => [
+            'method'  => 'GET',
+            'url'     => '/transactions',
+        ],
+        'response' => [
+            'content' => [
+                'entity'         => 'transaction',
+                'account_number' => '2224440041626905',
+                'amount'         => 1000,
+                'currency'       => 'INR',
+                'credit'         => 0,
+                'debit'          => 1000,
+                'balance'        => 9999000,
+                'source'         => [
+                    'entity'   => 'payout',
+                    'amount'   => 1000,
+                    'fees'     => 590,
+                    'tax'      => 90,
+                    'status'   => 'processing',
+                    'fee_type' => null,
+                    'mode'     => null,
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchTransactionByPublicBasIdForReversalWhenBasHasNoTxnLinked' => [
+        'request' => [
+            'method'  => 'GET',
+            'url'     => '/transactions',
+        ],
+        'response' => [
+            'content' => [
+                'entity'         => 'transaction',
+                'account_number' => '2224440041626905',
+                'amount'         => 1000,
+                'currency'       => 'INR',
+                'credit'         => 1000,
+                'debit'          => 0,
+                'balance'        => 10001000,
+                'source'         => [
+                    'entity'   => 'reversal',
+                    'amount'   => 1000,
+                    'fee'     => 0,
+                    'tax'      => 0,
+                    'currency' => 'INR',
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchTransactionByPublicBasIdForExternalEntityWhenBasHasNoTxnLinked' => [
+        'request' => [
+            'method'  => 'GET',
+            'url'     => '/transactions',
+        ],
+        'response' => [
+            'content' => [
+                'entity'         => 'transaction',
+                'account_number' => '2224440041626905',
+                'amount'         => 1000,
+                'currency'       => 'INR',
+                'credit'         => 1000,
+                'debit'          => 0,
+                'balance'        => 10001000,
+                'source'         => [
+                    'entity'   => 'external',
+                    'amount'   => 1000,
+                    'utr'      => '211708954836',
+                ],
+            ],
+        ],
+    ],
 ];
