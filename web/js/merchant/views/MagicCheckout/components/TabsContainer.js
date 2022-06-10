@@ -35,9 +35,7 @@ const RouteContainer = ({ user }) => {
           />
         ))}
       </content>
-      <Redirect // nosemgrep : https://semgrep.dev/s/razorpay:rzp-react-router-redirect
-        to={redirectPath}
-      />
+      <Redirect to={redirectPath} />
     </tabbed-container>
   );
 };
