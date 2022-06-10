@@ -16,14 +16,14 @@ export default class ExperimentList extends React.Component {
     isFetchingProjects: true,
     projects: [],
     selectedProject: null,
-    experiments: null,
     selectedExperimentId: null,
     selectedExperimentName: null,
   };
 
   resetFilters = (e) => {
+    const { collection } = this.props;
     // Clean filters in collection
-    this.props.collection.resetFilters();
+    collection.resetFilters();
 
     this.setState({
       selectedProject: null,
@@ -33,7 +33,7 @@ export default class ExperimentList extends React.Component {
     const form = e.currentTarget.closest('form');
     form.reset();
 
-    this.props.collection.fetch();
+    collection.fetch();
   };
 
   filterList = () => {
@@ -47,32 +47,22 @@ export default class ExperimentList extends React.Component {
   };
 
   componentDidMount() {
-    Promise.all([
-      splitzFetch({
-        url: 'project.v1.ProjectAPI/List',
-        data: {
-          limit: 100,
-          offset: 0,
-        },
-      }),
-      splitzFetch({
-        url: 'experiment.v1.ExperimentAPI/List',
-        data: {
-          limit: 100,
-          offset: 0,
-        },
-      }),
-    ])
-      .then((allResponses) => {
-        const [projectRes, experimentRes] = allResponses;
+    splitzFetch({
+      url: 'project.v1.ProjectAPI/List',
+      data: {
+        limit: 100,
+        offset: 0,
+      },
+    })
+      .then((projectRes) => {
+        const { location } = this.props;
 
         this.setState({
           isFetchingProjects: false,
           projects: projectRes.items,
-          experiments: experimentRes.items,
         });
 
-        const urlParams = new URLSearchParams(this.props.location.search);
+        const urlParams = new URLSearchParams(location.search);
         const projectId = urlParams.get('project_id');
 
         if (projectId) {
@@ -110,53 +100,15 @@ export default class ExperimentList extends React.Component {
     );
   };
 
-  handleSelectExperimentId = ({ option }) => {
-    if (!option) {
-      this.setState(
-        {
-          selectedExperimentId: null,
-        },
-        () => this.filterList(),
-      );
-      return;
-    }
-
-    this.setState(
-      {
-        selectedExperimentId: option.id,
-      },
-      () => this.filterList(),
-    );
-  };
-
-  handleSelectExperimentName = ({ option }) => {
-    if (!option) {
-      this.setState(
-        {
-          selectedExperimentName: null,
-        },
-        () => this.filterList(),
-      );
-      return;
-    }
-
-    this.setState(
-      {
-        selectedExperimentName: option.name,
-      },
-      () => this.filterList(),
-    );
+  handleSelectInput = (e) => {
+    const { name, value } = e?.target;
+    this.setState({ [name]: value.trim() });
   };
 
   render() {
-    const {
-      isFetchingProjects,
-      projects,
-      selectedProject,
-      experiments,
-      selectedExperimentId,
-      selectedExperimentName,
-    } = this.state;
+    const { isFetchingProjects, projects, selectedProject } = this.state;
+
+    const { collection, showDetails } = this.props;
 
     return (
       <div className="list-container">
@@ -178,28 +130,24 @@ export default class ExperimentList extends React.Component {
             onChange={this.handleSelectProject}
             className="search-box"
           />
-          <SearchableSelectField
-            name="experiment_id"
-            optionComponent={(experiment) => <div>{experiment?.option?.id}</div>}
-            placeholder="Select an experiment ID"
-            searchIndices={['id']}
-            label="Select Experiment ID"
-            options={experiments || []}
-            selected={selectedExperimentId}
-            onChange={this.handleSelectExperimentId}
-            className="search-box"
-          />
-          <SearchableSelectField
-            name="experiment_name"
-            optionComponent={(experiment) => <div>{experiment?.option?.name}</div>}
-            placeholder="Select an experiment name"
-            searchIndices={['name']}
-            label="Select Experiment Name"
-            options={experiments || []}
-            selected={selectedExperimentName}
-            onChange={this.handleSelectExperimentName}
-            className="search-box"
-          />
+          <div className="input-search-box">
+            <label className="input-search-label">Experiment ID</label>
+            <input
+              type="text"
+              name="selectedExperimentId"
+              className="search-box input-search-box"
+              onChange={this.handleSelectInput}
+            />
+          </div>
+          <div className="input-search-box">
+            <label className="input-search-label">Experiment Name</label>
+            <input
+              type="text"
+              name="selectedExperimentName"
+              className="search-box input-search-box"
+              onChange={this.handleSelectInput}
+            />
+          </div>
           <button className="btn btn--primary field">Search</button>
           <button type="button" className="btn btn--link field" onClick={this.resetFilters}>
             Clear
@@ -207,7 +155,7 @@ export default class ExperimentList extends React.Component {
         </Form>
         <div>
           <PageTable
-            model={this.props.collection}
+            model={collection}
             fields={[
               ['ID', (item) => item.id],
               ['Name', (item) => item.name],
@@ -226,7 +174,7 @@ export default class ExperimentList extends React.Component {
             ]}
             href={(item) => `/splitz/experiments/${item.id}`}
             info={false}
-            onClick={() => this.props.showDetails()}
+            onClick={showDetails}
           />
         </div>
       </div>
