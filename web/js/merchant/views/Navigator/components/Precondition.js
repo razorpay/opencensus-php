@@ -148,10 +148,7 @@ export default class Precondition extends React.Component {
                 />
               </div>
             ) : (
-              <button
-                style={{ left: this.props.readonly ? 'auto' : '35px' }}
-                className={`btn btn-primary operator-btn readonly`}
-              >
+              <button type="button" className="btn btn-primary operator-btn readonly">
                 {logical_operators.find((o) => o.value == this.props.precondition.value).name}
               </button>
             )
@@ -161,11 +158,7 @@ export default class Precondition extends React.Component {
           <CSSTransition in={true} exit={true} timeout={1000} classNames="slide-down">
             <div class="row">
               <div className="col-xs-12">
-                <div
-                  onClick={this.addCondition}
-                  class="add-expression"
-                  style={{ color: '#2B83EA', marginTop: '18px' }}
-                >
+                <div onClick={this.addCondition} className="add-expression add-provider">
                   <b class="pointer">Add Another Condition</b>
                 </div>
               </div>

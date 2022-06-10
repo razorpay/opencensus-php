@@ -269,9 +269,10 @@ export default class CreateRule extends React.Component {
   }
 
   get isProviderRulesValid() {
+    const { rule } = this.state;
     let is_valid = true;
-    const rules = mapRulesArrayToObject(this.state.rule.rules);
-    if (this.state.rule.rules.length == 0) {
+    const rules = mapRulesArrayToObject(rule.rules);
+    if (rule.rules.length === 0) {
       is_valid = false;
     }
     Object.keys(rules).forEach((k) => {
@@ -291,11 +292,12 @@ export default class CreateRule extends React.Component {
   }
 
   get isRuleValid() {
+    const { name, is_default, rules } = this.state?.rule;
     return (
-      this.state.rule.name &&
-      (this.state.rule.is_default ? true : this.state.rule.name !== appendMid(DEFAULT_RULE)) &&
-      this.state.rule.rules.length &&
-      (this.state.rule.is_default ? true : this.isPreconditionValid) &&
+      name &&
+      (is_default ? true : name !== appendMid(DEFAULT_RULE)) &&
+      rules.length &&
+      (is_default ? true : this.isPreconditionValid) &&
       this.isProviderRulesValid
     );
   }
@@ -323,8 +325,8 @@ export default class CreateRule extends React.Component {
   };
 
   addNewRow = (provider_priority) => {
-    const rule = this.state.rule;
-    const rules = mapRulesArrayToObject(this.state.rule.rules);
+    const { rule } = this.state;
+    const rules = mapRulesArrayToObject(rule.rules);
     const RULES = [];
     let load = null;
     let total_load = 0;
@@ -529,11 +531,17 @@ export default class CreateRule extends React.Component {
   };
 
   render() {
-    if (this.state.redirect) {
-      return <Redirect to={this.state.redirect} />; // nosemgrep : https://semgrep.dev/s/razorpay:rzp-react-router-redirect
-    }
-
-    const { PARAMETERS } = this.state;
+    const {
+      PARAMETERS,
+      rule,
+      mapMethodsProvider,
+      mapWalletProvider,
+      mapCurrencyProvider,
+      redirect,
+      update,
+      loading,
+      steps,
+    } = this.state;
     const rules = deepClone(this.props.rules);
 
     const { terminalProviders } = this.props;
@@ -546,9 +554,9 @@ export default class CreateRule extends React.Component {
     let is_wallet = false;
     let is_currency = false;
     let is_method = false;
-    if (this.state.rule.precondition) {
-      if (this.state.rule.precondition.type === 'logical') {
-        this.state.rule.precondition.operands.forEach((o) => {
+    if (rule?.precondition) {
+      if (rule?.precondition?.type === 'logical') {
+        rule?.precondition?.operands?.forEach((o) => {
           const methodResult = this.checkMethods(
             o.operands,
             selectedWallets,
@@ -560,7 +568,7 @@ export default class CreateRule extends React.Component {
           is_method = methodResult.is_method;
         });
       } else {
-        const operands = this.state.rule.precondition.operands;
+        const operands = rule?.precondition?.operands;
         const methodResult = this.checkMethods(
           operands,
           selectedWallets,
@@ -573,7 +581,7 @@ export default class CreateRule extends React.Component {
       }
     }
 
-    this.state.rule.rules.forEach((rule) => {
+    rule.rules.forEach((rule) => {
       rule.expression.operands?.forEach((o) => {
         if (o.operands && o.operands[1].value == SMART_ROUTER) {
           is_smart_router = true;
@@ -583,15 +591,12 @@ export default class CreateRule extends React.Component {
     if (is_wallet || is_currency || is_method) {
       MAPPED_PROVIDERS = MAPPED_PROVIDERS.map((p) => {
         if (is_method) {
-          const { mapMethodsProvider } = this.state;
           this.configureProvider('method', selectedMethods, mapMethodsProvider, p);
         }
         if (is_wallet && selectedWallets.length !== 0) {
-          const { mapWalletProvider } = this.state;
           this.configureProvider('wallet', selectedWallets, mapWalletProvider, p);
         }
         if (is_currency && selectedCurrencies.length !== 0) {
-          const { mapCurrencyProvider } = this.state;
           this.configureProvider('currency', selectedCurrencies, mapCurrencyProvider, p);
         }
         return p;
@@ -612,6 +617,10 @@ export default class CreateRule extends React.Component {
     }
     const isValidProvider = this.isSelectedValidProvider(MAPPED_PROVIDERS);
 
+    if (redirect) {
+      return <Redirect to={redirect} />;
+    }
+
     return (
       <FullPageCover>
         <FullPageCoverHeader>
@@ -620,23 +629,11 @@ export default class CreateRule extends React.Component {
               <div className="panel-body">
                 <div className="row">
                   <div className="col-xs-4">
-                    <h3>
-                      {this.state.update ? 'Edit' : 'Create'} Rule{' '}
-                      {/* {!this.state.update ? (
-                        <a
-                          class={`highlight know-more`}
-                          target="_blank"
-                          style={{ marginLeft: '10px', borderColor: '#EBEFF0', fontSize: '13px' }}
-                        >
-                          Know more
-                          <i class="i i-external-link" style={{ marginLeft: '5px' }} />
-                        </a>
-                      ) : null} */}
-                    </h3>
+                    <h3>{update ? 'Edit' : 'Create'} Rule</h3>
                   </div>
                   <div className="col-xs-5" />
                   <div className="col-xs-3">
-                    <Link to={'/optimizer/rules'}>
+                    <Link to="/optimizer/rules">
                       <span
                         style={{
                           cursor: 'pointer',
@@ -644,7 +641,7 @@ export default class CreateRule extends React.Component {
                           fontSize: '17px',
                           fontWeight: 600,
                         }}
-                        class="pull-right"
+                        className="pull-right"
                       >
                         Close <i className="i i-close" />
                       </span>
@@ -656,28 +653,28 @@ export default class CreateRule extends React.Component {
           </div>
         </FullPageCoverHeader>
         <div className="container">
-          <div class="navigator--create-rule">
-            {this.state.loading ? (
-              <div class="page-spinner-container">
+          <div className="navigator--create-rule">
+            {loading ? (
+              <div className="page-spinner-container">
                 <Spinner />
               </div>
             ) : (
               <Fragment>
-                {this.state.steps[1].show || this.state.update ? (
-                  !this.state.rule.is_default ? (
+                {steps?.[1]?.show || update ? (
+                  !rule.is_default ? (
                     <CSSTransition in={true} appear={true} timeout={800} classNames="slide-up">
                       <div
-                        class={`panel gateway-list rule-detail ${
-                          this.state.steps[1].edit ? 'active' : ''
+                        className={`panel gateway-list rule-detail ${
+                          steps?.[1].edit ? 'active' : ''
                         }`}
                       >
-                        <div class="panel-header">
-                          <h2 class="payment-gateway-title">
+                        <div className="panel-header">
+                          <h2 className="payment-gateway-title">
                             Rule Details
-                            {!this.state.steps[1].edit ? (
+                            {!steps?.[1].edit ? (
                               <button
                                 onClick={() => {
-                                  const edit = this.state.steps[1].edit;
+                                  const edit = steps?.[1].edit;
                                   this.updateStep(1, {
                                     edit: !edit,
                                   });
@@ -688,18 +685,15 @@ export default class CreateRule extends React.Component {
                                 <i className="i i-pencil-edit" /> Edit Rule Details
                               </button>
                             ) : (
-                              <span class="pull-right step-text" style={{ fontSize: '16px' }}>
-                                {' '}
-                                Step 1 Out Of 4
-                              </span>
+                              <span className="pull-right step-text"> Step 1 Out Of 4</span>
                             )}
                           </h2>
-                          {this.state.steps[1].edit ? (
-                            <p class="desc">Add a name and description for your custom rule.</p>
+                          {steps?.[1].edit ? (
+                            <p className="desc">Add a name and description for your custom rule.</p>
                           ) : null}
                         </div>
-                        <div class="panel-body">
-                          <div class="row">
+                        <div className="panel-body">
+                          <div className="row">
                             <div className="col-xs-12">
                               <div className="row">
                                 <div className="col-xs-2">
@@ -708,16 +702,14 @@ export default class CreateRule extends React.Component {
                                   </label>
                                 </div>
                                 <div className="col-xs-6">
-                                  {!this.state.steps[1].edit ? (
-                                    <div class="stepper-readonly">
-                                      {removeMid(this.state.rule.name)}
-                                    </div>
+                                  {!steps?.[1].edit ? (
+                                    <div className="stepper-readonly">{removeMid(rule.name)}</div>
                                   ) : (
                                     <Input
                                       id="name"
-                                      class="Input--vLeft"
+                                      className="Input--vLeft"
                                       name="name"
-                                      value={removeMid(this.state.rule.name)}
+                                      value={removeMid(rule.name)}
                                       placeholder="Rule Name"
                                       onChange={(e) => {
                                         const value = e.target.value;
@@ -743,15 +735,13 @@ export default class CreateRule extends React.Component {
                                   </label>
                                 </div>
                                 <div className="col-xs-6">
-                                  {!this.state.steps[1].edit ? (
-                                    <div class="stepper-readonly">
-                                      {this.state.rule.description}
-                                    </div>
+                                  {!steps?.[1].edit ? (
+                                    <div className="stepper-readonly">{rule.description}</div>
                                   ) : (
                                     <textarea
                                       id="description"
-                                      class="Input--vLeft form-control"
-                                      value={this.state.rule.description}
+                                      className="Input--vLeft form-control"
+                                      value={rule.description}
                                       name="description"
                                       placeholder="Rule Description"
                                       onChange={(e) => {
@@ -770,18 +760,15 @@ export default class CreateRule extends React.Component {
                             </div>
                           </div>
                         </div>
-                        {this.state.steps[1].edit ? (
+                        {steps?.[1].edit ? (
                           <div className="panel-footer">
                             <button
                               disabled={
-                                !(
-                                  removeMid(this.state.rule.name) &&
-                                  this.state.rule.name !== appendMid(DEFAULT_RULE)
-                                )
+                                !(removeMid(rule.name) && rule.name !== appendMid(DEFAULT_RULE))
                               }
                               onClick={() => {
                                 this.goNext(1, () => {
-                                  if (this.state.rule.is_default) {
+                                  if (rule.is_default) {
                                     this.goNext(2);
                                   }
                                 });
@@ -798,17 +785,17 @@ export default class CreateRule extends React.Component {
                   ) : null
                 ) : null}
 
-                {this.state.steps[2].show || this.state.update ? (
+                {steps?.[2].show || update ? (
                   <CSSTransition in={true} appear={true} timeout={800} classNames="slide-up">
-                    <div class={`panel gateway-list ${this.state.steps[2].edit ? 'active' : ''}`}>
-                      <div class="panel-header">
-                        <h2 class="payment-gateway-title">
+                    <div className={`panel gateway-list ${steps?.[2].edit ? 'active' : ''}`}>
+                      <div className="panel-header">
+                        <h2 className="payment-gateway-title">
                           Rule Conditions
-                          {!this.state.rule.is_default ? (
-                            !this.state.steps[2].edit ? (
+                          {!rule.is_default ? (
+                            !steps?.[2].edit ? (
                               <button
                                 onClick={() => {
-                                  const edit = this.state.steps[2].edit;
+                                  const edit = steps?.[2].edit;
                                   this.updateStep(2, {
                                     edit: !edit,
                                   });
@@ -819,16 +806,13 @@ export default class CreateRule extends React.Component {
                                 <i className="i i-pencil-edit" /> Edit Rule Conditions
                               </button>
                             ) : (
-                              <span class="pull-right step-text" style={{ fontSize: '16px' }}>
-                                {' '}
-                                Step 2 Out Of 4
-                              </span>
+                              <span className="pull-right step-text"> Step 2 Out Of 4</span>
                             )
                           ) : null}
                         </h2>
-                        {this.state.steps[2].edit ? (
-                          <p class="desc">
-                            {this.state.rule.is_default ? (
+                        {steps?.[2].edit ? (
+                          <p className="desc">
+                            {rule.is_default ? (
                               `Default rule will be used as a rule to route transactions that do not satisfy any other rules.`
                             ) : (
                               <span>
@@ -837,20 +821,20 @@ export default class CreateRule extends React.Component {
                               </span>
                             )}
                           </p>
-                        ) : this.state.rule.is_default ? (
-                          <p class="desc">
+                        ) : rule.is_default ? (
+                          <p className="desc">
                             Default rule will be used as a rule to route transactions that{' '}
                             <b>do not satisfy any other rules.</b>
                           </p>
                         ) : null}
                       </div>
-                      {!this.state.rule.is_default ? (
+                      {!rule.is_default ? (
                         <CSSTransition in={true} appear={true} timeout={800} classNames="slide-up">
-                          <div class="panel-body" style={{ paddingTop: '15px !important' }}>
+                          <div className="panel-body" style={{ paddingTop: '15px !important' }}>
                             <Precondition
                               parameters={PARAMETERS}
-                              readonly={!this.state.steps[2].edit}
-                              precondition={this.state.rule.precondition}
+                              readonly={!steps?.[2].edit}
+                              precondition={rule.precondition}
                               update={(precondition) => {
                                 this.setState((prevState) => {
                                   const rule = prevState.rule;
@@ -858,18 +842,18 @@ export default class CreateRule extends React.Component {
                                   return { rule };
                                 });
                               }}
-                              parent={'create-rule'}
+                              parent="create-rule"
                             />
                           </div>
                         </CSSTransition>
                       ) : null}
 
-                      {this.state.steps[2].edit ? (
+                      {steps?.[2].edit ? (
                         <div className="panel-footer">
                           <button
                             onClick={() => {
                               this.goNext(2);
-                              if (this.state.rule.rules.length == 0 && !this.state.update) {
+                              if (rule.rules.length == 0 && !update) {
                                 this.addPriority();
                               }
                             }}
@@ -885,16 +869,16 @@ export default class CreateRule extends React.Component {
                   </CSSTransition>
                 ) : null}
 
-                {this.state.steps[3].show || this.state.update ? (
+                {steps?.[3].show || update ? (
                   <CSSTransition in={true} appear={true} timeout={800} classNames="slide-up">
-                    <div class={`panel gateway-list ${this.state.steps[3].edit ? 'active' : ''}`}>
-                      <div class="panel-header">
-                        <h2 class="payment-gateway-title">
+                    <div className={`panel gateway-list ${steps?.[3].edit ? 'active' : ''}`}>
+                      <div className="panel-header">
+                        <h2 className="payment-gateway-title">
                           Target Payment Provider
-                          {!this.state.steps[3].edit ? (
+                          {!steps?.[3].edit ? (
                             <button
                               onClick={() => {
-                                const edit = this.state.steps[3].edit;
+                                const edit = steps?.[3].edit;
                                 this.updateStep(3, {
                                   edit: !edit,
                                 });
@@ -904,22 +888,19 @@ export default class CreateRule extends React.Component {
                               {' '}
                               <i className="i i-pencil-edit" /> Edit Target Provider
                             </button>
-                          ) : !this.state.rule.is_default ? (
-                            <span class="pull-right step-text" style={{ fontSize: '16px' }}>
-                              {' '}
-                              Step 3 Out Of 4
-                            </span>
+                          ) : !rule.is_default ? (
+                            <span className="pull-right step-text"> Step 3 Out Of 4</span>
                           ) : null}
                         </h2>
-                        {this.state.steps[3].edit ? (
-                          <p class="desc">
+                        {steps?.[3].edit ? (
+                          <p className="desc">
                             Add desired payment provider through which the payment has to be routed.{' '}
                             {/* <a class="nav-link">Learn More</a> */}
                           </p>
                         ) : null}
                       </div>
                       <ProviderRules
-                        parent={'create-rule'}
+                        parent="create-rule"
                         providers={MAPPED_PROVIDERS}
                         addNewRow={(pp, rp) => this.addNewRow(pp, rp)}
                         update={(e) => {
@@ -939,17 +920,17 @@ export default class CreateRule extends React.Component {
                             return { rule };
                           });
                         }}
-                        rules={mapRulesArrayToObject(this.state.rule.rules)}
-                        readonly={!this.state.steps[3].edit}
+                        rules={mapRulesArrayToObject(rule.rules)}
+                        readonly={!steps?.[3].edit}
                       />
-                      {this.state.steps[3].edit ? (
-                        <div class="panel-body add-exp-cont" style={{ padding: '0px 20px 6px' }}>
-                          <div class="row">
+                      {steps?.[3].edit ? (
+                        <div className="panel-body add-exp-cont">
+                          <div className="row">
                             <div className="col-xs-12">
-                              <div class="add-expression" style={{ color: '#2B83EA' }}>
-                                <b onClick={this.addPriority} class="pointer">
+                              <div className="add-expression">
+                                <b onClick={this.addPriority} className="pointer">
                                   Add Priority{' '}
-                                  {!this.state.rule.is_default ? (
+                                  {!rule.is_default ? (
                                     <span>
                                       <i className="i i-info-outline add-priority-info-c" />
                                       <Popover
@@ -972,7 +953,7 @@ export default class CreateRule extends React.Component {
                           </div>
                         </div>
                       ) : null}
-                      {this.state.steps[3].edit ? (
+                      {steps?.[3].edit ? (
                         <div className="panel-footer">
                           <button
                             onClick={() => {
@@ -989,22 +970,22 @@ export default class CreateRule extends React.Component {
                     </div>
                   </CSSTransition>
                 ) : null}
-                {this.state.steps[4].show || this.state.update ? (
+                {steps?.[4].show || update ? (
                   <CSSTransition in={true} appear={true} timeout={800} classNames="slide-up">
                     <div
                       style={{ paddingRight: '28px', paddingLeft: '28px', marginBottom: '80px' }}
-                      class={`panel gateway-list ${this.state.steps[4].edit ? 'active' : ''}`}
+                      className={`panel gateway-list ${steps?.[4].edit ? 'active' : ''}`}
                     >
-                      <div class="panel-header">
-                        <h2 class="payment-gateway-title" style={{ marginLeft: 0 }}>
+                      <div className="panel-header">
+                        <h2 className="payment-gateway-title" style={{ marginLeft: 0 }}>
                           Confirm Rule
                         </h2>
-                        <p class="desc" style={{ marginLeft: 0 }}>
+                        <p className="desc" style={{ marginLeft: 0 }}>
                           Publish the rule or save as draft to publish later.{' '}
                           {/* <a className="nav-link"> Learn More</a>{' '} */}
                         </p>
                       </div>
-                      {this.state.steps[4].edit ? (
+                      {steps?.[4].edit ? (
                         <div
                           className="panel-footer"
                           style={{
@@ -1013,7 +994,7 @@ export default class CreateRule extends React.Component {
                             paddingTop: '30px',
                           }}
                         >
-                          {!this.state.update ? (
+                          {!update ? (
                             <Fragment>
                               <button
                                 onClick={() => {
@@ -1214,7 +1195,7 @@ export default class CreateRule extends React.Component {
                                                     });
                                                   })
                                                   .then(() =>
-                                                    getRule(this.state.rule.id).then((R) =>
+                                                    getRule(rule.id).then((R) =>
                                                       this.setState({ rule: R }),
                                                     ),
                                                   )
@@ -1248,12 +1229,10 @@ export default class CreateRule extends React.Component {
                                 disabled={!this.isRuleValid}
                                 className="btn btn-primary pull-right"
                               >
-                                {getRuleStatus(this.state.rule) === 'test'
-                                  ? `Publish Rule`
-                                  : `Publish Edits`}
+                                {getRuleStatus(rule) === 'test' ? `Publish Rule` : `Publish Edits`}
                               </button>
-                              {getRuleStatus(this.state.rule) === 'live' ? (
-                                !this.state.rule.is_default ? (
+                              {getRuleStatus(rule) === 'live' ? (
+                                !rule.is_default ? (
                                   <button
                                     style={{ marginRight: '10px' }}
                                     onClick={() => {
@@ -1269,9 +1248,9 @@ export default class CreateRule extends React.Component {
                                         abortLabel: 'Cancel',
                                         action: () => {
                                           this.props
-                                            .changeRuleMode(this.state.rule.id, 'test')
+                                            .changeRuleMode(rule.id, 'test')
                                             .then(() => {
-                                              return getRule(this.state.rule.id);
+                                              return getRule(rule.id);
                                             })
                                             .then(() => this.props.fetchRules())
                                             .then((respRules) => {
