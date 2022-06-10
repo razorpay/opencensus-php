@@ -2558,6 +2558,26 @@ class Constants
             'display_name'  => 'Feature to have a separate composite API ingress',
             'documentation' => '',
         ],
+        self::ONE_CLICK_CHECKOUT => [
+            'feature'       => self::ONE_CLICK_CHECKOUT,
+            'display_name'  => 'One click checkout',
+            'documentation' => '',
+        ],
+        self::ONE_CC_MANDATORY_LOGIN => [
+            'feature'       => self::ONE_CC_MANDATORY_LOGIN,
+            'display_name'  => '1cc mandatory login',
+            'documentation' => '',
+        ],
+        self::ONE_CC_COUPONS => [
+            'feature'       => self::ONE_CC_COUPONS,
+            'display_name'  => 'One click checkout',
+            'documentation' => '',
+        ],
+        self::ONE_CC_MERCHANT_DASHBOARD => [
+            'feature'       => self::ONE_CC_MERCHANT_DASHBOARD,
+            'display_name'  => 'One click checkout tab on merchant dashboard',
+            'documentation' => '',
+        ],
         self::DISABLE_COLLECT_CONSENT => [
             'feature'       => self::DISABLE_COLLECT_CONSENT,
             'display_name'  => 'Disable tokenisation consent collection by Razorpay',
@@ -2566,6 +2586,16 @@ class Constants
         self::RECURRING_CARD_MANDATE_BILLDESK_SIHUB => [
             'feature' => self::RECURRING_CARD_MANDATE_BILLDESK_SIHUB,
             'display_name'  => 'Card mandate for card recurring payments for billdesk sihub',
+            'documentation' => '',
+        ],
+        self::ONE_CC_GA_ANALYTICS => [
+            'feature'       => self::ONE_CC_GA_ANALYTICS,
+            'display_name'  => 'Enable GA analytics for One Click checkout',
+            'documentation' => '',
+        ],
+        self::ONE_CC_FB_ANALYTICS => [
+            'feature'       => self::ONE_CC_FB_ANALYTICS,
+            'display_name'  => 'Enable FB analytics for One Click checkout',
             'documentation' => '',
         ],
         self::PARTNER_SUB_KYC_ACCESS => [
