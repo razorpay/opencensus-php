@@ -8375,7 +8375,7 @@ class Route
         'merchant_activation_upload_file'              => '*',
         'user_verify_contact'                          => '*',
         'user_merchant_mapping_action'                 => Permission::UPDATE_USER_ROLE,
-        'merchant_activation_save'                     => '*',
+        'merchant_activation_save'                     => Permission::UPDATE_MERCHANT_DETAILS,
         'bvs_service_dashboard'                        => '*',
         'merchant_razorx_bulk_evaluate'                => '*',
         'growth_get_asset_details'                     => '*',

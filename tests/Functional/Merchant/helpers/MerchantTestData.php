@@ -7815,6 +7815,59 @@ return [
         ],
     ],
 
+    'testSaveMerchantDetailsForActivationWithViewOnlyRole' => [
+        'request'  => [
+            'content' => [
+                'business_name' => 'Sample Business name'
+            ],
+            'url'     => '/merchant/activation',
+            'method'  => 'POST',
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_UNAUTHORIZED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
+    'testSaveMerchantDetailsForActivationWithOperationsRole' => [
+        'request'  => [
+            'content' => [
+                'business_name' => 'Sample Business name'
+            ],
+            'url'     => '/merchant/activation',
+            'method'  => 'POST',
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_UNAUTHORIZED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
+    'testSaveMerchantDetailsForActivationWithOwnerRole' => [
+        'request'  => [
+            'content' => [
+                'business_name' => 'Sample Business name'
+            ],
+            'url'     => '/merchant/activation',
+            'method'  => 'POST',
+        ],
+        'response' => [
+            'content'     => [
+                'business_name' => 'Sample Business name'
+            ],
+        ],
+    ],
+
     'testMerchantInternationalDisableAction' => [
         'request'  => [
             'content' => [

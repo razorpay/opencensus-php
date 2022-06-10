@@ -10640,6 +10640,48 @@ IFSC Code  ICIC0001206
         $this->startTest();
     }
 
+    public function testSaveMerchantDetailsForActivationWithViewOnlyRole()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $user = $this->fixtures->create('user');
+
+        $this->createMerchantUserMapping($user->getId(), $merchant->getId(), 'view_only');
+
+        $this->ba->proxyAuth('rzp_test_'.$merchant['id'], $user->getId());
+
+        $this->startTest();
+    }
+
+    public function testSaveMerchantDetailsForActivationWithOperationsRole()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $user = $this->fixtures->create('user');
+
+        $this->createMerchantUserMapping($user->getId(), $merchant->getId(), 'operations');
+
+        $this->ba->proxyAuth('rzp_test_'.$merchant['id'], $user->getId());
+
+        $this->startTest();
+    }
+
+    public function testSaveMerchantDetailsForActivationWithOwnerRole()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $user = $this->fixtures->create('user');
+
+        $this->createMerchantUserMapping($user->getId(), $merchant->getId(), 'owner');
+
+        $this->ba->proxyAuth('rzp_test_'.$merchant['id'], $user->getId());
+
+        $response = $this->startTest();
+
+        $this->assertNotNull($response);
+    }
+
+
     /*
      * Testing WorkflowAction creation using route risk-actions/create and then approving that workflowAction
      */

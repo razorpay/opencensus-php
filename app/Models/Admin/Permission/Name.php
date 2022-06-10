@@ -634,6 +634,7 @@ class Name
     const MERCHANT_SEND_ACTIVATION_MAIL       = 'merchant_send_activation_mail';
     const PAYOUT_LINKS_ADMIN_BULK_CREATE      = 'payout_links_admin_bulk_create';
     const TALLY_PAYOUT_BULK_CREATE            = 'tally_payout_bulk_create';
+    const UPDATE_MERCHANT_DETAILS             = 'update_merchant_details';
 
     // merchant preferences
     const UPDATE_MERCHANT_PREFERENCE          = 'update_merchant_preference';

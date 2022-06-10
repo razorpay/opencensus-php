@@ -129,6 +129,7 @@ class UserRolePermissionsMap
                  Permission::UPDATE_BULK_PAYOUT_AMOUNT_TYPE,
                  Permission::UPDATE_MERCHANT_PREFERENCE,
                  Permission::VIEW_MERCHANT_PREFERENCE,
+                 Permission::UPDATE_MERCHANT_DETAILS,
 
                  Permission::CREATE_ACCOUNTING_INTEGRATION,
                  Permission::DELETE_ACCOUNTING_INTEGRATION,
@@ -275,6 +276,7 @@ class UserRolePermissionsMap
                  Permission::MERCHANT_SUB_VIRTUAL_ACCOUNT_TRANSFER,
                  // Download payout attachments
                  Permission::DOWNLOAD_PAYOUT_ATTACHMENTS,
+                 Permission::UPDATE_MERCHANT_DETAILS,
 
                  Permission::VIEW_PUBLIC_PROFILE,
                  Permission::VIEW_MANAGE_TEAM,
@@ -384,6 +386,7 @@ class UserRolePermissionsMap
                  Permission::VIEW_MERCHANT_PREFERENCE,
                  // Download payout attachments
                  Permission::DOWNLOAD_PAYOUT_ATTACHMENTS,
+                 Permission::UPDATE_MERCHANT_DETAILS,
 
                  Permission::VIEW_MANAGE_TEAM,
                  Permission::VIEW_BANKING,
