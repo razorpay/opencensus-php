@@ -951,4 +951,17 @@ return [
             ],
         ],
     ],
+
+    'testFetchPaymentByIdWithReplicaLag' => [
+        'request' => [
+            'url'   => '/payments/{id}',
+            'method'  => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'captured',
+                'entity' => 'payment'
+            ],
+        ],
+    ],
 ];
