@@ -76,7 +76,11 @@ export default class SelectPeriod extends React.Component {
     } else {
       const timeInUnix = getTimeUnix(this.state.values[name]);
       try {
-        value = value.clone().startOf('day').startOf('minute').add(timeInUnix, 'seconds');
+        if (value && value instanceof moment) {
+          value = value.clone().startOf('day').startOf('minute').add(timeInUnix, 'seconds');
+        } else {
+          return; // user is trying to enter the date manually which is not supported
+        }
       } catch (error) {
         // this is temporary for tracking the issue causing value
         errorService.captureError(error, {
