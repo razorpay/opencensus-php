@@ -214,6 +214,8 @@ class Validator extends Base\Validator
         Entity::VIRTUAL_UPI_MERCHANT_PREFIX=> 'sometimes_if:type.upi_transfer,1|string',
         Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
         Entity::TPV                        => 'sometimes|in:0,1,2',
+        Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
+        Entity::NOTES                      => 'sometimes|string',
     ];
 
     protected static $upiAirtelTerminalRules = [
@@ -976,6 +978,8 @@ class Validator extends Base\Validator
         Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
         Entity::TPV                        => 'sometimes|in:0,1,2',
         Entity::GATEWAY_TERMINAL_PASSWORD  => 'sometimes|string',
+        Entity::NOTES                      => 'sometimes|string',
+        Entity::GATEWAY_MERCHANT_ID        => 'sometimes|string',
     ];
 
     protected static $upiMindgateEditTerminalRules = [
