@@ -29,8 +29,7 @@ export default class ExperimentDetails extends React.Component {
     exclusionGroup: null,
     stateLogs: null,
     submittedComment: null,
-    commentDate: null,
-    commentWriter: null,
+    commentHistory: [],
   };
 
   componentDidMount() {
@@ -69,12 +68,12 @@ export default class ExperimentDetails extends React.Component {
         this.setState({
           workflowStatus: res.workflows[0]?.workflow?.status || [],
           submittedComment: res.workflows[0]?.workflow?.states?.L1_Approval?.actions[0]?.comment,
-          commentDate: res.workflows[0]?.workflow?.states?.L1_Approval?.actions[0]?.created_at,
-          commentWriter:
-            res.workflows[0]?.workflow?.states?.L1_Approval?.actions[0]?.actor_meta?.email,
           isFetchingExperiment: false,
           data: res.experiment,
           stateLogs: res.state_change_logs,
+          commentHistory: res.workflows.map((item) => {
+            return item?.workflow?.states?.L1_Approval?.actions[0];
+          }),
         });
 
         return Promise.all(
@@ -254,8 +253,7 @@ export default class ExperimentDetails extends React.Component {
       exclusionGroup,
       stateLogs,
       submittedComment,
-      commentDate,
-      commentWriter,
+      commentHistory,
     } = this.state;
     const { experimentId } = this.props;
 
@@ -349,13 +347,7 @@ export default class ExperimentDetails extends React.Component {
           {['created', 'terminated'].includes(data.status) &&
           (['rejected', 'processed'].includes(workflowStatus) || !workflowStatus.length) ? (
             <>
-              {submittedComment && (
-                <Comment
-                  submittedComment={submittedComment}
-                  commentDate={commentDate}
-                  commentWriter={commentWriter}
-                />
-              )}
+              {submittedComment && <Comment commentHistory={commentHistory} />}
               <br />
               <AsyncButton
                 type="button"
@@ -409,13 +401,7 @@ export default class ExperimentDetails extends React.Component {
           ) : null}
           {data.status === 'activated' ? (
             <>
-              {submittedComment && (
-                <Comment
-                  submittedComment={submittedComment}
-                  commentDate={commentDate}
-                  commentWriter={commentWriter}
-                />
-              )}
+              {submittedComment && <Comment commentHistory={commentHistory} />}
               <br />
               <AsyncButton
                 type="button"
