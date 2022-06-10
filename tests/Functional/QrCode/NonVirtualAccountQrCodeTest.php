@@ -1345,6 +1345,10 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testQrCodeDemo()
     {
+        $this->markTestSkipped('landing page feature has been removed,
+        the routes created for this feature are no longer being used.
+        Skipping this test case as this tests that particular routes');
+
         $this->ba->directAuth();
 
         $this->app['rzp.mode'] = 'test';
@@ -1395,6 +1399,10 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testQrCodeCreateForCheckoutWithOrder()
     {
+        $this->markTestSkipped('checkout feature has been removed,
+        the routes created for this feature are no longer being used.
+        Skipping this test case as this tests that particular routes');
+
         $order = $this->fixtures->create('order');
 
         $response = $this->createQrCodeForCheckout($order);
@@ -1412,6 +1420,10 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testQrCodeCreateForCheckoutWithoutOrder()
     {
+        $this->markTestSkipped('checkout feature has been removed,
+        the routes created for this feature are no longer being used.
+        Skipping this test case as this tests that particular routes');
+
         $response = $this->createQrCodeForCheckout(null, 1000);
 
         $this->runEntityAssertions($response);
@@ -1419,6 +1431,10 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testPaymentOnQrCodeWithOrder()
     {
+        $this->markTestSkipped('checkout feature has been removed,
+        the routes created for this feature are no longer being used.
+        Skipping this test case as this tests that particular routes');
+
         $order = $this->fixtures->create('order');
 
         $qrCode = $this->createQrCodeForCheckout($order);
@@ -1458,6 +1474,10 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testFetchQrCodeOnCheckout()
     {
+        $this->markTestSkipped('checkout feature has been removed,
+        the routes created for this feature are no longer being used.
+        Skipping this test case as this tests that particular routes');
+
         $order = $this->fixtures->create('order');
 
         $this->createQrCodeForCheckout($order);
@@ -1469,6 +1489,10 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testPaymentOnQrCodeWithoutOrder()
     {
+        $this->markTestSkipped('checkout feature has been removed,
+        the routes created for this feature are no longer being used.
+        Skipping this test case as this tests that particular routes');
+
         $qrCode = $this->createQrCodeForCheckout(null, 4510);
 
         $qrCodeId = $qrCode['id'];
@@ -1504,6 +1528,10 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testCheckoutQrPaymentOnPaidOrder()
     {
+        $this->markTestSkipped('checkout feature has been removed,
+        the routes created for this feature are no longer being used.
+        Skipping this test case as this tests that particular routes');
+
         $order = $this->fixtures->create('order');
 
         $qrCode = $this->createQrCodeForCheckout($order);
@@ -1541,6 +1569,10 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testFetchCapturedPaymentByQrCodeId()
     {
+        $this->markTestSkipped('checkout feature has been removed,
+        the routes created for this feature are no longer being used.
+        Skipping this test case as this tests that particular routes');
+
         $qrCode = $this->createQrCode();
         $qrCodeId = $qrCode['id'];
         $this->assertNotNull($qrCodeId);
@@ -1564,6 +1596,10 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testFetchUnprocessedPaymentByQrCodeId()
     {
+        $this->markTestSkipped('checkout feature has been removed,
+        the routes created for this feature are no longer being used.
+        Skipping this test case as this tests that particular routes');
+
         $qrCode = $this->createQrCode();
         $qrCodeId = $qrCode['id'];
         $this->assertNotNull($qrCodeId);
