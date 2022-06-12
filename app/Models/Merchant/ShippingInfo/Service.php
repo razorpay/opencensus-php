@@ -52,11 +52,10 @@ class Service extends Base\Service
 
         $ex = '';
 
-        $dimensions = array_merge($input,
-            [
-                'merchant_id' => $this->merchant->getId(),
-                'mode' => $this->mode,
-            ]);
+        $dimensions = [
+            'merchant_id' => $this->merchant->getId(),
+            'mode' => $this->mode,
+        ];
 
         try {
 
@@ -87,12 +86,7 @@ class Service extends Base\Service
 
             if($orderMeta === null)
             {
-                $this->trace->count(Metric::MERCHANT_SHIPPING_INFO_CALL_INVALID_REQUEST_COUNT,
-                    array_merge($dimensions,
-                        [
-                            'order_meta' => $orderMeta
-                        ])
-                );
+                $this->trace->count(Metric::MERCHANT_SHIPPING_INFO_CALL_INVALID_REQUEST_COUNT, $dimensions);
                 $ex = new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_1CC_ORDER);
                 throw $ex;
             }
@@ -105,23 +99,15 @@ class Service extends Base\Service
             }
             catch (Throwable $e)
             {
-                $this->trace->count(Metric::MERCHANT_SHIPPING_INFO_CALL_INVALID_REQUEST_COUNT,
-                    array_merge($dimensions,
-                        [
-                            'error' => $e
-                        ])
-                );
+                $this->trace->count(Metric::MERCHANT_SHIPPING_INFO_CALL_INVALID_REQUEST_COUNT, $dimensions);
                 $ex = new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_1CC_ORDER);
                 throw $ex;
             }
 
             if(is_null($merchantOrderId))
             {
-                $this->trace->count(Metric::MERCHANT_SHIPPING_INFO_CALL_INVALID_REQUEST_COUNT,
-                    array_merge($dimensions, [
-                        'merchant_order_id' => $merchantOrderId
-                    ])
-                );
+                $this->trace->count(Metric::MERCHANT_SHIPPING_INFO_CALL_INVALID_REQUEST_COUNT, $dimensions);
+
                 $ex = new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_MERCHANT_SERVICEABILITY_INVALID_INPUT
                 );
@@ -171,12 +157,7 @@ class Service extends Base\Service
             // shopify configs take priority over all Rzp serviceability features
             if ($platformConfig !== null and $platformConfig->getValue() === Merchant1ccConfig\Type::SHOPIFY)
             {
-                $this->trace->count(Metric::MERCHANT_SHIPPING_INFO_SHOPIFY_CALL_COUNT, array_merge(
-                    $dimensions,
-                    [
-                        'platform' => $platformConfig->getValue()
-                    ]
-                ));
+                $this->trace->count(Metric::MERCHANT_SHIPPING_INFO_SHOPIFY_CALL_COUNT, $dimensions);
                 $decodedResponse = (new Shopify\Service)->getShippingInfo([
                     'order_id' => $order->toArrayPublic()['notes']['storefront_id'],
                     'address' => array_merge($address, [self::SHIPPING_INFO_ID => 0]),
@@ -189,12 +170,7 @@ class Service extends Base\Service
                 {
                     $shippingMethodProviderConfigJson = $shippingMethodProviderConfig->getValueJson();
                     $shippingProviderType = $shippingMethodProviderConfigJson[Constants::PROVIDER_TYPE] ?? Type::SHIPROCKET;
-                    $this->trace->count(Metric::SHIPPING_SERVICE_CALL_COUNT, array_merge(
-                        $dimensions,
-                        [
-                            'provider_type' => $shippingProviderType
-                        ]
-                    ));
+                    $this->trace->count(Metric::SHIPPING_SERVICE_CALL_COUNT, $dimensions);
                     switch ($shippingProviderType)
                     {
                         case Type::DEMO:
@@ -219,12 +195,7 @@ class Service extends Base\Service
 
                     if ($serviceabilityUrlConfig === null)
                     {
-                        $this->trace->count(Metric::MERCHANT_SHIPPING_INFO_CALL_INVALID_REQUEST_COUNT, array_merge(
-                            $dimensions,
-                            [
-                                'shipping_info_url' => $serviceabilityUrlConfig
-                            ]
-                        ));
+                        $this->trace->count(Metric::MERCHANT_SHIPPING_INFO_CALL_INVALID_REQUEST_COUNT, $dimensions);
                         $ex = new Exception\BadRequestException(
                             ErrorCode::BAD_REQUEST_MERCHANT_SERVICEABILITY_URL_NOT_CONFIGURED);
                         throw $ex;
@@ -258,11 +229,8 @@ class Service extends Base\Service
 
                     if (json_last_error() !== JSON_ERROR_NONE || !isset($response) || $response->status_code !== 200)
                     {
-                        $this->trace->count(Metric::MERCHANT_EXTERNAL_SHIPPING_INFO_CALL_FAILURE_COUNT,
-                            array_merge($dimensions,
-                                ['errorcode' => ErrorCode::SERVER_ERROR_MERCHANT_SERVICEABILITY_EXTERNAL_CALL_EXCEPTION]
-                            )
-                        );
+                        $this->trace->count(Metric::MERCHANT_EXTERNAL_SHIPPING_INFO_CALL_FAILURE_COUNT, $dimensions);
+
                         $decodedResponse = [];
                     }
 
@@ -272,8 +240,7 @@ class Service extends Base\Service
                     }
                     catch (Throwable $e)
                     {
-                        $this->trace->count(Metric::MERCHANT_EXTERNAL_SHIPPING_INFO_CALL_FAILURE_COUNT,
-                            ['errorcode' => ErrorCode::SERVER_ERROR_MERCHANT_SERVICEABILITY_EXTERNAL_CALL_EXCEPTION]);
+                        $this->trace->count(Metric::MERCHANT_EXTERNAL_SHIPPING_INFO_CALL_FAILURE_COUNT, $dimensions);
                         $decodedResponse = [];
                     }
                 }

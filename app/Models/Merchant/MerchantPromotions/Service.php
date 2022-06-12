@@ -28,7 +28,6 @@ class Service extends Base\Service
         $startTime = millitime();
 
         $dimensions =[
-            "order_id" => $input['order_id'],
             "merchant_id" => $this->merchant->getId(),
             "mode" => $this->mode
         ];
@@ -96,12 +95,7 @@ class Service extends Base\Service
                 }
                 $fetchCouponsUrl = $fetchCouponsUrlConfig->getValue();
 
-                $this->trace->count(Metric::FETCH_COUPONS_MERCHANT_REQUEST_COUNT,
-                    array_merge($dimensions,
-                        [
-                            'fetch_coupon_url' => $fetchCouponsUrl,
-                        ])
-                );
+                $this->trace->count(Metric::FETCH_COUPONS_MERCHANT_REQUEST_COUNT, $dimensions);
 
                 $response = $this->sendRequestToMerchant($fetchCouponsUrl, $input, $mockResponse);
 
@@ -186,8 +180,7 @@ class Service extends Base\Service
     {
         $startTimeMillis = millitime();
 
-        $dimensions =[
-            "order_id" => $input['order_id'],
+        $dimensions = [
             "merchant_id" => $this->merchant->getId(),
             "mode" => $this->mode
         ];
@@ -427,7 +420,7 @@ class Service extends Base\Service
         if (empty($input['email']) === false) {
             $maskedRequest = array_merge($maskedRequest,
                 [
-                    'contact' => mask_email($input['email'])]
+                    'email' => mask_email($input['email'])]
             );
         }
         return $maskedRequest;
