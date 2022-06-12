@@ -33,7 +33,7 @@ class Header
     const PRODUCTS          = 'products';
     // In file, notes columns are expected to be in format: Notes[<key>] & while parsing the file, formatted as above
     const NOTES_REGEX       = '/^notes\[(.*)]$/';
-    const PRODUCTS_REGEX    = '/^products_([1-9]|10)\[(.*)]$/';
+    const PRODUCTS_REGEX    = '/^products_([1-9]|1[0-5])\[(.*)]$/';
 
     const TERMINAL_CREATION_TYPE_REGEX           = '/^Type\[(.*)]$/';
 
