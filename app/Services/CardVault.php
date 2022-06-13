@@ -332,6 +332,49 @@ class CardVault
         return json_decode($response->body, true);
     }
 
+    public function sendBulkRequest($url, $method, $data = null)
+    {
+        $url = $this->baseUrl . $url;
+
+        if ($data === null)
+            $data = '';
+
+        $headers['Content-Type'] = 'application/json';
+
+        $headers['Accept'] = 'application/json';
+
+        $headers[self::X_RAZORPAY_TASKID] = $this->request->getTaskId();
+
+        $options = [
+            'timeout' => self::REQUEST_TIMEOUT,
+            'auth' => [
+                $this->key,
+                $this->secret
+            ],
+            'hooks' => $this->getRequestHooks(),
+        ];
+
+        $request = [
+            'url' => $url,
+            'method' => $method,
+            'headers' => $headers,
+            'options' => $options,
+            'content' => $data
+        ];
+
+
+        $this->trace->info(TraceCode::CARD_VAULT_REQUEST, [
+            'url' => $request['url'],
+            'content'  => $data
+        ]);
+
+        $response = $this->sendCardVaultRequest($request);
+
+        $this->checkErrors($response);
+
+        return json_decode($response->body, true);
+    }
+
     protected function getRequestHooks()
     {
         $hooks = new Requests_Hooks();
@@ -411,7 +454,7 @@ class CardVault
                 'Vault request failed', [Error\Error::DATA => $responseBody]);
         }
 
-        if ($success === false)
+        if ($success === false || $success === 0)
         {
             $error = $responseBody[self::ERROR];
 
@@ -577,6 +620,19 @@ class CardVault
         return $response;
     }
 
+
+    public function migrateVaultTokenNamespace($input)
+    {
+        $this->trace->info(TraceCode::VAULT_MIGRATE_TOKEN_BULK_REQUEST, ['input' => $input]);
+
+        $tokenInput['tokens'] = $input;
+
+        $response = $this->sendBulkRequest(Card\Constants::TOKENS_MIGRATE_BULK, 'post', $tokenInput);
+
+        $this->trace->info(TraceCode::VAULT_MIGRATE_TOKEN_BULK_RESPONSE, ['response' => $response]);
+
+        return $response;
+    }
 
     protected function handleVaultResponse($request, $response, $network = null, $action = null, $event = null)
     {

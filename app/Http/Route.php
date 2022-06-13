@@ -3481,6 +3481,8 @@ class Route
         'token_status'                            => ['post',        'internal/tokens/status',                                   'TokenController@updateStatus'                             ],
         'par_api'                                 => ['post',        'cards/fingerprints',                                       'TokenController@fetchParValue'                            ],
 
+        'vault_migrate_token_bulk'                => ['post',        'tokens/vault/migrate/namespace',                           'TokenController@migrateVaultTokenViaBatch'                ],
+
 
        'token_pause_not_supported_card_tokens'    => ['post',        'tokens/pause_not_supported/card',                          'TokenController@pauseNotSupportedCardTokens'                                                         ],
 
@@ -4523,6 +4525,8 @@ class Route
 
         // Capital LOC
         'feature_delete_entity_internal',
+
+        'vault_migrate_token_bulk',
 
         'internal_merchant_fetch',
         'internal_payment_instruments_fetch',
@@ -12781,6 +12785,7 @@ class Route
             'create_fraud_batch',
             'post_batch_bulk_fraud_notify',
             'payment_transfer_retry_batch',
+            'vault_migrate_token_bulk',
             'create_local_tokens_from_consents_bulk',
         ],
 

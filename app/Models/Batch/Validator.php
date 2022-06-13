@@ -245,6 +245,13 @@ class Validator extends Base\Validator
         Entity::SCHEDULE        => 'sometimes|numeric',
     ];
 
+    protected static $vaultMigrateTokenNsCreateRules = [
+        Entity::TYPE                 => 'required|in:vault_migrate_token_ns',
+        Entity::NAME                 => 'filled|string|max:255',
+        Entity::FILE                 => 'required|file|max:102400' . self::DEFAULT_MIME_RULE,
+        Entity::SCHEDULE             => 'sometimes|numeric',
+    ];
+
     protected static $emandateCreateRules = [
         Entity::FILE        => 'required|file|max:102400' . self::DEFAULT_MIME_RULE,
         Entity::TYPE        => 'required|in:emandate',

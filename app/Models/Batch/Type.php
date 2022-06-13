@@ -118,6 +118,10 @@ class Type
 
     const MPAN                  = 'mpan';
 
+    const VAULT_TOKEN_MIGRATE   = 'vault_token_migrate';
+
+    const VAULT_MIGRATE_TOKEN_NS = 'vault_migrate_token_ns';
+
     const CAPTURE_SETTING       = 'capture_setting';
 
     const ADMIN_BATCH           = 'admin_batch';
@@ -250,6 +254,7 @@ class Type
         self::IIN_HITACHI_VISA,
         self::IIN_MC_MASTERCARD,
         self::MPAN,
+        self::VAULT_MIGRATE_TOKEN_NS,
         self::CAPTURE_SETTING,
         self::PRICING_RULE,
         self::BUY_PRICING_RULE,
@@ -385,6 +390,7 @@ class Type
         self::MERCHANT_CAPITAL_TAGS,
         self::CREDIT,
         self::UPI_TERMINAL_ONBOARDING,
+        self::VAULT_MIGRATE_TOKEN_NS,
     ];
 
     /**
@@ -500,6 +506,7 @@ class Type
         self::EMANDATE_DEBIT_HDFC,
         self::LEDGER_ONBOARD_OLD_ACCOUNT,
         self::PARTNER_REFERRAL_FETCH,
+        self::VAULT_MIGRATE_TOKEN_NS
     ];
 
     /**
@@ -576,6 +583,7 @@ class Type
         self::DEBIT_NOTE,
         self::CREATE_PAYMENT_FRAUD,
         self::PARTNER_REFERRAL_FETCH,
+        self::VAULT_MIGRATE_TOKEN_NS,
         self::COLLECT_LOCAL_CONSENTS_TO_CREATE_TOKENS,
     ];
 
@@ -642,6 +650,7 @@ class Type
         self::MERCHANT_STATUS_ACTION             => Name::ADMIN_BATCH_CREATE,
         self::ENTITY_MAPPING                     => Name::ADMIN_BATCH_CREATE,
         self::ADMIN_BATCH                        => Name::ADMIN_BATCH_CREATE,
+        self::VAULT_MIGRATE_TOKEN_NS             => Name::ADMIN_BATCH_CREATE,
         self::INSTANT_ACTIVATION                 => Name::INSTANT_ACTIVATION,
         self::MDR_ADJUSTMENTS                    => Name::MDR_ADJUSTMENTS,
         self::MERCHANT_ACTIVATION                => Name::MERCHANT_ACTIVATION,

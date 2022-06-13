@@ -10,6 +10,7 @@ use RZP\Http\RequestHeader;
 use RZP\Jobs\MerchantAsyncTokenisationJob;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Base;
+use RZP\Models\Batch\Header;
 use RZP\Constants\Mode;
 use RZP\Models\Card;
 use RZP\Models\Customer;
@@ -38,6 +39,13 @@ class Service extends Base\Service
     use Card\InputDecryptionTrait;
 
     const CREATE_GLOBAL_TOKEN_CRON_KEY = 'CREATE_GLOBAL_TOKEN_CRON_KEY';
+
+    const IDEMPOTENCY_KEY             = 'idempotent_id';
+    const BATCH_ERROR                 = 'error';
+    const BATCH_ERROR_CODE            = 'code';
+    const BATCH_ERROR_DESCRIPTION     = 'description';
+    const BATCH_SUCCESS               = 'success';
+    const BATCH_HTTP_STATUS_CODE      = 'http_status_code';
 
     protected $core;
 
@@ -1383,5 +1391,64 @@ class Service extends Base\Service
 
             $input['iin'] = $iinInfo;
         }
+    }
+
+    public function migrateVaultTokenViaBatch($input)
+    {
+        $this->trace->info(TraceCode::VAULT_MIGRATE_TOKEN_NAMESPACE_BATCH_SERVICE_REQUEST, ['input' => $input]);
+
+        $response = new Base\PublicCollection;
+
+        foreach($input as $row)
+        {
+            $result = [
+                  self::IDEMPOTENCY_KEY         => $row[self::IDEMPOTENCY_KEY],
+                  self::BATCH_SUCCESS           => true,
+                  self::BATCH_HTTP_STATUS_CODE  => 200
+            ];
+
+            unset($row[self::IDEMPOTENCY_KEY]);
+
+            $result = array_merge($result, $row);
+
+            try
+            {
+                $tokenInput = new Base\PublicCollection;
+
+                $row[Header::VAULT_MIGRATE_TOKEN_NAMESPACE_EXISTING_NAMESPACE] = (int)$row[Header::VAULT_MIGRATE_TOKEN_NAMESPACE_EXISTING_NAMESPACE];
+                $row[Header::VAULT_MIGRATE_TOKEN_NAMESPACE_BU_NAMESPACE]       = (int)$row[Header::VAULT_MIGRATE_TOKEN_NAMESPACE_BU_NAMESPACE];
+
+                $tokenInput->add($row);
+
+                $data = $this->app['card.cardVault']->migrateVaultTokenNamespace($tokenInput);
+
+                $result[Header::VAULT_MIGRATE_TOKEN_NAMESPACE_MIGRATED_TOKEN_ID] = $data['tokens'][0]['migrated_token_id'] ?? null;
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::VAULT_MIGRATE_TOKEN_BULK_ERROR
+                );
+
+                $exceptionData =  $e->getData();
+
+                $result[self::BATCH_ERROR] = [
+                    self::BATCH_ERROR_DESCRIPTION => $e->getMessage(),
+                    self::BATCH_ERROR_CODE        =>  $exceptionData['error'] ?? $e->getCode()
+                ];
+
+                $result[self::BATCH_HTTP_STATUS_CODE] = 400;
+
+                $result[self::BATCH_SUCCESS] = false;
+            }
+
+            $response->add($result);
+        }
+
+        $this->trace->info(TraceCode::VAULT_MIGRATE_TOKEN_NAMESPACE_BATCH_SERVICE_RESPONSE, ['response' => $response->toArrayWithItems()]);
+
+        return $response->toArrayWithItems();
     }
 }

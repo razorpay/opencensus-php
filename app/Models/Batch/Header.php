@@ -1326,6 +1326,11 @@ class Header
     const DEBIT_NOTE_PAYMENT_IDS           = 'payment_ids';
     const DEBIT_NOTE_SKIP_VALIDATION       = 'skip_validation';
 
+    const VAULT_MIGRATE_TOKEN_NAMESPACE_TOKEN              = 'token';
+    const VAULT_MIGRATE_TOKEN_NAMESPACE_EXISTING_NAMESPACE = 'existing_namespace';
+    const VAULT_MIGRATE_TOKEN_NAMESPACE_BU_NAMESPACE       = 'bu_namespace';
+    const VAULT_MIGRATE_TOKEN_NAMESPACE_MIGRATED_TOKEN_ID  = 'migrated_token_id';
+
     // consent collection for creation of local tokens
     //input
     const CONSENT_COLLECTION_MERCHANT_ID = 'merchantId';
@@ -3707,6 +3712,23 @@ class Header
             ]
         ],
 
+        Type::VAULT_MIGRATE_TOKEN_NS => [
+            self::INPUT => [
+                self::VAULT_MIGRATE_TOKEN_NAMESPACE_TOKEN,
+                self::VAULT_MIGRATE_TOKEN_NAMESPACE_EXISTING_NAMESPACE,
+                self::VAULT_MIGRATE_TOKEN_NAMESPACE_BU_NAMESPACE
+            ],
+            self::OUTPUT => [
+                self::VAULT_MIGRATE_TOKEN_NAMESPACE_TOKEN,
+                self::VAULT_MIGRATE_TOKEN_NAMESPACE_EXISTING_NAMESPACE,
+                self::VAULT_MIGRATE_TOKEN_NAMESPACE_BU_NAMESPACE,
+                self::VAULT_MIGRATE_TOKEN_NAMESPACE_MIGRATED_TOKEN_ID,
+                self::STATUS,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ]
+        ],
+
         Type::MERCHANT_CONFIG_INHERITANCE => [
             self::INPUT => [
                 self::MERCHANT_CONFIG_INHERITANCE_PARENT_MERCHANT_ID,
@@ -4488,7 +4510,7 @@ class Header
                 self::ERROR_MESSAGE,
             ],
         ],
-                
+
         Type::COLLECT_LOCAL_CONSENTS_TO_CREATE_TOKENS => [
             self::INPUT => [
                 self::CONSENT_COLLECTION_MERCHANT_ID,

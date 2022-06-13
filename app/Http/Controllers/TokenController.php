@@ -108,6 +108,15 @@ class TokenController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function migrateVaultTokenViaBatch()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->migrateVaultTokenViaBatch($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function bulkCreateLocalTokensFromConsents()
     {
         $input = Request::all();
