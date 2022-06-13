@@ -79,6 +79,22 @@ return [
         ],
     ],
 
+    'testSuccessfulPaymentWithTamperedChecksum' => [
+        'response'  => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::SERVER_ERROR,
+                ],
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\RuntimeException::class,
+            'internal_error_code' => ErrorCode::SERVER_ERROR_RUNTIME_ERROR,
+            'error_description'   => 'Failed checksum verification',
+        ],
+    ],
+
     'testRefundPayment' => [
         'action'               => 'refund',
         'wallet'               => 'jiomoney',

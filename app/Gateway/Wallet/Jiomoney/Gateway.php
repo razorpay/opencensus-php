@@ -958,7 +958,7 @@ class Gateway extends Base\Gateway
             ErrorCode::GATEWAY_ERROR_UNEXPECTED_STATUS,
             [
                 PaymentModel\Gateway::GATEWAY_VERIFY_RESPONSE  => json_encode($content),
-                PaymentModel\Gateway::GATEWAY_KEYS      => [ 
+                PaymentModel\Gateway::GATEWAY_KEYS      => [
                     'payment_id' => $input['refund']['payment_id'],
                     'refund_id'  => $input['refund']['id'],
                     'content'    => json_encode($content)
@@ -1020,14 +1020,6 @@ class Gateway extends Base\Gateway
 
     protected function verifySecureHash(array $content)
     {
-        // Checking that the response_code is FAILED in case we don't receive a
-        // checksum in the gateway response, to prevent possible tampering
-        if ((empty($content[ResponseFields::CHECKSUM]) === true) and
-            ($content[ResponseFields::RESPONSE_CODE] === ResponseCode::FAILED))
-        {
-            return;
-        }
-
         $hashArray = $this->getResponseHashArray($content);
 
         $generated = $this->getHashOfArray($hashArray);

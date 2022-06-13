@@ -109,7 +109,7 @@ class Server extends Base\Mock\Server
         return $this->makeResponse($response);
     }
 
-    protected function getGatewayResponse(array $content)
+    protected function getGatewayResponse(array $content): array
     {
         if ($content[ResponseFields::RESPONSE_DESCRIPTION] !== 'BAD_REQUEST')
         {

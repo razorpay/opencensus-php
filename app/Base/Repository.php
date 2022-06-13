@@ -1197,7 +1197,7 @@ class Repository extends \Razorpay\Spine\Repository
 
     public function getPaymentFetchReplicaConnection(string $mode = null)
     {
-        if (in_array($this->app['env'], ['testing', 'dev'], true) === true)
+        if (in_array($this->app['env'], ['testing', 'dev', 'testing_docker'], true) === true)
         {
             return Config::get('database.default');
         }
