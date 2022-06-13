@@ -96,14 +96,6 @@ class FtsAdminClient extends Base
             $input)['body'][self::SOURCE_ACCOUNTS];
     }
 
-    public function getChannelHealthEvents(array $input)
-    {
-        return $this->createAndSendRequest(
-            parent::CHANNEL_HEALTH_EVENT,
-            Requests::GET,
-            $input)['body'][self::CHANNEL_HEALTH_EVENTS];
-    }
-
     public function getSourceAccountMappings(array $input)
     {
         return $this->createAndSendRequest(

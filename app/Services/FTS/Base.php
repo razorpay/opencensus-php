@@ -93,12 +93,6 @@ class Base
 
     const FETCH_ACCOUNT_BALANCE = '/source_account/fetch_balance';
 
-    const CHANNEL_HEALTH_EVENT = '/channel_health_events';
-
-    const FTS_TEST_TRANSACTIONS_TRIGGER = '/channel_health_events/trigger_test_transactions';
-
-    const FTS_CHANNEL_HEALTH_EVENT_STATS = '/channel_health_events/stats';
-
     const SOURCE_ACCOUNT_MAPPING = '/source_account_mappings';
 
     const DIRECT_ACCOUNT_ROUTING_RULES = '/direct_account_routing_rules';
@@ -128,7 +122,7 @@ class Base
     const FTS_FAIL_FAST_STATUS_LOGS_GET_URL = '/routing/fail_fast_status_logs';
 
     const FTS_NEW_CHANNEL_HEALTH_STATS = '/routing/channel_health_stats';
-    
+
     const FTS_TRANSFER_RETRY_BULK_URL = '/transfers/retry';
 
     const FTS_TRIGGER_HEALTH_STATUS    = '/routing/trigger_health_status';

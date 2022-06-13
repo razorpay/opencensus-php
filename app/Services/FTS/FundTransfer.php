@@ -1227,45 +1227,6 @@ class FundTransfer extends Base
      * @throws \RZP\Exception\RuntimeException
      * @throws \Throwable
      */
-    public function createChannelHealth(array $input)
-    {
-        $this->setAdminHeader();
-
-        return $this->createAndSendRequest(
-            parent::CHANNEL_HEALTH_EVENT,
-            Requests::POST,
-            $input);
-    }
-
-    public function deleteChannelHealth(array $input)
-    {
-        $this->setAdminHeader();
-
-        return $this->createAndSendRequest(
-            parent::CHANNEL_HEALTH_EVENT,
-            Requests::DELETE,
-            $input);
-    }
-
-    public function triggerTestTransactions(array $input)
-    {
-        $this->setAdminHeader();
-
-        return $this->createAndSendRequest(
-            parent::FTS_TEST_TRANSACTIONS_TRIGGER,
-            Requests::POST,
-            $input);
-    }
-
-    public function getChannelHealthStats(array $input)
-    {
-        $this->setAdminHeader();
-
-        return $this->createAndSendRequest(
-            parent::FTS_CHANNEL_HEALTH_EVENT_STATS,
-            Requests::GET,
-            $input);
-    }
 
     public function getNewChannelHealthStats(array $input)
     {

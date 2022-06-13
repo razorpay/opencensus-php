@@ -71,34 +71,6 @@ class FTSController extends Controller
         return ApiResponse::json($response);
     }
 
-    public function createChannelHealth()
-    {
-        $response = $this->app['fts_fund_transfer']->createChannelHealth($this->input);
-
-        return ApiResponse::json($response);
-    }
-
-    public function deleteChannelHealth()
-    {
-        $response = $this->app['fts_fund_transfer']->deleteChannelHealth($this->input);
-
-        return ApiResponse::json($response);
-    }
-
-    public function triggerTestTransactions()
-    {
-        $response = $this->app['fts_fund_transfer']->triggerTestTransactions($this->input);
-
-        return ApiResponse::json($response);
-    }
-
-    public function getChannelHealthStats()
-    {
-        $response = $this->app['fts_fund_transfer']->getChannelHealthStats($this->input);
-
-        return ApiResponse::json($response);
-    }
-
     public function getNewChannelHealthStats()
     {
         $response = $this->app['fts_fund_transfer']->getNewChannelHealthStats($this->input);
@@ -297,7 +269,7 @@ class FTSController extends Controller
 
         return ApiResponse::json($response);
     }
-    
+
     public function forceRetryFTSTransfer()
     {
         $response = $this->app['fts_fund_transfer']->forceRetryFTSTransfer($this->input);

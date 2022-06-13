@@ -452,7 +452,6 @@ class Entity
     const FTS_FUND_ACCOUNT                 = 'fts.fund_accounts';
     const FTS_SOURCE_ACCOUNT               = 'fts.source_accounts';
     const FTS_BENEFICIARY_STATUS           = 'fts.beneficiary_status';
-    const FTS_CHANNEL_HEALTH_EVENTS        = 'fts.channel_health_events';
     const FTS_SOURCE_ACCOUNT_MAPPING       = 'fts.source_account_mappings';
     const FTS_DIRECT_ACCOUNT_ROUTING_RULES = 'fts.direct_account_routing_rules';
     const FTS_PREFERRED_ROUTING_WEIGHTS    = 'fts.preferred_routing_weights';
@@ -1469,7 +1468,6 @@ class Entity
         self::FTS_DIRECT_ACCOUNT_ROUTING_RULES => \RZP\Services\FTS\FtsAdminClient::class,
         self::FTS_PREFERRED_ROUTING_WEIGHTS => \RZP\Services\FTS\FtsAdminClient::class,
         self::FTS_ACCOUNT_TYPE_MAPPINGS     => \RZP\Services\FTS\FtsAdminClient::class,
-        self::FTS_CHANNEL_HEALTH_EVENTS     => \RZP\Services\FTS\FtsAdminClient::class,
         self::FTS_SCHEDULES                 => \RZP\Services\FTS\FtsAdminClient::class,
         self::FTS_TRIGGER_STATUS_LOGS       => \RZP\Services\FTS\FtsAdminClient::class,
         self::FTS_MERCHANT_CONFIGURATIONS   => \RZP\Services\FTS\FtsAdminClient::class,
