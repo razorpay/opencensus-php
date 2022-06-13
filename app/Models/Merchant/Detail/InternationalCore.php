@@ -8,6 +8,7 @@ use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Admin\Org\Entity as Org;
+use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Models\Merchant\Detail\InternationalActivationFlow\InternationalActivationFlow;
 
 class InternationalCore extends Base\Core
@@ -41,6 +42,14 @@ class InternationalCore extends Base\Core
                 'category'    => $merchantDetails->getBusinessCategory(),
                 'subcategory' => $merchantDetails->getBusinessSubCategory(),
             ]);
+
+        $properties = [
+            'source'      => 'BE',
+            'action'      => 'International Payments Enabled',
+        ];
+
+        $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
+            $merchant, $properties, SegmentEvent::INTERNATIONAL_PAYMENTS_ENABLED);
 
         $this->trace->count(Merchant\Metric::INTERNATIONAL_ACTIVATION);
     }

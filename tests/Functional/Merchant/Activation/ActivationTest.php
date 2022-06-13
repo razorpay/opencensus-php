@@ -18,7 +18,7 @@ use RZP\Models\Merchant\Store\ConfigKey;
 use RZP\Mail\Merchant\MerchantOnboardingEmail;
 use RZP\Models\Merchant\Store\Core as StoreCore;
 use RZP\Models\Merchant\Detail\Core as DetailCore;
-
+use RZP\Models\Merchant\Detail;
 use RZP\Services\RazorXClient;
 use RZP\Services\HubspotClient;
 use RZP\Models\Currency\Currency;
@@ -27,6 +27,7 @@ use RZP\Models\Admin\Permission\Name;
 use RZP\Models\Merchant\Detail\Entity;
 use RZP\Models\Merchant\Document\Type;
 use RZP\Mail\Merchant\RejectionSettlement;
+use RZP\Services\Segment\SegmentAnalyticsClient;
 use RZP\Tests\Functional\Partner\Constants;
 use RZP\Models\Merchant\Detail\PennyTesting;
 use RZP\Tests\Functional\OAuth\OAuthTestCase;
@@ -56,6 +57,7 @@ use RZP\Models\Workflow\Observer\MerchantActivationStatusObserver;
 use RZP\Models\Merchant\Detail\Constants as MerchantDetailsConstant;
 use RZP\Tests\Functional\Helpers\FundAccount\FundAccountValidationTrait;
 use RZP\Mail\Merchant\NeedsClarificationEmail as NeedsClarificationEmail;
+
 
 /**
  * todo, need to add test cases for VA Emails (https://razorpay.atlassian.net/browse/RX-1025)
@@ -4733,5 +4735,33 @@ class ActivationTest extends OAuthTestCase
 
             return true;
         });
+    }
+
+    public function testPushSegmentEventsWhenMerchantActivatedOnInternational()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+
+        $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['pushIdentifyAndTrackEvent'])
+            ->getMock();
+
+        $this->app['rzp.mode'] = Mode::LIVE;
+        $this->app->instance('segment-analytics', $segmentMock);
+
+        $segmentMock->expects($this->exactly(1))
+            ->method('pushIdentifyAndTrackEvent')
+            ->will($this->returnCallback(function($merchant, $properties, $eventName) {
+                $this->assertNotNull($properties);
+                $this->assertTrue(in_array($eventName, ["International Payments Enabled"], true));
+            }));
+
+        (new Detail\InternationalCore())->activateInternational($merchant);
+
+        $this->assertTrue($merchant->isInternational());
+
+        $this->assertFalse($merchant->convertOnApi());
     }
 }

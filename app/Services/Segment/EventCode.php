@@ -107,4 +107,6 @@ class EventCode
 
     const IDENTIFY_APP_ATTRIBUTION = "Identify App Attribution";
 
+    const INTERNATIONAL_PAYMENTS_ENABLED =  "International Payments Enabled";
+
 }
