@@ -193,6 +193,17 @@ class FeaturesTest extends OAuthTestCase
         $this->startTest($testData);
     }
 
+    public function testAccountLedgerFeaturesDelete()
+    {
+        $this->fixtures->merchant->addFeatures(['ledger_reverse_shadow']);
+
+        $this->ba->adminAuth(Mode::TEST, null, 'org_100000razorpay');
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->startTest($testData);
+    }
+
     public function testDeleteNonExistentFeatureFromMerchant()
     {
         $this->ba->adminAuth('test', null, 'org_100000razorpay');

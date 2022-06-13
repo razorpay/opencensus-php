@@ -1870,6 +1870,29 @@ return [
         ]
     ],
 
+    'testAccountLedgerFeaturesDelete' => [
+        'request'  => [
+            'url'     => "/accounts/10000000000000/features/ledger_reverse_shadow",
+            'method'  => 'delete',
+            'content' => [
+                'should_sync'  => true,
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Manually enabling/disabling ledger feature ledger_reverse_shadow is not allowed.'
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ],
+
     'testRestrictedAccessFeatureEnabledAndAccessedByMerchant' => [
         'request' => [
             'method'  => 'POST',

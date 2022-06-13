@@ -509,6 +509,8 @@ class Service extends Base\Service
 
         $shouldSync = (bool) ($input[Entity::SHOULD_SYNC] ?? false);
 
+        (new Core)->checkAndDisableFeatureChangesForLedgerFeatures($feature->getName());
+
         (new Core)->delete($feature, $shouldSync);
 
         // We delete the tag also along with feature.
