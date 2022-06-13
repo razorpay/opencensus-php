@@ -435,10 +435,21 @@ class Generator extends Base\Core
                 null,
                 $this->options);
         };
+        $UnsupportedGatewayTerminalFilter = function($terminalAttributes)
+        {
+            $unsupportedProvider = false;
+            if (array_key_exists(Terminal\Entity::GATEWAY, $terminalAttributes))
+            {
+                $provider                             = str_replace('bt_', '', $terminalAttributes[Terminal\Entity::GATEWAY]);
+                $unSupportedProviderGatewayByRazorpay = (new VirtualAccount\Provider())->getUnsuportedProviderNamesByRazorpay();
+                $unsupportedProvider                  = in_array($provider, $unSupportedProviderGatewayByRazorpay);
+            }
+            return ($unsupportedProvider == false);
+        };
 
         if (($terminalCaching === Merchant\RazorxTreatment::RAZORX_VARIANT_ON) and ($isBalanceTypeBanking !== true))
         {
-            $terminal = (new VirtualAccount\Provider())->getTerminals($merchantId, $fetchTerminals);
+            $terminal = (new VirtualAccount\Provider())->getTerminals($merchantId, $fetchTerminals, $UnsupportedGatewayTerminalFilter);
         }
         else
         {

@@ -3393,6 +3393,18 @@ class VirtualAccountTest extends TestCase
                       return [
                           [
                               'id'                     => 'SHRDBANKACC3DS',
+                              Terminal\Entity::GATEWAY => 'bt_yesbank',
+                              'merchant_id'            => '100000Razorpay',
+                              'org_id'                 => '100000razorpay',
+                              'procurer'               => 'razorpay',
+                              'used_count'             => 0,
+                              'used'                   => 0,
+                              'gateway_merchant_id'    => '111222',
+                              'gateway_merchant_id2'   => '00',
+                              'gateway_terminal_id'    => 'quis'
+                          ],
+                          [
+                              'id'                     => 'SHRDBANKACC3DS',
                               Terminal\Entity::GATEWAY => 'bt_dashboard',
                               'merchant_id'            => '100000Razorpay',
                               'org_id'                 => '100000razorpay',

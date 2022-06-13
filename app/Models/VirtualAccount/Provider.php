@@ -238,7 +238,8 @@ class Provider
             $this->trace->info(TraceCode::SMART_COLLECT_TERMINAL_CACHING, [
                 'merchantId'        => $merchantId,
                 'cacheKey'          => $cacheKey,
-                'cacheValuePresent' => !empty($terminals)
+                'cacheValuePresent' => !empty($terminals),
+                'terminalId'        => array_column($terminals, 'id')
             ]);
 
             if ((count($filteredTerminals) > 0) and $filters !== null)
@@ -282,10 +283,20 @@ class Provider
 
     public static function getUnsuportedProviderByRazorpay()
     {
-        return [
-            self::IFSC[Provider::YESBANK],
-            self::IFSC[Provider::ICICI]
-        ];
+        return array_values(self::getUnsupportedGateways());
     }
 
+    public static function getUnsuportedProviderNamesByRazorpay()
+    {
+        return array_keys(self::getUnsupportedGateways());
+    }
+
+    public static function getUnsupportedGateways(): array
+    {
+        return [
+            self::YESBANK => self::IFSC[self::YESBANK],
+            self::ICICI => self::IFSC[self::ICICI],
+            self::KOTAK => self::IFSC[self::KOTAK],
+        ];
+    }
 }
