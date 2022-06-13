@@ -1492,6 +1492,44 @@ class SavedCardsPaymentCreateTest extends TestCase
         $this->assertNotNull($token['acknowledged_at']);
     }
 
+    public function testPaymentWithLocalSavedCardCreatesClonedTokenWithConsentMarkedForCAW()
+    {
+        $this->payment = $this->getDefaultPaymentArray();
+
+        $this->payment[Payment::CARD] = [];
+
+        $this->payment[Payment::TOKEN] = '10000cardtoken';
+
+        $this->payment[Payment::CARD] = array('cvv'  => 111);
+
+        $this->payment[Payment::CUSTOMER_ID] = 'cust_100000customer';
+
+        $this->payment['recurring'] = '1';
+
+        $this->payment['_']['library'] = 'checkoutjs';
+
+        $this->fixtures->merchant->addFeatures(['charge_at_will']);
+
+        $this->fixtures->base->editEntity('token', '100000custcard',
+            [
+                'acknowledged_at'   => 1646736566
+            ]);
+
+        $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        $token = $this->getLastEntity('token', true);
+
+        $this->assertNotEquals('100000custcard', $token['id']);
+
+        $this->assertEquals($token['acknowledged_at'], 1646736566);
+
+        $this->assertEquals($token['used_count'], 1);
+
+        $this->assertEquals($token['recurring'], 1);
+
+        $this->assertEquals($token['recurring_status'], 'confirmed');
+    }
+
     public function testPaymentWithLocalNewCardAndUserConsentTokenisation()
     {
         $this->payment = $this->getDefaultPaymentArray();
