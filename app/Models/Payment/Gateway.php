@@ -1979,6 +1979,7 @@ class Gateway
         self::ACQUIRER_RATN => IFSC::RATN,
         self::ACQUIRER_BARB => IFSC::BARB,
         self::ACQUIRER_SBIN => IFSC::SBIN,
+        self::ACQUIRER_KOTAK => IFSC::KKBK
     ];
 
     /**
