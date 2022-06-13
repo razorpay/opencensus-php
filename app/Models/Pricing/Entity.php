@@ -97,6 +97,9 @@ class Entity extends Base\PublicEntity
         self::FIXED_RATE,
     ];
 
+    protected $hidden = [
+        'audit_id'
+    ];
     protected $fillable = [
         self::ID,
         self::PLAN_ID,
