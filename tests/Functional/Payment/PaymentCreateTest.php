@@ -7283,6 +7283,8 @@ class PaymentCreateTest extends TestCase
 
     public function testUserConsentPageWithNewCard()
     {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::CUSTOM_CHECKOUT_CONSENT_SCREEN]);
+
         $this->ba->publicAuth();
 
         $payment = $this->getDefaultPaymentArray();
@@ -7317,6 +7319,8 @@ class PaymentCreateTest extends TestCase
 
     public function testUserConsentPageWithEmiMethodForNewCard()
     {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::CUSTOM_CHECKOUT_CONSENT_SCREEN]);
+
         $this->ba->publicAuth();
 
         $this->fixtures->merchant->enableEmi();
@@ -7354,6 +7358,8 @@ class PaymentCreateTest extends TestCase
 
     public function testUserConsentPageWithSavedCard()
     {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::CUSTOM_CHECKOUT_CONSENT_SCREEN]);
+
         $this->ba->publicAuth();
 
         $payment = $this->getDefaultPaymentArray();
@@ -7391,6 +7397,8 @@ class PaymentCreateTest extends TestCase
 
     public function testUserConsentPageWithEmiMethodForSavedCard()
     {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::CUSTOM_CHECKOUT_CONSENT_SCREEN]);
+
         $this->ba->publicAuth();
 
         $payment = $this->getDefaultPaymentArray();
@@ -7451,6 +7459,8 @@ class PaymentCreateTest extends TestCase
 
     public function testUserConsentPageWithInvalidLibrary()
     {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::CUSTOM_CHECKOUT_CONSENT_SCREEN]);
+
         $this->ba->publicAuth();
 
         $payment = $this->getDefaultPaymentArray();
@@ -7471,6 +7481,8 @@ class PaymentCreateTest extends TestCase
 
     public function testUserConsentPageWithNonCardPaymentMethod()
     {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::CUSTOM_CHECKOUT_CONSENT_SCREEN]);
+
         $this->ba->publicAuth();
 
         $payment = $this->getDefaultPaymentArray();
@@ -7492,6 +7504,8 @@ class PaymentCreateTest extends TestCase
 
     public function testUserConsentPageWithoutCustomerId()
     {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::CUSTOM_CHECKOUT_CONSENT_SCREEN]);
+
         $this->ba->publicAuth();
 
         $payment = $this->getDefaultPaymentArray();
@@ -7509,6 +7523,8 @@ class PaymentCreateTest extends TestCase
 
     public function testUserConsentPageWithoutCvv()
     {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::CUSTOM_CHECKOUT_CONSENT_SCREEN]);
+
         $this->ba->publicAuth();
 
         $payment = $this->getDefaultPaymentArray();
@@ -7528,6 +7544,8 @@ class PaymentCreateTest extends TestCase
 
     public function testUserConsentPageWithoutCardNumber()
     {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::CUSTOM_CHECKOUT_CONSENT_SCREEN]);
+
         $this->ba->publicAuth();
 
         $payment = $this->getDefaultPaymentArray();
@@ -7547,6 +7565,8 @@ class PaymentCreateTest extends TestCase
 
     public function testUserConsentPageForSavedCardWithConsentToSaveCardParam()
     {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::CUSTOM_CHECKOUT_CONSENT_SCREEN]);
+
         $this->ba->publicAuth();
 
         $payment = $this->getDefaultPaymentArray();
@@ -7567,6 +7587,8 @@ class PaymentCreateTest extends TestCase
 
     public function testUserConsentPageForNewCardWithConsentToSaveCardParam()
     {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::CUSTOM_CHECKOUT_CONSENT_SCREEN]);
+
         $this->ba->publicAuth();
 
         $payment = $this->getDefaultPaymentArray();
@@ -7586,6 +7608,8 @@ class PaymentCreateTest extends TestCase
 
     public function testUserConsentPageWithNewCardWithoutSaveParam()
     {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::CUSTOM_CHECKOUT_CONSENT_SCREEN]);
+
         $this->ba->publicAuth();
 
         $payment = $this->getDefaultPaymentArray();
@@ -7606,6 +7630,8 @@ class PaymentCreateTest extends TestCase
 
     public function testUserConsentPageForSavedCardWithConsentPreviouslyTaken()
     {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::CUSTOM_CHECKOUT_CONSENT_SCREEN]);
+
         $this->ba->publicAuth();
 
         $payment = $this->getDefaultPaymentArray();
@@ -7692,6 +7718,8 @@ class PaymentCreateTest extends TestCase
 
     public function testUserConsentPageForSavedCardWithToken()
     {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::CUSTOM_CHECKOUT_CONSENT_SCREEN]);
+
         $this->ba->publicAuth();
 
         $payment = $this->getDefaultPaymentArray();
@@ -7729,6 +7757,8 @@ class PaymentCreateTest extends TestCase
 
     public function testUserConsentPageForCustomLibrary()
     {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::CUSTOM_CHECKOUT_CONSENT_SCREEN]);
+
         $this->ba->publicAuth();
 
         $payment = $this->getDefaultPaymentArray();
@@ -8300,6 +8330,4 @@ class PaymentCreateTest extends TestCase
 
         $this->assertArrayHasKey('razorpay_payment_id', $response);
     }
-
 }
-

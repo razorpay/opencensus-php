@@ -3,14 +3,13 @@
 namespace RZP\Models\Payment;
 
 use App;
-use RZP\Models\Merchant\Entity as MerchantEntity;
-use View;
-use RZP\Exception;
-use RZP\Models\Base\UniqueIdEntity;
-use RZP\Trace\TraceCode;
-use RZP\Models\Payment;
-use RZP\Models\Customer\Token\Core as TokenCore;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\Base\UniqueIdEntity;
+use RZP\Models\Customer\Token\Core as TokenCore;
+use RZP\Models\Merchant\Entity as MerchantEntity;
+use RZP\Models\Payment;
+use RZP\Trace\TraceCode;
+use View;
 
 class TokenisationConsent
 {
@@ -140,6 +139,9 @@ class TokenisationConsent
     }
 
     /**
+     * Returns a decision whether to show intermediate consent screen to end customers
+     * on custom checkout merchants.
+     *
      * @param array          $input
      * @param MerchantEntity $merchant
      *
@@ -153,10 +155,11 @@ class TokenisationConsent
          * 2. Payment method - card, emi
          * 3. Card CVV should be present
          * 4. Collect Consent Feature flag - on
-         * 5. Customer id should be present
-         * 6. consent_to_save_card should not be present
-         * 7. For existing saved card token, check if consent already taken
-         * 8. for new card, if save=1, trigger this, for existing card no check
+         * 5. Custom checkout consent screen feature flag - on
+         * 6. Customer id should be present
+         * 7. consent_to_save_card should not be present
+         * 8. For existing saved card token, check if consent already taken
+         * 9. for new card, if save=1, trigger this, for existing card no check
          */
 
         try
@@ -165,7 +168,10 @@ class TokenisationConsent
             $paymentMethodsUsingCards = [Payment\Entity::CARD, Payment\Entity::EMI];
             $library                  = $input['_']['library'] ?? '';
             $allowedLibraries         = [Payment\Analytics\Metadata::RAZORPAYJS, Payment\Analytics\Metadata::CUSTOM];
-            $collectConsentEnabled    = $merchant->isCollectConsentEnabledForMerchant();
+            $collectConsentEnabled    = (
+                $merchant->isCustomCheckoutConsentScreenEnabledForMerchant() &&
+                $merchant->isCollectConsentEnabledForMerchant()
+            );
 
             if ((in_array($paymentMethod, $paymentMethodsUsingCards, true) === false) or
                 (in_array($library, $allowedLibraries, true) === false) or
@@ -181,7 +187,7 @@ class TokenisationConsent
 
             if (($isNewCard === true) and (empty($input['save']) === false))
             {
-                return $this->showConsentViewExperimentResult($merchant, $library);
+                return true;
             }
 
             if (($isNewCard === false) and
@@ -191,10 +197,7 @@ class TokenisationConsent
                     ->showTokenisationConsentViewForExistingSavedCard($input[Payment\Entity::TOKEN],
                                                                       $input[Payment\Entity::CUSTOMER_ID]);
 
-                if($showConsentView === true)
-                {
-                    return $this->showConsentViewExperimentResult($merchant, $library);
-                }
+                return $showConsentView;
             }
 
             return false;
