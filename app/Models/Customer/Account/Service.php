@@ -309,9 +309,10 @@ class Service extends Base\Service
                 return ['saved' => true];
             }
 
-            $sessionData = $this->app['request']->session()->all();
+            $sessionData = optional($this->app['request']->getSession())->all();
 
-            $this->trace->info(TraceCode::CUSTOMER_CHECKCOOKIE_STATUS,
+            $this->trace->info(
+                TraceCode::CUSTOMER_CHECKCOOKIE_STATUS,
                 [
                     'session' => $sessionData,
                     'input'   => $input

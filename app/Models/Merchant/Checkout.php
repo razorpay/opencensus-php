@@ -619,7 +619,8 @@ class Checkout
 
     protected function tracePreferencesRequest(Entity $merchant, $mode, array $input)
     {
-        $sessionData = $this->app['request']->session()->all();
+        $sessionData = optional($this->app['request']->getSession())->all();
+
         $this->trace->info(
             TraceCode::CHECKOUT_PREFERENCES_REQUEST,
             [
@@ -636,7 +637,8 @@ class Checkout
 
     protected function tracePersonalisationRequest(Entity $merchant, $mode, array $input)
     {
-        $sessionData = $this->app['request']->session()->all();
+        $sessionData = optional($this->app['request']->getSession())->all();
+
         $this->trace->info(
             TraceCode::PERSONALISATION_REQUEST,
             [
@@ -1066,7 +1068,14 @@ class Checkout
         {
             $key = $mode . '_checkcookie';
 
-            $this->app['request']->session()->put($key, '1');
+            $session = $this->app['request']->getSession();
+
+            if ($session === null)
+            {
+                return false;
+            }
+
+            $session->put($key, '1');
         }
 
         return $rememberCustomer;

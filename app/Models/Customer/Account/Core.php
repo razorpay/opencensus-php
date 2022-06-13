@@ -4,6 +4,7 @@ namespace RZP\Models\Customer;
 
 use http\Url;
 use RZP\Constants\Mode;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Base;
 use RZP\Models\Terminal;
@@ -802,22 +803,32 @@ class Core extends Base\Core
                 'app_token' => $appToken->getPublicId()
             ]);
 
-        $this->app['request']->session()->put($key, $appToken->getPublicId());
+        $session = $this->app['request']->getSession();
 
-        $this->trace->info(
-            TraceCode::CUSTOMER_SESSION,
-            [
-                'session' => $this->app['request']->session()->all()
-            ]);
+        if ($session !== null)
+        {
+            $session->put($key, $appToken->getPublicId());
+
+            $this->trace->info(
+                TraceCode::CUSTOMER_SESSION,
+                [
+                    'session' => $session->all()
+                ]);
+        }
     }
 
     protected function isCookieDisabledOnBrowser()
     {
         $key = $this->mode . '_checkcookie';
 
-        $cookieCheck = $this->app['request']->session()->get($key, '0');
+        $session = $this->app['request']->getSession();
 
-        return ($cookieCheck !== '1');
+        if ($session !== null)
+        {
+            return $session->get($key, '0') !== '1';
+        }
+
+        return false;
     }
 
     protected function getTemporarySessionToken()

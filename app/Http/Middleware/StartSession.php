@@ -2,12 +2,29 @@
 
 namespace RZP\Http\Middleware;
 
+use Closure;
 use Illuminate\Session\Middleware\StartSession as BaseStartSession;
 use Illuminate\Support\Str;
+use Predis\PredisException;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Trace\TraceCode;
 
 class StartSession extends BaseStartSession
 {
+    public function handle($request, Closure $next)
+    {
+        try
+        {
+            return parent::handle($request, $next);
+        }
+        catch (PredisException $e) // Catching PredisException thrown by predis.
+        {
+            app('trace')->traceException($e, Trace::ERROR, TraceCode::SESSION_CREATE_ERROR_FROM_CACHE, []);
+
+            return $next($request);
+        }
+    }
+
     /**
      * @inheritDoc
      */
