@@ -1848,6 +1848,14 @@ class Gateway
     {
         //upi_sbi v1 is deprecated in mozart
         if ($this->gateway === Payment\Gateway::UPI_SBI) {
+
+            $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(), 'upi_sbi_v3_migration', $this->mode);
+
+            if (strtolower($variant) === 'v3')
+            {
+                return 'v3';
+            }
+
             return 'v2';
         }
 

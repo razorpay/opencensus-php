@@ -16,6 +16,7 @@ use RZP\Models\Gateway\File;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Refund;
 use RZP\Gateway\Upi\Base\Type;
+use RZP\Services\RazorXClient;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Base\PublicEntity;
@@ -65,6 +66,13 @@ class UpiSbiGatewayTest extends TestCase
         $this->fixtures->merchant->enableMethod(Account::DEMO_ACCOUNT, Method::UPI);
 
         $this->payment = $this->getDefaultUpiPaymentArray();
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->onlyMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
     }
 
     /**
@@ -357,6 +365,37 @@ class UpiSbiGatewayTest extends TestCase
             {
                 $this->assertEquals('validate_vpa', $action);
                 $this->assertStringContainsString('/payments/upi_sbi/v2/validate_vpa', $request['url']);
+            }
+        );
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function testValidateVpaSuccessWithRazorx()
+    {
+        $this->app->razorx->method('getTreatment')->will($this->returnCallback(
+            function ($mid, $feature, $mode)
+            {
+                if ($feature === 'upi_sbi_v3_migration')
+                {
+                    return 'v3';
+                }
+
+                return 'control';
+            })
+        );
+
+        config()->set('gateway.validate_vpa_terminal_ids.test', '100UPIMgateSbi');
+
+        $this->fixtures->merchant->addFeatures(['enable_vpa_validate']);
+
+        $this->mockServerRequestFunction(
+            function (& $request, $action = null)
+            {
+                $this->assertEquals('validate_vpa', $action);
+                $this->assertStringContainsString('/payments/upi_sbi/v3/validate_vpa', $request['url']);
             }
         );
 

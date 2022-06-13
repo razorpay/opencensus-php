@@ -135,6 +135,23 @@ return [
         ]
     ],
 
+    'testValidateVpaSuccessWithRazorx' => [
+        'request'   => [
+            'url'       => '/payment/validate/vpa',
+            'method'    => 'post',
+            'content'   => [
+                'vpa' => 'success@sbi',
+            ]
+        ],
+        'response'  => [
+            'content' => [
+                'vpa'           => 'success@sbi',
+                'success'       => true,
+                'customer_name' => 'Test User',
+            ],
+        ]
+    ],
+
     'testValidateVpaSuccessWithPrefixSpace' => [
         'request'   => [
             'url'       => '/payment/validate/vpa',

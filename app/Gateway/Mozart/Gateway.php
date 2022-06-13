@@ -40,6 +40,7 @@ class Gateway extends Base\Gateway
 
     const CACHE_KEY    = 'gateway:cache_key_%s';
     const BAJAJ_FINSERV_REST_API =  'bajaj_finserv_rest_api';
+    const UPI_SBI_V3_MIGRATION = 'upi_sbi_v3_migration';
 
     protected $map = [
         'data'      => Entity::RAW,
@@ -1684,6 +1685,13 @@ class Gateway extends Base\Gateway
         if($gateway === Payment\Gateway::UPI_SBI)
         {
             $url = $baseUrl . $prefix . '/' . $gateway . '/v2/' . $this->action;
+
+            $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(), self::UPI_SBI_V3_MIGRATION, $mode);
+
+            if (strtolower($variant) === 'v3')
+            {
+                $url = $baseUrl . $prefix . '/' . $gateway . '/v3/' . $this->action;
+            }
 
             return $url;
         }
