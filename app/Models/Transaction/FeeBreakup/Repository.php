@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Transaction\FeeBreakup;
 
-use RZP\Exception;
+use RZP\Base\ConnectionType;
 use RZP\Models\Base;
 use RZP\Constants\Table;
 use RZP\Models\Payment;
@@ -55,7 +55,12 @@ class Repository extends Base\Repository
                            ->payment
                            ->dbColumn(Payment\Entity::CAPTURED_AT);
 
-        $feesBreakup = $this->newQueryWithConnection($this->getSlaveConnection())
+        // pushing the query to admin-tidb-cluster as sumo-logs show the routes gets called for upto 6 months data
+        // and hence, the query will have to crunch a lot of data.
+        // merchant-tidb-cluster should not deal with such heavy queries
+        $connectionType = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN);
+
+        $feesBreakup = $this->newQueryWithConnection($connectionType)
                             ->selectRaw(Entity::NAME . ','.
                                 'SUM(' .$feeBreakupAmount .') AS sum')
                             ->join(Table::TRANSACTION, $feeBreakupTransactionId, '=', $transactionId)
@@ -72,7 +77,9 @@ class Repository extends Base\Repository
 
     public function fetchByTransactionId(string $transactionId)
     {
-        $feesBreakups = $this->newQueryWithConnection($this->getSlaveConnection())
+        $connectionType = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+
+        $feesBreakups = $this->newQueryWithConnection($connectionType)
                             ->where(Entity::TRANSACTION_ID, $transactionId)
                             ->get();
 

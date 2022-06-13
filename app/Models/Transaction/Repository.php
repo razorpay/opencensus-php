@@ -319,7 +319,9 @@ class Repository extends Base\Repository
 
     public function fetchEntitiesForBrokerReport($merchantId, $from, $to, $count, $skip, $entityToRelationFetchMap)
     {
-        $txns = $this->newQuery()
+        $connectionType = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+
+        $txns = $this->newQueryWithConnection($connectionType)
                      ->merchantId($merchantId)
                      ->betweenTime($from, $to)
                      ->whereIn(Entity::TYPE, ['payment', 'refund'])
