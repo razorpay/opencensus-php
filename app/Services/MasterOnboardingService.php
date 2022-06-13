@@ -4,7 +4,9 @@ namespace RZP\Services;
 
 use App;
 use Config;
+use Request;
 use RZP\Trace\TraceCode;
+use RZP\Http\RequestHeader;
 use RZP\Http\Request\Requests;
 use RZP\Models\Merchant\Repository as MerchantRepo;
 use RZP\Models\Merchant\Balance\Type as ProductType;
@@ -160,6 +162,15 @@ class MasterOnboardingService
         $headers = ($isAdmin === true) ? $this->getAdminRequestHeaders($data) : $this->getProxyRequestHeaders();
 
         $headers = array_merge($headers, $this->getMOBHeaders());
+
+        $devServeHeader = Request::header(RequestHeader::DEV_SERVE_USER);
+
+        if (empty($devServeHeader) === false)
+        {
+            $headers["Grpc-metadata-" . RequestHeader::DEV_SERVE_USER] = $devServeHeader;
+
+            $headers[RequestHeader::DEV_SERVE_USER] = $devServeHeader;
+        }
 
         $options = [
             'auth'    => $this->getAuthHeaders(),
