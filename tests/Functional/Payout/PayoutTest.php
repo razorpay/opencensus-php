@@ -14534,6 +14534,10 @@ class PayoutTest extends OAuthTestCase
     // tests for va to va transfers using creditTransfer
     public function testBlockBankingVAToNonBankingVAPayouts()
     {
+        $ledgerSnsPayloadArray = [];
+
+        $this->mockLedgerSns(0, $ledgerSnsPayloadArray);
+
         // setting up source VA as Yes Bank Nodal Account VA
         $this->bankAccount->setAccountNumber("7878780111222");
         $this->bankAccount->save();
@@ -14555,6 +14559,10 @@ class PayoutTest extends OAuthTestCase
     // tests for va to va transfers using creditTransfer
     public function testBlockVAtoVAPayoutsBetweenCurrentAndNodalVirtualAccounts()
     {
+        $ledgerSnsPayloadArray = [];
+
+        $this->mockLedgerSns(0, $ledgerSnsPayloadArray);
+
         // setting up source VA as Yes Bank Nodal Account VA
         $this->bankAccount->setAccountNumber("7878780111222");
         $this->bankAccount->save();
@@ -14614,6 +14622,10 @@ class PayoutTest extends OAuthTestCase
     // tests for va to va transfers using creditTransfer
     public function testAllowVAtoVAPayoutsWhenDestinationMerchantIsWhitelisted()
     {
+        $ledgerSnsPayloadArray = [];
+
+        $this->mockLedgerSns(2, $ledgerSnsPayloadArray);
+
         // setting up source VA as Yes Bank Nodal Account VA
         $this->bankAccount->setAccountNumber("7878780111222");
         $this->bankAccount->save();
@@ -14632,6 +14644,15 @@ class PayoutTest extends OAuthTestCase
 
         $bankingBalance->setAccountNumber('7878780111011');
         $bankingBalance->save();
+
+        $this->fixtures->create('banking_account', [
+            'account_number'        => $bankingBalance['account_number'],
+            'merchant_id'           => $bankingBalance['merchant_id'],
+            'account_type'          => $bankingBalance['account_type'],
+            'status'                => 'activated',
+            'balance_id'            => $bankingBalance['id'],
+            'channel'               => 'yesbank'
+        ]);
 
         $fundAccount = $this->createFundAccountOfYesbankNodalVA();
         $fundAccountId = $fundAccount['id'];
@@ -14685,11 +14706,11 @@ class PayoutTest extends OAuthTestCase
 
         $this->startTest($testData);
 
-        $payout = $this->getLastEntity('payout', true);
+        $payout = $this->getDbLastEntity('payout');
 
-        $creditTransfer = $this->getLastEntity('credit_transfer',true);
+        $creditTransfer = $this->getDbLastEntity('credit_transfer');
 
-        $transaction = $this->getLastEntity('transaction',true);
+        $transaction = $this->getDbLastEntity('transaction');
 
         $this->assertEquals($transaction['type'], 'credit_transfer');
 
@@ -14708,11 +14729,49 @@ class PayoutTest extends OAuthTestCase
         $finalExpectedSourceBalance = $initialSourceBalance - $payout['amount'] - $payout['fees'];
 
         $this->assertEquals($finalExpectedSourceBalance, $sourceBalance['balance']);
+
+        $transactorTypeArray = [
+            'va_to_va_payout_initiated',
+            'va_to_va_credit_processed',
+        ];
+
+        $transactorIdArray = [
+            $payout->getPublicId(),
+            $creditTransfer->getPublicId()
+        ];
+
+        for ($index = 0; $index < count($ledgerSnsPayloadArray); $index++)
+        {
+            $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
+
+            $ledgerRequestPayload['identifiers']       = json_decode($ledgerRequestPayload['identifiers'], true);
+            $ledgerRequestPayload['additional_params'] = json_decode($ledgerRequestPayload['additional_params'], true);
+
+            $this->assertEquals('X', $ledgerRequestPayload['tenant']);
+            $this->assertEquals('test', $ledgerRequestPayload['mode']);
+            $this->assertEquals($transactorIdArray[$index], $ledgerRequestPayload['transactor_id']);
+            $this->assertEquals('INR', $ledgerRequestPayload['currency']);
+            $this->assertEquals($transactorTypeArray[$index], $ledgerRequestPayload['transactor_event']);
+            $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload['additional_params']);
+        }
+
+        $ledgerSnsPayloadArray[0]['identifiers'] = json_decode($ledgerSnsPayloadArray[0]['identifiers'], true);
+        $ledgerSnsPayloadArray[1]['identifiers'] = json_decode($ledgerSnsPayloadArray[1]['identifiers'], true);
+
+        $this->assertEquals($payout->transaction->getId(), $ledgerSnsPayloadArray[0]['api_transaction_id']);
+        $this->assertEquals($this->bankingBalance->bankingAccount->getPublicId(), $ledgerSnsPayloadArray[0]['identifiers']['banking_account_id']);
+
+        $this->assertEquals($creditTransfer->transaction->getId(), $ledgerSnsPayloadArray[1]['api_transaction_id']);
+        $this->assertEquals($bankingBalance->bankingAccount->getPublicId(), $ledgerSnsPayloadArray[1]['identifiers']['banking_account_id']);
     }
 
     // tests for va to va transfers using creditTransfer
     public function testAllowVAtoVAPayoutsWhenSourceMerchantIsEnabled()
     {
+        $ledgerSnsPayloadArray = [];
+
+        $this->mockLedgerSns(2, $ledgerSnsPayloadArray);
+
         // setting up source VA as Yes Bank Nodal Account VA
         $this->bankAccount->setAccountNumber("7878780111222");
         $this->bankAccount->save();
@@ -14731,6 +14790,15 @@ class PayoutTest extends OAuthTestCase
 
         $bankingBalance->setAccountNumber('7878780111011');
         $bankingBalance->save();
+
+        $this->fixtures->create('banking_account', [
+            'account_number'        => $bankingBalance['account_number'],
+            'merchant_id'           => $bankingBalance['merchant_id'],
+            'account_type'          => $bankingBalance['account_type'],
+            'status'                => 'activated',
+            'balance_id'            => $bankingBalance['id'],
+            'channel'               => 'yesbank'
+        ]);
 
         $fundAccount = $this->createFundAccountOfYesbankNodalVA();
         $fundAccountId = $fundAccount['id'];
@@ -14767,11 +14835,11 @@ class PayoutTest extends OAuthTestCase
 
         $this->startTest($testData);
 
-        $payout = $this->getLastEntity('payout', true);
+        $payout = $this->getDbLastEntity('payout');
 
-        $transaction = $this->getLastEntity('transaction',true);
+        $transaction = $this->getDbLastEntity('transaction');
 
-        $creditTransfer = $this->getLastEntity('credit_transfer',true);
+        $creditTransfer = $this->getDbLastEntity('credit_transfer');
 
         $this->assertEquals($transaction['type'], 'credit_transfer');
 
@@ -14790,11 +14858,49 @@ class PayoutTest extends OAuthTestCase
         $finalExpectedSourceBalance = $initialSourceBalance - $payout['amount'] - $payout['fees'];
 
         $this->assertEquals($finalExpectedSourceBalance, $sourceBalance['balance']);
+
+        $transactorTypeArray = [
+            'va_to_va_payout_initiated',
+            'va_to_va_credit_processed',
+        ];
+
+        $transactorIdArray = [
+            $payout->getPublicId(),
+            $creditTransfer->getPublicId()
+        ];
+
+        for ($index = 0; $index < count($ledgerSnsPayloadArray); $index++)
+        {
+            $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
+
+            $ledgerRequestPayload['identifiers']       = json_decode($ledgerRequestPayload['identifiers'], true);
+            $ledgerRequestPayload['additional_params'] = json_decode($ledgerRequestPayload['additional_params'], true);
+
+            $this->assertEquals('X', $ledgerRequestPayload['tenant']);
+            $this->assertEquals('test', $ledgerRequestPayload['mode']);
+            $this->assertEquals($transactorIdArray[$index], $ledgerRequestPayload['transactor_id']);
+            $this->assertEquals('INR', $ledgerRequestPayload['currency']);
+            $this->assertEquals($transactorTypeArray[$index], $ledgerRequestPayload['transactor_event']);
+            $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload['additional_params']);
+        }
+
+        $ledgerSnsPayloadArray[0]['identifiers'] = json_decode($ledgerSnsPayloadArray[0]['identifiers'], true);
+        $ledgerSnsPayloadArray[1]['identifiers'] = json_decode($ledgerSnsPayloadArray[1]['identifiers'], true);
+
+        $this->assertEquals($payout->transaction->getId(), $ledgerSnsPayloadArray[0]['api_transaction_id']);
+        $this->assertEquals($this->bankingBalance->bankingAccount->getPublicId(), $ledgerSnsPayloadArray[0]['identifiers']['banking_account_id']);
+
+        $this->assertEquals($creditTransfer->transaction->getId(), $ledgerSnsPayloadArray[1]['api_transaction_id']);
+        $this->assertEquals($bankingBalance->bankingAccount->getPublicId(), $ledgerSnsPayloadArray[1]['identifiers']['banking_account_id']);
     }
 
     // tests for va to va transfers using creditTransfer
     public function testBlockVAtoVAPayoutsWhenBothSourceAndDestinationMerchantNotEnabled()
     {
+        $ledgerSnsPayloadArray = [];
+
+        $this->mockLedgerSns(0, $ledgerSnsPayloadArray);
+
         // setting up source VA as Yes Bank Nodal Account VA
         $this->bankAccount->setAccountNumber("7878780111222");
         $this->bankAccount->save();
@@ -14851,6 +14957,10 @@ class PayoutTest extends OAuthTestCase
     // tests for va to va transfers using creditTransfer
     public function testBlockVAtoVAPayoutsWhenDestinationVaIsInActive()
     {
+        $ledgerSnsPayloadArray = [];
+
+        $this->mockLedgerSns(0, $ledgerSnsPayloadArray);
+
         // setting up source VA as Yes Bank Nodal Account VA
         $this->bankAccount->setAccountNumber("7878780111222");
         $this->bankAccount->save();
@@ -14913,6 +15023,10 @@ class PayoutTest extends OAuthTestCase
     // tests for va to va transfers using creditTransfer
     public function testBlockVAtoVAPayoutsWhenBothSourceAndDestinationAreSameBankingAccount()
     {
+        $ledgerSnsPayloadArray = [];
+
+        $this->mockLedgerSns(0, $ledgerSnsPayloadArray);
+
         // setting up source VA as Yes Bank Nodal Account VA
         $this->bankAccount->setAccountNumber("7878780111222");
         $this->bankAccount->save();
@@ -14958,6 +15072,10 @@ class PayoutTest extends OAuthTestCase
     // tests for va to va transfers using creditTransfer
     public function testAllowLowBalanceQueuedVAtoVAPayoutsWhenSourceMerchantIsEnabled()
     {
+        $ledgerSnsPayloadArray = [];
+
+        $this->mockLedgerSns(2, $ledgerSnsPayloadArray);
+
         // setting up source VA as Yes Bank Nodal Account VA
         $this->bankAccount->setAccountNumber("7878780111222");
         $this->bankAccount->save();
@@ -14976,6 +15094,15 @@ class PayoutTest extends OAuthTestCase
 
         $bankingBalance->setAccountNumber('7878780111011');
         $bankingBalance->save();
+
+        $this->fixtures->create('banking_account', [
+            'account_number'        => $bankingBalance['account_number'],
+            'merchant_id'           => $bankingBalance['merchant_id'],
+            'account_type'          => $bankingBalance['account_type'],
+            'status'                => 'activated',
+            'balance_id'            => $bankingBalance['id'],
+            'channel'               => 'yesbank'
+        ]);
 
         $fundAccount = $this->createFundAccountOfYesbankNodalVA();
         $fundAccountId = $fundAccount['id'];
@@ -15021,11 +15148,11 @@ class PayoutTest extends OAuthTestCase
 
         $dispatchResponse = $this->dispatchQueuedPayouts();
 
-        $payout = $this->getLastEntity('payout', true);
+        $payout = $this->getDbLastEntity('payout');
 
-        $transaction = $this->getLastEntity('transaction',true);
+        $transaction = $this->getDbLastEntity('transaction');
 
-        $creditTransfer = $this->getLastEntity('credit_transfer',true);
+        $creditTransfer = $this->getDbLastEntity('credit_transfer');
 
         $this->assertEquals($transaction['type'], 'credit_transfer');
 
@@ -15046,16 +15173,128 @@ class PayoutTest extends OAuthTestCase
         $finalExpectedSourceBalance = $initialSourceBalance - $payout['amount'] - $payout['fees'];
 
         $this->assertEquals($finalExpectedSourceBalance, $sourceBalance['balance']);
+
+        $transactorTypeArray = [
+            'va_to_va_payout_initiated',
+            'va_to_va_credit_processed',
+        ];
+
+        $transactorIdArray = [
+            $payout->getPublicId(),
+            $creditTransfer->getPublicId()
+        ];
+
+        for ($index = 0; $index < count($ledgerSnsPayloadArray); $index++)
+        {
+            $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
+
+            $ledgerRequestPayload['identifiers']       = json_decode($ledgerRequestPayload['identifiers'], true);
+            $ledgerRequestPayload['additional_params'] = json_decode($ledgerRequestPayload['additional_params'], true);
+
+            $this->assertEquals('X', $ledgerRequestPayload['tenant']);
+            $this->assertEquals('test', $ledgerRequestPayload['mode']);
+            $this->assertEquals($transactorIdArray[$index], $ledgerRequestPayload['transactor_id']);
+            $this->assertEquals('INR', $ledgerRequestPayload['currency']);
+            $this->assertEquals($transactorTypeArray[$index], $ledgerRequestPayload['transactor_event']);
+            $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload['additional_params']);
+        }
+
+        $ledgerSnsPayloadArray[0]['identifiers'] = json_decode($ledgerSnsPayloadArray[0]['identifiers'], true);
+        $ledgerSnsPayloadArray[1]['identifiers'] = json_decode($ledgerSnsPayloadArray[1]['identifiers'], true);
+
+        $this->assertEquals($payout->transaction->getId(), $ledgerSnsPayloadArray[0]['api_transaction_id']);
+        $this->assertEquals($this->bankingBalance->bankingAccount->getPublicId(), $ledgerSnsPayloadArray[0]['identifiers']['banking_account_id']);
+
+        $this->assertEquals($creditTransfer->transaction->getId(), $ledgerSnsPayloadArray[1]['api_transaction_id']);
+        $this->assertEquals($bankingBalance->bankingAccount->getPublicId(), $ledgerSnsPayloadArray[1]['identifiers']['banking_account_id']);
     }
 
+    // tests for va to va transfers using creditTransfer
     public function testFailedVAtoVAPayoutReversal()
     {
-        $this->testAllowVAtoVAPayoutsWhenDestinationMerchantIsWhitelisted();
+        $ledgerSnsPayloadArray = [];
+
+        $this->mockLedgerSns(3, $ledgerSnsPayloadArray);
+
+        // setting up source VA as Yes Bank Nodal Account VA
+        $this->bankAccount->setAccountNumber("7878780111222");
+        $this->bankAccount->save();
+        $this->bankingBalance->setAccountNumber("7878780111222");
+        $this->bankingBalance->save();
+        $this->fixtures->merchant->addFeatures([Feature\Constants::HANDLE_VA_TO_VA_PAYOUT]);
+        $this->fixtures->merchant->activate();
+
+        // setting up destination merchant with Yes Bank Nodal Account VA
+        // Activate merchant with business_banking flag set to true.
+        $this->fixtures->merchant->edit('100000Razorpay', ['business_banking' => 1]);
+
+        // Creates banking balance for destination merchant
+        $bankingBalance = $this->fixtures->merchant->createBalanceOfBankingType(
+            1000, '100000Razorpay','shared', null);
+
+        $bankingBalance->setAccountNumber('7878780111011');
+        $bankingBalance->save();
+
+        $this->fixtures->create('banking_account', [
+            'account_number'        => $bankingBalance['account_number'],
+            'merchant_id'           => $bankingBalance['merchant_id'],
+            'account_type'          => $bankingBalance['account_type'],
+            'status'                => 'activated',
+            'balance_id'            => $bankingBalance['id'],
+            'channel'               => 'yesbank'
+        ]);
+
+        $fundAccount = $this->createFundAccountOfYesbankNodalVA();
+        $fundAccountId = $fundAccount['id'];
+
+        // We shall setup a virtual account and a bank account that will act as a destination account
+        $destinationVirtualAccount = $this->fixtures->create('virtual_account',
+            [
+                'merchant_id' => '100000Razorpay',
+                'balance_id'  => $bankingBalance->getId()
+            ]);
+
+        $destinationBankAccount = $this->fixtures->create('bank_account',
+            [
+                'type'              => 'virtual_account',
+                'entity_id'         => $destinationVirtualAccount['id'],
+                'account_number'    => $fundAccount['bank_account']['account_number'],
+                'ifsc_code'         => $fundAccount['bank_account']['ifsc'],
+                'merchant_id'       => $destinationVirtualAccount['merchant_id'],
+            ]);
+
+        $this->fixtures->edit('virtual_account', $destinationVirtualAccount['id'],
+            [
+                'bank_account_id'   => $destinationBankAccount['id']
+            ]);
+
+        $destinationVirtualAccount = $this->getDbLastEntity('virtual_account');
+        $this->ba->adminAuth();
+
+        // Whitelisting the MID corresponding to the destination bank account number
+        $this->makeRequestAndGetContent([
+            'method'  => 'PUT',
+            'url'     => '/config/keys',
+            'content' => [
+                Admin\ConfigKey::RX_VA_TO_VA_PAYOUTS_WHITELISTED_DESTINATION_MERCHANTS =>
+                    [
+                        $destinationVirtualAccount['merchant_id']
+                    ],
+            ],
+        ]);
+
+        $testData = & $this->testData['testAllowVAtoVAPayoutsWhenDestinationMerchantIsWhitelisted'];
+        $testData['request']['content']['fund_account_id'] = $fundAccountId;
+
+        $this->mockRazorxTreatment();
+
+        $this->ba->privateAuth();
+
+        $this->startTest($testData);
 
         $payout = $this->getDbLastEntity('payout');
 
         $this->fixtures->edit('payout', $payout->getId(), [
-            'channel' => 'icici',
             'utr'     => null,
             'status'  => 'created'
         ]);
@@ -15069,13 +15308,285 @@ class PayoutTest extends OAuthTestCase
 
         $reversedPayout = (new Payout\Core)->handleReversalForFailedVaToVaPayout($payout->getId());
 
-        $updatedPayout = $this->getLastEntity('payout', true);
+        $updatedPayout = $this->getDbLastEntity('payout');
 
-        $reversal = $this->getLastEntity('reversal', true);
+        $reversal = $this->getDbLastEntity('reversal');
 
         $updatedCreditTransfer = $this->getDbLastEntity('credit_transfer');
 
-        $this->assertEquals($updatedPayout[Payout\Entity::ID], 'pout_'.$reversal[ReversalEntity::ENTITY_ID]);
+        $this->assertEquals($updatedPayout[Payout\Entity::ID], $reversal[ReversalEntity::ENTITY_ID]);
+
+        $this->assertEquals($updatedCreditTransfer[Payout\Entity::STATUS], CreditTransfer\Status::FAILED);
+
+        $this->assertEquals($updatedPayout[Payout\Entity::STATUS],Payout\Status::REVERSED);
+
+        $this->assertNotNull($updatedPayout[Payout\Entity::REVERSED_AT]);
+
+        $this->assertEquals($updatedPayout[Payout\Entity::AMOUNT] + $updatedPayout[Payout\Entity::FEES], $reversal['amount']);
+
+        $transactorTypeArray = [
+            'va_to_va_payout_initiated',
+            'va_to_va_credit_processed',
+            'va_to_va_payout_failed'
+        ];
+
+        $transactorIdArray = [
+            $updatedPayout->getPublicId(),
+            $updatedCreditTransfer->getPublicId(),
+            $reversal->getPublicId()
+        ];
+
+        for ($index = 0; $index < count($ledgerSnsPayloadArray); $index++)
+        {
+            $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
+
+            $ledgerRequestPayload['identifiers']       = json_decode($ledgerRequestPayload['identifiers'], true);
+            $ledgerRequestPayload['additional_params'] = json_decode($ledgerRequestPayload['additional_params'], true);
+
+            $this->assertEquals('X', $ledgerRequestPayload['tenant']);
+            $this->assertEquals('test', $ledgerRequestPayload['mode']);
+            $this->assertEquals($transactorIdArray[$index], $ledgerRequestPayload['transactor_id']);
+            $this->assertEquals('INR', $ledgerRequestPayload['currency']);
+            $this->assertEquals($transactorTypeArray[$index], $ledgerRequestPayload['transactor_event']);
+            $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload['additional_params']);
+        }
+
+        $ledgerSnsPayloadArray[0]['identifiers'] = json_decode($ledgerSnsPayloadArray[0]['identifiers'], true);
+        $ledgerSnsPayloadArray[1]['identifiers'] = json_decode($ledgerSnsPayloadArray[1]['identifiers'], true);
+        $ledgerSnsPayloadArray[2]['identifiers'] = json_decode($ledgerSnsPayloadArray[2]['identifiers'], true);
+
+        $this->assertEquals($updatedPayout->transaction->getId(), $ledgerSnsPayloadArray[0]['api_transaction_id']);
+        $this->assertEquals($this->bankingBalance->bankingAccount->getPublicId(), $ledgerSnsPayloadArray[0]['identifiers']['banking_account_id']);
+
+        $this->assertEquals($updatedCreditTransfer->transaction->getId(), $ledgerSnsPayloadArray[1]['api_transaction_id']);
+        $this->assertEquals($bankingBalance->bankingAccount->getPublicId(), $ledgerSnsPayloadArray[1]['identifiers']['banking_account_id']);
+
+        $this->assertEquals($reversal->transaction->getId(), $ledgerSnsPayloadArray[2]['api_transaction_id']);
+        $this->assertEquals($this->bankingBalance->bankingAccount->getPublicId(), $ledgerSnsPayloadArray[2]['identifiers']['banking_account_id']);
+    }
+
+    public function testCreateVaToVaPayoutInLedgerReverseShadowMode()
+    {
+        $this->app['config']->set('applications.ledger.enabled', false);
+
+        // setting up source VA as Yes Bank Nodal Account VA
+        $this->bankAccount->setAccountNumber("7878780111222");
+        $this->bankAccount->save();
+        $this->bankingBalance->setAccountNumber("7878780111222");
+        $this->bankingBalance->save();
+        $this->fixtures->merchant->addFeatures([
+            Feature\Constants::HANDLE_VA_TO_VA_PAYOUT,
+            Feature\Constants::LEDGER_REVERSE_SHADOW
+        ]);
+        $this->fixtures->merchant->activate();
+
+        // setting up destination merchant with Yes Bank Nodal Account VA
+        // Activate merchant with business_banking flag set to true.
+        $this->fixtures->merchant->edit('100000Razorpay', ['business_banking' => 1]);
+
+        // Creates banking balance for destination merchant
+        $bankingBalance = $this->fixtures->merchant->createBalanceOfBankingType(
+            1000, '100000Razorpay','shared', null);
+
+        $bankingBalance->setAccountNumber('7878780111011');
+        $bankingBalance->save();
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW], '100000Razorpay');
+
+        $this->fixtures->create('banking_account', [
+            'account_number'        => $bankingBalance['account_number'],
+            'merchant_id'           => $bankingBalance['merchant_id'],
+            'account_type'          => $bankingBalance['account_type'],
+            'status'                => 'activated',
+            'balance_id'            => $bankingBalance['id'],
+            'channel'               => 'yesbank'
+        ]);
+
+        $fundAccount = $this->createFundAccountOfYesbankNodalVA();
+        $fundAccountId = $fundAccount['id'];
+
+        // We shall setup a virtual account and a bank account that will act as a destination account
+        $destinationVirtualAccount = $this->fixtures->create('virtual_account',
+            [
+                'merchant_id' => '100000Razorpay',
+                'balance_id'  => $bankingBalance->getId()
+            ]);
+
+        $destinationBankAccount = $this->fixtures->create('bank_account',
+            [
+                'type'              => 'virtual_account',
+                'entity_id'         => $destinationVirtualAccount['id'],
+                'account_number'    => $fundAccount['bank_account']['account_number'],
+                'ifsc_code'         => $fundAccount['bank_account']['ifsc'],
+                'merchant_id'       => $destinationVirtualAccount['merchant_id'],
+            ]);
+
+        $this->fixtures->edit('virtual_account', $destinationVirtualAccount['id'],
+            [
+                'bank_account_id'   => $destinationBankAccount['id']
+            ]);
+
+        $destinationVirtualAccount = $this->getDbLastEntity('virtual_account');
+        $this->ba->adminAuth();
+
+        // Whitelisting the MID corresponding to the destination bank account number
+        $this->makeRequestAndGetContent([
+            'method'  => 'PUT',
+            'url'     => '/config/keys',
+            'content' => [
+                Admin\ConfigKey::RX_VA_TO_VA_PAYOUTS_WHITELISTED_DESTINATION_MERCHANTS =>
+                    [
+                        $destinationVirtualAccount['merchant_id']
+                    ],
+            ],
+        ]);
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['content']['fund_account_id'] = $fundAccountId;
+
+        $this->mockRazorxTreatment();
+
+        $this->ba->privateAuth();
+
+        $initialDestinationBalance = $bankingBalance->getBalance();
+
+        $initialSourceBalance = $this->bankingBalance->getBalance();
+
+        $this->startTest($testData);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $creditTransfer = $this->getDbLastEntity('credit_transfer');
+
+        $transaction = $this->getDbLastEntity('transaction');
+
+        $this->assertEquals($transaction['type'], 'credit_transfer');
+
+        $this->assertEquals($creditTransfer['utr'], $payout['utr']);
+
+        $this->assertEquals($payout['channel'], Channel::RZPX);
+
+        $destinationBalance = $this->getEntityById('balance', $bankingBalance->getId(), true);
+
+        $finalExpectedDestinationBalance = $initialDestinationBalance + $payout['amount'];
+
+        $this->assertEquals($finalExpectedDestinationBalance, $destinationBalance['balance']);
+
+        $sourceBalance = $this->getEntityById('balance', $this->bankingBalance->getId(), true);
+
+        $finalExpectedSourceBalance = $initialSourceBalance - $payout['amount'] - $payout['fees'];
+
+//        $this->assertEquals($finalExpectedSourceBalance, $sourceBalance['balance']);
+    }
+
+    public function testFailedVAToVAPayoutInLedgerReverseShadowMode()
+    {
+        $this->app['config']->set('applications.ledger.enabled', false);
+
+        // setting up source VA as Yes Bank Nodal Account VA
+        $this->bankAccount->setAccountNumber("7878780111222");
+        $this->bankAccount->save();
+        $this->bankingBalance->setAccountNumber("7878780111222");
+        $this->bankingBalance->save();
+        $this->fixtures->merchant->addFeatures([
+            Feature\Constants::HANDLE_VA_TO_VA_PAYOUT,
+            Feature\Constants::LEDGER_REVERSE_SHADOW
+        ]);
+        $this->fixtures->merchant->activate();
+
+        // setting up destination merchant with Yes Bank Nodal Account VA
+        // Activate merchant with business_banking flag set to true.
+        $this->fixtures->merchant->edit('100000Razorpay', ['business_banking' => 1]);
+
+        // Creates banking balance for destination merchant
+        $bankingBalance = $this->fixtures->merchant->createBalanceOfBankingType(
+            1000, '100000Razorpay','shared', null);
+
+        $bankingBalance->setAccountNumber('7878780111011');
+        $bankingBalance->save();
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW], '100000Razorpay');
+
+        $this->fixtures->create('banking_account', [
+            'account_number'        => $bankingBalance['account_number'],
+            'merchant_id'           => $bankingBalance['merchant_id'],
+            'account_type'          => $bankingBalance['account_type'],
+            'status'                => 'activated',
+            'balance_id'            => $bankingBalance['id'],
+            'channel'               => 'yesbank'
+        ]);
+
+        $fundAccount = $this->createFundAccountOfYesbankNodalVA();
+        $fundAccountId = $fundAccount['id'];
+
+        // We shall setup a virtual account and a bank account that will act as a destination account
+        $destinationVirtualAccount = $this->fixtures->create('virtual_account',
+            [
+                'merchant_id' => '100000Razorpay',
+                'balance_id'  => $bankingBalance->getId()
+            ]);
+
+        $destinationBankAccount = $this->fixtures->create('bank_account',
+            [
+                'type'              => 'virtual_account',
+                'entity_id'         => $destinationVirtualAccount['id'],
+                'account_number'    => $fundAccount['bank_account']['account_number'],
+                'ifsc_code'         => $fundAccount['bank_account']['ifsc'],
+                'merchant_id'       => $destinationVirtualAccount['merchant_id'],
+            ]);
+
+        $this->fixtures->edit('virtual_account', $destinationVirtualAccount['id'],
+            [
+                'bank_account_id'   => $destinationBankAccount['id']
+            ]);
+
+        $destinationVirtualAccount = $this->getDbLastEntity('virtual_account');
+        $this->ba->adminAuth();
+
+        // Whitelisting the MID corresponding to the destination bank account number
+        $this->makeRequestAndGetContent([
+            'method'  => 'PUT',
+            'url'     => '/config/keys',
+            'content' => [
+                Admin\ConfigKey::RX_VA_TO_VA_PAYOUTS_WHITELISTED_DESTINATION_MERCHANTS =>
+                    [
+                        $destinationVirtualAccount['merchant_id']
+                    ],
+            ],
+        ]);
+
+        $testData = & $this->testData['testAllowVAtoVAPayoutsWhenDestinationMerchantIsWhitelisted'];
+        $testData['request']['content']['fund_account_id'] = $fundAccountId;
+
+        $this->mockRazorxTreatment();
+
+        $this->ba->privateAuth();
+
+        $this->startTest($testData);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit('payout', $payout->getId(), [
+            'utr'     => null,
+            'status'  => 'created'
+        ]);
+
+        $creditTransfer = $this->getDbLastEntity('credit_transfer');
+
+        $this->fixtures->edit('credit_transfer', $creditTransfer->getId(), [
+            'utr'     => null,
+            'status'  => 'created'
+        ]);
+
+        $reversedPayout = (new Payout\Core)->handleReversalForFailedVaToVaPayout($payout->getId());
+
+        $updatedPayout = $this->getDbLastEntity('payout');
+
+        $reversal = $this->getDbLastEntity('reversal');
+
+        $updatedCreditTransfer = $this->getDbLastEntity('credit_transfer');
+
+        $this->assertEquals($updatedPayout[Payout\Entity::ID], $reversal[ReversalEntity::ENTITY_ID]);
 
         $this->assertEquals($updatedCreditTransfer[Payout\Entity::STATUS], CreditTransfer\Status::FAILED);
 

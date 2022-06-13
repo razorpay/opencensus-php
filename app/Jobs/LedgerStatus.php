@@ -12,6 +12,7 @@ use RZP\Models\Adjustment\Core as AdjustmentCore;
 use RZP\Models\BankTransfer\Core as BankTransferCore;
 use RZP\Models\FundAccount\Validation\Core as FavCore;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\CreditTransfer\Core as CreditTransferCore;
 
 class LedgerStatus extends Job
 {
@@ -40,11 +41,12 @@ class LedgerStatus extends Job
     const MUTEX_LOCK_TIMEOUT = 60;
 
     // ledger transactor id prefix
-    const BANK_TRANSFER_PREFIX  = "bt_";
-    const ADJUSTMENT_PREFIX     = "adj_";
-    const PAYOUT_PREFIX         = "pout_";
-    const FAV_PREFIX            = "fav_";
-    const REVERSAL_PREFIX       = "rvrsl_";
+    const BANK_TRANSFER_PREFIX   = "bt_";
+    const ADJUSTMENT_PREFIX      = "adj_";
+    const PAYOUT_PREFIX          = "pout_";
+    const FAV_PREFIX             = "fav_";
+    const REVERSAL_PREFIX        = "rvrsl_";
+    const CREDIT_TRANSFER_PREFIX = "ct_";
 
     // ledger transactor event prefix
     const BANK_TRANSFER_TYPE    = "fund_loading";
@@ -239,6 +241,12 @@ class LedgerStatus extends Job
             // Todo: discuss after state changes
             $adj = $this->repoManager->adjustment->findByPublicId($this->transactorId);
             (new AdjustmentCore)->processAdjustmentAfterLedgerStatusCheck($adj, $ledgerResponse);
+        }
+        else if (strpos($this->transactorId, self::CREDIT_TRANSFER_PREFIX) !== false)
+        {
+            // Todo: discuss after state changes
+            $creditTransfer = $this->repoManager->credit_transfer->findByPublicId($this->transactorId);
+            (new CreditTransferCore)->processCreditTransferAfterLedgerStatusCheck($creditTransfer, $ledgerResponse);
         }
 
         // nothing to do here in case of fav_processed, fav_reversed, payout_processed, reward fund_loading events

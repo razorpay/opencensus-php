@@ -11,7 +11,7 @@ class Entity extends Base\PublicEntity
 {
     use HasBalance;
 
-    protected static $sign = 'ct_';
+    protected static $sign = 'ct';
 
     protected $entity = 'credit_transfer';
 
@@ -148,6 +148,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::AMOUNT);
     }
 
+    public function getCurrency()
+    {
+        return $this->getAttribute(self::CURRENCY);
+    }
+
     public function getChannel()
     {
         return $this->getAttribute(self::CHANNEL);
@@ -156,6 +161,16 @@ class Entity extends Base\PublicEntity
     public function getUtr()
     {
         return $this->getAttribute(self::UTR);
+    }
+
+    public function getTransactionId()
+    {
+        return $this->getAttribute(self::TRANSACTION_ID);
+    }
+
+    public function getEntityId()
+    {
+        return $this->getAttribute(self::ENTITY_ID);
     }
 
     public function getProcessedAt()
@@ -230,6 +245,11 @@ class Entity extends Base\PublicEntity
     public function isStatusFailed()
     {
         return ($this->getAttribute(self::STATUS) === Status::FAILED);
+    }
+
+    public function isStatusCreated()
+    {
+        return ($this->getAttribute(self::STATUS) === Status::CREATED);
     }
 
     public function hasTransaction()

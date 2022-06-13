@@ -10,6 +10,7 @@ use RZP\Services\Ledger as BaseLedger;
 use RZP\Models\Transaction\Processor\Ledger\Payout;
 use RZP\Models\Transaction\Processor\Ledger\Adjustment;
 use RZP\Models\Transaction\Processor\Ledger\FundLoading;
+use RZP\Models\Transaction\Processor\Ledger\CreditTransfer;
 use RZP\Models\Transaction\Processor\Ledger\FundAccountValidation;
 
 class Ledger extends BaseLedger
@@ -374,6 +375,7 @@ class Ledger extends BaseLedger
             Payout::INTER_ACCOUNT_PAYOUT_REVERSED,
             Payout::PAYOUT_FAILED,
             Payout::INTER_ACCOUNT_PAYOUT_FAILED,
+            CreditTransfer::VA_TO_VA_CREDIT_PROCESSED,
         ];
 
         // Cases where there will be no change in merchant balance
@@ -382,6 +384,7 @@ class Ledger extends BaseLedger
             FundAccountValidation::FAV_PROCESSED,
             Payout::PAYOUT_PROCESSED,
             Payout::INTER_ACCOUNT_PAYOUT_PROCESSED,
+            Payout::VA_TO_VA_PAYOUT_FAILED,
         ];
 
         $isCredit = false;

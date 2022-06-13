@@ -69,6 +69,8 @@ class Service extends Base\Service
     // For each of these transactor_events, a new transaction is created at API monolith.
     private static $ledgerTxnEventToTxnSourceEntityMap = [
         LedgerProcessor\Payout::PAYOUT_INITIATED                  => E::PAYOUT,
+        LedgerProcessor\Payout::VA_TO_VA_PAYOUT_INITIATED         => E::PAYOUT,
+        LedgerProcessor\Payout::VA_TO_VA_PAYOUT_FAILED            => E::PAYOUT,
         LedgerProcessor\Payout::DA_PAYOUT_PROCESSED               => E::PAYOUT,
         LedgerProcessor\Payout::DA_FEE_PAYOUT_PROCESSED           => E::PAYOUT,
         LedgerProcessor\Payout::DA_EXT_PAYOUT_PROCESSED           => E::PAYOUT,
@@ -84,6 +86,7 @@ class Service extends Base\Service
         LedgerProcessor\FundAccountValidation::FAV_REVERSED       => E::REVERSAL,
         LedgerProcessor\Adjustment::POSITIVE_ADJUSTMENT_PROCESSED => E::ADJUSTMENT,
         LedgerProcessor\Adjustment::NEGATIVE_ADJUSTMENT_PROCESSED => E::ADJUSTMENT,
+        LedgerProcessor\CreditTransfer::VA_TO_VA_CREDIT_PROCESSED => E::CREDIT_TRANSFER,
         LedgerProcessor\Payout::DA_EXT_DEBIT                      => E::EXTERNAL,
         LedgerProcessor\Payout::DA_EXT_CREDIT                     => E::EXTERNAL,
     ];

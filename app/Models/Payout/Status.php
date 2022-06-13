@@ -286,6 +286,11 @@ class Status
         self::FAILED    => Ledger\Payout::INTER_ACCOUNT_PAYOUT_FAILED,
     ];
 
+    public static $payoutStatusToLedgerEventMapForVaToVaPayouts = [
+        self::CREATED  => Ledger\Payout::VA_TO_VA_PAYOUT_INITIATED,
+        self::REVERSED => Ledger\Payout::VA_TO_VA_PAYOUT_FAILED
+    ];
+
     /**
      * @param string $payoutStatus
      * @param string $purpose
@@ -300,6 +305,31 @@ class Status
         {
             return self::$payoutStatusToLedgerEventMapForInterAccount[$payoutStatus] ?? Ledger\Base::DEFAULT_EVENT;
         }
+        return self::$payoutStatusToLedgerEventMap[$payoutStatus] ?? Ledger\Base::DEFAULT_EVENT;
+    }
+
+    /**
+     * @param Entity $payout
+     * @return mixed|string
+     * Return ledger event mapped to a payout.
+     */
+    public static function getLedgerEventForPayout(Entity $payout)
+    {
+        $payoutStatus = $payout->getStatus();
+
+        $purpose = $payout->getPurpose();
+
+        if ($payout->isVaToVaPayout() === true)
+        {
+            // for VA to VA payouts
+            return self::$payoutStatusToLedgerEventMapForVaToVaPayouts[$payoutStatus] ?? Ledger\Base::DEFAULT_EVENT;
+        }
+
+        if ($purpose === Purpose::INTER_ACCOUNT_PAYOUT)
+        {
+            return self::$payoutStatusToLedgerEventMapForInterAccount[$payoutStatus] ?? Ledger\Base::DEFAULT_EVENT;
+        }
+
         return self::$payoutStatusToLedgerEventMap[$payoutStatus] ?? Ledger\Base::DEFAULT_EVENT;
     }
 

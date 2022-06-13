@@ -17544,6 +17544,40 @@ return [
         ],
     ],
 
+    'testCreateVaToVaPayoutInLedgerReverseShadowMode' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '7878780111222',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'IMPS',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'narration'       => 'Batman',
+                'purpose'         => 'refund',
+                'status'          => 'processed',
+                'mode'            => 'IFT',
+                'tax'             => 162,
+                'fees'            => 1062,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+    ],
+
     'testCreateAndProcessQueuedPayoutWithLowMerchantBalanceInLedgerReverseShadowMode' => [
         'request' => [
             'method'    => 'POST',

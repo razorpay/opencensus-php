@@ -47,6 +47,9 @@ class Payout extends Base
     const INTER_ACCOUNT_PAYOUT_REVERSED  = "inter_account_payout_reversed";
     const INTER_ACCOUNT_PAYOUT_FAILED    = "inter_account_payout_failed";
 
+    const VA_TO_VA_PAYOUT_INITIATED = "va_to_va_payout_initiated";
+    const VA_TO_VA_PAYOUT_FAILED    = "va_to_va_payout_failed";
+
     // Ledger Events for Direct Accounting
     const DA_PAYOUT_PROCESSED           = "da_payout_processed";
     const DA_PAYOUT_REVERSED            = "da_payout_reversed";
@@ -63,6 +66,8 @@ class Payout extends Base
 
     protected $eventsWithoutFtsInfo = [self::PAYOUT_FAILED,
                                        self::PAYOUT_INITIATED,
+                                       self::VA_TO_VA_PAYOUT_INITIATED,
+                                       self::VA_TO_VA_PAYOUT_FAILED,
                                        self::INTER_ACCOUNT_PAYOUT_INITIATED];
 
     public function pushTransactionToLedger(Entity $payout,
@@ -103,6 +108,7 @@ class Payout extends Base
             {
                 case self::INTER_ACCOUNT_PAYOUT_INITIATED:
                 case self::PAYOUT_INITIATED:
+                case self::VA_TO_VA_PAYOUT_INITIATED:
                     $transactorDate = $payout->getInitiatedAt();
                     $apiTransactionId = $payout->getTransactionId();
                     break;
@@ -129,6 +135,7 @@ class Payout extends Base
 
                 case self::INTER_ACCOUNT_PAYOUT_FAILED:
                 case self::PAYOUT_FAILED:
+                case self::VA_TO_VA_PAYOUT_FAILED:
                     if ($reversal !== null) {
                         $transactorDate = $reversal->getCreatedAt();
                         $transactorId = $reversal->getPublicId();
@@ -393,6 +400,12 @@ class Payout extends Base
 
         $payload = $this->createLedgerPayloadFromEntity($payout, null, $reversal, $ftsSourceAccountInformation);
 
+        if (($payout->isVaToVaPayout() === true) and
+            ($payload['transactor_event'] === self::DEFAULT_EVENT))
+        {
+            return [];
+        }
+
         return $this->createJournalEntry($payload);
     }
 
@@ -402,7 +415,7 @@ class Payout extends Base
         {
             $status = $payout->getStatus();
         }
-        $transactorEvent = Status::getLedgerEventFromPayoutStatus($status, $payout->getPurpose());
+        $transactorEvent = Status::getLedgerEventForPayout($payout);
 
         $notes = [
             self::BALANCE_ID => BalanceEntity::getSignedIdOrNull($payout->getBalanceId()),
@@ -437,7 +450,9 @@ class Payout extends Base
             self::IDENTIFIERS      => $identifiers,
         ];
 
-        if (($transactorEvent === self::PAYOUT_REVERSED) || ($transactorEvent === self::PAYOUT_FAILED))
+        if (($transactorEvent === self::PAYOUT_REVERSED) or
+            ($transactorEvent === self::PAYOUT_FAILED) or
+            ($transactorEvent === self::VA_TO_VA_PAYOUT_FAILED))
         {
             if ($reversal !== null)
             {
@@ -446,7 +461,8 @@ class Payout extends Base
             }
         }
 
-        if ($transactorEvent === self::PAYOUT_INITIATED)
+        if ($transactorEvent === self::PAYOUT_INITIATED or
+            $transactorEvent === self::VA_TO_VA_PAYOUT_INITIATED)
         {
             $payload[self::TRANSACTION_DATE] = $payout->getInitiatedAt();
         }
@@ -548,7 +564,8 @@ class Payout extends Base
         // We are not supposed to send and fts_fund_account_id or account_type for payout initiated
 
         if ($payload[self::TRANSACTOR_EVENT] === self::INTER_ACCOUNT_PAYOUT_INITIATED or
-            $payload[self::TRANSACTOR_EVENT] === self::PAYOUT_INITIATED)
+            $payload[self::TRANSACTOR_EVENT] === self::PAYOUT_INITIATED or
+            $payload[self::TRANSACTOR_EVENT] === self::VA_TO_VA_PAYOUT_INITIATED)
         {
             return;
         }

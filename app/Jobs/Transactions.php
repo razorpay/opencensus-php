@@ -17,6 +17,7 @@ use RZP\Models\Payout\Core as PayoutCore;
 use RZP\Models\Reversal\Core as ReversalCore;
 use RZP\Models\FundAccount\Validation\Core as FavCore;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\CreditTransfer\Core as CreditTransferCore;
 
 class Transactions extends Job
 {
@@ -88,6 +89,12 @@ class Transactions extends Job
 
                 case Entity::PAYOUT :
                     $response = (new PayoutCore)
+                        ->createTransactionInLedgerReverseShadowFlow($this->entityId, $this->ledgerResponse);
+
+                    break;
+
+                case Entity::CREDIT_TRANSFER :
+                    $response = (new CreditTransferCore())
                         ->createTransactionInLedgerReverseShadowFlow($this->entityId, $this->ledgerResponse);
 
                     break;

@@ -12,5 +12,6 @@ class Constants
         Type::PAYMENT,
         Type::SETTLEMENT,
         Type::PAYOUT,
+        Type::CREDIT_TRANSFER
     ];
 }

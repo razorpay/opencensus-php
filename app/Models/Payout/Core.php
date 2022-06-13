@@ -2368,10 +2368,11 @@ class Core extends Base\Core
             return;
         }
 
-        $event = Status::getLedgerEventFromPayoutStatus($payout->getStatus(),$payout->getPurpose());
+        $event = Status::getLedgerEventForPayout($payout);
 
         if (($event === PayoutsLedgerProcessor::PAYOUT_FAILED or
-             $event === PayoutsLedgerProcessor::PAYOUT_REVERSED) and
+             $event === PayoutsLedgerProcessor::PAYOUT_REVERSED or
+             $event === PayoutsLedgerProcessor::VA_TO_VA_PAYOUT_FAILED) and
              $reversal === null)
         {
             // We don't want to call payout_failed event without a reversal
@@ -3585,7 +3586,7 @@ class Core extends Base\Core
 
         // first we try processing the creditTransfer synchronously
         $this->mutex->acquireAndRelease(
-            $payout->getId(),
+            'ct_'.$payout->getId(),
             function() use ($payout)
             {
                 try
@@ -3630,19 +3631,22 @@ class Core extends Base\Core
         {
             $creditTransfer = (new CreditTransfer\Core())->process($creditTransfer);
 
-            $payout->setUtr($creditTransfer->getUtr());
+            if ($creditTransfer->isStatusProcessed() === true)
+            {
+                $payout->setUtr($creditTransfer->getUtr());
 
-            $payout->setStatus(Status::PROCESSED);
+                $payout->setStatus(Status::PROCESSED);
 
-            $this->repo->saveOrFail($payout);
+                $this->repo->saveOrFail($payout);
 
-            $this->trace->info(TraceCode::CREDIT_TRANSFER_FOR_VA_TO_VA_PAYOUT_SUCCESS,
-                [
-                    'payout_id'          => $payout->getId(),
-                    'payout'             => $payout->toArrayPublic(),
-                    'credit_transfer_id' => $creditTransfer->getId(),
-                    'credit_transfer'    => $creditTransfer->toArray(),
-                ]);
+                $this->trace->info(TraceCode::CREDIT_TRANSFER_FOR_VA_TO_VA_PAYOUT_SUCCESS,
+                    [
+                        'payout_id'          => $payout->getId(),
+                        'payout'             => $payout->toArray(),
+                        'credit_transfer_id' => $creditTransfer->getId(),
+                        'credit_transfer'    => $creditTransfer->toArray(),
+                    ]);
+            }
 
             return $payout;
         });
@@ -3662,10 +3666,34 @@ class Core extends Base\Core
         }
     }
 
+    public function updatePayoutFromCreditTransfer(CreditTransfer\Entity $creditTransfer)
+    {
+        $payout = $this->repo->payout->findOrFail($creditTransfer->getEntityId());
+
+        if ($creditTransfer->isStatusProcessed() === true)
+        {
+            $payout->setUtr($creditTransfer->getUtr());
+
+            $payout->setStatus(Status::PROCESSED);
+
+            $this->repo->saveOrFail($payout);
+
+            $this->trace->info(TraceCode::CREDIT_TRANSFER_FOR_VA_TO_VA_PAYOUT_SUCCESS,
+                [
+                    'payout_id'          => $payout->getId(),
+                    'payout'             => $payout->toArrayPublic(),
+                    'credit_transfer_id' => $creditTransfer->getId(),
+                    'credit_transfer'    => $creditTransfer->toArray(),
+                ]);
+
+            $this->handlePayoutProcessed($payout);
+        }
+    }
+
     public function handleTransferForQueuedVaToVaPayout(string $payoutId)
     {
         return $this->mutex->acquireAndRelease(
-            $payoutId,
+            'ct_'.$payoutId,
             function() use ($payoutId)
             {
                 /** @var Entity $payout */
@@ -3694,11 +3722,14 @@ class Core extends Base\Core
 
                 $payout->getValidator()->validateVaToVaPayoutForReversal();
 
-                $creditTransfer->getValidator()->validateCreditTransferForReversal();
+                if (is_null($creditTransfer) === false)
+                {
+                    $creditTransfer->getValidator()->validateCreditTransferForReversal();
 
-                $creditTransfer->setStatus(CreditTransfer\Status::FAILED);
+                    $creditTransfer->setStatus(CreditTransfer\Status::FAILED);
 
-                $this->repo->saveOrFail($creditTransfer);
+                    $this->repo->saveOrFail($creditTransfer);
+                }
 
                 $this->handlePayoutReversed($payout);
 
@@ -5224,12 +5255,19 @@ class Core extends Base\Core
                 'entity_name'       => EntityConstant::PAYOUT,
             ]);
 
-        $downstreamProcessor = new DownstreamProcessor('fund_account_payout',
-            $payout,
-            $this->mode,
-            $payout->fundAccount->account);
+        if ($payout->isVaToVaPayout() === true)
+        {
+            $this->handleTransferForVaToVaPayouts($payout);
+        }
+        else
+        {
+            $downstreamProcessor = new DownstreamProcessor('fund_account_payout',
+                $payout,
+                $this->mode,
+                $payout->fundAccount->account);
 
-        $downstreamProcessor->processCreateFundTransferAttempt();
+            $downstreamProcessor->processCreateFundTransferAttempt();
+        }
 
         try {
             Transactions::dispatch($this->mode,
@@ -5245,7 +5283,6 @@ class Core extends Base\Core
             ];
             $this->trace->traceException($ex, Trace::ERROR, TraceCode::LEDGER_TRANSACTIONS_QUEUE_JOB_PUSH_FAILED, $payload);
         }
-
     }
 
     public function failPayoutAfterLedgerStatusCheck($payout)

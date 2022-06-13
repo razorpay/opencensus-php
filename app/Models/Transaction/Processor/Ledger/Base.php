@@ -93,7 +93,10 @@ class Base extends Core
     // Ledger SNS push retry
     const DEFAULT_MAX_SNS_RETRY_COUNT = 3;
 
-    const LEDGER_DEBIT_EVENTS = [Payout::PAYOUT_INITIATED, FundAccountValidation::FAV_INITIATED, Adjustment::NEGATIVE_ADJUSTMENT_PROCESSED];
+    const LEDGER_DEBIT_EVENTS = [Payout::PAYOUT_INITIATED,
+                                 Payout::VA_TO_VA_PAYOUT_INITIATED,
+                                 FundAccountValidation::FAV_INITIATED,
+                                 Adjustment::NEGATIVE_ADJUSTMENT_PROCESSED];
 
     const DA_LEDGER_EXT_TO_ENTITY_DEBIT_EVENTS  = [Payout::DA_EXT_PAYOUT_PROCESSED, Payout::DA_EXT_FEE_PAYOUT_PROCESSED];
     const DA_LEDGER_EXT_TO_ENTITY_CREDIT_EVENTS = [Payout::DA_EXT_PAYOUT_REVERSED, Payout::DA_EXT_FEE_PAYOUT_REVERSED];
