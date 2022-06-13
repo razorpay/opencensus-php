@@ -753,8 +753,10 @@ class GatewayController extends Controller
                 ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
                 null,
                 [
-                    'provider' => Gateway::GETSIMPL,
-                    'input'    => $input,
+                    'provider'   => Gateway::GETSIMPL,
+                    'input'      => $input,
+                    'payment_id' => $payment->getPublicId(),
+                    'order_id'   => $payment->getOrderId(),
                 ]);
         }
 

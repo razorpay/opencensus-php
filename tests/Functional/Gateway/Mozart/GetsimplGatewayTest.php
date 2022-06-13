@@ -161,6 +161,8 @@ class GetsimplGatewayTest extends TestCase
 
         catch( BadRequestException $e)
         {
+            self::assertNotNull($e->getData()['payment_id']);
+            self::assertNotNull($e->getData()['order_id']);
             self::assertNotNull($e->getError());
         }
     }
@@ -184,6 +186,8 @@ class GetsimplGatewayTest extends TestCase
 
         catch( BadRequestException $e)
         {
+            self::assertNotNull($e->getData()['payment_id']);
+            self::assertNotNull($e->getData()['order_id']);
             self::assertNotNull($e->getError());
         }
     }
