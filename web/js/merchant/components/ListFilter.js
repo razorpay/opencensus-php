@@ -93,17 +93,23 @@ class ListFilter extends Component {
 
   // update query params as empty for auto search in willReceiveProps
   resetForm = () => {
-    this.props.history.push({
+    const { history, location, resetHandler, reset, onClearAnalytics, setProvider } = this.props;
+
+    history.push({
       search: stringifyQueryParams({}),
-      hash: this.props.location.hash,
+      hash: location.hash,
     });
 
-    this.props.reset();
+    if (resetHandler) {
+      resetHandler();
+    }
 
-    this.props.onClearAnalytics();
+    reset();
 
-    if (this.props.setProvider) {
-      this.props.setProvider({ name: 'All', value: '', gateway: '' });
+    onClearAnalytics();
+
+    if (setProvider) {
+      setProvider({ name: 'All', value: '', gateway: '' });
     }
   };
 

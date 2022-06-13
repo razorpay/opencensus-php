@@ -102,18 +102,23 @@ class BatchValidate extends Component {
   };
 
   render() {
+    const { component } = this.props;
+    const { status } = this.state;
     return (
-      <BatchValidateModal
-        onLoadMore={this.handleLoadMore}
-        onFileChange={this.handleBatchValidation}
-        onBiggerFileSize={this.handleBiggerFileSize}
-        onCloseClick={this.handleCloseClick}
-        onSampleFileDownload={this.onSampleFileDownload}
-        onErrorReportDownload={this.handleErrorReportDownload}
-        onClickUpload={this.onClickUpload}
-        {...this.state}
-        {...this.props}
-      />
+      <>
+        <BatchValidateModal
+          onLoadMore={this.handleLoadMore}
+          onFileChange={this.handleBatchValidation}
+          onBiggerFileSize={this.handleBiggerFileSize}
+          onCloseClick={this.handleCloseClick}
+          onSampleFileDownload={this.onSampleFileDownload}
+          onErrorReportDownload={this.handleErrorReportDownload}
+          onClickUpload={this.onClickUpload}
+          {...this.state}
+          {...this.props}
+        />
+        {!status ? component : null}
+      </>
     );
   }
 }

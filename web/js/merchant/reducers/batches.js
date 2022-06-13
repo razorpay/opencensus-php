@@ -108,7 +108,7 @@ const fetchBatchDetails = (batchType, fetchDetailAction) => (params) => ({
 
 /////
 
-function _createBatch(data, batchType, customBatch) {
+function _createBatch(data, batchType, customBatch, customHeaders) {
   return {
     type: getCreateActioName(customBatch || BATCH),
     payload: merchantFetch({
@@ -118,13 +118,14 @@ function _createBatch(data, batchType, customBatch) {
         type: batchType,
         ...data,
       },
+      headers: customHeaders,
     }).then((response) => response.data),
   };
 }
 
 /* method to create action for create batch action */
-export const createBatch = (batchType, actionPrefix) => (data) => {
-  return _createBatch(data, batchType, actionPrefix);
+export const createBatch = (batchType, actionPrefix, customHeaders = {}) => (data) => {
+  return _createBatch(data, batchType, actionPrefix, customHeaders);
 };
 
 /////

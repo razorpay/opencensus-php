@@ -59,9 +59,17 @@ class BatchUpload extends Component {
   }
 
   onModalClose = () => {
-    this.props.gaEvents.trackUploadBatch('Close');
-    this.props.closeModal();
-    this.props.trackCloseModal && this.props.trackCloseModal();
+    const { currentStatus } = this.state;
+    const { closeSuccessModal, gaEvents, closeModal, trackCloseModal } = this.props;
+
+    gaEvents?.trackUploadBatch?.('Close');
+    closeModal();
+
+    if (currentStatus === 'success' && closeSuccessModal) {
+      closeSuccessModal();
+    }
+
+    trackCloseModal && trackCloseModal();
   };
   render() {
     const {
@@ -85,13 +93,18 @@ class BatchUpload extends Component {
       createBatch,
       processingOptions,
       title,
+      component,
+      ctaText,
+      successText,
+      batchListClass,
+      pendingText,
     } = this.props;
 
     const { batchName, batch, currentStatus } = this.state;
 
     const docLink = getCustomURL(docUrl);
     return (
-      <div className={`batch-upload-modal ${currentStatus}`}>
+      <div className={`batch-upload-modal ${batchListClass} ${currentStatus}`}>
         <ModalHeader
           title={currentStatus !== 'success' ? title || 'Batch Upload' : ''}
           onCloseClick={this.onModalClose}
@@ -118,6 +131,7 @@ class BatchUpload extends Component {
                   maxFileSize={maxFileSize}
                   acceptFileInfo={acceptFileInfo}
                   modalInfo={validateModalInfo}
+                  component={component}
                 />
               );
             case 'create':
@@ -134,6 +148,8 @@ class BatchUpload extends Component {
                   trackSampleInterpretation={gaEvents?.trackSampleInterpretation}
                   docUrl={docLink}
                   processingOptions={processingOptions}
+                  ctaText={ctaText}
+                  pendingText={pendingText}
                   onFileNameTrack={this.props.onFileNameTrack}
                   onPreview={this.props.onPreview}
                   sampleUrl={sampleUrl}
@@ -146,6 +162,7 @@ class BatchUpload extends Component {
                     this.onModalClose && this.onModalClose();
                     this.props.trackSuccessModalClose && this.props.trackSuccessModalClose();
                   }}
+                  successHeader={successText}
                 >
                   <p className="text-center">
                     {successMessageMap[batchType] ||

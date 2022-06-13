@@ -39,7 +39,7 @@ const NativeShippingTabWrapper = ({ settings }) => {
           </div>
         </div>
       </div>
-      <div className={`padding-16${view === NATIVE_SHIPPING_VIEWS.SHIPROCKET ? ' bg-white' : ''}`}>
+      <div className={`padding-20${view === NATIVE_SHIPPING_VIEWS.SHIPROCKET ? ' bg-white' : ''}`}>
         <Component isServiceabilitySettingsEnabled={true} />
       </div>
     </div>

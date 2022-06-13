@@ -2,8 +2,8 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { useState, useCallback } from 'react';
 import { updateMagicSettings } from 'merchant/reducers/magicCheckout/magicSettings/actions';
-import ShipRocketSettings from 'merchant/views/MagicCheckout/ShippingServices';
 import CodIntelligenceToggle from 'merchant/views/MagicCheckout/MagicSettings/components/common/CodIntelligenceToggle';
+import MagicIntelligence from 'merchant/views/MagicCheckout/MagicIntelligence';
 import { PLATFORMS } from 'merchant/views/MagicCheckout/MagicSettings/constants';
 
 const MagicIntelligenceTab = ({ settings, updateSettings }) => {
@@ -35,7 +35,7 @@ const MagicIntelligenceTab = ({ settings, updateSettings }) => {
         </div>
       </div>
       <div className="magic-intelligence-shiprocket">
-        <ShipRocketSettings isServiceabilitySettingsEnabled={false} />
+        <MagicIntelligence />
       </div>
     </div>
   );

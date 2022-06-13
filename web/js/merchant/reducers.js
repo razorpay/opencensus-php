@@ -110,6 +110,10 @@ import shippingServiceReducer from 'merchant/reducers/magicCheckout/shipping_ser
 import trackEventsReducer from './reducers/trackEvents';
 import workflowReducer from './reducers/workflows';
 import magicSettingsReducer from 'merchant/reducers/magicCheckout/magicSettings/reducer';
+import {
+  blocklistReducer,
+  allowlistReducer,
+} from 'merchant/reducers/magicCheckout/magicIntelligence/reducer';
 
 export default combineReducers({
   modal: modalReducer,
@@ -213,6 +217,8 @@ export default combineReducers({
   migrations: MigrationReducer,
   magicCheckout: magicCheckoutReducer,
   magic_settings: magicSettingsReducer,
+  magicBlocklist: blocklistReducer,
+  magicAllowlist: allowlistReducer,
   shippingService: shippingServiceReducer,
   merchantReferral: merchantReferralReducer,
   trackEvents: trackEventsReducer,

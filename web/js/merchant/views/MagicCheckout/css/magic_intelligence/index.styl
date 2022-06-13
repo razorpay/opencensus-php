@@ -1,0 +1,175 @@
+.tabs
+  tabbed-container
+    padding: 0
+    header
+      border: none
+      border-bottom: 1px solid #e2e8ea
+      padding: 0 20px
+    content
+      border: none
+  .table
+      .i-delete
+        color: #999999
+        &:hover
+          cursor:pointer
+          color: #FF0000
+  .scrollable-tab-header
+    color: #555
+    border-bottom: 3px solid transparent
+    display: inline-block
+    margin: 0 16px
+    font-weight: bold
+    position: relative
+    bottom: -1px
+    &:hover
+      cursor:pointer
+  .scrollable-tab-header:first-child
+    margin-left:0
+  .active
+    border-color: #528ff0
+    color: #528ff0
+  .list-container
+    background-color: #fff
+    .content-wrapper
+      border-bottom: 1px solid #e2e8ea
+    .data-table
+      margin-top: -15px
+      th:last-child, td:last-child
+        text-align: right
+      .alert
+        padding: 10px
+      .alert-dismissable
+        padding-right: 35px
+        .close
+          top: 2px
+  .shipping-service
+    background-color: #fff
+    padding: 20px
+  .list-container
+    padding: 20px
+    .content-wrapper
+      padding: 0
+    .list-header
+      display: flex
+      justify-content: center
+      align-items: center
+      font-size: 16px
+      padding-bottom: 20px
+      .col-md-6
+        padding: 0
+        .cta-container
+          .btn
+            padding: 6px 12px 6px 9px
+    .list-filter-container
+      padding-top: 24px
+      display: flex
+      justify-content: flex-start
+      align-items: center
+      margin: 0 -25px 24px -25px
+      .list-filter-item
+        .select-control
+          border: 1px solid #cfdadd
+          padding: 0 12px
+          border-radius: 3px
+        select
+          text-transform: capitalize
+          padding: 0
+          border: none
+          height: 28px
+      .btn-toolbar
+        position: relative
+        top: -2px
+    .empty-table-message
+      p
+        margin-bottom: 5px
+        font-weight: 700
+      .btn
+        padding: 6px 12px 6px 9px
+
+.modal-body
+  .Modal__actions
+    display:flex
+    justify-content: space-around
+    .btn
+      width: 1440px
+  .table
+    tr:nth-child(odd)
+      background-color: #f9f9f9
+    tr:nth-child(even)
+      background-color: #fff
+    th
+      text-align: center
+    td
+      text-align: center
+
+.manual-upload
+  .modal-header
+    font-size: initial
+    color: #818FA4
+  .modal-body
+    .form-group
+      display: flex
+      flex-direction: row
+      margin: 18px 0 24px 0
+      label
+        font-weight: 400
+        font-size: 14px
+      .control-type
+        margin-right: 24px
+      .control-value
+        margin-right: 20px
+      .modal-select
+        width: 50%
+        border: 1px solid #cfdadd
+        border-radius: 3px
+        padding: 0 12px
+        select
+          border: none
+          padding: 0
+      .modal-textArea
+        width: 100%
+      .modal-err-msg
+        color: #EE6D69
+        padding: 5px 0
+        word-break: break-word
+
+.batch-upload-modal.list-upload
+  .manual-upload
+    .modal-header
+      padding-bottom: 0
+    .modal-body
+      padding: 0 24px
+  .modal-header
+    padding: 18px 24px 5px
+  .modal-body
+    padding: 5px 24px 12px
+    .modal-heading
+      margin: 14px 0
+      text-align: left
+    .modal-file
+      width: 100%
+    .modal-info
+      .validate-modal-ul
+        padding-left: 12px
+
+.batch-upload-modal.list-upload.success
+  .modal-header
+    padding: 20px 24px 0
+  .modal-body
+    display: flex
+    flex-direction: column
+    justify-content: center
+    align-items: center
+    padding-bottom: 43px
+    .success-tick
+      margin-bottom: 10px
+    .success-text
+      padding: 10px 0 0
+
+.layout
+  .Notification
+    .i-close
+      top: 14px
+
+.Modal--large
+  width: 756px

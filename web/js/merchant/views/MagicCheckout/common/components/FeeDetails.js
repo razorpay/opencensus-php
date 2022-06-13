@@ -24,12 +24,11 @@ const FeeDetails = ({ rule_type, flat, slabs, type, label }) => {
       fee = RULE_TYPES.FREE;
     }
     return (
-      <div
-        className={`display-flex justify-space-between c-fee-details fee-bg fee-slabs-table
-      ${type === 'shipping' ? ' c-fee-details-shipping' : ''}`}
-      >
+      <div className="display-flex justify-space-between c-fee-details fee-bg fee-slabs-table">
         {fee === RULE_TYPES.FREE && (
-          <span className="font-bold color-black">Free Cash on Delivery</span>
+          <span className="font-bold color-black">
+            {type === 'shipping' ? `Free shipping` : `Free Cash on Delivery`}
+          </span>
         )}
         {fee !== RULE_TYPES.FREE ? (
           <>
