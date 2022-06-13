@@ -48,8 +48,8 @@ class Entity extends Base\PublicEntity
     const TDS_CATEGORY    = 'tds_category';
     const VENDOR          = 'vendor';
     const PAN             = 'pan';
-    const GST_IN          = "gstin";
-    const EXPENSE_ID      = "expense_id";
+    const GST_IN          = 'gstin';
+    const EXPENSE_ID      = 'expense_id';
     const RESPONSE_CODE   = 'response_code';
 
     // Raw Email used exclusively for ES
@@ -365,7 +365,7 @@ class Entity extends Base\PublicEntity
         /** @var BasicAuth $basicAuth */
         $basicAuth = app('basicauth');
 
-        return $basicAuth->isProxyAuth() === true;
+        return $basicAuth->isProxyOrPrivilegeAuth() === true;
     }
 
 }
