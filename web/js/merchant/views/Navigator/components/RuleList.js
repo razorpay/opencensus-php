@@ -7,6 +7,7 @@ import DataTable from 'common/ui/Table/DataTable';
 import { getValue, getRuleStatus, removeMid, uniqueArray, findProviderName } from './util';
 import ProviderNewView from './ProviderNewView';
 import { idItem } from 'common/ui/item/id';
+import DocsLink from 'merchant/components/DocsLink';
 import { fetchTerminalProviders } from 'merchant/reducers/navigator/details';
 import Spinner from 'common/ui/Spinner';
 import { trackOptimizerEvents } from 'merchant/views/Navigator/track';
@@ -73,6 +74,10 @@ export default class RuleList extends React.Component {
   render() {
     const { isCollapsed, redirect } = this.state;
     const { terminalProviders } = this.props;
+    const docsLinkProps = {
+      url: 'https://razorpay.com/docs/payments/optimizer/',
+      title: <span>Documentation</span>,
+    };
     if (redirect) {
       return <Redirect to={redirect} />;
     }
@@ -94,15 +99,18 @@ export default class RuleList extends React.Component {
                   />
                 </span>
               )}
-              <Link to="/optimizer/add-provider" className="pull-right">
-                <button
-                  className="pull-right no-border create-rule-act"
-                  type="button"
-                  onClick={this.trackEventOnAddProvider}
-                >
-                  <i className="i i-plus" /> Add provider
-                </button>
-              </Link>
+              <div className="pull-right header-right-container">
+                <DocsLink {...docsLinkProps} />
+                <Link to="/optimizer/add-provider">
+                  <button
+                    className="pull-right no-border create-rule-act"
+                    type="button"
+                    onClick={this.trackEventOnAddProvider}
+                  >
+                    <i className="i i-plus" /> Add provider
+                  </button>
+                </Link>
+              </div>
             </h2>
           </div>
           <div
