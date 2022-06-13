@@ -17,7 +17,7 @@ class LinkedAccountBankVerificationStatusBackfill extends Job
 
     protected $shouldSync;
 
-    protected $queueConfigKey = 'batch';
+    protected $queueConfigKey = 'linked_account_batch';
 
     public $timeout = 5 * 3600;
 

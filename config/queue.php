@@ -103,6 +103,11 @@ return [
         'test'       => env('AWS_BATCH_QUEUE'),
         'live'       => env('AWS_BATCH_QUEUE'),
     ],
+    // generic batch queue with high visibility timeout
+    'linked_account_batch' => [
+        'test'      => env('AWS_LINKED_ACCOUNT_BATCH'),
+        'live'      => env('AWS_LINKED_ACCOUNT_BATCH')
+    ],
     'irctc_batch' => [
         'test'       => env('AWS_IRCTC_BATCH_QUEUE'),
         'live'       => env('AWS_IRCTC_BATCH_QUEUE'),
