@@ -2511,7 +2511,7 @@ class Core extends Base\Core
     public function buildCardInputForTokenisation(Card\Entity $card): array
     {
         return [
-            'cvv'          => 123,
+            'cvv'          => Card\Entity::getDummyCvv($card->getNetworkCode()),
             'last4'        => $card->getLast4() ?? "0000",
             'expiry_month' => $card->getExpiryMonth() ?? "0",
             'expiry_year'  => $card->getExpiryYear() ?? "9999",

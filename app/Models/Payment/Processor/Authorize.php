@@ -6716,7 +6716,7 @@ trait Authorize
             $this->setCardNumberAndCvv($input);
 
             $cardInput = [
-                'cvv'                             => $input['card']['cvv'] ?? 123,
+                'cvv'                             => $input['card']['cvv'] ?? Card\Entity::getDummyCvv($payment->card->getNetworkCode()),
                 'last4'                           => $input['card']['last4'] ?? "0000",
                 'expiry_month'                    => $input['card']['expiry_month'] ?? "0",
                 'expiry_year'                     => $input['card']['expiry_year'] ?? "9999",
