@@ -9,7 +9,7 @@ export default function PartnerNavLinks() {
         to="/partners"
         exact
         type="partner"
-        additionalCondition={(user) => user.isAllowedView('submerchants') && user.isPartnershipFUX}
+        additionalCondition={(user) => user.isPartnershipFUX}
         isNew={true}
       />
 

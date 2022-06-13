@@ -129,6 +129,7 @@ export default {
   partner_settings: [OWNER, ADMIN, MANAGER],
   earnings: [OWNER, ADMIN, MANAGER],
   partner_applications: [OWNER, MANAGER, ADMIN],
+  partner_home: [OWNER],
   loans: [OWNER, ADMIN],
   cash_advance: [OWNER, ADMIN],
 };
