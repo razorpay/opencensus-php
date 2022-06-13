@@ -50,6 +50,7 @@ use RZP\lib\ConditionParser\Parser;
 use RZP\Models\Partner\Activation;
 use RZP\Models\Merchant\Promotion;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Services\ApachePinotClient;
 use RZP\Models\Merchant\LegalEntity;
 use RZP\Models\Merchant\Stakeholder;
 use RZP\Listeners\ApiEventSubscriber;
@@ -3471,14 +3472,14 @@ class Core extends Base\Core
         try
         {
             $error_status = $this->fetchVerificationErrorCodes($merchant);
-            $this->trace->info(TraceCode::MERCHANT_DETAIL_VERIFICATION_ERROR_RESPONSE, [
+            $this->trace->info(TraceCode::MERCHANT_DETAIL_VERIFICATION_RESPONSE, [
                 '$error_status' => $error_status,
             ]);
             $response[DetailConstants::VERIFICATION_ERROR_CODES] = $error_status;
         }
         catch (\Throwable $e)
         {
-            $this->trace->error(TraceCode::MERCHANT_DETAIL_VERIFICATION_ERROR_RESPONSE, [
+            $this->trace->error(TraceCode::MERCHANT_DETAIL_VERIFICATION_RESPONSE, [
                 'error' => $e,
             ]);
             $response[DetailConstants::VERIFICATION_ERROR_CODES] = [];
@@ -3521,43 +3522,26 @@ class Core extends Base\Core
             return false;
         }
 
-        $query = [
-            'filters'      => [
-                'default' => [
-                    [
-                        'created_at'    => [
-                            'gte' => $merchant->getCreatedAt(),
-                            'lte' => Carbon::now()->getTimestamp()
-                        ],
-                        'authorized_at' => [
-                            'gt' => 0
-                        ],
-                    ],
-                ],
-            ],
-            'aggregations' => [
-                'firstTransaction' => [
-                    'agg_type' => 'oldest',
-                    'details'  => [
-                        'index'         => 'payments',
-                        'column'        => 'created_at',
-                        'mode'          => 'live',
-                        'limit'         => 1,
-                        'result_fields' => ['base_amount'],
-                    ],
-                ],
-            ],
-        ];
+        $query = "select count(merchant_id) as transacted from payments_v1 where created_at between %s and %s and base_amount>%s and merchant_id='%s'";
 
-        $query = (new Merchant\Core)->processMerchantAnalyticsQuery($merchant->getId(), $query);
+        $query = sprintf($query, $merchant->getCreatedAt(), Carbon::now()->getTimestamp(),0,$merchant->getId());
 
-        $aggregateData = $this->app['eventManager']->query($query);
+        // fetch if transactions are done
+        $queryResponse = (new ApachePinotClient())->getDataFromPinot($query);
 
-        $firstTransaction = $aggregateData['firstTransaction']['result'][0]['base_amount'] ?? 0;
+        $this->trace->info(TraceCode::APACHE_PINOT_RESPONSE, [
+            'response' => $queryResponse,
+            'merchant_id' => $merchant->getId()
+        ]);
 
-        if ($firstTransaction > 0)
+        if (empty($queryResponse) === false)
         {
-            return false;
+            $resultCount = $queryResponse[0]["transacted"];
+
+            if ($resultCount > 0)
+            {
+                return false;
+            }
         }
 
         if (Carbon::now()->subDays(2)->getTimestamp() < $merchant->getActivatedAt())
@@ -6872,7 +6856,7 @@ class Core extends Base\Core
                 Constant::MERCHANT,
                 $artefactType
             );
-            $this->trace->info(TraceCode::MERCHANT_DETAIL_VERIFICATION_ERROR_RESPONSE, [
+            $this->trace->info(TraceCode::MERCHANT_DETAIL_VERIFICATION_RESPONSE, [
                 '$validation' => $validation,
             ]);
             if (empty($validation) === true or empty($validation->getErrorCode()) === true)
@@ -6897,7 +6881,7 @@ class Core extends Base\Core
                     // since document associated with the validation is deleted, skip the processing
                     continue;
                 }
-                $this->trace->info(TraceCode::MERCHANT_DETAIL_VERIFICATION_ERROR_RESPONSE, [
+                $this->trace->info(TraceCode::MERCHANT_DETAIL_VERIFICATION_RESPONSE, [
                     '$document' => $document,
                 ]);
             }

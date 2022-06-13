@@ -2685,7 +2685,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_DETAIL_FRAUD_TYPE_UPDATED                    = 'MERCHANT_DETAIL_FRAUD_TYPE_UPDATED';
     const MERCHANT_DETAIL_FRAUD_TYPE_UPDATE_REQUEST             = 'MERCHANT_DETAIL_FRAUD_TYPE_UPDATE_REQUEST';
     const MERCHANT_DETAIL_FRAUD_TYPE_UPDATE_SKIPPED             = 'MERCHANT_DETAIL_FRAUD_TYPE_UPDATE_SKIPPED';
-    const MERCHANT_DETAIL_VERIFICATION_ERROR_RESPONSE           = 'MERCHANT_DETAIL_VERIFICATION_ERROR_RESPONSE';
+    const MERCHANT_DETAIL_VERIFICATION_RESPONSE           = 'MERCHANT_DETAIL_VERIFICATION_RESPONSE';
 
     // Trace code for stakeholders
     const MERCHANT_CREATE_STAKEHOLDER_REQUEST                   = 'MERCHANT_CREATE_STAKEHOLDER_REQUEST';
@@ -5653,7 +5653,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const DATALAKE_PRESTO_REQUEST_FAILURE                         = 'DATALAKE_PRESTO_REQUEST_FAILURE';
 
     const APACHE_PINOT_QUERY                                   = 'APACHE_PINOT_QUERY';
-    const APACHE_PINOT_RESPONSE                                   = 'APACHE_PINOT_RESPONSE';
+    const APACHE_PINOT_RESPONSE                                = 'APACHE_PINOT_RESPONSE';
     const APACHE_PINOT_REQUEST_FAILURE                         = 'APACHE_PINOT_REQUEST_FAILURE';
 
     // Request Log
