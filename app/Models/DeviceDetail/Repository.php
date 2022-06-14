@@ -7,10 +7,13 @@ use RZP\Models\Base;
 use RZP\Constants\Table;
 use RZP\Models\User\Role;
 use RZP\Models\Merchant\MerchantUser;
+use RZP\Models\Base\QueryCache\CacheQueries;
 use RZP\Models\Base\RepositoryUpdateTestAndLive;
 
 class Repository extends Base\Repository
 {
+    use CacheQueries;
+
     use RepositoryUpdateTestAndLive;
 
     protected $entity = 'user_device_detail';
@@ -37,7 +40,7 @@ class Repository extends Base\Repository
         $merchantUserIdColumn = $this->repo->merchant_user->dbColumn(MerchantUser\Entity::USER_ID);
         $merchantUserRoleColumn = $this->repo->merchant_user->dbColumn(MerchantUser\Entity::ROLE);
 
-        return $this->newQuery()
+        return $this->newQueryWithConnection($this->getReportingReplicaConnection())
             ->join(Table::MERCHANT_USER, $merchantUserIdColumn, '=', $userIdColumn)
             ->where($merchantIdColumn, '=', $merchantId)
             ->where($merchantUserRoleColumn, '=', $role)
