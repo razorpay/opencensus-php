@@ -10937,15 +10937,7 @@ trait Authorize
                     'tokenMerchantId' => $tokenEntity->getMerchantId(),
                 ]);
 
-            //consent will be a non boolean value (acknowledged_at time) in case of CAW saved card flow
-            if($consent !== true)
-            {
-                $tokenEntity->setAcknowledgedAt($consent);
-            }
-            else
-            {
-                $tokenEntity->setAcknowledgedAt(Carbon::now()->timestamp);
-            }
+            $tokenEntity->setAcknowledgedAt(Carbon::now()->timestamp);
 
             $tokenEntity->saveOrFail();
 

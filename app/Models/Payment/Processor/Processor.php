@@ -904,24 +904,7 @@ class Processor
             $userConsentGiven = ((empty($input[self::USER_CONSENT_FOR_TOKENISATION]) === false) ||
                                  (empty($input[self::SAVE]) === false));
 
-            // For CAW saved card flow, we clone the original local token and make another new local token
-            // we are saving the acknowledged_at value of the original card token in redis for the saved card flow in CAW
-            // this value will be set to the new token's acknowledged_at after payment authorization
-
-            $recurringInitialPaymentDataChecksForSavedCardFlow = (isset($paymentData['type']) and
-                                                                  $paymentData['type'] === 'first');
-
-            $recurringInitialInputPayloadChecksForSavedCardFlow = (isset($input['recurring']) and
-                                                                   ($input['recurring'] == true or
-                                                                    $input['recurring'] === 'preferred') and
-                                                                   isset($input['token']));
-
-            $isRecurringSavedCardFlow = $recurringInitialPaymentDataChecksForSavedCardFlow and
-                                        $recurringInitialInputPayloadChecksForSavedCardFlow;
-
-
-            if ($userConsentGiven === false and
-                $isRecurringSavedCardFlow === false)
+            if ($userConsentGiven === false)
             {
                 return;
             }
@@ -930,17 +913,7 @@ class Processor
 
             $ttl = 60 * 60; // 1 hr in seconds
 
-            if($isRecurringSavedCardFlow === true and
-               $userConsentGiven === false)
-            {
-                $recurringSavedCardToken = (new Customer\Token\Repository)->getByTokenAndMerchant($input['token'], $this->merchant);
-
-                $this->app['cache']->put($redisKey, $recurringSavedCardToken->getAcknowledgedAt(), $ttl);
-            }
-            else
-            {
-                $this->app['cache']->put($redisKey, true, $ttl);
-            }
+            $this->app['cache']->put($redisKey, true, $ttl);
 
             if (isset($input['token']))
             {
