@@ -5693,13 +5693,38 @@ class Core extends Base\Core
             return;
         }
 
-        $debitBAS = $this->repo->banking_account_statement->fetchByUtrForPayout($payout) ??
-                    $this->repo->banking_account_statement->fetchByCmsRefNumForPayout($payout);
+        $this->trace->info(
+            TraceCode::MODIFY_STATUS_FOR_CURRENT_ACCOUNT_CHECK_START,
+            [
+                Entity::PAYOUT . '_' . Entity::ID   => $payout->getId(),
+                Entity::MERCHANT_ID                 => $payout->getMerchantId(),
+                Entity::UTR                         => $payout->getUtr(),
+            ]
+        );
+
+        $debitBAS = null;
+
+        if (empty($payout->getUtr()) === false)
+        {
+            $debitBAS = $this->repo->banking_account_statement->fetchByUtrForPayout($payout);
+        }
+        if ($debitBAS === null)
+        {
+            $debitBAS = $this->repo->banking_account_statement->fetchByCmsRefNumForPayout($payout);
+        }
 
         if (empty($debitBAS) === false)
         {
-            $creditBAS = $this->repo->banking_account_statement->fetchByUtrForPayout($payout, BankingAccountStatement\Type::CREDIT) ??
-                         $this->repo->banking_account_statement->fetchByCmsRefNumForPayout($payout, BankingAccountStatement\Type::CREDIT);
+            $creditBAS = null;
+
+            if (empty($payout->getUtr()) === false)
+            {
+                $creditBAS = $this->repo->banking_account_statement->fetchByUtrForPayout($payout, BankingAccountStatement\Type::CREDIT);
+            }
+            if ($creditBAS === null)
+            {
+                $creditBAS = $this->repo->banking_account_statement->fetchByCmsRefNumForPayout($payout, BankingAccountStatement\Type::CREDIT);
+            }
 
             if ($creditBAS === null)
             {
