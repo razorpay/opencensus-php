@@ -5,6 +5,8 @@ namespace RZP\Models\CardMandate\MandateHubs\MandateHQ;
 use Crypt;
 use Carbon\Carbon;
 
+use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorDescription;
 use RZP\Models\Card;
 use RZP\Models\CardMandate\Entity;
 use RZP\Models\CardMandate\Status;
@@ -240,9 +242,21 @@ class MandateHQ extends CardMandate\MandateHubs\BaseHub
     protected function getReportInitialPaymentInput(Payment\Entity $payment): array
     {
         $paymentStatus = Payment\Status::CAPTURED;
+        $paymentErrorCode = $payment->getErrorCode();
+        $paymentErrorDescription = $payment->getErrorDescription();
+
         if ($payment->isFailed() === true)
         {
             $paymentStatus = Payment\Status::FAILED;
+        }
+
+        if ($payment->getStatus() === Payment\Status::REFUNDED)
+        {
+            $paymentStatus = Payment\Status::FAILED;
+            $paymentErrorCode = ErrorCode::BAD_REQUEST_ERROR;
+            // This error description will be updated when we receive proper
+            // descriptions from product, will handle this error case scenario separately.
+            $paymentErrorDescription = 'Failed to tokenised the card';
         }
 
         return [
@@ -250,8 +264,8 @@ class MandateHQ extends CardMandate\MandateHubs\BaseHub
             Constants::CURRENCY             => $payment->getCurrency(),
             Constants::AMOUNT               => $payment->getAmount(),
             Constants::PAYMENT_STATUS       => $paymentStatus,
-            Constants::FAILURE_CODE         => $payment->getErrorCode(),
-            Constants::FAILURE_DESCRIPTION  => $payment->getErrorDescription(),
+            Constants::FAILURE_CODE         => $paymentErrorCode,
+            Constants::FAILURE_DESCRIPTION  => $paymentErrorDescription,
             Constants::CAPTURED_AT          => $payment->getAuthorizeTimestamp(),
             Constants::AUTHENTICATION       => [
                 Constants::AUTHENTICATION_STATUS          => null,

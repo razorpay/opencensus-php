@@ -13,6 +13,7 @@ use RZP\Models\Bank\IFSC;
 use RZP\Constants\Entity as E;
 use RZP\Models\Card\Network;
 use RZP\Models\Currency\Currency;
+use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\Helpers\TerminalTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\CardMandate\Status;
@@ -121,6 +122,171 @@ class CardMandateTest extends TestCase
         $this->assertNotEmpty($token);
         $this->assertEquals('confirmed', $token->getRecurringStatus());
         $this->assertTrue($token->hasCardMandate());
+
+        $cardMandate = $this->getDbLastEntity(E::CARD_MANDATE);
+        $this->assertNotEmpty($cardMandate);
+        $this->assertNotEmpty($cardMandate->getMandateSummaryUrl());
+        $this->assertEquals('active', $cardMandate->getStatus());
+        $this->assertEquals('ratn_PP3VC146gmBVGG', $cardMandate->getMandateId());
+    }
+
+    public function testCreateCardMandatePaymentWithTokenisationSuccess()
+    {
+        $this->mockCheckBin();
+
+        $this->mockRegisterMandate();
+
+        $this->mockReportPayment();
+
+        $this->mockCardVaultWithMigrateToken();
+
+        $this->fixtures->merchant->addFeatures(['network_tokenization_live']);
+
+        $this->setMockRazorxTreatment(['recurring_tokenisation_unhappy_flow_handling' => 'on',
+                                       'recurring_tokenisation' => 'on']);
+
+        $this->mockFetchMerchantTokenisationOnboardedNetworks([Network::VISA]);
+
+        $paymentInp = $this->paymentInput;
+        $paymentInp['_']['library'] = 'razorpayjs';
+        $paymentInp['save'] = 1;
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/ajax',
+            'content' => $paymentInp,
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertNotNull($response['razorpay_payment_id'] ?? null);
+
+        $payment = $this->getDbLastEntity(E::PAYMENT);
+        $this->assertEquals('captured', $payment->getStatus());
+        $this->assertEquals('initial', $payment->getRecurringType());
+        $this->assertNotNull($payment->getTokenId());
+
+        $token = $payment->localToken;
+        $this->assertNotEmpty($token);
+        $this->assertEquals('confirmed', $token->getRecurringStatus());
+        $this->assertTrue($token->hasCardMandate());
+
+        $card = $payment->localToken->card;
+        $this->assertEquals('visa', $card->getVault());
+
+        $cardMandate = $this->getDbLastEntity(E::CARD_MANDATE);
+        $this->assertNotEmpty($cardMandate);
+        $this->assertNotEmpty($cardMandate->getMandateSummaryUrl());
+        $this->assertEquals('active', $cardMandate->getStatus());
+        $this->assertEquals('ratn_PP3VC146gmBVGG', $cardMandate->getMandateId());
+    }
+
+    public function testCreateCardMandatePaymentWithTokenisationFailure()
+    {
+        $this->mockCheckBin();
+
+        $this->mockRegisterMandate();
+
+        $this->mockReportPayment();
+
+        $this->fixtures->merchant->addFeatures(['network_tokenization_live']);
+
+        $this->setMockRazorxTreatment(['recurring_tokenisation_unhappy_flow_handling' => 'on',
+                                       'recurring_tokenisation' => 'on']);
+
+        $paymentInp = $this->paymentInput;
+        $paymentInp['_']['library'] = 'razorpayjs';
+        $paymentInp['save'] = 1;
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/ajax',
+            'content' => $paymentInp,
+        ];
+
+        $this->makeRequestAndCatchException(function () use ($request) {
+            $this->makeRequestAndGetContent($request);
+        }, \RZP\Exception\LogicException::class, 'Failed to tokenised the card');
+
+        $payment = $this->getDbLastEntity(E::PAYMENT);
+        $this->assertEquals('refunded', $payment->getStatus());
+        $this->assertEquals('initial', $payment->getRecurringType());
+        $this->assertNotNull($payment->getTokenId());
+
+        $token = $payment->localToken;
+        $this->assertNotEmpty($token);
+        $this->assertEquals('rejected', $token->getRecurringStatus());
+        $this->assertTrue($token->hasCardMandate());
+
+        $order = $payment->order;
+        $this->assertEquals('attempted', $order->getStatus());
+        $this->assertEquals(false, $order->isAuthorized());
+
+        $card = $payment->localToken->card;
+        $this->assertEquals('rzpvault', $card->getVault());
+
+        $cardMandate = $this->getDbLastEntity(E::CARD_MANDATE);
+        $this->assertNotEmpty($cardMandate);
+        $this->assertNotEmpty($cardMandate->getMandateSummaryUrl());
+        $this->assertEquals('mandate_approved', $cardMandate->getStatus());
+        $this->assertEquals('ratn_PP3VC146gmBVGG', $cardMandate->getMandateId());
+    }
+
+    public function testCreateCardMandatePaymentWithTokenisationFailureThenSuccess()
+    {
+        $this->mockCheckBin();
+
+        $this->mockRegisterMandate();
+
+        $this->mockReportPayment();
+
+        $paymentInp = $this->paymentInput;
+        $paymentInp['_']['library'] = 'razorpayjs';
+        $paymentInp['save'] = 1;
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/ajax',
+            'content' => $paymentInp,
+        ];
+
+        // In this step, tokenisation will fail and handling of unhappy flow is applicable
+        $this->fixtures->merchant->addFeatures(['network_tokenization_live']);
+
+        $this->setMockRazorxTreatment(['recurring_tokenisation_unhappy_flow_handling' => 'on',
+                                       'recurring_tokenisation' => 'on']);
+
+        $this->makeRequestAndCatchException(function () use ($request) {
+            $this->makeRequestAndGetContent($request);
+        }, \RZP\Exception\LogicException::class, 'Failed to tokenised the card');
+
+        // From here, we are mocking the tokenisation response and retry the payment for the same order
+        $this->mockCardVaultWithMigrateToken();
+
+        $this->mockFetchMerchantTokenisationOnboardedNetworks([Network::VISA]);
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertNotNull($response['razorpay_payment_id'] ?? null);
+
+        $payment = $this->getDbLastEntity(E::PAYMENT);
+        $this->assertEquals('captured', $payment->getStatus());
+        $this->assertEquals('initial', $payment->getRecurringType());
+        $this->assertNotNull($payment->getTokenId());
+
+        $token = $payment->localToken;
+        $this->assertNotEmpty($token);
+        $this->assertEquals('confirmed', $token->getRecurringStatus());
+        $this->assertTrue($token->hasCardMandate());
+
+        $order = $payment->order;
+        $this->assertEquals('paid', $order->getStatus());
+        $this->assertEquals(true, $order->isAuthorized());
+        $this->assertEquals(2, $order->getAttempts());
+
+
+        $card = $payment->localToken->card;
+        $this->assertEquals('visa', $card->getVault());
 
         $cardMandate = $this->getDbLastEntity(E::CARD_MANDATE);
         $this->assertNotEmpty($cardMandate);
@@ -908,6 +1074,8 @@ class CardMandateTest extends TestCase
         $this->mockCardVaultWithMigrateToken();
 
         $this->fixtures->merchant->addFeatures(['network_tokenization_live']);
+
+        $this->setMockRazorxTreatment(['recurring_tokenisation' => 'on']);
 
         $this->mockRegisterMandate();
 
@@ -2291,6 +2459,29 @@ class CardMandateTest extends TestCase
             });
 
         $this->app->instance('reminders', $reminders);
+    }
+
+    protected function setMockRazorxTreatment(array $razorxTreatment, string $defaultBehaviour = 'off')
+    {
+        // Mock Razorx
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->will($this->returnCallback(
+                        function ($mid, $feature, $mode) use ($razorxTreatment, $defaultBehaviour)
+                        {
+                            if (array_key_exists($feature, $razorxTreatment) === true)
+                            {
+                                return $razorxTreatment[$feature];
+                            }
+
+                            return strtolower($defaultBehaviour);
+                        }));
     }
 }
 

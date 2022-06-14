@@ -204,7 +204,7 @@ class TokenisationTest extends TestCase
         $this->assertEquals($response['triggeredTokenIdsCount'],0);
     }
 
-    public function testBulkTokenisationWhenTokenIsRecurringAndBelongsToRupayOfValidMerchantExpectsTokenisationSuccess(): void
+    public function testBulkTokenisationWhenTokenIsRecurringAndBelongsToRupayOfValidMerchantExpectsTokenisationFailure(): void
     {
         $testData = $this->testData['testBulkTokenisation'];
 
@@ -224,7 +224,7 @@ class TokenisationTest extends TestCase
 
         $card = $this->getLastEntity('card', true);
 
-        $this->assertEquals($card['vault'], 'rupay');
+        $this->assertEquals($card['vault'], 'rzpvault');
 
         $this->assertEquals($card['merchant_id'], $merchantId);
 
@@ -557,7 +557,7 @@ class TokenisationTest extends TestCase
         $this->assertEquals($card['vault'], 'rzpvault');
     }
 
-    public function testAsyncTokenisationWhenTokenIsRecurringAndRupayExpectsTokenisationSuccess(): void
+    public function testAsyncTokenisationWhenTokenIsRecurringAndRupayExpectsTokenisationFailure(): void
     {
         $testData = $this->testData['testAsyncTokenisation'];
 
@@ -579,7 +579,7 @@ class TokenisationTest extends TestCase
 
         $card = $this->getLastEntity('card', true);
 
-        $this->assertEquals($card['vault'], 'rupay');
+        $this->assertEquals($card['vault'], 'rzpvault');
 
         $this->assertEquals($card['merchant_id'], $merchantId);
     }

@@ -4861,6 +4861,20 @@ class Processor
             return $response;
         }
 
+        //
+        // For initial recurring payment, capturing the payment will be happening after tokenisation success.
+        // If tokenisation fails, amount will be refunded
+        //
+        if (($payment->isTokenisationUnhappyFlowHandlingApplicable() === true) and
+            ($payment->localToken->card->isRzpSavedCard() === true))
+        {
+            $response['should_auto_capture'] = false;
+
+            $response['reason'] = Constants::CAPTURE_RECURRING_PAYMENT_AFTER_TOKENISATION;
+
+            return $response;
+        }
+
         if ($payment->merchant->isFeatureEnabled(Feature::AUTH_SPLIT) === true)
         {
             $response['should_auto_capture'] = true;

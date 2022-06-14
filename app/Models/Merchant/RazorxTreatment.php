@@ -490,6 +490,12 @@ final class RazorxTreatment
     // Experiment to accept new axis UMRN in mandate migration
     const ACCEPT_NEW_AXIS_UMRN_MANDATE_MIGRATION = 'accept_new_axis_umrn_mandate_migration';
 
+    // Experiment to toggle unhappy flow handling for tokenisation failure in recurring
+    const RECURRING_TOKENISATION_UNHAPPY_FLOW_HANDLING = 'recurring_tokenisation_unhappy_flow_handling';
+
+    // Experiment to toggle tokenisation for recurring tokens
+    const RECURRING_TOKENISATION = 'recurring_tokenisation';
+
     /** @var string Experiment to deprecate tos_acceptance field from /accounts api */
     const IGNORE_TOS_ACCEPTANCE = 'ignore_tos_acceptance';
 

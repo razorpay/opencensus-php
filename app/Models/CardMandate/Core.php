@@ -403,7 +403,8 @@ class Core extends Base\Core
 
         $mandateHub = (new MandateHubs\MandateHubSelector)->GetMandateHubForCardMandate($cardMandate);
 
-        if ($payment->isFailed() === true)
+        if (($payment->isFailed() === true) or
+            ($payment->getStatus() === Payment\Status::REFUNDED))
         {
             try
             {
@@ -426,7 +427,8 @@ class Core extends Base\Core
             $mandateHub->ReportInitialPayment($cardMandate, $payment);
         }
 
-        if ($payment->isFailed() === false)
+        if (($payment->isFailed() === false) and
+            ($payment->getStatus() !== Payment\Status::REFUNDED))
         {
             $cardMandate->setStatus(Status::ACTIVE);
 

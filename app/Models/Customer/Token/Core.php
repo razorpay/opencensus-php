@@ -2485,11 +2485,18 @@ class Core extends Base\Core
             return false;
         }
 
-        // For recurring tokens, only rupay network is supported for now
-        if (($token->isRecurring() === true) and
-            ($card->isRupay() === false))
+        if ($token->isRecurring() === true)
         {
-            return false;
+            $app = \App::getFacadeRoot();
+
+            $variant = $app['razorx']->getTreatment($token->merchant,
+                Merchant\RazorxTreatment::RECURRING_TOKENISATION,
+                $app['rzp.mode']);
+
+            if (strtolower($variant) !== 'on')
+            {
+                return false;
+            }
         }
 
         $networkCode = $card->getNetworkCode();

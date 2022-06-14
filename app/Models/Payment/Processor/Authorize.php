@@ -6651,6 +6651,8 @@ trait Authorize
 
         $this->migrateTokenIfApplicable($payment, $callbackData);
 
+        $this->postTokenisationRecurringPaymentProcessingIfApplicable($payment);
+
         (new Payment\Core())->pushPaymentToKafkaForDeRegistrations($payment, microtime(true));
 
         return $this->processAuthorizeResponse($payment);
@@ -6842,6 +6844,67 @@ trait Authorize
         // This has been moved to eventsubscriber onPaymentAuthorized.
         // since this flow does not get called for late auth cases
         // Will be deleting this function in future.
+    }
+
+    protected function postTokenisationRecurringPaymentProcessingIfApplicable(Payment\Entity $payment)
+    {
+        if ($payment->isTokenisationUnhappyFlowHandlingApplicable() === true)
+        {
+            if ($payment->localToken->card->isRzpSavedCard() === false)
+            {
+                $this->eventPaymentAuthorized();
+
+                if ($payment->hasSubscription() === true)
+                {
+                    return;
+                }
+                else if ($payment->getStatus() === Payment\Status::AUTHORIZED)
+                {
+                    $this->autoCapturePaymentIfApplicable($payment);
+                }
+                else if ($payment->getStatus() === Payment\Status::CAPTURED)
+                {
+                    // Unexpected scenario, payment should not be captured before tokenisation
+                    $this->trace->info(
+                        TraceCode::RECURRING_PAYMENT_CAPTURED_BEFORE_TOKENISATION,
+                        [
+                            'payment_id'    => $payment->getId(),
+                            'status'        => $payment->getStatus(),
+                            'method'        => $payment->getMethod(),
+                        ]);
+                }
+            }
+            else
+            {
+                // Refunding the payment as tokenisation failed
+                $this->refundAuthorizedPayment($payment);
+
+                $this->eventPaymentFailed(null);
+
+                // marking the order as unauthorised post refund to pass the
+                // validation check in the retry attempt of the mandate
+                if ($payment->hasOrder() === true)
+                {
+                    $order = $payment->order;
+                    $order->setAuthorized(false);
+                    $this->repo->saveOrFail($order);
+                }
+
+                // marking the token as rejected as tokenisation failed
+                $token = $payment->localToken;
+                $token->setRecurringStatus(Token\RecurringStatus::REJECTED);
+                $this->repo->saveOrFail($token);
+
+                throw new Exception\LogicException(
+                    'Failed to tokenised the card',
+                    null,
+                    [
+                        'payment_id'   => $payment->getPublicId(),
+                        'status'       => $payment->getStatus(),
+                        'method'       => $payment->getMethod()
+                    ]);
+            }
+        }
     }
 
     protected function postPaymentAuthorizeSubscriptionProcessing(Payment\Entity $payment)
@@ -7488,6 +7551,12 @@ trait Authorize
 
     public function eventPaymentAuthorized()
     {
+        if (($this->payment->isTokenisationUnhappyFlowHandlingApplicable() === true) and
+            ($this->payment->localToken->card->isRzpSavedCard() === true))
+        {
+            return;
+        }
+
         $eventPayload = [
             ApiEventSubscriber::MAIN => $this->payment,
         ];

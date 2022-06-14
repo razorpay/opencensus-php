@@ -17,6 +17,7 @@ use RZP\Models\Card\Network;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Models\Merchant\FeeBearer;
+use RZP\Models\Merchant\RazorxTreatment;
 use Razorpay\Spine\DataTypes\Dictionary;
 
 use RZP\Models\Emi;
@@ -5006,11 +5007,28 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return false;
     }
 
+    public function isTokenisationUnhappyFlowHandlingApplicable(): bool
+    {
+        if (($this->isCardMandateRecurringInitialPayment() === true) and
+            ($this->localToken->merchant->isFeatureEnabled(Feature\Constants::NETWORK_TOKENIZATION_LIVE) === true))
+        {
+            $app = \App::getFacadeRoot();
+
+            $variant = $app['razorx']->getTreatment($this->localToken->merchant,
+                RazorxTreatment::RECURRING_TOKENISATION_UNHAPPY_FLOW_HANDLING,
+                $app['rzp.mode']);
+
+            return (strtolower($variant) === 'on');
+        }
+
+        return false;
+    }
+
     public function hasCardMandateNotification(): bool
     {
         return $this->cardMandateNotification !== null;
     }
-
+    
     public function isRequiredToCreateNewTokenAlways($token = null, $isPreferredRecurring = false): bool
     {
         // for auto payment, card mandate notification will be present
