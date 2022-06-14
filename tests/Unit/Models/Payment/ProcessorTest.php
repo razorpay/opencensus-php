@@ -278,4 +278,51 @@ class ProcessorTest extends TestCase
             self::assertArrayNotHasKey('next', $ex->getData()['error']['metadata']);
         }
     }
+
+    public function testPaypalAsBackupForNon3dsInternational(){
+
+        $ex = new GatewayErrorException(ErrorCode::BAD_REQUEST_NON_3DS_INTERNATIONAL_NOT_ALLOWED);
+        $paypal = [
+            'paypal' => true
+        ];
+
+        $payment = \Mockery::mock(Entity::class);
+        $merchant = \Mockery::mock(Merchant\Entity::class);
+
+        $processor = \Mockery::mock(Processor::class)->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $payment->shouldReceive('isCard')->andReturn(true);
+        $payment->shouldReceive('isInternational')->andReturn(true);
+        $payment->shouldReceive('getMetadata')->withAnyArgs()->andReturn(Metadata::CHECKOUTJS);
+
+        $merchant->shouldReceive('isFeatureEnabled')->with(Constants::DISABLE_PAYPAL_AS_BACKUP)->andReturn(false);
+        $merchant->shouldReceive('getMethods->getEnabledWallets')->andReturn($paypal);
+
+        $processor->shouldReceive('updatePaymentFailed')->withAnyArgs()->andReturnNull();
+
+        $processor->addBackupMethodForRetry($payment, $merchant, $ex);
+        $data = $ex->getData();
+        self::assertArrayHasKey('error', $data);
+        self::assertArrayHasKey('metadata', $data['error']);
+        self::assertArrayHasKey('next', $data['error']['metadata']);
+
+        $retryBlock = array();
+        foreach ($data['error']['metadata']['next'] as $block){
+            if(isset($block['action']) && $block['action'] === 'suggest_retry'){
+                $retryBlock = $block;
+            }
+        }
+
+        self::assertEquals('suggest_retry', $retryBlock['action']);
+        self::assertArrayHasKey('instruments', $retryBlock);
+
+        $instruments = array();
+        foreach ($retryBlock['instruments'] as $i){
+            if(isset($i['instrument']) && $i['instrument'] === \RZP\Models\Merchant\Methods\Entity::PAYPAL){
+                $instruments = $i;
+            }
+        }
+        self::assertEquals(\RZP\Models\Merchant\Methods\Entity::PAYPAL, $instruments['instrument']);
+        self::assertEquals('wallet', $instruments['method']);
+    }
 }
