@@ -729,13 +729,11 @@ class App extends Component {
           });
         }
 
-        if (window.trackHubs) {
-          window.trackHubs({
-            name: 'identify',
-            id: user.id,
-            email: user.user.email,
-          });
-        }
+        window.trackHubs?.({
+          name: 'identify',
+          id: user.id,
+          email: user.user.email,
+        });
       }
 
       return Promise.resolve({ data: user });
@@ -808,7 +806,7 @@ class App extends Component {
     } else {
       callback();
       LocalStorageService.setItem(this.modeToken, mode);
-      window.trackHubs({
+      window.trackHubs?.({
         name: 'update_property',
         data: {
           is_live: true,

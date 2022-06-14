@@ -21,8 +21,7 @@ const M2MBanner = (props) => {
       screen: 'home page',
       toCleverTap: true,
     });
-
-    window.trackhubs({
+    window.trackhubs?.({
       name: 'update_property',
       data: {
         referral_widget_viewed: true,
@@ -54,14 +53,12 @@ const M2MBanner = (props) => {
         });
       },
     ]);
-
-    window.trackhubs({
+    window.trackhubs?.({
       name: 'update_property',
       data: {
         email_share_success: true,
       },
     });
-
     window.friendbuyAPI.push([
       'subscribe',
       'widgetActionTriggered',

@@ -27,7 +27,7 @@ const M2MSuccessModal = ({ referredMerchants, referredAmount, trackEvents, isRef
       },
     });
 
-    window.trackhubs({
+    window.trackhubs?.({
       name: 'update_property',
       data: {
         referral_success_modal: true,

@@ -192,7 +192,7 @@ export default class App extends Component {
           },
         });
 
-        window.trackHubs({
+        window.trackHubs?.({
           name: 'identify',
           id: user.id,
           email: user.user.email,
