@@ -24,6 +24,7 @@ class SettlementInfo extends Component {
       fetchSettlementConfig,
       fetchBankAccountChangeStatus,
       fetchSettlementTimeline,
+      entityType,
     } = this.props;
     fetchSettlementConfig();
     fetchBankAccountChangeStatus(user.id);
@@ -31,6 +32,7 @@ class SettlementInfo extends Component {
       const { id, created_at } = data?.transaction;
       const payload = {
         transaction_id: id?.split('_')[1],
+        source_type: entityType,
         created_at,
       };
       fetchSettlementTimeline(payload);
@@ -179,7 +181,9 @@ class SettlementInfo extends Component {
               <SettlementStatusLabel status="scheduled" /> <br />
             </Fragment>
           ) : null}
-          {showTimeline && settlementTimelineDetails && settlementTimelineDetails.eligible_at ? (
+          {showTimeline &&
+          settlementTimelineDetails?.eligible_at &&
+          settlementTimelineDetails?.started_at ? (
             <>
               <span className="link">
                 <span>To be settled on </span>

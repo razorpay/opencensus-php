@@ -24,7 +24,7 @@ const SettlementTimeline = ({
   trackEventsAction,
 }) => {
   const { transaction } = data;
-  const { created_at, settlement } = transaction;
+  const { settlement } = transaction;
   const {
     method: settlementDetailsMethod,
     holidays,
@@ -32,6 +32,7 @@ const SettlementTimeline = ({
     is_settled,
     settled_at,
     eligible_at,
+    started_at,
   } = settlementDetails;
 
   useEffect(() => {
@@ -69,7 +70,7 @@ const SettlementTimeline = ({
               <div className="capitalize">{event?.split('_').join(' ').toLowerCase()}</div>
             </div>
             <div className="initial-event-details timeline-sub-text">
-              <Time value={created_at} format="DD MMM YYYY, hh:mm a" />
+              <Time value={parseInt(started_at, 10)} format="DD MMM YYYY, hh:mm a" />
             </div>
           </React.Fragment>
         );
