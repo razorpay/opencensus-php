@@ -441,6 +441,8 @@ class Selector extends Base\Core
 
                     $paymentData['card']['flows'] = $flows;
                 }
+                $paymentData['card']['iin'] = $card->getIin();
+                $paymentData['card']['token_iin'] = $card->getTokenIin();
             }
 
             if ($payment->getEmiPlanId() !== null)
@@ -823,6 +825,8 @@ class Selector extends Base\Core
                 }
 
                 $paymentData['card']['tokenised'] = $card->isTokenPan();
+                $paymentData['card']['iin'] = $card->getIin();
+                $paymentData['card']['token_iin'] = $card->getTokenIin();
 
                 if (empty($this->input['card_mandate']) === false)
                 {
