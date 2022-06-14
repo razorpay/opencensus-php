@@ -185,6 +185,7 @@ const initialState = {
     precondition: {},
     rules: [],
   },
+  providers_loading: false,
   terminalProviders: [],
   rule,
   error: null,
@@ -319,14 +320,20 @@ export default function navigatorReducer(state = initialState, action) {
 
     case `${FETCH_TERMINAL_PROVIDERS}::SUCCESS`:
       return merge(state, {
-        loading: false,
+        providers_loading: false,
         terminalProviders: action.payload,
         error: null,
       });
 
     case `${FETCH_TERMINAL_PROVIDERS}::PENDING`:
       return merge(state, {
-        loading: true,
+        providers_loading: true,
+      });
+
+    case `${FETCH_TERMINAL_PROVIDERS}::ERROR`:
+      return merge(state, {
+        providers_loading: false,
+        error: action.payload.errors,
       });
 
     case `${DELETE_RULE}::SUCCESS`:

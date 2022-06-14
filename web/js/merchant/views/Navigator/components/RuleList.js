@@ -11,15 +11,19 @@ import DocsLink from 'merchant/components/DocsLink';
 import { fetchTerminalProviders } from 'merchant/reducers/navigator/details';
 import Spinner from 'common/ui/Spinner';
 import { trackOptimizerEvents } from 'merchant/views/Navigator/track';
+import { ProviderShimmer } from './ProviderShimmer';
 
 @connect(
   (state) => {
+    const { navigator, session } = state;
+    const { rules, loading, default_rule, terminalProviders, providers_loading } = navigator;
     return {
-      rules: state.navigator.rules,
-      isLoading: state.navigator.loading,
-      default_rule: state.navigator.default_rule,
-      terminalProviders: state.navigator.terminalProviders,
-      user: state.session.user,
+      rules,
+      isLoading: loading,
+      default_rule,
+      isProvidersLoading: providers_loading,
+      terminalProviders,
+      user: session?.user,
     };
   },
   {
@@ -73,7 +77,7 @@ export default class RuleList extends React.Component {
 
   render() {
     const { isCollapsed, redirect } = this.state;
-    const { terminalProviders } = this.props;
+    const { terminalProviders, isProvidersLoading } = this.props;
     const docsLinkProps = {
       url: 'https://razorpay.com/docs/payments/optimizer/',
       title: <span>Documentation</span>,
@@ -88,9 +92,15 @@ export default class RuleList extends React.Component {
             <h2 class="payment-gateway-title" style={{ marginTop: '20px' }}>
               <span className="provider-title">
                 Payment Provider
-                {` (${terminalProviders.length})`}
+                <span className="total-providers">
+                  {isProvidersLoading ? (
+                    <div className="dotted-animation" />
+                  ) : (
+                    terminalProviders?.length
+                  )}
+                </span>
               </span>
-              {terminalProviders.length > 4 && (
+              {terminalProviders?.length > 4 && (
                 <span className="collapse-action-span" onClick={this.collapse}>
                   {isCollapsed ? 'View All' : 'Hide All'}
                   <img
@@ -125,9 +135,13 @@ export default class RuleList extends React.Component {
                 isCollapsed ? 'collapsed-providers-view' : 'expand-providers-view'
               }`}
             >
-              {terminalProviders.map((provider, index) => (
-                <ProviderNewView provider={provider} key={index} />
-              ))}
+              {isProvidersLoading ? (
+                <ProviderShimmer />
+              ) : (
+                terminalProviders?.map((provider, index) => (
+                  <ProviderNewView provider={provider} key={index} />
+                ))
+              )}
             </div>
           </div>
 

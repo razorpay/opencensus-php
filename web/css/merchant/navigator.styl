@@ -1250,6 +1250,10 @@ tr.is_current
   
   .active-providers-list 
     margin-bottom 10px
+
+    .gateway-provider-col
+      padding-left 0
+      padding-right 15px
     
     .provider-img-holder 
       padding 12px
@@ -1372,3 +1376,83 @@ tr.is_current
   background transparent
   margin-top -10px
 
+// '...' loading animation for providers count
+.total-providers
+  margin-left 4px
+  &::before
+    content '('
+  &::after
+    content ')'
+  
+  .dotted-animation
+    display inline-block
+    width 11px
+    &::after
+      display inline-block
+      animation dotty steps(1,end) 1s infinite
+      content ''
+
+    @keyframes dotty
+      0%
+        content ''
+      25%
+        content '.'
+      50%
+        content '..'
+      75%
+        content '...'
+      100%
+        content ''
+
+// Shimmer loader for providers list
+.providers-shimmer
+  height 50px
+  margin 0
+  padding 0
+  background $white
+  display flex
+  border-radius 4px
+
+  .gateway-provider-col
+    padding-left 0
+    padding-right 15px
+
+  .primary-shimmer
+    display flex
+    margin auto 0
+    background-color $zircon
+    border 1px solid $selago
+    border-radius 4px
+    margin-right 15px
+
+    .img-holder
+      padding 12px 12px
+
+    .gateway-icon
+      width 30px
+      height 30px
+    
+    .side-space
+      padding 13px 13px 13px 0
+
+      .first-sec
+        width 160px
+        height 10px
+
+      .second-sec
+        width 130px
+        height 8px
+        margin 5px 0
+
+.shimmer-loader
+    position relative
+    display block
+    background linear-gradient(to right, #ebecf2 0%, #dfe1ea 10%, #ebecf2 20%)
+    background-size 800px 100px
+    animation loaderShimmer 1.2s forwards infinite linear
+
+  @keyframes loaderShimmer
+    0%
+      background-position -300px 0
+    100%
+      background-position 300px 0
