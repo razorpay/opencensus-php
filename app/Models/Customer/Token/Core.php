@@ -1855,7 +1855,8 @@ class Core extends Base\Core
     {
         $cardInput += [
             'merchant_token' => $token->getId(),
-            'async'          => $isAsync
+            'async'          => $isAsync,
+            'customer_id'    => $token->getCustomerId()
         ];
 
         list($card, $serviceProviderTokens) = (new Card\Core)->migrateToTokenizedCard($token->card, $token->merchant, $cardInput);

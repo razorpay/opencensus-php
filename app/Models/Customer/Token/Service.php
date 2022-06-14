@@ -982,6 +982,9 @@ class Service extends Base\Service
                 $provider[Token\Entity::PROVIDER_DATA][Token\Entity::CRYPTOGRAM_VALUE] = (string)$provider[Token\Entity::PROVIDER_DATA][Token\Entity::CRYPTOGRAM_VALUE];
             }
 
+            if (isset($provider[Token\Entity::PROVIDER_DATA][Token\Entity::CVV])  === true) {
+                $provider[Token\Entity::PROVIDER_DATA][Token\Entity::CVV] = (string)$provider[Token\Entity::PROVIDER_DATA][Token\Entity::CVV];
+            }
             array_push($serviceProviderTokensArray, $provider);
         }
 

@@ -169,6 +169,7 @@ class Entity extends Base\PublicEntity
      */
     const TOKEN_NUMBER           = 'token_number';
     const CRYPTOGRAM_VALUE       = 'cryptogram_value';
+    const CVV                    = 'cvv';
     const TOKEN_REFERENCE_NUMBER = 'token_reference_number';
     const TOKEN_IIN              = 'token_iin';
     const TOKEN_EXPIRY_MONTH     = 'token_expiry_month';

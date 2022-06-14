@@ -1020,6 +1020,76 @@ class TokenTest extends TestCase
         $this->assertArrayNotHasKey('customer_id', $response);
     }
 
+    public function testCreateTokenAndTokenizeCardAmex()
+    {
+        $cardVault = Mockery::mock('RZP\Services\CardVault', [$this->app])->makePartial();
+
+        $this->app->instance('mpan.cardVault', $cardVault);
+
+        $callable = function ($route, $method, $input)
+        {
+            if ($route === Constants::TOKENS_UPDATE)
+            {
+                return ['success' => true];
+            }
+
+            $response['success'] = true;
+            $token = base64_encode($input['card']['number']);
+            $response['token']  = $token;
+            $response['fingerprint'] = strrev($token);
+
+            $response['service_provider_tokens'] = [
+                [
+                    'id'             => 'spt_1234abcd',
+                    'entity'         => 'service_provider_token',
+                    'provider_type'  => 'network',
+                    'provider_name'  => 'Amex',
+                    'status'         => 'created',
+                    'interoperable'  => true,
+                    'provider_data'  => [
+                        'token_reference_number'     => $token,
+                        'payment_account_reference'  => strrev($token),
+                        'token_expiry_month' => 0,
+                        'token_expiry_year' => 0,
+                        'token_iin' => "",
+                        'token_number' => "",
+                    ],
+                ]
+            ];
+
+            return $response;
+        };
+
+        $cardVault->shouldReceive('sendRequest')
+            ->with(Mockery::type('string'), 'post', Mockery::type('array'))
+            ->andReturnUsing($callable);
+
+        $this->app->instance('card.cardVault', $cardVault);
+
+        $this->fixtures->iin->create([
+            'iin'     => '414366',
+            'country' => 'IN',
+            'issuer'  => 'ICIC',
+            'network' => 'American Express',
+            'flows'   => [
+                '3ds'  => '1',
+                'headless_otp'  => '1',
+            ]
+        ]);
+
+        $this->fixtures->merchant->addFeatures(['network_tokenization_live']);
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals('card', $response['method']);
+
+        $this->assertNotNull($response['service_provider_tokens']);
+
+        $this->assertArrayNotHasKey('customer_id', $response);
+    }
+
     public function testCreateTokenAndTokenizeCardRuPay()
     {
         $cardVault = Mockery::mock('RZP\Services\CardVault', [$this->app])->makePartial();
@@ -1301,6 +1371,74 @@ class TokenTest extends TestCase
         $this->assertNotNull($response['token_number']);
 
         $this->assertNotNull($response['cryptogram_value']);
+
+        $this->assertEquals('12', $response['token_expiry_month']);
+
+        $this->assertEquals('2021', $response['token_expiry_year']);
+
+        $this->assertEquals('4100000000000099', $response['token_number']);
+    }
+
+    public function testFetchCryptogramAmexLive()
+    {
+        $cardVault = Mockery::mock('RZP\Services\CardVault', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('mpan.cardVault', $cardVault);
+
+        $callable = function ()
+        {
+            $dummyCardNumber = '4100000000000099';
+
+            $responsebody['success'] = true;
+            $responsebody['service_provider_tokens'] = [
+                [
+                    'id' => 'spt_IW48g8IeV3uUHA',
+                    'entity' => '',
+                    'interoperable' => '',
+                    'provider_type'  => 'network',
+                    'provider_name'  => 'Amex',
+                    'provider_data'  => [
+                        'token_reference_number'    => '',
+                        'payment_account_reference' => '',
+                        'token_iin' => '',
+                        'token_number' => $dummyCardNumber,
+                        'cvv' => 1234,
+                        'token_expiry_month' => 12,
+                        'token_expiry_year' => 2021,
+                    ],
+                    'status' => '',
+                ],
+            ];
+            $response = new Requests_Response();
+
+            $response->body = json_encode($responsebody, JSON_FORCE_OBJECT);
+
+            return $response;
+        };
+
+        $cardVault->shouldReceive('sendCardVaultRequest')
+            ->with(Mockery::type('array'))
+            ->andReturnUsing($callable);
+
+        $this->app->instance('card.cardVault', $cardVault);
+
+        $this->ba->privateAuth();
+
+        $createPayload = $this->testData['testCreateToken'];
+
+        $response = $this->startTest($createPayload);
+
+        $this->fixtures->merchant->addFeatures(['network_tokenization_live']);
+
+        $fetchPayload = $this->testData['testFetchCryptogramLive'];
+
+        $fetchPayload['request']['content'] = ['id' => 'spt_IW48g8IeV3uUHA'];
+
+        $response = $this->startTest($fetchPayload);
+
+        $this->assertNotNull($response['token_number']);
+
+        $this->assertNotNull($response['cvv']);
 
         $this->assertEquals('12', $response['token_expiry_month']);
 

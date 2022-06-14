@@ -339,6 +339,26 @@ return [
         ],
     ],
 
+    'testCreateTokenAndTokenizeCardAmex' => [
+        'request' => [
+            'url' => '/tokens',
+            'method' => 'post',
+            'content' => [
+                'method' => 'card',
+                'card' => [
+                    'number' => '4143667057540458',
+                    'cvv' => '1234',
+                    'expiry_month' => '12',
+                    'expiry_year' => '23',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
     'testCreateTokenAndTokenizeCardRuPay' => [
         'request' => [
             'url' => '/tokens',
@@ -409,6 +429,19 @@ return [
     ],
 
     'testFetchCryptogramLive' => [
+        'request' => [
+            'url' => '/tokens/service_provider_tokens/token_transactional_data',
+            'method' => 'post',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testFetchCryptogramAmexLive' => [
         'request' => [
             'url' => '/tokens/service_provider_tokens/token_transactional_data',
             'method' => 'post',

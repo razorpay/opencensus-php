@@ -180,6 +180,10 @@ class CardVault extends Base\Core
 
         $input = $this->setMerchantDetails($input, $merchant);
 
+        if (empty($cardInput['customer_id']) === false) {
+            $input['customer_id'] = $tokenInput['customer_id'];
+        }
+
         $input['features'] = $merchant->getEnabledFeatures();
 
         return $this->app['card.cardVault']->createTokenizedCard($input);
@@ -213,6 +217,11 @@ class CardVault extends Base\Core
         $input = $this->setMerchantDetails($input, $merchant);
 
         $input['features'] = $merchant->getEnabledFeatures();
+
+        if (empty($cardInput['customer_id']) === false)
+        {
+            $input['customer_id'] = $cardInput['customer_id'];
+        }
 
         return $this->app['card.cardVault']->migrateToTokenizedCard($input);
     }
@@ -274,7 +283,8 @@ class CardVault extends Base\Core
     {
         // todo: send required merchant attributes after api contract finalization
         $input['merchant'] = [
-            'id' => $merchant->getId()
+            'id' => $merchant->getId(),
+            'category' => $merchant->getCategory()
         ];
 
         return $input;
