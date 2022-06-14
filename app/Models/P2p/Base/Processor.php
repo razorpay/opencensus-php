@@ -70,7 +70,7 @@ class Processor
 
         if ($validate === true)
         {
-            $this->validator->validateInput($action, $input);
+            $this->validator->withContext($this->context()->getContextType())->validateInput($action, $input);
         }
 
         // Initializing the gateway data

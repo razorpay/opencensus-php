@@ -15,6 +15,9 @@ class Validator extends Base\Validator
      * @var \RZP\Models\P2p\Base\Entity
      */
     protected $entity;
+
+    protected $context;
+
     /**
      * Overriding this method allows us to register rules for defined action
      *
@@ -112,6 +115,15 @@ class Validator extends Base\Validator
         return $this->makeRules(array_merge($with, $default));
     }
 
+    public function makeDeviceIdRules(array $with = [])
+    {
+        $default = [
+            Entity::DEVICE_ID => 'required|string|size:21',
+        ];
+
+        return $this->makeRules(array_merge($with, $default));
+    }
+
     public function makeFetchAllRules()
     {
         $rules = $this->makeRules([]);
@@ -135,5 +147,12 @@ class Validator extends Base\Validator
     protected function validateTxn()
     {
 
+    }
+
+    public function withContext($context)
+    {
+        $this->context = $context;
+
+        return $this;
     }
 }
