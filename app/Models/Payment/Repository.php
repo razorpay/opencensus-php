@@ -742,7 +742,7 @@ EOT;
     {
         return $this->repo->useSlave(function() use ($method, $emandateRecurringType, $includeMerchantList, $excludeMerchantList, $filterPaymentPushedToKafka)
         {
-            $query =  $this->newQueryWithConnection($this->getSlaveConnection())
+            $query =  $this->newQueryWithConnection($this->getReportingReplicaConnection())
                       ->from(\DB::raw('`payments` FORCE INDEX (payments_status_index)'))
                       ->status(Payment\Status::CREATED)
                       ->where(Payment\Entity::METHOD, '=', $method);
