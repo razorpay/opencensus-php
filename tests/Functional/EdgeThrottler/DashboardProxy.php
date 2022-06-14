@@ -263,6 +263,61 @@ class DashboardProxy extends TestCase
         ]);
     }
 
+    public function testListRateLimitRules()
+    {
+        $mockResponse = new Response(200, [], '{
+            "data": [{
+                "id": "80a423aa-1178-4898-9213-11854e151d65",
+                "rule": "request_header.318",
+                "enabled": true,
+                "priority": 100,
+                "route": null,
+                "service": {
+                    "id": "094d8793-a2d5-4468-a302-3042567d4d65"
+                },
+                "created_at": 1649080101,
+                "updated_at": 1649080101
+            }],
+            "offset": null
+          }
+        ');
+
+        $httpClient = app('throttler_http_client');
+        $httpClient->addResponse($mockResponse);
+
+        $response = $this->sendRequest([
+            'url' => '/edge/rate_limiter/rules',
+            'method' => 'GET',
+        ]);
+
+        $this->assertCount(1, $httpClient->getRequests());
+
+        $req = $httpClient->getRequests()[0];
+
+        $this->assertSame('GET', $req->getMethod());
+        $this->assertSame('/routes/test_route/rate-limit-rules', $req->getUri()->getPath());
+
+        $response->assertOk();
+        $response->assertExactJson([
+            'data' => [
+                [
+                    'id'         => '80a423aa-1178-4898-9213-11854e151d65',
+                    'service'    => [
+                        'id' => '094d8793-a2d5-4468-a302-3042567d4d65',
+                    ],
+                    'rule' => 'request_header.318',
+                    'created_at' => 1649080101,
+                    'updated_at' => 1649080101,
+                    'enabled'    => true,
+                    'priority'   => 100,
+                    'route'      => null,
+                ],
+            ],
+            'offset' => null
+        ]);
+
+    }
+
     public function testDeleteRuleOnService()
     {
         $this->markTestSkipped();

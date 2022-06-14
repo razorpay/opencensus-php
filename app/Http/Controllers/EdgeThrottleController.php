@@ -140,7 +140,14 @@ class EdgeThrottleController extends Controller
 
         $method = $request->method();
 
-        $path = $this->rulePathPrefix($request, true) . '/rate-limit-rules' . $this->constructQueryParam();
+        if (isset($request['route_id']) === false and isset($request['service_id']) === false) 
+        {
+            $path = '/rate-limit-rules' . $this->constructQueryParam();
+        }
+        else
+        {
+            $path = $this->rulePathPrefix($request, true) . '/rate-limit-rules' . $this->constructQueryParam();
+        }
 
         $response = $this->request($method, $path);
 
