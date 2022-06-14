@@ -376,7 +376,6 @@ class GatewayEmiFileTest extends TestCase
         Queue::assertPushed(BeamJob::class, 1);
     }
 
-
     public function testGenerateEmiFileForHsbc()
     {
         $this->prerequisitesForHsbcEmi();
@@ -421,7 +420,7 @@ class GatewayEmiFileTest extends TestCase
 
         $emiFileContents = (new ExcelImport)->toArray($pathinfo['dirname'] . '/' . $filename);
 
-        $this->assertEquals("5546370000099413", $emiFileContents[0][0]["complete_card_number"]);
+        $this->assertEquals("9413", $emiFileContents[0][0]["last_4_digits_of_card_number"]);
         $this->assertEquals("5000", $emiFileContents[0][0]["amount"]);
         $this->assertEquals("123412341234", $emiFileContents[0][0]["rrn_number"]);
 

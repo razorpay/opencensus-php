@@ -39,21 +39,26 @@ class Hsbc extends Base
             $merchant = $emiPayment->merchant;
             $terminal = $emiPayment->terminal;
 
-            $cardNumber = $this->getCardNumber($emiPayment->card);
+            $cardNumber = $emiPayment->card->getLast4();
 
             $formattedData[] = [
-                'Complete Card Number'      =>  $cardNumber,
-                'Amount'                    =>  $emiPayment->getAmount()/100,
-                'MID'                       =>  $terminal->getGatewayMerchantId(),
-                'TID'                       =>  $terminal->getId(),
-                'Approval Code'             =>  str_pad($this->getAuthCode($emiPayment), self::APPROVAL_CODE_LENGTH, '0', STR_PAD_LEFT),
-                'Date'                      =>  $this->formattedDateFromTimestamp($emiPayment->getCreatedAt()),
-                'EMI Tenure'                =>  $emiPlan->getDuration().' '.self::DURATION,
-                'Merchant Name'             =>  $merchant->getName(),
-                'Interest Rate'             =>  $emiPlan->getRate()/100,
-                'RRN Number'                =>  $rrn[$emiPayment->getId()]['rrn'] ?? '',
-                'Processing fee'            =>  '0',
-                'Merchant Cash Bank'        =>  '0',
+                'Last 4 digits of Card Number'      =>  $cardNumber,
+                'Amount'                            =>  $emiPayment->getAmount()/100,
+                'MID'                               =>  $terminal->getGatewayMerchantId(),
+                'TID'                               =>  $terminal->getId(),
+                'Approval Code'                     =>  str_pad($this->getAuthCode($emiPayment), self::APPROVAL_CODE_LENGTH, '0', STR_PAD_LEFT),
+                'Date'                              =>  $this->formattedDateFromTimestamp($emiPayment->getCreatedAt()),
+                'EMI Tenure'                        =>  $emiPlan->getDuration().' '.self::DURATION,
+                'Merchant Name'                     =>  $merchant->getName(),
+                'Interest Rate'                     =>  $emiPlan->getRate()/100,
+                'RRN Number'                        =>  $rrn[$emiPayment->getId()]['rrn'] ?? '',
+                'Processing fee'                    =>  '0',
+                'Merchant Cash Bank'                =>  '0',
+                'Cashback Amount'                   =>  '0',
+                'Aggregator Txn ID'                 =>  '',
+                'ARN'                               =>  '',
+                'Time Stamp'                        =>   Carbon::now()->getTimestamp(),
+                'File Name'                         =>  $this->makeFileName($emiPayment->getCreatedAt()),
             ];
         }
 
@@ -81,6 +86,13 @@ class Hsbc extends Base
         $response = App::getFacadeRoot()['card.payments']->fetchAuthorizationData($request);
 
         return $response;
+    }
+
+    private function makeFileName($timestamp)
+    {
+        $date = Carbon::createFromTimestamp($timestamp, Timezone::IST)->format('dmY');
+
+        return self::FILE_NAME . '_' . $date . '_' . 'Razorpay';
     }
 
     private function formattedDateFromTimestamp($timestamp)
