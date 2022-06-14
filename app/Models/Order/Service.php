@@ -24,7 +24,6 @@ use RZP\Models\Offer;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Payment\Processor\Netbanking;
-use function Emoji\detect_emoji;
 
 class Service extends Base\Service
 {
@@ -116,25 +115,6 @@ class Service extends Base\Service
         if ($merchant->isFeatureEnabled(FeatureConstants::ONE_CLICK_CHECKOUT) === true)
         {
             return false;
-        }
-
-
-        if (isset($input[Entity::NOTES]) === true)
-        {
-            $notes = $input[Entity::NOTES];
-
-            foreach ($notes as $key => $value)
-            {
-                if (is_string($value) === true)
-                {
-                    $containsEmoji = detect_emoji($value);
-
-                    if (sizeof($containsEmoji) > 0)
-                    {
-                        return false;
-                    }
-                }
-            }
         }
 
         if ($this->isRearchBVTRequest() === true)
