@@ -6791,6 +6791,22 @@ ALTER TABLE payouts_details
 ALTER TABLE `merchant_banks`
     ADD COLUMN `razorpaywallet` TINYINT DEFAULT 0;
 
+CREATE TABLE merchant_otp_verification_logs
+(
+     id                         CHAR(14) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT
+     NULL,
+     merchant_id                CHAR(14) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT
+     NULL,
+     external_reference_number  VARCHAR (50),
+     razorpay_verified          tinyint(1)  DEFAULT 0,
+     contact_mobile             VARCHAR (255) NOT NULL,
+     created_at                 BIGINT NOT NULL,
+     updated_at                 BIGINT NOT NULL,
+     otp_submission_timestamp   BIGINT,
+     otp_verification_timestamp BIGINT,
+     PRIMARY KEY (id),
+     INDEX merchant_otp_verification_logs_mid_cnum_index (merchant_id, contact_mobile)
+);
 
 ALTER TABLE partner_configs
     ADD COLUMN sub_merchant_config JSON DEFAULT NULL;

@@ -667,6 +667,7 @@ class Entity
 
     const PARTNER_BANK_HEALTH = 'partner_bank_health';
 
+    const MERCHANT_OTP_VERIFICATION_LOGS = 'merchant_otp_verification_logs';
     // CAC entities
     const ACCESS_CONTROL_PRIVILEGES = 'access_control_privileges';
 
@@ -1317,6 +1318,7 @@ class Entity
 
         self::PAYMENT_FRAUD              => \RZP\Models\Payment\Fraud::class,
 
+        self::MERCHANT_OTP_VERIFICATION_LOGS       => \RZP\Models\Merchant\Product\Otp::class,
         self::ADDRESS_CONSENT_1CC               => \RZP\Models\Address\AddressConsent1cc::class,
 
         self::ADDRESS_CONSENT_1CC_AUDITS        => \RZP\Models\Address\AddressConsent1ccAudits::class,
@@ -1565,6 +1567,7 @@ class Entity
         self::STAKEHOLDER,
         self::APP_STORE,
         self::PARTNER_KYC_ACCESS_STATE,
+        self::MERCHANT_OTP_VERIFICATION_LOGS,
         self::ACCESS_CONTROL_HISTORY_LOGS,
         self::ACCESS_CONTROL_PRIVILEGES,
         self::ACCESS_POLICY_AUTHZ_ROLES_MAP,

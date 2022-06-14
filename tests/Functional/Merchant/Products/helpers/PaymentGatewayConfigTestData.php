@@ -941,6 +941,12 @@ return [
             'content' => [
                 'requirements'         => [
                     [
+                        'field_reference' => 'otp',
+                        'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
                         'field_reference' => 'legal_info.pan',
                         'resolution_url'  => '/accounts/{accountId}',
                         'status'          => 'required',
@@ -971,6 +977,12 @@ return [
         'response' => [
             'content' => [
                 'requirements'         => [
+                    [
+                        'field_reference' => 'otp',
+                        'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
                     [
                         'field_reference' => 'tnc_accepted',
                         'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
@@ -1013,6 +1025,12 @@ return [
         'response' => [
             'content' => [
                 'requirements'         => [
+                    [
+                        'field_reference' => 'otp',
+                        'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
                     [
                         'field_reference' => 'legal_info.pan',
                         'resolution_url'  => '/accounts/{accountId}',
@@ -1959,5 +1977,48 @@ return [
                 ]
             ],
         ]
-    ]
+    ],
+
+    'testRequirementsForOtpVerficationlog' => [
+        'request'  => [
+            'url'     => '/v2/accounts/{accountId}/products/{merchantProductId}',
+            'method'  => 'PATCH',
+            'content' => [
+                'otp' => [
+                    'contact_mobile'             => '9999999999',
+                    'external_reference_number'  => 'Shk@123',
+                    'otp_submission_timestamp'   => '1653847138',
+                    'otp_verification_timestamp' => '1653848138'
+                ],
+                'tnc_accepted' => true,
+                'ip'           => '223.233.71.18'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'active_configuration' => [
+                    'otp' => [
+                        'contact_mobile'             => '9999999999',
+                        'external_reference_number'  => 'Shk@123',
+                        'otp_submission_timestamp'   => '1653847138',
+                        'otp_verification_timestamp' => '1653848138'
+                    ]
+                ],
+                'requirements'         => [
+                    [
+                        'field_reference' => 'legal_info.pan',
+                        'resolution_url'  => '/accounts/{accountId}',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
+                        'field_reference' => 'settlements.account_number',
+                        'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                ]
+            ],
+        ]
+    ],
 ];

@@ -209,6 +209,7 @@ use RZP\Base\Database\Connectors\MySqlConnector;
  * @property Models\Roles\Repository    $roles
  * @property Models\Merchant\InternationalIntegration\Repository      $merchant_international_integrations
  * @property Models\PartnerBankHealth\Repository                      $partner_bank_health
+ * @property Models\Merchant\Product\Otp\Repository                   $merchant_otp_verification_logs
  * @property Models\FileStore\Repository                              $file_store
  */
 

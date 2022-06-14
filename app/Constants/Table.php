@@ -441,6 +441,8 @@ class Table
     // Nocode slug management table
     const NOCODE_CUSTOM_URL = 'nocode_custom_urls';
 
+    const MERCHANT_OTP_VERIFICATION_LOGS =  'merchant_otp_verification_logs';
+
     // CAC tables
     const ACCESS_CONTROL_PRIVILEGES     = 'access_control_privileges';
     const ACCESS_CONTROL_ROLES          = 'access_control_roles';

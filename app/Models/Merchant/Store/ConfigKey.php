@@ -169,4 +169,6 @@ class ConfigKey
             ]
         ]
     ];
+
+    const IS_MERCHANT_NO_DOC_ONBOARDED = 'is_merchant_no_doc_onboarded';
 }

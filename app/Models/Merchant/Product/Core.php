@@ -39,6 +39,8 @@ class Core extends Base\Core
 
     private $tncCore;
 
+    private $otpCore;
+
     public function __construct()
     {
         parent::__construct();
@@ -50,6 +52,8 @@ class Core extends Base\Core
         $this->tnc                   = new TncMap\Acceptance\Service();
 
         $this->tncCore               = new TncMap\Acceptance\Core();
+
+        $this->otpCore               = new Otp\Core();
     }
 
     public function createConfig(Merchant\Entity $merchant, Entity $merchantProduct, array $input)
@@ -116,6 +120,12 @@ class Core extends Base\Core
             }
             return $response;
         });
+
+        $otpLog = $this->otpCore->fetchOtpVerificationLog($merchant);
+        if (empty($otpLog) == false)
+        {
+            $response[Util\Constants::OTP] = $otpLog;
+        }
 
         return $response;
     }
@@ -264,6 +274,12 @@ class Core extends Base\Core
             }
             return [$input, $response];
         });
+
+        // Store otp verification log for no doc onboarded user
+        if ($this->merchant->isNoDocOnboardingEnabled() === true)
+        {
+            $response[Util\Constants::OTP] = $this->createOrFetchOtpVerificationLog($merchant, $input);
+        }
 
         $response = Tracer::inspan(['name' => HyperTrace::UPDATE_CONFIG], function () use ($response, $merchant, $input) {
 
@@ -535,5 +551,22 @@ class Core extends Base\Core
         });
 
         return $response;
+    }
+
+    private function createOrFetchOtpVerificationLog(Merchant\Entity $merchant,  array & $input )
+    {
+        if (isset($input[Util\Constants::OTP]) === true)
+        {
+            $otpLog = Tracer::inspan(['name' => HyperTrace::STORE_OTP_VERIFICATION_LOG], function() use ($input, $merchant) {
+
+                return $this->otpCore->saveOtpVerificationLog($merchant, $input);
+            });
+            unset($input[Util\Constants::OTP]);
+            return $otpLog;
+        }
+        else
+        {
+            return  $this->otpCore->fetchOtpVerificationLog($merchant);
+        }
     }
 }

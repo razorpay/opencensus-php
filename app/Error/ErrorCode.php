@@ -2739,7 +2739,8 @@ class ErrorCode
     const BAD_REQUEST_CARD_ISSUER_NOT_ALLOWED_ON_MERCHANT                          = 'BAD_REQUEST_CARD_ISSUER_NOT_ALLOWED_ON_MERCHANT';
     const BAD_REQUEST_CARD_NETWORK_NOT_ALLOWED_ON_MERCHANT                         = 'BAD_REQUEST_CARD_NETWORK_NOT_ALLOWED_ON_MERCHANT';
     const BAD_REQUEST_INVALID_MERCHANT_ID                                          = 'BAD_REQUEST_INVALID_MERCHANT_ID';
-
+    const BAD_REQUEST_OTP_VERIFICATION_LOG                                         = 'BAD_REQUEST_OTP_VERIFICATION_LOG';
+    const BAD_REQUEST_OTP_NOT_REQUIRED                                             = 'BAD_REQUEST_OTP_NOT_REQUIRED';
 
     static function getConstants()
     {

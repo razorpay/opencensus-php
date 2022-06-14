@@ -20,6 +20,7 @@ class Constants
     const ACCOUNT_ID      = 'account_id';
     const REQUESTED_AT    = 'requested_at';
     const TNC_ACCEPTED    = 'tnc_accepted';
+    const OTP             = 'otp';
     const IP              = 'ip';
 
     const REQUESTED_CONFIGURATION = 'requested_configuration';
@@ -104,6 +105,12 @@ class Constants
     const MOBIKWIK      = "mobikwik";
     const PAYTM         = "paytm";
     const PAYUMONEY     = "payumoney";
+
+    // OTP Verificaiton log
+    const CONTACT_MOBILE = 'contact_mobile';
+    const REFERENCE_NUMBER = 'external_reference_number';
+    const OTP_SUBMISSION_TIMESTAMP =  'otp_submission_timestamp';
+    const OTP_VERIFICATION_TIMESTAMP =  'otp_verification_timestamp';
 
     public static $wallets = [
         self::AIRTELMONEY,

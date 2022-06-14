@@ -1308,6 +1308,49 @@ class PaymentGatewayConfigTest extends OAuthTestCase
         (new Methods\Core())->setDefaultMethods($merchant);
     }
 
+    public function testOtpVerificationLogInRequirementsArray()
+    {
+        Mail::fake();
+
+        $this->mockTerminalServiceResponse();
+
+        $this->setUpPartnerWithKycHandled();
+
+        $featureParams = [
+            Entity::ENTITY_ID   => '10000000000000',
+            Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
+            Entity::NAME        => 'subm_no_doc_onboarding',
+        ];
+
+        (new Core())->create($featureParams, true);
+
+        $testData = $this->testData['createUnregisteredBusinessTypeAccount'];
+
+        $testData['request']['content']['no_doc_onboarding'] = true;
+
+        $accountResponse = $this->runRequestResponseFlow($testData);
+
+        $accountId = $accountResponse['id'];
+
+        $testData = $this->testData['createProductConfigForNoDoc'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products';
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $merchantProductId = $response['id'];
+
+        $testData = $this->testData['testRequirementsForOtpVerficationlog'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products/' . $merchantProductId;
+
+        $this->runRequestResponseFlow($testData);
+
+        $contactMobile = $this->getDbEntity('merchant_otp_verification_logs')->pluck('contact_mobile')->toArray();
+
+        $this->assertEquals($testData['request']['content']['otp']['contact_mobile'], $contactMobile[0]);
+    }
+
     protected function mockRazorxTreatment(string $returnValue = 'on')
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
@@ -1411,6 +1454,11 @@ class PaymentGatewayConfigTest extends OAuthTestCase
         ];
 
         $this->mockSplitzTreatment($input, $output);
+    }
+
+    private  function createNoDocOnboardingAccount(array & $accountCreationPayload)
+    {
+        $accountCreationPayload['no_doc_onboarding'] = true;
     }
 }
 

@@ -9,7 +9,7 @@ use Razorpay\IFSC\IFSC;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Product\Util;
-use RZP\Trace\TraceCode;
+
 
 class Validator extends Base\Validator
 {
@@ -23,6 +23,7 @@ class Validator extends Base\Validator
         Util\Constants::REFUND          => 'sometimes|array',
         Util\Constants::PAYMENT_METHODS => 'sometimes|array',
         Util\Constants::TNC_ACCEPTED    => 'sometimes|boolean|in:1',
+        Util\Constants::OTP             => 'sometimes|array',
         Util\Constants::IP              => 'sometimes|ip',
     ];
 
@@ -55,6 +56,13 @@ class Validator extends Base\Validator
         Util\Constants::ACCOUNT_NUMBER   => 'sometimes|regex:/^[a-zA-Z0-9]+$/|between:5,20|custom',
     ];
 
+    protected static $otpRules = [
+        Util\Constants::CONTACT_MOBILE             => 'required|string',
+        Util\Constants::REFERENCE_NUMBER           => 'sometimes|string',
+        Util\Constants::OTP_SUBMISSION_TIMESTAMP   => 'sometimes|string',
+        Util\Constants::OTP_VERIFICATION_TIMESTAMP => 'sometimes|string',
+    ];
+
     protected static $pgValidators = [
         'notifications',
         'payment_capture',
@@ -62,7 +70,8 @@ class Validator extends Base\Validator
         'checkout',
         'refund',
         'payment_methods',
-        'tnc_input_check',
+        'otp',
+        'tnc_input_check'
     ];
 
     public function __construct($entity = null)
@@ -168,6 +177,33 @@ class Validator extends Base\Validator
             (new PaymentMethodsValidator())->validateInput('paymentMethodUpdate', $input[Util\Constants::PAYMENT_METHODS]);
         }
     }
+
+    public function validateOtp(array $input)
+    {
+
+        if (isset($input[Util\Constants::OTP]) === true and $this->merchant->isNoDocOnboardingEnabled() === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                ErrorCode::BAD_REQUEST_OTP_NOT_REQUIRED);
+        }
+
+        if (isset($input[Util\Constants::OTP]) === true)
+        {
+            $this->validateInput('otp', $input[Util\Constants::OTP]);
+        }
+
+        if (empty($input[Util\Constants::OTP][Util\Constants::CONTACT_MOBILE]) === false)
+        {
+            $merchant_detail = $this->merchant->merchantDetail()->first();
+
+            if ($merchant_detail->getContactMobile() != $input[Util\Constants::OTP][Util\Constants::CONTACT_MOBILE])
+            {
+                throw new  Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_OTP_VERIFICATION_LOG);
+            }
+        }
+    }
+
 
     public function validateTncInputCheck($input)
     {

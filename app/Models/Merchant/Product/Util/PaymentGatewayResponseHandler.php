@@ -17,7 +17,8 @@ class PaymentGatewayResponseHandler
         Util\Constants::NOTIFICATIONS   => Util\Constants::NOTIFICATIONS,
         Util\Constants::REQUIREMENTS    => Util\Constants::REQUIREMENTS,
         Util\Constants::PAYMENT_METHODS => Util\Constants::PAYMENT_METHODS,
-        Util\Constants::TNC             => Util\Constants::TNC
+        Util\Constants::TNC             => Util\Constants::TNC,
+        Util\Constants::OTP             => Util\Constants::OTP
     ];
 
     const CONFIGS_TO_BE_TRANSFORMED = [

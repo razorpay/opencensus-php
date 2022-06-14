@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant\Product\Util;
 
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Detail;
+use RZP\Trace\TraceCode;
 
 class PaymentGatewayRequestHandler
 {
@@ -16,6 +17,7 @@ class PaymentGatewayRequestHandler
         Constants::PAYMENT_METHODS => Constants::PAYMENT_METHODS,
         Constants::CONFIGURATION   => Constants::CONFIGURATION,
         Constants::TNC_ACCEPTED    => Constants::TNC_ACCEPTED,
+        Constants::OTP             => Constants::OTP,
         Constants::IP              => Constants::IP
     ];
 
@@ -198,6 +200,11 @@ class PaymentGatewayRequestHandler
     }
 
     private static function transformTncAccepted(bool $input): bool
+    {
+        return $input;
+    }
+
+    private static function transformOtp(array $input): array
     {
         return $input;
     }

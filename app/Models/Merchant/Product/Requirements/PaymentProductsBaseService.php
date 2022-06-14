@@ -37,6 +37,8 @@ class PaymentProductsBaseService extends Base\Service
 
     private $tncCore;
 
+    private $otpCore;
+
     /**
      * @var Detail\NeedsClarification\Core
      */
@@ -55,6 +57,8 @@ class PaymentProductsBaseService extends Base\Service
         $this->validationFields = [];
 
         $this->tncCore = new TncAcceptance\Core();
+
+        $this->otpCore = new Product\Otp\Core();
 
     }
 
@@ -190,6 +194,13 @@ class PaymentProductsBaseService extends Base\Service
         $verificationResponse = [];
 
         [$tncRequirement, $tncIpRequirement] = $this->getTncRequirements($merchant);
+
+        $otpVerificationLogRequirement = $this->getOtpVerificationLogRequirements($merchant);
+
+        if (empty($otpVerificationLogRequirement) == false)
+        {
+            array_push($requirements, $otpVerificationLogRequirement);
+        }
 
         if (empty($tncRequirement) === false)
         {
@@ -873,5 +884,28 @@ class PaymentProductsBaseService extends Base\Service
         $url = str_replace(Constants::MERCHANT_PRODUCT_ID_PLACEHOLDER, $merchantProduct->getPublicId(), $url);
 
         return $url;
+    }
+
+    protected function getOtpVerificationLogRequirements(Merchant\Entity $merchant): array
+    {
+        $requirement = [];
+
+        $merchantDetail = $merchant->merchantDetail;
+
+        $hasPendingOtpLog = $this->otpCore->hasPendingOtpLog($merchant->getMerchantId(), $merchantDetail->getContactMobile());
+
+        if ($merchant->isNoDocOnboardingEnabled() and $hasPendingOtpLog === true)
+        {
+            $requirement[Constants::FIELD_REFERENCE] = Constants::OTP;
+
+            $requirement[Constants::RESOLUTION_URL] = Constants::PAYMENT_CONFIG_RESOLUTION_URL;
+
+            $requirement[Constants::STATUS] = Constants::REQUIRED;
+
+            $requirement[Constants::REASON_CODE] = Constants::FIELD_MISSING;
+        }
+
+
+        return $requirement;
     }
 }

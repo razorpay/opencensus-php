@@ -24,6 +24,7 @@ use RZP\Models\Merchant\Document\OcrVerificationStatus;
  * @property Merchant\Tnc\Entity $tnc
  * @property Merchant\BusinessDetail\Entity $businessDetail
  * @property Merchant\VerificationDetail\Entity $verificationDetail
+ * @property Merchant\Product\Otp\Entity $otp
  *
  * @package RZP\Models\Merchant\Detail
  */
@@ -189,8 +190,8 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
     const MERCHANT_AVG_ORDER_VALUE      = 'merchant_avg_order_value';
     const MERCHANT_TNC                  = 'merchant_tnc';
     const MERCHANT_VERIFICATION_DETAIL  = 'merchant_verification_detail';
-    const MERCHANT_BUSINESS_DETAIL      = 'merchant_business_detail';
-
+    const MERCHANT_BUSINESS_DETAIL       = 'merchant_business_detail';
+    const MERCHANT_OTP_VERIFICATION_LOG = 'merchant_otp_verification_log';
     // fields_pending field is used in new Account APIs.
     const FIELDS_PENDING = 'fields_pending';
 
@@ -440,6 +441,7 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
         self::FRAUD_TYPE,
         self::BAS_BUSINESS_ID,
         self::IEC_CODE,
+        self::MERCHANT_OTP_VERIFICATION_LOG,
         self::PROMOTER_PAN_NAME_SUGGESTED,
         self::BUSINESS_NAME_SUGGESTED,
     ];
@@ -567,6 +569,12 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
     {
         return $this->hasOne('RZP\Models\Merchant\BusinessDetail\Entity', self::MERCHANT_ID, self::MERCHANT_ID);
     }
+
+    public function otpVerificationLog()
+    {
+        return $this->hasOne('RZP\Models\Merchant\Product\Otp\Entity' , self::MERCHANT_ID, self::MERCHANT_ID);
+    }
+
     public function getReviewer(){
         // https://tomgrohl.medium.com/how-to-not-load-null-relations-in-laravel-5-dbfaedf56df2
         // even if reviewer_id is null, $this->reviewer will make an unnecessary query
@@ -1607,4 +1615,5 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
             }
         }
     }
+
 }

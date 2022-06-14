@@ -219,4 +219,6 @@ class HyperTrace
     const TRIGGER_COMMISSION_INVOICE_ACTION                    = 'trigger_commission_invoice_action';
     const COMMISSION_INVOICE_FETCH                             = 'commission_invoice_fetch.service';
 
+
+    const STORE_OTP_VERIFICATION_LOG                           = 'store_otp_verification_log';
 }
