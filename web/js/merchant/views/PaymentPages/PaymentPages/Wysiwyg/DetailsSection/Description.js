@@ -79,6 +79,8 @@ export default class WysiwygDescription extends React.PureComponent {
 
   componentWillUnmount() {
     this.QUILL = null;
+    // if debounce function was used (then cancel function will exist), then cancel any pending debounce actions
+    this.updateDescription.cancel && this.updateDescription.cancel();
   }
 
   UNSAFE_componentWillUpdate(nextProps) {
