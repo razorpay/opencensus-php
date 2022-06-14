@@ -19,6 +19,7 @@ import TransferReversal from 'merchant/views/Marketplace/Transfers/components/Tr
 import TransferSource from './TransferSource';
 import { RouteTransfersStatusLabel } from 'merchant/components/StatusLabel';
 import { updateTranferInList } from 'merchant/reducers/marketplace/transfers/list';
+import CustomClipboard from 'common/ui/Clipboard/Custom';
 
 let initialState = {
   onHold: 'false',
@@ -91,6 +92,16 @@ const SettlementText = ({ data, transfer, onEdit }) => {
       {showBusinessHolidaysInfo && (
         <div class="text-fade">
           Transfers scheduled to settle on bank holidays will get settled on the next working day.
+        </div>
+      )}
+      {transfer.recipient_settlement?.utr && (
+        <div>
+          <small className="m-r">UTR: {transfer.recipient_settlement.utr}</small>
+          <span>
+            <CustomClipboard value={transfer.recipient_settlement.utr}>
+              <button className="btn btn-default btn-xs">Copy</button>
+            </CustomClipboard>
+          </span>
         </div>
       )}
     </div>
