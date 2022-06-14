@@ -482,7 +482,9 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
     }
     if (step === 3) {
       // merchant added successfully
-      this.trackUserEvent('partnerships.submerchant.add.product_group.social.cancel');
+      this.trackUserEvent('partnerships.submerchant.add.product_group.social.cancel', {
+        action: 'Merchant Added',
+      });
     }
   };
 
