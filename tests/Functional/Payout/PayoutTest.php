@@ -19239,6 +19239,274 @@ class PayoutTest extends OAuthTestCase
         Queue::assertPushed(Transactions::class, 1);
     }
 
+    public function testPayoutChannelChangeWhenTxnNotCreatedAndModeIsAmazonPayInLedgerReverseShadow()
+    {
+        Queue::fake();
+
+        $this->app['config']->set('applications.ledger.enabled', false);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $contact = $this->getDbLastEntity('contact');
+
+        $this->fixtures->create('fund_account:wallet_account', [
+            'id'          => '100000000003fa',
+            'source_type' => 'contact',
+            'source_id'   => $contact->getId(),
+        ]);
+
+        $this->makeRequestAndGetContent($this->testData['testCreatePayoutViaAmazonPay']['request']);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals('yesbank', $payout->getChannel());
+
+        $this->assertNull($payout->transaction);
+
+        $payoutId = $payout->getId();
+
+        $this->ba->ftsAuth();
+
+        $ftsWebhook = [
+            'bank_processed_time' => '',
+            'bank_status_code'    => '',
+            'channel'             => 'AMAZON_PAY',
+            'mode'                => 'WALLET_TRANSFER',
+            'extra_info'          => [
+                'cms_ref_no'       => '7a452792bee811ec949d0a0047340000',
+                'internal_error'   => false,
+            ],
+            'failure_reason'      => '',
+            'fund_transfer_id'    => 327798418,
+            'gateway_error_code'  => '',
+            'gateway_ref_no'      => 'apay.razsof_JfeUw7IZJOsw4i',
+            'narration'           => '256557209A0A',
+            'remarks'             => '',
+            'return_utr'          => '',
+            'source_account_id'   => 1,
+            'source_id'           => $payout->getId(),
+            'source_type'         => 'payout',
+            'status'              => 'INITIATED',
+            'utr'                 => '',
+            'status_details'      => null,
+        ];
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/update_fts_fund_transfer',
+            'content' => $ftsWebhook,
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $updatedPayout = $this->getDbEntityById('payout', $payoutId)->toArray();
+
+        $this->assertEquals($updatedPayout[Payout\Entity::STATUS], Payout\Status::CREATED);
+        $this->assertEquals('amz_pay', $updatedPayout[Payout\Entity::CHANNEL]);
+        $this->assertNull($updatedPayout[Payout\Entity::REVERSED_AT]);
+
+        // pushed once for payout creation
+        Queue::assertPushed(Transactions::class, 1);
+
+        $ledgerResponse = [
+            'id'               => '1000000Journal',
+            'created_at'       => $updatedPayout['created_at'],
+            'updated_at'       => $updatedPayout['updated_at'],
+            'amount'           => $updatedPayout['amount'],
+            'base_amount'      => $updatedPayout['amount'],
+            'currency'         => 'INR',
+            'tenant'           => 'X',
+            'transactor_id'    => $updatedPayout['id'],
+            'transactor_event' => 'payout_initiated',
+            'transaction_date' => $updatedPayout['created_at'],
+            'ledger_entry'     => [
+                [
+                    'id'               => \RZP\Models\Base\UniqueIdEntity::generateUniqueId(),
+                    'created_at'       => $updatedPayout['created_at'],
+                    'updated_at'       => $updatedPayout['updated_at'],
+                    'merchant_id'      => $updatedPayout['merchant_id'],
+                    'journal_id'       => '1000000Journal',
+                    'account_id'       => \RZP\Models\Base\UniqueIdEntity::generateUniqueId(),
+                    'amount'           => $updatedPayout['amount'],
+                    'base_amount'      => $updatedPayout['amount'],
+                    'currency'         => 'INR',
+                    'type'             => 'credit',
+                    'balance'          => 10000000,
+                    'account_entities' => [
+                        'account_type'      => ['cash'],
+                        'fund_account_type' => ['adjustment'], //TODO: Determine how to correct this
+                        'transactor'        => ['X'],
+                    ],
+                ],
+                [
+                    'id'               => \RZP\Models\Base\UniqueIdEntity::generateUniqueId(),
+                    'created_at'       => $updatedPayout['created_at'],
+                    'updated_at'       => $updatedPayout['updated_at'],
+                    'merchant_id'      => $updatedPayout['merchant_id'],
+                    'journal_id'       => '1000000Journal',
+                    'account_id'       => \RZP\Models\Base\UniqueIdEntity::generateUniqueId(),
+                    'amount'           => $updatedPayout['amount'],
+                    'base_amount'      => $updatedPayout['amount'],
+                    'type'             => 'debit',
+                    'currency'         => 'INR',
+                    'balance'          => 10011001,
+                    'account_entities' => [
+                        'account_type'       => ['payable'],
+                        'banking_account_id' => $this->bankAccount->getId(),
+                        'fund_account_type'  => ['merchant_va'],
+                        'transactor'         => ['X'],
+                    ],
+                ]
+            ]
+        ];
+
+        $ledgerResponse = [
+            'code' => 200,
+            'body' => $ledgerResponse,
+        ];
+
+        // call job handle function and see nothing breaks
+        (new Transactions('test', $payoutId, 'payout', $ledgerResponse))->handle();
+
+        $updatedTxn = $this->getDbLastEntity('transaction');
+
+        $this->assertEquals($payout->getId(), $updatedTxn->getEntityId());
+        $this->assertEquals('payout', $updatedTxn->getType());
+        $this->assertEquals('amz_pay', $updatedTxn->getChannel());
+    }
+
+    public function testPayoutChannelChangeWhenTxnNotCreatedAndNewFtsChannelIsAxisInLedgerReverseShadow()
+    {
+        Queue::fake();
+
+        $this->app['config']->set('applications.ledger.enabled', false);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $this->makeRequestAndGetContent($this->testData['testCreatePayout']['request']);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals('yesbank', $payout->getChannel());
+
+        $this->assertNull($payout->transaction);
+
+        $payoutId = $payout->getId();
+
+        $this->ba->ftsAuth();
+
+        $ftsWebhook = [
+            'bank_processed_time' => '',
+            'bank_status_code'    => '',
+            'channel'             => 'AXIS',
+            'mode'                => 'RTGS',
+            'extra_info'          => [
+                'cms_ref_no'       => '7a452792bee811ec949d0a0047340000',
+                'internal_error'   => false,
+            ],
+            'failure_reason'      => '',
+            'fund_transfer_id'    => 327798418,
+            'gateway_error_code'  => '',
+            'gateway_ref_no'      => 'JbHUWsGuthdznM',
+            'narration'           => 'RXPL Axis Fund Transfer',
+            'remarks'             => '',
+            'return_utr'          => '',
+            'source_id'           => $payout->getId(),
+            'source_type'         => 'payout',
+            'status'              => 'INITIATED',
+            'utr'                 => '',
+            'status_details'      => [
+                'parameters' => [
+                    'processed_by_time' => '1653881929',
+                ],
+                'reason' => 'beneficiary_bank_confirmation_pending',
+            ],
+        ];
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/update_fts_fund_transfer',
+            'content' => $ftsWebhook,
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $updatedPayout = $this->getDbEntityById('payout', $payoutId)->toArray();
+
+        $this->assertEquals($updatedPayout[Payout\Entity::STATUS], Payout\Status::CREATED);
+        $this->assertEquals('axis', $updatedPayout[Payout\Entity::CHANNEL]);
+        $this->assertNull($updatedPayout[Payout\Entity::REVERSED_AT]);
+
+        // pushed once for payout creation
+        Queue::assertPushed(Transactions::class, 1);
+
+        $ledgerResponse = [
+            'id'               => '1000000Journal',
+            'created_at'       => $updatedPayout['created_at'],
+            'updated_at'       => $updatedPayout['updated_at'],
+            'amount'           => $updatedPayout['amount'],
+            'base_amount'      => $updatedPayout['amount'],
+            'currency'         => 'INR',
+            'tenant'           => 'X',
+            'transactor_id'    => $updatedPayout['id'],
+            'transactor_event' => 'payout_initiated',
+            'transaction_date' => $updatedPayout['created_at'],
+            'ledger_entry'     => [
+                [
+                    'id'               => \RZP\Models\Base\UniqueIdEntity::generateUniqueId(),
+                    'created_at'       => $updatedPayout['created_at'],
+                    'updated_at'       => $updatedPayout['updated_at'],
+                    'merchant_id'      => $updatedPayout['merchant_id'],
+                    'journal_id'       => '1000000Journal',
+                    'account_id'       => \RZP\Models\Base\UniqueIdEntity::generateUniqueId(),
+                    'amount'           => $updatedPayout['amount'],
+                    'base_amount'      => $updatedPayout['amount'],
+                    'currency'         => 'INR',
+                    'type'             => 'credit',
+                    'balance'          => 10000000,
+                    'account_entities' => [
+                        'account_type'      => ['cash'],
+                        'fund_account_type' => ['adjustment'], //TODO: Determine how to correct this
+                        'transactor'        => ['X'],
+                    ],
+                ],
+                [
+                    'id'               => \RZP\Models\Base\UniqueIdEntity::generateUniqueId(),
+                    'created_at'       => $updatedPayout['created_at'],
+                    'updated_at'       => $updatedPayout['updated_at'],
+                    'merchant_id'      => $updatedPayout['merchant_id'],
+                    'journal_id'       => '1000000Journal',
+                    'account_id'       => \RZP\Models\Base\UniqueIdEntity::generateUniqueId(),
+                    'amount'           => $updatedPayout['amount'],
+                    'base_amount'      => $updatedPayout['amount'],
+                    'type'             => 'debit',
+                    'currency'         => 'INR',
+                    'balance'          => 10011001,
+                    'account_entities' => [
+                        'account_type'       => ['payable'],
+                        'banking_account_id' => $this->bankAccount->getId(),
+                        'fund_account_type'  => ['merchant_va'],
+                        'transactor'         => ['X'],
+                    ],
+                ]
+            ]
+        ];
+
+        $ledgerResponse = [
+            'code' => 200,
+            'body' => $ledgerResponse,
+        ];
+
+        // call job handle function and see nothing breaks
+        (new Transactions('test', $payoutId, 'payout', $ledgerResponse))->handle();
+
+        $updatedTxn = $this->getDbLastEntity('transaction');
+
+        $this->assertEquals($payout->getId(), $updatedTxn->getEntityId());
+        $this->assertEquals('payout', $updatedTxn->getType());
+        $this->assertEquals('axis', $updatedTxn->getChannel());
+    }
+
     public function testPayoutChannelChangeViaReversalWhenTxnNotCreatedInLedgerReverseShadow()
     {
         Queue::fake();
