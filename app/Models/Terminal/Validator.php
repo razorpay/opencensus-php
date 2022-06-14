@@ -942,6 +942,7 @@ class Validator extends Base\Validator
         Entity::TYPE                       => 'sometimes|array',
         Entity::STATUS                     => 'sometimes|string|in:deactivated,activated',
         Entity::CURRENCY                   => 'sometimes|array',
+        Entity::GATEWAY_MERCHANT_ID        => 'sometimes|alpha_num|size:15',
     ];
 
     protected static $cybersourceEditTerminalRules = [

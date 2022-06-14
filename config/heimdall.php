@@ -517,6 +517,10 @@ return [
                 'description'   => 'Create paysecure terminal',
                 'assignable'    => true,
             ],
+            Permission::EDIT_EXTERNAL_ORG_TERMINALS     => [
+                'description'   => 'Edit paysecure terminal',
+                'assignable'    => true,
+            ],
             Permission::ASSIGN_MERCHANT_BANKS               => '',
             Permission::ADD_MERCHANT_ADJUSTMENT             => '',
             Permission::EDIT_MERCHANT_EMAIL                 => [

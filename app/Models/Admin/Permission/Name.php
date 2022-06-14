@@ -672,6 +672,7 @@ class Name
     const DELETE_GATEWAY_CREDENTIAL           = 'delete_gateway_credential';
 
     const CREATE_EXTERNAL_ORG_TERMINALS       = 'external_org_create_terminals';
+    const EDIT_EXTERNAL_ORG_TERMINALS         = 'external_org_edit_terminals';
     const EXECUTE_TERMINAL_TEST               = 'execute_terminal_test';
 
     const VIEW_IIR_DISCREPANCY                = 'view_iir_discrepancy';

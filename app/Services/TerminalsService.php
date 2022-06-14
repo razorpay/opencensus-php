@@ -63,6 +63,7 @@ class TerminalsService
     const CONNECT_TIMEOUT   = 'connect_timeout';
     const OPTIONS           = 'options';
     const ORG_ID            = 'org_id';
+    const GATEWAY_MERCHANT_ID = 'gateway_merchant_id';
 
     const CODE              = 'code';
     const CAPTURE_INFO_UPFRONT_ERROR = 'CAPTURE_INFO_UPFRONT_ERROR';
@@ -371,6 +372,13 @@ class TerminalsService
         if (isset($otherInputs[self::ORG_ID]) === true)
         {
             $content[self::ORG_ID] = $otherInputs[self::ORG_ID];
+        }
+
+        $headers = $this->getTerminalServiceOrgHeaders();
+
+        if(isset($otherInputs[self::GATEWAY_MERCHANT_ID]) === true)
+        {
+            $content[self::IDENTIFIERS][self::GATEWAY_MERCHANT_ID] = $otherInputs[self::GATEWAY_MERCHANT_ID];
         }
 
         // for paysecure

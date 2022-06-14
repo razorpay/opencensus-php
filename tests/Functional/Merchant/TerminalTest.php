@@ -856,6 +856,7 @@ class TerminalTest extends TestCase
 
         $data = [
             'status' => "deactivated",
+            'gateway_merchant_id' => 'axisgatewaymid1',
         ];
 
         $this->fixtures->create('feature', [
@@ -867,6 +868,8 @@ class TerminalTest extends TestCase
         $content = $this->editTerminal($tid, $data);
 
         $this->assertEquals($content['status'],$data['status']);
+
+        $this->assertEquals($content['gateway_merchant_id'],$data['gateway_merchant_id']);
     }
 
     public function testEditPaysecureTerminalWithAxisOrgIdTerminalByAxisAdminUser()
@@ -895,6 +898,7 @@ class TerminalTest extends TestCase
                 'non_recurring' => '1',
             ],
             'status' => "deactivated",
+            'gateway_merchant_id' => 'axisgatewaymid1',
         ];
 
         $this->fixtures->create('feature', [
@@ -910,6 +914,8 @@ class TerminalTest extends TestCase
         $this->assertEquals($content['status'],$data['status']);
 
         $this->assertEquals($content['type'][0],'non_recurring');
+
+        $this->assertEquals($content['gateway_merchant_id'],$data['gateway_merchant_id']);
     }
 
     public function testEditNonPaysecureTerminalWithByAxisAdminUser()
