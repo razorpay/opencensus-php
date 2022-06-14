@@ -9,6 +9,11 @@ use Illuminate\Contracts\Encryption\DecryptException;
 
 class EncryptCookies extends BaseEncrypter
 {
+    protected $except = [
+        'rzp_merchant_id',
+        'rzp_user_id',
+    ];
+
     protected function decrypt(Request $request)
     {
         foreach ($request->cookies as $key => $c) {
