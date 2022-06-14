@@ -382,6 +382,22 @@ class BankingAccountService
             $headers['X-Admin-Name'] = $this->ba->getAdmin()->getName() ?? '';
         }
 
+        $adminIdHeader = $this->app['request']->header('X-Admin-Id');
+
+        if (empty($adminIdHeader) === false)
+        {
+            $internalAppName = app('request.ctx')->getInternalAppName();
+
+            if ($internalAppName === 'master_onboarding')
+            {
+                $headers['X-Admin-Id'] = $this->app['request']->header('X-Admin-Id') ?? '';
+
+                $headers['X-Admin-Email'] = $this->app['request']->header('X-Admin-Email') ?? '';
+
+                $headers['X-Admin-Name'] = $this->app['request']->header('X-Admin-Name') ?? '';
+            }
+        }
+
         $user = $this->ba->getUser();
 
         if ($user !== null)

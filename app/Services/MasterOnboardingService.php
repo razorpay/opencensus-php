@@ -69,8 +69,9 @@ class MasterOnboardingService
     private function getAdminRequestHeaders(array $data = []) : array
     {
         $headers = [
-            'X-Admin-Id'                      => $this->ba->getAdmin()->getId() ?? '',
-            'X-Admin-Email'                   => $this->ba->getAdmin()->getEmail() ?? '',
+            'Grpc-metadata-X-Admin-Id'        => $this->ba->getAdmin()->getId() ?? '',
+            'Grpc-metadata-X-Admin-Email'     => $this->ba->getAdmin()->getEmail() ?? '',
+            'Grpc-metadata-X-Admin-Name'      => $this->ba->getAdmin()->getName() ?? '',
             'Grpc-metadata-X-Razorpay-TaskId' => $this->app['request']->getTaskId(),
             'X-Auth-Type'                     => 'admin'
         ];
