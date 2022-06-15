@@ -94,6 +94,7 @@ const PaymentRefund = ({
   const refundStatus = payment.refund_status;
   const refundAmount = payment.amount_refunded;
   const currency = payment.currency;
+  const errorReason = payment.error_reason;
 
   const onRefundStatusClick = () => {
     if (isQrCode) {
@@ -230,6 +231,12 @@ const PaymentRefund = ({
               </span>
             )}
           </Definition>
+          {errorReason === 'avs_failure' && (
+            <Definition customClass="m-t">
+              <span>Refund Reason</span>
+              <span>Payment auto refunded because of billing address mismatch</span>
+            </Definition>
+          )}
           <ShowWhen additionalCondition={(user) => user.isPaymentsExtraRefundDetailsEnabled}>
             <RefundDetails items={refunds.items} />
           </ShowWhen>

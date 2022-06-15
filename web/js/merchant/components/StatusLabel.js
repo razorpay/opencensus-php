@@ -1,22 +1,37 @@
 import { titleCase } from 'common/utils/rzp-utils';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 
-const statusLabel = (statusMap, statusDescriptionMap) => ({ status = '', className }) => (
-  <span
-    class={`status-label label ${statusMap ? statusMap[status?.toLowerCase()] : ''} ${className}`}
-  >
-    {status === 'activated_mcc_pending' ? 'Activated' : titleCase(status)}
-    {statusDescriptionMap && statusDescriptionMap[status] && (
-      <i class="i i-info-circle status-label-info-icon">
-        <Popover persistent={false} theme="dark">
-          <PopoverBody>
-            <p>{statusDescriptionMap[status]}</p>
-          </PopoverBody>
-        </Popover>
-      </i>
-    )}
-  </span>
-);
+const statusLabel = (statusMap, statusDescriptionMap) => ({
+  status = '',
+  error_reason = '',
+  className,
+}) => {
+  //short term fix to handle avs failure
+  const isAVSRefunded = status === 'refunded' && error_reason === 'avs_failure';
+
+  return (
+    <span
+      className={`status-label label${
+        statusMap ? ` ${statusMap[status?.toLowerCase()]}` : ''
+      } ${className}`}
+    >
+      {status === 'activated_mcc_pending' ? 'Activated' : titleCase(status)}
+      {(statusDescriptionMap?.[status] || isAVSRefunded) && (
+        <i className="i i-info-circle status-label-info-icon">
+          <Popover persistent={false} theme="dark">
+            <PopoverBody>
+              <p>
+                {isAVSRefunded
+                  ? 'Payment auto refunded because of billing address mismatch'
+                  : statusDescriptionMap[status]}
+              </p>
+            </PopoverBody>
+          </Popover>
+        </i>
+      )}
+    </span>
+  );
+};
 
 export const invoiceStatusMap = {
   draft: 'label-muted',
