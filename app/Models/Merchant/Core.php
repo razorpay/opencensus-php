@@ -7085,6 +7085,29 @@ class Core extends Base\Core
         );
     }
 
+    public function associateMerchant1ccComments(string $type, string $value)
+    {
+        $input = [
+            'flow' => $type,
+            'comment' => $value,
+        ];
+
+        $this->repo->transaction(
+            function () use($input)
+            {
+                $comment = $this->repo->merchant_1cc_comments->findByMerchantAndFlowType(
+                    $this->merchant->getId(),
+                    $input['flow']
+                );
+                if ($comment !== null)
+                {
+                    $comment->delete();
+                }
+                return (new Merchant1ccComments\Core())->createAndSaveComments($this->merchant, $input);
+            }
+        );
+    }
+
     protected function addMerchantWorkflowClarificationComments(WorkflowAction\Entity $action, string $clarification , array $documentIds = [])
     {
         $clarificationCommentEntity = (new CommentCore)->create([

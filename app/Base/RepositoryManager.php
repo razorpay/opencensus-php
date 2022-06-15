@@ -192,6 +192,7 @@ use RZP\Base\Database\Connectors\MySqlConnector;
  * @property Models\Merchant\Balance\SubBalanceMap\Repository         $sub_balance_map
  * @property Models\Merchant\Slab\Repository                          $merchant_slabs
  * @property Models\Merchant\Merchant1ccConfig\Repository             $merchant_1cc_configs
+ * @property Models\Merchant\Merchant1ccComments\Repository           $merchant_1cc_comments
  * @property Models\PayoutsStatusDetails\Repository                   $payouts_status_details
  * @property Models\VirtualAccountProducts\Repository                 $virtual_account_products
  * @property Models\Merchant\OneClickCheckout\AuthConfig\Repository   $merchant_1cc_auth_configs

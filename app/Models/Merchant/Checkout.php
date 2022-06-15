@@ -41,6 +41,8 @@ use RZP\Models\SubscriptionRegistration\Validator as SubscriptionRegistrationVal
 use RZP\Models\Key;
 use RZP\Models\TrustedBadge;
 use RZP\Models\Customer\AppToken;
+use RZP\Models\Merchant\OneClickCheckout\Constants;
+use RZP\Models\Merchant\OneClickCheckout\Config\Service as oneClickCheckoutConfigService;
 use RZP\Models\Address;
 class Checkout
 {
@@ -150,6 +152,8 @@ class Checkout
         $this->checkAndFillPaymentDowntime($merchant, $data);
 
         $this->fillEnabledFeatures($merchant, $data);
+
+        $this->fillEnabled1ccConfigs($merchant, $data);
 
         $data[Entity::METHODS] = (new Methods\Core)->enableOrDisableMethodsBasedOnTerminals($merchant, $data[Entity::METHODS], $mode);
 
@@ -1887,5 +1891,20 @@ class Checkout
         }
 
         return [$credInput, $credOptions];
+    }
+
+    protected function fillEnabled1ccConfigs(Merchant\Entity $merchant, array & $data)
+    {
+        if ($merchant->isFeatureEnabled(Constants::ONE_CLICK_CHECKOUT) === false)
+        {
+            return ;
+        }
+
+        $response = (new oneClickCheckoutConfigService())->get1ccConfigFlagsStatus($merchant);
+
+        foreach (Constants::CONFIG_CUM_FEATURE_FLAGS as $featureFlags) {
+            $data['features'][$featureFlags] = $response[$featureFlags];
+        }
+        $data['1cc']['configs'] = $response;
     }
 }

@@ -3528,6 +3528,7 @@ class Route
         '1cc_configs_update'                        => ['post',       '1cc/merchant/configs',                                  'MerchantController@update1ccConfig'],
         '1cc_configs_get'                           => ['get',        '1cc/merchant/configs',                                  'MerchantController@get1ccConfig'],
         '1cc_merchant_preferences'                  => ['get',        'merchant/1cc_preferences',                                  'MerchantController@get1ccMerchantPreferences'],
+        '1cc_disable_magic'                         => ['post',       '1cc/magic/disable',                                       'MerchantController@disable1ccMagicCheckout'],
 
         '1cc_cod_eligibility_attribute_list'         => ['get',    '1cc/rto_prediction_service/cod_eligibility_attribute/{cod_eligibility_type}',             'CODEligibilityAttributeController@list'       ],
         '1cc_cod_eligibility_attribute_upsert_bulk'  => ['post',   '1cc/rto_prediction_service/cod_eligibility_attribute/{cod_eligibility_type}/upsert/bulk', 'CODEligibilityAttributeController@bulkUpsert' ],
@@ -5714,6 +5715,7 @@ class Route
         'update_fetch_coupons_url',
         '1cc_configs_update',
         '1cc_configs_get',
+        '1cc_disable_magic',
         'update_merchant_platform',
         '1cc_cod_eligibility_attribute_list',
         '1cc_cod_eligibility_attribute_upsert_bulk',
@@ -9992,6 +9994,7 @@ class Route
             'update_fetch_coupons_url',
             '1cc_configs_update',
             '1cc_configs_get',
+            '1cc_disable_magic',
             'update_merchant_platform',
             '1cc_cod_eligibility_attribute_list',
             '1cc_cod_eligibility_attribute_upsert_bulk',

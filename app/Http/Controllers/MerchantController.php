@@ -3022,6 +3022,8 @@ class MerchantController extends Controller
         $input = Request::all();
 
         (new Merchant\OneClickCheckout\Config\Service())->update1ccConfig($input);
+
+        return ApiResponse::json([]);
     }
 
     public function get1ccConfig()
@@ -3150,6 +3152,15 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function disable1ccMagicCheckout()
+    {
+        $input = Request::all();
+
+        (new Merchant\OneClickCheckout\Config\Service())->disable1ccMagicCheckout($input);
+
+        return ApiResponse::json([]);
+    }
+    
     public function CollectInfoMerchantDetailsPatch($merchantId){
         $input = Request::all();
         $response = $this->service(E::MERCHANT_DETAIL)->patchSmartDashboardMerchantDetails($input, $merchantId);

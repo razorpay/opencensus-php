@@ -9,6 +9,7 @@ use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Merchant1ccConfig\Type;
 use RZP\Models\Merchant\OneClickCheckout\Constants;
 use RZP\Models\Merchant\OneClickCheckout\Shopify\Utils as ShopifyUtils;
+use RZP\Models\Merchant;
 
 class Service extends Base\Service
 {
@@ -56,7 +57,7 @@ class Service extends Base\Service
                         );
                     }
 
-                    $this->reset1ccConfig();
+                    $this->reset1ccConfig($merchantPlatform);
 
                     $reset = true;
 
@@ -137,6 +138,40 @@ class Service extends Base\Service
                     );
                 }
 
+                foreach ($input as $key => $value)
+                {
+                    switch ($key)
+                    {
+                        case "one_click_checkout":
+                            if($updatePlatform === Constants::SHOPIFY) {
+                                $this->add1ccConfigFlags($input, Type::ONE_CLICK_CHECKOUT);
+                            }
+                            break;
+                        case "one_cc_buy_now_button":
+                            if($updatePlatform === Constants::SHOPIFY) {
+                                $this->add1ccConfigFlags($input, Type::ONE_CC_BUY_NOW_BUTTON);
+                            }
+                        case "one_cc_ga_analytics":
+                            if($updatePlatform === Constants::SHOPIFY) {
+                                $this->add1ccConfigFlags($input, Type::ONE_CC_GA_ANALYTICS);
+                            }
+                            break;
+                        case "one_cc_fb_analytics":
+                            if($updatePlatform === Constants::SHOPIFY) {
+                                $this->add1ccConfigFlags($input, Type::ONE_CC_FB_ANALYTICS);
+                            }
+                            break;
+                        case "one_cc_auto_fetch_coupons":
+                            $this->add1ccConfigFlags($input, Type::ONE_CC_AUTO_FETCH_COUPONS);
+                            break;
+                        case "one_cc_international_shipping":
+                            $this->add1ccConfigFlags($input, Type::ONE_CC_INTERNATIONAL_SHIPPING);
+                            break;
+                        case "one_cc_capture_billing_address":
+                            $this->add1ccConfigFlags($input, Type::ONE_CC_CAPTURE_BILLING_ADDRESS);
+                            break;
+                    }
+                }
             }
         );
     }
@@ -146,7 +181,7 @@ class Service extends Base\Service
         // Special handling for Shopify
         $merchantPlatformConfig = $this->merchant->getMerchantPlatformConfig();
 
-        $codIntelligenceEnabled = $this->merchant->getCODIntelligenceConfig();
+        $configFlagsResponse = $this->get1ccConfigFlagsStatus($this->merchant);
 
         if ($merchantPlatformConfig !== null and $merchantPlatformConfig->getValue() === Constants::SHOPIFY)
         {
@@ -155,22 +190,19 @@ class Service extends Base\Service
                 Constants::SHOPIFY,
                 Constants::SHOP_ID
             );
+
+            $response = [
+                'platform'         => Constants::SHOPIFY,
+                Constants::SHOP_ID => ''
+            ];
+
+            $response = array_merge($response, $configFlagsResponse);
+
             if ($config !== null)
             {
-                return [
-                    'platform'         => Constants::SHOPIFY,
-                    Constants::SHOP_ID => $config->getValue(),
-                    Constants::COD_INTELLIGENCE => $codIntelligenceEnabled,
-                ];
+                $response[Constants::SHOP_ID] = $config->getValue();
             }
-            else
-            {
-                return [
-                    'platform'         => Constants::SHOPIFY,
-                    Constants::SHOP_ID => '',
-                    Constants::COD_INTELLIGENCE => $codIntelligenceEnabled,
-                ];
-            }
+            return $response;
         }
 
         $shippingInfoUrlConfig = $this->merchant->getShippingInfoUrlConfig();
@@ -214,20 +246,28 @@ class Service extends Base\Service
             "apply_promotion" => $applyCouponUrl,
             "cod_slabs"       => $codSlabs,
             "platform"        => $merchantPlatform,
-            Constants::COD_INTELLIGENCE => $codIntelligenceEnabled,
+            Constants::COD_INTELLIGENCE => $configFlagsResponse[Constants::COD_INTELLIGENCE],
+            Constants::ONE_CC_AUTO_FETCH_COUPONS => $configFlagsResponse[Constants::ONE_CC_AUTO_FETCH_COUPONS],
+            Constants::ONE_CC_INTERNATIONAL_SHIPPING => $configFlagsResponse[Constants::ONE_CC_INTERNATIONAL_SHIPPING],
+            Constants::ONE_CC_CAPTURE_BILLING_ADDRESS => $configFlagsResponse[Constants::ONE_CC_CAPTURE_BILLING_ADDRESS]
         ];
     }
 
     /**
      * @throws \Exception
      */
-    protected function reset1ccConfig()
+    protected function reset1ccConfig($platform)
     {
         $merchantId = $this->merchant->getId();
         $configs = $this->repo->merchant_1cc_configs->findByMerchantId($merchantId)->getModels();
+
         foreach ($configs as $config)
         {
-            $config->delete();
+            $currentConfig = $config['config'];
+            if (($platform === Constants::SHOPIFY && in_array($currentConfig, Constants::SHOPIFY_RESETTABLE_CONFIGS) === true)
+             || ($platform !== Constants::SHOPIFY && in_array($currentConfig, Constants::NATIVE_RESETTABLE_CONFIGS) === true)) {
+                $config->delete();
+            }
         }
         $slabs = $this->repo->merchant_slabs->findByMerchantId($merchantId)->getModels();
         foreach ($slabs as $slab)
@@ -242,5 +282,130 @@ class Service extends Base\Service
         findByMerchantAndConfigType($merchantId, Type::COD_INTELLIGENCE);
         return $codIntelligenceConfig !==  null && $codIntelligenceConfig->getValue() === "1";
     }
+
+    private function add1ccConfigFlags($input, string $type)
+    {
+        if (in_array($type, Constants::CONFIG_FLAGS) === false) {
+            return ;
+        }
+
+        $updatedConfig = isset($input[$type]) && $input[$type] === true;
+
+        $config = $this->merchant->get1ccConfig($type);
+
+        $currentConfig = $config !==  null && $config->getValue() === "1";
+
+        if(($config == null)  || ($currentConfig !==  $updatedConfig))
+        {
+            (new Core)->associateMerchant1ccConfig($type,
+                $updatedConfig
+            );
+        }
+    }
+
+    /**
+     * @throws \Throwable
+     */
+    public function disable1ccMagicCheckout($input)
+    {
+        if (isset($input['platform']) == false)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR, 'Platform is required');
+        }
+
+        if ($input['platform'] !== Constants::SHOPIFY)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR, 'Platform is invalid');
+        }
+
+        if ($input['platform'] === Constants::SHOPIFY)
+        {
+            (new Validator())->setStrictFalse()->validateInput(Constants::SHOPIFY, $input);
+        }
+
+        $this->repo->transaction(
+            function () use ($input)
+            {
+                $this->repo->merchant_1cc_auth_configs->deleteByConfig(
+                    $this->merchant->getId(),
+                    Constants::SHOPIFY,
+                    Constants::SHOP_ID
+                );
+
+                $shopId = (new ShopifyUtils)->stripAndReturnShopId($input[Constants::SHOP_ID]);
+
+                $this->repo->merchant_1cc_auth_configs->create(
+                    [
+                        'merchant_id' => $this->merchant->getId(),
+                        'platform'    => Constants::SHOPIFY,
+                        'config'      => Constants::SHOP_ID,
+                        'value'       => $shopId
+                    ]
+                );
+
+                if (isset($input[Type::ONE_CLICK_CHECKOUT]) && $input[Type::ONE_CLICK_CHECKOUT] === false)
+                {
+
+                    $this->add1ccConfigFlags($input, Type::ONE_CLICK_CHECKOUT);
+
+                    if (isset($input['reason']))
+                    {
+                            $reason = $input['reason'];
+
+                            $flow = Constants::DISABLE_MAGIC_CHECKOUT;
+
+                            (new Core())->associateMerchant1ccComments($flow, $reason);
+                    }
+
+                    if (isset($input['additional_reason']))
+                    {
+                        $reason = $input['additional_reason'];
+
+                        $flow = Constants::DISABLE_MAGIC_CHECKOUT_ADDITIONAL_COMMENT;
+
+                        (new Core())->associateMerchant1ccComments($flow, $reason);
+                    }
+                }
+            }
+        );
+    }
+
+
+    public function get1ccConfigFlagsStatus(Merchant\Entity $merchant) {
+        $response = [];
+
+        foreach(Constants::CONFIG_CUM_FEATURE_FLAGS as $flag)
+        {
+            $storedConfig = $merchant->get1ccConfig($flag);
+            $featureStatus = $merchant->isFeatureEnabled($flag);
+            if ($storedConfig !== null)
+            {
+                $featureStatus = $storedConfig->getValue() === "1";
+            }
+            $response[$flag] = $featureStatus;
+        }
+
+        foreach (Constants::CONFIG_FLAGS_ACROSS_ALL_PLATFORMS as $flag)
+        {
+            $configStatus = $merchant->get1ccConfigFlagStatus($flag);
+            $response[$flag] = $configStatus;
+        }
+
+        // If Config not present then by default the value should be true.
+        $autoFetchCouponsConfig = $merchant->get1ccConfig(Constants::ONE_CC_AUTO_FETCH_COUPONS);
+        $autoFetchCouponsConfigStatus = true;
+        if ($autoFetchCouponsConfig !== null)
+        {
+            $autoFetchCouponsConfigStatus = $autoFetchCouponsConfig->getValue() === "1";
+        }
+
+        $oneClickBuyNowConfigStatus = $merchant->get1ccConfigFlagStatus(Constants::ONE_CC_BUY_NOW_BUTTON);
+
+        $response[Constants::ONE_CC_AUTO_FETCH_COUPONS]  = $autoFetchCouponsConfigStatus;
+        $response[Constants::ONE_CC_BUY_NOW_BUTTON]      = $oneClickBuyNowConfigStatus;
+
+        return $response;
+    }
+
 
 }

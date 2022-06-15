@@ -1583,6 +1583,19 @@ class Entity extends Base\PublicEntity
         return $codIntelligenceConfig !==  null && $codIntelligenceConfig->getValue() === "1";
     }
 
+    public function get1ccConfig($type)
+    {
+        return  (new Merchant1ccConfig\Repository())->
+        findByMerchantAndConfigType($this->getId(), $type);
+    }
+
+    public function get1ccConfigFlagStatus($type) : bool
+    {
+        $configStatus =  (new Merchant1ccConfig\Repository())->
+        findByMerchantAndConfigType($this->getId(), $type);
+        return $configStatus !==  null && $configStatus->getValue() === "1";
+    }
+
     public function getShippingMethodProvider()
     {
         return (new Merchant1ccConfig\Repository())

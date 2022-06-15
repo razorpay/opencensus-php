@@ -12408,6 +12408,125 @@ return [
         ],
     ],
 
+    'testOneClickCheckoutMerchant1ccConfig' => [
+        'request' => [
+            'url' => '/1cc/merchant/configs',
+            'method' => 'post',
+            'content' => [
+                "shop_id" => "hias",
+                "platform"=> "shopify",
+                "one_click_checkout"=> true
+            ],
+            'convertContentToString' => false
+        ],
+        'response' => [
+            'content'     => [],
+            'status_code' => 200
+        ],
+    ],
+
+    'testOneCcAutoFetchCouponsMerchant1ccConfig' => [
+        'request' => [
+            'url' => '/1cc/merchant/configs',
+            'method' => 'post',
+            'content' => [
+                "shop_id" => "hias",
+                "platform"=> "shopify",
+                "one_cc_auto_fetch_coupons"=> true
+            ],
+            'convertContentToString' => false
+        ],
+        'response' => [
+            'content'     => [],
+            'status_code' => 200
+        ],
+    ],
+
+    'testOneCcBuyNowMerchant1ccConfig' => [
+        'request' => [
+            'url' => '/1cc/merchant/configs',
+            'method' => 'post',
+            'content' => [
+                "shop_id" => "hias",
+                "platform"=> "shopify",
+                "one_cc_buy_now_button"=> true
+            ],
+            'convertContentToString' => false
+        ],
+        'response' => [
+            'content'     => [],
+            'status_code' => 200
+        ],
+    ],
+
+    'testOneCcInternationalShippingMerchant1ccConfig' => [
+        'request' => [
+            'url' => '/1cc/merchant/configs',
+            'method' => 'post',
+            'content' => [
+                "shop_id" => "hias",
+                "platform"=> "shopify",
+                "one_cc_international_shipping"=> true
+            ],
+            'convertContentToString' => false
+        ],
+        'response' => [
+            'content'     => [],
+            'status_code' => 200
+        ],
+    ],
+
+    'testOneCcCaptureBillingAddressMerchant1ccConfig' => [
+        'request' => [
+            'url' => '/1cc/merchant/configs',
+            'method' => 'post',
+            'content' => [
+                "shop_id" => "hias",
+                "platform"=> "shopify",
+                "one_cc_capture_billing_address"=> true
+            ],
+            'convertContentToString' => false
+        ],
+        'response' => [
+            'content'     => [],
+            'status_code' => 200
+        ],
+    ],
+
+    'testOneCcGaAnalyticsMerchant1ccConfig' => [
+        'request' => [
+            'url' => '/1cc/merchant/configs',
+            'method' => 'post',
+            'content' => [
+                "shop_id" => "hias",
+                "platform" => "shopify",
+                "one_cc_ga_analytics" => true
+            ],
+            'convertContentToString' => false
+        ],
+        'response' => [
+            'content'     => [],
+            'status_code' => 200
+        ],
+    ],
+
+    'testOneCcFbAnalyticsMerchant1ccConfig' => [
+        'request' => [
+            'url' => '/1cc/merchant/configs',
+            'method' => 'post',
+            'content' => [
+                "shop_id" => "hias",
+                "platform" => "shopify",
+                "one_cc_fb_analytics" => true
+            ],
+            'convertContentToString' => false
+        ],
+        'response' => [
+            'content'     => [],
+            'status_code' => 200
+        ],
+    ],
+
     'testGetCheckoutPreferencesFor1CCOrderWithLineItems' => [
         'request'  => [
             'url'     => '/preferences',

@@ -608,6 +608,8 @@ class Entity
     const ADDRESS_CONSENT_1CC_AUDITS    = 'address_consent_1cc_audits';
     const ADDRESS_CONSENT_1CC           = 'address_consent_1cc';
 
+    const MERCHANT_1CC_COMMENTS          = 'merchant_1cc_comments';
+
     // merchant international integrations
     const MERCHANT_INTERNATIONAL_INTEGRATIONS = 'merchant_international_integrations';
 
@@ -1318,6 +1320,8 @@ class Entity
 
         self::PAYMENT_FRAUD              => \RZP\Models\Payment\Fraud::class,
 
+        self::MERCHANT_1CC_COMMENTS      => \RZP\Models\Merchant\Merchant1ccComments::class,
+        
         self::MERCHANT_OTP_VERIFICATION_LOGS       => \RZP\Models\Merchant\Product\Otp::class,
         self::ADDRESS_CONSENT_1CC               => \RZP\Models\Address\AddressConsent1cc::class,
 

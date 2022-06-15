@@ -18,7 +18,14 @@ class Constants
 
     const SHOPIFY_TEMP_RECEIPT = 'Order Pending';
 
-    const COD_INTELLIGENCE = 'cod_intelligence';
+    const COD_INTELLIGENCE               = 'cod_intelligence';
+    const ONE_CLICK_CHECKOUT             = 'one_click_checkout';
+    const ONE_CC_AUTO_FETCH_COUPONS      = 'one_cc_auto_fetch_coupons';
+    const ONE_CC_BUY_NOW_BUTTON          = 'one_cc_buy_now_button';
+    const ONE_CC_INTERNATIONAL_SHIPPING  = 'one_cc_international_shipping';
+    const ONE_CC_CAPTURE_BILLING_ADDRESS = 'one_cc_capture_billing_address';
+    const ONE_CC_GA_ANALYTICS            = 'one_cc_ga_analytics';
+    const ONE_CC_FB_ANALYTICS            = 'one_cc_fb_analytics';
 
     // common auth keys
     const API_KEY        = 'api_key';
@@ -41,6 +48,10 @@ class Constants
 
     // entities
     const ORDER_ID                          = 'order_id';
+
+    // merchant flows
+    const DISABLE_MAGIC_CHECKOUT = 'disable_magic_checkout';
+    const DISABLE_MAGIC_CHECKOUT_ADDITIONAL_COMMENT = 'disable_magic_checkout_additional_comment';
 
     const SHOPIFY_API_TYPES = [
         self::STOREFRONT,
@@ -66,5 +77,40 @@ class Constants
         self::API_SECRET,
         self::STOREFRONT_ACCESS_TOKEN,
         self::OAUTH_TOKEN,
+    ];
+
+    const CONFIG_FLAGS = [
+        self::COD_INTELLIGENCE,
+        self::ONE_CLICK_CHECKOUT,
+        self::ONE_CC_GA_ANALYTICS,
+        self::ONE_CC_FB_ANALYTICS,
+        self::ONE_CC_CAPTURE_BILLING_ADDRESS,
+        self::ONE_CC_INTERNATIONAL_SHIPPING,
+        self::ONE_CC_BUY_NOW_BUTTON,
+        self::ONE_CC_AUTO_FETCH_COUPONS
+    ];
+
+    const CONFIG_CUM_FEATURE_FLAGS = [
+        self::ONE_CLICK_CHECKOUT,
+        self::ONE_CC_GA_ANALYTICS,
+        self::ONE_CC_FB_ANALYTICS
+    ];
+
+    const CONFIG_FLAGS_ACROSS_ALL_PLATFORMS = [
+        self::COD_INTELLIGENCE,
+        self::ONE_CC_CAPTURE_BILLING_ADDRESS,
+        self::ONE_CC_INTERNATIONAL_SHIPPING
+    ];
+
+    const SHOPIFY_RESETTABLE_CONFIGS = [
+        self::PLATFORM,
+        self::SHOP_ID
+    ];
+
+    const NATIVE_RESETTABLE_CONFIGS = [
+        self::PLATFORM,
+        self::SHIPPING_INFO_URL,
+        self::FETCH_COUPONS_URL,
+        self::APPLY_COUPON_URL
     ];
 }
