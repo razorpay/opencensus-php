@@ -38,7 +38,6 @@ import {
   refreshPageData,
   markDataSaved,
   updateTemplateType,
-  isFormItemOfTypeAmount,
   updateReceiptDetails,
   setSettingsModal,
   replaceInFormItems,
@@ -54,6 +53,10 @@ import {
 } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/UDF/helpers';
 
 import { trackWYSIWYGCloseIntent, trackConfirmWYSIWYGCloseIntent } from '../ga';
+import {
+  convertSinglePriceFieldToMandatory,
+  isFormItemOfTypeAmount,
+} from './FormSection/Amount/helpers';
 
 const ERROR = {
   SCRIPT: 1,
@@ -400,7 +403,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     } = paymentPageEntity;
 
     const udf_schema = [];
-    const paymentPageItems = [];
+    let paymentPageItems = [];
 
     // Separate UDF and amount fields from FORM ITEMS.
     FORM_ITEMS.forEach((fi, ix) => {
@@ -461,6 +464,8 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
         udf_schema.push(fi);
       }
     });
+    // before saving, if there is only one price field, we are marking it as mandatory. (for UX reasons on hosted pages)
+    paymentPageItems = convertSinglePriceFieldToMandatory(paymentPageItems);
 
     if (!paymentPageItems.length) {
       this.props.showNotification({

@@ -43,6 +43,17 @@ export default class BaseForm extends React.PureComponent {
   }
 
   componentDidMount() {
+    const { fieldType, field } = this.props;
+
+    // if name is present and fixed price field -> focus on amount. Else focus on name field
+    if (field.item.hasOwnProperty('name') && fieldType === FIELD_TYPES.fixed_price.key) {
+      document.querySelector('input[name=amount]') &&
+        document.querySelector('input[name=amount]').focus();
+    } else {
+      document.querySelector('textarea[name=name]') &&
+        document.querySelector('textarea[name=name]').focus();
+    }
+
     setTimeout(this.toggleSubmitBtn);
   }
 
@@ -312,7 +323,6 @@ export default class BaseForm extends React.PureComponent {
               return 'Field title cannot be same as other field';
             }
           }}
-          autoFocus
         >
           <div class={classList('Field Field--mirrorDisplay', isMandatory && 'Field--required')}>
             <span class="mirror-title">{mirrorDisplayName}</span>

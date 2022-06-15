@@ -10,12 +10,11 @@ import {
   updateData,
   deleteInFormItems,
   updateInFormItems,
-  isFormItemOfTypeAmount,
   reorderFormItems,
   updateReceiptDetails,
 } from 'merchant/reducers/wysiwyg';
 import { checkIsShiprocketField, constructFieldSchema } from './UDF/helpers';
-import { constructAmountField } from './Amount/helpers';
+import { constructAmountField, isFormItemOfTypeAmount } from './Amount/helpers';
 import { sortableContainer, sortableElement } from 'react-sortable-hoc';
 
 import { showNotification } from 'merchant_common/reducers/notifications';

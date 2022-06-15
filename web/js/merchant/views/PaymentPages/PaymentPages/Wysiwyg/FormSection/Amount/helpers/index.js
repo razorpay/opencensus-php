@@ -18,15 +18,13 @@ export function mapFieldToAmountFieldType(amountField) {
   if (amountField && amountField.item) {
     if (!amountField.item.amount) {
       amountFieldType = getAmountFieldTypes()[1]; // FIELD_TYPES.dynamic_price
+    } else if (
+      amountField.hasOwnProperty('min_purchase') &&
+      amountField.min_purchase !== null // Counter type field will have min_purchase defined as 0 or 0+ integer
+    ) {
+      amountFieldType = getAmountFieldTypes()[2]; // FIELD_TYPES.multiple_purchase
     } else {
-      if (
-        amountField.hasOwnProperty('min_purchase') &&
-        amountField.min_purchase !== null // Counter type field will have min_purchase defined as 0 or 0+ integer
-      ) {
-        amountFieldType = getAmountFieldTypes()[2]; // FIELD_TYPES.multiple_purchase
-      } else {
-        amountFieldType = getAmountFieldTypes()[0]; // FIELD_TYPES.fixed_price,
-      }
+      amountFieldType = getAmountFieldTypes()[0]; // FIELD_TYPES.fixed_price,
     }
   }
 
@@ -54,6 +52,12 @@ export function getBaseFieldForAmountFieldType(amountFieldType) {
         item: {},
         mandatory: false, // By default non-mandatory because min_purchase = 0
         min_purchase: 0, // it cannot be null because field definition of optional counter field will become same as fixed price optional field otherwise.
+      };
+    default:
+      // fallback to fixed_price_key
+      return {
+        item: {},
+        mandatory: true, // fixed_price is always mandatory
       };
   }
 }
@@ -109,4 +113,46 @@ export function constructAmountField(fieldData) {
   }
 
   return amountItem;
+}
+
+export const isFormItemOfTypeAmount = (formItem) => formItem.hasOwnProperty('item');
+
+export function convertSinglePriceFieldToMandatory(paymentPageItems) {
+  // if only 1 price field exists in array, ensure its marked as mandatory (before saving in DB)
+  if (paymentPageItems.length !== 1) return paymentPageItems;
+
+  const newPaymentPageItems = [...paymentPageItems];
+  toggleMandatoryForPriceField(newPaymentPageItems[0], true);
+  return newPaymentPageItems;
+}
+
+export function toggleMandatoryForPriceField(priceField, forceMandatory) {
+  if (!priceField.mandatory || forceMandatory) {
+    // convert to mandatory
+    priceField.mandatory = true;
+    // if dynamic amount field
+    if (priceField.item.amount === null) {
+      // not setting any min_amount for now. Current UX is fine. Placeholder for future
+    }
+    // if quantity based price field
+    if (priceField.hasOwnProperty('min_purchase') && typeof priceField.min_purchase === 'number') {
+      // if min_purchase exists, retain it. If it doesnt exist, keep it at 1;
+      if (priceField.min_purchase === 0) {
+        priceField.min_purchase = 1;
+      }
+    }
+  } else {
+    // convert to optional
+    priceField.mandatory = false;
+    if (priceField.item.amount === null) {
+      // not setting any min_amount for now. Current UX is fine. Placeholder for future
+    }
+    // if quantity based price field
+    if (priceField.hasOwnProperty('min_purchase') && typeof priceField.min_purchase === 'number') {
+      // if min_purchase exists, retain it. If it doesnt exist, keep it at 1;
+      if (priceField.min_purchase === 1) {
+        priceField.min_purchase = 0;
+      }
+    }
+  }
 }

@@ -31,8 +31,6 @@ const REORDER_FORM_ITEMS = 'REORDER_FORM_ITEMS';
 const UPDATE_RECEIPT_DETAILS = 'UPDATE_RECEIPT_DETAILS';
 const PREFILL_CONTACT_DETAILS = 'PREFILL_CONTACT_DETAILS';
 
-export const isFormItemOfTypeAmount = (formItem) => formItem.hasOwnProperty('item');
-
 export const updateTemplateType = (data, templateKey) => {
   const isPageDirty = false;
 
