@@ -6728,6 +6728,24 @@ trait Authorize
                 'authentication_reference_number' => $authReferenceNumber,
             ];
 
+            $variant = $this->app->razorx->getTreatment($this->request->getTaskId(), Merchant\RazorxTreatment::ASYNC_TOKEN_MIGRATION, $this->mode);
+
+            $this->trace->info(TraceCode::ASYNC_TOKEN_MIGRATION_RAZORX_VARIANT, [
+                'payment_id'     => $payment->getId(),
+                'token'          => $token,
+                'merchant_id'    => $payment->getMerchantId(),
+                'razorx_variant' => $variant,
+            ]);
+
+            if ((strtolower($variant) === 'on') && ($token['recurring'] === false)){
+
+                $asyncTokenisationJobId = "paymentmigrate";
+
+                SavedCardTokenisationJob::dispatch($this->mode, $token->getId(), $asyncTokenisationJobId);
+
+                return;
+            }
+
             $core->migrateToTokenizedCard($token, $cardInput);
 
             (new Metric())->pushTokenHQResponseTimeMetrics($startTime, BaseMetric::SUCCESS, Token\Action::MIGRATE);

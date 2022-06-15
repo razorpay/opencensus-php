@@ -4,6 +4,7 @@ namespace RZP\Jobs;
 
 use App;
 use RZP\Diag\EventCode;
+use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Card\Entity as CardEntity;
 use RZP\Models\Customer\Token;
 use RZP\Trace\TraceCode;
@@ -110,6 +111,25 @@ class SavedCardTokenisationJob extends Job
                 'attempt'       => $this->attempts(),
                 'is_global_customer_local_token' => $this->isGlobalCustomerLocalToken,
             ]);
+
+            if ($this->asyncTokenisationJobId === "paymentmigrate") {
+
+                $serviceProviderTokens = (new Token\Core)->fetchToken($token, true);
+
+                $eventPayload = [
+                    ApiEventSubscriber::MAIN => $token,
+                    ApiEventSubscriber::WITH => $serviceProviderTokens,
+                ];
+
+                $this->trace->info(TraceCode::RESPONSE,
+                    [
+                        "eventpayload" => $eventPayload
+                    ]
+                );
+
+                app('events')->dispatch('api.token.service_provider.activated', $eventPayload);
+
+            }
 
             $this->triggerEvent(EventCode::ASYNC_TOKENISATION_TOKEN_CREATION_SUCCESS, $card);
 
