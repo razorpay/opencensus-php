@@ -50,6 +50,7 @@ use RZP\Models\Merchant\Email\Type as MerchantEmailType;
 use RZP\Models\Merchant\Email\Core as MerchantEmailCore;
 use RZP\Models\Payment\Refund\Constants as RefundConstants;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
+use RZP\Models\Terminal\Entity as TerminalEntity;
 
 class Service extends Base\Service
 {
@@ -1132,6 +1133,15 @@ class Service extends Base\Service
                                             $error = RefundConstants::FETCH_ENTITIES_ERROR;
                                         }
                                     }
+                                }
+                            }
+                            else if ($key === Constants\Entity::TERMINAL)
+                            {
+                                $entity = $payment->terminal;
+                                if (empty($entity) === false)
+                                {
+                                    $entity = $entity->makeVisible([TerminalEntity::GATEWAY_SECURE_SECRET, TerminalEntity::GATEWAY_SECURE_SECRET2, TerminalEntity::GATEWAY_TERMINAL_PASSWORD]);
+                                    $data = $entity->toArray();
                                 }
                             }
                             else if ($key !== Constants\Entity::PAYMENT)

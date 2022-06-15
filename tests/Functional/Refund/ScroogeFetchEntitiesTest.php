@@ -678,6 +678,12 @@ class ScroogeFetchEntitiesTest extends TestCase
     // test various entities fetch
     public function scroogeFetchEntitiesV2SubTest1($subTestArgs): array
     {
+        $this->fixtures->terminal->edit('1n25f6uN5S1Z5a',
+            ['gateway_secure_secret' => 'sample_secret_code',
+            'gateway_secure_secret2' => 'sample_secret_code2',
+            'gateway_terminal_password' => 'sample_terminal_password']
+        );
+
         $paymentId = substr($subTestArgs['payment']['id'], 4);
         $paymentId2 = substr($subTestArgs['payment2']['id'], 4);
 
@@ -717,6 +723,9 @@ class ScroogeFetchEntitiesTest extends TestCase
                         'data' =>  [
                             'gateway' => 'hdfc',
                             'gateway_acquirer' => 'hdfc',
+                            'gateway_secure_secret' => 'sample_secret_code',
+                            'gateway_secure_secret2' => 'sample_secret_code2',
+                            'gateway_terminal_password' => 'sample_terminal_password',
                         ],
                         'error' => NULL,
                     ],
