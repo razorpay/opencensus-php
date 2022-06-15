@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use phpseclib\Crypt\RSA;
 use phpseclib\Net\SFTP;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Constants\Entity as E;
 use RZP\Models\Payment;
 use RZP\Base\ConnectionType;
 use RZP\Models\Schedule;
@@ -22,7 +23,6 @@ use RZP\Models\Adjustment;
 use RZP\Models\Transaction;
 use RZP\Constants\Timezone;
 use RZP\Base\RuntimeManager;
-use RZP\Constants\Entity as E;
 use RZP\Models\Schedule\Type;
 use RZP\Jobs\Settlement\Create;
 use RZP\Models\Merchant\Balance;
@@ -1190,13 +1190,56 @@ class Service extends Base\Service
             return ['status' => false];
         }
 
+        // Maps the transaction source to the entities to be fetched for it
+        $txnToRelationFetchMap = [
+            // Maps transaction source to entities that need to be fetched
+            E::PAYMENT => [
+                E::PAYMENT  => [],
+            ],
+            E::REFUND => [
+                E::REFUND   => [],
+            ],
+        ];
+
         $transactionId = $input['transaction_id'];
-        $createdAt = $input['created_at'];
+        $transaction = $this->repo->transaction->findById($transactionId);
+        $source = $input['source_type'];
+
+        $txn = $this->repo->transaction
+            ->fetchAssociatedRelationsWithLoadedEntities(
+                $transaction,'source', $txnToRelationFetchMap[$source]);
+
+        $this->trace->info(
+            TraceCode::TRANSACTION_ENTITY_FETCH,
+            [
+                'txn'     => $txn,
+            ]);
+
+        $startedAt = 0;
+
+        switch($source) {
+
+            case E::PAYMENT:
+                $payment = $txn[0]->source;
+                $capturedAt = $payment['captured_at'];
+                if($capturedAt){
+                    $startedAt = $capturedAt;
+                }
+                break;
+
+            case E::REFUND:
+                $refund = $txn[0]->source;
+                $processedAt = $refund['processed_at'];
+                if($processedAt){
+                    $startedAt = $processedAt;
+                }
+                break;
+        }
 
         $settlementTimeLineModalInput = [
             'merchant_id' => $merchantId,
             'transaction_id' => $transactionId,
-            'created_at' => $createdAt
+            'created_at' => $startedAt
         ];
 
         $this->trace->info(TraceCode::SETTLEMENT_TIMELINE_REQ, [
@@ -1207,7 +1250,9 @@ class Service extends Base\Service
 
         try
         {
-            $settlementTimeLineModal = $this->settlementTimelineModalGet($settlementTimeLineModalInput);
+            if($startedAt) {
+                $settlementTimeLineModal = $this->settlementTimelineModalGet($settlementTimeLineModalInput);
+            }
         }
         catch (\Exception $exception)
         {
@@ -1218,7 +1263,7 @@ class Service extends Base\Service
                 [
                     'merchant_id'       => $merchantId,
                     'transaction_id'    => $transactionId,
-                    'created_at'       => $createdAt,
+                    'created_at'       => $startedAt,
                 ]
             );
         }

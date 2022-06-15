@@ -3690,6 +3690,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SETTLEMENT_NOTIFICATION_SKIPPED                       = 'SETTLEMENT_NOTIFICATION_SKIPPED';
     const SETTLEMENT_NOTIFICATION_FAILED                        = 'SETTLEMENT_NOTIFICATION_FAILED';
     const SETTLEMENTS_RETRY_SKIPPED                             = 'SETTLEMENTS_RETRY_SKIPPED';
+    const TRANSACTION_ENTITY_FETCH                              = 'TRANSACTION_ENTITY_FETCH';
 
     // instant async beneficiary registration trace codes
     const ATTEMPTING_BENEFICIARY_REGISTRATION                   = 'ATTEMPTING_BENEFICIARY_REGISTRATION';
