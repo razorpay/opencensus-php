@@ -221,17 +221,23 @@ class Service extends Base\Service
                     }
                     catch(Throwable $exception)
                     {
-                        // Swallowing the exception to allow the request to go through in case merchant call fails
                         $this->trace->error(TraceCode::ERROR_EXCEPTION, ['error' => $exception->getMessage()]);
 
-                        $decodedResponse = [];
+                        $ex = new Exception\BadRequestException(
+                            ErrorCode::SERVER_ERROR_MERCHANT_SERVICEABILITY_EXTERNAL_CALL_EXCEPTION, null,null, 'Unable to check pincode serviceability right now. Try again in some time');
+                        throw $ex;
                     }
 
                     if (json_last_error() !== JSON_ERROR_NONE || !isset($response) || $response->status_code !== 200)
                     {
-                        $this->trace->count(Metric::MERCHANT_EXTERNAL_SHIPPING_INFO_CALL_FAILURE_COUNT, $dimensions);
-
-                        $decodedResponse = [];
+                        $this->trace->count(Metric::MERCHANT_EXTERNAL_SHIPPING_INFO_CALL_FAILURE_COUNT,
+                            array_merge($dimensions,
+                                ['errorcode' => ErrorCode::SERVER_ERROR_MERCHANT_SERVICEABILITY_EXTERNAL_CALL_EXCEPTION]
+                            )
+                        );
+                        $ex = new Exception\BadRequestException(
+                            ErrorCode::SERVER_ERROR_MERCHANT_SERVICEABILITY_EXTERNAL_CALL_EXCEPTION, null,null, 'Unable to check pincode serviceability right now. Try again in some time');
+                        throw $ex;
                     }
 
                     try
@@ -240,8 +246,12 @@ class Service extends Base\Service
                     }
                     catch (Throwable $e)
                     {
-                        $this->trace->count(Metric::MERCHANT_EXTERNAL_SHIPPING_INFO_CALL_FAILURE_COUNT, $dimensions);
-                        $decodedResponse = [];
+                        $this->trace->count(Metric::MERCHANT_EXTERNAL_SHIPPING_INFO_CALL_FAILURE_COUNT,
+                            ['errorcode' => ErrorCode::SERVER_ERROR_MERCHANT_SERVICEABILITY_EXTERNAL_CALL_EXCEPTION]);
+
+                        $ex = new Exception\BadRequestException(
+                            ErrorCode::SERVER_ERROR_MERCHANT_SERVICEABILITY_EXTERNAL_CALL_EXCEPTION, null,null, 'Unable to check pincode serviceability right now. Try again in some time');
+                        throw $ex;
                     }
                 }
             }

@@ -146,44 +146,20 @@ return [
                         'country' => 'in'
                     ],
                 ],
-                'mock_response' => [
-                    'body' => [
-                        'addresses' => [
-                            [
-                                'id' => 0,
-                                'zipcode' => '560102',
-                                'state' => 'Delhi',
-                                'state_code' => 'DL',
-                                'city' => 'South West Delhi',
-                                'country' => 'in',
-                                'cod' => true,
-                                'cod_fee' => 50,
-                                'shipping_fee' => 90,
-                            ]
-                        ],
-                    ],
-                    'status_code' => 200,
-                ],
             ],
         ],
-        'response' => [
-            'content' => [
-                'addresses' => [
-                    [
-                        'zipcode'      => '560102',
-                        'state'        => 'Delhi',
-                        'state_code'   => 'DL',
-                        'city'         => 'South West Delhi',
-                        'country'      => 'in',
-                        'cod'          => false,
-                        'serviceable'  => true,
-                        'cod_fee'      => 0,
-                        'shipping_fee' => 0,
-
-                    ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::SERVER_ERROR,
                 ],
             ],
-            'status_code' => 200
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::SERVER_ERROR_MERCHANT_SERVICEABILITY_EXTERNAL_CALL_EXCEPTION,
         ],
     ],
+
 ];
