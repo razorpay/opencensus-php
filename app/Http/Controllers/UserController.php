@@ -184,12 +184,18 @@ class UserController extends Controller
             return false;
         }
 
-        if (empty($details['user']['signup_campaign']) === true)
+        $queryParams = Input::all();
+
+        $authSource = $queryParams['auth_source'] ?? null;
+
+        if ($authSource === 'website' or $authSource === 'website_homepage')
         {
             return false;
         }
 
-        if (($details['user']['signup_campaign'] === 'easy_onboarding') and
+        $signupCampaign = $details['user']['signup_campaign'] ?? null;
+
+        if (($signupCampaign === 'easy_onboarding') and
             (empty($details['activation_form_milestone']) === true))
         {
             return true;
