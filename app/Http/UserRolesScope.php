@@ -977,7 +977,7 @@ class UserRolesScope
             'update_payment_config'                                => [Role::OWNER, Role::ADMIN],
             'update_survey_tracker'                                => [Role::OWNER, Role::ADMIN],
             'user_2fa_change_setting'                              => Role::ALL_ROLES,
-            'user_account_unlock'                                  => [Role::OWNER, Role::ADMIN],
+            'user_account_unlock'                                  => [Role::OWNER],
             'user_edit_self'                                       => [Role::OWNER, Role::ADMIN],
             'user_opt_in_status_whatsapp'                          => [Role::OWNER, Role::ADMIN],
             'user_opt_in_whatsapp'                                 => [Role::OWNER, Role::ADMIN],
