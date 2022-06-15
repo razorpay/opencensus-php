@@ -9605,9 +9605,11 @@ class Service extends Base\Service
             'last_run_at' => $cronLastRunAt,
         ]);
 
-        $now = Carbon::now()->getTimestamp();
+        (new Validator)->validateSettlementsEventsCronInput($input, $cronLastRunAt);
 
-        $merchantsCollection = $this->repo->merchant->getMerchantsForSettlementsEventsCron($cronLastRunAt, $now);
+        $updatedAtTo = ($input[Constants::END_TIMESTAMP] ?? Carbon::now()->getTimestamp());
+
+        $merchantsCollection = $this->repo->merchant->getMerchantsForSettlementsEventsCron($cronLastRunAt, $updatedAtTo);
 
         $merchantsCollection = $merchantsCollection->filter(function ($merchant)
         {
@@ -9690,6 +9692,7 @@ class Service extends Base\Service
 
         if ($lastRunAt <= $previousLastRunAt)
         {
+            $this->trace->count(Metric::NSS_CRON_LAST_RUN_AT_SAME_VALUE);
             return;
         }
 

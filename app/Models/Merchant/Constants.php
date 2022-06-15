@@ -1600,4 +1600,6 @@ final class Constants
     ];
 
     const RATIO_OF_TOTAL_TRANSACTION_FOR_PLUGIN = .05;
+
+    const END_TIMESTAMP = 'end_timestamp';
 }

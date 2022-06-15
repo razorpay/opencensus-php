@@ -8,6 +8,7 @@ use Hash;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Base;
+use Carbon\Carbon;
 use RZP\Constants\Country;
 use RZP\Exception;
 use RZP\Models\Bank\BankCodes;
@@ -662,6 +663,18 @@ class Validator extends Base\Validator
             {
                 throw new Exception\BadRequestValidationFailureException(
                     'field ' . $key . ' is immutable');
+            }
+        }
+    }
+
+    public function validateSettlementsEventsCronInput(array $input, $cronLastRunAt)
+    {
+        if (isset($input[Constants::END_TIMESTAMP]) === true)
+        {
+            $endTimestamp = $input[Constants::END_TIMESTAMP];
+            if ($endTimestamp > Carbon::now()->getTimestamp() or $endTimestamp <= $cronLastRunAt)
+            {
+                throw new Exception\BadRequestValidationFailureException('end_timestamp should be in between last_run_at and the current timestamp');
             }
         }
     }

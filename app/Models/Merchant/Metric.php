@@ -91,6 +91,9 @@ final class Metric
     const MERCHANT_COUPON_VALIDITY_ERROR_COUNT  = 'merchant_coupon_validity_error_count';
     const MERCHANT_COUPON_VALIDITY_SHOPIFY_REQUEST_COUNT              = 'merchant_coupon_validity_shopify_request_count';
 
+    // New settlements events cron
+    const NSS_CRON_LAST_RUN_AT_SAME_VALUE                             = 'nss_cron_last_run_at_same_value'; 
+
 
     const MERCHANT_SHIPPING_INFO_CHECK_TIME_MILLIS = 'merchant_shipping_info_check_time_millis';
     const MERCHANT_SHIPPING_INFO_URL_UPDATE_FAILURE = 'merchant_shipping_info_url_update_failure';
