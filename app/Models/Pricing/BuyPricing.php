@@ -130,6 +130,7 @@ class BuyPricing
     const GETSIMPL              = 'getsimpl';
     const NACH_ICICI            = 'nach_icici';
     const NACH_CITI             = 'nach_citi';
+    const HITACHI               = 'hitachi';
 
     const NETBANKING_CORPORATION        = 'netbanking_corporation';
     const ENACH_NPCI_NETBANKING         = 'enach_npci_netbanking';
@@ -164,6 +165,7 @@ class BuyPricing
         self::MPGS,
         self::KOTAK,
         self::SHARP,
+        self::HITACHI
     ];
 
     protected static $netbankingGateways = [

@@ -619,6 +619,23 @@ return [
                     'amount_range_min'      => '700',
                     'amount_range_max'      => '0',
                 ],
+                [
+                    'plan_name'             => 'testName2',
+                    'payment_method'        => 'card',
+                    'payment_method_type'   => 'prepaid',
+                    'payment_method_subtype'=> '',
+                    'receiver_type'         => '',
+                    'gateway'               => 'hitachi',
+                    'payment_issuer'        => '',
+                    'payment_network'       => 'MC',
+                    'percent_rate'          => '10',
+                    'international'         => '0',
+                    'emi_duration'          => '',
+                    'amount_range_min'      => '0',
+                    'amount_range_max'      => '',
+                    'fixed_rate'            => '5',
+                    'idempotency_key'       => 'batch_DZtFGiJXmcdLaQ',
+                ],
             ],
             'url'       => '/buy_pricing/rules/bulk',
             'method'    => 'POST',
@@ -626,7 +643,7 @@ return [
         'response' => [
             'content'   => [
                 'entity'    => 'collection',
-                'count'     => 5,
+                'count'     => 6,
                 'items'     => [
                     [
                         'idempotency_key'   => 'batch_DZtFGiJXmcdLaM',
@@ -646,6 +663,10 @@ return [
                     ],
                     [
                         'idempotency_key'   => 'batch_DxtFGiJXmcdLfa',
+                        'success'           => true,
+                    ],
+                    [
+                        'idempotency_key'   => 'batch_DZtFGiJXmcdLaQ',
                         'success'           => true,
                     ],
                 ]
