@@ -81,6 +81,15 @@ class Templating
         ]);
     }
 
+    public function deleteTemplateConfig(string $id)
+    {
+        return $this->sendRequest(
+        [
+            'path'      => self::TEMPLATE_CONFIGS_PATH.'/'.$id,
+            'method'    => 'DELETE',
+        ]);
+    }
+
     public function createTemplateConfig($input)
     {
         return $this->sendRequest(
@@ -203,7 +212,7 @@ class Templating
 
     protected function getPayload($data, $method)
     {
-        if ($method === 'GET') return $data;
+        if ($method === 'GET'|| $method === 'DELETE') return $data;
 
         return json_encode($data, JSON_FORCE_OBJECT);
     }

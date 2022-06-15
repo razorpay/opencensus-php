@@ -72,6 +72,16 @@ class TemplatingServiceController extends Controller
         return ApiResponse::json($data);
     }
 
+
+    public function deleteTemplateConfig($id)
+    {
+        $data = $this
+            ->templatingService()
+            ->deleteTemplateConfig($id);
+
+        return ApiResponse::json($data);
+    }
+
     public function assignRole()
     {
         $data = $this

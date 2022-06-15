@@ -145,6 +145,22 @@ class TemplatingTest extends TestCase
         $templating->shouldHaveReceived('sendRequest', $expectedArgs);
     }
 
+    public function testDeleteTemplateConfig()
+    {
+        $templating = $this->getTemplatingWithSendRequestMock();
+
+        $sampleConfigId = 'randomId';
+
+        $templating->deleteTemplateConfig($sampleConfigId);
+
+        $expectedArgs = [[
+            'path'      => '/template_configs/'.$sampleConfigId,
+            'method'    => 'DELETE',
+        ]];
+
+        $templating->shouldHaveReceived('sendRequest', $expectedArgs);
+    }
+
     public function testAssignRole()
     {
         $templating = $this->getTemplatingWithSendRequestMock();
