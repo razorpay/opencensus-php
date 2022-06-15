@@ -15,8 +15,8 @@ const copyFallback = (url) => {
 };
 
 const copyToClipboard = (url) => {
-  if (navigator?.clipboard) {
-    navigator.clipboard.writeText?.(url).catch(() => {
+  if (navigator?.clipboard?.writeText) {
+    navigator.clipboard.writeText(url).catch(() => {
       copyFallback(url);
     });
   } else {
