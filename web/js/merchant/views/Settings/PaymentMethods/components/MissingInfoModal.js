@@ -164,7 +164,7 @@ const MissingInfoModal = (props) => {
   return (
     <>
       <div className="header">
-        <ModalHeader title={`Request ${name} for recurring payments`} onCloseClick={onCloseClick} />
+        <ModalHeader title={`Request ${name}`} onCloseClick={onCloseClick} />
       </div>
       {page === 1 ? (
         <MissingInfoForm values={values} fields={collect_info} onChange={onChange} />

@@ -116,11 +116,16 @@ class LeafListItem extends React.Component {
           status: 'Success',
         }),
       )
-      .then(() => this.props.fetchMerchantInstruments())
-      .then(() => this.props.setInstrument({ ...this.state.intermediateInstrument }))
-      .then(() =>
-        this.props.setInstrument({ ...this.state.instrument, ...this.state.leafInstrument }),
-      )
+      .then(() => {
+        this.props.showNotification({
+          type: 'success',
+          message: `${instrument.name} requested successfully`,
+        });
+        this.props.history.replace('/');
+        setTimeout(() => {
+          this.props.history.replace('/payment-methods');
+        }, 10);
+      })
       .catch(({ errors }) => {
         this.props.showNotification({
           type: 'error',
@@ -393,6 +398,7 @@ class LeafListItem extends React.Component {
       instrument?.should_show_reinitiate_button;
     const isMissingInfo = instrument?.capture_info_before_mir;
     const isGrayed = instrument.status === GREYED && instrument.fade_comment;
+    const instrumentParent = instrument?.path?.split('.')[1];
     return (
       <li className={getListClass(instrument.status, instrument.path)}>
         <div>
@@ -474,7 +480,7 @@ class LeafListItem extends React.Component {
                 </div>
               </div>
             )}
-            {[ACCOUNT_LINKABLE].includes(instrument.status) && (
+            {instrument.status === ACCOUNT_LINKABLE && (
               <div className="flex-end">
                 <button
                   className="btn btn-primary ml-5"
@@ -536,8 +542,8 @@ class LeafListItem extends React.Component {
         {isMissingInfo && (
           <details>
             <p>
-              The following fields need to be updated to request {instrument?.name} for card
-              payments
+              The following fields need to be updated to request {instrument?.name} for{' '}
+              {instrumentParent} payments
             </p>
             {isMissingInfo?.map(
               ({ display_name, url, status_identifier, current_value, status }, key) => {
