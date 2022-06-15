@@ -460,12 +460,16 @@ return [
         'recurring_oksbi_test_merchants'    => [
             'EOQRaXICwJIuoy',   // Srikant's Test Merchant
             '2aTeFCKTYWwfrF',   // RZP Demo Merchant
-            'FBYspBmKlWefX9'    // Akshata's Merchant (aka Furlenco Test Merchant)
+            'FBYspBmKlWefX9',    // Akshata's Merchant (aka Furlenco Test Merchant)
+            'HkC7ZWTZ5N5IGd',   // Prathmesh Bijjargi internal mid
+            'HVIrWRENC4AkcJ'    // Test Merchant Acme
         ],
         'recurring_okicici_test_merchants'    => [
             'EOQRaXICwJIuoy',   // Srikant's Test Merchant
             '2aTeFCKTYWwfrF',   // RZP Demo Merchant
-            'FBYspBmKlWefX9'    // Akshata's Merchant (aka Furlenco Test Merchant)
+            'FBYspBmKlWefX9',    // Akshata's Merchant (aka Furlenco Test Merchant)
+            'HkC7ZWTZ5N5IGd',   // Prathmesh Bijjargi internal mid
+            'HVIrWRENC4AkcJ'    // Test Merchant Acme
         ],
     ],
 
