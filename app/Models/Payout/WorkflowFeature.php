@@ -23,7 +23,8 @@ class WorkflowFeature
         Constants::PAYOUT_WORKFLOWS,
         Constants::SKIP_WF_AT_PAYOUTS,
         Constants::SKIP_WORKFLOWS_FOR_API,
-        Constants::SKIP_WF_FOR_PAYROLL
+        Constants::SKIP_WF_FOR_PAYROLL,
+        self::SKIP_FOR_INTERNAL_PAYOUT
     ];
 
     public static function getIntValueFromWorkflowFeature($feature)

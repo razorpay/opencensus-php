@@ -217,8 +217,6 @@ class Base extends BaseCore
         if (array_key_exists(Entity::ENABLE_WORKFLOW_FOR_INTERNAL_CONTACT, $input))
         {
             $enableWorkflowForInternalContact = filter_var($input[Entity::ENABLE_WORKFLOW_FOR_INTERNAL_CONTACT], FILTER_VALIDATE_BOOLEAN);
-
-            unset($input[Entity::ENABLE_WORKFLOW_FOR_INTERNAL_CONTACT]);
         }
 
         $this->isWorkflowEnabled = $this->isWorkflowApplicable($skipWorkflow, $enableWorkflowForInternalContact);
@@ -226,6 +224,8 @@ class Base extends BaseCore
         $payoutViaMicroservice = $this->createPayoutViaMicroservice($input);
 
         unset($input[Entity::SKIP_WORKFLOW]);
+
+        unset($input[Entity::ENABLE_WORKFLOW_FOR_INTERNAL_CONTACT]);
 
         if (is_null($payoutViaMicroservice) === false)
         {

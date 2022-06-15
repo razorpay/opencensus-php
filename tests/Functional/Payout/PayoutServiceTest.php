@@ -8,6 +8,7 @@ use Requests_Response;
 
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
+use RZP\Models\Payout\WorkflowFeature;
 use RZP\Models\Pricing\Fee;
 use RZP\Models\Payout\Status;
 use RZP\Services\RazorXClient;
@@ -680,20 +681,18 @@ class PayoutServiceTest extends TestCase
         $this->assertEquals($payout['merchant_id'], '10000000000000');
         $this->assertEquals($payout['fees'], 590);
         $this->assertEquals($payout['is_payout_service'], 0);
-
-
     }
 
     public function testCreatePayoutInternalContact()
     {
         $this->mockPayoutServiceCreate();
 
-        $this->testCreatePayoutServiceFtaCreation();
-
-        $this->fixtures->merchant->addFeatures([Feature\Constants::WORKFLOW_VIA_PAYOUTS_MS]);
         $this->fixtures->merchant->addFeatures([Feature\Constants::INTERNAL_CONTACT_VIA_PS]);
 
+        $this->testCreatePayoutEntry('IMPS');
+
         $this->setupWorkflowForLiveMode();
+        $this->fixtures->merchant->removeFeatures([Feature\Constants::PAYOUT_WORKFLOWS]);
 
         $this->ba->appAuthLive($this->config['applications.vendor_payments.secret']);
 
@@ -703,12 +702,80 @@ class PayoutServiceTest extends TestCase
 
         $payout = $this->getDbLastEntity('payout', 'live');
 
-
-        $this->assertEquals(Status::CREATED, $payout->getStatus());
+        $this->assertEquals(Status::CREATE_REQUEST_SUBMITTED, $payout->getStatus());
         $this->assertEquals($payout['merchant_id'], '10000000000000');
-        $this->assertEquals($payout['fees'], 590);
         $this->assertEquals($payout['is_payout_service'], 1);
+    }
 
+    public function testCreatePayoutInternalContactWithoutWorkflowsFlag()
+    {
+        $this->mockPayoutServiceCreate();
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::INTERNAL_CONTACT_VIA_PS]);
+
+        $this->testCreatePayoutEntry('IMPS');
+
+        $this->setupWorkflowForLiveMode();
+
+        $this->ba->appAuthLive($this->config['applications.vendor_payments.secret']);
+
+        $this->fixtures->on('live')->edit('contact', '1000001contact', ['type' => 'rzp_tax_pay']);
+
+        $payout = $this->getDbLastEntity('payout','live');
+
+        $this->fixtures->on('live')->edit(
+            'payout',
+            $payout->getId(),
+            [
+                'workflow_feature' => 4,
+            ]
+        );
+
+        $this->startTest();
+
+        $payout = $this->getDbLastEntity('payout', 'live');
+
+        $this->assertEquals(Status::CREATE_REQUEST_SUBMITTED, $payout->getStatus());
+        $this->assertEquals($payout['merchant_id'], '10000000000000');
+        $this->assertEquals($payout['is_payout_service'], 1);
+        $this->assertEquals(WorkflowFeature::getWorkflowFeatureFromInt($payout['workflow_feature']),
+            WorkflowFeature::SKIP_FOR_INTERNAL_PAYOUT);
+    }
+
+    public function testCreatePayoutInternalContactWithWorkflows()
+    {
+        $this->mockPayoutServiceCreate();
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::WORKFLOW_VIA_PAYOUTS_MS]);
+        $this->fixtures->merchant->addFeatures([Feature\Constants::INTERNAL_CONTACT_VIA_PS]);
+
+        $this->testCreatePayoutEntry('IMPS');
+
+        $this->setupWorkflowForLiveMode();
+
+        $this->ba->appAuthLive($this->config['applications.vendor_payments.secret']);
+
+        $this->fixtures->on('live')->edit('contact', '1000001contact', ['type' => 'rzp_tax_pay']);
+
+        $payout = $this->getDbLastEntity('payout','live');
+
+        $this->fixtures->on('live')->edit(
+            'payout',
+            $payout->getId(),
+            [
+                'workflow_feature' => 1,
+            ]
+        );
+
+        $this->startTest();
+
+        $payout = $this->getDbLastEntity('payout', 'live');
+
+        $this->assertEquals(Status::CREATE_REQUEST_SUBMITTED, $payout->getStatus());
+        $this->assertEquals($payout['merchant_id'], '10000000000000');
+        $this->assertEquals($payout['is_payout_service'], 1);
+        $this->assertEquals(WorkflowFeature::getWorkflowFeatureFromInt($payout['workflow_feature']),
+            Constants::PAYOUT_WORKFLOWS);
 
     }
 
