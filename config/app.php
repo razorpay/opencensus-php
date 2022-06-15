@@ -387,6 +387,8 @@ return array(
 
     '1cc_cart_items_splitz_experiment_id' => env('MAGIC_CHECKOUT_CART_ITEMS_EXP_ID'),
 
+    '1cc_address_flow_exp_splitz_experiment_id' => env('MAGIC_CHECKOUT_ADDRESS_FLOW_EXP_ID'),
+
     'shopify_1cc_sqs_splitz_experiment_id' => env('SHOPIFY_1CC_SQS_SPLITZ_EXPERIMENT_ID'),
 
     'global_card_payment_splitz_experiment_id' => env('GLOBAL_CARD_PAYMENT_SPLITZ_EXPERIMENT_ID'),
@@ -413,6 +415,6 @@ return array(
     'db_migration_metrics_sampling_percent' => env('DB_MIGRATION_METRIC_SAMPLING_PERCENT', 1.0),
 
     'product_config_issue_exp_id' => env('PRODUCT_CONFIG_ISSUE_EXP_ID'),
-    
+
     'merchant_kyc_update_to_partner_exp_id'    => env('MERCHANT_KYC_UPDATE_TO_PARTNER_EXP_ID'),
 );

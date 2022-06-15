@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use RZP\Constants\Country;
 use RZP\Constants\Timezone;
 use RZP\Constants\Mode;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Locale\Core as Locale;
 use Session;
 use Razorpay\Trace\Logger as Trace;
@@ -180,6 +181,8 @@ class Checkout
 
         $this->fill1ccCartDetailsExperiment($merchant, $data);
 
+        $this->fill1ccAddressOptExperiment($merchant, $data);
+
         $this->fillCovidReliefDetails($merchant, $data, $mode);
 
         return $data;
@@ -276,6 +279,29 @@ class Checkout
         catch (\Exception $e)
         {
             $data['1cc_cart_items_exp'] = null;
+        }
+    }
+
+    protected function fill1ccAddressOptExperiment(Entity $merchant, array &$data): void
+    {
+        if ($merchant->isFeatureEnabled(Feature\Constants::ONE_CLICK_CHECKOUT) === false)
+        {
+            return;
+        }
+        try
+        {
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.1cc_address_flow_exp_splitz_experiment_id'),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $data['1cc_address_flow_exp'] = $response['response']['variant']['name'] ?? null;
+        }
+        catch (\Exception $e)
+        {
+            $data['1cc_address_flow_exp'] = null;
         }
     }
 
