@@ -438,9 +438,9 @@ class ApiEventSubscriber extends Base\Core
         if (ErrorCode::BAD_REQUEST_PAYMENT_CANCELLED_BY_USER === $payment->getInternalErrorCode())
             return;
 
-        $this-> trace->info(TraceCode::FAILED_PAYMENT_PL_CREATION_CONDITION, [
+        $this->trace->info(TraceCode::FAILED_PAYMENT_PL_CREATION_CONDITION, [
             'hasOrder' => $payment->hasOrder(),
-            'productType' => $payment->hasOrder() ?? $payment->order->getProductType(),
+            'productType' => $payment->hasOrder() ? $payment->order->getProductType() : false,
             'orderHasInvoice' => empty($payment->order->invoice),
             'featureEnabled' => $payment->merchant->isFeatureEnabled(Feature\Constants::MISSED_ORDERS_PLINK)
         ]);

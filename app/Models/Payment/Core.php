@@ -497,13 +497,23 @@ class Core extends Base\Core
 
         $namespace = 'payment_failed_retry';
 
+        $this->trace->info(TraceCode::FAILED_PAYMENT_PL_CREATION_DEBUG, [
+            'msg' => 'Inside PL creation flow for missed orders'
+        ]);
+
         $paymentFailedConfig = (new Config\Core())->getPaymentFailedConfig($payment->getMerchantId());
+
+        $this->trace->info(TraceCode::FAILED_PAYMENT_PL_CREATION_DEBUG, [
+            'msg' => 'Fetched payment failed config for merchant',
+            'merchant_id' => $payment->getMerchantId(),
+            'payment_id' => $payment->getId(),
+            'config' => $paymentFailedConfig,
+        ]);
 
         $sendAfterSeconds = $this->app->razorx->getTreatment($payment->getMerchantId(), RazorxTreatment::PL_MO_SEND_AFTER_SECONDS, $this->mode);
 
         $this->trace->info(TraceCode::FAILED_PAYMENT_PL_CREATION_DELAY_CONFIG, [
             "seconds" => $sendAfterSeconds,
-            "config" => $paymentFailedConfig,
         ]);
 
         if ($sendAfterSeconds != 'control') {
