@@ -21,6 +21,8 @@ use RZP\Error\ErrorClass;
 use RZP\Gateway\Base\Action;
 use Illuminate\Support\Arr;
 use RZP\Http\Request\Requests;
+use RZP\Models\Customer\Token\Repository;
+use RZP\Models\Customer\Token\Core;
 
 class CardPaymentService
 {
@@ -202,6 +204,14 @@ class CardPaymentService
         if ($this->action === Action::AUTHORIZE)
         {
             $input[self::GATEWAY]['features']['tpv'] = $input[Entity::MERCHANT]->isTPVRequired();
+            try
+            {
+                $input = $this->getInput($gateway, $input);
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->info(TraceCode::GET_TOKEN_FAILED, [$e->getTrace()]);
+            }
         }
 
         if ((in_array($gateway, Payment\Gateway::OPTIMIZER_CARD_GATEWAYS, true) and
@@ -1047,5 +1057,56 @@ class CardPaymentService
         }
 
         throw new Exception\ServerErrorException($e->getMessage(), $errorCode);
+    }
+
+    /**
+     * @param string $gateway
+     * @param array $input
+     * @return array
+     */
+    public function getInput(string $gateway, array $input): array
+    {
+        if ((in_array($gateway, Payment\Gateway::OPTIMIZER_CARD_GATEWAYS, true) === false) or
+            ((isset($input['card']['tokenised']) === false) or ($input['card']['tokenised'] === false)) or
+            (is_null($input['card']['vault_token']) === true)
+        )
+        {
+            return $input;
+        }
+
+        $vault_token = $input['card']['vault_token'];
+
+        $card_input = $input[Entity::CARD];
+        $token = (new Card\CardVault())->fetchToken($vault_token, false);
+
+        $tokenised_terminal_id = $token['service_provider_tokens'][0]['tokenised_terminal_id'] ?? '';
+        $tokenised_terminal = $this->app['terminals_service']->fetchTerminalById($tokenised_terminal_id);
+        $trid = '';
+
+        if (empty($tokenised_terminal) === false)
+        {
+            switch ($card_input['network_code'])
+            {
+                case Card\Network::MC:
+                    $trid = $tokenised_terminal['gateway_merchant_id'];
+                    break;
+
+                case Card\Network::RUPAY:
+                    $trid = $tokenised_terminal['gateway_merchant_id2'];
+                    break;
+
+                case Card\Network::VISA:
+                    $trid = $tokenised_terminal['gateway_terminal_id'];
+                    break;
+
+                default:
+                    break;
+            }
+        }
+        $input['card']['payment_account_reference'] = $token['service_provider_tokens'][0]['provider_data']['payment_account_reference'] ?? '';
+        $input['card']['token_reference_number'] = $token['service_provider_tokens'][0]['provider_data']['token_reference_number'] ?? '';
+        $input['card']['token_reference_id'] = $trid ?? '';
+
+        return $input;
     }
 }
