@@ -31,7 +31,7 @@ const MissingInfoForm = ({ fields, values, onChange }) => (
               size="half"
               addonAfter={<i className="i i-date-range" />}
               placement="topLeft"
-              allowToday
+              allowToday={false}
               disablePastDates={false}
               required
             />
