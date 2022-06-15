@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import OffersForYouIconJson from 'merchant/helpers/lottieConfigs/OffersForYouIconJson.json';
+import OffersForYouIconJson from 'merchant/helpers/lottieConfigs/NewOfferForYouIconJson.json';
 import lazy from 'merchant/routes/LazyLoader';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 
