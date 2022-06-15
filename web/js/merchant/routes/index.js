@@ -457,6 +457,7 @@ const entityDetailsMap = {
 
 const routeEasyOnboarding = () => {
   window.open(`${window.EASY_ONBOARDING_URL}/onboarding/l2`, '_self', 'noopener');
+  return null;
 };
 
 const isFromEasyL1 =
@@ -467,7 +468,7 @@ const isFromEasyL1 =
 
 const entityModalsMap = {
   '/activation': {
-    component: isFromEasyL1 ? routeEasyOnboarding() : ActivationContainer,
+    component: isFromEasyL1 ? routeEasyOnboarding : ActivationContainer,
     additionalCondition: (user) => user.isAllowedEdit('activation'),
   },
   '/offers/new': {
@@ -567,15 +568,15 @@ const fullPageViewsMap = {
       user.isAllowedEdit('subscription_buttons') && user.isSubscriptionButtonEnabled,
   },
   '/onboarding/steps': {
-    component: isFromEasyL1 ? routeEasyOnboarding() : ActivationSteps,
+    component: isFromEasyL1 ? routeEasyOnboarding : ActivationSteps,
     additionalCondition: (user) => user.isOnboardingV2Enabled,
   },
   '/onboarding/form': {
-    component: isFromEasyL1 ? routeEasyOnboarding() : ActivationForm,
+    component: isFromEasyL1 ? routeEasyOnboarding : ActivationForm,
     additionalCondition: (user) => user.isOnboardingV2Enabled,
   },
   '/kyc': {
-    component: isFromEasyL1 ? routeEasyOnboarding() : ActivationFullViewContainer,
+    component: isFromEasyL1 ? routeEasyOnboarding : ActivationFullViewContainer,
     additionalCondition: (user) => user.isActivationFormFullView,
   },
   '/app-store/:partner': {
