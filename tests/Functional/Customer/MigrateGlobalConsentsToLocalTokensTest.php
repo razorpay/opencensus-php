@@ -6,6 +6,7 @@ use App;
 use Mockery;
 use Carbon\Carbon;
 use RZP\Models\Card\Network;
+use RZP\Services\Mock\DataLakePresto;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -240,6 +241,8 @@ class MigrateGlobalConsentsToLocalTokensTest extends TestCase
 
         $this->mockFetchMerchantTokenisationOnboardedNetworks([Network::VISA]);
 
+        $this->mockFetchConsentReceivedGlobalCustomerLocalTokens([['id' => '100022xytoken1']]);
+
         $this->mockCardVaultWithMigrateToken();
 
         $this->fixturesToCreateToken('100022xytoken1', '100000003card1', '411140', '10000000000000', '10000gcustomer');
@@ -266,6 +269,8 @@ class MigrateGlobalConsentsToLocalTokensTest extends TestCase
         $payload = $this->testData['testAsyncTokenisationOfGlobalCustomerLocalToken'];
 
         $this->mockFetchMerchantTokenisationOnboardedNetworks([Network::VISA]);
+
+        $this->mockFetchConsentReceivedGlobalCustomerLocalTokens([]);
 
         $this->mockCardVaultWithMigrateToken();
 
@@ -296,6 +301,8 @@ class MigrateGlobalConsentsToLocalTokensTest extends TestCase
 
         $this->mockFetchMerchantTokenisationOnboardedNetworks([Network::MAES]);
 
+        $this->mockFetchConsentReceivedGlobalCustomerLocalTokens([]);
+
         $this->mockCardVaultWithMigrateToken();
 
         $inputFields = ['network' => 'Maestro'];
@@ -324,6 +331,8 @@ class MigrateGlobalConsentsToLocalTokensTest extends TestCase
         $payload = $this->testData['testAsyncTokenisationOfGlobalCustomerLocalToken'];
 
         $this->mockFetchMerchantTokenisationOnboardedNetworks([Network::VISA]);
+
+        $this->mockFetchConsentReceivedGlobalCustomerLocalTokens([]);
 
         $this->mockCardVaultWithMigrateToken();
 
@@ -354,6 +363,8 @@ class MigrateGlobalConsentsToLocalTokensTest extends TestCase
 
         $this->mockFetchMerchantTokenisationOnboardedNetworks([]);
 
+        $this->mockFetchConsentReceivedGlobalCustomerLocalTokens([]);
+
         $this->mockCardVaultWithMigrateToken();
         $this->fixturesToCreateToken(
             '100022xytoken1',
@@ -383,7 +394,9 @@ class MigrateGlobalConsentsToLocalTokensTest extends TestCase
 
         $payload = $this->testData['testAsyncTokenisationOfGlobalCustomerLocalToken'];
 
-        $this->mockFetchMerchantTokenisationOnboardedNetworks([]);
+        $this->mockFetchMerchantTokenisationOnboardedNetworks([Network::VISA]);
+
+        $this->mockFetchConsentReceivedGlobalCustomerLocalTokens([]);
 
         $this->mockCardVaultWithMigrateToken();
 
@@ -631,5 +644,17 @@ class MigrateGlobalConsentsToLocalTokensTest extends TestCase
                 'acknowledged_at' => Carbon::now()->getTimestamp(),
             ]
         );
+    }
+
+    public function mockFetchConsentReceivedGlobalCustomerLocalTokens(array $tokenIds)
+    {
+        $prestoService = \Mockery::mock(DataLakePresto::class, [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('datalake.presto', $prestoService);
+
+        $prestoService->shouldReceive('getDataFromDataLake')
+            ->andReturnUsing(function (string $query) use ($tokenIds) {
+                return $tokenIds;
+            });
     }
 }

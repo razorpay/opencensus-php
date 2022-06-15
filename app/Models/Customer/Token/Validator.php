@@ -156,7 +156,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $validateGlobalCustomerLocalSavedCardAsyncTokenisationRules = [
-        'batch_size' => 'sometimes|integer|max:10000'
+        'batch_size' => 'sometimes|integer|max:100000'
     ];
 
     /**

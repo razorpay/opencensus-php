@@ -826,96 +826,52 @@ class Repository extends Base\Repository
 
     /**
      * Fetch a list of global customer local token ids which have received consents for token
-     * provisioning.
+     * provisioning from data lake.
      *
-     * @param array  $networks List of network names which support global tokens.
-     * @param string $offset   Last processed global token id.
+     * @param array  $supportedNetworks List of network names which support tokens provisioning.
+     * @param string $offset   Last processed token id.
      * @param int    $limit    Number of tokens to fetch.
      *
      * @return array List of global token ids
      */
-    public function fetchConsentReceivedGlobalCustomerLocalTokenIds(array $networks, string $offset, int $limit): array
+    public function fetchConsentReceivedGlobalCustomerLocalTokenIdsFromDataLake(array $supportedNetworks, string $offset, int $limit): array
     {
-        if (empty($networks)) {
-            return [];
-        }
+        $supportedNetworksInString = implode("','", $supportedNetworks);
 
-        /*
-        SELECT
-          t.id
-        FROM
-          tokens t
-          INNER JOIN cards c ON t.card_id = c.id
-          INNER JOIN customers cust ON t.customer_id = cust.id
-        WHERE
-          t.method = 'card'
-          AND t.acknowledged_at IS NOT NULL
-          AND cust.merchant_id = '100000Razorpay'
-          AND t.merchant_id != '100000Razorpay'
-          AND c.network IN ('MasterCard', 'Visa', 'RuPay')
-          AND c.vault = 'rzpvault'
-          AND (
-            c.international = 0
-            OR c.international IS NULL
-          )
-          AND (
-            t.expired_at > 1653311774
-            OR t.expired_at IS NULL
-          )
-          AND t.id > ''
-        ORDER BY
-          t.id ASC
-        LIMIT
-          1000;
-        */
+        $firstJune2022 = '2022-06-01';
 
-        $cardsTable               = $this->repo->card->getTableName();
-        $cardsIdColumn            = $this->repo->card->dbColumn(Card\Entity::ID);
-        $cardsInternationalColumn = $this->repo->card->dbColumn(Card\Entity::INTERNATIONAL);
-        $cardsNetworkColumn       = $this->repo->card->dbColumn(Card\Entity::NETWORK);
-        $cardsVaultColumn         = $this->repo->card->dbColumn(Card\Entity::VAULT);
-        $cardsCreatedAtColumn     = $this->repo->card->dbColumn(Card\Entity::CREATED_AT);
+        $rawQueryBuilder =<<<'EOT'
+            SELECT t.id FROM alluxio.realtime_hudi_api.tokens t
+            INNER JOIN alluxio.realtime_hudi_api.cards c
+                ON t.card_id = c.id
+            INNER JOIN alluxio.realtime_hudi_api.customers cust
+                ON t.customer_id = cust.id
+            WHERE t.method = 'card'
+                AND t.acknowledged_at IS NOT NULL
+                AND cust.merchant_id = '100000Razorpay'
+                AND t.merchant_id != '100000Razorpay'
+                AND c.network IN ('%s')
+                AND c.vault = 'rzpvault'
+                AND (c.international = 0 OR c.international IS NULL)
+                AND (t.expired_at > %d OR t.expired_at IS NULL)
+                AND (t.created_date > '%s' AND c.created_date > '%s')
+                AND t.id > '%s'
+            ORDER BY t.id ASC
+            LIMIT %d
+EOT;
 
-        $customersTable            = $this->repo->customer->getTableName();
-        $customersIdColumn         = $this->repo->customer->dbColumn(Base\UniqueIdEntity::ID);
-        $customersMerchantIdColumn = $this->repo->customer->dbColumn(Customer\Entity::MERCHANT_ID);
+        $rawQuery = sprintf(
+            $rawQueryBuilder,
+            $supportedNetworksInString,
+            time(),
+            $firstJune2022,
+            $firstJune2022,
+            $offset,
+            $limit
+        );
 
-        $tokensAcknowledgedAtColumn = $this->dbColumn(Entity::ACKNOWLEDGED_AT);
-        $tokensCardIdColumn         = $this->dbColumn(Entity::CARD_ID);
-        $tokensCustomerIdColumn     = $this->dbColumn(Entity::CUSTOMER_ID);
-        $tokensIdColumn             = $this->dbColumn(Entity::ID);
-        $tokensMerchantIdColumn     = $this->dbColumn(Entity::MERCHANT_ID);
-        $tokensMethodColumn         = $this->dbColumn(Entity::METHOD);
-        $tokensExpiredAtColumn      = $this->dbColumn(Entity::EXPIRED_AT);
-        $tokensCreatedAtColumn      = $this->dbColumn(Entity::CREATED_AT);
+        $queryResult = $this->app['datalake.presto']->getDataFromDataLake($rawQuery);
 
-        $firstJune2022 = Carbon::create(2022, 6, 1)->getTimestamp();
-
-        return $this->newQueryWithConnection($this->getSlaveConnection())
-            ->join($cardsTable, $tokensCardIdColumn, '=', $cardsIdColumn)
-            ->join($customersTable, $tokensCustomerIdColumn, '=', $customersIdColumn)
-            ->where([
-                $cardsVaultColumn => Card\Vault::RZP_VAULT,
-                $tokensMethodColumn => Entity::CARD,
-                $customersMerchantIdColumn => Merchant\Account::SHARED_ACCOUNT,
-            ])
-            ->where($tokensMerchantIdColumn, '!=', Merchant\Account::SHARED_ACCOUNT)
-            ->where(static function (Builder $query) use ($cardsInternationalColumn) {
-                $query->where($cardsInternationalColumn, '=', 0)
-                    ->orWhereNull($cardsInternationalColumn);
-            })
-            ->where(static function (Builder $query) use ($tokensExpiredAtColumn) {
-                $query->whereNull($tokensExpiredAtColumn)
-                    ->orWhere($tokensExpiredAtColumn, '>', time());
-            })
-            ->whereIn($cardsNetworkColumn, $networks)
-            ->whereNotNull($tokensAcknowledgedAtColumn)
-            ->where($tokensCreatedAtColumn, '>', $firstJune2022)
-            ->where($cardsCreatedAtColumn, '>', $firstJune2022)
-            ->where($tokensIdColumn, '>', $offset)
-            ->orderBy($tokensIdColumn)
-            ->limit($limit)
-            ->pluck($tokensIdColumn)
-            ->toArray();
+        return array_column($queryResult, 'id');
     }
 }

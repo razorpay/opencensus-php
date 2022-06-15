@@ -1223,7 +1223,7 @@ class Service extends Base\Service
 
             $startTime = millitime();
 
-            $tokenIds = $this->repo->token->fetchConsentReceivedGlobalCustomerLocalTokenIds($supportedNetworks, $lastDispatchedTokenId, $batchSize);
+            $tokenIds = $this->repo->token->fetchConsentReceivedGlobalCustomerLocalTokenIdsFromDataLake($supportedNetworks, $lastDispatchedTokenId, $batchSize);
 
             $tokensCount = count($tokenIds);
 
