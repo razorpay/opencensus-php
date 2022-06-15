@@ -1008,6 +1008,8 @@ class Name
     const HAS_APP_ACCESS                        = 'has_app_access';
     const ADMIN_BULK_ASSIGN_ROLE                = 'admin_bulk_assign_role';
 
+    const VIEW_PRIVILEGES                       = 'view_privileges';
+
     public static $actionMap = [
         Merchant\Action::ARCHIVE                            => self::EDIT_MERCHANT_ARCHIVE,
         Merchant\Action::UNARCHIVE                          => self::EDIT_MERCHANT_UNARCHIVE,

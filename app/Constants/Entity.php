@@ -676,6 +676,7 @@ class Entity
     const ROLES                     = 'roles';
 
     const ACCESS_POLICY_AUTHZ_ROLES_MAP = 'access_policy_authz_roles_map';
+    const ROLE_ACCESS_POLICY_MAP        = 'role_access_policy_map';
 
     const ACCESS_CONTROL_HISTORY_LOGS   = 'access_control_history_logs';
 
@@ -1335,6 +1336,7 @@ class Entity
 
         self::ACCESS_CONTROL_HISTORY_LOGS   => \RZP\Models\AccessControlHistoryLogs::class,
 
+        self::ROLE_ACCESS_POLICY_MAP        => \RZP\Models\RoleAccessPolicyMap::class,
     ];
 
     protected static $repository = [
@@ -1572,9 +1574,11 @@ class Entity
         self::APP_STORE,
         self::PARTNER_KYC_ACCESS_STATE,
         self::MERCHANT_OTP_VERIFICATION_LOGS,
+        self::ROLES,
         self::ACCESS_CONTROL_HISTORY_LOGS,
         self::ACCESS_CONTROL_PRIVILEGES,
         self::ACCESS_POLICY_AUTHZ_ROLES_MAP,
+        self::ROLE_ACCESS_POLICY_MAP,
     ];
 
     protected static $externalEntities = [

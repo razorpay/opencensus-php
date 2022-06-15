@@ -450,6 +450,7 @@ class Table
     const ACCESS_CONTROL_PRIVILEGES     = 'access_control_privileges';
     const ACCESS_CONTROL_ROLES          = 'access_control_roles';
     const ACCESS_POLICY_AUTHZ_ROLES_MAP = 'access_policy_authz_roles_map';
+    const ROLE_ACCESS_POLICY_MAP        = 'role_access_policy_map';
     const ACCESS_CONTROL_HISTORY_LOGS   = 'access_control_history_logs';
 
     protected static $entityToTableMap = [

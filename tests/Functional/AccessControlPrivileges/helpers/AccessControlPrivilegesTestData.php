@@ -17,6 +17,7 @@ return [
                             'id' => '1000privilege1',
                             'name' => 'Account Setting',
                             'description' => 'A/c setting test description',
+                            'label' => 'account_setting',
                             'parent_id' => NULL,
                             'actions' =>
                                 array (
@@ -27,6 +28,7 @@ return [
                                         array (
                                             'id' => '1000privilege3',
                                             'name' => 'Business Setting',
+                                            'label' => 'business_setting',
                                             'description' => 'Business setting test description',
                                             'parent_id' => '1000privilege1',
                                             'actions' =>
@@ -51,6 +53,7 @@ return [
                                         array (
                                             'id' => '1000privilege2',
                                             'name' => 'Tax Setting',
+                                            'label' => 'tax_setting',
                                             'description' => 'Tax setting test description',
                                             'parent_id' => '1000privilege1',
                                             'actions' =>

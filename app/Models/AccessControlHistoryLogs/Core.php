@@ -18,13 +18,13 @@ class Core extends Base\Core
      */
     public function create(array $input) :array
     {
-        $history = (new Entity)->build($input);
-
         $user = $this->app['basicauth']->getUser();
 
         $userId = $user ? $user->getUserId() : null;
 
-        $history->setCreatedBy($userId);
+        $input[Entity::CREATED_BY] = $userId;
+
+        $history = (new Entity)->build($input);
 
         $this->trace->info(
             TraceCode::CREATING_ACCESS_CONTROL_UPDATE_HISTORY,

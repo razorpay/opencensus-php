@@ -24,14 +24,14 @@ class Core extends Base\Core
         if(empty($privilegeEntity) === true)
         {
             throw new Exception\BadRequestValidationFailureException("Invalid Privilege Id for input " ,
-            '', $input);
+             $input);
         }
 
         // check if action is valid
         if(Validator::isValidAction($entity['action']) === false)
         {
             throw new Exception\BadRequestValidationFailureException("Invalid Action name for input " ,
-            '', $input);
+             $input);
         }
 
         $existingEntity = $this->checkIfPrivilegeAndActionAlreadyExists($input['privilege_id'], $input['action']);
@@ -44,7 +44,7 @@ class Core extends Base\Core
                 ]);
 
             throw new Exception\BadRequestValidationFailureException("Access Policy Already Exists " ,
-                '', $input);
+                 $input);
         }
 
         $this->repo->saveOrFail($entity);
@@ -56,10 +56,21 @@ class Core extends Base\Core
     public function checkIfPrivilegeAndActionAlreadyExists($privilegeId, $action) :bool
     {
         $entity = (new Repository())->findByPrivilegeIdAndAction($privilegeId, $action);
-        if (empty($entity))
+
+        if (empty($entity) === true)
         {
             return false;
         }
         return true;
+    }
+
+    public function checkIfAllAccessPolicyIdsExists($ids) :bool
+    {
+        $idsCount = count($ids);
+
+        $accessPolicyEntitiesCount = $this->repo->access_policy_authz_roles_map->getAccessPoliciesCountByIds($ids);
+
+        return $idsCount === $accessPolicyEntitiesCount;
+
     }
 }

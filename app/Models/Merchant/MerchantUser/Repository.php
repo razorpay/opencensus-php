@@ -177,7 +177,7 @@ class Repository extends Base\Repository
             ->toArray();
     }
 
-    public function getUserCountByMerchantIdAndRoleId(string $merchantID, array $roleIds)
+    public function getBankingUserCountByMerchantIdAndRoleIdsAsQuery(string $merchantID, array $roleIds)
     {
         $query = $this->newQuery()
             ->select($this->getTableName() . '.*')
@@ -189,5 +189,30 @@ class Repository extends Base\Repository
             ->groupBy(Entity::ROLE);
 
         return $query->get();
+    }
+
+    public function checkIfBankingMerchantUsersAreLinkedToRoleId(string $merchantId, string $roleId) :bool
+    {
+        $merchantUsers = $this->newQuery()
+            ->where(Entity::MERCHANT_ID, $merchantId)
+            ->where(Entity::ROLE, $roleId)
+            ->where(Entity::PRODUCT, 'banking')
+            ->get();
+
+        if($merchantUsers->isEmpty() === true)
+        {
+            return false;
+        }
+        return true;
+    }
+
+    public function getBankingUserCountByMerchantIdAndRoleId(string $merchantId, string $roleId)
+    {
+
+        return $this->newQuery()
+            ->where(Entity::MERCHANT_ID, $merchantId)
+            ->where(Entity::ROLE, $roleId)
+            ->where(Entity::PRODUCT, 'banking')
+            ->get()->count();
     }
 }

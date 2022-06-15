@@ -20,19 +20,6 @@ class Core extends Base\Core
 
         $privilegeEntity = (new Entity)->build($input);
 
-        $nameExists = $this->checkIfNameAlreadyExists($input['name']);
-
-        if ($nameExists === true)
-        {
-            $this->trace->notice(TraceCode::ACCESS_CONTROL_PRIVILEGE_NAME_ALREADY_EXISTS,
-                [
-                    'input' => $input
-                ]);
-
-            throw new Exception\BadRequestValidationFailureException("Privilege Name already exists " ,
-                '', $input);
-        }
-
         if (empty($input['parent_id']) === false and $this->checkIfParentEntityExists($input['parent_id']) === false)
         {
             $this->trace->error(TraceCode::ACCESS_CONTROL_PRIVILEGE_INVALID_PARENT_ID,
@@ -41,7 +28,7 @@ class Core extends Base\Core
                 ]);
 
             throw new Exception\BadRequestValidationFailureException("Invalid Parent Id for input " ,
-                '', $input);
+                 $input);
         }
 
         $this->repo->saveOrFail($privilegeEntity);
@@ -127,7 +114,8 @@ class Core extends Base\Core
 
         $entity = $this->repo->{$tableName}->findByName($name);
 
-        if (empty($entity)){
+        if (empty($entity) === true)
+        {
             return false;
         }
         return true;

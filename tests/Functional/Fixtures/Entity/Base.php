@@ -101,6 +101,7 @@ class Base
         'payouts_status_details'           => \RZP\Models\PayoutsStatusDetails\Entity::class,
         'adjustment'                       => \RZP\Models\Adjustment\Entity::class,
         'bank_transfer'                     => \RZP\Models\BankTransfer\Entity::class,
+        'role_access_policy_map'            => \RZP\Models\RoleAccessPolicyMap\Entity::class,
     ];
 
     protected static $liveAndTest = [

@@ -2105,6 +2105,16 @@ final class FactoryData
             'updated_at'  => $faker->timestamp,
         ]);
 
+
+        $factory(\RZP\Models\RoleAccessPolicyMap\Entity::class, [
+            'id' => $faker->uniqueid,
+            'role_id' => $faker->word,
+            'authz_roles'   => null,
+            'access_policy_ids' => null,
+            'created_at' => $faker->timestamp,
+            'updated_at' => $faker->timestamp,
+        ]);
+
         $factory(\RZP\Models\AccessControlPrivileges\Entity::class, [
             'id'          => $faker->uniqueid,
             'name'        => 'Account Setting',

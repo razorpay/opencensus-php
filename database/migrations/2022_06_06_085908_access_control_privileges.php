@@ -28,7 +28,8 @@ class AccessControlPrivileges extends Migration
             $table->string(Entity::DESCRIPTION, 255)
                 ->nullable();
 
-            $table->char(Entity::PARENT_ID, 14);
+            $table->char(Entity::PARENT_ID, 14)
+                ->nullable();
 
             $table->tinyInteger(Entity::VISIBILITY);
 

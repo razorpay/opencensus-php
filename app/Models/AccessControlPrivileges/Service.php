@@ -30,6 +30,7 @@ class Service extends Base\Service
         $input = [
             Entity::VISIBILITY => 1,
             'expand' => ['actions'],
+            'count'  => Entity::PRIVILEGES_FETCH_DATA_COUNT
         ];
 
         $privileges = $this->core->fetchPrivileges($input);

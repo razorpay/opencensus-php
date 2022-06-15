@@ -43,6 +43,13 @@ class AccessControlPrivileges extends TestCase
 
         $this->createMerchantUserMappingInLiveAndTest($user1['id'], self::DEFAULT_X_MERCHANT_ID, 'owner');
 
+        $this->createPrivileges();
+
+        $response = $this->startTest();
+    }
+
+    public function createPrivileges()
+    {
         $privilege1 = $this->fixtures->create('access_control_privileges',
             [
                 'id'          => '1000privilege1',
@@ -103,8 +110,6 @@ class AccessControlPrivileges extends TestCase
             'action'        => 'create',
             'authz_roles'   => ['authz_roles_2_4', 'authz_roles_2_5'],
         ]);
-
-        $response = $this->startTest();
     }
 
     protected function createMerchantUserMappingInLiveAndTest(string $userId, string $merchantId, string $role, string $roleId = null)

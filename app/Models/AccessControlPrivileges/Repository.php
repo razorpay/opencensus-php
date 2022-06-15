@@ -9,24 +9,24 @@ use \RZP\Models\AccessPolicyAuthzRolesMap;
 
 class Repository extends Base\Repository
 {
+    use Base\RepositoryUpdateTestAndLive;
+
     protected $entity = Constants\Table::ACCESS_CONTROL_PRIVILEGES;
 
     protected $merchantIdRequiredForMultipleFetch = false;
 
     public function findByName(string $name)
     {
-        $query =  $this->newQuery()
-            ->where(Entity::NAME, '=', $name);
+        return $this->newQuery()->where(Entity::NAME, '=', $name)->first();
 
-        return $query->first();
     }
 
-    public function findById(string $id)
+    public function findById(string $id, bool $useMasterConnection = false)
     {
-        $query =  $this->newQuery()
-            ->where(Entity::ID, '=', $id);
+        $this->setBaseQueryIfApplicable($useMasterConnection);
 
-        return $query->first();
+        return $this->baseQuery
+            ->where(Entity::ID, '=', $id);
     }
 
     public function fetchPrivileges($input)
@@ -53,6 +53,8 @@ class Repository extends Base\Repository
 
     public function deleteAll()
     {
-        $this->newQuery()->truncate();
+        $this->newQueryWithConnection('live')->truncate();
+
+        $this->newQueryWithConnection('test')->truncate();
     }
 }

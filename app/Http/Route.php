@@ -3585,10 +3585,13 @@ class Route
         'relay_props_action'            => ['post',                  'relay/props/action',                                  'RelayController@propsAction'],
 
         //CAC routes
-        'role_fetch_all'                   => ['get',                    'access/roles',                                               'RolesController@listRolesForMerchant'],
-        'access_control_privileges_fetch'              => ['get',                    'access/privileges',                                          'AccessControlPrivilegesController@listPrivileges'],
-
-        'relay_get_props_history'       => ['get',                  'relay/apps/{app_id}/props/{prop_id}/history',          'RelayController@getPropsHistory'],
+        'cac_role_fetch_all'                    => ['get',                    'cac/roles',                                               'RolesController@listRolesForMerchant'],
+        'view_cac_role'                         => ['get',                    'cac/role/{id}',                                                  'RolesController@getRole'],
+        //'delete_cac_role'                       => ['delete',                 'cac/role/{id}',                                                  'RolesController@deleteRole'                                 ],
+        'cac_privileges_fetch'                  => ['get',                    'cac/privileges',                                          'AccessControlPrivilegesController@listPrivileges'],
+        'create_cac_role'                       => ['post',                   'cac/role',                                                   'RolesController@create'],
+        'edit_cac_role'                         => ['patch',                  'cac/role/{id}',                                       'RolesController@edit'],
+        'relay_get_props_history'               => ['get',                    'relay/apps/{app_id}/props/{prop_id}/history',                'RelayController@getPropsHistory'],
     ];
 
     public static $public = [
@@ -4988,7 +4991,6 @@ class Route
     //
 
     public static $proxy = [
-        'access_control_privileges_fetch',
         'mob_fetch_multiple_intents',
         'mob_fetch_intent',
         'mob_fetch_multiple_applications',
@@ -5736,7 +5738,12 @@ class Route
         'capital_virtual_cards_generate_token',
 
         //CAC
-        'role_fetch_all',
+        'cac_privileges_fetch',
+        'cac_role_fetch_all',
+        'view_cac_role',
+        //'delete_cac_role',
+        'create_cac_role',
+        'edit_cac_role'
     ];
     // These will run on internal auth with the assurance
     // of X-Admin-Token being passed.
@@ -8121,7 +8128,6 @@ class Route
     ];
 
     public static $bankingRoutePermissions = [
-        'access_control_privileges_fetch'              => '*',
         'user_check_has_set_password'                  => '*',
         'mob_fetch_multiple_intents'                   => '*',
         'mob_fetch_intent'                             => '*',
@@ -8507,7 +8513,12 @@ class Route
         'oauth_token_fetch_multiple'          => Permission::MERCHANT_GET_OAUTH_TOKEN,
 
         //CAC
-        'role_fetch_all'                         => '*',
+        'cac_privileges_fetch'              => Permission::VIEW_PRIVILEGES,
+        'cac_role_fetch_all'                           => Permission::VIEW_MANAGE_TEAM,
+        'view_cac_role'                                => Permission::VIEW_ROLE,
+        //'delete_cac_role'                              => Permission::DELETE_ROLE,
+        'create_cac_role'                              => Permission::CREATE_ROLE,
+        'edit_cac_role'                                => Permission::EDIT_ROLE
     ];
 
     public static $direct = [
@@ -8820,7 +8831,6 @@ class Route
         ],
 
         'merchant_dashboard' => [
-            'access_control_privileges_fetch',
             'collect_info_merchant_details_patch',
             'mob_fetch_multiple_intents',
             'mob_fetch_intent',
@@ -10007,7 +10017,12 @@ class Route
             'oauth_token_create_for_apple_watch',
 
             //CAC
-            'role_fetch_all',
+            'cac_privileges_fetch',
+            'cac_role_fetch_all',
+            'view_cac_role',
+            //'delete_cac_role',
+            'create_cac_role',
+            'edit_cac_role'
         ],
 
         'admin_dashboard' => [

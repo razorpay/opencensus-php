@@ -8,6 +8,8 @@ use \RZP\Models\Merchant;
 
 class Repository extends Base\Repository
 {
+    use Base\RepositoryUpdateTestAndLive;
+
     protected $entity = Constants\Table::ACCESS_CONTROL_HISTORY_LOGS;
 
     protected $merchantIdRequiredForMultipleFetch = false;

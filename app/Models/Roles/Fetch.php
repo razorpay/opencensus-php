@@ -10,8 +10,9 @@ class Fetch extends BaseFetch
 {
     const RULES = [
         self::DEFAULTS => [
-            Entity::ID                   => 'sometimes|public_id|size:19',
-            Entity::MERCHANT_ID          => 'sometimes|string|unsigned_id',
+            self::EXPAND_EACH            => 'filled|string|in:access_policy',
+            Entity::ID                   => 'sometimes|max:19',
+            Entity::MERCHANT_ID          => 'sometimes|unsigned_id',
             Entity::NAME                 => 'sometimes|string|max:100',
             Entity::DESCRIPTION          => 'sometimes|string|max:255',
             Entity::TYPE                 => 'sometimes|string|max:50|in:standard,custom',
@@ -19,21 +20,8 @@ class Fetch extends BaseFetch
     ];
 
     const ACCESSES = [
-        AuthType::PRIVATE_AUTH => [
-            Entity::ID,
-            Entity::MERCHANT_ID,
-            Entity::NAME,
-            Entity::DESCRIPTION,
-            Entity::TYPE
-        ],
-        AuthType::PROXY_AUTH => [
-            Entity::ID,
-            Entity::MERCHANT_ID,
-            Entity::NAME,
-            Entity::DESCRIPTION,
-            Entity::TYPE
-        ],
-        AuthType::PRIVILEGE_AUTH => [
+        self::DEFAULTS => [
+            self::EXPAND_EACH,
             Entity::ID,
             Entity::MERCHANT_ID,
             Entity::NAME,

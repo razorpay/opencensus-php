@@ -2,9 +2,9 @@
 
 namespace RZP\Models\Roles;
 
-use RZP\Constants\Table;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
+use RZP\Constants\Table;
 use RZP\Models\RoleAccessPolicyMap;
 use RZP\Models\Base\Traits\HardDeletes;
 
@@ -14,7 +14,6 @@ class Entity extends Base\PublicEntity
     use HardDeletes;
 
     protected $entity = 'roles';
-    protected static $sign = 'role';
 
     protected $table  = Table::ACCESS_CONTROL_ROLES;
 
@@ -101,4 +100,10 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::NAME);
     }
+
+    public function getType()
+    {
+        return $this->getAttribute(self::TYPE);
+    }
+
 }

@@ -9,6 +9,7 @@ use RZP\Models\AccessPolicyAuthzRolesMap;
 
 class Entity extends PublicEntity
 {
+    const ID                = 'id';
     const ENTITY_TYPE       = 'entity_type';
     const ENTITY_ID         = 'entity_id';
     const MESSAGE           = 'message';
@@ -22,8 +23,15 @@ class Entity extends PublicEntity
 
     protected $entity = Constants\Table::ACCESS_CONTROL_HISTORY_LOGS;
 
+    const ENTITY_TYPE_ROLE = 'role';
+
     protected static $generators = [
         self::ID,
+    ];
+
+    protected $casts = [
+        self::PREVIOUS_VALUE    => 'array',
+        self::NEW_VALUE         => 'array'
     ];
 
     protected $fillable = [
@@ -34,6 +42,7 @@ class Entity extends PublicEntity
         self::NEW_VALUE,
         self::OWNER_TYPE,
         self::OWNER_ID,
+        self::CREATED_BY
     ];
 
     protected $visible = [

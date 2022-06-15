@@ -15,11 +15,13 @@ class Entity extends PublicEntity
     const PARENT_ID    = 'parent_id';
     const VISIBILITY   = 'visibility';
     const EXTRA_DATA   = 'extra_data';
-    const ORDERING     = 'ORDERING';
+    const ORDERING     = 'ordering';
 
     const ACTIONS = 'actions';
 
     const PRIVILEGE_DATA = 'privilege_data';
+
+    const PRIVILEGES_FETCH_DATA_COUNT  = 100;
 
     protected $entity = Constants\Table::ACCESS_CONTROL_PRIVILEGES;
 
@@ -58,6 +60,7 @@ class Entity extends PublicEntity
         self::ID,
         self::NAME,
         self::DESCRIPTION,
+        self::LABEL,
         self::PARENT_ID,
         self::EXTRA_DATA,
         self::ACTIONS,

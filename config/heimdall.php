@@ -2175,6 +2175,9 @@ return [
             Permission::HAS_APP_ACCESS => [
                 'assignable'    => true,
             ],
+            Permission::VIEW_PRIVILEGES => [
+                'assignable'    => true,
+            ],
         ],
     ],
 
