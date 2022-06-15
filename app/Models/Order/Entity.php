@@ -792,7 +792,7 @@ class Entity extends Base\PublicEntity
 
     public function hasOffers(): bool
     {
-        return (($this->offers !== null) and ($this->offers->isNotEmpty() === true));
+        return (($this->offers !== null) and (is_array($this->offers) === false) and ($this->offers->isNotEmpty() === true));
     }
 
     public function hasOrderMeta(): bool
