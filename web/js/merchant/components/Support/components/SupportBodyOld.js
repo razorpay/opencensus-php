@@ -14,11 +14,14 @@ import ErrorBoundary, { Ranks, Teams, InlineFallbackComponent } from 'common/new
 import { Modal, ModalBody } from 'common/components/Modal';
 import getMobileDetect from 'common/utils/mobileDetect';
 import errorService from '@razorpay/universe-utils/errorService';
-import { getCommonSupportProperties } from 'merchant/components/Support/getCommonSupportProperties';
+import {
+  getCommonSupportProperties,
+  getDeviceSource,
+} from 'merchant/components/Support/getCommonSupportProperties';
 import { getCookie, setCookie } from 'common/utils/cookies';
 
 const SupportSection = lazy(
-  () => import('@razorpay/frontend-care'),
+  () => import(/* webpackChunkName: 'frontend-care' */ '@razorpay/frontend-care'),
   // This will be replaced by @razorpay/care in prod
 );
 
@@ -360,6 +363,7 @@ class SupportBody extends Component {
               shouldPersistSearchString={this.props.isWebView}
               onClickToCallSuccess={this.onClickToCallSuccess}
               shouldOpenExistingTicketsOnNewTab={!this.props.isWebView}
+              deviceSource={getDeviceSource()}
             />
           ) : null}
         </ErrorBoundary>

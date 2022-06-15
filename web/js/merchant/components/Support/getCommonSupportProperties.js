@@ -47,8 +47,7 @@ const getUserSessionId = () => {
   return user_session_id;
 };
 
-// this function returns common support analytics properties.
-export const getCommonSupportProperties = () => {
+export const getDeviceSource = () => {
   if (source === null) {
     const isWebView = getMobileDetect().isWebView();
     if (isWebView) {
@@ -59,8 +58,13 @@ export const getCommonSupportProperties = () => {
     }
   }
 
+  return source;
+};
+
+// this function returns common support analytics properties.
+export const getCommonSupportProperties = () => {
   return {
-    source,
+    source: getDeviceSource(),
     deviceType: isMobileDevice(1020) ? 'mweb' : 'dweb',
     session_id: getSessionId(),
     linked_id: getLinkedId(),

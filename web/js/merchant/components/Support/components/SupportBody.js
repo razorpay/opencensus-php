@@ -13,9 +13,14 @@ import ErrorBoundary, { Ranks, Teams, InlineFallbackComponent } from 'common/new
 import { Modal, ModalBody } from 'common/components/Modal';
 import errorService from '@razorpay/universe-utils/errorService';
 import SupportActions from './SupportActions';
-import { getCommonSupportProperties } from 'merchant/components/Support/getCommonSupportProperties';
+import {
+  getCommonSupportProperties,
+  getDeviceSource,
+} from 'merchant/components/Support/getCommonSupportProperties';
 
-const SupportSection = lazy(() => import('@razorpay/frontend-care-new'));
+const SupportSection = lazy(() =>
+  import(/* webpackChunkName: 'frontend-care-new' */ '@razorpay/frontend-care-new'),
+);
 
 const isWorkingDay = () => {
   return window.RZP && window.RZP.holidays && window.RZP.holidays.isExtendedWorkingDay;
@@ -361,6 +366,7 @@ class SupportBody extends Component {
             onClose={this.handleCloseCareSupportSection}
             shouldOpenExistingTicketsOnNewTab={!this.props.isWebView}
             shouldPersistSearchString={this.props.isWebView}
+            deviceSource={getDeviceSource()}
             supportComponents={
               this.props.isWebView
                 ? []
