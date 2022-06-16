@@ -181,6 +181,12 @@ class Constants
     const USER_OAUTH_SIGNUP_SUCCESS         = 'user_oauth_signup_success';
     const USER_OAUTH_SIGNUP_FAILED          = 'user_oauth_signup_failed';
 
+    const SESSION_BLACKLISTED_ERROR_CODES = [
+       'BAD_REQUEST_LOCKED_USER_LOGIN',
+       'BAD_REQUEST_OTP_LOGIN_LOCKED',
+       'BAD_REQUEST_LOGIN_OTP_VERIFICATION_THRESHOLD_EXHAUSTED',
+       'BAD_REQUEST_VERIFICATION_OTP_VERIFICATION_THRESHOLD_EXHAUSTED'
+    ];
 
     const TRACE_DETAILS_MAP = [
         self::SEND_SIGNUP_OTP => [

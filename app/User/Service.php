@@ -633,7 +633,8 @@ class Service extends Base\Service
             {
                 $userId = $error[Constants::INTERNAL]['user_details']['user_id'] ??  "";
 
-                if (empty($userId) === false)
+                if (empty($userId) === false and
+                    (in_array($error[Constants::INTERNAL_ERROR_CODE], Constants::SESSION_BLACKLISTED_ERROR_CODES, true) === false))
                 {
                     Session::set('user_id', $userId);
                     Session::set('logged_in_via', $logged_in_via);
@@ -734,7 +735,8 @@ class Service extends Base\Service
             {
                 $userId = $error[Constants::INTERNAL][Constants::USER_DETAILS][Constants::USER_ID] ??  "";
 
-                if (empty($userId) === false)
+                if (empty($userId) === false and
+                    (in_array($error[Constants::INTERNAL_ERROR_CODE], Constants::SESSION_BLACKLISTED_ERROR_CODES, true) === false))
                 {
                     Session::set(Constants::USER_ID, $userId);
                     Session::set('logged_in_via', $logged_in_via);
