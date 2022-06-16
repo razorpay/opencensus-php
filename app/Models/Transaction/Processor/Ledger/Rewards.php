@@ -113,8 +113,6 @@ class Rewards extends Base
             self::FEE_ACCOUNTING => self::REWARD,
         ];
 
-        $identifiers = [];
-
         $payload = [
             self::TENANT                => self::X,
             self::MODE                  => $this->mode,
@@ -131,7 +129,6 @@ class Rewards extends Base
             self::TRANSACTOR_EVENT      => $transactorEvent,
             self::ADDITIONAL_PARAMS     => $additional_params,
             self::TRANSACTION_DATE      => $credits->getCreatedAt(),
-            self::IDENTIFIERS           => $identifiers,
         ];
 
         return $payload;
