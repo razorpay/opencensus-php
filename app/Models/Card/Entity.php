@@ -1244,6 +1244,38 @@ class Entity extends Base\PublicEntity
         return null;
     }
 
+    public function buildTokenisedTokenForMandateHQ($tokenNumber=null) : array
+    {
+        if ($tokenNumber !== null){
+
+            $tokenData = null;
+            $tokenData['token_provider']    = $this->getVault();
+            $tokenData['number']            = $tokenNumber;
+            $tokenData['expiry_month']      = $this->getTokenExpiryMonth();
+            $tokenData['expiry_year']       = $this->getTokenExpiryYear();
+
+            $input['token'] = $tokenData;
+
+            return $input;
+        }
+
+        $cryptogram = (new Card\CardVault)->fetchCryptogramForPayment($this->getVaultToken(), $this->merchant);
+
+        if (!empty($cryptogram)){
+
+            $tokenData = null;
+            $tokenData['token_provider']    = $this->getVault();
+            $tokenData['number']            = $cryptogram['token_number'];
+            $tokenData['expiry_month']      = $this->getTokenExpiryMonth();
+            $tokenData['expiry_year']       = $this->getTokenExpiryYear();
+
+            $input['token'] = $tokenData;
+
+            return $input;
+        }
+        return array();
+    }
+
     // Card Country would be set as part of token object only for the preferences API.
     protected function setCardCountryInTokenResponse(& $attributes)
     {

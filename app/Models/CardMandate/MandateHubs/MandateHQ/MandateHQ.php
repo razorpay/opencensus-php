@@ -3,6 +3,7 @@
 namespace RZP\Models\CardMandate\MandateHubs\MandateHQ;
 
 use Crypt;
+use Exception;
 use Carbon\Carbon;
 
 use RZP\Error\ErrorCode;
@@ -11,10 +12,12 @@ use RZP\Models\Card;
 use RZP\Models\CardMandate\Entity;
 use RZP\Models\CardMandate\Status;
 use RZP\Models\Payment;
+use RZP\Trace\TraceCode;
 use RZP\Models\CardMandate;
 use RZP\Constants\Timezone;
 use RZP\Exception\LogicException;
 use RZP\Models\Currency\Currency;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\CardMandate\MandateHubs\Mandate;
 use RZP\Models\CardMandate\MandateHubs\Notification;
 use RZP\Models\CardMandate\MandateHubs\MandateHubs;
@@ -241,6 +244,10 @@ class MandateHQ extends CardMandate\MandateHubs\BaseHub
 
     protected function getReportInitialPaymentInput(Payment\Entity $payment): array
     {
+        $card = $payment->card;
+
+        $token = $payment->localToken;
+
         $paymentStatus = Payment\Status::CAPTURED;
         $paymentErrorCode = $payment->getErrorCode();
         $paymentErrorDescription = $payment->getErrorDescription();
@@ -259,7 +266,7 @@ class MandateHQ extends CardMandate\MandateHubs\BaseHub
             $paymentErrorDescription = 'Failed to tokenised the card';
         }
 
-        return [
+        $inputResponse = [
             Constants::RECURRING_DEBIT_TYPE => Constants::RECURRING_DEBIT_TYPE_INITIAL,
             Constants::CURRENCY             => $payment->getCurrency(),
             Constants::AMOUNT               => $payment->getAmount(),
@@ -284,6 +291,26 @@ class MandateHQ extends CardMandate\MandateHubs\BaseHub
                 Constants::AUTHORIZATION_RRN           => null,
             ],
         ];
+
+        if ($token->card->isRzpSavedCard() === false)
+        {
+            try {
+                $tokenInput = $token->card->buildTokenisedTokenForMandateHQ();
+                $networkToken = $tokenInput['token'];
+                $inputResponse[Constants::TOKEN] = $networkToken;
+
+                return $inputResponse;
+
+            } catch (Exception $e){
+
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::TOKEN_CRYPTOGRAM_EXCEPTION);
+            }
+        }
+
+        return $inputResponse;
     }
 
     protected function getRegisterInput(Payment\Entity $payment, $input = []): array
@@ -331,7 +358,7 @@ class MandateHQ extends CardMandate\MandateHubs\BaseHub
             $skipSummaryPage = $input['skip_summary_page'];
         }
 
-        return [
+        $inputResponse = [
             Constants::AMOUNT       => $payment->getAmount(),
             Constants::CURRENCY     => $payment->getCurrency(),
             Constants::METHOD       => Constants::METHOD_CARD,
@@ -351,6 +378,35 @@ class MandateHQ extends CardMandate\MandateHubs\BaseHub
             ],
             Constants::NOTES       => empty($input['notes']) ? null : $input['notes'],
         ];
+
+        $isTokenPan = $token->card->isTokenPan();
+
+        if (($token->card->isRzpSavedCard() === false) or
+                ($isTokenPan === true))
+        {
+            try {
+                if ($isTokenPan === true){
+                    // In case of token requester merchant
+                    $tokenInput = $token->card->buildTokenisedTokenForMandateHQ($this->getCardNumber($token->card));
+                } else {
+                    $tokenInput = $token->card->buildTokenisedTokenForMandateHQ();
+                }
+                $networkToken = $tokenInput['token'];
+                $inputResponse[Constants::TOKEN] = $networkToken;
+                unset($inputResponse[Constants::CARD]);
+
+                return $inputResponse;
+
+            } catch (Exception $e){
+
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::TOKEN_CRYPTOGRAM_EXCEPTION);
+            }
+        }
+
+        return $inputResponse;
     }
 
     public function getRedirectUrlForPayment($paymentId)

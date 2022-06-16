@@ -159,6 +159,12 @@ class Core extends Base\Core
             $token->setWallet($input[Token\Entity::WALLET]);
         }
 
+        // required when we are cloning recurring token for card mandate
+        if (isset($input[Token\Entity::STATUS]) === true)
+        {
+            $token->setStatus($input[Token\Entity::STATUS]);
+        }
+
         $token->build($input);
 
         if ($card !== null)
@@ -403,6 +409,7 @@ class Core extends Base\Core
         $createInput = [
             Entity::METHOD      => $token->getMethod(),
             Entity::CARD_ID     => $token->getCardId(),
+            Entity::STATUS      => $token->getStatus()
         ];
 
         return $this->create($token->customer, $createInput, null, false);

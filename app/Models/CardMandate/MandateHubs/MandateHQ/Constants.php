@@ -36,6 +36,7 @@ class Constants
     const PAUSED_BY               = 'paused_by';
     const CANCELLED_BY            = 'cancelled_by';
     const SKIP_SUMMARY_PAGE       = 'skip_summary_page';
+    const TOKEN                   = 'token';
 
     const NOTES = 'notes';
 

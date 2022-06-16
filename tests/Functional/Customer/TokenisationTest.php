@@ -233,35 +233,6 @@ class TokenisationTest extends TestCase
         $this->assertEquals($response['triggeredTokenIdsCount'],1);
     }
 
-    public function testBulkTokenisationWhenCardIsRecurringAndBelongsToVisaExpectsTokenisationFailure(): void
-    {
-        $testData = $this->testData['testBulkTokenisation'];
-
-        $this->ba->adminAuth();
-
-        extract($this->setUpDataForTokenisation('10000000000000',null));
-
-        $this->mockFetchMerchantTokenisationOnboardedNetworks([Network::VISA]);
-
-        $this->prepareData($merchantId);
-
-        $this->buildData($network, $merchantId, $vault, $methodTest, $tokenId, $timestamp, 'IN', null, '100000007lcard', '411140', '10007cardToken', true);
-
-        $testData['request']['content']['token_ids'][] = $tokenId;
-
-        $response = $this->runRequestResponseFlow($testData);
-
-        $card = $this->getLastEntity('card', true);
-
-        $this->assertEquals($card['vault'], 'rzpvault');
-
-        $this->assertEquals($card['merchant_id'], $merchantId);
-
-        $this->assertEquals($response['inputTokenIdsCount'], 1);
-
-        $this->assertEquals($response['triggeredTokenIdsCount'],1);
-    }
-
     public function testBulkTokenisationWhenMultipleValidTokensOfValidMerchantExpectsTokenisationSuccessOnAllTokens(): void
     {
         $testData = $this->testData['testBulkTokenisation'];
@@ -582,31 +553,6 @@ class TokenisationTest extends TestCase
         $this->assertEquals($card['vault'], 'rzpvault');
 
         $this->assertEquals($card['merchant_id'], $merchantId);
-    }
-
-    public function testAsyncTokenisationWhenTokenIsRecurringAndVisaExpectsTokenisationFailure(): void
-    {
-        $testData = $this->testData['testAsyncTokenisation'];
-
-        $this->ba->appAuth();
-
-        $timestamp = Carbon::now()->getTimestamp();
-
-        extract($this->setUpDataForTokenisation('10000000000000',$timestamp));
-
-        $this->mockFetchMerchantTokenisationOnboardedNetworks([Network::VISA]);
-
-        $this->prepareData($merchantId,true);
-
-        $this->buildData($network, $merchantId, $vault, $methodTest, $tokenId, $timestamp, 'IN', null, '100000007lcard', '411140', '10007cardToken', true);
-
-        $this->mockDataLakeToReturnTokenIds();
-
-        $response = $this->runRequestResponseFlow($testData);
-
-        $card = $this->getLastEntity('card', true);
-
-        $this->assertEquals($card['vault'], 'rzpvault');
     }
 
     public function testAsyncTokenisationWhenTokenExpiredFailure(): void
