@@ -1253,54 +1253,6 @@ class Ledger extends BaseLedger
         ];
     }
 
-    /**
-     * @param      $input
-     * @param bool $throwExceptionOnFailure
-     *
-     * @return array
-     */
-    public function fetchFundAccountTypes($input, bool $throwExceptionOnFailure = false): array
-    {
-        $response = [
-            "fund_account_types" => [
-                "values" => [
-                    [
-                        "name" => "merchant_va_vendor"
-                    ],
-                    [
-                        "name" => "merchant_va"
-                    ],
-                    [
-                        "name" => "va_gst"
-                    ],
-                    [
-                        "name" => "reward"
-                    ],
-                    [
-                        "name" => "nodal"
-                    ],
-                    [
-                        "name" => "current"
-                    ],
-                    [
-                        "name" => "adjustment"
-                    ],
-                    [
-                        "name" => "m2p"
-                    ],
-                    [
-                        "name" => "amazonpay"
-                    ]
-                ]
-            ]
-        ];
-
-        return [
-            'code' => 200,
-            'body' => $response
-        ];
-    }
-
     public function fetchJournalFormFieldOptions($input, bool $throwExceptionOnFailure = false): array
     {
         $response = [

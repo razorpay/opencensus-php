@@ -3435,7 +3435,6 @@ class Route
         'fetch_journal_form_field_options_ledger'         => ['post',      'ledger_service/fetch_journal_form_field_options',       'LedgerController@fetchJournalFormFieldOptions'],
         'fetch_ledger_config_form_field_options_ledger'   => ['post',      'ledger_service/fetch_ledger_config_form_field_options', 'LedgerController@fetchLedgerConfigFormFieldOptions'],
         'fetch_account_types_ledger'                      => ['post',      'ledger_service/fetch_account_types',                    'LedgerController@fetchAccountTypes'],
-        'fetch_fund_account_types_ledger'                 => ['post',      'ledger_service/fetch_fund_account_types',               'LedgerController@fetchFundAccountTypes'],
         'delete_merchants_ledger'                         => ['post',      'ledger_service/delete_merchants',                       'LedgerController@deleteMerchants'],
         'create_ledger_journal_cron'                      => ['post',      'create_journal_cron',                                   'LedgerController@createJournalCron'],
 
@@ -6818,7 +6817,6 @@ class Route
         'fetch_journal_form_field_options_ledger',
         'fetch_ledger_config_form_field_options_ledger',
         'fetch_account_types_ledger',
-        'fetch_fund_account_types_ledger',
         'delete_merchants_ledger',
 
         'merchant_risk_data',
@@ -8066,7 +8064,6 @@ class Route
         'fetch_journal_form_field_options_ledger'         => Permission::LEDGER_VIEW_DASHBOARD,
         'fetch_ledger_config_form_field_options_ledger'   => Permission::LEDGER_VIEW_DASHBOARD,
         'fetch_account_types_ledger'                      => Permission::LEDGER_VIEW_DASHBOARD,
-        'fetch_fund_account_types_ledger'                 => Permission::LEDGER_VIEW_DASHBOARD,
 
         'merchant_risk_data'                              => Permission::GET_MERCHANT_RISK_DATA,
         'bulk_fraud_notify'                               => Permission::BULK_FRAUD_NOTIFY,
@@ -11969,7 +11966,6 @@ class Route
             'fetch_journal_form_field_options_ledger',
             'fetch_ledger_config_form_field_options_ledger',
             'fetch_account_types_ledger',
-            'fetch_fund_account_types_ledger',
             'delete_merchants_ledger',
 
             'merchant_risk_data',
@@ -13039,7 +13035,6 @@ class Route
             'fetch_ledger_config_form_field_options_ledger',
             'ledger_fetch_multiple_transactions',
             'fetch_account_types_ledger',
-            'fetch_fund_account_types_ledger',
             'delete_merchants_ledger',
         ],
 

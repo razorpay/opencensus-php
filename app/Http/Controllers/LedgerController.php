@@ -161,13 +161,6 @@ class LedgerController extends Controller
         return ApiResponse::json($response['body'], $response['code']);
     }
 
-    public function fetchFundAccountTypes()
-    {
-        $response = $this->app['ledger']->fetchFundAccountTypes($this->input, true);
-
-        return ApiResponse::json($response['body'], $response['code']);
-    }
-
     public function deleteMerchants()
     {
         $response = $this->app['ledger']->deleteMerchants($this->input, true);
