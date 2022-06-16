@@ -242,9 +242,16 @@ class Processor extends VirtualAccount\Processor
 
         }, $deadlockRetryAttempts);
 
-        // feature flag based
+        // feature flag based call to Ledger service
         if ($this->virtualAccount->isBalanceTypeBanking() === true) {
-            $this->processLedgerForReverseShadow($bankTransfer);
+            if ($bankTransfer->merchant->isFeatureEnabled(Feature\Constants::LEDGER_REVERSE_SHADOW) === true)
+            {
+                $this->processLedgerForReverseShadow($bankTransfer);
+            }
+            else
+            {
+                $this->processLedgerForShadow($bankTransfer);
+            }
         }
 
         // Currently dispatches transaction.created only for bank transfer on banking balance.
@@ -253,6 +260,28 @@ class Processor extends VirtualAccount\Processor
         $this->refundOrCapturePayment($bankTransfer);
 
         return $bankTransfer;
+    }
+
+    protected function processLedgerForShadow(Entity $bankTransfer)
+    {
+        try
+        {
+            // Fetching terminal to get the terminal_id which will be the identifier to uniquely
+            // identify accounts in case of fund loading.
+            $terminal = (new TerminalProcessor())->getTerminalForBankTransfer($bankTransfer);
+
+            // Pushing transaction to ledger which will create this transaction in ledger DB.
+            $this->processLedgerFundLoading($bankTransfer, $terminal->getPublicId(), $terminal->getAccountType());
+        } catch (\Throwable $ex) {
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::LEDGER_JOURNAL_FUND_LOADING_TERMINAL_ID_NOT_FOUND,
+                [
+                    'error' => $ex->getMessage(),
+                    self::BANK_TRANSFER_ID => $bankTransfer->getId(),
+                ]);
+        }
     }
 
     /**
@@ -265,11 +294,6 @@ class Processor extends VirtualAccount\Processor
      */
     protected function processLedgerForReverseShadow(Entity $bankTransfer)
     {
-        if ($bankTransfer->merchant->isFeatureEnabled(Feature\Constants::LEDGER_REVERSE_SHADOW) === false)
-        {
-            return;
-        }
-
         // create journal in sync
 
         // Fetching terminal to get the terminal_id which will be the identifier to uniquely
@@ -489,29 +513,6 @@ class Processor extends VirtualAccount\Processor
                     'channel'  => Config::get('slack.channels.x_finops'),
                 ]
             );
-        }
-
-        // In case reverse shadow feature is false, we push to ledger sns for async ledger creation
-        if ($bankTransfer->merchant->isFeatureEnabled(Feature\Constants::LEDGER_REVERSE_SHADOW) === false)
-        {
-            try
-            {
-                // Fetching terminal to get the terminal_id which will be the identifier to uniquely
-                // identify accounts in case of fund loading.
-                $terminal = (new TerminalProcessor())->getTerminalForBankTransfer($bankTransfer);
-
-                // Pushing transaction to ledger which will create this transaction in ledger DB.
-                $this->processLedgerFundLoading($bankTransfer, $terminal->getPublicId(), $terminal->getAccountType());
-            } catch (\Throwable $ex) {
-                $this->trace->traceException(
-                    $ex,
-                    Trace::ERROR,
-                    TraceCode::LEDGER_JOURNAL_FUND_LOADING_TERMINAL_ID_NOT_FOUND,
-                    [
-                        'error' => $ex->getMessage(),
-                        self::BANK_TRANSFER_ID => $bankTransfer->getId(),
-                    ]);
-            }
         }
 
         try
