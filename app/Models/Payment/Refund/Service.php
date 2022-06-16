@@ -1144,6 +1144,10 @@ class Service extends Base\Service
                                     $data = $entity->toArray();
                                 }
                             }
+                            else if ($key === Constants\Entity::TOKEN)
+                            {
+                                $data = $payment->getGlobalOrLocalTokenEntity();
+                            }
                             else if ($key !== Constants\Entity::PAYMENT)
                             {
                                 if ($key === Constants\Entity::IIN)

@@ -678,21 +678,38 @@ class ScroogeFetchEntitiesTest extends TestCase
     // test various entities fetch
     public function scroogeFetchEntitiesV2SubTest1($subTestArgs): array
     {
+        $paymentId = substr($subTestArgs['payment']['id'], 4);
+        $paymentId2 = substr($subTestArgs['payment2']['id'], 4);
+
         $this->fixtures->terminal->edit('1n25f6uN5S1Z5a',
             ['gateway_secure_secret' => 'sample_secret_code',
             'gateway_secure_secret2' => 'sample_secret_code2',
             'gateway_terminal_password' => 'sample_terminal_password']
         );
 
-        $paymentId = substr($subTestArgs['payment']['id'], 4);
-        $paymentId2 = substr($subTestArgs['payment2']['id'], 4);
+        $this->fixtures->create('token', [
+            'id' => 'IMxXhFhCPcU49R',
+            'status' => 'active'
+        ]);
+        $this->fixtures->create('token', [
+            'id' => 'IMxXhFhCPcU49S',
+            'status' => 'deactivated'
+        ]);
+
+        $this->fixtures->edit('payment', $paymentId, [
+            'token_id' => 'IMxXhFhCPcU49R'
+        ]);
+
+        $this->fixtures->edit('payment', $paymentId2, [
+            'global_token_id' => 'IMxXhFhCPcU49S'
+        ]);
 
         $input = [
             'payment_ids' => [
                 substr($subTestArgs['payment']['id'], 4),
                 substr($subTestArgs['payment2']['id'], 4),
             ],
-            'entities' => ['payment', 'card', 'terminal', 'upi_metadata'],
+            'entities' => ['payment', 'card', 'terminal', 'upi_metadata', "token"],
         ];
 
         $expectedOutput = [
@@ -732,6 +749,12 @@ class ScroogeFetchEntitiesTest extends TestCase
                     'upi_metadata' => [
                         'data' => NULL,
                         'error' => NULL,
+                    ],
+                    'token' => [
+                        'data' => [
+                            'status' => 'active'
+                        ],
+                        'error' => NULL,
                     ]
                 ],
             ],
@@ -767,6 +790,12 @@ class ScroogeFetchEntitiesTest extends TestCase
                     ],
                     'upi_metadata' => [
                         'data' => NULL,
+                        'error' => NULL,
+                    ],
+                    'token' => [
+                        'data' => [
+                            'status' => 'deactivated'
+                        ],
                         'error' => NULL,
                     ]
                 ],
