@@ -3,13 +3,12 @@ import { classList, getCommonAnalyticsProperties } from 'common/utils/rzp-utils'
 import { merchantFetch } from 'merchant/utils/ajax';
 import { trackSupportOptions } from 'merchant/components/Support/ga';
 import { fetchTicketsRaisedByAgents } from 'merchant/reducers/config';
-import ShowWhen from 'merchant/components/ShowWhen';
 import { analyticsTrack } from 'common/utils/analytics';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { connect } from 'react-redux';
-import WriteToUsPopup from './WriteToUsPopup';
-import { CreateTicketEmitter } from '../../../views/TicketSupport/utils';
-import { initCare, TicketSystemEmitter } from '../../../care/init';
+import WriteToUsPopup from 'merchant/components/Support/components/WriteToUsPopup';
+import { CreateTicketEmitter } from 'merchant/views/TicketSupport/utils';
+import { initCare, TicketSystemEmitter } from 'merchant/care/init';
 import ErrorBoundary, { Ranks, Teams, InlineFallbackComponent } from 'common/new-ui/ErrorBoundary';
 import { Modal, ModalBody } from 'common/components/Modal';
 import getMobileDetect from 'common/utils/mobileDetect';
@@ -19,6 +18,7 @@ import {
   getDeviceSource,
 } from 'merchant/components/Support/getCommonSupportProperties';
 import { getCookie, setCookie } from 'common/utils/cookies';
+import SupportActions from 'merchant/components/Support/components/SupportActions';
 
 const SupportSection = lazy(
   () => import(/* webpackChunkName: 'frontend-care' */ '@razorpay/frontend-care'),
@@ -48,6 +48,7 @@ class SupportBody extends Component {
     careSupportSection: null,
     openClickToCall: false,
     isClickToCallSubmitted: false,
+    isChatWithUsDisabled: false,
   };
   openDashboardGuide = (_) => {
     analyticsTrack({
@@ -178,8 +179,8 @@ class SupportBody extends Component {
       this.setState({ isClickToCallSubmitted: true });
     }
   };
-  handleClick = (id) => {
-    const { onToggle, onChat, notifyCount, user } = this.props;
+  handleClick = async (id) => {
+    const { onToggle, onChat, notifyCount, fetchSupportFlags } = this.props;
     const rzpTicketSystem = window.rzpTicketSystem;
     if (rzpTicketSystem) {
       trackSupportOptions(id);
@@ -190,26 +191,28 @@ class SupportBody extends Component {
       }
 
       if (id === 'schedule-call') {
+        this.scheduleCallTracking();
         // eslint-disable-next-line consistent-return
         return rzpTicketSystem.openModal(`#schedule-call`);
       }
 
       if (id === 'click-to-call') {
+        this.clickToCallTracking();
         // eslint-disable-next-line consistent-return
         return rzpTicketSystem.openModal(`#click-to-call`);
       }
       if (id === 'chat') {
-        const { isChatbotLive } = user;
-        analyticsTrack({
-          objectName: 'chat with us',
-          actionName: 'clicked',
-          screen: 'home page',
-          properties: {
-            isChatbot: isChatbotLive,
-            ...getCommonAnalyticsProperties(window.rzp_user),
-            ...getCommonSupportProperties(),
-          },
-        });
+        const newSupportflags = await fetchSupportFlags(false);
+        const showChat = Boolean(newSupportflags?.show_chat);
+
+        this.chatWithUsTracking({ showChat });
+
+        if (!showChat) {
+          this.setState({
+            isChatWithUsDisabled: true,
+          });
+          return;
+        }
         // if notifications pending, then enable chat
         if (!this.props.supportFlags.show_chat && notifyCount < 1) {
           return;
@@ -219,11 +222,72 @@ class SupportBody extends Component {
         onChat();
         return;
       }
+
+      if (id === 'tickets') {
+        this.ticketsTracking();
+      }
       onToggle();
       this.createTicket(id);
     } else {
-      console.log('RZP TICKET SYSTEM INIT FAILED');
+      errorService.captureError('RZP TICKET SYSTEM INIT FAILED', {
+        tags: {
+          team: Teams.CARE,
+        },
+        rank: Ranks.P2,
+      });
     }
+  };
+
+  scheduleCallTracking = () => {
+    analyticsTrack({
+      objectName: 'request a call',
+      actionName: 'clicked',
+      screen: 'home page',
+      properties: {
+        ...getCommonAnalyticsProperties(window.rzp_user),
+        ...getCommonSupportProperties(),
+      },
+    });
+  };
+
+  clickToCallTracking = () => {
+    analyticsTrack({
+      objectName: 'click to call',
+      actionName: 'clicked',
+      screen: 'home page',
+      properties: {
+        ...getCommonAnalyticsProperties(window.rzp_user),
+        ...getCommonSupportProperties(),
+      },
+    });
+  };
+
+  chatWithUsTracking = ({ showChat } = {}) => {
+    const { user: { isChatbotLive } = {} } = this.props;
+
+    analyticsTrack({
+      objectName: 'chat with us',
+      actionName: 'clicked',
+      screen: 'home page',
+      properties: {
+        isChatbot: isChatbotLive,
+        isAvailable: showChat,
+        ...getCommonAnalyticsProperties(window.rzp_user),
+        ...getCommonSupportProperties(),
+      },
+    });
+  };
+
+  ticketsTracking = () => {
+    analyticsTrack({
+      objectName: 'have a query',
+      actionName: 'clicked',
+      screen: 'home page',
+      properties: {
+        ...getCommonAnalyticsProperties(window.rzp_user),
+        ...getCommonSupportProperties(),
+      },
+    });
   };
 
   handleTicketCreatingSuccess = (data) => {
@@ -282,9 +346,24 @@ class SupportBody extends Component {
   };
 
   render() {
-    const { notifyCount, isOpened, onToggle, isCallEnabled, scheduleCallConfig, user } = this.props;
-    const { handleClick, openDashboardGuide } = this;
-    const { careSupportSection, isClickToCallSubmitted } = this.state;
+    const {
+      notifyCount,
+      isOpened,
+      onToggle,
+      isCallEnabled,
+      scheduleCallConfig,
+      user,
+      isWebView,
+      supportFlags,
+      botIsLoaded,
+    } = this.props;
+    const {
+      careSupportSection,
+      isClickToCallSubmitted,
+      isChatWithUsDisabled,
+      timings,
+      openClickToCall,
+    } = this.state;
     const shouldDisable = !isWorkingDay();
     let scheduleCallbackReason =
       scheduleCallConfig && scheduleCallConfig.is_eligible === false && scheduleCallConfig.reason
@@ -303,10 +382,10 @@ class SupportBody extends Component {
 
     const today = new Date().getDay();
     let date;
-    if (this.state.timings.length) {
+    if (timings.length) {
       date = {
-        start: this.state.timings[today].start / 60,
-        end: this.state.timings[today].end / 60,
+        start: timings[today].start / 60,
+        end: timings[today].end / 60,
         start_zone: 'AM',
         end_zone: 'AM',
       };
@@ -359,10 +438,10 @@ class SupportBody extends Component {
               initialData={careSupportSection.initialData}
               onSuccess={this.handleTicketCreatingSuccess}
               onClose={this.handleCloseCareSupportSection}
-              hideModalHeader={this.props.isWebView}
-              shouldPersistSearchString={this.props.isWebView}
+              hideModalHeader={isWebView}
+              shouldPersistSearchString={isWebView}
               onClickToCallSuccess={this.onClickToCallSuccess}
-              shouldOpenExistingTicketsOnNewTab={!this.props.isWebView}
+              shouldOpenExistingTicketsOnNewTab={!isWebView}
               deviceSource={getDeviceSource()}
             />
           ) : null}
@@ -372,142 +451,25 @@ class SupportBody extends Component {
           <i className="i i-headset m-r" /> Help and Support{' '}
           <i className="i i-close pull-right mob-close" onClick={onToggle} />
         </header>
-        <ul className="support-list">
-          <li
-            className={`support-item p-all ticket ${
-              !this.props.supportFlags.loaded ? 'disabled' : ''
-            }`}
-            onClick={() => {
-              analyticsTrack({
-                objectName: 'have a query',
-                actionName: 'clicked',
-                screen: 'home page',
-                properties: {
-                  ...getCommonAnalyticsProperties(window.rzp_user),
-                  ...getCommonSupportProperties(),
-                },
-              });
-              handleClick('tickets');
-            }}
-          >
-            Have a query? <small className="help-block">Check existing query/raise a new one</small>
-          </li>
-          <ShowWhen
-            myRole="owner admin"
-            additionalCondition={() =>
-              !(this.props.user.isClickToCallActive || this.state.openClickToCall) &&
-              !(
-                scheduleCallbackReason === 'NOT_FETCHED_YET' ||
-                (scheduleCallbackReason === 'NOT_APPLICABLE' && !scheduleCallConfig.is_eligible)
-              )
-            }
-          >
-            <li
-              onClick={() => {
-                analyticsTrack({
-                  objectName: 'request a call',
-                  actionName: 'clicked',
-                  screen: 'home page',
-                  properties: {
-                    ...getCommonAnalyticsProperties(window.rzp_user),
-                    ...getCommonSupportProperties(),
-                  },
-                });
-                handleClick('schedule-call');
-              }}
-            >
-              <span>
-                Request a call <span className="badge">Recommended</span>
-              </span>
-              <small className="help-block">{scheduleCallbackReason}</small>
-            </li>
-          </ShowWhen>
-          <ShowWhen
-            myRole="owner admin"
-            additionalCondition={() =>
-              this.props.user.isFrontendCareActive &&
-              this.props.user.isClickToCallActive &&
-              this.state.openClickToCall
-            }
-          >
-            <li
-              className={`support-item p-all callback ${isClickToCallSubmitted ? 'disabled' : ''}`}
-              onClick={() => {
-                analyticsTrack({
-                  objectName: 'click to call',
-                  actionName: 'clicked',
-                  screen: 'home page',
-                  properties: {
-                    ...getCommonAnalyticsProperties(window.rzp_user),
-                    ...getCommonSupportProperties(),
-                  },
-                });
-                handleClick('click-to-call');
-              }}
-            >
-              <span>
-                Click to call
-                {!isClickToCallSubmitted && <span className="badge">Recommended</span>}
-              </span>
-              {!isClickToCallSubmitted && (
-                <small className="help-block">Click to call instantly</small>
-              )}
-              {isClickToCallSubmitted && (
-                <small className="help-block">You will receive a call shortly</small>
-              )}
-            </li>
-          </ShowWhen>
-          {window.rzp_user ? (
-            ['activated', 'under_review', 'instantly_activated', 'needs_clarification'].indexOf(
-              window.rzp_user.activation_status,
-            ) > -1 && this.props.supportFlags.show_chat ? (
-              <li
-                className={`support-item p-all chat ${
-                  (!this.props.supportFlags.show_chat && notifyCount < 1) ||
-                  (this.props.user.isChatbotLive && !this.props.botIsLoaded)
-                    ? 'disabled'
-                    : ''
-                }`}
-                onClick={() => {
-                  handleClick('chat');
-                }}
-              >
-                Chat with us
-                {this.state.timings.length ? (
-                  <small className="help-content">
-                    ({date.start} {date.start_zone} - {date.end} {date.end_zone})
-                  </small>
-                ) : null}
-                {notifyCount > 0 && <span className="notify-icon m-l">{notifyCount}</span>}
-                <small className="help-block">
-                  {!this.props.supportFlags.show_chat && notifyCount < 1
-                    ? 'Currently unavailable'
-                    : 'For quick questions or help on dashboard'}
-                </small>
-              </li>
-            ) : null
-          ) : null}
-          {isCallEnabled ? (
-            <li
-              className={`support-item p-all call ${shouldDisable ? 'disabled' : ''}`}
-              onClick={() => handleClick('call')}
-            >
-              Call Support <small className="help-content">(9am-9pm, working days)</small>
-              <small className="help-block">
-                {shouldDisable ? 'Currently unavailable' : 'For queries and help on the dashboard'}
-              </small>
-            </li>
-          ) : null}
-          <li
-            className="support-item p-all dashboard_guide"
-            onClick={() => {
-              openDashboardGuide();
-            }}
-          >
-            Dashboard Guide{' '}
-            <small className="help-block">Read more about how to use the dashboard</small>
-          </li>
-        </ul>
+        <SupportActions
+          key="SupportActions"
+          notifyCount={notifyCount}
+          isCallEnabled={isCallEnabled}
+          handleClick={this.handleClick}
+          shouldDisable={shouldDisable}
+          scheduleCallbackReason={scheduleCallbackReason}
+          openClickToCall={openClickToCall}
+          user={user}
+          supportFlags={supportFlags}
+          botIsLoaded={botIsLoaded}
+          timings={timings}
+          date={date}
+          isEligible={scheduleCallConfig.is_eligible}
+          isOldFlow
+          isClickToCallSubmitted={isClickToCallSubmitted}
+          isChatWithUsDisabled={isChatWithUsDisabled}
+          openDashboardGuide={this.openDashboardGuide}
+        />
       </div>
     );
   }

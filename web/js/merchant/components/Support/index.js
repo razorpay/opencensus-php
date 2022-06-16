@@ -48,6 +48,7 @@ export default class Support extends Component {
       show_create_ticket_popup: false,
       no_of_days_for_activation: '3 to 5',
       loaded: false,
+      isFetching: false,
     },
     isWebView: false,
   };
@@ -70,20 +71,8 @@ export default class Support extends Component {
     });
 
     this.bindEvents();
-    this.props.user.current &&
-      merchantFetch({
-        url: 'merchants/support/option/flags',
-      }).then((res) => {
-        this.setState({
-          supportFlags: {
-            no_of_days_for_activation: '3 to 5',
-            cta_list: ['continue_with_ticket', 'faqs'],
-            message_body: `Your account is currently not activated. Our team is working hard to fast track your activation and it can take ${`3 to 5`} business days. If you have any other concerns, please feel free to raise a ticket.`,
-            ...res.data,
-            loaded: true,
-          },
-        });
-      });
+
+    this.fetchSupportFlags();
 
     this.handleIsWebView();
 
@@ -112,6 +101,44 @@ export default class Support extends Component {
     if (getMobileDetect().isWebView()) {
       this.setState({ isWebView: true });
     }
+  };
+
+  fetchSupportFlags = () => {
+    return new Promise((resolve) => {
+      if (this.props.user.current) {
+        const { supportFlags: oldSupportFlags } = this.state;
+        this.setState(
+          {
+            supportFlags: {
+              ...oldSupportFlags,
+              isFetching: true,
+            },
+          },
+          async () => {
+            const response = await merchantFetch({
+              url: 'merchants/support/option/flags',
+            });
+            const newSupportFlags = {
+              ...oldSupportFlags,
+              ...response.data,
+              loaded: true,
+              isFetching: false,
+            };
+
+            this.setState(
+              {
+                supportFlags: newSupportFlags,
+              },
+              () => {
+                resolve(newSupportFlags);
+              },
+            );
+          },
+        );
+      } else {
+        resolve();
+      }
+    });
   };
 
   bindEvents = () => {
@@ -235,6 +262,7 @@ export default class Support extends Component {
               supportFlags={this.state.supportFlags}
               user={this.props.user}
               isWebView={this.state.isWebView}
+              fetchSupportFlags={this.fetchSupportFlags}
             />
           ) : (
             <SupportBodyOld
@@ -249,6 +277,7 @@ export default class Support extends Component {
               user={this.props.user}
               isWebView={this.state.isWebView}
               shouldOpenRaiseAQueryOnMount={shouldOpenRaiseAQueryOnMount}
+              fetchSupportFlags={this.fetchSupportFlags}
             />
           )}
         </Suspense>
