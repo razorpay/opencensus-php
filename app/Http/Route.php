@@ -7785,9 +7785,9 @@ class Route
         'fts_dashboard_schedule_update'                     => Permission::FTS_ROUTING_RULES_UPDATE,
         'fts_dashboard_manual_override'                     => Permission::FTS_ROUTING_RULES_UPDATE,
         'fts_dashboard_fail_fast_status_manual_update'      => Permission::FTS_ROUTING_RULES_UPDATE,
-        'fts_dashboard_merchant_configurations_create'      => Permission::FTS_MERCHANT_CONFIGURATIONS_UPDATE,
-        'fts_dashboard_merchant_configurations_delete'      => Permission::FTS_MERCHANT_CONFIGURATIONS_UPDATE,
-        'fts_dashboard_merchant_configurations_patch'       => Permission::FTS_MERCHANT_CONFIGURATIONS_UPDATE,
+        'fts_dashboard_merchant_configurations_create'      => Permission::FTS_ROUTING_RULES_UPDATE,
+        'fts_dashboard_merchant_configurations_delete'      => Permission::FTS_ROUTING_RULES_UPDATE,
+        'fts_dashboard_merchant_configurations_patch'       => Permission::FTS_ROUTING_RULES_UPDATE,
 
         //relay permissions
         'relay_get_apps'                                    => Permission::RELAY_READ_PERMISSION,
