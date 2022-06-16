@@ -475,7 +475,8 @@ class Processor
                 ($merchant->isRazorpayOrgId() === false) or
                 ($merchant->isFeatureEnabled('openwallet') === true) or
                 ($merchant->isMarketplace() === true) or
-                ($merchant->isFeatureEnabled(Feature::JSON_V2) === true))
+                ($merchant->isFeatureEnabled(Feature::JSON_V2) === true) or
+                (empty($input[Payment\Entity::CARD][Card\Entity::TOKENISED]) === false))
             {
                 return false;
             }
