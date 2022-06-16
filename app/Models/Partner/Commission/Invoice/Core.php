@@ -9,6 +9,7 @@ use RZP\Exception;
 use RZP\Models\Tax;
 use RZP\Models\Base;
 use RZP\Trace\Tracer;
+use RZP\Diag\EventCode;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
@@ -159,7 +160,7 @@ class Core extends Base\Core
         Mail::send($opsInvoice);
     }
 
-    public function sendCommissionSms(Entity $invoice, string $pdfPath)
+    public function sendCommissionSms(Entity $invoice, string $pdfPath = null)
     {
         $merchant = $invoice->merchant;
 
@@ -229,6 +230,43 @@ class Core extends Base\Core
         $commissionInvoice = new CommissionInvoiceIssued($data);
 
         Mail::send($commissionInvoice);
+    }
+
+    public function sendCommissionInvoiceEvents(Entity $invoice, array $eventCode)
+    {
+        $data = $this->getTemplateData($invoice);
+
+        $properties = [
+            'id'            => $data['merchant']['id'],
+            'experiment_id' => $this->app['config']->get('app.commission_invoice_events_exp_id'),
+        ];
+
+        $isExpEnabled = (new MerchantCore())->isSplitzExperimentEnable($properties, 'enable');
+
+        if($isExpEnabled === false)
+        {
+            return ;
+        }
+
+        $eventData = [
+            'partner_id'                =>  $data['merchant']['id'],
+            'month_of_commission'       =>  $invoice->getMonth().'-'.$invoice->getYear(),
+            'commission_amount'         =>  $data['invoice']['gross_amount_spread'][0].' '.$data['invoice']['gross_amount_spread'][1].'.'.$data['invoice']['gross_amount_spread'][2],
+        ] ;
+
+        if ($eventCode !== EventCode::PARTNERSHIPS_COMMISSION_INVOICE_PROCESSED)
+        {
+            $eventData['activation_status'] = $data['activation_status'];
+        }
+
+        $this->trace->info(TraceCode::COMMISSION_INVOICE_ACTION_EVENTS,
+            [
+                'mode'   => $this->mode,
+                'event'  => $eventCode['name'],
+                'data'   => $eventData,
+            ]);
+
+        $this->app['diag']->trackOnboardingEvent($eventCode, $invoice->merchant, null, $eventData);
     }
 
     public function sendCommissionProcessedMail(Entity $invoice, string $pdfPath)

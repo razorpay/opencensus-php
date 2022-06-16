@@ -5,6 +5,7 @@ namespace RZP\Jobs;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Exception;
+use RZP\Diag\EventCode;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Partner\Commission\Invoice;
@@ -74,14 +75,23 @@ class CommissionInvoiceAction extends Job
 
     protected function handleIssued()
     {
-       (new Invoice\Core)->createInvoicePdfAndGetFilePath($this->invoice);
+
+        $core    = new Invoice\Core;
+
+        $core->createInvoicePdfAndGetFilePath($this->invoice);
+
+        $core->sendCommissionInvoiceEvents($this->invoice, EventCode::PARTNERSHIPS_COMMISSION_INVOICE_GENERATED);
     }
 
     protected function handleUnderReview()
     {
-        $pdfPath = (new Invoice\Core)->createInvoicePdfAndGetFilePath($this->invoice);
+        $core    = new Invoice\Core;
 
-        (new Invoice\Core)->sendCommissionMail($this->invoice, $pdfPath);
+        $pdfPath = $core->createInvoicePdfAndGetFilePath($this->invoice);
+
+        $core->sendCommissionMail($this->invoice, $pdfPath);
+
+        $core->sendCommissionInvoiceEvents($this->invoice, EventCode::PARTNERSHIPS_COMMISSION_INVOICE_APPROVED);
     }
 
     protected function handleProcessed()
@@ -90,6 +100,8 @@ class CommissionInvoiceAction extends Job
         $pdfPath = $core->createInvoicePdfAndGetFilePath($this->invoice);
 
         $core->sendCommissionProcessedMail($this->invoice, $pdfPath);
+
+        $core->sendCommissionInvoiceEvents($this->invoice, EventCode::PARTNERSHIPS_COMMISSION_INVOICE_PROCESSED);
     }
 
     protected function getHandlerForJobEvent(): string

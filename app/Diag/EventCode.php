@@ -1311,4 +1311,19 @@ class EventCode
         'group' => 'onboarding',
         'name'  => 'partner_kyc_access.reject',
     ];
+
+    const PARTNERSHIPS_COMMISSION_INVOICE_GENERATED  = [
+        'group' => 'onboarding',
+        'name'  => 'partnerships.commission.invoice.generated',
+    ];
+
+    const PARTNERSHIPS_COMMISSION_INVOICE_APPROVED  = [
+        'group' => 'onboarding',
+        'name'  => 'partnerships.commission.invoice.approved',
+    ];
+
+    const PARTNERSHIPS_COMMISSION_INVOICE_PROCESSED  = [
+        'group' => 'onboarding',
+        'name'  => 'partnerships.commission.invoice.processed',
+    ];
 }
