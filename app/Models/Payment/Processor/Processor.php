@@ -918,8 +918,8 @@ class Processor
                                                                     ($input['recurring'] === 'preferred')) and
                                                                    isset($input['token']));
 
-            $isRecurringSavedCardFlow = $recurringInitialPaymentDataChecksForSavedCardFlow and
-                                        $recurringInitialInputPayloadChecksForSavedCardFlow;
+            $isRecurringSavedCardFlow = ($recurringInitialPaymentDataChecksForSavedCardFlow and
+                                         $recurringInitialInputPayloadChecksForSavedCardFlow);
 
 
             if ($userConsentGiven === false and
