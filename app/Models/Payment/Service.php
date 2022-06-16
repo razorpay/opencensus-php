@@ -1167,13 +1167,10 @@ class Service extends Base\Service
 
     public function retrieveRefundsForPayment($id, array $input = [])
     {
-        // Route only private auth and not proxy auth requests to scrooge
+        $experiment = false;
+
         if ($this->app['basicauth']->isStrictPrivateAuth() === true)
         {
-            // Expands is not supported in strict private auth, but requests could still come at the moment
-            // Not moving them to scrooge right away. Need to handle validation part on scrooge for such additional params
-            if (empty($input) === true)
-            {
                 $variant = $this->app->razorx->getTreatment($id,
                     RefundConstants::RAZORX_KEY_REFUND_FETCH_BY_PAYMENT_FROM_SCROOGE,
                     $this->mode
@@ -1182,6 +1179,33 @@ class Service extends Base\Service
                 if ($variant === RefundConstants::RAZORX_VARIANT_ON)
                 {
                     return $this->app['scrooge']->refundsFetchByPayment($id, $input);
+                }
+        }
+
+        else
+        {
+            $variant = $this->app->razorx->getTreatment($id,
+                RefundConstants::RAZORX_KEY_REFUND_FETCH_BY_PAYMENT_FROM_SCROOGE_PROXY,
+                $this->mode
+            );
+
+            if ($variant === RefundConstants::RAZORX_VARIANT_ON) {
+
+                $experiment = true;
+
+                // keeping in shadow mode for non-private auth requests
+                try
+                {
+                    $scroogeRefundsArray = $this->app['scrooge']->refundsFetchByPayment($id, $input);
+                }
+                catch (\Throwable $e)
+                {
+                    $this->trace->info(
+                        TraceCode::REFUNDS_FETCH_BY_PAYMENT_SCROOGE_EXCEPTION,
+                        [
+                            'error_code' => $e->getCode(),
+                            'error_message' => $e->getMessage(),
+                        ]);
                 }
             }
         }
@@ -1195,6 +1219,11 @@ class Service extends Base\Service
         if ($this->app['basicauth']->isProxyAuth() === true)
         {
             (new Payment\Refund\Service())->addModeAndPublicStatus($refundsArray);
+        }
+
+        if ($experiment === true)
+        {
+            $this->compareRefundsAndLogDifference([$refundsArray], [$scroogeRefundsArray]);
         }
 
         return $refundsArray;
@@ -4268,7 +4297,7 @@ class Service extends Base\Service
             $this->traceRetryVerifyFalse($id, TraceCode::PAYMENT_VERIFY_STOPPED_FOR_FILE_BASED_DEBITS, $data);
 
             $data['retry_verify'] = false;
-            
+
             return $data;
         }
 

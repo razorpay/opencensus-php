@@ -1391,6 +1391,7 @@ class Service extends Base\Service
     public function fetchMultiple($input)
     {
         $this->trace->info(TraceCode::REFUNDS_FETCH_MULTIPLE_REQUEST_BODY, $input);
+        $experiment = false;
 
         // We are masking status for merchants
         if ((($this->app['basicauth']->isProxyAuth() === true) or
@@ -1402,7 +1403,6 @@ class Service extends Base\Service
             unset($input[Entity::STATUS]);
         }
 
-        // Route only private auth and not proxy auth requests to scrooge
         if ($this->app['basicauth']->isStrictPrivateAuth() === true)
         {
             $variant = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(),
@@ -1415,6 +1415,33 @@ class Service extends Base\Service
                 return $this->app['scrooge']->refundsFetchMultiple($input);
             }
         }
+        else
+        {
+            $variant = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(),
+                RefundConstants::RAZORX_KEY_REFUND_FETCH_MULTIPLE_FROM_SCROOGE_PROXY,
+                $this->mode
+            );
+
+            if ($variant === RefundConstants::RAZORX_VARIANT_ON)
+            {
+                $experiment = true;
+
+                // keeping in shadow mode for non-private auth requests
+                try
+                {
+                    $scroogeRefundsArray =  $this->app['scrooge']->refundsFetchMultiple($input);
+                }
+                catch (\Throwable $e)
+                {
+                    $this->trace->info(
+                        TraceCode::REFUNDS_FETCH_MULTIPLE_SCROOGE_EXCEPTION,
+                        [
+                            'error_code'    => $e->getCode(),
+                            'error_message' => $e->getMessage(),
+                        ]);
+                }
+            }
+        }
 
         $refunds = $this->repo->refund->fetch($input, $this->merchant->getId());
 
@@ -1424,6 +1451,11 @@ class Service extends Base\Service
         if ($this->app['basicauth']->isProxyAuth() === true)
         {
             $this->addPublicStatus($refundsArray, $input);
+        }
+
+        if ($experiment === true)
+        {
+            $this->compareRefundsAndLogDifference([$refundsArray], [$scroogeRefundsArray]);
         }
 
         return $refundsArray;
