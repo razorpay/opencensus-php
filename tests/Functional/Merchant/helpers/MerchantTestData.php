@@ -7777,6 +7777,35 @@ return [
         ],
     ],
 
+    'testGetBalancesFromLedgerWithRetry' => [
+        'request' => [
+            'url' => '/balances',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content' => [
+                'count' => 2,
+                'items' => [
+                    '0' => [
+                        'id'                => '100def000def00',
+                        'type'              => 'primary',
+                        'currency'          => null,
+                        'name'              => null,
+                        'balance'           => 100000,
+                    ],
+                    '1' => [
+                        'id'                => '100abc000abc00',
+                        'type'              => 'banking',
+                        'currency'          => 'INR',
+                        'name'              => null,
+                        'balance'           => 160,
+                    ]
+                ]
+            ],
+        ],
+    ],
+
     'testGetBalancesWhenNoBalanceExists' => [
         'request'  => [
             'url'    => '/balances',

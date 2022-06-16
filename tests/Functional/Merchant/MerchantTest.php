@@ -10452,6 +10452,97 @@ IFSC Code  ICIC0001206
         $this->startTest();
     }
 
+    public function testGetBalancesFromLedgerWithRetry() {
+        $this->fixtures->create('merchant',['id' => '10000000000001']);
+
+        $this->app['config']->set('applications.ledger.enabled', false);
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $mockLedger->shouldReceive('fetchMerchantAccounts')
+            ->andReturn(
+                [
+                    'code'            => 503,
+                    'body'   => [
+                        "code" => "external",
+                        "msg" => "service unavailable",
+                    ],
+                ],
+                [
+                    'code'            => 200,
+                    'body'   => [
+                        "merchant_id"      => "10000000000000",
+                        "merchant_balance" => [
+                            "balance"      => "160.000000",
+                            "min_balance"  => "10000.000000"
+                        ],
+                        "reward_balance"  => [
+                            "balance"     => "20.000000",
+                            "min_balance" => "-20.000000"
+                        ],
+                    ],
+                ]
+            );
+
+        $balanceData1 = [
+            'id'                => '100abc000abc00',
+            'merchant_id'       => '10000000000001',
+            'type'              => 'banking',
+            'currency'          => 'INR',
+            'name'              => null,
+            'balance'           => 0,
+            'credits'           => 0,
+            'fee_credits'       => 0,
+            'refund_credits'    => 0,
+            'account_number'    => '2224440041626905',
+            'account_type'      => 'shared',
+            'channel'           => null,
+            'updated_at'        => 1
+        ];
+
+        $balanceData2 = [
+            'id'                => '100def000def00',
+            'merchant_id'       => '10000000000001',
+            'type'              => 'primary',
+            'currency'          => null,
+            'name'              => null,
+            'balance'           => 100000,
+            'credits'           => 50000,
+            'fee_credits'       => 0,
+            'refund_credits'    => 0,
+            'account_number'    => null,
+            'account_type'      => null,
+            'channel'           => 'shared',
+            'updated_at'        => 1
+        ];
+
+        $this->fixtures->create('balance', $balanceData1);
+
+        $this->fixtures->create('balance', $balanceData2);
+
+        $bankingAccountAttributes = [
+            'id'                    =>  'ABCde1234ABCde',
+            'account_number'        =>  $balanceData1['account_number'],
+            'balance_id'            =>  $balanceData1['id'],
+            'account_type'          =>  'shared',
+            'channel'               =>  $balanceData1['channel'],
+        ];
+
+        $this->createBankingAccount($bankingAccountAttributes);
+
+        $user = $this->fixtures->user->createUserForMerchant('10000000000001',[],'owner','test');
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::LEDGER_REVERSE_SHADOW,
+            'entity_id'   => 10000000000001,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_10000000000001', $user->getId());
+
+        $this->startTest();
+    }
+
     public function testGetBalancesWhenNoBalanceExists()
     {
         $this->fixtures->create('merchant', ['id'=>'100ghi000ghi00']);

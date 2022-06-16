@@ -64,6 +64,9 @@ class Core extends Base\Core
     const SHARED = 'shared';
     const DIRECT = 'direct';
 
+    // Ledger sync retry
+    const DEFAULT_MAX_RETRY_COUNT = 3;
+
     protected $eventDescription = [
         self::DIRECT_MERCHANT_ONBOARDING    => 'Event for onboarding of merchant on direct account',
         self::SHARED_MERCHANT_ONBOARDING    => 'Event for onboarding of merchant on shared account',
@@ -414,7 +417,7 @@ class Core extends Base\Core
      * @param string $bankingAccountId
      * @return array
      */
-    public function fetchBalanceFromLedger(string $merchantId, string $bankingAccountId) :array {
+    public function fetchBalanceFromLedger(string $merchantId, string $bankingAccountId, int $maxRetryCount = self::DEFAULT_MAX_RETRY_COUNT, int $retryCount = 0) :array {
             $startTime = millitime();
             $ledgerResponse = [];
             $ledgerBalanceFetchTiDBEnabled = false;
@@ -440,13 +443,21 @@ class Core extends Base\Core
 
                     if ($statusCode !== 200)
                     {
-                        throw new ServerErrorException('Received invalid status code',
-                            ErrorCode::SERVER_ERROR_LEDGER_ACCOUNT_FETCH_BALANCES,
-                            [
-                                LedgerService::RESPONSE_CODE => $statusCode,
-                                LedgerService::RESPONSE_BODY => $ledgerResponse,
-                            ]
-                        );
+                        if ($retryCount < $maxRetryCount)
+                        {
+                            $retryCount++;
+                            return $this->fetchBalanceFromLedger($merchantId, $bankingAccountId, $maxRetryCount, $retryCount);
+                        }
+                        else
+                        {
+                            throw new ServerErrorException('Received invalid status code',
+                                ErrorCode::SERVER_ERROR_LEDGER_ACCOUNT_FETCH_BALANCES,
+                                [
+                                    LedgerService::RESPONSE_CODE => $statusCode,
+                                    LedgerService::RESPONSE_BODY => $ledgerResponse,
+                                ]
+                            );
+                        }
                     }
 
                     $ledgerResponse = $response[LedgerService::RESPONSE_BODY];
