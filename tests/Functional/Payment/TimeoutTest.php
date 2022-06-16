@@ -89,4 +89,40 @@ class TimeoutTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testTimeoutOldRecurringNachPaymentAndRejectToken()
+    {
+        $this->fixtures->create('token', [
+            'id'              => 'nachToken12020',
+            'method'          => 'nach',
+            'recurring'       => 0,
+            'recurring_status'=> 'initiated',
+            'created_at'      => Carbon::now()->subMonth()->getTimestamp()
+        ]);
+
+        $this->fixtures->create('payment', [
+            'token_id'      => 'nachToken12020',
+            'method'        => 'nach',
+            'status'        => 'created',
+            'recurring'     => 1,
+            'recurring_type'=> 'initial',
+            'created_at'    => Carbon::now()->subMonth()->getTimestamp()
+        ]);
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('failed', $payment['status']);
+
+        $token = $this->getLastEntity('token', true);
+
+        $this->assertEquals('rejected', $token['recurring_status']);
+
+        $this->assertEquals(0, $token['recurring']);
+
+        $this->assertEquals('TAT Expired', $token['recurring_failure_reason']);
+    }
 }

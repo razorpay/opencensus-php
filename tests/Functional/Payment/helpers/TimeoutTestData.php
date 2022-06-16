@@ -62,5 +62,18 @@ return [
                 ]
             ],
         ],
+    ],
+    'testTimeoutOldRecurringNachPaymentAndRejectToken' => [
+        'request' => [
+            'url'    => '/payments/timeout',
+            'method' => 'post',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'count' => 1
+            ],
+        ],
     ]
 ];

@@ -63,6 +63,7 @@ use RZP\Models\Payment\Refund\Constants as RefundConstants;
 use RZP\Models\Payment\PaymentMeta;
 use RZP\Models\Payment\Fraud;
 use RZP\Constants\Shield as ShieldConstants;
+use RZP\Models\Batch\Processor\Nach\ErrorCodes\RegisterErrorCodes;
 
 class Service extends Base\Service
 {
@@ -2862,7 +2863,7 @@ class Service extends Base\Service
             if (($payment->isCreated() === true) and
                 ($payment->shouldTimeout($now) === true))
             {
-                $this->repo->transaction(function () use ($payment, & $count, & $error)
+                $this->repo->transaction(function () use ($payment, & $count, & $error, $method)
                 {
                     $this->repo->payment->lockForUpdateAndReload($payment);
 
@@ -2871,6 +2872,19 @@ class Service extends Base\Service
                         $this->getNewProcessor($payment->merchant)
                              ->setPayment($payment)
                              ->timeoutPayment();
+
+                        if ($method === Payment\Method::NACH and
+                            $payment->isRecurring() and
+                            $payment->getRecurringType() === Payment\RecurringType::INITIAL)
+                        {
+                            $nachToken = $this->repo->token->findByIdAndMerchantId($payment->getTokenId(), $payment->getMerchantId());
+
+                            $nachToken->setRecurringStatus(Token\RecurringStatus::REJECTED);
+
+                            $nachToken->setRecurringFailureReason(RegisterErrorCodes::NCEX);
+
+                            $nachToken->saveOrFail();
+                        }
 
                         $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_AUTHORIZATION_DROPPED, $payment);
 
