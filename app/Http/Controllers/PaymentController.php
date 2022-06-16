@@ -697,4 +697,13 @@ class PaymentController extends Controller
 
         return ApiResponse::json($pricingResponse);
     }
+
+    public function internalRiskNotificationForRearch($id)
+    {
+        $input = Request::all();
+
+        $this->service()->internalRiskNotificationForRearch($id, $input);
+
+        return ApiResponse::json();
+    }
 }

@@ -14,6 +14,7 @@ use RZP\Base\RuntimeManager;
 
 use RZP\Jobs;
 use RZP\Diag\EventCode;
+use RZP\Models\Risk;
 use RZP\Exception;
 use RZP\Error;
 use RZP\Mail\Merchant\AuthorizedPaymentsReminder as AuthorizedPaymentsReminderMail;
@@ -59,6 +60,8 @@ use RZP\Models\Payment\Processor\Constants as PaymentConstants;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Payment\Refund\Constants as RefundConstants;
 use RZP\Models\Payment\PaymentMeta;
+use RZP\Models\Payment\Fraud;
+use RZP\Constants\Shield as ShieldConstants;
 
 class Service extends Base\Service
 {
@@ -4249,6 +4252,40 @@ class Service extends Base\Service
         ];
 
         return $response;
+    }
+
+    public function internalRiskNotificationForRearch($id, $input)
+    {
+        if (isset($id) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException("Payment Id is a required field");
+        }
+
+        $payment = $this->repo->payment->findByPublicId($id);
+
+        if (empty($input['merchant_id']) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException("Merchant Id is a required field");
+        }
+
+        $merchant = $this->repo->merchant->findById($input['merchant_id']);
+
+        $riskData = $input['risk'];
+       
+        (new Fraud\Notify())->notifyOpsIfNeeded($merchant, $riskData[ShieldConstants::TRIGGERED_RULES]);
+
+        if ($riskData[Risk\Entity::FRAUD_TYPE] === Risk\Type::CONFIRMED)
+        {
+            $data = [
+                'payment_id' => $payment->getPublicId(),
+                'method'     => $payment->getMethod(),
+                'risk_data'  => $riskData,
+            ];
+
+            $errorCode = $this->getErrorCodeFromTriggeredRules($riskData[ShieldConstants::TRIGGERED_RULES]);
+
+            (new Fraud\Notify())->notifyMerchantIfNeeded($merchant, $payment, $errorCode);
+        }    
     }
 
     public function addVerifyDisabledGateway(array $input)
