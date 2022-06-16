@@ -39,7 +39,7 @@ class Validator extends Base\Validator
         Entity::REPORTED_TO_RAZORPAY_AT     => 'required|int',
         Constants::HAS_CHARGEBACK           => 'required|string|in:0,1',
         Entity::IS_ACCOUNT_CLOSED           => 'required|string|in:0,1',
-        Entity::AMOUNT                      => 'required|int',
+        Entity::AMOUNT                      => 'required|numeric|min:0',
         Entity::CURRENCY                    => 'required|string|in:INR,USD',
         Entity::REPORTED_BY                 => 'required|string|in:' . Constants::REPORTED_BY_CSV,
         Constants::SKIP_MERCHANT_EMAIL      => 'required|string|in:0,1',

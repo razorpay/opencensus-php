@@ -87,7 +87,7 @@ return [
                 'reported_to_razorpay_at'   => 123456789,
                 'has_chargeback'            => '1',
                 'is_account_closed'         => 1,
-                'amount'                    => 50,
+                'amount'                    => 50.23,
                 'currency'                  => 'INR',
                 'reported_by'               => 'Visa',
                 'skip_merchant_email'       => '0',

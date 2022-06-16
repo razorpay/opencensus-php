@@ -162,6 +162,10 @@ class BulkFraudNotifyTest extends TestCase
 
         $fraud = $this->assertFraudEntityExists($payment->getId());
 
+        $this->assertEquals($fraud->amount, $testData['request']['content']['amount']*100);
+        $this->assertEquals($fraud->base_amount, $testData['request']['content']['amount']*100);
+        $this->assertEquals($fraud->currency, $testData['request']['content']['currency']);
+
         //for pushing fraud event to lumberjack
         $expectedSNSPayload = $this->getExpectedSNSPayload($fraud, $payment);
 
