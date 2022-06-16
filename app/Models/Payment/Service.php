@@ -34,6 +34,7 @@ use RZP\Models\Feature;
 use RZP\Models\Card;
 use RZP\Models\Card\IIN;
 use RZP\Models\Payment\Processor\Notify;
+use RZP\Models\Payment\Processor\FraudDetector;
 use RZP\Models\Transfer;
 use RZP\Models\UpiMandate;
 use RZP\Models\Transaction;
@@ -65,6 +66,8 @@ use RZP\Constants\Shield as ShieldConstants;
 
 class Service extends Base\Service
 {
+    use FraudDetector;
+    
     protected $merchant;
 
     protected $core;
@@ -4263,12 +4266,13 @@ class Service extends Base\Service
 
         $payment = $this->repo->payment->findByPublicId($id);
 
-        if (empty($input['merchant_id']) === true)
+
+        if (empty($payment) === true)
         {
-            throw new Exception\BadRequestValidationFailureException("Merchant Id is a required field");
+            throw new Exception\BadRequestValidationFailureException("Payment Id is a required field");
         }
 
-        $merchant = $this->repo->merchant->findById($input['merchant_id']);
+        $merchant = $payment->merchant;
 
         $riskData = $input['risk'];
        
