@@ -5014,7 +5014,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         {
             $app = \App::getFacadeRoot();
 
-            $variant = $app['razorx']->getTreatment($this->localToken->merchant,
+            $variant = $app['razorx']->getTreatment($this->localToken->merchant->getId(),
                 RazorxTreatment::RECURRING_TOKENISATION_UNHAPPY_FLOW_HANDLING,
                 $app['rzp.mode']);
 

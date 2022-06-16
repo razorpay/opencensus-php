@@ -2496,7 +2496,7 @@ class Core extends Base\Core
         {
             $app = \App::getFacadeRoot();
 
-            $variant = $app['razorx']->getTreatment($token->merchant,
+            $variant = $app['razorx']->getTreatment($token->merchant->getId(),
                 Merchant\RazorxTreatment::RECURRING_TOKENISATION,
                 $app['rzp.mode']);
 
