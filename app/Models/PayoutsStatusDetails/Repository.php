@@ -64,4 +64,15 @@ class Repository extends Base\Repository
 
     }
 
+    public function fetchPayoutStatusDetailsByPayoutIds(array $payoutIds)
+    {
+        $payoutIdColumn = $this->repo->payouts_status_details->dbColumn(Entity::PAYOUT_ID);
+
+        return $this->newQuery()
+                    ->select(Table::PAYOUTS_STATUS_DETAILS . '.*')
+                    ->whereIn($payoutIdColumn, $payoutIds)
+                    ->get();
+
+    }
+
 }

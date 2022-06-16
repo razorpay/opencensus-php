@@ -103,6 +103,9 @@ class Validator extends Base\Validator
     const TDS_CATEGORY_ID_CACHE_KEY = 'tds_category_id_list';
     const TDS_CATEGORY_ID_CACHE_TTL = 12 * 60 * 60;
 
+    const MAX_COUNT_DATA_CONSISTENCY_CHECKER_PAYOUT_IDS = 1000;
+    const DATA_CONSISTENCY_CHECKER_PAYOUTS_DETAIL_FETCH = 'data_consistency_checker_payouts_detail_fetch';
+
     //
     // This is required for build. Currently, build does not
     // accept ruleName as a parameter. Hence, this list needs
@@ -414,6 +417,11 @@ class Validator extends Base\Validator
 
     protected static $payoutBulkStatusUpdateManualValidators = [
         'final_status',
+    ];
+
+    protected static $dataConsistencyCheckerPayoutsDetailFetchRules = [
+        Entity::PAYOUT_IDS        => 'required|array|max:' . self::MAX_COUNT_DATA_CONSISTENCY_CHECKER_PAYOUT_IDS,
+        Entity::PAYOUT_IDS . '.*' => 'required|string|size:14',
     ];
 
     protected function validateMethod($attribute, $method)

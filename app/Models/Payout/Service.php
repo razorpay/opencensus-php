@@ -135,6 +135,18 @@ class Service extends Base\Service
         $this->payoutDetailsCore = new PayoutDetails\Core();
     }
 
+    public function fetchPayoutsDetailsForDcc($input) : array
+    {
+        (new Validator)->validateInput(Validator::DATA_CONSISTENCY_CHECKER_PAYOUTS_DETAIL_FETCH, $input);
+
+        return $this->core->fetchPayoutsDetailsForDcc($input);
+    }
+
+    public function initiatePayoutsConsistencyCheck()
+    {
+        return $this->core->initiatePayoutsConsistencyCheck();
+    }
+
     public function createPayoutEntry($input)
     {
         return $this->core->createPayoutEntry($input);

@@ -632,6 +632,22 @@ class PayoutController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function fetchPayoutsDetailsForDcc()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->fetchPayoutsDetailsForDcc($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function initiatePayoutsConsistencyCheck()
+    {
+        $data = $this->service()->initiatePayoutsConsistencyCheck();
+
+        return ApiResponse::json($data);
+    }
+
     // upload a new file as attachment for the payout
     public function uploadAttachment()
     {

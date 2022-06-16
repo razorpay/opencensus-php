@@ -180,6 +180,9 @@ class Core extends Base\Core
     /** @var PayoutService\Workflow*/
     protected $payoutWorkflowServiceClient;
 
+    /** @var PayoutService\DataConsistencyChecker */
+    protected $payoutServiceDataConsistencyCheckerClient;
+
     /** @var TdsProcessor\Processor*/
     protected $tdsProcessor;
 
@@ -198,6 +201,8 @@ class Core extends Base\Core
         $this->payoutCancelServiceClient = $this->app[PayoutService\Cancel::PAYOUT_SERVICE_CANCEL];
 
         $this->payoutScheduledServiceClient = $this->app[PayoutService\Schedule::PAYOUT_SERVICE_SCHEDULE];
+
+        $this->payoutServiceDataConsistencyCheckerClient = $this->app[PayoutService\DataConsistencyChecker::PAYOUT_SERVICE_DATA_CONSISTENCY_CHECKER];
 
         $this->payoutServiceBeneEventUpdateClient = $this->app[PayoutService\OnHoldBeneEvent::PAYOUT_SERVICE_BENE_EVENT_UPDATE];
 
@@ -4483,6 +4488,53 @@ class Core extends Base\Core
         }
 
        return $processor->createPayoutEntry($input);
+    }
+
+    public function fetchPayoutsDetailsForDcc(array $input) : array
+    {
+        $this->trace->info(
+            TraceCode::DCC_PAYOUT_DATA_FETCH_REQUEST,
+            [
+                'input' => $input,
+            ]);
+
+        $payouts = $this->repo->payout->findMany($input[Entity::PAYOUT_IDS])->all();
+
+        $payoutStatusDetails = $this->repo->payouts_status_details->fetchPayoutStatusDetailsByPayoutIds(
+            $input[Entity::PAYOUT_IDS])->all();
+
+        $reversals = $this->repo->reversal->findReversalForPayouts($input[Entity::PAYOUT_IDS])->all();
+
+        $this->trace->info(
+            TraceCode::DCC_PAYOUT_DETAILS_ENTITY_COUNTS,
+            [
+                'payouts'             => count($payouts),
+                'payoutStatusDetails' => count($payoutStatusDetails),
+                'reversals'           => count($reversals)
+            ]);
+
+        $mergedPayoutDetails = (new DataConsistencyChecker)->mergePayoutDetails(
+            $payouts,
+            $payoutStatusDetails,
+            $reversals
+        );
+
+        $response = [
+            'payout_details' => $mergedPayoutDetails
+        ];
+
+        $this->trace->info(
+            TraceCode::DCC_PAYOUT_DATA_FETCH_RESPONSE,
+            [
+                'response' => $response
+            ]);
+
+        return $response;
+    }
+
+    public function initiatePayoutsConsistencyCheck()
+    {
+        return $this->payoutServiceDataConsistencyCheckerClient->initiateDataConsistencyChecker();
     }
 
     public function createWorkflowForPayout(array $input)

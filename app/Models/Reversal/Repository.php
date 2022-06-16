@@ -232,6 +232,14 @@ class Repository extends Base\Repository
                     ->first();
     }
 
+    public function findReversalForPayouts($payoutIds)
+    {
+        return $this->newQuery()
+                    ->whereIn(Entity::ENTITY_ID, $payoutIds)
+                    ->where(Entity::ENTITY_TYPE, Type::PAYOUT)
+                    ->get();
+    }
+
     /**
      * This will fetch all reversals for payouts and fund_account_validations
      * which are created in the last 24 hour after 05-02-2022 and where transaction_id is null.

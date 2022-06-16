@@ -3398,6 +3398,10 @@ class Route
         'payout_outbox_partition_cron'            => ['post',     'payout_outbox/partition',                                'PayoutOutboxController@createPayoutOutboxPartition'           ],
         'payment_analytics_partition_cron'        => ['post',     'payment_analytics/partition',                            'PaymentController@createPaymentAnalyticsPartition'            ],
 
+        // Data Consistency Checker Routes
+        'initiate_payouts_consistency_check'      => ['post',     'consistency_checker',                                    'PayoutController@initiatePayoutsConsistencyCheck'             ],
+        'dcc_payouts_details_fetch'               => ['post',     'consistency_checker/fetch',                              'PayoutController@fetchPayoutsDetailsForDcc'                   ],
+
         //auditing
         'audit_info_partition_cron'            => ['post',     'audit_info/partition',                                'AuditingController@createAuditInfoPartition'           ],
 
@@ -4724,6 +4728,8 @@ class Route
         'create_payment_payout_service_axis_cc',
         'update_payout_payout_service',
         'internal_balances_queued',
+        'dcc_payouts_details_fetch',
+        'initiate_payouts_consistency_check',
         'payout_bulk_update_attachments',
 
 
@@ -12400,8 +12406,8 @@ class Route
             'payouts_batch_create_x_demo_cron',
             'growth_filter_and_sync_cron',
             'payments_card_es_sync_cron',
+            'initiate_payouts_consistency_check',
             'developer_console_maintenance',
-
             'firs_collect_and_zip_cron'
         ],
 
@@ -13001,6 +13007,7 @@ class Route
             'fetch_actor_info_internal',
             'on_hold_merchant_slas_internal',
             'internal_balances_queued',
+            'dcc_payouts_details_fetch',
         ],
 
         'ledger' => [

@@ -1173,4 +1173,79 @@ return [
             ],
         ],
     ],
+
+    'testDccPayoutsDetailsFetch' => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/consistency_checker/fetch',
+        ],
+        'response' => [
+            'content'     => [
+                "payout_details" => [[]]
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testInitiatePayoutsConsistencyCheck' => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/consistency_checker',
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testInitiatePayoutsConsistencyCheckError' => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/consistency_checker',
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testDccPayoutsDetailsFetchPayoutCountValidationFailure' => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/consistency_checker/fetch',
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The payout ids may not have more than 1000 items.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testDccPayoutsDetailsFetchPayoutIdLengthValidationFailure' => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/consistency_checker/fetch',
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The payout_ids.0 must be 14 characters.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ]
 ];

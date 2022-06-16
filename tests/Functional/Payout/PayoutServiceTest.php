@@ -9,8 +9,9 @@ use Requests_Response;
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Models\Payout\WorkflowFeature;
-use RZP\Models\Pricing\Fee;
 use RZP\Models\Payout\Status;
+use RZP\Models\Payout\Validator;
+use RZP\Models\Pricing\Fee;
 use RZP\Services\RazorXClient;
 use RZP\Models\Feature\Constants;
 use RZP\Tests\Functional\TestCase;
@@ -19,6 +20,7 @@ use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payout\PayoutTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
+use RZP\Services\PayoutService\DataConsistencyChecker;
 use RZP\Services\PayoutService\Get as PayoutServiceGet;
 use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
 use RZP\Services\PayoutService\Retry as PayoutServiceRetry;
@@ -2408,5 +2410,194 @@ class PayoutServiceTest extends TestCase
         $this->assertNotNull($payout);
         $this->assertEquals($payout['workflow_feature'], 1);
         $this->assertEquals($payout['is_payout_service'], false);
+    }
+
+    public function testDccPayoutsDetailsFetch()
+    {
+        $this->testCreateReversalEntry();
+
+        $payout = $this->getDbLastEntity('payout', 'live')->toArray();
+
+        $this->fixtures->on('live')->create(
+            'payouts_status_details',
+            [
+                'id'           => 'ps100000000000',
+                'payout_id'    => $payout['id'],
+                'status'       => Status::INITIATED,
+                'reason'       => 'Manually Initiated',
+                'description'  => '',
+                'mode'         => 'system',
+                'triggered_by' => ''
+            ]);
+
+        $this->fixtures->on('live')->create(
+            'payouts_status_details',
+            [
+                'id'           => 'ps100000000001',
+                'payout_id'    => $payout['id'],
+                'status'       => Status::REVERSED,
+                'reason'       => 'Manually Reversed',
+                'description'  => '',
+                'mode'         => 'system',
+                'triggered_by' => ''
+            ]);
+
+        $payout['reversal']       = $this->getDbLastEntity('reversal', 'live')->toArray();
+        $payout['status_details'] = $this->getDbEntities(
+            'payouts_status_details',
+            ['payout_id' => $payout['id']],
+            'live')->toArray();
+
+        $this->ba->appAuthLive();
+
+        $this->testData[__FUNCTION__]['request']['content'] = [
+            'payout_ids' => [$payout['id']]
+        ];
+
+        $this->testData[__FUNCTION__]['response']['content'] = [
+            "payout_details" => [$payout]
+        ];
+
+        $response = $this->startTest();
+
+        // Payout Details assertions
+        $this->assertEquals(count($this->testData[__FUNCTION__]['response']['content']['payout_details']),
+                            count($response['payout_details']));
+
+        $expectedPayoutDetails = $this->testData[__FUNCTION__]['response']['content']['payout_details'];
+        $actualPayoutDetails   = $response['payout_details'];
+
+        $this->assertEquals($expectedPayoutDetails[0]['id'], $actualPayoutDetails[0]['id']);
+        $this->assertEquals($expectedPayoutDetails[0]['merchant_id'], $actualPayoutDetails[0]['merchant_id']);
+        $this->assertEquals($expectedPayoutDetails[0]['fund_account_id'], $actualPayoutDetails[0]['fund_account_id']);
+        $this->assertEquals($expectedPayoutDetails[0]['balance_id'], $actualPayoutDetails[0]['balance_id']);
+        $this->assertEquals($expectedPayoutDetails[0]['amount'], $actualPayoutDetails[0]['amount']);
+        $this->assertEquals($expectedPayoutDetails[0]['currency'], $actualPayoutDetails[0]['currency']);
+        $this->assertEquals($expectedPayoutDetails[0]['fees'], $actualPayoutDetails[0]['fees']);
+        $this->assertEquals($expectedPayoutDetails[0]['tax'], $actualPayoutDetails[0]['tax']);
+        $this->assertEquals($expectedPayoutDetails[0]['status'], $actualPayoutDetails[0]['status']);
+        $this->assertEquals($expectedPayoutDetails[0]['transaction_id'], $actualPayoutDetails[0]['transaction_id']);
+        $this->assertEquals($expectedPayoutDetails[0]['pricing_rule_id'], $actualPayoutDetails[0]['pricing_rule_id']);
+
+        // Payout Status Detail assertions
+        $expectedPayoutStatusDetails = $expectedPayoutDetails[0]['status_details'];
+        $actualPayoutStatusDetails   = $actualPayoutDetails[0]['status_details'];
+
+        $this->assertEquals(count($expectedPayoutStatusDetails), count($actualPayoutStatusDetails));
+
+        foreach ($expectedPayoutStatusDetails as $expectedPayoutStatusDetail)
+        {
+            foreach ($actualPayoutStatusDetails as $actualPayoutStatusDetail)
+            {
+                if ($expectedPayoutStatusDetail['id'] == $actualPayoutStatusDetail['id'])
+                {
+                    $this->assertEquals($expectedPayoutStatusDetail['id'], $actualPayoutStatusDetail['id']);
+                    $this->assertEquals($expectedPayoutStatusDetail['payout_id'],
+                                        $actualPayoutStatusDetail['payout_id']);
+                    $this->assertEquals($expectedPayoutStatusDetail['status'], $actualPayoutStatusDetail['status']);
+                    $this->assertEquals($expectedPayoutStatusDetail['reason'], $actualPayoutStatusDetail['reason']);
+                    $this->assertEquals($expectedPayoutStatusDetail['description'],
+                                        $actualPayoutStatusDetail['description']);
+                }
+            }
+        }
+
+        // Payout Reversal assertions
+        $expectedReversalDetails = $expectedPayoutDetails[0]['reversal'];
+        $actualReversalDetails   = $actualPayoutDetails[0]['reversal'];
+
+        $this->assertEquals(count($expectedReversalDetails), count($actualReversalDetails));
+
+        $this->assertEquals($expectedReversalDetails['id'], $actualReversalDetails['id']);
+        $this->assertEquals($expectedReversalDetails['merchant_id'], $actualReversalDetails['merchant_id']);
+        $this->assertEquals($expectedReversalDetails['entity_id'], $actualReversalDetails['entity_id']);
+        $this->assertEquals($expectedReversalDetails['entity_type'], $actualReversalDetails['entity_type']);
+        $this->assertEquals($expectedReversalDetails['balance_id'], $actualReversalDetails['balance_id']);
+        $this->assertEquals($expectedReversalDetails['amount'], $actualReversalDetails['amount']);
+        $this->assertEquals($expectedReversalDetails['tax'], $actualReversalDetails['tax']);
+        $this->assertEquals($expectedReversalDetails['fee'], $actualReversalDetails['fee']);
+        $this->assertEquals($expectedReversalDetails['currency'], $actualReversalDetails['currency']);
+        $this->assertEquals($expectedReversalDetails['channel'], $actualReversalDetails['channel']);
+        $this->assertEquals($expectedReversalDetails['utr'], $actualReversalDetails['utr']);
+        $this->assertEquals($expectedReversalDetails['transaction_id'], $actualReversalDetails['transaction_id']);
+    }
+
+    public function testDccPayoutsDetailsFetchPayoutCountValidationFailure()
+    {
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout', 'live')->toArray();
+
+        $this->ba->appAuthLive();
+
+        $this->testData[__FUNCTION__]['request']['content']['payout_ids'] = [];
+
+        for ($i = 0; $i < Validator::MAX_COUNT_DATA_CONSISTENCY_CHECKER_PAYOUT_IDS + 1; $i++)
+        {
+            array_push($this->testData[__FUNCTION__]['request']['content']['payout_ids'], $payout['id']);
+        }
+
+        $this->startTest();
+    }
+
+    public function testDccPayoutsDetailsFetchPayoutIdLengthValidationFailure()
+    {
+        $this->ba->appAuthLive();
+
+        $this->testData[__FUNCTION__]['request']['content']['payout_ids'] = ["12345678901234567"];
+
+        $this->startTest();
+    }
+
+    public function mockPayoutServiceDataConsistencyCheckerCronCreate($fail = false)
+    {
+        $payoutServiceDataConsistencyCheckerMock = Mockery::mock(
+            'RZP\Services\PayoutService\DataConsistencyChecker', [$this->app])->makePartial();
+
+        $payoutServiceDataConsistencyCheckerMock->shouldReceive('sendRequest')
+                                                ->andReturn(
+                                                    $this->initiateDataConsistencyCheckerResponseForPayoutServiceMock($fail)
+                                                );
+
+        $this->app->instance(DataConsistencyChecker::PAYOUT_SERVICE_DATA_CONSISTENCY_CHECKER,
+                             $payoutServiceDataConsistencyCheckerMock);
+    }
+
+    public function initiateDataConsistencyCheckerResponseForPayoutServiceMock($fail)
+    {
+        $response = new Requests_Response();
+
+        if ($fail === true)
+        {
+            $response->body        = json_encode([]);
+            $response->status_code = 500;
+            $response->success     = true;
+        }
+        else
+        {
+            $response->body        = json_encode([]);
+            $response->status_code = 200;
+            $response->success     = true;
+        }
+
+        return $response;
+    }
+
+    public function testInitiatePayoutsConsistencyCheck()
+    {
+        $this->ba->cronAuth();
+
+        $this->mockPayoutServiceDataConsistencyCheckerCronCreate();
+
+        $this->startTest();
+    }
+
+    public function testInitiatePayoutsConsistencyCheckError()
+    {
+        $this->ba->cronAuth();
+
+        $this->mockPayoutServiceDataConsistencyCheckerCronCreate(true);
+
+        $this->startTest();
     }
 }
