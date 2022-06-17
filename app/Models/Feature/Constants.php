@@ -1370,6 +1370,8 @@ class Constants
 
     const ALLOW_NEGATIVE_DISPUTE = "allow_negative_dispute";
 
+    const CART_API_AMOUNT_CHECK  =  "cart_api_amount_check";
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -1882,6 +1884,7 @@ class Constants
         self::RECURRING_CHECKOUT_DOT_COM      => true,
         self::ALLOW_NEGATIVE_DISPUTE          => true,
         self::DEDUPE_CONTACT_ON_REPLICA       => true,
+        self::CART_API_AMOUNT_CHECK           => true,
     ];
 
     // Entity type constants

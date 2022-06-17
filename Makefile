@@ -31,8 +31,8 @@ PHPUNIT_ENV_FLAG = APP_ENV=testing_docker
 AT=
 
 # ERROR_MODULE repo info
-ERROR_MODULE_GIT_URL := "https://github.com/razorpay/ "
-DRONE_ERROR_MODULE_GIT_URL := "https://$(GIT_TOKEN)@github.com/razorpay//error-mapping-module"
+ERROR_MODULE_GIT_URL := "https://github.com/razorpay/"
+DRONE_ERROR_MODULE_GIT_URL := "https://$(GIT_TOKEN)@github.com/razorpay/error-mapping-module"
 ifneq ($(GIT_TOKEN),)
 ERROR_MODULE_GIT_URL = $(DRONE_ERROR_MODULE_GIT_URL)
 endif

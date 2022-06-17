@@ -5,6 +5,7 @@ namespace RZP\Models\Order\Product;
 
 use RZP\Models\Base;
 use RZP\Models\Order;
+use RZP\Models\Feature;
 
 class Core extends Base\Core
 {
@@ -34,6 +35,11 @@ class Core extends Base\Core
     public function createMany(Order\Entity $order, $productsArray)
     {
         (new Validator)->validateCreateMany($productsArray);
+
+        if ($order->merchant->isFeatureEnabled(Feature\Constants::CART_API_AMOUNT_CHECK) === true)
+        {
+            (new Validator)->validateOrderAmountWithProductTotal($order->getAmount(), $productsArray);
+        }
 
         $this->repo->product->transaction(function() use ($order, $productsArray){
             foreach ($productsArray as $productArray)

@@ -4,7 +4,9 @@
 namespace RZP\Models\Order\Product;
 
 use RZP\Base;
+use RZP\Exception;
 use RZP\Models\Order;
+use RZP\Error\ErrorCode;
 use Illuminate\Support\Arr;
 use RZP\Exception\ExtraFieldsException;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -91,6 +93,35 @@ class Validator extends Base\Validator
             $field = Order\Entity::PRODUCTS;
 
             throw new BadRequestValidationFailureException($message, $field);
+        }
+    }
+
+    /**
+     * @throws Exception\BadRequestException
+     */
+    public function validateOrderAmountWithProductTotal($orderAmount, $productsArray)
+    {
+        $productAmountSum = 0;
+
+        foreach ($productsArray as $productArray)
+        {
+            if(array_key_exists(Constants::AMOUNT, $productArray) === true)
+            {
+                $productAmountSum += $productArray[Constants::AMOUNT];
+            }
+        }
+
+        if ($productAmountSum !== $orderAmount)
+        {
+            $errorData = [
+                'method' => 'pg_router'
+            ];
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ORDER_AND_PRODUCTS_AMOUNT_MISMATCH,
+                Order\Entity::PRODUCTS,
+                $errorData
+            );
         }
     }
 }

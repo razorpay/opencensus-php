@@ -139,4 +139,16 @@ class ProductTest extends TestCase
             $this->assertArrayNotHasKey('products', $order);
         }
     }
+
+    public function testAmountMismatchError()
+    {
+        $this->fixtures->merchant->addFeatures(['cart_api_amount_check']);
+
+        $this->startTest();
+    }
+
+    public function testAmountMismatchNoError()
+    {
+        $this->startTest();
+    }
 }
