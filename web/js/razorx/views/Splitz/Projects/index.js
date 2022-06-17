@@ -8,6 +8,7 @@ import { splitzFetch } from 'razorx/helpers/fetch';
 import AddEditProject from './AddEditProject';
 import ProjectList from './ProjectList';
 import ProjectDetails from './ProjectDetails';
+import { PROJECT_LIST } from './constants';
 
 @withRouter
 @observer
@@ -16,7 +17,7 @@ export default class Projects extends React.Component {
     isSplitz: true,
     fetchFn: splitzFetch,
     data: {
-      url: 'project.v1.ProjectAPI/List',
+      url: PROJECT_LIST,
     },
   });
 

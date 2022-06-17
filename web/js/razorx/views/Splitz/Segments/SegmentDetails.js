@@ -235,7 +235,7 @@ export default class SegmentDetails extends React.Component {
           </div>
           <br />
           <br />
-          {data.source_type !== 'SQL' && (
+          {data.inputFileID && (
             <div className="flex-row">
               <div className="flex-row-item">
                 <div className="label">Input File</div>

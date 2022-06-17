@@ -153,6 +153,23 @@ export default class ProjectDetails extends React.Component {
             </div>
           </div>
           <br />
+          <br />
+
+          <div className="flex-row">
+            <div className="flex-row-item">
+              <div className="label">Business Unit</div>
+            </div>
+          </div>
+          <div>{data.business_unit}</div>
+          <br />
+
+          <div className="flex-row">
+            <div className="flex-row-item">
+              <div className="label">POD/Team Name</div>
+            </div>
+          </div>
+          <div>{data.pod}</div>
+          <br />
 
           <div className="label">Experiments</div>
           {experiments && (

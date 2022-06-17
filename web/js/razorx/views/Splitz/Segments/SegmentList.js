@@ -117,6 +117,7 @@ class SegmentList extends React.Component {
             fields={[
               ['ID', (item) => item.id],
               ['Name', (item) => item.name],
+              ['Type', (item) => item.source_type],
               ['Entries', (item) => item.entries],
               ['Created On', (item) => formatDate(item.created_at)],
             ]}
