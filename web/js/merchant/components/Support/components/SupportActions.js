@@ -23,7 +23,7 @@ function SupportActions({
 }) {
   const { show_chat, loaded } = supportFlags;
   const { isClickToCallActive, isFrontendCareActive, isChatbotLive } = user;
-  const activationStatus = window.rzp_user.activation_status;
+  const activationStatus = window?.rzp_user?.activation_status || '';
 
   const isChatDisabled =
     (!show_chat && notifyCount < 1) || (isChatbotLive && !botIsLoaded) || supportFlags?.isFetching;
