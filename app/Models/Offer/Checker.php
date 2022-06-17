@@ -12,6 +12,7 @@ use RZP\Models\Emi;
 use RZP\Trace\TraceCode;
 use RZP\Models\Offer\Core;
 use RZP\Exception\LogicException;
+use RZP\Models\Card;
 
 class Checker extends Base\Core
 {
@@ -387,11 +388,31 @@ class Checker extends Base\Core
 
         $card = $this->payment->card;
 
+        $cardActualIin = null;
+        $cardTokenIin = $card->getTokenIin();
+
+        if (empty($cardTokenIin) === false)
+        {
+            $cardActualIin = (string) Card\IIN\IIN::getTransactingIinforRange($cardTokenIin);
+
+            if (empty($cardActualIin) === true)
+            {
+                $this->trace->info(TraceCode::BIN_MAPPING_FOR_TOKEN_NOT_AVAILABLE, [
+                    'token_iin' => $cardTokenIin,
+                ]);
+            }
+        }
+        // not adding this in else condition because this check is needed even for tokenised cards flow after mapping fails.
+        if (empty($cardActualIin) === true)
+        {
+            $cardActualIin = $card->getIin();
+        }
+
         $result = false;
 
         foreach ($offerIins as $iin)
         {
-            if (starts_with($card->getIin(), $iin) === true)
+            if (starts_with($cardActualIin, $iin) === true)
             {
                 $result = true;
 
@@ -402,10 +423,10 @@ class Checker extends Base\Core
         $this->traceCheckResult(TraceCode::OFFER_CARD_IIN_CHECK, [
             'result'     => $result,
             'offer_iins' => $offerIins,
-            'card_iin'   => $card->getIin()
+            'card_iin'   => $cardActualIin,
         ]);
 
-        if($result === false)
+        if ($result === false)
         {
             $this->offer->setErrorMessage(PublicErrorDescription::OFFER_IINS_DOES_NOT_MATCH);
         }

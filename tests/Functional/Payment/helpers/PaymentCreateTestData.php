@@ -988,5 +988,31 @@ return [
             ]
         ]
     ],
+
+    'testCheckOfferApplicabilityForPaymentUsingSavedCardWithMappingAvailable' => [
+        'request' => [
+            'url' => '/payments/create/ajax',
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content' => [
+
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
+    'testCheckOfferApplicabilityForPaymentUsingSavedCardWithMappingUnavailable' => [
+        'request' => [
+            'url' => '/payments/create/ajax',
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content' => [
+
+            ],
+            'status_code' => 200,
+        ]
+    ],
 ];
 

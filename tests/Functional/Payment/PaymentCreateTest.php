@@ -8330,4 +8330,82 @@ class PaymentCreateTest extends TestCase
 
         $this->assertArrayHasKey('razorpay_payment_id', $response);
     }
+
+    public function testCheckOfferApplicabilityForPaymentUsingSavedCardWithMappingAvailable()
+    {
+        $this->ba->publicAuth();
+        $offer1 = $this->fixtures->create('offer', [
+            'iins' => ['461786'],
+            'block' => true,
+            'type' => 'instant',
+        ]);
+
+        $offer2 = $this->fixtures->create('offer', [
+            'iins' => ['403776','400782'],
+            'block' => true,
+            'type' => 'instant',
+        ]);
+
+        $order = $this->fixtures->order->createWithOffers([
+            $offer1,
+            $offer2,
+        ]);
+
+        $payment = $this->getDefaultTokenPanPaymentArray();
+
+        $payment['offer_id'] = 'offer_' . $offer2->getId();
+        $payment['order_id'] = 'order_' . $order->getId();
+        $payment['amount'] = $order->getAmount();
+
+        // the card number 4044649165235890 has actual bin = 400782 and token bin = 404464916
+        // which is present in offer2. so the offer2 gets applied in this case.
+        // we are asserting 200 code to ensure offer got applied without errors.
+        $payment['card']['number'] = '4044649165235890';
+
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['content'] = $payment;
+
+        $response = $this->makeRequestParent($testData['request']);
+        $this->processAndAssertStatusCode($testData, $response);
+        $this->processAndAssertResponseData($testData, $response);
+    }
+
+    public function testCheckOfferApplicabilityForPaymentUsingSavedCardWithMappingUnavailable()
+    {
+        $this->ba->publicAuth();
+        $offer1 = $this->fixtures->create('offer', [
+            'iins' => ['461786'],
+            'block' => true,
+            'type' => 'instant',
+        ]);
+
+        $offer2 = $this->fixtures->create('offer', [
+            'iins' => ['403776','400782'],
+            'block' => true,
+            'type' => 'instant',
+        ]);
+
+        $order = $this->fixtures->order->createWithOffers([
+            $offer1,
+            $offer2,
+        ]);
+
+        $payment = $this->getDefaultTokenPanPaymentArray();
+
+        $payment['offer_id'] = 'offer_' . $offer1->getId();
+        $payment['order_id'] = 'order_' . $order->getId();
+        $payment['amount'] = $order->getAmount();
+
+        // here we are using the default card number 4012001038443335 & it has no bin mapping at our end
+        // so any offer doesn't get applied here. and throws 400 response code (which we are expecting)
+        // because offer has block = true.
+
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['content'] = $payment;
+
+        $this->expectException(BadRequestValidationFailureException::class);
+        $response = $this->makeRequestParent($testData['request']);
+        $this->processAndAssertStatusCode($testData, $response);
+        $this->processAndAssertResponseData($testData, $response);
+    }
 }
