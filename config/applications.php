@@ -1009,6 +1009,7 @@ return [
 
     'nbplus_payment_service' => [
         'mock'      => env('NBPLUS_PAYMENT_SERVICE_MOCK', false),
+        'secret'    => env('NBPLUS_PAYMENT_SERVICE_SECRET'),
         'username'  => env('NBPLUS_PAYMENT_SERVICE_KEY'),
         'password'  => env('NBPLUS_PAYMENT_SERVICE_SECRET'),
         'url'       => [

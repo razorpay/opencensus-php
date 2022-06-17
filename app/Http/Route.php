@@ -12877,6 +12877,10 @@ class Route
             'internal_merchant_risk_notification'
         ],
 
+        'nbplus_payment_service' => [
+            'internal_payment_pricing',
+        ],
+
         'workflows' => [
             'payout_approve_internal',
             'payout_reject_internal',
