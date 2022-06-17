@@ -3339,6 +3339,44 @@ return [
         ],
     ],
 
+    'testValidateInvalidLlpin' => [
+        'request'  => [
+            'url'     => '/merchant/activation',
+            'method'  => 'POST',
+            'content' => [
+                'company_cin'       => 'F1D3-12345',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The company cin format is invalid.',
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testValidateLlpin' => [
+        'request'  => [
+            'url'     => '/merchant/activation',
+            'method'  => 'POST',
+            'content' => [
+                'company_cin'       => 'F2A3-0001',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+            ],
+            'status_code' => 200
+        ],
+    ],
+
     'testUpdateContactUniqueOwnerWithContactMobileDifferentFormatSuccess' => [
         'request'  => [
             'content' => [

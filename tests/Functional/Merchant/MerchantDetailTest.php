@@ -7144,6 +7144,28 @@ We look forward to transacting with you!
         $this->startTest();
     }
 
+    public function testValidateInvalidLlpin()
+    {
+        $merchant = $this->fixtures->create('merchant:with_keys');
+
+        $user = $this->fixtures->user->createUserForMerchant($merchant['id']);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $user->getId());
+
+        $this->startTest();
+    }
+
+    public function testValidateLlpin()
+    {
+        $merchant = $this->fixtures->create('merchant:with_keys');
+
+        $user = $this->fixtures->user->createUserForMerchant($merchant['id']);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $user->getId());
+
+        $this->startTest();
+    }
+
     public function testUpdateContactUniqueOwnerWithContactMobileDifferentFormatSuccess()
     {
         Mail::fake();
