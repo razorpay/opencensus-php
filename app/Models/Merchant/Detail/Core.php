@@ -19,6 +19,7 @@ use RZP\Models\DeviceDetail\Constants as DDConstants;
 use RZP\Models\Merchant\AutoKyc\Bvs\Factory;
 use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 
+use RZP\Models\RiskWorkflowAction\Constants as RiskActionConstants;
 use RZP\Trace\Tracer;
 use RZP\Models\State;
 use RZP\Models\Coupon;
@@ -4013,6 +4014,24 @@ class Core extends Base\Core
         return Status::UNDER_REVIEW;
     }
 
+    private function hasRiskTags($merchant): bool
+    {
+        $riskTags= explode(',', RiskActionConstants::RISK_TAGS_CSV);
+
+        $merchantTags = $merchant->tagNames();
+
+        //Check if the merchant is tagged by Risk team
+        foreach ($merchantTags as $tag)
+        {
+            if (in_array(strtolower($tag), $riskTags) === true)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private function getApplicableActivationStatusForRegisteredMerchant($merchantDetails)
     {
         if ($merchantDetails->merchant->getOrgId() !== Org\Entity::RAZORPAY_ORG_ID)
@@ -4043,7 +4062,8 @@ class Core extends Base\Core
 
         if (($isWhitelisted === true) and
             ($isImpersonated === false) and
-            (in_array($currentActivationStatus, $excludeActivationStatusList) === false))
+            (in_array($currentActivationStatus, $excludeActivationStatusList) === false) and
+            ($this->hasRiskTags($merchantDetails->merchant) === false))
         {
             return Status::ACTIVATED_MCC_PENDING;
         }
@@ -4081,7 +4101,8 @@ class Core extends Base\Core
 
         if (($isWhitelisted === true) and
             ($isImpersonated === false) and
-            (in_array($currentActivationStatus, $excludeActivationStatusList) === false))
+            (in_array($currentActivationStatus, $excludeActivationStatusList) === false) and 
+            ($this->hasRiskTags($merchantDetails->merchant) === false))
         {
             return Status::ACTIVATED_MCC_PENDING;
         }

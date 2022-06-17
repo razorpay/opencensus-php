@@ -9,6 +9,7 @@ use RZP\Models\Coupon;
 use RZP\Constants\Mode;
 use RZP\Models\Coupon\Constants;
 use RZP\Models\Merchant\Detail\Core;
+use RZP\Models\Merchant\Detail\Core as DetailCore;
 use RZP\Models\Merchant\Detail\Entity;
 use RZP\Models\Merchant\Escalations;
 use RZP\Services\RazorXClient;
@@ -28,7 +29,6 @@ use RZP\Error\PublicErrorDescription;
 use RZP\Models\Merchant\Detail\Status;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Admin\Org\Entity as ORG_ENTITY;
-use RZP\Models\Merchant\Detail\Core as DetailCore;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Merchant\Detail\SelectiveRequiredFields;
@@ -2218,6 +2218,64 @@ class CoreTest extends TestCase
         $response = $core->isPOIVerificationRequiredForL2($merchantDetails, ['promoter_pan'=>'AAAPA6969J']);
 
         $this->assertEquals(true, $response);
+    }
+
+    public function testApplicableActivationStatusForRiskyMerchant()
+    {
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+            ->setMethods(['isAutoKycDone'])
+            ->getMock();
+
+        $detailCoreMock->expects($this->any())
+            ->method('isAutoKycDone')
+            ->willReturn(true);
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 4,
+            'business_category'         => 'financial_services',
+            'business_subcategory'      => 'accounting',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'          => 'under_review',
+        ]);
+
+        $merchant = $merchantDetails->merchant;
+        (new MerchantCore())->appendTag($merchant, 'risk_review_suspend');
+
+        $this->mockRazorxTreatment();
+
+        $this->assertEquals(Status::UNDER_REVIEW, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
+    }
+
+    public function testApplicableActivationStatusForNonRiskyMerchant()
+    {
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+            ->setMethods(['isAutoKycDone'])
+            ->getMock();
+
+        $detailCoreMock->expects($this->any())
+            ->method('isAutoKycDone')
+            ->willReturn(true);
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 4,
+            'business_category'         => 'financial_services',
+            'business_subcategory'      => 'accounting',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'          => 'under_review',
+        ]);
+
+        $merchant = $merchantDetails->merchant;
+        (new MerchantCore())->appendTag($merchant, 'random_tag');
+
+        $this->mockRazorxTreatment();
+
+        $this->assertEquals(Status::ACTIVATED_MCC_PENDING, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
     }
 
     public function testApplicableActivationStatus()
