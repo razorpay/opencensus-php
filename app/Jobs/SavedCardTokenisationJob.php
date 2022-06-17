@@ -110,6 +110,7 @@ class SavedCardTokenisationJob extends Job
                 'network'       => $card->getNetwork(),
                 'attempt'       => $this->attempts(),
                 'is_global_customer_local_token' => $this->isGlobalCustomerLocalToken,
+                'asyncTokenisationJobId'    => $this->asyncTokenisationJobId,
             ]);
 
             if ($this->asyncTokenisationJobId === "paymentmigrate") {
@@ -150,6 +151,7 @@ class SavedCardTokenisationJob extends Job
                     'merchantId'    => $this->merchantId,
                     'attempt'       => $this->attempts(),
                     'is_global_customer_local_token' => $this->isGlobalCustomerLocalToken,
+                    'asyncTokenisationJobId'    => $this->asyncTokenisationJobId,
                 ]
             );
 
@@ -183,6 +185,7 @@ class SavedCardTokenisationJob extends Job
             'tokenId'       => $this->tokenId,
             'merchantId'    => $this->merchantId,
             'is_global_customer_local_token' => $this->isGlobalCustomerLocalToken,
+            'asyncTokenisationJobId'    => $this->asyncTokenisationJobId,
         ]);
     }
 
