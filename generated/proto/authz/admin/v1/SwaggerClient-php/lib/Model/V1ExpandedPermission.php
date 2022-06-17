@@ -5,7 +5,7 @@
  * PHP version 5
  *
  * @category Class
- * @package  Swagger\Client
+ * @package  AuthzAdmin\Client
  * @author   Swagger Codegen team
  * @link     https://github.com/swagger-api/swagger-codegen
  */
@@ -27,17 +27,17 @@
  * Do not edit the class manually.
  */
 
-namespace Swagger\Client\Model;
+namespace AuthzAdmin\Client\Model;
 
 use \ArrayAccess;
-use \Swagger\Client\ObjectSerializer;
+use \AuthzAdmin\Client\ObjectSerializer;
 
 /**
  * V1ExpandedPermission Class Doc Comment
  *
  * @category Class
  * @description ExpandedPermission is the struct defining a permission which has all sub entities expanded.
- * @package  Swagger\Client
+ * @package  AuthzAdmin\Client
  * @author   Swagger Codegen team
  * @link     https://github.com/swagger-api/swagger-codegen
  */
@@ -59,9 +59,9 @@ class V1ExpandedPermission implements ModelInterface, ArrayAccess
       */
     protected static $swaggerTypes = [
         'id' => 'string',
-        'resource' => '\Swagger\Client\Model\V1Resource',
-        'action' => '\Swagger\Client\Model\V1Action',
-        'effect' => '\Swagger\Client\Model\V1Effect'
+        'resource' => '\AuthzAdmin\Client\Model\V1Resource',
+        'action' => '\AuthzAdmin\Client\Model\V1Action',
+        'effect' => '\AuthzAdmin\Client\Model\V1Effect'
     ];
 
     /**
@@ -250,7 +250,7 @@ class V1ExpandedPermission implements ModelInterface, ArrayAccess
     /**
      * Gets resource
      *
-     * @return \Swagger\Client\Model\V1Resource
+     * @return \AuthzAdmin\Client\Model\V1Resource
      */
     public function getResource()
     {
@@ -260,7 +260,7 @@ class V1ExpandedPermission implements ModelInterface, ArrayAccess
     /**
      * Sets resource
      *
-     * @param \Swagger\Client\Model\V1Resource $resource resource
+     * @param \AuthzAdmin\Client\Model\V1Resource $resource resource
      *
      * @return $this
      */
@@ -274,7 +274,7 @@ class V1ExpandedPermission implements ModelInterface, ArrayAccess
     /**
      * Gets action
      *
-     * @return \Swagger\Client\Model\V1Action
+     * @return \AuthzAdmin\Client\Model\V1Action
      */
     public function getAction()
     {
@@ -284,7 +284,7 @@ class V1ExpandedPermission implements ModelInterface, ArrayAccess
     /**
      * Sets action
      *
-     * @param \Swagger\Client\Model\V1Action $action action
+     * @param \AuthzAdmin\Client\Model\V1Action $action action
      *
      * @return $this
      */
@@ -298,7 +298,7 @@ class V1ExpandedPermission implements ModelInterface, ArrayAccess
     /**
      * Gets effect
      *
-     * @return \Swagger\Client\Model\V1Effect
+     * @return \AuthzAdmin\Client\Model\V1Effect
      */
     public function getEffect()
     {
@@ -308,7 +308,7 @@ class V1ExpandedPermission implements ModelInterface, ArrayAccess
     /**
      * Sets effect
      *
-     * @param \Swagger\Client\Model\V1Effect $effect effect
+     * @param \AuthzAdmin\Client\Model\V1Effect $effect effect
      *
      * @return $this
      */

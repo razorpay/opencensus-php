@@ -514,4 +514,7 @@ final class RazorxTreatment
     const PAYMENT_METHOD_CONFIG_UPDATE = 'payment_method_config_update';
 
     const ASYNC_TOKEN_MIGRATION = 'async_token_migration';
+
+    /** Experiment to enable custom access control */
+    public const RX_CUSTOM_ACCESS_CONTROL_ENABLED = "rx_custom_access_control_enabled";
 }

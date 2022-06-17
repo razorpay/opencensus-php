@@ -5,7 +5,7 @@
  * PHP version 5
  *
  * @category Class
- * @package  Swagger\Client
+ * @package  AuthzAdmin\Client
  * @author   Swagger Codegen team
  * @link     https://github.com/swagger-api/swagger-codegen
  */
@@ -27,16 +27,16 @@
  * Do not edit the class manually.
  */
 
-namespace Swagger\Client\Model;
+namespace AuthzAdmin\Client\Model;
 
 use \ArrayAccess;
-use \Swagger\Client\ObjectSerializer;
+use \AuthzAdmin\Client\ObjectSerializer;
 
 /**
  * V1Permission Class Doc Comment
  *
  * @category Class
- * @package  Swagger\Client
+ * @package  AuthzAdmin\Client
  * @author   Swagger Codegen team
  * @link     https://github.com/swagger-api/swagger-codegen
  */
@@ -60,7 +60,7 @@ class V1Permission implements ModelInterface, ArrayAccess
         'id' => 'string',
         'resource_id' => 'string',
         'action_id' => 'string',
-        'effect' => '\Swagger\Client\Model\V1Effect'
+        'effect' => '\AuthzAdmin\Client\Model\V1Effect'
     ];
 
     /**
@@ -297,7 +297,7 @@ class V1Permission implements ModelInterface, ArrayAccess
     /**
      * Gets effect
      *
-     * @return \Swagger\Client\Model\V1Effect
+     * @return \AuthzAdmin\Client\Model\V1Effect
      */
     public function getEffect()
     {
@@ -307,7 +307,7 @@ class V1Permission implements ModelInterface, ArrayAccess
     /**
      * Sets effect
      *
-     * @param \Swagger\Client\Model\V1Effect $effect effect
+     * @param \AuthzAdmin\Client\Model\V1Effect $effect effect
      *
      * @return $this
      */

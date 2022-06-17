@@ -5,7 +5,7 @@
  * PHP version 5
  *
  * @category Class
- * @package  Swagger\Client
+ * @package  AuthzAdmin\Client
  * @author   Swagger Codegen team
  * @link     https://github.com/swagger-api/swagger-codegen
  */
@@ -27,16 +27,16 @@
  * Do not edit the class manually.
  */
 
-namespace Swagger\Client\Model;
+namespace AuthzAdmin\Client\Model;
 
 use \ArrayAccess;
-use \Swagger\Client\ObjectSerializer;
+use \AuthzAdmin\Client\ObjectSerializer;
 
 /**
  * V1SubjectRoleMapping Class Doc Comment
  *
  * @category Class
- * @package  Swagger\Client
+ * @package  AuthzAdmin\Client
  * @author   Swagger Codegen team
  * @link     https://github.com/swagger-api/swagger-codegen
  */
@@ -58,7 +58,7 @@ class V1SubjectRoleMapping implements ModelInterface, ArrayAccess
       */
     protected static $swaggerTypes = [
         'role_id' => 'string[]',
-        'key' => '\Swagger\Client\Model\V1KeySubject',
+        'key' => '\AuthzAdmin\Client\Model\V1KeySubject',
         'role_names' => 'string[]'
     ];
 
@@ -243,7 +243,7 @@ class V1SubjectRoleMapping implements ModelInterface, ArrayAccess
     /**
      * Gets key
      *
-     * @return \Swagger\Client\Model\V1KeySubject
+     * @return \AuthzAdmin\Client\Model\V1KeySubject
      */
     public function getKey()
     {
@@ -253,7 +253,7 @@ class V1SubjectRoleMapping implements ModelInterface, ArrayAccess
     /**
      * Sets key
      *
-     * @param \Swagger\Client\Model\V1KeySubject $key key
+     * @param \AuthzAdmin\Client\Model\V1KeySubject $key key
      *
      * @return $this
      */

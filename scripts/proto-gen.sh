@@ -41,6 +41,7 @@ protoc -I "$parentdir"/proto --openapiv2_out "$parentdir"/api/generated/proto \
 #java -jar modules/swagger-codegen-cli/target/swagger-codegen-cli.jar generate \
 #   -i /Users/anand/Desktop/workspace/api/generated/proto/authz/admin/v1/admin_api.swagger.json \
 #   -l php \
+#   --invoker-package "AuthzAdmin\Client" \
 #   -o /Users/anand/Desktop/workspace/api/generated/proto/authz/admin/v1/
 
 #java -jar modules/swagger-codegen-cli/target/swagger-codegen-cli.jar generate \

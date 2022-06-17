@@ -5,7 +5,7 @@
  * PHP version 5
  *
  * @category Class
- * @package  Swagger\Client
+ * @package  AuthzAdmin\Client
  * @author   Swagger Codegen team
  * @link     https://github.com/swagger-api/swagger-codegen
  */
@@ -27,16 +27,16 @@
  * Do not edit the class manually.
  */
 
-namespace Swagger\Client\Model;
+namespace AuthzAdmin\Client\Model;
 
 use \ArrayAccess;
-use \Swagger\Client\ObjectSerializer;
+use \AuthzAdmin\Client\ObjectSerializer;
 
 /**
  * V1Action Class Doc Comment
  *
  * @category Class
- * @package  Swagger\Client
+ * @package  AuthzAdmin\Client
  * @author   Swagger Codegen team
  * @link     https://github.com/swagger-api/swagger-codegen
  */
@@ -59,7 +59,7 @@ class V1Action implements ModelInterface, ArrayAccess
     protected static $swaggerTypes = [
         'id' => 'string',
         'name' => 'string',
-        'type' => '\Swagger\Client\Model\ActionActionType'
+        'type' => '\AuthzAdmin\Client\Model\ActionActionType'
     ];
 
     /**
@@ -267,7 +267,7 @@ class V1Action implements ModelInterface, ArrayAccess
     /**
      * Gets type
      *
-     * @return \Swagger\Client\Model\ActionActionType
+     * @return \AuthzAdmin\Client\Model\ActionActionType
      */
     public function getType()
     {
@@ -277,7 +277,7 @@ class V1Action implements ModelInterface, ArrayAccess
     /**
      * Sets type
      *
-     * @param \Swagger\Client\Model\ActionActionType $type type
+     * @param \AuthzAdmin\Client\Model\ActionActionType $type type
      *
      * @return $this
      */

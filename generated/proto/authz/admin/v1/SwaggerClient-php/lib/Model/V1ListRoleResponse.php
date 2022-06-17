@@ -5,7 +5,7 @@
  * PHP version 5
  *
  * @category Class
- * @package  Swagger\Client
+ * @package  AuthzAdmin\Client
  * @author   Swagger Codegen team
  * @link     https://github.com/swagger-api/swagger-codegen
  */
@@ -27,16 +27,16 @@
  * Do not edit the class manually.
  */
 
-namespace Swagger\Client\Model;
+namespace AuthzAdmin\Client\Model;
 
 use \ArrayAccess;
-use \Swagger\Client\ObjectSerializer;
+use \AuthzAdmin\Client\ObjectSerializer;
 
 /**
  * V1ListRoleResponse Class Doc Comment
  *
  * @category Class
- * @package  Swagger\Client
+ * @package  AuthzAdmin\Client
  * @author   Swagger Codegen team
  * @link     https://github.com/swagger-api/swagger-codegen
  */
@@ -59,7 +59,7 @@ class V1ListRoleResponse implements ModelInterface, ArrayAccess
     protected static $swaggerTypes = [
         'pagination_token' => 'string',
         'count' => 'string',
-        'items' => '\Swagger\Client\Model\V1Role[]'
+        'items' => '\AuthzAdmin\Client\Model\V1Role[]'
     ];
 
     /**
@@ -267,7 +267,7 @@ class V1ListRoleResponse implements ModelInterface, ArrayAccess
     /**
      * Gets items
      *
-     * @return \Swagger\Client\Model\V1Role[]
+     * @return \AuthzAdmin\Client\Model\V1Role[]
      */
     public function getItems()
     {
@@ -277,7 +277,7 @@ class V1ListRoleResponse implements ModelInterface, ArrayAccess
     /**
      * Sets items
      *
-     * @param \Swagger\Client\Model\V1Role[] $items items
+     * @param \AuthzAdmin\Client\Model\V1Role[] $items items
      *
      * @return $this
      */

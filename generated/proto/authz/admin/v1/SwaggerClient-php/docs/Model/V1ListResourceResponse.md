@@ -5,7 +5,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **pagination_token** | **string** |  | [optional] 
 **count** | **string** |  | [optional] 
-**items** | [**\Swagger\Client\Model\V1Resource[]**](V1Resource.md) |  | [optional] 
+**items** | [**\AuthzAdmin\Client\Model\V1Resource[]**](V1Resource.md) |  | [optional] 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

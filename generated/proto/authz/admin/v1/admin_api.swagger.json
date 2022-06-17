@@ -390,6 +390,7 @@
           },
           {
             "name": "roleId",
+            "description": "DEPRECATED: use role_names and org_id instead.",
             "in": "query",
             "required": false,
             "type": "string"
@@ -413,6 +414,22 @@
               "type": "string"
             },
             "collectionFormat": "multi"
+          },
+          {
+            "name": "roleNames",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "name": "orgId",
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
         "tags": [
@@ -1057,6 +1074,12 @@
               "type": "string"
             },
             "collectionFormat": "multi"
+          },
+          {
+            "name": "orgId",
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
         "tags": [

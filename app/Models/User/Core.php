@@ -23,6 +23,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Table;
 use RZP\Models\Admin\Org;
+use RZP\Models\AuthzAdmin;
 use RZP\Constants\Product;
 use RZP\Constants\Timezone;
 use RZP\Constants\Environment;
@@ -3065,8 +3066,30 @@ class Core extends Base\Core
         return Adapter\Base::getActorInfo();
     }
 
+    private function isCACEnabled($merchant)
+    {
+
+        $isCACExperimentEnabled = $this->app->razorx->getTreatment(
+            $merchant[Entity::ID],
+            RazorxTreatment::RX_CUSTOM_ACCESS_CONTROL_ENABLED,
+            $this->mode ?? Mode::LIVE
+        );
+
+        return $isCACExperimentEnabled === RazorxTreatment::RAZORX_VARIANT_ON;
+    }
+
     private function fetchUserPermissions($merchant)
     {
+
+        /*
+        if ( $this->isCACEnabled($merchant))
+        {
+             // We have to fetch authz_roles from access_control_roles entity ($merchant[Entity::BANKING_ROLE])
+             // pass authz_roles in this api
+            return (new AuthzAdmin\Service())->adminAPIListPolicy([$merchant[Entity::BANKING_ROLE]]);
+        }
+        */
+
         // Fetch static role permissions map
         $basePermissions = UserRolePermissionsMap::getRolePermissions($merchant[Entity::BANKING_ROLE]);
 

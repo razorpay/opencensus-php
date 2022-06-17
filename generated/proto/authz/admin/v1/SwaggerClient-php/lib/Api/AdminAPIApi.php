@@ -4,7 +4,7 @@
  * PHP version 5
  *
  * @category Class
- * @package  Swagger\Client
+ * @package  AuthzAdmin\Client
  * @author   Swagger Codegen team
  * @link     https://github.com/swagger-api/swagger-codegen
  */
@@ -26,7 +26,7 @@
  * Do not edit the class manually.
  */
 
-namespace Swagger\Client\Api;
+namespace AuthzAdmin\Client\Api;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\ClientInterface;
@@ -34,16 +34,16 @@ use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Psr7\MultipartStream;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\RequestOptions;
-use Swagger\Client\ApiException;
-use Swagger\Client\Configuration;
-use Swagger\Client\HeaderSelector;
-use Swagger\Client\ObjectSerializer;
+use AuthzAdmin\Client\ApiException;
+use AuthzAdmin\Client\Configuration;
+use AuthzAdmin\Client\HeaderSelector;
+use AuthzAdmin\Client\ObjectSerializer;
 
 /**
  * AdminAPIApi Class Doc Comment
  *
  * @category Class
- * @package  Swagger\Client
+ * @package  AuthzAdmin\Client
  * @author   Swagger Codegen team
  * @link     https://github.com/swagger-api/swagger-codegen
  */
@@ -92,11 +92,11 @@ class AdminAPIApi
      *
      * CreateAction creates the action entity in AuthZ policy store.
      *
-     * @param  \Swagger\Client\Model\V1Action $body body (required)
+     * @param  \AuthzAdmin\Client\Model\V1Action $body body (required)
      *
-     * @throws \Swagger\Client\ApiException on non-2xx response
+     * @throws \AuthzAdmin\Client\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return \Swagger\Client\Model\V1Action
+     * @return \AuthzAdmin\Client\Model\V1Action
      */
     public function adminAPICreateAction($body)
     {
@@ -109,15 +109,15 @@ class AdminAPIApi
      *
      * CreateAction creates the action entity in AuthZ policy store.
      *
-     * @param  \Swagger\Client\Model\V1Action $body (required)
+     * @param  \AuthzAdmin\Client\Model\V1Action $body (required)
      *
-     * @throws \Swagger\Client\ApiException on non-2xx response
+     * @throws \AuthzAdmin\Client\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return array of \Swagger\Client\Model\V1Action, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \AuthzAdmin\Client\Model\V1Action, HTTP status code, HTTP response headers (array of strings)
      */
     public function adminAPICreateActionWithHttpInfo($body)
     {
-        $returnType = '\Swagger\Client\Model\V1Action';
+        $returnType = '\AuthzAdmin\Client\Model\V1Action';
         $request = $this->adminAPICreateActionRequest($body);
 
         try {
@@ -169,7 +169,7 @@ class AdminAPIApi
                 case 200:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Swagger\Client\Model\V1Action',
+                        '\AuthzAdmin\Client\Model\V1Action',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -177,7 +177,7 @@ class AdminAPIApi
                 default:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Swagger\Client\Model\RpcStatus',
+                        '\AuthzAdmin\Client\Model\RpcStatus',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -192,7 +192,7 @@ class AdminAPIApi
      *
      * CreateAction creates the action entity in AuthZ policy store.
      *
-     * @param  \Swagger\Client\Model\V1Action $body (required)
+     * @param  \AuthzAdmin\Client\Model\V1Action $body (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
@@ -212,14 +212,14 @@ class AdminAPIApi
      *
      * CreateAction creates the action entity in AuthZ policy store.
      *
-     * @param  \Swagger\Client\Model\V1Action $body (required)
+     * @param  \AuthzAdmin\Client\Model\V1Action $body (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
     public function adminAPICreateActionAsyncWithHttpInfo($body)
     {
-        $returnType = '\Swagger\Client\Model\V1Action';
+        $returnType = '\AuthzAdmin\Client\Model\V1Action';
         $request = $this->adminAPICreateActionRequest($body);
 
         return $this->client
@@ -262,7 +262,7 @@ class AdminAPIApi
     /**
      * Create request for operation 'adminAPICreateAction'
      *
-     * @param  \Swagger\Client\Model\V1Action $body (required)
+     * @param  \AuthzAdmin\Client\Model\V1Action $body (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Psr7\Request
@@ -364,11 +364,11 @@ class AdminAPIApi
      *
      * CreatePermission creates the permission entity in AuthZ policy store.
      *
-     * @param  \Swagger\Client\Model\V1Permission $body body (required)
+     * @param  \AuthzAdmin\Client\Model\V1Permission $body body (required)
      *
-     * @throws \Swagger\Client\ApiException on non-2xx response
+     * @throws \AuthzAdmin\Client\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return \Swagger\Client\Model\V1Permission
+     * @return \AuthzAdmin\Client\Model\V1Permission
      */
     public function adminAPICreatePermission($body)
     {
@@ -381,15 +381,15 @@ class AdminAPIApi
      *
      * CreatePermission creates the permission entity in AuthZ policy store.
      *
-     * @param  \Swagger\Client\Model\V1Permission $body (required)
+     * @param  \AuthzAdmin\Client\Model\V1Permission $body (required)
      *
-     * @throws \Swagger\Client\ApiException on non-2xx response
+     * @throws \AuthzAdmin\Client\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return array of \Swagger\Client\Model\V1Permission, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \AuthzAdmin\Client\Model\V1Permission, HTTP status code, HTTP response headers (array of strings)
      */
     public function adminAPICreatePermissionWithHttpInfo($body)
     {
-        $returnType = '\Swagger\Client\Model\V1Permission';
+        $returnType = '\AuthzAdmin\Client\Model\V1Permission';
         $request = $this->adminAPICreatePermissionRequest($body);
 
         try {
@@ -441,7 +441,7 @@ class AdminAPIApi
                 case 200:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Swagger\Client\Model\V1Permission',
+                        '\AuthzAdmin\Client\Model\V1Permission',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -449,7 +449,7 @@ class AdminAPIApi
                 default:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Swagger\Client\Model\RpcStatus',
+                        '\AuthzAdmin\Client\Model\RpcStatus',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -464,7 +464,7 @@ class AdminAPIApi
      *
      * CreatePermission creates the permission entity in AuthZ policy store.
      *
-     * @param  \Swagger\Client\Model\V1Permission $body (required)
+     * @param  \AuthzAdmin\Client\Model\V1Permission $body (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
@@ -484,14 +484,14 @@ class AdminAPIApi
      *
      * CreatePermission creates the permission entity in AuthZ policy store.
      *
-     * @param  \Swagger\Client\Model\V1Permission $body (required)
+     * @param  \AuthzAdmin\Client\Model\V1Permission $body (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
     public function adminAPICreatePermissionAsyncWithHttpInfo($body)
     {
-        $returnType = '\Swagger\Client\Model\V1Permission';
+        $returnType = '\AuthzAdmin\Client\Model\V1Permission';
         $request = $this->adminAPICreatePermissionRequest($body);
 
         return $this->client
@@ -534,7 +534,7 @@ class AdminAPIApi
     /**
      * Create request for operation 'adminAPICreatePermission'
      *
-     * @param  \Swagger\Client\Model\V1Permission $body (required)
+     * @param  \AuthzAdmin\Client\Model\V1Permission $body (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Psr7\Request
@@ -636,11 +636,11 @@ class AdminAPIApi
      *
      * CreatePolicy creates the policy entity in AuthZ policy store.
      *
-     * @param  \Swagger\Client\Model\V1Policy $body body (required)
+     * @param  \AuthzAdmin\Client\Model\V1Policy $body body (required)
      *
-     * @throws \Swagger\Client\ApiException on non-2xx response
+     * @throws \AuthzAdmin\Client\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return \Swagger\Client\Model\V1Policy
+     * @return \AuthzAdmin\Client\Model\V1Policy
      */
     public function adminAPICreatePolicy($body)
     {
@@ -653,15 +653,15 @@ class AdminAPIApi
      *
      * CreatePolicy creates the policy entity in AuthZ policy store.
      *
-     * @param  \Swagger\Client\Model\V1Policy $body (required)
+     * @param  \AuthzAdmin\Client\Model\V1Policy $body (required)
      *
-     * @throws \Swagger\Client\ApiException on non-2xx response
+     * @throws \AuthzAdmin\Client\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return array of \Swagger\Client\Model\V1Policy, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \AuthzAdmin\Client\Model\V1Policy, HTTP status code, HTTP response headers (array of strings)
      */
     public function adminAPICreatePolicyWithHttpInfo($body)
     {
-        $returnType = '\Swagger\Client\Model\V1Policy';
+        $returnType = '\AuthzAdmin\Client\Model\V1Policy';
         $request = $this->adminAPICreatePolicyRequest($body);
 
         try {
@@ -713,7 +713,7 @@ class AdminAPIApi
                 case 200:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Swagger\Client\Model\V1Policy',
+                        '\AuthzAdmin\Client\Model\V1Policy',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -721,7 +721,7 @@ class AdminAPIApi
                 default:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Swagger\Client\Model\RpcStatus',
+                        '\AuthzAdmin\Client\Model\RpcStatus',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -736,7 +736,7 @@ class AdminAPIApi
      *
      * CreatePolicy creates the policy entity in AuthZ policy store.
      *
-     * @param  \Swagger\Client\Model\V1Policy $body (required)
+     * @param  \AuthzAdmin\Client\Model\V1Policy $body (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
@@ -756,14 +756,14 @@ class AdminAPIApi
      *
      * CreatePolicy creates the policy entity in AuthZ policy store.
      *
-     * @param  \Swagger\Client\Model\V1Policy $body (required)
+     * @param  \AuthzAdmin\Client\Model\V1Policy $body (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
     public function adminAPICreatePolicyAsyncWithHttpInfo($body)
     {
-        $returnType = '\Swagger\Client\Model\V1Policy';
+        $returnType = '\AuthzAdmin\Client\Model\V1Policy';
         $request = $this->adminAPICreatePolicyRequest($body);
 
         return $this->client
@@ -806,7 +806,7 @@ class AdminAPIApi
     /**
      * Create request for operation 'adminAPICreatePolicy'
      *
-     * @param  \Swagger\Client\Model\V1Policy $body (required)
+     * @param  \AuthzAdmin\Client\Model\V1Policy $body (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Psr7\Request
@@ -908,11 +908,11 @@ class AdminAPIApi
      *
      * CreateResource creates the resource entity in AuthZ policy store.
      *
-     * @param  \Swagger\Client\Model\V1Resource $body body (required)
+     * @param  \AuthzAdmin\Client\Model\V1Resource $body body (required)
      *
-     * @throws \Swagger\Client\ApiException on non-2xx response
+     * @throws \AuthzAdmin\Client\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return \Swagger\Client\Model\V1Resource
+     * @return \AuthzAdmin\Client\Model\V1Resource
      */
     public function adminAPICreateResource($body)
     {
@@ -925,15 +925,15 @@ class AdminAPIApi
      *
      * CreateResource creates the resource entity in AuthZ policy store.
      *
-     * @param  \Swagger\Client\Model\V1Resource $body (required)
+     * @param  \AuthzAdmin\Client\Model\V1Resource $body (required)
      *
-     * @throws \Swagger\Client\ApiException on non-2xx response
+     * @throws \AuthzAdmin\Client\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return array of \Swagger\Client\Model\V1Resource, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \AuthzAdmin\Client\Model\V1Resource, HTTP status code, HTTP response headers (array of strings)
      */
     public function adminAPICreateResourceWithHttpInfo($body)
     {
-        $returnType = '\Swagger\Client\Model\V1Resource';
+        $returnType = '\AuthzAdmin\Client\Model\V1Resource';
         $request = $this->adminAPICreateResourceRequest($body);
 
         try {
@@ -985,7 +985,7 @@ class AdminAPIApi
                 case 200:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Swagger\Client\Model\V1Resource',
+                        '\AuthzAdmin\Client\Model\V1Resource',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -993,7 +993,7 @@ class AdminAPIApi
                 default:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Swagger\Client\Model\RpcStatus',
+                        '\AuthzAdmin\Client\Model\RpcStatus',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -1008,7 +1008,7 @@ class AdminAPIApi
      *
      * CreateResource creates the resource entity in AuthZ policy store.
      *
-     * @param  \Swagger\Client\Model\V1Resource $body (required)
+     * @param  \AuthzAdmin\Client\Model\V1Resource $body (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
@@ -1028,14 +1028,14 @@ class AdminAPIApi
      *
      * CreateResource creates the resource entity in AuthZ policy store.
      *
-     * @param  \Swagger\Client\Model\V1Resource $body (required)
+     * @param  \AuthzAdmin\Client\Model\V1Resource $body (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
     public function adminAPICreateResourceAsyncWithHttpInfo($body)
     {
-        $returnType = '\Swagger\Client\Model\V1Resource';
+        $returnType = '\AuthzAdmin\Client\Model\V1Resource';
         $request = $this->adminAPICreateResourceRequest($body);
 
         return $this->client
@@ -1078,7 +1078,7 @@ class AdminAPIApi
     /**
      * Create request for operation 'adminAPICreateResource'
      *
-     * @param  \Swagger\Client\Model\V1Resource $body (required)
+     * @param  \AuthzAdmin\Client\Model\V1Resource $body (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Psr7\Request
@@ -1180,11 +1180,11 @@ class AdminAPIApi
      *
      * CreateResourceGroup creates the resource group entity in AuthZ policy store.
      *
-     * @param  \Swagger\Client\Model\V1ResourceGroup $body body (required)
+     * @param  \AuthzAdmin\Client\Model\V1ResourceGroup $body body (required)
      *
-     * @throws \Swagger\Client\ApiException on non-2xx response
+     * @throws \AuthzAdmin\Client\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return \Swagger\Client\Model\V1ResourceGroup
+     * @return \AuthzAdmin\Client\Model\V1ResourceGroup
      */
     public function adminAPICreateResourceGroup($body)
     {
@@ -1197,15 +1197,15 @@ class AdminAPIApi
      *
      * CreateResourceGroup creates the resource group entity in AuthZ policy store.
      *
-     * @param  \Swagger\Client\Model\V1ResourceGroup $body (required)
+     * @param  \AuthzAdmin\Client\Model\V1ResourceGroup $body (required)
      *
-     * @throws \Swagger\Client\ApiException on non-2xx response
+     * @throws \AuthzAdmin\Client\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return array of \Swagger\Client\Model\V1ResourceGroup, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \AuthzAdmin\Client\Model\V1ResourceGroup, HTTP status code, HTTP response headers (array of strings)
      */
     public function adminAPICreateResourceGroupWithHttpInfo($body)
     {
-        $returnType = '\Swagger\Client\Model\V1ResourceGroup';
+        $returnType = '\AuthzAdmin\Client\Model\V1ResourceGroup';
         $request = $this->adminAPICreateResourceGroupRequest($body);
 
         try {
@@ -1257,7 +1257,7 @@ class AdminAPIApi
                 case 200:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Swagger\Client\Model\V1ResourceGroup',
+                        '\AuthzAdmin\Client\Model\V1ResourceGroup',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -1265,7 +1265,7 @@ class AdminAPIApi
                 default:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Swagger\Client\Model\RpcStatus',
+                        '\AuthzAdmin\Client\Model\RpcStatus',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -1280,7 +1280,7 @@ class AdminAPIApi
      *
      * CreateResourceGroup creates the resource group entity in AuthZ policy store.
      *
-     * @param  \Swagger\Client\Model\V1ResourceGroup $body (required)
+     * @param  \AuthzAdmin\Client\Model\V1ResourceGroup $body (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
@@ -1300,14 +1300,14 @@ class AdminAPIApi
      *
      * CreateResourceGroup creates the resource group entity in AuthZ policy store.
      *
-     * @param  \Swagger\Client\Model\V1ResourceGroup $body (required)
+     * @param  \AuthzAdmin\Client\Model\V1ResourceGroup $body (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
     public function adminAPICreateResourceGroupAsyncWithHttpInfo($body)
     {
-        $returnType = '\Swagger\Client\Model\V1ResourceGroup';
+        $returnType = '\AuthzAdmin\Client\Model\V1ResourceGroup';
         $request = $this->adminAPICreateResourceGroupRequest($body);
 
         return $this->client
@@ -1350,7 +1350,7 @@ class AdminAPIApi
     /**
      * Create request for operation 'adminAPICreateResourceGroup'
      *
-     * @param  \Swagger\Client\Model\V1ResourceGroup $body (required)
+     * @param  \AuthzAdmin\Client\Model\V1ResourceGroup $body (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Psr7\Request
@@ -1452,11 +1452,11 @@ class AdminAPIApi
      *
      * CreateResourceGroupMapping creates the resource group mapping in AuthZ policy store.
      *
-     * @param  \Swagger\Client\Model\V1ResourceGroupMapping $body body (required)
+     * @param  \AuthzAdmin\Client\Model\V1ResourceGroupMapping $body body (required)
      *
-     * @throws \Swagger\Client\ApiException on non-2xx response
+     * @throws \AuthzAdmin\Client\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return \Swagger\Client\Model\V1ResourceGroupMapping
+     * @return \AuthzAdmin\Client\Model\V1ResourceGroupMapping
      */
     public function adminAPICreateResourceGroupMapping($body)
     {
@@ -1469,15 +1469,15 @@ class AdminAPIApi
      *
      * CreateResourceGroupMapping creates the resource group mapping in AuthZ policy store.
      *
-     * @param  \Swagger\Client\Model\V1ResourceGroupMapping $body (required)
+     * @param  \AuthzAdmin\Client\Model\V1ResourceGroupMapping $body (required)
      *
-     * @throws \Swagger\Client\ApiException on non-2xx response
+     * @throws \AuthzAdmin\Client\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return array of \Swagger\Client\Model\V1ResourceGroupMapping, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \AuthzAdmin\Client\Model\V1ResourceGroupMapping, HTTP status code, HTTP response headers (array of strings)
      */
     public function adminAPICreateResourceGroupMappingWithHttpInfo($body)
     {
-        $returnType = '\Swagger\Client\Model\V1ResourceGroupMapping';
+        $returnType = '\AuthzAdmin\Client\Model\V1ResourceGroupMapping';
         $request = $this->adminAPICreateResourceGroupMappingRequest($body);
 
         try {
@@ -1529,7 +1529,7 @@ class AdminAPIApi
                 case 200:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Swagger\Client\Model\V1ResourceGroupMapping',
+                        '\AuthzAdmin\Client\Model\V1ResourceGroupMapping',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -1537,7 +1537,7 @@ class AdminAPIApi
                 default:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Swagger\Client\Model\RpcStatus',
+                        '\AuthzAdmin\Client\Model\RpcStatus',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -1552,7 +1552,7 @@ class AdminAPIApi
      *
      * CreateResourceGroupMapping creates the resource group mapping in AuthZ policy store.
      *
-     * @param  \Swagger\Client\Model\V1ResourceGroupMapping $body (required)
+     * @param  \AuthzAdmin\Client\Model\V1ResourceGroupMapping $body (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
@@ -1572,14 +1572,14 @@ class AdminAPIApi
      *
      * CreateResourceGroupMapping creates the resource group mapping in AuthZ policy store.
      *
-     * @param  \Swagger\Client\Model\V1ResourceGroupMapping $body (required)
+     * @param  \AuthzAdmin\Client\Model\V1ResourceGroupMapping $body (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
     public function adminAPICreateResourceGroupMappingAsyncWithHttpInfo($body)
     {
-        $returnType = '\Swagger\Client\Model\V1ResourceGroupMapping';
+        $returnType = '\AuthzAdmin\Client\Model\V1ResourceGroupMapping';
         $request = $this->adminAPICreateResourceGroupMappingRequest($body);
 
         return $this->client
@@ -1622,7 +1622,7 @@ class AdminAPIApi
     /**
      * Create request for operation 'adminAPICreateResourceGroupMapping'
      *
-     * @param  \Swagger\Client\Model\V1ResourceGroupMapping $body (required)
+     * @param  \AuthzAdmin\Client\Model\V1ResourceGroupMapping $body (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Psr7\Request
@@ -1724,11 +1724,11 @@ class AdminAPIApi
      *
      * CreateRole creates the role entity in AuthZ policy store.
      *
-     * @param  \Swagger\Client\Model\V1Role $body body (required)
+     * @param  \AuthzAdmin\Client\Model\V1Role $body body (required)
      *
-     * @throws \Swagger\Client\ApiException on non-2xx response
+     * @throws \AuthzAdmin\Client\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return \Swagger\Client\Model\V1Role
+     * @return \AuthzAdmin\Client\Model\V1Role
      */
     public function adminAPICreateRole($body)
     {
@@ -1741,15 +1741,15 @@ class AdminAPIApi
      *
      * CreateRole creates the role entity in AuthZ policy store.
      *
-     * @param  \Swagger\Client\Model\V1Role $body (required)
+     * @param  \AuthzAdmin\Client\Model\V1Role $body (required)
      *
-     * @throws \Swagger\Client\ApiException on non-2xx response
+     * @throws \AuthzAdmin\Client\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return array of \Swagger\Client\Model\V1Role, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \AuthzAdmin\Client\Model\V1Role, HTTP status code, HTTP response headers (array of strings)
      */
     public function adminAPICreateRoleWithHttpInfo($body)
     {
-        $returnType = '\Swagger\Client\Model\V1Role';
+        $returnType = '\AuthzAdmin\Client\Model\V1Role';
         $request = $this->adminAPICreateRoleRequest($body);
 
         try {
@@ -1801,7 +1801,7 @@ class AdminAPIApi
                 case 200:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Swagger\Client\Model\V1Role',
+                        '\AuthzAdmin\Client\Model\V1Role',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -1809,7 +1809,7 @@ class AdminAPIApi
                 default:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Swagger\Client\Model\RpcStatus',
+                        '\AuthzAdmin\Client\Model\RpcStatus',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -1824,7 +1824,7 @@ class AdminAPIApi
      *
      * CreateRole creates the role entity in AuthZ policy store.
      *
-     * @param  \Swagger\Client\Model\V1Role $body (required)
+     * @param  \AuthzAdmin\Client\Model\V1Role $body (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
@@ -1844,14 +1844,14 @@ class AdminAPIApi
      *
      * CreateRole creates the role entity in AuthZ policy store.
      *
-     * @param  \Swagger\Client\Model\V1Role $body (required)
+     * @param  \AuthzAdmin\Client\Model\V1Role $body (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
     public function adminAPICreateRoleAsyncWithHttpInfo($body)
     {
-        $returnType = '\Swagger\Client\Model\V1Role';
+        $returnType = '\AuthzAdmin\Client\Model\V1Role';
         $request = $this->adminAPICreateRoleRequest($body);
 
         return $this->client
@@ -1894,7 +1894,7 @@ class AdminAPIApi
     /**
      * Create request for operation 'adminAPICreateRole'
      *
-     * @param  \Swagger\Client\Model\V1Role $body (required)
+     * @param  \AuthzAdmin\Client\Model\V1Role $body (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Psr7\Request
@@ -1996,11 +1996,11 @@ class AdminAPIApi
      *
      * CreateRolePolicyMapping adds a policy to the given role in AuthZ policy store.
      *
-     * @param  \Swagger\Client\Model\V1RolePolicyMapping $body body (required)
+     * @param  \AuthzAdmin\Client\Model\V1RolePolicyMapping $body body (required)
      *
-     * @throws \Swagger\Client\ApiException on non-2xx response
+     * @throws \AuthzAdmin\Client\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return \Swagger\Client\Model\V1RolePolicyMapping
+     * @return \AuthzAdmin\Client\Model\V1RolePolicyMapping
      */
     public function adminAPICreateRolePolicyMapping($body)
     {
@@ -2013,15 +2013,15 @@ class AdminAPIApi
      *
      * CreateRolePolicyMapping adds a policy to the given role in AuthZ policy store.
      *
-     * @param  \Swagger\Client\Model\V1RolePolicyMapping $body (required)
+     * @param  \AuthzAdmin\Client\Model\V1RolePolicyMapping $body (required)
      *
-     * @throws \Swagger\Client\ApiException on non-2xx response
+     * @throws \AuthzAdmin\Client\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return array of \Swagger\Client\Model\V1RolePolicyMapping, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \AuthzAdmin\Client\Model\V1RolePolicyMapping, HTTP status code, HTTP response headers (array of strings)
      */
     public function adminAPICreateRolePolicyMappingWithHttpInfo($body)
     {
-        $returnType = '\Swagger\Client\Model\V1RolePolicyMapping';
+        $returnType = '\AuthzAdmin\Client\Model\V1RolePolicyMapping';
         $request = $this->adminAPICreateRolePolicyMappingRequest($body);
 
         try {
@@ -2073,7 +2073,7 @@ class AdminAPIApi
                 case 200:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Swagger\Client\Model\V1RolePolicyMapping',
+                        '\AuthzAdmin\Client\Model\V1RolePolicyMapping',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -2081,7 +2081,7 @@ class AdminAPIApi
                 default:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Swagger\Client\Model\RpcStatus',
+                        '\AuthzAdmin\Client\Model\RpcStatus',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -2096,7 +2096,7 @@ class AdminAPIApi
      *
      * CreateRolePolicyMapping adds a policy to the given role in AuthZ policy store.
      *
-     * @param  \Swagger\Client\Model\V1RolePolicyMapping $body (required)
+     * @param  \AuthzAdmin\Client\Model\V1RolePolicyMapping $body (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
@@ -2116,14 +2116,14 @@ class AdminAPIApi
      *
      * CreateRolePolicyMapping adds a policy to the given role in AuthZ policy store.
      *
-     * @param  \Swagger\Client\Model\V1RolePolicyMapping $body (required)
+     * @param  \AuthzAdmin\Client\Model\V1RolePolicyMapping $body (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
     public function adminAPICreateRolePolicyMappingAsyncWithHttpInfo($body)
     {
-        $returnType = '\Swagger\Client\Model\V1RolePolicyMapping';
+        $returnType = '\AuthzAdmin\Client\Model\V1RolePolicyMapping';
         $request = $this->adminAPICreateRolePolicyMappingRequest($body);
 
         return $this->client
@@ -2166,7 +2166,7 @@ class AdminAPIApi
     /**
      * Create request for operation 'adminAPICreateRolePolicyMapping'
      *
-     * @param  \Swagger\Client\Model\V1RolePolicyMapping $body (required)
+     * @param  \AuthzAdmin\Client\Model\V1RolePolicyMapping $body (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Psr7\Request
@@ -2268,11 +2268,11 @@ class AdminAPIApi
      *
      * CreateService creates the service entity in AuthZ policy store.
      *
-     * @param  \Swagger\Client\Model\V1Service $body body (required)
+     * @param  \AuthzAdmin\Client\Model\V1Service $body body (required)
      *
-     * @throws \Swagger\Client\ApiException on non-2xx response
+     * @throws \AuthzAdmin\Client\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return \Swagger\Client\Model\V1Service
+     * @return \AuthzAdmin\Client\Model\V1Service
      */
     public function adminAPICreateService($body)
     {
@@ -2285,15 +2285,15 @@ class AdminAPIApi
      *
      * CreateService creates the service entity in AuthZ policy store.
      *
-     * @param  \Swagger\Client\Model\V1Service $body (required)
+     * @param  \AuthzAdmin\Client\Model\V1Service $body (required)
      *
-     * @throws \Swagger\Client\ApiException on non-2xx response
+     * @throws \AuthzAdmin\Client\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return array of \Swagger\Client\Model\V1Service, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \AuthzAdmin\Client\Model\V1Service, HTTP status code, HTTP response headers (array of strings)
      */
     public function adminAPICreateServiceWithHttpInfo($body)
     {
-        $returnType = '\Swagger\Client\Model\V1Service';
+        $returnType = '\AuthzAdmin\Client\Model\V1Service';
         $request = $this->adminAPICreateServiceRequest($body);
 
         try {
@@ -2345,7 +2345,7 @@ class AdminAPIApi
                 case 200:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Swagger\Client\Model\V1Service',
+                        '\AuthzAdmin\Client\Model\V1Service',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -2353,7 +2353,7 @@ class AdminAPIApi
                 default:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Swagger\Client\Model\RpcStatus',
+                        '\AuthzAdmin\Client\Model\RpcStatus',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -2368,7 +2368,7 @@ class AdminAPIApi
      *
      * CreateService creates the service entity in AuthZ policy store.
      *
-     * @param  \Swagger\Client\Model\V1Service $body (required)
+     * @param  \AuthzAdmin\Client\Model\V1Service $body (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
@@ -2388,14 +2388,14 @@ class AdminAPIApi
      *
      * CreateService creates the service entity in AuthZ policy store.
      *
-     * @param  \Swagger\Client\Model\V1Service $body (required)
+     * @param  \AuthzAdmin\Client\Model\V1Service $body (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
     public function adminAPICreateServiceAsyncWithHttpInfo($body)
     {
-        $returnType = '\Swagger\Client\Model\V1Service';
+        $returnType = '\AuthzAdmin\Client\Model\V1Service';
         $request = $this->adminAPICreateServiceRequest($body);
 
         return $this->client
@@ -2438,7 +2438,7 @@ class AdminAPIApi
     /**
      * Create request for operation 'adminAPICreateService'
      *
-     * @param  \Swagger\Client\Model\V1Service $body (required)
+     * @param  \AuthzAdmin\Client\Model\V1Service $body (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Psr7\Request
@@ -2540,11 +2540,11 @@ class AdminAPIApi
      *
      * CreateSubjectRoleMapping assigns the role to a subject entity in AuthZ policy store.
      *
-     * @param  \Swagger\Client\Model\V1SubjectRoleMapping $body body (required)
+     * @param  \AuthzAdmin\Client\Model\V1SubjectRoleMapping $body body (required)
      *
-     * @throws \Swagger\Client\ApiException on non-2xx response
+     * @throws \AuthzAdmin\Client\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return \Swagger\Client\Model\V1Null
+     * @return \AuthzAdmin\Client\Model\V1Null
      */
     public function adminAPICreateSubjectRoleMapping($body)
     {
@@ -2557,15 +2557,15 @@ class AdminAPIApi
      *
      * CreateSubjectRoleMapping assigns the role to a subject entity in AuthZ policy store.
      *
-     * @param  \Swagger\Client\Model\V1SubjectRoleMapping $body (required)
+     * @param  \AuthzAdmin\Client\Model\V1SubjectRoleMapping $body (required)
      *
-     * @throws \Swagger\Client\ApiException on non-2xx response
+     * @throws \AuthzAdmin\Client\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return array of \Swagger\Client\Model\V1Null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \AuthzAdmin\Client\Model\V1Null, HTTP status code, HTTP response headers (array of strings)
      */
     public function adminAPICreateSubjectRoleMappingWithHttpInfo($body)
     {
-        $returnType = '\Swagger\Client\Model\V1Null';
+        $returnType = '\AuthzAdmin\Client\Model\V1Null';
         $request = $this->adminAPICreateSubjectRoleMappingRequest($body);
 
         try {
@@ -2617,7 +2617,7 @@ class AdminAPIApi
                 case 200:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Swagger\Client\Model\V1Null',
+                        '\AuthzAdmin\Client\Model\V1Null',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -2625,7 +2625,7 @@ class AdminAPIApi
                 default:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Swagger\Client\Model\RpcStatus',
+                        '\AuthzAdmin\Client\Model\RpcStatus',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -2640,7 +2640,7 @@ class AdminAPIApi
      *
      * CreateSubjectRoleMapping assigns the role to a subject entity in AuthZ policy store.
      *
-     * @param  \Swagger\Client\Model\V1SubjectRoleMapping $body (required)
+     * @param  \AuthzAdmin\Client\Model\V1SubjectRoleMapping $body (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
@@ -2660,14 +2660,14 @@ class AdminAPIApi
      *
      * CreateSubjectRoleMapping assigns the role to a subject entity in AuthZ policy store.
      *
-     * @param  \Swagger\Client\Model\V1SubjectRoleMapping $body (required)
+     * @param  \AuthzAdmin\Client\Model\V1SubjectRoleMapping $body (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
     public function adminAPICreateSubjectRoleMappingAsyncWithHttpInfo($body)
     {
-        $returnType = '\Swagger\Client\Model\V1Null';
+        $returnType = '\AuthzAdmin\Client\Model\V1Null';
         $request = $this->adminAPICreateSubjectRoleMappingRequest($body);
 
         return $this->client
@@ -2710,7 +2710,7 @@ class AdminAPIApi
     /**
      * Create request for operation 'adminAPICreateSubjectRoleMapping'
      *
-     * @param  \Swagger\Client\Model\V1SubjectRoleMapping $body (required)
+     * @param  \AuthzAdmin\Client\Model\V1SubjectRoleMapping $body (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Psr7\Request
@@ -2816,9 +2816,9 @@ class AdminAPIApi
      * @param  string $name name (optional)
      * @param  string $type type (optional, default to ACTION_TYPE_C)
      *
-     * @throws \Swagger\Client\ApiException on non-2xx response
+     * @throws \AuthzAdmin\Client\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return \Swagger\Client\Model\V1Null
+     * @return \AuthzAdmin\Client\Model\V1Null
      */
     public function adminAPIDeleteAction($id, $name = null, $type = 'ACTION_TYPE_C')
     {
@@ -2835,13 +2835,13 @@ class AdminAPIApi
      * @param  string $name (optional)
      * @param  string $type (optional, default to ACTION_TYPE_C)
      *
-     * @throws \Swagger\Client\ApiException on non-2xx response
+     * @throws \AuthzAdmin\Client\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return array of \Swagger\Client\Model\V1Null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \AuthzAdmin\Client\Model\V1Null, HTTP status code, HTTP response headers (array of strings)
      */
     public function adminAPIDeleteActionWithHttpInfo($id, $name = null, $type = 'ACTION_TYPE_C')
     {
-        $returnType = '\Swagger\Client\Model\V1Null';
+        $returnType = '\AuthzAdmin\Client\Model\V1Null';
         $request = $this->adminAPIDeleteActionRequest($id, $name, $type);
 
         try {
@@ -2893,7 +2893,7 @@ class AdminAPIApi
                 case 200:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Swagger\Client\Model\V1Null',
+                        '\AuthzAdmin\Client\Model\V1Null',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -2901,7 +2901,7 @@ class AdminAPIApi
                 default:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Swagger\Client\Model\RpcStatus',
+                        '\AuthzAdmin\Client\Model\RpcStatus',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -2947,7 +2947,7 @@ class AdminAPIApi
      */
     public function adminAPIDeleteActionAsyncWithHttpInfo($id, $name = null, $type = 'ACTION_TYPE_C')
     {
-        $returnType = '\Swagger\Client\Model\V1Null';
+        $returnType = '\AuthzAdmin\Client\Model\V1Null';
         $request = $this->adminAPIDeleteActionRequest($id, $name, $type);
 
         return $this->client
@@ -3112,9 +3112,9 @@ class AdminAPIApi
      * @param  string $action_id action_id (optional)
      * @param  string $effect effect (optional, default to EFFECT_UNKNOWN)
      *
-     * @throws \Swagger\Client\ApiException on non-2xx response
+     * @throws \AuthzAdmin\Client\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return \Swagger\Client\Model\V1Null
+     * @return \AuthzAdmin\Client\Model\V1Null
      */
     public function adminAPIDeletePermission($id, $resource_id = null, $action_id = null, $effect = 'EFFECT_UNKNOWN')
     {
@@ -3132,13 +3132,13 @@ class AdminAPIApi
      * @param  string $action_id (optional)
      * @param  string $effect (optional, default to EFFECT_UNKNOWN)
      *
-     * @throws \Swagger\Client\ApiException on non-2xx response
+     * @throws \AuthzAdmin\Client\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return array of \Swagger\Client\Model\V1Null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \AuthzAdmin\Client\Model\V1Null, HTTP status code, HTTP response headers (array of strings)
      */
     public function adminAPIDeletePermissionWithHttpInfo($id, $resource_id = null, $action_id = null, $effect = 'EFFECT_UNKNOWN')
     {
-        $returnType = '\Swagger\Client\Model\V1Null';
+        $returnType = '\AuthzAdmin\Client\Model\V1Null';
         $request = $this->adminAPIDeletePermissionRequest($id, $resource_id, $action_id, $effect);
 
         try {
@@ -3190,7 +3190,7 @@ class AdminAPIApi
                 case 200:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Swagger\Client\Model\V1Null',
+                        '\AuthzAdmin\Client\Model\V1Null',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -3198,7 +3198,7 @@ class AdminAPIApi
                 default:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Swagger\Client\Model\RpcStatus',
+                        '\AuthzAdmin\Client\Model\RpcStatus',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -3246,7 +3246,7 @@ class AdminAPIApi
      */
     public function adminAPIDeletePermissionAsyncWithHttpInfo($id, $resource_id = null, $action_id = null, $effect = 'EFFECT_UNKNOWN')
     {
-        $returnType = '\Swagger\Client\Model\V1Null';
+        $returnType = '\AuthzAdmin\Client\Model\V1Null';
         $request = $this->adminAPIDeletePermissionRequest($id, $resource_id, $action_id, $effect);
 
         return $this->client
@@ -3419,9 +3419,9 @@ class AdminAPIApi
      * @param  bool $is_assignable is_assignable (optional)
      * @param  bool $is_active is_active (optional)
      *
-     * @throws \Swagger\Client\ApiException on non-2xx response
+     * @throws \AuthzAdmin\Client\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return \Swagger\Client\Model\V1Null
+     * @return \AuthzAdmin\Client\Model\V1Null
      */
     public function adminAPIDeletePolicy($id, $name = null, $origin_service_id = null, $permission_id = null, $type = 'ROLE_POLICY_TYPE_INTERNAL', $is_assignable = null, $is_active = null)
     {
@@ -3442,13 +3442,13 @@ class AdminAPIApi
      * @param  bool $is_assignable (optional)
      * @param  bool $is_active (optional)
      *
-     * @throws \Swagger\Client\ApiException on non-2xx response
+     * @throws \AuthzAdmin\Client\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return array of \Swagger\Client\Model\V1Null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \AuthzAdmin\Client\Model\V1Null, HTTP status code, HTTP response headers (array of strings)
      */
     public function adminAPIDeletePolicyWithHttpInfo($id, $name = null, $origin_service_id = null, $permission_id = null, $type = 'ROLE_POLICY_TYPE_INTERNAL', $is_assignable = null, $is_active = null)
     {
-        $returnType = '\Swagger\Client\Model\V1Null';
+        $returnType = '\AuthzAdmin\Client\Model\V1Null';
         $request = $this->adminAPIDeletePolicyRequest($id, $name, $origin_service_id, $permission_id, $type, $is_assignable, $is_active);
 
         try {
@@ -3500,7 +3500,7 @@ class AdminAPIApi
                 case 200:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Swagger\Client\Model\V1Null',
+                        '\AuthzAdmin\Client\Model\V1Null',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -3508,7 +3508,7 @@ class AdminAPIApi
                 default:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Swagger\Client\Model\RpcStatus',
+                        '\AuthzAdmin\Client\Model\RpcStatus',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -3562,7 +3562,7 @@ class AdminAPIApi
      */
     public function adminAPIDeletePolicyAsyncWithHttpInfo($id, $name = null, $origin_service_id = null, $permission_id = null, $type = 'ROLE_POLICY_TYPE_INTERNAL', $is_assignable = null, $is_active = null)
     {
-        $returnType = '\Swagger\Client\Model\V1Null';
+        $returnType = '\AuthzAdmin\Client\Model\V1Null';
         $request = $this->adminAPIDeletePolicyRequest($id, $name, $origin_service_id, $permission_id, $type, $is_assignable, $is_active);
 
         return $this->client
@@ -3745,9 +3745,9 @@ class AdminAPIApi
      * @param  string $id id (required)
      * @param  string $name name (optional)
      *
-     * @throws \Swagger\Client\ApiException on non-2xx response
+     * @throws \AuthzAdmin\Client\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return \Swagger\Client\Model\V1Null
+     * @return \AuthzAdmin\Client\Model\V1Null
      */
     public function adminAPIDeleteResource($id, $name = null)
     {
@@ -3763,13 +3763,13 @@ class AdminAPIApi
      * @param  string $id (required)
      * @param  string $name (optional)
      *
-     * @throws \Swagger\Client\ApiException on non-2xx response
+     * @throws \AuthzAdmin\Client\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return array of \Swagger\Client\Model\V1Null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \AuthzAdmin\Client\Model\V1Null, HTTP status code, HTTP response headers (array of strings)
      */
     public function adminAPIDeleteResourceWithHttpInfo($id, $name = null)
     {
-        $returnType = '\Swagger\Client\Model\V1Null';
+        $returnType = '\AuthzAdmin\Client\Model\V1Null';
         $request = $this->adminAPIDeleteResourceRequest($id, $name);
 
         try {
@@ -3821,7 +3821,7 @@ class AdminAPIApi
                 case 200:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Swagger\Client\Model\V1Null',
+                        '\AuthzAdmin\Client\Model\V1Null',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -3829,7 +3829,7 @@ class AdminAPIApi
                 default:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Swagger\Client\Model\RpcStatus',
+                        '\AuthzAdmin\Client\Model\RpcStatus',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -3873,7 +3873,7 @@ class AdminAPIApi
      */
     public function adminAPIDeleteResourceAsyncWithHttpInfo($id, $name = null)
     {
-        $returnType = '\Swagger\Client\Model\V1Null';
+        $returnType = '\AuthzAdmin\Client\Model\V1Null';
         $request = $this->adminAPIDeleteResourceRequest($id, $name);
 
         return $this->client
@@ -4031,9 +4031,9 @@ class AdminAPIApi
      * @param  string $id id (required)
      * @param  string $name name (optional)
      *
-     * @throws \Swagger\Client\ApiException on non-2xx response
+     * @throws \AuthzAdmin\Client\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return \Swagger\Client\Model\V1Null
+     * @return \AuthzAdmin\Client\Model\V1Null
      */
     public function adminAPIDeleteResourceGroup($id, $name = null)
     {
@@ -4049,13 +4049,13 @@ class AdminAPIApi
      * @param  string $id (required)
      * @param  string $name (optional)
      *
-     * @throws \Swagger\Client\ApiException on non-2xx response
+     * @throws \AuthzAdmin\Client\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return array of \Swagger\Client\Model\V1Null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \AuthzAdmin\Client\Model\V1Null, HTTP status code, HTTP response headers (array of strings)
      */
     public function adminAPIDeleteResourceGroupWithHttpInfo($id, $name = null)
     {
-        $returnType = '\Swagger\Client\Model\V1Null';
+        $returnType = '\AuthzAdmin\Client\Model\V1Null';
         $request = $this->adminAPIDeleteResourceGroupRequest($id, $name);
 
         try {
@@ -4107,7 +4107,7 @@ class AdminAPIApi
                 case 200:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Swagger\Client\Model\V1Null',
+                        '\AuthzAdmin\Client\Model\V1Null',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -4115,7 +4115,7 @@ class AdminAPIApi
                 default:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Swagger\Client\Model\RpcStatus',
+                        '\AuthzAdmin\Client\Model\RpcStatus',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -4159,7 +4159,7 @@ class AdminAPIApi
      */
     public function adminAPIDeleteResourceGroupAsyncWithHttpInfo($id, $name = null)
     {
-        $returnType = '\Swagger\Client\Model\V1Null';
+        $returnType = '\AuthzAdmin\Client\Model\V1Null';
         $request = $this->adminAPIDeleteResourceGroupRequest($id, $name);
 
         return $this->client
@@ -4317,9 +4317,9 @@ class AdminAPIApi
      * @param  string $resource_id resource_id (optional)
      * @param  string $group_id group_id (optional)
      *
-     * @throws \Swagger\Client\ApiException on non-2xx response
+     * @throws \AuthzAdmin\Client\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return \Swagger\Client\Model\V1Null
+     * @return \AuthzAdmin\Client\Model\V1Null
      */
     public function adminAPIDeleteResourceGroupMapping($resource_id = null, $group_id = null)
     {
@@ -4335,13 +4335,13 @@ class AdminAPIApi
      * @param  string $resource_id (optional)
      * @param  string $group_id (optional)
      *
-     * @throws \Swagger\Client\ApiException on non-2xx response
+     * @throws \AuthzAdmin\Client\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return array of \Swagger\Client\Model\V1Null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \AuthzAdmin\Client\Model\V1Null, HTTP status code, HTTP response headers (array of strings)
      */
     public function adminAPIDeleteResourceGroupMappingWithHttpInfo($resource_id = null, $group_id = null)
     {
-        $returnType = '\Swagger\Client\Model\V1Null';
+        $returnType = '\AuthzAdmin\Client\Model\V1Null';
         $request = $this->adminAPIDeleteResourceGroupMappingRequest($resource_id, $group_id);
 
         try {
@@ -4393,7 +4393,7 @@ class AdminAPIApi
                 case 200:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Swagger\Client\Model\V1Null',
+                        '\AuthzAdmin\Client\Model\V1Null',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -4401,7 +4401,7 @@ class AdminAPIApi
                 default:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Swagger\Client\Model\RpcStatus',
+                        '\AuthzAdmin\Client\Model\RpcStatus',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -4445,7 +4445,7 @@ class AdminAPIApi
      */
     public function adminAPIDeleteResourceGroupMappingAsyncWithHttpInfo($resource_id = null, $group_id = null)
     {
-        $returnType = '\Swagger\Client\Model\V1Null';
+        $returnType = '\AuthzAdmin\Client\Model\V1Null';
         $request = $this->adminAPIDeleteResourceGroupMappingRequest($resource_id, $group_id);
 
         return $this->client
@@ -4597,9 +4597,9 @@ class AdminAPIApi
      * @param  string $owner_type owner_type (optional)
      * @param  string $owner_id owner_id (optional)
      *
-     * @throws \Swagger\Client\ApiException on non-2xx response
+     * @throws \AuthzAdmin\Client\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return \Swagger\Client\Model\V1Null
+     * @return \AuthzAdmin\Client\Model\V1Null
      */
     public function adminAPIDeleteRole($id, $name = null, $org_id = null, $type = 'ROLE_POLICY_TYPE_INTERNAL', $owner_type = null, $owner_id = null)
     {
@@ -4619,13 +4619,13 @@ class AdminAPIApi
      * @param  string $owner_type (optional)
      * @param  string $owner_id (optional)
      *
-     * @throws \Swagger\Client\ApiException on non-2xx response
+     * @throws \AuthzAdmin\Client\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return array of \Swagger\Client\Model\V1Null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \AuthzAdmin\Client\Model\V1Null, HTTP status code, HTTP response headers (array of strings)
      */
     public function adminAPIDeleteRoleWithHttpInfo($id, $name = null, $org_id = null, $type = 'ROLE_POLICY_TYPE_INTERNAL', $owner_type = null, $owner_id = null)
     {
-        $returnType = '\Swagger\Client\Model\V1Null';
+        $returnType = '\AuthzAdmin\Client\Model\V1Null';
         $request = $this->adminAPIDeleteRoleRequest($id, $name, $org_id, $type, $owner_type, $owner_id);
 
         try {
@@ -4677,7 +4677,7 @@ class AdminAPIApi
                 case 200:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Swagger\Client\Model\V1Null',
+                        '\AuthzAdmin\Client\Model\V1Null',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -4685,7 +4685,7 @@ class AdminAPIApi
                 default:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Swagger\Client\Model\RpcStatus',
+                        '\AuthzAdmin\Client\Model\RpcStatus',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -4737,7 +4737,7 @@ class AdminAPIApi
      */
     public function adminAPIDeleteRoleAsyncWithHttpInfo($id, $name = null, $org_id = null, $type = 'ROLE_POLICY_TYPE_INTERNAL', $owner_type = null, $owner_id = null)
     {
-        $returnType = '\Swagger\Client\Model\V1Null';
+        $returnType = '\AuthzAdmin\Client\Model\V1Null';
         $request = $this->adminAPIDeleteRoleRequest($id, $name, $org_id, $type, $owner_type, $owner_id);
 
         return $this->client
@@ -4915,9 +4915,9 @@ class AdminAPIApi
      * @param  string $role_id role_id (optional)
      * @param  string $policy_id policy_id (optional)
      *
-     * @throws \Swagger\Client\ApiException on non-2xx response
+     * @throws \AuthzAdmin\Client\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return \Swagger\Client\Model\V1Null
+     * @return \AuthzAdmin\Client\Model\V1Null
      */
     public function adminAPIDeleteRolePolicyMapping($role_id = null, $policy_id = null)
     {
@@ -4933,13 +4933,13 @@ class AdminAPIApi
      * @param  string $role_id (optional)
      * @param  string $policy_id (optional)
      *
-     * @throws \Swagger\Client\ApiException on non-2xx response
+     * @throws \AuthzAdmin\Client\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return array of \Swagger\Client\Model\V1Null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \AuthzAdmin\Client\Model\V1Null, HTTP status code, HTTP response headers (array of strings)
      */
     public function adminAPIDeleteRolePolicyMappingWithHttpInfo($role_id = null, $policy_id = null)
     {
-        $returnType = '\Swagger\Client\Model\V1Null';
+        $returnType = '\AuthzAdmin\Client\Model\V1Null';
         $request = $this->adminAPIDeleteRolePolicyMappingRequest($role_id, $policy_id);
 
         try {
@@ -4991,7 +4991,7 @@ class AdminAPIApi
                 case 200:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Swagger\Client\Model\V1Null',
+                        '\AuthzAdmin\Client\Model\V1Null',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -4999,7 +4999,7 @@ class AdminAPIApi
                 default:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Swagger\Client\Model\RpcStatus',
+                        '\AuthzAdmin\Client\Model\RpcStatus',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -5043,7 +5043,7 @@ class AdminAPIApi
      */
     public function adminAPIDeleteRolePolicyMappingAsyncWithHttpInfo($role_id = null, $policy_id = null)
     {
-        $returnType = '\Swagger\Client\Model\V1Null';
+        $returnType = '\AuthzAdmin\Client\Model\V1Null';
         $request = $this->adminAPIDeleteRolePolicyMappingRequest($role_id, $policy_id);
 
         return $this->client
@@ -5191,9 +5191,9 @@ class AdminAPIApi
      * @param  string $id id (required)
      * @param  string $name name (optional)
      *
-     * @throws \Swagger\Client\ApiException on non-2xx response
+     * @throws \AuthzAdmin\Client\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return \Swagger\Client\Model\V1Null
+     * @return \AuthzAdmin\Client\Model\V1Null
      */
     public function adminAPIDeleteService($id, $name = null)
     {
@@ -5209,13 +5209,13 @@ class AdminAPIApi
      * @param  string $id (required)
      * @param  string $name (optional)
      *
-     * @throws \Swagger\Client\ApiException on non-2xx response
+     * @throws \AuthzAdmin\Client\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return array of \Swagger\Client\Model\V1Null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \AuthzAdmin\Client\Model\V1Null, HTTP status code, HTTP response headers (array of strings)
      */
     public function adminAPIDeleteServiceWithHttpInfo($id, $name = null)
     {
-        $returnType = '\Swagger\Client\Model\V1Null';
+        $returnType = '\AuthzAdmin\Client\Model\V1Null';
         $request = $this->adminAPIDeleteServiceRequest($id, $name);
 
         try {
@@ -5267,7 +5267,7 @@ class AdminAPIApi
                 case 200:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Swagger\Client\Model\V1Null',
+                        '\AuthzAdmin\Client\Model\V1Null',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -5275,7 +5275,7 @@ class AdminAPIApi
                 default:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Swagger\Client\Model\RpcStatus',
+                        '\AuthzAdmin\Client\Model\RpcStatus',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -5319,7 +5319,7 @@ class AdminAPIApi
      */
     public function adminAPIDeleteServiceAsyncWithHttpInfo($id, $name = null)
     {
-        $returnType = '\Swagger\Client\Model\V1Null';
+        $returnType = '\AuthzAdmin\Client\Model\V1Null';
         $request = $this->adminAPIDeleteServiceRequest($id, $name);
 
         return $this->client
@@ -5480,9 +5480,9 @@ class AdminAPIApi
      * @param  string $key_owner_id key_owner_id (optional)
      * @param  string[] $role_names role_names (optional)
      *
-     * @throws \Swagger\Client\ApiException on non-2xx response
+     * @throws \AuthzAdmin\Client\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return \Swagger\Client\Model\V1Null
+     * @return \AuthzAdmin\Client\Model\V1Null
      */
     public function adminAPIDeleteSubject($role_id = null, $key_id = null, $key_owner_type = null, $key_owner_id = null, $role_names = null)
     {
@@ -5501,13 +5501,13 @@ class AdminAPIApi
      * @param  string $key_owner_id (optional)
      * @param  string[] $role_names (optional)
      *
-     * @throws \Swagger\Client\ApiException on non-2xx response
+     * @throws \AuthzAdmin\Client\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return array of \Swagger\Client\Model\V1Null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \AuthzAdmin\Client\Model\V1Null, HTTP status code, HTTP response headers (array of strings)
      */
     public function adminAPIDeleteSubjectWithHttpInfo($role_id = null, $key_id = null, $key_owner_type = null, $key_owner_id = null, $role_names = null)
     {
-        $returnType = '\Swagger\Client\Model\V1Null';
+        $returnType = '\AuthzAdmin\Client\Model\V1Null';
         $request = $this->adminAPIDeleteSubjectRequest($role_id, $key_id, $key_owner_type, $key_owner_id, $role_names);
 
         try {
@@ -5559,7 +5559,7 @@ class AdminAPIApi
                 case 200:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Swagger\Client\Model\V1Null',
+                        '\AuthzAdmin\Client\Model\V1Null',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -5567,7 +5567,7 @@ class AdminAPIApi
                 default:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Swagger\Client\Model\RpcStatus',
+                        '\AuthzAdmin\Client\Model\RpcStatus',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -5617,7 +5617,7 @@ class AdminAPIApi
      */
     public function adminAPIDeleteSubjectAsyncWithHttpInfo($role_id = null, $key_id = null, $key_owner_type = null, $key_owner_id = null, $role_names = null)
     {
-        $returnType = '\Swagger\Client\Model\V1Null';
+        $returnType = '\AuthzAdmin\Client\Model\V1Null';
         $request = $this->adminAPIDeleteSubjectRequest($role_id, $key_id, $key_owner_type, $key_owner_id, $role_names);
 
         return $this->client
@@ -5789,9 +5789,9 @@ class AdminAPIApi
      * @param  string $key_owner_id key_owner_id (optional)
      * @param  string[] $role_names role_names (optional)
      *
-     * @throws \Swagger\Client\ApiException on non-2xx response
+     * @throws \AuthzAdmin\Client\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return \Swagger\Client\Model\V1Null
+     * @return \AuthzAdmin\Client\Model\V1Null
      */
     public function adminAPIDeleteSubjectRoleMapping($role_id = null, $key_id = null, $key_owner_type = null, $key_owner_id = null, $role_names = null)
     {
@@ -5810,13 +5810,13 @@ class AdminAPIApi
      * @param  string $key_owner_id (optional)
      * @param  string[] $role_names (optional)
      *
-     * @throws \Swagger\Client\ApiException on non-2xx response
+     * @throws \AuthzAdmin\Client\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return array of \Swagger\Client\Model\V1Null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \AuthzAdmin\Client\Model\V1Null, HTTP status code, HTTP response headers (array of strings)
      */
     public function adminAPIDeleteSubjectRoleMappingWithHttpInfo($role_id = null, $key_id = null, $key_owner_type = null, $key_owner_id = null, $role_names = null)
     {
-        $returnType = '\Swagger\Client\Model\V1Null';
+        $returnType = '\AuthzAdmin\Client\Model\V1Null';
         $request = $this->adminAPIDeleteSubjectRoleMappingRequest($role_id, $key_id, $key_owner_type, $key_owner_id, $role_names);
 
         try {
@@ -5868,7 +5868,7 @@ class AdminAPIApi
                 case 200:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Swagger\Client\Model\V1Null',
+                        '\AuthzAdmin\Client\Model\V1Null',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -5876,7 +5876,7 @@ class AdminAPIApi
                 default:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Swagger\Client\Model\RpcStatus',
+                        '\AuthzAdmin\Client\Model\RpcStatus',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -5926,7 +5926,7 @@ class AdminAPIApi
      */
     public function adminAPIDeleteSubjectRoleMappingAsyncWithHttpInfo($role_id = null, $key_id = null, $key_owner_type = null, $key_owner_id = null, $role_names = null)
     {
-        $returnType = '\Swagger\Client\Model\V1Null';
+        $returnType = '\AuthzAdmin\Client\Model\V1Null';
         $request = $this->adminAPIDeleteSubjectRoleMappingRequest($role_id, $key_id, $key_owner_type, $key_owner_id, $role_names);
 
         return $this->client
@@ -6095,9 +6095,9 @@ class AdminAPIApi
      * @param  string $pagination_token pagination_token (optional)
      * @param  string $action_name_prefix action_name_prefix (optional)
      *
-     * @throws \Swagger\Client\ApiException on non-2xx response
+     * @throws \AuthzAdmin\Client\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return \Swagger\Client\Model\V1ListActionResponse
+     * @return \AuthzAdmin\Client\Model\V1ListActionResponse
      */
     public function adminAPIListAction($pagination_token = null, $action_name_prefix = null)
     {
@@ -6113,13 +6113,13 @@ class AdminAPIApi
      * @param  string $pagination_token (optional)
      * @param  string $action_name_prefix (optional)
      *
-     * @throws \Swagger\Client\ApiException on non-2xx response
+     * @throws \AuthzAdmin\Client\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return array of \Swagger\Client\Model\V1ListActionResponse, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \AuthzAdmin\Client\Model\V1ListActionResponse, HTTP status code, HTTP response headers (array of strings)
      */
     public function adminAPIListActionWithHttpInfo($pagination_token = null, $action_name_prefix = null)
     {
-        $returnType = '\Swagger\Client\Model\V1ListActionResponse';
+        $returnType = '\AuthzAdmin\Client\Model\V1ListActionResponse';
         $request = $this->adminAPIListActionRequest($pagination_token, $action_name_prefix);
 
         try {
@@ -6171,7 +6171,7 @@ class AdminAPIApi
                 case 200:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Swagger\Client\Model\V1ListActionResponse',
+                        '\AuthzAdmin\Client\Model\V1ListActionResponse',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -6179,7 +6179,7 @@ class AdminAPIApi
                 default:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Swagger\Client\Model\RpcStatus',
+                        '\AuthzAdmin\Client\Model\RpcStatus',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -6223,7 +6223,7 @@ class AdminAPIApi
      */
     public function adminAPIListActionAsyncWithHttpInfo($pagination_token = null, $action_name_prefix = null)
     {
-        $returnType = '\Swagger\Client\Model\V1ListActionResponse';
+        $returnType = '\AuthzAdmin\Client\Model\V1ListActionResponse';
         $request = $this->adminAPIListActionRequest($pagination_token, $action_name_prefix);
 
         return $this->client
@@ -6373,9 +6373,9 @@ class AdminAPIApi
      * @param  string[] $resource_id_list resource_id_list (optional)
      * @param  string[] $action_id_list action_id_list (optional)
      *
-     * @throws \Swagger\Client\ApiException on non-2xx response
+     * @throws \AuthzAdmin\Client\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return \Swagger\Client\Model\V1ListPermissionResponse
+     * @return \AuthzAdmin\Client\Model\V1ListPermissionResponse
      */
     public function adminAPIListPermission($pagination_token = null, $resource_group_id_list = null, $resource_id_list = null, $action_id_list = null)
     {
@@ -6393,13 +6393,13 @@ class AdminAPIApi
      * @param  string[] $resource_id_list (optional)
      * @param  string[] $action_id_list (optional)
      *
-     * @throws \Swagger\Client\ApiException on non-2xx response
+     * @throws \AuthzAdmin\Client\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return array of \Swagger\Client\Model\V1ListPermissionResponse, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \AuthzAdmin\Client\Model\V1ListPermissionResponse, HTTP status code, HTTP response headers (array of strings)
      */
     public function adminAPIListPermissionWithHttpInfo($pagination_token = null, $resource_group_id_list = null, $resource_id_list = null, $action_id_list = null)
     {
-        $returnType = '\Swagger\Client\Model\V1ListPermissionResponse';
+        $returnType = '\AuthzAdmin\Client\Model\V1ListPermissionResponse';
         $request = $this->adminAPIListPermissionRequest($pagination_token, $resource_group_id_list, $resource_id_list, $action_id_list);
 
         try {
@@ -6451,7 +6451,7 @@ class AdminAPIApi
                 case 200:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Swagger\Client\Model\V1ListPermissionResponse',
+                        '\AuthzAdmin\Client\Model\V1ListPermissionResponse',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -6459,7 +6459,7 @@ class AdminAPIApi
                 default:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Swagger\Client\Model\RpcStatus',
+                        '\AuthzAdmin\Client\Model\RpcStatus',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -6507,7 +6507,7 @@ class AdminAPIApi
      */
     public function adminAPIListPermissionAsyncWithHttpInfo($pagination_token = null, $resource_group_id_list = null, $resource_id_list = null, $action_id_list = null)
     {
-        $returnType = '\Swagger\Client\Model\V1ListPermissionResponse';
+        $returnType = '\AuthzAdmin\Client\Model\V1ListPermissionResponse';
         $request = $this->adminAPIListPermissionRequest($pagination_token, $resource_group_id_list, $resource_id_list, $action_id_list);
 
         return $this->client
@@ -6674,17 +6674,19 @@ class AdminAPIApi
      * @param  string $pagination_token pagination_token (optional)
      * @param  string[] $resource_group_id_list resource_group_id_list (optional)
      * @param  string[] $resource_id_list resource_id_list (optional)
-     * @param  string $role_id role_id (optional)
+     * @param  string $role_id DEPRECATED: use role_names and org_id instead. (optional)
      * @param  string[] $service_id_list service_id_list (optional)
      * @param  string[] $permission_id_list permission_id_list (optional)
+     * @param  string[] $role_names role_names (optional)
+     * @param  string $org_id org_id (optional)
      *
-     * @throws \Swagger\Client\ApiException on non-2xx response
+     * @throws \AuthzAdmin\Client\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return \Swagger\Client\Model\V1ListPolicyResponse
+     * @return \AuthzAdmin\Client\Model\V1ListPolicyResponse
      */
-    public function adminAPIListPolicy($pagination_token = null, $resource_group_id_list = null, $resource_id_list = null, $role_id = null, $service_id_list = null, $permission_id_list = null)
+    public function adminAPIListPolicy($pagination_token = null, $resource_group_id_list = null, $resource_id_list = null, $role_id = null, $service_id_list = null, $permission_id_list = null, $role_names = null, $org_id = null)
     {
-        list($response) = $this->adminAPIListPolicyWithHttpInfo($pagination_token, $resource_group_id_list, $resource_id_list, $role_id, $service_id_list, $permission_id_list);
+        list($response) = $this->adminAPIListPolicyWithHttpInfo($pagination_token, $resource_group_id_list, $resource_id_list, $role_id, $service_id_list, $permission_id_list, $role_names, $org_id);
         return $response;
     }
 
@@ -6696,18 +6698,20 @@ class AdminAPIApi
      * @param  string $pagination_token (optional)
      * @param  string[] $resource_group_id_list (optional)
      * @param  string[] $resource_id_list (optional)
-     * @param  string $role_id (optional)
+     * @param  string $role_id DEPRECATED: use role_names and org_id instead. (optional)
      * @param  string[] $service_id_list (optional)
      * @param  string[] $permission_id_list (optional)
+     * @param  string[] $role_names (optional)
+     * @param  string $org_id (optional)
      *
-     * @throws \Swagger\Client\ApiException on non-2xx response
+     * @throws \AuthzAdmin\Client\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return array of \Swagger\Client\Model\V1ListPolicyResponse, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \AuthzAdmin\Client\Model\V1ListPolicyResponse, HTTP status code, HTTP response headers (array of strings)
      */
-    public function adminAPIListPolicyWithHttpInfo($pagination_token = null, $resource_group_id_list = null, $resource_id_list = null, $role_id = null, $service_id_list = null, $permission_id_list = null)
+    public function adminAPIListPolicyWithHttpInfo($pagination_token = null, $resource_group_id_list = null, $resource_id_list = null, $role_id = null, $service_id_list = null, $permission_id_list = null, $role_names = null, $org_id = null)
     {
-        $returnType = '\Swagger\Client\Model\V1ListPolicyResponse';
-        $request = $this->adminAPIListPolicyRequest($pagination_token, $resource_group_id_list, $resource_id_list, $role_id, $service_id_list, $permission_id_list);
+        $returnType = '\AuthzAdmin\Client\Model\V1ListPolicyResponse';
+        $request = $this->adminAPIListPolicyRequest($pagination_token, $resource_group_id_list, $resource_id_list, $role_id, $service_id_list, $permission_id_list, $role_names, $org_id);
 
         try {
             $options = $this->createHttpClientOption();
@@ -6758,7 +6762,7 @@ class AdminAPIApi
                 case 200:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Swagger\Client\Model\V1ListPolicyResponse',
+                        '\AuthzAdmin\Client\Model\V1ListPolicyResponse',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -6766,7 +6770,7 @@ class AdminAPIApi
                 default:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Swagger\Client\Model\RpcStatus',
+                        '\AuthzAdmin\Client\Model\RpcStatus',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -6784,16 +6788,18 @@ class AdminAPIApi
      * @param  string $pagination_token (optional)
      * @param  string[] $resource_group_id_list (optional)
      * @param  string[] $resource_id_list (optional)
-     * @param  string $role_id (optional)
+     * @param  string $role_id DEPRECATED: use role_names and org_id instead. (optional)
      * @param  string[] $service_id_list (optional)
      * @param  string[] $permission_id_list (optional)
+     * @param  string[] $role_names (optional)
+     * @param  string $org_id (optional)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
-    public function adminAPIListPolicyAsync($pagination_token = null, $resource_group_id_list = null, $resource_id_list = null, $role_id = null, $service_id_list = null, $permission_id_list = null)
+    public function adminAPIListPolicyAsync($pagination_token = null, $resource_group_id_list = null, $resource_id_list = null, $role_id = null, $service_id_list = null, $permission_id_list = null, $role_names = null, $org_id = null)
     {
-        return $this->adminAPIListPolicyAsyncWithHttpInfo($pagination_token, $resource_group_id_list, $resource_id_list, $role_id, $service_id_list, $permission_id_list)
+        return $this->adminAPIListPolicyAsyncWithHttpInfo($pagination_token, $resource_group_id_list, $resource_id_list, $role_id, $service_id_list, $permission_id_list, $role_names, $org_id)
             ->then(
                 function ($response) {
                     return $response[0];
@@ -6809,17 +6815,19 @@ class AdminAPIApi
      * @param  string $pagination_token (optional)
      * @param  string[] $resource_group_id_list (optional)
      * @param  string[] $resource_id_list (optional)
-     * @param  string $role_id (optional)
+     * @param  string $role_id DEPRECATED: use role_names and org_id instead. (optional)
      * @param  string[] $service_id_list (optional)
      * @param  string[] $permission_id_list (optional)
+     * @param  string[] $role_names (optional)
+     * @param  string $org_id (optional)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
-    public function adminAPIListPolicyAsyncWithHttpInfo($pagination_token = null, $resource_group_id_list = null, $resource_id_list = null, $role_id = null, $service_id_list = null, $permission_id_list = null)
+    public function adminAPIListPolicyAsyncWithHttpInfo($pagination_token = null, $resource_group_id_list = null, $resource_id_list = null, $role_id = null, $service_id_list = null, $permission_id_list = null, $role_names = null, $org_id = null)
     {
-        $returnType = '\Swagger\Client\Model\V1ListPolicyResponse';
-        $request = $this->adminAPIListPolicyRequest($pagination_token, $resource_group_id_list, $resource_id_list, $role_id, $service_id_list, $permission_id_list);
+        $returnType = '\AuthzAdmin\Client\Model\V1ListPolicyResponse';
+        $request = $this->adminAPIListPolicyRequest($pagination_token, $resource_group_id_list, $resource_id_list, $role_id, $service_id_list, $permission_id_list, $role_names, $org_id);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
@@ -6864,14 +6872,16 @@ class AdminAPIApi
      * @param  string $pagination_token (optional)
      * @param  string[] $resource_group_id_list (optional)
      * @param  string[] $resource_id_list (optional)
-     * @param  string $role_id (optional)
+     * @param  string $role_id DEPRECATED: use role_names and org_id instead. (optional)
      * @param  string[] $service_id_list (optional)
      * @param  string[] $permission_id_list (optional)
+     * @param  string[] $role_names (optional)
+     * @param  string $org_id (optional)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Psr7\Request
      */
-    protected function adminAPIListPolicyRequest($pagination_token = null, $resource_group_id_list = null, $resource_id_list = null, $role_id = null, $service_id_list = null, $permission_id_list = null)
+    protected function adminAPIListPolicyRequest($pagination_token = null, $resource_group_id_list = null, $resource_id_list = null, $role_id = null, $service_id_list = null, $permission_id_list = null, $role_names = null, $org_id = null)
     {
 
         $resourcePath = '/v1/policies';
@@ -6916,6 +6926,17 @@ class AdminAPIApi
         } else
         if ($permission_id_list !== null) {
             $queryParams['permissionIdList'] = ObjectSerializer::toQueryValue($permission_id_list);
+        }
+        // query params
+        if (is_array($role_names)) {
+            $queryParams['roleNames'] = $role_names;
+        } else
+        if ($role_names !== null) {
+            $queryParams['roleNames'] = ObjectSerializer::toQueryValue($role_names);
+        }
+        // query params
+        if ($org_id !== null) {
+            $queryParams['orgId'] = ObjectSerializer::toQueryValue($org_id);
         }
 
 
@@ -7000,9 +7021,9 @@ class AdminAPIApi
      * @param  string $resource_group_name_prefix resource_group_name_prefix (optional)
      * @param  string $resource_name_prefix resource_name_prefix (optional)
      *
-     * @throws \Swagger\Client\ApiException on non-2xx response
+     * @throws \AuthzAdmin\Client\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return \Swagger\Client\Model\V1ListResourceResponse
+     * @return \AuthzAdmin\Client\Model\V1ListResourceResponse
      */
     public function adminAPIListResource($pagination_token = null, $resource_group_id = null, $resource_group_name_prefix = null, $resource_name_prefix = null)
     {
@@ -7020,13 +7041,13 @@ class AdminAPIApi
      * @param  string $resource_group_name_prefix (optional)
      * @param  string $resource_name_prefix (optional)
      *
-     * @throws \Swagger\Client\ApiException on non-2xx response
+     * @throws \AuthzAdmin\Client\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return array of \Swagger\Client\Model\V1ListResourceResponse, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \AuthzAdmin\Client\Model\V1ListResourceResponse, HTTP status code, HTTP response headers (array of strings)
      */
     public function adminAPIListResourceWithHttpInfo($pagination_token = null, $resource_group_id = null, $resource_group_name_prefix = null, $resource_name_prefix = null)
     {
-        $returnType = '\Swagger\Client\Model\V1ListResourceResponse';
+        $returnType = '\AuthzAdmin\Client\Model\V1ListResourceResponse';
         $request = $this->adminAPIListResourceRequest($pagination_token, $resource_group_id, $resource_group_name_prefix, $resource_name_prefix);
 
         try {
@@ -7078,7 +7099,7 @@ class AdminAPIApi
                 case 200:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Swagger\Client\Model\V1ListResourceResponse',
+                        '\AuthzAdmin\Client\Model\V1ListResourceResponse',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -7086,7 +7107,7 @@ class AdminAPIApi
                 default:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Swagger\Client\Model\RpcStatus',
+                        '\AuthzAdmin\Client\Model\RpcStatus',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -7134,7 +7155,7 @@ class AdminAPIApi
      */
     public function adminAPIListResourceAsyncWithHttpInfo($pagination_token = null, $resource_group_id = null, $resource_group_name_prefix = null, $resource_name_prefix = null)
     {
-        $returnType = '\Swagger\Client\Model\V1ListResourceResponse';
+        $returnType = '\AuthzAdmin\Client\Model\V1ListResourceResponse';
         $request = $this->adminAPIListResourceRequest($pagination_token, $resource_group_id, $resource_group_name_prefix, $resource_name_prefix);
 
         return $this->client
@@ -7292,9 +7313,9 @@ class AdminAPIApi
      * @param  string $pagination_token pagination_token (optional)
      * @param  string $resource_group_name_prefix resource_group_name_prefix (optional)
      *
-     * @throws \Swagger\Client\ApiException on non-2xx response
+     * @throws \AuthzAdmin\Client\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return \Swagger\Client\Model\V1ListResourceGroupResponse
+     * @return \AuthzAdmin\Client\Model\V1ListResourceGroupResponse
      */
     public function adminAPIListResourceGroup($pagination_token = null, $resource_group_name_prefix = null)
     {
@@ -7310,13 +7331,13 @@ class AdminAPIApi
      * @param  string $pagination_token (optional)
      * @param  string $resource_group_name_prefix (optional)
      *
-     * @throws \Swagger\Client\ApiException on non-2xx response
+     * @throws \AuthzAdmin\Client\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return array of \Swagger\Client\Model\V1ListResourceGroupResponse, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \AuthzAdmin\Client\Model\V1ListResourceGroupResponse, HTTP status code, HTTP response headers (array of strings)
      */
     public function adminAPIListResourceGroupWithHttpInfo($pagination_token = null, $resource_group_name_prefix = null)
     {
-        $returnType = '\Swagger\Client\Model\V1ListResourceGroupResponse';
+        $returnType = '\AuthzAdmin\Client\Model\V1ListResourceGroupResponse';
         $request = $this->adminAPIListResourceGroupRequest($pagination_token, $resource_group_name_prefix);
 
         try {
@@ -7368,7 +7389,7 @@ class AdminAPIApi
                 case 200:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Swagger\Client\Model\V1ListResourceGroupResponse',
+                        '\AuthzAdmin\Client\Model\V1ListResourceGroupResponse',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -7376,7 +7397,7 @@ class AdminAPIApi
                 default:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Swagger\Client\Model\RpcStatus',
+                        '\AuthzAdmin\Client\Model\RpcStatus',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -7420,7 +7441,7 @@ class AdminAPIApi
      */
     public function adminAPIListResourceGroupAsyncWithHttpInfo($pagination_token = null, $resource_group_name_prefix = null)
     {
-        $returnType = '\Swagger\Client\Model\V1ListResourceGroupResponse';
+        $returnType = '\AuthzAdmin\Client\Model\V1ListResourceGroupResponse';
         $request = $this->adminAPIListResourceGroupRequest($pagination_token, $resource_group_name_prefix);
 
         return $this->client
@@ -7569,14 +7590,15 @@ class AdminAPIApi
      * @param  string $role_name_prefix role_name_prefix (optional)
      * @param  string[] $role_names role_names (optional)
      * @param  string[] $role_ids role_ids (optional)
+     * @param  string $org_id org_id (optional)
      *
-     * @throws \Swagger\Client\ApiException on non-2xx response
+     * @throws \AuthzAdmin\Client\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return \Swagger\Client\Model\V1ListRoleResponse
+     * @return \AuthzAdmin\Client\Model\V1ListRoleResponse
      */
-    public function adminAPIListRole($pagination_token = null, $role_name_prefix = null, $role_names = null, $role_ids = null)
+    public function adminAPIListRole($pagination_token = null, $role_name_prefix = null, $role_names = null, $role_ids = null, $org_id = null)
     {
-        list($response) = $this->adminAPIListRoleWithHttpInfo($pagination_token, $role_name_prefix, $role_names, $role_ids);
+        list($response) = $this->adminAPIListRoleWithHttpInfo($pagination_token, $role_name_prefix, $role_names, $role_ids, $org_id);
         return $response;
     }
 
@@ -7589,15 +7611,16 @@ class AdminAPIApi
      * @param  string $role_name_prefix (optional)
      * @param  string[] $role_names (optional)
      * @param  string[] $role_ids (optional)
+     * @param  string $org_id (optional)
      *
-     * @throws \Swagger\Client\ApiException on non-2xx response
+     * @throws \AuthzAdmin\Client\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return array of \Swagger\Client\Model\V1ListRoleResponse, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \AuthzAdmin\Client\Model\V1ListRoleResponse, HTTP status code, HTTP response headers (array of strings)
      */
-    public function adminAPIListRoleWithHttpInfo($pagination_token = null, $role_name_prefix = null, $role_names = null, $role_ids = null)
+    public function adminAPIListRoleWithHttpInfo($pagination_token = null, $role_name_prefix = null, $role_names = null, $role_ids = null, $org_id = null)
     {
-        $returnType = '\Swagger\Client\Model\V1ListRoleResponse';
-        $request = $this->adminAPIListRoleRequest($pagination_token, $role_name_prefix, $role_names, $role_ids);
+        $returnType = '\AuthzAdmin\Client\Model\V1ListRoleResponse';
+        $request = $this->adminAPIListRoleRequest($pagination_token, $role_name_prefix, $role_names, $role_ids, $org_id);
 
         try {
             $options = $this->createHttpClientOption();
@@ -7648,7 +7671,7 @@ class AdminAPIApi
                 case 200:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Swagger\Client\Model\V1ListRoleResponse',
+                        '\AuthzAdmin\Client\Model\V1ListRoleResponse',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -7656,7 +7679,7 @@ class AdminAPIApi
                 default:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Swagger\Client\Model\RpcStatus',
+                        '\AuthzAdmin\Client\Model\RpcStatus',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -7675,13 +7698,14 @@ class AdminAPIApi
      * @param  string $role_name_prefix (optional)
      * @param  string[] $role_names (optional)
      * @param  string[] $role_ids (optional)
+     * @param  string $org_id (optional)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
-    public function adminAPIListRoleAsync($pagination_token = null, $role_name_prefix = null, $role_names = null, $role_ids = null)
+    public function adminAPIListRoleAsync($pagination_token = null, $role_name_prefix = null, $role_names = null, $role_ids = null, $org_id = null)
     {
-        return $this->adminAPIListRoleAsyncWithHttpInfo($pagination_token, $role_name_prefix, $role_names, $role_ids)
+        return $this->adminAPIListRoleAsyncWithHttpInfo($pagination_token, $role_name_prefix, $role_names, $role_ids, $org_id)
             ->then(
                 function ($response) {
                     return $response[0];
@@ -7698,14 +7722,15 @@ class AdminAPIApi
      * @param  string $role_name_prefix (optional)
      * @param  string[] $role_names (optional)
      * @param  string[] $role_ids (optional)
+     * @param  string $org_id (optional)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
-    public function adminAPIListRoleAsyncWithHttpInfo($pagination_token = null, $role_name_prefix = null, $role_names = null, $role_ids = null)
+    public function adminAPIListRoleAsyncWithHttpInfo($pagination_token = null, $role_name_prefix = null, $role_names = null, $role_ids = null, $org_id = null)
     {
-        $returnType = '\Swagger\Client\Model\V1ListRoleResponse';
-        $request = $this->adminAPIListRoleRequest($pagination_token, $role_name_prefix, $role_names, $role_ids);
+        $returnType = '\AuthzAdmin\Client\Model\V1ListRoleResponse';
+        $request = $this->adminAPIListRoleRequest($pagination_token, $role_name_prefix, $role_names, $role_ids, $org_id);
 
         return $this->client
             ->sendAsync($request, $this->createHttpClientOption())
@@ -7751,11 +7776,12 @@ class AdminAPIApi
      * @param  string $role_name_prefix (optional)
      * @param  string[] $role_names (optional)
      * @param  string[] $role_ids (optional)
+     * @param  string $org_id (optional)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Psr7\Request
      */
-    protected function adminAPIListRoleRequest($pagination_token = null, $role_name_prefix = null, $role_names = null, $role_ids = null)
+    protected function adminAPIListRoleRequest($pagination_token = null, $role_name_prefix = null, $role_names = null, $role_ids = null, $org_id = null)
     {
 
         $resourcePath = '/v1/roles';
@@ -7786,6 +7812,10 @@ class AdminAPIApi
         } else
         if ($role_ids !== null) {
             $queryParams['roleIds'] = ObjectSerializer::toQueryValue($role_ids);
+        }
+        // query params
+        if ($org_id !== null) {
+            $queryParams['orgId'] = ObjectSerializer::toQueryValue($org_id);
         }
 
 
@@ -7868,9 +7898,9 @@ class AdminAPIApi
      * @param  string $pagination_token pagination_token (optional)
      * @param  string $service_name_prefix service_name_prefix (optional)
      *
-     * @throws \Swagger\Client\ApiException on non-2xx response
+     * @throws \AuthzAdmin\Client\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return \Swagger\Client\Model\V1ListServiceResponse
+     * @return \AuthzAdmin\Client\Model\V1ListServiceResponse
      */
     public function adminAPIListService($pagination_token = null, $service_name_prefix = null)
     {
@@ -7886,13 +7916,13 @@ class AdminAPIApi
      * @param  string $pagination_token (optional)
      * @param  string $service_name_prefix (optional)
      *
-     * @throws \Swagger\Client\ApiException on non-2xx response
+     * @throws \AuthzAdmin\Client\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return array of \Swagger\Client\Model\V1ListServiceResponse, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \AuthzAdmin\Client\Model\V1ListServiceResponse, HTTP status code, HTTP response headers (array of strings)
      */
     public function adminAPIListServiceWithHttpInfo($pagination_token = null, $service_name_prefix = null)
     {
-        $returnType = '\Swagger\Client\Model\V1ListServiceResponse';
+        $returnType = '\AuthzAdmin\Client\Model\V1ListServiceResponse';
         $request = $this->adminAPIListServiceRequest($pagination_token, $service_name_prefix);
 
         try {
@@ -7944,7 +7974,7 @@ class AdminAPIApi
                 case 200:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Swagger\Client\Model\V1ListServiceResponse',
+                        '\AuthzAdmin\Client\Model\V1ListServiceResponse',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -7952,7 +7982,7 @@ class AdminAPIApi
                 default:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Swagger\Client\Model\RpcStatus',
+                        '\AuthzAdmin\Client\Model\RpcStatus',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -7996,7 +8026,7 @@ class AdminAPIApi
      */
     public function adminAPIListServiceAsyncWithHttpInfo($pagination_token = null, $service_name_prefix = null)
     {
-        $returnType = '\Swagger\Client\Model\V1ListServiceResponse';
+        $returnType = '\AuthzAdmin\Client\Model\V1ListServiceResponse';
         $request = $this->adminAPIListServiceRequest($pagination_token, $service_name_prefix);
 
         return $this->client
@@ -8141,11 +8171,11 @@ class AdminAPIApi
      *
      * Recon is to be used for reconciliation of policies between MySQL & Consul.
      *
-     * @param  \Swagger\Client\Model\V1Null $body body (required)
+     * @param  \AuthzAdmin\Client\Model\V1Null $body body (required)
      *
-     * @throws \Swagger\Client\ApiException on non-2xx response
+     * @throws \AuthzAdmin\Client\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return \Swagger\Client\Model\V1Null
+     * @return \AuthzAdmin\Client\Model\V1Null
      */
     public function adminAPIRecon($body)
     {
@@ -8158,15 +8188,15 @@ class AdminAPIApi
      *
      * Recon is to be used for reconciliation of policies between MySQL & Consul.
      *
-     * @param  \Swagger\Client\Model\V1Null $body (required)
+     * @param  \AuthzAdmin\Client\Model\V1Null $body (required)
      *
-     * @throws \Swagger\Client\ApiException on non-2xx response
+     * @throws \AuthzAdmin\Client\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return array of \Swagger\Client\Model\V1Null, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \AuthzAdmin\Client\Model\V1Null, HTTP status code, HTTP response headers (array of strings)
      */
     public function adminAPIReconWithHttpInfo($body)
     {
-        $returnType = '\Swagger\Client\Model\V1Null';
+        $returnType = '\AuthzAdmin\Client\Model\V1Null';
         $request = $this->adminAPIReconRequest($body);
 
         try {
@@ -8218,7 +8248,7 @@ class AdminAPIApi
                 case 200:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Swagger\Client\Model\V1Null',
+                        '\AuthzAdmin\Client\Model\V1Null',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -8226,7 +8256,7 @@ class AdminAPIApi
                 default:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Swagger\Client\Model\RpcStatus',
+                        '\AuthzAdmin\Client\Model\RpcStatus',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -8241,7 +8271,7 @@ class AdminAPIApi
      *
      * Recon is to be used for reconciliation of policies between MySQL & Consul.
      *
-     * @param  \Swagger\Client\Model\V1Null $body (required)
+     * @param  \AuthzAdmin\Client\Model\V1Null $body (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
@@ -8261,14 +8291,14 @@ class AdminAPIApi
      *
      * Recon is to be used for reconciliation of policies between MySQL & Consul.
      *
-     * @param  \Swagger\Client\Model\V1Null $body (required)
+     * @param  \AuthzAdmin\Client\Model\V1Null $body (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
     public function adminAPIReconAsyncWithHttpInfo($body)
     {
-        $returnType = '\Swagger\Client\Model\V1Null';
+        $returnType = '\AuthzAdmin\Client\Model\V1Null';
         $request = $this->adminAPIReconRequest($body);
 
         return $this->client
@@ -8311,7 +8341,7 @@ class AdminAPIApi
     /**
      * Create request for operation 'adminAPIRecon'
      *
-     * @param  \Swagger\Client\Model\V1Null $body (required)
+     * @param  \AuthzAdmin\Client\Model\V1Null $body (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Psr7\Request
@@ -8413,11 +8443,11 @@ class AdminAPIApi
      *
      * UpdateAction creates the action entity in AuthZ policy store.
      *
-     * @param  \Swagger\Client\Model\V1Action $body body (required)
+     * @param  \AuthzAdmin\Client\Model\V1Action $body body (required)
      *
-     * @throws \Swagger\Client\ApiException on non-2xx response
+     * @throws \AuthzAdmin\Client\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return \Swagger\Client\Model\V1Action
+     * @return \AuthzAdmin\Client\Model\V1Action
      */
     public function adminAPIUpdateAction($body)
     {
@@ -8430,15 +8460,15 @@ class AdminAPIApi
      *
      * UpdateAction creates the action entity in AuthZ policy store.
      *
-     * @param  \Swagger\Client\Model\V1Action $body (required)
+     * @param  \AuthzAdmin\Client\Model\V1Action $body (required)
      *
-     * @throws \Swagger\Client\ApiException on non-2xx response
+     * @throws \AuthzAdmin\Client\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return array of \Swagger\Client\Model\V1Action, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \AuthzAdmin\Client\Model\V1Action, HTTP status code, HTTP response headers (array of strings)
      */
     public function adminAPIUpdateActionWithHttpInfo($body)
     {
-        $returnType = '\Swagger\Client\Model\V1Action';
+        $returnType = '\AuthzAdmin\Client\Model\V1Action';
         $request = $this->adminAPIUpdateActionRequest($body);
 
         try {
@@ -8490,7 +8520,7 @@ class AdminAPIApi
                 case 200:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Swagger\Client\Model\V1Action',
+                        '\AuthzAdmin\Client\Model\V1Action',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -8498,7 +8528,7 @@ class AdminAPIApi
                 default:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Swagger\Client\Model\RpcStatus',
+                        '\AuthzAdmin\Client\Model\RpcStatus',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -8513,7 +8543,7 @@ class AdminAPIApi
      *
      * UpdateAction creates the action entity in AuthZ policy store.
      *
-     * @param  \Swagger\Client\Model\V1Action $body (required)
+     * @param  \AuthzAdmin\Client\Model\V1Action $body (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
@@ -8533,14 +8563,14 @@ class AdminAPIApi
      *
      * UpdateAction creates the action entity in AuthZ policy store.
      *
-     * @param  \Swagger\Client\Model\V1Action $body (required)
+     * @param  \AuthzAdmin\Client\Model\V1Action $body (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
     public function adminAPIUpdateActionAsyncWithHttpInfo($body)
     {
-        $returnType = '\Swagger\Client\Model\V1Action';
+        $returnType = '\AuthzAdmin\Client\Model\V1Action';
         $request = $this->adminAPIUpdateActionRequest($body);
 
         return $this->client
@@ -8583,7 +8613,7 @@ class AdminAPIApi
     /**
      * Create request for operation 'adminAPIUpdateAction'
      *
-     * @param  \Swagger\Client\Model\V1Action $body (required)
+     * @param  \AuthzAdmin\Client\Model\V1Action $body (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Psr7\Request
@@ -8685,11 +8715,11 @@ class AdminAPIApi
      *
      * UpdatePermission creates the permission entity in AuthZ policy store.
      *
-     * @param  \Swagger\Client\Model\V1Permission $body body (required)
+     * @param  \AuthzAdmin\Client\Model\V1Permission $body body (required)
      *
-     * @throws \Swagger\Client\ApiException on non-2xx response
+     * @throws \AuthzAdmin\Client\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return \Swagger\Client\Model\V1Permission
+     * @return \AuthzAdmin\Client\Model\V1Permission
      */
     public function adminAPIUpdatePermission($body)
     {
@@ -8702,15 +8732,15 @@ class AdminAPIApi
      *
      * UpdatePermission creates the permission entity in AuthZ policy store.
      *
-     * @param  \Swagger\Client\Model\V1Permission $body (required)
+     * @param  \AuthzAdmin\Client\Model\V1Permission $body (required)
      *
-     * @throws \Swagger\Client\ApiException on non-2xx response
+     * @throws \AuthzAdmin\Client\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return array of \Swagger\Client\Model\V1Permission, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \AuthzAdmin\Client\Model\V1Permission, HTTP status code, HTTP response headers (array of strings)
      */
     public function adminAPIUpdatePermissionWithHttpInfo($body)
     {
-        $returnType = '\Swagger\Client\Model\V1Permission';
+        $returnType = '\AuthzAdmin\Client\Model\V1Permission';
         $request = $this->adminAPIUpdatePermissionRequest($body);
 
         try {
@@ -8762,7 +8792,7 @@ class AdminAPIApi
                 case 200:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Swagger\Client\Model\V1Permission',
+                        '\AuthzAdmin\Client\Model\V1Permission',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -8770,7 +8800,7 @@ class AdminAPIApi
                 default:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Swagger\Client\Model\RpcStatus',
+                        '\AuthzAdmin\Client\Model\RpcStatus',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -8785,7 +8815,7 @@ class AdminAPIApi
      *
      * UpdatePermission creates the permission entity in AuthZ policy store.
      *
-     * @param  \Swagger\Client\Model\V1Permission $body (required)
+     * @param  \AuthzAdmin\Client\Model\V1Permission $body (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
@@ -8805,14 +8835,14 @@ class AdminAPIApi
      *
      * UpdatePermission creates the permission entity in AuthZ policy store.
      *
-     * @param  \Swagger\Client\Model\V1Permission $body (required)
+     * @param  \AuthzAdmin\Client\Model\V1Permission $body (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
     public function adminAPIUpdatePermissionAsyncWithHttpInfo($body)
     {
-        $returnType = '\Swagger\Client\Model\V1Permission';
+        $returnType = '\AuthzAdmin\Client\Model\V1Permission';
         $request = $this->adminAPIUpdatePermissionRequest($body);
 
         return $this->client
@@ -8855,7 +8885,7 @@ class AdminAPIApi
     /**
      * Create request for operation 'adminAPIUpdatePermission'
      *
-     * @param  \Swagger\Client\Model\V1Permission $body (required)
+     * @param  \AuthzAdmin\Client\Model\V1Permission $body (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Psr7\Request
@@ -8957,11 +8987,11 @@ class AdminAPIApi
      *
      * UpdatePolicy creates the policy entity in AuthZ policy store.
      *
-     * @param  \Swagger\Client\Model\V1Policy $body body (required)
+     * @param  \AuthzAdmin\Client\Model\V1Policy $body body (required)
      *
-     * @throws \Swagger\Client\ApiException on non-2xx response
+     * @throws \AuthzAdmin\Client\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return \Swagger\Client\Model\V1Policy
+     * @return \AuthzAdmin\Client\Model\V1Policy
      */
     public function adminAPIUpdatePolicy($body)
     {
@@ -8974,15 +9004,15 @@ class AdminAPIApi
      *
      * UpdatePolicy creates the policy entity in AuthZ policy store.
      *
-     * @param  \Swagger\Client\Model\V1Policy $body (required)
+     * @param  \AuthzAdmin\Client\Model\V1Policy $body (required)
      *
-     * @throws \Swagger\Client\ApiException on non-2xx response
+     * @throws \AuthzAdmin\Client\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return array of \Swagger\Client\Model\V1Policy, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \AuthzAdmin\Client\Model\V1Policy, HTTP status code, HTTP response headers (array of strings)
      */
     public function adminAPIUpdatePolicyWithHttpInfo($body)
     {
-        $returnType = '\Swagger\Client\Model\V1Policy';
+        $returnType = '\AuthzAdmin\Client\Model\V1Policy';
         $request = $this->adminAPIUpdatePolicyRequest($body);
 
         try {
@@ -9034,7 +9064,7 @@ class AdminAPIApi
                 case 200:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Swagger\Client\Model\V1Policy',
+                        '\AuthzAdmin\Client\Model\V1Policy',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -9042,7 +9072,7 @@ class AdminAPIApi
                 default:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Swagger\Client\Model\RpcStatus',
+                        '\AuthzAdmin\Client\Model\RpcStatus',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -9057,7 +9087,7 @@ class AdminAPIApi
      *
      * UpdatePolicy creates the policy entity in AuthZ policy store.
      *
-     * @param  \Swagger\Client\Model\V1Policy $body (required)
+     * @param  \AuthzAdmin\Client\Model\V1Policy $body (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
@@ -9077,14 +9107,14 @@ class AdminAPIApi
      *
      * UpdatePolicy creates the policy entity in AuthZ policy store.
      *
-     * @param  \Swagger\Client\Model\V1Policy $body (required)
+     * @param  \AuthzAdmin\Client\Model\V1Policy $body (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
     public function adminAPIUpdatePolicyAsyncWithHttpInfo($body)
     {
-        $returnType = '\Swagger\Client\Model\V1Policy';
+        $returnType = '\AuthzAdmin\Client\Model\V1Policy';
         $request = $this->adminAPIUpdatePolicyRequest($body);
 
         return $this->client
@@ -9127,7 +9157,7 @@ class AdminAPIApi
     /**
      * Create request for operation 'adminAPIUpdatePolicy'
      *
-     * @param  \Swagger\Client\Model\V1Policy $body (required)
+     * @param  \AuthzAdmin\Client\Model\V1Policy $body (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Psr7\Request
@@ -9229,11 +9259,11 @@ class AdminAPIApi
      *
      * UpdateResource creates the resource entity in AuthZ policy store.
      *
-     * @param  \Swagger\Client\Model\V1Resource $body body (required)
+     * @param  \AuthzAdmin\Client\Model\V1Resource $body body (required)
      *
-     * @throws \Swagger\Client\ApiException on non-2xx response
+     * @throws \AuthzAdmin\Client\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return \Swagger\Client\Model\V1Resource
+     * @return \AuthzAdmin\Client\Model\V1Resource
      */
     public function adminAPIUpdateResource($body)
     {
@@ -9246,15 +9276,15 @@ class AdminAPIApi
      *
      * UpdateResource creates the resource entity in AuthZ policy store.
      *
-     * @param  \Swagger\Client\Model\V1Resource $body (required)
+     * @param  \AuthzAdmin\Client\Model\V1Resource $body (required)
      *
-     * @throws \Swagger\Client\ApiException on non-2xx response
+     * @throws \AuthzAdmin\Client\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return array of \Swagger\Client\Model\V1Resource, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \AuthzAdmin\Client\Model\V1Resource, HTTP status code, HTTP response headers (array of strings)
      */
     public function adminAPIUpdateResourceWithHttpInfo($body)
     {
-        $returnType = '\Swagger\Client\Model\V1Resource';
+        $returnType = '\AuthzAdmin\Client\Model\V1Resource';
         $request = $this->adminAPIUpdateResourceRequest($body);
 
         try {
@@ -9306,7 +9336,7 @@ class AdminAPIApi
                 case 200:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Swagger\Client\Model\V1Resource',
+                        '\AuthzAdmin\Client\Model\V1Resource',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -9314,7 +9344,7 @@ class AdminAPIApi
                 default:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Swagger\Client\Model\RpcStatus',
+                        '\AuthzAdmin\Client\Model\RpcStatus',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -9329,7 +9359,7 @@ class AdminAPIApi
      *
      * UpdateResource creates the resource entity in AuthZ policy store.
      *
-     * @param  \Swagger\Client\Model\V1Resource $body (required)
+     * @param  \AuthzAdmin\Client\Model\V1Resource $body (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
@@ -9349,14 +9379,14 @@ class AdminAPIApi
      *
      * UpdateResource creates the resource entity in AuthZ policy store.
      *
-     * @param  \Swagger\Client\Model\V1Resource $body (required)
+     * @param  \AuthzAdmin\Client\Model\V1Resource $body (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
     public function adminAPIUpdateResourceAsyncWithHttpInfo($body)
     {
-        $returnType = '\Swagger\Client\Model\V1Resource';
+        $returnType = '\AuthzAdmin\Client\Model\V1Resource';
         $request = $this->adminAPIUpdateResourceRequest($body);
 
         return $this->client
@@ -9399,7 +9429,7 @@ class AdminAPIApi
     /**
      * Create request for operation 'adminAPIUpdateResource'
      *
-     * @param  \Swagger\Client\Model\V1Resource $body (required)
+     * @param  \AuthzAdmin\Client\Model\V1Resource $body (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Psr7\Request
@@ -9501,11 +9531,11 @@ class AdminAPIApi
      *
      * UpdateResourceGroup updates the given resource group entity.
      *
-     * @param  \Swagger\Client\Model\V1ResourceGroup $body body (required)
+     * @param  \AuthzAdmin\Client\Model\V1ResourceGroup $body body (required)
      *
-     * @throws \Swagger\Client\ApiException on non-2xx response
+     * @throws \AuthzAdmin\Client\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return \Swagger\Client\Model\V1ResourceGroup
+     * @return \AuthzAdmin\Client\Model\V1ResourceGroup
      */
     public function adminAPIUpdateResourceGroup($body)
     {
@@ -9518,15 +9548,15 @@ class AdminAPIApi
      *
      * UpdateResourceGroup updates the given resource group entity.
      *
-     * @param  \Swagger\Client\Model\V1ResourceGroup $body (required)
+     * @param  \AuthzAdmin\Client\Model\V1ResourceGroup $body (required)
      *
-     * @throws \Swagger\Client\ApiException on non-2xx response
+     * @throws \AuthzAdmin\Client\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return array of \Swagger\Client\Model\V1ResourceGroup, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \AuthzAdmin\Client\Model\V1ResourceGroup, HTTP status code, HTTP response headers (array of strings)
      */
     public function adminAPIUpdateResourceGroupWithHttpInfo($body)
     {
-        $returnType = '\Swagger\Client\Model\V1ResourceGroup';
+        $returnType = '\AuthzAdmin\Client\Model\V1ResourceGroup';
         $request = $this->adminAPIUpdateResourceGroupRequest($body);
 
         try {
@@ -9578,7 +9608,7 @@ class AdminAPIApi
                 case 200:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Swagger\Client\Model\V1ResourceGroup',
+                        '\AuthzAdmin\Client\Model\V1ResourceGroup',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -9586,7 +9616,7 @@ class AdminAPIApi
                 default:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Swagger\Client\Model\RpcStatus',
+                        '\AuthzAdmin\Client\Model\RpcStatus',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -9601,7 +9631,7 @@ class AdminAPIApi
      *
      * UpdateResourceGroup updates the given resource group entity.
      *
-     * @param  \Swagger\Client\Model\V1ResourceGroup $body (required)
+     * @param  \AuthzAdmin\Client\Model\V1ResourceGroup $body (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
@@ -9621,14 +9651,14 @@ class AdminAPIApi
      *
      * UpdateResourceGroup updates the given resource group entity.
      *
-     * @param  \Swagger\Client\Model\V1ResourceGroup $body (required)
+     * @param  \AuthzAdmin\Client\Model\V1ResourceGroup $body (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
     public function adminAPIUpdateResourceGroupAsyncWithHttpInfo($body)
     {
-        $returnType = '\Swagger\Client\Model\V1ResourceGroup';
+        $returnType = '\AuthzAdmin\Client\Model\V1ResourceGroup';
         $request = $this->adminAPIUpdateResourceGroupRequest($body);
 
         return $this->client
@@ -9671,7 +9701,7 @@ class AdminAPIApi
     /**
      * Create request for operation 'adminAPIUpdateResourceGroup'
      *
-     * @param  \Swagger\Client\Model\V1ResourceGroup $body (required)
+     * @param  \AuthzAdmin\Client\Model\V1ResourceGroup $body (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Psr7\Request
@@ -9773,11 +9803,11 @@ class AdminAPIApi
      *
      * UpdateRole creates the role entity in AuthZ policy store.
      *
-     * @param  \Swagger\Client\Model\V1Role $body body (required)
+     * @param  \AuthzAdmin\Client\Model\V1Role $body body (required)
      *
-     * @throws \Swagger\Client\ApiException on non-2xx response
+     * @throws \AuthzAdmin\Client\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return \Swagger\Client\Model\V1Role
+     * @return \AuthzAdmin\Client\Model\V1Role
      */
     public function adminAPIUpdateRole($body)
     {
@@ -9790,15 +9820,15 @@ class AdminAPIApi
      *
      * UpdateRole creates the role entity in AuthZ policy store.
      *
-     * @param  \Swagger\Client\Model\V1Role $body (required)
+     * @param  \AuthzAdmin\Client\Model\V1Role $body (required)
      *
-     * @throws \Swagger\Client\ApiException on non-2xx response
+     * @throws \AuthzAdmin\Client\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return array of \Swagger\Client\Model\V1Role, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \AuthzAdmin\Client\Model\V1Role, HTTP status code, HTTP response headers (array of strings)
      */
     public function adminAPIUpdateRoleWithHttpInfo($body)
     {
-        $returnType = '\Swagger\Client\Model\V1Role';
+        $returnType = '\AuthzAdmin\Client\Model\V1Role';
         $request = $this->adminAPIUpdateRoleRequest($body);
 
         try {
@@ -9850,7 +9880,7 @@ class AdminAPIApi
                 case 200:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Swagger\Client\Model\V1Role',
+                        '\AuthzAdmin\Client\Model\V1Role',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -9858,7 +9888,7 @@ class AdminAPIApi
                 default:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Swagger\Client\Model\RpcStatus',
+                        '\AuthzAdmin\Client\Model\RpcStatus',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -9873,7 +9903,7 @@ class AdminAPIApi
      *
      * UpdateRole creates the role entity in AuthZ policy store.
      *
-     * @param  \Swagger\Client\Model\V1Role $body (required)
+     * @param  \AuthzAdmin\Client\Model\V1Role $body (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
@@ -9893,14 +9923,14 @@ class AdminAPIApi
      *
      * UpdateRole creates the role entity in AuthZ policy store.
      *
-     * @param  \Swagger\Client\Model\V1Role $body (required)
+     * @param  \AuthzAdmin\Client\Model\V1Role $body (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
     public function adminAPIUpdateRoleAsyncWithHttpInfo($body)
     {
-        $returnType = '\Swagger\Client\Model\V1Role';
+        $returnType = '\AuthzAdmin\Client\Model\V1Role';
         $request = $this->adminAPIUpdateRoleRequest($body);
 
         return $this->client
@@ -9943,7 +9973,7 @@ class AdminAPIApi
     /**
      * Create request for operation 'adminAPIUpdateRole'
      *
-     * @param  \Swagger\Client\Model\V1Role $body (required)
+     * @param  \AuthzAdmin\Client\Model\V1Role $body (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Psr7\Request
@@ -10045,11 +10075,11 @@ class AdminAPIApi
      *
      * UpdateService creates the service entity in AuthZ policy store.
      *
-     * @param  \Swagger\Client\Model\V1Service $body body (required)
+     * @param  \AuthzAdmin\Client\Model\V1Service $body body (required)
      *
-     * @throws \Swagger\Client\ApiException on non-2xx response
+     * @throws \AuthzAdmin\Client\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return \Swagger\Client\Model\V1Service
+     * @return \AuthzAdmin\Client\Model\V1Service
      */
     public function adminAPIUpdateService($body)
     {
@@ -10062,15 +10092,15 @@ class AdminAPIApi
      *
      * UpdateService creates the service entity in AuthZ policy store.
      *
-     * @param  \Swagger\Client\Model\V1Service $body (required)
+     * @param  \AuthzAdmin\Client\Model\V1Service $body (required)
      *
-     * @throws \Swagger\Client\ApiException on non-2xx response
+     * @throws \AuthzAdmin\Client\ApiException on non-2xx response
      * @throws \InvalidArgumentException
-     * @return array of \Swagger\Client\Model\V1Service, HTTP status code, HTTP response headers (array of strings)
+     * @return array of \AuthzAdmin\Client\Model\V1Service, HTTP status code, HTTP response headers (array of strings)
      */
     public function adminAPIUpdateServiceWithHttpInfo($body)
     {
-        $returnType = '\Swagger\Client\Model\V1Service';
+        $returnType = '\AuthzAdmin\Client\Model\V1Service';
         $request = $this->adminAPIUpdateServiceRequest($body);
 
         try {
@@ -10122,7 +10152,7 @@ class AdminAPIApi
                 case 200:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Swagger\Client\Model\V1Service',
+                        '\AuthzAdmin\Client\Model\V1Service',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -10130,7 +10160,7 @@ class AdminAPIApi
                 default:
                     $data = ObjectSerializer::deserialize(
                         $e->getResponseBody(),
-                        '\Swagger\Client\Model\RpcStatus',
+                        '\AuthzAdmin\Client\Model\RpcStatus',
                         $e->getResponseHeaders()
                     );
                     $e->setResponseObject($data);
@@ -10145,7 +10175,7 @@ class AdminAPIApi
      *
      * UpdateService creates the service entity in AuthZ policy store.
      *
-     * @param  \Swagger\Client\Model\V1Service $body (required)
+     * @param  \AuthzAdmin\Client\Model\V1Service $body (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
@@ -10165,14 +10195,14 @@ class AdminAPIApi
      *
      * UpdateService creates the service entity in AuthZ policy store.
      *
-     * @param  \Swagger\Client\Model\V1Service $body (required)
+     * @param  \AuthzAdmin\Client\Model\V1Service $body (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Promise\PromiseInterface
      */
     public function adminAPIUpdateServiceAsyncWithHttpInfo($body)
     {
-        $returnType = '\Swagger\Client\Model\V1Service';
+        $returnType = '\AuthzAdmin\Client\Model\V1Service';
         $request = $this->adminAPIUpdateServiceRequest($body);
 
         return $this->client
@@ -10215,7 +10245,7 @@ class AdminAPIApi
     /**
      * Create request for operation 'adminAPIUpdateService'
      *
-     * @param  \Swagger\Client\Model\V1Service $body (required)
+     * @param  \AuthzAdmin\Client\Model\V1Service $body (required)
      *
      * @throws \InvalidArgumentException
      * @return \GuzzleHttp\Psr7\Request

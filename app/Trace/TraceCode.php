@@ -7007,6 +7007,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const AUTHZ_ENFORCEMENT_REQUEST                         = 'AUTHZ_ENFORCEMENT_REQUEST';
     const AUTHZ_ENFORCEMENT_RESPONSE                        = 'AUTHZ_ENFORCEMENT_RESPONSE';
 
+    const AUTHZ_POLICY_LIST_REQUEST                         = 'AUTHZ_POLICY_LIST_REQUEST';
+    const AUTHZ_POLICY_LIST_RESPONSE                        = 'AUTHZ_POLICY_LIST_RESPONSE';
+
     const FORCE_SET_SALESFORCE_REQUEST_JOB_MODE             = 'FORCE_SET_SALESFORCE_REQUEST_JOB_MODE';
 
     // Payment Page Processor

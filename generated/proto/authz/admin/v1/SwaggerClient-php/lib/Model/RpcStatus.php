@@ -5,7 +5,7 @@
  * PHP version 5
  *
  * @category Class
- * @package  Swagger\Client
+ * @package  AuthzAdmin\Client
  * @author   Swagger Codegen team
  * @link     https://github.com/swagger-api/swagger-codegen
  */
@@ -27,16 +27,16 @@
  * Do not edit the class manually.
  */
 
-namespace Swagger\Client\Model;
+namespace AuthzAdmin\Client\Model;
 
 use \ArrayAccess;
-use \Swagger\Client\ObjectSerializer;
+use \AuthzAdmin\Client\ObjectSerializer;
 
 /**
  * RpcStatus Class Doc Comment
  *
  * @category Class
- * @package  Swagger\Client
+ * @package  AuthzAdmin\Client
  * @author   Swagger Codegen team
  * @link     https://github.com/swagger-api/swagger-codegen
  */
@@ -59,7 +59,7 @@ class RpcStatus implements ModelInterface, ArrayAccess
     protected static $swaggerTypes = [
         'code' => 'int',
         'message' => 'string',
-        'details' => '\Swagger\Client\Model\ProtobufAny[]'
+        'details' => '\AuthzAdmin\Client\Model\ProtobufAny[]'
     ];
 
     /**
@@ -267,7 +267,7 @@ class RpcStatus implements ModelInterface, ArrayAccess
     /**
      * Gets details
      *
-     * @return \Swagger\Client\Model\ProtobufAny[]
+     * @return \AuthzAdmin\Client\Model\ProtobufAny[]
      */
     public function getDetails()
     {
@@ -277,7 +277,7 @@ class RpcStatus implements ModelInterface, ArrayAccess
     /**
      * Sets details
      *
-     * @param \Swagger\Client\Model\ProtobufAny[] $details details
+     * @param \AuthzAdmin\Client\Model\ProtobufAny[] $details details
      *
      * @return $this
      */

@@ -5,7 +5,7 @@
  * PHP version 5
  *
  * @category Class
- * @package  Swagger\Client
+ * @package  AuthzAdmin\Client
  * @author   Swagger Codegen team
  * @link     https://github.com/swagger-api/swagger-codegen
  */
@@ -27,17 +27,17 @@
  * Do not edit the class manually.
  */
 
-namespace Swagger\Client\Model;
+namespace AuthzAdmin\Client\Model;
 
 use \ArrayAccess;
-use \Swagger\Client\ObjectSerializer;
+use \AuthzAdmin\Client\ObjectSerializer;
 
 /**
  * V1ExpandedPolicy Class Doc Comment
  *
  * @category Class
  * @description ExpandedPolicy is the struct defining a policy which has all sub entities expanded.
- * @package  Swagger\Client
+ * @package  AuthzAdmin\Client
  * @author   Swagger Codegen team
  * @link     https://github.com/swagger-api/swagger-codegen
  */
@@ -60,9 +60,9 @@ class V1ExpandedPolicy implements ModelInterface, ArrayAccess
     protected static $swaggerTypes = [
         'id' => 'string',
         'name' => 'string',
-        'service' => '\Swagger\Client\Model\V1Service',
-        'permission' => '\Swagger\Client\Model\V1ExpandedPermission',
-        'type' => '\Swagger\Client\Model\V1RolePolicyType',
+        'service' => '\AuthzAdmin\Client\Model\V1Service',
+        'permission' => '\AuthzAdmin\Client\Model\V1ExpandedPermission',
+        'type' => '\AuthzAdmin\Client\Model\V1RolePolicyType',
         'is_assignable' => 'bool',
         'is_active' => 'bool'
     ];
@@ -292,7 +292,7 @@ class V1ExpandedPolicy implements ModelInterface, ArrayAccess
     /**
      * Gets service
      *
-     * @return \Swagger\Client\Model\V1Service
+     * @return \AuthzAdmin\Client\Model\V1Service
      */
     public function getService()
     {
@@ -302,7 +302,7 @@ class V1ExpandedPolicy implements ModelInterface, ArrayAccess
     /**
      * Sets service
      *
-     * @param \Swagger\Client\Model\V1Service $service service
+     * @param \AuthzAdmin\Client\Model\V1Service $service service
      *
      * @return $this
      */
@@ -316,7 +316,7 @@ class V1ExpandedPolicy implements ModelInterface, ArrayAccess
     /**
      * Gets permission
      *
-     * @return \Swagger\Client\Model\V1ExpandedPermission
+     * @return \AuthzAdmin\Client\Model\V1ExpandedPermission
      */
     public function getPermission()
     {
@@ -326,7 +326,7 @@ class V1ExpandedPolicy implements ModelInterface, ArrayAccess
     /**
      * Sets permission
      *
-     * @param \Swagger\Client\Model\V1ExpandedPermission $permission permission
+     * @param \AuthzAdmin\Client\Model\V1ExpandedPermission $permission permission
      *
      * @return $this
      */
@@ -340,7 +340,7 @@ class V1ExpandedPolicy implements ModelInterface, ArrayAccess
     /**
      * Gets type
      *
-     * @return \Swagger\Client\Model\V1RolePolicyType
+     * @return \AuthzAdmin\Client\Model\V1RolePolicyType
      */
     public function getType()
     {
@@ -350,7 +350,7 @@ class V1ExpandedPolicy implements ModelInterface, ArrayAccess
     /**
      * Sets type
      *
-     * @param \Swagger\Client\Model\V1RolePolicyType $type type
+     * @param \AuthzAdmin\Client\Model\V1RolePolicyType $type type
      *
      * @return $this
      */

@@ -6,7 +6,7 @@ Name | Type | Description | Notes
 **id** | **string** |  | [optional] 
 **name** | **string** |  | [optional] 
 **org_id** | **string** |  | [optional] 
-**type** | [**\Swagger\Client\Model\V1RolePolicyType**](V1RolePolicyType.md) |  | [optional] 
+**type** | [**\AuthzAdmin\Client\Model\V1RolePolicyType**](V1RolePolicyType.md) |  | [optional] 
 **owner_type** | **string** |  | [optional] 
 **owner_id** | **string** |  | [optional] 
 

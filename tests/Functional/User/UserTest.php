@@ -40,6 +40,7 @@ use Illuminate\Support\Facades\Redis;
 use RZP\Models\BankingAccount\Channel;
 use RZP\Exception\BadRequestException;
 use RZP\Mail\User\AccountVerification;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Services\Segment\XSegmentClient;
 use RZP\Models\Merchant\Attribute\Type;
@@ -76,6 +77,8 @@ class UserTest extends TestCase
     use RequestResponseFlowTrait;
     use TestsStorkServiceRequests;
 
+    protected $coreMock;
+
     protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__.'/helpers/UserTestData.php';
@@ -87,6 +90,8 @@ class UserTest extends TestCase
         $this->app->make(Factory::class)->load($factoryPath);
 
         $this->app['config']->set('applications.banking_account_service.mock', true);
+
+        $this->createAndFetchMocks();
     }
 
     public function testCreate()
@@ -935,6 +940,43 @@ class UserTest extends TestCase
         $this->assertNull($bankAccount);
     }
 
+    private function mockRazorxWith(string $featureUnderTest, string $value = 'on')
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')->will(
+            $this->returnCallback(
+                function (string $mid, string $feature, string $mode) use ($featureUnderTest, $value)
+                {
+                    return $feature === $featureUnderTest ? $value : 'control';
+                }
+            ));
+    }
+
+    /*
+    * when experiment in enabled
+    * */
+    public function testFetchUserPermissions_experimentEnable()
+    {
+        $this->mockRazorxWith(RazorxTreatment::RX_CUSTOM_ACCESS_CONTROL_ENABLED, 'on');
+        $merchant = [
+            'id'                    => '1cXSLlUU8V9sXl',
+            'banking_role'          =>  'admin',
+        ];
+        $r = new \ReflectionMethod('RZP\Models\User\Core', 'fetchUserPermissions');
+
+        $r->setAccessible(true);
+
+        $response = $r->invoke($this->coreMock, $merchant);
+
+        //$this->assertEquals(["payout_create", "view_payout"], $response );
+    }
+
     public function testGetActorInfo()
     {
         $user = $this->fixtures->create('user');
@@ -1077,6 +1119,9 @@ class UserTest extends TestCase
         $mockMC->expects($this->any())
             ->method('isRazorxExperimentEnable')
             ->willReturn(true);
+
+        // Core Mocking Partial
+        $this->coreMock = Mockery::mock('RZP\Models\User\Core', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
 
         return [
             "merchantCoreMock"    => $mockMC

@@ -7,9 +7,6 @@ use Illuminate\Cache\CacheManager;
 use RZP;
 use Cache;
 use RZP\Trace\TraceCode;
-use Swagger\Client\Api\AdminAPIApi;
-use Swagger\Client\Api\EnforcerAPIApi;
-use Swagger\Client\Configuration;
 use Swift_Mailer;
 use Buzz\Client\MultiCurl;
 use Razorpay\Outbox\Job\Core;
@@ -32,6 +29,7 @@ use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 use Illuminate\Database\MySqlConnection as IlluminateMySqlConnection;
 
 use RZP\Models\Vpa;
+use RZP\Modules\Acs;
 use RZP\Models\Card;
 use RZP\Models\User;
 use RZP\Services\FTS;
@@ -72,20 +70,26 @@ use RZP\Gateway\GatewayManager;
 use RZP\Models\Workflow\Action;
 use RZP\Models\CreditRepayment;
 use RZP\Models\VirtualAccountTpv;
+use Swagger\Client\Configuration;
 use RZP\Models\Plan\Subscription;
 use RZP\Base\Http\Psr18ClientMock;
 use RZP\Models\Partner\Commission;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Base\Database\MySqlConnection;
+use AuthzAdmin\Client\Api\AdminAPIApi;
+use Swagger\Client\Api\EnforcerAPIApi;
 use RZP\Models\Plan\Subscription\Addon;
 use RZP\Services\FreshdeskTicketClient;
 use RZP\Models\SubscriptionRegistration;
 use RZP\Models\Gateway\File as GatewayFile;
 use RZP\Models\PaymentLink\PaymentPageItem;
 use RZP\Services\Beam\Service as BeamService;
+use RZP\Models\Base\DbMigrationMetricsObserver;
 use RZP\Base\Database\Connectors\MySqlConnector;
+use RZP\Models\Base\EntityInstrumentationObserver;
 use RZP\Models\Merchant\Request as MerchantRequest;
 use RZP\Services\XPayroll\Service as XPayrollService;
+use AuthzAdmin\Client\Configuration as AdminConfiguration;
 use RZP\Services\VendorPortal\Service as VendorPortalService;
 use RZP\Services\VendorPayments\Service as VendorPaymentService;
 use RZP\Models\Merchant\OneClickCheckout\ShippingProvider\Service as ShippingProviderService;
@@ -95,9 +99,6 @@ use RZP\Models\Merchant\OneClickCheckout\ShippingMethods\Service as ShippingMeth
 use RZP\Models\Merchant\OneClickCheckout\ShippingService\Client as ShippingServiceClient;
 use RZP\Models\Merchant\OneClickCheckout\RtoPredictionProvider\Service as RtoPredictionProviderService;
 use RZP\Models\Merchant\OneClickCheckout\RtoPredictionService\Client as RtoPredictionServiceClient;
-use RZP\Models\Base\EntityInstrumentationObserver;
-use RZP\Modules\Acs;
-use RZP\Models\Base\DbMigrationMetricsObserver;
 
 class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvider
 {
@@ -717,11 +718,11 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
 
         $this->registerPspx();
 
-        $this->registerAuthzClient();
-
         $this->registerRelayService();
 
         $this->registerAuthzXPlatformEnforcerClient();
+
+        $this->registerAuthzXPlatformAdminClient();
 
         $this->registerCommissionService();
     }
@@ -1290,41 +1291,20 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         });
     }
 
-    protected function registerAuthzClient()
-    {
-        $this->app->singleton('authz', function($app)
-        {
-            $config = $app['config']->get('applications.authz');
-            $mock = $config['mock'];
-            if ($mock === true) {
-                return new Mock\AuthzClient();
-            }
-            $client = new Client([
-                'base_uri' => $config['url'],
-                'timeout'  => 10,
-                'auth'     => [
-                    $config['auth']['username'],
-                    $config['auth']['password'],
-                ],
-            ]);
-            $configuration = new Configuration;
-            $configuration->setUsername($config['auth']['username']);
-            $configuration->setPassword($config['auth']['password']);
-            $configuration->setHost($config['url']);
-
-            return new AdminAPIApi($client, $configuration);
-        });
-    }
 
     protected function registerAuthzXPlatformEnforcerClient()
     {
         $this->app->singleton('authzXPlatformEnforcer', function($app)
         {
             $config = $app['config']->get('applications.authzXPlatformEnforcer');
+
             $mock = $config['mock'];
-            if ($mock === true) {
+
+            if ($mock === true)
+            {
                 return new Mock\AuthzEnforcerClient();
             }
+
             $client = new Client([
                 'base_uri' => $config['url'],
                 'timeout'  => self::AUTHZ_CLIENT_TIMEOUT_SEC,
@@ -1333,12 +1313,50 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
                     $config['auth']['password'],
                 ],
             ]);
+
             $configuration = new Configuration;
+
             $configuration->setUsername($config['auth']['username']);
+
             $configuration->setPassword($config['auth']['password']);
+
             $configuration->setHost($config['url']);
 
             return new EnforcerAPIApi($client, $configuration);
+        });
+    }
+
+    protected function registerAuthzXPlatformAdminClient()
+    {
+        $this->app->singleton('authzXPlatformAdmin', function($app)
+        {
+            $config = $app['config']->get('applications.authzXPlatformAdmin');
+
+            $mock = $config['mock'];
+
+            if ($mock === true)
+            {
+                return new Mock\AuthzAdminClient();
+            }
+
+            $client = new Client([
+                'base_uri' => $config['url'],
+                'timeout'  => self::AUTHZ_CLIENT_TIMEOUT_SEC,
+                'auth'     => [
+                    $config['auth']['username'],
+                    $config['auth']['password'],
+                ],
+            ]);
+
+            $configuration = new AdminConfiguration;
+
+            $configuration->setUsername($config['auth']['username']);
+
+            $configuration->setPassword($config['auth']['password']);
+
+            $configuration->setHost($config['url']);
+
+            return new AdminAPIApi($client, $configuration);
         });
     }
 

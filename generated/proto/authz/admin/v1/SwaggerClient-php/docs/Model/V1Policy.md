@@ -7,7 +7,7 @@ Name | Type | Description | Notes
 **name** | **string** |  | [optional] 
 **origin_service_id** | **string** |  | [optional] 
 **permission_id** | **string** |  | [optional] 
-**type** | [**\Swagger\Client\Model\V1RolePolicyType**](V1RolePolicyType.md) |  | [optional] 
+**type** | [**\AuthzAdmin\Client\Model\V1RolePolicyType**](V1RolePolicyType.md) |  | [optional] 
 **is_assignable** | **bool** |  | [optional] 
 **is_active** | **bool** |  | [optional] 
 

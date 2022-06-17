@@ -5,7 +5,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **code** | **int** |  | [optional] 
 **message** | **string** |  | [optional] 
-**details** | [**\Swagger\Client\Model\ProtobufAny[]**](ProtobufAny.md) |  | [optional] 
+**details** | [**\AuthzAdmin\Client\Model\ProtobufAny[]**](ProtobufAny.md) |  | [optional] 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

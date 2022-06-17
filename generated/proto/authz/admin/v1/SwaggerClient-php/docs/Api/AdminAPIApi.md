@@ -1,4 +1,4 @@
-# Swagger\Client\AdminAPIApi
+# AuthzAdmin\Client\AdminAPIApi
 
 All URIs are relative to *https://localhost*
 
@@ -43,7 +43,7 @@ Method | HTTP request | Description
 
 
 # **adminAPICreateAction**
-> \Swagger\Client\Model\V1Action adminAPICreateAction($body)
+> \AuthzAdmin\Client\Model\V1Action adminAPICreateAction($body)
 
 CreateAction creates the action entity in AuthZ policy store.
 
@@ -52,12 +52,12 @@ CreateAction creates the action entity in AuthZ policy store.
 <?php
 require_once(__DIR__ . '/vendor/autoload.php');
 
-$apiInstance = new Swagger\Client\Api\AdminAPIApi(
+$apiInstance = new AuthzAdmin\Client\Api\AdminAPIApi(
     // If you want use custom http client, pass your client which implements `GuzzleHttp\ClientInterface`.
     // This is optional, `GuzzleHttp\Client` will be used as default.
     new GuzzleHttp\Client()
 );
-$body = new \Swagger\Client\Model\V1Action(); // \Swagger\Client\Model\V1Action | 
+$body = new \AuthzAdmin\Client\Model\V1Action(); // \AuthzAdmin\Client\Model\V1Action | 
 
 try {
     $result = $apiInstance->adminAPICreateAction($body);
@@ -72,11 +72,11 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **body** | [**\Swagger\Client\Model\V1Action**](../Model/V1Action.md)|  |
+ **body** | [**\AuthzAdmin\Client\Model\V1Action**](../Model/V1Action.md)|  |
 
 ### Return type
 
-[**\Swagger\Client\Model\V1Action**](../Model/V1Action.md)
+[**\AuthzAdmin\Client\Model\V1Action**](../Model/V1Action.md)
 
 ### Authorization
 
@@ -90,7 +90,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../../README.md#documentation-for-api-endpoints) [[Back to Model list]](../../README.md#documentation-for-models) [[Back to README]](../../README.md)
 
 # **adminAPICreatePermission**
-> \Swagger\Client\Model\V1Permission adminAPICreatePermission($body)
+> \AuthzAdmin\Client\Model\V1Permission adminAPICreatePermission($body)
 
 CreatePermission creates the permission entity in AuthZ policy store.
 
@@ -99,12 +99,12 @@ CreatePermission creates the permission entity in AuthZ policy store.
 <?php
 require_once(__DIR__ . '/vendor/autoload.php');
 
-$apiInstance = new Swagger\Client\Api\AdminAPIApi(
+$apiInstance = new AuthzAdmin\Client\Api\AdminAPIApi(
     // If you want use custom http client, pass your client which implements `GuzzleHttp\ClientInterface`.
     // This is optional, `GuzzleHttp\Client` will be used as default.
     new GuzzleHttp\Client()
 );
-$body = new \Swagger\Client\Model\V1Permission(); // \Swagger\Client\Model\V1Permission | 
+$body = new \AuthzAdmin\Client\Model\V1Permission(); // \AuthzAdmin\Client\Model\V1Permission | 
 
 try {
     $result = $apiInstance->adminAPICreatePermission($body);
@@ -119,11 +119,11 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **body** | [**\Swagger\Client\Model\V1Permission**](../Model/V1Permission.md)|  |
+ **body** | [**\AuthzAdmin\Client\Model\V1Permission**](../Model/V1Permission.md)|  |
 
 ### Return type
 
-[**\Swagger\Client\Model\V1Permission**](../Model/V1Permission.md)
+[**\AuthzAdmin\Client\Model\V1Permission**](../Model/V1Permission.md)
 
 ### Authorization
 
@@ -137,7 +137,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../../README.md#documentation-for-api-endpoints) [[Back to Model list]](../../README.md#documentation-for-models) [[Back to README]](../../README.md)
 
 # **adminAPICreatePolicy**
-> \Swagger\Client\Model\V1Policy adminAPICreatePolicy($body)
+> \AuthzAdmin\Client\Model\V1Policy adminAPICreatePolicy($body)
 
 CreatePolicy creates the policy entity in AuthZ policy store.
 
@@ -146,12 +146,12 @@ CreatePolicy creates the policy entity in AuthZ policy store.
 <?php
 require_once(__DIR__ . '/vendor/autoload.php');
 
-$apiInstance = new Swagger\Client\Api\AdminAPIApi(
+$apiInstance = new AuthzAdmin\Client\Api\AdminAPIApi(
     // If you want use custom http client, pass your client which implements `GuzzleHttp\ClientInterface`.
     // This is optional, `GuzzleHttp\Client` will be used as default.
     new GuzzleHttp\Client()
 );
-$body = new \Swagger\Client\Model\V1Policy(); // \Swagger\Client\Model\V1Policy | 
+$body = new \AuthzAdmin\Client\Model\V1Policy(); // \AuthzAdmin\Client\Model\V1Policy | 
 
 try {
     $result = $apiInstance->adminAPICreatePolicy($body);
@@ -166,11 +166,11 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **body** | [**\Swagger\Client\Model\V1Policy**](../Model/V1Policy.md)|  |
+ **body** | [**\AuthzAdmin\Client\Model\V1Policy**](../Model/V1Policy.md)|  |
 
 ### Return type
 
-[**\Swagger\Client\Model\V1Policy**](../Model/V1Policy.md)
+[**\AuthzAdmin\Client\Model\V1Policy**](../Model/V1Policy.md)
 
 ### Authorization
 
@@ -184,7 +184,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../../README.md#documentation-for-api-endpoints) [[Back to Model list]](../../README.md#documentation-for-models) [[Back to README]](../../README.md)
 
 # **adminAPICreateResource**
-> \Swagger\Client\Model\V1Resource adminAPICreateResource($body)
+> \AuthzAdmin\Client\Model\V1Resource adminAPICreateResource($body)
 
 CreateResource creates the resource entity in AuthZ policy store.
 
@@ -193,12 +193,12 @@ CreateResource creates the resource entity in AuthZ policy store.
 <?php
 require_once(__DIR__ . '/vendor/autoload.php');
 
-$apiInstance = new Swagger\Client\Api\AdminAPIApi(
+$apiInstance = new AuthzAdmin\Client\Api\AdminAPIApi(
     // If you want use custom http client, pass your client which implements `GuzzleHttp\ClientInterface`.
     // This is optional, `GuzzleHttp\Client` will be used as default.
     new GuzzleHttp\Client()
 );
-$body = new \Swagger\Client\Model\V1Resource(); // \Swagger\Client\Model\V1Resource | 
+$body = new \AuthzAdmin\Client\Model\V1Resource(); // \AuthzAdmin\Client\Model\V1Resource | 
 
 try {
     $result = $apiInstance->adminAPICreateResource($body);
@@ -213,11 +213,11 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **body** | [**\Swagger\Client\Model\V1Resource**](../Model/V1Resource.md)|  |
+ **body** | [**\AuthzAdmin\Client\Model\V1Resource**](../Model/V1Resource.md)|  |
 
 ### Return type
 
-[**\Swagger\Client\Model\V1Resource**](../Model/V1Resource.md)
+[**\AuthzAdmin\Client\Model\V1Resource**](../Model/V1Resource.md)
 
 ### Authorization
 
@@ -231,7 +231,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../../README.md#documentation-for-api-endpoints) [[Back to Model list]](../../README.md#documentation-for-models) [[Back to README]](../../README.md)
 
 # **adminAPICreateResourceGroup**
-> \Swagger\Client\Model\V1ResourceGroup adminAPICreateResourceGroup($body)
+> \AuthzAdmin\Client\Model\V1ResourceGroup adminAPICreateResourceGroup($body)
 
 CreateResourceGroup creates the resource group entity in AuthZ policy store.
 
@@ -240,12 +240,12 @@ CreateResourceGroup creates the resource group entity in AuthZ policy store.
 <?php
 require_once(__DIR__ . '/vendor/autoload.php');
 
-$apiInstance = new Swagger\Client\Api\AdminAPIApi(
+$apiInstance = new AuthzAdmin\Client\Api\AdminAPIApi(
     // If you want use custom http client, pass your client which implements `GuzzleHttp\ClientInterface`.
     // This is optional, `GuzzleHttp\Client` will be used as default.
     new GuzzleHttp\Client()
 );
-$body = new \Swagger\Client\Model\V1ResourceGroup(); // \Swagger\Client\Model\V1ResourceGroup | 
+$body = new \AuthzAdmin\Client\Model\V1ResourceGroup(); // \AuthzAdmin\Client\Model\V1ResourceGroup | 
 
 try {
     $result = $apiInstance->adminAPICreateResourceGroup($body);
@@ -260,11 +260,11 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **body** | [**\Swagger\Client\Model\V1ResourceGroup**](../Model/V1ResourceGroup.md)|  |
+ **body** | [**\AuthzAdmin\Client\Model\V1ResourceGroup**](../Model/V1ResourceGroup.md)|  |
 
 ### Return type
 
-[**\Swagger\Client\Model\V1ResourceGroup**](../Model/V1ResourceGroup.md)
+[**\AuthzAdmin\Client\Model\V1ResourceGroup**](../Model/V1ResourceGroup.md)
 
 ### Authorization
 
@@ -278,7 +278,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../../README.md#documentation-for-api-endpoints) [[Back to Model list]](../../README.md#documentation-for-models) [[Back to README]](../../README.md)
 
 # **adminAPICreateResourceGroupMapping**
-> \Swagger\Client\Model\V1ResourceGroupMapping adminAPICreateResourceGroupMapping($body)
+> \AuthzAdmin\Client\Model\V1ResourceGroupMapping adminAPICreateResourceGroupMapping($body)
 
 CreateResourceGroupMapping creates the resource group mapping in AuthZ policy store.
 
@@ -287,12 +287,12 @@ CreateResourceGroupMapping creates the resource group mapping in AuthZ policy st
 <?php
 require_once(__DIR__ . '/vendor/autoload.php');
 
-$apiInstance = new Swagger\Client\Api\AdminAPIApi(
+$apiInstance = new AuthzAdmin\Client\Api\AdminAPIApi(
     // If you want use custom http client, pass your client which implements `GuzzleHttp\ClientInterface`.
     // This is optional, `GuzzleHttp\Client` will be used as default.
     new GuzzleHttp\Client()
 );
-$body = new \Swagger\Client\Model\V1ResourceGroupMapping(); // \Swagger\Client\Model\V1ResourceGroupMapping | 
+$body = new \AuthzAdmin\Client\Model\V1ResourceGroupMapping(); // \AuthzAdmin\Client\Model\V1ResourceGroupMapping | 
 
 try {
     $result = $apiInstance->adminAPICreateResourceGroupMapping($body);
@@ -307,11 +307,11 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **body** | [**\Swagger\Client\Model\V1ResourceGroupMapping**](../Model/V1ResourceGroupMapping.md)|  |
+ **body** | [**\AuthzAdmin\Client\Model\V1ResourceGroupMapping**](../Model/V1ResourceGroupMapping.md)|  |
 
 ### Return type
 
-[**\Swagger\Client\Model\V1ResourceGroupMapping**](../Model/V1ResourceGroupMapping.md)
+[**\AuthzAdmin\Client\Model\V1ResourceGroupMapping**](../Model/V1ResourceGroupMapping.md)
 
 ### Authorization
 
@@ -325,7 +325,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../../README.md#documentation-for-api-endpoints) [[Back to Model list]](../../README.md#documentation-for-models) [[Back to README]](../../README.md)
 
 # **adminAPICreateRole**
-> \Swagger\Client\Model\V1Role adminAPICreateRole($body)
+> \AuthzAdmin\Client\Model\V1Role adminAPICreateRole($body)
 
 CreateRole creates the role entity in AuthZ policy store.
 
@@ -334,12 +334,12 @@ CreateRole creates the role entity in AuthZ policy store.
 <?php
 require_once(__DIR__ . '/vendor/autoload.php');
 
-$apiInstance = new Swagger\Client\Api\AdminAPIApi(
+$apiInstance = new AuthzAdmin\Client\Api\AdminAPIApi(
     // If you want use custom http client, pass your client which implements `GuzzleHttp\ClientInterface`.
     // This is optional, `GuzzleHttp\Client` will be used as default.
     new GuzzleHttp\Client()
 );
-$body = new \Swagger\Client\Model\V1Role(); // \Swagger\Client\Model\V1Role | 
+$body = new \AuthzAdmin\Client\Model\V1Role(); // \AuthzAdmin\Client\Model\V1Role | 
 
 try {
     $result = $apiInstance->adminAPICreateRole($body);
@@ -354,11 +354,11 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **body** | [**\Swagger\Client\Model\V1Role**](../Model/V1Role.md)|  |
+ **body** | [**\AuthzAdmin\Client\Model\V1Role**](../Model/V1Role.md)|  |
 
 ### Return type
 
-[**\Swagger\Client\Model\V1Role**](../Model/V1Role.md)
+[**\AuthzAdmin\Client\Model\V1Role**](../Model/V1Role.md)
 
 ### Authorization
 
@@ -372,7 +372,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../../README.md#documentation-for-api-endpoints) [[Back to Model list]](../../README.md#documentation-for-models) [[Back to README]](../../README.md)
 
 # **adminAPICreateRolePolicyMapping**
-> \Swagger\Client\Model\V1RolePolicyMapping adminAPICreateRolePolicyMapping($body)
+> \AuthzAdmin\Client\Model\V1RolePolicyMapping adminAPICreateRolePolicyMapping($body)
 
 CreateRolePolicyMapping adds a policy to the given role in AuthZ policy store.
 
@@ -381,12 +381,12 @@ CreateRolePolicyMapping adds a policy to the given role in AuthZ policy store.
 <?php
 require_once(__DIR__ . '/vendor/autoload.php');
 
-$apiInstance = new Swagger\Client\Api\AdminAPIApi(
+$apiInstance = new AuthzAdmin\Client\Api\AdminAPIApi(
     // If you want use custom http client, pass your client which implements `GuzzleHttp\ClientInterface`.
     // This is optional, `GuzzleHttp\Client` will be used as default.
     new GuzzleHttp\Client()
 );
-$body = new \Swagger\Client\Model\V1RolePolicyMapping(); // \Swagger\Client\Model\V1RolePolicyMapping | 
+$body = new \AuthzAdmin\Client\Model\V1RolePolicyMapping(); // \AuthzAdmin\Client\Model\V1RolePolicyMapping | 
 
 try {
     $result = $apiInstance->adminAPICreateRolePolicyMapping($body);
@@ -401,11 +401,11 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **body** | [**\Swagger\Client\Model\V1RolePolicyMapping**](../Model/V1RolePolicyMapping.md)|  |
+ **body** | [**\AuthzAdmin\Client\Model\V1RolePolicyMapping**](../Model/V1RolePolicyMapping.md)|  |
 
 ### Return type
 
-[**\Swagger\Client\Model\V1RolePolicyMapping**](../Model/V1RolePolicyMapping.md)
+[**\AuthzAdmin\Client\Model\V1RolePolicyMapping**](../Model/V1RolePolicyMapping.md)
 
 ### Authorization
 
@@ -419,7 +419,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../../README.md#documentation-for-api-endpoints) [[Back to Model list]](../../README.md#documentation-for-models) [[Back to README]](../../README.md)
 
 # **adminAPICreateService**
-> \Swagger\Client\Model\V1Service adminAPICreateService($body)
+> \AuthzAdmin\Client\Model\V1Service adminAPICreateService($body)
 
 CreateService creates the service entity in AuthZ policy store.
 
@@ -428,12 +428,12 @@ CreateService creates the service entity in AuthZ policy store.
 <?php
 require_once(__DIR__ . '/vendor/autoload.php');
 
-$apiInstance = new Swagger\Client\Api\AdminAPIApi(
+$apiInstance = new AuthzAdmin\Client\Api\AdminAPIApi(
     // If you want use custom http client, pass your client which implements `GuzzleHttp\ClientInterface`.
     // This is optional, `GuzzleHttp\Client` will be used as default.
     new GuzzleHttp\Client()
 );
-$body = new \Swagger\Client\Model\V1Service(); // \Swagger\Client\Model\V1Service | 
+$body = new \AuthzAdmin\Client\Model\V1Service(); // \AuthzAdmin\Client\Model\V1Service | 
 
 try {
     $result = $apiInstance->adminAPICreateService($body);
@@ -448,11 +448,11 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **body** | [**\Swagger\Client\Model\V1Service**](../Model/V1Service.md)|  |
+ **body** | [**\AuthzAdmin\Client\Model\V1Service**](../Model/V1Service.md)|  |
 
 ### Return type
 
-[**\Swagger\Client\Model\V1Service**](../Model/V1Service.md)
+[**\AuthzAdmin\Client\Model\V1Service**](../Model/V1Service.md)
 
 ### Authorization
 
@@ -466,7 +466,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../../README.md#documentation-for-api-endpoints) [[Back to Model list]](../../README.md#documentation-for-models) [[Back to README]](../../README.md)
 
 # **adminAPICreateSubjectRoleMapping**
-> \Swagger\Client\Model\V1Null adminAPICreateSubjectRoleMapping($body)
+> \AuthzAdmin\Client\Model\V1Null adminAPICreateSubjectRoleMapping($body)
 
 CreateSubjectRoleMapping assigns the role to a subject entity in AuthZ policy store.
 
@@ -475,12 +475,12 @@ CreateSubjectRoleMapping assigns the role to a subject entity in AuthZ policy st
 <?php
 require_once(__DIR__ . '/vendor/autoload.php');
 
-$apiInstance = new Swagger\Client\Api\AdminAPIApi(
+$apiInstance = new AuthzAdmin\Client\Api\AdminAPIApi(
     // If you want use custom http client, pass your client which implements `GuzzleHttp\ClientInterface`.
     // This is optional, `GuzzleHttp\Client` will be used as default.
     new GuzzleHttp\Client()
 );
-$body = new \Swagger\Client\Model\V1SubjectRoleMapping(); // \Swagger\Client\Model\V1SubjectRoleMapping | 
+$body = new \AuthzAdmin\Client\Model\V1SubjectRoleMapping(); // \AuthzAdmin\Client\Model\V1SubjectRoleMapping | 
 
 try {
     $result = $apiInstance->adminAPICreateSubjectRoleMapping($body);
@@ -495,11 +495,11 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **body** | [**\Swagger\Client\Model\V1SubjectRoleMapping**](../Model/V1SubjectRoleMapping.md)|  |
+ **body** | [**\AuthzAdmin\Client\Model\V1SubjectRoleMapping**](../Model/V1SubjectRoleMapping.md)|  |
 
 ### Return type
 
-[**\Swagger\Client\Model\V1Null**](../Model/V1Null.md)
+[**\AuthzAdmin\Client\Model\V1Null**](../Model/V1Null.md)
 
 ### Authorization
 
@@ -513,7 +513,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../../README.md#documentation-for-api-endpoints) [[Back to Model list]](../../README.md#documentation-for-models) [[Back to README]](../../README.md)
 
 # **adminAPIDeleteAction**
-> \Swagger\Client\Model\V1Null adminAPIDeleteAction($id, $name, $type)
+> \AuthzAdmin\Client\Model\V1Null adminAPIDeleteAction($id, $name, $type)
 
 DeleteAction deletes the action entity from AuthZ policy store.
 
@@ -522,7 +522,7 @@ DeleteAction deletes the action entity from AuthZ policy store.
 <?php
 require_once(__DIR__ . '/vendor/autoload.php');
 
-$apiInstance = new Swagger\Client\Api\AdminAPIApi(
+$apiInstance = new AuthzAdmin\Client\Api\AdminAPIApi(
     // If you want use custom http client, pass your client which implements `GuzzleHttp\ClientInterface`.
     // This is optional, `GuzzleHttp\Client` will be used as default.
     new GuzzleHttp\Client()
@@ -550,7 +550,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**\Swagger\Client\Model\V1Null**](../Model/V1Null.md)
+[**\AuthzAdmin\Client\Model\V1Null**](../Model/V1Null.md)
 
 ### Authorization
 
@@ -564,7 +564,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../../README.md#documentation-for-api-endpoints) [[Back to Model list]](../../README.md#documentation-for-models) [[Back to README]](../../README.md)
 
 # **adminAPIDeletePermission**
-> \Swagger\Client\Model\V1Null adminAPIDeletePermission($id, $resource_id, $action_id, $effect)
+> \AuthzAdmin\Client\Model\V1Null adminAPIDeletePermission($id, $resource_id, $action_id, $effect)
 
 DeletePermission deletes the permission entity from AuthZ policy store.
 
@@ -573,7 +573,7 @@ DeletePermission deletes the permission entity from AuthZ policy store.
 <?php
 require_once(__DIR__ . '/vendor/autoload.php');
 
-$apiInstance = new Swagger\Client\Api\AdminAPIApi(
+$apiInstance = new AuthzAdmin\Client\Api\AdminAPIApi(
     // If you want use custom http client, pass your client which implements `GuzzleHttp\ClientInterface`.
     // This is optional, `GuzzleHttp\Client` will be used as default.
     new GuzzleHttp\Client()
@@ -603,7 +603,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**\Swagger\Client\Model\V1Null**](../Model/V1Null.md)
+[**\AuthzAdmin\Client\Model\V1Null**](../Model/V1Null.md)
 
 ### Authorization
 
@@ -617,7 +617,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../../README.md#documentation-for-api-endpoints) [[Back to Model list]](../../README.md#documentation-for-models) [[Back to README]](../../README.md)
 
 # **adminAPIDeletePolicy**
-> \Swagger\Client\Model\V1Null adminAPIDeletePolicy($id, $name, $origin_service_id, $permission_id, $type, $is_assignable, $is_active)
+> \AuthzAdmin\Client\Model\V1Null adminAPIDeletePolicy($id, $name, $origin_service_id, $permission_id, $type, $is_assignable, $is_active)
 
 DeletePolicy deletes the policy entity from AuthZ policy store.
 
@@ -626,7 +626,7 @@ DeletePolicy deletes the policy entity from AuthZ policy store.
 <?php
 require_once(__DIR__ . '/vendor/autoload.php');
 
-$apiInstance = new Swagger\Client\Api\AdminAPIApi(
+$apiInstance = new AuthzAdmin\Client\Api\AdminAPIApi(
     // If you want use custom http client, pass your client which implements `GuzzleHttp\ClientInterface`.
     // This is optional, `GuzzleHttp\Client` will be used as default.
     new GuzzleHttp\Client()
@@ -662,7 +662,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**\Swagger\Client\Model\V1Null**](../Model/V1Null.md)
+[**\AuthzAdmin\Client\Model\V1Null**](../Model/V1Null.md)
 
 ### Authorization
 
@@ -676,7 +676,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../../README.md#documentation-for-api-endpoints) [[Back to Model list]](../../README.md#documentation-for-models) [[Back to README]](../../README.md)
 
 # **adminAPIDeleteResource**
-> \Swagger\Client\Model\V1Null adminAPIDeleteResource($id, $name)
+> \AuthzAdmin\Client\Model\V1Null adminAPIDeleteResource($id, $name)
 
 DeleteResource deletes the resource entity from AuthZ policy store.
 
@@ -685,7 +685,7 @@ DeleteResource deletes the resource entity from AuthZ policy store.
 <?php
 require_once(__DIR__ . '/vendor/autoload.php');
 
-$apiInstance = new Swagger\Client\Api\AdminAPIApi(
+$apiInstance = new AuthzAdmin\Client\Api\AdminAPIApi(
     // If you want use custom http client, pass your client which implements `GuzzleHttp\ClientInterface`.
     // This is optional, `GuzzleHttp\Client` will be used as default.
     new GuzzleHttp\Client()
@@ -711,7 +711,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**\Swagger\Client\Model\V1Null**](../Model/V1Null.md)
+[**\AuthzAdmin\Client\Model\V1Null**](../Model/V1Null.md)
 
 ### Authorization
 
@@ -725,7 +725,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../../README.md#documentation-for-api-endpoints) [[Back to Model list]](../../README.md#documentation-for-models) [[Back to README]](../../README.md)
 
 # **adminAPIDeleteResourceGroup**
-> \Swagger\Client\Model\V1Null adminAPIDeleteResourceGroup($id, $name)
+> \AuthzAdmin\Client\Model\V1Null adminAPIDeleteResourceGroup($id, $name)
 
 DeleteResourceGroup deletes the resource group entity from AuthZ policy store.
 
@@ -734,7 +734,7 @@ DeleteResourceGroup deletes the resource group entity from AuthZ policy store.
 <?php
 require_once(__DIR__ . '/vendor/autoload.php');
 
-$apiInstance = new Swagger\Client\Api\AdminAPIApi(
+$apiInstance = new AuthzAdmin\Client\Api\AdminAPIApi(
     // If you want use custom http client, pass your client which implements `GuzzleHttp\ClientInterface`.
     // This is optional, `GuzzleHttp\Client` will be used as default.
     new GuzzleHttp\Client()
@@ -760,7 +760,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**\Swagger\Client\Model\V1Null**](../Model/V1Null.md)
+[**\AuthzAdmin\Client\Model\V1Null**](../Model/V1Null.md)
 
 ### Authorization
 
@@ -774,7 +774,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../../README.md#documentation-for-api-endpoints) [[Back to Model list]](../../README.md#documentation-for-models) [[Back to README]](../../README.md)
 
 # **adminAPIDeleteResourceGroupMapping**
-> \Swagger\Client\Model\V1Null adminAPIDeleteResourceGroupMapping($resource_id, $group_id)
+> \AuthzAdmin\Client\Model\V1Null adminAPIDeleteResourceGroupMapping($resource_id, $group_id)
 
 DeleteResourceGroupMapping deletes the resource group mapping from AuthZ policy store.
 
@@ -783,7 +783,7 @@ DeleteResourceGroupMapping deletes the resource group mapping from AuthZ policy 
 <?php
 require_once(__DIR__ . '/vendor/autoload.php');
 
-$apiInstance = new Swagger\Client\Api\AdminAPIApi(
+$apiInstance = new AuthzAdmin\Client\Api\AdminAPIApi(
     // If you want use custom http client, pass your client which implements `GuzzleHttp\ClientInterface`.
     // This is optional, `GuzzleHttp\Client` will be used as default.
     new GuzzleHttp\Client()
@@ -809,7 +809,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**\Swagger\Client\Model\V1Null**](../Model/V1Null.md)
+[**\AuthzAdmin\Client\Model\V1Null**](../Model/V1Null.md)
 
 ### Authorization
 
@@ -823,7 +823,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../../README.md#documentation-for-api-endpoints) [[Back to Model list]](../../README.md#documentation-for-models) [[Back to README]](../../README.md)
 
 # **adminAPIDeleteRole**
-> \Swagger\Client\Model\V1Null adminAPIDeleteRole($id, $name, $org_id, $type, $owner_type, $owner_id)
+> \AuthzAdmin\Client\Model\V1Null adminAPIDeleteRole($id, $name, $org_id, $type, $owner_type, $owner_id)
 
 DeleteRole deletes the role entity from AuthZ policy store.
 
@@ -832,7 +832,7 @@ DeleteRole deletes the role entity from AuthZ policy store.
 <?php
 require_once(__DIR__ . '/vendor/autoload.php');
 
-$apiInstance = new Swagger\Client\Api\AdminAPIApi(
+$apiInstance = new AuthzAdmin\Client\Api\AdminAPIApi(
     // If you want use custom http client, pass your client which implements `GuzzleHttp\ClientInterface`.
     // This is optional, `GuzzleHttp\Client` will be used as default.
     new GuzzleHttp\Client()
@@ -866,7 +866,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**\Swagger\Client\Model\V1Null**](../Model/V1Null.md)
+[**\AuthzAdmin\Client\Model\V1Null**](../Model/V1Null.md)
 
 ### Authorization
 
@@ -880,7 +880,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../../README.md#documentation-for-api-endpoints) [[Back to Model list]](../../README.md#documentation-for-models) [[Back to README]](../../README.md)
 
 # **adminAPIDeleteRolePolicyMapping**
-> \Swagger\Client\Model\V1Null adminAPIDeleteRolePolicyMapping($role_id, $policy_id)
+> \AuthzAdmin\Client\Model\V1Null adminAPIDeleteRolePolicyMapping($role_id, $policy_id)
 
 DeleteRolePolicyMapping deletes a policy from the given role in AuthZ policy store.
 
@@ -889,7 +889,7 @@ DeleteRolePolicyMapping deletes a policy from the given role in AuthZ policy sto
 <?php
 require_once(__DIR__ . '/vendor/autoload.php');
 
-$apiInstance = new Swagger\Client\Api\AdminAPIApi(
+$apiInstance = new AuthzAdmin\Client\Api\AdminAPIApi(
     // If you want use custom http client, pass your client which implements `GuzzleHttp\ClientInterface`.
     // This is optional, `GuzzleHttp\Client` will be used as default.
     new GuzzleHttp\Client()
@@ -915,7 +915,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**\Swagger\Client\Model\V1Null**](../Model/V1Null.md)
+[**\AuthzAdmin\Client\Model\V1Null**](../Model/V1Null.md)
 
 ### Authorization
 
@@ -929,7 +929,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../../README.md#documentation-for-api-endpoints) [[Back to Model list]](../../README.md#documentation-for-models) [[Back to README]](../../README.md)
 
 # **adminAPIDeleteService**
-> \Swagger\Client\Model\V1Null adminAPIDeleteService($id, $name)
+> \AuthzAdmin\Client\Model\V1Null adminAPIDeleteService($id, $name)
 
 DeleteService deletes the service entity from AuthZ policy store.
 
@@ -938,7 +938,7 @@ DeleteService deletes the service entity from AuthZ policy store.
 <?php
 require_once(__DIR__ . '/vendor/autoload.php');
 
-$apiInstance = new Swagger\Client\Api\AdminAPIApi(
+$apiInstance = new AuthzAdmin\Client\Api\AdminAPIApi(
     // If you want use custom http client, pass your client which implements `GuzzleHttp\ClientInterface`.
     // This is optional, `GuzzleHttp\Client` will be used as default.
     new GuzzleHttp\Client()
@@ -964,7 +964,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**\Swagger\Client\Model\V1Null**](../Model/V1Null.md)
+[**\AuthzAdmin\Client\Model\V1Null**](../Model/V1Null.md)
 
 ### Authorization
 
@@ -978,7 +978,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../../README.md#documentation-for-api-endpoints) [[Back to Model list]](../../README.md#documentation-for-models) [[Back to README]](../../README.md)
 
 # **adminAPIDeleteSubject**
-> \Swagger\Client\Model\V1Null adminAPIDeleteSubject($role_id, $key_id, $key_owner_type, $key_owner_id, $role_names)
+> \AuthzAdmin\Client\Model\V1Null adminAPIDeleteSubject($role_id, $key_id, $key_owner_type, $key_owner_id, $role_names)
 
 DeleteSubject detaches all roles for the given subject entity in AuthZ policy store.
 
@@ -987,7 +987,7 @@ DeleteSubject detaches all roles for the given subject entity in AuthZ policy st
 <?php
 require_once(__DIR__ . '/vendor/autoload.php');
 
-$apiInstance = new Swagger\Client\Api\AdminAPIApi(
+$apiInstance = new AuthzAdmin\Client\Api\AdminAPIApi(
     // If you want use custom http client, pass your client which implements `GuzzleHttp\ClientInterface`.
     // This is optional, `GuzzleHttp\Client` will be used as default.
     new GuzzleHttp\Client()
@@ -1019,7 +1019,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**\Swagger\Client\Model\V1Null**](../Model/V1Null.md)
+[**\AuthzAdmin\Client\Model\V1Null**](../Model/V1Null.md)
 
 ### Authorization
 
@@ -1033,7 +1033,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../../README.md#documentation-for-api-endpoints) [[Back to Model list]](../../README.md#documentation-for-models) [[Back to README]](../../README.md)
 
 # **adminAPIDeleteSubjectRoleMapping**
-> \Swagger\Client\Model\V1Null adminAPIDeleteSubjectRoleMapping($role_id, $key_id, $key_owner_type, $key_owner_id, $role_names)
+> \AuthzAdmin\Client\Model\V1Null adminAPIDeleteSubjectRoleMapping($role_id, $key_id, $key_owner_type, $key_owner_id, $role_names)
 
 DeleteSubjectRoleMapping detaches the role from a subject entity in AuthZ policy store.
 
@@ -1042,7 +1042,7 @@ DeleteSubjectRoleMapping detaches the role from a subject entity in AuthZ policy
 <?php
 require_once(__DIR__ . '/vendor/autoload.php');
 
-$apiInstance = new Swagger\Client\Api\AdminAPIApi(
+$apiInstance = new AuthzAdmin\Client\Api\AdminAPIApi(
     // If you want use custom http client, pass your client which implements `GuzzleHttp\ClientInterface`.
     // This is optional, `GuzzleHttp\Client` will be used as default.
     new GuzzleHttp\Client()
@@ -1074,7 +1074,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**\Swagger\Client\Model\V1Null**](../Model/V1Null.md)
+[**\AuthzAdmin\Client\Model\V1Null**](../Model/V1Null.md)
 
 ### Authorization
 
@@ -1088,7 +1088,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../../README.md#documentation-for-api-endpoints) [[Back to Model list]](../../README.md#documentation-for-models) [[Back to README]](../../README.md)
 
 # **adminAPIListAction**
-> \Swagger\Client\Model\V1ListActionResponse adminAPIListAction($pagination_token, $action_name_prefix)
+> \AuthzAdmin\Client\Model\V1ListActionResponse adminAPIListAction($pagination_token, $action_name_prefix)
 
 ListAction returns a list of actions based on the supplied filters.
 
@@ -1097,7 +1097,7 @@ ListAction returns a list of actions based on the supplied filters.
 <?php
 require_once(__DIR__ . '/vendor/autoload.php');
 
-$apiInstance = new Swagger\Client\Api\AdminAPIApi(
+$apiInstance = new AuthzAdmin\Client\Api\AdminAPIApi(
     // If you want use custom http client, pass your client which implements `GuzzleHttp\ClientInterface`.
     // This is optional, `GuzzleHttp\Client` will be used as default.
     new GuzzleHttp\Client()
@@ -1123,7 +1123,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**\Swagger\Client\Model\V1ListActionResponse**](../Model/V1ListActionResponse.md)
+[**\AuthzAdmin\Client\Model\V1ListActionResponse**](../Model/V1ListActionResponse.md)
 
 ### Authorization
 
@@ -1137,7 +1137,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../../README.md#documentation-for-api-endpoints) [[Back to Model list]](../../README.md#documentation-for-models) [[Back to README]](../../README.md)
 
 # **adminAPIListPermission**
-> \Swagger\Client\Model\V1ListPermissionResponse adminAPIListPermission($pagination_token, $resource_group_id_list, $resource_id_list, $action_id_list)
+> \AuthzAdmin\Client\Model\V1ListPermissionResponse adminAPIListPermission($pagination_token, $resource_group_id_list, $resource_id_list, $action_id_list)
 
 ListPermission returns a list of permissions satisfying the filter conditions.
 
@@ -1146,7 +1146,7 @@ ListPermission returns a list of permissions satisfying the filter conditions.
 <?php
 require_once(__DIR__ . '/vendor/autoload.php');
 
-$apiInstance = new Swagger\Client\Api\AdminAPIApi(
+$apiInstance = new AuthzAdmin\Client\Api\AdminAPIApi(
     // If you want use custom http client, pass your client which implements `GuzzleHttp\ClientInterface`.
     // This is optional, `GuzzleHttp\Client` will be used as default.
     new GuzzleHttp\Client()
@@ -1176,7 +1176,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**\Swagger\Client\Model\V1ListPermissionResponse**](../Model/V1ListPermissionResponse.md)
+[**\AuthzAdmin\Client\Model\V1ListPermissionResponse**](../Model/V1ListPermissionResponse.md)
 
 ### Authorization
 
@@ -1190,7 +1190,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../../README.md#documentation-for-api-endpoints) [[Back to Model list]](../../README.md#documentation-for-models) [[Back to README]](../../README.md)
 
 # **adminAPIListPolicy**
-> \Swagger\Client\Model\V1ListPolicyResponse adminAPIListPolicy($pagination_token, $resource_group_id_list, $resource_id_list, $role_id, $service_id_list, $permission_id_list)
+> \AuthzAdmin\Client\Model\V1ListPolicyResponse adminAPIListPolicy($pagination_token, $resource_group_id_list, $resource_id_list, $role_id, $service_id_list, $permission_id_list, $role_names, $org_id)
 
 ListPolicy returns a list of policies satisfying the filter conditions.
 
@@ -1199,7 +1199,7 @@ ListPolicy returns a list of policies satisfying the filter conditions.
 <?php
 require_once(__DIR__ . '/vendor/autoload.php');
 
-$apiInstance = new Swagger\Client\Api\AdminAPIApi(
+$apiInstance = new AuthzAdmin\Client\Api\AdminAPIApi(
     // If you want use custom http client, pass your client which implements `GuzzleHttp\ClientInterface`.
     // This is optional, `GuzzleHttp\Client` will be used as default.
     new GuzzleHttp\Client()
@@ -1207,12 +1207,14 @@ $apiInstance = new Swagger\Client\Api\AdminAPIApi(
 $pagination_token = "pagination_token_example"; // string | 
 $resource_group_id_list = array("resource_group_id_list_example"); // string[] | 
 $resource_id_list = array("resource_id_list_example"); // string[] | 
-$role_id = "role_id_example"; // string | 
+$role_id = "role_id_example"; // string | DEPRECATED: use role_names and org_id instead.
 $service_id_list = array("service_id_list_example"); // string[] | 
 $permission_id_list = array("permission_id_list_example"); // string[] | 
+$role_names = array("role_names_example"); // string[] | 
+$org_id = "org_id_example"; // string | 
 
 try {
-    $result = $apiInstance->adminAPIListPolicy($pagination_token, $resource_group_id_list, $resource_id_list, $role_id, $service_id_list, $permission_id_list);
+    $result = $apiInstance->adminAPIListPolicy($pagination_token, $resource_group_id_list, $resource_id_list, $role_id, $service_id_list, $permission_id_list, $role_names, $org_id);
     print_r($result);
 } catch (Exception $e) {
     echo 'Exception when calling AdminAPIApi->adminAPIListPolicy: ', $e->getMessage(), PHP_EOL;
@@ -1227,13 +1229,15 @@ Name | Type | Description  | Notes
  **pagination_token** | **string**|  | [optional]
  **resource_group_id_list** | [**string[]**](../Model/string.md)|  | [optional]
  **resource_id_list** | [**string[]**](../Model/string.md)|  | [optional]
- **role_id** | **string**|  | [optional]
+ **role_id** | **string**| DEPRECATED: use role_names and org_id instead. | [optional]
  **service_id_list** | [**string[]**](../Model/string.md)|  | [optional]
  **permission_id_list** | [**string[]**](../Model/string.md)|  | [optional]
+ **role_names** | [**string[]**](../Model/string.md)|  | [optional]
+ **org_id** | **string**|  | [optional]
 
 ### Return type
 
-[**\Swagger\Client\Model\V1ListPolicyResponse**](../Model/V1ListPolicyResponse.md)
+[**\AuthzAdmin\Client\Model\V1ListPolicyResponse**](../Model/V1ListPolicyResponse.md)
 
 ### Authorization
 
@@ -1247,7 +1251,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../../README.md#documentation-for-api-endpoints) [[Back to Model list]](../../README.md#documentation-for-models) [[Back to README]](../../README.md)
 
 # **adminAPIListResource**
-> \Swagger\Client\Model\V1ListResourceResponse adminAPIListResource($pagination_token, $resource_group_id, $resource_group_name_prefix, $resource_name_prefix)
+> \AuthzAdmin\Client\Model\V1ListResourceResponse adminAPIListResource($pagination_token, $resource_group_id, $resource_group_name_prefix, $resource_name_prefix)
 
 ListResource returns a list of resources based on the supplied filters.
 
@@ -1256,7 +1260,7 @@ ListResource returns a list of resources based on the supplied filters.
 <?php
 require_once(__DIR__ . '/vendor/autoload.php');
 
-$apiInstance = new Swagger\Client\Api\AdminAPIApi(
+$apiInstance = new AuthzAdmin\Client\Api\AdminAPIApi(
     // If you want use custom http client, pass your client which implements `GuzzleHttp\ClientInterface`.
     // This is optional, `GuzzleHttp\Client` will be used as default.
     new GuzzleHttp\Client()
@@ -1286,7 +1290,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**\Swagger\Client\Model\V1ListResourceResponse**](../Model/V1ListResourceResponse.md)
+[**\AuthzAdmin\Client\Model\V1ListResourceResponse**](../Model/V1ListResourceResponse.md)
 
 ### Authorization
 
@@ -1300,7 +1304,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../../README.md#documentation-for-api-endpoints) [[Back to Model list]](../../README.md#documentation-for-models) [[Back to README]](../../README.md)
 
 # **adminAPIListResourceGroup**
-> \Swagger\Client\Model\V1ListResourceGroupResponse adminAPIListResourceGroup($pagination_token, $resource_group_name_prefix)
+> \AuthzAdmin\Client\Model\V1ListResourceGroupResponse adminAPIListResourceGroup($pagination_token, $resource_group_name_prefix)
 
 ListResourceGroup returns a list of resource group entities from AuthZ policy store.
 
@@ -1309,7 +1313,7 @@ ListResourceGroup returns a list of resource group entities from AuthZ policy st
 <?php
 require_once(__DIR__ . '/vendor/autoload.php');
 
-$apiInstance = new Swagger\Client\Api\AdminAPIApi(
+$apiInstance = new AuthzAdmin\Client\Api\AdminAPIApi(
     // If you want use custom http client, pass your client which implements `GuzzleHttp\ClientInterface`.
     // This is optional, `GuzzleHttp\Client` will be used as default.
     new GuzzleHttp\Client()
@@ -1335,7 +1339,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**\Swagger\Client\Model\V1ListResourceGroupResponse**](../Model/V1ListResourceGroupResponse.md)
+[**\AuthzAdmin\Client\Model\V1ListResourceGroupResponse**](../Model/V1ListResourceGroupResponse.md)
 
 ### Authorization
 
@@ -1349,7 +1353,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../../README.md#documentation-for-api-endpoints) [[Back to Model list]](../../README.md#documentation-for-models) [[Back to README]](../../README.md)
 
 # **adminAPIListRole**
-> \Swagger\Client\Model\V1ListRoleResponse adminAPIListRole($pagination_token, $role_name_prefix, $role_names, $role_ids)
+> \AuthzAdmin\Client\Model\V1ListRoleResponse adminAPIListRole($pagination_token, $role_name_prefix, $role_names, $role_ids, $org_id)
 
 ListRole returns a list of roles matching the filter condition.
 
@@ -1358,7 +1362,7 @@ ListRole returns a list of roles matching the filter condition.
 <?php
 require_once(__DIR__ . '/vendor/autoload.php');
 
-$apiInstance = new Swagger\Client\Api\AdminAPIApi(
+$apiInstance = new AuthzAdmin\Client\Api\AdminAPIApi(
     // If you want use custom http client, pass your client which implements `GuzzleHttp\ClientInterface`.
     // This is optional, `GuzzleHttp\Client` will be used as default.
     new GuzzleHttp\Client()
@@ -1367,9 +1371,10 @@ $pagination_token = "pagination_token_example"; // string |
 $role_name_prefix = "role_name_prefix_example"; // string | 
 $role_names = array("role_names_example"); // string[] | 
 $role_ids = array("role_ids_example"); // string[] | 
+$org_id = "org_id_example"; // string | 
 
 try {
-    $result = $apiInstance->adminAPIListRole($pagination_token, $role_name_prefix, $role_names, $role_ids);
+    $result = $apiInstance->adminAPIListRole($pagination_token, $role_name_prefix, $role_names, $role_ids, $org_id);
     print_r($result);
 } catch (Exception $e) {
     echo 'Exception when calling AdminAPIApi->adminAPIListRole: ', $e->getMessage(), PHP_EOL;
@@ -1385,10 +1390,11 @@ Name | Type | Description  | Notes
  **role_name_prefix** | **string**|  | [optional]
  **role_names** | [**string[]**](../Model/string.md)|  | [optional]
  **role_ids** | [**string[]**](../Model/string.md)|  | [optional]
+ **org_id** | **string**|  | [optional]
 
 ### Return type
 
-[**\Swagger\Client\Model\V1ListRoleResponse**](../Model/V1ListRoleResponse.md)
+[**\AuthzAdmin\Client\Model\V1ListRoleResponse**](../Model/V1ListRoleResponse.md)
 
 ### Authorization
 
@@ -1402,7 +1408,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../../README.md#documentation-for-api-endpoints) [[Back to Model list]](../../README.md#documentation-for-models) [[Back to README]](../../README.md)
 
 # **adminAPIListService**
-> \Swagger\Client\Model\V1ListServiceResponse adminAPIListService($pagination_token, $service_name_prefix)
+> \AuthzAdmin\Client\Model\V1ListServiceResponse adminAPIListService($pagination_token, $service_name_prefix)
 
 ListService returns a list of services based on the supplied filters.
 
@@ -1411,7 +1417,7 @@ ListService returns a list of services based on the supplied filters.
 <?php
 require_once(__DIR__ . '/vendor/autoload.php');
 
-$apiInstance = new Swagger\Client\Api\AdminAPIApi(
+$apiInstance = new AuthzAdmin\Client\Api\AdminAPIApi(
     // If you want use custom http client, pass your client which implements `GuzzleHttp\ClientInterface`.
     // This is optional, `GuzzleHttp\Client` will be used as default.
     new GuzzleHttp\Client()
@@ -1437,7 +1443,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**\Swagger\Client\Model\V1ListServiceResponse**](../Model/V1ListServiceResponse.md)
+[**\AuthzAdmin\Client\Model\V1ListServiceResponse**](../Model/V1ListServiceResponse.md)
 
 ### Authorization
 
@@ -1451,7 +1457,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../../README.md#documentation-for-api-endpoints) [[Back to Model list]](../../README.md#documentation-for-models) [[Back to README]](../../README.md)
 
 # **adminAPIRecon**
-> \Swagger\Client\Model\V1Null adminAPIRecon($body)
+> \AuthzAdmin\Client\Model\V1Null adminAPIRecon($body)
 
 Recon is to be used for reconciliation of policies between MySQL & Consul.
 
@@ -1460,12 +1466,12 @@ Recon is to be used for reconciliation of policies between MySQL & Consul.
 <?php
 require_once(__DIR__ . '/vendor/autoload.php');
 
-$apiInstance = new Swagger\Client\Api\AdminAPIApi(
+$apiInstance = new AuthzAdmin\Client\Api\AdminAPIApi(
     // If you want use custom http client, pass your client which implements `GuzzleHttp\ClientInterface`.
     // This is optional, `GuzzleHttp\Client` will be used as default.
     new GuzzleHttp\Client()
 );
-$body = new \Swagger\Client\Model\V1Null(); // \Swagger\Client\Model\V1Null | 
+$body = new \AuthzAdmin\Client\Model\V1Null(); // \AuthzAdmin\Client\Model\V1Null | 
 
 try {
     $result = $apiInstance->adminAPIRecon($body);
@@ -1480,11 +1486,11 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **body** | [**\Swagger\Client\Model\V1Null**](../Model/V1Null.md)|  |
+ **body** | [**\AuthzAdmin\Client\Model\V1Null**](../Model/V1Null.md)|  |
 
 ### Return type
 
-[**\Swagger\Client\Model\V1Null**](../Model/V1Null.md)
+[**\AuthzAdmin\Client\Model\V1Null**](../Model/V1Null.md)
 
 ### Authorization
 
@@ -1498,7 +1504,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../../README.md#documentation-for-api-endpoints) [[Back to Model list]](../../README.md#documentation-for-models) [[Back to README]](../../README.md)
 
 # **adminAPIUpdateAction**
-> \Swagger\Client\Model\V1Action adminAPIUpdateAction($body)
+> \AuthzAdmin\Client\Model\V1Action adminAPIUpdateAction($body)
 
 UpdateAction creates the action entity in AuthZ policy store.
 
@@ -1507,12 +1513,12 @@ UpdateAction creates the action entity in AuthZ policy store.
 <?php
 require_once(__DIR__ . '/vendor/autoload.php');
 
-$apiInstance = new Swagger\Client\Api\AdminAPIApi(
+$apiInstance = new AuthzAdmin\Client\Api\AdminAPIApi(
     // If you want use custom http client, pass your client which implements `GuzzleHttp\ClientInterface`.
     // This is optional, `GuzzleHttp\Client` will be used as default.
     new GuzzleHttp\Client()
 );
-$body = new \Swagger\Client\Model\V1Action(); // \Swagger\Client\Model\V1Action | 
+$body = new \AuthzAdmin\Client\Model\V1Action(); // \AuthzAdmin\Client\Model\V1Action | 
 
 try {
     $result = $apiInstance->adminAPIUpdateAction($body);
@@ -1527,11 +1533,11 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **body** | [**\Swagger\Client\Model\V1Action**](../Model/V1Action.md)|  |
+ **body** | [**\AuthzAdmin\Client\Model\V1Action**](../Model/V1Action.md)|  |
 
 ### Return type
 
-[**\Swagger\Client\Model\V1Action**](../Model/V1Action.md)
+[**\AuthzAdmin\Client\Model\V1Action**](../Model/V1Action.md)
 
 ### Authorization
 
@@ -1545,7 +1551,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../../README.md#documentation-for-api-endpoints) [[Back to Model list]](../../README.md#documentation-for-models) [[Back to README]](../../README.md)
 
 # **adminAPIUpdatePermission**
-> \Swagger\Client\Model\V1Permission adminAPIUpdatePermission($body)
+> \AuthzAdmin\Client\Model\V1Permission adminAPIUpdatePermission($body)
 
 UpdatePermission creates the permission entity in AuthZ policy store.
 
@@ -1554,12 +1560,12 @@ UpdatePermission creates the permission entity in AuthZ policy store.
 <?php
 require_once(__DIR__ . '/vendor/autoload.php');
 
-$apiInstance = new Swagger\Client\Api\AdminAPIApi(
+$apiInstance = new AuthzAdmin\Client\Api\AdminAPIApi(
     // If you want use custom http client, pass your client which implements `GuzzleHttp\ClientInterface`.
     // This is optional, `GuzzleHttp\Client` will be used as default.
     new GuzzleHttp\Client()
 );
-$body = new \Swagger\Client\Model\V1Permission(); // \Swagger\Client\Model\V1Permission | 
+$body = new \AuthzAdmin\Client\Model\V1Permission(); // \AuthzAdmin\Client\Model\V1Permission | 
 
 try {
     $result = $apiInstance->adminAPIUpdatePermission($body);
@@ -1574,11 +1580,11 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **body** | [**\Swagger\Client\Model\V1Permission**](../Model/V1Permission.md)|  |
+ **body** | [**\AuthzAdmin\Client\Model\V1Permission**](../Model/V1Permission.md)|  |
 
 ### Return type
 
-[**\Swagger\Client\Model\V1Permission**](../Model/V1Permission.md)
+[**\AuthzAdmin\Client\Model\V1Permission**](../Model/V1Permission.md)
 
 ### Authorization
 
@@ -1592,7 +1598,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../../README.md#documentation-for-api-endpoints) [[Back to Model list]](../../README.md#documentation-for-models) [[Back to README]](../../README.md)
 
 # **adminAPIUpdatePolicy**
-> \Swagger\Client\Model\V1Policy adminAPIUpdatePolicy($body)
+> \AuthzAdmin\Client\Model\V1Policy adminAPIUpdatePolicy($body)
 
 UpdatePolicy creates the policy entity in AuthZ policy store.
 
@@ -1601,12 +1607,12 @@ UpdatePolicy creates the policy entity in AuthZ policy store.
 <?php
 require_once(__DIR__ . '/vendor/autoload.php');
 
-$apiInstance = new Swagger\Client\Api\AdminAPIApi(
+$apiInstance = new AuthzAdmin\Client\Api\AdminAPIApi(
     // If you want use custom http client, pass your client which implements `GuzzleHttp\ClientInterface`.
     // This is optional, `GuzzleHttp\Client` will be used as default.
     new GuzzleHttp\Client()
 );
-$body = new \Swagger\Client\Model\V1Policy(); // \Swagger\Client\Model\V1Policy | 
+$body = new \AuthzAdmin\Client\Model\V1Policy(); // \AuthzAdmin\Client\Model\V1Policy | 
 
 try {
     $result = $apiInstance->adminAPIUpdatePolicy($body);
@@ -1621,11 +1627,11 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **body** | [**\Swagger\Client\Model\V1Policy**](../Model/V1Policy.md)|  |
+ **body** | [**\AuthzAdmin\Client\Model\V1Policy**](../Model/V1Policy.md)|  |
 
 ### Return type
 
-[**\Swagger\Client\Model\V1Policy**](../Model/V1Policy.md)
+[**\AuthzAdmin\Client\Model\V1Policy**](../Model/V1Policy.md)
 
 ### Authorization
 
@@ -1639,7 +1645,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../../README.md#documentation-for-api-endpoints) [[Back to Model list]](../../README.md#documentation-for-models) [[Back to README]](../../README.md)
 
 # **adminAPIUpdateResource**
-> \Swagger\Client\Model\V1Resource adminAPIUpdateResource($body)
+> \AuthzAdmin\Client\Model\V1Resource adminAPIUpdateResource($body)
 
 UpdateResource creates the resource entity in AuthZ policy store.
 
@@ -1648,12 +1654,12 @@ UpdateResource creates the resource entity in AuthZ policy store.
 <?php
 require_once(__DIR__ . '/vendor/autoload.php');
 
-$apiInstance = new Swagger\Client\Api\AdminAPIApi(
+$apiInstance = new AuthzAdmin\Client\Api\AdminAPIApi(
     // If you want use custom http client, pass your client which implements `GuzzleHttp\ClientInterface`.
     // This is optional, `GuzzleHttp\Client` will be used as default.
     new GuzzleHttp\Client()
 );
-$body = new \Swagger\Client\Model\V1Resource(); // \Swagger\Client\Model\V1Resource | 
+$body = new \AuthzAdmin\Client\Model\V1Resource(); // \AuthzAdmin\Client\Model\V1Resource | 
 
 try {
     $result = $apiInstance->adminAPIUpdateResource($body);
@@ -1668,11 +1674,11 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **body** | [**\Swagger\Client\Model\V1Resource**](../Model/V1Resource.md)|  |
+ **body** | [**\AuthzAdmin\Client\Model\V1Resource**](../Model/V1Resource.md)|  |
 
 ### Return type
 
-[**\Swagger\Client\Model\V1Resource**](../Model/V1Resource.md)
+[**\AuthzAdmin\Client\Model\V1Resource**](../Model/V1Resource.md)
 
 ### Authorization
 
@@ -1686,7 +1692,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../../README.md#documentation-for-api-endpoints) [[Back to Model list]](../../README.md#documentation-for-models) [[Back to README]](../../README.md)
 
 # **adminAPIUpdateResourceGroup**
-> \Swagger\Client\Model\V1ResourceGroup adminAPIUpdateResourceGroup($body)
+> \AuthzAdmin\Client\Model\V1ResourceGroup adminAPIUpdateResourceGroup($body)
 
 UpdateResourceGroup updates the given resource group entity.
 
@@ -1695,12 +1701,12 @@ UpdateResourceGroup updates the given resource group entity.
 <?php
 require_once(__DIR__ . '/vendor/autoload.php');
 
-$apiInstance = new Swagger\Client\Api\AdminAPIApi(
+$apiInstance = new AuthzAdmin\Client\Api\AdminAPIApi(
     // If you want use custom http client, pass your client which implements `GuzzleHttp\ClientInterface`.
     // This is optional, `GuzzleHttp\Client` will be used as default.
     new GuzzleHttp\Client()
 );
-$body = new \Swagger\Client\Model\V1ResourceGroup(); // \Swagger\Client\Model\V1ResourceGroup | 
+$body = new \AuthzAdmin\Client\Model\V1ResourceGroup(); // \AuthzAdmin\Client\Model\V1ResourceGroup | 
 
 try {
     $result = $apiInstance->adminAPIUpdateResourceGroup($body);
@@ -1715,11 +1721,11 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **body** | [**\Swagger\Client\Model\V1ResourceGroup**](../Model/V1ResourceGroup.md)|  |
+ **body** | [**\AuthzAdmin\Client\Model\V1ResourceGroup**](../Model/V1ResourceGroup.md)|  |
 
 ### Return type
 
-[**\Swagger\Client\Model\V1ResourceGroup**](../Model/V1ResourceGroup.md)
+[**\AuthzAdmin\Client\Model\V1ResourceGroup**](../Model/V1ResourceGroup.md)
 
 ### Authorization
 
@@ -1733,7 +1739,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../../README.md#documentation-for-api-endpoints) [[Back to Model list]](../../README.md#documentation-for-models) [[Back to README]](../../README.md)
 
 # **adminAPIUpdateRole**
-> \Swagger\Client\Model\V1Role adminAPIUpdateRole($body)
+> \AuthzAdmin\Client\Model\V1Role adminAPIUpdateRole($body)
 
 UpdateRole creates the role entity in AuthZ policy store.
 
@@ -1742,12 +1748,12 @@ UpdateRole creates the role entity in AuthZ policy store.
 <?php
 require_once(__DIR__ . '/vendor/autoload.php');
 
-$apiInstance = new Swagger\Client\Api\AdminAPIApi(
+$apiInstance = new AuthzAdmin\Client\Api\AdminAPIApi(
     // If you want use custom http client, pass your client which implements `GuzzleHttp\ClientInterface`.
     // This is optional, `GuzzleHttp\Client` will be used as default.
     new GuzzleHttp\Client()
 );
-$body = new \Swagger\Client\Model\V1Role(); // \Swagger\Client\Model\V1Role | 
+$body = new \AuthzAdmin\Client\Model\V1Role(); // \AuthzAdmin\Client\Model\V1Role | 
 
 try {
     $result = $apiInstance->adminAPIUpdateRole($body);
@@ -1762,11 +1768,11 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **body** | [**\Swagger\Client\Model\V1Role**](../Model/V1Role.md)|  |
+ **body** | [**\AuthzAdmin\Client\Model\V1Role**](../Model/V1Role.md)|  |
 
 ### Return type
 
-[**\Swagger\Client\Model\V1Role**](../Model/V1Role.md)
+[**\AuthzAdmin\Client\Model\V1Role**](../Model/V1Role.md)
 
 ### Authorization
 
@@ -1780,7 +1786,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../../README.md#documentation-for-api-endpoints) [[Back to Model list]](../../README.md#documentation-for-models) [[Back to README]](../../README.md)
 
 # **adminAPIUpdateService**
-> \Swagger\Client\Model\V1Service adminAPIUpdateService($body)
+> \AuthzAdmin\Client\Model\V1Service adminAPIUpdateService($body)
 
 UpdateService creates the service entity in AuthZ policy store.
 
@@ -1789,12 +1795,12 @@ UpdateService creates the service entity in AuthZ policy store.
 <?php
 require_once(__DIR__ . '/vendor/autoload.php');
 
-$apiInstance = new Swagger\Client\Api\AdminAPIApi(
+$apiInstance = new AuthzAdmin\Client\Api\AdminAPIApi(
     // If you want use custom http client, pass your client which implements `GuzzleHttp\ClientInterface`.
     // This is optional, `GuzzleHttp\Client` will be used as default.
     new GuzzleHttp\Client()
 );
-$body = new \Swagger\Client\Model\V1Service(); // \Swagger\Client\Model\V1Service | 
+$body = new \AuthzAdmin\Client\Model\V1Service(); // \AuthzAdmin\Client\Model\V1Service | 
 
 try {
     $result = $apiInstance->adminAPIUpdateService($body);
@@ -1809,11 +1815,11 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **body** | [**\Swagger\Client\Model\V1Service**](../Model/V1Service.md)|  |
+ **body** | [**\AuthzAdmin\Client\Model\V1Service**](../Model/V1Service.md)|  |
 
 ### Return type
 
-[**\Swagger\Client\Model\V1Service**](../Model/V1Service.md)
+[**\AuthzAdmin\Client\Model\V1Service**](../Model/V1Service.md)
 
 ### Authorization
 

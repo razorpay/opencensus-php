@@ -5,7 +5,7 @@
  * PHP version 5
  *
  * @category Class
- * @package  Swagger\Client
+ * @package  AuthzAdmin\Client
  * @author   Swagger Codegen team
  * @link     https://github.com/swagger-api/swagger-codegen
  */
@@ -27,14 +27,14 @@
  * Please update the test case below to test the model.
  */
 
-namespace Swagger\Client;
+namespace AuthzAdmin\Client;
 
 /**
  * V1ListRoleResponseTest Class Doc Comment
  *
  * @category    Class
  * @description V1ListRoleResponse
- * @package     Swagger\Client
+ * @package     AuthzAdmin\Client
  * @author      Swagger Codegen team
  * @link        https://github.com/swagger-api/swagger-codegen
  */

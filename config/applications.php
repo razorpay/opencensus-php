@@ -1300,6 +1300,16 @@ return [
         'mock_url' => env('AUTHZ_XPLATFORM_ENFORCER_BASE_MOCK_URL')
     ],
 
+    'authzXPlatformAdmin' => [
+        'auth' => [
+            'username' => env('AUTHZ_XPLATFORM_ADMIN_USER'),
+            'password' => env('AUTHZ_XPLATFORM_ADMIN_SECRET'),
+        ],
+        'service_id' =>  env('AUTHZ_XPLATFORM_ADMIN_SERVICE_ID'),
+        'mock'     => env('AUTHZ_XPLATFORM_ADMIN_MOCK', true),
+        'url'      => env('AUTHZ_XPLATFORM_ADMIN_BASE_URL')
+    ],
+
     'downtime_manager' => [
         'url' => env('DOWNTIME_MANAGER_URL'),
         'user' => env('DOWNTIME_MANAGER_USER'),
