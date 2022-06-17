@@ -38,6 +38,7 @@ class Service extends Base\Service
         'FN2kulvZ47wf4g',   //Limese
         'IDTUUOoV4Ph06T',   //Khiangte Skincare
         'GkUeUmMJI0xrIN',   //Asa industries
+        '5IXXDp7kTi2BtJ',   //Cyahi
     ];
 
     const farziEnabledMids = [
