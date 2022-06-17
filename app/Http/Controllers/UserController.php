@@ -835,7 +835,8 @@ class UserController extends Controller
             // Clearing all session data as session keys like current_merchant_id are persisted even after logout
             $this->trace->info(TraceCode::FORCE_SESSION_CLEAR_AFTER_X_DEMO_LOGOUT, []);
 
-            Session::flush();
+            Session::forget('current_merchant_id');
+            Session::forget('dashboard_user_payload');
         }
 
         Session::forget(User\Constants::OAUTH_LOGIN);

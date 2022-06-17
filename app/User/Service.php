@@ -3,6 +3,7 @@
 namespace App\User;
 
 use App\Http\Headers;
+use App\Merchant\Constants as MerchantConstants;
 use Auth;
 use Trace;
 use Cookie;
@@ -539,14 +540,14 @@ class Service extends Base\Service
          */
         $currentMerchantId = Session::get('current_merchant_id','');
 
-        if (!empty($currentMerchantId))
+        if (!empty($currentMerchantId) and  !in_array($currentMerchantId, MerchantConstants::X_DEMO_MERCHANT_IDS, true))
         {
             // Clearing all session data as session keys like current_merchant_id are persisted even after logout
             $this->trace->info(TraceCode::FORCE_SESSION_CLEAR_BEFORE_X_DEMO_LOGIN, [
                 'current_merchant_id'   => $currentMerchantId
             ]);
 
-            Session::forget('current_merchant_id');
+            Session::invalidate();
         }
 
         $input = array(
