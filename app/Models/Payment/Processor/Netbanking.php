@@ -193,6 +193,7 @@ class Netbanking
         IFSC::UCBA,
         IFSC::CNRB,
         IFSC::DCBL,
+        IFSC::SRCB,
         IFSC::UCBA,
         IFSC::TMBL,
         IFSC::DBSS,
@@ -1099,6 +1100,14 @@ class Netbanking
             ],
             'tpv'    => [
                 IFSC::BDBL,
+            ]
+        ],
+        Gateway::NETBANKING_SARASWAT => [
+            'retail' => [
+                IFSC::SRCB,
+            ],
+            'tpv' => [
+                IFSC::SRCB,
             ]
         ],
         Gateway::NETBANKING_UCO => [

@@ -83,6 +83,7 @@ return [
         'netbanking_ausf',
         'netbanking_nsdl',
         'netbanking_bdbl',
+        'netbanking_saraswat',
         'netbanking_uco',
         'netbanking_tmb',
         'netbanking_dbs',

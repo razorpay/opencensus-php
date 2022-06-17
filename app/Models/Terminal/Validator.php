@@ -168,6 +168,7 @@ class Validator extends Base\Validator
         Payment\Gateway::NETBANKING_BDBL,
         Payment\Gateway::NETBANKING_UCO,
         Payment\Gateway::MOBIKWIK,
+        Payment\Gateway::NETBANKING_SARASWAT,
         Payment\Gateway::EMERCHANTPAY,
         Payment\Gateway::NETBANKING_DBS,
         Payment\Gateway::INGENICO,
@@ -1353,6 +1354,20 @@ class Validator extends Base\Validator
     ];
 
     protected static $netbankingBdblEditTerminalRules = [
+        Entity::GATEWAY_MERCHANT_ID     => 'sometimes|string',
+        Entity::TPV                     => 'sometimes|in:0,1,2',
+        Entity::STATUS                  => 'sometimes|in:pending,activated,deactivated,failed',
+        Entity::TYPE                    => 'sometimes|array',
+    ];
+
+    protected static $netbankingSaraswatTerminalRules = [
+        Entity::GATEWAY                 => 'required|in:netbanking_saraswat',
+        Entity::GATEWAY_MERCHANT_ID     => 'required|string',
+        Entity::TPV                     => 'sometimes|in:0,1,2',
+        Entity::STATUS                  => 'sometimes|in:pending,activated,deactivated,failed',
+    ];
+
+    protected static $netbankingSaraswatEditTerminalRules = [
         Entity::GATEWAY_MERCHANT_ID     => 'sometimes|string',
         Entity::TPV                     => 'sometimes|in:0,1,2',
         Entity::STATUS                  => 'sometimes|in:pending,activated,deactivated,failed',

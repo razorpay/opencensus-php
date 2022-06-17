@@ -182,6 +182,10 @@ class Type
 
     const BDBL_NETBANKING_REFUND            = 'bdbl_netbanking_refund';
 
+    const SARASWAT_NETBANKING_REFUND        = 'saraswat_netbanking_refund';
+
+    const SARASWAT_NETBANKING_CLAIMS        = 'saraswat_netbanking_claims';
+
     const UCO_NETBANKING_REFUND             = 'uco_netbanking_refund';
 
     const DBS_NETBANKING_CLAIMS             = 'dbs_netbanking_claims';
@@ -424,6 +428,8 @@ class Type
             self::KOTAK_CORP_NETBANKING_REFUND,
             self::RECON_INPUT,
             self::BDBL_NETBANKING_REFUND,
+            self::SARASWAT_NETBANKING_REFUND,
+            self::SARASWAT_NETBANKING_CLAIMS,
             self::AXIS_CARD_SETTLEMENT_FILE,
             self::AXIS_CARD_SETTLEMENT_OUTPUT_FILE,
             self::UCO_NETBANKING_REFUND,
@@ -611,6 +617,8 @@ class Type
         self::DATA_LAKE_SEGMENT_FILE,
         self::RECON_INPUT,
         self::BULK_FRAUD_NOTIFICATION,
+        self::SARASWAT_NETBANKING_REFUND,
+        self::SARASWAT_NETBANKING_CLAIMS,
         self::AXIS_CARD_SETTLEMENT_OUTPUT_FILE,
         self::AXIS_CARD_SETTLEMENT_FILE,
         self::DBS_NETBANKING_CLAIMS,
@@ -813,6 +821,7 @@ class Type
             self::ENACH_NPCI_NB_CANCEL,
             self::RBL_ENACH_CANCEL,
             self::BDBL_NETBANKING_REFUND,
+            self::SARASWAT_NETBANKING_REFUND,
             self::SBI_UPI_REFUND,
             self::UCO_NETBANKING_REFUND,
             self::DBS_NETBANKING_COMBINED,

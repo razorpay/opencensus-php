@@ -319,6 +319,7 @@ class Entity
     const ESIGNER_DIGIO          = 'esigner_digio';
     const NETBANKING_CUB         = 'netbanking_cub';
     const NETBANKING_SIB         = 'netbanking_sib';
+    const NETBANKING_SARASWAT    = 'netbanking_saraswat';
     const NETBANKING_CBI         = 'netbanking_cbi';
     const PAYLATER_ICICI         = 'paylater_icici';
     const HDFC_DEBIT_EMI         = 'hdfc_debit_emi';
@@ -1128,6 +1129,7 @@ class Entity
         self::WALLET_JIOMONEY        => \RZP\Gateway\Wallet\Jiomoney::class,
         self::WALLET_SBIBUDDY        => \RZP\Gateway\Wallet\Sbibuddy::class,
         self::NETBANKING_SIB         => \RZP\Gateway\Mozart::class,
+        self::NETBANKING_SARASWAT    => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_CBI         => \RZP\Gateway\Mozart::class,
         self::NETBANKING_IDFC        => \RZP\Gateway\Netbanking\Idfc::class,
         self::NETBANKING_AXIS        => \RZP\Gateway\Netbanking\Axis::class,

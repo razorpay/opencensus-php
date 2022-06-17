@@ -52,6 +52,7 @@ class Base extends BaseProcessor
         Constants::NSDL,
         Constants::INDUSIND,
         Constants::BDBL,
+        Constants::SRCB,
         Constants::UCO,
         Constants::HDFC_CORP,
         Constants::RBL_CORP,

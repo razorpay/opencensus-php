@@ -145,6 +145,7 @@ function disableEmptyInputs(form) {
                 <option value="DLXB">DhanlaxmiBank</option>
                 <option value="NSPB">NSDL Payments Bank Limited</option>
                 <option value="BDBL">Bandhan Bank</option>
+                <option value="SRCB">Saraswat Bank</option>
                 <option value="UCBA">United Commercial Bank</option>
                 <option value="TMBL">Tamilnad Mercantile Bank</option>
                 <option value="SRCB">Saraswat Bank</option>

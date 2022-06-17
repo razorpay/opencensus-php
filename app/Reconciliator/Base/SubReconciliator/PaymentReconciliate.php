@@ -100,6 +100,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         RequestProcessor\Base::NETBANKING_UCO,
         RequestProcessor\Base::PAYLATER_LAZYPAY,
         RequestProcessor\Base::CARDLESS_EMI_EARLYSALARY,
+        RequestProcessor\Base::NETBANKING_SARASWAT,
         RequestProcessor\Base::EMERCHANTPAY,
         RequestProcessor\Base::NETBANKING_DBS,
     ];

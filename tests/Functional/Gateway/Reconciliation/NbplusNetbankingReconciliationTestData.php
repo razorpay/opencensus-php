@@ -247,6 +247,15 @@ return [
         'TransactionDate'               => Carbon::today()->format("Ymd"),
         'Account_Number'                => '123456',
     ],
+
+    'testSrcbSuccessRecon'  => [
+        'Paymentid'                     => '',
+        'BankTransactionReferenceNo'    => '1234',
+        'TransactionAmount'             => '500.00',
+        'Refund_and_narration'          => 'Y',
+        'TransactionDate'               => Carbon::today()->format("Ymd"),
+
+    ],
     'testUcoSuccessRecon'  => [
         'Account_No'                    => '123456',
         'PG Payment Reference No(PRN)'  => '',

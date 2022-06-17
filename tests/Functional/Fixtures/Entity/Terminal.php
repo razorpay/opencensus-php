@@ -132,10 +132,10 @@ class Terminal extends Base
         $this->createSharedNetbankingDlbTerminal();
         $this->createSharedNetbankingNsdlTerminal();
         $this->createSharedNetbankingBdblTerminal();
+        $this->createSharedNetbankingSaraswatTerminal();
         $this->createSharedNetbankingUcoTerminal();
         $this->createSharedNetbankingTmbTerminal();
         $this->createsharednetbankingDbsTerminal();
-        $this->createSharedNetbankingSaraswatTerminal();
     }
 
     public function createBharatQrIsgTerminal()
@@ -4476,7 +4476,7 @@ class Terminal extends Base
         $sharedMerchantAccount = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;
 
         $defaultValues = [
-            'id'                   => '1ShrdNBSrtFTml',
+            'id'                   => "1ShrdNBSrtFTml",
             'merchant_id'          => $sharedMerchantAccount,
             'gateway'              => Gateway::NETBANKING_SARASWAT,
             'gateway_merchant_id'  => 'netbanking_saraswat',

@@ -102,6 +102,7 @@ class Base extends Core
     const NETBANKING_KOTAK_V2      = 'NetbankingKotakV2';
     const NETBANKING_NSDL          = 'NetbankingNsdl';
     const NETBANKING_BDBL          = 'NetbankingBdbl';
+    const NETBANKING_SARASWAT      = 'NetbankingSaraswat';
     const NETBANKING_UCO           = 'NetbankingUco';
     const VIRTUAL_ACC_KOTAK        = 'VirtualAccKotak';
     const VIRTUAL_ACC_YESBANK      = 'VirtualAccYesBank';
@@ -250,6 +251,7 @@ class Base extends Core
         self::NETBANKING_BDBL          => ['imps.dispute@bandhanbank.com'],
         self::NETBANKING_UCO           => ['hoe_banking.calcutta@ucobank.co.in'],
         self::CARDLESS_EMI_EARLYSALARY => [],
+        self::NETBANKING_SARASWAT      => [],
         self::EMERCHANTPAY             => ['aithal@emerchantpay.com'],
         self::NETBANKING_HDFC_CORP     => [],
         self::NETBANKING_DBS           => [],
@@ -333,6 +335,7 @@ class Base extends Core
         Gateway::NETBANKING_DLB         => self::NETBANKING_DLB,
         Gateway::NETBANKING_NSDL        => self::NETBANKING_NSDL,
         Gateway::NETBANKING_BDBL        => self::NETBANKING_BDBL,
+        Gateway::NETBANKING_SARASWAT    => self::NETBANKING_SARASWAT,
         Gateway::NETBANKING_UCO         => self::NETBANKING_UCO,
         Gateway::NETBANKING_DBS         => self::NETBANKING_DBS,
 

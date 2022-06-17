@@ -110,6 +110,7 @@ class Validator extends Base\Core
         RequestProcessor\Base::NETBANKING_RBL     => ["/RBL (Razorpay|CIB) PG Recon File/"],
         RequestProcessor\Base::CARDLESS_EMI_ZESTMONEY  => ["/Settlement_RazorpayPG_[0-9]{2}-[0-9]{2}-20[0-9]{2}/"],
         RequestProcessor\Base::NETBANKING_BDBL    => [""],
+        RequestProcessor\Base::NETBANKING_SARASWAT    => ["/Saraswat Bank Recon File"],
         RequestProcessor\Base::NETBANKING_UCO     => [""],
         RequestProcessor\Base::EMERCHANTPAY       => ["/Settlement Razorpay Software Private Ltd (Trustly|Poli|Sofort|Giropay) (EUR|GBP|AUD) [0-9]{2}-(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-20[0-9]{2}/"],
     ];
@@ -198,6 +199,7 @@ class Validator extends Base\Core
         RequestProcessor\Base::NETBANKING_RBL           => 1,
         RequestProcessor\Base::CARDLESS_EMI_ZESTMONEY   => 1,
         RequestProcessor\Base::NETBANKING_BDBL          => 1,
+        RequestProcessor\Base::NETBANKING_SARASWAT      => 1,
         RequestProcessor\Base::NETBANKING_UCO           => 1,
     ];
 
@@ -832,6 +834,18 @@ class Validator extends Base\Core
         return ($validSubject and $validAttachmentCount);
     }
 
+    public function validateNetbankingSaraswatEmail(array $emailDetails)
+    {
+        $validSubject = $this->validateEmailSubject(
+            $emailDetails[RequestProcessor\Mailgun::SUBJECT],
+            RequestProcessor\Base::NETBANKING_SARASWAT);
+
+        $validAttachmentCount = $this->validateAttachmentCount(
+            $emailDetails[RequestProcessor\Base::ATTACHMENT_COUNT],
+            RequestProcessor\Base:: NETBANKING_SARASWAT);
+
+        return ($validSubject and $validAttachmentCount);
+    }
     public function validateNetbankingUcoEmail(array $emailDetails)
     {
         $validSubject = $this->validateEmailSubject(
