@@ -123,6 +123,8 @@ class CreatePricing extends Migration
             $table->integer(Pricing::EXPIRED_AT)
                   ->nullable();
 
+            $table->char(Pricing::AUDIT_ID,Pricing::ID_LENGTH)->nullable();
+
             $table->index(Pricing::PLAN_ID);
             $table->index([Pricing::PLAN_NAME, Pricing::PLAN_ID]);
             $table->index([Pricing::ORG_ID, Pricing::PLAN_ID]);

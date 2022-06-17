@@ -6667,7 +6667,7 @@ ALTER TABLE merchant_business_details
 
 ALTER TABLE user_device_details
     ADD COLUMN signup_campaign varchar(50) DEFAULT NULL;
-    
+
 ALTER TABLE cards
     ADD COLUMN token_last4 char(4) DEFAULT NULL;
 
@@ -6865,6 +6865,11 @@ CREATE TABLE IF NOT EXISTS address_consent_1cc (
         KEY address_consent_1cc_created_at_index (created_at)
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
 
+alter table
+  pricing
+add
+  column audit_id char(14) COLLATE utf8mb4_bin DEFAULT NULL;
+
 CREATE TABLE IF NOT EXISTS  merchant_1cc_comments (
 	id CHAR(14) COLLATE utf8mb4_bin NOT NULL,
 	merchant_id CHAR(14) COLLATE utf8mb4_bin NOT NULL,
@@ -6875,3 +6880,4 @@ CREATE TABLE IF NOT EXISTS  merchant_1cc_comments (
     PRIMARY KEY (id),
 	KEY merchant_1cc_comments_merchant_id_index (merchant_id),
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+

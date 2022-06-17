@@ -81,8 +81,8 @@ class Entity extends Base\PublicEntity
 
     // Input key for array of rules
     const RULES                = 'rules';
-
     const ORG_ID               = 'org_id';
+    const AUDIT_ID             = 'audit_id';
 
     protected $cryptomute;
     protected $password = '0123456789qwerty';
@@ -132,6 +132,7 @@ class Entity extends Base\PublicEntity
         self::ACCOUNT_TYPE,
         self::FEE_BEARER,
         self::PAYOUTS_FILTER,
+        self::AUDIT_ID
     ];
 
     protected $entity = 'pricing';

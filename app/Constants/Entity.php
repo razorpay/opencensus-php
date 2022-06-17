@@ -729,6 +729,7 @@ class Entity
      * Entities that are auditable via entity audit trait
      */
     const AUDITED_ENTITIES = [
+        self::PRICING,
         self::MERCHANT,
         self::MERCHANT_BUSINESS_DETAIL,
         self::STAKEHOLDER,
