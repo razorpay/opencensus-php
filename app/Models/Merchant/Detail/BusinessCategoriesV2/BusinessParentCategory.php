@@ -23,10 +23,10 @@ class BusinessParentCategory
     const MEDIA_AND_ENTERTAINMENT               = 'media_and_entertainment';
     const TECH_SERVICE_AND_FREELANCER           = 'tech_service_and_freelancer';
     const TECH_PRODUCT                          = 'tech_product';
-    const HEALTHCARE_WELLNESS_FITNESS           = 'healthcare_wellness_fitness';
+    const HEALTHCARE                            = 'healthcare';
     const NOT_FOR_PROFIT                        = 'not_for_profit';
     const GOVERNMENT                            = 'government';
-    const UTILITIES_BILLS_PAYMENTS              = 'utilities_bills_payments';
+    const UTILITIES                             = 'utilities';
     const HOUSING                               = 'housing';
     const TRAVEL_AND_TRANSPORT                  = 'travel_and_transport';
     const SOCIAL                                = 'social';
@@ -44,10 +44,10 @@ class BusinessParentCategory
         self::MEDIA_AND_ENTERTAINMENT               =>  'Media and entertainment',
         self::TECH_SERVICE_AND_FREELANCER           =>  'Tech services',
         self::TECH_PRODUCT                          =>  'Tech products',
-        self::HEALTHCARE_WELLNESS_FITNESS           =>  'Healthcare, fitness, or wellness',
+        self::HEALTHCARE                            =>  'Healthcare, fitness, or wellness',
         self::NOT_FOR_PROFIT                        =>  'Nonprofit',
         self::GOVERNMENT                            =>  'Public sector',
-        self::UTILITIES_BILLS_PAYMENTS              =>  'Utilities provider',
+        self::UTILITIES                             =>  'Utilities provider',
         self::HOUSING                               =>  'Real estate, housing, rentals',
         self::TRAVEL_AND_TRANSPORT                  =>  'Transport or travel',
         self::SOCIAL                                =>  'Social group or platform',
@@ -65,10 +65,10 @@ class BusinessParentCategory
         self::MEDIA_AND_ENTERTAINMENT           => 1,
         self::TECH_SERVICE_AND_FREELANCER       => 1,
         self::TECH_PRODUCT                      => 1,
-        self::HEALTHCARE_WELLNESS_FITNESS       => 1,
+        self::HEALTHCARE                        => 1,
         self::NOT_FOR_PROFIT                    => 1,
         self::GOVERNMENT                        => 1,
-        self::UTILITIES_BILLS_PAYMENTS          => 1,
+        self::UTILITIES                         => 1,
         self::HOUSING                           => 1,
         self::TRAVEL_AND_TRANSPORT              => 1,
         self::SOCIAL                            => 1,
@@ -126,7 +126,7 @@ class BusinessParentCategory
             Category::PAAS,
             Category::SAAS,
         ],
-        self::HEALTHCARE_WELLNESS_FITNESS => [
+        self::HEALTHCARE => [
             Category::HEALTHCARE,
         ],
         self::NOT_FOR_PROFIT => [
@@ -135,7 +135,7 @@ class BusinessParentCategory
         self::GOVERNMENT => [
             Category::GOVERNMENT,
         ],
-        self::UTILITIES_BILLS_PAYMENTS => [
+        self::UTILITIES => [
             Category::UTILITIES,
         ],
         self::HOUSING => [

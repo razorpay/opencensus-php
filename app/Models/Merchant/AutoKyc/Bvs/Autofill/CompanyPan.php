@@ -26,5 +26,7 @@ class CompanyPan extends Base
     protected function updateMerchantContext(string $name)
     {
         $this->merchantDetails->setBusinessNameSuggested($name);
+
+        $this->merchantDetails->setCompanyPanVerificationStatus();
     }
 }

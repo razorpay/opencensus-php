@@ -103,7 +103,7 @@ abstract class Base implements RequestDispatcher
         }
     }
 
-    public function fetchEnrichmentDetails(): AutoKyc\Response
+    public function fetchEnrichmentDetails(): ?AutoKyc\Response
     {
         $payload = $this->getRequestPayload();
 

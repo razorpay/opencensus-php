@@ -26,5 +26,7 @@ class PersonalPan extends Base
     protected function updateMerchantContext(string $name)
     {
         $this->merchantDetails->setPromoterPanNameSuggested($name);
+
+        $this->merchantDetails->setPoiVerificationStatus();
     }
 }

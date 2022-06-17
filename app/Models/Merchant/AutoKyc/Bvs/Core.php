@@ -126,7 +126,7 @@ class Core extends Base\Core
         return $validation;
     }
 
-    public function fetchEnrichmentDetails(string $ownerId, array $input): Response
+    public function fetchEnrichmentDetails(string $ownerId, array $input): ?Response
     {
         $input[Constant::OWNER_ID] = $ownerId;
 
@@ -163,7 +163,7 @@ class Core extends Base\Core
             $this->trace->count(Metric::BVS_ARTEFACT_VERIFICATION_TRIGGER, $dimension);
         }
 
-        return $response ?? new ValidationBaseResponse(new ValidationResponse());
+        return $response;
     }
 
     /**

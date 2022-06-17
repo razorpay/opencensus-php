@@ -77,11 +77,11 @@ abstract class Base
 
         $sendEnrichmentDetails = true;
 
-        $response = $details->getResponseData($sendEnrichmentDetails);
+        $response = optional($details)->getResponseData($sendEnrichmentDetails);
 
         $name = $response[Constant::ENRICHMENTS][Constant::ONLINE_PROVIDER][Constant::DETAILS][Constant::NAME][Constant::VALUE] ?? '';
 
-        $validationStatus = $response[BvsValidation\Entity::VALIDATION_STATUS];
+        $validationStatus = $response[BvsValidation\Entity::VALIDATION_STATUS] ?? '';
 
         $this->updateMerchantContext($name);
 
