@@ -7204,6 +7204,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const CREATING_ACCESS_CONTROL_UPDATE_HISTORY                = 'CREATING_ACCESS_CONTROL_UPDATE_HISTORY';
 
+    const BUCKET_MIGRATION_FOR_NEW_COMMISSION_INVOICES_EXP      = 'BUCKET_MIGRATION_FOR_NEW_COMMISSION_INVOICES_EXP';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',

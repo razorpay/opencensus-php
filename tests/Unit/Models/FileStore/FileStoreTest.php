@@ -148,6 +148,10 @@ class FileStoreTest extends TestCase
                 'name'   => 'invoice_bucket',
                 'region' => 'region2'
             ],
+            'commission_invoice_ap_south_bucket_config' => [
+                'name'   => 'invoice_bucket',
+                'region' => 'region2'
+            ],
             'activation_bucket_config' => [
                 'name'   => 'activation_bucket',
                 'region' => 'region3'
@@ -190,6 +194,11 @@ class FileStoreTest extends TestCase
             'invoice_bucket_config',
             $bucketConfig,
             $this->merchant);
+
+        $this->checkBucketAndRegion(
+            'commission_invoice',
+            'commission_invoice_ap_south_bucket_config',
+            $bucketConfig);
 
         $this->checkBucketAndRegion(
             'business_proof_url',

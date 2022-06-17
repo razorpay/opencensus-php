@@ -279,6 +279,8 @@ class Type
     const PAYOUTS_BUCKET_CONFIG                 = 'payouts_bucket_config';
     const NON_MIGRATED_BATCH_BUCKET_CONFIG      = 'non_migrated_batch_bucket_config';
 
+    const COMMISSION_INVOICE_AP_SOUTH_BUCKET_CONFIG    = 'commission_invoice_ap_south_bucket_config';
+
     const PAYOUT_SAMPLE                         = 'payout_sample';
 
     const RECON_INPUT                           = 'recon_input';

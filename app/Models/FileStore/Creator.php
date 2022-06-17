@@ -7,6 +7,7 @@ use RZP\Exception;
 use RZP\Encryption;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
+use RZP\Models\Merchant\Core;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\FileStore\Formatter;
@@ -712,6 +713,8 @@ class Creator extends Base\Core
             $this->env,
             $this->s3BucketConfigForExternalServices);
 
+        $this->updateBucketConfigForCommissionInvoice($bucketConfig);
+
         $fileName = $this->getFullFileName();
 
         $fileDetails = [
@@ -733,6 +736,37 @@ class Creator extends Base\Core
         $this->file->setBucket($bucketConfig['name']);
 
         $this->file->setRegion($bucketConfig['region']);
+    }
+
+    protected function updateBucketConfigForCommissionInvoice(&$bucketConfig)
+    {
+        if($this->file->getType() === Type::COMMISSION_INVOICE)
+        {
+            $merchantId = $this->merchant->getId();
+
+            $properties = [
+                'id'            => $merchantId,
+                'experiment_id' => $this->app['config']->get('app.commission_invoice_bucket_migration_exp_id')
+            ];
+
+            $isExpEnable = (new Core())->isSplitzExperimentEnable($properties,'enable');
+
+            $this->trace->info(TraceCode::BUCKET_MIGRATION_FOR_NEW_COMMISSION_INVOICES_EXP,[
+                'merchant_id' => $merchantId,
+                'isExpEnable' => $isExpEnable,
+            ]);
+
+            if($isExpEnable === true)
+            {
+                $configType = Type::COMMISSION_INVOICE_AP_SOUTH_BUCKET_CONFIG;
+
+                $config = $this->app['config']->get('filestore.aws');
+
+                $bucketConfig = $config[$configType];
+            }
+        }
+
+        return $bucketConfig;
     }
 
     /**
