@@ -1750,6 +1750,8 @@ trait Authorize
 
             $this->validateCardAndCvv($payment, $input);
 
+            $this->validateLast4ForS2STokenisedEmiPayments($payment, $input);
+
             $this->validateLibraryForInternationalApps($payment, $input);
 
             $this->validateAddressIfPresentWithoutRedirect($payment, $input);
@@ -8676,6 +8678,33 @@ trait Authorize
             ($payment->getMethod() === Method::CARD))
         {
             $payment->getValidator()->validateCardAndCvv($input);
+        }
+    }
+
+    protected function validateLast4ForS2STokenisedEmiPayments(Payment\Entity $payment, array $input)
+    {
+        if ($payment->isMethodCardOrEmi() === false){
+            return ;
+        }
+
+        $last4 = $input['card']['last4'] ?? '';
+
+        if ( ($payment->getMethod() === Method::EMI) and  ($this->app['api.route']->isS2SPaymentRoute() === true) and isset($input['card'])=== true and  empty($input['card']['tokenised']) === false and empty($last4) === true)
+        {
+
+            $this->trace->info(
+                TraceCode::S2S_TOKENISED_EMI_LAST4_VALIDATION,
+                [
+                    'payment_id'  => $payment->getId(),
+                    'method'      => $payment->getMethod(),
+                    'last4'       => $last4,
+                    'tokenised'   => $input['card']['tokenised'],
+
+                ]);
+
+            throw new Exception\BadRequestValidationFailureException (
+                'The last4 field is required when method is emi and tokenised is true'
+            );
         }
     }
 

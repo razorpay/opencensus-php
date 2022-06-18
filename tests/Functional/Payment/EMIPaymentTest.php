@@ -79,6 +79,55 @@ class EMIPaymentTest extends TestCase
         $this->fixtures->merchant->disableEmi();
     }
 
+    public function testS2SEmiPaymentCreate()
+    {
+        $emiPlan = $this->emiPlan;
+
+        $this->fixtures->merchant->enableEmi();
+        $this->ba->privateAuth();
+        $this->fixtures->merchant->addFeatures(['s2s']);
+        $this->payment['amount'] = 500000;
+        $this->payment['method'] = 'emi';
+        $this->payment['emi_duration'] = 9;
+        $this->payment['card']['number'] = '41476700000006';
+        $this->payment['card'][ 'cryptogram_value'] = 'test';
+        $this->payment['card'][ 'tokenised'] = true;
+        $this->payment['card'][ 'last4'] = '1234';
+        $this->payment['card'][ 'token_provider'] =  'PayU';
+
+        $response = $this->doS2SPrivateAuthPayment($this->payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $feeBreakup = $this->getEntities('fee_breakup',[], true);
+
+        $this->assertEquals($payment['emi_plan_id'], $emiPlan[0]['id']);
+        $this->assertEquals($payment['method'], 'emi');
+        $this->assertEquals($payment['status'], 'authorized');
+
+        $this->fixtures->merchant->disableEmi();
+    }
+
+    public function testS2SEmiPaymentLast4ValidationFailure()
+    {
+        $this->fixtures->merchant->enableEmi();
+        $this->ba->privateAuth();
+        $this->fixtures->merchant->addFeatures(['s2s']);
+
+        $paymentArray = $this->getDefaultTokenPanPaymentArray();
+        $paymentArray['amount'] = 500000;
+        $paymentArray['method'] = 'emi';
+        $paymentArray['emi_duration'] = 9;
+        $paymentArray['card']['number'] = '41476700000006';
+
+        $this->makeRequestAndCatchException(
+            function() use ($paymentArray)
+            {
+                $this->doS2SPrivateAuthPayment($paymentArray);
+            },
+            \RZP\Exception\BadRequestValidationFailureException::class , 'The last4 field is required when method is emi and tokenised is true');
+    }
+
     public function testEmiPaymentWithNewCardAndUserConsentTokenisation()
     {
         $this->mockSession();
