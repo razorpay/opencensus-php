@@ -237,7 +237,10 @@ class Core extends Base\Core
 
             $body = json_decode($response, true);
 
-            if (empty($body['errors']) === false || $body['data'] === null)
+            if (
+              empty($body['errors']) === false
+              or $body['data'] === null
+              or empty($body['checkoutUserErrors']) === false)
             {
                 $this->trace->info(
                      TraceCode::SHOPIFY_1CC_API_ERROR,
@@ -250,10 +253,12 @@ class Core extends Base\Core
                      ]
                 );
 
-                throw new Exception\ServerErrorException(
-                    'Fetching shipping rates from Shopify failed',
-                    ErrorCode::SERVER_ERROR
-                );
+                return [
+                    'serviceable'  => false,
+                    'cod'          => false,
+                    'shipping_fee' => 0,
+                    'cod_fee'      => null,
+                ];
             }
 
             $checkout = $body['data']['node'];

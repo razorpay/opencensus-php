@@ -397,9 +397,10 @@ class Service extends Base\Service
 
         $response = json_decode($response, true);
 
-        if (empty($response['errors']) === false)
+        if (empty($response['errors']) === false
+        or empty($response['data']['checkoutShippingAddressUpdateV2']['checkoutUserErrors']) === false)
         {
-          // address has no PII so we can log it
+          // address has pincode and state so we can log it (no PII)
           $this->trace->info(
               TraceCode::SHOPIFY_1CC_API_ERROR,
               [
@@ -409,6 +410,17 @@ class Service extends Base\Service
                   'address'    => $address
               ]
           );
+
+          return [
+              'id'			     => $address['id'],
+              'zipcode'      => $address['zipcode'],
+              'state_code'   => $address['state_code'],
+              'country'      => $address['country'],
+              'serviceable'  => false,
+              'cod'          => false,
+              'shipping_fee' => 0,
+              'cod_fee'      => null,
+          ];
         }
 
         $rates = (new Core)->sleepAndPollForShippingInfo($checkoutId);
