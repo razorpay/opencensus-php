@@ -63,6 +63,7 @@ class Service extends Base\Service
     public function shopifyCreateCheckout(array $input): array
     {
         $start = millitime();
+
         (new Core)->verifyHmacSignature($input);
 
         $checkout = (new Core)->placeShopifyCheckout($input);
@@ -73,17 +74,19 @@ class Service extends Base\Service
 
         $cartId = $cart['token'];
 
-        $rzporder = (new Order\Service)->createOrder([
+        $order = (new Order\Service)->createOrder([
             'receipt'          => (new OneClickCheckout\Constants)::SHOPIFY_TEMP_RECEIPT,
             'amount'           => $amount,
             'currency'         => 'INR',
             'payment_capture'  => 1,
             'line_items_total' => $amount,
             'notes'            => (new Checkout)->getNotesForCheckout($checkout, $cartId),
-        ])->toArrayPublic();
+        ]);
+
+        $formattedOrder = (new Order\Core)->getFormattedDataForCheckout($order, $this->merchant);
 
         $checkoutParams = [
-            'order_id'           => $rzporder['id'],
+            'order_id'           => $order->getPublicId(),
             'currency'           => 'INR',
             'name'               => $this->merchant->getBillingLabel(),
             'checkout_id'        => $checkout['id'],
@@ -101,9 +104,9 @@ class Service extends Base\Service
 
         $this->trace->info(
             TraceCode::SHOPIFY_1CC_CREATE_RZP_ORDER_RES,
-            ['order_id' => $rzporder['id'], 'time' => millitime() - $start]);
+            ['order_id' => $order->getPublicId(), 'time' => millitime() - $start]);
 
-        return $checkoutParams;
+        return array_merge($checkoutParams, ['order' => $formattedOrder]);
     }
 
     public function shopifyGetCheckoutOptions(array $input): array
