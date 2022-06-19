@@ -1868,6 +1868,15 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
                     $acquirerData['product_enrollment_id'] = $productEnrollmentId;
                 }
 
+                if(($this->getCardId() === true) && ($this->card->isRuPay() ==true))
+                {
+                    $authenticationData = (new Payment\Service)->getAuthenticationEntityForAcquirerData($this->getId());
+                }
+                if ((isset($authenticationData) == true) &&
+                    (empty($authenticationData['gateway_reference_id2']) == false)) {
+                    $acquirerData['authentication_reference_number'] = $authenticationData['gateway_reference_id2'];
+                }
+
                 break;
 
             case Method::EMI:
@@ -5028,7 +5037,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     {
         return $this->cardMandateNotification !== null;
     }
-    
+
     public function isRequiredToCreateNewTokenAlways($token = null, $isPreferredRecurring = false): bool
     {
         // for auto payment, card mandate notification will be present

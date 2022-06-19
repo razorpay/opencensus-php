@@ -999,6 +999,90 @@ class PaymentFetchTest extends TestCase
         }
     }
 
+    public function testFetchPaymentAuthRefNumber()
+    {
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '6073849700004947';
+
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $paymentId = $payment['id'];
+
+        $this->mockCps(null, "entity_fetch", $paymentId);
+
+        $request = array(
+            'url'     => '/payments/authentication/'.$paymentId,
+            'method'  => 'get',
+        );
+
+        $this->ba->expressAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $paymentFetchResponse = $this->fetchPaymentWithCpsResponse($paymentId, $response);
+
+        $this->assertArrayHasKey('authentication_reference_number', $paymentFetchResponse['acquirer_data']);
+    }
+
+    protected function mockCps($terminal, $responder, $paymentId)
+    {
+        $cardService = \Mockery::mock('RZP\Services\CardPaymentService')->makePartial();
+
+        $this->app->instance('card.payments', $cardService);
+
+        $cardService->shouldReceive('sendRequest')
+            ->with('GET', Mockery::type('string'), Mockery::type('array'))
+            ->andReturnUsing(function (string $method, string $url, array $input) use ($paymentId, $terminal, $responder)
+            {
+                switch ($responder)
+                {
+                    case 'entity_fetch':
+                        return $this->mockCpsEntityFetch($url, $paymentId);
+                }
+            });
+    }
+
+    protected function mockCpsEntityFetch($url, $paymentId)
+    {
+        $id= str_replace("pay_","",$paymentId);
+        switch ($url)
+        {
+            case 'entity/authentication/'.$id:
+                return [
+                    'id' => 'Flj87LBAuB6JcE',
+                    'created_at' => 1602011616,
+                    'payment_id' => $id,
+                    'merchant_id' => 'CCOhinUeUsT8HN',
+                    'attempt_id' => 'Flj87KPgVIXUjX',
+                    'status' => 'skip',
+                    'gateway' => 'visasafeclick',
+                    'terminal_id' => 'DfqXJH6OO9NEU5',
+                    'gateway_merchant_id' => 'escowrazcybs',
+                    'enrollment_status' => 'Y',
+                    'pares_status' => 'Y',
+                    'acs_url' => '',
+                    'eci' => '05',
+                    'commerce_indicator' => '',
+                    'xid' => 'ODUzNTYzOTcwODU5NzY3Qw==',
+                    'cavv' => '3q2+78r+ur7erb7vyv66vv\\/\\/8=',
+                    'cavv_algorithm' => '1',
+                    'notes' => '',
+                    'error_code' => '',
+                    'gateway_error_code' => '',
+                    'gateway_error_description' => '',
+                    'gateway_transaction_id1' => '',
+                    'gateway_reference_id1' => '',
+                    'gateway_reference_id2' => '100222021120200000000742753928',
+                    'success' => true
+                ];
+            default:
+                return [
+                    'error' => 'CORE_FAILED_TO_FIND_MODEL',
+                    'success' => false,
+                ];
+        }
+    }
+
     public function testPaymentFetchFromPG()
     {
         $this->enablePgRouterConfig();

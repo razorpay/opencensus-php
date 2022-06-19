@@ -4137,6 +4137,11 @@ class Service extends Base\Service
         return $response;
     }
 
+    public function getAuthenticationEntityForAcquirerData($id)
+    {
+        return $this->app['card.payments']->fetchEntity('authentication', $id);
+    }
+
     public function getAuthorizationEntity($id)
     {
         $paymentId = Payment\Entity::verifyIdAndStripSign($id);

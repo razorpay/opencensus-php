@@ -1558,6 +1558,22 @@ trait PaymentTrait
         return $this->makeRequestAndGetContent($request);
     }
 
+    protected function fetchPaymentWithCpsResponse($paymentId, $CpsResponse, $content = [])
+    {
+        $request['url'] = '/payments/'.$paymentId;
+        $request['method'] = 'GET';
+
+        $request['content'] = $content;
+
+        $this->ba->privateAuth();
+
+        $paymentFetchResponse = $this->makeRequestAndGetContent($request);
+
+        $paymentFetchResponse['acquirer_data']['authentication_reference_number'] = $CpsResponse['gateway_reference_id2'];
+
+        return $paymentFetchResponse;
+    }
+
     protected function fetchRefundsForPayment($paymentId)
     {
         $request['url'] = '/payments/'.$paymentId.'/refunds';
