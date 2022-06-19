@@ -69,6 +69,10 @@ class Events
 
     const COUPON_EXPIRY_ALERT                                           = 'COUPON_EXPIRY_ALERT';
 
+    const DISABLE_NON_3DS_ALERT                                         = 'DISABLE_NON_3DS_ALERT';
+
+    const ENABLE_NON_3DS_ALERT                                          = 'ENABLE_NON_3DS_ALERT';
+
 
     // Event vs sms templates mapping
     const SMS_TEMPLATES = [
@@ -230,6 +234,8 @@ class Events
         self::ADD_ADDITIONAL_WEBSITE_REJECTION_REASON                   => 'emails.merchant.rejection_reason_notification',
         self::NEED_CLARIFICATION_FOR_ADD_ADDITIONAL_WEBSITE_WORKFLOW    => 'emails.merchant.needs_clarification_on_workflow',
         self::COUPON_EXPIRY_ALERT                                       => 'emails.coupon.coupon_expiry_alert',
+        self::DISABLE_NON_3DS_ALERT                                     => 'emails.merchant.disable_non_3ds_alert',
+        self::ENABLE_NON_3DS_ALERT                                      => 'emails.merchant.enable_non_3ds_alert',
     ];
 
     // Event vs email Tags mapping
@@ -262,6 +268,8 @@ class Events
         self::ADD_ADDITIONAL_WEBSITE_SUCCESS                            => MailTags::MERCHANT_ADD_ADDITIONAL_WEBSITE_SUCCESS,
         self::ADD_ADDITIONAL_WEBSITE_REJECTION_REASON                   => MailTags::MERCHANT_ADD_ADDITIONAL_WEBSITE_REJECTION_REASON,
         self::NEED_CLARIFICATION_FOR_ADD_ADDITIONAL_WEBSITE_WORKFLOW    => MailTags::MERCHANT_CLARIFICATION_ON_ADDITIONAL_WEBSITE_WORKFLOW,
+        self::DISABLE_NON_3DS_ALERT                                     => MailTags::DISABLE_NON_3DS_SUCCESS,
+        self::ENABLE_NON_3DS_ALERT                                      => MailTags::ENABLE_NON_3DS_REQUEST_SUCCESS,
     ];
 
     // Event vs email subject mapping
@@ -294,6 +302,8 @@ class Events
         self::ADD_ADDITIONAL_WEBSITE_SUCCESS                            => 'Razorpay | Additional Website added successfully for %s(MID: %s)',
         self::ADD_ADDITIONAL_WEBSITE_REJECTION_REASON                   => '%s',
         self::NEED_CLARIFICATION_FOR_ADD_ADDITIONAL_WEBSITE_WORKFLOW    => '%s',
+        self::DISABLE_NON_3DS_ALERT                                     => 'Non-3D Secure Card Transactions Disabled for your Razorpay Account',
+        self::ENABLE_NON_3DS_ALERT                                      => 'Non-3D Secure Card Transactions Enabled for your Razorpay Account',
     ];
 
     // Event vs recipients role mapping
@@ -326,6 +336,8 @@ class Events
         self::ADD_ADDITIONAL_WEBSITE_SUCCESS                            => [UserRole::OWNER],
         self::ADD_ADDITIONAL_WEBSITE_REJECTION_REASON                   => [UserRole::OWNER],
         self::NEED_CLARIFICATION_FOR_ADD_ADDITIONAL_WEBSITE_WORKFLOW    => [UserRole::OWNER],
+        self::DISABLE_NON_3DS_ALERT                                     => [UserRole::OWNER],
+        self::ENABLE_NON_3DS_ALERT                                      => [UserRole::OWNER],
     ];
 
     // Event vs supported channel mapping
@@ -358,5 +370,7 @@ class Events
         self::ADD_ADDITIONAL_WEBSITE_SUCCESS                            => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
         self::ADD_ADDITIONAL_WEBSITE_REJECTION_REASON                   => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
         self::NEED_CLARIFICATION_FOR_ADD_ADDITIONAL_WEBSITE_WORKFLOW    => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
+        self::DISABLE_NON_3DS_ALERT                                     => [Channel::EMAIL],
+        self::ENABLE_NON_3DS_ALERT                                      => [Channel::EMAIL],
     ];
 }

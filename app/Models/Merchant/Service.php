@@ -138,6 +138,7 @@ use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Models\TrustedBadge;
 use RZP\Models\Partner\Commission\Core as PartnerCommissionCore;
 use RZP\Models\EntityOrigin\Core as EntityOriginCore;
+use \RZP\Models\Workflow\Action\Entity as ActionEntity;
 
 class Service extends Base\Service
 {
@@ -9786,5 +9787,177 @@ class Service extends Base\Service
         $partnerIds = $input['partner_ids'];
 
         RemoveSubmerchantDashboardAccessJob::dispatch($partnerIds);
+    }
+
+    public function addOrRemoveFeaturesForMerchant(array $input)
+    {
+        $merchant = $this->merchant;
+
+        $shouldSync = true;
+
+        $failedStatus = "FAILED";
+
+        $featuresToAdd = $this->getFeatureNamesFromFeatureFlag($input['enable']);
+
+        $featuresToRemove = $this->getFeatureNamesFromFeatureFlag($input['disable']);
+
+        $this->trace->info(
+            TraceCode::MERCHANT_FEATURE_UPDATE,
+            [
+                'purpose'             => "Add/update feature flags for the merchant via merchant dashboard",
+                'merchant'            =>  $merchant->getId(),
+                'featuresToAdd'       =>  $featuresToAdd,
+                'featuresToRemove'    =>  $featuresToRemove,
+            ]
+        );
+
+        if (in_array($failedStatus,$featuresToAdd, true) || in_array($failedStatus,$featuresToRemove, true)){
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_UNAVAILABLE,
+                null,
+                null,
+                "The requested feature is unavailable."
+            );
+        }
+
+        $this->addFeatures($featuresToAdd, $shouldSync);
+
+        $this->removeFeatures($featuresToRemove, $shouldSync);
+
+        $this->sendMerchantNotifications($merchant, $featuresToAdd);
+
+        return ['success' => true];
+    }
+
+    // validate and obtain the feature flags from the supported list of feature flags for self serve
+    private function getFeatureNamesFromFeatureFlag(array $features): array
+    {
+        $featureNames = [];
+
+        foreach ($features as $name) 
+        {
+            try{
+            $featureNames[] = Feature\Constants::$visibleFeaturesMap[$name]['feature'];
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->info(
+                    TraceCode::MERCHANT_FEATURE_NOT_EXIST,
+                    [
+                        'purpose'         => "Feature sent doesn't exist",
+                        'features'        =>  $features,
+                    ]
+                );
+
+                return ['FAILED'];
+            }
+        }
+
+        return $featureNames;
+    }
+
+    //email notifications for different feature flags
+    private function sendMerchantNotifications($merchant, $features)
+    {
+        foreach ($features as $name) 
+        {
+            switch(Feature\Constants::$visibleFeaturesMap[$name]['feature'])
+            {
+                case FeatureConstants::ACCEPT_ONLY_3DS_PAYMENTS:
+                    $args = [
+                        MerchantConstants::MERCHANT        => $merchant,
+                        DashboardEvents::EVENT             => DashboardEvents::DISABLE_NON_3DS_ALERT,
+                        MerchantConstants::PARAMS          => []
+                    ];
+                    (new DashboardNotificationHandler($args))->send();
+            }
+        }
+    }
+
+    // Enabling non-3ds card processing for merchants
+    public function postEnableNon3dsSelfServe()
+    {
+        $merchant = $this->merchant;
+
+        $merchantId = $merchant->getMerchantId();
+
+        $data = [Entity::MERCHANT_ID => $merchantId];
+
+        (new Validator)->validateEnableNon3dsConditions($merchant);
+
+        $workflowPermission = Permission::ENABLE_NON_3DS_PROCESSING;
+
+        $oldFlag = [
+            'feature' => 'accept_only_3ds_payments'
+        ];
+
+        $newFlag = [
+            'feature' => null
+        ];
+
+        $this->app['workflow']
+            ->setPermission($workflowPermission)
+            ->setEntityAndId($merchant->getEntity(), $merchantId)
+            ->setInput($data)
+            ->setController(Constants::ENABLE_NON_3DS_WORKFLOW_APPROVE)
+            ->handle($oldFlag, $newFlag);
+
+        $this->trace->info(
+            TraceCode::ENABLE_NON_3DS_WORKFLOW_CREATED,
+            [
+                'merchant_id' => $merchantId
+            ]
+        );
+
+        return ['success' => true];
+    }
+
+    public function postEnableNon3dsWorkflowApprove(array $input)
+    {
+        $merchantId = $input[Constants::MERCHANT_ID];
+
+        $merchant = $this->repo->merchant->findorFailPublic($merchantId);
+
+        $featuresToRemove = [];
+
+        $featuresToRemove[] = Feature\Constants::$visibleFeaturesMap[FeatureConstants::ACCEPT_ONLY_3DS_PAYMENTS]['feature'];
+
+        $shouldSync = true;
+
+        $this->removeFeatures($featuresToRemove, $shouldSync);
+
+        $this->trace->info(TraceCode::ENABLE_NON_3DS_WORKFLOW_APPROVED,
+            [
+               'merchant_id' => $merchantId
+            ]
+        );
+
+        $args = [
+            MerchantConstants::MERCHANT        => $merchant,
+            DashboardEvents::EVENT             => DashboardEvents::ENABLE_NON_3DS_ALERT,
+            MerchantConstants::PARAMS          => []
+        ];
+
+        (new DashboardNotificationHandler($args))->send();
+    }
+
+    public function getEnableNon3dsDetails()
+    {
+        $action = $this->getActionForMerchantWorkflow(Constants::ENABLE_NON_3DS_PROCESSING);
+
+        $updatedDate = null;
+
+        if ($action !== null) {
+            $updatedTime = $action->getAttribute(ActionEntity::UPDATED_AT);
+
+            $updatedDate = date('d-m-Y', $updatedTime);
+        }
+
+        $response = (new WorkflowService)->getWorkflowDetailsWithRejectionMessage($action);
+
+        return array_merge($response, [
+            'allow_only_3ds'      => $this->merchant->isFeatureEnabled(FeatureConstants::ACCEPT_ONLY_3DS_PAYMENTS),
+            'updated_at'          => $updatedDate
+        ]);
     }
 }

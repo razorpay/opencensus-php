@@ -433,6 +433,9 @@ class Name
     // International transaction limit of merchant
     const INCREASE_INTERNATIONAL_TRANSACTION_LIMIT = 'increase_international_transaction_limit';
 
+     //non-3ds card processing of a merchant
+     const ENABLE_NON_3DS_PROCESSING = 'enable_non_3ds_processing';
+
     // Permission to create NC responded WF
     const NEEDS_CLARIFICATION_RESPONDED = 'needs_clarification_responded';
 

@@ -3167,4 +3167,40 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    // Function to enable/disable feature flags from merchant dashboard
+    public function addOrRemoveFeaturesForMerchant()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->addOrRemoveFeaturesForMerchant($input);
+
+        return ApiResponse::json($data);
+    }
+
+    // Function to enable non 3ds card processing from merchant dashboard
+    public function postEnableNon3dsSelfServe()
+    {
+        $response = $this->service()->postEnableNon3dsSelfServe();
+
+        return ApiResponse::json($response);
+    }
+
+    //Function to approve the enabling of non-3ds card processing for merchants
+    public function postEnableNon3dsWorkflowApprove()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->postEnableNon3dsWorkflowApprove($input);
+
+        return ApiResponse::json($response);
+    }
+
+    // Get the non-3ds card processing enablement workflow details
+    public function getEnableNon3dsDetails()
+    {
+        $response = $this->service()->getEnableNon3dsDetails();
+
+        return ApiResponse::json($response);
+    }
+
 }

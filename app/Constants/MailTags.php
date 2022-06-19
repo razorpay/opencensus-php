@@ -259,6 +259,10 @@ class MailTags
 
     const UPDATE_REJECTION_REASON                       = 'update_rejection_reason';
 
+    const DISABLE_NON_3DS_SUCCESS                       = 'disable_non_3ds_success';
+
+    const ENABLE_NON_3DS_REQUEST_SUCCESS                = 'enable_non_3ds_request_success';
+
     // Mail tags for needs clarification on workflow
     const MERCHANT_CLARIFICATION_ON_BANK_ACCOUNT_WORKFLOW        =  'merchant_clarification_on_bank_account_workflow';
     const MERCHANT_CLARIFICATION_ON_TRANSACTION_LIMIT_WORKFLOW   =  'merchant_clarification_on_transaction_limit_workflow';

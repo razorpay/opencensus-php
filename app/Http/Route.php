@@ -2029,6 +2029,12 @@ class Route
         'firs_collect_and_zip_cron'                => ['post',      'merchant/firs/collect/cron',                    'DocumentController@collectAndZipFIRSDocuments'                 ],
 
         'automate_merchant_master_firs'            => ['post',      'rbl/update_merchant_master/firs',               'LambdaController@processLambdaMerchantMasterFIRS'                  ],
+        // Non 3ds card processing self serve
+        'merchant_features_edit'                   => ['post',     'merchant/features/update',                          'MerchantController@addOrRemoveFeaturesForMerchant'                         ],
+
+        'enable_non_3ds_self_serve'                => ['post',     'merchant/enable_non_3ds',                           'MerchantController@postEnableNon3dsSelfServe' ],
+        'get_non_3ds_details'                      => ['get',      'merchant/get_non_3ds_details',                           'MerchantController@getEnableNon3dsDetails'],
+
 
         // Shield routes
         'shield_rules_get_multiple' => [
@@ -5752,7 +5758,11 @@ class Route
         'view_cac_role',
         //'delete_cac_role',
         'create_cac_role',
-        'edit_cac_role'
+        'edit_cac_role',
+
+        'merchant_features_edit',
+        'enable_non_3ds_self_serve',
+        'get_non_3ds_details',
     ];
     // These will run on internal auth with the assurance
     // of X-Admin-Token being passed.
@@ -8134,6 +8144,9 @@ class Route
 
         'admin_collect_info_merchant_details_patch'        =>Permission::EDIT_MERCHANT,
 
+        'merchant_features_edit'                     => Permission::UPDATE_MERCHANT_FEATURE,
+        'enable_non_3ds_self_serve'                  => Permission::ENABLE_NON_3DS_PROCESSING,
+        'get_non_3ds_details'                        => Permission::VIEW_ALL_WORKFLOW,
     ];
 
     public static $bankingRoutePermissions = [
@@ -10031,7 +10044,11 @@ class Route
             'view_cac_role',
             //'delete_cac_role',
             'create_cac_role',
-            'edit_cac_role'
+            'edit_cac_role',
+
+            'merchant_features_edit',
+            'enable_non_3ds_self_serve',
+            'get_non_3ds_details',
         ],
 
         'admin_dashboard' => [

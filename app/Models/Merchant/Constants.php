@@ -162,6 +162,7 @@ final class Constants
     const TRANSACTION_LIMIT_INCREASE_INVOICE_URL        = 'transaction_limit_increase_invoice_url';
     const INCREASE_TRANSACTION_LIMIT                    = 'increase_transaction_limit';
     const INCREASE_INTERNATIONAL_TRANSACTION_LIMIT      = 'increase_international_transaction_limit';
+    const ENABLE_NON_3DS_PROCESSING                     = 'enable_non_3ds_processing';
     const UPDATED_TRANSACTION_LIMIT                     = 'updated_transaction_limit';
     const GSTIN_UPDATE_SELF_SERVE                       = 'gstin_update_self_serve';
     const OLD_GSTIN                                     = 'old_gstin';
@@ -321,6 +322,9 @@ final class Constants
     const WORKFLOW_CLARIFICATION_DOCUMENTS_IDS           =  "clarification_documents_ids";
     const UFH_FILE_URL                                   = "%sadmin/entity/ufh.files/live/file_%s ,  ";
     const MERCHANT_WORKFLOW_CLARIFICATION_FILES_PREFIX   = 'Files shared by merchant: ';
+
+    const ENABLE_NON_3DS_WORKFLOW_APPROVE          = 'RZP\Http\Controllers\MerchantController@postEnableNon3dsWorkflowApprove';
+
 
     const unregisteredMerchantMaximumTransactionLimit = [
         BusinessCategory::FINANCIAL_SERVICES        => 10000000,
@@ -543,6 +547,10 @@ final class Constants
         self::GSTIN_UPDATE_SELF_SERVE      => [
             self::PERMISSION  => Permission::UPDATE_MERCHANT_GSTIN_DETAIL,
             self::ENTITY      => \RZP\Constants\Entity::MERCHANT_DETAIL,
+        ],
+        self::ENABLE_NON_3DS_PROCESSING =>[
+            self::PERMISSION   => Permission::ENABLE_NON_3DS_PROCESSING,
+            self::ENTITY       => \RZP\Constants\Entity::MERCHANT,
         ],
     ];
 

@@ -2663,6 +2663,11 @@ class Constants
             'display_name' => 'This feature is used to block the download report option',
             'description'  => 'This feature is used to block the download report option, to block reports RX_BLOCK_REPORT_DOWNLOAD should also be present at merchant level.',
         ],
+        self::ACCEPT_ONLY_3DS_PAYMENTS =>[
+            'feature'       => self::ACCEPT_ONLY_3DS_PAYMENTS,
+            'display_name'  => 'Disable Non-3ds card processing',
+            'documentation' => '',
+        ],
     ];
 
     /**

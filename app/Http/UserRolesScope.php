@@ -1087,6 +1087,9 @@ class UserRolesScope
             'shipping_method_provider_patch'                      => [Role::OWNER, Role::ADMIN],
             'shipping_method_provider_delete'                     => [Role::OWNER, Role::ADMIN],
             'collect_info_merchant_details_patch'                 => [Role::OWNER, Role::ADMIN],
+            'merchant_features_edit'                              => [Role::OWNER],
+            'enable_non_3ds_self_serve'                           => [Role::OWNER],
+            'get_non_3ds_details'                                 => Role::ALL_ROLES,
         ];
 
         /*

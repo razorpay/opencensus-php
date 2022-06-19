@@ -15731,4 +15731,139 @@ The same has been enabled for the account.
         $this->startTest();
     }
 
+    public function testGetWorkflowDetailsForInternationalNon3ds()
+    {
+        $user = $this->fixtures->user->createUserForMerchant('10000000000000', [], 'owner', 'live');
+
+        $this->ba->proxyAuth('rzp_live_10000000000000', $user->getId());
+
+        $response = $this->startTest();
+
+        $this->assertNotNull($response['allow_only_3ds']);
+
+        $this->assertNotNull($response['workflow_exists']);
+    }
+
+    public function testUpdateMerchantFeatureFlagSuccess()
+    {
+        $user = $this->fixtures->user->createUserForMerchant('10000000000000', [], 'owner', 'live');
+
+        $this->ba->proxyAuth('rzp_live_10000000000000', $user->getId());
+
+        $response = $this->startTest();
+
+        $this->assertNotNull($response['success']);
+    }
+
+    public function testUpdateMerchantFeatureFlagFailure()
+    {
+        $user = $this->fixtures->user->createUserForMerchant('10000000000000', [], 'owner', 'live');
+
+        $this->ba->proxyAuth('rzp_live_10000000000000', $user->getId());
+
+        $request = $this->testData['testUpdateMerchantFeatureFlagFailure']['request'];
+
+        $this->makeRequestAndCatchException(
+                    function () use ($request)
+                    {
+                        $this->makeRequestAndGetContent($request);
+                    },
+                    BadRequestException::class,
+                    'The requested feature is unavailable.'
+                );
+    }
+
+    public function testEnableNon3dsWorkflowSuccess()
+    {
+        Mail::fake();
+
+        $predefinedMerchant = [
+            'name'               => 'testname',
+            'activated'          => 1,
+            'max_payment_amount' => 10000
+        ];
+
+        $predefinedMerchantDetails = [
+            'business_type'      => 2,
+            'business_category'  => Merchant\Detail\BusinessCategory::MEDIA_AND_ENTERTAINMENT
+        ];
+
+        $merchant = $this->fixtures->create('merchant', $predefinedMerchant);
+
+        $merchantId = $merchant['id'];
+
+        $this->fixtures->merchant->addFeatures(['accept_only_3ds_payments'],$merchantId);
+
+        $user = $this->fixtures->create('user', [
+            'contact_mobile'          => '1234567890',
+            'contact_mobile_verified' => true,
+        ]);
+
+        $this->fixtures->user->createUserMerchantMapping([
+            'user_id'     => $user->id,
+            'merchant_id' => $merchantId,
+            'role'        => Role::OWNER,
+        ]);
+
+        $predefinedMerchantDetails = array_merge(['merchant_id'  => $merchantId], $predefinedMerchantDetails );
+
+        $this->fixtures->create('merchant_detail', $predefinedMerchantDetails);
+
+        $userId = $user->id;
+
+        $this->setupWorkflow('enable_non_3ds_processing', PermissionName::ENABLE_NON_3DS_PROCESSING, 'test');
+
+        $this->ba->proxyAuth('rzp_test_'.$merchantId, $userId);
+
+        $this->startTest();
+
+        $workflowAction = $this->getLastEntity('workflow_action', true);
+
+        $this->assertNotEmpty($workflowAction);
+
+        $workflowActionId = $workflowAction['id'];
+
+        $this->performWorkflowAction($workflowActionId, true);
+
+        Mail::assertQueued(MerchantMail\MerchantDashboardEmail::class, function ($mail)
+        {
+            if ($mail->view === 'emails.merchant.enable_non_3ds_alert')
+            {
+                return true;
+            }
+            return false;
+        });
+    }
+
+    public function testEnableNon3dsWorkflowRejection()
+    {
+        $predefinedMerchant = [
+            'name'               => 'testname',
+            'activated'          => 1,
+            'max_payment_amount' => 10000
+        ];
+
+        $predefinedMerchantDetails = [
+            'business_type'      => 2,
+            'business_category'  => Merchant\Detail\BusinessCategory::MEDIA_AND_ENTERTAINMENT
+        ];
+
+        [$merchantId, $userId] = $this->setupMerchantWithMerchantDetails($predefinedMerchant, $predefinedMerchantDetails);
+
+        $this->setupWorkflow('enable_non_3ds_processing', PermissionName::ENABLE_NON_3DS_PROCESSING, 'test');
+
+        $this->ba->proxyAuth('rzp_test_'.$merchantId, $userId);
+
+        $this->startTest();
+
+        $workflowAction = $this->getLastEntity('workflow_action', true);
+
+        $this->assertNotEmpty($workflowAction);
+
+        $workflowActionId = $workflowAction['id'];
+
+        $response= $this->performWorkflowAction($workflowActionId, false);
+
+        $this->assertEquals($workflowActionId, $response['id']);
+    }
 }

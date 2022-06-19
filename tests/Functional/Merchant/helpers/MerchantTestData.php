@@ -12594,4 +12594,80 @@ return [
             ],
         ],
     ],
+
+    'testGetWorkflowDetailsForInternationalNon3ds' => [
+        'request' => [
+            'url' => '/merchant/get_non_3ds_details',
+            'method' => 'get'
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testUpdateMerchantFeatureFlagSuccess' => [
+        'request' => [
+            'content' => [
+                'enable' => [
+                    'accept_only_3ds_payments'
+                ],
+                'disable' => []
+            ],
+            'url' => '/merchant/features/update',
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content' => [
+            ]
+        ]
+    ],
+
+    'testUpdateMerchantFeatureFlagFailure' => [
+        'request' => [
+            'content' => [
+                'enable' => [
+                    'accept_payments'
+                ],
+                'disable' => []
+            ],
+            'url' => '/merchant/features/update',
+            'method' => 'POST',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'           => 'The requested feature is unavailable.',
+                ],
+            ],
+            'exception' => [
+                'class'               => RZP\Exception\BadRequestException::class,
+                'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_UNAVAILABLE,
+            ],
+            'status_code' => 400,
+        ]
+    ],
+
+    'testEnableNon3dsWorkflowSuccess' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/merchant/enable_non_3ds'
+        ],
+        'response' => [
+            'content'     => [],
+            'status_code' => 200,
+        ]
+    ],
+
+    'testEnableNon3dsWorkflowRejection' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/merchant/enable_non_3ds'
+        ],
+        'response' => [
+            'content'     => [],
+            'status_code' => 200,
+        ]
+    ],
 ];

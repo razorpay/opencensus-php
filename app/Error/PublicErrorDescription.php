@@ -1646,6 +1646,7 @@ class PublicErrorDescription
     const SERVER_ERROR_GET_ATTACHMENTS_FAILURE                                      = 'Failed to get attachments for the payouts';
 
     const BAD_REQUEST_SET_DEFAULT_METHODS_ALREADY_IN_PROGRESS                       = 'Set Default Methods is in progress for the merchant';
+    const BAD_REQUEST_ENABLE_NON_3DS_REQUEST_MADE_IN_LAST_30_DAYS                   = 'Bad request enable non-3ds card processing request made in last 30 days';
 
     const BAD_REQUEST_OTP_VERIFICATION_LOG                                          = 'Contact mobile must be same as merchant business mobile number';
     const BAD_REQUEST_OTP_NOT_REQUIRED                                              = 'otp is/are not required and should not be sent';

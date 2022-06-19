@@ -3019,4 +3019,44 @@ class Validator extends Base\Validator
         Entity::ORG_ID                          => 'sometimes|string',
         'merchant_ids'                          => 'sometimes|array',
     ];
+
+    public function validateEnableNon3dsConditions(Entity $merchant)
+    {
+
+        $workflowType = Constants::ENABLE_NON_3DS_PROCESSING;
+
+        [$entityId, $entity] = (new Core())->fetchWorkflowData($workflowType, $merchant);
+
+        $action = (new ActionCore)->fetchLastUpdatedWorkflowActionInPermissionList(
+            $entityId,
+            $entity,
+            [Constants::MERCHANT_WORKFLOWS[$workflowType][Constants::PERMISSION]]
+        );
+
+        if (empty($action) === false) {
+            $updatedTime = $action->getAttribute(ActionEntity::UPDATED_AT);
+
+            $currentTime = time();
+
+            $checkTime = strtotime('+30 days', $updatedTime);
+
+            if ($currentTime < $checkTime) {
+                $updatedDate = date('d-M-Y', $updatedTime);
+
+                $checkDate = date('d-M-Y', $checkTime);
+
+                $description = 'We have already evaluated your profile for enabling non-3ds card processing on ' . $updatedDate . ', please wait till ' . $checkDate . ' to send another request.';
+
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_ENABLE_NON_3DS_REQUEST_MADE_IN_LAST_30_DAYS,
+                    null,
+                    [
+                        'updatedDate' => $updatedDate,
+                        'checkDate' => $checkDate
+                    ],
+                    $description
+                );
+            }
+        }
+    }
 }
