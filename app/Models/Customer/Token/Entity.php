@@ -1136,6 +1136,22 @@ class Entity extends Base\PublicEntity
         return ($this->getMethod() === Payment\Method::NACH);
     }
 
+    public function getTokenLengthWithNetwork($network)
+    {
+        $tokenLength = 9;
+
+        switch($network)
+        {
+            case "rupay" :
+                $tokenLength = 8;
+                break;
+
+            case "amex" :
+                $tokenLength = 6;
+        }
+        return $tokenLength;
+    }
+
     public function toArrayPublicTokenizedCard($serviceProviderTokens)
     {
         $publicArray = parent::toArrayPublic();
@@ -1187,6 +1203,11 @@ class Entity extends Base\PublicEntity
                     }
                 }
 
+                if (array_key_exists(self::TOKEN_IIN, $provider[self::PROVIDER_DATA]))
+                {
+                    $provider[self::PROVIDER_DATA][self::TOKEN_IIN] = substr($provider[self::PROVIDER_DATA][self::TOKEN_IIN], 0, $this->getTokenLengthWithNetwork($provider["provider_name"]));
+                }
+
                 array_push($serviceProviderTokensArray, $provider);
             }
 
@@ -1198,6 +1219,10 @@ class Entity extends Base\PublicEntity
             if (array_key_exists(self::TOKEN_IIN, $provider[self::PROVIDER_DATA]))
             {
                 $publicArray['card']['token_iin'] = $provider[self::PROVIDER_DATA][self::TOKEN_IIN];
+            }
+            else if(isset($publicArray['card']['token_iin']) == true)
+            {
+                $publicArray['card']['token_iin'] = substr($publicArray['card']['token_iin'], 0, $this->getTokenLengthWithNetwork($provider["provider_name"]));
             }
         }
 
