@@ -517,4 +517,6 @@ final class RazorxTreatment
 
     /** Experiment to enable custom access control */
     public const RX_CUSTOM_ACCESS_CONTROL_ENABLED = "rx_custom_access_control_enabled";
+
+    public const PANSOURCE_CHANGE_RUPAY = 'pansource_change_rupay';
 }

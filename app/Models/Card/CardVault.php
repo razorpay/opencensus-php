@@ -4,9 +4,13 @@ namespace RZP\Models\Card;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Customer\Token\Entity;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\P2p\Base\Libraries\Card;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Detail;
+use RZP\Models\Card\Entity as CardEntity;
+use RZP\Models\Customer\Token\Core as TokenCore;
 
 class CardVault extends Base\Core
 {
@@ -173,9 +177,12 @@ class CardVault extends Base\Core
         $input['card']     = $tokenInput['card'];
         $input['iin']      = $iinInfo;
 
-        if (empty($tokenInput['authentication']) === false)
+        if (empty($tokenInput['authentication']) === false && $this->shouldPanSourceChange($tokenInput, $merchant)==true)
         {
-            $input['authentication'] = $tokenInput['authentication'];
+            $this->trace->info(TraceCode::PANSOURCE_CHANGE_RAZORX_VARIANT, [
+                'Activated'     => true,
+            ]);
+            $input['authentication_data'] = $tokenInput['authentication'];
         }
 
         $input = $this->setMerchantDetails($input, $merchant);
@@ -189,6 +196,28 @@ class CardVault extends Base\Core
         return $this->app['card.cardVault']->createTokenizedCard($input);
     }
 
+    public function shouldPanSourceChange($input, $merchant)
+    {
+        if((new TokenCore)->isNetworkRuPay($input[Entity::CARD]))
+        {
+            $variant = $this->app->razorx->getTreatment($merchant->getId(), RazorxTreatment::PANSOURCE_CHANGE_RUPAY, $this->mode);
+
+            $this->trace->info(TraceCode::PANSOURCE_CHANGE_RAZORX_VARIANT, [
+                'authentication_data'     => $input['authentication'],
+                'razorx_variant' => $variant,
+                'mode' => $this->mode,
+                'merchant_id' => $merchant->getId(),
+            ]);
+
+            if (strtolower($variant) === 'on')
+            {
+                return true;
+            }
+
+            return false;
+        }
+    }
+
     public function migrateToTokenizedCard($card, $merchant, $iinInfo, $cardInput)
     {
         $input['card'] = [
@@ -198,14 +227,15 @@ class CardVault extends Base\Core
             'cvv'                             => strval($cardInput['cvv']),
         ];
 
-        if (empty($cardInput['authentication_reference_number']) === false)
+        $input['async'] = isset($cardInput['async']) ? $cardInput['async'] : null;
+
+        if ((empty($cardInput['authentication_reference_number']) === false) && (empty($input['async']) == true)
+            && ($this->shouldPanSourceChange($input, $merchant)==true))
         {
-            $input['authentication'] = [
+            $input['authentication_data'] = [
                 'authentication_reference_number' => $cardInput['authentication_reference_number'],
             ];
         }
-
-        $input['async'] = isset($cardInput['async']) ? $cardInput['async'] : null;
 
         $input['iin'] = $iinInfo;
 

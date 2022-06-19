@@ -1961,7 +1961,11 @@ class Core extends Base\Core
 
         (new Validator)->validateInput(Validator::CREATE_NETWORK_TOKEN, $input);
 
-        if (empty($input[Token\Entity::AUTHENTICATION]) === false)
+        if ($this->isNetworkRuPay($input[Entity::CARD]) && (empty($input[Token\Entity::AUTHENTICATION]) === false))
+        {
+            (new Validator)->validateInput(Validator::CREATE_NETWORK_TOKEN_AUTHENTICAION_DATA_RUPAY, $input[Token\Entity::AUTHENTICATION]);
+        }
+        else if (empty($input[Token\Entity::AUTHENTICATION]) === false)
         {
             (new Validator)->validateInput(Validator::CREATE_NETWORK_TOKEN_AUTHENTICAION_DATA, $input[Token\Entity::AUTHENTICATION]);
         }
@@ -2271,7 +2275,7 @@ class Core extends Base\Core
         return substr($id, strlen($prefix . $delimiter));
     }
 
-    protected function isNetworkRuPay($card)
+    public function isNetworkRuPay($card)
     {
         $iin =  substr($card['number'] ?? 0, 0, 6);
 
