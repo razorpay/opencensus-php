@@ -19558,6 +19558,25 @@ return [
         ],
     ],
 
+    'testDownloadAttachmentsInPayoutReportWithAttachmentsForMultiplePayoutIds' => [
+        'request'  => [
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Razorpay-Account' => '10000000000000',
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
+            'url'     => '/payouts/attachments/download',
+            'content' => [
+                'account_number'  => '2224440041626905',
+            ],
+        ],
+        'response' => [
+            'content' => [
+
+            ],
+        ],
+    ],
+
     'testDownloadAttachmentsInPayoutReportWithAttachments' => [
         'request'  => [
             'method'  => 'POST',

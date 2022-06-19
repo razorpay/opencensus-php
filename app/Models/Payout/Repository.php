@@ -1048,6 +1048,15 @@ class Repository extends Base\Repository
         $query->groupBy(Payout\Entity::ID);
     }
 
+    protected function addQueryParamPayoutIds(BuilderEx $query, array $params)
+    {
+        $payoutIds = $params[Entity::PAYOUT_IDS];
+
+        $idColumn = $this->dbColumn(Entity::ID);
+
+        $query->whereIn($idColumn, $payoutIds);
+    }
+
     /**
      * Refer: addQueryParamContactId()
      *

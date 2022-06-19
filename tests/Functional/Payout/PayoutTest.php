@@ -23599,6 +23599,33 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals(UfhMockService::MOCK_FILE_ID, $response[Payout\Constants::ZIP_FILE_ID]);
     }
 
+    public function testDownloadAttachmentsInPayoutReportWithAttachmentsForMultiplePayoutIds()
+    {
+        $this->createPayoutWithAttachments();
+
+        $payout1 = $this->getDbLastEntity(Constants\Entity::PAYOUT);
+
+        $this->createPayoutWithAttachments();
+
+        $payout2 = $this->getDbLastEntity(Constants\Entity::PAYOUT);
+
+        $this->testData[__FUNCTION__]['request']['content'] = [
+            'payout_ids'     => [
+                $payout1->getId(),
+                $payout2->getId(),
+            ],
+            'account_number'  => '2224440041626905',
+        ];
+
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
+
+        $this->assertArrayHasKey(Payout\Constants::ZIP_FILE_ID, $response);
+
+        $this->assertEquals(UfhMockService::MOCK_FILE_ID, $response[Payout\Constants::ZIP_FILE_ID]);
+    }
+
     /**
      * Create download payout attachment request
      *

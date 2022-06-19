@@ -67,6 +67,7 @@ class Fetch extends BaseFetch
             Entity::REVERSAL_ID                     => 'sometimes|public_id|size:20',
             PayoutDetails::TDS_CATEGORY_ID          => 'sometimes|integer',
             PayoutDetails::TAX_PAYMENT_ID           => 'sometimes|string',
+            Entity::PAYOUT_IDS                      => 'sometimes|array',
         ],
         AuthType::PRIVILEGE_AUTH => [
             Entity::PRODUCT                 => 'sometimes|string',
@@ -145,6 +146,7 @@ class Fetch extends BaseFetch
             PayoutsStatusDetails::REASON,
             PayoutDetails::TDS_CATEGORY_ID,
             PayoutDetails::TAX_PAYMENT_ID,
+            Entity::PAYOUT_IDS,
         ],
         AuthType::PRIVILEGE_AUTH => [
             Entity::MERCHANT_ID,
