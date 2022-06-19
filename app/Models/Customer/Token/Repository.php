@@ -824,6 +824,13 @@ class Repository extends Base\Repository
             ->toArray();
     }
 
+    public function findManyOnReadReplica(array $tokenIds)
+    {
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+            ->with(['card', 'customer'])
+            ->findMany($tokenIds);
+    }
+
     /**
      * Fetch a list of global customer local token ids which have received consents for token
      * provisioning from data lake.

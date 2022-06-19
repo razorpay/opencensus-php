@@ -160,16 +160,30 @@ class Validator extends Base\Validator
     ];
 
     /**
-     * @param Entity $token
-     * @param Merchant\Entity $merchant
+     * @param ?Entity $token
+     * @param ?Merchant\Entity $merchant
      * @return array
      */
     public function validateGlobalTokenToLocalTokenMigrationInput(
-        Entity $token,
-        Merchant\Entity $merchant
+        ?Entity $token,
+        ?Merchant\Entity $merchant
     ): array
     {
         $output = ['reason' => '', 'valid' => false];
+
+        if ($token === null)
+        {
+            $output['reason'] = 'Token is deleted or does not exist';
+
+            return $output;
+        }
+
+        if ($merchant === null)
+        {
+            $output['reason'] = 'Merchant is deleted or does not exist';
+
+            return $output;
+        }
 
         if ($token->isLocal())
         {
@@ -192,7 +206,7 @@ class Validator extends Base\Validator
             return $output;
         }
 
-        if ($token->isExpired() === true)
+        if ($token->isExpired() === true || $token->card->getExpiryTimestamp() <= Carbon::now()->getTimestamp())
         {
             $output['reason'] = 'Token expired';
 

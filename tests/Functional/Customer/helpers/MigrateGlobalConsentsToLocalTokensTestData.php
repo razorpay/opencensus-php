@@ -109,8 +109,7 @@ return [
                         'success' => false,
                         'idempotency_key' => "batch_JRyOR7f18LUS51",
                         'error' => [
-                            'description' => "The id provided does not exist",
-                            'code' => "BAD_REQUEST_INVALID_ID",
+                            'description' => 'Token is deleted or does not exist',
                         ],
                     ],
                 ],
@@ -183,8 +182,7 @@ return [
                         'success' => false,
                         'idempotency_key' => "batch_JRyOR7f18LUS51",
                         'error' => [
-                            'description' => "The id provided does not exist",
-                            'code' => "BAD_REQUEST_INVALID_ID",
+                            'description' => 'Merchant is deleted or does not exist',
                         ],
                     ],
                 ],

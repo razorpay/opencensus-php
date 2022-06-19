@@ -2551,8 +2551,27 @@ class Core extends Base\Core
         $result = new Base\PublicCollection;
 
         $failedTokensCount = 0;
-
         $notApplicableTokensCount = 0;
+
+        $tokenIds = array_unique(array_column($input, 'tokenId'));
+        $merchantIds = array_unique(array_column($input, 'merchantId'));
+
+        $tokensMap = [];
+        $merchantsMap = [];
+
+        $tokens = $this->repo->token->findManyOnReadReplica($tokenIds);
+        $merchants = $this->repo->merchant->findManyOnReadReplica($merchantIds);
+
+        unset($tokenIds);
+        unset($merchantIds);
+
+        foreach ($tokens as $token) {
+            $tokensMap[$token->getId()] = $token;
+        }
+
+        foreach ($merchants as $merchant) {
+            $merchantsMap[$merchant->getId()] = $merchant;
+        }
 
         foreach ($input as $consentData)
         {
@@ -2569,9 +2588,9 @@ class Core extends Base\Core
                 $tokenId = $consentData['tokenId'];
                 $merchantId = $consentData['merchantId'];
 
-                $token = $this->repo->token->findOrFailPublic($tokenId);
+                $token = $tokensMap[$tokenId] ?? null;
 
-                $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+                $merchant = $merchantsMap[$merchantId] ?? null;
 
                 $validationData = (new Validator())->validateGlobalTokenToLocalTokenMigrationInput($token, $merchant);
 

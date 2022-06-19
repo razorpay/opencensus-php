@@ -1177,6 +1177,11 @@ class EventCode
         'name'    => 'async_tokenisation.token.creation_failed'
     ];
 
+    public const ASYNC_TOKENISATION_TOKEN_CREATION_NOT_APPLICABLE = [
+        'group'   => 'async_tokenisation',
+        'name'    => 'async_tokenisation.token.creation_not_applicable'
+    ];
+
     public const ASYNC_TOKENISATION_ADMIN_CONSENT_COLLECTION_AND_TOKENISATION_TRIGGER = [
         'group'   => 'async_tokenisation',
         'name'    => 'async_tokenisation.admin_dashboard.tokens.consent_collection_and_tokenisation',

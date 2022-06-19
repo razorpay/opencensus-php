@@ -86,7 +86,7 @@ class SavedCardTokenisationJob extends Job
 
             if($this->tokenCore->checkIfTokenisationApplicable($token) === false)
             {
-                $this->traceTokenisationNotApplicable();
+                $this->traceTokenisationNotApplicable($card);
                 $this->delete();
                 return;
             }
@@ -169,6 +169,7 @@ class SavedCardTokenisationJob extends Job
                 'merchantId'    => $this->merchantId,
                 'jobAttempts'   => $this->attempts(),
                 'is_global_customer_local_token' => $this->isGlobalCustomerLocalToken,
+                'asyncTokenisationJobId' => $this->asyncTokenisationJobId,
             ]);
 
             $this->delete();
@@ -179,7 +180,7 @@ class SavedCardTokenisationJob extends Job
         }
     }
 
-    protected function traceTokenisationNotApplicable(): void
+    protected function traceTokenisationNotApplicable(CardEntity $card): void
     {
         $this->trace->info(TraceCode::SAVED_CARD_TOKENISATION_JOB_TOKEN_NOT_APPLICABLE, [
             'tokenId'       => $this->tokenId,
@@ -187,6 +188,8 @@ class SavedCardTokenisationJob extends Job
             'is_global_customer_local_token' => $this->isGlobalCustomerLocalToken,
             'asyncTokenisationJobId'    => $this->asyncTokenisationJobId,
         ]);
+
+        $this->triggerEvent(EventCode::ASYNC_TOKENISATION_TOKEN_CREATION_NOT_APPLICABLE, $card);
     }
 
     protected function trackFailedTokenCreationEvent(Throwable $e, CardEntity $card): void

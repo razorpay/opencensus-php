@@ -14264,6 +14264,7 @@ class Route
         'payout_links_shopify_app_shop_redact'              => HeartbeatLagChecker::SLAVE,
         'payout_links_shopify_customers_data_request'       => HeartbeatLagChecker::SLAVE,
         'oauth_token_create_for_apple_watch'                => HeartbeatLagChecker::MASTER,
+        'create_local_tokens_from_consents_bulk'            => HeartbeatLagChecker::SLAVE,
     ];
 
     public static $terminalsServiceFormRequestsRoutes = [
@@ -14452,6 +14453,7 @@ class Route
         'reminder_next_run',
         'user_fetch_for_merchant',
         'user_fetch_entity',
+        'create_local_tokens_from_consents_bulk',
     ];
 
     /*

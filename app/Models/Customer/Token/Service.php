@@ -1234,14 +1234,6 @@ class Service extends Base\Service
 
             if ($tokensCount === 0)
             {
-                $lastDispatchedTokenId = '';
-
-                Cache::put(
-                    Constants::LAST_DISPATCHED_GLOBAL_CUSTOMER_LOCAL_TOKEN_CACHE_KEY,
-                    $lastDispatchedTokenId,
-                    Constants::LAST_DISPATCHED_GLOBAL_CUSTOMER_LOCAL_TOKEN_CACHE_TTL
-                );
-
                 $this->trace->warning(
                     TraceCode::ASYNC_GLOBAL_CUSTOMER_LOCAL_TOKENISATION_ERROR,
                     ['reason' => 'No global customer local tokens found for tokenisation.']

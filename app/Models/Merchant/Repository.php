@@ -1576,4 +1576,10 @@ class Repository extends Base\Repository
             ->toArray();
 
     }
+
+    public function findManyOnReadReplica(array $merchantIds)
+    {
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+            ->findMany($merchantIds);
+    }
 }
