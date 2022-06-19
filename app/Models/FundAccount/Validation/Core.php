@@ -1173,8 +1173,14 @@ class Core extends Base\Core
         ];
     }
 
-    public function createFundAccountValidationViaLedgerCronJob(array $blacklistIds, array $forcedMerchantIds, int $limit)
+    public function createFundAccountValidationViaLedgerCronJob(array $blacklistIds, array $whitelistIds, int $limit)
     {
+        if(empty($whitelistIds) === false)
+        {
+            $favs = $this->repo->fund_account_validation->fetchCreatedFAVWhereTxnIdNullAndIdsIn($whitelistIds);
+
+            return $this->processFundAccountValidationViaLedgerCronJob($blacklistIds, $favs, true);
+        }
 
         for ($i = 0; $i < 3; $i++)
         {
@@ -1183,27 +1189,34 @@ class Core extends Base\Core
             // This is done so as to not put extra load on the database while querying.
             $favs = $this->repo->fund_account_validation->fetchCreatedFAVAndTxnIdNullBetweenTimestamp($i, $limit);
 
-            foreach ($favs as $fav)
-            {
-                try
-                {
-                    /*
-                     * If merchant is not on reverse shadow, and is not present in $forcedMerchantIds array,
-                     * only then skip the merchant.
-                     */
-                    if (($fav->merchant->isFeatureEnabled(Feature\Constants::LEDGER_REVERSE_SHADOW) === false)
-                        && (in_array($fav->getMerchantId(), $forcedMerchantIds) === false))
-                    {
-                        $this->trace->info(
-                            TraceCode::LEDGER_STATUS_CRON_SKIP_MERCHANT_NOT_REVERSE_SHADOW,
-                            [
-                                'fav_id'      => $fav->getPublicId(),
-                                'merchant_id' => $fav->getMerchantId(),
-                            ]
-                        );
-                        continue;
-                    }
+            $this->processFundAccountValidationViaLedgerCronJob($blacklistIds, $favs);
+        }
+    }
 
+    private function processFundAccountValidationViaLedgerCronJob(array $blacklistIds, $favs, bool $skipChecks = false)
+    {
+        foreach ($favs as $fav)
+        {
+            try
+            {
+                /*
+                 * If merchant is not on reverse shadow, and is not present in $forcedMerchantIds array,
+                 * only then skip the merchant.
+                 */
+                if ($fav->merchant->isFeatureEnabled(Feature\Constants::LEDGER_REVERSE_SHADOW) === false)
+                {
+                    $this->trace->info(
+                        TraceCode::LEDGER_STATUS_CRON_SKIP_MERCHANT_NOT_REVERSE_SHADOW,
+                        [
+                            'fav_id'      => $fav->getPublicId(),
+                            'merchant_id' => $fav->getMerchantId(),
+                        ]
+                    );
+                    continue;
+                }
+
+                if($skipChecks === false)
+                {
                     if(in_array($fav->getPublicId(), $blacklistIds) === true)
                     {
                         $this->trace->info(
@@ -1215,30 +1228,31 @@ class Core extends Base\Core
                         continue;
                     }
 
-                    $this->trace->info(
-                        TraceCode::LEDGER_STATUS_CRON_FAV_INIT,
-                        [
-                            'fav_id' => $fav->getPublicId(),
-                        ]
-                    );
-
-                    $ledgerRequest = (new FavLedgerProcessor())->createLedgerPayloadFromEntity($fav);
-
-                    (new LedgerStatus($this->mode, $ledgerRequest, null, false))->handle();
                 }
-                catch (\Throwable $e)
-                {
-                    $this->trace->traceException(
-                        $e,
-                        Trace::ERROR,
-                        TraceCode::LEDGER_STATUS_CRON_FAV_FAILED,
-                        [
-                            'fav_id' => $fav->getPublicId(),
-                        ]
-                    );
 
-                    continue;
-                }
+                $this->trace->info(
+                    TraceCode::LEDGER_STATUS_CRON_FAV_INIT,
+                    [
+                        'fav_id' => $fav->getPublicId(),
+                    ]
+                );
+
+                $ledgerRequest = (new FavLedgerProcessor())->createLedgerPayloadFromEntity($fav);
+
+                (new LedgerStatus($this->mode, $ledgerRequest, null, false))->handle();
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::LEDGER_STATUS_CRON_FAV_FAILED,
+                    [
+                        'fav_id' => $fav->getPublicId(),
+                    ]
+                );
+
+                continue;
             }
         }
     }

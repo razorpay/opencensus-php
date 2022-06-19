@@ -823,8 +823,15 @@ class Core extends Base\Core
         }
     }
 
-    public function createBankTransferViaLedgerCronJob(array $blacklistIds, array $forcedMerchantIds, int $limit)
+    public function createBankTransferViaLedgerCronJob(array $blacklistIds, array $whitelistIds, int $limit)
     {
+        if(empty($whitelistIds) === false)
+        {
+            $bankTransfers = $this->repo->bank_transfer->fetchCreatedBankTransferWhereTxnIdNullAndIdsIn($whitelistIds);
+
+            return $this->processBankTransferViaLedgerCronJob($blacklistIds, $bankTransfers, true);
+        }
+
         for ($i = 0; $i < 3; $i++)
         {
             // Fetch all bank transfers created in the last 24 hours.
@@ -832,27 +839,34 @@ class Core extends Base\Core
             // This is done so as to not put extra load on the database while querying.
             $bankTransfers = $this->repo->bank_transfer->fetchCreatedBankTransferAndTxnIdNullBetweenTimestamp($i, $limit);
 
-            foreach ($bankTransfers as $bt)
-            {
-                try
-                {
-                    /*
-                     * If merchant is not on reverse shadow, and is not present in $forcedMerchantIds array,
-                     * only then skip the merchant.
-                     */
-                    if (($bt->merchant->isFeatureEnabled(Feature\Constants::LEDGER_REVERSE_SHADOW) === false)
-                        && (in_array($bt->getMerchantId(), $forcedMerchantIds) === false))
-                    {
-                        $this->trace->info(
-                            TraceCode::LEDGER_STATUS_CRON_SKIP_MERCHANT_NOT_REVERSE_SHADOW,
-                            [
-                                'bank_transfer_id' => $bt->getPublicId(),
-                                'merchant_id'      => $bt->getMerchantId(),
-                            ]
-                        );
-                        continue;
-                    }
+            $this->processBankTransferViaLedgerCronJob($blacklistIds, $bankTransfers);
+        }
+    }
 
+    private function processBankTransferViaLedgerCronJob(array $blacklistIds, $bankTransfers, bool $skipChecks = false)
+    {
+        foreach ($bankTransfers as $bt)
+        {
+            try
+            {
+                /*
+                 * If merchant is not on reverse shadow, and is not present in $forcedMerchantIds array,
+                 * only then skip the merchant.
+                 */
+                if ($bt->merchant->isFeatureEnabled(Feature\Constants::LEDGER_REVERSE_SHADOW) === false)
+                {
+                    $this->trace->info(
+                        TraceCode::LEDGER_STATUS_CRON_SKIP_MERCHANT_NOT_REVERSE_SHADOW,
+                        [
+                            'bank_transfer_id' => $bt->getPublicId(),
+                            'merchant_id'      => $bt->getMerchantId(),
+                        ]
+                    );
+                    continue;
+                }
+
+                if($skipChecks === false)
+                {
                     if(in_array($bt->getPublicId(), $blacklistIds) === true)
                     {
                         $this->trace->info(
@@ -863,32 +877,32 @@ class Core extends Base\Core
                         );
                         continue;
                     }
-
-                    $this->trace->info(
-                        TraceCode::LEDGER_STATUS_CRON_BANK_TRANSFER_INIT,
-                        [
-                            'bank_transfer_id' => $bt->getPublicId(),
-                        ]
-                    );
-
-                    $terminal = (new TerminalProcessor())->getTerminalForBankTransfer($bt);
-                    $ledgerRequest = (new LedgerFundLoading())->createPayloadForJournalEntry($bt, $terminal->getPublicId(), $terminal->getAccountType());
-
-                    (new LedgerStatus($this->mode, $ledgerRequest, null, false))->handle();
                 }
-                catch (\Throwable $e)
-                {
-                    $this->trace->traceException(
-                        $e,
-                        Trace::ERROR,
-                        TraceCode::LEDGER_STATUS_CRON_BANK_TRANSFER_FAILED,
-                        [
-                            'bank_transfer_id' => $bt->getPublicId(),
-                        ]
-                    );
 
-                    continue;
-                }
+                $this->trace->info(
+                    TraceCode::LEDGER_STATUS_CRON_BANK_TRANSFER_INIT,
+                    [
+                        'bank_transfer_id' => $bt->getPublicId(),
+                    ]
+                );
+
+                $terminal = (new TerminalProcessor())->getTerminalForBankTransfer($bt);
+                $ledgerRequest = (new LedgerFundLoading())->createPayloadForJournalEntry($bt, $terminal->getPublicId(), $terminal->getAccountType());
+
+                (new LedgerStatus($this->mode, $ledgerRequest, null, false))->handle();
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::LEDGER_STATUS_CRON_BANK_TRANSFER_FAILED,
+                    [
+                        'bank_transfer_id' => $bt->getPublicId(),
+                    ]
+                );
+
+                continue;
             }
         }
     }

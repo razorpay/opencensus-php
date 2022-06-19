@@ -282,4 +282,34 @@ class Repository extends Base\Repository
                     ->limit($limit)
                     ->get();
     }
+
+    /**
+     * This will fetch all reversals in created state where id is in the given list of ids
+     * and where transaction_id is null.
+     * @param array $ids
+     * @return mixed
+     */
+    public function fetchReversalWhereTxnIdNullAndIdsIn(array $ids)
+    {
+        $balanceIdColumn            = $this->repo->balance->dbColumn(Balance\Entity::ID);
+        $balanceTypeColumn          = $this->repo->balance->dbColumn(Balance\Entity::TYPE);
+        $balanceAccountTypeColumn   = $this->repo->balance->dbColumn(Balance\Entity::ACCOUNT_TYPE);
+
+        $revIdColumn            = $this->repo->reversal->dbColumn(Entity::ID);
+        $revTransactionIdColumn = $this->repo->reversal->dbColumn(Entity::TRANSACTION_ID);
+        $revEntityType          = $this->repo->reversal->dbColumn(Entity::ENTITY_TYPE);
+        $revBalanceIdColumn     = $this->repo->reversal->dbColumn(Entity::BALANCE_ID);
+
+        $revAttrs = $this->dbColumn('*');
+
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+                    ->join(Table::BALANCE, $balanceIdColumn, '=', $revBalanceIdColumn)
+                    ->select($revAttrs)
+                    ->whereIn($revEntityType, [Type::PAYOUT, Type::FUND_ACCOUNT_VALIDATION])
+                    ->where($balanceTypeColumn, '=', Balance\Type::BANKING)
+                    ->where($balanceAccountTypeColumn, '=', Balance\AccountType::SHARED)
+                    ->whereNull($revTransactionIdColumn)
+                    ->whereIn($revIdColumn, $ids)
+                    ->get();
+    }
 }

@@ -778,8 +778,15 @@ class Core extends Base\Core
         $this->repo->saveOrFail($adjustment);
     }
 
-    public function createAdjustmentViaLedgerCronJob(array $blacklistIds, array $forcedMerchantIds, int $limit)
+    public function createAdjustmentViaLedgerCronJob(array $blacklistIds, array $whitelistIds, int $limit)
     {
+        if(empty($whitelistIds) === false)
+        {
+            $adjustments = $this->repo->adjustment->fetchCreatedAdjustmentWhereTxnIdNullAndIdsIn($whitelistIds);
+
+            return $this->processAdjustmentViaLedgerCronJob($blacklistIds, $adjustments, true);
+        }
+
         for ($i = 0; $i < 3; $i++)
         {
             // Fetch all adjustments created in the last 24 hours.
@@ -787,27 +794,34 @@ class Core extends Base\Core
             // This is done so as to not put extra load on the database while querying.
             $adjustments = $this->repo->adjustment->fetchCreatedAdjustmentAndTxnIdNullBetweenTimestamp($i, $limit);
 
-            foreach ($adjustments as $adj)
-            {
-                try
-                {
-                    /*
-                     * If merchant is not on reverse shadow, and is not present in $forcedMerchantIds array,
-                     * only then skip the merchant.
-                     */
-                    if (($adj->merchant->isFeatureEnabled(Feature\Constants::LEDGER_REVERSE_SHADOW) === false)
-                        && (in_array($adj->getMerchantId(), $forcedMerchantIds) === false))
-                    {
-                        $this->trace->info(
-                            TraceCode::LEDGER_STATUS_CRON_SKIP_MERCHANT_NOT_REVERSE_SHADOW,
-                            [
-                                'adjustment_id' => $adj->getPublicId(),
-                                'merchant_id'   => $adj->getMerchantId(),
-                            ]
-                        );
-                        continue;
-                    }
+            $this->processAdjustmentViaLedgerCronJob($blacklistIds, $adjustments);
+        }
+    }
 
+    private function processAdjustmentViaLedgerCronJob(array $blacklistIds, $adjustments, bool $skipChecks = false)
+    {
+        foreach ($adjustments as $adj)
+        {
+            try
+            {
+                /*
+                 * If merchant is not on reverse shadow, and is not present in $forcedMerchantIds array,
+                 * only then skip the merchant.
+                 */
+                if ($adj->merchant->isFeatureEnabled(Feature\Constants::LEDGER_REVERSE_SHADOW) === false)
+                {
+                    $this->trace->info(
+                        TraceCode::LEDGER_STATUS_CRON_SKIP_MERCHANT_NOT_REVERSE_SHADOW,
+                        [
+                            'adjustment_id' => $adj->getPublicId(),
+                            'merchant_id'   => $adj->getMerchantId(),
+                        ]
+                    );
+                    continue;
+                }
+
+                if($skipChecks === false)
+                {
                     if(in_array($adj->getPublicId(), $blacklistIds) === true)
                     {
                         $this->trace->info(
@@ -818,31 +832,32 @@ class Core extends Base\Core
                         );
                         continue;
                     }
-
-                    $this->trace->info(
-                        TraceCode::LEDGER_STATUS_CRON_ADJUSTMENT_INIT,
-                        [
-                            'adjustment_id' => $adj->getPublicId(),
-                        ]
-                    );
-                    $event = self::getLedgerEventBasedOnAdjustment($adj);
-                    $ledgerRequest = (new LedgerAdjustment())->createPayloadForJournalEntry($adj, $event);
-
-                    (new LedgerStatus($this->mode, $ledgerRequest, null, false))->handle();
                 }
-                catch (\Throwable $e)
-                {
-                    $this->trace->traceException(
-                        $e,
-                        Trace::ERROR,
-                        TraceCode::LEDGER_STATUS_CRON_ADJUSTMENT_FAILED,
-                        [
-                            'adjustment_id' => $adj->getPublicId(),
-                        ]
-                    );
 
-                    continue;
-                }
+                $this->trace->info(
+                    TraceCode::LEDGER_STATUS_CRON_ADJUSTMENT_INIT,
+                    [
+                        'adjustment_id' => $adj->getPublicId(),
+                    ]
+                );
+
+                $event = self::getLedgerEventBasedOnAdjustment($adj);
+                $ledgerRequest = (new LedgerAdjustment())->createPayloadForJournalEntry($adj, $event);
+
+                (new LedgerStatus($this->mode, $ledgerRequest, null, false))->handle();
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::LEDGER_STATUS_CRON_ADJUSTMENT_FAILED,
+                    [
+                        'adjustment_id' => $adj->getPublicId(),
+                    ]
+                );
+
+                continue;
             }
         }
     }

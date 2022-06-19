@@ -138,4 +138,36 @@ class Repository extends Base\Repository
                     ->limit($limit)
                     ->get();
     }
+
+    /**
+     * This will fetch all favs in created state where id is in the given list of ids
+     * and where transaction_id is null.
+     * @param array $ids
+     * @return mixed
+     */
+    public function fetchCreatedFAVWhereTxnIdNullAndIdsIn(array $ids)
+    {
+        $balanceIdColumn            = $this->repo->balance->dbColumn(Balance\Entity::ID);
+        $balanceTypeColumn          = $this->repo->balance->dbColumn(Balance\Entity::TYPE);
+        $balanceAccountTypeColumn   = $this->repo->balance->dbColumn(Balance\Entity::ACCOUNT_TYPE);
+
+        $favIdColumn              = $this->repo->fund_account_validation->dbColumn(Entity::ID);
+        $favTransactionIdColumn   = $this->repo->fund_account_validation->dbColumn(Entity::TRANSACTION_ID);
+        $favStatusColumn          = $this->repo->fund_account_validation->dbColumn(Entity::STATUS);
+        $favBalanceIdColumn       = $this->repo->fund_account_validation->dbColumn(Entity::BALANCE_ID);
+        $favFundAccountTypeColumn = $this->repo->fund_account_validation->dbColumn(Entity::FUND_ACCOUNT_TYPE);
+
+        $favAttrs = $this->dbColumn('*');
+
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+                    ->join(Table::BALANCE, $balanceIdColumn, '=', $favBalanceIdColumn)
+                    ->select($favAttrs)
+                    ->where($favStatusColumn, '=', Status::CREATED)
+                    ->where($favFundAccountTypeColumn, '=', Type::BANK_ACCOUNT)
+                    ->where($balanceTypeColumn, '=', Balance\Type::BANKING)
+                    ->where($balanceAccountTypeColumn, '=', Balance\AccountType::SHARED)
+                    ->whereNull($favTransactionIdColumn)
+                    ->whereIn($favIdColumn, $ids)
+                    ->get();
+    }
 }

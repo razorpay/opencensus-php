@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Reversal;
 
+use Razorpay\Trace\Logger;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Ledger\RefundJournalEvents;
@@ -16,7 +17,6 @@ use RZP\Models\Customer;
 use RZP\Trace\TraceCode;
 use RZP\Jobs\LedgerStatus;
 use RZP\Models\Adjustment;
-use Razorpay\Trace\Logger;
 use RZP\Jobs\Transactions;
 use RZP\Models\Transaction;
 use RZP\Models\Payment\Refund;
@@ -1074,8 +1074,14 @@ class Core extends Base\Core
         ];
     }
 
-    public function createReversalViaLedgerCronJob(array $blacklistIds, array $forcedMerchantIds, int $limit)
+    public function createReversalViaLedgerCronJob(array $blacklistIds, array $whitelistIds, int $limit)
     {
+        if(empty($whitelistIds) === false)
+        {
+            $reversals = $this->repo->reversal->fetchReversalWhereTxnIdNullAndIdsIn($whitelistIds);
+
+            return $this->processReversalViaLedgerCronJob($blacklistIds, $reversals, true);
+        }
 
         for ($i = 0; $i < 3; $i++)
         {
@@ -1084,30 +1090,37 @@ class Core extends Base\Core
             // This is done so as to not put extra load on the database while querying.
             $reversals = $this->repo->reversal->fetchReversalAndTxnIdNullBetweenTimestamp($i, $limit);
 
-            foreach ($reversals as $rev)
+            $this->processReversalViaLedgerCronJob($blacklistIds, $reversals);
+        }
+    }
+
+    private function processReversalViaLedgerCronJob(array $blacklistIds, $reversals, bool $skipChecks = false)
+    {
+        foreach ($reversals as $rev)
+        {
+            $sourceId = $rev->getEntityId();
+            $sourceType = $rev->getEntityType();
+
+            try
             {
-                $sourceId = $rev->getEntityId();
-                $sourceType = $rev->getEntityType();
-
-                try
+                /*
+                 * If merchant is not on reverse shadow, and is not present in $forcedMerchantIds array,
+                 * only then skip the merchant.
+                 */
+                if ($rev->merchant->isFeatureEnabled(Feature\Constants::LEDGER_REVERSE_SHADOW) === false)
                 {
-                    /*
-                     * If merchant is not on reverse shadow, and is not present in $forcedMerchantIds array,
-                     * only then skip the merchant.
-                     */
-                    if (($rev->merchant->isFeatureEnabled(Feature\Constants::LEDGER_REVERSE_SHADOW) === false)
-                        && (in_array($rev->getMerchantId(), $forcedMerchantIds) === false))
-                    {
-                        $this->trace->info(
-                            TraceCode::LEDGER_STATUS_CRON_SKIP_MERCHANT_NOT_REVERSE_SHADOW,
-                            [
-                                'reversal_id' => $rev->getPublicId(),
-                                'merchant_id' => $rev->getMerchantId(),
-                            ]
-                        );
-                        continue;
-                    }
+                    $this->trace->info(
+                        TraceCode::LEDGER_STATUS_CRON_SKIP_MERCHANT_NOT_REVERSE_SHADOW,
+                        [
+                            'reversal_id' => $rev->getPublicId(),
+                            'merchant_id' => $rev->getMerchantId(),
+                        ]
+                    );
+                    continue;
+                }
 
+                if($skipChecks === false)
+                {
                     if(in_array($rev->getPublicId(), $blacklistIds) === true)
                     {
                         $this->trace->info(
@@ -1120,72 +1133,72 @@ class Core extends Base\Core
                         );
                         continue;
                     }
-
-                    $this->trace->info(
-                        TraceCode::LEDGER_STATUS_CRON_REVERSAL_INIT,
-                        [
-                            'reversal_id' => $rev->getPublicId(),
-                            'source_id'   => $sourceId,
-                            'source_type' => $sourceType,
-                        ]
-                    );
-
-                    $ledgerRequest = null;
-
-                    if($sourceType === E::PAYOUT)
-                    {
-                        $payout = $this->repo->payout->find($sourceId);
-
-                        $response = null;
-                        $ftsData = [];
-                        $status = Payout\Status::FAILED;
-
-                        /*
-                         * In case of reversal, payout can have two states. payout_failed and payout_reversed.
-                         * Currently there is no way to get the fts information from the payout entity.
-                         * For payout_reversed, we need fts source data. So, if payout processed_at is set, i.e., not null,
-                         * that concludes that payout has been processed. Therefore, calling ledger service with the same payout_processed
-                         * event to get fts information which would be used when creating payout_reversed.
-                         *
-                         * In other cases, since payout is not processed, payout_failed event is sent to ledger.
-                         */
-                        if($payout->getProcessedAt() !== null)
-                        {
-                            $input = [
-                                Ledger\Base::TRANSACTOR_ID    => $payout->getPublicId(),
-                                Ledger\Base::TRANSACTOR_EVENT => PayoutLedger::PAYOUT_PROCESSED,
-                            ];
-                            $response = (new Ledger\Base)->fetchJournalByTransactor($input);
-                            $ftsData = Ledger\Base::getFtsDataFromLedgerResponse($response);
-                            $status = Payout\Status::REVERSED;
-                        }
-
-                        $ledgerRequest = (new PayoutLedger())->createLedgerPayloadFromEntity($payout, $status, $rev, $ftsData);
-                    }
-                    else
-                    {
-                        $fav = $this->repo->fund_account_validation->find($sourceId);
-                        $ledgerRequest = (new FavLedger())->createLedgerPayloadFromEntity($fav);
-                    }
-
-                    (new LedgerStatus($this->mode, $ledgerRequest, null, false))->handle();
-
                 }
-                catch (\Throwable $e)
+
+                $this->trace->info(
+                    TraceCode::LEDGER_STATUS_CRON_REVERSAL_INIT,
+                    [
+                        'reversal_id' => $rev->getPublicId(),
+                        'source_id'   => $sourceId,
+                        'source_type' => $sourceType,
+                    ]
+                );
+
+                $ledgerRequest = null;
+
+                if($sourceType === E::PAYOUT)
                 {
-                    $this->trace->traceException(
-                        $e,
-                        Logger::ERROR,
-                        TraceCode::LEDGER_STATUS_CRON_REVERSAL_FAILED,
-                        [
-                            'reversal_id' => $rev->getPublicId(),
-                            'source_id'   => $sourceId,
-                            'source_type' => $sourceType,
-                        ]
-                    );
+                    $payout = $this->repo->payout->find($sourceId);
 
-                    continue;
+                    $response = null;
+                    $ftsData = [];
+                    $status = Payout\Status::FAILED;
+
+                    /*
+                     * In case of reversal, payout can have two states. payout_failed and payout_reversed.
+                     * Currently there is no way to get the fts information from the payout entity.
+                     * For payout_reversed, we need fts source data. So, if payout processed_at is set, i.e., not null,
+                     * that concludes that payout has been processed. Therefore, calling ledger service with the same payout_processed
+                     * event to get fts information which would be used when creating payout_reversed.
+                     *
+                     * In other cases, since payout is not processed, payout_failed event is sent to ledger.
+                     */
+                    if($payout->getProcessedAt() !== null)
+                    {
+                        $input = [
+                            Ledger\Base::TRANSACTOR_ID    => $payout->getPublicId(),
+                            Ledger\Base::TRANSACTOR_EVENT => PayoutLedger::PAYOUT_PROCESSED,
+                        ];
+                        $response = (new Ledger\Base)->fetchJournalByTransactor($input);
+                        $ftsData = Ledger\Base::getFtsDataFromLedgerResponse($response);
+                        $status = Payout\Status::REVERSED;
+                    }
+
+                    $ledgerRequest = (new PayoutLedger())->createLedgerPayloadFromEntity($payout, $status, $rev, $ftsData);
                 }
+                else
+                {
+                    $fav = $this->repo->fund_account_validation->find($sourceId);
+                    $ledgerRequest = (new FavLedger())->createLedgerPayloadFromEntity($fav);
+                }
+
+                (new LedgerStatus($this->mode, $ledgerRequest, null, false))->handle();
+
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::LEDGER_STATUS_CRON_REVERSAL_FAILED,
+                    [
+                        'reversal_id' => $rev->getPublicId(),
+                        'source_id'   => $sourceId,
+                        'source_type' => $sourceType,
+                    ]
+                );
+
+                continue;
             }
         }
     }

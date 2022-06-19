@@ -121,8 +121,8 @@ class Service extends Base\Service
         return $response;
     }
 
-    public function createReversalViaLedgerCronJob(array $blacklistIds, array $forcedMerchantIds, int $limit)
+    public function createReversalViaLedgerCronJob(array $blacklistIds, array $whitelistIds, int $limit)
     {
-        (new Core)->createReversalViaLedgerCronJob($blacklistIds, $forcedMerchantIds, $limit);
+        (new Core)->createReversalViaLedgerCronJob($blacklistIds, $whitelistIds, $limit);
     }
 }

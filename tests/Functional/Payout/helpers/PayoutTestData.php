@@ -17609,6 +17609,52 @@ return [
         ],
     ],
 
+    'testPayoutWithJournalLedgerCronInLedgerReverseShadow' => [
+        'request' => [
+            'method'    => 'POST',
+            'url'       => '/create_journal_cron',
+            'content'   => [
+                'entity'        => 'payout',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'success',
+            ],
+        ],
+    ],
+
+    'testPayoutWithJournalLedgerCronInLedgerReverseShadowWithWhitelistIds' => [
+        'request' => [
+            'method'    => 'POST',
+            'url'       => '/create_journal_cron',
+            'content'   => [
+                'whitelist_ids' => ['IwHCToefEWVgpi'],
+                'entity'        => 'payout',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'success',
+            ],
+        ],
+    ],
+
+    'testPayoutReversalWithJournalLedgerCronInLedgerReverseShadow' => [
+        'request' => [
+            'method'    => 'POST',
+            'url'       => '/create_journal_cron',
+            'content'   => [
+                'entity'        => 'reversal',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'success',
+            ],
+        ],
+    ],
+
     'testUpdateMerchantSlaForOnHoldPayoutsInsufficientPermission' => [
         'request' => [
             'method'    => 'PUT',

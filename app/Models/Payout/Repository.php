@@ -1877,6 +1877,36 @@ class Repository extends Base\Repository
     }
 
     /**
+     * This will fetch all payouts in created state where id is in the given list of ids
+     * and where transaction_id is null.
+     * @param array $ids
+     * @return mixed
+     */
+    public function fetchCreatedPayoutsWhereTxnIdNullAndIdsIn(array $ids)
+    {
+        $balanceIdColumn            = $this->repo->balance->dbColumn(Balance\Entity::ID);
+        $balanceTypeColumn          = $this->repo->balance->dbColumn(Balance\Entity::TYPE);
+        $balanceAccountTypeColumn   = $this->repo->balance->dbColumn(Balance\Entity::ACCOUNT_TYPE);
+
+        $payoutIdColumn            = $this->repo->payout->dbColumn(Entity::ID);
+        $payoutTransactionIdColumn = $this->repo->payout->dbColumn(Entity::TRANSACTION_ID);
+        $payoutStatusColumn        = $this->repo->payout->dbColumn(Entity::STATUS);
+        $payoutBalanceIdColumn     = $this->repo->payout->dbColumn(Entity::BALANCE_ID);
+
+        $payoutAttrs = $this->dbColumn('*');
+
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+                    ->join(Table::BALANCE, $balanceIdColumn, '=', $payoutBalanceIdColumn)
+                    ->select($payoutAttrs)
+                    ->where($payoutStatusColumn, '=', Status::CREATED)
+                    ->where($balanceTypeColumn, '=', Balance\Type::BANKING)
+                    ->where($balanceAccountTypeColumn, '=', Balance\AccountType::SHARED)
+                    ->whereNull($payoutTransactionIdColumn)
+                    ->whereIn($payoutIdColumn, $ids)
+                    ->get();
+    }
+
+    /**
      * get yesterday's total payout amount, fee and tax count
      *
      */

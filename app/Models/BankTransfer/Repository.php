@@ -147,4 +147,34 @@ class Repository extends Base\Repository
                     ->limit($limit)
                     ->get();
     }
+
+    /**
+     * This will fetch all bank transfers in created state where id is in the given list of ids
+     * and where transaction_id is null.
+     * @param array $ids
+     * @return mixed
+     */
+    public function fetchCreatedBankTransferWhereTxnIdNullAndIdsIn(array $ids)
+    {
+        $balanceIdColumn          = $this->repo->balance->dbColumn(Balance\Entity::ID);
+        $balanceTypeColumn        = $this->repo->balance->dbColumn(Balance\Entity::TYPE);
+        $balanceAccountTypeColumn = $this->repo->balance->dbColumn(Balance\Entity::ACCOUNT_TYPE);
+
+        $btIdColumn            = $this->repo->bank_transfer->dbColumn(Entity::ID);
+        $btTransactionIdColumn = $this->repo->bank_transfer->dbColumn(Entity::TRANSACTION_ID);
+        $btStatusColumn        = $this->repo->bank_transfer->dbColumn(Entity::STATUS);
+        $btBalanceIdColumn     = $this->repo->bank_transfer->dbColumn(Entity::BALANCE_ID);
+
+        $btAttrs = $this->dbColumn('*');
+
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+                    ->join(Table::BALANCE, $balanceIdColumn, '=', $btBalanceIdColumn)
+                    ->select($btAttrs)
+                    ->where($btStatusColumn, '=', Status::CREATED)
+                    ->where($balanceTypeColumn, '=', Balance\Type::BANKING)
+                    ->where($balanceAccountTypeColumn, '=', Balance\AccountType::SHARED)
+                    ->whereNull($btTransactionIdColumn)
+                    ->whereIn($btIdColumn, $ids)
+                    ->get();
+    }
 }

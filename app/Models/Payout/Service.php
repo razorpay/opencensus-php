@@ -2775,9 +2775,9 @@ class Service extends Base\Service
         return $response;
     }
 
-    public function createPayoutViaLedgerCronJob(array $blacklistIds, array $forcedMerchantIds, int $limit)
+    public function createPayoutViaLedgerCronJob(array $blacklistIds, array $whitelistIds, int $limit)
     {
-        $this->core->createPayoutViaLedgerCronJob($blacklistIds, $forcedMerchantIds, $limit);
+        $this->core->createPayoutViaLedgerCronJob($blacklistIds, $whitelistIds, $limit);
     }
 
     public function updateMerchantOnHoldSlas(array $input)

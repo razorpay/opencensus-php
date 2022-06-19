@@ -17,6 +17,7 @@ use Illuminate\Http\UploadedFile;
 use RZP\Models\PayoutOutbox\Constants as PayoutOutboxConstants;
 use RZP\Services\DiagClient;
 use RZP\Services\Raven;
+use RZP\Services\Ledger;
 use RZP\Jobs\Transactions;
 use RZP\Exception\RuntimeException;
 use PhpOffice\PhpSpreadsheet\IOFactory;
@@ -21089,6 +21090,306 @@ class PayoutTest extends OAuthTestCase
         // Assert that there are still 3 payouts in queued state since there wasn't enough balance to process them
         $this->assertEquals(3, $summary2[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['low_balance']['count']);
         $this->assertEquals(30000003, $summary2[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['low_balance']['total_amount']);
+    }
+
+    public function testPayoutWithJournalLedgerCronInLedgerReverseShadow()
+    {
+        $this->app['rzp.mode'] = 'test';
+
+        $this->app['config']->set('applications.ledger.enabled', false);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $mockLedger = \Mockery::mock(Ledger::class, [$this->app])->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $mockLedger->shouldReceive('fetchByTransactor')
+                   ->times(1)
+                   ->andReturn([
+                        "body" => [
+                            "id"                => "sampleJournlID",
+                            "created_at"        => "1623848289",
+                            "updated_at"        => "1632368730",
+                            "amount"            => "130.000000",
+                            "base_amount"       => "130.000000",
+                            "currency"          => "INR",
+                            "tenant"            => "X",
+                            "transactor_id"     => "pout_IwHCToefEWVgph",
+                            "transactor_event"  => "payout_initiated",
+                            "transaction_date"  => "1611132045",
+                            "ledger_entry" => [
+                                [
+                                    "id"          => "HNjsypHNXdSiei",
+                                    "created_at"  => "1623848289",
+                                    "updated_at"  => "1623848289",
+                                    "merchant_id" => "HN59oOIDACOXt3",
+                                    "journal_id"  => "sampleJournlID",
+                                    "account_id"  => "GoRNyEuu9Hl0OZ",
+                                    "amount"      => "130.000000",
+                                    "base_amount" => "130.000000",
+                                    "type"        => "credit",
+                                    "currency"    => "INR",
+                                    "balance"     => ""
+                                ],
+                                [
+                                    "id"          => "HNjsypHPOUlxDR",
+                                    "created_at"  => "1623848289",
+                                    "updated_at"  => "1623848289",
+                                    "merchant_id" => "HN59oOIDACOXt3",
+                                    "journal_id"  => "sampleJournlID",
+                                    "account_id"  => "HN5AGgmKu0ki13",
+                                    "amount"      => "130.000000",
+                                    "base_amount" => "130.000000",
+                                    "type"        => "debit",
+                                    "currency"    => "INR",
+                                    "balance"     => "",
+                                    'account_entities' => [
+                                        'account_type'       => ['payable'],
+                                        'fund_account_type'  => ['merchant_va'],
+                                    ],
+                                ]
+                            ]
+                        ]
+                   ]);
+
+        $this->createPayout([
+            'id'              => 'IwHCToefEWVgph',
+            'merchant_id'     => '10000000000000',
+            'status'          => 'created',
+            'purpose'         => 'payout',
+            'purpose_type'    => 'refund',
+            'transaction_id'  => '00000000000001',
+            'created_at'      => Carbon::now()->subMinutes(20)->getTimestamp(),
+        ]);
+
+        $payout = $this->getDbLastEntity('payout');
+        $txn = $this->getDbLastEntity('transaction');
+
+        $this->fixtures->edit('payout', $payout->getId(), ['transaction_id' => null]);
+        $this->fixtures->edit('transaction', $txn->getId(), ['entity_id' => 'boohooboohooaa']);
+
+        $payout->reload();
+
+        $this->assertNull($payout->getTransactionId());
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+
+        $payout->reload();
+
+        $txn = $this->getDbLastEntity('transaction');
+
+        $this->assertEquals(Status::CREATED, $payout['status']);
+
+        $this->assertEquals($payout->getTransactionId(), $txn->getId());
+    }
+
+    public function testPayoutWithJournalLedgerCronInLedgerReverseShadowWithWhitelistIds()
+    {
+        $this->app['rzp.mode'] = 'test';
+
+        $this->app['config']->set('applications.ledger.enabled', false);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $mockLedger = \Mockery::mock(Ledger::class, [$this->app])->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $mockLedger->shouldReceive('fetchByTransactor')
+                   ->times(1)
+                   ->andReturn([
+                        "body" => [
+                            "id"                => "sampleJournlID",
+                            "created_at"        => "1623848289",
+                            "updated_at"        => "1632368730",
+                            "amount"            => "130.000000",
+                            "base_amount"       => "130.000000",
+                            "currency"          => "INR",
+                            "tenant"            => "X",
+                            "transactor_id"     => "pout_IwHCToefEWVgpi",
+                            "transactor_event"  => "payout_initiated",
+                            "transaction_date"  => "1611132045",
+                            "ledger_entry" => [
+                                [
+                                    "id"          => "HNjsypHNXdSiei",
+                                    "created_at"  => "1623848289",
+                                    "updated_at"  => "1623848289",
+                                    "merchant_id" => "HN59oOIDACOXt3",
+                                    "journal_id"  => "sampleJournlID",
+                                    "account_id"  => "GoRNyEuu9Hl0OZ",
+                                    "amount"      => "130.000000",
+                                    "base_amount" => "130.000000",
+                                    "type"        => "credit",
+                                    "currency"    => "INR",
+                                    "balance"     => ""
+                                ],
+                                [
+                                    "id"          => "HNjsypHPOUlxDR",
+                                    "created_at"  => "1623848289",
+                                    "updated_at"  => "1623848289",
+                                    "merchant_id" => "HN59oOIDACOXt3",
+                                    "journal_id"  => "sampleJournlID",
+                                    "account_id"  => "HN5AGgmKu0ki13",
+                                    "amount"      => "130.000000",
+                                    "base_amount" => "130.000000",
+                                    "type"        => "debit",
+                                    "currency"    => "INR",
+                                    "balance"     => "",
+                                    'account_entities' => [
+                                        'account_type'       => ['payable'],
+                                        'fund_account_type'  => ['merchant_va'],
+                                    ],
+                                ]
+                            ]
+                        ]
+                   ]);
+
+        $this->createPayout([
+            'id'              => 'IwHCToefEWVgpi',
+            'merchant_id'     => '10000000000000',
+            'status'          => 'created',
+            'purpose'         => 'payout',
+            'purpose_type'    => 'refund',
+            'transaction_id'  => '00000000000001',
+            'created_at'      => Carbon::now()->subMinutes(20)->getTimestamp(),
+        ]);
+
+        $payout = $this->getDbLastEntity('payout');
+        $txn = $this->getDbLastEntity('transaction');
+
+        $this->fixtures->edit('payout', $payout->getId(), ['transaction_id' => null]);
+        $this->fixtures->edit('transaction', $txn->getId(), ['entity_id' => 'boohooboohooaa']);
+
+        $payout->reload();
+
+        $this->assertNull($payout->getTransactionId());
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+
+        $payout->reload();
+
+        $txn = $this->getDbLastEntity('transaction');
+
+        $this->assertEquals(Status::CREATED, $payout['status']);
+
+        $this->assertEquals($payout->getTransactionId(), $txn->getId());
+    }
+
+    public function testPayoutReversalWithJournalLedgerCronInLedgerReverseShadow()
+    {
+        $this->app['rzp.mode'] = 'test';
+
+        $this->app['config']->set('applications.ledger.enabled', false);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $mockLedger = \Mockery::mock(Ledger::class, [$this->app])->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $mockLedger->shouldReceive('fetchByTransactor')
+            ->times(2)
+            ->andReturn([
+                "body" => [
+                    "id"                => "sampleJournlID",
+                    "created_at"        => "1623848289",
+                    "updated_at"        => "1632368730",
+                    "amount"            => "130.000000",
+                    "base_amount"       => "130.000000",
+                    "currency"          => "INR",
+                    "tenant"            => "X",
+                    "transactor_id"     => "rvrsl_IwHCToefEWVgpj",
+                    "transactor_event"  => "payout_reversed",
+                    "transaction_date"  => "1611132045",
+                    "ledger_entry" => [
+                        [
+                            "id"          => "HNjsypHNXdSiei",
+                            "created_at"  => "1623848289",
+                            "updated_at"  => "1623848289",
+                            "merchant_id" => "HN59oOIDACOXt3",
+                            "journal_id"  => "sampleJournlID",
+                            "account_id"  => "GoRNyEuu9Hl0OZ",
+                            "amount"      => "130.000000",
+                            "base_amount" => "130.000000",
+                            "type"        => "credit",
+                            "currency"    => "INR",
+                            "balance"     => ""
+                        ],
+                        [
+                            "id"          => "HNjsypHPOUlxDR",
+                            "created_at"  => "1623848289",
+                            "updated_at"  => "1623848289",
+                            "merchant_id" => "HN59oOIDACOXt3",
+                            "journal_id"  => "sampleJournlID",
+                            "account_id"  => "HN5AGgmKu0ki13",
+                            "amount"      => "130.000000",
+                            "base_amount" => "130.000000",
+                            "type"        => "debit",
+                            "currency"    => "INR",
+                            "balance"     => "",
+                            'account_entities' => [
+                                'account_type'       => ['payable'],
+                                'fund_account_type'  => ['merchant_va'],
+                            ],
+                        ]
+                    ]
+                ]
+            ]);
+
+        $this->createPayout([
+            'id'              => 'IwHCToefEWVgph',
+            'merchant_id'     => '10000000000000',
+            'status'          => 'created',
+            'purpose'         => 'payout',
+            'purpose_type'    => 'refund',
+            'transaction_id'  => '00000000000001',
+            'created_at'      => Carbon::now()->subMinutes(20)->getTimestamp(),
+        ]);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $request = [
+            'url'     => '/payouts/' . $payout['id'] . '/manual/status',
+            'method'  => 'PATCH',
+            'content' => [
+                'status' => 'reversed',
+            ]
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        $payout->reload();
+
+        $payoutReversal = $this->getDbLastEntity('reversal');
+        $txn = $this->getDbLastEntity('transaction');
+
+        $this->fixtures->edit('reversal', $payoutReversal->getId(),
+            [
+                'transaction_id' => null,
+                'created_at' => Carbon::now()->subMinutes(20)->getTimestamp()
+            ]);
+        $this->fixtures->edit('transaction', $txn->getId(), ['entity_id' => 'boohooboohooaa']);
+
+        $payoutReversal->reload();
+        $txn->reload();
+
+        $this->assertNull($payoutReversal->getTransactionId());
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+
+        $payoutReversal->reload();
+
+        $txn = $this->getDbLastEntity('transaction');
+
+        $this->assertEquals(Status::REVERSED, $payout['status']);
+
+        $this->assertEquals($payoutReversal->getTransactionId(), $txn->getId());
     }
 
     public function testSkipEmailNotificationForFeatureEnabledMerchantOnPayoutProcessed()

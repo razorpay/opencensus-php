@@ -5418,8 +5418,15 @@ class Core extends Base\Core
             $eventAttribute);
     }
 
-    public function createPayoutViaLedgerCronJob(array $blacklistIds, array $forcedMerchantIds, int $limit)
+    public function createPayoutViaLedgerCronJob(array $blacklistIds, array $whitelistIds, int $limit)
     {
+        if(empty($whitelistIds) === false)
+        {
+            $payouts = $this->repo->payout->fetchCreatedPayoutsWhereTxnIdNullAndIdsIn($whitelistIds);
+
+            return $this->processPayoutViaLedgerCronJob($blacklistIds, $payouts, true);
+        }
+
         for ($i = 0; $i < 3; $i++)
         {
             // Fetch all payouts created in the last 24 hours.
@@ -5427,26 +5434,34 @@ class Core extends Base\Core
             // This is done so as to not put extra load on the database while querying.
             $payouts = $this->repo->payout->fetchCreatedPayoutsAndTxnIdNullBetweenTimestamp($i, $limit);
 
-            foreach ($payouts as $payout)
+            $this->processPayoutViaLedgerCronJob($blacklistIds, $payouts);
+        }
+    }
+
+    private function processPayoutViaLedgerCronJob(array $blacklistIds, $payouts, bool $skipChecks = false)
+    {
+        foreach ($payouts as $payout)
+        {
+            try
             {
-                try
+                /*
+                 * If merchant is not on reverse shadow, and is not present in $forcedMerchantIds array,
+                 * only then skip the merchant.
+                 */
+                if ($payout->merchant->isFeatureEnabled(FeatureConstants::LEDGER_REVERSE_SHADOW) === false)
                 {
-                    /*
-                     * If merchant is not on reverse shadow, and is not present in $forcedMerchantIds array,
-                     * only then skip the merchant.
-                     */
-                    if (($payout->merchant->isFeatureEnabled(FeatureConstants::LEDGER_REVERSE_SHADOW) === false)
-                        && (in_array($payout->getMerchantId(), $forcedMerchantIds) === false))
-                    {
-                        $this->trace->info(
-                            TraceCode::LEDGER_STATUS_CRON_SKIP_MERCHANT_NOT_REVERSE_SHADOW,
-                            [
-                                'payout_id'   => $payout->getPublicId(),
-                                'merchant_id' => $payout->getMerchantId(),
-                            ]
-                        );
-                        continue;
-                    }
+                    $this->trace->info(
+                        TraceCode::LEDGER_STATUS_CRON_SKIP_MERCHANT_NOT_REVERSE_SHADOW,
+                        [
+                            'payout_id'   => $payout->getPublicId(),
+                            'merchant_id' => $payout->getMerchantId(),
+                        ]
+                    );
+                    continue;
+                }
+
+                if($skipChecks === false)
+                {
 
                     if(in_array($payout->getPublicId(), $blacklistIds) === true)
                     {
@@ -5458,31 +5473,31 @@ class Core extends Base\Core
                         );
                         continue;
                     }
-
-                    $this->trace->info(
-                        TraceCode::LEDGER_STATUS_CRON_PAYOUT_INIT,
-                        [
-                            'payout_id' => $payout->getPublicId(),
-                        ]
-                    );
-
-                    $ledgerRequest = (new PayoutsLedgerProcessor())->createLedgerPayloadFromEntity($payout);
-
-                    (new LedgerStatus($this->mode, $ledgerRequest, null, false))->handle();
                 }
-                catch (\Throwable $e)
-                {
-                    $this->trace->traceException(
-                        $e,
-                        Trace::ERROR,
-                        TraceCode::LEDGER_STATUS_CRON_PAYOUT_FAILED,
-                        [
-                            'payout_id' => $payout->getPublicId(),
-                        ]
-                    );
 
-                    continue;
-                }
+                $this->trace->info(
+                    TraceCode::LEDGER_STATUS_CRON_PAYOUT_INIT,
+                    [
+                        'payout_id' => $payout->getPublicId(),
+                    ]
+                );
+
+                $ledgerRequest = (new PayoutsLedgerProcessor())->createLedgerPayloadFromEntity($payout);
+
+                (new LedgerStatus($this->mode, $ledgerRequest, null, false))->handle();
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::LEDGER_STATUS_CRON_PAYOUT_FAILED,
+                    [
+                        'payout_id' => $payout->getPublicId(),
+                    ]
+                );
+
+                continue;
             }
         }
     }

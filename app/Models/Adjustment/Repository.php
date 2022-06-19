@@ -70,4 +70,35 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    /**
+     * This will fetch all adjustments in created state where id is in the given list of ids
+     * and where transaction_id is null.
+     * @param array $ids
+     * @return mixed
+     */
+    public function fetchCreatedAdjustmentWhereTxnIdNullAndIdsIn(array $ids)
+    {
+        $balanceIdColumn          = $this->repo->balance->dbColumn(Balance\Entity::ID);
+        $balanceTypeColumn        = $this->repo->balance->dbColumn(Balance\Entity::TYPE);
+        $balanceAccountTypeColumn = $this->repo->balance->dbColumn(Balance\Entity::ACCOUNT_TYPE);
+
+        $adjIdColumn            = $this->repo->adjustment->dbColumn(Entity::ID);
+        $adjTransactionIdColumn = $this->repo->adjustment->dbColumn(Entity::TRANSACTION_ID);
+        $adjStatusColumn        = $this->repo->adjustment->dbColumn(Entity::STATUS);
+        $adjBalanceIdColumn     = $this->repo->adjustment->dbColumn(Entity::BALANCE_ID);
+
+        $adjAttrs = $this->dbColumn('*');
+
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+                    ->join(Table::BALANCE, $balanceIdColumn, '=', $adjBalanceIdColumn)
+                    ->select($adjAttrs)
+                    ->where($adjStatusColumn, '=', Status::CREATED)
+                    ->where($balanceTypeColumn, '=', Balance\Type::BANKING)
+                    ->where($balanceAccountTypeColumn, '=', Balance\AccountType::SHARED)
+                    ->whereNull($adjTransactionIdColumn)
+                    ->whereIn($adjIdColumn, $ids)
+                    ->get();
+    }
+
+
 }

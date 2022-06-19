@@ -774,7 +774,7 @@ class Ledger
 
         $limit = 500;
         $blacklistIds = [];
-        $forcedMerchantIds = [];
+        $whitelistIds = [];
 
         if(array_key_exists('limit', $input))
         {
@@ -784,31 +784,31 @@ class Ledger
         {
             $blacklistIds = $input['blacklist_ids'];
         }
-        if(array_key_exists('forced_merchant_ids', $input))
+        if(array_key_exists('whitelist_ids', $input))
         {
-            $forcedMerchantIds = $input['forced_merchant_ids'];
+            $whitelistIds = $input['whitelist_ids'];
         }
 
         switch ($input['entity'])
         {
             case EntityConstant::PAYOUT:
-                (new PayoutService())->createPayoutViaLedgerCronJob($blacklistIds, $forcedMerchantIds, $limit);
+                (new PayoutService())->createPayoutViaLedgerCronJob($blacklistIds, $whitelistIds, $limit);
                 break;
 
             case EntityConstant::FUND_ACCOUNT_VALIDATION:
-                (new FAVService())->createFundAccountValidationViaLedgerCronJob($blacklistIds, $forcedMerchantIds, $limit);
+                (new FAVService())->createFundAccountValidationViaLedgerCronJob($blacklistIds, $whitelistIds, $limit);
                 break;
 
             case EntityConstant::REVERSAL:
-                (new ReversalService())->createReversalViaLedgerCronJob($blacklistIds, $forcedMerchantIds, $limit);
+                (new ReversalService())->createReversalViaLedgerCronJob($blacklistIds, $whitelistIds, $limit);
                 break;
 
             case EntityConstant::ADJUSTMENT:
-                (new AdjustmentService())->createAdjustmentViaLedgerCronJob($blacklistIds, $forcedMerchantIds, $limit);
+                (new AdjustmentService())->createAdjustmentViaLedgerCronJob($blacklistIds, $whitelistIds, $limit);
                 break;
 
             case EntityConstant::BANK_TRANSFER:
-                (new BankTransferService())->createBankTransferViaLedgerCronJob($blacklistIds, $forcedMerchantIds, $limit);
+                (new BankTransferService())->createBankTransferViaLedgerCronJob($blacklistIds, $whitelistIds, $limit);
                 break;
 
             default:

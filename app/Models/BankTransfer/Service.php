@@ -855,9 +855,9 @@ class Service extends Base\Service
         return $this->saveRequestAndProcess($input, 'dashboard', false, $input);
     }
 
-    public function createBankTransferViaLedgerCronJob(array $blacklistIds, array $forcedMerchantIds, int $limit)
+    public function createBankTransferViaLedgerCronJob(array $blacklistIds, array $whitelistIds, int $limit)
     {
-        $this->core->createBankTransferViaLedgerCronJob($blacklistIds, $forcedMerchantIds, $limit);
+        $this->core->createBankTransferViaLedgerCronJob($blacklistIds, $whitelistIds, $limit);
     }
 
     public function modifyInvalidInputForPJSB(&$input)

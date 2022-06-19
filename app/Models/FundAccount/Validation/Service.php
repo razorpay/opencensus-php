@@ -173,8 +173,8 @@ class Service extends Base\Service
         return $response;
     }
 
-    public function createFundAccountValidationViaLedgerCronJob(array $blacklistIds, array $forcedMerchantIds, int $limit)
+    public function createFundAccountValidationViaLedgerCronJob(array $blacklistIds, array $whitelistIds, int $limit)
     {
-        $this->core->createFundAccountValidationViaLedgerCronJob($blacklistIds, $forcedMerchantIds, $limit);
+        $this->core->createFundAccountValidationViaLedgerCronJob($blacklistIds, $whitelistIds, $limit);
     }
 }
