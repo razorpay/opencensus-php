@@ -631,7 +631,7 @@ class PaymentCreateDCCTest extends TestCase
         $this->assertEquals("captured", $payment['status']);
         $this->assertEquals($payment['id'], 'pay_' . $paymentMeta['payment_id']);
         $this->assertEquals(null, $payment['convert_currency']);
-        $this->assertEquals(494000, $payment['base_amount']);
+        $this->assertEquals(492500, $payment['base_amount']);
         $this->assertEquals('USD', $cardCurrency);
         $this->assertEquals($cardCurrency, $paymentMeta['gateway_currency']);
         $this->assertEquals($usdAmount, $paymentMeta['gateway_amount']);
@@ -693,7 +693,7 @@ class PaymentCreateDCCTest extends TestCase
         $this->assertEquals("captured", $payment['status']);
         $this->assertEquals($payment['id'], 'pay_' . $paymentMeta['payment_id']);
         $this->assertEquals(null, $payment['convert_currency']);
-        $this->assertEquals(494000, $payment['base_amount']);
+        $this->assertEquals(492500, $payment['base_amount']);
         $this->assertEquals(50000, $payment['amount']);
         $this->assertEquals('EUR', $payment['currency']);
         $this->assertEquals($inrAmount, $paymentMeta['gateway_amount']);
@@ -756,7 +756,7 @@ class PaymentCreateDCCTest extends TestCase
         $this->assertEquals("captured", $payment['status']);
         $this->assertEquals($payment['id'], 'pay_' . $paymentMeta['payment_id']);
         $this->assertEquals(null, $payment['convert_currency']);
-        $this->assertEquals(494000, $payment['base_amount']);
+        $this->assertEquals(492500, $payment['base_amount']);
         $this->assertEquals($paymentMeta['gateway_amount'], $payment['amount']);
         $this->assertEquals($paymentMeta['gateway_currency'], $payment['currency']);
 
