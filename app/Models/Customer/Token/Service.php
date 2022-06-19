@@ -940,7 +940,7 @@ class Service extends Base\Service
             }
             else
             {
-                $response['status'] = ($token->isExpired() === true) ? 'deactivated' : 'activated';
+                $response['status'] = ($token->isExpired() === true) ? 'deactivated' : 'active';
 
                 $response['service_provider_tokens'][0]['provider_data'] = [
                     'token_reference_number'     => $token->card->getVaultToken(),

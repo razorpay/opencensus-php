@@ -180,7 +180,7 @@ class CardVault extends BaseCardVault
 
         $response['token'] = $input['token'];
         $response['fingerprint'] = strrev($token);
-        $response['status'] = 'activated';
+        $response['status'] = 'active';
 
         $response['service_providers'] = [
             [
