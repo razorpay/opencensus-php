@@ -1318,5 +1318,10 @@ return [
 
     'tls_config' => [
         'offline_challan_validate' => env('OFFLINE_CHALLAN_VALIDATE_DOMAINS')
-    ]
+    ],
+
+    'whatcms' => [
+        'base_url'      => env('WHATCMS_BASE_URL'),
+        'secret'        => env('WHATCMS_API_KEY'),
+    ],
 ];

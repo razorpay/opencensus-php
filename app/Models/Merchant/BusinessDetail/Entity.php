@@ -20,6 +20,7 @@ class Entity extends Base\PublicEntity
     const ID                            = 'id';
     const MERCHANT_ID                   = 'merchant_id';
     const WEBSITE_DETAILS               = 'website_details';
+    const PLUGIN_DETAILS                = 'plugin_details';
     const APP_URLS                      = 'app_urls';
     const BLACKLISTED_PRODUCTS_CATEGORY = 'blacklisted_products_category';
     const BUSINESS_PARENT_CATEGORY      = 'business_parent_category';
@@ -27,13 +28,14 @@ class Entity extends Base\PublicEntity
     const UPDATED_AT                    = 'updated_at';
     const AUDIT_ID                      = 'audit_id';
 
-    protected $entity     = 'merchant_business_detail';
+    protected $entity = 'merchant_business_detail';
 
     protected $generateIdOnCreate = true;
 
-    protected $public             = [
+    protected $public = [
         self::MERCHANT_ID,
         self::WEBSITE_DETAILS,
+        self::PLUGIN_DETAILS,
         self::APP_URLS,
         self::BLACKLISTED_PRODUCTS_CATEGORY,
         self::BUSINESS_PARENT_CATEGORY,
@@ -41,9 +43,10 @@ class Entity extends Base\PublicEntity
         self::UPDATED_AT
     ];
 
-    protected $fillable           = [
+    protected $fillable = [
         self::MERCHANT_ID,
         self::WEBSITE_DETAILS,
+        self::PLUGIN_DETAILS,
         self::APP_URLS,
         self::BLACKLISTED_PRODUCTS_CATEGORY,
         self::CREATED_AT,
@@ -52,15 +55,17 @@ class Entity extends Base\PublicEntity
         self::AUDIT_ID
     ];
 
-    protected $casts              = [
+    protected $casts = [
         self::WEBSITE_DETAILS => 'array',
         self::APP_URLS        => 'array',
+        self::PLUGIN_DETAILS  => 'array',
     ];
 
-    protected $defaults           = [
+    protected $defaults = [
         self::WEBSITE_DETAILS                => [],
         self::APP_URLS                       => null,
         self::BLACKLISTED_PRODUCTS_CATEGORY  => null,
+        self::PLUGIN_DETAILS                 => null,
     ];
 
     public function getId()
@@ -157,6 +162,16 @@ class Entity extends Base\PublicEntity
     public function getWebsiteCancellation()
     {
         return isset($this->getAttribute(self::WEBSITE_DETAILS)[Constants::CANCELLATION]) ? $this->getAttribute(self::WEBSITE_DETAILS)[Constants::CANCELLATION] : null;
+    }
+
+    public function getPluginDetails()
+    {
+        return $this->getAttribute(self::PLUGIN_DETAILS);
+    }
+
+    public function setPluginDetail(array $pluginDetails)
+    {
+        return $this->setAttribute(self::PLUGIN_DETAILS, $pluginDetails);
     }
 
     public function setBlacklistedProductsCategory($value)

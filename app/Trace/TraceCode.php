@@ -4400,6 +4400,12 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SALESFORCE_CA_EVENT_ERROR                                = 'SALESFORCE_CA_EVENT_ERROR';
     const FILTER_RESPONSE_BASED_ON_ROLE                            = 'FILTER_RESPONSE_BASED_ON_ROLE';
 
+    //whatcms integration
+    const WHATCMS_API_REQUEST                 = 'WHATCMS_API_REQUEST';
+    const WHATCMS_API_RESPONSE                = 'WHATCMS_API_RESPONSE';
+    const WHATCMS_INTEGRATION_ERROR           = 'WHATCMS_INTEGRATION_ERROR';
+    const WHATCMS_RESPONSE                    = 'WHATCMS_RESPONSE';
+
     // Banking account
     const BANKING_ACCOUNT_USER_PERMISSION_ERROR                = 'BANKING_ACCOUNT_USER_PERMISSION_ERROR';
     const BANKING_ACCOUNT_EDIT                                 = 'BANKING_ACCOUNT_EDIT';

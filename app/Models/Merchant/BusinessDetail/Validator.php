@@ -32,6 +32,7 @@ class Validator extends Base\Validator
         Entity::APP_URLS.'.'.Constants::APPSTORE_URL                          => 'sometimes|custom:active_url|max:255|nullable',
         Entity::BLACKLISTED_PRODUCTS_CATEGORY                                 => 'sometimes|string|max:255|nullable',
         Entity::BUSINESS_PARENT_CATEGORY                                      => 'sometimes|string|nullable',
+        Entity::PLUGIN_DETAILS                                                => 'sometimes|array',
     ];
 
     protected static $editRules   = [
@@ -59,5 +60,6 @@ class Validator extends Base\Validator
         Entity::APP_URLS.'.'.Constants::APPSTORE_URL                          => 'sometimes|custom:active_url|max:255|nullable',
         Entity::BLACKLISTED_PRODUCTS_CATEGORY                                 => 'sometimes|string|max:255|nullable',
         Entity::BUSINESS_PARENT_CATEGORY                                      => 'sometimes|string|nullable',
+        Entity::PLUGIN_DETAILS                                                => 'sometimes|array',
     ];
 }

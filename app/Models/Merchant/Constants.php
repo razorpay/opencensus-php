@@ -1030,6 +1030,7 @@ final class Constants
     const CANCELLATION_POLICY   = 'Cancellation Policy';
     const PLAYSTORE_URL     = 'Playstore URL';
     const APPSTORE_URL      = 'Appstore URL';
+    const WEBSITE           = 'website';
 
     const BUSINESS_DESCRIPTION = 'Business Description';
     const BUSINESS_MODEL       = 'Business Model';

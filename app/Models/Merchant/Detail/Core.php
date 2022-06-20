@@ -39,6 +39,7 @@ use RZP\Models\State\Reason;
 use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Metric;
+use RZP\Service\WhatCmsService;
 use RZP\Constants\IndianStates;
 use RZP\Models\Merchant\AutoKyc;
 use RZP\Models\MerchantRiskAlert;
@@ -257,7 +258,7 @@ class Core extends Base\Core
 
         $this->handleBusinessDetail($input, $merchant, $startTime);
 
-        if (empty($input['business_website']) === false)
+        if (empty($input[Entity::BUSINESS_WEBSITE]) === false)
         {
             //Calling Profanity Checker during onboarding
             (new MRS())->enqueueProfanityCheckerRequest($merchant->getId(), 'site', 'merchant', $merchant->getId(), $input['business_website'], DetailConstants:: MRS_PROFANITY_CHECKER_DEPTH, Constants::MERCHANT_ONBOARDING);
@@ -440,6 +441,8 @@ class Core extends Base\Core
 
         $businessDetailsInput = array_merge($businessDetailsInput, $this->handleWebsiteDetails($input));
 
+        $businessDetailsInput = array_merge($businessDetailsInput, $this->handlePluginDetails($merchant, $input));
+
         $businessDetailsInput = array_merge($businessDetailsInput, $this->handleBusinessDetailFields($input));
 
         if (empty($businessDetailsInput) === true)
@@ -509,6 +512,42 @@ class Core extends Base\Core
                 $businessDetailsInput[BusinessDetailEntity::WEBSITE_DETAILS][$websiteDetail] = $input[$websiteDetail];
 
                 unset($input[$websiteDetail]);
+            }
+        }
+
+        return $businessDetailsInput;
+    }
+
+    public function handlePluginDetails(Merchant\Entity $merchant, &$input): array
+    {
+        $whatcmsExpt = (new Merchant\Core)->isRazorxExperimentEnable(
+            $merchant->getId(),
+            RazorxTreatment::WHATCMS_EXPERIMENT);
+
+        $businessDetailsInput = [];
+
+        if ((empty($input[Entity::BUSINESS_WEBSITE]) === false) && ($whatcmsExpt === true))
+        {
+            $businessWebsite = $input[Entity::BUSINESS_WEBSITE];
+
+            $merchantBusinessDetail = $merchant->merchantBusinessDetail;
+
+            $pluginDetails = null;
+
+            if($merchantBusinessDetail !== null)
+            {
+                $pluginDetails = $merchantBusinessDetail->getPluginDetails() ?? [];
+            }
+
+            $domain = (new Merchant\TLDExtract)->getEffectiveTLDPlusOne($businessWebsite);
+
+            if(isset($pluginDetails[$domain]) === false)
+            {
+                $pluginType = (new WhatCmsService())->checkForPluginType($merchant->getId(), $input[Entity::BUSINESS_WEBSITE]);
+
+                $businessDetailsInput[BusinessDetailEntity::PLUGIN_DETAILS] = [
+                    $domain => $pluginType
+                ];
             }
         }
 
@@ -1810,6 +1849,40 @@ class Core extends Base\Core
      *
      * @return array
      */
+    public function getPluginData(Merchant\Entity $merchant, Merchant\Detail\Entity $merchantDetail, $pluginData){
+        $data = [];
+
+        $businessWebsite = $merchant->getWebsite() ?? '';
+
+        $businessWebsite = (new Merchant\TLDExtract)->getEffectiveTLDPlusOne($businessWebsite);
+
+        $additionalWebsites = $merchantDetail->getAdditionalWebsites() ?? [];
+
+        $additionalWebsitesData = [];
+
+        foreach ($additionalWebsites as $additionalWebsite)
+        {
+            $res = [];
+
+            $additionalWebsite = (new Merchant\TLDExtract)->getEffectiveTLDPlusOne($additionalWebsite);
+
+            $res["website"]     = $additionalWebsite;
+
+            $res["plugin_type"] = isset($pluginData[$additionalWebsite]) ?  WhatCmsService::getIndexFromKey($pluginData[$additionalWebsite]) : 0;
+
+            array_push($additionalWebsitesData, $res);
+        }
+
+        $data[Entity::BUSINESS_WEBSITE] = [
+            "website"     => $businessWebsite,
+            "plugin_type" => isset($pluginData[$businessWebsite]) ?  WhatCmsService::getIndexFromKey($pluginData[$businessWebsite]) : 0
+        ];
+
+        $data[Entity::ADDITIONAL_WEBSITES] = $additionalWebsitesData;
+
+        return $data;
+    }
+
     public function getUpdatedKycClarificationReasons(array $input, string $merchantId, ?string $source = null): array
     {
         $merchantDetails = $this->repo->merchant_detail->findByPublicId($merchantId);
@@ -3413,6 +3486,15 @@ class Core extends Base\Core
                 'isUnderReview' => !$isDedupeBlocked
             ];
 
+            $pluginDetails = [];
+
+            if($merchantBusinessDetails !== null)
+            {
+                $pluginDetails = $merchantBusinessDetails->getPluginDetails() ?? [];
+            }
+
+            $pluginData = $this->getPluginData($merchant, $merchantDetails, $pluginDetails);
+
             $response[Merchant\Entity::ACTIVATED]                     = (int) $merchant->isActivated();
             $response[Merchant\Entity::LIVE]                          = $merchant->isLive();
             $response[Merchant\Entity::INTERNATIONAL]                 = $merchant->isInternational();
@@ -3427,6 +3509,8 @@ class Core extends Base\Core
             $response['isHardLimitReached']                           = empty($hardEscalationLevel4) ? false : true;
             $response['activationStatusChangeLogs']                   = $this->getStatusChangeLogs($merchant);
             $response[Entity::MERCHANT_BUSINESS_DETAIL]               = $merchantBusinessDetails;
+            $response['isPluginMerchant']                             = $pluginData[Entity::BUSINESS_WEBSITE]['plugin_type'] == 0 ? false : true;
+            $response['pluginData']                                   = $pluginData;
             $response[BusinessDetailEntity::BUSINESS_PARENT_CATEGORY] = $merchantBusinessDetails[BusinessDetailEntity::BUSINESS_PARENT_CATEGORY];
             $response[Entity::PROMOTER_PAN_NAME_SUGGESTED]            = $merchantDetails->getPromoterPanNameSuggested();
             $response[Entity::BUSINESS_NAME_SUGGESTED]                = $merchantDetails->getBusinessNameSuggested();
@@ -4101,7 +4185,7 @@ class Core extends Base\Core
 
         if (($isWhitelisted === true) and
             ($isImpersonated === false) and
-            (in_array($currentActivationStatus, $excludeActivationStatusList) === false) and 
+            (in_array($currentActivationStatus, $excludeActivationStatusList) === false) and
             ($this->hasRiskTags($merchantDetails->merchant) === false))
         {
             return Status::ACTIVATED_MCC_PENDING;
@@ -4421,6 +4505,14 @@ class Core extends Base\Core
         $domain = (new Merchant\TLDExtract)->getEffectiveTLDPlusOne($input[Entity::ADDITIONAL_WEBSITE]);
 
         $merchantCore->addDomainInWhitelistedDomain($merchant, $domain);
+
+        $websiteInput = [
+            Entity::BUSINESS_WEBSITE => $input[Entity::ADDITIONAL_WEBSITE]
+        ];
+
+        $businessDetailsInput = $this->handlePluginDetails($merchant, $websiteInput);
+
+        (new Service())->saveBusinessDetailsForMerchant($merchant->getId(), $businessDetailsInput);
 
         return $this->repo->transactionOnLiveAndTest(function() use ($merchantDetails, $input, $merchant) {
 

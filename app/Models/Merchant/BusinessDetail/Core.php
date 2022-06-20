@@ -57,6 +57,16 @@ class Core extends Base\Core
                         unset($input[Constants::TXN_URL]);
                     }
 
+                    if (empty($input[BusinessDetailEntity::PLUGIN_DETAILS]) === false)
+                    {
+                        $existingPluginDetails = $businessDetail->getPluginDetails() ?? [];
+
+                        $input[BusinessDetailEntity::PLUGIN_DETAILS] = array_merge(
+                            $input[BusinessDetailEntity::PLUGIN_DETAILS],
+                            $existingPluginDetails
+                        );
+                    }
+
                     $businessDetail->edit($input, MerchantConstants::EDIT);
 
                     $this->repo->merchant_business_detail->saveOrFail($businessDetail);

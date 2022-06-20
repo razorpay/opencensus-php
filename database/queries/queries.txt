@@ -6881,3 +6881,5 @@ CREATE TABLE IF NOT EXISTS  merchant_1cc_comments (
 	KEY merchant_1cc_comments_merchant_id_index (merchant_id),
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
 
+ALTER TABLE merchant_business_details
+   ADD COLUMN plugin_details json DEFAULT NULL;

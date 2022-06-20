@@ -28,6 +28,7 @@ use RZP\Constants\Timezone;
 use RZP\Constants\IndianStates;
 use RZP\Models\Promotion\Event;
 use RZP\Models\Merchant\Account;
+use RZP\Service\WhatCmsService;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Merchant\Constants;
 use RZP\Models\Base\UniqueIdEntity;
@@ -79,6 +80,8 @@ use RZP\Notifications\Dashboard\Handler as DashboardNotificationHandler;
 use RZP\Models\Workflow\Observer\Constants as WorkflowObserverConstants;
 use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstants;
 use RZP\Notifications\Dashboard\Constants as DashboardNotificationConstants;
+use RZP\Models\Merchant\BusinessDetail\Constants as BusinessDetailConstants;
+use RZP\Models\Merchant\BusinessDetail\Entity as BusinessDetailEntity;
 use RZP\Models\Merchant\AutoKyc\Bvs\BvsClient\BvsValidationClient;
 
 class Service extends Base\Service
@@ -1130,6 +1133,14 @@ class Service extends Base\Service
                 DashboardNotificationConstants::UPDATED_BUSINESS_WEBSITE   => $newUrl
             ]
         ];
+
+        $websiteInput = [
+            Entity::BUSINESS_WEBSITE => $newUrl
+        ];
+
+        $businessDetailsInput = $this->core->handlePluginDetails($this->merchant, $websiteInput);
+
+        (new BusinessDetail\Service())->saveBusinessDetailsForMerchant($this->merchant->getId(), $businessDetailsInput);
 
         if($event === DashboardEvents::MERCHANT_BUSINESS_WEBSITE_UPDATE)
         {

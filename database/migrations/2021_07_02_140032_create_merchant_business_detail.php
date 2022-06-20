@@ -27,6 +27,9 @@ class CreateMerchantBusinessDetail extends Migration
             $table->json(BusinessDetailEntity::WEBSITE_DETAILS)
                   ->nullable();
 
+            $table->json(BusinessDetailEntity::PLUGIN_DETAILS)
+                ->nullable();
+
             $table->json(BusinessDetailEntity::APP_URLS)
                 ->nullable();
 
