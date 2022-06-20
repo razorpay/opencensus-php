@@ -553,6 +553,9 @@ class Entity
 
     const PAYMENTS_NBPLUS_PAYLATER_GATEWAY         = 'payments_nbplus.paylater_gateway';
 
+    const VENDOR_PAYMENTS_VENDOR_PAYMENTS         = 'vendor_payments.vendor_payments';
+    const VENDOR_PAYMENTS_ICICI_TAX_PAY_REQUESTS  = 'vendor_payments.icici_tax_pay_requests';
+
     // Service: Payments UPi
     const PAYMENTS_UPI_VPA              = 'payments_upi_vpa';
     const PAYMENTS_UPI_BANK_ACCOUNT     = 'payments_upi_bank_account';
@@ -1339,7 +1342,7 @@ class Entity
         self::PAYMENT_FRAUD              => \RZP\Models\Payment\Fraud::class,
 
         self::MERCHANT_1CC_COMMENTS      => \RZP\Models\Merchant\Merchant1ccComments::class,
-        
+
         self::MERCHANT_OTP_VERIFICATION_LOGS       => \RZP\Models\Merchant\Product\Otp::class,
         self::ADDRESS_CONSENT_1CC               => \RZP\Models\Address\AddressConsent1cc::class,
 
@@ -1568,8 +1571,10 @@ class Entity
         self::PAYOUTS_PAYOUT_SOURCES => \RZP\Services\PayoutService\AdminFetch::class,
 
         self::GOVERNOR_RULES        => \RZP\Services\GovernorService::class,
-        self::GOVERNOR_RULE_GROUPS  => \RZP\Services\GovernorService::class
+        self::GOVERNOR_RULE_GROUPS  => \RZP\Services\GovernorService::class,
 
+        self::VENDOR_PAYMENTS_VENDOR_PAYMENTS                       => \RZP\Services\VendorPayments\Service::class,
+        self::VENDOR_PAYMENTS_ICICI_TAX_PAY_REQUESTS                => \RZP\Services\VendorPayments\Service::class,
     ];
 
     protected static $syncedInLiveAndTest = [

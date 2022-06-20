@@ -2,6 +2,7 @@
 
 namespace RZP\Services\VendorPayments;
 
+use App;
 use Mail;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
@@ -63,6 +64,8 @@ class Service
     const TRIGGER_VENDOR_INVITE         = 'TriggerEiVendorInvitationEmail';
     const DISABLE_VENDOR_PORTAL         = 'DisableVendorPortal';
     const ENABLE_VENDOR_PORTAL          = 'EnableVendorPortal';
+    const FETCH_ENTITY                  = 'FetchEntity';
+    const FETCH_ENTITY_BY_ID            = 'FetchEntityById';
 
     const BASE_PATH = 'twirp/vendorpayments.Vendorpayments';
 
@@ -100,8 +103,13 @@ class Service
 
     protected $config;
 
-    public function __construct($app)
+    public function __construct($app = null)
     {
+        if (empty($app) == true)
+        {
+            $app = App::getFacadeRoot();
+        }
+
         $this->app = $app;
 
         $this->trace = $app['trace'];
@@ -658,6 +666,58 @@ class Service
         ];
 
         return $this->makeRequest($merchant, $url, $data, [], 'POST');
+    }
+
+    public function fetchMultiple(string $entity, array $input)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::FETCH_ENTITY);
+
+        $data = [];
+
+        $data['entity_type'] = $entity;
+
+        $data['skip'] = $input['skip'];
+
+        $data['count'] = $input['count'];
+
+        if (isset($input['from']))
+        {
+            $data['from'] = $input['from'];
+        }
+
+        if (isset($input['to']))
+        {
+            $data['to'] = $input['to'];
+        }
+
+        $response = $this->makeRequest(null, $url, $data, [], 'POST');
+
+        if (isset($response['data']))
+        {
+            return $response['data'];
+        }
+
+        return [];
+    }
+
+    public function fetch(string $entity, string $id, array $input)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::FETCH_ENTITY_BY_ID);
+
+        $data = [];
+
+        $data['entity_type'] = $entity;
+
+        $data['entity_id'] = $id;
+
+        $response = $this->makeRequest(null, $url, $data, [], 'POST');
+
+        if (isset($response['data']))
+        {
+            return $response['data'];
+        }
+
+        return [];
     }
 
     protected function makeRequest(MerchantEntity $merchant = null,

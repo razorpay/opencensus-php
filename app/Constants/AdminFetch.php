@@ -1627,6 +1627,10 @@ class AdminFetch
                 ],
             ],
 
+            Entity::VENDOR_PAYMENTS_VENDOR_PAYMENTS => [
+            ],
+//            Entity::VENDOR_PAYMENTS_ICICI_TAX_PAY_REQUESTS => [
+//            ]
         ];
     }
 
