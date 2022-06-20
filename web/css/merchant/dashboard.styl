@@ -1,205 +1,205 @@
 .Dashboard {
   .h1, h4 {
-    margin: 0;
-    font-weight: 300;
+    margin 0 
+    font-weight 300 
   }
 
   .panel {
-    box-shadow: 0 1px 1px rgba(0,0,0,.05);
+    box-shadow 0 1px 1px rgba(0,0,0,.05) 
   }
 }
 
 .clearfix:after {
-  display: table;
-  content: '';
-  clear: both;
+  display table 
+  content '' 
+  clear both 
 }
 
 .webkit-sec {
-  -webkit-text-security: disc;
+  -webkit-text-security disc 
 }
 
 .InfoCard {
-  padding-top: 15px;
-  padding-bottom: 15px;
+  padding-top 15px 
+  padding-bottom 15px 
 
   .LoaderDots span {
-    font-size: 28px;
+    font-size 28px 
   }
 }
 
 .InfoCard__value {
-  height: 36px;
-  line-height: 36px;
+  height 36px 
+  line-height 36px 
 }
 
 .InfoCard__label {
-  font-size: 12px;
-  color: rgb(214, 211, 230);
+  font-size 12px 
+  color rgb(214, 211, 230) 
 }
 
 .WidgetContainer {
-  height: 304px;
-  margin-bottom: 20px;
+  height 304px 
+  margin-bottom 20px 
 
   h4 {
-    margin-bottom: 10px;
+    margin-bottom 10px 
   }
 
   .panel,
   .panel-body {
-    height: 100%;
-    position: relative;
+    height 100% 
+    position relative 
   }
 
   &.Transaction__Vol {
-    margin-right: 30%;
+    margin-right 30% 
     @media (max-width $screen-sm-min) {
-      margin-right: 0;
+      margin-right 0 
     }
   }
 
   &.Transaction__Types {
-    display: inline-block;
-    float: right;
-    width: 30%;
-    color: #58666e;
+    display inline-block 
+    float right 
+    width 30% 
+    color #58666e 
     @media (max-width $screen-sm-min) {
-      width: 100%;
-      float: none;
+      width 100% 
+      float none 
     }
 
     .panel-body {
-      background-color: #e4eaec;
+      background-color #e4eaec 
     }
   }
 }
 
 .RecentTxns .WidgetContainer {
-  height: auto;
+  height auto 
 
   .panel-body {
-    min-height: 175px;
+    min-height 175px 
   }
 }
 
 .EntityTable {
   code {
-    padding: 0;
+    padding 0 
   }
 }
 
 .report-wrapper {
-  background-color: #fff;
-  padding: 0;
-  float: none;
-  padding-top: 8px;
-  margin: 0px auto;
+  background-color #fff 
+  padding 0 
+  float none 
+  padding-top 8px 
+  margin 0px auto 
 
 // This is only needed for desktop
-  @media(min-width: 992px) {
+  @media(min-width 992px) {
     &:before {
-      content: '';
-      display: block;
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      left: 33.33%;
-      border-left: 1px solid #DEE5E7;
+      content '' 
+      display block 
+      position absolute 
+      top 0 
+      bottom 0 
+      left 33.33% 
+      border-left 1px solid #DEE5E7 
     }
   }
 
   &:after {
-    clear: both;
-    content: '';
-    display: table;
+    clear both 
+    content '' 
+    display table 
   }
 
   .report-list-panel {
     .title {
-      color: #7f7f7f;
-      font-size: 12px;
+      color #7f7f7f 
+      font-size 12px 
     }
     &--mobile {
-      padding: 16px 16px 0;
+      padding 16px 16px 0 
 
       .title {
-        padding: 0 0 8px 0;
+        padding 0 0 8px 0 
       }
     }
     &--desktop {
-      padding: 0;
-      padding-top: 16px;
-      padding-bottom: 8px;
+      padding 0 
+      padding-top 16px 
+      padding-bottom 8px 
 
       .title {
-        padding: 0 0 8px 24px;
+        padding 0 0 8px 24px 
       }
     }
   }
 
   .report-generate-panel {
-    padding: 11px 24px 24px;
-    min-height: 300px;
+    padding 11px 24px 24px 
+    min-height 300px 
 
     .title {
-      color: #7f7f7f;
-      font-size: 12px;
-      padding-bottom: 8px;
+      color #7f7f7f 
+      font-size 12px 
+      padding-bottom 8px 
     }
 
     .account {
-      line-height: 36px;
+      line-height 36px 
     }
 
     .custom-date {
-      position: relative;
+      position relative 
 
       .custom-icon {
-        right: 10px;
-        display: inline-block;
-        height: 100%;
-        line-height: 2.2;
+        right 10px 
+        display inline-block 
+        height 100% 
+        line-height 2.2 
       }
     }
 
     .form-heading {
-      font-weight: 600;
-      border-bottom: 1px solid #e2e8ea;
-      padding-bottom: 6px;
-      margin-bottom: 24px;
-      font-size: 16px;
+      font-weight 600 
+      border-bottom 1px solid #e2e8ea 
+      padding-bottom 6px 
+      margin-bottom 24px 
+      font-size 16px 
     }
 
     .form-element {
-      margin-bottom 16px;
+      margin-bottom 16px 
 
     //<select> has default radius which can't be changed using CSS. So, set parent as .form-control and don't add .form-control to <select>
       .fix-select {
-        background: transparent;
-        border: none;
-        margin-left: -5px;
-        width: 100%;
+        background transparent 
+        border none 
+        margin-left -5px 
+        width 100% 
       }
 
       &:last-child {
-        margin-bottom: 4px;
+        margin-bottom 4px 
       }
 
       &:after {
-        clear: both;
-        content: '';
-        display: table;
+        clear both 
+        content '' 
+        display table 
       }
 
       footer {
-        padding: 12px 0 0 0;
+        padding 12px 0 0 0 
       }
 
       [class^='col-'] {
-        padding: 0;
+        padding 0 
         &:not(:last-child) {
-          margin-right: 16px;
+          margin-right 16px 
         }
       }
     }
@@ -208,106 +208,106 @@
 
 .radio-group-container{
   label {
-    padding: 5px 15px 5px 0;
+    padding 5px 15px 5px 0 
     input{
-      margin-right: 5px;
+      margin-right 5px 
     }
   }
   .radio-error{
-    border: 1px solid red;
+    border 1px solid red 
   }
   span.error{
-    font-size: 11px;
-    color: red;
-    float: right;
+    font-size 11px 
+    color red 
+    float right 
   }
 }
 
 .custom-date-error{
   input{
-    border:1px solid red;
+    border:1px solid red 
   }
   span.error{
-    font-size: 11px;
-    color: red;
-    float: right;
+    font-size 11px 
+    color red 
+    float right 
   }
 }
 
 .custom-icon {
-  position: absolute;
-  z-index: 1;
-  color: #e0e0e0;
-  pointer-events: none;
+  position absolute 
+  z-index 1 
+  color #e0e0e0 
+  pointer-events none 
 }
 
 .typeAheadSkin {
-  position: absolute;
-  z-index: 2;
-  background-color: rgb(255, 255, 255);
-  top: 10px;
-  width: 87%;
-  margin-left: 30px;
-  pointer-events none;
-  font-size: 12px;
+  position absolute 
+  z-index 2 
+  background-color rgb(255, 255, 255) 
+  top 10px 
+  width 87% 
+  margin-left 30px 
+  pointer-events none 
+  font-size 12px 
 
   .option-title {
-    margin-right: 5px
-    max-width: 33%
-    text-overflow: ellipsis
-    display: inline-block
-    white-space: nowrap
-    overflow: hidden
-    vertical-align: middle
+    margin-right 5px
+    max-width 33%
+    text-overflow ellipsis
+    display inline-block
+    white-space nowrap
+    overflow hidden
+    vertical-align middle
   }
 }
 
 
 .transfers-powerselect + .typeAheadSkin {
-  margin-left: 10px;
+  margin-left 10px 
 }
 
 .auto-complete-search {
-  position: relative
+  position relative
 
   .typeAheadSkin {
-    margin-left: 2px;
-    padding-left: 6px;
-    width: 80%;
+    margin-left 2px 
+    padding-left 6px 
+    width 80% 
   }
 }
 
 .custom-select .custom-icon {
-  top: 11px;
-  left: 8px;
-  font-size: 20px;
+  top 11px 
+  left 8px 
+  font-size 20px 
 }
 
 .custom-select .PowerSelect__Trigger {
-  height: 35px;
+  height 35px 
 }
 
 // Onboarding Card
 
 .media.onboarding-card.new-features {
   > .media-body {
-    max-width: 100%;
-    padding: 24px;
+    max-width 100% 
+    padding 24px 
   }
 }
 .onboarding-illustration {
 
-  width: 280px;
-  height: 310px;
-  position: absolute;
-  top: 0;
-  right: 0;
-  background: transparent url("assets/onboarding.svg") 0 0 no-repeat;
-  opacity: 1;
+  width 280px 
+  height 310px 
+  position absolute 
+  top 0 
+  right 0 
+  background transparent url("assets/onboarding.svg") 0 0 no-repeat 
+  opacity 1 
 
-  @media (max-width: 1234px) {
+  @media (max-width 1234px) {
 
-    opacity: 0.7;
+    opacity 0.7 
   }
 }
 
@@ -315,212 +315,212 @@
 
   .onboarding-card-wrapper-content {
 
-    width: 100%;
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 1s ease-in-out;
+    width 100% 
+    max-height 0 
+    overflow hidden 
+    transition max-height 1s ease-in-out 
   }
 
   &.expand {
 
     .onboarding-card-wrapper-content {
 
-      max-height: 700px;
-      transition: max-height 1s ease-in-out;
+      max-height 700px 
+      transition max-height 1s ease-in-out 
     }
   }
 
   &.old-analytics {
 
-    margin-bottom: 20px;
+    margin-bottom 20px 
   }
 }
 
 body.analytics-v2-active .onboarding-card-wrapper {
 
-  padding: 20px;
+  padding 20px 
 }
 
 .onboarding-card.media {
-  background-color: #5D89E5;
-  padding: 54px 48px 54px 48px;
-  box-shadow: 0 0 8px 0 rgba(0,0,0,0.16);
-  border-radius: 2px;
-  position: relative;
-  transition: 0.1s linear;
-  box-shadow: none;
-  background: linear-gradient(223.96deg, #5D89E5 0%, #3059C0 100%);
-  color: white;
+  background-color #5D89E5 
+  padding 54px 48px 54px 48px 
+  box-shadow 0 0 8px 0 rgba(0,0,0,0.16) 
+  border-radius 2px 
+  position relative 
+  transition 0.1s linear 
+  box-shadow none 
+  background linear-gradient(223.96deg, #5D89E5 0%, #3059C0 100%) 
+  color white 
 
   .close {
-    position: absolute;
-    top: 16px;
-    right: 16px;
-    font-size: 18px;
-    color: #ffffff;
-    opacity: 0.8;
+    position absolute 
+    top 16px 
+    right 16px 
+    font-size 18px 
+    color #ffffff 
+    opacity 0.8 
 
     &:hover {
 
-      opacity: 1;
+      opacity 1 
     }
   }
 
   > .media-left {
-    vertical-align: middle;
-    @media(max-width: 480px) {
-      display: none;
+    vertical-align middle 
+    @media(max-width 480px) {
+      display none 
     }
 
     .media-object {
-      width: 320px;
-      min-height: 200px;
-      max-height: 220px;
+      width 320px 
+      min-height 200px 
+      max-height 220px 
     }
   }
 
   > .media-body {
-    width: 1px;
-    padding: 0;
-    max-width: 800px;
-    min-height: 200px;
-    position: relative;
-    z-index: 1;
+    width 1px 
+    padding 0 
+    max-width 800px 
+    min-height 200px 
+    position relative 
+    z-index 1 
 
-    @media (max-width: 974px) {
+    @media (max-width 974px) {
 
-      width: 100%;
+      width 100% 
     }
 
     p {
-      margin-bottom: 16px;
+      margin-bottom 16px 
     }
 
     ul.row {
-      margin-bottom: 8px;
-      padding-left: 30px;
+      margin-bottom 8px 
+      padding-left 30px 
 
       > li {
-        padding-left: 0;
-        margin-bottom: 8px;
+        padding-left 0 
+        margin-bottom 8px 
       }
     }
 
     .btn {
-      padding-left: 12px;
-      font-size: 14px;
-      border-radius: 2px;
-      margin-top: 12px;
-      background-color: #fff;
-      color: #528ff0;
-      border: none;
-      box-shadow: 0 1px 3px 0 rgba(0,0,0,0.14);
+      padding-left 12px 
+      font-size 14px 
+      border-radius 2px 
+      margin-top 12px 
+      background-color #fff 
+      color #528ff0 
+      border none 
+      box-shadow 0 1px 3px 0 rgba(0,0,0,0.14) 
 
       &:hover {
 
-        box-shadow: inset 0 1px 3px 0 rgba(0,0,0,0.24);
+        box-shadow inset 0 1px 3px 0 rgba(0,0,0,0.24) 
       }
 
       > span {
-        margin-right: 8px;
+        margin-right 8px 
       }
     }
   }
 
   div.new-products-row {
 
-    display: flex;
-    flex-direction: row;
-    align-items: stretch;
+    display flex 
+    flex-direction row 
+    align-items stretch 
 
     div.product-item {
-      padding-left: 10px;
-      flex: 1;
+      padding-left 10px 
+      flex 1 
       &:first-child {
-        padding-left: 0;
+        padding-left 0 
       }
     }
 
     div.media {
 
-      height: 100%;
-      color: #58666e;
-      border-radius: 2px;
-      background-color: #FAFAFA;
-      padding: 14px;
-      border: 1px solid #D8E1E3;
-      vertical-align: top;
+      height 100% 
+      color #58666e 
+      border-radius 2px 
+      background-color #FAFAFA 
+      padding 14px 
+      border 1px solid #D8E1E3 
+      vertical-align top 
 
       &:hover {
-        border: 1px solid #BAACEA;
-        background-color: #FAFBFF;
+        border 1px solid #BAACEA 
+        background-color #FAFBFF 
       }
 
       .media-object {
-        width: 31px;
-        height: 31px;
+        width 31px 
+        height 31px 
       }
     }
   }
 
   .media-heading {
-    font-size: 24px;
-    line-height: 36px;
-    font-weight: bold;
-    margin-bottom: 16px;
+    font-size 24px 
+    line-height 36px 
+    font-weight bold 
+    margin-bottom 16px 
 
     .highlight {
 
-      display: inline-block;
-      padding-bottom: 20px;
-      border-bottom: 4px solid #96C5FF;
+      display inline-block 
+      padding-bottom 20px 
+      border-bottom 4px solid #96C5FF 
     }
 
-    @media(max-width: 778px) {
+    @media(max-width 778px) {
 
       .highlight {
 
-        padding-bottom: 0;
-        border-bottom: 0;
+        padding-bottom 0 
+        border-bottom 0 
       }
     }
   }
 
   .onboarding-cta {
 
-    color: $primary-color;
+    color $primary-color 
   }
 
   .onboarding-checklist-item {
 
-    display: table;
-    width: 100%;
-    padding-bottom: 16px;
+    display table 
+    width 100% 
+    padding-bottom 16px 
 
     > div {
 
-      display: table-cell;
-      vertical-align: top;
+      display table-cell 
+      vertical-align top 
 
       &.icon-cont {
 
-        width: 20px;
-        text-align: center;
-        padding-right: 6px;
+        width 20px 
+        text-align center 
+        padding-right 6px 
 
         > i {
 
-          display: inline-block;
-          width: 16px;
-          height: 16px;
-          line-height: 12px;
-          border-radius: 50%;
-          background-color: rgba(255, 255, 255, 0.2);
+          display inline-block 
+          width 16px 
+          height 16px 
+          line-height 12px 
+          border-radius 50% 
+          background-color rgba(255, 255, 255, 0.2) 
 
           &:before {
 
-            font-size: 12px;
-            vertical-align: middle;
+            font-size 12px 
+            vertical-align middle 
           }
         }
       }
@@ -529,12 +529,12 @@ body.analytics-v2-active .onboarding-card-wrapper {
 
   .onboarding-desc {
 
-    margin-bottom: 24px;
+    margin-bottom 24px 
 
     a {
 
-      color: inherit;
-      text-decoration: underline;
+      color inherit 
+      text-decoration underline 
     }
   }
 
@@ -542,31 +542,31 @@ body.analytics-v2-active .onboarding-card-wrapper {
 
     .rzp-group {
 
-      width: 100%;
+      width 100% 
 
       .rzp-group-item {
 
-        border: 0;
-        padding: 0;
+        border 0 
+        padding 0 
 
         &:first-child {
 
-          padding-right: 12px;
+          padding-right 12px 
         }
       }
 
-      @media (min-width: $screen-sm-min + 1px) and (max-width: 820px), (max-width:688px) {
+      @media (min-width $screen-sm-min + 1px) and (max-width 820px), (max-width:688px) {
 
-        display: block;
+        display block 
 
         > .rzp-group-item {
 
-          display: block;
+          display block 
 
           &:first-child {
 
-            padding-right: 0;
-            padding-bottom: 12px;
+            padding-right 0 
+            padding-bottom 12px 
           }
         }
       }
@@ -575,25 +575,25 @@ body.analytics-v2-active .onboarding-card-wrapper {
 
   a.Onboarding__Step:hover {
 
-    background-color: rgba(250, 250, 250, 0.9);
+    background-color rgba(250, 250, 250, 0.9) 
   }
 
   .Onboarding__Step {
-    display: block;
-    color: #58666e;
-    border-radius: 2px;
-    background-color: #FAFAFA;
-    padding: 14px;
-    min-width: 275px;
+    display block 
+    color #58666e 
+    border-radius 2px 
+    background-color #FAFAFA 
+    padding 14px 
+    min-width 275px 
 
-    @media (max-width: 893px) {
+    @media (max-width 893px) {
 
-      min-width: auto;
+      min-width auto 
     }
 
     &.loading {
 
-      pointer-events: none;
+      pointer-events none 
 
       div.media > div {
 
@@ -601,53 +601,53 @@ body.analytics-v2-active .onboarding-card-wrapper {
 
           b * , .step-desc * {
 
-            opacity: 0;
+            opacity 0 
           }
 
           b .PlaceholderLoader, .step-desc .PlaceholderLoader {
 
-            position: absolute;
-            display: inline-block;
-            opacity: 1;
-            top: 0;
-            left: 0;
+            position absolute 
+            display inline-block 
+            opacity 1 
+            top 0 
+            left 0 
           }
         }
 
         &.media-icon {
 
-          padding-right: 8px;
+          padding-right 8px 
 
           > .activation-step-icon {
 
-            background-image: none !important;
-            background-color: #dfe1ea;
-            border-radius: 50%;
-            width: 32px;
-            height: 32px;
+            background-image none !important 
+            background-color #dfe1ea 
+            border-radius 50% 
+            width 32px 
+            height 32px 
           }
         }
 
         &.media-arrow {
 
-          display: none;
+          display none 
         }
       }
     }
 
     div.media {
 
-      display: table;
-      width: 100%;
+      display table 
+      width 100% 
 
       > div {
 
-        display: table-cell;
-        vertical-align: middle;
+        display table-cell 
+        vertical-align middle 
 
         b, div.step-desc {
 
-          white-space: nowrap;
+          white-space nowrap 
 
           .rzp-popover {
 
@@ -655,177 +655,177 @@ body.analytics-v2-active .onboarding-card-wrapper {
 
               .rzp-popover-content {
 
-                white-space: normal;
+                white-space normal 
               }
             }
           }
 
-          @media (max-width: 974px) {
+          @media (max-width 974px) {
 
-            white-space: normal;
+            white-space normal 
           }
         }
 
         b {
 
-          font-size: 14px;
-          line-height: 19px;
-          display: inline-block;
-          position: relative;
-          color: rgba(0,0,0,0.87);
+          font-size 14px 
+          line-height 19px 
+          display inline-block 
+          position relative 
+          color rgba(0,0,0,0.87) 
 
           i.i-info-circle {
 
-            display: inline-block;
-            margin-left: 2px;
-            vertical-align: middle;
+            display inline-block 
+            margin-left 2px 
+            vertical-align middle 
           }
         }
 
         div.step-desc {
 
-          margin-top: 4px;
-          position: relative;
-          color: rgba(0,0,0,0.54);
+          margin-top 4px 
+          position relative 
+          color rgba(0,0,0,0.54) 
         }
 
         &.media-icon {
 
-          width: 1px;
-          vertical-align: middle;
+          width 1px 
+          vertical-align middle 
 
-          @media (max-width: 372px) {
+          @media (max-width 372px) {
 
-            display: none;
+            display none 
           }
 
           .activation-step-icon {
 
-            display: block;
-            width: 46px;
-            height: 32px;
-            background-position: top left;
-            background-repeat: no-repeat;
+            display block 
+            width 46px 
+            height 32px 
+            background-position top left 
+            background-repeat no-repeat 
 
             &.keygen {
 
-              background-image: url('assets/activation_icons/keygen.svg');
+              background-image url('assets/activation_icons/keygen.svg') 
             }
 
             &.integrate {
 
-              background-image: url('assets/activation_icons/integrate.svg');
+              background-image url('assets/activation_icons/integrate.svg') 
             }
 
             &.browse {
 
-              background-image: url('assets/activation_icons/browse.svg');
+              background-image url('assets/activation_icons/browse.svg') 
             }
 
             &.done {
 
-              background-image: url('assets/activation_icons/done.svg');
+              background-image url('assets/activation_icons/done.svg') 
             }
 
             &.activation-form {
 
-              background-image: url('assets/activation_icons/activation-form.svg');
+              background-image url('assets/activation_icons/activation-form.svg') 
             }
 
             &.activation-form-submitted {
 
-              background-image: url('assets/activation_icons/activation-form-submitted.svg');
+              background-image url('assets/activation_icons/activation-form-submitted.svg') 
             }
 
             &.activation-form-rejected {
 
-              background-image: url('assets/activation_icons/activation-form-rejected.svg');
+              background-image url('assets/activation_icons/activation-form-rejected.svg') 
             }
 
             &.activation-form-need-clarification {
 
-              background-image: url('assets/activation_icons/activation-form-need-clarification.svg');
+              background-image url('assets/activation_icons/activation-form-need-clarification.svg') 
             }
           }
         }
 
         &.media-body .activation-progress-cont {
 
-          display: table;
-          width: 100%;
+          display table 
+          width 100% 
 
-          @media (min-width: 768px) and (max-width: 978px) {
+          @media (min-width 768px) and (max-width 978px) {
 
             .activation-progress, .activation-progress-num {
 
-              display: none !important;
+              display none !important 
             }
           }
 
-          @media (max-width: 440px) {
+          @media (max-width 440px) {
 
             .activation-progress {
 
-              display: none !important;
+              display none !important 
             }
           }
 
-          @media (max-width: 412px) {
+          @media (max-width 412px) {
 
             .activation-progress-num {
 
-              display: none !important;
+              display none !important 
             }
           }
 
           > div {
 
-            display: table-cell;
-            white-space: nowrap;
-            vertical-align: middle;
+            display table-cell 
+            white-space nowrap 
+            vertical-align middle 
 
-            @media (max-width: 412px) {
+            @media (max-width 412px) {
 
-              white-space: normal;
+              white-space normal 
 
               span.activation-progress-num, div.activation-progress {
 
-                display: none;
+                display none 
               }
             }
 
             &:first-child {
 
-              width: 1%;
+              width 1% 
             }
 
             b {
 
-              white-space: nowrap;
+              white-space nowrap 
             }
 
             span.activation-progress-num {
 
-              display: inline-block;
-              padding-left: 10px;
-              padding-right: 5px;
+              display inline-block 
+              padding-left 10px 
+              padding-right 5px 
             }
 
             div.activation-progress {
 
-              width: 100%;
-              margin-left: 0;
+              width 100% 
+              margin-left 0 
 
               .progress {
 
-                height: 6px;
-                border-radius: 4px;
-                overflow: hidden;
-                background-color: #ced7d9;
+                height 6px 
+                border-radius 4px 
+                overflow hidden 
+                background-color #ced7d9 
 
                 div.progress-bar {
 
-                  border-radius: 4px;
+                  border-radius 4px 
                 }
               }
             }
@@ -834,57 +834,57 @@ body.analytics-v2-active .onboarding-card-wrapper {
 
         &.media-body {
 
-          width: auto;
+          width auto 
         }
 
         &.media-arrow {
 
-          width: 32px;
-          text-align: right;
+          width 32px 
+          text-align right 
 
           > i {
 
-            font-size: 20px;
-            vertical-align: middle;
-            position: relative;
-            right: -7px;
-            padding-left: 8px;
+            font-size 20px 
+            vertical-align middle 
+            position relative 
+            right -7px 
+            padding-left 8px 
           }
         }
       }
     }
 
     a {
-      text-decoration: underline;
+      text-decoration underline 
     }
 
     .i-external-link {
-      font-size: 100%;
+      font-size 100% 
     }
 
     .media-heading {
-      margin-bottom: 2px;
+      margin-bottom 2px 
     }
 
     .media-body {
-      font-size: 13px;
+      font-size 13px 
     }
 
     .media-object {
-      width: 53px;
-      height: 42px;
+      width 53px 
+      height 42px 
     }
 
     .activation-progress {
-      width: 75px;
-      display: inline-block;
-      margin-left: 12px;
+      width 75px 
+      display inline-block 
+      margin-left 12px 
 
       .progress {
-        height: 8px;
-        border-radius: 2px;
-        background-color: #e4e9ea;
-        margin-bottom: 0;
+        height 8px 
+        border-radius 2px 
+        background-color #e4e9ea 
+        margin-bottom 0 
       }
     }
   }
@@ -892,111 +892,111 @@ body.analytics-v2-active .onboarding-card-wrapper {
 
 .onboarding-card-wrapper-content.first-step {
 
-  position: relative;
+  position relative 
   /* 9999px box-shadow spread radius does not work in safari, max is 1016 */
-  box-shadow: 0 0 0 1000px rgba(0,0,0,.7), 0 0 15px rgba(0,0,0,.25);
-  z-index: 9999;
-  border-radius: 2px;
+  box-shadow 0 0 0 1000px rgba(0,0,0,.7), 0 0 15px rgba(0,0,0,.25) 
+  z-index 9999 
+  border-radius 2px 
 
   div.onboarding-card.media {
 
-    padding-right: 328px;
+    padding-right 328px 
 
-    @media (max-width: 1278px) {
+    @media (max-width 1278px) {
 
-      padding-right: 250px;
+      padding-right 250px 
     }
 
-    @media (max-width: 1200px) {
+    @media (max-width 1200px) {
 
-      padding-right: 301px;
+      padding-right 301px 
     }
 
-    @media (max-width: 1095px) {
+    @media (max-width 1095px) {
 
-      padding-right: 48px;
+      padding-right 48px 
     }
 
-    @media (max-width: 450px) {
+    @media (max-width 450px) {
 
-      padding: 24px;
+      padding 24px 
     }
 
     > div.media-body {
 
-      width: 100%;
+      width 100% 
     }
 
     .onboarding-illustration {
 
-      opacity: 1;
+      opacity 1 
     }
   }
 }
 
-@media(max-width: 1095px) {
+@media(max-width 1095px) {
 
   .onboarding-illustration {
 
-    display: none;
+    display none 
   }
 
   .onboarding-card.media {
 
-    padding: 54px 48px 54px 48px;
+    padding 54px 48px 54px 48px 
   }
 }
 
-@media(max-width: 500px) {
+@media(max-width 500px) {
 
   .onboarding-card.media {
 
-    padding: 24px;
+    padding 24px 
 
     .close {
 
-      top: 8px;
-      right: 8px;
+      top 8px 
+      right 8px 
     }
   }
 }
 
 .media.onboarding-card.servicetax-news {
-  min-height: inherit;
-  width: 100%;
-  padding: 24px;
+  min-height inherit 
+  width 100% 
+  padding 24px 
 
   img, >div {
-    vertical-align: middle;
+    vertical-align middle 
   }
 
   img {
-    max-width: 75px;
-    width: 4em;
-    margin-right: 20px;
+    max-width 75px 
+    width 4em 
+    margin-right 20px 
   }
 
   > div {
-    display: inline-block;
-    width: 73%;
-    margin-right: 12px;
+    display inline-block 
+    width 73% 
+    margin-right 12px 
 
     .heading {
-      font-weight: bold;
-      font-size: 16px;
-      margin-bottom: 4px;
+      font-weight bold 
+      font-size 16px 
+      margin-bottom 4px 
     }
 
     .news {
       > a {
-        padding: 0;
+        padding 0 
       }
     }
   }
 
   a {
-    margin-top: 16px;
-    padding: 8px;
+    margin-top 16px 
+    padding 8px 
   }
 }
 
@@ -1005,265 +1005,265 @@ body.analytics-v2-active .onboarding-card-wrapper {
 .reports-entity-options {
 
   input[type=radio].report-type {
-    display: none;
+    display none 
   }
 
   input[type=radio].report-type + label {
-    width: 100%;
-    padding: 12px 24px;
-    margin: 0;
-    color: #555555;
-    font-size: 14px;
-    font-weight: 400;
-    cursor: pointer;
+    width 100% 
+    padding 12px 24px 
+    margin 0 
+    color #555555 
+    font-size 14px 
+    font-weight 400 
+    cursor pointer 
   }
 
   &:not(:last-child) {
     input[type=radio].report-type + label {
-      border-bottom: 1px solid rgba(0,0,0,0.03);
+      border-bottom 1px solid rgba(0,0,0,0.03) 
     }
   }
 
   input[type=radio].report-type + label:hover {
-    background-color: #f9f9f9;
+    background-color #f9f9f9 
   }
 
   input[type=radio].report-type:checked + label {
-    color: $primary-color;
-    background-color: #f9f9f9;
+    color $primary-color 
+    background-color #f9f9f9 
   }
 
-  @media(min-width: 992px) {
+  @media(min-width 992px) {
     input[type=radio].report-type:checked + label:after {
-      float: right;
-      content: "\25BA";
-      color: #a5a5a5;
-      font-size: 11px;
+      float right 
+      content "\25BA" 
+      color #a5a5a5 
+      font-size 11px 
     }
   }
 
   &.new {
 
     label {
-      width: 100%;
-      padding: 12px 24px;
-      margin: 0;
-      color: #555555;
-      font-size: 14px;
-      font-weight: 400;
-      cursor: pointer;
+      width 100% 
+      padding 12px 24px 
+      margin 0 
+      color #555555 
+      font-size 14px 
+      font-weight 400 
+      cursor pointer 
 
       :hover {
-        background-color: #f9f9f9;
+        background-color #f9f9f9 
       }
 
       &.active {
-        color: $primary-color;
-        background-color: #f9f9f9;
+        color $primary-color 
+        background-color #f9f9f9 
       }
     }
 
     &:not(:last-child) {
       label {
-        border-bottom: 1px solid rgba(0,0,0,0.03);
+        border-bottom 1px solid rgba(0,0,0,0.03) 
       }
     }
 
-    @media(min-width: 992px) {
+    @media(min-width 992px) {
       label:after {
-        float: right;
-        content: "\25BA";
-        color: #a5a5a5;
-        font-size: 11px;
+        float right 
+        content "\25BA" 
+        color #a5a5a5 
+        font-size 11px 
       }
     }
   }
 }
 
 .custom-tag {
-  color: $primary-color;
-  float: right;
-  font-size: 14px;
+  color $primary-color 
+  float right 
+  font-size 14px 
 
   &.i {
-    margin-top: 2px;
+    margin-top 2px 
   }
 }
 
 // To be checked and later generalized. Currently, styles are inconsisent
 .virtual-account-powerselect {
-  border: 1px solid #cfdadd;
-  border-radius: 2px;
+  border 1px solid #cfdadd 
+  border-radius 2px 
 }
 
 .transfers-powerselect {
   input {
-    padding: 0 12px;
+    padding 0 12px 
   }
 }
 
 .transfers-powerselect__Menu {
   .PowerSelect__Option {
-    border-bottom: 1px solid #eaeff0;
-    padding: 8px 0;
-    border-bottom: 1px solid #eaeff0;
-    line-height: 28px;
+    border-bottom 1px solid #eaeff0 
+    padding 8px 0 
+    border-bottom 1px solid #eaeff0 
+    line-height 28px 
   }
 
   .heading {
-    color: #8991ae;
-    padding: 12px 12px 8px;
+    color #8991ae 
+    padding 12px 12px 8px 
   }
 }
 
 .custom-powerselect {
-  border: 1px solid #cfdadd;
-  border-radius: 3px;
+  border 1px solid #cfdadd 
+  border-radius 3px 
 
   .PowerSelect__Trigger,
   .PowerSelect__TriggerLabel,
   .PowerSelect__TriggerStatus {
-    height: 28px;
+    height 28px 
   }
 
   .PowerSelect__TriggerLabel {
-    padding-top: 0;
-    padding-bottom: 0;
+    padding-top 0 
+    padding-bottom 0 
   }
 }
 
 .custom-powerselect-options {
-  line-height: 24px !important;
-  padding: 2px 12px !important;
-  min-height: 28px;
+  line-height 24px !important 
+  padding 2px 12px !important 
+  min-height 28px 
 }
 
 .currency-dropdown {
-  background: transparent
-  border: none
-  padding: 0
+  background transparent
+  border none
+  padding 0
 
   .PowerSelect__TriggerLabel {
-    display: block
-    padding: 0
+    display block
+    padding 0
   }
 }
 
 div.data-table.has-panel {
   div.table-responsive {
-    margin-top: 0;
+    margin-top 0 
 
     > table.table {
-      margin-bottom: 0;
+      margin-bottom 0 
     }
   }
 }
 
 .sub-entity-list {
-  margin-top: 16px;
-  margin-bottom: 24px;
+  margin-top 16px 
+  margin-bottom 24px 
 }
 
 // Data table
 .details-row-container .data-table {
-  margin: 20px 0;
-  border-bottom: 1px solid #C6CFD9;
+  margin 20px 0 
+  border-bottom 1px solid #C6CFD9 
 }
 
 // Stats Info
 .stats-info
-  width: 100%
+  width 100%
   .table
-    border: 1px solid $stats-border
-    margin-bottom: 0px
-    table-layout: fixed
+    border 1px solid $stats-border
+    margin-bottom 0px
+    table-layout fixed
 
     .td-info
-      position: relative
+      position relative
 
     .td-info:not(:first-child)::before
-      content: '';
-      height: 20px;
-      background: $stats-border;
-      width: 1px;
-      position: absolute;
-      top: 18px;
-      bottom: 18px;
+      content '' 
+      height 20px 
+      background $stats-border 
+      width 1px 
+      position absolute 
+      top 18px 
+      bottom 18px 
     .td-heading
-      display: block
-      color: rgba(0,0,0,0.54)
-      text-align: center
-      font-size: 13px
+      display block
+      color rgba(0,0,0,0.54)
+      text-align center
+      font-size 13px
     .td-value
-      display: block
-      text-align: center
-      font-size: 16px
+      display block
+      text-align center
+      font-size 16px
 
 // Entity Detail List
 .entity-detail-list {
-  margin: 16px 0;
-  border-bottom: 1px solid #C6CFD9;
+  margin 16px 0 
+  border-bottom 1px solid #C6CFD9 
 
   .show-btn {
-    padding: 12px;
-    cursor: pointer;
+    padding 12px 
+    cursor pointer 
 
     .i {
-      vertical-align: middle;
+      vertical-align middle 
     }
   }
 
   .list-heading {
-    border-bottom: 1px solid #e2e3e5;
+    border-bottom 1px solid #e2e3e5 
   }
 }
 
 .details-row-container .data-table {
   table {
-    margin-bottom: 0;
-    border-bottom: none;
+    margin-bottom 0 
+    border-bottom none 
   }
 }
 
-@media (max-width: 996px) {
+@media (max-width 996px) {
   div.new-products-row {
-    height: auto !important;
-    flex-direction: column !important;
+    height auto !important 
+    flex-direction column !important 
 
     div.product-item {
-      width: 100% !important;
-      margin-bottom: 10px;
-      padding: 0 !important;
+      width 100% !important 
+      margin-bottom 10px 
+      padding 0 !important 
     }
   }
 }
 
 div.feature-activation-banner {
-  padding: 20px 20px 0 20px;
+  padding 20px 20px 0 20px 
 
   div.media {
-    background-color: #fff;
-    border: 1px solid #e2e8ea;
-    padding: 15px;
+    background-color #fff 
+    border 1px solid #e2e8ea 
+    padding 15px 
 
     div.media-body {
       div.media-heading {
-        font-weight: bold;
-        font-size: 15px;
+        font-weight bold 
+        font-size 15px 
       }
     }
 
     div.media-left {
-      padding-right: 15px;
+      padding-right 15px 
 
       .media-object {
-        height: 100px;
-        width: 100px;
-        margin: 0 10px;
+        height 100px 
+        width 100px 
+        margin 0 10px 
       }
 
       @media (max-width $screen-sm-min) {
-        display: none;
+        display none 
       }
     }
   }
@@ -1272,73 +1272,73 @@ div.feature-activation-banner {
 .payment-link-form {
 
   .i-date-range.custom-icon {
-    display: none;
+    display none 
   }
 
   .rdtPicker {
-    width: 200px;
+    width 200px 
   }
 }
 
 .rollkey .RadioButton {
-  margin: 8px 0;
+  margin 8px 0 
 }
 
 .media-object {
-  background: no-repeat center;
-  background-size: contain;
+  background no-repeat center 
+  background-size contain 
   &.route {
-    background-image: url('assets/symbols/route.svg');
+    background-image url('assets/symbols/route.svg') 
   }
   &.sub {
-    background-image: url('assets/symbols/sub.svg');
+    background-image url('assets/symbols/sub.svg') 
   }
   &.sc {
-    background-image: url('assets/symbols/sc.svg');
+    background-image url('assets/symbols/sc.svg') 
   }
   &.activate {
-    background-image: url('assets/activate-account.svg');
+    background-image url('assets/activate-account.svg') 
   }
   &.activated {
-    background-image: url('assets/account-activated.svg');
+    background-image url('assets/account-activated.svg') 
   }
   &.submitted {
-    background-image: url('assets/activation-submitted.svg');
+    background-image url('assets/activation-submitted.svg') 
   }
   &.first-pay {
-    background-image: url('assets/first-payment.svg');
+    background-image url('assets/first-payment.svg') 
   }
   &.genkeys {
-    background-image: url('assets/genkeys.svg');
+    background-image url('assets/genkeys.svg') 
   }
   &.integrate {
-    background-image: url('assets/integrate.svg');
+    background-image url('assets/integrate.svg') 
   }
   &.onboarding {
-    background-image: url('assets/onboarding.svg');
+    background-image url('assets/onboarding.svg') 
   }
 }
 
 .more-options-button {
 
   .dropdown-menu {
-    right: 0;
-    left: unset !important;
-    padding: 0;
+    right 0 
+    left unset !important 
+    padding 0 
   }
 
   .option {
-    padding: 10px 15px 15px 5px;
-    cursor: pointer;
+    padding 10px 15px 15px 5px 
+    cursor pointer 
 
     &:hover {
-      background-color: #F0F1F6;
+      background-color #F0F1F6 
     }
   }
 }
 
 .fileupload-btn input {
-  display: none;
+  display none 
 }
 
 .layout.rzp {
@@ -1349,35 +1349,35 @@ div.feature-activation-banner {
     }
     .navbar-collapse{
       @media screen and (max-width $screen-sm-min) {
-        border-top-width: 0
+        border-top-width 0
         padding 0 5px
       }
     }
 
     .navbar-toggle-container {
 
-      color: white;
+      color white 
 
       button.navbar-toggle {
 
-        display: inline-block;
-        padding-left: 0;
-        padding-right: 0;
-        margin-left: 10px;
-        margin-top: 11px;
-        margin-bottom: 11px;
-        float: none;
-        border: none;
-        vertical-align: middle;
+        display inline-block 
+        padding-left 0 
+        padding-right 0 
+        margin-left 10px 
+        margin-top 11px 
+        margin-bottom 11px 
+        float none 
+        border none 
+        vertical-align middle 
 
         &:hover, &:focus {
 
-          background-color: transparent;
+          background-color transparent 
         }
 
         .i-bar {
 
-          background-color: currentColor;
+          background-color currentColor 
         }
         @media screen and (max-width $screen-sm-min) {
           margin 14px 10px
@@ -1386,20 +1386,20 @@ div.feature-activation-banner {
     }
   }
   .nav-wrapper {
-    position fixed;
+    position fixed 
     z-index 1030
     width 100%
     top 0
   }
 }
 
-@media (min-width: 0px) {
+@media (min-width 0px) {
 
   // Do not collapse navbar even in mobile
   .layout.rzp ul.navbar-nav.navbar-right {
 
-    float: right;
-    margin: 0 -15px 0 0;
+    float right 
+    margin 0 -15px 0 0 
     @media screen and (max-width $screen-sm-min) {
       height 60px
       display flex
@@ -1409,34 +1409,34 @@ div.feature-activation-banner {
 
     &> li {
 
-      float: left;
+      float left 
     }
   }
 }
 
-@media screen and (max-width: $screen-sm-min) {
+@media screen and (max-width $screen-sm-min) {
 
   .layout.rzp {
 
     .navbar.navbar-fixed-top {
 
-      background-color: $sidebar-bg-color;
+      background-color $sidebar-bg-color 
 
       ul.navbar-nav.navbar-right {
 
         > li > div.dropdown > a {
 
-          color: white !important;
+          color white !important 
 
           &.switch-modes-toggle {
 
-            padding: 17px 15px;
+            padding 17px 15px 
           }
         }
 
         .dropdown-menu.ProfileDropdown, .Dropdown--Notifications-menu {
-          left: auto;
-          right: 0;
+          left auto 
+          right 0 
           top 55px
         }
       }
@@ -1444,15 +1444,15 @@ div.feature-activation-banner {
   }
 }
 
-@media (max-width: 360px) {
+@media (max-width 360px) {
 
   .layout.rzp {
       .navbar.navbar-fixed-top {
 
       ul.navbar-nav.navbar-right > li:first-child > div.dropdown > a {
 
-        padding-right: 0;
-        padding-left: 0;
+        padding-right 0 
+        padding-left 0 
       }
     }
   }
@@ -1462,262 +1462,262 @@ div.feature-activation-banner {
   .dropdown__trigger
     i
       position relative
-      font-size: 24px
-      top: 3px
+      font-size 24px
+      top 3px
       &:after
-        border-radius: 50%
-        height: 36px
-        width: 36px
-        position: absolute
-        content: ''
-        left: -6px
-        top: -6px
+        border-radius 50%
+        height 36px
+        width 36px
+        position absolute
+        content ''
+        left -6px
+        top -6px
         z-index -1
     &.dropdown-toggle--large-icon
       i
-        font-size: 24px
+        font-size 24px
         &:after
-          left: -6px
-          top: -6px
+          left -6px
+          top -6px
         &:hover:after
-          background: #F3F5F9;
+          background #F3F5F9 
   &.dropdown--active
     i
-      color: #2B83EA
+      color #2B83EA
       &:after
-        background: rgba(11, 112, 231, 0.05)
-      @media (max-width: $screen-sm-min)
+        background rgba(11, 112, 231, 0.05)
+      @media (max-width $screen-sm-min)
         &:after
-          background: #FFF;
+          background #FFF 
 
 #app-switcher
   .dropdown--active
     .app-switcher-dropdown
-      display: flex
+      display flex
   .app-switcher-dropdown
-    top: calc(100% + 2px)
-    border: none
-    box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.12)
-    width: 822px
-    flex-direction: row
-    padding: 40px 32px 22px 32px
+    top calc(100% + 2px)
+    border none
+    box-shadow 0px 2px 6px rgba(0, 0, 0, 0.12)
+    width 822px
+    flex-direction row
+    padding 40px 32px 22px 32px
     .column
-      width: 50%
-      justify-content: space-between
-      display: flex
-      flex-direction: column;
+      width 50%
+      justify-content space-between
+      display flex
+      flex-direction column 
     .heading
-      text-transform: uppercase
-      padding: 0 24px
-      font-weight: 500;
-      font-size: 14px;
-      line-height: 19px
-      letter-spacing: 1px
+      text-transform uppercase
+      padding 0 24px
+      font-weight 500 
+      font-size 14px 
+      line-height 19px
+      letter-spacing 1px
     .item
-      padding: 17px 24px 18px 24px;
-      display: flex
-      justify-content: center
-      align-items: center;
-      will-change: transform
-      border-radius: 6px;
+      padding 17px 24px 18px 24px 
+      display flex
+      justify-content center
+      align-items center 
+      will-change transform
+      border-radius 6px 
       &:hover
-        box-shadow: 0px 2px 22px rgba(202, 202, 202, 0.25);
+        box-shadow 0px 2px 22px rgba(202, 202, 202, 0.25) 
         .title
-          color: #2B83EA
-          display: block
+          color #2B83EA
+          display block
           .arrow
             opacity 1
       .icon
-        margin-right: 16px
-        width: 32px
-        height: 32px
+        margin-right 16px
+        width 32px
+        height 32px
       .title
-        font-weight: 800;
-        color: #444444
-        font-size: 16px;
-        line-height: 150%
+        font-weight 800 
+        color #444444
+        font-size 16px 
+        line-height 150%
         position relative
         &.new
           &:after
-            content: 'NEW'
-            background: #5CC67B;
-            border-radius: 4px
-            font-size: 12px;
-            line-height: 150%
-            padding: 2px 6px
+            content 'NEW'
+            background #5CC67B 
+            border-radius 4px
+            font-size 12px 
+            line-height 150%
+            padding 2px 6px
             position relative
-            left: 6px
-            top: -2px
-            color: #fff
+            left 6px
+            top -2px
+            color #fff
         .arrow
-          border: solid #2B83EA;
-          border-width: 0 2px 2px 0;
-          display: inline-block;
-          padding: 3px;
-          transform: rotate(-45deg);
-          margin: 0px 0px 1px 5px;
+          border solid #2B83EA 
+          border-width 0 2px 2px 0 
+          display inline-block 
+          padding 3px 
+          transform rotate(-45deg) 
+          margin 0px 0px 1px 5px 
           opacity 0
       .desc
-        font-weight: normal;
-        font-size: 14px;
-        color: #7C8297
-        line-height: 150%
+        font-weight normal 
+        font-size 14px 
+        color #7C8297
+        line-height 150%
       .info
-        width: 371px
-        display: flex
-        flex-direction: column
+        width 371px
+        display flex
+        flex-direction column
 
     .close-block
-      display: none
-      padding: 0 20px 14px 20px;
-      font-weight: 600;
-      font-size: 16px;
-      line-height: 150%
-      border-bottom: 1px solid rgba(22, 47, 86, 0.05)
-      justify-content: space-between
-      align-items: center
+      display none
+      padding 0 20px 14px 20px 
+      font-weight 600 
+      font-size 16px 
+      line-height 150%
+      border-bottom 1px solid rgba(22, 47, 86, 0.05)
+      justify-content space-between
+      align-items center
       .close
-        font-size: 23px;
-        color: #162f56bd;
-        opacity: 0.3;
-        position: relative;
-        top: 1px;
-    @media screen and (max-width: $screen-sm-min)
-      top: 60px;
-      position: fixed;
-      padding: 20px 0 4px 0
-      right: 0;
-      left: auto;
-      width: auto;
-      flex-direction: column;
-      height: auto;
+        font-size 23px 
+        color #162f56bd 
+        opacity 0.3 
+        position relative 
+        top 1px 
+    @media screen and (max-width $screen-sm-min)
+      top 60px 
+      position fixed 
+      padding 20px 0 4px 0
+      right 0 
+      left auto 
+      width auto 
+      flex-direction column 
+      height auto 
       .column
-        width: 100%
-        padding: 0 20px
+        width 100%
+        padding 0 20px
       .heading
-        display: none
+        display none
       .item
-        padding: 14px 0
-        justify-content: flex-start;
+        padding 14px 0
+        justify-content flex-start 
         &:last-child
-          padding-bottom: 14px
+          padding-bottom 14px
         .info
-          width: 164px
+          width 164px
         .title
-          font-weight: normal;
-          font-size: 14px;
-          line-height: 20px
+          font-weight normal 
+          font-size 14px 
+          line-height 20px
           &.new
             &:after
-              top: -1px
+              top -1px
         .desc
-          display: none
+          display none
         .icon
-          width: 24px
-          height: 24px
+          width 24px
+          height 24px
       .close-block
-        display: flex
+        display flex
 
 
 #profile-dropdown {
 
   .merchant-logo-preview{
 
-    border-radius: 50%;
-    width: 24px;
-    height: 24px;
-    display: inline-block;
-    vertical-align: middle;
-    text-align: center;
-    overflow: hidden;
+    border-radius 50% 
+    width 24px 
+    height 24px 
+    display inline-block 
+    vertical-align middle 
+    text-align center 
+    overflow hidden 
 
     .rzp-image > img {
 
-      border-radius: 50%;
+      border-radius 50% 
     }
   }
 
   a {
-    color: inherit;
+    color inherit 
   }
 
   .rtb-user-dropdown {
-    background: linear-gradient(90deg, #2d62d2, #3472e2);
+    background linear-gradient(90deg, #2d62d2, #3472e2) 
 
     @media (max-width 768px) {
-      background: transparent;
+      background transparent 
     }
 
     span {
-      color: #fff;
-      font-size: 14px;
-      font-weight: 900;
-      line-height: 13px;
-      text-shadow: 0px 1px 0px #1149b5, 2px 1px 0px rgb(17, 73, 181, 0.1);
+      color #fff 
+      font-size 14px 
+      font-weight 900 
+      line-height 13px 
+      text-shadow 0px 1px 0px #1149b5, 2px 1px 0px rgb(17, 73, 181, 0.1) 
 
       .rtb-user-bg-img {
-        position: absolute;
-        top: 0;
-        left: 0;
-        height: 52px;
-        margin-right: 0px;
+        position absolute 
+        top 0 
+        left 0 
+        height 52px 
+        margin-right 0px 
       }
 
       .rtb-nav-icon {
-        display: inline-block;
-        height: 19px;
-        width: 17px;
-        background-size: cover;
-        top: 4px;
-        margin-right: 4px;
-        background-image: url("https://cdn.razorpay.com/static/assets/trustedbadge/rtb-user.svg");
+        display inline-block 
+        height 19px 
+        width 17px 
+        background-size cover 
+        top 4px 
+        margin-right 4px 
+        background-image url("https://cdn.razorpay.com/static/assets/trustedbadge/rtb-user.svg") 
       }
 
       img {
-        height: 19px;
-        margin-right: 5px;
+        height 19px 
+        margin-right 5px 
       }
     }
   }
 
   .rzp-image.invalid-src {
 
-    color: #949494;
+    color #949494 
   }
 
   .loggedin-as {
 
-    background-color: #F5F7F8;
+    background-color #F5F7F8 
 
     .account-details {
 
-      padding: 12px 0;
-      font-size: 16px;
-      line-height: 19px;
-      max-width: 250px;
-      white-space: nowrap;
-      text-overflow: ellipsis;
+      padding 12px 0 
+      font-size 16px 
+      line-height 19px 
+      max-width 250px 
+      white-space nowrap 
+      text-overflow ellipsis 
 
       i.i-account {
 
-        font-size: 24px;
-        vertical-align: middle;
-        color: #BDC3C6;
-        display: inline-block;
-        height: 24px;
-        line-height: 1em;
+        font-size 24px 
+        vertical-align middle 
+        color #BDC3C6 
+        display inline-block 
+        height 24px 
+        line-height 1em 
       }
     }
 
     .logout-btn {
 
-      display: block;
-      width: 100%;
+      display block 
+      width 100% 
     }
   }
   &.profile-dropdown-section{
-    @media screen and (max-width: $screen-xs-max) {
-      margin-right 10px;
+    @media screen and (max-width $screen-xs-max) {
+      margin-right 10px 
     }
   }
 }
@@ -1726,35 +1726,35 @@ div.feature-activation-banner {
 
   div.modal-body {
 
-    max-height: 90vh;
-    overflow: auto;
+    max-height 90vh 
+    overflow auto 
 
     ul.merchants-list {
 
       > li {
 
-        border: 1px solid rgba(0,0,0,0.05);
-        border-top: none;
+        border 1px solid rgba(0,0,0,0.05) 
+        border-top none 
 
         &.active {
 
-          background-color: $primary-color;
-          color: white;
+          background-color $primary-color 
+          color white 
 
           > a .i.i-check {
 
-            display: inline;
+            display inline 
           }
         }
 
         > a {
 
-          color: inherit;
-          cursor: pointer;
+          color inherit 
+          cursor pointer 
 
           .i.i-check {
 
-            display: none;
+            display none 
           }
         }
       }
@@ -1772,283 +1772,283 @@ div.feature-activation-banner {
   margin-top 4px
 
 .temp-icon-style
-  font-size: 18px
-  margin-left: -1px
+  font-size 18px
+  margin-left -1px
 
 .temp-icon-2
-  margin-top: 14px;
+  margin-top 14px 
 
 .right-margin 
-  margin-right: 13px;
+  margin-right 13px 
 
 .settle-icon
-  color: #39C7E6;
+  color #39C7E6 
 
-$stepIndicatorSize = 36px;
+$stepIndicatorSize = 36px 
 
 // Onboarding Card - Instant Activations
 .onboarding-card-instant {
 
-  position: relative;
-  height: 100%;
-  padding: 22px;
+  position relative 
+  height 100% 
+  padding 22px 
 
   .onboarding-step-switcher {
 
-    display: none;
+    display none 
   }
 
   .rx-ca-onboarding-card {
-    background-color: #fff;
-    width: 100%
-    height: 100%
-    margin-top: 22px;
-    position: relative;
-    border-radius: 2px;
-    overflow: hidden;
-    display: flex
+    background-color #fff 
+    width 100%
+    height 100%
+    margin-top 22px 
+    position relative 
+    border-radius 2px 
+    overflow hidden 
+    display flex
 
     .side {
-      position: absolute;
-      height: 4px;
-      background: linear-gradient(90deg, #58D4FF -41.68%, #025BD2 75.26%);
-      width: 192px;
-      top: 93px;
-      left: -94px;
-      transform: rotate(-90deg);
+      position absolute 
+      height 4px 
+      background linear-gradient(90deg, #58D4FF -41.68%, #025BD2 75.26%) 
+      width 192px 
+      top 93px 
+      left -94px 
+      transform rotate(-90deg) 
 
-      @media (max-width: 1095px) {
-          width: 252px;
-          top: 125px;
-          left: -124px;
+      @media (max-width 1095px) {
+          width 252px 
+          top 125px 
+          left -124px 
       }
     }
 
     .cross {
-      position: absolute;
-      right: 16px;
-      top: 16px;
-      font-size: 24px;
-      color: rgba(22, 47, 86, 0.38);
-      cursor: pointer;
+      position absolute 
+      right 16px 
+      top 16px 
+      font-size 24px 
+      color rgba(22, 47, 86, 0.38) 
+      cursor pointer 
     }
 
     .right-bottom-img {
-      position: absolute;
-      right: 0;
-      bottom: 0;
+      position absolute 
+      right 0 
+      bottom 0 
       }
 
     .left-container {
-      display: flex;
-      width: 50%;
-      padding: 30px
+      display flex 
+      width 50% 
+      padding 30px
 
       .img-left {
-        margin-top: 4px;
+        margin-top 4px 
       }
 
       .left-info {
-        margin-left: 12px;
+        margin-left 12px 
 
         .learn-more {
-          margin-left: 22px
+          margin-left 22px
         }
 
         .i-external-link {
-          margin-left: 2px
+          margin-left 2px
         }
 
         .req-success {
             display flex
             img {
-              width: 16px;
-              height: 16px;
-              margin-right: 8px;
+              width 16px 
+              height 16px 
+              margin-right 8px 
             }
             .req-info {
-              font-size: 14px
-              color: rgba(22, 47, 86, 0.87);
-              opacity: 0.5;
-              width: 80%
+              font-size 14px
+              color rgba(22, 47, 86, 0.87) 
+              opacity 0.5 
+              width 80%
           }
         }
 
         .title {
-          font-weight: bold;
-          font-size: 20px;
-          color: #162F56;
-          margin-bottom: 12px
+          font-weight bold 
+          font-size 20px 
+          color #162F56 
+          margin-bottom 12px
           }
 
         .subtext {
-          font-size: 14px
-          color: rgba(22, 47, 86, 0.87);
-          opacity: 0.5;
-          margin-bottom: 24px
+          font-size 14px
+          color rgba(22, 47, 86, 0.87) 
+          opacity 0.5 
+          margin-bottom 24px
         }
       }
     }
     .right-container {
-      background: rgba(11, 112, 231, 0.05);
-      padding: 39px 40px
-      width: 50%;
+      background rgba(11, 112, 231, 0.05) 
+      padding 39px 40px
+      width 50% 
 
       .single-container {
-        display: flex;
+        display flex 
       }
       .right-info {
-        margin-bottom: 24px;
+        margin-bottom 24px 
       }
       img{
-        margin-right: 8px
+        margin-right 8px
       }
       .rx-benefits {
-        font-size: 14px
-        color: rgba(22, 47, 86, 0.38);
+        font-size 14px
+        color rgba(22, 47, 86, 0.38) 
 
         .highlight {
-          font-weight: bold;
-          color: rgba(22, 47, 86, 0.74);
+          font-weight bold 
+          color rgba(22, 47, 86, 0.74) 
         }
 
       }
     }
 
-    @media (max-width: 640px) {
-      display: block;
-      margin-top: 40px;
+    @media (max-width 640px) {
+      display block 
+      margin-top 40px 
 
       .left-container {
-        width: 100%;
-        padding: 36px 12px 24px 12px;
+        width 100% 
+        padding 36px 12px 24px 12px 
       }
 
       .right-container {
-        width: 100%;
-        padding: 24px;
+        width 100% 
+        padding 24px 
       }
 
       .title{
-          font-size: 16px;
+          font-size 16px 
       }
 
       .subtext{
-        font-size: 14px;
+        font-size 14px 
       }
 
       .rx-benefits{
-        font-size 12px;
+        font-size 12px 
       }
 
       .learn-more {
-        display: block;
-        margin-top: 20px
+        display block 
+        margin-top 20px
       }
 
       .side {
-        transform: none
-        top: 0px
-        width: 100%
-        left: 0px
+        transform none
+        top 0px
+        width 100%
+        left 0px
       }
 
       .req-info{
-        font-size: 12px
+        font-size 12px
       }
 
       .right-bottom-img {
-        display: none;
+        display none 
       }
 
     }
   }
 
   .announcement-banner-container{
-    margin-left: -22px;
-    width: calc(100% + 44px);
-    padding-top: 0;
+    margin-left -22px 
+    width calc(100% + 44px) 
+    padding-top 0 
   }
 
 .rx-ca-home-container{
-  width: 100%;
-  height: 386px;
-  display: flex;
-  background-color: #fff;
-  border-radius: 2px;
+  width 100% 
+  height 386px 
+  display flex 
+  background-color #fff 
+  border-radius 2px 
 
   .ca-container{
-    width: 63%;
-    padding: 24px;
-    margin-right: 4px;
-    position: relative;
-    box-shadow: 6px 0px 8px rgba(11, 112, 231, 0.07);
+    width 63% 
+    padding 24px 
+    margin-right 4px 
+    position relative 
+    box-shadow 6px 0px 8px rgba(11, 112, 231, 0.07) 
 
     .spinner{
-      margin-left: 50%;
-      margin-top: 20%;
+      margin-left 50% 
+      margin-top 20% 
     }
 
     .separator{
-      margin-top: 24px;
-      margin-bottom: 24px;
-      border: 0;
-      border-top: 1px solid #eee;
+      margin-top 24px 
+      margin-bottom 24px 
+      border 0 
+      border-top 1px solid #eee 
     }
   }
   .faq-container{
-    width: 36%;
-    padding: 24px;
-    background: #FEFEFE;
+    width 36% 
+    padding 24px 
+    background #FEFEFE 
 
     .rx-faq{
       .faq-title-container{
-        display: flex;
+        display flex 
 
       .faq-title{
-        font-weight: bold;
-        font-size: 20px;
-        line-height: 30px;
-        color: #8C9CBB;
+        font-weight bold 
+        font-size 20px 
+        line-height 30px 
+        color #8C9CBB 
       }
 
       .t-n-c{
-        margin-left: auto;
-        margin-top: 5px;
+        margin-left auto 
+        margin-top 5px 
       }
 
       }
       .open{
         .Accordion__title {
-          font-weight: bold
+          font-weight bold
         }
       }
       .Accordion__title {
-        background: transparent;
-        color: #647596;
-        font-weight: normal;
-        padding-top: 0px;
-        font-size: 12px;
-        line-height: 21px;
+        background transparent 
+        color #647596 
+        font-weight normal 
+        padding-top 0px 
+        font-size 12px 
+        line-height 21px 
 
         .accordion__arrow{
-          top: 32%;
-          right: 2px;
+          top 32% 
+          right 2px 
         }
 
         .accordion__arrow:last-child {
-          top: 20%;
+          top 20% 
         }
 
         &:hover{
-          color: #2F3B53;
+          color #2F3B53 
 
           .accordion__arrow{
             &:after{
-              background-color:  #2F3B53 !important;
+              background-color  #2F3B53 !important 
             }
             &:before{
-              background-color: #2F3B53 !important;
+              background-color #2F3B53 !important 
             }
           }
         }
@@ -2056,19 +2056,19 @@ $stepIndicatorSize = 36px;
 
       .accordion__arrow{
         &:after{
-          background-color:  #8C9CBB
+          background-color  #8C9CBB
         }
         &:before{
-          background-color:  #8C9CBB
+          background-color  #8C9CBB
         }
       }
 
       .Accordion__content {
-        font-weight: normal;
-        font-size: 12px;
-        line-height: 20px;
-        padding: 8px 10px;
-        color: #647596;
+        font-weight normal 
+        font-size 12px 
+        line-height 20px 
+        padding 8px 10px 
+        color #647596 
       }
     }
   }
@@ -2076,268 +2076,268 @@ $stepIndicatorSize = 36px;
 
   .onboarding-card-instant-content {
 
-    width: 100%;
-    height: 100%;
-    padding: 66px 300px 50px 50px;
-    position: relative;
-    background-color: #fff;
+    width 100% 
+    height 100% 
+    padding 66px 300px 50px 50px 
+    position relative 
+    background-color #fff 
 
-    @media (max-width: 1234px) {
+    @media (max-width 1234px) {
 
-      padding-right: 30%;
+      padding-right 30% 
     }
 
-    @media (max-width: 1150px) {
+    @media (max-width 1150px) {
 
-      padding-right: 25%;
+      padding-right 25% 
     }
 
-    @media (max-width: 1095px) {
+    @media (max-width 1095px) {
 
-      padding-right: 40px;
+      padding-right 40px 
     }
 
-    @media (max-width: 910px) {
+    @media (max-width 910px) {
 
-      padding-left: 16px;
-      padding-right: 16px;
+      padding-left 16px 
+      padding-right 16px 
     }
 
     .onboarding-illustration-top, .onboarding-illustration-bottom {
 
-      position: absolute;
-      top: 0;
-      left: 0;
-      display: block;
-      height: 40px;
+      position absolute 
+      top 0 
+      left 0 
+      display block 
+      height 40px 
 
       img {
 
-        display: block;
-        height: 100%;
-        width: auto;
+        display block 
+        height 100% 
+        width auto 
       }
     }
 
     .onboarding-illustration-bottom {
 
-      top: auto;
-      bottom: 0;
+      top auto 
+      bottom 0 
     }
 
     .onboarding-steps {
 
-      display: table;
-      width: 100%;
-      height: 100%;
-      position: relative;
-      z-index: 1;
+      display table 
+      width 100% 
+      height 100% 
+      position relative 
+      z-index 1 
 
       .onboarding-step {
 
-        display: table-cell;
-        vertical-align: top;
-        position: relative;
-        width: (100/3)%;
-        height: 100%;
-        text-align: center;
+        display table-cell 
+        vertical-align top 
+        position relative 
+        width (100/3)% 
+        height 100% 
+        text-align center 
 
         .PlaceholderLoader {
 
-          height: 1em;
+          height 1em 
         }
 
         &:first-child .step-connector {
 
-          display: none;
+          display none 
         }
 
         .step-connector {
 
-          position: absolute;
-          top: 16px;
-          left: 0;
-          transform: translate(-50%, 0);
-          width: 100%;
-          padding-left: 26px;
-          padding-right: 26px;
-          height: 4px;
+          position absolute 
+          top 16px 
+          left 0 
+          transform translate(-50%, 0) 
+          width 100% 
+          padding-left 26px 
+          padding-right 26px 
+          height 4px 
 
           &.align-left {
-            transform: translate(-96%, 0);
+            transform translate(-96%, 0) 
           }
 
           .step-connector-content {
 
-            background: transparent url('assets/onboarding/inactive_connector.png') 50% 0 no-repeat;
-            width: 100%;
-            height: 100%;
+            background transparent url('assets/onboarding/inactive_connector.png') 50% 0 no-repeat 
+            width 100% 
+            height 100% 
           }
         }
 
         &.align-left {
-          text-align: left;
+          text-align left 
         }
 
         &.status-active {
 
           .step-indicator {
 
-            padding: 0;
+            padding 0 
           }
 
           .step-connector {
 
             .step-connector-content {
 
-              background-image: url('assets/onboarding/active_connector.png');
+              background-image url('assets/onboarding/active_connector.png') 
             }
           }
         }
 
         .step-indicator {
 
-          margin: 0 auto;
-          width: $stepIndicatorSize;
-          height: $stepIndicatorSize;
-          border-radius: 50%;
-          overflow: hidden;
-          margin-bottom: 22px;
-          padding: 6px;
+          margin 0 auto 
+          width $stepIndicatorSize 
+          height $stepIndicatorSize 
+          border-radius 50% 
+          overflow hidden 
+          margin-bottom 22px 
+          padding 6px 
 
           &.align-left {
-            margin: 0 0 20px -6px;  
+            margin 0 0 20px -6px   
           }
 
           .PlaceholderLoader {
 
-            vertical-align: top;
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
+            vertical-align top 
+            width 100% 
+            height 100% 
+            border-radius 50% 
           }
 
           img {
 
-            display: block;
-            width: 100%;
-            height: 100%;
+            display block 
+            width 100% 
+            height 100% 
           }
         }
 
         .step-content {
 
-          padding: 0 8px;
+          padding 0 8px 
 
           &.align-left{
-            padding: 0 40px 0 0;
+            padding 0 40px 0 0 
 
             .step-content { 
-                padding: 0;
+                padding 0 
             }
           }
 
           .step-content-title {
 
-            font-weight: bold;
-            font-size: 16px;
-            line-height: 19px;
-            margin-bottom: 12px;
+            font-weight bold 
+            font-size 16px 
+            line-height 19px 
+            margin-bottom 12px 
           }
 
           .btn {
-            margin-top: 18px;
+            margin-top 18px 
           }
         }
       }
     }
 
-    @media (max-width: 640px) {
+    @media (max-width 640px) {
 
-      overflow: hidden;
-      box-shadow: 0 3px 6px 0 rgba(0,0,0,0.13);
+      overflow hidden 
+      box-shadow 0 3px 6px 0 rgba(0,0,0,0.13) 
 
       .onboarding-steps {
 
-        display: block;
-        width: 300%;
-        transform: translate(0, 0);
-        transition: transform 0.2s ease;
+        display block 
+        width 300% 
+        transform translate(0, 0) 
+        transition transform 0.2s ease 
 
         &:after {
 
-          display: table;
-          clear: both;
+          display table 
+          clear both 
         }
 
         .onboarding-step {
 
-          display: block;
-          float: left;
-          width: (100/3)%;
-          height: auto;
+          display block 
+          float left 
+          width (100/3)% 
+          height auto 
         }
 
         &.active-step-0 {
 
-          transform: translate(0, 0);
+          transform translate(0, 0) 
         }
 
         &.active-step-1 {
 
-          transform: translate(-(100/3)%, 0);
+          transform translate(-(100/3)%, 0) 
         }
 
         &.active-step-2 {
 
-          transform: translate(-(200/3)%, 0);
+          transform translate(-(200/3)%, 0) 
         }
       }
     }
 
     .btn-close {
 
-      color: #fff;
-      position: absolute;
-      top: 4px;
-      right: 14px;
-      font-size: 28px;
-      line-height: 28px;
+      color #fff 
+      position absolute 
+      top 4px 
+      right 14px 
+      font-size 28px 
+      line-height 28px 
     }
   }
 
-  @media (max-width: 640px) {
-    padding-bottom: 40px;
+  @media (max-width 640px) {
+    padding-bottom 40px 
 
     .onboarding-step-switcher {
 
-      display: table;
-      position: absolute;
-      top: 354px;
-      left: 50%;
-      transform: translate(-50%, -100%);
-      line-height: 8px;
-      margin-top: -20px;
+      display table 
+      position absolute 
+      top 354px 
+      left 50% 
+      transform translate(-50%, -100%) 
+      line-height 8px 
+      margin-top -20px 
 
       .onboarding-step-switch {
 
-         display: inline-block;
-         width: 8px;
-         height: 8px;
-         margin-left: 18px;
-         background-color: #D9D9D9;
-         border-radius: 50%;
-         cursor: pointer;
+         display inline-block 
+         width 8px 
+         height 8px 
+         margin-left 18px 
+         background-color #D9D9D9 
+         border-radius 50% 
+         cursor pointer 
 
          &.active {
 
-           cursor: default;
-           background-color: #939393;
+           cursor default 
+           background-color #939393 
          }
 
          &:first-child {
 
-           margin-left: 0;
+           margin-left 0 
          }
        }
     }
@@ -2348,15 +2348,15 @@ $stepIndicatorSize = 36px;
 
 .Modal-container--products-suite-modal {
 
-  width: 90%;
-  max-width: 375px;
+  width 90% 
+  max-width 375px 
 
   span.Modal-close {
-    color: #fff;
-    top: 6px;
+    color #fff 
+    top 6px 
 
     &:hover {
-      color: #fff;
+      color #fff 
     }
   }
 }
@@ -2365,94 +2365,94 @@ $stepIndicatorSize = 36px;
 .product-suite {
   > h1, > p, > ul > li > a {
 
-    padding-left: 64px;
+    padding-left 64px 
   }
 
   > p {
-    padding: 0 18px;
+    padding 0 18px 
   }
 
   > h1 {
-    position: relative;
-    margin-top: 0;
-    margin-bottom: 20px;
-    font-size: 18px;
-    line-height: 22px;
-    background: -webkit-linear-gradient(left, #528ff0, #2371ec)
-    color: #fff;
-    padding: 16px 64px
+    position relative 
+    margin-top 0 
+    margin-bottom 20px 
+    font-size 18px 
+    line-height 22px 
+    background -webkit-linear-gradient(left, #528ff0, #2371ec)
+    color #fff 
+    padding 16px 64px
 
     > i {
 
-      position: absolute;
-      left: 25px;
-      top: 50%;
-      transform: translate(0, -50%);
-      display: block;
-      font-size: 14px;
-      line-height: 1em;
+      position absolute 
+      left 25px 
+      top 50% 
+      transform translate(0, -50%) 
+      display block 
+      font-size 14px 
+      line-height 1em 
     }
   }
 
   > p {
 
-    margin-bottom: 4px;
+    margin-bottom 4px 
   }
 
   > ul > li > a {
 
-    position: relative;
-    color: inherit;
-    padding-top: 21px;
-    padding-bottom: 18px;
-    padding-right: 42px;
-    display: table;
-    width: 100%;
+    position relative 
+    color inherit 
+    padding-top 21px 
+    padding-bottom 18px 
+    padding-right 42px 
+    display table 
+    width 100% 
 
     &:after {
 
-      position: absolute;
-      top: 100%;
-      left: 0;
-      content: "";
-      display: block;
-      width: 100%;
-      height: 3px;
-      background-image: radial-gradient(#eee, transparent);
+      position absolute 
+      top 100% 
+      left 0 
+      content "" 
+      display block 
+      width 100% 
+      height 3px 
+      background-image radial-gradient(#eee, transparent) 
     }
 
     > img {
 
-      position: absolute;
-      left: 18px;
-      top: 50%;
-      transform: translate(0, -50%);
-      display: block;
-      width: 28px;
-      height: 28px;
+      position absolute 
+      left 18px 
+      top 50% 
+      transform translate(0, -50%) 
+      display block 
+      width 28px 
+      height 28px 
     }
 
     > i {
 
-      font-size: 24px;
-      position: absolute;
-      top: 50%;
-      right: 18px;
-      transform: translate(0, -50%);
+      font-size 24px 
+      position absolute 
+      top 50% 
+      right 18px 
+      transform translate(0, -50%) 
     }
 
     > p {
 
-      font-size: 12px;
-      line-height: 15px;
-      margin-bottom: 0;
+      font-size 12px 
+      line-height 15px 
+      margin-bottom 0 
 
       &:first-of-type {
 
-        font-size: 14px;
-        font-weight: bold;
-        line-height: 17px;
-        margin-bottom: 6px;
+        font-size 14px 
+        font-weight bold 
+        line-height 17px 
+        margin-bottom 6px 
       }
     }
   }
@@ -2461,246 +2461,246 @@ $stepIndicatorSize = 36px;
 // Instant activation success
 .Modal-container--instant-activations-success {
 
-  width: 90%;
-  max-width: 400px;
+  width 90% 
+  max-width 400px 
 
   .modal-header, .modal-body {
-    text-align: center;
+    text-align center 
   }
 
   .Modal-close, .modal-header {
-    color: #fff !important;
+    color #fff !important 
   }
 
   .modal-header {
-    background: #03036a;
-    height: 230px;
+    background #03036a 
+    height 230px 
   }
 
   .modal-body {
-    padding: 24px;
+    padding 24px 
 
     .modal-description {
-      margin-bottom: 30px;
-      text-align: center;
+      margin-bottom 30px 
+      text-align center 
 
       .title {
-        color: #162f56de;
-        font-size: 16px;
-        font-weight: 700;
-        margin-bottom: 16px;
+        color #162f56de 
+        font-size 16px 
+        font-weight 700 
+        margin-bottom 16px 
       }
       > p {
-        margin-bottom: 12px;
-        color: #162f568a;
+        margin-bottom 12px 
+        color #162f568a 
       }
     }
     .redirect-counter {
-      color: #162f568a;
-      margin-top: 16px;
+      color #162f568a 
+      margin-top 16px 
     }
   }
 
   .redirect-progress {
-    margin: 0;
-    height: 4px;
+    margin 0 
+    height 4px 
   }
 
   .progress-bar-animation {
-    animation: progress 9s forwards ease-in-out;
+    animation progress 9s forwards ease-in-out 
     @keyframes progress{
       0% {
-        width: 0%;
+        width 0% 
       }
       100% {
-        width: 100%;
+        width 100% 
       }
     }
   }
 }
 
 .Modal-container--m2m-success-modal{
-  width: 408px;
+  width 408px 
   .Modal-close{
-    display: none;
+    display none 
   }
   .m2m-modal-body{
     .m2m-header{
-      font-weight: bold;
-      font-size: 16px;
-      line-height: 24px;
-      text-align: center;
-      color: rgba(22, 47, 86, 0.87);
-      padding: 25px 60px 16px;
+      font-weight bold 
+      font-size 16px 
+      line-height 24px 
+      text-align center 
+      color rgba(22, 47, 86, 0.87) 
+      padding 25px 60px 16px 
     }
     .m2m-desc{
-      font-size: 14px;
-      line-height: 20px;
-      text-align: center;
-      color: rgba(22, 47, 86, 0.54);
-      padding: 0 20px 0;
+      font-size 14px 
+      line-height 20px 
+      text-align center 
+      color rgba(22, 47, 86, 0.54) 
+      padding 0 20px 0 
     }
     .m2m-btn-close{
-      background: #2B83EA;
-      border-radius: 2px;
-      color: #FFFFFF;
-      padding: 10px 25px;
-      margin: 25px auto;
-      display: block;
-      border: none;
+      background #2B83EA 
+      border-radius 2px 
+      color #FFFFFF 
+      padding 10px 25px 
+      margin 25px auto 
+      display block 
+      border none 
     }
   }
 }
 
 .Modal-container--pan-status-modal,  .Modal-container--nc-status-modal {
-  width: 90%;
-  max-width: 328px;
+  width 90% 
+  max-width 328px 
 
   .modal-header, .modal-body {
-    text-align: center;
+    text-align center 
   }
 
   .Modal-close, .modal-header {
-    color: #fff !important;
+    color #fff !important 
   }
 
   .modal-header {
-    background-size: cover;
-    padding: 34px;
+    background-size cover 
+    padding 34px 
 
     h1, p {
-      margin: 0;
+      margin 0 
     }
 
     > h1 {
-      font-weight: bold;
-      font-size: 18px;
-      line-height: 22px;
+      font-weight bold 
+      font-size 18px 
+      line-height 22px 
     }
 
     > p {
-      font-size: 14px;
+      font-size 14px 
     }
   }
 
   .success {
-    background: rgb(31, 53, 181) url('assets/instant_activations/transactions_helper.png') top left no-repeat;
+    background rgb(31, 53, 181) url('assets/instant_activations/transactions_helper.png') top left no-repeat 
   }
 
   .pending {
-    background: rgb(240,138,10) url('assets/instant_activations/pending_background.png') top left no-repeat;
+    background rgb(240,138,10) url('assets/instant_activations/pending_background.png') top left no-repeat 
   }
 
   .warning {
-    background: #ec3a0f;
+    background #ec3a0f 
   }
 
   .suspect-warning{
-    background: #ec3a0f url('assets/instant_activations/suspect_background.svg') top left no-repeat;
+    background #ec3a0f url('assets/instant_activations/suspect_background.svg') top left no-repeat 
   }
 
   .completed{
-    background: #016F13 url('assets/instant_activations/success_bg.svg') top left no-repeat;
+    background #016F13 url('assets/instant_activations/success_bg.svg') top left no-repeat 
   }
 
   .modal-body {
-    padding: 24px;
+    padding 24px 
 
     .KYC__more_details {
-      margin-right: 20px;
+      margin-right 20px 
 
       @media (max-width $screen-sm-min) {
-        display: block;
-        margin: auto;
-        margin-bottom: 20px;
+        display block 
+        margin auto 
+        margin-bottom 20px 
       }
     }
 
     .modal-description {
-      margin-bottom: 30px;
-      text-align: center;
+      margin-bottom 30px 
+      text-align center 
 
       > p {
-        margin-bottom: 10px;
+        margin-bottom 10px 
       }
 
       .tnc-success {
         &___text {
-          color: #162f56bd;
+          color #162f56bd 
         }
 
         &__link {
-          border: 1px solid #162f561a;
-          box-sizing: border-box;
-          box-shadow: 0px 4px 10px #0b70e714;
-          border-radius: 3px;
-          margin: 16px 0;
-          padding: 15px;
-          text-align: center;
-          word-break: break-word;
+          border 1px solid #162f561a 
+          box-sizing border-box 
+          box-shadow 0px 4px 10px #0b70e714 
+          border-radius 3px 
+          margin 16px 0 
+          padding 15px 
+          text-align center 
+          word-break break-word 
           > a {
-            font-weight: 700;
-            color: #2B83EA;
+            font-weight 700 
+            color #2B83EA 
           }
         }
 
         .warning-text {
-          background: #fcf8e5;
-          padding: 8px 12px;
-          font-size: 12px;
-          line-height: 18px;
-          margin: 15px 0 20px;
+          background #fcf8e5 
+          padding 8px 12px 
+          font-size 12px 
+          line-height 18px 
+          margin 15px 0 20px 
         }
 
          .Button.Button--primary.backto-dashboard {
-          padding: 12px 20px;
-          width: 100%;
+          padding 12px 20px 
+          width 100% 
         }
       }
 
       .coupon-content {
-        color: rgba(22, 47, 86, 0.74);
-        margin-bottom: 20px;
+        color rgba(22, 47, 86, 0.74) 
+        margin-bottom 20px 
         .link {
-          display: inline;
+          display inline 
         }
-        @media(max-width: 498px) {
-          color: rgba(22, 47, 86, 0.54)
+        @media(max-width 498px) {
+          color rgba(22, 47, 86, 0.54)
         }
       }
     }
 
     .tnc-body, .success-redeem {
-      margin-bottom: 0px; 
+      margin-bottom 0px  
     }
 
     .fraud-detection, .tnc-desc {
-      text-align: center;
-      margin-bottom: 10px;
+      text-align center 
+      margin-bottom 10px 
       > div {
-        padding: 0 24px 10px;
+        padding 0 24px 10px 
         > p {
-          margin: 8px 0 16px;
+          margin 8px 0 16px 
         }
       }
     }
     .tnc-desc {
       > div {
-        padding: 0 18px 10px;
+        padding 0 18px 10px 
       }
     }
   }
 }
 
 .Modal-container--mtu-success {
-  @media(max-width: 498px) {
-    padding: 15px;
-    border-radius: 6px;
+  @media(max-width 498px) {
+    padding 15px 
+    border-radius 6px 
   }
 
   .Button.Button--primary.succes-mtu-btn {
-    @media(max-width: 498px) {
-      width: 100%; 
+    @media(max-width 498px) {
+      width 100%  
     }
   }
 }
@@ -2708,95 +2708,95 @@ $stepIndicatorSize = 36px;
 // Instant Activations , Transactions helper
 .Modal-container--transactions-helper {
 
-  width: 90%;
-  max-width: 640px;
+  width 90% 
+  max-width 640px 
 
   modal-header, modal-body {
 
-    display: block;
-    text-align: center;
+    display block 
+    text-align center 
   }
 
   .Modal-close, modal-header {
 
-    color: #fff !important;
+    color #fff !important 
   }
 
   modal-header {
 
-    background: rgb(31, 53, 181) url('assets/instant_activations/transactions_helper.png') top left no-repeat;
-    background-size: cover;
-    padding: 34px;
+    background rgb(31, 53, 181) url('assets/instant_activations/transactions_helper.png') top left no-repeat 
+    background-size cover 
+    padding 34px 
 
     h1, p {
 
-      margin: 0;
+      margin 0 
     }
 
     > h1 {
 
-      font-weight: 900;
-      font-size: 18px;
-      line-height: 22px;
+      font-weight 900 
+      font-size 18px 
+      line-height 22px 
     }
   }
 
   modal-body {
 
-    padding: 24px;
+    padding 24px 
 
    .rzp-group {
 
-     width: 100%;
+     width 100% 
 
      .rzp-group-item {
 
-       border: none;
+       border none 
 
        img {
 
-         display: inline-block;
-         height: 24px;
-         width: auto;
+         display inline-block 
+         height 24px 
+         width auto 
        }
 
        &.vertical-splitter {
 
-         padding: 0;
-         width: 0;
-         background-image: radial-gradient(#eee, transparent);
+         padding 0 
+         width 0 
+         background-image radial-gradient(#eee, transparent) 
 
          > div {
 
-           width: 3px;
+           width 3px 
          }
        }
 
        .Button--secondary {
-         display: inline-block;
-         margin: 18px 0 0 0;
-         box-shadow: none;
+         display inline-block 
+         margin 18px 0 0 0 
+         box-shadow none 
        }
      }
 
-     @media(max-width: 498px) {
+     @media(max-width 498px) {
 
-       display: block;
+       display block 
 
        .rzp-group-item {
 
-         display: block;
+         display block 
 
          &.vertical-splitter {
 
-           width: 100%;
+           width 100% 
 
            > div {
 
-             width: 100%;
-             height: 3px;
-             margin-top: 8px;
-             margin-bottom: 8px;
+             width 100% 
+             height 3px 
+             margin-top 8px 
+             margin-bottom 8px 
            }
          }
        }
@@ -2805,59 +2805,59 @@ $stepIndicatorSize = 36px;
 
     > p {
 
-      margin-bottom: 32px;
+      margin-bottom 32px 
     }
   }
 }
 
 .Modal-container--kyc-details-modal {
 
-  width: 90%;
-  max-width: 328px;
-  padding: 18px 24px 24px 24px;
+  width 90% 
+  max-width 328px 
+  padding 18px 24px 24px 24px 
 
   .modal-header {
-    text-align: center;
-    padding: 0;
-    border: 0;
+    text-align center 
+    padding 0 
+    border 0 
   }
 
   b {
 
-    font-size: 18px;
-    line-height: 22px;
+    font-size 18px 
+    line-height 22px 
   }
 
   > a {
 
-    display: block;
-    margin-top: 24px;
+    display block 
+    margin-top 24px 
   }
 
   .kyc-details-modal {
     &__btn {
-      margin-top : 20px;
+      margin-top  20px 
 
       button, a {
-        width: 47%;
-        display: inline-block;
+        width 47% 
+        display inline-block 
       }
 
       a {
-        margin-left: 6px;
-        margin-right: 0;
-        text-align: center;
+        margin-left 6px 
+        margin-right 0 
+        text-align center 
       }
 
       button {
-        margin-right: 6px;
+        margin-right 6px 
       }
     }
 
     &__desc {
-      margin-top: 20px;
-      width: 90%;
-      text-align: justify;
+      margin-top 20px 
+      width 90% 
+      text-align justify 
     }
   }
 }
@@ -2865,255 +2865,256 @@ $stepIndicatorSize = 36px;
 // Announcements
 .announcement-banner-container {
 
-  padding: 20px;
+  padding 20px 
+  padding-bottom 0px 
 }
 
 .big-dot-separator {
 
-  display: inline-block;
-  width: 9px;
-  height: 9px;
-  margin: 0 8px;
-  background-color: currentColor;
-  border-radius: 50%;
+  display inline-block 
+  width 9px 
+  height 9px 
+  margin 0 8px 
+  background-color currentColor 
+  border-radius 50% 
 }
 
 .dot-separator {
-  display: inline-block;
-  width: 4px;
-  height: 4px;
-  margin: 0 4px;
-  background-color: currentColor;
-  border-radius: 50%;
+  display inline-block 
+  width 4px 
+  height 4px 
+  margin 0 4px 
+  background-color currentColor 
+  border-radius 50% 
 }
 
 .enable-settlements-banner .rzp-banner {
 
-  margin-bottom: 0;
+  margin-bottom 0 
 }
 
 [data-tooltip] {
-    display: inline-block;
-    position: relative;
-    cursor: pointer;
-    padding: 4px;
+    display inline-block 
+    position relative 
+    cursor pointer 
+    padding 4px 
 }
 [data-tooltip]:before {
-    content: attr(data-tooltip);
-    display: none;
-    position: absolute;
-    background: #2C3243;
-    color: rgba(255, 255, 255, 0.72);
-    padding: 10px 15px 15px 10px;
-    font-size: 12px;
-    min-width: 200px;
-    text-align: center;
-    box-shadow: 0 6px 15px rgba(0,0,0,0.13);
+    content attr(data-tooltip) 
+    display none 
+    position absolute 
+    background #2C3243 
+    color rgba(255, 255, 255, 0.72) 
+    padding 10px 15px 15px 10px 
+    font-size 12px 
+    min-width 200px 
+    text-align center 
+    box-shadow 0 6px 15px rgba(0,0,0,0.13) 
 }
 [data-tooltip-position="top"]:before{
-    left: 50%;
-    transform: translateX(-50%);
-    bottom: 100%;
-    margin-bottom: 6px;
+    left 50% 
+    transform translateX(-50%) 
+    bottom 100% 
+    margin-bottom 6px 
 }
 
 [data-tooltip]:after {
-    content: '';
-    display: none;
-    position: absolute;
-    width: 0;
-    height: 0;
-    border-color: transparent;
-    border-style: solid;
+    content '' 
+    display none 
+    position absolute 
+    width 0 
+    height 0 
+    border-color transparent 
+    border-style solid 
 }
 [data-tooltip-position="top"]:after {
-    bottom: 100%;
-    border-width: 6px 6px 0;
-    border-top-color: #2C3243;
-    left: 50%;
-    margin-left: -6px;
+    bottom 100% 
+    border-width 6px 6px 0 
+    border-top-color #2C3243 
+    left 50% 
+    margin-left -6px 
 }
 [data-tooltip]:hover:before,
 [data-tooltip]:hover:after {
-    display: block;
-    z-index: 50;
+    display block 
+    z-index 50 
 }
 p.small-txt{
-  font-size:12px;
+  font-size:12px 
 }
 
 .negative-balance{
-  color: #C42A2A
+  color #C42A2A
 }
 
 .payments-manual-actions{
-  display: flex;
-  padding: 10px 0px 10px 5px;
-  background: #fff5d5;
+  display flex 
+  padding 10px 0px 10px 5px 
+  background #fff5d5 
 }
 .PaymentProgressBar-onboarding {
-  background: #F9FBFE;
-  border: 1px solid #C4DDF9;
-  box-sizing: border-box;
-  box-shadow: 0px 4px 10px rgba(11, 112, 231, 0.05);
-  border-radius: 4px;
-  margin: 38px 0 0;
-  display: flex;
-  padding: 15px;
-  align-items: flex-end;
-  justify-content: space-between;
+  background #F9FBFE 
+  border 1px solid #C4DDF9 
+  box-sizing border-box 
+  box-shadow 0px 4px 10px rgba(11, 112, 231, 0.05) 
+  border-radius 4px 
+  margin 38px 0 0 
+  display flex 
+  padding 15px 
+  align-items flex-end 
+  justify-content space-between 
 
   .info {
-    font-weight: bold;
-    font-size: 12px;
-    line-height: 20px;
-    color: rgba(22, 47, 86, 0.87);
-    max-width: 500px;
+    font-weight bold 
+    font-size 12px 
+    line-height 20px 
+    color rgba(22, 47, 86, 0.87) 
+    max-width 500px 
   }
 
   .amount-total {
-    font-size: 16px;
-    line-height: 17px;
-    color: #6F7691;
-    margin-bottom: 10px;
+    font-size 16px 
+    line-height 17px 
+    color #6F7691 
+    margin-bottom 10px 
 
     .amount-accepted {
-      color: #2B83EA;
+      color #2B83EA 
     }
   }
 
   .progressbar {
-    width: 30%;
-    padding: 0 35px;
-    flex-shrink: 0;
+    width 30% 
+    padding 0 35px 
+    flex-shrink 0 
   }
 
   .progress-div {
-    border-radius: 10px;
-    overflow: hidden;
+    border-radius 10px 
+    overflow hidden 
   }
 
   .progress-container {
-    height: 5px;
-    border-radius: 10px;
-    transition: 1s ease;
-    transition-delay: 0.5s;
+    height 5px 
+    border-radius 10px 
+    transition 1s ease 
+    transition-delay 0.5s 
   }
 }
 
 .status-info{
-  color: rgba(22, 47, 86, 0.54);
-  padding: 6px 0;
+  color rgba(22, 47, 86, 0.54) 
+  padding 6px 0 
   i {
-    margin-right: 8px;
-    position: relative;
-    top: -1px;
+    margin-right 8px 
+    position relative 
+    top -1px 
   }
   span {
-    font-size: 12px;
-    line-height: 14px;
-    text-align: center;
+    font-size 12px 
+    line-height 14px 
+    text-align center 
   }
 }
 
 .announcement-container {
-  display: flex;
-  align-items: center;
+  display flex 
+  align-items center 
 }
 
 .announcement-info {
-  max-width: 75%;
+  max-width 75% 
 }
 .remove-logo {
-  margin-left: 10px
+  margin-left 10px
 }
 
 .recommendation-widget {
-  display: flex;
-  background-color: #fff;
-  padding-bottom: 24px;
-  background-image: url("https://cdn.razorpay.com/static/assets/product-recommendation/mask-group.svg");
-  background-position: top center;
-  background-repeat: no-repeat;
-  background-size: cover;
+  display flex 
+  background-color #fff 
+  padding-bottom 24px 
+  background-image url("https://cdn.razorpay.com/static/assets/product-recommendation/mask-group.svg") 
+  background-position top center 
+  background-repeat no-repeat 
+  background-size cover 
 
-  @media screen and (max-width: $screen-xs-max){
+  @media screen and (max-width $screen-xs-max){
     display block
   }
 
   .recommend-product {
-    width: 50%;
-    padding: 25px 0 0 40px;
-    @media screen and (max-width: $screen-xs-max){
-      width: 100%;
-      padding: 16px;
+    width 50% 
+    padding 25px 0 0 40px 
+    @media screen and (max-width $screen-xs-max){
+      width 100% 
+      padding 16px 
     }
 
     .title {
-      color: rgba(22, 47, 86, 0.74);
-      font-weight: 700;
-      font-size: 18px;
+      color rgba(22, 47, 86, 0.74) 
+      font-weight 700 
+      font-size 18px 
     }
 
     .active-product {
-      background: linear-gradient(to bottom right, #f3f8fe 46%, #fbfcff 45%);
-      max-width: 510px;
-      display: flex;
-      margin-top: 15px;
-      border-radius: 4px;
-      box-shadow: 0px 2px 12px -8px;
-      padding: 25px 42px 30px 40px;
-      cursor: pointer;
-      @media screen and (max-width: $screen-xs-max){
+      background linear-gradient(to bottom right, #f3f8fe 46%, #fbfcff 45%) 
+      max-width 510px 
+      display flex 
+      margin-top 15px 
+      border-radius 4px 
+      box-shadow 0px 2px 12px -8px 
+      padding 25px 42px 30px 40px 
+      cursor pointer 
+      @media screen and (max-width $screen-xs-max){
         display block
         padding 16px
       }
 
       &__container {
-        margin-left: 18px;
-        @media screen and (max-width: $screen-xs-max){
+        margin-left 18px 
+        @media screen and (max-width $screen-xs-max){
           margin-left 0
           margin-top 16px
         }
         .name {
-          color: #58666E;
-          font-size: 16px;
-          font-weight: 700;
-          padding-bottom: 5px;
+          color #58666E 
+          font-size 16px 
+          font-weight 700 
+          padding-bottom 5px 
 
           span {
-            cursor: pointer;
+            cursor pointer 
           }
         }
         .desc {
-          color: #6f7691;
+          color #6f7691 
         }
         .explore {
-          padding-top: 6px;
-          font-weight: 700;
-          color: #2b83ea;
+          padding-top 6px 
+          font-weight 700 
+          color #2b83ea 
 
           .card-cta {
-            margin-right: 18px;
-            cursor: pointer;
+            margin-right 18px 
+            cursor pointer 
           }
         }
       }
       > img {
-        height: 50px;
+        height 50px 
       }
     }
   }
 
   .more-product {
-    margin-top: 25px;
-    width: 50%;
-    background-image: url("https://cdn.razorpay.com/static/assets/product-recommendation/overview.svg");
-    background-position: right;
-    background-repeat: no-repeat;
-    background-size: auto;
+    margin-top 25px 
+    width 50% 
+    background-image url("https://cdn.razorpay.com/static/assets/product-recommendation/overview.svg") 
+    background-position right 
+    background-repeat no-repeat 
+    background-size auto 
 
-    @media screen and (max-width: $screen-xs-max){
+    @media screen and (max-width $screen-xs-max){
       margin-top 0
       width 100%
       padding 0 16px
@@ -3121,49 +3122,49 @@ p.small-txt{
     }
 
     &__title {
-      color: #162f568a;
-      font-size: 13px;
+      color #162f568a 
+      font-size 13px 
     }
 
     .product-container {
-      width: 55%;
-      margin-top: 35px;
-      @media screen and (max-width: $screen-xs-max){
+      width 55% 
+      margin-top 35px 
+      @media screen and (max-width $screen-xs-max){
         margin-top 16px
         width 100%
       }
       .prd-one, .prd-two {
-        display: flex;
-        margin-top: 25px;
-        cursor: pointer;
-        @media screen and (max-width: $screen-xs-max){
+        display flex 
+        margin-top 25px 
+        cursor pointer 
+        @media screen and (max-width $screen-xs-max){
           margin-top 0
         }
 
         .container {
-          margin-left: 18px;
+          margin-left 18px 
           .name {
-            color: #58666E;
-            font-size: 16px;
-            font-weight: 700;
-            padding-bottom: 2px;
+            color #58666E 
+            font-size 16px 
+            font-weight 700 
+            padding-bottom 2px 
 
             span {
-              margin-right: 40px;
-              cursor: pointer;
+              margin-right 40px 
+              cursor pointer 
             }
           }
           .desc {
-            color: #6f7691;
+            color #6f7691 
           }
         }
         > img {
-          height: 32px;
+          height 32px 
         }
       }
       .prd-two {
-        margin-top: 20px;
-        @media screen and (max-width: $screen-xs-max){
+        margin-top 20px 
+        @media screen and (max-width $screen-xs-max){
           margin-top 10px
         }
       }
@@ -3171,26 +3172,26 @@ p.small-txt{
   }
   
   .api-loader {
-    position: relative;
-    right: 6px;
+    position relative 
+    right 6px 
   }
 }
 .post-l1 {
-  margin: 22px;
+  margin 22px 
 }
 .pre-l1 {
-  margin: 22px;
+  margin 22px 
 }
 
 .recommendation-shimmer {
-  height: 190px;
-  max-height: 219px;
-  margin: 22px;
-  padding: 20px;
-  background: rgb(255, 255, 255);
-  display: flex;
-  border-radius: 4px;
-  @media screen and (max-width: $screen-xs-max){
+  height 190px 
+  max-height 219px 
+  margin 22px 
+  padding 20px 
+  background rgb(255, 255, 255) 
+  display flex 
+  border-radius 4px 
+  @media screen and (max-width $screen-xs-max){
     display block
     margin 0 16px 16px
     padding 16px
@@ -3199,189 +3200,189 @@ p.small-txt{
   }
   
   .primary-shimmer {
-    padding-left: 40px;
-    display: flex;
-    width: 50%;
-    margin: auto 0px;
-    @media screen and (max-width: $screen-xs-max){
+    padding-left 40px 
+    display flex 
+    width 50% 
+    margin auto 0px 
+    @media screen and (max-width $screen-xs-max){
       padding-left 0
       width 100%
     }
   
     .primary-icon {
-      width: 90px;
-      height: 80px;
+      width 90px 
+      height 80px 
     }
 
     .first-cta {
-      width: 260px;
-      height: 12px;
-      @media screen and (max-width: $screen-xs-max){
+      width 260px 
+      height 12px 
+      @media screen and (max-width $screen-xs-max){
         width 200px
       }
     }
     .sec-cta {
-      width: 330px;
-      height: 10px;
-      margin: 16px 0;
-      @media screen and (max-width: $screen-xs-max){
+      width 330px 
+      height 10px 
+      margin 16px 0 
+      @media screen and (max-width $screen-xs-max){
         width 260px
       }
     }
     .last-cta {
-      width: 150px;
-      height: 10px;
-      margin-top: 24px;
-      @media screen and (max-width: $screen-xs-max){
+      width 150px 
+      height 10px 
+      margin-top 24px 
+      @media screen and (max-width $screen-xs-max){
         width 100px
       }
     }
   }
 
   .secondary-shimmer {
-    width: 50%;
-    margin: auto 0;
-    @media screen and (max-width: $screen-xs-max){
+    width 50% 
+    margin auto 0 
+    @media screen and (max-width $screen-xs-max){
       margin-top 30px
       width 100%
     }
 
     .more-content {
-      display: flex;
+      display flex 
 
       .icon {
-        width: 40px;
-        height: 40px;
+        width 40px 
+        height 40px 
       }
 
       .first-cta {
-        width: 180px;
-        height: 12px;
+        width 180px 
+        height 12px 
       }
       .sec-cta {
-        width: 250px;
-        height: 10px;
-        margin-top: 10px;
+        width 250px 
+        height 10px 
+        margin-top 10px 
       }
     }
   }
 
   .shimmer-loader {
-    position: relative;
-    display: block;
-    background: #ebecf2;
-    background: linear-gradient(to right, #ebecf2 0%, #dfe1ea 10%, #ebecf2 20%);
-    background-size: 800px 100px;
-    animation: loaderShimmer 1.2s forwards infinite linear;
+    position relative 
+    display block 
+    background #ebecf2 
+    background linear-gradient(to right, #ebecf2 0%, #dfe1ea 10%, #ebecf2 20%) 
+    background-size 800px 100px 
+    animation loaderShimmer 1.2s forwards infinite linear 
 
     @keyframes loaderShimmer {
       0% {
-        background-position: -300px 0;
+        background-position -300px 0 
       }
       100% {
-        background-position: 300px 0;
+        background-position 300px 0 
       }
     }
   }
 
   .side-space {
-    margin-left: 20px;
-    @media screen and (max-width: $screen-xs-max){
+    margin-left 20px 
+    @media screen and (max-width $screen-xs-max){
       margin-left 10px
     }
   }
 }
 
 .hideShimer {
-  height: 0;
-  transition: height 0.3s linear;
-  overflow: hidden;
+  height 0 
+  transition height 0.3s linear 
+  overflow hidden 
 }
 
 .intl-payment-recommendation {
-  display: block;
-  background-image: url("https://cdn.razorpay.com/static/assets/product-recommendation/mask-group.svg");
-  background-position: left center;
-  background-repeat: no-repeat;
-  background-size: cover;
-  background-color: #ffffff;
-  padding: 25px 40px;
-  margin: 22px;
-  @media screen and (max-width: $screen-xs-max) {
-    padding: 16px;
+  display block 
+  background-image url("https://cdn.razorpay.com/static/assets/product-recommendation/mask-group.svg") 
+  background-position left center 
+  background-repeat no-repeat 
+  background-size cover 
+  background-color #ffffff 
+  padding 25px 40px 
+  margin 22px 
+  @media screen and (max-width $screen-xs-max) {
+    padding 16px 
   }
 
   .recommend-product {
-    width: 100%;
+    width 100% 
 
     .flex-between {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      display flex 
+      justify-content space-between 
+      align-items center 
     }
 
     .title {
-      color: #162f56bd;
-      font-weight: 700;
-      font-size: 18px;
+      color #162f56bd 
+      font-weight 700 
+      font-size 18px 
     }
 
     .highlight {
-      color: #cd8214;
+      color #cd8214 
     }
 
     .close-btn {
-      font-size: 24px;
-      line-height: 18px;
-      border-color: transparent;
-      background-color: transparent;
-      box-shadow: none;
-      cursor: pointer;
+      font-size 24px 
+      line-height 18px 
+      border-color transparent 
+      background-color transparent 
+      box-shadow none 
+      cursor pointer 
     }
 
     .product-card {
-      width: 100%;
-      background-image: linear-gradient(135deg, #f3f8fe 35%, #fbfcff 15%);
-      display: flex;
-      margin-top: 15px;
-      border-radius: 4px;
-      box-shadow: 0 2px 12px -8px;
-      padding: 25px 42px 30px 40px;
-      @media screen and (max-width: $screen-xs-max) {
-        display: block;
-        padding: 16px;
+      width 100% 
+      background-image linear-gradient(135deg, #f3f8fe 35%, #fbfcff 15%) 
+      display flex 
+      margin-top 15px 
+      border-radius 4px 
+      box-shadow 0 2px 12px -8px 
+      padding 25px 42px 30px 40px 
+      @media screen and (max-width $screen-xs-max) {
+        display block 
+        padding 16px 
       }
 
       &__container {
-        margin-left: 18px;
-        @media screen and (max-width: $screen-xs-max) {
-          margin-left: 0;
-          margin-top: 16px;
+        margin-left 18px 
+        @media screen and (max-width $screen-xs-max) {
+          margin-left 0 
+          margin-top 16px 
         }
         .name {
-          color: #58666e;
-          font-size: 16px;
-          font-weight: 700;
-          padding-bottom: 5px;
+          color #58666e 
+          font-size 16px 
+          font-weight 700 
+          padding-bottom 5px 
 
           span {
-            cursor: pointer;
+            cursor pointer 
           }
         }
         .desc {
-          color: #6f7691;
-          padding-bottom: 10px;
+          color #6f7691 
+          padding-bottom 10px 
         }
         .btn-link {
-          font-weight: 600;
-          text-decoration: none;
+          font-weight 600 
+          text-decoration none 
           i {
-            margin-left: 5px;
+            margin-left 5px 
           }
         }
       }
       > img {
-        height: 50px;
+        height 50px 
       }
     }
   }
@@ -3389,35 +3390,35 @@ p.small-txt{
 
 .thank-you-modal {
   .img-container {
-    text-align: center
+    text-align center
     img {
-      max-width: 340px
+      max-width 340px
     }
   }
 }
 
 .webview-header {
-  font-size: 20px;
-  font-weight: 700;
-  padding: 16px;
-  background-color: #2F3344;
-  color: #fff;
-  position: relative;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 56px;
+  font-size 20px 
+  font-weight 700 
+  padding 16px 
+  background-color #2F3344 
+  color #fff 
+  position relative 
+  display flex 
+  justify-content center 
+  align-items center 
+  height 56px 
 }
 
 .webview-header-cross-icon {
-  width: 14px;  
-  right: 24px;
-  position: absolute;
-  cursor: pointer;
+  width 14px   
+  right 24px 
+  position absolute 
+  cursor pointer 
 }
 .webview-header-back-icon {
-  width: 8px;
-  position: absolute;
-  left: 24px;
-  cursor: pointer;
+  width 8px 
+  position absolute 
+  left 24px 
+  cursor pointer 
 }

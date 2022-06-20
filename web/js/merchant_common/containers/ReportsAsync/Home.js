@@ -13,6 +13,7 @@ import { getItem } from 'common/utils/localStorage';
 import LogList from './Logs/List';
 import GenerateReportPanel from './GenerateReportPanel';
 import EasterEgg from 'merchant/components/EasterEgg';
+import DashboardBanner from 'common/ui/DashboardBanner';
 
 @connect(null, { showNotification })
 export default class ReportHome extends React.PureComponent {
@@ -158,6 +159,7 @@ export default class ReportHome extends React.PureComponent {
             bannerKey={`zapier-integration-banner-${user.current}`}
           />
         </ShowWhen>
+        <DashboardBanner />
         <tabbed-container>
           <header>
             <NavLink to="/reports">Reports</NavLink>
