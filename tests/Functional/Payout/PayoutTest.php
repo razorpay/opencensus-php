@@ -23912,8 +23912,8 @@ class PayoutTest extends OAuthTestCase
 
         $this->testData[__FUNCTION__]['request']['content'] = [
             'payout_ids'     => [
-                $payout1->getId(),
-                $payout2->getId(),
+                $payout1->getPublicId(),
+                $payout2->getPublicId(),
             ],
             'account_number'  => '2224440041626905',
         ];

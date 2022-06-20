@@ -1052,6 +1052,8 @@ class Repository extends Base\Repository
     {
         $payoutIds = $params[Entity::PAYOUT_IDS];
 
+        Entity::verifyIdAndStripSignMultiple($payoutIds);
+
         $idColumn = $this->dbColumn(Entity::ID);
 
         $query->whereIn($idColumn, $payoutIds);
