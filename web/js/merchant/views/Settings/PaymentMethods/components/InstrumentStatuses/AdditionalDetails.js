@@ -20,14 +20,21 @@ const AdditionalDetails = (props) => {
             Add now <i className="i i-external-link" />
           </Link>
         ) : (
-          <div className={statusClass[status]}>
-            {displayStatus}
-            <Popover align="bottom" theme="dark">
-              <PopoverBody>
-                <div className="popover-text">{statusPopoverText[status]}</div>
-              </PopoverBody>
-            </Popover>
-          </div>
+          <>
+            {['under_review', 'rejected'].includes(status) && (
+              <Link to={url} title="External Link">
+                View Details <i className="i i-external-link" />
+              </Link>
+            )}
+            <div className={statusClass[status]}>
+              {displayStatus}
+              <Popover align="bottom" theme="dark">
+                <PopoverBody>
+                  <div className="popover-text">{statusPopoverText[status]}</div>
+                </PopoverBody>
+              </Popover>
+            </div>
+          </>
         )}
       </div>
     </div>

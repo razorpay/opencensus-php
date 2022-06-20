@@ -14,7 +14,6 @@ import {
   fetchMerchantInstruments,
   fetchRequestedInstruments,
   getIirDiscrepancies,
-  saveMerchantDetails,
   setInstrument,
 } from 'merchant/reducers/instrumentRequests';
 
@@ -193,26 +192,6 @@ class LeafListItem extends React.Component {
     return true;
   };
 
-  saveDetails = (data, id) => {
-    return this.props
-      .saveMerchantDetails(data, id)
-      .then(
-        ({ success }) =>
-          success &&
-          this.props.showNotification({
-            type: 'success',
-            message: 'Details are saved',
-          }),
-      )
-      .catch((err) =>
-        this.props.showNotification({
-          type: 'error',
-          message: err?.errors[0],
-        }),
-      )
-      .finally(() => this.setState({ loading: false }));
-  };
-
   handleMissingInfoModal = () => {
     const { instrument, leafInstrument, instrumentsTat } = this.props;
 
@@ -226,7 +205,6 @@ class LeafListItem extends React.Component {
           instrument={instrument}
           tat={instrumentsTat[instrument.path]}
           onCloseClick={this.props.closeModal}
-          saveMerchantDetails={this.saveDetails}
           createRequestAction={() =>
             this.createRequestAction(instrument, leafInstrument, instrument.path)
           }
@@ -399,6 +377,9 @@ class LeafListItem extends React.Component {
     const isMissingInfo = instrument?.capture_info_before_mir;
     const isGrayed = instrument.status === GREYED && instrument.fade_comment;
     const instrumentParent = instrument?.path?.split('.')[1];
+    const shouldShowGSTMessage =
+      ['2', '11'].includes(this.props?.user?.business_type) &&
+      isMissingInfo.some((field) => field.name === 'merchant_details|gstin');
     return (
       <li className={getListClass(instrument.status, instrument.path)}>
         <div>
@@ -543,7 +524,9 @@ class LeafListItem extends React.Component {
           <details>
             <p>
               The following fields need to be updated to request {instrument?.name} for{' '}
-              {instrumentParent} payments
+              {instrumentParent} payments.
+              {shouldShowGSTMessage &&
+                'Unregistered businesses are not allowed to update GST details'}
             </p>
             {isMissingInfo?.map(
               ({ display_name, url, status_identifier, current_value, status }, key) => {
@@ -618,7 +601,6 @@ const mapDispatchToProps = (dispatch) => {
       fetchMerchantInstruments,
       fetchRequestedInstruments,
       getIirDiscrepancies,
-      saveMerchantDetails,
       setInstrument,
     },
     dispatch,

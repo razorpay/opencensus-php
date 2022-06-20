@@ -25,7 +25,7 @@ export const statusClass = {
   pending: 'pending status',
   rejected: 'rejected status',
   action_required: 'action-required status',
-  under_review: 'action-required status',
+  under_review: 'action-required under-review status',
   activated_action_required: 'activated-action-required status',
   greyed: 'btn btn-primary disabled',
   reinitiated: 'requested status',

@@ -460,6 +460,9 @@ $details-white = #F3F6F8
       color: #CD8214
       border-radius: 15px
       background: $color-mustard
+    .under-review
+      margin-top 10px
+      opacity 1
     
     .notify-badge
       cursor: pointer
@@ -562,18 +565,17 @@ $details-white = #F3F6F8
     overflow-y scroll
     .form-container-item
       display grid
-      grid-template-columns 1.5fr 2fr
+      grid-template-columns 1fr 2fr
       align-items center
       grid-auto-rows minmax(40px, auto)
-      margin-left 60px
-      margin-right 130px
       label
         text-align right
         margin-right 20px
-      input
+      input[type="text"], input[type="number"]
        height 36px
        border 1px solid #E2E2E2
        padding 12px
+       width 300px
       .Input
         margin: 24px 0
   .tat
@@ -588,6 +590,16 @@ $details-white = #F3F6F8
       font-weight 400
       font-size 14px
       color $secondary-color
+  .disclaimer
+    padding 12px
+    background #FEF6DD
+    display flex
+    align-items baseline
+    margin 0 20px
+    .i-info-outline
+      margin-right 10px
+      position relative
+      top 3px
   .footer
     position fixed
     bottom 0

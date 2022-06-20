@@ -17,7 +17,6 @@ const REINITIATE_INSTRUMENT_REQUEST = 'REINITIATE_INSTRUMENT_REQUEST';
 const SET_LOADING = 'SET_LOADING';
 const GET_DISCREPANCY_CATEGORIES = 'GET_DISCREPANCY_CATEGORIES';
 const GET_IIR_DISCREPANCIES = 'GET_IIR_DISCREPANCIES';
-const SAVE_MERCHANT_DETAILS = 'SAVE_MERCHANT_DETAILS';
 
 export const clearIntermediateInstrument = () => {
   return {
@@ -56,17 +55,6 @@ export const fetchRequestedInstruments = () => {
   return {
     type: FETCH_REQUESTED_MERCHANT_INSTRUMENTS,
     payload: merchantFetch('merchant_instruments'),
-  };
-};
-
-export const saveMerchantDetails = (data) => {
-  return {
-    type: SAVE_MERCHANT_DETAILS,
-    payload: merchantFetch({
-      url: `terminals/proxy/collect_info/merchant/details`,
-      method: 'post',
-      data,
-    }),
   };
 };
 

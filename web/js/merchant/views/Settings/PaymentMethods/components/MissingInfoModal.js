@@ -7,6 +7,7 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 import { bindActionCreators } from 'redux';
 import { closeModal } from 'merchant_common/reducers/modals';
 import { withRouter } from 'react-router-dom';
+import { merchantFetch } from 'merchant/utils/ajax';
 
 const SET_VALUE = 'SET_VALUE';
 const SET_PAGE = 'SET_PAGE';
@@ -32,7 +33,7 @@ const MissingInfoForm = ({ fields, values, onChange }) => (
               addonAfter={<i className="i i-date-range" />}
               placement="topLeft"
               allowToday={false}
-              disablePastDates={false}
+              allowedPastTill={1900}
               required
             />
           ) : (
@@ -92,7 +93,6 @@ const MissingInfoModal = (props) => {
     tat,
     instrument: { name, collect_info, path },
     onCloseClick,
-    saveMerchantDetails,
     user,
     closeModal,
     showNotification,
@@ -100,6 +100,28 @@ const MissingInfoModal = (props) => {
     history,
   } = props;
   const { page, values, disabled } = state;
+
+  const saveMerchantDetails = (data) => {
+    return merchantFetch({
+      url: `terminals/proxy/collect_info/merchant/details`,
+      method: 'post',
+      data,
+    }).then(async (d) => {
+      if (d?.success) {
+        await createRequestAction();
+      }
+      return false;
+    });
+  };
+
+  const refreshEntries = () => {
+    closeModal();
+    history.replace('/');
+    setTimeout(() => {
+      history.replace('/payment-methods');
+    }, 10);
+  };
+
   const onSecondaryClick = () => {
     return dispatch({ type: SET_SECONDARY_PAGE });
   };
@@ -113,19 +135,10 @@ const MissingInfoModal = (props) => {
           instruments: [path],
         };
         await saveMerchantDetails(data, user.id);
-        await createRequestAction();
-        await closeModal();
-        history.replace('/');
-        setTimeout(() => {
-          history.replace('/payment-methods');
-        }, 10);
+        return refreshEntries();
       }
     } catch (error) {
-      closeModal();
-      history.replace('/');
-      setTimeout(() => {
-        history.replace('/payment-methods');
-      }, 10);
+      refreshEntries();
       return showNotification({
         type: 'error',
         message: error?.errors[0],
@@ -164,8 +177,18 @@ const MissingInfoModal = (props) => {
   return (
     <>
       <div className="header">
-        <ModalHeader title={`Request ${name}`} onCloseClick={onCloseClick} />
+        <ModalHeader title="Additional Details required" onCloseClick={onCloseClick} />
       </div>
+      {page === 1 && (
+        <div className="disclaimer">
+          <i className="i i-info-outline" />
+          <p>
+            Our banking partners need some additional information to proceed with the request.
+            Ensure that it matches with previously submitted information to increase chances of your
+            request getting fulfilled
+          </p>
+        </div>
+      )}
       {page === 1 ? (
         <MissingInfoForm values={values} fields={collect_info} onChange={onChange} />
       ) : (
