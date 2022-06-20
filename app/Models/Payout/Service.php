@@ -112,6 +112,11 @@ class Service extends Base\Service
      */
     protected $payoutServiceOnHoldCronClient;
 
+    /**
+     * @var PayoutService\OnHoldSLAUpdate
+     */
+    protected $payoutServiceOnHoldSLAUpdateClient;
+
     public function __construct()
     {
         parent::__construct();
@@ -131,6 +136,8 @@ class Service extends Base\Service
         $this->slackAppService = new SlackAppService($this->app);
 
         $this->payoutServiceOnHoldCronClient = $this->app[PayoutService\OnHoldCron::PAYOUT_SERVICE_ON_HOLD_CRON];
+
+        $this->payoutServiceOnHoldSLAUpdateClient = $this->app[PayoutService\OnHoldSLAUpdate::PAYOUT_SERVICE_ON_HOLD_SLA_UPDATE];
 
         $this->payoutDetailsCore = new PayoutDetails\Core();
     }
@@ -2782,6 +2789,13 @@ class Service extends Base\Service
 
     public function updateMerchantOnHoldSlas(array $input)
     {
+        $this->trace->info(
+            TraceCode::ON_HOLD_SLA_UPDATE_API_REQUEST,
+            [
+                'input' => $input,
+            ]
+        );
+
         (new Validator)->validateMerchantSlasForOnHoldPayouts($input);
 
         $adminService = new Admin\Service;
@@ -2790,8 +2804,10 @@ class Service extends Base\Service
             'key' => Admin\ConfigKey::RX_ON_HOLD_PAYOUTS_MERCHANT_SLA
         ]);
 
+        $success = false;
+
         $this->repo->transaction(
-            function () use ($input, & $merchantSlaConfigList, $adminService) {
+            function () use ($input, & $merchantSlaConfigList, $adminService, & $success) {
                 foreach ($input as $sla => $merchantIds) {
                     foreach ($merchantIds as $merchantId) {
                         try
@@ -2821,10 +2837,46 @@ class Service extends Base\Service
                 $adminService->setConfigKeys([
                     Admin\ConfigKey::RX_ON_HOLD_PAYOUTS_MERCHANT_SLA => $merchantSlaConfigList
                 ]);
+
+                $success = true;
             }
         );
 
-        return ['success' => true];
+        $this->trace->info(
+            TraceCode::ON_HOLD_SLA_UPDATE_API_RESPONSE,
+            [
+                'success' => $success
+            ]
+        );
+
+        if ($success === true)
+        {
+            $configList = [];
+
+            foreach ($input as $sla => $merchantIds)
+            {
+                foreach ($merchantIds as $merchantId)
+                {
+                    $configList['merchants_sla'][$merchantId] = $sla;
+                }
+            }
+
+            try
+            {
+                $this->payoutServiceOnHoldSLAUpdateClient->onHoldSLAUpdateToMicroservice($configList);
+            }
+            catch (\Exception $exception)
+            {
+                $this->trace->info(
+                    TraceCode::ON_HOLD_SLA_UPDATE_TO_MICROSERVICE_FAILED,
+                    [
+                        'exception' => $exception->getMessage(),
+                    ]
+                );
+            }
+        }
+
+        return ['success' => $success];
     }
 
     /**

@@ -678,6 +678,9 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
 
         $this->registerOnHoldCron();
 
+
+        $this->registerOnHoldSLAUpdate();
+
         $this->registerPayoutServiceDataConsistencyChecker();
 
         $this->registerPayoutServiceQueuedInitiate();
@@ -1639,6 +1642,14 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->app->singleton(PayoutService\OnHoldCron::PAYOUT_SERVICE_ON_HOLD_CRON, function($app)
         {
             return new PayoutService\OnHoldCron($app);
+        });
+    }
+
+    protected function registerOnHoldSLAUpdate()
+    {
+        $this->app->singleton(PayoutService\OnHoldSLAUpdate::PAYOUT_SERVICE_ON_HOLD_SLA_UPDATE, function($app)
+        {
+            return new PayoutService\OnHoldSLAUpdate($app);
         });
     }
 
