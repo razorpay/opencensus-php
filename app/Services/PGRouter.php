@@ -183,8 +183,8 @@ class PGRouter
 
         if ($s2s === true)
         {
-            $ip = $input['ip'] ?? null;
-            $userAgent = $input['user_agent'] ?? null;
+            $ip = $input['ip'] ?? $ip;
+            $userAgent = $input['user_agent'] ?? $userAgent;
         }
 
         $input['_']['ip'] = $ip;
