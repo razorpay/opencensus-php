@@ -495,14 +495,29 @@ class Name
     // Permission to access capital-cards service
     const CAPITAL_CARDS                       = 'capital_cards';
 
+    // This will give all required accesses to capital risk developers
+    const CAPITAL_RISK_DEVELOPER              = 'capital_risk_developer';
+
     // Permission to access capital-scorecard service
     const CAPITAL_SCORECARD                   = 'capital_scorecard';
 
     // Permission to access Capital LOS application One pager data
     const ONE_PAGER                           = 'one_pager';
 
-    // Permission to edit Capital Scorecard
+    // Permission to scorecard edit (bureau L1 edit) tab on Admin dashboard UI
     const SCORECARD_EDIT                      = 'scorecard_edit';
+
+    // Permission to view scorecard entities on Admin dashboard UI
+    const SCORECARD_VIEW                      = 'scorecard_view';
+
+    // Permission to generate dedupe in Capital Risk/ Dedupe Tab
+    const DEDUPE_MATCH                        = 'dedupe_match';
+
+    // Permission to view dedupe in Capital Risk/ Dedupe Tab
+    const DEDUPE_VIEW                         = 'dedupe_view';
+
+    // Permission to trigger STP generation
+    const GENERATE_STP                        = 'generate_stp';
 
     // Permissions to access download of CLI/CLD files
     const SCORECARD_CLI_CLD_VIEW              = 'scorecard_cli_cld_view';
@@ -511,7 +526,7 @@ class Name
     const SCORECARD_CLI_CLD_REVIEW            = 'scorecard_cli_cld_review';
 
     // Permission to access wallet admin actions
-    const WALLETS                              = 'wallet';
+    const WALLETS                             = 'wallet';
 
     const MOB_ADMIN                           = 'mob_admin';
     const LOC                                 = 'loc';

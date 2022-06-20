@@ -1505,6 +1505,11 @@ return [
                 'assignable'  => true,
             ],
 
+            Permission::CAPITAL_RISK_DEVELOPER => [
+                'description' => 'Allow all required accesses to capital risk developers',
+                'assignable'  => true,
+            ],
+
             Permission::CAPITAL_SCORECARD => [
                 'description' => 'Allow access to capital-scorecard service from dashboard',
                 'assignable'  => true,
@@ -1517,6 +1522,26 @@ return [
 
             Permission::SCORECARD_EDIT => [
                 'description' => 'Allow access to editing los application scorecard',
+                'assignable'  => true,
+            ],
+
+            Permission::SCORECARD_VIEW => [
+                'description' => 'Allow access to view scorecard entities on Admin dashboard UI',
+                'assignable'  => true,
+            ],
+
+            Permission::DEDUPE_MATCH => [
+                'description' => 'Allow access to generate dedupe in Capital Risk/ Dedupe Tab',
+                'assignable'  => true,
+            ],
+
+            Permission::DEDUPE_VIEW => [
+                'description' => 'Allow access to view dedupe in Capital Risk/ Dedupe Tab',
+                'assignable'  => true,
+            ],
+
+            Permission::GENERATE_STP => [
+                'description' => 'Allow access to trigger STP generation',
                 'assignable'  => true,
             ],
 
