@@ -66,6 +66,18 @@ class ViewSerializer extends Base\Core
     }
 
     /**
+     * @param array $data
+     *
+     * @return array
+     */
+    public function updateViewPreferences(array $data): array
+    {
+        $data['view_preferences'] = $this->getViewPreferences();
+
+        return $data;
+    }
+
+    /**
      * @return array
      */
     public function serializeForHosted(): array
@@ -76,7 +88,6 @@ class ViewSerializer extends Base\Core
             E::MERCHANT        => $this->serializeMerchantForHosted(),
             E::PAYMENT_LINK    => $this->serializePaymentLinkForHosted(),
             E::ORG             => $this->serializeOrgPropertiesForHosted(),
-            'view_preferences' => $this->getViewPreferences(),
         ];
 
         return $this->updateNoneCachedHostedKeys($data);
@@ -445,6 +456,8 @@ class ViewSerializer extends Base\Core
     public function updateNoneCachedHostedKeys(array $data): array
     {
         $data = $this->updateKeyLessHeader($data);
+
+        $data = $this->updateViewPreferences($data);
 
         $data['base_url'] = $this->config['app']['url'];
 
