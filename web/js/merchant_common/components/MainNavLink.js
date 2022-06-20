@@ -133,6 +133,7 @@ class MainNavLink extends Component {
       label,
       type,
       isNew,
+      isLive,
       customBadge,
       isBeta = false,
       isPending,
@@ -161,6 +162,8 @@ class MainNavLink extends Component {
       tag = <span class="badge bg-success pull-right hidden-xs">{customBadge}</span>;
     } else if (isComingSoon) {
       tag = <span class="badge pull-right hidden-xs coming-soon-badge">Coming Soon!</span>;
+    } else if (isLive) {
+      tag = <span class="badge bg-primary pull-right hidden-xs">live</span>;
     }
     if (isPending) {
       //show infinite spin loader if there are some pending items in that section of the app

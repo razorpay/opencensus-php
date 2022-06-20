@@ -289,10 +289,10 @@ function MerchantNavLinks(props) {
       />
 
       <MainNavLink
-        label="Cash Advance"
+        label="Loans (Cash Advance)"
         icon="i fa fa-star text-warning"
         to="/capital/cash-advance/"
-        isNew={!isRecommendProduct}
+        isLive
         additionalCondition={(currentUser) =>
           currentUser.isAllowedView('cash_advance') &&
           (currentUser.isLOCEnabled ||
