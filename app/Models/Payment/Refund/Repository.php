@@ -147,7 +147,7 @@ class Repository extends Base\Repository
             ->whereIn( $paymentMerchantId , $merchantIds)
             ->where($paymentMethod, '=', Payment\Method::CARD)
             ->where($paymentGateway, '=', 'cybersource')
-            ->with('payment', 'payment.card.globalCard')
+            ->with('payment', 'payment.card.globalCard', 'payment.terminal')
             ->select($refundData)
             ->get();
     }

@@ -80,11 +80,32 @@ class GatewayRefundFileTest extends TestCase
             $capturedAt = $capturedAt - 1800;
         }
 
-        $paymentId1 = $this->fixtures->create('payment:captured', ['gateway' => 'cybersource'],['caputed_at'=>$capturedAt])->getId();
+        $paymentId1 = $this->fixtures->create('payment:captured', [
+            'gateway' => 'cybersource',
+            'captured_at'=>$capturedAt,
+            'notes' => [
+                'GST' => 'GST 3',
+                'Corporate Name' => 'Corp 1',
+            ],
+        ])->getId();
 
-        $paymentId2 = $this->fixtures->create('payment:captured', ['gateway' => 'cybersource'],['caputed_at'=>$capturedAt])->getId();
+        $paymentId2 = $this->fixtures->create('payment:captured', [
+            'gateway' => 'cybersource',
+            'captured_at'=>$capturedAt,
+            'notes' => [
+                'GST' => 'GST 2',
+                'Corporate Name' => 'Corp 2',
+            ],
+        ])->getId();
 
-        $paymentId3 = $this->fixtures->create('payment:captured', ['gateway' => 'cybersource'],['caputed_at'=>$capturedAt])->getId();
+        $paymentId3 = $this->fixtures->create('payment:captured', [
+            'gateway' => 'cybersource',
+            'captured_at'=>$capturedAt,
+            'notes' => [
+                'GST' => 'GST2 1',
+                'Corporate Name' => 'Corp 3',
+            ],
+        ])->getId();
 
         $this->fixtures->edit('payment',$paymentId1,['captured_at'=>$capturedAt]);
 

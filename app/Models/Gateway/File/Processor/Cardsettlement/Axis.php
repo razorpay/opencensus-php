@@ -280,26 +280,39 @@ class Axis extends Base
 
                     $rrn = $rrns[$settlementPayment->getId()]['rrn'] ?? '';
 
-                    $gst = isset($settlementPayment->getNotes()['key_1']) === true ? $settlementPayment->getNotes()['key_1'] : '';
+                    $notes = array_slice($settlementPayment->getNotes()->toArray(), 0, 2);
 
-                    $vendorName = isset($settlementPayment->getNotes()['key_2']) === true ? $settlementPayment->getNotes()['key_2'] : '';
+//                    $gst = isset($notes['gst']) === true ? $notes['gst'] : '';
+//
+//                    $vendorName = isset($notes['vendor_name']) === true ? $notes['vendor_name'] : '';
+
+                    $notes1 = reset($notes);
+                    next($notes);
+                    $notes2 = current($notes);
+
+                    $notes1 = $notes1 !== false ? $notes1 : '';
+                    $notes2 = $notes2 !== false ? $notes2 : '';
 
                     $cardToken = $this->getCardToken($settlementPayment->card);
 
+                    $cardTypeIdentifier = $settlementPayment->card->isCredit() ? 'C' : 'D';
+
+                    $gatewayTID = $settlementPayment->terminal->getGatewayTerminalId();
+
                     $content[] =
                         $cardToken . self::PIPE_SEPARATOR .
-                        'C' . self::PIPE_SEPARATOR .
+                        $cardTypeIdentifier . self::PIPE_SEPARATOR .
                         'P' . self::PIPE_SEPARATOR .
                         $this->getFormattedAmount($settlementPayment->getAmount()) . self::PIPE_SEPARATOR .
                         $rrn . self::PIPE_SEPARATOR .
-                        $settlementPayment->getMerchantId() . self::PIPE_SEPARATOR .
+                        $gatewayTID . self::PIPE_SEPARATOR .
                         $settlementPayment->getAmount() . self::PIPE_SEPARATOR .
                         Carbon::createFromTimestamp($settlementPayment['captured_at'])->format('d-M-y H:i:s')  . self::PIPE_SEPARATOR .
                         $this->getAuthCode($settlementPayment) . self::PIPE_SEPARATOR .
                         $this->getCardTokenBIN($cardToken) . self::PIPE_SEPARATOR .
                         '5' . self::PIPE_SEPARATOR .
                         $settlementPayment->getId() . self::PIPE_SEPARATOR .
-                        $gst . ' ' . $vendorName;
+                        $notes1 . ' ' . $notes2;
                 }
                 catch (\Throwable $ex)
                 {
@@ -325,26 +338,38 @@ class Axis extends Base
 
                     $rrn = $rrns[$settlementRefunds->payment->getId()]['rrn'] ?? '';
 
-                    $gst = isset($settlementPayment->getNotes()['key_1']) === true ? $settlementPayment->getNotes()['key_1'] : '';
+                    $notes = $settlementRefunds->payment->getNotes()->toArray();
 
-                    $vendorName = isset($settlementPayment->getNotes()['key_2']) === true ? $settlementPayment->getNotes()['key_2'] : '';
+//                    $gst = isset($notes['gst']) === true ? $notes['gst'] : '';
+//
+//                    $vendorName = isset($notes['vendor_name']) === true ? $notes['vendor_name'] : '';
 
-                    $cardToken = $this->getCardToken($settlementPayment->card);
+                    $notes1 = reset($notes);
+                    $notes2 = reset($notes);
+
+                    $notes1 = $notes1 !== false ? $notes1 : '';
+                    $notes2 = $notes2 !== false ? $notes2 : '';
+
+                    $cardToken = $this->getCardToken($settlementRefunds->payment->card);
+
+                    $cardTypeIdentifier = $settlementRefunds->payment->card->isCredit() ? 'C' : 'D';
+
+                    $gatewayTID = $settlementRefunds->payment->terminal->getGatewayTerminalId();
 
                     $content[] =
                         $cardToken . self::PIPE_SEPARATOR .
-                        'C' . self::PIPE_SEPARATOR .
+                        $cardTypeIdentifier . self::PIPE_SEPARATOR .
                         'P' . self::PIPE_SEPARATOR .
                         $this->getFormattedAmount($settlementRefunds->getBaseAmount()) . self::PIPE_SEPARATOR .
                         $rrn . self::PIPE_SEPARATOR .
-                        $settlementRefunds->getMerchantId() . self::PIPE_SEPARATOR .
+                        $gatewayTID . self::PIPE_SEPARATOR .
                         $settlementRefunds->getBaseAmount() . self::PIPE_SEPARATOR .
                         Carbon::createFromTimestamp($settlementRefunds['processed_at'])->format('d-M-y H:i:s') . self::PIPE_SEPARATOR .
                         '' . self::PIPE_SEPARATOR .
                         $this->getCardTokenBIN($cardToken) . self::PIPE_SEPARATOR .
                         '6' . self::PIPE_SEPARATOR .
                         $settlementRefunds->getPaymentId() . self::PIPE_SEPARATOR .
-                        $gst . ' ' . $vendorName;
+                        $notes1 . ' ' . $notes2;
 
                 }
                 catch(\Throwable $ex)

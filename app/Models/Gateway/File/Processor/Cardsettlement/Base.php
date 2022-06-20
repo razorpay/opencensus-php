@@ -152,7 +152,7 @@ class Base extends BaseProcessor
 
     protected function getCardTokenBIN(string $cardToken)
     {
-        return $cardToken.substr(0,6);
+        return substr($cardToken, 0, 6);
     }
 
     protected function getCardToken(Card\Entity $card)

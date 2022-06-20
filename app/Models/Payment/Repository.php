@@ -326,7 +326,7 @@ EOT;
                     ->where(Entity::BANK, '=', $bank)
                     ->where(Entity::METHOD, '=', Method::EMI)
                     ->where($terminalEmi, '=', false)
-                    ->with('card.globalCard', 'emiPlan', 'merchant')
+                    ->with('card.globalCard', 'emiPlan', 'merchant', 'terminal')
                     ->select($paymentData)
                     ->get();
     }
