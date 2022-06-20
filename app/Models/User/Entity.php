@@ -8,6 +8,7 @@ use RZP\Models\Admin;
 use RZP\Models\Merchant;
 use RZP\Models\Settings;
 use RZP\Constants\Table;
+use RZP\Models\Admin\Org;
 use RZP\Models\Admin\Role;
 use RZP\Models\Invitation;
 use RZP\Models\Merchant\MerchantUser;
@@ -248,6 +249,24 @@ class Entity extends Base\PublicEntity
                      else 2 END";
 
         return $this->belongsToMany(Merchant\Entity::class, Table::MERCHANT_USERS)
+                    ->withPivot([self::ROLE, self::PRODUCT])
+                    ->orderByRaw($sql, [$this->getEmail()]);
+    }
+
+    /**
+     * Order by owned first. In case of multiple owned merchants with same
+     * email, pick first. Followed by owned merchants with different emails.
+     */
+    public function merchantsForOrg(string $orgId)
+    {
+        $orgId = Org\Entity::verifyIdAndSilentlyStripSign($orgId);
+
+        $sql = "CASE WHEN email=? AND role='owner' THEN 0
+                     WHEN role='owner' THEN 1
+                     else 2 END";
+
+        return $this->belongsToMany(Merchant\Entity::class, Table::MERCHANT_USERS)
+                    ->where(Merchant\Entity::ORG_ID, $orgId)
                     ->withPivot([self::ROLE, self::PRODUCT])
                     ->orderByRaw($sql, [$this->getEmail()]);
     }
@@ -568,9 +587,25 @@ class Entity extends Base\PublicEntity
         return (new MerchantUser\Repository())->fetchMerchantIdForUserIdAndRole($this->getId());
     }
 
-    public function getTopMerchantEntity()
+    public function getFirstMerchantEntity()
     {
         $merchantIds = (new MerchantUser\Repository)->returnMerchantIdsForUserId($this->getAttribute(self::ID), 1);
         return (new Merchant\Repository)->find($merchantIds[0]);
+    }
+
+    public function getFirstMerchantEntityForOrg($orgId)
+    {
+        $orgId = Org\Entity::verifyIdAndSilentlyStripSign($orgId);
+
+        $merchantIds = (new MerchantUser\Repository)->returnMerchantIdsForUserId($this->getAttribute(self::ID), 1);
+        $merchants = (new Merchant\Repository)->findMany($merchantIds)->where(Merchant\Entity::ORG_ID, $orgId);
+        if(empty($merchants) === false)
+        {
+            return $merchants[0];
+        }
+        else
+        {
+            return null;
+        }
     }
 }
