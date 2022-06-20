@@ -13,6 +13,7 @@ use RZP\Models\Coupon\Constants;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Store\ConfigKey;
 use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Services\Mock\ApachePinotClient;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Merchant\Promotion\Repository;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
@@ -295,7 +296,20 @@ class M2MReferralTest extends TestCase
         $this->assertEquals(true, $data[StoreConfigKey::IS_SIGNED_UP_REFEREE]);
 
     }
+    private function mockApachePinot(string $merchantId, int $amount)
+    {
+        $pinotService = $this->getMockBuilder(ApachePinotClient::class)
+                             ->setConstructorArgs([$this->app])
+                             ->onlyMethods(['getDataFromPinot'])
+                             ->getMock();
 
+        $this->app->instance('apache.pinot', $pinotService);
+
+        $dataFromPinot = ['merchant_id' => $merchantId, "amount" => $amount * 100];
+
+        $pinotService->method('getDataFromPinot')
+                     ->willReturn([$dataFromPinot]);
+    }
     public function testSignupFromFriendBuy()
     {
         $this->mockHubSpotClient('trackSignupEvent');
@@ -338,6 +352,7 @@ class M2MReferralTest extends TestCase
         $this->assertEquals(true, $data[StoreConfigKey::IS_SIGNED_UP_REFEREE]);
 
         $transaction = $this->createPayment($m2mReferral->getAttribute('merchant_id'), 1000);
+        $this->mockApachePinot($m2mReferral->getAttribute('merchant_id'), 1000);
 
         (new CronJobHandler())->handleCron(CronConstants::FRIEND_BUY_SEND_PURCHASE_EVENTS_CRON_JOB_NAME, []);
 

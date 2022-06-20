@@ -374,10 +374,10 @@ class Core extends Base\Core
         $lastCronTime = $this->getLastCronTime(Constants::SEGMENT_MTU_CACHE_KEY);
 
         $from = Carbon::createFromTimestamp($lastCronTime)
-                      ->subHour()
+                      ->subMinutes(5)
                       ->getTimestamp();
 
-        $to = Carbon::now()->subHour()->getTimestamp();
+        $to = Carbon::now()->getTimestamp();
 
         /*
          * Update last Cron time instantly, since processing of cron may take another 5-10 mins
@@ -386,61 +386,119 @@ class Core extends Base\Core
         $this->updateLastCronTime(Constants::SEGMENT_MTU_CACHE_KEY);
 
         // Filter out all merchants that have transacted since last time cron ran
-        $transactedMerchants = $this->repo->transaction->fetchTransactedMerchants(
-            'payment', $from, $to, false);
+        // we have to first get count as pinot has limitation that limit has to be passed in the get query
+        $query = "select count(distinct merchant_id) as transacted_merchants_count from payments_v1 where created_at between %s and %s and base_amount>0";
 
-        $this->trace->info(TraceCode::ESCALATION_CRON_TRACE, [
-            'last_cron_time'  => $lastCronTime,
-            'type'            => 'mtu_coupon_apply_init',
-            'merchants_count' => count($transactedMerchants),
+        $query = sprintf($query, $from, $to);
+
+        // fetch all merchants count merchants that have transacted since last time cron ran
+        $queryResponse = (new ApachePinotClient())->getDataFromPinot($query);
+
+        if (empty($queryResponse) === true)
+        {
+            $this->trace->info(TraceCode::ESCALATION_ATTEMPT_SKIPPED, [
+                'type'   => 'mtu_coupon_apply',
+                'reason' => 'no merchants found',
+                'step'   => 'transacted_merchants_count'
+            ]);
+
+            return;
+        }
+
+        $this->trace->info(TraceCode::ESCALATION_ATTEMPT, [
+            'merchants_count' => count($queryResponse),
+            'type'            => 'mtu_coupon_apply',
+            'step'            => 'transacted_merchants_count'
         ]);
 
-        $m2mMerchants = $this->repo->m2m_referral->filterMerchants($transactedMerchants);
+        $resultCount = $queryResponse[0]["transacted_merchants_count"];
+
+        $query = "select distinct merchant_id from payments_v1 where created_at between %s and %s and base_amount>0 limit %s";
+
+        $query = sprintf($query, $from, $to, $resultCount + 1);
+
+        // fetch all merchants who've have done the transaction since last time cron ran
+        $queryResponse = (new ApachePinotClient())->getDataFromPinot($query);
+
+        if (empty($queryResponse) === true)
+        {
+            $this->trace->info(TraceCode::ESCALATION_ATTEMPT_SKIPPED, [
+                'type'   => 'mtu_coupon_apply',
+                'reason' => 'no merchants found',
+                'step'   => 'transacted_merchants'
+            ]);
+
+            return;
+        }
+
+        $this->trace->info(TraceCode::ESCALATION_ATTEMPT, [
+            'merchants_count' => count($queryResponse),
+            'type'            => 'mtu_coupon_apply',
+            'step'            => 'transacted_merchants'
+        ]);
+
+        $merchantIdList = array_column($queryResponse, Entity::MERCHANT_ID);
+
+        //filter out m2m merchants as they will receive different coupon
+        $m2mMerchants = $this->repo->m2m_referral->filterMerchants($merchantIdList);
 
         $this->trace->info(TraceCode::ESCALATION_CRON_TRACE, [
             'last_cron_time'  => $lastCronTime,
-            'type'            => 'm2m merchants',
+            'type'            => 'mtu_coupon_apply',
+            'step'            => 'm2m merchants',
             'merchants_count' => count($m2mMerchants),
         ]);
 
-        $transactedMerchants =  array_diff($transactedMerchants, $m2mMerchants);
+        $merchantIdList = array_diff($merchantIdList, $m2mMerchants);
 
-
-        $merchantIdChunks = array_chunk($transactedMerchants, 100);
-        $merchantIdList   = [];
+        $merchantIdChunks = array_chunk($merchantIdList, 100);
 
         foreach ($merchantIdChunks as $merchantIdChunk)
         {
-            $filteredMerchants = $this->repo->transaction->filterMerchantsWithFirstTransactionBetweenTimestamps(
-                $merchantIdChunk, $from, $to);
+            $query = "select min(created_at) as first_transaction_timestamp,merchant_id from payments_v1 where merchant_id in (%s) and base_amount>0 group by merchant_id limit %s";
 
-            $this->trace->info(TraceCode::ESCALATION_CRON_TRACE, [
-                'last_cron_time'  => $lastCronTime,
+            $query = sprintf($query, "'" . implode("','", $merchantIdChunk) . "'", count($merchantIdChunk) + 1);
+
+            // fetch all merchants first transaction timestamp
+            $queryResponse = $this->app['apache.pinot']->getDataFromPinot($query);
+
+            if (empty($queryResponse) === true)
+            {
+                $this->trace->info(TraceCode::ESCALATION_ATTEMPT_SKIPPED, [
+                    'type'   => 'mtu_coupon_apply',
+                    'reason' => 'no merchants found',
+                    'step'   => 'first_transaction_timestamp'
+                ]);
+
+                return;
+            }
+
+            $this->trace->info(TraceCode::ESCALATION_ATTEMPT, [
+                'merchants_count' => count($queryResponse),
                 'type'            => 'mtu_coupon_apply',
-                'merchants_count' => count($filteredMerchants),
-                'merchants'       => $filteredMerchants
+                'step'            => 'first_transaction_timestamp'
             ]);
 
-            if (empty($filteredMerchants) === false)
-            {
-                $merchantIdList = array_merge($merchantIdList, $filteredMerchants);
-            }
-        }
+            $merchantsMTUTimestampMap = array_column($queryResponse, "first_transaction_timestamp", Entity::MERCHANT_ID);
 
-        foreach ($merchantIdList as $merchantId)
-        {
-            try
+            foreach ($merchantsMTUTimestampMap as $merchantId => $firstTxnTimestamp)
             {
-                $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+                try
+                {
+                    if ($firstTxnTimestamp > $from and $firstTxnTimestamp < $to)
+                    {
+                        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
-                $this->applyMtuCouponIfEligible($merchant);
-            }
-            catch (\Exception $e)
-            {
-                $this->trace->error(TraceCode::MTU_COUPON_APPLY_FAILURE, [
-                    'merchant_id' => $merchantId,
-                    'exception'   => $e->getMessage()
-                ]);
+                        $this->applyMtuCouponIfEligible($merchant);
+                    }
+                }
+                catch (\Exception $e)
+                {
+                    $this->trace->error(TraceCode::MTU_COUPON_APPLY_FAILURE, [
+                        'merchant_id' => $merchantId,
+                        'exception'   => $e->getMessage()
+                    ]);
+                }
             }
         }
     }

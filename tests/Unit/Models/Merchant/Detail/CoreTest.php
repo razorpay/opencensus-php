@@ -9,6 +9,7 @@ use RZP\Models\Coupon;
 use RZP\Constants\Mode;
 use RZP\Models\Coupon\Constants;
 use RZP\Models\Merchant\Detail\Core;
+use RZP\Services\Mock\ApachePinotClient;
 use RZP\Models\Merchant\Detail\Core as DetailCore;
 use RZP\Models\Merchant\Detail\Entity;
 use RZP\Models\Merchant\Escalations;
@@ -1014,55 +1015,21 @@ class CoreTest extends TestCase
             ->willReturn('on');
     }
 
-    public function testMtuCouponApplicationOnFirstTransaction()
+    private function mockApachePinot(string $merchantId, int $amount)
     {
-        $this->enableRazorXTreatmentForRazorX();
+        $pinotService = $this->getMockBuilder(ApachePinotClient::class)
+                             ->setConstructorArgs([$this->app])
+                             ->onlyMethods(['getDataFromPinot'])
+                             ->getMock();
 
-        $merchantDetail = $this->fixtures->on('live')->create('merchant_detail:valid_fields');
+        $this->app->instance('apache.pinot', $pinotService);
 
-        $merchantId = $merchantDetail->getMerchantId();
+        $dataFromPinot = ['merchant_id' => $merchantId, "amount" => $amount * 100];
 
-        $promotionAttributes = [
-            'pricing_plan_id' => 'BAJq6FJDNJ4ZqD',
-        ];
-
-        $promotion = $this->fixtures->on('live')->create('promotion', $promotionAttributes);
-
-        $couponAttributes = [
-            'entity_id'   => $promotion->getId(),
-            'entity_type' => 'promotion',
-            'merchant_id' => '100000Razorpay',
-            'code'        => Constants::MTU_COUPON
-        ];
-
-        $this->fixtures->on('live')->create('coupon', $couponAttributes);
-
-        $this->createTransaction($merchantId, 'payment', 10000, Carbon::now()->subHour()->getTimestamp());
-        $this->createPayment($merchantId, 10000);
-
-        $data = [
-            StoreConstants::NAMESPACE                    => StoreConfigKey::ONBOARDING_NAMESPACE,
-            StoreConfigKey::MTU_COUPON_POPUP_COUNT       => 1
-        ];
-
-        (new StoreCore())->updateMerchantStore($merchantId, $data, StoreConstants::INTERNAL);
-
-        (new Escalations\Core)->handleMtuCouponApply();
-
-        $data = (new StoreCore())->fetchValuesFromStore(
-            $merchantId,
-            StoreConfigKey::ONBOARDING_NAMESPACE,
-            [StoreConfigKey::ENABLE_MTU_CONGRATULATORY_POPUP],
-            StoreConstants::INTERNAL);
-
-        $this->assertTrue($data[StoreConfigKey::ENABLE_MTU_CONGRATULATORY_POPUP]);
-
-        $merchant = $this->getDbLastEntity('merchant');
-
-        $isCouponApplied = (new Coupon\Core)->isCouponApplied($merchant, Coupon\Constants::MTU_COUPON);
-
-        $this->assertTrue($isCouponApplied);
+        $pinotService->method('getDataFromPinot')
+                     ->willReturn([$dataFromPinot]);
     }
+    
 
     public function testMtuCouponApplicationOnFirstTransactionExistingPromotion()
     {

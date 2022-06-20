@@ -29,17 +29,33 @@ class FriendBuySendPurchaseEventsDataCollector extends DbDataCollector
 
         foreach ($merchantIdChunks as $merchantIdChunk) {
             // filter merchants who have crossed settlements above threshold
-            $merchantsGmvList = $this->repo->transaction->fetchTotalAmountByTransactionTypeAboveThreshold(
-                $merchantIdChunk, MConstants::PAYMENT, env(M2MConstants::M2M_REFERRAL_MIN_TRANSACTION_AMOUNT));
+            $query = "select sum(base_amount) amount,merchant_id from payments_v1 where merchant_id in (%s) group by merchant_id having amount>%s limit %s";
 
-            $transactedMerchantIds = array_map(function ($element) {
-                return $element[Entity::MERCHANT_ID];
-            }, $merchantsGmvList);
+            $query = sprintf($query, "'" . implode("','", $merchantIdChunk) . "'", env(M2MConstants::M2M_REFERRAL_MIN_TRANSACTION_AMOUNT), count($merchantIdChunk) + 1);
 
-            if (empty($transactedMerchantIds) === false)
+            // fetch all merchants who've atleast breached lowest payments threshold
+            $queryResponse = $this->app['apache.pinot']->getDataFromPinot($query);
+
+            if (empty($queryResponse) === true)
             {
-                $filteredMerchantIdList = array_merge($filteredMerchantIdList, $transactedMerchantIds);
+                $this->app['trace']->info(TraceCode::ESCALATION_ATTEMPT_SKIPPED, [
+                    'type'   => 'm2m_send_purchase_event',
+                    'reason' => 'no merchants found',
+                    'step'   => 'transacted_merchants'
+                ]);
+
+                continue;
             }
+
+            $this->app['trace']->info(TraceCode::ESCALATION_ATTEMPT, [
+                'merchants_count' => count($queryResponse),
+                'type'            => 'm2m_send_purchase_event',
+                'step'            => 'transacted_merchants'
+            ]);
+
+            $merchantIdList = array_column($queryResponse, Entity::MERCHANT_ID);
+
+            $filteredMerchantIdList = array_merge($filteredMerchantIdList, $merchantIdList);
 
         }
 
