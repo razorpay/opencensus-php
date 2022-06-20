@@ -204,13 +204,14 @@ class CardPaymentService
         if ($this->action === Action::AUTHORIZE)
         {
             $input[self::GATEWAY]['features']['tpv'] = $input[Entity::MERCHANT]->isTPVRequired();
+
             try
             {
-                $input = $this->getInput($gateway, $input);
+                $input = $this->getAdditionalNetworkTokenDetailsForOptimizer($gateway, $input);
             }
             catch (\Throwable $e)
             {
-                $this->trace->info(TraceCode::GET_TOKEN_FAILED, [$e->getTrace()]);
+                $this->trace->info(TraceCode::GET_OPTIMIZER_TOKEN_FAILED, [$e->getTrace()]);
             }
         }
 
@@ -514,6 +515,8 @@ class CardPaymentService
                 'card.network'                      => 'content.input.card.network',
                 'card.issuer'                       => 'content.input.card.issuer',
                 'card.country'                      => 'content.input.card.country',
+                'card.tokenised'                    => 'content.input.card.tokenised',
+                'card.token_id'                     => 'content.input.token.id',
                 'iin.iin'                           => 'content.input.iin.iin',
                 'iin.network'                       => 'content.input.iin.network',
                 'iin.country'                       => 'content.input.iin.country',
@@ -1060,52 +1063,70 @@ class CardPaymentService
     }
 
     /**
+     * Optimizer gateways required additional network token details, like
+     * PAR, TRN, TRID for payment processing
+     *
      * @param string $gateway
      * @param array $input
      * @return array
      */
-    public function getInput(string $gateway, array $input): array
+    public function getAdditionalNetworkTokenDetailsForOptimizer(string $gateway, array $input): array
     {
         if ((in_array($gateway, Payment\Gateway::OPTIMIZER_CARD_GATEWAYS, true) === false) or
-            ((isset($input['card']['tokenised']) === false) or ($input['card']['tokenised'] === false)) or
-            (is_null($input['card']['vault_token']) === true)
+            ((isset($input[Entity::CARD][Entity::TOKENISED]) === false) or ($input[Entity::CARD][Entity::TOKENISED] === false)) or
+            ((isset($input[Entity::TOKEN]) === false) or (isset($input[Entity::TOKEN]['id']) === false))
         )
         {
             return $input;
         }
 
-        $vault_token = $input['card']['vault_token'];
+        if (empty($this->app) === true)
+        {
+            $this->app = App::getFacadeRoot();
+        }
 
-        $card_input = $input[Entity::CARD];
-        $token = (new Card\CardVault())->fetchToken($vault_token, false);
+        $cardInput = $input[Entity::CARD];
 
-        $tokenised_terminal_id = $token['service_provider_tokens'][0]['tokenised_terminal_id'] ?? '';
-        $tokenised_terminal = $this->app['terminals_service']->fetchTerminalById($tokenised_terminal_id);
+        // fetch network token associated with payment
+        $token = (new Repository())->find($input[Entity::TOKEN]['id']);
+        $networkToken = (new Core())->fetchToken($token, false);
+
+        assertTrue(empty($networkToken) === false);
+
+        $tokenisedTerminalId = $networkToken[0][Entity::TOKENISED_TERMINAL_ID] ?? '';
+        $tokenisedTerminal = $this->app['terminals_service']->fetchTerminalById($tokenisedTerminalId);
+
         $trid = '';
 
-        if (empty($tokenised_terminal) === false)
+        assertTrue(empty($tokenisedTerminal) === false);
+
+        if (empty($tokenisedTerminal) === false)
         {
-            switch ($card_input['network_code'])
+            switch ($cardInput[Entity::NETWORK_CODE])
             {
                 case Card\Network::MC:
-                    $trid = $tokenised_terminal['gateway_merchant_id'];
+                    $trid = $tokenisedTerminal[Entity::GATEWAY_MERCHANT_ID];
                     break;
 
                 case Card\Network::RUPAY:
-                    $trid = $tokenised_terminal['gateway_merchant_id2'];
+                    $trid = $tokenisedTerminal[Entity::GATEWAY_MERCHANT_ID2];
                     break;
 
                 case Card\Network::VISA:
-                    $trid = $tokenised_terminal['gateway_terminal_id'];
+                    $trid = $tokenisedTerminal[Entity::GATEWAY_TERMINAL_ID];
                     break;
 
                 default:
                     break;
             }
         }
-        $input['card']['payment_account_reference'] = $token['service_provider_tokens'][0]['provider_data']['payment_account_reference'] ?? '';
-        $input['card']['token_reference_number'] = $token['service_provider_tokens'][0]['provider_data']['token_reference_number'] ?? '';
-        $input['card']['token_reference_id'] = $trid ?? '';
+
+        $par = $networkToken[0][Entity::PROVIDER_DATA][Entity::PAYMENT_ACCOUNT_REFERENCE] ?? '';
+        $trn = $networkToken[0][Entity::PROVIDER_DATA][Entity::TOKEN_REFERENCE_NUMBER] ?? '';
+
+        $input[Entity::CARD][Entity::PAYMENT_ACCOUNT_REFERENCE] = $par;
+        $input[Entity::CARD][Entity::TOKEN_REFERENCE_NUMBER] = $trn;
+        $input[Entity::CARD][Entity::TOKEN_REFERENCE_ID] = $trid;
 
         return $input;
     }

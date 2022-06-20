@@ -391,4 +391,26 @@ trait TerminalTrait
                 return $gateways;
             });
     }
+
+    protected function getTokenisedTerminalResponseForTrid() : \Requests_Response
+    {
+        $data = [
+            'gateway_merchant_id' => 'mc_trid',
+            'gateway_merchant_id2' => 'rupay_trid',
+            'gateway_terminal_id' => 'visa_trid',
+        ];
+
+        if (isset($data["id"]) === false)
+        {
+            $data["id"] = "10000000000011";
+        }
+
+        $response = new \Requests_Response;
+
+        $responseData = ['data' => $data];
+
+        $response->body = json_encode($responseData);
+
+        return $response;
+    }
 }

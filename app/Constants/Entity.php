@@ -656,7 +656,13 @@ class Entity
     const ONE_CLICK_CHECKOUT    = 'one_click_checkout';
 
     // Network Tokenization
-    const SERVICE_PROVIDER_TOKEN = 'service_provider_token';
+    const SERVICE_PROVIDER_TOKEN    = 'service_provider_token';
+    const PAYMENT_ACCOUNT_REFERENCE = 'payment_account_reference';
+    const TOKEN_REFERENCE_NUMBER    = 'token_reference_number';
+    const TOKENISED_TERMINAL_ID     = 'tokenised_terminal_id';
+    const TOKEN_REFERENCE_ID        = 'token_reference_id';
+    const PROVIDER_DATA             = 'provider_data';
+    const TOKENISED                 = 'tokenised';
 
     // Ledger
     const JOURNAL           = 'journal';
@@ -680,6 +686,14 @@ class Entity
     const ROLE_ACCESS_POLICY_MAP        = 'role_access_policy_map';
 
     const ACCESS_CONTROL_HISTORY_LOGS   = 'access_control_history_logs';
+
+    const NETWORK_CODE = 'network_code';
+
+    const GATEWAY_MERCHANT_ID = 'gateway_merchant_id';
+    
+    const GATEWAY_MERCHANT_ID2 = 'gateway_merchant_id2';
+    
+    const GATEWAY_TERMINAL_ID = 'gateway_terminal_id';
 
     /**
      * Defines a map of entites which are currently
