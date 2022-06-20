@@ -112,6 +112,11 @@ class Entity extends PublicEntity
 
     protected static $generators       = [self::REVISIT_AT, self::ID];
 
+    protected $dispatchesEvents = [
+        // Event 'saved' fires on insert and update both.
+        'saved'   => EventSaved::class
+    ];
+
     // --------------------- Relations ------------------
     public function entity()
     {

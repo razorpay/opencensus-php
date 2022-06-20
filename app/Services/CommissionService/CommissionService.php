@@ -40,6 +40,12 @@ class CommissionService extends Base\Service
 
     const UPDATE_RULE_CONFIG_MAPPING  = 'twirp/rzp.commissions.rules.rule_config_mapping.v1.RuleConfigMappingAPI/Update';
 
+    const CREATE_AUDIT_LOG            = 'twirp/rzp.commissions.audit.v1.AuditLogAPI/Create';
+
+    const LIST_AUDIT_LOG_BY_ENTITY_IDS    = 'twirp/rzp.commissions.audit.v1.AuditLogAPI/ListByEntityIds';
+
+    const LIST_AUDIT_LOG_BY_ENTITY_ID    = 'twirp/rzp.commissions.audit.v1.AuditLogAPI/ListByEntityId';
+
     const ACTIVATED = 'ACTIVATED';
 
     // Tells the client what the content type of the returned content actually is
@@ -161,6 +167,23 @@ class CommissionService extends Base\Service
         (new Validator())->validateInput(Validator::UPDATE_RULE_CONFIG_MAPPING, $parameters);
 
         return $this->sendRequest($parameters, self::UPDATE_RULE_CONFIG_MAPPING, Requests::POST);
+    }
+
+    public function createAuditLog($parameters)
+    {
+        (new Validator())->validateInput(Validator::CREATE_AUDIT_LOG, $parameters);
+
+        return $this->sendRequest($parameters, self::CREATE_AUDIT_LOG, Requests::POST);
+    }
+
+    public function listAuditLogByEntityIds($parameters)
+    {
+        return $this->sendRequest($parameters, self::LIST_AUDIT_LOG_BY_ENTITY_IDS, Requests::POST);
+    }
+
+    public function listAuditLogByEntityId($parameters)
+    {
+        return $this->sendRequest($parameters, self::LIST_AUDIT_LOG_BY_ENTITY_ID, Requests::POST);
     }
 
     /**

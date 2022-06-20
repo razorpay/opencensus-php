@@ -13,6 +13,7 @@ class Validator extends Base\Validator
     const UPDATE_RULE                  = 'update_rule';
     const UPDATE_RULE_CONFIG_MAPPING   = 'update_rule_config_mapping';
     const GET                          = 'get';
+    const CREATE_AUDIT_LOG             = 'create_audit_log';
 
 
     protected static $createRuleRules = [
@@ -53,5 +54,9 @@ class Validator extends Base\Validator
 
     protected static $getRules = [
         'id' => 'required|string'
+    ];
+
+    protected static $createAuditLogRules = [
+        'audit_log' => 'required'
     ];
 }

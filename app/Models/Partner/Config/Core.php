@@ -497,4 +497,49 @@ class Core extends Base\Core
 
         return $partnerConfig;
     }
+
+    /**
+     * This function is used to audit partner config entity
+     * @param array $params
+     */
+    public function auditPartnerConfig(array $params) {
+
+        $entity = $params['entity'];
+
+        $properties = [
+            'id'            => $entity[Entity::ENTITY_TYPE] === Constants::APPLICATION ?
+                $entity[Entity::ENTITY_ID] : $entity[Entity::ORIGIN_ID],
+            'experiment_id' => $this->app['config']->get('app.partner_config_auditing_experiment_id'),
+        ];
+
+        $isExpEnabled = (new Merchant\Core)->isSplitzExperimentEnable($properties, 'enable');
+
+        if($isExpEnabled === true)
+        {
+            $this->trace->info(TraceCode::PARTNER_CONFIG_AUDIT_JOB_REQUEST,
+               [
+                   'mode'    => $this->mode,
+                   'params'  => $params,
+               ]);
+
+            $request = $this->getAuditData($entity, $params);
+            $this->app->commissionService->createAuditLog($request);
+        }
+    }
+
+    private function getAuditData($entity, $params) {
+
+        $auditLog =  [
+            'entity_id'             => $entity[Entity::ID],
+            'entity_type'           => $params['entity_name'],
+            'actor_id'              => $params['actor_id'],
+            'actor_email'           => $params['actor_email'],
+            'entity_data'           => json_decode(json_encode($entity)),
+            'modified_at'           => $entity[Entity::UPDATED_AT]
+        ];
+
+        return [
+            'audit_log'             => json_decode(json_encode($auditLog)),
+        ];
+    }
 }
