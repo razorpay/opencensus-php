@@ -140,6 +140,10 @@ const MagicCheckout = lazy(() =>
   import(/* webpackChunkName: "MagicCheckout" */ 'merchant/views/MagicCheckout'),
 );
 
+const Developers = lazy(() =>
+  import(/* webpackChunkName: "Developers" */ 'merchant/views/Developers'),
+);
+
 // Can be removed with old navigation removal
 const TabbedContent = ({ headerId, navLabel, path, to, component }) => {
   return (
@@ -555,6 +559,13 @@ export default class Content extends Component {
             path="/team"
             component={MyAccount}
             additionalCondition={(user) => user.isAllowedTeamManagement}
+          />
+          <ShowWhenRoute
+            path="/developers"
+            component={Developers}
+            additionalCondition={(user) =>
+              user.isAllowedView('developers_console') && user.isDeveloperConsoleEnabled
+            }
           />
           <ShowWhenRoute
             path="/config"

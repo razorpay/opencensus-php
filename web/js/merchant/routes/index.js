@@ -288,6 +288,12 @@ const StoresProductsCreate = lazy(() =>
   import(/* webpackChunkName: "StoresProductsCreate" */ 'merchant/views/Stores/Create/'),
 );
 
+const RequestLogDetails = lazy(() =>
+  import(
+    /* webpackChunkName: "RequestLogDetails" */ 'merchant/views/Developers/Api/RequestLogs/Details'
+  ),
+);
+
 const AppSupport = lazy(() =>
   import(/* webpackChunkName: "AppSupport" */ 'merchant/views/AppSupport'),
 );
@@ -447,6 +453,11 @@ const entityDetailsMap = {
   '/webhooks/:id': { component: WebhookEntity },
   '/announcements/:id': {
     component: WhatsNewDetailsPage,
+  },
+  '/developers/apis/:id': {
+    component: RequestLogDetails,
+    additionalCondition: (user) =>
+      user.isAllowedView('developers_console') && user.isDeveloperConsoleEnabled,
   },
 };
 

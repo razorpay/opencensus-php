@@ -1,0 +1,78 @@
+$black = #252939
+$yellow = #F9B154
+$green = #01B358
+$red = #F54A2A
+$purple = #9F3DFB
+$disabled = #DFDFDF
+
+.status-legend-container
+  .rzp-legend
+    width: auto
+    height: 28px
+    padding-top: 4px
+    margin-top: 0
+    padding-right: 24px
+
+    .rzp-legend-item
+      padding-top: 0
+
+      .rzp-legend-item-inner
+        border: none
+
+    label
+      display inline-flex
+      align-items: center
+      cursor pointer
+      padding-left: 4px
+      padding-right: 10px
+
+      input[type=checkbox]
+        display none
+
+        &:checked + .status-checkbox
+          &__black
+            background: $black
+          &__yellow
+            background: $yellow
+          &__green
+            background: $green
+          &__red
+            background: $red
+          &__other
+            background: $purple
+          &__disabled
+            background: $disabled
+            cursor: not-allowed
+
+        &:checked + .status-checkbox::after
+          display block
+
+      .status-checkbox
+        width: 15px
+        height: 15px
+        border-radius: 3px
+        margin-right: 5px
+        display: flex
+        align-items: center
+        justify-content: center
+        flex-shrink: 0
+
+        &__black
+          border: 1px solid $black
+        &__yellow
+          border: 1px solid $yellow
+        &__green
+          border: 1px solid $green
+        &__red
+          border: 1px solid $red
+        &__other
+          border: 1px solid $purple
+        &__disabled
+          border: 1px solid $disabled
+
+        &:after
+          content: "\f00c"
+          font-family: "FontAwesome"
+          font-size: 10px
+          font-weight: lighter
+          color: #ffffff

@@ -338,6 +338,16 @@ function MerchantNavLinks(props) {
         }
       />
       <MainNavLink
+        label="Developers"
+        type="general"
+        icon="i i-code-white text-primary"
+        to={routes.developersApis}
+        additionalCondition={(currentUser) =>
+          currentUser.isAllowedView('developers_console') && currentUser.isDeveloperConsoleEnabled
+        }
+        isNew
+      />
+      <MainNavLink
         label="Settings"
         icon="i i-settings text-warning"
         type="general"

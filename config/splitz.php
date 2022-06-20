@@ -121,6 +121,7 @@ return [
         // EDX experiments
         'ZAPIER_ANNOUNCEMENT_SPLITZ' => env('ZAPIER_ANNOUNCEMENT_SPLITZ', ''),
         'AI_SENSY_BANNER_SPLITZ' => env('AI_SENSY_BANNER_SPLITZ', ''),
+        'DEVELOPER_CONSOLE_SPLITZ' => env('DEVELOPER_CONSOLE_SPLITZ', ''),
 
          //Razorpay Trusted Badge (RTB)
         'RTB_ANNOUNCEMENT' => env('RTB_ANNOUNCEMENT', ''),

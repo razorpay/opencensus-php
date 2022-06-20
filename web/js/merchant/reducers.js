@@ -115,6 +115,10 @@ import {
   allowlistReducer,
 } from 'merchant/reducers/magicCheckout/magicIntelligence/reducer';
 
+import apiLogsReducer from 'merchant/reducers/developers/apiLogs';
+import apiStatsReducer from 'merchant/reducers/developers/apiStats';
+import apiListReducer from 'merchant/reducers/developers/apiList';
+
 export default combineReducers({
   modal: modalReducer,
   slider: sliderReducer,
@@ -224,4 +228,7 @@ export default combineReducers({
   trackEvents: trackEventsReducer,
   workflows: workflowReducer,
   virtualAccountBatches: virtualAccountBatchesReducer,
+  apiLogs: apiLogsReducer,
+  apiStats: apiStatsReducer,
+  appList: apiListReducer,
 });

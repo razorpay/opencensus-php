@@ -19,6 +19,7 @@ export enum Teams {
   TERMINAL = 'Terminal',
   COMMON = 'Common',
   ROUTING = 'Routing',
+  DEV_EXP = 'Developer Experience',
 }
 
 // Maintain this list in ascending order
@@ -43,6 +44,7 @@ export const RoutesConfig = {
   '/credits': Teams.PG_DASHBOARD,
   '/customers': Teams.PG_DASHBOARD,
   '/disputes': Teams.PG_DASHBOARD,
+  '/developers': Teams.DEV_EXP,
   '/instantsettlements': Teams.PG_DASHBOARD,
 
   '/invoices': Teams.PG_DASHBOARD,

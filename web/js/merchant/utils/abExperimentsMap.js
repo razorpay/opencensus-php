@@ -327,6 +327,7 @@ export default {
     // prod experiment id
     'Iw2TWM0yRhXrWI',
   ],
+
   ultra_campagin_capital_cards_only: [
     // prod experiment id
     'IzNDbBZJkmum9p',
@@ -359,11 +360,17 @@ export default {
     // prod
     'JJCnl2fwyUMPvm',
   ],
-
   digilocker_aadhaar_ekyc: [
     //beta
     'JXRN0Fw8NN7qIG',
     //prod
     'JfNOewpSluhNIB',
+  ],
+  developer_console: [
+    // beta experiment ids
+    'IBpLCtGOiepyF3',
+
+    // prod experiment ids
+    'Jhk9i7jzGtL2OT',
   ],
 };

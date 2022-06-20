@@ -90,6 +90,11 @@ class DateRangePicker extends Component {
       return;
     }
 
+    // this is required for calling onPresetChange when custom date range is selected
+    if (this.props.callPresetChangeOnCustomOption && this.props.onSelectPreset) {
+      this.props.onSelectPreset(this.customPreset);
+    }
+
     this.setDates(moment(from * 1000), moment(to * 1000), this.customPreset);
 
     this.setState({ selectedPreset: this.customPreset });
@@ -149,7 +154,7 @@ class DateRangePicker extends Component {
   }
 
   render() {
-    const { icon, numberOfMonths = 2, horizontalMargin = 0 } = this.props;
+    const { icon, numberOfMonths = 2, horizontalMargin = 0, isOutsideRange } = this.props;
 
     const { presets, selectedPreset, startDate, endDate } = this.state;
 
@@ -178,6 +183,7 @@ class DateRangePicker extends Component {
               onDatesChange={this.onDatesChange}
               numberOfMonths={isMobileDevice() ? 1 : numberOfMonths}
               horizontalMargin={horizontalMargin}
+              isOutsideRange={isOutsideRange ? isOutsideRange : (day) => moment().isBefore(day)}
             />
           </SuspenseWithLoader>
         </div>

@@ -463,6 +463,10 @@ export default class User {
     );
   }
 
+  get isDeveloperConsoleEnabled() {
+    return getSplitzExperimentVariant('developer_console')?.variables?.result === 'on';
+  }
+
   get isProjectKeystoneCorporateCardsEnabled() {
     return (
       getSplitzExperimentVariant('keystone_corporate_cards_experiment')?.variables?.result === 'on'

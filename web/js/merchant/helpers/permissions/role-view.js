@@ -123,6 +123,7 @@ export default {
   applications: [OWNER],
   offers: [OWNER, ADMIN, MANAGER, OPERATIONS, FINANCE, SUPPORT, RBL_SUPERVISOR, AGENT, SELLERAPP],
   checkoutrewards: [OWNER, ADMIN, MANAGER, OPERATIONS, SUPPORT, AGENT],
+  developers_console: [OWNER, ADMIN],
 
   // partner dashboard permissions
   submerchants: [OWNER, ADMIN, MANAGER],

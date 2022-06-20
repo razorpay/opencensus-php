@@ -47,6 +47,7 @@ const BASE_ROUTES = {
   bbps: '/bbps',
   magicCheckout: '/magic',
   stores: '/stores/products',
+  developersApis: '/developers/apis',
 };
 
 @withRouter
