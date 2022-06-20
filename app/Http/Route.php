@@ -3401,7 +3401,6 @@ class Route
         'retry_payouts_on_service'                => ['post',     'payouts_service/retry',                                  'PayoutController@retryPayoutsOnPayoutService'                 ],
         'create_payment_payout_service_axis_cc'   => ['post',     'payouts_service/payments/create/axis',                   'PaymentCreateController@postCreateS2SPayment'                 ],
         'update_payout_payout_service'            => ['patch',    'payouts_service/payout/{payout_id}/update',              'PayoutController@updatePayoutEntry'                           ],
-        'payout_analytics_axis_cc'                => ['get',      'payouts_analytics',                                      'PayoutController@payoutAnalytics'                             ],
         'payout_outbox_partition_cron'            => ['post',     'payout_outbox/partition',                                'PayoutOutboxController@createPayoutOutboxPartition'           ],
         'payment_analytics_partition_cron'        => ['post',     'payment_analytics/partition',                            'PaymentController@createPaymentAnalyticsPartition'            ],
 
@@ -5388,7 +5387,6 @@ class Route
         'payout_update_status',
         'payouts_summary',
         'payouts_workflow_summary',
-        'payout_analytics_axis_cc',
         'payment_page_images',
         'commissions_get_multiple',
         'subscription_payment_fetch_by_id',
@@ -7236,7 +7234,6 @@ class Route
         'settings_upsert'                          => Permission::EDIT_WALLET_CONFIG,
         'settings_delete'                          => Permission::EDIT_WALLET_CONFIG,
         'merchant_analytics'                       => Permission::VIEW_MERCHANT_ANALYTICS,
-        'payout_analytics_axis_cc'                 => Permission::VIEW_MERCHANT_ANALYTICS,
         'merchant_activation_files'                => Permission::VIEW_MERCHANT,
         'merchant_activation_archive'              => Permission::MERCHANT_ACTIVATION_ARCHIVE,
         'merchant_activation_status'               => Permission::EDIT_ACTIVATE_MERCHANT,
@@ -13651,7 +13648,6 @@ class Route
         'payout_service_process_scheduled_payout',
         'payouts_summary',
         'payouts_workflow_summary',
-        'payout_analytics_axis_cc',
 
         'payout_links_fetch_multiple',
         'payout_links_fetch_by_id',

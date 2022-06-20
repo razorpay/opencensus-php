@@ -863,21 +863,6 @@ class Service extends Base\Service
 
     public function fetch(string $id, array $input): array
     {
-        if ($this->app['basicauth']->authCreds->checkIfOrgAxisCC() === true)
-        {
-            $this->trace->info(
-                TraceCode::PAYOUT_AXIS_CC_GET_REQUEST,
-                [
-                    'input' => $input,
-                    'id' => $id,
-
-                ]);
-
-            $payout = $this->core->fetchFromPayoutsService($id, $this->merchant);
-
-            return $payout;
-        }
-
         // currently keeping this feature under razorx
         if ($this->shouldSkipPayrollEntries())
         {
@@ -2674,28 +2659,6 @@ class Service extends Base\Service
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_STANDALONE_PAYOUT_TO_CARDS_NOT_ALLOWED);
         }
-    }
-
-    public function axisCCPayoutAnalytics()
-    {
-
-        if ($this->app['basicauth']->authCreds->checkIfOrgAxisCC() === false)
-        {
-            //Currently this should be called only for axis cc merchant.
-            // So throwing error if condition is not met
-            $this->trace->info(
-                TraceCode::PAYOUT_AXIS_CC_GET_PAYOUT_ANALYTICS_REQUEST,
-                [
-                    'is_axis' => false,
-                ]
-            );
-
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FORBIDDEN);
-        }
-
-        $response = $this->core->fetchPayoutAnalyticsfromPayoutsService($this->merchant);
-
-        return $response;
     }
 
     public function trackPayoutsFetchEvent(array $input, $payout = null)

@@ -790,59 +790,6 @@ class PayoutServiceTest extends TestCase
         $this->startTest();
     }
 
-    public function testGetPayoutById()
-    {
-        $this->testCreatePayout();
-
-        $payout = $this->getLastEntity('payout', true, 'live');
-
-        $org = $this->fixtures->create('org');
-
-        $this->fixtures->create('org_hostname', ['org_id' => $org->getId()]);
-
-        $org = $this->getLastEntity('org', true);
-
-        $this->fixtures->org->edit($org['id'], ['custom_code' => 'axis_cc']);
-
-        $org = $this->getLastEntity('org', true);
-
-        $orgId = trim($org['id'],"org_");
-
-        $this->fixtures->merchant->edit('10000000000000',['org_id' => $orgId]);
-
-        $this->mockPayoutServiceGet();
-
-        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
-
-        $this->startTest();
-    }
-
-    public function testGetPayoutAnalytics()
-    {
-        //TODO : Testcase has to be fixed
-        $this->markTestSkipped("Skipping Testcase, Need to be fixed");
-
-        $org = $this->fixtures->create('org');
-
-        $this->fixtures->create('org_hostname', ['org_id' => $org->getId()]);
-
-        $org = $this->getLastEntity('org', true);
-
-        $this->fixtures->org->edit($org['id'], ['custom_code' => 'axis_cc']);
-
-        $org = $this->getLastEntity('org', true);
-
-        $orgId = trim($org['id'],"org_");
-
-        $this->fixtures->merchant->edit('10000000000000',['org_id' => $orgId]);
-
-        $this->mockPayoutServiceGetAnalytics();
-
-        $this->ba->proxyAuth();
-
-        $this->startTest();
-    }
-
     public function testCreateReversalEntry()
     {
         $this->testCreatePayout();
