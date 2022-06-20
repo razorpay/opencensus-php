@@ -38,6 +38,13 @@ class Repository extends Base\Repository
             ->first();
     }
 
+    public function getFromBalanceIdOrFail(string $balanceId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::BALANCE_ID, '=', $balanceId)
+                    ->firstOrFail();
+    }
+
     public function findByAccountNumberAndChannel(string $accountNumber, string $channel)
     {
         return $this->whereAccountNumberAndChannelAre($accountNumber, $channel)

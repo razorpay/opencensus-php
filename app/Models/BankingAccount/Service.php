@@ -40,7 +40,7 @@ class Service extends Base\Service
 
     protected $config;
 
-    /** @var \RZP\Models\BankingAccount\Core $core*/ 
+    /** @var \RZP\Models\BankingAccount\Core $core*/
     protected $core;
 
     protected $notifier;
@@ -282,7 +282,7 @@ class Service extends Base\Service
 
     /**
      * Sanitize status by replacing underscore with space and capitalizing first letter of each word
-     * 
+     *
      * @param string $status
      */
     private function sanitizeStatus(string $status): string
@@ -291,14 +291,14 @@ class Service extends Base\Service
     }
 
     /**
-     * Changes input array based on sub-status change  
-     * > Sub-status is changing either from or to `Pending on Sales | <REASON>`  
-     * > Add assignee_team and comment  
-     *   
-     * Check if the sub_status is changing either from or to `Pending on Sales | <REASON>`  
-     * * If it is changing to something like "Pending on Sales | *", then make sure the assignee team will be `sales`  
-     * * Otherwise if it is already sales, then the assignee team is changed to `ops`.  
-     * 
+     * Changes input array based on sub-status change
+     * > Sub-status is changing either from or to `Pending on Sales | <REASON>`
+     * > Add assignee_team and comment
+     *
+     * Check if the sub_status is changing either from or to `Pending on Sales | <REASON>`
+     * * If it is changing to something like "Pending on Sales | *", then make sure the assignee team will be `sales`
+     * * Otherwise if it is already sales, then the assignee team is changed to `ops`.
+     *
      * @param \RZP\Models\BankingAccount\Entity $bankingAccount
      * @param array $input
      */
@@ -308,9 +308,9 @@ class Service extends Base\Service
         {
             $currentSubStatus = $bankingAccount->getSubStatus();
             $newSubStatus = $input[Entity::SUB_STATUS];
-            
-            if ($newSubStatus != $currentSubStatus && 
-                (str_starts_with($newSubStatus, Status::PENDING_ON_SALES_SUB_STRING) || 
+
+            if ($newSubStatus != $currentSubStatus &&
+                (str_starts_with($newSubStatus, Status::PENDING_ON_SALES_SUB_STRING) ||
                 str_starts_with($currentSubStatus, Status::PENDING_ON_SALES_SUB_STRING)))
             {
                 $currentSubStatusSanitized = $currentSubStatus;
@@ -336,17 +336,17 @@ class Service extends Base\Service
                 if (str_starts_with($newSubStatus, Status::PENDING_ON_SALES_SUB_STRING))
                 {
                     $input[Entity::ACTIVATION_DETAIL][Entity::ASSIGNEE_TEAM] = 'sales';
-                    
+
                     $comment[Comment\Entity::COMMENT] = $comment[Comment\Entity::COMMENT]."Assignee changed to Sales.";
                     $comment[Comment\Entity::SOURCE_TEAM] = 'ops';
-                    
+
                     $input[Entity::ACTIVATION_DETAIL][Comment\Entity::COMMENT] = $comment;
 
-                } 
+                }
                 else if ($bankingAccount->bankingAccountActivationDetails->assignee_team == 'sales')
                 {
                     $input[Entity::ACTIVATION_DETAIL][Entity::ASSIGNEE_TEAM] = 'ops';
-                    
+
                     $comment[Comment\Entity::COMMENT] = $comment[Comment\Entity::COMMENT]."Assignee changed to Ops.";
                     $comment[Comment\Entity::SOURCE_TEAM] = 'sales';
 
@@ -1135,6 +1135,64 @@ class Service extends Base\Service
             Entity::BALANCE_TYPE         => $bankingAccount->balance->getType(),
             Entity::FTS_FUND_ACCOUNT_ID  => $bankingAccount->getFtsFundAccountId()
         ];
+    }
+
+    /**
+     * Get banking account using balance id
+     *
+     * @param string $balanceId
+     * @return array
+     */
+    public function getBankingAccountForBalanceId(string $balanceId)
+    {
+        try
+        {
+            $this->trace->info(
+                TraceCode::FETCH_BANKING_ACCOUNT_FOR_PAYOUT_SERVICE,
+                [
+                    Entity::BALANCE_ID => $balanceId,
+                ]);
+
+            (new Validator)->validateInput(
+                Validator::FETCH_BANKING_ACCOUNT_USING_BALANCE_ID,
+                [
+                    Entity::BALANCE_ID => $balanceId
+                ]);
+
+            $bankingAccount = $this->repo->banking_account->getFromBalanceIdOrFail($balanceId);
+
+            $response = [
+                Entity::ID                  => $bankingAccount->getId(),
+                Entity::STATUS              => $bankingAccount->getStatus(),
+                Entity::CHANNEL             => $bankingAccount->getChannel(),
+                Entity::BALANCE_ID          => $bankingAccount->getBalanceId(),
+                Entity::MERCHANT_ID         => $bankingAccount->getMerchantId(),
+                Entity::ACCOUNT_NUMBER      => $bankingAccount->getAccountNumber(),
+                Entity::ACCOUNT_TYPE        => $bankingAccount->balance->getAccountType(),
+                Entity::BALANCE_TYPE        => $bankingAccount->balance->getType(),
+                Entity::FTS_FUND_ACCOUNT_ID => $bankingAccount->getFtsFundAccountId()
+            ];
+        }
+        catch (\Exception $exception)
+        {
+            $this->trace->traceException(
+                $exception,
+                Trace::ERROR,
+                TraceCode::FETCH_BANKING_ACCOUNT_FOR_PAYOUT_SERVICE_FAILED,
+                [
+                    'balance_id' => $balanceId,
+                ]
+            );
+
+            throw $exception;
+        }
+
+        $this->trace->info(TraceCode::FETCH_BANKING_ACCOUNT_FOR_PAYOUT_SERVICE_RESPONSE,
+                           [
+                               'response' => $response
+                           ]);
+
+        return $response;
     }
 
     /**

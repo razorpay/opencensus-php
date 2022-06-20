@@ -228,6 +228,13 @@ class BankingAccountController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function getBankingAccountForBalanceId(string $balanceId)
+    {
+        $response = $this->service()->getBankingAccountForBalanceId($balanceId);
+
+        return ApiResponse::json($response);
+    }
+
     public function getBankingAccountBeneficiary(string $accountNumber, string $ifsc)
     {
         $response = $this->service()->fetchBankingAccountBeneficiary($accountNumber, $ifsc);

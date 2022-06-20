@@ -2883,6 +2883,7 @@ class Route
 
         // Create for payout service
         'banking_account_fetch_by_account_number' => ['get',      'banking_accounts/{account_number}/{merchant_id}',           'BankingAccountController@getBankingAccountForAccountNumber'],
+        'banking_account_fetch_by_balance_id'     => ['get',      'banking_accounts_balance_id/{balance_id}',                  'BankingAccountController@getBankingAccountForBalanceId'],
         'banking_account_beneficiary_fetch'       => ['get',      'banking_accounts_beneficiary/{account_number}/{ifsc}',           'BankingAccountController@getBankingAccountBeneficiary'],
 
 
@@ -4726,6 +4727,7 @@ class Route
         'create_payout_entry',
         'create_reversal_entry',
         'banking_account_fetch_by_account_number',
+        'banking_account_fetch_by_balance_id',
         'create_FTA_payout_service',
         'create_ledger_payout_service',
         'create_workflow_for_payout',
@@ -13015,6 +13017,7 @@ class Route
             'create_payout_entry',
             'fund_account_get_internal',
             'banking_account_fetch_by_account_number',
+            'banking_account_fetch_by_balance_id',
             'create_reversal_entry',
             'create_FTA_payout_service',
             'create_ledger_payout_service',

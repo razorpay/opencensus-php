@@ -6991,6 +6991,51 @@ class BankingAccountTest extends TestCase
         $this->startTest();
     }
 
+    public function testFetchBankingAccountWithBalanceIdForPayoutService()
+    {
+        $xBalance1 = $this->fixtures->create('balance',
+            [
+                'merchant_id'       => '10000000000000',
+                'type'              => 'banking',
+                'account_type'      => 'shared',
+                'account_number'    => '2224440041626905',
+                'balance'           => 200,
+            ]);
+
+        $ba1 = $this->fixtures->create('banking_account', [
+            'account_number'        => '2224440041626905',
+            'account_type'          => 'current',
+            'merchant_id'           => '10000000000000',
+            'channel'               => 'yesbank',
+            'status'                => 'created',
+            'pincode'               => '1',
+            'bank_reference_number' => '',
+            'account_ifsc'          => 'RATN0000156',
+            'balance_id'            => $xBalance1->getId(),
+        ]);
+
+        $this->ba->appAuth();
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/banking_accounts_balance_id/' . $xBalance1->getId();
+
+        $response = $this->startTest();
+
+        $this->assertEquals($response[Entity::ID], $ba1->getId());
+        $this->assertEquals($response[Entity::ACCOUNT_NUMBER], $ba1->getAccountNumber());
+        $this->assertEquals($response[Entity::ACCOUNT_TYPE], $xBalance1->getAccountType());
+        $this->assertEquals($response[Entity::BALANCE_ID], $xBalance1->getId());
+        $this->assertEquals($response[Entity::BALANCE_TYPE], $xBalance1->getType());
+    }
+
+    public function testFetchBankingAccountForPayoutServiceWithInvalidBalanceId()
+    {
+        $this->ba->appAuth();
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/banking_accounts_balance_id/' . '1';
+
+        $this->startTest();
+    }
+
     public function testFetchBankingAccountBeneficiaryViaAccountNumberandIfsc()
     {
         $ba1 = $this->fixtures->create('banking_account', [

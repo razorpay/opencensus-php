@@ -175,6 +175,8 @@ class Entity extends Base\PublicEntity
     // Slack channel for alerts
     const RX_CA_RBL_ALERTS  = 'rx_ca_rbl_alerts';
 
+    const ERROR = 'error';
+
     // RM_NAME possible strings
     const RM_NOT_MAP = 'rm not map';
     const RM_NOT_MAP_BY_BM = 'rm not map by bm';
