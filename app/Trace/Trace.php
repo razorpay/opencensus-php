@@ -2,6 +2,8 @@
 
 namespace App\Trace;
 
+use Session;
+
 class Trace extends TraceWriter
 {
     public function __construct()
@@ -36,8 +38,9 @@ class Trace extends TraceWriter
             $values[$key] = $record[$key];
         }
 
+        $merchant_id = Session::get('current_merchant_id') ?? '';
 
-        $context = $values;
+        $context = $values + ['merchant_id' => $merchant_id];
 
         TraceFields::checkFields($code, array_keys($context));
 
