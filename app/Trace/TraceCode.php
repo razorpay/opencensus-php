@@ -1190,6 +1190,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const BULK_REFUND_VERIFY_REQUEST                            = 'BULK_REFUND_VERIFY_REQUEST';
     const SCROOGE_AND_API_REFUNDS_INCONSISTENCY                 = 'SCROOGE_AND_API_REFUNDS_INCONSISTENCY';
+    const COMPARE_REFUNDS_ERROR                                 = 'COMPARE_REFUNDS_ERROR';
     const API_DATA_NOT_PRESENT_ON_SCROOGE                       = 'API_DATA_NOT_PRESENT_ON_SCROOGE';
     const SCROOGE_FETCH_ENTITIES                                = 'SCROOGE_FETCH_ENTITIES';
     const SCROOGE_FETCH_ENTITIES_V2_REQUEST                     = 'SCROOGE_FETCH_ENTITIES_V2_REQUEST';

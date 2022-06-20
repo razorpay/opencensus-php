@@ -530,49 +530,61 @@ class Service extends Base\Service
         // Compare scrooge and api response
         $inconsistentParams = [];
 
-        if (count($apiRefundsArray) !== count($scroogeRefundsArray))
+        try
         {
-            $inconsistentParams['api_refunds_collection_length'] = count($apiRefundsArray);
-            $inconsistentParams['scrooge_refunds_collection_length'] = count($scroogeRefundsArray);
-        }
-
-        foreach ($apiRefundsArray as $apiRefundArray)
-        {
-            $idx = 0;
-
-            foreach ($scroogeRefundsArray as $scroogeRefundArray)
+            if (count($apiRefundsArray) !== count($scroogeRefundsArray))
             {
-                $scroogeRefundId = $scroogeRefundArray[RefundEntity::ID] ?? '';
+                $inconsistentParams['api_refunds_collection_length'] = count($apiRefundsArray);
+                $inconsistentParams['scrooge_refunds_collection_length'] = count($scroogeRefundsArray);
+            }
 
-                if ($apiRefundArray[RefundEntity::ID] === $scroogeRefundId)
+            foreach ($apiRefundsArray as $apiRefundArray)
+            {
+                $idx = 0;
+
+                foreach ($scroogeRefundsArray as $scroogeRefundArray)
                 {
-                    $diffKeys = $this->differenceKeysOfRefunds($apiRefundArray, $scroogeRefundArray);
+                    $scroogeRefundId = $scroogeRefundArray[RefundEntity::ID] ?? '';
 
-                    if (empty($diffKeys) === false)
+                    if ($apiRefundArray[RefundEntity::ID] === $scroogeRefundId)
                     {
-                        $inconsistentParams[$apiRefundArray[RefundEntity::ID]] = $diffKeys;
+                        $diffKeys = $this->differenceKeysOfRefunds($apiRefundArray, $scroogeRefundArray);
+
+                        if (empty($diffKeys) === false)
+                        {
+                            $inconsistentParams[$apiRefundArray[RefundEntity::ID]] = $diffKeys;
+                        }
+
+                        break;
                     }
 
-                    break;
+                    $idx += 1;
                 }
 
-                $idx += 1;
+                // null value here means that the refund is not present in scrooge but is present in the API monolith
+                if ($idx === count($scroogeRefundsArray))
+                {
+                    $inconsistentParams[$apiRefundArray[RefundEntity::ID]] = null;
+                }
             }
 
-            // null value here means that the refund is not present in scrooge but is present in the API monolith
-            if ($idx === count($scroogeRefundsArray))
+            if (empty($inconsistentParams) === false)
             {
-                $inconsistentParams[$apiRefundArray[RefundEntity::ID]] = null;
+                $this->trace->info(TraceCode::SCROOGE_AND_API_REFUNDS_INCONSISTENCY, [
+                    'diff'        => $inconsistentParams,
+                    'route_name'  => $this->app['api.route']->getCurrentRouteName(),
+                    'extra_trace' => $extraTrace,
+                ]);
             }
         }
-
-        if (empty($inconsistentParams) === false)
+        catch (\Throwable $e)
         {
-            $this->trace->info(TraceCode::SCROOGE_AND_API_REFUNDS_INCONSISTENCY, [
-                'diff'        => $inconsistentParams,
-                'route_name'  => $this->app['api.route']->getCurrentRouteName(),
-                'extra_trace' => $extraTrace,
-            ]);
+            $this->trace->info(
+                TraceCode::COMPARE_REFUNDS_ERROR,
+                [
+                    'api' => $apiRefundsArray,
+                    'scrooge' => $scroogeRefundsArray,
+                ]);
         }
     }
 
@@ -1396,6 +1408,7 @@ class Service extends Base\Service
     {
         $this->trace->info(TraceCode::REFUNDS_FETCH_MULTIPLE_REQUEST_BODY, $input);
         $experiment = false;
+        $scroogeRefundsArray = [];
 
         // We are masking status for merchants
         if ((($this->app['basicauth']->isProxyAuth() === true) or
@@ -1459,7 +1472,7 @@ class Service extends Base\Service
 
         if ($experiment === true)
         {
-            $this->compareRefundsAndLogDifference([$refundsArray], [$scroogeRefundsArray]);
+            $this->compareRefundsAndLogDifference($refundsArray['items'], $scroogeRefundsArray['items'] ?? []);
         }
 
         return $refundsArray;

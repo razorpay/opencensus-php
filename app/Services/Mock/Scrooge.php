@@ -460,10 +460,7 @@ class Scrooge extends BaseScrooge
             "status"          => "processed"
         ];
 
-        return [
-            'code' => 200,
-            'body' => $scroogeResponseBody
-        ];
+        return $scroogeResponseBody;
     }
 
     public function refundsFetchMultiple(array $input): array
@@ -505,10 +502,7 @@ class Scrooge extends BaseScrooge
             ]
         ];
 
-        return [
-            'code' => 200,
-            'body' => $scroogeResponseBody
-        ];
+        return $scroogeResponseBody;
     }
 
     public function refundsFetchByPayment($paymentId, array $input): array
@@ -550,10 +544,7 @@ class Scrooge extends BaseScrooge
             ]
         ];
 
-        return [
-            'code' => 200,
-            'body' => $scroogeResponseBody
-        ];
+        return $scroogeResponseBody;
     }
 
     public function refundsFetchByIdAndPayment($paymentId, $refundId): array
@@ -574,10 +565,7 @@ class Scrooge extends BaseScrooge
             "status"          => "processed"
         ];
 
-        return [
-            'code' => 200,
-            'body' => $scroogeResponseBody
-        ];
+        return $scroogeResponseBody;
     }
 
     public function updateRefund($refundId, array $input): array

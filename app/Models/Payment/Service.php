@@ -68,7 +68,7 @@ use RZP\Models\Batch\Processor\Nach\ErrorCodes\RegisterErrorCodes;
 class Service extends Base\Service
 {
     use FraudDetector;
-    
+
     protected $merchant;
 
     protected $core;
@@ -1175,6 +1175,7 @@ class Service extends Base\Service
     public function retrieveRefundsForPayment($id, array $input = [])
     {
         $experiment = false;
+        $scroogeRefundsArray = [];
 
         if ($this->app['basicauth']->isStrictPrivateAuth() === true)
         {
@@ -1230,7 +1231,7 @@ class Service extends Base\Service
 
         if ($experiment === true)
         {
-            $this->compareRefundsAndLogDifference([$refundsArray], [$scroogeRefundsArray]);
+            (new Payment\Refund\Service())->compareRefundsAndLogDifference($refundsArray['items'], $scroogeRefundsArray['items'] ?? []);
         }
 
         return $refundsArray;
@@ -4294,7 +4295,7 @@ class Service extends Base\Service
         $merchant = $payment->merchant;
 
         $riskData = $input['risk'];
-       
+
         (new Fraud\Notify())->notifyOpsIfNeeded($merchant, $riskData[ShieldConstants::TRIGGERED_RULES]);
 
         if ($riskData[Risk\Entity::FRAUD_TYPE] === Risk\Type::CONFIRMED)
@@ -4308,7 +4309,7 @@ class Service extends Base\Service
             $errorCode = $this->getErrorCodeFromTriggeredRules($riskData[ShieldConstants::TRIGGERED_RULES]);
 
             (new Fraud\Notify())->notifyMerchantIfNeeded($merchant, $payment, $errorCode);
-        }    
+        }
     }
 
     public function addVerifyDisabledGateway(array $input)
