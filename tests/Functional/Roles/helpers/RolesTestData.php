@@ -6,18 +6,18 @@ return [
             'method'  => 'GET',
             'url'     => '/cac/roles',
             'content' => [
-                'type'          => 'custom',
             ],
             'server' => [
                 'HTTP_X-Request-Origin' => 'https://x.razorpay.com'
             ],
         ],
         'response' => [
-            'content' => [
+            'content' => array (
                 'custom' =>
                     array (
                         0 =>
                             array (
+                                'id' => '100customRole1',
                                 'merchant_id' => '100000merchant',
                                 'name' => 'CAC 1',
                                 'description' => 'Test custom role',
@@ -26,6 +26,7 @@ return [
                             ),
                         1 =>
                             array (
+                                'id' => '100customRole2',
                                 'merchant_id' => '100000merchant',
                                 'name' => 'CAC 2',
                                 'description' => 'Test custom role',
@@ -34,6 +35,7 @@ return [
                             ),
                         2 =>
                             array (
+                                'id' => '100customRole3',
                                 'merchant_id' => '100000merchant',
                                 'name' => 'CAC 3',
                                 'description' => 'Test custom role',
@@ -41,7 +43,19 @@ return [
                                 'members' => 1,
                             ),
                     ),
-            ],
+                'standard' =>
+                    array (
+                        0 =>
+                            array (
+                                'id' => 'finance_l1',
+                                'merchant_id' => '100000merchant',
+                                'name' => 'finance_l1',
+                                'description' => 'Standard role - finance_l1',
+                                'type' => 'standard',
+                                'members' => 0,
+                            ),
+                    ),
+            ),
         ],
     ],
 

@@ -149,6 +149,8 @@ class Core extends Base\Core
 
         $roles = $this->repo->roles->listRoles($input);
 
+        $roles = $roles->whereNotIn(Entity::ID, Entity::$rolesHiddenFromDashboard);
+
         $this->trace->info(
             TraceCode::RECOVERABLE_EXCEPTION,
             ['roles' => $roles->toArray()]);

@@ -45,6 +45,9 @@ class RolesTest extends TestCase
         $user4 = $this->fixtures->user->createEntityInTestAndLive('user', []);
         $user5 = $this->fixtures->user->createEntityInTestAndLive('user', []);
         $user6 = $this->fixtures->user->createEntityInTestAndLive('user', []);
+        $user7 = $this->fixtures->user->createEntityInTestAndLive('user', []);
+        $user8 = $this->fixtures->user->createEntityInTestAndLive('user', []);
+        $user9 = $this->fixtures->user->createEntityInTestAndLive('user', []);
 
         $this->ba->proxyAuth('rzp_test_' . self::DEFAULT_X_MERCHANT_ID, $user1->getId());
 
@@ -62,6 +65,13 @@ class RolesTest extends TestCase
         $customRole3 = $this->fixtures->create('roles', ['name' => 'CAC 3', 'id' => '100customRole3', 'org_id' => "100000razorpay"]);
 
         $this->createMerchantUserMappingInLiveAndTest($user6['id'], self::DEFAULT_X_MERCHANT_ID, $customRole3['id']);
+
+        $this->createStandardRole('owner');
+        $this->createStandardRole('vendor');
+        $this->createStandardRole('finance_l1');
+
+        $this->createMerchantUserMappingInLiveAndTest($user7['id'], self::DEFAULT_X_MERCHANT_ID, 'owner');
+        $this->createMerchantUserMappingInLiveAndTest($user8['id'], self::DEFAULT_X_MERCHANT_ID, 'vendor');
 
         $response = $this->startTest();
     }

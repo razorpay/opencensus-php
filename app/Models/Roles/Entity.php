@@ -5,6 +5,7 @@ namespace RZP\Models\Roles;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Constants\Table;
+use RZP\Models\User\BankingRole;
 use RZP\Models\RoleAccessPolicyMap;
 use RZP\Models\Base\Traits\HardDeletes;
 
@@ -82,6 +83,11 @@ class Entity extends Base\PublicEntity
     protected $dates = [
         self::CREATED_AT,
         self::UPDATED_AT,
+    ];
+
+    public static $rolesHiddenFromDashboard = [
+        BankingRole::OWNER,
+        BankingRole::VENDOR,
     ];
 
     // ============================= RELATIONS =============================
