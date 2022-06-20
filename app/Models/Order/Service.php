@@ -152,7 +152,7 @@ class Service extends Base\Service
 
             $this->checkForDefaultOffers($input);
 
-            $input['public_key'] = App::getFacadeRoot()['basicauth']->getPublicKey();
+            $input['public_key'] = (new Core())->getOrderPublicKey($this->merchant);
 
             $input['merchant_id'] = $this->merchant->getId();
 

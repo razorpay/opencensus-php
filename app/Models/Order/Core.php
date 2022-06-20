@@ -101,7 +101,7 @@ class Core extends Base\Core
             $input[Entity::CUSTOMER_ADDITIONAL_INFO] = $orderOfflineInput;
         }
 
-        $order->setPublicKey(App::getFacadeRoot()['basicauth']->getPublicKey());
+        $order->setPublicKey($this->getOrderPublicKey($merchant));
 
         $order->generateId();
 
@@ -938,5 +938,38 @@ class Core extends Base\Core
         }
 
         return true;
+    }
+
+    public function getOrderPublicKey($merchant)
+    {
+        $ba = App::getFacadeRoot()['basicauth'];
+
+        $publicKey = $ba->getPublicKey();
+
+        if ($ba->isProxyAuth() === true)
+        {
+            $keyEntity = $this->repo->key->getLatestActiveKeyForMerchant($merchant->getId());
+
+            if (isset($keyEntity) === false)
+            {
+                $parentMerchant = $merchant->parent;
+
+                if (isset($parentMerchant) === true)
+                {
+                    $parentKeyEntity = $this->repo->key->getLatestActiveKeyForMerchant($parentMerchant->getId());
+
+                    if (isset($parentKeyEntity) === true)
+                    {
+                        $publicKey = $parentKeyEntity->getPublicKey();
+                    }
+                }
+            }
+            else
+            {
+                $publicKey = $keyEntity->getPublicKey();
+            }
+        }
+
+        return $publicKey;
     }
 }
