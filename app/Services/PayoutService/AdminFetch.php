@@ -8,7 +8,7 @@ use Razorpay\Edge\Passport\Passport;
 
 class AdminFetch extends Base
 {
-    const FETCH_PAYOUTS_BASE_URI = '/payouts/admin';
+    const FETCH_PAYOUTS_BASE_URI = '/admin';
 
     const FETCH_PAYOUTS_URI = self::FETCH_PAYOUTS_BASE_URI . '/payouts';
 

@@ -152,7 +152,7 @@ class PayoutServiceTest extends TestCase
         $payoutServiceAdminFetchMock = Mockery::mock('RZP\Services\PayoutService\AdminFetch',
                                                      [$this->app])->makePartial();
 
-        $expectedUrl = '/payouts/admin/' . $entity . '/' . $entityId;
+        $expectedUrl = '/admin/' . $entity . '/' . $entityId;
 
         $payoutServiceAdminFetchMock->shouldReceive('sendRequest')
                                     ->withArgs(
