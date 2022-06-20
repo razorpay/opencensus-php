@@ -45,8 +45,6 @@ class Core extends Base\Core
 
         $card = (new Card\Entity)->build($input);
 
-        $this->setVaultTokenAndFingerPrint($card, $input, $recurring);
-
         $card->merchant()->associate($merchant);
 
         $this->card = $card;
@@ -57,6 +55,8 @@ class Core extends Base\Core
         {
             $card->iinRelation()->associate($iin);
         }
+
+        $this->setVaultTokenAndFingerPrint($card, $input, $recurring);
 
         if ($dummyProcessing === false)
         {
@@ -407,6 +407,7 @@ class Core extends Base\Core
         {
             $cardVault = (new Card\CardVault);
 
+            $tempInput['bu_namespace'] = $cardVault->getBuNamespaceIfApplicable($card->toArray());
             $tempInput['card'] = $input['number'];
 
             $response = $cardVault->getTokenAndFingerprint($tempInput);

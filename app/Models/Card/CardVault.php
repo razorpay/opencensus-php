@@ -21,13 +21,14 @@ class CardVault extends Base\Core
         $this->cardVault = $this->app['card.cardVault'];
     }
 
-    public function getCardNumber($vaultToken)
+    public function getCardNumber($vaultToken,array $input = [])
     {
         $vaultEx = null;
-
+        $buNamespace =null;
+        $buNamespace = $this->getBuNamespaceIfApplicable($input);
         try
         {
-            $cardNumber = $this->cardVault->detokenize($vaultToken);
+            $cardNumber = $this->cardVault->detokenize($vaultToken,$buNamespace);
 
             assertTrue(empty($cardNumber) === false);
 
@@ -66,7 +67,7 @@ class CardVault extends Base\Core
         }
     }
 
-    public function getVaultToken($input)
+    public function getVaultToken($input,$cardArray=[])
     {
         try
         {
@@ -74,7 +75,9 @@ class CardVault extends Base\Core
 
             $input['card'] = $cardNumber;
 
-            $token = $this->cardVault->tokenize($input);
+            $buNamespace =null;
+            $buNamespace = $this->getBuNamespaceIfApplicable($cardArray);
+            $token = $this->cardVault->tokenize($input,$buNamespace);
 
             return $token;
         }
@@ -91,11 +94,11 @@ class CardVault extends Base\Core
         }
     }
 
-    public function getVaultTokenOrEncryptionToken($input)
+    public function getVaultTokenOrEncryptionToken($input,$cardArray=[])
     {
         try
         {
-            return $this->getVaultToken($input);
+            return $this->getVaultToken($input,$cardArray);
         }
         catch (\Exception $e)
         {
@@ -171,6 +174,47 @@ class CardVault extends Base\Core
             throw $e;
         }
     }
+
+    public function getBuNamespaceIfApplicable($input)
+    {
+        $buNamespace =null;
+        try
+        {
+            if (empty($input['trivia']) === false) {
+                $buNamespace = 'payments_token_pan';
+            }
+            else if (empty($input['international']) === false) {
+                $buNamespace = 'payments_international';
+            }
+            else if (empty($input['network']) === false and $input['network'] === 'Bajaj Finserv'){
+                $buNamespace = 'payments_bajajfinserv';
+            }
+
+            $this->trace->info(
+                TraceCode::CARD_ENTIY_DETAILS_BEFORE_VAULT_REQUEST,
+                [
+                    'card_id'       => $input['id'] ?? "" ,
+                    'trivia'        => $input['trivia'] ?? "",
+                    'international' => $input['international'] ?? "",
+                    'network'       => $input['network']??"",
+                    'vault_token'   => $input['vault_token']?? "",
+                    "bu_namespace"  => $buNamespace
+                ]
+            );
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->error(
+                TraceCode::CARD_VAULT_BU_NAMESPACE_EXCEPTION,
+                [
+                    'message' => $e
+                ]
+            );
+        }
+
+        return $buNamespace;
+    }
+
 
     public function createTokenizedCard($tokenInput, $merchant, $iinInfo)
     {

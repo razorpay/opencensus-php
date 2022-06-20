@@ -9,6 +9,7 @@ use RZP\Exception;
 use RZP\Models\Card;
 use RZP\Error;
 use RZP\Models\Base;
+use RZP\Models\Merchant;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
@@ -30,6 +31,7 @@ class CardVault
     const TOKENEX_TOKEN     = 'tokenex_token';
     const TOKENEX_TOKENS    = 'tokenex_tokens';
     const X_RAZORPAY_TASKID = 'X-Razorpay-TaskId';
+    const BU_NAMESPACE      = 'bu_namespace';
 
     const TOKENEX_VAULT_MAPPING   = 'tokenex_vault_mapping';
     const SERVICE_PROVIDER_TOKENS = 'service_provider_tokens';
@@ -137,7 +139,7 @@ class CardVault
 
     }
 
-    public function tokenize($input)
+    public function tokenize($input,$buNamespace=null)
     {
         $key  = '';
 
@@ -173,6 +175,22 @@ class CardVault
             return $this->cardNumberToToken[$key];
         }
 
+        if (isset($buNamespace) === true ) {
+
+            $variant =  $this->app['razorx']->getTreatment($buNamespace, Merchant\RazorxTreatment::VAULT_BU_NAMESPACE_MIGRATION, $this->mode);
+
+            $this->trace->info(TraceCode::VAULT_BU_NAMESPACE_MIGRATION_RAZORX_VARIANT, [
+                'razorx_variant' => $variant,
+                'bu_namespace'   => $buNamespace
+            ]);
+
+            if (strtolower($variant) === 'on') {
+                $payload += [
+                    self::BU_NAMESPACE => $buNamespace,
+                ];
+            }
+        }
+
         $response = $this->sendRequest('tokenize', 'post', $payload);
 
         if (empty($response[self::TOKEN]) === true)
@@ -191,6 +209,22 @@ class CardVault
         $payload = [
             self::SECRET => $input['card'],
         ];
+
+         if (isset($input['bu_namespace'])=== true ) {
+
+             $variant =  $this->app['razorx']->getTreatment($input['bu_namespace'], Merchant\RazorxTreatment::VAULT_BU_NAMESPACE_MIGRATION, $this->mode);
+
+             $this->trace->info(TraceCode::VAULT_BU_NAMESPACE_MIGRATION_RAZORX_VARIANT, [
+                 'razorx_variant' => $variant,
+                 'bu_namespace'   => $input['bu_namespace']
+             ]);
+
+             if (strtolower($variant) === 'on') {
+                 $payload += [
+                     self::BU_NAMESPACE => $input['bu_namespace'],
+                 ];
+             }
+         }
 
         $key = $input['card'];
 
@@ -216,11 +250,28 @@ class CardVault
         return $response;
     }
 
-    public function detokenize($token)
+    public function detokenize($token ,$buNamespace=null)
     {
         $input = [
             self::TOKEN         => $token,
         ];
+
+        if (isset($buNamespace) === true ) {
+
+            $variant =  $this->app['razorx']->getTreatment($buNamespace, Merchant\RazorxTreatment::VAULT_BU_NAMESPACE_MIGRATION, $this->mode);
+
+            $this->trace->info(TraceCode::VAULT_BU_NAMESPACE_MIGRATION_RAZORX_VARIANT, [
+                'razorx_variant' => $variant,
+                'bu_namespace'   => $buNamespace
+            ]);
+
+            if (strtolower($variant) === 'on') {
+                $input += [
+                    self::BU_NAMESPACE => $buNamespace,
+                ];
+            }
+        }
+
 
         $response = $this->sendRequest('detokenize', 'post', $input);
 
@@ -258,6 +309,7 @@ class CardVault
         }
 
         $tokenizationUrl = $url;
+        $vaultAction = $url;
 
         // temporary code to debug
         if (($url === 'tokenize') or
@@ -299,7 +351,8 @@ class CardVault
 
         $this->trace->info(TraceCode::CARD_VAULT_REQUEST, [
             'url' => $request['url'],
-            'namespace' => $this->namespace
+            'namespace' => $this->namespace,
+            'request' => $data
         ]);
 
         $isTokenisationRoute = in_array($tokenizationUrl, self::TOKENIZATION_ROUTES);
@@ -327,7 +380,7 @@ class CardVault
             $this->handleVaultResponse($request, $response, $network, $action, $event);
         }
         else {
-            $this->checkErrors($response);
+            $this->checkErrors($data,$response,$vaultAction);
         }
         return json_decode($response->body, true);
     }
@@ -434,7 +487,7 @@ class CardVault
         return $response;
     }
 
-    protected function checkErrors($response)
+    protected function checkErrors($request,$response,$action)
     {
         $responseBody = json_decode($response->body, true);
 
@@ -443,13 +496,15 @@ class CardVault
         $this->trace->info(
             TraceCode::CARD_VAULT_RESPONSE,
             [
-                'response'  => $this->getRedactedData($responseBody),
+                'response'    => $this->getRedactedData($responseBody),
                 'namespace' => $this->namespace,
                 'status_code' => $response->status_code,
             ]);
 
         if ($response->status_code >= 500)
         {
+            $this->pushVaultDimensions($request, Metric::FAILED, $response->status_code, $action);
+
             throw new Exception\RuntimeException(
                 'Vault request failed', [Error\Error::DATA => $responseBody]);
         }
@@ -457,6 +512,8 @@ class CardVault
         if ($success === false || $success === 0)
         {
             $error = $responseBody[self::ERROR];
+
+            $this->pushVaultDimensions($request, Metric::FAILED, $response->status_code, $action);
 
             // case where validate token return success false because of invalid token
             // error will be empty
@@ -469,6 +526,9 @@ class CardVault
                 throw new Exception\RuntimeException('card vault request failed', $data);
             }
         }
+
+        $this->pushVaultDimensions($request, Metric::SUCCESS, $response->status_code, $action);
+
     }
 
     protected function getRedactedData($response)
@@ -803,6 +863,22 @@ class CardVault
             $code,
             $data);
     }
+
+    protected function pushVaultDimensions($request, $status, $statusCode = null, $action = null, $exe = null)
+    {
+        try {
+            if (($this->mode === Mode::TEST) and
+                ($this->app->runningUnitTests() === false)) {
+                return;
+            }
+
+            (new Card\Metric)->pushCardVaultDimensions($request, $status, $statusCode, $action, $exe);
+        }
+        catch(Exception\BaseException $e) {
+            $this->trace->info(TraceCode::ERROR_EXCEPTION, [$e->getError()]);
+        }
+    }
+
 
     protected function pushDimensions($request, $status, $statusCode = null, $action = null, $exe = null)
     {

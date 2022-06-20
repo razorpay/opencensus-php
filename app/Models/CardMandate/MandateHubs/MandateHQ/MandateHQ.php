@@ -440,6 +440,6 @@ class MandateHQ extends CardMandate\MandateHubs\BaseHub
     {
         $cardToken = $card->getCardVaultToken();
 
-        return (new Card\CardVault)->getCardNumber($cardToken);
+        return (new Card\CardVault)->getCardNumber($cardToken,$card->toArray());
     }
 }

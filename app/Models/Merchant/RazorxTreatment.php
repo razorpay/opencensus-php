@@ -32,6 +32,9 @@ final class RazorxTreatment
     //Razorx treatment constant, allows system to show friend buy widget to merchant
     const SHOW_FRIENDBUY_WIDGET = "show_friendbuy_widget";
 
+    //Razorx treatment constant, allows system to send new bu namespace to vault service
+    const VAULT_BU_NAMESPACE_MIGRATION  = 'vault_bu_namespace_migration';
+
     // Response filed filtering based on role
     const RESPONSE_FIELDS_FILTERING_FOR_ROLES = 'response_fields_filtering_for_roles';
 

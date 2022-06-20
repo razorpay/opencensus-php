@@ -12,7 +12,7 @@ class CardVault extends BaseCardVault
         return true;
     }
 
-    public function tokenize($input)
+    public function tokenize($input, $buNamespace=null)
     {
         if (isset($input['card']) === true)
         {
@@ -34,7 +34,7 @@ class CardVault extends BaseCardVault
         ];
     }
 
-    public function detokenize($token)
+    public function detokenize($token,$buNamespace=null)
     {
         $data = base64_decode($token);
 

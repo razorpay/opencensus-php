@@ -2857,7 +2857,7 @@ class Core extends Base\Core
 
             $existingCard = $existingToken->card;
 
-            $actualCardNumber = (new Card\CardVault)->getCardNumber($existingCard->getVaultToken());
+            $actualCardNumber = (new Card\CardVault)->getCardNumber($existingCard->getVaultToken(),$existingCard->toArray());
 
             $cardInput = [
                 Card\Entity::NUMBER           => $actualCardNumber,

@@ -362,7 +362,7 @@ class Entity extends Base\PublicEntity
                 $tempInput['scheme'] = Card\Vault::RZP_ENCRYPTION_SCHEME;
             }
 
-            $vaultToken = (new Card\CardVault)->getVaultToken($tempInput);
+            $vaultToken = (new Card\CardVault)->getVaultToken($tempInput,$input);
 
             $this->setAttribute(self::VAULT_TOKEN, $vaultToken);
         }

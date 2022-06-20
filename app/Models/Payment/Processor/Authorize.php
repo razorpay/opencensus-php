@@ -8172,7 +8172,7 @@ trait Authorize
             return $this->createCardEntityForTokenisedCard($token, $input);
         }
 
-        $cardNumber = (new Card\CardVault)->getCardNumber($card->getVaultToken());
+        $cardNumber = (new Card\CardVault)->getCardNumber($card->getVaultToken(),$card->toArray());
 
         // Recurring terminals accept null cvv.
         $cvv = isset($input['card']['cvv']) ? $input['card']['cvv'] : null;
@@ -8258,7 +8258,7 @@ trait Authorize
      */
     protected function createActualCardFromTokenisedCard(Card\Entity $card, $input): array
     {
-        $actualCardNumber = (new Card\CardVault)->getCardNumber($card->getVaultToken());
+        $actualCardNumber = (new Card\CardVault)->getCardNumber($card->getVaultToken(),$card->toArray());
 
         $cardInput = [
             Card\Entity::NUMBER           => $actualCardNumber,
@@ -8291,7 +8291,7 @@ trait Authorize
             return $this->createCardEntityForTokenisedCard($token, $input);
         }
 
-        $cardNumber = (new Card\CardVault)->getCardNumber($card->getVaultToken());
+        $cardNumber = (new Card\CardVault)->getCardNumber($card->getVaultToken(),$card->toArray());
 
         $cvv = isset($input['card']['cvv']) ? $input['card']['cvv'] : null;
 

@@ -61,7 +61,7 @@ class CardAutoRecurringReminderProcessor extends ReminderProcessor
         }
         else
         {
-            $cardNumber = (new Card\CardVault)->getCardNumber($card->getVaultToken());
+            $cardNumber = (new Card\CardVault)->getCardNumber($card->getVaultToken(),$card->toArray());
 
             $cardInput = array_merge(
                 $card->toArray(),

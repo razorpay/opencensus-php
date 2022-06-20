@@ -34,8 +34,8 @@ trait CardCacheTrait
         else
         {
             $tempInput['card'] = $input['card']['number'];
-
-            $vaultToken = (new Card\CardVault)->getVaultTokenOrEncryptionToken($tempInput);
+            $cardArray = $input['card'];
+            $vaultToken = (new Card\CardVault)->getVaultTokenOrEncryptionToken($tempInput , $cardArray);
         }
 
         $key = $this->getCacheKey($input);
@@ -56,7 +56,6 @@ trait CardCacheTrait
             }
         }
 
-        
         $cacheTtl = $this->getCardCacheTtl($input);
 
         // If this is set to 0, set the cache forever
@@ -97,7 +96,7 @@ trait CardCacheTrait
             $vaultToken = $input['card'][Card\Entity::VAULT_TOKEN];
         }
 
-        $input['card']['number'] = (new Card\CardVault)->getCardNumber($vaultToken);
+        $input['card']['number'] = (new Card\CardVault)->getCardNumber($vaultToken,$input['card']);
 
         if (isset($data['cvv']) === true)
         {

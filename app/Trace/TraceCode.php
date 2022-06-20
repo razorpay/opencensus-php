@@ -2193,6 +2193,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CARD_VAULT_REQUEST_FAILED                             = 'CARD_VAULT_REQUEST_FAILED';
     const CARD_VAULT_TOKEN_MISSING                              = 'CARD_VAULT_TOKEN_MISSING';
     const CARD_VAULT_REQUEST_DURATION                           = 'CARD_VAULT_REQUEST_DURATION';
+    const CARD_VAULT_BU_NAMESPACE_EXCEPTION                     = 'CARD_VAULT_BU_NAMESPACE_EXCEPTION';
     const SHIELD_REQUEST_DURATION                               = 'SHIELD_REQUEST_DURATION';
     const CORE_PAYMENT_SERVICE_REQUEST                          = 'CORE_PAYMENT_SERVICE_REQUEST';
     const CORE_PAYMENT_SERVICE_RESPONSE                         = 'CORE_PAYMENT_SERVICE_RESPONSE';
@@ -7225,9 +7226,15 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ROLE_ACCESS_POLICY_MAP_UPDATE_RESPONSE                = 'ROLE_ACCESS_POLICY_MAP_UPDATE_RESPONSE';
 
     const CREATING_ACCESS_CONTROL_UPDATE_HISTORY                = 'CREATING_ACCESS_CONTROL_UPDATE_HISTORY';
+
+    const VAULT_BU_NAMESPACE_MIGRATION_RAZORX_VARIANT           = 'VAULT_BU_NAMESPACE_MIGRATION_RAZORX_VARIANT';
+    const CARD_VAULT_METRICS_DIMENSION_PUSH_FAILED              = 'CARD_VAULT_METRICS_DIMENSION_PUSH_FAILED';
+    const CARD_ENTIY_DETAILS_BEFORE_VAULT_REQUEST               = 'CARD_ENTIY_DETAILS_BEFORE_VAULT_REQUEST';
+
     const S2S_TOKENISED_EMI_LAST4_VALIDATION                    = 'S2S_TOKENISED_EMI_LAST4_VALIDATION';
 
     const BUCKET_MIGRATION_FOR_NEW_COMMISSION_INVOICES_EXP      = 'BUCKET_MIGRATION_FOR_NEW_COMMISSION_INVOICES_EXP';
+
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
