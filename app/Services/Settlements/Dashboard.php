@@ -55,6 +55,7 @@ class Dashboard extends Base
     const BLOCK = 'block';
     const HOLD = 'hold';
     const STATUS = 'status';
+    const AGGREGATE_SETTLEMENT_PARENT = 'aggregate_settlement_parent';
 
     public function __construct($app)
     {
@@ -231,6 +232,10 @@ class Dashboard extends Base
         if (isset($input[self::ENTITIES][self::FEATURES][self::HOLD][self::STATUS]) === true)
         {
             $input[self::ENTITIES][self::FEATURES][self::HOLD][self::STATUS]  = ($input[self::ENTITIES][self::FEATURES][self::HOLD][self::STATUS] == true);
+        }
+        if (isset($input[self::ENTITIES][self::PREFERENCES][self::AGGREGATE_SETTLEMENT_PARENT]) === true)
+        {
+            $input[self::ENTITIES][self::PREFERENCES][self::AGGREGATE_SETTLEMENT_PARENT]  = ($input[self::ENTITIES][self::PREFERENCES][self::AGGREGATE_SETTLEMENT_PARENT] == true);
         }
         return $this->makeRequest(self::MERCHANT_CONFIG_BULK_UPDATE, $input, self::SERVICE_DASHBOARD, $mode);
     }

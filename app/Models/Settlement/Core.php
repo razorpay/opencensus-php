@@ -868,6 +868,7 @@ class Core extends Base\Core
         if ($isAggregateSettlement === true)
         {
             $response['config']['types']['aggregate']['enable'] = true;
+            $response['config']['types']['aggregate']['settle_to'] = $destinationMerchantId;
             $response['config']['types']['default']['enable'] = false;
         }
 
