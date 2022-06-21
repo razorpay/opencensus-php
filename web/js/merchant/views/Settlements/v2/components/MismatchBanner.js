@@ -3,6 +3,8 @@ import Amount from 'common/ui/Amount';
 import { titleCase } from 'common/utils/rzp-utils';
 
 export const MismatchBanner = ({ totalAmount, calculatedAmounts, gatewayName }) => {
+  totalAmount *= 100;
+  calculatedAmounts *= 100;
   return (
     <Banner className="mis-match-banner">
       <div className="banner-heading">

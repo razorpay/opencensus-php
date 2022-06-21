@@ -1,12 +1,13 @@
 import React from 'react';
-import { sanitizeTabName } from '../util';
+import { sanitizeTabName, removeUnreconciledEntity } from '../util';
 import { titleCase } from 'common/utils/rzp-utils';
 
 const Tabs = (props) => {
-  const { items } = props.breakupDetails;
+  let { items } = props.breakupDetails;
   const { activeTab } = props;
 
   const renderTabNames = () => {
+    items = removeUnreconciledEntity(items);
     const tabNamesObj = items.reduce((acc, tab) => {
       if (!tab.count) return acc;
 

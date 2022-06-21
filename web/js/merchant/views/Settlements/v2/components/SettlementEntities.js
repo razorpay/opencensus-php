@@ -4,6 +4,7 @@ import Tabs from './Tabs';
 import EntityList from './EntityList';
 import Spinner from 'common/ui/Spinner';
 import LoaderDots from 'common/ui/LoaderDots';
+import { removeUnreconciledEntity } from 'merchant/views/Settlements/v2/util';
 
 const SettlementEntities = (props) => {
   const [activeTab, setactiveTab] = useState(null);
@@ -13,8 +14,9 @@ const SettlementEntities = (props) => {
 
   useEffect(() => {
     // sets the first item as active tab by default
-    if (items?.length > 0) {
-      setactiveTab(items[0].component);
+    const ENTITY_ITEMS = removeUnreconciledEntity(items);
+    if (ENTITY_ITEMS?.length > 0) {
+      setactiveTab(ENTITY_ITEMS[0].component);
       setNoDataFound(false);
     } else {
       setNoDataFound(true);

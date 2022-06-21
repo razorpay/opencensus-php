@@ -15,3 +15,11 @@ export const calculateCreditDebitAmount = (items, isBreakupNew) => {
 };
 
 export const sanitizeTabName = (tabName) => tabName.split('_')[0].trim();
+
+/**
+ * For single recon we have Unreconciled breakup for external transactions, no need to show in entities table
+ * @param {object} items array of items breakup details
+ * @returns {object} filtered items for unreconciled entity
+ */
+export const removeUnreconciledEntity = (items) =>
+  items.filter((item) => item.component !== 'unreconciled');
