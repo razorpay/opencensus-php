@@ -90,6 +90,14 @@ class UserController extends Controller
                     Cookie::make('rzp_user_id', $details['user']['id'], $ttl, null, env('SECOND_LEVEL_DOMAIN'), true, false),
                 ]);
             }
+
+            if ($this->canCookieSetForEasyOnboardingPostL1Submit($details) === true)
+            {
+                $ttl = 12 * 60;
+
+                Cookie::queue('rzp_merchant_id', $details['id'], $ttl, null, env('SECOND_LEVEL_DOMAIN'), true, false);
+                Cookie::queue('rzp_user_id', $details['user']['id'], $ttl, null, env('SECOND_LEVEL_DOMAIN'), true, false);
+            }
         }
 
         $data['cdnDashboardUrl'] = \Config::get('app.cdn_dashboard_url');
@@ -164,7 +172,7 @@ class UserController extends Controller
         }
     }
 
-    private function isRedirectionApplicable($details): bool
+    private function isEasyOnboardingExperimentEnable(): bool
     {
         try
         {
@@ -179,16 +187,57 @@ class UserController extends Controller
             return false;
         }
 
-        if ($experiment === false)
-        {
-            return false;
-        }
+        return $experiment;
+    }
 
+    private function isAuthSourceHasWebsite(): bool
+    {
         $queryParams = Input::all();
 
         $authSource = $queryParams['auth_source'] ?? null;
 
         if ($authSource === 'website' or $authSource === 'website_homepage')
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    private function canCookieSetForEasyOnboardingPostL1Submit($details): bool
+    {
+        if ($this->isAuthSourceHasWebsite() === true)
+        {
+            return false;
+        }
+
+        if ($this->isEasyOnboardingExperimentEnable() === false)
+        {
+            return false;
+        }
+
+        $signupCampaign = $details['user']['signup_campaign'] ?? null;
+
+        $activationFormMilestone = $details['activation_form_milestone'] ?? null;
+
+        if (($signupCampaign === 'easy_onboarding') and 
+            ($activationFormMilestone == 'L1' or $activationFormMilestone == 'L2'))
+        {
+            return true;
+        }
+
+        return false;
+
+    }
+
+    private function isRedirectionApplicable($details): bool
+    {
+        if ($this->isEasyOnboardingExperimentEnable() === false)
+        {
+            return false;
+        }
+
+        if ($this->isAuthSourceHasWebsite() === true)
         {
             return false;
         }
