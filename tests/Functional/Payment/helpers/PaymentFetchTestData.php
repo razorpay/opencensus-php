@@ -923,6 +923,23 @@ return [
         ],
     ],
 
+    'testFetchPaymentFromPgRouterWithNonToken' => [
+        'request' => [
+            'method'  => 'get',
+            'content' => [
+                'id'     => '',
+                'expand' => [
+                    'token',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'  => 'payment',
+            ],
+        ],
+    ],
+
     'testProxyAuthFetchPaymentOnTerminalId' => [
         'request' => [
             'url'     => '/payments',

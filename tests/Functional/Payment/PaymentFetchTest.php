@@ -1787,6 +1787,137 @@ class PaymentFetchTest extends TestCase
         $this->assertEquals($response['id'], 'pay_GrClIcbRtTUxxb');
     }
 
+    public function testFetchPaymentFromPgRouterWithNonToken()
+    {
+        $this->enablePgRouterConfig();
+        $pgService = \Mockery::mock('RZP\Services\PGRouter')->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $this->app->instance('pg_router', $pgService);
+
+        $pgService->shouldReceive('sendRequest')
+            ->with(Mockery::type('string'), Mockery::type('string'), Mockery::type('array'), Mockery::type('bool'), Mockery::type('int'), Mockery::type('bool'))
+            ->andReturnUsing(function (string $endpoint, string $method, array $data, bool $throwExceptionOnFailure, int $timeout, bool $retry)
+            {
+                return [
+                    'body' => [
+                        'data'=>[
+                            'payment'=>[
+                                'id'=>'GrClIcbRtTUxxb',
+                                'contact'=>'9891337297',
+                                'email'=>'qa1610364215uduuazxbwyuxqrjl@example.com',
+                                'merchant_id'=>'10000000000000',
+                                'status'=>'authorized',
+                                'gateway'=>'cybersource',
+                                'description'=>'',
+                                'gateway_captured'=>false,
+                                'captured_at'=>0,
+                                'recurring'=>false,
+                                'international'=>false,
+                                'terminal_id'=>'',
+                                'recurring_type'=>'',
+                                'authorized_at'=>0,
+                                'authentication_gateway'=>'cybersource',
+                                'verify_at'=>0,
+                                'amount'=>3000,
+                                'otp_count'=>null,
+                                'currency'=>'INR',
+                                'method'=>'card',
+                                'auth_type'=>'3ds',
+                                'base_amount'=>null,
+                                'authorized_amount'=>1,
+                                'settled_by'=>'',
+                                'updated_at'=>1616745601,
+                                'created_at'=>1616744756,
+                                'captured'=>false,
+                                'receiver_type'=>'',
+                                'convert_currency'=>false,
+                                'preferred_auth'=>null,
+                                'acquirer_data'=>[
+                                    'auth_code'=>'83100'
+                                ],
+                                'internal_error_code'=>'',
+                                'error_description'=>'',
+                                'notes'=> [],
+                                'two_factor_auth'=>'passed',
+                                'invoice_id'=> null,
+                                'transfer_id'=>'',
+                                'payment_link_id'=>'',
+                                'amount_refunded'=>null,
+                                'base_amount_refunded'=>null,
+                                'amount_paidout'=>null,
+                                'amount_transferred'=>null,
+                                'refund_status'=>null,
+                                'bank'=>null,
+                                'wallet'=>null,
+                                'vpa'=>null,
+                                'on_hold'=>null,
+                                'on_hold_until'=>null,
+                                'emi_plan_id'=>'',
+                                'error_code'=>'',
+                                'cancellation_reason'=>'',
+                                'global_customer_id'=>'',
+                                'receiver_id'=>'',
+                                'app_token'=>'',
+                                'emi_subvention'=>'',
+                                'acknowledged_at'=>null,
+                                'refund_at'=>null,
+                                'reference13'=>null,
+                                'reference16'=>null,
+                                'reference17'=>null,
+                                'global_token_id'=>'',
+                                'transaction_id'=>'',
+                                'auto_captured'=>false,
+                                'reference1'=>null,
+                                'reference2'=>null,
+                                'cps_route'=>null,
+                                'batch_id'=>'',
+                                'signed'=>false,
+                                'verified'=>1,
+                                'verify_bucket'=>null,
+                                'callback_url'=>'',
+                                'fee'=>0,
+                                'mdr'=>0,
+                                'tax'=>0,
+                                'otp_attempts'=>null,
+                                'save'=>false,
+                                'late_authorized'=>false,
+                                'disputed'=>false,
+                                'entity'=>'payments',
+                                'fee_bearer'=>'platform',
+                                'error_source'=>'',
+                                'error_step'=>'',
+                                'error_reason'=>'',
+                                'gateway_amount'=>0,
+                                'gateway_currency'=>'',
+                                'forex_rate'=>0,
+                                'dcc_offered'=>0,
+                                'dcc_mark_up_percent'=>0,
+                                'action_type'=>'',
+                                'reference_id'=>'',
+                                'dcc'=>false,
+                                'dcc_markup_amount'=>0,
+                                'mcc'=>false,
+                                'forex_rate_received'=>0,
+                                'forex_rate_applied'=>0,
+                                'admin'=>true,
+                                'mode'=>'test'
+                            ]
+                        ]
+                    ]
+                ];
+            });
+
+        $this->ba->privateAuth();
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/payments/pay_AqQFBCdRFFwmB4';
+
+        $response = $this->startTest();
+
+        $this->assertEquals($response['id'], 'pay_GrClIcbRtTUxxb');
+    }
+
     public function testProxyAuthFetchPaymentOnTerminalId()
     {
         $payment = $this->fixtures->create('payment:authorized', []);

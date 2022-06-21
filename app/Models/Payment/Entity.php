@@ -507,6 +507,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::PROVIDER,
         self::SETTLED_BY,
         self::OPTIMIZER_PROVIDER,
+        self::TOKEN
     ];
 
     protected $reconAppInternal = [
@@ -4323,6 +4324,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function globalCustomer()
     {
         return $this->belongsTo('RZP\Models\Customer\Entity', self::GLOBAL_CUSTOMER_ID);
+    }
+
+    public function token()
+    {
+        return $this->belongsTo('RZP\Models\Customer\Token\Entity', self::TOKEN_ID);
     }
 
     public function localToken()

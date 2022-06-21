@@ -1879,6 +1879,16 @@ class Service extends Base\Service
             $this->addDashboardFlags($entity, $payment, $input);
         }
 
+        if(isset($entity['token']))
+        {
+            if($payment->card->isInternational() === false)
+            {
+                $data['id'] = $entity['token_id'];
+                $network_token_data = (new Token\Service())->fetchNetworkToken($data);
+                $entity['token'] = $network_token_data;
+            }
+        }
+
         return $entity;
     }
 

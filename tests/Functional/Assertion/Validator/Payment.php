@@ -77,6 +77,7 @@ class Payment extends Validator
         Entity::PROVIDER            => 'sometimes',
         Entity::OPTIMIZER_PROVIDER  => 'sometimes',
         Entity::SETTLED_BY          => 'sometimes',
+        Entity::TOKEN               => 'sometimes',
     );
 
     protected function validateMethod($attribute, $value)
