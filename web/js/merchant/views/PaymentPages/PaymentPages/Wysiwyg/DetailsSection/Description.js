@@ -241,12 +241,12 @@ export default class WysiwygDescription extends React.PureComponent {
               throw new Error({ errors: [errorMessage] });
             }
           })
-          .catch(({ errors }) => {
-            track.wysiwyg.addImageFail(errors[0]);
+          .catch((error) => {
+            track.wysiwyg.addImageFail(error.errors?.[0] || error.message);
 
             self.props.showNotification({
               type: 'error',
-              message: errors[0],
+              message: error.errors?.[0] || 'Something went wrong, please try again later',
             });
           });
       } else {
