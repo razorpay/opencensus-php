@@ -4,7 +4,6 @@ import Amount from 'common/ui/Amount';
 import Definition from 'common/ui/Definition';
 import Spinner from 'common/ui/Spinner';
 import Time from 'common/ui/Time';
-import { titleCase } from 'common/utils/rzp-utils';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import SettlementInfo from 'merchant/views/Settlements/components/SettlementInfo';
 import { connect } from 'react-redux';
@@ -16,8 +15,8 @@ import { connect } from 'react-redux';
 }, null)
 export default class ReversalDetails extends Component {
   render() {
-    const { reversal, transfer, isLoading, onClose, merchant } = this.props,
-      isLAInitiator = (reversal.initiator_id || '').replace('acc_', '') !== merchant.id;
+    const { reversal, transfer, isLoading, onClose, merchant } = this.props;
+    const isLAInitiator = (reversal.initiator_id || '').replace('acc_', '') !== merchant.id;
 
     return (
       <div class="content-wrapper content-sm txn-details">
@@ -39,15 +38,17 @@ export default class ReversalDetails extends Component {
 
             <div class="SliderPanel__Body">
               <div class="panel-body">
-                <EntityDetailRow label="Linked Account">
-                  <Definition>
-                    <span>{transfer.recipient_details.name}</span>
-                    {transfer.recipient_details.email && (
-                      <span>{transfer.recipient_details.email}</span>
-                    )}
-                    <code>{transfer.recipient}</code>
-                  </Definition>
-                </EntityDetailRow>
+                {transfer.recipient_details && (
+                  <EntityDetailRow label="Linked Account">
+                    <Definition>
+                      <span>{transfer.recipient_details.name}</span>
+                      {transfer.recipient_details.email && (
+                        <span>{transfer.recipient_details.email}</span>
+                      )}
+                      <code>{transfer.recipient}</code>
+                    </Definition>
+                  </EntityDetailRow>
+                )}
 
                 <EntityDetailRow label="Amount">
                   <Amount value={reversal.amount} currency={reversal.currency} />
@@ -55,7 +56,7 @@ export default class ReversalDetails extends Component {
 
                 <EntityDetailRow
                   label="Initiated By"
-                  value={() => (isLAInitiator ? transfer.recipient_details.name : merchant.name)}
+                  value={() => (isLAInitiator ? transfer.recipient_details?.name : merchant.name)}
                 />
 
                 {isLAInitiator && reversal.customer_refund_id && (
