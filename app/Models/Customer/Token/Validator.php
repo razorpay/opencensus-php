@@ -14,7 +14,6 @@ use RZP\Models\Payment\Processor\Wallet;
 use RZP\Models\PaperMandate\Constants as PaperMandateConstants;
 use RZP\Models\Merchant;
 use RZP\Models\Card;
-use RZP\Models\Terminal;
 
 class Validator extends Base\Validator
 {
@@ -217,15 +216,6 @@ class Validator extends Base\Validator
         if ($merchant->isShared() === true)
         {
             $output['reason'] = 'Input merchant is global merchant';
-
-            return $output;
-        }
-
-        $onboardedNetworks = (new Terminal\Core())->getMerchantTokenisationOnboardedNetworks($merchant->getId());
-
-        if (!in_array($token->card->getNetworkCode(), $onboardedNetworks, true))
-        {
-            $output['reason'] = 'Merchant not onboarded to network - ' . $token->card->getNetworkCode();
 
             return $output;
         }

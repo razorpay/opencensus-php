@@ -30,7 +30,6 @@ class MigrateGlobalConsentsToLocalTokensTest extends TestCase
         $this->ba->batchAppAuth();
 
         $this->mockCardVaultWithCryptogram();
-        $this->mockFetchMerchantTokenisationOnboardedNetworks([Network::VISA]);
 
         $this->fixturesToCreateToken('100022xytoken1', '100000003card1', '411140');
         $this->fixturesToCreateToken('100022xytoken2', '100000003card2', '411141');
@@ -65,7 +64,6 @@ class MigrateGlobalConsentsToLocalTokensTest extends TestCase
         $this->ba->batchAppAuth();
 
         $this->mockCardVaultWithCryptogram();
-        $this->mockFetchMerchantTokenisationOnboardedNetworks([Network::VISA]);
 
         $payload = $this->testData['testBulkCreateLocalTokensFromConsent'];
 
@@ -73,7 +71,7 @@ class MigrateGlobalConsentsToLocalTokensTest extends TestCase
 
         $this->fixtureToCreateTokenisedToken(
             'HDFC',
-            'Visa',
+            'visa',
             '100000Razorpay',
             '10000gcustomer',
             '100022xytoken1'
@@ -94,27 +92,9 @@ class MigrateGlobalConsentsToLocalTokensTest extends TestCase
         $this->assertEquals('10000merchant1', $card['merchant_id']);
     }
 
-    public function testBulkCreateLocalTokensFromConsentWhenMerchantNotOnboardedExpectsLocalTokenCreationFailure()
-    {
-        $this->ba->batchAppAuth();
-
-        $this->mockCardVaultWithCryptogram();
-        $this->mockFetchMerchantTokenisationOnboardedNetworks([]);
-
-        $this->fixturesToCreateToken('100022xytoken1', '100000003card1', '411140');
-
-        $this->fixtures->merchant->create(['id' => '10000merchant1']);
-
-        $payload = $this->testData['testBulkCreateLocalTokensFromConsent'];
-        $response = $this->startTest($payload);
-
-        $this->assertEquals(false, $response['items'][0]['success']);
-    }
-
     public function testBulkCreateLocalTokensFromConsentWhenDuplicateTokenExpectsLocalTokenCreationFailure()
     {
         $this->mockCardVaultWithCryptogram();
-        $this->mockFetchMerchantTokenisationOnboardedNetworks([Network::VISA]);
 
         $this->ba->batchAppAuth();
 
@@ -136,8 +116,6 @@ class MigrateGlobalConsentsToLocalTokensTest extends TestCase
     public function testBulkCreateLocalTokensFromConsentWhenExpiredTokenExpectsLocalTokenCreationFailure()
     {
         $this->ba->batchAppAuth();
-
-        $this->mockFetchMerchantTokenisationOnboardedNetworks([Network::VISA]);
 
         $payload = $this->testData['testBulkCreateLocalTokensFromConsent'];
 
@@ -163,8 +141,6 @@ class MigrateGlobalConsentsToLocalTokensTest extends TestCase
     {
         $this->ba->batchAppAuth();
 
-        $this->mockFetchMerchantTokenisationOnboardedNetworks([Network::VISA]);
-
         $this->fixtures->merchant->create(['id' => '10000merchant1']);
 
         $response = $this->startTest();
@@ -176,8 +152,6 @@ class MigrateGlobalConsentsToLocalTokensTest extends TestCase
     {
         $this->ba->batchAppAuth();
 
-        $this->mockFetchMerchantTokenisationOnboardedNetworks([Network::VISA]);
-
         $this->fixturesToCreateToken('100022xytoken1', '100000003card1', '411140');
 
         $response = $this->startTest();
@@ -188,8 +162,6 @@ class MigrateGlobalConsentsToLocalTokensTest extends TestCase
     public function testBulkCreateLocalTokensFromConsentWhenGlobalMerchantIsPassedAsInputExpectsLocalTokenCreationFailure()
     {
         $this->ba->batchAppAuth();
-
-        $this->mockFetchMerchantTokenisationOnboardedNetworks([Network::VISA]);
 
         $payload = $this->testData['testBulkCreateLocalTokensFromConsent'];
         $payload['request']['content'][0]['merchantId'] = '100000Razorpay';
@@ -206,8 +178,6 @@ class MigrateGlobalConsentsToLocalTokensTest extends TestCase
     {
         $this->ba->batchAppAuth();
 
-        $this->mockFetchMerchantTokenisationOnboardedNetworks([Network::VISA]);
-
         $payload = $this->testData['testBulkCreateLocalTokensFromConsent'];
 
         $this->fixturesToCreateToken('100022xytoken1', '100000003card1', '411140', '100000Razorpay', '100000customer');
@@ -222,8 +192,6 @@ class MigrateGlobalConsentsToLocalTokensTest extends TestCase
     public function testBulkCreateLocalTokensFromConsentWhenConsentIsNotReceivedExpectsLocalTokenCreationFailure()
     {
         $this->ba->batchAppAuth();
-
-        $this->mockFetchMerchantTokenisationOnboardedNetworks([Network::VISA]);
 
         $payload = $this->testData['testBulkCreateLocalTokensFromConsent'];
 
@@ -248,8 +216,6 @@ class MigrateGlobalConsentsToLocalTokensTest extends TestCase
     public function testBulkCreateLocalTokensFromConsentWhenOneInvalidTokenExpectsLocalTokenCreationFailureOnInvalidToken()
     {
         $this->ba->batchAppAuth();
-
-        $this->mockFetchMerchantTokenisationOnboardedNetworks([Network::VISA]);
 
         //local token - new local token creation fails on this token
         $this->fixturesToCreateToken('100022xytoken1', '100000003card1', '411140', '10000000000000', '100000customer');
