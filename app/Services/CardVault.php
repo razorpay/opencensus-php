@@ -386,6 +386,8 @@ class CardVault
 
     public function sendBulkRequest($url, $method, $data = null)
     {
+        $action = $url;
+
         $url = $this->baseUrl . $url;
 
         if ($data === null)
@@ -422,7 +424,7 @@ class CardVault
 
         $response = $this->sendCardVaultRequest($request);
 
-        $this->checkErrors($response);
+        $this->checkErrors($request, $response, $action);
 
         return json_decode($response->body, true);
     }
