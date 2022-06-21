@@ -35,6 +35,7 @@ const MissingInfoForm = ({ fields, values, onChange }) => (
               allowToday={false}
               allowedPastTill={1900}
               required
+              className="missing-info-form"
             />
           ) : (
             <input
