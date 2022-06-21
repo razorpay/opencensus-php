@@ -15,6 +15,20 @@ import * as NotificationsActions from 'merchant_common/reducers/notifications';
 
 import { isWebkit, validateBankDetails } from 'common/utils/rzp-utils';
 
+export const BankVerificationErrors = {
+  'KC03: Invalid Beneficiary Account Number or IFSC':
+    "The bank account details you've provided are incorrect. Try again with another account.",
+  'KC05: Account Blocked/Frozen':
+    'The given bank account is either blocked or frozen. Try again with another account.',
+  'KC06: NRE Account':
+    'NRE accounts are currently not supported for payments.Try again with another account.',
+  'KC07: Account Closed': 'The given bank account is closed. Try again with another account.',
+  'KC27: Invalid Account':
+    "The bank account details you've provided are incorrect. Try again with another account.",
+  'KC40: Invalid Beneficiary IFSC Code or NBIN':
+    "The bank account details you've provided are incorrect. Try again with another account.",
+};
+
 const reVerifyAccountNumber = (value, allValues) => {
   return value !== allValues.account_number ? "Bank Number doesn't match" : undefined;
 };
@@ -181,6 +195,7 @@ class BankAccountDetailsChange extends Component {
                       type="button"
                       class="btn btn-primary pull-right"
                       text="Save"
+                      pendingText="Saving..."
                       onClick={handleSubmit(this.handleSubmission)}
                     />
                   </div>

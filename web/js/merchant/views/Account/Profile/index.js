@@ -14,7 +14,9 @@ import Gst from 'merchant/views/Account/Profile/components/GST';
 import BankAccountDetails from 'merchant/views/Account/Profile/components/BankAccountDetails';
 import LoggedInUserDetails from 'merchant/views/Account/Profile/components/LoggedInUserDetails';
 import Invitations from 'merchant/views/Account/Profile/components/Invitations';
-import BankAccountDetailsChange from 'merchant/views/Account/Profile/components/BankAccountDetailsChange';
+import BankAccountDetailsChange, {
+  BankVerificationErrors,
+} from 'merchant/views/Account/Profile/components/BankAccountDetailsChange';
 import { fetchUser, updateSession } from 'merchant/reducers/session';
 import PasswordForm from 'merchant/views/Account/Profile/components/PasswordForm';
 import MerchantConfigForm from 'merchant/views/Account/Profile/components/MerchantConfigForm';
@@ -478,19 +480,27 @@ class Profile extends Component {
     if (user.bankAccountAutoUpdateOrWorkflow()) {
       return this.props
         .saveBankAccountChangesAutomate(user.id, formdata) //user.id is merchant_id not user_id
-        .then(() => {
-          this.props.closeModal();
-          this.props.fetchWorkflowStatus(WORKFLOW_TYPES.BANK_DETAIL_UPDATE);
+        .then(({ data }) => {
+          let message;
+          if (data.new_bank_account && data.sync_flow === true) {
+            message = 'Bank account details updated successfully.';
+            this.props.fetchBankAccount();
+          } else {
+            message = 'Bank Account change request updated successfully.';
+            this.props.fetchWorkflowStatus(WORKFLOW_TYPES.BANK_DETAIL_UPDATE);
+            this.setState({ isBankAccountChangeAllowed: false });
+          }
           this.props.showNotification({
             type: 'success',
-            message: 'Bank Account change request updated succesfully. ',
+            message,
           });
-          this.setState({ isBankAccountChangeAllowed: false });
+          this.props.closeModal();
         })
         .catch(({ errors }) => {
           this.props.showNotification({
             type: 'error',
-            message: errors,
+            message:
+              errors?.[0] in BankVerificationErrors ? BankVerificationErrors[errors[0]] : errors,
           });
         });
     }
