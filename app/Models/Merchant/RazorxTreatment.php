@@ -6,6 +6,7 @@ final class RazorxTreatment
 {
     const EDUCATION_OTHERS_BUSINESS_TYPE = 'EDUCATION_OTHERS_BUSINESS_TYPE';
     const HUF_BUSINESS_TYPE              = 'huf_business_type';
+    const MAILMODO_L1_FORM_EMAIL_TRIGGER = 'mailmodo_l1_form_email_trigger';
 
     const AADHAAR_EKYC_FOR_REG_BUSINESS_TYPES  = 'adharEkyc_for_reg_businessTypes';
     const AADHAAR_EKYC_FOR_TRUST_SOCIETY_NGO   = 'aadharEkyc_for_trust_society_ngo';

@@ -143,6 +143,7 @@ class Table
     const VIRTUAL_ACCOUNT            = 'virtual_accounts';
     const MERCHANT_DETAIL            = 'merchant_details';
     const MERCHANT_BUSINESS_DETAIL   = 'merchant_business_details';
+    const AMP_EMAIL                  = 'amp_emails';
     const M2M_REFERRAL               = 'm2m_referrals';
     const STAKEHOLDER                = 'stakeholders';
     const CUSTOMER_BALANCE           = 'customer_balance';

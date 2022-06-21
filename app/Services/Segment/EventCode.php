@@ -33,6 +33,9 @@ class EventCode
     const M2M_ENABLED = 'M2M  ENABLED';
     const M2M_ENABLED_EXPERIMENT = 'M2M EXPERIMENT ENABLED';
 
+
+    const AMP_EMAIL_L1_SUBMISSION = 'AMPEmail L1Submission';
+
     const KYC_FORM_SAVED = 'KYC Form Saved';
 
     const KYC_STATUS_CHANGE = 'KYC Status Change';

@@ -7,6 +7,7 @@ use RZP\Base\RuntimeManager;
 use RZP\Models\Merchant\Cron\Jobs\AppsflyerUninstallCronJob;
 use RZP\Models\Merchant\Cron\Jobs\MonthFirstMtuCronJob;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\Merchant\Cron\Jobs\L1FormEmailTriggerCronJob;
 use RZP\Models\Merchant\Cron\Jobs\AadharDetailsNotSubmittedCronJob;
 use RZP\Models\Merchant\Cron\Jobs\BankDetailsNotSubmittedCronJob;
 use RZP\Models\Merchant\Cron\Jobs\BvsCronJob;
@@ -91,6 +92,8 @@ class Factory
                 return (new MerchantAutoKycHardLimitCronJob($input));
             case "autokyc-escalations":
                 return (new MerchantAutoKycEscalationsCronJob($input));
+            case Constants::L1_FORM_EMAIL_TRIGGER_CRON_JOB_NAME:
+                return (new L1FormEmailTriggerCronJob($input));
             case "appsflyer-uninstall-segment-event-push":
                 return (new AppsflyerUninstallCronJob($input));
         }

@@ -486,6 +486,20 @@ return [
     'friend_buy_webhook' => [
         'secret'  => env('FRIEND_BUY_WEBHOOK_BASIC_AUTH_PASSWORD'),
     ],
+    'mailmodo' => [
+        // Api url for merchant risks service.
+        'url'                       => env('MAILMODO_URL'),
+        'mock'                      => env('MAILMODO_SERVICE_MOCK', false),
+        'response'                  => env('MAILMODO_SERVICE_MOCK_RESPONSE', 'success'),
+        'request_timeout'           => env('MAILMODO_REQUEST_TIMEOUT', 4000),
+        'connection_timeout'        => env('MAILMODO_CONNECTION_TIMEOUT', 2000),
+        'trigger_email_endpoint'    => env('MAILMODO_EMAIL_TRIGGER_API_ENDPOINT'),
+        'l1_campaign_id'            => env('MAILMODO_L1_CAMPAIGN_ID'),
+        'auth'                      => [
+            'key'           => env('MAILMODO_API_AUTH_CLIENT_KEY'),
+            'secret'        => env('MAILMODO_API_AUTH_SECRET_KEY'),
+        ],
+    ],
     'yellowmessenger'   => [
         'secret'  => env('YELLOWMESSENGER_SECRET'),
     ],

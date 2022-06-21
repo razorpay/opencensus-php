@@ -395,7 +395,7 @@ class Repository extends Base\Repository
             ->toArray();
     }
 
-    public function filterL1MilestoneSubmittedMerchantsOfOrg(int $from, int $to, $org = Org\Entity::RAZORPAY_ORG_ID): array
+    public function filterL1MilestoneSubmittedMerchantsOfOrg(int $from, int $to, array $orgList =[Org\Entity::RAZORPAY_ORG_ID]): array
     {
         $detailMerchantIdColumn             = $this->dbColumn(Entity::MERCHANT_ID);
         $merchantIdColumn                   = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
@@ -408,7 +408,7 @@ class Repository extends Base\Repository
             ->select(Entity::MERCHANT_ID)
             ->whereBetween($merchantCreatedAtColumn, [$from, $to])
             ->Where(Entity::ACTIVATION_FORM_MILESTONE, '=', 'L1')
-            ->where($merchantOrgIdColumn, '=' ,$org)
+            ->whereIn($merchantOrgIdColumn,$orgList)
             ->where($merchantBusinessBankingIdColumn, '=', false)
             ->get()
             ->pluck(Entity::MERCHANT_ID)
@@ -451,4 +451,5 @@ class Repository extends Base\Repository
                     ->get()
                     ->toArray();
     }
+
 }

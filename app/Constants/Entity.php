@@ -606,6 +606,7 @@ class Entity
     const MERCHANT_BUSINESS_DETAIL      = 'merchant_business_detail';
 
     const M2M_REFERRAL                  = 'm2m_referral';
+    const AMP_EMAIL                     = 'amp_email';
     const MERCHANT_CHECKOUT_DETAIL      = 'merchant_checkout_detail';
     const MERCHANT_SLABS                = 'merchant_slabs';
     const MERCHANT_1CC_CONFIGS          = 'merchant_1cc_configs';
@@ -1301,6 +1302,7 @@ class Entity
         self::AUDIT_INFO                      => \RZP\Models\Base\Audit::class,
         self::MERCHANT_BUSINESS_DETAIL        => \RZP\Models\Merchant\BusinessDetail::class,
         self::M2M_REFERRAL                    => \RZP\Models\Merchant\M2MReferral::class,
+        self::AMP_EMAIL                       => \RZP\Models\AMPEmail::class,
         self::MERCHANT_ONBOARDING_ESCALATIONS   => \RZP\Models\Merchant\Escalations::class,
         self::ONBOARDING_ESCALATION_ACTIONS     => \RZP\Models\Merchant\Escalations\Actions::class,
         self::MERCHANT_CHECKOUT_DETAIL        => \RZP\Models\Merchant\CheckoutDetail::class,

@@ -273,9 +273,11 @@ class Service extends Base\Service
         return (new User\Service())->sendOtpEmailVerification($this->merchant, $this->user, $input);
     }
 
-    public function saveMerchantDetailsForActivation(array $input)
+    public function saveMerchantDetailsForActivation(array $input,$merchant=null)
     {
         $activationFormMilestone = $input[Entity::ACTIVATION_FORM_MILESTONE] ?? null;
+
+        if (empty($this->merchant)===true) $this->merchant=$merchant;
 
         $merchant = $this->repo->merchant->findOrFailPublic($this->merchant->getMerchantId());
 

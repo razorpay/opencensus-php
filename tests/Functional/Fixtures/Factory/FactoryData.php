@@ -854,6 +854,15 @@ final class FactoryData
                                                                       'status'      => 'signup'
                                                                   ]
         );
+        $factory(\RZP\Models\AMPEmail\Entity::class, [
+                                                                   'id'             => $faker->uniqueid,
+                                                                   'entity_id'      => '10000000000000',
+                                                                   'entity_type'    => 'merchant',
+                                                                   'vendor'         => 'mailmodo',
+                                                                   'template'         => 'l1',
+                                                                   'status'         => 'initiated'
+                                                               ]
+        );
         $factory(\RZP\Models\Merchant\Stakeholder\Entity::class, [
                                                                    'id'            => $faker->uniqueid,
                                                                    'merchant_id'   => '10000000000000',

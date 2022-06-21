@@ -22,4 +22,6 @@ class Constants
     const BVS_PARTLY_EXECUTED_VALIDATION_CRON_JOB       = "bvs_partly_executed_validation_cron";
     const FRIEND_BUY_SEND_PURCHASE_EVENTS_CRON_JOB_NAME = "friend-buy-send-purchase-events-cron";
     const MERCHANT_SEGMENT_TYPE_CRON_JOB_NAME           = 'save-merchant-segment-type-cron';
+    const L1_FORM_EMAIL_TRIGGER_CRON_JOB_NAME           = 'l1_form_email_trigger_cron_job';
+
 }

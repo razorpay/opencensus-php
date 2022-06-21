@@ -26,6 +26,9 @@ class Route
         //friend buy
         'friend_buy_reward_validation'  =>  ['post',    'friendbuy/reward_validation',  'ReferralController@performRewardValidation' ],
 
+        //mailmodo
+        'mailmodo_l1_form_submission'  =>  ['post',    'mailmodo/l1_form',  'AMPEmailController@submitMailModoL1Form' ],
+
         // Dev routes
         'inspector_view_get'                      => ['get',      '_inspector',                                      'GenericController@getInspectorIndex'                               ],
 
@@ -8545,6 +8548,7 @@ class Route
     public static $direct = [
         'fund_addition_webhook',
         'friend_buy_reward_validation',
+        'mailmodo_l1_form_submission',
         //'qr_code_demo',
         //'qr_code_demo_cors',
         'store_hosted_page_data_options',
