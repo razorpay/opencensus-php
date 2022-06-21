@@ -192,6 +192,8 @@ class Constants
 
     const FRESHDESK_DEFAULT_PAGE_SIZE        = 30;
 
+    const DEFAULT_CF_CATEGORY = 'New Ticket';
+
     //DASHBOARD URLS
     const SUPPORT_TICKET_DASHBOARD_URL = 'app/ticket-support/%s/%s/agent/conversation';
     const SUPPORT_TICKET_DASHBOARD_BUTTON_URL = '%s/%s/agent/conversation';

@@ -224,6 +224,8 @@ class Service extends Base\Service
 
         unset($input[Constants::PAN]);
 
+        $input = $this->addDefaultValuesBeforeTicketCreation($input, $fdInstance);
+
         $ticketCreateResponse = $this->app[Constants::FRESHDESK_CLIENT]->postTicket($input, $url);
 
         $ticketCreateResponse[Constants::FD_INSTANCE] = $fdInstance;
@@ -258,6 +260,8 @@ class Service extends Base\Service
         unset($input[Constants::FD_INSTANCE]);
 
         unset($input[Constants::OTP]);
+
+        $input = $this->addDefaultValuesBeforeTicketCreation($input, $fdInstance);
 
         $ticketCreateResponse = $this->app[Constants::FRESHDESK_CLIENT]->postTicket($input, $url);
 
@@ -488,6 +492,8 @@ class Service extends Base\Service
 
         unset($input[Constants::FD_INSTANCE]);
 
+        $input = $this->addDefaultValuesBeforeTicketCreation($input, $fdInstance);
+
         $freshdeskTicketResponse = $this->app[Constants::FRESHDESK_CLIENT]->postTicket($input, $url);
 
         $this->validateTicketResponse($freshdeskTicketResponse);
@@ -559,6 +565,26 @@ class Service extends Base\Service
         }
     }
 
+    public function addDefaultValuesBeforeTicketCreation($input, $fdInstance)
+    {
+        if ($fdInstance === Constants::RZPIND)
+        {
+            if (array_key_exists(Constants::CF_CATEGORY, $input[Constants::CUSTOM_FIELDS]) === false)
+            {
+                $input[Constants::CUSTOM_FIELDS][Constants::CF_CATEGORY] = Constants::DEFAULT_CF_CATEGORY;
+            }
+            else
+            {
+                if ($input[Constants::CUSTOM_FIELDS][Constants::CF_CATEGORY] === '' or $input[Constants::CUSTOM_FIELDS][Constants::CF_CATEGORY] === null)
+                {
+                    $input[Constants::CUSTOM_FIELDS][Constants::CF_CATEGORY] = Constants::DEFAULT_CF_CATEGORY;
+                }
+            }
+        }
+
+        return $input;
+    }
+
     public function postTicketV2($type, $input, $keepHtmlTags = false)
     {
         $function = 'makeInputFor' . studly_case($type) . 'PostTicket';
@@ -609,6 +635,8 @@ class Service extends Base\Service
         $this->trace->info(TraceCode::FRESHDESK_CREATE_TICKET_INPUT_LOG, $log);
 
         unset($input[Constants::FD_INSTANCE]);
+
+        $input = $this->addDefaultValuesBeforeTicketCreation($input, $fdInstance);
 
         $ticketCreateResponse = $this->app[Constants::FRESHDESK_CLIENT]->postTicket($input, $url);
 
