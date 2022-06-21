@@ -351,8 +351,7 @@ class CardVault
 
         $this->trace->info(TraceCode::CARD_VAULT_REQUEST, [
             'url' => $request['url'],
-            'namespace' => $this->namespace,
-            'request' => $data
+            'namespace' => $this->namespace
         ]);
 
         $isTokenisationRoute = in_array($tokenizationUrl, self::TOKENIZATION_ROUTES);

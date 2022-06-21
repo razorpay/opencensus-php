@@ -95,8 +95,9 @@ trait CardCacheTrait
         {
             $vaultToken = $input['card'][Card\Entity::VAULT_TOKEN];
         }
+        $cardArray = $input['card']??[];
 
-        $input['card']['number'] = (new Card\CardVault)->getCardNumber($vaultToken,$input['card']);
+        $input['card']['number'] = (new Card\CardVault)->getCardNumber($vaultToken,$cardArray);
 
         if (isset($data['cvv']) === true)
         {
