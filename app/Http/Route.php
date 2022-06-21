@@ -13148,7 +13148,7 @@ class Route
     public static $routeNameToFeaturesMap = [
         'capital_cards_service'                => [Feature::CAPITAL_CARDS],
         'capital_virtual_cards_generate_token' => [Feature::CAPITAL_CARDS],
-        'loc_service'                          => [Feature::WITHDRAW_LOC, Feature::WITHDRAWAL_ES_AMAZON],
+        'loc_service'                          => [Feature::WITHDRAW_LOC, Feature::WITHDRAWAL_ES_AMAZON, Feature::CASH_ON_CARD],
         'feature_dummy'                        => [Feature::DUMMY],
         'payment_create_wallet'                => [Feature::S2SWALLET, Feature::S2S],
         'payment_create_upi'                   => [Feature::S2SUPI, Feature::S2S],

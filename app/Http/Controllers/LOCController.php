@@ -60,6 +60,7 @@ class LOCController extends Controller
     const RECON_REPAID_WITHDRAWALS_WITH_GROMOR           = 'RECON_REPAID_WITHDRAWALS_WITH_GROMOR';
     const APPLY_CREDIT_LIMIT_UPDATE                      = 'APPLY_CREDIT_LIMIT_UPDATE';
     const GET_CREDIT_LIMIT_UPDATE                        = 'GET_CREDIT_LIMIT_UPDATE';
+    const GET_CREDIT_SUMMARY_REGEX                       = 'GET_CREDIT_SUMMARY_REGEX';
 
     const ROUTES_URL_MAP = [
         self::SEED_DATA_REGEX                        => 'twirp/rzp.capital.loc.withdrawal.v1.WithdrawalAPI/SeedData',
@@ -90,7 +91,8 @@ class LOCController extends Controller
         self::UPDATE_MERCHANT_DETAILS                => 'twirp/rzp.capital.loc.migration.v1.MerchantDetailsAPI/UpdateMerchantDetails',
         self::GET_ONHOLD_STATUS_REASONS              => 'twirp/rzp.capital.loc.withdrawal.v1.WithdrawalConfigAPI/GetOnholdStatusReasons',
         self::APPLY_CREDIT_LIMIT_UPDATE              => 'twirp/rzp.capital.loc.withdrawal.v1.CreditLimitUpdateAPI/ApplyCreditLimitUpdate',
-        self::GET_CREDIT_LIMIT_UPDATE                => 'twirp/rzp.capital.loc.withdrawal.v1.CreditLimitUpdateAPI/GetCreditLimitUpdate'
+        self::GET_CREDIT_LIMIT_UPDATE                => 'twirp/rzp.capital.loc.withdrawal.v1.CreditLimitUpdateAPI/GetCreditLimitUpdate',
+        self::GET_CREDIT_SUMMARY_REGEX               => 'twirp/rzp.capital.loc.withdrawal.v1.WithdrawalConfigAPI/GetCreditSummary',
     ];
 
     const CRON_URL_MAP = [
@@ -113,6 +115,7 @@ class LOCController extends Controller
         self::GET_AUTOMATED_LOC,
         self::SET_AUTOMATED_LOC,
         self::GET_MERCHANT_DETAILS,
+        self::GET_CREDIT_SUMMARY_REGEX,
     ];
 
     const ROUTE_PERMISSION_MAP = [

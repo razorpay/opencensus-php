@@ -489,6 +489,11 @@ class Constants
     const WITHDRAW_LOC = 'withdraw_loc';
 
     /**
+     * Gives access to Cash On Card Service
+     */
+    const CASH_ON_CARD = 'cash_on_card';
+
+    /**
      * Gives access to loc service for es amazon merchants
      */
     const WITHDRAWAL_ES_AMAZON = 'withdrawal_es_amazon';
@@ -1669,6 +1674,7 @@ class Constants
         self::ALLOW_ES_AMAZON                 => true,
         self::IVR_DISABLE                     => true,
         self::WITHDRAW_LOC                    => true,
+        self::CASH_ON_CARD                    => true,
         self::WITHDRAWAL_ES_AMAZON            => true,
         self::LOC_ESIGN                       => true,
         self::LOC_FIRST_WITHDRAWAL            => true,
@@ -2066,6 +2072,11 @@ class Constants
         self::WITHDRAW_LOC              => [
             'feature'       => self::WITHDRAW_LOC,
             'display_name'  => 'Withdraw Loc',
+            'documentation' => '',
+        ],
+        self::CASH_ON_CARD              => [
+            'feature'       => self::CASH_ON_CARD,
+            'display_name'  => 'Cash On Card',
             'documentation' => '',
         ],
         self::WITHDRAWAL_ES_AMAZON              => [
