@@ -20,4 +20,11 @@ class Repository extends Base\Repository
             ->where(Entity::MERCHANT_ID, '=', $mid)
             ->first();
     }
+    public function getDetailsForMerchant(string $mid)
+    {
+        return $this->newQuery()
+                    ->where(Entity::MERCHANT_ID, '=', $mid)
+                    ->get()
+                    ->callOnEveryItem('toArrayPublic');
+    }
 }

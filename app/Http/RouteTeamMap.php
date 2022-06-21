@@ -253,6 +253,7 @@ class RouteTeamMap
         'merchant_info'                                   => [self::TEAM_PAYMENTS_GROWTH],
         'merchant_audit_info'                             => [self::TEAM_PAYMENTS_GROWTH],
         'entity_audit_info'                               => [self::TEAM_PAYMENTS_GROWTH],
+        'get_audit_entities'                              => [self::TEAM_PAYMENTS_GROWTH],
         'merchant_logs_search'                            => [self::TEAM_PAYMENTS_GROWTH],
         'merchant_logs_fetch'                             => [self::TEAM_PAYMENTS_GROWTH],
         'merchant_activation_needs_clarification'         => [self::TEAM_PAYMENTS_GROWTH],

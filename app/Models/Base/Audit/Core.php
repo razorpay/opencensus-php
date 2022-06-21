@@ -3,13 +3,14 @@
 namespace RZP\Models\Base\Audit;
 
 use App;
+use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
 
 class Core extends Base\Core
 {
     //todo
-    const DATA_LAKE_ENTITY_AUDIT_QUERY   = "select changelog,meta from hive.realtime_entity_meta.audit audit inner join hive.realtime_hudi_api.audit_info info on info.id = audit.audit_id where audit.service='api' and audit.entity_id =  '%s' and audit.entity_type = '%s'";
+    const DATA_LAKE_ENTITY_AUDIT_QUERY   = "select changelog,meta,info.created_at as modified_at from hive.realtime_entity_meta.audit audit inner join hive.realtime_hudi_api.audit_info info on info.id = audit.audit_id where audit.service='api' and audit.entity_id =  '%s' and audit.entity_type = '%s' and info.created_at < %s limit %s";
 
     public function create()
     {
@@ -65,19 +66,19 @@ class Core extends Base\Core
         return ['', ''];
     }
 
-    public function getMerchantAuditInfo(string $merchantId): array
+    public function getMerchantAuditInfo(string $merchantId, int $timeStamp,int $limit ): array
     {
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
         $users = (new \RZP\Models\Merchant\Core())->getUsers($merchant);
 
-        $dataLakeQuery = sprintf(self::DATA_LAKE_ENTITY_AUDIT_QUERY, $merchantId, "merchants");
+        $dataLakeQuery = sprintf(self::DATA_LAKE_ENTITY_AUDIT_QUERY, $merchantId, "merchants",$timeStamp,$limit);
 
         $lakeData = $this->app['datalake.presto']->getDataFromDataLake($dataLakeQuery);
 
         $response['merchant'] = $lakeData;
 
-        $dataLakeQuery = sprintf(self::DATA_LAKE_ENTITY_AUDIT_QUERY, $merchantId, 'merchant_details');
+        $dataLakeQuery = sprintf(self::DATA_LAKE_ENTITY_AUDIT_QUERY, $merchantId, 'merchant_details',$timeStamp,$limit);
 
         $response['merchant_details'] = $this->app['datalake.presto']->getDataFromDataLake($dataLakeQuery);
 
@@ -89,7 +90,7 @@ class Core extends Base\Core
             {
                 $id = $user['id'];
 
-                $dataLakeQuery = sprintf(self::DATA_LAKE_ENTITY_AUDIT_QUERY, $id, "users");
+                $dataLakeQuery = sprintf(self::DATA_LAKE_ENTITY_AUDIT_QUERY, $id, "users",$timeStamp,$limit);
 
                 $lakeData = $this->app['datalake.presto']->getDataFromDataLake($dataLakeQuery);
 
@@ -117,7 +118,7 @@ class Core extends Base\Core
                 {
                     $id = $stakeholder->getId();
 
-                    $dataLakeQuery = sprintf(self::DATA_LAKE_ENTITY_AUDIT_QUERY, $id, "stakeholders");
+                    $dataLakeQuery = sprintf(self::DATA_LAKE_ENTITY_AUDIT_QUERY, $id, "stakeholders",$timeStamp,$limit);
 
                     $lakeData = $this->app['datalake.presto']->getDataFromDataLake($dataLakeQuery);
 
@@ -139,9 +140,9 @@ class Core extends Base\Core
 
     }
 
-    public function getAuditInfo(string $entity,string $id): array
+    public function getAuditInfo(string $entity,string $id, int $timeStamp,int $limit): array
     {
-        $dataLakeQuery = sprintf(self::DATA_LAKE_ENTITY_AUDIT_QUERY, $id,$entity);
+        $dataLakeQuery = sprintf(self::DATA_LAKE_ENTITY_AUDIT_QUERY, $id,$entity,$timeStamp,$limit);
 
         return $this->app['datalake.presto']->getDataFromDataLake($dataLakeQuery);
 

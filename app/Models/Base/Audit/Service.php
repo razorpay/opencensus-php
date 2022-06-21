@@ -4,6 +4,7 @@ namespace RZP\Models\Base\Audit;
 
 use Cache;
 use RZP\Exception;
+use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
@@ -12,7 +13,8 @@ use Razorpay\Trace\Logger as Trace;
 class Service extends Base\Service
 {
 
-    public function createAuditInfoPartition() {
+    public function createAuditInfoPartition()
+    {
         try
         {
             $this->repo->audit_info->createPartition();
@@ -45,17 +47,25 @@ class Service extends Base\Service
         return ['success' => true];
     }
 
-    public function getMerchantAuditInfo($merchant_id)
+    public function getMerchantAuditInfo($merchant_id, $input)
     {
         $core = new Core();
 
-        return $core->getMerchantAuditInfo($merchant_id);
+        $timeStamp = $input["timeStamp"] ?? Carbon::now()->getTimestamp();
+
+        $limit = $input["limit"] ?? 20;
+
+        return $core->getMerchantAuditInfo($merchant_id, $timeStamp, $limit);
     }
 
-    public function getAuditInfo($entity,$merchant_id)
+    public function getAuditInfo($entity, $merchant_id, $input)
     {
         $core = new Core();
 
-        return $core->getAuditInfo($entity,$merchant_id);
+        $timeStamp = $input["timeStamp"] ?? Carbon::now()->getTimestamp();
+
+        $limit = $input["limit"] ?? 20;
+
+        return $core->getAuditInfo($entity, $merchant_id, $timeStamp, $limit);
     }
 }

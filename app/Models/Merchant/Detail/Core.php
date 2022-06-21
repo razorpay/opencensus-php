@@ -7052,8 +7052,6 @@ class Core extends Base\Core
 
         $merchantDetails = $merchant->merchantDetail;
 
-        $response['merchant_details'] = $this->createResponse($merchantDetails);
-
         $users = (new Merchant\Core())->getUsers($merchant);
 
         $finalUsers = [];
@@ -7080,13 +7078,45 @@ class Core extends Base\Core
 
         $response['users'] = $finalUsers;
 
+        $verificationDetails = $this->repo->merchant_verification_detail->getDetailsForMerchant($merchantId);
+
+        foreach (Constant::ARTEFACT_STATUS_ATTRIBUTE_MAPPING as $artefactIdentifier => $tableNameFieldName)
+        {
+            $tableName = $tableNameFieldName[0];
+
+            if ($tableName === TABLE::MERCHANT_DETAIL)
+            {
+                $artefactIdentifierArr = (explode("-", $artefactIdentifier));
+                $artefact_type         = $artefactIdentifierArr[0];
+                $validation_unit       = $artefactIdentifierArr[1];
+                $fieldName             = $tableNameFieldName[1];
+                if (empty($merchantDetails->getAttribute($fieldName)) === false)
+                {
+                    array_push($verificationDetails, [
+                        "artefact_type"       => $artefact_type,
+                        "artefact_identifier" => $validation_unit,
+                        "status"              => $merchantDetails->getAttribute($fieldName)
+                    ]);
+                }
+            }
+        }
+
+        $response['kyc_validations'] = $verificationDetails;
+
+        $response['merchant_business_details']=$merchantDetails->businessDetail;
+
+        $response['documents'] = $merchant->merchantDocuments;
+        
+        $response['stakeholder']=$merchantDetails->stakeholder;
+
         //escalations
-        $onboardingescalations = (new Merchant\Escalations\Core)->fetchAllEscalationsForMerchant($merchant);
-        $autoKycescalations    = $this->repo->merchant_auto_kyc_escalations->fetchEscalationsForMerchant($merchantId)->callOnEveryItem('toArrayPublic');
+        $onboardingEscalations = (new Merchant\Escalations\Core)->fetchAllEscalationsForMerchant($merchant);
 
-        $response['escalations'] = array_merge($onboardingescalations, $autoKycescalations);
+        $autoKycEscalations    = $this->repo->merchant_auto_kyc_escalations->fetchEscalationsForMerchant($merchantId)->callOnEveryItem('toArrayPublic');
 
-        $response['features'] = (new Feature\Service())->getFeaturesForMerchantPublic($merchant)["features"];
+        $response['escalations_v1'] = $autoKycEscalations;
+
+        $response['escalations_v2'] = $onboardingEscalations;
 
         $response['invitations'] = $this->repo->invitation->fetchInvitations(Product::PRIMARY, $merchant->getMerchantId());
 
@@ -7106,6 +7136,7 @@ class Core extends Base\Core
         $response['settlements'] = $this->repo->settlement->fetch($input, $merchantId)->toArrayPublic()['items'];
 
         $input['phase']          = 'chargeback';
+
         $response['chargebacks'] = $this->repo->dispute->fetch($input, $merchantId)->toArrayPublic()['items'];
 
         $data = [

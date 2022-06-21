@@ -694,9 +694,9 @@ class Entity
     const NETWORK_CODE = 'network_code';
 
     const GATEWAY_MERCHANT_ID = 'gateway_merchant_id';
-    
+
     const GATEWAY_MERCHANT_ID2 = 'gateway_merchant_id2';
-    
+
     const GATEWAY_TERMINAL_ID = 'gateway_terminal_id';
 
     /**
@@ -747,7 +747,8 @@ class Entity
     /**
      * Entities that are auditable via entity audit trait
      */
-    const AUDITED_ENTITIES = [
+
+    public const AUDITED_ENTITIES = [
         self::PRICING,
         self::MERCHANT,
         self::MERCHANT_BUSINESS_DETAIL,
