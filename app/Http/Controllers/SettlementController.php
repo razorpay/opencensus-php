@@ -620,6 +620,20 @@ class SettlementController extends Controller
         return ApiResponse::json($data);
     }
 
+    /**
+     * RSR-2204 - bulk register reminder service
+     * for created execution in CREATED
+     * @return mixed
+     */
+    public function bulkRegisterReminder()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->bulkRegisterReminder($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function transactionHold()
     {
         $input = Request::all();

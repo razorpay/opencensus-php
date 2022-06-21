@@ -420,6 +420,7 @@ class RouteTeamMap
         'setl_trigger_multiple'                           => [self::TEAM_PAYMENTS_SETTLEMENTS],
         'setl_execution_resume'                           => [self::TEAM_PAYMENTS_SETTLEMENTS],
         'setl_transaction_release'                        => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'setl_bulk_reminder_registration'                 => [self::TEAM_PAYMENTS_SETTLEMENTS],
         'setl_transaction_hold'                           => [self::TEAM_PAYMENTS_SETTLEMENTS],
         'setl_channel_status_update'                      => [self::TEAM_PAYMENTS_SETTLEMENTS],
         'setl_channel_state_get'                          => [self::TEAM_PAYMENTS_SETTLEMENTS],

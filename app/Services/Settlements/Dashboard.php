@@ -26,6 +26,7 @@ class Dashboard extends Base
     const EXECUTION_REGISTER           = '/twirp/rzp.settlements.execution.v1.ExecutionService/Register';
     const EXECUTION_TRIGGER_MULTIPLE   = '/twirp/rzp.settlements.execution.v1.ExecutionService/TriggerMultiple';
     const EXECUTION_RESUME             = '/twirp/rzp.settlements.execution.v1.ExecutionService/Resume';
+    const BULK_REGISTRATION_REMINDER   = '/twirp/rzp.settlements.execution.v1.ExecutionService/BulkRegisterReminders';
 
     const CHANNEL_STATUS_UPDATE        = '/twirp/rzp.settlements.transfer.v1.TransferService/SetChannelState';
     const CHANNEL_STATUS_GET           = '/twirp/rzp.settlements.transfer.v1.TransferService/GetChannelState';
@@ -379,6 +380,19 @@ class Dashboard extends Base
     public function executionResume(array $input) : array
     {
         return $this->makeRequest(self::EXECUTION_RESUME, $input, self::SERVICE_DASHBOARD);
+    }
+
+    /**
+     * RSR-2204 - bulk register reminder service
+     * for created execution in CREATED
+     * @param array $input
+     * @return array
+     * @throws RuntimeException
+     * @throws \Throwable
+     */
+    public function bulkRegisterReminder(array $input) : array
+    {
+        return $this->makeRequest(self::BULK_REGISTRATION_REMINDER, $input, self::SERVICE_DASHBOARD);
     }
 
     /**

@@ -1474,6 +1474,17 @@ class Service extends Base\Service
         return app('settlements_dashboard')->executionResume($input);
     }
 
+    /**
+     * RSR-2204 - bulk register reminder service
+     * for created execution in CREATED
+     * @param array $input
+     * @return array
+     */
+    public function bulkRegisterReminder(array $input) : array
+    {
+        return app('settlements_dashboard')->bulkRegisterReminder($input);
+    }
+
     public function transactionHold(array $input) : array
     {
         return app('settlements_dashboard')->transactionHold($input);
