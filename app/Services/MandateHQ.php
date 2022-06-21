@@ -18,6 +18,7 @@ class MandateHQ
         'check_bin'                     => 'v1/iins/%s',
         'cancel_mandate'                => 'v1/mandates/%s/cancel',
         'validate_payment'              => 'v1/mandates/%s/payments/validate',
+        'update_card_token'             => 'v1/mandates/%s/update_token'
     ];
 
     const VALID_400_ERROR_DESCRIPTIONS = [
@@ -281,5 +282,12 @@ class MandateHQ
         }
 
         return $response;
+    }
+
+    public function updateTokenisedCardTokenInMandate($mandateId, $input)
+    {
+        $url = sprintf(self::MANDATE_HQ_URLS['update_card_token'], $mandateId);
+
+        return $this->sendRequest($url, 'patch', $input);
     }
 }

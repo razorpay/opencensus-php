@@ -15,4 +15,5 @@ abstract class BaseHub extends Base\Core
     abstract public function getRedirectResponseIfApplicable(CardMandate\Entity $cardMandate, Payment\Entity $payment);
     abstract public function getValidationBeforeSubsequentPayment(CardMandate\Entity $cardMandate, Payment\Entity $payment, $input = []);
     abstract public function CreatePreDebitNotification(CardMandate\Entity $cardMandate, ?Payment\Entity $payment, $input): Notification;
+    abstract public function updateTokenisedCardTokenInMandate(CardMandate\Entity $cardMandate, $input);
 }

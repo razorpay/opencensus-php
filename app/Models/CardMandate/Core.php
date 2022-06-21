@@ -548,4 +548,11 @@ class Core extends Base\Core
 
         $cardMandate->setMandateHub($mandate->getMandateHub());
     }
+
+    public function updateTokenisedCardTokenInMandate($cardMandate, $input)
+    {
+        $mandateHub = (new MandateHubs\MandateHubSelector)->GetMandateHubForCardMandate($cardMandate);
+
+        $mandateHub->updateTokenisedCardTokenInMandate($cardMandate, $input);
+    }
 }

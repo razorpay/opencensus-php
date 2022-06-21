@@ -6,6 +6,7 @@ use App;
 use RZP\Diag\EventCode;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Card\Entity as CardEntity;
+use RZP\Models\CardMandate;
 use RZP\Models\Customer\Token;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
@@ -102,6 +103,12 @@ class SavedCardTokenisationJob extends Job
              * existing token entity is associated to new card entity
              */
             $this->tokenCore->migrateToTokenizedCard($token, $cardInput, true);
+
+            // Notify to mandateHQ for successful tokenisation
+            if($token->isRecurring() === true and $token->getCardMandateId() !== null)
+            {
+                $this->notifyToMandateHqForSuccessfulTokenisation($token);
+            }
 
             $this->trace->info(TraceCode::SAVED_CARD_TOKENISATION_JOB_SUCCESS, [
                 'tokenId'       => $this->tokenId,
@@ -221,5 +228,12 @@ class SavedCardTokenisationJob extends Job
         $properties = array_merge($properties, $customProperties);
 
         app('diag')->trackAsyncTokenisationEvent($eventData, $properties);
+    }
+
+    protected function notifyToMandateHqForSuccessfulTokenisation(Token\Entity $token)
+    {
+        $tokenInput = $token->card->buildTokenisedTokenForMandateHQ();
+
+        (new CardMandate\Core)->updateTokenisedCardTokenInMandate($token->cardMandate, $tokenInput);
     }
 }

@@ -6,6 +6,7 @@ use App;
 use Mockery;
 use Carbon\Carbon;
 use Requests_Response;
+use RZP\Constants\Entity;
 use RZP\Models\Card\Network;
 use RZP\Models\Card\Vault;
 use RZP\Models\Gateway\Terminal\Constants;
@@ -2126,5 +2127,47 @@ class TokenisationTest extends TestCase
         $payment[Payment::TOKEN] = 'token_' . $tokenId;
 
         return $payment;
+    }
+
+    public function testAsyncTokenisationWhenValidTokenBelongsToValidMerchantExpectsTokenisationSuccessForRecurring(): void
+    {
+        $testData = $this->testData['testAsyncTokenisation'];
+
+        $output = [];
+
+        $this->mockSplitzTreatment($output);
+
+        $this->mockRazorXTreatment('on');
+
+        $this->ba->appAuth();
+
+        $timestamp = Carbon::now()->getTimestamp();
+
+        extract($this->setUpDataForTokenisation('10000000000000',$timestamp));
+
+        $this->mockFetchMerchantTokenisationOnboardedNetworks([Network::VISA]);
+
+        $this->prepareData($merchantId,true);
+
+        $this->buildData($network, $merchantId, $vault, $methodTest, $tokenId, $timestamp);
+
+        $this->fixtures->token->edit($tokenId,
+                [   'recurring_status'     => 'confirmed',
+                    'recurring'            => 1
+                ]);
+
+        $this->mockDataLakeToReturnTokenIds();
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $card = $this->getLastEntity('card', true);
+
+        $token = $this->getLastEntity('token', true);
+
+        $this->assertEquals($card['vault'], 'visa');
+
+        $this->assertEquals($token['recurring'], true);
+
+        $this->assertEquals($card['merchant_id'], $merchantId);
     }
 }

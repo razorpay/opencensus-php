@@ -1046,7 +1046,7 @@ class Service extends Base\Service
         {
             $asyncTokenisationJobId = UniqueIdEntity::generateUniqueId();
 
-            $merchantIds = $this->repo->feature->findMerchantIdsHavingFeatures([Feature\Constants::ASYNC_TOKENISATION]);
+            $merchantIds = $this->repo->feature->findMerchantIdsHavingFeatures([Feature\Constants::ASYNC_TOKENISATION, Feature\Constants::ASYNC_TOKENISATION_RECUR]);
 
             $this->app['diag']->trackAsyncTokenisationEvent(EventCode::ASYNC_TOKENISATION_JOB_INITIATED, [
                 'merchant_id_count'         => count($merchantIds),

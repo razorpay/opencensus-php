@@ -384,4 +384,9 @@ class BillDeskSIHub extends CardMandate\MandateHubs\BaseHub
 
         return (new Card\CardVault)->getCardNumber($cardToken,$card->toArray());
     }
+
+    public function updateTokenisedCardTokenInMandate($cardMandate, $input)
+    {
+        // TODO: Implement updateTokenisedCardTokenInMandate() method.
+    }
 }

@@ -1162,13 +1162,18 @@ class Constants
     const ASYNC_TOKENISATION = 'async_tokenisation';
 
     /**
-     * Feature flag to enable consent collection screen on custom checkout
+     * Feature flag to onboard merchants on async tokenisation for recurring
+     */
+    const ASYNC_TOKENISATION_RECUR = 'async_tokenisation_recur';
+
+     /* Feature flag to enable consent collection screen on custom checkout
      * merchants in the scenario where Razorpay would collect consent
      * on-behalf of the merchant.
      *
      * @see https://razorpay.com/docs/payments/payment-gateway/web-integration/custom/features/saved-cards/scenario-2/
      */
     const CUSTOM_CHECKOUT_CONSENT_SCREEN = 'cust_checkout_cnsnt_scrn';
+
 
     /**
      * Feature flag to let Razorpay collect consent for tokenising cards in the payment flow through intermediate consent page
@@ -1839,6 +1844,7 @@ class Constants
         self::ONBOARD_TOKENIZATION_MASTERCARD => true,
         self::ONBOARD_TOKENIZATION_RUPAY      => true,
         self::ONBOARD_TOKENIZATION_DINERS     => true,
+        self::ASYNC_TOKENISATION_RECUR        => true,
         self::ASYNC_TOKENISATION              => true,
         self::DISABLE_TOKENISED_PAYMENT       => true,
         self::EXCLUDE_DEDUCT_DISPUTE          => true,

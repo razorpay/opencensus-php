@@ -2294,25 +2294,45 @@ class Core extends Base\Core
      * @param  int $offset
      * @return array
      */
-    private function executeDataLakeQueryToFetchConsentReceivedTokenIds(string $merchantId, array $onboardedNetworkNames, int $offset): array
+    private function executeDataLakeQueryToFetchConsentReceivedTokenIds(string $merchantId, array $onboardedNetworkNames, int $offset, bool $onlyRecurring): array
     {
         $onboardedNetworkNamesInString = implode("','", $onboardedNetworkNames);
 
         $rzpVaultsInString = implode("','", [Card\Vault::RZP_ENCRYPTION, Card\Vault::RZP_VAULT]);
 
-        $rawQueryBuilder = " SELECT t.id " .
-            " FROM alluxio.realtime_hudi_api.tokens t " .
+        if(!$onlyRecurring)
+        {
+            $rawQueryBuilder = " SELECT t.id " .
+                " FROM alluxio.realtime_hudi_api.tokens t " .
                 " INNER JOIN alluxio.realtime_hudi_api.cards c " .
-                    " ON t.card_id = c.id " .
-            " WHERE  t.method = 'card' " .
+                " ON t.card_id = c.id " .
+                " WHERE  t.method = 'card' " .
                 " AND t.acknowledged_at IS NOT NULL " .
                 " AND c.international = 0 " .
                 " AND t.merchant_id = '%s' " .
                 " AND c.network IN ('%s') " .
                 " AND c.vault IN ('%s') " .
                 " AND t.deleted_at IS NULL " .
-            " ORDER BY t.id " .
-            " OFFSET %d LIMIT %d";
+                " ORDER BY t.id " .
+                " OFFSET %d LIMIT %d";
+        }
+        else
+        {
+            $rawQueryBuilder = " SELECT t.id " .
+                " FROM alluxio.realtime_hudi_api.tokens t " .
+                " INNER JOIN alluxio.realtime_hudi_api.cards c " .
+                " ON t.card_id = c.id " .
+                " WHERE t.method = 'card' " .
+                " AND t.acknowledged_at IS NOT NULL " .
+                " AND c.international = 0 " .
+                " AND t.merchant_id = '%s' " .
+                " AND t.recurring = 1 " .
+                " AND c.network IN ('%s') " .
+                " AND c.vault IN ('%s') " .
+                " AND t.deleted_at IS NULL " .
+                " ORDER BY t.id " .
+                " OFFSET %d LIMIT %d";
+        }
 
         $rawQuery = sprintf(
             $rawQueryBuilder,
@@ -2356,7 +2376,15 @@ class Core extends Base\Core
                 );
             }
 
-            return $this->executeDataLakeQueryToFetchConsentReceivedTokenIds($merchantId, $onboardedNetworkNames, $offset);
+            $onlyRecurring = true;
+            $featureName = $this->repo->feature->findMerchantWithFeatures($merchantId, [Feature::ASYNC_TOKENISATION]);
+
+            if($featureName !== null and $featureName === 'async_tokenisation')
+            {
+                $onlyRecurring = false;
+            }
+
+            return $this->executeDataLakeQueryToFetchConsentReceivedTokenIds($merchantId, $onboardedNetworkNames, $offset, $onlyRecurring);
         }
         catch (\Exception $ex)
         {
@@ -2508,8 +2536,12 @@ class Core extends Base\Core
             {
                 return false;
             }
-        }
 
+            if($token->getRecurringStatus() !== Token\RecurringStatus::CONFIRMED)
+            {
+                return false;
+            }
+        }
         $networkCode = $card->getNetworkCode();
 
         if (in_array($networkCode, Card\Network::NETWORKS_SUPPORTING_TOKEN_PROVISIONING, true) === false) {
