@@ -105,6 +105,7 @@ class Validator extends Base\Validator
         'custom_fields.cf_ticket_queue'                          => 'sometimes|string|custom:custom_field_ticket_queue',
         'custom_fields.cf_created_by'                            => 'sometimes|string',
         'custom_fields.cf_creation_source'                       => 'sometimes|string|custom:custom_field_creation_source',
+        'custom_fields.cf_merchant_activation_status'            => 'sometimes|string',
         'tags'                                                   => 'sometimes|array',
         'status'                                                 => 'sometimes',
     ];
@@ -132,6 +133,7 @@ class Validator extends Base\Validator
         'custom_fields.cf_ticket_queue'                          => 'sometimes|string|custom:custom_field_ticket_queue',
         'custom_fields.cf_created_by'                            => 'sometimes|string',
         'custom_fields.cf_creation_source'                       => 'sometimes|string|custom:custom_field_creation_source',
+        'custom_fields.cf_merchant_activation_status'            => 'sometimes|string',
         'tags'                                                   => 'sometimes|array',
         'status'                                                 => 'sometimes',
     ];

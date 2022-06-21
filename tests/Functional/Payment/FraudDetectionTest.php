@@ -296,13 +296,14 @@ class FraudDetectionTest extends TestCase
             'priority'        => 1,
             'phone'           => '9999999999',
             'custom_fields'   => [
-                'cf_ticket_queue'           => 'Merchant',
-                'cf_category'               => 'Risk Report_Merchant',
-                'cf_subcategory'            => 'Website Mismatch',
-                'cf_product'                => 'Payment Gateway',
-                'cf_created_by'             => 'agent',
-                'cf_merchant_id_dashboard'  => 'merchant_dashboard_10000000000000',
-                'cf_merchant_id'            => '10000000000000',
+                'cf_ticket_queue'               => 'Merchant',
+                'cf_category'                   => 'Risk Report_Merchant',
+                'cf_subcategory'                => 'Website Mismatch',
+                'cf_product'                    => 'Payment Gateway',
+                'cf_created_by'                 => 'agent',
+                'cf_merchant_id_dashboard'      => 'merchant_dashboard_10000000000000',
+                'cf_merchant_id'                => '10000000000000',
+                'cf_merchant_activation_status' => 'undefined',
             ],
         ];
 

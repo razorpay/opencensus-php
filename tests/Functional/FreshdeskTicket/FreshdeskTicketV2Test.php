@@ -30,9 +30,10 @@ class FreshdeskTicketV2Test extends TestCase
 
     protected $ravenMock;
 
-    const RZP_CREATE_TICKET                      = 'rzp_create_ticket';
-    const RZP_CREATE_TICKET_WITH_CREATION_SOURCE = 'rzp_create_ticket_with_creation_source';
-    const RZP_CREATE_TICKET_MOBILE_SIGNUP        = 'rzp_create_ticket_mobile_signup';
+    const RZP_CREATE_TICKET                         = 'rzp_create_ticket';
+    const RZP_CREATE_TICKET_WITH_ACTIVATION_STATUS  = 'rzp_create_ticket_with_activation_status';
+    const RZP_CREATE_TICKET_WITH_CREATION_SOURCE    = 'rzp_create_ticket_with_creation_source';
+    const RZP_CREATE_TICKET_MOBILE_SIGNUP           = 'rzp_create_ticket_mobile_signup';
 
     const RZP_FETCH_OPEN_TICKETS                        = 'rzp_fetch_open_tickets';
     const RZP_CREATE_TICKET_CHECKING_CC_EMAILS          = 'rzp_create_ticket_checking_cc_emails';
@@ -670,6 +671,8 @@ class FreshdeskTicketV2Test extends TestCase
     {
         $this->mockRazorxTreatment('on');
 
+        $this->fixtures->edit('merchant_detail', '10000000000000', ['activation_status' => 'activated']);
+
         $expectedRequestResponse = $this->getExpectedRequestResponse(self::RZP_CREATE_TICKET);
 
         $this->checkFreshdeskCorrectInstanceCallAndRespondWith('tickets', 'POST', 'rzpind',
@@ -793,6 +796,8 @@ class FreshdeskTicketV2Test extends TestCase
 
             $this->ba->proxyAuth();
 
+            $this->fixtures->edit('merchant_detail', '10000000000000', ['activation_status' => 'activated']);
+
             $expectedRequestResponse    =   $this->getExpectedRequestResponse(self::RZP_CREATE_TICKET);
 
             if ($testCase['razorx'] === 'on')
@@ -903,12 +908,13 @@ class FreshdeskTicketV2Test extends TestCase
                                                                        'status'        => 2,
                                                                        'cc_emails'     => ['a@b.com', 'merchantuser01@razorpay.com'],
                                                                        'custom_fields' => [
-                                                                           'cf_requester_category'    => 'Merchant',
-                                                                           'cf_requestor_subcategory' => 'Technical support',
-                                                                           'cf_requester_item'        => 'Success rate',
-                                                                           'cf_merchant_id_dashboard' => 'merchant_dashboard_10000000000000',
-                                                                           'cf_merchant_id'           => '10000000000000',
-                                                                           'cf_category'              => 'New Ticket',
+                                                                           'cf_requester_category'          => 'Merchant',
+                                                                           'cf_requestor_subcategory'       => 'Technical support',
+                                                                           'cf_requester_item'              => 'Success rate',
+                                                                           'cf_merchant_id_dashboard'       => 'merchant_dashboard_10000000000000',
+                                                                           'cf_merchant_id'                 => '10000000000000',
+                                                                           'cf_merchant_activation_status'  => 'undefined',
+                                                                           'cf_category'                    => 'New Ticket',
                                                                        ],
                                                                        'email'         => 'test@razorpay.com',
                                                                        'phone'         => '9876543210',
@@ -920,10 +926,11 @@ class FreshdeskTicketV2Test extends TestCase
                                                                        'description'   => 'ticket description',
                                                                        'fr_due_by'     => $frDueByFreshdeskFormat,
                                                                        'custom_fields' => [
-                                                                           'cf_requester_category'    => 'Merchant',
-                                                                           'cf_requestor_subcategory' => 'Technical support',
-                                                                           'cf_requester_item'        => 'Success rate',
-                                                                           'cf_merchant_id_dashboard' => 'merchant_dashboard_10000000000000',
+                                                                           'cf_requester_category'          => 'Merchant',
+                                                                           'cf_requestor_subcategory'       => 'Technical support',
+                                                                           'cf_requester_item'              => 'Success rate',
+                                                                           'cf_merchant_id_dashboard'       => 'merchant_dashboard_10000000000000',
+                                                                           'cf_merchant_activation_status'  => 'undefined',
                                                                        ],
                                                                        'priority'      => 1,
                                                                    ]);
@@ -1312,11 +1319,12 @@ class FreshdeskTicketV2Test extends TestCase
                                                         'cc_emails'     => ['a@b.com', 'merchantuser01@razorpay.com'],
                                                         'status'        => 2,
                                                         'custom_fields' => [
-                                                            'cf_requester_category'    => 'Invalid',
-                                                            'cf_requestor_subcategory' => 'activation',
-                                                            'cf_merchant_id_dashboard' => 'merchant_dashboard_10000000000000',
-                                                            'cf_merchant_id'           => '10000000000000',
-                                                            'cf_category'              => 'New Ticket',
+                                                            'cf_requester_category'         => 'Invalid',
+                                                            'cf_requestor_subcategory'      => 'activation',
+                                                            'cf_merchant_id_dashboard'      => 'merchant_dashboard_10000000000000',
+                                                            'cf_merchant_id'                => '10000000000000',
+                                                            'cf_merchant_activation_status' => 'undefined',
+                                                            'cf_category'                   => 'New Ticket',
                                                         ],
                                                         'email'         => 'test@razorpay.com',
                                                         'phone'         => '9876543210',
@@ -1379,6 +1387,8 @@ class FreshdeskTicketV2Test extends TestCase
         'Team Razorpay');
 
         $this->testData[__FUNCTION__] = $this->testData['testCreateTicketRzp'];
+
+        $this->fixtures->edit('merchant_detail', '10000000000000', ['activation_status' => 'activated']);
 
         $expectedRequestResponse = $this->getExpectedRequestResponse(self::RZP_CREATE_TICKET);
 
@@ -1716,11 +1726,12 @@ class FreshdeskTicketV2Test extends TestCase
                                                         'description'   => 'ticket description',
                                                         'status'        => 2,
                                                         'custom_fields' => [
-                                                            'cf_requester_category'    => 'Merchant',
-                                                            'cf_requestor_subcategory' => 'Activation',
-                                                            'cf_merchant_id_dashboard' => 'merchant_dashboard_10000000000000',
-                                                            'cf_merchant_id'           => '10000000000000',
-                                                            'cf_category'              => 'New Ticket',
+                                                            'cf_requester_category'         => 'Merchant',
+                                                            'cf_requestor_subcategory'      => 'Activation',
+                                                            'cf_merchant_id_dashboard'      => 'merchant_dashboard_10000000000000',
+                                                            'cf_merchant_id'                => '10000000000000',
+                                                            'cf_merchant_activation_status' => 'undefined',
+                                                            'cf_category'                   => 'New Ticket',
                                                         ],
                                                         'priority'      => 1,
                                                     ],
@@ -1967,11 +1978,12 @@ class FreshdeskTicketV2Test extends TestCase
                     'subject' => 'ticket subject',
                     'cc_emails' => ['a@b.com','merchantuser01@razorpay.com'],
                     'custom_fields' => [
-                        'cf_requester_category'    => 'Merchant',
-                        'cf_requestor_subcategory' => 'Activation',
-                        'cf_merchant_id_dashboard' => 'merchant_dashboard_10000000000000',
-                        'cf_merchant_id'           => '10000000000000',
-                        'cf_category'              => 'New Ticket',
+                        'cf_requester_category'         => 'Merchant',
+                        'cf_requestor_subcategory'      => 'Activation',
+                        'cf_merchant_id_dashboard'      => 'merchant_dashboard_10000000000000',
+                        'cf_merchant_id'                => '10000000000000',
+                        'cf_merchant_activation_status' => 'activated',
+                        'cf_category'                   => 'New Ticket',
                     ],
                     'email' =>  'test@razorpay.com',
                     'phone' => '9876543210',
@@ -1983,10 +1995,11 @@ class FreshdeskTicketV2Test extends TestCase
                     'description'   => 'ticket description',
                     'fr_due_by'     => $frDueByFreshdeskFormat,
                     'custom_fields' => [
-                        'cf_requester_category'    => 'Merchant',
-                        'cf_requestor_subcategory' => 'Activation',
-                        'cf_merchant_id_dashboard' => 'merchant_dashboard_10000000000000',
-                        'cf_merchant_id'           => '10000000000000',
+                        'cf_requester_category'         => 'Merchant',
+                        'cf_requestor_subcategory'      => 'Activation',
+                        'cf_merchant_id_dashboard'      => 'merchant_dashboard_10000000000000',
+                        'cf_merchant_id'                => '10000000000000',
+                        'cf_merchant_activation_status' => 'activated',
                     ],
                     'priority' =>  1,
                 ]
@@ -2001,12 +2014,13 @@ class FreshdeskTicketV2Test extends TestCase
                     'subject' => 'ticket subject',
                     'cc_emails' => ['a@b.com','merchantuser01@razorpay.com'],
                     'custom_fields' => [
-                        'cf_requester_category'    => 'Merchant',
-                        'cf_requestor_subcategory' => 'Activation',
-                        'cf_creation_source'       => 'Dashboard',
-                        'cf_merchant_id_dashboard' => 'merchant_dashboard_10000000000000',
-                        'cf_merchant_id'           => '10000000000000',
-                        'cf_category'              => 'New Ticket',
+                        'cf_requester_category'         => 'Merchant',
+                        'cf_requestor_subcategory'      => 'Activation',
+                        'cf_creation_source'            => 'Dashboard',
+                        'cf_merchant_id_dashboard'      => 'merchant_dashboard_10000000000000',
+                        'cf_merchant_id'                => '10000000000000',
+                        'cf_merchant_activation_status' => 'undefined',
+                        'cf_category'                   => 'New Ticket',
                     ],
                     'email' =>  'test@razorpay.com',
                     'phone' => '9876543210',
@@ -2018,11 +2032,12 @@ class FreshdeskTicketV2Test extends TestCase
                         'description'   => 'ticket description',
                         'fr_due_by'     => $frDueByFreshdeskFormat,
                         'custom_fields' => [
-                            'cf_requester_category'    => 'Merchant',
-                            'cf_requestor_subcategory' => 'Activation',
-                            'cf_merchant_id_dashboard' => 'merchant_dashboard_10000000000000',
-                            'cf_merchant_id'           => '10000000000000',
-                            'cf_creation_source'       => 'Dashboard',
+                            'cf_requester_category'         => 'Merchant',
+                            'cf_requestor_subcategory'      => 'Activation',
+                            'cf_merchant_id_dashboard'      => 'merchant_dashboard_10000000000000',
+                            'cf_merchant_id'                => '10000000000000',
+                            'cf_creation_source'            => 'Dashboard',
+                            'cf_merchant_activation_status' => 'undefined',
                         ],
                         'priority' =>  1,
                     ]
@@ -2037,11 +2052,12 @@ class FreshdeskTicketV2Test extends TestCase
                     'subject'       => 'ticket subject',
                     'status'        => 2,
                     'custom_fields' => [
-                        'cf_requester_category'    => 'Merchant',
-                        'cf_requestor_subcategory' => 'Activation',
-                        'cf_merchant_id_dashboard' => 'merchant_dashboard_10000000000000',
-                        'cf_merchant_id'           => '10000000000000',
-                        'cf_category'              => 'New Ticket',
+                        'cf_requester_category'         => 'Merchant',
+                        'cf_requestor_subcategory'      => 'Activation',
+                        'cf_merchant_id_dashboard'      => 'merchant_dashboard_10000000000000',
+                        'cf_merchant_id'                => '10000000000000',
+                        'cf_merchant_activation_status' => 'undefined',
+                        'cf_category'                   => 'New Ticket',
                     ],
                     'phone'         => '9876543210',
                     'priority'      => 1,
@@ -2052,10 +2068,11 @@ class FreshdeskTicketV2Test extends TestCase
                         'description'   => 'ticket description',
                         'fr_due_by'     => $frDueByFreshdeskFormat,
                         'custom_fields' => [
-                            'cf_requester_category'    => 'Merchant',
-                            'cf_requestor_subcategory' => 'Activation',
-                            'cf_merchant_id_dashboard' => 'merchant_dashboard_10000000000000',
-                            'cf_merchant_id'           => '10000000000000',
+                            'cf_requester_category'         => 'Merchant',
+                            'cf_requestor_subcategory'      => 'Activation',
+                            'cf_merchant_id_dashboard'      => 'merchant_dashboard_10000000000000',
+                            'cf_merchant_id'                => '10000000000000',
+                            'cf_merchant_activation_status' => 'undefined',
                         ],
                         'priority' =>  1,
                     ]
@@ -2071,11 +2088,12 @@ class FreshdeskTicketV2Test extends TestCase
                     'cc_emails'     => ['a@b.com', 'merchantuser01@razorpay.com'],
                     'status'        => 2,
                     'custom_fields' => [
-                        'cf_requester_category'    => 'Merchant',
-                        'cf_requestor_subcategory' => 'Activation',
-                        'cf_merchant_id_dashboard' => 'merchant_dashboard_10000000000000',
-                        'cf_merchant_id'           => '10000000000000',
-                        'cf_category'              => 'New Ticket',
+                        'cf_requester_category'         => 'Merchant',
+                        'cf_requestor_subcategory'      => 'Activation',
+                        'cf_merchant_id_dashboard'      => 'merchant_dashboard_10000000000000',
+                        'cf_merchant_id'                => '10000000000000',
+                        'cf_merchant_activation_status' => 'undefined',
+                        'cf_category'                   => 'New Ticket',
                     ],
                     'email'         => 'test@razorpay.com',
                     'phone'         => '9876543210',
@@ -2087,11 +2105,12 @@ class FreshdeskTicketV2Test extends TestCase
                         'description'   => '<br>Ticket<b>Description</b><br>HTML',
                         'fr_due_by'     => $frDueByFreshdeskFormat,
                         'custom_fields' => [
-                            'cf_requester_category'    => 'Merchant',
-                            'cf_requestor_subcategory' => 'Activation',
-                            'cf_merchant_id_dashboard' => 'merchant_dashboard_10000000000000',
-                            'cf_merchant_id'           => '10000000000000',
-                            'cf_category'              => 'New Ticket',
+                            'cf_requester_category'         => 'Merchant',
+                            'cf_requestor_subcategory'      => 'Activation',
+                            'cf_merchant_id_dashboard'      => 'merchant_dashboard_10000000000000',
+                            'cf_merchant_id'                => '10000000000000',
+                            'cf_merchant_activation_status' => 'undefined',
+                            'cf_category'                   => 'New Ticket',
                         ],
                         'priority' =>  1,
                     ]
@@ -2112,11 +2131,12 @@ class FreshdeskTicketV2Test extends TestCase
                         'fr_due_by'     => $frDueByFreshdeskFormat,
                         'status'        => 2,
                         'custom_fields' => [
-                            'cf_requester_category'    => 'Merchant',
-                            'cf_requestor_subcategory' => 'Activation',
-                            'cf_merchant_id'           => '10000000000000',
-                            'cf_merchant_id_dashboard' => 'merchant_dashboard_10000000000000',
-                            'cf_category'              => 'New Ticket',
+                            'cf_requester_category'         => 'Merchant',
+                            'cf_requestor_subcategory'      => 'Activation',
+                            'cf_merchant_id'                => '10000000000000',
+                            'cf_merchant_id_dashboard'      => 'merchant_dashboard_10000000000000',
+                            'cf_merchant_activation_status' => 'undefined',
+                            'cf_category'                   => 'New Ticket',
                         ],
                         'priority'      => 1,
                     ]
@@ -2132,11 +2152,12 @@ class FreshdeskTicketV2Test extends TestCase
                     'status'        => 2,
                     'cc_emails'     => ['a@b.com'],
                     'custom_fields' => [
-                        'cf_requester_category'    => 'Merchant',
-                        'cf_requestor_subcategory' => 'Activation',
-                        'cf_merchant_id_dashboard' => 'merchant_dashboard_10000000000000',
-                        'cf_merchant_id'           => '10000000000000',
-                        'cf_category'              => 'New Ticket',
+                        'cf_requester_category'         => 'Merchant',
+                        'cf_requestor_subcategory'      => 'Activation',
+                        'cf_merchant_id_dashboard'      => 'merchant_dashboard_10000000000000',
+                        'cf_merchant_id'                => '10000000000000',
+                        'cf_merchant_activation_status' => 'undefined',
+                        'cf_category'                   => 'New Ticket',
                     ],
                     'email'         => 'test@razorpay.com',
                     'phone'         => '9876543210',
@@ -2148,10 +2169,11 @@ class FreshdeskTicketV2Test extends TestCase
                         'description'   => 'ticket description',
                         'fr_due_by'     => $frDueByFreshdeskFormat,
                         'custom_fields' => [
-                            'cf_requester_category'    => 'Merchant',
-                            'cf_requestor_subcategory' => 'Activation',
-                            'cf_merchant_id_dashboard' => 'merchant_dashboard_10000000000000',
-                            'cf_merchant_id'           => '10000000000000',
+                            'cf_requester_category'         => 'Merchant',
+                            'cf_requestor_subcategory'      => 'Activation',
+                            'cf_merchant_id_dashboard'      => 'merchant_dashboard_10000000000000',
+                            'cf_merchant_id'                => '10000000000000',
+                            'cf_merchant_activation_status' => 'undefined',
                         ],
                         'priority' =>  1,
                     ]
@@ -2164,10 +2186,11 @@ class FreshdeskTicketV2Test extends TestCase
                     'description'   => 'ticket description',
                     'subject'       => 'ticket subject',
                     'custom_fields' => [
-                        'cf_requester_category'    => 'Merchant',
-                        'cf_requestor_subcategory' => 'Call Requested',
-                        'cf_merchant_id'           => '10000000000000',
-                        'cf_category'              => 'New Ticket',
+                        'cf_requester_category'         => 'Merchant',
+                        'cf_requestor_subcategory'      => 'Call Requested',
+                        'cf_merchant_id'                => '10000000000000',
+                        'cf_merchant_activation_status' => 'undefined',
+                        'cf_category'                   => 'New Ticket',
                     ],
                     'email'         => 'test@razorpay.com',
                     'priority'      => '4',

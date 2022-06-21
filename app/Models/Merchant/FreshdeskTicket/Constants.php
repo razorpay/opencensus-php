@@ -15,27 +15,30 @@ class Constants
     const PHONE     = 'phone';
     const OLD_PHONE = 'old_phone';
 
+    const DEFAULT_ACTIVATION_STATUS = 'undefined';
+
     const CC_EMAILS                 = 'cc_emails';
 
     const CUSTOM_FIELDS             = 'custom_fields';
     // custom fields
-    const CF_REQUESTOR_CATEGORY     = 'cf_requester_category';
-    const CF_REQUESTOR_SUBCATEGORY  = 'cf_requestor_subcategory';
-    const CF_SUBCATEGORY            = 'cf_subcategory';
-    const CF_REQUESTOR_ITEM         = 'cf_requester_item';
-    const CF_CATEGORY               = 'cf_category';
-    const TRANSACTION_ID            = 'cf_transaction_id';
-    const PAYMENT_ID                = 'cf_razorpay_payment_id';
-    const REFUND_ID                 = 'cf_refund_id';
-    const ORDER_ID                  = 'cf_order_id';
-    const CF_MERCHANT_ID            = 'cf_merchant_id';
-    const PAYMENT_CUSTOMER_EMAIL    = 'cf_payment_email';
-    const PAYMENT_CUSTOMER_PHONE    = 'cf_payment_phone';
-    const CF_MERCHANT_ID_DASHBOARD  = 'cf_merchant_id_dashboard';
-    const CF_TICKET_QUEUE           = 'cf_ticket_queue';
-    const CF_PRODUCT                = 'cf_product';
-    const CF_QUERY                  = 'cf_query';
-    const CF_CREATED_BY             = 'cf_created_by';
+    const CF_REQUESTOR_CATEGORY         = 'cf_requester_category';
+    const CF_REQUESTOR_SUBCATEGORY      = 'cf_requestor_subcategory';
+    const CF_SUBCATEGORY                = 'cf_subcategory';
+    const CF_REQUESTOR_ITEM             = 'cf_requester_item';
+    const CF_CATEGORY                   = 'cf_category';
+    const TRANSACTION_ID                = 'cf_transaction_id';
+    const PAYMENT_ID                    = 'cf_razorpay_payment_id';
+    const REFUND_ID                     = 'cf_refund_id';
+    const ORDER_ID                      = 'cf_order_id';
+    const CF_MERCHANT_ID                = 'cf_merchant_id';
+    const PAYMENT_CUSTOMER_EMAIL        = 'cf_payment_email';
+    const PAYMENT_CUSTOMER_PHONE        = 'cf_payment_phone';
+    const CF_MERCHANT_ID_DASHBOARD      = 'cf_merchant_id_dashboard';
+    const CF_TICKET_QUEUE               = 'cf_ticket_queue';
+    const CF_PRODUCT                    = 'cf_product';
+    const CF_QUERY                      = 'cf_query';
+    const CF_CREATED_BY                 = 'cf_created_by';
+    const CF_MERCHANT_ACTIVATION_STATUS = 'cf_merchant_activation_status';
 
     const AGENT      = 'agent';
     const AGENT_ID   = 'agent_id';

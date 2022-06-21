@@ -2712,13 +2712,14 @@ class DisputeTest extends TestCase
                 'priority'        => 1,
                 'phone'           => '9991119991',
                 'custom_fields'   => [
-                    'cf_ticket_queue'           => 'Merchant',
-                    'cf_category'               => 'Chargebacks',
-                    'cf_subcategory'            => 'Service Chargeback',
-                    'cf_product'                => 'Payment Gateway',
-                    'cf_created_by'             =>  'agent',
-                    'cf_merchant_id_dashboard'  => 'merchant_dashboard_10000000000000',
-                    'cf_merchant_id'            => '10000000000000',
+                    'cf_ticket_queue'               => 'Merchant',
+                    'cf_category'                   => 'Chargebacks',
+                    'cf_subcategory'                => 'Service Chargeback',
+                    'cf_product'                    => 'Payment Gateway',
+                    'cf_created_by'                 =>  'agent',
+                    'cf_merchant_id_dashboard'      => 'merchant_dashboard_10000000000000',
+                    'cf_merchant_id'                => '10000000000000',
+                    'cf_merchant_activation_status' => 'undefined',
                 ],
             ];
 

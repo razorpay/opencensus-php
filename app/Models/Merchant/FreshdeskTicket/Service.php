@@ -490,6 +490,8 @@ class Service extends Base\Service
 
         $url = $this->getFreshdeskUrlType(Type::SUPPORT_DASHBOARD, $fdInstance);
 
+        $input = $this->addActivationStatusToInput($input, $fdInstance);
+
         unset($input[Constants::FD_INSTANCE]);
 
         $input = $this->addDefaultValuesBeforeTicketCreation($input, $fdInstance);
@@ -585,6 +587,25 @@ class Service extends Base\Service
         return $input;
     }
 
+    public function addActivationStatusToInput($input, $fdInstance): array
+    {
+        if ($fdInstance === Constants::RZPIND)
+        {
+            $activationStatus = $this->merchant->merchantDetail->getActivationStatus();
+
+            if ($activationStatus === null)
+            {
+                $input[Constants::CUSTOM_FIELDS][Constants::CF_MERCHANT_ACTIVATION_STATUS] = Constants::DEFAULT_ACTIVATION_STATUS;
+            }
+            else
+            {
+                $input[Constants::CUSTOM_FIELDS][Constants::CF_MERCHANT_ACTIVATION_STATUS] = $activationStatus;
+            }
+        }
+
+        return $input;
+    }
+
     public function postTicketV2($type, $input, $keepHtmlTags = false)
     {
         $function = 'makeInputFor' . studly_case($type) . 'PostTicket';
@@ -610,6 +631,8 @@ class Service extends Base\Service
         }
 
         $fdInstance = $this->getFdInstanceFromTypeAndInput($type, $input);
+
+        $input = $this->addActivationStatusToInput($input, $fdInstance);
 
         $input = $this->appendUserEmailToCCEmails($input);
 
