@@ -482,14 +482,32 @@ class Core extends Base\Core
                 break;
 
             case Type::CARD:
-                $this->blockTokenisedFlow($merchant, $accountInput);
-
                 if (isset($accountInput[Card\Entity::TOKEN]) === true)
                 {
                     // we will fetch the card details from vault token and modify the input so that rest of the
                     // account creation flow can be used same as account creation with card number.
                     $accountInput = (new Card\Core)->fillCardDetailsWithVaultToken($accountInput);
                 }
+
+                $this->transformAccountInputForCard($accountInput, $merchant);
+
+                $traceRequest = $this->unsetSensitiveDetails($accountInput);
+
+                $this->trace->info(TraceCode::TRANSFORM_INPUT_FOR_CARD_FUND_ACCOUNT_CREATION, $traceRequest);
+
+                if ((isset($accountInput[Card\Entity::TOKEN_ID]) === true) and
+                    ($merchant->isFeatureEnabled(Feature\Constants::ALLOW_NON_SAVED_CARDS) === true))
+                {
+                    $token = $this->repo->token->findByPublicId($accountInput[Card\Entity::TOKEN_ID]);
+
+                    // token entity will always have an associated card entity because of foreign key constraint
+                    $account = $token->card;
+
+                    (new Card\Core)->checkIfCardIsSupportedAndEnqueueForBeneficiaryRegistration($account, $merchant);
+
+                    break;
+                }
+
                 // Card number is validated as part of fund_account create validator itself.
                 $network = Card\Network::detectNetwork(substr($accountInput[Card\Entity::NUMBER], 0, 6));
 
@@ -523,24 +541,37 @@ class Core extends Base\Core
         return $account;
     }
 
-    public function blockTokenisedFlow($merchant, $accountInput)
+    public function transformAccountInputForCard(&$accountInput, $merchant)
     {
-        if (($merchant->isFeatureEnabled(Feature\Constants::ALLOW_NON_SAVED_CARDS) === true) and
-            ((isset($accountInput[Card\Entity::TOKENISED]) === true) and
-             ($accountInput[Card\Entity::TOKENISED] === true)))
+        if ($merchant->isFeatureEnabled(Feature\Constants::PAYOUT_NAMESPACE_CHANGES) === true)
         {
-            $this->trace->error(TraceCode::TOKENISED_CARDS_NOT_SUPPORTED,
-                                [
-                                    'tokenised' => $accountInput[Card\Entity::TOKENISED],
-                                ]);
+            $inputType = $accountInput[Card\Entity::INPUT_TYPE] ?? null;
 
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_CARD_NOT_SUPPORTED_FOR_FUND_ACCOUNT,
-                null,
-                [],
-                "Tokenised cards are not supported"
-            );
+            //Setting default input_type to card
+            if (isset($inputType) === false)
+            {
+                $inputType = Card\InputType::CARD;
+            }
+
+            switch ($inputType)
+            {
+                case Card\InputType::CARD:
+                    $accountInput[Card\Entity::TOKENISED] = false;
+
+                    break;
+
+                case Card\InputType::SERVICE_PROVIDER_TOKEN:
+                    $accountInput[Card\Entity::TOKENISED] = true;
+
+                    break;
+
+                case Card\InputType::RAZORPAY_TOKEN:
+                default:
+                    break;
+            }
         }
+
+        unset($accountInput[Card\Entity::INPUT_TYPE]);
     }
 
     public function update(Entity $fundAccount, array $input): Entity
@@ -1290,5 +1321,18 @@ class Core extends Base\Core
             default:
                 return false;
         }
+    }
+
+    public function unsetSensitiveDetails($accountInput)
+    {
+        if (empty($accountInput[Card\Entity::NUMBER]) === false)
+        {
+            $accountInput[Card\Entity::IIN] = substr($accountInput[Card\Entity::NUMBER], 0, 6);
+        }
+
+        unset($accountInput[Card\Entity::CVV]);
+        unset($accountInput[Card\Entity::NUMBER]);
+
+        return $accountInput;
     }
 }

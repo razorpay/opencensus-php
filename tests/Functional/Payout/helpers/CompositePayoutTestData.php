@@ -978,13 +978,13 @@ return [
                 ],
                 'fund_account'   => [
                     'account_type' => 'card',
-                    'card' => [
-                        'name' => 'Prashanth YV',
-                        'number' => '340169570990137',
-                        'cvv' => '123',
+                    'card'         => [
+                        'name'         => 'Prashanth YV',
+                        'number'       => '340169570990137',
+                        'cvv'          => '123',
                         'expiry_month' => 8,
-                        'expiry_year' => 2025,
-                        'tokenised' => false
+                        'expiry_year'  => 2025,
+                        'input_type'   => 'card'
                     ],
                     'contact'      => [
                         'name'    => 'Prashanth 98',
@@ -1013,18 +1013,116 @@ return [
                 'fund_account' => [
                     'entity'       => 'fund_account',
                     'account_type' => 'card',
-                    'card' => [
-                        'last4'     =>  '0137',
-                        'network'   =>  'MasterCard',
-                        'type'      =>  'credit',
-                        'issuer'    =>  'YESB'
+                    'card'         => [
+                        'last4'      => '0137',
+                        'network'    => 'MasterCard',
+                        'type'       => 'credit',
+                        'issuer'     => 'YESB',
+                        'input_type' => 'card',
                     ],
                 ],
             ],
         ],
     ],
 
-    'testCreateCompositePayoutWithTokenisedCard' => [
+    'testCreateCompositePayoutToThirdPartyTokenisedCardThroughBankRails' => [
+        'request'   => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number' => '2224440041626905',
+                'amount'         => 20000,
+                'currency'       => 'INR',
+                'purpose'        => 'payout',
+                'narration'      => 'Batman',
+                'mode'           => 'IMPS',
+                'notes'          => [
+                    'abc' => 'xyz',
+                ],
+                'fund_account'   => [
+                    'account_type' => 'card',
+                    'card'         => [
+                        'name'           => 'Prashanth YV',
+                        'number'         => '340169570990137',
+                        'expiry_month'   => 8,
+                        'expiry_year'    => 2025,
+                        'input_type'     => 'service_provider_token',
+                        'token_provider' => 'xyz'
+                    ],
+                    'contact'      => [
+                        'name'    => 'Prashanth 98',
+                        'email'   => 'prashanth@razorpay.com',
+                        'contact' => '9999999999',
+                        'type'    => 'employee',
+                        'notes'   => [
+                            'note_key' => 'note_value'
+                        ],
+                    ],
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'description' => 'Payout mode is not supported for tokenised cards',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MODE_NOT_SUPPORTED_FOR_PAYOUT_TO_TOKENISED_CARDS,
+        ],
+    ],
+
+    'testCreateCompositePayoutToRzpTokenisedCardThroughBankRails' => [
+        'request'   => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number' => '2224440041626905',
+                'amount'         => 20000,
+                'currency'       => 'INR',
+                'purpose'        => 'payout',
+                'narration'      => 'Batman',
+                'mode'           => 'IMPS',
+                'notes'          => [
+                    'abc' => 'xyz',
+                ],
+                'fund_account'   => [
+                    'account_type' => 'card',
+                    'card'         => [
+                        'token_id'       => 'token_100000000token',
+                        'input_type'     => 'razorpay_token',
+                        'token_provider' => 'razorpay'
+                    ],
+                    'contact'      => [
+                        'name'    => 'Prashanth 98',
+                        'email'   => 'prashanth@razorpay.com',
+                        'contact' => '9999999999',
+                        'type'    => 'employee',
+                        'notes'   => [
+                            'note_key' => 'note_value'
+                        ],
+                    ],
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'description' => 'Payout mode is not supported for tokenised cards',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MODE_NOT_SUPPORTED_FOR_PAYOUT_TO_TOKENISED_CARDS,
+        ],
+    ],
+
+    'testCreateCompositePayoutWithTokenisedCardFromOtherTSP' => [
         'request'  => [
             'method'  => 'POST',
             'url'     => '/payouts',
@@ -1040,13 +1138,12 @@ return [
                 ],
                 'fund_account'   => [
                     'account_type' => 'card',
-                    'card' => [
-                        'name' => 'Prashanth YV',
-                        'number' => '340169570990137',
-                        'cvv' => '123',
-                        'expiry_month' => 8,
-                        'expiry_year' => 2025,
-                        'tokenised' => true
+                    'card'         => [
+                        'number'         => '4610151724696781',
+                        'expiry_month'   => 8,
+                        'expiry_year'    => 2025,
+                        'input_type'     => 'service_provider_token',
+                        'token_provider' => 'xyz'
                     ],
                     'contact'      => [
                         'name'    => 'Prashanth',
@@ -1060,18 +1157,80 @@ return [
                 ],
             ],
         ],
-        'response'  => [
-            'content'     => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Tokenised cards are not supported',
+        'response' => [
+            'content' => [
+                'entity'       => 'payout',
+                'amount'       => 20000,
+                'currency'     => 'INR',
+                'narration'    => 'Batman',
+                'purpose'      => 'payout',
+                'status'       => 'processing',
+                'mode'         => 'card',
+                'notes'        => [
+                    'abc' => 'xyz',
+                ],
+                'fund_account' => [
+                    'entity'       => 'fund_account',
+                    'account_type' => 'card',
+                    'card'         => [
+                    ],
                 ],
             ],
-            'status_code' => 400,
         ],
-        'exception' => [
-            'class'               => RZP\Exception\BadRequestException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_CARD_NOT_SUPPORTED_FOR_FUND_ACCOUNT,
+    ],
+
+    'testCreateCompositePayoutForTokenisedRzpSavedCardFlow' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number' => '2224440041626905',
+                'amount'         => 20000,
+                'currency'       => 'INR',
+                'purpose'        => 'payout',
+                'narration'      => 'Batman',
+                'mode'           => 'card',
+                'notes'          => [
+                    'abc' => 'xyz',
+                ],
+                'fund_account'   => [
+                    'account_type' => 'card',
+                    'card'         => [
+                        'token_id'       => 'token_100000000token',
+                        'input_type'     => 'razorpay_token',
+                        'token_provider' => 'razorpay'
+                    ],
+                    'contact'      => [
+                        'name'    => 'Prashanth',
+                        'email'   => 'prashanth@razorpay.com',
+                        'contact' => '9999999999',
+                        'type'    => 'employee',
+                        'notes'   => [
+                            'note_key' => 'note_value'
+                        ],
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'payout',
+                'amount'       => 20000,
+                'currency'     => 'INR',
+                'narration'    => 'Batman',
+                'purpose'      => 'payout',
+                'status'       => 'processing',
+                'mode'         => 'card',
+                'notes'        => [
+                    'abc' => 'xyz',
+                ],
+                'fund_account' => [
+                    'entity'       => 'fund_account',
+                    'account_type' => 'card',
+                    'card'         => [
+                    ],
+                ],
+            ],
         ],
     ],
 

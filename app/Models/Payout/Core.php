@@ -5220,16 +5220,42 @@ class Core extends Base\Core
         return ['Queued email count' => $count];
     }
 
-    public function isPayoutsToFundAccountAllowed($fundAccountId)
+    public function isPayoutToFundAccountAllowed($fundAccountId, $mode, $isCompositePayout)
     {
         $fundAccount = $this->repo->fund_account->findByPublicIdAndMerchant($fundAccountId, $this->merchant);
 
-        if ($fundAccount->getAccountType() === Entity::CARD)
+        if (($fundAccount->getAccountType() === Entity::CARD) and
+            (isset($mode) === true))
         {
-            return false;
-        }
+            $isTokenised = ($fundAccount->account->isTokenPan() === true) ? true : $fundAccount->account->isNetworkTokenisedCard();
 
-        return true;
+            if (($isTokenised === true) and
+                ($mode !== Mode::CARD))
+            {
+                $this->trace->error(TraceCode::MODE_NOT_SUPPORTED_FOR_PAYOUT_TO_TOKENISED_CARDS,
+                                    [
+                                        'is_composite_payout' => $isCompositePayout,
+                                        'payout_mode'         => $mode,
+                                        'is_tokenised'        => $isTokenised
+                                    ]);
+
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_MODE_NOT_SUPPORTED_FOR_PAYOUT_TO_TOKENISED_CARDS);
+            }
+
+            if ($isTokenised === false)
+            {
+                $this->trace->error(TraceCode::STANDALONE_PAYOUT_TO_CARDS_NOT_ALLOWED,
+                                    [
+                                        'is_composite_payout' => $isCompositePayout,
+                                        'payout_mode'         => $mode,
+                                        'is_tokenised'        => $isTokenised
+                                    ]);
+
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_STANDALONE_PAYOUT_TO_CARDS_NOT_ALLOWED);
+            }
+        }
     }
 
     public function fetchPayoutAnalyticsfromPayoutsService(Merchant\Entity $merchant): array

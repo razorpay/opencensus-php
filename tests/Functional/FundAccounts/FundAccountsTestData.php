@@ -2526,6 +2526,147 @@ return [
         ],
     ],
 
+    'testCreateNonSavedCardFundAccount' => [
+        'request'  => [
+            'content' => [
+                'account_type' => 'card',
+                'contact_id'   => 'cont_1000000contact',
+                'card'         => [
+                    'name'       => 'chirag',
+                    'number'     => '4111111111111111',
+                    'input_type' => 'card'
+                ]
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content'     => [
+                'entity'       => 'fund_account',
+                'account_type' => 'card',
+                'contact_id'   => 'cont_1000000contact',
+                'card'         => [
+                ],
+            ],
+            'status_code' => 201
+        ],
+    ],
+
+    'testCreateNonSavedCardFundAccountWithInvalidVaultTokenAssociated' => [
+        'request'   => [
+            'content' => [
+                'account_type' => 'card',
+                'contact_id'   => 'cont_1000000contact',
+                'card'         => [
+                    'name'       => 'chirag',
+                    'number'     => '4111111111111111',
+                    'input_type' => 'card'
+                ]
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Card not supported for fund account creation',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_CARD_NOT_SUPPORTED_FOR_FUND_ACCOUNT,
+        ],
+    ],
+
+    'testCreateRzpSavedCardFundAccount' => [
+        'request'  => [
+            'content' => [
+                'account_type' => 'card',
+                'contact_id'   => 'cont_1000000contact',
+                'card'         => [
+                    'token_id'       => 'token_100000000token',
+                    'input_type'     => 'razorpay_token',
+                    'token_provider' => 'razorpay'
+                ]
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content'     => [
+                'entity'       => 'fund_account',
+                'account_type' => 'card',
+                'contact_id'   => 'cont_1000000contact',
+                'card'         => [
+                ],
+            ],
+            'status_code' => 201
+        ],
+    ],
+
+    'testCreateSavedCardOtherTSPFundAccount' => [
+        'request'  => [
+            'content' => [
+                'account_type' => 'card',
+                'contact_id'   => 'cont_1000000contact',
+                'card'         => [
+                    'number'         => '4610151724696781',
+                    'expiry_month'   => 8,
+                    'expiry_year'    => 2025,
+                    'input_type'     => 'service_provider_token',
+                    'token_provider' => 'xyz'
+                ],
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content'     => [
+                'entity'       => 'fund_account',
+                'account_type' => 'card',
+                'contact_id'   => 'cont_1000000contact',
+                'card'         => [
+                ],
+            ],
+            'status_code' => 201
+        ],
+    ],
+
+    'testCreateSavedCardOtherTSPFundAccountWithInvalidVaultTokenAssociated' => [
+        'request'   => [
+            'content' => [
+                'account_type' => 'card',
+                'contact_id'   => 'cont_1000000contact',
+                'card'         => [
+                    'name'           => 'chirag',
+                    'number'         => '4111111111111111',
+                    'expiry_month'   => 11,
+                    'expiry_year'    => 2024,
+                    'input_type'     => 'service_provider_token',
+                    'token_provider' => 'xyz'
+                ]
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Card not supported for fund account creation',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_CARD_NOT_SUPPORTED_FOR_FUND_ACCOUNT,
+        ],
+    ],
+
     'testCreateCardFundAccountWithSpecialCharName' => [
         'request'  => [
             'content' => [
@@ -2550,6 +2691,32 @@ return [
                 ],
             ],
             'status_code' => 201
+        ],
+    ],
+
+    'testCreateFundAccountWithVariousInputTypeValidation' => [
+        'request'   => [
+            'content' => [
+                'account_type' => 'card',
+                'contact_id'   => 'cont_1000000contact',
+                'card'         => [
+                ]
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response'  => [
+            'content'   => [
+                'error' => [
+                    'code'  => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => '',
+                ],
+            ],
+            'status_code'   => 400,
+        ],
+        'exception' => [
+            'class' => Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 

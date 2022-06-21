@@ -1628,6 +1628,7 @@ class PublicErrorDescription
     const BAD_REQUEST_KEYS_REGENERATED_PREVIOUSLY                                   = 'Merchant has already generated keys within 24 hours';
 
     const BAD_REQUEST_STANDALONE_PAYOUT_TO_CARDS_NOT_ALLOWED                        = 'Standalone payouts API is not supported for payouts to card numbers, please use the composite API';
+    const BAD_REQUEST_MODE_NOT_SUPPORTED_FOR_PAYOUT_TO_TOKENISED_CARDS              = 'Payout mode is not supported for tokenised cards';
     const BAD_REQUEST_CUSTOMER_ADDRESS_NOT_FOUND                                    = 'Address not found/Invalid Address Id';
 
     const BAD_REQUEST_TDS_AMOUNT_GREATER_THAN_PAYOUT_AMOUNT                         = 'TDS amount cannot be greater than Payout amount';

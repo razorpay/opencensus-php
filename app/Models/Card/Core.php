@@ -20,27 +20,37 @@ use RZP\Models\FundAccount\Type as FundAccountType;
 
 class Core extends Base\Core
 {
+    const TEMPORARY_VAULT_TOKEN_REGEX = '/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-'.
+                                        '[0-9a-f]{4}-[0-9a-f]{12}|[0-9a-f]{12}4[0-9a-f]{19}$/';
+
     protected $card = null;
 
-    public function create($input, $merchant, $recurring = false, $dummyProcessing = false)
+    public function create($input, $merchant, $recurring = false, $dummyProcessing = false, $isRzpX = false)
     {
-        /*
-         *  when s2s merchant initiates the payment using token pan and cryptogram , they will send the token pan 's  expiry month  and expiry year in expiry_month and expiry_year but we have to store it in token_expiry_month and
-            token_expiry_year and setting dummy value in expiry_month and expiry_year
-         *   when merchant initiates the payment using razorpay token / from checkout ,   we are sending  expiry month and year in token_expiry_month and token_expiry_year
+        /**
+         * When s2s merchant initiates the payment using token pan and cryptogram ,
+         * they will send the token pan 's  expiry month  and expiry year in expiry_month and expiry_year
+         * but we have to store it in token_expiry_month and token_expiry_year and setting dummy value in expiry_month
+         * and expiry_year when merchant initiates the payment using razorpay token / from checkout ,
+         * we are sending  expiry month and year in token_expiry_month and token_expiry_year
+         *
+         * isRzpX flag here distinguishes between X and PG flows
         */
-        if (empty($input['tokenised'])=== false and  empty($input['cryptogram_value'])=== false) {
-
-            if (empty($input[Card\Entity::TOKEN_EXPIRY_MONTH])=== true) {
-                $input[Card\Entity::TOKEN_EXPIRY_MONTH]=$input[Card\Entity::EXPIRY_MONTH];
-                $input[Card\Entity::EXPIRY_MONTH] = '0';
+        if ($this->setTokenExpiryMonthAndYear($input, $isRzpX) === true)
+        {
+            if (empty($input[Card\Entity::TOKEN_EXPIRY_MONTH]) === true)
+            {
+                $input[Card\Entity::TOKEN_EXPIRY_MONTH] = $input[Card\Entity::EXPIRY_MONTH];
+                $input[Card\Entity::EXPIRY_MONTH]       = '0';
             }
-            if (empty($input[Card\Entity::TOKEN_EXPIRY_YEAR])=== true) {
-                $input[Card\Entity::TOKEN_EXPIRY_YEAR]=$input[Card\Entity::EXPIRY_YEAR];
-                $input[Card\Entity::EXPIRY_YEAR]  = '9999';
+            if (empty($input[Card\Entity::TOKEN_EXPIRY_YEAR]) === true)
+            {
+                $input[Card\Entity::TOKEN_EXPIRY_YEAR] = $input[Card\Entity::EXPIRY_YEAR];
+                $input[Card\Entity::EXPIRY_YEAR]       = '9999';
             }
 
-            $input[Card\Entity::IS_TOKENIZED_CARD] = true;   // this will set  card's iin  field with actual card bin  not with the token pan's iin
+            // this will set card's iin field with actual card bin not with the token pan's iin
+            $input[Card\Entity::IS_TOKENIZED_CARD] = true;
         }
 
         $card = (new Card\Entity)->build($input);
@@ -56,7 +66,28 @@ class Core extends Base\Core
             $card->iinRelation()->associate($iin);
         }
 
-        $this->setVaultTokenAndFingerPrint($card, $input, $recurring);
+        /**
+         * Allow setting of vault token and fingerprint if it is the PG flow
+         *
+         * For X flow, if dummy processing is true, it means it is High TPS flow
+         * and we need not create KMS vault token with a TTL in ingress
+         *
+         * if dummy processing is false, we set vault token and fingerprint and
+         * check if the vault token generated is in accordance with the flow
+         */
+        if ($isRzpX === false)
+        {
+            $this->setVaultTokenAndFingerPrint($card, $input, $recurring);
+        }
+        else
+        {
+            if ($dummyProcessing === false)
+            {
+                $this->setVaultTokenAndFingerPrint($card, $input, $recurring, $isRzpX);
+
+                $this->checkIfCardHasProperVaultToken($card->getVaultToken(), $merchant, $input);
+            }
+        }
 
         if ($dummyProcessing === false)
         {
@@ -251,11 +282,77 @@ class Core extends Base\Core
     {
         $input[Card\Entity::VAULT] = Card\Vault::RZP_VAULT;
 
-        // We are sending negation of compositePayoutSaveOrFail because to save the card entity
-        // dummy processing needs to be false
+        /**
+         * We are sending negation of compositePayoutSaveOrFail because to save the card entity
+         * dummy processing needs to be false
+         *
+         * Here isRzpX flag is sent as true to indicate X flow
+         */
+        $card = $this->create($input, $merchant, false, !$compositePayoutSaveOrFail, true);
 
-        $card = $this->create($input, $merchant, false, !$compositePayoutSaveOrFail);
+        $this->checkIfCardIsSupportedAndEnqueueForBeneficiaryRegistration($card, $merchant, $compositePayoutSaveOrFail);
 
+        return $card;
+    }
+
+    public function checkIfCardHasProperVaultToken($vaultToken, $merchant, $input)
+    {
+        if (($merchant->isFeatureEnabled(Feature\Constants::ALLOW_NON_SAVED_CARDS) === true) and
+            (isset($input[Card\Entity::TOKENISED]) === true) and
+            (isset($vaultToken) === true))
+        {
+            $isTempVaultToken = $this->checkIfVaultTokenIsTemporary($vaultToken);
+
+            $tokenised = $input[Card\Entity::TOKENISED];
+
+            if (($tokenised xor $isTempVaultToken) === false)
+            {
+                $this->trace->error(TraceCode::INVALID_VAULT_TOKEN_ASSOCIATED,
+                    [
+                        'vault_token'        => $vaultToken,
+                        'is_temporary_token' => $isTempVaultToken,
+                        'is_tokenised'       => $tokenised
+                    ]);
+
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_CARD_NOT_SUPPORTED_FOR_FUND_ACCOUNT,
+                    null,
+                    [
+                        'card_'.Card\Entity::VAULT_TOKEN => $vaultToken,
+                    ]
+                );
+            }
+        }
+    }
+
+    /**
+     * Logic for temporary vault token with TTL confirmed from Vault team
+     *
+     * @param $vaultToken
+     *
+     * @return bool
+     */
+    public function checkIfVaultTokenIsTemporary($vaultToken)
+    {
+        $values = explode("_", $vaultToken);
+
+        if (count($values) != 2)
+        {
+            return false;
+        }
+
+        if (preg_match(self::TEMPORARY_VAULT_TOKEN_REGEX, $values[1], $matches) === 1)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function checkIfCardIsSupportedAndEnqueueForBeneficiaryRegistration($card,
+                                                                               $merchant,
+                                                                               $compositePayoutSaveOrFail = true)
+    {
         $cardType       = $card->getType();
         $cardIssuer     = $card->getIssuer();
         $cardVaultToken = $card->getCardVaultToken();
@@ -308,12 +405,12 @@ class Core extends Base\Core
                     ]);
             }
 
-            return $card;
+            return;
         }
 
         // If a credit card is not supported for IMPS, NEFT, we check if m2p supports it.
         // If it does, we allow FA creation.
-        if (($card->getCardVaultToken() === null) or
+        if (($this->checkIfVaultTokenIsNull($card, $compositePayoutSaveOrFail) === true) or
             (Type::isValidFundAccountCardType($cardType, $prepaidCardVariant) === false) or
             ((in_array($cardIssuer, FundTransfer\Mode::getSupportedIssuers(), true) === false) and
              (empty($m2pSupportedModeConfigs) === true)))
@@ -322,7 +419,7 @@ class Core extends Base\Core
             if (($card->isAmex() === true) and
                 ($cardIssuer === null))
             {
-                return $card;
+                return;
             }
 
             throw new Exception\BadRequestException(
@@ -336,8 +433,6 @@ class Core extends Base\Core
         }
 
         (new Beneficiary)->enqueueForBeneficiaryRegistration($card, FundAccountType::CARD);
-
-        return $card;
     }
 
     public function checkAllowedNetworksForSCBL($card)
@@ -396,7 +491,7 @@ class Core extends Base\Core
             ]);
     }
 
-    public function setVaultTokenAndFingerPrint(Card\Entity $card, array $input, bool $recurring)
+    public function setVaultTokenAndFingerPrint(Card\Entity $card, array $input, bool $recurring, bool $isRzpX = false)
     {
         if (empty($card->getVault()) === true)
         {
@@ -407,7 +502,22 @@ class Core extends Base\Core
         {
             $cardVault = (new Card\CardVault);
 
-            $tempInput['bu_namespace'] = $cardVault->getBuNamespaceIfApplicable($card->toArray());
+            if ($isRzpX === false)
+            {
+                $tempInput['bu_namespace'] = $cardVault->getBuNamespaceIfApplicable($card->toArray(), $isRzpX);
+            }
+            else
+            {
+                if ($card->merchant->isFeatureEnabled(Feature\Constants::PAYOUT_NAMESPACE_CHANGES) === true)
+                {
+                    $tempInput['bu_namespace'] = $cardVault->getBuNamespaceIfApplicable($card->toArray(), $isRzpX);
+                }
+                else
+                {
+                    $tempInput['bu_namespace'] = null;
+                }
+            }
+
             $tempInput['card'] = $input['number'];
 
             $response = $cardVault->getTokenAndFingerprint($tempInput);
@@ -956,5 +1066,19 @@ class Core extends Base\Core
         }
 
         return $default;
+    }
+
+    public function setTokenExpiryMonthAndYear($input, bool $isRzpX)
+    {
+        return (empty($input[Entity::TOKENISED]) === false) and
+               ((empty($input[Entity::CRYPTOGRAM_VALUE]) === false) or
+               (($input[Entity::TOKENISED] === true) and
+                ($isRzpX === true)));
+    }
+
+    public function checkIfVaultTokenIsNull($card, bool $compositePayoutSaveOrFail)
+    {
+        return ($card->getCardVaultToken() === null) and
+               ($compositePayoutSaveOrFail === true);
     }
 }

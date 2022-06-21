@@ -85,7 +85,10 @@ class Entity extends Base\PublicEntity
 
     const NETWORK_CODE = 'network_code';
 
-    const TOKEN = 'token';
+    const TOKEN                  = 'token';
+    const TOKEN_ID               = 'token_id';
+    const INPUT_TYPE             = 'input_type';
+    const BU_NAMESPACE           = 'bu_namespace';
 
     protected static $sign = 'card';
 
@@ -194,7 +197,7 @@ class Entity extends Base\PublicEntity
         Card\Entity::SUBTYPE,
         Card\Entity::ISSUER,
         Card\Entity::IIN,
-        Card\Entity::TOKENISED,
+        Card\Entity::INPUT_TYPE
     ];
 
     protected $appends = [self::NETWORK_CODE];
@@ -1139,6 +1142,27 @@ class Entity extends Base\PublicEntity
             ($attributes[self::NAME] === self::DUMMY_NAME))
         {
             unset($attributes[self::NAME]);
+        }
+
+        if ($this->merchant->isFeatureEnabled(Feature\Constants::ALLOW_NON_SAVED_CARDS) === true)
+        {
+            if ($this->isTokenPan() === true)
+            {
+                $attributes[self::LAST4]      = $this->attributes[self::TOKEN_LAST_4];
+
+                $attributes[self::INPUT_TYPE] = Card\InputType::SERVICE_PROVIDER_TOKEN;
+            }
+            else
+            {
+                if ($this->isNetworkTokenisedCard() === true)
+                {
+                    $attributes[self::INPUT_TYPE] = Card\InputType::RAZORPAY_TOKEN;
+                }
+                else
+                {
+                    $attributes[self::INPUT_TYPE] = Card\InputType::CARD;
+                }
+            }
         }
 
         return array_only($attributes, $this->fundAccount);

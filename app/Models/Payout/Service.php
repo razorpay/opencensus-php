@@ -42,6 +42,7 @@ use RZP\Exception\ServerErrorException;
 use RZP\Exception\BadRequestException;
 use RZP\Models\PayoutOutbox\RequestType;
 use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Models\Payout\Mode as PayoutMode;
 use RZP\Models\Payout\Batch as PayoutsBatch;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Feature\Constants as Features;
@@ -2645,19 +2646,36 @@ class Service extends Base\Service
 
     protected function checkIfPayoutIsAllowed(bool $isCompositePayout, array $input)
     {
-        if (($this->merchant->isFeatureEnabled(Features::ALLOW_NON_SAVED_CARDS) === true) and
-            (($isCompositePayout === false) and
-             (isset($input[Entity::FUND_ACCOUNT_ID]) === true) and
-             ($this->core->isPayoutsToFundAccountAllowed($input[Entity::FUND_ACCOUNT_ID]) === false)))
-        {
-            $this->trace->error(TraceCode::STANDALONE_PAYOUT_TO_CARDS_NOT_ALLOWED,
-                                [
-                                    'is_composite_payout' => $isCompositePayout,
-                                    'payout_mode'         => $input[Payout\Entity::MODE] ?? null
-                                ]);
+        $payoutMode = $input[Payout\Entity::MODE] ?? null;
 
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_STANDALONE_PAYOUT_TO_CARDS_NOT_ALLOWED);
+        if ($this->merchant->isFeatureEnabled(Features::ALLOW_NON_SAVED_CARDS) === true)
+        {
+            if ($isCompositePayout === false)
+            {
+                $this->core->isPayoutToFundAccountAllowed($input[Entity::FUND_ACCOUNT_ID], $payoutMode, $isCompositePayout);
+            }
+            else
+            {
+                if (isset($input[Entity::FUND_ACCOUNT][Entity::CARD][Card\Entity::INPUT_TYPE]) === true)
+                {
+                    $inputType = $input[Entity::FUND_ACCOUNT][Entity::CARD][Card\Entity::INPUT_TYPE];
+
+                    if ((($inputType === Card\InputType::RAZORPAY_TOKEN) or
+                         ($inputType === Card\InputType::SERVICE_PROVIDER_TOKEN)) and
+                        ($payoutMode !== PayoutMode::CARD))
+                    {
+                        $this->trace->error(TraceCode::MODE_NOT_SUPPORTED_FOR_PAYOUT_TO_TOKENISED_CARDS,
+                                            [
+                                                'is_composite_payout' => $isCompositePayout,
+                                                'payout_mode'         => $payoutMode,
+                                                'is_tokenised'        => true
+                                            ]);
+
+                        throw new Exception\BadRequestException(
+                            ErrorCode::BAD_REQUEST_MODE_NOT_SUPPORTED_FOR_PAYOUT_TO_TOKENISED_CARDS);
+                    }
+                }
+            }
         }
     }
 

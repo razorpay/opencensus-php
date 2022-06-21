@@ -15753,7 +15753,7 @@ return [
     ],
 
     'testCreatePayoutToCardsNotAllowed' => [
-        'request'  => [
+        'request'   => [
             'method'  => 'POST',
             'url'     => '/payouts',
             'content' => [
@@ -15776,6 +15776,33 @@ return [
         'exception' => [
             'class'               => Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_STANDALONE_PAYOUT_TO_CARDS_NOT_ALLOWED,
+        ],
+    ],
+
+    'testCreatePayoutToRzpTokenisedCardThroughBankRails' => [
+        'request'   => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'fund_account_id' => 'fa_100000000002fa',
+                'amount'          => 100,
+                'mode'            => 'IMPS',
+                'currency'        => 'INR',
+                'account_number'  => '2224440041626905',
+                'purpose'         => 'payout'
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'description' => 'Payout mode is not supported for tokenised cards',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MODE_NOT_SUPPORTED_FOR_PAYOUT_TO_TOKENISED_CARDS,
         ],
     ],
 

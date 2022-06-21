@@ -175,19 +175,33 @@ class CardVault extends Base\Core
         }
     }
 
-    public function getBuNamespaceIfApplicable($input)
+    public function getBuNamespaceIfApplicable($input, $isRzpX = false)
     {
         $buNamespace =null;
         try
         {
-            if (empty($input['trivia']) === false) {
-                $buNamespace = 'payments_token_pan';
+            if($isRzpX === false)
+            {
+                if (empty($input['trivia']) === false) {
+                    $buNamespace = 'payments_token_pan';
+                }
+                else if (empty($input['international']) === false) {
+                    $buNamespace = 'payments_international';
+                }
+                else if (empty($input['network']) === false and $input['network'] === 'Bajaj Finserv'){
+                    $buNamespace = 'payments_bajajfinserv';
+                }
             }
-            else if (empty($input['international']) === false) {
-                $buNamespace = 'payments_international';
-            }
-            else if (empty($input['network']) === false and $input['network'] === 'Bajaj Finserv'){
-                $buNamespace = 'payments_bajajfinserv';
+            else
+            {
+                if (empty($input[CardEntity::TRIVIA]) === false)
+                {
+                    $buNamespace = BuNamespace::RAZORPAYX_TOKEN_PAN;
+                }
+                else
+                {
+                    $buNamespace = BuNamespace::RAZORPAYX_NON_SAVED_CARDS;
+                }
             }
 
             $this->trace->info(

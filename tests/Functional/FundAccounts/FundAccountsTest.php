@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\FundAccount;
 
 use App;
 use Queue;
+use Mockery;
 
 use RZP\Error\Error;
 use RZP\Models\Feature;
@@ -12,6 +13,7 @@ use RZP\Models\Card\Issuer;
 use RZP\Models\Card\Network;
 use RZP\Models\Contact\Type;
 use RZP\Services\RazorXClient;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Services\Segment\XSegmentClient;
 use RZP\Jobs\FTS\CreateAccount;
@@ -1407,6 +1409,446 @@ class FundAccountsTest extends TestCase
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
         $this->startTest();
+    }
+
+    public function testCreateNonSavedCardFundAccount()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS,
+                                                Feature\Constants::S2S,
+                                                Feature\Constants::PAYOUT_NAMESPACE_CHANGES,
+                                                Feature\Constants::ALLOW_NON_SAVED_CARDS]);
+
+        $this->setMockRazorxTreatment([RazorxTreatment::VAULT_BU_NAMESPACE_MIGRATION    => 'on']);
+
+        $this->fixtures->create('contact', ['id' => '1000000contact', 'name' => 'Mr. John']);
+
+        $callable = function($route, $method, $input) {
+            $response = [
+                'error'   => '',
+                'success' => true,
+            ];
+
+            switch ($route)
+            {
+                case 'tokenize':
+                    $response['token']       = 'pay2_44f3d176b38b4cd2a588f243e3ff7b20';
+                    $response['fingerprint'] = null;
+                    $response['scheme']      = '2';
+                    break;
+            }
+
+            return $response;
+        };
+
+        $this->mockCardVault($callable);
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+
+        $card = $this->getDbLastEntity('card');
+
+        $this->assertNull($card['trivia']);
+
+        $this->assertEquals($response['card']['input_type'], 'card');
+
+        $this->assertEquals('pay2_44f3d176b38b4cd2a588f243e3ff7b20', $card['vault_token']);
+    }
+
+    public function testCreateCardFundAccountWithNamespaceChanges()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS,
+                                                Feature\Constants::S2S,
+                                                Feature\Constants::PAYOUT_NAMESPACE_CHANGES]);
+
+        $this->setMockRazorxTreatment([RazorxTreatment::VAULT_BU_NAMESPACE_MIGRATION    => 'on']);
+
+        $this->fixtures->create('contact', ['id' => '1000000contact', 'name' => 'Mr. John']);
+
+        $callable = function($route, $method, $input) {
+            $response = [
+                'error'   => '',
+                'success' => true,
+            ];
+
+            switch ($route)
+            {
+                case 'tokenize':
+                    $response['token']       = '0c0e7db24cce4512bc9c71f2dbec7075';
+                    $response['fingerprint'] = '5707cebd2f17c9cb2154ecc42bd7e0c0';
+                    $response['scheme']      = '0';
+                    break;
+            }
+
+            return $response;
+        };
+
+        $this->mockCardVault($callable);
+
+        $this->ba->privateAuth();
+
+        $testData = &$this->testData['testCreateNonSavedCardFundAccount'];
+
+        unset($testData['request']['content']['card']['input_type']);
+
+        $response = $this->startTest($testData);
+
+        $card = $this->getDbLastEntity('card');
+
+        $this->assertNull($card['trivia']);
+
+        $this->assertArrayNotHasKey('input_type', $response['card']);
+
+        $this->assertEquals('0c0e7db24cce4512bc9c71f2dbec7075', $card['vault_token']);
+    }
+
+    public function testCreateNonSavedCardFundAccountWithInvalidVaultTokenAssociated()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS,
+                                                Feature\Constants::S2S,
+                                                Feature\Constants::PAYOUT_NAMESPACE_CHANGES,
+                                                Feature\Constants::ALLOW_NON_SAVED_CARDS]);
+
+        $this->fixtures->create('contact', ['id' => '1000000contact', 'name' => 'Mr. John']);
+
+        $this->setMockRazorxTreatment([RazorxTreatment::VAULT_BU_NAMESPACE_MIGRATION    => 'on']);
+
+        $cardCountBefore = count($this->getDbEntities('card'));
+
+        $callable = function($route, $method, $input) {
+            $response = [
+                'error'   => '',
+                'success' => true,
+            ];
+
+            switch ($route)
+            {
+                case 'tokenize':
+                    $response['token']       = '0c0e7db24cce4512bc9c71f2dbec7075';
+                    $response['fingerprint'] = null;
+                    $response['scheme']      = '0';
+                    break;
+            }
+
+            return $response;
+        };
+
+        $this->mockCardVault($callable);
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+
+        $cardCountAfter = count($this->getDbEntities('card'));
+
+        $this->assertEquals(0, $cardCountAfter - $cardCountBefore);
+    }
+
+    public function testCreateRzpSavedCardFundAccount()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS,
+                                                Feature\Constants::S2S,
+                                                Feature\Constants::PAYOUT_NAMESPACE_CHANGES,
+                                                Feature\Constants::ALLOW_NON_SAVED_CARDS]);
+
+        $this->fixtures->create('contact', ['id' => '1000000contact', 'name' => 'Mr. John']);
+
+        $this->fixtures->create('card', [
+            'id'                 => '1000000010card',
+            'expiry_month'       => 12,
+            'expiry_year'        => 2028,
+            'iin'                => '437551',
+            'last4'              => '3002',
+            'length'             => '16',
+            'network'            => 'Visa',
+            'type'               => 'credit',
+            'issuer'             => 'SBIN',
+            'vault'              => 'visa',
+            'trivia'             => null,
+            'vault_token'        => 'JDzXk6S3CAjUn8',
+            'global_fingerprint' => 'V0010014618091560597265901338',
+            'country'            => 'IN',
+            'token_expiry_month' => 12,
+            'token_expiry_year'  => 2028,
+            'token_iin'          => '448966524',
+            'sub_type'           => 'consumer',
+            'category'           => 'Platinum'
+        ]);
+
+        $this->fixtures->create('token', ['id' => '100000000token', 'method' => 'card', 'recurring' => false, 'card_id' => '1000000010card']);
+
+        $response = $this->startTest();
+
+        $card = $this->getDbEntity('card', ['id' => '1000000010card']);
+
+        $this->assertNull($card['trivia']);
+
+        $this->assertEquals($response['card']['input_type'], 'razorpay_token');
+    }
+
+    public function testCreateSavedCardOtherTSPFundAccount()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS,
+                                                Feature\Constants::S2S,
+                                                Feature\Constants::PAYOUT_NAMESPACE_CHANGES,
+                                                Feature\Constants::ALLOW_NON_SAVED_CARDS]);
+
+        $this->fixtures->create('contact', ['id' => '1000000contact', 'name' => 'Mr. John']);
+
+        $this->setMockRazorxTreatment([RazorxTreatment::VAULT_BU_NAMESPACE_MIGRATION    => 'on']);
+
+        $this->fixtures->create('iin', [
+            'iin'     => 416021,
+            'network' => Network::$fullName[Network::MC],
+            'type'    => \RZP\Models\Card\Type::CREDIT,
+            'issuer'  => Issuer::YESB
+        ]);
+
+        $callable = function($route, $method, $input) {
+            $response = [
+                'error'   => '',
+                'success' => true,
+            ];
+
+            switch ($route)
+            {
+                case 'tokenize':
+                    $response['token']       = '0c0e7db24cce4512bc9c71f2dbec7075';
+                    $response['fingerprint'] = '5707cebd2f17c9cb2154ecc42bd7e0c0';
+                    $response['scheme']      = '0';
+                    break;
+            }
+
+            return $response;
+        };
+
+        $this->mockCardVault($callable);
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+
+        $card = $this->getDbLastEntity('card');
+
+        $this->assertEquals('416021', $card['iin']);
+
+        $this->assertEquals('1', $card['trivia']);
+
+        $this->assertEquals(8, $card['token_expiry_month']);
+
+        $this->assertEquals(2025, $card['token_expiry_year']);
+
+        $this->assertEquals(0, $card['expiry_month']);
+
+        $this->assertEquals(9999, $card['expiry_year']);
+
+        $this->assertEquals('xxxx', $card['last4']);
+
+        $this->assertEquals('6781', $card['token_last4']);
+
+        $this->assertEquals('461015172', $card['token_iin']);
+
+        $this->assertEquals($response['card']['input_type'], 'service_provider_token');
+
+        $this->assertEquals($response['card']['last4'], $card['token_last4']);
+
+        $this->assertEquals('0c0e7db24cce4512bc9c71f2dbec7075', $card['vault_token']);
+    }
+
+    public function testCreateSavedCardOtherTSPFundAccountWithInvalidVaultTokenAssociated()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS,
+                                                Feature\Constants::S2S,
+                                                Feature\Constants::PAYOUT_NAMESPACE_CHANGES,
+                                                Feature\Constants::ALLOW_NON_SAVED_CARDS]);
+
+        $this->fixtures->create('contact', ['id' => '1000000contact', 'name' => 'Mr. John']);
+
+        $this->setMockRazorxTreatment([RazorxTreatment::VAULT_BU_NAMESPACE_MIGRATION    => 'on']);
+
+        $this->fixtures->create('iin', [
+            'iin'     => 416021,
+            'network' => Network::$fullName[Network::MC],
+            'type'    => \RZP\Models\Card\Type::CREDIT,
+            'issuer'  => Issuer::YESB
+        ]);
+
+        $cardCountBefore = count($this->getDbEntities('card'));
+
+        $callable = function($route, $method, $input) {
+            $response = [
+                'error'   => '',
+                'success' => true,
+            ];
+
+            switch ($route)
+            {
+                case 'tokenize':
+                    $response['token']       = 'pay2_44f3d176b38b4cd2a588f243e3ff7b20';
+                    $response['fingerprint'] = null;
+                    $response['scheme']      = '2';
+                    break;
+            }
+
+            return $response;
+        };
+
+        $this->mockCardVault($callable);
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+
+        $cardCountAfter = count($this->getDbEntities('card'));
+
+        $this->assertEquals(0, $cardCountAfter - $cardCountBefore);
+    }
+
+    public function testCreateFundAccountWithVariousInputTypeValidation()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS,
+                                                Feature\Constants::S2S]);
+
+        $this->fixtures->create('contact', ['id' => '1000000contact', 'name' => 'Mr. John']);
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $responseDescription = &$this->testData[__FUNCTION__]['response']['content']['error']['description'];
+
+        // when card.token_id is sent but card.expiry_month or card.expiry_year or both are not sent.
+
+        $testData['request']['content']['card'] = [
+            "number"         => "2223000250156293",
+            "input_type"     => "service_provider_token",
+            "token_provider" => "xyz"
+        ];
+
+        $responseDescription = 'card.expiry_year and card.expiry_month are mandatory fields ' .
+                               'when input type is sent as service_provider_token';
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+
+        // When card.token_id is sent but card.input_type is not sent
+
+        $testData['request']['content']['card'] = [
+            "token_id" => "token_JiVrlEXjI6wFfo"
+        ];
+
+        $responseDescription = 'card.input_type should be sent along with card.token_id';
+
+        $this->startTest();
+
+        // When card.input_type is sent as service_provider_token or razorpay_token and card.token_provider is not present
+
+        $testData['request']['content']['card'] = [
+            "token_id"   => "token_JiVrlEXjI6wFfo",
+            "input_type" => "razorpay_token",
+        ];
+
+        $responseDescription = 'card.token_provider should be sent for input type as razorpay_token';
+
+        $this->startTest();
+
+        $testData['request']['content']['card'] = [
+            "number"         => "2223000250156293",
+            "expiry_year"    => "2028",
+            "expiry_month"   => "8",
+            "input_type"     => "service_provider_token"
+        ];
+
+        $responseDescription = 'card.token_provider should be sent for input type as service_provider_token';
+
+        $this->startTest();
+
+        // When card.input_type is sent as razorpay_token and card.token_id is not present
+
+        $testData['request']['content']['card'] = [
+            "input_type"     => "razorpay_token",
+            "token_provider" => "razorpay"
+        ];
+
+        $responseDescription = 'card.token_id should be sent for input type as razorpay_token';
+
+        $this->startTest();
+
+        // When card.input_type is sent as service_provider_token or card and card.number is not present
+
+        $testData['request']['content']['card'] = [
+            "input_type" => "card",
+        ];
+
+        $responseDescription = 'card.number should be sent for input type as card';
+
+        $this->startTest();
+
+        $testData['request']['content']['card'] = [
+            "expiry_year"    => "2028",
+            "expiry_month"   => "8",
+            "input_type"     => "service_provider_token",
+            "token_provider" => "xyz"
+        ];
+
+        $responseDescription = 'card.number should be sent for input type as service_provider_token';
+
+        $this->startTest();
+    }
+
+    public function testCreateFundAccountWithExclusiveFieldsValidation()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS,
+                                                Feature\Constants::S2S]);
+
+        $this->fixtures->create('contact', ['id' => '1000000contact', 'name' => 'Mr. John']);
+
+        $testData = &$this->testData['testCreateFundAccountWithVariousInputTypeValidation'];
+
+        $responseDescription = &$this->testData['testCreateFundAccountWithVariousInputTypeValidation']
+                                ['response']['content']['error']['description'];
+
+        // When card.token_id and card.number are sent together
+
+        $testData['request']['content']['card'] = [
+            "token_id" => "token_JiVrlEXjI6wFfo",
+            "number"   => "2223000250156293"
+        ];
+
+        $responseDescription = 'both card.token_id and card.number should not be sent';
+
+        $this->ba->privateAuth();
+
+        $this->startTest($testData);
+
+        // When card.token and card.number are sent together
+
+        $testData['request']['content']['card'] = [
+            "token"  => "44f3d176b38b4cd2a588f243e3ff7b20",
+            "number" => "2223000250156293"
+        ];
+
+        $responseDescription = 'both card.token and card.number should not be sent';
+
+        $this->startTest($testData);
+
+        // When card.token and card.token_id are sent together
+
+        $testData['request']['content']['card'] = [
+            "token"    => "44f3d176b38b4cd2a588f243e3ff7b20",
+            "token_id" => "token_JiVrlEXjI6wFfo"
+        ];
+
+        $responseDescription = 'both card.token_id and card.token should not be sent';
+
+        $this->startTest($testData);
+
+        // When no exclusive fields are passed
+
+        $testData['request']['content']['card'] = [];
+
+        $responseDescription = 'The card field is required.';
+
+        $this->startTest($testData);
     }
 
     public function testBulkFundAccountCard()

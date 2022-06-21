@@ -37,23 +37,25 @@ class Validator extends Base\Validator
     const MAX_WALLET_ACCOUNT_AMAZON_PAY_AMOUNT = 1000000;
 
     protected static $createRules = [
-        Entity::CUSTOMER_ID                         => 'sometimes|public_id',
-        Entity::CONTACT_ID                          => 'sometimes|public_id',
-        Entity::ACCOUNT_TYPE                        => 'required|string|custom',
-        Entity::VPA                                 => 'filled|associative_array|custom',
-        Entity::BANK_ACCOUNT                        => 'filled|associative_array|custom',
-        Entity::CARD                                => 'filled|associative_array|custom',
-        Entity::WALLET_ACCOUNT                      => 'filled|associative_array|custom',
+        Entity::CUSTOMER_ID                              => 'sometimes|public_id',
+        Entity::CONTACT_ID                               => 'sometimes|public_id',
+        Entity::ACCOUNT_TYPE                             => 'required|string|custom',
+        Entity::VPA                                      => 'filled|associative_array|custom',
+        Entity::BANK_ACCOUNT                             => 'filled|associative_array|custom',
+        Entity::CARD                                     => 'filled|associative_array|custom',
+        Entity::WALLET_ACCOUNT                           => 'filled|associative_array|custom',
         // This is required to even create the card because we need to fill a
         // dummy cvv and that requires network and that requires card number.
         // The other card details are validated as part of card creation.
-        Entity::CARD . '.' . Card\Entity::NUMBER    => 'sometimes:card|required_without:card.token|numeric|luhn|digits_between:12,19',
-        Entity::CARD . '.' . Card\Entity::NAME      => 'sometimes:card|regex:([a-zA-Z-.\' ]+$)|max:100',
-        Entity::IDEMPOTENCY_KEY                     => 'sometimes|string',
+        Entity::CARD . '.' . Card\Entity::NUMBER         => 'sometimes:card|numeric|luhn|digits_between:12,19',
+        Entity::CARD . '.' . Card\Entity::NAME           => 'sometimes:card|regex:([a-zA-Z-.\' ]+$)|max:100',
+        Entity::IDEMPOTENCY_KEY                          => 'sometimes|string',
         //Validation if vault token is received for payout creation
         //If card number is not present then vault token must be there
-        Entity::CARD . '.' . Card\Entity::TOKEN     => 'sometimes:card|required_without:card.number|string',
-        Entity::CARD . '.' . Card\Entity::TOKENISED => 'sometimes:card|bool',
+        Entity::CARD . '.' . Card\Entity::TOKEN          => 'sometimes:card|string',
+        Entity::CARD . '.' . Card\Entity::INPUT_TYPE     => 'sometimes:card|string|in:razorpay_token,service_provider_token,card',
+        Entity::CARD . '.' . Card\Entity::TOKEN_ID       => 'sometimes:card|public_id',
+        Entity::CARD . '.' . Card\Entity::TOKEN_PROVIDER => 'sometimes:card|string'
     ];
 
     protected static $beforeCreateRules = [
@@ -150,14 +152,94 @@ class Validator extends Base\Validator
                 ]);
         }
 
+        $this->validateExclusiveFieldsForCard($attribute, $value);
+
+        $this->validateInputTypeForCard($attribute, $value);
+    }
+
+    public function validateExclusiveFieldsForCard($attribute, $value)
+    {
         //Validating here if token and card number both has been received in the request.
         //There shall be either of them.
         //Validating it here as could not find any inbuilt validator for the use case.
         if ((isset($value[Card\Entity::NUMBER]) === true) and
-            (isset($value[Card\Entity::TOKEN]) === true)) {
+            (isset($value[Card\Entity::TOKEN]) === true))
+        {
             throw new Exception\BadRequestValidationFailureException(
                 'both card.token and card.number should not be sent'
             );
+        }
+
+        //Validating here if token_id and card number both has been received in the request.
+        //There shall be either of them.
+        if ((isset($value[Card\Entity::NUMBER]) === true) and
+            (isset($value[Card\Entity::TOKEN_ID]) === true))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'both card.token_id and card.number should not be sent'
+            );
+        }
+
+        //Validating here if token_id and token both has been received in the request.
+        //There shall be either of them.
+        if ((isset($value[Card\Entity::TOKEN]) === true) and
+            (isset($value[Card\Entity::TOKEN_ID]) === true))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'both card.token_id and card.token should not be sent'
+            );
+        }
+    }
+
+    public function validateInputTypeForCard($attribute, $value)
+    {
+        if (isset($value[Card\Entity::INPUT_TYPE]) === true)
+        {
+            $inputType = $value[Card\Entity::INPUT_TYPE];
+
+            if ((in_array($inputType, [Card\InputType::SERVICE_PROVIDER_TOKEN, Card\InputType::CARD]) === true) and
+                (isset($value[Card\Entity::NUMBER]) === false))
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'card.number should be sent for input type as ' . $inputType
+                );
+            }
+
+            if (($inputType === Card\InputType::RAZORPAY_TOKEN) and
+                (isset($value[Card\Entity::TOKEN_ID]) === false))
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'card.token_id should be sent for input type as ' . $inputType
+                );
+            }
+
+            if ((in_array($inputType, [Card\InputType::SERVICE_PROVIDER_TOKEN, Card\InputType::RAZORPAY_TOKEN]) === true) and
+                (isset($value[Card\Entity::TOKEN_PROVIDER]) === false))
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'card.token_provider should be sent for input type as ' . $inputType
+                );
+            }
+
+            $isExpiryMonthOrYearNotSet = ((isset($value[Card\Entity::EXPIRY_YEAR]) === false) or
+                                          (isset($value[Card\Entity::EXPIRY_MONTH]) === false));
+
+            if ((in_array($inputType, [Card\InputType::SERVICE_PROVIDER_TOKEN]) === true) and
+                ($isExpiryMonthOrYearNotSet === true))
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'card.expiry_year and card.expiry_month are mandatory fields when input type is sent as ' . $inputType
+                );
+            }
+        }
+        else
+        {
+            if (isset($value[Card\Entity::TOKEN_ID]) === true)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'card.input_type should be sent along with card.token_id'
+                );
+            }
         }
     }
 

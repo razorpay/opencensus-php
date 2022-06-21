@@ -2,14 +2,19 @@
 
 namespace RZP\Tests\Functional\Payout;
 
+use App;
+use Mockery;
+
 use RZP\Error\Error;
 use RZP\Models\Payout;
 use RZP\Models\Feature;
 use RZP\Models\Card\Type;
 use RZP\Models\Card\Issuer;
 use RZP\Models\Card\Network;
+use RZP\Constants\Mode as EnvMode;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Payout\WorkflowFeature;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payout\PayoutTrait;
@@ -361,9 +366,10 @@ class CompositePayoutTest extends TestCase
 
     public function testCreateCompositePayoutForNonSavedCardFlow()
     {
-        $this->fixtures->merchant->addFeatures([Feature\Constants::ALLOW_NON_SAVED_CARDS,
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS,
                                                 Feature\Constants::S2S,
-                                                Feature\Constants::PAYOUT_TO_CARDS]);
+                                                Feature\Constants::PAYOUT_NAMESPACE_CHANGES,
+                                                Feature\Constants::ALLOW_NON_SAVED_CARDS]);
 
         $this->fixtures->create('iin', [
             'iin'     => 340169,
@@ -372,14 +378,164 @@ class CompositePayoutTest extends TestCase
             'issuer'  => Issuer::YESB
         ]);
 
+        $this->setMockRazorxTreatment([RazorxTreatment::VAULT_BU_NAMESPACE_MIGRATION    => 'on']);
+
+        $callable = function($route, $method, $input) {
+            $response = [
+                'error'   => '',
+                'success' => true,
+            ];
+
+            switch ($route)
+            {
+                case 'tokenize':
+                    $response['token']       = 'pay2_44f3d176b38b4cd2a588f243e3ff7b20';
+                    $response['fingerprint'] = null;
+                    $response['scheme']      = '2';
+                    break;
+            }
+
+            return $response;
+        };
+
+        $this->mockCardVault($callable);
+
+        $this->app['rzp.mode'] = EnvMode::TEST;
+
+        $ftsMock = Mockery::mock('RZP\Services\FTS\FundTransfer', [$this->app])->makePartial();
+
+        $this->app->instance('fts_fund_transfer', $ftsMock);
+
+        $ftsMock->shouldReceive('shouldAllowTransfersViaFts')
+                ->andReturn([true, 'Dummy']);
+
         $this->ba->privateAuth();
 
-        $response = $this->startTest();
+        $this->startTest();
 
-        $this->assertArrayNotHasKey('tokenised', $response['fund_account']['card']);
+        $card = $this->getDbLastEntity('card');
+
+        $this->assertEquals('pay2_44f3d176b38b4cd2a588f243e3ff7b20', $card['vault_token']);
     }
 
-    public function testCreateCompositePayoutWithTokenisedCard()
+    public function testCreateCompositePayoutForNonSavedCardFlowWithoutInputType()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS,
+                                                Feature\Constants::S2S,
+                                                Feature\Constants::PAYOUT_NAMESPACE_CHANGES,
+                                                Feature\Constants::ALLOW_NON_SAVED_CARDS]);
+
+        $this->fixtures->create('iin', [
+            'iin'     => 340169,
+            'network' => Network::$fullName[Network::MC],
+            'type'    => Type::CREDIT,
+            'issuer'  => Issuer::YESB
+        ]);
+
+        $this->setMockRazorxTreatment([RazorxTreatment::VAULT_BU_NAMESPACE_MIGRATION    => 'on']);
+
+        $callable = function($route, $method, $input) {
+            $response = [
+                'error'   => '',
+                'success' => true,
+            ];
+
+            switch ($route)
+            {
+                case 'tokenize':
+                    $response['token']       = 'pay2_44f3d176b38b4cd2a588f243e3ff7b20';
+                    $response['fingerprint'] = null;
+                    $response['scheme']      = '2';
+                    break;
+            }
+
+            return $response;
+        };
+
+        $this->mockCardVault($callable);
+
+        $this->app['rzp.mode'] = EnvMode::TEST;
+
+        $ftsMock = Mockery::mock('RZP\Services\FTS\FundTransfer', [$this->app])->makePartial();
+
+        $this->app->instance('fts_fund_transfer', $ftsMock);
+
+        $ftsMock->shouldReceive('shouldAllowTransfersViaFts')
+                ->andReturn([true, 'Dummy']);
+
+        $this->ba->privateAuth();
+
+        $testData = &$this->testData['testCreateCompositePayoutForNonSavedCardFlow'];
+
+        unset($testData['request']['content']['fund_account']['card']['input_type']);
+
+        $this->startTest($testData);
+
+        $card = $this->getDbLastEntity('card');
+
+        $this->assertEquals('pay2_44f3d176b38b4cd2a588f243e3ff7b20', $card['vault_token']);
+    }
+
+    public function testCreateCompositePayoutWithNamespace()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS,
+                                                Feature\Constants::S2S,
+                                                Feature\Constants::PAYOUT_NAMESPACE_CHANGES]);
+
+        $this->fixtures->create('iin', [
+            'iin'     => 340169,
+            'network' => Network::$fullName[Network::MC],
+            'type'    => Type::CREDIT,
+            'issuer'  => Issuer::YESB
+        ]);
+
+        $this->setMockRazorxTreatment([RazorxTreatment::VAULT_BU_NAMESPACE_MIGRATION    => 'on']);
+
+        $callable = function($route, $method, $input) {
+            $response = [
+                'error'   => '',
+                'success' => true,
+            ];
+
+            switch ($route)
+            {
+                case 'tokenize':
+                    $response['token']       = '0c0e7db24cce4512bc9c71f2dbec7075';
+                    $response['fingerprint'] = '5707cebd2f17c9cb2154ecc42bd7e0c0';
+                    $response['scheme']      = '0';
+                    break;
+            }
+
+            return $response;
+        };
+
+        $this->mockCardVault($callable);
+
+        $this->app['rzp.mode'] = EnvMode::TEST;
+
+        $ftsMock = Mockery::mock('RZP\Services\FTS\FundTransfer', [$this->app])->makePartial();
+
+        $this->app->instance('fts_fund_transfer', $ftsMock);
+
+        $ftsMock->shouldReceive('shouldAllowTransfersViaFts')
+                ->andReturn([true, 'Dummy']);
+
+        $this->ba->privateAuth();
+
+        $testData = &$this->testData['testCreateCompositePayoutForNonSavedCardFlow'];
+
+        unset($testData['request']['content']['fund_account']['card']['input_type']);
+
+        unset($testData['response']['content']['fund_account']['card']['input_type']);
+
+        $this->startTest($testData);
+
+        $card = $this->getDbLastEntity('card');
+
+        $this->assertEquals('0c0e7db24cce4512bc9c71f2dbec7075', $card['vault_token']);
+    }
+
+    public function testCreateCompositePayoutToThirdPartyTokenisedCardThroughBankRails()
     {
         $this->fixtures->merchant->addFeatures([Feature\Constants::ALLOW_NON_SAVED_CARDS,
                                                 Feature\Constants::S2S,
@@ -395,6 +551,130 @@ class CompositePayoutTest extends TestCase
         $this->ba->privateAuth();
 
         $this->startTest();
+    }
+
+    public function testCreateCompositePayoutToRzpTokenisedCardThroughBankRails()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::ALLOW_NON_SAVED_CARDS,
+                                                Feature\Constants::S2S,
+                                                Feature\Constants::PAYOUT_TO_CARDS]);
+
+        $this->fixtures->create('iin', [
+            'iin'     => 340169,
+            'network' => Network::$fullName[Network::MC],
+            'type'    => Type::CREDIT,
+            'issuer'  => Issuer::YESB
+        ]);
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function testCreateCompositePayoutWithTokenisedCardFromOtherTSP()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS,
+                                                Feature\Constants::S2S,
+                                                Feature\Constants::PAYOUT_NAMESPACE_CHANGES,
+                                                Feature\Constants::ALLOW_NON_SAVED_CARDS]);
+
+        $this->fixtures->create('iin', [
+            'iin'     => 416021,
+            'network' => Network::$fullName[Network::MC],
+            'type'    => Type::CREDIT,
+            'issuer'  => Issuer::YESB
+        ]);
+
+        $this->setMockRazorxTreatment([RazorxTreatment::VAULT_BU_NAMESPACE_MIGRATION    => 'on']);
+
+        $callable = function($route, $method, $input) {
+            $response = [
+                'error'   => '',
+                'success' => true,
+            ];
+
+            switch ($route)
+            {
+                case 'tokenize':
+                    $response['token']       = '0c0e7db24cce4512bc9c71f2dbec7075';
+                    $response['fingerprint'] = '5707cebd2f17c9cb2154ecc42bd7e0c0';
+                    $response['scheme']      = '0';
+                    break;
+            }
+
+            return $response;
+        };
+
+        $this->mockCardVault($callable);
+
+        $this->app['rzp.mode'] = EnvMode::TEST;
+
+        $ftsMock = Mockery::mock('RZP\Services\FTS\FundTransfer', [$this->app])->makePartial();
+
+        $this->app->instance('fts_fund_transfer', $ftsMock);
+
+        $ftsMock->shouldReceive('shouldAllowTransfersViaFts')
+                ->andReturn([true, 'Dummy']);
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals('service_provider_token', $response['fund_account']['card']['input_type']);
+
+        $card = $this->getDbLastEntity('card');
+
+        $this->assertEquals('0c0e7db24cce4512bc9c71f2dbec7075', $card['vault_token']);
+    }
+
+    public function testCreateCompositePayoutForTokenisedRzpSavedCardFlow()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS,
+                                                Feature\Constants::S2S,
+                                                Feature\Constants::PAYOUT_NAMESPACE_CHANGES,
+                                                Feature\Constants::ALLOW_NON_SAVED_CARDS]);
+
+        $this->fixtures->create('contact', ['id' => '1000000contact', 'name' => 'Chirag']);
+
+        $this->fixtures->create('card', [
+            'id'                 => '1000000010card',
+            'expiry_month'       => 12,
+            'expiry_year'        => 2028,
+            'iin'                => '416021',
+            'last4'              => '3002',
+            'length'             => '16',
+            'network'            => 'Visa',
+            'type'               => 'debit',
+            'issuer'             => 'ICIC',
+            'vault'              => 'visa',
+            'vault_token'        => 'JDzXk6S3CAjUn8',
+            'global_fingerprint' => 'V0010014618091560597265901338',
+            'country'            => 'IN',
+            'token_expiry_month' => 12,
+            'token_expiry_year'  => 2028,
+            'token_iin'          => '461015172',
+            'sub_type'           => 'consumer',
+            'category'           => 'Platinum'
+        ]);
+
+        $this->fixtures->create('token', ['id' => '100000000token', 'method' => 'card', 'card_id' => '1000000010card']);
+
+        $app = App::getFacadeRoot();
+
+        $this->app['rzp.mode'] = EnvMode::TEST;
+
+        $ftsMock = Mockery::mock('RZP\Services\FTS\FundTransfer', [$app])->makePartial();
+
+        $this->app->instance('fts_fund_transfer', $ftsMock);
+
+        $ftsMock->shouldReceive('shouldAllowTransfersViaFts')
+                ->andReturn([true, 'Dummy']);
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals('razorpay_token', $response['fund_account']['card']['input_type']);
     }
 
     public function testCreateCompositePayoutForCred()

@@ -1252,9 +1252,14 @@ class Constants
 
     /**
      * Feature flag to allow the transition from older flow to newer flow
-     * where standalone payout to cards is not allowed
+     * for payouts to cards tokenisation
      */
-    const ALLOW_NON_SAVED_CARDS   = 'allow_non_saved_cards';
+    const ALLOW_NON_SAVED_CARDS = 'allow_non_saved_cards';
+
+    /**
+     * Feature flag to allow bu_namespace changes for payouts to cards
+     */
+    const PAYOUT_NAMESPACE_CHANGES = 'payout_namespace_changes';
 
     /**
      * Feature flag to show entire error description for each row in error csv file generated in case
@@ -1846,6 +1851,7 @@ class Constants
         self::NO_DOC_ONBOARDING               => true,
         self::SUBM_NO_DOC_ONBOARDING          => true,
         self::ALLOW_NON_SAVED_CARDS           => true,
+        self::PAYOUT_NAMESPACE_CHANGES        => true,
         self::ALLOW_COMPLETE_ERROR_DESC       => true,
         self::ACCEPT_LOWER_AMOUNT             => true,
         self::SET_VA_DEFAULT_EXPIRY           => true,

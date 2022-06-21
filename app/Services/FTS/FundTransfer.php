@@ -5,8 +5,10 @@ namespace RZP\Services\FTS;
 use App;
 use Carbon\Carbon;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
 use RZP\Constants\Entity;
 use RZP\Constants\Timezone;
+use RZP\Models\Card as Card;
 use RZP\Models\Payout\Status;
 use RZP\Http\Request\Requests;
 use RZP\Models\Admin\ConfigKey;
@@ -518,13 +520,36 @@ class FundTransfer extends Base
             }
         }
 
-        if (($this->fta->merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::ALLOW_NON_SAVED_CARDS) === true) and
+        if (($this->fta->merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::PAYOUT_NAMESPACE_CHANGES) === true) and
             ($this->fta->getSourceType() === Constants::PAYOUT))
         {
-            $request[Constants::ACCOUNT][Constants::CARD][Constants::TOKENISED] = $this->fta->card->isTokenPan();
+            $tokenised = ($this->fta->card->isTokenPan() === true) ? true : $this->fta->card->isNetworkTokenisedCard();
+
+            $request[Constants::ACCOUNT][Constants::CARD][Constants::TOKENISED] = $tokenised;
+
+            $this->setNamespacesInRequest($request[Constants::ACCOUNT][Constants::CARD]);
         }
 
         return $request;
+    }
+
+    protected function setNamespacesInRequest(&$card)
+    {
+        if ($this->fta->card->isTokenPan() === true)
+        {
+            $card[Constants::BU_NAMESPACE] = Card\BuNamespace::RAZORPAYX_TOKEN_PAN;
+        }
+        else
+        {
+            if ($this->fta->card->isNetworkTokenisedCard() === true)
+            {
+                $card[Constants::BU_NAMESPACE] = null;
+            }
+            else
+            {
+                $card[Constants::BU_NAMESPACE] = Card\BuNamespace::RAZORPAYX_NON_SAVED_CARDS;
+            }
+        }
     }
 
     /**

@@ -16477,6 +16477,90 @@ class PayoutTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testCreatePayoutToRzpTokenisedCardThroughBankRails()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::ALLOW_NON_SAVED_CARDS]);
+
+        $this->fixtures->create('contact', ['id' => '1000000contact', 'name' => 'Mr. John']);
+
+        $this->fixtures->create('card', [
+            'id'                 => '1000000010card',
+            'expiry_month'       => 12,
+            'expiry_year'        => 2028,
+            'iin'                => '437551',
+            'last4'              => '3002',
+            'length'             => '16',
+            'network'            => 'Visa',
+            'type'               => 'credit',
+            'issuer'             => 'SBIN',
+            'vault'              => 'visa',
+            'trivia'             => null,
+            'vault_token'        => 'JDzXk6S3CAjUn8',
+            'global_fingerprint' => 'V0010014618091560597265901338',
+            'country'            => 'IN',
+            'token_expiry_month' => 12,
+            'token_expiry_year'  => 2028,
+            'token_iin'          => '448966524',
+            'sub_type'           => 'consumer',
+            'category'           => 'Platinum'
+        ]);
+
+        $this->fixtures->create(
+            'fund_account',
+            [
+                'id'           => '100000000002fa',
+                'account_type' => 'card',
+                'source_id'    => '1000000contact',
+                'source_type'  => 'contact',
+                'account_id'   => '1000000010card',
+                'active'       => 1,
+            ]);
+
+        $this->startTest();
+    }
+
+    public function testCreatePayoutToThirdPartyTokenisedCardThroughBankRails()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::ALLOW_NON_SAVED_CARDS]);
+
+        $this->fixtures->create('contact', ['id' => '1000000contact', 'name' => 'Mr. John']);
+
+        $this->fixtures->create('card', [
+            'id'                 => '1000000010card',
+            'expiry_month'       => 12,
+            'expiry_year'        => 2028,
+            'iin'                => '437551',
+            'last4'              => 'xxxx',
+            'length'             => '16',
+            'network'            => 'Visa',
+            'type'               => 'credit',
+            'issuer'             => 'SBIN',
+            'vault'              => 'rzpvault',
+            'trivia'             => '1',
+            'token_expiry_month' => 12,
+            'token_expiry_year'  => 2028,
+            'token_iin'          => '448966524',
+            'sub_type'           => 'consumer',
+            'category'           => 'Platinum'
+        ]);
+
+        $this->fixtures->create(
+            'fund_account',
+            [
+                'id'           => '100000000002fa',
+                'account_type' => 'card',
+                'source_id'    => '1000000contact',
+                'source_type'  => 'contact',
+                'account_id'   => '1000000010card',
+                'active'       => 1,
+            ]);
+
+        $testData = &$this->testData['testCreatePayoutToRzpTokenisedCardThroughBankRails'];
+
+        $this->startTest($testData);
+    }
+
+
     // Following test depends on configs. Adding/removing configs defined in Models/FundTransfer/M2P/M2PConfigs file can fail these.
     // We need to make changes to the test sample data to pass them
     public function testCreateM2PPayoutForDebitCardWithUpperCaseCardMode()

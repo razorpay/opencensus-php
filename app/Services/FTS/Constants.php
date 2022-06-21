@@ -66,6 +66,8 @@ final class Constants
 
     const TOKENISED                      = 'tokenised';
 
+    const BU_NAMESPACE                   = 'bu_namespace';
+
     const SOURCE_TYPE                    = 'source_type';
 
     const CREDENTIALS                    = 'credentials';
