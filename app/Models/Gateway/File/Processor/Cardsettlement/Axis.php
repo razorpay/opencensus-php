@@ -280,18 +280,7 @@ class Axis extends Base
 
                     $rrn = $rrns[$settlementPayment->getId()]['rrn'] ?? '';
 
-                    $notes = array_slice($settlementPayment->getNotes()->toArray(), 0, 2);
-
-//                    $gst = isset($notes['gst']) === true ? $notes['gst'] : '';
-//
-//                    $vendorName = isset($notes['vendor_name']) === true ? $notes['vendor_name'] : '';
-
-                    $notes1 = reset($notes);
-                    next($notes);
-                    $notes2 = current($notes);
-
-                    $notes1 = $notes1 !== false ? $notes1 : '';
-                    $notes2 = $notes2 !== false ? $notes2 : '';
+                    list($notes1, $notes2, $paymentIdRefNum) = $this->parseNotes($settlementPayment->getNotes());
 
                     $cardToken = $this->getCardToken($settlementPayment->card);
 
@@ -311,7 +300,7 @@ class Axis extends Base
                         $this->getAuthCode($settlementPayment) . self::PIPE_SEPARATOR .
                         $this->getCardTokenBIN($cardToken) . self::PIPE_SEPARATOR .
                         '5' . self::PIPE_SEPARATOR .
-                        $settlementPayment->getId() . self::PIPE_SEPARATOR .
+                        $paymentIdRefNum . self::PIPE_SEPARATOR .
                         $notes1 . ' ' . $notes2;
                 }
                 catch (\Throwable $ex)
@@ -338,17 +327,7 @@ class Axis extends Base
 
                     $rrn = $rrns[$settlementRefunds->payment->getId()]['rrn'] ?? '';
 
-                    $notes = $settlementRefunds->payment->getNotes()->toArray();
-
-//                    $gst = isset($notes['gst']) === true ? $notes['gst'] : '';
-//
-//                    $vendorName = isset($notes['vendor_name']) === true ? $notes['vendor_name'] : '';
-
-                    $notes1 = reset($notes);
-                    $notes2 = reset($notes);
-
-                    $notes1 = $notes1 !== false ? $notes1 : '';
-                    $notes2 = $notes2 !== false ? $notes2 : '';
+                    list($notes1, $notes2, $paymentIdRefNum) = $this->parseNotes($settlementRefunds->payment->getNotes());
 
                     $cardToken = $this->getCardToken($settlementRefunds->payment->card);
 
@@ -368,7 +347,7 @@ class Axis extends Base
                         '' . self::PIPE_SEPARATOR .
                         $this->getCardTokenBIN($cardToken) . self::PIPE_SEPARATOR .
                         '6' . self::PIPE_SEPARATOR .
-                        $settlementRefunds->getPaymentId() . self::PIPE_SEPARATOR .
+                        $paymentIdRefNum . self::PIPE_SEPARATOR .
                         $notes1 . ' ' . $notes2;
 
                 }
@@ -410,6 +389,28 @@ class Axis extends Base
     protected function getFormattedAmount($amount)
     {
         return number_format($amount / 100, 2, '.', '');
+    }
+
+    protected function parseNotes($notes)
+    {
+        // We are expecting 3 values in notes
+        // 1. GST
+        // 2. Corporate Name
+        // 3. Payment ref num
+        $notes = array_slice($notes->toArray(), 0, 3);
+
+        $notes1 = reset($notes);
+        next($notes);
+        $notes2 = current($notes);
+        next($notes);
+        $paymentIdRefNum = current($notes);
+
+        $notes1 = $notes1 !== false ? $notes1 : '';
+        $notes2 = $notes2 !== false ? $notes2 : '';
+
+        $paymentIdRefNum = $paymentIdRefNum !== false ? $paymentIdRefNum : '';
+
+        return array($notes1, $notes2, $paymentIdRefNum);
     }
 
     protected function getRrnNumber($data)

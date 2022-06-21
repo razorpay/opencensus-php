@@ -86,6 +86,7 @@ class GatewayRefundFileTest extends TestCase
             'notes' => [
                 'GST' => 'GST 3',
                 'Corporate Name' => 'Corp 1',
+                'paymentRefId' => 'paymentRefId_1'
             ],
         ])->getId();
 
@@ -95,6 +96,7 @@ class GatewayRefundFileTest extends TestCase
             'notes' => [
                 'GST' => 'GST 2',
                 'Corporate Name' => 'Corp 2',
+                'paymentRefId' => 'paymentRefId_2'
             ],
         ])->getId();
 
@@ -104,14 +106,9 @@ class GatewayRefundFileTest extends TestCase
             'notes' => [
                 'GST' => 'GST2 1',
                 'Corporate Name' => 'Corp 3',
+                'paymentRefId' => 'paymentRefId_3'
             ],
         ])->getId();
-
-        $this->fixtures->edit('payment',$paymentId1,['captured_at'=>$capturedAt]);
-
-        $this->fixtures->edit('payment',$paymentId2,['captured_at'=>$capturedAt]);
-
-        $this->fixtures->edit('payment',$paymentId3,['captured_at'=>$capturedAt]);
 
         $this->fixtures->edit('payment',$paymentId1,['reference_2'=>'abcdefgh']);
 
