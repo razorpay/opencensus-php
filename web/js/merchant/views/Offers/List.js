@@ -35,13 +35,13 @@ const EmptyComponent = () => (
 export default class OffersList extends ListContainer {
   render() {
     const { user } = this.props;
-    const { ADMIN, OWNER } = rolesList;
+    const { ADMIN, OWNER, SELLERAPP } = rolesList;
     return (
       <>
         <DataTable
           title="Offers"
           columns={[
-            [ADMIN, OWNER].includes(user.role) ? offerId : OfferIdWithoutLink,
+            [ADMIN, OWNER, SELLERAPP].includes(user.role) ? offerId : OfferIdWithoutLink,
             offerTitle,
             promotionType,
             paymentMethod,
