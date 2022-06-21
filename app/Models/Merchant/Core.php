@@ -2407,7 +2407,7 @@ class Core extends Base\Core
         $this->repo->merchant_detail->saveOrFail($merchant->merchantDetail);
     }
 
-    protected function addOrClearRiskTagAndSetFraudType($merchant, $riskAttributes, $action)
+    public function addOrClearRiskTagAndSetFraudType($merchant, $riskAttributes, $action)
     {
         $merchantTags = $merchant->tagNames();
 

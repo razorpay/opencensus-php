@@ -24,6 +24,7 @@ use RZP\Models\Dispute\Phase;
 use RZP\Exception\BadRequestValidationFailureException;
 use \RZP\Models\Merchant\FreshdeskTicket\Processor\WebsiteCheckerReply as WebsiteCheckerReply;
 use RZP\Models\Merchant\FreshdeskTicket\Constants as FreshdeskConstants;
+use RZP\Models\RiskWorkflowAction\Constants as RiskWorkflowActionConstants;
 
 // TODO: add traces
 
@@ -85,9 +86,12 @@ class Service extends Base\Service
 
         if ($merchant->isFundsOnHold() === false)
         {
-            $this->repo->transactionOnLiveAndTest(function() use ($merchant)
+            $this->repo->transactionOnLiveAndTest(function() use ($input, $merchant)
             {
                 $merchant->holdFunds();
+
+                $riskAttributes = $input["tags"];
+                (new Merchant\Core)->addOrClearRiskTagAndSetFraudType($merchant, $riskAttributes, Merchant\Action::HOLD_FUNDS);
 
                 $this->repo->saveOrFail($merchant);
             });
