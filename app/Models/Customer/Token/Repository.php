@@ -862,6 +862,7 @@ class Repository extends Base\Repository
                 AND (c.international = 0 OR c.international IS NULL)
                 AND (t.expired_at > %d OR t.expired_at IS NULL)
                 AND (t.created_date > '%s' AND c.created_date > '%s')
+                AND t.deleted_at IS NULL
                 AND t.id > '%s'
             ORDER BY t.id ASC
             LIMIT %d
