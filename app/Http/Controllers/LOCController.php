@@ -2,6 +2,7 @@
 
 namespace RZP\Http\Controllers;
 
+use Config;
 use Request;
 use ApiResponse;
 use RZP\Error\Error;
@@ -14,6 +15,7 @@ use RZP\Trace\TraceCode;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Mail;
 use RZP\Http\Request\Requests as RzpRequest;
+use RZP\Models\Admin\Permission\Category as PermissionCategory;
 
 class LOCController extends Controller
 {
@@ -336,9 +338,10 @@ class LOCController extends Controller
         }
 
         $headers = [
-            'X-Admin-Id'    => $this->ba->getAdmin()->getId() ?? '',
-            'X-Admin-Email' => $this->ba->getAdmin()->getEmail() ?? '',
-            'X-Auth-Type'   => 'admin'
+            'X-Admin-Id'          => $this->ba->getAdmin()->getId() ?? '',
+            'X-Admin-Email'       => $this->ba->getAdmin()->getEmail() ?? '',
+            'X-Admin-Permissions' => $this->getCapitalPermissionsStringForAdmin(),
+            'X-Auth-Type'         => 'admin'
         ];
 
         $response = $this->sendRequestAndParseResponse($url, $body, $headers);
@@ -357,9 +360,10 @@ class LOCController extends Controller
         ]);
 
         $headers = [
-            'X-Admin-Id'    => $this->ba->getAdmin()->getId() ?? '',
-            'X-Admin-Email' => $this->ba->getAdmin()->getEmail() ?? '',
-            'X-Auth-Type'   => 'admin'
+            'X-Admin-Id'          => $this->ba->getAdmin()->getId() ?? '',
+            'X-Admin-Email'       => $this->ba->getAdmin()->getEmail() ?? '',
+            'X-Auth-Type'         => 'admin',
+            'X-Admin-Permissions' => $this->getCapitalPermissionsStringForAdmin(),
         ];
 
         return $this->sendRequestAndParseResponse($url, $body, $headers);
@@ -515,5 +519,19 @@ class LOCController extends Controller
         }
 
         return ApiResponse::json(['success' => true]);
+    }
+
+    protected function getCapitalPermissionsStringForAdmin()
+    {
+        $permissions = $this->ba->getAdmin()->getPermissionsList();
+        $permissionsString = "";
+        $permissionCategories = Config::get('heimdall.permissions');
+        $capitalPermissions = $permissionCategories[PermissionCategory::RAZORPAY_CAPITAL];
+        foreach ($permissions as $permission) {
+            if (isset($capitalPermissions[$permission])) {
+                $permissionsString .= $permission . ":";
+            }
+        }
+        return substr($permissionsString, 0, -1);
     }
 }
