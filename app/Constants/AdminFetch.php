@@ -2235,6 +2235,19 @@ class AdminFetch
                 'type'            => [],
             ],
 
+            Entity::CREDIT_TRANSFER => [
+                'merchant_id'    => Fetch::FIELD_MERCHANT_ID,
+                'balance_id'     => Fetch::FIELD_BALANCE_ID,
+                'utr'            => [
+                    Fetch::LABEL   => 'UTR',
+                    Fetch::TYPE    => Fetch::TYPE_STRING,
+                ],
+                'transaction_id' => [
+                    Fetch::LABEL   => 'Transaction Id',
+                    Fetch::TYPE    => Fetch::TYPE_STRING,
+                ],
+            ],
+
             Entity::CREDITS => [
                 'merchant_id' => Fetch::FIELD_MERCHANT_ID,
                 'type' => [
@@ -3767,6 +3780,7 @@ class AdminFetch
                         'refund',
                         'settlement',
                         'adjustment',
+                        'credit_transfer',
                         'transfer',
                         'reversal',
                         'payout',
