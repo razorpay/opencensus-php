@@ -53,4 +53,11 @@ class Service extends Base\Service
 
         return $response;
     }
+
+    public function fetchAll(array $input): array
+    {
+        $response = $this->processor->fetchAll($input);
+
+        return $response;
+    }
 }

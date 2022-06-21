@@ -10,6 +10,7 @@ use RZP\Tests\P2p\Service\Base\Traits\EventsTrait;
 use RZP\Tests\P2p\Service\Base\Traits\MetricsTrait;
 use RZP\Models\P2p\Base\Metrics\GatewayActionMetric;
 use RZP\Tests\P2p\Service\Base\Traits\TransactionTrait;
+use RZP\Exception\BadRequestValidationFailureException;
 
 class DeviceTest extends TestCase
 {
@@ -367,5 +368,53 @@ class DeviceTest extends TestCase
             GatewayActionMetric::DIMENSION_STATUS       => 'failed',
             GatewayActionMetric::DIMENSION_TYPE         => 'processed',
         ], 1);
+    }
+
+    public function testFetchDeviceByContact()
+    {
+        $helper = $this->getDeviceHelper()->setMerchantOnAuth(true);
+
+        $device = $this->fixtures->device(self::DEVICE_1);
+
+        $response = $helper->fetchAll([
+                        'contact'  => $device->getContact(),
+                    ]);
+
+        $this->assertEquals($response['items'][0]['contact'], $device->getContact());
+
+    }
+
+    public function testFetchDeviceByContactPostDeRegister()
+    {
+        $helper = $this->getDeviceHelper();
+
+        $helper->withSchemaValidated();
+
+        $this->mockActionContentFunction([
+                 Device\Action::DEREGISTER => function(& $content)
+                 {
+                     $this->assertArrayHasKey('payload', $content);
+                 }]);
+
+        $helper->deregisterDevice();
+
+        $helper = $this->getDeviceHelper()->setMerchantOnAuth(true);
+
+        $response = $helper->fetchAll([
+                          'contact'  => $this->getDbLastDevice()->toArray()['contact'],
+                          ]);
+
+        $this->assertEquals($response['items'][0]['contact'], $this->getDbLastDevice()->toArray()['contact']);
+    }
+
+    public function testFetchDeviceWithoutContactViaMerchant()
+    {
+        $helper = $this->getDeviceHelper()->setMerchantOnAuth(true);
+
+        $this->expectException(BadRequestValidationFailureException::class);
+
+        $device = $this->fixtures->device(self::DEVICE_1);
+
+        $response = $helper->fetchAll([]);
     }
 }

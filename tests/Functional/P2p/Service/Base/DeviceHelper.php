@@ -110,4 +110,15 @@ class DeviceHelper extends P2pHelper
 
         return $this->post($request);
     }
+
+    public function fetchAll(array $content = [])
+    {
+        $this->validationJsonSchemaPath = 'devices/fetchAll';
+
+        $request = $this->request('devices');
+
+        $this->content($request, [], $content);
+
+        return $this->get($request);
+    }
 }

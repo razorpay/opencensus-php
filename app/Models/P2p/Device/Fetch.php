@@ -14,12 +14,18 @@ class Fetch extends BaseFetch
             Entity::CUSTOMER_ID => 'sometimes|alpha_num|size:14',
             Entity::MERCHANT_ID => 'sometimes|alpha_num',
         ],
+        AuthType::PRIVATE_AUTH=> [
+            Entity::CONTACT     => 'required|string|max:12',
+        ],
     ];
 
     const ACCESSES = [
         AuthType::PRIVILEGE_AUTH => [
             Entity::CONTACT,
             Entity::CUSTOMER_ID,
+        ],
+        AuthType::PRIVATE_AUTH =>[
+            Entity::CONTACT,
         ],
     ];
 }

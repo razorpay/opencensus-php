@@ -6,6 +6,7 @@ use RZP\Exception;
 use RZP\Models\P2p\Vpa;
 use RZP\Models\P2p\Base;
 use RZP\Models\P2p\Device\RegisterToken;
+use RZP\Models\P2p\Base\Libraries\Context;
 
 class Validator extends Base\Validator
 {
@@ -23,6 +24,7 @@ class Validator extends Base\Validator
     protected static $updateWithActionRules;
     protected static $restoreDeviceRules;
     protected static $reassignCustomerRules;
+    protected static $fetchAllRules;
 
     public function rules()
     {
@@ -203,6 +205,21 @@ class Validator extends Base\Validator
             Entity::CUSTOMER_ID     => 'required|string|regex:/cust_(\.*){14}/',
             'forced'                => 'sometimes|boolean|in:0,1',
         ]);
+
+        return $rules;
+    }
+
+    public function makeFetchAllRules()
+    {
+        $rules = $this->makeRules();
+
+        // restrict fetch all via only device id in merchant context
+        if($this->context === Context::MERCHANT)
+        {
+            $rules = $this->makeRules([
+              Entity::CONTACT   => 'string|required|regex:/91(\d*){10}/',
+            ]);
+        }
 
         return $rules;
     }

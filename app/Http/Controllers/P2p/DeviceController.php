@@ -57,6 +57,15 @@ class DeviceController extends Controller
         return $this->response($response);
     }
 
+    public function fetchAll()
+    {
+        $input = $this->request()->all();
+
+        $response = $this->service->fetchAll($input);
+
+        return $this->response($response);
+    }
+
     public function updateWithAction()
     {
         $input['id'] = $this->request()->route('device_id');

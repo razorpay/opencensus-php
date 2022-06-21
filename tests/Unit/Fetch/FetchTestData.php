@@ -683,11 +683,12 @@ return [
     E::ORDER => [],
 
     E::P2P_DEVICE => [
-        Type::PRIVILEGE_AUTH  => [
+        Type::PRIVATE_AUTH  => [
             [
                 'contact'   => '919876543210',
             ],
         ],
+        Type::PRIVILEGE_AUTH  => [],
     ],
 
     E::P2P_DEVICE_TOKEN => [],

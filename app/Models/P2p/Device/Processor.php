@@ -250,4 +250,13 @@ class Processor extends Base\Processor
             Vpa\Entity::VPA                 => $defaultVpa ? $defaultVpa->toArrayPublic() : null,
         ];
     }
+
+    public function fetchAll(array $input): array
+    {
+        $this->initialize(Action::FETCH_ALL, $input, true);
+
+        $entities = $this->core->fetchAll($input);
+
+        return $entities->toArrayPublic();
+    }
 }

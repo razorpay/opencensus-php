@@ -280,6 +280,13 @@ final class P2pRoute
                 'DeviceController@updateWithAction'
             ],
 
+        Requests::P2P_MERCHANT_DEVICES_FETCH_ALL =>
+            [
+                'get',
+                'merchant/devices',
+                'DeviceController@fetchAll'
+            ],
+
         /************* Mandates **************/
         Requests::P2P_CUSTOMER_MANDATE_FETCH =>
             [
@@ -423,6 +430,7 @@ final class P2pRoute
     public static $private = [
         Requests::P2P_MERCHANT_BENEFICIARY_VALIDATE,
         Requests::P2P_MERCHANT_DEVICE_UPDATE_WITH_ACTION,
+        Requests::P2P_MERCHANT_DEVICES_FETCH_ALL,
     ];
 
     public static $routePermission = [];
