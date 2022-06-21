@@ -13,6 +13,8 @@ export default function ReferralBox({
   partnershipForXEnabled,
 }) {
   const [productType, setProductType] = useState('');
+  const pgReferralLink = referralData?.[PRODUCT_TYPE.PG]?.url ?? '';
+  const bankingReferralLink = referralData?.[PRODUCT_TYPE.X]?.url ?? '';
 
   const getCurrentProduct = () => {
     if (productType === PRODUCT_TYPE.PG) {
@@ -71,7 +73,7 @@ export default function ReferralBox({
             accounts who signs up with this link.
           </p>
           <SocialShareGroup
-            referralUrl={referralData[PRODUCT_TYPE.PG].url}
+            referralUrl={pgReferralLink}
             tracking={tracking}
             product={PRODUCT_TYPE.PG}
             partnerID={partnerID}
@@ -92,7 +94,7 @@ export default function ReferralBox({
         >
           {productType === PRODUCT_TYPE.PG ? (
             <SocialShareGroup
-              referralUrl={referralData[productType].url}
+              referralUrl={pgReferralLink}
               tracking={tracking}
               product={PRODUCT_TYPE.PG}
               partnerID={partnerID}
@@ -109,7 +111,7 @@ export default function ReferralBox({
         >
           {productType === PRODUCT_TYPE.X ? (
             <SocialShareGroup
-              referralUrl={referralData[productType].url}
+              referralUrl={bankingReferralLink}
               tracking={tracking}
               product={PRODUCT_TYPE.X}
               partnerID={partnerID}
