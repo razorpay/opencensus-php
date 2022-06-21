@@ -1561,6 +1561,10 @@ class Validator extends Base\Validator
             return;
         }
 
+        // replace underscore with '-' as this is php bug and which consider valid url as invalid if it has a underscore
+        // https://bugs.php.net/bug.php?id=64948
+        $value = str_replace('_', "-", $value);
+
         if (filter_var($value, FILTER_VALIDATE_URL) === false) {
 
             $host = parse_url($value, PHP_URL_HOST);
