@@ -34,7 +34,7 @@ class FreePayout
     const FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT             = 'free_direct_account_payouts_count';
 
     // Default free payouts supported modes.
-    const DEFAULT_FREE_PAYOUTS_SUPPORTED_MODES          = [Mode::IMPS, Mode::NEFT, Mode::RTGS, Mode::UPI];
+    const DEFAULT_FREE_PAYOUTS_SUPPORTED_MODES          = [Mode::IMPS, Mode::NEFT, Mode::RTGS, Mode::UPI, Mode::IFT];
 
     public function getFreePayoutsKeyAndDefaultCount(Balance\Entity $balance)
     {

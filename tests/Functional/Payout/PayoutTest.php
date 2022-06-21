@@ -14532,63 +14532,30 @@ class PayoutTest extends OAuthTestCase
         return $this->makeRequestAndGetContent($request);
     }
 
-    // tests for va to va transfers using creditTransfer
-    public function testBlockBankingVAToNonBankingVAPayouts()
+    protected function setupSourceForVaToVaPayoutsWithProvidedAccountNumber($accountNumber)
     {
-        $ledgerSnsPayloadArray = [];
-
-        $this->mockLedgerSns(0, $ledgerSnsPayloadArray);
-
-        // setting up source VA as Yes Bank Nodal Account VA
-        $this->bankAccount->setAccountNumber("7878780111222");
+        $this->bankAccount->setAccountNumber($accountNumber);
         $this->bankAccount->save();
-        $this->bankingBalance->setAccountNumber("7878780111222");
+
+        $this->bankingBalance->setAccountNumber($accountNumber);
         $this->bankingBalance->save();
+
         $this->fixtures->merchant->addFeatures([Feature\Constants::HANDLE_VA_TO_VA_PAYOUT]);
         $this->fixtures->merchant->activate();
-
-        $fundAccount = $this->createFundAccountOfNonBankingVA();
-
-        $testData = & $this->testData[__FUNCTION__];
-        $testData['request']['content']['fund_account_id'] = $fundAccount['id'];
-
-        $this->ba->privateAuth();
-
-        $this->startTest($testData);
     }
 
-    // tests for va to va transfers using creditTransfer
-    public function testBlockVAtoVAPayoutsBetweenCurrentAndNodalVirtualAccounts()
+    protected function setupDestinationForVaToVaPayoutsWithProvidedFundAccount($fundAccount)
     {
-        $ledgerSnsPayloadArray = [];
-
-        $this->mockLedgerSns(0, $ledgerSnsPayloadArray);
-
-        // setting up source VA as Yes Bank Nodal Account VA
-        $this->bankAccount->setAccountNumber("7878780111222");
-        $this->bankAccount->save();
-        $this->bankingBalance->setAccountNumber("7878780111222");
-        $this->bankingBalance->save();
-        $this->fixtures->merchant->addFeatures([Feature\Constants::HANDLE_VA_TO_VA_PAYOUT]);
-        $this->fixtures->merchant->activate();
-
-        // setting up destination merchant with ICICI current VA
-        // Activate merchant with business_banking flag set to true
+        // Activate merchant with business_banking flag set to true, Using MID 100000Razorpay
         $this->fixtures->merchant->edit('100000Razorpay', ['business_banking' => 1]);
 
         // Creates banking balance
-        $bankingBalance = $this->fixtures->merchant->createBalanceOfBankingType(
-            1000, '100000Razorpay','shared', null);
+        $bankingBalance = $this->fixtures->merchant->createBalanceOfBankingType(1000, '100000Razorpay','shared', null);
 
-        $bankingBalance->setAccountNumber('34340111011');
+        $bankingBalance->setAccountNumber($fundAccount['bank_account']['account_number']);
         $bankingBalance->save();
 
-        $fundAccount = $this->createFundAccountOfIciciCurrentVA();
-
-        $fundAccountId = $fundAccount['id'];
-
         // We shall setup a virtual account and a bank account that will act as a destination account
-        // Using MID 100000Razorpay
         $destinationVirtualAccount = $this->fixtures->create('virtual_account',
             [
                 'merchant_id' => '100000Razorpay',
@@ -14609,7 +14576,63 @@ class PayoutTest extends OAuthTestCase
                 'bank_account_id'   => $destinationBankAccount['id']
             ]);
 
+        return $bankingBalance;
+    }
+
+    protected function whitelistDestinationMerchantForVaToVaPayouts($merchantId)
+    {
+        $this->ba->adminAuth();
+
+        $this->makeRequestAndGetContent([
+            'method'  => 'PUT',
+            'url'     => '/config/keys',
+            'content' => [
+                Admin\ConfigKey::RX_VA_TO_VA_PAYOUTS_WHITELISTED_DESTINATION_MERCHANTS =>
+                    [
+                        $merchantId
+                    ],
+            ],
+        ]);
+    }
+
+    // tests for va to va transfers using creditTransfer
+    public function testBlockBankingVAToNonBankingVAPayouts()
+    {
+        $ledgerSnsPayloadArray = [];
+
+        $this->mockLedgerSns(0, $ledgerSnsPayloadArray);
+
+        // setting up source VA as Yes Bank Nodal Account VA
+        $this->setupSourceForVaToVaPayoutsWithProvidedAccountNumber("7878780111222");
+
+        $fundAccount = $this->createFundAccountOfNonBankingVA();
+
         $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['content']['fund_account_id'] = $fundAccount['id'];
+
+        $this->ba->privateAuth();
+
+        $this->startTest($testData);
+    }
+
+    // tests for va to va transfers using creditTransfer
+    public function testBlockVAtoVAPayoutsBetweenCurrentAndNodalVirtualAccounts()
+    {
+        $ledgerSnsPayloadArray = [];
+
+        $this->mockLedgerSns(0, $ledgerSnsPayloadArray);
+
+        // setting up source VA as Yes Bank Nodal Account VA
+        $this->setupSourceForVaToVaPayoutsWithProvidedAccountNumber("7878780111222");
+
+        // setting up destination merchant with ICICI current VA
+        $fundAccount = $this->createFundAccountOfIciciCurrentVA();
+
+        $this->setupDestinationForVaToVaPayoutsWithProvidedFundAccount($fundAccount);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $fundAccountId = $fundAccount['id'];
 
         $testData['request']['content']['fund_account_id'] = $fundAccountId;
 
@@ -15366,6 +15389,7 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals($this->bankingBalance->bankingAccount->getPublicId(), $ledgerSnsPayloadArray[2]['identifiers']['banking_account_id']);
     }
 
+    // tests for va to va transfers using creditTransfer
     public function testCreateVaToVaPayoutInLedgerReverseShadowMode()
     {
         $this->app['config']->set('applications.ledger.enabled', false);
@@ -15480,6 +15504,7 @@ class PayoutTest extends OAuthTestCase
 //        $this->assertEquals($finalExpectedSourceBalance, $sourceBalance['balance']);
     }
 
+    // tests for va to va transfers using creditTransfer
     public function testFailedVAToVAPayoutInLedgerReverseShadowMode()
     {
         $this->app['config']->set('applications.ledger.enabled', false);
@@ -15596,6 +15621,75 @@ class PayoutTest extends OAuthTestCase
         $this->assertNotNull($updatedPayout[Payout\Entity::REVERSED_AT]);
 
         $this->assertEquals($updatedPayout[Payout\Entity::AMOUNT] + $updatedPayout[Payout\Entity::FEES], $reversal['amount']);
+    }
+
+    // tests for va to va transfers using creditTransfer
+    public function testFreePayoutsForVaToVaPayouts()
+    {
+        // setting up source VA as Yes Bank Nodal Account VA
+        $this->setupSourceForVaToVaPayoutsWithProvidedAccountNumber("7878780111222");
+
+        $sourceBalanceId =  $this->bankingBalance->getId();
+
+        //setting up free payouts for source merchant
+        $this->setUpCounterAndFreePayoutsCount('shared', $sourceBalanceId);
+
+        $fundAccount = $this->createFundAccountOfYesbankNodalVA();
+
+        $this->setupDestinationForVaToVaPayoutsWithProvidedFundAccount($fundAccount);
+
+        // enabling source merchant to allow va to va payouts
+        $this->mockRazorxToAllowVAToVAPayouts();
+
+        $testData = & $this->testData['testAllowVAtoVAPayoutsWhenSourceMerchantIsEnabled'];
+        $testData['request']['content']['fund_account_id'] = $fundAccount['id'];
+        $testData['response']['content']['fees'] = 0;
+        $testData['response']['content']['tax'] = 0;
+
+        $this->ba->privateAuth();
+
+        $this->startTest($testData);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        // assert payout mode is ift
+        $this->assertEquals('IFT', $payout->getMode());
+
+        // Assert 0 fee and tax in payout
+        $this->assertEquals(0, $payout->getFees());
+        $this->assertEquals(0, $payout->getTax());
+
+        // Assert that free_payout is assigned as fee_type for such payouts.
+        $this->assertEquals(Payout\Entity::FREE_PAYOUT, $payout->getFeeType());
+
+        $counter = $this->getDbEntities('counter',
+            [
+                'account_type' => 'shared',
+                'balance_id'   => $sourceBalanceId,
+            ])->first();
+
+        // Assert that one free payout has been consumed
+        $this->assertEquals(1, $counter->getFreePayoutsConsumed());
+
+        $transactionId = $payout->transaction->getId();
+
+        $transaction = $this->getDbEntityById('transaction', $transactionId)->toArray();
+
+        // Assert 0 fee and tax in transaction
+        $this->assertEquals(0, $transaction['fee']);
+        $this->assertEquals(0, $transaction['tax']);
+
+        $feesSplit = $this->getEntities('fee_breakup', ['transaction_id' => $transactionId], true);
+
+        $expectedBreakup = [
+            'name'            => "payout",
+            'transaction_id'  => $transactionId,
+            'pricing_rule_id' => "Bbg7cl6t6I3XA9",
+            'percentage'      => null,
+            'amount'          => 0,
+        ];
+
+        $this->assertArraySelectiveEquals($expectedBreakup, $feesSplit['items'][1]);
     }
 
     // Since this is a VA to VA payout and razorx returns control, we shall fail this payout
