@@ -873,7 +873,7 @@ class Entity extends Base\PublicEntity
 
     public function setPublicProductsAttribute(array & $array)
     {
-        if (($this->products !== null) and
+        if (($this->products !== null) and (is_array($this->products) === false) and
             (count($this->products) > 0))
         {
             $array[self::PRODUCTS] = $this->products->toArrayPublic()['items'];
