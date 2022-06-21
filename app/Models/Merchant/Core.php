@@ -64,6 +64,7 @@ use RZP\Mail\Merchant as MerchantMail;
 use RZP\Models\Merchant\Attribute;
 use RZP\Models\Order;
 use RZP\Models\Adjustment;
+use RZP\Jobs\MerchantHoldFundsSync;
 use RZP\Models\Merchant\LegalEntity;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Merchant\Balance\Type;
@@ -2518,6 +2519,19 @@ class Core extends Base\Core
         else if ($action === Constants::UNSUSPEND)
         {
             $this->addMerchantEmailToMailingList($merchant);
+        }
+
+        //
+        // sync linked accounts' hold_funds with that of parent merchant's . https://docs.google.com/document/d/1ePztfh9GG4ImVzKlnQVaJ0GKCid0nLx_FRAyJGJDyTc/edit?usp=sharing
+        //
+        $linkedAccountCount = $this->repo->merchant->fetchLinkedAccountsCount($merchant->getId());
+
+        if (($linkedAccountCount > 0) and
+            (in_array($action, [Merchant\Action::HOLD_FUNDS, Merchant\Action::RELEASE_FUNDS]) === true))
+        {
+            $holdFunds = ($action === Merchant\Action::HOLD_FUNDS) ? 1 : 0;
+
+            MerchantHoldFundsSync::dispatch($this->mode, $merchant->getId(), $holdFunds);
         }
 
         // pipe to slack if the action is defined

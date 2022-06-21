@@ -64,6 +64,7 @@ use RZP\Exception\BaseException;
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Settlement\Bucket;
 use RZP\Models\Admin as MainAdmin;
+use RZP\Jobs\MerchantHoldFundsSync;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Admin\Org\Hostname;
 use RZP\Services\SalesForceClient;
@@ -764,8 +765,68 @@ class Service extends Base\Service
 
             return $merchant;
         });
+        //
+        // syncing Linked Accounts' hold_funds with parent merchant's due to risk concerns. https://docs.google.com/document/d/1ePztfh9GG4ImVzKlnQVaJ0GKCid0nLx_FRAyJGJDyTc/edit?usp=sharing*/
+        //
+        $linkedAccountCount = $this->repo->merchant->fetchLinkedAccountsCount($merchant->getId());
+
+        if ((isset($input[Entity::HOLD_FUNDS]) === true) and
+            ($linkedAccountCount > 0))
+        {
+            MerchantHoldFundsSync::dispatch($this->mode, $id, $input[Entity::HOLD_FUNDS]);
+        }
 
         return $merchant->toArrayPublic();
+    }
+
+    public function syncMerchantFundsOnHold(string $parentMid, $holdFunds)
+    {
+        $linkedAccountMids = $this->repo->merchant->fetchLinkedAccountMids($parentMid);
+
+        $count = count($linkedAccountMids);
+
+        $updatedCount = 0;
+
+        $this->trace->info(
+            TraceCode::LINKED_ACCOUNTS_FETCHED_FOR_HOLD_FUNDS_SYNC,
+            [
+                'count'                 => $count,
+                'parent_mid'            => $parentMid
+            ]
+        );
+        foreach ($linkedAccountMids as $linkedAccountMid)
+        {
+            $input[Entity::HOLD_FUNDS] = $holdFunds;
+
+            try {
+                $this->edit($linkedAccountMid, $input);
+
+                $updatedCount += 1;
+
+                $this->trace->info(
+                    TraceCode::LINKED_ACCOUNT_HOLD_FUNDS_UPDATED,
+                    [
+                        'parent_mid'            => $parentMid,
+                        'linked_account_mid'    => $linkedAccountMid,
+                        'hold_funds_input'      => $input
+                    ]
+                );
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    null,
+                    TraceCode::LINKED_ACCOUNT_HOLD_FUNDS_UPDATE_FAILED,
+                    [
+                        'parent_mid'            => $parentMid,
+                        'linked_account_mid'    => $linkedAccountMid,
+                        'hold_funds_input'      => $input
+                    ]
+                );
+            }
+        }
+        return $updatedCount;
     }
 
     public function editRiskAttributes(string $id, array $input): array
@@ -9834,7 +9895,7 @@ class Service extends Base\Service
     {
         $featureNames = [];
 
-        foreach ($features as $name) 
+        foreach ($features as $name)
         {
             try{
             $featureNames[] = Feature\Constants::$visibleFeaturesMap[$name]['feature'];
@@ -9859,7 +9920,7 @@ class Service extends Base\Service
     //email notifications for different feature flags
     private function sendMerchantNotifications($merchant, $features)
     {
-        foreach ($features as $name) 
+        foreach ($features as $name)
         {
             switch(Feature\Constants::$visibleFeaturesMap[$name]['feature'])
             {
