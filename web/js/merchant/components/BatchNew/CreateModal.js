@@ -53,6 +53,7 @@ class BatchCreateModal extends Component {
       children,
       onFileNameTrack = () => {},
       onPreview = () => {},
+      isCreatingBatch,
     } = this.props;
     let ctaText = this.props.ctaText;
     if (batch_type_refund) {
@@ -246,6 +247,7 @@ class BatchCreateModal extends Component {
               text={ctaText}
               pendingText={pendingText}
               onClick={handleSubmit(onCreateBatch)}
+              disabled={isCreatingBatch}
             />
           </form>
         </div>

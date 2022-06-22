@@ -15,6 +15,10 @@ const batchFormDefaults = {
 };
 
 class BatchCreate extends Component {
+  state = {
+    isCreatingBatch: false,
+  };
+
   formInitialValues = {
     name: this.props.batchName,
   };
@@ -59,17 +63,21 @@ class BatchCreate extends Component {
     }
 
     this.props.trackUploadBatch('Create');
-    this.props
-      .createBatch(data)
-      .then((response) => {
-        this.props.onCreation(response);
-      })
-      .catch(() => {
-        this.props.showNotification({
-          type: 'error',
-          message: 'Failed to create batch.',
-        });
-      });
+    this.setState({ isCreatingBatch: true }, () =>
+      this.props
+        .createBatch(data)
+        .then((response) => {
+          this.props.onCreation(response);
+        })
+        .catch(() => {
+          this.props
+            .showNotification({
+              type: 'error',
+              message: 'Failed to create batch.',
+            })
+            .finally(() => this.setState({ isCreatingBatch: false }));
+        }),
+    );
   };
 
   render() {
@@ -86,6 +94,7 @@ class BatchCreate extends Component {
         batchFormInitialValues = {},
         trackSampleInterpretation,
       },
+      state: { isCreatingBatch },
     } = this;
 
     const initialValues = {
@@ -109,6 +118,7 @@ class BatchCreate extends Component {
         processingOptions={this.props.processingOptions}
         onFileNameTrack={this.props.onFileNameTrack}
         onPreview={this.props.onPreview}
+        isCreatingBatch={isCreatingBatch}
       >
         {renderBatchCreationForm && renderBatchCreationForm()}
       </BatchCreateModal>
