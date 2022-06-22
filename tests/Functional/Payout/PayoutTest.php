@@ -6706,6 +6706,16 @@ class PayoutTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testAddBulkCustomPayoutPurposeVendorPaymentsInternalAuth()
+    {
+        $this->ba->appAuthLive($this->app['config']['applications.vendor_payments.secret']);
+
+        $request        = &$this->testData[__FUNCTION__]['request'];
+        $request['url'] = '/payouts/purposes/10000000000000';
+
+        $this->startTest();
+    }
+
     public function testGetAllCustomPayoutPurposesInternalRoute()
     {
         $this->testAddCustomPayoutPurpose();

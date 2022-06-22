@@ -7572,6 +7572,71 @@ return [
         ],
     ],
 
+    'testAddBulkCustomPayoutPurposeVendorPaymentsInternalAuth' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/payouts/purposes/{merchant_id}',
+            'content' => [
+                [
+                    'purpose'   => 'Give Sumit A Bonus',
+                    'purpose_type'  => 'settlement'
+                ],
+                [
+                    'purpose'   => 'Advertising And Marketing',
+                    'purpose_type'  => 'settlement'
+                ],
+                [
+                    'purpose'   => 'Education and Training Expense',
+                    'purpose_type'  => 'settlement'
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'    => 'collection',
+                'count'     => 9,
+                'items'     =>  [
+                    [
+                        'purpose'   => 'Give Sumit A Bonus',
+                        'purpose_type'  => 'settlement'
+                    ],
+                    [
+                        'purpose'   => 'Advertising And Marketing',
+                        'purpose_type'  => 'settlement'
+                    ],
+                    [
+                        'purpose'   => 'Education and Training Expense',
+                        'purpose_type'  => 'settlement'
+                    ],
+                    [
+                        'purpose'       => 'refund',
+                        'purpose_type'  => 'refund',
+                    ],
+                    [
+                        'purpose'       => 'cashback',
+                        'purpose_type'  => 'refund',
+                    ],
+                    [
+                        'purpose'       => 'payout',
+                        'purpose_type'  => 'settlement',
+                    ],
+                    [
+                        'purpose'       => 'salary',
+                        'purpose_type'  => 'settlement',
+                    ],
+                    [
+                        'purpose'       => 'utility bill',
+                        'purpose_type'  => 'settlement',
+                    ],
+                    [
+                        'purpose'       => 'vendor bill',
+                        'purpose_type'  => 'settlement',
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testAddCustomPayoutPurposeOfNumericType' => [
         'request' => [
             'method'  => 'POST',

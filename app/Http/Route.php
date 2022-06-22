@@ -8857,6 +8857,7 @@ class Route
             'merchant_fetch_internal_users',
             'user_details_unified',
             'payout_update_tax_payment_id',
+            'bulk_payout_purpose_post',
         ],
 
         'dashboard' => [
