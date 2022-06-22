@@ -38,7 +38,7 @@ const DashboardBanner = ({
 export default compose(
   connect(
     (state) => ({
-      ...state.growthService.banners,
+      ...(state?.growthService?.banners || []),
     }),
     {
       fetchBanners: fetchBannersProp,
