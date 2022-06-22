@@ -67,6 +67,7 @@ class StatusReasonMap
             self::BENEFICIARY_BANK_CONFIRMATION_PENDING,
             self::BANK_WINDOW_CLOSED,
             self::PAYOUT_BANK_PROCESSING,
+            self::AMOUNT_LIMIT_EXHAUSTED,
         ],
 
         PayoutStatus::PROCESSED => [

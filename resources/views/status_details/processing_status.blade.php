@@ -10,4 +10,8 @@
 
     Payout is being processed by our partner bank. Please check the final status after some time
 
+@elseif ($reason === 'amount_limit_exhausted')
+
+The {{$mode}} 24*7 limits for your account has been exhausted. Please check the status after {{Carbon\Carbon::createFromTimestamp($processByTime, 'Asia/Kolkata')->format("dS F Y, h:i A") ?? null}}
+
 @endif
