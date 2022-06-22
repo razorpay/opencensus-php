@@ -21,6 +21,8 @@ class GraphRequestAny
     const CONTENT_TYPE_JSON = 'application/json';
     const CONTENT_TYPE_MULTIPART = 'multipart/form-data';
 
+    const SERVER_ERROR       = 'Internal Server Error';
+
     // true is a dummy value
     // presence any value even false will make the key whitelisted
     // For more details please refer working of array_intersect_key herew
@@ -93,7 +95,22 @@ class GraphRequestAny
         {
             $errors = [$exception->getMessage()];
 
+            /*
+             * commenting this as this is failing due to null value returned instead of array of headers
+             *
             return [$errors, null];
+            */
+
+            // since X-mobile app has integrated internal server error for this case hence returning the same
+            // To do : once X-mobile app handles this then return correct error message
+            // slack thread : https://razorpay.slack.com/archives/CQ56RK941/p1641467424016100?thread_ts=1641445389.002600&cid=CQ56RK941
+
+            $data = [
+                'success' => false,
+                'errors'  => [self::SERVER_ERROR]
+            ];
+
+            return [$data, []];
         }
         catch(\Exception $exception)
         {
@@ -143,7 +160,7 @@ class GraphRequestAny
 
         $devServeHeader = Request::header('rzpctx-dev-serve-user');
 
-        $mobileDebugId = Request::header('x-mobile-debug-id');  // adding a unique key with value = ({userId}:{uniqueDeviceId}) to help in debugging issues for multiple platforms. This header will not be available for web applications. 
+        $mobileDebugId = Request::header('x-mobile-debug-id');  // adding a unique key with value = ({userId}:{uniqueDeviceId}) to help in debugging issues for multiple platforms. This header will not be available for web applications.
 
         $defaultHeaders =  [
             'X-Dashboard'                           => 'true',
