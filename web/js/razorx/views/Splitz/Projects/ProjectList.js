@@ -14,8 +14,12 @@ class ProjectList extends React.Component {
             fields={[
               ['ID', (item) => item.id],
               ['Name', (item) => item.name],
-              ['Business Unit', (item) => (item.business_unit ? item.business_unit : '')],
-              ['Team Name', (item) => item.team_name],
+              [
+                'Business Unit',
+                (item) =>
+                  !item.business_unit || item.business_unit === 'unknown' ? '' : item.business_unit,
+              ],
+              ['Pod', (item) => item.pod],
               ['Created On', (item) => formatDate(item.created_at)],
             ]}
             href={(item) => `/splitz/projects/${item.id}`}
