@@ -2,7 +2,6 @@ import React, { useEffect } from 'react';
 import QueryString from 'query-string';
 import { connect } from 'react-redux';
 import MainNavLink from 'merchant_common/components/MainNavLink';
-import ShowWhen from 'merchant/components/ShowWhen';
 import * as LocalStorageService from 'common/utils/localStorage';
 import MagicCheckoutNavLink from 'merchant/components/Sidebar/MagicCheckoutNavLink';
 import { analyticsTrack } from 'common/utils/analytics';
@@ -238,14 +237,16 @@ function MerchantNavLinks(props) {
         }
       />
 
-      <ShowWhen featureEnabled="raas">
-        <MainNavLink
-          label="Optimizer"
-          type="product"
-          icon="i i-routing text-warm temp-icon-style"
-          to="/optimizer/rules"
-        />
-      </ShowWhen>
+      <MainNavLink
+        label="Optimizer"
+        type="product"
+        icon="i i-routing text-warm temp-icon-style"
+        to="/optimizer"
+        additionalCondition={(currentUser) =>
+          currentUser.isOptimizerEnabled || currentUser.isOptimizerOnboardingEnabled
+        }
+        isNew={user?.isOptimizerOnboardingEnabled && !user?.isOptimizerEnabled}
+      />
 
       <MainNavLink
         label="Customers"

@@ -19,7 +19,15 @@ export default class OnBoardingFeatures extends React.PureComponent {
   };
 
   render() {
-    const { title, nextBtn, active, feature, features, featureLinks } = this.props;
+    const {
+      title,
+      nextBtn,
+      active,
+      feature,
+      features,
+      featureLinks,
+      moreFeaturesLink,
+    } = this.props;
 
     return (
       <div class="OnBoarding--Slide OnBoarding--Features" key="FeatureSlide">
@@ -47,7 +55,11 @@ export default class OnBoardingFeatures extends React.PureComponent {
             <FeatureCard {...data} key={idx} />
           ))}
         </div>
-
+        {moreFeaturesLink && (
+          <div className="More-features-link flex">
+            <FeatureLink {...moreFeaturesLink} page={active} feature={feature} />
+          </div>
+        )}
         <div class="Button-Container">
           <Button.Transparent iconBefore="arrow-back" onClick={this.handleBackButton}>
             Back

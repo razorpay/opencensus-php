@@ -1185,3 +1185,11 @@ export const getSelectedProviderWithAcquirer = ({ providers, selectedProvider, p
   }
   return selectedProvider;
 };
+
+export const getOptimizerOnboardingStorageKey = (user) =>
+  `optimizer-onboarding-banner-${user.current}`;
+
+export const shouldShowRules = (user) => user?.isOptimizerEnabled;
+
+export const shouldShowOnBoarding = (user) =>
+  user?.isOptimizerOnboardingEnabled && !user?.isOptimizerEnabled;

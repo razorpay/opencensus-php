@@ -259,6 +259,7 @@ class Service extends Base\Service
             'capital_virtual_card',
             'capital_addon_cards_status_tracker',
             'set_pref_corporate_cards',
+            'optimizer_onboarding',
         ];
 
         $experimentsResults = $this->getBulkTreatment($features);

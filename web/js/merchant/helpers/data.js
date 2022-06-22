@@ -135,6 +135,7 @@ export const RZPFeatures = {
   MAGIC_CHECKOUT: 'magic_checkout',
   STORES: 'stores',
   RAZORPAYX: 'razorpayx',
+  OPTIMIZER: 'optimizer',
 };
 
 export const UPI_AVL_LIMIT = 20000000;

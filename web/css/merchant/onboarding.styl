@@ -1,3 +1,5 @@
+$green = #01B358
+
 .Onboarding
   font-size: 14px
   text-align: center
@@ -354,6 +356,18 @@
       top: 0
       right: 0
       overflow: scroll
+  
+  .More-features-link
+    position absolute
+    top 67%
+    right 6%
+    font-weight bold
+    @media(max-width 1024px)
+      position relative
+      top 0
+      right 0
+      width fit-content
+      padding-bottom 10px
 
   .Feature
     width: calc(100% / 3 - 28px)
@@ -415,7 +429,8 @@
 .OnBoarding--Offers,
 .OnBoarding--Rewards,
 .OnBoarding--SmartCollect,
-.OnBoarding--QRCodes
+.OnBoarding--QRCodes,
+.OnBoarding--Optimizer
   .Landing--Image
     overflow: hidden
     z-index: 2
@@ -564,6 +579,48 @@
     img
       max-width: 600px
       left: 0
+
+.OnBoarding--Optimizer
+  .OnBoarding--Landing
+    .Landing--Image
+      &:before
+        box-shadow none
+        position absolute
+        width 558px
+        height 670px
+        right -525px
+        top -15px
+        background #012980
+      img
+        max-width 640px
+        left -24px
+
+    .joined-button.Button
+      background rgba(0, 156, 92, 0.09)
+      border 1px solid $green
+      color $green
+      cursor default
+      .i.i-tick
+        font-size 11px
+        vertical-align middle
+        margin-left 7px
+        margin-right 11px
+      &:hover
+        background rgba(21, 177, 27, 0.1)
+        border 1px solid $green
+      &:active
+        color $green
+
+  .OnBoarding--Features
+    .joined-button.Button
+      background-color $green
+      .i.i-tick
+        margin-left 7px
+        margin-right 11px
+      &:hover
+        background-color $green
+      &:active
+        background-color $green
 
 .OnBoarding--Loans
   //min-height: 85vh

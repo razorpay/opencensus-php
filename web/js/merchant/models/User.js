@@ -792,6 +792,10 @@ export default class User {
     return this.findTag('raas');
   }
 
+  get isOptimizerOnboardingEnabled() {
+    return this.getExpStatus('optimizer_onboarding');
+  }
+
   get isSingleReconEnabled() {
     return this.isFeatureEnabled('enable_single_recon');
   }
