@@ -241,7 +241,7 @@ class MigrateGlobalConsentsToLocalTokensTest extends TestCase
 
         $this->mockFetchMerchantTokenisationOnboardedNetworks([Network::VISA]);
 
-        $this->mockFetchConsentReceivedGlobalCustomerLocalTokens([['id' => '100022xytoken1']]);
+        $this->mockFetchConsentReceivedGlobalCustomerLocalTokens([['id' => '100022xytoken1', 'merchant_id' => '10000000000000', 'network' => 'Visa']]);
 
         $this->mockCardVaultWithMigrateToken();
 

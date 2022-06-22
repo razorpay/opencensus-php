@@ -832,8 +832,8 @@ class Repository extends Base\Repository
     }
 
     /**
-     * Fetch a list of global customer local token ids which have received consents for token
-     * provisioning from data lake.
+     * Fetch a list of global customer local token data (token id, merchant id, card network)
+     * which have received consents for token provisioning from data lake.
      *
      * @param array  $supportedNetworks List of network names which support tokens provisioning.
      * @param string $offset   Last processed token id.
@@ -841,14 +841,14 @@ class Repository extends Base\Repository
      *
      * @return array List of global token ids
      */
-    public function fetchConsentReceivedGlobalCustomerLocalTokenIdsFromDataLake(array $supportedNetworks, string $offset, int $limit): array
+    public function fetchConsentReceivedGlobalCustomerLocalTokensDataFromDataLake(array $supportedNetworks, string $offset, int $limit): array
     {
         $supportedNetworksInString = implode("','", $supportedNetworks);
 
         $firstJune2022 = '2022-06-01';
 
         $rawQueryBuilder =<<<'EOT'
-            SELECT t.id FROM alluxio.realtime_hudi_api.tokens t
+            SELECT t.id, t.merchant_id, c.network FROM alluxio.realtime_hudi_api.tokens t
             INNER JOIN alluxio.realtime_hudi_api.cards c
                 ON t.card_id = c.id
             INNER JOIN alluxio.realtime_hudi_api.customers cust
@@ -878,8 +878,6 @@ EOT;
             $limit
         );
 
-        $queryResult = $this->app['datalake.presto']->getDataFromDataLake($rawQuery);
-
-        return array_column($queryResult, 'id');
+        return $this->app['datalake.presto']->getDataFromDataLake($rawQuery);
     }
 }

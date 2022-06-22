@@ -30,7 +30,9 @@ use RZP\Error\ErrorCode;
 use RZP\Constants\Entity;
 use RZP\Models\PaymentsUpi;
 use RZP\Models\CardMandate;
+use RZP\Models\Terminal;
 use RZP\Gateway\Base\Metric as BaseMetric;
+use RZP\Models\Customer\Token\Entity as TokenEntity;
 use RZP\Models\CardMandate\CardMandateNotification;
 use Illuminate\Support\Facades\Cache;
 
@@ -1223,13 +1225,16 @@ class Service extends Base\Service
 
             $startTime = millitime();
 
-            $tokenIds = $this->repo->token->fetchConsentReceivedGlobalCustomerLocalTokenIdsFromDataLake($supportedNetworks, $lastDispatchedTokenId, $batchSize);
+            $tokensData = $this->repo->token->fetchConsentReceivedGlobalCustomerLocalTokensDataFromDataLake($supportedNetworks, $lastDispatchedTokenId, $batchSize);
 
-            $tokensCount = count($tokenIds);
+            $tokensCount = count($tokensData);
+
+            $tokenIds = $this->getValidTokenIds($tokensData);
 
             $this->trace->info(TraceCode::ASYNC_GLOBAL_CUSTOMER_LOCAL_TOKENISATION_FETCH_SUCCESS, [
-                'tokensCount' => $tokensCount,
-                'offset'      => $lastDispatchedTokenId,
+                'fetchedTokensCount' => $tokensCount,
+                'validTokensCount'   => count($tokenIds),
+                'offset'             => $lastDispatchedTokenId,
             ]);
 
             if ($tokensCount === 0)
@@ -1250,7 +1255,7 @@ class Service extends Base\Service
 
             $offset = $lastDispatchedTokenId;
 
-            $lastDispatchedTokenId = $tokenIds[$tokensCount - 1];
+            $lastDispatchedTokenId = $tokensData[$tokensCount - 1][TokenEntity::ID];
 
             Cache::put(
                 Constants::LAST_DISPATCHED_GLOBAL_CUSTOMER_LOCAL_TOKEN_CACHE_KEY,
@@ -1260,7 +1265,8 @@ class Service extends Base\Service
 
 
             $this->trace->info(TraceCode::ASYNC_GLOBAL_CUSTOMER_LOCAL_TOKENISATION_DISPATCH_SUCCESS, [
-                'tokenIdCount'           => $tokensCount,
+                'fetchedTokenIdCount'    => $tokensCount,
+                'tokensPushedIntoQueue'  => count($tokenIds),
                 'asyncTokenizationJobId' => $asyncTokenisationJobId,
                 'queryTime'              => $endTime - $startTime,
                 'queuingTime'            => $endQueuingTime - $endTime,
@@ -1445,5 +1451,24 @@ class Service extends Base\Service
         $this->trace->info(TraceCode::VAULT_MIGRATE_TOKEN_NAMESPACE_BATCH_SERVICE_RESPONSE, ['response' => $response->toArrayWithItems()]);
 
         return $response->toArrayWithItems();
+    }
+
+    private function getValidTokenIds(array $tokensData): array
+    {
+        $validTokenIds = [];
+
+        foreach ($tokensData as $tokenData) {
+            $cardNetworkCode = Card\Network::getCode($tokenData[Card\Entity::NETWORK]);
+
+            $onboardedNetworks = (new Terminal\Core())->getMerchantTokenisationOnboardedNetworks(
+                $tokenData[TokenEntity::MERCHANT_ID]
+            );
+
+            if (in_array($cardNetworkCode, $onboardedNetworks, true)) {
+                $validTokenIds[] = $tokenData[TokenEntity::ID];
+            }
+        }
+
+        return $validTokenIds;
     }
 }
