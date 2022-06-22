@@ -664,6 +664,9 @@ class Core extends Base\Core
 
             unset($input[Entity::CARD][Card\Entity::CVV]);
             unset($input[Entity::CARD][Card\Entity::NUMBER]);
+            unset($input[Entity::CARD][Card\Entity::NAME]);
+            unset($input[Entity::CARD][Card\Entity::EXPIRY_YEAR]);
+            unset($input[Entity::CARD][Card\Entity::EXPIRY_MONTH]);
         }
 
         return $input;
@@ -1332,6 +1335,9 @@ class Core extends Base\Core
 
         unset($accountInput[Card\Entity::CVV]);
         unset($accountInput[Card\Entity::NUMBER]);
+        unset($accountInput[Card\Entity::NAME]);
+        unset($accountInput[Card\Entity::EXPIRY_MONTH]);
+        unset($accountInput[Card\Entity::EXPIRY_YEAR]);
 
         return $accountInput;
     }
