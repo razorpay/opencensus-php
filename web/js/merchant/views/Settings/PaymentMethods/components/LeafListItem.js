@@ -379,7 +379,7 @@ class LeafListItem extends React.Component {
     const instrumentParent = instrument?.path?.split('.')[1];
     const shouldShowGSTMessage =
       ['2', '11'].includes(this.props?.user?.business_type) &&
-      isMissingInfo.some((field) => field.name === 'merchant_details|gstin');
+      isMissingInfo?.some((field) => field.name === 'merchant_details|gstin');
     return (
       <li className={getListClass(instrument.status, instrument.path)}>
         <div>

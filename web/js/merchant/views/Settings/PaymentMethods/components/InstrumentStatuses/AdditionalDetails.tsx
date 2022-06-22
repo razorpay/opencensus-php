@@ -1,12 +1,20 @@
-import React from 'react';
+import React, { FC } from 'react';
 import { Link } from 'react-router-dom';
 import Popover, { PopoverBody } from 'common/ui/Popover';
-import PropTypes from 'prop-types';
 
 import { statusClass, statusPopoverText } from '../../constants';
 
-const AdditionalDetails = (props) => {
+interface IAdditionalDetailsProps {
+  displayName: string;
+  currentValue: string;
+  url: string;
+  status: string;
+  statusIdentifier: string;
+}
+
+const AdditionalDetails: FC<IAdditionalDetailsProps> = (props) => {
   const { displayName, currentValue, url, status, statusIdentifier } = props;
+
   const displayStatus = status?.replace('_', ' ') || '';
   return (
     <div className="details-field">
@@ -39,14 +47,6 @@ const AdditionalDetails = (props) => {
       </div>
     </div>
   );
-};
-
-AdditionalDetails.propTypes = {
-  displayName: PropTypes.string,
-  currentValue: PropTypes.string,
-  url: PropTypes.string,
-  status: PropTypes.string,
-  statusIdentifier: PropTypes.string,
 };
 
 export default AdditionalDetails;
