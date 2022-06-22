@@ -10,7 +10,7 @@
     "@razorpay/blade-old": "0.0.1",
     "@razorpay/commander-services": "1.0.38",
     "@razorpay/commander-shield": "0.0.1470",
-    "@razorpay/frontend-care": "0.4.19",
+    "@razorpay/frontend-care": "0.4.20",
     "@razorpay/frontend-care-new": "npm:@razorpay/frontend-care@0.4.12-beta.3",
     "@razorpay/universe-utils": "3.1.2",
     "@types/react-is": "17.0.0",
