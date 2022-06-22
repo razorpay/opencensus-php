@@ -179,6 +179,10 @@ class Core extends Base\Core
         if ($payment->getStatus() == "captured")
         {
             $txn =  $this->createTransactionForCapturedPayment($payment);
+
+            $processor = new Processor($payment->merchant);
+
+            $processor->createPartnerCommission($payment);
         }
         else if ($payment->getStatus() == "authorized")
         {

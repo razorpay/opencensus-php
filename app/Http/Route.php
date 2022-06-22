@@ -3478,6 +3478,7 @@ class Route
         'payment_update_reference6'                  => ['patch',      'payments/{id}/updateReference6',                       'PaymentController@updateReference6'                           ],
         'internal_payment_pricing'                   => ['get',        'internal/payments/{id}/pricing',                       'PaymentController@internalPricingFetchForPayment'                         ],
         'internal_merchant_risk_notification'        => ['post',       'internal/payments/{id}/risk_notification',            'PaymentController@internalRiskNotificationForRearch'                      ],
+        'internal_sign_payload'                      => ['post',       'internal/payments/signer',                             'PaymentController@signPayloadInternal'                      ],
 
         // Onboarding APIs
         'complete_submerchant_onboarding'         => ['post',       'submerchants/{id}/onboard',                             'MerchantController@completeSubmerchantOnboarding'],
@@ -4783,6 +4784,7 @@ class Route
         'payment_update_reference6',
         'internal_payment_pricing',
         'internal_merchant_risk_notification',
+        'internal_sign_payload',
 
 
         // cron to send emails about pending payouts
@@ -12943,6 +12945,7 @@ class Route
             'recon_update_upi_data',
             'internal_payment_pricing',
             'internal_merchant_risk_notification',
+            'internal_sign_payload',
         ],
 
         'freshdesk_webhook' => [

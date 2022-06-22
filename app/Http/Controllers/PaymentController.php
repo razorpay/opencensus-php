@@ -6,15 +6,22 @@ use ApiResponse;
 use Request;
 use RZP\Constants\HyperTrace;
 use RZP\Trace\Tracer;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 use View;
 
 use RZP\Constants\Entity as E;
 use RZP\Trace\TraceCode;
+use RZP\Services\CredcaseSigner;
 use RZP\Models\Payment\Analytics\Service as PaymentAnalyticsService;
 
 class PaymentController extends Controller
 {
     use Traits\HasCrudMethods;
+
+    const MERCHANT_ID = 'merchant_id';
+
+    const PUBLIC_KEY = 'public_key';
 
     public function getPayment($id)
     {
@@ -705,5 +712,53 @@ class PaymentController extends Controller
         $this->service()->internalRiskNotificationForRearch($id, $input);
 
         return ApiResponse::json();
+    }
+
+     // This function would generate the razorpay signature for a given payload
+    // Internal auth route. Merchant id will be passed in input
+    public function signPayloadInternal()
+    {
+        $input = Request::all();
+
+        $merchant = null;
+
+        if (isset($input[self::MERCHANT_ID]) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_ID_NOT_PRESENT
+            );
+        }
+
+        $merchant = $this->repo->merchant->findByPublicId($input[self::MERCHANT_ID]);
+
+        // Set merchantId for the current request
+        $this->ba->setMerchantById($input[self::MERCHANT_ID]);
+
+        unset($input[self::MERCHANT_ID]);
+
+        ksort($input);
+
+        if (isset($input[self::PUBLIC_KEY]) === true)
+        {
+            $key = $input[self::PUBLIC_KEY];
+
+            unset($input[self::PUBLIC_KEY]);
+
+            $str = implode('|', $input);
+
+            $response['razorpay_signature'] = (new CredcaseSigner)->sign($str, $key);
+
+            return $response;
+        }
+
+        $str = implode('|', $input);
+
+        $key = $this->repo->key->getFirstActiveKeyForMerchant($merchant->getId());
+
+        $this->ba->authCreds->setKeyEntity($key);
+
+        $response['razorpay_signature'] = (new CredcaseSigner)->sign($str);
+
+        return $response;
     }
 }

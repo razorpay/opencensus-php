@@ -980,7 +980,7 @@ trait Capture
      *
      * @param Payment\Entity $payment
      */
-    protected function createPartnerCommission(Payment\Entity $payment)
+    public function createPartnerCommission(Payment\Entity $payment)
     {
         try
         {

@@ -251,6 +251,16 @@ class Processor
     const RAAS_CARD_PAYMENTS_VIA_PGROUTER = 'raas_card_payments_via_pg_router';
 
     /**
+     * Razorx flag to indicate if a oAuth payment should go via PG Router and CPS or just via API service
+     */
+    const OAUTH_CARD_PAYMENTS_VIA_PGROUTER = 'oauth_card_payments_via_pg_router';
+
+    /**
+     * Razorx flag to indicate if a partner auth payment should go via PG Router and CPS or just via API service
+     */
+    const PARTNER_AUTH_CARD_PAYMENTS_VIA_PGROUTER = 'partner_auth_card_payments_via_pg_router';
+
+    /**
      * User consent flag indicates whether the user has given consent to tokenise
      * the card or not.
      */
@@ -452,12 +462,6 @@ class Processor
                 return true;
             }
 
-            if (($this->ba->getOAuthClientId() !== null) or
-                ($this->ba->isPartnerAuth() === true))
-            {
-                return false;
-            }
-
             if (($this->route->isRearchRoute($currentRouteName) == false) or
                 (empty($input[Payment\Entity::METHOD]) === true) or
                 ($input[Payment\Entity::METHOD] !== Payment\METHOD::CARD) or
@@ -497,6 +501,7 @@ class Processor
                     return false;
                 }
             }
+
 
             if (($input[Payment\Entity::METHOD] == Payment\METHOD::CARD) and
                 ($merchant->isFeatureEnabled('skip_cvv') === true))
@@ -560,13 +565,35 @@ class Processor
                 return false;
             }
 
-            if ($merchant->isFeatureEnabled('raas') === true) {
+            if ($merchant->isFeatureEnabled('raas') === true) 
+            {
                 $raasResult = $this->app->razorx->getTreatment($merchant->getId(), self::RAAS_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
 
                 if ($raasResult !== 'on') {
                     return false;
                 }
             }
+
+            if ($this->ba->getOAuthClientId() !== null)
+            {
+                $result = $this->app->razorx->getTreatment($merchant->getId(), self::OAUTH_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
+
+                if ($result !== 'on') 
+                {
+                    return false;
+                }
+            }
+            
+            if ($this->ba->isPartnerAuth() === true)
+            {
+                $result = $this->app->razorx->getTreatment($merchant->getId(), self::PARTNER_AUTH_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
+
+                if ($result !== 'on') 
+                {
+                    return false;
+                }
+            }
+
 
             $isRupay = ($iin->getNetworkCode() === Card\Network::RUPAY);
             $isHeadless = (in_array(Card\IIN\Flow::HEADLESS_OTP, $enabledFlows, true) === true);
