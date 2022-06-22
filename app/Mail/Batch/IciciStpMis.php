@@ -17,7 +17,7 @@ class IciciStpMis extends Base
 
     protected static $sender      = Constants::BANKING_ACCOUNT;
 
-    protected static $subjectLine = 'RazorpayX | ICICI STP MIS file for %s dated %s';
+    protected static $subjectLine = 'RazorpayX | ICICI STP MIS file for %s';
 
     protected static $body        = 'Please find attached the ICICI STP MIS file created.';
 
