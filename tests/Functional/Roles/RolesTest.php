@@ -69,6 +69,7 @@ class RolesTest extends TestCase
         $this->createStandardRole('owner');
         $this->createStandardRole('vendor');
         $this->createStandardRole('finance_l1');
+        $this->createStandardRole('admin');
 
         $this->createMerchantUserMappingInLiveAndTest($user7['id'], self::DEFAULT_X_MERCHANT_ID, 'owner');
         $this->createMerchantUserMappingInLiveAndTest($user8['id'], self::DEFAULT_X_MERCHANT_ID, 'vendor');

@@ -175,6 +175,15 @@ class Core extends Base\Core
         {
             foreach ($roles as & $role)
             {
+                //disable copy of admin role
+                $role[Entity::COPY_DISABLE] = false;
+
+                if(in_array($role[Entity::ID], Entity::$disableCopyForRoles) === true)
+                {
+                    $role[Entity::COPY_DISABLE] = true;
+                }
+
+                //add member count in response
                 if (empty($userCount[$role[Entity::ID]]) === false)
                 {
                     $role[Entity::MEMBERS] = $userCount[$role[Entity::ID]][0]['count'];

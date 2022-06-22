@@ -23,6 +23,7 @@ return [
                                 'description' => 'Test custom role',
                                 'type' => 'custom',
                                 'members' => 3,
+                                'copy_disable' => false,
                             ),
                         1 =>
                             array (
@@ -32,6 +33,7 @@ return [
                                 'description' => 'Test custom role',
                                 'type' => 'custom',
                                 'members' => 2,
+                                'copy_disable' => false,
                             ),
                         2 =>
                             array (
@@ -41,11 +43,22 @@ return [
                                 'description' => 'Test custom role',
                                 'type' => 'custom',
                                 'members' => 1,
+                                'copy_disable' => false,
                             ),
                     ),
                 'standard' =>
                     array (
                         0 =>
+                            array (
+                                'id' => 'admin',
+                                'merchant_id' => '100000merchant',
+                                'name' => 'admin',
+                                'description' => 'Standard role - admin',
+                                'type' => 'standard',
+                                'members' => 0,
+                                'copy_disable' => true,
+                            ),
+                        1 =>
                             array (
                                 'id' => 'finance_l1',
                                 'merchant_id' => '100000merchant',
@@ -53,6 +66,7 @@ return [
                                 'description' => 'Standard role - finance_l1',
                                 'type' => 'standard',
                                 'members' => 0,
+                                'copy_disable' => false,
                             ),
                     ),
             ),

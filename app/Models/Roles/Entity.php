@@ -44,6 +44,8 @@ class Entity extends Base\PublicEntity
     const STANDARD_ROLE_MERCHANT_ID             = '100000Razorpay';
     const ORG_ID_FOR_ROLES                      = '100000razorpay';
 
+    const COPY_DISABLE                          = 'copy_disable';
+
     protected $fillable = [
         self::NAME,
         self::DESCRIPTION,
@@ -88,6 +90,10 @@ class Entity extends Base\PublicEntity
     public static $rolesHiddenFromDashboard = [
         BankingRole::OWNER,
         BankingRole::VENDOR,
+    ];
+
+    public static $disableCopyForRoles = [
+        BankingRole::ADMIN
     ];
 
     // ============================= RELATIONS =============================
