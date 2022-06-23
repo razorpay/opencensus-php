@@ -47,9 +47,6 @@ const GetOtpScreen = ({
       objectName: 'kyc.mobile not linked',
       actionName: 'click on checkbox',
       screen: 'KYC on Activation page',
-      properties: {
-        aadhaar_ekyc_mode: isDigilockerEkyc ? 'Digilocker native' : 'UIDAI native',
-      },
       ...analyticsProperties,
     });
     trackEvents({
@@ -157,9 +154,6 @@ const GetOtpScreen = ({
           objectName: 'kyc.e-aadhar get captcha',
           actionName: 'generate captcha',
           screen: 'Verify with OTP on Activation page',
-          properties: {
-            aadhaar_ekyc_mode: isDigilockerEkyc ? 'Digilocker native' : 'UIDAI native',
-          },
           ...analyticsProperties,
         });
       })
@@ -181,9 +175,6 @@ const GetOtpScreen = ({
           objectName: 'kyc.e-aadhar get captcha',
           actionName: 'generate captcha Error',
           screen: 'Verify with OTP on Activation page',
-          properties: {
-            aadhaar_ekyc_mode: isDigilockerEkyc ? 'Digilocker native' : 'UIDAI native',
-          },
           ...analyticsProperties,
         });
       });
@@ -253,9 +244,6 @@ const GetOtpScreen = ({
           objectName: 'kyc.e-aadhar send otp',
           actionName: 'send OTP',
           screen: 'Send OTP button on Activation page',
-          properties: {
-            aadhaar_ekyc_mode: isDigilockerEkyc ? 'Digilocker native' : 'UIDAI native',
-          },
           ...analyticsProperties,
         });
       })
@@ -283,6 +271,12 @@ const GetOtpScreen = ({
     if ((activeTab === 4 || isStartAgain) && !isDigilockerEkyc) {
       generateCaptcha();
     }
+    analyticsTrack({
+      objectName: 'Aadhaar EKYC',
+      actionName: 'Displayed',
+      screen: 'home page',
+      ...analyticsProperties,
+    });
   }, [activeTab, isStartAgain]);
 
   useEffect(() => {
@@ -329,9 +323,6 @@ const GetOtpScreen = ({
             objectName: 'kyc.e-aadhar',
             actionName: 'focus',
             screen: 'Activation page',
-            properties: {
-              aadhaar_ekyc_mode: isDigilockerEkyc ? 'Digilocker native' : 'UIDAI native',
-            },
             ...analyticsProperties,
           });
           trackEvents({
@@ -398,9 +389,6 @@ const GetOtpScreen = ({
                   objectName: 'kyc.e-aadhar code',
                   actionName: 'focus on enter captcha',
                   screen: 'Entering captch on Activation page',
-                  properties: {
-                    aadhaar_ekyc_mode: isDigilockerEkyc ? 'Digilocker native' : 'UIDAI native',
-                  },
                   ...analyticsProperties,
                 });
                 trackEvents({

@@ -48,7 +48,7 @@ const VerifyOtp = ({
         'Field Type': 'Text',
         'Field Name': 'Aadhar OTP Verification',
         'Card Title': 'none',
-        ' aadhaar_ekyc_mode': isDigilockerEkyc ? 'Digilocker native' : 'UIDAInative',
+        aadhaar_ekyc_mode: isDigilockerEkyc ? 'Digilocker native' : 'UIDAI Native',
       },
     });
   };
@@ -74,7 +74,7 @@ const VerifyOtp = ({
       properties: {
         'CTA Label': 'Submit & Verify',
         'Modal Label': 'KYC Form',
-        ' aadhaar_ekyc_mode': isDigilockerEkyc ? 'Digilocker native' : 'UIDAInative',
+        aadhaar_ekyc_mode: isDigilockerEkyc ? 'Digilocker native' : 'UIDAI Native',
       },
     });
 
@@ -187,9 +187,6 @@ const VerifyOtp = ({
           objectName: 'kyc.e-aadhar OTP submit',
           actionName: 'OTP verified successfully',
           screen: 'Submit OTP on Activation page',
-          properties: {
-            aadhaar_ekyc_mode: isDigilockerEkyc ? 'Digilocker native' : 'UIDAInative',
-          },
           ...analyticsProperties,
         });
       })
@@ -214,9 +211,6 @@ const VerifyOtp = ({
           objectName: 'kyc.e-aadhar OTP submit',
           actionName: 'OTP verify failed',
           screen: 'Submit OTP on Activation page',
-          properties: {
-            aadhaar_ekyc_mode: isDigilockerEkyc ? 'Digilocker native' : 'UIDAInative',
-          },
           ...analyticsProperties,
         });
       });
@@ -306,9 +300,6 @@ const VerifyOtp = ({
                       objectName: 'kyc.e-aadhar consent link',
                       actionName: 'click on privacy policy (e-aadhar)',
                       screen: 'KYC on Activation page',
-                      properties: {
-                        aadhaar_ekyc_mode: isDigilockerEkyc ? 'Digilocker native' : 'UIDAInative',
-                      },
                       ...analyticsProperties,
                     });
                   }}

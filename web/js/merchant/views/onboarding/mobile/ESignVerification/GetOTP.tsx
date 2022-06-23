@@ -182,6 +182,16 @@ const GetOTP: React.FC<GetOTPPropsT> = ({
     if (!isDigilockerEkyc) {
       fetchCaptcha();
     }
+
+    analyticsTrack({
+      objectName: 'Aadhaar EKYC',
+      actionName: 'Displayed',
+      screen: 'home page',
+      user,
+      properties: {
+        aadhaar_ekyc_mode: experiments.isDigilockerEkyc ? 'Digilocker native' : 'UIDAI native',
+      },
+    });
   }, []);
 
   useEffect(() => {

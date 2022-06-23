@@ -21,7 +21,7 @@ const ESignVerification = ({ disabled = false, showAddressProofDoc }: ESignProps
   const [otp, setHasOTP] = useState('');
   const [inputCaptcha, setInputCaptcha] = useState('');
   const [aadharError, setAadharInputError] = useState('');
-  const { user } = useApp();
+  const { user, experiments } = useApp();
   const { data, postData } = useActivation();
   const trackEvents = useTrackEvents();
 
@@ -65,6 +65,7 @@ const ESignVerification = ({ disabled = false, showAddressProofDoc }: ESignProps
       screen: 'Documents',
       properties: {
         ...resData,
+        aadhaar_ekyc_mode: experiments.isDigilockerEkyc ? 'Digilocker native' : 'UIDAI native',
       },
     });
   };

@@ -27,6 +27,7 @@ const EAadhar = ({
     properties: {
       location: 'Activation page',
       error_code: error,
+      aadhaar_ekyc_mode: isDigilockerEkyc ? 'Digilocker native' : 'UIDAI native',
       ...getCommonAnalyticsProperties(window.rzp_user),
     },
   };
@@ -87,6 +88,7 @@ const EAadhar = ({
       actionName: 'e aadhar downtime fallback initiated',
       screen: 'Documents',
       properties: {
+        aadhaar_ekyc_mode: isDigilockerEkyc ? 'Digilocker native' : 'UIDAInative',
         ...resData,
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
