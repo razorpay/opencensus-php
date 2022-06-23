@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Card;
 
+use Illuminate\Support\Str;
 use Route;
 
 use RZP\Exception;
@@ -12,6 +13,7 @@ use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Models\Customer\Token;
 use RZP\Models\FundTransfer;
 use RZP\Models\FundAccount;
 use Razorpay\Trace\Logger as Trace;
@@ -1080,5 +1082,48 @@ class Core extends Base\Core
     {
         return ($card->getCardVaultToken() === null) and
                ($compositePayoutSaveOrFail === true);
+    }
+
+    public function addCardDetailsOfToken(
+        Token\Entity $token,
+        array &$cardsList,
+        array &$merchantIdMapping
+    ) : void
+    {
+        $card = $token->card;
+
+        // Fetching card details as a unique key for each token as card id will be different for each token
+        // even if the tokens are of the same card
+        $uniqueCardCombination = $card->getCardDetailsAsKey();
+
+        if (array_key_exists($uniqueCardCombination, $cardsList) === false)
+        {
+            $cardDetail = $this->getCardDetails($card);
+
+            $cardsList[$uniqueCardCombination] = $cardDetail;
+        }
+
+        $tokenDetails = [
+            Token\Entity::ID          => $token->getId(),
+            Token\Entity::CREATED_AT  => $token->getCreatedAt(),
+            Token\Entity::MERCHANT_ID => $merchantIdMapping[$token->getMerchantId()],
+        ];
+
+        $cardsList[$uniqueCardCombination][Constants::TOKENS][] = $tokenDetails;
+    }
+
+    protected function getCardDetails(Card\Entity $card) : array
+    {
+        // We have decided not to expose the actual Card IDs due to security issues.
+        // We would expose random IDs as Card ID as FE requires a unique value for each card entity.
+        $cardId = Str::random(20);
+
+        return [
+            Token\Entity::CARD_ID => $cardId,
+            Entity::LAST4         => $card->getLast4(),
+            Entity::NETWORK       => $card->getNetwork(),
+            Entity::TYPE          => $card->getType(),
+            Entity::ISSUER        => $card->getIssuer(),
+        ];
     }
 }

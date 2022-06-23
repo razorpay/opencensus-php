@@ -2,15 +2,19 @@
 
 namespace RZP\Tests\Functional\CustomerToken;
 
+use Carbon\Carbon;
 use RZP\Models\Customer\Token;
 use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
+use RZP\Trace\TraceCode;
 
 class CustomerTokenTest extends TestCase
 {
     use PaymentTrait;
     use InteractsWithSession;
+    use DbEntityFetchTrait;
 
     protected function setUp(): void
     {
@@ -497,6 +501,634 @@ class CustomerTokenTest extends TestCase
         $this->startTest();
     }
 
+    public function testFetchAppTokensV2SingleCardSingleTokenSingleMerchantSuccessful()
+    {
+        $this->mockSession();
+
+        $this->attachDifferentMerchantWithSessionCustomer('test merchant','https://www.abcd.xyz.com', '/logos/random_image.png');
+
+        $this->ba->publicAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals('10000custgcard', $response['cards'][0]['tokens'][0]['id']);
+
+        $tokenMerchantId = $response['cards'][0]['tokens'][0]['merchant_id'];
+
+        $merchantDetails = [
+            'website_name'  => 'xyz',
+            'name'          => 'test merchant',
+            'logo_url'      => 'https://dummycdn.razorpay.com/logos/random_image_original.png'
+        ];
+
+        $this->assertArraySelectiveEquals($merchantDetails, $response['mappings']['merchants'][$tokenMerchantId]);
+    }
+
+    public function testFetchAppTokensV2RazorPaySharedAccountDisplayNameSuccessful()
+    {
+        $this->mockSession();
+
+        $this->mockSharedAccountMerchant('test merchant','https://www.abcd.xyz.com', '/logos/random_image.png');
+
+        $this->ba->publicAuth();
+
+        $testData = $this->testData['testFetchAppTokensV2SingleCardSingleTokenSingleMerchantSuccessful'];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $response = $this->startTest();
+
+        $this->assertEquals('10000custgcard', $response['cards'][0]['tokens'][0]['id']);
+
+        $tokenMerchantId = $response['cards'][0]['tokens'][0]['merchant_id'];
+
+        $merchantDetails = [
+            'website_name'  => 'Razorpay Software Pvt Ltd',
+            'name'          => 'test merchant',
+            'logo_url'      => 'https://dummycdn.razorpay.com/logos/random_image_original.png'
+        ];
+
+        $this->assertArraySelectiveEquals($merchantDetails, $response['mappings']['merchants'][$tokenMerchantId]);
+    }
+
+    public function testFetchAppTokensV2BillingLabelAsDisplayNameSuccessful()
+    {
+        $this->mockSession();
+
+        $this->attachDifferentMerchantWithSessionCustomer('test merchant',null, '/logos/random_image.png', 'Billing Name');
+
+        $this->ba->publicAuth();
+
+        $testData = $this->testData['testFetchAppTokensV2SingleCardSingleTokenSingleMerchantSuccessful'];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $response = $this->startTest();
+
+        $this->assertEquals('10000custgcard', $response['cards'][0]['tokens'][0]['id']);
+
+        $tokenMerchantId = $response['cards'][0]['tokens'][0]['merchant_id'];
+
+        $merchantDetails = [
+            'website_name'  => 'Billing Name',
+            'name'          => 'test merchant',
+            'logo_url'      => 'https://dummycdn.razorpay.com/logos/random_image_original.png'
+        ];
+
+        $this->assertArraySelectiveEquals($merchantDetails, $response['mappings']['merchants'][$tokenMerchantId]);
+    }
+
+    public function testFetchAppTokensV2BusinessNameAsDisplayNameSuccessful()
+    {
+        $this->mockSession();
+
+        $this->attachDifferentMerchantWithSessionCustomer('test merchant',null, '/logos/random_image.png', null, 'Business Name');
+
+        $this->ba->publicAuth();
+
+        $testData = $this->testData['testFetchAppTokensV2SingleCardSingleTokenSingleMerchantSuccessful'];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $response = $this->startTest();
+
+        $this->assertEquals('10000custgcard', $response['cards'][0]['tokens'][0]['id']);
+
+        $tokenMerchantId = $response['cards'][0]['tokens'][0]['merchant_id'];
+
+        $merchantDetails = [
+            'website_name'  => 'Business Name',
+            'name'          => 'test merchant',
+            'logo_url'      => 'https://dummycdn.razorpay.com/logos/random_image_original.png'
+        ];
+
+        $this->assertArraySelectiveEquals($merchantDetails, $response['mappings']['merchants'][$tokenMerchantId]);
+    }
+
+    public function testFetchAppTokensV2MerchantNameAsDisplayNameSuccessful()
+    {
+        $this->mockSession();
+
+        $this->attachDifferentMerchantWithSessionCustomer('test merchant');
+
+        $this->ba->publicAuth();
+
+        $testData = $this->testData['testFetchAppTokensV2SingleCardSingleTokenSingleMerchantSuccessful'];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $response = $this->startTest();
+
+        $this->assertEquals('10000custgcard', $response['cards'][0]['tokens'][0]['id']);
+
+        $tokenMerchantId = $response['cards'][0]['tokens'][0]['merchant_id'];
+
+        $merchantDetails = [
+            'website_name'  => 'test merchant',
+            'name'          => 'test merchant',
+            'logo_url'      => null
+        ];
+
+        $this->assertArraySelectiveEquals($merchantDetails, $response['mappings']['merchants'][$tokenMerchantId]);
+    }
+
+    public function testFetchAppTokensV2EmailAsWebsiteBillingLabelAsDisplayName()
+    {
+        $this->mockSession();
+
+        $this->attachDifferentMerchantWithSessionCustomer('test merchant','http://abcd@xyz.com', '/logos/random_image.png', 'Billing Name');
+
+        $this->ba->publicAuth();
+
+        $testData = $this->testData['testFetchAppTokensV2SingleCardSingleTokenSingleMerchantSuccessful'];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $response = $this->startTest();
+
+        $this->assertEquals('10000custgcard', $response['cards'][0]['tokens'][0]['id']);
+
+        $tokenMerchantId = $response['cards'][0]['tokens'][0]['merchant_id'];
+
+        $merchantDetails = [
+            'website_name'  => 'Billing Name',
+            'name'          => 'test merchant',
+            'logo_url'      => 'https://dummycdn.razorpay.com/logos/random_image_original.png'
+        ];
+
+        $this->assertArraySelectiveEquals($merchantDetails, $response['mappings']['merchants'][$tokenMerchantId]);
+    }
+
+    public function testFetchAppTokensV2UpiIdAsWebsiteBillingLabelAsDisplayName()
+    {
+        $this->mockSession();
+
+        $this->attachDifferentMerchantWithSessionCustomer('test merchant','http://1234567890@okaxis', '/logos/random_image.png', 'Billing Name');
+
+        $this->ba->publicAuth();
+
+        $testData = $this->testData['testFetchAppTokensV2SingleCardSingleTokenSingleMerchantSuccessful'];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $response = $this->startTest();
+
+        $this->assertEquals('10000custgcard', $response['cards'][0]['tokens'][0]['id']);
+
+        $tokenMerchantId = $response['cards'][0]['tokens'][0]['merchant_id'];
+
+        $merchantDetails = [
+            'website_name'  => 'Billing Name',
+            'name'          => 'test merchant',
+            'logo_url'      => 'https://dummycdn.razorpay.com/logos/random_image_original.png'
+        ];
+
+        $this->assertArraySelectiveEquals($merchantDetails, $response['mappings']['merchants'][$tokenMerchantId]);
+    }
+
+    public function testFetchAppTokensV2IpAddressAsWebsiteBillingLabelAsDisplayName()
+    {
+        $this->mockSession();
+
+        $this->attachDifferentMerchantWithSessionCustomer('test merchant','http://127.0.0.1:5000/', null, 'Billing Name');
+
+        $this->ba->publicAuth();
+
+        $testData = $this->testData['testFetchAppTokensV2SingleCardSingleTokenSingleMerchantSuccessful'];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $response = $this->startTest();
+
+        $this->assertEquals('10000custgcard', $response['cards'][0]['tokens'][0]['id']);
+
+        $tokenMerchantId = $response['cards'][0]['tokens'][0]['merchant_id'];
+
+        $merchantDetails = [
+            'website_name'  => 'Billing Name',
+            'name'          => 'test merchant',
+            'logo_url'      => null
+        ];
+
+        $this->assertArraySelectiveEquals($merchantDetails, $response['mappings']['merchants'][$tokenMerchantId]);
+    }
+
+    public function testFetchAppTokensV2ScemeNotHttpOrHttpsMerchantNameAsDisplayName()
+    {
+        $this->mockSession();
+
+        $this->attachDifferentMerchantWithSessionCustomer('test merchant','www.testing.com');
+
+        $this->ba->publicAuth();
+
+        $testData = $this->testData['testFetchAppTokensV2SingleCardSingleTokenSingleMerchantSuccessful'];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $response = $this->startTest();
+
+        $this->assertEquals('10000custgcard', $response['cards'][0]['tokens'][0]['id']);
+
+        $tokenMerchantId = $response['cards'][0]['tokens'][0]['merchant_id'];
+
+        $merchantDetails = [
+            'website_name'  => 'test merchant',
+            'name'          => 'test merchant',
+            'logo_url'      => null
+        ];
+
+        $this->assertArraySelectiveEquals($merchantDetails, $response['mappings']['merchants'][$tokenMerchantId]);
+    }
+
+    public function testFetchAppTokensV2NumericDomainMerchantNameAsDisplayName()
+    {
+        $this->mockSession();
+
+        $this->attachDifferentMerchantWithSessionCustomer('test merchant','http://2001');
+
+        $this->ba->publicAuth();
+
+        $testData = $this->testData['testFetchAppTokensV2SingleCardSingleTokenSingleMerchantSuccessful'];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $response = $this->startTest();
+
+        $this->assertEquals('10000custgcard', $response['cards'][0]['tokens'][0]['id']);
+
+        $tokenMerchantId = $response['cards'][0]['tokens'][0]['merchant_id'];
+
+        $merchantDetails = [
+            'website_name'  => 'test merchant',
+            'name'          => 'test merchant',
+            'logo_url'      => null
+        ];
+
+        $this->assertArraySelectiveEquals($merchantDetails, $response['mappings']['merchants'][$tokenMerchantId]);
+    }
+
+    public function testFetchAppTokensV2DomainFromExcludedDomainArrayMerchantNameAsDisplayName()
+    {
+        $this->mockSession();
+
+        $this->attachDifferentMerchantWithSessionCustomer('test merchant','https://www.google.com');
+
+        $this->ba->publicAuth();
+
+        $testData = $this->testData['testFetchAppTokensV2SingleCardSingleTokenSingleMerchantSuccessful'];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $response = $this->startTest();
+
+        $this->assertEquals('10000custgcard', $response['cards'][0]['tokens'][0]['id']);
+
+        $tokenMerchantId = $response['cards'][0]['tokens'][0]['merchant_id'];
+
+        $merchantDetails = [
+            'website_name'  => 'test merchant',
+            'name'          => 'test merchant',
+            'logo_url'      => null
+        ];
+
+        $this->assertArraySelectiveEquals($merchantDetails, $response['mappings']['merchants'][$tokenMerchantId]);
+    }
+
+    public function testFetchAppTokensV2PlayStoreLinkAsWebsiteMerchantNameAsDisplayName()
+    {
+        $this->mockSession();
+
+        $this->attachDifferentMerchantWithSessionCustomer('test merchant','https://play.google.com/store/apps/details?id=com.apexlearningapp.EducationalApp');
+
+        $this->ba->publicAuth();
+
+        $testData = $this->testData['testFetchAppTokensV2SingleCardSingleTokenSingleMerchantSuccessful'];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $response = $this->startTest();
+
+        $this->assertEquals('10000custgcard', $response['cards'][0]['tokens'][0]['id']);
+
+        $tokenMerchantId = $response['cards'][0]['tokens'][0]['merchant_id'];
+
+        $merchantDetails = [
+            'website_name'  => 'test merchant',
+            'name'          => 'test merchant',
+            'logo_url'      => null
+        ];
+
+        $this->assertArraySelectiveEquals($merchantDetails, $response['mappings']['merchants'][$tokenMerchantId]);
+    }
+
+    public function testFetchAppTokensV2AppleStoreLinkAsWebsiteMerchantNameAsDisplayName()
+    {
+        $this->mockSession();
+
+        $this->attachDifferentMerchantWithSessionCustomer('test merchant','https://apps.apple.com/us/app/la-milano-pizzeria/id1568854744');
+
+        $this->ba->publicAuth();
+
+        $testData = $this->testData['testFetchAppTokensV2SingleCardSingleTokenSingleMerchantSuccessful'];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $response = $this->startTest();
+
+        $this->assertEquals('10000custgcard', $response['cards'][0]['tokens'][0]['id']);
+
+        $tokenMerchantId = $response['cards'][0]['tokens'][0]['merchant_id'];
+
+        $merchantDetails = [
+            'website_name'  => 'test merchant',
+            'name'          => 'test merchant',
+            'logo_url'      => null
+        ];
+
+        $this->assertArraySelectiveEquals($merchantDetails, $response['mappings']['merchants'][$tokenMerchantId]);
+    }
+
+    public function testFetchAppTokensV2MultipleCardsDifferentMerchantsSuccessful()
+    {
+        $this->mockSession();
+
+        $this->attachDifferentMerchantWithSessionCustomer('test merchant','https://www.abcd.xyz.com', '/logos/random_image.png');
+
+        $cardId = $this->createCardFixture();
+
+        $merchantId = $this->createMerchantFixture();
+
+        $tokenId = $this->createTokenFixture($cardId, $merchantId);
+
+        $this->ba->publicAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals($tokenId, $response['cards'][0]['tokens'][0]['id']);
+
+        $this->assertEquals('10000custgcard', $response['cards'][1]['tokens'][0]['id']);
+
+        $tokenMerchantId1 = $response['cards'][0]['tokens'][0]['merchant_id'];
+
+        $tokenMerchantId2 = $response['cards'][1]['tokens'][0]['merchant_id'];
+
+        $merchantDetails1 = [
+            'website_name'  => 'testing',
+            'name'          => 'random merchant',
+            'logo_url'      => 'https://dummycdn.razorpay.com/logos/abcd/xyz_original.png'
+        ];
+
+        $merchantDetails2 = [
+            'website_name'  => 'xyz',
+            'name'          => 'test merchant',
+            'logo_url'      => 'https://dummycdn.razorpay.com/logos/random_image_original.png'
+        ];
+
+        $this->assertArraySelectiveEquals($merchantDetails1, $response['mappings']['merchants'][$tokenMerchantId1]);
+
+        $this->assertArraySelectiveEquals($merchantDetails2, $response['mappings']['merchants'][$tokenMerchantId2]);
+    }
+
+    public function testFetchAppTokensV2MultipleCardsSameMerchant()
+    {
+        $this->mockSession();
+
+        $this->attachDifferentMerchantWithSessionCustomer('test merchant','https://www.abcd.xyz.com', '/logos/random_image.png');
+
+        $cardId = $this->createCardFixture();
+
+        $tokenId = $this->createTokenFixture($cardId, '111111Razorpay');
+
+        $this->ba->publicAuth();
+
+        $testData = $this->testData['testFetchAppTokensV2MultipleCardsDifferentMerchantsSuccessful'];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $response = $this->startTest();
+
+        $this->assertEquals($tokenId, $response['cards'][0]['tokens'][0]['id']);
+
+        $this->assertEquals('10000custgcard', $response['cards'][1]['tokens'][0]['id']);
+
+        $merchantDetails = [
+            'website_name'  => 'xyz',
+            'name'          => 'test merchant',
+            'logo_url'      => 'https://dummycdn.razorpay.com/logos/random_image_original.png'
+        ];
+
+        $tokenMerchantId1 = $response['cards'][0]['tokens'][0]['merchant_id'];
+
+        $tokenMerchantId2 = $response['cards'][1]['tokens'][0]['merchant_id'];
+
+        $this->assertEquals($tokenMerchantId1, $tokenMerchantId2);
+
+        $this->assertArraySelectiveEquals($merchantDetails, $response['mappings']['merchants'][$tokenMerchantId1]);
+    }
+
+    public function testFetchAppTokensV2SingleCardMultipleTokensDifferentMerchantsSuccessful()
+    {
+        $this->mockSession();
+
+        $this->attachDifferentMerchantWithSessionCustomer('test merchant','https://www.abcd.xyz.com', '/logos/random_image.png');
+
+        $merchantId2 =  $this->createMerchantFixture();
+
+        $tokenId = $this->createTokenFixture('100000000gcard', $merchantId2);
+
+        $token = $this->getDbEntityById('token', $tokenId);
+
+        $token->setAttribute('created_at', 1234567890);
+
+        $token->saveOrFail();
+
+        $this->ba->publicAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals('10000custgcard', $response['cards'][0]['tokens'][0]['id']);
+
+        $this->assertEquals($tokenId, $response['cards'][0]['tokens'][1]['id']);
+
+        $tokenMerchantId1 = $response['cards'][0]['tokens'][0]['merchant_id'];
+
+        $tokenMerchantId2 = $response['cards'][0]['tokens'][1]['merchant_id'];
+
+        $merchantDetails1 = [
+            'website_name'  => 'xyz',
+            'name'          => 'test merchant',
+            'logo_url'      => 'https://dummycdn.razorpay.com/logos/random_image_original.png'
+        ];
+
+        $merchantDetails2 = [
+            'website_name'  => 'testing',
+            'name'          => 'random merchant',
+            'logo_url'      => 'https://dummycdn.razorpay.com/logos/abcd/xyz_original.png'
+        ];
+
+        $this->assertArraySelectiveEquals($merchantDetails1, $response['mappings']['merchants'][$tokenMerchantId1]);
+
+        $this->assertArraySelectiveEquals($merchantDetails2, $response['mappings']['merchants'][$tokenMerchantId2]);
+    }
+
+    public function testFetchAppTokensV2MultipleCardsMultipleTokensMultipleMerchantsSuccessful()
+    {
+        $this->mockSession();
+
+        $this->attachDifferentMerchantWithSessionCustomer('test merchant','https://www.abcd.xyz.com', '/logos/random_image.png');
+
+        $merchantId2 =  $this->createMerchantFixture();
+
+        $tokenId1 = $this->createTokenFixture('100000000gcard', $merchantId2);
+
+        $token1 = $this->getDbEntityById('token', $tokenId1);
+
+        $token1->setAttribute('created_at', 1234567890);
+
+        $token1->saveOrFail();
+
+        $cardId = $this->createCardFixture();
+
+        $tokenId2 = $this->createTokenFixture($cardId, $merchantId2);
+
+        $this->ba->publicAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals($tokenId2, $response['cards'][0]['tokens'][0]['id']);
+
+        $this->assertEquals('10000custgcard', $response['cards'][1]['tokens'][0]['id']);
+
+        $this->assertEquals($tokenId1, $response['cards'][1]['tokens'][1]['id']);
+
+        $tokenMerchantId1 = $response['cards'][0]['tokens'][0]['merchant_id'];
+
+        $tokenMerchantId2 = $response['cards'][1]['tokens'][0]['merchant_id'];
+
+        $tokenMerchantId3 = $response['cards'][1]['tokens'][1]['merchant_id'];
+
+        $this->assertEquals($tokenMerchantId1, $tokenMerchantId3);
+
+        $merchantDetails1 = [
+            'website_name'  => 'xyz',
+            'name'          => 'test merchant',
+            'logo_url'      => 'https://dummycdn.razorpay.com/logos/random_image_original.png'
+        ];
+
+        $merchantDetails2 = [
+            'website_name'  => 'testing',
+            'name'          => 'random merchant',
+            'logo_url'      => 'https://dummycdn.razorpay.com/logos/abcd/xyz_original.png'
+        ];
+
+        $this->assertArraySelectiveEquals($merchantDetails1, $response['mappings']['merchants'][$tokenMerchantId2]);
+
+        $this->assertArraySelectiveEquals($merchantDetails2, $response['mappings']['merchants'][$tokenMerchantId1]);
+    }
+
+    public function testFetchAppTokensV2CustomerNotAuthenticated()
+    {
+        $this->ba->publicAuth();
+
+        $this->startTest();
+    }
+
+    public function testDeleteAppTokensV2Successful()
+    {
+        $this->mockSession();
+
+        $card = $this->fixtures->create('card');
+
+        $tokenId = $this->createTokenFixture($card->getId());
+
+        $this->testData[__FUNCTION__]['request']['content']['tokens'][] = $tokenId;
+
+        $this->ba->publicAuth();
+
+        $response = $this->startTest();
+
+        $this->assertArrayHasKey('success', $response);
+
+        $this->assertArraySelectiveEquals([$tokenId], $response['success']);
+    }
+
+    public function testDeleteAppTokensV2CustomerNotAuthenticated()
+    {
+        $this->ba->publicAuth();
+
+        $this->startTest();
+    }
+
+    public function testDeleteAppTokensV2SizeValidationFailure()
+    {
+        $this->mockSession();
+
+        $this->ba->publicAuth();
+
+        $this->startTest();
+    }
+
+    public function testDeleteAppTokensV2TypeValidationFailure()
+    {
+        $this->mockSession();
+
+        $this->ba->publicAuth();
+
+        $this->startTest();
+    }
+
+    public function testDeleteAppTokensV2CountNotEqualValidationFailure()
+    {
+        $this->mockSession();
+
+        $card = $this->fixtures->create('card');
+
+        $tokenId1 = $this->createTokenFixture($card->getId());
+
+        $tokenId2 = $this->createTokenFixture($card->getId());
+
+        $tokens = [$tokenId1, $tokenId2, '12345678901234'];
+
+        $this->testData[__FUNCTION__]['request']['content']['tokens'] = $tokens;
+
+        $this->ba->publicAuth();
+
+        $this->startTest();
+    }
+
+    public function testDeleteAppTokensV2DeleteMultipleTokensSuccessful()
+    {
+        $this->mockSession();
+
+        $card1 = $this->fixtures->create('card');
+
+        $card2 = $this->fixtures->create('card');
+
+        $tokenId1 = $this->createTokenFixture($card1->getId());
+
+        $tokenId2 = $this->createTokenFixture($card1->getId());
+
+        $tokenId3 = $this->createTokenFixture($card2->getId());
+
+        $tokenId4 = $this->createTokenFixture($card2->getId());
+
+        $tokens = [$tokenId1, $tokenId3, $tokenId4];
+
+        $testData = $this->testData['testDeleteAppTokensV2Successful'];
+
+        $testData['request']['content']['tokens'] = $tokens;
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->publicAuth();
+
+        $response = $this->startTest();
+
+        $this->assertArrayHasKey('success', $response);
+
+        $this->assertArraySelectiveEquals($tokens, $response['success']);
+    }
+
     protected function mockSession()
     {
         $data = array(
@@ -505,5 +1137,89 @@ class CustomerTokenTest extends TestCase
         );
 
         $this->session($data);
+    }
+
+    protected function mockSharedAccountMerchant($name, $website = null, $logoUrl = null, $billingLabel = null, $businessName = null)
+    {
+        $merchant = $this->getDbEntityById('merchant', '100000Razorpay');
+
+        $merchant->setAttribute('name', $name);
+
+        $merchant->setAttribute('website', $website);
+
+        $merchant->setAttribute('logo_url', $logoUrl);
+
+        $merchant->setAttribute('billing_label', $billingLabel);
+
+        $merchant->saveOrFail();
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'   => '100000Razorpay',
+            'business_name' => $businessName
+        ]);
+    }
+
+    protected function attachDifferentMerchantWithSessionCustomer($name, $website = null, $logoUrl = null, $billingLabel = null, $businessName = null)
+    {
+        $this->fixtures->create('merchant', [
+            'id'            => '111111Razorpay',
+            'website'       => $website,
+            'name'          => $name,
+            'logo_url'      => $logoUrl,
+            'billing_label' => $billingLabel
+        ]);
+
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'   => '111111Razorpay',
+            'business_name' => $businessName
+        ]);
+
+        $token = $this->getDbEntityById('token', '10000custgcard');
+
+        $token->setAttribute('merchant_id', '111111Razorpay');
+
+        $token->saveOrFail();
+    }
+
+    protected function createTokenFixture($cardId, $merchantId = '100000Razorpay')
+    {
+        $token = $this->fixtures->create('token', [
+                'method'      => 'card',
+                'card_id'     => $cardId,
+                'customer_id' => '10000gcustomer',
+                'merchant_id' => $merchantId,
+                'used_at'     => Carbon::now()->getTimestamp(),
+            ]
+        );
+
+        return $token->getId();
+    }
+
+    protected function createCardFixture()
+    {
+        $card = $this->fixtures->create('card', [
+                'country'       => 'IN',
+                "last4"         => "1234",
+                "network"       => "Visa",
+                "type"          => "credit",
+                "issuer"        => "sbi",
+                "expiry_month"  => 12,
+                "expiry_year"   => 2024,
+            ]
+        );
+
+        return $card->getId();
+    }
+
+    protected function createMerchantFixture()
+    {
+        $merchant = $this->fixtures->create('merchant', [
+            'website'  => 'https://www.testing.com',
+            'name'     => 'random merchant',
+            'logo_url' => '/logos/abcd/xyz.png',
+        ]);
+
+        return $merchant->getId();
     }
 }

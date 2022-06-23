@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Customer;
 
+use RZP\Error\ErrorCode;
+use RZP\Exception;
 use Request;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Base;
@@ -778,5 +780,61 @@ class Service extends Base\Service
         $payout = (new Payout\Core)->createPayoutFromCustomerWallet($input, $customer, $this->merchant);
 
         return $payout->toArrayPublic();
+    }
+
+    public function fetchTokensForGlobalCustomerV2() : array
+    {
+        $customer = $this->getCustomerFromSession();
+
+        if ($customer === null)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_USER_NOT_AUTHENTICATED
+            );
+        }
+
+        $this->trace->info(TraceCode::CUSTOMER_FETCH, [
+            Customer\Token\Entity::CUSTOMER_ID => $customer->getId(),
+        ]);
+
+        $fetchedTokenDetails = (new Token\Core())->fetchTokenDetailsForCustomer($customer);
+
+        return $fetchedTokenDetails;
+    }
+
+    public function deleteTokenForGlobalCustomerV2(array $input) : array
+    {
+        $customer = $this->getCustomerFromSession();
+
+        if ($customer === null)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_USER_NOT_AUTHENTICATED
+            );
+        }
+
+        $customerId = $customer->getId();
+
+        $this->trace->info(TraceCode::CUSTOMER_FETCH, [
+            Customer\Token\Entity::CUSTOMER_ID => $customerId
+        ]);
+
+        $deletedTokens = (new Token\Core())->deleteTokensForCustomer($input, $customerId);
+
+        return $deletedTokens;
+    }
+
+    protected function getCustomerFromSession() : ?Entity
+    {
+        $appTokenId = AppToken\SessionHelper::getAppTokenFromSession($this->mode);
+
+        if ($appTokenId === null)
+        {
+            return null;
+        }
+
+        $app = (new AppToken\Core)->getAppByAppTokenId($appTokenId, $this->repo->merchant->getSharedAccount());
+
+        return $this->repo->customer->fetchByAppToken($app);
     }
 }

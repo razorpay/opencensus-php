@@ -405,4 +405,22 @@ class CustomerController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function fetchTokensForGlobalCustomerV2()
+    {
+        $input = Request::all();
+
+        $tokens = $this->service()->fetchTokensForGlobalCustomerV2($input);
+
+        return ApiResponse::json($tokens);
+    }
+
+    public function deleteTokenForGlobalCustomerV2()
+    {
+        $input = Request::all();
+
+        $tokens = $this->service()->deleteTokenForGlobalCustomerV2($input);
+
+        return ApiResponse::json($tokens);
+    }
 }

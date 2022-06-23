@@ -2,6 +2,7 @@
 
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
+use RZP\Error\PublicErrorDescription;
 
 return [
     'testCreateCustomer' => [
@@ -1026,4 +1027,260 @@ return [
         ],
     ],
 
+    'testFetchAppTokensV2SingleCardSingleTokenSingleMerchantSuccessful' => [
+        'request' => [
+            'url' => '/v2/apps/tokens',
+            'method' => 'get',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                "contact" => "+919988776655",
+                "cards" => [
+                    [
+                        "last4"         => "1111",
+                        "network"       => "Visa",
+                        "type"          => "debit",
+                        "issuer"        => "hdfc",
+                        "tokens" => [
+                            [
+                                'id'         => '10000custgcard',
+                                'created_at' => 1500000004
+                            ]
+                        ]
+                    ]
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchAppTokensV2SingleCardMultipleTokensDifferentMerchantsSuccessful' => [
+        'request' => [
+            'url' => '/v2/apps/tokens',
+            'method' => 'get',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                "contact" => "+919988776655",
+                "cards" => [
+                    [
+                        "last4"         => "1111",
+                        "network"       => "Visa",
+                        "type"          => "debit",
+                        "issuer"        => "hdfc",
+                        "tokens" => [
+                            [
+                                'id'         => '10000custgcard',
+                                'created_at' => 1500000004
+                            ],
+                            [
+                                'created_at' => 1234567890
+                            ]
+                        ]
+                    ]
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchAppTokensV2MultipleCardsDifferentMerchantsSuccessful' => [
+        'request' => [
+            'url' => '/v2/apps/tokens',
+            'method' => 'get',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                "contact" => "+919988776655",
+                "cards" => [
+                    [
+                        "last4"         => "1234",
+                        "network"       => "Visa",
+                        "type"          => "credit",
+                        "issuer"        => "sbi",
+                        "tokens" => [
+                            []
+                        ]
+                    ],
+                    [
+                        "last4"         => "1111",
+                        "network"       => "Visa",
+                        "type"          => "debit",
+                        "issuer"        => "hdfc",
+                        "tokens" => [
+                            [
+                                'id'         => '10000custgcard',
+                                'created_at' => 1500000004
+                            ]
+                        ]
+                    ]
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchAppTokensV2MultipleCardsMultipleTokensMultipleMerchantsSuccessful' => [
+        'request' => [
+            'url' => '/v2/apps/tokens',
+            'method' => 'get',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                "contact" => "+919988776655",
+                "cards" => [
+                    [
+                        "last4"         => "1234",
+                        "network"       => "Visa",
+                        "type"          => "credit",
+                        "issuer"        => "sbi",
+                        "tokens" => [
+                            []
+                        ]
+                    ],
+                    [
+                        "last4"         => "1111",
+                        "network"       => "Visa",
+                        "type"          => "debit",
+                        "issuer"        => "hdfc",
+                        "tokens" => [
+                            [
+                                'id'         => '10000custgcard',
+                                'created_at' => 1500000004
+                            ],
+                            [
+                                'created_at' => 1234567890
+                            ]
+                        ]
+                    ]
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchAppTokensV2CustomerNotAuthenticated' => [
+        'request' => [
+            'url' => '/v2/apps/tokens',
+            'method' => 'get',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_USER_NOT_AUTHENTICATED,
+                ],
+            ],
+            'status_code' => 401,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_USER_NOT_AUTHENTICATED,
+        ],
+    ],
+
+    'testDeleteAppTokensV2Successful' => [
+        'request' => [
+            'url' => '/v2/apps/tokens',
+            'method' => 'delete',
+            'content' => [
+                'tokens' => []
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testDeleteAppTokensV2CustomerNotAuthenticated' =>[
+        'request' => [
+            'url' => '/v2/apps/tokens',
+            'method' => 'get',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_USER_NOT_AUTHENTICATED,
+                ],
+            ],
+            'status_code' => 401,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_USER_NOT_AUTHENTICATED,
+        ],
+    ],
+
+    'testDeleteAppTokensV2SizeValidationFailure' => [
+        'request' => [
+            'url' => '/v2/apps/tokens',
+            'method' => 'delete',
+            'content' => [
+                'tokens' => ['1234567890']
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The tokens.0 must be 14 characters.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testDeleteAppTokensV2TypeValidationFailure' => [
+        'request' => [
+            'url' => '/v2/apps/tokens',
+            'method' => 'delete',
+            'content' => [
+                'tokens' => '1234567890'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The tokens must be an array.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testDeleteAppTokensV2CountNotEqualValidationFailure' => [
+        'request' => [
+            'url' => '/v2/apps/tokens',
+            'method' => 'delete',
+            'content' => [
+                'tokens' => []
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'One or more tokens do not belong to this customer',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_CUSTOMER_TOKEN_COUNT_NOT_EQUAL,
+        ],
+    ],
 ];

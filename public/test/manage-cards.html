@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html dir='ltr'>
+  <head>
+    <title>Razorpay · Manage Your Saved Cards</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta charset='utf-8'>
+    <meta name='viewport' content='user-scalable=no,width=device-width,initial-scale=1,maximum-scale=1'>
+  </head>
+  <body></body>
+  <script>
+
+    function appendScript(element) {
+      var script = document.createElement('script');
+      script.src = element.src;
+      document.querySelector('head').appendChild(script);
+    }
+  
+    function addScript (src) {
+      var script = document.createElement('script');
+      script.crossorigin = true;
+      script.onerror = function () { appendScript(script); };
+      script.src = src;
+  
+      document.querySelector('head').appendChild(script);
+    }
+  
+    function addLink (href) {
+      var link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = href;
+  
+      document.querySelector('head').appendChild(link);
+    }
+  
+    function getSearchParams () {
+      var search = window.location.search.replace('?', '');
+      var params = {};
+  
+      var items = search.split('&');
+  
+      var i;
+      for (i = 0; i < items.length; i++) {
+        var pair = items[i].split('=');
+  
+        params[pair[0]] = pair[1];
+      }
+  
+      return params;
+    }
+  
+    function addAssets () {
+      var params = getSearchParams();
+  
+      var base = 'https://cdn.razorpay.com/static/cx/manage-cards/';
+  
+      if (params['env'] === 'beta') {
+         base = 'https://betacdn.np.razorpay.in/static/cx/manage-cards/';
+      }
+  
+      addLink(base + 'bundle.css');
+      addScript(base + 'bundle.js');
+    }
+  
+    addAssets();
+  </script>
+</html>

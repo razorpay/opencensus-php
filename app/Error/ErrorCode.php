@@ -2150,6 +2150,7 @@ class ErrorCode
     const BAD_REQUEST_INVALID_TOKEN_FOR_PAUSE                                       = 'BAD_REQUEST_INVALID_TOKEN_FOR_PAUSE';
     const BAD_REQUEST_INVALID_TOKEN_FOR_RESUME                                      = 'BAD_REQUEST_INVALID_TOKEN_FOR_RESUME';
     const BAD_REQUEST_INVALID_TOKEN                                                 = 'BAD_REQUEST_INVALID_TOKEN';
+    const BAD_REQUEST_CUSTOMER_TOKEN_COUNT_NOT_EQUAL                                = 'BAD_REQUEST_CUSTOMER_TOKEN_COUNT_NOT_EQUAL';
     const BAD_REQUEST_D2C_WRONG_OTP                                                 = 'BAD_REQUEST_D2C_WRONG_OTP';
     const BAD_REQUEST_D2C_NON_OWNER_USER_NOT_ALLOWED                                = 'BAD_REQUEST_D2C_NON_OWNER_USER_NOT_ALLOWED';
     const BAD_REQUEST_D2C_CREDIT_BUREAU_INVALID_EMAIL_OR_CONTACT                    = 'BAD_REQUEST_D2C_CREDIT_BUREAU_INVALID_EMAIL_OR_CONTACT';

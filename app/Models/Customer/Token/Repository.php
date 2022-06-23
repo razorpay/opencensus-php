@@ -831,6 +831,22 @@ class Repository extends Base\Repository
             ->findMany($tokenIds);
     }
 
+    public function getByTokensAndCustomer(array $tokenIds, string $customerId)
+    {
+        return $this->newQuery()
+            ->where(Token\Entity::CUSTOMER_ID, '=', $customerId)
+            ->whereIn(Token\Entity::ID, $tokenIds)
+            ->get();
+    }
+
+    public function getCountOfExistingTokensByTokensAndCustomer(array $tokenIds, string $customerId)
+    {
+        return $this->newQuery()
+            ->where(Token\Entity::CUSTOMER_ID, '=', $customerId)
+            ->whereIn(Token\Entity::ID, $tokenIds)
+            ->count();
+    }
+
     /**
      * Fetch a list of global customer local token data (token id, merchant id, card network)
      * which have received consents for token provisioning from data lake.

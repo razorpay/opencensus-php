@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant;
 
 use App;
+use Illuminate\Support\Str;
 use Mail;
 use Config;
 use ApiResponse;
@@ -7726,6 +7727,137 @@ class Core extends Base\Core
         }
 
         return false;
+    }
+
+    public function addMerchantDetailsOfToken(
+        Entity $merchant,
+        array &$merchantsList,
+        array &$merchantIdMapping
+    ) : void
+    {
+        $merchantId = $merchant->getId();
+
+        if (array_key_exists($merchantId, $merchantIdMapping) === false)
+        {
+            // We have decided not to expose the actual Merchant IDs due to security issues.
+            // We would expose random IDs as Merchant ID and is used over here only for mapping purpose.
+            $merchantIdMapping[$merchantId] = Str::random(20);
+
+            $merchantDisplayName = $this->getMerchantDisplayName($merchant);
+
+            $merchantDetails = [
+                Entity::NAME            => $merchant->getName(),
+                Entity::LOGO_URL        => $merchant->getFullLogoUrlWithSize(),
+                Constants::WEBSITE_NAME => $merchantDisplayName
+            ];
+
+            $merchantsList[$merchantIdMapping[$merchantId]] = $merchantDetails ;
+        }
+    }
+
+    protected function getWebsiteDomainName(string $websiteUrl) : string
+    {
+        $websiteUrl = $this->preProcessWebsiteForDomainName($websiteUrl);
+
+        $host = parse_url($websiteUrl, PHP_URL_HOST);
+
+        $extractedDomains = (new TLDExtract())->extract($host);
+
+        if (count($extractedDomains) >= 2)
+        {
+            $hostWithoutTld = $extractedDomains[0];
+
+            // divide in subdomain and second level domain
+            $hostParts = explode('.', $hostWithoutTld);
+
+            // take second level domain(just below top level domain) as website name
+            return $hostParts[count($hostParts)-1];
+        }
+
+        return "";
+    }
+
+    protected function getMerchantDisplayName(Entity $merchant) : string
+    {
+        if ($merchant->isShared() === true)
+        {
+            return Constants::RAZORPAY_DISPLAY_NAME;
+        }
+
+        $merchantWebsite = $merchant->getWebsite();
+
+        $isValidWebsite = $this->isValidSchemeAndHostForMerchantWebsite($merchantWebsite);
+
+        if ($isValidWebsite === true)
+        {
+            $merchantDisplayName = $this->getWebsiteDomainName($merchantWebsite);
+        }
+
+        // We are using merchant website domain as the display name
+        // Exclude showing website domain as merchant name for those having websites as IPs, Email Ids, UPI Ids
+        // and domains which are present in the array DOMAINS_TO_BE_EXCLUDED
+        // Show Billing label as the display name for merchants which are being excluded
+        // If Billing label is not present, show the Business name as the display name
+        // If Business name is not present, show the Merchant name as the display name
+
+        if ((empty($merchantDisplayName) === true) or
+            (is_numeric($merchantDisplayName) === true) or
+            (in_array($merchantDisplayName, Constants::DOMAINS_TO_BE_EXCLUDED, true)))
+        {
+            $merchantDetail = $merchant->merchantDetail;
+
+            // Get first non-empty value in the list
+            $merchantDisplayName = current(
+                array_filter([
+                    $merchant->getBillingLabelNotName(),
+                    $merchantDetail->getBusinessName(),
+                    $merchant->getName(),
+                ])
+            ) ?: '';
+        }
+
+        return $merchantDisplayName;
+    }
+
+    protected function preProcessWebsiteForDomainName(string $websiteUrl) : string
+    {
+        $websiteUrl = trim($websiteUrl);
+
+        return strtolower($websiteUrl);
+    }
+
+    /**
+     * checks if scheme is valid(http and https) and
+     * host is not 'play.google.com' and 'apps.apple.com'
+     * also check if url contains @ (in case of email id and upi id) or : (in case of ip)
+     * @param $websiteUrl
+     * @return bool
+     */
+    protected function isValidSchemeAndHostForMerchantWebsite($websiteUrl) : bool
+    {
+        $host = parse_url($websiteUrl, PHP_URL_HOST);
+
+        $scheme = parse_url($websiteUrl, PHP_URL_SCHEME);
+
+        // allow only http, https scheme
+        // do not consider play store app link as merchant website
+        if (($host === null) or
+            ($scheme === null) or
+            ((($scheme === 'http') or ($scheme === 'https')) === false) or
+            ((($host === 'play.google.com') or ($host === 'apps.apple.com')) === true))
+        {
+            return false;
+        }
+
+        $websiteUrl = preg_replace("(^https?://)", "", $websiteUrl);
+
+        if ((str_contains($websiteUrl, ':') === true) or
+            (str_contains($websiteUrl, '@') === true))
+        {
+            return false;
+        }
+
+        return true;
     }
 
     private function detachAndAttachSubmerchantOwners(Entity $merchant, string $oldOwnerId, string $newOwnerId, string $product)

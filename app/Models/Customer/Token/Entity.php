@@ -135,6 +135,8 @@ class Entity extends Base\PublicEntity
 
     const BILLING_ADDRESS       = 'billing_address';
 
+    const CARDS                 = 'cards';
+
     /*
      * authentication data key in the input
      */

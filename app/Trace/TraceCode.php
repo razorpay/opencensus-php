@@ -7181,6 +7181,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PARTNER_KYC_ACCESS__REQUEST                           = 'PARTNER_KYC_ACCESS__REQUEST';
     const BAS_DEDUPE_CHECK_ANALYSIS                             = 'BAS_DEDUPE_CHECK_ANALYSIS';
 
+    const FETCHED_CUSTOMER_TOKENS                               = 'FETCHED_CUSTOMER_TOKENS';
+    const TOKENS_TO_BE_DELETED                                  = 'TOKENS_TO_BE_DELETED';
+    const TOKENS_DELETED                                        = 'TOKENS_DELETED';
+
     //partner bank health update and notification trace codes
     const PARTNER_BANK_HEALTH_NOTIFICATION_JOB_REQUEST      = 'PARTNER_BANK_HEALTH_NOTIFICATION_JOB_REQUEST';
     const PARTNER_BANK_HEALTH_NOTIFICATION_JOB_INIT         = 'PARTNER_BANK_HEALTH_NOTIFICATION_JOB_INIT';

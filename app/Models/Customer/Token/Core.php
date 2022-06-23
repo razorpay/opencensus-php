@@ -2572,6 +2572,82 @@ class Core extends Base\Core
         ];
     }
 
+    public function fetchTokenDetailsForCustomer(Customer\Entity $customer) : array
+    {
+        $cardsList = [];
+
+        $tokenIdList = [];
+
+        $merchantsList = [];
+
+        $merchantIdMapping = [];
+
+        $tokens = $this->repo->token->getByCustomer($customer);
+
+        foreach ($tokens as $token)
+        {
+            $tokenIdList[] = $token->getId();
+        }
+
+        $this->trace->info(TraceCode::FETCHED_CUSTOMER_TOKENS, [
+            Card\Constants::TOKENS  => $tokenIdList
+        ]);
+
+        foreach ($tokens as $token)
+        {
+            $merchant = $token->merchant;
+
+            (new Merchant\Core())->addMerchantDetailsOfToken($merchant, $merchantsList, $merchantIdMapping);
+
+            (new Card\Core())->addCardDetailsOfToken($token, $cardsList, $merchantIdMapping);
+        }
+
+        return [
+            Customer\Entity::CONTACT => $customer->contact,
+            Entity::CARDS => array_values($cardsList),
+            'mappings' => [
+                Merchant\Constants::MERCHANTS => $merchantsList
+            ]
+        ];
+    }
+
+    public function deleteTokensForCustomer(array $input, string $customerId) : array
+    {
+        $this->trace->info(TraceCode::TOKENS_TO_BE_DELETED, [
+            Card\Constants::TOKENS  => $input
+        ]);
+
+        (new Validator())->validateDeleteTokensInput($input, $customerId);
+
+        $deletedTokensList = [];
+
+        $tokens = $this->repo->token->getByTokensAndCustomer($input['tokens'], $customerId);
+
+        foreach ($tokens as $token)
+        {
+            $tokenId = $token->getId();
+
+            try
+            {
+                $this->repo->token->deleteOrFail($token);
+
+                $deletedTokensList['success'][] = $tokenId;
+            }
+            catch(\Exception $e)
+            {
+                $this->trace->traceException($e);
+
+                $deletedTokensList['errors'][] = $tokenId;
+            }
+        }
+
+        $this->trace->info(TraceCode::TOKENS_DELETED, [
+            $deletedTokensList
+        ]);
+
+        return $deletedTokensList;
+    }
+
     /**
      * @param $input
      * @param $bulkRequestUniqueId

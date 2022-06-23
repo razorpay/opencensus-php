@@ -1280,6 +1280,9 @@ class Route
         // Setu Integration
         'bbps_bill_payments'                       => ['get',      'bbps_bill_payments',                             'BbpsController@showBbpsDashboard'                                  ],
 
+        'app_fetch_tokens_v2'                      => ['get',      'apps/tokens',                                    'CustomerController@fetchTokensForGlobalCustomerV2'                 ],
+        'app_delete_tokens_v2'                     => ['delete',   'apps/tokens',                                    'CustomerController@deleteTokenForGlobalCustomerV2'                 ],
+
         'app_delete_token'                         => ['delete',   'apps/tokens/{token}',                            'CustomerController@deleteTokenForGlobalCustomer'                   ],
         'app_fetch_tokens'                         => ['get',      'apps/tokens',                                    'CustomerController@fetchTokensForGlobalCustomer'                   ],
         'app_fetch_payments'                       => ['get',      'apps/payments',                                  'CustomerController@fetchPaymentsForGlobalCustomer'                 ],
@@ -3508,7 +3511,7 @@ class Route
         // migrate global tokens to local tokens on which consents are received
         'create_local_tokens_from_consents_bulk' => ['post',         'create_local_tokens_from_consents/bulk',                   'TokenController@bulkCreateLocalTokensFromConsents'],
 
-       // 1 click checkout
+        // 1 click checkout
        'third_watch_address_check'               => ['post',       'tw/address/check_cod_eligibility',                      'ThirdWatchController@checkAddressServiceability'   ],
        '1cc_cod_check'                           => ['post',       '1cc/check_cod_eligibility',                             'ThirdWatchController@checkCodEligibility'   ],
        'third_watch_address_cod_score'           => ['post',       'tw/address/cod_score',                                  'ThirdWatchController@saveCodScoreForAddress'                  ],
@@ -3739,6 +3742,8 @@ class Route
         'country_fetch',
         'state_fetch',
         '1cc_shopify_checkout_update',
+        'app_fetch_tokens_v2',
+        'app_delete_tokens_v2',
         '1cc_shopify_add_checkout_url',
     ];
 
@@ -8786,6 +8791,8 @@ class Route
         'capital_virtual_cards',
         'capital_virtual_cards_get_card_cvv',
         'capital_virtual_cards_send_otp',
+        'app_fetch_tokens_v2',
+        'app_delete_tokens_v2',
         'customer_record_1cc_address_consent_view',
         'customer_record_1cc_address_consent'
     ];
@@ -13955,6 +13962,8 @@ class Route
         'onboarding_webhook_fetch_all',
         'onboarding_webhook_update',
         'onboarding_webhook_delete',
+        'app_fetch_tokens_v2',
+        'app_delete_tokens_v2',
     ];
 
     // Routes for header X_DASHBOARD_USER_2FA_VERIFIED should be true

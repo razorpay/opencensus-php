@@ -4,8 +4,10 @@ namespace RZP\Models\Customer\Token;
 
 use Carbon\Carbon;
 
+use App;
 use RZP\Base;
 use RZP\Exception;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Bank;
 use RZP\Error\ErrorCode;
 use RZP\Models\Payment\Method;
@@ -155,6 +157,11 @@ class Validator extends Base\Validator
         'batch_size'    => 'sometimes|integer|max:10000'
     ];
 
+    protected static $deleteTokensRules = [
+        Card\Constants::TOKENS        => 'required|array',
+        Card\Constants::TOKENS . '.*' => 'required_with:' . Card\Constants::TOKENS . '|string|size:14',
+    ];
+
     protected static $validateGlobalCustomerLocalSavedCardAsyncTokenisationRules = [
         'batch_size' => 'sometimes|integer|max:100000'
     ];
@@ -301,6 +308,25 @@ class Validator extends Base\Validator
                         'id'            => $this->entity->getId(),
                     ]);
             }
+        }
+    }
+
+    public function validateDeleteTokensInput($input, $customerId)
+    {
+        $app = App::getFacadeRoot();
+
+        $this->repo = $app['repo'];
+
+        (new static)->validateInput('delete_tokens', $input);
+
+        $tokenCount = $this->repo->token->getCountOfExistingTokensByTokensAndCustomer($input['tokens'], $customerId);
+
+        // check if tokens found in db are less than provided
+        if ($tokenCount !== count($input['tokens']))
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_CUSTOMER_TOKEN_COUNT_NOT_EQUAL
+            );
         }
     }
 }
