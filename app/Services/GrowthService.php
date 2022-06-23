@@ -11,6 +11,7 @@ use RZP\Exception;
 use RZP\Http\RequestHeader;
 use RZP\Http\Request\Requests;
 use RZP\Models\Base;
+use RZP\Services\UfhService;
 use RZP\Trace\TraceCode;
 use Throwable;
 
@@ -46,6 +47,9 @@ class GrowthService extends Base\Service
     // Admin email parameter to be sent in all admin requests
     const ADMIN_EMAIL_PARAM_NAME = 'admin_email';
     const ADMIN_EMAIL_PARAM_HEADER = 'X-Admin-Email';
+
+    // Max allowed file size - 1MB (1024*1024).
+    const MAX_FILE_SIZE = 1048576;
 
     /**
      * @var string
@@ -87,6 +91,7 @@ class GrowthService extends Base\Service
         $this->skipPassport = $growthConfig['skip_jwt_passport'];
         $this->requestTimeout = $growthConfig['request_timeout'];
         $this->auth = $app['basicauth'];
+        $this->ufh = (new UfhService($app));
     }
 
     public function getAssetDetails($parameters)
@@ -127,6 +132,37 @@ class GrowthService extends Base\Service
     public function filterAndSyncEventsFromPinot($parameters)
     {
         return $this->sendRequest($parameters, self::FILTER_AND_SYNC_URL, Requests::POST);
+    }
+
+    public function uploadAssets($parameters)
+    {
+        $file = $parameters['file'];
+        $subCampaignId = $parameters['sub_campaign_id'];
+
+        if (empty($file) || empty($subCampaignId)) {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
+        }
+
+        if ($file->getSize() > self::MAX_FILE_SIZE) {
+            throw new Exception\BadRequestValidationFailureException('File Size exceeds max allowed size of 1MB');
+        }
+        $fileIdentifier = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+
+        $fileName = 'growth/' . $subCampaignId . '/' . $fileIdentifier;
+        $extension = strtolower($file->getClientOriginalExtension());
+        if (empty($extension) === false) {
+            $fileName .= '.' . $extension;
+        }
+
+        try {
+            $response = $this->ufh->uploadFileAndGetUrl($parameters['file'], $fileName, 'growth_asset', null);
+        } catch (\Throwable $e) {
+            throw new Exception\ServerErrorException('Error completing the uploadAsset request', ErrorCode::SERVER_ERROR_GROWTH_FAILURE, null, $e);
+        }
+        if (!empty($response)) {
+            $response["asset_url"] = "CDN_URL_PREFIX/" . $fileIdentifier . '.' . $extension;
+        }
+        return $response;
     }
 
     public function sendRequest($parameters, $path, $method)

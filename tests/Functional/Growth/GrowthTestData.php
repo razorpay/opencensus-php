@@ -229,4 +229,25 @@ return [
         ]
     ],
 
+    'testGrowthUploadAssets' => [
+        'request'  => [
+            'url'     => '/growth/assets/upload',
+            'method'  => 'POST',
+            'files' => [
+                'file' => '',
+            ],
+            'content' => [
+                'sub_campaign_id' => 'QWERTYUIOP'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'file_id' => 'file_JcAPVqc5j6Smvc',
+                'relative_location'=> 'growth/QWERTYUIOP/a.png',
+                'local_file' => [],
+                'asset_url' => "CDN_URL_PREFIX/cms-logo.png"
+            ],
+        ],
+    ],
+
 ];

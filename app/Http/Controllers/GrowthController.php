@@ -124,4 +124,23 @@ class GrowthController extends Controller
         }
         return $response;
     }
+
+    public function uploadAssets() {
+        $parameters = Request::all();
+        $response = [];
+
+        try {
+            if (empty($parameters) === false) {
+
+                $response = $this->app->growthService->uploadAssets($parameters);
+
+                $response = ApiResponse::json($response);
+
+            }
+        } catch (\Throwable $e) {
+            throw new Exception\ServerErrorException('Error completing the uploadAssets request', ErrorCode::SERVER_ERROR_GROWTH_FAILURE, null, $e);
+        }
+
+        return $response;
+    }
 }

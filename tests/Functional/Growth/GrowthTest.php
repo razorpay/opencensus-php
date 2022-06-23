@@ -7,6 +7,7 @@ namespace RZP\Tests\Functional\Growth;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Traits\MocksGrowth;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class GrowthTest extends TestCase
 {
@@ -247,6 +248,24 @@ class GrowthTest extends TestCase
         $this->mockGrowthTreatment($input, [], 'filterAndSyncEventsFromPinot');
 
         $this->ba->cronAuth();
+
+        $this->startTest();
+    }
+
+    public function testGrowthUploadAssets()
+    {
+        $testData = &$this->testData['testGrowthUploadAssets'];
+        $testData['request']['files']['file'] = new UploadedFile(
+            __DIR__ . '/../Storage/a.png',
+            'a.png',
+            'image/png',
+            filesize(__DIR__ . '/../Storage/a.png'),
+            null,
+            true);
+
+        $this->mockGrowthTreatment([], $testData['response']['content'], 'uploadAssets');
+
+        $this->ba->adminAuth();
 
         $this->startTest();
     }
