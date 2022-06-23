@@ -565,7 +565,7 @@ class Processor
                 return false;
             }
 
-            if ($merchant->isFeatureEnabled('raas') === true) 
+            if ($merchant->isFeatureEnabled('raas') === true)
             {
                 $raasResult = $this->app->razorx->getTreatment($merchant->getId(), self::RAAS_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
 
@@ -578,17 +578,17 @@ class Processor
             {
                 $result = $this->app->razorx->getTreatment($merchant->getId(), self::OAUTH_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
 
-                if ($result !== 'on') 
+                if ($result !== 'on')
                 {
                     return false;
                 }
             }
-            
+
             if ($this->ba->isPartnerAuth() === true)
             {
                 $result = $this->app->razorx->getTreatment($merchant->getId(), self::PARTNER_AUTH_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
 
-                if ($result !== 'on') 
+                if ($result !== 'on')
                 {
                     return false;
                 }
@@ -747,6 +747,19 @@ class Processor
 
         $paymentData = $this->callPGRouterPaymentCreateBasedOnRoute($input);
 
+        $paymentId = $this->getPaymentIdFromRearchResponse($paymentData);
+
+        $this->trace->info(TraceCode::FINDING_PAYMENT_ID_FROM_REARCH_RESPONSE, [
+            'paymentId' => $paymentId
+        ]);
+
+        if ($paymentId !== null)
+        {
+            $payment = $this->repo->payment->findByPublicId($paymentId);
+
+            (new EntityOrigin\Core)->createEntityOrigin($payment);
+        }
+
         $this->logPGRouterRequestTime($input, $startTime);
 
         $paymentData['processed_via_pg_router'] = true;
@@ -770,6 +783,30 @@ class Processor
                 return $this->app['pg_router']->validateAndCreatePaymentJson($input, true);
             case "payment_create_checkout":
                 return $this->app['pg_router']->validateAndCreatePaymentCheckout($input, true);
+        }
+        return null;
+    }
+
+    private function getPaymentIdFromRearchResponse($paymentData)
+    {
+        if (isset($paymentData['payment_id']) === true)
+        {
+            return $paymentData['payment_id'];
+        }
+        if (isset($paymentData['razorpay_payment_id']) === true)
+        {
+            return $paymentData['razorpay_payment_id'];
+        }
+        if (isset($paymentData['html']) === true)
+        {
+            $matches = array();
+
+            preg_match('/pay_[a-zA-Z0-9]{14}/', $paymentData['html'], $matches);
+
+            if (sizeof($matches) > 0)
+            {
+                return $matches[0];
+            }
         }
         return null;
     }

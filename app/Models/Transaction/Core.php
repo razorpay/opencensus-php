@@ -180,9 +180,12 @@ class Core extends Base\Core
         {
             $txn =  $this->createTransactionForCapturedPayment($payment);
 
-            $processor = new Processor($payment->merchant);
+            $this->repo->transaction(function() use ($payment)
+            {
+                $processor = new Processor($payment->merchant);
 
-            $processor->createPartnerCommission($payment);
+                $processor->createPartnerCommission($payment);
+            });
         }
         else if ($payment->getStatus() == "authorized")
         {

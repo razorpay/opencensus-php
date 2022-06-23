@@ -991,7 +991,7 @@ trait Capture
             $this->trace->critical(
                 TraceCode::COMMISSION_CREATE_FAILED,
                 [
-                    'payment_id' => $this->payment->getId(),
+                    'payment_id' => $payment->getId(),
                     'message'    => $e->getMessage(),
                 ]);
         }

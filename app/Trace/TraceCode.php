@@ -7260,6 +7260,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const BUCKET_MIGRATION_FOR_NEW_COMMISSION_INVOICES_EXP      = 'BUCKET_MIGRATION_FOR_NEW_COMMISSION_INVOICES_EXP';
 
+    const FINDING_PAYMENT_ID_FROM_REARCH_RESPONSE               = 'FINDING_PAYMENT_ID_FROM_REARCH_RESPONSE';
+
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',

@@ -10,6 +10,7 @@ use RZP\Models\Base\PublicEntity;
 use RZP\Models\Partner\Config\CommissionModel;
 use RZP\Models\Base\Repository as BaseRepository;
 use Carbon\Carbon;
+use RZP\Constants\Entity as E;
 use RZP\Models\Transaction\Entity as TransactionEntity;
 
 class Repository extends BaseRepository
@@ -201,5 +202,43 @@ class Repository extends BaseRepository
         }
 
         parent::modifyFetchParams($input);
+    }
+
+    public function saveOrFail($commission, array $options = array())
+    {
+        $paymentSource = $this->stripPaymentSourceRelationIfApplicable($commission);
+
+        parent::saveOrFail($commission, $options);
+
+        $this->associatePaymentSourceIfApplicable($commission, $paymentSource);
+    }
+
+    protected function stripPaymentSourceRelationIfApplicable($commission)
+    {
+        $source = $commission->source;
+
+        if (($source === null) or
+            ($source->getEntityName() !== E::PAYMENT))
+        {
+            return;
+        }
+
+        $commission->source()->dissociate();
+
+        $commission->setAttribute(Entity::SOURCE_ID, $source->getId());
+
+        $commission->setAttribute(Entity::SOURCE_TYPE, E::PAYMENT);
+
+        return $source;
+    }
+
+    public function associatePaymentSourceIfApplicable($commission, $payment)
+    {
+        if ($payment === null)
+        {
+            return;
+        }
+
+        $commission->source()->associate($payment);
     }
 }
