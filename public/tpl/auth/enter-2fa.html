@@ -3,7 +3,7 @@
     2-Step Verification
   </div>
   <div class="auth-text m-t-sm">
-    A 6-digit OTP has been sent to your {{second_factor_auth_mode}}. OTP will expire in 5 mins.
+    A 6-digit OTP has been sent to your {{second_factor_auth_mode ? second_factor_auth_mode : 'phone number/email'}}. OTP will expire in 5 mins.
   </div>
 
   <form class="auth-form" name="secondFAForm" ng-submit="verify2FaOtp()">

@@ -85,11 +85,18 @@ app
       $filter,
       tracking,
     ) {
-      $scope.toArray = function (obj) {
-        if (!obj) {
-          return [];
-        }
+      $scope.toArray = (obj) => {
+        if (!obj) return [];
         return Object.keys(obj);
+      };
+
+      const ORG_CUSTOM_CODE_MAP = {
+        Razorpay: 'rzp',
+        AXIS_BANK: 'axis',
+        ICICI_BANK: 'icic',
+        HDFC_SMART_HUB: 'hdfc',
+        HDFC_COLLECT_NOW: 'HDFC',
+        KOTAK_MAHINDRA_BANK: 'KKBK',
       };
 
       const LoginCardIDs = ['Sep22-AppStore-Zapier-GTM-LoginCard', 'DEC21-FREECREDIT'];
@@ -108,6 +115,32 @@ app
       };
       const isMerchantX = window.location.href.includes('merchant=x');
       const eventTypes = { twitterAgency: 'twitterAgency' };
+      const LOGIN_HEADING = {
+        axis: 'Powered by Razorpay and Axis Bank',
+        icic: 'ICICI Bank Eazypay Pro powered by Razorpay',
+        hdfc: 'Powered by Razorpay and HDFC',
+        HDFC: 'Welcome to HDFC Bank Collect Now!',
+      };
+      const LOGIN_DESCRIPTION = {
+        axis:
+          'This joint initiative between Axis Bank and Razorpay aims to make accepting payments a seamless experience for fast-growing businesses.',
+        icic:
+          'This joint initiative between ICICI Bank Eazypay Pro and Razorpay aims to make accepting payments a seamless experience for fast-growing businesses.',
+        hdfc:
+          'This joint initiative between HDFC and Razorpay aims to make accepting payments a seamless experience for fast-growing businesses.',
+        HDFC:
+          'Through this initiative, we aim to provide Single solution, Simpler payments and Seamless Collections for your fast-growing business',
+      };
+      const G_AUTH_TYPES = {
+        oneTap: 'google-one-tap',
+        btn: 'google-button',
+      };
+      const OTP_AUTH_MODE = {
+        sms: 'phone number',
+        email: 'email',
+        sms_and_email: 'phone number and email',
+      };
+
       $scope.data = {};
       $scope.alerts = alertsFactory.getHandler();
       $scope.rightLayout = false; // login layout ? right is true : right is false
@@ -120,32 +153,12 @@ app
       $scope.showCookieErrorPopup = false;
       $scope.showKnowMore = false;
       $scope.currentService = serviceName();
-
       $scope.isInlineOneTap = true;
       $scope.isOneTapExpOn = false;
       $scope.isOneTapEnabled = false;
       $scope.isGauthTypeDecided = false;
       $scope.oneTapScaling = 0.8;
       $scope.authVersion = 1.2; // for analytics
-
-      var G_AUTH_TYPES = {
-        oneTap: 'google-one-tap',
-        btn: 'google-button',
-      };
-
-      var OTP_AUTH_MODE = {
-        sms: 'phone number',
-        email: 'email',
-        sms_and_email: 'phone number and email',
-      };
-
-      var LOGIN_HEADING = {
-        icic: 'ICICI Bank Eazypay Pro powered by Razorpay',
-      };
-
-      var LOGIN_TEXT = {
-        icic: 'ICICI Bank Eazypay Pro and Razorpay',
-      };
 
       // initialize onetap only when not X and if optimize experiment(isOneTapExpOn) returns true
       if ($scope.currentService != 'X') {
@@ -155,22 +168,17 @@ app
       $scope.organization = {};
       $scope.isOrgCheckDone = false;
       $scope.isOwner = false;
-      organization.fetchCurrentOrg().then(function (data) {
-        $scope.login_logo = data.login_logo_url || 'img/logo_full.png';
+      organization.fetchCurrentOrg().then((data) => {
         $scope.isOrgCheckDone = true;
         $scope.organization = data;
-        $scope.isOrgRZP = $scope.organization.custom_code === 'rzp';
-        $scope.isOrgHDFC = $scope.organization.custom_code === 'hdfc';
-        $scope.isOrgAXIS = $scope.organization.custom_code === 'axis';
-        $scope.isOrgICICI = $scope.organization.custom_code === 'icic';
-        $scope.second_factor_auth_mode =
-          OTP_AUTH_MODE[$scope.organization.second_factor_auth_mode] || 'phone number/email';
-        $scope.loginHeading =
-          LOGIN_HEADING[$scope.organization.custom_code] ||
-          `Powered by Razorpay and ${$scope.organization.business_name}`;
-        $scope.loginText =
-          LOGIN_TEXT[$scope.organization.custom_code] ||
-          `${$scope.organization.business_name} and Razorpay`;
+        $scope.login_logo = data.login_logo_url || 'img/logo_full.png';
+        $scope.isOrgRZP = data.custom_code === ORG_CUSTOM_CODE_MAP.Razorpay;
+        $scope.isOrgAXIS = data.custom_code === ORG_CUSTOM_CODE_MAP.AXIS_BANK;
+        $scope.isOrgICICI = data.custom_code === ORG_CUSTOM_CODE_MAP.ICICI_BANK;
+        $scope.isOrgHDFC = data.custom_code === ORG_CUSTOM_CODE_MAP.HDFC_SMART_HUB;
+        $scope.second_factor_auth_mode = OTP_AUTH_MODE[data.second_factor_auth_mode];
+        $scope.loginHeading = LOGIN_HEADING[data.custom_code];
+        $scope.loginDescription = LOGIN_DESCRIPTION[data.custom_code];
       });
 
       $scope.forms = {};

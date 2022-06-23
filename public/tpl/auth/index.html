@@ -125,12 +125,13 @@
         </div>
         <div class="login-messaging" ng-if="isOrgRZP === false">
           <div class="messaging-heading" style="margin-top: 8px">
-            {{loginHeading}}
+            {{loginHeading ? loginHeading : "Powered by Razorpay and " + organization.business_name}}
           </div>
 
           <div class="messaging-text" style="margin-top: 16px">
-            This joint initiative between {{loginText}} aims to make accepting payments a seamless experience for fast-growing businesses.
+            {{loginDescription ? loginDescription : "This joint initiative between " + organization.business_name + " and Razorpay aims to make accepting payments a seamless experience for fast-growing businesses."}}
           </div>
+          
           <div class="messaging-text" style="margin-top: 28px;">
             Let’s simplify payments together!
           </div>
