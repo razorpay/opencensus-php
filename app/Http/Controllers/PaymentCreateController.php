@@ -1737,6 +1737,26 @@ class PaymentCreateController extends Controller
             }
         }
 
+        // In case when recurring feature flag for consent is enabled we don't show consent page for fresh card.
+        // this means we have to explicitly collect consent as per our contract with merchant for saving that card
+        // because this is mandatory for recurring card payments even if consent_to_save_card is not passed
+
+        if((in_array($library, $allowedLibraries, true) === true) and
+            ((isset($input['subscription_id'])) or
+                (isset($input['recurring']) and
+                    (($input['recurring'] === '1') or ($input['recurring'] === 'preferred')))))
+        {
+            $this->trace->info(
+                TraceCode::EXPLICIT_CONSENT_COLLECTED_RECURRING,
+                    [
+                        'merchant_id' => $this->app['basicauth']->getMerchantId(),
+                        'library' => $library
+                    ]
+            );
+
+            $input['save'] = '1';
+        }
+
         return $input;
     }
 }

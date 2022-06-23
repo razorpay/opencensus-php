@@ -1043,6 +1043,11 @@ class Entity extends Base\PublicEntity
         return ($this->isFeatureEnabled(Feature\Constants::DISABLE_COLLECT_CONSENT) === false);
     }
 
+    public function isCollectConsentEnabledForMerchantRecurring(): bool
+    {
+        return ($this->isFeatureEnabled(Feature\Constants::NO_CUSTOM_CHECKOUT_RECURRING_CONSENT) === false);
+    }
+
     public function isTokenisedCardPaymentEnabledForMerchant(): bool
     {
         return ($this->isFeatureEnabled(Feature\Constants::DISABLE_TOKENISED_PAYMENT) === false);

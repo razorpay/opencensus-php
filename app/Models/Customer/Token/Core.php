@@ -2322,6 +2322,35 @@ class Core extends Base\Core
         }
     }
 
+    public function showTokenisationConsentViewForExistingSavedCardwithoutCustomer($token): bool
+    {
+        try
+        {
+            $tokenEntity = $this->repo->token->findByPublicId($token);
+
+            if(isset($tokenEntity) === false)
+            {
+                return true;
+            }
+
+            $acknowledgedAt = $tokenEntity->getAcknowledgedAt();
+
+            if (empty($acknowledgedAt) === true)
+            {
+                return true;
+            }
+
+            return false;
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->info(TraceCode::SAVED_CARD_TOKEN_NOT_FOUND, []);
+
+            return true;
+        }
+    }
+
+
     protected function stripSptPrefix($id)
     {
         $prefix = 'spt';

@@ -923,6 +923,34 @@ return [
         ]
     ],
 
+    'testUserConsentPageWithNewCardRecurring' => [
+        'response' => [
+            'input' => [
+                'amount' => '50000',
+                'currency' => 'INR',
+                'contact' => '9918899029',
+                '_[library]' => 'razorpayjs',
+                'recurring' => '1',
+                'method' => 'card',
+                'customer_id' => 'cust_100000customer'
+            ]
+        ]
+    ],
+
+    'testUserConsentPageWithSavedCardRecurring' => [
+        'response' => [
+            'input' => [
+                'amount' => '50000',
+                'currency' => 'INR',
+                'contact' => '9918899029',
+                'recurring' => '1',
+                '_[library]' => 'razorpayjs',
+                'method' => 'card',
+                'customer_id' => 'cust_100000customer',
+            ]
+        ]
+    ],
+
     'testUserConsentPageWithEmiMethodForNewCard' => [
         'response' => [
             'input' => [

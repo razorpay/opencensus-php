@@ -7317,6 +7317,78 @@ class PaymentCreateTest extends TestCase
         $this->assertArraySelectiveEquals($expectedResponse, $responseContent);
     }
 
+    public function testUserConsentPageWithNewCardRecurring()
+    {
+        $this->ba->publicAuth();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['_']['library'] = 'razorpayjs';
+        $payment['recurring'] = '1';
+        $payment['method'] = 'card';
+        $payment['customer_id'] = 'cust_100000customer';
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/checkout',
+            'content' => $payment
+        ];
+
+        $response = $this->makeRequestParent($request);
+
+        $response->assertViewIs('tokenisation.recurringTokenisationConsentForm');
+
+        $responseContent = $response->getOriginalContent()->getData();
+
+        $card = $this->app['encrypter']->decrypt($responseContent['input']['card']);
+
+        $this->assertEquals($payment['card']['cvv'], $card['cvv']);
+
+        $this->assertEquals($payment['card']['number'], $card['number']);
+
+        $expectedResponse = $this->testData[__FUNCTION__]['response'];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $responseContent);
+    }
+
+    public function testUserConsentPageWithSavedCardRecurring()
+    {
+        $this->ba->publicAuth();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card'] = array('cvv'  => 111);
+        $payment['_']['library'] = 'razorpayjs';
+        $payment['token'] = 'token_100000custcard';
+        $payment['method'] = 'card';
+        $payment['recurring'] = '1';
+        $payment['customer_id'] = 'cust_100000customer';
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/checkout',
+            'content' => $payment
+        ];
+
+        $response = $this->makeRequestParent($request);
+
+        $response->assertViewIs('tokenisation.recurringTokenisationConsentForm');
+
+        $responseContent = $response->getOriginalContent()->getData();
+
+        $card = $this->app['encrypter']->decrypt($responseContent['input']['card']);
+
+        $token = $this->app['encrypter']->decrypt($responseContent['input']['token']);
+
+        $this->assertEquals($payment['card']['cvv'], $card['cvv']);
+
+        $this->assertEquals($payment['token'], $token);
+
+        $expectedResponse = $this->testData[__FUNCTION__]['response'];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $responseContent);
+    }
+
     public function testUserConsentPageWithEmiMethodForNewCard()
     {
         $this->fixtures->merchant->addFeatures([Feature\Constants::CUSTOM_CHECKOUT_CONSENT_SCREEN]);

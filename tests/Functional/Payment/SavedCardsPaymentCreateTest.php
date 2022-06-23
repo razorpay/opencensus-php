@@ -1564,6 +1564,27 @@ class SavedCardsPaymentCreateTest extends TestCase
         $this->assertNull($token['acknowledged_at']);
     }
 
+    public function testPaymentWithRecurringUserConsentFlagEnabled()
+    {
+        $this->fixtures->merchant->addFeatures(['no_cust_chekout_rec_cons']);
+
+        $this->fixtures->merchant->addFeatures(['charge_at_will']);
+
+        $this->mockSession();
+
+        $this->payment = $this->getDefaultRecurringPaymentArray();
+
+        $this->payment['_']['library'] = 'razorpayjs';
+
+        $this->doAuthPaymentViaCheckoutRoute($this->payment);
+
+        $token = $this->getLastEntity('token', true);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertNotNull($token['acknowledged_at']);
+    }
+
     public function testPaymentWithInvalidUserConsentTokenisation()
     {
         $this->mockSession();

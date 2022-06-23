@@ -942,19 +942,55 @@ class Processor
     {
         // If payment is done via recurring flow and call is from S2S,
         // we are automatically collect the user's consent for card
-
-        $library = $input['_']['library'] ?? '';
-
-        $isRecurringInitialPayment = (isset($paymentData['type']) and $paymentData['type'] === 'first');
-
-        $isRecurringFlow = isset($input['recurring']) and
-                           (($input["recurring"] === '1') or ($input['recurring'] === 'preferred'));
-
-        if($isRecurringInitialPayment and
-            ($isRecurringFlow or isset($input[Payment\Entity::SUBSCRIPTION_ID])) and
-            $library === Payment\Analytics\Metadata::S2S)
+        try
         {
-            $input['save'] = 1;
+            $library = $input['_']['library'] ?? '';
+
+            $isRecurringInitialPayment = (isset($paymentData['type']) and $paymentData['type'] === 'first');
+
+            $isRecurringFlow = isset($input['recurring']) and
+            (($input["recurring"] === '1') or ($input['recurring'] === 'preferred'));
+
+            if($isRecurringInitialPayment and
+                ($isRecurringFlow or isset($input[Payment\Entity::SUBSCRIPTION_ID])) and
+                $library === Payment\Analytics\Metadata::S2S)
+            {
+
+                $this->trace->info(
+                    TraceCode::EXPLICIT_CONSENT_COLLECTED_RECURRING,
+                    [
+                        'merchant_id' => $this->app['basicauth']->getMerchantId(),
+                        'library' => $library
+                    ]
+                );
+
+                $input['save'] = "1";
+            }
+
+            // TODO: Remove this after gating logic is live
+            if($isRecurringInitialPayment and
+                ($isRecurringFlow or isset($input[Payment\Entity::SUBSCRIPTION_ID])) and
+                (isset($input['save']) === false) and (isset($input['token']) === false))
+            {
+                $this->trace->info(
+                    TraceCode::EXPLICIT_CONSENT_COLLECTED_RECURRING,
+                    [
+                        'merchant_id' => $this->app['basicauth']->getMerchantId(),
+                        'library' => $library
+                    ]
+                );
+
+                $input['save'] = "1";
+            }
+
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::EXPLICIT_CONSENT_RECURRING_ERROR,
+                []);
         }
     }
 
@@ -1002,11 +1038,12 @@ class Processor
             $recurringInitialPaymentDataChecksForSavedCardFlow = (isset($paymentData['type']) and
                                                                   $paymentData['type'] === 'first');
 
-            $recurringInitialInputPayloadChecksForSavedCardFlow = (isset($input['recurring']) and
-                                                                   (($input['recurring'] === '1') or
-                                                                    ((bool) $input['recurring'] === true) or
-                                                                    ($input['recurring'] === 'preferred')) and
-                                                                   isset($input['token']));
+            $recurringInitialInputPayloadChecksForSavedCardFlow = (((isset($input['subscription_id'])) or
+                                                                    ((isset($input['recurring'])) and
+                                                                        (($input['recurring'] === '1') or
+                                                                            ((bool) $input['recurring'] === true) or
+                                                                            ($input['recurring']=== 'preferred')))) and
+                                                                    (isset($input['token'])));
 
             $isRecurringSavedCardFlow = ($recurringInitialPaymentDataChecksForSavedCardFlow and
                                          $recurringInitialInputPayloadChecksForSavedCardFlow);

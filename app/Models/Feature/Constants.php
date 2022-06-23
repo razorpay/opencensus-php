@@ -1187,6 +1187,15 @@ class Constants
     const DISABLE_COLLECT_CONSENT = 'disable_collect_consent';
 
     /**
+     * Feature flag to let Razorpay collect consent for tokenising cards in the payment flow through intermediate consent page
+     * This will be used for custom checkout merchants for recurring payment only
+     * By default Razorpay collects consent
+     * Can use this feature flag to disable consent collection by Razorpay
+     *
+     */
+    const NO_CUSTOM_CHECKOUT_RECURRING_CONSENT = 'no_cust_chekout_rec_cons';
+
+    /**
      * Flag to be enabled for merchants for whom we want to generate the axis card payments and refunds file
      */
     const AXIS_SETTLEMENT_FILE = 'axis_settlement_file';
