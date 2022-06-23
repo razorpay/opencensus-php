@@ -2,17 +2,16 @@
 
 namespace RZP\Models\Transaction\Statement\DirectAccount\Statement;
 
-use RZP\Base\Fetch as BaseFetch;
+use RZP\Models\Transaction;
 use RZP\Models\FundTransfer\Mode;
 use RZP\Http\BasicAuth\Type as AuthType;
-use RZP\Models\Transaction\Type as TransactionType;
 
 /**
  * Class Fetch
  *
  * @package RZP\Models\Transaction\Statement\DirectAccount\Statement
  */
-class Fetch extends BaseFetch
+class Fetch extends Transaction\Statement\Fetch
 {
     const RULES = [
         self::DEFAULTS => [
@@ -30,6 +29,10 @@ class Fetch extends BaseFetch
             Entity::MODE              => 'sometimes|string|custom',
             Entity::TYPE              => 'sometimes|string|custom',
             Entity::ACTION            => 'sometimes|string|in:debit,credit',
+            Entity::NOTES             => 'sometimes|notes_fetch',
+            Entity::FUND_ACCOUNT_NUMBER => 'sometimes|string',
+            Entity::CONTACT_PHONE_PS  => 'sometimes|string',
+            Entity::CONTACT_EMAIL_PS  => 'sometimes|string',
             EsRepository::QUERY       => 'sometimes|string|min:2|max:100',
         ],
     ];
@@ -50,6 +53,10 @@ class Fetch extends BaseFetch
             EsRepository::QUERY,
             Entity::MODE,
             Entity::TYPE,
+            Entity::NOTES,
+            Entity::FUND_ACCOUNT_NUMBER,
+            Entity::CONTACT_PHONE_PS,
+            Entity::CONTACT_EMAIL_PS,
         ],
         AuthType::PROXY_AUTH => [
             Entity::ACTION,
@@ -66,6 +73,10 @@ class Fetch extends BaseFetch
         Entity::CONTACT_NAME,
         Entity::CONTACT_EMAIL,
         EsRepository::QUERY,
+        Entity::NOTES,
+        Entity::FUND_ACCOUNT_NUMBER,
+        Entity::CONTACT_PHONE_PS,
+        Entity::CONTACT_EMAIL_PS,
     ];
 
     const COMMON_FIELDS = [
@@ -82,6 +93,6 @@ class Fetch extends BaseFetch
 
     protected function validateType(string $attribute, string $value)
     {
-        TransactionType::validateBankingType($value);
+        Transaction\Type::validateBankingType($value);
     }
 }

@@ -947,7 +947,598 @@ return [
         ],
     ],
 
+    'testFetchByContactEmailExpectedSearchParams' => [
+        'index' => env('ES_ENTITY_TYPE_PREFIX').'transaction_test',
+        'type'  => env('ES_ENTITY_TYPE_PREFIX').'transaction_test',
+        'body'  => [
+            '_source' => false,
+            'from'    => 0,
+            'size'    => 10,
+            'query'   => [
+                'bool' => [
+                    'filter' => [
+                        'bool' => [
+                            'must' => [
+                                [
+                                    'term' => [
+                                        'contact_email.raw' => [
+                                            'value'                => 'contact@razorpay.com',
+                                        ],
+                                    ],
+                                ],
+                                [
+                                    'term' => [
+                                        'balance_id' => [
+                                            'value' => 'BfCGvMZswckZl8',
+                                        ],
+                                    ],
+                                ],
+                                [
+                                    'term' => [
+                                        'merchant_id' => [
+                                            'value' => '10000000000000',
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            'sort' => [
+                '_score' => [
+                    'order' => 'desc',
+                ],
+                'created_at' => [
+                    'order' => 'desc',
+                ],
+            ],
+        ],
+    ],
+
     'testFetchByContactEmailExpectedSearchResponse' => [
+        'hits' => [
+            'hits' => [
+                [
+                    '_id' => '00000000000001',
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchByContactEmailPartial' => [
+        'request' => [
+            'method'  => 'GET',
+            'url'     => '/transactions',
+            'content' => [
+                'account_number' => '2224440041626905',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'entity'         => 'transaction',
+                        'account_number' => '2224440041626905',
+                        'amount'         => 1000,
+                        'debit'          => 1000,
+                        'credit'         => 0,
+                        'currency'       => 'INR',
+                        'balance'        => 9999000,
+                        'source'         => [
+                            'entity'       => 'payout',
+                            'fund_account' => [
+                                'entity'            => 'fund_account',
+                                'contact'           => [
+                                    'entity'   => 'contact',
+                                    'name'     => 'test user',
+                                    'contact'  => '8888888888',
+                                    'email'    => 'contact2@razorpay.com',
+                                    'batch_id' => null,
+                                    'notes'    => [],
+                                ],
+                                'account_type'      => 'bank_account',
+                                'merchant_disabled' => false,
+                                'bank_account'      => [
+                                    'ifsc'           => 'SBIN0007105',
+                                    'bank_name'      => 'State Bank of India',
+                                    'name'           => 'test',
+                                    'notes'          => [
+                                    ],
+                                    'account_number' => '111000',
+                                ],
+                                'batch_id'          => null,
+                            ],
+                            'amount'       => 1000,
+                            'notes'        => [
+                                'abc' => 'xyz',
+                            ],
+                            'fees'         => 590,
+                            'tax'          => 90,
+                            'status'       => 'processing',
+                            'utr'          => null,
+                            'mode'         => null,
+                            'reversal'     => null,
+                            'fee_type'     => null,
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchByContactEmailPartialExpectedSearchParams' => [
+        'index' => env('ES_ENTITY_TYPE_PREFIX').'transaction_test',
+        'type'  => env('ES_ENTITY_TYPE_PREFIX').'transaction_test',
+        'body'  => [
+            '_source' => false,
+            'from'    => 0,
+            'size'    => 10,
+            'query'   => [
+                'bool' => [
+                    'filter' => [
+                        'bool' => [
+                            'must' => [
+                                [
+                                    'term' => [
+                                        'contact_email.partial_search' => [
+                                            'value'                => 'contact@',
+                                        ],
+                                    ],
+                                ],
+                                [
+                                    'term' => [
+                                        'balance_id' => [
+                                            'value' => 'BfCGvMZswckZl8',
+                                        ],
+                                    ],
+                                ],
+                                [
+                                    'term' => [
+                                        'merchant_id' => [
+                                            'value' => '10000000000000',
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            'sort' => [
+                '_score' => [
+                    'order' => 'desc',
+                ],
+                'created_at' => [
+                    'order' => 'desc',
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchByContactEmailPartialExpectedSearchResponse' => [
+        'hits' => [
+            'hits' => [
+                [
+                    '_id' => '00000000000001',
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchByContactPhonePartial' => [
+        'request' => [
+            'method'  => 'GET',
+            'url'     => '/transactions',
+            'content' => [
+                'account_number' => '2224440041626905',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'entity'         => 'transaction',
+                        'account_number' => '2224440041626905',
+                        'amount'         => 1000,
+                        'debit'          => 1000,
+                        'credit'         => 0,
+                        'currency'       => 'INR',
+                        'balance'        => 9999000,
+                        'source'         => [
+                            'entity'       => 'payout',
+                            'fund_account' => [
+                                'entity'            => 'fund_account',
+                                'contact'           => [
+                                    'entity'   => 'contact',
+                                    'name'     => 'test user',
+                                    'contact'  => '9888888888',
+                                    'email'    => 'contact2@razorpay.com',
+                                    'batch_id' => null,
+                                    'notes'    => [],
+                                ],
+                                'account_type'      => 'bank_account',
+                                'merchant_disabled' => false,
+                                'bank_account'      => [
+                                    'ifsc'           => 'SBIN0007105',
+                                    'bank_name'      => 'State Bank of India',
+                                    'name'           => 'test',
+                                    'notes'          => [
+                                    ],
+                                    'account_number' => '111000',
+                                ],
+                                'batch_id'          => null,
+                            ],
+                            'amount'       => 1000,
+                            'notes'        => [
+                                'abc' => 'xyz',
+                            ],
+                            'fees'         => 590,
+                            'tax'          => 90,
+                            'status'       => 'processing',
+                            'utr'          => null,
+                            'mode'         => null,
+                            'reversal'     => null,
+                            'fee_type'     => null,
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchByContactPhonePartialExpectedSearchParams' => [
+        'index' => env('ES_ENTITY_TYPE_PREFIX').'transaction_test',
+        'type'  => env('ES_ENTITY_TYPE_PREFIX').'transaction_test',
+        'body'  => [
+            '_source' => false,
+            'from'    => 0,
+            'size'    => 10,
+            'query'   => [
+                'bool' => [
+                    'filter' => [
+                        'bool' => [
+                            'must' => [
+                                [
+                                    'term' => [
+                                        'contact_phone' => [
+                                            'value'                => '988888',
+                                        ],
+                                    ],
+                                ],
+                                [
+                                    'term' => [
+                                        'balance_id' => [
+                                            'value' => 'BfCGvMZswckZl8',
+                                        ],
+                                    ],
+                                ],
+                                [
+                                    'term' => [
+                                        'merchant_id' => [
+                                            'value' => '10000000000000',
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            'sort' => [
+                '_score' => [
+                    'order' => 'desc',
+                ],
+                'created_at' => [
+                    'order' => 'desc',
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchByContactPhonePartialExpectedSearchResponse' => [
+        'hits' => [
+            'hits' => [
+                [
+                    '_id' => '00000000000001',
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchByFundAccountNumber' => [
+        'request' => [
+            'method'  => 'GET',
+            'url'     => '/transactions',
+            'content' => [
+                'account_number' => '2224440041626905',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 2,
+                'items'  => [
+                    [
+                        'entity'         => 'transaction',
+                        'account_number' => '2224440041626905',
+                        'amount'         => 1000,
+                        'debit'          => 1000,
+                        'credit'         => 0,
+                        'currency'       => 'INR',
+                        'balance'        => 9999000,
+                        'source'         => [
+                            'entity'       => 'payout',
+                            'fund_account' => [
+                                'entity'            => 'fund_account',
+                                'contact'           => [
+                                    'entity'   => 'contact',
+                                    'name'     => 'test user',
+                                    'contact'  => '8888888888',
+                                    'email'    => 'contact@razorpay.com',
+                                    'batch_id' => null,
+                                    'active'   => true,
+                                    'notes'    => [],
+                                ],
+                                'account_type'      => 'bank_account',
+                                'merchant_disabled' => false,
+                                'bank_account'      => [
+                                    'ifsc'           => 'SBIN0007105',
+                                    'bank_name'      => 'State Bank of India',
+                                    'name'           => 'test',
+                                    'notes'          => [
+                                    ],
+                                    'account_number' => '111000',
+                                ],
+                                'batch_id'          => null,
+                            ],
+                            'amount'       => 1000,
+                            'notes'        => [
+                                'abc' => 'xyz',
+                            ],
+                            'fees'         => 590,
+                            'tax'          => 90,
+                            'status'       => 'processing',
+                            'utr'          => null,
+                            'mode'         => null,
+                            'reversal'     => null,
+                            'fee_type'     => null,
+                        ],
+                    ],
+                    [
+                        'entity'         => 'transaction',
+                        'account_number' => '2224440041626905',
+                        'amount'         => 1000,
+                        'debit'          => 1000,
+                        'credit'         => 0,
+                        'currency'       => 'INR',
+                        'balance'        => 9999000,
+                        'source'         => [
+                            'entity'       => 'payout',
+                            'fund_account' => [
+                                'entity'            => 'fund_account',
+                                'contact'           => [
+                                    'entity'   => 'contact',
+                                    'name'     => 'test user',
+                                    'contact'  => '8888888888',
+                                    'email'    => 'contact@razorpay.com',
+                                    'batch_id' => null,
+                                    'active'   => true,
+                                    'notes'    => [],
+                                ],
+                                'account_type'      => 'bank_account',
+                                'merchant_disabled' => false,
+                                'bank_account'      => [
+                                    'ifsc'           => 'SBIN0007105',
+                                    'bank_name'      => 'State Bank of India',
+                                    'name'           => 'test',
+                                    'notes'          => [
+                                    ],
+                                    'account_number' => '111000',
+                                ],
+                                'batch_id'          => null,
+                            ],
+                            'amount'       => 1000,
+                            'notes'        => [
+                                'abc' => 'xyz',
+                            ],
+                            'fees'         => 590,
+                            'tax'          => 90,
+                            'status'       => 'processing',
+                            'utr'          => null,
+                            'mode'         => null,
+                            'reversal'     => null,
+                            'fee_type'     => null,
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchByFundAccountNumberExpectedSearchParams' => [
+        'index' => env('ES_ENTITY_TYPE_PREFIX').'transaction_test',
+        'type'  => env('ES_ENTITY_TYPE_PREFIX').'transaction_test',
+        'body'  => [
+            '_source' => false,
+            'from'    => 0,
+            'size'    => 10,
+            'query'   => [
+                'bool' => [
+                    'must' => [
+                        [
+                            'match' => [
+                                'fund_account_number' => [
+                                    'query'                => '111000',
+                                    'boost'                => 2,
+                                    'minimum_should_match' => '75%',
+                                ],
+                            ],
+                        ],
+                    ],
+                    'filter' => [
+                        'bool' => [
+                            'must' => [
+                                [
+                                    'term' => [
+                                        'balance_id' => [
+                                            'value' => 'BfCGvMZswckZl8',
+                                        ],
+                                    ],
+                                ],
+                                [
+                                    'term' => [
+                                        'merchant_id' => [
+                                            'value' => '10000000000000',
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            'sort' => [
+                '_score' => [
+                    'order' => 'desc',
+                ],
+                'created_at' => [
+                    'order' => 'desc',
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchByFundAccountNumberExpectedSearchResponse' => [
+        'hits' => [
+            'hits' => [
+                [
+                    '_id' => '00000000000001',
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchByNotes' => [
+        'request' => [
+            'method'  => 'GET',
+            'url'     => '/transactions',
+            'content' => [
+                'account_number' => '2224440041626905',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'entity'         => 'transaction',
+                        'account_number' => '2224440041626905',
+                        'amount'         => 1000,
+                        'debit'          => 1000,
+                        'credit'         => 0,
+                        'currency'       => 'INR',
+                        'balance'        => 9999000,
+                        'source'         => [
+                            'entity'       => 'payout',
+                            'fund_account' => [
+                                'entity'            => 'fund_account',
+                                'contact'           => [
+                                    'entity'   => 'contact',
+                                    'name'     => 'test user',
+                                    'contact'  => '8888888888',
+                                    'email'    => 'contact@razorpay.com',
+                                    'batch_id' => null,
+                                    'active'   => true,
+                                    'notes'    => [],
+                                ],
+                                'account_type'      => 'bank_account',
+                                'merchant_disabled' => false,
+                                'bank_account'      => [
+                                    'ifsc'           => 'SBIN0007105',
+                                    'bank_name'      => 'State Bank of India',
+                                    'name'           => 'test',
+                                    'notes'          => [
+                                    ],
+                                    'account_number' => '111000',
+                                ],
+                                'batch_id'          => null,
+                            ],
+                            'amount'       => 1000,
+                            'notes'        => [
+                                'text' => 'testPayout',
+                            ],
+                            'fees'         => 590,
+                            'tax'          => 90,
+                            'status'       => 'processing',
+                            'utr'          => null,
+                            'mode'         => null,
+                            'reversal'     => null,
+                            'fee_type'     => null,
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchByNotesExpectedSearchParams' => [
+        'index' => env('ES_ENTITY_TYPE_PREFIX').'transaction_test',
+        'type'  => env('ES_ENTITY_TYPE_PREFIX').'transaction_test',
+        'body'  => [
+            '_source' => false,
+            'from'    => 0,
+            'size'    => 10,
+            'query'   => [
+                'bool' => [
+                    'must' => [
+                        [
+                            'match' => [
+                                'notes.value' => [
+                                    'query'                => 'testPayout',
+                                ],
+                            ],
+                        ],
+                    ],
+                    'filter' => [
+                        'bool' => [
+                            'must' => [
+                                [
+                                    'term' => [
+                                        'balance_id' => [
+                                            'value' => 'BfCGvMZswckZl8',
+                                        ],
+                                    ],
+                                ],
+                                [
+                                    'term' => [
+                                        'merchant_id' => [
+                                            'value' => '10000000000000',
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            'sort' => [
+                '_score' => [
+                    'order' => 'desc',
+                ],
+                'created_at' => [
+                    'order' => 'desc',
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchByNotesExpectedSearchResponse' => [
         'hits' => [
             'hits' => [
                 [

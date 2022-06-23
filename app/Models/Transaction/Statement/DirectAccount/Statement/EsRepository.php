@@ -5,7 +5,7 @@ namespace RZP\Models\Transaction\Statement\DirectAccount\Statement;
 use RZP\Models\Transaction;
 use RZP\Constants\Entity as E;
 
-class EsRepository extends Transaction\EsRepository
+class EsRepository extends Transaction\Statement\EsRepository
 {
     /**
      * {@inheritDoc}
@@ -15,6 +15,10 @@ class EsRepository extends Transaction\EsRepository
         Entity::UTR,
         Entity::CONTACT_NAME,
         Entity::CONTACT_EMAIL,
+        Entity::NOTES . '.value',
+        Entity::FUND_ACCOUNT_NUMBER,
+        Entity::CONTACT_PHONE_PS,
+        Entity::CONTACT_EMAIL_PS,
     ];
 
     /**
@@ -27,10 +31,28 @@ class EsRepository extends Transaction\EsRepository
 
     protected function buildQueryForContactEmail(array &$query, $value)
     {
-        if (empty($value) === true) {
+        if (empty($value)) {
             return;
         }
 
         $this->addTermFilter($query, Entity::CONTACT_EMAIL_RAW, $value);
+    }
+
+    public function buildQueryForContactPhonePs(array &$query, string $value)
+    {
+        if (empty($value)) {
+            return;
+        }
+
+        $this->addTermFilter($query, Entity::CONTACT_PHONE, $value);
+    }
+
+    public function buildQueryForContactEmailPs(array &$query, string $value)
+    {
+        if (empty($value)) {
+            return;
+        }
+
+        $this->addTermFilter($query, Entity::CONTACT_EMAIL_PARTIAL_SEARCH, strtolower($value));
     }
 }

@@ -43,6 +43,19 @@ class Entity extends BankingAccountStatement\Entity
 
     const ACCOUNT_BALANCE   = 'account_balance';
 
+    const NOTES           = 'notes';
+
+    //ES Fund account number search
+    const FUND_ACCOUNT_NUMBER  = 'fund_account_number';
+
+    //Partial Search
+    const CONTACT_PHONE_PS  = 'contact_phone_ps';
+    const CONTACT_EMAIL_PS  = 'contact_email_ps';
+
+
+    //Used Exclusively for the ES raw searching of Email
+    const CONTACT_EMAIL_PARTIAL_SEARCH = 'contact_email.partial_search';
+
     protected $entity = 'direct_account_statement';
 
     protected $primaryKey = self::ID;

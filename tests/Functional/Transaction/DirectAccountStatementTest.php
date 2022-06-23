@@ -483,6 +483,39 @@ class DirectAccountStatementTest extends TestCase
         $this->testData[__FUNCTION__]['request']['url'] = '/transactions?contact_email=contact@razorpay.com';
 
         // Sets ES fetch expected return values.
+        $this->testData[__FUNCTION__ . 'ExpectedSearchParams']['body']['query']['bool']['filter']['bool']['must'][1]['term']['balance_id']['value'] = $this->bankingBalance->getId();
+        $this->testData[__FUNCTION__ . 'ExpectedSearchResponse']['hits']['hits'][0]['_id'] = str_after($this->transaction['id'], 'txn_');
+        $this->createEsMockAndSetExpectations(__FUNCTION__);
+
+        $this->ba->proxyAuth();
+        $response = $this->startTest();
+
+        $this->assertEquals(1, $response['count']);
+
+        $txn = $response['items'][0];
+
+        $this->assertEquals($this->transaction->getPublicId(), $txn['id']);
+        $this->assertEquals($this->transaction['amount'], $txn['amount']);
+        $this->assertEquals($this->transaction->getSignedEntityId(), $txn['source']['id']);
+    }
+
+    public function testFetchByContactEmailPartial()
+    {
+        $this->createDummyReversal();
+
+        //Create another Payout with different Contact Details
+        $this->createDummyPayout([], [
+            'id' => '1000015contact',
+            'email' => 'contact2@razorpay.com',
+            'contact' => '8888888888',
+            'name' => 'test user'
+        ]);
+
+        //Fetch the Transactions of the first Contact
+        $this->testData[__FUNCTION__]['request']['url'] = '/transactions?contact_email_ps=contact@';
+
+        // Sets ES fetch expected return values.
+        $this->testData[__FUNCTION__ . 'ExpectedSearchParams']['body']['query']['bool']['filter']['bool']['must'][1]['term']['balance_id']['value'] = $this->bankingBalance->getId();
         $this->testData[__FUNCTION__ . 'ExpectedSearchResponse']['hits']['hits'][0]['_id'] = str_after($this->transaction['id'], 'txn_');
         $this->createEsMockAndSetExpectations(__FUNCTION__);
 
@@ -514,6 +547,85 @@ class DirectAccountStatementTest extends TestCase
         $this->assertEquals($this->transaction->getPublicId(), $txn['id']);
         $this->assertEquals($this->transaction['amount'], $txn['amount']);
         $this->assertEquals($this->transaction->getSignedEntityId(), $txn['source']['id']);
+    }
+
+    public function testFetchByContactPhonePartial()
+    {
+        $this->createDummyReversal();
+
+        //Create another Payout with different Contact Details
+        $this->createDummyPayout([], [
+            'id' => '1000015contact',
+            'email' => 'contact2@razorpay.com',
+            'contact' => '9888888888',
+            'name' => 'test user'
+        ]);
+
+        //Fetch the Transactions of the first Contact
+        $this->testData[__FUNCTION__]['request']['url'] = '/transactions?contact_phone_ps=988888';
+
+        // Sets ES fetch expected return values.
+        $this->testData[__FUNCTION__ . 'ExpectedSearchParams']['body']['query']['bool']['filter']['bool']['must'][1]['term']['balance_id']['value'] = $this->bankingBalance->getId();
+        $this->testData[__FUNCTION__ . 'ExpectedSearchResponse']['hits']['hits'][0]['_id'] = str_after($this->transaction['id'], 'txn_');
+        $this->createEsMockAndSetExpectations(__FUNCTION__);
+
+        $this->ba->proxyAuth();
+        $response = $this->startTest();
+
+        $this->assertEquals(1, $response['count']);
+
+        $txn = $response['items'][0];
+
+        $this->assertEquals($this->transaction->getPublicId(), $txn['id']);
+        $this->assertEquals($this->transaction['amount'], $txn['amount']);
+        $this->assertEquals($this->transaction->getSignedEntityId(), $txn['source']['id']);
+    }
+
+    public function testFetchByFundAccountNumber()
+    {
+        $esTxnResult = [];
+
+        $this->createDummyPayout();
+
+        $esTxnResult[] = ['_id' => str_after($this->transaction['id'], 'txn_')];
+
+        $this->createDummyPayout([], [
+            'id' => '1000011contact',
+            'email' => 'contact@razorpay.com',
+            'contact' => '8888888888',
+            'name' => 'test user'
+        ]);
+
+        $esTxnResult[] = ['_id' => str_after($this->transaction['id'], 'txn_')];
+
+        $this->testData[__FUNCTION__]['request']['url'] =
+            '/transactions?fund_account_number=' . $this->fundAccount->account->getAccountNumber();
+
+        // Sets ES fetch expected return values.
+        $this->testData[__FUNCTION__ . 'ExpectedSearchParams']['body']['query']['bool']['filter']['bool']['must'][0]['term']['balance_id']['value'] = $this->bankingBalance->getId();
+        $this->testData[__FUNCTION__ . 'ExpectedSearchResponse']['hits']['hits'] = $esTxnResult;
+        $this->createEsMockAndSetExpectations(__FUNCTION__);
+
+        $this->ba->proxyAuth();
+        $response = $this->startTest();
+
+        $this->assertEquals(2, $response['count']);
+    }
+
+    public function testFetchByNotes()
+    {
+        $this->createDummyPayout(['notes' => ['text' => 'testPayout']]);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/transactions?notes=testPayout';
+        // Sets ES fetch expected return values.
+        $this->testData[__FUNCTION__ . 'ExpectedSearchParams']['body']['query']['bool']['filter']['bool']['must'][0]['term']['balance_id']['value'] = $this->bankingBalance->getId();
+        $this->testData[__FUNCTION__ . 'ExpectedSearchResponse']['hits']['hits'][0]['_id'] = str_after($this->transaction['id'], 'txn_');
+        $this->createEsMockAndSetExpectations(__FUNCTION__);
+
+        $this->ba->proxyAuth();
+        $response = $this->startTest();
+
+        $this->assertEquals(1, $response['count']);
     }
 
     public function testFetchByFundAccountId()
