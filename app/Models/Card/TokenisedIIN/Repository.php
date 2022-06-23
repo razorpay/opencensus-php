@@ -34,15 +34,9 @@ class Repository extends Base\Repository
 
     public function findbyTokenIin($tokenIin)
     {
-        $tokenIin_8len = substr($tokenIin, 0, 8);
         return $this->newQuery()
-            ->where(function($query) use ($tokenIin, $tokenIin_8len)
-            {
-                $query->where(Entity::LOW_RANGE, '<=', $tokenIin)
-                    ->where(Entity::HIGH_RANGE, '>=', $tokenIin)
-                    ->orwhere(Entity::LOW_RANGE, '<=', $tokenIin_8len)
-                    ->where(Entity::HIGH_RANGE, '>=', $tokenIin_8len);
-            })
+            ->where(Entity::LOW_RANGE, '<=', $tokenIin)
+            ->where(Entity::HIGH_RANGE, '>=', $tokenIin)
             ->first();
     }
 }
