@@ -5024,8 +5024,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     public function isTokenisationUnhappyFlowHandlingApplicable(): bool
     {
-        if (($this->isCardMandateRecurringInitialPayment() === true) and
-            ($this->localToken->merchant->isFeatureEnabled(Feature\Constants::NETWORK_TOKENIZATION_LIVE) === true))
+        if ($this->isCardMandateRecurringInitialPayment() === true)
         {
             $app = \App::getFacadeRoot();
 

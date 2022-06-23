@@ -6872,6 +6872,15 @@ trait Authorize
         {
             if ($payment->localToken->card->isRzpSavedCard() === false)
             {
+                $cardMandate = $this->repo->card_mandate->findByIdAndMerchant($payment->localToken->getCardMandateId(), $payment->merchant);
+
+                // In the case of saved card flow, card will be tokenised from the start.
+                // Hence, no need to go through this method.
+                if ($cardMandate->getStatus() === CardMandate\Status::ACTIVE)
+                {
+                    return;
+                }
+
                 $this->eventPaymentAuthorized();
 
                 if ($payment->hasSubscription() === true)

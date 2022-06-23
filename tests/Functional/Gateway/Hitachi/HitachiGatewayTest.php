@@ -107,6 +107,11 @@ class HitachiGatewayTest extends TestCase
                         return 'off';
                     }
 
+                    if ($feature === 'recurring_tokenisation_unhappy_flow_handling')
+                    {
+                        return 'control';
+                    }
+
                     return 'on';
                 }));
 
