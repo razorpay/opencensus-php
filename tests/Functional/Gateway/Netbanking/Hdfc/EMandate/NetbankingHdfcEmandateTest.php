@@ -234,7 +234,6 @@ class NetbankingHdfcEmandateTest extends TestCase
             'entity_type' => 'gateway_file',
             'entity_id'   => $content['id'],
             'extension'   => 'xlsx',
-            'name'        => 'Hdfc/Emandate/Register/HDFC_EMandate_Registration_' . $date . '_test',
         ];
 
         $this->assertArraySelectiveEquals($expectedFileContent, $file);
@@ -566,7 +565,6 @@ class NetbankingHdfcEmandateTest extends TestCase
             'entity_type' => 'gateway_file',
             'entity_id'   => $content['id'],
             'extension'   => 'xlsx',
-            'name'        => 'Hdfc/Emandate/Debit/HDFC_EMandate_Debit_' . $date . '_test',
         ];
 
         $this->assertArraySelectiveEquals($expectedFileContent, $file);
