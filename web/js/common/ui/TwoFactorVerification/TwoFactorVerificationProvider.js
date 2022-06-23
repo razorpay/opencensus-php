@@ -114,12 +114,16 @@ export default class TwoFaVerificationContextProvider extends React.Component {
       });
     }
 
-    const res = await this.props.checkPassword().catch((err) => {
+    let res;
+    try {
+      res = await this.props.checkPassword();
+    } catch ({ errors }) {
       this.props.showNotification({
         type: 'error',
-        message: err.errors,
+        message: errors,
       });
-    });
+    }
+
     if (!res || !res.data || !('set_password' in res.data)) {
       return this.onCloseCallback();
     }
