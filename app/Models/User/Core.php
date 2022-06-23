@@ -932,8 +932,7 @@ class Core extends Base\Core
             $this->sendLoginMailToUser($user, $browserDetails);
         }
 
-        $orgId = $this->app['basicauth']->getOrgId();
-        $merchant = $this->findMerchantForOrg($user[Entity::ID], $orgId);
+        $merchant = $this->findMerchant($user[Entity::ID]);
 
         //  $this->mode === 'test', just a hack need to write proper test case after setting product as Banking in requests origin
 
@@ -949,7 +948,7 @@ class Core extends Base\Core
 
         try {
             $user = $this->repo->user->findOrFailPublic($userId);
-            $merchant = $user->getFirstMerchantEntity();
+            $merchant = $user->getTopMerchantEntity();
 
             return $merchant;
         }
@@ -959,26 +958,6 @@ class Core extends Base\Core
                 [
                     'user_id' => $userId
                 ]);
-            return null;
-        }
-
-    }
-
-    public function findMerchantForOrg($userId, $orgId){
-
-        try {
-            $user = $this->repo->user->findOrFailPublic($userId);
-            $merchant = $user->getFirstMerchantEntityForOrg($orgId);
-
-            return $merchant;
-        }
-        catch (\Throwable $ex )
-        {
-
-            $this->trace->info(TraceCode::MERCHANT_FETCH_FAILED,
-                               [
-                                   'user_id' => $userId
-                               ]);
             return null;
         }
 
@@ -2240,8 +2219,7 @@ class Core extends Base\Core
         (new Core)->trackOnboardingEvent($user->getEmail(),
                                          EventCode::MERCHANT_ONBOARDING_LOGIN_SUCCESS);
 
-        $orgId = $this->app['basicauth']->getOrgId();
-        $merchant = $this->findMerchantForOrg($user[Entity::ID], $orgId);
+        $merchant = $this->findMerchant($user[Entity::ID]);
 
         //  $this->mode === 'test', just a hack need to write proper test case after setting product as Banking in requests origin
 
@@ -3043,28 +3021,7 @@ class Core extends Base\Core
     {
         $response = $user->toArrayPublic();
 
-        // Refer to SBB-1061.
-        // - cross org access to a merchant needs to be restricted. i.e. a user can access a HDFC org merchant only from hdfc.razorpay.com
-        //   and not from dashboard.razorpay.com or other org dashboards.
-        // - the fix here is to only return those merchants that have the same org_id as the dashboard the user is logged in on.
-        //
-        // - Apple watch uses oauth to access user_fetch_self route.
-        // - As of June 13, 2022, only apple-watch uses user_fetch_self.
-        // - user_fetch_self is exposed on oAuth and requires APPLE_WATCH_READ_WRITE scope in the token to be accessible.
-        // - isAppleWatchApp is true is APPLE_WATCH_READ_WRITE scope is present in the token.
-        // - So the fix will be bypassed for apple watch calling user_fetch_self
-        // - For other use cases, the fix will be present.
-
-        $orgId = $this->app['basicauth']->getOrgId();
-
-        if($this->app['basicauth']->isAppleWatchApp() === true)
-        {
-            $merchantEntities = $user->merchants()->where(Merchant\Entity::SUSPENDED_AT, null)->take(1000)->get();
-        }
-        else
-        {
-            $merchantEntities = $user->merchantsForOrg($orgId)->where(Merchant\Entity::SUSPENDED_AT, null)->take(1000)->get();
-        }
+        $merchantEntities = $user->merchants()->where(Merchant\Entity::SUSPENDED_AT, null)->take(1000)->get();
 
         $merchants = $merchantEntities->callOnEveryItem('toArrayUser');
 

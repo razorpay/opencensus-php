@@ -3083,7 +3083,7 @@ class UserTest extends TestCase
 
         $this->basicAuthMock->shouldReceive('getUser')->andReturn($this->userEntityMock);
 
-        $this->basicAuthMock->shouldReceive('getOrgId')->andReturn('org_100000razorpay');
+        $this->basicAuthMock->shouldReceive('getOrgId')->andReturn('org_1000000razorpay');
 
         $this->basicAuthMock->shouldReceive('getOrgHostName')->andReturn('Razorpay');
 
