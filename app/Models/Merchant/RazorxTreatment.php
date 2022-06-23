@@ -523,8 +523,11 @@ final class RazorxTreatment
 
     const ASYNC_TOKEN_MIGRATION = 'async_token_migration';
 
+    const REFUNDS_IIN_REMOVAL = "refunds_iin_removal";
+
     /** Experiment to enable custom access control */
     public const RX_CUSTOM_ACCESS_CONTROL_ENABLED = "rx_custom_access_control_enabled";
 
     public const PANSOURCE_CHANGE_RUPAY = 'pansource_change_rupay';
+
 }

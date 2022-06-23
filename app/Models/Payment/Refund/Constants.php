@@ -83,6 +83,12 @@ class Constants
     const CARD_TRANSFER   = 'card_transfer';
     const TRANSFER_METHOD = 'transfer_method';
 
+
+    const CARD_TOKEN_EXPIRY_MONTH   = 'token_expiry_month';
+    const CARD_TOKEN_EXPIRY_YEAR    = 'token_expiry_year';
+    const CARD_TRIVIA               = 'trivia';
+    const TOKEN_STATUS              = 'token_status';
+
     /**
      * razorx experiments related constants
      */

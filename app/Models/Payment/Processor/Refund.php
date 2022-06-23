@@ -4005,6 +4005,8 @@ trait Refund
             RefundConstants::FUNDS_ON_HOLD         => strval($payment->merchant->isFundsOnHold()),
         ];
 
+        $queryParams = $this->setCardTokenDetailsIfApplicable($payment, $queryParams);
+
         // setting default amount when actual refund amount is not known yet
         // and scrooge always expects this parameter in request
         $queryParams[RefundConstants::AMOUNT] = (empty($refund) === false) ? $refund->getBaseAmount() :
@@ -4016,17 +4018,37 @@ trait Refund
             // The following checks have already been made in scrooge. Keeping these for sanity.
             // Therefore, Scrooge must not send a validation error.
             //
-            $iin = $payment->card->iinRelation;
 
-            if (($payment->hasCard() === true) and
-                (is_null($iin) === false) and
-                (empty($iin->getIssuer()) === false) and
-                (empty($iin->getType()) === false))
+            $variant = $this->app->razorx->getTreatment(
+                $payment->getId(),
+                Merchant\RazorxTreatment::REFUNDS_IIN_REMOVAL,
+                $this->mode);
+
+            if ($variant === RefundConstants::RAZORX_VARIANT_ON)
             {
-                $queryParams[RefundConstants::NETWORK_CODE] = $payment->card->getNetworkCode();
-                $queryParams[RefundConstants::ISSUER]       = $iin->getIssuer();
-                $queryParams[RefundConstants::CARD_TYPE]    = strtolower($iin->getType());
-                $queryParams[RefundConstants::BIN]          = $iin->getIin();
+                if (($payment->hasCard() === true) and
+                    (empty($payment->card->getIssuer()) === false) and
+                    (empty($payment->card->getType()) === false))
+                {
+                    $queryParams[RefundConstants::NETWORK_CODE] = $payment->card->getNetworkCode();
+                    $queryParams[RefundConstants::ISSUER] = $payment->card->getIssuer();
+                    $queryParams[RefundConstants::CARD_TYPE] = strtolower($payment->card->getType());
+                }
+            }
+            else
+            {
+                $iin = $payment->card->iinRelation;
+
+                if (($payment->hasCard() === true) and
+                    (is_null($iin) === false) and
+                    (empty($iin->getIssuer()) === false) and
+                    (empty($iin->getType()) === false))
+                {
+                    $queryParams[RefundConstants::NETWORK_CODE] = $payment->card->getNetworkCode();
+                    $queryParams[RefundConstants::ISSUER] = $iin->getIssuer();
+                    $queryParams[RefundConstants::CARD_TYPE] = strtolower($iin->getType());
+                    $queryParams[RefundConstants::BIN] = $iin->getIin();
+                }
             }
         }
 
@@ -4134,5 +4156,23 @@ trait Refund
         {
             $this->eventRefundArnUpdated($refund);
         }
+    }
+
+    private function setCardTokenDetailsIfApplicable(Payment\Entity $payment, array $queryParams): array
+    {
+        if (($payment->getMethod() === Method::CARD) && ($payment->hasCard() === true))
+        {
+            $queryParams[RefundConstants::CARD_TOKEN_EXPIRY_MONTH]  = $payment->card->getTokenExpiryMonth();
+            $queryParams[RefundConstants::CARD_TOKEN_EXPIRY_YEAR]   = $payment->card->getTokenExpiryYear();
+            $queryParams[RefundConstants::CARD_TRIVIA]              = $payment->card->getTrivia();
+
+            $tokenEntity = $payment->getGlobalOrLocalTokenEntity();
+
+            if (empty($tokenEntity) === false)
+            {
+                $queryParams[RefundConstants::TOKEN_STATUS]             = $tokenEntity->getStatus();
+            }
+        }
+        return $queryParams;
     }
 }
