@@ -282,6 +282,26 @@ class IciciBankingAccountStatementTest extends TestCase
                         "TXNDATE"       => "19-02-2021 04:29:52",
                         "TYPE"          => "DR",
                         "VALUEDATE"     => "19-02-2021",
+                    ],
+                    [
+                        "AMOUNT"        => "1.00",
+                        "BALANCE"       => "102.00",
+                        "CHEQUENO"      => [],
+                        "REMARKS"       => "MMT IMPS 212211671710 APIJQFQgSvI8qvN MR SATYANAR  SBIN0003281",
+                        "TRANSACTIONID" => "S86768231",
+                        "TXNDATE"       => "19-02-2021 04:29:52",
+                        "TYPE"          => "CR",
+                        "VALUEDATE"     => "19-02-2021",
+                    ],
+                    [
+                        "AMOUNT"        => "1.00",
+                        "BALANCE"       => "103.00",
+                        "CHEQUENO"      => [],
+                        "REMARKS"       => "IMPS 204813976491 19 02 2021 BOI",
+                        "TRANSACTIONID" => "S86768232",
+                        "TXNDATE"       => "19-02-2021 04:29:52",
+                        "TYPE"          => "CR",
+                        "VALUEDATE"     => "19-02-2021",
                     ]
                 ],
                 "URN"       => "SR189932540",
@@ -718,9 +738,9 @@ class IciciBankingAccountStatementTest extends TestCase
         $basExpected = [
             BasEntity::MERCHANT_ID           => $txnActual[TransactionEntity::MERCHANT_ID],
             BasEntity::BANK_TRANSACTION_ID   => trim($txn[F::TRANSACTION_ID]),
-            BasEntity::TYPE                  => 'debit',
+            BasEntity::TYPE                  => 'credit',
             BasEntity::AMOUNT                => 100,
-            BasEntity::BALANCE               => 10100,
+            BasEntity::BALANCE               => 10300,
             BasEntity::POSTED_DATE           => 1613689192,
             BasEntity::TRANSACTION_DATE      => 1613673000,
             BasEntity::DESCRIPTION           => trim($txn[F::REMARKS]),
@@ -748,8 +768,8 @@ class IciciBankingAccountStatementTest extends TestCase
             TransactionEntity::ID               => $externalTxnId,
             TransactionEntity::ENTITY_ID        => $externalId,
             TransactionEntity::TYPE             => 'external',
-            TransactionEntity::DEBIT            => $externalActual[ExternalEntity::AMOUNT],
-            TransactionEntity::CREDIT           => 0,
+            TransactionEntity::DEBIT            => 0,
+            TransactionEntity::CREDIT           => $externalActual[ExternalEntity::AMOUNT],
             TransactionEntity::AMOUNT           => $externalActual[ExternalEntity::AMOUNT],
             TransactionEntity::FEE              => 0,
             TransactionEntity::TAX              => 0,
@@ -771,6 +791,8 @@ class IciciBankingAccountStatementTest extends TestCase
             '000000043NVN',
             '000286716570',
             '115600327157',
+            '212211671710',
+            '204813976491',
         ];
 
         $utrsActual = $this->getDbEntities(EntityConstants::BANKING_ACCOUNT_STATEMENT)

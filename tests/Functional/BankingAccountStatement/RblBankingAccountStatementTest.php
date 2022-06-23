@@ -6159,6 +6159,60 @@ class RblBankingAccountStatementTest extends TestCase
         $this->makeRequestAndGetContent($request);
     }
 
+    protected function getRblDataResponseForUTRExtractionFromDescription()
+    {
+        $response = [
+            'data' => [
+                'PayGenRes' => [
+                    'Body' => [
+                        'hasMoreData' => 'N',
+                        'transactionDetails' => [
+                            [
+                                'pstdDate' => '2015-12-29T15:58:12.000',
+                                'transactionSummary' => [
+                                    'instrumentId' => '',
+                                    'txnAmt' => [
+                                        'amountValue' => '114.50',
+                                        'currencyCode' => 'INR'
+                                    ],
+                                    'txnDate' => '2015-12-29T00:00:00.000',
+                                    'txnDesc' => '209821868111_IMPSIN',
+                                    'txnType' => 'C'
+                                ],
+                                'txnBalance' => [
+                                    'currencyCode' => 'INR',
+                                    'amountValue' => '214.50'
+                                ],
+                                'txnCat' => 'TBI',
+                                'txnId' => '  S429655',
+                                'txnSrlNo' => ' 498',
+                                'valueDate' => '2015-12-29T00:00:00.000'
+                            ]
+                        ]
+                    ],
+                    'Header' => [
+                        'Approver_ID' => '',
+                        'Corp_ID' => 'RAZORPAY',
+                        'Error_Cde' => '',
+                        'Error_Desc' => '',
+                        'Status' => 'SUCCESS',
+                        'TranID' => '1'
+                    ],
+                    'Signature' => [
+                        'Signature' => 'Signature'
+                    ]
+                ],
+            ],
+            'error' => null,
+            'external_trace_id' => '',
+            'mozart_id' => 'bjt1l8jc1osqk0jtadrg',
+            'next' => [],
+            'success' => true
+        ];
+
+        return $response;
+    }
+
     public function testAccountStatementLastUpdatedAtInBankingAccountsApi()
     {
         $oldDateTime = Carbon::create(2019, 07, 21, 12, 23, 41, Timezone::IST);
@@ -11466,5 +11520,30 @@ class RblBankingAccountStatementTest extends TestCase
         $this->assertEquals($reversal->getId(), $basEntries[2]['entity_id']);
         $this->assertEquals($reversal->getTransactionId(), $basEntries[2]['transaction_id']);
         $this->assertEquals($transactions[2]['entity_id'],$reversal->getId());
+    }
+
+    public function testRBLAccountStatementWithVariousRegex()
+    {
+        $mockedResponse = $this->getRblDataResponseForUTRExtractionFromDescription();
+
+        $this->setMozartMockResponse($mockedResponse);
+
+        $testData = $this->testData['testRblAccountStatementCase1'];
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+
+        $utrsExpected = [
+            '209821868111',
+        ];
+
+        $utrsActual = $this->getDbEntities(EntityConstants::BANKING_ACCOUNT_STATEMENT)
+            ->map(function($basEntity) {
+                return $basEntity->getUtr();
+            })->all();
+
+        $this->assertEqualsCanonicalizing($utrsExpected, $utrsActual);
     }
 }

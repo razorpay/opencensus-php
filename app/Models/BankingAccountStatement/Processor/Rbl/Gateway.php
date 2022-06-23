@@ -52,6 +52,9 @@ class Gateway extends BaseProcessor
     // regex to fetch utr from description
     const CREDIT_REGEX = '/^(RTGS\/|NEFT\/|UPI\/|R\/UPI\/|R-|IMPS )(.*?)(\/|-| )/';
 
+    // sample IMPS - 209821868111_IMPSIN
+    const IMPS_CREDIT_REGEX = '/^([0-9]{12})_IMPS/';
+
     // sample IMPS - 010617021414-QCREDIT 234412
     const IMPS_DEBIT_REGEX = '/^(.*?)-/';
 
@@ -1331,17 +1334,26 @@ class Gateway extends BaseProcessor
 
         if ($basEntity->isTypeCredit() === true)
         {
-            $regex = self::CREDIT_REGEX;
+            if ($this->matchDescriptionFor(self::IMPS_CREDIT_REGEX, $description) === true)
+            {
+                $regex = self::IMPS_CREDIT_REGEX;
+            }
+
+            else
+            {
+                $regex = self::CREDIT_REGEX;
+            }
         }
         else
         {
             $regex = self::IMPS_DEBIT_REGEX;
 
-            if ($this->isNeftOrRtgs($description) === true)
+            if ($this->matchDescriptionFor(self::NEFT_RTGS_DEBIT_REGEX, $description) === true)
             {
                 $regex = self::NEFT_RTGS_DEBIT_REGEX;
             }
-            if ($this->isUpi($description) === true)
+
+            if ($this->matchDescriptionFor(self::UPI_DEBIT_REGEX, $description) === true)
             {
                 $regex = self::UPI_DEBIT_REGEX;
             }
@@ -1365,24 +1377,8 @@ class Gateway extends BaseProcessor
         return null;
     }
 
-    protected function isNeftOrRtgs(string  $description)
+    protected function matchDescriptionFor(string $regex, string $description)
     {
-        $regex = self::NEFT_RTGS_DEBIT_REGEX;
-
-        $match = preg_match($regex, $description, $matches);
-
-        if ($match === 1)
-        {
-            return true;
-        }
-
-        return false;
-    }
-
-    protected function isUpi(string $description)
-    {
-        $regex = self::UPI_DEBIT_REGEX;
-
         $match = preg_match($regex, $description, $matches);
 
         if ($match === 1)
